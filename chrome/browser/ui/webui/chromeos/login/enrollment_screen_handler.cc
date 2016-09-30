@@ -345,6 +345,10 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_ATTRIBUTE_UPDATE_FAILED:
       ShowErrorForDevice(IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR, false);
       return;
+    case policy::EnrollmentStatus::STATUS_NO_MACHINE_IDENTIFICATION:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_MACHINE_IDENTIFICATION,
+                false);
+      return;
   }
   NOTREACHED();
 }

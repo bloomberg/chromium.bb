@@ -417,6 +417,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED:
       UMA(policy::kMetricEnrollmentRegistrationCertificateFetchFailed);
       break;
+    case policy::EnrollmentStatus::STATUS_NO_MACHINE_IDENTIFICATION:
+      UMA(policy::kMetricEnrollmentNoDeviceIdentification);
+      break;
   }
 }
 

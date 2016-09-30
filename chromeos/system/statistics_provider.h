@@ -41,6 +41,10 @@ CHROMEOS_EXPORT extern const char kFirmwareTypeValueDeveloper[];
 CHROMEOS_EXPORT extern const char kFirmwareTypeValueNonchrome[];
 CHROMEOS_EXPORT extern const char kFirmwareTypeValueNormal[];
 
+// Serial number key (only VPD v2+ devices). Use GetEnterpriseMachineID() to
+// cover legacy devices.
+CHROMEOS_EXPORT extern const char kSerialNumberKey[];
+
 // HWID key.
 CHROMEOS_EXPORT extern const char kHardwareClassKey[];
 
@@ -103,11 +107,17 @@ class CHROMEOS_EXPORT StatisticsProvider {
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) = 0;
 
-  // Checks whether a machine statistic is present (without logging a warning).
-  bool HasMachineStatistic(const std::string& name);
-
   // Similar to GetMachineStatistic for boolean flags.
   virtual bool GetMachineFlag(const std::string& name, bool* result) = 0;
+
+  // Returns the machine serial number after examining a set of well-known
+  // keys. In case no serial is found (possibly due to the device having already
+  // been enrolled or claimed by a local user), an empty string is returned.
+  // Caveat: For lumpy, the last letter is ommitted from the serial number for
+  // historical reasons.
+  // TODO(tnagel): Drop "Enterprise" from the method name and remove lumpy
+  // special casing after lumpy EOL.
+  std::string GetEnterpriseMachineID();
 
   // Cancels any pending file operations.
   virtual void Shutdown() = 0;

@@ -39,22 +39,6 @@
 
 namespace policy {
 
-namespace {
-
-// Gets a machine flag from StatisticsProvider, returning the given
-// |default_value| if not present.
-bool GetMachineFlag(const std::string& key, bool default_value) {
-  bool value = default_value;
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineFlag(key, &value))
-    return default_value;
-
-  return value;
-}
-
-}  // namespace
-
 DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     PrefService* local_state,
     DeviceManagementService* enterprise_service,
@@ -64,7 +48,8 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     DeviceCloudPolicyStoreChromeOS* device_store,
     DeviceCloudPolicyManagerChromeOS* manager,
     cryptohome::AsyncMethodCaller* async_method_caller,
-    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow)
+    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
+    chromeos::system::StatisticsProvider* statistics_provider)
     : local_state_(local_state),
       enterprise_service_(enterprise_service),
       background_task_runner_(background_task_runner),
@@ -73,6 +58,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       device_store_(device_store),
       manager_(manager),
       attestation_flow_(std::move(attestation_flow)),
+      statistics_provider_(statistics_provider),
       signing_service_(base::MakeUnique<TpmEnrollmentKeySigningService>(
           async_method_caller)) {}
 
@@ -165,7 +151,7 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
     // registration gets lost.
     if (local_state_->GetBoolean(prefs::kEnrollmentRecoveryRequired)) {
       LOG(WARNING) << "Enrollment recovery required according to pref.";
-      if (DeviceCloudPolicyManagerChromeOS::GetMachineID().empty())
+      if (statistics_provider_->GetEnterpriseMachineID().empty())
         LOG(WARNING) << "Postponing recovery because machine id is missing.";
       else
         config.mode = EnrollmentConfig::MODE_RECOVERY;
@@ -263,9 +249,11 @@ void DeviceCloudPolicyInitializer::EnrollmentCompleted(
 
 std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
     DeviceManagementService* device_management_service) {
+  std::string machine_model;
+  statistics_provider_->GetMachineStatistic(chromeos::system::kHardwareClassKey,
+                                            &machine_model);
   return base::MakeUnique<CloudPolicyClient>(
-      DeviceCloudPolicyManagerChromeOS::GetMachineID(),
-      DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
+      statistics_provider_->GetEnterpriseMachineID(), machine_model,
       kPolicyVerificationKeyHash, device_management_service,
       g_browser_process->system_request_context(), signing_service_.get());
 }
@@ -284,6 +272,15 @@ void DeviceCloudPolicyInitializer::StartConnection(
     std::unique_ptr<CloudPolicyClient> client) {
   if (!manager_->core()->service())
     manager_->StartConnection(std::move(client), install_attributes_);
+}
+
+bool DeviceCloudPolicyInitializer::GetMachineFlag(const std::string& key,
+                                                  bool default_value) const {
+  bool value = default_value;
+  if (!statistics_provider_->GetMachineFlag(key, &value))
+    return default_value;
+
+  return value;
 }
 
 DeviceCloudPolicyInitializer::TpmEnrollmentKeySigningService::

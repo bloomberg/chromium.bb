@@ -224,6 +224,8 @@ enum MetricEnrollment {
   kMetricEnrollmentRegistrationCertificateFetchFailed = 52,
   // The request to enroll could not be signed.
   kMetricEnrollmentRegisterCannotSignRequest = 53,
+  // Device model or serial number missing from VPD.
+  kMetricEnrollmentNoDeviceIdentification = 54,
 };
 
 // Events related to policy refresh.

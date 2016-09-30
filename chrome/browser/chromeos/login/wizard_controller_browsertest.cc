@@ -726,9 +726,10 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
                             std::string(),
                             std::string(),
                             policy::DEVICE_MODE_NOT_SET) {
-    fake_statistics_provider_.SetMachineStatistic("serial_number", "test");
-    fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
-                                                  "2000-01");
+    fake_statistics_provider_.SetMachineStatistic(
+        system::kSerialNumberKey, "test");
+    fake_statistics_provider_.SetMachineStatistic(
+        system::kActivateDateKey, "2000-01");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

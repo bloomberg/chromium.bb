@@ -118,6 +118,20 @@ EnrollmentHandlerChromeOS::~EnrollmentHandlerChromeOS() {
 void EnrollmentHandlerChromeOS::StartEnrollment() {
   CHECK_EQ(STEP_PENDING, enrollment_step_);
   enrollment_step_ = STEP_STATE_KEYS;
+
+  if (client_->machine_id().empty()) {
+    LOG(ERROR) << "Machine id empty.";
+    ReportResult(EnrollmentStatus::ForStatus(
+        EnrollmentStatus::STATUS_NO_MACHINE_IDENTIFICATION));
+    return;
+  }
+  if (client_->machine_model().empty()) {
+    LOG(ERROR) << "Machine model empty.";
+    ReportResult(EnrollmentStatus::ForStatus(
+        EnrollmentStatus::STATUS_NO_MACHINE_IDENTIFICATION));
+    return;
+  }
+
   state_keys_broker_->RequestStateKeys(
       base::Bind(&EnrollmentHandlerChromeOS::HandleStateKeysResult,
                  weak_ptr_factory_.GetWeakPtr()));

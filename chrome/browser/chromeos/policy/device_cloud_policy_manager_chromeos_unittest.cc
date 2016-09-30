@@ -113,7 +113,10 @@ class DeviceCloudPolicyManagerChromeOSTest
         state_keys_broker_(&fake_session_manager_client_,
                            base::ThreadTaskRunnerHandle::Get()),
         store_(NULL) {
-    fake_statistics_provider_.SetMachineStatistic("serial_numer", "test_sn");
+    fake_statistics_provider_.SetMachineStatistic(
+        chromeos::system::kSerialNumberKey, "test_sn");
+    fake_statistics_provider_.SetMachineStatistic(
+        chromeos::system::kHardwareClassKey, "test_hw");
     std::vector<std::string> state_keys;
     state_keys.push_back("1");
     state_keys.push_back("2");
@@ -207,11 +210,12 @@ class DeviceCloudPolicyManagerChromeOSTest
         CreateAttestationFlow());
     manager_->Initialize(&local_state_);
     manager_->AddDeviceCloudPolicyManagerObserver(this);
-    initializer_.reset(new DeviceCloudPolicyInitializer(
+    initializer_ = base::MakeUnique<DeviceCloudPolicyInitializer>(
         &local_state_, &device_management_service_,
         base::ThreadTaskRunnerHandle::Get(), install_attributes_.get(),
         &state_keys_broker_, store_, manager_.get(),
-        cryptohome::AsyncMethodCaller::GetInstance(), std::move(unique_flow)));
+        cryptohome::AsyncMethodCaller::GetInstance(), std::move(unique_flow),
+        &fake_statistics_provider_);
     initializer_->SetSigningServiceForTesting(
         base::MakeUnique<FakeSigningService>());
     initializer_->Init();

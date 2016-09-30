@@ -14,16 +14,17 @@ namespace policy {
 
 FakeDeviceCloudPolicyInitializer::FakeDeviceCloudPolicyInitializer()
     : DeviceCloudPolicyInitializer(
-          NULL,  // local_state
-          NULL,  // enterprise_service
+          nullptr,  // local_state
+          nullptr,  // enterprise_service
           // background_task_runner
-          scoped_refptr<base::SequencedTaskRunner>(NULL),
-          NULL,  // install_attributes
-          NULL,  // state_keys_broker
-          NULL,  // device_store
-          NULL,  // manager
-          NULL,  // async_caller
-          base::MakeUnique<chromeos::attestation::MockAttestationFlow>()),
+          scoped_refptr<base::SequencedTaskRunner>(nullptr),
+          nullptr,  // install_attributes
+          nullptr,  // state_keys_broker
+          nullptr,  // device_store
+          nullptr,  // manager
+          nullptr,  // async_caller
+          base::MakeUnique<chromeos::attestation::MockAttestationFlow>(),
+          nullptr),  // statistics_provider
       was_start_enrollment_called_(false),
       enrollment_status_(
           EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS)) {}

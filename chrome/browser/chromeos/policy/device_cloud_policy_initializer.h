@@ -32,6 +32,9 @@ class InstallAttributes;
 namespace attestation {
 class AttestationFlow;
 }
+namespace system {
+class StatisticsProvider;
+}
 }
 
 namespace cryptohome {
@@ -64,7 +67,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       DeviceCloudPolicyStoreChromeOS* device_store,
       DeviceCloudPolicyManagerChromeOS* manager,
       cryptohome::AsyncMethodCaller* async_method_caller,
-      std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow);
+      std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
+      chromeos::system::StatisticsProvider* statistics_provider);
 
   ~DeviceCloudPolicyInitializer() override;
 
@@ -134,6 +138,10 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   void TryToCreateClient();
   void StartConnection(std::unique_ptr<CloudPolicyClient> client);
 
+  // Get a machine flag from |statistics_provider_|, returning the given
+  // |default_value| if not present.
+  bool GetMachineFlag(const std::string& key, bool default_value) const;
+
   PrefService* local_state_;
   DeviceManagementService* enterprise_service_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
@@ -142,6 +150,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   DeviceCloudPolicyStoreChromeOS* device_store_;
   DeviceCloudPolicyManagerChromeOS* manager_;
   std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow_;
+  chromeos::system::StatisticsProvider* statistics_provider_;
   bool is_initialized_ = false;
 
   // Non-NULL if there is an enrollment operation pending.

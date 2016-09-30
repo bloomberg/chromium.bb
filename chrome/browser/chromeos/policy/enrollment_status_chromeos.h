@@ -42,6 +42,7 @@ class EnrollmentStatus {
     STATUS_ATTRIBUTE_UPDATE_FAILED = 14,    // Device attribute update failed.
     STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED = 15,  // Cannot obtain
                                                         // registration cert.
+    STATUS_NO_MACHINE_IDENTIFICATION = 16,  // Machine model or serial missing.
   };
 
   // Helpers for constructing errors for relevant cases.

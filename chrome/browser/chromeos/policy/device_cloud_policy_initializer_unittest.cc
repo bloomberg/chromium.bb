@@ -47,9 +47,13 @@ class DeviceCloudPolicyInitializerTest
             nullptr,
             nullptr,
             nullptr,
-            base::MakeUnique<chromeos::attestation::MockAttestationFlow>()) {
+            base::MakeUnique<chromeos::attestation::MockAttestationFlow>(),
+            &statistics_provider_) {
     chrome::RegisterLocalState(local_state_.registry());
-    statistics_provider_.SetMachineStatistic("serial_number", "fake-serial");
+    statistics_provider_.SetMachineStatistic(
+        chromeos::system::kSerialNumberKey, "fake-serial");
+    statistics_provider_.SetMachineStatistic(
+        chromeos::system::kHardwareClassKey, "fake-hardware");
   }
 
   void SetupZeroTouchFlag();

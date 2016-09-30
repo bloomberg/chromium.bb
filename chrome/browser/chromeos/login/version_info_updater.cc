@@ -16,11 +16,11 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -136,10 +136,11 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
 }
 
 void VersionInfoUpdater::UpdateSerialNumberInfo() {
-  std::string sn = policy::DeviceCloudPolicyManagerChromeOS::GetMachineID();
-  if (!sn.empty()) {
+  std::string serial =
+      system::StatisticsProvider::GetInstance()->GetEnterpriseMachineID();
+  if (!serial.empty()) {
     serial_number_text_ = kSerialNumberPrefix;
-    serial_number_text_.append(sn);
+    serial_number_text_.append(serial);
   }
 }
 

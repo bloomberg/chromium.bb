@@ -87,12 +87,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Pref registration helper.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Returns the device serial number, or an empty string if not available.
-  static std::string GetMachineID();
-
-  // Returns the machine model, or an empty string if not available.
-  static std::string GetMachineModel();
-
   // Returns the mode for using zero-touch enrollment.
   static ZeroTouchEnrollmentMode GetZeroTouchEnrollmentMode();
 

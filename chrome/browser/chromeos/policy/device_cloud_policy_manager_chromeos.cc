@@ -61,26 +61,6 @@ const char kRialtoRequisition[] = "rialto";
 // Zero-touch enrollment flag values.
 const char kZeroTouchEnrollmentForced[] = "forced";
 
-// These are the machine serial number keys that we check in order until we
-// find a non-empty serial number. The VPD spec says the serial number should be
-// in the "serial_number" key for v2+ VPDs. However, legacy devices used a
-// different key to report their serial number, which we fall back to if
-// "serial_number" is not present.
-//
-// Product_S/N is still special-cased due to inconsistencies with serial
-// numbers on Lumpy devices: On these devices, serial_number is identical to
-// Product_S/N with an appended checksum. Unfortunately, the sticker on the
-// packaging doesn't include that checksum either (the sticker on the device
-// does though!). The former sticker is the source of the serial number used by
-// device management service, so we prefer Product_S/N over serial number to
-// match the server.
-const char* const kMachineInfoSerialNumberKeys[] = {
-  "Product_S/N",    // Lumpy/Alex devices
-  "serial_number",  // VPD v2+ devices
-  "Product_SN",     // Mario
-  "sn",             // old ZGB devices (more recent ones use serial_number)
-};
-
 // Fetches a machine statistic value from StatisticsProvider, returns an empty
 // string on failure.
 std::string GetMachineStatistic(const std::string& key) {
@@ -217,34 +197,6 @@ void DeviceCloudPolicyManagerChromeOS::RegisterPrefs(
   registry->RegisterBooleanPref(prefs::kDeviceEnrollmentAutoStart, false);
   registry->RegisterBooleanPref(prefs::kDeviceEnrollmentCanExit, true);
   registry->RegisterDictionaryPref(prefs::kServerBackedDeviceState);
-}
-
-// static
-std::string DeviceCloudPolicyManagerChromeOS::GetMachineID() {
-  std::string machine_id;
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  for (size_t i = 0; i < arraysize(kMachineInfoSerialNumberKeys); i++) {
-    if (provider->HasMachineStatistic(kMachineInfoSerialNumberKeys[i]) &&
-        provider->GetMachineStatistic(kMachineInfoSerialNumberKeys[i],
-                                      &machine_id) &&
-        !machine_id.empty()) {
-      break;
-    }
-  }
-
-  if (machine_id.empty()) {
-    LOG(WARNING) << "Failed to get machine id. This is only an error if the "
-                    "device has not yet been enrolled or claimed by a local "
-                    "user.";
-  }
-
-  return machine_id;
-}
-
-// static
-std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
-  return GetMachineStatistic(chromeos::system::kHardwareClassKey);
 }
 
 // static

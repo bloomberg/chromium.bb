@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
@@ -60,15 +59,16 @@ int GetSanitizedArg(const std::string& switch_name) {
 // The requirement for the machine serial number to be present as well is a
 // sanity-check to ensure that the VPD has actually been read successfully.
 bool CanSkipFRE() {
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
   std::string check_enrollment_value;
   bool is_enrolled =
-      system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+      provider->GetMachineStatistic(
           system::kCheckEnrollmentKey, &check_enrollment_value) &&
       check_enrollment_value == "1";
-  return !system::StatisticsProvider::GetInstance()->HasMachineStatistic(
-             system::kActivateDateKey) &&
+  return !provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
          !is_enrolled &&
-         !policy::DeviceCloudPolicyManagerChromeOS::GetMachineID().empty();
+         !provider->GetEnterpriseMachineID().empty();
 }
 
 }  // namespace
