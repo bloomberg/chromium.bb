@@ -396,16 +396,6 @@ void WebURLResponse::setWasAlternateProtocolAvailable(bool value)
     m_resourceResponse->setWasAlternateProtocolAvailable(value);
 }
 
-bool WebURLResponse::wasFetchedViaProxy() const
-{
-    return m_resourceResponse->wasFetchedViaProxy();
-}
-
-void WebURLResponse::setWasFetchedViaProxy(bool value)
-{
-    m_resourceResponse->setWasFetchedViaProxy(value);
-}
-
 bool WebURLResponse::wasFetchedViaServiceWorker() const
 {
     return m_resourceResponse->wasFetchedViaServiceWorker();

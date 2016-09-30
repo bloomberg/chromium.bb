@@ -1027,8 +1027,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
   extra_data->set_connection_info(info.connection_info);
-  extra_data->set_was_fetched_via_proxy(info.was_fetched_via_proxy);
-  extra_data->set_proxy_server(info.proxy_server);
   extra_data->set_is_using_lofi(info.is_using_lofi);
   extra_data->set_effective_connection_type(info.effective_connection_type);
 

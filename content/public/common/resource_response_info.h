@@ -98,13 +98,6 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // Information about the type of connection used to fetch this response.
   net::HttpResponseInfo::ConnectionInfo connection_info;
 
-  // True if the response was fetched via an explicit proxy (as opposed to a
-  // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
-  // Note: we cannot tell if a transparent proxy may have been involved. If
-  // true, |proxy_server| contains the name of the proxy server that was used.
-  bool was_fetched_via_proxy;
-  net::HostPortPair proxy_server;
-
   // ALPN protocol negotiated with the server.
   std::string alpn_negotiated_protocol;
 

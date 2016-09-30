@@ -255,10 +255,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // so that we can set the appropriate page type.
   IPC_STRUCT_MEMBER(bool, url_is_unreachable)
 
-  // True if the connection was proxied.  In this case, socket_address
-  // will represent the address of the proxy, rather than the remote host.
-  IPC_STRUCT_MEMBER(bool, was_fetched_via_proxy)
-
   // Serialized history item state to store in the navigation entry.
   IPC_STRUCT_MEMBER(content::PageState, page_state)
 

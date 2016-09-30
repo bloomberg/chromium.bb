@@ -241,9 +241,6 @@ public:
       m_wasAlternateProtocolAvailable = value;
     }
 
-    bool wasFetchedViaProxy() const { return m_wasFetchedViaProxy; }
-    void setWasFetchedViaProxy(bool value) { m_wasFetchedViaProxy = value; }
-
     bool wasFetchedViaServiceWorker() const { return m_wasFetchedViaServiceWorker; }
     void setWasFetchedViaServiceWorker(bool value) { m_wasFetchedViaServiceWorker = value; }
 

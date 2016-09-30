@@ -238,10 +238,6 @@ public:
     BLINK_PLATFORM_EXPORT bool wasAlternateProtocolAvailable() const;
     BLINK_PLATFORM_EXPORT void setWasAlternateProtocolAvailable(bool);
 
-    // Flag whether this request was loaded via an explicit proxy (HTTP, SOCKS, etc).
-    BLINK_PLATFORM_EXPORT bool wasFetchedViaProxy() const;
-    BLINK_PLATFORM_EXPORT void setWasFetchedViaProxy(bool);
-
     // Flag whether this request was loaded via a ServiceWorker.
     BLINK_PLATFORM_EXPORT bool wasFetchedViaServiceWorker() const;
     BLINK_PLATFORM_EXPORT void setWasFetchedViaServiceWorker(bool);

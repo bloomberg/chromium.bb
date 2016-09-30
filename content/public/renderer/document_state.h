@@ -157,17 +157,6 @@ class CONTENT_EXPORT DocumentState
     connection_info_ = connection_info;
   }
 
-  bool was_fetched_via_proxy() const { return was_fetched_via_proxy_; }
-  void set_was_fetched_via_proxy(bool value) {
-    was_fetched_via_proxy_ = value;
-  }
-
-  const net::HostPortPair& proxy_server() const { return proxy_server_; }
-  void set_proxy_server(const net::HostPortPair& proxy_server) {
-    proxy_server_ = proxy_server;
-  }
-
-
   // For LoadDataWithBaseURL navigations, |was_load_data_with_base_url_request_|
   // is set to true and |data_url_| is set to the data URL of the navigation.
   // Otherwise, |was_load_data_with_base_url_request_| is false and |data_url_|
@@ -212,8 +201,6 @@ class CONTENT_EXPORT DocumentState
   std::string alpn_negotiated_protocol_;
   bool was_alternate_protocol_available_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
-  bool was_fetched_via_proxy_;
-  net::HostPortPair proxy_server_;
 
   bool was_load_data_with_base_url_request_;
   GURL data_url_;

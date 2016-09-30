@@ -4196,10 +4196,6 @@ void RenderFrameImpl::didReceiveResponse(
         extra_data->was_alternate_protocol_available());
     document_state->set_connection_info(
         extra_data->connection_info());
-    document_state->set_was_fetched_via_proxy(
-        extra_data->was_fetched_via_proxy());
-    document_state->set_proxy_server(
-        extra_data->proxy_server());
   }
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
@@ -4625,9 +4621,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.render_view_routing_id = render_view_->routing_id();
   params.socket_address.set_host(response.remoteIPAddress().utf8());
   params.socket_address.set_port(response.remotePort());
-  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
-  if (extra_data)
-    params.was_fetched_via_proxy = extra_data->was_fetched_via_proxy();
   params.was_within_same_page = navigation_state->WasWithinSamePage();
 
   // Set the origin of the frame.  This will be replicated to the corresponding

@@ -64,8 +64,6 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
   response->head.alpn_negotiated_protocol =
       response_info.alpn_negotiated_protocol;
   response->head.connection_info = response_info.connection_info;
-  response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
-  response->head.proxy_server = response_info.proxy_server;
   response->head.socket_address = response_info.socket_address;
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
