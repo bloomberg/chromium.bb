@@ -425,6 +425,8 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   // PlzNavigate
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
+  bool have_to_make_network_request = ShouldMakeNetworkRequestForURL(
+      request->common_params().url);
 
   // Simulate a beforeUnload ACK from the renderer if the browser is waiting for
   // it. If it runs it will update the request state.
@@ -432,6 +434,9 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     static_cast<TestRenderFrameHost*>(frame_tree_node()->current_frame_host())
         ->SendBeforeUnloadACK(true);
   }
+
+  if (!have_to_make_network_request)
+    return;  // |request| is destructed by now.
 
   CHECK(request->state() == NavigationRequest::STARTED);
 

@@ -24,6 +24,7 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -2461,7 +2462,8 @@ void RenderFrameHostImpl::CommitNavigation(
     bool is_view_source) {
   DCHECK((response && body.get()) ||
          common_params.url.SchemeIs(url::kDataScheme) ||
-         !ShouldMakeNetworkRequestForURL(common_params.url));
+         !ShouldMakeNetworkRequestForURL(common_params.url) ||
+         IsRendererDebugURL(common_params.url));
   UpdatePermissionsForNavigation(common_params, request_params);
 
   // Get back to a clean state, in case we start a new navigation without
@@ -2490,11 +2492,11 @@ void RenderFrameHostImpl::CommitNavigation(
   // reading it.
   stream_handle_ = std::move(body);
 
-  // When navigating to a Javascript url, no commit is expected from the
+  // When navigating to a debug url, no commit is expected from the
   // RenderFrameHost, nor should the throbber start. The NavigationRequest is
   // also not stored in the FrameTreeNode. Therefore do not reset it, as this
   // could cancel an existing pending navigation.
-  if (!common_params.url.SchemeIs(url::kJavaScriptScheme)) {
+  if (!IsRendererDebugURL(common_params.url)) {
     pending_commit_ = true;
     is_loading_ = true;
   }

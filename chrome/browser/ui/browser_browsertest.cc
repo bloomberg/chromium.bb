@@ -83,6 +83,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -94,6 +95,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
@@ -330,6 +332,24 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   BrowserWindow* browser_window_;  // Weak ptr.
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewSizeObserver);
+};
+
+// Waits for a failed commit notification.
+class FailedCommitWatcher : public content::WebContentsObserver {
+public:
+  explicit FailedCommitWatcher(content::WebContents* wc)
+      : content::WebContentsObserver(wc) {}
+  void Wait() {
+    run_loop_.Run();
+  }
+
+ private:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    CHECK(!navigation_handle->HasCommitted());
+    run_loop_.Quit();
+  }
+  base::RunLoop run_loop_;
 };
 
 }  // namespace
@@ -672,7 +692,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   // the throbber stops spinning.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+
+  FailedCommitWatcher watcher(
+      browser()->tab_strip_model()->GetActiveWebContents());
   alert->CloseModalDialog();
+  if (content::IsBrowserSideNavigationEnabled())
+    watcher.Wait();
   EXPECT_FALSE(
       browser()->tab_strip_model()->GetActiveWebContents()->IsLoading());
 
@@ -824,7 +849,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 
   // Cancel the dialog.
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  FailedCommitWatcher watcher(
+      browser()->tab_strip_model()->GetActiveWebContents());
   alert->CloseModalDialog();
+  if (content::IsBrowserSideNavigationEnabled())
+    watcher.Wait();
   EXPECT_FALSE(
       browser()->tab_strip_model()->GetActiveWebContents()->IsLoading());
 
@@ -882,7 +911,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
 #define MAYBE_BeforeUnloadVsBeforeReload BeforeUnloadVsBeforeReload
 #endif
 
-// Test that when a page has an onunload handler, reloading a page shows a
+// Test that when a page has an onbeforeunload handler, reloading a page shows a
 // different dialog than navigating to a different page.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_BeforeUnloadVsBeforeReload) {
   GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
@@ -894,7 +923,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_BeforeUnloadVsBeforeReload) {
   EXPECT_TRUE(static_cast<JavaScriptAppModalDialog*>(alert)->is_reload());
 
   // Cancel the reload.
+  FailedCommitWatcher watcher(
+      browser()->tab_strip_model()->GetActiveWebContents());
   alert->native_dialog()->CancelAppModalDialog();
+  if (content::IsBrowserSideNavigationEnabled())
+    watcher.Wait();
 
   // Navigate to another url, and check that we get a "before unload" dialog.
   GURL url2(url::kAboutBlankURL);

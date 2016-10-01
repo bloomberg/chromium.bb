@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -413,10 +414,10 @@ bool NavigatorImpl::NavigateToEntry(
     CHECK_EQ(controller_->GetPendingEntry(), &entry);
 
   if (controller_->GetPendingEntryIndex() == -1 &&
-      dest_url.SchemeIs(url::kJavaScriptScheme)) {
+      IsRendererDebugURL(dest_url)) {
     // If the pending entry index is -1 (which means a new navigation rather
-    // than a history one), and the user typed in a javascript: URL, don't add
-    // it to the session history.
+    // than a history one), and the user typed in a debug URL, don't add it to
+    // the session history.
     //
     // This is a hack. What we really want is to avoid adding to the history any
     // URL that doesn't generate content, and what would be great would be if we
@@ -1057,12 +1058,9 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
   navigation_request->CreateNavigationHandle(entry.GetUniqueID());
 
   // Have the current renderer execute its beforeunload event if needed. If it
-  // is not needed (when beforeunload dispatch is not needed or this navigation
-  // is synchronous and same-site) then NavigationRequest::BeginNavigation
-  // should be directly called instead.
-  if (should_dispatch_beforeunload &&
-      ShouldMakeNetworkRequestForURL(
-          navigation_request->common_params().url)) {
+  // is not needed then NavigationRequest::BeginNavigation should be directly
+  // called instead.
+  if (should_dispatch_beforeunload && !IsRendererDebugURL(dest_url)) {
     navigation_request->SetWaitingForRendererResponse();
     frame_tree_node->current_frame_host()->DispatchBeforeUnload(
         true, reload_type != ReloadType::NONE);

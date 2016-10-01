@@ -176,6 +176,18 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
   ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
 }
 
+// Tests that a beforeunload handler doesn't run if user navigates to
+// chrome::crash.
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, BeforeUnloadNotRun) {
+  const char* kBeforeUnloadHTML =
+    "<html><body>"
+    "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
+    "</body></html>";
+  GURL url(std::string("data:text/html,") + kBeforeUnloadHTML);
+  ui_test_utils::NavigateToURL(browser(), url);
+  SimulateRendererCrash(browser());
+}
+
 }  // namespace
 
 #endif
