@@ -50,6 +50,7 @@ CONTENT_EXPORT extern const base::Feature kTokenBinding;
 CONTENT_EXPORT extern const base::Feature kTouchpadAndWheelScrollLatching;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
 CONTENT_EXPORT extern const base::Feature kWebRtcEcdsaDefault;
+CONTENT_EXPORT extern const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT
 extern const base::Feature kSendBeaconThrowForBlobWithNonSimpleType;

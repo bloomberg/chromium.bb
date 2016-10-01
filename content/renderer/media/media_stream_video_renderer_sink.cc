@@ -4,9 +4,11 @@
 
 #include "content/renderer/media/media_stream_video_renderer_sink.h"
 
+#include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "content/public/common/content_features.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
@@ -33,7 +35,9 @@ MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
       media_task_runner_(media_task_runner),
       weak_factory_(this) {
   if (gpu_factories &&
-      gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
+      gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames() &&
+      base::FeatureList::IsEnabled(
+          features::kWebRtcUseGpuMemoryBufferVideoFrames)) {
     gpu_memory_buffer_pool_.reset(new media::GpuMemoryBufferVideoFramePool(
         media_task_runner, worker_task_runner, gpu_factories));
   }
