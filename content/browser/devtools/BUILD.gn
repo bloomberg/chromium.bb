@@ -12,6 +12,7 @@ group("resources") {
 
 grit("devtools_resources") {
   source = "$root_gen_dir/devtools/devtools_resources.grd"
+  source_is_generated = true
 
   # TOOD(brettw) remove this so the output file goes into the target_gen_dir,
   # but keep this for not for GYP compat.

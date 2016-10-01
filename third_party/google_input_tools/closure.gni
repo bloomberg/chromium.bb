@@ -5,8 +5,7 @@
 template("build_closure") {
   assert(defined(invoker.sources))
   assert(defined(invoker.target))
-  action_name = target_name + "_js_gen"
-  action(action_name) {
+  action(target_name) {
     script = "//third_party/google_input_tools/builder.py"
     sources = invoker.sources
     outputs = [
@@ -38,10 +37,5 @@ template("build_closure") {
         invoker.path,
       ]
     }
-  }
-  group(target_name) {
-    deps = [
-      ":$action_name",
-    ]
   }
 }

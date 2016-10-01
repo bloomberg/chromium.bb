@@ -258,6 +258,7 @@ exec_script_whitelist = [
 
   # CLD2 should be removed soon, delete this when we do.
   "//third_party/cld_2/BUILD.gn",
+  "//tools/grit/grit_rule.gni",
 
   # Not gypi-to-gn.
   "//google_apis/BUILD.gn",

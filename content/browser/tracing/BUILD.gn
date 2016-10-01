@@ -36,6 +36,8 @@ action("generate_tracing_grd") {
 
 grit("resources") {
   source = tracing_grd
+  source_is_generated = true
+
   outputs = [
     "grit/tracing_resources.h",
     "tracing_resources.pak",
