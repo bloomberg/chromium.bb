@@ -13,71 +13,73 @@
 
 namespace blink {
 
-PaymentResponse::PaymentResponse(mojom::blink::PaymentResponsePtr response, PaymentCompleter* paymentCompleter)
-    : m_methodName(response->method_name)
-    , m_stringifiedDetails(response->stringified_details)
-    , m_shippingAddress(response->shipping_address ? new PaymentAddress(std::move(response->shipping_address)) : nullptr)
-    , m_shippingOption(response->shipping_option)
-    , m_payerName(response->payer_name)
-    , m_payerEmail(response->payer_email)
-    , m_payerPhone(response->payer_phone)
-    , m_paymentCompleter(paymentCompleter)
-{
-    DCHECK(m_paymentCompleter);
+PaymentResponse::PaymentResponse(mojom::blink::PaymentResponsePtr response,
+                                 PaymentCompleter* paymentCompleter)
+    : m_methodName(response->method_name),
+      m_stringifiedDetails(response->stringified_details),
+      m_shippingAddress(
+          response->shipping_address
+              ? new PaymentAddress(std::move(response->shipping_address))
+              : nullptr),
+      m_shippingOption(response->shipping_option),
+      m_payerName(response->payer_name),
+      m_payerEmail(response->payer_email),
+      m_payerPhone(response->payer_phone),
+      m_paymentCompleter(paymentCompleter) {
+  DCHECK(m_paymentCompleter);
 }
 
-PaymentResponse::~PaymentResponse()
-{
+PaymentResponse::~PaymentResponse() {}
+
+ScriptValue PaymentResponse::toJSONForBinding(ScriptState* scriptState) const {
+  V8ObjectBuilder result(scriptState);
+  result.addString("methodName", methodName());
+  result.add("details", details(scriptState, ASSERT_NO_EXCEPTION));
+
+  if (shippingAddress())
+    result.add("shippingAddress",
+               shippingAddress()->toJSONForBinding(scriptState));
+  else
+    result.addNull("shippingAddress");
+
+  if (shippingOption().isNull())
+    result.addNull("shippingOption");
+  else
+    result.addString("shippingOption", shippingOption());
+
+  if (payerEmail().isNull())
+    result.addNull("payerEmail");
+  else
+    result.addString("payerEmail", payerEmail());
+
+  if (payerPhone().isNull())
+    result.addNull("payerPhone");
+  else
+    result.addString("payerPhone", payerPhone());
+
+  return result.scriptValue();
 }
 
-ScriptValue PaymentResponse::toJSONForBinding(ScriptState* scriptState) const
-{
-    V8ObjectBuilder result(scriptState);
-    result.addString("methodName", methodName());
-    result.add("details", details(scriptState, ASSERT_NO_EXCEPTION));
-
-    if (shippingAddress())
-        result.add("shippingAddress", shippingAddress()->toJSONForBinding(scriptState));
-    else
-        result.addNull("shippingAddress");
-
-    if (shippingOption().isNull())
-        result.addNull("shippingOption");
-    else
-        result.addString("shippingOption", shippingOption());
-
-    if (payerEmail().isNull())
-        result.addNull("payerEmail");
-    else
-        result.addString("payerEmail", payerEmail());
-
-    if (payerPhone().isNull())
-        result.addNull("payerPhone");
-    else
-        result.addString("payerPhone", payerPhone());
-
-    return result.scriptValue();
+ScriptValue PaymentResponse::details(ScriptState* scriptState,
+                                     ExceptionState& exceptionState) const {
+  return ScriptValue(
+      scriptState,
+      fromJSONString(scriptState, m_stringifiedDetails, exceptionState));
 }
 
-ScriptValue PaymentResponse::details(ScriptState* scriptState, ExceptionState& exceptionState) const
-{
-    return ScriptValue(scriptState, fromJSONString(scriptState, m_stringifiedDetails, exceptionState));
+ScriptPromise PaymentResponse::complete(ScriptState* scriptState,
+                                        const String& result) {
+  PaymentCompleter::PaymentComplete convertedResult = PaymentCompleter::Unknown;
+  if (result == "success")
+    convertedResult = PaymentCompleter::Success;
+  else if (result == "fail")
+    convertedResult = PaymentCompleter::Fail;
+  return m_paymentCompleter->complete(scriptState, convertedResult);
 }
 
-ScriptPromise PaymentResponse::complete(ScriptState* scriptState, const String& result)
-{
-    PaymentCompleter::PaymentComplete convertedResult = PaymentCompleter::Unknown;
-    if (result == "success")
-        convertedResult = PaymentCompleter::Success;
-    else if (result == "fail")
-        convertedResult = PaymentCompleter::Fail;
-    return m_paymentCompleter->complete(scriptState, convertedResult);
+DEFINE_TRACE(PaymentResponse) {
+  visitor->trace(m_shippingAddress);
+  visitor->trace(m_paymentCompleter);
 }
 
-DEFINE_TRACE(PaymentResponse)
-{
-    visitor->trace(m_shippingAddress);
-    visitor->trace(m_paymentCompleter);
-}
-
-} // namespace blink
+}  // namespace blink

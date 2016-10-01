@@ -16,26 +16,27 @@ class ThreadedWorkletMessagingProxy;
 class WorkletGlobalScopeProxy;
 
 class MODULES_EXPORT AnimationWorklet final : public Worklet {
-    WTF_MAKE_NONCOPYABLE(AnimationWorklet);
-public:
-    static AnimationWorklet* create(LocalFrame*);
-    ~AnimationWorklet() override;
+  WTF_MAKE_NONCOPYABLE(AnimationWorklet);
 
-    void initialize() final;
-    bool isInitialized() const final;
+ public:
+  static AnimationWorklet* create(LocalFrame*);
+  ~AnimationWorklet() override;
 
-    WorkletGlobalScopeProxy* workletGlobalScopeProxy() const final;
+  void initialize() final;
+  bool isInitialized() const final;
 
-    DECLARE_VIRTUAL_TRACE();
+  WorkletGlobalScopeProxy* workletGlobalScopeProxy() const final;
 
-private:
-    explicit AnimationWorklet(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
 
-    // The proxy outlives the worklet as it is used to perform thread shutdown,
-    // it deletes itself once this has occured.
-    ThreadedWorkletMessagingProxy* m_workletMessagingProxy;
+ private:
+  explicit AnimationWorklet(LocalFrame*);
+
+  // The proxy outlives the worklet as it is used to perform thread shutdown,
+  // it deletes itself once this has occured.
+  ThreadedWorkletMessagingProxy* m_workletMessagingProxy;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationWorklet_h
+#endif  // AnimationWorklet_h

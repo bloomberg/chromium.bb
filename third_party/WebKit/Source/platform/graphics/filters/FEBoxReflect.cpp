@@ -11,30 +11,25 @@
 namespace blink {
 
 FEBoxReflect::FEBoxReflect(Filter* filter, const BoxReflection& reflection)
-    : FilterEffect(filter)
-    , m_reflection(reflection)
-{
+    : FilterEffect(filter), m_reflection(reflection) {}
+
+FEBoxReflect::~FEBoxReflect() {}
+
+FloatRect FEBoxReflect::mapEffect(const FloatRect& rect) const {
+  return m_reflection.mapRect(rect);
 }
 
-FEBoxReflect::~FEBoxReflect()
-{
+TextStream& FEBoxReflect::externalRepresentation(TextStream& ts,
+                                                 int indent) const {
+  // Only called for SVG layout tree printing.
+  ASSERT_NOT_REACHED();
+  return ts;
 }
 
-FloatRect FEBoxReflect::mapEffect(const FloatRect& rect) const
-{
-    return m_reflection.mapRect(rect);
+sk_sp<SkImageFilter> FEBoxReflect::createImageFilter() {
+  return SkiaImageFilterBuilder::buildBoxReflectFilter(
+      m_reflection,
+      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
 }
 
-TextStream& FEBoxReflect::externalRepresentation(TextStream& ts, int indent) const
-{
-    // Only called for SVG layout tree printing.
-    ASSERT_NOT_REACHED();
-    return ts;
-}
-
-sk_sp<SkImageFilter> FEBoxReflect::createImageFilter()
-{
-    return SkiaImageFilterBuilder::buildBoxReflectFilter(m_reflection, SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-}
-
-} // namespace blink
+}  // namespace blink

@@ -18,28 +18,29 @@ namespace blink {
 class InspectedFrames;
 class LocalFrame;
 
-class CORE_EXPORT InspectorResourceContainer : public GarbageCollectedFinalized<InspectorResourceContainer> {
-    WTF_MAKE_NONCOPYABLE(InspectorResourceContainer);
-public:
-    explicit InspectorResourceContainer(InspectedFrames*);
-    ~InspectorResourceContainer();
-    DECLARE_TRACE();
+class CORE_EXPORT InspectorResourceContainer
+    : public GarbageCollectedFinalized<InspectorResourceContainer> {
+  WTF_MAKE_NONCOPYABLE(InspectorResourceContainer);
 
-    void didCommitLoadForLocalFrame(LocalFrame*);
+ public:
+  explicit InspectorResourceContainer(InspectedFrames*);
+  ~InspectorResourceContainer();
+  DECLARE_TRACE();
 
-    void storeStyleSheetContent(const String& url, const String& content);
-    bool loadStyleSheetContent(const String& url, String* content);
+  void didCommitLoadForLocalFrame(LocalFrame*);
 
-    void storeStyleElementContent(int backendNodeId, const String& content);
-    bool loadStyleElementContent(int backendNodeId, String* content);
+  void storeStyleSheetContent(const String& url, const String& content);
+  bool loadStyleSheetContent(const String& url, String* content);
 
-private:
-    Member<InspectedFrames> m_inspectedFrames;
-    HashMap<String, String> m_styleSheetContents;
-    HashMap<int, String> m_styleElementContents;
+  void storeStyleElementContent(int backendNodeId, const String& content);
+  bool loadStyleElementContent(int backendNodeId, String* content);
+
+ private:
+  Member<InspectedFrames> m_inspectedFrames;
+  HashMap<String, String> m_styleSheetContents;
+  HashMap<int, String> m_styleElementContents;
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // !defined(InspectorResourceContainer_h)
+#endif  // !defined(InspectorResourceContainer_h)

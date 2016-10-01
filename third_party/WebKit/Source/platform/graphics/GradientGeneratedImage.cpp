@@ -31,36 +31,41 @@
 
 namespace blink {
 
-void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& destRect,
-    const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
-{
-    SkRect visibleSrcRect = srcRect;
-    if (!visibleSrcRect.intersect(SkRect::MakeIWH(m_size.width(), m_size.height())))
-        return;
+void GradientGeneratedImage::draw(SkCanvas* canvas,
+                                  const SkPaint& paint,
+                                  const FloatRect& destRect,
+                                  const FloatRect& srcRect,
+                                  RespectImageOrientationEnum,
+                                  ImageClampingMode) {
+  SkRect visibleSrcRect = srcRect;
+  if (!visibleSrcRect.intersect(
+          SkRect::MakeIWH(m_size.width(), m_size.height())))
+    return;
 
-    const SkMatrix transform = SkMatrix::MakeRectToRect(srcRect, destRect, SkMatrix::kFill_ScaleToFit);
-    SkRect visibleDestRect;
-    transform.mapRect(&visibleDestRect, visibleSrcRect);
+  const SkMatrix transform =
+      SkMatrix::MakeRectToRect(srcRect, destRect, SkMatrix::kFill_ScaleToFit);
+  SkRect visibleDestRect;
+  transform.mapRect(&visibleDestRect, visibleSrcRect);
 
-    SkPaint gradientPaint(paint);
-    m_gradient->applyToPaint(gradientPaint, transform);
-    canvas->drawRect(visibleDestRect, gradientPaint);
+  SkPaint gradientPaint(paint);
+  m_gradient->applyToPaint(gradientPaint, transform);
+  canvas->drawRect(visibleDestRect, gradientPaint);
 }
 
-void GradientGeneratedImage::drawTile(GraphicsContext& context, const FloatRect& srcRect)
-{
-    SkPaint gradientPaint(context.fillPaint());
-    m_gradient->applyToPaint(gradientPaint, SkMatrix::I());
+void GradientGeneratedImage::drawTile(GraphicsContext& context,
+                                      const FloatRect& srcRect) {
+  SkPaint gradientPaint(context.fillPaint());
+  m_gradient->applyToPaint(gradientPaint, SkMatrix::I());
 
-    context.drawRect(srcRect, gradientPaint);
+  context.drawRect(srcRect, gradientPaint);
 }
 
-bool GradientGeneratedImage::applyShader(SkPaint& paint, const SkMatrix& localMatrix)
-{
-    DCHECK(m_gradient);
-    m_gradient->applyToPaint(paint, localMatrix);
+bool GradientGeneratedImage::applyShader(SkPaint& paint,
+                                         const SkMatrix& localMatrix) {
+  DCHECK(m_gradient);
+  m_gradient->applyToPaint(paint, localMatrix);
 
-    return true;
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -13,28 +13,27 @@ namespace blink {
 class ContentSecurityPolicy;
 
 class CSPDirective : public GarbageCollectedFinalized<CSPDirective> {
-    WTF_MAKE_NONCOPYABLE(CSPDirective);
-public:
-    CSPDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
-        : m_name(name)
-        , m_text(name + ' ' + value)
-        , m_policy(policy)
-    {
-    }
-    virtual ~CSPDirective() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_policy); }
+  WTF_MAKE_NONCOPYABLE(CSPDirective);
 
-    const String& text() const { return m_text; }
+ public:
+  CSPDirective(const String& name,
+               const String& value,
+               ContentSecurityPolicy* policy)
+      : m_name(name), m_text(name + ' ' + value), m_policy(policy) {}
+  virtual ~CSPDirective() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_policy); }
 
-protected:
-    ContentSecurityPolicy* policy() const { return m_policy; }
+  const String& text() const { return m_text; }
 
-private:
-    String m_name;
-    String m_text;
-    Member<ContentSecurityPolicy> m_policy;
+ protected:
+  ContentSecurityPolicy* policy() const { return m_policy; }
+
+ private:
+  String m_name;
+  String m_text;
+  Member<ContentSecurityPolicy> m_policy;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -15,34 +15,34 @@ class WebGLRenderingContextBase;
 class WebGLTimerQueryEXT;
 
 class EXTDisjointTimerQuery final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static EXTDisjointTimerQuery* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+ public:
+  static EXTDisjointTimerQuery* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-    ~EXTDisjointTimerQuery() override;
-    WebGLExtensionName name() const override;
+  ~EXTDisjointTimerQuery() override;
+  WebGLExtensionName name() const override;
 
-    WebGLTimerQueryEXT* createQueryEXT();
-    void deleteQueryEXT(WebGLTimerQueryEXT*);
-    GLboolean isQueryEXT(WebGLTimerQueryEXT*);
-    void beginQueryEXT(GLenum, WebGLTimerQueryEXT*);
-    void endQueryEXT(GLenum);
-    void queryCounterEXT(WebGLTimerQueryEXT*, GLenum);
-    ScriptValue getQueryEXT(ScriptState*, GLenum, GLenum);
-    ScriptValue getQueryObjectEXT(ScriptState*, WebGLTimerQueryEXT*, GLenum);
+  WebGLTimerQueryEXT* createQueryEXT();
+  void deleteQueryEXT(WebGLTimerQueryEXT*);
+  GLboolean isQueryEXT(WebGLTimerQueryEXT*);
+  void beginQueryEXT(GLenum, WebGLTimerQueryEXT*);
+  void endQueryEXT(GLenum);
+  void queryCounterEXT(WebGLTimerQueryEXT*, GLenum);
+  ScriptValue getQueryEXT(ScriptState*, GLenum, GLenum);
+  ScriptValue getQueryObjectEXT(ScriptState*, WebGLTimerQueryEXT*, GLenum);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    friend class WebGLTimerQueryEXT;
-    explicit EXTDisjointTimerQuery(WebGLRenderingContextBase*);
+ private:
+  friend class WebGLTimerQueryEXT;
+  explicit EXTDisjointTimerQuery(WebGLRenderingContextBase*);
 
-    Member<WebGLTimerQueryEXT> m_currentElapsedQuery;
+  Member<WebGLTimerQueryEXT> m_currentElapsedQuery;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EXTDisjointTimerQuery_h
+#endif  // EXTDisjointTimerQuery_h

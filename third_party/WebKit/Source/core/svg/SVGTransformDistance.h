@@ -28,27 +28,35 @@ namespace blink {
 class AffineTransform;
 
 class SVGTransformDistance {
-    STACK_ALLOCATED();
-public:
-    SVGTransformDistance();
-    SVGTransformDistance(SVGTransform* fromTransform, SVGTransform* toTransform);
+  STACK_ALLOCATED();
 
-    SVGTransformDistance scaledDistance(float scaleFactor) const;
-    SVGTransform* addToSVGTransform(SVGTransform*) const;
+ public:
+  SVGTransformDistance();
+  SVGTransformDistance(SVGTransform* fromTransform, SVGTransform* toTransform);
 
-    static SVGTransform* addSVGTransforms(SVGTransform*, SVGTransform*, unsigned repeatCount = 1);
+  SVGTransformDistance scaledDistance(float scaleFactor) const;
+  SVGTransform* addToSVGTransform(SVGTransform*) const;
 
-    float distance() const;
+  static SVGTransform* addSVGTransforms(SVGTransform*,
+                                        SVGTransform*,
+                                        unsigned repeatCount = 1);
 
-private:
-    SVGTransformDistance(SVGTransformType, float angle, float cx, float cy, const AffineTransform&);
+  float distance() const;
 
-    SVGTransformType m_transformType;
-    float m_angle;
-    float m_cx;
-    float m_cy;
-    AffineTransform m_transform; // for storing scale, translation or matrix transforms
+ private:
+  SVGTransformDistance(SVGTransformType,
+                       float angle,
+                       float cx,
+                       float cy,
+                       const AffineTransform&);
+
+  SVGTransformType m_transformType;
+  float m_angle;
+  float m_cx;
+  float m_cy;
+  AffineTransform
+      m_transform;  // for storing scale, translation or matrix transforms
 };
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGTransformDistance_h
+#endif  // SVGTransformDistance_h

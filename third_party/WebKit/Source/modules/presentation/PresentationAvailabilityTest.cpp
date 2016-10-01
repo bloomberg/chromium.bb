@@ -17,17 +17,18 @@
 namespace blink {
 namespace {
 
-TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach)
-{
-    V8TestingScope scope;
-    const KURL url = URLTestHelpers::toKURL("https://example.com");
-    Persistent<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scope.getScriptState());
-    Persistent<PresentationAvailability> availability = PresentationAvailability::take(resolver, url, false);
+TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
+  V8TestingScope scope;
+  const KURL url = URLTestHelpers::toKURL("https://example.com");
+  Persistent<ScriptPromiseResolver> resolver =
+      ScriptPromiseResolver::create(scope.getScriptState());
+  Persistent<PresentationAvailability> availability =
+      PresentationAvailability::take(resolver, url, false);
 
-    // These two calls should not crash.
-    scope.frame().detach(FrameDetachType::Remove);
-    scope.page().setVisibilityState(PageVisibilityStateHidden, false);
+  // These two calls should not crash.
+  scope.frame().detach(FrameDetachType::Remove);
+  scope.page().setVisibilityState(PageVisibilityStateHidden, false);
 }
 
-} // anonymous namespace
-} // namespace blink
+}  // anonymous namespace
+}  // namespace blink

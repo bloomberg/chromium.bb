@@ -42,37 +42,37 @@ class SVGElement;
 // SVGStringList property implementations for SVGTests properties.
 // Inherits SVGAnimatedPropertyBase to enable XML attribute synchronization, but this is never animated.
 class SVGStaticStringList final : public SVGAnimatedPropertyBase {
-public:
-    static SVGStaticStringList* create(SVGElement* contextElement, const QualifiedName& attributeName)
-    {
-        return new SVGStaticStringList(contextElement, attributeName);
-    }
+ public:
+  static SVGStaticStringList* create(SVGElement* contextElement,
+                                     const QualifiedName& attributeName) {
+    return new SVGStaticStringList(contextElement, attributeName);
+  }
 
-    ~SVGStaticStringList() override;
+  ~SVGStaticStringList() override;
 
-    // SVGAnimatedPropertyBase:
-    SVGPropertyBase* currentValueBase() override;
-    const SVGPropertyBase& baseValueBase() const override;
-    bool isAnimating() const override;
-    SVGPropertyBase* createAnimatedValue() override;
-    void setAnimatedValue(SVGPropertyBase*) override;
-    void animationEnded() override;
-    bool needsSynchronizeAttribute() override;
+  // SVGAnimatedPropertyBase:
+  SVGPropertyBase* currentValueBase() override;
+  const SVGPropertyBase& baseValueBase() const override;
+  bool isAnimating() const override;
+  SVGPropertyBase* createAnimatedValue() override;
+  void setAnimatedValue(SVGPropertyBase*) override;
+  void animationEnded() override;
+  bool needsSynchronizeAttribute() override;
 
-    SVGParsingError setBaseValueAsString(const String&) override;
+  SVGParsingError setBaseValueAsString(const String&) override;
 
-    SVGStringList* value() { return m_value.get(); }
-    SVGStringListTearOff* tearOff();
+  SVGStringList* value() { return m_value.get(); }
+  SVGStringListTearOff* tearOff();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    SVGStaticStringList(SVGElement*, const QualifiedName&);
+ private:
+  SVGStaticStringList(SVGElement*, const QualifiedName&);
 
-    Member<SVGStringList> m_value;
-    Member<SVGStringListTearOff> m_tearOff;
+  Member<SVGStringList> m_value;
+  Member<SVGStringListTearOff> m_tearOff;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

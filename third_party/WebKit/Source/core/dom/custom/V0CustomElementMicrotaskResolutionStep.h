@@ -40,28 +40,34 @@ namespace blink {
 class V0CustomElementRegistrationContext;
 class Element;
 
-class V0CustomElementMicrotaskResolutionStep final : public V0CustomElementMicrotaskStep {
-public:
-    static V0CustomElementMicrotaskResolutionStep* create(V0CustomElementRegistrationContext*, Element*, const V0CustomElementDescriptor&);
+class V0CustomElementMicrotaskResolutionStep final
+    : public V0CustomElementMicrotaskStep {
+ public:
+  static V0CustomElementMicrotaskResolutionStep* create(
+      V0CustomElementRegistrationContext*,
+      Element*,
+      const V0CustomElementDescriptor&);
 
-    ~V0CustomElementMicrotaskResolutionStep() override;
+  ~V0CustomElementMicrotaskResolutionStep() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    V0CustomElementMicrotaskResolutionStep(V0CustomElementRegistrationContext*, Element*, const V0CustomElementDescriptor&);
+ private:
+  V0CustomElementMicrotaskResolutionStep(V0CustomElementRegistrationContext*,
+                                         Element*,
+                                         const V0CustomElementDescriptor&);
 
-    Result process() override;
+  Result process() override;
 
 #if !defined(NDEBUG)
-    void show(unsigned indent) override;
+  void show(unsigned indent) override;
 #endif
 
-    Member<V0CustomElementRegistrationContext> m_context;
-    Member<Element> m_element;
-    V0CustomElementDescriptor m_descriptor;
+  Member<V0CustomElementRegistrationContext> m_context;
+  Member<Element> m_element;
+  V0CustomElementDescriptor m_descriptor;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementMicrotaskResolutionStep_h
+#endif  // V0CustomElementMicrotaskResolutionStep_h

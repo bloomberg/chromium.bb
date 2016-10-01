@@ -12,35 +12,39 @@
 namespace blink {
 
 class LayoutProgressTest : public RenderingTest {
-public:
-    static bool isAnimationTimerActive(const LayoutProgress* o) { return o->isAnimationTimerActive(); }
-    static bool isAnimatiing(const LayoutProgress* o) { return o->isAnimating(); }
+ public:
+  static bool isAnimationTimerActive(const LayoutProgress* o) {
+    return o->isAnimationTimerActive();
+  }
+  static bool isAnimatiing(const LayoutProgress* o) { return o->isAnimating(); }
 };
 
-TEST_F(LayoutProgressTest, AnimationScheduling)
-{
-    RenderingTest::setBodyInnerHTML("<progress id=\"progressElement\" value=0.3 max=1.0></progress>");
-    document().view()->updateAllLifecyclePhases();
-    Element* progressElement = document().getElementById(AtomicString("progressElement"));
-    LayoutProgress* layoutProgress = toLayoutProgress(progressElement->layoutObject());
+TEST_F(LayoutProgressTest, AnimationScheduling) {
+  RenderingTest::setBodyInnerHTML(
+      "<progress id=\"progressElement\" value=0.3 max=1.0></progress>");
+  document().view()->updateAllLifecyclePhases();
+  Element* progressElement =
+      document().getElementById(AtomicString("progressElement"));
+  LayoutProgress* layoutProgress =
+      toLayoutProgress(progressElement->layoutObject());
 
-    // Verify that we do not schedule a timer for a determinant progress element
-    EXPECT_FALSE(LayoutProgressTest::isAnimationTimerActive(layoutProgress));
-    EXPECT_FALSE(LayoutProgressTest::isAnimatiing(layoutProgress));
+  // Verify that we do not schedule a timer for a determinant progress element
+  EXPECT_FALSE(LayoutProgressTest::isAnimationTimerActive(layoutProgress));
+  EXPECT_FALSE(LayoutProgressTest::isAnimatiing(layoutProgress));
 
-    progressElement->removeAttribute("value");
-    document().view()->updateAllLifecyclePhases();
+  progressElement->removeAttribute("value");
+  document().view()->updateAllLifecyclePhases();
 
-    // Verify that we schedule a timer for an indeterminant progress element
-    EXPECT_TRUE(LayoutProgressTest::isAnimationTimerActive(layoutProgress));
-    EXPECT_TRUE(LayoutProgressTest::isAnimatiing(layoutProgress));
+  // Verify that we schedule a timer for an indeterminant progress element
+  EXPECT_TRUE(LayoutProgressTest::isAnimationTimerActive(layoutProgress));
+  EXPECT_TRUE(LayoutProgressTest::isAnimatiing(layoutProgress));
 
-    progressElement->setAttribute(HTMLNames::valueAttr, "0.7");
-    document().view()->updateAllLifecyclePhases();
+  progressElement->setAttribute(HTMLNames::valueAttr, "0.7");
+  document().view()->updateAllLifecyclePhases();
 
-    // Verify that we cancel the timer for a determinant progress element
-    EXPECT_FALSE(LayoutProgressTest::isAnimationTimerActive(layoutProgress));
-    EXPECT_FALSE(LayoutProgressTest::isAnimatiing(layoutProgress));
+  // Verify that we cancel the timer for a determinant progress element
+  EXPECT_FALSE(LayoutProgressTest::isAnimationTimerActive(layoutProgress));
+  EXPECT_FALSE(LayoutProgressTest::isAnimatiing(layoutProgress));
 }
 
-} // namespace blink
+}  // namespace blink

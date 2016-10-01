@@ -10,31 +10,28 @@
 namespace blink {
 
 class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
-    WTF_MAKE_NONCOPYABLE(CSSURLImageValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSURLImageValue* create(const AtomicString& url)
-    {
-        return new CSSURLImageValue(CSSImageValue::create(url));
-    }
-    static CSSURLImageValue* create(const CSSImageValue* imageValue)
-    {
-        return new CSSURLImageValue(imageValue);
-    }
+  WTF_MAKE_NONCOPYABLE(CSSURLImageValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    StyleValueType type() const override { return URLImageType; }
+ public:
+  static CSSURLImageValue* create(const AtomicString& url) {
+    return new CSSURLImageValue(CSSImageValue::create(url));
+  }
+  static CSSURLImageValue* create(const CSSImageValue* imageValue) {
+    return new CSSURLImageValue(imageValue);
+  }
 
-    const CSSValue* toCSSValue() const { return m_imageValue.get(); }
+  StyleValueType type() const override { return URLImageType; }
 
-    const String& url() const { return m_imageValue->url(); }
+  const CSSValue* toCSSValue() const { return m_imageValue.get(); }
 
-private:
-    explicit CSSURLImageValue(const CSSImageValue* imageValue)
-        : CSSStyleImageValue(imageValue)
-    {
-    }
+  const String& url() const { return m_imageValue->url(); }
+
+ private:
+  explicit CSSURLImageValue(const CSSImageValue* imageValue)
+      : CSSStyleImageValue(imageValue) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSResourceValue_h
+#endif  // CSSResourceValue_h

@@ -9,25 +9,25 @@
 
 namespace blink {
 
-class RelocatablePositionTest : public EditingTestBase {
-};
+class RelocatablePositionTest : public EditingTestBase {};
 
-TEST_F(RelocatablePositionTest, position)
-{
-    setBodyContent("<b>foo</b><textarea>bar</textarea>");
-    Node* boldface = document().querySelector("b");
-    Node* textarea = document().querySelector("textarea");
+TEST_F(RelocatablePositionTest, position) {
+  setBodyContent("<b>foo</b><textarea>bar</textarea>");
+  Node* boldface = document().querySelector("b");
+  Node* textarea = document().querySelector("textarea");
 
-    RelocatablePosition relocatablePosition(Position(textarea, PositionAnchorType::BeforeAnchor));
-    textarea->remove();
-    document().updateStyleAndLayout();
+  RelocatablePosition relocatablePosition(
+      Position(textarea, PositionAnchorType::BeforeAnchor));
+  textarea->remove();
+  document().updateStyleAndLayout();
 
-    // RelocatablePosition should track the given Position even if its original
-    // anchor node is moved away from the document.
-    Position expectedPosition(boldface, PositionAnchorType::AfterAnchor);
-    Position trackedPosition = relocatablePosition.position();
-    EXPECT_TRUE(trackedPosition.anchorNode()->isConnected());
-    EXPECT_EQ(createVisiblePosition(expectedPosition).deepEquivalent(), createVisiblePosition(trackedPosition).deepEquivalent());
+  // RelocatablePosition should track the given Position even if its original
+  // anchor node is moved away from the document.
+  Position expectedPosition(boldface, PositionAnchorType::AfterAnchor);
+  Position trackedPosition = relocatablePosition.position();
+  EXPECT_TRUE(trackedPosition.anchorNode()->isConnected());
+  EXPECT_EQ(createVisiblePosition(expectedPosition).deepEquivalent(),
+            createVisiblePosition(trackedPosition).deepEquivalent());
 }
 
-} // namespace blink
+}  // namespace blink

@@ -15,34 +15,37 @@
 namespace blink {
 
 class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SyncEvent* create(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
-    {
-        return new SyncEvent(type, tag, lastChance, observer);
-    }
-    static SyncEvent* create(const AtomicString& type, const SyncEventInit& init)
-    {
-        return new SyncEvent(type, init);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~SyncEvent() override;
+ public:
+  static SyncEvent* create(const AtomicString& type,
+                           const String& tag,
+                           bool lastChance,
+                           WaitUntilObserver* observer) {
+    return new SyncEvent(type, tag, lastChance, observer);
+  }
+  static SyncEvent* create(const AtomicString& type,
+                           const SyncEventInit& init) {
+    return new SyncEvent(type, init);
+  }
 
-    const AtomicString& interfaceName() const override;
+  ~SyncEvent() override;
 
-    String tag();
-    bool lastChance();
+  const AtomicString& interfaceName() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  String tag();
+  bool lastChance();
 
-private:
-    SyncEvent(const AtomicString& type, const String&, bool, WaitUntilObserver*);
-    SyncEvent(const AtomicString& type, const SyncEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_tag;
-    bool m_lastChance;
+ private:
+  SyncEvent(const AtomicString& type, const String&, bool, WaitUntilObserver*);
+  SyncEvent(const AtomicString& type, const SyncEventInit&);
+
+  String m_tag;
+  bool m_lastChance;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SyncEvent_h
+#endif  // SyncEvent_h

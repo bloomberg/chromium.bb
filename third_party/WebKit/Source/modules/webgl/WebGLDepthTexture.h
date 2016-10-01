@@ -31,19 +31,20 @@
 namespace blink {
 
 class WebGLDepthTexture final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WebGLDepthTexture* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~WebGLDepthTexture() override;
-    WebGLExtensionName name() const override;
+ public:
+  static WebGLDepthTexture* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-private:
-    explicit WebGLDepthTexture(WebGLRenderingContextBase*);
+  ~WebGLDepthTexture() override;
+  WebGLExtensionName name() const override;
+
+ private:
+  explicit WebGLDepthTexture(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLDepthTexture_h
+#endif  // WebGLDepthTexture_h

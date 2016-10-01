@@ -17,16 +17,21 @@ class LayoutRect;
 class NinePieceImage;
 
 class NinePieceImagePainter {
-    STACK_ALLOCATED();
-public:
-    NinePieceImagePainter(const LayoutBoxModelObject&);
+  STACK_ALLOCATED();
 
-    bool paint(GraphicsContext&, const LayoutRect&, const ComputedStyle&, const NinePieceImage&, SkXfermode::Mode) const;
+ public:
+  NinePieceImagePainter(const LayoutBoxModelObject&);
 
-private:
-    const LayoutBoxModelObject& m_layoutObject;
+  bool paint(GraphicsContext&,
+             const LayoutRect&,
+             const ComputedStyle&,
+             const NinePieceImage&,
+             SkXfermode::Mode) const;
+
+ private:
+  const LayoutBoxModelObject& m_layoutObject;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NinePieceImagePainter_h
+#endif  // NinePieceImagePainter_h

@@ -13,17 +13,19 @@
 namespace blink {
 
 class MockThreadableLoader : public ThreadableLoader {
-public:
-    static MockThreadableLoader* create() { return new testing::StrictMock<MockThreadableLoader>; }
+ public:
+  static MockThreadableLoader* create() {
+    return new testing::StrictMock<MockThreadableLoader>;
+  }
 
-    MOCK_METHOD1(start, void(const ResourceRequest&));
-    MOCK_METHOD1(overrideTimeout, void(unsigned long));
-    MOCK_METHOD0(cancel, void());
+  MOCK_METHOD1(start, void(const ResourceRequest&));
+  MOCK_METHOD1(overrideTimeout, void(unsigned long));
+  MOCK_METHOD0(cancel, void());
 
-protected:
-    MockThreadableLoader() = default;
+ protected:
+  MockThreadableLoader() = default;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MockThreadableLoader_h
+#endif  // MockThreadableLoader_h

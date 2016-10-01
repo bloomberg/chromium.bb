@@ -42,99 +42,100 @@ namespace WTF {
 
 static UCollator* cachedCollator;
 static char cachedEquivalentLocale[Collator::ulocFullnameCapacity];
-static Mutex& cachedCollatorMutex()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
-    return mutex;
+static Mutex& cachedCollatorMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  return mutex;
 }
 
 Collator::Collator(const char* locale)
-    : m_collator(0)
-    , m_locale(locale ? strdup(locale) : 0)
-    , m_lowerFirst(false)
-{
-    setEquivalentLocale(m_locale, m_equivalentLocale);
+    : m_collator(0),
+      m_locale(locale ? strdup(locale) : 0),
+      m_lowerFirst(false) {
+  setEquivalentLocale(m_locale, m_equivalentLocale);
 }
 
-std::unique_ptr<Collator> Collator::userDefault()
-{
-    return wrapUnique(new Collator(0));
+std::unique_ptr<Collator> Collator::userDefault() {
+  return wrapUnique(new Collator(0));
 }
 
-Collator::~Collator()
-{
-    releaseCollator();
-    free(m_locale);
+Collator::~Collator() {
+  releaseCollator();
+  free(m_locale);
 }
 
-void Collator::setOrderLowerFirst(bool lowerFirst)
-{
-    m_lowerFirst = lowerFirst;
+void Collator::setOrderLowerFirst(bool lowerFirst) {
+  m_lowerFirst = lowerFirst;
 }
 
-Collator::Result Collator::collate(const UChar* lhs, size_t lhsLength, const UChar* rhs, size_t rhsLength) const
-{
-    if (!m_collator)
-        createCollator();
+Collator::Result Collator::collate(const UChar* lhs,
+                                   size_t lhsLength,
+                                   const UChar* rhs,
+                                   size_t rhsLength) const {
+  if (!m_collator)
+    createCollator();
 
-    return static_cast<Result>(ucol_strcoll(m_collator, lhs, lhsLength, rhs, rhsLength));
+  return static_cast<Result>(
+      ucol_strcoll(m_collator, lhs, lhsLength, rhs, rhsLength));
 }
 
-void Collator::createCollator() const
-{
-    ASSERT(!m_collator);
-    UErrorCode status = U_ZERO_ERROR;
+void Collator::createCollator() const {
+  ASSERT(!m_collator);
+  UErrorCode status = U_ZERO_ERROR;
 
-    {
-        Locker<Mutex> lock(cachedCollatorMutex());
-        if (cachedCollator) {
-            UColAttributeValue cachedCollatorLowerFirst = ucol_getAttribute(cachedCollator, UCOL_CASE_FIRST, &status);
-            ASSERT(U_SUCCESS(status));
+  {
+    Locker<Mutex> lock(cachedCollatorMutex());
+    if (cachedCollator) {
+      UColAttributeValue cachedCollatorLowerFirst =
+          ucol_getAttribute(cachedCollator, UCOL_CASE_FIRST, &status);
+      ASSERT(U_SUCCESS(status));
 
-            if (0 == strcmp(cachedEquivalentLocale, m_equivalentLocale)
-                && ((UCOL_LOWER_FIRST == cachedCollatorLowerFirst && m_lowerFirst) || (UCOL_UPPER_FIRST == cachedCollatorLowerFirst && !m_lowerFirst))) {
-                m_collator = cachedCollator;
-                cachedCollator = 0;
-                cachedEquivalentLocale[0] = 0;
-                return;
-            }
-        }
+      if (0 == strcmp(cachedEquivalentLocale, m_equivalentLocale) &&
+          ((UCOL_LOWER_FIRST == cachedCollatorLowerFirst && m_lowerFirst) ||
+           (UCOL_UPPER_FIRST == cachedCollatorLowerFirst && !m_lowerFirst))) {
+        m_collator = cachedCollator;
+        cachedCollator = 0;
+        cachedEquivalentLocale[0] = 0;
+        return;
+      }
     }
+  }
 
-    m_collator = ucol_open(m_locale, &status);
-    if (U_FAILURE(status)) {
-        status = U_ZERO_ERROR;
-        m_collator = ucol_open("", &status); // Fallback to Unicode Collation Algorithm.
-    }
-    ASSERT(U_SUCCESS(status));
+  m_collator = ucol_open(m_locale, &status);
+  if (U_FAILURE(status)) {
+    status = U_ZERO_ERROR;
+    m_collator =
+        ucol_open("", &status);  // Fallback to Unicode Collation Algorithm.
+  }
+  ASSERT(U_SUCCESS(status));
 
-    ucol_setAttribute(m_collator, UCOL_CASE_FIRST, m_lowerFirst ? UCOL_LOWER_FIRST : UCOL_UPPER_FIRST, &status);
-    ASSERT(U_SUCCESS(status));
+  ucol_setAttribute(m_collator, UCOL_CASE_FIRST,
+                    m_lowerFirst ? UCOL_LOWER_FIRST : UCOL_UPPER_FIRST,
+                    &status);
+  ASSERT(U_SUCCESS(status));
 
-    ucol_setAttribute(m_collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
-    ASSERT(U_SUCCESS(status));
+  ucol_setAttribute(m_collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
+  ASSERT(U_SUCCESS(status));
 }
 
-void Collator::releaseCollator()
-{
-    {
-        Locker<Mutex> lock(cachedCollatorMutex());
-        if (cachedCollator)
-            ucol_close(cachedCollator);
-        cachedCollator = m_collator;
-        strncpy(cachedEquivalentLocale, m_equivalentLocale, ulocFullnameCapacity);
-        m_collator  = 0;
-    }
+void Collator::releaseCollator() {
+  {
+    Locker<Mutex> lock(cachedCollatorMutex());
+    if (cachedCollator)
+      ucol_close(cachedCollator);
+    cachedCollator = m_collator;
+    strncpy(cachedEquivalentLocale, m_equivalentLocale, ulocFullnameCapacity);
     m_collator = 0;
+  }
+  m_collator = 0;
 }
 
-void Collator::setEquivalentLocale(const char* locale, char* equivalentLocale)
-{
-    UErrorCode status = U_ZERO_ERROR;
-    UBool isAvailable;
-    ucol_getFunctionalEquivalent(equivalentLocale, ulocFullnameCapacity, "collation", locale, &isAvailable, &status);
-    if (U_FAILURE(status))
-        strcpy(equivalentLocale, "root");
+void Collator::setEquivalentLocale(const char* locale, char* equivalentLocale) {
+  UErrorCode status = U_ZERO_ERROR;
+  UBool isAvailable;
+  ucol_getFunctionalEquivalent(equivalentLocale, ulocFullnameCapacity,
+                               "collation", locale, &isAvailable, &status);
+  if (U_FAILURE(status))
+    strcpy(equivalentLocale, "root");
 }
 
-} // namespace WTF
+}  // namespace WTF

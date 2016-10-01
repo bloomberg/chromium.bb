@@ -41,38 +41,41 @@ namespace blink {
 // DownSampler down-samples the source stream by a factor of 2x.
 
 class PLATFORM_EXPORT DownSampler {
-    USING_FAST_MALLOC(DownSampler);
-    WTF_MAKE_NONCOPYABLE(DownSampler);
-public:
-    DownSampler(size_t inputBlockSize);
+  USING_FAST_MALLOC(DownSampler);
+  WTF_MAKE_NONCOPYABLE(DownSampler);
 
-    // The destination buffer |destP| is of size sourceFramesToProcess / 2.
-    void process(const float* sourceP, float* destP, size_t sourceFramesToProcess);
+ public:
+  DownSampler(size_t inputBlockSize);
 
-    void reset();
+  // The destination buffer |destP| is of size sourceFramesToProcess / 2.
+  void process(const float* sourceP,
+               float* destP,
+               size_t sourceFramesToProcess);
 
-    // Latency based on the destination sample-rate.
-    size_t latencyFrames() const;
+  void reset();
 
-private:
-    enum { DefaultKernelSize = 256 };
+  // Latency based on the destination sample-rate.
+  size_t latencyFrames() const;
 
-    size_t m_inputBlockSize;
+ private:
+  enum { DefaultKernelSize = 256 };
 
-    // Computes ideal band-limited half-band filter coefficients.
-    // In other words, filter out all frequencies higher than 0.25 * Nyquist.
-    void initializeKernel();
-    AudioFloatArray m_reducedKernel;
+  size_t m_inputBlockSize;
 
-    // Half-band filter.
-    DirectConvolver m_convolver;
+  // Computes ideal band-limited half-band filter coefficients.
+  // In other words, filter out all frequencies higher than 0.25 * Nyquist.
+  void initializeKernel();
+  AudioFloatArray m_reducedKernel;
 
-    AudioFloatArray m_tempBuffer;
+  // Half-band filter.
+  DirectConvolver m_convolver;
 
-    // Used as delay-line (FIR filter history) for the input samples to account for the 0.5 term right in the middle of the kernel.
-    AudioFloatArray m_inputBuffer;
+  AudioFloatArray m_tempBuffer;
+
+  // Used as delay-line (FIR filter history) for the input samples to account for the 0.5 term right in the middle of the kernel.
+  AudioFloatArray m_inputBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DownSampler_h
+#endif  // DownSampler_h

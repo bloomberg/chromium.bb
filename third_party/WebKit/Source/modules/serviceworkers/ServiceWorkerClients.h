@@ -15,23 +15,26 @@ namespace blink {
 class ScriptPromise;
 class ScriptState;
 
-class ServiceWorkerClients final : public GarbageCollected<ServiceWorkerClients>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ServiceWorkerClients* create();
+class ServiceWorkerClients final
+    : public GarbageCollected<ServiceWorkerClients>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Clients.idl
-    ScriptPromise get(ScriptState*, const String& id);
-    ScriptPromise matchAll(ScriptState*, const ClientQueryOptions&);
-    ScriptPromise openWindow(ScriptState*, const String& url);
-    ScriptPromise claim(ScriptState*);
+ public:
+  static ServiceWorkerClients* create();
 
-    DEFINE_INLINE_TRACE() { }
+  // Clients.idl
+  ScriptPromise get(ScriptState*, const String& id);
+  ScriptPromise matchAll(ScriptState*, const ClientQueryOptions&);
+  ScriptPromise openWindow(ScriptState*, const String& url);
+  ScriptPromise claim(ScriptState*);
 
-private:
-    ServiceWorkerClients();
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  ServiceWorkerClients();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerClients_h
+#endif  // ServiceWorkerClients_h

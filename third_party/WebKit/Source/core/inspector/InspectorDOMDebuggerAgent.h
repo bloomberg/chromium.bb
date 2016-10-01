@@ -55,70 +55,99 @@ class DictionaryValue;
 
 class CORE_EXPORT InspectorDOMDebuggerAgent final
     : public InspectorBaseAgent<protocol::DOMDebugger::Metainfo> {
-    WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
-public:
-    static void eventListenersInfoForTarget(v8::Isolate*, v8::Local<v8::Value>, V8EventListenerInfoList& listeners);
+  WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 
-    InspectorDOMDebuggerAgent(v8::Isolate*, InspectorDOMAgent*, v8_inspector::V8InspectorSession*);
-    ~InspectorDOMDebuggerAgent() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static void eventListenersInfoForTarget(v8::Isolate*,
+                                          v8::Local<v8::Value>,
+                                          V8EventListenerInfoList& listeners);
 
-    // DOMDebugger API for frontend
-    void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
-    void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
-    void setEventListenerBreakpoint(ErrorString*, const String& eventName, const Maybe<String>& targetName) override;
-    void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const Maybe<String>& targetName) override;
-    void setInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
-    void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
-    void setXHRBreakpoint(ErrorString*, const String& url) override;
-    void removeXHRBreakpoint(ErrorString*, const String& url) override;
-    void getEventListeners(ErrorString*, const String& objectId, std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
+  InspectorDOMDebuggerAgent(v8::Isolate*,
+                            InspectorDOMAgent*,
+                            v8_inspector::V8InspectorSession*);
+  ~InspectorDOMDebuggerAgent() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // InspectorInstrumentation API
-    void willInsertDOMNode(Node* parent);
-    void didInvalidateStyleAttr(Node*);
-    void didInsertDOMNode(Node*);
-    void willRemoveDOMNode(Node*);
-    void didRemoveDOMNode(Node*);
-    void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
-    void willSendXMLHttpOrFetchNetworkRequest(const String& url);
-    void didFireWebGLError(const String& errorName);
-    void didFireWebGLWarning();
-    void didFireWebGLErrorOrWarning(const String& message);
-    void allowNativeBreakpoint(const String& breakpointName, const String* targetName, bool sync);
-    void cancelNativeBreakpoint();
-    void scriptExecutionBlockedByCSP(const String& directiveText);
+  // DOMDebugger API for frontend
+  void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
+  void removeDOMBreakpoint(ErrorString*,
+                           int nodeId,
+                           const String& type) override;
+  void setEventListenerBreakpoint(ErrorString*,
+                                  const String& eventName,
+                                  const Maybe<String>& targetName) override;
+  void removeEventListenerBreakpoint(ErrorString*,
+                                     const String& eventName,
+                                     const Maybe<String>& targetName) override;
+  void setInstrumentationBreakpoint(ErrorString*,
+                                    const String& eventName) override;
+  void removeInstrumentationBreakpoint(ErrorString*,
+                                       const String& eventName) override;
+  void setXHRBreakpoint(ErrorString*, const String& url) override;
+  void removeXHRBreakpoint(ErrorString*, const String& url) override;
+  void getEventListeners(
+      ErrorString*,
+      const String& objectId,
+      std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>*
+          listeners) override;
 
-    void disable(ErrorString*) override;
-    void restore() override;
-    void didCommitLoadForLocalFrame(LocalFrame*) override;
+  // InspectorInstrumentation API
+  void willInsertDOMNode(Node* parent);
+  void didInvalidateStyleAttr(Node*);
+  void didInsertDOMNode(Node*);
+  void willRemoveDOMNode(Node*);
+  void didRemoveDOMNode(Node*);
+  void willModifyDOMAttr(Element*, const AtomicString&, const AtomicString&);
+  void willSendXMLHttpOrFetchNetworkRequest(const String& url);
+  void didFireWebGLError(const String& errorName);
+  void didFireWebGLWarning();
+  void didFireWebGLErrorOrWarning(const String& message);
+  void allowNativeBreakpoint(const String& breakpointName,
+                             const String* targetName,
+                             bool sync);
+  void cancelNativeBreakpoint();
+  void scriptExecutionBlockedByCSP(const String& directiveText);
 
-private:
-    void pauseOnNativeEventIfNeeded(std::unique_ptr<protocol::DictionaryValue> eventData, bool synchronous);
-    std::unique_ptr<protocol::DictionaryValue> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
+  void disable(ErrorString*) override;
+  void restore() override;
+  void didCommitLoadForLocalFrame(LocalFrame*) override;
 
-    protocol::DictionaryValue* eventListenerBreakpoints();
-    protocol::DictionaryValue* xhrBreakpoints();
+ private:
+  void pauseOnNativeEventIfNeeded(
+      std::unique_ptr<protocol::DictionaryValue> eventData,
+      bool synchronous);
+  std::unique_ptr<protocol::DictionaryValue> preparePauseOnNativeEventData(
+      const String& eventName,
+      const String* targetName);
 
-    void breakProgramOnDOMEvent(Node* target, int breakpointType, bool insertion);
-    void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
-    bool hasBreakpoint(Node*, int type);
-    void setBreakpoint(ErrorString*, const String& eventName, const String& targetName);
-    void removeBreakpoint(ErrorString*, const String& eventName, const String& targetName);
+  protocol::DictionaryValue* eventListenerBreakpoints();
+  protocol::DictionaryValue* xhrBreakpoints();
 
-    void didAddBreakpoint();
-    void didRemoveBreakpoint();
-    void setEnabled(bool);
+  void breakProgramOnDOMEvent(Node* target, int breakpointType, bool insertion);
+  void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
+  bool hasBreakpoint(Node*, int type);
+  void setBreakpoint(ErrorString*,
+                     const String& eventName,
+                     const String& targetName);
+  void removeBreakpoint(ErrorString*,
+                        const String& eventName,
+                        const String& targetName);
 
-    std::unique_ptr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const v8_inspector::StringView& objectGroupId);
+  void didAddBreakpoint();
+  void didRemoveBreakpoint();
+  void setEnabled(bool);
 
-    v8::Isolate* m_isolate;
-    Member<InspectorDOMAgent> m_domAgent;
-    v8_inspector::V8InspectorSession* m_v8Session;
-    HeapHashMap<Member<Node>, uint32_t> m_domBreakpoints;
+  std::unique_ptr<protocol::DOMDebugger::EventListener>
+  buildObjectForEventListener(v8::Local<v8::Context>,
+                              const V8EventListenerInfo&,
+                              const v8_inspector::StringView& objectGroupId);
+
+  v8::Isolate* m_isolate;
+  Member<InspectorDOMAgent> m_domAgent;
+  v8_inspector::V8InspectorSession* m_v8Session;
+  HeapHashMap<Member<Node>, uint32_t> m_domBreakpoints;
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // !defined(InspectorDOMDebuggerAgent_h)
+#endif  // !defined(InspectorDOMDebuggerAgent_h)

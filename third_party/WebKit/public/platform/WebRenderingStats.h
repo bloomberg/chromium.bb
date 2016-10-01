@@ -29,11 +29,9 @@
 namespace blink {
 
 struct WebRenderingStats {
-    WebRenderingStats()
-    {
-    }
+  WebRenderingStats() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRenderingStats_h
+#endif  // WebRenderingStats_h

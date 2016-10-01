@@ -33,29 +33,29 @@ class FrameSelection;
 class LayoutView;
 
 class PendingSelection final : public GarbageCollected<PendingSelection> {
-public:
-    static PendingSelection* create(FrameSelection& frameSelection)
-    {
-        return new PendingSelection(frameSelection);
-    }
+ public:
+  static PendingSelection* create(FrameSelection& frameSelection) {
+    return new PendingSelection(frameSelection);
+  }
 
-    bool hasPendingSelection() const { return m_hasPendingSelection; }
-    void setHasPendingSelection() { m_hasPendingSelection = true; }
-    void commit(LayoutView&);
+  bool hasPendingSelection() const { return m_hasPendingSelection; }
+  void setHasPendingSelection() { m_hasPendingSelection = true; }
+  void commit(LayoutView&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    PendingSelection(FrameSelection&);
+ private:
+  PendingSelection(FrameSelection&);
 
-    const VisibleSelection& visibleSelection() const;
+  const VisibleSelection& visibleSelection() const;
 
-    VisibleSelectionInFlatTree calcVisibleSelection(const VisibleSelectionInFlatTree&) const;
+  VisibleSelectionInFlatTree calcVisibleSelection(
+      const VisibleSelectionInFlatTree&) const;
 
-    Member<FrameSelection> m_frameSelection;
-    bool m_hasPendingSelection : 1;
+  Member<FrameSelection> m_frameSelection;
+  bool m_hasPendingSelection : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

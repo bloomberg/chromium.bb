@@ -91,53 +91,49 @@ class HTMLImportLoader;
 
 // The superclass of HTMLImportTreeRoot and HTMLImportChild
 // This represents the import tree data structure.
-class HTMLImport : public GarbageCollectedFinalized<HTMLImport>, public TreeNode<HTMLImport> {
-public:
-    enum SyncMode {
-        Sync  = 0,
-        Async = 1
-    };
+class HTMLImport : public GarbageCollectedFinalized<HTMLImport>,
+                   public TreeNode<HTMLImport> {
+ public:
+  enum SyncMode { Sync = 0, Async = 1 };
 
-    virtual ~HTMLImport() { }
+  virtual ~HTMLImport() {}
 
-    // FIXME: Consider returning HTMLImportTreeRoot.
-    HTMLImport* root();
-    bool precedes(HTMLImport*);
-    bool isRoot() const { return !parent(); }
-    bool isSync() const { return SyncMode(m_sync) == Sync; }
-    bool formsCycle() const;
-    const HTMLImportState& state() const { return m_state; }
+  // FIXME: Consider returning HTMLImportTreeRoot.
+  HTMLImport* root();
+  bool precedes(HTMLImport*);
+  bool isRoot() const { return !parent(); }
+  bool isSync() const { return SyncMode(m_sync) == Sync; }
+  bool formsCycle() const;
+  const HTMLImportState& state() const { return m_state; }
 
-    void appendImport(HTMLImport*);
+  void appendImport(HTMLImport*);
 
-    virtual Document* document() const = 0;
-    virtual bool hasFinishedLoading() const = 0;
-    virtual HTMLImportLoader* loader() const { return nullptr; }
-    virtual void stateWillChange() { }
-    virtual void stateDidChange();
+  virtual Document* document() const = 0;
+  virtual bool hasFinishedLoading() const = 0;
+  virtual HTMLImportLoader* loader() const { return nullptr; }
+  virtual void stateWillChange() {}
+  virtual void stateDidChange();
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    // Stating from most conservative state.
-    // It will be corrected through state update flow.
-    explicit HTMLImport(SyncMode sync)
-        : m_sync(sync)
-    { }
+ protected:
+  // Stating from most conservative state.
+  // It will be corrected through state update flow.
+  explicit HTMLImport(SyncMode sync) : m_sync(sync) {}
 
-    static void recalcTreeState(HTMLImport* root);
+  static void recalcTreeState(HTMLImport* root);
 
 #if !defined(NDEBUG)
-    void show();
-    void showTree(HTMLImport* highlight, unsigned depth);
-    virtual void showThis();
+  void show();
+  void showTree(HTMLImport* highlight, unsigned depth);
+  virtual void showThis();
 #endif
 
-private:
-    HTMLImportState m_state;
-    unsigned m_sync : 1;
+ private:
+  HTMLImportState m_state;
+  unsigned m_sync : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLImport_h
+#endif  // HTMLImport_h

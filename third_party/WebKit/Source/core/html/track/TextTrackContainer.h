@@ -37,28 +37,28 @@ namespace blink {
 class HTMLMediaElement;
 
 class TextTrackContainer final : public HTMLDivElement {
-public:
-    static TextTrackContainer* create(Document&);
+ public:
+  static TextTrackContainer* create(Document&);
 
-    // Runs the "rules for updating the text track rendering". The
-    // ExposingControls enum is used in the WebVTT processing model to reset the
-    // layout when the media controls become visible, to avoid overlapping them.
-    enum ExposingControls {
-        DidNotStartExposingControls,
-        DidStartExposingControls
-    };
-    void updateDisplay(HTMLMediaElement&, ExposingControls);
+  // Runs the "rules for updating the text track rendering". The
+  // ExposingControls enum is used in the WebVTT processing model to reset the
+  // layout when the media controls become visible, to avoid overlapping them.
+  enum ExposingControls {
+    DidNotStartExposingControls,
+    DidStartExposingControls
+  };
+  void updateDisplay(HTMLMediaElement&, ExposingControls);
 
-private:
-    TextTrackContainer(Document&);
+ private:
+  TextTrackContainer(Document&);
 
-    bool isTextTrackContainer() const override { return true; }
+  bool isTextTrackContainer() const override { return true; }
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(TextTrackContainer, isTextTrackContainer());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextTrackContainer_h
+#endif  // TextTrackContainer_h

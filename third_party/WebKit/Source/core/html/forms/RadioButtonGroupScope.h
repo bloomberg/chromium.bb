@@ -32,24 +32,26 @@ class HTMLInputElement;
 class RadioButtonGroup;
 
 class RadioButtonGroupScope {
-    DISALLOW_NEW();
-public:
-    RadioButtonGroupScope();
-    ~RadioButtonGroupScope();
-    DECLARE_TRACE();
-    void addButton(HTMLInputElement*);
-    void updateCheckedState(HTMLInputElement*);
-    void requiredAttributeChanged(HTMLInputElement*);
-    void removeButton(HTMLInputElement*);
-    HTMLInputElement* checkedButtonForGroup(const AtomicString& groupName) const;
-    bool isInRequiredGroup(HTMLInputElement*) const;
-    unsigned groupSizeFor(const HTMLInputElement*) const;
+  DISALLOW_NEW();
 
-private:
-    using NameToGroupMap = HeapHashMap<AtomicString, Member<RadioButtonGroup>, CaseFoldingHash>;
-    Member<NameToGroupMap> m_nameToGroupMap;
+ public:
+  RadioButtonGroupScope();
+  ~RadioButtonGroupScope();
+  DECLARE_TRACE();
+  void addButton(HTMLInputElement*);
+  void updateCheckedState(HTMLInputElement*);
+  void requiredAttributeChanged(HTMLInputElement*);
+  void removeButton(HTMLInputElement*);
+  HTMLInputElement* checkedButtonForGroup(const AtomicString& groupName) const;
+  bool isInRequiredGroup(HTMLInputElement*) const;
+  unsigned groupSizeFor(const HTMLInputElement*) const;
+
+ private:
+  using NameToGroupMap =
+      HeapHashMap<AtomicString, Member<RadioButtonGroup>, CaseFoldingHash>;
+  Member<NameToGroupMap> m_nameToGroupMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RadioButtonGroupScope_h
+#endif  // RadioButtonGroupScope_h

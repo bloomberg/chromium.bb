@@ -17,53 +17,65 @@ class Document;
 class ExceptionState;
 class Range;
 
-class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
+                                      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static StaticRange* create(Document& document)
-    {
-        return new StaticRange(document);
-    }
-    static StaticRange* create(Document& document, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
-    {
-        return new StaticRange(document, startContainer, startOffset, endContainer, endOffset);
-    }
+ public:
+  static StaticRange* create(Document& document) {
+    return new StaticRange(document);
+  }
+  static StaticRange* create(Document& document,
+                             Node* startContainer,
+                             int startOffset,
+                             Node* endContainer,
+                             int endOffset) {
+    return new StaticRange(document, startContainer, startOffset, endContainer,
+                           endOffset);
+  }
 
-    Node* startContainer() const { return m_startContainer.get(); }
-    void setStartContainer(Node* startContainer) { m_startContainer = startContainer; }
+  Node* startContainer() const { return m_startContainer.get(); }
+  void setStartContainer(Node* startContainer) {
+    m_startContainer = startContainer;
+  }
 
-    int startOffset() const { return m_startOffset; }
-    void setStartOffset(int startOffset) { m_startOffset = startOffset; }
+  int startOffset() const { return m_startOffset; }
+  void setStartOffset(int startOffset) { m_startOffset = startOffset; }
 
-    Node* endContainer() const { return m_endContainer.get(); }
-    void setEndContainer(Node* endContainer) { m_endContainer = endContainer; }
+  Node* endContainer() const { return m_endContainer.get(); }
+  void setEndContainer(Node* endContainer) { m_endContainer = endContainer; }
 
-    int endOffset() const { return m_endOffset; }
-    void setEndOffset(int endOffset) { m_endOffset = endOffset; }
+  int endOffset() const { return m_endOffset; }
+  void setEndOffset(int endOffset) { m_endOffset = endOffset; }
 
-    bool collapsed() const { return m_startContainer == m_endContainer && m_startOffset == m_endOffset; }
+  bool collapsed() const {
+    return m_startContainer == m_endContainer && m_startOffset == m_endOffset;
+  }
 
-    void setStart(Node* container, int offset);
-    void setEnd(Node* container, int offset);
+  void setStart(Node* container, int offset);
+  void setEnd(Node* container, int offset);
 
-    Range* toRange(ExceptionState&) const;
+  Range* toRange(ExceptionState&) const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit StaticRange(Document&);
-    StaticRange(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
+ private:
+  explicit StaticRange(Document&);
+  StaticRange(Document&,
+              Node* startContainer,
+              int startOffset,
+              Node* endContainer,
+              int endOffset);
 
-    Member<Document> m_ownerDocument; // Required by |toRange()|.
-    Member<Node> m_startContainer;
-    int m_startOffset;
-    Member<Node> m_endContainer;
-    int m_endOffset;
+  Member<Document> m_ownerDocument;  // Required by |toRange()|.
+  Member<Node> m_startContainer;
+  int m_startOffset;
+  Member<Node> m_endContainer;
+  int m_endOffset;
 };
 
 using StaticRangeVector = HeapVector<Member<StaticRange>>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StaticRange_h
+#endif  // StaticRange_h

@@ -34,59 +34,67 @@
 
 namespace blink {
 
-class SpeechSynthesisUtterance final : public EventTargetWithInlineData, public PlatformSpeechSynthesisUtteranceClient, public ContextLifecycleObserver {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
-public:
-    static SpeechSynthesisUtterance* create(ExecutionContext*, const String&);
+class SpeechSynthesisUtterance final
+    : public EventTargetWithInlineData,
+      public PlatformSpeechSynthesisUtteranceClient,
+      public ContextLifecycleObserver {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
 
-    ~SpeechSynthesisUtterance() override;
+ public:
+  static SpeechSynthesisUtterance* create(ExecutionContext*, const String&);
 
-    const String& text() const { return m_platformUtterance->text(); }
-    void setText(const String& text) { m_platformUtterance->setText(text); }
+  ~SpeechSynthesisUtterance() override;
 
-    const String& lang() const { return m_platformUtterance->lang(); }
-    void setLang(const String& lang) { m_platformUtterance->setLang(lang); }
+  const String& text() const { return m_platformUtterance->text(); }
+  void setText(const String& text) { m_platformUtterance->setText(text); }
 
-    SpeechSynthesisVoice* voice() const;
-    void setVoice(SpeechSynthesisVoice*);
+  const String& lang() const { return m_platformUtterance->lang(); }
+  void setLang(const String& lang) { m_platformUtterance->setLang(lang); }
 
-    float volume() const { return m_platformUtterance->volume(); }
-    void setVolume(float volume) { m_platformUtterance->setVolume(volume); }
+  SpeechSynthesisVoice* voice() const;
+  void setVoice(SpeechSynthesisVoice*);
 
-    float rate() const { return m_platformUtterance->rate(); }
-    void setRate(float rate) { m_platformUtterance->setRate(rate); }
+  float volume() const { return m_platformUtterance->volume(); }
+  void setVolume(float volume) { m_platformUtterance->setVolume(volume); }
 
-    float pitch() const { return m_platformUtterance->pitch(); }
-    void setPitch(float pitch) { m_platformUtterance->setPitch(pitch); }
+  float rate() const { return m_platformUtterance->rate(); }
+  void setRate(float rate) { m_platformUtterance->setRate(rate); }
 
-    double startTime() const { return m_platformUtterance->startTime(); }
-    void setStartTime(double startTime) { m_platformUtterance->setStartTime(startTime); }
+  float pitch() const { return m_platformUtterance->pitch(); }
+  void setPitch(float pitch) { m_platformUtterance->setPitch(pitch); }
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
+  double startTime() const { return m_platformUtterance->startTime(); }
+  void setStartTime(double startTime) {
+    m_platformUtterance->setStartTime(startTime);
+  }
 
-    ExecutionContext* getExecutionContext() const override;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
 
-    PlatformSpeechSynthesisUtterance* platformUtterance() const { return m_platformUtterance; }
+  ExecutionContext* getExecutionContext() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  PlatformSpeechSynthesisUtterance* platformUtterance() const {
+    return m_platformUtterance;
+  }
 
-private:
-    SpeechSynthesisUtterance(ExecutionContext*, const String&);
+  DECLARE_VIRTUAL_TRACE();
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
+ private:
+  SpeechSynthesisUtterance(ExecutionContext*, const String&);
 
-    Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
-    Member<SpeechSynthesisVoice> m_voice;
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+
+  Member<PlatformSpeechSynthesisUtterance> m_platformUtterance;
+  Member<SpeechSynthesisVoice> m_voice;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpeechSynthesisUtterance_h
+#endif  // SpeechSynthesisUtterance_h

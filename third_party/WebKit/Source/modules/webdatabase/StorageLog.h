@@ -10,9 +10,11 @@
 #if DCHECK_IS_ON()
 // We can see logs with |--v=N| or |--vmodule=StorageLog=N| where N is a
 // verbose level.
-#define STORAGE_DVLOG(verbose_level) LAZY_STREAM(VLOG_STREAM(verbose_level), ((verbose_level) <= ::logging::GetVlogLevel("StorageLog.h")))
+#define STORAGE_DVLOG(verbose_level)      \
+  LAZY_STREAM(VLOG_STREAM(verbose_level), \
+              ((verbose_level) <= ::logging::GetVlogLevel("StorageLog.h")))
 #else
 #define STORAGE_DVLOG(verbose_level) EAT_STREAM_PARAMETERS
 #endif
 
-#endif // StorageLog_h
+#endif  // StorageLog_h

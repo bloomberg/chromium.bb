@@ -9,104 +9,83 @@
 
 namespace blink {
 
-std::unique_ptr<TracedValue> TracedValue::create()
-{
-    return wrapUnique(new TracedValue());
+std::unique_ptr<TracedValue> TracedValue::create() {
+  return wrapUnique(new TracedValue());
 }
 
-TracedValue::TracedValue()
-{
+TracedValue::TracedValue() {}
+
+TracedValue::~TracedValue() {}
+
+void TracedValue::setInteger(const char* name, int value) {
+  m_tracedValue.SetIntegerWithCopiedName(name, value);
 }
 
-TracedValue::~TracedValue()
-{
+void TracedValue::setDouble(const char* name, double value) {
+  m_tracedValue.SetDoubleWithCopiedName(name, value);
 }
 
-void TracedValue::setInteger(const char* name, int value)
-{
-    m_tracedValue.SetIntegerWithCopiedName(name, value);
+void TracedValue::setBoolean(const char* name, bool value) {
+  m_tracedValue.SetBooleanWithCopiedName(name, value);
 }
 
-void TracedValue::setDouble(const char* name, double value)
-{
-    m_tracedValue.SetDoubleWithCopiedName(name, value);
+void TracedValue::setString(const char* name, const String& value) {
+  StringUTF8Adaptor adaptor(value);
+  m_tracedValue.SetStringWithCopiedName(name, adaptor.asStringPiece());
 }
 
-void TracedValue::setBoolean(const char* name, bool value)
-{
-    m_tracedValue.SetBooleanWithCopiedName(name, value);
+void TracedValue::beginDictionary(const char* name) {
+  m_tracedValue.BeginDictionaryWithCopiedName(name);
 }
 
-void TracedValue::setString(const char* name, const String& value)
-{
-    StringUTF8Adaptor adaptor(value);
-    m_tracedValue.SetStringWithCopiedName(name, adaptor.asStringPiece());
+void TracedValue::beginArray(const char* name) {
+  m_tracedValue.BeginArrayWithCopiedName(name);
 }
 
-void TracedValue::beginDictionary(const char* name)
-{
-    m_tracedValue.BeginDictionaryWithCopiedName(name);
+void TracedValue::endDictionary() {
+  m_tracedValue.EndDictionary();
 }
 
-void TracedValue::beginArray(const char* name)
-{
-    m_tracedValue.BeginArrayWithCopiedName(name);
+void TracedValue::pushInteger(int value) {
+  m_tracedValue.AppendInteger(value);
 }
 
-void TracedValue::endDictionary()
-{
-    m_tracedValue.EndDictionary();
+void TracedValue::pushDouble(double value) {
+  m_tracedValue.AppendDouble(value);
 }
 
-void TracedValue::pushInteger(int value)
-{
-    m_tracedValue.AppendInteger(value);
+void TracedValue::pushBoolean(bool value) {
+  m_tracedValue.AppendBoolean(value);
 }
 
-void TracedValue::pushDouble(double value)
-{
-    m_tracedValue.AppendDouble(value);
+void TracedValue::pushString(const String& value) {
+  StringUTF8Adaptor adaptor(value);
+  m_tracedValue.AppendString(adaptor.asStringPiece());
 }
 
-void TracedValue::pushBoolean(bool value)
-{
-    m_tracedValue.AppendBoolean(value);
+void TracedValue::beginArray() {
+  m_tracedValue.BeginArray();
 }
 
-void TracedValue::pushString(const String& value)
-{
-    StringUTF8Adaptor adaptor(value);
-    m_tracedValue.AppendString(adaptor.asStringPiece());
+void TracedValue::beginDictionary() {
+  m_tracedValue.BeginDictionary();
 }
 
-void TracedValue::beginArray()
-{
-    m_tracedValue.BeginArray();
+void TracedValue::endArray() {
+  m_tracedValue.EndArray();
 }
 
-void TracedValue::beginDictionary()
-{
-    m_tracedValue.BeginDictionary();
+String TracedValue::toString() const {
+  return String(m_tracedValue.ToString().c_str());
 }
 
-void TracedValue::endArray()
-{
-    m_tracedValue.EndArray();
+void TracedValue::AppendAsTraceFormat(std::string* out) const {
+  m_tracedValue.AppendAsTraceFormat(out);
 }
 
-String TracedValue::toString() const
-{
-    return String(m_tracedValue.ToString().c_str());
+void TracedValue::EstimateTraceMemoryOverhead(
+    base::trace_event::TraceEventMemoryOverhead* overhead) {
+  m_tracedValue.EstimateTraceMemoryOverhead(overhead);
 }
 
-void TracedValue::AppendAsTraceFormat(std::string* out) const
-{
-    m_tracedValue.AppendAsTraceFormat(out);
-}
-
-void TracedValue::EstimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead* overhead)
-{
-    m_tracedValue.EstimateTraceMemoryOverhead(overhead);
-}
-
-} // namespace blink
+}  // namespace blink

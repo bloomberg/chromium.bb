@@ -12,15 +12,19 @@ namespace blink {
 class WebGL2RenderingContextBase;
 
 class WebGLFenceSync : public WebGLSync {
-public:
-    ~WebGLFenceSync() override;
+ public:
+  ~WebGLFenceSync() override;
 
-    static WebGLSync* create(WebGL2RenderingContextBase*, GLenum condition, GLbitfield flags);
+  static WebGLSync* create(WebGL2RenderingContextBase*,
+                           GLenum condition,
+                           GLbitfield flags);
 
-protected:
-    WebGLFenceSync(WebGL2RenderingContextBase*, GLenum condition, GLbitfield flags);
+ protected:
+  WebGLFenceSync(WebGL2RenderingContextBase*,
+                 GLenum condition,
+                 GLbitfield flags);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLFenceSync_h
+#endif  // WebGLFenceSync_h

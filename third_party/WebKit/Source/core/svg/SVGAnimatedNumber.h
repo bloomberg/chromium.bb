@@ -41,35 +41,40 @@ namespace blink {
 class SVGAnimatedNumberOptionalNumber;
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumber
-class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGAnimatedNumber* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGNumber* initialValue)
-    {
-        return new SVGAnimatedNumber(contextElement, attributeName, initialValue);
-    }
+class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    void synchronizeAttribute() override;
+ public:
+  static SVGAnimatedNumber* create(SVGElement* contextElement,
+                                   const QualifiedName& attributeName,
+                                   SVGNumber* initialValue) {
+    return new SVGAnimatedNumber(contextElement, attributeName, initialValue);
+  }
 
-    void setParentOptionalNumber(SVGAnimatedNumberOptionalNumber* numberOptionalNumber)
-    {
-        m_parentNumberOptionalNumber = numberOptionalNumber;
-    }
+  void synchronizeAttribute() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  void setParentOptionalNumber(
+      SVGAnimatedNumberOptionalNumber* numberOptionalNumber) {
+    m_parentNumberOptionalNumber = numberOptionalNumber;
+  }
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    SVGAnimatedNumber(SVGElement* contextElement, const QualifiedName& attributeName, SVGNumber* initialValue)
-        : SVGAnimatedProperty<SVGNumber>(contextElement, attributeName, initialValue)
-        , m_parentNumberOptionalNumber(nullptr)
-    {
-    }
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    Member<SVGAnimatedNumberOptionalNumber> m_parentNumberOptionalNumber;
+ protected:
+  SVGAnimatedNumber(SVGElement* contextElement,
+                    const QualifiedName& attributeName,
+                    SVGNumber* initialValue)
+      : SVGAnimatedProperty<SVGNumber>(contextElement,
+                                       attributeName,
+                                       initialValue),
+        m_parentNumberOptionalNumber(nullptr) {}
+
+  Member<SVGAnimatedNumberOptionalNumber> m_parentNumberOptionalNumber;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedNumber_h
+#endif  // SVGAnimatedNumber_h

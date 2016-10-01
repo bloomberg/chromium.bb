@@ -20,31 +20,34 @@ class PaymentUpdater;
 class ScriptState;
 
 class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    ~PaymentRequestUpdateEvent() override;
+ public:
+  ~PaymentRequestUpdateEvent() override;
 
-    static PaymentRequestUpdateEvent* create(const AtomicString& type, const PaymentRequestUpdateEventInit& = PaymentRequestUpdateEventInit());
+  static PaymentRequestUpdateEvent* create(
+      const AtomicString& type,
+      const PaymentRequestUpdateEventInit& = PaymentRequestUpdateEventInit());
 
-    void setPaymentDetailsUpdater(PaymentUpdater*);
+  void setPaymentDetailsUpdater(PaymentUpdater*);
 
-    void updateWith(ScriptState*, ScriptPromise, ExceptionState&);
+  void updateWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    void onUpdateEventTimeoutForTesting();
+  void onUpdateEventTimeoutForTesting();
 
-private:
-    PaymentRequestUpdateEvent(const AtomicString& type, const PaymentRequestUpdateEventInit&);
+ private:
+  PaymentRequestUpdateEvent(const AtomicString& type,
+                            const PaymentRequestUpdateEventInit&);
 
-    void onUpdateEventTimeout(TimerBase*);
+  void onUpdateEventTimeout(TimerBase*);
 
-    Member<PaymentUpdater> m_updater;
-    bool m_waitForUpdate;
-    Timer<PaymentRequestUpdateEvent> m_abortTimer;
+  Member<PaymentUpdater> m_updater;
+  bool m_waitForUpdate;
+  Timer<PaymentRequestUpdateEvent> m_abortTimer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaymentRequestUpdateEvent_h
+#endif  // PaymentRequestUpdateEvent_h

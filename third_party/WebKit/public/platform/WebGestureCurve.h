@@ -34,13 +34,13 @@ class WebGestureCurveTarget;
 // (zero-based), and applies the parameters directly to the target of the
 // animation.
 class WebGestureCurve {
-public:
-    virtual ~WebGestureCurve() { }
+ public:
+  virtual ~WebGestureCurve() {}
 
-    // Returns false if curve has finished and can no longer be applied.
-    virtual bool apply(double time, WebGestureCurveTarget*) = 0;
+  // Returns false if curve has finished and can no longer be applied.
+  virtual bool apply(double time, WebGestureCurveTarget*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -11,26 +11,28 @@
 
 namespace blink {
 
-bool LocalFontFaceSource::isLocalFontAvailable(const FontDescription& fontDescription)
-{
-    return FontCache::fontCache()->isPlatformFontAvailable(fontDescription, m_fontName);
+bool LocalFontFaceSource::isLocalFontAvailable(
+    const FontDescription& fontDescription) {
+  return FontCache::fontCache()->isPlatformFontAvailable(fontDescription,
+                                                         m_fontName);
 }
 
-PassRefPtr<SimpleFontData> LocalFontFaceSource::createFontData(const FontDescription& fontDescription)
-{
-    // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
-    RefPtr<SimpleFontData> fontData = FontCache::fontCache()->getFontData(fontDescription, m_fontName, true);
-    m_histograms.record(fontData.get());
-    return fontData.release();
+PassRefPtr<SimpleFontData> LocalFontFaceSource::createFontData(
+    const FontDescription& fontDescription) {
+  // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
+  RefPtr<SimpleFontData> fontData =
+      FontCache::fontCache()->getFontData(fontDescription, m_fontName, true);
+  m_histograms.record(fontData.get());
+  return fontData.release();
 }
 
-void LocalFontFaceSource::LocalFontHistograms::record(bool loadSuccess)
-{
-    if (m_reported)
-        return;
-    m_reported = true;
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, localFontUsedHistogram, ("WebFont.LocalFontUsed", 2));
-    localFontUsedHistogram.count(loadSuccess ? 1 : 0);
+void LocalFontFaceSource::LocalFontHistograms::record(bool loadSuccess) {
+  if (m_reported)
+    return;
+  m_reported = true;
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, localFontUsedHistogram,
+                      ("WebFont.LocalFontUsed", 2));
+  localFontUsedHistogram.count(loadSuccess ? 1 : 0);
 }
 
-} // namespace blink
+}  // namespace blink

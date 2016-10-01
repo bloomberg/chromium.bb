@@ -40,29 +40,29 @@
 namespace blink {
 
 class CORE_EXPORT AnimationClock {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(AnimationClock);
-public:
-    explicit AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)
-        : m_monotonicallyIncreasingTime(monotonicallyIncreasingTime)
-        , m_time(0)
-        , m_currentTask(std::numeric_limits<unsigned>::max())
-    {
-    }
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(AnimationClock);
 
-    void updateTime(double time);
-    double currentTime();
-    void resetTimeForTesting(double time = 0);
+ public:
+  explicit AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime =
+                              WTF::monotonicallyIncreasingTime)
+      : m_monotonicallyIncreasingTime(monotonicallyIncreasingTime),
+        m_time(0),
+        m_currentTask(std::numeric_limits<unsigned>::max()) {}
 
-    static void notifyTaskStart() { ++s_currentTask; }
+  void updateTime(double time);
+  double currentTime();
+  void resetTimeForTesting(double time = 0);
 
-private:
-    WTF::TimeFunction m_monotonicallyIncreasingTime;
-    double m_time;
-    unsigned m_currentTask;
-    static unsigned s_currentTask;
+  static void notifyTaskStart() { ++s_currentTask; }
+
+ private:
+  WTF::TimeFunction m_monotonicallyIncreasingTime;
+  double m_time;
+  unsigned m_currentTask;
+  static unsigned s_currentTask;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationClock_h
+#endif  // AnimationClock_h

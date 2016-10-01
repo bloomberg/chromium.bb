@@ -11,31 +11,26 @@
 namespace blink {
 
 PassRefPtr<PicturePattern> PicturePattern::create(sk_sp<SkPicture> picture,
-    RepeatMode repeatMode)
-{
-    return adoptRef(new PicturePattern(std::move(picture), repeatMode));
+                                                  RepeatMode repeatMode) {
+  return adoptRef(new PicturePattern(std::move(picture), repeatMode));
 }
 
 PicturePattern::PicturePattern(sk_sp<SkPicture> picture, RepeatMode mode)
-    : Pattern(mode)
-    , m_tilePicture(std::move(picture))
-{
-    // All current clients use RepeatModeXY, so we only support this mode for now.
-    ASSERT(isRepeatXY());
+    : Pattern(mode), m_tilePicture(std::move(picture)) {
+  // All current clients use RepeatModeXY, so we only support this mode for now.
+  ASSERT(isRepeatXY());
 
-    // FIXME: we don't have a good way to account for DL memory utilization.
+  // FIXME: we don't have a good way to account for DL memory utilization.
 }
 
-PicturePattern::~PicturePattern()
-{
+PicturePattern::~PicturePattern() {}
+
+sk_sp<SkShader> PicturePattern::createShader(const SkMatrix& localMatrix) {
+  SkRect tileBounds = m_tilePicture->cullRect();
+
+  return SkShader::MakePictureShader(m_tilePicture, SkShader::kRepeat_TileMode,
+                                     SkShader::kRepeat_TileMode, &localMatrix,
+                                     &tileBounds);
 }
 
-sk_sp<SkShader> PicturePattern::createShader(const SkMatrix& localMatrix)
-{
-    SkRect tileBounds = m_tilePicture->cullRect();
-
-    return SkShader::MakePictureShader(m_tilePicture,
-        SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix, &tileBounds);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -30,6 +30,6 @@ namespace blink {
 
 enum SelectionType { NoSelection, CaretSelection, RangeSelection };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SelectionType_h
+#endif  // SelectionType_h

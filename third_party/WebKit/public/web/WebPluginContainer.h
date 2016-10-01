@@ -51,99 +51,103 @@ struct WebPoint;
 struct WebRect;
 
 class WebPluginContainer {
-public:
-    enum TouchEventRequestType {
-        TouchEventRequestTypeNone,
-        TouchEventRequestTypeRaw,
-        TouchEventRequestTypeSynthesizedMouse,
-    };
+ public:
+  enum TouchEventRequestType {
+    TouchEventRequestTypeNone,
+    TouchEventRequestTypeRaw,
+    TouchEventRequestTypeSynthesizedMouse,
+  };
 
-    // Returns the element containing this plugin.
-    virtual WebElement element() = 0;
+  // Returns the element containing this plugin.
+  virtual WebElement element() = 0;
 
-    // Returns the owning document for the plugin.
-    virtual WebDocument document() = 0;
+  // Returns the owning document for the plugin.
+  virtual WebDocument document() = 0;
 
-    // Synchronously dispatches the progress event.
-    virtual void dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url) = 0;
+  // Synchronously dispatches the progress event.
+  virtual void dispatchProgressEvent(const WebString& type,
+                                     bool lengthComputable,
+                                     unsigned long long loaded,
+                                     unsigned long long total,
+                                     const WebString& url) = 0;
 
-    // Enqueue's a task to dispatch the event.
-    // TODO(esprehn): Why are progress events sync and message events async!?
-    virtual void enqueueMessageEvent(const WebDOMMessageEvent&) = 0;
+  // Enqueue's a task to dispatch the event.
+  // TODO(esprehn): Why are progress events sync and message events async!?
+  virtual void enqueueMessageEvent(const WebDOMMessageEvent&) = 0;
 
-    virtual void invalidate() = 0;
-    virtual void invalidateRect(const WebRect&) = 0;
-    virtual void scrollRect(const WebRect&) = 0;
+  virtual void invalidate() = 0;
+  virtual void invalidateRect(const WebRect&) = 0;
+  virtual void scrollRect(const WebRect&) = 0;
 
-    // Schedules an animation of the WebView that contains the plugin, as well as the plugin.
-    virtual void scheduleAnimation() = 0;
+  // Schedules an animation of the WebView that contains the plugin, as well as the plugin.
+  virtual void scheduleAnimation() = 0;
 
-    // Causes the container to report its current geometry via
-    // WebPlugin::updateGeometry.
-    virtual void reportGeometry() = 0;
+  // Causes the container to report its current geometry via
+  // WebPlugin::updateGeometry.
+  virtual void reportGeometry() = 0;
 
-    // Returns the scriptable object associated with the DOM element
-    // containing the plugin as a native v8 object.
-    virtual v8::Local<v8::Object> v8ObjectForElement() = 0;
+  // Returns the scriptable object associated with the DOM element
+  // containing the plugin as a native v8 object.
+  virtual v8::Local<v8::Object> v8ObjectForElement() = 0;
 
-    // Executes a "javascript:" URL on behalf of the plugin in the context
-    // of the frame containing the plugin.  Returns the result of script
-    // execution, if any.
-    virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed) = 0;
+  // Executes a "javascript:" URL on behalf of the plugin in the context
+  // of the frame containing the plugin.  Returns the result of script
+  // execution, if any.
+  virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed) = 0;
 
-    // Loads an URL in the specified frame (or the frame containing this
-    // plugin if target is empty).  If notifyNeeded is true, then upon
-    // completion, WebPlugin::didFinishLoadingFrameRequest is called if the
-    // load was successful or WebPlugin::didFailLoadingFrameRequest is
-    // called if the load failed.  The given notifyData is passed along to
-    // the callback.
-    virtual void loadFrameRequest(
-        const WebURLRequest&, const WebString& target) = 0;
+  // Loads an URL in the specified frame (or the frame containing this
+  // plugin if target is empty).  If notifyNeeded is true, then upon
+  // completion, WebPlugin::didFinishLoadingFrameRequest is called if the
+  // load was successful or WebPlugin::didFailLoadingFrameRequest is
+  // called if the load failed.  The given notifyData is passed along to
+  // the callback.
+  virtual void loadFrameRequest(const WebURLRequest&,
+                                const WebString& target) = 0;
 
-    // Determines whether the given rectangle in this plugin is above all other
-    // content. The rectangle is in the plugin's coordinate system.
-    virtual bool isRectTopmost(const WebRect&) = 0;
+  // Determines whether the given rectangle in this plugin is above all other
+  // content. The rectangle is in the plugin's coordinate system.
+  virtual bool isRectTopmost(const WebRect&) = 0;
 
-    // Notifies when the plugin changes the kind of touch-events it accepts.
-    virtual void requestTouchEventType(TouchEventRequestType) = 0;
+  // Notifies when the plugin changes the kind of touch-events it accepts.
+  virtual void requestTouchEventType(TouchEventRequestType) = 0;
 
-    // Notifies when the plugin starts/stops accepting wheel events. Without
-    // calling the function with true, the container might not always able to
-    // receive wheel events in some cases (such as when threaded compositing
-    // is in use but a scroll bar is not in use).
-    virtual void setWantsWheelEvents(bool) = 0;
+  // Notifies when the plugin starts/stops accepting wheel events. Without
+  // calling the function with true, the container might not always able to
+  // receive wheel events in some cases (such as when threaded compositing
+  // is in use but a scroll bar is not in use).
+  virtual void setWantsWheelEvents(bool) = 0;
 
-    // Converts root frame's coordinates to plugin's local coordinates.
-    virtual WebPoint rootFrameToLocalPoint(const WebPoint&) = 0;
+  // Converts root frame's coordinates to plugin's local coordinates.
+  virtual WebPoint rootFrameToLocalPoint(const WebPoint&) = 0;
 
-    // Converts plugin's local coordinate to root frame's coordinates.
-    virtual WebPoint localToRootFramePoint(const WebPoint&) = 0;
+  // Converts plugin's local coordinate to root frame's coordinates.
+  virtual WebPoint localToRootFramePoint(const WebPoint&) = 0;
 
-    // Returns the plugin this container owns. This plugin will be
-    // automatically destroyed when the container is destroyed.
-    virtual WebPlugin* plugin() = 0;
+  // Returns the plugin this container owns. This plugin will be
+  // automatically destroyed when the container is destroyed.
+  virtual WebPlugin* plugin() = 0;
 
-    // Sets the plugin owned by this container. If the container already owned
-    // a different plugin before this call, that old plugin is now unowned.
-    // The caller is then responsible for destroying the old plugin.
-    virtual void setPlugin(WebPlugin*) = 0;
+  // Sets the plugin owned by this container. If the container already owned
+  // a different plugin before this call, that old plugin is now unowned.
+  // The caller is then responsible for destroying the old plugin.
+  virtual void setPlugin(WebPlugin*) = 0;
 
-    virtual float deviceScaleFactor() = 0;
-    virtual float pageScaleFactor() = 0;
-    virtual float pageZoomFactor() = 0;
+  virtual float deviceScaleFactor() = 0;
+  virtual float pageScaleFactor() = 0;
+  virtual float pageZoomFactor() = 0;
 
-    // Sets the layer representing the plugin for compositing. The
-    // WebPluginContainer does *not* take ownership.
-    virtual void setWebLayer(WebLayer*) = 0;
+  // Sets the layer representing the plugin for compositing. The
+  // WebPluginContainer does *not* take ownership.
+  virtual void setWebLayer(WebLayer*) = 0;
 
-    virtual void requestFullscreen() = 0;
-    virtual bool isFullscreenElement() const = 0;
-    virtual void cancelFullscreen() = 0;
+  virtual void requestFullscreen() = 0;
+  virtual bool isFullscreenElement() const = 0;
+  virtual void cancelFullscreen() = 0;
 
-protected:
-    ~WebPluginContainer() { }
+ protected:
+  ~WebPluginContainer() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

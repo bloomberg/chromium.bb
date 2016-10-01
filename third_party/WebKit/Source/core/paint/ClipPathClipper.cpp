@@ -17,68 +17,69 @@ namespace {
 
 LayoutSVGResourceClipper* resolveElementReference(
     const LayoutObject& layoutObject,
-    const ReferenceClipPathOperation& referenceClipPathOperation)
-{
-    if (layoutObject.isSVG() && !layoutObject.isSVGRoot()) {
-        // The reference will have been resolved in
-        // SVGResources::buildResources, so we can just use the LayoutObject's
-        // SVGResources.
-        SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&layoutObject);
-        return resources ? resources->clipper() : nullptr;
+    const ReferenceClipPathOperation& referenceClipPathOperation) {
+  if (layoutObject.isSVG() && !layoutObject.isSVGRoot()) {
+    // The reference will have been resolved in
+    // SVGResources::buildResources, so we can just use the LayoutObject's
+    // SVGResources.
+    SVGResources* resources =
+        SVGResourcesCache::cachedResourcesForLayoutObject(&layoutObject);
+    return resources ? resources->clipper() : nullptr;
+  }
+  // TODO(fs): It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
+  Element* element = layoutObject.document().getElementById(
+      referenceClipPathOperation.fragment());
+  if (!isSVGClipPathElement(element) || !element->layoutObject())
+    return nullptr;
+  return toLayoutSVGResourceClipper(
+      toLayoutSVGResourceContainer(element->layoutObject()));
+}
+
+}  // namespace
+
+ClipPathClipper::ClipPathClipper(GraphicsContext& context,
+                                 ClipPathOperation& clipPathOperation,
+                                 const LayoutObject& layoutObject,
+                                 const FloatRect& referenceBox,
+                                 const FloatPoint& origin)
+    : m_resourceClipper(nullptr),
+      m_clipperState(ClipperState::NotApplied),
+      m_layoutObject(layoutObject),
+      m_context(context) {
+  if (clipPathOperation.type() == ClipPathOperation::SHAPE) {
+    ShapeClipPathOperation& shape = toShapeClipPathOperation(clipPathOperation);
+    if (!shape.isValid())
+      return;
+    m_clipPathRecorder.emplace(context, layoutObject, shape.path(referenceBox));
+    m_clipperState = ClipperState::AppliedPath;
+  } else {
+    DCHECK_EQ(clipPathOperation.type(), ClipPathOperation::REFERENCE);
+    LayoutSVGResourceClipper* clipper = resolveElementReference(
+        layoutObject, toReferenceClipPathOperation(clipPathOperation));
+    if (!clipper)
+      return;
+    // Compute the (conservative) bounds of the clip-path.
+    FloatRect clipPathBounds = clipper->resourceBoundingBox(referenceBox);
+    // When SVG applies the clip, and the coordinate system is "userspace on use", we must explicitly pass in
+    // the offset to have the clip paint in the correct location. When the coordinate system is
+    // "object bounding box" the offset should already be accounted for in the reference box.
+    FloatPoint originTranslation;
+    if (clipper->clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
+      clipPathBounds.moveBy(origin);
+      originTranslation = origin;
     }
-    // TODO(fs): It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
-    Element* element = layoutObject.document().getElementById(referenceClipPathOperation.fragment());
-    if (!isSVGClipPathElement(element) || !element->layoutObject())
-        return nullptr;
-    return toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
+    if (!SVGClipPainter(*clipper).prepareEffect(
+            layoutObject, referenceBox, clipPathBounds, originTranslation,
+            context, m_clipperState))
+      return;
+    m_resourceClipper = clipper;
+  }
 }
 
-} // namespace
-
-ClipPathClipper::ClipPathClipper(
-    GraphicsContext& context,
-    ClipPathOperation& clipPathOperation,
-    const LayoutObject& layoutObject,
-    const FloatRect& referenceBox,
-    const FloatPoint& origin)
-    : m_resourceClipper(nullptr)
-    , m_clipperState(ClipperState::NotApplied)
-    , m_layoutObject(layoutObject)
-    , m_context(context)
-{
-    if (clipPathOperation.type() == ClipPathOperation::SHAPE) {
-        ShapeClipPathOperation& shape = toShapeClipPathOperation(clipPathOperation);
-        if (!shape.isValid())
-            return;
-        m_clipPathRecorder.emplace(context, layoutObject, shape.path(referenceBox));
-        m_clipperState = ClipperState::AppliedPath;
-    } else {
-        DCHECK_EQ(clipPathOperation.type(), ClipPathOperation::REFERENCE);
-        LayoutSVGResourceClipper* clipper = resolveElementReference(
-            layoutObject, toReferenceClipPathOperation(clipPathOperation));
-        if (!clipper)
-            return;
-        // Compute the (conservative) bounds of the clip-path.
-        FloatRect clipPathBounds = clipper->resourceBoundingBox(referenceBox);
-        // When SVG applies the clip, and the coordinate system is "userspace on use", we must explicitly pass in
-        // the offset to have the clip paint in the correct location. When the coordinate system is
-        // "object bounding box" the offset should already be accounted for in the reference box.
-        FloatPoint originTranslation;
-        if (clipper->clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-            clipPathBounds.moveBy(origin);
-            originTranslation = origin;
-        }
-        if (!SVGClipPainter(*clipper).prepareEffect(layoutObject, referenceBox,
-            clipPathBounds, originTranslation, context, m_clipperState))
-            return;
-        m_resourceClipper = clipper;
-    }
+ClipPathClipper::~ClipPathClipper() {
+  if (m_resourceClipper)
+    SVGClipPainter(*m_resourceClipper)
+        .finishEffect(m_layoutObject, m_context, m_clipperState);
 }
 
-ClipPathClipper::~ClipPathClipper()
-{
-    if (m_resourceClipper)
-        SVGClipPainter(*m_resourceClipper).finishEffect(m_layoutObject, m_context, m_clipperState);
-}
-
-} // namespace blink
+}  // namespace blink

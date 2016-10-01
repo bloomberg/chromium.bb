@@ -36,266 +36,249 @@ namespace blink {
 
 namespace XPath {
 
-Number::Number(double value)
-    : m_value(value)
-{
+Number::Number(double value) : m_value(value) {}
+
+DEFINE_TRACE(Number) {
+  visitor->trace(m_value);
+  Expression::trace(visitor);
 }
 
-DEFINE_TRACE(Number)
-{
-    visitor->trace(m_value);
-    Expression::trace(visitor);
+Value Number::evaluate(EvaluationContext&) const {
+  return m_value;
 }
 
-Value Number::evaluate(EvaluationContext&) const
-{
-    return m_value;
+StringExpression::StringExpression(const String& value) : m_value(value) {}
+
+DEFINE_TRACE(StringExpression) {
+  visitor->trace(m_value);
+  Expression::trace(visitor);
 }
 
-StringExpression::StringExpression(const String& value)
-    : m_value(value)
-{
+Value StringExpression::evaluate(EvaluationContext&) const {
+  return m_value;
 }
 
-DEFINE_TRACE(StringExpression)
-{
-    visitor->trace(m_value);
-    Expression::trace(visitor);
-}
-
-Value StringExpression::evaluate(EvaluationContext&) const
-{
-    return m_value;
-}
-
-Value Negative::evaluate(EvaluationContext& context) const
-{
-    Value p(subExpr(0)->evaluate(context));
-    return -p.toNumber();
+Value Negative::evaluate(EvaluationContext& context) const {
+  Value p(subExpr(0)->evaluate(context));
+  return -p.toNumber();
 }
 
 NumericOp::NumericOp(Opcode opcode, Expression* lhs, Expression* rhs)
-    : m_opcode(opcode)
-{
-    addSubExpression(lhs);
-    addSubExpression(rhs);
+    : m_opcode(opcode) {
+  addSubExpression(lhs);
+  addSubExpression(rhs);
 }
 
-Value NumericOp::evaluate(EvaluationContext& context) const
-{
-    Value lhs(subExpr(0)->evaluate(context));
-    Value rhs(subExpr(1)->evaluate(context));
+Value NumericOp::evaluate(EvaluationContext& context) const {
+  Value lhs(subExpr(0)->evaluate(context));
+  Value rhs(subExpr(1)->evaluate(context));
 
-    double leftVal = lhs.toNumber();
-    double rightVal = rhs.toNumber();
+  double leftVal = lhs.toNumber();
+  double rightVal = rhs.toNumber();
 
-    switch (m_opcode) {
+  switch (m_opcode) {
     case OP_Add:
-        return leftVal + rightVal;
+      return leftVal + rightVal;
     case OP_Sub:
-        return leftVal - rightVal;
+      return leftVal - rightVal;
     case OP_Mul:
-        return leftVal * rightVal;
+      return leftVal * rightVal;
     case OP_Div:
-        return leftVal / rightVal;
+      return leftVal / rightVal;
     case OP_Mod:
-        return fmod(leftVal, rightVal);
-    }
-    NOTREACHED();
-    return 0.0;
+      return fmod(leftVal, rightVal);
+  }
+  NOTREACHED();
+  return 0.0;
 }
 
 EqTestOp::EqTestOp(Opcode opcode, Expression* lhs, Expression* rhs)
-    : m_opcode(opcode)
-{
-    addSubExpression(lhs);
-    addSubExpression(rhs);
+    : m_opcode(opcode) {
+  addSubExpression(lhs);
+  addSubExpression(rhs);
 }
 
-bool EqTestOp::compare(EvaluationContext& context, const Value& lhs, const Value& rhs) const
-{
-    if (lhs.isNodeSet()) {
-        const NodeSet& lhsSet = lhs.toNodeSet(&context);
-        if (rhs.isNodeSet()) {
-            // If both objects to be compared are node-sets, then the comparison
-            // will be true if and only if there is a node in the first node-set
-            // and a node in the second node-set such that the result of
-            // performing the comparison on the string-values of the two nodes
-            // is true.
-            const NodeSet& rhsSet = rhs.toNodeSet(&context);
-            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-                for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-                    if (compare(context, stringValue(lhsSet[lindex]), stringValue(rhsSet[rindex])))
-                        return true;
-                }
-            }
-            return false;
-        }
-        if (rhs.isNumber()) {
-            // If one object to be compared is a node-set and the other is a
-            // number, then the comparison will be true if and only if there is
-            // a node in the node-set such that the result of performing the
-            // comparison on the number to be compared and on the result of
-            // converting the string-value of that node to a number using the
-            // number function is true.
-            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-                if (compare(context, Value(stringValue(lhsSet[lindex])).toNumber(), rhs))
-                    return true;
-            }
-            return false;
-        }
-        if (rhs.isString()) {
-            // If one object to be compared is a node-set and the other is a
-            // string, then the comparison will be true if and only if there is
-            // a node in the node-set such that the result of performing the
-            // comparison on the string-value of the node and the other string
-            // is true.
-            for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
-                if (compare(context, stringValue(lhsSet[lindex]), rhs))
-                    return true;
-            }
-            return false;
-        }
-        if (rhs.isBoolean()) {
-            // If one object to be compared is a node-set and the other is a
-            // boolean, then the comparison will be true if and only if the
-            // result of performing the comparison on the boolean and on the
-            // result of converting the node-set to a boolean using the boolean
-            // function is true.
-            return compare(context, lhs.toBoolean(), rhs);
-        }
-        NOTREACHED();
-    }
+bool EqTestOp::compare(EvaluationContext& context,
+                       const Value& lhs,
+                       const Value& rhs) const {
+  if (lhs.isNodeSet()) {
+    const NodeSet& lhsSet = lhs.toNodeSet(&context);
     if (rhs.isNodeSet()) {
-        const NodeSet& rhsSet = rhs.toNodeSet(&context);
-        if (lhs.isNumber()) {
-            for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-                if (compare(context, lhs, Value(stringValue(rhsSet[rindex])).toNumber()))
-                    return true;
-            }
-            return false;
+      // If both objects to be compared are node-sets, then the comparison
+      // will be true if and only if there is a node in the first node-set
+      // and a node in the second node-set such that the result of
+      // performing the comparison on the string-values of the two nodes
+      // is true.
+      const NodeSet& rhsSet = rhs.toNodeSet(&context);
+      for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
+        for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
+          if (compare(context, stringValue(lhsSet[lindex]),
+                      stringValue(rhsSet[rindex])))
+            return true;
         }
-        if (lhs.isString()) {
-            for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
-                if (compare(context, lhs, stringValue(rhsSet[rindex])))
-                    return true;
-            }
-            return false;
-        }
-        if (lhs.isBoolean())
-            return compare(context, lhs, rhs.toBoolean());
-        NOTREACHED();
+      }
+      return false;
     }
-
-    // Neither side is a NodeSet.
-    switch (m_opcode) {
-    case OpcodeEqual:
-    case OpcodeNotEqual:
-        bool equal;
-        if (lhs.isBoolean() || rhs.isBoolean())
-            equal = lhs.toBoolean() == rhs.toBoolean();
-        else if (lhs.isNumber() || rhs.isNumber())
-            equal = lhs.toNumber() == rhs.toNumber();
-        else
-            equal = lhs.toString() == rhs.toString();
-
-        if (m_opcode == OpcodeEqual)
-            return equal;
-        return !equal;
-    case OpcodeGreaterThan:
-        return lhs.toNumber() > rhs.toNumber();
-    case OpcodeGreaterOrEqual:
-        return lhs.toNumber() >= rhs.toNumber();
-    case OpcodeLessThan:
-        return lhs.toNumber() < rhs.toNumber();
-    case OpcodeLessOrEqual:
-        return lhs.toNumber() <= rhs.toNumber();
+    if (rhs.isNumber()) {
+      // If one object to be compared is a node-set and the other is a
+      // number, then the comparison will be true if and only if there is
+      // a node in the node-set such that the result of performing the
+      // comparison on the number to be compared and on the result of
+      // converting the string-value of that node to a number using the
+      // number function is true.
+      for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
+        if (compare(context, Value(stringValue(lhsSet[lindex])).toNumber(),
+                    rhs))
+          return true;
+      }
+      return false;
+    }
+    if (rhs.isString()) {
+      // If one object to be compared is a node-set and the other is a
+      // string, then the comparison will be true if and only if there is
+      // a node in the node-set such that the result of performing the
+      // comparison on the string-value of the node and the other string
+      // is true.
+      for (unsigned lindex = 0; lindex < lhsSet.size(); ++lindex) {
+        if (compare(context, stringValue(lhsSet[lindex]), rhs))
+          return true;
+      }
+      return false;
+    }
+    if (rhs.isBoolean()) {
+      // If one object to be compared is a node-set and the other is a
+      // boolean, then the comparison will be true if and only if the
+      // result of performing the comparison on the boolean and on the
+      // result of converting the node-set to a boolean using the boolean
+      // function is true.
+      return compare(context, lhs.toBoolean(), rhs);
     }
     NOTREACHED();
-    return false;
+  }
+  if (rhs.isNodeSet()) {
+    const NodeSet& rhsSet = rhs.toNodeSet(&context);
+    if (lhs.isNumber()) {
+      for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
+        if (compare(context, lhs,
+                    Value(stringValue(rhsSet[rindex])).toNumber()))
+          return true;
+      }
+      return false;
+    }
+    if (lhs.isString()) {
+      for (unsigned rindex = 0; rindex < rhsSet.size(); ++rindex) {
+        if (compare(context, lhs, stringValue(rhsSet[rindex])))
+          return true;
+      }
+      return false;
+    }
+    if (lhs.isBoolean())
+      return compare(context, lhs, rhs.toBoolean());
+    NOTREACHED();
+  }
+
+  // Neither side is a NodeSet.
+  switch (m_opcode) {
+    case OpcodeEqual:
+    case OpcodeNotEqual:
+      bool equal;
+      if (lhs.isBoolean() || rhs.isBoolean())
+        equal = lhs.toBoolean() == rhs.toBoolean();
+      else if (lhs.isNumber() || rhs.isNumber())
+        equal = lhs.toNumber() == rhs.toNumber();
+      else
+        equal = lhs.toString() == rhs.toString();
+
+      if (m_opcode == OpcodeEqual)
+        return equal;
+      return !equal;
+    case OpcodeGreaterThan:
+      return lhs.toNumber() > rhs.toNumber();
+    case OpcodeGreaterOrEqual:
+      return lhs.toNumber() >= rhs.toNumber();
+    case OpcodeLessThan:
+      return lhs.toNumber() < rhs.toNumber();
+    case OpcodeLessOrEqual:
+      return lhs.toNumber() <= rhs.toNumber();
+  }
+  NOTREACHED();
+  return false;
 }
 
-Value EqTestOp::evaluate(EvaluationContext& context) const
-{
-    Value lhs(subExpr(0)->evaluate(context));
-    Value rhs(subExpr(1)->evaluate(context));
+Value EqTestOp::evaluate(EvaluationContext& context) const {
+  Value lhs(subExpr(0)->evaluate(context));
+  Value rhs(subExpr(1)->evaluate(context));
 
-    return compare(context, lhs, rhs);
+  return compare(context, lhs, rhs);
 }
 
 LogicalOp::LogicalOp(Opcode opcode, Expression* lhs, Expression* rhs)
-    : m_opcode(opcode)
-{
-    addSubExpression(lhs);
-    addSubExpression(rhs);
+    : m_opcode(opcode) {
+  addSubExpression(lhs);
+  addSubExpression(rhs);
 }
 
-bool LogicalOp::shortCircuitOn() const
-{
-    return m_opcode != OP_And;
+bool LogicalOp::shortCircuitOn() const {
+  return m_opcode != OP_And;
 }
 
-Value LogicalOp::evaluate(EvaluationContext& context) const
-{
-    Value lhs(subExpr(0)->evaluate(context));
+Value LogicalOp::evaluate(EvaluationContext& context) const {
+  Value lhs(subExpr(0)->evaluate(context));
 
-    // This is not only an optimization, http://www.w3.org/TR/xpath
-    // dictates that we must do short-circuit evaluation
-    bool lhsBool = lhs.toBoolean();
-    if (lhsBool == shortCircuitOn())
-        return lhsBool;
+  // This is not only an optimization, http://www.w3.org/TR/xpath
+  // dictates that we must do short-circuit evaluation
+  bool lhsBool = lhs.toBoolean();
+  if (lhsBool == shortCircuitOn())
+    return lhsBool;
 
-    return subExpr(1)->evaluate(context).toBoolean();
+  return subExpr(1)->evaluate(context).toBoolean();
 }
 
-Value Union::evaluate(EvaluationContext& context) const
-{
-    Value lhsResult = subExpr(0)->evaluate(context);
-    Value rhs = subExpr(1)->evaluate(context);
+Value Union::evaluate(EvaluationContext& context) const {
+  Value lhsResult = subExpr(0)->evaluate(context);
+  Value rhs = subExpr(1)->evaluate(context);
 
-    NodeSet& resultSet = lhsResult.modifiableNodeSet(context);
-    const NodeSet& rhsNodes = rhs.toNodeSet(&context);
+  NodeSet& resultSet = lhsResult.modifiableNodeSet(context);
+  const NodeSet& rhsNodes = rhs.toNodeSet(&context);
 
-    HeapHashSet<Member<Node>> nodes;
-    for (size_t i = 0; i < resultSet.size(); ++i)
-        nodes.add(resultSet[i]);
+  HeapHashSet<Member<Node>> nodes;
+  for (size_t i = 0; i < resultSet.size(); ++i)
+    nodes.add(resultSet[i]);
 
-    for (size_t i = 0; i < rhsNodes.size(); ++i) {
-        Node* node = rhsNodes[i];
-        if (nodes.add(node).isNewEntry)
-            resultSet.append(node);
-    }
+  for (size_t i = 0; i < rhsNodes.size(); ++i) {
+    Node* node = rhsNodes[i];
+    if (nodes.add(node).isNewEntry)
+      resultSet.append(node);
+  }
 
-    // It is also possible to use merge sort to avoid making the result
-    // unsorted; but this would waste the time in cases when order is not
-    // important.
-    resultSet.markSorted(false);
-    return lhsResult;
+  // It is also possible to use merge sort to avoid making the result
+  // unsorted; but this would waste the time in cases when order is not
+  // important.
+  resultSet.markSorted(false);
+  return lhsResult;
 }
 
-Predicate::Predicate(Expression* expr)
-    : m_expr(expr)
-{
+Predicate::Predicate(Expression* expr) : m_expr(expr) {}
+
+DEFINE_TRACE(Predicate) {
+  visitor->trace(m_expr);
 }
 
-DEFINE_TRACE(Predicate)
-{
-    visitor->trace(m_expr);
+bool Predicate::evaluate(EvaluationContext& context) const {
+  DCHECK(m_expr);
+
+  Value result(m_expr->evaluate(context));
+
+  // foo[3] means foo[position()=3]
+  if (result.isNumber())
+    return EqTestOp(EqTestOp::OpcodeEqual, createFunction("position"),
+                    new Number(result.toNumber()))
+        .evaluate(context)
+        .toBoolean();
+
+  return result.toBoolean();
 }
 
-bool Predicate::evaluate(EvaluationContext& context) const
-{
-    DCHECK(m_expr);
+}  // namespace XPath
 
-    Value result(m_expr->evaluate(context));
-
-    // foo[3] means foo[position()=3]
-    if (result.isNumber())
-        return EqTestOp(EqTestOp::OpcodeEqual, createFunction("position"), new Number(result.toNumber())).evaluate(context).toBoolean();
-
-    return result.toBoolean();
-}
-
-} // namespace XPath
-
-} // namespace blink
+}  // namespace blink

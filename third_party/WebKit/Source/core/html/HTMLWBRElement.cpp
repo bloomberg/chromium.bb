@@ -38,15 +38,12 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLWBRElement::HTMLWBRElement(Document& document)
-    : HTMLElement(wbrTag, document)
-{
-}
+    : HTMLElement(wbrTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLWBRElement)
 
-LayoutObject* HTMLWBRElement::createLayoutObject(const ComputedStyle& style)
-{
-    return new LayoutWordBreak(this);
+LayoutObject* HTMLWBRElement::createLayoutObject(const ComputedStyle& style) {
+  return new LayoutWordBreak(this);
 }
 
-} // namespace blink
+}  // namespace blink

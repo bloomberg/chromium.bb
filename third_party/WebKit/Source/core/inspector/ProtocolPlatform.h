@@ -10,4 +10,4 @@
 
 #include <memory>
 
-#endif // ProtocolPlatform_h
+#endif  // ProtocolPlatform_h

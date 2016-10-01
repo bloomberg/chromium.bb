@@ -14,16 +14,19 @@ class LayoutPoint;
 class LayoutFileUploadControl;
 
 class FileUploadControlPainter {
-    STACK_ALLOCATED();
-public:
-    FileUploadControlPainter(const LayoutFileUploadControl& layoutFileUploadControl) : m_layoutFileUploadControl(layoutFileUploadControl) { }
+  STACK_ALLOCATED();
 
-    void paintObject(const PaintInfo&, const LayoutPoint&);
+ public:
+  FileUploadControlPainter(
+      const LayoutFileUploadControl& layoutFileUploadControl)
+      : m_layoutFileUploadControl(layoutFileUploadControl) {}
 
-private:
-    const LayoutFileUploadControl& m_layoutFileUploadControl;
+  void paintObject(const PaintInfo&, const LayoutPoint&);
+
+ private:
+  const LayoutFileUploadControl& m_layoutFileUploadControl;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileUploadControlPainter_h
+#endif  // FileUploadControlPainter_h

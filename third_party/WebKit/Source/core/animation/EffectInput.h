@@ -20,16 +20,25 @@ class ExceptionState;
 class ExecutionContext;
 
 class CORE_EXPORT EffectInput {
-    STATIC_ONLY(EffectInput);
-public:
-    // TODO(alancutter): Replace Element* parameter with Document&.
-    static EffectModel* convert(Element*, const DictionarySequenceOrDictionary&, ExecutionContext*, ExceptionState&);
+  STATIC_ONLY(EffectInput);
 
-private:
-    static EffectModel* convertArrayForm(Element&, const Vector<Dictionary>& keyframes, ExceptionState&);
-    static EffectModel* convertObjectForm(Element&, const Dictionary& keyframe, ExecutionContext*, ExceptionState&);
+ public:
+  // TODO(alancutter): Replace Element* parameter with Document&.
+  static EffectModel* convert(Element*,
+                              const DictionarySequenceOrDictionary&,
+                              ExecutionContext*,
+                              ExceptionState&);
+
+ private:
+  static EffectModel* convertArrayForm(Element&,
+                                       const Vector<Dictionary>& keyframes,
+                                       ExceptionState&);
+  static EffectModel* convertObjectForm(Element&,
+                                        const Dictionary& keyframe,
+                                        ExecutionContext*,
+                                        ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

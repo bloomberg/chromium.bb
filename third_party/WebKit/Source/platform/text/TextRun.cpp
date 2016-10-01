@@ -30,31 +30,31 @@
 namespace blink {
 
 struct ExpectedTextRunSize {
-    DISALLOW_NEW();
-    const void* pointer;
-    int integers[2];
-    float float1;
-    float float2;
-    float float3;
-    uint32_t bitfields : 10;
-    TabSize tabSize;
+  DISALLOW_NEW();
+  const void* pointer;
+  int integers[2];
+  float float1;
+  float float2;
+  float float3;
+  uint32_t bitfields : 10;
+  TabSize tabSize;
 };
 
-static_assert(sizeof(TextRun) == sizeof(ExpectedTextRunSize), "TextRun should have expected size");
+static_assert(sizeof(TextRun) == sizeof(ExpectedTextRunSize),
+              "TextRun should have expected size");
 
-void TextRun::setText(const String& string)
-{
-    m_len = string.length();
-    if (!m_len) {
-        m_data.characters8 = 0;
-        m_is8Bit = true;
-        return;
-    }
-    m_is8Bit = string.is8Bit();
-    if (m_is8Bit)
-        m_data.characters8 = string.characters8();
-    else
-        m_data.characters16 = string.characters16();
+void TextRun::setText(const String& string) {
+  m_len = string.length();
+  if (!m_len) {
+    m_data.characters8 = 0;
+    m_is8Bit = true;
+    return;
+  }
+  m_is8Bit = string.is8Bit();
+  if (m_is8Bit)
+    m_data.characters8 = string.characters8();
+  else
+    m_data.characters16 = string.characters16();
 }
 
-} // namespace blink
+}  // namespace blink

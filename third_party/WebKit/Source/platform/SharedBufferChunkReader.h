@@ -42,36 +42,39 @@ namespace blink {
 class SharedBuffer;
 
 class PLATFORM_EXPORT SharedBufferChunkReader final {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(SharedBufferChunkReader);
-public:
-    SharedBufferChunkReader(PassRefPtr<const SharedBuffer>, const Vector<char>& separator);
-    SharedBufferChunkReader(PassRefPtr<const SharedBuffer>, const char* separator);
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(SharedBufferChunkReader);
 
-    void setSeparator(const Vector<char>&);
-    void setSeparator(const char*);
+ public:
+  SharedBufferChunkReader(PassRefPtr<const SharedBuffer>,
+                          const Vector<char>& separator);
+  SharedBufferChunkReader(PassRefPtr<const SharedBuffer>,
+                          const char* separator);
 
-    // Returns false when the end of the buffer was reached.
-    bool nextChunk(Vector<char>& data, bool includeSeparator = false);
+  void setSeparator(const Vector<char>&);
+  void setSeparator(const char*);
 
-    // Returns a null string when the end of the buffer has been reached.
-    String nextChunkAsUTF8StringWithLatin1Fallback(bool includeSeparator = false);
+  // Returns false when the end of the buffer was reached.
+  bool nextChunk(Vector<char>& data, bool includeSeparator = false);
 
-    // Reads size bytes at the current location in the buffer, without changing the buffer position.
-    // Returns the number of bytes read. That number might be less than the specified size if the end of the buffer was reached.
-    size_t peek(Vector<char>&, size_t);
+  // Returns a null string when the end of the buffer has been reached.
+  String nextChunkAsUTF8StringWithLatin1Fallback(bool includeSeparator = false);
 
-private:
-    RefPtr<const SharedBuffer> m_buffer;
-    size_t m_bufferPosition;
-    const char* m_segment;
-    size_t m_segmentLength;
-    size_t m_segmentIndex;
-    bool m_reachedEndOfFile;
-    Vector<char> m_separator;
-    size_t m_separatorIndex;
+  // Reads size bytes at the current location in the buffer, without changing the buffer position.
+  // Returns the number of bytes read. That number might be less than the specified size if the end of the buffer was reached.
+  size_t peek(Vector<char>&, size_t);
+
+ private:
+  RefPtr<const SharedBuffer> m_buffer;
+  size_t m_bufferPosition;
+  const char* m_segment;
+  size_t m_segmentLength;
+  size_t m_segmentIndex;
+  bool m_reachedEndOfFile;
+  Vector<char> m_separator;
+  size_t m_separatorIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

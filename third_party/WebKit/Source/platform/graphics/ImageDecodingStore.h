@@ -61,163 +61,191 @@ class ImageFrameGenerator;
 // All public methods can be used on any thread.
 
 class PLATFORM_EXPORT ImageDecodingStore final {
-    USING_FAST_MALLOC(ImageDecodingStore);
-    WTF_MAKE_NONCOPYABLE(ImageDecodingStore);
-public:
-    static std::unique_ptr<ImageDecodingStore> create() { return wrapUnique(new ImageDecodingStore); }
-    ~ImageDecodingStore();
+  USING_FAST_MALLOC(ImageDecodingStore);
+  WTF_MAKE_NONCOPYABLE(ImageDecodingStore);
 
-    static ImageDecodingStore& instance();
+ public:
+  static std::unique_ptr<ImageDecodingStore> create() {
+    return wrapUnique(new ImageDecodingStore);
+  }
+  ~ImageDecodingStore();
 
-    // Access a cached decoder object. A decoder is indexed by origin (ImageFrameGenerator)
-    // and scaled size. Return true if the cached object is found.
-    bool lockDecoder(const ImageFrameGenerator*, const SkISize& scaledSize, ImageDecoder**);
-    void unlockDecoder(const ImageFrameGenerator*, const ImageDecoder*);
-    void insertDecoder(const ImageFrameGenerator*, std::unique_ptr<ImageDecoder>);
-    void removeDecoder(const ImageFrameGenerator*, const ImageDecoder*);
+  static ImageDecodingStore& instance();
 
-    // Remove all cache entries indexed by ImageFrameGenerator.
-    void removeCacheIndexedByGenerator(const ImageFrameGenerator*);
+  // Access a cached decoder object. A decoder is indexed by origin (ImageFrameGenerator)
+  // and scaled size. Return true if the cached object is found.
+  bool lockDecoder(const ImageFrameGenerator*,
+                   const SkISize& scaledSize,
+                   ImageDecoder**);
+  void unlockDecoder(const ImageFrameGenerator*, const ImageDecoder*);
+  void insertDecoder(const ImageFrameGenerator*, std::unique_ptr<ImageDecoder>);
+  void removeDecoder(const ImageFrameGenerator*, const ImageDecoder*);
 
-    void clear();
-    void setCacheLimitInBytes(size_t);
-    size_t memoryUsageInBytes();
-    int cacheEntries();
-    int decoderCacheEntries();
+  // Remove all cache entries indexed by ImageFrameGenerator.
+  void removeCacheIndexedByGenerator(const ImageFrameGenerator*);
 
-private:
-    // Decoder cache entry is identified by:
-    // 1. Pointer to ImageFrameGenerator.
-    // 2. Size of the image.
-    typedef std::pair<const ImageFrameGenerator*, SkISize> DecoderCacheKey;
+  void clear();
+  void setCacheLimitInBytes(size_t);
+  size_t memoryUsageInBytes();
+  int cacheEntries();
+  int decoderCacheEntries();
 
-    // Base class for all cache entries.
-    class CacheEntry : public DoublyLinkedListNode<CacheEntry> {
-        USING_FAST_MALLOC(CacheEntry);
-        WTF_MAKE_NONCOPYABLE(CacheEntry);
-        friend class WTF::DoublyLinkedListNode<CacheEntry>;
-    public:
-        enum CacheType {
-            TypeDecoder,
-        };
+ private:
+  // Decoder cache entry is identified by:
+  // 1. Pointer to ImageFrameGenerator.
+  // 2. Size of the image.
+  typedef std::pair<const ImageFrameGenerator*, SkISize> DecoderCacheKey;
 
-        CacheEntry(const ImageFrameGenerator* generator, int useCount)
-            : m_generator(generator)
-            , m_useCount(useCount)
-            , m_prev(0)
-            , m_next(0)
-        {
-        }
+  // Base class for all cache entries.
+  class CacheEntry : public DoublyLinkedListNode<CacheEntry> {
+    USING_FAST_MALLOC(CacheEntry);
+    WTF_MAKE_NONCOPYABLE(CacheEntry);
+    friend class WTF::DoublyLinkedListNode<CacheEntry>;
 
-        virtual ~CacheEntry()
-        {
-            ASSERT(!m_useCount);
-        }
-
-        const ImageFrameGenerator* generator() const { return m_generator; }
-        int useCount() const { return m_useCount; }
-        void incrementUseCount() { ++m_useCount; }
-        void decrementUseCount() { --m_useCount; ASSERT(m_useCount >= 0); }
-
-        // FIXME: getSafeSize() returns size in bytes truncated to a 32-bits integer.
-        //        Find a way to get the size in 64-bits.
-        virtual size_t memoryUsageInBytes() const = 0;
-        virtual CacheType type() const = 0;
-
-    protected:
-        const ImageFrameGenerator* m_generator;
-        int m_useCount;
-
-    private:
-        CacheEntry* m_prev;
-        CacheEntry* m_next;
+   public:
+    enum CacheType {
+      TypeDecoder,
     };
 
-    class DecoderCacheEntry final : public CacheEntry {
-    public:
-        static std::unique_ptr<DecoderCacheEntry> create(const ImageFrameGenerator* generator, std::unique_ptr<ImageDecoder> decoder)
-        {
-            return wrapUnique(new DecoderCacheEntry(generator, 0, std::move(decoder)));
-        }
+    CacheEntry(const ImageFrameGenerator* generator, int useCount)
+        : m_generator(generator), m_useCount(useCount), m_prev(0), m_next(0) {}
 
-        DecoderCacheEntry(const ImageFrameGenerator* generator, int count, std::unique_ptr<ImageDecoder> decoder)
-            : CacheEntry(generator, count)
-            , m_cachedDecoder(std::move(decoder))
-            , m_size(SkISize::Make(m_cachedDecoder->decodedSize().width(), m_cachedDecoder->decodedSize().height()))
-        {
-        }
+    virtual ~CacheEntry() { ASSERT(!m_useCount); }
 
-        size_t memoryUsageInBytes() const override { return m_size.width() * m_size.height() * 4; }
-        CacheType type() const override { return TypeDecoder; }
+    const ImageFrameGenerator* generator() const { return m_generator; }
+    int useCount() const { return m_useCount; }
+    void incrementUseCount() { ++m_useCount; }
+    void decrementUseCount() {
+      --m_useCount;
+      ASSERT(m_useCount >= 0);
+    }
 
-        static DecoderCacheKey makeCacheKey(const ImageFrameGenerator* generator, const SkISize& size)
-        {
-            return std::make_pair(generator, size);
-        }
-        static DecoderCacheKey makeCacheKey(const ImageFrameGenerator* generator, const ImageDecoder* decoder)
-        {
-            return std::make_pair(generator, SkISize::Make(decoder->decodedSize().width(), decoder->decodedSize().height()));
-        }
-        DecoderCacheKey cacheKey() const { return makeCacheKey(m_generator, m_size); }
-        ImageDecoder* cachedDecoder() const { return m_cachedDecoder.get(); }
+    // FIXME: getSafeSize() returns size in bytes truncated to a 32-bits integer.
+    //        Find a way to get the size in 64-bits.
+    virtual size_t memoryUsageInBytes() const = 0;
+    virtual CacheType type() const = 0;
 
-    private:
-        std::unique_ptr<ImageDecoder> m_cachedDecoder;
-        SkISize m_size;
-    };
+   protected:
+    const ImageFrameGenerator* m_generator;
+    int m_useCount;
 
-    ImageDecodingStore();
+   private:
+    CacheEntry* m_prev;
+    CacheEntry* m_next;
+  };
 
-    void prune();
+  class DecoderCacheEntry final : public CacheEntry {
+   public:
+    static std::unique_ptr<DecoderCacheEntry> create(
+        const ImageFrameGenerator* generator,
+        std::unique_ptr<ImageDecoder> decoder) {
+      return wrapUnique(
+          new DecoderCacheEntry(generator, 0, std::move(decoder)));
+    }
 
-    // These helper methods are called while m_mutex is locked.
-    template<class T, class U, class V> void insertCacheInternal(std::unique_ptr<T> cacheEntry, U* cacheMap, V* identifierMap);
+    DecoderCacheEntry(const ImageFrameGenerator* generator,
+                      int count,
+                      std::unique_ptr<ImageDecoder> decoder)
+        : CacheEntry(generator, count),
+          m_cachedDecoder(std::move(decoder)),
+          m_size(SkISize::Make(m_cachedDecoder->decodedSize().width(),
+                               m_cachedDecoder->decodedSize().height())) {}
 
-    // Helper method to remove a cache entry. Ownership is transferred to
-    // deletionList. Use of Vector<> is handy when removing multiple entries.
-    template<class T, class U, class V> void removeFromCacheInternal(const T* cacheEntry, U* cacheMap, V* identifierMap, Vector<std::unique_ptr<CacheEntry>>* deletionList);
+    size_t memoryUsageInBytes() const override {
+      return m_size.width() * m_size.height() * 4;
+    }
+    CacheType type() const override { return TypeDecoder; }
 
-    // Helper method to remove a cache entry. Uses the templated version base on
-    // the type of cache entry.
-    void removeFromCacheInternal(const CacheEntry*, Vector<std::unique_ptr<CacheEntry>>* deletionList);
+    static DecoderCacheKey makeCacheKey(const ImageFrameGenerator* generator,
+                                        const SkISize& size) {
+      return std::make_pair(generator, size);
+    }
+    static DecoderCacheKey makeCacheKey(const ImageFrameGenerator* generator,
+                                        const ImageDecoder* decoder) {
+      return std::make_pair(generator,
+                            SkISize::Make(decoder->decodedSize().width(),
+                                          decoder->decodedSize().height()));
+    }
+    DecoderCacheKey cacheKey() const {
+      return makeCacheKey(m_generator, m_size);
+    }
+    ImageDecoder* cachedDecoder() const { return m_cachedDecoder.get(); }
 
-    // Helper method to remove all cache entries associated with a ImageFraneGenerator.
-    // Ownership of cache entries is transferred to deletionList.
-    template<class U, class V> void removeCacheIndexedByGeneratorInternal(U* cacheMap, V* identifierMap, const ImageFrameGenerator*, Vector<std::unique_ptr<CacheEntry>>* deletionList);
+   private:
+    std::unique_ptr<ImageDecoder> m_cachedDecoder;
+    SkISize m_size;
+  };
 
-    // Helper method to remove cache entry pointers from the LRU list.
-    void removeFromCacheListInternal(const Vector<std::unique_ptr<CacheEntry>>& deletionList);
+  ImageDecodingStore();
 
-    // A doubly linked list that maintains usage history of cache entries.
-    // This is used for eviction of old entries.
-    // Head of this list is the least recently used cache entry.
-    // Tail of this list is the most recently used cache entry.
-    DoublyLinkedList<CacheEntry> m_orderedCacheList;
+  void prune();
 
-    // A lookup table for all decoder cache objects. Owns all decoder cache objects.
-    typedef HashMap<DecoderCacheKey, std::unique_ptr<DecoderCacheEntry>> DecoderCacheMap;
-    DecoderCacheMap m_decoderCacheMap;
+  // These helper methods are called while m_mutex is locked.
+  template <class T, class U, class V>
+  void insertCacheInternal(std::unique_ptr<T> cacheEntry,
+                           U* cacheMap,
+                           V* identifierMap);
 
-    // A lookup table to map ImageFrameGenerator to all associated
-    // decoder cache keys.
-    typedef HashSet<DecoderCacheKey> DecoderCacheKeySet;
-    typedef HashMap<const ImageFrameGenerator*, DecoderCacheKeySet> DecoderCacheKeyMap;
-    DecoderCacheKeyMap m_decoderCacheKeyMap;
+  // Helper method to remove a cache entry. Ownership is transferred to
+  // deletionList. Use of Vector<> is handy when removing multiple entries.
+  template <class T, class U, class V>
+  void removeFromCacheInternal(
+      const T* cacheEntry,
+      U* cacheMap,
+      V* identifierMap,
+      Vector<std::unique_ptr<CacheEntry>>* deletionList);
 
-    size_t m_heapLimitInBytes;
-    size_t m_heapMemoryUsageInBytes;
+  // Helper method to remove a cache entry. Uses the templated version base on
+  // the type of cache entry.
+  void removeFromCacheInternal(
+      const CacheEntry*,
+      Vector<std::unique_ptr<CacheEntry>>* deletionList);
 
-    // Protect concurrent access to these members:
-    //   m_orderedCacheList
-    //   m_decoderCacheMap and all CacheEntrys stored in it
-    //   m_decoderCacheKeyMap
-    //   m_heapLimitInBytes
-    //   m_heapMemoryUsageInBytes
-    // This mutex also protects calls to underlying skBitmap's
-    // lockPixels()/unlockPixels() as they are not threadsafe.
-    Mutex m_mutex;
+  // Helper method to remove all cache entries associated with a ImageFraneGenerator.
+  // Ownership of cache entries is transferred to deletionList.
+  template <class U, class V>
+  void removeCacheIndexedByGeneratorInternal(
+      U* cacheMap,
+      V* identifierMap,
+      const ImageFrameGenerator*,
+      Vector<std::unique_ptr<CacheEntry>>* deletionList);
+
+  // Helper method to remove cache entry pointers from the LRU list.
+  void removeFromCacheListInternal(
+      const Vector<std::unique_ptr<CacheEntry>>& deletionList);
+
+  // A doubly linked list that maintains usage history of cache entries.
+  // This is used for eviction of old entries.
+  // Head of this list is the least recently used cache entry.
+  // Tail of this list is the most recently used cache entry.
+  DoublyLinkedList<CacheEntry> m_orderedCacheList;
+
+  // A lookup table for all decoder cache objects. Owns all decoder cache objects.
+  typedef HashMap<DecoderCacheKey, std::unique_ptr<DecoderCacheEntry>>
+      DecoderCacheMap;
+  DecoderCacheMap m_decoderCacheMap;
+
+  // A lookup table to map ImageFrameGenerator to all associated
+  // decoder cache keys.
+  typedef HashSet<DecoderCacheKey> DecoderCacheKeySet;
+  typedef HashMap<const ImageFrameGenerator*, DecoderCacheKeySet>
+      DecoderCacheKeyMap;
+  DecoderCacheKeyMap m_decoderCacheKeyMap;
+
+  size_t m_heapLimitInBytes;
+  size_t m_heapMemoryUsageInBytes;
+
+  // Protect concurrent access to these members:
+  //   m_orderedCacheList
+  //   m_decoderCacheMap and all CacheEntrys stored in it
+  //   m_decoderCacheKeyMap
+  //   m_heapLimitInBytes
+  //   m_heapMemoryUsageInBytes
+  // This mutex also protects calls to underlying skBitmap's
+  // lockPixels()/unlockPixels() as they are not threadsafe.
+  Mutex m_mutex;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

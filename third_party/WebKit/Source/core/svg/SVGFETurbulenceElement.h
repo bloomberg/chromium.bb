@@ -32,42 +32,51 @@
 namespace blink {
 
 enum SVGStitchOptions {
-    kSvgStitchtypeUnknown  = 0,
-    kSvgStitchtypeStitch   = 1,
-    kSvgStitchtypeNostitch = 2
+  kSvgStitchtypeUnknown = 0,
+  kSvgStitchtypeStitch = 1,
+  kSvgStitchtypeNostitch = 2
 };
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOptions>();
+template <>
+const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOptions>();
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceType>();
+template <>
+const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceType>();
 
-class SVGFETurbulenceElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFETurbulenceElement);
+class SVGFETurbulenceElement final
+    : public SVGFilterPrimitiveStandardAttributes {
+  DEFINE_WRAPPERTYPEINFO();
 
-    SVGAnimatedNumber* baseFrequencyX() { return m_baseFrequency->firstNumber(); }
-    SVGAnimatedNumber* baseFrequencyY() { return m_baseFrequency->secondNumber(); }
-    SVGAnimatedNumber* seed() { return m_seed.get(); }
-    SVGAnimatedEnumeration<SVGStitchOptions>* stitchTiles() { return m_stitchTiles.get(); }
-    SVGAnimatedEnumeration<TurbulenceType>* type() { return m_type.get(); }
-    SVGAnimatedInteger* numOctaves() { return m_numOctaves.get(); }
+ public:
+  DECLARE_NODE_FACTORY(SVGFETurbulenceElement);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedNumber* baseFrequencyX() { return m_baseFrequency->firstNumber(); }
+  SVGAnimatedNumber* baseFrequencyY() {
+    return m_baseFrequency->secondNumber();
+  }
+  SVGAnimatedNumber* seed() { return m_seed.get(); }
+  SVGAnimatedEnumeration<SVGStitchOptions>* stitchTiles() {
+    return m_stitchTiles.get();
+  }
+  SVGAnimatedEnumeration<TurbulenceType>* type() { return m_type.get(); }
+  SVGAnimatedInteger* numOctaves() { return m_numOctaves.get(); }
 
-private:
-    explicit SVGFETurbulenceElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
-    void svgAttributeChanged(const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+ private:
+  explicit SVGFETurbulenceElement(Document&);
 
-    Member<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
-    Member<SVGAnimatedNumber> m_seed;
-    Member<SVGAnimatedEnumeration<SVGStitchOptions>> m_stitchTiles;
-    Member<SVGAnimatedEnumeration<TurbulenceType>> m_type;
-    Member<SVGAnimatedInteger> m_numOctaves;
+  bool setFilterEffectAttribute(FilterEffect*,
+                                const QualifiedName& attrName) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+
+  Member<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
+  Member<SVGAnimatedNumber> m_seed;
+  Member<SVGAnimatedEnumeration<SVGStitchOptions>> m_stitchTiles;
+  Member<SVGAnimatedEnumeration<TurbulenceType>> m_type;
+  Member<SVGAnimatedInteger> m_numOctaves;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFETurbulenceElement_h
+#endif  // SVGFETurbulenceElement_h

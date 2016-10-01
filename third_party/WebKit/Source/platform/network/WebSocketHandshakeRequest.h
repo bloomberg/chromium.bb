@@ -42,38 +42,52 @@ namespace blink {
 
 class HTTPHeaderMap;
 
-class PLATFORM_EXPORT WebSocketHandshakeRequest final : public RefCounted<WebSocketHandshakeRequest> {
-public:
-    static PassRefPtr<WebSocketHandshakeRequest> create(const KURL& url) { return adoptRef(new WebSocketHandshakeRequest(url)); }
-    static PassRefPtr<WebSocketHandshakeRequest> create() { return adoptRef(new WebSocketHandshakeRequest); }
-    static PassRefPtr<WebSocketHandshakeRequest> create(const WebSocketHandshakeRequest& request) { return adoptRef(new WebSocketHandshakeRequest(request)); }
-    virtual ~WebSocketHandshakeRequest();
+class PLATFORM_EXPORT WebSocketHandshakeRequest final
+    : public RefCounted<WebSocketHandshakeRequest> {
+ public:
+  static PassRefPtr<WebSocketHandshakeRequest> create(const KURL& url) {
+    return adoptRef(new WebSocketHandshakeRequest(url));
+  }
+  static PassRefPtr<WebSocketHandshakeRequest> create() {
+    return adoptRef(new WebSocketHandshakeRequest);
+  }
+  static PassRefPtr<WebSocketHandshakeRequest> create(
+      const WebSocketHandshakeRequest& request) {
+    return adoptRef(new WebSocketHandshakeRequest(request));
+  }
+  virtual ~WebSocketHandshakeRequest();
 
-    void addAndMergeHeader(const AtomicString& name, const AtomicString& value) { addAndMergeHeader(&m_headerFields, name, value); }
+  void addAndMergeHeader(const AtomicString& name, const AtomicString& value) {
+    addAndMergeHeader(&m_headerFields, name, value);
+  }
 
-    // Merges the existing value with |value| in |map| if |map| already has |name|.
-    // Associates |value| with |name| in |map| otherwise.
-    // This function builds data for inspector.
-    static void addAndMergeHeader(HTTPHeaderMap* /* map */, const AtomicString& name, const AtomicString& value);
+  // Merges the existing value with |value| in |map| if |map| already has |name|.
+  // Associates |value| with |name| in |map| otherwise.
+  // This function builds data for inspector.
+  static void addAndMergeHeader(HTTPHeaderMap* /* map */,
+                                const AtomicString& name,
+                                const AtomicString& value);
 
-    void addHeaderField(const AtomicString& name, const AtomicString& value) { m_headerFields.add(name, value); }
+  void addHeaderField(const AtomicString& name, const AtomicString& value) {
+    m_headerFields.add(name, value);
+  }
 
-    KURL url() const { return m_url; }
-    void setURL(const KURL& url) { m_url = url; }
-    const HTTPHeaderMap& headerFields() const { return m_headerFields; }
-    const String& headersText() const { return m_headersText; }
-    void setHeadersText(const String& text) { m_headersText = text; }
+  KURL url() const { return m_url; }
+  void setURL(const KURL& url) { m_url = url; }
+  const HTTPHeaderMap& headerFields() const { return m_headerFields; }
+  const String& headersText() const { return m_headersText; }
+  void setHeadersText(const String& text) { m_headersText = text; }
 
-private:
-    WebSocketHandshakeRequest(const KURL&);
-    WebSocketHandshakeRequest();
-    WebSocketHandshakeRequest(const WebSocketHandshakeRequest&);
+ private:
+  WebSocketHandshakeRequest(const KURL&);
+  WebSocketHandshakeRequest();
+  WebSocketHandshakeRequest(const WebSocketHandshakeRequest&);
 
-    KURL m_url;
-    HTTPHeaderMap m_headerFields;
-    String m_headersText;
+  KURL m_url;
+  HTTPHeaderMap m_headerFields;
+  String m_headersText;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSocketHandshakeRequest_h
+#endif  // WebSocketHandshakeRequest_h

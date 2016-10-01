@@ -16,13 +16,14 @@ class ComputedStyle;
 using SizeList = Vector<FillSize, 1>;
 
 class SizeListPropertyFunctions {
-    STATIC_ONLY(SizeListPropertyFunctions);
-public:
-    static SizeList getInitialSizeList(CSSPropertyID);
-    static SizeList getSizeList(CSSPropertyID, const ComputedStyle&);
-    static void setSizeList(CSSPropertyID, ComputedStyle&, const SizeList&);
+  STATIC_ONLY(SizeListPropertyFunctions);
+
+ public:
+  static SizeList getInitialSizeList(CSSPropertyID);
+  static SizeList getSizeList(CSSPropertyID, const ComputedStyle&);
+  static void setSizeList(CSSPropertyID, ComputedStyle&, const SizeList&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SizeListPropertyFunctions_h
+#endif  // SizeListPropertyFunctions_h

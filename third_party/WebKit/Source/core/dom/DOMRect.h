@@ -12,19 +12,23 @@
 namespace blink {
 
 class CORE_EXPORT DOMRect final : public DOMRectReadOnly {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMRect* create(double x = 0, double y = 0, double width = 0, double height = 0);
+  DEFINE_WRAPPERTYPEINFO();
 
-    void setX(double x) { m_x = x; }
-    void setY(double y) { m_y = y; }
-    void setWidth(double width) { m_width = width; }
-    void setHeight(double height) { m_height = height; }
+ public:
+  static DOMRect* create(double x = 0,
+                         double y = 0,
+                         double width = 0,
+                         double height = 0);
 
-protected:
-    DOMRect(double x, double y, double z, double w);
+  void setX(double x) { m_x = x; }
+  void setY(double y) { m_y = y; }
+  void setWidth(double width) { m_width = width; }
+  void setHeight(double height) { m_height = height; }
+
+ protected:
+  DOMRect(double x, double y, double z, double w);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

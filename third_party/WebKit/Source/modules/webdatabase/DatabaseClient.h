@@ -45,29 +45,36 @@ class InspectorDatabaseAgent;
 class Page;
 
 class MODULES_EXPORT DatabaseClient : public Supplement<Page> {
-    WTF_MAKE_NONCOPYABLE(DatabaseClient);
-public:
-    DatabaseClient();
-    virtual ~DatabaseClient() { }
+  WTF_MAKE_NONCOPYABLE(DatabaseClient);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  DatabaseClient();
+  virtual ~DatabaseClient() {}
 
-    virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned estimatedSize) = 0;
+  DECLARE_VIRTUAL_TRACE();
 
-    void didOpenDatabase(Database*, const String& domain, const String& name, const String& version);
+  virtual bool allowDatabase(ExecutionContext*,
+                             const String& name,
+                             const String& displayName,
+                             unsigned estimatedSize) = 0;
 
-    static DatabaseClient* fromPage(Page*);
-    static DatabaseClient* from(ExecutionContext*);
-    static const char* supplementName();
+  void didOpenDatabase(Database*,
+                       const String& domain,
+                       const String& name,
+                       const String& version);
 
-    void setInspectorAgent(InspectorDatabaseAgent*);
+  static DatabaseClient* fromPage(Page*);
+  static DatabaseClient* from(ExecutionContext*);
+  static const char* supplementName();
 
-private:
-    Member<InspectorDatabaseAgent> m_inspectorAgent;
+  void setInspectorAgent(InspectorDatabaseAgent*);
+
+ private:
+  Member<InspectorDatabaseAgent> m_inspectorAgent;
 };
 
 MODULES_EXPORT void provideDatabaseClientTo(Page&, DatabaseClient*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseClient_h
+#endif  // DatabaseClient_h

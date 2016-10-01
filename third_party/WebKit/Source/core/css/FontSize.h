@@ -29,37 +29,48 @@ namespace blink {
 
 class Document;
 
-enum ESmartMinimumForFontSize { DoNotUseSmartMinimumForFontSize, UseSmartMinimumForFontSize };
-
-class FontSize {
-    STATIC_ONLY(FontSize);
-public:
-    static float getComputedSizeFromSpecifiedSize(const Document*, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize = UseSmartMinimumForFontSize);
-
-    // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this function returns
-    // values from '1' to '8'.
-    static unsigned keywordSize(CSSValueID valueID)
-    {
-        ASSERT(isValidValueID(valueID));
-        return valueID - CSSValueXxSmall + 1;
-    }
-
-    static bool isValidValueID(CSSValueID valueID)
-    {
-        return valueID >= CSSValueXxSmall && valueID <= CSSValueWebkitXxxLarge;
-    }
-
-    static CSSValueID initialValueID() { return CSSValueMedium; }
-    static unsigned initialKeywordSize() { return keywordSize(initialValueID()); }
-
-    // Given a keyword size in the range (1 to 8), this function will return
-    // the correct font size scaled relative to the user's default (4).
-    static float fontSizeForKeyword(const Document*, unsigned keyword, bool isMonospace);
-
-    // Given a font size in pixel, this function will return legacy font size between 1 and 7.
-    static int legacyFontSize(const Document*, int pixelFontSize, bool isMonospace);
+enum ESmartMinimumForFontSize {
+  DoNotUseSmartMinimumForFontSize,
+  UseSmartMinimumForFontSize
 };
 
-} // namespace blink
+class FontSize {
+  STATIC_ONLY(FontSize);
 
-#endif // FontSize_h
+ public:
+  static float getComputedSizeFromSpecifiedSize(
+      const Document*,
+      float zoomFactor,
+      bool isAbsoluteSize,
+      float specifiedSize,
+      ESmartMinimumForFontSize = UseSmartMinimumForFontSize);
+
+  // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this function returns
+  // values from '1' to '8'.
+  static unsigned keywordSize(CSSValueID valueID) {
+    ASSERT(isValidValueID(valueID));
+    return valueID - CSSValueXxSmall + 1;
+  }
+
+  static bool isValidValueID(CSSValueID valueID) {
+    return valueID >= CSSValueXxSmall && valueID <= CSSValueWebkitXxxLarge;
+  }
+
+  static CSSValueID initialValueID() { return CSSValueMedium; }
+  static unsigned initialKeywordSize() { return keywordSize(initialValueID()); }
+
+  // Given a keyword size in the range (1 to 8), this function will return
+  // the correct font size scaled relative to the user's default (4).
+  static float fontSizeForKeyword(const Document*,
+                                  unsigned keyword,
+                                  bool isMonospace);
+
+  // Given a font size in pixel, this function will return legacy font size between 1 and 7.
+  static int legacyFontSize(const Document*,
+                            int pixelFontSize,
+                            bool isMonospace);
+};
+
+}  // namespace blink
+
+#endif  // FontSize_h

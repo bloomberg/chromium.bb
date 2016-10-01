@@ -41,21 +41,24 @@ namespace blink {
 class Prerender;
 class WebPrerendererClient;
 
-class PrerendererClientImpl final : public GarbageCollected<PrerendererClientImpl>, public PrerendererClient {
-    USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
-    WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
-public:
-    explicit PrerendererClientImpl(WebPrerendererClient*);
+class PrerendererClientImpl final
+    : public GarbageCollected<PrerendererClientImpl>,
+      public PrerendererClient {
+  USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
+  WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
 
-    void willAddPrerender(Prerender*) override;
-    bool isPrefetchOnly() override;
+ public:
+  explicit PrerendererClientImpl(WebPrerendererClient*);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { PrerendererClient::trace(visitor); }
+  void willAddPrerender(Prerender*) override;
+  bool isPrefetchOnly() override;
 
-private:
-    WebPrerendererClient* m_client;
+  DEFINE_INLINE_VIRTUAL_TRACE() { PrerendererClient::trace(visitor); }
+
+ private:
+  WebPrerendererClient* m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PrerendererClientImpl_h
+#endif  // PrerendererClientImpl_h

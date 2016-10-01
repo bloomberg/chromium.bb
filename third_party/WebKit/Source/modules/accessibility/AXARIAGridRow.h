@@ -36,21 +36,21 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXARIAGridRow final : public AXTableRow {
-    WTF_MAKE_NONCOPYABLE(AXARIAGridRow);
+  WTF_MAKE_NONCOPYABLE(AXARIAGridRow);
 
-private:
-    AXARIAGridRow(LayoutObject*, AXObjectCacheImpl&);
+ private:
+  AXARIAGridRow(LayoutObject*, AXObjectCacheImpl&);
 
-public:
-    static AXARIAGridRow* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXARIAGridRow() override;
+ public:
+  static AXARIAGridRow* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXARIAGridRow() override;
 
-    void headerObjectsForRow(AXObjectVector&) override;
+  void headerObjectsForRow(AXObjectVector&) override;
 
-private:
-    bool isARIATreeGridRow() const override;
+ private:
+  bool isARIATreeGridRow() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXARIAGridRow_h
+#endif  // AXARIAGridRow_h

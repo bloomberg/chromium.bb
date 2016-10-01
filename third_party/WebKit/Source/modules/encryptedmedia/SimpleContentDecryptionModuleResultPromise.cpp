@@ -6,18 +6,15 @@
 
 namespace blink {
 
-SimpleContentDecryptionModuleResultPromise::SimpleContentDecryptionModuleResultPromise(ScriptState* scriptState)
-    : ContentDecryptionModuleResultPromise(scriptState)
-{
+SimpleContentDecryptionModuleResultPromise::
+    SimpleContentDecryptionModuleResultPromise(ScriptState* scriptState)
+    : ContentDecryptionModuleResultPromise(scriptState) {}
+
+SimpleContentDecryptionModuleResultPromise::
+    ~SimpleContentDecryptionModuleResultPromise() {}
+
+void SimpleContentDecryptionModuleResultPromise::complete() {
+  resolve();
 }
 
-SimpleContentDecryptionModuleResultPromise::~SimpleContentDecryptionModuleResultPromise()
-{
-}
-
-void SimpleContentDecryptionModuleResultPromise::complete()
-{
-    resolve();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -14,14 +14,19 @@ namespace blink {
 class ComputedStyle;
 
 class LengthListPropertyFunctions {
-    STATIC_ONLY(LengthListPropertyFunctions);
-public:
-    static ValueRange getValueRange(CSSPropertyID);
-    static bool getInitialLengthList(CSSPropertyID, Vector<Length>& result);
-    static bool getLengthList(CSSPropertyID, const ComputedStyle&, Vector<Length>& result);
-    static void setLengthList(CSSPropertyID, ComputedStyle&, Vector<Length>&& lengthList);
+  STATIC_ONLY(LengthListPropertyFunctions);
+
+ public:
+  static ValueRange getValueRange(CSSPropertyID);
+  static bool getInitialLengthList(CSSPropertyID, Vector<Length>& result);
+  static bool getLengthList(CSSPropertyID,
+                            const ComputedStyle&,
+                            Vector<Length>& result);
+  static void setLengthList(CSSPropertyID,
+                            ComputedStyle&,
+                            Vector<Length>&& lengthList);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LengthListPropertyFunctions_h
+#endif  // LengthListPropertyFunctions_h

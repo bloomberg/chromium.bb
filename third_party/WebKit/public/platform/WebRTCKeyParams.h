@@ -41,8 +41,8 @@ enum WebRTCKeyType { WebRTCKeyTypeRSA, WebRTCKeyTypeECDSA, WebRTCKeyTypeNull };
 
 // Corresponds to rtc::RSAParams in WebRTC.
 struct WebRTCRSAParams {
-    unsigned modLength;
-    unsigned pubExp;
+  unsigned modLength;
+  unsigned pubExp;
 };
 
 // Corresponds to rtc::ECCurve in WebRTC.
@@ -50,45 +50,41 @@ enum WebRTCECCurve { WebRTCECCurveNistP256 };
 
 // Corresponds to rtc::KeyParams in WebRTC.
 class WebRTCKeyParams {
-public:
-    static WebRTCKeyParams createRSA(unsigned modLength, unsigned pubExp)
-    {
-        WebRTCKeyParams keyParams(WebRTCKeyTypeRSA);
-        keyParams.m_params.rsa.modLength = modLength;
-        keyParams.m_params.rsa.pubExp = pubExp;
-        return keyParams;
-    }
-    static WebRTCKeyParams createECDSA(WebRTCECCurve curve)
-    {
-        WebRTCKeyParams keyParams(WebRTCKeyTypeECDSA);
-        keyParams.m_params.ecCurve = curve;
-        return keyParams;
-    }
+ public:
+  static WebRTCKeyParams createRSA(unsigned modLength, unsigned pubExp) {
+    WebRTCKeyParams keyParams(WebRTCKeyTypeRSA);
+    keyParams.m_params.rsa.modLength = modLength;
+    keyParams.m_params.rsa.pubExp = pubExp;
+    return keyParams;
+  }
+  static WebRTCKeyParams createECDSA(WebRTCECCurve curve) {
+    WebRTCKeyParams keyParams(WebRTCKeyTypeECDSA);
+    keyParams.m_params.ecCurve = curve;
+    return keyParams;
+  }
 
-    WebRTCKeyParams() : WebRTCKeyParams(WebRTCKeyTypeNull) {}
+  WebRTCKeyParams() : WebRTCKeyParams(WebRTCKeyTypeNull) {}
 
-    WebRTCKeyType keyType() const { return m_keyType; }
-    WebRTCRSAParams rsaParams() const
-    {
-        DCHECK_EQ(m_keyType, WebRTCKeyTypeRSA);
-        return m_params.rsa;
-    }
-    WebRTCECCurve ecCurve() const
-    {
-        DCHECK_EQ(m_keyType, WebRTCKeyTypeECDSA);
-        return m_params.ecCurve;
-    }
+  WebRTCKeyType keyType() const { return m_keyType; }
+  WebRTCRSAParams rsaParams() const {
+    DCHECK_EQ(m_keyType, WebRTCKeyTypeRSA);
+    return m_params.rsa;
+  }
+  WebRTCECCurve ecCurve() const {
+    DCHECK_EQ(m_keyType, WebRTCKeyTypeECDSA);
+    return m_params.ecCurve;
+  }
 
-private:
-    WebRTCKeyParams(WebRTCKeyType keyType) : m_keyType(keyType) {}
+ private:
+  WebRTCKeyParams(WebRTCKeyType keyType) : m_keyType(keyType) {}
 
-    WebRTCKeyType m_keyType;
-    union {
-        WebRTCRSAParams rsa;
-        WebRTCECCurve ecCurve;
-    } m_params;
+  WebRTCKeyType m_keyType;
+  union {
+    WebRTCRSAParams rsa;
+    WebRTCECCurve ecCurve;
+  } m_params;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRTCKeyParams_h
+#endif  // WebRTCKeyParams_h

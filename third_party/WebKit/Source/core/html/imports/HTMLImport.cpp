@@ -36,108 +36,99 @@
 
 namespace blink {
 
-HTMLImport* HTMLImport::root()
-{
-    HTMLImport* i = this;
-    while (i->parent())
-        i = i->parent();
-    return i;
+HTMLImport* HTMLImport::root() {
+  HTMLImport* i = this;
+  while (i->parent())
+    i = i->parent();
+  return i;
 }
 
-bool HTMLImport::precedes(HTMLImport* import)
-{
-    for (HTMLImport* i = this; i; i = traverseNext(i)) {
-        if (i == import)
-            return true;
-    }
+bool HTMLImport::precedes(HTMLImport* import) {
+  for (HTMLImport* i = this; i; i = traverseNext(i)) {
+    if (i == import)
+      return true;
+  }
 
-    return false;
+  return false;
 }
 
-bool HTMLImport::formsCycle() const
-{
-    for (const HTMLImport* i = this->parent(); i; i = i->parent()) {
-        if (i->document() == this->document())
-            return true;
-    }
+bool HTMLImport::formsCycle() const {
+  for (const HTMLImport* i = this->parent(); i; i = i->parent()) {
+    if (i->document() == this->document())
+      return true;
+  }
 
-    return false;
-
+  return false;
 }
 
-void HTMLImport::appendImport(HTMLImport* child)
-{
-    appendChild(child);
+void HTMLImport::appendImport(HTMLImport* child) {
+  appendChild(child);
 
-    // This prevents HTML parser from going beyond the
-    // blockage line before the precise state is computed by recalcState().
-    if (child->isSync())
-        m_state = HTMLImportState::blockedState();
+  // This prevents HTML parser from going beyond the
+  // blockage line before the precise state is computed by recalcState().
+  if (child->isSync())
+    m_state = HTMLImportState::blockedState();
 
-    stateWillChange();
+  stateWillChange();
 }
 
-void HTMLImport::stateDidChange()
-{
-    if (!state().shouldBlockScriptExecution()) {
-        if (Document* document = this->document())
-            document->didLoadAllImports();
-    }
+void HTMLImport::stateDidChange() {
+  if (!state().shouldBlockScriptExecution()) {
+    if (Document* document = this->document())
+      document->didLoadAllImports();
+  }
 }
 
-void HTMLImport::recalcTreeState(HTMLImport* root)
-{
-    HeapHashMap<Member<HTMLImport>, HTMLImportState> snapshot;
-    HeapVector<Member<HTMLImport>> updated;
+void HTMLImport::recalcTreeState(HTMLImport* root) {
+  HeapHashMap<Member<HTMLImport>, HTMLImportState> snapshot;
+  HeapVector<Member<HTMLImport>> updated;
 
-    for (HTMLImport* i = root; i; i = traverseNext(i)) {
-        snapshot.add(i, i->state());
-        i->m_state = HTMLImportState::invalidState();
-    }
+  for (HTMLImport* i = root; i; i = traverseNext(i)) {
+    snapshot.add(i, i->state());
+    i->m_state = HTMLImportState::invalidState();
+  }
 
-    // The post-visit DFS order matters here because
-    // HTMLImportStateResolver in recalcState() Depends on
-    // |m_state| of its children and precedents of ancestors.
-    // Accidental cycle dependency of state computation is prevented
-    // by invalidateCachedState() and isStateCacheValid() check.
-    for (HTMLImport* i = traverseFirstPostOrder(root); i; i = traverseNextPostOrder(i)) {
-        DCHECK(!i->m_state.isValid());
-        i->m_state = HTMLImportStateResolver(i).resolve();
+  // The post-visit DFS order matters here because
+  // HTMLImportStateResolver in recalcState() Depends on
+  // |m_state| of its children and precedents of ancestors.
+  // Accidental cycle dependency of state computation is prevented
+  // by invalidateCachedState() and isStateCacheValid() check.
+  for (HTMLImport* i = traverseFirstPostOrder(root); i;
+       i = traverseNextPostOrder(i)) {
+    DCHECK(!i->m_state.isValid());
+    i->m_state = HTMLImportStateResolver(i).resolve();
 
-        HTMLImportState newState = i->state();
-        HTMLImportState oldState = snapshot.get(i);
-        // Once the state reaches Ready, it shouldn't go back.
-        DCHECK(!oldState.isReady() || oldState <= newState);
-        if (newState != oldState)
-            updated.append(i);
-    }
+    HTMLImportState newState = i->state();
+    HTMLImportState oldState = snapshot.get(i);
+    // Once the state reaches Ready, it shouldn't go back.
+    DCHECK(!oldState.isReady() || oldState <= newState);
+    if (newState != oldState)
+      updated.append(i);
+  }
 
-    for (size_t i = 0; i < updated.size(); ++i)
-        updated[i]->stateDidChange();
+  for (size_t i = 0; i < updated.size(); ++i)
+    updated[i]->stateDidChange();
 }
 
 #if !defined(NDEBUG)
-void HTMLImport::show()
-{
-    root()->showTree(this, 0);
+void HTMLImport::show() {
+  root()->showTree(this, 0);
 }
 
-void HTMLImport::showTree(HTMLImport* highlight, unsigned depth)
-{
-    for (unsigned i = 0; i < depth*4; ++i)
-        fprintf(stderr, " ");
+void HTMLImport::showTree(HTMLImport* highlight, unsigned depth) {
+  for (unsigned i = 0; i < depth * 4; ++i)
+    fprintf(stderr, " ");
 
-    fprintf(stderr, "%s", this == highlight ? "*" : " ");
-    showThis();
-    fprintf(stderr, "\n");
-    for (HTMLImport* child = firstChild(); child; child = child->next())
-        child->showTree(highlight, depth + 1);
+  fprintf(stderr, "%s", this == highlight ? "*" : " ");
+  showThis();
+  fprintf(stderr, "\n");
+  for (HTMLImport* child = firstChild(); child; child = child->next())
+    child->showTree(highlight, depth + 1);
 }
 
-void HTMLImport::showThis()
-{
-    fprintf(stderr, "%p state=%d", this, m_state.peekValueForDebug());
+void HTMLImport::showThis() {
+  fprintf(stderr, "%p state=%d", this, m_state.peekValueForDebug());
 }
 #endif
 
-} // namespace blink
+}  // namespace blink

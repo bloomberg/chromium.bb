@@ -45,31 +45,37 @@ class LocalFrame;
 class ExecutionContext;
 class WorkerGlobalScope;
 
-class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction> {
-    WTF_MAKE_NONCOPYABLE(ScheduledAction);
-public:
-    static ScheduledAction* create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
-    static ScheduledAction* create(ScriptState*, const String& handler);
+class ScheduledAction final
+    : public GarbageCollectedFinalized<ScheduledAction> {
+  WTF_MAKE_NONCOPYABLE(ScheduledAction);
 
-    ~ScheduledAction();
-    DECLARE_TRACE();
+ public:
+  static ScheduledAction* create(ScriptState*,
+                                 const ScriptValue& handler,
+                                 const Vector<ScriptValue>& arguments);
+  static ScheduledAction* create(ScriptState*, const String& handler);
 
-    void execute(ExecutionContext*);
+  ~ScheduledAction();
+  DECLARE_TRACE();
 
-private:
-    ScheduledAction(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
-    ScheduledAction(ScriptState*, const String& handler);
+  void execute(ExecutionContext*);
 
-    void execute(LocalFrame*);
-    void execute(WorkerGlobalScope*);
-    void createLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles);
+ private:
+  ScheduledAction(ScriptState*,
+                  const ScriptValue& handler,
+                  const Vector<ScriptValue>& arguments);
+  ScheduledAction(ScriptState*, const String& handler);
 
-    ScriptStateProtectingContext m_scriptState;
-    ScopedPersistent<v8::Function> m_function;
-    V8PersistentValueVector<v8::Value> m_info;
-    ScriptSourceCode m_code;
+  void execute(LocalFrame*);
+  void execute(WorkerGlobalScope*);
+  void createLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles);
+
+  ScriptStateProtectingContext m_scriptState;
+  ScopedPersistent<v8::Function> m_function;
+  V8PersistentValueVector<v8::Value> m_info;
+  ScriptSourceCode m_code;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScheduledAction
+#endif  // ScheduledAction

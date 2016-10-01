@@ -28,28 +28,38 @@ namespace blink {
 class SVGGraphicsElement;
 
 class LayoutSVGTransformableContainer final : public LayoutSVGContainer {
-public:
-    explicit LayoutSVGTransformableContainer(SVGGraphicsElement*);
+ public:
+  explicit LayoutSVGTransformableContainer(SVGGraphicsElement*);
 
-    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGTransformableContainer || LayoutSVGContainer::isOfType(type); }
-    const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
-    const FloatSize& additionalTranslation() const { return m_additionalTranslation; }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGTransformableContainer ||
+           LayoutSVGContainer::isOfType(type);
+  }
+  const AffineTransform& localToSVGParentTransform() const override {
+    return m_localTransform;
+  }
+  const FloatSize& additionalTranslation() const {
+    return m_additionalTranslation;
+  }
 
-    void setNeedsTransformUpdate() override;
+  void setNeedsTransformUpdate() override;
 
-private:
-    SVGTransformChange calculateLocalTransform() override;
-    AffineTransform localSVGTransform() const override { return m_localTransform; }
+ private:
+  SVGTransformChange calculateLocalTransform() override;
+  AffineTransform localSVGTransform() const override {
+    return m_localTransform;
+  }
 
-    bool m_needsTransformUpdate : 1;
-    AffineTransform m_localTransform;
-    FloatSize m_additionalTranslation;
+  bool m_needsTransformUpdate : 1;
+  AffineTransform m_localTransform;
+  FloatSize m_additionalTranslation;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGTransformableContainer, isSVGTransformableContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGTransformableContainer,
+                                isSVGTransformableContainer());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSVGTransformableContainer_h
+#endif  // LayoutSVGTransformableContainer_h

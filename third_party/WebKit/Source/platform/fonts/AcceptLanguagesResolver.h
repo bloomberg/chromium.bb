@@ -15,13 +15,13 @@ namespace blink {
 class LayoutLocale;
 
 class PLATFORM_EXPORT AcceptLanguagesResolver {
-public:
-    static void acceptLanguagesChanged(const String&);
+ public:
+  static void acceptLanguagesChanged(const String&);
 
-    static const LayoutLocale* localeForHan();
-    static const LayoutLocale* localeForHanFromAcceptLanguages(const String&);
+  static const LayoutLocale* localeForHan();
+  static const LayoutLocale* localeForHanFromAcceptLanguages(const String&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AcceptLanguagesResolver_h
+#endif  // AcceptLanguagesResolver_h

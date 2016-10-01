@@ -14,31 +14,42 @@
 namespace blink {
 
 class StyleNonInheritedVariables {
-public:
-    static std::unique_ptr<StyleNonInheritedVariables> create() { return wrapUnique(new StyleNonInheritedVariables); }
+ public:
+  static std::unique_ptr<StyleNonInheritedVariables> create() {
+    return wrapUnique(new StyleNonInheritedVariables);
+  }
 
-    std::unique_ptr<StyleNonInheritedVariables> copy() { return wrapUnique(new StyleNonInheritedVariables(*this)); }
+  std::unique_ptr<StyleNonInheritedVariables> copy() {
+    return wrapUnique(new StyleNonInheritedVariables(*this));
+  }
 
-    bool operator==(const StyleNonInheritedVariables& other) const;
-    bool operator!=(const StyleNonInheritedVariables& other) const { return !(*this == other); }
+  bool operator==(const StyleNonInheritedVariables& other) const;
+  bool operator!=(const StyleNonInheritedVariables& other) const {
+    return !(*this == other);
+  }
 
-    void setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value) { m_data.set(name, value); }
-    CSSVariableData* getVariable(const AtomicString& name) const;
-    void removeVariable(const AtomicString&);
+  void setVariable(const AtomicString& name,
+                   PassRefPtr<CSSVariableData> value) {
+    m_data.set(name, value);
+  }
+  CSSVariableData* getVariable(const AtomicString& name) const;
+  void removeVariable(const AtomicString&);
 
-    void setRegisteredVariable(const AtomicString&, const CSSValue*);
-    CSSValue* registeredVariable(const AtomicString& name) const { return m_registeredData.get(name); }
+  void setRegisteredVariable(const AtomicString&, const CSSValue*);
+  CSSValue* registeredVariable(const AtomicString& name) const {
+    return m_registeredData.get(name);
+  }
 
-private:
-    StyleNonInheritedVariables() = default;
-    StyleNonInheritedVariables(StyleNonInheritedVariables&);
+ private:
+  StyleNonInheritedVariables() = default;
+  StyleNonInheritedVariables(StyleNonInheritedVariables&);
 
-    friend class CSSVariableResolver;
+  friend class CSSVariableResolver;
 
-    HashMap<AtomicString, RefPtr<CSSVariableData>> m_data;
-    HashMap<AtomicString, Persistent<CSSValue>> m_registeredData;
+  HashMap<AtomicString, RefPtr<CSSVariableData>> m_data;
+  HashMap<AtomicString, Persistent<CSSValue>> m_registeredData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleNonInheritedVariables_h
+#endif  // StyleNonInheritedVariables_h

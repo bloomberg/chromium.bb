@@ -38,28 +38,35 @@ class BaseAudioContext;
 class ChannelMergerOptions;
 
 class ChannelMergerHandler final : public AudioHandler {
-public:
-    static PassRefPtr<ChannelMergerHandler> create(AudioNode&, float sampleRate, unsigned numberOfInputs);
+ public:
+  static PassRefPtr<ChannelMergerHandler> create(AudioNode&,
+                                                 float sampleRate,
+                                                 unsigned numberOfInputs);
 
-    void process(size_t framesToProcess) override;
-    void setChannelCount(unsigned long, ExceptionState&) final;
-    void setChannelCountMode(const String&, ExceptionState&) final;
+  void process(size_t framesToProcess) override;
+  void setChannelCount(unsigned long, ExceptionState&) final;
+  void setChannelCountMode(const String&, ExceptionState&) final;
 
-private:
-    ChannelMergerHandler(AudioNode&, float sampleRate, unsigned numberOfInputs);
+ private:
+  ChannelMergerHandler(AudioNode&, float sampleRate, unsigned numberOfInputs);
 };
 
 class ChannelMergerNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ChannelMergerNode* create(BaseAudioContext&, ExceptionState&);
-    static ChannelMergerNode* create(BaseAudioContext&, unsigned numberOfInputs, ExceptionState&);
-    static ChannelMergerNode* create(BaseAudioContext*, const ChannelMergerOptions&, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    ChannelMergerNode(BaseAudioContext&, unsigned numberOfInputs);
+ public:
+  static ChannelMergerNode* create(BaseAudioContext&, ExceptionState&);
+  static ChannelMergerNode* create(BaseAudioContext&,
+                                   unsigned numberOfInputs,
+                                   ExceptionState&);
+  static ChannelMergerNode* create(BaseAudioContext*,
+                                   const ChannelMergerOptions&,
+                                   ExceptionState&);
+
+ private:
+  ChannelMergerNode(BaseAudioContext&, unsigned numberOfInputs);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ChannelMergerNode_h
+#endif  // ChannelMergerNode_h

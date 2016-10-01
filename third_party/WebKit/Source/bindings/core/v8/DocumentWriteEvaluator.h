@@ -21,48 +21,51 @@ namespace blink {
 // by document.write(). It takes a script string and outputs a vector of start
 // tag tokens.
 class CORE_EXPORT DocumentWriteEvaluator {
-    WTF_MAKE_NONCOPYABLE(DocumentWriteEvaluator);
-    USING_FAST_MALLOC(DocumentWriteEvaluator);
+  WTF_MAKE_NONCOPYABLE(DocumentWriteEvaluator);
+  USING_FAST_MALLOC(DocumentWriteEvaluator);
 
-public:
-    // For unit testing.
-    DocumentWriteEvaluator(const String& pathName, const String& hostName, const String& protocol, const String& userAgent);
+ public:
+  // For unit testing.
+  DocumentWriteEvaluator(const String& pathName,
+                         const String& hostName,
+                         const String& protocol,
+                         const String& userAgent);
 
-    static std::unique_ptr<DocumentWriteEvaluator> create(const Document& document)
-    {
-        return wrapUnique(new DocumentWriteEvaluator(document));
-    }
-    virtual ~DocumentWriteEvaluator();
+  static std::unique_ptr<DocumentWriteEvaluator> create(
+      const Document& document) {
+    return wrapUnique(new DocumentWriteEvaluator(document));
+  }
+  virtual ~DocumentWriteEvaluator();
 
-    // Initializes the V8 context for this document. Returns whether
-    // initialization was needed.
-    bool ensureEvaluationContext();
-    String evaluateAndEmitWrittenSource(const String& scriptSource);
-    bool shouldEvaluate(const String& scriptSource);
+  // Initializes the V8 context for this document. Returns whether
+  // initialization was needed.
+  bool ensureEvaluationContext();
+  String evaluateAndEmitWrittenSource(const String& scriptSource);
+  bool shouldEvaluate(const String& scriptSource);
 
-    void recordDocumentWrite(const String& documentWrittenString);
+  void recordDocumentWrite(const String& documentWrittenString);
 
-private:
-    explicit DocumentWriteEvaluator(const Document&);
-    // Returns true if the evaluation succeeded with no errors.
-    bool evaluate(const String& scriptSource);
+ private:
+  explicit DocumentWriteEvaluator(const Document&);
+  // Returns true if the evaluation succeeded with no errors.
+  bool evaluate(const String& scriptSource);
 
-    // All the strings that are document.written in the script tag that is being
-    // scanned.
-    StringBuilder m_documentWrittenStrings;
+  // All the strings that are document.written in the script tag that is being
+  // scanned.
+  StringBuilder m_documentWrittenStrings;
 
-    ScopedPersistent<v8::Context> m_persistentContext;
-    ScopedPersistent<v8::Object> m_window;
-    ScopedPersistent<v8::Object> m_document;
-    ScopedPersistent<v8::Object> m_location;
-    ScopedPersistent<v8::Object> m_navigator;
+  ScopedPersistent<v8::Context> m_persistentContext;
+  ScopedPersistent<v8::Object> m_window;
+  ScopedPersistent<v8::Object> m_document;
+  ScopedPersistent<v8::Object> m_location;
+  ScopedPersistent<v8::Object> m_navigator;
 
-    String m_pathName;
-    String m_hostName;
-    String m_protocol;
-    String m_userAgent;
+  String m_pathName;
+  String m_hostName;
+  String m_protocol;
+  String m_userAgent;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentWriteEvaluator_h
+#endif  // DocumentWriteEvaluator_h

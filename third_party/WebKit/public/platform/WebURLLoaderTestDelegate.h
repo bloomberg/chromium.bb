@@ -19,16 +19,27 @@ struct WebURLError;
 // implementations of all methods just call the original method on the
 // WebURLLoaderClient.
 class BLINK_PLATFORM_EXPORT WebURLLoaderTestDelegate {
-public:
-    WebURLLoaderTestDelegate();
-    virtual ~WebURLLoaderTestDelegate();
+ public:
+  WebURLLoaderTestDelegate();
+  virtual ~WebURLLoaderTestDelegate();
 
-    virtual void didReceiveResponse(WebURLLoaderClient* originalClient, WebURLLoader*, const WebURLResponse&);
-    virtual void didReceiveData(WebURLLoaderClient* originalClient, WebURLLoader*, const char* data, int dataLength, int encodedDataLength);
-    virtual void didFail(WebURLLoaderClient* originalClient, WebURLLoader*, const WebURLError&);
-    virtual void didFinishLoading(WebURLLoaderClient* originalClient, WebURLLoader*, double finishTime, int64_t totalEncodedDataLength);
+  virtual void didReceiveResponse(WebURLLoaderClient* originalClient,
+                                  WebURLLoader*,
+                                  const WebURLResponse&);
+  virtual void didReceiveData(WebURLLoaderClient* originalClient,
+                              WebURLLoader*,
+                              const char* data,
+                              int dataLength,
+                              int encodedDataLength);
+  virtual void didFail(WebURLLoaderClient* originalClient,
+                       WebURLLoader*,
+                       const WebURLError&);
+  virtual void didFinishLoading(WebURLLoaderClient* originalClient,
+                                WebURLLoader*,
+                                double finishTime,
+                                int64_t totalEncodedDataLength);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

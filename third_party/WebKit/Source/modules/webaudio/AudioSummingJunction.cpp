@@ -29,43 +29,36 @@
 namespace blink {
 
 AudioSummingJunction::AudioSummingJunction(DeferredTaskHandler& handler)
-    : m_deferredTaskHandler(handler)
-    , m_renderingStateNeedUpdating(false)
-{
+    : m_deferredTaskHandler(handler), m_renderingStateNeedUpdating(false) {}
+
+AudioSummingJunction::~AudioSummingJunction() {
+  deferredTaskHandler().removeMarkedSummingJunction(this);
 }
 
-AudioSummingJunction::~AudioSummingJunction()
-{
-    deferredTaskHandler().removeMarkedSummingJunction(this);
+void AudioSummingJunction::changedOutputs() {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  if (!m_renderingStateNeedUpdating) {
+    deferredTaskHandler().markSummingJunctionDirty(this);
+    m_renderingStateNeedUpdating = true;
+  }
 }
 
-void AudioSummingJunction::changedOutputs()
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    if (!m_renderingStateNeedUpdating) {
-        deferredTaskHandler().markSummingJunctionDirty(this);
-        m_renderingStateNeedUpdating = true;
+void AudioSummingJunction::updateRenderingState() {
+  DCHECK(deferredTaskHandler().isAudioThread());
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  if (m_renderingStateNeedUpdating) {
+    // Copy from m_outputs to m_renderingOutputs.
+    m_renderingOutputs.resize(m_outputs.size());
+    unsigned j = 0;
+    for (AudioNodeOutput* output : m_outputs) {
+      m_renderingOutputs[j++] = output;
+      output->updateRenderingState();
     }
+
+    didUpdate();
+
+    m_renderingStateNeedUpdating = false;
+  }
 }
 
-void AudioSummingJunction::updateRenderingState()
-{
-    DCHECK(deferredTaskHandler().isAudioThread());
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    if (m_renderingStateNeedUpdating) {
-        // Copy from m_outputs to m_renderingOutputs.
-        m_renderingOutputs.resize(m_outputs.size());
-        unsigned j = 0;
-        for (AudioNodeOutput* output : m_outputs) {
-            m_renderingOutputs[j++] = output;
-            output->updateRenderingState();
-        }
-
-        didUpdate();
-
-        m_renderingStateNeedUpdating = false;
-    }
-}
-
-} // namespace blink
-
+}  // namespace blink

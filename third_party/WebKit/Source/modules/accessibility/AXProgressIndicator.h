@@ -30,27 +30,26 @@ class HTMLProgressElement;
 class LayoutProgress;
 
 class AXProgressIndicator final : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AXProgressIndicator);
+  WTF_MAKE_NONCOPYABLE(AXProgressIndicator);
 
-public:
-    static AXProgressIndicator* create(LayoutProgress*, AXObjectCacheImpl&);
+ public:
+  static AXProgressIndicator* create(LayoutProgress*, AXObjectCacheImpl&);
 
-private:
-    AccessibilityRole determineAccessibilityRole() final;
+ private:
+  AccessibilityRole determineAccessibilityRole() final;
 
-    bool isProgressIndicator() const override { return true; }
+  bool isProgressIndicator() const override { return true; }
 
-    float valueForRange() const override;
-    float maxValueForRange() const override;
-    float minValueForRange() const override;
+  float valueForRange() const override;
+  float maxValueForRange() const override;
+  float minValueForRange() const override;
 
-    AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl&);
+  AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl&);
 
-    HTMLProgressElement* element() const;
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  HTMLProgressElement* element() const;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // AXProgressIndicator_h
+#endif  // AXProgressIndicator_h

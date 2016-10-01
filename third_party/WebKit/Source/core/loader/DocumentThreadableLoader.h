@@ -53,192 +53,213 @@ class ResourceRequest;
 class SecurityOrigin;
 class ThreadableLoaderClient;
 
-class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, private RawResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
-    public:
-        static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        static DocumentThreadableLoader* create(Document&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        ~DocumentThreadableLoader() override;
+class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
+                                                   private RawResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
 
-        void start(const ResourceRequest&) override;
+ public:
+  static void loadResourceSynchronously(Document&,
+                                        const ResourceRequest&,
+                                        ThreadableLoaderClient&,
+                                        const ThreadableLoaderOptions&,
+                                        const ResourceLoaderOptions&);
+  static DocumentThreadableLoader* create(Document&,
+                                          ThreadableLoaderClient*,
+                                          const ThreadableLoaderOptions&,
+                                          const ResourceLoaderOptions&);
+  ~DocumentThreadableLoader() override;
 
-        void overrideTimeout(unsigned long timeout) override;
+  void start(const ResourceRequest&) override;
 
-        // |this| may be dead after calling this method in async mode.
-        void cancel() override;
-        void setDefersLoading(bool);
+  void overrideTimeout(unsigned long timeout) override;
 
-        DECLARE_TRACE();
+  // |this| may be dead after calling this method in async mode.
+  void cancel() override;
+  void setDefersLoading(bool);
 
-    private:
-        enum BlockingBehavior {
-            LoadSynchronously,
-            LoadAsynchronously
-        };
+  DECLARE_TRACE();
 
-        DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+ private:
+  enum BlockingBehavior { LoadSynchronously, LoadAsynchronously };
 
-        void clear();
+  DocumentThreadableLoader(Document&,
+                           ThreadableLoaderClient*,
+                           BlockingBehavior,
+                           const ThreadableLoaderOptions&,
+                           const ResourceLoaderOptions&);
 
-        // ResourceClient
-        //
-        // |this| may be dead after calling this method.
-        void notifyFinished(Resource*) override;
+  void clear();
 
-        String debugName() const override { return "DocumentThreadableLoader"; }
+  // ResourceClient
+  //
+  // |this| may be dead after calling this method.
+  void notifyFinished(Resource*) override;
 
-        // RawResourceClient
-        //
-        // |this| may be dead after calling these methods.
-        void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-        void responseReceived(Resource*, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
-        void setSerializedCachedMetadata(Resource*, const char*, size_t) override;
-        void dataReceived(Resource*, const char* data, size_t dataLength) override;
-        void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
-        void redirectBlocked() override;
-        void dataDownloaded(Resource*, int) override;
-        void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
+  String debugName() const override { return "DocumentThreadableLoader"; }
 
-        // |this| may be dead after calling this method in async mode.
-        void cancelWithError(const ResourceError&);
+  // RawResourceClient
+  //
+  // |this| may be dead after calling these methods.
+  void dataSent(Resource*,
+                unsigned long long bytesSent,
+                unsigned long long totalBytesToBeSent) override;
+  void responseReceived(Resource*,
+                        const ResourceResponse&,
+                        std::unique_ptr<WebDataConsumerHandle>) override;
+  void setSerializedCachedMetadata(Resource*, const char*, size_t) override;
+  void dataReceived(Resource*, const char* data, size_t dataLength) override;
+  void redirectReceived(Resource*,
+                        ResourceRequest&,
+                        const ResourceResponse&) override;
+  void redirectBlocked() override;
+  void dataDownloaded(Resource*, int) override;
+  void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
 
-        // Notify Inspector and log to console about resource response. Use
-        // this method if response is not going to be finished normally.
-        void reportResponseReceived(unsigned long identifier, const ResourceResponse&);
+  // |this| may be dead after calling this method in async mode.
+  void cancelWithError(const ResourceError&);
 
-        // Methods containing code to handle resource fetch results which are
-        // common to both sync and async mode.
-        //
-        // |this| may be dead after calling these method in async mode.
-        void handleResponse(unsigned long identifier, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>);
-        void handleReceivedData(const char* data, size_t dataLength);
-        void handleSuccessfulFinish(unsigned long identifier, double finishTime);
+  // Notify Inspector and log to console about resource response. Use
+  // this method if response is not going to be finished normally.
+  void reportResponseReceived(unsigned long identifier,
+                              const ResourceResponse&);
 
-        // |this| may be dead after calling this method.
-        void didTimeout(TimerBase*);
-        // Calls the appropriate loading method according to policy and data
-        // about origin. Only for handling the initial load (including fallback
-        // after consulting ServiceWorker).
-        //
-        // |this| may be dead after calling this method in async mode.
-        void dispatchInitialRequest(const ResourceRequest&);
-        // |this| may be dead after calling this method in async mode.
-        void makeCrossOriginAccessRequest(const ResourceRequest&);
-        // Loads m_fallbackRequestForServiceWorker.
-        //
-        // |this| may be dead after calling this method in async mode.
-        void loadFallbackRequestForServiceWorker();
-        // Loads m_actualRequest.
-        void loadActualRequest();
-        // Clears m_actualRequest and reports access control check failure to
-        // m_client.
-        //
-        // |this| may be dead after calling this method in async mode.
-        void handlePreflightFailure(const String& url, const String& errorDescription);
-        // Investigates the response for the preflight request. If successful,
-        // the actual request will be made later in handleSuccessfulFinish().
-        //
-        // |this| may be dead after calling this method in async mode.
-        void handlePreflightResponse(const ResourceResponse&);
-        // |this| may be dead after calling this method.
-        void handleError(const ResourceError&);
+  // Methods containing code to handle resource fetch results which are
+  // common to both sync and async mode.
+  //
+  // |this| may be dead after calling these method in async mode.
+  void handleResponse(unsigned long identifier,
+                      const ResourceResponse&,
+                      std::unique_ptr<WebDataConsumerHandle>);
+  void handleReceivedData(const char* data, size_t dataLength);
+  void handleSuccessfulFinish(unsigned long identifier, double finishTime);
 
-        void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
-        bool isAllowedRedirect(const KURL&) const;
-        // Returns DoNotAllowStoredCredentials
-        // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
-        // returns allowCredentials value of m_resourceLoaderOptions.
-        StoredCredentials effectiveAllowCredentials() const;
+  // |this| may be dead after calling this method.
+  void didTimeout(TimerBase*);
+  // Calls the appropriate loading method according to policy and data
+  // about origin. Only for handling the initial load (including fallback
+  // after consulting ServiceWorker).
+  //
+  // |this| may be dead after calling this method in async mode.
+  void dispatchInitialRequest(const ResourceRequest&);
+  // |this| may be dead after calling this method in async mode.
+  void makeCrossOriginAccessRequest(const ResourceRequest&);
+  // Loads m_fallbackRequestForServiceWorker.
+  //
+  // |this| may be dead after calling this method in async mode.
+  void loadFallbackRequestForServiceWorker();
+  // Loads m_actualRequest.
+  void loadActualRequest();
+  // Clears m_actualRequest and reports access control check failure to
+  // m_client.
+  //
+  // |this| may be dead after calling this method in async mode.
+  void handlePreflightFailure(const String& url,
+                              const String& errorDescription);
+  // Investigates the response for the preflight request. If successful,
+  // the actual request will be made later in handleSuccessfulFinish().
+  //
+  // |this| may be dead after calling this method in async mode.
+  void handlePreflightResponse(const ResourceResponse&);
+  // |this| may be dead after calling this method.
+  void handleError(const ResourceError&);
 
-        // TODO(hiroshige): After crbug.com/633696 is fixed,
-        // - Remove RawResourceClientStateChecker logic,
-        // - Make DocumentThreadableLoader to be a ResourceOwner and remove
-        //   this re-implementation of ResourceOwner, and
-        // - Consider re-applying RawResourceClientStateChecker in a more
-        //   general fashion (crbug.com/640291).
-        RawResource* resource() const { return m_resource.get(); }
-        void clearResource() { setResource(nullptr); }
-        void setResource(RawResource* newResource)
-        {
-            if (newResource == m_resource)
-                return;
+  void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
+  bool isAllowedRedirect(const KURL&) const;
+  // Returns DoNotAllowStoredCredentials
+  // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
+  // returns allowCredentials value of m_resourceLoaderOptions.
+  StoredCredentials effectiveAllowCredentials() const;
 
-            if (RawResource* oldResource = m_resource.release()) {
-                m_checker.willRemoveClient();
-                oldResource->removeClient(this);
-            }
+  // TODO(hiroshige): After crbug.com/633696 is fixed,
+  // - Remove RawResourceClientStateChecker logic,
+  // - Make DocumentThreadableLoader to be a ResourceOwner and remove
+  //   this re-implementation of ResourceOwner, and
+  // - Consider re-applying RawResourceClientStateChecker in a more
+  //   general fashion (crbug.com/640291).
+  RawResource* resource() const { return m_resource.get(); }
+  void clearResource() { setResource(nullptr); }
+  void setResource(RawResource* newResource) {
+    if (newResource == m_resource)
+      return;
 
-            if (newResource) {
-                m_resource = newResource;
-                m_checker.willAddClient();
-                m_resource->addClient(this);
-            }
-        }
-        Member<RawResource> m_resource;
-        // End of ResourceOwner re-implementation, see above.
+    if (RawResource* oldResource = m_resource.release()) {
+      m_checker.willRemoveClient();
+      oldResource->removeClient(this);
+    }
 
-        const SecurityOrigin* getSecurityOrigin() const;
-        Document& document() const;
+    if (newResource) {
+      m_resource = newResource;
+      m_checker.willAddClient();
+      m_resource->addClient(this);
+    }
+  }
+  Member<RawResource> m_resource;
+  // End of ResourceOwner re-implementation, see above.
 
-        ThreadableLoaderClient* m_client;
-        Member<Document> m_document;
+  const SecurityOrigin* getSecurityOrigin() const;
+  Document& document() const;
 
-        const ThreadableLoaderOptions m_options;
-        // Some items may be overridden by m_forceDoNotAllowStoredCredentials
-        // and m_securityOrigin. In such a case, build a ResourceLoaderOptions
-        // with up-to-date values from them and this variable, and use it.
-        const ResourceLoaderOptions m_resourceLoaderOptions;
+  ThreadableLoaderClient* m_client;
+  Member<Document> m_document;
 
-        bool m_forceDoNotAllowStoredCredentials;
-        RefPtr<SecurityOrigin> m_securityOrigin;
+  const ThreadableLoaderOptions m_options;
+  // Some items may be overridden by m_forceDoNotAllowStoredCredentials
+  // and m_securityOrigin. In such a case, build a ResourceLoaderOptions
+  // with up-to-date values from them and this variable, and use it.
+  const ResourceLoaderOptions m_resourceLoaderOptions;
 
-        // True while the initial URL and all the URLs of the redirects
-        // this object has followed, if any, are same-origin to
-        // getSecurityOrigin().
-        bool m_sameOriginRequest;
-        // Set to true if the current request is cross-origin and not simple.
-        bool m_crossOriginNonSimpleRequest;
+  bool m_forceDoNotAllowStoredCredentials;
+  RefPtr<SecurityOrigin> m_securityOrigin;
 
-        // Set to true when the response data is given to a data consumer
-        // handle.
-        bool m_isUsingDataConsumerHandle;
+  // True while the initial URL and all the URLs of the redirects
+  // this object has followed, if any, are same-origin to
+  // getSecurityOrigin().
+  bool m_sameOriginRequest;
+  // Set to true if the current request is cross-origin and not simple.
+  bool m_crossOriginNonSimpleRequest;
 
-        const bool m_async;
+  // Set to true when the response data is given to a data consumer
+  // handle.
+  bool m_isUsingDataConsumerHandle;
 
-        // Holds the original request context (used for sanity checks).
-        WebURLRequest::RequestContext m_requestContext;
+  const bool m_async;
 
-        // Holds the original request for fallback in case the Service Worker
-        // does not respond.
-        ResourceRequest m_fallbackRequestForServiceWorker;
+  // Holds the original request context (used for sanity checks).
+  WebURLRequest::RequestContext m_requestContext;
 
-        // Holds the original request and options for it during preflight
-        // request handling phase.
-        ResourceRequest m_actualRequest;
-        ResourceLoaderOptions m_actualOptions;
+  // Holds the original request for fallback in case the Service Worker
+  // does not respond.
+  ResourceRequest m_fallbackRequestForServiceWorker;
 
-        HTTPHeaderMap m_simpleRequestHeaders; // stores simple request headers in case of a cross-origin redirect.
-        Timer<DocumentThreadableLoader> m_timeoutTimer;
-        double m_requestStartedSeconds; // Time an asynchronous fetch request is started
+  // Holds the original request and options for it during preflight
+  // request handling phase.
+  ResourceRequest m_actualRequest;
+  ResourceLoaderOptions m_actualOptions;
 
-        // Max number of times that this DocumentThreadableLoader can follow
-        // cross-origin redirects.
-        // This is used to limit the number of redirects.
-        // But this value is not the max number of total redirects allowed,
-        // because same-origin redirects are not counted here.
-        int m_corsRedirectLimit;
+  HTTPHeaderMap
+      m_simpleRequestHeaders;  // stores simple request headers in case of a cross-origin redirect.
+  Timer<DocumentThreadableLoader> m_timeoutTimer;
+  double
+      m_requestStartedSeconds;  // Time an asynchronous fetch request is started
 
-        WebURLRequest::FetchRedirectMode m_redirectMode;
+  // Max number of times that this DocumentThreadableLoader can follow
+  // cross-origin redirects.
+  // This is used to limit the number of redirects.
+  // But this value is not the max number of total redirects allowed,
+  // because same-origin redirects are not counted here.
+  int m_corsRedirectLimit;
 
-        // Holds the referrer after a redirect response was
-        // received. This referrer is used to populate the HTTP Referer
-        // header when following the redirect.
-        bool m_didRedirect;
-        Referrer m_referrerAfterRedirect;
+  WebURLRequest::FetchRedirectMode m_redirectMode;
 
-        RawResourceClientStateChecker m_checker;
-    };
+  // Holds the referrer after a redirect response was
+  // received. This referrer is used to populate the HTTP Referer
+  // header when following the redirect.
+  bool m_didRedirect;
+  Referrer m_referrerAfterRedirect;
 
-} // namespace blink
+  RawResourceClientStateChecker m_checker;
+};
 
-#endif // DocumentThreadableLoader_h
+}  // namespace blink
+
+#endif  // DocumentThreadableLoader_h

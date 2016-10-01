@@ -11,43 +11,55 @@
 
 namespace blink {
 
-class CORE_EXPORT VideoTrack final : public GarbageCollectedFinalized<VideoTrack>, public TrackBase, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(VideoTrack);
-public:
-    static VideoTrack* create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected)
-    {
-        return new VideoTrack(id, isValidKindKeyword(kind) ? kind : emptyAtom, label, language, selected);
-    }
+class CORE_EXPORT VideoTrack final
+    : public GarbageCollectedFinalized<VideoTrack>,
+      public TrackBase,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(VideoTrack);
 
-    ~VideoTrack() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static VideoTrack* create(const String& id,
+                            const AtomicString& kind,
+                            const AtomicString& label,
+                            const AtomicString& language,
+                            bool selected) {
+    return new VideoTrack(id, isValidKindKeyword(kind) ? kind : emptyAtom,
+                          label, language, selected);
+  }
 
-    bool selected() const { return m_selected; }
-    void setSelected(bool);
+  ~VideoTrack() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // Set selected to false without notifying the owner media element. Used when
-    // another video track is selected, implicitly deselecting this one.
-    void clearSelected() { m_selected = false; }
+  bool selected() const { return m_selected; }
+  void setSelected(bool);
 
-    // Valid kind keywords.
-    static const AtomicString& alternativeKeyword();
-    static const AtomicString& captionsKeyword();
-    static const AtomicString& mainKeyword();
-    static const AtomicString& signKeyword();
-    static const AtomicString& subtitlesKeyword();
-    static const AtomicString& commentaryKeyword();
+  // Set selected to false without notifying the owner media element. Used when
+  // another video track is selected, implicitly deselecting this one.
+  void clearSelected() { m_selected = false; }
 
-    static bool isValidKindKeyword(const String&);
+  // Valid kind keywords.
+  static const AtomicString& alternativeKeyword();
+  static const AtomicString& captionsKeyword();
+  static const AtomicString& mainKeyword();
+  static const AtomicString& signKeyword();
+  static const AtomicString& subtitlesKeyword();
+  static const AtomicString& commentaryKeyword();
 
-private:
-    VideoTrack(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected);
+  static bool isValidKindKeyword(const String&);
 
-    bool m_selected;
+ private:
+  VideoTrack(const String& id,
+             const AtomicString& kind,
+             const AtomicString& label,
+             const AtomicString& language,
+             bool selected);
+
+  bool m_selected;
 };
 
 DEFINE_TRACK_TYPE_CASTS(VideoTrack, WebMediaPlayer::VideoTrack);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VideoTrack_h
+#endif  // VideoTrack_h

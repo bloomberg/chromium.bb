@@ -32,53 +32,44 @@
 
 namespace blink {
 
-void WebArrayBufferView::assign(const WebArrayBufferView& other)
-{
-    m_private = other.m_private;
+void WebArrayBufferView::assign(const WebArrayBufferView& other) {
+  m_private = other.m_private;
 }
 
-void WebArrayBufferView::reset()
-{
-    m_private.reset();
+void WebArrayBufferView::reset() {
+  m_private.reset();
 }
 
-void* WebArrayBufferView::baseAddress() const
-{
-    return m_private->baseAddress();
+void* WebArrayBufferView::baseAddress() const {
+  return m_private->baseAddress();
 }
 
-unsigned WebArrayBufferView::byteOffset() const
-{
-    return m_private->byteOffset();
+unsigned WebArrayBufferView::byteOffset() const {
+  return m_private->byteOffset();
 }
 
-unsigned WebArrayBufferView::byteLength() const
-{
-    return m_private->byteLength();
+unsigned WebArrayBufferView::byteLength() const {
+  return m_private->byteLength();
 }
 
-WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Local<v8::Value> value)
-{
-    if (!value->IsArrayBufferView())
-        return 0;
-    DOMArrayBufferView* view = V8ArrayBufferView::toImpl(value.As<v8::Object>());
-    return new WebArrayBufferView(view);
+WebArrayBufferView* WebArrayBufferView::createFromV8Value(
+    v8::Local<v8::Value> value) {
+  if (!value->IsArrayBufferView())
+    return 0;
+  DOMArrayBufferView* view = V8ArrayBufferView::toImpl(value.As<v8::Object>());
+  return new WebArrayBufferView(view);
 }
 
 WebArrayBufferView::WebArrayBufferView(DOMArrayBufferView* value)
-    : m_private(value)
-{
+    : m_private(value) {}
+
+WebArrayBufferView& WebArrayBufferView::operator=(DOMArrayBufferView* value) {
+  m_private = value;
+  return *this;
 }
 
-WebArrayBufferView& WebArrayBufferView::operator=(DOMArrayBufferView* value)
-{
-    m_private = value;
-    return *this;
+WebArrayBufferView::operator DOMArrayBufferView*() const {
+  return m_private.get();
 }
 
-WebArrayBufferView::operator DOMArrayBufferView*() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

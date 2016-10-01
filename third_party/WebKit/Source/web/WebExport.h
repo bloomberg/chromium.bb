@@ -18,14 +18,14 @@ namespace blink {
 #define WEB_EXPORT __declspec(dllexport)
 #else
 #define WEB_EXPORT __declspec(dllimport)
-#endif // BLINK_WEB_IMPLEMENTATION
-#else // defined(WIN32)
+#endif  // BLINK_WEB_IMPLEMENTATION
+#else   // defined(WIN32)
 #define WEB_EXPORT __attribute__((visibility("default")))
 #endif
-#else // defined(COMPONENT_BUILD)
+#else  // defined(COMPONENT_BUILD)
 #define WEB_EXPORT
 #endif
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebExport_h
+#endif  // WebExport_h

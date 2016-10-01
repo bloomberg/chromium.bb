@@ -26,19 +26,20 @@
 namespace blink {
 
 class SVGGElement final : public SVGGraphicsElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGGElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-protected:
-    explicit SVGGElement(Document&, ConstructionType = CreateSVGElement);
+ public:
+  DECLARE_NODE_FACTORY(SVGGElement);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+ protected:
+  explicit SVGGElement(Document&, ConstructionType = CreateSVGElement);
 
-private:
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+
+ private:
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGGElement_h
+#endif  // SVGGElement_h

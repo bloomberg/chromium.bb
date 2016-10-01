@@ -36,47 +36,51 @@
 
 namespace blink {
 
-class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement, private DOMTokenListObserver {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
-public:
-    static HTMLOutputElement* create(Document&, HTMLFormElement*);
-    ~HTMLOutputElement() override;
+class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement,
+                                            private DOMTokenListObserver {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
 
-    bool willValidate() const override { return false; }
+ public:
+  static HTMLOutputElement* create(Document&, HTMLFormElement*);
+  ~HTMLOutputElement() override;
 
-    String value() const;
-    void setValue(const String&);
-    String defaultValue() const;
-    void setDefaultValue(const String&);
-    void setFor(const AtomicString&);
-    DOMTokenList* htmlFor() const;
+  bool willValidate() const override { return false; }
 
-    bool canContainRangeEndPoint() const override { return false; }
+  String value() const;
+  void setValue(const String&);
+  String defaultValue() const;
+  void setDefaultValue(const String&);
+  void setFor(const AtomicString&);
+  DOMTokenList* htmlFor() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  bool canContainRangeEndPoint() const override { return false; }
 
-private:
-    HTMLOutputElement(Document&, HTMLFormElement*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    const AtomicString& formControlType() const override;
-    bool isDisabledFormControl() const override;
-    bool matchesEnabledPseudoClass() const override;
-    bool isEnumeratable() const override { return true; }
-    bool supportLabels() const override { return true; }
-    bool supportsFocus() const override;
-    void childrenChanged(const ChildrenChange&) override;
-    void resetImpl() override;
-    short tabIndex() const override;
+ private:
+  HTMLOutputElement(Document&, HTMLFormElement*);
 
-    void valueWasSet() final;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  const AtomicString& formControlType() const override;
+  bool isDisabledFormControl() const override;
+  bool matchesEnabledPseudoClass() const override;
+  bool isEnumeratable() const override { return true; }
+  bool supportLabels() const override { return true; }
+  bool supportsFocus() const override;
+  void childrenChanged(const ChildrenChange&) override;
+  void resetImpl() override;
+  short tabIndex() const override;
 
-    bool m_isDefaultValueMode;
-    String m_defaultValue;
-    Member<DOMTokenList> m_tokens;
+  void valueWasSet() final;
+
+  bool m_isDefaultValueMode;
+  String m_defaultValue;
+  Member<DOMTokenList> m_tokens;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLOutputElement_h
+#endif  // HTMLOutputElement_h

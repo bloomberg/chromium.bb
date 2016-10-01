@@ -34,91 +34,91 @@
 
 namespace WTF {
 
-void BitVector::setSlow(const BitVector& other)
-{
-    uintptr_t newBitsOrPointer;
-    if (other.isInline()) {
-        newBitsOrPointer = other.m_bitsOrPointer;
-    } else {
-        OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(other.size());
-        memcpy(newOutOfLineBits->bits(), other.bits(), byteCount(other.size()));
-        newBitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
-    }
-    if (!isInline())
-        OutOfLineBits::destroy(outOfLineBits());
-    m_bitsOrPointer = newBitsOrPointer;
+void BitVector::setSlow(const BitVector& other) {
+  uintptr_t newBitsOrPointer;
+  if (other.isInline()) {
+    newBitsOrPointer = other.m_bitsOrPointer;
+  } else {
+    OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(other.size());
+    memcpy(newOutOfLineBits->bits(), other.bits(), byteCount(other.size()));
+    newBitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
+  }
+  if (!isInline())
+    OutOfLineBits::destroy(outOfLineBits());
+  m_bitsOrPointer = newBitsOrPointer;
 }
 
-void BitVector::resize(size_t numBits)
-{
-    if (numBits <= maxInlineBits()) {
-        if (isInline())
-            return;
-
-        OutOfLineBits* myOutOfLineBits = outOfLineBits();
-        m_bitsOrPointer = makeInlineBits(*myOutOfLineBits->bits());
-        OutOfLineBits::destroy(myOutOfLineBits);
-        return;
-    }
-
-    resizeOutOfLine(numBits);
-}
-
-void BitVector::clearAll()
-{
+void BitVector::resize(size_t numBits) {
+  if (numBits <= maxInlineBits()) {
     if (isInline())
-        m_bitsOrPointer = makeInlineBits(0);
-    else
-        memset(outOfLineBits()->bits(), 0, byteCount(size()));
+      return;
+
+    OutOfLineBits* myOutOfLineBits = outOfLineBits();
+    m_bitsOrPointer = makeInlineBits(*myOutOfLineBits->bits());
+    OutOfLineBits::destroy(myOutOfLineBits);
+    return;
+  }
+
+  resizeOutOfLine(numBits);
 }
 
-BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits)
-{
-    // Because of the way BitVector stores the pointer, memory tools
-    // will erroneously report a leak here.
-    WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE;
-    numBits = (numBits + bitsInPointer() - 1) & ~(bitsInPointer() - static_cast<size_t>(1));
-    size_t size = sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
-    void* allocation = Partitions::bufferMalloc(size, WTF_HEAP_PROFILER_TYPE_NAME(OutOfLineBits));
-    OutOfLineBits* result = new (NotNull, allocation) OutOfLineBits(numBits);
-    return result;
+void BitVector::clearAll() {
+  if (isInline())
+    m_bitsOrPointer = makeInlineBits(0);
+  else
+    memset(outOfLineBits()->bits(), 0, byteCount(size()));
 }
 
-void BitVector::OutOfLineBits::destroy(OutOfLineBits* outOfLineBits)
-{
-    Partitions::bufferFree(outOfLineBits);
+BitVector::OutOfLineBits* BitVector::OutOfLineBits::create(size_t numBits) {
+  // Because of the way BitVector stores the pointer, memory tools
+  // will erroneously report a leak here.
+  WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE;
+  numBits = (numBits + bitsInPointer() - 1) &
+            ~(bitsInPointer() - static_cast<size_t>(1));
+  size_t size =
+      sizeof(OutOfLineBits) + sizeof(uintptr_t) * (numBits / bitsInPointer());
+  void* allocation = Partitions::bufferMalloc(
+      size, WTF_HEAP_PROFILER_TYPE_NAME(OutOfLineBits));
+  OutOfLineBits* result = new (NotNull, allocation) OutOfLineBits(numBits);
+  return result;
 }
 
-void BitVector::resizeOutOfLine(size_t numBits)
-{
-    ASSERT(numBits > maxInlineBits());
-    OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(numBits);
-    size_t newNumWords = newOutOfLineBits->numWords();
-    if (isInline()) {
-        // Make sure that all of the bits are zero in case we do a no-op resize.
-        *newOutOfLineBits->bits() = m_bitsOrPointer & ~(static_cast<uintptr_t>(1) << maxInlineBits());
-        memset(newOutOfLineBits->bits() + 1, 0, (newNumWords - 1) * sizeof(void*));
+void BitVector::OutOfLineBits::destroy(OutOfLineBits* outOfLineBits) {
+  Partitions::bufferFree(outOfLineBits);
+}
+
+void BitVector::resizeOutOfLine(size_t numBits) {
+  ASSERT(numBits > maxInlineBits());
+  OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(numBits);
+  size_t newNumWords = newOutOfLineBits->numWords();
+  if (isInline()) {
+    // Make sure that all of the bits are zero in case we do a no-op resize.
+    *newOutOfLineBits->bits() =
+        m_bitsOrPointer & ~(static_cast<uintptr_t>(1) << maxInlineBits());
+    memset(newOutOfLineBits->bits() + 1, 0, (newNumWords - 1) * sizeof(void*));
+  } else {
+    if (numBits > size()) {
+      size_t oldNumWords = outOfLineBits()->numWords();
+      memcpy(newOutOfLineBits->bits(), outOfLineBits()->bits(),
+             oldNumWords * sizeof(void*));
+      memset(newOutOfLineBits->bits() + oldNumWords, 0,
+             (newNumWords - oldNumWords) * sizeof(void*));
     } else {
-        if (numBits > size()) {
-            size_t oldNumWords = outOfLineBits()->numWords();
-            memcpy(newOutOfLineBits->bits(), outOfLineBits()->bits(), oldNumWords * sizeof(void*));
-            memset(newOutOfLineBits->bits() + oldNumWords, 0, (newNumWords - oldNumWords) * sizeof(void*));
-        } else {
-            memcpy(newOutOfLineBits->bits(), outOfLineBits()->bits(), newOutOfLineBits->numWords() * sizeof(void*));
-        }
-        OutOfLineBits::destroy(outOfLineBits());
+      memcpy(newOutOfLineBits->bits(), outOfLineBits()->bits(),
+             newOutOfLineBits->numWords() * sizeof(void*));
     }
-    m_bitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
+    OutOfLineBits::destroy(outOfLineBits());
+  }
+  m_bitsOrPointer = bitwiseCast<uintptr_t>(newOutOfLineBits) >> 1;
 }
 
-void BitVector::dump(PrintStream& out)
-{
-    for (size_t i = 0; i < size(); ++i) {
-        if (get(i))
-            out.printf("1");
-        else
-            out.printf("-");
-    }
+void BitVector::dump(PrintStream& out) {
+  for (size_t i = 0; i < size(); ++i) {
+    if (get(i))
+      out.printf("1");
+    else
+      out.printf("-");
+  }
 }
 
-} // namespace WTF
+}  // namespace WTF

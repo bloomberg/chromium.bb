@@ -18,19 +18,20 @@ class SkImage;
 namespace blink {
 
 class ImagePixelLocker final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    WTF_MAKE_NONCOPYABLE(ImagePixelLocker);
-public:
-    ImagePixelLocker(sk_sp<const SkImage>, SkAlphaType, SkColorType);
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  WTF_MAKE_NONCOPYABLE(ImagePixelLocker);
 
-    const void* pixels() const { return m_pixels; }
+ public:
+  ImagePixelLocker(sk_sp<const SkImage>, SkAlphaType, SkColorType);
 
-private:
-    const sk_sp<const SkImage> m_image;
-    const void* m_pixels;
-    SkAutoMalloc m_pixelStorage;
+  const void* pixels() const { return m_pixels; }
+
+ private:
+  const sk_sp<const SkImage> m_image;
+  const void* m_pixels;
+  SkAutoMalloc m_pixelStorage;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

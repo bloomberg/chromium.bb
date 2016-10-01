@@ -38,14 +38,16 @@
 namespace blink {
 
 class PLATFORM_EXPORT TextCheckerClient {
-public:
-    virtual ~TextCheckerClient() { }
+ public:
+  virtual ~TextCheckerClient() {}
 
-    virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) = 0;
-    virtual void requestCheckingOfString(TextCheckingRequest*) = 0;
-    virtual void cancelAllPendingRequests() = 0;
+  virtual void checkSpellingOfString(const String&,
+                                     int* misspellingLocation,
+                                     int* misspellingLength) = 0;
+  virtual void requestCheckingOfString(TextCheckingRequest*) = 0;
+  virtual void cancelAllPendingRequests() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextCheckerClient_h
+#endif  // TextCheckerClient_h

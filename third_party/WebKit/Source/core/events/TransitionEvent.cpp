@@ -28,58 +28,48 @@
 
 namespace blink {
 
-TransitionEvent::TransitionEvent()
-    : m_elapsedTime(0)
-{
+TransitionEvent::TransitionEvent() : m_elapsedTime(0) {}
+
+TransitionEvent::TransitionEvent(const AtomicString& type,
+                                 const String& propertyName,
+                                 double elapsedTime,
+                                 const String& pseudoElement)
+    : Event(type, true, true),
+      m_propertyName(propertyName),
+      m_elapsedTime(elapsedTime),
+      m_pseudoElement(pseudoElement) {}
+
+TransitionEvent::TransitionEvent(const AtomicString& type,
+                                 const TransitionEventInit& initializer)
+    : Event(type, initializer), m_elapsedTime(0) {
+  if (initializer.hasPropertyName())
+    m_propertyName = initializer.propertyName();
+  if (initializer.hasElapsedTime())
+    m_elapsedTime = initializer.elapsedTime();
+  if (initializer.hasPseudoElement())
+    m_pseudoElement = initializer.pseudoElement();
 }
 
-TransitionEvent::TransitionEvent(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
-    : Event(type, true, true)
-    , m_propertyName(propertyName)
-    , m_elapsedTime(elapsedTime)
-    , m_pseudoElement(pseudoElement)
-{
+TransitionEvent::~TransitionEvent() {}
+
+const String& TransitionEvent::propertyName() const {
+  return m_propertyName;
 }
 
-TransitionEvent::TransitionEvent(const AtomicString& type, const TransitionEventInit& initializer)
-    : Event(type, initializer)
-    , m_elapsedTime(0)
-{
-    if (initializer.hasPropertyName())
-        m_propertyName = initializer.propertyName();
-    if (initializer.hasElapsedTime())
-        m_elapsedTime = initializer.elapsedTime();
-    if (initializer.hasPseudoElement())
-        m_pseudoElement = initializer.pseudoElement();
+double TransitionEvent::elapsedTime() const {
+  return m_elapsedTime;
 }
 
-TransitionEvent::~TransitionEvent()
-{
+const String& TransitionEvent::pseudoElement() const {
+  return m_pseudoElement;
 }
 
-const String& TransitionEvent::propertyName() const
-{
-    return m_propertyName;
+const AtomicString& TransitionEvent::interfaceName() const {
+  return EventNames::TransitionEvent;
 }
 
-double TransitionEvent::elapsedTime() const
-{
-    return m_elapsedTime;
+DEFINE_TRACE(TransitionEvent) {
+  Event::trace(visitor);
 }
 
-const String& TransitionEvent::pseudoElement() const
-{
-    return m_pseudoElement;
-}
-
-const AtomicString& TransitionEvent::interfaceName() const
-{
-    return EventNames::TransitionEvent;
-}
-
-DEFINE_TRACE(TransitionEvent)
-{
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

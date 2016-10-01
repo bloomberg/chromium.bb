@@ -32,42 +32,47 @@
 
 namespace blink {
 
-static int cScrollbarThickness[] = { 15, 11 };
+static int cScrollbarThickness[] = {15, 11};
 
-int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize)
-{
-    return cScrollbarThickness[controlSize];
+int ScrollbarThemeMock::scrollbarThickness(ScrollbarControlSize controlSize) {
+  return cScrollbarThickness[controlSize];
 }
 
-bool ScrollbarThemeMock::usesOverlayScrollbars() const
-{
-    return RuntimeEnabledFeatures::overlayScrollbarsEnabled();
+bool ScrollbarThemeMock::usesOverlayScrollbars() const {
+  return RuntimeEnabledFeatures::overlayScrollbarsEnabled();
 }
 
-IntRect ScrollbarThemeMock::trackRect(const ScrollbarThemeClient& scrollbar, bool)
-{
-    return scrollbar.frameRect();
+IntRect ScrollbarThemeMock::trackRect(const ScrollbarThemeClient& scrollbar,
+                                      bool) {
+  return scrollbar.frameRect();
 }
 
-void ScrollbarThemeMock::paintTrackBackground(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& trackRect)
-{
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::kScrollbarTrackBackground))
-        return;
+void ScrollbarThemeMock::paintTrackBackground(GraphicsContext& context,
+                                              const Scrollbar& scrollbar,
+                                              const IntRect& trackRect) {
+  if (DrawingRecorder::useCachedDrawingIfPossible(
+          context, scrollbar, DisplayItem::kScrollbarTrackBackground))
+    return;
 
-    DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarTrackBackground, trackRect);
-    context.fillRect(trackRect, scrollbar.enabled() ? Color::lightGray : Color(0xFFE0E0E0));
+  DrawingRecorder recorder(context, scrollbar,
+                           DisplayItem::kScrollbarTrackBackground, trackRect);
+  context.fillRect(trackRect,
+                   scrollbar.enabled() ? Color::lightGray : Color(0xFFE0E0E0));
 }
 
-void ScrollbarThemeMock::paintThumb(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& thumbRect)
-{
-    if (!scrollbar.enabled())
-        return;
+void ScrollbarThemeMock::paintThumb(GraphicsContext& context,
+                                    const Scrollbar& scrollbar,
+                                    const IntRect& thumbRect) {
+  if (!scrollbar.enabled())
+    return;
 
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::kScrollbarThumb))
-        return;
+  if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar,
+                                                  DisplayItem::kScrollbarThumb))
+    return;
 
-    DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb, thumbRect);
-    context.fillRect(thumbRect, Color::darkGray);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
+                           thumbRect);
+  context.fillRect(thumbRect, Color::darkGray);
 }
 
-} // namespace blink
+}  // namespace blink

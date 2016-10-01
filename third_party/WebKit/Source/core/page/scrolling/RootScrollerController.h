@@ -41,74 +41,74 @@ class ScrollStateCallback;
 // root scroller is re-checked after each layout.
 class CORE_EXPORT RootScrollerController
     : public GarbageCollected<RootScrollerController> {
-public:
-    // Creates a RootScrollerController for the given document. Note: instances
-    // of this class need to be made aware of layout updates.
-    static RootScrollerController* create(Document&);
+ public:
+  // Creates a RootScrollerController for the given document. Note: instances
+  // of this class need to be made aware of layout updates.
+  static RootScrollerController* create(Document&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-    // Sets the element that will be used as the root scroller. This can be
-    // nullptr, in which case we'll use the default element (documentElement) as
-    // the effective root scroller.
-    void set(Element*);
+  // Sets the element that will be used as the root scroller. This can be
+  // nullptr, in which case we'll use the default element (documentElement) as
+  // the effective root scroller.
+  void set(Element*);
 
-    // Returns the element currently set as the root scroller from script. This
-    // differs from the effective root scroller since the set Element may not
-    // currently be a valid root scroller. e.g. If the page sets an Element
-    // with `display: none`, get() will return that element, even though the
-    // effective root scroller will remain the element returned by
-    // defaultEffectiveRootScroller().
-    Element* get() const;
+  // Returns the element currently set as the root scroller from script. This
+  // differs from the effective root scroller since the set Element may not
+  // currently be a valid root scroller. e.g. If the page sets an Element
+  // with `display: none`, get() will return that element, even though the
+  // effective root scroller will remain the element returned by
+  // defaultEffectiveRootScroller().
+  Element* get() const;
 
-    // This returns the Element that's actually being used to control viewport
-    // actions right now. This is different from get() if a root scroller hasn't
-    // been set, or if the set root scroller isn't currently a valid scroller.
-    Element* effectiveRootScroller() const;
+  // This returns the Element that's actually being used to control viewport
+  // actions right now. This is different from get() if a root scroller hasn't
+  // been set, or if the set root scroller isn't currently a valid scroller.
+  Element* effectiveRootScroller() const;
 
-    // This class needs to be informed of changes in layout so that it can
-    // determine if the current root scroller is still valid or if it must be
-    // replaced by the default root scroller.
-    void didUpdateLayout();
+  // This class needs to be informed of changes in layout so that it can
+  // determine if the current root scroller is still valid or if it must be
+  // replaced by the default root scroller.
+  void didUpdateLayout();
 
-    // PaintLayerScrollableAreas need to notify this class when they're being
-    // disposed so that we can remove them as the root scroller.
-    void didDisposePaintLayerScrollableArea(PaintLayerScrollableArea&);
+  // PaintLayerScrollableAreas need to notify this class when they're being
+  // disposed so that we can remove them as the root scroller.
+  void didDisposePaintLayerScrollableArea(PaintLayerScrollableArea&);
 
-    // Returns the PaintLayer associated with the currently effective root
-    // scroller.
-    PaintLayer* rootScrollerPaintLayer() const;
+  // Returns the PaintLayer associated with the currently effective root
+  // scroller.
+  PaintLayer* rootScrollerPaintLayer() const;
 
-private:
-    RootScrollerController(Document&);
+ private:
+  RootScrollerController(Document&);
 
-    // Ensures the effective root scroller is currently valid and replaces it
-    // with the default if not.
-    void recomputeEffectiveRootScroller();
+  // Ensures the effective root scroller is currently valid and replaces it
+  // with the default if not.
+  void recomputeEffectiveRootScroller();
 
-    // Determines whether the given element meets the criteria to become the
-    // effective root scroller.
-    bool isValidRootScroller(const Element&) const;
+  // Determines whether the given element meets the criteria to become the
+  // effective root scroller.
+  bool isValidRootScroller(const Element&) const;
 
-    // Returns the Element that should be used if the currently set
-    // m_rootScroller isn't valid to be a root scroller.
-    Element* defaultEffectiveRootScroller();
+  // Returns the Element that should be used if the currently set
+  // m_rootScroller isn't valid to be a root scroller.
+  Element* defaultEffectiveRootScroller();
 
-    // The owning Document whose root scroller this object manages.
-    WeakMember<Document> m_document;
+  // The owning Document whose root scroller this object manages.
+  WeakMember<Document> m_document;
 
-    // The Element that was set from script as rootScroller for this Document.
-    // Depending on its validity to be the root scroller (e.g. a display: none
-    // element isn't a valid root scroller), this may not actually be the
-    // Element being used as the root scroller.
-    WeakMember<Element> m_rootScroller;
+  // The Element that was set from script as rootScroller for this Document.
+  // Depending on its validity to be the root scroller (e.g. a display: none
+  // element isn't a valid root scroller), this may not actually be the
+  // Element being used as the root scroller.
+  WeakMember<Element> m_rootScroller;
 
-    // The element currently being used as the root scroller in this Document.
-    // If the m_rootScroller is valid this will point to it. Otherwise, it'll
-    // use a default Element.
-    WeakMember<Element> m_effectiveRootScroller;
+  // The element currently being used as the root scroller in this Document.
+  // If the m_rootScroller is valid this will point to it. Otherwise, it'll
+  // use a default Element.
+  WeakMember<Element> m_effectiveRootScroller;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RootScrollerController_h
+#endif  // RootScrollerController_h

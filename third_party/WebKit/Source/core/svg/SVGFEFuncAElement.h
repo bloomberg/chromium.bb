@@ -27,14 +27,15 @@
 namespace blink {
 
 class SVGFEFuncAElement final : public SVGComponentTransferFunctionElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEFuncAElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGFEFuncAElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGFEFuncAElement);
+
+ private:
+  explicit SVGFEFuncAElement(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEFuncAElement_h
+#endif  // SVGFEFuncAElement_h

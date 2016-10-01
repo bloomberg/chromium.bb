@@ -32,13 +32,13 @@
 namespace blink {
 
 class WebContentLayer {
-public:
-    virtual ~WebContentLayer() { }
+ public:
+  virtual ~WebContentLayer() {}
 
-    // The WebContentLayer has ownership of this wrapper.
-    virtual WebLayer* layer() = 0;
+  // The WebContentLayer has ownership of this wrapper.
+  virtual WebLayer* layer() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebContentLayer_h
+#endif  // WebContentLayer_h

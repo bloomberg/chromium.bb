@@ -16,15 +16,14 @@ namespace mojo {
 // each element. The returned array will always be non-null.
 template <typename T, typename E>
 struct TypeConverter<WTFArray<T>, blink::HeapVector<E>> {
-    static WTFArray<T> Convert(const blink::HeapVector<E>& input)
-    {
-        WTFArray<T> result(input.size());
-        for (size_t i = 0; i < input.size(); ++i)
-            result[i] = TypeConverter<T, E>::Convert(input[i]);
-        return std::move(result);
-    }
+  static WTFArray<T> Convert(const blink::HeapVector<E>& input) {
+    WTFArray<T> result(input.size());
+    for (size_t i = 0; i < input.size(); ++i)
+      result[i] = TypeConverter<T, E>::Convert(input[i]);
+    return std::move(result);
+  }
 };
 
-} // namespace mojo
+}  // namespace mojo
 
-#endif // MojoHelper_h
+#endif  // MojoHelper_h

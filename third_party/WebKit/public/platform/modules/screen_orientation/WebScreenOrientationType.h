@@ -8,13 +8,13 @@
 namespace blink {
 
 enum WebScreenOrientationType {
-    WebScreenOrientationUndefined = 0,
-    WebScreenOrientationPortraitPrimary,
-    WebScreenOrientationPortraitSecondary,
-    WebScreenOrientationLandscapePrimary,
-    WebScreenOrientationLandscapeSecondary
+  WebScreenOrientationUndefined = 0,
+  WebScreenOrientationPortraitPrimary,
+  WebScreenOrientationPortraitSecondary,
+  WebScreenOrientationLandscapePrimary,
+  WebScreenOrientationLandscapeSecondary
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebScreenOrientationType_h
+#endif  // WebScreenOrientationType_h

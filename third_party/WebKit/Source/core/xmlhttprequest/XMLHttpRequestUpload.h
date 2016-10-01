@@ -39,36 +39,39 @@ namespace blink {
 class ExecutionContext;
 
 class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static XMLHttpRequestUpload* create(XMLHttpRequest* xmlHttpRequest)
-    {
-        return new XMLHttpRequestUpload(xmlHttpRequest);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
+ public:
+  static XMLHttpRequestUpload* create(XMLHttpRequest* xmlHttpRequest) {
+    return new XMLHttpRequestUpload(xmlHttpRequest);
+  }
 
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
 
-    void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
-    void dispatchProgressEvent(unsigned long long, unsigned long long);
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    void handleRequestError(const AtomicString&);
+  void dispatchEventAndLoadEnd(const AtomicString&,
+                               bool,
+                               unsigned long long,
+                               unsigned long long);
+  void dispatchProgressEvent(unsigned long long, unsigned long long);
 
-    DECLARE_VIRTUAL_TRACE();
+  void handleRequestError(const AtomicString&);
 
-private:
-    explicit XMLHttpRequestUpload(XMLHttpRequest*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<XMLHttpRequest> m_xmlHttpRequest;
+ private:
+  explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
-    // Last progress event values; used when issuing the
-    // required 'progress' event on a request error or abort.
-    unsigned long long m_lastBytesSent;
-    unsigned long long m_lastTotalBytesToBeSent;
+  Member<XMLHttpRequest> m_xmlHttpRequest;
+
+  // Last progress event values; used when issuing the
+  // required 'progress' event on a request error or abort.
+  unsigned long long m_lastBytesSent;
+  unsigned long long m_lastTotalBytesToBeSent;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XMLHttpRequestUpload_h
+#endif  // XMLHttpRequestUpload_h

@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef LayoutMultiColumnFlowThread_h
 #define LayoutMultiColumnFlowThread_h
 
@@ -38,12 +37,12 @@ class LayoutMultiColumnSpannerPlaceholder;
 
 // What to translate *to* when translating from a flow thread coordinate space.
 enum class CoordinateSpaceConversion {
-    // Just translate to the nearest containing coordinate space (i.e. where our multicol container
-    // lives) of this flow thread, i.e. don't walk ancestral flow threads, if any.
-    Containing,
+  // Just translate to the nearest containing coordinate space (i.e. where our multicol container
+  // lives) of this flow thread, i.e. don't walk ancestral flow threads, if any.
+  Containing,
 
-    // Translate to visual coordinates, by walking all ancestral flow threads.
-    Visual
+  // Translate to visual coordinates, by walking all ancestral flow threads.
+  Visual
 };
 
 // Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
@@ -123,170 +122,206 @@ enum class CoordinateSpaceConversion {
 //
 // There's also some documentation online:
 // https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
-class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread, public FragmentationContext {
-public:
-    ~LayoutMultiColumnFlowThread() override;
+class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
+                                                public FragmentationContext {
+ public:
+  ~LayoutMultiColumnFlowThread() override;
 
-    static LayoutMultiColumnFlowThread* createAnonymous(Document&, const ComputedStyle& parentStyle);
+  static LayoutMultiColumnFlowThread* createAnonymous(
+      Document&,
+      const ComputedStyle& parentStyle);
 
-    bool isLayoutMultiColumnFlowThread() const final { return true; }
+  bool isLayoutMultiColumnFlowThread() const final { return true; }
 
-    LayoutBlockFlow* multiColumnBlockFlow() const { return toLayoutBlockFlow(parent()); }
+  LayoutBlockFlow* multiColumnBlockFlow() const {
+    return toLayoutBlockFlow(parent());
+  }
 
-    LayoutMultiColumnSet* firstMultiColumnSet() const;
-    LayoutMultiColumnSet* lastMultiColumnSet() const;
+  LayoutMultiColumnSet* firstMultiColumnSet() const;
+  LayoutMultiColumnSet* lastMultiColumnSet() const;
 
-    // Return the first column set or spanner placeholder.
-    LayoutBox* firstMultiColumnBox() const
-    {
-        return nextSiblingBox();
-    }
-    // Return the last column set or spanner placeholder.
-    LayoutBox* lastMultiColumnBox() const
-    {
-        LayoutBox* lastSiblingBox = multiColumnBlockFlow()->lastChildBox();
-        // The flow thread is the first child of the multicol container. If the flow thread is also
-        // the last child, it means that there are no siblings; i.e. we have no column boxes.
-        return lastSiblingBox != this ? lastSiblingBox : 0;
-    }
+  // Return the first column set or spanner placeholder.
+  LayoutBox* firstMultiColumnBox() const { return nextSiblingBox(); }
+  // Return the last column set or spanner placeholder.
+  LayoutBox* lastMultiColumnBox() const {
+    LayoutBox* lastSiblingBox = multiColumnBlockFlow()->lastChildBox();
+    // The flow thread is the first child of the multicol container. If the flow thread is also
+    // the last child, it means that there are no siblings; i.e. we have no column boxes.
+    return lastSiblingBox != this ? lastSiblingBox : 0;
+  }
 
-    // Find the first set inside which the specified layoutObject (which is a flowthread descendant) would be rendered.
-    LayoutMultiColumnSet* mapDescendantToColumnSet(LayoutObject*) const;
+  // Find the first set inside which the specified layoutObject (which is a flowthread descendant) would be rendered.
+  LayoutMultiColumnSet* mapDescendantToColumnSet(LayoutObject*) const;
 
-    // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
-    // any. This includes the layoutObject for the element that actually establishes the spanner too.
-    LayoutMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const LayoutObject* descendant) const;
+  // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
+  // any. This includes the layoutObject for the element that actually establishes the spanner too.
+  LayoutMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(
+      const LayoutObject* descendant) const;
 
-    // Populate the flow thread with what's currently its siblings. Called when a regular block
-    // becomes a multicol container.
-    void populate();
+  // Populate the flow thread with what's currently its siblings. Called when a regular block
+  // becomes a multicol container.
+  void populate();
 
-    // Empty the flow thread by moving everything to the parent. Remove all multicol specific
-    // layoutObjects. Then destroy the flow thread. Called when a multicol container becomes a regular
-    // block.
-    void evacuateAndDestroy();
+  // Empty the flow thread by moving everything to the parent. Remove all multicol specific
+  // layoutObjects. Then destroy the flow thread. Called when a multicol container becomes a regular
+  // block.
+  void evacuateAndDestroy();
 
-    unsigned columnCount() const { return m_columnCount; }
+  unsigned columnCount() const { return m_columnCount; }
 
-    // Total height available to columns and spanners. This is the multicol container's content box
-    // logical height, or 0 if auto.
-    LayoutUnit columnHeightAvailable() const { return m_columnHeightAvailable; }
-    void setColumnHeightAvailable(LayoutUnit available) { m_columnHeightAvailable = available; }
+  // Total height available to columns and spanners. This is the multicol container's content box
+  // logical height, or 0 if auto.
+  LayoutUnit columnHeightAvailable() const { return m_columnHeightAvailable; }
+  void setColumnHeightAvailable(LayoutUnit available) {
+    m_columnHeightAvailable = available;
+  }
 
-    // Maximum content box logical height for the multicol container. This takes CSS logical
-    // 'height' and 'max-height' into account. LayoutUnit::max() is returned if nothing constrains
-    // the height of the multicol container. This method only deals with used values of CSS
-    // properties, and it does not consider enclosing fragmentation contexts -- that's something
-    // that needs to be calculated per fragmentainer group.
-    LayoutUnit maxColumnLogicalHeight() const;
+  // Maximum content box logical height for the multicol container. This takes CSS logical
+  // 'height' and 'max-height' into account. LayoutUnit::max() is returned if nothing constrains
+  // the height of the multicol container. This method only deals with used values of CSS
+  // properties, and it does not consider enclosing fragmentation contexts -- that's something
+  // that needs to be calculated per fragmentainer group.
+  LayoutUnit maxColumnLogicalHeight() const;
 
-    bool progressionIsInline() const { return m_progressionIsInline; }
+  bool progressionIsInline() const { return m_progressionIsInline; }
 
-    LayoutUnit tallestUnbreakableLogicalHeight(LayoutUnit offsetInFlowThread) const;
+  LayoutUnit tallestUnbreakableLogicalHeight(
+      LayoutUnit offsetInFlowThread) const;
 
-    LayoutSize columnOffset(const LayoutPoint&) const final;
+  LayoutSize columnOffset(const LayoutPoint&) const final;
 
-    // Do we need to set a new width and lay out?
-    virtual bool needsNewWidth() const;
+  // Do we need to set a new width and lay out?
+  virtual bool needsNewWidth() const;
 
-    bool isPageLogicalHeightKnown() const final;
+  bool isPageLogicalHeightKnown() const final;
 
-    LayoutSize flowThreadTranslationAtOffset(LayoutUnit, PageBoundaryRule, CoordinateSpaceConversion) const;
-    LayoutSize flowThreadTranslationAtPoint(const LayoutPoint& flowThreadPoint, CoordinateSpaceConversion) const;
+  LayoutSize flowThreadTranslationAtOffset(LayoutUnit,
+                                           PageBoundaryRule,
+                                           CoordinateSpaceConversion) const;
+  LayoutSize flowThreadTranslationAtPoint(const LayoutPoint& flowThreadPoint,
+                                          CoordinateSpaceConversion) const;
 
-    LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const override;
-    LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const override;
+  LayoutPoint flowThreadPointToVisualPoint(
+      const LayoutPoint& flowThreadPoint) const override;
+  LayoutPoint visualPointToFlowThreadPoint(
+      const LayoutPoint& visualPoint) const override;
 
-    int inlineBlockBaseline(LineDirectionMode) const override;
+  int inlineBlockBaseline(LineDirectionMode) const override;
 
-    LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit, PageBoundaryRule) const final;
+  LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit,
+                                               PageBoundaryRule) const final;
 
-    void layoutColumns(SubtreeLayoutScope&);
+  void layoutColumns(SubtreeLayoutScope&);
 
-    // Skip past a column spanner during flow thread layout. Spanners are not laid out inside the
-    // flow thread, since the flow thread is not in a spanner's containing block chain (since the
-    // containing block is the multicol container).
-    void skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread);
+  // Skip past a column spanner during flow thread layout. Spanners are not laid out inside the
+  // flow thread, since the flow thread is not in a spanner's containing block chain (since the
+  // containing block is the multicol container).
+  void skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread);
 
-    // Returns true if at least one column got a new height after flow thread layout (during column
-    // set layout), in which case we need another layout pass. Column heights may change after flow
-    // thread layout because of balancing. We may have to do multiple layout passes, depending on
-    // how the contents is fitted to the changed column heights. In most cases, laying out again
-    // twice or even just once will suffice. Sometimes we need more passes than that, though, but
-    // the number of retries should not exceed the number of columns, unless we have a bug.
-    bool columnHeightsChanged() const { return m_columnHeightsChanged; }
-    void setColumnHeightsChanged() { m_columnHeightsChanged = true; }
+  // Returns true if at least one column got a new height after flow thread layout (during column
+  // set layout), in which case we need another layout pass. Column heights may change after flow
+  // thread layout because of balancing. We may have to do multiple layout passes, depending on
+  // how the contents is fitted to the changed column heights. In most cases, laying out again
+  // twice or even just once will suffice. Sometimes we need more passes than that, though, but
+  // the number of retries should not exceed the number of columns, unless we have a bug.
+  bool columnHeightsChanged() const { return m_columnHeightsChanged; }
+  void setColumnHeightsChanged() { m_columnHeightsChanged = true; }
 
-    void columnRuleStyleDidChange();
+  void columnRuleStyleDidChange();
 
-    // Remove the spanner placeholder and return true if the specified object is no longer a valid spanner.
-    bool removeSpannerPlaceholderIfNoLongerValid(LayoutBox* spannerObjectInFlowThread);
+  // Remove the spanner placeholder and return true if the specified object is no longer a valid spanner.
+  bool removeSpannerPlaceholderIfNoLongerValid(
+      LayoutBox* spannerObjectInFlowThread);
 
-    LayoutMultiColumnFlowThread* enclosingFlowThread() const;
-    FragmentationContext* enclosingFragmentationContext() const;
-    LayoutUnit blockOffsetInEnclosingFragmentationContext() const { ASSERT(enclosingFragmentationContext()); return m_blockOffsetInEnclosingFragmentationContext; }
+  LayoutMultiColumnFlowThread* enclosingFlowThread() const;
+  FragmentationContext* enclosingFragmentationContext() const;
+  LayoutUnit blockOffsetInEnclosingFragmentationContext() const {
+    ASSERT(enclosingFragmentationContext());
+    return m_blockOffsetInEnclosingFragmentationContext;
+  }
 
-    // If we've run out of columns in the last fragmentainer group (column row), we have to insert
-    // another fragmentainer group in order to hold more columns. This means that we're moving to
-    // the next outer column (in the enclosing fragmentation context).
-    void appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread, PageBoundaryRule);
+  // If we've run out of columns in the last fragmentainer group (column row), we have to insert
+  // another fragmentainer group in order to hold more columns. This means that we're moving to
+  // the next outer column (in the enclosing fragmentation context).
+  void appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread,
+                                           PageBoundaryRule);
 
-    // Implementing FragmentationContext:
-    bool isFragmentainerLogicalHeightKnown() final;
-    LayoutUnit fragmentainerLogicalHeightAt(LayoutUnit blockOffset) final;
-    LayoutUnit remainingLogicalHeightAt(LayoutUnit blockOffset) final;
-    LayoutMultiColumnFlowThread* associatedFlowThread() final { return this; }
+  // Implementing FragmentationContext:
+  bool isFragmentainerLogicalHeightKnown() final;
+  LayoutUnit fragmentainerLogicalHeightAt(LayoutUnit blockOffset) final;
+  LayoutUnit remainingLogicalHeightAt(LayoutUnit blockOffset) final;
+  LayoutMultiColumnFlowThread* associatedFlowThread() final { return this; }
 
-    const char* name() const override { return "LayoutMultiColumnFlowThread"; }
+  const char* name() const override { return "LayoutMultiColumnFlowThread"; }
 
-protected:
-    LayoutMultiColumnFlowThread();
-    void setProgressionIsInline(bool isInline) { m_progressionIsInline = isInline; }
+ protected:
+  LayoutMultiColumnFlowThread();
+  void setProgressionIsInline(bool isInline) {
+    m_progressionIsInline = isInline;
+  }
 
-    void layout() override;
+  void layout() override;
 
-private:
-    void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
-    void createAndInsertMultiColumnSet(LayoutBox* insertBefore = nullptr);
-    void createAndInsertSpannerPlaceholder(LayoutBox* spannerObjectInFlowThread, LayoutObject* insertedBeforeInFlowThread);
-    void destroySpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder*);
-    virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
+ private:
+  void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
+  void createAndInsertMultiColumnSet(LayoutBox* insertBefore = nullptr);
+  void createAndInsertSpannerPlaceholder(
+      LayoutBox* spannerObjectInFlowThread,
+      LayoutObject* insertedBeforeInFlowThread);
+  void destroySpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder*);
+  virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
-    void addColumnSetToThread(LayoutMultiColumnSet*) override;
-    void willBeRemovedFromTree() override;
-    void flowThreadDescendantWasInserted(LayoutObject*) final;
-    void flowThreadDescendantWillBeRemoved(LayoutObject*) final;
-    void flowThreadDescendantStyleWillChange(LayoutBox*, StyleDifference, const ComputedStyle& newStyle) override;
-    void flowThreadDescendantStyleDidChange(LayoutBox*, StyleDifference, const ComputedStyle& oldStyle) override;
-    void computePreferredLogicalWidths() override;
-    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
-    void updateLogicalWidth() override;
-    void contentWasLaidOut(LayoutUnit logicalBottomInFlowThreadAfterPagination) override;
-    bool canSkipLayout(const LayoutBox&) const override;
-    MultiColumnLayoutState multiColumnLayoutState() const override;
-    void restoreMultiColumnLayoutState(const MultiColumnLayoutState&) override;
+  void addColumnSetToThread(LayoutMultiColumnSet*) override;
+  void willBeRemovedFromTree() override;
+  void flowThreadDescendantWasInserted(LayoutObject*) final;
+  void flowThreadDescendantWillBeRemoved(LayoutObject*) final;
+  void flowThreadDescendantStyleWillChange(
+      LayoutBox*,
+      StyleDifference,
+      const ComputedStyle& newStyle) override;
+  void flowThreadDescendantStyleDidChange(
+      LayoutBox*,
+      StyleDifference,
+      const ComputedStyle& oldStyle) override;
+  void computePreferredLogicalWidths() override;
+  void computeLogicalHeight(LayoutUnit logicalHeight,
+                            LayoutUnit logicalTop,
+                            LogicalExtentComputedValues&) const override;
+  void updateLogicalWidth() override;
+  void contentWasLaidOut(
+      LayoutUnit logicalBottomInFlowThreadAfterPagination) override;
+  bool canSkipLayout(const LayoutBox&) const override;
+  MultiColumnLayoutState multiColumnLayoutState() const override;
+  void restoreMultiColumnLayoutState(const MultiColumnLayoutState&) override;
 
-    // The last set we worked on. It's not to be used as the "current set". The concept of a
-    // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong
-    // top location estimates (due to e.g. margin collapsing), and possibly for other reasons.
-    LayoutMultiColumnSet* m_lastSetWorkedOn;
+  // The last set we worked on. It's not to be used as the "current set". The concept of a
+  // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong
+  // top location estimates (due to e.g. margin collapsing), and possibly for other reasons.
+  LayoutMultiColumnSet* m_lastSetWorkedOn;
 
-    unsigned m_columnCount; // The used value of column-count
-    LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
+  unsigned m_columnCount;  // The used value of column-count
+  LayoutUnit
+      m_columnHeightAvailable;  // Total height available to columns, or 0 if auto.
 
-    // Cached block offset from this flow thread to the enclosing fragmentation context, if any. In
-    // the coordinate space of the enclosing fragmentation context.
-    LayoutUnit m_blockOffsetInEnclosingFragmentationContext;
+  // Cached block offset from this flow thread to the enclosing fragmentation context, if any. In
+  // the coordinate space of the enclosing fragmentation context.
+  LayoutUnit m_blockOffsetInEnclosingFragmentationContext;
 
-    bool m_columnHeightsChanged; // Set when column heights are out of sync with actual layout.
-    bool m_progressionIsInline; // Always true for regular multicol. False for paged-y overflow.
-    bool m_isBeingEvacuated;
+  bool
+      m_columnHeightsChanged;  // Set when column heights are out of sync with actual layout.
+  bool
+      m_progressionIsInline;  // Always true for regular multicol. False for paged-y overflow.
+  bool m_isBeingEvacuated;
 };
 
 // Cannot use DEFINE_LAYOUT_OBJECT_TYPE_CASTS here, because isMultiColumnFlowThread() is defined in
 // LayoutFlowThread, not in LayoutObject.
-DEFINE_TYPE_CASTS(LayoutMultiColumnFlowThread, LayoutFlowThread, object, object->isLayoutMultiColumnFlowThread(), object.isLayoutMultiColumnFlowThread());
+DEFINE_TYPE_CASTS(LayoutMultiColumnFlowThread,
+                  LayoutFlowThread,
+                  object,
+                  object->isLayoutMultiColumnFlowThread(),
+                  object.isLayoutMultiColumnFlowThread());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutMultiColumnFlowThread_h
+#endif  // LayoutMultiColumnFlowThread_h

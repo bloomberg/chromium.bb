@@ -33,42 +33,36 @@
 
 namespace blink {
 
-StyleMedia::StyleMedia(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
+StyleMedia::StyleMedia(LocalFrame* frame) : DOMWindowProperty(frame) {}
+
+AtomicString StyleMedia::type() const {
+  FrameView* view = frame() ? frame()->view() : nullptr;
+  if (view)
+    return view->mediaType();
+
+  return nullAtom;
 }
 
-AtomicString StyleMedia::type() const
-{
-    FrameView* view = frame() ? frame()->view() : nullptr;
-    if (view)
-        return view->mediaType();
+bool StyleMedia::matchMedium(const String& query) const {
+  if (!frame())
+    return false;
 
-    return nullAtom;
+  Document* document = frame()->document();
+  ASSERT(document);
+  Element* documentElement = document->documentElement();
+  if (!documentElement)
+    return false;
+
+  MediaQuerySet* media = MediaQuerySet::create();
+  if (!media->set(query))
+    return false;
+
+  MediaQueryEvaluator screenEval(frame());
+  return screenEval.eval(media);
 }
 
-bool StyleMedia::matchMedium(const String& query) const
-{
-    if (!frame())
-        return false;
-
-    Document* document = frame()->document();
-    ASSERT(document);
-    Element* documentElement = document->documentElement();
-    if (!documentElement)
-        return false;
-
-    MediaQuerySet* media = MediaQuerySet::create();
-    if (!media->set(query))
-        return false;
-
-    MediaQueryEvaluator screenEval(frame());
-    return screenEval.eval(media);
+DEFINE_TRACE(StyleMedia) {
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(StyleMedia)
-{
-    DOMWindowProperty::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

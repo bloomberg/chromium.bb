@@ -9,15 +9,14 @@
 
 namespace WTF {
 
-TEST(TextCodecICUTest, IgnorableCodePoint)
-{
-    TextEncoding iso2022jp("iso-2022-jp");
-    std::unique_ptr<TextCodec> codec = TextCodecICU::create(iso2022jp, nullptr);
-    Vector<UChar> source;
-    source.append('a');
-    source.append(zeroWidthJoinerCharacter);
-    CString encoded = codec->encode(source.data(), source.size(), EntitiesForUnencodables);
-    EXPECT_STREQ("a&#8205;", encoded.data());
+TEST(TextCodecICUTest, IgnorableCodePoint) {
+  TextEncoding iso2022jp("iso-2022-jp");
+  std::unique_ptr<TextCodec> codec = TextCodecICU::create(iso2022jp, nullptr);
+  Vector<UChar> source;
+  source.append('a');
+  source.append(zeroWidthJoinerCharacter);
+  CString encoded =
+      codec->encode(source.data(), source.size(), EntitiesForUnencodables);
+  EXPECT_STREQ("a&#8205;", encoded.data());
 }
-
 }

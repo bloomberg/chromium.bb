@@ -30,36 +30,36 @@
 namespace blink {
 
 class SVGTextPositioningElement : public SVGTextContentElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    SVGAnimatedLengthList* x() { return m_x.get(); }
-    SVGAnimatedLengthList* y() { return m_y.get(); }
-    SVGAnimatedLengthList* dx() { return m_dx.get(); }
-    SVGAnimatedLengthList* dy() { return m_dy.get(); }
-    SVGAnimatedNumberList* rotate() { return m_rotate.get(); }
+  DEFINE_WRAPPERTYPEINFO();
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  SVGAnimatedLengthList* x() { return m_x.get(); }
+  SVGAnimatedLengthList* y() { return m_y.get(); }
+  SVGAnimatedLengthList* dx() { return m_dx.get(); }
+  SVGAnimatedLengthList* dy() { return m_dy.get(); }
+  SVGAnimatedNumberList* rotate() { return m_rotate.get(); }
 
-protected:
-    SVGTextPositioningElement(const QualifiedName&, Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void svgAttributeChanged(const QualifiedName&) final;
-    bool isTextPositioning() const final { return true; }
+ protected:
+  SVGTextPositioningElement(const QualifiedName&, Document&);
 
-    Member<SVGAnimatedLengthList> m_x;
-    Member<SVGAnimatedLengthList> m_y;
-    Member<SVGAnimatedLengthList> m_dx;
-    Member<SVGAnimatedLengthList> m_dy;
-    Member<SVGAnimatedNumberList> m_rotate;
+  void svgAttributeChanged(const QualifiedName&) final;
+  bool isTextPositioning() const final { return true; }
+
+  Member<SVGAnimatedLengthList> m_x;
+  Member<SVGAnimatedLengthList> m_y;
+  Member<SVGAnimatedLengthList> m_dx;
+  Member<SVGAnimatedLengthList> m_dy;
+  Member<SVGAnimatedNumberList> m_rotate;
 };
 
-inline bool isSVGTextPositioningElement(const SVGElement& element)
-{
-    return element.isTextPositioning();
+inline bool isSVGTextPositioningElement(const SVGElement& element) {
+  return element.isTextPositioning();
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextPositioningElement);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGTextPositioningElement_h
+#endif  // SVGTextPositioningElement_h

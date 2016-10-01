@@ -41,38 +41,45 @@ namespace blink {
 class KURL;
 
 class CORE_EXPORT V8DOMActivityLogger {
-    USING_FAST_MALLOC(V8DOMActivityLogger);
-public:
-    virtual ~V8DOMActivityLogger() { }
+  USING_FAST_MALLOC(V8DOMActivityLogger);
 
-    virtual void logGetter(const String& apiName) { }
-    virtual void logSetter(const String& apiName, const v8::Local<v8::Value>& newValue) { }
-    virtual void logMethod(const String& apiName, int argc, const v8::Local<v8::Value>* argv) { }
-    virtual void logEvent(const String& eventName, int argc, const String* argv) { }
+ public:
+  virtual ~V8DOMActivityLogger() {}
 
-    // Associates a logger with the world identified by worldId (worlId may be 0
-    // identifying the main world) and extension ID. Extension ID is used to
-    // identify a logger for main world only (worldId == 0). If the world is not
-    // a main world, an extension ID is ignored.
-    //
-    // A renderer process may host multiple extensions when the browser hits the
-    // renderer process limit. In such case, we assign multiple extensions to
-    // the same main world of a renderer process. In order to distinguish the
-    // extensions and their activity loggers in the main world, we require an
-    // extension ID. Otherwise, extension activities may be logged under
-    // a wrong extension ID.
-    static void setActivityLogger(int worldId, const String&, std::unique_ptr<V8DOMActivityLogger>);
-    static V8DOMActivityLogger* activityLogger(int worldId, const String& extensionId);
-    static V8DOMActivityLogger* activityLogger(int worldId, const KURL&);
+  virtual void logGetter(const String& apiName) {}
+  virtual void logSetter(const String& apiName,
+                         const v8::Local<v8::Value>& newValue) {}
+  virtual void logMethod(const String& apiName,
+                         int argc,
+                         const v8::Local<v8::Value>* argv) {}
+  virtual void logEvent(const String& eventName, int argc, const String* argv) {
+  }
 
-    // Returns activity logger for current V8 context or 0.
-    static V8DOMActivityLogger* currentActivityLogger();
-    // Returns activity logger for current V8 context if the context belongs to
-    // an isolated world or 0.
-    static V8DOMActivityLogger* currentActivityLoggerIfIsolatedWorld();
+  // Associates a logger with the world identified by worldId (worlId may be 0
+  // identifying the main world) and extension ID. Extension ID is used to
+  // identify a logger for main world only (worldId == 0). If the world is not
+  // a main world, an extension ID is ignored.
+  //
+  // A renderer process may host multiple extensions when the browser hits the
+  // renderer process limit. In such case, we assign multiple extensions to
+  // the same main world of a renderer process. In order to distinguish the
+  // extensions and their activity loggers in the main world, we require an
+  // extension ID. Otherwise, extension activities may be logged under
+  // a wrong extension ID.
+  static void setActivityLogger(int worldId,
+                                const String&,
+                                std::unique_ptr<V8DOMActivityLogger>);
+  static V8DOMActivityLogger* activityLogger(int worldId,
+                                             const String& extensionId);
+  static V8DOMActivityLogger* activityLogger(int worldId, const KURL&);
 
+  // Returns activity logger for current V8 context or 0.
+  static V8DOMActivityLogger* currentActivityLogger();
+  // Returns activity logger for current V8 context if the context belongs to
+  // an isolated world or 0.
+  static V8DOMActivityLogger* currentActivityLoggerIfIsolatedWorld();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8DOMActivityLogger_h
+#endif  // V8DOMActivityLogger_h

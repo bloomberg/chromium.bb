@@ -40,27 +40,28 @@ namespace blink {
 class ExceptionState;
 
 class V0CustomElementException {
-    STATIC_ONLY(V0CustomElementException);
-public:
-    enum Reason {
-        CannotRegisterFromExtension,
-        ConstructorPropertyNotConfigurable,
-        ContextDestroyedCheckingPrototype,
-        ContextDestroyedCreatingCallbacks,
-        ContextDestroyedRegisteringDefinition,
-        ExtendsIsInvalidName,
-        ExtendsIsCustomElementName,
-        InvalidName,
-        PrototypeInUse,
-        TypeAlreadyRegistered
-    };
+  STATIC_ONLY(V0CustomElementException);
 
-    static void throwException(Reason, const AtomicString& type, ExceptionState&);
+ public:
+  enum Reason {
+    CannotRegisterFromExtension,
+    ConstructorPropertyNotConfigurable,
+    ContextDestroyedCheckingPrototype,
+    ContextDestroyedCreatingCallbacks,
+    ContextDestroyedRegisteringDefinition,
+    ExtendsIsInvalidName,
+    ExtendsIsCustomElementName,
+    InvalidName,
+    PrototypeInUse,
+    TypeAlreadyRegistered
+  };
 
-private:
-    static String preamble(const AtomicString& type);
+  static void throwException(Reason, const AtomicString& type, ExceptionState&);
+
+ private:
+  static String preamble(const AtomicString& type);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementException_h
+#endif  // V0CustomElementException_h

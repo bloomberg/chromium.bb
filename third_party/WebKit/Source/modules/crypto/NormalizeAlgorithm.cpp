@@ -53,14 +53,14 @@ namespace {
 typedef ArrayBufferOrArrayBufferView BufferSource;
 
 struct AlgorithmNameMapping {
-    // Must be an upper case ASCII string.
-    const char* const algorithmName;
-    // Must be strlen(algorithmName).
-    unsigned char algorithmNameLength;
-    WebCryptoAlgorithmId algorithmId;
+  // Must be an upper case ASCII string.
+  const char* const algorithmName;
+  // Must be strlen(algorithmName).
+  unsigned char algorithmNameLength;
+  WebCryptoAlgorithmId algorithmId;
 
 #if ENABLE(ASSERT)
-    bool operator<(const AlgorithmNameMapping&) const;
+  bool operator<(const AlgorithmNameMapping&) const;
 #endif
 };
 
@@ -87,127 +87,128 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
 
 // Reminder to update the table mapping names to IDs whenever adding a new
 // algorithm ID.
-static_assert(WebCryptoAlgorithmIdLast + 1 == WTF_ARRAY_LENGTH(algorithmNameMappings), "algorithmNameMappings needs to be updated");
+static_assert(WebCryptoAlgorithmIdLast + 1 ==
+                  WTF_ARRAY_LENGTH(algorithmNameMappings),
+              "algorithmNameMappings needs to be updated");
 
 #if ENABLE(ASSERT)
 
 // Essentially std::is_sorted() (however that function is new to C++11).
 template <typename Iterator>
-bool isSorted(Iterator begin, Iterator end)
-{
-    if (begin == end)
-        return true;
-
-    Iterator prev = begin;
-    Iterator cur = begin + 1;
-
-    while (cur != end) {
-        if (*cur < *prev)
-            return false;
-        cur++;
-        prev++;
-    }
-
+bool isSorted(Iterator begin, Iterator end) {
+  if (begin == end)
     return true;
+
+  Iterator prev = begin;
+  Iterator cur = begin + 1;
+
+  while (cur != end) {
+    if (*cur < *prev)
+      return false;
+    cur++;
+    prev++;
+  }
+
+  return true;
 }
 
-bool AlgorithmNameMapping::operator<(const AlgorithmNameMapping& o) const
-{
-    if (algorithmNameLength < o.algorithmNameLength)
-        return true;
-    if (algorithmNameLength > o.algorithmNameLength)
-        return false;
-
-    for (size_t i = 0; i < algorithmNameLength; ++i) {
-        size_t reverseIndex = algorithmNameLength - i - 1;
-        char c1 = algorithmName[reverseIndex];
-        char c2 = o.algorithmName[reverseIndex];
-
-        if (c1 < c2)
-            return true;
-        if (c1 > c2)
-            return false;
-    }
-
+bool AlgorithmNameMapping::operator<(const AlgorithmNameMapping& o) const {
+  if (algorithmNameLength < o.algorithmNameLength)
+    return true;
+  if (algorithmNameLength > o.algorithmNameLength)
     return false;
+
+  for (size_t i = 0; i < algorithmNameLength; ++i) {
+    size_t reverseIndex = algorithmNameLength - i - 1;
+    char c1 = algorithmName[reverseIndex];
+    char c2 = o.algorithmName[reverseIndex];
+
+    if (c1 < c2)
+      return true;
+    if (c1 > c2)
+      return false;
+  }
+
+  return false;
 }
 
-bool verifyAlgorithmNameMappings(const AlgorithmNameMapping* begin, const AlgorithmNameMapping* end)
-{
-    for (const AlgorithmNameMapping* it = begin; it != end; ++it) {
-        if (it->algorithmNameLength != strlen(it->algorithmName))
-            return false;
-        String str(it->algorithmName, it->algorithmNameLength);
-        if (!str.containsOnlyASCII())
-            return false;
-        if (str.upper() != str)
-            return false;
-    }
+bool verifyAlgorithmNameMappings(const AlgorithmNameMapping* begin,
+                                 const AlgorithmNameMapping* end) {
+  for (const AlgorithmNameMapping* it = begin; it != end; ++it) {
+    if (it->algorithmNameLength != strlen(it->algorithmName))
+      return false;
+    String str(it->algorithmName, it->algorithmNameLength);
+    if (!str.containsOnlyASCII())
+      return false;
+    if (str.upper() != str)
+      return false;
+  }
 
-    return isSorted(begin, end);
+  return isSorted(begin, end);
 }
 #endif
 
 template <typename CharType>
-bool algorithmNameComparator(const AlgorithmNameMapping& a, StringImpl* b)
-{
-    if (a.algorithmNameLength < b->length())
-        return true;
-    if (a.algorithmNameLength > b->length())
-        return false;
-
-    // Because the algorithm names contain many common prefixes, it is better
-    // to compare starting at the end of the string.
-    for (size_t i = 0; i < a.algorithmNameLength; ++i) {
-        size_t reverseIndex = a.algorithmNameLength - i - 1;
-        CharType c1 = a.algorithmName[reverseIndex];
-        CharType c2 = b->getCharacters<CharType>()[reverseIndex];
-        if (!isASCII(c2))
-            return false;
-        c2 = toASCIIUpper(c2);
-
-        if (c1 < c2)
-            return true;
-        if (c1 > c2)
-            return false;
-    }
-
-    return false;
-}
-
-bool lookupAlgorithmIdByName(const String& algorithmName, WebCryptoAlgorithmId& id)
-{
-    const AlgorithmNameMapping* begin = algorithmNameMappings;
-    const AlgorithmNameMapping* end = algorithmNameMappings + WTF_ARRAY_LENGTH(algorithmNameMappings);
-
-    ASSERT(verifyAlgorithmNameMappings(begin, end));
-
-    const AlgorithmNameMapping* it;
-    if (algorithmName.impl()->is8Bit())
-        it = std::lower_bound(begin, end, algorithmName.impl(), &algorithmNameComparator<LChar>);
-    else
-        it = std::lower_bound(begin, end, algorithmName.impl(), &algorithmNameComparator<UChar>);
-
-    if (it == end)
-        return false;
-
-    if (it->algorithmNameLength != algorithmName.length() || !equalIgnoringCase(algorithmName, it->algorithmName))
-        return false;
-
-    id = it->algorithmId;
+bool algorithmNameComparator(const AlgorithmNameMapping& a, StringImpl* b) {
+  if (a.algorithmNameLength < b->length())
     return true;
+  if (a.algorithmNameLength > b->length())
+    return false;
+
+  // Because the algorithm names contain many common prefixes, it is better
+  // to compare starting at the end of the string.
+  for (size_t i = 0; i < a.algorithmNameLength; ++i) {
+    size_t reverseIndex = a.algorithmNameLength - i - 1;
+    CharType c1 = a.algorithmName[reverseIndex];
+    CharType c2 = b->getCharacters<CharType>()[reverseIndex];
+    if (!isASCII(c2))
+      return false;
+    c2 = toASCIIUpper(c2);
+
+    if (c1 < c2)
+      return true;
+    if (c1 > c2)
+      return false;
+  }
+
+  return false;
 }
 
-void setTypeError(const String& message, AlgorithmError* error)
-{
-    error->errorType = WebCryptoErrorTypeType;
-    error->errorDetails = message;
+bool lookupAlgorithmIdByName(const String& algorithmName,
+                             WebCryptoAlgorithmId& id) {
+  const AlgorithmNameMapping* begin = algorithmNameMappings;
+  const AlgorithmNameMapping* end =
+      algorithmNameMappings + WTF_ARRAY_LENGTH(algorithmNameMappings);
+
+  ASSERT(verifyAlgorithmNameMappings(begin, end));
+
+  const AlgorithmNameMapping* it;
+  if (algorithmName.impl()->is8Bit())
+    it = std::lower_bound(begin, end, algorithmName.impl(),
+                          &algorithmNameComparator<LChar>);
+  else
+    it = std::lower_bound(begin, end, algorithmName.impl(),
+                          &algorithmNameComparator<UChar>);
+
+  if (it == end)
+    return false;
+
+  if (it->algorithmNameLength != algorithmName.length() ||
+      !equalIgnoringCase(algorithmName, it->algorithmName))
+    return false;
+
+  id = it->algorithmId;
+  return true;
 }
 
-void setNotSupportedError(const String& message, AlgorithmError* error)
-{
-    error->errorType = WebCryptoErrorTypeNotSupported;
-    error->errorDetails = message;
+void setTypeError(const String& message, AlgorithmError* error) {
+  error->errorType = WebCryptoErrorTypeType;
+  error->errorDetails = message;
+}
+
+void setNotSupportedError(const String& message, AlgorithmError* error) {
+  error->errorType = WebCryptoErrorTypeNotSupported;
+  error->errorDetails = message;
 }
 
 // ErrorContext holds a stack of string literals which describe what was
@@ -215,241 +216,289 @@ void setNotSupportedError(const String& message, AlgorithmError* error)
 // parsing of the algorithm dictionary can be recursive and it is difficult to
 // tell what went wrong from a failure alone.
 class ErrorContext {
-public:
-    void add(const char* message)
-    {
-        m_messages.append(message);
+ public:
+  void add(const char* message) { m_messages.append(message); }
+
+  void removeLast() { m_messages.removeLast(); }
+
+  // Join all of the string literals into a single String.
+  String toString() const {
+    if (m_messages.isEmpty())
+      return String();
+
+    StringBuilder result;
+    const char* Separator = ": ";
+
+    size_t length = (m_messages.size() - 1) * strlen(Separator);
+    for (size_t i = 0; i < m_messages.size(); ++i)
+      length += strlen(m_messages[i]);
+    result.reserveCapacity(length);
+
+    for (size_t i = 0; i < m_messages.size(); ++i) {
+      if (i)
+        result.append(Separator, strlen(Separator));
+      result.append(m_messages[i], strlen(m_messages[i]));
     }
 
-    void removeLast()
-    {
-        m_messages.removeLast();
-    }
+    return result.toString();
+  }
 
-    // Join all of the string literals into a single String.
-    String toString() const
-    {
-        if (m_messages.isEmpty())
-            return String();
+  String toString(const char* message) const {
+    ErrorContext stack(*this);
+    stack.add(message);
+    return stack.toString();
+  }
 
-        StringBuilder result;
-        const char* Separator = ": ";
+  String toString(const char* message1, const char* message2) const {
+    ErrorContext stack(*this);
+    stack.add(message1);
+    stack.add(message2);
+    return stack.toString();
+  }
 
-        size_t length = (m_messages.size() - 1) * strlen(Separator);
-        for (size_t i = 0; i < m_messages.size(); ++i)
-            length += strlen(m_messages[i]);
-        result.reserveCapacity(length);
-
-        for (size_t i = 0; i < m_messages.size(); ++i) {
-            if (i)
-                result.append(Separator, strlen(Separator));
-            result.append(m_messages[i], strlen(m_messages[i]));
-        }
-
-        return result.toString();
-    }
-
-    String toString(const char* message) const
-    {
-        ErrorContext stack(*this);
-        stack.add(message);
-        return stack.toString();
-    }
-
-    String toString(const char* message1, const char* message2) const
-    {
-        ErrorContext stack(*this);
-        stack.add(message1);
-        stack.add(message2);
-        return stack.toString();
-    }
-
-private:
-    // This inline size is large enough to avoid having to grow the Vector in
-    // the majority of cases (up to 1 nested algorithm identifier).
-    Vector<const char*, 10> m_messages;
+ private:
+  // This inline size is large enough to avoid having to grow the Vector in
+  // the majority of cases (up to 1 nested algorithm identifier).
+  Vector<const char*, 10> m_messages;
 };
 
-static WebVector<uint8_t> copyBytes(const DOMArrayPiece& source)
-{
-    return WebVector<uint8_t>(static_cast<const uint8_t*>(source.data()), source.byteLength());
+static WebVector<uint8_t> copyBytes(const DOMArrayPiece& source) {
+  return WebVector<uint8_t>(static_cast<const uint8_t*>(source.data()),
+                            source.byteLength());
 }
 
 // Defined by the WebCrypto spec as:
 //
 //     typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 //
-bool getOptionalBufferSource(const Dictionary& raw, const char* propertyName, bool& hasProperty, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
-{
-    hasProperty = false;
-    v8::Local<v8::Value> v8Value;
-    if (!raw.get(propertyName, v8Value))
-        return true;
-    hasProperty = true;
-
-    if (v8Value->IsArrayBufferView()) {
-        bytes = copyBytes(V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value)));
-        return true;
-    }
-
-    if (v8Value->IsArrayBuffer()) {
-        bytes = copyBytes(V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value)));
-        return true;
-    }
-
-    if (hasProperty) {
-        setTypeError(context.toString(propertyName, "Not a BufferSource"), error);
-        return false;
-    }
+bool getOptionalBufferSource(const Dictionary& raw,
+                             const char* propertyName,
+                             bool& hasProperty,
+                             WebVector<uint8_t>& bytes,
+                             const ErrorContext& context,
+                             AlgorithmError* error) {
+  hasProperty = false;
+  v8::Local<v8::Value> v8Value;
+  if (!raw.get(propertyName, v8Value))
     return true;
+  hasProperty = true;
+
+  if (v8Value->IsArrayBufferView()) {
+    bytes = copyBytes(
+        V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value)));
+    return true;
+  }
+
+  if (v8Value->IsArrayBuffer()) {
+    bytes =
+        copyBytes(V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value)));
+    return true;
+  }
+
+  if (hasProperty) {
+    setTypeError(context.toString(propertyName, "Not a BufferSource"), error);
+    return false;
+  }
+  return true;
 }
 
-bool getBufferSource(const Dictionary& raw, const char* propertyName, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
-{
-    bool hasProperty;
-    bool ok = getOptionalBufferSource(raw, propertyName, hasProperty, bytes, context, error);
-    if (!hasProperty) {
-        setTypeError(context.toString(propertyName, "Missing required property"), error);
-        return false;
-    }
-    return ok;
+bool getBufferSource(const Dictionary& raw,
+                     const char* propertyName,
+                     WebVector<uint8_t>& bytes,
+                     const ErrorContext& context,
+                     AlgorithmError* error) {
+  bool hasProperty;
+  bool ok = getOptionalBufferSource(raw, propertyName, hasProperty, bytes,
+                                    context, error);
+  if (!hasProperty) {
+    setTypeError(context.toString(propertyName, "Missing required property"),
+                 error);
+    return false;
+  }
+  return ok;
 }
 
-bool getUint8Array(const Dictionary& raw, const char* propertyName, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
-{
-    DOMUint8Array* array = nullptr;
-    if (!DictionaryHelper::get(raw, propertyName, array) || !array) {
-        setTypeError(context.toString(propertyName, "Missing or not a Uint8Array"), error);
-        return false;
-    }
-    bytes = copyBytes(array);
-    return true;
+bool getUint8Array(const Dictionary& raw,
+                   const char* propertyName,
+                   WebVector<uint8_t>& bytes,
+                   const ErrorContext& context,
+                   AlgorithmError* error) {
+  DOMUint8Array* array = nullptr;
+  if (!DictionaryHelper::get(raw, propertyName, array) || !array) {
+    setTypeError(context.toString(propertyName, "Missing or not a Uint8Array"),
+                 error);
+    return false;
+  }
+  bytes = copyBytes(array);
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
 //
 //     typedef Uint8Array BigInteger;
-bool getBigInteger(const Dictionary& raw, const char* propertyName, WebVector<uint8_t>& bytes, const ErrorContext& context, AlgorithmError* error)
-{
-    if (!getUint8Array(raw, propertyName, bytes, context, error))
-        return false;
+bool getBigInteger(const Dictionary& raw,
+                   const char* propertyName,
+                   WebVector<uint8_t>& bytes,
+                   const ErrorContext& context,
+                   AlgorithmError* error) {
+  if (!getUint8Array(raw, propertyName, bytes, context, error))
+    return false;
 
-    if (bytes.isEmpty()) {
-        // Empty BigIntegers represent 0 according to the spec
-        bytes = WebVector<uint8_t>(static_cast<size_t>(1u));
-        DCHECK_EQ(0u, bytes[0]);
-    }
+  if (bytes.isEmpty()) {
+    // Empty BigIntegers represent 0 according to the spec
+    bytes = WebVector<uint8_t>(static_cast<size_t>(1u));
+    DCHECK_EQ(0u, bytes[0]);
+  }
 
-    return true;
+  return true;
 }
 
 // Gets an integer according to WebIDL's [EnforceRange].
-bool getOptionalInteger(const Dictionary& raw, const char* propertyName, bool& hasProperty, double& value, double minValue, double maxValue, const ErrorContext& context, AlgorithmError* error)
-{
-    double number;
-    bool ok = DictionaryHelper::get(raw, propertyName, number, hasProperty);
+bool getOptionalInteger(const Dictionary& raw,
+                        const char* propertyName,
+                        bool& hasProperty,
+                        double& value,
+                        double minValue,
+                        double maxValue,
+                        const ErrorContext& context,
+                        AlgorithmError* error) {
+  double number;
+  bool ok = DictionaryHelper::get(raw, propertyName, number, hasProperty);
 
-    if (!hasProperty)
-        return true;
+  if (!hasProperty)
+    return true;
 
-    if (!ok || std::isnan(number)) {
-        setTypeError(context.toString(propertyName, "Is not a number"), error);
-        return false;
-    }
+  if (!ok || std::isnan(number)) {
+    setTypeError(context.toString(propertyName, "Is not a number"), error);
+    return false;
+  }
 
-    number = trunc(number);
+  number = trunc(number);
 
-    if (std::isinf(number) || number < minValue || number > maxValue) {
-        setTypeError(context.toString(propertyName, "Outside of numeric range"), error);
-        return false;
-    }
+  if (std::isinf(number) || number < minValue || number > maxValue) {
+    setTypeError(context.toString(propertyName, "Outside of numeric range"),
+                 error);
+    return false;
+  }
 
+  value = number;
+  return true;
+}
+
+bool getInteger(const Dictionary& raw,
+                const char* propertyName,
+                double& value,
+                double minValue,
+                double maxValue,
+                const ErrorContext& context,
+                AlgorithmError* error) {
+  bool hasProperty;
+  if (!getOptionalInteger(raw, propertyName, hasProperty, value, minValue,
+                          maxValue, context, error))
+    return false;
+
+  if (!hasProperty) {
+    setTypeError(context.toString(propertyName, "Missing required property"),
+                 error);
+    return false;
+  }
+
+  return true;
+}
+
+bool getUint32(const Dictionary& raw,
+               const char* propertyName,
+               uint32_t& value,
+               const ErrorContext& context,
+               AlgorithmError* error) {
+  double number;
+  if (!getInteger(raw, propertyName, number, 0, 0xFFFFFFFF, context, error))
+    return false;
+  value = number;
+  return true;
+}
+
+bool getUint16(const Dictionary& raw,
+               const char* propertyName,
+               uint16_t& value,
+               const ErrorContext& context,
+               AlgorithmError* error) {
+  double number;
+  if (!getInteger(raw, propertyName, number, 0, 0xFFFF, context, error))
+    return false;
+  value = number;
+  return true;
+}
+
+bool getUint8(const Dictionary& raw,
+              const char* propertyName,
+              uint8_t& value,
+              const ErrorContext& context,
+              AlgorithmError* error) {
+  double number;
+  if (!getInteger(raw, propertyName, number, 0, 0xFF, context, error))
+    return false;
+  value = number;
+  return true;
+}
+
+bool getOptionalUint32(const Dictionary& raw,
+                       const char* propertyName,
+                       bool& hasValue,
+                       uint32_t& value,
+                       const ErrorContext& context,
+                       AlgorithmError* error) {
+  double number;
+  if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFFFFFFFF,
+                          context, error))
+    return false;
+  if (hasValue)
     value = number;
-    return true;
+  return true;
 }
 
-bool getInteger(const Dictionary& raw, const char* propertyName, double& value, double minValue, double maxValue, const ErrorContext& context, AlgorithmError* error)
-{
-    bool hasProperty;
-    if (!getOptionalInteger(raw, propertyName, hasProperty, value, minValue, maxValue, context, error))
-        return false;
-
-    if (!hasProperty) {
-        setTypeError(context.toString(propertyName, "Missing required property"), error);
-        return false;
-    }
-
-    return true;
-}
-
-bool getUint32(const Dictionary& raw, const char* propertyName, uint32_t& value, const ErrorContext& context, AlgorithmError* error)
-{
-    double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFFFFFFFF, context, error))
-        return false;
+bool getOptionalUint8(const Dictionary& raw,
+                      const char* propertyName,
+                      bool& hasValue,
+                      uint8_t& value,
+                      const ErrorContext& context,
+                      AlgorithmError* error) {
+  double number;
+  if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFF, context,
+                          error))
+    return false;
+  if (hasValue)
     value = number;
-    return true;
+  return true;
 }
 
-bool getUint16(const Dictionary& raw, const char* propertyName, uint16_t& value, const ErrorContext& context, AlgorithmError* error)
-{
-    double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFFFF, context, error))
-        return false;
-    value = number;
+bool getAlgorithmIdentifier(const Dictionary& raw,
+                            const char* propertyName,
+                            AlgorithmIdentifier& value,
+                            const ErrorContext& context,
+                            AlgorithmError* error) {
+  // FIXME: This is not correct: http://crbug.com/438060
+  //   (1) It may retrieve the property twice from the dictionary, whereas it
+  //       should be reading the v8 value once to avoid issues with getters.
+  //   (2) The value is stringified (whereas the spec says it should be an
+  //       instance of DOMString).
+  Dictionary dictionary;
+  if (DictionaryHelper::get(raw, propertyName, dictionary) &&
+      !dictionary.isUndefinedOrNull()) {
+    value.setDictionary(dictionary);
     return true;
-}
+  }
 
-bool getUint8(const Dictionary& raw, const char* propertyName, uint8_t& value, const ErrorContext& context, AlgorithmError* error)
-{
-    double number;
-    if (!getInteger(raw, propertyName, number, 0, 0xFF, context, error))
-        return false;
-    value = number;
-    return true;
-}
+  String algorithmName;
+  if (!DictionaryHelper::get(raw, propertyName, algorithmName)) {
+    setTypeError(
+        context.toString(propertyName, "Missing or not an AlgorithmIdentifier"),
+        error);
+    return false;
+  }
 
-bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& hasValue, uint32_t& value, const ErrorContext& context, AlgorithmError* error)
-{
-    double number;
-    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFFFFFFFF, context, error))
-        return false;
-    if (hasValue)
-        value = number;
-    return true;
-}
-
-bool getOptionalUint8(const Dictionary& raw, const char* propertyName, bool& hasValue, uint8_t& value, const ErrorContext& context, AlgorithmError* error)
-{
-    double number;
-    if (!getOptionalInteger(raw, propertyName, hasValue, number, 0, 0xFF, context, error))
-        return false;
-    if (hasValue)
-        value = number;
-    return true;
-}
-
-bool getAlgorithmIdentifier(const Dictionary& raw, const char* propertyName, AlgorithmIdentifier& value, const ErrorContext& context, AlgorithmError* error)
-{
-    // FIXME: This is not correct: http://crbug.com/438060
-    //   (1) It may retrieve the property twice from the dictionary, whereas it
-    //       should be reading the v8 value once to avoid issues with getters.
-    //   (2) The value is stringified (whereas the spec says it should be an
-    //       instance of DOMString).
-    Dictionary dictionary;
-    if (DictionaryHelper::get(raw, propertyName, dictionary) && !dictionary.isUndefinedOrNull()) {
-        value.setDictionary(dictionary);
-        return true;
-    }
-
-    String algorithmName;
-    if (!DictionaryHelper::get(raw, propertyName, algorithmName)) {
-        setTypeError(context.toString(propertyName, "Missing or not an AlgorithmIdentifier"), error);
-        return false;
-    }
-
-    value.setString(algorithmName);
-    return true;
+  value.setString(algorithmName);
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -457,14 +506,16 @@ bool getAlgorithmIdentifier(const Dictionary& raw, const char* propertyName, Alg
 //    dictionary AesCbcParams : Algorithm {
 //      required BufferSource iv;
 //    };
-bool parseAesCbcParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebVector<uint8_t> iv;
-    if (!getBufferSource(raw, "iv", iv, context, error))
-        return false;
+bool parseAesCbcParams(const Dictionary& raw,
+                       std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                       const ErrorContext& context,
+                       AlgorithmError* error) {
+  WebVector<uint8_t> iv;
+  if (!getBufferSource(raw, "iv", iv, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoAesCbcParams(std::move(iv)));
-    return true;
+  params = wrapUnique(new WebCryptoAesCbcParams(std::move(iv)));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -472,26 +523,35 @@ bool parseAesCbcParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
 //    dictionary AesKeyGenParams : Algorithm {
 //      [EnforceRange] required unsigned short length;
 //    };
-bool parseAesKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    uint16_t length;
-    if (!getUint16(raw, "length", length, context, error))
-        return false;
+bool parseAesKeyGenParams(const Dictionary& raw,
+                          std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                          const ErrorContext& context,
+                          AlgorithmError* error) {
+  uint16_t length;
+  if (!getUint16(raw, "length", length, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoAesKeyGenParams(length));
-    return true;
+  params = wrapUnique(new WebCryptoAesKeyGenParams(length));
+  return true;
 }
 
-bool parseAlgorithmIdentifier(const AlgorithmIdentifier&, WebCryptoOperation, WebCryptoAlgorithm&, ErrorContext, AlgorithmError*);
+bool parseAlgorithmIdentifier(const AlgorithmIdentifier&,
+                              WebCryptoOperation,
+                              WebCryptoAlgorithm&,
+                              ErrorContext,
+                              AlgorithmError*);
 
-bool parseHash(const Dictionary& raw, WebCryptoAlgorithm& hash, ErrorContext context, AlgorithmError* error)
-{
-    AlgorithmIdentifier rawHash;
-    if (!getAlgorithmIdentifier(raw, "hash", rawHash, context, error))
-        return false;
+bool parseHash(const Dictionary& raw,
+               WebCryptoAlgorithm& hash,
+               ErrorContext context,
+               AlgorithmError* error) {
+  AlgorithmIdentifier rawHash;
+  if (!getAlgorithmIdentifier(raw, "hash", rawHash, context, error))
+    return false;
 
-    context.add("hash");
-    return parseAlgorithmIdentifier(rawHash, WebCryptoOperationDigest, hash, context, error);
+  context.add("hash");
+  return parseAlgorithmIdentifier(rawHash, WebCryptoOperationDigest, hash,
+                                  context, error);
 }
 
 // Defined by the WebCrypto spec as:
@@ -500,19 +560,21 @@ bool parseHash(const Dictionary& raw, WebCryptoAlgorithm& hash, ErrorContext con
 //      required HashAlgorithmIdentifier hash;
 //      [EnforceRange] unsigned long length;
 //    };
-bool parseHmacImportParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, error))
-        return false;
+bool parseHmacImportParams(const Dictionary& raw,
+                           std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                           const ErrorContext& context,
+                           AlgorithmError* error) {
+  WebCryptoAlgorithm hash;
+  if (!parseHash(raw, hash, context, error))
+    return false;
 
-    bool hasLength;
-    uint32_t length = 0;
-    if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
-        return false;
+  bool hasLength;
+  uint32_t length = 0;
+  if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoHmacImportParams(hash, hasLength, length));
-    return true;
+  params = wrapUnique(new WebCryptoHmacImportParams(hash, hasLength, length));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -521,19 +583,21 @@ bool parseHmacImportParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgor
 //      required HashAlgorithmIdentifier hash;
 //      [EnforceRange] unsigned long length;
 //    };
-bool parseHmacKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, error))
-        return false;
+bool parseHmacKeyGenParams(const Dictionary& raw,
+                           std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                           const ErrorContext& context,
+                           AlgorithmError* error) {
+  WebCryptoAlgorithm hash;
+  if (!parseHash(raw, hash, context, error))
+    return false;
 
-    bool hasLength;
-    uint32_t length = 0;
-    if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
-        return false;
+  bool hasLength;
+  uint32_t length = 0;
+  if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoHmacKeyGenParams(hash, hasLength, length));
-    return true;
+  params = wrapUnique(new WebCryptoHmacKeyGenParams(hash, hasLength, length));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -541,14 +605,17 @@ bool parseHmacKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgor
 //    dictionary RsaHashedImportParams : Algorithm {
 //      required HashAlgorithmIdentifier hash;
 //    };
-bool parseRsaHashedImportParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, error))
-        return false;
+bool parseRsaHashedImportParams(
+    const Dictionary& raw,
+    std::unique_ptr<WebCryptoAlgorithmParams>& params,
+    const ErrorContext& context,
+    AlgorithmError* error) {
+  WebCryptoAlgorithm hash;
+  if (!parseHash(raw, hash, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoRsaHashedImportParams(hash));
-    return true;
+  params = wrapUnique(new WebCryptoRsaHashedImportParams(hash));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -561,22 +628,26 @@ bool parseRsaHashedImportParams(const Dictionary& raw, std::unique_ptr<WebCrypto
 //    dictionary RsaHashedKeyGenParams : RsaKeyGenParams {
 //      required HashAlgorithmIdentifier hash;
 //    };
-bool parseRsaHashedKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    uint32_t modulusLength;
-    if (!getUint32(raw, "modulusLength", modulusLength, context, error))
-        return false;
+bool parseRsaHashedKeyGenParams(
+    const Dictionary& raw,
+    std::unique_ptr<WebCryptoAlgorithmParams>& params,
+    const ErrorContext& context,
+    AlgorithmError* error) {
+  uint32_t modulusLength;
+  if (!getUint32(raw, "modulusLength", modulusLength, context, error))
+    return false;
 
-    WebVector<uint8_t> publicExponent;
-    if (!getBigInteger(raw, "publicExponent", publicExponent, context, error))
-        return false;
+  WebVector<uint8_t> publicExponent;
+  if (!getBigInteger(raw, "publicExponent", publicExponent, context, error))
+    return false;
 
-    WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, error))
-        return false;
+  WebCryptoAlgorithm hash;
+  if (!parseHash(raw, hash, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoRsaHashedKeyGenParams(hash, modulusLength, std::move(publicExponent)));
-    return true;
+  params = wrapUnique(new WebCryptoRsaHashedKeyGenParams(
+      hash, modulusLength, std::move(publicExponent)));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -585,18 +656,20 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCrypto
 //      required BufferSource counter;
 //      [EnforceRange] required octet length;
 //    };
-bool parseAesCtrParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebVector<uint8_t> counter;
-    if (!getBufferSource(raw, "counter", counter, context, error))
-        return false;
+bool parseAesCtrParams(const Dictionary& raw,
+                       std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                       const ErrorContext& context,
+                       AlgorithmError* error) {
+  WebVector<uint8_t> counter;
+  if (!getBufferSource(raw, "counter", counter, context, error))
+    return false;
 
-    uint8_t length;
-    if (!getUint8(raw, "length", length, context, error))
-        return false;
+  uint8_t length;
+  if (!getUint8(raw, "length", length, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoAesCtrParams(length, std::move(counter)));
-    return true;
+  params = wrapUnique(new WebCryptoAesCtrParams(length, std::move(counter)));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -606,24 +679,30 @@ bool parseAesCtrParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
 //       BufferSource additionalData;
 //       [EnforceRange] octet tagLength;
 //     }
-bool parseAesGcmParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebVector<uint8_t> iv;
-    if (!getBufferSource(raw, "iv", iv, context, error))
-        return false;
+bool parseAesGcmParams(const Dictionary& raw,
+                       std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                       const ErrorContext& context,
+                       AlgorithmError* error) {
+  WebVector<uint8_t> iv;
+  if (!getBufferSource(raw, "iv", iv, context, error))
+    return false;
 
-    bool hasAdditionalData;
-    WebVector<uint8_t> additionalData;
-    if (!getOptionalBufferSource(raw, "additionalData", hasAdditionalData, additionalData, context, error))
-        return false;
+  bool hasAdditionalData;
+  WebVector<uint8_t> additionalData;
+  if (!getOptionalBufferSource(raw, "additionalData", hasAdditionalData,
+                               additionalData, context, error))
+    return false;
 
-    uint8_t tagLength = 0;
-    bool hasTagLength;
-    if (!getOptionalUint8(raw, "tagLength", hasTagLength, tagLength, context, error))
-        return false;
+  uint8_t tagLength = 0;
+  bool hasTagLength;
+  if (!getOptionalUint8(raw, "tagLength", hasTagLength, tagLength, context,
+                        error))
+    return false;
 
-    params = wrapUnique(new WebCryptoAesGcmParams(std::move(iv), hasAdditionalData, std::move(additionalData), hasTagLength, tagLength));
-    return true;
+  params = wrapUnique(new WebCryptoAesGcmParams(
+      std::move(iv), hasAdditionalData, std::move(additionalData), hasTagLength,
+      tagLength));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -631,15 +710,17 @@ bool parseAesGcmParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
 //     dictionary RsaOaepParams : Algorithm {
 //       BufferSource label;
 //     };
-bool parseRsaOaepParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    bool hasLabel;
-    WebVector<uint8_t> label;
-    if (!getOptionalBufferSource(raw, "label", hasLabel, label, context, error))
-        return false;
+bool parseRsaOaepParams(const Dictionary& raw,
+                        std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                        const ErrorContext& context,
+                        AlgorithmError* error) {
+  bool hasLabel;
+  WebVector<uint8_t> label;
+  if (!getOptionalBufferSource(raw, "label", hasLabel, label, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoRsaOaepParams(hasLabel, std::move(label)));
-    return true;
+  params = wrapUnique(new WebCryptoRsaOaepParams(hasLabel, std::move(label)));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -647,14 +728,16 @@ bool parseRsaOaepParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorith
 //     dictionary RsaPssParams : Algorithm {
 //       [EnforceRange] required unsigned long saltLength;
 //     };
-bool parseRsaPssParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    uint32_t saltLengthBytes;
-    if (!getUint32(raw, "saltLength", saltLengthBytes, context, error))
-        return false;
+bool parseRsaPssParams(const Dictionary& raw,
+                       std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                       const ErrorContext& context,
+                       AlgorithmError* error) {
+  uint32_t saltLengthBytes;
+  if (!getUint32(raw, "saltLength", saltLengthBytes, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoRsaPssParams(saltLengthBytes));
-    return true;
+  params = wrapUnique(new WebCryptoRsaPssParams(saltLengthBytes));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -662,47 +745,53 @@ bool parseRsaPssParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
 //     dictionary EcdsaParams : Algorithm {
 //       required HashAlgorithmIdentifier hash;
 //     };
-bool parseEcdsaParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, error))
-        return false;
+bool parseEcdsaParams(const Dictionary& raw,
+                      std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                      const ErrorContext& context,
+                      AlgorithmError* error) {
+  WebCryptoAlgorithm hash;
+  if (!parseHash(raw, hash, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoEcdsaParams(hash));
-    return true;
+  params = wrapUnique(new WebCryptoEcdsaParams(hash));
+  return true;
 }
 
 struct CurveNameMapping {
-    const char* const name;
-    WebCryptoNamedCurve value;
+  const char* const name;
+  WebCryptoNamedCurve value;
 };
 
 const CurveNameMapping curveNameMappings[] = {
-    { "P-256", WebCryptoNamedCurveP256 },
-    { "P-384", WebCryptoNamedCurveP384 },
-    { "P-521", WebCryptoNamedCurveP521 }
-};
+    {"P-256", WebCryptoNamedCurveP256},
+    {"P-384", WebCryptoNamedCurveP384},
+    {"P-521", WebCryptoNamedCurveP521}};
 
 // Reminder to update curveNameMappings when adding a new curve.
-static_assert(WebCryptoNamedCurveLast + 1 == WTF_ARRAY_LENGTH(curveNameMappings), "curveNameMappings needs to be updated");
+static_assert(WebCryptoNamedCurveLast + 1 ==
+                  WTF_ARRAY_LENGTH(curveNameMappings),
+              "curveNameMappings needs to be updated");
 
-bool parseNamedCurve(const Dictionary& raw, WebCryptoNamedCurve& namedCurve, ErrorContext context, AlgorithmError* error)
-{
-    String namedCurveString;
-    if (!DictionaryHelper::get(raw, "namedCurve", namedCurveString)) {
-        setTypeError(context.toString("namedCurve", "Missing or not a string"), error);
-        return false;
-    }
-
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(curveNameMappings); ++i) {
-        if (curveNameMappings[i].name == namedCurveString) {
-            namedCurve = curveNameMappings[i].value;
-            return true;
-        }
-    }
-
-    setNotSupportedError(context.toString("Unrecognized namedCurve"), error);
+bool parseNamedCurve(const Dictionary& raw,
+                     WebCryptoNamedCurve& namedCurve,
+                     ErrorContext context,
+                     AlgorithmError* error) {
+  String namedCurveString;
+  if (!DictionaryHelper::get(raw, "namedCurve", namedCurveString)) {
+    setTypeError(context.toString("namedCurve", "Missing or not a string"),
+                 error);
     return false;
+  }
+
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(curveNameMappings); ++i) {
+    if (curveNameMappings[i].name == namedCurveString) {
+      namedCurve = curveNameMappings[i].value;
+      return true;
+    }
+  }
+
+  setNotSupportedError(context.toString("Unrecognized namedCurve"), error);
+  return false;
 }
 
 // Defined by the WebCrypto spec as:
@@ -710,14 +799,16 @@ bool parseNamedCurve(const Dictionary& raw, WebCryptoNamedCurve& namedCurve, Err
 //     dictionary EcKeyGenParams : Algorithm {
 //       required NamedCurve namedCurve;
 //     };
-bool parseEcKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebCryptoNamedCurve namedCurve;
-    if (!parseNamedCurve(raw, namedCurve, context, error))
-        return false;
+bool parseEcKeyGenParams(const Dictionary& raw,
+                         std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                         const ErrorContext& context,
+                         AlgorithmError* error) {
+  WebCryptoNamedCurve namedCurve;
+  if (!parseNamedCurve(raw, namedCurve, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoEcKeyGenParams(namedCurve));
-    return true;
+  params = wrapUnique(new WebCryptoEcKeyGenParams(namedCurve));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -725,14 +816,16 @@ bool parseEcKeyGenParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorit
 //     dictionary EcKeyImportParams : Algorithm {
 //       required NamedCurve namedCurve;
 //     };
-bool parseEcKeyImportParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebCryptoNamedCurve namedCurve;
-    if (!parseNamedCurve(raw, namedCurve, context, error))
-        return false;
+bool parseEcKeyImportParams(const Dictionary& raw,
+                            std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                            const ErrorContext& context,
+                            AlgorithmError* error) {
+  WebCryptoNamedCurve namedCurve;
+  if (!parseNamedCurve(raw, namedCurve, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoEcKeyImportParams(namedCurve));
-    return true;
+  params = wrapUnique(new WebCryptoEcKeyImportParams(namedCurve));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -740,22 +833,26 @@ bool parseEcKeyImportParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgo
 //     dictionary EcdhKeyDeriveParams : Algorithm {
 //       required CryptoKey public;
 //     };
-bool parseEcdhKeyDeriveParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    v8::Local<v8::Value> v8Value;
-    if (!raw.get("public", v8Value)) {
-        setTypeError(context.toString("public", "Missing required property"), error);
-        return false;
-    }
+bool parseEcdhKeyDeriveParams(const Dictionary& raw,
+                              std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                              const ErrorContext& context,
+                              AlgorithmError* error) {
+  v8::Local<v8::Value> v8Value;
+  if (!raw.get("public", v8Value)) {
+    setTypeError(context.toString("public", "Missing required property"),
+                 error);
+    return false;
+  }
 
-    CryptoKey* cryptoKey = V8CryptoKey::toImplWithTypeCheck(raw.isolate(), v8Value);
-    if (!cryptoKey) {
-        setTypeError(context.toString("public", "Must be a CryptoKey"), error);
-        return false;
-    }
+  CryptoKey* cryptoKey =
+      V8CryptoKey::toImplWithTypeCheck(raw.isolate(), v8Value);
+  if (!cryptoKey) {
+    setTypeError(context.toString("public", "Must be a CryptoKey"), error);
+    return false;
+  }
 
-    params = wrapUnique(new WebCryptoEcdhKeyDeriveParams(cryptoKey->key()));
-    return true;
+  params = wrapUnique(new WebCryptoEcdhKeyDeriveParams(cryptoKey->key()));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -765,21 +862,24 @@ bool parseEcdhKeyDeriveParams(const Dictionary& raw, std::unique_ptr<WebCryptoAl
 //       [EnforceRange] required unsigned long iterations;
 //       required HashAlgorithmIdentifier hash;
 //     };
-bool parsePbkdf2Params(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebVector<uint8_t> salt;
-    if (!getBufferSource(raw, "salt", salt, context, error))
-        return false;
+bool parsePbkdf2Params(const Dictionary& raw,
+                       std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                       const ErrorContext& context,
+                       AlgorithmError* error) {
+  WebVector<uint8_t> salt;
+  if (!getBufferSource(raw, "salt", salt, context, error))
+    return false;
 
-    uint32_t iterations;
-    if (!getUint32(raw, "iterations", iterations, context, error))
-        return false;
+  uint32_t iterations;
+  if (!getUint32(raw, "iterations", iterations, context, error))
+    return false;
 
-    WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, error))
-        return false;
-    params = wrapUnique(new WebCryptoPbkdf2Params(hash, std::move(salt), iterations));
-    return true;
+  WebCryptoAlgorithm hash;
+  if (!parseHash(raw, hash, context, error))
+    return false;
+  params =
+      wrapUnique(new WebCryptoPbkdf2Params(hash, std::move(salt), iterations));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -787,14 +887,16 @@ bool parsePbkdf2Params(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithm
 //    dictionary AesDerivedKeyParams : Algorithm {
 //      [EnforceRange] required unsigned short length;
 //    };
-bool parseAesDerivedKeyParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    uint16_t length;
-    if (!getUint16(raw, "length", length, context, error))
-        return false;
+bool parseAesDerivedKeyParams(const Dictionary& raw,
+                              std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                              const ErrorContext& context,
+                              AlgorithmError* error) {
+  uint16_t length;
+  if (!getUint16(raw, "length", length, context, error))
+    return false;
 
-    params = wrapUnique(new WebCryptoAesDerivedKeyParams(length));
-    return true;
+  params = wrapUnique(new WebCryptoAesDerivedKeyParams(length));
+  return true;
 }
 
 // Defined by the WebCrypto spec as:
@@ -804,172 +906,194 @@ bool parseAesDerivedKeyParams(const Dictionary& raw, std::unique_ptr<WebCryptoAl
 //      required BufferSource salt;
 //      required BufferSource info;
 //    };
-bool parseHkdfParams(const Dictionary& raw, std::unique_ptr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
-{
-    WebCryptoAlgorithm hash;
-    if (!parseHash(raw, hash, context, error))
-        return false;
-    WebVector<uint8_t> salt;
-    if (!getBufferSource(raw, "salt", salt, context, error))
-        return false;
-    WebVector<uint8_t> info;
-    if (!getBufferSource(raw, "info", info, context, error))
-        return false;
-
-    params = wrapUnique(new WebCryptoHkdfParams(hash, std::move(salt), std::move(info)));
-    return true;
-}
-
-bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType type, std::unique_ptr<WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
-{
-    switch (type) {
-    case WebCryptoAlgorithmParamsTypeNone:
-        return true;
-    case WebCryptoAlgorithmParamsTypeAesCbcParams:
-        context.add("AesCbcParams");
-        return parseAesCbcParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeAesKeyGenParams:
-        context.add("AesKeyGenParams");
-        return parseAesKeyGenParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeHmacImportParams:
-        context.add("HmacImportParams");
-        return parseHmacImportParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
-        context.add("HmacKeyGenParams");
-        return parseHmacKeyGenParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
-        context.add("RsaHashedKeyGenParams");
-        return parseRsaHashedKeyGenParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
-        context.add("RsaHashedImportParams");
-        return parseRsaHashedImportParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeAesCtrParams:
-        context.add("AesCtrParams");
-        return parseAesCtrParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeAesGcmParams:
-        context.add("AesGcmParams");
-        return parseAesGcmParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeRsaOaepParams:
-        context.add("RsaOaepParams");
-        return parseRsaOaepParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeRsaPssParams:
-        context.add("RsaPssParams");
-        return parseRsaPssParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeEcdsaParams:
-        context.add("EcdsaParams");
-        return parseEcdsaParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeEcKeyGenParams:
-        context.add("EcKeyGenParams");
-        return parseEcKeyGenParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeEcKeyImportParams:
-        context.add("EcKeyImportParams");
-        return parseEcKeyImportParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams:
-        context.add("EcdhKeyDeriveParams");
-        return parseEcdhKeyDeriveParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeAesDerivedKeyParams:
-        context.add("AesDerivedKeyParams");
-        return parseAesDerivedKeyParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypeHkdfParams:
-        context.add("HkdfParams");
-        return parseHkdfParams(raw, params, context, error);
-    case WebCryptoAlgorithmParamsTypePbkdf2Params:
-        context.add("Pbkdf2Params");
-        return parsePbkdf2Params(raw, params, context, error);
-    }
-    ASSERT_NOT_REACHED();
+bool parseHkdfParams(const Dictionary& raw,
+                     std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                     const ErrorContext& context,
+                     AlgorithmError* error) {
+  WebCryptoAlgorithm hash;
+  if (!parseHash(raw, hash, context, error))
     return false;
+  WebVector<uint8_t> salt;
+  if (!getBufferSource(raw, "salt", salt, context, error))
+    return false;
+  WebVector<uint8_t> info;
+  if (!getBufferSource(raw, "info", info, context, error))
+    return false;
+
+  params = wrapUnique(
+      new WebCryptoHkdfParams(hash, std::move(salt), std::move(info)));
+  return true;
 }
 
-const char* operationToString(WebCryptoOperation op)
-{
-    switch (op) {
+bool parseAlgorithmParams(const Dictionary& raw,
+                          WebCryptoAlgorithmParamsType type,
+                          std::unique_ptr<WebCryptoAlgorithmParams>& params,
+                          ErrorContext& context,
+                          AlgorithmError* error) {
+  switch (type) {
+    case WebCryptoAlgorithmParamsTypeNone:
+      return true;
+    case WebCryptoAlgorithmParamsTypeAesCbcParams:
+      context.add("AesCbcParams");
+      return parseAesCbcParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeAesKeyGenParams:
+      context.add("AesKeyGenParams");
+      return parseAesKeyGenParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeHmacImportParams:
+      context.add("HmacImportParams");
+      return parseHmacImportParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
+      context.add("HmacKeyGenParams");
+      return parseHmacKeyGenParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
+      context.add("RsaHashedKeyGenParams");
+      return parseRsaHashedKeyGenParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
+      context.add("RsaHashedImportParams");
+      return parseRsaHashedImportParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeAesCtrParams:
+      context.add("AesCtrParams");
+      return parseAesCtrParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeAesGcmParams:
+      context.add("AesGcmParams");
+      return parseAesGcmParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeRsaOaepParams:
+      context.add("RsaOaepParams");
+      return parseRsaOaepParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeRsaPssParams:
+      context.add("RsaPssParams");
+      return parseRsaPssParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcdsaParams:
+      context.add("EcdsaParams");
+      return parseEcdsaParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcKeyGenParams:
+      context.add("EcKeyGenParams");
+      return parseEcKeyGenParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcKeyImportParams:
+      context.add("EcKeyImportParams");
+      return parseEcKeyImportParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams:
+      context.add("EcdhKeyDeriveParams");
+      return parseEcdhKeyDeriveParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeAesDerivedKeyParams:
+      context.add("AesDerivedKeyParams");
+      return parseAesDerivedKeyParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeHkdfParams:
+      context.add("HkdfParams");
+      return parseHkdfParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypePbkdf2Params:
+      context.add("Pbkdf2Params");
+      return parsePbkdf2Params(raw, params, context, error);
+  }
+  ASSERT_NOT_REACHED();
+  return false;
+}
+
+const char* operationToString(WebCryptoOperation op) {
+  switch (op) {
     case WebCryptoOperationEncrypt:
-        return "encrypt";
+      return "encrypt";
     case WebCryptoOperationDecrypt:
-        return "decrypt";
+      return "decrypt";
     case WebCryptoOperationSign:
-        return "sign";
+      return "sign";
     case WebCryptoOperationVerify:
-        return "verify";
+      return "verify";
     case WebCryptoOperationDigest:
-        return "digest";
+      return "digest";
     case WebCryptoOperationGenerateKey:
-        return "generateKey";
+      return "generateKey";
     case WebCryptoOperationImportKey:
-        return "importKey";
+      return "importKey";
     case WebCryptoOperationGetKeyLength:
-        return "get key length";
+      return "get key length";
     case WebCryptoOperationDeriveBits:
-        return "deriveBits";
+      return "deriveBits";
     case WebCryptoOperationWrapKey:
-        return "wrapKey";
+      return "wrapKey";
     case WebCryptoOperationUnwrapKey:
-        return "unwrapKey";
-    }
-    return 0;
+      return "unwrapKey";
+  }
+  return 0;
 }
 
-bool parseAlgorithmDictionary(const String& algorithmName, const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
-{
-    WebCryptoAlgorithmId algorithmId;
-    if (!lookupAlgorithmIdByName(algorithmName, algorithmId)) {
-        setNotSupportedError(context.toString("Unrecognized name"), error);
-        return false;
-    }
+bool parseAlgorithmDictionary(const String& algorithmName,
+                              const Dictionary& raw,
+                              WebCryptoOperation op,
+                              WebCryptoAlgorithm& algorithm,
+                              ErrorContext context,
+                              AlgorithmError* error) {
+  WebCryptoAlgorithmId algorithmId;
+  if (!lookupAlgorithmIdByName(algorithmName, algorithmId)) {
+    setNotSupportedError(context.toString("Unrecognized name"), error);
+    return false;
+  }
 
-    // Remove the "Algorithm:" prefix for all subsequent errors.
-    context.removeLast();
+  // Remove the "Algorithm:" prefix for all subsequent errors.
+  context.removeLast();
 
-    const WebCryptoAlgorithmInfo* algorithmInfo = WebCryptoAlgorithm::lookupAlgorithmInfo(algorithmId);
+  const WebCryptoAlgorithmInfo* algorithmInfo =
+      WebCryptoAlgorithm::lookupAlgorithmInfo(algorithmId);
 
-    if (algorithmInfo->operationToParamsType[op] == WebCryptoAlgorithmInfo::Undefined) {
-        context.add(algorithmInfo->name);
-        setNotSupportedError(context.toString("Unsupported operation", operationToString(op)), error);
-        return false;
-    }
+  if (algorithmInfo->operationToParamsType[op] ==
+      WebCryptoAlgorithmInfo::Undefined) {
+    context.add(algorithmInfo->name);
+    setNotSupportedError(
+        context.toString("Unsupported operation", operationToString(op)),
+        error);
+    return false;
+  }
 
-    WebCryptoAlgorithmParamsType paramsType = static_cast<WebCryptoAlgorithmParamsType>(algorithmInfo->operationToParamsType[op]);
+  WebCryptoAlgorithmParamsType paramsType =
+      static_cast<WebCryptoAlgorithmParamsType>(
+          algorithmInfo->operationToParamsType[op]);
 
-    std::unique_ptr<WebCryptoAlgorithmParams> params;
-    if (!parseAlgorithmParams(raw, paramsType, params, context, error))
-        return false;
+  std::unique_ptr<WebCryptoAlgorithmParams> params;
+  if (!parseAlgorithmParams(raw, paramsType, params, context, error))
+    return false;
 
-    algorithm = WebCryptoAlgorithm(algorithmId, std::move(params));
-    return true;
+  algorithm = WebCryptoAlgorithm(algorithmId, std::move(params));
+  return true;
 }
 
-bool parseAlgorithmIdentifier(const AlgorithmIdentifier& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
-{
-    context.add("Algorithm");
+bool parseAlgorithmIdentifier(const AlgorithmIdentifier& raw,
+                              WebCryptoOperation op,
+                              WebCryptoAlgorithm& algorithm,
+                              ErrorContext context,
+                              AlgorithmError* error) {
+  context.add("Algorithm");
 
-    // If the AlgorithmIdentifier is a String, treat it the same as a Dictionary with a "name" attribute and nothing else.
-    if (raw.isString()) {
-        return parseAlgorithmDictionary(raw.getAsString(), Dictionary(), op, algorithm, context, error);
-    }
+  // If the AlgorithmIdentifier is a String, treat it the same as a Dictionary with a "name" attribute and nothing else.
+  if (raw.isString()) {
+    return parseAlgorithmDictionary(raw.getAsString(), Dictionary(), op,
+                                    algorithm, context, error);
+  }
 
-    Dictionary params = raw.getAsDictionary();
+  Dictionary params = raw.getAsDictionary();
 
-    // Get the name of the algorithm from the AlgorithmIdentifier.
-    if (!params.isObject()) {
-        setTypeError(context.toString("Not an object"), error);
-        return false;
-    }
+  // Get the name of the algorithm from the AlgorithmIdentifier.
+  if (!params.isObject()) {
+    setTypeError(context.toString("Not an object"), error);
+    return false;
+  }
 
-    String algorithmName;
-    if (!DictionaryHelper::get(params, "name", algorithmName)) {
-        setTypeError(context.toString("name", "Missing or not a string"), error);
-        return false;
-    }
+  String algorithmName;
+  if (!DictionaryHelper::get(params, "name", algorithmName)) {
+    setTypeError(context.toString("name", "Missing or not a string"), error);
+    return false;
+  }
 
-    return parseAlgorithmDictionary(algorithmName, params, op, algorithm, context, error);
+  return parseAlgorithmDictionary(algorithmName, params, op, algorithm, context,
+                                  error);
 }
 
-} // namespace
+}  // namespace
 
-bool normalizeAlgorithm(const AlgorithmIdentifier& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, AlgorithmError* error)
-{
-    return parseAlgorithmIdentifier(raw, op, algorithm, ErrorContext(), error);
+bool normalizeAlgorithm(const AlgorithmIdentifier& raw,
+                        WebCryptoOperation op,
+                        WebCryptoAlgorithm& algorithm,
+                        AlgorithmError* error) {
+  return parseAlgorithmIdentifier(raw, op, algorithm, ErrorContext(), error);
 }
 
-} // namespace blink
+}  // namespace blink

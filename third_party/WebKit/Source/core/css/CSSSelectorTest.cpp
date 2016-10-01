@@ -9,49 +9,48 @@
 
 namespace blink {
 
-TEST(CSSSelector, Representations)
-{
-    CSSTestHelper helper;
+TEST(CSSSelector, Representations) {
+  CSSTestHelper helper;
 
-    const char* cssRules =
-    "summary::-webkit-details-marker { }"
-    "* {}"
-    "div {}"
-    "#id {}"
-    ".class {}"
-    "[attr] {}"
-    "div:hover {}"
-    "div:nth-child(2){}"
-    ".class#id { }"
-    "#id.class { }"
-    "[attr]#id { }"
-    "div[attr]#id { }"
-    "div::content { }"
-    "div::first-line { }"
-    ".a.b.c { }"
-    "div:not(.a) { }" // without class a
-    "div:not(:visited) { }" // without the visited pseudo class
+  const char* cssRules =
+      "summary::-webkit-details-marker { }"
+      "* {}"
+      "div {}"
+      "#id {}"
+      ".class {}"
+      "[attr] {}"
+      "div:hover {}"
+      "div:nth-child(2){}"
+      ".class#id { }"
+      "#id.class { }"
+      "[attr]#id { }"
+      "div[attr]#id { }"
+      "div::content { }"
+      "div::first-line { }"
+      ".a.b.c { }"
+      "div:not(.a) { }"        // without class a
+      "div:not(:visited) { }"  // without the visited pseudo class
 
-    "[attr=\"value\"] { }" // Exact equality
-    "[attr~=\"value\"] { }" // One of a space-separated list
-    "[attr^=\"value\"] { }" // Begins with
-    "[attr$=\"value\"] { }" // Ends with
-    "[attr*=\"value\"] { }" // Substring equal to
-    "[attr|=\"value\"] { }" // One of a hyphen-separated list
+      "[attr=\"value\"] { }"   // Exact equality
+      "[attr~=\"value\"] { }"  // One of a space-separated list
+      "[attr^=\"value\"] { }"  // Begins with
+      "[attr$=\"value\"] { }"  // Ends with
+      "[attr*=\"value\"] { }"  // Substring equal to
+      "[attr|=\"value\"] { }"  // One of a hyphen-separated list
 
-    ".a .b { }" // .b is a descendant of .a
-    ".a > .b { }" // .b is a direct descendant of .a
-    ".a ~ .b { }" // .a precedes .b in sibling order
-    ".a + .b { }" // .a element immediately precedes .b in sibling order
-    ".a, .b { }" // matches .a or .b
+      ".a .b { }"    // .b is a descendant of .a
+      ".a > .b { }"  // .b is a direct descendant of .a
+      ".a ~ .b { }"  // .a precedes .b in sibling order
+      ".a + .b { }"  // .a element immediately precedes .b in sibling order
+      ".a, .b { }"   // matches .a or .b
 
-    ".a.b .c {}";
+      ".a.b .c {}";
 
-    helper.addCSSRules(cssRules);
-    EXPECT_EQ(30u, helper.ruleSet().ruleCount()); // .a, .b counts as two rules.
+  helper.addCSSRules(cssRules);
+  EXPECT_EQ(30u, helper.ruleSet().ruleCount());  // .a, .b counts as two rules.
 #ifndef NDEBUG
-    helper.ruleSet().show();
+  helper.ruleSet().show();
 #endif
 }
 
-} // namespace blink
+}  // namespace blink

@@ -32,29 +32,30 @@
 namespace blink {
 
 class CSSFontFeatureValue : public CSSValue {
-public:
-    static CSSFontFeatureValue* create(const AtomicString& tag, int value)
-    {
-        return new CSSFontFeatureValue(tag, value);
-    }
+ public:
+  static CSSFontFeatureValue* create(const AtomicString& tag, int value) {
+    return new CSSFontFeatureValue(tag, value);
+  }
 
-    const AtomicString& tag() const { return m_tag; }
-    int value() const { return m_value; }
-    String customCSSText() const;
+  const AtomicString& tag() const { return m_tag; }
+  int value() const { return m_value; }
+  String customCSSText() const;
 
-    bool equals(const CSSFontFeatureValue&) const;
+  bool equals(const CSSFontFeatureValue&) const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValue::traceAfterDispatch(visitor);
+  }
 
-private:
-    CSSFontFeatureValue(const AtomicString& tag, int value);
+ private:
+  CSSFontFeatureValue(const AtomicString& tag, int value);
 
-    AtomicString m_tag;
-    const int m_value;
+  AtomicString m_tag;
+  const int m_value;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFeatureValue, isFontFeatureValue());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

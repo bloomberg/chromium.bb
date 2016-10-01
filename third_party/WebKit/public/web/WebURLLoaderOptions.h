@@ -34,34 +34,31 @@
 namespace blink {
 
 struct WebURLLoaderOptions {
+  enum CrossOriginRequestPolicy {
+    CrossOriginRequestPolicyDeny,
+    CrossOriginRequestPolicyUseAccessControl,
+    CrossOriginRequestPolicyAllow
+  };
 
-    enum CrossOriginRequestPolicy {
-        CrossOriginRequestPolicyDeny,
-        CrossOriginRequestPolicyUseAccessControl,
-        CrossOriginRequestPolicyAllow
-    };
+  enum PreflightPolicy { ConsiderPreflight, ForcePreflight, PreventPreflight };
 
-    enum PreflightPolicy {
-        ConsiderPreflight,
-        ForcePreflight,
-        PreventPreflight
-    };
+  WebURLLoaderOptions()
+      : untrustedHTTP(false),
+        allowCredentials(false),
+        exposeAllResponseHeaders(false),
+        preflightPolicy(ConsiderPreflight),
+        crossOriginRequestPolicy(CrossOriginRequestPolicyDeny) {}
 
-    WebURLLoaderOptions()
-        : untrustedHTTP(false)
-        , allowCredentials(false)
-        , exposeAllResponseHeaders(false)
-        , preflightPolicy(ConsiderPreflight)
-        , crossOriginRequestPolicy(CrossOriginRequestPolicyDeny)
-        { }
-
-    bool untrustedHTTP; // Whether to validate the method and headers as if this was an XMLHttpRequest.
-    bool allowCredentials; // Whether to send HTTP credentials and cookies with the request.
-    bool exposeAllResponseHeaders; // If policy is to use access control, whether to expose non-whitelisted response headers to the client.
-    PreflightPolicy preflightPolicy;
-    CrossOriginRequestPolicy crossOriginRequestPolicy;
+  bool
+      untrustedHTTP;  // Whether to validate the method and headers as if this was an XMLHttpRequest.
+  bool
+      allowCredentials;  // Whether to send HTTP credentials and cookies with the request.
+  bool
+      exposeAllResponseHeaders;  // If policy is to use access control, whether to expose non-whitelisted response headers to the client.
+  PreflightPolicy preflightPolicy;
+  CrossOriginRequestPolicy crossOriginRequestPolicy;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

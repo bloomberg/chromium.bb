@@ -31,34 +31,34 @@ namespace blink {
 class StyleRuleMedia;
 
 class CSSMediaRule final : public CSSGroupingRule {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSMediaRule* create(StyleRuleMedia* rule, CSSStyleSheet* sheet)
-    {
-        return new CSSMediaRule(rule, sheet);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~CSSMediaRule() override;
+ public:
+  static CSSMediaRule* create(StyleRuleMedia* rule, CSSStyleSheet* sheet) {
+    return new CSSMediaRule(rule, sheet);
+  }
 
-    void reattach(StyleRuleBase*) override;
-    String cssText() const override;
+  ~CSSMediaRule() override;
 
-    MediaList* media() const;
+  void reattach(StyleRuleBase*) override;
+  String cssText() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  MediaList* media() const;
 
-private:
-    CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
+  DECLARE_VIRTUAL_TRACE();
 
-    CSSRule::Type type() const override { return kMediaRule; }
+ private:
+  CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
 
-    MediaQuerySet* mediaQueries() const;
+  CSSRule::Type type() const override { return kMediaRule; }
 
-    mutable Member<MediaList> m_mediaCSSOMWrapper;
+  MediaQuerySet* mediaQueries() const;
+
+  mutable Member<MediaList> m_mediaCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, kMediaRule);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSMediaRule_h
+#endif  // CSSMediaRule_h

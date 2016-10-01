@@ -27,36 +27,34 @@
 
 namespace blink {
 
-WebGLCompressedTextureATC::WebGLCompressedTextureATC(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->addCompressedTextureFormat(GC3D_COMPRESSED_ATC_RGB_AMD);
-    context->addCompressedTextureFormat(GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD);
-    context->addCompressedTextureFormat(GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD);
+WebGLCompressedTextureATC::WebGLCompressedTextureATC(
+    WebGLRenderingContextBase* context)
+    : WebGLExtension(context) {
+  context->addCompressedTextureFormat(GC3D_COMPRESSED_ATC_RGB_AMD);
+  context->addCompressedTextureFormat(
+      GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD);
+  context->addCompressedTextureFormat(
+      GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD);
 }
 
-WebGLCompressedTextureATC::~WebGLCompressedTextureATC()
-{
+WebGLCompressedTextureATC::~WebGLCompressedTextureATC() {}
+
+WebGLExtensionName WebGLCompressedTextureATC::name() const {
+  return WebGLCompressedTextureATCName;
 }
 
-WebGLExtensionName WebGLCompressedTextureATC::name() const
-{
-    return WebGLCompressedTextureATCName;
+WebGLCompressedTextureATC* WebGLCompressedTextureATC::create(
+    WebGLRenderingContextBase* context) {
+  return new WebGLCompressedTextureATC(context);
 }
 
-WebGLCompressedTextureATC* WebGLCompressedTextureATC::create(WebGLRenderingContextBase* context)
-{
-    return new WebGLCompressedTextureATC(context);
+bool WebGLCompressedTextureATC::supported(WebGLRenderingContextBase* context) {
+  return context->extensionsUtil()->supportsExtension(
+      "GL_AMD_compressed_ATC_texture");
 }
 
-bool WebGLCompressedTextureATC::supported(WebGLRenderingContextBase* context)
-{
-    return context->extensionsUtil()->supportsExtension("GL_AMD_compressed_ATC_texture");
+const char* WebGLCompressedTextureATC::extensionName() {
+  return "WEBGL_compressed_texture_atc";
 }
 
-const char* WebGLCompressedTextureATC::extensionName()
-{
-    return "WEBGL_compressed_texture_atc";
-}
-
-} // namespace blink
+}  // namespace blink

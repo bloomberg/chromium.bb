@@ -36,11 +36,12 @@ class Document;
 class FontFaceSet;
 
 class DocumentFontFaceSet {
-    STATIC_ONLY(DocumentFontFaceSet);
-public:
-    static FontFaceSet* fonts(Document&);
+  STATIC_ONLY(DocumentFontFaceSet);
+
+ public:
+  static FontFaceSet* fonts(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentFontFaceSet_h
+#endif  // DocumentFontFaceSet_h

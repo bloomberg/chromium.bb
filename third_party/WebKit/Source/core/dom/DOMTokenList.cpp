@@ -33,283 +33,283 @@ namespace blink {
 
 namespace {
 
-class DOMTokenListIterationSource final : public ValueIterable<String>::IterationSource {
-public:
-    explicit DOMTokenListIterationSource(DOMTokenList* domTokenList)
-        : m_domTokenList(domTokenList)
-    {
-    }
+class DOMTokenListIterationSource final
+    : public ValueIterable<String>::IterationSource {
+ public:
+  explicit DOMTokenListIterationSource(DOMTokenList* domTokenList)
+      : m_domTokenList(domTokenList) {}
 
-    bool next(ScriptState* scriptState, String& value, ExceptionState& exceptionState) override
-    {
-        if (m_index >= m_domTokenList->length())
-            return false;
-        value = m_domTokenList->item(m_index);
-        return true;
-    }
+  bool next(ScriptState* scriptState,
+            String& value,
+            ExceptionState& exceptionState) override {
+    if (m_index >= m_domTokenList->length())
+      return false;
+    value = m_domTokenList->item(m_index);
+    return true;
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_domTokenList);
-        ValueIterable<String>::IterationSource::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_domTokenList);
+    ValueIterable<String>::IterationSource::trace(visitor);
+  }
 
-private:
-    const Member<DOMTokenList> m_domTokenList;
+ private:
+  const Member<DOMTokenList> m_domTokenList;
 };
 
-} // namespace
+}  // namespace
 
-bool DOMTokenList::validateToken(const String& token, ExceptionState& exceptionState) const
-{
-    if (token.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "The token provided must not be empty.");
-        return false;
-    }
+bool DOMTokenList::validateToken(const String& token,
+                                 ExceptionState& exceptionState) const {
+  if (token.isEmpty()) {
+    exceptionState.throwDOMException(SyntaxError,
+                                     "The token provided must not be empty.");
+    return false;
+  }
 
-    if (token.find(isHTMLSpace) != kNotFound) {
-        exceptionState.throwDOMException(InvalidCharacterError, "The token provided ('" + token + "') contains HTML space characters, which are not valid in tokens.");
-        return false;
-    }
+  if (token.find(isHTMLSpace) != kNotFound) {
+    exceptionState.throwDOMException(InvalidCharacterError,
+                                     "The token provided ('" + token +
+                                         "') contains HTML space characters, "
+                                         "which are not valid in tokens.");
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
-bool DOMTokenList::validateTokens(const Vector<String>& tokens, ExceptionState& exceptionState) const
-{
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        if (!validateToken(tokens[i], exceptionState))
-            return false;
-    }
+bool DOMTokenList::validateTokens(const Vector<String>& tokens,
+                                  ExceptionState& exceptionState) const {
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    if (!validateToken(tokens[i], exceptionState))
+      return false;
+  }
 
-    return true;
+  return true;
 }
 
 // https://dom.spec.whatwg.org/#concept-domtokenlist-validation
-bool DOMTokenList::validateTokenValue(const AtomicString&, ExceptionState& exceptionState) const
-{
-    exceptionState.throwTypeError("DOMTokenList has no supported tokens.");
+bool DOMTokenList::validateTokenValue(const AtomicString&,
+                                      ExceptionState& exceptionState) const {
+  exceptionState.throwTypeError("DOMTokenList has no supported tokens.");
+  return false;
+}
+
+bool DOMTokenList::contains(const AtomicString& token,
+                            ExceptionState& exceptionState) const {
+  if (!validateToken(token, exceptionState))
     return false;
+  return containsInternal(token);
 }
 
-bool DOMTokenList::contains(const AtomicString& token, ExceptionState& exceptionState) const
-{
-    if (!validateToken(token, exceptionState))
-        return false;
-    return containsInternal(token);
-}
-
-void DOMTokenList::add(const AtomicString& token, ExceptionState& exceptionState)
-{
-    Vector<String> tokens;
-    tokens.append(token.getString());
-    add(tokens, exceptionState);
+void DOMTokenList::add(const AtomicString& token,
+                       ExceptionState& exceptionState) {
+  Vector<String> tokens;
+  tokens.append(token.getString());
+  add(tokens, exceptionState);
 }
 
 // Optimally, this should take a Vector<AtomicString> const ref in argument but the
 // bindings generator does not handle that.
-void DOMTokenList::add(const Vector<String>& tokens, ExceptionState& exceptionState)
-{
-    Vector<String> filteredTokens;
-    filteredTokens.reserveCapacity(tokens.size());
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        if (!validateToken(tokens[i], exceptionState))
-            return;
-        if (containsInternal(AtomicString(tokens[i])))
-            continue;
-        if (filteredTokens.contains(tokens[i]))
-            continue;
-        filteredTokens.append(tokens[i]);
-    }
+void DOMTokenList::add(const Vector<String>& tokens,
+                       ExceptionState& exceptionState) {
+  Vector<String> filteredTokens;
+  filteredTokens.reserveCapacity(tokens.size());
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    if (!validateToken(tokens[i], exceptionState))
+      return;
+    if (containsInternal(AtomicString(tokens[i])))
+      continue;
+    if (filteredTokens.contains(tokens[i]))
+      continue;
+    filteredTokens.append(tokens[i]);
+  }
 
-    if (!filteredTokens.isEmpty())
-        setValue(addTokens(value(), filteredTokens));
+  if (!filteredTokens.isEmpty())
+    setValue(addTokens(value(), filteredTokens));
 }
 
-void DOMTokenList::remove(const AtomicString& token, ExceptionState& exceptionState)
-{
-    Vector<String> tokens;
-    tokens.append(token.getString());
-    remove(tokens, exceptionState);
+void DOMTokenList::remove(const AtomicString& token,
+                          ExceptionState& exceptionState) {
+  Vector<String> tokens;
+  tokens.append(token.getString());
+  remove(tokens, exceptionState);
 }
 
 // Optimally, this should take a Vector<AtomicString> const ref in argument but the
 // bindings generator does not handle that.
-void DOMTokenList::remove(const Vector<String>& tokens, ExceptionState& exceptionState)
-{
-    if (!validateTokens(tokens, exceptionState))
-        return;
+void DOMTokenList::remove(const Vector<String>& tokens,
+                          ExceptionState& exceptionState) {
+  if (!validateTokens(tokens, exceptionState))
+    return;
 
-    // Check using containsInternal first since it is a lot faster than going
-    // through the string character by character.
-    bool found = false;
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        if (containsInternal(AtomicString(tokens[i]))) {
-            found = true;
-            break;
-        }
+  // Check using containsInternal first since it is a lot faster than going
+  // through the string character by character.
+  bool found = false;
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    if (containsInternal(AtomicString(tokens[i]))) {
+      found = true;
+      break;
     }
+  }
 
-    if (found)
-        setValue(removeTokens(value(), tokens));
+  if (found)
+    setValue(removeTokens(value(), tokens));
 }
 
-bool DOMTokenList::toggle(const AtomicString& token, ExceptionState& exceptionState)
-{
-    if (!validateToken(token, exceptionState))
-        return false;
+bool DOMTokenList::toggle(const AtomicString& token,
+                          ExceptionState& exceptionState) {
+  if (!validateToken(token, exceptionState))
+    return false;
 
-    if (containsInternal(token)) {
-        removeInternal(token);
-        return false;
-    }
+  if (containsInternal(token)) {
+    removeInternal(token);
+    return false;
+  }
+  addInternal(token);
+  return true;
+}
+
+bool DOMTokenList::toggle(const AtomicString& token,
+                          bool force,
+                          ExceptionState& exceptionState) {
+  if (!validateToken(token, exceptionState))
+    return false;
+
+  if (force)
     addInternal(token);
-    return true;
+  else
+    removeInternal(token);
+
+  return force;
 }
 
-bool DOMTokenList::toggle(const AtomicString& token, bool force, ExceptionState& exceptionState)
-{
-    if (!validateToken(token, exceptionState))
-        return false;
-
-    if (force)
-        addInternal(token);
-    else
-        removeInternal(token);
-
-    return force;
+bool DOMTokenList::supports(const AtomicString& token,
+                            ExceptionState& exceptionState) {
+  return validateTokenValue(token, exceptionState);
 }
 
-bool DOMTokenList::supports(const AtomicString& token, ExceptionState& exceptionState)
-{
-    return validateTokenValue(token, exceptionState);
+void DOMTokenList::addInternal(const AtomicString& token) {
+  if (!containsInternal(token))
+    setValue(addToken(value(), token));
 }
 
-void DOMTokenList::addInternal(const AtomicString& token)
-{
-    if (!containsInternal(token))
-        setValue(addToken(value(), token));
+void DOMTokenList::removeInternal(const AtomicString& token) {
+  // Check using contains first since it uses AtomicString comparisons instead
+  // of character by character testing.
+  if (!containsInternal(token))
+    return;
+  setValue(removeToken(value(), token));
 }
 
-void DOMTokenList::removeInternal(const AtomicString& token)
-{
-    // Check using contains first since it uses AtomicString comparisons instead
-    // of character by character testing.
-    if (!containsInternal(token))
-        return;
-    setValue(removeToken(value(), token));
-}
-
-AtomicString DOMTokenList::addToken(const AtomicString& input, const AtomicString& token)
-{
-    Vector<String> tokens;
-    tokens.append(token.getString());
-    return addTokens(input, tokens);
+AtomicString DOMTokenList::addToken(const AtomicString& input,
+                                    const AtomicString& token) {
+  Vector<String> tokens;
+  tokens.append(token.getString());
+  return addTokens(input, tokens);
 }
 
 // This returns an AtomicString because it is always passed as argument to setValue() and setValue()
 // takes an AtomicString in argument.
-AtomicString DOMTokenList::addTokens(const AtomicString& input, const Vector<String>& tokens)
-{
-    bool needsSpace = false;
+AtomicString DOMTokenList::addTokens(const AtomicString& input,
+                                     const Vector<String>& tokens) {
+  bool needsSpace = false;
 
-    StringBuilder builder;
-    if (!input.isEmpty()) {
-        builder.append(input);
-        needsSpace = !isHTMLSpace<UChar>(input[input.length() - 1]);
-    }
+  StringBuilder builder;
+  if (!input.isEmpty()) {
+    builder.append(input);
+    needsSpace = !isHTMLSpace<UChar>(input[input.length() - 1]);
+  }
 
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        if (needsSpace)
-            builder.append(' ');
-        builder.append(tokens[i]);
-        needsSpace = true;
-    }
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    if (needsSpace)
+      builder.append(' ');
+    builder.append(tokens[i]);
+    needsSpace = true;
+  }
 
-    return builder.toAtomicString();
+  return builder.toAtomicString();
 }
 
-AtomicString DOMTokenList::removeToken(const AtomicString& input, const AtomicString& token)
-{
-    Vector<String> tokens;
-    tokens.append(token.getString());
-    return removeTokens(input, tokens);
+AtomicString DOMTokenList::removeToken(const AtomicString& input,
+                                       const AtomicString& token) {
+  Vector<String> tokens;
+  tokens.append(token.getString());
+  return removeTokens(input, tokens);
 }
 
 // This returns an AtomicString because it is always passed as argument to setValue() and setValue()
 // takes an AtomicString in argument.
-AtomicString DOMTokenList::removeTokens(const AtomicString& input, const Vector<String>& tokens)
-{
-    // Algorithm defined at http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#remove-a-token-from-a-string
-    // New spec is at https://dom.spec.whatwg.org/#remove-a-token-from-a-string
+AtomicString DOMTokenList::removeTokens(const AtomicString& input,
+                                        const Vector<String>& tokens) {
+  // Algorithm defined at http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#remove-a-token-from-a-string
+  // New spec is at https://dom.spec.whatwg.org/#remove-a-token-from-a-string
 
-    unsigned inputLength = input.length();
-    StringBuilder output; // 3
-    output.reserveCapacity(inputLength);
-    unsigned position = 0; // 4
+  unsigned inputLength = input.length();
+  StringBuilder output;  // 3
+  output.reserveCapacity(inputLength);
+  unsigned position = 0;  // 4
 
-    // Step 5
-    while (position < inputLength) {
-        if (isHTMLSpace<UChar>(input[position])) { // 6
-            position++;
-            continue; // 6.3
-        }
-
-        // Step 7
-        StringBuilder tokenBuilder;
-        while (position < inputLength && isNotHTMLSpace<UChar>(input[position]))
-            tokenBuilder.append(input[position++]);
-
-        // Step 8
-        String token = tokenBuilder.toString();
-        if (tokens.contains(token)) {
-            // Step 8.1
-            while (position < inputLength && isHTMLSpace<UChar>(input[position]))
-                ++position;
-
-            // Step 8.2
-            size_t j = output.length();
-            while (j > 0 && isHTMLSpace<UChar>(output[j - 1]))
-                --j;
-            output.resize(j);
-        } else {
-            output.append(token); // Step 9
-        }
-
-        if (position < inputLength && !output.isEmpty())
-            output.append(' ');
+  // Step 5
+  while (position < inputLength) {
+    if (isHTMLSpace<UChar>(input[position])) {  // 6
+      position++;
+      continue;  // 6.3
     }
 
-    size_t j = output.length();
-    if (j > 0 && isHTMLSpace<UChar>(output[j - 1]))
-        output.resize(j - 1);
+    // Step 7
+    StringBuilder tokenBuilder;
+    while (position < inputLength && isNotHTMLSpace<UChar>(input[position]))
+      tokenBuilder.append(input[position++]);
 
-    return output.toAtomicString();
+    // Step 8
+    String token = tokenBuilder.toString();
+    if (tokens.contains(token)) {
+      // Step 8.1
+      while (position < inputLength && isHTMLSpace<UChar>(input[position]))
+        ++position;
+
+      // Step 8.2
+      size_t j = output.length();
+      while (j > 0 && isHTMLSpace<UChar>(output[j - 1]))
+        --j;
+      output.resize(j);
+    } else {
+      output.append(token);  // Step 9
+    }
+
+    if (position < inputLength && !output.isEmpty())
+      output.append(' ');
+  }
+
+  size_t j = output.length();
+  if (j > 0 && isHTMLSpace<UChar>(output[j - 1]))
+    output.resize(j - 1);
+
+  return output.toAtomicString();
 }
 
-void DOMTokenList::setValue(const AtomicString& value)
-{
-    m_value = value;
-    m_tokens.set(value, SpaceSplitString::ShouldNotFoldCase);
-    if (m_observer)
-        m_observer->valueWasSet();
+void DOMTokenList::setValue(const AtomicString& value) {
+  m_value = value;
+  m_tokens.set(value, SpaceSplitString::ShouldNotFoldCase);
+  if (m_observer)
+    m_observer->valueWasSet();
 }
 
-bool DOMTokenList::containsInternal(const AtomicString& token) const
-{
-    return m_tokens.contains(token);
+bool DOMTokenList::containsInternal(const AtomicString& token) const {
+  return m_tokens.contains(token);
 }
 
-ValueIterable<String>::IterationSource* DOMTokenList::startIteration(ScriptState*, ExceptionState&)
-{
-    return new DOMTokenListIterationSource(this);
+ValueIterable<String>::IterationSource* DOMTokenList::startIteration(
+    ScriptState*,
+    ExceptionState&) {
+  return new DOMTokenListIterationSource(this);
 }
 
-const AtomicString DOMTokenList::item(unsigned index) const
-{
-    if (index >= length())
-        return AtomicString();
-    return m_tokens[index];
+const AtomicString DOMTokenList::item(unsigned index) const {
+  if (index >= length())
+    return AtomicString();
+  return m_tokens[index];
 }
 
-} // namespace blink
+}  // namespace blink

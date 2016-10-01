@@ -16,44 +16,55 @@ namespace blink {
 class WebGraphicsContext3DProvider;
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
-public:
-    ~StaticBitmapImage() override;
+ public:
+  ~StaticBitmapImage() override;
 
-    bool currentFrameIsComplete() override { return true; }
+  bool currentFrameIsComplete() override { return true; }
 
-    static PassRefPtr<StaticBitmapImage> create(sk_sp<SkImage>);
-    void destroyDecodedData() override { }
-    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
-    IntSize size() const override;
-    void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;
+  static PassRefPtr<StaticBitmapImage> create(sk_sp<SkImage>);
+  void destroyDecodedData() override {}
+  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
+  IntSize size() const override;
+  void draw(SkCanvas*,
+            const SkPaint&,
+            const FloatRect& dstRect,
+            const FloatRect& srcRect,
+            RespectImageOrientationEnum,
+            ImageClampingMode) override;
 
-    sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame() override;
 
-    bool originClean() const { return m_isOriginClean; }
-    void setOriginClean(bool flag) { m_isOriginClean = flag; }
-    bool isPremultiplied() const { return m_isPremultiplied; }
-    void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
-    bool isTextureBacked() override;
-    virtual void copyToTexture(WebGraphicsContext3DProvider*, GLuint, GLenum, GLenum, bool) { NOTREACHED(); }
-    virtual bool hasMailbox() { return false; }
-    virtual void transfer() { }
+  bool originClean() const { return m_isOriginClean; }
+  void setOriginClean(bool flag) { m_isOriginClean = flag; }
+  bool isPremultiplied() const { return m_isPremultiplied; }
+  void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
+  bool isTextureBacked() override;
+  virtual void copyToTexture(WebGraphicsContext3DProvider*,
+                             GLuint,
+                             GLenum,
+                             GLenum,
+                             bool) {
+    NOTREACHED();
+  }
+  virtual bool hasMailbox() { return false; }
+  virtual void transfer() {}
 
-    virtual gpu::Mailbox getMailbox() { return gpu::Mailbox(); }
-    virtual gpu::SyncToken getSyncToken() { return gpu::SyncToken(); }
-    virtual void ensureMailbox() {}
+  virtual gpu::Mailbox getMailbox() { return gpu::Mailbox(); }
+  virtual gpu::SyncToken getSyncToken() { return gpu::SyncToken(); }
+  virtual void ensureMailbox() {}
 
-protected:
-    StaticBitmapImage(sk_sp<SkImage>);
-    StaticBitmapImage(); // empty constructor for derived class.
-    sk_sp<SkImage> m_image;
+ protected:
+  StaticBitmapImage(sk_sp<SkImage>);
+  StaticBitmapImage();  // empty constructor for derived class.
+  sk_sp<SkImage> m_image;
 
-private:
-    bool m_isOriginClean = true;
-    // The premultiply info is stored here because the SkImage API
-    // doesn't expose this info.
-    bool m_isPremultiplied = true;
+ private:
+  bool m_isOriginClean = true;
+  // The premultiply info is stored here because the SkImage API
+  // doesn't expose this info.
+  bool m_isPremultiplied = true;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -11,31 +11,25 @@
 namespace blink {
 
 CSSCustomIdentValue::CSSCustomIdentValue(const AtomicString& str)
-    : CSSValue(CustomIdentClass)
-    , m_string(str)
-    , m_propertyId(CSSPropertyInvalid) { }
+    : CSSValue(CustomIdentClass),
+      m_string(str),
+      m_propertyId(CSSPropertyInvalid) {}
 
 CSSCustomIdentValue::CSSCustomIdentValue(CSSPropertyID id)
-    : CSSValue(CustomIdentClass)
-    , m_string()
-    , m_propertyId(id)
-{
-    ASSERT(isKnownPropertyID());
+    : CSSValue(CustomIdentClass), m_string(), m_propertyId(id) {
+  ASSERT(isKnownPropertyID());
 }
 
-
-String CSSCustomIdentValue::customCSSText() const
-{
-    if (isKnownPropertyID())
-        return getPropertyNameAtomicString(m_propertyId);
-    StringBuilder builder;
-    serializeIdentifier(m_string, builder);
-    return builder.toString();
+String CSSCustomIdentValue::customCSSText() const {
+  if (isKnownPropertyID())
+    return getPropertyNameAtomicString(m_propertyId);
+  StringBuilder builder;
+  serializeIdentifier(m_string, builder);
+  return builder.toString();
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSCustomIdentValue)
-{
-    CSSValue::traceAfterDispatch(visitor);
+DEFINE_TRACE_AFTER_DISPATCH(CSSCustomIdentValue) {
+  CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

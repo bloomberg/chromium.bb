@@ -42,41 +42,38 @@ namespace blink {
 class Blob;
 class ExceptionState;
 
-class FileWriterSync final
-    : public GarbageCollectedFinalized<FileWriterSync>
-    , public FileWriterBase
-    , public ScriptWrappable
-    , public WebFileWriterClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
-public:
-    static FileWriterSync* create()
-    {
-        return new FileWriterSync();
-    }
-    ~FileWriterSync() override;
-    DECLARE_VIRTUAL_TRACE();
+class FileWriterSync final : public GarbageCollectedFinalized<FileWriterSync>,
+                             public FileWriterBase,
+                             public ScriptWrappable,
+                             public WebFileWriterClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 
-    // FileWriterBase
-    void write(Blob*, ExceptionState&);
-    void seek(long long position, ExceptionState&);
-    void truncate(long long length, ExceptionState&);
+ public:
+  static FileWriterSync* create() { return new FileWriterSync(); }
+  ~FileWriterSync() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // WebFileWriterClient, via FileWriterBase
-    void didWrite(long long bytes, bool complete) override;
-    void didTruncate() override;
-    void didFail(WebFileError) override;
+  // FileWriterBase
+  void write(Blob*, ExceptionState&);
+  void seek(long long position, ExceptionState&);
+  void truncate(long long length, ExceptionState&);
 
-private:
-    FileWriterSync();
-    void prepareForWrite();
+  // WebFileWriterClient, via FileWriterBase
+  void didWrite(long long bytes, bool complete) override;
+  void didTruncate() override;
+  void didFail(WebFileError) override;
 
-    FileError::ErrorCode m_error;
+ private:
+  FileWriterSync();
+  void prepareForWrite();
+
+  FileError::ErrorCode m_error;
 #if DCHECK_IS_ON()
-    bool m_complete;
+  bool m_complete;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileWriterSync_h
+#endif  // FileWriterSync_h

@@ -21,55 +21,56 @@ class ScreenOrientation;
 class WebScreenOrientationClient;
 
 class MODULES_EXPORT ScreenOrientationController final
-    : public GarbageCollectedFinalized<ScreenOrientationController>
-    , public Supplement<LocalFrame>
-    , public DOMWindowProperty
-    , public PlatformEventController {
-    USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
-    WTF_MAKE_NONCOPYABLE(ScreenOrientationController);
-public:
-    ~ScreenOrientationController() override;
+    : public GarbageCollectedFinalized<ScreenOrientationController>,
+      public Supplement<LocalFrame>,
+      public DOMWindowProperty,
+      public PlatformEventController {
+  USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
+  WTF_MAKE_NONCOPYABLE(ScreenOrientationController);
 
-    void setOrientation(ScreenOrientation*);
-    void notifyOrientationChanged();
+ public:
+  ~ScreenOrientationController() override;
 
-    void lock(WebScreenOrientationLockType, WebLockOrientationCallback*);
-    void unlock();
+  void setOrientation(ScreenOrientation*);
+  void notifyOrientationChanged();
 
-    static void provideTo(LocalFrame&, WebScreenOrientationClient*);
-    static ScreenOrientationController* from(LocalFrame&);
-    static const char* supplementName();
+  void lock(WebScreenOrientationLockType, WebLockOrientationCallback*);
+  void unlock();
 
-    DECLARE_VIRTUAL_TRACE();
+  static void provideTo(LocalFrame&, WebScreenOrientationClient*);
+  static ScreenOrientationController* from(LocalFrame&);
+  static const char* supplementName();
 
-private:
-    ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
+  DECLARE_VIRTUAL_TRACE();
 
-    static WebScreenOrientationType computeOrientation(const IntRect&, uint16_t);
+ private:
+  ScreenOrientationController(LocalFrame&, WebScreenOrientationClient*);
 
-    // Inherited from PlatformEventController.
-    void didUpdateData() override;
-    void registerWithDispatcher() override;
-    void unregisterWithDispatcher() override;
-    bool hasLastData() override;
-    void pageVisibilityChanged() override;
+  static WebScreenOrientationType computeOrientation(const IntRect&, uint16_t);
 
-    // Inherited from DOMWindowProperty.
-    void frameDestroyed() override;
+  // Inherited from PlatformEventController.
+  void didUpdateData() override;
+  void registerWithDispatcher() override;
+  void unregisterWithDispatcher() override;
+  bool hasLastData() override;
+  void pageVisibilityChanged() override;
 
-    void notifyDispatcher();
+  // Inherited from DOMWindowProperty.
+  void frameDestroyed() override;
 
-    void updateOrientation();
+  void notifyDispatcher();
 
-    void dispatchEventTimerFired(TimerBase*);
+  void updateOrientation();
 
-    bool isActiveAndVisible() const;
+  void dispatchEventTimerFired(TimerBase*);
 
-    Member<ScreenOrientation> m_orientation;
-    WebScreenOrientationClient* m_client;
-    Timer<ScreenOrientationController> m_dispatchEventTimer;
+  bool isActiveAndVisible() const;
+
+  Member<ScreenOrientation> m_orientation;
+  WebScreenOrientationClient* m_client;
+  Timer<ScreenOrientationController> m_dispatchEventTimer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScreenOrientationController_h
+#endif  // ScreenOrientationController_h

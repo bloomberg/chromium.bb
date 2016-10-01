@@ -8,33 +8,31 @@
 
 namespace blink {
 
-CompositorFloatKeyframe::CompositorFloatKeyframe(double time, float value, const TimingFunction& timingFunction)
-    : m_floatKeyframe(cc::FloatKeyframe::Create(base::TimeDelta::FromSecondsD(time), value, timingFunction.cloneToCC()))
-{
+CompositorFloatKeyframe::CompositorFloatKeyframe(
+    double time,
+    float value,
+    const TimingFunction& timingFunction)
+    : m_floatKeyframe(
+          cc::FloatKeyframe::Create(base::TimeDelta::FromSecondsD(time),
+                                    value,
+                                    timingFunction.cloneToCC())) {}
+
+CompositorFloatKeyframe::CompositorFloatKeyframe(
+    std::unique_ptr<cc::FloatKeyframe> floatKeyframe)
+    : m_floatKeyframe(std::move(floatKeyframe)) {}
+
+CompositorFloatKeyframe::~CompositorFloatKeyframe() {}
+
+double CompositorFloatKeyframe::time() const {
+  return m_floatKeyframe->Time().InSecondsF();
 }
 
-CompositorFloatKeyframe::CompositorFloatKeyframe(std::unique_ptr<cc::FloatKeyframe> floatKeyframe)
-    : m_floatKeyframe(std::move(floatKeyframe))
-{
+const cc::TimingFunction* CompositorFloatKeyframe::ccTimingFunction() const {
+  return m_floatKeyframe->timing_function();
 }
 
-CompositorFloatKeyframe::~CompositorFloatKeyframe()
-{
+std::unique_ptr<cc::FloatKeyframe> CompositorFloatKeyframe::cloneToCC() const {
+  return m_floatKeyframe->Clone();
 }
 
-double CompositorFloatKeyframe::time() const
-{
-    return m_floatKeyframe->Time().InSecondsF();
-}
-
-const cc::TimingFunction* CompositorFloatKeyframe::ccTimingFunction() const
-{
-    return m_floatKeyframe->timing_function();
-}
-
-std::unique_ptr<cc::FloatKeyframe> CompositorFloatKeyframe::cloneToCC() const
-{
-    return m_floatKeyframe->Clone();
-}
-
-} // namespace blink
+}  // namespace blink

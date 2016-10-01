@@ -38,28 +38,37 @@ namespace blink {
 
 using namespace XPath;
 
-XPathExpression* XPathEvaluator::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
-{
-    return XPathExpression::createExpression(expression, resolver, exceptionState);
+XPathExpression* XPathEvaluator::createExpression(
+    const String& expression,
+    XPathNSResolver* resolver,
+    ExceptionState& exceptionState) {
+  return XPathExpression::createExpression(expression, resolver,
+                                           exceptionState);
 }
 
-XPathNSResolver* XPathEvaluator::createNSResolver(Node* nodeResolver)
-{
-    return NativeXPathNSResolver::create(nodeResolver);
+XPathNSResolver* XPathEvaluator::createNSResolver(Node* nodeResolver) {
+  return NativeXPathNSResolver::create(nodeResolver);
 }
 
-XPathResult* XPathEvaluator::evaluate(const String& expression, Node* contextNode, XPathNSResolver* resolver, unsigned short type, const ScriptValue&, ExceptionState& exceptionState)
-{
-    if (!isValidContextNode(contextNode)) {
-        exceptionState.throwDOMException(NotSupportedError, "The node provided is '" + contextNode->nodeName() + "', which is not a valid context node type.");
-        return nullptr;
-    }
+XPathResult* XPathEvaluator::evaluate(const String& expression,
+                                      Node* contextNode,
+                                      XPathNSResolver* resolver,
+                                      unsigned short type,
+                                      const ScriptValue&,
+                                      ExceptionState& exceptionState) {
+  if (!isValidContextNode(contextNode)) {
+    exceptionState.throwDOMException(
+        NotSupportedError, "The node provided is '" + contextNode->nodeName() +
+                               "', which is not a valid context node type.");
+    return nullptr;
+  }
 
-    XPathExpression* expr = createExpression(expression, resolver, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
+  XPathExpression* expr =
+      createExpression(expression, resolver, exceptionState);
+  if (exceptionState.hadException())
+    return nullptr;
 
-    return expr->evaluate(contextNode, type, ScriptValue(), exceptionState);
+  return expr->evaluate(contextNode, type, ScriptValue(), exceptionState);
 }
 
-} // namespace blink
+}  // namespace blink

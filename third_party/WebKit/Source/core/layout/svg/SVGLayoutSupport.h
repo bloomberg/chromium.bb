@@ -47,87 +47,131 @@ class StrokeData;
 class TransformState;
 
 class CORE_EXPORT SVGLayoutSupport {
-    STATIC_ONLY(SVGLayoutSupport);
-public:
-    // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
-    static void layoutChildren(LayoutObject*, bool forceLayout, bool screenScalingFactorChanged, bool layoutSizeChanged);
+  STATIC_ONLY(SVGLayoutSupport);
 
-    // Layout resources used by this node.
-    static void layoutResourcesIfNeeded(const LayoutObject*);
+ public:
+  // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
+  static void layoutChildren(LayoutObject*,
+                             bool forceLayout,
+                             bool screenScalingFactorChanged,
+                             bool layoutSizeChanged);
 
-    // Helper function determining whether overflow is hidden.
-    static bool isOverflowHidden(const LayoutObject*);
+  // Layout resources used by this node.
+  static void layoutResourcesIfNeeded(const LayoutObject*);
 
-    // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
-    static void intersectPaintInvalidationRectWithResources(const LayoutObject*, FloatRect&);
+  // Helper function determining whether overflow is hidden.
+  static bool isOverflowHidden(const LayoutObject*);
 
-    // Determine if the LayoutObject references a filter resource object.
-    static bool hasFilterResource(const LayoutObject&);
+  // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
+  static void intersectPaintInvalidationRectWithResources(const LayoutObject*,
+                                                          FloatRect&);
 
-    // Determines whether the passed point lies in a clipping area
-    static bool pointInClippingArea(const LayoutObject&, const FloatPoint&);
+  // Determine if the LayoutObject references a filter resource object.
+  static bool hasFilterResource(const LayoutObject&);
 
-    // Transform |pointInParent| to |object|'s user-space and check if it is
-    // within the clipping area. Returns false if the transform is singular or
-    // the point is outside the clipping area.
-    static bool transformToUserSpaceAndCheckClipping(const LayoutObject&, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint);
+  // Determines whether the passed point lies in a clipping area
+  static bool pointInClippingArea(const LayoutObject&, const FloatPoint&);
 
-    static void computeContainerBoundingBoxes(const LayoutObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
+  // Transform |pointInParent| to |object|'s user-space and check if it is
+  // within the clipping area. Returns false if the transform is singular or
+  // the point is outside the clipping area.
+  static bool transformToUserSpaceAndCheckClipping(
+      const LayoutObject&,
+      const AffineTransform& localTransform,
+      const FloatPoint& pointInParent,
+      FloatPoint& localPoint);
 
-    // Important functions used by nearly all SVG layoutObjects centralizing coordinate transformations / paint invalidation rect calculations
-    static FloatRect localOverflowRectForPaintInvalidation(const LayoutObject&);
-    static LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutObject&, const LayoutBoxModelObject& paintInvalidationContainer);
-    static LayoutRect transformPaintInvalidationRect(const LayoutObject&, const AffineTransform&, const FloatRect&);
-    static bool mapToVisualRectInAncestorSpace(const LayoutObject&, const LayoutBoxModelObject* ancestor, const FloatRect& localPaintInvalidationRect, LayoutRect& resultRect, VisualRectFlags = DefaultVisualRectFlags);
-    static void mapLocalToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags);
-    static void mapAncestorToLocal(const LayoutObject&, const LayoutBoxModelObject* ancestor, TransformState&);
-    static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
+  static void computeContainerBoundingBoxes(
+      const LayoutObject* container,
+      FloatRect& objectBoundingBox,
+      bool& objectBoundingBoxValid,
+      FloatRect& strokeBoundingBox,
+      FloatRect& paintInvalidationBoundingBox);
 
-    // Shared between SVG layoutObjects and resources.
-    static void applyStrokeStyleToStrokeData(StrokeData&, const ComputedStyle&, const LayoutObject&, float dashScaleFactor);
+  // Important functions used by nearly all SVG layoutObjects centralizing coordinate transformations / paint invalidation rect calculations
+  static FloatRect localOverflowRectForPaintInvalidation(const LayoutObject&);
+  static LayoutRect clippedOverflowRectForPaintInvalidation(
+      const LayoutObject&,
+      const LayoutBoxModelObject& paintInvalidationContainer);
+  static LayoutRect transformPaintInvalidationRect(const LayoutObject&,
+                                                   const AffineTransform&,
+                                                   const FloatRect&);
+  static bool mapToVisualRectInAncestorSpace(
+      const LayoutObject&,
+      const LayoutBoxModelObject* ancestor,
+      const FloatRect& localPaintInvalidationRect,
+      LayoutRect& resultRect,
+      VisualRectFlags = DefaultVisualRectFlags);
+  static void mapLocalToAncestor(const LayoutObject*,
+                                 const LayoutBoxModelObject* ancestor,
+                                 TransformState&,
+                                 MapCoordinatesFlags);
+  static void mapAncestorToLocal(const LayoutObject&,
+                                 const LayoutBoxModelObject* ancestor,
+                                 TransformState&);
+  static const LayoutObject* pushMappingToContainer(
+      const LayoutObject*,
+      const LayoutBoxModelObject* ancestorToStopAt,
+      LayoutGeometryMap&);
 
-    static DashArray resolveSVGDashArray(const SVGDashArray&, const ComputedStyle&, const SVGLengthContext&);
+  // Shared between SVG layoutObjects and resources.
+  static void applyStrokeStyleToStrokeData(StrokeData&,
+                                           const ComputedStyle&,
+                                           const LayoutObject&,
+                                           float dashScaleFactor);
 
-    // Determines if any ancestor has adjusted the scale factor.
-    static bool screenScaleFactorChanged(const LayoutObject*);
+  static DashArray resolveSVGDashArray(const SVGDashArray&,
+                                       const ComputedStyle&,
+                                       const SVGLengthContext&);
 
-    // Determines if any ancestor's layout size has changed.
-    static bool layoutSizeOfNearestViewportChanged(const LayoutObject*);
+  // Determines if any ancestor has adjusted the scale factor.
+  static bool screenScaleFactorChanged(const LayoutObject*);
 
-    // FIXME: These methods do not belong here.
-    static const LayoutSVGRoot* findTreeRootObject(const LayoutObject*);
+  // Determines if any ancestor's layout size has changed.
+  static bool layoutSizeOfNearestViewportChanged(const LayoutObject*);
 
-    // Helper method for determining if a LayoutObject marked as text (isText()== true)
-    // can/will be laid out as part of a <text>.
-    static bool isLayoutableTextNode(const LayoutObject*);
+  // FIXME: These methods do not belong here.
+  static const LayoutSVGRoot* findTreeRootObject(const LayoutObject*);
 
-    // Determines whether a svg node should isolate or not based on ComputedStyle.
-    static bool willIsolateBlendingDescendantsForStyle(const ComputedStyle&);
-    static bool willIsolateBlendingDescendantsForObject(const LayoutObject*);
-    template<typename LayoutObjectType>
-    static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);
-    static bool isIsolationRequired(const LayoutObject*);
+  // Helper method for determining if a LayoutObject marked as text (isText()== true)
+  // can/will be laid out as part of a <text>.
+  static bool isLayoutableTextNode(const LayoutObject*);
 
-    static AffineTransform deprecatedCalculateTransformToLayer(const LayoutObject*);
-    static float calculateScreenFontSizeScalingFactor(const LayoutObject*);
+  // Determines whether a svg node should isolate or not based on ComputedStyle.
+  static bool willIsolateBlendingDescendantsForStyle(const ComputedStyle&);
+  static bool willIsolateBlendingDescendantsForObject(const LayoutObject*);
+  template <typename LayoutObjectType>
+  static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);
+  static bool isIsolationRequired(const LayoutObject*);
 
-    static LayoutObject* findClosestLayoutSVGText(LayoutObject*, const FloatPoint&);
+  static AffineTransform deprecatedCalculateTransformToLayer(
+      const LayoutObject*);
+  static float calculateScreenFontSizeScalingFactor(const LayoutObject*);
 
-private:
-    static void updateObjectBoundingBox(FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, LayoutObject* other, FloatRect otherBoundingBox);
+  static LayoutObject* findClosestLayoutSVGText(LayoutObject*,
+                                                const FloatPoint&);
+
+ private:
+  static void updateObjectBoundingBox(FloatRect& objectBoundingBox,
+                                      bool& objectBoundingBoxValid,
+                                      LayoutObject* other,
+                                      FloatRect otherBoundingBox);
 };
 
 class SubtreeContentTransformScope {
-    STACK_ALLOCATED();
-public:
-    SubtreeContentTransformScope(const AffineTransform&);
-    ~SubtreeContentTransformScope();
+  STACK_ALLOCATED();
 
-    static AffineTransform currentContentTransformation() { return AffineTransform(s_currentContentTransformation); }
+ public:
+  SubtreeContentTransformScope(const AffineTransform&);
+  ~SubtreeContentTransformScope();
 
-private:
-    static AffineTransform::Transform s_currentContentTransformation;
-    AffineTransform m_savedContentTransformation;
+  static AffineTransform currentContentTransformation() {
+    return AffineTransform(s_currentContentTransformation);
+  }
+
+ private:
+  static AffineTransform::Transform s_currentContentTransformation;
+  AffineTransform m_savedContentTransformation;
 };
 
 // The following enumeration is used to optimize cases where the scale is known
@@ -135,50 +179,50 @@ private:
 // value 'Full' can be used in the general case when the scale change is
 // unknown, or known to change.
 enum class SVGTransformChange {
-    None,
-    ScaleInvariant,
-    Full,
+  None,
+  ScaleInvariant,
+  Full,
 };
 
 // Helper for computing ("classifying") a change to a transform using the
 // categoies defined above.
 class SVGTransformChangeDetector {
-    STACK_ALLOCATED();
-public:
-    explicit SVGTransformChangeDetector(const AffineTransform& previous)
-        : m_previousTransform(previous)
-    {
-    }
+  STACK_ALLOCATED();
 
-    SVGTransformChange computeChange(const AffineTransform& current)
-    {
-        if (m_previousTransform == current)
-            return SVGTransformChange::None;
-        if (scaleReference(m_previousTransform) == scaleReference(current))
-            return SVGTransformChange::ScaleInvariant;
-        return SVGTransformChange::Full;
-    }
+ public:
+  explicit SVGTransformChangeDetector(const AffineTransform& previous)
+      : m_previousTransform(previous) {}
 
-private:
-    static std::pair<double, double> scaleReference(const AffineTransform& transform)
-    {
-        return std::make_pair(transform.xScaleSquared(), transform.yScaleSquared());
-    }
-    AffineTransform m_previousTransform;
+  SVGTransformChange computeChange(const AffineTransform& current) {
+    if (m_previousTransform == current)
+      return SVGTransformChange::None;
+    if (scaleReference(m_previousTransform) == scaleReference(current))
+      return SVGTransformChange::ScaleInvariant;
+    return SVGTransformChange::Full;
+  }
+
+ private:
+  static std::pair<double, double> scaleReference(
+      const AffineTransform& transform) {
+    return std::make_pair(transform.xScaleSquared(), transform.yScaleSquared());
+  }
+  AffineTransform m_previousTransform;
 };
 
 template <typename LayoutObjectType>
-bool SVGLayoutSupport::computeHasNonIsolatedBlendingDescendants(const LayoutObjectType* object)
-{
-    for (LayoutObject* child = object->firstChild(); child; child = child->nextSibling()) {
-        if (child->isBlendingAllowed() && child->style()->hasBlendMode())
-            return true;
-        if (child->hasNonIsolatedBlendingDescendants() && !willIsolateBlendingDescendantsForObject(child))
-            return true;
-    }
-    return false;
+bool SVGLayoutSupport::computeHasNonIsolatedBlendingDescendants(
+    const LayoutObjectType* object) {
+  for (LayoutObject* child = object->firstChild(); child;
+       child = child->nextSibling()) {
+    if (child->isBlendingAllowed() && child->style()->hasBlendMode())
+      return true;
+    if (child->hasNonIsolatedBlendingDescendants() &&
+        !willIsolateBlendingDescendantsForObject(child))
+      return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGLayoutSupport_h
+#endif  // SVGLayoutSupport_h

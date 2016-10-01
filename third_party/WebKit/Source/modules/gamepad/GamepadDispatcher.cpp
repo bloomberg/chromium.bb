@@ -9,58 +9,52 @@
 
 namespace blink {
 
-GamepadDispatcher& GamepadDispatcher::instance()
-{
-    DEFINE_STATIC_LOCAL(GamepadDispatcher, gamepadDispatcher, (new GamepadDispatcher));
-    return gamepadDispatcher;
+GamepadDispatcher& GamepadDispatcher::instance() {
+  DEFINE_STATIC_LOCAL(GamepadDispatcher, gamepadDispatcher,
+                      (new GamepadDispatcher));
+  return gamepadDispatcher;
 }
 
-void GamepadDispatcher::sampleGamepads(WebGamepads& gamepads)
-{
-    Platform::current()->sampleGamepads(gamepads);
+void GamepadDispatcher::sampleGamepads(WebGamepads& gamepads) {
+  Platform::current()->sampleGamepads(gamepads);
 }
 
-GamepadDispatcher::GamepadDispatcher()
-{
+GamepadDispatcher::GamepadDispatcher() {}
+
+GamepadDispatcher::~GamepadDispatcher() {}
+
+DEFINE_TRACE(GamepadDispatcher) {
+  PlatformEventDispatcher::trace(visitor);
 }
 
-GamepadDispatcher::~GamepadDispatcher()
-{
+void GamepadDispatcher::didConnectGamepad(unsigned index,
+                                          const WebGamepad& gamepad) {
+  dispatchDidConnectOrDisconnectGamepad(index, gamepad, true);
 }
 
-DEFINE_TRACE(GamepadDispatcher)
-{
-    PlatformEventDispatcher::trace(visitor);
+void GamepadDispatcher::didDisconnectGamepad(unsigned index,
+                                             const WebGamepad& gamepad) {
+  dispatchDidConnectOrDisconnectGamepad(index, gamepad, false);
 }
 
-void GamepadDispatcher::didConnectGamepad(unsigned index, const WebGamepad& gamepad)
-{
-    dispatchDidConnectOrDisconnectGamepad(index, gamepad, true);
+void GamepadDispatcher::dispatchDidConnectOrDisconnectGamepad(
+    unsigned index,
+    const WebGamepad& gamepad,
+    bool connected) {
+  ASSERT(index < WebGamepads::itemsLengthCap);
+  ASSERT(connected == gamepad.connected);
+
+  m_latestChange.pad = gamepad;
+  m_latestChange.index = index;
+  notifyControllers();
 }
 
-void GamepadDispatcher::didDisconnectGamepad(unsigned index, const WebGamepad& gamepad)
-{
-    dispatchDidConnectOrDisconnectGamepad(index, gamepad, false);
+void GamepadDispatcher::startListening() {
+  Platform::current()->startListening(WebPlatformEventTypeGamepad, this);
 }
 
-void GamepadDispatcher::dispatchDidConnectOrDisconnectGamepad(unsigned index, const WebGamepad& gamepad, bool connected)
-{
-    ASSERT(index < WebGamepads::itemsLengthCap);
-    ASSERT(connected == gamepad.connected);
-
-    m_latestChange.pad = gamepad;
-    m_latestChange.index = index;
-    notifyControllers();
+void GamepadDispatcher::stopListening() {
+  Platform::current()->stopListening(WebPlatformEventTypeGamepad);
 }
 
-void GamepadDispatcher::startListening()
-{
-    Platform::current()->startListening(WebPlatformEventTypeGamepad, this);
-}
-
-void GamepadDispatcher::stopListening()
-{
-    Platform::current()->stopListening(WebPlatformEventTypeGamepad);
-}
-
-} // namespace blink
+}  // namespace blink

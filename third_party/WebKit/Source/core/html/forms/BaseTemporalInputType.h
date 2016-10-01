@@ -45,50 +45,63 @@ class ExceptionState;
 // MultipleFieldsTemporalInputType, and another is BaseTemporalInputType, which
 // inherits from InputTypeView through InputType.  The latter is not used.
 class BaseTemporalInputType : public InputType {
-public:
-    String visibleValue() const override;
-    String sanitizeValue(const String&) const override;
-    // Parses the specified string for this InputType, and returns true if it
-    // is successfully parsed. An instance pointed by the DateComponents*
-    // parameter will have parsed values and be modified even if the parsing
-    // fails. The DateComponents* parameter may be 0.
-    bool parseToDateComponents(const String&, DateComponents*) const;
-    virtual bool setMillisecondToDateComponents(double, DateComponents*) const = 0;
+ public:
+  String visibleValue() const override;
+  String sanitizeValue(const String&) const override;
+  // Parses the specified string for this InputType, and returns true if it
+  // is successfully parsed. An instance pointed by the DateComponents*
+  // parameter will have parsed values and be modified even if the parsing
+  // fails. The DateComponents* parameter may be 0.
+  bool parseToDateComponents(const String&, DateComponents*) const;
+  virtual bool setMillisecondToDateComponents(double,
+                                              DateComponents*) const = 0;
 
-    // Provide some helpers for MultipleFieldsTemporalInputTypeView.
-    virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const = 0;
-    virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const = 0;
-    virtual bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const = 0;
+  // Provide some helpers for MultipleFieldsTemporalInputTypeView.
+  virtual String formatDateTimeFieldsState(
+      const DateTimeFieldsState&) const = 0;
+  virtual void setupLayoutParameters(DateTimeEditElement::LayoutParameters&,
+                                     const DateComponents&) const = 0;
+  virtual bool isValidFormat(bool hasYear,
+                             bool hasMonth,
+                             bool hasWeek,
+                             bool hasDay,
+                             bool hasAMPM,
+                             bool hasHour,
+                             bool hasMinute,
+                             bool hasSecond) const = 0;
 
-protected:
-    BaseTemporalInputType(HTMLInputElement& element) : InputType(element) { }
-    Decimal parseToNumber(const String&, const Decimal&) const override;
-    String serialize(const Decimal&) const override;
-    String serializeWithComponents(const DateComponents&) const;
-    bool shouldHaveSecondField(const DateComponents&) const;
+ protected:
+  BaseTemporalInputType(HTMLInputElement& element) : InputType(element) {}
+  Decimal parseToNumber(const String&, const Decimal&) const override;
+  String serialize(const Decimal&) const override;
+  String serializeWithComponents(const DateComponents&) const;
+  bool shouldHaveSecondField(const DateComponents&) const;
 
-private:
-    virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const = 0;
+ private:
+  virtual bool parseToDateComponentsInternal(const String&,
+                                             DateComponents*) const = 0;
 
-    String badInputText() const override;
-    InputTypeView* createView() override;
-    double valueAsDate() const override;
-    void setValueAsDate(double, ExceptionState&) const override;
-    double valueAsDouble() const override;
-    void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
-    bool typeMismatchFor(const String&) const override;
-    bool typeMismatch() const override;
-    bool valueMissing(const String&) const override;
-    String rangeOverflowText(const Decimal& maximum) const override;
-    String rangeUnderflowText(const Decimal& minimum) const override;
-    Decimal defaultValueForStepUp() const override;
-    bool isSteppable() const override;
-    virtual String serializeWithMilliseconds(double) const;
-    String localizeValue(const String&) const override;
-    bool supportsReadOnly() const override;
-    bool shouldRespectListAttribute() override;
-    bool shouldShowFocusRingOnMouseFocus() const override;
+  String badInputText() const override;
+  InputTypeView* createView() override;
+  double valueAsDate() const override;
+  void setValueAsDate(double, ExceptionState&) const override;
+  double valueAsDouble() const override;
+  void setValueAsDouble(double,
+                        TextFieldEventBehavior,
+                        ExceptionState&) const override;
+  bool typeMismatchFor(const String&) const override;
+  bool typeMismatch() const override;
+  bool valueMissing(const String&) const override;
+  String rangeOverflowText(const Decimal& maximum) const override;
+  String rangeUnderflowText(const Decimal& minimum) const override;
+  Decimal defaultValueForStepUp() const override;
+  bool isSteppable() const override;
+  virtual String serializeWithMilliseconds(double) const;
+  String localizeValue(const String&) const override;
+  bool supportsReadOnly() const override;
+  bool shouldRespectListAttribute() override;
+  bool shouldShowFocusRingOnMouseFocus() const override;
 };
 
-} // namespace blink
-#endif // BaseTemporalInputType_h
+}  // namespace blink
+#endif  // BaseTemporalInputType_h

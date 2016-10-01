@@ -34,24 +34,23 @@
 namespace blink {
 
 enum WebFocusType {
-    // Element::focus(), etc.
-    WebFocusTypeNone = 0,
-    // Sequential navigation with TAB, or Shift + TAB.
-    WebFocusTypeForward,
-    WebFocusTypeBackward,
-    // Spatial navigation.
-    WebFocusTypeUp,
-    WebFocusTypeDown,
-    WebFocusTypeLeft,
-    WebFocusTypeRight,
-    // Mouse press
-    WebFocusTypeMouse,
-    // Re-focus by a page focus
-    WebFocusTypePage,
+  // Element::focus(), etc.
+  WebFocusTypeNone = 0,
+  // Sequential navigation with TAB, or Shift + TAB.
+  WebFocusTypeForward,
+  WebFocusTypeBackward,
+  // Spatial navigation.
+  WebFocusTypeUp,
+  WebFocusTypeDown,
+  WebFocusTypeLeft,
+  WebFocusTypeRight,
+  // Mouse press
+  WebFocusTypeMouse,
+  // Re-focus by a page focus
+  WebFocusTypePage,
 
-    WebFocusTypeLast = WebFocusTypePage
+  WebFocusTypeLast = WebFocusTypePage
 };
-
 }
 
-#endif // WebFocusType_h
+#endif  // WebFocusType_h

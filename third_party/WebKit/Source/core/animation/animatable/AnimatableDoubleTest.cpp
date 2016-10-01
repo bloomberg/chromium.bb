@@ -34,36 +34,54 @@
 
 namespace blink {
 
-TEST(AnimationAnimatableDoubleTest, Create)
-{
-    EXPECT_TRUE(static_cast<bool>(AnimatableDouble::create(5).get()));
-    EXPECT_TRUE(static_cast<bool>(AnimatableDouble::create(10).get()));
+TEST(AnimationAnimatableDoubleTest, Create) {
+  EXPECT_TRUE(static_cast<bool>(AnimatableDouble::create(5).get()));
+  EXPECT_TRUE(static_cast<bool>(AnimatableDouble::create(10).get()));
 }
 
-TEST(AnimationAnimatableDoubleTest, Equal)
-{
-    EXPECT_TRUE(AnimatableDouble::create(10)->equals(AnimatableDouble::create(10).get()));
-    EXPECT_FALSE(AnimatableDouble::create(5)->equals(AnimatableDouble::create(10).get()));
+TEST(AnimationAnimatableDoubleTest, Equal) {
+  EXPECT_TRUE(
+      AnimatableDouble::create(10)->equals(AnimatableDouble::create(10).get()));
+  EXPECT_FALSE(
+      AnimatableDouble::create(5)->equals(AnimatableDouble::create(10).get()));
 }
 
-TEST(AnimationAnimatableDoubleTest, ToDouble)
-{
-    EXPECT_EQ(5.9, AnimatableDouble::create(5.9)->toDouble());
-    EXPECT_EQ(-10, AnimatableDouble::create(-10)->toDouble());
+TEST(AnimationAnimatableDoubleTest, ToDouble) {
+  EXPECT_EQ(5.9, AnimatableDouble::create(5.9)->toDouble());
+  EXPECT_EQ(-10, AnimatableDouble::create(-10)->toDouble());
 }
 
-
-TEST(AnimationAnimatableDoubleTest, Interpolate)
-{
-    RefPtr<AnimatableDouble> from10 = AnimatableDouble::create(10);
-    RefPtr<AnimatableDouble> to20 = AnimatableDouble::create(20);
-    EXPECT_EQ(5, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())->toDouble());
-    EXPECT_EQ(10, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 0).get())->toDouble());
-    EXPECT_EQ(14, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 0.4).get())->toDouble());
-    EXPECT_EQ(15, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 0.5).get())->toDouble());
-    EXPECT_EQ(16, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 0.6).get())->toDouble());
-    EXPECT_EQ(20, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 1).get())->toDouble());
-    EXPECT_EQ(25, toAnimatableDouble(AnimatableValue::interpolate(from10.get(), to20.get(), 1.5).get())->toDouble());
+TEST(AnimationAnimatableDoubleTest, Interpolate) {
+  RefPtr<AnimatableDouble> from10 = AnimatableDouble::create(10);
+  RefPtr<AnimatableDouble> to20 = AnimatableDouble::create(20);
+  EXPECT_EQ(
+      5, toAnimatableDouble(
+             AnimatableValue::interpolate(from10.get(), to20.get(), -0.5).get())
+             ->toDouble());
+  EXPECT_EQ(10,
+            toAnimatableDouble(
+                AnimatableValue::interpolate(from10.get(), to20.get(), 0).get())
+                ->toDouble());
+  EXPECT_EQ(
+      14, toAnimatableDouble(
+              AnimatableValue::interpolate(from10.get(), to20.get(), 0.4).get())
+              ->toDouble());
+  EXPECT_EQ(
+      15, toAnimatableDouble(
+              AnimatableValue::interpolate(from10.get(), to20.get(), 0.5).get())
+              ->toDouble());
+  EXPECT_EQ(
+      16, toAnimatableDouble(
+              AnimatableValue::interpolate(from10.get(), to20.get(), 0.6).get())
+              ->toDouble());
+  EXPECT_EQ(20,
+            toAnimatableDouble(
+                AnimatableValue::interpolate(from10.get(), to20.get(), 1).get())
+                ->toDouble());
+  EXPECT_EQ(
+      25, toAnimatableDouble(
+              AnimatableValue::interpolate(from10.get(), to20.get(), 1.5).get())
+              ->toDouble());
 }
 
-} // namespace blink
+}  // namespace blink

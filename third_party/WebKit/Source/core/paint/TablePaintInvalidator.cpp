@@ -14,56 +14,73 @@
 
 namespace blink {
 
-PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded()
-{
-    PaintInvalidationReason reason = BoxPaintInvalidator(m_table, m_context).invalidatePaintIfNeeded();
+PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
+  PaintInvalidationReason reason =
+      BoxPaintInvalidator(m_table, m_context).invalidatePaintIfNeeded();
 
-    // Table cells paint background from the containing column group, column, section and row.
-    // If background of any of them changed, we need to invalidate all affected cells.
-    // Here use shouldDoFullPaintInvalidation() as a broader condition of background change.
+  // Table cells paint background from the containing column group, column, section and row.
+  // If background of any of them changed, we need to invalidate all affected cells.
+  // Here use shouldDoFullPaintInvalidation() as a broader condition of background change.
 
-    // If any col changed background, we'll check all cells for background changes.
-    bool hasColChangedBackground = false;
-    for (LayoutTableCol* col = m_table.firstColumn(); col; col = col->nextColumn()) {
-        if (col->backgroundChangedSinceLastPaintInvalidation()) {
-            hasColChangedBackground = true;
-            break;
-        }
+  // If any col changed background, we'll check all cells for background changes.
+  bool hasColChangedBackground = false;
+  for (LayoutTableCol* col = m_table.firstColumn(); col;
+       col = col->nextColumn()) {
+    if (col->backgroundChangedSinceLastPaintInvalidation()) {
+      hasColChangedBackground = true;
+      break;
     }
-    for (LayoutObject* child = m_table.firstChild(); child; child = child->nextSibling()) {
-        if (!child->isTableSection())
-            continue;
-        LayoutTableSection* section = toLayoutTableSection(child);
-        ObjectPaintInvalidator sectionInvalidator(*section);
-        if (!hasColChangedBackground && !section->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
-            continue;
-        for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
-            if (!hasColChangedBackground && !section->backgroundChangedSinceLastPaintInvalidation() && !row->backgroundChangedSinceLastPaintInvalidation())
-                continue;
-            for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
-                bool invalidated = false;
-                // Table cells paint container's background on the container's backing instead of its own (if any),
-                // so we must invalidate it by the containers.
-                if (section->backgroundChangedSinceLastPaintInvalidation()) {
-                    sectionInvalidator.slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
-                    invalidated = true;
-                } else if (hasColChangedBackground) {
-                    LayoutTable::ColAndColGroup colAndColGroup = m_table.colElementAtAbsoluteColumn(cell->absoluteColumnIndex());
-                    LayoutTableCol* column = colAndColGroup.col;
-                    LayoutTableCol* columnGroup = colAndColGroup.colgroup;
-                    if ((columnGroup && columnGroup->backgroundChangedSinceLastPaintInvalidation())
-                        || (column && column->backgroundChangedSinceLastPaintInvalidation())) {
-                        sectionInvalidator.slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
-                        invalidated = true;
-                    }
-                }
-                if ((!invalidated || row->hasSelfPaintingLayer()) && row->backgroundChangedSinceLastPaintInvalidation())
-                    ObjectPaintInvalidator(*row).slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
-            }
+  }
+  for (LayoutObject* child = m_table.firstChild(); child;
+       child = child->nextSibling()) {
+    if (!child->isTableSection())
+      continue;
+    LayoutTableSection* section = toLayoutTableSection(child);
+    ObjectPaintInvalidator sectionInvalidator(*section);
+    if (!hasColChangedBackground &&
+        !section
+             ->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
+      continue;
+    for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
+      if (!hasColChangedBackground &&
+          !section->backgroundChangedSinceLastPaintInvalidation() &&
+          !row->backgroundChangedSinceLastPaintInvalidation())
+        continue;
+      for (LayoutTableCell* cell = row->firstCell(); cell;
+           cell = cell->nextCell()) {
+        bool invalidated = false;
+        // Table cells paint container's background on the container's backing instead of its own (if any),
+        // so we must invalidate it by the containers.
+        if (section->backgroundChangedSinceLastPaintInvalidation()) {
+          sectionInvalidator
+              .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+                  *cell, PaintInvalidationStyleChange);
+          invalidated = true;
+        } else if (hasColChangedBackground) {
+          LayoutTable::ColAndColGroup colAndColGroup =
+              m_table.colElementAtAbsoluteColumn(cell->absoluteColumnIndex());
+          LayoutTableCol* column = colAndColGroup.col;
+          LayoutTableCol* columnGroup = colAndColGroup.colgroup;
+          if ((columnGroup &&
+               columnGroup->backgroundChangedSinceLastPaintInvalidation()) ||
+              (column &&
+               column->backgroundChangedSinceLastPaintInvalidation())) {
+            sectionInvalidator
+                .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+                    *cell, PaintInvalidationStyleChange);
+            invalidated = true;
+          }
         }
+        if ((!invalidated || row->hasSelfPaintingLayer()) &&
+            row->backgroundChangedSinceLastPaintInvalidation())
+          ObjectPaintInvalidator(*row)
+              .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+                  *cell, PaintInvalidationStyleChange);
+      }
     }
+  }
 
-    return reason;
+  return reason;
 }
 
-} // namespace blink
+}  // namespace blink

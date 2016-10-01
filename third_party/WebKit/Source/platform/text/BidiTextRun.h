@@ -37,10 +37,15 @@
 
 namespace blink {
 
-PLATFORM_EXPORT TextDirection directionForRun(TextRun&, bool* hasStrongDirectionality = nullptr);
-PLATFORM_EXPORT TextDirection determineDirectionality(const String& value, bool* hasStrongDirectionality = nullptr);
-PLATFORM_EXPORT TextRun textRunWithDirectionality(const String& value, bool* hasStrongDirectionality = nullptr);
+PLATFORM_EXPORT TextDirection
+directionForRun(TextRun&, bool* hasStrongDirectionality = nullptr);
+PLATFORM_EXPORT TextDirection
+determineDirectionality(const String& value,
+                        bool* hasStrongDirectionality = nullptr);
+PLATFORM_EXPORT TextRun
+textRunWithDirectionality(const String& value,
+                          bool* hasStrongDirectionality = nullptr);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BidiTextRun_h
+#endif  // BidiTextRun_h

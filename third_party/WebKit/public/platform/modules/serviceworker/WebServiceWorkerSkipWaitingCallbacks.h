@@ -11,6 +11,6 @@ namespace blink {
 
 using WebServiceWorkerSkipWaitingCallbacks = WebCallbacks<void, void>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerSkipWaitingCallbacks_h
+#endif  // WebServiceWorkerSkipWaitingCallbacks_h

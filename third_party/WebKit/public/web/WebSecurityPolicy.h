@@ -41,97 +41,115 @@ class WebString;
 class WebURL;
 
 class WebSecurityPolicy {
-public:
-    // Registers a URL scheme to be treated as a local scheme (i.e., with the
-    // same security rules as those applied to "file" URLs). This means that
-    // normal pages cannot link to or access URLs of this scheme.
-    BLINK_EXPORT static void registerURLSchemeAsLocal(const WebString&);
+ public:
+  // Registers a URL scheme to be treated as a local scheme (i.e., with the
+  // same security rules as those applied to "file" URLs). This means that
+  // normal pages cannot link to or access URLs of this scheme.
+  BLINK_EXPORT static void registerURLSchemeAsLocal(const WebString&);
 
-    // Registers a URL scheme to be treated as a noAccess scheme. This means
-    // that pages loaded with this URL scheme cannot access pages loaded with
-    // any other URL scheme.
-    BLINK_EXPORT static void registerURLSchemeAsNoAccess(const WebString&);
+  // Registers a URL scheme to be treated as a noAccess scheme. This means
+  // that pages loaded with this URL scheme cannot access pages loaded with
+  // any other URL scheme.
+  BLINK_EXPORT static void registerURLSchemeAsNoAccess(const WebString&);
 
-    // Registers a URL scheme to be treated as display-isolated. This means
-    // that pages cannot display these URLs unless they are from the same
-    // scheme. For example, pages in other origin cannot create iframes or
-    // hyperlinks to URLs with the scheme.
-    BLINK_EXPORT static void registerURLSchemeAsDisplayIsolated(const WebString&);
+  // Registers a URL scheme to be treated as display-isolated. This means
+  // that pages cannot display these URLs unless they are from the same
+  // scheme. For example, pages in other origin cannot create iframes or
+  // hyperlinks to URLs with the scheme.
+  BLINK_EXPORT static void registerURLSchemeAsDisplayIsolated(const WebString&);
 
-    // Registers a URL scheme to generate mixed content warnings when resources whose
-    // schemes are not registered as "secure" are embedded.
-    BLINK_EXPORT static void registerURLSchemeAsRestrictingMixedContent(const WebString&);
+  // Registers a URL scheme to generate mixed content warnings when resources whose
+  // schemes are not registered as "secure" are embedded.
+  BLINK_EXPORT static void registerURLSchemeAsRestrictingMixedContent(
+      const WebString&);
 
-    // Subresources transported by secure schemes do not trigger mixed content
-    // warnings. For example, https and data are secure schemes because they
-    // cannot be corrupted by active network attackers.
-    BLINK_EXPORT static void registerURLSchemeAsSecure(const WebString&);
+  // Subresources transported by secure schemes do not trigger mixed content
+  // warnings. For example, https and data are secure schemes because they
+  // cannot be corrupted by active network attackers.
+  BLINK_EXPORT static void registerURLSchemeAsSecure(const WebString&);
 
-    // Returns true if the scheme has been registered as a secure scheme.
-    BLINK_EXPORT static bool shouldTreatURLSchemeAsSecure(const WebString&);
+  // Returns true if the scheme has been registered as a secure scheme.
+  BLINK_EXPORT static bool shouldTreatURLSchemeAsSecure(const WebString&);
 
-    // Registers a non-HTTP URL scheme which can be sent CORS requests.
-    BLINK_EXPORT static void registerURLSchemeAsCORSEnabled(const WebString&);
+  // Registers a non-HTTP URL scheme which can be sent CORS requests.
+  BLINK_EXPORT static void registerURLSchemeAsCORSEnabled(const WebString&);
 
-    // Registers a URL scheme that can register a ServiceWorker.
-    BLINK_EXPORT static void registerURLSchemeAsAllowingServiceWorkers(const WebString&);
+  // Registers a URL scheme that can register a ServiceWorker.
+  BLINK_EXPORT static void registerURLSchemeAsAllowingServiceWorkers(
+      const WebString&);
 
-    // Registers an HTTP-like URL scheme that supports the Fetch API.
-    BLINK_EXPORT static void registerURLSchemeAsSupportingFetchAPI(const WebString&);
+  // Registers an HTTP-like URL scheme that supports the Fetch API.
+  BLINK_EXPORT static void registerURLSchemeAsSupportingFetchAPI(
+      const WebString&);
 
-    // Registers a URL scheme whose resources can be loaded regardless of a page's Content Security Policy.
-    BLINK_EXPORT static void registerURLSchemeAsBypassingContentSecurityPolicy(const WebString&);
+  // Registers a URL scheme whose resources can be loaded regardless of a page's Content Security Policy.
+  BLINK_EXPORT static void registerURLSchemeAsBypassingContentSecurityPolicy(
+      const WebString&);
 
-    // Registers a URL scheme which will always be considered the first-party when loaded in a top-level context.
-    BLINK_EXPORT static void registerURLSchemeAsFirstPartyWhenTopLevel(const WebString&);
+  // Registers a URL scheme which will always be considered the first-party when loaded in a top-level context.
+  BLINK_EXPORT static void registerURLSchemeAsFirstPartyWhenTopLevel(
+      const WebString&);
 
-    // Registers a URL scheme for which some kinds of resources bypass Content Security Policy.
-    // This enum should be kept in sync with Source/platform/weborigin/SchemeRegistry.h.
-    // Enforced in AssertMatchingEnums.cpp.
-    enum PolicyAreas : uint32_t {
-        PolicyAreaNone = 0,
-        PolicyAreaImage = 1 << 0,
-        PolicyAreaStyle = 1 << 1,
-        // Add more policy areas as needed by clients.
-        PolicyAreaAll = ~static_cast<uint32_t>(0),
-    };
-    BLINK_EXPORT static void registerURLSchemeAsBypassingContentSecurityPolicy(const WebString& scheme, PolicyAreas);
+  // Registers a URL scheme for which some kinds of resources bypass Content Security Policy.
+  // This enum should be kept in sync with Source/platform/weborigin/SchemeRegistry.h.
+  // Enforced in AssertMatchingEnums.cpp.
+  enum PolicyAreas : uint32_t {
+    PolicyAreaNone = 0,
+    PolicyAreaImage = 1 << 0,
+    PolicyAreaStyle = 1 << 1,
+    // Add more policy areas as needed by clients.
+    PolicyAreaAll = ~static_cast<uint32_t>(0),
+  };
+  BLINK_EXPORT static void registerURLSchemeAsBypassingContentSecurityPolicy(
+      const WebString& scheme,
+      PolicyAreas);
 
-    // Registers a URL scheme as strictly empty documents, allowing them to
-    // commit synchronously.
-    BLINK_EXPORT static void registerURLSchemeAsEmptyDocument(const WebString&);
+  // Registers a URL scheme as strictly empty documents, allowing them to
+  // commit synchronously.
+  BLINK_EXPORT static void registerURLSchemeAsEmptyDocument(const WebString&);
 
-    // Support for whitelisting access to origins beyond the same-origin policy.
-    BLINK_EXPORT static void addOriginAccessWhitelistEntry(
-        const WebURL& sourceOrigin, const WebString& destinationProtocol,
-        const WebString& destinationHost, bool allowDestinationSubdomains);
-    BLINK_EXPORT static void removeOriginAccessWhitelistEntry(
-        const WebURL& sourceOrigin, const WebString& destinationProtocol,
-        const WebString& destinationHost, bool allowDestinationSubdomains);
-    BLINK_EXPORT static void resetOriginAccessWhitelists();
+  // Support for whitelisting access to origins beyond the same-origin policy.
+  BLINK_EXPORT static void addOriginAccessWhitelistEntry(
+      const WebURL& sourceOrigin,
+      const WebString& destinationProtocol,
+      const WebString& destinationHost,
+      bool allowDestinationSubdomains);
+  BLINK_EXPORT static void removeOriginAccessWhitelistEntry(
+      const WebURL& sourceOrigin,
+      const WebString& destinationProtocol,
+      const WebString& destinationHost,
+      bool allowDestinationSubdomains);
+  BLINK_EXPORT static void resetOriginAccessWhitelists();
 
-    // Support for whitelisting origins to treat them as trustworthy.
-    BLINK_EXPORT static void addOriginTrustworthyWhiteList(const WebSecurityOrigin&);
+  // Support for whitelisting origins to treat them as trustworthy.
+  BLINK_EXPORT static void addOriginTrustworthyWhiteList(
+      const WebSecurityOrigin&);
 
-    // Support for whitelisting schemes as bypassing secure context checks.
-    BLINK_EXPORT static void addSchemeToBypassSecureContextWhitelist(const WebString&);
+  // Support for whitelisting schemes as bypassing secure context checks.
+  BLINK_EXPORT static void addSchemeToBypassSecureContextWhitelist(
+      const WebString&);
 
-    // Returns the referrer modified according to the referrer policy for a
-    // navigation to a given URL. If the referrer returned is empty, the
-    // referrer header should be omitted.
-    BLINK_EXPORT static WebString generateReferrerHeader(WebReferrerPolicy, const WebURL&, const WebString& referrer);
+  // Returns the referrer modified according to the referrer policy for a
+  // navigation to a given URL. If the referrer returned is empty, the
+  // referrer header should be omitted.
+  BLINK_EXPORT static WebString generateReferrerHeader(
+      WebReferrerPolicy,
+      const WebURL&,
+      const WebString& referrer);
 
-    // Registers an URL scheme to not allow manipulation of the loaded page
-    // by bookmarklets or javascript: URLs typed in the omnibox.
-    BLINK_EXPORT static void registerURLSchemeAsNotAllowingJavascriptURLs(const WebString&);
+  // Registers an URL scheme to not allow manipulation of the loaded page
+  // by bookmarklets or javascript: URLs typed in the omnibox.
+  BLINK_EXPORT static void registerURLSchemeAsNotAllowingJavascriptURLs(
+      const WebString&);
 
-    // Registers an URL scheme as allowed in referrers.
-    BLINK_EXPORT static void registerURLSchemeAsAllowedForReferrer(const WebString&);
+  // Registers an URL scheme as allowed in referrers.
+  BLINK_EXPORT static void registerURLSchemeAsAllowedForReferrer(
+      const WebString&);
 
-private:
-    WebSecurityPolicy();
+ private:
+  WebSecurityPolicy();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

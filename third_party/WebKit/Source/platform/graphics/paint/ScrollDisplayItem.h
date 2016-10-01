@@ -11,50 +11,56 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginScrollDisplayItem final : public PairedBeginDisplayItem {
-public:
-    BeginScrollDisplayItem(const DisplayItemClient& client, Type type, const IntSize& currentOffset)
-        : PairedBeginDisplayItem(client, type, sizeof(*this))
-        , m_currentOffset(currentOffset)
-    {
-        ASSERT(isScrollType(type));
-    }
+class PLATFORM_EXPORT BeginScrollDisplayItem final
+    : public PairedBeginDisplayItem {
+ public:
+  BeginScrollDisplayItem(const DisplayItemClient& client,
+                         Type type,
+                         const IntSize& currentOffset)
+      : PairedBeginDisplayItem(client, type, sizeof(*this)),
+        m_currentOffset(currentOffset) {
+    ASSERT(isScrollType(type));
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-    const IntSize& currentOffset() const { return m_currentOffset; }
+  const IntSize& currentOffset() const { return m_currentOffset; }
 
-private:
+ private:
 #ifndef NDEBUG
-    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
+  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
-    bool equals(const DisplayItem& other) const final
-    {
-        return DisplayItem::equals(other)
-            && m_currentOffset == static_cast<const BeginScrollDisplayItem&>(other).m_currentOffset;
-    }
+  bool equals(const DisplayItem& other) const final {
+    return DisplayItem::equals(other) &&
+           m_currentOffset ==
+               static_cast<const BeginScrollDisplayItem&>(other)
+                   .m_currentOffset;
+  }
 
-    const IntSize m_currentOffset;
+  const IntSize m_currentOffset;
 };
 
 class PLATFORM_EXPORT EndScrollDisplayItem final : public PairedEndDisplayItem {
-public:
-    EndScrollDisplayItem(const DisplayItemClient& client, Type type)
-        : PairedEndDisplayItem(client, type, sizeof(*this))
-    {
-        ASSERT(isEndScrollType(type));
-    }
+ public:
+  EndScrollDisplayItem(const DisplayItemClient& client, Type type)
+      : PairedEndDisplayItem(client, type, sizeof(*this)) {
+    ASSERT(isEndScrollType(type));
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-private:
+ private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return DisplayItem::isScrollType(otherType); }
+  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
+    return DisplayItem::isScrollType(otherType);
+  }
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScrollDisplayItem_h
+#endif  // ScrollDisplayItem_h

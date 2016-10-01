@@ -13,10 +13,9 @@
 
 namespace blink {
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame)
-{
-    // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
-    switch (type) {
+WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
+  // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
+  switch (type) {
     case TaskType::DOMManipulation:
     case TaskType::UserInteraction:
     case TaskType::HistoryTraversal:
@@ -30,30 +29,33 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame)
     case TaskType::UnshippedPortMessage:
     case TaskType::Timer:
     case TaskType::Internal:
-        return frame ? frame->frameScheduler()->timerTaskRunner() : Platform::current()->currentThread()->getWebTaskRunner();
+      return frame ? frame->frameScheduler()->timerTaskRunner()
+                   : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::Networking:
-        return frame ? frame->frameScheduler()->loadingTaskRunner() : Platform::current()->currentThread()->getWebTaskRunner();
+      return frame ? frame->frameScheduler()->loadingTaskRunner()
+                   : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::Unthrottled:
-        return frame ? frame->frameScheduler()->unthrottledTaskRunner() : Platform::current()->currentThread()->getWebTaskRunner();
+      return frame ? frame->frameScheduler()->unthrottledTaskRunner()
+                   : Platform::current()->currentThread()->getWebTaskRunner();
     default:
-        NOTREACHED();
-    }
-    return nullptr;
+      NOTREACHED();
+  }
+  return nullptr;
 }
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type, Document* document)
-{
-    return get(type, document ? document->frame() : nullptr);
+WebTaskRunner* TaskRunnerHelper::get(TaskType type, Document* document) {
+  return get(type, document ? document->frame() : nullptr);
 }
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type, ExecutionContext* executionContext)
-{
-    return get(type, executionContext && executionContext->isDocument() ? static_cast<Document*>(executionContext) : nullptr);
+WebTaskRunner* TaskRunnerHelper::get(TaskType type,
+                                     ExecutionContext* executionContext) {
+  return get(type, executionContext && executionContext->isDocument()
+                       ? static_cast<Document*>(executionContext)
+                       : nullptr);
 }
 
-WebTaskRunner* TaskRunnerHelper::get(TaskType type, ScriptState* scriptState)
-{
-    return get(type, scriptState ? scriptState->getExecutionContext() : nullptr);
+WebTaskRunner* TaskRunnerHelper::get(TaskType type, ScriptState* scriptState) {
+  return get(type, scriptState ? scriptState->getExecutionContext() : nullptr);
 }
 
-} // namespace blink
+}  // namespace blink

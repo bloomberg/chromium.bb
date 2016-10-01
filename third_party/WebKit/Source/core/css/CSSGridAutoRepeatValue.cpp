@@ -8,15 +8,14 @@
 
 namespace blink {
 
-String CSSGridAutoRepeatValue::customCSSText() const
-{
-    StringBuilder result;
-    result.append("repeat(");
-    result.append(getValueName(autoRepeatID()));
-    result.append(", ");
-    result.append(CSSValueList::customCSSText());
-    result.append(')');
-    return result.toString();
+String CSSGridAutoRepeatValue::customCSSText() const {
+  StringBuilder result;
+  result.append("repeat(");
+  result.append(getValueName(autoRepeatID()));
+  result.append(", ");
+  result.append(CSSValueList::customCSSText());
+  result.append(')');
+  return result.toString();
 }
 
-} // namespace blink
+}  // namespace blink

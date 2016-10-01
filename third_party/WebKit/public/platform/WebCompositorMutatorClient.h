@@ -11,11 +11,12 @@
 namespace blink {
 
 // This is used by the compositor to invoke compositor worker callbacks.
-class BLINK_PLATFORM_EXPORT WebCompositorMutatorClient : public cc::LayerTreeMutator {
-public:
-    virtual ~WebCompositorMutatorClient() {}
+class BLINK_PLATFORM_EXPORT WebCompositorMutatorClient
+    : public cc::LayerTreeMutator {
+ public:
+  virtual ~WebCompositorMutatorClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebCompositorMutatorClient_h
+#endif  // WebCompositorMutatorClient_h

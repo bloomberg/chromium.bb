@@ -33,50 +33,57 @@
 
 namespace blink {
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeType>();
+template <>
+const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeType>();
 
-class SVGFEConvolveMatrixElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEConvolveMatrixElement);
+class SVGFEConvolveMatrixElement final
+    : public SVGFilterPrimitiveStandardAttributes {
+  DEFINE_WRAPPERTYPEINFO();
 
-    SVGAnimatedBoolean* preserveAlpha() { return m_preserveAlpha.get(); }
-    SVGAnimatedNumber* divisor() { return m_divisor.get(); }
-    SVGAnimatedNumber* bias() { return m_bias.get(); }
-    SVGAnimatedNumber* kernelUnitLengthX() { return m_kernelUnitLength->firstNumber(); }
-    SVGAnimatedNumber* kernelUnitLengthY() { return m_kernelUnitLength->secondNumber(); }
-    SVGAnimatedNumberList* kernelMatrix() { return m_kernelMatrix.get(); }
-    SVGAnimatedString* in1() { return m_in1.get(); }
-    SVGAnimatedEnumeration<EdgeModeType>* edgeMode() { return m_edgeMode.get(); }
-    SVGAnimatedInteger* orderX() const { return m_order->firstInteger(); }
-    SVGAnimatedInteger* orderY() const { return m_order->secondInteger(); }
-    SVGAnimatedInteger* targetX() { return m_targetX.get(); }
-    SVGAnimatedInteger* targetY() { return m_targetY.get(); }
+ public:
+  DECLARE_NODE_FACTORY(SVGFEConvolveMatrixElement);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedBoolean* preserveAlpha() { return m_preserveAlpha.get(); }
+  SVGAnimatedNumber* divisor() { return m_divisor.get(); }
+  SVGAnimatedNumber* bias() { return m_bias.get(); }
+  SVGAnimatedNumber* kernelUnitLengthX() {
+    return m_kernelUnitLength->firstNumber();
+  }
+  SVGAnimatedNumber* kernelUnitLengthY() {
+    return m_kernelUnitLength->secondNumber();
+  }
+  SVGAnimatedNumberList* kernelMatrix() { return m_kernelMatrix.get(); }
+  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedEnumeration<EdgeModeType>* edgeMode() { return m_edgeMode.get(); }
+  SVGAnimatedInteger* orderX() const { return m_order->firstInteger(); }
+  SVGAnimatedInteger* orderY() const { return m_order->secondInteger(); }
+  SVGAnimatedInteger* targetX() { return m_targetX.get(); }
+  SVGAnimatedInteger* targetY() { return m_targetY.get(); }
 
-private:
-    explicit SVGFEConvolveMatrixElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    IntSize matrixOrder() const;
-    IntPoint targetPoint() const;
+ private:
+  explicit SVGFEConvolveMatrixElement(Document&);
 
-    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-    void svgAttributeChanged(const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  IntSize matrixOrder() const;
+  IntPoint targetPoint() const;
 
-    Member<SVGAnimatedNumber> m_bias;
-    Member<SVGAnimatedNumber> m_divisor;
-    Member<SVGAnimatedString> m_in1;
-    Member<SVGAnimatedEnumeration<EdgeModeType>> m_edgeMode;
-    Member<SVGAnimatedNumberList> m_kernelMatrix;
-    Member<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
-    Member<SVGAnimatedIntegerOptionalInteger> m_order;
-    Member<SVGAnimatedBoolean> m_preserveAlpha;
-    Member<SVGAnimatedInteger> m_targetX;
-    Member<SVGAnimatedInteger> m_targetY;
+  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+
+  Member<SVGAnimatedNumber> m_bias;
+  Member<SVGAnimatedNumber> m_divisor;
+  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedEnumeration<EdgeModeType>> m_edgeMode;
+  Member<SVGAnimatedNumberList> m_kernelMatrix;
+  Member<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
+  Member<SVGAnimatedIntegerOptionalInteger> m_order;
+  Member<SVGAnimatedBoolean> m_preserveAlpha;
+  Member<SVGAnimatedInteger> m_targetX;
+  Member<SVGAnimatedInteger> m_targetY;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEConvolveMatrixElement_h
+#endif  // SVGFEConvolveMatrixElement_h

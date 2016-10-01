@@ -33,34 +33,40 @@
 namespace blink {
 
 class PLATFORM_EXPORT GeneratedImage : public Image {
-public:
-    bool currentFrameHasSingleSecurityOrigin() const override { return true; }
+ public:
+  bool currentFrameHasSingleSecurityOrigin() const override { return true; }
 
-    bool usesContainerSize() const override { return true; }
-    bool hasRelativeSize() const override { return true; }
+  bool usesContainerSize() const override { return true; }
+  bool hasRelativeSize() const override { return true; }
 
-    IntSize size() const override { return m_size; }
+  IntSize size() const override { return m_size; }
 
-    // Assume that generated content has no decoded data we need to worry about
-    void destroyDecodedData() override { }
+  // Assume that generated content has no decoded data we need to worry about
+  void destroyDecodedData() override {}
 
-    sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame() override;
 
-protected:
-    void drawPattern(GraphicsContext&, const FloatRect&,
-        const FloatSize&, const FloatPoint&, SkXfermode::Mode,
-        const FloatRect&, const FloatSize& repeatSpacing) final;
+ protected:
+  void drawPattern(GraphicsContext&,
+                   const FloatRect&,
+                   const FloatSize&,
+                   const FloatPoint&,
+                   SkXfermode::Mode,
+                   const FloatRect&,
+                   const FloatSize& repeatSpacing) final;
 
-    // FIXME: Implement this to be less conservative.
-    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
+  // FIXME: Implement this to be less conservative.
+  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
+    return false;
+  }
 
-    GeneratedImage(const IntSize& size) : m_size(size) { }
+  GeneratedImage(const IntSize& size) : m_size(size) {}
 
-    virtual void drawTile(GraphicsContext&, const FloatRect&) = 0;
+  virtual void drawTile(GraphicsContext&, const FloatRect&) = 0;
 
-    IntSize m_size;
+  IntSize m_size;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

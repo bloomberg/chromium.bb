@@ -28,49 +28,54 @@
 
 namespace blink {
 
-class SVGStyleElement final : public SVGElement
-                            , public StyleElement {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
-public:
-    static SVGStyleElement* create(Document&, bool createdByParser);
-    ~SVGStyleElement() override;
+class SVGStyleElement final : public SVGElement, public StyleElement {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 
-    using StyleElement::sheet;
+ public:
+  static SVGStyleElement* create(Document&, bool createdByParser);
+  ~SVGStyleElement() override;
 
-    bool disabled() const;
-    void setDisabled(bool);
+  using StyleElement::sheet;
 
-    const AtomicString& type() const override;
-    void setType(const AtomicString&);
+  bool disabled() const;
+  void setDisabled(bool);
 
-    const AtomicString& media() const override;
-    void setMedia(const AtomicString&);
+  const AtomicString& type() const override;
+  void setType(const AtomicString&);
 
-    String title() const override;
-    void setTitle(const AtomicString&);
+  const AtomicString& media() const override;
+  void setMedia(const AtomicString&);
 
-    void dispatchPendingEvent();
+  String title() const override;
+  void setTitle(const AtomicString&);
 
-    DECLARE_VIRTUAL_TRACE();
+  void dispatchPendingEvent();
 
-private:
-    SVGStyleElement(Document&, bool createdByParser);
+  DECLARE_VIRTUAL_TRACE();
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void didNotifySubtreeInsertionsToDocument() override;
-    void removedFrom(ContainerNode*) override;
-    void childrenChanged(const ChildrenChange&) override;
+ private:
+  SVGStyleElement(Document&, bool createdByParser);
 
-    void finishParsingChildren() override;
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void didNotifySubtreeInsertionsToDocument() override;
+  void removedFrom(ContainerNode*) override;
+  void childrenChanged(const ChildrenChange&) override;
 
-    bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
-    void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
-    void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
+  void finishParsingChildren() override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+
+  bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
+  void notifyLoadedSheetAndAllCriticalSubresources(
+      LoadedSheetErrorStatus) override;
+  void startLoadingDynamicSheet() override {
+    StyleElement::startLoadingDynamicSheet(document());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGStyleElement_h
+#endif  // SVGStyleElement_h

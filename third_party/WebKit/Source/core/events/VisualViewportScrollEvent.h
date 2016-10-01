@@ -10,22 +10,21 @@
 namespace blink {
 
 class VisualViewportScrollEvent final : public Event {
-public:
-    ~VisualViewportScrollEvent() override;
+ public:
+  ~VisualViewportScrollEvent() override;
 
-    static VisualViewportScrollEvent* create()
-    {
-        return new VisualViewportScrollEvent();
-    }
+  static VisualViewportScrollEvent* create() {
+    return new VisualViewportScrollEvent();
+  }
 
-    void doneDispatchingEventAtCurrentTarget() override;
+  void doneDispatchingEventAtCurrentTarget() override;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
-private:
-    VisualViewportScrollEvent();
+ private:
+  VisualViewportScrollEvent();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VisualViewportScrollEvent_h
+#endif  // VisualViewportScrollEvent_h

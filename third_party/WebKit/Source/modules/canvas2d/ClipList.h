@@ -17,33 +17,33 @@ namespace blink {
 class AffineTransform;
 
 class ClipList {
-    DISALLOW_NEW();
-public:
-    ClipList() { }
-    ClipList(const ClipList&);
-    ~ClipList() { }
+  DISALLOW_NEW();
 
-    void clipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
-    void playback(SkCanvas*) const;
-    const SkPath& getCurrentClipPath() const;
+ public:
+  ClipList() {}
+  ClipList(const ClipList&);
+  ~ClipList() {}
 
-private:
+  void clipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
+  void playback(SkCanvas*) const;
+  const SkPath& getCurrentClipPath() const;
 
-    struct ClipOp {
-        SkPath m_path;
-        AntiAliasingMode m_antiAliasingMode;
+ private:
+  struct ClipOp {
+    SkPath m_path;
+    AntiAliasingMode m_antiAliasingMode;
 
-        ClipOp();
-        ClipOp(const ClipOp&);
-    };
+    ClipOp();
+    ClipOp(const ClipOp&);
+  };
 
-    // Number of clip ops that can be stored in a ClipList without resorting to dynamic allocation
-    static const size_t cInlineClipOpCapacity = 4;
+  // Number of clip ops that can be stored in a ClipList without resorting to dynamic allocation
+  static const size_t cInlineClipOpCapacity = 4;
 
-    WTF::Vector<ClipOp, cInlineClipOpCapacity> m_clipList;
-    SkPath m_currentClipPath;
+  WTF::Vector<ClipOp, cInlineClipOpCapacity> m_clipList;
+  SkPath m_currentClipPath;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -13,30 +13,33 @@ namespace blink {
 
 class Event;
 
-class MODULES_EXPORT DeviceLightController final : public DeviceSingleWindowEventController, public Supplement<Document> {
-    USING_GARBAGE_COLLECTED_MIXIN(DeviceLightController);
-public:
-    ~DeviceLightController() override;
+class MODULES_EXPORT DeviceLightController final
+    : public DeviceSingleWindowEventController,
+      public Supplement<Document> {
+  USING_GARBAGE_COLLECTED_MIXIN(DeviceLightController);
 
-    static const char* supplementName();
-    static DeviceLightController& from(Document&);
+ public:
+  ~DeviceLightController() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  static const char* supplementName();
+  static DeviceLightController& from(Document&);
 
-private:
-    explicit DeviceLightController(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from DeviceEventControllerBase.
-    void registerWithDispatcher() override;
-    void unregisterWithDispatcher() override;
-    bool hasLastData() override;
+ private:
+  explicit DeviceLightController(Document&);
 
-    // Inherited from DeviceSingleWindowEventController.
-    Event* lastEvent() const override;
-    const AtomicString& eventTypeName() const override;
-    bool isNullEvent(Event*) const override;
+  // Inherited from DeviceEventControllerBase.
+  void registerWithDispatcher() override;
+  void unregisterWithDispatcher() override;
+  bool hasLastData() override;
+
+  // Inherited from DeviceSingleWindowEventController.
+  Event* lastEvent() const override;
+  const AtomicString& eventTypeName() const override;
+  bool isNullEvent(Event*) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceLightController_h
+#endif  // DeviceLightController_h

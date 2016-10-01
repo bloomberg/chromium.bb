@@ -14,11 +14,11 @@ namespace blink {
 // generate_init_partial_interfaces.py.
 void initPartialInterfacesInModules();
 
-void ModuleBindingsInitializer::init()
-{
-    registerInstallConditionalFeaturesForModules();
-    initPartialInterfacesInModules();
-    SerializedScriptValueFactory::initialize(new SerializedScriptValueForModulesFactory);
+void ModuleBindingsInitializer::init() {
+  registerInstallConditionalFeaturesForModules();
+  initPartialInterfacesInModules();
+  SerializedScriptValueFactory::initialize(
+      new SerializedScriptValueForModulesFactory);
 }
 
-} // namespace blink
+}  // namespace blink

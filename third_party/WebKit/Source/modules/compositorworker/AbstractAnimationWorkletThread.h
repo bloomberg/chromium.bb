@@ -17,31 +17,31 @@ class WorkerReportingProxy;
 // TODO(ikilpatrick): Remove this class up to AnimationWorkletThread once we no
 // longer have CompositorWorker.
 class MODULES_EXPORT AbstractAnimationWorkletThread : public WorkerThread {
-public:
-    ~AbstractAnimationWorkletThread() override;
+ public:
+  ~AbstractAnimationWorkletThread() override;
 
-    WorkerBackingThread& workerBackingThread() override;
-    void clearWorkerBackingThread() override
-    {
-        // Do nothing.
-        // The backing thread is cleared by clearSharedBackingThread().
-    }
+  WorkerBackingThread& workerBackingThread() override;
+  void clearWorkerBackingThread() override {
+    // Do nothing.
+    // The backing thread is cleared by clearSharedBackingThread().
+  }
 
-    bool shouldAttachThreadDebugger() const override { return false; }
+  bool shouldAttachThreadDebugger() const override { return false; }
 
-    static void collectAllGarbage();
+  static void collectAllGarbage();
 
-    static void ensureSharedBackingThread();
-    static void createSharedBackingThreadForTest();
+  static void ensureSharedBackingThread();
+  static void createSharedBackingThreadForTest();
 
-    static void clearSharedBackingThread();
+  static void clearSharedBackingThread();
 
-protected:
-    AbstractAnimationWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
+ protected:
+  AbstractAnimationWorkletThread(PassRefPtr<WorkerLoaderProxy>,
+                                 WorkerReportingProxy&);
 
-    bool isOwningBackingThread() const override { return false; }
+  bool isOwningBackingThread() const override { return false; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AbstractAnimationWorkletThread_h
+#endif  // AbstractAnimationWorkletThread_h

@@ -45,57 +45,63 @@ namespace blink {
 
 class PrerenderClient;
 
-class PLATFORM_EXPORT Prerender final : public GarbageCollectedFinalized<Prerender> {
-    WTF_MAKE_NONCOPYABLE(Prerender);
-public:
-    class ExtraData : public RefCounted<ExtraData> {
-    public:
-        virtual ~ExtraData() { }
-    };
+class PLATFORM_EXPORT Prerender final
+    : public GarbageCollectedFinalized<Prerender> {
+  WTF_MAKE_NONCOPYABLE(Prerender);
 
-    static Prerender* create(PrerenderClient* client, const KURL& url, unsigned relTypes, const Referrer& referrer)
-    {
-        return new Prerender(client, url, relTypes, referrer);
-    }
+ public:
+  class ExtraData : public RefCounted<ExtraData> {
+   public:
+    virtual ~ExtraData() {}
+  };
 
-    ~Prerender();
-    DECLARE_TRACE();
+  static Prerender* create(PrerenderClient* client,
+                           const KURL& url,
+                           unsigned relTypes,
+                           const Referrer& referrer) {
+    return new Prerender(client, url, relTypes, referrer);
+  }
 
-    void dispose();
+  ~Prerender();
+  DECLARE_TRACE();
 
-    void add();
-    void cancel();
-    void abandon();
+  void dispose();
 
-    const KURL& url() const { return m_url; }
-    unsigned relTypes() const { return m_relTypes; }
-    const String& getReferrer() const { return m_referrer.referrer; }
-    ReferrerPolicy getReferrerPolicy() const { return m_referrer.referrerPolicy; }
+  void add();
+  void cancel();
+  void abandon();
 
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
-    ExtraData* getExtraData() { return m_extraData.get(); }
+  const KURL& url() const { return m_url; }
+  unsigned relTypes() const { return m_relTypes; }
+  const String& getReferrer() const { return m_referrer.referrer; }
+  ReferrerPolicy getReferrerPolicy() const { return m_referrer.referrerPolicy; }
 
-    void didStartPrerender();
-    void didStopPrerender();
-    void didSendLoadForPrerender();
-    void didSendDOMContentLoadedForPrerender();
+  void setExtraData(PassRefPtr<ExtraData> extraData) {
+    m_extraData = extraData;
+  }
+  ExtraData* getExtraData() { return m_extraData.get(); }
 
-private:
-    Prerender(PrerenderClient*, const KURL&, unsigned relTypes, const Referrer&);
+  void didStartPrerender();
+  void didStopPrerender();
+  void didSendLoadForPrerender();
+  void didSendDOMContentLoadedForPrerender();
 
-    // The embedder's prerendering support holds on to pending Prerender objects;
-    // those references should not keep the PrerenderClient alive -- if the client
-    // becomes otherwise unreachable it should be GCed (at which point it will
-    // abandon this Prerender object.)
-    WeakMember<PrerenderClient> m_client;
+ private:
+  Prerender(PrerenderClient*, const KURL&, unsigned relTypes, const Referrer&);
 
-    const KURL m_url;
-    const unsigned m_relTypes;
-    const Referrer m_referrer;
+  // The embedder's prerendering support holds on to pending Prerender objects;
+  // those references should not keep the PrerenderClient alive -- if the client
+  // becomes otherwise unreachable it should be GCed (at which point it will
+  // abandon this Prerender object.)
+  WeakMember<PrerenderClient> m_client;
 
-    RefPtr<ExtraData> m_extraData;
+  const KURL m_url;
+  const unsigned m_relTypes;
+  const Referrer m_referrer;
+
+  RefPtr<ExtraData> m_extraData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Prerender_h
+#endif  // Prerender_h

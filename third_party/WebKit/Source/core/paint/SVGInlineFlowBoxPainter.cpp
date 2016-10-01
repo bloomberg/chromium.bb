@@ -13,28 +13,37 @@
 
 namespace blink {
 
-void SVGInlineFlowBoxPainter::paintSelectionBackground(const PaintInfo& paintInfo)
-{
-    ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
+void SVGInlineFlowBoxPainter::paintSelectionBackground(
+    const PaintInfo& paintInfo) {
+  ASSERT(paintInfo.phase == PaintPhaseForeground ||
+         paintInfo.phase == PaintPhaseSelection);
 
-    PaintInfo childPaintInfo(paintInfo);
-    for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine()) {
-        if (child->isSVGInlineTextBox())
-            SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(childPaintInfo);
-        else if (child->isSVGInlineFlowBox())
-            SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child)).paintSelectionBackground(childPaintInfo);
-    }
+  PaintInfo childPaintInfo(paintInfo);
+  for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child;
+       child = child->nextOnLine()) {
+    if (child->isSVGInlineTextBox())
+      SVGInlineTextBoxPainter(*toSVGInlineTextBox(child))
+          .paintSelectionBackground(childPaintInfo);
+    else if (child->isSVGInlineFlowBox())
+      SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child))
+          .paintSelectionBackground(childPaintInfo);
+  }
 }
 
-void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
+void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo,
+                                    const LayoutPoint& paintOffset) {
+  ASSERT(paintInfo.phase == PaintPhaseForeground ||
+         paintInfo.phase == PaintPhaseSelection);
 
-    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgInlineFlowBox.getLineLayoutItem()), paintInfo);
-    if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-        for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(), LayoutUnit());
-    }
+  SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(
+                                   m_svgInlineFlowBox.getLineLayoutItem()),
+                               paintInfo);
+  if (paintContext.applyClipMaskAndFilterIfNecessary()) {
+    for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child;
+         child = child->nextOnLine())
+      child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(),
+                   LayoutUnit());
+  }
 }
 
-} // namespace blink
+}  // namespace blink

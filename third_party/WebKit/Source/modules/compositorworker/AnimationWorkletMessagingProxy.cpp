@@ -9,18 +9,15 @@
 
 namespace blink {
 
-AnimationWorkletMessagingProxy::AnimationWorkletMessagingProxy(ExecutionContext* executionContext)
-    : ThreadedWorkletMessagingProxy(executionContext)
-{
+AnimationWorkletMessagingProxy::AnimationWorkletMessagingProxy(
+    ExecutionContext* executionContext)
+    : ThreadedWorkletMessagingProxy(executionContext) {}
+
+AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy() {}
+
+std::unique_ptr<WorkerThread>
+AnimationWorkletMessagingProxy::createWorkerThread(double originTime) {
+  return AnimationWorkletThread::create(loaderProxy(), workletObjectProxy());
 }
 
-AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy()
-{
-}
-
-std::unique_ptr<WorkerThread> AnimationWorkletMessagingProxy::createWorkerThread(double originTime)
-{
-    return AnimationWorkletThread::create(loaderProxy(), workletObjectProxy());
-}
-
-} // namespace blink
+}  // namespace blink

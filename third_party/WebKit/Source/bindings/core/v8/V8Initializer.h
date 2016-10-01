@@ -33,15 +33,16 @@
 namespace blink {
 
 class CORE_EXPORT V8Initializer {
-    STATIC_ONLY(V8Initializer);
-public:
-    static void initializeMainThread();
-    static void shutdownMainThread();
-    static void initializeWorker(v8::Isolate*);
+  STATIC_ONLY(V8Initializer);
 
-    static void reportRejectedPromisesOnMainThread();
+ public:
+  static void initializeMainThread();
+  static void shutdownMainThread();
+  static void initializeWorker(v8::Isolate*);
+
+  static void reportRejectedPromisesOnMainThread();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8Initializer_h
+#endif  // V8Initializer_h

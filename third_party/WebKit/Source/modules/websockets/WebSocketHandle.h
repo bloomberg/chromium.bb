@@ -49,26 +49,31 @@ class WebSocketHandleClient;
 // Once a WebSocketHandleClient receives didClose, any method of the corresponding WebSocketHandle can't be called.
 
 class WebSocketHandle {
-public:
-    enum MessageType {
-        MessageTypeContinuation,
-        MessageTypeText,
-        MessageTypeBinary,
-    };
+ public:
+  enum MessageType {
+    MessageTypeContinuation,
+    MessageTypeText,
+    MessageTypeBinary,
+  };
 
-    virtual ~WebSocketHandle() {}
+  virtual ~WebSocketHandle() {}
 
-    // This method may optionally be called before connect() to specify an
-    // InterfaceProvider to get a WebSocket instance. By default, connect() will
-    // use Platform::interfaceProvider().
-    virtual void initialize(InterfaceProvider*) = 0;
+  // This method may optionally be called before connect() to specify an
+  // InterfaceProvider to get a WebSocket instance. By default, connect() will
+  // use Platform::interfaceProvider().
+  virtual void initialize(InterfaceProvider*) = 0;
 
-    virtual void connect(const KURL&, const Vector<String>& protocols, SecurityOrigin*, const KURL& firstPartyForCookies, const String& userAgentOverride, WebSocketHandleClient*) = 0;
-    virtual void send(bool fin, MessageType, const char* data, size_t) = 0;
-    virtual void flowControl(int64_t quota) = 0;
-    virtual void close(unsigned short code, const String& reason) = 0;
+  virtual void connect(const KURL&,
+                       const Vector<String>& protocols,
+                       SecurityOrigin*,
+                       const KURL& firstPartyForCookies,
+                       const String& userAgentOverride,
+                       WebSocketHandleClient*) = 0;
+  virtual void send(bool fin, MessageType, const char* data, size_t) = 0;
+  virtual void flowControl(int64_t quota) = 0;
+  virtual void close(unsigned short code, const String& reason) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSocketHandle_h
+#endif  // WebSocketHandle_h

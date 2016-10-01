@@ -44,100 +44,71 @@ namespace blink {
 class KURL;
 
 class WebURL {
-public:
-    ~WebURL()
-    {
-    }
+ public:
+  ~WebURL() {}
 
-    WebURL()
-        : m_isValid(false)
-    {
-    }
+  WebURL() : m_isValid(false) {}
 
-    WebURL(const WebURL& url)
-        : m_string(url.m_string)
-        , m_parsed(url.m_parsed)
-        , m_isValid(url.m_isValid)
-    {
-    }
+  WebURL(const WebURL& url)
+      : m_string(url.m_string),
+        m_parsed(url.m_parsed),
+        m_isValid(url.m_isValid) {}
 
-    WebURL& operator=(const WebURL& url)
-    {
-        m_string = url.m_string;
-        m_parsed = url.m_parsed;
-        m_isValid = url.m_isValid;
-        return *this;
-    }
+  WebURL& operator=(const WebURL& url) {
+    m_string = url.m_string;
+    m_parsed = url.m_parsed;
+    m_isValid = url.m_isValid;
+    return *this;
+  }
 
-    const WebString& string() const
-    {
-        return m_string;
-    }
+  const WebString& string() const { return m_string; }
 
-    const url::Parsed& parsed() const
-    {
-        return m_parsed;
-    }
+  const url::Parsed& parsed() const { return m_parsed; }
 
-    bool isValid() const
-    {
-        return m_isValid;
-    }
+  bool isValid() const { return m_isValid; }
 
-    bool isEmpty() const
-    {
-        return m_string.isEmpty();
-    }
+  bool isEmpty() const { return m_string.isEmpty(); }
 
-    bool isNull() const
-    {
-        return m_string.isEmpty();
-    }
+  bool isNull() const { return m_string.isEmpty(); }
 
-    BLINK_PLATFORM_EXPORT bool protocolIs(const char* protocol) const;
+  BLINK_PLATFORM_EXPORT bool protocolIs(const char* protocol) const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebURL(const KURL&);
-    BLINK_PLATFORM_EXPORT WebURL& operator=(const KURL&);
-    BLINK_PLATFORM_EXPORT operator KURL() const;
+  BLINK_PLATFORM_EXPORT WebURL(const KURL&);
+  BLINK_PLATFORM_EXPORT WebURL& operator=(const KURL&);
+  BLINK_PLATFORM_EXPORT operator KURL() const;
 #else
-    WebURL(const GURL& url)
-        : m_string(WebString::fromUTF8(url.possibly_invalid_spec()))
-        , m_parsed(url.parsed_for_possibly_invalid_spec())
-        , m_isValid(url.is_valid())
-    {
-    }
+  WebURL(const GURL& url)
+      : m_string(WebString::fromUTF8(url.possibly_invalid_spec())),
+        m_parsed(url.parsed_for_possibly_invalid_spec()),
+        m_isValid(url.is_valid()) {}
 
-    WebURL& operator=(const GURL& url)
-    {
-        m_string = WebString::fromUTF8(url.possibly_invalid_spec());
-        m_parsed = url.parsed_for_possibly_invalid_spec();
-        m_isValid = url.is_valid();
-        return *this;
-    }
+  WebURL& operator=(const GURL& url) {
+    m_string = WebString::fromUTF8(url.possibly_invalid_spec());
+    m_parsed = url.parsed_for_possibly_invalid_spec();
+    m_isValid = url.is_valid();
+    return *this;
+  }
 
-    operator GURL() const
-    {
-        return isNull() ? GURL() : GURL(m_string.utf8(), m_parsed, m_isValid);
-    }
+  operator GURL() const {
+    return isNull() ? GURL() : GURL(m_string.utf8(), m_parsed, m_isValid);
+  }
 #endif
 
-private:
-    WebString m_string;
-    url::Parsed m_parsed;
-    bool m_isValid;
+ private:
+  WebString m_string;
+  url::Parsed m_parsed;
+  bool m_isValid;
 };
 
-inline bool operator==(const WebURL& a, const WebURL& b)
-{
-    return a.string().equals(b.string());
+inline bool operator==(const WebURL& a, const WebURL& b) {
+  return a.string().equals(b.string());
 }
 
-inline bool operator!=(const WebURL& a, const WebURL& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebURL& a, const WebURL& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

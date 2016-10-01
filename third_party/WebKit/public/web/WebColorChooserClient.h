@@ -33,16 +33,15 @@ namespace blink {
 
 // Receives calls from WebColorChooser and passes it to the WebCore side.
 class WebColorChooserClient {
-public:
-    virtual ~WebColorChooserClient() { }
+ public:
+  virtual ~WebColorChooserClient() {}
 
-    // Called when user selects a color in the color chooser.
-    virtual void didChooseColor(const WebColor&) { }
+  // Called when user selects a color in the color chooser.
+  virtual void didChooseColor(const WebColor&) {}
 
-    // Called when color chooser has ended.
-    virtual void didEndChooser() { }
+  // Called when color chooser has ended.
+  virtual void didEndChooser() {}
 };
-
 }
 
-#endif // WebColorChooserClient_h
+#endif  // WebColorChooserClient_h

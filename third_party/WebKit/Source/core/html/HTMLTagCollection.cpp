@@ -26,11 +26,11 @@
 
 namespace blink {
 
-HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode, const AtomicString& localName)
-    : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName)
-    , m_loweredLocalName(localName.lower())
-{
-    DCHECK(rootNode.document().isHTMLDocument());
+HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode,
+                                     const AtomicString& localName)
+    : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName),
+      m_loweredLocalName(localName.lower()) {
+  DCHECK(rootNode.document().isHTMLDocument());
 }
 
-} // namespace blink
+}  // namespace blink

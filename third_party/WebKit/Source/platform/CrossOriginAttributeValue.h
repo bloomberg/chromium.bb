@@ -8,12 +8,11 @@
 namespace blink {
 
 enum CrossOriginAttributeValue {
-    CrossOriginAttributeNotSet,
-    CrossOriginAttributeAnonymous,
-    CrossOriginAttributeUseCredentials,
+  CrossOriginAttributeNotSet,
+  CrossOriginAttributeAnonymous,
+  CrossOriginAttributeUseCredentials,
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

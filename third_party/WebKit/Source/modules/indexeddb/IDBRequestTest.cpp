@@ -48,77 +48,78 @@
 namespace blink {
 namespace {
 
-TEST(IDBRequestTest, EventsAfterStopping)
-{
-    V8TestingScope scope;
-    IDBTransaction* transaction = nullptr;
-    IDBRequest* request = IDBRequest::create(scope.getScriptState(), IDBAny::createUndefined(), transaction);
+TEST(IDBRequestTest, EventsAfterStopping) {
+  V8TestingScope scope;
+  IDBTransaction* transaction = nullptr;
+  IDBRequest* request = IDBRequest::create(
+      scope.getScriptState(), IDBAny::createUndefined(), transaction);
+  EXPECT_EQ(request->readyState(), "pending");
+  scope.getExecutionContext()->stopActiveDOMObjects();
+
+  // Ensure none of the following raise assertions in stopped state:
+  request->onError(DOMException::create(AbortError, "Description goes here."));
+  request->onSuccess(Vector<String>());
+  request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(),
+                     IDBValue::create());
+  request->onSuccess(IDBKey::createInvalid());
+  request->onSuccess(IDBValue::create());
+  request->onSuccess(static_cast<int64_t>(0));
+  request->onSuccess();
+  request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(),
+                     IDBValue::create());
+}
+
+TEST(IDBRequestTest, AbortErrorAfterAbort) {
+  V8TestingScope scope;
+  IDBTransaction* transaction = nullptr;
+  IDBRequest* request = IDBRequest::create(
+      scope.getScriptState(), IDBAny::createUndefined(), transaction);
+  EXPECT_EQ(request->readyState(), "pending");
+
+  // Simulate the IDBTransaction having received onAbort from back end and aborting the request:
+  request->abort();
+
+  // Now simulate the back end having fired an abort error at the request to clear up any intermediaries.
+  // Ensure an assertion is not raised.
+  request->onError(DOMException::create(AbortError, "Description goes here."));
+
+  // Stop the request lest it be GCed and its destructor
+  // finds the object in a pending state (and asserts.)
+  scope.getExecutionContext()->stopActiveDOMObjects();
+}
+
+TEST(IDBRequestTest, ConnectionsAfterStopping) {
+  V8TestingScope scope;
+  const int64_t transactionId = 1234;
+  const int64_t version = 1;
+  const int64_t oldVersion = 0;
+  const IDBDatabaseMetadata metadata;
+  Persistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::create();
+
+  {
+    std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+    EXPECT_CALL(*backend, abort(transactionId)).Times(1);
+    EXPECT_CALL(*backend, close()).Times(1);
+    IDBOpenDBRequest* request = IDBOpenDBRequest::create(
+        scope.getScriptState(), callbacks, transactionId, version);
     EXPECT_EQ(request->readyState(), "pending");
+
     scope.getExecutionContext()->stopActiveDOMObjects();
+    request->onUpgradeNeeded(oldVersion, std::move(backend), metadata,
+                             WebIDBDataLossNone, String());
+  }
 
-    // Ensure none of the following raise assertions in stopped state:
-    request->onError(DOMException::create(AbortError, "Description goes here."));
-    request->onSuccess(Vector<String>());
-    request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());
-    request->onSuccess(IDBKey::createInvalid());
-    request->onSuccess(IDBValue::create());
-    request->onSuccess(static_cast<int64_t>(0));
-    request->onSuccess();
-    request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());
-}
-
-TEST(IDBRequestTest, AbortErrorAfterAbort)
-{
-    V8TestingScope scope;
-    IDBTransaction* transaction = nullptr;
-    IDBRequest* request = IDBRequest::create(scope.getScriptState(), IDBAny::createUndefined(), transaction);
+  {
+    std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
+    EXPECT_CALL(*backend, close()).Times(1);
+    IDBOpenDBRequest* request = IDBOpenDBRequest::create(
+        scope.getScriptState(), callbacks, transactionId, version);
     EXPECT_EQ(request->readyState(), "pending");
 
-    // Simulate the IDBTransaction having received onAbort from back end and aborting the request:
-    request->abort();
-
-    // Now simulate the back end having fired an abort error at the request to clear up any intermediaries.
-    // Ensure an assertion is not raised.
-    request->onError(DOMException::create(AbortError, "Description goes here."));
-
-    // Stop the request lest it be GCed and its destructor
-    // finds the object in a pending state (and asserts.)
     scope.getExecutionContext()->stopActiveDOMObjects();
+    request->onSuccess(std::move(backend), metadata);
+  }
 }
 
-TEST(IDBRequestTest, ConnectionsAfterStopping)
-{
-    V8TestingScope scope;
-    const int64_t transactionId = 1234;
-    const int64_t version = 1;
-    const int64_t oldVersion = 0;
-    const IDBDatabaseMetadata metadata;
-    Persistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::create();
-
-    {
-        std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
-        EXPECT_CALL(*backend, abort(transactionId))
-            .Times(1);
-        EXPECT_CALL(*backend, close())
-            .Times(1);
-        IDBOpenDBRequest* request = IDBOpenDBRequest::create(scope.getScriptState(), callbacks, transactionId, version);
-        EXPECT_EQ(request->readyState(), "pending");
-
-        scope.getExecutionContext()->stopActiveDOMObjects();
-        request->onUpgradeNeeded(oldVersion, std::move(backend), metadata, WebIDBDataLossNone, String());
-    }
-
-    {
-        std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
-        EXPECT_CALL(*backend, close())
-            .Times(1);
-        IDBOpenDBRequest* request = IDBOpenDBRequest::create(scope.getScriptState(), callbacks, transactionId, version);
-        EXPECT_EQ(request->readyState(), "pending");
-
-        scope.getExecutionContext()->stopActiveDOMObjects();
-        request->onSuccess(std::move(backend), metadata);
-    }
-}
-
-} // namespace
-} // namespace blink
+}  // namespace
+}  // namespace blink

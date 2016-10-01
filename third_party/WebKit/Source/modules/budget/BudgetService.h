@@ -18,39 +18,42 @@ class ScriptState;
 // This is the entry point into the browser for the BudgetService API, which is
 // designed to give origins the ability to perform background operations
 // on the user's behalf.
-class BudgetService final : public GarbageCollectedFinalized<BudgetService>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class BudgetService final : public GarbageCollectedFinalized<BudgetService>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static BudgetService* create()
-    {
-        return new BudgetService();
-    }
+ public:
+  static BudgetService* create() { return new BudgetService(); }
 
-    ~BudgetService();
+  ~BudgetService();
 
-    // Implementation of the Budget API interface.
-    ScriptPromise getCost(ScriptState*, const AtomicString& operation);
-    ScriptPromise getBudget(ScriptState*);
-    ScriptPromise reserve(ScriptState*, const AtomicString& operation);
+  // Implementation of the Budget API interface.
+  ScriptPromise getCost(ScriptState*, const AtomicString& operation);
+  ScriptPromise getBudget(ScriptState*);
+  ScriptPromise reserve(ScriptState*, const AtomicString& operation);
 
-    DEFINE_INLINE_TRACE() {}
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    // Callbacks from the BudgetService to the blink layer.
-    void gotCost(ScriptPromiseResolver*, double cost) const;
-    void gotBudget(ScriptPromiseResolver*, mojom::blink::BudgetServiceErrorType, const mojo::WTFArray<mojom::blink::BudgetStatePtr> expectations) const;
-    void gotReservation(ScriptPromiseResolver*, mojom::blink::BudgetServiceErrorType, bool success) const;
+ private:
+  // Callbacks from the BudgetService to the blink layer.
+  void gotCost(ScriptPromiseResolver*, double cost) const;
+  void gotBudget(
+      ScriptPromiseResolver*,
+      mojom::blink::BudgetServiceErrorType,
+      const mojo::WTFArray<mojom::blink::BudgetStatePtr> expectations) const;
+  void gotReservation(ScriptPromiseResolver*,
+                      mojom::blink::BudgetServiceErrorType,
+                      bool success) const;
 
-    // Error handler for use if mojo service doesn't connect.
-    void onConnectionError();
+  // Error handler for use if mojo service doesn't connect.
+  void onConnectionError();
 
-    BudgetService();
+  BudgetService();
 
-    // Pointer to the Mojo service which will proxy calls to the browser.
-    mojom::blink::BudgetServicePtr m_service;
+  // Pointer to the Mojo service which will proxy calls to the browser.
+  mojom::blink::BudgetServicePtr m_service;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BudgetService_h
+#endif  // BudgetService_h

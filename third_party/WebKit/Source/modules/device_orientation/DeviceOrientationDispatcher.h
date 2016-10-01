@@ -43,34 +43,38 @@ class DeviceOrientationData;
 class WebDeviceOrientationData;
 
 // This class listens to device orientation data and notifies all registered controllers.
-class DeviceOrientationDispatcher final : public GarbageCollectedFinalized<DeviceOrientationDispatcher>, public PlatformEventDispatcher, public WebDeviceOrientationListener {
-    USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationDispatcher);
-public:
-    static DeviceOrientationDispatcher& instance(bool absolute);
-    ~DeviceOrientationDispatcher() override;
+class DeviceOrientationDispatcher final
+    : public GarbageCollectedFinalized<DeviceOrientationDispatcher>,
+      public PlatformEventDispatcher,
+      public WebDeviceOrientationListener {
+  USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationDispatcher);
 
-    // Note that the returned object is owned by this class.
-    // FIXME: make the return value const, see crbug.com/233174.
-    DeviceOrientationData* latestDeviceOrientationData();
+ public:
+  static DeviceOrientationDispatcher& instance(bool absolute);
+  ~DeviceOrientationDispatcher() override;
 
-    // Inherited from WebDeviceOrientationListener.
-    void didChangeDeviceOrientation(const WebDeviceOrientationData&) override;
+  // Note that the returned object is owned by this class.
+  // FIXME: make the return value const, see crbug.com/233174.
+  DeviceOrientationData* latestDeviceOrientationData();
 
-    DECLARE_VIRTUAL_TRACE();
+  // Inherited from WebDeviceOrientationListener.
+  void didChangeDeviceOrientation(const WebDeviceOrientationData&) override;
 
-private:
-    explicit DeviceOrientationDispatcher(bool absolute);
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from PlatformEventDispatcher.
-    void startListening() override;
-    void stopListening() override;
+ private:
+  explicit DeviceOrientationDispatcher(bool absolute);
 
-    WebPlatformEventType getWebPlatformEventType() const;
+  // Inherited from PlatformEventDispatcher.
+  void startListening() override;
+  void stopListening() override;
 
-    const bool m_absolute;
-    Member<DeviceOrientationData> m_lastDeviceOrientationData;
+  WebPlatformEventType getWebPlatformEventType() const;
+
+  const bool m_absolute;
+  Member<DeviceOrientationData> m_lastDeviceOrientationData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceOrientationDispatcher_h
+#endif  // DeviceOrientationDispatcher_h

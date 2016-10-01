@@ -13,12 +13,12 @@ namespace blink {
 
 // Representation of the MediaMetadata interface to the content layer.
 struct WebMediaMetadata {
-    WebString title;
-    WebString artist;
-    WebString album;
-    WebVector<WebMediaArtwork> artwork;
+  WebString title;
+  WebString artist;
+  WebString album;
+  WebVector<WebMediaArtwork> artwork;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaMetadata_h
+#endif  // WebMediaMetadata_h

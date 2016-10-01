@@ -37,32 +37,36 @@
 
 namespace blink {
 
-class Metadata final : public GarbageCollectedFinalized<Metadata>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Metadata* create(const FileMetadata& platformMetadata)
-    {
-        return new Metadata(platformMetadata);
-    }
+class Metadata final : public GarbageCollectedFinalized<Metadata>,
+                       public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static Metadata* create(Metadata* metadata)
-    {
-        return new Metadata(metadata->m_platformMetadata);
-    }
+ public:
+  static Metadata* create(const FileMetadata& platformMetadata) {
+    return new Metadata(platformMetadata);
+  }
 
-    // Return Epoch time in milliseconds for Date.
-    double modificationTime() const { return m_platformMetadata.modificationTime; }
-    unsigned long long size() const { return static_cast<unsigned long long>(m_platformMetadata.length); }
+  static Metadata* create(Metadata* metadata) {
+    return new Metadata(metadata->m_platformMetadata);
+  }
 
-    DEFINE_INLINE_TRACE() { }
+  // Return Epoch time in milliseconds for Date.
+  double modificationTime() const {
+    return m_platformMetadata.modificationTime;
+  }
+  unsigned long long size() const {
+    return static_cast<unsigned long long>(m_platformMetadata.length);
+  }
 
-private:
-    explicit Metadata(const FileMetadata& platformMetadata)
-        : m_platformMetadata(platformMetadata) { }
+  DEFINE_INLINE_TRACE() {}
 
-    FileMetadata m_platformMetadata;
+ private:
+  explicit Metadata(const FileMetadata& platformMetadata)
+      : m_platformMetadata(platformMetadata) {}
+
+  FileMetadata m_platformMetadata;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Metadata_h
+#endif  // Metadata_h

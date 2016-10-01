@@ -38,12 +38,12 @@ namespace blink {
 class DOMException;
 
 class ErrorCallback : public GarbageCollectedFinalized<ErrorCallback> {
-public:
-    virtual ~ErrorCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(DOMException*) = 0;
+ public:
+  virtual ~ErrorCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(DOMException*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ErrorCallback_h
+#endif  // ErrorCallback_h

@@ -15,30 +15,33 @@ class IDBObserver;
 struct WebIDBObservation;
 
 class WebIDBObserverImpl final : public WebIDBObserver {
-    USING_FAST_MALLOC(WebIDBObserverImpl);
+  USING_FAST_MALLOC(WebIDBObserverImpl);
 
-public:
-    static std::unique_ptr<WebIDBObserverImpl> create(IDBObserver*);
+ public:
+  static std::unique_ptr<WebIDBObserverImpl> create(IDBObserver*);
 
-    ~WebIDBObserverImpl() override;
+  ~WebIDBObserverImpl() override;
 
-    void setId(int32_t);
+  void setId(int32_t);
 
-    bool transaction() const { return m_observer->transaction(); }
-    bool noRecords() const { return m_observer->noRecords(); }
-    bool values() const { return m_observer->values(); }
-    const std::bitset<WebIDBOperationTypeCount>& operationTypes() const { return m_observer->operationTypes(); }
-    void onChange(const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
+  bool transaction() const { return m_observer->transaction(); }
+  bool noRecords() const { return m_observer->noRecords(); }
+  bool values() const { return m_observer->values(); }
+  const std::bitset<WebIDBOperationTypeCount>& operationTypes() const {
+    return m_observer->operationTypes();
+  }
+  void onChange(const WebVector<WebIDBObservation>&,
+                const WebVector<int32_t>& observationIndex);
 
-private:
-    enum { kInvalidObserverId = -1 };
+ private:
+  enum { kInvalidObserverId = -1 };
 
-    explicit WebIDBObserverImpl(IDBObserver*);
+  explicit WebIDBObserverImpl(IDBObserver*);
 
-    int32_t m_id;
-    Persistent<IDBObserver> m_observer;
+  int32_t m_id;
+  Persistent<IDBObserver> m_observer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBObserverImpl_h
+#endif  // WebIDBObserverImpl_h

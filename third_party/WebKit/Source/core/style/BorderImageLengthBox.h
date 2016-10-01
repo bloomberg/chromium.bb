@@ -41,61 +41,47 @@ namespace blink {
 // http://www.w3.org/TR/css3-background/#border-image-width
 // http://www.w3.org/TR/css3-background/#border-image-outset
 class BorderImageLengthBox {
-    DISALLOW_NEW();
-public:
-    BorderImageLengthBox(Length length)
-        : m_left(length)
-        , m_right(length)
-        , m_top(length)
-        , m_bottom(length)
-    {
-    }
+  DISALLOW_NEW();
 
-    BorderImageLengthBox(double number)
-        : m_left(number)
-        , m_right(number)
-        , m_top(number)
-        , m_bottom(number)
-    {
-    }
+ public:
+  BorderImageLengthBox(Length length)
+      : m_left(length), m_right(length), m_top(length), m_bottom(length) {}
 
-    BorderImageLengthBox(const BorderImageLength& top, const BorderImageLength& right,
-        const BorderImageLength& bottom, const BorderImageLength& left)
-        : m_left(left)
-        , m_right(right)
-        , m_top(top)
-        , m_bottom(bottom)
-    {
-    }
+  BorderImageLengthBox(double number)
+      : m_left(number), m_right(number), m_top(number), m_bottom(number) {}
 
-    const BorderImageLength& left() const { return m_left; }
-    const BorderImageLength& right() const { return m_right; }
-    const BorderImageLength& top() const { return m_top; }
-    const BorderImageLength& bottom() const { return m_bottom; }
+  BorderImageLengthBox(const BorderImageLength& top,
+                       const BorderImageLength& right,
+                       const BorderImageLength& bottom,
+                       const BorderImageLength& left)
+      : m_left(left), m_right(right), m_top(top), m_bottom(bottom) {}
 
-    bool operator==(const BorderImageLengthBox& other) const
-    {
-        return m_left == other.m_left && m_right == other.m_right
-            && m_top == other.m_top && m_bottom == other.m_bottom;
-    }
+  const BorderImageLength& left() const { return m_left; }
+  const BorderImageLength& right() const { return m_right; }
+  const BorderImageLength& top() const { return m_top; }
+  const BorderImageLength& bottom() const { return m_bottom; }
 
-    bool operator!=(const BorderImageLengthBox& other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const BorderImageLengthBox& other) const {
+    return m_left == other.m_left && m_right == other.m_right &&
+           m_top == other.m_top && m_bottom == other.m_bottom;
+  }
 
-    bool nonZero() const
-    {
-        return !(m_left.isZero() && m_right.isZero() && m_top.isZero() && m_bottom.isZero());
-    }
+  bool operator!=(const BorderImageLengthBox& other) const {
+    return !(*this == other);
+  }
 
-private:
-    BorderImageLength m_left;
-    BorderImageLength m_right;
-    BorderImageLength m_top;
-    BorderImageLength m_bottom;
+  bool nonZero() const {
+    return !(m_left.isZero() && m_right.isZero() && m_top.isZero() &&
+             m_bottom.isZero());
+  }
+
+ private:
+  BorderImageLength m_left;
+  BorderImageLength m_right;
+  BorderImageLength m_top;
+  BorderImageLength m_bottom;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BorderImageLengthBox_h
+#endif  // BorderImageLengthBox_h

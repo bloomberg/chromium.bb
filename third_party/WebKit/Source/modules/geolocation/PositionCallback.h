@@ -30,15 +30,15 @@
 
 namespace blink {
 
-    class Geoposition;
+class Geoposition;
 
-    class PositionCallback : public GarbageCollectedFinalized<PositionCallback> {
-    public:
-        virtual ~PositionCallback() { }
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
-        virtual void handleEvent(Geoposition*) = 0;
-    };
+class PositionCallback : public GarbageCollectedFinalized<PositionCallback> {
+ public:
+  virtual ~PositionCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(Geoposition*) = 0;
+};
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PositionCallback_h
+#endif  // PositionCallback_h

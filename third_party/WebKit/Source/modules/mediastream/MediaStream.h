@@ -38,87 +38,92 @@ namespace blink {
 
 class ExceptionState;
 
-class MODULES_EXPORT MediaStream final
-    : public EventTargetWithInlineData
-    , public URLRegistrable
-    , public MediaStreamDescriptorClient
-    , public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MediaStream* create(ExecutionContext*);
-    static MediaStream* create(ExecutionContext*, MediaStream*);
-    static MediaStream* create(ExecutionContext*, const MediaStreamTrackVector&);
-    static MediaStream* create(ExecutionContext*, MediaStreamDescriptor*);
-    ~MediaStream() override;
+class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
+                                         public URLRegistrable,
+                                         public MediaStreamDescriptorClient,
+                                         public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
+  DEFINE_WRAPPERTYPEINFO();
 
-    String id() const { return m_descriptor->id(); }
+ public:
+  static MediaStream* create(ExecutionContext*);
+  static MediaStream* create(ExecutionContext*, MediaStream*);
+  static MediaStream* create(ExecutionContext*, const MediaStreamTrackVector&);
+  static MediaStream* create(ExecutionContext*, MediaStreamDescriptor*);
+  ~MediaStream() override;
 
-    void addTrack(MediaStreamTrack*, ExceptionState&);
-    void removeTrack(MediaStreamTrack*, ExceptionState&);
-    MediaStreamTrack* getTrackById(String);
-    MediaStream* clone(ExecutionContext*);
+  String id() const { return m_descriptor->id(); }
 
-    MediaStreamTrackVector getAudioTracks() const { return m_audioTracks; }
-    MediaStreamTrackVector getVideoTracks() const { return m_videoTracks; }
-    MediaStreamTrackVector getTracks();
+  void addTrack(MediaStreamTrack*, ExceptionState&);
+  void removeTrack(MediaStreamTrack*, ExceptionState&);
+  MediaStreamTrack* getTrackById(String);
+  MediaStream* clone(ExecutionContext*);
 
-    bool active() const { return m_descriptor->active(); }
+  MediaStreamTrackVector getAudioTracks() const { return m_audioTracks; }
+  MediaStreamTrackVector getVideoTracks() const { return m_videoTracks; }
+  MediaStreamTrackVector getTracks();
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(active);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(inactive);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
+  bool active() const { return m_descriptor->active(); }
 
-    void trackEnded();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(active);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(inactive);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
-    // MediaStreamDescriptorClient
-    void streamEnded() override;
+  void trackEnded();
 
-    MediaStreamDescriptor* descriptor() const { return m_descriptor; }
+  // MediaStreamDescriptorClient
+  void streamEnded() override;
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  MediaStreamDescriptor* descriptor() const { return m_descriptor; }
 
-    // URLRegistrable
-    URLRegistry& registry() const override;
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  // URLRegistrable
+  URLRegistry& registry() const override;
 
-protected:
-    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const AddEventListenerOptionsResolved&) override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    MediaStream(ExecutionContext*, MediaStreamDescriptor*);
-    MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
+ protected:
+  bool addEventListenerInternal(
+      const AtomicString& eventType,
+      EventListener*,
+      const AddEventListenerOptionsResolved&) override;
 
-    // ContextLifecycleObserver
-    void contextDestroyed() override;
+ private:
+  MediaStream(ExecutionContext*, MediaStreamDescriptor*);
+  MediaStream(ExecutionContext*,
+              const MediaStreamTrackVector& audioTracks,
+              const MediaStreamTrackVector& videoTracks);
 
-    // MediaStreamDescriptorClient
-    void addRemoteTrack(MediaStreamComponent*) override;
-    void removeRemoteTrack(MediaStreamComponent*) override;
+  // ContextLifecycleObserver
+  void contextDestroyed() override;
 
-    bool emptyOrOnlyEndedTracks();
+  // MediaStreamDescriptorClient
+  void addRemoteTrack(MediaStreamComponent*) override;
+  void removeRemoteTrack(MediaStreamComponent*) override;
 
-    void scheduleDispatchEvent(Event*);
-    void scheduledEventTimerFired(TimerBase*);
+  bool emptyOrOnlyEndedTracks();
 
-    bool m_stopped;
+  void scheduleDispatchEvent(Event*);
+  void scheduledEventTimerFired(TimerBase*);
 
-    MediaStreamTrackVector m_audioTracks;
-    MediaStreamTrackVector m_videoTracks;
-    Member<MediaStreamDescriptor> m_descriptor;
+  bool m_stopped;
 
-    Timer<MediaStream> m_scheduledEventTimer;
-    HeapVector<Member<Event>> m_scheduledEvents;
+  MediaStreamTrackVector m_audioTracks;
+  MediaStreamTrackVector m_videoTracks;
+  Member<MediaStreamDescriptor> m_descriptor;
+
+  Timer<MediaStream> m_scheduledEventTimer;
+  HeapVector<Member<Event>> m_scheduledEvents;
 };
 
 typedef HeapVector<Member<MediaStream>> MediaStreamVector;
 
 MediaStream* toMediaStream(MediaStreamDescriptor*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStream_h
+#endif  // MediaStream_h

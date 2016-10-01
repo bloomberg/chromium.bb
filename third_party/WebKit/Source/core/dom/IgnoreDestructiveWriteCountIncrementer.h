@@ -32,28 +32,27 @@
 namespace blink {
 
 class IgnoreDestructiveWriteCountIncrementer {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(IgnoreDestructiveWriteCountIncrementer);
-public:
-    explicit IgnoreDestructiveWriteCountIncrementer(Document* document)
-        : m_count(document ? &document->m_ignoreDestructiveWriteCount : 0)
-    {
-        if (!m_count)
-            return;
-        ++(*m_count);
-    }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(IgnoreDestructiveWriteCountIncrementer);
 
-    ~IgnoreDestructiveWriteCountIncrementer()
-    {
-        if (!m_count)
-            return;
-        --(*m_count);
-    }
+ public:
+  explicit IgnoreDestructiveWriteCountIncrementer(Document* document)
+      : m_count(document ? &document->m_ignoreDestructiveWriteCount : 0) {
+    if (!m_count)
+      return;
+    ++(*m_count);
+  }
 
-private:
-    unsigned* m_count;
+  ~IgnoreDestructiveWriteCountIncrementer() {
+    if (!m_count)
+      return;
+    --(*m_count);
+  }
+
+ private:
+  unsigned* m_count;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

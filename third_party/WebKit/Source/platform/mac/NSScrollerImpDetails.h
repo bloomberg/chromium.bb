@@ -29,7 +29,10 @@
 #import <AvailabilityMacros.h>
 
 @interface NSObject (ScrollbarPainter)
-+ (id)scrollerImpWithStyle:(NSScrollerStyle)newScrollerStyle controlSize:(NSControlSize)newControlSize horizontal:(BOOL)horizontal replacingScrollerImp:(id)previous;
++ (id)scrollerImpWithStyle:(NSScrollerStyle)newScrollerStyle
+               controlSize:(NSControlSize)newControlSize
+                horizontal:(BOOL)horizontal
+      replacingScrollerImp:(id)previous;
 - (CGFloat)knobAlpha;
 - (void)setKnobAlpha:(CGFloat)knobAlpha;
 - (CGFloat)trackAlpha;
@@ -55,7 +58,9 @@
 - (CGFloat)uiStateTransitionProgress;
 - (CGFloat)expansionTransitionProgress;
 - (NSRect)rectForPart:(NSScrollerPart)partCode;
-- (void)drawKnobSlotInRect:(NSRect)slotRect highlight:(BOOL)flag alpha:(CGFloat)alpha;
+- (void)drawKnobSlotInRect:(NSRect)slotRect
+                 highlight:(BOOL)flag
+                     alpha:(CGFloat)alpha;
 - (void)drawKnob;
 - (void)mouseEnteredScroller;
 - (void)mouseExitedScroller;
@@ -86,4 +91,4 @@
 - (void)endScrollGesture;
 @end
 
-#endif // WebCore_NSScrollerImpDetails_h
+#endif  // WebCore_NSScrollerImpDetails_h

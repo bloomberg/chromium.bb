@@ -18,32 +18,33 @@ class ComputedStyle;
 class LayoutView;
 
 class CompositingReasonFinder {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(CompositingReasonFinder);
-public:
-    explicit CompositingReasonFinder(LayoutView&);
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(CompositingReasonFinder);
 
-    CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject*) const;
-    CompositingReasons directReasons(const PaintLayer*) const;
+ public:
+  explicit CompositingReasonFinder(LayoutView&);
 
-    void updateTriggers();
+  CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject*) const;
+  CompositingReasons directReasons(const PaintLayer*) const;
 
-    bool hasOverflowScrollTrigger() const;
-    bool requiresCompositingForScrollableFrame() const;
-    bool requiresCompositingForAnimation(const ComputedStyle&) const;
+  void updateTriggers();
 
-private:
-    bool isMainFrame() const;
+  bool hasOverflowScrollTrigger() const;
+  bool requiresCompositingForScrollableFrame() const;
+  bool requiresCompositingForAnimation(const ComputedStyle&) const;
 
-    CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*) const;
+ private:
+  bool isMainFrame() const;
 
-    bool requiresCompositingForTransform(LayoutObject*) const;
-    bool requiresCompositingForScrollDependentPosition(const PaintLayer*) const;
+  CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*) const;
 
-    LayoutView& m_layoutView;
-    CompositingTriggerFlags m_compositingTriggers;
+  bool requiresCompositingForTransform(LayoutObject*) const;
+  bool requiresCompositingForScrollDependentPosition(const PaintLayer*) const;
+
+  LayoutView& m_layoutView;
+  CompositingTriggerFlags m_compositingTriggers;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositingReasonFinder_h
+#endif  // CompositingReasonFinder_h

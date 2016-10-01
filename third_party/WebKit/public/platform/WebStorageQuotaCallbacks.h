@@ -40,36 +40,39 @@ namespace blink {
 class StorageQuotaCallbacks;
 
 class WebStorageQuotaCallbacks {
-public:
-    ~WebStorageQuotaCallbacks() { reset(); }
-    WebStorageQuotaCallbacks() { }
-    WebStorageQuotaCallbacks(const WebStorageQuotaCallbacks& c) { assign(c); }
-    WebStorageQuotaCallbacks& operator=(const WebStorageQuotaCallbacks& c)
-    {
-        assign(c);
-        return *this;
-    }
+ public:
+  ~WebStorageQuotaCallbacks() { reset(); }
+  WebStorageQuotaCallbacks() {}
+  WebStorageQuotaCallbacks(const WebStorageQuotaCallbacks& c) { assign(c); }
+  WebStorageQuotaCallbacks& operator=(const WebStorageQuotaCallbacks& c) {
+    assign(c);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebStorageQuotaCallbacks&);
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebStorageQuotaCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebStorageQuotaCallbacks(StorageQuotaCallbacks*);
+  BLINK_PLATFORM_EXPORT WebStorageQuotaCallbacks(StorageQuotaCallbacks*);
 #endif
 
-    // Callback for WebFrameClient::queryStorageUsageAndQuota.
-    BLINK_PLATFORM_EXPORT void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes);
+  // Callback for WebFrameClient::queryStorageUsageAndQuota.
+  BLINK_PLATFORM_EXPORT void didQueryStorageUsageAndQuota(
+      unsigned long long usageInBytes,
+      unsigned long long quotaInBytes);
 
-    // Callback for WebFrameClient::requestStorageQuota.
-    // This may return a smaller amount of quota than the requested.
-    BLINK_PLATFORM_EXPORT void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes);
+  // Callback for WebFrameClient::requestStorageQuota.
+  // This may return a smaller amount of quota than the requested.
+  BLINK_PLATFORM_EXPORT void didGrantStorageQuota(
+      unsigned long long usageInBytes,
+      unsigned long long grantedQuotaInBytes);
 
-    BLINK_PLATFORM_EXPORT void didFail(WebStorageQuotaError);
+  BLINK_PLATFORM_EXPORT void didFail(WebStorageQuotaError);
 
-private:
-    WebPrivatePtr<StorageQuotaCallbacks> m_private;
+ private:
+  WebPrivatePtr<StorageQuotaCallbacks> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebStorageQuotaCallbacks_h
+#endif  // WebStorageQuotaCallbacks_h

@@ -38,38 +38,40 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXImageMapLink final : public AXNodeObject {
-    WTF_MAKE_NONCOPYABLE(AXImageMapLink);
+  WTF_MAKE_NONCOPYABLE(AXImageMapLink);
 
-private:
-    explicit AXImageMapLink(HTMLAreaElement*, AXObjectCacheImpl&);
+ private:
+  explicit AXImageMapLink(HTMLAreaElement*, AXObjectCacheImpl&);
 
-public:
-    static AXImageMapLink* create(HTMLAreaElement*, AXObjectCacheImpl&);
-    ~AXImageMapLink() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static AXImageMapLink* create(HTMLAreaElement*, AXObjectCacheImpl&);
+  ~AXImageMapLink() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    HTMLAreaElement* areaElement() const { return toHTMLAreaElement(getNode()); }
+  HTMLAreaElement* areaElement() const { return toHTMLAreaElement(getNode()); }
 
-    HTMLMapElement* mapElement() const;
+  HTMLMapElement* mapElement() const;
 
-    AccessibilityRole roleValue() const override;
-    bool isEnabled() const override { return true; }
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  AccessibilityRole roleValue() const override;
+  bool isEnabled() const override { return true; }
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-    Element* anchorElement() const override;
-    Element* actionElement() const override;
-    KURL url() const override;
-    bool isLink() const override { return true; }
-    bool isLinked() const override { return true; }
-    AXObject* computeParent() const override;
-    void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const override;
+  Element* anchorElement() const override;
+  Element* actionElement() const override;
+  KURL url() const override;
+  bool isLink() const override { return true; }
+  bool isLinked() const override { return true; }
+  AXObject* computeParent() const override;
+  void getRelativeBounds(AXObject** outContainer,
+                         FloatRect& outBoundsInContainer,
+                         SkMatrix44& outContainerTransform) const override;
 
-private:
-    bool isImageMapLink() const override { return true; }
+ private:
+  bool isImageMapLink() const override { return true; }
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, isImageMapLink());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXImageMapLink_h
+#endif  // AXImageMapLink_h

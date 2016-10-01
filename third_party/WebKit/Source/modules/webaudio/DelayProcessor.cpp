@@ -29,23 +29,21 @@
 
 namespace blink {
 
-DelayProcessor::DelayProcessor(float sampleRate, unsigned numberOfChannels, AudioParamHandler& delayTime, double maxDelayTime)
-    : AudioDSPKernelProcessor(sampleRate, numberOfChannels)
-    , m_delayTime(delayTime)
-    , m_maxDelayTime(maxDelayTime)
-{
+DelayProcessor::DelayProcessor(float sampleRate,
+                               unsigned numberOfChannels,
+                               AudioParamHandler& delayTime,
+                               double maxDelayTime)
+    : AudioDSPKernelProcessor(sampleRate, numberOfChannels),
+      m_delayTime(delayTime),
+      m_maxDelayTime(maxDelayTime) {}
+
+DelayProcessor::~DelayProcessor() {
+  if (isInitialized())
+    uninitialize();
 }
 
-DelayProcessor::~DelayProcessor()
-{
-    if (isInitialized())
-        uninitialize();
+std::unique_ptr<AudioDSPKernel> DelayProcessor::createKernel() {
+  return wrapUnique(new DelayDSPKernel(this));
 }
 
-std::unique_ptr<AudioDSPKernel> DelayProcessor::createKernel()
-{
-    return wrapUnique(new DelayDSPKernel(this));
-}
-
-} // namespace blink
-
+}  // namespace blink

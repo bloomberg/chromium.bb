@@ -9,14 +9,12 @@
 
 namespace blink {
 
-CSSUnsetValue* CSSUnsetValue::create()
-{
-    return cssValuePool().unsetValue();
+CSSUnsetValue* CSSUnsetValue::create() {
+  return cssValuePool().unsetValue();
 }
 
-String CSSUnsetValue::customCSSText() const
-{
-    return "unset";
+String CSSUnsetValue::customCSSText() const {
+  return "unset";
 }
 
-} // namespace blink
+}  // namespace blink

@@ -42,41 +42,43 @@ class WebView;
 class WebWidgetClient;
 
 class WebFrameWidget : public WebWidget {
-public:
-    BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*, WebLocalFrame*);
-    // Creates a frame widget for a WebView. Temporary helper to help transition
-    // away from WebView inheriting WebWidget.
-    // TODO(dcheng): Remove once transition is complete.
-    BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*, WebView*, WebLocalFrame* mainFrame);
+ public:
+  BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*, WebLocalFrame*);
+  // Creates a frame widget for a WebView. Temporary helper to help transition
+  // away from WebView inheriting WebWidget.
+  // TODO(dcheng): Remove once transition is complete.
+  BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*,
+                                             WebView*,
+                                             WebLocalFrame* mainFrame);
 
-    // Sets the visibility of the WebFrameWidget.
-    // We still track page-level visibility, but additionally we need to notify a WebFrameWidget
-    // when its owning RenderWidget receives a Show or Hide directive, so that it knows whether
-    // it needs to draw or not.
-    virtual void setVisibilityState(WebPageVisibilityState visibilityState) {}
+  // Sets the visibility of the WebFrameWidget.
+  // We still track page-level visibility, but additionally we need to notify a WebFrameWidget
+  // when its owning RenderWidget receives a Show or Hide directive, so that it knows whether
+  // it needs to draw or not.
+  virtual void setVisibilityState(WebPageVisibilityState visibilityState) {}
 
-    // Makes the WebFrameWidget transparent.  This is useful if you want to have
-    // some custom background rendered behind it.
-    virtual bool isTransparent() const = 0;
-    virtual void setIsTransparent(bool) = 0;
+  // Makes the WebFrameWidget transparent.  This is useful if you want to have
+  // some custom background rendered behind it.
+  virtual bool isTransparent() const = 0;
+  virtual void setIsTransparent(bool) = 0;
 
-    // Sets the base color used for this WebFrameWidget's background. This is in
-    // effect the default background color used for pages with no
-    // background-color style in effect, or used as the alpha-blended basis for
-    // any pages with translucent background-color style. (For pages with opaque
-    // background-color style, this property is effectively ignored).
-    // Setting this takes effect for the currently loaded page, if any, and
-    // persists across subsequent navigations. Defaults to white prior to the
-    // first call to this method.
-    virtual void setBaseBackgroundColor(WebColor) = 0;
+  // Sets the base color used for this WebFrameWidget's background. This is in
+  // effect the default background color used for pages with no
+  // background-color style in effect, or used as the alpha-blended basis for
+  // any pages with translucent background-color style. (For pages with opaque
+  // background-color style, this property is effectively ignored).
+  // Setting this takes effect for the currently loaded page, if any, and
+  // persists across subsequent navigations. Defaults to white prior to the
+  // first call to this method.
+  virtual void setBaseBackgroundColor(WebColor) = 0;
 
-    // Returns the local root of this WebFrameWidget.
-    virtual WebLocalFrame* localRoot() = 0;
+  // Returns the local root of this WebFrameWidget.
+  virtual WebLocalFrame* localRoot() = 0;
 
-    // WebWidget implementation.
-    bool isWebFrameWidget() const final { return true; }
+  // WebWidget implementation.
+  bool isWebFrameWidget() const final { return true; }
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

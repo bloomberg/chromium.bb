@@ -13,23 +13,27 @@ namespace blink {
 
 class WebLocalFrameImpl;
 
-class NavigatorContentUtilsClientImpl final : public NavigatorContentUtilsClient {
-public:
-    static NavigatorContentUtilsClientImpl* create(WebLocalFrameImpl*);
-    ~NavigatorContentUtilsClientImpl() override { }
+class NavigatorContentUtilsClientImpl final
+    : public NavigatorContentUtilsClient {
+ public:
+  static NavigatorContentUtilsClientImpl* create(WebLocalFrameImpl*);
+  ~NavigatorContentUtilsClientImpl() override {}
 
-    void registerProtocolHandler(const String& scheme, const KURL&, const String& title) override;
-    CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL&) override;
-    void unregisterProtocolHandler(const String& scheme, const KURL&) override;
+  void registerProtocolHandler(const String& scheme,
+                               const KURL&,
+                               const String& title) override;
+  CustomHandlersState isProtocolHandlerRegistered(const String& scheme,
+                                                  const KURL&) override;
+  void unregisterProtocolHandler(const String& scheme, const KURL&) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit NavigatorContentUtilsClientImpl(WebLocalFrameImpl*);
+ private:
+  explicit NavigatorContentUtilsClientImpl(WebLocalFrameImpl*);
 
-    Member<WebLocalFrameImpl> m_webFrame;
+  Member<WebLocalFrameImpl> m_webFrame;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorContentUtilsClientImpl_h
+#endif  // NavigatorContentUtilsClientImpl_h

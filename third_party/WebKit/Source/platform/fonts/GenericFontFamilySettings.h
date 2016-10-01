@@ -42,66 +42,71 @@
 namespace blink {
 
 class PLATFORM_EXPORT GenericFontFamilySettings {
-    DISALLOW_NEW();
+  DISALLOW_NEW();
 
-public:
-    GenericFontFamilySettings()
-    {
-    }
+ public:
+  GenericFontFamilySettings() {}
 
-    explicit GenericFontFamilySettings(const GenericFontFamilySettings&);
+  explicit GenericFontFamilySettings(const GenericFontFamilySettings&);
 
-    bool updateStandard(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& standard(UScriptCode = USCRIPT_COMMON) const;
+  bool updateStandard(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+  const AtomicString& standard(UScriptCode = USCRIPT_COMMON) const;
 
-    bool updateFixed(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& fixed(UScriptCode = USCRIPT_COMMON) const;
+  bool updateFixed(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+  const AtomicString& fixed(UScriptCode = USCRIPT_COMMON) const;
 
-    bool updateSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& serif(UScriptCode = USCRIPT_COMMON) const;
+  bool updateSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+  const AtomicString& serif(UScriptCode = USCRIPT_COMMON) const;
 
-    bool updateSansSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& sansSerif(UScriptCode = USCRIPT_COMMON) const;
+  bool updateSansSerif(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+  const AtomicString& sansSerif(UScriptCode = USCRIPT_COMMON) const;
 
-    bool updateCursive(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& cursive(UScriptCode = USCRIPT_COMMON) const;
+  bool updateCursive(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+  const AtomicString& cursive(UScriptCode = USCRIPT_COMMON) const;
 
-    bool updateFantasy(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& fantasy(UScriptCode = USCRIPT_COMMON) const;
+  bool updateFantasy(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+  const AtomicString& fantasy(UScriptCode = USCRIPT_COMMON) const;
 
-    bool updatePictograph(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& pictograph(UScriptCode = USCRIPT_COMMON) const;
+  bool updatePictograph(const AtomicString&, UScriptCode = USCRIPT_COMMON);
+  const AtomicString& pictograph(UScriptCode = USCRIPT_COMMON) const;
 
-    // Only called by InternalSettings to clear font family maps.
-    void reset();
+  // Only called by InternalSettings to clear font family maps.
+  void reset();
 
-    GenericFontFamilySettings& operator=(const GenericFontFamilySettings&);
+  GenericFontFamilySettings& operator=(const GenericFontFamilySettings&);
 
-private:
-    // UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
-    // We need to use -2 and -3 for empty value and deleted value.
-    struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {
-        STATIC_ONLY(UScriptCodeHashTraits);
-        static const bool emptyValueIsZero = false;
-        static int emptyValue() { return -2; }
-        static void constructDeletedValue(int& slot, bool) { slot = -3; }
-        static bool isDeletedValue(int value) { return value == -3; }
-    };
+ private:
+  // UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
+  // We need to use -2 and -3 for empty value and deleted value.
+  struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {
+    STATIC_ONLY(UScriptCodeHashTraits);
+    static const bool emptyValueIsZero = false;
+    static int emptyValue() { return -2; }
+    static void constructDeletedValue(int& slot, bool) { slot = -3; }
+    static bool isDeletedValue(int value) { return value == -3; }
+  };
 
-    typedef HashMap<int, AtomicString, DefaultHash<int>::Hash, UScriptCodeHashTraits> ScriptFontFamilyMap;
+  typedef HashMap<int,
+                  AtomicString,
+                  DefaultHash<int>::Hash,
+                  UScriptCodeHashTraits>
+      ScriptFontFamilyMap;
 
-    void setGenericFontFamilyMap(ScriptFontFamilyMap&, const AtomicString&, UScriptCode);
-    const AtomicString& genericFontFamilyForScript(const ScriptFontFamilyMap&, UScriptCode) const;
+  void setGenericFontFamilyMap(ScriptFontFamilyMap&,
+                               const AtomicString&,
+                               UScriptCode);
+  const AtomicString& genericFontFamilyForScript(const ScriptFontFamilyMap&,
+                                                 UScriptCode) const;
 
-    ScriptFontFamilyMap m_standardFontFamilyMap;
-    ScriptFontFamilyMap m_serifFontFamilyMap;
-    ScriptFontFamilyMap m_fixedFontFamilyMap;
-    ScriptFontFamilyMap m_sansSerifFontFamilyMap;
-    ScriptFontFamilyMap m_cursiveFontFamilyMap;
-    ScriptFontFamilyMap m_fantasyFontFamilyMap;
-    ScriptFontFamilyMap m_pictographFontFamilyMap;
+  ScriptFontFamilyMap m_standardFontFamilyMap;
+  ScriptFontFamilyMap m_serifFontFamilyMap;
+  ScriptFontFamilyMap m_fixedFontFamilyMap;
+  ScriptFontFamilyMap m_sansSerifFontFamilyMap;
+  ScriptFontFamilyMap m_cursiveFontFamilyMap;
+  ScriptFontFamilyMap m_fantasyFontFamilyMap;
+  ScriptFontFamilyMap m_pictographFontFamilyMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

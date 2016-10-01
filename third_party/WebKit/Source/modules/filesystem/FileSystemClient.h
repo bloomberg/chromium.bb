@@ -46,20 +46,26 @@ class ContentSettingCallbacks;
 class WorkerClients;
 
 class FileSystemClient {
-    USING_FAST_MALLOC(FileSystemClient);
-    WTF_MAKE_NONCOPYABLE(FileSystemClient);
-public:
-    FileSystemClient() { }
-    virtual ~FileSystemClient() { }
+  USING_FAST_MALLOC(FileSystemClient);
+  WTF_MAKE_NONCOPYABLE(FileSystemClient);
 
-    virtual bool requestFileSystemAccessSync(ExecutionContext*) = 0;
-    virtual void requestFileSystemAccessAsync(ExecutionContext*, std::unique_ptr<ContentSettingCallbacks>) = 0;
+ public:
+  FileSystemClient() {}
+  virtual ~FileSystemClient() {}
+
+  virtual bool requestFileSystemAccessSync(ExecutionContext*) = 0;
+  virtual void requestFileSystemAccessAsync(
+      ExecutionContext*,
+      std::unique_ptr<ContentSettingCallbacks>) = 0;
 };
 
-MODULES_EXPORT void provideLocalFileSystemTo(LocalFrame&, std::unique_ptr<FileSystemClient>);
+MODULES_EXPORT void provideLocalFileSystemTo(LocalFrame&,
+                                             std::unique_ptr<FileSystemClient>);
 
-MODULES_EXPORT void provideLocalFileSystemToWorker(WorkerClients*, std::unique_ptr<FileSystemClient>);
+MODULES_EXPORT void provideLocalFileSystemToWorker(
+    WorkerClients*,
+    std::unique_ptr<FileSystemClient>);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileSystemClient_h
+#endif  // FileSystemClient_h

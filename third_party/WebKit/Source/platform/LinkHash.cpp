@@ -37,26 +37,30 @@
 
 namespace blink {
 
-static bool resolveRelative(const KURL& base, const String& relative, url::RawCanonOutput<2048>* buffer)
-{
-    // We use these low-level GURL functions to avoid converting back and forth from UTF-8 unnecessarily.
-    url::Parsed parsed;
-    StringUTF8Adaptor baseUTF8(base.getString());
-    if (relative.is8Bit()) {
-        StringUTF8Adaptor relativeUTF8(relative);
-        return url::ResolveRelative(baseUTF8.data(), baseUTF8.length(), base.parsed(), relativeUTF8.data(), relativeUTF8.length(), 0, buffer, &parsed);
-    }
-    return url::ResolveRelative(baseUTF8.data(), baseUTF8.length(), base.parsed(), relative.characters16(), relative.length(), 0, buffer, &parsed);
+static bool resolveRelative(const KURL& base,
+                            const String& relative,
+                            url::RawCanonOutput<2048>* buffer) {
+  // We use these low-level GURL functions to avoid converting back and forth from UTF-8 unnecessarily.
+  url::Parsed parsed;
+  StringUTF8Adaptor baseUTF8(base.getString());
+  if (relative.is8Bit()) {
+    StringUTF8Adaptor relativeUTF8(relative);
+    return url::ResolveRelative(baseUTF8.data(), baseUTF8.length(),
+                                base.parsed(), relativeUTF8.data(),
+                                relativeUTF8.length(), 0, buffer, &parsed);
+  }
+  return url::ResolveRelative(baseUTF8.data(), baseUTF8.length(), base.parsed(),
+                              relative.characters16(), relative.length(), 0,
+                              buffer, &parsed);
 }
 
-LinkHash visitedLinkHash(const KURL& base, const AtomicString& relative)
-{
-    if (relative.isNull())
-        return 0;
-    url::RawCanonOutput<2048> buffer;
-    if (!resolveRelative(base, relative.getString(), &buffer))
-        return 0;
-    return Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
+LinkHash visitedLinkHash(const KURL& base, const AtomicString& relative) {
+  if (relative.isNull())
+    return 0;
+  url::RawCanonOutput<2048> buffer;
+  if (!resolveRelative(base, relative.getString(), &buffer))
+    return 0;
+  return Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
 }
 
-} // namespace blink
+}  // namespace blink

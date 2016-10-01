@@ -34,44 +34,44 @@
 namespace blink {
 
 class CORE_EXPORT DOMURLUtilsReadOnly {
-public:
-    virtual KURL url() const = 0;
-    virtual String input() const = 0;
-    virtual ~DOMURLUtilsReadOnly() { }
+ public:
+  virtual KURL url() const = 0;
+  virtual String input() const = 0;
+  virtual ~DOMURLUtilsReadOnly() {}
 
-    String href();
+  String href();
 
-    static String origin(const KURL&);
-    String origin() { return origin(url()); }
+  static String origin(const KURL&);
+  String origin() { return origin(url()); }
 
-    static String protocol(const KURL& url) { return url.protocol() + ":"; }
-    String protocol() { return protocol(url()); }
+  static String protocol(const KURL& url) { return url.protocol() + ":"; }
+  String protocol() { return protocol(url()); }
 
-    static String username(const KURL& url) { return url.user(); }
-    String username() { return username(url()); }
+  static String username(const KURL& url) { return url.user(); }
+  String username() { return username(url()); }
 
-    static String password(const KURL& url) { return url.pass(); }
-    String password() { return password(url()); }
+  static String password(const KURL& url) { return url.pass(); }
+  String password() { return password(url()); }
 
-    static String host(const KURL&);
-    String host() { return host(url()); }
+  static String host(const KURL&);
+  String host() { return host(url()); }
 
-    static String hostname(const KURL& url) { return url.host(); }
-    String hostname() { return hostname(url()); }
+  static String hostname(const KURL& url) { return url.host(); }
+  String hostname() { return hostname(url()); }
 
-    static String port(const KURL&);
-    String port() { return port(url()); }
+  static String port(const KURL&);
+  String port() { return port(url()); }
 
-    static String pathname(const KURL& url) { return url.path(); }
-    String pathname() { return pathname(url()); }
+  static String pathname(const KURL& url) { return url.path(); }
+  String pathname() { return pathname(url()); }
 
-    static String search(const KURL&);
-    String search() { return search(url()); }
+  static String search(const KURL&);
+  String search() { return search(url()); }
 
-    static String hash(const KURL&);
-    String hash() { return hash(url()); }
+  static String hash(const KURL&);
+  String hash() { return hash(url()); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMURLUtilsReadOnly_h
+#endif  // DOMURLUtilsReadOnly_h

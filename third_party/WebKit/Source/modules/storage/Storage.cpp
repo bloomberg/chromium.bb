@@ -31,81 +31,78 @@
 
 namespace blink {
 
-Storage* Storage::create(LocalFrame* frame, StorageArea* storageArea)
-{
-    return new Storage(frame, storageArea);
+Storage* Storage::create(LocalFrame* frame, StorageArea* storageArea) {
+  return new Storage(frame, storageArea);
 }
 
 Storage::Storage(LocalFrame* frame, StorageArea* storageArea)
-    : DOMWindowProperty(frame)
-    , m_storageArea(storageArea)
-{
-    DCHECK(frame);
-    DCHECK(m_storageArea);
+    : DOMWindowProperty(frame), m_storageArea(storageArea) {
+  DCHECK(frame);
+  DCHECK(m_storageArea);
 }
 
-String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionState& exceptionState)
-{
-    bool found = contains(name, exceptionState);
-    if (exceptionState.hadException() || !found)
-        return String();
-    String result = getItem(name, exceptionState);
+String Storage::anonymousNamedGetter(const AtomicString& name,
+                                     ExceptionState& exceptionState) {
+  bool found = contains(name, exceptionState);
+  if (exceptionState.hadException() || !found)
+    return String();
+  String result = getItem(name, exceptionState);
+  if (exceptionState.hadException())
+    return String();
+  return result;
+}
+
+bool Storage::anonymousNamedSetter(const AtomicString& name,
+                                   const AtomicString& value,
+                                   ExceptionState& exceptionState) {
+  setItem(name, value, exceptionState);
+  return true;
+}
+
+DeleteResult Storage::anonymousNamedDeleter(const AtomicString& name,
+                                            ExceptionState& exceptionState) {
+  bool found = contains(name, exceptionState);
+  if (!found)
+    return DeleteUnknownProperty;
+  if (exceptionState.hadException())
+    return DeleteReject;
+  removeItem(name, exceptionState);
+  if (exceptionState.hadException())
+    return DeleteReject;
+  return DeleteSuccess;
+}
+
+void Storage::namedPropertyEnumerator(Vector<String>& names,
+                                      ExceptionState& exceptionState) {
+  unsigned length = this->length(exceptionState);
+  if (exceptionState.hadException())
+    return;
+  names.resize(length);
+  for (unsigned i = 0; i < length; ++i) {
+    String key = this->key(i, exceptionState);
     if (exceptionState.hadException())
-        return String();
-    return result;
-}
-
-bool Storage::anonymousNamedSetter(const AtomicString& name, const AtomicString& value, ExceptionState& exceptionState)
-{
-    setItem(name, value, exceptionState);
-    return true;
-}
-
-DeleteResult Storage::anonymousNamedDeleter(const AtomicString& name, ExceptionState& exceptionState)
-{
-    bool found = contains(name, exceptionState);
-    if (!found)
-        return DeleteUnknownProperty;
+      return;
+    ASSERT(!key.isNull());
+    String val = getItem(key, exceptionState);
     if (exceptionState.hadException())
-        return DeleteReject;
-    removeItem(name, exceptionState);
-    if (exceptionState.hadException())
-        return DeleteReject;
-    return DeleteSuccess;
+      return;
+    names[i] = key;
+  }
 }
 
-void Storage::namedPropertyEnumerator(Vector<String>& names, ExceptionState& exceptionState)
-{
-    unsigned length = this->length(exceptionState);
-    if (exceptionState.hadException())
-        return;
-    names.resize(length);
-    for (unsigned i = 0; i < length; ++i) {
-        String key = this->key(i, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        ASSERT(!key.isNull());
-        String val = getItem(key, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        names[i] = key;
-    }
+bool Storage::namedPropertyQuery(const AtomicString& name,
+                                 ExceptionState& exceptionState) {
+  if (name == "length")
+    return false;
+  bool found = contains(name, exceptionState);
+  if (exceptionState.hadException() || !found)
+    return false;
+  return true;
 }
 
-bool Storage::namedPropertyQuery(const AtomicString& name, ExceptionState& exceptionState)
-{
-    if (name == "length")
-        return false;
-    bool found = contains(name, exceptionState);
-    if (exceptionState.hadException() || !found)
-        return false;
-    return true;
+DEFINE_TRACE(Storage) {
+  visitor->trace(m_storageArea);
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(Storage)
-{
-    visitor->trace(m_storageArea);
-    DOMWindowProperty::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

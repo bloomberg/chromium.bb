@@ -34,16 +34,16 @@
 namespace blink {
 
 enum WebFileSystemType {
-    WebFileSystemTypeTemporary,
-    WebFileSystemTypePersistent,
+  WebFileSystemTypeTemporary,
+  WebFileSystemTypePersistent,
 
-    // Indicates an isolated filesystem which only exposes a set of files.
-    WebFileSystemTypeIsolated,
+  // Indicates an isolated filesystem which only exposes a set of files.
+  WebFileSystemTypeIsolated,
 
-    // Indicates a non-sandboxed filesystem.
-    WebFileSystemTypeExternal,
+  // Indicates a non-sandboxed filesystem.
+  WebFileSystemTypeExternal,
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

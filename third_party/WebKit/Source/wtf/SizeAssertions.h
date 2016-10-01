@@ -11,17 +11,19 @@ namespace WTF {
 // size as a class. This is useful to visualize where the space is being used in
 // a class, as well as give a useful compile error message when the size doesn't
 // match the expected value.
-template<class T, class U> struct assert_size {
-    template<int ActualSize, int ExpectedSize> struct assertSizeEqual {
-        static_assert(ActualSize == ExpectedSize, "Class should stay small");
-        static const bool innerValue = true;
-    };
-    static const bool value = assertSizeEqual<sizeof(T), sizeof(U)>::innerValue;
+template <class T, class U>
+struct assert_size {
+  template <int ActualSize, int ExpectedSize>
+  struct assertSizeEqual {
+    static_assert(ActualSize == ExpectedSize, "Class should stay small");
+    static const bool innerValue = true;
+  };
+  static const bool value = assertSizeEqual<sizeof(T), sizeof(U)>::innerValue;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 #define ASSERT_SIZE(className, sameSizeAsClassName) \
-    static_assert(WTF::assert_size<className, sameSizeAsClassName>::value, "");
+  static_assert(WTF::assert_size<className, sameSizeAsClassName>::value, "");
 
-#endif // WTF_SizeAssertions_h
+#endif  // WTF_SizeAssertions_h

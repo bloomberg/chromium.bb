@@ -31,24 +31,25 @@
 namespace blink {
 
 class WebGLDebugRendererInfo final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum EnumType {
-        kUnmaskedVendorWebgl = 0x9245,
-        kUnmaskedRendererWebgl = 0x9246
-    };
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebGLDebugRendererInfo* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+ public:
+  enum EnumType {
+    kUnmaskedVendorWebgl = 0x9245,
+    kUnmaskedRendererWebgl = 0x9246
+  };
 
-    ~WebGLDebugRendererInfo() override;
-    WebGLExtensionName name() const override;
+  static WebGLDebugRendererInfo* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-private:
-    explicit WebGLDebugRendererInfo(WebGLRenderingContextBase*);
+  ~WebGLDebugRendererInfo() override;
+  WebGLExtensionName name() const override;
+
+ private:
+  explicit WebGLDebugRendererInfo(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLDebugRendererInfo_h
+#endif  // WebGLDebugRendererInfo_h

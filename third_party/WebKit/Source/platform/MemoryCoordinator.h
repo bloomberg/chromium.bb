@@ -13,43 +13,45 @@
 namespace blink {
 
 class PLATFORM_EXPORT MemoryCoordinatorClient : public GarbageCollectedMixin {
-public:
-    virtual ~MemoryCoordinatorClient() { }
+ public:
+  virtual ~MemoryCoordinatorClient() {}
 
-    // Called when MemoryCoordinator is asked to prepare for suspending
-    // the renderer. Clients should purge discardable memory as much as
-    // possible.
-    virtual void prepareToSuspend() { }
+  // Called when MemoryCoordinator is asked to prepare for suspending
+  // the renderer. Clients should purge discardable memory as much as
+  // possible.
+  virtual void prepareToSuspend() {}
 
-    // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
-    // gone.
-    virtual void onMemoryPressure(WebMemoryPressureLevel) { }
+  // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
+  // gone.
+  virtual void onMemoryPressure(WebMemoryPressureLevel) {}
 };
 
 // MemoryCoordinator listens to some events which could be opportunities
 // for reducing memory consumption and notifies its clients.
-class PLATFORM_EXPORT MemoryCoordinator final : public GarbageCollected<MemoryCoordinator> {
-    WTF_MAKE_NONCOPYABLE(MemoryCoordinator);
-public:
-    static MemoryCoordinator& instance();
+class PLATFORM_EXPORT MemoryCoordinator final
+    : public GarbageCollected<MemoryCoordinator> {
+  WTF_MAKE_NONCOPYABLE(MemoryCoordinator);
 
-    void registerClient(MemoryCoordinatorClient*);
-    void unregisterClient(MemoryCoordinatorClient*);
+ public:
+  static MemoryCoordinator& instance();
 
-    void prepareToSuspend();
+  void registerClient(MemoryCoordinatorClient*);
+  void unregisterClient(MemoryCoordinatorClient*);
 
-    // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
-    // gone.
-    void onMemoryPressure(WebMemoryPressureLevel);
+  void prepareToSuspend();
 
-    DECLARE_TRACE();
+  // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
+  // gone.
+  void onMemoryPressure(WebMemoryPressureLevel);
 
-private:
-    MemoryCoordinator();
+  DECLARE_TRACE();
 
-    HeapHashSet<WeakMember<MemoryCoordinatorClient>> m_clients;
+ private:
+  MemoryCoordinator();
+
+  HeapHashSet<WeakMember<MemoryCoordinatorClient>> m_clients;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MemoryCoordinator_h
+#endif  // MemoryCoordinator_h

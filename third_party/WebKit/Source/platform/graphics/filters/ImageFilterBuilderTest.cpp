@@ -36,85 +36,84 @@ using testing::Test;
 namespace blink {
 
 class ImageFilterBuilderTest : public Test {
-protected:
-    void colorSpaceTest()
-    {
-        // Build filter tree
-        Filter* referenceFilter = Filter::create(1.0f);
+ protected:
+  void colorSpaceTest() {
+    // Build filter tree
+    Filter* referenceFilter = Filter::create(1.0f);
 
-        // Add a dummy source graphic input
-        FilterEffect* sourceEffect = referenceFilter->getSourceGraphic();
-        sourceEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
+    // Add a dummy source graphic input
+    FilterEffect* sourceEffect = referenceFilter->getSourceGraphic();
+    sourceEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
 
-        // Add a blur effect (with input : source)
-        FilterEffect* blurEffect =
-            FEGaussianBlur::create(referenceFilter, 3.0f, 3.0f);
-        blurEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
-        blurEffect->inputEffects().append(sourceEffect);
+    // Add a blur effect (with input : source)
+    FilterEffect* blurEffect =
+        FEGaussianBlur::create(referenceFilter, 3.0f, 3.0f);
+    blurEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
+    blurEffect->inputEffects().append(sourceEffect);
 
-        // Add a blend effect (with inputs : blur, source)
-        FilterEffect* blendEffect =
-            FEBlend::create(referenceFilter, WebBlendModeNormal);
-        blendEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
-        FilterEffectVector& blendInputs = blendEffect->inputEffects();
-        blendInputs.reserveCapacity(2);
-        blendInputs.append(sourceEffect);
-        blendInputs.append(blurEffect);
+    // Add a blend effect (with inputs : blur, source)
+    FilterEffect* blendEffect =
+        FEBlend::create(referenceFilter, WebBlendModeNormal);
+    blendEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
+    FilterEffectVector& blendInputs = blendEffect->inputEffects();
+    blendInputs.reserveCapacity(2);
+    blendInputs.append(sourceEffect);
+    blendInputs.append(blurEffect);
 
-        // Add a merge effect (with inputs : blur, blend)
-        FilterEffect* mergeEffect = FEMerge::create(referenceFilter);
-        mergeEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
-        FilterEffectVector& mergeInputs = mergeEffect->inputEffects();
-        mergeInputs.reserveCapacity(2);
-        mergeInputs.append(blurEffect);
-        mergeInputs.append(blendEffect);
-        referenceFilter->setLastEffect(mergeEffect);
+    // Add a merge effect (with inputs : blur, blend)
+    FilterEffect* mergeEffect = FEMerge::create(referenceFilter);
+    mergeEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
+    FilterEffectVector& mergeInputs = mergeEffect->inputEffects();
+    mergeInputs.reserveCapacity(2);
+    mergeInputs.append(blurEffect);
+    mergeInputs.append(blendEffect);
+    referenceFilter->setLastEffect(mergeEffect);
 
-        // Get SkImageFilter resulting tree
-        sk_sp<SkImageFilter> filter = SkiaImageFilterBuilder::build(referenceFilter->lastEffect(), ColorSpaceDeviceRGB);
+    // Get SkImageFilter resulting tree
+    sk_sp<SkImageFilter> filter = SkiaImageFilterBuilder::build(
+        referenceFilter->lastEffect(), ColorSpaceDeviceRGB);
 
-        // Let's check that the resulting tree looks like this :
-        //      ColorSpace (Linear->Device) : CS (L->D)
-        //                |
-        //             Merge (L)
-        //              |     |
-        //              |    CS (D->L)
-        //              |          |
-        //              |      Blend (D)
-        //              |       /    |
-        //              |  CS (L->D) |
-        //              |  /         |
-        //             Blur (L)      |
-        //                 \         |
-        //               CS (D->L)   |
-        //                   \       |
-        //                 Source Graphic (D)
+    // Let's check that the resulting tree looks like this :
+    //      ColorSpace (Linear->Device) : CS (L->D)
+    //                |
+    //             Merge (L)
+    //              |     |
+    //              |    CS (D->L)
+    //              |          |
+    //              |      Blend (D)
+    //              |       /    |
+    //              |  CS (L->D) |
+    //              |  /         |
+    //             Blur (L)      |
+    //                 \         |
+    //               CS (D->L)   |
+    //                   \       |
+    //                 Source Graphic (D)
 
-        EXPECT_EQ(filter->countInputs(), 1); // Should be CS (L->D)
-        SkImageFilter* child = filter->getInput(0); // Should be Merge
-        EXPECT_EQ(child->asColorFilter(0), false);
-        EXPECT_EQ(child->countInputs(), 2);
-        child = child->getInput(1); // Should be CS (D->L)
-        EXPECT_EQ(child->asColorFilter(0), true);
-        EXPECT_EQ(child->countInputs(), 1);
-        child = child->getInput(0); // Should be Blend
-        EXPECT_EQ(child->asColorFilter(0), false);
-        EXPECT_EQ(child->countInputs(), 2);
-        child = child->getInput(0); // Should be CS (L->D)
-        EXPECT_EQ(child->asColorFilter(0), true);
-        EXPECT_EQ(child->countInputs(), 1);
-        child = child->getInput(0); // Should be Blur
-        EXPECT_EQ(child->asColorFilter(0), false);
-        EXPECT_EQ(child->countInputs(), 1);
-        child = child->getInput(0); // Should be CS (D->L)
-        EXPECT_EQ(child->asColorFilter(0), true);
-        EXPECT_EQ(child->countInputs(), 1);
-    }
+    EXPECT_EQ(filter->countInputs(), 1);         // Should be CS (L->D)
+    SkImageFilter* child = filter->getInput(0);  // Should be Merge
+    EXPECT_EQ(child->asColorFilter(0), false);
+    EXPECT_EQ(child->countInputs(), 2);
+    child = child->getInput(1);  // Should be CS (D->L)
+    EXPECT_EQ(child->asColorFilter(0), true);
+    EXPECT_EQ(child->countInputs(), 1);
+    child = child->getInput(0);  // Should be Blend
+    EXPECT_EQ(child->asColorFilter(0), false);
+    EXPECT_EQ(child->countInputs(), 2);
+    child = child->getInput(0);  // Should be CS (L->D)
+    EXPECT_EQ(child->asColorFilter(0), true);
+    EXPECT_EQ(child->countInputs(), 1);
+    child = child->getInput(0);  // Should be Blur
+    EXPECT_EQ(child->asColorFilter(0), false);
+    EXPECT_EQ(child->countInputs(), 1);
+    child = child->getInput(0);  // Should be CS (D->L)
+    EXPECT_EQ(child->asColorFilter(0), true);
+    EXPECT_EQ(child->countInputs(), 1);
+  }
 };
 
-TEST_F(ImageFilterBuilderTest, testColorSpace)
-{
-    colorSpaceTest();
+TEST_F(ImageFilterBuilderTest, testColorSpace) {
+  colorSpaceTest();
 }
 
-} // namespace blink
+}  // namespace blink

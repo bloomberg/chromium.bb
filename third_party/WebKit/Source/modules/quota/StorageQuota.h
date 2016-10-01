@@ -38,25 +38,25 @@
 
 namespace blink {
 
-class StorageQuota final : public GarbageCollected<StorageQuota>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static StorageQuota* create()
-    {
-        return new StorageQuota();
-    }
+class StorageQuota final : public GarbageCollected<StorageQuota>,
+                           public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    Vector<String> supportedTypes() const;
+ public:
+  static StorageQuota* create() { return new StorageQuota(); }
 
-    ScriptPromise queryInfo(ScriptState*, String type);
-    ScriptPromise requestPersistentQuota(ScriptState*, unsigned long long newQuota);
+  Vector<String> supportedTypes() const;
 
-    DEFINE_INLINE_TRACE() { }
+  ScriptPromise queryInfo(ScriptState*, String type);
+  ScriptPromise requestPersistentQuota(ScriptState*,
+                                       unsigned long long newQuota);
 
-private:
-    StorageQuota();
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  StorageQuota();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageQuota_h
+#endif  // StorageQuota_h

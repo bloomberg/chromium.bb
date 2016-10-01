@@ -39,18 +39,18 @@ class Document;
 class Node;
 
 class DocumentAnimations {
-public:
-    static void updateAnimationTimingForAnimationFrame(Document&);
-    static bool needsAnimationTimingUpdate(const Document&);
-    static void updateAnimationTimingIfNeeded(Document&);
+ public:
+  static void updateAnimationTimingForAnimationFrame(Document&);
+  static bool needsAnimationTimingUpdate(const Document&);
+  static void updateAnimationTimingIfNeeded(Document&);
 
-    // Updates existing animations as part of generating a new (document lifecycle) frame.
-    static void updateAnimations(Document&);
+  // Updates existing animations as part of generating a new (document lifecycle) frame.
+  static void updateAnimations(Document&);
 
-private:
-    DocumentAnimations() { }
+ private:
+  DocumentAnimations() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

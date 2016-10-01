@@ -33,38 +33,41 @@
 namespace blink {
 
 struct GradientData {
-    USING_FAST_MALLOC(GradientData);
-public:
-    RefPtr<Gradient> gradient;
-    AffineTransform userspaceTransform;
+  USING_FAST_MALLOC(GradientData);
+
+ public:
+  RefPtr<Gradient> gradient;
+  AffineTransform userspaceTransform;
 };
 
 class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
-public:
-    explicit LayoutSVGResourceGradient(SVGGradientElement*);
+ public:
+  explicit LayoutSVGResourceGradient(SVGGradientElement*);
 
-    void removeAllClientsFromCache(bool markForInvalidation = true) final;
-    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) final;
+  void removeAllClientsFromCache(bool markForInvalidation = true) final;
+  void removeClientFromCache(LayoutObject*,
+                             bool markForInvalidation = true) final;
 
-    SVGPaintServer preparePaintServer(const LayoutObject&) final;
+  SVGPaintServer preparePaintServer(const LayoutObject&) final;
 
-    bool isChildAllowed(LayoutObject* child, const ComputedStyle&) const final;
+  bool isChildAllowed(LayoutObject* child, const ComputedStyle&) const final;
 
-protected:
-    void addStops(Gradient&, const Vector<Gradient::ColorStop>&) const;
+ protected:
+  void addStops(Gradient&, const Vector<Gradient::ColorStop>&) const;
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const = 0;
-    virtual AffineTransform calculateGradientTransform() const = 0;
-    virtual bool collectGradientAttributes(SVGGradientElement*) = 0;
-    virtual PassRefPtr<Gradient> buildGradient() const = 0;
+  virtual SVGUnitTypes::SVGUnitType gradientUnits() const = 0;
+  virtual AffineTransform calculateGradientTransform() const = 0;
+  virtual bool collectGradientAttributes(SVGGradientElement*) = 0;
+  virtual PassRefPtr<Gradient> buildGradient() const = 0;
 
-    static GradientSpreadMethod platformSpreadMethodFromSVGType(SVGSpreadMethodType);
+  static GradientSpreadMethod platformSpreadMethodFromSVGType(
+      SVGSpreadMethodType);
 
-private:
-    bool m_shouldCollectGradientAttributes : 1;
-    HashMap<const LayoutObject*, std::unique_ptr<GradientData>> m_gradientMap;
+ private:
+  bool m_shouldCollectGradientAttributes : 1;
+  HashMap<const LayoutObject*, std::unique_ptr<GradientData>> m_gradientMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

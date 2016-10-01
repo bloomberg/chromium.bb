@@ -15,32 +15,33 @@ class TextTrackList;
 class TrackGroup;
 
 class AutomaticTrackSelection {
-    STACK_ALLOCATED();
-public:
-    struct Configuration {
-        DISALLOW_NEW();
-        Configuration()
-            : disableCurrentlyEnabledTracks(false)
-            , forceEnableSubtitleOrCaptionTrack(false)
-            , textTrackKindUserPreference(TextTrackKindUserPreference::Default) { }
+  STACK_ALLOCATED();
 
-        bool disableCurrentlyEnabledTracks;
-        bool forceEnableSubtitleOrCaptionTrack;
-        TextTrackKindUserPreference textTrackKindUserPreference;
-    };
+ public:
+  struct Configuration {
+    DISALLOW_NEW();
+    Configuration()
+        : disableCurrentlyEnabledTracks(false),
+          forceEnableSubtitleOrCaptionTrack(false),
+          textTrackKindUserPreference(TextTrackKindUserPreference::Default) {}
 
-    AutomaticTrackSelection(const Configuration&);
+    bool disableCurrentlyEnabledTracks;
+    bool forceEnableSubtitleOrCaptionTrack;
+    TextTrackKindUserPreference textTrackKindUserPreference;
+  };
 
-    void perform(TextTrackList&);
+  AutomaticTrackSelection(const Configuration&);
 
-private:
-    void performAutomaticTextTrackSelection(const TrackGroup&);
-    void enableDefaultMetadataTextTracks(const TrackGroup&);
-    const AtomicString& preferredTrackKind() const;
+  void perform(TextTrackList&);
 
-    const Configuration m_configuration;
+ private:
+  void performAutomaticTextTrackSelection(const TrackGroup&);
+  void enableDefaultMetadataTextTracks(const TrackGroup&);
+  const AtomicString& preferredTrackKind() const;
+
+  const Configuration m_configuration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AutomaticTrackSelection_h
+#endif  // AutomaticTrackSelection_h

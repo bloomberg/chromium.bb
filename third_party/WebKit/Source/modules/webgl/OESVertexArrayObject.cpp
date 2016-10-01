@@ -33,90 +33,89 @@
 namespace blink {
 
 OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->extensionsUtil()->ensureExtensionEnabled("GL_OES_vertex_array_object");
+    : WebGLExtension(context) {
+  context->extensionsUtil()->ensureExtensionEnabled(
+      "GL_OES_vertex_array_object");
 }
 
-OESVertexArrayObject::~OESVertexArrayObject()
-{
+OESVertexArrayObject::~OESVertexArrayObject() {}
+
+WebGLExtensionName OESVertexArrayObject::name() const {
+  return OESVertexArrayObjectName;
 }
 
-WebGLExtensionName OESVertexArrayObject::name() const
-{
-    return OESVertexArrayObjectName;
+OESVertexArrayObject* OESVertexArrayObject::create(
+    WebGLRenderingContextBase* context) {
+  return new OESVertexArrayObject(context);
 }
 
-OESVertexArrayObject* OESVertexArrayObject::create(WebGLRenderingContextBase* context)
-{
-    return new OESVertexArrayObject(context);
+WebGLVertexArrayObjectOES* OESVertexArrayObject::createVertexArrayOES() {
+  WebGLExtensionScopedContext scoped(this);
+  if (scoped.isLost())
+    return nullptr;
+
+  WebGLVertexArrayObjectOES* o = WebGLVertexArrayObjectOES::create(
+      scoped.context(), WebGLVertexArrayObjectOES::VaoTypeUser);
+  scoped.context()->addContextObject(o);
+  return o;
 }
 
-WebGLVertexArrayObjectOES* OESVertexArrayObject::createVertexArrayOES()
-{
-    WebGLExtensionScopedContext scoped(this);
-    if (scoped.isLost())
-        return nullptr;
+void OESVertexArrayObject::deleteVertexArrayOES(
+    WebGLVertexArrayObjectOES* arrayObject) {
+  WebGLExtensionScopedContext scoped(this);
+  if (!arrayObject || scoped.isLost())
+    return;
 
-    WebGLVertexArrayObjectOES* o = WebGLVertexArrayObjectOES::create(scoped.context(), WebGLVertexArrayObjectOES::VaoTypeUser);
-    scoped.context()->addContextObject(o);
-    return o;
+  if (!arrayObject->isDefaultObject() &&
+      arrayObject == scoped.context()->m_boundVertexArrayObject)
+    scoped.context()->setBoundVertexArrayObject(nullptr);
+
+  arrayObject->deleteObject(scoped.context()->contextGL());
 }
 
-void OESVertexArrayObject::deleteVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
-{
-    WebGLExtensionScopedContext scoped(this);
-    if (!arrayObject || scoped.isLost())
-        return;
+GLboolean OESVertexArrayObject::isVertexArrayOES(
+    WebGLVertexArrayObjectOES* arrayObject) {
+  WebGLExtensionScopedContext scoped(this);
+  if (!arrayObject || scoped.isLost())
+    return 0;
 
-    if (!arrayObject->isDefaultObject() && arrayObject == scoped.context()->m_boundVertexArrayObject)
-        scoped.context()->setBoundVertexArrayObject(nullptr);
+  if (!arrayObject->hasEverBeenBound())
+    return 0;
 
-    arrayObject->deleteObject(scoped.context()->contextGL());
+  return scoped.context()->contextGL()->IsVertexArrayOES(arrayObject->object());
 }
 
-GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
-{
-    WebGLExtensionScopedContext scoped(this);
-    if (!arrayObject || scoped.isLost())
-        return 0;
+void OESVertexArrayObject::bindVertexArrayOES(
+    WebGLVertexArrayObjectOES* arrayObject) {
+  WebGLExtensionScopedContext scoped(this);
+  if (scoped.isLost())
+    return;
 
-    if (!arrayObject->hasEverBeenBound())
-        return 0;
+  if (arrayObject && (arrayObject->isDeleted() ||
+                      !arrayObject->validate(0, scoped.context()))) {
+    scoped.context()->synthesizeGLError(
+        GL_INVALID_OPERATION, "bindVertexArrayOES", "invalid arrayObject");
+    return;
+  }
 
-    return scoped.context()->contextGL()->IsVertexArrayOES(arrayObject->object());
+  if (arrayObject && !arrayObject->isDefaultObject() && arrayObject->object()) {
+    scoped.context()->contextGL()->BindVertexArrayOES(arrayObject->object());
+
+    arrayObject->setHasEverBeenBound();
+    scoped.context()->setBoundVertexArrayObject(arrayObject);
+  } else {
+    scoped.context()->contextGL()->BindVertexArrayOES(0);
+    scoped.context()->setBoundVertexArrayObject(nullptr);
+  }
 }
 
-void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
-{
-    WebGLExtensionScopedContext scoped(this);
-    if (scoped.isLost())
-        return;
-
-    if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, scoped.context()))) {
-        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "bindVertexArrayOES", "invalid arrayObject");
-        return;
-    }
-
-    if (arrayObject && !arrayObject->isDefaultObject() && arrayObject->object()) {
-        scoped.context()->contextGL()->BindVertexArrayOES(arrayObject->object());
-
-        arrayObject->setHasEverBeenBound();
-        scoped.context()->setBoundVertexArrayObject(arrayObject);
-    } else {
-        scoped.context()->contextGL()->BindVertexArrayOES(0);
-        scoped.context()->setBoundVertexArrayObject(nullptr);
-    }
+bool OESVertexArrayObject::supported(WebGLRenderingContextBase* context) {
+  return context->extensionsUtil()->supportsExtension(
+      "GL_OES_vertex_array_object");
 }
 
-bool OESVertexArrayObject::supported(WebGLRenderingContextBase* context)
-{
-    return context->extensionsUtil()->supportsExtension("GL_OES_vertex_array_object");
+const char* OESVertexArrayObject::extensionName() {
+  return "OES_vertex_array_object";
 }
 
-const char* OESVertexArrayObject::extensionName()
-{
-    return "OES_vertex_array_object";
-}
-
-} // namespace blink
+}  // namespace blink

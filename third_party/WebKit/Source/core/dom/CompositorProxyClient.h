@@ -20,27 +20,28 @@ class WorkerClients;
 class WorkerGlobalScope;
 
 class CORE_EXPORT CompositorProxyClient : public Supplement<WorkerClients> {
-    WTF_MAKE_NONCOPYABLE(CompositorProxyClient);
+  WTF_MAKE_NONCOPYABLE(CompositorProxyClient);
 
-public:
-    CompositorProxyClient() {}
+ public:
+  CompositorProxyClient() {}
 
-    static CompositorProxyClient* from(WorkerClients*);
-    static const char* supplementName();
+  static CompositorProxyClient* from(WorkerClients*);
+  static const char* supplementName();
 
-    virtual void dispose() = 0;
-    virtual void setGlobalScope(WorkerGlobalScope*) = 0;
-    virtual void requestAnimationFrame() = 0;
-    virtual void registerCompositorProxy(CompositorProxy*) = 0;
-    // It is not guaranteed to receive an unregister call for every registered
-    // proxy. In fact we only receive one when a proxy is explicitly
-    // disconnected otherwise we rely on oilpan collection process to remove the
-    // weak reference to the proxy.
-    virtual void unregisterCompositorProxy(CompositorProxy*) = 0;
+  virtual void dispose() = 0;
+  virtual void setGlobalScope(WorkerGlobalScope*) = 0;
+  virtual void requestAnimationFrame() = 0;
+  virtual void registerCompositorProxy(CompositorProxy*) = 0;
+  // It is not guaranteed to receive an unregister call for every registered
+  // proxy. In fact we only receive one when a proxy is explicitly
+  // disconnected otherwise we rely on oilpan collection process to remove the
+  // weak reference to the proxy.
+  virtual void unregisterCompositorProxy(CompositorProxy*) = 0;
 };
 
-CORE_EXPORT void provideCompositorProxyClientTo(WorkerClients*, CompositorProxyClient*);
+CORE_EXPORT void provideCompositorProxyClientTo(WorkerClients*,
+                                                CompositorProxyClient*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorProxyClient_h
+#endif  // CompositorProxyClient_h

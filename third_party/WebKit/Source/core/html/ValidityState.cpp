@@ -25,64 +25,52 @@
 
 namespace blink {
 
-String ValidityState::validationMessage() const
-{
-    return m_control->validationMessage();
+String ValidityState::validationMessage() const {
+  return m_control->validationMessage();
 }
 
-bool ValidityState::valueMissing() const
-{
-    return m_control->valueMissing();
+bool ValidityState::valueMissing() const {
+  return m_control->valueMissing();
 }
 
-bool ValidityState::typeMismatch() const
-{
-    return m_control->typeMismatch();
+bool ValidityState::typeMismatch() const {
+  return m_control->typeMismatch();
 }
 
-bool ValidityState::patternMismatch() const
-{
-    return m_control->patternMismatch();
+bool ValidityState::patternMismatch() const {
+  return m_control->patternMismatch();
 }
 
-bool ValidityState::tooLong() const
-{
-    return m_control->tooLong();
+bool ValidityState::tooLong() const {
+  return m_control->tooLong();
 }
 
-bool ValidityState::tooShort() const
-{
-    return m_control->tooShort();
+bool ValidityState::tooShort() const {
+  return m_control->tooShort();
 }
 
-bool ValidityState::rangeUnderflow() const
-{
-    return m_control->rangeUnderflow();
+bool ValidityState::rangeUnderflow() const {
+  return m_control->rangeUnderflow();
 }
 
-bool ValidityState::rangeOverflow() const
-{
-    return m_control->rangeOverflow();
+bool ValidityState::rangeOverflow() const {
+  return m_control->rangeOverflow();
 }
 
-bool ValidityState::stepMismatch() const
-{
-    return m_control->stepMismatch();
+bool ValidityState::stepMismatch() const {
+  return m_control->stepMismatch();
 }
 
-bool ValidityState::badInput() const
-{
-    return m_control->hasBadInput();
+bool ValidityState::badInput() const {
+  return m_control->hasBadInput();
 }
 
-bool ValidityState::customError() const
-{
-    return m_control->customError();
+bool ValidityState::customError() const {
+  return m_control->customError();
 }
 
-bool ValidityState::valid() const
-{
-    return m_control->valid();
+bool ValidityState::valid() const {
+  return m_control->valid();
 }
 
-} // namespace blink
+}  // namespace blink

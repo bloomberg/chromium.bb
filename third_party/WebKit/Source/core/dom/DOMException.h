@@ -39,39 +39,50 @@ namespace blink {
 
 typedef int ExceptionCode;
 
-class CORE_EXPORT DOMException final : public GarbageCollectedFinalized<DOMException>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMException* create(ExceptionCode, const String& sanitizedMessage = String(), const String& unsanitizedMessage = String());
+class CORE_EXPORT DOMException final
+    : public GarbageCollectedFinalized<DOMException>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Constructor exposed to script.
-    static DOMException* create(const String& message, const String& name);
+ public:
+  static DOMException* create(ExceptionCode,
+                              const String& sanitizedMessage = String(),
+                              const String& unsanitizedMessage = String());
 
-    unsigned short code() const { return m_code; }
-    String name() const { return m_name; }
+  // Constructor exposed to script.
+  static DOMException* create(const String& message, const String& name);
 
-    // This is the message that's exposed to JavaScript: never return unsanitized data.
-    String message() const { return m_sanitizedMessage; }
-    String toString() const;
+  unsigned short code() const { return m_code; }
+  String name() const { return m_name; }
 
-    // This is the message that's exposed to the console: if an unsanitized message is present, we prefer it.
-    String messageForConsole() const { return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage : m_sanitizedMessage; }
-    String toStringForConsole() const;
+  // This is the message that's exposed to JavaScript: never return unsanitized data.
+  String message() const { return m_sanitizedMessage; }
+  String toString() const;
 
-    static String getErrorName(ExceptionCode);
-    static String getErrorMessage(ExceptionCode);
+  // This is the message that's exposed to the console: if an unsanitized message is present, we prefer it.
+  String messageForConsole() const {
+    return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage
+                                           : m_sanitizedMessage;
+  }
+  String toStringForConsole() const;
 
-    DEFINE_INLINE_TRACE() { }
+  static String getErrorName(ExceptionCode);
+  static String getErrorMessage(ExceptionCode);
 
-private:
-    DOMException(unsigned short m_code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage);
+  DEFINE_INLINE_TRACE() {}
 
-    unsigned short m_code;
-    String m_name;
-    String m_sanitizedMessage;
-    String m_unsanitizedMessage;
+ private:
+  DOMException(unsigned short m_code,
+               const String& name,
+               const String& sanitizedMessage,
+               const String& unsanitizedMessage);
+
+  unsigned short m_code;
+  String m_name;
+  String m_sanitizedMessage;
+  String m_unsanitizedMessage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMException_h
+#endif  // DOMException_h

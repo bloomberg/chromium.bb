@@ -34,55 +34,60 @@ class MediaDevices;
 class MediaDevicesRequest;
 class UserMediaRequest;
 
-class UserMediaController final : public GarbageCollectedFinalized<UserMediaController>, public Supplement<LocalFrame> {
-    USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
-public:
-    static UserMediaController* create(std::unique_ptr<UserMediaClient>);
+class UserMediaController final
+    : public GarbageCollectedFinalized<UserMediaController>,
+      public Supplement<LocalFrame> {
+  USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static UserMediaController* create(std::unique_ptr<UserMediaClient>);
 
-    UserMediaClient* client() const { return m_client.get(); }
+  DECLARE_VIRTUAL_TRACE();
 
-    void requestUserMedia(UserMediaRequest*);
-    void cancelUserMediaRequest(UserMediaRequest*);
-    void requestMediaDevices(MediaDevicesRequest*);
-    void requestSources(MediaStreamTrackSourcesRequest*);
-    void setMediaDeviceChangeObserver(MediaDevices*);
+  UserMediaClient* client() const { return m_client.get(); }
 
-    static const char* supplementName();
-    static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
+  void requestUserMedia(UserMediaRequest*);
+  void cancelUserMediaRequest(UserMediaRequest*);
+  void requestMediaDevices(MediaDevicesRequest*);
+  void requestSources(MediaStreamTrackSourcesRequest*);
+  void setMediaDeviceChangeObserver(MediaDevices*);
 
-private:
-    explicit UserMediaController(std::unique_ptr<UserMediaClient>);
+  static const char* supplementName();
+  static UserMediaController* from(LocalFrame* frame) {
+    return static_cast<UserMediaController*>(
+        Supplement<LocalFrame>::from(frame, supplementName()));
+  }
 
-    std::unique_ptr<UserMediaClient> m_client;
+ private:
+  explicit UserMediaController(std::unique_ptr<UserMediaClient>);
+
+  std::unique_ptr<UserMediaClient> m_client;
 };
 
-inline void UserMediaController::requestUserMedia(UserMediaRequest* request)
-{
-    m_client->requestUserMedia(request);
+inline void UserMediaController::requestUserMedia(UserMediaRequest* request) {
+  m_client->requestUserMedia(request);
 }
 
-inline void UserMediaController::cancelUserMediaRequest(UserMediaRequest* request)
-{
-    m_client->cancelUserMediaRequest(request);
+inline void UserMediaController::cancelUserMediaRequest(
+    UserMediaRequest* request) {
+  m_client->cancelUserMediaRequest(request);
 }
 
-inline void UserMediaController::requestMediaDevices(MediaDevicesRequest* request)
-{
-    m_client->requestMediaDevices(request);
+inline void UserMediaController::requestMediaDevices(
+    MediaDevicesRequest* request) {
+  m_client->requestMediaDevices(request);
 }
 
-inline void UserMediaController::requestSources(MediaStreamTrackSourcesRequest* request)
-{
-    m_client->requestSources(request);
+inline void UserMediaController::requestSources(
+    MediaStreamTrackSourcesRequest* request) {
+  m_client->requestSources(request);
 }
 
-inline void UserMediaController::setMediaDeviceChangeObserver(MediaDevices* observer)
-{
-    m_client->setMediaDeviceChangeObserver(observer);
+inline void UserMediaController::setMediaDeviceChangeObserver(
+    MediaDevices* observer) {
+  m_client->setMediaDeviceChangeObserver(observer);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UserMediaController_h
+#endif  // UserMediaController_h

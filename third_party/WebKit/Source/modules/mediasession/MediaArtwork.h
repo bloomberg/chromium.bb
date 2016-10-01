@@ -16,26 +16,26 @@ class ExecutionContext;
 class MediaArtworkInit;
 
 class MODULES_EXPORT MediaArtwork final
-    : public GarbageCollectedFinalized<MediaArtwork>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MediaArtwork* create(ExecutionContext*, const MediaArtworkInit&);
+    : public GarbageCollectedFinalized<MediaArtwork>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    String src() const;
-    String sizes() const;
-    String type() const;
+ public:
+  static MediaArtwork* create(ExecutionContext*, const MediaArtworkInit&);
 
-    WebMediaArtwork* data() { return &m_data; }
+  String src() const;
+  String sizes() const;
+  String type() const;
 
-    DEFINE_INLINE_TRACE() { }
+  WebMediaArtwork* data() { return &m_data; }
 
-private:
-    MediaArtwork(ExecutionContext*, const MediaArtworkInit&);
+  DEFINE_INLINE_TRACE() {}
 
-    WebMediaArtwork m_data;
+ private:
+  MediaArtwork(ExecutionContext*, const MediaArtworkInit&);
+
+  WebMediaArtwork m_data;
 };
-
 }
 
-#endif // MediaArtwork_h
+#endif  // MediaArtwork_h

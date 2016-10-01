@@ -31,13 +31,14 @@
 
 namespace blink {
 
-class NotificationPermissionCallback : public GarbageCollectedFinalized<NotificationPermissionCallback> {
-public:
-    virtual ~NotificationPermissionCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(const String& permission) = 0;
+class NotificationPermissionCallback
+    : public GarbageCollectedFinalized<NotificationPermissionCallback> {
+ public:
+  virtual ~NotificationPermissionCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(const String& permission) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NotificationPermissionCallback_h
+#endif  // NotificationPermissionCallback_h

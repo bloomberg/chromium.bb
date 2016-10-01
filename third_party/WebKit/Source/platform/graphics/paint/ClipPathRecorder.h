@@ -15,17 +15,18 @@ namespace blink {
 class GraphicsContext;
 
 class PLATFORM_EXPORT ClipPathRecorder {
-    USING_FAST_MALLOC(ClipPathRecorder);
-    WTF_MAKE_NONCOPYABLE(ClipPathRecorder);
-public:
-    ClipPathRecorder(GraphicsContext&, const DisplayItemClient&, const Path&);
-    ~ClipPathRecorder();
+  USING_FAST_MALLOC(ClipPathRecorder);
+  WTF_MAKE_NONCOPYABLE(ClipPathRecorder);
 
-private:
-    GraphicsContext& m_context;
-    const DisplayItemClient& m_client;
+ public:
+  ClipPathRecorder(GraphicsContext&, const DisplayItemClient&, const Path&);
+  ~ClipPathRecorder();
+
+ private:
+  GraphicsContext& m_context;
+  const DisplayItemClient& m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClipPathRecorder_h
+#endif  // ClipPathRecorder_h

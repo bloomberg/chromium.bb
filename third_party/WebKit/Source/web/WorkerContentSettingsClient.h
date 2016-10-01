@@ -41,28 +41,35 @@ class ExecutionContext;
 class WebString;
 class WebWorkerContentSettingsClientProxy;
 
-class WorkerContentSettingsClient final : public GarbageCollectedFinalized<WorkerContentSettingsClient>, public Supplement<WorkerClients> {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
-public:
-    static WorkerContentSettingsClient* create(std::unique_ptr<WebWorkerContentSettingsClientProxy>);
-    virtual ~WorkerContentSettingsClient();
+class WorkerContentSettingsClient final
+    : public GarbageCollectedFinalized<WorkerContentSettingsClient>,
+      public Supplement<WorkerClients> {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
 
-    bool requestFileSystemAccessSync();
-    bool allowIndexedDB(const WebString& name);
+ public:
+  static WorkerContentSettingsClient* create(
+      std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+  virtual ~WorkerContentSettingsClient();
 
-    static const char* supplementName();
-    static WorkerContentSettingsClient* from(ExecutionContext&);
+  bool requestFileSystemAccessSync();
+  bool allowIndexedDB(const WebString& name);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<WorkerClients>::trace(visitor); }
+  static const char* supplementName();
+  static WorkerContentSettingsClient* from(ExecutionContext&);
 
-private:
-    explicit WorkerContentSettingsClient(std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<WorkerClients>::trace(visitor); }
 
-    std::unique_ptr<WebWorkerContentSettingsClientProxy> m_proxy;
+ private:
+  explicit WorkerContentSettingsClient(
+      std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+
+  std::unique_ptr<WebWorkerContentSettingsClientProxy> m_proxy;
 };
 
-void provideContentSettingsClientToWorker(WorkerClients*, std::unique_ptr<WebWorkerContentSettingsClientProxy>);
+void provideContentSettingsClientToWorker(
+    WorkerClients*,
+    std::unique_ptr<WebWorkerContentSettingsClientProxy>);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerContentSettingsClient_h
+#endif  // WorkerContentSettingsClient_h

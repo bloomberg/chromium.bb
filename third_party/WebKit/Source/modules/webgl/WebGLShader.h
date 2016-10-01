@@ -32,28 +32,29 @@
 namespace blink {
 
 class WebGLShader final : public WebGLSharedPlatform3DObject {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~WebGLShader() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebGLShader* create(WebGLRenderingContextBase*, GLenum);
+ public:
+  ~WebGLShader() override;
 
-    GLenum type() const { return m_type; }
-    const String& source() const { return m_source; }
+  static WebGLShader* create(WebGLRenderingContextBase*, GLenum);
 
-    void setSource(const String& source) { m_source = source; }
+  GLenum type() const { return m_type; }
+  const String& source() const { return m_source; }
 
-private:
-    WebGLShader(WebGLRenderingContextBase*, GLenum);
+  void setSource(const String& source) { m_source = source; }
 
-    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+ private:
+  WebGLShader(WebGLRenderingContextBase*, GLenum);
 
-    bool isShader() const override { return true; }
+  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    GLenum m_type;
-    String m_source;
+  bool isShader() const override { return true; }
+
+  GLenum m_type;
+  String m_source;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLShader_h
+#endif  // WebGLShader_h

@@ -54,172 +54,185 @@ class FloatRect;
 class LayoutRect;
 
 class PLATFORM_EXPORT IntRect {
-    USING_FAST_MALLOC(IntRect);
-public:
-    IntRect() { }
-    IntRect(const IntPoint& location, const IntSize& size)
-        : m_location(location), m_size(size) { }
-    IntRect(int x, int y, int width, int height)
-        : m_location(IntPoint(x, y)), m_size(IntSize(width, height)) { }
+  USING_FAST_MALLOC(IntRect);
 
-    explicit IntRect(const FloatRect&); // don't do this implicitly since it's lossy
-    explicit IntRect(const LayoutRect&); // don't do this implicitly since it's lossy
+ public:
+  IntRect() {}
+  IntRect(const IntPoint& location, const IntSize& size)
+      : m_location(location), m_size(size) {}
+  IntRect(int x, int y, int width, int height)
+      : m_location(IntPoint(x, y)), m_size(IntSize(width, height)) {}
 
-    IntPoint location() const { return m_location; }
-    IntSize size() const { return m_size; }
+  explicit IntRect(
+      const FloatRect&);  // don't do this implicitly since it's lossy
+  explicit IntRect(
+      const LayoutRect&);  // don't do this implicitly since it's lossy
 
-    void setLocation(const IntPoint& location) { m_location = location; }
-    void setSize(const IntSize& size) { m_size = size; }
+  IntPoint location() const { return m_location; }
+  IntSize size() const { return m_size; }
 
-    int x() const { return m_location.x(); }
-    int y() const { return m_location.y(); }
-    int maxX() const { return x() + width(); }
-    int maxY() const { return y() + height(); }
-    int width() const { return m_size.width(); }
-    int height() const { return m_size.height(); }
+  void setLocation(const IntPoint& location) { m_location = location; }
+  void setSize(const IntSize& size) { m_size = size; }
 
-    void setX(int x) { m_location.setX(x); }
-    void setY(int y) { m_location.setY(y); }
-    void setWidth(int width) { m_size.setWidth(width); }
-    void setHeight(int height) { m_size.setHeight(height); }
+  int x() const { return m_location.x(); }
+  int y() const { return m_location.y(); }
+  int maxX() const { return x() + width(); }
+  int maxY() const { return y() + height(); }
+  int width() const { return m_size.width(); }
+  int height() const { return m_size.height(); }
 
-    bool isEmpty() const { return m_size.isEmpty(); }
+  void setX(int x) { m_location.setX(x); }
+  void setY(int y) { m_location.setY(y); }
+  void setWidth(int width) { m_size.setWidth(width); }
+  void setHeight(int height) { m_size.setHeight(height); }
 
-    // NOTE: The result is rounded to integer values, and thus may be not the exact
-    // center point.
-    IntPoint center() const { return IntPoint(x() + width() / 2, y() + height() / 2); }
+  bool isEmpty() const { return m_size.isEmpty(); }
 
-    void move(const IntSize& size) { m_location += size; }
-    void moveBy(const IntPoint& offset) { m_location.move(offset.x(), offset.y()); }
-    void move(int dx, int dy) { m_location.move(dx, dy); }
-    void saturatedMove(int dx, int dy) { m_location.saturatedMove(dx, dy); }
+  // NOTE: The result is rounded to integer values, and thus may be not the exact
+  // center point.
+  IntPoint center() const {
+    return IntPoint(x() + width() / 2, y() + height() / 2);
+  }
 
-    void expand(const IntSize& size) { m_size += size; }
-    void expand(int dw, int dh) { m_size.expand(dw, dh); }
-    void expand(const IntRectOutsets& outsets)
-    {
-        m_location.move(-outsets.left(), -outsets.top());
-        m_size.expand(outsets.left() + outsets.right(), outsets.top() + outsets.bottom());
-    }
+  void move(const IntSize& size) { m_location += size; }
+  void moveBy(const IntPoint& offset) {
+    m_location.move(offset.x(), offset.y());
+  }
+  void move(int dx, int dy) { m_location.move(dx, dy); }
+  void saturatedMove(int dx, int dy) { m_location.saturatedMove(dx, dy); }
 
-    void contract(const IntSize& size) { m_size -= size; }
-    void contract(int dw, int dh) { m_size.expand(-dw, -dh); }
+  void expand(const IntSize& size) { m_size += size; }
+  void expand(int dw, int dh) { m_size.expand(dw, dh); }
+  void expand(const IntRectOutsets& outsets) {
+    m_location.move(-outsets.left(), -outsets.top());
+    m_size.expand(outsets.left() + outsets.right(),
+                  outsets.top() + outsets.bottom());
+  }
 
-    void shiftXEdgeTo(int edge)
-    {
-        int delta = edge - x();
-        setX(edge);
-        setWidth(std::max(0, width() - delta));
-    }
-    void shiftMaxXEdgeTo(int edge)
-    {
-        int delta = edge - maxX();
-        setWidth(std::max(0, width() + delta));
-    }
-    void shiftYEdgeTo(int edge)
-    {
-        int delta = edge - y();
-        setY(edge);
-        setHeight(std::max(0, height() - delta));
-    }
-    void shiftMaxYEdgeTo(int edge)
-    {
-        int delta = edge - maxY();
-        setHeight(std::max(0, height() + delta));
-    }
+  void contract(const IntSize& size) { m_size -= size; }
+  void contract(int dw, int dh) { m_size.expand(-dw, -dh); }
 
-    IntPoint minXMinYCorner() const { return m_location; } // typically topLeft
-    IntPoint maxXMinYCorner() const { return IntPoint(m_location.x() + m_size.width(), m_location.y()); } // typically topRight
-    IntPoint minXMaxYCorner() const { return IntPoint(m_location.x(), m_location.y() + m_size.height()); } // typically bottomLeft
-    IntPoint maxXMaxYCorner() const { return IntPoint(m_location.x() + m_size.width(), m_location.y() + m_size.height()); } // typically bottomRight
+  void shiftXEdgeTo(int edge) {
+    int delta = edge - x();
+    setX(edge);
+    setWidth(std::max(0, width() - delta));
+  }
+  void shiftMaxXEdgeTo(int edge) {
+    int delta = edge - maxX();
+    setWidth(std::max(0, width() + delta));
+  }
+  void shiftYEdgeTo(int edge) {
+    int delta = edge - y();
+    setY(edge);
+    setHeight(std::max(0, height() - delta));
+  }
+  void shiftMaxYEdgeTo(int edge) {
+    int delta = edge - maxY();
+    setHeight(std::max(0, height() + delta));
+  }
 
-    bool intersects(const IntRect&) const;
-    bool contains(const IntRect&) const;
+  IntPoint minXMinYCorner() const { return m_location; }  // typically topLeft
+  IntPoint maxXMinYCorner() const {
+    return IntPoint(m_location.x() + m_size.width(), m_location.y());
+  }  // typically topRight
+  IntPoint minXMaxYCorner() const {
+    return IntPoint(m_location.x(), m_location.y() + m_size.height());
+  }  // typically bottomLeft
+  IntPoint maxXMaxYCorner() const {
+    return IntPoint(m_location.x() + m_size.width(),
+                    m_location.y() + m_size.height());
+  }  // typically bottomRight
 
-    // This checks to see if the rect contains x,y in the traditional sense.
-    // Equivalent to checking if the rect contains a 1x1 rect below and to the right of (px,py).
-    bool contains(int px, int py) const
-        { return px >= x() && px < maxX() && py >= y() && py < maxY(); }
-    bool contains(const IntPoint& point) const { return contains(point.x(), point.y()); }
+  bool intersects(const IntRect&) const;
+  bool contains(const IntRect&) const;
 
-    void intersect(const IntRect&);
-    void unite(const IntRect&);
-    void uniteIfNonZero(const IntRect&);
+  // This checks to see if the rect contains x,y in the traditional sense.
+  // Equivalent to checking if the rect contains a 1x1 rect below and to the right of (px,py).
+  bool contains(int px, int py) const {
+    return px >= x() && px < maxX() && py >= y() && py < maxY();
+  }
+  bool contains(const IntPoint& point) const {
+    return contains(point.x(), point.y());
+  }
 
-    // Besides non-empty rects, this method also unites empty rects (as points or line segments).
-    // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
-    void uniteEvenIfEmpty(const IntRect&);
+  void intersect(const IntRect&);
+  void unite(const IntRect&);
+  void uniteIfNonZero(const IntRect&);
 
-    void inflateX(int dx)
-    {
-        m_location.setX(m_location.x() - dx);
-        m_size.setWidth(m_size.width() + dx + dx);
-    }
-    void inflateY(int dy)
-    {
-        m_location.setY(m_location.y() - dy);
-        m_size.setHeight(m_size.height() + dy + dy);
-    }
-    void inflate(int d) { inflateX(d); inflateY(d); }
-    void scale(float s);
+  // Besides non-empty rects, this method also unites empty rects (as points or line segments).
+  // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
+  void uniteEvenIfEmpty(const IntRect&);
 
-    IntSize differenceToPoint(const IntPoint&) const;
-    int distanceSquaredToPoint(const IntPoint& p) const { return differenceToPoint(p).diagonalLengthSquared(); }
+  void inflateX(int dx) {
+    m_location.setX(m_location.x() - dx);
+    m_size.setWidth(m_size.width() + dx + dx);
+  }
+  void inflateY(int dy) {
+    m_location.setY(m_location.y() - dy);
+    m_size.setHeight(m_size.height() + dy + dy);
+  }
+  void inflate(int d) {
+    inflateX(d);
+    inflateY(d);
+  }
+  void scale(float s);
 
-    IntRect transposedRect() const { return IntRect(m_location.transposedPoint(), m_size.transposedSize()); }
+  IntSize differenceToPoint(const IntPoint&) const;
+  int distanceSquaredToPoint(const IntPoint& p) const {
+    return differenceToPoint(p).diagonalLengthSquared();
+  }
+
+  IntRect transposedRect() const {
+    return IntRect(m_location.transposedPoint(), m_size.transposedSize());
+  }
 
 #if OS(MACOSX)
-    operator CGRect() const;
+  operator CGRect() const;
 #if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-    operator NSRect() const;
+  operator NSRect() const;
 #endif
 #endif
 
-    operator SkRect() const;
-    operator SkIRect() const;
+  operator SkRect() const;
+  operator SkIRect() const;
 
-    operator gfx::Rect() const;
+  operator gfx::Rect() const;
 
-    String toString() const;
+  String toString() const;
 
-private:
-    IntPoint m_location;
-    IntSize m_size;
+ private:
+  IntPoint m_location;
+  IntSize m_size;
 };
 
-inline IntRect intersection(const IntRect& a, const IntRect& b)
-{
-    IntRect c = a;
-    c.intersect(b);
-    return c;
+inline IntRect intersection(const IntRect& a, const IntRect& b) {
+  IntRect c = a;
+  c.intersect(b);
+  return c;
 }
 
-inline IntRect unionRect(const IntRect& a, const IntRect& b)
-{
-    IntRect c = a;
-    c.unite(b);
-    return c;
+inline IntRect unionRect(const IntRect& a, const IntRect& b) {
+  IntRect c = a;
+  c.unite(b);
+  return c;
 }
 
 PLATFORM_EXPORT IntRect unionRect(const Vector<IntRect>&);
 
-inline IntRect unionRectEvenIfEmpty(const IntRect& a, const IntRect& b)
-{
-    IntRect c = a;
-    c.uniteEvenIfEmpty(b);
-    return c;
+inline IntRect unionRectEvenIfEmpty(const IntRect& a, const IntRect& b) {
+  IntRect c = a;
+  c.uniteEvenIfEmpty(b);
+  return c;
 }
 
 PLATFORM_EXPORT IntRect unionRectEvenIfEmpty(const Vector<IntRect>&);
 
-inline bool operator==(const IntRect& a, const IntRect& b)
-{
-    return a.location() == b.location() && a.size() == b.size();
+inline bool operator==(const IntRect& a, const IntRect& b) {
+  return a.location() == b.location() && a.size() == b.size();
 }
 
-inline bool operator!=(const IntRect& a, const IntRect& b)
-{
-    return a.location() != b.location() || a.size() != b.size();
+inline bool operator!=(const IntRect& a, const IntRect& b) {
+  return a.location() != b.location() || a.size() != b.size();
 }
 
 #if OS(MACOSX)
@@ -233,8 +246,8 @@ PLATFORM_EXPORT IntRect enclosingIntRect(const NSRect&);
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const IntRect&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntRect);
 
-#endif // IntRect_h
+#endif  // IntRect_h

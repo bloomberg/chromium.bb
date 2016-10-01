@@ -9,10 +9,13 @@
 
 namespace blink {
 
-void installConditionalFeaturesForModules(const WrapperTypeInfo*, const ScriptState*, v8::Local<v8::Object>, v8::Local<v8::Function>);
+void installConditionalFeaturesForModules(const WrapperTypeInfo*,
+                                          const ScriptState*,
+                                          v8::Local<v8::Object>,
+                                          v8::Local<v8::Function>);
 
 void registerInstallConditionalFeaturesForModules();
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ConditionalFeaturesForModules_h
+#endif  // ConditionalFeaturesForModules_h

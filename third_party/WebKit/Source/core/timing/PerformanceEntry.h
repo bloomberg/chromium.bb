@@ -46,57 +46,63 @@ class V8ObjectBuilder;
 using PerformanceEntryType = unsigned char;
 using PerformanceEntryTypeMask = unsigned char;
 
-class CORE_EXPORT PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    virtual ~PerformanceEntry();
+class CORE_EXPORT PerformanceEntry
+    : public GarbageCollectedFinalized<PerformanceEntry>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    enum EntryType {
-        Invalid = 0,
-        Composite = 1 << 1,
-        Mark = 1 << 2,
-        Measure = 1 << 3,
-        Render = 1 << 4,
-        Resource = 1 << 5,
-        LongTask = 1 << 6,
-    };
+ public:
+  virtual ~PerformanceEntry();
 
-    String name() const;
-    String entryType() const;
-    double startTime() const;
-    double duration() const;
+  enum EntryType {
+    Invalid = 0,
+    Composite = 1 << 1,
+    Mark = 1 << 2,
+    Measure = 1 << 3,
+    Render = 1 << 4,
+    Resource = 1 << 5,
+    LongTask = 1 << 6,
+  };
 
-    ScriptValue toJSONForBinding(ScriptState*) const;
+  String name() const;
+  String entryType() const;
+  double startTime() const;
+  double duration() const;
 
-    PerformanceEntryType entryTypeEnum() const { return m_entryTypeEnum; }
+  ScriptValue toJSONForBinding(ScriptState*) const;
 
-    bool isResource() const { return m_entryTypeEnum == Resource; }
-    bool isRender()  const { return m_entryTypeEnum == Render; }
-    bool isComposite()  const { return m_entryTypeEnum == Composite; }
-    bool isMark()  const { return m_entryTypeEnum == Mark; }
-    bool isMeasure()  const { return m_entryTypeEnum == Measure; }
+  PerformanceEntryType entryTypeEnum() const { return m_entryTypeEnum; }
 
-    static bool startTimeCompareLessThan(PerformanceEntry* a, PerformanceEntry* b)
-    {
-        return a->startTime() < b->startTime();
-    }
+  bool isResource() const { return m_entryTypeEnum == Resource; }
+  bool isRender() const { return m_entryTypeEnum == Render; }
+  bool isComposite() const { return m_entryTypeEnum == Composite; }
+  bool isMark() const { return m_entryTypeEnum == Mark; }
+  bool isMeasure() const { return m_entryTypeEnum == Measure; }
 
-    static EntryType toEntryTypeEnum(const String& entryType);
+  static bool startTimeCompareLessThan(PerformanceEntry* a,
+                                       PerformanceEntry* b) {
+    return a->startTime() < b->startTime();
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  static EntryType toEntryTypeEnum(const String& entryType);
 
-protected:
-    PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime);
-    virtual void buildJSONValue(V8ObjectBuilder&) const;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-private:
-    const String m_name;
-    const String m_entryType;
-    const double m_startTime;
-    const double m_duration;
-    const PerformanceEntryType m_entryTypeEnum;
+ protected:
+  PerformanceEntry(const String& name,
+                   const String& entryType,
+                   double startTime,
+                   double finishTime);
+  virtual void buildJSONValue(V8ObjectBuilder&) const;
+
+ private:
+  const String m_name;
+  const String m_entryType;
+  const double m_startTime;
+  const double m_duration;
+  const PerformanceEntryType m_entryTypeEnum;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PerformanceEntry_h
+#endif  // PerformanceEntry_h

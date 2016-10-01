@@ -13,54 +13,49 @@
 namespace blink {
 
 class LineLayoutRubyRun : public LineLayoutBlockFlow {
-public:
-    explicit LineLayoutRubyRun(LayoutRubyRun* layoutRubyRun)
-        : LineLayoutBlockFlow(layoutRubyRun)
-    {
-    }
+ public:
+  explicit LineLayoutRubyRun(LayoutRubyRun* layoutRubyRun)
+      : LineLayoutBlockFlow(layoutRubyRun) {}
 
-    explicit LineLayoutRubyRun(const LineLayoutItem& item)
-        : LineLayoutBlockFlow(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isRubyRun());
-    }
+  explicit LineLayoutRubyRun(const LineLayoutItem& item)
+      : LineLayoutBlockFlow(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isRubyRun());
+  }
 
-    explicit LineLayoutRubyRun(std::nullptr_t) : LineLayoutBlockFlow(nullptr) { }
+  explicit LineLayoutRubyRun(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}
 
-    LineLayoutRubyRun() { }
+  LineLayoutRubyRun() {}
 
-    void getOverhang(bool firstLine, LineLayoutItem startLayoutItem, LineLayoutItem endLayoutItem, int& startOverhang, int& endOverhang) const
-    {
-        toRubyRun()->getOverhang(firstLine, startLayoutItem.layoutObject(), endLayoutItem.layoutObject(), startOverhang, endOverhang);
-    }
+  void getOverhang(bool firstLine,
+                   LineLayoutItem startLayoutItem,
+                   LineLayoutItem endLayoutItem,
+                   int& startOverhang,
+                   int& endOverhang) const {
+    toRubyRun()->getOverhang(firstLine, startLayoutItem.layoutObject(),
+                             endLayoutItem.layoutObject(), startOverhang,
+                             endOverhang);
+  }
 
-    LineLayoutRubyText rubyText() const
-    {
-        return LineLayoutRubyText(toRubyRun()->rubyText());
-    }
+  LineLayoutRubyText rubyText() const {
+    return LineLayoutRubyText(toRubyRun()->rubyText());
+  }
 
-    LineLayoutRubyBase rubyBase() const
-    {
-        return LineLayoutRubyBase(toRubyRun()->rubyBase());
-    }
+  LineLayoutRubyBase rubyBase() const {
+    return LineLayoutRubyBase(toRubyRun()->rubyBase());
+  }
 
-    bool canBreakBefore(const LazyLineBreakIterator& iterator) const
-    {
-        return toRubyRun()->canBreakBefore(iterator);
-    }
+  bool canBreakBefore(const LazyLineBreakIterator& iterator) const {
+    return toRubyRun()->canBreakBefore(iterator);
+  }
 
-private:
-    LayoutRubyRun* toRubyRun()
-    {
-        return toLayoutRubyRun(layoutObject());
-    }
+ private:
+  LayoutRubyRun* toRubyRun() { return toLayoutRubyRun(layoutObject()); }
 
-    const LayoutRubyRun* toRubyRun() const
-    {
-        return toLayoutRubyRun(layoutObject());
-    }
+  const LayoutRubyRun* toRubyRun() const {
+    return toLayoutRubyRun(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutRubyRun_h
+#endif  // LineLayoutRubyRun_h

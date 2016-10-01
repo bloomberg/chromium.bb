@@ -30,41 +30,29 @@
 namespace blink {
 
 ScrollSnapPoints::ScrollSnapPoints()
-    : repeatOffset(100, Percent)
-    , hasRepeat(false)
-    , usesElements(false)
-{
-}
+    : repeatOffset(100, Percent), hasRepeat(false), usesElements(false) {}
 
-bool operator==(const ScrollSnapPoints& a, const ScrollSnapPoints& b)
-{
-    return a.repeatOffset == b.repeatOffset
-        && a.hasRepeat == b.hasRepeat
-        && a.usesElements == b.usesElements;
+bool operator==(const ScrollSnapPoints& a, const ScrollSnapPoints& b) {
+  return a.repeatOffset == b.repeatOffset && a.hasRepeat == b.hasRepeat &&
+         a.usesElements == b.usesElements;
 }
 
 StyleScrollSnapData::StyleScrollSnapData()
-    : m_xPoints(ComputedStyle::initialScrollSnapPointsX())
-    , m_yPoints(ComputedStyle::initialScrollSnapPointsY())
-    , m_destination(ComputedStyle::initialScrollSnapDestination())
-    , m_coordinates(ComputedStyle::initialScrollSnapCoordinate())
-{
-}
+    : m_xPoints(ComputedStyle::initialScrollSnapPointsX()),
+      m_yPoints(ComputedStyle::initialScrollSnapPointsY()),
+      m_destination(ComputedStyle::initialScrollSnapDestination()),
+      m_coordinates(ComputedStyle::initialScrollSnapCoordinate()) {}
 
 StyleScrollSnapData::StyleScrollSnapData(const StyleScrollSnapData& other)
-    : m_xPoints(other.m_xPoints)
-    , m_yPoints(other.m_yPoints)
-    , m_destination(other.m_destination)
-    , m_coordinates(other.m_coordinates)
-{
+    : m_xPoints(other.m_xPoints),
+      m_yPoints(other.m_yPoints),
+      m_destination(other.m_destination),
+      m_coordinates(other.m_coordinates) {}
+
+bool operator==(const StyleScrollSnapData& a, const StyleScrollSnapData& b) {
+  return a.m_xPoints == b.m_xPoints && a.m_yPoints == b.m_yPoints &&
+         a.m_destination == b.m_destination &&
+         a.m_coordinates == b.m_coordinates;
 }
 
-bool operator==(const StyleScrollSnapData& a, const StyleScrollSnapData& b)
-{
-    return a.m_xPoints == b.m_xPoints
-        && a.m_yPoints == b.m_yPoints
-        && a.m_destination == b.m_destination
-        && a.m_coordinates == b.m_coordinates;
-}
-
-} // namespace blink
+}  // namespace blink

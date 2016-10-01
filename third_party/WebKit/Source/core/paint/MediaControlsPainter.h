@@ -39,30 +39,65 @@ class IntRect;
 class LayoutObject;
 
 class MediaControlsPainter {
-    STATIC_ONLY(MediaControlsPainter);
-public:
-    static bool paintMediaMuteButton(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaPlayButton(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaToggleClosedCaptionsButton(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaSlider(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaSliderThumb(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaVolumeSlider(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaVolumeSliderThumb(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaFullscreenButton(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaOverlayPlayButton(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaCastButton(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaTrackSelectionCheckmark(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaClosedCaptionsIcon(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaSubtitlesIcon(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaOverflowMenu(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static bool paintMediaDownloadIcon(const LayoutObject&, const PaintInfo&, const IntRect&);
-    static void adjustMediaSliderThumbSize(ComputedStyle&);
+  STATIC_ONLY(MediaControlsPainter);
 
-private:
-    static void adjustMediaSliderThumbPaintSize(const IntRect&, const ComputedStyle&, IntRect& rectOut);
-    static void paintMediaSliderInternal(const LayoutObject&, const PaintInfo&, const IntRect&);
+ public:
+  static bool paintMediaMuteButton(const LayoutObject&,
+                                   const PaintInfo&,
+                                   const IntRect&);
+  static bool paintMediaPlayButton(const LayoutObject&,
+                                   const PaintInfo&,
+                                   const IntRect&);
+  static bool paintMediaToggleClosedCaptionsButton(const LayoutObject&,
+                                                   const PaintInfo&,
+                                                   const IntRect&);
+  static bool paintMediaSlider(const LayoutObject&,
+                               const PaintInfo&,
+                               const IntRect&);
+  static bool paintMediaSliderThumb(const LayoutObject&,
+                                    const PaintInfo&,
+                                    const IntRect&);
+  static bool paintMediaVolumeSlider(const LayoutObject&,
+                                     const PaintInfo&,
+                                     const IntRect&);
+  static bool paintMediaVolumeSliderThumb(const LayoutObject&,
+                                          const PaintInfo&,
+                                          const IntRect&);
+  static bool paintMediaFullscreenButton(const LayoutObject&,
+                                         const PaintInfo&,
+                                         const IntRect&);
+  static bool paintMediaOverlayPlayButton(const LayoutObject&,
+                                          const PaintInfo&,
+                                          const IntRect&);
+  static bool paintMediaCastButton(const LayoutObject&,
+                                   const PaintInfo&,
+                                   const IntRect&);
+  static bool paintMediaTrackSelectionCheckmark(const LayoutObject&,
+                                                const PaintInfo&,
+                                                const IntRect&);
+  static bool paintMediaClosedCaptionsIcon(const LayoutObject&,
+                                           const PaintInfo&,
+                                           const IntRect&);
+  static bool paintMediaSubtitlesIcon(const LayoutObject&,
+                                      const PaintInfo&,
+                                      const IntRect&);
+  static bool paintMediaOverflowMenu(const LayoutObject&,
+                                     const PaintInfo&,
+                                     const IntRect&);
+  static bool paintMediaDownloadIcon(const LayoutObject&,
+                                     const PaintInfo&,
+                                     const IntRect&);
+  static void adjustMediaSliderThumbSize(ComputedStyle&);
+
+ private:
+  static void adjustMediaSliderThumbPaintSize(const IntRect&,
+                                              const ComputedStyle&,
+                                              IntRect& rectOut);
+  static void paintMediaSliderInternal(const LayoutObject&,
+                                       const PaintInfo&,
+                                       const IntRect&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaControlsPainter_h
+#endif  // MediaControlsPainter_h

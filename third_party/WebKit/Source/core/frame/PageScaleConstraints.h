@@ -38,25 +38,26 @@
 namespace blink {
 
 struct CORE_EXPORT PageScaleConstraints {
-    DISALLOW_NEW();
-    FloatSize layoutSize;
+  DISALLOW_NEW();
+  FloatSize layoutSize;
 
-    float initialScale;
-    float minimumScale;
-    float maximumScale;
+  float initialScale;
+  float minimumScale;
+  float maximumScale;
 
-    PageScaleConstraints();
-    PageScaleConstraints(float initial, float minimum, float maximum);
+  PageScaleConstraints();
+  PageScaleConstraints(float initial, float minimum, float maximum);
 
-    void overrideWith(const PageScaleConstraints& other);
-    float clampToConstraints(float pageScaleFactor) const;
-    void clampAll();
-    void fitToContentsWidth(float contentsWidth, int viewWidthNotIncludingScrollbars);
-    void resolveAutoInitialScale();
+  void overrideWith(const PageScaleConstraints& other);
+  float clampToConstraints(float pageScaleFactor) const;
+  void clampAll();
+  void fitToContentsWidth(float contentsWidth,
+                          int viewWidthNotIncludingScrollbars);
+  void resolveAutoInitialScale();
 
-    bool operator==(const PageScaleConstraints& other) const;
+  bool operator==(const PageScaleConstraints& other) const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PageScaleConstraints_h
+#endif  // PageScaleConstraints_h

@@ -38,46 +38,49 @@ class ExecutionContext;
 class URLRegistry;
 class URLRegistrable;
 
-class PublicURLManager final : public GarbageCollectedFinalized<PublicURLManager>, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
-public:
-    static PublicURLManager* create(ExecutionContext*);
+class PublicURLManager final
+    : public GarbageCollectedFinalized<PublicURLManager>,
+      public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
 
-    // Generates a new Blob URL and registers the URLRegistrable to the
-    // corresponding URLRegistry with the Blob URL. Returns the serialization
-    // of the Blob URL.
-    //
-    // |uuid| can be used for revoke() to revoke all URLs associated with the
-    // |uuid|. It's not the UUID generated and appended to the BlobURL, but an
-    // identifier for the object to which URL(s) are generated e.g. ones
-    // returned by blink::Blob::uuid().
-    String registerURL(ExecutionContext*, URLRegistrable*, const String& uuid);
-    // Revokes the given URL.
-    void revoke(const KURL&);
-    // Revokes all URLs associated with |uuid|.
-    void revoke(const String& uuid);
+ public:
+  static PublicURLManager* create(ExecutionContext*);
 
-    // ActiveDOMObject interface.
-    void stop() override;
+  // Generates a new Blob URL and registers the URLRegistrable to the
+  // corresponding URLRegistry with the Blob URL. Returns the serialization
+  // of the Blob URL.
+  //
+  // |uuid| can be used for revoke() to revoke all URLs associated with the
+  // |uuid|. It's not the UUID generated and appended to the BlobURL, but an
+  // identifier for the object to which URL(s) are generated e.g. ones
+  // returned by blink::Blob::uuid().
+  String registerURL(ExecutionContext*, URLRegistrable*, const String& uuid);
+  // Revokes the given URL.
+  void revoke(const KURL&);
+  // Revokes all URLs associated with |uuid|.
+  void revoke(const String& uuid);
 
-    DECLARE_VIRTUAL_TRACE();
+  // ActiveDOMObject interface.
+  void stop() override;
 
-private:
-    explicit PublicURLManager(ExecutionContext*);
+  DECLARE_VIRTUAL_TRACE();
 
-    // One or more URLs can be associated with the same unique ID.
-    // Objects need be revoked by unique ID in some cases.
-    typedef String URLString;
-    typedef HashMap<URLString, String> URLMap;
-    // Map from URLRegistry instances to the maps which store association
-    // between URLs registered with the URLRegistry and UUIDs assigned for
-    // each of the URLs.
-    typedef HashMap<URLRegistry*, URLMap> RegistryURLMap;
+ private:
+  explicit PublicURLManager(ExecutionContext*);
 
-    RegistryURLMap m_registryToURL;
-    bool m_isStopped;
+  // One or more URLs can be associated with the same unique ID.
+  // Objects need be revoked by unique ID in some cases.
+  typedef String URLString;
+  typedef HashMap<URLString, String> URLMap;
+  // Map from URLRegistry instances to the maps which store association
+  // between URLs registered with the URLRegistry and UUIDs assigned for
+  // each of the URLs.
+  typedef HashMap<URLRegistry*, URLMap> RegistryURLMap;
+
+  RegistryURLMap m_registryToURL;
+  bool m_isStopped;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PublicURLManager_h
+#endif  // PublicURLManager_h

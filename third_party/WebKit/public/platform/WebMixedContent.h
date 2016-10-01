@@ -37,19 +37,22 @@ namespace blink {
 
 // Types and helper functions related to mixed content checks.
 class WebMixedContent {
-public:
-    enum class ContextType {
-        NotMixedContent,
-        Blockable,
-        OptionallyBlockable,
-        ShouldBeBlockable,
-    };
+ public:
+  enum class ContextType {
+    NotMixedContent,
+    Blockable,
+    OptionallyBlockable,
+    ShouldBeBlockable,
+  };
 
-    BLINK_PLATFORM_EXPORT static ContextType contextTypeFromRequestContext(WebURLRequest::RequestContext, bool strictMixedContentCheckingForPlugin);
+  BLINK_PLATFORM_EXPORT static ContextType contextTypeFromRequestContext(
+      WebURLRequest::RequestContext,
+      bool strictMixedContentCheckingForPlugin);
 
-    BLINK_PLATFORM_EXPORT static const char* requestContextName(WebURLRequest::RequestContext);
+  BLINK_PLATFORM_EXPORT static const char* requestContextName(
+      WebURLRequest::RequestContext);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMixedContent_h
+#endif  // WebMixedContent_h

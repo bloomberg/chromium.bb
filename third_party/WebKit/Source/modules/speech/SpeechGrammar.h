@@ -36,29 +36,33 @@ namespace blink {
 
 class ExecutionContext;
 
-class MODULES_EXPORT SpeechGrammar final : public GarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SpeechGrammar* create(); // FIXME: The spec is not clear on what the constructor should look like.
-    static SpeechGrammar* create(const KURL& src, double weight);
+class MODULES_EXPORT SpeechGrammar final
+    : public GarbageCollectedFinalized<SpeechGrammar>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    const KURL& src(ExecutionContext*) const { return m_src; }
-    const KURL& src() const { return m_src; }
-    void setSrc(ExecutionContext*, const String& src);
+ public:
+  static SpeechGrammar*
+  create();  // FIXME: The spec is not clear on what the constructor should look like.
+  static SpeechGrammar* create(const KURL& src, double weight);
 
-    double weight() const { return m_weight; }
-    void setWeight(double weight) { m_weight = weight; }
+  const KURL& src(ExecutionContext*) const { return m_src; }
+  const KURL& src() const { return m_src; }
+  void setSrc(ExecutionContext*, const String& src);
 
-    DEFINE_INLINE_TRACE() { }
+  double weight() const { return m_weight; }
+  void setWeight(double weight) { m_weight = weight; }
 
-private:
-    SpeechGrammar();
-    SpeechGrammar(const KURL& src, double weight);
+  DEFINE_INLINE_TRACE() {}
 
-    KURL m_src;
-    double m_weight;
+ private:
+  SpeechGrammar();
+  SpeechGrammar(const KURL& src, double weight);
+
+  KURL m_src;
+  double m_weight;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpeechGrammar_h
+#endif  // SpeechGrammar_h

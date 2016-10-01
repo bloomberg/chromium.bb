@@ -51,54 +51,74 @@ class PrerenderHandle;
 struct ViewportDescriptionWrapper;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
-class CORE_EXPORT LinkLoader final : public GarbageCollectedFinalized<LinkLoader>, public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
-public:
-    static LinkLoader* create(LinkLoaderClient* client)
-    {
-        return new LinkLoader(client);
-    }
-    ~LinkLoader() override;
+class CORE_EXPORT LinkLoader final
+    : public GarbageCollectedFinalized<LinkLoader>,
+      public ResourceOwner<Resource, ResourceClient>,
+      public PrerenderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 
-    // from ResourceClient
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "LinkLoader"; }
+ public:
+  static LinkLoader* create(LinkLoaderClient* client) {
+    return new LinkLoader(client);
+  }
+  ~LinkLoader() override;
 
-    // from PrerenderClient
-    void didStartPrerender() override;
-    void didStopPrerender() override;
-    void didSendLoadForPrerender() override;
-    void didSendDOMContentLoadedForPrerender() override;
+  // from ResourceClient
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "LinkLoader"; }
 
-    void triggerEvents(const Resource*);
+  // from PrerenderClient
+  void didStartPrerender() override;
+  void didStopPrerender() override;
+  void didSendLoadForPrerender() override;
+  void didSendDOMContentLoadedForPrerender() override;
 
-    void released();
-    bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const String& media, const KURL&, Document&, const NetworkHintsInterface&);
-    enum CanLoadResources { OnlyLoadResources, DoNotLoadResources, LoadResourcesAndPreconnect };
-    // Media links cannot be preloaded until the first chunk is parsed. The rest
-    // can be preloaded at commit time.
-    enum MediaPreloadPolicy { LoadAll, OnlyLoadNonMedia, OnlyLoadMedia };
-    static void loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document*, const NetworkHintsInterface&, CanLoadResources, MediaPreloadPolicy, ViewportDescriptionWrapper*);
-    static bool getResourceTypeFromAsAttribute(const String& as, Resource::Type&);
+  void triggerEvents(const Resource*);
 
-    DECLARE_TRACE();
+  void released();
+  bool loadLink(const LinkRelAttribute&,
+                CrossOriginAttributeValue,
+                const String& type,
+                const String& as,
+                const String& media,
+                const KURL&,
+                Document&,
+                const NetworkHintsInterface&);
+  enum CanLoadResources {
+    OnlyLoadResources,
+    DoNotLoadResources,
+    LoadResourcesAndPreconnect
+  };
+  // Media links cannot be preloaded until the first chunk is parsed. The rest
+  // can be preloaded at commit time.
+  enum MediaPreloadPolicy { LoadAll, OnlyLoadNonMedia, OnlyLoadMedia };
+  static void loadLinksFromHeader(const String& headerValue,
+                                  const KURL& baseURL,
+                                  Document*,
+                                  const NetworkHintsInterface&,
+                                  CanLoadResources,
+                                  MediaPreloadPolicy,
+                                  ViewportDescriptionWrapper*);
+  static bool getResourceTypeFromAsAttribute(const String& as, Resource::Type&);
 
-private:
-    explicit LinkLoader(LinkLoaderClient*);
+  DECLARE_TRACE();
 
-    void linkLoadTimerFired(TimerBase*);
-    void linkLoadingErrorTimerFired(TimerBase*);
-    void createLinkPreloadResourceClient(Resource*);
+ private:
+  explicit LinkLoader(LinkLoaderClient*);
 
-    Member<LinkLoaderClient> m_client;
+  void linkLoadTimerFired(TimerBase*);
+  void linkLoadingErrorTimerFired(TimerBase*);
+  void createLinkPreloadResourceClient(Resource*);
 
-    Timer<LinkLoader> m_linkLoadTimer;
-    Timer<LinkLoader> m_linkLoadingErrorTimer;
+  Member<LinkLoaderClient> m_client;
 
-    Member<PrerenderHandle> m_prerender;
-    Member<LinkPreloadResourceClient> m_linkPreloadResourceClient;
+  Timer<LinkLoader> m_linkLoadTimer;
+  Timer<LinkLoader> m_linkLoadingErrorTimer;
+
+  Member<PrerenderHandle> m_prerender;
+  Member<LinkPreloadResourceClient> m_linkPreloadResourceClient;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

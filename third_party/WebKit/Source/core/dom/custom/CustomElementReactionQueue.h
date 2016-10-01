@@ -16,22 +16,23 @@ class Element;
 
 class CORE_EXPORT CustomElementReactionQueue final
     : public GarbageCollectedFinalized<CustomElementReactionQueue> {
-    WTF_MAKE_NONCOPYABLE(CustomElementReactionQueue);
-public:
-    CustomElementReactionQueue();
-    ~CustomElementReactionQueue();
+  WTF_MAKE_NONCOPYABLE(CustomElementReactionQueue);
 
-    DECLARE_TRACE();
+ public:
+  CustomElementReactionQueue();
+  ~CustomElementReactionQueue();
 
-    void add(CustomElementReaction*);
-    void invokeReactions(Element*);
-    bool isEmpty() { return m_reactions.isEmpty(); }
+  DECLARE_TRACE();
 
-private:
-    HeapVector<Member<CustomElementReaction>, 1> m_reactions;
-    size_t m_index;
+  void add(CustomElementReaction*);
+  void invokeReactions(Element*);
+  bool isEmpty() { return m_reactions.isEmpty(); }
+
+ private:
+  HeapVector<Member<CustomElementReaction>, 1> m_reactions;
+  size_t m_index;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementReactionQueue_h
+#endif  // CustomElementReactionQueue_h

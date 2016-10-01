@@ -18,47 +18,54 @@ namespace blink {
 namespace {
 
 class BlockPainterDelegate : public LayoutBlock {
-public:
-    BlockPainterDelegate(const LayoutSVGForeignObject& layoutSVGForeignObject)
-        : LayoutBlock(nullptr)
-        , m_layoutSVGForeignObject(layoutSVGForeignObject)
-    { }
+ public:
+  BlockPainterDelegate(const LayoutSVGForeignObject& layoutSVGForeignObject)
+      : LayoutBlock(nullptr),
+        m_layoutSVGForeignObject(layoutSVGForeignObject) {}
 
-private:
-    void paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const final
-    {
-        BlockPainter(m_layoutSVGForeignObject).paint(paintInfo, paintOffset);
-    }
-    const LayoutSVGForeignObject& m_layoutSVGForeignObject;
+ private:
+  void paint(const PaintInfo& paintInfo,
+             const LayoutPoint& paintOffset) const final {
+    BlockPainter(m_layoutSVGForeignObject).paint(paintInfo, paintOffset);
+  }
+  const LayoutSVGForeignObject& m_layoutSVGForeignObject;
 };
 
-} // namespace
+}  // namespace
 
-void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo)
-{
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
-        return;
+void SVGForeignObjectPainter::paint(const PaintInfo& paintInfo) {
+  if (paintInfo.phase != PaintPhaseForeground &&
+      paintInfo.phase != PaintPhaseSelection)
+    return;
 
-    PaintInfo paintInfoBeforeFiltering(paintInfo);
-    paintInfoBeforeFiltering.updateCullRect(m_layoutSVGForeignObject.localSVGTransform());
-    SVGTransformContext transformContext(paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, m_layoutSVGForeignObject.localSVGTransform());
+  PaintInfo paintInfoBeforeFiltering(paintInfo);
+  paintInfoBeforeFiltering.updateCullRect(
+      m_layoutSVGForeignObject.localSVGTransform());
+  SVGTransformContext transformContext(
+      paintInfoBeforeFiltering.context, m_layoutSVGForeignObject,
+      m_layoutSVGForeignObject.localSVGTransform());
 
-    Optional<FloatClipRecorder> clipRecorder;
-    if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject))
-        clipRecorder.emplace(paintInfoBeforeFiltering.context, m_layoutSVGForeignObject, paintInfoBeforeFiltering.phase, m_layoutSVGForeignObject.viewportRect());
+  Optional<FloatClipRecorder> clipRecorder;
+  if (SVGLayoutSupport::isOverflowHidden(&m_layoutSVGForeignObject))
+    clipRecorder.emplace(paintInfoBeforeFiltering.context,
+                         m_layoutSVGForeignObject,
+                         paintInfoBeforeFiltering.phase,
+                         m_layoutSVGForeignObject.viewportRect());
 
-    SVGPaintContext paintContext(m_layoutSVGForeignObject, paintInfoBeforeFiltering);
-    bool continueRendering = true;
-    if (paintContext.paintInfo().phase == PaintPhaseForeground)
-        continueRendering = paintContext.applyClipMaskAndFilterIfNecessary();
+  SVGPaintContext paintContext(m_layoutSVGForeignObject,
+                               paintInfoBeforeFiltering);
+  bool continueRendering = true;
+  if (paintContext.paintInfo().phase == PaintPhaseForeground)
+    continueRendering = paintContext.applyClipMaskAndFilterIfNecessary();
 
-    if (continueRendering) {
-        // Paint all phases of FO elements atomically as though the FO element established its own stacking context.
-        // The delegate forwards calls to paint() in LayoutObject::paintAllPhasesAtomically() to
-        // BlockPainter::paint(), instead of m_layoutSVGForeignObject.paint() (which would call this method again).
-        BlockPainterDelegate delegate(m_layoutSVGForeignObject);
-        ObjectPainter(delegate).paintAllPhasesAtomically(paintContext.paintInfo(), LayoutPoint());
-    }
+  if (continueRendering) {
+    // Paint all phases of FO elements atomically as though the FO element established its own stacking context.
+    // The delegate forwards calls to paint() in LayoutObject::paintAllPhasesAtomically() to
+    // BlockPainter::paint(), instead of m_layoutSVGForeignObject.paint() (which would call this method again).
+    BlockPainterDelegate delegate(m_layoutSVGForeignObject);
+    ObjectPainter(delegate).paintAllPhasesAtomically(paintContext.paintInfo(),
+                                                     LayoutPoint());
+  }
 }
 
-} // namespace blink
+}  // namespace blink

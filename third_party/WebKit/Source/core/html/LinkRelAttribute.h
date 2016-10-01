@@ -40,38 +40,39 @@
 namespace blink {
 
 class CORE_EXPORT LinkRelAttribute {
-    DISALLOW_NEW();
-public:
-    explicit LinkRelAttribute(const String& = "");
+  DISALLOW_NEW();
 
-    bool isStyleSheet() const { return m_isStyleSheet; }
-    IconType getIconType() const { return m_iconType; }
-    bool isAlternate() const { return m_isAlternate; }
-    bool isDNSPrefetch() const { return m_isDNSPrefetch; }
-    bool isPreconnect() const { return m_isPreconnect; }
-    bool isLinkPrefetch() const { return m_isLinkPrefetch; }
-    bool isLinkPreload() const { return m_isLinkPreload; }
-    bool isLinkPrerender() const { return m_isLinkPrerender; }
-    bool isLinkNext() const { return m_isLinkNext; }
-    bool isImport() const { return m_isImport; }
-    bool isManifest() const { return m_isManifest; }
-    bool isServiceWorker() const { return m_isServiceWorker; }
+ public:
+  explicit LinkRelAttribute(const String& = "");
 
-private:
-    IconType m_iconType;
-    bool m_isStyleSheet : 1;
-    bool m_isAlternate : 1;
-    bool m_isDNSPrefetch : 1;
-    bool m_isPreconnect : 1;
-    bool m_isLinkPrefetch : 1;
-    bool m_isLinkPreload : 1;
-    bool m_isLinkPrerender : 1;
-    bool m_isLinkNext : 1;
-    bool m_isImport : 1;
-    bool m_isManifest : 1;
-    bool m_isServiceWorker : 1;
+  bool isStyleSheet() const { return m_isStyleSheet; }
+  IconType getIconType() const { return m_iconType; }
+  bool isAlternate() const { return m_isAlternate; }
+  bool isDNSPrefetch() const { return m_isDNSPrefetch; }
+  bool isPreconnect() const { return m_isPreconnect; }
+  bool isLinkPrefetch() const { return m_isLinkPrefetch; }
+  bool isLinkPreload() const { return m_isLinkPreload; }
+  bool isLinkPrerender() const { return m_isLinkPrerender; }
+  bool isLinkNext() const { return m_isLinkNext; }
+  bool isImport() const { return m_isImport; }
+  bool isManifest() const { return m_isManifest; }
+  bool isServiceWorker() const { return m_isServiceWorker; }
+
+ private:
+  IconType m_iconType;
+  bool m_isStyleSheet : 1;
+  bool m_isAlternate : 1;
+  bool m_isDNSPrefetch : 1;
+  bool m_isPreconnect : 1;
+  bool m_isLinkPrefetch : 1;
+  bool m_isLinkPreload : 1;
+  bool m_isLinkPrerender : 1;
+  bool m_isLinkNext : 1;
+  bool m_isImport : 1;
+  bool m_isManifest : 1;
+  bool m_isServiceWorker : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

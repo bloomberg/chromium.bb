@@ -30,65 +30,65 @@
 
 namespace blink {
 
-HTMLSourceTracker::HTMLSourceTracker()
-    : m_isStarted(false)
-{
+HTMLSourceTracker::HTMLSourceTracker() : m_isStarted(false) {}
+
+void HTMLSourceTracker::start(SegmentedString& currentInput,
+                              HTMLTokenizer* tokenizer,
+                              HTMLToken& token) {
+  if (token.type() == HTMLToken::Uninitialized && !m_isStarted) {
+    m_previousSource.clear();
+    if (tokenizer->numberOfBufferedCharacters())
+      m_previousSource = tokenizer->bufferedCharacters();
+  } else
+    m_previousSource.append(m_currentSource);
+
+  m_isStarted = true;
+  m_currentSource = currentInput;
+  token.setBaseOffset(m_currentSource.numberOfCharactersConsumed() -
+                      m_previousSource.length());
 }
 
-void HTMLSourceTracker::start(SegmentedString& currentInput, HTMLTokenizer* tokenizer, HTMLToken& token)
-{
-    if (token.type() == HTMLToken::Uninitialized && !m_isStarted) {
-        m_previousSource.clear();
-        if (tokenizer->numberOfBufferedCharacters())
-            m_previousSource = tokenizer->bufferedCharacters();
-    } else
-        m_previousSource.append(m_currentSource);
+void HTMLSourceTracker::end(SegmentedString& currentInput,
+                            HTMLTokenizer* tokenizer,
+                            HTMLToken& token) {
+  m_isStarted = false;
 
-    m_isStarted = true;
-    m_currentSource = currentInput;
-    token.setBaseOffset(m_currentSource.numberOfCharactersConsumed() - m_previousSource.length());
+  m_cachedSourceForToken = String();
+
+  // FIXME: This work should really be done by the HTMLTokenizer.
+  token.end(currentInput.numberOfCharactersConsumed() -
+            tokenizer->numberOfBufferedCharacters());
 }
 
-void HTMLSourceTracker::end(SegmentedString& currentInput, HTMLTokenizer* tokenizer, HTMLToken& token)
-{
-    m_isStarted = false;
-
-    m_cachedSourceForToken = String();
-
-    // FIXME: This work should really be done by the HTMLTokenizer.
-    token.end(currentInput.numberOfCharactersConsumed() - tokenizer->numberOfBufferedCharacters());
-}
-
-String HTMLSourceTracker::sourceForToken(const HTMLToken& token)
-{
-    if (!m_cachedSourceForToken.isEmpty())
-        return m_cachedSourceForToken;
-
-    size_t length;
-    if (token.type() == HTMLToken::EndOfFile) {
-        // Consume the remainder of the input, omitting the null character we use to mark the end of the file.
-        length = m_previousSource.length() + m_currentSource.length() - 1;
-    } else {
-        ASSERT(!token.startIndex());
-        length = static_cast<size_t>(token.endIndex() - token.startIndex());
-    }
-
-    StringBuilder source;
-    source.reserveCapacity(length);
-
-    size_t i = 0;
-    for ( ; i < length && !m_previousSource.isEmpty(); ++i) {
-        source.append(m_previousSource.currentChar());
-        m_previousSource.advance();
-    }
-    for ( ; i < length; ++i) {
-        ASSERT(!m_currentSource.isEmpty());
-        source.append(m_currentSource.currentChar());
-        m_currentSource.advance();
-    }
-
-    m_cachedSourceForToken = source.toString();
+String HTMLSourceTracker::sourceForToken(const HTMLToken& token) {
+  if (!m_cachedSourceForToken.isEmpty())
     return m_cachedSourceForToken;
+
+  size_t length;
+  if (token.type() == HTMLToken::EndOfFile) {
+    // Consume the remainder of the input, omitting the null character we use to mark the end of the file.
+    length = m_previousSource.length() + m_currentSource.length() - 1;
+  } else {
+    ASSERT(!token.startIndex());
+    length = static_cast<size_t>(token.endIndex() - token.startIndex());
+  }
+
+  StringBuilder source;
+  source.reserveCapacity(length);
+
+  size_t i = 0;
+  for (; i < length && !m_previousSource.isEmpty(); ++i) {
+    source.append(m_previousSource.currentChar());
+    m_previousSource.advance();
+  }
+  for (; i < length; ++i) {
+    ASSERT(!m_currentSource.isEmpty());
+    source.append(m_currentSource.currentChar());
+    m_currentSource.advance();
+  }
+
+  m_cachedSourceForToken = source.toString();
+  return m_cachedSourceForToken;
 }
 
-} // namespace blink
+}  // namespace blink

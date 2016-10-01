@@ -41,14 +41,21 @@ class CSSValue;
 class StyleResolverState;
 
 class CORE_EXPORT StyleBuilder {
-    STATIC_ONLY(StyleBuilder);
-public:
-    static void applyProperty(CSSPropertyID, StyleResolverState&, const CSSValue&);
+  STATIC_ONLY(StyleBuilder);
 
-private:
-    static void applyProperty(CSSPropertyID, StyleResolverState&, const CSSValue&, bool isInitial, bool isInherit);
+ public:
+  static void applyProperty(CSSPropertyID,
+                            StyleResolverState&,
+                            const CSSValue&);
+
+ private:
+  static void applyProperty(CSSPropertyID,
+                            StyleResolverState&,
+                            const CSSValue&,
+                            bool isInitial,
+                            bool isInherit);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

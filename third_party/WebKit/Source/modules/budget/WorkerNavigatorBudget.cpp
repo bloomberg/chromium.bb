@@ -9,46 +9,43 @@
 
 namespace blink {
 
-WorkerNavigatorBudget::WorkerNavigatorBudget()
-{
+WorkerNavigatorBudget::WorkerNavigatorBudget() {}
+
+// static
+const char* WorkerNavigatorBudget::supplementName() {
+  return "WorkerNavigatorBudget";
 }
 
 // static
-const char* WorkerNavigatorBudget::supplementName()
-{
-    return "WorkerNavigatorBudget";
+WorkerNavigatorBudget& WorkerNavigatorBudget::from(
+    WorkerNavigator& workerNavigator) {
+  // Get the unique WorkerNavigatorBudget associated with this workerNavigator.
+  WorkerNavigatorBudget* workerNavigatorBudget =
+      static_cast<WorkerNavigatorBudget*>(
+          Supplement<WorkerNavigator>::from(workerNavigator, supplementName()));
+  if (!workerNavigatorBudget) {
+    // If there isn't one already, create it now and associate it.
+    workerNavigatorBudget = new WorkerNavigatorBudget();
+    Supplement<WorkerNavigator>::provideTo(workerNavigator, supplementName(),
+                                           workerNavigatorBudget);
+  }
+  return *workerNavigatorBudget;
+}
+
+BudgetService* WorkerNavigatorBudget::budget() {
+  if (!m_budget)
+    m_budget = BudgetService::create();
+  return m_budget.get();
 }
 
 // static
-WorkerNavigatorBudget& WorkerNavigatorBudget::from(WorkerNavigator& workerNavigator)
-{
-    // Get the unique WorkerNavigatorBudget associated with this workerNavigator.
-    WorkerNavigatorBudget* workerNavigatorBudget = static_cast<WorkerNavigatorBudget*>(Supplement<WorkerNavigator>::from(workerNavigator, supplementName()));
-    if (!workerNavigatorBudget) {
-        // If there isn't one already, create it now and associate it.
-        workerNavigatorBudget = new WorkerNavigatorBudget();
-        Supplement<WorkerNavigator>::provideTo(workerNavigator, supplementName(), workerNavigatorBudget);
-    }
-    return *workerNavigatorBudget;
+BudgetService* WorkerNavigatorBudget::budget(WorkerNavigator& workerNavigator) {
+  return WorkerNavigatorBudget::from(workerNavigator).budget();
 }
 
-BudgetService* WorkerNavigatorBudget::budget()
-{
-    if (!m_budget)
-        m_budget = BudgetService::create();
-    return m_budget.get();
+DEFINE_TRACE(WorkerNavigatorBudget) {
+  visitor->trace(m_budget);
+  Supplement<WorkerNavigator>::trace(visitor);
 }
 
-// static
-BudgetService* WorkerNavigatorBudget::budget(WorkerNavigator& workerNavigator)
-{
-    return WorkerNavigatorBudget::from(workerNavigator).budget();
-}
-
-DEFINE_TRACE(WorkerNavigatorBudget)
-{
-    visitor->trace(m_budget);
-    Supplement<WorkerNavigator>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

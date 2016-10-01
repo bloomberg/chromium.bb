@@ -36,22 +36,27 @@
 
 namespace blink {
 
-class V0CustomElementDefinition final : public GarbageCollectedFinalized<V0CustomElementDefinition> {
-public:
-    static V0CustomElementDefinition* create(const V0CustomElementDescriptor&, V0CustomElementLifecycleCallbacks*);
+class V0CustomElementDefinition final
+    : public GarbageCollectedFinalized<V0CustomElementDefinition> {
+ public:
+  static V0CustomElementDefinition* create(const V0CustomElementDescriptor&,
+                                           V0CustomElementLifecycleCallbacks*);
 
-    const V0CustomElementDescriptor& descriptor() const { return m_descriptor; }
-    V0CustomElementLifecycleCallbacks* callbacks() const { return m_callbacks.get(); }
+  const V0CustomElementDescriptor& descriptor() const { return m_descriptor; }
+  V0CustomElementLifecycleCallbacks* callbacks() const {
+    return m_callbacks.get();
+  }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    V0CustomElementDefinition(const V0CustomElementDescriptor&, V0CustomElementLifecycleCallbacks*);
+ private:
+  V0CustomElementDefinition(const V0CustomElementDescriptor&,
+                            V0CustomElementLifecycleCallbacks*);
 
-    V0CustomElementDescriptor m_descriptor;
-    Member<V0CustomElementLifecycleCallbacks> m_callbacks;
+  V0CustomElementDescriptor m_descriptor;
+  Member<V0CustomElementLifecycleCallbacks> m_callbacks;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementDefinition_h
+#endif  // V0CustomElementDefinition_h

@@ -45,85 +45,87 @@ class MediaTrackConstraints;
 class MediaStreamTrackSourcesCallback;
 class MediaTrackSettings;
 
-class MODULES_EXPORT MediaStreamTrack
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject
-    , public MediaStreamSource::Observer {
-    USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MediaStreamTrack* create(ExecutionContext*, MediaStreamComponent*);
-    ~MediaStreamTrack() override;
+class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,
+                                        public ActiveScriptWrappable,
+                                        public ActiveDOMObject,
+                                        public MediaStreamSource::Observer {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
+  DEFINE_WRAPPERTYPEINFO();
 
-    String kind() const;
-    String id() const;
-    String label() const;
-    bool remote() const;
+ public:
+  static MediaStreamTrack* create(ExecutionContext*, MediaStreamComponent*);
+  ~MediaStreamTrack() override;
 
-    bool enabled() const;
-    void setEnabled(bool);
+  String kind() const;
+  String id() const;
+  String label() const;
+  bool remote() const;
 
-    bool muted() const;
+  bool enabled() const;
+  void setEnabled(bool);
 
-    String readyState() const;
+  bool muted() const;
 
-    static void getSources(ExecutionContext*, MediaStreamTrackSourcesCallback*, ExceptionState&);
-    void stopTrack(ExceptionState&);
-    virtual MediaStreamTrack* clone(ExecutionContext*);
+  String readyState() const;
 
-    void getConstraints(MediaTrackConstraints&);
+  static void getSources(ExecutionContext*,
+                         MediaStreamTrackSourcesCallback*,
+                         ExceptionState&);
+  void stopTrack(ExceptionState&);
+  virtual MediaStreamTrack* clone(ExecutionContext*);
 
-    // This function is called when constrains have been successfully applied.
-    // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
-    void setConstraints(const WebMediaConstraints&);
+  void getConstraints(MediaTrackConstraints&);
 
-    void getSettings(MediaTrackSettings&);
+  // This function is called when constrains have been successfully applied.
+  // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
+  void setConstraints(const WebMediaConstraints&);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(ended);
+  void getSettings(MediaTrackSettings&);
 
-    MediaStreamComponent* component() { return m_component; }
-    bool ended() const;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(ended);
 
-    void registerMediaStream(MediaStream*);
-    void unregisterMediaStream(MediaStream*);
+  MediaStreamComponent* component() { return m_component; }
+  bool ended() const;
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  void registerMediaStream(MediaStream*);
+  void unregisterMediaStream(MediaStream*);
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ActiveDOMObject
-    void stop() override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    std::unique_ptr<AudioSourceProvider> createWebAudioSource();
+  // ActiveDOMObject
+  void stop() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  std::unique_ptr<AudioSourceProvider> createWebAudioSource();
 
-private:
-    friend class CanvasCaptureMediaStreamTrack;
+  DECLARE_VIRTUAL_TRACE();
 
-    MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
+ private:
+  friend class CanvasCaptureMediaStreamTrack;
 
-    // MediaStreamSourceObserver
-    void sourceChangedState() override;
+  MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
 
-    void propagateTrackEnded();
+  // MediaStreamSourceObserver
+  void sourceChangedState() override;
 
-    MediaStreamSource::ReadyState m_readyState;
-    HeapHashSet<Member<MediaStream>> m_registeredMediaStreams;
-    bool m_isIteratingRegisteredMediaStreams;
-    bool m_stopped;
-    Member<MediaStreamComponent> m_component;
-    WebMediaConstraints m_constraints;
+  void propagateTrackEnded();
+
+  MediaStreamSource::ReadyState m_readyState;
+  HeapHashSet<Member<MediaStream>> m_registeredMediaStreams;
+  bool m_isIteratingRegisteredMediaStreams;
+  bool m_stopped;
+  Member<MediaStreamComponent> m_component;
+  WebMediaConstraints m_constraints;
 };
 
 typedef HeapVector<Member<MediaStreamTrack>> MediaStreamTrackVector;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamTrack_h
+#endif  // MediaStreamTrack_h

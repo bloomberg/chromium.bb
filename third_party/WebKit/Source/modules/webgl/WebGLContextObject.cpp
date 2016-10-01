@@ -30,34 +30,26 @@
 namespace blink {
 
 WebGLContextObject::WebGLContextObject(WebGLRenderingContextBase* context)
-    : WebGLObject(context)
-    , m_context(context)
-{
+    : WebGLObject(context), m_context(context) {}
+
+WebGLContextObject::~WebGLContextObject() {}
+
+void WebGLContextObject::detachContext() {
+  detach();
+  if (m_context) {
+    deleteObject(m_context->contextGL());
+    m_context->removeContextObject(this);
+    m_context = nullptr;
+  }
 }
 
-WebGLContextObject::~WebGLContextObject()
-{
+gpu::gles2::GLES2Interface* WebGLContextObject::getAGLInterface() const {
+  return m_context->contextGL();
 }
 
-void WebGLContextObject::detachContext()
-{
-    detach();
-    if (m_context) {
-        deleteObject(m_context->contextGL());
-        m_context->removeContextObject(this);
-        m_context = nullptr;
-    }
+DEFINE_TRACE(WebGLContextObject) {
+  visitor->trace(m_context);
+  WebGLObject::trace(visitor);
 }
 
-gpu::gles2::GLES2Interface* WebGLContextObject::getAGLInterface() const
-{
-    return m_context->contextGL();
-}
-
-DEFINE_TRACE(WebGLContextObject)
-{
-    visitor->trace(m_context);
-    WebGLObject::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

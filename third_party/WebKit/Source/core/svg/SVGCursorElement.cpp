@@ -27,62 +27,61 @@
 namespace blink {
 
 inline SVGCursorElement::SVGCursorElement(Document& document)
-    : SVGElement(SVGNames::cursorTag, document)
-    , SVGTests(this)
-    , SVGURIReference(this)
-    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(SVGLengthMode::Width)))
-    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height)))
-{
-    addToPropertyMap(m_x);
-    addToPropertyMap(m_y);
+    : SVGElement(SVGNames::cursorTag, document),
+      SVGTests(this),
+      SVGURIReference(this),
+      m_x(SVGAnimatedLength::create(this,
+                                    SVGNames::xAttr,
+                                    SVGLength::create(SVGLengthMode::Width))),
+      m_y(SVGAnimatedLength::create(this,
+                                    SVGNames::yAttr,
+                                    SVGLength::create(SVGLengthMode::Height))) {
+  addToPropertyMap(m_x);
+  addToPropertyMap(m_y);
 
-    UseCounter::count(document, UseCounter::SVGCursorElement);
+  UseCounter::count(document, UseCounter::SVGCursorElement);
 }
 
 DEFINE_NODE_FACTORY(SVGCursorElement)
 
-SVGCursorElement::~SVGCursorElement()
-{
+SVGCursorElement::~SVGCursorElement() {}
+
+void SVGCursorElement::addClient(SVGElement* element) {
+  UseCounter::count(document(), UseCounter::SVGCursorElementHasClient);
+
+  m_clients.add(element);
+  element->setCursorElement(this);
 }
 
-void SVGCursorElement::addClient(SVGElement* element)
-{
-    UseCounter::count(document(), UseCounter::SVGCursorElementHasClient);
-
-    m_clients.add(element);
-    element->setCursorElement(this);
+void SVGCursorElement::removeReferencedElement(SVGElement* element) {
+  m_clients.remove(element);
 }
 
-void SVGCursorElement::removeReferencedElement(SVGElement* element)
-{
-    m_clients.remove(element);
+void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
+      SVGTests::isKnownAttribute(attrName) ||
+      SVGURIReference::isKnownAttribute(attrName)) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
+
+    // Any change of a cursor specific attribute triggers this recalc.
+    for (const auto& client : m_clients)
+      client->setNeedsStyleRecalc(
+          LocalStyleChange,
+          StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
+
+    return;
+  }
+
+  SVGElement::svgAttributeChanged(attrName);
 }
 
-void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
-        || SVGTests::isKnownAttribute(attrName)
-        || SVGURIReference::isKnownAttribute(attrName)) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
-
-        // Any change of a cursor specific attribute triggers this recalc.
-        for (const auto& client : m_clients)
-            client->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SVGCursor));
-
-        return;
-    }
-
-    SVGElement::svgAttributeChanged(attrName);
+DEFINE_TRACE(SVGCursorElement) {
+  visitor->trace(m_x);
+  visitor->trace(m_y);
+  visitor->trace(m_clients);
+  SVGElement::trace(visitor);
+  SVGTests::trace(visitor);
+  SVGURIReference::trace(visitor);
 }
 
-DEFINE_TRACE(SVGCursorElement)
-{
-    visitor->trace(m_x);
-    visitor->trace(m_y);
-    visitor->trace(m_clients);
-    SVGElement::trace(visitor);
-    SVGTests::trace(visitor);
-    SVGURIReference::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

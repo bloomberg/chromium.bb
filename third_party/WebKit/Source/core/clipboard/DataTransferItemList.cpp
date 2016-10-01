@@ -34,77 +34,73 @@
 
 namespace blink {
 
-DataTransferItemList* DataTransferItemList::create(DataTransfer* dataTransfer, DataObject* list)
-{
-    return new DataTransferItemList(dataTransfer, list);
+DataTransferItemList* DataTransferItemList::create(DataTransfer* dataTransfer,
+                                                   DataObject* list) {
+  return new DataTransferItemList(dataTransfer, list);
 }
 
-size_t DataTransferItemList::length() const
-{
-    if (!m_dataTransfer->canReadTypes())
-        return 0;
-    return m_dataObject->length();
+size_t DataTransferItemList::length() const {
+  if (!m_dataTransfer->canReadTypes())
+    return 0;
+  return m_dataObject->length();
 }
 
-DataTransferItem* DataTransferItemList::item(unsigned long index)
-{
-    if (!m_dataTransfer->canReadTypes())
-        return nullptr;
-    DataObjectItem* item = m_dataObject->item(index);
-    if (!item)
-        return nullptr;
+DataTransferItem* DataTransferItemList::item(unsigned long index) {
+  if (!m_dataTransfer->canReadTypes())
+    return nullptr;
+  DataObjectItem* item = m_dataObject->item(index);
+  if (!item)
+    return nullptr;
 
-    return DataTransferItem::create(m_dataTransfer, item);
+  return DataTransferItem::create(m_dataTransfer, item);
 }
 
-void DataTransferItemList::deleteItem(unsigned long index, ExceptionState& exceptionState)
-{
-    if (!m_dataTransfer->canWriteData()) {
-        exceptionState.throwDOMException(InvalidStateError, "The list is not writable.");
-        return;
-    }
-    m_dataObject->deleteItem(index);
+void DataTransferItemList::deleteItem(unsigned long index,
+                                      ExceptionState& exceptionState) {
+  if (!m_dataTransfer->canWriteData()) {
+    exceptionState.throwDOMException(InvalidStateError,
+                                     "The list is not writable.");
+    return;
+  }
+  m_dataObject->deleteItem(index);
 }
 
-void DataTransferItemList::clear()
-{
-    if (!m_dataTransfer->canWriteData())
-        return;
-    m_dataObject->clearAll();
+void DataTransferItemList::clear() {
+  if (!m_dataTransfer->canWriteData())
+    return;
+  m_dataObject->clearAll();
 }
 
-DataTransferItem* DataTransferItemList::add(const String& data, const String& type, ExceptionState& exceptionState)
-{
-    if (!m_dataTransfer->canWriteData())
-        return nullptr;
-    DataObjectItem* item = m_dataObject->add(data, type);
-    if (!item) {
-        exceptionState.throwDOMException(NotSupportedError, "An item already exists for type '" + type + "'.");
-        return nullptr;
-    }
-    return DataTransferItem::create(m_dataTransfer, item);
+DataTransferItem* DataTransferItemList::add(const String& data,
+                                            const String& type,
+                                            ExceptionState& exceptionState) {
+  if (!m_dataTransfer->canWriteData())
+    return nullptr;
+  DataObjectItem* item = m_dataObject->add(data, type);
+  if (!item) {
+    exceptionState.throwDOMException(
+        NotSupportedError, "An item already exists for type '" + type + "'.");
+    return nullptr;
+  }
+  return DataTransferItem::create(m_dataTransfer, item);
 }
 
-DataTransferItem* DataTransferItemList::add(File* file)
-{
-    if (!m_dataTransfer->canWriteData())
-        return nullptr;
-    DataObjectItem* item = m_dataObject->add(file);
-    if (!item)
-        return nullptr;
-    return DataTransferItem::create(m_dataTransfer, item);
+DataTransferItem* DataTransferItemList::add(File* file) {
+  if (!m_dataTransfer->canWriteData())
+    return nullptr;
+  DataObjectItem* item = m_dataObject->add(file);
+  if (!item)
+    return nullptr;
+  return DataTransferItem::create(m_dataTransfer, item);
 }
 
-DataTransferItemList::DataTransferItemList(DataTransfer* dataTransfer, DataObject* dataObject)
-    : m_dataTransfer(dataTransfer)
-    , m_dataObject(dataObject)
-{
+DataTransferItemList::DataTransferItemList(DataTransfer* dataTransfer,
+                                           DataObject* dataObject)
+    : m_dataTransfer(dataTransfer), m_dataObject(dataObject) {}
+
+DEFINE_TRACE(DataTransferItemList) {
+  visitor->trace(m_dataTransfer);
+  visitor->trace(m_dataObject);
 }
 
-DEFINE_TRACE(DataTransferItemList)
-{
-    visitor->trace(m_dataTransfer);
-    visitor->trace(m_dataObject);
-}
-
-} // namespace blink
+}  // namespace blink

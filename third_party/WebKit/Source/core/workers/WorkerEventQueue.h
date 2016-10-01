@@ -36,28 +36,27 @@ class Event;
 class ExecutionContext;
 
 class WorkerEventQueue final : public EventQueue {
-public:
+ public:
+  static WorkerEventQueue* create(ExecutionContext*);
+  ~WorkerEventQueue() override;
+  DECLARE_TRACE();
 
-    static WorkerEventQueue* create(ExecutionContext*);
-    ~WorkerEventQueue() override;
-    DECLARE_TRACE();
+  // EventQueue
+  bool enqueueEvent(Event*) override;
+  bool cancelEvent(Event*) override;
+  void close() override;
 
-    // EventQueue
-    bool enqueueEvent(Event*) override;
-    bool cancelEvent(Event*) override;
-    void close() override;
+ private:
+  explicit WorkerEventQueue(ExecutionContext*);
+  bool removeEvent(Event*);
+  void dispatchEvent(Event*, ExecutionContext*);
 
-private:
-    explicit WorkerEventQueue(ExecutionContext*);
-    bool removeEvent(Event*);
-    void dispatchEvent(Event*, ExecutionContext*);
+  Member<ExecutionContext> m_executionContext;
+  bool m_isClosed;
 
-    Member<ExecutionContext> m_executionContext;
-    bool m_isClosed;
-
-    HeapHashSet<Member<Event>> m_pendingEvents;
+  HeapHashSet<Member<Event>> m_pendingEvents;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerEventQueue_h
+#endif  // WorkerEventQueue_h

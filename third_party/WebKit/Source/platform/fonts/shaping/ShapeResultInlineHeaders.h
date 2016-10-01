@@ -46,64 +46,70 @@ class SimpleFontData;
 class HarfBuzzShaper;
 
 struct HarfBuzzRunGlyphData {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    uint16_t glyph;
-    uint16_t characterIndex;
-    float advance;
-    FloatSize offset;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  uint16_t glyph;
+  uint16_t characterIndex;
+  float advance;
+  FloatSize offset;
 };
 
 enum AdjustMidCluster { AdjustToStart, AdjustToEnd };
 
 struct ShapeResult::RunInfo {
-    USING_FAST_MALLOC(RunInfo);
-public:
-    RunInfo(const SimpleFontData* font, hb_direction_t dir, hb_script_t script,
-        unsigned startIndex, unsigned numGlyphs, unsigned numCharacters)
-        : m_fontData(const_cast<SimpleFontData*>(font)), m_direction(dir)
-        , m_script(script), m_glyphData(numGlyphs), m_startIndex(startIndex)
-        , m_numCharacters(numCharacters), m_width(0.0f)
-    {
-    }
+  USING_FAST_MALLOC(RunInfo);
 
-    RunInfo(const RunInfo& other)
-        : m_fontData(other.m_fontData)
-        , m_direction(other.m_direction)
-        , m_script(other.m_script)
-        , m_glyphData(other.m_glyphData)
-        , m_startIndex(other.m_startIndex)
-        , m_numCharacters(other.m_numCharacters)
-        , m_width(other.m_width)
-    {
-    }
+ public:
+  RunInfo(const SimpleFontData* font,
+          hb_direction_t dir,
+          hb_script_t script,
+          unsigned startIndex,
+          unsigned numGlyphs,
+          unsigned numCharacters)
+      : m_fontData(const_cast<SimpleFontData*>(font)),
+        m_direction(dir),
+        m_script(script),
+        m_glyphData(numGlyphs),
+        m_startIndex(startIndex),
+        m_numCharacters(numCharacters),
+        m_width(0.0f) {}
 
-    bool rtl() const { return HB_DIRECTION_IS_BACKWARD(m_direction); }
-    float xPositionForVisualOffset(unsigned, AdjustMidCluster) const;
-    float xPositionForOffset(unsigned, AdjustMidCluster) const;
-    int characterIndexForXPosition(float, bool includePartialGlyphs) const;
-    void setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance,
-        float offsetX, float offsetY);
+  RunInfo(const RunInfo& other)
+      : m_fontData(other.m_fontData),
+        m_direction(other.m_direction),
+        m_script(other.m_script),
+        m_glyphData(other.m_glyphData),
+        m_startIndex(other.m_startIndex),
+        m_numCharacters(other.m_numCharacters),
+        m_width(other.m_width) {}
 
-    size_t glyphToCharacterIndex(size_t i) const
-    {
-        return m_startIndex + m_glyphData[i].characterIndex;
-    }
+  bool rtl() const { return HB_DIRECTION_IS_BACKWARD(m_direction); }
+  float xPositionForVisualOffset(unsigned, AdjustMidCluster) const;
+  float xPositionForOffset(unsigned, AdjustMidCluster) const;
+  int characterIndexForXPosition(float, bool includePartialGlyphs) const;
+  void setGlyphAndPositions(unsigned index,
+                            uint16_t glyphId,
+                            float advance,
+                            float offsetX,
+                            float offsetY);
 
-    // For memory reporting.
-    size_t byteSize() const
-    {
-        return sizeof(this) + m_glyphData.size() * sizeof(HarfBuzzRunGlyphData);
-    }
+  size_t glyphToCharacterIndex(size_t i) const {
+    return m_startIndex + m_glyphData[i].characterIndex;
+  }
 
-    RefPtr<SimpleFontData> m_fontData;
-    hb_direction_t m_direction;
-    hb_script_t m_script;
-    Vector<HarfBuzzRunGlyphData> m_glyphData;
-    unsigned m_startIndex;
-    unsigned m_numCharacters;
-    float m_width;
+  // For memory reporting.
+  size_t byteSize() const {
+    return sizeof(this) + m_glyphData.size() * sizeof(HarfBuzzRunGlyphData);
+  }
+
+  RefPtr<SimpleFontData> m_fontData;
+  hb_direction_t m_direction;
+  hb_script_t m_script;
+  Vector<HarfBuzzRunGlyphData> m_glyphData;
+  unsigned m_startIndex;
+  unsigned m_numCharacters;
+  float m_width;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ShapeResultInlineHeaders_h
+#endif  // ShapeResultInlineHeaders_h

@@ -35,37 +35,44 @@
 namespace WTF {
 
 class WTF_EXPORT TextEncoding final {
-    USING_FAST_MALLOC(TextEncoding);
-public:
-    TextEncoding() : m_name(0) { }
-    TextEncoding(const char* name);
-    TextEncoding(const String& name);
+  USING_FAST_MALLOC(TextEncoding);
 
-    bool isValid() const { return m_name; }
-    const char* name() const { return m_name; }
-    bool usesVisualOrdering() const;
-    const TextEncoding& closestByteBasedEquivalent() const;
-    const TextEncoding& encodingForFormSubmission() const;
+ public:
+  TextEncoding() : m_name(0) {}
+  TextEncoding(const char* name);
+  TextEncoding(const String& name);
 
-    String decode(const char* str, size_t length) const
-    {
-        bool ignored;
-        return decode(str, length, false, ignored);
-    }
-    String decode(const char*, size_t length, bool stopOnError, bool& sawError) const;
+  bool isValid() const { return m_name; }
+  const char* name() const { return m_name; }
+  bool usesVisualOrdering() const;
+  const TextEncoding& closestByteBasedEquivalent() const;
+  const TextEncoding& encodingForFormSubmission() const;
 
-    CString encode(const String&, UnencodableHandling) const;
+  String decode(const char* str, size_t length) const {
+    bool ignored;
+    return decode(str, length, false, ignored);
+  }
+  String decode(const char*,
+                size_t length,
+                bool stopOnError,
+                bool& sawError) const;
 
-    bool isNonByteBasedEncoding() const;
+  CString encode(const String&, UnencodableHandling) const;
 
-private:
-    bool isUTF7Encoding() const;
+  bool isNonByteBasedEncoding() const;
 
-    const char* m_name;
+ private:
+  bool isUTF7Encoding() const;
+
+  const char* m_name;
 };
 
-inline bool operator==(const TextEncoding& a, const TextEncoding& b) { return a.name() == b.name(); }
-inline bool operator!=(const TextEncoding& a, const TextEncoding& b) { return a.name() != b.name(); }
+inline bool operator==(const TextEncoding& a, const TextEncoding& b) {
+  return a.name() == b.name();
+}
+inline bool operator!=(const TextEncoding& a, const TextEncoding& b) {
+  return a.name() != b.name();
+}
 
 WTF_EXPORT const TextEncoding& ASCIIEncoding();
 WTF_EXPORT const TextEncoding& Latin1Encoding();
@@ -76,7 +83,7 @@ WTF_EXPORT const TextEncoding& UTF32LittleEndianEncoding();
 WTF_EXPORT const TextEncoding& UTF8Encoding();
 WTF_EXPORT const TextEncoding& WindowsLatin1Encoding();
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::ASCIIEncoding;
 using WTF::Latin1Encoding;
@@ -87,4 +94,4 @@ using WTF::UTF32LittleEndianEncoding;
 using WTF::UTF8Encoding;
 using WTF::WindowsLatin1Encoding;
 
-#endif // TextEncoding_h
+#endif  // TextEncoding_h

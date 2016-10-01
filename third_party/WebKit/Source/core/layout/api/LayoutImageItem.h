@@ -11,39 +11,28 @@
 namespace blink {
 
 class LayoutImageItem : public LayoutBoxItem {
-public:
-    explicit LayoutImageItem(LayoutImage* layoutImage)
-        : LayoutBoxItem(layoutImage)
-    {
-    }
+ public:
+  explicit LayoutImageItem(LayoutImage* layoutImage)
+      : LayoutBoxItem(layoutImage) {}
 
-    explicit LayoutImageItem(const LayoutItem& item)
-        : LayoutBoxItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isImage());
-    }
+  explicit LayoutImageItem(const LayoutItem& item) : LayoutBoxItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isImage());
+  }
 
-    explicit LayoutImageItem(std::nullptr_t) : LayoutBoxItem(nullptr) { }
+  explicit LayoutImageItem(std::nullptr_t) : LayoutBoxItem(nullptr) {}
 
-    LayoutImageItem() { }
+  LayoutImageItem() {}
 
-    void setImageDevicePixelRatio(float factor)
-    {
-        toImage()->setImageDevicePixelRatio(factor);
-    }
+  void setImageDevicePixelRatio(float factor) {
+    toImage()->setImageDevicePixelRatio(factor);
+  }
 
-private:
-    LayoutImage* toImage()
-    {
-        return toLayoutImage(layoutObject());
-    }
+ private:
+  LayoutImage* toImage() { return toLayoutImage(layoutObject()); }
 
-    const LayoutImage* toImage() const
-    {
-        return toLayoutImage(layoutObject());
-    }
+  const LayoutImage* toImage() const { return toLayoutImage(layoutObject()); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutImageItem_h
+#endif  // LayoutImageItem_h

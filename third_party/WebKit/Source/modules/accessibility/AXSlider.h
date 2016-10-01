@@ -38,48 +38,47 @@ class AXObjectCacheImpl;
 class HTMLInputElement;
 
 class AXSlider : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AXSlider);
+  WTF_MAKE_NONCOPYABLE(AXSlider);
 
-public:
-    static AXSlider* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXSlider() override { }
+ public:
+  static AXSlider* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXSlider() override {}
 
-protected:
-    AXSlider(LayoutObject*, AXObjectCacheImpl&);
+ protected:
+  AXSlider(LayoutObject*, AXObjectCacheImpl&);
 
-private:
-    HTMLInputElement* element() const;
-    AXObject* elementAccessibilityHitTest(const IntPoint&) const final;
+ private:
+  HTMLInputElement* element() const;
+  AXObject* elementAccessibilityHitTest(const IntPoint&) const final;
 
-    AccessibilityRole determineAccessibilityRole() final;
-    bool isSlider() const final { return true; }
-    bool isControl() const final { return true; }
+  AccessibilityRole determineAccessibilityRole() final;
+  bool isSlider() const final { return true; }
+  bool isControl() const final { return true; }
 
-    void addChildren() final;
+  void addChildren() final;
 
-    bool canSetValueAttribute() const final { return true; }
+  bool canSetValueAttribute() const final { return true; }
 
-    void setValue(const String&) final;
-    AccessibilityOrientation orientation() const final;
+  void setValue(const String&) final;
+  AccessibilityOrientation orientation() const final;
 };
 
 class AXSliderThumb final : public AXMockObject {
-    WTF_MAKE_NONCOPYABLE(AXSliderThumb);
+  WTF_MAKE_NONCOPYABLE(AXSliderThumb);
 
-public:
-    static AXSliderThumb* create(AXObjectCacheImpl&);
-    ~AXSliderThumb() override { }
+ public:
+  static AXSliderThumb* create(AXObjectCacheImpl&);
+  ~AXSliderThumb() override {}
 
-    AccessibilityRole roleValue() const override { return SliderThumbRole; }
+  AccessibilityRole roleValue() const override { return SliderThumbRole; }
 
-private:
-    explicit AXSliderThumb(AXObjectCacheImpl&);
+ private:
+  explicit AXSliderThumb(AXObjectCacheImpl&);
 
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
-    LayoutObject* layoutObjectForRelativeBounds() const override;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  LayoutObject* layoutObjectForRelativeBounds() const override;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // AXSlider_h
+#endif  // AXSlider_h

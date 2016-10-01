@@ -46,30 +46,34 @@ class SVGFilterElement;
 class SVGFilterGraphNodeMap;
 
 class CORE_EXPORT FilterEffectBuilder final {
-    STACK_ALLOCATED();
-public:
-    FilterEffectBuilder(
-        Node*,
-        const FloatRect& zoomedReferenceBox,
-        float zoom,
-        const SkPaint* fillPaint = nullptr,
-        const SkPaint* strokePaint = nullptr);
+  STACK_ALLOCATED();
 
-    Filter* buildReferenceFilter(SVGFilterElement&, FilterEffect* previousEffect, SVGFilterGraphNodeMap* = nullptr) const;
+ public:
+  FilterEffectBuilder(Node*,
+                      const FloatRect& zoomedReferenceBox,
+                      float zoom,
+                      const SkPaint* fillPaint = nullptr,
+                      const SkPaint* strokePaint = nullptr);
 
-    FilterEffect* buildFilterEffect(const FilterOperations&) const;
-    CompositorFilterOperations buildFilterOperations(const FilterOperations&) const;
+  Filter* buildReferenceFilter(SVGFilterElement&,
+                               FilterEffect* previousEffect,
+                               SVGFilterGraphNodeMap* = nullptr) const;
 
-private:
-    Filter* buildReferenceFilter(const ReferenceFilterOperation&, FilterEffect* previousEffect) const;
+  FilterEffect* buildFilterEffect(const FilterOperations&) const;
+  CompositorFilterOperations buildFilterOperations(
+      const FilterOperations&) const;
 
-    Member<Node> m_targetContext;
-    FloatRect m_referenceBox;
-    float m_zoom;
-    const SkPaint* m_fillPaint;
-    const SkPaint* m_strokePaint;
+ private:
+  Filter* buildReferenceFilter(const ReferenceFilterOperation&,
+                               FilterEffect* previousEffect) const;
+
+  Member<Node> m_targetContext;
+  FloatRect m_referenceBox;
+  float m_zoom;
+  const SkPaint* m_fillPaint;
+  const SkPaint* m_strokePaint;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FilterEffectBuilder_h
+#endif  // FilterEffectBuilder_h

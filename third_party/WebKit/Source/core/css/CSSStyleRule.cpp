@@ -31,107 +31,98 @@
 
 namespace blink {
 
-using SelectorTextCache = PersistentHeapHashMap<WeakMember<const CSSStyleRule>, String>;
+using SelectorTextCache =
+    PersistentHeapHashMap<WeakMember<const CSSStyleRule>, String>;
 
-static SelectorTextCache& selectorTextCache()
-{
-    DEFINE_STATIC_LOCAL(SelectorTextCache, cache, ());
-    return cache;
+static SelectorTextCache& selectorTextCache() {
+  DEFINE_STATIC_LOCAL(SelectorTextCache, cache, ());
+  return cache;
 }
 
 CSSStyleRule::CSSStyleRule(StyleRule* styleRule, CSSStyleSheet* parent)
-    : CSSRule(parent)
-    , m_styleRule(styleRule)
-{
+    : CSSRule(parent), m_styleRule(styleRule) {}
+
+CSSStyleRule::~CSSStyleRule() {}
+
+CSSStyleDeclaration* CSSStyleRule::style() const {
+  if (!m_propertiesCSSOMWrapper) {
+    m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(
+        m_styleRule->mutableProperties(), const_cast<CSSStyleRule*>(this));
+  }
+  return m_propertiesCSSOMWrapper.get();
 }
 
-CSSStyleRule::~CSSStyleRule()
-{
+String CSSStyleRule::generateSelectorText() const {
+  StringBuilder builder;
+  for (const CSSSelector* selector = m_styleRule->selectorList().first();
+       selector; selector = CSSSelectorList::next(*selector)) {
+    if (selector != m_styleRule->selectorList().first())
+      builder.append(", ");
+    builder.append(selector->selectorText());
+  }
+  return builder.toString();
 }
 
-CSSStyleDeclaration* CSSStyleRule::style() const
-{
-    if (!m_propertiesCSSOMWrapper) {
-        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_styleRule->mutableProperties(), const_cast<CSSStyleRule*>(this));
-    }
-    return m_propertiesCSSOMWrapper.get();
+String CSSStyleRule::selectorText() const {
+  if (hasCachedSelectorText()) {
+    ASSERT(selectorTextCache().contains(this));
+    return selectorTextCache().get(this);
+  }
+
+  ASSERT(!selectorTextCache().contains(this));
+  String text = generateSelectorText();
+  selectorTextCache().set(this, text);
+  setHasCachedSelectorText(true);
+  return text;
 }
 
-String CSSStyleRule::generateSelectorText() const
-{
-    StringBuilder builder;
-    for (const CSSSelector* selector = m_styleRule->selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
-        if (selector != m_styleRule->selectorList().first())
-            builder.append(", ");
-        builder.append(selector->selectorText());
-    }
-    return builder.toString();
+void CSSStyleRule::setSelectorText(const String& selectorText) {
+  CSSParserContext context(parserContext(), nullptr);
+  CSSSelectorList selectorList = CSSParser::parseSelector(
+      context, parentStyleSheet() ? parentStyleSheet()->contents() : nullptr,
+      selectorText);
+  if (!selectorList.isValid())
+    return;
+
+  CSSStyleSheet::RuleMutationScope mutationScope(this);
+
+  m_styleRule->wrapperAdoptSelectorList(std::move(selectorList));
+
+  if (hasCachedSelectorText()) {
+    selectorTextCache().remove(this);
+    setHasCachedSelectorText(false);
+  }
 }
 
-String CSSStyleRule::selectorText() const
-{
-    if (hasCachedSelectorText()) {
-        ASSERT(selectorTextCache().contains(this));
-        return selectorTextCache().get(this);
-    }
-
-    ASSERT(!selectorTextCache().contains(this));
-    String text = generateSelectorText();
-    selectorTextCache().set(this, text);
-    setHasCachedSelectorText(true);
-    return text;
+String CSSStyleRule::cssText() const {
+  StringBuilder result;
+  result.append(selectorText());
+  result.append(" { ");
+  String decls = m_styleRule->properties().asText();
+  result.append(decls);
+  if (!decls.isEmpty())
+    result.append(' ');
+  result.append('}');
+  return result.toString();
 }
 
-void CSSStyleRule::setSelectorText(const String& selectorText)
-{
-    CSSParserContext context(parserContext(), nullptr);
-    CSSSelectorList selectorList = CSSParser::parseSelector(context, parentStyleSheet() ? parentStyleSheet()->contents() : nullptr, selectorText);
-    if (!selectorList.isValid())
-        return;
-
-    CSSStyleSheet::RuleMutationScope mutationScope(this);
-
-    m_styleRule->wrapperAdoptSelectorList(std::move(selectorList));
-
-    if (hasCachedSelectorText()) {
-        selectorTextCache().remove(this);
-        setHasCachedSelectorText(false);
-    }
+void CSSStyleRule::reattach(StyleRuleBase* rule) {
+  ASSERT(rule);
+  m_styleRule = toStyleRule(rule);
+  if (m_propertiesCSSOMWrapper)
+    m_propertiesCSSOMWrapper->reattach(m_styleRule->mutableProperties());
 }
 
-String CSSStyleRule::cssText() const
-{
-    StringBuilder result;
-    result.append(selectorText());
-    result.append(" { ");
-    String decls = m_styleRule->properties().asText();
-    result.append(decls);
-    if (!decls.isEmpty())
-        result.append(' ');
-    result.append('}');
-    return result.toString();
+DEFINE_TRACE(CSSStyleRule) {
+  visitor->trace(m_styleRule);
+  visitor->trace(m_propertiesCSSOMWrapper);
+  CSSRule::trace(visitor);
 }
 
-void CSSStyleRule::reattach(StyleRuleBase* rule)
-{
-    ASSERT(rule);
-    m_styleRule = toStyleRule(rule);
-    if (m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper->reattach(m_styleRule->mutableProperties());
+DEFINE_TRACE_WRAPPERS(CSSStyleRule) {
+  visitor->traceWrappers(parentRule());
+  visitor->traceWrappers(parentStyleSheet());
+  CSSRule::traceWrappers(visitor);
 }
 
-DEFINE_TRACE(CSSStyleRule)
-{
-    visitor->trace(m_styleRule);
-    visitor->trace(m_propertiesCSSOMWrapper);
-    CSSRule::trace(visitor);
-}
-
-DEFINE_TRACE_WRAPPERS(CSSStyleRule)
-{
-    visitor->traceWrappers(parentRule());
-    visitor->traceWrappers(parentStyleSheet());
-    CSSRule::traceWrappers(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

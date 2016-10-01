@@ -11,19 +11,24 @@
 namespace blink {
 
 class CORE_EXPORT DOMDataView final : public DOMArrayBufferView {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    typedef char ValueType;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static DOMDataView* create(DOMArrayBufferBase*, unsigned byteOffset, unsigned byteLength);
+ public:
+  typedef char ValueType;
 
-    v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+  static DOMDataView* create(DOMArrayBufferBase*,
+                             unsigned byteOffset,
+                             unsigned byteLength);
 
-private:
-    DOMDataView(PassRefPtr<WTF::ArrayBufferView> dataView, DOMArrayBufferBase* domArrayBuffer)
-        : DOMArrayBufferView(std::move(dataView), domArrayBuffer) { }
+  v8::Local<v8::Object> wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creationContext) override;
+
+ private:
+  DOMDataView(PassRefPtr<WTF::ArrayBufferView> dataView,
+              DOMArrayBufferBase* domArrayBuffer)
+      : DOMArrayBufferView(std::move(dataView), domArrayBuffer) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMDataView_h
+#endif  // DOMDataView_h

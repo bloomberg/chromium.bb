@@ -35,22 +35,23 @@ class Document;
 class Element;
 
 class DocumentFullscreen {
-    STATIC_ONLY(DocumentFullscreen);
-public:
-    static bool fullscreenEnabled(Document&);
-    static Element* fullscreenElement(Document&);
-    static void exitFullscreen(Document&);
+  STATIC_ONLY(DocumentFullscreen);
 
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
+ public:
+  static bool fullscreenEnabled(Document&);
+  static Element* fullscreenElement(Document&);
+  static void exitFullscreen(Document&);
 
-    // Mozilla version
-    static Element* currentFullScreenElement(Document&);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
 
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
+  // Mozilla version
+  static Element* currentFullScreenElement(Document&);
+
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentFullscreen_h
+#endif  // DocumentFullscreen_h

@@ -44,122 +44,130 @@
 
 namespace blink {
 
-ScheduledAction* ScheduledAction::create(ScriptState* scriptState, const ScriptValue& handler, const Vector<ScriptValue>& arguments)
-{
-    ASSERT(handler.isFunction());
-    return new ScheduledAction(scriptState, handler, arguments);
+ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
+                                         const ScriptValue& handler,
+                                         const Vector<ScriptValue>& arguments) {
+  ASSERT(handler.isFunction());
+  return new ScheduledAction(scriptState, handler, arguments);
 }
 
-ScheduledAction* ScheduledAction::create(ScriptState* scriptState, const String& handler)
-{
-    return new ScheduledAction(scriptState, handler);
+ScheduledAction* ScheduledAction::create(ScriptState* scriptState,
+                                         const String& handler) {
+  return new ScheduledAction(scriptState, handler);
 }
 
-DEFINE_TRACE(ScheduledAction)
-{
-    visitor->trace(m_code);
+DEFINE_TRACE(ScheduledAction) {
+  visitor->trace(m_code);
 }
 
-ScheduledAction::~ScheduledAction()
-{
-}
+ScheduledAction::~ScheduledAction() {}
 
-void ScheduledAction::execute(ExecutionContext* context)
-{
-    if (context->isDocument()) {
-        LocalFrame* frame = toDocument(context)->frame();
-        if (!frame) {
-            DVLOG(1) << "ScheduledAction::execute " << this << ": no frame";
-            return;
-        }
-        if (!frame->script().canExecuteScripts(AboutToExecuteScript)) {
-            DVLOG(1) << "ScheduledAction::execute " << this << ": frame can not execute scripts";
-            return;
-        }
-        execute(frame);
-    } else {
-        DVLOG(1) << "ScheduledAction::execute " << this << ": worker scope";
-        execute(toWorkerGlobalScope(context));
+void ScheduledAction::execute(ExecutionContext* context) {
+  if (context->isDocument()) {
+    LocalFrame* frame = toDocument(context)->frame();
+    if (!frame) {
+      DVLOG(1) << "ScheduledAction::execute " << this << ": no frame";
+      return;
     }
+    if (!frame->script().canExecuteScripts(AboutToExecuteScript)) {
+      DVLOG(1) << "ScheduledAction::execute " << this
+               << ": frame can not execute scripts";
+      return;
+    }
+    execute(frame);
+  } else {
+    DVLOG(1) << "ScheduledAction::execute " << this << ": worker scope";
+    execute(toWorkerGlobalScope(context));
+  }
 }
 
-ScheduledAction::ScheduledAction(ScriptState* scriptState, const ScriptValue& function, const Vector<ScriptValue>& arguments)
-    : m_scriptState(scriptState)
-    , m_info(scriptState->isolate())
-    , m_code(String(), KURL(), TextPosition::belowRangePosition())
-{
-    ASSERT(function.isFunction());
-    m_function.set(scriptState->isolate(), v8::Local<v8::Function>::Cast(function.v8Value()));
-    m_info.ReserveCapacity(arguments.size());
-    for (const ScriptValue& argument : arguments)
-        m_info.Append(argument.v8Value());
+ScheduledAction::ScheduledAction(ScriptState* scriptState,
+                                 const ScriptValue& function,
+                                 const Vector<ScriptValue>& arguments)
+    : m_scriptState(scriptState),
+      m_info(scriptState->isolate()),
+      m_code(String(), KURL(), TextPosition::belowRangePosition()) {
+  ASSERT(function.isFunction());
+  m_function.set(scriptState->isolate(),
+                 v8::Local<v8::Function>::Cast(function.v8Value()));
+  m_info.ReserveCapacity(arguments.size());
+  for (const ScriptValue& argument : arguments)
+    m_info.Append(argument.v8Value());
 }
 
 ScheduledAction::ScheduledAction(ScriptState* scriptState, const String& code)
-    : m_scriptState(scriptState)
-    , m_info(scriptState->isolate())
-    , m_code(code, KURL())
-{
+    : m_scriptState(scriptState),
+      m_info(scriptState->isolate()),
+      m_code(code, KURL()) {}
+
+void ScheduledAction::execute(LocalFrame* frame) {
+  if (!m_scriptState->contextIsValid()) {
+    DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
+    return;
+  }
+
+  TRACE_EVENT0("v8", "ScheduledAction::execute");
+  ScriptState::Scope scope(m_scriptState.get());
+  if (!m_function.isEmpty()) {
+    DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
+    v8::Local<v8::Function> function =
+        m_function.newLocal(m_scriptState->isolate());
+    ScriptState* scriptStateForFunc =
+        ScriptState::from(function->CreationContext());
+    if (!scriptStateForFunc->contextIsValid()) {
+      DVLOG(1) << "ScheduledAction::execute " << this
+               << ": function's context is empty";
+      return;
+    }
+    Vector<v8::Local<v8::Value>> info;
+    createLocalHandlesForArgs(&info);
+    V8ScriptRunner::callFunction(
+        function, frame->document(), m_scriptState->context()->Global(),
+        info.size(), info.data(), m_scriptState->isolate());
+  } else {
+    DVLOG(1) << "ScheduledAction::execute " << this
+             << ": executing from source";
+    frame->script().executeScriptAndReturnValue(m_scriptState->context(),
+                                                ScriptSourceCode(m_code));
+  }
+
+  // The frame might be invalid at this point because JavaScript could have released it.
 }
 
-void ScheduledAction::execute(LocalFrame* frame)
-{
-    if (!m_scriptState->contextIsValid()) {
-        DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
-        return;
-    }
+void ScheduledAction::execute(WorkerGlobalScope* worker) {
+  ASSERT(worker->thread()->isCurrentThread());
 
-    TRACE_EVENT0("v8", "ScheduledAction::execute");
+  if (!m_scriptState->contextIsValid()) {
+    DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
+    return;
+  }
+
+  if (!m_function.isEmpty()) {
     ScriptState::Scope scope(m_scriptState.get());
-    if (!m_function.isEmpty()) {
-        DVLOG(1) << "ScheduledAction::execute " << this << ": have function";
-        v8::Local<v8::Function> function = m_function.newLocal(m_scriptState->isolate());
-        ScriptState* scriptStateForFunc = ScriptState::from(function->CreationContext());
-        if (!scriptStateForFunc->contextIsValid()) {
-            DVLOG(1) << "ScheduledAction::execute " << this << ": function's context is empty";
-            return;
-        }
-        Vector<v8::Local<v8::Value>> info;
-        createLocalHandlesForArgs(&info);
-        V8ScriptRunner::callFunction(function, frame->document(), m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
-    } else {
-        DVLOG(1) << "ScheduledAction::execute " << this << ": executing from source";
-        frame->script().executeScriptAndReturnValue(m_scriptState->context(), ScriptSourceCode(m_code));
+    v8::Local<v8::Function> function =
+        m_function.newLocal(m_scriptState->isolate());
+    ScriptState* scriptStateForFunc =
+        ScriptState::from(function->CreationContext());
+    if (!scriptStateForFunc->contextIsValid()) {
+      DVLOG(1) << "ScheduledAction::execute " << this
+               << ": function's context is empty";
+      return;
     }
-
-    // The frame might be invalid at this point because JavaScript could have released it.
+    Vector<v8::Local<v8::Value>> info;
+    createLocalHandlesForArgs(&info);
+    V8ScriptRunner::callFunction(
+        function, worker, m_scriptState->context()->Global(), info.size(),
+        info.data(), m_scriptState->isolate());
+  } else {
+    worker->scriptController()->evaluate(m_code);
+  }
 }
 
-void ScheduledAction::execute(WorkerGlobalScope* worker)
-{
-    ASSERT(worker->thread()->isCurrentThread());
-
-    if (!m_scriptState->contextIsValid()) {
-        DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
-        return;
-    }
-
-    if (!m_function.isEmpty()) {
-        ScriptState::Scope scope(m_scriptState.get());
-        v8::Local<v8::Function> function = m_function.newLocal(m_scriptState->isolate());
-        ScriptState* scriptStateForFunc = ScriptState::from(function->CreationContext());
-        if (!scriptStateForFunc->contextIsValid()) {
-            DVLOG(1) << "ScheduledAction::execute " << this << ": function's context is empty";
-            return;
-        }
-        Vector<v8::Local<v8::Value>> info;
-        createLocalHandlesForArgs(&info);
-        V8ScriptRunner::callFunction(function, worker, m_scriptState->context()->Global(), info.size(), info.data(), m_scriptState->isolate());
-    } else {
-        worker->scriptController()->evaluate(m_code);
-    }
+void ScheduledAction::createLocalHandlesForArgs(
+    Vector<v8::Local<v8::Value>>* handles) {
+  handles->reserveCapacity(m_info.Size());
+  for (size_t i = 0; i < m_info.Size(); ++i)
+    handles->append(m_info.Get(i));
 }
 
-void ScheduledAction::createLocalHandlesForArgs(Vector<v8::Local<v8::Value>>* handles)
-{
-    handles->reserveCapacity(m_info.Size());
-    for (size_t i = 0; i < m_info.Size(); ++i)
-        handles->append(m_info.Get(i));
-}
-
-} // namespace blink
+}  // namespace blink

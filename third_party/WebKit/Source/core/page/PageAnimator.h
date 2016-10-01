@@ -15,27 +15,27 @@ class LocalFrame;
 class Page;
 
 class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
-public:
-    static PageAnimator* create(Page&);
-    DECLARE_TRACE();
-    void scheduleVisualUpdate(LocalFrame*);
-    void serviceScriptedAnimations(double monotonicAnimationStartTime);
+ public:
+  static PageAnimator* create(Page&);
+  DECLARE_TRACE();
+  void scheduleVisualUpdate(LocalFrame*);
+  void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
-    bool isServicingAnimations() const { return m_servicingAnimations; }
+  bool isServicingAnimations() const { return m_servicingAnimations; }
 
-    // See documents of methods with the same names in FrameView class.
-    void updateAllLifecyclePhases(LocalFrame& rootFrame);
-    AnimationClock& clock() { return m_animationClock; }
+  // See documents of methods with the same names in FrameView class.
+  void updateAllLifecyclePhases(LocalFrame& rootFrame);
+  AnimationClock& clock() { return m_animationClock; }
 
-private:
-    explicit PageAnimator(Page&);
+ private:
+  explicit PageAnimator(Page&);
 
-    Member<Page> m_page;
-    bool m_servicingAnimations;
-    bool m_updatingLayoutAndStyleForPainting;
-    AnimationClock m_animationClock;
+  Member<Page> m_page;
+  bool m_servicingAnimations;
+  bool m_updatingLayoutAndStyleForPainting;
+  AnimationClock m_animationClock;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PageAnimator_h
+#endif  // PageAnimator_h

@@ -36,64 +36,70 @@ class WebString;
 
 // A client for reporting progress on speech recognition for a specific handle.
 class WebSpeechRecognizerClient {
-public:
-    enum ErrorCode {
-        OtherError = 0,
-        NoSpeechError = 1,
-        AbortedError = 2,
-        AudioCaptureError = 3,
-        NetworkError = 4,
-        NotAllowedError = 5,
-        ServiceNotAllowedError = 6,
-        BadGrammarError = 7,
-        LanguageNotSupportedError = 8
-    };
+ public:
+  enum ErrorCode {
+    OtherError = 0,
+    NoSpeechError = 1,
+    AbortedError = 2,
+    AudioCaptureError = 3,
+    NetworkError = 4,
+    NotAllowedError = 5,
+    ServiceNotAllowedError = 6,
+    BadGrammarError = 7,
+    LanguageNotSupportedError = 8
+  };
 
-    // These methods correspond to the events described in the spec:
-    // http://speech-javascript-api-spec.googlecode.com/git/speechapi.html#speechreco-events
+  // These methods correspond to the events described in the spec:
+  // http://speech-javascript-api-spec.googlecode.com/git/speechapi.html#speechreco-events
 
-    // To be called when the embedder has started to capture audio.
-    virtual void didStartAudio(const WebSpeechRecognitionHandle&) = 0;
+  // To be called when the embedder has started to capture audio.
+  virtual void didStartAudio(const WebSpeechRecognitionHandle&) = 0;
 
-    // To be called when some sound, possibly speech, has been detected.
-    // This is expected to be called after didStartAudio.
-    virtual void didStartSound(const WebSpeechRecognitionHandle&) = 0;
+  // To be called when some sound, possibly speech, has been detected.
+  // This is expected to be called after didStartAudio.
+  virtual void didStartSound(const WebSpeechRecognitionHandle&) = 0;
 
-    // To be called when sound is no longer detected.
-    // This is expected to be called after didEndSpeech.
-    virtual void didEndSound(const WebSpeechRecognitionHandle&) = 0;
+  // To be called when sound is no longer detected.
+  // This is expected to be called after didEndSpeech.
+  virtual void didEndSound(const WebSpeechRecognitionHandle&) = 0;
 
-    // To be called when audio capture has stopped.
-    // This is expected to be called after didEndSound.
-    virtual void didEndAudio(const WebSpeechRecognitionHandle&) = 0;
+  // To be called when audio capture has stopped.
+  // This is expected to be called after didEndSound.
+  virtual void didEndAudio(const WebSpeechRecognitionHandle&) = 0;
 
-    // To be called when the speech recognizer provides new results.
-    // - newFinalResults contains zero or more final results that are new since
-    // the last time the function was called.
-    // - currentInterimResults contains zero or more inteirm results that
-    // replace the interim results that were reported the last time this
-    // function was called.
-    virtual void didReceiveResults(const WebSpeechRecognitionHandle&, const WebVector<WebSpeechRecognitionResult>& newFinalResults, const WebVector<WebSpeechRecognitionResult>& currentInterimResults) = 0;
+  // To be called when the speech recognizer provides new results.
+  // - newFinalResults contains zero or more final results that are new since
+  // the last time the function was called.
+  // - currentInterimResults contains zero or more inteirm results that
+  // replace the interim results that were reported the last time this
+  // function was called.
+  virtual void didReceiveResults(
+      const WebSpeechRecognitionHandle&,
+      const WebVector<WebSpeechRecognitionResult>& newFinalResults,
+      const WebVector<WebSpeechRecognitionResult>& currentInterimResults) = 0;
 
-    // To be called when the speech recognizer returns a final result with no
-    // recognizion hypothesis.
-    virtual void didReceiveNoMatch(const WebSpeechRecognitionHandle&, const WebSpeechRecognitionResult&) = 0;
+  // To be called when the speech recognizer returns a final result with no
+  // recognizion hypothesis.
+  virtual void didReceiveNoMatch(const WebSpeechRecognitionHandle&,
+                                 const WebSpeechRecognitionResult&) = 0;
 
-    // To be called when a speech recognition error occurs.
-    virtual void didReceiveError(const WebSpeechRecognitionHandle&, const WebString& message, ErrorCode) = 0;
+  // To be called when a speech recognition error occurs.
+  virtual void didReceiveError(const WebSpeechRecognitionHandle&,
+                               const WebString& message,
+                               ErrorCode) = 0;
 
-    // To be called when the recognizer has begun to listen to the audio with
-    // the intention of recognizing.
-    virtual void didStart(const WebSpeechRecognitionHandle&) = 0;
+  // To be called when the recognizer has begun to listen to the audio with
+  // the intention of recognizing.
+  virtual void didStart(const WebSpeechRecognitionHandle&) = 0;
 
-    // To be called when the recognition session has ended. This must always be
-    // called, no matter the reason for the end.
-    virtual void didEnd(const WebSpeechRecognitionHandle&) = 0;
+  // To be called when the recognition session has ended. This must always be
+  // called, no matter the reason for the end.
+  virtual void didEnd(const WebSpeechRecognitionHandle&) = 0;
 
-protected:
-    virtual ~WebSpeechRecognizerClient() {}
+ protected:
+  virtual ~WebSpeechRecognizerClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSpeechRecognizerClient_h
+#endif  // WebSpeechRecognizerClient_h

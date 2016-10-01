@@ -40,26 +40,26 @@
 
 namespace {
 
-int runTestSuite(base::TestSuite* testSuite)
-{
-    int result = testSuite->Run();
-    blink::ThreadState::current()-> collectAllGarbage();
-    return result;
+int runTestSuite(base::TestSuite* testSuite) {
+  int result = testSuite->Run();
+  blink::ThreadState::current()->collectAllGarbage();
+  return result;
 }
 
-} // namespace
+}  // namespace
 
-int main(int argc, char** argv)
-{
-    blink::ScopedUnittestsEnvironmentSetup testEnvironmentSetup(argc, argv);
-    int result = 0;
-    {
-        base::TestSuite testSuite(argc, argv);
+int main(int argc, char** argv) {
+  blink::ScopedUnittestsEnvironmentSetup testEnvironmentSetup(argc, argv);
+  int result = 0;
+  {
+    base::TestSuite testSuite(argc, argv);
 
-        mojo::edk::Init();
-        base::TestIOThread testIoThread(base::TestIOThread::kAutoStart);
-        std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipcSupport(wrapUnique(new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
-        result = base::LaunchUnitTests(argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
-    }
-    return result;
+    mojo::edk::Init();
+    base::TestIOThread testIoThread(base::TestIOThread::kAutoStart);
+    std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipcSupport(wrapUnique(
+        new mojo::edk::test::ScopedIPCSupport(testIoThread.task_runner())));
+    result = base::LaunchUnitTests(
+        argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
+  }
+  return result;
 }

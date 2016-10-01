@@ -17,17 +17,17 @@ namespace blink {
 class TimingFunction;
 
 class PLATFORM_EXPORT CompositorKeyframe {
-public:
-    virtual ~CompositorKeyframe() {}
+ public:
+  virtual ~CompositorKeyframe() {}
 
-    virtual double time() const = 0;
+  virtual double time() const = 0;
 
-    PassRefPtr<TimingFunction> getTimingFunctionForTesting() const;
+  PassRefPtr<TimingFunction> getTimingFunctionForTesting() const;
 
-private:
-    virtual const cc::TimingFunction* ccTimingFunction() const = 0;
+ private:
+  virtual const cc::TimingFunction* ccTimingFunction() const = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorKeyframe_h
+#endif  // CompositorKeyframe_h

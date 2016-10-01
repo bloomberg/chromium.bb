@@ -29,34 +29,30 @@
 
 namespace blink {
 
-CSSBorderImageSliceValue::CSSBorderImageSliceValue(CSSQuadValue* slices, bool fill)
-    : CSSValue(BorderImageSliceClass)
-    , m_slices(slices)
-    , m_fill(fill)
-{
-    ASSERT(m_slices);
+CSSBorderImageSliceValue::CSSBorderImageSliceValue(CSSQuadValue* slices,
+                                                   bool fill)
+    : CSSValue(BorderImageSliceClass), m_slices(slices), m_fill(fill) {
+  ASSERT(m_slices);
 }
 
-String CSSBorderImageSliceValue::customCSSText() const
-{
-    // Dump the slices first.
-    String text = m_slices->cssText();
+String CSSBorderImageSliceValue::customCSSText() const {
+  // Dump the slices first.
+  String text = m_slices->cssText();
 
-    // Now the fill keywords if it is present.
-    if (m_fill)
-        return text + " fill";
-    return text;
+  // Now the fill keywords if it is present.
+  if (m_fill)
+    return text + " fill";
+  return text;
 }
 
-bool CSSBorderImageSliceValue::equals(const CSSBorderImageSliceValue& other) const
-{
-    return m_fill == other.m_fill && compareCSSValuePtr(m_slices, other.m_slices);
+bool CSSBorderImageSliceValue::equals(
+    const CSSBorderImageSliceValue& other) const {
+  return m_fill == other.m_fill && compareCSSValuePtr(m_slices, other.m_slices);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSBorderImageSliceValue)
-{
-    visitor->trace(m_slices);
-    CSSValue::traceAfterDispatch(visitor);
+DEFINE_TRACE_AFTER_DISPATCH(CSSBorderImageSliceValue) {
+  visitor->trace(m_slices);
+  CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

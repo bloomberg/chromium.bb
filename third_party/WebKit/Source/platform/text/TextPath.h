@@ -34,7 +34,6 @@
 namespace blink {
 
 enum CodePath { SimplePath, ComplexPath };
-
 }
 
-#endif // TextPath_h
+#endif  // TextPath_h

@@ -39,31 +39,35 @@ class SkImage;
 namespace blink {
 
 struct FrameData {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    WTF_MAKE_NONCOPYABLE(FrameData);
-public:
-    FrameData();
-    ~FrameData();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  WTF_MAKE_NONCOPYABLE(FrameData);
 
-    // Clear the cached image data on the frame, and (optionally) the metadata.
-    // Returns whether there was cached image data to clear.
-    void clear(bool clearMetadata);
+ public:
+  FrameData();
+  ~FrameData();
 
-    ImageOrientation m_orientation;
-    float m_duration;
-    bool m_haveMetadata : 1;
-    bool m_isComplete : 1;
-    bool m_hasAlpha : 1;
-    size_t m_frameBytes;
+  // Clear the cached image data on the frame, and (optionally) the metadata.
+  // Returns whether there was cached image data to clear.
+  void clear(bool clearMetadata);
+
+  ImageOrientation m_orientation;
+  float m_duration;
+  bool m_haveMetadata : 1;
+  bool m_isComplete : 1;
+  bool m_hasAlpha : 1;
+  size_t m_frameBytes;
 };
 
-} // namespace blink
+}  // namespace blink
 
 namespace WTF {
-template<> struct VectorTraits<blink::FrameData> : public SimpleClassVectorTraits<blink::FrameData> {
-    STATIC_ONLY(VectorTraits);
-    static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
+template <>
+struct VectorTraits<blink::FrameData>
+    : public SimpleClassVectorTraits<blink::FrameData> {
+  STATIC_ONLY(VectorTraits);
+  static const bool canInitializeWithMemset =
+      false;  // Not all FrameData members initialize to 0.
 };
 }
 
-#endif // FrameData_h
+#endif  // FrameData_h

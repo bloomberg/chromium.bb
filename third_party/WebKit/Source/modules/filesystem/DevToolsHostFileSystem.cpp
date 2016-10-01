@@ -13,21 +13,25 @@
 
 namespace blink {
 
-DOMFileSystem* DevToolsHostFileSystem::isolatedFileSystem(DevToolsHost& host, const String& fileSystemName, const String& rootURL)
-{
-    ExecutionContext* context = host.frontendFrame()->document();
-    return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated, KURL(ParsedURLString, rootURL));
+DOMFileSystem* DevToolsHostFileSystem::isolatedFileSystem(
+    DevToolsHost& host,
+    const String& fileSystemName,
+    const String& rootURL) {
+  ExecutionContext* context = host.frontendFrame()->document();
+  return DOMFileSystem::create(context, fileSystemName, FileSystemTypeIsolated,
+                               KURL(ParsedURLString, rootURL));
 }
 
-void DevToolsHostFileSystem::upgradeDraggedFileSystemPermissions(DevToolsHost& host, DOMFileSystem* domFileSystem)
-{
-    std::unique_ptr<JSONObject> message = JSONObject::create();
-    message->setInteger("id", 0);
-    message->setString("method", "upgradeDraggedFileSystemPermissions");
-    std::unique_ptr<JSONArray> params = JSONArray::create();
-    params->pushString(domFileSystem->rootURL().getString());
-    message->setArray("params", std::move(params));
-    host.sendMessageToEmbedder(message->toJSONString());
+void DevToolsHostFileSystem::upgradeDraggedFileSystemPermissions(
+    DevToolsHost& host,
+    DOMFileSystem* domFileSystem) {
+  std::unique_ptr<JSONObject> message = JSONObject::create();
+  message->setInteger("id", 0);
+  message->setString("method", "upgradeDraggedFileSystemPermissions");
+  std::unique_ptr<JSONArray> params = JSONArray::create();
+  params->pushString(domFileSystem->rootURL().getString());
+  message->setArray("params", std::move(params));
+  host.sendMessageToEmbedder(message->toJSONString());
 }
 
-} // namespace blink
+}  // namespace blink

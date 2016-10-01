@@ -40,120 +40,126 @@
 
 namespace blink {
 
-CSSGroupingRule::CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* parent)
-    : CSSRule(parent)
-    , m_groupRule(groupRule)
-    , m_childRuleCSSOMWrappers(groupRule->childRules().size())
-{
+CSSGroupingRule::CSSGroupingRule(StyleRuleGroup* groupRule,
+                                 CSSStyleSheet* parent)
+    : CSSRule(parent),
+      m_groupRule(groupRule),
+      m_childRuleCSSOMWrappers(groupRule->childRules().size()) {}
+
+CSSGroupingRule::~CSSGroupingRule() {}
+
+unsigned CSSGroupingRule::insertRule(const String& ruleString,
+                                     unsigned index,
+                                     ExceptionState& exceptionState) {
+  ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
+
+  if (index > m_groupRule->childRules().size()) {
+    exceptionState.throwDOMException(
+        IndexSizeError,
+        "the index " + String::number(index) +
+            " must be less than or equal to the length of the rule list.");
+    return 0;
+  }
+
+  CSSStyleSheet* styleSheet = parentStyleSheet();
+  CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
+  StyleRuleBase* newRule = CSSParser::parseRule(
+      context, styleSheet ? styleSheet->contents() : nullptr, ruleString);
+  if (!newRule) {
+    exceptionState.throwDOMException(
+        SyntaxError,
+        "the rule '" + ruleString + "' is invalid and cannot be parsed.");
+    return 0;
+  }
+
+  if (newRule->isNamespaceRule()) {
+    exceptionState.throwDOMException(
+        HierarchyRequestError,
+        "'@namespace' rules cannot be inserted inside a group rule.");
+    return 0;
+  }
+
+  if (newRule->isImportRule()) {
+    // FIXME: an HierarchyRequestError should also be thrown for a nested @media rule. They are
+    // currently not getting parsed, resulting in a SyntaxError to get raised above.
+    exceptionState.throwDOMException(
+        HierarchyRequestError,
+        "'@import' rules cannot be inserted inside a group rule.");
+    return 0;
+  }
+  CSSStyleSheet::RuleMutationScope mutationScope(this);
+
+  m_groupRule->wrapperInsertRule(index, newRule);
+
+  m_childRuleCSSOMWrappers.insert(index, Member<CSSRule>(nullptr));
+  return index;
 }
 
-CSSGroupingRule::~CSSGroupingRule()
-{
+void CSSGroupingRule::deleteRule(unsigned index,
+                                 ExceptionState& exceptionState) {
+  ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
+
+  if (index >= m_groupRule->childRules().size()) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "the index " + String::number(index) +
+                            " is greated than the length of the rule list.");
+    return;
+  }
+
+  CSSStyleSheet::RuleMutationScope mutationScope(this);
+
+  m_groupRule->wrapperRemoveRule(index);
+
+  if (m_childRuleCSSOMWrappers[index])
+    m_childRuleCSSOMWrappers[index]->setParentRule(0);
+  m_childRuleCSSOMWrappers.remove(index);
 }
 
-unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, ExceptionState& exceptionState)
-{
-    ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
-
-    if (index > m_groupRule->childRules().size()) {
-        exceptionState.throwDOMException(IndexSizeError, "the index " + String::number(index) + " must be less than or equal to the length of the rule list.");
-        return 0;
-    }
-
-    CSSStyleSheet* styleSheet = parentStyleSheet();
-    CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
-    StyleRuleBase* newRule = CSSParser::parseRule(context, styleSheet ? styleSheet->contents() : nullptr, ruleString);
-    if (!newRule) {
-        exceptionState.throwDOMException(SyntaxError, "the rule '" + ruleString + "' is invalid and cannot be parsed.");
-        return 0;
-    }
-
-    if (newRule->isNamespaceRule()) {
-        exceptionState.throwDOMException(HierarchyRequestError, "'@namespace' rules cannot be inserted inside a group rule.");
-        return 0;
-    }
-
-    if (newRule->isImportRule()) {
-        // FIXME: an HierarchyRequestError should also be thrown for a nested @media rule. They are
-        // currently not getting parsed, resulting in a SyntaxError to get raised above.
-        exceptionState.throwDOMException(HierarchyRequestError, "'@import' rules cannot be inserted inside a group rule.");
-        return 0;
-    }
-    CSSStyleSheet::RuleMutationScope mutationScope(this);
-
-    m_groupRule->wrapperInsertRule(index, newRule);
-
-    m_childRuleCSSOMWrappers.insert(index, Member<CSSRule>(nullptr));
-    return index;
+void CSSGroupingRule::appendCSSTextForItems(StringBuilder& result) const {
+  unsigned size = length();
+  for (unsigned i = 0; i < size; ++i) {
+    result.append("  ");
+    result.append(item(i)->cssText());
+    result.append('\n');
+  }
 }
 
-void CSSGroupingRule::deleteRule(unsigned index, ExceptionState& exceptionState)
-{
-    ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
-
-    if (index >= m_groupRule->childRules().size()) {
-        exceptionState.throwDOMException(IndexSizeError, "the index " + String::number(index) + " is greated than the length of the rule list.");
-        return;
-    }
-
-    CSSStyleSheet::RuleMutationScope mutationScope(this);
-
-    m_groupRule->wrapperRemoveRule(index);
-
-    if (m_childRuleCSSOMWrappers[index])
-        m_childRuleCSSOMWrappers[index]->setParentRule(0);
-    m_childRuleCSSOMWrappers.remove(index);
+unsigned CSSGroupingRule::length() const {
+  return m_groupRule->childRules().size();
 }
 
-void CSSGroupingRule::appendCSSTextForItems(StringBuilder& result) const
-{
-    unsigned size = length();
-    for (unsigned i = 0; i < size; ++i) {
-        result.append("  ");
-        result.append(item(i)->cssText());
-        result.append('\n');
-    }
+CSSRule* CSSGroupingRule::item(unsigned index) const {
+  if (index >= length())
+    return nullptr;
+  ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
+  Member<CSSRule>& rule = m_childRuleCSSOMWrappers[index];
+  if (!rule)
+    rule = m_groupRule->childRules()[index]->createCSSOMWrapper(
+        const_cast<CSSGroupingRule*>(this));
+  return rule.get();
 }
 
-unsigned CSSGroupingRule::length() const
-{
-    return m_groupRule->childRules().size();
+CSSRuleList* CSSGroupingRule::cssRules() const {
+  if (!m_ruleListCSSOMWrapper)
+    m_ruleListCSSOMWrapper = LiveCSSRuleList<CSSGroupingRule>::create(
+        const_cast<CSSGroupingRule*>(this));
+  return m_ruleListCSSOMWrapper.get();
 }
 
-CSSRule* CSSGroupingRule::item(unsigned index) const
-{
-    if (index >= length())
-        return nullptr;
-    ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
-    Member<CSSRule>& rule = m_childRuleCSSOMWrappers[index];
-    if (!rule)
-        rule = m_groupRule->childRules()[index]->createCSSOMWrapper(const_cast<CSSGroupingRule*>(this));
-    return rule.get();
+void CSSGroupingRule::reattach(StyleRuleBase* rule) {
+  ASSERT(rule);
+  m_groupRule = static_cast<StyleRuleGroup*>(rule);
+  for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
+    if (m_childRuleCSSOMWrappers[i])
+      m_childRuleCSSOMWrappers[i]->reattach(m_groupRule->childRules()[i].get());
+  }
 }
 
-CSSRuleList* CSSGroupingRule::cssRules() const
-{
-    if (!m_ruleListCSSOMWrapper)
-        m_ruleListCSSOMWrapper = LiveCSSRuleList<CSSGroupingRule>::create(const_cast<CSSGroupingRule*>(this));
-    return m_ruleListCSSOMWrapper.get();
+DEFINE_TRACE(CSSGroupingRule) {
+  CSSRule::trace(visitor);
+  visitor->trace(m_childRuleCSSOMWrappers);
+  visitor->trace(m_groupRule);
+  visitor->trace(m_ruleListCSSOMWrapper);
 }
 
-void CSSGroupingRule::reattach(StyleRuleBase* rule)
-{
-    ASSERT(rule);
-    m_groupRule = static_cast<StyleRuleGroup*>(rule);
-    for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
-        if (m_childRuleCSSOMWrappers[i])
-            m_childRuleCSSOMWrappers[i]->reattach(m_groupRule->childRules()[i].get());
-    }
-}
-
-DEFINE_TRACE(CSSGroupingRule)
-{
-    CSSRule::trace(visitor);
-    visitor->trace(m_childRuleCSSOMWrappers);
-    visitor->trace(m_groupRule);
-    visitor->trace(m_ruleListCSSOMWrapper);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -36,12 +36,13 @@
 namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
-public:
-    ScrollbarThemeOverlayMock() : ScrollbarThemeOverlay(3, 4, DisallowHitTest, Color(128, 128, 128)) { }
+ public:
+  ScrollbarThemeOverlayMock()
+      : ScrollbarThemeOverlay(3, 4, DisallowHitTest, Color(128, 128, 128)) {}
 
-private:
-    bool isMockTheme() const final { return true; }
+ private:
+  bool isMockTheme() const final { return true; }
 };
 
-} // namespace blink
-#endif // ScrollbarThemeOverlayMock_h
+}  // namespace blink
+#endif  // ScrollbarThemeOverlayMock_h

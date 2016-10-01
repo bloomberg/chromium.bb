@@ -30,38 +30,42 @@
 
 namespace blink {
 
-class NavigatorUserMediaError final : public GarbageCollectedFinalized<NavigatorUserMediaError>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum Name {
-        NamePermissionDenied,
-        NameConstraintNotSatisfied
-    };
+class NavigatorUserMediaError final
+    : public GarbageCollectedFinalized<NavigatorUserMediaError>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static NavigatorUserMediaError* create(Name, const String& message, const String& constraintName);
-    static NavigatorUserMediaError* create(const String& name, const String& message, const String& constraintName)
-    {
-        return new NavigatorUserMediaError(name, message, constraintName);
-    }
+ public:
+  enum Name { NamePermissionDenied, NameConstraintNotSatisfied };
 
-    String name() const { return m_name; }
-    const String& message() const { return m_message; }
-    const String& constraintName() const { return m_constraintName; }
+  static NavigatorUserMediaError* create(Name,
+                                         const String& message,
+                                         const String& constraintName);
+  static NavigatorUserMediaError* create(const String& name,
+                                         const String& message,
+                                         const String& constraintName) {
+    return new NavigatorUserMediaError(name, message, constraintName);
+  }
 
-    DEFINE_INLINE_TRACE() { }
+  String name() const { return m_name; }
+  const String& message() const { return m_message; }
+  const String& constraintName() const { return m_constraintName; }
 
-private:
-    NavigatorUserMediaError(const String& name, const String& message, const String& constraintName)
-        : m_name(name), m_message(message), m_constraintName(constraintName)
-    {
-        DCHECK(!name.isEmpty());
-    }
+  DEFINE_INLINE_TRACE() {}
 
-    String m_name;
-    String m_message;
-    String m_constraintName;
+ private:
+  NavigatorUserMediaError(const String& name,
+                          const String& message,
+                          const String& constraintName)
+      : m_name(name), m_message(message), m_constraintName(constraintName) {
+    DCHECK(!name.isEmpty());
+  }
+
+  String m_name;
+  String m_message;
+  String m_constraintName;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorUserMediaError_h
+#endif  // NavigatorUserMediaError_h

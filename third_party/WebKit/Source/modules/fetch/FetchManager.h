@@ -15,27 +15,29 @@ class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
 
-class FetchManager final : public GarbageCollected<FetchManager>, public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
-public:
-    static FetchManager* create(ExecutionContext*);
-    explicit FetchManager(ExecutionContext*);
-    ScriptPromise fetch(ScriptState*, FetchRequestData*);
-    void contextDestroyed() override;
-    bool isStopped() const { return m_isStopped; }
+class FetchManager final : public GarbageCollected<FetchManager>,
+                           public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
 
-    DECLARE_TRACE();
+ public:
+  static FetchManager* create(ExecutionContext*);
+  explicit FetchManager(ExecutionContext*);
+  ScriptPromise fetch(ScriptState*, FetchRequestData*);
+  void contextDestroyed() override;
+  bool isStopped() const { return m_isStopped; }
 
-private:
-    class Loader;
+  DECLARE_TRACE();
 
-    // Removes loader from |m_loaders|.
-    void onLoaderFinished(Loader*);
+ private:
+  class Loader;
 
-    HeapHashSet<Member<Loader>> m_loaders;
-    bool m_isStopped;
+  // Removes loader from |m_loaders|.
+  void onLoaderFinished(Loader*);
+
+  HeapHashSet<Member<Loader>> m_loaders;
+  bool m_isStopped;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FetchManager_h
+#endif  // FetchManager_h

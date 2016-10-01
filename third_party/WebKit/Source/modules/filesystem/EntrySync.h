@@ -44,24 +44,31 @@ class Metadata;
 class ExceptionState;
 
 class EntrySync : public EntryBase, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static EntrySync* create(EntryBase*);
+  DEFINE_WRAPPERTYPEINFO();
 
-    DOMFileSystemSync* filesystem() const { return static_cast<DOMFileSystemSync*>(m_fileSystem.get()); }
+ public:
+  static EntrySync* create(EntryBase*);
 
-    Metadata* getMetadata(ExceptionState&);
-    EntrySync* moveTo(DirectoryEntrySync* parent, const String& name, ExceptionState&) const;
-    EntrySync* copyTo(DirectoryEntrySync* parent, const String& name, ExceptionState&) const;
-    void remove(ExceptionState&) const;
-    EntrySync* getParent() const;
+  DOMFileSystemSync* filesystem() const {
+    return static_cast<DOMFileSystemSync*>(m_fileSystem.get());
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  Metadata* getMetadata(ExceptionState&);
+  EntrySync* moveTo(DirectoryEntrySync* parent,
+                    const String& name,
+                    ExceptionState&) const;
+  EntrySync* copyTo(DirectoryEntrySync* parent,
+                    const String& name,
+                    ExceptionState&) const;
+  void remove(ExceptionState&) const;
+  EntrySync* getParent() const;
 
-protected:
-    EntrySync(DOMFileSystemBase*, const String& fullPath);
+  DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  EntrySync(DOMFileSystemBase*, const String& fullPath);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EntrySync_h
+#endif  // EntrySync_h

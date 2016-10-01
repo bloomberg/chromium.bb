@@ -31,30 +31,36 @@
 namespace blink {
 
 class CORE_EXPORT DocumentFragment : public ContainerNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DocumentFragment* create(Document&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    void parseHTML(const String&, Element* contextElement, ParserContentPolicy = AllowScriptingContent);
-    bool parseXML(const String&, Element* contextElement, ParserContentPolicy = AllowScriptingContent);
+ public:
+  static DocumentFragment* create(Document&);
 
-    bool canContainRangeEndPoint() const final { return true; }
-    virtual bool isTemplateContent() const { return false; }
+  void parseHTML(const String&,
+                 Element* contextElement,
+                 ParserContentPolicy = AllowScriptingContent);
+  bool parseXML(const String&,
+                Element* contextElement,
+                ParserContentPolicy = AllowScriptingContent);
 
-protected:
-    DocumentFragment(Document*, ConstructionType = CreateContainer);
-    String nodeName() const final;
+  bool canContainRangeEndPoint() const final { return true; }
+  virtual bool isTemplateContent() const { return false; }
 
-private:
-    NodeType getNodeType() const final;
-    Node* cloneNode(bool deep) override;
-    bool childTypeAllowed(NodeType) const override;
+ protected:
+  DocumentFragment(Document*, ConstructionType = CreateContainer);
+  String nodeName() const final;
 
-    bool isDocumentFragment() const = delete; // This will catch anyone doing an unnecessary check.
+ private:
+  NodeType getNodeType() const final;
+  Node* cloneNode(bool deep) override;
+  bool childTypeAllowed(NodeType) const override;
+
+  bool isDocumentFragment() const =
+      delete;  // This will catch anyone doing an unnecessary check.
 };
 
 DEFINE_NODE_TYPE_CASTS(DocumentFragment, isDocumentFragment());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentFragment_h
+#endif  // DocumentFragment_h

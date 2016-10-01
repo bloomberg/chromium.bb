@@ -34,146 +34,143 @@
 
 namespace blink {
 
-static AtomicString makeVisibleEmptyValue(const Vector<String>& symbols)
-{
-    unsigned maximumLength = 0;
-    for (unsigned index = 0; index < symbols.size(); ++index)
-        maximumLength = std::max(maximumLength, numGraphemeClusters(symbols[index]));
-    StringBuilder builder;
-    builder.reserveCapacity(maximumLength);
-    for (unsigned length = 0; length < maximumLength; ++length)
-        builder.append('-');
-    return builder.toAtomicString();
+static AtomicString makeVisibleEmptyValue(const Vector<String>& symbols) {
+  unsigned maximumLength = 0;
+  for (unsigned index = 0; index < symbols.size(); ++index)
+    maximumLength =
+        std::max(maximumLength, numGraphemeClusters(symbols[index]));
+  StringBuilder builder;
+  builder.reserveCapacity(maximumLength);
+  for (unsigned length = 0; length < maximumLength; ++length)
+    builder.append('-');
+  return builder.toAtomicString();
 }
 
-DateTimeSymbolicFieldElement::DateTimeSymbolicFieldElement(Document& document, FieldOwner& fieldOwner, const Vector<String>& symbols, int minimum, int maximum)
-    : DateTimeFieldElement(document, fieldOwner)
-    , m_symbols(symbols)
-    , m_visibleEmptyValue(makeVisibleEmptyValue(symbols))
-    , m_selectedIndex(-1)
-    , m_typeAhead(this)
-    , m_minimumIndex(minimum)
-    , m_maximumIndex(maximum)
-{
-    DCHECK(!symbols.isEmpty());
-    DCHECK_GE(m_minimumIndex, 0);
-    SECURITY_DCHECK(m_maximumIndex < static_cast<int>(m_symbols.size()));
-    DCHECK_LE(m_minimumIndex, m_maximumIndex);
+DateTimeSymbolicFieldElement::DateTimeSymbolicFieldElement(
+    Document& document,
+    FieldOwner& fieldOwner,
+    const Vector<String>& symbols,
+    int minimum,
+    int maximum)
+    : DateTimeFieldElement(document, fieldOwner),
+      m_symbols(symbols),
+      m_visibleEmptyValue(makeVisibleEmptyValue(symbols)),
+      m_selectedIndex(-1),
+      m_typeAhead(this),
+      m_minimumIndex(minimum),
+      m_maximumIndex(maximum) {
+  DCHECK(!symbols.isEmpty());
+  DCHECK_GE(m_minimumIndex, 0);
+  SECURITY_DCHECK(m_maximumIndex < static_cast<int>(m_symbols.size()));
+  DCHECK_LE(m_minimumIndex, m_maximumIndex);
 }
 
-float DateTimeSymbolicFieldElement::maximumWidth(const ComputedStyle& style)
-{
-    float maximumWidth = computeTextWidth(style, visibleEmptyValue());
-    for (unsigned index = 0; index < m_symbols.size(); ++index)
-        maximumWidth = std::max(maximumWidth, computeTextWidth(style, m_symbols[index]));
-    return maximumWidth + DateTimeFieldElement::maximumWidth(style);
+float DateTimeSymbolicFieldElement::maximumWidth(const ComputedStyle& style) {
+  float maximumWidth = computeTextWidth(style, visibleEmptyValue());
+  for (unsigned index = 0; index < m_symbols.size(); ++index)
+    maximumWidth =
+        std::max(maximumWidth, computeTextWidth(style, m_symbols[index]));
+  return maximumWidth + DateTimeFieldElement::maximumWidth(style);
 }
 
-void DateTimeSymbolicFieldElement::handleKeyboardEvent(KeyboardEvent* keyboardEvent)
-{
-    if (keyboardEvent->type() != EventTypeNames::keypress)
-        return;
+void DateTimeSymbolicFieldElement::handleKeyboardEvent(
+    KeyboardEvent* keyboardEvent) {
+  if (keyboardEvent->type() != EventTypeNames::keypress)
+    return;
 
-    const UChar charCode = WTF::Unicode::toLower(keyboardEvent->charCode());
-    if (charCode < ' ')
-        return;
+  const UChar charCode = WTF::Unicode::toLower(keyboardEvent->charCode());
+  if (charCode < ' ')
+    return;
 
-    keyboardEvent->setDefaultHandled();
+  keyboardEvent->setDefaultHandled();
 
-    int index = m_typeAhead.handleEvent(keyboardEvent, TypeAhead::MatchPrefix | TypeAhead::CycleFirstChar | TypeAhead::MatchIndex);
-    if (index < 0)
-        return;
-    setValueAsInteger(index, DispatchEvent);
+  int index = m_typeAhead.handleEvent(
+      keyboardEvent, TypeAhead::MatchPrefix | TypeAhead::CycleFirstChar |
+                         TypeAhead::MatchIndex);
+  if (index < 0)
+    return;
+  setValueAsInteger(index, DispatchEvent);
 }
 
-bool DateTimeSymbolicFieldElement::hasValue() const
-{
-    return m_selectedIndex >= 0;
+bool DateTimeSymbolicFieldElement::hasValue() const {
+  return m_selectedIndex >= 0;
 }
 
-void DateTimeSymbolicFieldElement::initialize(const AtomicString& pseudo, const String& axHelpText)
-{
-    // The minimum and maximum below are exposed to users, and 1-based numbers
-    // are natural for symbolic fields. For example, the minimum value of a
-    // month field should be 1, not 0.
-    DateTimeFieldElement::initialize(pseudo, axHelpText, m_minimumIndex + 1, m_maximumIndex + 1);
+void DateTimeSymbolicFieldElement::initialize(const AtomicString& pseudo,
+                                              const String& axHelpText) {
+  // The minimum and maximum below are exposed to users, and 1-based numbers
+  // are natural for symbolic fields. For example, the minimum value of a
+  // month field should be 1, not 0.
+  DateTimeFieldElement::initialize(pseudo, axHelpText, m_minimumIndex + 1,
+                                   m_maximumIndex + 1);
 }
 
-void DateTimeSymbolicFieldElement::setEmptyValue(EventBehavior eventBehavior)
-{
-    if (isDisabled())
-        return;
-    m_selectedIndex = invalidIndex;
-    updateVisibleValue(eventBehavior);
+void DateTimeSymbolicFieldElement::setEmptyValue(EventBehavior eventBehavior) {
+  if (isDisabled())
+    return;
+  m_selectedIndex = invalidIndex;
+  updateVisibleValue(eventBehavior);
 }
 
-void DateTimeSymbolicFieldElement::setValueAsInteger(int newSelectedIndex, EventBehavior eventBehavior)
-{
-    m_selectedIndex = std::max(0, std::min(newSelectedIndex, static_cast<int>(m_symbols.size() - 1)));
-    updateVisibleValue(eventBehavior);
+void DateTimeSymbolicFieldElement::setValueAsInteger(
+    int newSelectedIndex,
+    EventBehavior eventBehavior) {
+  m_selectedIndex = std::max(
+      0, std::min(newSelectedIndex, static_cast<int>(m_symbols.size() - 1)));
+  updateVisibleValue(eventBehavior);
 }
 
-void DateTimeSymbolicFieldElement::stepDown()
-{
-    if (hasValue()) {
-        if (!indexIsInRange(--m_selectedIndex))
-            m_selectedIndex = m_maximumIndex;
-    } else {
-        m_selectedIndex = m_maximumIndex;
-    }
-    updateVisibleValue(DispatchEvent);
+void DateTimeSymbolicFieldElement::stepDown() {
+  if (hasValue()) {
+    if (!indexIsInRange(--m_selectedIndex))
+      m_selectedIndex = m_maximumIndex;
+  } else {
+    m_selectedIndex = m_maximumIndex;
+  }
+  updateVisibleValue(DispatchEvent);
 }
 
-void DateTimeSymbolicFieldElement::stepUp()
-{
-    if (hasValue()) {
-        if (!indexIsInRange(++m_selectedIndex))
-            m_selectedIndex = m_minimumIndex;
-    } else {
-        m_selectedIndex = m_minimumIndex;
-    }
-    updateVisibleValue(DispatchEvent);
+void DateTimeSymbolicFieldElement::stepUp() {
+  if (hasValue()) {
+    if (!indexIsInRange(++m_selectedIndex))
+      m_selectedIndex = m_minimumIndex;
+  } else {
+    m_selectedIndex = m_minimumIndex;
+  }
+  updateVisibleValue(DispatchEvent);
 }
 
-String DateTimeSymbolicFieldElement::value() const
-{
-    return hasValue() ? m_symbols[m_selectedIndex] : emptyString();
+String DateTimeSymbolicFieldElement::value() const {
+  return hasValue() ? m_symbols[m_selectedIndex] : emptyString();
 }
 
-int DateTimeSymbolicFieldElement::valueAsInteger() const
-{
-    return m_selectedIndex;
+int DateTimeSymbolicFieldElement::valueAsInteger() const {
+  return m_selectedIndex;
 }
 
-int DateTimeSymbolicFieldElement::valueForARIAValueNow() const
-{
-    // Synchronize with minimum/maximum adjustment in initialize().
-    return m_selectedIndex + 1;
+int DateTimeSymbolicFieldElement::valueForARIAValueNow() const {
+  // Synchronize with minimum/maximum adjustment in initialize().
+  return m_selectedIndex + 1;
 }
 
-String DateTimeSymbolicFieldElement::visibleEmptyValue() const
-{
-    return m_visibleEmptyValue;
+String DateTimeSymbolicFieldElement::visibleEmptyValue() const {
+  return m_visibleEmptyValue;
 }
 
-String DateTimeSymbolicFieldElement::visibleValue() const
-{
-    return hasValue() ? m_symbols[m_selectedIndex] : visibleEmptyValue();
+String DateTimeSymbolicFieldElement::visibleValue() const {
+  return hasValue() ? m_symbols[m_selectedIndex] : visibleEmptyValue();
 }
 
-int DateTimeSymbolicFieldElement::indexOfSelectedOption() const
-{
-    return m_selectedIndex;
+int DateTimeSymbolicFieldElement::indexOfSelectedOption() const {
+  return m_selectedIndex;
 }
 
-int DateTimeSymbolicFieldElement::optionCount() const
-{
-    return m_symbols.size();
+int DateTimeSymbolicFieldElement::optionCount() const {
+  return m_symbols.size();
 }
 
-String DateTimeSymbolicFieldElement::optionAtIndex(int index) const
-{
-    return m_symbols[index];
+String DateTimeSymbolicFieldElement::optionAtIndex(int index) const {
+  return m_symbols[index];
 }
 
-} // namespace blink
+}  // namespace blink

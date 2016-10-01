@@ -11,6 +11,6 @@ namespace blink {
 
 using BlameContext = base::trace_event::BlameContext;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BlameContext_h
+#endif  // BlameContext_h

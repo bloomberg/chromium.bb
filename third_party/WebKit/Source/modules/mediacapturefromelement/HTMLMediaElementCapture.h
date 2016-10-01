@@ -14,11 +14,12 @@ class HTMLMediaElement;
 class MediaStream;
 
 class HTMLMediaElementCapture {
-    STATIC_ONLY(HTMLMediaElementCapture);
-public:
-    static MediaStream* captureStream(HTMLMediaElement&, ExceptionState&);
+  STATIC_ONLY(HTMLMediaElementCapture);
+
+ public:
+  static MediaStream* captureStream(HTMLMediaElement&, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

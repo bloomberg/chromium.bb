@@ -45,32 +45,42 @@ struct WebIDBMetadata;
 struct WebIDBValue;
 
 class WebIDBCallbacksImpl final : public WebIDBCallbacks {
-    USING_FAST_MALLOC(WebIDBCallbacksImpl);
-public:
-    static std::unique_ptr<WebIDBCallbacksImpl> create(IDBRequest*);
+  USING_FAST_MALLOC(WebIDBCallbacksImpl);
 
-    ~WebIDBCallbacksImpl() override;
+ public:
+  static std::unique_ptr<WebIDBCallbacksImpl> create(IDBRequest*);
 
-    // Pointers transfer ownership.
-    void onError(const WebIDBDatabaseError&) override;
-    void onSuccess(const WebVector<WebString>&) override;
-    void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) override;
-    void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
-    void onSuccess(const WebIDBKey&) override;
-    void onSuccess(const WebIDBValue&) override;
-    void onSuccess(const WebVector<WebIDBValue>&) override;
-    void onSuccess(long long) override;
-    void onSuccess() override;
-    void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebIDBValue&) override;
-    void onBlocked(long long oldVersion) override;
-    void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) override;
+  ~WebIDBCallbacksImpl() override;
 
-private:
-    explicit WebIDBCallbacksImpl(IDBRequest*);
+  // Pointers transfer ownership.
+  void onError(const WebIDBDatabaseError&) override;
+  void onSuccess(const WebVector<WebString>&) override;
+  void onSuccess(WebIDBCursor*,
+                 const WebIDBKey&,
+                 const WebIDBKey& primaryKey,
+                 const WebIDBValue&) override;
+  void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) override;
+  void onSuccess(const WebIDBKey&) override;
+  void onSuccess(const WebIDBValue&) override;
+  void onSuccess(const WebVector<WebIDBValue>&) override;
+  void onSuccess(long long) override;
+  void onSuccess() override;
+  void onSuccess(const WebIDBKey&,
+                 const WebIDBKey& primaryKey,
+                 const WebIDBValue&) override;
+  void onBlocked(long long oldVersion) override;
+  void onUpgradeNeeded(long long oldVersion,
+                       WebIDBDatabase*,
+                       const WebIDBMetadata&,
+                       unsigned short dataLoss,
+                       WebString dataLossMessage) override;
 
-    Persistent<IDBRequest> m_request;
+ private:
+  explicit WebIDBCallbacksImpl(IDBRequest*);
+
+  Persistent<IDBRequest> m_request;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBCallbacksImpl_h
+#endif  // WebIDBCallbacksImpl_h

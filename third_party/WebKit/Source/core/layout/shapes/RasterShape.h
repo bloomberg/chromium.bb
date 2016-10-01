@@ -40,73 +40,75 @@
 namespace blink {
 
 class RasterShapeIntervals {
-    USING_FAST_MALLOC(RasterShapeIntervals);
-public:
-    RasterShapeIntervals(unsigned size, int offset = 0)
-        : m_offset(offset)
-    {
-        m_intervals.resize(clampTo<int>(size));
-    }
+  USING_FAST_MALLOC(RasterShapeIntervals);
 
-    void initializeBounds();
-    const IntRect& bounds() const { return m_bounds; }
-    bool isEmpty() const { return m_bounds.isEmpty(); }
+ public:
+  RasterShapeIntervals(unsigned size, int offset = 0) : m_offset(offset) {
+    m_intervals.resize(clampTo<int>(size));
+  }
 
-    IntShapeInterval& intervalAt(int y)
-    {
-        ASSERT(y + m_offset >= 0 && static_cast<unsigned>(y + m_offset) < m_intervals.size());
-        return m_intervals[y + m_offset];
-    }
+  void initializeBounds();
+  const IntRect& bounds() const { return m_bounds; }
+  bool isEmpty() const { return m_bounds.isEmpty(); }
 
-    const IntShapeInterval& intervalAt(int y) const
-    {
-        ASSERT(y + m_offset >= 0 && static_cast<unsigned>(y + m_offset) < m_intervals.size());
-        return m_intervals[y + m_offset];
-    }
+  IntShapeInterval& intervalAt(int y) {
+    ASSERT(y + m_offset >= 0 &&
+           static_cast<unsigned>(y + m_offset) < m_intervals.size());
+    return m_intervals[y + m_offset];
+  }
 
-    std::unique_ptr<RasterShapeIntervals> computeShapeMarginIntervals(int shapeMargin) const;
+  const IntShapeInterval& intervalAt(int y) const {
+    ASSERT(y + m_offset >= 0 &&
+           static_cast<unsigned>(y + m_offset) < m_intervals.size());
+    return m_intervals[y + m_offset];
+  }
 
-    void buildBoundsPath(Path&) const;
+  std::unique_ptr<RasterShapeIntervals> computeShapeMarginIntervals(
+      int shapeMargin) const;
 
-private:
-    int size() const { return m_intervals.size(); }
-    int offset() const { return m_offset; }
-    int minY() const { return -m_offset; }
-    int maxY() const { return -m_offset + m_intervals.size(); }
+  void buildBoundsPath(Path&) const;
 
-    IntRect m_bounds;
-    Vector<IntShapeInterval> m_intervals;
-    int m_offset;
+ private:
+  int size() const { return m_intervals.size(); }
+  int offset() const { return m_offset; }
+  int minY() const { return -m_offset; }
+  int maxY() const { return -m_offset + m_intervals.size(); }
+
+  IntRect m_bounds;
+  Vector<IntShapeInterval> m_intervals;
+  int m_offset;
 };
 
 class RasterShape final : public Shape {
-    WTF_MAKE_NONCOPYABLE(RasterShape);
-public:
-    RasterShape(std::unique_ptr<RasterShapeIntervals> intervals, const IntSize& marginRectSize)
-        : m_intervals(std::move(intervals))
-        , m_marginRectSize(marginRectSize)
-    {
-        m_intervals->initializeBounds();
-    }
+  WTF_MAKE_NONCOPYABLE(RasterShape);
 
-    LayoutRect shapeMarginLogicalBoundingBox() const override { return static_cast<LayoutRect>(marginIntervals().bounds()); }
-    bool isEmpty() const override { return m_intervals->isEmpty(); }
-    LineSegment getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const override;
-    void buildDisplayPaths(DisplayPaths& paths) const override
-    {
-        m_intervals->buildBoundsPath(paths.shape);
-        if (shapeMargin())
-            marginIntervals().buildBoundsPath(paths.marginShape);
-    }
+ public:
+  RasterShape(std::unique_ptr<RasterShapeIntervals> intervals,
+              const IntSize& marginRectSize)
+      : m_intervals(std::move(intervals)), m_marginRectSize(marginRectSize) {
+    m_intervals->initializeBounds();
+  }
 
-private:
-    const RasterShapeIntervals& marginIntervals() const;
+  LayoutRect shapeMarginLogicalBoundingBox() const override {
+    return static_cast<LayoutRect>(marginIntervals().bounds());
+  }
+  bool isEmpty() const override { return m_intervals->isEmpty(); }
+  LineSegment getExcludedInterval(LayoutUnit logicalTop,
+                                  LayoutUnit logicalHeight) const override;
+  void buildDisplayPaths(DisplayPaths& paths) const override {
+    m_intervals->buildBoundsPath(paths.shape);
+    if (shapeMargin())
+      marginIntervals().buildBoundsPath(paths.marginShape);
+  }
 
-    std::unique_ptr<RasterShapeIntervals> m_intervals;
-    mutable std::unique_ptr<RasterShapeIntervals> m_marginIntervals;
-    IntSize m_marginRectSize;
+ private:
+  const RasterShapeIntervals& marginIntervals() const;
+
+  std::unique_ptr<RasterShapeIntervals> m_intervals;
+  mutable std::unique_ptr<RasterShapeIntervals> m_marginIntervals;
+  IntSize m_marginRectSize;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RasterShape_h
+#endif  // RasterShape_h

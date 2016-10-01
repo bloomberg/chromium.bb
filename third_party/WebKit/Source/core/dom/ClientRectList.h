@@ -37,46 +37,43 @@ namespace blink {
 
 class ClientRect;
 
-class CORE_EXPORT ClientRectList final : public GarbageCollected<ClientRectList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ClientRectList* create()
-    {
-        return new ClientRectList;
-    }
-    static ClientRectList* create(const Vector<FloatQuad>& quads)
-    {
-        return new ClientRectList(quads);
-    }
+class CORE_EXPORT ClientRectList final
+    : public GarbageCollected<ClientRectList>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    template<typename Rects>
-    static ClientRectList* create(const Rects& rects)
-    {
-        return new ClientRectList(rects);
-    }
+ public:
+  static ClientRectList* create() { return new ClientRectList; }
+  static ClientRectList* create(const Vector<FloatQuad>& quads) {
+    return new ClientRectList(quads);
+  }
 
-    unsigned length() const;
-    ClientRect* item(unsigned index);
-    ClientRect* anonymousIndexedGetter(unsigned index) { return item(index); }
+  template <typename Rects>
+  static ClientRectList* create(const Rects& rects) {
+    return new ClientRectList(rects);
+  }
 
-    DECLARE_TRACE();
+  unsigned length() const;
+  ClientRect* item(unsigned index);
+  ClientRect* anonymousIndexedGetter(unsigned index) { return item(index); }
 
-private:
-    ClientRectList();
+  DECLARE_TRACE();
 
-    template<typename Rects>
-    explicit ClientRectList(const Rects& rects)
-    {
-        m_list.reserveInitialCapacity(rects.size());
-        for (const auto& r : rects)
-            m_list.append(ClientRect::create(FloatRect(r)));
-    }
+ private:
+  ClientRectList();
 
-    explicit ClientRectList(const Vector<FloatQuad>&);
+  template <typename Rects>
+  explicit ClientRectList(const Rects& rects) {
+    m_list.reserveInitialCapacity(rects.size());
+    for (const auto& r : rects)
+      m_list.append(ClientRect::create(FloatRect(r)));
+  }
 
-    HeapVector<Member<ClientRect>> m_list;
+  explicit ClientRectList(const Vector<FloatQuad>&);
+
+  HeapVector<Member<ClientRect>> m_list;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClientRectList_h
+#endif  // ClientRectList_h

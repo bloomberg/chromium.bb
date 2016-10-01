@@ -37,23 +37,31 @@ namespace blink {
 class WebGLRenderingContextBase;
 
 class ANGLEInstancedArrays final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ANGLEInstancedArrays* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~ANGLEInstancedArrays() override;
-    WebGLExtensionName name() const override;
+ public:
+  static ANGLEInstancedArrays* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-    void drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
-    void drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount);
-    void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
+  ~ANGLEInstancedArrays() override;
+  WebGLExtensionName name() const override;
 
-private:
-    explicit ANGLEInstancedArrays(WebGLRenderingContextBase*);
+  void drawArraysInstancedANGLE(GLenum mode,
+                                GLint first,
+                                GLsizei count,
+                                GLsizei primcount);
+  void drawElementsInstancedANGLE(GLenum mode,
+                                  GLsizei count,
+                                  GLenum type,
+                                  long long offset,
+                                  GLsizei primcount);
+  void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
+
+ private:
+  explicit ANGLEInstancedArrays(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ANGLEInstancedArrays_h
+#endif  // ANGLEInstancedArrays_h

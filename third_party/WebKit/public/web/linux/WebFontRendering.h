@@ -38,19 +38,19 @@
 namespace blink {
 
 class WebFontRendering {
-public:
-    // Set global font renderering preferences.
+ public:
+  // Set global font renderering preferences.
 
-    BLINK_EXPORT static void setSkiaFontManager(SkFontMgr*);
-    BLINK_EXPORT static void setHinting(SkPaint::Hinting);
-    BLINK_EXPORT static void setAutoHint(bool);
-    BLINK_EXPORT static void setUseBitmaps(bool);
-    BLINK_EXPORT static void setAntiAlias(bool);
-    BLINK_EXPORT static void setSubpixelRendering(bool);
-    BLINK_EXPORT static void setSubpixelPositioning(bool);
-    BLINK_EXPORT static void setDefaultFontSize(int);
+  BLINK_EXPORT static void setSkiaFontManager(SkFontMgr*);
+  BLINK_EXPORT static void setHinting(SkPaint::Hinting);
+  BLINK_EXPORT static void setAutoHint(bool);
+  BLINK_EXPORT static void setUseBitmaps(bool);
+  BLINK_EXPORT static void setAntiAlias(bool);
+  BLINK_EXPORT static void setSubpixelRendering(bool);
+  BLINK_EXPORT static void setSubpixelPositioning(bool);
+  BLINK_EXPORT static void setDefaultFontSize(int);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

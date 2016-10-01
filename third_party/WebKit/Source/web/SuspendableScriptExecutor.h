@@ -16,37 +16,50 @@ class LocalFrame;
 class ScriptSourceCode;
 class WebScriptExecutionCallback;
 
-class SuspendableScriptExecutor final : public GarbageCollectedFinalized<SuspendableScriptExecutor>, public SuspendableTimer {
-    USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
-public:
-    static void createAndRun(LocalFrame*, int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
-    ~SuspendableScriptExecutor() override;
+class SuspendableScriptExecutor final
+    : public GarbageCollectedFinalized<SuspendableScriptExecutor>,
+      public SuspendableTimer {
+  USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
 
-    void contextDestroyed() override;
+ public:
+  static void createAndRun(LocalFrame*,
+                           int worldID,
+                           const HeapVector<ScriptSourceCode>& sources,
+                           int extensionGroup,
+                           bool userGesture,
+                           WebScriptExecutionCallback*);
+  ~SuspendableScriptExecutor() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  void contextDestroyed() override;
 
-private:
-    SuspendableScriptExecutor(LocalFrame*, int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void fired() override;
+ private:
+  SuspendableScriptExecutor(LocalFrame*,
+                            int worldID,
+                            const HeapVector<ScriptSourceCode>& sources,
+                            int extensionGroup,
+                            bool userGesture,
+                            WebScriptExecutionCallback*);
 
-    void run();
-    void executeAndDestroySelf();
-    void dispose();
+  void fired() override;
 
-    Member<LocalFrame> m_frame;
-    HeapVector<ScriptSourceCode> m_sources;
-    WebScriptExecutionCallback* m_callback;
+  void run();
+  void executeAndDestroySelf();
+  void dispose();
 
-    SelfKeepAlive<SuspendableScriptExecutor> m_keepAlive;
+  Member<LocalFrame> m_frame;
+  HeapVector<ScriptSourceCode> m_sources;
+  WebScriptExecutionCallback* m_callback;
 
-    int m_worldID;
-    int m_extensionGroup;
+  SelfKeepAlive<SuspendableScriptExecutor> m_keepAlive;
 
-    bool m_userGesture;
+  int m_worldID;
+  int m_extensionGroup;
+
+  bool m_userGesture;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SuspendableScriptExecutor_h
+#endif  // SuspendableScriptExecutor_h

@@ -10,13 +10,12 @@
 namespace blink {
 
 class NumberAttributeFunctions {
-public:
-    static bool isNonNegative(const QualifiedName& attribute)
-    {
-        return attribute == SVGNames::pathLengthAttr;
-    }
+ public:
+  static bool isNonNegative(const QualifiedName& attribute) {
+    return attribute == SVGNames::pathLengthAttr;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NumberAttributeFunctions_h
+#endif  // NumberAttributeFunctions_h

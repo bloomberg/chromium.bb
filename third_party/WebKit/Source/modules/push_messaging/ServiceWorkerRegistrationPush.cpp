@@ -9,47 +9,44 @@
 
 namespace blink {
 
-ServiceWorkerRegistrationPush::ServiceWorkerRegistrationPush(ServiceWorkerRegistration* registration)
-    : m_registration(registration)
-{
+ServiceWorkerRegistrationPush::ServiceWorkerRegistrationPush(
+    ServiceWorkerRegistration* registration)
+    : m_registration(registration) {}
+
+ServiceWorkerRegistrationPush::~ServiceWorkerRegistrationPush() {}
+
+const char* ServiceWorkerRegistrationPush::supplementName() {
+  return "ServiceWorkerRegistrationPush";
 }
 
-ServiceWorkerRegistrationPush::~ServiceWorkerRegistrationPush()
-{
+ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::from(
+    ServiceWorkerRegistration& registration) {
+  ServiceWorkerRegistrationPush* supplement =
+      static_cast<ServiceWorkerRegistrationPush*>(
+          Supplement<ServiceWorkerRegistration>::from(registration,
+                                                      supplementName()));
+  if (!supplement) {
+    supplement = new ServiceWorkerRegistrationPush(&registration);
+    provideTo(registration, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-const char* ServiceWorkerRegistrationPush::supplementName()
-{
-    return "ServiceWorkerRegistrationPush";
+PushManager* ServiceWorkerRegistrationPush::pushManager(
+    ServiceWorkerRegistration& registration) {
+  return ServiceWorkerRegistrationPush::from(registration).pushManager();
 }
 
-ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::from(ServiceWorkerRegistration& registration)
-{
-    ServiceWorkerRegistrationPush* supplement = static_cast<ServiceWorkerRegistrationPush*>(Supplement<ServiceWorkerRegistration>::from(registration, supplementName()));
-    if (!supplement) {
-        supplement = new ServiceWorkerRegistrationPush(&registration);
-        provideTo(registration, supplementName(), supplement);
-    }
-    return *supplement;
+PushManager* ServiceWorkerRegistrationPush::pushManager() {
+  if (!m_pushManager)
+    m_pushManager = PushManager::create(m_registration);
+  return m_pushManager.get();
 }
 
-PushManager* ServiceWorkerRegistrationPush::pushManager(ServiceWorkerRegistration& registration)
-{
-    return ServiceWorkerRegistrationPush::from(registration).pushManager();
+DEFINE_TRACE(ServiceWorkerRegistrationPush) {
+  visitor->trace(m_registration);
+  visitor->trace(m_pushManager);
+  Supplement<ServiceWorkerRegistration>::trace(visitor);
 }
 
-PushManager* ServiceWorkerRegistrationPush::pushManager()
-{
-    if (!m_pushManager)
-        m_pushManager = PushManager::create(m_registration);
-    return m_pushManager.get();
-}
-
-DEFINE_TRACE(ServiceWorkerRegistrationPush)
-{
-    visitor->trace(m_registration);
-    visitor->trace(m_pushManager);
-    Supplement<ServiceWorkerRegistration>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

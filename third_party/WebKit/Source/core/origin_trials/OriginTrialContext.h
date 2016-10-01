@@ -32,68 +32,69 @@ class WebTrialTokenValidator;
 // is validated against any provided tokens.
 //
 // For more information, see https://github.com/jpchase/OriginTrials.
-class CORE_EXPORT OriginTrialContext final : public GarbageCollectedFinalized<OriginTrialContext>, public Supplement<ExecutionContext> {
-USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
-public:
-    enum CreateMode {
-        CreateIfNotExists,
-        DontCreateIfNotExists
-    };
+class CORE_EXPORT OriginTrialContext final
+    : public GarbageCollectedFinalized<OriginTrialContext>,
+      public Supplement<ExecutionContext> {
+  USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
+ public:
+  enum CreateMode { CreateIfNotExists, DontCreateIfNotExists };
 
-    OriginTrialContext(ExecutionContext*, WebTrialTokenValidator*);
+  OriginTrialContext(ExecutionContext*, WebTrialTokenValidator*);
 
-    static const char* supplementName();
+  static const char* supplementName();
 
-    // Returns the OriginTrialContext for a specific ExecutionContext. If
-    // |create| is false, this returns null if no OriginTrialContext exists
-    // yet for the ExecutionContext.
-    static OriginTrialContext* from(ExecutionContext*, CreateMode = CreateIfNotExists);
+  // Returns the OriginTrialContext for a specific ExecutionContext. If
+  // |create| is false, this returns null if no OriginTrialContext exists
+  // yet for the ExecutionContext.
+  static OriginTrialContext* from(ExecutionContext*,
+                                  CreateMode = CreateIfNotExists);
 
-    // Parses an Origin-Trial header as specified in
-    // https://jpchase.github.io/OriginTrials/#header into individual tokens.
-    // Returns null if the header value was malformed and could not be parsed.
-    // If the header does not contain any tokens, this returns an empty vector.
-    static std::unique_ptr<Vector<String>> parseHeaderValue(const String& headerValue);
+  // Parses an Origin-Trial header as specified in
+  // https://jpchase.github.io/OriginTrials/#header into individual tokens.
+  // Returns null if the header value was malformed and could not be parsed.
+  // If the header does not contain any tokens, this returns an empty vector.
+  static std::unique_ptr<Vector<String>> parseHeaderValue(
+      const String& headerValue);
 
-    static void addTokensFromHeader(ExecutionContext*, const String& headerValue);
-    static void addTokens(ExecutionContext*, const Vector<String>* tokens);
+  static void addTokensFromHeader(ExecutionContext*, const String& headerValue);
+  static void addTokens(ExecutionContext*, const Vector<String>* tokens);
 
-    // Returns the trial tokens that are active in a specific ExecutionContext.
-    // Returns null if no tokens were added to the ExecutionContext.
-    static std::unique_ptr<Vector<String>> getTokens(ExecutionContext*);
+  // Returns the trial tokens that are active in a specific ExecutionContext.
+  // Returns null if no tokens were added to the ExecutionContext.
+  static std::unique_ptr<Vector<String>> getTokens(ExecutionContext*);
 
-    void addToken(const String& token);
-    void addTokens(const Vector<String>& tokens);
+  void addToken(const String& token);
+  void addTokens(const Vector<String>& tokens);
 
-    // Returns true if the feature should be considered enabled for the current
-    // execution context.
-    bool isFeatureEnabled(const String& featureName);
+  // Returns true if the feature should be considered enabled for the current
+  // execution context.
+  bool isFeatureEnabled(const String& featureName);
 
-    // Installs JavaScript bindings for any features which should be enabled by
-    // the current set of trial tokens. This method is idempotent; only features
-    // which have been enabled since the last time it was run will be installed.
-    // If the V8 context for the host execution context has not been
-    // initialized, then this method will return without doing anything.
-    void initializePendingFeatures();
+  // Installs JavaScript bindings for any features which should be enabled by
+  // the current set of trial tokens. This method is idempotent; only features
+  // which have been enabled since the last time it was run will be installed.
+  // If the V8 context for the host execution context has not been
+  // initialized, then this method will return without doing anything.
+  void initializePendingFeatures();
 
-    void setFeatureBindingsInstalled(const String& featureName);
-    bool featureBindingsInstalled(const String& featureName);
+  void setFeatureBindingsInstalled(const String& featureName);
+  bool featureBindingsInstalled(const String& featureName);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    void validateToken(const String& token);
+ private:
+  void validateToken(const String& token);
 
-    Member<ExecutionContext> m_host;
-    Vector<String> m_tokens;
-    HashSet<String> m_enabledFeatures;
-    WebTrialTokenValidator* m_trialTokenValidator;
+  Member<ExecutionContext> m_host;
+  Vector<String> m_tokens;
+  HashSet<String> m_enabledFeatures;
+  WebTrialTokenValidator* m_trialTokenValidator;
 
-    // Records whether a feature has been installed into the host's V8 context,
-    // for each feature name.
-    HashSet<String> m_bindingsInstalled;
+  // Records whether a feature has been installed into the host's V8 context,
+  // for each feature name.
+  HashSet<String> m_bindingsInstalled;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OriginTrialContext_h
+#endif  // OriginTrialContext_h

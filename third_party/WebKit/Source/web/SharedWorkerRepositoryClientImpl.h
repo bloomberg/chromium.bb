@@ -41,26 +41,32 @@ namespace blink {
 
 class WebSharedWorkerRepositoryClient;
 
-class SharedWorkerRepositoryClientImpl final : public SharedWorkerRepositoryClient {
-    WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClientImpl);
-    USING_FAST_MALLOC(SharedWorkerRepositoryClientImpl);
-public:
-    static std::unique_ptr<SharedWorkerRepositoryClientImpl> create(WebSharedWorkerRepositoryClient* client)
-    {
-        return wrapUnique(new SharedWorkerRepositoryClientImpl(client));
-    }
+class SharedWorkerRepositoryClientImpl final
+    : public SharedWorkerRepositoryClient {
+  WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClientImpl);
+  USING_FAST_MALLOC(SharedWorkerRepositoryClientImpl);
 
-    ~SharedWorkerRepositoryClientImpl() override { }
+ public:
+  static std::unique_ptr<SharedWorkerRepositoryClientImpl> create(
+      WebSharedWorkerRepositoryClient* client) {
+    return wrapUnique(new SharedWorkerRepositoryClientImpl(client));
+  }
 
-    void connect(SharedWorker*, WebMessagePortChannelUniquePtr, const KURL&, const String& name, ExceptionState&) override;
-    void documentDetached(Document*) override;
+  ~SharedWorkerRepositoryClientImpl() override {}
 
-private:
-    explicit SharedWorkerRepositoryClientImpl(WebSharedWorkerRepositoryClient*);
+  void connect(SharedWorker*,
+               WebMessagePortChannelUniquePtr,
+               const KURL&,
+               const String& name,
+               ExceptionState&) override;
+  void documentDetached(Document*) override;
 
-    WebSharedWorkerRepositoryClient* m_client;
+ private:
+  explicit SharedWorkerRepositoryClientImpl(WebSharedWorkerRepositoryClient*);
+
+  WebSharedWorkerRepositoryClient* m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SharedWorkerRepositoryClientImpl_h
+#endif  // SharedWorkerRepositoryClientImpl_h

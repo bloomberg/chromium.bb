@@ -14,108 +14,96 @@ namespace blink {
 
 namespace {
 
-CustomElementReactionStack& customElementReactionStack()
-{
-    DEFINE_STATIC_LOCAL(CustomElementReactionStack, customElementReactionStack, (new CustomElementReactionStack));
-    return customElementReactionStack;
+CustomElementReactionStack& customElementReactionStack() {
+  DEFINE_STATIC_LOCAL(CustomElementReactionStack, customElementReactionStack,
+                      (new CustomElementReactionStack));
+  return customElementReactionStack;
 }
 
-} // namespace
+}  // namespace
 
 // TODO(dominicc): Consider using linked heap structures, avoiding
 // finalizers, to make short-lived entries fast.
 
-CustomElementReactionStack::CustomElementReactionStack()
-{
+CustomElementReactionStack::CustomElementReactionStack() {}
+
+DEFINE_TRACE(CustomElementReactionStack) {
+  visitor->trace(m_map);
+  visitor->trace(m_stack);
+  visitor->trace(m_backupQueue);
 }
 
-DEFINE_TRACE(CustomElementReactionStack)
-{
-    visitor->trace(m_map);
-    visitor->trace(m_stack);
-    visitor->trace(m_backupQueue);
+void CustomElementReactionStack::push() {
+  m_stack.append(nullptr);
 }
 
-void CustomElementReactionStack::push()
-{
-    m_stack.append(nullptr);
+void CustomElementReactionStack::popInvokingReactions() {
+  ElementQueue* queue = m_stack.last();
+  if (queue)
+    invokeReactions(*queue);
+  m_stack.removeLast();
 }
 
-void CustomElementReactionStack::popInvokingReactions()
-{
-    ElementQueue* queue = m_stack.last();
-    if (queue)
-        invokeReactions(*queue);
-    m_stack.removeLast();
-}
-
-void CustomElementReactionStack::invokeReactions(ElementQueue& queue)
-{
-    for (size_t i = 0; i < queue.size(); ++i) {
-        Element* element = queue[i];
-        if (CustomElementReactionQueue* reactions = m_map.get(element)) {
-            reactions->invokeReactions(element);
-            CHECK(reactions->isEmpty());
-            m_map.remove(element);
-        }
+void CustomElementReactionStack::invokeReactions(ElementQueue& queue) {
+  for (size_t i = 0; i < queue.size(); ++i) {
+    Element* element = queue[i];
+    if (CustomElementReactionQueue* reactions = m_map.get(element)) {
+      reactions->invokeReactions(element);
+      CHECK(reactions->isEmpty());
+      m_map.remove(element);
     }
+  }
 }
 
 void CustomElementReactionStack::enqueueToCurrentQueue(
     Element* element,
-    CustomElementReaction* reaction)
-{
-    enqueue(m_stack.last(), element, reaction);
+    CustomElementReaction* reaction) {
+  enqueue(m_stack.last(), element, reaction);
 }
 
-void CustomElementReactionStack::enqueue(
-    Member<ElementQueue>& queue,
-    Element* element,
-    CustomElementReaction* reaction)
-{
-    if (!queue)
-        queue = new ElementQueue();
-    queue->append(element);
+void CustomElementReactionStack::enqueue(Member<ElementQueue>& queue,
+                                         Element* element,
+                                         CustomElementReaction* reaction) {
+  if (!queue)
+    queue = new ElementQueue();
+  queue->append(element);
 
-    CustomElementReactionQueue* reactions = m_map.get(element);
-    if (!reactions) {
-        reactions = new CustomElementReactionQueue();
-        m_map.add(element, reactions);
-    }
+  CustomElementReactionQueue* reactions = m_map.get(element);
+  if (!reactions) {
+    reactions = new CustomElementReactionQueue();
+    m_map.add(element, reactions);
+  }
 
-    reactions->add(reaction);
+  reactions->add(reaction);
 }
 
 void CustomElementReactionStack::enqueueToBackupQueue(
     Element* element,
-    CustomElementReaction* reaction)
-{
-    // https://html.spec.whatwg.org/multipage/scripting.html#backup-element-queue
+    CustomElementReaction* reaction) {
+  // https://html.spec.whatwg.org/multipage/scripting.html#backup-element-queue
 
-    DCHECK(!CEReactionsScope::current());
-    DCHECK(m_stack.isEmpty());
-    DCHECK(isMainThread());
+  DCHECK(!CEReactionsScope::current());
+  DCHECK(m_stack.isEmpty());
+  DCHECK(isMainThread());
 
-    // If the processing the backup element queue is not set:
-    if (!m_backupQueue || m_backupQueue->isEmpty()) {
-        Microtask::enqueueMicrotask(WTF::bind(
-            &CustomElementReactionStack::invokeBackupQueue,
-            Persistent<CustomElementReactionStack>(this)));
-    }
+  // If the processing the backup element queue is not set:
+  if (!m_backupQueue || m_backupQueue->isEmpty()) {
+    Microtask::enqueueMicrotask(
+        WTF::bind(&CustomElementReactionStack::invokeBackupQueue,
+                  Persistent<CustomElementReactionStack>(this)));
+  }
 
-    enqueue(m_backupQueue, element, reaction);
+  enqueue(m_backupQueue, element, reaction);
 }
 
-void CustomElementReactionStack::invokeBackupQueue()
-{
-    DCHECK(isMainThread());
-    invokeReactions(*m_backupQueue);
-    m_backupQueue->clear();
+void CustomElementReactionStack::invokeBackupQueue() {
+  DCHECK(isMainThread());
+  invokeReactions(*m_backupQueue);
+  m_backupQueue->clear();
 }
 
-CustomElementReactionStack& CustomElementReactionStack::current()
-{
-    return customElementReactionStack();
+CustomElementReactionStack& CustomElementReactionStack::current() {
+  return customElementReactionStack();
 }
 
-} // namespace blink
+}  // namespace blink

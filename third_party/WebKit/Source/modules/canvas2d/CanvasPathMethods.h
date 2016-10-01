@@ -37,29 +37,52 @@ namespace blink {
 class ExceptionState;
 
 class MODULES_EXPORT CanvasPathMethods {
-public:
-    virtual ~CanvasPathMethods() { }
+ public:
+  virtual ~CanvasPathMethods() {}
 
-    void closePath();
-    void moveTo(float x, float y);
-    void lineTo(float x, float y);
-    void quadraticCurveTo(float cpx, float cpy, float x, float y);
-    void bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
-    void arcTo(float x0, float y0, float x1, float y1, float radius, ExceptionState&);
-    void arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise, ExceptionState&);
-    void ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise, ExceptionState&);
-    void rect(float x, float y, float width, float height);
+  void closePath();
+  void moveTo(float x, float y);
+  void lineTo(float x, float y);
+  void quadraticCurveTo(float cpx, float cpy, float x, float y);
+  void bezierCurveTo(float cp1x,
+                     float cp1y,
+                     float cp2x,
+                     float cp2y,
+                     float x,
+                     float y);
+  void arcTo(float x0,
+             float y0,
+             float x1,
+             float y1,
+             float radius,
+             ExceptionState&);
+  void arc(float x,
+           float y,
+           float radius,
+           float startAngle,
+           float endAngle,
+           bool anticlockwise,
+           ExceptionState&);
+  void ellipse(float x,
+               float y,
+               float radiusX,
+               float radiusY,
+               float rotation,
+               float startAngle,
+               float endAngle,
+               bool anticlockwise,
+               ExceptionState&);
+  void rect(float x, float y, float width, float height);
 
-    virtual bool isTransformInvertible() const { return true; }
+  virtual bool isTransformInvertible() const { return true; }
 
-protected:
-    CanvasPathMethods() { m_path.setIsVolatile(true); }
-    CanvasPathMethods(const Path& path) : m_path(path)
-    {
-        m_path.setIsVolatile(true);
-    }
-    Path m_path;
+ protected:
+  CanvasPathMethods() { m_path.setIsVolatile(true); }
+  CanvasPathMethods(const Path& path) : m_path(path) {
+    m_path.setIsVolatile(true);
+  }
+  Path m_path;
 };
-} // namespace blink
+}  // namespace blink
 
 #endif

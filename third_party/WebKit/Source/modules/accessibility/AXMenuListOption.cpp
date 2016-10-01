@@ -33,138 +33,133 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXMenuListOption::AXMenuListOption(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache)
-    : AXMockObject(axObjectCache)
-    , m_element(element)
-{
+AXMenuListOption::AXMenuListOption(HTMLOptionElement* element,
+                                   AXObjectCacheImpl& axObjectCache)
+    : AXMockObject(axObjectCache), m_element(element) {}
+
+AXMenuListOption::~AXMenuListOption() {
+  ASSERT(!m_element);
 }
 
-AXMenuListOption::~AXMenuListOption()
-{
-    ASSERT(!m_element);
+void AXMenuListOption::detach() {
+  m_element = nullptr;
+  AXMockObject::detach();
 }
 
-void AXMenuListOption::detach()
-{
-    m_element = nullptr;
-    AXMockObject::detach();
-}
-
-AccessibilityRole AXMenuListOption::roleValue() const
-{
-    const AtomicString& ariaRole = getAttribute(roleAttr);
-    if (ariaRole.isEmpty())
-        return MenuListOptionRole;
-
-    AccessibilityRole role = ariaRoleToWebCoreRole(ariaRole);
-    if (role)
-        return role;
+AccessibilityRole AXMenuListOption::roleValue() const {
+  const AtomicString& ariaRole = getAttribute(roleAttr);
+  if (ariaRole.isEmpty())
     return MenuListOptionRole;
+
+  AccessibilityRole role = ariaRoleToWebCoreRole(ariaRole);
+  if (role)
+    return role;
+  return MenuListOptionRole;
 }
 
-Element* AXMenuListOption::actionElement() const
-{
-    return m_element;
+Element* AXMenuListOption::actionElement() const {
+  return m_element;
 }
 
-bool AXMenuListOption::isEnabled() const
-{
-    // isDisabledFormControl() returns true if the parent <select> element is disabled,
-    // which we don't want.
-    return m_element && !m_element->ownElementDisabled();
+bool AXMenuListOption::isEnabled() const {
+  // isDisabledFormControl() returns true if the parent <select> element is disabled,
+  // which we don't want.
+  return m_element && !m_element->ownElementDisabled();
 }
 
-bool AXMenuListOption::isVisible() const
-{
-    if (!m_parent)
-        return false;
+bool AXMenuListOption::isVisible() const {
+  if (!m_parent)
+    return false;
 
-    // In a single-option select with the popup collapsed, only the selected
-    // item is considered visible.
-    return !m_parent->isOffScreen() || isSelected();
+  // In a single-option select with the popup collapsed, only the selected
+  // item is considered visible.
+  return !m_parent->isOffScreen() || isSelected();
 }
 
-bool AXMenuListOption::isOffScreen() const
-{
-    // Invisible list options are considered to be offscreen.
-    return !isVisible();
+bool AXMenuListOption::isOffScreen() const {
+  // Invisible list options are considered to be offscreen.
+  return !isVisible();
 }
 
-bool AXMenuListOption::isSelected() const
-{
-    AXMenuListPopup* parent = static_cast<AXMenuListPopup*>(parentObject());
-    if (parent && !parent->isOffScreen())
-        return parent->activeDescendant() == this;
-    return m_element && m_element->selected();
+bool AXMenuListOption::isSelected() const {
+  AXMenuListPopup* parent = static_cast<AXMenuListPopup*>(parentObject());
+  if (parent && !parent->isOffScreen())
+    return parent->activeDescendant() == this;
+  return m_element && m_element->selected();
 }
 
-void AXMenuListOption::setSelected(bool b)
-{
-    if (!m_element || !canSetSelectedAttribute())
-        return;
+void AXMenuListOption::setSelected(bool b) {
+  if (!m_element || !canSetSelectedAttribute())
+    return;
 
-    m_element->setSelected(b);
+  m_element->setSelected(b);
 }
 
-bool AXMenuListOption::canSetSelectedAttribute() const
-{
-    return isEnabled();
+bool AXMenuListOption::canSetSelectedAttribute() const {
+  return isEnabled();
 }
 
-bool AXMenuListOption::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
-{
-    return accessibilityIsIgnoredByDefault(ignoredReasons);
+bool AXMenuListOption::computeAccessibilityIsIgnored(
+    IgnoredReasons* ignoredReasons) const {
+  return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
-void AXMenuListOption::getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const
-{
-    *outContainer = nullptr;
-    outBoundsInContainer = FloatRect();
-    outContainerTransform.setIdentity();
+void AXMenuListOption::getRelativeBounds(
+    AXObject** outContainer,
+    FloatRect& outBoundsInContainer,
+    SkMatrix44& outContainerTransform) const {
+  *outContainer = nullptr;
+  outBoundsInContainer = FloatRect();
+  outContainerTransform.setIdentity();
 
-    AXObject* parent = parentObject();
-    if (!parent)
-        return;
-    ASSERT(parent->isMenuListPopup());
+  AXObject* parent = parentObject();
+  if (!parent)
+    return;
+  ASSERT(parent->isMenuListPopup());
 
-    AXObject* grandparent = parent->parentObject();
-    if (!grandparent)
-        return;
-    ASSERT(grandparent->isMenuList());
-    grandparent->getRelativeBounds(outContainer, outBoundsInContainer, outContainerTransform);
+  AXObject* grandparent = parent->parentObject();
+  if (!grandparent)
+    return;
+  ASSERT(grandparent->isMenuList());
+  grandparent->getRelativeBounds(outContainer, outBoundsInContainer,
+                                 outContainerTransform);
 }
 
-String AXMenuListOption::textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources) const
-{
-    // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
-    if (nameSources)
-        ASSERT(relatedObjects);
+String AXMenuListOption::textAlternative(bool recursive,
+                                         bool inAriaLabelledByTraversal,
+                                         AXObjectSet& visited,
+                                         AXNameFrom& nameFrom,
+                                         AXRelatedObjectVector* relatedObjects,
+                                         NameSources* nameSources) const {
+  // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+  if (nameSources)
+    ASSERT(relatedObjects);
 
-    if (!getNode())
-        return String();
+  if (!getNode())
+    return String();
 
-    bool foundTextAlternative = false;
-    String textAlternative = ariaTextAlternative(recursive, inAriaLabelledByTraversal, visited, nameFrom, relatedObjects, nameSources, &foundTextAlternative);
-    if (foundTextAlternative && !nameSources)
-        return textAlternative;
-
-    nameFrom = AXNameFromContents;
-    textAlternative = m_element->displayLabel();
-    if (nameSources) {
-        nameSources->append(NameSource(foundTextAlternative));
-        nameSources->last().type = nameFrom;
-        nameSources->last().text = textAlternative;
-        foundTextAlternative = true;
-    }
-
+  bool foundTextAlternative = false;
+  String textAlternative = ariaTextAlternative(
+      recursive, inAriaLabelledByTraversal, visited, nameFrom, relatedObjects,
+      nameSources, &foundTextAlternative);
+  if (foundTextAlternative && !nameSources)
     return textAlternative;
 
+  nameFrom = AXNameFromContents;
+  textAlternative = m_element->displayLabel();
+  if (nameSources) {
+    nameSources->append(NameSource(foundTextAlternative));
+    nameSources->last().type = nameFrom;
+    nameSources->last().text = textAlternative;
+    foundTextAlternative = true;
+  }
+
+  return textAlternative;
 }
 
-DEFINE_TRACE(AXMenuListOption)
-{
-    visitor->trace(m_element);
-    AXMockObject::trace(visitor);
+DEFINE_TRACE(AXMenuListOption) {
+  visitor->trace(m_element);
+  AXMockObject::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

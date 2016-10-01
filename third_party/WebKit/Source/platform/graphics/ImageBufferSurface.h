@@ -55,51 +55,63 @@ class FloatRect;
 class GraphicsContext;
 
 class PLATFORM_EXPORT ImageBufferSurface {
-    WTF_MAKE_NONCOPYABLE(ImageBufferSurface); USING_FAST_MALLOC(ImageBufferSurface);
-public:
-    virtual ~ImageBufferSurface();
+  WTF_MAKE_NONCOPYABLE(ImageBufferSurface);
+  USING_FAST_MALLOC(ImageBufferSurface);
 
-    virtual SkCanvas* canvas() = 0;
-    virtual void disableDeferral(DisableDeferralReason) { }
-    virtual void willOverwriteCanvas() { }
-    virtual void didDraw(const FloatRect& rect) { }
-    virtual bool isValid() const = 0;
-    virtual bool restore() { return false; }
-    virtual WebLayer* layer() const { return 0; }
-    virtual bool isAccelerated() const { return false; }
-    virtual bool isRecording() const { return false; }
-    virtual bool isExpensiveToPaint() { return false; }
-    virtual void setFilterQuality(SkFilterQuality) { }
-    virtual void setIsHidden(bool) { }
-    virtual void setImageBuffer(ImageBuffer*) { }
-    virtual sk_sp<SkPicture> getPicture();
-    virtual void finalizeFrame(const FloatRect &dirtyRect) { }
-    virtual void draw(GraphicsContext&, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
-    virtual void setHasExpensiveOp() { }
-    virtual GLuint getBackingTextureHandleForOverwrite() { return 0; }
-    virtual void flush(FlushReason); // Execute all deferred rendering immediately
-    virtual void flushGpu(FlushReason reason) { flush(reason); } // Like flush, but flushes all the way down to the GPU context if the surface uses the GPU
-    virtual void prepareSurfaceForPaintingIfNeeded() { }
-    virtual bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y);
+ public:
+  virtual ~ImageBufferSurface();
 
-    // May return nullptr if the surface is GPU-backed and the GPU context was lost.
-    virtual sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) = 0;
+  virtual SkCanvas* canvas() = 0;
+  virtual void disableDeferral(DisableDeferralReason) {}
+  virtual void willOverwriteCanvas() {}
+  virtual void didDraw(const FloatRect& rect) {}
+  virtual bool isValid() const = 0;
+  virtual bool restore() { return false; }
+  virtual WebLayer* layer() const { return 0; }
+  virtual bool isAccelerated() const { return false; }
+  virtual bool isRecording() const { return false; }
+  virtual bool isExpensiveToPaint() { return false; }
+  virtual void setFilterQuality(SkFilterQuality) {}
+  virtual void setIsHidden(bool) {}
+  virtual void setImageBuffer(ImageBuffer*) {}
+  virtual sk_sp<SkPicture> getPicture();
+  virtual void finalizeFrame(const FloatRect& dirtyRect) {}
+  virtual void draw(GraphicsContext&,
+                    const FloatRect& destRect,
+                    const FloatRect& srcRect,
+                    SkXfermode::Mode);
+  virtual void setHasExpensiveOp() {}
+  virtual GLuint getBackingTextureHandleForOverwrite() { return 0; }
+  virtual void flush(
+      FlushReason);  // Execute all deferred rendering immediately
+  virtual void flushGpu(FlushReason reason) {
+    flush(reason);
+  }  // Like flush, but flushes all the way down to the GPU context if the surface uses the GPU
+  virtual void prepareSurfaceForPaintingIfNeeded() {}
+  virtual bool writePixels(const SkImageInfo& origInfo,
+                           const void* pixels,
+                           size_t rowBytes,
+                           int x,
+                           int y);
 
-    OpacityMode getOpacityMode() const { return m_opacityMode; }
-    const IntSize& size() const { return m_size; }
-    const sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
-    void notifyIsValidChanged(bool isValid) const;
+  // May return nullptr if the surface is GPU-backed and the GPU context was lost.
+  virtual sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) = 0;
 
-protected:
-    ImageBufferSurface(const IntSize&, OpacityMode, sk_sp<SkColorSpace>);
-    void clear();
+  OpacityMode getOpacityMode() const { return m_opacityMode; }
+  const IntSize& size() const { return m_size; }
+  const sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
+  void notifyIsValidChanged(bool isValid) const;
 
-private:
-    OpacityMode m_opacityMode;
-    IntSize m_size;
-    sk_sp<SkColorSpace> m_colorSpace;
+ protected:
+  ImageBufferSurface(const IntSize&, OpacityMode, sk_sp<SkColorSpace>);
+  void clear();
+
+ private:
+  OpacityMode m_opacityMode;
+  IntSize m_size;
+  sk_sp<SkColorSpace> m_colorSpace;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -38,63 +38,54 @@
 namespace blink {
 
 ScrollAnimatorBase::ScrollAnimatorBase(ScrollableArea* scrollableArea)
-    : m_scrollableArea(scrollableArea)
-{
+    : m_scrollableArea(scrollableArea) {}
+
+ScrollAnimatorBase::~ScrollAnimatorBase() {}
+
+FloatSize ScrollAnimatorBase::computeDeltaToConsume(
+    const FloatSize& delta) const {
+  FloatPoint newPos =
+      toFloatPoint(m_scrollableArea->clampScrollPosition(m_currentPos + delta));
+  return newPos - m_currentPos;
 }
 
-ScrollAnimatorBase::~ScrollAnimatorBase()
-{
+ScrollResult ScrollAnimatorBase::userScroll(ScrollGranularity,
+                                            const FloatSize& delta) {
+  FloatSize consumedDelta = computeDeltaToConsume(delta);
+  FloatPoint newPos = m_currentPos + consumedDelta;
+  if (m_currentPos == newPos)
+    return ScrollResult(false, false, delta.width(), delta.height());
+
+  m_currentPos = newPos;
+
+  notifyPositionChanged();
+
+  return ScrollResult(consumedDelta.width(), consumedDelta.height(),
+                      delta.width() - consumedDelta.width(),
+                      delta.height() - consumedDelta.height());
 }
 
-FloatSize ScrollAnimatorBase::computeDeltaToConsume(const FloatSize& delta) const
-{
-    FloatPoint newPos = toFloatPoint(m_scrollableArea->clampScrollPosition(m_currentPos + delta));
-    return newPos - m_currentPos;
+void ScrollAnimatorBase::scrollToOffsetWithoutAnimation(
+    const FloatPoint& offset) {
+  m_currentPos = offset;
+  notifyPositionChanged();
 }
 
-ScrollResult ScrollAnimatorBase::userScroll(ScrollGranularity, const FloatSize& delta)
-{
-    FloatSize consumedDelta = computeDeltaToConsume(delta);
-    FloatPoint newPos = m_currentPos + consumedDelta;
-    if (m_currentPos == newPos)
-        return ScrollResult(false, false, delta.width(), delta.height());
-
-    m_currentPos = newPos;
-
-    notifyPositionChanged();
-
-    return ScrollResult(
-        consumedDelta.width(),
-        consumedDelta.height(),
-        delta.width() - consumedDelta.width(),
-        delta.height() - consumedDelta.height());
+void ScrollAnimatorBase::setCurrentPosition(const FloatPoint& position) {
+  m_currentPos = position;
 }
 
-void ScrollAnimatorBase::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
-{
-    m_currentPos = offset;
-    notifyPositionChanged();
+FloatPoint ScrollAnimatorBase::currentPosition() const {
+  return m_currentPos;
 }
 
-void ScrollAnimatorBase::setCurrentPosition(const FloatPoint& position)
-{
-    m_currentPos = position;
+void ScrollAnimatorBase::notifyPositionChanged() {
+  scrollPositionChanged(m_currentPos, UserScroll);
 }
 
-FloatPoint ScrollAnimatorBase::currentPosition() const
-{
-    return m_currentPos;
+DEFINE_TRACE(ScrollAnimatorBase) {
+  visitor->trace(m_scrollableArea);
+  ScrollAnimatorCompositorCoordinator::trace(visitor);
 }
 
-void ScrollAnimatorBase::notifyPositionChanged()
-{
-    scrollPositionChanged(m_currentPos, UserScroll);
-}
-
-DEFINE_TRACE(ScrollAnimatorBase)
-{
-    visitor->trace(m_scrollableArea);
-    ScrollAnimatorCompositorCoordinator::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

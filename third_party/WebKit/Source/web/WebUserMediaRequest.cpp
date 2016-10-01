@@ -45,99 +45,91 @@
 namespace blink {
 
 WebUserMediaRequest::WebUserMediaRequest(UserMediaRequest* request)
-    : m_private(request)
-{
+    : m_private(request) {}
+
+WebUserMediaRequest WebUserMediaRequest::createForTesting(
+    const WebMediaConstraints& audio,
+    const WebMediaConstraints& video) {
+  UserMediaRequest* request = UserMediaRequest::createForTesting(audio, video);
+  return WebUserMediaRequest(request);
 }
 
-WebUserMediaRequest WebUserMediaRequest::createForTesting(const WebMediaConstraints& audio, const WebMediaConstraints& video)
-{
-    UserMediaRequest* request = UserMediaRequest::createForTesting(audio, video);
-    return WebUserMediaRequest(request);
+void WebUserMediaRequest::reset() {
+  m_private.reset();
 }
 
-void WebUserMediaRequest::reset()
-{
-    m_private.reset();
+bool WebUserMediaRequest::audio() const {
+  DCHECK(!isNull());
+  return m_private->audio();
 }
 
-bool WebUserMediaRequest::audio() const
-{
-    DCHECK(!isNull());
-    return m_private->audio();
+bool WebUserMediaRequest::video() const {
+  DCHECK(!isNull());
+  return m_private->video();
 }
 
-bool WebUserMediaRequest::video() const
-{
-    DCHECK(!isNull());
-    return m_private->video();
+WebMediaConstraints WebUserMediaRequest::audioConstraints() const {
+  DCHECK(!isNull());
+  return m_private->audioConstraints();
 }
 
-WebMediaConstraints WebUserMediaRequest::audioConstraints() const
-{
-    DCHECK(!isNull());
-    return m_private->audioConstraints();
+WebMediaConstraints WebUserMediaRequest::videoConstraints() const {
+  DCHECK(!isNull());
+  return m_private->videoConstraints();
 }
 
-WebMediaConstraints WebUserMediaRequest::videoConstraints() const
-{
-    DCHECK(!isNull());
-    return m_private->videoConstraints();
+WebSecurityOrigin WebUserMediaRequest::getSecurityOrigin() const {
+  DCHECK(!isNull());
+  if (!m_private->getExecutionContext())
+    return WebSecurityOrigin::createFromString("test://test");
+  return WebSecurityOrigin(
+      m_private->getExecutionContext()->getSecurityOrigin());
 }
 
-WebSecurityOrigin WebUserMediaRequest::getSecurityOrigin() const
-{
-    DCHECK(!isNull());
-    if (!m_private->getExecutionContext())
-        return WebSecurityOrigin::createFromString("test://test");
-    return WebSecurityOrigin(m_private->getExecutionContext()->getSecurityOrigin());
+WebDocument WebUserMediaRequest::ownerDocument() const {
+  DCHECK(!isNull());
+  return WebDocument(m_private->ownerDocument());
 }
 
-WebDocument WebUserMediaRequest::ownerDocument() const
-{
-    DCHECK(!isNull());
-    return WebDocument(m_private->ownerDocument());
+void WebUserMediaRequest::requestSucceeded(
+    const WebMediaStream& streamDescriptor) {
+  DCHECK(!isNull());
+  DCHECK(!streamDescriptor.isNull());
+  m_private->succeed(streamDescriptor);
 }
 
-void WebUserMediaRequest::requestSucceeded(const WebMediaStream& streamDescriptor)
-{
-    DCHECK(!isNull());
-    DCHECK(!streamDescriptor.isNull());
-    m_private->succeed(streamDescriptor);
+void WebUserMediaRequest::requestDenied(const WebString& description) {
+  DCHECK(!isNull());
+  m_private->failPermissionDenied(description);
 }
 
-void WebUserMediaRequest::requestDenied(const WebString& description)
-{
-    DCHECK(!isNull());
-    m_private->failPermissionDenied(description);
+void WebUserMediaRequest::requestFailedConstraint(
+    const WebString& constraintName,
+    const WebString& description) {
+  DCHECK(!isNull());
+  m_private->failConstraint(constraintName, description);
 }
 
-void WebUserMediaRequest::requestFailedConstraint(const WebString& constraintName, const WebString& description)
-{
-    DCHECK(!isNull());
-    m_private->failConstraint(constraintName, description);
+void WebUserMediaRequest::requestFailedUASpecific(
+    const WebString& name,
+    const WebString& constraintName,
+    const WebString& description) {
+  DCHECK(!isNull());
+  m_private->failUASpecific(name, constraintName, description);
 }
 
-void WebUserMediaRequest::requestFailedUASpecific(const WebString& name, const WebString& constraintName, const WebString& description)
-{
-    DCHECK(!isNull());
-    m_private->failUASpecific(name, constraintName, description);
+bool WebUserMediaRequest::equals(const WebUserMediaRequest& other) const {
+  if (isNull() || other.isNull())
+    return false;
+  return m_private.get() == other.m_private.get();
 }
 
-bool WebUserMediaRequest::equals(const WebUserMediaRequest& other) const
-{
-    if (isNull() || other.isNull())
-        return false;
-    return m_private.get() == other.m_private.get();
+void WebUserMediaRequest::assign(const WebUserMediaRequest& other) {
+  m_private = other.m_private;
 }
 
-void WebUserMediaRequest::assign(const WebUserMediaRequest& other)
-{
-    m_private = other.m_private;
+WebUserMediaRequest::operator UserMediaRequest*() const {
+  return m_private.get();
 }
 
-WebUserMediaRequest::operator UserMediaRequest*() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

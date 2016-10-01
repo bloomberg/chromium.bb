@@ -41,54 +41,54 @@ class WebSourceBufferClient;
 // extension's SourceBuffer. See also the mediasource module in Blink, and the
 // WebSourceBufferClient interface.
 class WebSourceBuffer {
-public:
-    enum AppendMode {
-        AppendModeSegments,
-        AppendModeSequence
-    };
+ public:
+  enum AppendMode { AppendModeSegments, AppendModeSequence };
 
-    virtual ~WebSourceBuffer() { }
+  virtual ~WebSourceBuffer() {}
 
-    // This will only be called once and only with a non-null pointer to a
-    // client whose ownership is not transferred to this WebSourceBuffer.
-    virtual void setClient(WebSourceBufferClient*) = 0;
+  // This will only be called once and only with a non-null pointer to a
+  // client whose ownership is not transferred to this WebSourceBuffer.
+  virtual void setClient(WebSourceBufferClient*) = 0;
 
-    virtual bool setMode(AppendMode) = 0;
-    virtual WebTimeRanges buffered() = 0;
+  virtual bool setMode(AppendMode) = 0;
+  virtual WebTimeRanges buffered() = 0;
 
-    // Returns the highest buffered presentation timestamp of all buffered coded
-    // frames, or 0 if nothing is buffered.
-    virtual double highestPresentationTimestamp() = 0;
+  // Returns the highest buffered presentation timestamp of all buffered coded
+  // frames, or 0 if nothing is buffered.
+  virtual double highestPresentationTimestamp() = 0;
 
-    // Run coded frame eviction/garbage collection algorithm.
-    // |currentPlaybackTime| is HTMLMediaElement::currentTime. The algorithm
-    // will try to preserve data around current playback position.
-    // |newDataSize| is size of new data about to be appended to SourceBuffer.
-    // Could be zero for appendStream if stream size is unknown in advance.
-    // Returns false if buffer is still full after eviction.
-    virtual bool evictCodedFrames(double currentPlaybackTime, size_t newDataSize) = 0;
+  // Run coded frame eviction/garbage collection algorithm.
+  // |currentPlaybackTime| is HTMLMediaElement::currentTime. The algorithm
+  // will try to preserve data around current playback position.
+  // |newDataSize| is size of new data about to be appended to SourceBuffer.
+  // Could be zero for appendStream if stream size is unknown in advance.
+  // Returns false if buffer is still full after eviction.
+  virtual bool evictCodedFrames(double currentPlaybackTime,
+                                size_t newDataSize) = 0;
 
-    // Appends data and runs the segment parser loop algorithm.
-    // The algorithm may update |*timestampOffset| if |timestampOffset| is not null.
-    // Returns true on success, otherwise the append error algorithm needs to
-    // run with the decode error parameter set to true.
-    virtual bool append(const unsigned char* data, unsigned length, double* timestampOffset) = 0;
+  // Appends data and runs the segment parser loop algorithm.
+  // The algorithm may update |*timestampOffset| if |timestampOffset| is not null.
+  // Returns true on success, otherwise the append error algorithm needs to
+  // run with the decode error parameter set to true.
+  virtual bool append(const unsigned char* data,
+                      unsigned length,
+                      double* timestampOffset) = 0;
 
-    virtual void resetParserState() = 0;
-    virtual void remove(double start, double end) = 0;
-    virtual bool setTimestampOffset(double) = 0;
+  virtual void resetParserState() = 0;
+  virtual void remove(double start, double end) = 0;
+  virtual bool setTimestampOffset(double) = 0;
 
-    // Set presentation timestamp for the start of append window.
-    virtual void setAppendWindowStart(double) = 0;
+  // Set presentation timestamp for the start of append window.
+  virtual void setAppendWindowStart(double) = 0;
 
-    // Set presentation timestamp for the end of append window.
-    virtual void setAppendWindowEnd(double) = 0;
+  // Set presentation timestamp for the end of append window.
+  virtual void setAppendWindowEnd(double) = 0;
 
-    // After this method is called, this WebSourceBuffer should never use the
-    // client pointer passed to setClient().
-    virtual void removedFromMediaSource() = 0;
+  // After this method is called, this WebSourceBuffer should never use the
+  // client pointer passed to setClient().
+  virtual void removedFromMediaSource() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

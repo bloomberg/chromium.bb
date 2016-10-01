@@ -39,32 +39,44 @@ class Node;
 class TouchEventContext;
 
 class CORE_EXPORT NodeEventContext {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    // FIXME: Use ContainerNode instead of Node.
-    NodeEventContext(Node*, EventTarget* currentTarget);
-    DECLARE_TRACE();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    Node* node() const { return m_node.get(); }
+ public:
+  // FIXME: Use ContainerNode instead of Node.
+  NodeEventContext(Node*, EventTarget* currentTarget);
+  DECLARE_TRACE();
 
-    void setTreeScopeEventContext(TreeScopeEventContext* treeScopeEventContext) { m_treeScopeEventContext = treeScopeEventContext; }
-    TreeScopeEventContext& treeScopeEventContext() { DCHECK(m_treeScopeEventContext); return *m_treeScopeEventContext; }
+  Node* node() const { return m_node.get(); }
 
-    EventTarget* target() const { return m_treeScopeEventContext->target(); }
-    EventTarget* relatedTarget() const { return m_treeScopeEventContext->relatedTarget(); }
-    TouchEventContext* touchEventContext() const { return m_treeScopeEventContext->touchEventContext(); }
+  void setTreeScopeEventContext(TreeScopeEventContext* treeScopeEventContext) {
+    m_treeScopeEventContext = treeScopeEventContext;
+  }
+  TreeScopeEventContext& treeScopeEventContext() {
+    DCHECK(m_treeScopeEventContext);
+    return *m_treeScopeEventContext;
+  }
 
-    bool currentTargetSameAsTarget() const { return m_currentTarget.get() == target(); }
-    void handleLocalEvents(Event&) const;
+  EventTarget* target() const { return m_treeScopeEventContext->target(); }
+  EventTarget* relatedTarget() const {
+    return m_treeScopeEventContext->relatedTarget();
+  }
+  TouchEventContext* touchEventContext() const {
+    return m_treeScopeEventContext->touchEventContext();
+  }
 
-private:
-    Member<Node> m_node;
-    Member<EventTarget> m_currentTarget;
-    Member<TreeScopeEventContext> m_treeScopeEventContext;
+  bool currentTargetSameAsTarget() const {
+    return m_currentTarget.get() == target();
+  }
+  void handleLocalEvents(Event&) const;
+
+ private:
+  Member<Node> m_node;
+  Member<EventTarget> m_currentTarget;
+  Member<TreeScopeEventContext> m_treeScopeEventContext;
 };
 
-} // namespace blink
+}  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NodeEventContext);
 
-#endif // NodeEventContext_h
+#endif  // NodeEventContext_h

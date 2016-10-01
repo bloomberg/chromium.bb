@@ -15,57 +15,75 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginCompositingDisplayItem final : public PairedBeginDisplayItem {
-public:
-    BeginCompositingDisplayItem(const DisplayItemClient& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter = ColorFilterNone)
-        : PairedBeginDisplayItem(client, kBeginCompositing, sizeof(*this))
-        , m_xferMode(xferMode)
-        , m_opacity(opacity)
-        , m_hasBounds(bounds)
-        , m_colorFilter(colorFilter)
-    {
-        if (bounds)
-            m_bounds = FloatRect(*bounds);
-    }
+class PLATFORM_EXPORT BeginCompositingDisplayItem final
+    : public PairedBeginDisplayItem {
+ public:
+  BeginCompositingDisplayItem(const DisplayItemClient& client,
+                              const SkXfermode::Mode xferMode,
+                              const float opacity,
+                              const FloatRect* bounds,
+                              ColorFilter colorFilter = ColorFilterNone)
+      : PairedBeginDisplayItem(client, kBeginCompositing, sizeof(*this)),
+        m_xferMode(xferMode),
+        m_opacity(opacity),
+        m_hasBounds(bounds),
+        m_colorFilter(colorFilter) {
+    if (bounds)
+      m_bounds = FloatRect(*bounds);
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-private:
+ private:
 #ifndef NDEBUG
-    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    bool equals(const DisplayItem& other) const final
-    {
-        return DisplayItem::equals(other)
-            && m_xferMode == static_cast<const BeginCompositingDisplayItem&>(other).m_xferMode
-            && m_opacity == static_cast<const BeginCompositingDisplayItem&>(other).m_opacity
-            && m_hasBounds == static_cast<const BeginCompositingDisplayItem&>(other).m_hasBounds
-            && m_bounds == static_cast<const BeginCompositingDisplayItem&>(other).m_bounds
-            && m_colorFilter == static_cast<const BeginCompositingDisplayItem&>(other).m_colorFilter;
-    }
+  bool equals(const DisplayItem& other) const final {
+    return DisplayItem::equals(other) &&
+           m_xferMode ==
+               static_cast<const BeginCompositingDisplayItem&>(other)
+                   .m_xferMode &&
+           m_opacity ==
+               static_cast<const BeginCompositingDisplayItem&>(other)
+                   .m_opacity &&
+           m_hasBounds ==
+               static_cast<const BeginCompositingDisplayItem&>(other)
+                   .m_hasBounds &&
+           m_bounds ==
+               static_cast<const BeginCompositingDisplayItem&>(other)
+                   .m_bounds &&
+           m_colorFilter ==
+               static_cast<const BeginCompositingDisplayItem&>(other)
+                   .m_colorFilter;
+  }
 
-    const SkXfermode::Mode m_xferMode;
-    const float m_opacity;
-    bool m_hasBounds;
-    FloatRect m_bounds;
-    ColorFilter m_colorFilter;
+  const SkXfermode::Mode m_xferMode;
+  const float m_opacity;
+  bool m_hasBounds;
+  FloatRect m_bounds;
+  ColorFilter m_colorFilter;
 };
 
-class PLATFORM_EXPORT EndCompositingDisplayItem final : public PairedEndDisplayItem {
-public:
-    EndCompositingDisplayItem(const DisplayItemClient& client)
-        : PairedEndDisplayItem(client, kEndCompositing, sizeof(*this)) { }
+class PLATFORM_EXPORT EndCompositingDisplayItem final
+    : public PairedEndDisplayItem {
+ public:
+  EndCompositingDisplayItem(const DisplayItemClient& client)
+      : PairedEndDisplayItem(client, kEndCompositing, sizeof(*this)) {}
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-private:
+ private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == kBeginCompositing; }
+  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
+    return otherType == kBeginCompositing;
+  }
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositingDisplayItem_h
+#endif  // CompositingDisplayItem_h

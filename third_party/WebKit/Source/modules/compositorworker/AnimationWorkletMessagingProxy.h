@@ -14,17 +14,19 @@ namespace blink {
 class ExecutionContext;
 class WorkerThread;
 
-class AnimationWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
-    USING_FAST_MALLOC(AnimationWorkletMessagingProxy);
-public:
-    explicit AnimationWorkletMessagingProxy(ExecutionContext*);
+class AnimationWorkletMessagingProxy final
+    : public ThreadedWorkletMessagingProxy {
+  USING_FAST_MALLOC(AnimationWorkletMessagingProxy);
 
-protected:
-    ~AnimationWorkletMessagingProxy() override;
+ public:
+  explicit AnimationWorkletMessagingProxy(ExecutionContext*);
 
-    std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
+ protected:
+  ~AnimationWorkletMessagingProxy() override;
+
+  std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationWorkletMessagingProxy_h
+#endif  // AnimationWorkletMessagingProxy_h

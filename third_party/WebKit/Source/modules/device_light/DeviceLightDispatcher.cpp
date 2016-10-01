@@ -9,46 +9,36 @@
 
 namespace blink {
 
-DeviceLightDispatcher& DeviceLightDispatcher::instance()
-{
-    DEFINE_STATIC_LOCAL(DeviceLightDispatcher, deviceLightDispatcher, (new DeviceLightDispatcher));
-    return deviceLightDispatcher;
+DeviceLightDispatcher& DeviceLightDispatcher::instance() {
+  DEFINE_STATIC_LOCAL(DeviceLightDispatcher, deviceLightDispatcher,
+                      (new DeviceLightDispatcher));
+  return deviceLightDispatcher;
 }
 
-DeviceLightDispatcher::DeviceLightDispatcher()
-    : m_lastDeviceLightData(-1)
-{
+DeviceLightDispatcher::DeviceLightDispatcher() : m_lastDeviceLightData(-1) {}
+
+DeviceLightDispatcher::~DeviceLightDispatcher() {}
+
+DEFINE_TRACE(DeviceLightDispatcher) {
+  PlatformEventDispatcher::trace(visitor);
 }
 
-DeviceLightDispatcher::~DeviceLightDispatcher()
-{
+void DeviceLightDispatcher::startListening() {
+  Platform::current()->startListening(WebPlatformEventTypeDeviceLight, this);
 }
 
-DEFINE_TRACE(DeviceLightDispatcher)
-{
-    PlatformEventDispatcher::trace(visitor);
+void DeviceLightDispatcher::stopListening() {
+  Platform::current()->stopListening(WebPlatformEventTypeDeviceLight);
+  m_lastDeviceLightData = -1;
 }
 
-void DeviceLightDispatcher::startListening()
-{
-    Platform::current()->startListening(WebPlatformEventTypeDeviceLight, this);
+void DeviceLightDispatcher::didChangeDeviceLight(double value) {
+  m_lastDeviceLightData = value;
+  notifyControllers();
 }
 
-void DeviceLightDispatcher::stopListening()
-{
-    Platform::current()->stopListening(WebPlatformEventTypeDeviceLight);
-    m_lastDeviceLightData = -1;
+double DeviceLightDispatcher::latestDeviceLightData() const {
+  return m_lastDeviceLightData;
 }
 
-void DeviceLightDispatcher::didChangeDeviceLight(double value)
-{
-    m_lastDeviceLightData = value;
-    notifyControllers();
-}
-
-double DeviceLightDispatcher::latestDeviceLightData() const
-{
-    return m_lastDeviceLightData;
-}
-
-} // namespace blink
+}  // namespace blink

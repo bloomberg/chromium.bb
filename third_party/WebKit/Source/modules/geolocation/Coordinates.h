@@ -32,52 +32,75 @@
 
 namespace blink {
 
-class Coordinates : public GarbageCollected<Coordinates>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Coordinates* create(double latitude, double longitude, bool providesAltitude, double altitude, double accuracy, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
-    {
-        return new Coordinates(latitude, longitude, providesAltitude, altitude, accuracy, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed);
-    }
+class Coordinates : public GarbageCollected<Coordinates>,
+                    public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DEFINE_INLINE_TRACE() { }
+ public:
+  static Coordinates* create(double latitude,
+                             double longitude,
+                             bool providesAltitude,
+                             double altitude,
+                             double accuracy,
+                             bool providesAltitudeAccuracy,
+                             double altitudeAccuracy,
+                             bool providesHeading,
+                             double heading,
+                             bool providesSpeed,
+                             double speed) {
+    return new Coordinates(latitude, longitude, providesAltitude, altitude,
+                           accuracy, providesAltitudeAccuracy, altitudeAccuracy,
+                           providesHeading, heading, providesSpeed, speed);
+  }
 
-    double latitude() const { return m_latitude; }
-    double longitude() const { return m_longitude; }
-    double altitude(bool& isNull) const;
-    double accuracy() const { return m_accuracy; }
-    double altitudeAccuracy(bool& isNull) const;
-    double heading(bool& isNull) const;
-    double speed(bool& isNull) const;
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    Coordinates(double latitude, double longitude, bool providesAltitude, double altitude, double accuracy, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
-        : m_latitude(latitude)
-        , m_longitude(longitude)
-        , m_altitude(altitude)
-        , m_accuracy(accuracy)
-        , m_altitudeAccuracy(altitudeAccuracy)
-        , m_heading(heading)
-        , m_speed(speed)
-        , m_canProvideAltitude(providesAltitude)
-        , m_canProvideAltitudeAccuracy(providesAltitudeAccuracy)
-        , m_canProvideHeading(providesHeading)
-        , m_canProvideSpeed(providesSpeed) { }
+  double latitude() const { return m_latitude; }
+  double longitude() const { return m_longitude; }
+  double altitude(bool& isNull) const;
+  double accuracy() const { return m_accuracy; }
+  double altitudeAccuracy(bool& isNull) const;
+  double heading(bool& isNull) const;
+  double speed(bool& isNull) const;
 
-    double m_latitude;
-    double m_longitude;
-    double m_altitude;
-    double m_accuracy;
-    double m_altitudeAccuracy;
-    double m_heading;
-    double m_speed;
+ private:
+  Coordinates(double latitude,
+              double longitude,
+              bool providesAltitude,
+              double altitude,
+              double accuracy,
+              bool providesAltitudeAccuracy,
+              double altitudeAccuracy,
+              bool providesHeading,
+              double heading,
+              bool providesSpeed,
+              double speed)
+      : m_latitude(latitude),
+        m_longitude(longitude),
+        m_altitude(altitude),
+        m_accuracy(accuracy),
+        m_altitudeAccuracy(altitudeAccuracy),
+        m_heading(heading),
+        m_speed(speed),
+        m_canProvideAltitude(providesAltitude),
+        m_canProvideAltitudeAccuracy(providesAltitudeAccuracy),
+        m_canProvideHeading(providesHeading),
+        m_canProvideSpeed(providesSpeed) {}
 
-    bool m_canProvideAltitude;
-    bool m_canProvideAltitudeAccuracy;
-    bool m_canProvideHeading;
-    bool m_canProvideSpeed;
+  double m_latitude;
+  double m_longitude;
+  double m_altitude;
+  double m_accuracy;
+  double m_altitudeAccuracy;
+  double m_heading;
+  double m_speed;
+
+  bool m_canProvideAltitude;
+  bool m_canProvideAltitudeAccuracy;
+  bool m_canProvideHeading;
+  bool m_canProvideSpeed;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Coordinates_h
+#endif  // Coordinates_h

@@ -31,27 +31,28 @@ class LayoutSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCycleSolver {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SVGResourcesCycleSolver);
-public:
-    SVGResourcesCycleSolver(LayoutObject*, SVGResources*);
-    ~SVGResourcesCycleSolver();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SVGResourcesCycleSolver);
 
-    void resolveCycles();
+ public:
+  SVGResourcesCycleSolver(LayoutObject*, SVGResources*);
+  ~SVGResourcesCycleSolver();
 
-    typedef HashSet<LayoutSVGResourceContainer*> ResourceSet;
+  void resolveCycles();
 
-private:
-    bool resourceContainsCycles(LayoutSVGResourceContainer*);
-    void breakCycle(LayoutSVGResourceContainer*);
+  typedef HashSet<LayoutSVGResourceContainer*> ResourceSet;
 
-    LayoutObject* m_layoutObject;
-    SVGResources* m_resources;
+ private:
+  bool resourceContainsCycles(LayoutSVGResourceContainer*);
+  void breakCycle(LayoutSVGResourceContainer*);
 
-    ResourceSet m_activeResources;
-    ResourceSet m_dagCache;
+  LayoutObject* m_layoutObject;
+  SVGResources* m_resources;
+
+  ResourceSet m_activeResources;
+  ResourceSet m_dagCache;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

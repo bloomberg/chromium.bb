@@ -10,17 +10,19 @@
 namespace blink {
 
 class SVGAngleInterpolationType : public SVGInterpolationType {
-public:
-    SVGAngleInterpolationType(const QualifiedName& attribute)
-        : SVGInterpolationType(attribute)
-    { }
+ public:
+  SVGAngleInterpolationType(const QualifiedName& attribute)
+      : SVGInterpolationType(attribute) {}
 
-private:
-    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
-    SVGPropertyBase* appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
+ private:
+  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertSVGValue(
+      const SVGPropertyBase& svgValue) const final;
+  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+                                   const NonInterpolableValue*) const final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAngleInterpolationType_h
+#endif  // SVGAngleInterpolationType_h

@@ -7,18 +7,16 @@
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/text/WTFString.h"
-#include <ostream> // NOLINT
+#include <ostream>  // NOLINT
 
 namespace blink {
 
-void PrintTo(const AffineTransform& transform, std::ostream* os)
-{
-    *os << transform.toString();
+void PrintTo(const AffineTransform& transform, std::ostream* os) {
+  *os << transform.toString();
 }
 
-void PrintTo(const TransformationMatrix& matrix, std::ostream* os)
-{
-    *os << matrix.toString();
+void PrintTo(const TransformationMatrix& matrix, std::ostream* os) {
+  *os << matrix.toString();
 }
 
-} // namespace blink
+}  // namespace blink

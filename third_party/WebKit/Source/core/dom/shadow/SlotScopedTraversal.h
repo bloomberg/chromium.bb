@@ -11,14 +11,14 @@ class Element;
 class HTMLSlotElement;
 
 class SlotScopedTraversal {
-public:
-    static HTMLSlotElement* findScopeOwnerSlot(const Element&);
-    static Element* nearestAncestorAssignedToSlot(const Element&);
-    static Element* next(const Element&);
-    static Element* previous(const Element&);
-    static bool isSlotScoped(const Element&);
+ public:
+  static HTMLSlotElement* findScopeOwnerSlot(const Element&);
+  static Element* nearestAncestorAssignedToSlot(const Element&);
+  static Element* next(const Element&);
+  static Element* previous(const Element&);
+  static bool isSlotScoped(const Element&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

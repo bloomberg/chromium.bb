@@ -11,41 +11,37 @@
 
 namespace blink {
 
-PushPermissionStatusCallbacks::PushPermissionStatusCallbacks(ScriptPromiseResolver* resolver)
-    : m_resolver(resolver)
-{
+PushPermissionStatusCallbacks::PushPermissionStatusCallbacks(
+    ScriptPromiseResolver* resolver)
+    : m_resolver(resolver) {}
+
+PushPermissionStatusCallbacks::~PushPermissionStatusCallbacks() {}
+
+void PushPermissionStatusCallbacks::onSuccess(WebPushPermissionStatus status) {
+  m_resolver->resolve(permissionString(status));
 }
 
-PushPermissionStatusCallbacks::~PushPermissionStatusCallbacks()
-{
-}
-
-void PushPermissionStatusCallbacks::onSuccess(WebPushPermissionStatus status)
-{
-    m_resolver->resolve(permissionString(status));
-}
-
-void PushPermissionStatusCallbacks::onError(const WebPushError& error)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    m_resolver->reject(PushError::take(m_resolver.get(), error));
+void PushPermissionStatusCallbacks::onError(const WebPushError& error) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->reject(PushError::take(m_resolver.get(), error));
 }
 
 // static
-String PushPermissionStatusCallbacks::permissionString(WebPushPermissionStatus status)
-{
-    switch (status) {
+String PushPermissionStatusCallbacks::permissionString(
+    WebPushPermissionStatus status) {
+  switch (status) {
     case WebPushPermissionStatusGranted:
-        return "granted";
+      return "granted";
     case WebPushPermissionStatusDenied:
-        return "denied";
+      return "denied";
     case WebPushPermissionStatusPrompt:
-        return "prompt";
-    }
+      return "prompt";
+  }
 
-    NOTREACHED();
-    return "denied";
+  NOTREACHED();
+  return "denied";
 }
 
-} // namespace blink
+}  // namespace blink

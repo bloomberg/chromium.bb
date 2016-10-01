@@ -35,87 +35,99 @@ class ExceptionState;
 class OfflineAudioDestinationHandler;
 
 class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static OfflineAudioContext* create(ExecutionContext*, unsigned numberOfChannels, unsigned numberOfFrames, float sampleRate, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~OfflineAudioContext() override;
+ public:
+  static OfflineAudioContext* create(ExecutionContext*,
+                                     unsigned numberOfChannels,
+                                     unsigned numberOfFrames,
+                                     float sampleRate,
+                                     ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  ~OfflineAudioContext() override;
 
-    unsigned length() const { return m_totalRenderFrames; }
+  DECLARE_VIRTUAL_TRACE();
 
-    ScriptPromise startOfflineRendering(ScriptState*);
+  unsigned length() const { return m_totalRenderFrames; }
 
-    ScriptPromise suspendContext(ScriptState*, double);
-    ScriptPromise resumeContext(ScriptState*) final;
+  ScriptPromise startOfflineRendering(ScriptState*);
 
-    // This is to implement the pure virtual method from BaseAudioContext.
-    // CANNOT be called from an OfflineAudioContext.
-    ScriptPromise suspendContext(ScriptState*) final;
+  ScriptPromise suspendContext(ScriptState*, double);
+  ScriptPromise resumeContext(ScriptState*) final;
 
-    void rejectPendingResolvers() override;
+  // This is to implement the pure virtual method from BaseAudioContext.
+  // CANNOT be called from an OfflineAudioContext.
+  ScriptPromise suspendContext(ScriptState*) final;
 
-    bool hasRealtimeConstraint() final { return false; }
+  void rejectPendingResolvers() override;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
+  bool hasRealtimeConstraint() final { return false; }
 
-    // Fire completion event when the rendering is finished.
-    void fireCompletionEvent();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
 
-    // This is same with the online version in BaseAudioContext class except
-    // for returning a boolean value after checking the scheduled suspends.
-    bool handlePreOfflineRenderTasks();
+  // Fire completion event when the rendering is finished.
+  void fireCompletionEvent();
 
-    void handlePostOfflineRenderTasks();
+  // This is same with the online version in BaseAudioContext class except
+  // for returning a boolean value after checking the scheduled suspends.
+  bool handlePreOfflineRenderTasks();
 
-    // Resolve a suspend scheduled at the specified frame. With this specified
-    // frame as a unique key, the associated promise resolver can be retrieved
-    // from the map (m_scheduledSuspends) and resolved.
-    void resolveSuspendOnMainThread(size_t);
+  void handlePostOfflineRenderTasks();
 
-    // The HashMap with 'zero' key is needed because |currentSampleFrame| can be
-    // zero.
-    using SuspendMap = HeapHashMap<size_t, Member<ScriptPromiseResolver>, DefaultHash<size_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<size_t>>;
+  // Resolve a suspend scheduled at the specified frame. With this specified
+  // frame as a unique key, the associated promise resolver can be retrieved
+  // from the map (m_scheduledSuspends) and resolved.
+  void resolveSuspendOnMainThread(size_t);
 
-    using OfflineGraphAutoLocker = DeferredTaskHandler::OfflineGraphAutoLocker;
+  // The HashMap with 'zero' key is needed because |currentSampleFrame| can be
+  // zero.
+  using SuspendMap = HeapHashMap<size_t,
+                                 Member<ScriptPromiseResolver>,
+                                 DefaultHash<size_t>::Hash,
+                                 WTF::UnsignedWithZeroKeyHashTraits<size_t>>;
 
-private:
-    OfflineAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
+  using OfflineGraphAutoLocker = DeferredTaskHandler::OfflineGraphAutoLocker;
 
-    // Fetch directly the destination handler.
-    OfflineAudioDestinationHandler& destinationHandler();
+ private:
+  OfflineAudioContext(Document*,
+                      unsigned numberOfChannels,
+                      size_t numberOfFrames,
+                      float sampleRate,
+                      ExceptionState&);
 
-    AudioBuffer* renderTarget() const { return m_renderTarget.get(); }
+  // Fetch directly the destination handler.
+  OfflineAudioDestinationHandler& destinationHandler();
 
-    // Check if the rendering needs to be suspended.
-    bool shouldSuspend();
+  AudioBuffer* renderTarget() const { return m_renderTarget.get(); }
 
-    Member<AudioBuffer> m_renderTarget;
+  // Check if the rendering needs to be suspended.
+  bool shouldSuspend();
 
-    // This map is to store the timing of scheduled suspends (frame) and the
-    // associated promise resolver. This storage can only be modified by the
-    // main thread and accessed by the audio thread with the graph lock.
-    //
-    // The map consists of key-value pairs of:
-    // { size_t quantizedFrame: ScriptPromiseResolver resolver }
-    //
-    // Note that |quantizedFrame| is a unique key, since you can have only one
-    // suspend scheduled for a certain frame. Accessing to this must be
-    // protected by the offline context lock.
-    SuspendMap m_scheduledSuspends;
+  Member<AudioBuffer> m_renderTarget;
 
-    Member<ScriptPromiseResolver> m_completeResolver;
+  // This map is to store the timing of scheduled suspends (frame) and the
+  // associated promise resolver. This storage can only be modified by the
+  // main thread and accessed by the audio thread with the graph lock.
+  //
+  // The map consists of key-value pairs of:
+  // { size_t quantizedFrame: ScriptPromiseResolver resolver }
+  //
+  // Note that |quantizedFrame| is a unique key, since you can have only one
+  // suspend scheduled for a certain frame. Accessing to this must be
+  // protected by the offline context lock.
+  SuspendMap m_scheduledSuspends;
 
-    // This flag is necessary to indicate the rendering has actually started.
-    // Note that initial state of context is 'Suspended', which is the same
-    // state when the context is suspended.
-    bool m_isRenderingStarted;
+  Member<ScriptPromiseResolver> m_completeResolver;
 
-    // Total render sample length.
-    size_t m_totalRenderFrames;
+  // This flag is necessary to indicate the rendering has actually started.
+  // Note that initial state of context is 'Suspended', which is the same
+  // state when the context is suspended.
+  bool m_isRenderingStarted;
+
+  // Total render sample length.
+  size_t m_totalRenderFrames;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OfflineAudioContext_h
+#endif  // OfflineAudioContext_h

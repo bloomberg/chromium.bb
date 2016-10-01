@@ -36,25 +36,23 @@ namespace WTF {
 
 static TimeFunction mockTimeFunctionForTesting = nullptr;
 
-double currentTime()
-{
-    if (mockTimeFunctionForTesting)
-        return mockTimeFunctionForTesting();
-    return base::Time::Now().ToDoubleT();
+double currentTime() {
+  if (mockTimeFunctionForTesting)
+    return mockTimeFunctionForTesting();
+  return base::Time::Now().ToDoubleT();
 }
 
-double monotonicallyIncreasingTime()
-{
-    if (mockTimeFunctionForTesting)
-        return mockTimeFunctionForTesting();
-    return base::TimeTicks::Now().ToInternalValue() / static_cast<double>(base::Time::kMicrosecondsPerSecond);
+double monotonicallyIncreasingTime() {
+  if (mockTimeFunctionForTesting)
+    return mockTimeFunctionForTesting();
+  return base::TimeTicks::Now().ToInternalValue() /
+         static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
-TimeFunction setTimeFunctionsForTesting(TimeFunction newFunction)
-{
-    TimeFunction oldFunction = mockTimeFunctionForTesting;
-    mockTimeFunctionForTesting = newFunction;
-    return oldFunction;
+TimeFunction setTimeFunctionsForTesting(TimeFunction newFunction) {
+  TimeFunction oldFunction = mockTimeFunctionForTesting;
+  mockTimeFunctionForTesting = newFunction;
+  return oldFunction;
 }
 
-} // namespace WTF
+}  // namespace WTF

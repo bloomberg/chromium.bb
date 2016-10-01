@@ -35,14 +35,15 @@
 namespace blink {
 
 WebCursorInfo::WebCursorInfo(const Cursor& cursor)
-    : type(static_cast<Type>(cursor.getType()))
-    , hotSpot(cursor.hotSpot())
-    , imageScaleFactor(cursor.imageScaleFactor())
-    , customImage(cursor.getImage())
+    : type(static_cast<Type>(cursor.getType())),
+      hotSpot(cursor.hotSpot()),
+      imageScaleFactor(cursor.imageScaleFactor()),
+      customImage(cursor.getImage())
 #ifdef WIN32
-    , externalHandle(0)
+      ,
+      externalHandle(0)
 #endif
 {
 }
 
-} // namespace blink
+}  // namespace blink

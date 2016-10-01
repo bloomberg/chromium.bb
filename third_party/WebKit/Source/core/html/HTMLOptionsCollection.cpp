@@ -33,93 +33,94 @@
 namespace blink {
 
 HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
-    : HTMLCollection(select, SelectOptions, DoesNotOverrideItemAfter)
-{
-    DCHECK(isHTMLSelectElement(select));
+    : HTMLCollection(select, SelectOptions, DoesNotOverrideItemAfter) {
+  DCHECK(isHTMLSelectElement(select));
 }
 
-void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names)
-{
-    // As per http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmloptionscollection:
-    // The supported property names consist of the non-empty values of all the id and name attributes of all the elements
-    // represented by the collection, in tree order, ignoring later duplicates, with the id of an element preceding its
-    // name if it contributes both, they differ from each other, and neither is the duplicate of an earlier entry.
-    HashSet<AtomicString> existingNames;
-    unsigned length = this->length();
-    for (unsigned i = 0; i < length; ++i) {
-        Element* element = item(i);
-        DCHECK(element);
-        const AtomicString& idAttribute = element->getIdAttribute();
-        if (!idAttribute.isEmpty()) {
-            HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);
-            if (addResult.isNewEntry)
-                names.append(idAttribute);
-        }
-        const AtomicString& nameAttribute = element->getNameAttribute();
-        if (!nameAttribute.isEmpty()) {
-            HashSet<AtomicString>::AddResult addResult = existingNames.add(nameAttribute);
-            if (addResult.isNewEntry)
-                names.append(nameAttribute);
-        }
+void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names) {
+  // As per http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmloptionscollection:
+  // The supported property names consist of the non-empty values of all the id and name attributes of all the elements
+  // represented by the collection, in tree order, ignoring later duplicates, with the id of an element preceding its
+  // name if it contributes both, they differ from each other, and neither is the duplicate of an earlier entry.
+  HashSet<AtomicString> existingNames;
+  unsigned length = this->length();
+  for (unsigned i = 0; i < length; ++i) {
+    Element* element = item(i);
+    DCHECK(element);
+    const AtomicString& idAttribute = element->getIdAttribute();
+    if (!idAttribute.isEmpty()) {
+      HashSet<AtomicString>::AddResult addResult =
+          existingNames.add(idAttribute);
+      if (addResult.isNewEntry)
+        names.append(idAttribute);
     }
-}
-
-HTMLOptionsCollection* HTMLOptionsCollection::create(ContainerNode& select, CollectionType)
-{
-    return new HTMLOptionsCollection(select);
-}
-
-void HTMLOptionsCollection::add(const HTMLOptionElementOrHTMLOptGroupElement& element, const HTMLElementOrLong& before, ExceptionState& exceptionState)
-{
-    toHTMLSelectElement(ownerNode()).add(element, before, exceptionState);
-}
-
-void HTMLOptionsCollection::remove(int index)
-{
-    toHTMLSelectElement(ownerNode()).remove(index);
-}
-
-int HTMLOptionsCollection::selectedIndex() const
-{
-    return toHTMLSelectElement(ownerNode()).selectedIndex();
-}
-
-void HTMLOptionsCollection::setSelectedIndex(int index)
-{
-    toHTMLSelectElement(ownerNode()).setSelectedIndex(index);
-}
-
-void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& exceptionState)
-{
-    toHTMLSelectElement(ownerNode()).setLength(length, exceptionState);
-}
-
-void HTMLOptionsCollection::namedGetter(const AtomicString& name, NodeListOrElement& returnValue)
-{
-    HeapVector<Member<Element>> namedItems;
-    this->namedItems(name, namedItems);
-
-    if (!namedItems.size())
-        return;
-
-    if (namedItems.size() == 1) {
-        returnValue.setElement(namedItems.at(0));
-        return;
+    const AtomicString& nameAttribute = element->getNameAttribute();
+    if (!nameAttribute.isEmpty()) {
+      HashSet<AtomicString>::AddResult addResult =
+          existingNames.add(nameAttribute);
+      if (addResult.isNewEntry)
+        names.append(nameAttribute);
     }
-
-    // FIXME: The spec and Firefox do not return a NodeList. They always return the first matching Element.
-    returnValue.setNodeList(StaticElementList::adopt(namedItems));
+  }
 }
 
-bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, HTMLOptionElement* value, ExceptionState& exceptionState)
-{
-    HTMLSelectElement& base = toHTMLSelectElement(ownerNode());
-    if (!value) { // undefined or null
-        base.remove(index);
-        return true;
-    }
-    base.setOption(index, value, exceptionState);
+HTMLOptionsCollection* HTMLOptionsCollection::create(ContainerNode& select,
+                                                     CollectionType) {
+  return new HTMLOptionsCollection(select);
+}
+
+void HTMLOptionsCollection::add(
+    const HTMLOptionElementOrHTMLOptGroupElement& element,
+    const HTMLElementOrLong& before,
+    ExceptionState& exceptionState) {
+  toHTMLSelectElement(ownerNode()).add(element, before, exceptionState);
+}
+
+void HTMLOptionsCollection::remove(int index) {
+  toHTMLSelectElement(ownerNode()).remove(index);
+}
+
+int HTMLOptionsCollection::selectedIndex() const {
+  return toHTMLSelectElement(ownerNode()).selectedIndex();
+}
+
+void HTMLOptionsCollection::setSelectedIndex(int index) {
+  toHTMLSelectElement(ownerNode()).setSelectedIndex(index);
+}
+
+void HTMLOptionsCollection::setLength(unsigned length,
+                                      ExceptionState& exceptionState) {
+  toHTMLSelectElement(ownerNode()).setLength(length, exceptionState);
+}
+
+void HTMLOptionsCollection::namedGetter(const AtomicString& name,
+                                        NodeListOrElement& returnValue) {
+  HeapVector<Member<Element>> namedItems;
+  this->namedItems(name, namedItems);
+
+  if (!namedItems.size())
+    return;
+
+  if (namedItems.size() == 1) {
+    returnValue.setElement(namedItems.at(0));
+    return;
+  }
+
+  // FIXME: The spec and Firefox do not return a NodeList. They always return the first matching Element.
+  returnValue.setNodeList(StaticElementList::adopt(namedItems));
+}
+
+bool HTMLOptionsCollection::anonymousIndexedSetter(
+    unsigned index,
+    HTMLOptionElement* value,
+    ExceptionState& exceptionState) {
+  HTMLSelectElement& base = toHTMLSelectElement(ownerNode());
+  if (!value) {  // undefined or null
+    base.remove(index);
     return true;
+  }
+  base.setOption(index, value, exceptionState);
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

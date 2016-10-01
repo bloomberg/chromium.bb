@@ -10,10 +10,11 @@
 namespace blink {
 
 class MockHyphenation : public Hyphenation {
-public:
-    size_t lastHyphenLocation(const StringView&, size_t beforeIndex) const override;
+ public:
+  size_t lastHyphenLocation(const StringView&,
+                            size_t beforeIndex) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MockHyphenation_h
+#endif  // MockHyphenation_h

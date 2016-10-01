@@ -40,33 +40,34 @@ class CSSStyleDeclaration;
 class StyleRuleViewport;
 class StyleRuleCSSStyleDeclaration;
 
-class CSSViewportRule final: public CSSRule {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSViewportRule* create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
-    {
-        return new CSSViewportRule(viewportRule, sheet);
-    }
-    ~CSSViewportRule() override;
+class CSSViewportRule final : public CSSRule {
+  DEFINE_WRAPPERTYPEINFO();
 
-    String cssText() const override;
-    void reattach(StyleRuleBase*) override;
+ public:
+  static CSSViewportRule* create(StyleRuleViewport* viewportRule,
+                                 CSSStyleSheet* sheet) {
+    return new CSSViewportRule(viewportRule, sheet);
+  }
+  ~CSSViewportRule() override;
 
-    CSSStyleDeclaration* style() const;
+  String cssText() const override;
+  void reattach(StyleRuleBase*) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  CSSStyleDeclaration* style() const;
 
-private:
-    CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
+  DECLARE_VIRTUAL_TRACE();
 
-    CSSRule::Type type() const override { return kViewportRule; }
+ private:
+  CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
 
-    Member<StyleRuleViewport> m_viewportRule;
-    mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  CSSRule::Type type() const override { return kViewportRule; }
+
+  Member<StyleRuleViewport> m_viewportRule;
+  mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSViewportRule, kViewportRule);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSViewportRule_h
+#endif  // CSSViewportRule_h

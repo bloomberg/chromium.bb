@@ -12,10 +12,11 @@
 namespace blink {
 
 // static
-DOMException* MediaSessionError::take(ScriptPromiseResolver*, const WebMediaSessionError& webError)
-{
-    DCHECK(webError == WebMediaSessionError::Activate);
-    return DOMException::create(InvalidStateError, "The media session activation failed.");
+DOMException* MediaSessionError::take(ScriptPromiseResolver*,
+                                      const WebMediaSessionError& webError) {
+  DCHECK(webError == WebMediaSessionError::Activate);
+  return DOMException::create(InvalidStateError,
+                              "The media session activation failed.");
 }
 
-} // namespace blink
+}  // namespace blink

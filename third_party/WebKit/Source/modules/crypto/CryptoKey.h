@@ -42,39 +42,44 @@ namespace blink {
 
 class CryptoResult;
 
-class CryptoKey final : public GarbageCollectedFinalized<CryptoKey>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CryptoKey* create(const WebCryptoKey& key)
-    {
-        return new CryptoKey(key);
-    }
+class CryptoKey final : public GarbageCollectedFinalized<CryptoKey>,
+                        public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~CryptoKey();
+ public:
+  static CryptoKey* create(const WebCryptoKey& key) {
+    return new CryptoKey(key);
+  }
 
-    String type() const;
-    bool extractable() const;
-    ScriptValue algorithm(ScriptState*);
-    Vector<String> usages() const;
+  ~CryptoKey();
 
-    const WebCryptoKey& key() const { return m_key; }
+  String type() const;
+  bool extractable() const;
+  ScriptValue algorithm(ScriptState*);
+  Vector<String> usages() const;
 
-    // If the key cannot be used with the indicated algorithm, returns false
-    // and completes the CryptoResult with an error.
-    bool canBeUsedForAlgorithm(const WebCryptoAlgorithm&, WebCryptoKeyUsage, CryptoResult*) const;
+  const WebCryptoKey& key() const { return m_key; }
 
-    // On failure, these return false and complete the CryptoResult with an error.
-    static bool parseFormat(const String&, WebCryptoKeyFormat&, CryptoResult*);
-    static bool parseUsageMask(const Vector<String>&, WebCryptoKeyUsageMask&, CryptoResult*);
+  // If the key cannot be used with the indicated algorithm, returns false
+  // and completes the CryptoResult with an error.
+  bool canBeUsedForAlgorithm(const WebCryptoAlgorithm&,
+                             WebCryptoKeyUsage,
+                             CryptoResult*) const;
 
-    DEFINE_INLINE_TRACE() { }
+  // On failure, these return false and complete the CryptoResult with an error.
+  static bool parseFormat(const String&, WebCryptoKeyFormat&, CryptoResult*);
+  static bool parseUsageMask(const Vector<String>&,
+                             WebCryptoKeyUsageMask&,
+                             CryptoResult*);
 
-protected:
-    explicit CryptoKey(const WebCryptoKey&);
+  DEFINE_INLINE_TRACE() {}
 
-    const WebCryptoKey m_key;
+ protected:
+  explicit CryptoKey(const WebCryptoKey&);
+
+  const WebCryptoKey m_key;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CryptoKey_h
+#endif  // CryptoKey_h

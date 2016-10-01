@@ -6,39 +6,37 @@
 
 namespace blink {
 
-bool PropertyHandle::operator==(const PropertyHandle& other) const
-{
-    if (m_handleType != other.m_handleType)
-        return false;
+bool PropertyHandle::operator==(const PropertyHandle& other) const {
+  if (m_handleType != other.m_handleType)
+    return false;
 
-    switch (m_handleType) {
+  switch (m_handleType) {
     case HandleCSSProperty:
     case HandlePresentationAttribute:
-        return m_cssProperty == other.m_cssProperty;
+      return m_cssProperty == other.m_cssProperty;
     case HandleCSSCustomProperty:
-        return m_propertyName == other.m_propertyName;
+      return m_propertyName == other.m_propertyName;
     case HandleSVGAttribute:
-        return m_svgAttribute == other.m_svgAttribute;
+      return m_svgAttribute == other.m_svgAttribute;
     default:
-        return true;
-    }
+      return true;
+  }
 }
 
-unsigned PropertyHandle::hash() const
-{
-    switch (m_handleType) {
+unsigned PropertyHandle::hash() const {
+  switch (m_handleType) {
     case HandleCSSProperty:
-        return m_cssProperty;
+      return m_cssProperty;
     case HandleCSSCustomProperty:
-        return m_propertyName->existingHash();
+      return m_propertyName->existingHash();
     case HandlePresentationAttribute:
-        return -m_cssProperty;
+      return -m_cssProperty;
     case HandleSVGAttribute:
-        return QualifiedNameHash::hash(*m_svgAttribute);
+      return QualifiedNameHash::hash(*m_svgAttribute);
     default:
-        NOTREACHED();
-        return 0;
-    }
+      NOTREACHED();
+      return 0;
+  }
 }
 
-} // namespace blink
+}  // namespace blink

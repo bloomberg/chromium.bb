@@ -37,51 +37,53 @@
 
 namespace blink {
 
-Shaper::Shaper(const Font* font, const TextRun& run, const GlyphData* emphasisData,
-    HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
-    : m_font(font)
-    , m_textRun(run)
-    , m_fallbackFonts(fallbackFonts)
-    , m_glyphBoundingBox(bounds)
-    , m_expansion(0)
-    , m_expansionPerOpportunity(0)
-    , m_isAfterExpansion(!run.allowsLeadingExpansion())
-    , m_emphasisSubstitutionData(emphasisData)
-{
-    if (emphasisData) {
-        ASSERT(emphasisData->fontData);
-        m_emphasisGlyphCenter = emphasisData->fontData->boundsForGlyph(emphasisData->glyph).center();
-    }
+Shaper::Shaper(const Font* font,
+               const TextRun& run,
+               const GlyphData* emphasisData,
+               HashSet<const SimpleFontData*>* fallbackFonts,
+               FloatRect* bounds)
+    : m_font(font),
+      m_textRun(run),
+      m_fallbackFonts(fallbackFonts),
+      m_glyphBoundingBox(bounds),
+      m_expansion(0),
+      m_expansionPerOpportunity(0),
+      m_isAfterExpansion(!run.allowsLeadingExpansion()),
+      m_emphasisSubstitutionData(emphasisData) {
+  if (emphasisData) {
+    ASSERT(emphasisData->fontData);
+    m_emphasisGlyphCenter =
+        emphasisData->fontData->boundsForGlyph(emphasisData->glyph).center();
+  }
 }
 
-void Shaper::addEmphasisMark(GlyphBuffer* buffer, float midGlyphOffset) const
-{
-    ASSERT(buffer);
-    ASSERT(m_emphasisSubstitutionData);
+void Shaper::addEmphasisMark(GlyphBuffer* buffer, float midGlyphOffset) const {
+  ASSERT(buffer);
+  ASSERT(m_emphasisSubstitutionData);
 
-    const SimpleFontData* emphasisFontData = m_emphasisSubstitutionData->fontData;
-    ASSERT(emphasisFontData);
+  const SimpleFontData* emphasisFontData = m_emphasisSubstitutionData->fontData;
+  ASSERT(emphasisFontData);
 
-    bool isVertical = emphasisFontData->platformData().isVerticalAnyUpright()
-        && emphasisFontData->verticalData();
+  bool isVertical = emphasisFontData->platformData().isVerticalAnyUpright() &&
+                    emphasisFontData->verticalData();
 
-    if (!isVertical) {
-        buffer->add(m_emphasisSubstitutionData->glyph, emphasisFontData,
-            midGlyphOffset - m_emphasisGlyphCenter.x());
-    } else {
-        buffer->add(m_emphasisSubstitutionData->glyph, emphasisFontData,
-            FloatPoint(-m_emphasisGlyphCenter.x(), midGlyphOffset - m_emphasisGlyphCenter.y()));
-    }
+  if (!isVertical) {
+    buffer->add(m_emphasisSubstitutionData->glyph, emphasisFontData,
+                midGlyphOffset - m_emphasisGlyphCenter.x());
+  } else {
+    buffer->add(m_emphasisSubstitutionData->glyph, emphasisFontData,
+                FloatPoint(-m_emphasisGlyphCenter.x(),
+                           midGlyphOffset - m_emphasisGlyphCenter.y()));
+  }
 }
 
-void Shaper::trackNonPrimaryFallbackFont(const SimpleFontData* fontData)
-{
-    ASSERT(m_fallbackFonts);
+void Shaper::trackNonPrimaryFallbackFont(const SimpleFontData* fontData) {
+  ASSERT(m_fallbackFonts);
 
-    if (fontData == m_font->primaryFont())
-        return;
+  if (fontData == m_font->primaryFont())
+    return;
 
-    m_fallbackFonts->add(fontData);
+  m_fallbackFonts->add(fontData);
 }
 
-} // namespace blink
+}  // namespace blink

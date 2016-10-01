@@ -40,80 +40,98 @@ namespace blink {
 class SecurityOrigin;
 
 class CORE_EXPORT FetchRequest {
-    STACK_ALLOCATED();
-public:
-    enum DeferOption { NoDefer,
-        LazyLoad,
-        IdleLoad };
-    enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin, NoOriginRestriction };
+  STACK_ALLOCATED();
 
-    struct ResourceWidth {
-        DISALLOW_NEW();
-        float width;
-        bool isSet;
+ public:
+  enum DeferOption { NoDefer, LazyLoad, IdleLoad };
+  enum OriginRestriction {
+    UseDefaultOriginRestrictionForType,
+    RestrictToSameOrigin,
+    NoOriginRestriction
+  };
 
-        ResourceWidth()
-            : width(0)
-            , isSet(false)
-        {
-        }
-    };
+  struct ResourceWidth {
+    DISALLOW_NEW();
+    float width;
+    bool isSet;
 
-    FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String());
-    FetchRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
-    FetchRequest(const ResourceRequest&, const FetchInitiatorInfo&);
-    ~FetchRequest();
+    ResourceWidth() : width(0), isSet(false) {}
+  };
 
-    ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
-    const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
-    const KURL& url() const { return m_resourceRequest.url(); }
+  FetchRequest(const ResourceRequest&,
+               const AtomicString& initiator,
+               const String& charset = String());
+  FetchRequest(const ResourceRequest&,
+               const AtomicString& initiator,
+               const ResourceLoaderOptions&);
+  FetchRequest(const ResourceRequest&, const FetchInitiatorInfo&);
+  ~FetchRequest();
 
-    const String& charset() const { return m_charset; }
-    void setCharset(const String& charset) { m_charset = charset; }
+  ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
+  const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
+  const KURL& url() const { return m_resourceRequest.url(); }
 
-    const ResourceLoaderOptions& options() const { return m_options; }
+  const String& charset() const { return m_charset; }
+  void setCharset(const String& charset) { m_charset = charset; }
 
-    DeferOption defer() const { return m_defer; }
-    void setDefer(DeferOption defer) { m_defer = defer; }
+  const ResourceLoaderOptions& options() const { return m_options; }
 
-    ResourceWidth getResourceWidth() const { return m_resourceWidth; }
-    void setResourceWidth(ResourceWidth);
+  DeferOption defer() const { return m_defer; }
+  void setDefer(DeferOption defer) { m_defer = defer; }
 
-    ClientHintsPreferences& clientHintsPreferences() { return m_clientHintPreferences; }
+  ResourceWidth getResourceWidth() const { return m_resourceWidth; }
+  void setResourceWidth(ResourceWidth);
 
-    bool forPreload() const { return m_forPreload; }
-    void setForPreload(bool forPreload, double discoveryTime = 0);
+  ClientHintsPreferences& clientHintsPreferences() {
+    return m_clientHintPreferences;
+  }
 
-    double preloadDiscoveryTime() { return m_preloadDiscoveryTime; }
+  bool forPreload() const { return m_forPreload; }
+  void setForPreload(bool forPreload, double discoveryTime = 0);
 
-    bool isLinkPreload() { return m_linkPreload; }
-    void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
+  double preloadDiscoveryTime() { return m_preloadDiscoveryTime; }
 
-    void setContentSecurityCheck(ContentSecurityPolicyDisposition contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
-    void setCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
-    OriginRestriction getOriginRestriction() const { return m_originRestriction; }
-    void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
-    const IntegrityMetadataSet integrityMetadata() const { return m_options.integrityMetadata; }
-    void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_options.integrityMetadata = metadata; }
+  bool isLinkPreload() { return m_linkPreload; }
+  void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
 
-    String contentSecurityPolicyNonce() const { return m_options.contentSecurityPolicyNonce; }
-    void setContentSecurityPolicyNonce(const String& nonce) { m_options.contentSecurityPolicyNonce = nonce; }
+  void setContentSecurityCheck(
+      ContentSecurityPolicyDisposition contentSecurityPolicyOption) {
+    m_options.contentSecurityPolicyOption = contentSecurityPolicyOption;
+  }
+  void setCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
+  OriginRestriction getOriginRestriction() const { return m_originRestriction; }
+  void setOriginRestriction(OriginRestriction restriction) {
+    m_originRestriction = restriction;
+  }
+  const IntegrityMetadataSet integrityMetadata() const {
+    return m_options.integrityMetadata;
+  }
+  void setIntegrityMetadata(const IntegrityMetadataSet& metadata) {
+    m_options.integrityMetadata = metadata;
+  }
 
-    void makeSynchronous();
+  String contentSecurityPolicyNonce() const {
+    return m_options.contentSecurityPolicyNonce;
+  }
+  void setContentSecurityPolicyNonce(const String& nonce) {
+    m_options.contentSecurityPolicyNonce = nonce;
+  }
 
-private:
-    ResourceRequest m_resourceRequest;
-    String m_charset;
-    ResourceLoaderOptions m_options;
-    bool m_forPreload;
-    bool m_linkPreload;
-    double m_preloadDiscoveryTime;
-    DeferOption m_defer;
-    OriginRestriction m_originRestriction;
-    ResourceWidth m_resourceWidth;
-    ClientHintsPreferences m_clientHintPreferences;
+  void makeSynchronous();
+
+ private:
+  ResourceRequest m_resourceRequest;
+  String m_charset;
+  ResourceLoaderOptions m_options;
+  bool m_forPreload;
+  bool m_linkPreload;
+  double m_preloadDiscoveryTime;
+  DeferOption m_defer;
+  OriginRestriction m_originRestriction;
+  ResourceWidth m_resourceWidth;
+  ClientHintsPreferences m_clientHintPreferences;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

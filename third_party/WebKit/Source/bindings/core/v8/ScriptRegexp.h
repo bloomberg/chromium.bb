@@ -35,32 +35,34 @@
 
 namespace blink {
 
-enum MultilineMode {
-    MultilineDisabled,
-    MultilineEnabled
-};
+enum MultilineMode { MultilineDisabled, MultilineEnabled };
 
 class CORE_EXPORT ScriptRegexp {
-    USING_FAST_MALLOC(ScriptRegexp); WTF_MAKE_NONCOPYABLE(ScriptRegexp);
-public:
-    enum CharacterMode {
-        BMP, // NOLINT
-        UTF16, // NOLINT
-    };
+  USING_FAST_MALLOC(ScriptRegexp);
+  WTF_MAKE_NONCOPYABLE(ScriptRegexp);
 
-    ScriptRegexp(const String&, TextCaseSensitivity, MultilineMode = MultilineDisabled, CharacterMode = BMP);
+ public:
+  enum CharacterMode {
+    BMP,    // NOLINT
+    UTF16,  // NOLINT
+  };
 
-    int match(const String&, int startFrom = 0, int* matchLength = 0) const;
+  ScriptRegexp(const String&,
+               TextCaseSensitivity,
+               MultilineMode = MultilineDisabled,
+               CharacterMode = BMP);
 
-    bool isValid() const { return !m_regex.isEmpty(); }
-    // exceptionMessage is available only if !isValid().
-    String exceptionMessage() const { return m_exceptionMessage; }
+  int match(const String&, int startFrom = 0, int* matchLength = 0) const;
 
-private:
-    ScopedPersistent<v8::RegExp> m_regex;
-    String m_exceptionMessage;
+  bool isValid() const { return !m_regex.isEmpty(); }
+  // exceptionMessage is available only if !isValid().
+  String exceptionMessage() const { return m_exceptionMessage; }
+
+ private:
+  ScopedPersistent<v8::RegExp> m_regex;
+  String m_exceptionMessage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptRegexp_h
+#endif  // ScriptRegexp_h

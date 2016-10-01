@@ -11,8 +11,9 @@ namespace blink {
 
 struct WebServiceWorkerError;
 
-using WebServiceWorkerClientsClaimCallbacks = WebCallbacks<void, const WebServiceWorkerError&>;
+using WebServiceWorkerClientsClaimCallbacks =
+    WebCallbacks<void, const WebServiceWorkerError&>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerClientsClaimCallbacks_h
+#endif  // WebServiceWorkerClientsClaimCallbacks_h

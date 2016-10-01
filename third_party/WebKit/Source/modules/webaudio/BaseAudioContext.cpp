@@ -77,9 +77,9 @@
 
 namespace blink {
 
-BaseAudioContext* BaseAudioContext::create(Document& document, ExceptionState& exceptionState)
-{
-    return AudioContext::create(document, exceptionState);
+BaseAudioContext* BaseAudioContext::create(Document& document,
+                                           ExceptionState& exceptionState) {
+  return AudioContext::create(document, exceptionState);
 }
 
 // FIXME(dominicc): Devolve these constructors to AudioContext
@@ -87,738 +87,757 @@ BaseAudioContext* BaseAudioContext::create(Document& document, ExceptionState& e
 
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document)
-    : ActiveScriptWrappable(this)
-    , ActiveDOMObject(document)
-    , m_destinationNode(nullptr)
-    , m_isCleared(false)
-    , m_isResolvingResumePromises(false)
-    , m_userGestureRequired(false)
-    , m_connectionCount(0)
-    , m_deferredTaskHandler(DeferredTaskHandler::create())
-    , m_contextState(Suspended)
-    , m_closedContextSampleRate(-1)
-    , m_periodicWaveSine(nullptr)
-    , m_periodicWaveSquare(nullptr)
-    , m_periodicWaveSawtooth(nullptr)
-    , m_periodicWaveTriangle(nullptr)
-{
-    // If mediaPlaybackRequiresUserGesture is enabled, cross origin iframes will
-    // require user gesture for the AudioContext to produce sound.
-    if (document->settings() && document->settings()->mediaPlaybackRequiresUserGesture()
-        && document->frame() && document->frame()->isCrossOriginSubframe()) {
-        m_userGestureRequired = true;
-    }
+    : ActiveScriptWrappable(this),
+      ActiveDOMObject(document),
+      m_destinationNode(nullptr),
+      m_isCleared(false),
+      m_isResolvingResumePromises(false),
+      m_userGestureRequired(false),
+      m_connectionCount(0),
+      m_deferredTaskHandler(DeferredTaskHandler::create()),
+      m_contextState(Suspended),
+      m_closedContextSampleRate(-1),
+      m_periodicWaveSine(nullptr),
+      m_periodicWaveSquare(nullptr),
+      m_periodicWaveSawtooth(nullptr),
+      m_periodicWaveTriangle(nullptr) {
+  // If mediaPlaybackRequiresUserGesture is enabled, cross origin iframes will
+  // require user gesture for the AudioContext to produce sound.
+  if (document->settings() &&
+      document->settings()->mediaPlaybackRequiresUserGesture() &&
+      document->frame() && document->frame()->isCrossOriginSubframe()) {
+    m_userGestureRequired = true;
+  }
 
-    m_destinationNode = DefaultAudioDestinationNode::create(this);
+  m_destinationNode = DefaultAudioDestinationNode::create(this);
 
-    initialize();
+  initialize();
 }
 
 // Constructor for offline (non-realtime) rendering.
-BaseAudioContext::BaseAudioContext(Document* document, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
-    : ActiveScriptWrappable(this)
-    , ActiveDOMObject(document)
-    , m_destinationNode(nullptr)
-    , m_isCleared(false)
-    , m_isResolvingResumePromises(false)
-    , m_userGestureRequired(false)
-    , m_connectionCount(0)
-    , m_deferredTaskHandler(DeferredTaskHandler::create())
-    , m_contextState(Suspended)
-    , m_closedContextSampleRate(-1)
-    , m_periodicWaveSine(nullptr)
-    , m_periodicWaveSquare(nullptr)
-    , m_periodicWaveSawtooth(nullptr)
-    , m_periodicWaveTriangle(nullptr)
-{
+BaseAudioContext::BaseAudioContext(Document* document,
+                                   unsigned numberOfChannels,
+                                   size_t numberOfFrames,
+                                   float sampleRate)
+    : ActiveScriptWrappable(this),
+      ActiveDOMObject(document),
+      m_destinationNode(nullptr),
+      m_isCleared(false),
+      m_isResolvingResumePromises(false),
+      m_userGestureRequired(false),
+      m_connectionCount(0),
+      m_deferredTaskHandler(DeferredTaskHandler::create()),
+      m_contextState(Suspended),
+      m_closedContextSampleRate(-1),
+      m_periodicWaveSine(nullptr),
+      m_periodicWaveSquare(nullptr),
+      m_periodicWaveSawtooth(nullptr),
+      m_periodicWaveTriangle(nullptr) {}
+
+BaseAudioContext::~BaseAudioContext() {
+  deferredTaskHandler().contextWillBeDestroyed();
+  // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
+  DCHECK(!isDestinationInitialized());
+  DCHECK(!m_activeSourceNodes.size());
+  DCHECK(!m_finishedSourceHandlers.size());
+  DCHECK(!m_isResolvingResumePromises);
+  DCHECK(!m_resumeResolvers.size());
 }
 
-BaseAudioContext::~BaseAudioContext()
-{
-    deferredTaskHandler().contextWillBeDestroyed();
-    // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
-    DCHECK(!isDestinationInitialized());
-    DCHECK(!m_activeSourceNodes.size());
-    DCHECK(!m_finishedSourceHandlers.size());
-    DCHECK(!m_isResolvingResumePromises);
-    DCHECK(!m_resumeResolvers.size());
+void BaseAudioContext::initialize() {
+  if (isDestinationInitialized())
+    return;
+
+  FFTFrame::initialize();
+
+  if (m_destinationNode) {
+    m_destinationNode->handler().initialize();
+    // The AudioParams in the listener need access to the destination node, so only create the
+    // listener if the destination node exists.
+    m_listener = AudioListener::create(*this);
+  }
 }
 
-void BaseAudioContext::initialize()
-{
-    if (isDestinationInitialized())
-        return;
+void BaseAudioContext::clear() {
+  m_destinationNode.clear();
+  // The audio rendering thread is dead.  Nobody will schedule AudioHandler
+  // deletion.  Let's do it ourselves.
+  deferredTaskHandler().clearHandlersToBeDeleted();
+  m_isCleared = true;
+}
 
-    FFTFrame::initialize();
+void BaseAudioContext::uninitialize() {
+  DCHECK(isMainThread());
 
-    if (m_destinationNode) {
-        m_destinationNode->handler().initialize();
-        // The AudioParams in the listener need access to the destination node, so only create the
-        // listener if the destination node exists.
-        m_listener = AudioListener::create(*this);
+  if (!isDestinationInitialized())
+    return;
+
+  // This stops the audio thread and all audio rendering.
+  if (m_destinationNode)
+    m_destinationNode->handler().uninitialize();
+
+  // Get rid of the sources which may still be playing.
+  releaseActiveSourceNodes();
+
+  // Reject any pending resolvers before we go away.
+  rejectPendingResolvers();
+  didClose();
+
+  DCHECK(m_listener);
+  m_listener->waitForHRTFDatabaseLoaderThreadCompletion();
+
+  clear();
+}
+
+void BaseAudioContext::stop() {
+  uninitialize();
+}
+
+bool BaseAudioContext::hasPendingActivity() const {
+  // There's no pending activity if the audio context has been cleared.
+  return !m_isCleared;
+}
+
+AudioDestinationNode* BaseAudioContext::destination() const {
+  // Cannot be called from the audio thread because this method touches objects managed by Oilpan,
+  // and the audio thread is not managed by Oilpan.
+  DCHECK(!isAudioThread());
+  return m_destinationNode;
+}
+
+void BaseAudioContext::throwExceptionForClosedState(
+    ExceptionState& exceptionState) {
+  exceptionState.throwDOMException(InvalidStateError,
+                                   "AudioContext has been closed.");
+}
+
+AudioBuffer* BaseAudioContext::createBuffer(unsigned numberOfChannels,
+                                            size_t numberOfFrames,
+                                            float sampleRate,
+                                            ExceptionState& exceptionState) {
+  // It's ok to call createBuffer, even if the context is closed because the AudioBuffer doesn't
+  // really "belong" to any particular context.
+
+  AudioBuffer* buffer = AudioBuffer::create(numberOfChannels, numberOfFrames,
+                                            sampleRate, exceptionState);
+
+  if (buffer) {
+    // Only record the data if the creation succeeded.
+    DEFINE_STATIC_LOCAL(SparseHistogram, audioBufferChannelsHistogram,
+                        ("WebAudio.AudioBuffer.NumberOfChannels"));
+
+    // Arbitrarly limit the maximum length to 1 million frames (about 20 sec
+    // at 48kHz).  The number of buckets is fairly arbitrary.
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferLengthHistogram,
+                        ("WebAudio.AudioBuffer.Length", 1, 1000000, 50));
+    // The limits are the min and max AudioBuffer sample rates currently
+    // supported.  We use explicit values here instead of
+    // AudioUtilities::minAudioBufferSampleRate() and
+    // AudioUtilities::maxAudioBufferSampleRate().  The number of buckets is
+    // fairly arbitrary.
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferSampleRateHistogram,
+                        ("WebAudio.AudioBuffer.SampleRate", 3000, 192000, 60));
+
+    audioBufferChannelsHistogram.sample(numberOfChannels);
+    audioBufferLengthHistogram.count(numberOfFrames);
+    audioBufferSampleRateHistogram.count(sampleRate);
+
+    // Compute the ratio of the buffer rate and the context rate so we know
+    // how often the buffer needs to be resampled to match the context.  For
+    // the histogram, we multiply the ratio by 100 and round to the nearest
+    // integer.  If the context is closed, don't record this because we
+    // don't have a sample rate for closed context.
+    if (!isContextClosed()) {
+      // The limits are choosen from 100*(3000/192000) = 1.5625 and
+      // 100*(192000/3000) = 6400, where 3000 and 192000 are the current
+      // min and max sample rates possible for an AudioBuffer.  The number
+      // of buckets is fairly arbitrary.
+      DEFINE_STATIC_LOCAL(
+          CustomCountHistogram, audioBufferSampleRateRatioHistogram,
+          ("WebAudio.AudioBuffer.SampleRateRatio", 1, 6400, 50));
+      float ratio = 100 * sampleRate / this->sampleRate();
+      audioBufferSampleRateRatioHistogram.count(static_cast<int>(0.5 + ratio));
     }
+  }
+
+  return buffer;
 }
 
-void BaseAudioContext::clear()
-{
-    m_destinationNode.clear();
-    // The audio rendering thread is dead.  Nobody will schedule AudioHandler
-    // deletion.  Let's do it ourselves.
-    deferredTaskHandler().clearHandlersToBeDeleted();
-    m_isCleared = true;
+ScriptPromise BaseAudioContext::decodeAudioData(
+    ScriptState* scriptState,
+    DOMArrayBuffer* audioData,
+    AudioBufferCallback* successCallback,
+    AudioBufferCallback* errorCallback,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+  DCHECK(audioData);
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+
+  float rate = isContextClosed() ? closedContextSampleRate() : sampleRate();
+
+  DCHECK_GT(rate, 0);
+
+  m_decodeAudioResolvers.add(resolver);
+  m_audioDecoder.decodeAsync(audioData, rate, successCallback, errorCallback,
+                             resolver, this);
+
+  return promise;
 }
 
-void BaseAudioContext::uninitialize()
-{
-    DCHECK(isMainThread());
+void BaseAudioContext::handleDecodeAudioData(
+    AudioBuffer* audioBuffer,
+    ScriptPromiseResolver* resolver,
+    AudioBufferCallback* successCallback,
+    AudioBufferCallback* errorCallback) {
+  DCHECK(isMainThread());
 
-    if (!isDestinationInitialized())
-        return;
+  if (audioBuffer) {
+    // Resolve promise successfully and run the success callback
+    resolver->resolve(audioBuffer);
+    if (successCallback)
+      successCallback->handleEvent(audioBuffer);
+  } else {
+    // Reject the promise and run the error callback
+    DOMException* error =
+        DOMException::create(EncodingError, "Unable to decode audio data");
+    resolver->reject(error);
+    if (errorCallback)
+      errorCallback->handleEvent(error);
+  }
 
-    // This stops the audio thread and all audio rendering.
-    if (m_destinationNode)
-        m_destinationNode->handler().uninitialize();
-
-    // Get rid of the sources which may still be playing.
-    releaseActiveSourceNodes();
-
-    // Reject any pending resolvers before we go away.
-    rejectPendingResolvers();
-    didClose();
-
-    DCHECK(m_listener);
-    m_listener->waitForHRTFDatabaseLoaderThreadCompletion();
-
-    clear();
+  // We've resolved the promise.  Remove it now.
+  DCHECK(m_decodeAudioResolvers.contains(resolver));
+  m_decodeAudioResolvers.remove(resolver);
 }
 
-void BaseAudioContext::stop()
-{
-    uninitialize();
+AudioBufferSourceNode* BaseAudioContext::createBufferSource(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+
+  AudioBufferSourceNode* node =
+      AudioBufferSourceNode::create(*this, exceptionState);
+
+  // Do not add a reference to this source node now. The reference will be added when start() is
+  // called.
+
+  return node;
 }
 
-bool BaseAudioContext::hasPendingActivity() const
-{
-    // There's no pending activity if the audio context has been cleared.
-    return !m_isCleared;
+MediaElementAudioSourceNode* BaseAudioContext::createMediaElementSource(
+    HTMLMediaElement* mediaElement,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+
+  return MediaElementAudioSourceNode::create(*this, *mediaElement,
+                                             exceptionState);
 }
 
-AudioDestinationNode* BaseAudioContext::destination() const
-{
-    // Cannot be called from the audio thread because this method touches objects managed by Oilpan,
-    // and the audio thread is not managed by Oilpan.
-    DCHECK(!isAudioThread());
-    return m_destinationNode;
+MediaStreamAudioSourceNode* BaseAudioContext::createMediaStreamSource(
+    MediaStream* mediaStream,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+
+  return MediaStreamAudioSourceNode::create(*this, *mediaStream,
+                                            exceptionState);
 }
 
-void BaseAudioContext::throwExceptionForClosedState(ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(InvalidStateError, "AudioContext has been closed.");
+MediaStreamAudioDestinationNode* BaseAudioContext::createMediaStreamDestination(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+
+  // Set number of output channels to stereo by default.
+  return MediaStreamAudioDestinationNode::create(*this, 2, exceptionState);
 }
 
-AudioBuffer* BaseAudioContext::createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
-{
-    // It's ok to call createBuffer, even if the context is closed because the AudioBuffer doesn't
-    // really "belong" to any particular context.
+ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    AudioBuffer* buffer = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
-
-    if (buffer) {
-        // Only record the data if the creation succeeded.
-        DEFINE_STATIC_LOCAL(SparseHistogram, audioBufferChannelsHistogram,
-            ("WebAudio.AudioBuffer.NumberOfChannels"));
-
-        // Arbitrarly limit the maximum length to 1 million frames (about 20 sec
-        // at 48kHz).  The number of buckets is fairly arbitrary.
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferLengthHistogram,
-            ("WebAudio.AudioBuffer.Length", 1, 1000000, 50));
-        // The limits are the min and max AudioBuffer sample rates currently
-        // supported.  We use explicit values here instead of
-        // AudioUtilities::minAudioBufferSampleRate() and
-        // AudioUtilities::maxAudioBufferSampleRate().  The number of buckets is
-        // fairly arbitrary.
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferSampleRateHistogram,
-            ("WebAudio.AudioBuffer.SampleRate", 3000, 192000, 60));
-
-        audioBufferChannelsHistogram.sample(numberOfChannels);
-        audioBufferLengthHistogram.count(numberOfFrames);
-        audioBufferSampleRateHistogram.count(sampleRate);
-
-        // Compute the ratio of the buffer rate and the context rate so we know
-        // how often the buffer needs to be resampled to match the context.  For
-        // the histogram, we multiply the ratio by 100 and round to the nearest
-        // integer.  If the context is closed, don't record this because we
-        // don't have a sample rate for closed context.
-        if (!isContextClosed()) {
-            // The limits are choosen from 100*(3000/192000) = 1.5625 and
-            // 100*(192000/3000) = 6400, where 3000 and 192000 are the current
-            // min and max sample rates possible for an AudioBuffer.  The number
-            // of buckets is fairly arbitrary.
-            DEFINE_STATIC_LOCAL(CustomCountHistogram, audioBufferSampleRateRatioHistogram,
-                ("WebAudio.AudioBuffer.SampleRateRatio", 1, 6400, 50));
-            float ratio = 100 * sampleRate / this->sampleRate();
-            audioBufferSampleRateRatioHistogram.count(static_cast<int>(0.5 + ratio));
-        }
-    }
-
-    return buffer;
+  return ScriptProcessorNode::create(*this, exceptionState);
 }
 
-ScriptPromise BaseAudioContext::decodeAudioData(ScriptState* scriptState, DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-    DCHECK(audioData);
+ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
+    size_t bufferSize,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    float rate = isContextClosed() ? closedContextSampleRate() : sampleRate();
-
-    DCHECK_GT(rate, 0);
-
-    m_decodeAudioResolvers.add(resolver);
-    m_audioDecoder.decodeAsync(audioData, rate, successCallback, errorCallback, resolver, this);
-
-    return promise;
+  return ScriptProcessorNode::create(*this, bufferSize, exceptionState);
 }
 
-void BaseAudioContext::handleDecodeAudioData(AudioBuffer* audioBuffer, ScriptPromiseResolver* resolver, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
-{
-    DCHECK(isMainThread());
+ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
+    size_t bufferSize,
+    size_t numberOfInputChannels,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    if (audioBuffer) {
-        // Resolve promise successfully and run the success callback
-        resolver->resolve(audioBuffer);
-        if (successCallback)
-            successCallback->handleEvent(audioBuffer);
-    } else {
-        // Reject the promise and run the error callback
-        DOMException* error = DOMException::create(EncodingError, "Unable to decode audio data");
-        resolver->reject(error);
-        if (errorCallback)
-            errorCallback->handleEvent(error);
-    }
-
-    // We've resolved the promise.  Remove it now.
-    DCHECK(m_decodeAudioResolvers.contains(resolver));
-    m_decodeAudioResolvers.remove(resolver);
+  return ScriptProcessorNode::create(*this, bufferSize, numberOfInputChannels,
+                                     exceptionState);
 }
 
-AudioBufferSourceNode* BaseAudioContext::createBufferSource(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
+    size_t bufferSize,
+    size_t numberOfInputChannels,
+    size_t numberOfOutputChannels,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    AudioBufferSourceNode* node = AudioBufferSourceNode::create(*this, exceptionState);
-
-    // Do not add a reference to this source node now. The reference will be added when start() is
-    // called.
-
-    return node;
+  return ScriptProcessorNode::create(*this, bufferSize, numberOfInputChannels,
+                                     numberOfOutputChannels, exceptionState);
 }
 
-MediaElementAudioSourceNode* BaseAudioContext::createMediaElementSource(HTMLMediaElement* mediaElement, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+StereoPannerNode* BaseAudioContext::createStereoPanner(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return MediaElementAudioSourceNode::create(*this, *mediaElement, exceptionState);
+  return StereoPannerNode::create(*this, exceptionState);
 }
 
-MediaStreamAudioSourceNode* BaseAudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+BiquadFilterNode* BaseAudioContext::createBiquadFilter(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return MediaStreamAudioSourceNode::create(*this, *mediaStream, exceptionState);
+  return BiquadFilterNode::create(*this, exceptionState);
 }
 
-MediaStreamAudioDestinationNode* BaseAudioContext::createMediaStreamDestination(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+WaveShaperNode* BaseAudioContext::createWaveShaper(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    // Set number of output channels to stereo by default.
-    return MediaStreamAudioDestinationNode::create(*this, 2, exceptionState);
+  return WaveShaperNode::create(*this, exceptionState);
 }
 
-ScriptProcessorNode* BaseAudioContext::createScriptProcessor(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+PannerNode* BaseAudioContext::createPanner(ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return ScriptProcessorNode::create(*this, exceptionState);
+  return PannerNode::create(*this, exceptionState);
 }
 
-ScriptProcessorNode* BaseAudioContext::createScriptProcessor(size_t bufferSize, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+ConvolverNode* BaseAudioContext::createConvolver(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return ScriptProcessorNode::create(*this, bufferSize, exceptionState);
+  return ConvolverNode::create(*this, exceptionState);
 }
 
-ScriptProcessorNode* BaseAudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+DynamicsCompressorNode* BaseAudioContext::createDynamicsCompressor(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return ScriptProcessorNode::create(*this, bufferSize, numberOfInputChannels, exceptionState);
+  return DynamicsCompressorNode::create(*this, exceptionState);
 }
 
-ScriptProcessorNode* BaseAudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+AnalyserNode* BaseAudioContext::createAnalyser(ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return ScriptProcessorNode::create(
-        *this,
-        bufferSize,
-        numberOfInputChannels,
-        numberOfOutputChannels,
-        exceptionState);
+  return AnalyserNode::create(*this, exceptionState);
 }
 
-StereoPannerNode* BaseAudioContext::createStereoPanner(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+GainNode* BaseAudioContext::createGain(ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return StereoPannerNode::create(*this, exceptionState);
+  return GainNode::create(*this, exceptionState);
 }
 
-BiquadFilterNode* BaseAudioContext::createBiquadFilter(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+DelayNode* BaseAudioContext::createDelay(ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return BiquadFilterNode::create(*this, exceptionState);
+  return DelayNode::create(*this, exceptionState);
 }
 
-WaveShaperNode* BaseAudioContext::createWaveShaper(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+DelayNode* BaseAudioContext::createDelay(double maxDelayTime,
+                                         ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return WaveShaperNode::create(*this, exceptionState);
+  return DelayNode::create(*this, maxDelayTime, exceptionState);
 }
 
-PannerNode* BaseAudioContext::createPanner(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+ChannelSplitterNode* BaseAudioContext::createChannelSplitter(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return PannerNode::create(*this, exceptionState);
+  return ChannelSplitterNode::create(*this, exceptionState);
 }
 
-ConvolverNode* BaseAudioContext::createConvolver(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+ChannelSplitterNode* BaseAudioContext::createChannelSplitter(
+    size_t numberOfOutputs,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return ConvolverNode::create(*this, exceptionState);
+  return ChannelSplitterNode::create(*this, numberOfOutputs, exceptionState);
 }
 
-DynamicsCompressorNode* BaseAudioContext::createDynamicsCompressor(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+ChannelMergerNode* BaseAudioContext::createChannelMerger(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return DynamicsCompressorNode::create(*this, exceptionState);
+  return ChannelMergerNode::create(*this, exceptionState);
 }
 
-AnalyserNode* BaseAudioContext::createAnalyser(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+ChannelMergerNode* BaseAudioContext::createChannelMerger(
+    size_t numberOfInputs,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return AnalyserNode::create(*this, exceptionState);
+  return ChannelMergerNode::create(*this, numberOfInputs, exceptionState);
 }
 
-GainNode* BaseAudioContext::createGain(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+OscillatorNode* BaseAudioContext::createOscillator(
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return GainNode::create(*this, exceptionState);
+  return OscillatorNode::create(*this, exceptionState);
 }
 
-DelayNode* BaseAudioContext::createDelay(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+PeriodicWave* BaseAudioContext::createPeriodicWave(
+    DOMFloat32Array* real,
+    DOMFloat32Array* imag,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return DelayNode::create(*this, exceptionState);
+  return PeriodicWave::create(*this, real, imag, false, exceptionState);
 }
 
-DelayNode* BaseAudioContext::createDelay(double maxDelayTime, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+PeriodicWave* BaseAudioContext::createPeriodicWave(
+    DOMFloat32Array* real,
+    DOMFloat32Array* imag,
+    const PeriodicWaveConstraints& options,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return DelayNode::create(*this, maxDelayTime, exceptionState);
+  bool disable = options.hasDisableNormalization()
+                     ? options.disableNormalization()
+                     : false;
+
+  return PeriodicWave::create(*this, real, imag, disable, exceptionState);
 }
 
-ChannelSplitterNode* BaseAudioContext::createChannelSplitter(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+IIRFilterNode* BaseAudioContext::createIIRFilter(
+    Vector<double> feedforwardCoef,
+    Vector<double> feedbackCoef,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    return ChannelSplitterNode::create(*this, exceptionState);
+  return IIRFilterNode::create(*this, feedforwardCoef, feedbackCoef,
+                               exceptionState);
 }
 
-ChannelSplitterNode* BaseAudioContext::createChannelSplitter(size_t numberOfOutputs, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    return ChannelSplitterNode::create(*this, numberOfOutputs, exceptionState);
-}
-
-ChannelMergerNode* BaseAudioContext::createChannelMerger(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    return ChannelMergerNode::create(*this, exceptionState);
-}
-
-ChannelMergerNode* BaseAudioContext::createChannelMerger(size_t numberOfInputs, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    return ChannelMergerNode::create(*this, numberOfInputs, exceptionState);
-}
-
-OscillatorNode* BaseAudioContext::createOscillator(ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    return OscillatorNode::create(*this, exceptionState);
-}
-
-PeriodicWave* BaseAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    return PeriodicWave::create(*this, real, imag, false, exceptionState);
-}
-
-PeriodicWave* BaseAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const PeriodicWaveConstraints& options, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    bool disable = options.hasDisableNormalization() ? options.disableNormalization() : false;
-
-    return PeriodicWave::create(*this, real, imag, disable, exceptionState);
-}
-
-IIRFilterNode* BaseAudioContext::createIIRFilter(Vector<double> feedforwardCoef, Vector<double> feedbackCoef,  ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    return IIRFilterNode::create(*this, feedforwardCoef, feedbackCoef, exceptionState);
-}
-
-PeriodicWave* BaseAudioContext::periodicWave(int type)
-{
-    switch (type) {
+PeriodicWave* BaseAudioContext::periodicWave(int type) {
+  switch (type) {
     case OscillatorHandler::SINE:
-        // Initialize the table if necessary
-        if (!m_periodicWaveSine)
-            m_periodicWaveSine = PeriodicWave::createSine(sampleRate());
-        return m_periodicWaveSine;
+      // Initialize the table if necessary
+      if (!m_periodicWaveSine)
+        m_periodicWaveSine = PeriodicWave::createSine(sampleRate());
+      return m_periodicWaveSine;
     case OscillatorHandler::SQUARE:
-        // Initialize the table if necessary
-        if (!m_periodicWaveSquare)
-            m_periodicWaveSquare = PeriodicWave::createSquare(sampleRate());
-        return m_periodicWaveSquare;
+      // Initialize the table if necessary
+      if (!m_periodicWaveSquare)
+        m_periodicWaveSquare = PeriodicWave::createSquare(sampleRate());
+      return m_periodicWaveSquare;
     case OscillatorHandler::SAWTOOTH:
-        // Initialize the table if necessary
-        if (!m_periodicWaveSawtooth)
-            m_periodicWaveSawtooth = PeriodicWave::createSawtooth(sampleRate());
-        return m_periodicWaveSawtooth;
+      // Initialize the table if necessary
+      if (!m_periodicWaveSawtooth)
+        m_periodicWaveSawtooth = PeriodicWave::createSawtooth(sampleRate());
+      return m_periodicWaveSawtooth;
     case OscillatorHandler::TRIANGLE:
-        // Initialize the table if necessary
-        if (!m_periodicWaveTriangle)
-            m_periodicWaveTriangle = PeriodicWave::createTriangle(sampleRate());
-        return m_periodicWaveTriangle;
+      // Initialize the table if necessary
+      if (!m_periodicWaveTriangle)
+        m_periodicWaveTriangle = PeriodicWave::createTriangle(sampleRate());
+      return m_periodicWaveTriangle;
     default:
-        NOTREACHED();
-        return nullptr;
-    }
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
-String BaseAudioContext::state() const
-{
-    // These strings had better match the strings for AudioContextState in AudioContext.idl.
-    switch (m_contextState) {
+String BaseAudioContext::state() const {
+  // These strings had better match the strings for AudioContextState in AudioContext.idl.
+  switch (m_contextState) {
     case Suspended:
-        return "suspended";
+      return "suspended";
     case Running:
-        return "running";
+      return "running";
     case Closed:
-        return "closed";
-    }
-    NOTREACHED();
-    return "";
+      return "closed";
+  }
+  NOTREACHED();
+  return "";
 }
 
-void BaseAudioContext::setContextState(AudioContextState newState)
-{
-    DCHECK(isMainThread());
+void BaseAudioContext::setContextState(AudioContextState newState) {
+  DCHECK(isMainThread());
 
-    // Validate the transitions.  The valid transitions are Suspended->Running, Running->Suspended,
-    // and anything->Closed.
-    switch (newState) {
+  // Validate the transitions.  The valid transitions are Suspended->Running, Running->Suspended,
+  // and anything->Closed.
+  switch (newState) {
     case Suspended:
-        DCHECK_EQ(m_contextState, Running);
-        break;
+      DCHECK_EQ(m_contextState, Running);
+      break;
     case Running:
-        DCHECK_EQ(m_contextState, Suspended);
-        break;
+      DCHECK_EQ(m_contextState, Suspended);
+      break;
     case Closed:
-        DCHECK_NE(m_contextState, Closed);
-        break;
-    }
+      DCHECK_NE(m_contextState, Closed);
+      break;
+  }
 
-    if (newState == m_contextState) {
-        // DCHECKs above failed; just return.
-        return;
-    }
+  if (newState == m_contextState) {
+    // DCHECKs above failed; just return.
+    return;
+  }
 
-    m_contextState = newState;
+  m_contextState = newState;
 
-    // Notify context that state changed
-    if (getExecutionContext())
-        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&BaseAudioContext::notifyStateChange, wrapPersistent(this)));
+  // Notify context that state changed
+  if (getExecutionContext())
+    getExecutionContext()->postTask(
+        BLINK_FROM_HERE,
+        createSameThreadTask(&BaseAudioContext::notifyStateChange,
+                             wrapPersistent(this)));
 }
 
-void BaseAudioContext::notifyStateChange()
-{
-    dispatchEvent(Event::create(EventTypeNames::statechange));
+void BaseAudioContext::notifyStateChange() {
+  dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
-void BaseAudioContext::notifySourceNodeFinishedProcessing(AudioHandler* handler)
-{
-    DCHECK(isAudioThread());
-    m_finishedSourceHandlers.append(handler);
+void BaseAudioContext::notifySourceNodeFinishedProcessing(
+    AudioHandler* handler) {
+  DCHECK(isAudioThread());
+  m_finishedSourceHandlers.append(handler);
 }
 
-void BaseAudioContext::removeFinishedSourceNodes()
-{
-    DCHECK(isMainThread());
-    AutoLocker locker(this);
-    // Quadratic worst case, but sizes of both vectors are considered
-    // manageable, especially |m_finishedSourceNodes| is likely to be short.
-    for (AudioNode* node : m_finishedSourceNodes) {
-        size_t i = m_activeSourceNodes.find(node);
-        if (i != kNotFound)
-            m_activeSourceNodes.remove(i);
-    }
-    m_finishedSourceNodes.clear();
+void BaseAudioContext::removeFinishedSourceNodes() {
+  DCHECK(isMainThread());
+  AutoLocker locker(this);
+  // Quadratic worst case, but sizes of both vectors are considered
+  // manageable, especially |m_finishedSourceNodes| is likely to be short.
+  for (AudioNode* node : m_finishedSourceNodes) {
+    size_t i = m_activeSourceNodes.find(node);
+    if (i != kNotFound)
+      m_activeSourceNodes.remove(i);
+  }
+  m_finishedSourceNodes.clear();
 }
 
-void BaseAudioContext::releaseFinishedSourceNodes()
-{
-    ASSERT(isGraphOwner());
-    DCHECK(isAudioThread());
-    bool didRemove = false;
-    for (AudioHandler* handler : m_finishedSourceHandlers) {
-        for (AudioNode* node : m_activeSourceNodes) {
-            if (m_finishedSourceNodes.contains(node))
-                continue;
-            if (handler == &node->handler()) {
-                handler->breakConnection();
-                m_finishedSourceNodes.add(node);
-                didRemove = true;
-                break;
-            }
-        }
-    }
-    if (didRemove)
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&BaseAudioContext::removeFinishedSourceNodes, wrapCrossThreadPersistent(this)));
-
-    m_finishedSourceHandlers.clear();
-}
-
-void BaseAudioContext::notifySourceNodeStartedProcessing(AudioNode* node)
-{
-    DCHECK(isMainThread());
-    AutoLocker locker(this);
-
-    m_activeSourceNodes.append(node);
-    node->handler().makeConnection();
-}
-
-void BaseAudioContext::releaseActiveSourceNodes()
-{
-    DCHECK(isMainThread());
-    for (auto& sourceNode : m_activeSourceNodes)
-        sourceNode->handler().breakConnection();
-
-    m_activeSourceNodes.clear();
-}
-
-void BaseAudioContext::handleStoppableSourceNodes()
-{
-    ASSERT(isGraphOwner());
-
-    // Find AudioBufferSourceNodes to see if we can stop playing them.
+void BaseAudioContext::releaseFinishedSourceNodes() {
+  ASSERT(isGraphOwner());
+  DCHECK(isAudioThread());
+  bool didRemove = false;
+  for (AudioHandler* handler : m_finishedSourceHandlers) {
     for (AudioNode* node : m_activeSourceNodes) {
-        // If the AudioNode has been marked as finished and released by
-        // the audio thread, but not yet removed by the main thread
-        // (see releaseActiveSourceNodes() above), |node| must not be
-        // touched as its handler may have been released already.
-        if (m_finishedSourceNodes.contains(node))
-            continue;
-        if (node->handler().getNodeType() == AudioHandler::NodeTypeAudioBufferSource) {
-            AudioBufferSourceNode* sourceNode = static_cast<AudioBufferSourceNode*>(node);
-            sourceNode->audioBufferSourceHandler().handleStoppableSourceNode();
-        }
+      if (m_finishedSourceNodes.contains(node))
+        continue;
+      if (handler == &node->handler()) {
+        handler->breakConnection();
+        m_finishedSourceNodes.add(node);
+        didRemove = true;
+        break;
+      }
     }
+  }
+  if (didRemove)
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(&BaseAudioContext::removeFinishedSourceNodes,
+                        wrapCrossThreadPersistent(this)));
+
+  m_finishedSourceHandlers.clear();
 }
 
-void BaseAudioContext::handlePreRenderTasks()
-{
-    DCHECK(isAudioThread());
+void BaseAudioContext::notifySourceNodeStartedProcessing(AudioNode* node) {
+  DCHECK(isMainThread());
+  AutoLocker locker(this);
 
-    // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
-    // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
-    if (tryLock()) {
-        deferredTaskHandler().handleDeferredTasks();
+  m_activeSourceNodes.append(node);
+  node->handler().makeConnection();
+}
 
-        resolvePromisesForResume();
+void BaseAudioContext::releaseActiveSourceNodes() {
+  DCHECK(isMainThread());
+  for (auto& sourceNode : m_activeSourceNodes)
+    sourceNode->handler().breakConnection();
 
-        // Check to see if source nodes can be stopped because the end time has passed.
-        handleStoppableSourceNodes();
+  m_activeSourceNodes.clear();
+}
 
-        // Update the dirty state of the listener.
-        listener()->updateState();
+void BaseAudioContext::handleStoppableSourceNodes() {
+  ASSERT(isGraphOwner());
 
-        unlock();
+  // Find AudioBufferSourceNodes to see if we can stop playing them.
+  for (AudioNode* node : m_activeSourceNodes) {
+    // If the AudioNode has been marked as finished and released by
+    // the audio thread, but not yet removed by the main thread
+    // (see releaseActiveSourceNodes() above), |node| must not be
+    // touched as its handler may have been released already.
+    if (m_finishedSourceNodes.contains(node))
+      continue;
+    if (node->handler().getNodeType() ==
+        AudioHandler::NodeTypeAudioBufferSource) {
+      AudioBufferSourceNode* sourceNode =
+          static_cast<AudioBufferSourceNode*>(node);
+      sourceNode->audioBufferSourceHandler().handleStoppableSourceNode();
     }
+  }
 }
 
-void BaseAudioContext::handlePostRenderTasks()
-{
-    DCHECK(isAudioThread());
+void BaseAudioContext::handlePreRenderTasks() {
+  DCHECK(isAudioThread());
 
-    // Must use a tryLock() here too.  Don't worry, the lock will very rarely be contended and this method is called frequently.
-    // The worst that can happen is that there will be some nodes which will take slightly longer than usual to be deleted or removed
-    // from the render graph (in which case they'll render silence).
-    if (tryLock()) {
-        // Take care of AudioNode tasks where the tryLock() failed previously.
-        deferredTaskHandler().breakConnections();
+  // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
+  // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
+  if (tryLock()) {
+    deferredTaskHandler().handleDeferredTasks();
 
-        // Dynamically clean up nodes which are no longer needed.
-        releaseFinishedSourceNodes();
+    resolvePromisesForResume();
 
-        deferredTaskHandler().handleDeferredTasks();
-        deferredTaskHandler().requestToDeleteHandlersOnMainThread();
+    // Check to see if source nodes can be stopped because the end time has passed.
+    handleStoppableSourceNodes();
 
-        unlock();
+    // Update the dirty state of the listener.
+    listener()->updateState();
+
+    unlock();
+  }
+}
+
+void BaseAudioContext::handlePostRenderTasks() {
+  DCHECK(isAudioThread());
+
+  // Must use a tryLock() here too.  Don't worry, the lock will very rarely be contended and this method is called frequently.
+  // The worst that can happen is that there will be some nodes which will take slightly longer than usual to be deleted or removed
+  // from the render graph (in which case they'll render silence).
+  if (tryLock()) {
+    // Take care of AudioNode tasks where the tryLock() failed previously.
+    deferredTaskHandler().breakConnections();
+
+    // Dynamically clean up nodes which are no longer needed.
+    releaseFinishedSourceNodes();
+
+    deferredTaskHandler().handleDeferredTasks();
+    deferredTaskHandler().requestToDeleteHandlersOnMainThread();
+
+    unlock();
+  }
+}
+
+void BaseAudioContext::resolvePromisesForResumeOnMainThread() {
+  DCHECK(isMainThread());
+  AutoLocker locker(this);
+
+  for (auto& resolver : m_resumeResolvers) {
+    if (m_contextState == Closed) {
+      resolver->reject(DOMException::create(
+          InvalidStateError, "Cannot resume a context that has been closed"));
+    } else {
+      resolver->resolve();
     }
+  }
+
+  m_resumeResolvers.clear();
+  m_isResolvingResumePromises = false;
 }
 
-void BaseAudioContext::resolvePromisesForResumeOnMainThread()
-{
-    DCHECK(isMainThread());
-    AutoLocker locker(this);
+void BaseAudioContext::resolvePromisesForResume() {
+  // This runs inside the BaseAudioContext's lock when handling pre-render tasks.
+  DCHECK(isAudioThread());
+  ASSERT(isGraphOwner());
 
-    for (auto& resolver : m_resumeResolvers) {
-        if (m_contextState == Closed) {
-            resolver->reject(
-                DOMException::create(InvalidStateError, "Cannot resume a context that has been closed"));
-        } else {
-            resolver->resolve();
-        }
-    }
-
-    m_resumeResolvers.clear();
-    m_isResolvingResumePromises = false;
+  // Resolve any pending promises created by resume(). Only do this if we haven't already started
+  // resolving these promises. This gets called very often and it takes some time to resolve the
+  // promises in the main thread.
+  if (!m_isResolvingResumePromises && m_resumeResolvers.size() > 0) {
+    m_isResolvingResumePromises = true;
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(&BaseAudioContext::resolvePromisesForResumeOnMainThread,
+                        wrapCrossThreadPersistent(this)));
+  }
 }
 
-void BaseAudioContext::resolvePromisesForResume()
-{
-    // This runs inside the BaseAudioContext's lock when handling pre-render tasks.
-    DCHECK(isAudioThread());
-    ASSERT(isGraphOwner());
-
-    // Resolve any pending promises created by resume(). Only do this if we haven't already started
-    // resolving these promises. This gets called very often and it takes some time to resolve the
-    // promises in the main thread.
-    if (!m_isResolvingResumePromises && m_resumeResolvers.size() > 0) {
-        m_isResolvingResumePromises = true;
-        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&BaseAudioContext::resolvePromisesForResumeOnMainThread, wrapCrossThreadPersistent(this)));
-    }
+void BaseAudioContext::rejectPendingDecodeAudioDataResolvers() {
+  // Now reject any pending decodeAudioData resolvers
+  for (auto& resolver : m_decodeAudioResolvers)
+    resolver->reject(
+        DOMException::create(InvalidStateError, "Audio context is going away"));
+  m_decodeAudioResolvers.clear();
 }
 
-void BaseAudioContext::rejectPendingDecodeAudioDataResolvers()
-{
-    // Now reject any pending decodeAudioData resolvers
-    for (auto& resolver : m_decodeAudioResolvers)
-        resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
-    m_decodeAudioResolvers.clear();
+void BaseAudioContext::maybeUnlockUserGesture() {
+  if (!m_userGestureRequired || !UserGestureIndicator::processingUserGesture())
+    return;
+
+  UserGestureIndicator::utilizeUserGesture();
+  m_userGestureRequired = false;
 }
 
-void BaseAudioContext::maybeUnlockUserGesture()
-{
-    if (!m_userGestureRequired || !UserGestureIndicator::processingUserGesture())
-        return;
+bool BaseAudioContext::isAllowedToStart() const {
+  if (!m_userGestureRequired)
+    return true;
 
-    UserGestureIndicator::utilizeUserGesture();
-    m_userGestureRequired = false;
+  toDocument(getExecutionContext())
+      ->addConsoleMessage(ConsoleMessage::create(
+          JSMessageSource, WarningMessageLevel,
+          "An AudioContext in a cross origin iframe must be created or resumed "
+          "from a user gesture to enable audio output."));
+  return false;
 }
 
-bool BaseAudioContext::isAllowedToStart() const
-{
-    if (!m_userGestureRequired)
-        return true;
+void BaseAudioContext::rejectPendingResolvers() {
+  DCHECK(isMainThread());
 
-    toDocument(getExecutionContext())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output."));
-    return false;
+  // Audio context is closing down so reject any resume promises that are still pending.
+
+  for (auto& resolver : m_resumeResolvers) {
+    resolver->reject(
+        DOMException::create(InvalidStateError, "Audio context is going away"));
+  }
+  m_resumeResolvers.clear();
+  m_isResolvingResumePromises = false;
+
+  rejectPendingDecodeAudioDataResolvers();
 }
 
-void BaseAudioContext::rejectPendingResolvers()
-{
-    DCHECK(isMainThread());
-
-    // Audio context is closing down so reject any resume promises that are still pending.
-
-    for (auto& resolver : m_resumeResolvers) {
-        resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
-    }
-    m_resumeResolvers.clear();
-    m_isResolvingResumePromises = false;
-
-    rejectPendingDecodeAudioDataResolvers();
+const AtomicString& BaseAudioContext::interfaceName() const {
+  return EventTargetNames::AudioContext;
 }
 
-const AtomicString& BaseAudioContext::interfaceName() const
-{
-    return EventTargetNames::AudioContext;
+ExecutionContext* BaseAudioContext::getExecutionContext() const {
+  return ActiveDOMObject::getExecutionContext();
 }
 
-ExecutionContext* BaseAudioContext::getExecutionContext() const
-{
-    return ActiveDOMObject::getExecutionContext();
+void BaseAudioContext::startRendering() {
+  // This is called for both online and offline contexts.
+  DCHECK(isMainThread());
+  DCHECK(m_destinationNode);
+  DCHECK(isAllowedToStart());
+
+  if (m_contextState == Suspended) {
+    destination()->audioDestinationHandler().startRendering();
+    setContextState(Running);
+  }
 }
 
-void BaseAudioContext::startRendering()
-{
-    // This is called for both online and offline contexts.
-    DCHECK(isMainThread());
-    DCHECK(m_destinationNode);
-    DCHECK(isAllowedToStart());
+DEFINE_TRACE(BaseAudioContext) {
+  visitor->trace(m_destinationNode);
+  visitor->trace(m_listener);
+  visitor->trace(m_activeSourceNodes);
+  visitor->trace(m_resumeResolvers);
+  visitor->trace(m_decodeAudioResolvers);
 
-    if (m_contextState == Suspended) {
-        destination()->audioDestinationHandler().startRendering();
-        setContextState(Running);
-    }
+  visitor->trace(m_periodicWaveSine);
+  visitor->trace(m_periodicWaveSquare);
+  visitor->trace(m_periodicWaveSawtooth);
+  visitor->trace(m_periodicWaveTriangle);
+  EventTargetWithInlineData::trace(visitor);
+  ActiveDOMObject::trace(visitor);
 }
 
-DEFINE_TRACE(BaseAudioContext)
-{
-    visitor->trace(m_destinationNode);
-    visitor->trace(m_listener);
-    visitor->trace(m_activeSourceNodes);
-    visitor->trace(m_resumeResolvers);
-    visitor->trace(m_decodeAudioResolvers);
+SecurityOrigin* BaseAudioContext::getSecurityOrigin() const {
+  if (getExecutionContext())
+    return getExecutionContext()->getSecurityOrigin();
 
-    visitor->trace(m_periodicWaveSine);
-    visitor->trace(m_periodicWaveSquare);
-    visitor->trace(m_periodicWaveSawtooth);
-    visitor->trace(m_periodicWaveTriangle);
-    EventTargetWithInlineData::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+  return nullptr;
 }
 
-SecurityOrigin* BaseAudioContext::getSecurityOrigin() const
-{
-    if (getExecutionContext())
-        return getExecutionContext()->getSecurityOrigin();
-
-    return nullptr;
-}
-
-} // namespace blink
+}  // namespace blink

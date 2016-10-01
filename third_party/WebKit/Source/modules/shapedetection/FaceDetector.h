@@ -12,14 +12,14 @@
 namespace blink {
 
 class MODULES_EXPORT FaceDetector final : public Detector {
-    DEFINE_WRAPPERTYPEINFO();
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static FaceDetector* create();
+ public:
+  static FaceDetector* create();
 
-    ScriptPromise detect(ScriptState*, const HTMLImageElement*);
+  ScriptPromise detect(ScriptState*, const HTMLImageElement*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FaceDetector_h
+#endif  // FaceDetector_h

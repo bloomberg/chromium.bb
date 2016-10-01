@@ -13,14 +13,14 @@ namespace blink {
 class ComputedStyle;
 
 class ColorPropertyFunctions {
-public:
-    static StyleColor getInitialColor(CSSPropertyID);
-    static StyleColor getUnvisitedColor(CSSPropertyID, const ComputedStyle&);
-    static StyleColor getVisitedColor(CSSPropertyID, const ComputedStyle&);
-    static void setUnvisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
-    static void setVisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
+ public:
+  static StyleColor getInitialColor(CSSPropertyID);
+  static StyleColor getUnvisitedColor(CSSPropertyID, const ComputedStyle&);
+  static StyleColor getVisitedColor(CSSPropertyID, const ComputedStyle&);
+  static void setUnvisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
+  static void setVisitedColor(CSSPropertyID, ComputedStyle&, const Color&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ColorPropertyFunctions_h
+#endif  // ColorPropertyFunctions_h

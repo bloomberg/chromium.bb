@@ -41,55 +41,63 @@ class WebLayer;
 class WebMediaSource;
 
 class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
-public:
-    enum VideoTrackKind {
-        VideoTrackKindNone,
-        VideoTrackKindAlternative,
-        VideoTrackKindCaptions,
-        VideoTrackKindMain,
-        VideoTrackKindSign,
-        VideoTrackKindSubtitles,
-        VideoTrackKindCommentary
-    };
+ public:
+  enum VideoTrackKind {
+    VideoTrackKindNone,
+    VideoTrackKindAlternative,
+    VideoTrackKindCaptions,
+    VideoTrackKindMain,
+    VideoTrackKindSign,
+    VideoTrackKindSubtitles,
+    VideoTrackKindCommentary
+  };
 
-    enum AudioTrackKind {
-        AudioTrackKindNone,
-        AudioTrackKindAlternative,
-        AudioTrackKindDescriptions,
-        AudioTrackKindMain,
-        AudioTrackKindMainDescriptions,
-        AudioTrackKindTranslation,
-        AudioTrackKindCommentary
-    };
+  enum AudioTrackKind {
+    AudioTrackKindNone,
+    AudioTrackKindAlternative,
+    AudioTrackKindDescriptions,
+    AudioTrackKindMain,
+    AudioTrackKindMainDescriptions,
+    AudioTrackKindTranslation,
+    AudioTrackKindCommentary
+  };
 
-    virtual void networkStateChanged() = 0;
-    virtual void readyStateChanged() = 0;
-    virtual void timeChanged() = 0;
-    virtual void repaint() = 0;
-    virtual void durationChanged() = 0;
-    virtual void sizeChanged() = 0;
-    virtual void playbackStateChanged() = 0;
-    virtual void setWebLayer(WebLayer*) = 0;
-    virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id, AudioTrackKind, const WebString& label, const WebString& language, bool enabled) = 0;
-    virtual void removeAudioTrack(WebMediaPlayer::TrackId) = 0;
-    virtual WebMediaPlayer::TrackId addVideoTrack(const WebString& id, VideoTrackKind, const WebString& label, const WebString& language, bool selected) = 0;
-    virtual void removeVideoTrack(WebMediaPlayer::TrackId) = 0;
-    virtual void addTextTrack(WebInbandTextTrack*) = 0;
-    virtual void removeTextTrack(WebInbandTextTrack*) = 0;
-    virtual void mediaSourceOpened(WebMediaSource*) = 0;
-    virtual void requestSeek(double) = 0;
-    virtual void remoteRouteAvailabilityChanged(bool) = 0;
-    virtual void connectedToRemoteDevice() = 0;
-    virtual void disconnectedFromRemoteDevice() = 0;
-    virtual void cancelledRemotePlaybackRequest() = 0;
+  virtual void networkStateChanged() = 0;
+  virtual void readyStateChanged() = 0;
+  virtual void timeChanged() = 0;
+  virtual void repaint() = 0;
+  virtual void durationChanged() = 0;
+  virtual void sizeChanged() = 0;
+  virtual void playbackStateChanged() = 0;
+  virtual void setWebLayer(WebLayer*) = 0;
+  virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id,
+                                                AudioTrackKind,
+                                                const WebString& label,
+                                                const WebString& language,
+                                                bool enabled) = 0;
+  virtual void removeAudioTrack(WebMediaPlayer::TrackId) = 0;
+  virtual WebMediaPlayer::TrackId addVideoTrack(const WebString& id,
+                                                VideoTrackKind,
+                                                const WebString& label,
+                                                const WebString& language,
+                                                bool selected) = 0;
+  virtual void removeVideoTrack(WebMediaPlayer::TrackId) = 0;
+  virtual void addTextTrack(WebInbandTextTrack*) = 0;
+  virtual void removeTextTrack(WebInbandTextTrack*) = 0;
+  virtual void mediaSourceOpened(WebMediaSource*) = 0;
+  virtual void requestSeek(double) = 0;
+  virtual void remoteRouteAvailabilityChanged(bool) = 0;
+  virtual void connectedToRemoteDevice() = 0;
+  virtual void disconnectedFromRemoteDevice() = 0;
+  virtual void cancelledRemotePlaybackRequest() = 0;
 
-    // Warning: This method will destruct the caller.
-    virtual void requestReload(const WebURL& newUrl) = 0;
+  // Warning: This method will destruct the caller.
+  virtual void requestReload(const WebURL& newUrl) = 0;
 
-protected:
-    ~WebMediaPlayerClient() { }
+ protected:
+  ~WebMediaPlayerClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -8,28 +8,24 @@
 
 namespace blink {
 
-AppBannerPromptResult::~AppBannerPromptResult()
-{
-}
+AppBannerPromptResult::~AppBannerPromptResult() {}
 
-String AppBannerPromptResult::outcome() const
-{
-    switch (m_outcome) {
+String AppBannerPromptResult::outcome() const {
+  switch (m_outcome) {
     case WebAppBannerPromptResult::Outcome::Accepted:
-        return "accepted";
+      return "accepted";
 
     case WebAppBannerPromptResult::Outcome::Dismissed:
-        return "dismissed";
-    }
+      return "dismissed";
+  }
 
-    ASSERT_NOT_REACHED();
-    return "";
+  ASSERT_NOT_REACHED();
+  return "";
 }
 
-AppBannerPromptResult::AppBannerPromptResult(const AtomicString& platform, WebAppBannerPromptResult::Outcome outcome)
-    : m_platform(platform)
-    , m_outcome(outcome)
-{
-}
+AppBannerPromptResult::AppBannerPromptResult(
+    const AtomicString& platform,
+    WebAppBannerPromptResult::Outcome outcome)
+    : m_platform(platform), m_outcome(outcome) {}
 
-} // namespace blink
+}  // namespace blink

@@ -20,8 +20,12 @@ class NotificationOptions;
 
 // Creates a WebNotificationData object based on the developer-provided notification data. When the
 // data is deemed invalid, an exception will be thrown to the passed exception state.
-MODULES_EXPORT WebNotificationData createWebNotificationData(ExecutionContext*, const String& title, const NotificationOptions&, ExceptionState&);
+MODULES_EXPORT WebNotificationData
+createWebNotificationData(ExecutionContext*,
+                          const String& title,
+                          const NotificationOptions&,
+                          ExceptionState&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NotificationData_h
+#endif  // NotificationData_h

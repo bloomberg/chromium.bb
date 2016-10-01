@@ -39,67 +39,62 @@
 
 namespace blink {
 
-MediaStreamComponent* MediaStreamComponent::create(MediaStreamSource* source)
-{
-    return new MediaStreamComponent(createCanonicalUUIDString(), source);
+MediaStreamComponent* MediaStreamComponent::create(MediaStreamSource* source) {
+  return new MediaStreamComponent(createCanonicalUUIDString(), source);
 }
 
-MediaStreamComponent* MediaStreamComponent::create(const String& id, MediaStreamSource* source)
-{
-    return new MediaStreamComponent(id, source);
+MediaStreamComponent* MediaStreamComponent::create(const String& id,
+                                                   MediaStreamSource* source) {
+  return new MediaStreamComponent(id, source);
 }
 
-MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamSource* source)
-    : m_source(source)
-    , m_id(id)
-    , m_enabled(true)
-    , m_muted(false)
-{
-    DCHECK(m_id.length());
-    ThreadState::current()->registerPreFinalizer(this);
+MediaStreamComponent::MediaStreamComponent(const String& id,
+                                           MediaStreamSource* source)
+    : m_source(source), m_id(id), m_enabled(true), m_muted(false) {
+  DCHECK(m_id.length());
+  ThreadState::current()->registerPreFinalizer(this);
 }
 
-void MediaStreamComponent::dispose()
-{
-    m_trackData.reset();
+void MediaStreamComponent::dispose() {
+  m_trackData.reset();
 }
 
-void MediaStreamComponent::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
-{
-    MutexLocker locker(m_provideInputLock);
-    m_webAudioSourceProvider = provider;
+void MediaStreamComponent::AudioSourceProviderImpl::wrap(
+    WebAudioSourceProvider* provider) {
+  MutexLocker locker(m_provideInputLock);
+  m_webAudioSourceProvider = provider;
 }
 
-void MediaStreamComponent::getSettings(WebMediaStreamTrack::Settings& settings)
-{
-    DCHECK(m_trackData);
-    m_trackData->getSettings(settings);
+void MediaStreamComponent::getSettings(
+    WebMediaStreamTrack::Settings& settings) {
+  DCHECK(m_trackData);
+  m_trackData->getSettings(settings);
 }
 
-void MediaStreamComponent::AudioSourceProviderImpl::provideInput(AudioBus* bus, size_t framesToProcess)
-{
-    DCHECK(bus);
-    if (!bus)
-        return;
+void MediaStreamComponent::AudioSourceProviderImpl::provideInput(
+    AudioBus* bus,
+    size_t framesToProcess) {
+  DCHECK(bus);
+  if (!bus)
+    return;
 
-    MutexTryLocker tryLocker(m_provideInputLock);
-    if (!tryLocker.locked() || !m_webAudioSourceProvider) {
-        bus->zero();
-        return;
-    }
+  MutexTryLocker tryLocker(m_provideInputLock);
+  if (!tryLocker.locked() || !m_webAudioSourceProvider) {
+    bus->zero();
+    return;
+  }
 
-    // Wrap the AudioBus channel data using WebVector.
-    size_t n = bus->numberOfChannels();
-    WebVector<float*> webAudioData(n);
-    for (size_t i = 0; i < n; ++i)
-        webAudioData[i] = bus->channel(i)->mutableData();
+  // Wrap the AudioBus channel data using WebVector.
+  size_t n = bus->numberOfChannels();
+  WebVector<float*> webAudioData(n);
+  for (size_t i = 0; i < n; ++i)
+    webAudioData[i] = bus->channel(i)->mutableData();
 
-    m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
+  m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
 }
 
-DEFINE_TRACE(MediaStreamComponent)
-{
-    visitor->trace(m_source);
+DEFINE_TRACE(MediaStreamComponent) {
+  visitor->trace(m_source);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -40,78 +40,80 @@ namespace WTF {
 // null terminated.
 // TODO(esprehn): Rename to CStringImpl.
 class WTF_EXPORT CStringBuffer : public RefCounted<CStringBuffer> {
-    WTF_MAKE_NONCOPYABLE(CStringBuffer);
-public:
-    // CStringBuffers are allocated out of the WTF buffer partition.
-    void* operator new(size_t, void* ptr) { return ptr; }
-    void operator delete(void*);
+  WTF_MAKE_NONCOPYABLE(CStringBuffer);
 
-    static PassRefPtr<CStringBuffer> createUninitialized(size_t length, char*& data);
+ public:
+  // CStringBuffers are allocated out of the WTF buffer partition.
+  void* operator new(size_t, void* ptr) { return ptr; }
+  void operator delete(void*);
 
-    const char* data() const { return reinterpret_cast<const char*>(this + 1); }
-    size_t length() const { return m_length; }
+  static PassRefPtr<CStringBuffer> createUninitialized(size_t length,
+                                                       char*& data);
 
-private:
-    explicit CStringBuffer(size_t length)
-        : m_length(length) {}
+  const char* data() const { return reinterpret_cast<const char*>(this + 1); }
+  size_t length() const { return m_length; }
 
-    const unsigned m_length;
+ private:
+  explicit CStringBuffer(size_t length) : m_length(length) {}
+
+  const unsigned m_length;
 };
 
 // A container for an immutable ref-counted null-terminated char array. This is
 // analogous to a WTF::String but does not require the contained bytes to be
 // valid Latin1 or UTF-16. Instead a CString can contain any arbitrary bytes.
 class WTF_EXPORT CString {
-    USING_FAST_MALLOC(CString);
-public:
-    // Construct a null string, distinguishable from an empty string.
-    CString() {}
+  USING_FAST_MALLOC(CString);
 
-    // Construct a string from arbitrary bytes.
-    CString(const char* chars)
-        : CString(chars, chars ? strlen(chars) : 0) {}
-    CString(const char*, size_t length);
+ public:
+  // Construct a null string, distinguishable from an empty string.
+  CString() {}
 
-    // Construct a string referencing an existing buffer.
-    CString(CStringBuffer* buffer)
-        : m_buffer(buffer) {}
-    CString(PassRefPtr<CStringBuffer> buffer)
-        : m_buffer(buffer) {}
+  // Construct a string from arbitrary bytes.
+  CString(const char* chars) : CString(chars, chars ? strlen(chars) : 0) {}
+  CString(const char*, size_t length);
 
-    // TODO(esprehn): Rename to createUninitialized.
-    static CString newUninitialized(size_t length, char*& data)
-    {
-        return CStringBuffer::createUninitialized(length, data);
-    }
+  // Construct a string referencing an existing buffer.
+  CString(CStringBuffer* buffer) : m_buffer(buffer) {}
+  CString(PassRefPtr<CStringBuffer> buffer) : m_buffer(buffer) {}
 
-    // The bytes of the string, always NUL terminated. May be null.
-    const char* data() const { return m_buffer ? m_buffer->data() : 0; }
+  // TODO(esprehn): Rename to createUninitialized.
+  static CString newUninitialized(size_t length, char*& data) {
+    return CStringBuffer::createUninitialized(length, data);
+  }
 
-    // The length of the data(), *not* including the NUL terminator.
-    size_t length() const { return m_buffer ? m_buffer->length() : 0; }
+  // The bytes of the string, always NUL terminated. May be null.
+  const char* data() const { return m_buffer ? m_buffer->data() : 0; }
 
-    bool isNull() const { return !m_buffer; }
+  // The length of the data(), *not* including the NUL terminator.
+  size_t length() const { return m_buffer ? m_buffer->length() : 0; }
 
-    bool isSafeToSendToAnotherThread() const;
+  bool isNull() const { return !m_buffer; }
 
-    // TODO(esprehn): Rename to impl() when CStringBuffer is renamed.
-    CStringBuffer* buffer() const { return m_buffer.get(); }
+  bool isSafeToSendToAnotherThread() const;
 
-private:
-    RefPtr<CStringBuffer> m_buffer;
+  // TODO(esprehn): Rename to impl() when CStringBuffer is renamed.
+  CStringBuffer* buffer() const { return m_buffer.get(); }
+
+ private:
+  RefPtr<CStringBuffer> m_buffer;
 };
 
 WTF_EXPORT bool operator==(const CString& a, const CString& b);
-inline bool operator!=(const CString& a, const CString& b) { return !(a == b); }
+inline bool operator!=(const CString& a, const CString& b) {
+  return !(a == b);
+}
 WTF_EXPORT bool operator==(const CString& a, const char* b);
-inline bool operator!=(const CString& a, const char* b) { return !(a == b); }
+inline bool operator!=(const CString& a, const char* b) {
+  return !(a == b);
+}
 
 // Pretty printer for gtest and base/logging.*.  It prepends and appends
 // double-quotes, and escapes characters other than ASCII printables.
 WTF_EXPORT std::ostream& operator<<(std::ostream&, const CString&);
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::CString;
 
-#endif // CString_h
+#endif  // CString_h

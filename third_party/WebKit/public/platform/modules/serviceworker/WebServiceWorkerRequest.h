@@ -28,73 +28,74 @@ class WebServiceWorkerRequestPrivate;
 
 // Represents a request for a web resource.
 class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
-public:
-    ~WebServiceWorkerRequest() { reset(); }
-    WebServiceWorkerRequest();
-    WebServiceWorkerRequest(const WebServiceWorkerRequest& other) { assign(other); }
-    WebServiceWorkerRequest& operator=(const WebServiceWorkerRequest& other)
-    {
-        assign(other);
-        return *this;
-    }
+ public:
+  ~WebServiceWorkerRequest() { reset(); }
+  WebServiceWorkerRequest();
+  WebServiceWorkerRequest(const WebServiceWorkerRequest& other) {
+    assign(other);
+  }
+  WebServiceWorkerRequest& operator=(const WebServiceWorkerRequest& other) {
+    assign(other);
+    return *this;
+  }
 
-    void reset();
-    void assign(const WebServiceWorkerRequest&);
+  void reset();
+  void assign(const WebServiceWorkerRequest&);
 
-    void setURL(const WebURL&);
-    WebURL url() const;
+  void setURL(const WebURL&);
+  WebURL url() const;
 
-    void setMethod(const WebString&);
-    WebString method() const;
+  void setMethod(const WebString&);
+  WebString method() const;
 
-    void setHeader(const WebString& key, const WebString& value);
+  void setHeader(const WebString& key, const WebString& value);
 
-    // If the key already exists, the value is appended to the existing value
-    // with a comma delimiter between them.
-    void appendHeader(const WebString& key, const WebString& value);
+  // If the key already exists, the value is appended to the existing value
+  // with a comma delimiter between them.
+  void appendHeader(const WebString& key, const WebString& value);
 
-    void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+  void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-    void setBlob(const WebString& uuid, long long size);
+  void setBlob(const WebString& uuid, long long size);
 
-    void setReferrer(const WebString&, WebReferrerPolicy);
-    WebURL referrerUrl() const;
-    WebReferrerPolicy referrerPolicy() const;
+  void setReferrer(const WebString&, WebReferrerPolicy);
+  WebURL referrerUrl() const;
+  WebReferrerPolicy referrerPolicy() const;
 
-    void setMode(WebURLRequest::FetchRequestMode);
-    WebURLRequest::FetchRequestMode mode() const;
+  void setMode(WebURLRequest::FetchRequestMode);
+  WebURLRequest::FetchRequestMode mode() const;
 
-    void setIsMainResourceLoad(bool);
-    bool isMainResourceLoad() const;
+  void setIsMainResourceLoad(bool);
+  bool isMainResourceLoad() const;
 
-    void setCredentialsMode(WebURLRequest::FetchCredentialsMode);
-    WebURLRequest::FetchCredentialsMode credentialsMode() const;
+  void setCredentialsMode(WebURLRequest::FetchCredentialsMode);
+  WebURLRequest::FetchCredentialsMode credentialsMode() const;
 
-    void setRedirectMode(WebURLRequest::FetchRedirectMode);
-    WebURLRequest::FetchRedirectMode redirectMode() const;
+  void setRedirectMode(WebURLRequest::FetchRedirectMode);
+  WebURLRequest::FetchRedirectMode redirectMode() const;
 
-    void setRequestContext(WebURLRequest::RequestContext);
-    WebURLRequest::RequestContext requestContext() const;
+  void setRequestContext(WebURLRequest::RequestContext);
+  WebURLRequest::RequestContext requestContext() const;
 
-    void setFrameType(WebURLRequest::FrameType);
-    WebURLRequest::FrameType frameType() const;
+  void setFrameType(WebURLRequest::FrameType);
+  WebURLRequest::FrameType frameType() const;
 
-    void setClientId(const WebString&);
-    WebString clientId() const;
+  void setClientId(const WebString&);
+  WebString clientId() const;
 
-    void setIsReload(bool);
-    bool isReload() const;
+  void setIsReload(bool);
+  bool isReload() const;
 
 #if INSIDE_BLINK
-    const HTTPHeaderMap& headers() const;
-    PassRefPtr<BlobDataHandle> blobDataHandle() const;
-    const Referrer& referrer() const;
+  const HTTPHeaderMap& headers() const;
+  PassRefPtr<BlobDataHandle> blobDataHandle() const;
+  const Referrer& referrer() const;
 #endif
 
-private:
-    WebPrivatePtr<WebServiceWorkerRequestPrivate> m_private;
+ private:
+  WebPrivatePtr<WebServiceWorkerRequestPrivate> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerRequest_h
+#endif  // WebServiceWorkerRequest_h

@@ -9,82 +9,77 @@
 
 namespace blink {
 
-PointerEvent::PointerEvent(const AtomicString& type, const PointerEventInit& initializer)
-    : MouseEvent(type, initializer)
-    , m_pointerId(0)
-    , m_width(0)
-    , m_height(0)
-    , m_pressure(0)
-    , m_tiltX(0)
-    , m_tiltY(0)
-    , m_isPrimary(false)
-{
-    if (initializer.hasPointerId())
-        m_pointerId = initializer.pointerId();
-    if (initializer.hasWidth())
-        m_width = initializer.width();
-    if (initializer.hasHeight())
-        m_height = initializer.height();
-    if (initializer.hasPressure())
-        m_pressure = initializer.pressure();
-    if (initializer.hasTiltX())
-        m_tiltX = initializer.tiltX();
-    if (initializer.hasTiltY())
-        m_tiltY = initializer.tiltY();
-    if (initializer.hasPointerType())
-        m_pointerType = initializer.pointerType();
-    if (initializer.hasIsPrimary())
-        m_isPrimary = initializer.isPrimary();
+PointerEvent::PointerEvent(const AtomicString& type,
+                           const PointerEventInit& initializer)
+    : MouseEvent(type, initializer),
+      m_pointerId(0),
+      m_width(0),
+      m_height(0),
+      m_pressure(0),
+      m_tiltX(0),
+      m_tiltY(0),
+      m_isPrimary(false) {
+  if (initializer.hasPointerId())
+    m_pointerId = initializer.pointerId();
+  if (initializer.hasWidth())
+    m_width = initializer.width();
+  if (initializer.hasHeight())
+    m_height = initializer.height();
+  if (initializer.hasPressure())
+    m_pressure = initializer.pressure();
+  if (initializer.hasTiltX())
+    m_tiltX = initializer.tiltX();
+  if (initializer.hasTiltY())
+    m_tiltY = initializer.tiltY();
+  if (initializer.hasPointerType())
+    m_pointerType = initializer.pointerType();
+  if (initializer.hasIsPrimary())
+    m_isPrimary = initializer.isPrimary();
 }
 
-bool PointerEvent::isMouseEvent() const
-{
-    return false;
+bool PointerEvent::isMouseEvent() const {
+  return false;
 }
 
-bool PointerEvent::isPointerEvent() const
-{
-    return true;
+bool PointerEvent::isPointerEvent() const {
+  return true;
 }
 
-EventDispatchMediator* PointerEvent::createMediator()
-{
-    return PointerEventDispatchMediator::create(this);
+EventDispatchMediator* PointerEvent::createMediator() {
+  return PointerEventDispatchMediator::create(this);
 }
 
-DEFINE_TRACE(PointerEvent)
-{
-    MouseEvent::trace(visitor);
+DEFINE_TRACE(PointerEvent) {
+  MouseEvent::trace(visitor);
 }
 
-PointerEventDispatchMediator* PointerEventDispatchMediator::create(PointerEvent* pointerEvent)
-{
-    return new PointerEventDispatchMediator(pointerEvent);
+PointerEventDispatchMediator* PointerEventDispatchMediator::create(
+    PointerEvent* pointerEvent) {
+  return new PointerEventDispatchMediator(pointerEvent);
 }
 
-PointerEventDispatchMediator::PointerEventDispatchMediator(PointerEvent* pointerEvent)
-    : EventDispatchMediator(pointerEvent)
-{
+PointerEventDispatchMediator::PointerEventDispatchMediator(
+    PointerEvent* pointerEvent)
+    : EventDispatchMediator(pointerEvent) {}
+
+PointerEvent& PointerEventDispatchMediator::event() const {
+  return toPointerEvent(EventDispatchMediator::event());
 }
 
-PointerEvent& PointerEventDispatchMediator::event() const
-{
-    return toPointerEvent(EventDispatchMediator::event());
+DispatchEventResult PointerEventDispatchMediator::dispatchEvent(
+    EventDispatcher& dispatcher) const {
+  if (isDisabledFormControl(&dispatcher.node()))
+    return DispatchEventResult::CanceledBeforeDispatch;
+
+  if (event().type().isEmpty())
+    return DispatchEventResult::NotCanceled;  // Shouldn't happen.
+
+  DCHECK(!event().target() || event().target() != event().relatedTarget());
+
+  event().eventPath().adjustForRelatedTarget(dispatcher.node(),
+                                             event().relatedTarget());
+
+  return dispatcher.dispatch();
 }
 
-DispatchEventResult PointerEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
-{
-    if (isDisabledFormControl(&dispatcher.node()))
-        return DispatchEventResult::CanceledBeforeDispatch;
-
-    if (event().type().isEmpty())
-        return DispatchEventResult::NotCanceled; // Shouldn't happen.
-
-    DCHECK(!event().target() || event().target() != event().relatedTarget());
-
-    event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
-
-    return dispatcher.dispatch();
-}
-
-} // namespace blink
+}  // namespace blink

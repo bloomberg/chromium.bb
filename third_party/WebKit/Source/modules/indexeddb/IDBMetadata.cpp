@@ -13,22 +13,27 @@ constexpr int64_t IDBIndexMetadata::InvalidId;
 constexpr int64_t IDBObjectStoreMetadata::InvalidId;
 
 IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& webMetadata)
-    : name(webMetadata.name)
-    , id(webMetadata.id)
-    , version(webMetadata.version)
-    , maxObjectStoreId(webMetadata.maxObjectStoreId)
-{
-    for (size_t i = 0; i < webMetadata.objectStores.size(); ++i) {
-        const WebIDBMetadata::ObjectStore webObjectStore = webMetadata.objectStores[i];
-        IDBObjectStoreMetadata objectStore(webObjectStore.name, webObjectStore.id, IDBKeyPath(webObjectStore.keyPath), webObjectStore.autoIncrement, webObjectStore.maxIndexId);
+    : name(webMetadata.name),
+      id(webMetadata.id),
+      version(webMetadata.version),
+      maxObjectStoreId(webMetadata.maxObjectStoreId) {
+  for (size_t i = 0; i < webMetadata.objectStores.size(); ++i) {
+    const WebIDBMetadata::ObjectStore webObjectStore =
+        webMetadata.objectStores[i];
+    IDBObjectStoreMetadata objectStore(webObjectStore.name, webObjectStore.id,
+                                       IDBKeyPath(webObjectStore.keyPath),
+                                       webObjectStore.autoIncrement,
+                                       webObjectStore.maxIndexId);
 
-        for (size_t j = 0; j < webObjectStore.indexes.size(); ++j) {
-            const WebIDBMetadata::Index webIndex = webObjectStore.indexes[j];
-            IDBIndexMetadata index(webIndex.name, webIndex.id, IDBKeyPath(webIndex.keyPath), webIndex.unique, webIndex.multiEntry);
-            objectStore.indexes.set(index.id, index);
-        }
-        objectStores.set(objectStore.id, objectStore);
+    for (size_t j = 0; j < webObjectStore.indexes.size(); ++j) {
+      const WebIDBMetadata::Index webIndex = webObjectStore.indexes[j];
+      IDBIndexMetadata index(webIndex.name, webIndex.id,
+                             IDBKeyPath(webIndex.keyPath), webIndex.unique,
+                             webIndex.multiEntry);
+      objectStore.indexes.set(index.id, index);
     }
+    objectStores.set(objectStore.id, objectStore);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

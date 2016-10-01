@@ -37,47 +37,54 @@ class Image;
 class SecurityOrigin;
 
 enum SourceImageStatus {
-    NormalSourceImageStatus,
-    UndecodableSourceImageStatus, // Image element with a 'broken' image
-    ZeroSizeCanvasSourceImageStatus, // Source is a canvas with width or heigh of zero
-    IncompleteSourceImageStatus, // Image element with no source media
-    InvalidSourceImageStatus,
+  NormalSourceImageStatus,
+  UndecodableSourceImageStatus,  // Image element with a 'broken' image
+  ZeroSizeCanvasSourceImageStatus,  // Source is a canvas with width or heigh of zero
+  IncompleteSourceImageStatus,  // Image element with no source media
+  InvalidSourceImageStatus,
 };
 
 class CORE_EXPORT CanvasImageSource {
-public:
-    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason, const FloatSize&) const = 0;
+ public:
+  virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
+                                                    AccelerationHint,
+                                                    SnapshotReason,
+                                                    const FloatSize&) const = 0;
 
-    // IMPORTANT: Result must be independent of whether destinationContext is
-    // already tainted because this function may be used to determine whether
-    // a CanvasPattern is "origin clean", and that pattern may be used on
-    // another canvas, which may not be already tainted.
-    virtual bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const = 0;
+  // IMPORTANT: Result must be independent of whether destinationContext is
+  // already tainted because this function may be used to determine whether
+  // a CanvasPattern is "origin clean", and that pattern may be used on
+  // another canvas, which may not be already tainted.
+  virtual bool wouldTaintOrigin(
+      SecurityOrigin* destinationSecurityOrigin) const = 0;
 
-    virtual bool isCSSImageValue() const { return false; }
-    virtual bool isVideoElement() const { return false; }
-    virtual bool isCanvasElement() const { return false; }
-    virtual bool isSVGSource() const { return false; }
-    virtual bool isImageBitmap() const { return false; }
-    virtual bool isOffscreenCanvas() const { return false; }
+  virtual bool isCSSImageValue() const { return false; }
+  virtual bool isVideoElement() const { return false; }
+  virtual bool isCanvasElement() const { return false; }
+  virtual bool isSVGSource() const { return false; }
+  virtual bool isImageBitmap() const { return false; }
+  virtual bool isOffscreenCanvas() const { return false; }
 
-    // Adjusts the source and destination rectangles for cases where the actual
-    // source image is a subregion of the image returned by getSourceImageForCanvas.
-    virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const { }
+  // Adjusts the source and destination rectangles for cases where the actual
+  // source image is a subregion of the image returned by getSourceImageForCanvas.
+  virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const {}
 
-    virtual FloatSize elementSize(const FloatSize& defaultObjectSize) const = 0;
-    virtual FloatSize defaultDestinationSize(const FloatSize& defaultObjectSize) const { return elementSize(defaultObjectSize); }
-    virtual const KURL& sourceURL() const { return blankURL(); }
-    virtual bool isOpaque() const { return false; }
-    virtual bool isAccelerated() const = 0;
+  virtual FloatSize elementSize(const FloatSize& defaultObjectSize) const = 0;
+  virtual FloatSize defaultDestinationSize(
+      const FloatSize& defaultObjectSize) const {
+    return elementSize(defaultObjectSize);
+  }
+  virtual const KURL& sourceURL() const { return blankURL(); }
+  virtual bool isOpaque() const { return false; }
+  virtual bool isAccelerated() const = 0;
 
-    virtual int sourceWidth() = 0;
-    virtual int sourceHeight() = 0;
+  virtual int sourceWidth() = 0;
+  virtual int sourceHeight() = 0;
 
-protected:
-    virtual ~CanvasImageSource() { }
+ protected:
+  virtual ~CanvasImageSource() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -33,15 +33,16 @@ namespace blink {
 struct PathSegmentData;
 
 class CORE_EXPORT SVGPathConsumer {
-    WTF_MAKE_NONCOPYABLE(SVGPathConsumer);
-    STACK_ALLOCATED();
-public:
-    SVGPathConsumer() { }
-    virtual ~SVGPathConsumer() { }
+  WTF_MAKE_NONCOPYABLE(SVGPathConsumer);
+  STACK_ALLOCATED();
 
-    virtual void emitSegment(const PathSegmentData&) = 0;
+ public:
+  SVGPathConsumer() {}
+  virtual ~SVGPathConsumer() {}
+
+  virtual void emitSegment(const PathSegmentData&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPathConsumer_h
+#endif  // SVGPathConsumer_h

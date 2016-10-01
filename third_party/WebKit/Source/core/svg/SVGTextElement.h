@@ -27,16 +27,17 @@
 namespace blink {
 
 class SVGTextElement final : public SVGTextPositioningElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGTextElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGTextElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGTextElement);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+ private:
+  explicit SVGTextElement(Document&);
+
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGTextElement_h
+#endif  // SVGTextElement_h

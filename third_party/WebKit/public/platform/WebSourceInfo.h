@@ -36,44 +36,42 @@ namespace blink {
 class WebSourceInfoPrivate;
 
 class WebSourceInfo {
-public:
-    enum SourceKind {
-        SourceKindNone,
-        SourceKindAudio,
-        SourceKindVideo
-    };
+ public:
+  enum SourceKind { SourceKindNone, SourceKindAudio, SourceKindVideo };
 
-    enum VideoFacingMode {
-        VideoFacingModeNone,
-        VideoFacingModeUser,
-        VideoFacingModeEnvironment
-    };
+  enum VideoFacingMode {
+    VideoFacingModeNone,
+    VideoFacingModeUser,
+    VideoFacingModeEnvironment
+  };
 
-    WebSourceInfo() { }
-    WebSourceInfo(const WebSourceInfo& other) { assign(other); }
-    ~WebSourceInfo() { reset(); }
+  WebSourceInfo() {}
+  WebSourceInfo(const WebSourceInfo& other) { assign(other); }
+  ~WebSourceInfo() { reset(); }
 
-    WebSourceInfo& operator=(const WebSourceInfo& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebSourceInfo& operator=(const WebSourceInfo& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebSourceInfo&);
+  BLINK_PLATFORM_EXPORT void assign(const WebSourceInfo&);
 
-    BLINK_PLATFORM_EXPORT void initialize(const WebString& id, SourceKind, const WebString& label, VideoFacingMode);
-    BLINK_PLATFORM_EXPORT void reset();
-    bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void initialize(const WebString& id,
+                                        SourceKind,
+                                        const WebString& label,
+                                        VideoFacingMode);
+  BLINK_PLATFORM_EXPORT void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebString id() const;
-    BLINK_PLATFORM_EXPORT SourceKind kind() const;
-    BLINK_PLATFORM_EXPORT WebString label() const;
-    BLINK_PLATFORM_EXPORT VideoFacingMode facing() const;
+  BLINK_PLATFORM_EXPORT WebString id() const;
+  BLINK_PLATFORM_EXPORT SourceKind kind() const;
+  BLINK_PLATFORM_EXPORT WebString label() const;
+  BLINK_PLATFORM_EXPORT VideoFacingMode facing() const;
 
-private:
-    WebPrivatePtr<WebSourceInfoPrivate> m_private;
+ private:
+  WebPrivatePtr<WebSourceInfoPrivate> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSourceInfo_h
+#endif  // WebSourceInfo_h

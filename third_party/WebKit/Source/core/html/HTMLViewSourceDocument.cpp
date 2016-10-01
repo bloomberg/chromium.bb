@@ -48,274 +48,282 @@ namespace {
 
 const char kXSSDetected[] = "Token contains a reflected XSS vector";
 
-} // namespace
+}  // namespace
 
-HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer, const String& mimeType)
-    : HTMLDocument(initializer)
-    , m_type(mimeType)
-{
-    setIsViewSource(true);
+HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer,
+                                               const String& mimeType)
+    : HTMLDocument(initializer), m_type(mimeType) {
+  setIsViewSource(true);
 
-    // FIXME: Why do view-source pages need to load in quirks mode?
-    setCompatibilityMode(QuirksMode);
-    lockCompatibilityMode();
-    UseCounter::count(*this, UseCounter::ViewSourceDocument);
+  // FIXME: Why do view-source pages need to load in quirks mode?
+  setCompatibilityMode(QuirksMode);
+  lockCompatibilityMode();
+  UseCounter::count(*this, UseCounter::ViewSourceDocument);
 }
 
-DocumentParser* HTMLViewSourceDocument::createParser()
-{
-    return HTMLViewSourceParser::create(*this, m_type);
+DocumentParser* HTMLViewSourceDocument::createParser() {
+  return HTMLViewSourceParser::create(*this, m_type);
 }
 
-void HTMLViewSourceDocument::createContainingTable()
-{
-    HTMLHtmlElement* html = HTMLHtmlElement::create(*this);
-    parserAppendChild(html);
-    HTMLHeadElement* head = HTMLHeadElement::create(*this);
-    html->parserAppendChild(head);
-    HTMLBodyElement* body = HTMLBodyElement::create(*this);
-    html->parserAppendChild(body);
+void HTMLViewSourceDocument::createContainingTable() {
+  HTMLHtmlElement* html = HTMLHtmlElement::create(*this);
+  parserAppendChild(html);
+  HTMLHeadElement* head = HTMLHeadElement::create(*this);
+  html->parserAppendChild(head);
+  HTMLBodyElement* body = HTMLBodyElement::create(*this);
+  html->parserAppendChild(body);
 
-    // Create a line gutter div that can be used to make sure the gutter extends down the height of the whole
-    // document.
-    HTMLDivElement* div = HTMLDivElement::create(*this);
-    div->setAttribute(classAttr, "line-gutter-backdrop");
-    body->parserAppendChild(div);
+  // Create a line gutter div that can be used to make sure the gutter extends down the height of the whole
+  // document.
+  HTMLDivElement* div = HTMLDivElement::create(*this);
+  div->setAttribute(classAttr, "line-gutter-backdrop");
+  body->parserAppendChild(div);
 
-    HTMLTableElement* table = HTMLTableElement::create(*this);
-    body->parserAppendChild(table);
-    m_tbody = HTMLTableSectionElement::create(tbodyTag, *this);
-    table->parserAppendChild(m_tbody);
-    m_current = m_tbody;
-    m_lineNumber = 0;
+  HTMLTableElement* table = HTMLTableElement::create(*this);
+  body->parserAppendChild(table);
+  m_tbody = HTMLTableSectionElement::create(tbodyTag, *this);
+  table->parserAppendChild(m_tbody);
+  m_current = m_tbody;
+  m_lineNumber = 0;
 }
 
-void HTMLViewSourceDocument::addSource(const String& source, HTMLToken& token, SourceAnnotation annotation)
-{
-    if (!m_current)
-        createContainingTable();
+void HTMLViewSourceDocument::addSource(const String& source,
+                                       HTMLToken& token,
+                                       SourceAnnotation annotation) {
+  if (!m_current)
+    createContainingTable();
 
-    switch (token.type()) {
+  switch (token.type()) {
     case HTMLToken::Uninitialized:
-        NOTREACHED();
-        break;
+      NOTREACHED();
+      break;
     case HTMLToken::DOCTYPE:
-        processDoctypeToken(source, token);
-        break;
+      processDoctypeToken(source, token);
+      break;
     case HTMLToken::EndOfFile:
-        processEndOfFileToken(source, token);
-        break;
+      processEndOfFileToken(source, token);
+      break;
     case HTMLToken::StartTag:
     case HTMLToken::EndTag:
-        processTagToken(source, token, annotation);
-        break;
+      processTagToken(source, token, annotation);
+      break;
     case HTMLToken::Comment:
-        processCommentToken(source, token);
-        break;
+      processCommentToken(source, token);
+      break;
     case HTMLToken::Character:
-        processCharacterToken(source, token, annotation);
-        break;
-    }
+      processCharacterToken(source, token, annotation);
+      break;
+  }
 }
 
-void HTMLViewSourceDocument::processDoctypeToken(const String& source, HTMLToken&)
-{
-    m_current = addSpanWithClassName("html-doctype");
-    addText(source, "html-doctype");
-    m_current = m_td;
+void HTMLViewSourceDocument::processDoctypeToken(const String& source,
+                                                 HTMLToken&) {
+  m_current = addSpanWithClassName("html-doctype");
+  addText(source, "html-doctype");
+  m_current = m_td;
 }
 
-void HTMLViewSourceDocument::processEndOfFileToken(const String& source, HTMLToken&)
-{
-    m_current = addSpanWithClassName("html-end-of-file");
-    addText(source, "html-end-of-file");
-    m_current = m_td;
+void HTMLViewSourceDocument::processEndOfFileToken(const String& source,
+                                                   HTMLToken&) {
+  m_current = addSpanWithClassName("html-end-of-file");
+  addText(source, "html-end-of-file");
+  m_current = m_td;
 }
 
-void HTMLViewSourceDocument::processTagToken(const String& source, HTMLToken& token, SourceAnnotation annotation)
-{
-    maybeAddSpanForAnnotation(annotation);
-    m_current = addSpanWithClassName("html-tag");
+void HTMLViewSourceDocument::processTagToken(const String& source,
+                                             HTMLToken& token,
+                                             SourceAnnotation annotation) {
+  maybeAddSpanForAnnotation(annotation);
+  m_current = addSpanWithClassName("html-tag");
 
-    AtomicString tagName(token.name());
+  AtomicString tagName(token.name());
 
-    unsigned index = 0;
-    HTMLToken::AttributeList::const_iterator iter = token.attributes().begin();
-    while (index < source.length()) {
-        if (iter == token.attributes().end()) {
-            // We want to show the remaining characters in the token.
-            index = addRange(source, index, source.length(), emptyAtom);
-            DCHECK_EQ(index, source.length());
-            break;
-        }
-
-        AtomicString name(iter->name());
-        AtomicString value(iter->value8BitIfNecessary());
-
-        index = addRange(source, index, iter->nameRange().start - token.startIndex(), emptyAtom);
-        index = addRange(source, index, iter->nameRange().end - token.startIndex(), "html-attribute-name");
-
-        if (tagName == baseTag && name == hrefAttr)
-            addBase(value);
-
-        index = addRange(source, index, iter->valueRange().start - token.startIndex(), emptyAtom);
-
-        bool isLink = name == srcAttr || name == hrefAttr;
-        index = addRange(source, index, iter->valueRange().end - token.startIndex(), "html-attribute-value", isLink, tagName == aTag, value);
-
-        ++iter;
-    }
-    m_current = m_td;
-}
-
-void HTMLViewSourceDocument::processCommentToken(const String& source, HTMLToken&)
-{
-    m_current = addSpanWithClassName("html-comment");
-    addText(source, "html-comment");
-    m_current = m_td;
-}
-
-void HTMLViewSourceDocument::processCharacterToken(const String& source, HTMLToken&, SourceAnnotation annotation)
-{
-    addText(source, "", annotation);
-}
-
-Element* HTMLViewSourceDocument::addSpanWithClassName(const AtomicString& className)
-{
-    if (m_current == m_tbody) {
-        addLine(className);
-        return m_current;
+  unsigned index = 0;
+  HTMLToken::AttributeList::const_iterator iter = token.attributes().begin();
+  while (index < source.length()) {
+    if (iter == token.attributes().end()) {
+      // We want to show the remaining characters in the token.
+      index = addRange(source, index, source.length(), emptyAtom);
+      DCHECK_EQ(index, source.length());
+      break;
     }
 
-    HTMLSpanElement* span = HTMLSpanElement::create(*this);
-    span->setAttribute(classAttr, className);
-    m_current->parserAppendChild(span);
-    return span;
+    AtomicString name(iter->name());
+    AtomicString value(iter->value8BitIfNecessary());
+
+    index = addRange(source, index,
+                     iter->nameRange().start - token.startIndex(), emptyAtom);
+    index = addRange(source, index, iter->nameRange().end - token.startIndex(),
+                     "html-attribute-name");
+
+    if (tagName == baseTag && name == hrefAttr)
+      addBase(value);
+
+    index = addRange(source, index,
+                     iter->valueRange().start - token.startIndex(), emptyAtom);
+
+    bool isLink = name == srcAttr || name == hrefAttr;
+    index = addRange(source, index, iter->valueRange().end - token.startIndex(),
+                     "html-attribute-value", isLink, tagName == aTag, value);
+
+    ++iter;
+  }
+  m_current = m_td;
 }
 
-void HTMLViewSourceDocument::addLine(const AtomicString& className)
-{
-    // Create a table row.
-    HTMLTableRowElement* trow = HTMLTableRowElement::create(*this);
-    m_tbody->parserAppendChild(trow);
-
-    // Create a cell that will hold the line number (it is generated in the stylesheet using counters).
-    HTMLTableCellElement* td = HTMLTableCellElement::create(tdTag, *this);
-    td->setAttribute(classAttr, "line-number");
-    td->setIntegralAttribute(valueAttr, ++m_lineNumber);
-    trow->parserAppendChild(td);
-
-    // Create a second cell for the line contents
-    td = HTMLTableCellElement::create(tdTag, *this);
-    td->setAttribute(classAttr, "line-content");
-    trow->parserAppendChild(td);
-    m_current = m_td = td;
-
-    // Open up the needed spans.
-    if (!className.isEmpty()) {
-        if (className == "html-attribute-name" || className == "html-attribute-value")
-            m_current = addSpanWithClassName("html-tag");
-        m_current = addSpanWithClassName(className);
-    }
+void HTMLViewSourceDocument::processCommentToken(const String& source,
+                                                 HTMLToken&) {
+  m_current = addSpanWithClassName("html-comment");
+  addText(source, "html-comment");
+  m_current = m_td;
 }
 
-void HTMLViewSourceDocument::finishLine()
-{
-    if (!m_current->hasChildren()) {
-        HTMLBRElement* br = HTMLBRElement::create(*this);
-        m_current->parserAppendChild(br);
-    }
-    m_current = m_tbody;
+void HTMLViewSourceDocument::processCharacterToken(
+    const String& source,
+    HTMLToken&,
+    SourceAnnotation annotation) {
+  addText(source, "", annotation);
 }
 
-void HTMLViewSourceDocument::addText(const String& text, const AtomicString& className, SourceAnnotation annotation)
-{
-    if (text.isEmpty())
-        return;
+Element* HTMLViewSourceDocument::addSpanWithClassName(
+    const AtomicString& className) {
+  if (m_current == m_tbody) {
+    addLine(className);
+    return m_current;
+  }
 
-    // Add in the content, splitting on newlines.
-    Vector<String> lines;
-    text.split('\n', true, lines);
-    unsigned size = lines.size();
-    for (unsigned i = 0; i < size; i++) {
-        String substring = lines[i];
-        if (m_current == m_tbody)
-            addLine(className);
-        if (substring.isEmpty()) {
-            if (i == size - 1)
-                break;
-            finishLine();
-            continue;
-        }
-        Element* oldElement = m_current;
-        maybeAddSpanForAnnotation(annotation);
-        m_current->parserAppendChild(Text::create(*this, substring));
-        m_current = oldElement;
-        if (i < size - 1)
-            finishLine();
-    }
+  HTMLSpanElement* span = HTMLSpanElement::create(*this);
+  span->setAttribute(classAttr, className);
+  m_current->parserAppendChild(span);
+  return span;
 }
 
-int HTMLViewSourceDocument::addRange(const String& source, int start, int end, const AtomicString& className, bool isLink, bool isAnchor, const AtomicString& link)
-{
-    DCHECK_LE(start, end);
-    if (start == end)
-        return start;
+void HTMLViewSourceDocument::addLine(const AtomicString& className) {
+  // Create a table row.
+  HTMLTableRowElement* trow = HTMLTableRowElement::create(*this);
+  m_tbody->parserAppendChild(trow);
 
-    String text = source.substring(start, end - start);
-    if (!className.isEmpty()) {
-        if (isLink)
-            m_current = addLink(link, isAnchor);
-        else
-            m_current = addSpanWithClassName(className);
-    }
-    addText(text, className);
-    if (!className.isEmpty() && m_current != m_tbody)
-        m_current = toElement(m_current->parentNode());
-    return end;
+  // Create a cell that will hold the line number (it is generated in the stylesheet using counters).
+  HTMLTableCellElement* td = HTMLTableCellElement::create(tdTag, *this);
+  td->setAttribute(classAttr, "line-number");
+  td->setIntegralAttribute(valueAttr, ++m_lineNumber);
+  trow->parserAppendChild(td);
+
+  // Create a second cell for the line contents
+  td = HTMLTableCellElement::create(tdTag, *this);
+  td->setAttribute(classAttr, "line-content");
+  trow->parserAppendChild(td);
+  m_current = m_td = td;
+
+  // Open up the needed spans.
+  if (!className.isEmpty()) {
+    if (className == "html-attribute-name" ||
+        className == "html-attribute-value")
+      m_current = addSpanWithClassName("html-tag");
+    m_current = addSpanWithClassName(className);
+  }
 }
 
-Element* HTMLViewSourceDocument::addBase(const AtomicString& href)
-{
-    HTMLBaseElement* base = HTMLBaseElement::create(*this);
-    base->setAttribute(hrefAttr, href);
-    m_current->parserAppendChild(base);
-    return base;
+void HTMLViewSourceDocument::finishLine() {
+  if (!m_current->hasChildren()) {
+    HTMLBRElement* br = HTMLBRElement::create(*this);
+    m_current->parserAppendChild(br);
+  }
+  m_current = m_tbody;
 }
 
-Element* HTMLViewSourceDocument::addLink(const AtomicString& url, bool isAnchor)
-{
+void HTMLViewSourceDocument::addText(const String& text,
+                                     const AtomicString& className,
+                                     SourceAnnotation annotation) {
+  if (text.isEmpty())
+    return;
+
+  // Add in the content, splitting on newlines.
+  Vector<String> lines;
+  text.split('\n', true, lines);
+  unsigned size = lines.size();
+  for (unsigned i = 0; i < size; i++) {
+    String substring = lines[i];
     if (m_current == m_tbody)
-        addLine("html-tag");
-
-    // Now create a link for the attribute value instead of a span.
-    HTMLAnchorElement* anchor = HTMLAnchorElement::create(*this);
-    const char* classValue;
-    if (isAnchor)
-        classValue = "html-attribute-value html-external-link";
-    else
-        classValue = "html-attribute-value html-resource-link";
-    anchor->setAttribute(classAttr, classValue);
-    anchor->setAttribute(targetAttr, "_blank");
-    anchor->setAttribute(hrefAttr, url);
-    m_current->parserAppendChild(anchor);
-    return anchor;
-}
-
-void HTMLViewSourceDocument::maybeAddSpanForAnnotation(SourceAnnotation annotation)
-{
-    if (annotation == AnnotateSourceAsXSS) {
-        m_current = addSpanWithClassName("highlight");
-        m_current->setAttribute(titleAttr, kXSSDetected);
+      addLine(className);
+    if (substring.isEmpty()) {
+      if (i == size - 1)
+        break;
+      finishLine();
+      continue;
     }
+    Element* oldElement = m_current;
+    maybeAddSpanForAnnotation(annotation);
+    m_current->parserAppendChild(Text::create(*this, substring));
+    m_current = oldElement;
+    if (i < size - 1)
+      finishLine();
+  }
 }
 
-DEFINE_TRACE(HTMLViewSourceDocument)
-{
-    visitor->trace(m_current);
-    visitor->trace(m_tbody);
-    visitor->trace(m_td);
-    HTMLDocument::trace(visitor);
+int HTMLViewSourceDocument::addRange(const String& source,
+                                     int start,
+                                     int end,
+                                     const AtomicString& className,
+                                     bool isLink,
+                                     bool isAnchor,
+                                     const AtomicString& link) {
+  DCHECK_LE(start, end);
+  if (start == end)
+    return start;
+
+  String text = source.substring(start, end - start);
+  if (!className.isEmpty()) {
+    if (isLink)
+      m_current = addLink(link, isAnchor);
+    else
+      m_current = addSpanWithClassName(className);
+  }
+  addText(text, className);
+  if (!className.isEmpty() && m_current != m_tbody)
+    m_current = toElement(m_current->parentNode());
+  return end;
 }
 
-} // namespace blink
+Element* HTMLViewSourceDocument::addBase(const AtomicString& href) {
+  HTMLBaseElement* base = HTMLBaseElement::create(*this);
+  base->setAttribute(hrefAttr, href);
+  m_current->parserAppendChild(base);
+  return base;
+}
+
+Element* HTMLViewSourceDocument::addLink(const AtomicString& url,
+                                         bool isAnchor) {
+  if (m_current == m_tbody)
+    addLine("html-tag");
+
+  // Now create a link for the attribute value instead of a span.
+  HTMLAnchorElement* anchor = HTMLAnchorElement::create(*this);
+  const char* classValue;
+  if (isAnchor)
+    classValue = "html-attribute-value html-external-link";
+  else
+    classValue = "html-attribute-value html-resource-link";
+  anchor->setAttribute(classAttr, classValue);
+  anchor->setAttribute(targetAttr, "_blank");
+  anchor->setAttribute(hrefAttr, url);
+  m_current->parserAppendChild(anchor);
+  return anchor;
+}
+
+void HTMLViewSourceDocument::maybeAddSpanForAnnotation(
+    SourceAnnotation annotation) {
+  if (annotation == AnnotateSourceAsXSS) {
+    m_current = addSpanWithClassName("highlight");
+    m_current->setAttribute(titleAttr, kXSSDetected);
+  }
+}
+
+DEFINE_TRACE(HTMLViewSourceDocument) {
+  visitor->trace(m_current);
+  visitor->trace(m_tbody);
+  visitor->trace(m_td);
+  HTMLDocument::trace(visitor);
+}
+
+}  // namespace blink

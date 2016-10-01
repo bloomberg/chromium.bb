@@ -8,21 +8,23 @@
 
 namespace blink {
 
-DeprecatedScheduleStyleRecalcDuringLayout::DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle& lifecycle)
-    : m_lifecycle(lifecycle)
-    , m_deprecatedTransition(DocumentLifecycle::InPerformLayout, DocumentLifecycle::VisualUpdatePending)
-    , m_wasInPerformLayout(lifecycle.state() == DocumentLifecycle::InPerformLayout)
-{
+DeprecatedScheduleStyleRecalcDuringLayout::
+    DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle& lifecycle)
+    : m_lifecycle(lifecycle),
+      m_deprecatedTransition(DocumentLifecycle::InPerformLayout,
+                             DocumentLifecycle::VisualUpdatePending),
+      m_wasInPerformLayout(lifecycle.state() ==
+                           DocumentLifecycle::InPerformLayout) {}
+
+DeprecatedScheduleStyleRecalcDuringLayout::
+    ~DeprecatedScheduleStyleRecalcDuringLayout() {
+  // This block of code is intended to restore the state machine to the
+  // proper state. The style recalc will still have been schedule, however.
+  if (m_wasInPerformLayout &&
+      m_lifecycle.state() != DocumentLifecycle::InPerformLayout) {
+    ASSERT(m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending);
+    m_lifecycle.advanceTo(DocumentLifecycle::InPerformLayout);
+  }
 }
 
-DeprecatedScheduleStyleRecalcDuringLayout::~DeprecatedScheduleStyleRecalcDuringLayout()
-{
-    // This block of code is intended to restore the state machine to the
-    // proper state. The style recalc will still have been schedule, however.
-    if (m_wasInPerformLayout && m_lifecycle.state() != DocumentLifecycle::InPerformLayout) {
-        ASSERT(m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending);
-        m_lifecycle.advanceTo(DocumentLifecycle::InPerformLayout);
-    }
-}
-
-} // namespace blink
+}  // namespace blink

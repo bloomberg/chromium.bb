@@ -29,34 +29,33 @@
 namespace blink {
 
 class SVGPolyElement : public SVGGeometryElement {
-public:
-    SVGAnimatedPointList* points() const { return m_points.get(); }
+ public:
+  SVGAnimatedPointList* points() const { return m_points.get(); }
 
-    SVGPointListTearOff* pointsFromJavascript() { return m_points->baseVal(); }
-    SVGPointListTearOff* animatedPoints() { return m_points->animVal(); }
+  SVGPointListTearOff* pointsFromJavascript() { return m_points->baseVal(); }
+  SVGPointListTearOff* animatedPoints() { return m_points->animVal(); }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    SVGPolyElement(const QualifiedName&, Document&);
+ protected:
+  SVGPolyElement(const QualifiedName&, Document&);
 
-    Path asPathFromPoints() const;
+  Path asPathFromPoints() const;
 
-private:
-    void svgAttributeChanged(const QualifiedName&) final;
+ private:
+  void svgAttributeChanged(const QualifiedName&) final;
 
-private:
-    Member<SVGAnimatedPointList> m_points;
-
+ private:
+  Member<SVGAnimatedPointList> m_points;
 };
 
-inline bool isSVGPolyElement(const SVGElement& element)
-{
-    return element.hasTagName(SVGNames::polygonTag) || element.hasTagName(SVGNames::polylineTag);
+inline bool isSVGPolyElement(const SVGElement& element) {
+  return element.hasTagName(SVGNames::polygonTag) ||
+         element.hasTagName(SVGNames::polylineTag);
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGPolyElement);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

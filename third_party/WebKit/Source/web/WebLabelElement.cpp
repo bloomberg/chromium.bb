@@ -38,27 +38,22 @@
 
 namespace blink {
 
-WebElement WebLabelElement::correspondingControl()
-{
-    return WebElement(unwrap<HTMLLabelElement>()->control());
+WebElement WebLabelElement::correspondingControl() {
+  return WebElement(unwrap<HTMLLabelElement>()->control());
 }
 
-WebLabelElement::WebLabelElement(HTMLLabelElement* elem)
-    : WebElement(elem)
-{
+WebLabelElement::WebLabelElement(HTMLLabelElement* elem) : WebElement(elem) {}
+
+DEFINE_WEB_NODE_TYPE_CASTS(WebLabelElement,
+                           isHTMLLabelElement(constUnwrap<Node>()));
+
+WebLabelElement& WebLabelElement::operator=(HTMLLabelElement* elem) {
+  m_private = elem;
+  return *this;
 }
 
-DEFINE_WEB_NODE_TYPE_CASTS(WebLabelElement, isHTMLLabelElement(constUnwrap<Node>()));
-
-WebLabelElement& WebLabelElement::operator=(HTMLLabelElement* elem)
-{
-    m_private = elem;
-    return *this;
+WebLabelElement::operator HTMLLabelElement*() const {
+  return toHTMLLabelElement(m_private.get());
 }
 
-WebLabelElement::operator HTMLLabelElement*() const
-{
-    return toHTMLLabelElement(m_private.get());
-}
-
-} // namespace blink
+}  // namespace blink

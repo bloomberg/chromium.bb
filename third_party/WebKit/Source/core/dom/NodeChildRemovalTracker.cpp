@@ -26,9 +26,8 @@
 
 #include "core/dom/NodeChildRemovalTracker.h"
 
-
 namespace blink {
 
 NodeChildRemovalTracker* NodeChildRemovalTracker::s_last;
 
-} // namespace
+}  // namespace

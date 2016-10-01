@@ -30,38 +30,44 @@ namespace blink {
 // This is used for non-root <svg> elements and <marker> elements, neither of which are SVGTransformable
 // thus we inherit from LayoutSVGContainer instead of LayoutSVGTransformableContainer
 class LayoutSVGViewportContainer final : public LayoutSVGContainer {
-public:
-    explicit LayoutSVGViewportContainer(SVGElement*);
-    FloatRect viewport() const { return m_viewport; }
+ public:
+  explicit LayoutSVGViewportContainer(SVGElement*);
+  FloatRect viewport() const { return m_viewport; }
 
-    bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
+  bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
 
-    void determineIfLayoutSizeChanged() override;
-    void setNeedsTransformUpdate() override;
+  void determineIfLayoutSizeChanged() override;
+  void setNeedsTransformUpdate() override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) const override;
+  void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    const char* name() const override { return "LayoutSVGViewportContainer"; }
+  const char* name() const override { return "LayoutSVGViewportContainer"; }
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGViewportContainer || LayoutSVGContainer::isOfType(type); }
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGViewportContainer ||
+           LayoutSVGContainer::isOfType(type);
+  }
 
-    AffineTransform viewportTransform() const;
-    const AffineTransform& localToSVGParentTransform() const override { return m_localToParentTransform; }
+  AffineTransform viewportTransform() const;
+  const AffineTransform& localToSVGParentTransform() const override {
+    return m_localToParentTransform;
+  }
 
-    void calcViewport() override;
-    SVGTransformChange calculateLocalTransform() override;
+  void calcViewport() override;
+  SVGTransformChange calculateLocalTransform() override;
 
-    bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
+  bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
 
-    FloatRect m_viewport;
-    mutable AffineTransform m_localToParentTransform;
-    bool m_isLayoutSizeChanged : 1;
-    bool m_needsTransformUpdate : 1;
+  FloatRect m_viewport;
+  mutable AffineTransform m_localToParentTransform;
+  bool m_isLayoutSizeChanged : 1;
+  bool m_needsTransformUpdate : 1;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGViewportContainer, isSVGViewportContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGViewportContainer,
+                                isSVGViewportContainer());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSVGViewportContainer_h
+#endif  // LayoutSVGViewportContainer_h

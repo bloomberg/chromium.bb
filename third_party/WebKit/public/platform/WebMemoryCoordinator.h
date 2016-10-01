@@ -11,16 +11,16 @@
 namespace blink {
 
 class WebMemoryCoordinator {
-public:
-    // Called when a memory pressure notification is received.
-    // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
-    // gone.
-    BLINK_PLATFORM_EXPORT static void onMemoryPressure(WebMemoryPressureLevel);
+ public:
+  // Called when a memory pressure notification is received.
+  // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
+  // gone.
+  BLINK_PLATFORM_EXPORT static void onMemoryPressure(WebMemoryPressureLevel);
 
-    // Called when Blink is going to be suspended.
-    BLINK_PLATFORM_EXPORT static void prepareToSuspend();
+  // Called when Blink is going to be suspended.
+  BLINK_PLATFORM_EXPORT static void prepareToSuspend();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

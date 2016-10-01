@@ -34,10 +34,8 @@ namespace blink {
 
 static unsigned long s_uniqueIdentifier = 0;
 
-unsigned long createUniqueIdentifier()
-{
-    return ++s_uniqueIdentifier;
+unsigned long createUniqueIdentifier() {
+  return ++s_uniqueIdentifier;
 }
 
-} // namespace blink
-
+}  // namespace blink

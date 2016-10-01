@@ -11,29 +11,39 @@
 namespace blink {
 
 class RelatedEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RelatedEvent* create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);
-    static RelatedEvent* create(const AtomicString& eventType, const RelatedEventInit&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~RelatedEvent() override;
+ public:
+  static RelatedEvent* create(const AtomicString& type,
+                              bool canBubble,
+                              bool cancelable,
+                              EventTarget* relatedTarget);
+  static RelatedEvent* create(const AtomicString& eventType,
+                              const RelatedEventInit&);
 
-    EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
+  ~RelatedEvent() override;
 
-    const AtomicString& interfaceName() const override { return EventNames::RelatedEvent; }
-    bool isRelatedEvent() const override { return true; }
+  EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override {
+    return EventNames::RelatedEvent;
+  }
+  bool isRelatedEvent() const override { return true; }
 
-private:
-    RelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, EventTarget*);
-    RelatedEvent(const AtomicString& type, const RelatedEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<EventTarget> m_relatedTarget;
+ private:
+  RelatedEvent(const AtomicString& type,
+               bool canBubble,
+               bool cancelable,
+               EventTarget*);
+  RelatedEvent(const AtomicString& type, const RelatedEventInit&);
+
+  Member<EventTarget> m_relatedTarget;
 };
 
 DEFINE_EVENT_TYPE_CASTS(RelatedEvent);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RelatedEvent_h
+#endif  // RelatedEvent_h

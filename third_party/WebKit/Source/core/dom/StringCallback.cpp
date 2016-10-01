@@ -37,9 +37,14 @@
 
 namespace blink {
 
-void StringCallback::scheduleCallback(StringCallback* callback, ExecutionContext* context, const String& data, const String& instrumentationName)
-{
-    context->postTask(BLINK_FROM_HERE, createSameThreadTask(&StringCallback::handleEvent, wrapPersistent(callback), data), instrumentationName);
+void StringCallback::scheduleCallback(StringCallback* callback,
+                                      ExecutionContext* context,
+                                      const String& data,
+                                      const String& instrumentationName) {
+  context->postTask(BLINK_FROM_HERE,
+                    createSameThreadTask(&StringCallback::handleEvent,
+                                         wrapPersistent(callback), data),
+                    instrumentationName);
 }
 
-} // namespace blink
+}  // namespace blink

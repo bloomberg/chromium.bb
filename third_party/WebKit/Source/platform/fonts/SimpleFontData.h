@@ -47,191 +47,219 @@ namespace blink {
 
 class FontDescription;
 
-enum FontDataVariant { AutoVariant, NormalVariant, SmallCapsVariant, EmphasisMarkVariant };
+enum FontDataVariant {
+  AutoVariant,
+  NormalVariant,
+  SmallCapsVariant,
+  EmphasisMarkVariant
+};
 
 class PLATFORM_EXPORT SimpleFontData : public FontData {
-public:
-    // Used to create platform fonts.
-    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData = nullptr, bool isTextOrientationFallback = false)
-    {
-        return adoptRef(new SimpleFontData(platformData, std::move(customData), isTextOrientationFallback));
+ public:
+  // Used to create platform fonts.
+  static PassRefPtr<SimpleFontData> create(
+      const FontPlatformData& platformData,
+      PassRefPtr<CustomFontData> customData = nullptr,
+      bool isTextOrientationFallback = false) {
+    return adoptRef(new SimpleFontData(platformData, std::move(customData),
+                                       isTextOrientationFallback));
+  }
+
+  ~SimpleFontData() override;
+
+  const FontPlatformData& platformData() const { return m_platformData; }
+  const OpenTypeVerticalData* verticalData() const {
+    return m_verticalData.get();
+  }
+
+  PassRefPtr<SimpleFontData> smallCapsFontData(const FontDescription&) const;
+  PassRefPtr<SimpleFontData> emphasisMarkFontData(const FontDescription&) const;
+
+  PassRefPtr<SimpleFontData> variantFontData(const FontDescription& description,
+                                             FontDataVariant variant) const {
+    switch (variant) {
+      case SmallCapsVariant:
+        return smallCapsFontData(description);
+      case EmphasisMarkVariant:
+        return emphasisMarkFontData(description);
+      case AutoVariant:
+      case NormalVariant:
+        break;
     }
+    ASSERT_NOT_REACHED();
+    return const_cast<SimpleFontData*>(this);
+  }
 
-    ~SimpleFontData() override;
+  PassRefPtr<SimpleFontData> verticalRightOrientationFontData() const;
+  PassRefPtr<SimpleFontData> uprightOrientationFontData() const;
 
-    const FontPlatformData& platformData() const { return m_platformData; }
-    const OpenTypeVerticalData* verticalData() const { return m_verticalData.get(); }
+  bool hasVerticalGlyphs() const { return m_hasVerticalGlyphs; }
+  bool isTextOrientationFallback() const { return m_isTextOrientationFallback; }
+  bool isTextOrientationFallbackOf(const SimpleFontData*) const;
 
-    PassRefPtr<SimpleFontData> smallCapsFontData(const FontDescription&) const;
-    PassRefPtr<SimpleFontData> emphasisMarkFontData(const FontDescription&) const;
+  FontMetrics& getFontMetrics() { return m_fontMetrics; }
+  const FontMetrics& getFontMetrics() const { return m_fontMetrics; }
+  float sizePerUnit() const {
+    return platformData().size() /
+           (getFontMetrics().unitsPerEm() ? getFontMetrics().unitsPerEm() : 1);
+  }
+  float internalLeading() const {
+    return getFontMetrics().floatHeight() - platformData().size();
+  }
 
-    PassRefPtr<SimpleFontData> variantFontData(const FontDescription& description, FontDataVariant variant) const
-    {
-        switch (variant) {
-        case SmallCapsVariant:
-            return smallCapsFontData(description);
-        case EmphasisMarkVariant:
-            return emphasisMarkFontData(description);
-        case AutoVariant:
-        case NormalVariant:
-            break;
-        }
-        ASSERT_NOT_REACHED();
-        return const_cast<SimpleFontData*>(this);
-    }
+  float maxCharWidth() const { return m_maxCharWidth; }
+  void setMaxCharWidth(float maxCharWidth) { m_maxCharWidth = maxCharWidth; }
 
-    PassRefPtr<SimpleFontData> verticalRightOrientationFontData() const;
-    PassRefPtr<SimpleFontData> uprightOrientationFontData() const;
+  float avgCharWidth() const { return m_avgCharWidth; }
+  void setAvgCharWidth(float avgCharWidth) { m_avgCharWidth = avgCharWidth; }
 
-    bool hasVerticalGlyphs() const { return m_hasVerticalGlyphs; }
-    bool isTextOrientationFallback() const { return m_isTextOrientationFallback; }
-    bool isTextOrientationFallbackOf(const SimpleFontData*) const;
+  FloatRect boundsForGlyph(Glyph) const;
+  FloatRect platformBoundsForGlyph(Glyph) const;
+  float widthForGlyph(Glyph) const;
+  float platformWidthForGlyph(Glyph) const;
 
-    FontMetrics& getFontMetrics() { return m_fontMetrics; }
-    const FontMetrics& getFontMetrics() const { return m_fontMetrics; }
-    float sizePerUnit() const { return platformData().size() / (getFontMetrics().unitsPerEm() ? getFontMetrics().unitsPerEm() : 1); }
-    float internalLeading() const { return getFontMetrics().floatHeight() - platformData().size(); }
+  float spaceWidth() const { return m_spaceWidth; }
+  void setSpaceWidth(float spaceWidth) { m_spaceWidth = spaceWidth; }
 
-    float maxCharWidth() const { return m_maxCharWidth; }
-    void setMaxCharWidth(float maxCharWidth) { m_maxCharWidth = maxCharWidth; }
+  Glyph spaceGlyph() const { return m_spaceGlyph; }
+  void setSpaceGlyph(Glyph spaceGlyph) { m_spaceGlyph = spaceGlyph; }
+  Glyph zeroGlyph() const { return m_zeroGlyph; }
+  void setZeroGlyph(Glyph zeroGlyph) { m_zeroGlyph = zeroGlyph; }
 
-    float avgCharWidth() const { return m_avgCharWidth; }
-    void setAvgCharWidth(float avgCharWidth) { m_avgCharWidth = avgCharWidth; }
+  const SimpleFontData* fontDataForCharacter(UChar32) const override;
 
-    FloatRect boundsForGlyph(Glyph) const;
-    FloatRect platformBoundsForGlyph(Glyph) const;
-    float widthForGlyph(Glyph) const;
-    float platformWidthForGlyph(Glyph) const;
+  Glyph glyphForCharacter(UChar32) const;
 
-    float spaceWidth() const { return m_spaceWidth; }
-    void setSpaceWidth(float spaceWidth) { m_spaceWidth = spaceWidth; }
+  bool isCustomFont() const override { return m_customFontData.get(); }
+  bool isLoading() const override {
+    return m_customFontData ? m_customFontData->isLoading() : false;
+  }
+  bool isLoadingFallback() const override {
+    return m_customFontData ? m_customFontData->isLoadingFallback() : false;
+  }
+  bool isSegmented() const override;
+  bool shouldSkipDrawing() const override {
+    return m_customFontData && m_customFontData->shouldSkipDrawing();
+  }
 
-    Glyph spaceGlyph() const { return m_spaceGlyph; }
-    void setSpaceGlyph(Glyph spaceGlyph) { m_spaceGlyph = spaceGlyph; }
-    Glyph zeroGlyph() const { return m_zeroGlyph; }
-    void setZeroGlyph(Glyph zeroGlyph) { m_zeroGlyph = zeroGlyph; }
+  const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
+  void setMissingGlyphData(const GlyphData& glyphData) {
+    m_missingGlyphData = glyphData;
+  }
 
-    const SimpleFontData* fontDataForCharacter(UChar32) const override;
+  bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
 
-    Glyph glyphForCharacter(UChar32) const;
+  CustomFontData* customFontData() const { return m_customFontData.get(); }
 
-    bool isCustomFont() const override { return m_customFontData.get(); }
-    bool isLoading() const override { return m_customFontData ? m_customFontData->isLoading() : false; }
-    bool isLoadingFallback() const override { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
-    bool isSegmented() const override;
-    bool shouldSkipDrawing() const override { return m_customFontData && m_customFontData->shouldSkipDrawing(); }
+  // Implemented by the platform.
+  virtual bool fillGlyphPage(GlyphPage* pageToFill,
+                             unsigned offset,
+                             unsigned length,
+                             UChar* buffer,
+                             unsigned bufferLength) const;
 
-    const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
-    void setMissingGlyphData(const GlyphData& glyphData) { m_missingGlyphData = glyphData; }
+ protected:
+  SimpleFontData(const FontPlatformData&,
+                 PassRefPtr<CustomFontData> customData,
+                 bool isTextOrientationFallback = false);
 
-    bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
+  SimpleFontData(PassRefPtr<CustomFontData> customData,
+                 float fontSize,
+                 bool syntheticBold,
+                 bool syntheticItalic);
 
-    CustomFontData* customFontData() const { return m_customFontData.get(); }
+ private:
+  void platformInit();
+  void platformGlyphInit();
 
-    // Implemented by the platform.
-    virtual bool fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const;
+  PassRefPtr<SimpleFontData> createScaledFontData(const FontDescription&,
+                                                  float scaleFactor) const;
 
-protected:
-    SimpleFontData(const FontPlatformData&, PassRefPtr<CustomFontData> customData, bool isTextOrientationFallback = false);
+  FontMetrics m_fontMetrics;
+  float m_maxCharWidth;
+  float m_avgCharWidth;
 
-    SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic);
+  FontPlatformData m_platformData;
+  SkPaint m_paint;
 
-private:
-    void platformInit();
-    void platformGlyphInit();
+  bool m_isTextOrientationFallback;
+  RefPtr<OpenTypeVerticalData> m_verticalData;
+  bool m_hasVerticalGlyphs;
 
-    PassRefPtr<SimpleFontData> createScaledFontData(const FontDescription&, float scaleFactor) const;
+  Glyph m_spaceGlyph;
+  float m_spaceWidth;
+  Glyph m_zeroGlyph;
 
-    FontMetrics m_fontMetrics;
-    float m_maxCharWidth;
-    float m_avgCharWidth;
+  GlyphData m_missingGlyphData;
 
-    FontPlatformData m_platformData;
-    SkPaint m_paint;
+  struct DerivedFontData {
+    USING_FAST_MALLOC(DerivedFontData);
+    WTF_MAKE_NONCOPYABLE(DerivedFontData);
 
-    bool m_isTextOrientationFallback;
-    RefPtr<OpenTypeVerticalData> m_verticalData;
-    bool m_hasVerticalGlyphs;
+   public:
+    static std::unique_ptr<DerivedFontData> create(bool forCustomFont);
+    ~DerivedFontData();
 
-    Glyph m_spaceGlyph;
-    float m_spaceWidth;
-    Glyph m_zeroGlyph;
+    bool forCustomFont;
+    RefPtr<SimpleFontData> smallCaps;
+    RefPtr<SimpleFontData> emphasisMark;
+    RefPtr<SimpleFontData> verticalRightOrientation;
+    RefPtr<SimpleFontData> uprightOrientation;
 
-    GlyphData m_missingGlyphData;
+   private:
+    DerivedFontData(bool custom) : forCustomFont(custom) {}
+  };
 
-    struct DerivedFontData {
-        USING_FAST_MALLOC(DerivedFontData);
-        WTF_MAKE_NONCOPYABLE(DerivedFontData);
-    public:
-        static std::unique_ptr<DerivedFontData> create(bool forCustomFont);
-        ~DerivedFontData();
+  mutable std::unique_ptr<DerivedFontData> m_derivedFontData;
 
-        bool forCustomFont;
-        RefPtr<SimpleFontData> smallCaps;
-        RefPtr<SimpleFontData> emphasisMark;
-        RefPtr<SimpleFontData> verticalRightOrientation;
-        RefPtr<SimpleFontData> uprightOrientation;
+  RefPtr<CustomFontData> m_customFontData;
 
-    private:
-        DerivedFontData(bool custom)
-            : forCustomFont(custom)
-        {
-        }
-    };
-
-    mutable std::unique_ptr<DerivedFontData> m_derivedFontData;
-
-    RefPtr<CustomFontData> m_customFontData;
-
-    // See discussion on crbug.com/631032 and Skiaissue
-    // https://bugs.chromium.org/p/skia/issues/detail?id=5328 :
-    // On Mac we're still using path based glyph metrics, and they seem to be
-    // too slow to be able to remove the caching layer we have here.
+// See discussion on crbug.com/631032 and Skiaissue
+// https://bugs.chromium.org/p/skia/issues/detail?id=5328 :
+// On Mac we're still using path based glyph metrics, and they seem to be
+// too slow to be able to remove the caching layer we have here.
 #if OS(MACOSX)
-    mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
-    mutable GlyphMetricsMap<float> m_glyphToWidthMap;
+  mutable std::unique_ptr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
+  mutable GlyphMetricsMap<float> m_glyphToWidthMap;
 #endif
 };
 
-
-ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const
-{
+ALWAYS_INLINE FloatRect SimpleFontData::boundsForGlyph(Glyph glyph) const {
 #if !OS(MACOSX)
-    return platformBoundsForGlyph(glyph);
+  return platformBoundsForGlyph(glyph);
 #else
-    FloatRect boundsResult;
-    if (m_glyphToBoundsMap) {
-        boundsResult = m_glyphToBoundsMap->metricsForGlyph(glyph);
-        if (boundsResult.width() != cGlyphSizeUnknown)
-            return boundsResult;
-    }
+  FloatRect boundsResult;
+  if (m_glyphToBoundsMap) {
+    boundsResult = m_glyphToBoundsMap->metricsForGlyph(glyph);
+    if (boundsResult.width() != cGlyphSizeUnknown)
+      return boundsResult;
+  }
 
-    boundsResult = platformBoundsForGlyph(glyph);
-    if (!m_glyphToBoundsMap)
-        m_glyphToBoundsMap = wrapUnique(new GlyphMetricsMap<FloatRect>);
-    m_glyphToBoundsMap->setMetricsForGlyph(glyph, boundsResult);
+  boundsResult = platformBoundsForGlyph(glyph);
+  if (!m_glyphToBoundsMap)
+    m_glyphToBoundsMap = wrapUnique(new GlyphMetricsMap<FloatRect>);
+  m_glyphToBoundsMap->setMetricsForGlyph(glyph, boundsResult);
 
-    return boundsResult;
+  return boundsResult;
 #endif
 }
 
-ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
-{
+ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const {
 #if !OS(MACOSX)
-    return platformWidthForGlyph(glyph);
+  return platformWidthForGlyph(glyph);
 #else
-    float width = m_glyphToWidthMap.metricsForGlyph(glyph);
-    if (width != cGlyphSizeUnknown)
-        return width;
-
-    width = platformWidthForGlyph(glyph);
-
-    m_glyphToWidthMap.setMetricsForGlyph(glyph, width);
+  float width = m_glyphToWidthMap.metricsForGlyph(glyph);
+  if (width != cGlyphSizeUnknown)
     return width;
+
+  width = platformWidthForGlyph(glyph);
+
+  m_glyphToWidthMap.setMetricsForGlyph(glyph, width);
+  return width;
 #endif
 }
 
 DEFINE_FONT_DATA_TYPE_CASTS(SimpleFontData, false);
 
-} // namespace blink
-#endif // SimpleFontData_h
+}  // namespace blink
+#endif  // SimpleFontData_h

@@ -13,22 +13,24 @@
 
 namespace blink {
 
-TEST(StyleElementTest, CreateSheetUsesCache)
-{
-    std::unique_ptr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    Document& document = dummyPageHolder->document();
+TEST(StyleElementTest, CreateSheetUsesCache) {
+  std::unique_ptr<DummyPageHolder> dummyPageHolder =
+      DummyPageHolder::create(IntSize(800, 600));
+  Document& document = dummyPageHolder->document();
 
-    document.documentElement()->setInnerHTML("<style id=style>a { top: 0; }</style>", ASSERT_NO_EXCEPTION);
+  document.documentElement()->setInnerHTML(
+      "<style id=style>a { top: 0; }</style>", ASSERT_NO_EXCEPTION);
 
-    HTMLStyleElement& styleElement = toHTMLStyleElement(*document.getElementById("style"));
-    StyleSheetContents* sheet = styleElement.sheet()->contents();
+  HTMLStyleElement& styleElement =
+      toHTMLStyleElement(*document.getElementById("style"));
+  StyleSheetContents* sheet = styleElement.sheet()->contents();
 
-    Comment* comment = document.createComment("hello!");
-    styleElement.appendChild(comment);
-    EXPECT_EQ(styleElement.sheet()->contents(), sheet);
+  Comment* comment = document.createComment("hello!");
+  styleElement.appendChild(comment);
+  EXPECT_EQ(styleElement.sheet()->contents(), sheet);
 
-    styleElement.removeChild(comment);
-    EXPECT_EQ(styleElement.sheet()->contents(), sheet);
+  styleElement.removeChild(comment);
+  EXPECT_EQ(styleElement.sheet()->contents(), sheet);
 }
 
-} // namespace blink
+}  // namespace blink

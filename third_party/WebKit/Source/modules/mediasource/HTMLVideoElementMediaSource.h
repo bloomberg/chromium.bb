@@ -40,11 +40,12 @@ class HTMLVideoElement;
 class VideoPlaybackQuality;
 
 class HTMLVideoElementMediaSource {
-    STATIC_ONLY(HTMLVideoElementMediaSource);
-public:
-    static VideoPlaybackQuality* getVideoPlaybackQuality(HTMLVideoElement&);
+  STATIC_ONLY(HTMLVideoElementMediaSource);
+
+ public:
+  static VideoPlaybackQuality* getVideoPlaybackQuality(HTMLVideoElement&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

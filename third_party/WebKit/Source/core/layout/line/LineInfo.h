@@ -30,38 +30,42 @@
 namespace blink {
 
 class LineInfo {
-    STACK_ALLOCATED();
-public:
-    LineInfo()
-        : m_isFirstLine(true)
-        , m_isLastLine(false)
-        , m_isEmpty(true)
-        , m_previousLineBrokeCleanly(true)
-        , m_runsFromLeadingWhitespace(0)
-    { }
+  STACK_ALLOCATED();
 
-    bool isFirstLine() const { return m_isFirstLine; }
-    bool isLastLine() const { return m_isLastLine; }
-    bool isEmpty() const { return m_isEmpty; }
-    bool previousLineBrokeCleanly() const { return m_previousLineBrokeCleanly; }
-    unsigned runsFromLeadingWhitespace() const { return m_runsFromLeadingWhitespace; }
-    void resetRunsFromLeadingWhitespace() { m_runsFromLeadingWhitespace = 0; }
-    void incrementRunsFromLeadingWhitespace() { m_runsFromLeadingWhitespace++; }
+ public:
+  LineInfo()
+      : m_isFirstLine(true),
+        m_isLastLine(false),
+        m_isEmpty(true),
+        m_previousLineBrokeCleanly(true),
+        m_runsFromLeadingWhitespace(0) {}
 
-    void setFirstLine(bool firstLine) { m_isFirstLine = firstLine; }
-    void setLastLine(bool lastLine) { m_isLastLine = lastLine; }
-    void setEmpty(bool empty) { m_isEmpty = empty; }
+  bool isFirstLine() const { return m_isFirstLine; }
+  bool isLastLine() const { return m_isLastLine; }
+  bool isEmpty() const { return m_isEmpty; }
+  bool previousLineBrokeCleanly() const { return m_previousLineBrokeCleanly; }
+  unsigned runsFromLeadingWhitespace() const {
+    return m_runsFromLeadingWhitespace;
+  }
+  void resetRunsFromLeadingWhitespace() { m_runsFromLeadingWhitespace = 0; }
+  void incrementRunsFromLeadingWhitespace() { m_runsFromLeadingWhitespace++; }
 
-    void setPreviousLineBrokeCleanly(bool previousLineBrokeCleanly) { m_previousLineBrokeCleanly = previousLineBrokeCleanly; }
+  void setFirstLine(bool firstLine) { m_isFirstLine = firstLine; }
+  void setLastLine(bool lastLine) { m_isLastLine = lastLine; }
+  void setEmpty(bool empty) { m_isEmpty = empty; }
 
-private:
-    bool m_isFirstLine;
-    bool m_isLastLine;
-    bool m_isEmpty;
-    bool m_previousLineBrokeCleanly;
-    unsigned m_runsFromLeadingWhitespace;
+  void setPreviousLineBrokeCleanly(bool previousLineBrokeCleanly) {
+    m_previousLineBrokeCleanly = previousLineBrokeCleanly;
+  }
+
+ private:
+  bool m_isFirstLine;
+  bool m_isLastLine;
+  bool m_isEmpty;
+  bool m_previousLineBrokeCleanly;
+  unsigned m_runsFromLeadingWhitespace;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineInfo_h
+#endif  // LineInfo_h

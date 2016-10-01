@@ -13,53 +13,52 @@ namespace blink {
 class PaintLayer;
 
 class CompositingInputsUpdater {
-    STACK_ALLOCATED();
-public:
-    explicit CompositingInputsUpdater(PaintLayer* rootLayer);
-    ~CompositingInputsUpdater();
+  STACK_ALLOCATED();
 
-    void update();
+ public:
+  explicit CompositingInputsUpdater(PaintLayer* rootLayer);
+  ~CompositingInputsUpdater();
+
+  void update();
 
 #if ENABLE(ASSERT)
-    static void assertNeedsCompositingInputsUpdateBitsCleared(PaintLayer*);
+  static void assertNeedsCompositingInputsUpdateBitsCleared(PaintLayer*);
 #endif
 
-private:
-    enum UpdateType {
-        DoNotForceUpdate,
-        ForceUpdate,
-    };
+ private:
+  enum UpdateType {
+    DoNotForceUpdate,
+    ForceUpdate,
+  };
 
-    struct AncestorInfo {
-        AncestorInfo()
-            : ancestorStackingContext(nullptr)
-            , enclosingCompositedLayer(nullptr)
-            , lastOverflowClipLayer(nullptr)
-            , lastScrollingAncestor(nullptr)
-            , hasAncestorWithClipRelatedProperty(false)
-            , hasAncestorWithClipPath(false)
-        {
-        }
+  struct AncestorInfo {
+    AncestorInfo()
+        : ancestorStackingContext(nullptr),
+          enclosingCompositedLayer(nullptr),
+          lastOverflowClipLayer(nullptr),
+          lastScrollingAncestor(nullptr),
+          hasAncestorWithClipRelatedProperty(false),
+          hasAncestorWithClipPath(false) {}
 
-        PaintLayer* ancestorStackingContext;
-        PaintLayer* enclosingCompositedLayer;
-        PaintLayer* lastOverflowClipLayer;
-        // Notice that lastScrollingAncestor isn't the same thing as
-        // ancestorScrollingLayer. The former is just the nearest scrolling
-        // along the PaintLayer::parent() chain. The latter is the layer that
-        // actually controls the scrolling of this layer, which we find on the
-        // containing block chain.
-        PaintLayer* lastScrollingAncestor;
-        bool hasAncestorWithClipRelatedProperty;
-        bool hasAncestorWithClipPath;
-    };
+    PaintLayer* ancestorStackingContext;
+    PaintLayer* enclosingCompositedLayer;
+    PaintLayer* lastOverflowClipLayer;
+    // Notice that lastScrollingAncestor isn't the same thing as
+    // ancestorScrollingLayer. The former is just the nearest scrolling
+    // along the PaintLayer::parent() chain. The latter is the layer that
+    // actually controls the scrolling of this layer, which we find on the
+    // containing block chain.
+    PaintLayer* lastScrollingAncestor;
+    bool hasAncestorWithClipRelatedProperty;
+    bool hasAncestorWithClipPath;
+  };
 
-    void updateRecursive(PaintLayer*, UpdateType, AncestorInfo);
+  void updateRecursive(PaintLayer*, UpdateType, AncestorInfo);
 
-    LayoutGeometryMap m_geometryMap;
-    PaintLayer* m_rootLayer;
+  LayoutGeometryMap m_geometryMap;
+  PaintLayer* m_rootLayer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositingInputsUpdater_h
+#endif  // CompositingInputsUpdater_h

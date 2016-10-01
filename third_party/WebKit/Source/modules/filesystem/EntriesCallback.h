@@ -39,12 +39,12 @@ class Entry;
 typedef HeapVector<Member<Entry>> EntryHeapVector;
 
 class EntriesCallback : public GarbageCollectedFinalized<EntriesCallback> {
-public:
-    virtual ~EntriesCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(const EntryHeapVector&) = 0;
+ public:
+  virtual ~EntriesCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(const EntryHeapVector&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EntriesCallback_h
+#endif  // EntriesCallback_h

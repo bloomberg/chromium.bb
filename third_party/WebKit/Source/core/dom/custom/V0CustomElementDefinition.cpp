@@ -32,20 +32,19 @@
 
 namespace blink {
 
-V0CustomElementDefinition* V0CustomElementDefinition::create(const V0CustomElementDescriptor& descriptor, V0CustomElementLifecycleCallbacks* callbacks)
-{
-    return new V0CustomElementDefinition(descriptor, callbacks);
+V0CustomElementDefinition* V0CustomElementDefinition::create(
+    const V0CustomElementDescriptor& descriptor,
+    V0CustomElementLifecycleCallbacks* callbacks) {
+  return new V0CustomElementDefinition(descriptor, callbacks);
 }
 
-V0CustomElementDefinition::V0CustomElementDefinition(const V0CustomElementDescriptor& descriptor, V0CustomElementLifecycleCallbacks* callbacks)
-    : m_descriptor(descriptor)
-    , m_callbacks(callbacks)
-{
+V0CustomElementDefinition::V0CustomElementDefinition(
+    const V0CustomElementDescriptor& descriptor,
+    V0CustomElementLifecycleCallbacks* callbacks)
+    : m_descriptor(descriptor), m_callbacks(callbacks) {}
+
+DEFINE_TRACE(V0CustomElementDefinition) {
+  visitor->trace(m_callbacks);
 }
 
-DEFINE_TRACE(V0CustomElementDefinition)
-{
-    visitor->trace(m_callbacks);
-}
-
-} // namespace blink
+}  // namespace blink

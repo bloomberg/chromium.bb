@@ -38,30 +38,32 @@ namespace blink {
 class SVGPointTearOff;
 
 class SVGGeometryElement : public SVGGraphicsElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    virtual Path asPath() const = 0;
-    bool isPointInFill(SVGPointTearOff*) const;
-    bool isPointInStroke(SVGPointTearOff*) const;
+  DEFINE_WRAPPERTYPEINFO();
 
-    void toClipPath(Path&) const;
+ public:
+  virtual Path asPath() const = 0;
+  bool isPointInFill(SVGPointTearOff*) const;
+  bool isPointInStroke(SVGPointTearOff*) const;
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void toClipPath(Path&) const;
 
-protected:
-    SVGGeometryElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-private:
-    bool isSVGGeometryElement() const final { return true; }
+ protected:
+  SVGGeometryElement(const QualifiedName&,
+                     Document&,
+                     ConstructionType = CreateSVGElement);
+
+ private:
+  bool isSVGGeometryElement() const final { return true; }
 };
 
-inline bool isSVGGeometryElement(const SVGElement& element)
-{
-    return element.isSVGGeometryElement();
+inline bool isSVGGeometryElement(const SVGElement& element) {
+  return element.isSVGGeometryElement();
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGeometryElement);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGGeometryElement_h
+#endif  // SVGGeometryElement_h

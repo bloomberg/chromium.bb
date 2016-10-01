@@ -34,59 +34,61 @@ namespace blink {
 class HitTestLocation;
 
 class ClipRect {
-    USING_FAST_MALLOC(ClipRect);
-public:
-    ClipRect()
-        : m_hasRadius(false)
-        , m_isClippedByClipCss(false)
-    { }
+  USING_FAST_MALLOC(ClipRect);
 
-    ClipRect(const LayoutRect& rect)
-        : m_rect(rect)
-        , m_hasRadius(false)
-        , m_isClippedByClipCss(false)
-    { }
+ public:
+  ClipRect() : m_hasRadius(false), m_isClippedByClipCss(false) {}
 
-    const LayoutRect& rect() const { return m_rect; }
+  ClipRect(const LayoutRect& rect)
+      : m_rect(rect), m_hasRadius(false), m_isClippedByClipCss(false) {}
 
-    bool hasRadius() const { return m_hasRadius; }
-    void setHasRadius(bool hasRadius) { m_hasRadius = hasRadius; }
+  const LayoutRect& rect() const { return m_rect; }
 
-    bool operator==(const ClipRect& other) const { return rect() == other.rect() && hasRadius() == other.hasRadius(); }
-    bool operator!=(const ClipRect& other) const { return rect() != other.rect() || hasRadius() != other.hasRadius(); }
-    bool operator!=(const LayoutRect& otherRect) const { return rect() != otherRect; }
+  bool hasRadius() const { return m_hasRadius; }
+  void setHasRadius(bool hasRadius) { m_hasRadius = hasRadius; }
 
-    void intersect(const LayoutRect& other) { m_rect.intersect(other); }
-    void intersect(const ClipRect& other)
-    {
-        m_rect.intersect(other.rect());
-        if (other.hasRadius())
-            m_hasRadius = true;
-    }
-    void move(const LayoutSize& size) { m_rect.move(size); }
-    void move(const IntSize& size) { m_rect.move(size); }
-    void moveBy(const LayoutPoint& point) { m_rect.moveBy(point); }
+  bool operator==(const ClipRect& other) const {
+    return rect() == other.rect() && hasRadius() == other.hasRadius();
+  }
+  bool operator!=(const ClipRect& other) const {
+    return rect() != other.rect() || hasRadius() != other.hasRadius();
+  }
+  bool operator!=(const LayoutRect& otherRect) const {
+    return rect() != otherRect;
+  }
 
-    bool isEmpty() const { return m_rect.isEmpty(); }
-    bool intersects(const HitTestLocation&) const;
+  void intersect(const LayoutRect& other) { m_rect.intersect(other); }
+  void intersect(const ClipRect& other) {
+    m_rect.intersect(other.rect());
+    if (other.hasRadius())
+      m_hasRadius = true;
+  }
+  void move(const LayoutSize& size) { m_rect.move(size); }
+  void move(const IntSize& size) { m_rect.move(size); }
+  void moveBy(const LayoutPoint& point) { m_rect.moveBy(point); }
 
-    // These have no semantic use. They are used for use-counting.
-    bool isClippedByClipCss() const { return m_isClippedByClipCss; }
-    ClipRect& setIsClippedByClipCss() { m_isClippedByClipCss = true; return *this; }
+  bool isEmpty() const { return m_rect.isEmpty(); }
+  bool intersects(const HitTestLocation&) const;
 
-private:
-    LayoutRect m_rect;
-    bool m_hasRadius;
-    bool m_isClippedByClipCss;
+  // These have no semantic use. They are used for use-counting.
+  bool isClippedByClipCss() const { return m_isClippedByClipCss; }
+  ClipRect& setIsClippedByClipCss() {
+    m_isClippedByClipCss = true;
+    return *this;
+  }
+
+ private:
+  LayoutRect m_rect;
+  bool m_hasRadius;
+  bool m_isClippedByClipCss;
 };
 
-inline ClipRect intersection(const ClipRect& a, const ClipRect& b)
-{
-    ClipRect c = a;
-    c.intersect(b);
-    return c;
+inline ClipRect intersection(const ClipRect& a, const ClipRect& b) {
+  ClipRect c = a;
+  c.intersect(b);
+  return c;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClipRect_h
+#endif  // ClipRect_h

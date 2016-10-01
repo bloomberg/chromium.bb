@@ -42,47 +42,53 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSSelectorWatch final : public GarbageCollectedFinalized<CSSSelectorWatch>, public Supplement<Document> {
-    USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
-public:
-    virtual ~CSSSelectorWatch() { }
+class CORE_EXPORT CSSSelectorWatch final
+    : public GarbageCollectedFinalized<CSSSelectorWatch>,
+      public Supplement<Document> {
+  USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
 
-    static CSSSelectorWatch& from(Document&);
-    static CSSSelectorWatch* fromIfExists(Document&);
+ public:
+  virtual ~CSSSelectorWatch() {}
 
-    void watchCSSSelectors(const Vector<String>& selectors);
-    const HeapVector<Member<StyleRule>>& watchedCallbackSelectors() const { return m_watchedCallbackSelectors; }
+  static CSSSelectorWatch& from(Document&);
+  static CSSSelectorWatch* fromIfExists(Document&);
 
-    void updateSelectorMatches(const Vector<String>& removedSelectors, const Vector<String>& addedSelectors);
+  void watchCSSSelectors(const Vector<String>& selectors);
+  const HeapVector<Member<StyleRule>>& watchedCallbackSelectors() const {
+    return m_watchedCallbackSelectors;
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  void updateSelectorMatches(const Vector<String>& removedSelectors,
+                             const Vector<String>& addedSelectors);
 
-private:
-    explicit CSSSelectorWatch(Document&);
-    void callbackSelectorChangeTimerFired(TimerBase*);
-    Document& document() const { return *m_document; }
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<Document> m_document;
+ private:
+  explicit CSSSelectorWatch(Document&);
+  void callbackSelectorChangeTimerFired(TimerBase*);
+  Document& document() const { return *m_document; }
 
-    HeapVector<Member<StyleRule>> m_watchedCallbackSelectors;
+  Member<Document> m_document;
 
-    // Maps a CSS selector string with a -webkit-callback property to the number
-    // of matching ComputedStyle objects in this document.
-    HashCountedSet<String> m_matchingCallbackSelectors;
-    // Selectors are relative to m_matchingCallbackSelectors's contents at
-    // the previous call to selectorMatchChanged.
-    HashSet<String> m_addedSelectors;
-    HashSet<String> m_removedSelectors;
+  HeapVector<Member<StyleRule>> m_watchedCallbackSelectors;
 
-    Timer<CSSSelectorWatch> m_callbackSelectorChangeTimer;
+  // Maps a CSS selector string with a -webkit-callback property to the number
+  // of matching ComputedStyle objects in this document.
+  HashCountedSet<String> m_matchingCallbackSelectors;
+  // Selectors are relative to m_matchingCallbackSelectors's contents at
+  // the previous call to selectorMatchChanged.
+  HashSet<String> m_addedSelectors;
+  HashSet<String> m_removedSelectors;
 
-    // When an element is reparented, the new location's style is evaluated after the expriation of the relayout timer.
-    // We don't want to send redundant callbacks to the embedder, so this counter lets us wait another time around the event loop.
-    int m_timerExpirations;
+  Timer<CSSSelectorWatch> m_callbackSelectorChangeTimer;
 
-    friend class CSSSelectorWatchTest;
+  // When an element is reparented, the new location's style is evaluated after the expriation of the relayout timer.
+  // We don't want to send redundant callbacks to the embedder, so this counter lets us wait another time around the event loop.
+  int m_timerExpirations;
+
+  friend class CSSSelectorWatchTest;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSSelectorWatch_h
+#endif  // CSSSelectorWatch_h

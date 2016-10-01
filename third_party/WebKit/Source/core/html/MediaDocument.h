@@ -31,20 +31,20 @@
 namespace blink {
 
 class MediaDocument final : public HTMLDocument {
-public:
-    static MediaDocument* create(const DocumentInit& initializer = DocumentInit())
-    {
-        return new MediaDocument(initializer);
-    }
+ public:
+  static MediaDocument* create(
+      const DocumentInit& initializer = DocumentInit()) {
+    return new MediaDocument(initializer);
+  }
 
-private:
-    MediaDocument(const DocumentInit&);
+ private:
+  MediaDocument(const DocumentInit&);
 
-    DocumentParser* createParser() override;
+  DocumentParser* createParser() override;
 
-    void defaultEventHandler(Event*) override;
+  void defaultEventHandler(Event*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -10,16 +10,23 @@
 
 namespace blink {
 
-void OffscreenCanvasModules::getContext(ScriptState* scriptState, OffscreenCanvas& offscreenCanvas, const String& id, const CanvasContextCreationAttributes& attributes, ExceptionState& exceptionState, OffscreenRenderingContext& result)
-{
-    if (offscreenCanvas.isNeutered()) {
-        exceptionState.throwDOMException(InvalidStateError, "OffscreenCanvas object is detached");
-        return;
-    }
+void OffscreenCanvasModules::getContext(
+    ScriptState* scriptState,
+    OffscreenCanvas& offscreenCanvas,
+    const String& id,
+    const CanvasContextCreationAttributes& attributes,
+    ExceptionState& exceptionState,
+    OffscreenRenderingContext& result) {
+  if (offscreenCanvas.isNeutered()) {
+    exceptionState.throwDOMException(InvalidStateError,
+                                     "OffscreenCanvas object is detached");
+    return;
+  }
 
-    CanvasRenderingContext* context = offscreenCanvas.getCanvasRenderingContext(scriptState, id, attributes);
-    if (context)
-        context->setOffscreenCanvasGetContextResult(result);
+  CanvasRenderingContext* context =
+      offscreenCanvas.getCanvasRenderingContext(scriptState, id, attributes);
+  if (context)
+    context->setOffscreenCanvasGetContextResult(result);
 }
 
-} // namespace blink
+}  // namespace blink

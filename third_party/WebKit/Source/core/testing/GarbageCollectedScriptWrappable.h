@@ -12,19 +12,22 @@
 
 namespace blink {
 
-class GarbageCollectedScriptWrappable : public GarbageCollectedFinalized<GarbageCollectedScriptWrappable>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    GarbageCollectedScriptWrappable(const String&);
-    virtual ~GarbageCollectedScriptWrappable();
+class GarbageCollectedScriptWrappable
+    : public GarbageCollectedFinalized<GarbageCollectedScriptWrappable>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    const String& toString() const { return m_string; }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+ public:
+  GarbageCollectedScriptWrappable(const String&);
+  virtual ~GarbageCollectedScriptWrappable();
 
-private:
-    String m_string;
+  const String& toString() const { return m_string; }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ private:
+  String m_string;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GarbageCollectedScriptWrappable_h
+#endif  // GarbageCollectedScriptWrappable_h

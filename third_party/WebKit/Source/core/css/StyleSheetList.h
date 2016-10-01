@@ -33,29 +33,35 @@ namespace blink {
 class HTMLStyleElement;
 class StyleSheet;
 
-class StyleSheetList final : public GarbageCollected<StyleSheetList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static StyleSheetList* create(TreeScope* treeScope) { return new StyleSheetList(treeScope); }
+class StyleSheetList final : public GarbageCollected<StyleSheetList>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned length();
-    StyleSheet* item(unsigned index);
+ public:
+  static StyleSheetList* create(TreeScope* treeScope) {
+    return new StyleSheetList(treeScope);
+  }
 
-    HTMLStyleElement* getNamedItem(const AtomicString&) const;
+  unsigned length();
+  StyleSheet* item(unsigned index);
 
-    Document* document() const { return m_treeScope ? &m_treeScope->document() : nullptr; }
+  HTMLStyleElement* getNamedItem(const AtomicString&) const;
 
-    CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
+  Document* document() const {
+    return m_treeScope ? &m_treeScope->document() : nullptr;
+  }
 
-    DECLARE_TRACE();
+  CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
 
-private:
-    explicit StyleSheetList(TreeScope*);
-    const HeapVector<Member<StyleSheet>>& styleSheets() const;
+  DECLARE_TRACE();
 
-    Member<TreeScope> m_treeScope;
+ private:
+  explicit StyleSheetList(TreeScope*);
+  const HeapVector<Member<StyleSheet>>& styleSheets() const;
+
+  Member<TreeScope> m_treeScope;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleSheetList_h
+#endif  // StyleSheetList_h

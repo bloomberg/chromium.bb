@@ -13,66 +13,54 @@
 namespace blink {
 
 DeviceLightController::DeviceLightController(Document& document)
-    : DeviceSingleWindowEventController(document)
-{
+    : DeviceSingleWindowEventController(document) {}
+
+DeviceLightController::~DeviceLightController() {}
+
+const char* DeviceLightController::supplementName() {
+  return "DeviceLightController";
 }
 
-DeviceLightController::~DeviceLightController()
-{
+DeviceLightController& DeviceLightController::from(Document& document) {
+  DeviceLightController* controller = static_cast<DeviceLightController*>(
+      Supplement<Document>::from(document, supplementName()));
+  if (!controller) {
+    controller = new DeviceLightController(document);
+    Supplement<Document>::provideTo(document, supplementName(), controller);
+  }
+  return *controller;
 }
 
-const char* DeviceLightController::supplementName()
-{
-    return "DeviceLightController";
+bool DeviceLightController::hasLastData() {
+  return DeviceLightDispatcher::instance().latestDeviceLightData() >= 0;
 }
 
-DeviceLightController& DeviceLightController::from(Document& document)
-{
-    DeviceLightController* controller = static_cast<DeviceLightController*>(Supplement<Document>::from(document, supplementName()));
-    if (!controller) {
-        controller = new DeviceLightController(document);
-        Supplement<Document>::provideTo(document, supplementName(), controller);
-    }
-    return *controller;
+void DeviceLightController::registerWithDispatcher() {
+  DeviceLightDispatcher::instance().addController(this);
 }
 
-bool DeviceLightController::hasLastData()
-{
-    return DeviceLightDispatcher::instance().latestDeviceLightData() >= 0;
+void DeviceLightController::unregisterWithDispatcher() {
+  DeviceLightDispatcher::instance().removeController(this);
 }
 
-void DeviceLightController::registerWithDispatcher()
-{
-    DeviceLightDispatcher::instance().addController(this);
+Event* DeviceLightController::lastEvent() const {
+  return DeviceLightEvent::create(
+      EventTypeNames::devicelight,
+      DeviceLightDispatcher::instance().latestDeviceLightData());
 }
 
-void DeviceLightController::unregisterWithDispatcher()
-{
-    DeviceLightDispatcher::instance().removeController(this);
+bool DeviceLightController::isNullEvent(Event* event) const {
+  DeviceLightEvent* lightEvent = toDeviceLightEvent(event);
+  return lightEvent->value() == std::numeric_limits<double>::infinity();
 }
 
-Event* DeviceLightController::lastEvent() const
-{
-    return DeviceLightEvent::create(EventTypeNames::devicelight,
-        DeviceLightDispatcher::instance().latestDeviceLightData());
+const AtomicString& DeviceLightController::eventTypeName() const {
+  return EventTypeNames::devicelight;
 }
 
-bool DeviceLightController::isNullEvent(Event* event) const
-{
-    DeviceLightEvent* lightEvent = toDeviceLightEvent(event);
-    return lightEvent->value() == std::numeric_limits<double>::infinity();
+DEFINE_TRACE(DeviceLightController) {
+  DeviceSingleWindowEventController::trace(visitor);
+  Supplement<Document>::trace(visitor);
 }
 
-const AtomicString& DeviceLightController::eventTypeName() const
-{
-    return EventTypeNames::devicelight;
-}
-
-DEFINE_TRACE(DeviceLightController)
-{
-    DeviceSingleWindowEventController::trace(visitor);
-    Supplement<Document>::trace(visitor);
-}
-
-
-} // namespace blink
+}  // namespace blink

@@ -29,51 +29,125 @@
 namespace blink {
 
 enum ControlState {
-    HoverControlState = 1,
-    PressedControlState = 1 << 1,
-    FocusControlState = 1 << 2,
-    EnabledControlState = 1 << 3,
-    CheckedControlState = 1 << 4,
-    ReadOnlyControlState = 1 << 5,
-    WindowInactiveControlState = 1 << 7,
-    IndeterminateControlState = 1 << 8,
-    SpinUpControlState = 1 << 9, // Sub-state for HoverControlState and PressedControlState.
-    AllControlStates = 0xffffffff
+  HoverControlState = 1,
+  PressedControlState = 1 << 1,
+  FocusControlState = 1 << 2,
+  EnabledControlState = 1 << 3,
+  CheckedControlState = 1 << 4,
+  ReadOnlyControlState = 1 << 5,
+  WindowInactiveControlState = 1 << 7,
+  IndeterminateControlState = 1 << 8,
+  SpinUpControlState =
+      1 << 9,  // Sub-state for HoverControlState and PressedControlState.
+  AllControlStates = 0xffffffff
 };
 
 typedef unsigned ControlStates;
 
 // Must follow CSSValueKeywords.in order
 enum ControlPart {
-    NoControlPart, CheckboxPart, RadioPart, PushButtonPart, SquareButtonPart, ButtonPart,
-    ButtonBevelPart, InnerSpinButtonPart, ListboxPart, ListItemPart,
-    MediaEnterFullscreenButtonPart, MediaExitFullscreenButtonPart, MediaFullscreenVolumeSliderPart, MediaFullscreenVolumeSliderThumbPart, MediaMuteButtonPart, MediaPlayButtonPart,
-    MediaOverlayPlayButtonPart, MediaToggleClosedCaptionsButtonPart,
-    MediaSliderPart, MediaSliderThumbPart, MediaVolumeSliderContainerPart, MediaVolumeSliderPart, MediaVolumeSliderThumbPart,
-    MediaControlsBackgroundPart, MediaControlsFullscreenBackgroundPart, MediaCurrentTimePart, MediaTimeRemainingPart, MediaCastOffButtonPart,
-    MediaOverlayCastOffButtonPart, MediaTrackSelectionCheckmarkPart, MediaClosedCaptionsIconPart, MediaSubtitlesIconPart, MediaOverflowMenuButtonPart, MediaDownloadIconPart,
-    MenulistPart, MenulistButtonPart, MenulistTextPart, MenulistTextFieldPart, MeterPart, ProgressBarPart, ProgressBarValuePart,
-    SliderHorizontalPart, SliderVerticalPart, SliderThumbHorizontalPart,
-    SliderThumbVerticalPart, CaretPart, SearchFieldPart,
-    SearchFieldCancelButtonPart, TextFieldPart,
-    TextAreaPart, CapsLockIndicatorPart
+  NoControlPart,
+  CheckboxPart,
+  RadioPart,
+  PushButtonPart,
+  SquareButtonPart,
+  ButtonPart,
+  ButtonBevelPart,
+  InnerSpinButtonPart,
+  ListboxPart,
+  ListItemPart,
+  MediaEnterFullscreenButtonPart,
+  MediaExitFullscreenButtonPart,
+  MediaFullscreenVolumeSliderPart,
+  MediaFullscreenVolumeSliderThumbPart,
+  MediaMuteButtonPart,
+  MediaPlayButtonPart,
+  MediaOverlayPlayButtonPart,
+  MediaToggleClosedCaptionsButtonPart,
+  MediaSliderPart,
+  MediaSliderThumbPart,
+  MediaVolumeSliderContainerPart,
+  MediaVolumeSliderPart,
+  MediaVolumeSliderThumbPart,
+  MediaControlsBackgroundPart,
+  MediaControlsFullscreenBackgroundPart,
+  MediaCurrentTimePart,
+  MediaTimeRemainingPart,
+  MediaCastOffButtonPart,
+  MediaOverlayCastOffButtonPart,
+  MediaTrackSelectionCheckmarkPart,
+  MediaClosedCaptionsIconPart,
+  MediaSubtitlesIconPart,
+  MediaOverflowMenuButtonPart,
+  MediaDownloadIconPart,
+  MenulistPart,
+  MenulistButtonPart,
+  MenulistTextPart,
+  MenulistTextFieldPart,
+  MeterPart,
+  ProgressBarPart,
+  ProgressBarValuePart,
+  SliderHorizontalPart,
+  SliderVerticalPart,
+  SliderThumbHorizontalPart,
+  SliderThumbVerticalPart,
+  CaretPart,
+  SearchFieldPart,
+  SearchFieldCancelButtonPart,
+  TextFieldPart,
+  TextAreaPart,
+  CapsLockIndicatorPart
 };
 
-enum SelectionPart {
-    SelectionBackground, SelectionForeground
-};
+enum SelectionPart { SelectionBackground, SelectionForeground };
 
 enum ThemeFont {
-    CaptionFont, IconFont, MenuFont, MessageBoxFont, SmallCaptionFont, StatusBarFont, MiniControlFont, SmallControlFont, ControlFont
+  CaptionFont,
+  IconFont,
+  MenuFont,
+  MessageBoxFont,
+  SmallCaptionFont,
+  StatusBarFont,
+  MiniControlFont,
+  SmallControlFont,
+  ControlFont
 };
 
 enum ThemeColor {
-    ActiveBorderColor, ActiveCaptionColor, AppWorkspaceColor, BackgroundColor, ButtonFaceColor, ButtonHighlightColor, ButtonShadowColor,
-    ButtonTextColor, CaptionTextColor, GrayTextColor, HighlightColor, HighlightTextColor, InactiveBorderColor, InactiveCaptionColor,
-    InactiveCaptionTextColor, InfoBackgroundColor, InfoTextColor, MatchColor, MenuTextColor, ScrollbarColor, ThreeDDarkDhasowColor,
-    ThreeDFaceColor, ThreeDHighlightColor, ThreeDLightShadowColor, ThreeDShadowCLor, WindowColor, WindowFrameColor, WindowTextColor,
-    FocusRingColor, ActiveListBoxSelection, ActiveListBoxSelectionText, InactiveListBoxSelection, InactiveListBoxSelectionText
+  ActiveBorderColor,
+  ActiveCaptionColor,
+  AppWorkspaceColor,
+  BackgroundColor,
+  ButtonFaceColor,
+  ButtonHighlightColor,
+  ButtonShadowColor,
+  ButtonTextColor,
+  CaptionTextColor,
+  GrayTextColor,
+  HighlightColor,
+  HighlightTextColor,
+  InactiveBorderColor,
+  InactiveCaptionColor,
+  InactiveCaptionTextColor,
+  InfoBackgroundColor,
+  InfoTextColor,
+  MatchColor,
+  MenuTextColor,
+  ScrollbarColor,
+  ThreeDDarkDhasowColor,
+  ThreeDFaceColor,
+  ThreeDHighlightColor,
+  ThreeDLightShadowColor,
+  ThreeDShadowCLor,
+  WindowColor,
+  WindowFrameColor,
+  WindowTextColor,
+  FocusRingColor,
+  ActiveListBoxSelection,
+  ActiveListBoxSelectionText,
+  InactiveListBoxSelection,
+  InactiveListBoxSelectionText
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

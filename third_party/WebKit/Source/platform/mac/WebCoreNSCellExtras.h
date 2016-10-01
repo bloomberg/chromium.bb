@@ -26,5 +26,5 @@
 #import <AppKit/AppKit.h>
 
 @interface NSCell (BlinkFocusRingDrawing)
-- (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
+- (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 @end

@@ -39,31 +39,33 @@ class WebInputElement;
 class WebKeyboardEvent;
 class WebNode;
 
-template <typename T> class WebVector;
+template <typename T>
+class WebVector;
 
 class WebAutofillClient {
-public:
-    // These methods are called when the users edits a text-field.
-    virtual void textFieldDidEndEditing(const WebInputElement&) { }
-    virtual void textFieldDidChange(const WebFormControlElement&) { }
-    virtual void textFieldDidReceiveKeyDown(const WebInputElement&, const WebKeyboardEvent&) { }
-    // This is called when a datalist indicator is clicked.
-    virtual void openTextDataListChooser(const WebInputElement&) { }
-    // This is called when the datalist for an input has changed.
-    virtual void dataListOptionsChanged(const WebInputElement&) { }
-    // Called the first time the user interacts with the page after a load.
-    virtual void firstUserGestureObserved() { }
+ public:
+  // These methods are called when the users edits a text-field.
+  virtual void textFieldDidEndEditing(const WebInputElement&) {}
+  virtual void textFieldDidChange(const WebFormControlElement&) {}
+  virtual void textFieldDidReceiveKeyDown(const WebInputElement&,
+                                          const WebKeyboardEvent&) {}
+  // This is called when a datalist indicator is clicked.
+  virtual void openTextDataListChooser(const WebInputElement&) {}
+  // This is called when the datalist for an input has changed.
+  virtual void dataListOptionsChanged(const WebInputElement&) {}
+  // Called the first time the user interacts with the page after a load.
+  virtual void firstUserGestureObserved() {}
 
-    // Informs the client whether or not any subsequent text changes should be ignored.
-    virtual void setIgnoreTextChanges(bool ignore) { }
+  // Informs the client whether or not any subsequent text changes should be ignored.
+  virtual void setIgnoreTextChanges(bool ignore) {}
 
-    virtual void didAssociateFormControlsDynamically() { }
-    virtual void ajaxSucceeded() { }
+  virtual void didAssociateFormControlsDynamically() {}
+  virtual void ajaxSucceeded() {}
 
-protected:
-    virtual ~WebAutofillClient() { }
+ protected:
+  virtual ~WebAutofillClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

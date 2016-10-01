@@ -10,35 +10,36 @@
 
 namespace blink {
 
-void FloatClipDisplayItem::replay(GraphicsContext& context) const
-{
-    context.save();
-    context.clip(m_clipRect);
+void FloatClipDisplayItem::replay(GraphicsContext& context) const {
+  context.save();
+  context.clip(m_clipRect);
 }
 
-void FloatClipDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
-{
-    list->appendFloatClipItem(m_clipRect);
+void FloatClipDisplayItem::appendToWebDisplayItemList(
+    const IntRect& visualRect,
+    WebDisplayItemList* list) const {
+  list->appendFloatClipItem(m_clipRect);
 }
 
-void EndFloatClipDisplayItem::replay(GraphicsContext& context) const
-{
-    context.restore();
+void EndFloatClipDisplayItem::replay(GraphicsContext& context) const {
+  context.restore();
 }
 
-void EndFloatClipDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
-{
-    list->appendEndFloatClipItem();
+void EndFloatClipDisplayItem::appendToWebDisplayItemList(
+    const IntRect& visualRect,
+    WebDisplayItemList* list) const {
+  list->appendEndFloatClipItem();
 }
 
 #ifndef NDEBUG
-void FloatClipDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
-{
-    DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", floatClipRect: [%f,%f,%f,%f]}",
-        m_clipRect.x(), m_clipRect.y(), m_clipRect.width(), m_clipRect.height()));
+void FloatClipDisplayItem::dumpPropertiesAsDebugString(
+    WTF::StringBuilder& stringBuilder) const {
+  DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+  stringBuilder.append(WTF::String::format(
+      ", floatClipRect: [%f,%f,%f,%f]}", m_clipRect.x(), m_clipRect.y(),
+      m_clipRect.width(), m_clipRect.height()));
 }
 
 #endif
 
-} // namespace blink
+}  // namespace blink

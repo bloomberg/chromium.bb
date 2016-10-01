@@ -14,17 +14,22 @@ namespace blink {
 class GraphicsContext;
 
 class PLATFORM_EXPORT ClipRecorder {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    WTF_MAKE_NONCOPYABLE(ClipRecorder);
-public:
-    ClipRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const IntRect& clipRect);
-    ~ClipRecorder();
-private:
-    const DisplayItemClient& m_client;
-    GraphicsContext& m_context;
-    DisplayItem::Type m_type;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  WTF_MAKE_NONCOPYABLE(ClipRecorder);
+
+ public:
+  ClipRecorder(GraphicsContext&,
+               const DisplayItemClient&,
+               DisplayItem::Type,
+               const IntRect& clipRect);
+  ~ClipRecorder();
+
+ private:
+  const DisplayItemClient& m_client;
+  GraphicsContext& m_context;
+  DisplayItem::Type m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClipRecorder_h
+#endif  // ClipRecorder_h

@@ -39,63 +39,74 @@
 namespace blink {
 
 V8EventListener::V8EventListener(bool isAttribute, ScriptState* scriptState)
-    : V8AbstractEventListener(isAttribute, scriptState->world(), scriptState->isolate())
-{
-}
+    : V8AbstractEventListener(isAttribute,
+                              scriptState->world(),
+                              scriptState->isolate()) {}
 
-v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptState* scriptState)
-{
-    v8::Local<v8::Object> listener = getListenerObject(scriptState->getExecutionContext());
+v8::Local<v8::Function> V8EventListener::getListenerFunction(
+    ScriptState* scriptState) {
+  v8::Local<v8::Object> listener =
+      getListenerObject(scriptState->getExecutionContext());
 
-    // Has the listener been disposed?
-    if (listener.IsEmpty())
-        return v8::Local<v8::Function>();
-
-    if (listener->IsFunction())
-        return v8::Local<v8::Function>::Cast(listener);
-
-    // The EventHandler callback function type (used for event handler
-    // attributes in HTML) has [TreatNonObjectAsNull], which implies that
-    // non-function objects should be treated as no-op functions that return
-    // undefined.
-    if (isAttribute())
-        return v8::Local<v8::Function>();
-
-    if (listener->IsObject()) {
-        // Check that no exceptions were thrown when getting the
-        // handleEvent property and that the value is a function.
-        v8::Local<v8::Value> property;
-        if (listener->Get(scriptState->context(), v8AtomicString(isolate(), "handleEvent")).ToLocal(&property) && property->IsFunction())
-            return v8::Local<v8::Function>::Cast(property);
-    }
-
+  // Has the listener been disposed?
+  if (listener.IsEmpty())
     return v8::Local<v8::Function>();
+
+  if (listener->IsFunction())
+    return v8::Local<v8::Function>::Cast(listener);
+
+  // The EventHandler callback function type (used for event handler
+  // attributes in HTML) has [TreatNonObjectAsNull], which implies that
+  // non-function objects should be treated as no-op functions that return
+  // undefined.
+  if (isAttribute())
+    return v8::Local<v8::Function>();
+
+  if (listener->IsObject()) {
+    // Check that no exceptions were thrown when getting the
+    // handleEvent property and that the value is a function.
+    v8::Local<v8::Value> property;
+    if (listener
+            ->Get(scriptState->context(),
+                  v8AtomicString(isolate(), "handleEvent"))
+            .ToLocal(&property) &&
+        property->IsFunction())
+      return v8::Local<v8::Function>::Cast(property);
+  }
+
+  return v8::Local<v8::Function>();
 }
 
-v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
-{
-    ASSERT(!jsEvent.IsEmpty());
-    v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
-    v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
-    if (handlerFunction.IsEmpty() || receiver.IsEmpty())
-        return v8::Local<v8::Value>();
+v8::Local<v8::Value> V8EventListener::callListenerFunction(
+    ScriptState* scriptState,
+    v8::Local<v8::Value> jsEvent,
+    Event* event) {
+  ASSERT(!jsEvent.IsEmpty());
+  v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
+  v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
+  if (handlerFunction.IsEmpty() || receiver.IsEmpty())
+    return v8::Local<v8::Value>();
 
-    if (!scriptState->getExecutionContext()->isDocument())
-        return v8::Local<v8::Value>();
+  if (!scriptState->getExecutionContext()->isDocument())
+    return v8::Local<v8::Value>();
 
-    LocalFrame* frame = toDocument(scriptState->getExecutionContext())->frame();
-    if (!frame)
-        return v8::Local<v8::Value>();
+  LocalFrame* frame = toDocument(scriptState->getExecutionContext())->frame();
+  if (!frame)
+    return v8::Local<v8::Value>();
 
-    // TODO(jochen): Consider moving this check into canExecuteScripts. http://crbug.com/608641
-    if (scriptState->world().isMainWorld() && !frame->script().canExecuteScripts(AboutToExecuteScript))
-        return v8::Local<v8::Value>();
+  // TODO(jochen): Consider moving this check into canExecuteScripts. http://crbug.com/608641
+  if (scriptState->world().isMainWorld() &&
+      !frame->script().canExecuteScripts(AboutToExecuteScript))
+    return v8::Local<v8::Value>();
 
-    v8::Local<v8::Value> parameters[1] = { jsEvent };
-    v8::Local<v8::Value> result;
-    if (!V8ScriptRunner::callFunction(handlerFunction, frame->document(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, scriptState->isolate()).ToLocal(&result))
-        return v8::Local<v8::Value>();
-    return result;
+  v8::Local<v8::Value> parameters[1] = {jsEvent};
+  v8::Local<v8::Value> result;
+  if (!V8ScriptRunner::callFunction(handlerFunction, frame->document(),
+                                    receiver, WTF_ARRAY_LENGTH(parameters),
+                                    parameters, scriptState->isolate())
+           .ToLocal(&result))
+    return v8::Local<v8::Value>();
+  return result;
 }
 
-} // namespace blink
+}  // namespace blink

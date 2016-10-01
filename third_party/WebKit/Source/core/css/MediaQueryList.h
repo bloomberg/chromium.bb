@@ -40,55 +40,61 @@ class MediaQuerySet;
 // retrieve the current value of the given media query and to add/remove listeners that
 // will be called whenever the value of the query changes.
 
-class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
-    WTF_MAKE_NONCOPYABLE(MediaQueryList);
-public:
-    static MediaQueryList* create(ExecutionContext*, MediaQueryMatcher*, MediaQuerySet*);
-    ~MediaQueryList() override;
+class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData,
+                                         public ActiveScriptWrappable,
+                                         public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
+  WTF_MAKE_NONCOPYABLE(MediaQueryList);
 
-    String media() const;
-    bool matches();
+ public:
+  static MediaQueryList* create(ExecutionContext*,
+                                MediaQueryMatcher*,
+                                MediaQuerySet*);
+  ~MediaQueryList() override;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  String media() const;
+  bool matches();
 
-    // These two functions are provided for compatibility with JS code
-    // written before the change listener became a DOM event.
-    void addDeprecatedListener(EventListener*);
-    void removeDeprecatedListener(EventListener*);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
-    // C++ code can use these functions to listen to changes instead of having to use DOM event listeners.
-    void addListener(MediaQueryListListener*);
-    void removeListener(MediaQueryListListener*);
+  // These two functions are provided for compatibility with JS code
+  // written before the change listener became a DOM event.
+  void addDeprecatedListener(EventListener*);
+  void removeDeprecatedListener(EventListener*);
 
-    // Will return true if a DOM event should be scheduled.
-    bool mediaFeaturesChanged(HeapVector<Member<MediaQueryListListener>>* listenersToNotify);
+  // C++ code can use these functions to listen to changes instead of having to use DOM event listeners.
+  void addListener(MediaQueryListListener*);
+  void removeListener(MediaQueryListListener*);
 
-    DECLARE_VIRTUAL_TRACE();
+  // Will return true if a DOM event should be scheduled.
+  bool mediaFeaturesChanged(
+      HeapVector<Member<MediaQueryListListener>>* listenersToNotify);
 
-    // From ScriptWrappable
-    bool hasPendingActivity() const final;
+  DECLARE_VIRTUAL_TRACE();
 
-    // From ActiveDOMObject
-    void stop() override;
+  // From ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  // From ActiveDOMObject
+  void stop() override;
 
-private:
-    MediaQueryList(ExecutionContext*, MediaQueryMatcher*, MediaQuerySet*);
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    bool updateMatches();
+ private:
+  MediaQueryList(ExecutionContext*, MediaQueryMatcher*, MediaQuerySet*);
 
-    Member<MediaQueryMatcher> m_matcher;
-    Member<MediaQuerySet> m_media;
-    using ListenerList = HeapListHashSet<Member<MediaQueryListListener>>;
-    ListenerList m_listeners;
-    bool m_matchesDirty;
-    bool m_matches;
+  bool updateMatches();
+
+  Member<MediaQueryMatcher> m_matcher;
+  Member<MediaQuerySet> m_media;
+  using ListenerList = HeapListHashSet<Member<MediaQueryListListener>>;
+  ListenerList m_listeners;
+  bool m_matchesDirty;
+  bool m_matches;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaQueryList_h
+#endif  // MediaQueryList_h

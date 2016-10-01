@@ -21,45 +21,45 @@ class ScriptPromise;
 class ScriptState;
 class ScreenOrientationController;
 
-class ScreenOrientation final
-    : public EventTargetWithInlineData
-    , public DOMWindowProperty {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
-public:
-    static ScreenOrientation* create(LocalFrame*);
+class ScreenOrientation final : public EventTargetWithInlineData,
+                                public DOMWindowProperty {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 
-    ~ScreenOrientation() override;
+ public:
+  static ScreenOrientation* create(LocalFrame*);
 
-    // EventTarget implementation.
-    const WTF::AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  ~ScreenOrientation() override;
 
-    String type() const;
-    unsigned short angle() const;
+  // EventTarget implementation.
+  const WTF::AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    void setType(WebScreenOrientationType);
-    void setAngle(unsigned short);
+  String type() const;
+  unsigned short angle() const;
 
-    ScriptPromise lock(ScriptState*, const AtomicString& orientation);
-    void unlock();
+  void setType(WebScreenOrientationType);
+  void setAngle(unsigned short);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  ScriptPromise lock(ScriptState*, const AtomicString& orientation);
+  void unlock();
 
-    // Helper being used by this class and LockOrientationCallback.
-    static const AtomicString& orientationTypeToString(WebScreenOrientationType);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
-    DECLARE_VIRTUAL_TRACE();
+  // Helper being used by this class and LockOrientationCallback.
+  static const AtomicString& orientationTypeToString(WebScreenOrientationType);
 
-private:
-    explicit ScreenOrientation(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
 
-    ScreenOrientationController* controller();
+ private:
+  explicit ScreenOrientation(LocalFrame*);
 
-    WebScreenOrientationType m_type;
-    unsigned short m_angle;
+  ScreenOrientationController* controller();
+
+  WebScreenOrientationType m_type;
+  unsigned short m_angle;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScreenOrientation_h
+#endif  // ScreenOrientation_h

@@ -39,98 +39,97 @@ namespace blink {
 // We currently do not support bitmap fonts on windows.
 // Instead of trying to construct a bitmap font and then going down the fallback path map
 // certain common bitmap fonts to their truetype equivalent up front.
-inline const AtomicString& adjustFamilyNameToAvoidUnsupportedFonts(const AtomicString& familyName)
-{
+inline const AtomicString& adjustFamilyNameToAvoidUnsupportedFonts(
+    const AtomicString& familyName) {
 #if OS(WIN)
-    // On Windows, 'Courier New' (truetype font) is always present and
-    // 'Courier' is a bitmap font. On Mac on the other hand 'Courier' is
-    // a truetype font. Thus pages asking for Courier are better of
-    // using 'Courier New' on windows.
-    DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier"));
-    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New"));
-    if (equalIgnoringCase(familyName, courier))
-        return courierNew;
+  // On Windows, 'Courier New' (truetype font) is always present and
+  // 'Courier' is a bitmap font. On Mac on the other hand 'Courier' is
+  // a truetype font. Thus pages asking for Courier are better of
+  // using 'Courier New' on windows.
+  DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier"));
+  DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New"));
+  if (equalIgnoringCase(familyName, courier))
+    return courierNew;
 
-    // Alias 'MS Sans Serif' (bitmap font) -> 'Microsoft Sans Serif'
-    // (truetype font).
-    DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif"));
-    DEFINE_STATIC_LOCAL(AtomicString, microsoftSans, ("Microsoft Sans Serif"));
-    if (equalIgnoringCase(familyName, msSans))
-        return microsoftSans;
+  // Alias 'MS Sans Serif' (bitmap font) -> 'Microsoft Sans Serif'
+  // (truetype font).
+  DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif"));
+  DEFINE_STATIC_LOCAL(AtomicString, microsoftSans, ("Microsoft Sans Serif"));
+  if (equalIgnoringCase(familyName, msSans))
+    return microsoftSans;
 
-    // Alias 'MS Serif' (bitmap) -> 'Times New Roman' (truetype font).
-    // Alias 'Times' -> 'Times New Roman' (truetype font).
-    // There's no 'Microsoft Sans Serif-equivalent' for Serif.
-    DEFINE_STATIC_LOCAL(AtomicString, msSerif, ("MS Serif"));
-    DEFINE_STATIC_LOCAL(AtomicString, times, ("Times"));
-    DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman"));
-    if (equalIgnoringCase(familyName, msSerif) || equalIgnoringCase(familyName, times))
-        return timesNewRoman;
+  // Alias 'MS Serif' (bitmap) -> 'Times New Roman' (truetype font).
+  // Alias 'Times' -> 'Times New Roman' (truetype font).
+  // There's no 'Microsoft Sans Serif-equivalent' for Serif.
+  DEFINE_STATIC_LOCAL(AtomicString, msSerif, ("MS Serif"));
+  DEFINE_STATIC_LOCAL(AtomicString, times, ("Times"));
+  DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman"));
+  if (equalIgnoringCase(familyName, msSerif) ||
+      equalIgnoringCase(familyName, times))
+    return timesNewRoman;
 #endif
 
-    return familyName;
+  return familyName;
 }
 
-inline const AtomicString& alternateFamilyName(const AtomicString& familyName)
-{
-    // Alias Courier <-> Courier New
-    DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier"));
-    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New"));
-    if (equalIgnoringCase(familyName, courier))
-        return courierNew;
+inline const AtomicString& alternateFamilyName(const AtomicString& familyName) {
+  // Alias Courier <-> Courier New
+  DEFINE_STATIC_LOCAL(AtomicString, courier, ("Courier"));
+  DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New"));
+  if (equalIgnoringCase(familyName, courier))
+    return courierNew;
 #if !OS(WIN)
-    // On Windows, Courier New (truetype font) is always present and
-    // Courier is a bitmap font. So, we don't want to map Courier New to
-    // Courier.
-    if (equalIgnoringCase(familyName, courierNew))
-        return courier;
+  // On Windows, Courier New (truetype font) is always present and
+  // Courier is a bitmap font. So, we don't want to map Courier New to
+  // Courier.
+  if (equalIgnoringCase(familyName, courierNew))
+    return courier;
 #endif
 
-    // Alias Times and Times New Roman.
-    DEFINE_STATIC_LOCAL(AtomicString, times, ("Times"));
-    DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman"));
-    if (equalIgnoringCase(familyName, times))
-        return timesNewRoman;
-    if (equalIgnoringCase(familyName, timesNewRoman))
-        return times;
+  // Alias Times and Times New Roman.
+  DEFINE_STATIC_LOCAL(AtomicString, times, ("Times"));
+  DEFINE_STATIC_LOCAL(AtomicString, timesNewRoman, ("Times New Roman"));
+  if (equalIgnoringCase(familyName, times))
+    return timesNewRoman;
+  if (equalIgnoringCase(familyName, timesNewRoman))
+    return times;
 
-    // Alias Arial and Helvetica
-    DEFINE_STATIC_LOCAL(AtomicString, arial, ("Arial"));
-    DEFINE_STATIC_LOCAL(AtomicString, helvetica, ("Helvetica"));
-    if (equalIgnoringCase(familyName, arial))
-        return helvetica;
-    if (equalIgnoringCase(familyName, helvetica))
-        return arial;
+  // Alias Arial and Helvetica
+  DEFINE_STATIC_LOCAL(AtomicString, arial, ("Arial"));
+  DEFINE_STATIC_LOCAL(AtomicString, helvetica, ("Helvetica"));
+  if (equalIgnoringCase(familyName, arial))
+    return helvetica;
+  if (equalIgnoringCase(familyName, helvetica))
+    return arial;
 
-    return emptyAtom;
+  return emptyAtom;
 }
 
+inline const AtomicString getFallbackFontFamily(
+    const FontDescription& description) {
+  DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("sans-serif"));
+  DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("serif"));
+  DEFINE_STATIC_LOCAL(const AtomicString, monospaceStr, ("monospace"));
+  DEFINE_STATIC_LOCAL(const AtomicString, cursiveStr, ("cursive"));
+  DEFINE_STATIC_LOCAL(const AtomicString, fantasyStr, ("fantasy"));
 
-inline const AtomicString getFallbackFontFamily(const FontDescription& description)
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, sansStr, ("sans-serif"));
-    DEFINE_STATIC_LOCAL(const AtomicString, serifStr, ("serif"));
-    DEFINE_STATIC_LOCAL(const AtomicString, monospaceStr, ("monospace"));
-    DEFINE_STATIC_LOCAL(const AtomicString, cursiveStr, ("cursive"));
-    DEFINE_STATIC_LOCAL(const AtomicString, fantasyStr, ("fantasy"));
-
-    switch (description.genericFamily()) {
+  switch (description.genericFamily()) {
     case FontDescription::SansSerifFamily:
-        return sansStr;
+      return sansStr;
     case FontDescription::SerifFamily:
-        return serifStr;
+      return serifStr;
     case FontDescription::MonospaceFamily:
-        return monospaceStr;
+      return monospaceStr;
     case FontDescription::CursiveFamily:
-        return cursiveStr;
+      return cursiveStr;
     case FontDescription::FantasyFamily:
-        return fantasyStr;
+      return fantasyStr;
     default:
-        // Let the caller use the system default font.
-        return emptyAtom;
-    }
+      // Let the caller use the system default font.
+      return emptyAtom;
+  }
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AlternateFontFamily_h
+#endif  // AlternateFontFamily_h

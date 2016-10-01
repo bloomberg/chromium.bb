@@ -34,34 +34,30 @@
 
 namespace blink {
 
-class Geoposition final : public GarbageCollected<Geoposition>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Geoposition* create(Coordinates* coordinates, DOMTimeStamp timestamp)
-    {
-        return new Geoposition(coordinates, timestamp);
-    }
+class Geoposition final : public GarbageCollected<Geoposition>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_coordinates);
-    }
+ public:
+  static Geoposition* create(Coordinates* coordinates, DOMTimeStamp timestamp) {
+    return new Geoposition(coordinates, timestamp);
+  }
 
-    DOMTimeStamp timestamp() const { return m_timestamp; }
-    Coordinates* coords() const { return m_coordinates; }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_coordinates); }
 
-private:
-    Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
-        : m_coordinates(coordinates)
-        , m_timestamp(timestamp)
-    {
-        DCHECK(m_coordinates);
-    }
+  DOMTimeStamp timestamp() const { return m_timestamp; }
+  Coordinates* coords() const { return m_coordinates; }
 
-    Member<Coordinates> m_coordinates;
-    DOMTimeStamp m_timestamp;
+ private:
+  Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
+      : m_coordinates(coordinates), m_timestamp(timestamp) {
+    DCHECK(m_coordinates);
+  }
+
+  Member<Coordinates> m_coordinates;
+  DOMTimeStamp m_timestamp;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Geoposition_h
+#endif  // Geoposition_h

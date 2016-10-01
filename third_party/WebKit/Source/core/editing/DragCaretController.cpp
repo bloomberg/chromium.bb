@@ -32,94 +32,87 @@
 
 namespace blink {
 
-DragCaretController::DragCaretController()
-    : m_caretBase(new CaretBase())
-{
+DragCaretController::DragCaretController() : m_caretBase(new CaretBase()) {}
+
+DragCaretController* DragCaretController::create() {
+  return new DragCaretController;
 }
 
-DragCaretController* DragCaretController::create()
-{
-    return new DragCaretController;
+bool DragCaretController::hasCaretIn(const LayoutBlock& layoutBlock) const {
+  Node* node = m_position.deepEquivalent().anchorNode();
+  if (!node)
+    return false;
+  if (layoutBlock != CaretBase::caretLayoutObject(node))
+    return false;
+  if (rootEditableElementOf(m_position))
+    return true;
+  Settings* settings = node->ownerDocument()->frame()->settings();
+  return settings && settings->caretBrowsingEnabled();
 }
 
-bool DragCaretController::hasCaretIn(const LayoutBlock& layoutBlock) const
-{
-    Node* node = m_position.deepEquivalent().anchorNode();
-    if (!node)
-        return false;
-    if (layoutBlock != CaretBase::caretLayoutObject(node))
-        return false;
-    if (rootEditableElementOf(m_position))
-        return true;
-    Settings* settings = node->ownerDocument()->frame()->settings();
-    return settings && settings->caretBrowsingEnabled();
+bool DragCaretController::isContentRichlyEditable() const {
+  return isRichlyEditablePosition(m_position.deepEquivalent());
 }
 
-bool DragCaretController::isContentRichlyEditable() const
-{
-    return isRichlyEditablePosition(m_position.deepEquivalent());
+void DragCaretController::setCaretPosition(
+    const PositionWithAffinity& position) {
+  // for querying Layer::compositingState()
+  // This code is probably correct, since it doesn't occur in a stack that
+  // involves updating compositing state.
+  DisableCompositingQueryAsserts disabler;
+
+  if (Node* node = m_position.deepEquivalent().anchorNode())
+    m_caretBase->invalidateCaretRect(node);
+  m_position = createVisiblePosition(position);
+  Document* document = nullptr;
+  if (Node* node = m_position.deepEquivalent().anchorNode()) {
+    m_caretBase->invalidateCaretRect(node);
+    document = &node->document();
+  }
+  if (m_position.isNull() || m_position.isOrphan()) {
+    m_caretBase->clearCaretRect();
+  } else {
+    document->updateStyleAndLayoutTree();
+    m_caretBase->updateCaretRect(m_position);
+  }
 }
 
-void DragCaretController::setCaretPosition(const PositionWithAffinity& position)
-{
-    // for querying Layer::compositingState()
-    // This code is probably correct, since it doesn't occur in a stack that
-    // involves updating compositing state.
-    DisableCompositingQueryAsserts disabler;
+static bool removingNodeRemovesPosition(Node& node, const Position& position) {
+  if (!position.anchorNode())
+    return false;
 
-    if (Node* node = m_position.deepEquivalent().anchorNode())
-        m_caretBase->invalidateCaretRect(node);
-    m_position = createVisiblePosition(position);
-    Document* document = nullptr;
-    if (Node* node = m_position.deepEquivalent().anchorNode()) {
-        m_caretBase->invalidateCaretRect(node);
-        document = &node->document();
-    }
-    if (m_position.isNull() || m_position.isOrphan()) {
-        m_caretBase->clearCaretRect();
-    } else {
-        document->updateStyleAndLayoutTree();
-        m_caretBase->updateCaretRect(m_position);
-    }
+  if (position.anchorNode() == node)
+    return true;
+
+  if (!node.isElementNode())
+    return false;
+
+  Element& element = toElement(node);
+  return element.isShadowIncludingInclusiveAncestorOf(position.anchorNode());
 }
 
-static bool removingNodeRemovesPosition(Node& node, const Position& position)
-{
-    if (!position.anchorNode())
-        return false;
+void DragCaretController::nodeWillBeRemoved(Node& node) {
+  if (!hasCaret() || !node.inActiveDocument())
+    return;
 
-    if (position.anchorNode() == node)
-        return true;
+  if (!removingNodeRemovesPosition(node, m_position.deepEquivalent()))
+    return;
 
-    if (!node.isElementNode())
-        return false;
-
-    Element& element = toElement(node);
-    return element.isShadowIncludingInclusiveAncestorOf(position.anchorNode());
+  m_position.deepEquivalent().document()->layoutViewItem().clearSelection();
+  clear();
 }
 
-void DragCaretController::nodeWillBeRemoved(Node& node)
-{
-    if (!hasCaret() || !node.inActiveDocument())
-        return;
-
-    if (!removingNodeRemovesPosition(node, m_position.deepEquivalent()))
-        return;
-
-    m_position.deepEquivalent().document()->layoutViewItem().clearSelection();
-    clear();
+DEFINE_TRACE(DragCaretController) {
+  visitor->trace(m_position);
+  visitor->trace(m_caretBase);
 }
 
-DEFINE_TRACE(DragCaretController)
-{
-    visitor->trace(m_position);
-    visitor->trace(m_caretBase);
+void DragCaretController::paintDragCaret(LocalFrame* frame,
+                                         GraphicsContext& context,
+                                         const LayoutPoint& paintOffset) const {
+  if (m_position.deepEquivalent().anchorNode()->document().frame() == frame)
+    m_caretBase->paintCaret(m_position.deepEquivalent().anchorNode(), context,
+                            paintOffset, DisplayItem::kDragCaret);
 }
 
-void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext& context, const LayoutPoint& paintOffset) const
-{
-    if (m_position.deepEquivalent().anchorNode()->document().frame() == frame)
-        m_caretBase->paintCaret(m_position.deepEquivalent().anchorNode(), context, paintOffset, DisplayItem::kDragCaret);
-}
-
-} // namespace blink
+}  // namespace blink

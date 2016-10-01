@@ -38,54 +38,70 @@ namespace blink {
 class BaseAudioContext;
 
 class MediaStreamAudioSourceHandler final : public AudioHandler {
-public:
-    static PassRefPtr<MediaStreamAudioSourceHandler> create(AudioNode&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
-    ~MediaStreamAudioSourceHandler() override;
+ public:
+  static PassRefPtr<MediaStreamAudioSourceHandler> create(
+      AudioNode&,
+      MediaStream&,
+      MediaStreamTrack*,
+      std::unique_ptr<AudioSourceProvider>);
+  ~MediaStreamAudioSourceHandler() override;
 
-    MediaStream* getMediaStream() { return m_mediaStream.get(); }
+  MediaStream* getMediaStream() { return m_mediaStream.get(); }
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
 
-    // A helper for AudioSourceProviderClient implementation of
-    // MediaStreamAudioSourceNode.
-    void setFormat(size_t numberOfChannels, float sampleRate);
+  // A helper for AudioSourceProviderClient implementation of
+  // MediaStreamAudioSourceNode.
+  void setFormat(size_t numberOfChannels, float sampleRate);
 
-    AudioSourceProvider* getAudioSourceProvider() const { return m_audioSourceProvider.get(); }
+  AudioSourceProvider* getAudioSourceProvider() const {
+    return m_audioSourceProvider.get();
+  }
 
-private:
-    MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
-    // As an audio source, we will never propagate silence.
-    bool propagatesSilence() const override { return false; }
+ private:
+  MediaStreamAudioSourceHandler(AudioNode&,
+                                MediaStream&,
+                                MediaStreamTrack*,
+                                std::unique_ptr<AudioSourceProvider>);
+  // As an audio source, we will never propagate silence.
+  bool propagatesSilence() const override { return false; }
 
-    // These Persistents don't make reference cycles including the owner
-    // MediaStreamAudioSourceNode.
-    Persistent<MediaStream> m_mediaStream;
-    Persistent<MediaStreamTrack> m_audioTrack;
-    std::unique_ptr<AudioSourceProvider> m_audioSourceProvider;
+  // These Persistents don't make reference cycles including the owner
+  // MediaStreamAudioSourceNode.
+  Persistent<MediaStream> m_mediaStream;
+  Persistent<MediaStreamTrack> m_audioTrack;
+  std::unique_ptr<AudioSourceProvider> m_audioSourceProvider;
 
-    Mutex m_processLock;
+  Mutex m_processLock;
 
-    unsigned m_sourceNumberOfChannels;
+  unsigned m_sourceNumberOfChannels;
 };
 
-class MediaStreamAudioSourceNode final : public AudioSourceNode, public AudioSourceProviderClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
-public:
-    static MediaStreamAudioSourceNode* create(BaseAudioContext&, MediaStream&, ExceptionState&);
-    DECLARE_VIRTUAL_TRACE();
-    MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
+class MediaStreamAudioSourceNode final : public AudioSourceNode,
+                                         public AudioSourceProviderClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 
-    MediaStream* getMediaStream() const;
+ public:
+  static MediaStreamAudioSourceNode* create(BaseAudioContext&,
+                                            MediaStream&,
+                                            ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
+  MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 
-    // AudioSourceProviderClient functions:
-    void setFormat(size_t numberOfChannels, float sampleRate) override;
+  MediaStream* getMediaStream() const;
 
-private:
-    MediaStreamAudioSourceNode(BaseAudioContext&, MediaStream&, MediaStreamTrack*, std::unique_ptr<AudioSourceProvider>);
+  // AudioSourceProviderClient functions:
+  void setFormat(size_t numberOfChannels, float sampleRate) override;
+
+ private:
+  MediaStreamAudioSourceNode(BaseAudioContext&,
+                             MediaStream&,
+                             MediaStreamTrack*,
+                             std::unique_ptr<AudioSourceProvider>);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamAudioSourceNode_h
+#endif  // MediaStreamAudioSourceNode_h

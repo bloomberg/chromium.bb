@@ -35,26 +35,27 @@ namespace blink {
 class MessagePort;
 class ExecutionContext;
 
-class MessageChannel final : public GarbageCollected<MessageChannel>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MessageChannel* create(ExecutionContext* context)
-    {
-        return new MessageChannel(context);
-    }
+class MessageChannel final : public GarbageCollected<MessageChannel>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    MessagePort* port1() const { return m_port1; }
-    MessagePort* port2() const { return m_port2; }
+ public:
+  static MessageChannel* create(ExecutionContext* context) {
+    return new MessageChannel(context);
+  }
 
-    DECLARE_TRACE();
+  MessagePort* port1() const { return m_port1; }
+  MessagePort* port2() const { return m_port2; }
 
-private:
-    explicit MessageChannel(ExecutionContext*);
+  DECLARE_TRACE();
 
-    Member<MessagePort> m_port1;
-    Member<MessagePort> m_port2;
+ private:
+  explicit MessageChannel(ExecutionContext*);
+
+  Member<MessagePort> m_port1;
+  Member<MessagePort> m_port2;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MessageChannel_h
+#endif  // MessageChannel_h

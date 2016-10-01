@@ -16,19 +16,19 @@ class SkImage;
 namespace blink {
 
 class CORE_EXPORT CanvasDrawListener : public GarbageCollectedMixin {
-public:
-    virtual ~CanvasDrawListener();
-    virtual void sendNewFrame(sk_sp<SkImage>);
-    bool needsNewFrame() const;
-    void requestFrame();
+ public:
+  virtual ~CanvasDrawListener();
+  virtual void sendNewFrame(sk_sp<SkImage>);
+  bool needsNewFrame() const;
+  void requestFrame();
 
-protected:
-    explicit CanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
+ protected:
+  explicit CanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
 
-    bool m_frameCaptureRequested;
-    std::unique_ptr<WebCanvasCaptureHandler> m_handler;
+  bool m_frameCaptureRequested;
+  std::unique_ptr<WebCanvasCaptureHandler> m_handler;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

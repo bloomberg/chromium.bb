@@ -37,48 +37,49 @@ class WebString;
 class WebSecurityOrigin;
 
 class WebDatabaseObserver {
-public:
-    virtual void databaseOpened(
-        const WebSecurityOrigin&,
-        const WebString& databaseName,
-        const WebString& databaseDisplayName,
-        unsigned long estimatedSize) = 0;
-    virtual void databaseModified(
-        const WebSecurityOrigin&,
-        const WebString& databaseName) = 0;
-    virtual void databaseClosed(
-        const WebSecurityOrigin&,
-        const WebString& databaseName) = 0;
-    virtual void reportOpenDatabaseResult(
-        const WebSecurityOrigin&,
-        const WebString& databaseName,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode,
-        double callTime) { }
-    virtual void reportChangeVersionResult(
-        const WebSecurityOrigin&,
-        const WebString& databaseName,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportStartTransactionResult(
-        const WebSecurityOrigin&,
-        const WebString& databaseName,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportCommitTransactionResult(
-        const WebSecurityOrigin&,
-        const WebString& databaseName,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportExecuteStatementResult(
-        const WebSecurityOrigin&,
-        const WebString& databaseName,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportVacuumDatabaseResult(
-        const WebSecurityOrigin&,
-        const WebString& databaseName,
-        int sqliteErrorCode) { }
+ public:
+  virtual void databaseOpened(const WebSecurityOrigin&,
+                              const WebString& databaseName,
+                              const WebString& databaseDisplayName,
+                              unsigned long estimatedSize) = 0;
+  virtual void databaseModified(const WebSecurityOrigin&,
+                                const WebString& databaseName) = 0;
+  virtual void databaseClosed(const WebSecurityOrigin&,
+                              const WebString& databaseName) = 0;
+  virtual void reportOpenDatabaseResult(const WebSecurityOrigin&,
+                                        const WebString& databaseName,
+                                        int errorSite,
+                                        int webSqlErrorCode,
+                                        int sqliteErrorCode,
+                                        double callTime) {}
+  virtual void reportChangeVersionResult(const WebSecurityOrigin&,
+                                         const WebString& databaseName,
+                                         int errorSite,
+                                         int webSqlErrorCode,
+                                         int sqliteErrorCode) {}
+  virtual void reportStartTransactionResult(const WebSecurityOrigin&,
+                                            const WebString& databaseName,
+                                            int errorSite,
+                                            int webSqlErrorCode,
+                                            int sqliteErrorCode) {}
+  virtual void reportCommitTransactionResult(const WebSecurityOrigin&,
+                                             const WebString& databaseName,
+                                             int errorSite,
+                                             int webSqlErrorCode,
+                                             int sqliteErrorCode) {}
+  virtual void reportExecuteStatementResult(const WebSecurityOrigin&,
+                                            const WebString& databaseName,
+                                            int errorSite,
+                                            int webSqlErrorCode,
+                                            int sqliteErrorCode) {}
+  virtual void reportVacuumDatabaseResult(const WebSecurityOrigin&,
+                                          const WebString& databaseName,
+                                          int sqliteErrorCode) {}
 
-protected:
-    ~WebDatabaseObserver() { }
+ protected:
+  ~WebDatabaseObserver() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebDatabaseObserver_h
+#endif  // WebDatabaseObserver_h

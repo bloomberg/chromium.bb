@@ -31,30 +31,24 @@
 namespace blink {
 
 WebGLSharedObject::WebGLSharedObject(WebGLRenderingContextBase* context)
-    : WebGLObject(context),
-      m_contextGroup(context->contextGroup())
-{
+    : WebGLObject(context), m_contextGroup(context->contextGroup()) {}
+
+WebGLSharedObject::~WebGLSharedObject() {
+  if (m_contextGroup)
+    m_contextGroup->removeObject(this);
 }
 
-WebGLSharedObject::~WebGLSharedObject()
-{
-    if (m_contextGroup)
-        m_contextGroup->removeObject(this);
+void WebGLSharedObject::detachContextGroup() {
+  detach();
+  if (m_contextGroup) {
+    deleteObject(nullptr);
+    m_contextGroup->removeObject(this);
+    m_contextGroup = nullptr;
+  }
 }
 
-void WebGLSharedObject::detachContextGroup()
-{
-    detach();
-    if (m_contextGroup) {
-        deleteObject(nullptr);
-        m_contextGroup->removeObject(this);
-        m_contextGroup = nullptr;
-    }
+gpu::gles2::GLES2Interface* WebGLSharedObject::getAGLInterface() const {
+  return m_contextGroup ? m_contextGroup->getAGLInterface() : nullptr;
 }
 
-gpu::gles2::GLES2Interface* WebGLSharedObject::getAGLInterface() const
-{
-    return m_contextGroup ? m_contextGroup->getAGLInterface() : nullptr;
-}
-
-} // namespace blink
+}  // namespace blink

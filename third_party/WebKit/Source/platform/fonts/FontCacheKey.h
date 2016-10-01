@@ -45,81 +45,62 @@ namespace blink {
 static const unsigned s_fontSizePrecisionMultiplier = 100;
 
 struct FontCacheKey {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    FontCacheKey()
-        : m_creationParams()
-        , m_fontSize(0)
-        , m_options(0) { }
-    FontCacheKey(FontFaceCreationParams creationParams, float fontSize, unsigned options)
-        : m_creationParams(creationParams)
-        , m_fontSize(fontSize * s_fontSizePrecisionMultiplier)
-        , m_options(options) { }
-    FontCacheKey(WTF::HashTableDeletedValueType)
-        : m_fontSize(hashTableDeletedSize()) { }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    unsigned hash() const
-    {
-        unsigned hashCodes[3] = {
-            m_creationParams.hash(),
-            m_fontSize,
-            m_options
-        };
-        return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
-    }
+ public:
+  FontCacheKey() : m_creationParams(), m_fontSize(0), m_options(0) {}
+  FontCacheKey(FontFaceCreationParams creationParams,
+               float fontSize,
+               unsigned options)
+      : m_creationParams(creationParams),
+        m_fontSize(fontSize * s_fontSizePrecisionMultiplier),
+        m_options(options) {}
+  FontCacheKey(WTF::HashTableDeletedValueType)
+      : m_fontSize(hashTableDeletedSize()) {}
 
-    bool operator==(const FontCacheKey& other) const
-    {
-        return m_creationParams == other.m_creationParams
-            && m_fontSize == other.m_fontSize
-            && m_options == other.m_options;
-    }
+  unsigned hash() const {
+    unsigned hashCodes[3] = {m_creationParams.hash(), m_fontSize, m_options};
+    return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
+  }
 
-    bool isHashTableDeletedValue() const
-    {
-        return m_fontSize == hashTableDeletedSize();
-    }
+  bool operator==(const FontCacheKey& other) const {
+    return m_creationParams == other.m_creationParams &&
+           m_fontSize == other.m_fontSize && m_options == other.m_options;
+  }
 
-    static unsigned precisionMultiplier()
-    {
-        return s_fontSizePrecisionMultiplier;
-    }
+  bool isHashTableDeletedValue() const {
+    return m_fontSize == hashTableDeletedSize();
+  }
 
-    void clearFontSize()
-    {
-        m_fontSize = 0;
-    }
+  static unsigned precisionMultiplier() {
+    return s_fontSizePrecisionMultiplier;
+  }
 
-private:
-    static unsigned hashTableDeletedSize()
-    {
-        return 0xFFFFFFFFU;
-    }
+  void clearFontSize() { m_fontSize = 0; }
 
-    FontFaceCreationParams m_creationParams;
-    unsigned m_fontSize;
-    unsigned m_options;
+ private:
+  static unsigned hashTableDeletedSize() { return 0xFFFFFFFFU; }
+
+  FontFaceCreationParams m_creationParams;
+  unsigned m_fontSize;
+  unsigned m_options;
 };
 
 struct FontCacheKeyHash {
-    STATIC_ONLY(FontCacheKeyHash);
-    static unsigned hash(const FontCacheKey& key)
-    {
-        return key.hash();
-    }
+  STATIC_ONLY(FontCacheKeyHash);
+  static unsigned hash(const FontCacheKey& key) { return key.hash(); }
 
-    static bool equal(const FontCacheKey& a, const FontCacheKey& b)
-    {
-        return a == b;
-    }
+  static bool equal(const FontCacheKey& a, const FontCacheKey& b) {
+    return a == b;
+  }
 
-    static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
 struct FontCacheKeyTraits : WTF::SimpleClassHashTraits<FontCacheKey> {
-    STATIC_ONLY(FontCacheKeyTraits);
+  STATIC_ONLY(FontCacheKeyTraits);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FontCacheKey_h
+#endif  // FontCacheKey_h

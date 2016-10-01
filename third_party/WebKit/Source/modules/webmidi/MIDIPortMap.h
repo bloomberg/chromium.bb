@@ -14,79 +14,81 @@
 namespace blink {
 
 template <typename T>
-class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>, public Maplike<String, T*> {
-public:
-    explicit MIDIPortMap(const HeapVector<Member<T>>& entries) : m_entries(entries) { }
+class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>,
+                    public Maplike<String, T*> {
+ public:
+  explicit MIDIPortMap(const HeapVector<Member<T>>& entries)
+      : m_entries(entries) {}
 
-    // IDL attributes / methods
-    size_t size() const { return m_entries.size(); }
+  // IDL attributes / methods
+  size_t size() const { return m_entries.size(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_entries);
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_entries); }
+
+ private:
+  // We use HeapVector here to keep the entry order.
+  using Entries = HeapVector<Member<T>>;
+  using IteratorType = typename Entries::const_iterator;
+
+  typename PairIterable<String, T*>::IterationSource* startIteration(
+      ScriptState*,
+      ExceptionState&) override {
+    return new MapIterationSource(this, m_entries.begin(), m_entries.end());
+  }
+
+  bool getMapEntry(ScriptState*,
+                   const String& key,
+                   T*& value,
+                   ExceptionState&) override {
+    // FIXME: This function is not O(1). Perhaps it's OK because in typical
+    // cases not so many ports are connected.
+    for (const auto& p : m_entries) {
+      if (key == p->id()) {
+        value = p;
+        return true;
+      }
     }
+    return false;
+  }
 
-private:
-    // We use HeapVector here to keep the entry order.
-    using Entries = HeapVector<Member<T>>;
-    using IteratorType = typename Entries::const_iterator;
+  // Note: This template class relies on the fact that m_map.m_entries will
+  // never be modified once it is created.
+  class MapIterationSource final
+      : public PairIterable<String, T*>::IterationSource {
+   public:
+    MapIterationSource(MIDIPortMap<T>* map,
+                       IteratorType iterator,
+                       IteratorType end)
+        : m_map(map), m_iterator(iterator), m_end(end) {}
 
-    typename PairIterable<String, T*>::IterationSource* startIteration(ScriptState*, ExceptionState&) override
-    {
-        return new MapIterationSource(this, m_entries.begin(), m_entries.end());
-    }
-
-    bool getMapEntry(ScriptState*, const String& key, T*& value, ExceptionState&) override
-    {
-        // FIXME: This function is not O(1). Perhaps it's OK because in typical
-        // cases not so many ports are connected.
-        for (const auto& p : m_entries) {
-            if (key == p->id()) {
-                value = p;
-                return true;
-            }
-        }
+    bool next(ScriptState* scriptState,
+              String& key,
+              T*& value,
+              ExceptionState&) override {
+      if (m_iterator == m_end)
         return false;
+      key = (*m_iterator)->id();
+      value = *m_iterator;
+      ++m_iterator;
+      return true;
     }
 
-    // Note: This template class relies on the fact that m_map.m_entries will
-    // never be modified once it is created.
-    class MapIterationSource final : public PairIterable<String, T*>::IterationSource {
-    public:
-        MapIterationSource(MIDIPortMap<T>* map, IteratorType iterator, IteratorType end)
-            : m_map(map)
-            , m_iterator(iterator)
-            , m_end(end)
-        {
-        }
+    DEFINE_INLINE_VIRTUAL_TRACE() {
+      visitor->trace(m_map);
+      PairIterable<String, T*>::IterationSource::trace(visitor);
+    }
 
-        bool next(ScriptState* scriptState, String& key, T*& value, ExceptionState&) override
-        {
-            if (m_iterator == m_end)
-                return false;
-            key = (*m_iterator)->id();
-            value = *m_iterator;
-            ++m_iterator;
-            return true;
-        }
+   private:
+    // m_map is stored just for keeping it alive. It needs to be kept
+    // alive while JavaScript holds the iterator to it.
+    const Member<const MIDIPortMap<T>> m_map;
+    IteratorType m_iterator;
+    const IteratorType m_end;
+  };
 
-        DEFINE_INLINE_VIRTUAL_TRACE()
-        {
-            visitor->trace(m_map);
-            PairIterable<String, T*>::IterationSource::trace(visitor);
-        }
-
-    private:
-        // m_map is stored just for keeping it alive. It needs to be kept
-        // alive while JavaScript holds the iterator to it.
-        const Member<const MIDIPortMap<T>> m_map;
-        IteratorType m_iterator;
-        const IteratorType m_end;
-    };
-
-    const Entries m_entries;
+  const Entries m_entries;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

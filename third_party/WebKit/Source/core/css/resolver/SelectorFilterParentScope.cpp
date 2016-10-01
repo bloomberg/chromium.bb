@@ -8,4 +8,4 @@ namespace blink {
 
 SelectorFilterParentScope* SelectorFilterParentScope::s_currentScope = 0;
 
-} // namespace blink
+}  // namespace blink

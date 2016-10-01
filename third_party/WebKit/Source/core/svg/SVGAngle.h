@@ -33,100 +33,120 @@ class SVGAngle;
 class SVGAngleTearOff;
 
 enum SVGMarkerOrientType {
-    SVGMarkerOrientUnknown = 0,
-    SVGMarkerOrientAuto,
-    SVGMarkerOrientAngle,
-    SVGMarkerOrientAutoStartReverse
+  SVGMarkerOrientUnknown = 0,
+  SVGMarkerOrientAuto,
+  SVGMarkerOrientAngle,
+  SVGMarkerOrientAutoStartReverse
 };
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerOrientType>();
-template<> unsigned short getMaxExposedEnumValue<SVGMarkerOrientType>();
+template <>
+const SVGEnumerationStringEntries&
+getStaticStringEntries<SVGMarkerOrientType>();
+template <>
+unsigned short getMaxExposedEnumValue<SVGMarkerOrientType>();
 
-class SVGMarkerOrientEnumeration final : public SVGEnumeration<SVGMarkerOrientType> {
-public:
-    static SVGMarkerOrientEnumeration* create(SVGAngle* angle)
-    {
-        return new SVGMarkerOrientEnumeration(angle);
-    }
+class SVGMarkerOrientEnumeration final
+    : public SVGEnumeration<SVGMarkerOrientType> {
+ public:
+  static SVGMarkerOrientEnumeration* create(SVGAngle* angle) {
+    return new SVGMarkerOrientEnumeration(angle);
+  }
 
-    ~SVGMarkerOrientEnumeration() override;
+  ~SVGMarkerOrientEnumeration() override;
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGElement*) override;
-    float calculateDistance(SVGPropertyBase*, SVGElement*) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float,
+                              unsigned,
+                              SVGPropertyBase*,
+                              SVGPropertyBase*,
+                              SVGPropertyBase*,
+                              SVGElement*) override;
+  float calculateDistance(SVGPropertyBase*, SVGElement*) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    SVGMarkerOrientEnumeration(SVGAngle*);
+ private:
+  SVGMarkerOrientEnumeration(SVGAngle*);
 
-    void notifyChange() override;
+  void notifyChange() override;
 
-    Member<SVGAngle> m_angle;
+  Member<SVGAngle> m_angle;
 };
 
 class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
-public:
-    typedef SVGAngleTearOff TearOffType;
+ public:
+  typedef SVGAngleTearOff TearOffType;
 
-    enum SVGAngleType {
-        kSvgAngletypeUnknown = 0,
-        kSvgAngletypeUnspecified = 1,
-        kSvgAngletypeDeg = 2,
-        kSvgAngletypeRad = 3,
-        kSvgAngletypeGrad = 4,
-        kSvgAngletypeTurn = 5
-    };
+  enum SVGAngleType {
+    kSvgAngletypeUnknown = 0,
+    kSvgAngletypeUnspecified = 1,
+    kSvgAngletypeDeg = 2,
+    kSvgAngletypeRad = 3,
+    kSvgAngletypeGrad = 4,
+    kSvgAngletypeTurn = 5
+  };
 
-    static SVGAngle* create()
-    {
-        return new SVGAngle();
-    }
+  static SVGAngle* create() { return new SVGAngle(); }
 
-    ~SVGAngle() override;
+  ~SVGAngle() override;
 
-    SVGAngleType unitType() const { return m_unitType; }
+  SVGAngleType unitType() const { return m_unitType; }
 
-    void setValue(float);
-    float value() const;
+  void setValue(float);
+  float value() const;
 
-    void setValueInSpecifiedUnits(float valueInSpecifiedUnits) { m_valueInSpecifiedUnits = valueInSpecifiedUnits; }
-    float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
+  void setValueInSpecifiedUnits(float valueInSpecifiedUnits) {
+    m_valueInSpecifiedUnits = valueInSpecifiedUnits;
+  }
+  float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
 
-    void newValueSpecifiedUnits(SVGAngleType unitType, float valueInSpecifiedUnits);
-    void convertToSpecifiedUnits(SVGAngleType unitType);
+  void newValueSpecifiedUnits(SVGAngleType unitType,
+                              float valueInSpecifiedUnits);
+  void convertToSpecifiedUnits(SVGAngleType unitType);
 
-    SVGEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
-    const SVGEnumeration<SVGMarkerOrientType>* orientType() const { return m_orientType.get(); }
-    void orientTypeChanged();
+  SVGEnumeration<SVGMarkerOrientType>* orientType() {
+    return m_orientType.get();
+  }
+  const SVGEnumeration<SVGMarkerOrientType>* orientType() const {
+    return m_orientType.get();
+  }
+  void orientTypeChanged();
 
-    // SVGPropertyBase:
+  // SVGPropertyBase:
 
-    SVGAngle* clone() const;
+  SVGAngle* clone() const;
 
-    String valueAsString() const override;
-    SVGParsingError setValueAsString(const String&);
+  String valueAsString() const override;
+  SVGParsingError setValueAsString(const String&);
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement* contextElement) override;
+  float calculateDistance(SVGPropertyBase* to,
+                          SVGElement* contextElement) override;
 
-    static AnimatedPropertyType classType() { return AnimatedAngle; }
+  static AnimatedPropertyType classType() { return AnimatedAngle; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    SVGAngle();
-    SVGAngle(SVGAngleType, float, SVGMarkerOrientType);
+ private:
+  SVGAngle();
+  SVGAngle(SVGAngleType, float, SVGMarkerOrientType);
 
-    void assign(const SVGAngle&);
+  void assign(const SVGAngle&);
 
-    SVGAngleType m_unitType;
-    float m_valueInSpecifiedUnits;
-    Member<SVGMarkerOrientEnumeration> m_orientType;
+  SVGAngleType m_unitType;
+  float m_valueInSpecifiedUnits;
+  Member<SVGMarkerOrientEnumeration> m_orientType;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGAngle);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAngle_h
+#endif  // SVGAngle_h

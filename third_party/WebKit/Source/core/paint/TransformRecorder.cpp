@@ -10,24 +10,24 @@
 
 namespace blink {
 
-TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItemClient& client, const AffineTransform& transform)
-    : m_context(context)
-    , m_client(client)
-{
-    m_skipRecordingForIdentityTransform = transform.isIdentity();
+TransformRecorder::TransformRecorder(GraphicsContext& context,
+                                     const DisplayItemClient& client,
+                                     const AffineTransform& transform)
+    : m_context(context), m_client(client) {
+  m_skipRecordingForIdentityTransform = transform.isIdentity();
 
-    if (m_skipRecordingForIdentityTransform)
-        return;
+  if (m_skipRecordingForIdentityTransform)
+    return;
 
-    m_context.getPaintController().createAndAppend<BeginTransformDisplayItem>(m_client, transform);
+  m_context.getPaintController().createAndAppend<BeginTransformDisplayItem>(
+      m_client, transform);
 }
 
-TransformRecorder::~TransformRecorder()
-{
-    if (m_skipRecordingForIdentityTransform)
-        return;
+TransformRecorder::~TransformRecorder() {
+  if (m_skipRecordingForIdentityTransform)
+    return;
 
-    m_context.getPaintController().endItem<EndTransformDisplayItem>(m_client);
+  m_context.getPaintController().endItem<EndTransformDisplayItem>(m_client);
 }
 
-} // namespace blink
+}  // namespace blink

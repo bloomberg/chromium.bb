@@ -41,88 +41,80 @@
 
 namespace blink {
 
-class DirectoryReaderSync::EntriesCallbackHelper final : public EntriesCallback {
-public:
-    explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
-        : m_reader(reader)
-    {
-    }
+class DirectoryReaderSync::EntriesCallbackHelper final
+    : public EntriesCallback {
+ public:
+  explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
+      : m_reader(reader) {}
 
-    void handleEvent(const EntryHeapVector& entries) override
-    {
-        EntrySyncHeapVector syncEntries;
-        syncEntries.reserveInitialCapacity(entries.size());
-        for (size_t i = 0; i < entries.size(); ++i)
-            syncEntries.uncheckedAppend(EntrySync::create(entries[i].get()));
-        m_reader->addEntries(syncEntries);
-    }
+  void handleEvent(const EntryHeapVector& entries) override {
+    EntrySyncHeapVector syncEntries;
+    syncEntries.reserveInitialCapacity(entries.size());
+    for (size_t i = 0; i < entries.size(); ++i)
+      syncEntries.uncheckedAppend(EntrySync::create(entries[i].get()));
+    m_reader->addEntries(syncEntries);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_reader);
-        EntriesCallback::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_reader);
+    EntriesCallback::trace(visitor);
+  }
 
-private:
-    Member<DirectoryReaderSync> m_reader;
+ private:
+  Member<DirectoryReaderSync> m_reader;
 };
 
-class DirectoryReaderSync::ErrorCallbackHelper final : public ErrorCallbackBase {
-public:
-    explicit ErrorCallbackHelper(DirectoryReaderSync* reader)
-        : m_reader(reader)
-    {
-    }
+class DirectoryReaderSync::ErrorCallbackHelper final
+    : public ErrorCallbackBase {
+ public:
+  explicit ErrorCallbackHelper(DirectoryReaderSync* reader)
+      : m_reader(reader) {}
 
-    void invoke(FileError::ErrorCode error) override
-    {
-        m_reader->setError(error);
-    }
+  void invoke(FileError::ErrorCode error) override {
+    m_reader->setError(error);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_reader);
-        ErrorCallbackBase::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_reader);
+    ErrorCallbackBase::trace(visitor);
+  }
 
-private:
-    Member<DirectoryReaderSync> m_reader;
+ private:
+  Member<DirectoryReaderSync> m_reader;
 };
 
-DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* fileSystem, const String& fullPath)
-    : DirectoryReaderBase(fileSystem, fullPath)
-    , m_callbacksId(0)
-    , m_errorCode(FileError::kOK)
-{
+DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* fileSystem,
+                                         const String& fullPath)
+    : DirectoryReaderBase(fileSystem, fullPath),
+      m_callbacksId(0),
+      m_errorCode(FileError::kOK) {}
+
+DirectoryReaderSync::~DirectoryReaderSync() {}
+
+EntrySyncHeapVector DirectoryReaderSync::readEntries(
+    ExceptionState& exceptionState) {
+  if (!m_callbacksId) {
+    m_callbacksId = filesystem()->readDirectory(
+        this, m_fullPath, new EntriesCallbackHelper(this),
+        new ErrorCallbackHelper(this), DOMFileSystemBase::Synchronous);
+  }
+
+  if (m_errorCode == FileError::kOK && m_hasMoreEntries && m_entries.isEmpty())
+    m_fileSystem->waitForAdditionalResult(m_callbacksId);
+
+  if (m_errorCode != FileError::kOK) {
+    FileError::throwDOMException(exceptionState, m_errorCode);
+    return EntrySyncHeapVector();
+  }
+
+  EntrySyncHeapVector result;
+  result.swap(m_entries);
+  return result;
 }
 
-DirectoryReaderSync::~DirectoryReaderSync()
-{
+DEFINE_TRACE(DirectoryReaderSync) {
+  visitor->trace(m_entries);
+  DirectoryReaderBase::trace(visitor);
 }
 
-EntrySyncHeapVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
-{
-    if (!m_callbacksId) {
-        m_callbacksId = filesystem()->readDirectory(this, m_fullPath, new EntriesCallbackHelper(this), new ErrorCallbackHelper(this), DOMFileSystemBase::Synchronous);
-    }
-
-    if (m_errorCode == FileError::kOK && m_hasMoreEntries && m_entries.isEmpty())
-        m_fileSystem->waitForAdditionalResult(m_callbacksId);
-
-    if (m_errorCode != FileError::kOK) {
-        FileError::throwDOMException(exceptionState, m_errorCode);
-        return EntrySyncHeapVector();
-    }
-
-    EntrySyncHeapVector result;
-    result.swap(m_entries);
-    return result;
-}
-
-DEFINE_TRACE(DirectoryReaderSync)
-{
-    visitor->trace(m_entries);
-    DirectoryReaderBase::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

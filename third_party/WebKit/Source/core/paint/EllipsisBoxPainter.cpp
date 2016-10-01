@@ -16,43 +16,59 @@
 
 namespace blink {
 
-void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
-{
-    if (paintInfo.phase == PaintPhaseSelection)
-        return;
+void EllipsisBoxPainter::paint(const PaintInfo& paintInfo,
+                               const LayoutPoint& paintOffset,
+                               LayoutUnit lineTop,
+                               LayoutUnit lineBottom) {
+  if (paintInfo.phase == PaintPhaseSelection)
+    return;
 
-    const ComputedStyle& style = m_ellipsisBox.getLineLayoutItem().styleRef(m_ellipsisBox.isFirstLineStyle());
-    paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
+  const ComputedStyle& style = m_ellipsisBox.getLineLayoutItem().styleRef(
+      m_ellipsisBox.isFirstLineStyle());
+  paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
-void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
-{
-    LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
-    m_ellipsisBox.logicalRectToPhysicalRect(paintRect);
-    paintRect.moveBy(paintOffset);
+void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo,
+                                       const LayoutPoint& paintOffset,
+                                       LayoutUnit lineTop,
+                                       LayoutUnit lineBottom,
+                                       const ComputedStyle& style) {
+  LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
+  m_ellipsisBox.logicalRectToPhysicalRect(paintRect);
+  paintRect.moveBy(paintOffset);
 
-    GraphicsContext& context = paintInfo.context;
-    DisplayItem::Type displayItemType = DisplayItem::paintPhaseToDrawingType(paintInfo.phase);
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, m_ellipsisBox, displayItemType))
-        return;
+  GraphicsContext& context = paintInfo.context;
+  DisplayItem::Type displayItemType =
+      DisplayItem::paintPhaseToDrawingType(paintInfo.phase);
+  if (DrawingRecorder::useCachedDrawingIfPossible(context, m_ellipsisBox,
+                                                  displayItemType))
+    return;
 
-    DrawingRecorder recorder(context, m_ellipsisBox, displayItemType, FloatRect(paintRect));
+  DrawingRecorder recorder(context, m_ellipsisBox, displayItemType,
+                           FloatRect(paintRect));
 
-    LayoutPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
-    boxOrigin.moveBy(paintOffset);
-    LayoutRect boxRect(boxOrigin, LayoutSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
+  LayoutPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
+  boxOrigin.moveBy(paintOffset);
+  LayoutRect boxRect(boxOrigin,
+                     LayoutSize(m_ellipsisBox.logicalWidth(),
+                                m_ellipsisBox.virtualLogicalHeight()));
 
-    GraphicsContextStateSaver stateSaver(context);
-    if (!m_ellipsisBox.isHorizontal())
-        context.concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
+  GraphicsContextStateSaver stateSaver(context);
+  if (!m_ellipsisBox.isHorizontal())
+    context.concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
 
-    const Font& font = style.font();
+  const Font& font = style.font();
 
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.getLineLayoutItem(), style, paintInfo);
-    TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
-    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.getFontMetrics().ascent());
-    TextPainter textPainter(context, font, textRun, textOrigin, boxRect, m_ellipsisBox.isHorizontal());
-    textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
+  TextPainter::Style textStyle = TextPainter::textPaintingStyle(
+      m_ellipsisBox.getLineLayoutItem(), style, paintInfo);
+  TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style,
+                                     TextRun::AllowTrailingExpansion);
+  LayoutPoint textOrigin(boxOrigin.x(),
+                         boxOrigin.y() + font.getFontMetrics().ascent());
+  TextPainter textPainter(context, font, textRun, textOrigin, boxRect,
+                          m_ellipsisBox.isHorizontal());
+  textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(),
+                    m_ellipsisBox.ellipsisStr().length(), textStyle);
 }
 
-} // namespace blink
+}  // namespace blink

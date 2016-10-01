@@ -41,120 +41,124 @@ class StepRange;
 // representing date and time, such as
 //  - Year, Month, Day Of Month
 //  - Hour, Minute, Second, Millisecond, AM/PM
-class DateTimeEditElement final : public HTMLDivElement, public DateTimeFieldElement::FieldOwner {
-    WTF_MAKE_NONCOPYABLE(DateTimeEditElement);
-    USING_GARBAGE_COLLECTED_MIXIN(DateTimeEditElement);
+class DateTimeEditElement final : public HTMLDivElement,
+                                  public DateTimeFieldElement::FieldOwner {
+  WTF_MAKE_NONCOPYABLE(DateTimeEditElement);
+  USING_GARBAGE_COLLECTED_MIXIN(DateTimeEditElement);
 
-public:
-    // EditControlOwner implementer must call removeEditControlOwner when
-    // it doesn't handle event, e.g. at destruction.
-    class EditControlOwner : public GarbageCollectedMixin {
-    public:
-        virtual ~EditControlOwner();
-        virtual void didBlurFromControl() = 0;
-        virtual void didFocusOnControl() = 0;
-        virtual void editControlValueChanged() = 0;
-        virtual String formatDateTimeFieldsState(const DateTimeFieldsState&) const = 0;
-        virtual bool isEditControlOwnerDisabled() const = 0;
-        virtual bool isEditControlOwnerReadOnly() const = 0;
-        virtual AtomicString localeIdentifier() const = 0;
-        virtual void editControlDidChangeValueByKeyboard() = 0;
-    };
+ public:
+  // EditControlOwner implementer must call removeEditControlOwner when
+  // it doesn't handle event, e.g. at destruction.
+  class EditControlOwner : public GarbageCollectedMixin {
+   public:
+    virtual ~EditControlOwner();
+    virtual void didBlurFromControl() = 0;
+    virtual void didFocusOnControl() = 0;
+    virtual void editControlValueChanged() = 0;
+    virtual String formatDateTimeFieldsState(
+        const DateTimeFieldsState&) const = 0;
+    virtual bool isEditControlOwnerDisabled() const = 0;
+    virtual bool isEditControlOwnerReadOnly() const = 0;
+    virtual AtomicString localeIdentifier() const = 0;
+    virtual void editControlDidChangeValueByKeyboard() = 0;
+  };
 
-    struct LayoutParameters {
-        STACK_ALLOCATED();
-        String dateTimeFormat;
-        String fallbackDateTimeFormat;
-        Locale& locale;
-        const StepRange stepRange;
-        DateComponents minimum;
-        DateComponents maximum;
-        String placeholderForDay;
-        String placeholderForMonth;
-        String placeholderForYear;
+  struct LayoutParameters {
+    STACK_ALLOCATED();
+    String dateTimeFormat;
+    String fallbackDateTimeFormat;
+    Locale& locale;
+    const StepRange stepRange;
+    DateComponents minimum;
+    DateComponents maximum;
+    String placeholderForDay;
+    String placeholderForMonth;
+    String placeholderForYear;
 
-        LayoutParameters(Locale& locale, const StepRange& stepRange)
-            : locale(locale)
-            , stepRange(stepRange)
-        {
-        }
-    };
+    LayoutParameters(Locale& locale, const StepRange& stepRange)
+        : locale(locale), stepRange(stepRange) {}
+  };
 
-    static DateTimeEditElement* create(Document&, EditControlOwner&);
+  static DateTimeEditElement* create(Document&, EditControlOwner&);
 
-    ~DateTimeEditElement() override;
-    DECLARE_VIRTUAL_TRACE();
+  ~DateTimeEditElement() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void addField(DateTimeFieldElement*);
-    bool anyEditableFieldsHaveValues() const;
-    void blurByOwner();
-    void defaultEventHandler(Event*) override;
-    void disabledStateChanged();
-    Element* fieldsWrapperElement() const;
-    void focusIfNoFocus();
-    // If oldFocusedNode is one of sub-fields, focus on it. Otherwise focus on
-    // the first sub-field.
-    void focusByOwner(Element* oldFocusedElement = 0);
-    bool hasFocusedField();
-    void readOnlyStateChanged();
-    void removeEditControlOwner() { m_editControlOwner = nullptr; }
-    void resetFields();
-    void setEmptyValue(const LayoutParameters&, const DateComponents& dateForReadOnlyField);
-    void setValueAsDate(const LayoutParameters&, const DateComponents&);
-    void setValueAsDateTimeFieldsState(const DateTimeFieldsState&);
-    void setOnlyYearMonthDay(const DateComponents&);
-    void stepDown();
-    void stepUp();
-    String value() const;
-    DateTimeFieldsState valueAsDateTimeFieldsState() const;
+  void addField(DateTimeFieldElement*);
+  bool anyEditableFieldsHaveValues() const;
+  void blurByOwner();
+  void defaultEventHandler(Event*) override;
+  void disabledStateChanged();
+  Element* fieldsWrapperElement() const;
+  void focusIfNoFocus();
+  // If oldFocusedNode is one of sub-fields, focus on it. Otherwise focus on
+  // the first sub-field.
+  void focusByOwner(Element* oldFocusedElement = 0);
+  bool hasFocusedField();
+  void readOnlyStateChanged();
+  void removeEditControlOwner() { m_editControlOwner = nullptr; }
+  void resetFields();
+  void setEmptyValue(const LayoutParameters&,
+                     const DateComponents& dateForReadOnlyField);
+  void setValueAsDate(const LayoutParameters&, const DateComponents&);
+  void setValueAsDateTimeFieldsState(const DateTimeFieldsState&);
+  void setOnlyYearMonthDay(const DateComponents&);
+  void stepDown();
+  void stepUp();
+  String value() const;
+  DateTimeFieldsState valueAsDateTimeFieldsState() const;
 
-private:
-    static const size_t invalidFieldIndex = static_cast<size_t>(-1);
+ private:
+  static const size_t invalidFieldIndex = static_cast<size_t>(-1);
 
-    // Datetime can be represent at most five fields, such as
-    //  1. year
-    //  2. month
-    //  3. day-of-month
-    //  4. hour
-    //  5. minute
-    //  6. second
-    //  7. millisecond
-    //  8. AM/PM
-    static const int maximumNumberOfFields = 8;
+  // Datetime can be represent at most five fields, such as
+  //  1. year
+  //  2. month
+  //  3. day-of-month
+  //  4. hour
+  //  5. minute
+  //  6. second
+  //  7. millisecond
+  //  8. AM/PM
+  static const int maximumNumberOfFields = 8;
 
-    DateTimeEditElement(Document&, EditControlOwner&);
+  DateTimeEditElement(Document&, EditControlOwner&);
 
-    DateTimeFieldElement* fieldAt(size_t) const;
-    size_t fieldIndexOf(const DateTimeFieldElement&) const;
-    DateTimeFieldElement* focusedField() const;
-    size_t focusedFieldIndex() const;
-    bool focusOnNextFocusableField(size_t startIndex);
-    bool isDisabled() const;
-    bool isReadOnly() const;
-    void layout(const LayoutParameters&, const DateComponents&);
-    void updateUIState();
+  DateTimeFieldElement* fieldAt(size_t) const;
+  size_t fieldIndexOf(const DateTimeFieldElement&) const;
+  DateTimeFieldElement* focusedField() const;
+  size_t focusedFieldIndex() const;
+  bool focusOnNextFocusableField(size_t startIndex);
+  bool isDisabled() const;
+  bool isReadOnly() const;
+  void layout(const LayoutParameters&, const DateComponents&);
+  void updateUIState();
 
-    // Element function.
-    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-    bool isDateTimeEditElement() const override;
+  // Element function.
+  PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
+  bool isDateTimeEditElement() const override;
 
-    // DateTimeFieldElement::FieldOwner functions.
-    void didBlurFromField() override;
-    void didFocusOnField() override;
-    void fieldValueChanged() override;
-    bool focusOnNextField(const DateTimeFieldElement&) override;
-    bool focusOnPreviousField(const DateTimeFieldElement&) override;
-    bool isFieldOwnerDisabled() const override;
-    bool isFieldOwnerReadOnly() const override;
-    AtomicString localeIdentifier() const override;
-    void fieldDidChangeValueByKeyboard() override;
+  // DateTimeFieldElement::FieldOwner functions.
+  void didBlurFromField() override;
+  void didFocusOnField() override;
+  void fieldValueChanged() override;
+  bool focusOnNextField(const DateTimeFieldElement&) override;
+  bool focusOnPreviousField(const DateTimeFieldElement&) override;
+  bool isFieldOwnerDisabled() const override;
+  bool isFieldOwnerReadOnly() const override;
+  AtomicString localeIdentifier() const override;
+  void fieldDidChangeValueByKeyboard() override;
 
-    HeapVector<Member<DateTimeFieldElement>, maximumNumberOfFields> m_fields;
-    Member<EditControlOwner> m_editControlOwner;
+  HeapVector<Member<DateTimeFieldElement>, maximumNumberOfFields> m_fields;
+  Member<EditControlOwner> m_editControlOwner;
 };
 
-DEFINE_TYPE_CASTS(DateTimeEditElement, Element, element, element->isDateTimeEditElement(), element.isDateTimeEditElement());
+DEFINE_TYPE_CASTS(DateTimeEditElement,
+                  Element,
+                  element,
+                  element->isDateTimeEditElement(),
+                  element.isDateTimeEditElement());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -14,17 +14,19 @@ class LayoutPoint;
 class LayoutFieldset;
 
 class FieldsetPainter {
-    STACK_ALLOCATED();
-public:
-    FieldsetPainter(const LayoutFieldset& layoutFieldset) : m_layoutFieldset(layoutFieldset) { }
+  STACK_ALLOCATED();
 
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-    void paintMask(const PaintInfo&, const LayoutPoint&);
+ public:
+  FieldsetPainter(const LayoutFieldset& layoutFieldset)
+      : m_layoutFieldset(layoutFieldset) {}
 
-private:
-    const LayoutFieldset& m_layoutFieldset;
+  void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+  void paintMask(const PaintInfo&, const LayoutPoint&);
+
+ private:
+  const LayoutFieldset& m_layoutFieldset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FieldsetPainter_h
+#endif  // FieldsetPainter_h

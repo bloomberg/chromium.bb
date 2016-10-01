@@ -15,66 +15,59 @@ namespace blink {
 #if DCHECK_IS_ON()
 
 class EventDispatchForbiddenScope {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(EventDispatchForbiddenScope);
+
+ public:
+  EventDispatchForbiddenScope() {
+    ASSERT(isMainThread());
+    ++s_count;
+  }
+
+  ~EventDispatchForbiddenScope() {
+    ASSERT(isMainThread());
+    ASSERT(s_count);
+    --s_count;
+  }
+
+  static bool isEventDispatchForbidden() {
+    if (!isMainThread())
+      return false;
+    return s_count;
+  }
+
+  class AllowUserAgentEvents {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(EventDispatchForbiddenScope);
-public:
-    EventDispatchForbiddenScope()
-    {
-        ASSERT(isMainThread());
-        ++s_count;
-    }
 
-    ~EventDispatchForbiddenScope()
-    {
-        ASSERT(isMainThread());
-        ASSERT(s_count);
-        --s_count;
-    }
+   public:
+    AllowUserAgentEvents() : m_change(&s_count, 0) { ASSERT(isMainThread()); }
 
-    static bool isEventDispatchForbidden()
-    {
-        if (!isMainThread())
-            return false;
-        return s_count;
-    }
+    ~AllowUserAgentEvents() { ASSERT(!s_count); }
 
-    class AllowUserAgentEvents {
-        STACK_ALLOCATED();
-    public:
-        AllowUserAgentEvents()
-            : m_change(&s_count, 0)
-        {
-            ASSERT(isMainThread());
-        }
+    AutoReset<unsigned> m_change;
+  };
 
-        ~AllowUserAgentEvents()
-        {
-            ASSERT(!s_count);
-        }
-
-        AutoReset<unsigned> m_change;
-    };
-
-private:
-    PLATFORM_EXPORT static unsigned s_count;
+ private:
+  PLATFORM_EXPORT static unsigned s_count;
 };
 
 #else
 
 class EventDispatchForbiddenScope {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(EventDispatchForbiddenScope);
-public:
-    EventDispatchForbiddenScope() { }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(EventDispatchForbiddenScope);
 
-    class AllowUserAgentEvents {
-    public:
-        AllowUserAgentEvents() { }
-    };
+ public:
+  EventDispatchForbiddenScope() {}
+
+  class AllowUserAgentEvents {
+   public:
+    AllowUserAgentEvents() {}
+  };
 };
 
-#endif // DCHECK_IS_ON()
+#endif  // DCHECK_IS_ON()
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EventDispatchForbiddenScope_h
+#endif  // EventDispatchForbiddenScope_h

@@ -38,31 +38,33 @@
 
 namespace blink {
 
-class KeyAlgorithm : public GarbageCollectedFinalized<KeyAlgorithm>, public ScriptWrappable {
-public:
-    ~KeyAlgorithm() override;
+class KeyAlgorithm : public GarbageCollectedFinalized<KeyAlgorithm>,
+                     public ScriptWrappable {
+ public:
+  ~KeyAlgorithm() override;
 
-    static KeyAlgorithm* create(const WebCryptoKeyAlgorithm&);
-    static KeyAlgorithm* createHash(const WebCryptoAlgorithm&);
+  static KeyAlgorithm* create(const WebCryptoKeyAlgorithm&);
+  static KeyAlgorithm* createHash(const WebCryptoAlgorithm&);
 
-    String name();
+  String name();
 
-    // Needed by SpecialWrapFor and for casting.
-    bool isAesKeyAlgorithm() const;
-    bool isHmacKeyAlgorithm() const;
-    bool isRsaHashedKeyAlgorithm() const;
+  // Needed by SpecialWrapFor and for casting.
+  bool isAesKeyAlgorithm() const;
+  bool isHmacKeyAlgorithm() const;
+  bool isRsaHashedKeyAlgorithm() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    explicit KeyAlgorithm(const WebCryptoKeyAlgorithm&);
+ protected:
+  explicit KeyAlgorithm(const WebCryptoKeyAlgorithm&);
 
-    WebCryptoKeyAlgorithm m_algorithm;
+  WebCryptoKeyAlgorithm m_algorithm;
 };
 
-#define DEFINE_KEY_ALGORITHM_TYPE_CASTS(thisType) \
-    DEFINE_TYPE_CASTS(thisType, KeyAlgorithm, value, value->is##thisType(), value.is##thisType())
+#define DEFINE_KEY_ALGORITHM_TYPE_CASTS(thisType)                         \
+  DEFINE_TYPE_CASTS(thisType, KeyAlgorithm, value, value->is##thisType(), \
+                    value.is##thisType())
 
-} // namespace blink
+}  // namespace blink
 
 #endif

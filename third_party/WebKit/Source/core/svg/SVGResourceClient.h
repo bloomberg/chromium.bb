@@ -17,27 +17,28 @@ class FilterOperations;
 class SVGFilterElement;
 
 class CORE_EXPORT SVGResourceClient : public DocumentResourceClient {
-    USING_PRE_FINALIZER(SVGResourceClient, clearFilterReferences);
-public:
-    SVGResourceClient();
-    ~SVGResourceClient() override;
-    void addFilterReferences(const FilterOperations&, const Document&);
-    void clearFilterReferences();
+  USING_PRE_FINALIZER(SVGResourceClient, clearFilterReferences);
 
-    virtual void filterNeedsInvalidation() = 0;
+ public:
+  SVGResourceClient();
+  ~SVGResourceClient() override;
+  void addFilterReferences(const FilterOperations&, const Document&);
+  void clearFilterReferences();
 
-    void filterWillBeDestroyed(SVGFilterElement*);
+  virtual void filterNeedsInvalidation() = 0;
 
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "SVGResourceClient"; }
+  void filterWillBeDestroyed(SVGFilterElement*);
 
-    DECLARE_TRACE();
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "SVGResourceClient"; }
 
-private:
-    HeapHashSet<WeakMember<SVGFilterElement>> m_internalFilterReferences;
-    HeapVector<Member<DocumentResource>> m_externalFilterReferences;
+  DECLARE_TRACE();
+
+ private:
+  HeapHashSet<WeakMember<SVGFilterElement>> m_internalFilterReferences;
+  HeapVector<Member<DocumentResource>> m_externalFilterReferences;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGResourceClient_h
+#endif  // SVGResourceClient_h

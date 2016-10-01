@@ -30,16 +30,17 @@
 namespace blink {
 
 class WebAudioDestinationConsumer {
-public:
-    virtual ~WebAudioDestinationConsumer() { }
+ public:
+  virtual ~WebAudioDestinationConsumer() {}
 
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
+  virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
 
-    // The size of the vector is the number of audio channels, and numberOfFrames is the
-    // number of audio frames in the (possibly multi-channel) buffer in a planar format.
-    virtual void consumeAudio(const WebVector<const float*>&, size_t numberOfFrames) = 0;
+  // The size of the vector is the number of audio channels, and numberOfFrames is the
+  // number of audio frames in the (possibly multi-channel) buffer in a planar format.
+  virtual void consumeAudio(const WebVector<const float*>&,
+                            size_t numberOfFrames) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebAudioDestinationConsumer_h
+#endif  // WebAudioDestinationConsumer_h

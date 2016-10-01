@@ -48,67 +48,68 @@ namespace blink {
 namespace {
 
 struct StorageTypeMapping {
-    WebStorageQuotaType type;
-    const char* const name;
+  WebStorageQuotaType type;
+  const char* const name;
 };
 
 const StorageTypeMapping storageTypeMappings[] = {
-    { WebStorageQuotaTypeTemporary, "temporary" },
-    { WebStorageQuotaTypePersistent, "persistent" },
+    {WebStorageQuotaTypeTemporary, "temporary"},
+    {WebStorageQuotaTypePersistent, "persistent"},
 };
 
-WebStorageQuotaType stringToStorageQuotaType(const String& type)
-{
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i) {
-        if (storageTypeMappings[i].name == type)
-            return storageTypeMappings[i].type;
-    }
-    ASSERT_NOT_REACHED();
-    return WebStorageQuotaTypeTemporary;
+WebStorageQuotaType stringToStorageQuotaType(const String& type) {
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i) {
+    if (storageTypeMappings[i].name == type)
+      return storageTypeMappings[i].type;
+  }
+  ASSERT_NOT_REACHED();
+  return WebStorageQuotaTypeTemporary;
 }
 
-} // namespace
+}  // namespace
 
-StorageQuota::StorageQuota()
-{
+StorageQuota::StorageQuota() {}
+
+Vector<String> StorageQuota::supportedTypes() const {
+  Vector<String> types;
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i)
+    types.append(storageTypeMappings[i].name);
+  return types;
 }
 
-Vector<String> StorageQuota::supportedTypes() const
-{
-    Vector<String> types;
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(storageTypeMappings); ++i)
-        types.append(storageTypeMappings[i].name);
-    return types;
-}
+ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
 
-ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    SecurityOrigin* securityOrigin = scriptState->getExecutionContext()->getSecurityOrigin();
-    if (securityOrigin->isUnique()) {
-        resolver->reject(DOMError::create(NotSupportedError));
-        return promise;
-    }
-
-    KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    StorageQuotaCallbacks* callbacks = StorageQuotaCallbacksImpl::create(resolver);
-    Platform::current()->queryStorageUsageAndQuota(storagePartition, stringToStorageQuotaType(type), callbacks);
+  SecurityOrigin* securityOrigin =
+      scriptState->getExecutionContext()->getSecurityOrigin();
+  if (securityOrigin->isUnique()) {
+    resolver->reject(DOMError::create(NotSupportedError));
     return promise;
+  }
+
+  KURL storagePartition = KURL(KURL(), securityOrigin->toString());
+  StorageQuotaCallbacks* callbacks =
+      StorageQuotaCallbacksImpl::create(resolver);
+  Platform::current()->queryStorageUsageAndQuota(
+      storagePartition, stringToStorageQuotaType(type), callbacks);
+  return promise;
 }
 
-ScriptPromise StorageQuota::requestPersistentQuota(ScriptState* scriptState, unsigned long long newQuota)
-{
-    StorageQuotaClient* client = StorageQuotaClient::from(scriptState->getExecutionContext());
-    if (!client) {
-        ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-        ScriptPromise promise = resolver->promise();
-        resolver->reject(DOMError::create(NotSupportedError));
-        return promise;
-    }
+ScriptPromise StorageQuota::requestPersistentQuota(
+    ScriptState* scriptState,
+    unsigned long long newQuota) {
+  StorageQuotaClient* client =
+      StorageQuotaClient::from(scriptState->getExecutionContext());
+  if (!client) {
+    ScriptPromiseResolver* resolver =
+        ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    resolver->reject(DOMError::create(NotSupportedError));
+    return promise;
+  }
 
-    return client->requestPersistentQuota(scriptState, newQuota);
+  return client->requestPersistentQuota(scriptState, newQuota);
 }
 
-} // namespace blink
+}  // namespace blink

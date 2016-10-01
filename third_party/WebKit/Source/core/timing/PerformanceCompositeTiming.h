@@ -42,28 +42,33 @@ namespace blink {
 class Document;
 
 class PerformanceCompositeTiming final : public PerformanceEntry {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PerformanceCompositeTiming* create(Document* requestingDocument, unsigned sourceFrame, double startTime)
-    {
-        return new PerformanceCompositeTiming(requestingDocument, sourceFrame, startTime);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned sourceFrame() const;
+ public:
+  static PerformanceCompositeTiming* create(Document* requestingDocument,
+                                            unsigned sourceFrame,
+                                            double startTime) {
+    return new PerformanceCompositeTiming(requestingDocument, sourceFrame,
+                                          startTime);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  unsigned sourceFrame() const;
 
-protected:
-    void buildJSONValue(V8ObjectBuilder&) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    PerformanceCompositeTiming(Document* requestingDocument, unsigned sourceFrame, double startTime);
-    ~PerformanceCompositeTiming() override;
+ protected:
+  void buildJSONValue(V8ObjectBuilder&) const override;
 
-    unsigned m_sourceFrame;
-    Member<Document> m_requestingDocument;
+ private:
+  PerformanceCompositeTiming(Document* requestingDocument,
+                             unsigned sourceFrame,
+                             double startTime);
+  ~PerformanceCompositeTiming() override;
+
+  unsigned m_sourceFrame;
+  Member<Document> m_requestingDocument;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PerformanceCompositeTiming_h
+#endif  // PerformanceCompositeTiming_h

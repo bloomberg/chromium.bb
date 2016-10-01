@@ -19,89 +19,105 @@ namespace blink {
 
 class CanvasContextCreationAttributes;
 class ImageBitmap;
-class OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext;
-typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext OffscreenRenderingContext;
+class
+    OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext;
+typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext
+    OffscreenRenderingContext;
 
-class CORE_EXPORT OffscreenCanvas final : public GarbageCollectedFinalized<OffscreenCanvas>, public ScriptWrappable, public CanvasImageSource {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static OffscreenCanvas* create(unsigned width, unsigned height);
+class CORE_EXPORT OffscreenCanvas final
+    : public GarbageCollectedFinalized<OffscreenCanvas>,
+      public ScriptWrappable,
+      public CanvasImageSource {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // IDL attributes
-    unsigned width() const { return m_size.width(); }
-    unsigned height() const { return m_size.height(); }
-    void setWidth(unsigned, ExceptionState&);
-    void setHeight(unsigned, ExceptionState&);
+ public:
+  static OffscreenCanvas* create(unsigned width, unsigned height);
 
-    // API Methods
-    ImageBitmap* transferToImageBitmap(ExceptionState&);
+  // IDL attributes
+  unsigned width() const { return m_size.width(); }
+  unsigned height() const { return m_size.height(); }
+  void setWidth(unsigned, ExceptionState&);
+  void setHeight(unsigned, ExceptionState&);
 
-    IntSize size() const { return m_size; }
-    void setAssociatedCanvasId(int canvasId) { m_canvasId = canvasId; }
-    int getAssociatedCanvasId() const { return m_canvasId; }
-    bool isNeutered() const { return m_isNeutered; }
-    void setNeutered();
-    CanvasRenderingContext* getCanvasRenderingContext(ScriptState*, const String&, const CanvasContextCreationAttributes&);
-    CanvasRenderingContext* renderingContext() { return m_context; }
+  // API Methods
+  ImageBitmap* transferToImageBitmap(ExceptionState&);
 
-    static void registerRenderingContextFactory(std::unique_ptr<CanvasRenderingContextFactory>);
+  IntSize size() const { return m_size; }
+  void setAssociatedCanvasId(int canvasId) { m_canvasId = canvasId; }
+  int getAssociatedCanvasId() const { return m_canvasId; }
+  bool isNeutered() const { return m_isNeutered; }
+  void setNeutered();
+  CanvasRenderingContext* getCanvasRenderingContext(
+      ScriptState*,
+      const String&,
+      const CanvasContextCreationAttributes&);
+  CanvasRenderingContext* renderingContext() { return m_context; }
 
-    bool originClean() const;
-    void setOriginTainted() { m_originClean = false; }
-    // TODO(crbug.com/630356): apply the flag to WebGL context as well
-    void setDisableReadingFromCanvasTrue() { m_disableReadingFromCanvas = true; }
+  static void registerRenderingContextFactory(
+      std::unique_ptr<CanvasRenderingContextFactory>);
 
-    OffscreenCanvasFrameDispatcher* getOrCreateFrameDispatcher();
+  bool originClean() const;
+  void setOriginTainted() { m_originClean = false; }
+  // TODO(crbug.com/630356): apply the flag to WebGL context as well
+  void setDisableReadingFromCanvasTrue() { m_disableReadingFromCanvas = true; }
 
-    void setSurfaceId(uint32_t clientId, uint32_t localId, uint64_t nonce)
-    {
-        m_clientId = clientId;
-        m_localId = localId;
-        m_nonce = nonce;
-    }
-    uint32_t clientId() const { return m_clientId; }
-    uint32_t localId() const { return m_localId; }
-    uint64_t nonce() const { return m_nonce; }
+  OffscreenCanvasFrameDispatcher* getOrCreateFrameDispatcher();
 
-    // CanvasImageSource implementation
-    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason, const FloatSize&) const final;
-    bool wouldTaintOrigin(SecurityOrigin*) const final { return !m_originClean; }
-    bool isOffscreenCanvas() const final { return true; }
-    FloatSize elementSize(const FloatSize& defaultObjectSize) const final { return FloatSize(width(), height()); }
-    bool isOpaque() const final;
-    bool isAccelerated() const final;
-    int sourceWidth() final { return width(); }
-    int sourceHeight() final { return height(); }
+  void setSurfaceId(uint32_t clientId, uint32_t localId, uint64_t nonce) {
+    m_clientId = clientId;
+    m_localId = localId;
+    m_nonce = nonce;
+  }
+  uint32_t clientId() const { return m_clientId; }
+  uint32_t localId() const { return m_localId; }
+  uint64_t nonce() const { return m_nonce; }
 
-    DECLARE_VIRTUAL_TRACE();
+  // CanvasImageSource implementation
+  PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
+                                            AccelerationHint,
+                                            SnapshotReason,
+                                            const FloatSize&) const final;
+  bool wouldTaintOrigin(SecurityOrigin*) const final { return !m_originClean; }
+  bool isOffscreenCanvas() const final { return true; }
+  FloatSize elementSize(const FloatSize& defaultObjectSize) const final {
+    return FloatSize(width(), height());
+  }
+  bool isOpaque() const final;
+  bool isAccelerated() const final;
+  int sourceWidth() final { return width(); }
+  int sourceHeight() final { return height(); }
 
-private:
-    explicit OffscreenCanvas(const IntSize&);
+  DECLARE_VIRTUAL_TRACE();
 
-    using ContextFactoryVector = Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
-    static ContextFactoryVector& renderingContextFactories();
-    static CanvasRenderingContextFactory* getRenderingContextFactory(int);
+ private:
+  explicit OffscreenCanvas(const IntSize&);
 
-    Member<CanvasRenderingContext> m_context;
-    int m_canvasId = -1; // DOMNodeIds starts from 0, using -1 to indicate no associated canvas element.
-    IntSize m_size;
-    bool m_isNeutered = false;
+  using ContextFactoryVector =
+      Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
+  static ContextFactoryVector& renderingContextFactories();
+  static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
-    bool m_originClean;
-    bool m_disableReadingFromCanvas = false;
+  Member<CanvasRenderingContext> m_context;
+  int m_canvasId =
+      -1;  // DOMNodeIds starts from 0, using -1 to indicate no associated canvas element.
+  IntSize m_size;
+  bool m_isNeutered = false;
 
-    bool isPaintable() const;
+  bool m_originClean;
+  bool m_disableReadingFromCanvas = false;
 
-    std::unique_ptr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
-    // cc::SurfaceId is broken into three integer components as this can be used
-    // in transfer of OffscreenCanvas across threads
-    // If this object is not created via HTMLCanvasElement.transferControlToOffscreen(),
-    // then the following members would remain as initialized zero values.
-    uint32_t m_clientId = 0;
-    uint32_t m_localId = 0;
-    uint64_t m_nonce = 0;
+  bool isPaintable() const;
+
+  std::unique_ptr<OffscreenCanvasFrameDispatcher> m_frameDispatcher;
+  // cc::SurfaceId is broken into three integer components as this can be used
+  // in transfer of OffscreenCanvas across threads
+  // If this object is not created via HTMLCanvasElement.transferControlToOffscreen(),
+  // then the following members would remain as initialized zero values.
+  uint32_t m_clientId = 0;
+  uint32_t m_localId = 0;
+  uint64_t m_nonce = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OffscreenCanvas_h
+#endif  // OffscreenCanvas_h

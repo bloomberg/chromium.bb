@@ -34,9 +34,8 @@
 
 namespace blink {
 
-void WebImageCache::clear()
-{
-    ImageDecodingStore::instance().clear();
+void WebImageCache::clear() {
+  ImageDecodingStore::instance().clear();
 }
 
 }  // namespace blink

@@ -32,71 +32,83 @@
 namespace blink {
 
 class PLATFORM_EXPORT TranslateTransformOperation : public TransformOperation {
-public:
-    static PassRefPtr<TranslateTransformOperation> create(const Length& tx, const Length& ty, OperationType type)
-    {
-        return adoptRef(new TranslateTransformOperation(tx, ty, 0, type));
-    }
+ public:
+  static PassRefPtr<TranslateTransformOperation> create(const Length& tx,
+                                                        const Length& ty,
+                                                        OperationType type) {
+    return adoptRef(new TranslateTransformOperation(tx, ty, 0, type));
+  }
 
-    static PassRefPtr<TranslateTransformOperation> create(const Length& tx, const Length& ty, double tz, OperationType type)
-    {
-        return adoptRef(new TranslateTransformOperation(tx, ty, tz, type));
-    }
+  static PassRefPtr<TranslateTransformOperation> create(const Length& tx,
+                                                        const Length& ty,
+                                                        double tz,
+                                                        OperationType type) {
+    return adoptRef(new TranslateTransformOperation(tx, ty, tz, type));
+  }
 
-    virtual bool canBlendWith(const TransformOperation& other) const;
+  virtual bool canBlendWith(const TransformOperation& other) const;
 
-    double x(const FloatSize& borderBoxSize) const { return floatValueForLength(m_x, borderBoxSize.width()); }
-    double y(const FloatSize& borderBoxSize) const { return floatValueForLength(m_y, borderBoxSize.height()); }
+  double x(const FloatSize& borderBoxSize) const {
+    return floatValueForLength(m_x, borderBoxSize.width());
+  }
+  double y(const FloatSize& borderBoxSize) const {
+    return floatValueForLength(m_y, borderBoxSize.height());
+  }
 
-    Length x() const { return m_x; }
-    Length y() const { return m_y; }
-    double z() const { return m_z; }
+  Length x() const { return m_x; }
+  Length y() const { return m_y; }
+  double z() const { return m_z; }
 
-    void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const override
-    {
-        transform.translate3d(x(borderBoxSize), y(borderBoxSize), z());
-    }
+  void apply(TransformationMatrix& transform,
+             const FloatSize& borderBoxSize) const override {
+    transform.translate3d(x(borderBoxSize), y(borderBoxSize), z());
+  }
 
-    static bool isMatchingOperationType(OperationType type) { return type == Translate || type == TranslateX || type == TranslateY || type == TranslateZ || type == Translate3D; }
+  static bool isMatchingOperationType(OperationType type) {
+    return type == Translate || type == TranslateX || type == TranslateY ||
+           type == TranslateZ || type == Translate3D;
+  }
 
-    PassRefPtr<TranslateTransformOperation> zoomTranslate(double factor);
+  PassRefPtr<TranslateTransformOperation> zoomTranslate(double factor);
 
-private:
-    OperationType type() const override { return m_type; }
+ private:
+  OperationType type() const override { return m_type; }
 
-    bool operator==(const TransformOperation& o) const override
-    {
-        if (!isSameType(o))
-            return false;
-        const TranslateTransformOperation* t = static_cast<const TranslateTransformOperation*>(&o);
-        return m_x == t->m_x && m_y == t->m_y && m_z == t->m_z;
-    }
+  bool operator==(const TransformOperation& o) const override {
+    if (!isSameType(o))
+      return false;
+    const TranslateTransformOperation* t =
+        static_cast<const TranslateTransformOperation*>(&o);
+    return m_x == t->m_x && m_y == t->m_y && m_z == t->m_z;
+  }
 
-    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
-    PassRefPtr<TransformOperation> zoom(double factor) final { return zoomTranslate(factor); }
+  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+                                       double progress,
+                                       bool blendToIdentity = false) override;
+  PassRefPtr<TransformOperation> zoom(double factor) final {
+    return zoomTranslate(factor);
+  }
 
-    bool dependsOnBoxSize() const override
-    {
-        return m_x.isPercentOrCalc() || m_y.isPercentOrCalc();
-    }
+  bool dependsOnBoxSize() const override {
+    return m_x.isPercentOrCalc() || m_y.isPercentOrCalc();
+  }
 
-    TranslateTransformOperation(const Length& tx, const Length& ty, double tz, OperationType type)
-        : m_x(tx)
-        , m_y(ty)
-        , m_z(tz)
-        , m_type(type)
-    {
-        ASSERT(isMatchingOperationType(type));
-    }
+  TranslateTransformOperation(const Length& tx,
+                              const Length& ty,
+                              double tz,
+                              OperationType type)
+      : m_x(tx), m_y(ty), m_z(tz), m_type(type) {
+    ASSERT(isMatchingOperationType(type));
+  }
 
-    Length m_x;
-    Length m_y;
-    double m_z;
-    OperationType m_type;
+  Length m_x;
+  Length m_y;
+  double m_z;
+  OperationType m_type;
 };
 
 DEFINE_TRANSFORM_TYPE_CASTS(TranslateTransformOperation);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TranslateTransformOperation_h
+#endif  // TranslateTransformOperation_h

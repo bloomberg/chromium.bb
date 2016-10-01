@@ -39,33 +39,32 @@
 namespace blink {
 
 class RectangleShape final : public Shape {
-public:
-    RectangleShape(const FloatRect& bounds, const FloatSize& radii)
-        : Shape()
-        , m_bounds(bounds)
-        , m_radii(radii)
-    {
-    }
+ public:
+  RectangleShape(const FloatRect& bounds, const FloatSize& radii)
+      : Shape(), m_bounds(bounds), m_radii(radii) {}
 
-    LayoutRect shapeMarginLogicalBoundingBox() const override { return static_cast<LayoutRect>(shapeMarginBounds()); }
-    bool isEmpty() const override { return m_bounds.isEmpty(); }
-    LineSegment getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const override;
-    void buildDisplayPaths(DisplayPaths&) const override;
+  LayoutRect shapeMarginLogicalBoundingBox() const override {
+    return static_cast<LayoutRect>(shapeMarginBounds());
+  }
+  bool isEmpty() const override { return m_bounds.isEmpty(); }
+  LineSegment getExcludedInterval(LayoutUnit logicalTop,
+                                  LayoutUnit logicalHeight) const override;
+  void buildDisplayPaths(DisplayPaths&) const override;
 
-private:
-    FloatRect shapeMarginBounds() const;
+ private:
+  FloatRect shapeMarginBounds() const;
 
-    float rx() const { return m_radii.width(); }
-    float ry() const { return m_radii.height(); }
-    float x() const { return m_bounds.x(); }
-    float y() const { return m_bounds.y(); }
-    float width() const { return m_bounds.width(); }
-    float height() const { return m_bounds.height(); }
+  float rx() const { return m_radii.width(); }
+  float ry() const { return m_radii.height(); }
+  float x() const { return m_bounds.x(); }
+  float y() const { return m_bounds.y(); }
+  float width() const { return m_bounds.width(); }
+  float height() const { return m_bounds.height(); }
 
-    FloatRect m_bounds;
-    FloatSize m_radii;
+  FloatRect m_bounds;
+  FloatSize m_radii;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RectangleShape_h
+#endif  // RectangleShape_h

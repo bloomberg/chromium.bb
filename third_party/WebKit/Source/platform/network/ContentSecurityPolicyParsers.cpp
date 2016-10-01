@@ -9,61 +9,50 @@
 
 namespace blink {
 
-bool isCSPDirectiveNameCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '-';
+bool isCSPDirectiveNameCharacter(UChar c) {
+  return isASCIIAlphanumeric(c) || c == '-';
 }
 
-bool isCSPDirectiveValueCharacter(UChar c)
-{
-    return isASCIISpace(c) || (c >= 0x21 && c <= 0x7e); // Whitespace + VCHAR
+bool isCSPDirectiveValueCharacter(UChar c) {
+  return isASCIISpace(c) || (c >= 0x21 && c <= 0x7e);  // Whitespace + VCHAR
 }
 
 // Only checks for general Base64(url) encoded chars, not '=' chars since '=' is
 // positional and may only appear at the end of a Base64 encoded string.
-bool isBase64EncodedCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '+' || c == '/' || c == '-' || c == '_';
+bool isBase64EncodedCharacter(UChar c) {
+  return isASCIIAlphanumeric(c) || c == '+' || c == '/' || c == '-' || c == '_';
 }
 
-bool isNonceCharacter(UChar c)
-{
-    return isBase64EncodedCharacter(c) || c == '=';
+bool isNonceCharacter(UChar c) {
+  return isBase64EncodedCharacter(c) || c == '=';
 }
 
-bool isSourceCharacter(UChar c)
-{
-    return !isASCIISpace(c);
+bool isSourceCharacter(UChar c) {
+  return !isASCIISpace(c);
 }
 
-bool isPathComponentCharacter(UChar c)
-{
-    return c != '?' && c != '#';
+bool isPathComponentCharacter(UChar c) {
+  return c != '?' && c != '#';
 }
 
-bool isHostCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '-';
+bool isHostCharacter(UChar c) {
+  return isASCIIAlphanumeric(c) || c == '-';
 }
 
-bool isSchemeContinuationCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '+' || c == '-' || c == '.';
+bool isSchemeContinuationCharacter(UChar c) {
+  return isASCIIAlphanumeric(c) || c == '+' || c == '-' || c == '.';
 }
 
-bool isNotASCIISpace(UChar c)
-{
-    return !isASCIISpace(c);
+bool isNotASCIISpace(UChar c) {
+  return !isASCIISpace(c);
 }
 
-bool isNotColonOrSlash(UChar c)
-{
-    return c != ':' && c != '/';
+bool isNotColonOrSlash(UChar c) {
+  return c != ':' && c != '/';
 }
 
-bool isMediaTypeCharacter(UChar c)
-{
-    return !isASCIISpace(c) && c != '/';
+bool isMediaTypeCharacter(UChar c) {
+  return !isASCIISpace(c) && c != '/';
 }
 
-} // namespace blink
+}  // namespace blink

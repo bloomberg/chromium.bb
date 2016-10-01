@@ -10,19 +10,18 @@ namespace blink {
 
 static bool showPaintRectsEnabled = false;
 
-bool firstPaintInvalidationTrackingEnabled()
-{
-    if (showPaintRectsEnabled)
-        return true;
+bool firstPaintInvalidationTrackingEnabled() {
+  if (showPaintRectsEnabled)
+    return true;
 
-    bool isTracingEnabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), &isTracingEnabled);
-    return isTracingEnabled;
+  bool isTracingEnabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), &isTracingEnabled);
+  return isTracingEnabled;
 }
 
-void setFirstPaintInvalidationTrackingEnabledForShowPaintRects(bool b)
-{
-    showPaintRectsEnabled = b;
+void setFirstPaintInvalidationTrackingEnabledForShowPaintRects(bool b) {
+  showPaintRectsEnabled = b;
 }
 
-} // namespace blink
+}  // namespace blink

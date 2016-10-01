@@ -25,71 +25,69 @@
 namespace blink {
 
 class HTMLCanvasPainterTestForSPv2 : public ::testing::Test {
-protected:
-    void SetUp() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        m_chromeClient = new StubChromeClientForSPv2();
-        Page::PageClients clients;
-        fillWithEmptyClients(clients);
-        clients.chromeClient = m_chromeClient.get();
-        m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients, nullptr,
-            [](Settings& settings)
-            {
-                settings.setAcceleratedCompositingEnabled(true);
-                // LayoutHTMLCanvas doesn't exist if script is disabled.
-                settings.setScriptEnabled(true);
-            });
-        document().view()->setParentVisible(true);
-        document().view()->setSelfVisible(true);
-    }
+ protected:
+  void SetUp() override {
+    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
+    m_chromeClient = new StubChromeClientForSPv2();
+    Page::PageClients clients;
+    fillWithEmptyClients(clients);
+    clients.chromeClient = m_chromeClient.get();
+    m_pageHolder = DummyPageHolder::create(
+        IntSize(800, 600), &clients, nullptr, [](Settings& settings) {
+          settings.setAcceleratedCompositingEnabled(true);
+          // LayoutHTMLCanvas doesn't exist if script is disabled.
+          settings.setScriptEnabled(true);
+        });
+    document().view()->setParentVisible(true);
+    document().view()->setSelfVisible(true);
+  }
 
-    void TearDown() override
-    {
-        m_featuresBackup.restore();
-    }
+  void TearDown() override { m_featuresBackup.restore(); }
 
-    Document& document() { return m_pageHolder->document(); }
-    bool hasLayerAttached(const WebLayer& layer) { return m_chromeClient->hasLayer(layer); }
+  Document& document() { return m_pageHolder->document(); }
+  bool hasLayerAttached(const WebLayer& layer) {
+    return m_chromeClient->hasLayer(layer);
+  }
 
-    PassRefPtr<Canvas2DLayerBridge> makeCanvas2DLayerBridge(const IntSize& size)
-    {
-        return adoptRef(new Canvas2DLayerBridge(
-            wrapUnique(new FakeWebGraphicsContext3DProvider(&m_gl)),
-            size, 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting,
-            nullptr));
-    }
+  PassRefPtr<Canvas2DLayerBridge> makeCanvas2DLayerBridge(const IntSize& size) {
+    return adoptRef(new Canvas2DLayerBridge(
+        wrapUnique(new FakeWebGraphicsContext3DProvider(&m_gl)), size, 0,
+        NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr));
+  }
 
-private:
-    RuntimeEnabledFeatures::Backup m_featuresBackup;
-    Persistent<StubChromeClientForSPv2> m_chromeClient;
-    FakeGLES2Interface m_gl;
-    std::unique_ptr<DummyPageHolder> m_pageHolder;
+ private:
+  RuntimeEnabledFeatures::Backup m_featuresBackup;
+  Persistent<StubChromeClientForSPv2> m_chromeClient;
+  FakeGLES2Interface m_gl;
+  std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
-TEST_F(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree)
-{
-    // Insert a <canvas> and force it into accelerated mode.
-    document().body()->setInnerHTML("<canvas width=300 height=200>", ASSERT_NO_EXCEPTION);
-    HTMLCanvasElement* element = toHTMLCanvasElement(document().body()->firstChild());
-    CanvasContextCreationAttributes attributes;
-    attributes.setAlpha(true);
-    CanvasRenderingContext* context = element->getCanvasRenderingContext("2d", attributes);
-    RefPtr<Canvas2DLayerBridge> bridge = makeCanvas2DLayerBridge(IntSize(300, 200));
-    element->createImageBufferUsingSurfaceForTesting(
-        wrapUnique(new Canvas2DImageBufferSurface(bridge, IntSize(300, 200))));
-    ASSERT_EQ(context, element->renderingContext());
-    ASSERT_TRUE(context->isAccelerated());
+TEST_F(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
+  // Insert a <canvas> and force it into accelerated mode.
+  document().body()->setInnerHTML("<canvas width=300 height=200>",
+                                  ASSERT_NO_EXCEPTION);
+  HTMLCanvasElement* element =
+      toHTMLCanvasElement(document().body()->firstChild());
+  CanvasContextCreationAttributes attributes;
+  attributes.setAlpha(true);
+  CanvasRenderingContext* context =
+      element->getCanvasRenderingContext("2d", attributes);
+  RefPtr<Canvas2DLayerBridge> bridge =
+      makeCanvas2DLayerBridge(IntSize(300, 200));
+  element->createImageBufferUsingSurfaceForTesting(
+      wrapUnique(new Canvas2DImageBufferSurface(bridge, IntSize(300, 200))));
+  ASSERT_EQ(context, element->renderingContext());
+  ASSERT_TRUE(context->isAccelerated());
 
-    // Force the page to paint.
-    document().view()->updateAllLifecyclePhases();
+  // Force the page to paint.
+  document().view()->updateAllLifecyclePhases();
 
-    // Fetch the layer associated with the <canvas>, and check that it was
-    // correctly configured in the layer tree.
-    const WebLayer* layer = context->platformLayer();
-    ASSERT_TRUE(layer);
-    EXPECT_TRUE(hasLayerAttached(*layer));
-    EXPECT_EQ(WebSize(300, 200), layer->bounds());
+  // Fetch the layer associated with the <canvas>, and check that it was
+  // correctly configured in the layer tree.
+  const WebLayer* layer = context->platformLayer();
+  ASSERT_TRUE(layer);
+  EXPECT_TRUE(hasLayerAttached(*layer));
+  EXPECT_EQ(WebSize(300, 200), layer->bounds());
 }
 
-} // namespace blink
+}  // namespace blink

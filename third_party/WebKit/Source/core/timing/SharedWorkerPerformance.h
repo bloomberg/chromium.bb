@@ -38,23 +38,26 @@ namespace blink {
 class ExecutionContext;
 class SharedWorker;
 
-class SharedWorkerPerformance final : public GarbageCollected<SharedWorkerPerformance>, public Supplement<SharedWorker> {
-    USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerPerformance);
-public:
-    static SharedWorkerPerformance& from(SharedWorker&);
+class SharedWorkerPerformance final
+    : public GarbageCollected<SharedWorkerPerformance>,
+      public Supplement<SharedWorker> {
+  USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerPerformance);
 
-    static double workerStart(ExecutionContext*, SharedWorker&);
-    double getWorkerStart(ExecutionContext*, SharedWorker&) const;
+ public:
+  static SharedWorkerPerformance& from(SharedWorker&);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<SharedWorker>::trace(visitor); }
+  static double workerStart(ExecutionContext*, SharedWorker&);
+  double getWorkerStart(ExecutionContext*, SharedWorker&) const;
 
-private:
-    SharedWorkerPerformance();
-    static const char* supplementName();
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<SharedWorker>::trace(visitor); }
 
-    double m_timeOrigin;
+ private:
+  SharedWorkerPerformance();
+  static const char* supplementName();
+
+  double m_timeOrigin;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SharedWorkerPerformance_h
+#endif  // SharedWorkerPerformance_h

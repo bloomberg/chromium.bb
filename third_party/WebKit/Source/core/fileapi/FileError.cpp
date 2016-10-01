@@ -38,113 +38,131 @@ namespace blink {
 
 namespace FileError {
 
-const char abortErrorMessage[] = "An ongoing operation was aborted, typically with a call to abort().";
-const char encodingErrorMessage[] = "A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.";
-const char invalidStateErrorMessage[] = "An operation that depends on state cached in an interface object was made but the state had changed since it was read from disk.";
-const char noModificationAllowedErrorMessage[] = "An attempt was made to write to a file or directory which could not be modified due to the state of the underlying filesystem.";
-const char notFoundErrorMessage[] = "A requested file or directory could not be found at the time an operation was processed.";
-const char notReadableErrorMessage[] = "The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.";
-const char pathExistsErrorMessage[] = "An attempt was made to create a file or directory where an element already exists.";
-const char quotaExceededErrorMessage[] = "The operation failed because it would cause the application to exceed its storage quota.";
-const char securityErrorMessage[] = "It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.";
-const char syntaxErrorMessage[] = "An invalid or unsupported argument was given, like an invalid line ending specifier.";
-const char typeMismatchErrorMessage[] = "The path supplied exists, but was not an entry of requested type.";
+const char abortErrorMessage[] =
+    "An ongoing operation was aborted, typically with a call to abort().";
+const char encodingErrorMessage[] =
+    "A URI supplied to the API was malformed, or the resulting Data URL has "
+    "exceeded the URL length limitations for Data URLs.";
+const char invalidStateErrorMessage[] =
+    "An operation that depends on state cached in an interface object was made "
+    "but the state had changed since it was read from disk.";
+const char noModificationAllowedErrorMessage[] =
+    "An attempt was made to write to a file or directory which could not be "
+    "modified due to the state of the underlying filesystem.";
+const char notFoundErrorMessage[] =
+    "A requested file or directory could not be found at the time an operation "
+    "was processed.";
+const char notReadableErrorMessage[] =
+    "The requested file could not be read, typically due to permission "
+    "problems that have occurred after a reference to a file was acquired.";
+const char pathExistsErrorMessage[] =
+    "An attempt was made to create a file or directory where an element "
+    "already exists.";
+const char quotaExceededErrorMessage[] =
+    "The operation failed because it would cause the application to exceed its "
+    "storage quota.";
+const char securityErrorMessage[] =
+    "It was determined that certain files are unsafe for access within a Web "
+    "application, or that too many calls are being made on file resources.";
+const char syntaxErrorMessage[] =
+    "An invalid or unsupported argument was given, like an invalid line ending "
+    "specifier.";
+const char typeMismatchErrorMessage[] =
+    "The path supplied exists, but was not an entry of requested type.";
 
 namespace {
 
-ExceptionCode errorCodeToExceptionCode(ErrorCode code)
-{
-    switch (code) {
+ExceptionCode errorCodeToExceptionCode(ErrorCode code) {
+  switch (code) {
     case kOK:
-        return 0;
+      return 0;
     case kNotFoundErr:
-        return NotFoundError;
+      return NotFoundError;
     case kSecurityErr:
-        return SecurityError;
+      return SecurityError;
     case kAbortErr:
-        return AbortError;
+      return AbortError;
     case kNotReadableErr:
-        return NotReadableError;
+      return NotReadableError;
     case kEncodingErr:
-        return EncodingError;
+      return EncodingError;
     case kNoModificationAllowedErr:
-        return NoModificationAllowedError;
+      return NoModificationAllowedError;
     case kInvalidStateErr:
-        return InvalidStateError;
+      return InvalidStateError;
     case kSyntaxErr:
-        return SyntaxError;
+      return SyntaxError;
     case kInvalidModificationErr:
-        return InvalidModificationError;
+      return InvalidModificationError;
     case kQuotaExceededErr:
-        return QuotaExceededError;
+      return QuotaExceededError;
     case kTypeMismatchErr:
-        return TypeMismatchError;
+      return TypeMismatchError;
     case kPathExistsErr:
-        return PathExistsError;
+      return PathExistsError;
     default:
-        ASSERT_NOT_REACHED();
-        return code;
-    }
+      ASSERT_NOT_REACHED();
+      return code;
+  }
 }
 
-const char* errorCodeToMessage(ErrorCode code)
-{
-    // Note that some of these do not set message. If message is 0 then the default message is used.
-    switch (code) {
+const char* errorCodeToMessage(ErrorCode code) {
+  // Note that some of these do not set message. If message is 0 then the default message is used.
+  switch (code) {
     case kOK:
-        return 0;
+      return 0;
     case kSecurityErr:
-        return securityErrorMessage;
+      return securityErrorMessage;
     case kNotFoundErr:
-        return notFoundErrorMessage;
+      return notFoundErrorMessage;
     case kAbortErr:
-        return abortErrorMessage;
+      return abortErrorMessage;
     case kNotReadableErr:
-        return notReadableErrorMessage;
+      return notReadableErrorMessage;
     case kEncodingErr:
-        return encodingErrorMessage;
+      return encodingErrorMessage;
     case kNoModificationAllowedErr:
-        return noModificationAllowedErrorMessage;
+      return noModificationAllowedErrorMessage;
     case kInvalidStateErr:
-        return invalidStateErrorMessage;
+      return invalidStateErrorMessage;
     case kSyntaxErr:
-        return syntaxErrorMessage;
+      return syntaxErrorMessage;
     case kInvalidModificationErr:
-        return 0;
+      return 0;
     case kQuotaExceededErr:
-        return quotaExceededErrorMessage;
+      return quotaExceededErrorMessage;
     case kTypeMismatchErr:
-        return 0;
+      return 0;
     case kPathExistsErr:
-        return pathExistsErrorMessage;
+      return pathExistsErrorMessage;
     default:
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
+      ASSERT_NOT_REACHED();
+      return 0;
+  }
 }
 
-} // namespace
+}  // namespace
 
-void throwDOMException(ExceptionState& exceptionState, ErrorCode code)
-{
-    if (code == kOK)
-        return;
+void throwDOMException(ExceptionState& exceptionState, ErrorCode code) {
+  if (code == kOK)
+    return;
 
-    // SecurityError is special-cased, as we want to route those exceptions through ExceptionState::throwSecurityError.
-    if (code == kSecurityErr) {
-        exceptionState.throwSecurityError(securityErrorMessage);
-        return;
-    }
+  // SecurityError is special-cased, as we want to route those exceptions through ExceptionState::throwSecurityError.
+  if (code == kSecurityErr) {
+    exceptionState.throwSecurityError(securityErrorMessage);
+    return;
+  }
 
-    exceptionState.throwDOMException(errorCodeToExceptionCode(code), errorCodeToMessage(code));
+  exceptionState.throwDOMException(errorCodeToExceptionCode(code),
+                                   errorCodeToMessage(code));
 }
 
-DOMException* createDOMException(ErrorCode code)
-{
-    DCHECK_NE(code, kOK);
-    return DOMException::create(errorCodeToExceptionCode(code), errorCodeToMessage(code));
+DOMException* createDOMException(ErrorCode code) {
+  DCHECK_NE(code, kOK);
+  return DOMException::create(errorCodeToExceptionCode(code),
+                              errorCodeToMessage(code));
 }
 
-} // namespace FileError
+}  // namespace FileError
 
-} // namespace blink
+}  // namespace blink

@@ -10,13 +10,13 @@
 namespace blink {
 
 struct WebRelatedApplication {
-    WebRelatedApplication() {}
+  WebRelatedApplication() {}
 
-    WebString platform;
-    WebString url;
-    WebString id;
+  WebString platform;
+  WebString url;
+  WebString id;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRelatedApplication_h
+#endif  // WebRelatedApplication_h

@@ -36,42 +36,60 @@ namespace blink {
 class LocalFrame;
 class InspectedFrames;
 
-class CORE_EXPORT InspectorApplicationCacheAgent final : public InspectorBaseAgent<protocol::ApplicationCache::Metainfo> {
-    WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
-public:
-    static InspectorApplicationCacheAgent* create(InspectedFrames* inspectedFrames)
-    {
-        return new InspectorApplicationCacheAgent(inspectedFrames);
-    }
-    ~InspectorApplicationCacheAgent() override { }
-    DECLARE_VIRTUAL_TRACE();
+class CORE_EXPORT InspectorApplicationCacheAgent final
+    : public InspectorBaseAgent<protocol::ApplicationCache::Metainfo> {
+  WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
 
-    // InspectorBaseAgent
-    void restore() override;
-    void disable(ErrorString*) override;
+ public:
+  static InspectorApplicationCacheAgent* create(
+      InspectedFrames* inspectedFrames) {
+    return new InspectorApplicationCacheAgent(inspectedFrames);
+  }
+  ~InspectorApplicationCacheAgent() override {}
+  DECLARE_VIRTUAL_TRACE();
 
-    // InspectorInstrumentation API
-    void updateApplicationCacheStatus(LocalFrame*);
-    void networkStateChanged(LocalFrame*, bool online);
+  // InspectorBaseAgent
+  void restore() override;
+  void disable(ErrorString*) override;
 
-    // ApplicationCache API for frontend
-    void getFramesWithManifests(ErrorString*, std::unique_ptr<protocol::Array<protocol::ApplicationCache::FrameWithManifest>>* frameIds) override;
-    void enable(ErrorString*) override;
-    void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) override;
-    void getApplicationCacheForFrame(ErrorString*, const String& frameId, std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*) override;
+  // InspectorInstrumentation API
+  void updateApplicationCacheStatus(LocalFrame*);
+  void networkStateChanged(LocalFrame*, bool online);
 
-private:
-    explicit InspectorApplicationCacheAgent(InspectedFrames*);
+  // ApplicationCache API for frontend
+  void getFramesWithManifests(
+      ErrorString*,
+      std::unique_ptr<
+          protocol::Array<protocol::ApplicationCache::FrameWithManifest>>*
+          frameIds) override;
+  void enable(ErrorString*) override;
+  void getManifestForFrame(ErrorString*,
+                           const String& frameId,
+                           String* manifestURL) override;
+  void getApplicationCacheForFrame(
+      ErrorString*,
+      const String& frameId,
+      std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*) override;
 
-    std::unique_ptr<protocol::ApplicationCache::ApplicationCache> buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&, const ApplicationCacheHost::CacheInfo&);
-    std::unique_ptr<protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>> buildArrayForApplicationCacheResources(const ApplicationCacheHost::ResourceInfoList&);
-    std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo&);
+ private:
+  explicit InspectorApplicationCacheAgent(InspectedFrames*);
 
-    DocumentLoader* assertFrameWithDocumentLoader(ErrorString*, String frameId);
+  std::unique_ptr<protocol::ApplicationCache::ApplicationCache>
+  buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&,
+                                 const ApplicationCacheHost::CacheInfo&);
+  std::unique_ptr<
+      protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
+  buildArrayForApplicationCacheResources(
+      const ApplicationCacheHost::ResourceInfoList&);
+  std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource>
+  buildObjectForApplicationCacheResource(
+      const ApplicationCacheHost::ResourceInfo&);
 
-    Member<InspectedFrames> m_inspectedFrames;
+  DocumentLoader* assertFrameWithDocumentLoader(ErrorString*, String frameId);
+
+  Member<InspectedFrames> m_inspectedFrames;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InspectorApplicationCacheAgent_h
+#endif  // InspectorApplicationCacheAgent_h

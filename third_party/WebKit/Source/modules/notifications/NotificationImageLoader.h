@@ -23,44 +23,44 @@ class ResourceError;
 
 // Asynchronously downloads an image when given a url, decodes the loaded data,
 // and passes the bitmap to the given callback.
-class NotificationImageLoader final : public GarbageCollectedFinalized<NotificationImageLoader>, public ThreadableLoaderClient {
-public:
-    // The bitmap may be empty if the request failed or the image data could not
-    // be decoded.
-    using ImageCallback = Function<void(const SkBitmap&)>;
+class NotificationImageLoader final
+    : public GarbageCollectedFinalized<NotificationImageLoader>,
+      public ThreadableLoaderClient {
+ public:
+  // The bitmap may be empty if the request failed or the image data could not
+  // be decoded.
+  using ImageCallback = Function<void(const SkBitmap&)>;
 
-    NotificationImageLoader();
-    ~NotificationImageLoader() override;
+  NotificationImageLoader();
+  ~NotificationImageLoader() override;
 
-    // Asynchronously downloads an image from the given url, decodes the loaded
-    // data, and passes the bitmap to the callback.
-    void start(ExecutionContext*, const KURL&, std::unique_ptr<ImageCallback>);
+  // Asynchronously downloads an image from the given url, decodes the loaded
+  // data, and passes the bitmap to the callback.
+  void start(ExecutionContext*, const KURL&, std::unique_ptr<ImageCallback>);
 
-    // Cancels the pending load, if there is one. The |m_imageCallback| will not
-    // be run.
-    void stop();
+  // Cancels the pending load, if there is one. The |m_imageCallback| will not
+  // be run.
+  void stop();
 
-    // ThreadableLoaderClient interface.
-    void didReceiveData(const char* data, unsigned length) override;
-    void didFinishLoading(unsigned long resourceIdentifier, double finishTime) override;
-    void didFail(const ResourceError&) override;
-    void didFailRedirectCheck() override;
+  // ThreadableLoaderClient interface.
+  void didReceiveData(const char* data, unsigned length) override;
+  void didFinishLoading(unsigned long resourceIdentifier,
+                        double finishTime) override;
+  void didFail(const ResourceError&) override;
+  void didFailRedirectCheck() override;
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_threadableLoader);
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_threadableLoader); }
 
-private:
-    void runCallbackWithEmptyBitmap();
+ private:
+  void runCallbackWithEmptyBitmap();
 
-    bool m_stopped;
-    double m_startTime;
-    RefPtr<SharedBuffer> m_data;
-    std::unique_ptr<ImageCallback> m_imageCallback;
-    Member<ThreadableLoader> m_threadableLoader;
+  bool m_stopped;
+  double m_startTime;
+  RefPtr<SharedBuffer> m_data;
+  std::unique_ptr<ImageCallback> m_imageCallback;
+  Member<ThreadableLoader> m_threadableLoader;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NotificationImageLoader_h
+#endif  // NotificationImageLoader_h

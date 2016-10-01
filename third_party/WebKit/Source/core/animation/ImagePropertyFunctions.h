@@ -11,42 +11,45 @@
 namespace blink {
 
 class ImagePropertyFunctions {
-public:
-    static const StyleImage* getInitialStyleImage(CSSPropertyID) { return nullptr; }
+ public:
+  static const StyleImage* getInitialStyleImage(CSSPropertyID) {
+    return nullptr;
+  }
 
-    static const StyleImage* getStyleImage(CSSPropertyID property, const ComputedStyle& style)
-    {
-        switch (property) {
-        case CSSPropertyBorderImageSource:
-            return style.borderImageSource();
-        case CSSPropertyListStyleImage:
-            return style.listStyleImage();
-        case CSSPropertyWebkitMaskBoxImageSource:
-            return style.maskBoxImageSource();
-        default:
-            NOTREACHED();
-            return nullptr;
-        }
+  static const StyleImage* getStyleImage(CSSPropertyID property,
+                                         const ComputedStyle& style) {
+    switch (property) {
+      case CSSPropertyBorderImageSource:
+        return style.borderImageSource();
+      case CSSPropertyListStyleImage:
+        return style.listStyleImage();
+      case CSSPropertyWebkitMaskBoxImageSource:
+        return style.maskBoxImageSource();
+      default:
+        NOTREACHED();
+        return nullptr;
     }
+  }
 
-    static void setStyleImage(CSSPropertyID property, ComputedStyle& style, StyleImage* image)
-    {
-        switch (property) {
-        case CSSPropertyBorderImageSource:
-            style.setBorderImageSource(image);
-            break;
-        case CSSPropertyListStyleImage:
-            style.setListStyleImage(image);
-            break;
-        case CSSPropertyWebkitMaskBoxImageSource:
-            style.setMaskBoxImageSource(image);
-            break;
-        default:
-            NOTREACHED();
-        }
+  static void setStyleImage(CSSPropertyID property,
+                            ComputedStyle& style,
+                            StyleImage* image) {
+    switch (property) {
+      case CSSPropertyBorderImageSource:
+        style.setBorderImageSource(image);
+        break;
+      case CSSPropertyListStyleImage:
+        style.setListStyleImage(image);
+        break;
+      case CSSPropertyWebkitMaskBoxImageSource:
+        style.setMaskBoxImageSource(image);
+        break;
+      default:
+        NOTREACHED();
     }
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ImagePropertyFunctions_h
+#endif  // ImagePropertyFunctions_h

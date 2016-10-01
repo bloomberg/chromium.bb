@@ -39,207 +39,217 @@ namespace blink {
 
 static HashSet<String>* schemeWhitelist;
 
-static void initCustomSchemeHandlerWhitelist()
-{
-    schemeWhitelist = new HashSet<String>;
-    static const char* const schemes[] = {
-        "bitcoin",
-        "geo",
-        "im",
-        "irc",
-        "ircs",
-        "magnet",
-        "mailto",
-        "mms",
-        "news",
-        "nntp",
-        "openpgp4fpr",
-        "sip",
-        "sms",
-        "smsto",
-        "ssh",
-        "tel",
-        "urn",
-        "webcal",
-        "wtai",
-        "xmpp",
-    };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(schemes); ++i)
-        schemeWhitelist->add(schemes[i]);
+static void initCustomSchemeHandlerWhitelist() {
+  schemeWhitelist = new HashSet<String>;
+  static const char* const schemes[] = {
+      "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
+      "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
+      "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
+  };
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(schemes); ++i)
+    schemeWhitelist->add(schemes[i]);
 }
 
-static bool verifyCustomHandlerURL(const Document& document, const String& url, ExceptionState& exceptionState)
-{
-    // The specification requires that it is a SyntaxError if the "%s" token is
-    // not present.
-    static const char token[] = "%s";
-    int index = url.find(token);
-    if (-1 == index) {
-        exceptionState.throwDOMException(SyntaxError, "The url provided ('" + url + "') does not contain '%s'.");
-        return false;
-    }
-
-    // It is also a SyntaxError if the custom handler URL, as created by removing
-    // the "%s" token and prepending the base url, does not resolve.
-    String newURL = url;
-    newURL.remove(index, WTF_ARRAY_LENGTH(token) - 1);
-
-    KURL kurl = document.completeURL(url);
-
-    if (kurl.isEmpty() || !kurl.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + document.baseURL().getString() + "' is invalid.");
-        return false;
-    }
-
-    // The specification says that the API throws SecurityError exception if the
-    // URL's origin differs from the document's origin.
-    if (!document.getSecurityOrigin()->canRequest(kurl)) {
-        exceptionState.throwSecurityError("Can only register custom handler in the document's origin.");
-        return false;
-    }
-
-    return true;
-}
-
-static bool isSchemeWhitelisted(const String& scheme)
-{
-    if (!schemeWhitelist)
-        initCustomSchemeHandlerWhitelist();
-
-    StringBuilder builder;
-    builder.append(scheme.lower().ascii().data());
-
-    return schemeWhitelist->contains(builder.toString());
-}
-
-static bool verifyCustomHandlerScheme(const String& scheme, ExceptionState& exceptionState)
-{
-    if (!isValidProtocol(scheme)) {
-        exceptionState.throwSecurityError("The scheme '" + scheme + "' is not valid protocol");
-        return false;
-    }
-
-    if (scheme.startsWith("web+")) {
-        // The specification requires that the length of scheme is at least five characteres (including 'web+' prefix).
-        if (scheme.length() >= 5)
-            return true;
-
-        exceptionState.throwSecurityError("The scheme '" + scheme + "' is less than five characters long.");
-        return false;
-    }
-
-    if (isSchemeWhitelisted(scheme))
-        return true;
-
-    exceptionState.throwSecurityError("The scheme '" + scheme + "' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.");
+static bool verifyCustomHandlerURL(const Document& document,
+                                   const String& url,
+                                   ExceptionState& exceptionState) {
+  // The specification requires that it is a SyntaxError if the "%s" token is
+  // not present.
+  static const char token[] = "%s";
+  int index = url.find(token);
+  if (-1 == index) {
+    exceptionState.throwDOMException(
+        SyntaxError, "The url provided ('" + url + "') does not contain '%s'.");
     return false;
+  }
+
+  // It is also a SyntaxError if the custom handler URL, as created by removing
+  // the "%s" token and prepending the base url, does not resolve.
+  String newURL = url;
+  newURL.remove(index, WTF_ARRAY_LENGTH(token) - 1);
+
+  KURL kurl = document.completeURL(url);
+
+  if (kurl.isEmpty() || !kurl.isValid()) {
+    exceptionState.throwDOMException(
+        SyntaxError,
+        "The custom handler URL created by removing '%s' and prepending '" +
+            document.baseURL().getString() + "' is invalid.");
+    return false;
+  }
+
+  // The specification says that the API throws SecurityError exception if the
+  // URL's origin differs from the document's origin.
+  if (!document.getSecurityOrigin()->canRequest(kurl)) {
+    exceptionState.throwSecurityError(
+        "Can only register custom handler in the document's origin.");
+    return false;
+  }
+
+  return true;
 }
 
-NavigatorContentUtils* NavigatorContentUtils::from(LocalFrame& frame)
-{
-    return static_cast<NavigatorContentUtils*>(Supplement<LocalFrame>::from(frame, supplementName()));
+static bool isSchemeWhitelisted(const String& scheme) {
+  if (!schemeWhitelist)
+    initCustomSchemeHandlerWhitelist();
+
+  StringBuilder builder;
+  builder.append(scheme.lower().ascii().data());
+
+  return schemeWhitelist->contains(builder.toString());
 }
 
-NavigatorContentUtils::~NavigatorContentUtils()
-{
+static bool verifyCustomHandlerScheme(const String& scheme,
+                                      ExceptionState& exceptionState) {
+  if (!isValidProtocol(scheme)) {
+    exceptionState.throwSecurityError("The scheme '" + scheme +
+                                      "' is not valid protocol");
+    return false;
+  }
+
+  if (scheme.startsWith("web+")) {
+    // The specification requires that the length of scheme is at least five characteres (including 'web+' prefix).
+    if (scheme.length() >= 5)
+      return true;
+
+    exceptionState.throwSecurityError("The scheme '" + scheme +
+                                      "' is less than five characters long.");
+    return false;
+  }
+
+  if (isSchemeWhitelisted(scheme))
+    return true;
+
+  exceptionState.throwSecurityError("The scheme '" + scheme +
+                                    "' doesn't belong to the scheme whitelist. "
+                                    "Please prefix non-whitelisted schemes "
+                                    "with the string 'web+'.");
+  return false;
 }
 
-NavigatorContentUtils* NavigatorContentUtils::create(NavigatorContentUtilsClient* client)
-{
-    return new NavigatorContentUtils(client);
+NavigatorContentUtils* NavigatorContentUtils::from(LocalFrame& frame) {
+  return static_cast<NavigatorContentUtils*>(
+      Supplement<LocalFrame>::from(frame, supplementName()));
 }
 
-void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const String& scheme, const String& url, const String& title, ExceptionState& exceptionState)
-{
-    if (!navigator.frame())
-        return;
+NavigatorContentUtils::~NavigatorContentUtils() {}
 
-    Document* document = navigator.frame()->document();
-    ASSERT(document);
-
-    if (!verifyCustomHandlerURL(*document, url, exceptionState))
-        return;
-
-    if (!verifyCustomHandlerScheme(scheme, exceptionState))
-        return;
-
-    // Count usage; perhaps we can lock this to secure contexts.
-    UseCounter::count(*document, document->isSecureContext() ? UseCounter::RegisterProtocolHandlerSecureOrigin : UseCounter::RegisterProtocolHandlerInsecureOrigin);
-
-    NavigatorContentUtils::from(*navigator.frame())->client()->registerProtocolHandler(scheme, document->completeURL(url), title);
+NavigatorContentUtils* NavigatorContentUtils::create(
+    NavigatorContentUtilsClient* client) {
+  return new NavigatorContentUtils(client);
 }
 
-static String customHandlersStateString(const NavigatorContentUtilsClient::CustomHandlersState state)
-{
-    DEFINE_STATIC_LOCAL(const String, newHandler, ("new"));
-    DEFINE_STATIC_LOCAL(const String, registeredHandler, ("registered"));
-    DEFINE_STATIC_LOCAL(const String, declinedHandler, ("declined"));
+void NavigatorContentUtils::registerProtocolHandler(
+    Navigator& navigator,
+    const String& scheme,
+    const String& url,
+    const String& title,
+    ExceptionState& exceptionState) {
+  if (!navigator.frame())
+    return;
 
-    switch (state) {
+  Document* document = navigator.frame()->document();
+  ASSERT(document);
+
+  if (!verifyCustomHandlerURL(*document, url, exceptionState))
+    return;
+
+  if (!verifyCustomHandlerScheme(scheme, exceptionState))
+    return;
+
+  // Count usage; perhaps we can lock this to secure contexts.
+  UseCounter::count(*document,
+                    document->isSecureContext()
+                        ? UseCounter::RegisterProtocolHandlerSecureOrigin
+                        : UseCounter::RegisterProtocolHandlerInsecureOrigin);
+
+  NavigatorContentUtils::from(*navigator.frame())
+      ->client()
+      ->registerProtocolHandler(scheme, document->completeURL(url), title);
+}
+
+static String customHandlersStateString(
+    const NavigatorContentUtilsClient::CustomHandlersState state) {
+  DEFINE_STATIC_LOCAL(const String, newHandler, ("new"));
+  DEFINE_STATIC_LOCAL(const String, registeredHandler, ("registered"));
+  DEFINE_STATIC_LOCAL(const String, declinedHandler, ("declined"));
+
+  switch (state) {
     case NavigatorContentUtilsClient::CustomHandlersNew:
-        return newHandler;
+      return newHandler;
     case NavigatorContentUtilsClient::CustomHandlersRegistered:
-        return registeredHandler;
+      return registeredHandler;
     case NavigatorContentUtilsClient::CustomHandlersDeclined:
-        return declinedHandler;
-    }
+      return declinedHandler;
+  }
 
-    ASSERT_NOT_REACHED();
-    return String();
+  ASSERT_NOT_REACHED();
+  return String();
 }
 
-String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator& navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
-{
-    DEFINE_STATIC_LOCAL(const String, declined, ("declined"));
+String NavigatorContentUtils::isProtocolHandlerRegistered(
+    Navigator& navigator,
+    const String& scheme,
+    const String& url,
+    ExceptionState& exceptionState) {
+  DEFINE_STATIC_LOCAL(const String, declined, ("declined"));
 
-    if (!navigator.frame())
-        return declined;
+  if (!navigator.frame())
+    return declined;
 
-    Document* document = navigator.frame()->document();
-    ASSERT(document);
-    if (document->activeDOMObjectsAreStopped())
-        return declined;
+  Document* document = navigator.frame()->document();
+  ASSERT(document);
+  if (document->activeDOMObjectsAreStopped())
+    return declined;
 
-    if (!verifyCustomHandlerURL(*document, url, exceptionState))
-        return declined;
+  if (!verifyCustomHandlerURL(*document, url, exceptionState))
+    return declined;
 
-    if (!verifyCustomHandlerScheme(scheme, exceptionState))
-        return declined;
+  if (!verifyCustomHandlerScheme(scheme, exceptionState))
+    return declined;
 
-    return customHandlersStateString(NavigatorContentUtils::from(*navigator.frame())->client()->isProtocolHandlerRegistered(scheme, document->completeURL(url)));
+  return customHandlersStateString(
+      NavigatorContentUtils::from(*navigator.frame())
+          ->client()
+          ->isProtocolHandlerRegistered(scheme, document->completeURL(url)));
 }
 
-void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
-{
-    if (!navigator.frame())
-        return;
+void NavigatorContentUtils::unregisterProtocolHandler(
+    Navigator& navigator,
+    const String& scheme,
+    const String& url,
+    ExceptionState& exceptionState) {
+  if (!navigator.frame())
+    return;
 
-    Document* document = navigator.frame()->document();
-    ASSERT(document);
+  Document* document = navigator.frame()->document();
+  ASSERT(document);
 
-    if (!verifyCustomHandlerURL(*document, url, exceptionState))
-        return;
+  if (!verifyCustomHandlerURL(*document, url, exceptionState))
+    return;
 
-    if (!verifyCustomHandlerScheme(scheme, exceptionState))
-        return;
+  if (!verifyCustomHandlerScheme(scheme, exceptionState))
+    return;
 
-    NavigatorContentUtils::from(*navigator.frame())->client()->unregisterProtocolHandler(scheme, document->completeURL(url));
+  NavigatorContentUtils::from(*navigator.frame())
+      ->client()
+      ->unregisterProtocolHandler(scheme, document->completeURL(url));
 }
 
-DEFINE_TRACE(NavigatorContentUtils)
-{
-    visitor->trace(m_client);
-    Supplement<LocalFrame>::trace(visitor);
+DEFINE_TRACE(NavigatorContentUtils) {
+  visitor->trace(m_client);
+  Supplement<LocalFrame>::trace(visitor);
 }
 
-const char* NavigatorContentUtils::supplementName()
-{
-    return "NavigatorContentUtils";
+const char* NavigatorContentUtils::supplementName() {
+  return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(LocalFrame& frame, NavigatorContentUtilsClient* client)
-{
-    NavigatorContentUtils::provideTo(frame, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
+void provideNavigatorContentUtilsTo(LocalFrame& frame,
+                                    NavigatorContentUtilsClient* client) {
+  NavigatorContentUtils::provideTo(frame,
+                                   NavigatorContentUtils::supplementName(),
+                                   NavigatorContentUtils::create(client));
 }
 
-} // namespace blink
+}  // namespace blink

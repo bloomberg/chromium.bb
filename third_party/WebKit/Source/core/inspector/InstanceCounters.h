@@ -41,41 +41,40 @@
 namespace blink {
 
 class InstanceCounters {
-    STATIC_ONLY(InstanceCounters);
-public:
-    enum CounterType {
-        ActiveDOMObjectCounter,
-        AudioHandlerCounter,
-        DocumentCounter,
-        FrameCounter,
-        JSEventListenerCounter,
-        LayoutObjectCounter,
-        NodeCounter,
-        ResourceCounter,
-        ScriptPromiseCounter,
-        V8PerContextDataCounter,
-        WorkerGlobalScopeCounter,
+  STATIC_ONLY(InstanceCounters);
 
-        // This value must be the last.
-        CounterTypeLength,
-    };
+ public:
+  enum CounterType {
+    ActiveDOMObjectCounter,
+    AudioHandlerCounter,
+    DocumentCounter,
+    FrameCounter,
+    JSEventListenerCounter,
+    LayoutObjectCounter,
+    NodeCounter,
+    ResourceCounter,
+    ScriptPromiseCounter,
+    V8PerContextDataCounter,
+    WorkerGlobalScopeCounter,
 
-    static inline void incrementCounter(CounterType type)
-    {
-        atomicIncrement(&s_counters[type]);
-    }
+    // This value must be the last.
+    CounterTypeLength,
+  };
 
-    static inline void decrementCounter(CounterType type)
-    {
-        atomicDecrement(&s_counters[type]);
-    }
+  static inline void incrementCounter(CounterType type) {
+    atomicIncrement(&s_counters[type]);
+  }
 
-    CORE_EXPORT static int counterValue(CounterType);
+  static inline void decrementCounter(CounterType type) {
+    atomicDecrement(&s_counters[type]);
+  }
 
-private:
-    CORE_EXPORT static int s_counters[CounterTypeLength];
+  CORE_EXPORT static int counterValue(CounterType);
+
+ private:
+  CORE_EXPORT static int s_counters[CounterTypeLength];
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !defined(InstanceCounters_h)
+#endif  // !defined(InstanceCounters_h)

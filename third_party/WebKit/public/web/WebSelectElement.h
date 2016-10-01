@@ -41,28 +41,30 @@ class HTMLSelectElement;
 
 // Provides readonly access to some properties of a DOM select element node.
 class WebSelectElement final : public WebFormControlElement {
-public:
-    WebSelectElement() : WebFormControlElement() { }
-    WebSelectElement(const WebSelectElement& element) : WebFormControlElement(element) { }
+ public:
+  WebSelectElement() : WebFormControlElement() {}
+  WebSelectElement(const WebSelectElement& element)
+      : WebFormControlElement(element) {}
 
-    WebSelectElement& operator=(const WebSelectElement& element)
-    {
-        WebFormControlElement::assign(element);
-        return *this;
-    }
-    void assign(const WebSelectElement& element) { WebFormControlElement::assign(element); }
+  WebSelectElement& operator=(const WebSelectElement& element) {
+    WebFormControlElement::assign(element);
+    return *this;
+  }
+  void assign(const WebSelectElement& element) {
+    WebFormControlElement::assign(element);
+  }
 
-    BLINK_EXPORT WebVector<WebElement> listItems() const;
+  BLINK_EXPORT WebVector<WebElement> listItems() const;
 
 #if BLINK_IMPLEMENTATION
-    WebSelectElement(HTMLSelectElement*);
-    WebSelectElement& operator=(HTMLSelectElement*);
-    operator HTMLSelectElement*() const;
+  WebSelectElement(HTMLSelectElement*);
+  WebSelectElement& operator=(HTMLSelectElement*);
+  operator HTMLSelectElement*() const;
 #endif
 };
 
 DECLARE_WEB_NODE_TYPE_CASTS(WebSelectElement);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

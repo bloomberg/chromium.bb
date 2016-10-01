@@ -13,53 +13,63 @@
 namespace blink {
 
 class CSSCustomPropertyDeclaration : public CSSValue {
-public:
-    static CSSCustomPropertyDeclaration* create(const AtomicString& name, PassRefPtr<CSSVariableData> value)
-    {
-        return new CSSCustomPropertyDeclaration(name, std::move(value));
-    }
+ public:
+  static CSSCustomPropertyDeclaration* create(
+      const AtomicString& name,
+      PassRefPtr<CSSVariableData> value) {
+    return new CSSCustomPropertyDeclaration(name, std::move(value));
+  }
 
-    static CSSCustomPropertyDeclaration* create(const AtomicString& name, CSSValueID id)
-    {
-        return new CSSCustomPropertyDeclaration(name, id);
-    }
+  static CSSCustomPropertyDeclaration* create(const AtomicString& name,
+                                              CSSValueID id) {
+    return new CSSCustomPropertyDeclaration(name, id);
+  }
 
-    const AtomicString& name() const { return m_name; }
-    CSSVariableData* value() const { return m_value.get(); }
+  const AtomicString& name() const { return m_name; }
+  CSSVariableData* value() const { return m_value.get(); }
 
-    bool isInherit(bool isInheritedProperty) const { return m_valueId == CSSValueInherit || (isInheritedProperty && m_valueId == CSSValueUnset); }
-    bool isInitial(bool isInheritedProperty) const { return m_valueId == CSSValueInitial || (!isInheritedProperty && m_valueId == CSSValueUnset); }
+  bool isInherit(bool isInheritedProperty) const {
+    return m_valueId == CSSValueInherit ||
+           (isInheritedProperty && m_valueId == CSSValueUnset);
+  }
+  bool isInitial(bool isInheritedProperty) const {
+    return m_valueId == CSSValueInitial ||
+           (!isInheritedProperty && m_valueId == CSSValueUnset);
+  }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSCustomPropertyDeclaration& other) const { return this == &other; }
+  bool equals(const CSSCustomPropertyDeclaration& other) const {
+    return this == &other;
+  }
 
-    DECLARE_TRACE_AFTER_DISPATCH();
-private:
-    CSSCustomPropertyDeclaration(const AtomicString& name, CSSValueID id)
-        : CSSValue(CustomPropertyDeclarationClass)
-        , m_name(name)
-        , m_value(nullptr)
-        , m_valueId(id)
-    {
-        ASSERT(id == CSSValueInherit || id == CSSValueInitial || id == CSSValueUnset);
-    }
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-    CSSCustomPropertyDeclaration(const AtomicString& name, PassRefPtr<CSSVariableData> value)
-        : CSSValue(CustomPropertyDeclarationClass)
-        , m_name(name)
-        , m_value(value)
-        , m_valueId(CSSValueInvalid)
-    {
-    }
+ private:
+  CSSCustomPropertyDeclaration(const AtomicString& name, CSSValueID id)
+      : CSSValue(CustomPropertyDeclarationClass),
+        m_name(name),
+        m_value(nullptr),
+        m_valueId(id) {
+    ASSERT(id == CSSValueInherit || id == CSSValueInitial ||
+           id == CSSValueUnset);
+  }
 
-    const AtomicString m_name;
-    RefPtr<CSSVariableData> m_value;
-    CSSValueID m_valueId;
+  CSSCustomPropertyDeclaration(const AtomicString& name,
+                               PassRefPtr<CSSVariableData> value)
+      : CSSValue(CustomPropertyDeclarationClass),
+        m_name(name),
+        m_value(value),
+        m_valueId(CSSValueInvalid) {}
+
+  const AtomicString m_name;
+  RefPtr<CSSVariableData> m_value;
+  CSSValueID m_valueId;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCustomPropertyDeclaration, isCustomPropertyDeclaration());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCustomPropertyDeclaration,
+                            isCustomPropertyDeclaration());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSCustomPropertyDeclaration_h
+#endif  // CSSCustomPropertyDeclaration_h

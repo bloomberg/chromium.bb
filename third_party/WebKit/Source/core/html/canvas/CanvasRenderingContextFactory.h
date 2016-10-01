@@ -18,19 +18,29 @@ class HTMLCanvasElement;
 class OffscreenCanvas;
 
 class CORE_EXPORT CanvasRenderingContextFactory {
-    USING_FAST_MALLOC(CanvasRenderingContextFactory);
-    WTF_MAKE_NONCOPYABLE(CanvasRenderingContextFactory);
-public:
-    CanvasRenderingContextFactory() = default;
-    virtual ~CanvasRenderingContextFactory() { }
+  USING_FAST_MALLOC(CanvasRenderingContextFactory);
+  WTF_MAKE_NONCOPYABLE(CanvasRenderingContextFactory);
 
-    virtual CanvasRenderingContext* create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) { return nullptr; }
-    virtual CanvasRenderingContext* create(ScriptState*, OffscreenCanvas*, const CanvasContextCreationAttributes&) { return nullptr; }
-    virtual CanvasRenderingContext::ContextType getContextType() const = 0;
-    virtual void onError(HTMLCanvasElement*, const String& error) {};
-    virtual void onError(OffscreenCanvas*, const String& error) {};
+ public:
+  CanvasRenderingContextFactory() = default;
+  virtual ~CanvasRenderingContextFactory() {}
+
+  virtual CanvasRenderingContext* create(HTMLCanvasElement*,
+                                         const CanvasContextCreationAttributes&,
+                                         Document&) {
+    return nullptr;
+  }
+  virtual CanvasRenderingContext* create(
+      ScriptState*,
+      OffscreenCanvas*,
+      const CanvasContextCreationAttributes&) {
+    return nullptr;
+  }
+  virtual CanvasRenderingContext::ContextType getContextType() const = 0;
+  virtual void onError(HTMLCanvasElement*, const String& error){};
+  virtual void onError(OffscreenCanvas*, const String& error){};
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CanvasRenderingContextFactory_h
+#endif  // CanvasRenderingContextFactory_h

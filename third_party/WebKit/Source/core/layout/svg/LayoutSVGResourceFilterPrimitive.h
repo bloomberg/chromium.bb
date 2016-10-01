@@ -32,28 +32,33 @@
 namespace blink {
 
 class LayoutSVGResourceFilterPrimitive final : public LayoutSVGHiddenContainer {
-public:
-    explicit LayoutSVGResourceFilterPrimitive(SVGElement* filterPrimitiveElement)
-        : LayoutSVGHiddenContainer(filterPrimitiveElement)
-    {
-    }
+ public:
+  explicit LayoutSVGResourceFilterPrimitive(SVGElement* filterPrimitiveElement)
+      : LayoutSVGHiddenContainer(filterPrimitiveElement) {}
 
-    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override { return false; }
+  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override {
+    return false;
+  }
 
-    void styleDidChange(StyleDifference, const ComputedStyle*) override;
+  void styleDidChange(StyleDifference, const ComputedStyle*) override;
 
-    const char* name() const override { return "LayoutSVGResourceFilterPrimitive"; }
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilterPrimitive || LayoutSVGHiddenContainer::isOfType(type); }
+  const char* name() const override {
+    return "LayoutSVGResourceFilterPrimitive";
+  }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGResourceFilterPrimitive ||
+           LayoutSVGHiddenContainer::isOfType(type);
+  }
 
-    inline void primitiveAttributeChanged(const QualifiedName& attribute)
-    {
-        LayoutObject* filter = parent();
-        if (!filter || !filter->isSVGResourceFilter())
-            return;
-        toLayoutSVGResourceFilter(filter)->primitiveAttributeChanged(this, attribute);
-    }
+  inline void primitiveAttributeChanged(const QualifiedName& attribute) {
+    LayoutObject* filter = parent();
+    if (!filter || !filter->isSVGResourceFilter())
+      return;
+    toLayoutSVGResourceFilter(filter)->primitiveAttributeChanged(this,
+                                                                 attribute);
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSVGResourceFilterPrimitive_h
+#endif  // LayoutSVGResourceFilterPrimitive_h

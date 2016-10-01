@@ -34,54 +34,63 @@
 namespace blink {
 
 class CORE_EXPORT HTMLIFrameElement final : public HTMLFrameElementBase {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLIFrameElement);
-    DECLARE_VIRTUAL_TRACE();
-    ~HTMLIFrameElement() override;
-    DOMTokenList* sandbox() const;
-    DOMTokenList* permissions() const;
+  DEFINE_WRAPPERTYPEINFO();
 
-    void sandboxValueWasSet();
-    void permissionsValueWasSet();
+ public:
+  DECLARE_NODE_FACTORY(HTMLIFrameElement);
+  DECLARE_VIRTUAL_TRACE();
+  ~HTMLIFrameElement() override;
+  DOMTokenList* sandbox() const;
+  DOMTokenList* permissions() const;
 
-private:
-    explicit HTMLIFrameElement(Document&);
+  void sandboxValueWasSet();
+  void permissionsValueWasSet();
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  explicit HTMLIFrameElement(Document&);
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
 
-    bool loadedNonEmptyDocument() const override { return m_didLoadNonEmptyDocument; }
-    void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }
-    bool isInteractiveContent() const override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    ReferrerPolicy referrerPolicyAttribute() override;
+  bool loadedNonEmptyDocument() const override {
+    return m_didLoadNonEmptyDocument;
+  }
+  void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }
+  bool isInteractiveContent() const override;
 
-    bool allowFullscreen() const override { return m_allowFullscreen; }
+  ReferrerPolicy referrerPolicyAttribute() override;
 
-    const WebVector<WebPermissionType>& delegatedPermissions() const override { return m_delegatedPermissions; }
+  bool allowFullscreen() const override { return m_allowFullscreen; }
 
-    bool initializePermissionsAttribute();
+  const WebVector<WebPermissionType>& delegatedPermissions() const override {
+    return m_delegatedPermissions;
+  }
 
-    AtomicString m_name;
-    AtomicString m_csp;
-    bool m_didLoadNonEmptyDocument;
-    bool m_allowFullscreen;
-    Member<HTMLIFrameElementSandbox> m_sandbox;
-    Member<HTMLIFrameElementPermissions> m_permissions;
+  bool initializePermissionsAttribute();
 
-    WebVector<WebPermissionType> m_delegatedPermissions;
+  AtomicString m_name;
+  AtomicString m_csp;
+  bool m_didLoadNonEmptyDocument;
+  bool m_allowFullscreen;
+  Member<HTMLIFrameElementSandbox> m_sandbox;
+  Member<HTMLIFrameElementPermissions> m_permissions;
 
-    ReferrerPolicy m_referrerPolicy;
+  WebVector<WebPermissionType> m_delegatedPermissions;
+
+  ReferrerPolicy m_referrerPolicy;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLIFrameElement_h
+#endif  // HTMLIFrameElement_h

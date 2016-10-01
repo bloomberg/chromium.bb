@@ -38,43 +38,40 @@
 
 namespace blink {
 
-TextEncoder* TextEncoder::create(ExecutionContext* context, ExceptionState& exceptionState)
-{
-    WTF::TextEncoding encoding("UTF-8");
-    return new TextEncoder(encoding);
+TextEncoder* TextEncoder::create(ExecutionContext* context,
+                                 ExceptionState& exceptionState) {
+  WTF::TextEncoding encoding("UTF-8");
+  return new TextEncoder(encoding);
 }
 
 TextEncoder::TextEncoder(const WTF::TextEncoding& encoding)
-    : m_encoding(encoding)
-    , m_codec(newTextCodec(encoding))
-{
-    String name(m_encoding.name());
-    DCHECK_EQ(name, "UTF-8");
+    : m_encoding(encoding), m_codec(newTextCodec(encoding)) {
+  String name(m_encoding.name());
+  DCHECK_EQ(name, "UTF-8");
 }
 
-TextEncoder::~TextEncoder()
-{
+TextEncoder::~TextEncoder() {}
+
+String TextEncoder::encoding() const {
+  String name = String(m_encoding.name()).lower();
+  DCHECK_EQ(name, "utf-8");
+  return name;
 }
 
-String TextEncoder::encoding() const
-{
-    String name = String(m_encoding.name()).lower();
-    DCHECK_EQ(name, "utf-8");
-    return name;
+DOMUint8Array* TextEncoder::encode(const String& input) {
+  CString result;
+  if (input.is8Bit())
+    result = m_codec->encode(input.characters8(), input.length(),
+                             WTF::QuestionMarksForUnencodables);
+  else
+    result = m_codec->encode(input.characters16(), input.length(),
+                             WTF::QuestionMarksForUnencodables);
+
+  const char* buffer = result.data();
+  const unsigned char* unsignedBuffer =
+      reinterpret_cast<const unsigned char*>(buffer);
+
+  return DOMUint8Array::create(unsignedBuffer, result.length());
 }
 
-DOMUint8Array* TextEncoder::encode(const String& input)
-{
-    CString result;
-    if (input.is8Bit())
-        result = m_codec->encode(input.characters8(), input.length(), WTF::QuestionMarksForUnencodables);
-    else
-        result = m_codec->encode(input.characters16(), input.length(), WTF::QuestionMarksForUnencodables);
-
-    const char* buffer = result.data();
-    const unsigned char* unsignedBuffer = reinterpret_cast<const unsigned char*>(buffer);
-
-    return DOMUint8Array::create(unsignedBuffer, result.length());
-}
-
-} // namespace blink
+}  // namespace blink

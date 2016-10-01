@@ -33,92 +33,76 @@
 
 namespace blink {
 
-FetchContext& FetchContext::nullInstance()
-{
-    DEFINE_STATIC_LOCAL(FetchContext, instance, (new FetchContext));
-    return instance;
+FetchContext& FetchContext::nullInstance() {
+  DEFINE_STATIC_LOCAL(FetchContext, instance, (new FetchContext));
+  return instance;
 }
 
-void FetchContext::dispatchDidChangeResourcePriority(unsigned long, ResourceLoadPriority, int)
-{
+void FetchContext::dispatchDidChangeResourcePriority(unsigned long,
+                                                     ResourceLoadPriority,
+                                                     int) {}
+
+void FetchContext::addAdditionalRequestHeaders(ResourceRequest&,
+                                               FetchResourceType) {}
+
+CachePolicy FetchContext::getCachePolicy() const {
+  return CachePolicyVerify;
 }
 
-void FetchContext::addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType)
-{
+WebCachePolicy FetchContext::resourceRequestCachePolicy(
+    const ResourceRequest&,
+    Resource::Type,
+    FetchRequest::DeferOption defer) const {
+  return WebCachePolicy::UseProtocolCachePolicy;
 }
 
-CachePolicy FetchContext::getCachePolicy() const
-{
-    return CachePolicyVerify;
-}
+void FetchContext::dispatchWillSendRequest(unsigned long,
+                                           ResourceRequest&,
+                                           const ResourceResponse&,
+                                           const FetchInitiatorInfo&) {}
 
-WebCachePolicy FetchContext::resourceRequestCachePolicy(const ResourceRequest&, Resource::Type, FetchRequest::DeferOption defer) const
-{
-    return WebCachePolicy::UseProtocolCachePolicy;
-}
+void FetchContext::dispatchDidLoadResourceFromMemoryCache(
+    unsigned long,
+    Resource*,
+    WebURLRequest::FrameType,
+    WebURLRequest::RequestContext) {}
 
-void FetchContext::dispatchWillSendRequest(unsigned long, ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&)
-{
-}
+void FetchContext::dispatchDidReceiveResponse(unsigned long,
+                                              const ResourceResponse&,
+                                              WebURLRequest::FrameType,
+                                              WebURLRequest::RequestContext,
+                                              Resource*) {}
 
-void FetchContext::dispatchDidLoadResourceFromMemoryCache(unsigned long, Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext)
-{
-}
+void FetchContext::dispatchDidReceiveData(unsigned long,
+                                          const char*,
+                                          int,
+                                          int) {}
 
-void FetchContext::dispatchDidReceiveResponse(unsigned long, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, Resource*)
-{
-}
+void FetchContext::dispatchDidDownloadData(unsigned long, int, int) {}
 
-void FetchContext::dispatchDidReceiveData(unsigned long, const char*, int, int)
-{
-}
+void FetchContext::dispatchDidFinishLoading(unsigned long, double, int64_t) {}
 
-void FetchContext::dispatchDidDownloadData(unsigned long, int, int)
-{
-}
+void FetchContext::dispatchDidFail(unsigned long, const ResourceError&, bool) {}
 
-void FetchContext::dispatchDidFinishLoading(unsigned long, double, int64_t)
-{
-}
+void FetchContext::willStartLoadingResource(unsigned long,
+                                            ResourceRequest&,
+                                            Resource::Type) {}
 
-void FetchContext::dispatchDidFail(unsigned long, const ResourceError&, bool)
-{
-}
+void FetchContext::didLoadResource(Resource*) {}
 
-void FetchContext::willStartLoadingResource(unsigned long, ResourceRequest&, Resource::Type)
-{
-}
+void FetchContext::addResourceTiming(const ResourceTimingInfo&) {}
 
-void FetchContext::didLoadResource(Resource*)
-{
-}
+void FetchContext::sendImagePing(const KURL&) {}
 
-void FetchContext::addResourceTiming(const ResourceTimingInfo&)
-{
-}
+void FetchContext::addConsoleMessage(const String&,
+                                     FetchContext::LogMessageType) const {}
 
-void FetchContext::sendImagePing(const KURL&)
-{
-}
+void FetchContext::upgradeInsecureRequest(ResourceRequest&) {}
 
-void FetchContext::addConsoleMessage(const String&, FetchContext::LogMessageType) const
-{
-}
+void FetchContext::addClientHintsIfNecessary(FetchRequest&) {}
 
-void FetchContext::upgradeInsecureRequest(ResourceRequest&)
-{
-}
+void FetchContext::addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) {}
 
-void FetchContext::addClientHintsIfNecessary(FetchRequest&)
-{
-}
+void FetchContext::populateRequestData(ResourceRequest&) {}
 
-void FetchContext::addCSPHeaderIfNecessary(Resource::Type, FetchRequest&)
-{
-}
-
-void FetchContext::populateRequestData(ResourceRequest&)
-{
-}
-
-} // namespace blink
+}  // namespace blink

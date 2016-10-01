@@ -13,12 +13,13 @@ class WebContentDecryptionModuleResult;
 struct WebMediaKeySystemConfiguration;
 
 class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleAccess {
-public:
-    virtual ~WebContentDecryptionModuleAccess();
-    virtual void createContentDecryptionModule(WebContentDecryptionModuleResult) = 0;
-    virtual WebMediaKeySystemConfiguration getConfiguration() = 0;
+ public:
+  virtual ~WebContentDecryptionModuleAccess();
+  virtual void createContentDecryptionModule(
+      WebContentDecryptionModuleResult) = 0;
+  virtual WebMediaKeySystemConfiguration getConfiguration() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebContentDecryptionModuleAccess_h
+#endif  // WebContentDecryptionModuleAccess_h

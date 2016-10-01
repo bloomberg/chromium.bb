@@ -28,16 +28,15 @@ namespace blink {
 //     bind(func1, 42, str);
 //     bind(func1, 42, str.isolatedCopy());
 
-template<typename FunctionType, typename... Ps>
-std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, Ps...>, WTF::CrossThreadAffinity>> crossThreadBind(
-    FunctionType function,
-    Ps&&... parameters)
-{
-    return WTF::bindInternal<WTF::CrossThreadAffinity>(
-        function,
-        CrossThreadCopier<typename std::decay<Ps>::type>::copy(std::forward<Ps>(parameters))...);
+template <typename FunctionType, typename... Ps>
+std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, Ps...>,
+                         WTF::CrossThreadAffinity>>
+crossThreadBind(FunctionType function, Ps&&... parameters) {
+  return WTF::bindInternal<WTF::CrossThreadAffinity>(
+      function, CrossThreadCopier<typename std::decay<Ps>::type>::copy(
+                    std::forward<Ps>(parameters))...);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CrossThreadFunctional_h
+#endif  // CrossThreadFunctional_h

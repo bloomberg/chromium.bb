@@ -37,38 +37,40 @@
 
 namespace blink {
 
-static double monotonicTimeToDocumentMilliseconds(Document* document, double seconds)
-{
-    ASSERT(seconds >= 0.0);
-    return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(seconds) * 1000.0;
+static double monotonicTimeToDocumentMilliseconds(Document* document,
+                                                  double seconds) {
+  ASSERT(seconds >= 0.0);
+  return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(
+             seconds) *
+         1000.0;
 }
 
-PerformanceRenderTiming::PerformanceRenderTiming(Document* requestingDocument, unsigned sourceFrame, double startTime, double finishTime)
-    : PerformanceEntry(requestingDocument->url().getString(), "render", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, finishTime))
-    , m_sourceFrame(sourceFrame)
-    , m_requestingDocument(requestingDocument)
-{
+PerformanceRenderTiming::PerformanceRenderTiming(Document* requestingDocument,
+                                                 unsigned sourceFrame,
+                                                 double startTime,
+                                                 double finishTime)
+    : PerformanceEntry(
+          requestingDocument->url().getString(),
+          "render",
+          monotonicTimeToDocumentMilliseconds(requestingDocument, startTime),
+          monotonicTimeToDocumentMilliseconds(requestingDocument, finishTime)),
+      m_sourceFrame(sourceFrame),
+      m_requestingDocument(requestingDocument) {}
+
+PerformanceRenderTiming::~PerformanceRenderTiming() {}
+
+unsigned PerformanceRenderTiming::sourceFrame() const {
+  return m_sourceFrame;
 }
 
-PerformanceRenderTiming::~PerformanceRenderTiming()
-{
+void PerformanceRenderTiming::buildJSONValue(V8ObjectBuilder& builder) const {
+  PerformanceEntry::buildJSONValue(builder);
+  builder.addNumber("sourceFrame", sourceFrame());
 }
 
-unsigned PerformanceRenderTiming::sourceFrame() const
-{
-    return m_sourceFrame;
+DEFINE_TRACE(PerformanceRenderTiming) {
+  visitor->trace(m_requestingDocument);
+  PerformanceEntry::trace(visitor);
 }
 
-void PerformanceRenderTiming::buildJSONValue(V8ObjectBuilder& builder) const
-{
-    PerformanceEntry::buildJSONValue(builder);
-    builder.addNumber("sourceFrame", sourceFrame());
-}
-
-DEFINE_TRACE(PerformanceRenderTiming)
-{
-    visitor->trace(m_requestingDocument);
-    PerformanceEntry::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

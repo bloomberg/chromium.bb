@@ -11,16 +11,18 @@
 
 namespace blink {
 
-class CORE_EXPORT DedicatedWorkerMessagingProxy final : public InProcessWorkerMessagingProxy {
-    WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxy);
-    USING_FAST_MALLOC(DedicatedWorkerMessagingProxy);
-public:
-    DedicatedWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
-    ~DedicatedWorkerMessagingProxy() override;
+class CORE_EXPORT DedicatedWorkerMessagingProxy final
+    : public InProcessWorkerMessagingProxy {
+  WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxy);
+  USING_FAST_MALLOC(DedicatedWorkerMessagingProxy);
 
-    std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
+ public:
+  DedicatedWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
+  ~DedicatedWorkerMessagingProxy() override;
+
+  std::unique_ptr<WorkerThread> createWorkerThread(double originTime) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DedicatedWorkerMessagingProxy_h
+#endif  // DedicatedWorkerMessagingProxy_h

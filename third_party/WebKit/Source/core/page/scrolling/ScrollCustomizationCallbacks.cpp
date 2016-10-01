@@ -8,35 +8,36 @@
 
 namespace blink {
 
-void ScrollCustomizationCallbacks::setDistributeScroll(Element* element, ScrollStateCallback* scrollStateCallback)
-{
-    m_distributeScrollCallbacks.set(element, scrollStateCallback);
+void ScrollCustomizationCallbacks::setDistributeScroll(
+    Element* element,
+    ScrollStateCallback* scrollStateCallback) {
+  m_distributeScrollCallbacks.set(element, scrollStateCallback);
 }
 
-ScrollStateCallback* ScrollCustomizationCallbacks::getDistributeScroll(Element* element)
-{
-    auto it = m_distributeScrollCallbacks.find(element);
-    if (it == m_distributeScrollCallbacks.end())
-        return nullptr;
-    return it->value.get();
+ScrollStateCallback* ScrollCustomizationCallbacks::getDistributeScroll(
+    Element* element) {
+  auto it = m_distributeScrollCallbacks.find(element);
+  if (it == m_distributeScrollCallbacks.end())
+    return nullptr;
+  return it->value.get();
 }
 
-void ScrollCustomizationCallbacks::setApplyScroll(Element* element, ScrollStateCallback* scrollStateCallback)
-{
-    m_applyScrollCallbacks.set(element, scrollStateCallback);
+void ScrollCustomizationCallbacks::setApplyScroll(
+    Element* element,
+    ScrollStateCallback* scrollStateCallback) {
+  m_applyScrollCallbacks.set(element, scrollStateCallback);
 }
 
-void ScrollCustomizationCallbacks::removeApplyScroll(Element* element)
-{
-    m_applyScrollCallbacks.remove(element);
+void ScrollCustomizationCallbacks::removeApplyScroll(Element* element) {
+  m_applyScrollCallbacks.remove(element);
 }
 
-ScrollStateCallback* ScrollCustomizationCallbacks::getApplyScroll(Element* element)
-{
-    auto it = m_applyScrollCallbacks.find(element);
-    if (it == m_applyScrollCallbacks.end())
-        return nullptr;
-    return it->value.get();
+ScrollStateCallback* ScrollCustomizationCallbacks::getApplyScroll(
+    Element* element) {
+  auto it = m_applyScrollCallbacks.find(element);
+  if (it == m_applyScrollCallbacks.end())
+    return nullptr;
+  return it->value.get();
 }
 
-} // namespace blink
+}  // namespace blink

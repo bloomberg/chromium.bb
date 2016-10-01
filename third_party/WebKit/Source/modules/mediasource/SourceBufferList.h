@@ -40,45 +40,50 @@ class SourceBuffer;
 class GenericEventQueue;
 
 class SourceBufferList final : public EventTargetWithInlineData {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SourceBufferList* create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
-    {
-        return new SourceBufferList(context, asyncEventQueue);
-    }
-    ~SourceBufferList() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned length() const { return m_list.size(); }
+ public:
+  static SourceBufferList* create(ExecutionContext* context,
+                                  GenericEventQueue* asyncEventQueue) {
+    return new SourceBufferList(context, asyncEventQueue);
+  }
+  ~SourceBufferList() override;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(addsourcebuffer);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(removesourcebuffer);
+  unsigned length() const { return m_list.size(); }
 
-    SourceBuffer* item(unsigned index) const { return (index < m_list.size()) ? m_list[index].get() : 0; }
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addsourcebuffer);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removesourcebuffer);
 
-    void add(SourceBuffer*);
-    void insert(size_t position, SourceBuffer*);
-    void remove(SourceBuffer*);
-    size_t find(SourceBuffer* buffer) { return m_list.find(buffer); }
-    bool contains(SourceBuffer* buffer) { return m_list.find(buffer) != kNotFound; }
-    void clear();
+  SourceBuffer* item(unsigned index) const {
+    return (index < m_list.size()) ? m_list[index].get() : 0;
+  }
 
-    // EventTarget interface
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  void add(SourceBuffer*);
+  void insert(size_t position, SourceBuffer*);
+  void remove(SourceBuffer*);
+  size_t find(SourceBuffer* buffer) { return m_list.find(buffer); }
+  bool contains(SourceBuffer* buffer) {
+    return m_list.find(buffer) != kNotFound;
+  }
+  void clear();
 
-    DECLARE_VIRTUAL_TRACE();
+  // EventTarget interface
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-private:
-    SourceBufferList(ExecutionContext*, GenericEventQueue*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void scheduleEvent(const AtomicString&);
+ private:
+  SourceBufferList(ExecutionContext*, GenericEventQueue*);
 
-    Member<ExecutionContext> m_executionContext;
-    Member<GenericEventQueue> m_asyncEventQueue;
+  void scheduleEvent(const AtomicString&);
 
-    HeapVector<Member<SourceBuffer>> m_list;
+  Member<ExecutionContext> m_executionContext;
+  Member<GenericEventQueue> m_asyncEventQueue;
+
+  HeapVector<Member<SourceBuffer>> m_list;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SourceBufferList_h
+#endif  // SourceBufferList_h

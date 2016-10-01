@@ -30,70 +30,61 @@
 namespace blink {
 
 CSSImportRule::CSSImportRule(StyleRuleImport* importRule, CSSStyleSheet* parent)
-    : CSSRule(parent)
-    , m_importRule(importRule)
-{
+    : CSSRule(parent), m_importRule(importRule) {}
+
+CSSImportRule::~CSSImportRule() {}
+
+String CSSImportRule::href() const {
+  return m_importRule->href();
 }
 
-CSSImportRule::~CSSImportRule()
-{
+MediaList* CSSImportRule::media() const {
+  if (!m_mediaCSSOMWrapper)
+    m_mediaCSSOMWrapper = MediaList::create(m_importRule->mediaQueries(),
+                                            const_cast<CSSImportRule*>(this));
+  return m_mediaCSSOMWrapper.get();
 }
 
-String CSSImportRule::href() const
-{
-    return m_importRule->href();
-}
+String CSSImportRule::cssText() const {
+  StringBuilder result;
+  result.append("@import url(\"");
+  result.append(m_importRule->href());
+  result.append("\")");
 
-MediaList* CSSImportRule::media() const
-{
-    if (!m_mediaCSSOMWrapper)
-        m_mediaCSSOMWrapper = MediaList::create(m_importRule->mediaQueries(), const_cast<CSSImportRule*>(this));
-    return m_mediaCSSOMWrapper.get();
-}
-
-String CSSImportRule::cssText() const
-{
-    StringBuilder result;
-    result.append("@import url(\"");
-    result.append(m_importRule->href());
-    result.append("\")");
-
-    if (m_importRule->mediaQueries()) {
-        String mediaText = m_importRule->mediaQueries()->mediaText();
-        if (!mediaText.isEmpty()) {
-            result.append(' ');
-            result.append(mediaText);
-        }
+  if (m_importRule->mediaQueries()) {
+    String mediaText = m_importRule->mediaQueries()->mediaText();
+    if (!mediaText.isEmpty()) {
+      result.append(' ');
+      result.append(mediaText);
     }
-    result.append(';');
+  }
+  result.append(';');
 
-    return result.toString();
+  return result.toString();
 }
 
-CSSStyleSheet* CSSImportRule::styleSheet() const
-{
-    // TODO(yukishiino): CSSImportRule.styleSheet attribute is not nullable,
-    // thus this function must not return nullptr.
-    if (!m_importRule->styleSheet())
-        return nullptr;
+CSSStyleSheet* CSSImportRule::styleSheet() const {
+  // TODO(yukishiino): CSSImportRule.styleSheet attribute is not nullable,
+  // thus this function must not return nullptr.
+  if (!m_importRule->styleSheet())
+    return nullptr;
 
-    if (!m_styleSheetCSSOMWrapper)
-        m_styleSheetCSSOMWrapper = CSSStyleSheet::create(m_importRule->styleSheet(), const_cast<CSSImportRule*>(this));
-    return m_styleSheetCSSOMWrapper.get();
+  if (!m_styleSheetCSSOMWrapper)
+    m_styleSheetCSSOMWrapper = CSSStyleSheet::create(
+        m_importRule->styleSheet(), const_cast<CSSImportRule*>(this));
+  return m_styleSheetCSSOMWrapper.get();
 }
 
-void CSSImportRule::reattach(StyleRuleBase*)
-{
-    // FIXME: Implement when enabling caching for stylesheets with import rules.
-    ASSERT_NOT_REACHED();
+void CSSImportRule::reattach(StyleRuleBase*) {
+  // FIXME: Implement when enabling caching for stylesheets with import rules.
+  ASSERT_NOT_REACHED();
 }
 
-DEFINE_TRACE(CSSImportRule)
-{
-    visitor->trace(m_importRule);
-    visitor->trace(m_mediaCSSOMWrapper);
-    visitor->trace(m_styleSheetCSSOMWrapper);
-    CSSRule::trace(visitor);
+DEFINE_TRACE(CSSImportRule) {
+  visitor->trace(m_importRule);
+  visitor->trace(m_mediaCSSOMWrapper);
+  visitor->trace(m_styleSheetCSSOMWrapper);
+  CSSRule::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

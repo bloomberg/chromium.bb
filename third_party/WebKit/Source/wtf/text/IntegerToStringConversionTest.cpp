@@ -9,11 +9,10 @@
 
 namespace WTF {
 
-TEST(IntegerToStringConversionTest, SimpleIntConversion)
-{
-    const IntegerToStringConverter<int> conv(100500);
-    EXPECT_EQ(
-        StringView(conv.characters8(), conv.length()), StringView("100500"));
+TEST(IntegerToStringConversionTest, SimpleIntConversion) {
+  const IntegerToStringConverter<int> conv(100500);
+  EXPECT_EQ(StringView(conv.characters8(), conv.length()),
+            StringView("100500"));
 }
 
-} // namespace WTF
+}  // namespace WTF

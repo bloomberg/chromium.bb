@@ -10,30 +10,32 @@
 
 namespace blink {
 
-LayoutSize StyleImage::applyZoom(const LayoutSize& size, float multiplier)
-{
-    if (multiplier == 1.0f)
-        return size;
+LayoutSize StyleImage::applyZoom(const LayoutSize& size, float multiplier) {
+  if (multiplier == 1.0f)
+    return size;
 
-    LayoutUnit width(size.width() * multiplier);
-    LayoutUnit height(size.height() * multiplier);
+  LayoutUnit width(size.width() * multiplier);
+  LayoutUnit height(size.height() * multiplier);
 
-    // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-    if (size.width() > LayoutUnit())
-        width = std::max(LayoutUnit(1), width);
+  // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
+  if (size.width() > LayoutUnit())
+    width = std::max(LayoutUnit(1), width);
 
-    if (size.height() > LayoutUnit())
-        height = std::max(LayoutUnit(1), height);
+  if (size.height() > LayoutUnit())
+    height = std::max(LayoutUnit(1), height);
 
-    return LayoutSize(width, height);
+  return LayoutSize(width, height);
 }
 
-LayoutSize StyleImage::imageSizeForSVGImage(SVGImage* svgImage, float multiplier, const LayoutSize& defaultObjectSize) const
-{
-    FloatSize unzoomedDefaultObjectSize(defaultObjectSize);
-    unzoomedDefaultObjectSize.scale(1 / multiplier);
-    LayoutSize imageSize(roundedIntSize(svgImage->concreteObjectSize(unzoomedDefaultObjectSize)));
-    return applyZoom(imageSize, multiplier);
+LayoutSize StyleImage::imageSizeForSVGImage(
+    SVGImage* svgImage,
+    float multiplier,
+    const LayoutSize& defaultObjectSize) const {
+  FloatSize unzoomedDefaultObjectSize(defaultObjectSize);
+  unzoomedDefaultObjectSize.scale(1 / multiplier);
+  LayoutSize imageSize(
+      roundedIntSize(svgImage->concreteObjectSize(unzoomedDefaultObjectSize)));
+  return applyZoom(imageSize, multiplier);
 }
 
-} // namespace blink
+}  // namespace blink

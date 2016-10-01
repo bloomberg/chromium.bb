@@ -33,61 +33,54 @@
 namespace blink {
 
 WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(Element* element)
-    : SimpleEditCommand(element->document())
-    , m_element(element)
-{
-    DCHECK(m_element);
+    : SimpleEditCommand(element->document()), m_element(element) {
+  DCHECK(m_element);
 }
 
-void WrapContentsInDummySpanCommand::executeApply()
-{
-    NodeVector children;
-    getChildNodes(*m_element, children);
+void WrapContentsInDummySpanCommand::executeApply() {
+  NodeVector children;
+  getChildNodes(*m_element, children);
 
-    for (auto& child : children)
-        m_dummySpan->appendChild(child.release(), IGNORE_EXCEPTION);
+  for (auto& child : children)
+    m_dummySpan->appendChild(child.release(), IGNORE_EXCEPTION);
 
-    m_element->appendChild(m_dummySpan.get(), IGNORE_EXCEPTION);
+  m_element->appendChild(m_dummySpan.get(), IGNORE_EXCEPTION);
 }
 
-void WrapContentsInDummySpanCommand::doApply(EditingState*)
-{
-    m_dummySpan = HTMLSpanElement::create(document());
+void WrapContentsInDummySpanCommand::doApply(EditingState*) {
+  m_dummySpan = HTMLSpanElement::create(document());
 
-    executeApply();
+  executeApply();
 }
 
-void WrapContentsInDummySpanCommand::doUnapply()
-{
-    DCHECK(m_element);
+void WrapContentsInDummySpanCommand::doUnapply() {
+  DCHECK(m_element);
 
-    if (!m_dummySpan || !hasEditableStyle(*m_element))
-        return;
+  if (!m_dummySpan || !hasEditableStyle(*m_element))
+    return;
 
-    NodeVector children;
-    getChildNodes(*m_dummySpan, children);
+  NodeVector children;
+  getChildNodes(*m_dummySpan, children);
 
-    for (auto& child : children)
-        m_element->appendChild(child.release(), IGNORE_EXCEPTION);
+  for (auto& child : children)
+    m_element->appendChild(child.release(), IGNORE_EXCEPTION);
 
-    m_dummySpan->remove(IGNORE_EXCEPTION);
+  m_dummySpan->remove(IGNORE_EXCEPTION);
 }
 
-void WrapContentsInDummySpanCommand::doReapply()
-{
-    DCHECK(m_element);
+void WrapContentsInDummySpanCommand::doReapply() {
+  DCHECK(m_element);
 
-    if (!m_dummySpan || !hasEditableStyle(*m_element))
-        return;
+  if (!m_dummySpan || !hasEditableStyle(*m_element))
+    return;
 
-    executeApply();
+  executeApply();
 }
 
-DEFINE_TRACE(WrapContentsInDummySpanCommand)
-{
-    visitor->trace(m_element);
-    visitor->trace(m_dummySpan);
-    SimpleEditCommand::trace(visitor);
+DEFINE_TRACE(WrapContentsInDummySpanCommand) {
+  visitor->trace(m_element);
+  visitor->trace(m_dummySpan);
+  SimpleEditCommand::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

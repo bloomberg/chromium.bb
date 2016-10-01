@@ -30,43 +30,36 @@
 
 namespace blink {
 
-StyleSheetCollection::StyleSheetCollection()
-{
+StyleSheetCollection::StyleSheetCollection() {}
+
+void StyleSheetCollection::dispose() {
+  m_styleSheetsForStyleSheetList.clear();
+  m_activeAuthorStyleSheets.clear();
 }
 
-void StyleSheetCollection::dispose()
-{
-    m_styleSheetsForStyleSheetList.clear();
-    m_activeAuthorStyleSheets.clear();
+void StyleSheetCollection::swap(StyleSheetCollection& other) {
+  m_styleSheetsForStyleSheetList.swap(other.m_styleSheetsForStyleSheetList);
+  m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
 }
 
-void StyleSheetCollection::swap(StyleSheetCollection& other)
-{
-    m_styleSheetsForStyleSheetList.swap(other.m_styleSheetsForStyleSheetList);
-    m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
+void StyleSheetCollection::swapSheetsForSheetList(
+    HeapVector<Member<StyleSheet>>& sheets) {
+  // Only called for collection of HTML Imports that never has active sheets.
+  DCHECK(m_activeAuthorStyleSheets.isEmpty());
+  m_styleSheetsForStyleSheetList.swap(sheets);
 }
 
-void StyleSheetCollection::swapSheetsForSheetList(HeapVector<Member<StyleSheet>>& sheets)
-{
-    // Only called for collection of HTML Imports that never has active sheets.
-    DCHECK(m_activeAuthorStyleSheets.isEmpty());
-    m_styleSheetsForStyleSheetList.swap(sheets);
+void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet) {
+  m_activeAuthorStyleSheets.append(sheet);
 }
 
-void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet)
-{
-    m_activeAuthorStyleSheets.append(sheet);
+void StyleSheetCollection::appendSheetForList(StyleSheet* sheet) {
+  m_styleSheetsForStyleSheetList.append(sheet);
 }
 
-void StyleSheetCollection::appendSheetForList(StyleSheet* sheet)
-{
-    m_styleSheetsForStyleSheetList.append(sheet);
+DEFINE_TRACE(StyleSheetCollection) {
+  visitor->trace(m_activeAuthorStyleSheets);
+  visitor->trace(m_styleSheetsForStyleSheetList);
 }
 
-DEFINE_TRACE(StyleSheetCollection)
-{
-    visitor->trace(m_activeAuthorStyleSheets);
-    visitor->trace(m_styleSheetsForStyleSheetList);
-}
-
-} // namespace blink
+}  // namespace blink

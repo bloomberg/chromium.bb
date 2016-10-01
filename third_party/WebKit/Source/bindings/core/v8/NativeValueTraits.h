@@ -14,10 +14,13 @@ class ExceptionState;
 
 template <typename T, typename... Arguments>
 struct NativeValueTraits {
-    STATIC_ONLY(NativeValueTraits);
-    static T nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, Arguments... args);
+  STATIC_ONLY(NativeValueTraits);
+  static T nativeValue(v8::Isolate*,
+                       v8::Local<v8::Value>,
+                       ExceptionState&,
+                       Arguments... args);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NativeValueTraits_h
+#endif  // NativeValueTraits_h

@@ -40,41 +40,49 @@ namespace blink {
 
 class Node;
 
-class LayerRect final : public GarbageCollectedFinalized<LayerRect>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static LayerRect* create(Node* node, const String& layerType, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
-    {
-        return new LayerRect(node, layerType, nodeOffsetX, nodeOffsetY, rect);
-    }
+class LayerRect final : public GarbageCollectedFinalized<LayerRect>,
+                        public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    Node* layerAssociatedNode() const { return m_layerAssociatedNode.get(); }
-    String layerType() const { return m_layerType; }
-    int associatedNodeOffsetX() const { return m_associatedNodeOffsetX; }
-    int associatedNodeOffsetY() const { return m_associatedNodeOffsetY; }
-    ClientRect* layerRelativeRect() const { return m_rect.get(); }
+ public:
+  static LayerRect* create(Node* node,
+                           const String& layerType,
+                           int nodeOffsetX,
+                           int nodeOffsetY,
+                           ClientRect* rect) {
+    return new LayerRect(node, layerType, nodeOffsetX, nodeOffsetY, rect);
+  }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_layerAssociatedNode);
-        visitor->trace(m_rect);
-    }
+  Node* layerAssociatedNode() const { return m_layerAssociatedNode.get(); }
+  String layerType() const { return m_layerType; }
+  int associatedNodeOffsetX() const { return m_associatedNodeOffsetX; }
+  int associatedNodeOffsetY() const { return m_associatedNodeOffsetY; }
+  ClientRect* layerRelativeRect() const { return m_rect.get(); }
 
-private:
-    LayerRect(Node* node, const String& layerName, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
-        : m_layerAssociatedNode(node)
-        , m_layerType(layerName)
-        , m_associatedNodeOffsetX(nodeOffsetX)
-        , m_associatedNodeOffsetY(nodeOffsetY)
-        , m_rect(rect) { }
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_layerAssociatedNode);
+    visitor->trace(m_rect);
+  }
 
-    Member<Node> m_layerAssociatedNode;
-    String m_layerType;
-    int m_associatedNodeOffsetX;
-    int m_associatedNodeOffsetY;
-    Member<ClientRect> m_rect;
+ private:
+  LayerRect(Node* node,
+            const String& layerName,
+            int nodeOffsetX,
+            int nodeOffsetY,
+            ClientRect* rect)
+      : m_layerAssociatedNode(node),
+        m_layerType(layerName),
+        m_associatedNodeOffsetX(nodeOffsetX),
+        m_associatedNodeOffsetY(nodeOffsetY),
+        m_rect(rect) {}
+
+  Member<Node> m_layerAssociatedNode;
+  String m_layerType;
+  int m_associatedNodeOffsetX;
+  int m_associatedNodeOffsetY;
+  Member<ClientRect> m_rect;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayerRect_h
+#endif  // LayerRect_h

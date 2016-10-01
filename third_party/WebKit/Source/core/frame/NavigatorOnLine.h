@@ -36,13 +36,10 @@
 namespace blink {
 
 class NavigatorOnLine {
-public:
-    bool onLine()
-    {
-        return networkStateNotifier().onLine();
-    }
+ public:
+  bool onLine() { return networkStateNotifier().onLine(); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorOnLine_h
+#endif  // NavigatorOnLine_h

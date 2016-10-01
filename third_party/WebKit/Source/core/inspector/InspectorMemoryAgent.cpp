@@ -34,18 +34,19 @@
 
 namespace blink {
 
-InspectorMemoryAgent::~InspectorMemoryAgent()
-{
-}
+InspectorMemoryAgent::~InspectorMemoryAgent() {}
 
-void InspectorMemoryAgent::getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners)
-{
-    *documents = InstanceCounters::counterValue(InstanceCounters::DocumentCounter);
-    *nodes = InstanceCounters::counterValue(InstanceCounters::NodeCounter);
-    *jsEventListeners = InstanceCounters::counterValue(InstanceCounters::JSEventListenerCounter);
+void InspectorMemoryAgent::getDOMCounters(ErrorString*,
+                                          int* documents,
+                                          int* nodes,
+                                          int* jsEventListeners) {
+  *documents =
+      InstanceCounters::counterValue(InstanceCounters::DocumentCounter);
+  *nodes = InstanceCounters::counterValue(InstanceCounters::NodeCounter);
+  *jsEventListeners =
+      InstanceCounters::counterValue(InstanceCounters::JSEventListenerCounter);
 }
 
 InspectorMemoryAgent::InspectorMemoryAgent() = default;
 
-} // namespace blink
-
+}  // namespace blink

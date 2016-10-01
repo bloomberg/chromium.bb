@@ -13,40 +13,35 @@
 namespace blink {
 
 NavigatorUserMedia::NavigatorUserMedia(ExecutionContext* context)
-    : m_mediaDevices(MediaDevices::create(context))
-{
+    : m_mediaDevices(MediaDevices::create(context)) {}
+
+const char* NavigatorUserMedia::supplementName() {
+  return "NavigatorUserMedia";
 }
 
-const char* NavigatorUserMedia::supplementName()
-{
-    return "NavigatorUserMedia";
+NavigatorUserMedia& NavigatorUserMedia::from(Navigator& navigator) {
+  NavigatorUserMedia* supplement = static_cast<NavigatorUserMedia*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    ExecutionContext* context =
+        navigator.frame() ? navigator.frame()->document() : nullptr;
+    supplement = new NavigatorUserMedia(context);
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-NavigatorUserMedia& NavigatorUserMedia::from(Navigator& navigator)
-{
-    NavigatorUserMedia* supplement = static_cast<NavigatorUserMedia*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        ExecutionContext* context = navigator.frame() ? navigator.frame()->document() : nullptr;
-        supplement = new NavigatorUserMedia(context);
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+MediaDevices* NavigatorUserMedia::getMediaDevices() {
+  return m_mediaDevices;
 }
 
-MediaDevices* NavigatorUserMedia::getMediaDevices()
-{
-    return m_mediaDevices;
+MediaDevices* NavigatorUserMedia::mediaDevices(Navigator& navigator) {
+  return NavigatorUserMedia::from(navigator).getMediaDevices();
 }
 
-MediaDevices* NavigatorUserMedia::mediaDevices(Navigator& navigator)
-{
-    return NavigatorUserMedia::from(navigator).getMediaDevices();
+DEFINE_TRACE(NavigatorUserMedia) {
+  visitor->trace(m_mediaDevices);
+  Supplement<Navigator>::trace(visitor);
 }
 
-DEFINE_TRACE(NavigatorUserMedia)
-{
-    visitor->trace(m_mediaDevices);
-    Supplement<Navigator>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

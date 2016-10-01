@@ -37,136 +37,146 @@
 namespace blink {
 
 // FIXME: Remove the need for this.
-WebCryptoAlgorithm createHash(WebCryptoAlgorithmId hash)
-{
-    return WebCryptoAlgorithm::adoptParamsAndCreate(hash, 0);
+WebCryptoAlgorithm createHash(WebCryptoAlgorithmId hash) {
+  return WebCryptoAlgorithm::adoptParamsAndCreate(hash, 0);
 }
 
-class WebCryptoKeyAlgorithmPrivate : public ThreadSafeRefCounted<WebCryptoKeyAlgorithmPrivate> {
-public:
-    WebCryptoKeyAlgorithmPrivate(WebCryptoAlgorithmId id, std::unique_ptr<WebCryptoKeyAlgorithmParams> params)
-        : id(id)
-        , params(std::move(params))
-    {
-    }
+class WebCryptoKeyAlgorithmPrivate
+    : public ThreadSafeRefCounted<WebCryptoKeyAlgorithmPrivate> {
+ public:
+  WebCryptoKeyAlgorithmPrivate(
+      WebCryptoAlgorithmId id,
+      std::unique_ptr<WebCryptoKeyAlgorithmParams> params)
+      : id(id), params(std::move(params)) {}
 
-    WebCryptoAlgorithmId id;
-    std::unique_ptr<WebCryptoKeyAlgorithmParams> params;
+  WebCryptoAlgorithmId id;
+  std::unique_ptr<WebCryptoKeyAlgorithmParams> params;
 };
 
-WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(WebCryptoAlgorithmId id, std::unique_ptr<WebCryptoKeyAlgorithmParams> params)
-    : m_private(adoptRef(new WebCryptoKeyAlgorithmPrivate(id, std::move(params))))
-{
+WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(
+    WebCryptoAlgorithmId id,
+    std::unique_ptr<WebCryptoKeyAlgorithmParams> params)
+    : m_private(
+          adoptRef(new WebCryptoKeyAlgorithmPrivate(id, std::move(params)))) {}
+
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::adoptParamsAndCreate(
+    WebCryptoAlgorithmId id,
+    WebCryptoKeyAlgorithmParams* params) {
+  return WebCryptoKeyAlgorithm(id, wrapUnique(params));
 }
 
-WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::adoptParamsAndCreate(WebCryptoAlgorithmId id, WebCryptoKeyAlgorithmParams* params)
-{
-    return WebCryptoKeyAlgorithm(id, wrapUnique(params));
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(
+    WebCryptoAlgorithmId id,
+    unsigned short keyLengthBits) {
+  // FIXME: Verify that id is an AES algorithm.
+  // FIXME: Move this somewhere more general.
+  if (keyLengthBits != 128 && keyLengthBits != 192 && keyLengthBits != 256)
+    return WebCryptoKeyAlgorithm();
+  return WebCryptoKeyAlgorithm(
+      id, wrapUnique(new WebCryptoAesKeyAlgorithmParams(keyLengthBits)));
 }
 
-WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(WebCryptoAlgorithmId id, unsigned short keyLengthBits)
-{
-    // FIXME: Verify that id is an AES algorithm.
-    // FIXME: Move this somewhere more general.
-    if (keyLengthBits != 128 && keyLengthBits != 192 && keyLengthBits != 256)
-        return WebCryptoKeyAlgorithm();
-    return WebCryptoKeyAlgorithm(id, wrapUnique(new WebCryptoAesKeyAlgorithmParams(keyLengthBits)));
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(
+    WebCryptoAlgorithmId hash,
+    unsigned keyLengthBits) {
+  if (!WebCryptoAlgorithm::isHash(hash))
+    return WebCryptoKeyAlgorithm();
+  return WebCryptoKeyAlgorithm(WebCryptoAlgorithmIdHmac,
+                               wrapUnique(new WebCryptoHmacKeyAlgorithmParams(
+                                   createHash(hash), keyLengthBits)));
 }
 
-WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(WebCryptoAlgorithmId hash, unsigned keyLengthBits)
-{
-    if (!WebCryptoAlgorithm::isHash(hash))
-        return WebCryptoKeyAlgorithm();
-    return WebCryptoKeyAlgorithm(WebCryptoAlgorithmIdHmac, wrapUnique(new WebCryptoHmacKeyAlgorithmParams(createHash(hash), keyLengthBits)));
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(
+    WebCryptoAlgorithmId id,
+    unsigned modulusLengthBits,
+    const unsigned char* publicExponent,
+    unsigned publicExponentSize,
+    WebCryptoAlgorithmId hash) {
+  // FIXME: Verify that id is an RSA algorithm which expects a hash
+  if (!WebCryptoAlgorithm::isHash(hash))
+    return WebCryptoKeyAlgorithm();
+  return WebCryptoKeyAlgorithm(
+      id, wrapUnique(new WebCryptoRsaHashedKeyAlgorithmParams(
+              modulusLengthBits, publicExponent, publicExponentSize,
+              createHash(hash))));
 }
 
-WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(WebCryptoAlgorithmId id, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, WebCryptoAlgorithmId hash)
-{
-    // FIXME: Verify that id is an RSA algorithm which expects a hash
-    if (!WebCryptoAlgorithm::isHash(hash))
-        return WebCryptoKeyAlgorithm();
-    return WebCryptoKeyAlgorithm(id, wrapUnique(new WebCryptoRsaHashedKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize, createHash(hash))));
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createEc(
+    WebCryptoAlgorithmId id,
+    WebCryptoNamedCurve namedCurve) {
+  return WebCryptoKeyAlgorithm(
+      id, wrapUnique(new WebCryptoEcKeyAlgorithmParams(namedCurve)));
 }
 
-WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createEc(WebCryptoAlgorithmId id, WebCryptoNamedCurve namedCurve)
-{
-    return WebCryptoKeyAlgorithm(id, wrapUnique(new WebCryptoEcKeyAlgorithmParams(namedCurve)));
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createWithoutParams(
+    WebCryptoAlgorithmId id) {
+  if (!WebCryptoAlgorithm::isKdf(id))
+    return WebCryptoKeyAlgorithm();
+  return WebCryptoKeyAlgorithm(id, nullptr);
 }
 
-WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createWithoutParams(WebCryptoAlgorithmId id)
-{
-    if (!WebCryptoAlgorithm::isKdf(id))
-        return WebCryptoKeyAlgorithm();
-    return WebCryptoKeyAlgorithm(id, nullptr);
+bool WebCryptoKeyAlgorithm::isNull() const {
+  return m_private.isNull();
 }
 
-bool WebCryptoKeyAlgorithm::isNull() const
-{
-    return m_private.isNull();
+WebCryptoAlgorithmId WebCryptoKeyAlgorithm::id() const {
+  ASSERT(!isNull());
+  return m_private->id;
 }
 
-WebCryptoAlgorithmId WebCryptoKeyAlgorithm::id() const
-{
-    ASSERT(!isNull());
-    return m_private->id;
+WebCryptoKeyAlgorithmParamsType WebCryptoKeyAlgorithm::paramsType() const {
+  ASSERT(!isNull());
+  if (!m_private->params.get())
+    return WebCryptoKeyAlgorithmParamsTypeNone;
+  return m_private->params->type();
 }
 
-WebCryptoKeyAlgorithmParamsType WebCryptoKeyAlgorithm::paramsType() const
-{
-    ASSERT(!isNull());
-    if (!m_private->params.get())
-        return WebCryptoKeyAlgorithmParamsTypeNone;
-    return m_private->params->type();
+WebCryptoAesKeyAlgorithmParams* WebCryptoKeyAlgorithm::aesParams() const {
+  ASSERT(!isNull());
+  if (paramsType() == WebCryptoKeyAlgorithmParamsTypeAes)
+    return static_cast<WebCryptoAesKeyAlgorithmParams*>(
+        m_private->params.get());
+  return 0;
 }
 
-WebCryptoAesKeyAlgorithmParams* WebCryptoKeyAlgorithm::aesParams() const
-{
-    ASSERT(!isNull());
-    if (paramsType() == WebCryptoKeyAlgorithmParamsTypeAes)
-        return static_cast<WebCryptoAesKeyAlgorithmParams*>(m_private->params.get());
-    return 0;
+WebCryptoHmacKeyAlgorithmParams* WebCryptoKeyAlgorithm::hmacParams() const {
+  ASSERT(!isNull());
+  if (paramsType() == WebCryptoKeyAlgorithmParamsTypeHmac)
+    return static_cast<WebCryptoHmacKeyAlgorithmParams*>(
+        m_private->params.get());
+  return 0;
 }
 
-WebCryptoHmacKeyAlgorithmParams* WebCryptoKeyAlgorithm::hmacParams() const
-{
-    ASSERT(!isNull());
-    if (paramsType() == WebCryptoKeyAlgorithmParamsTypeHmac)
-        return static_cast<WebCryptoHmacKeyAlgorithmParams*>(m_private->params.get());
-    return 0;
+WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::rsaHashedParams()
+    const {
+  ASSERT(!isNull());
+  if (paramsType() == WebCryptoKeyAlgorithmParamsTypeRsaHashed)
+    return static_cast<WebCryptoRsaHashedKeyAlgorithmParams*>(
+        m_private->params.get());
+  return 0;
 }
 
-WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::rsaHashedParams() const
-{
-    ASSERT(!isNull());
-    if (paramsType() == WebCryptoKeyAlgorithmParamsTypeRsaHashed)
-        return static_cast<WebCryptoRsaHashedKeyAlgorithmParams*>(m_private->params.get());
-    return 0;
+WebCryptoEcKeyAlgorithmParams* WebCryptoKeyAlgorithm::ecParams() const {
+  ASSERT(!isNull());
+  if (paramsType() == WebCryptoKeyAlgorithmParamsTypeEc)
+    return static_cast<WebCryptoEcKeyAlgorithmParams*>(m_private->params.get());
+  return 0;
 }
 
-WebCryptoEcKeyAlgorithmParams* WebCryptoKeyAlgorithm::ecParams() const
-{
-    ASSERT(!isNull());
-    if (paramsType() == WebCryptoKeyAlgorithmParamsTypeEc)
-        return static_cast<WebCryptoEcKeyAlgorithmParams*>(m_private->params.get());
-    return 0;
+void WebCryptoKeyAlgorithm::writeToDictionary(
+    WebCryptoKeyAlgorithmDictionary* dict) const {
+  ASSERT(!isNull());
+  dict->setString("name", WebCryptoAlgorithm::lookupAlgorithmInfo(id())->name);
+  if (m_private->params.get())
+    m_private->params.get()->writeToDictionary(dict);
 }
 
-void WebCryptoKeyAlgorithm::writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
-{
-    ASSERT(!isNull());
-    dict->setString("name", WebCryptoAlgorithm::lookupAlgorithmInfo(id())->name);
-    if (m_private->params.get())
-        m_private->params.get()->writeToDictionary(dict);
+void WebCryptoKeyAlgorithm::assign(const WebCryptoKeyAlgorithm& other) {
+  m_private = other.m_private;
 }
 
-void WebCryptoKeyAlgorithm::assign(const WebCryptoKeyAlgorithm& other)
-{
-    m_private = other.m_private;
+void WebCryptoKeyAlgorithm::reset() {
+  m_private.reset();
 }
 
-void WebCryptoKeyAlgorithm::reset()
-{
-    m_private.reset();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -50,189 +50,179 @@
 namespace blink {
 
 class TestImage : public Image {
-public:
-    static PassRefPtr<TestImage> create(sk_sp<SkImage> image)
-    {
-        return adoptRef(new TestImage(image));
-    }
+ public:
+  static PassRefPtr<TestImage> create(sk_sp<SkImage> image) {
+    return adoptRef(new TestImage(image));
+  }
 
-    static PassRefPtr<TestImage> create(const IntSize& size)
-    {
-        return adoptRef(new TestImage(size));
-    }
+  static PassRefPtr<TestImage> create(const IntSize& size) {
+    return adoptRef(new TestImage(size));
+  }
 
-    IntSize size() const override
-    {
-        ASSERT(m_image);
+  IntSize size() const override {
+    ASSERT(m_image);
 
-        return IntSize(m_image->width(), m_image->height());
-    }
+    return IntSize(m_image->width(), m_image->height());
+  }
 
-    sk_sp<SkImage> imageForCurrentFrame() override
-    {
-        return m_image;
-    }
+  sk_sp<SkImage> imageForCurrentFrame() override { return m_image; }
 
-    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override
-    {
-        return false;
-    }
+  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
+    return false;
+  }
 
-    void destroyDecodedData() override
-    {
-        // Image pure virtual stub.
-    }
+  void destroyDecodedData() override {
+    // Image pure virtual stub.
+  }
 
-    void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override
-    {
-        // Image pure virtual stub.
-    }
+  void draw(SkCanvas*,
+            const SkPaint&,
+            const FloatRect&,
+            const FloatRect&,
+            RespectImageOrientationEnum,
+            ImageClampingMode) override {
+    // Image pure virtual stub.
+  }
 
-private:
-    explicit TestImage(sk_sp<SkImage> image)
-        : m_image(image)
-    {
-    }
+ private:
+  explicit TestImage(sk_sp<SkImage> image) : m_image(image) {}
 
-    explicit TestImage(IntSize size)
-        : m_image(nullptr)
-    {
-        sk_sp<SkSurface> surface = createSkSurface(size);
-        if (!surface)
-            return;
+  explicit TestImage(IntSize size) : m_image(nullptr) {
+    sk_sp<SkSurface> surface = createSkSurface(size);
+    if (!surface)
+      return;
 
-        surface->getCanvas()->clear(SK_ColorTRANSPARENT);
-        m_image = surface->makeImageSnapshot();
-    }
+    surface->getCanvas()->clear(SK_ColorTRANSPARENT);
+    m_image = surface->makeImageSnapshot();
+  }
 
-    static sk_sp<SkSurface> createSkSurface(IntSize size)
-    {
-        return SkSurface::MakeRaster(SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType));
-    }
+  static sk_sp<SkSurface> createSkSurface(IntSize size) {
+    return SkSurface::MakeRaster(
+        SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType));
+  }
 
-    sk_sp<SkImage> m_image;
+  sk_sp<SkImage> m_image;
 };
 
-TEST(DragImageTest, NullHandling)
-{
-    EXPECT_FALSE(DragImage::create(0));
+TEST(DragImageTest, NullHandling) {
+  EXPECT_FALSE(DragImage::create(0));
 
-    RefPtr<TestImage> nullTestImage(TestImage::create(IntSize()));
-    EXPECT_FALSE(DragImage::create(nullTestImage.get()));
+  RefPtr<TestImage> nullTestImage(TestImage::create(IntSize()));
+  EXPECT_FALSE(DragImage::create(nullTestImage.get()));
 }
 
-TEST(DragImageTest, NonNullHandling)
-{
-    RefPtr<TestImage> testImage(TestImage::create(IntSize(2, 2)));
-    std::unique_ptr<DragImage> dragImage = DragImage::create(testImage.get());
-    ASSERT_TRUE(dragImage);
+TEST(DragImageTest, NonNullHandling) {
+  RefPtr<TestImage> testImage(TestImage::create(IntSize(2, 2)));
+  std::unique_ptr<DragImage> dragImage = DragImage::create(testImage.get());
+  ASSERT_TRUE(dragImage);
 
-    dragImage->scale(0.5, 0.5);
-    IntSize size = dragImage->size();
-    EXPECT_EQ(1, size.width());
-    EXPECT_EQ(1, size.height());
+  dragImage->scale(0.5, 0.5);
+  IntSize size = dragImage->size();
+  EXPECT_EQ(1, size.width());
+  EXPECT_EQ(1, size.height());
 }
 
-TEST(DragImageTest, CreateDragImage)
-{
-    // Tests that the DrageImage implementation doesn't choke on null values
-    // of imageForCurrentFrame().
-    // FIXME: how is this test any different from test NullHandling?
-    RefPtr<TestImage> testImage(TestImage::create(IntSize()));
-    EXPECT_FALSE(DragImage::create(testImage.get()));
+TEST(DragImageTest, CreateDragImage) {
+  // Tests that the DrageImage implementation doesn't choke on null values
+  // of imageForCurrentFrame().
+  // FIXME: how is this test any different from test NullHandling?
+  RefPtr<TestImage> testImage(TestImage::create(IntSize()));
+  EXPECT_FALSE(DragImage::create(testImage.get()));
 }
 
-TEST(DragImageTest, TrimWhitespace)
-{
-    KURL url(ParsedURLString, "http://www.example.com/");
-    String testLabel = "          Example Example Example      \n    ";
-    String expectedLabel = "Example Example Example";
-    float deviceScaleFactor = 1.0f;
+TEST(DragImageTest, TrimWhitespace) {
+  KURL url(ParsedURLString, "http://www.example.com/");
+  String testLabel = "          Example Example Example      \n    ";
+  String expectedLabel = "Example Example Example";
+  float deviceScaleFactor = 1.0f;
 
-    FontDescription fontDescription;
-    fontDescription.firstFamily().setFamily("Arial");
-    fontDescription.setSpecifiedSize(16);
-    fontDescription.setIsAbsoluteSize(true);
-    fontDescription.setGenericFamily(FontDescription::NoFamily);
-    fontDescription.setWeight(FontWeightNormal);
-    fontDescription.setStyle(FontStyleNormal);
+  FontDescription fontDescription;
+  fontDescription.firstFamily().setFamily("Arial");
+  fontDescription.setSpecifiedSize(16);
+  fontDescription.setIsAbsoluteSize(true);
+  fontDescription.setGenericFamily(FontDescription::NoFamily);
+  fontDescription.setWeight(FontWeightNormal);
+  fontDescription.setStyle(FontStyleNormal);
 
-    std::unique_ptr<DragImage> testImage =
-        DragImage::create(url, testLabel, fontDescription, deviceScaleFactor);
-    std::unique_ptr<DragImage> expectedImage =
-        DragImage::create(url, expectedLabel, fontDescription, deviceScaleFactor);
+  std::unique_ptr<DragImage> testImage =
+      DragImage::create(url, testLabel, fontDescription, deviceScaleFactor);
+  std::unique_ptr<DragImage> expectedImage =
+      DragImage::create(url, expectedLabel, fontDescription, deviceScaleFactor);
 
-    EXPECT_EQ(testImage->size().width(), expectedImage->size().width());
+  EXPECT_EQ(testImage->size().width(), expectedImage->size().width());
 }
 
 // SkPixelRef which fails to lock, as a lazy pixel ref might if its pixels
 // cannot be generated.
 class InvalidPixelRef : public SkPixelRef {
-public:
-    InvalidPixelRef(const SkImageInfo& info) : SkPixelRef(info) { }
-private:
-    bool onNewLockPixels(LockRec*) override { return false; }
-    void onUnlockPixels() override { ASSERT_NOT_REACHED(); }
+ public:
+  InvalidPixelRef(const SkImageInfo& info) : SkPixelRef(info) {}
+
+ private:
+  bool onNewLockPixels(LockRec*) override { return false; }
+  void onUnlockPixels() override { ASSERT_NOT_REACHED(); }
 };
 
-TEST(DragImageTest, InvalidRotatedBitmapImage)
-{
-    // This test is mostly useful with MSAN builds, which can actually detect
-    // the use of uninitialized memory.
+TEST(DragImageTest, InvalidRotatedBitmapImage) {
+  // This test is mostly useful with MSAN builds, which can actually detect
+  // the use of uninitialized memory.
 
-    // Create a BitmapImage which will fail to produce pixels, and hence not
-    // draw.
-    SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
-    sk_sp<SkPixelRef> pixelRef(new InvalidPixelRef(info));
-    SkBitmap invalidBitmap;
-    invalidBitmap.setInfo(info);
-    invalidBitmap.setPixelRef(pixelRef.get());
-    RefPtr<BitmapImage> image = BitmapImage::createWithOrientationForTesting(invalidBitmap, OriginRightTop);
+  // Create a BitmapImage which will fail to produce pixels, and hence not
+  // draw.
+  SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
+  sk_sp<SkPixelRef> pixelRef(new InvalidPixelRef(info));
+  SkBitmap invalidBitmap;
+  invalidBitmap.setInfo(info);
+  invalidBitmap.setPixelRef(pixelRef.get());
+  RefPtr<BitmapImage> image = BitmapImage::createWithOrientationForTesting(
+      invalidBitmap, OriginRightTop);
 
-    // Create a DragImage from it. In MSAN builds, this will cause a failure if
-    // the pixel memory is not initialized, if we have to respect non-default
-    // orientation.
-    std::unique_ptr<DragImage> dragImage = DragImage::create(image.get(), RespectImageOrientation);
+  // Create a DragImage from it. In MSAN builds, this will cause a failure if
+  // the pixel memory is not initialized, if we have to respect non-default
+  // orientation.
+  std::unique_ptr<DragImage> dragImage =
+      DragImage::create(image.get(), RespectImageOrientation);
 
-    // With an invalid pixel ref, BitmapImage should have no backing SkImage => we don't allocate
-    // a DragImage.
-    ASSERT_FALSE(dragImage);
+  // With an invalid pixel ref, BitmapImage should have no backing SkImage => we don't allocate
+  // a DragImage.
+  ASSERT_FALSE(dragImage);
 }
 
-TEST(DragImageTest, InterpolationNone)
-{
-    SkBitmap expectedBitmap;
-    expectedBitmap.allocN32Pixels(4, 4);
-    {
-        SkAutoLockPixels lock(expectedBitmap);
-        expectedBitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 2, 2), 0xFFFFFFFF);
-        expectedBitmap.eraseArea(SkIRect::MakeXYWH(0, 2, 2, 2), 0xFF000000);
-        expectedBitmap.eraseArea(SkIRect::MakeXYWH(2, 0, 2, 2), 0xFF000000);
-        expectedBitmap.eraseArea(SkIRect::MakeXYWH(2, 2, 2, 2), 0xFFFFFFFF);
-    }
+TEST(DragImageTest, InterpolationNone) {
+  SkBitmap expectedBitmap;
+  expectedBitmap.allocN32Pixels(4, 4);
+  {
+    SkAutoLockPixels lock(expectedBitmap);
+    expectedBitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 2, 2), 0xFFFFFFFF);
+    expectedBitmap.eraseArea(SkIRect::MakeXYWH(0, 2, 2, 2), 0xFF000000);
+    expectedBitmap.eraseArea(SkIRect::MakeXYWH(2, 0, 2, 2), 0xFF000000);
+    expectedBitmap.eraseArea(SkIRect::MakeXYWH(2, 2, 2, 2), 0xFFFFFFFF);
+  }
 
-    SkBitmap testBitmap;
-    testBitmap.allocN32Pixels(2, 2);
-    {
-        SkAutoLockPixels lock(testBitmap);
-        testBitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 1, 1), 0xFFFFFFFF);
-        testBitmap.eraseArea(SkIRect::MakeXYWH(0, 1, 1, 1), 0xFF000000);
-        testBitmap.eraseArea(SkIRect::MakeXYWH(1, 0, 1, 1), 0xFF000000);
-        testBitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
-    }
+  SkBitmap testBitmap;
+  testBitmap.allocN32Pixels(2, 2);
+  {
+    SkAutoLockPixels lock(testBitmap);
+    testBitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 1, 1), 0xFFFFFFFF);
+    testBitmap.eraseArea(SkIRect::MakeXYWH(0, 1, 1, 1), 0xFF000000);
+    testBitmap.eraseArea(SkIRect::MakeXYWH(1, 0, 1, 1), 0xFF000000);
+    testBitmap.eraseArea(SkIRect::MakeXYWH(1, 1, 1, 1), 0xFFFFFFFF);
+  }
 
-    RefPtr<TestImage> testImage = TestImage::create(SkImage::MakeFromBitmap(testBitmap));
-    std::unique_ptr<DragImage> dragImage = DragImage::create(testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
-    ASSERT_TRUE(dragImage);
-    dragImage->scale(2, 2);
-    const SkBitmap& dragBitmap = dragImage->bitmap();
-    {
-        SkAutoLockPixels lock1(dragBitmap);
-        SkAutoLockPixels lock2(expectedBitmap);
-        for (int x = 0; x < dragBitmap.width(); ++x)
-            for (int y = 0; y < dragBitmap.height(); ++y)
-                EXPECT_EQ(expectedBitmap.getColor(x, y), dragBitmap.getColor(x, y));
-    }
+  RefPtr<TestImage> testImage =
+      TestImage::create(SkImage::MakeFromBitmap(testBitmap));
+  std::unique_ptr<DragImage> dragImage = DragImage::create(
+      testImage.get(), DoNotRespectImageOrientation, 1, InterpolationNone);
+  ASSERT_TRUE(dragImage);
+  dragImage->scale(2, 2);
+  const SkBitmap& dragBitmap = dragImage->bitmap();
+  {
+    SkAutoLockPixels lock1(dragBitmap);
+    SkAutoLockPixels lock2(expectedBitmap);
+    for (int x = 0; x < dragBitmap.width(); ++x)
+      for (int y = 0; y < dragBitmap.height(); ++y)
+        EXPECT_EQ(expectedBitmap.getColor(x, y), dragBitmap.getColor(x, y));
+  }
 }
 
-} // namespace blink
+}  // namespace blink

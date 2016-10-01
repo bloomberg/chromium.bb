@@ -22,64 +22,58 @@
 
 namespace blink {
 
-class ReplaceSelectionCommandTest : public EditingTestBase {
-};
+class ReplaceSelectionCommandTest : public EditingTestBase {};
 
 // This is a regression test for https://crbug.com/619131
-TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan)
-{
-    document().setDesignMode("on");
-    setBodyContent("foo");
+TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
+  document().setDesignMode("on");
+  setBodyContent("foo");
 
-    LocalFrame* frame = document().frame();
-    frame->selection().setSelection(
-        createVisibleSelection(Position(document().body(), 0)));
+  LocalFrame* frame = document().frame();
+  frame->selection().setSelection(
+      createVisibleSelection(Position(document().body(), 0)));
 
-    DocumentFragment* fragment = document().createDocumentFragment();
-    fragment->appendChild(document().createElement("span", ASSERT_NO_EXCEPTION));
+  DocumentFragment* fragment = document().createDocumentFragment();
+  fragment->appendChild(document().createElement("span", ASSERT_NO_EXCEPTION));
 
-    // |options| are taken from |Editor::replaceSelectionWithFragment()| with
-    // |selectReplacement| and |smartReplace|.
-    ReplaceSelectionCommand::CommandOptions options =
-        ReplaceSelectionCommand::PreventNesting |
-        ReplaceSelectionCommand::SanitizeFragment |
-        ReplaceSelectionCommand::SelectReplacement |
-        ReplaceSelectionCommand::SmartReplace;
-    ReplaceSelectionCommand* command =
-        ReplaceSelectionCommand::create(document(), fragment, options);
+  // |options| are taken from |Editor::replaceSelectionWithFragment()| with
+  // |selectReplacement| and |smartReplace|.
+  ReplaceSelectionCommand::CommandOptions options =
+      ReplaceSelectionCommand::PreventNesting |
+      ReplaceSelectionCommand::SanitizeFragment |
+      ReplaceSelectionCommand::SelectReplacement |
+      ReplaceSelectionCommand::SmartReplace;
+  ReplaceSelectionCommand* command =
+      ReplaceSelectionCommand::create(document(), fragment, options);
 
-    EXPECT_TRUE(command->apply())
-        << "the replace command should have succeeded";
-    EXPECT_EQ("foo", document().body()->innerHTML()) << "no DOM tree mutation";
+  EXPECT_TRUE(command->apply()) << "the replace command should have succeeded";
+  EXPECT_EQ("foo", document().body()->innerHTML()) << "no DOM tree mutation";
 }
 
 // This is a regression test for https://crbug.com/121163
-TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent)
-{
-    document().setDesignMode("on");
-    updateAllLifecyclePhases();
-    dummyPageHolder().frame().selection().setSelection(
-        createVisibleSelection(Position(document().body(), 0)));
+TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
+  document().setDesignMode("on");
+  updateAllLifecyclePhases();
+  dummyPageHolder().frame().selection().setSelection(
+      createVisibleSelection(Position(document().body(), 0)));
 
-    DocumentFragment* fragment = document().createDocumentFragment();
-    fragment->parseHTML(
-        "<head><style>foo { bar: baz; }</style></head>"
-        "<body><p>Text</p></body>",
-        document().documentElement(),
-        DisallowScriptingAndPluginContent);
+  DocumentFragment* fragment = document().createDocumentFragment();
+  fragment->parseHTML(
+      "<head><style>foo { bar: baz; }</style></head>"
+      "<body><p>Text</p></body>",
+      document().documentElement(), DisallowScriptingAndPluginContent);
 
-    ReplaceSelectionCommand::CommandOptions options = 0;
-    ReplaceSelectionCommand* command =
-        ReplaceSelectionCommand::create(document(), fragment, options);
-    EXPECT_TRUE(command->apply())
-        << "the replace command should have succeeded";
+  ReplaceSelectionCommand::CommandOptions options = 0;
+  ReplaceSelectionCommand* command =
+      ReplaceSelectionCommand::create(document(), fragment, options);
+  EXPECT_TRUE(command->apply()) << "the replace command should have succeeded";
 
-    EXPECT_EQ(
-        "<head><style>foo { bar: baz; }</style></head>"
-        "<body><p>Text</p></body>",
-        document().body()->innerHTML())
-        << "the STYLE and P elements should have been pasted into the body "
-        << "of the document";
+  EXPECT_EQ(
+      "<head><style>foo { bar: baz; }</style></head>"
+      "<body><p>Text</p></body>",
+      document().body()->innerHTML())
+      << "the STYLE and P elements should have been pasted into the body "
+      << "of the document";
 }
 
-} // namespace blink
+}  // namespace blink

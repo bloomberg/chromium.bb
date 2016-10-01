@@ -33,36 +33,36 @@ class StyleRulePage;
 class StyleRuleCSSStyleDeclaration;
 
 class CORE_EXPORT CSSPageRule final : public CSSRule {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSPageRule* create(StyleRulePage* rule, CSSStyleSheet* sheet)
-    {
-        return new CSSPageRule(rule, sheet);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~CSSPageRule() override;
+ public:
+  static CSSPageRule* create(StyleRulePage* rule, CSSStyleSheet* sheet) {
+    return new CSSPageRule(rule, sheet);
+  }
 
-    String cssText() const override;
-    void reattach(StyleRuleBase*) override;
+  ~CSSPageRule() override;
 
-    CSSStyleDeclaration* style() const;
+  String cssText() const override;
+  void reattach(StyleRuleBase*) override;
 
-    String selectorText() const;
-    void setSelectorText(const String&);
+  CSSStyleDeclaration* style() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  String selectorText() const;
+  void setSelectorText(const String&);
 
-private:
-    CSSPageRule(StyleRulePage*, CSSStyleSheet*);
+  DECLARE_VIRTUAL_TRACE();
 
-    CSSRule::Type type() const override { return kPageRule; }
+ private:
+  CSSPageRule(StyleRulePage*, CSSStyleSheet*);
 
-    Member<StyleRulePage> m_pageRule;
-    mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  CSSRule::Type type() const override { return kPageRule; }
+
+  Member<StyleRulePage> m_pageRule;
+  mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSPageRule, kPageRule);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSPageRule_h
+#endif  // CSSPageRule_h

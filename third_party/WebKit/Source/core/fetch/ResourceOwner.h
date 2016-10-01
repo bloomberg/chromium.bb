@@ -41,65 +41,66 @@ class ResourceOwnerBase;
 
 template <typename Client>
 class ResourceOwnerBase<Client, true> : public Client {
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        Client::trace(visitor);
-    }
+ public:
+  DEFINE_INLINE_VIRTUAL_TRACE() { Client::trace(visitor); }
 };
 
 // TODO(yhirano): Remove this template once all ResourceClients become
 // GarbageCollectedMixin.
 template <typename Client>
-class ResourceOwnerBase<Client, false> : public GarbageCollectedMixin, public Client {
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+class ResourceOwnerBase<Client, false> : public GarbageCollectedMixin,
+                                         public Client {
+ public:
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-template<class R, class C = typename R::ClientType>
-class ResourceOwner : public ResourceOwnerBase<C, std::is_base_of<GarbageCollectedMixin, C>::value> {
-    USING_PRE_FINALIZER(ResourceOwner, clearResource);
-public:
-    using ResourceType = R;
-    ~ResourceOwner() override {}
-    ResourceType* resource() const { return m_resource; }
+template <class R, class C = typename R::ClientType>
+class ResourceOwner : public ResourceOwnerBase<
+                          C,
+                          std::is_base_of<GarbageCollectedMixin, C>::value> {
+  USING_PRE_FINALIZER(ResourceOwner, clearResource);
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_resource);
-        ResourceOwnerBase<C, std::is_base_of<GarbageCollectedMixin, C>::value>::trace(visitor);
-    }
+ public:
+  using ResourceType = R;
+  ~ResourceOwner() override {}
+  ResourceType* resource() const { return m_resource; }
 
-protected:
-    ResourceOwner()
-    {
-        ThreadState::current()->registerPreFinalizer(this);
-    }
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_resource);
+    ResourceOwnerBase<
+        C, std::is_base_of<GarbageCollectedMixin, C>::value>::trace(visitor);
+  }
 
-    void setResource(ResourceType*, Resource::PreloadReferencePolicy = Resource::MarkAsReferenced);
-    void clearResource() { setResource(nullptr); }
+ protected:
+  ResourceOwner() { ThreadState::current()->registerPreFinalizer(this); }
 
-private:
-    Member<ResourceType> m_resource;
+  void setResource(
+      ResourceType*,
+      Resource::PreloadReferencePolicy = Resource::MarkAsReferenced);
+  void clearResource() { setResource(nullptr); }
+
+ private:
+  Member<ResourceType> m_resource;
 };
 
-template<class R, class C>
-inline void ResourceOwner<R, C>::setResource(R* newResource, Resource::PreloadReferencePolicy preloadReferencePolicy)
-{
-    if (newResource == m_resource)
-        return;
+template <class R, class C>
+inline void ResourceOwner<R, C>::setResource(
+    R* newResource,
+    Resource::PreloadReferencePolicy preloadReferencePolicy) {
+  if (newResource == m_resource)
+    return;
 
-    // Some ResourceClient implementations reenter this so
-    // we need to prevent double removal.
-    if (ResourceType* oldResource = m_resource.release())
-        oldResource->removeClient(this);
+  // Some ResourceClient implementations reenter this so
+  // we need to prevent double removal.
+  if (ResourceType* oldResource = m_resource.release())
+    oldResource->removeClient(this);
 
-    if (newResource) {
-        m_resource = newResource;
-        m_resource->addClient(this, preloadReferencePolicy);
-    }
+  if (newResource) {
+    m_resource = newResource;
+    m_resource->addClient(this, preloadReferencePolicy);
+  }
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

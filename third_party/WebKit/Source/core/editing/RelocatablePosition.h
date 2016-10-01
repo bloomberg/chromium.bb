@@ -16,19 +16,20 @@ namespace blink {
 // temporary |Range| object to keep track of the |Position|, and disposing the
 // |Range| when out of scope.
 class CORE_EXPORT RelocatablePosition final {
-    STACK_ALLOCATED();
-public:
-    explicit RelocatablePosition(const Position&);
-    ~RelocatablePosition();
+  STACK_ALLOCATED();
 
-    Position position() const;
+ public:
+  explicit RelocatablePosition(const Position&);
+  ~RelocatablePosition();
 
-private:
-    const Member<Range> m_range;
+  Position position() const;
 
-    DISALLOW_COPY_AND_ASSIGN(RelocatablePosition);
+ private:
+  const Member<Range> m_range;
+
+  DISALLOW_COPY_AND_ASSIGN(RelocatablePosition);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RelocatablePosition_h
+#endif  // RelocatablePosition_h

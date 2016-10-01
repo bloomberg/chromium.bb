@@ -12,32 +12,28 @@
 namespace blink {
 
 CompositorTransformAnimationCurve::CompositorTransformAnimationCurve()
-    : m_curve(cc::KeyframedTransformAnimationCurve::Create())
-{
+    : m_curve(cc::KeyframedTransformAnimationCurve::Create()) {}
+
+CompositorTransformAnimationCurve::~CompositorTransformAnimationCurve() {}
+
+void CompositorTransformAnimationCurve::addKeyframe(
+    const CompositorTransformKeyframe& keyframe) {
+  m_curve->AddKeyframe(keyframe.cloneToCC());
 }
 
-CompositorTransformAnimationCurve::~CompositorTransformAnimationCurve()
-{
+void CompositorTransformAnimationCurve::setTimingFunction(
+    const TimingFunction& timingFunction) {
+  m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
-void CompositorTransformAnimationCurve::addKeyframe(const CompositorTransformKeyframe& keyframe)
-{
-    m_curve->AddKeyframe(keyframe.cloneToCC());
+void CompositorTransformAnimationCurve::setScaledDuration(
+    double scaledDuration) {
+  m_curve->set_scaled_duration(scaledDuration);
 }
 
-void CompositorTransformAnimationCurve::setTimingFunction(const TimingFunction& timingFunction)
-{
-    m_curve->SetTimingFunction(timingFunction.cloneToCC());
+std::unique_ptr<cc::AnimationCurve>
+CompositorTransformAnimationCurve::cloneToAnimationCurve() const {
+  return m_curve->Clone();
 }
 
-void CompositorTransformAnimationCurve::setScaledDuration(double scaledDuration)
-{
-    m_curve->set_scaled_duration(scaledDuration);
-}
-
-std::unique_ptr<cc::AnimationCurve> CompositorTransformAnimationCurve::cloneToAnimationCurve() const
-{
-    return m_curve->Clone();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -39,11 +39,11 @@ namespace blink {
 class WebPrerender;
 
 class WebPrerendererClient {
-public:
-    virtual void willAddPrerender(WebPrerender*) = 0;
-    virtual bool isPrefetchOnly() = 0;
+ public:
+  virtual void willAddPrerender(WebPrerender*) = 0;
+  virtual bool isPrefetchOnly() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPrerendererClient_h
+#endif  // WebPrerendererClient_h

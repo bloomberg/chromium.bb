@@ -12,14 +12,14 @@ namespace blink {
 class WebGamepad;
 
 class WebGamepadListener : public WebPlatformEventListener {
-public:
-    virtual void didConnectGamepad(unsigned index, const WebGamepad&) = 0;
-    virtual void didDisconnectGamepad(unsigned index, const WebGamepad&) = 0;
+ public:
+  virtual void didConnectGamepad(unsigned index, const WebGamepad&) = 0;
+  virtual void didDisconnectGamepad(unsigned index, const WebGamepad&) = 0;
 
-protected:
-    virtual ~WebGamepadListener() { }
+ protected:
+  virtual ~WebGamepadListener() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

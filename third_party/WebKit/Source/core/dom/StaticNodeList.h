@@ -39,67 +39,64 @@ class Node;
 
 template <typename NodeType>
 class StaticNodeTypeList final : public NodeList {
-public:
-    static StaticNodeTypeList* adopt(HeapVector<Member<NodeType>>& nodes);
+ public:
+  static StaticNodeTypeList* adopt(HeapVector<Member<NodeType>>& nodes);
 
-    static StaticNodeTypeList* createEmpty()
-    {
-        return new StaticNodeTypeList;
-    }
+  static StaticNodeTypeList* createEmpty() { return new StaticNodeTypeList; }
 
-    ~StaticNodeTypeList() override;
+  ~StaticNodeTypeList() override;
 
-    unsigned length() const override;
-    NodeType* item(unsigned index) const override;
+  unsigned length() const override;
+  NodeType* item(unsigned index) const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    HeapVector<Member<NodeType>> m_nodes;
+ private:
+  HeapVector<Member<NodeType>> m_nodes;
 };
 
 using StaticNodeList = StaticNodeTypeList<Node>;
 
 template <typename NodeType>
-StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::adopt(HeapVector<Member<NodeType>>& nodes)
-{
-    StaticNodeTypeList<NodeType>* nodeList = new StaticNodeTypeList<NodeType>;
-    nodeList->m_nodes.swap(nodes);
-    return nodeList;
+StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::adopt(
+    HeapVector<Member<NodeType>>& nodes) {
+  StaticNodeTypeList<NodeType>* nodeList = new StaticNodeTypeList<NodeType>;
+  nodeList->m_nodes.swap(nodes);
+  return nodeList;
 }
 
 template <typename NodeType>
-StaticNodeTypeList<NodeType>::~StaticNodeTypeList()
-{
+StaticNodeTypeList<NodeType>::~StaticNodeTypeList() {}
+
+template <typename NodeType>
+unsigned StaticNodeTypeList<NodeType>::length() const {
+  return m_nodes.size();
 }
 
 template <typename NodeType>
-unsigned StaticNodeTypeList<NodeType>::length() const
-{
-    return m_nodes.size();
+NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const {
+  if (index < m_nodes.size())
+    return m_nodes[index].get();
+  return 0;
 }
 
 template <typename NodeType>
-NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const
-{
-    if (index < m_nodes.size())
-        return m_nodes[index].get();
-    return 0;
+void StaticNodeTypeList<NodeType>::trace(Visitor* visitor) {
+  traceImpl(visitor);
 }
-
 template <typename NodeType>
-void StaticNodeTypeList<NodeType>::trace(Visitor* visitor) { traceImpl(visitor); }
-template <typename NodeType>
-void StaticNodeTypeList<NodeType>::trace(InlinedGlobalMarkingVisitor visitor) { traceImpl(visitor); }
+void StaticNodeTypeList<NodeType>::trace(InlinedGlobalMarkingVisitor visitor) {
+  traceImpl(visitor);
+}
 
 template <typename NodeType>
 template <typename VisitorDispatcher>
-ALWAYS_INLINE void StaticNodeTypeList<NodeType>::traceImpl(VisitorDispatcher visitor)
-{
-    visitor->trace(m_nodes);
-    NodeList::trace(visitor);
+ALWAYS_INLINE void StaticNodeTypeList<NodeType>::traceImpl(
+    VisitorDispatcher visitor) {
+  visitor->trace(m_nodes);
+  NodeList::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StaticNodeList_h
+#endif  // StaticNodeList_h

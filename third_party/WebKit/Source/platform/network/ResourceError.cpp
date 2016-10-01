@@ -35,70 +35,67 @@ namespace blink {
 
 const char errorDomainBlinkInternal[] = "BlinkInternal";
 
-ResourceError ResourceError::cancelledError(const String& failingURL)
-{
-    return Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
+ResourceError ResourceError::cancelledError(const String& failingURL) {
+  return Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
 }
 
-ResourceError ResourceError::cancelledDueToAccessCheckError(const String& failingURL)
-{
-    ResourceError error = cancelledError(failingURL);
-    error.setIsAccessCheck(true);
-    return error;
+ResourceError ResourceError::cancelledDueToAccessCheckError(
+    const String& failingURL) {
+  ResourceError error = cancelledError(failingURL);
+  error.setIsAccessCheck(true);
+  return error;
 }
 
-ResourceError ResourceError::copy() const
-{
-    ResourceError errorCopy;
-    errorCopy.m_domain = m_domain.isolatedCopy();
-    errorCopy.m_errorCode = m_errorCode;
-    errorCopy.m_failingURL = m_failingURL.isolatedCopy();
-    errorCopy.m_localizedDescription = m_localizedDescription.isolatedCopy();
-    errorCopy.m_isNull = m_isNull;
-    errorCopy.m_isCancellation = m_isCancellation;
-    errorCopy.m_isAccessCheck = m_isAccessCheck;
-    errorCopy.m_isTimeout = m_isTimeout;
-    errorCopy.m_staleCopyInCache = m_staleCopyInCache;
-    errorCopy.m_wasIgnoredByHandler = m_wasIgnoredByHandler;
-    return errorCopy;
+ResourceError ResourceError::copy() const {
+  ResourceError errorCopy;
+  errorCopy.m_domain = m_domain.isolatedCopy();
+  errorCopy.m_errorCode = m_errorCode;
+  errorCopy.m_failingURL = m_failingURL.isolatedCopy();
+  errorCopy.m_localizedDescription = m_localizedDescription.isolatedCopy();
+  errorCopy.m_isNull = m_isNull;
+  errorCopy.m_isCancellation = m_isCancellation;
+  errorCopy.m_isAccessCheck = m_isAccessCheck;
+  errorCopy.m_isTimeout = m_isTimeout;
+  errorCopy.m_staleCopyInCache = m_staleCopyInCache;
+  errorCopy.m_wasIgnoredByHandler = m_wasIgnoredByHandler;
+  return errorCopy;
 }
 
-bool ResourceError::compare(const ResourceError& a, const ResourceError& b)
-{
-    if (a.isNull() && b.isNull())
-        return true;
-
-    if (a.isNull() || b.isNull())
-        return false;
-
-    if (a.domain() != b.domain())
-        return false;
-
-    if (a.errorCode() != b.errorCode())
-        return false;
-
-    if (a.failingURL() != b.failingURL())
-        return false;
-
-    if (a.localizedDescription() != b.localizedDescription())
-        return false;
-
-    if (a.isCancellation() != b.isCancellation())
-        return false;
-
-    if (a.isAccessCheck() != b.isAccessCheck())
-        return false;
-
-    if (a.isTimeout() != b.isTimeout())
-        return false;
-
-    if (a.staleCopyInCache() != b.staleCopyInCache())
-        return false;
-
-    if (a.wasIgnoredByHandler() != b.wasIgnoredByHandler())
-        return false;
-
+bool ResourceError::compare(const ResourceError& a, const ResourceError& b) {
+  if (a.isNull() && b.isNull())
     return true;
+
+  if (a.isNull() || b.isNull())
+    return false;
+
+  if (a.domain() != b.domain())
+    return false;
+
+  if (a.errorCode() != b.errorCode())
+    return false;
+
+  if (a.failingURL() != b.failingURL())
+    return false;
+
+  if (a.localizedDescription() != b.localizedDescription())
+    return false;
+
+  if (a.isCancellation() != b.isCancellation())
+    return false;
+
+  if (a.isAccessCheck() != b.isAccessCheck())
+    return false;
+
+  if (a.isTimeout() != b.isTimeout())
+    return false;
+
+  if (a.staleCopyInCache() != b.staleCopyInCache())
+    return false;
+
+  if (a.wasIgnoredByHandler() != b.wasIgnoredByHandler())
+    return false;
+
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

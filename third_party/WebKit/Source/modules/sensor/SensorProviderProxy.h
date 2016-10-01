@@ -18,35 +18,38 @@ class SensorProxy;
 // This class wraps 'SensorProvider' mojo interface and it manages
 // 'SensorProxy' instances.
 class SensorProviderProxy final
-    : public GarbageCollectedFinalized<SensorProviderProxy>
-    , public Supplement<LocalFrame> {
-    USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
-    WTF_MAKE_NONCOPYABLE(SensorProviderProxy);
-public:
-    static SensorProviderProxy* from(LocalFrame*);
+    : public GarbageCollectedFinalized<SensorProviderProxy>,
+      public Supplement<LocalFrame> {
+  USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
+  WTF_MAKE_NONCOPYABLE(SensorProviderProxy);
 
-    ~SensorProviderProxy();
+ public:
+  static SensorProviderProxy* from(LocalFrame*);
 
-    SensorProxy* getOrCreateSensor(device::mojom::blink::SensorType);
+  ~SensorProviderProxy();
 
-    DECLARE_VIRTUAL_TRACE();
+  SensorProxy* getOrCreateSensor(device::mojom::blink::SensorType);
 
-private:
-    friend class SensorProxy; // To call sensorProvider().
+  DECLARE_VIRTUAL_TRACE();
 
-    explicit SensorProviderProxy(LocalFrame*);
-    static const char* supplementName();
+ private:
+  friend class SensorProxy;  // To call sensorProvider().
 
-    device::mojom::blink::SensorProvider* sensorProvider() const { return m_sensorProvider.get(); }
+  explicit SensorProviderProxy(LocalFrame*);
+  static const char* supplementName();
 
-    void onSensorProviderConnectionError();
+  device::mojom::blink::SensorProvider* sensorProvider() const {
+    return m_sensorProvider.get();
+  }
 
-    using SensorsSet = HeapHashSet<WeakMember<SensorProxy>>;
-    SensorsSet m_sensors;
+  void onSensorProviderConnectionError();
 
-    device::mojom::blink::SensorProviderPtr m_sensorProvider;
+  using SensorsSet = HeapHashSet<WeakMember<SensorProxy>>;
+  SensorsSet m_sensors;
+
+  device::mojom::blink::SensorProviderPtr m_sensorProvider;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SensorProviderProxy_h
+#endif  // SensorProviderProxy_h

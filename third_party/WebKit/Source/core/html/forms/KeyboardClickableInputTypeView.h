@@ -38,16 +38,17 @@ namespace blink {
 
 // An InputTypeView class that dispatches a simulated click on space/return key.
 class CORE_EXPORT KeyboardClickableInputTypeView : public InputTypeView {
-protected:
-    KeyboardClickableInputTypeView(HTMLInputElement& element) : InputTypeView(element) {}
+ protected:
+  KeyboardClickableInputTypeView(HTMLInputElement& element)
+      : InputTypeView(element) {}
 
-private:
-    void handleKeydownEvent(KeyboardEvent*) override;
-    void handleKeypressEvent(KeyboardEvent*) override;
-    void handleKeyupEvent(KeyboardEvent*) override;
-    void accessKeyAction(bool sendMouseEvents) override;
+ private:
+  void handleKeydownEvent(KeyboardEvent*) override;
+  void handleKeypressEvent(KeyboardEvent*) override;
+  void handleKeyupEvent(KeyboardEvent*) override;
+  void accessKeyAction(bool sendMouseEvents) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // KeyboardClickableInputTypeView_h
+#endif  // KeyboardClickableInputTypeView_h

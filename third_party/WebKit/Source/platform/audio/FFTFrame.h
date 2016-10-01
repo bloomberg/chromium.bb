@@ -50,65 +50,73 @@ namespace blink {
 // and reverse FFT, internally storing the resultant frequency-domain data.
 
 class PLATFORM_EXPORT FFTFrame {
-    USING_FAST_MALLOC(FFTFrame);
-public:
-    // The constructors, destructor, and methods up to the CROSS-PLATFORM section have platform-dependent implementations.
+  USING_FAST_MALLOC(FFTFrame);
 
-    FFTFrame(unsigned fftSize);
-    FFTFrame(); // creates a blank/empty frame for later use with createInterpolatedFrame()
-    FFTFrame(const FFTFrame& frame);
-    ~FFTFrame();
+ public:
+  // The constructors, destructor, and methods up to the CROSS-PLATFORM section have platform-dependent implementations.
 
-    static void initialize();
-    static void cleanup();
-    void doFFT(const float* data);
-    void doInverseFFT(float* data);
+  FFTFrame(unsigned fftSize);
+  FFTFrame();  // creates a blank/empty frame for later use with createInterpolatedFrame()
+  FFTFrame(const FFTFrame& frame);
+  ~FFTFrame();
 
-    float* realData() const { return const_cast<float*>(m_realData.data()); }
-    float* imagData() const { return const_cast<float*>(m_imagData.data()); }
+  static void initialize();
+  static void cleanup();
+  void doFFT(const float* data);
+  void doInverseFFT(float* data);
 
-    unsigned fftSize() const { return m_FFTSize; }
-    unsigned log2FFTSize() const { return m_log2FFTSize; }
+  float* realData() const { return const_cast<float*>(m_realData.data()); }
+  float* imagData() const { return const_cast<float*>(m_imagData.data()); }
 
-    // CROSS-PLATFORM
-    // The remaining public methods have cross-platform implementations:
+  unsigned fftSize() const { return m_FFTSize; }
+  unsigned log2FFTSize() const { return m_log2FFTSize; }
 
-    // Interpolates from frame1 -> frame2 as x goes from 0.0 -> 1.0
-    static std::unique_ptr<FFTFrame> createInterpolatedFrame(const FFTFrame& frame1, const FFTFrame& frame2, double x);
-    void doPaddedFFT(const float* data, size_t dataSize); // zero-padding with dataSize <= fftSize
-    double extractAverageGroupDelay();
-    void addConstantGroupDelay(double sampleFrameDelay);
-    void multiply(const FFTFrame&); // multiplies ourself with frame : effectively operator*=()
+  // CROSS-PLATFORM
+  // The remaining public methods have cross-platform implementations:
 
-private:
-    void interpolateFrequencyComponents(const FFTFrame& frame1, const FFTFrame& frame2, double x);
+  // Interpolates from frame1 -> frame2 as x goes from 0.0 -> 1.0
+  static std::unique_ptr<FFTFrame> createInterpolatedFrame(
+      const FFTFrame& frame1,
+      const FFTFrame& frame2,
+      double x);
+  void doPaddedFFT(const float* data,
+                   size_t dataSize);  // zero-padding with dataSize <= fftSize
+  double extractAverageGroupDelay();
+  void addConstantGroupDelay(double sampleFrameDelay);
+  void multiply(
+      const FFTFrame&);  // multiplies ourself with frame : effectively operator*=()
 
-    unsigned m_FFTSize;
-    unsigned m_log2FFTSize;
-    AudioFloatArray m_realData;
-    AudioFloatArray m_imagData;
+ private:
+  void interpolateFrequencyComponents(const FFTFrame& frame1,
+                                      const FFTFrame& frame2,
+                                      double x);
+
+  unsigned m_FFTSize;
+  unsigned m_log2FFTSize;
+  AudioFloatArray m_realData;
+  AudioFloatArray m_imagData;
 
 #if OS(MACOSX)
-    DSPSplitComplex& dspSplitComplex() { return m_frame; }
-    DSPSplitComplex dspSplitComplex() const { return m_frame; }
-    static FFTSetup fftSetupForSize(unsigned fftSize);
-    static FFTSetup* fftSetups;
-    FFTSetup m_FFTSetup;
-    DSPSplitComplex m_frame;
+  DSPSplitComplex& dspSplitComplex() { return m_frame; }
+  DSPSplitComplex dspSplitComplex() const { return m_frame; }
+  static FFTSetup fftSetupForSize(unsigned fftSize);
+  static FFTSetup* fftSetups;
+  FFTSetup m_FFTSetup;
+  DSPSplitComplex m_frame;
 #elif USE(WEBAUDIO_FFMPEG)
-    static RDFTContext* contextForSize(unsigned fftSize, int trans);
-    RDFTContext* m_forwardContext;
-    RDFTContext* m_inverseContext;
-    float* getUpToDateComplexData();
-    AudioFloatArray m_complexData;
+  static RDFTContext* contextForSize(unsigned fftSize, int trans);
+  RDFTContext* m_forwardContext;
+  RDFTContext* m_inverseContext;
+  float* getUpToDateComplexData();
+  AudioFloatArray m_complexData;
 #elif USE(WEBAUDIO_OPENMAX_DL_FFT)
-    static OMXFFTSpec_R_F32* contextForSize(unsigned log2FFTSize);
-    OMXFFTSpec_R_F32* m_forwardContext;
-    OMXFFTSpec_R_F32* m_inverseContext;
-    AudioFloatArray m_complexData;
+  static OMXFFTSpec_R_F32* contextForSize(unsigned log2FFTSize);
+  OMXFFTSpec_R_F32* m_forwardContext;
+  OMXFFTSpec_R_F32* m_inverseContext;
+  AudioFloatArray m_complexData;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FFTFrame_h
+#endif  // FFTFrame_h

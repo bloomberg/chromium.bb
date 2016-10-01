@@ -26,192 +26,182 @@ const unsigned MaxHardwareContexts = 6;
 static unsigned s_hardwareContextCount = 0;
 static unsigned s_contextId = 0;
 
-AudioContext* AudioContext::create(Document& document, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+AudioContext* AudioContext::create(Document& document,
+                                   ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    UseCounter::countCrossOriginIframe(document, UseCounter::AudioContextCrossOriginIframe);
+  UseCounter::countCrossOriginIframe(document,
+                                     UseCounter::AudioContextCrossOriginIframe);
 
-    if (s_hardwareContextCount >= MaxHardwareContexts) {
-        exceptionState.throwDOMException(
-            NotSupportedError,
-            ExceptionMessages::indexExceedsMaximumBound(
-                "number of hardware contexts",
-                s_hardwareContextCount,
-                MaxHardwareContexts));
-        return nullptr;
-    }
+  if (s_hardwareContextCount >= MaxHardwareContexts) {
+    exceptionState.throwDOMException(
+        NotSupportedError, ExceptionMessages::indexExceedsMaximumBound(
+                               "number of hardware contexts",
+                               s_hardwareContextCount, MaxHardwareContexts));
+    return nullptr;
+  }
 
-    AudioContext* audioContext = new AudioContext(document);
-    audioContext->suspendIfNeeded();
+  AudioContext* audioContext = new AudioContext(document);
+  audioContext->suspendIfNeeded();
 
-    if (!AudioUtilities::isValidAudioBufferSampleRate(audioContext->sampleRate())) {
-        exceptionState.throwDOMException(
-            NotSupportedError,
-            ExceptionMessages::indexOutsideRange(
-                "hardware sample rate",
-                audioContext->sampleRate(),
-                AudioUtilities::minAudioBufferSampleRate(),
-                ExceptionMessages::InclusiveBound,
-                AudioUtilities::maxAudioBufferSampleRate(),
-                ExceptionMessages::InclusiveBound));
-        return audioContext;
-    }
-    // This starts the audio thread. The destination node's
-    // provideInput() method will now be called repeatedly to render
-    // audio.  Each time provideInput() is called, a portion of the
-    // audio stream is rendered. Let's call this time period a "render
-    // quantum". NOTE: for now AudioContext does not need an explicit
-    // startRendering() call from JavaScript.  We may want to consider
-    // requiring it for symmetry with OfflineAudioContext.
-    audioContext->maybeUnlockUserGesture();
-    if (audioContext->isAllowedToStart())
-        audioContext->startRendering();
-    ++s_hardwareContextCount;
+  if (!AudioUtilities::isValidAudioBufferSampleRate(
+          audioContext->sampleRate())) {
+    exceptionState.throwDOMException(
+        NotSupportedError,
+        ExceptionMessages::indexOutsideRange(
+            "hardware sample rate", audioContext->sampleRate(),
+            AudioUtilities::minAudioBufferSampleRate(),
+            ExceptionMessages::InclusiveBound,
+            AudioUtilities::maxAudioBufferSampleRate(),
+            ExceptionMessages::InclusiveBound));
+    return audioContext;
+  }
+  // This starts the audio thread. The destination node's
+  // provideInput() method will now be called repeatedly to render
+  // audio.  Each time provideInput() is called, a portion of the
+  // audio stream is rendered. Let's call this time period a "render
+  // quantum". NOTE: for now AudioContext does not need an explicit
+  // startRendering() call from JavaScript.  We may want to consider
+  // requiring it for symmetry with OfflineAudioContext.
+  audioContext->maybeUnlockUserGesture();
+  if (audioContext->isAllowedToStart())
+    audioContext->startRendering();
+  ++s_hardwareContextCount;
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "[%16p]: AudioContext::AudioContext(): %u #%u\n",
-        audioContext, audioContext->m_contextId, s_hardwareContextCount);
+  fprintf(stderr, "[%16p]: AudioContext::AudioContext(): %u #%u\n",
+          audioContext, audioContext->m_contextId, s_hardwareContextCount);
 #endif
 
-    DEFINE_STATIC_LOCAL(SparseHistogram, maxChannelCountHistogram,
-        ("WebAudio.AudioContext.MaxChannelsAvailable"));
-    DEFINE_STATIC_LOCAL(SparseHistogram, sampleRateHistogram,
-        ("WebAudio.AudioContext.HardwareSampleRate"));
-    maxChannelCountHistogram.sample(audioContext->destination()->maxChannelCount());
-    sampleRateHistogram.sample(audioContext->sampleRate());
+  DEFINE_STATIC_LOCAL(SparseHistogram, maxChannelCountHistogram,
+                      ("WebAudio.AudioContext.MaxChannelsAvailable"));
+  DEFINE_STATIC_LOCAL(SparseHistogram, sampleRateHistogram,
+                      ("WebAudio.AudioContext.HardwareSampleRate"));
+  maxChannelCountHistogram.sample(
+      audioContext->destination()->maxChannelCount());
+  sampleRateHistogram.sample(audioContext->sampleRate());
 
-    return audioContext;
+  return audioContext;
 }
 
 AudioContext::AudioContext(Document& document)
-    : BaseAudioContext(&document)
-    , m_contextId(s_contextId++)
-{
-}
+    : BaseAudioContext(&document), m_contextId(s_contextId++) {}
 
-AudioContext::~AudioContext()
-{
+AudioContext::~AudioContext() {
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "[%16p]: AudioContext::~AudioContext(): %u\n", this, m_contextId);
+  fprintf(stderr, "[%16p]: AudioContext::~AudioContext(): %u\n", this,
+          m_contextId);
 #endif
 }
 
-DEFINE_TRACE(AudioContext)
-{
-    visitor->trace(m_closeResolver);
-    BaseAudioContext::trace(visitor);
+DEFINE_TRACE(AudioContext) {
+  visitor->trace(m_closeResolver);
+  BaseAudioContext::trace(visitor);
 }
 
-ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
-{
-    DCHECK(isMainThread());
+ScriptPromise AudioContext::suspendContext(ScriptState* scriptState) {
+  DCHECK(isMainThread());
+  AutoLocker locker(this);
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+
+  if (contextState() == Closed) {
+    resolver->reject(DOMException::create(
+        InvalidStateError, "Cannot suspend a context that has been closed"));
+  } else {
+    // Stop rendering now.
+    if (destination())
+      stopRendering();
+
+    // Since we don't have any way of knowing when the hardware actually stops, we'll just
+    // resolve the promise now.
+    resolver->resolve();
+  }
+
+  return promise;
+}
+
+ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
+  DCHECK(isMainThread());
+
+  if (isContextClosed()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(InvalidAccessError,
+                             "cannot resume a closed AudioContext"));
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+
+  // Restart the destination node to pull on the audio graph.
+  if (destination()) {
+    maybeUnlockUserGesture();
+    if (isAllowedToStart())
+      startRendering();
+  }
+
+  // Save the resolver which will get resolved when the destination node starts pulling on the
+  // graph again.
+  {
     AutoLocker locker(this);
+    m_resumeResolvers.append(resolver);
+  }
 
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-
-    if (contextState() == Closed) {
-        resolver->reject(
-            DOMException::create(InvalidStateError, "Cannot suspend a context that has been closed"));
-    } else {
-        // Stop rendering now.
-        if (destination())
-            stopRendering();
-
-        // Since we don't have any way of knowing when the hardware actually stops, we'll just
-        // resolve the promise now.
-        resolver->resolve();
-    }
-
-    return promise;
+  return promise;
 }
 
-ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
-{
-    DCHECK(isMainThread());
+ScriptPromise AudioContext::closeContext(ScriptState* scriptState) {
+  if (isContextClosed()) {
+    // We've already closed the context previously, but it hasn't yet been resolved, so just
+    // create a new promise and reject it.
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(InvalidStateError,
+                             "Cannot close a context that is being closed or "
+                             "has already been closed."));
+  }
 
-    if (isContextClosed()) {
-        return ScriptPromise::rejectWithDOMException(
-            scriptState,
-            DOMException::create(
-                InvalidAccessError,
-                "cannot resume a closed AudioContext"));
-    }
+  // Save the current sample rate for any subsequent decodeAudioData calls.
+  setClosedContextSampleRate(sampleRate());
 
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+  m_closeResolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = m_closeResolver->promise();
 
-    // Restart the destination node to pull on the audio graph.
-    if (destination()) {
-        maybeUnlockUserGesture();
-        if (isAllowedToStart())
-            startRendering();
-    }
+  // Stop the audio context. This will stop the destination node from pulling audio anymore. And
+  // since we have disconnected the destination from the audio graph, and thus has no references,
+  // the destination node can GCed if JS has no references. uninitialize() will also resolve the Promise
+  // created here.
+  uninitialize();
 
-    // Save the resolver which will get resolved when the destination node starts pulling on the
-    // graph again.
-    {
-        AutoLocker locker(this);
-        m_resumeResolvers.append(resolver);
-    }
-
-    return promise;
+  return promise;
 }
 
-ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
-{
-    if (isContextClosed()) {
-        // We've already closed the context previously, but it hasn't yet been resolved, so just
-        // create a new promise and reject it.
-        return ScriptPromise::rejectWithDOMException(
-            scriptState,
-            DOMException::create(InvalidStateError,
-                "Cannot close a context that is being closed or has already been closed."));
-    }
+void AudioContext::didClose() {
+  // This is specific to AudioContexts. OfflineAudioContexts
+  // are closed in their completion event.
+  setContextState(Closed);
 
-    // Save the current sample rate for any subsequent decodeAudioData calls.
-    setClosedContextSampleRate(sampleRate());
+  DCHECK(s_hardwareContextCount);
+  --s_hardwareContextCount;
 
-    m_closeResolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = m_closeResolver->promise();
-
-    // Stop the audio context. This will stop the destination node from pulling audio anymore. And
-    // since we have disconnected the destination from the audio graph, and thus has no references,
-    // the destination node can GCed if JS has no references. uninitialize() will also resolve the Promise
-    // created here.
-    uninitialize();
-
-    return promise;
+  if (m_closeResolver)
+    m_closeResolver->resolve();
 }
 
-void AudioContext::didClose()
-{
-    // This is specific to AudioContexts. OfflineAudioContexts
-    // are closed in their completion event.
-    setContextState(Closed);
-
-    DCHECK(s_hardwareContextCount);
-    --s_hardwareContextCount;
-
-    if (m_closeResolver)
-        m_closeResolver->resolve();
+bool AudioContext::isContextClosed() const {
+  return m_closeResolver || BaseAudioContext::isContextClosed();
 }
 
-bool AudioContext::isContextClosed() const
-{
-    return m_closeResolver || BaseAudioContext::isContextClosed();
+void AudioContext::stopRendering() {
+  DCHECK(isMainThread());
+  DCHECK(destination());
+
+  if (contextState() == Running) {
+    destination()->audioDestinationHandler().stopRendering();
+    setContextState(Suspended);
+    deferredTaskHandler().clearHandlersToBeDeleted();
+  }
 }
 
-void AudioContext::stopRendering()
-{
-    DCHECK(isMainThread());
-    DCHECK(destination());
-
-    if (contextState() == Running) {
-        destination()->audioDestinationHandler().stopRendering();
-        setContextState(Suspended);
-        deferredTaskHandler().clearHandlersToBeDeleted();
-    }
-}
-
-} // namespace blink
+}  // namespace blink

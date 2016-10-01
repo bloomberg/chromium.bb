@@ -39,19 +39,19 @@
 namespace blink {
 
 class AesKeyAlgorithm : public KeyAlgorithm {
-public:
-    static AesKeyAlgorithm* create(const WebCryptoKeyAlgorithm&);
+ public:
+  static AesKeyAlgorithm* create(const WebCryptoKeyAlgorithm&);
 
-    unsigned short length();
+  unsigned short length();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit AesKeyAlgorithm(const WebCryptoKeyAlgorithm&);
+ private:
+  explicit AesKeyAlgorithm(const WebCryptoKeyAlgorithm&);
 };
 
 DEFINE_KEY_ALGORITHM_TYPE_CASTS(AesKeyAlgorithm);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

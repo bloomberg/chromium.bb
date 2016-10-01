@@ -30,34 +30,52 @@
 namespace blink {
 
 class LayoutBR final : public LayoutText {
-public:
-    explicit LayoutBR(Node*);
-    ~LayoutBR() override;
+ public:
+  explicit LayoutBR(Node*);
+  ~LayoutBR() override;
 
-    const char* name() const override { return "LayoutBR"; }
+  const char* name() const override { return "LayoutBR"; }
 
-    // Although line breaks contain no actual text, if we're selected we need
-    // to return a rect that includes space to illustrate a newline.
-    using LayoutText::localSelectionRect;
+  // Although line breaks contain no actual text, if we're selected we need
+  // to return a rect that includes space to illustrate a newline.
+  using LayoutText::localSelectionRect;
 
-    float width(unsigned /* from */, unsigned /* len */, const Font&, LayoutUnit /* xpos */, TextDirection, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */ , FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
-    float width(unsigned /* from */, unsigned /* len */, LayoutUnit /* xpos */, TextDirection, bool = false /* firstLine */, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */, FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
+  float width(unsigned /* from */,
+              unsigned /* len */,
+              const Font&,
+              LayoutUnit /* xpos */,
+              TextDirection,
+              HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */,
+              FloatRect* /* glyphBounds */ = nullptr) const override {
+    return 0;
+  }
+  float width(unsigned /* from */,
+              unsigned /* len */,
+              LayoutUnit /* xpos */,
+              TextDirection,
+              bool = false /* firstLine */,
+              HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */,
+              FloatRect* /* glyphBounds */ = nullptr) const override {
+    return 0;
+  }
 
-    int lineHeight(bool firstLine) const;
+  int lineHeight(bool firstLine) const;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectBr || LayoutText::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectBr || LayoutText::isOfType(type);
+  }
 
-    int caretMinOffset() const override;
-    int caretMaxOffset() const override;
+  int caretMinOffset() const override;
+  int caretMaxOffset() const override;
 
-    PositionWithAffinity positionForPoint(const LayoutPoint&) final;
+  PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 
-protected:
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+ protected:
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBR, isBR());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutBR_h
+#endif  // LayoutBR_h

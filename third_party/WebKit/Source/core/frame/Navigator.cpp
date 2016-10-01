@@ -35,80 +35,70 @@
 
 namespace blink {
 
-Navigator::Navigator(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
+Navigator::Navigator(LocalFrame* frame) : DOMWindowProperty(frame) {}
+
+String Navigator::productSub() const {
+  return "20030107";
 }
 
-String Navigator::productSub() const
-{
-    return "20030107";
+String Navigator::vendor() const {
+  // Do not change without good cause. History:
+  // https://code.google.com/p/chromium/issues/detail?id=276813
+  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27786
+  // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/QrgyulnqvmE
+  return "Google Inc.";
 }
 
-String Navigator::vendor() const
-{
-    // Do not change without good cause. History:
-    // https://code.google.com/p/chromium/issues/detail?id=276813
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27786
-    // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/QrgyulnqvmE
-    return "Google Inc.";
+String Navigator::vendorSub() const {
+  return "";
 }
 
-String Navigator::vendorSub() const
-{
-    return "";
+String Navigator::userAgent() const {
+  // If the frame is already detached it no longer has a meaningful useragent.
+  if (!frame() || !frame()->page())
+    return String();
+
+  return frame()->loader().userAgent();
 }
 
-String Navigator::userAgent() const
-{
-    // If the frame is already detached it no longer has a meaningful useragent.
-    if (!frame() || !frame()->page())
-        return String();
+bool Navigator::cookieEnabled() const {
+  if (!frame())
+    return false;
 
-    return frame()->loader().userAgent();
+  Settings* settings = frame()->settings();
+  if (!settings || !settings->cookieEnabled())
+    return false;
+
+  return cookiesEnabled(frame()->document());
 }
 
-bool Navigator::cookieEnabled() const
-{
-    if (!frame())
-        return false;
+Vector<String> Navigator::languages() {
+  Vector<String> languages;
 
-    Settings* settings = frame()->settings();
-    if (!settings || !settings->cookieEnabled())
-        return false;
-
-    return cookiesEnabled(frame()->document());
-}
-
-Vector<String> Navigator::languages()
-{
-    Vector<String> languages;
-
-    if (!frame() || !frame()->host()) {
-        languages.append(defaultLanguage());
-        return languages;
-    }
-
-    String acceptLanguages = frame()->host()->chromeClient().acceptLanguages();
-    acceptLanguages.split(',', languages);
-
-    // Sanitizing tokens. We could do that more extensively but we should assume
-    // that the accept languages are already sane and support BCP47. It is
-    // likely a waste of time to make sure the tokens matches that spec here.
-    for (size_t i = 0; i < languages.size(); ++i) {
-        String& token = languages[i];
-        token = token.stripWhiteSpace();
-        if (token.length() >= 3 && token[2] == '_')
-            token.replace(2, 1, "-");
-    }
-
+  if (!frame() || !frame()->host()) {
+    languages.append(defaultLanguage());
     return languages;
+  }
+
+  String acceptLanguages = frame()->host()->chromeClient().acceptLanguages();
+  acceptLanguages.split(',', languages);
+
+  // Sanitizing tokens. We could do that more extensively but we should assume
+  // that the accept languages are already sane and support BCP47. It is
+  // likely a waste of time to make sure the tokens matches that spec here.
+  for (size_t i = 0; i < languages.size(); ++i) {
+    String& token = languages[i];
+    token = token.stripWhiteSpace();
+    if (token.length() >= 3 && token[2] == '_')
+      token.replace(2, 1, "-");
+  }
+
+  return languages;
 }
 
-DEFINE_TRACE(Navigator)
-{
-    DOMWindowProperty::trace(visitor);
-    Supplementable<Navigator>::trace(visitor);
+DEFINE_TRACE(Navigator) {
+  DOMWindowProperty::trace(visitor);
+  Supplementable<Navigator>::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

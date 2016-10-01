@@ -10,68 +10,58 @@
 
 namespace WTF {
 
-ArrayPiece::ArrayPiece()
-{
+ArrayPiece::ArrayPiece() {
+  initNull();
+}
+
+ArrayPiece::ArrayPiece(void* data, unsigned byteLength) {
+  initWithData(data, byteLength);
+}
+
+ArrayPiece::ArrayPiece(ArrayBuffer* buffer) {
+  if (buffer) {
+    initWithData(buffer->data(), buffer->byteLength());
+  } else {
     initNull();
+  }
 }
 
-ArrayPiece::ArrayPiece(void* data, unsigned byteLength)
-{
-    initWithData(data, byteLength);
+ArrayPiece::ArrayPiece(ArrayBufferView* buffer) {
+  if (buffer) {
+    initWithData(buffer->baseAddress(), buffer->byteLength());
+  } else {
+    initNull();
+  }
 }
 
-ArrayPiece::ArrayPiece(ArrayBuffer* buffer)
-{
-    if (buffer) {
-        initWithData(buffer->data(), buffer->byteLength());
-    } else {
-        initNull();
-    }
+bool ArrayPiece::isNull() const {
+  return m_isNull;
 }
 
-ArrayPiece::ArrayPiece(ArrayBufferView* buffer)
-{
-    if (buffer) {
-        initWithData(buffer->baseAddress(), buffer->byteLength());
-    } else {
-        initNull();
-    }
+void* ArrayPiece::data() const {
+  ASSERT(!isNull());
+  return m_data;
 }
 
-bool ArrayPiece::isNull() const
-{
-    return m_isNull;
+unsigned char* ArrayPiece::bytes() const {
+  return static_cast<unsigned char*>(data());
 }
 
-void* ArrayPiece::data() const
-{
-    ASSERT(!isNull());
-    return m_data;
+unsigned ArrayPiece::byteLength() const {
+  ASSERT(!isNull());
+  return m_byteLength;
 }
 
-unsigned char* ArrayPiece::bytes() const
-{
-    return static_cast<unsigned char*>(data());
+void ArrayPiece::initWithData(void* data, unsigned byteLength) {
+  m_byteLength = byteLength;
+  m_data = data;
+  m_isNull = false;
 }
 
-unsigned ArrayPiece::byteLength() const
-{
-    ASSERT(!isNull());
-    return m_byteLength;
+void ArrayPiece::initNull() {
+  m_byteLength = 0;
+  m_data = 0;
+  m_isNull = true;
 }
 
-void ArrayPiece::initWithData(void* data, unsigned byteLength)
-{
-    m_byteLength = byteLength;
-    m_data = data;
-    m_isNull = false;
-}
-
-void ArrayPiece::initNull()
-{
-    m_byteLength = 0;
-    m_data = 0;
-    m_isNull = true;
-}
-
-} // namespace WTF
+}  // namespace WTF

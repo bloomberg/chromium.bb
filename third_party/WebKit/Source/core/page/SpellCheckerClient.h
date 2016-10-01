@@ -34,19 +34,19 @@ namespace blink {
 class TextCheckerClient;
 
 class SpellCheckerClient {
-public:
-    virtual ~SpellCheckerClient() { }
+ public:
+  virtual ~SpellCheckerClient() {}
 
-    virtual bool isSpellCheckingEnabled() = 0;
-    virtual void toggleSpellCheckingEnabled() = 0;
+  virtual bool isSpellCheckingEnabled() = 0;
+  virtual void toggleSpellCheckingEnabled() = 0;
 
-    virtual TextCheckerClient& textChecker() = 0;
+  virtual TextCheckerClient& textChecker() = 0;
 
-    virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) = 0;
-    virtual void showSpellingUI(bool show) = 0;
-    virtual bool spellingUIIsShowing() = 0;
+  virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) = 0;
+  virtual void showSpellingUI(bool show) = 0;
+  virtual bool spellingUIIsShowing() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpellCheckerClient_h
+#endif  // SpellCheckerClient_h

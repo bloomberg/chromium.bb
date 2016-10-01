@@ -12,32 +12,27 @@
 namespace blink {
 
 CompositorFilterAnimationCurve::CompositorFilterAnimationCurve()
-    : m_curve(cc::KeyframedFilterAnimationCurve::Create())
-{
+    : m_curve(cc::KeyframedFilterAnimationCurve::Create()) {}
+
+CompositorFilterAnimationCurve::~CompositorFilterAnimationCurve() {}
+
+void CompositorFilterAnimationCurve::addKeyframe(
+    const CompositorFilterKeyframe& keyframe) {
+  m_curve->AddKeyframe(keyframe.cloneToCC());
 }
 
-CompositorFilterAnimationCurve::~CompositorFilterAnimationCurve()
-{
+void CompositorFilterAnimationCurve::setTimingFunction(
+    const TimingFunction& timingFunction) {
+  m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
-void CompositorFilterAnimationCurve::addKeyframe(const CompositorFilterKeyframe& keyframe)
-{
-    m_curve->AddKeyframe(keyframe.cloneToCC());
+void CompositorFilterAnimationCurve::setScaledDuration(double scaledDuration) {
+  m_curve->set_scaled_duration(scaledDuration);
 }
 
-void CompositorFilterAnimationCurve::setTimingFunction(const TimingFunction& timingFunction)
-{
-    m_curve->SetTimingFunction(timingFunction.cloneToCC());
+std::unique_ptr<cc::AnimationCurve>
+CompositorFilterAnimationCurve::cloneToAnimationCurve() const {
+  return m_curve->Clone();
 }
 
-void CompositorFilterAnimationCurve::setScaledDuration(double scaledDuration)
-{
-    m_curve->set_scaled_duration(scaledDuration);
-}
-
-std::unique_ptr<cc::AnimationCurve> CompositorFilterAnimationCurve::cloneToAnimationCurve() const
-{
-    return m_curve->Clone();
-}
-
-} // namespace blink
+}  // namespace blink

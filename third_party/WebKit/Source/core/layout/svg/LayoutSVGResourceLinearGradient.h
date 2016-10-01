@@ -29,30 +29,41 @@ namespace blink {
 class SVGLinearGradientElement;
 
 class LayoutSVGResourceLinearGradient final : public LayoutSVGResourceGradient {
-public:
-    explicit LayoutSVGResourceLinearGradient(SVGLinearGradientElement*);
-    ~LayoutSVGResourceLinearGradient() override;
+ public:
+  explicit LayoutSVGResourceLinearGradient(SVGLinearGradientElement*);
+  ~LayoutSVGResourceLinearGradient() override;
 
-    const char* name() const override { return "LayoutSVGResourceLinearGradient"; }
+  const char* name() const override {
+    return "LayoutSVGResourceLinearGradient";
+  }
 
-    static const LayoutSVGResourceType s_resourceType = LinearGradientResourceType;
-    LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+  static const LayoutSVGResourceType s_resourceType =
+      LinearGradientResourceType;
+  LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-    SVGUnitTypes::SVGUnitType gradientUnits() const override { return attributes().gradientUnits(); }
-    AffineTransform calculateGradientTransform() const override { return attributes().gradientTransform(); }
-    bool collectGradientAttributes(SVGGradientElement*) override;
-    PassRefPtr<Gradient> buildGradient() const override;
+  SVGUnitTypes::SVGUnitType gradientUnits() const override {
+    return attributes().gradientUnits();
+  }
+  AffineTransform calculateGradientTransform() const override {
+    return attributes().gradientTransform();
+  }
+  bool collectGradientAttributes(SVGGradientElement*) override;
+  PassRefPtr<Gradient> buildGradient() const override;
 
-    FloatPoint startPoint(const LinearGradientAttributes&) const;
-    FloatPoint endPoint(const LinearGradientAttributes&) const;
+  FloatPoint startPoint(const LinearGradientAttributes&) const;
+  FloatPoint endPoint(const LinearGradientAttributes&) const;
 
-private:
-    Persistent<LinearGradientAttributesWrapper> m_attributesWrapper;
+ private:
+  Persistent<LinearGradientAttributesWrapper> m_attributesWrapper;
 
-    LinearGradientAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
-    const LinearGradientAttributes& attributes() const { return m_attributesWrapper->attributes(); }
+  LinearGradientAttributes& mutableAttributes() {
+    return m_attributesWrapper->attributes();
+  }
+  const LinearGradientAttributes& attributes() const {
+    return m_attributesWrapper->attributes();
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSVGResourceLinearGradient_h
+#endif  // LayoutSVGResourceLinearGradient_h

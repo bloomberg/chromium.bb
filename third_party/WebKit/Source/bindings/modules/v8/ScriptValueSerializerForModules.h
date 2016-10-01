@@ -14,85 +14,107 @@
 
 namespace blink {
 
-class SerializedScriptValueWriterForModules final : public SerializedScriptValueWriter {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SerializedScriptValueWriterForModules);
-public:
-    SerializedScriptValueWriterForModules()
-        : SerializedScriptValueWriter()
-    {
-    }
+class SerializedScriptValueWriterForModules final
+    : public SerializedScriptValueWriter {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SerializedScriptValueWriterForModules);
 
-    void writeDOMFileSystem(int type, const String& name, const String& url);
-    bool writeCryptoKey(const WebCryptoKey&);
-    void writeRTCCertificate(const RTCCertificate&);
+ public:
+  SerializedScriptValueWriterForModules() : SerializedScriptValueWriter() {}
 
-private:
-    void doWriteHmacKey(const WebCryptoKey&);
-    void doWriteAesKey(const WebCryptoKey&);
-    void doWriteRsaHashedKey(const WebCryptoKey&);
-    void doWriteEcKey(const WebCryptoKey&);
-    void doWriteKeyWithoutParams(const WebCryptoKey&);
-    void doWriteAlgorithmId(WebCryptoAlgorithmId);
-    void doWriteAsymmetricKeyType(WebCryptoKeyType);
-    void doWriteNamedCurve(WebCryptoNamedCurve);
-    void doWriteKeyUsages(const WebCryptoKeyUsageMask usages, bool extractable);
+  void writeDOMFileSystem(int type, const String& name, const String& url);
+  bool writeCryptoKey(const WebCryptoKey&);
+  void writeRTCCertificate(const RTCCertificate&);
+
+ private:
+  void doWriteHmacKey(const WebCryptoKey&);
+  void doWriteAesKey(const WebCryptoKey&);
+  void doWriteRsaHashedKey(const WebCryptoKey&);
+  void doWriteEcKey(const WebCryptoKey&);
+  void doWriteKeyWithoutParams(const WebCryptoKey&);
+  void doWriteAlgorithmId(WebCryptoAlgorithmId);
+  void doWriteAsymmetricKeyType(WebCryptoKeyType);
+  void doWriteNamedCurve(WebCryptoNamedCurve);
+  void doWriteKeyUsages(const WebCryptoKeyUsageMask usages, bool extractable);
 };
 
-DEFINE_TYPE_CASTS(SerializedScriptValueWriterForModules, SerializedScriptValueWriter, writer, true, true);
+DEFINE_TYPE_CASTS(SerializedScriptValueWriterForModules,
+                  SerializedScriptValueWriter,
+                  writer,
+                  true,
+                  true);
 
-class SerializedScriptValueReaderForModules final : public SerializedScriptValueReader {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SerializedScriptValueReaderForModules);
-public:
-    SerializedScriptValueReaderForModules(const uint8_t* buffer, int length, const WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, ScriptState* scriptState)
-        : SerializedScriptValueReader(buffer, length, blobInfo, blobDataHandles, scriptState)
-    {
-    }
+class SerializedScriptValueReaderForModules final
+    : public SerializedScriptValueReader {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SerializedScriptValueReaderForModules);
 
-    bool read(v8::Local<v8::Value>*, ScriptValueDeserializer&) override;
+ public:
+  SerializedScriptValueReaderForModules(const uint8_t* buffer,
+                                        int length,
+                                        const WebBlobInfoArray* blobInfo,
+                                        BlobDataHandleMap& blobDataHandles,
+                                        ScriptState* scriptState)
+      : SerializedScriptValueReader(buffer,
+                                    length,
+                                    blobInfo,
+                                    blobDataHandles,
+                                    scriptState) {}
 
-private:
-    bool readDOMFileSystem(v8::Local<v8::Value>*);
-    bool readCryptoKey(v8::Local<v8::Value>*);
-    bool readRTCCertificate(v8::Local<v8::Value>*);
-    bool doReadHmacKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadAesKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadRsaHashedKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadEcKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadKeyWithoutParams(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadAlgorithmId(WebCryptoAlgorithmId&);
-    bool doReadAsymmetricKeyType(WebCryptoKeyType&);
-    bool doReadNamedCurve(WebCryptoNamedCurve&);
-    bool doReadKeyUsages(WebCryptoKeyUsageMask& usages, bool& extractable);
+  bool read(v8::Local<v8::Value>*, ScriptValueDeserializer&) override;
+
+ private:
+  bool readDOMFileSystem(v8::Local<v8::Value>*);
+  bool readCryptoKey(v8::Local<v8::Value>*);
+  bool readRTCCertificate(v8::Local<v8::Value>*);
+  bool doReadHmacKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
+  bool doReadAesKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
+  bool doReadRsaHashedKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
+  bool doReadEcKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
+  bool doReadKeyWithoutParams(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
+  bool doReadAlgorithmId(WebCryptoAlgorithmId&);
+  bool doReadAsymmetricKeyType(WebCryptoKeyType&);
+  bool doReadNamedCurve(WebCryptoNamedCurve&);
+  bool doReadKeyUsages(WebCryptoKeyUsageMask& usages, bool& extractable);
 };
 
-DEFINE_TYPE_CASTS(SerializedScriptValueReaderForModules, SerializedScriptValueReader, reader, true, true);
+DEFINE_TYPE_CASTS(SerializedScriptValueReaderForModules,
+                  SerializedScriptValueReader,
+                  reader,
+                  true,
+                  true);
 
 class ScriptValueSerializerForModules final : public ScriptValueSerializer {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ScriptValueSerializerForModules);
-public:
-    ScriptValueSerializerForModules(SerializedScriptValueWriter&, WebBlobInfoArray*, ScriptState*);
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ScriptValueSerializerForModules);
 
-private:
-    StateBase* doSerializeObject(v8::Local<v8::Object>, StateBase* next) override;
+ public:
+  ScriptValueSerializerForModules(SerializedScriptValueWriter&,
+                                  WebBlobInfoArray*,
+                                  ScriptState*);
 
-    StateBase* writeDOMFileSystem(v8::Local<v8::Value>, StateBase* next);
-    bool writeCryptoKey(v8::Local<v8::Value>);
-    StateBase* writeRTCCertificate(v8::Local<v8::Value>, StateBase* next);
+ private:
+  StateBase* doSerializeObject(v8::Local<v8::Object>, StateBase* next) override;
+
+  StateBase* writeDOMFileSystem(v8::Local<v8::Value>, StateBase* next);
+  bool writeCryptoKey(v8::Local<v8::Value>);
+  StateBase* writeRTCCertificate(v8::Local<v8::Value>, StateBase* next);
 };
 
 class ScriptValueDeserializerForModules final : public ScriptValueDeserializer {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ScriptValueDeserializerForModules);
-public:
-    ScriptValueDeserializerForModules(SerializedScriptValueReaderForModules&, MessagePortArray* messagePorts, ArrayBufferContentsArray*, ImageBitmapContentsArray*);
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ScriptValueDeserializerForModules);
 
-private:
-    bool read(v8::Local<v8::Value>*) override;
+ public:
+  ScriptValueDeserializerForModules(SerializedScriptValueReaderForModules&,
+                                    MessagePortArray* messagePorts,
+                                    ArrayBufferContentsArray*,
+                                    ImageBitmapContentsArray*);
+
+ private:
+  bool read(v8::Local<v8::Value>*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptValueSerializerForModules_h
+#endif  // ScriptValueSerializerForModules_h

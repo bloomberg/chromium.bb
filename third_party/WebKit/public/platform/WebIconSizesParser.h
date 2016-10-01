@@ -17,10 +17,11 @@ struct WebSize;
 // https://html.spec.whatwg.org/multipage/semantics.html#attr-link-sizes
 // TODO(zqzhang): merge with WebIconURL, and rename it "WebIcon"?
 class WebIconSizesParser {
-public:
-    BLINK_PLATFORM_EXPORT static WebVector<WebSize> parseIconSizes(const WebString& sizesString);
+ public:
+  BLINK_PLATFORM_EXPORT static WebVector<WebSize> parseIconSizes(
+      const WebString& sizesString);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

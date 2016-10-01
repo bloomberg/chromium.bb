@@ -39,21 +39,19 @@ namespace blink {
 // WrappedResourceResponse doesn't take ownership of given ResourceResponse,
 // but just holds a pointer to it. It is not copyable.
 class WrappedResourceResponse : public WebURLResponse {
-    WTF_MAKE_NONCOPYABLE(WrappedResourceResponse);
-public:
-    ~WrappedResourceResponse() {}
+  WTF_MAKE_NONCOPYABLE(WrappedResourceResponse);
 
-    explicit WrappedResourceResponse(ResourceResponse& resourceResponse)
-        : WebURLResponse(resourceResponse)
-    {
-    }
+ public:
+  ~WrappedResourceResponse() {}
 
-    explicit WrappedResourceResponse(const ResourceResponse& resourceResponse)
-        : WrappedResourceResponse(const_cast<ResourceResponse&>(resourceResponse))
-    {
-    }
+  explicit WrappedResourceResponse(ResourceResponse& resourceResponse)
+      : WebURLResponse(resourceResponse) {}
+
+  explicit WrappedResourceResponse(const ResourceResponse& resourceResponse)
+      : WrappedResourceResponse(
+            const_cast<ResourceResponse&>(resourceResponse)) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

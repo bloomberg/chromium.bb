@@ -39,20 +39,17 @@
 namespace blink {
 
 struct SerializedResource {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    KURL url;
-    String mimeType;
-    RefPtr<const SharedBuffer> data;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  KURL url;
+  String mimeType;
+  RefPtr<const SharedBuffer> data;
 
-    SerializedResource(const KURL& url, const String& mimeType, PassRefPtr<const SharedBuffer> data)
-        : url(url)
-        , mimeType(mimeType)
-        , data(data)
-    {
-    }
+  SerializedResource(const KURL& url,
+                     const String& mimeType,
+                     PassRefPtr<const SharedBuffer> data)
+      : url(url), mimeType(mimeType), data(data) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SerializedResource_h
-
+#endif  // SerializedResource_h

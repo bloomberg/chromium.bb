@@ -34,20 +34,25 @@ class DelayOptions;
 class ExceptionState;
 
 class DelayNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DelayNode* create(BaseAudioContext&, ExceptionState&);
-    static DelayNode* create(BaseAudioContext&, double maxDelayTime, ExceptionState&);
-    static DelayNode* create(BaseAudioContext*, const DelayOptions&, ExceptionState&);
-    DECLARE_VIRTUAL_TRACE();
-    AudioParam* delayTime();
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    DelayNode(BaseAudioContext&, double maxDelayTime);
+ public:
+  static DelayNode* create(BaseAudioContext&, ExceptionState&);
+  static DelayNode* create(BaseAudioContext&,
+                           double maxDelayTime,
+                           ExceptionState&);
+  static DelayNode* create(BaseAudioContext*,
+                           const DelayOptions&,
+                           ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
+  AudioParam* delayTime();
 
-    Member<AudioParam> m_delayTime;
+ private:
+  DelayNode(BaseAudioContext&, double maxDelayTime);
+
+  Member<AudioParam> m_delayTime;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DelayNode_h
+#endif  // DelayNode_h

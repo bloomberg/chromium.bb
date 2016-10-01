@@ -16,6 +16,6 @@ class JSONValue;
 
 PLATFORM_EXPORT std::unique_ptr<JSONValue> parseJSON(const String& json);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // JSONParser_h
+#endif  // JSONParser_h

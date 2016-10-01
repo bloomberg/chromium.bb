@@ -25,23 +25,20 @@
 
 namespace blink {
 
-bool ShadowData::operator==(const ShadowData& o) const
-{
-    return m_location == o.m_location
-        && m_blur == o.m_blur
-        && m_spread == o.m_spread
-        && m_style == o.m_style
-        && m_color == o.m_color;
+bool ShadowData::operator==(const ShadowData& o) const {
+  return m_location == o.m_location && m_blur == o.m_blur &&
+         m_spread == o.m_spread && m_style == o.m_style && m_color == o.m_color;
 }
 
-ShadowData ShadowData::blend(const ShadowData& from, double progress, const Color& currentColor) const
-{
-    ASSERT(style() == from.style());
-    return ShadowData(blink::blend(from.location(), location(), progress),
-        clampTo(blink::blend(from.blur(), blur(), progress), 0.0f),
-        blink::blend(from.spread(), spread(), progress),
-        style(),
-        blink::blend(from.color().resolve(currentColor), color().resolve(currentColor), progress));
+ShadowData ShadowData::blend(const ShadowData& from,
+                             double progress,
+                             const Color& currentColor) const {
+  ASSERT(style() == from.style());
+  return ShadowData(blink::blend(from.location(), location(), progress),
+                    clampTo(blink::blend(from.blur(), blur(), progress), 0.0f),
+                    blink::blend(from.spread(), spread(), progress), style(),
+                    blink::blend(from.color().resolve(currentColor),
+                                 color().resolve(currentColor), progress));
 }
 
-} // namespace blink
+}  // namespace blink

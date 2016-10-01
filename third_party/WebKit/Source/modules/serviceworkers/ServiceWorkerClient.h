@@ -20,36 +20,43 @@ class ExecutionContext;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class MODULES_EXPORT ServiceWorkerClient : public GarbageCollectedFinalized<ServiceWorkerClient>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    // To be used by CallbackPromiseAdapter.
-    using WebType = std::unique_ptr<WebServiceWorkerClientInfo>;
+class MODULES_EXPORT ServiceWorkerClient
+    : public GarbageCollectedFinalized<ServiceWorkerClient>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static ServiceWorkerClient* take(ScriptPromiseResolver*, std::unique_ptr<WebServiceWorkerClientInfo>);
-    static ServiceWorkerClient* create(const WebServiceWorkerClientInfo&);
+ public:
+  // To be used by CallbackPromiseAdapter.
+  using WebType = std::unique_ptr<WebServiceWorkerClientInfo>;
 
-    virtual ~ServiceWorkerClient();
+  static ServiceWorkerClient* take(ScriptPromiseResolver*,
+                                   std::unique_ptr<WebServiceWorkerClientInfo>);
+  static ServiceWorkerClient* create(const WebServiceWorkerClientInfo&);
 
-    // Client.idl
-    String url() const { return m_url; }
-    String frameType() const;
-    String id() const { return m_uuid; }
-    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray&, ExceptionState&);
+  virtual ~ServiceWorkerClient();
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  // Client.idl
+  String url() const { return m_url; }
+  String frameType() const;
+  String id() const { return m_uuid; }
+  void postMessage(ExecutionContext*,
+                   PassRefPtr<SerializedScriptValue> message,
+                   const MessagePortArray&,
+                   ExceptionState&);
 
-protected:
-    explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    String uuid() const { return m_uuid; }
+ protected:
+  explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
 
-private:
-    String m_uuid;
-    String m_url;
-    WebURLRequest::FrameType m_frameType;
+  String uuid() const { return m_uuid; }
+
+ private:
+  String m_uuid;
+  String m_url;
+  WebURLRequest::FrameType m_frameType;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerClient_h
+#endif  // ServiceWorkerClient_h

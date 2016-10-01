@@ -35,35 +35,31 @@
 
 namespace blink {
 
-PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer) : m_layer(layer) {}
+PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer)
+    : m_layer(layer) {}
 
-PaintLayerFilterInfo::~PaintLayerFilterInfo()
-{
-    DCHECK(!m_layer);
+PaintLayerFilterInfo::~PaintLayerFilterInfo() {
+  DCHECK(!m_layer);
 }
 
-void PaintLayerFilterInfo::setLastEffect(FilterEffect* lastEffect)
-{
-    m_lastEffect = lastEffect;
+void PaintLayerFilterInfo::setLastEffect(FilterEffect* lastEffect) {
+  m_lastEffect = lastEffect;
 }
 
-void PaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
-{
-    clearFilterReferences();
-    addFilterReferences(operations, m_layer->layoutObject()->document());
+void PaintLayerFilterInfo::updateReferenceFilterClients(
+    const FilterOperations& operations) {
+  clearFilterReferences();
+  addFilterReferences(operations, m_layer->layoutObject()->document());
 }
 
-void PaintLayerFilterInfo::filterNeedsInvalidation()
-{
-    if (m_layer)
-        m_layer->filterNeedsPaintInvalidation();
+void PaintLayerFilterInfo::filterNeedsInvalidation() {
+  if (m_layer)
+    m_layer->filterNeedsPaintInvalidation();
 }
 
-DEFINE_TRACE(PaintLayerFilterInfo)
-{
-    visitor->trace(m_lastEffect);
-    SVGResourceClient::trace(visitor);
+DEFINE_TRACE(PaintLayerFilterInfo) {
+  visitor->trace(m_lastEffect);
+  SVGResourceClient::trace(visitor);
 }
 
-} // namespace blink
-
+}  // namespace blink

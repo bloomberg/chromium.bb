@@ -13,60 +13,56 @@
 namespace blink {
 
 CompositorFloatAnimationCurve::CompositorFloatAnimationCurve()
-    : m_curve(cc::KeyframedFloatAnimationCurve::Create())
-{
+    : m_curve(cc::KeyframedFloatAnimationCurve::Create()) {}
+
+CompositorFloatAnimationCurve::CompositorFloatAnimationCurve(
+    std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
+    : m_curve(std::move(curve)) {}
+
+CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve() {}
+
+std::unique_ptr<CompositorFloatAnimationCurve>
+CompositorFloatAnimationCurve::createForTesting(
+    std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve) {
+  return wrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
 }
 
-CompositorFloatAnimationCurve::CompositorFloatAnimationCurve(std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
-    : m_curve(std::move(curve))
-{
+CompositorFloatAnimationCurve::Keyframes
+CompositorFloatAnimationCurve::keyframesForTesting() const {
+  Keyframes keyframes;
+  for (const auto& ccKeyframe : m_curve->keyframes_for_testing())
+    keyframes.append(
+        wrapUnique(new CompositorFloatKeyframe(ccKeyframe->Clone())));
+  return keyframes;
 }
 
-CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve()
-{
+PassRefPtr<TimingFunction>
+CompositorFloatAnimationCurve::getTimingFunctionForTesting() const {
+  return createCompositorTimingFunctionFromCC(
+      m_curve->timing_function_for_testing());
 }
 
-std::unique_ptr<CompositorFloatAnimationCurve> CompositorFloatAnimationCurve::createForTesting(std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
-{
-    return wrapUnique(new CompositorFloatAnimationCurve(std::move(curve)));
+void CompositorFloatAnimationCurve::addKeyframe(
+    const CompositorFloatKeyframe& keyframe) {
+  m_curve->AddKeyframe(keyframe.cloneToCC());
 }
 
-CompositorFloatAnimationCurve::Keyframes CompositorFloatAnimationCurve::keyframesForTesting() const
-{
-    Keyframes keyframes;
-    for (const auto& ccKeyframe : m_curve->keyframes_for_testing())
-        keyframes.append(wrapUnique(new CompositorFloatKeyframe(ccKeyframe->Clone())));
-    return keyframes;
+void CompositorFloatAnimationCurve::setTimingFunction(
+    const TimingFunction& timingFunction) {
+  m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
-PassRefPtr<TimingFunction> CompositorFloatAnimationCurve::getTimingFunctionForTesting() const
-{
-    return createCompositorTimingFunctionFromCC(m_curve->timing_function_for_testing());
+void CompositorFloatAnimationCurve::setScaledDuration(double scaledDuration) {
+  m_curve->set_scaled_duration(scaledDuration);
 }
 
-void CompositorFloatAnimationCurve::addKeyframe(const CompositorFloatKeyframe& keyframe)
-{
-    m_curve->AddKeyframe(keyframe.cloneToCC());
+float CompositorFloatAnimationCurve::getValue(double time) const {
+  return m_curve->GetValue(base::TimeDelta::FromSecondsD(time));
 }
 
-void CompositorFloatAnimationCurve::setTimingFunction(const TimingFunction& timingFunction)
-{
-    m_curve->SetTimingFunction(timingFunction.cloneToCC());
+std::unique_ptr<cc::AnimationCurve>
+CompositorFloatAnimationCurve::cloneToAnimationCurve() const {
+  return m_curve->Clone();
 }
 
-void CompositorFloatAnimationCurve::setScaledDuration(double scaledDuration)
-{
-    m_curve->set_scaled_duration(scaledDuration);
-}
-
-float CompositorFloatAnimationCurve::getValue(double time) const
-{
-    return m_curve->GetValue(base::TimeDelta::FromSecondsD(time));
-}
-
-std::unique_ptr<cc::AnimationCurve> CompositorFloatAnimationCurve::cloneToAnimationCurve() const
-{
-    return m_curve->Clone();
-}
-
-} // namespace blink
+}  // namespace blink

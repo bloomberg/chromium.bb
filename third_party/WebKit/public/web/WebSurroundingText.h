@@ -41,41 +41,44 @@ struct WebPoint;
 // WebSurroundingText is a Blink API that gives access to the SurroundingText
 // API. It allows caller to know the text surrounding a point or a range.
 class WebSurroundingText {
-public:
-    BLINK_EXPORT WebSurroundingText();
-    BLINK_EXPORT ~WebSurroundingText();
+ public:
+  BLINK_EXPORT WebSurroundingText();
+  BLINK_EXPORT ~WebSurroundingText();
 
-    BLINK_EXPORT bool isNull() const;
+  BLINK_EXPORT bool isNull() const;
 
-    // Initializes the object to get the surrounding text centered in the
-    // position relative to a provided node.
-    // The maximum length of the contents retrieved is defined by maxLength.
-    BLINK_EXPORT void initialize(const WebNode&, const WebPoint&, size_t maxLength);
-    // Initializes the object with the current selection in a given frame.
-    // The maximum length of the contents retrieved is defined by maxLength.
-    // It does not include the text inside the range.
-    BLINK_EXPORT void initializeFromCurrentSelection(WebLocalFrame*, size_t maxLength);
+  // Initializes the object to get the surrounding text centered in the
+  // position relative to a provided node.
+  // The maximum length of the contents retrieved is defined by maxLength.
+  BLINK_EXPORT void initialize(const WebNode&,
+                               const WebPoint&,
+                               size_t maxLength);
+  // Initializes the object with the current selection in a given frame.
+  // The maximum length of the contents retrieved is defined by maxLength.
+  // It does not include the text inside the range.
+  BLINK_EXPORT void initializeFromCurrentSelection(WebLocalFrame*,
+                                                   size_t maxLength);
 
-    // Surrounding text content retrieved.
-    BLINK_EXPORT WebString textContent() const;
+  // Surrounding text content retrieved.
+  BLINK_EXPORT WebString textContent() const;
 
-    // Offset in the text content of the initial hit position (or provided
-    // offset in the node).
-    // This should only be called when WebSurroundingText has been initialized
-    // with a WebPoint.
-    // DEPRECATED: use startOffsetInTextContent() or endOffsetInTextContent().
-    BLINK_EXPORT size_t hitOffsetInTextContent() const;
+  // Offset in the text content of the initial hit position (or provided
+  // offset in the node).
+  // This should only be called when WebSurroundingText has been initialized
+  // with a WebPoint.
+  // DEPRECATED: use startOffsetInTextContent() or endOffsetInTextContent().
+  BLINK_EXPORT size_t hitOffsetInTextContent() const;
 
-    // Start offset of the initial text in the text content.
-    BLINK_EXPORT size_t startOffsetInTextContent() const;
+  // Start offset of the initial text in the text content.
+  BLINK_EXPORT size_t startOffsetInTextContent() const;
 
-    // End offset of the initial text in the text content.
-    BLINK_EXPORT size_t endOffsetInTextContent() const;
+  // End offset of the initial text in the text content.
+  BLINK_EXPORT size_t endOffsetInTextContent() const;
 
-protected:
-    std::unique_ptr<SurroundingText> m_private;
+ protected:
+  std::unique_ptr<SurroundingText> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -36,46 +36,38 @@
 
 namespace blink {
 
-DeviceMotionDispatcher& DeviceMotionDispatcher::instance()
-{
-    DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher, (new DeviceMotionDispatcher));
-    return deviceMotionDispatcher;
+DeviceMotionDispatcher& DeviceMotionDispatcher::instance() {
+  DEFINE_STATIC_LOCAL(DeviceMotionDispatcher, deviceMotionDispatcher,
+                      (new DeviceMotionDispatcher));
+  return deviceMotionDispatcher;
 }
 
-DeviceMotionDispatcher::DeviceMotionDispatcher()
-{
+DeviceMotionDispatcher::DeviceMotionDispatcher() {}
+
+DeviceMotionDispatcher::~DeviceMotionDispatcher() {}
+
+DEFINE_TRACE(DeviceMotionDispatcher) {
+  visitor->trace(m_lastDeviceMotionData);
+  PlatformEventDispatcher::trace(visitor);
 }
 
-DeviceMotionDispatcher::~DeviceMotionDispatcher()
-{
+void DeviceMotionDispatcher::startListening() {
+  Platform::current()->startListening(WebPlatformEventTypeDeviceMotion, this);
 }
 
-DEFINE_TRACE(DeviceMotionDispatcher)
-{
-    visitor->trace(m_lastDeviceMotionData);
-    PlatformEventDispatcher::trace(visitor);
+void DeviceMotionDispatcher::stopListening() {
+  Platform::current()->stopListening(WebPlatformEventTypeDeviceMotion);
+  m_lastDeviceMotionData.clear();
 }
 
-void DeviceMotionDispatcher::startListening()
-{
-    Platform::current()->startListening(WebPlatformEventTypeDeviceMotion, this);
+void DeviceMotionDispatcher::didChangeDeviceMotion(
+    const WebDeviceMotionData& motion) {
+  m_lastDeviceMotionData = DeviceMotionData::create(motion);
+  notifyControllers();
 }
 
-void DeviceMotionDispatcher::stopListening()
-{
-    Platform::current()->stopListening(WebPlatformEventTypeDeviceMotion);
-    m_lastDeviceMotionData.clear();
+DeviceMotionData* DeviceMotionDispatcher::latestDeviceMotionData() {
+  return m_lastDeviceMotionData.get();
 }
 
-void DeviceMotionDispatcher::didChangeDeviceMotion(const WebDeviceMotionData& motion)
-{
-    m_lastDeviceMotionData = DeviceMotionData::create(motion);
-    notifyControllers();
-}
-
-DeviceMotionData* DeviceMotionDispatcher::latestDeviceMotionData()
-{
-    return m_lastDeviceMotionData.get();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -34,45 +34,44 @@
 
 namespace blink {
 
-class CORE_EXPORT InspectorOverlayHost final : public GarbageCollected<InspectorOverlayHost>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static InspectorOverlayHost* create()
-    {
-        return new InspectorOverlayHost();
-    }
-    DECLARE_TRACE();
+class CORE_EXPORT InspectorOverlayHost final
+    : public GarbageCollected<InspectorOverlayHost>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    void resume();
-    void stepOver();
-    void startPropertyChange(const String&);
-    void changeProperty(float delta);
-    void endPropertyChange();
-    void clearSelection(bool commitChanges);
-    void nextSelector();
-    void previousSelector();
+ public:
+  static InspectorOverlayHost* create() { return new InspectorOverlayHost(); }
+  DECLARE_TRACE();
 
-    class Listener : public GarbageCollectedMixin {
-    public:
-        virtual ~Listener() { }
-        virtual void overlayResumed() = 0;
-        virtual void overlaySteppedOver() = 0;
-        virtual void overlayStartedPropertyChange(const String&) = 0;
-        virtual void overlayPropertyChanged(float cssDelta) = 0;
-        virtual void overlayEndedPropertyChange() = 0;
-        virtual void overlayClearSelection(bool commitChanges) = 0;
-        virtual void overlayNextSelector() = 0;
-        virtual void overlayPreviousSelector() = 0;
-    };
-    void setListener(Listener* listener) { m_listener = listener; }
+  void resume();
+  void stepOver();
+  void startPropertyChange(const String&);
+  void changeProperty(float delta);
+  void endPropertyChange();
+  void clearSelection(bool commitChanges);
+  void nextSelector();
+  void previousSelector();
 
-private:
-    InspectorOverlayHost();
+  class Listener : public GarbageCollectedMixin {
+   public:
+    virtual ~Listener() {}
+    virtual void overlayResumed() = 0;
+    virtual void overlaySteppedOver() = 0;
+    virtual void overlayStartedPropertyChange(const String&) = 0;
+    virtual void overlayPropertyChanged(float cssDelta) = 0;
+    virtual void overlayEndedPropertyChange() = 0;
+    virtual void overlayClearSelection(bool commitChanges) = 0;
+    virtual void overlayNextSelector() = 0;
+    virtual void overlayPreviousSelector() = 0;
+  };
+  void setListener(Listener* listener) { m_listener = listener; }
 
-    Member<Listener> m_listener;
+ private:
+  InspectorOverlayHost();
 
+  Member<Listener> m_listener;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InspectorOverlayHost_h
+#endif  // InspectorOverlayHost_h

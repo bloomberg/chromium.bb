@@ -17,57 +17,55 @@ namespace blink {
 // See GeometryMapper. Scroll nodes (ScrollPaintPropertyNode) are not needed for mapping geometry
 // and have been left off of this structure.
 struct GeometryPropertyTreeState {
-    GeometryPropertyTreeState() : GeometryPropertyTreeState(nullptr, nullptr, nullptr) {}
+  GeometryPropertyTreeState()
+      : GeometryPropertyTreeState(nullptr, nullptr, nullptr) {}
 
-    GeometryPropertyTreeState(
-        const TransformPaintPropertyNode* transform,
-        const ClipPaintPropertyNode* clip,
-        const EffectPaintPropertyNode* effect)
-    : transform(transform), clip(clip), effect(effect) {}
+  GeometryPropertyTreeState(const TransformPaintPropertyNode* transform,
+                            const ClipPaintPropertyNode* clip,
+                            const EffectPaintPropertyNode* effect)
+      : transform(transform), clip(clip), effect(effect) {}
 
-    RefPtr<const TransformPaintPropertyNode> transform;
-    RefPtr<const ClipPaintPropertyNode> clip;
-    RefPtr<const EffectPaintPropertyNode> effect;
+  RefPtr<const TransformPaintPropertyNode> transform;
+  RefPtr<const ClipPaintPropertyNode> clip;
+  RefPtr<const EffectPaintPropertyNode> effect;
 };
 
 template <class A>
-unsigned propertyTreeNodeDepth(const A* node)
-{
-    unsigned depth = 0;
-    while (node) {
-        depth++;
-        node = node->parent();
-    }
-    return depth;
+unsigned propertyTreeNodeDepth(const A* node) {
+  unsigned depth = 0;
+  while (node) {
+    depth++;
+    node = node->parent();
+  }
+  return depth;
 }
 
 template <class A>
-const A* propertyTreeNearestCommonAncestor(const A* a, const A* b)
-{
-    // Measure both depths.
-    unsigned depthA = propertyTreeNodeDepth<A>(a);
-    unsigned depthB = propertyTreeNodeDepth<A>(b);
+const A* propertyTreeNearestCommonAncestor(const A* a, const A* b) {
+  // Measure both depths.
+  unsigned depthA = propertyTreeNodeDepth<A>(a);
+  unsigned depthB = propertyTreeNodeDepth<A>(b);
 
-    // Make it so depthA >= depthB.
-    if (depthA < depthB) {
-        std::swap(a, b);
-        std::swap(depthA, depthB);
-    }
+  // Make it so depthA >= depthB.
+  if (depthA < depthB) {
+    std::swap(a, b);
+    std::swap(depthA, depthB);
+  }
 
-    // Make it so depthA == depthB.
-    while (depthA > depthB) {
-        a = a->parent();
-        depthA--;
-    }
+  // Make it so depthA == depthB.
+  while (depthA > depthB) {
+    a = a->parent();
+    depthA--;
+  }
 
-    // Walk up until we find the ancestor.
-    while (a != b) {
-        a = a->parent();
-        b = b->parent();
-    }
-    return a;
+  // Walk up until we find the ancestor.
+  while (a != b) {
+    a = a->parent();
+    b = b->parent();
+  }
+  return a;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GeometryPropertyTreeState_h
+#endif  // GeometryPropertyTreeState_h

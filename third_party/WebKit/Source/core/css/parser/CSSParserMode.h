@@ -42,103 +42,108 @@ class Document;
 
 // Must not grow beyond 3 bits, due to packing in StylePropertySet.
 enum CSSParserMode {
-    HTMLStandardMode,
-    HTMLQuirksMode,
-    // HTML attributes are parsed in quirks mode but also allows internal properties and values.
-    HTMLAttributeMode,
-    // SVG attributes are parsed in quirks mode but rules differ slightly.
-    SVGAttributeMode,
-    // @viewport rules are parsed in standards mode but CSSOM modifications (via StylePropertySet)
-    // must call parseViewportProperties so needs a special mode.
-    CSSViewportRuleMode,
-    // User agent stylesheets are parsed in standards mode but also allows internal properties and values.
-    UASheetMode
+  HTMLStandardMode,
+  HTMLQuirksMode,
+  // HTML attributes are parsed in quirks mode but also allows internal properties and values.
+  HTMLAttributeMode,
+  // SVG attributes are parsed in quirks mode but rules differ slightly.
+  SVGAttributeMode,
+  // @viewport rules are parsed in standards mode but CSSOM modifications (via StylePropertySet)
+  // must call parseViewportProperties so needs a special mode.
+  CSSViewportRuleMode,
+  // User agent stylesheets are parsed in standards mode but also allows internal properties and values.
+  UASheetMode
 };
 
-inline bool isQuirksModeBehavior(CSSParserMode mode)
-{
-    return mode == HTMLQuirksMode; // || mode == HTMLAttributeMode;
+inline bool isQuirksModeBehavior(CSSParserMode mode) {
+  return mode == HTMLQuirksMode;  // || mode == HTMLAttributeMode;
 }
 
-inline bool isUASheetBehavior(CSSParserMode mode)
-{
-    return mode == UASheetMode;
+inline bool isUASheetBehavior(CSSParserMode mode) {
+  return mode == UASheetMode;
 }
 
-inline bool isUnitLessLengthParsingEnabledForMode(CSSParserMode mode)
-{
-    return mode == HTMLAttributeMode || mode == SVGAttributeMode;
+inline bool isUnitLessLengthParsingEnabledForMode(CSSParserMode mode) {
+  return mode == HTMLAttributeMode || mode == SVGAttributeMode;
 }
 
-inline bool isCSSViewportParsingEnabledForMode(CSSParserMode mode)
-{
-    return mode == CSSViewportRuleMode;
+inline bool isCSSViewportParsingEnabledForMode(CSSParserMode mode) {
+  return mode == CSSViewportRuleMode;
 }
 
-inline bool isUseCounterEnabledForMode(CSSParserMode mode)
-{
-    // We don't count the UA style sheet in our statistics.
-    return mode != UASheetMode;
+inline bool isUseCounterEnabledForMode(CSSParserMode mode) {
+  // We don't count the UA style sheet in our statistics.
+  return mode != UASheetMode;
 }
 
 class UseCounter;
 
 class CORE_EXPORT CSSParserContext {
-    USING_FAST_MALLOC(CSSParserContext);
-public:
-    CSSParserContext(CSSParserMode, UseCounter*);
-    // FIXME: We shouldn't need the UseCounter argument as we could infer it from the Document
-    // but some callers want to disable use counting (e.g. the WebInspector).
-    CSSParserContext(const Document&, UseCounter*, const KURL& baseURL = KURL(), const String& charset = emptyString());
-    // FIXME: This constructor shouldn't exist if we properly piped the UseCounter through the CSS
-    // subsystem. Currently the UseCounter life time is too crazy and we need a way to override it.
-    CSSParserContext(const CSSParserContext&, UseCounter*);
+  USING_FAST_MALLOC(CSSParserContext);
 
-    bool operator==(const CSSParserContext&) const;
-    bool operator!=(const CSSParserContext& other) const { return !(*this == other); }
+ public:
+  CSSParserContext(CSSParserMode, UseCounter*);
+  // FIXME: We shouldn't need the UseCounter argument as we could infer it from the Document
+  // but some callers want to disable use counting (e.g. the WebInspector).
+  CSSParserContext(const Document&,
+                   UseCounter*,
+                   const KURL& baseURL = KURL(),
+                   const String& charset = emptyString());
+  // FIXME: This constructor shouldn't exist if we properly piped the UseCounter through the CSS
+  // subsystem. Currently the UseCounter life time is too crazy and we need a way to override it.
+  CSSParserContext(const CSSParserContext&, UseCounter*);
 
-    CSSParserMode mode() const { return m_mode; }
-    CSSParserMode matchMode() const { return m_matchMode; }
-    const KURL& baseURL() const { return m_baseURL; }
-    const String& charset() const { return m_charset; }
-    const Referrer& referrer() const { return m_referrer; }
-    bool isHTMLDocument() const { return m_isHTMLDocument; }
+  bool operator==(const CSSParserContext&) const;
+  bool operator!=(const CSSParserContext& other) const {
+    return !(*this == other);
+  }
 
-    // This quirk is to maintain compatibility with Android apps built on
-    // the Android SDK prior to and including version 18. Presumably, this
-    // can be removed any time after 2015. See http://crbug.com/277157.
-    bool useLegacyBackgroundSizeShorthandBehavior() const { return m_useLegacyBackgroundSizeShorthandBehavior; }
+  CSSParserMode mode() const { return m_mode; }
+  CSSParserMode matchMode() const { return m_matchMode; }
+  const KURL& baseURL() const { return m_baseURL; }
+  const String& charset() const { return m_charset; }
+  const Referrer& referrer() const { return m_referrer; }
+  bool isHTMLDocument() const { return m_isHTMLDocument; }
 
-    // FIXME: These setters shouldn't exist, however the current lifetime of CSSParserContext
-    // is not well understood and thus we sometimes need to override these fields.
-    void setMode(CSSParserMode mode) { m_mode = mode; }
-    void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
-    void setCharset(const String& charset) { m_charset = charset; }
-    void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
+  // This quirk is to maintain compatibility with Android apps built on
+  // the Android SDK prior to and including version 18. Presumably, this
+  // can be removed any time after 2015. See http://crbug.com/277157.
+  bool useLegacyBackgroundSizeShorthandBehavior() const {
+    return m_useLegacyBackgroundSizeShorthandBehavior;
+  }
 
-    KURL completeURL(const String& url) const;
+  // FIXME: These setters shouldn't exist, however the current lifetime of CSSParserContext
+  // is not well understood and thus we sometimes need to override these fields.
+  void setMode(CSSParserMode mode) { m_mode = mode; }
+  void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
+  void setCharset(const String& charset) { m_charset = charset; }
+  void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
 
-    // This may return nullptr if counting is disabled.
-    // See comments on constructors.
-    UseCounter* useCounter() const { return m_useCounter; }
+  KURL completeURL(const String& url) const;
 
-    ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy() const { return m_shouldCheckContentSecurityPolicy; }
+  // This may return nullptr if counting is disabled.
+  // See comments on constructors.
+  UseCounter* useCounter() const { return m_useCounter; }
 
-private:
-    KURL m_baseURL;
-    String m_charset;
-    CSSParserMode m_mode;
-    CSSParserMode m_matchMode;
-    Referrer m_referrer;
-    bool m_isHTMLDocument;
-    bool m_useLegacyBackgroundSizeShorthandBehavior;
-    ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
+  ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy() const {
+    return m_shouldCheckContentSecurityPolicy;
+  }
 
-    UseCounter* m_useCounter;
+ private:
+  KURL m_baseURL;
+  String m_charset;
+  CSSParserMode m_mode;
+  CSSParserMode m_matchMode;
+  Referrer m_referrer;
+  bool m_isHTMLDocument;
+  bool m_useLegacyBackgroundSizeShorthandBehavior;
+  ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
+
+  UseCounter* m_useCounter;
 };
 
 CORE_EXPORT const CSSParserContext& strictCSSParserContext();
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSParserMode_h
+#endif  // CSSParserMode_h

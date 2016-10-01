@@ -48,20 +48,26 @@ class WebFrame;
 // events are used for communication between documents and described here:
 // http://www.w3.org/TR/2012/WD-webmessaging-20120313/#terminology
 class WebDOMMessageEvent : public WebDOMEvent {
-public:
-    BLINK_EXPORT WebDOMMessageEvent(const WebSerializedScriptValue& messageData, const WebString& origin = WebString(), const WebFrame* sourceFrame = nullptr, const WebDocument& targetDocument = WebDocument(), const WebMessagePortChannelArray& channels = WebMessagePortChannelArray());
-    WebDOMMessageEvent() { }
+ public:
+  BLINK_EXPORT WebDOMMessageEvent(
+      const WebSerializedScriptValue& messageData,
+      const WebString& origin = WebString(),
+      const WebFrame* sourceFrame = nullptr,
+      const WebDocument& targetDocument = WebDocument(),
+      const WebMessagePortChannelArray& channels =
+          WebMessagePortChannelArray());
+  WebDOMMessageEvent() {}
 
-    BLINK_EXPORT WebSerializedScriptValue data() const;
-    BLINK_EXPORT WebString origin() const;
+  BLINK_EXPORT WebSerializedScriptValue data() const;
+  BLINK_EXPORT WebString origin() const;
 
-    BLINK_EXPORT WebMessagePortChannelArray releaseChannels();
+  BLINK_EXPORT WebMessagePortChannelArray releaseChannels();
 
 #if BLINK_IMPLEMENTATION
-    explicit WebDOMMessageEvent(MessageEvent* e) : WebDOMEvent(e) { }
+  explicit WebDOMMessageEvent(MessageEvent* e) : WebDOMEvent(e) {}
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

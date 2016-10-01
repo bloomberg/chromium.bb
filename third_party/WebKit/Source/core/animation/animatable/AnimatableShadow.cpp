@@ -32,37 +32,42 @@
 
 namespace blink {
 
-PassRefPtr<AnimatableValue> AnimatableShadow::interpolateTo(const AnimatableValue* value, double fraction) const
-{
-    if (usesDefaultInterpolationWith(value))
-        return defaultInterpolateTo(this, value, fraction);
+PassRefPtr<AnimatableValue> AnimatableShadow::interpolateTo(
+    const AnimatableValue* value,
+    double fraction) const {
+  if (usesDefaultInterpolationWith(value))
+    return defaultInterpolateTo(this, value, fraction);
 
-    const AnimatableShadow* shadowList = toAnimatableShadow(value);
-    return AnimatableShadow::create(ShadowList::blend(m_shadowList.get(), shadowList->m_shadowList.get(), fraction, m_currentColor), m_currentColor);
+  const AnimatableShadow* shadowList = toAnimatableShadow(value);
+  return AnimatableShadow::create(
+      ShadowList::blend(m_shadowList.get(), shadowList->m_shadowList.get(),
+                        fraction, m_currentColor),
+      m_currentColor);
 }
 
-bool AnimatableShadow::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    const AnimatableShadow* target = toAnimatableShadow(value);
-    if (!m_shadowList || !target->m_shadowList)
-        return false;
-
-    size_t minLength = std::min(m_shadowList->shadows().size(), target->m_shadowList->shadows().size());
-    for (size_t i = 0; i < minLength; ++i) {
-        ShadowStyle fromShadowStyle = m_shadowList->shadows()[i].style();
-        ShadowStyle toShadowStyle = target->m_shadowList->shadows()[i].style();
-
-        if (fromShadowStyle != toShadowStyle)
-            return true;
-    }
-
+bool AnimatableShadow::usesDefaultInterpolationWith(
+    const AnimatableValue* value) const {
+  const AnimatableShadow* target = toAnimatableShadow(value);
+  if (!m_shadowList || !target->m_shadowList)
     return false;
+
+  size_t minLength = std::min(m_shadowList->shadows().size(),
+                              target->m_shadowList->shadows().size());
+  for (size_t i = 0; i < minLength; ++i) {
+    ShadowStyle fromShadowStyle = m_shadowList->shadows()[i].style();
+    ShadowStyle toShadowStyle = target->m_shadowList->shadows()[i].style();
+
+    if (fromShadowStyle != toShadowStyle)
+      return true;
+  }
+
+  return false;
 }
 
-bool AnimatableShadow::equalTo(const AnimatableValue* value) const
-{
-    const ShadowList* shadowList = toAnimatableShadow(value)->m_shadowList.get();
-    return m_shadowList == shadowList || (m_shadowList && shadowList && *m_shadowList == *shadowList);
+bool AnimatableShadow::equalTo(const AnimatableValue* value) const {
+  const ShadowList* shadowList = toAnimatableShadow(value)->m_shadowList.get();
+  return m_shadowList == shadowList ||
+         (m_shadowList && shadowList && *m_shadowList == *shadowList);
 }
 
-} // namespace blink
+}  // namespace blink

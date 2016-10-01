@@ -47,33 +47,40 @@ class ExceptionState;
 
 typedef ArrayBufferOrArrayBufferView BufferSource;
 
-class TextDecoder final : public GarbageCollectedFinalized<TextDecoder>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static TextDecoder* create(const String& label, const TextDecoderOptions&, ExceptionState&);
-    ~TextDecoder();
+class TextDecoder final : public GarbageCollectedFinalized<TextDecoder>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Implement the IDL
-    String encoding() const;
-    bool fatal() const { return m_fatal; }
-    bool ignoreBOM() const { return m_ignoreBOM; }
-    String decode(const BufferSource&, const TextDecodeOptions&, ExceptionState&);
-    String decode(ExceptionState&);
+ public:
+  static TextDecoder* create(const String& label,
+                             const TextDecoderOptions&,
+                             ExceptionState&);
+  ~TextDecoder();
 
-    DEFINE_INLINE_TRACE() { }
+  // Implement the IDL
+  String encoding() const;
+  bool fatal() const { return m_fatal; }
+  bool ignoreBOM() const { return m_ignoreBOM; }
+  String decode(const BufferSource&, const TextDecodeOptions&, ExceptionState&);
+  String decode(ExceptionState&);
 
-private:
-    TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignoreBOM);
+  DEFINE_INLINE_TRACE() {}
 
-    String decode(const char* start, size_t length, const TextDecodeOptions&, ExceptionState&);
+ private:
+  TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignoreBOM);
 
-    WTF::TextEncoding m_encoding;
-    std::unique_ptr<WTF::TextCodec> m_codec;
-    bool m_fatal;
-    bool m_ignoreBOM;
-    bool m_bomSeen;
+  String decode(const char* start,
+                size_t length,
+                const TextDecodeOptions&,
+                ExceptionState&);
+
+  WTF::TextEncoding m_encoding;
+  std::unique_ptr<WTF::TextCodec> m_codec;
+  bool m_fatal;
+  bool m_ignoreBOM;
+  bool m_bomSeen;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextDecoder_h
+#endif  // TextDecoder_h

@@ -44,44 +44,57 @@ class ExecutionContext;
 class ExecutionContextTask;
 
 class CORE_EXPORT MainThreadTaskRunner final {
-    USING_FAST_MALLOC(MainThreadTaskRunner);
-    WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
-public:
-    static std::unique_ptr<MainThreadTaskRunner> create(ExecutionContext*);
+  USING_FAST_MALLOC(MainThreadTaskRunner);
+  WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
 
-    ~MainThreadTaskRunner();
+ public:
+  static std::unique_ptr<MainThreadTaskRunner> create(ExecutionContext*);
 
-    DECLARE_TRACE();
+  ~MainThreadTaskRunner();
 
-    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, const String& taskNameForInstrumentation = emptyString()); // Executes the task on context's thread asynchronously.
-    void postInspectorTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
-    void perform(std::unique_ptr<ExecutionContextTask>, bool isInspectorTask, bool instrumenting);
+  DECLARE_TRACE();
 
-    void suspend();
-    void resume();
+  void postTask(
+      const WebTraceLocation&,
+      std::unique_ptr<ExecutionContextTask>,
+      const String& taskNameForInstrumentation =
+          emptyString());  // Executes the task on context's thread asynchronously.
+  void postInspectorTask(const WebTraceLocation&,
+                         std::unique_ptr<ExecutionContextTask>);
+  void perform(std::unique_ptr<ExecutionContextTask>,
+               bool isInspectorTask,
+               bool instrumenting);
 
-private:
-    explicit MainThreadTaskRunner(ExecutionContext*);
+  void suspend();
+  void resume();
 
-    void pendingTasksTimerFired(TimerBase*);
+ private:
+  explicit MainThreadTaskRunner(ExecutionContext*);
 
-    void postTaskInternal(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, bool isInspectorTask, bool instrumenting);
+  void pendingTasksTimerFired(TimerBase*);
 
-    // Untraced back reference to the owner Document;
-    // this object has identical lifetime to it.
-    UntracedMember<ExecutionContext> m_context;
-    Timer<MainThreadTaskRunner> m_pendingTasksTimer;
-    Vector<std::pair<std::unique_ptr<ExecutionContextTask>, bool /* instrumenting */>> m_pendingTasks;
-    bool m_suspended;
-    WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
-    WeakPtr<MainThreadTaskRunner> m_weakPtr;
+  void postTaskInternal(const WebTraceLocation&,
+                        std::unique_ptr<ExecutionContextTask>,
+                        bool isInspectorTask,
+                        bool instrumenting);
+
+  // Untraced back reference to the owner Document;
+  // this object has identical lifetime to it.
+  UntracedMember<ExecutionContext> m_context;
+  Timer<MainThreadTaskRunner> m_pendingTasksTimer;
+  Vector<std::pair<std::unique_ptr<ExecutionContextTask>,
+                   bool /* instrumenting */>>
+      m_pendingTasks;
+  bool m_suspended;
+  WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
+  WeakPtr<MainThreadTaskRunner> m_weakPtr;
 };
 
-inline std::unique_ptr<MainThreadTaskRunner> MainThreadTaskRunner::create(ExecutionContext* context)
-{
-    return wrapUnique(new MainThreadTaskRunner(context));
+inline std::unique_ptr<MainThreadTaskRunner> MainThreadTaskRunner::create(
+    ExecutionContext* context) {
+  return wrapUnique(new MainThreadTaskRunner(context));
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

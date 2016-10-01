@@ -31,32 +31,33 @@
 namespace blink {
 
 class WebGLBuffer final : public WebGLSharedPlatform3DObject {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~WebGLBuffer() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebGLBuffer* create(WebGLRenderingContextBase*);
+ public:
+  ~WebGLBuffer() override;
 
-    GLenum getInitialTarget() const { return m_initialTarget; }
-    void setInitialTarget(GLenum);
+  static WebGLBuffer* create(WebGLRenderingContextBase*);
 
-    bool hasEverBeenBound() const { return object() && m_initialTarget; }
+  GLenum getInitialTarget() const { return m_initialTarget; }
+  void setInitialTarget(GLenum);
 
-    void setSize(long long size) { m_size = size; }
-    long long getSize() const { return m_size; }
+  bool hasEverBeenBound() const { return object() && m_initialTarget; }
 
-protected:
-    explicit WebGLBuffer(WebGLRenderingContextBase*);
+  void setSize(long long size) { m_size = size; }
+  long long getSize() const { return m_size; }
 
-    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+ protected:
+  explicit WebGLBuffer(WebGLRenderingContextBase*);
 
-private:
-    bool isBuffer() const override { return true; }
+  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    GLenum m_initialTarget;
-    long long m_size;
+ private:
+  bool isBuffer() const override { return true; }
+
+  GLenum m_initialTarget;
+  long long m_size;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLBuffer_h
+#endif  // WebGLBuffer_h

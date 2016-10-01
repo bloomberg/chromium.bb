@@ -35,37 +35,36 @@
 
 namespace blink {
 
-bool detectTextEncoding(const char* data, size_t length,
-    const char* hintEncodingName, WTF::TextEncoding* detectedEncoding)
-{
-    *detectedEncoding = WTF::TextEncoding();
-    int consumedBytes;
-    bool isReliable;
-    Encoding encoding = CompactEncDet::DetectEncoding(
-        data, length, nullptr, nullptr, nullptr,
-        EncodingNameAliasToEncoding(hintEncodingName),
-        UNKNOWN_LANGUAGE,
-        CompactEncDet::WEB_CORPUS,
-        false, // Include 7-bit encodings to detect ISO-2022-JP
-        &consumedBytes,
-        &isReliable);
-    if (encoding == UNKNOWN_ENCODING)
-        return false;
+bool detectTextEncoding(const char* data,
+                        size_t length,
+                        const char* hintEncodingName,
+                        WTF::TextEncoding* detectedEncoding) {
+  *detectedEncoding = WTF::TextEncoding();
+  int consumedBytes;
+  bool isReliable;
+  Encoding encoding = CompactEncDet::DetectEncoding(
+      data, length, nullptr, nullptr, nullptr,
+      EncodingNameAliasToEncoding(hintEncodingName), UNKNOWN_LANGUAGE,
+      CompactEncDet::WEB_CORPUS,
+      false,  // Include 7-bit encodings to detect ISO-2022-JP
+      &consumedBytes, &isReliable);
+  if (encoding == UNKNOWN_ENCODING)
+    return false;
 
-    // 7-bit encodings (except ISO-2022-JP) are not supported in WHATWG encoding
-    // standard. Mark them as ASCII to keep the raw bytes intact.
-    switch (encoding) {
+  // 7-bit encodings (except ISO-2022-JP) are not supported in WHATWG encoding
+  // standard. Mark them as ASCII to keep the raw bytes intact.
+  switch (encoding) {
     case HZ_GB_2312:
     case ISO_2022_KR:
     case ISO_2022_CN:
     case UTF7:
-        encoding = ASCII_7BIT;
-        break;
+      encoding = ASCII_7BIT;
+      break;
     default:
-        break;
-    }
-    *detectedEncoding = WTF::TextEncoding(MimeEncodingName(encoding));
-    return true;
+      break;
+  }
+  *detectedEncoding = WTF::TextEncoding(MimeEncodingName(encoding));
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

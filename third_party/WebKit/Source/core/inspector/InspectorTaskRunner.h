@@ -17,45 +17,46 @@
 namespace blink {
 
 class CORE_EXPORT InspectorTaskRunner final {
-    WTF_MAKE_NONCOPYABLE(InspectorTaskRunner);
-    USING_FAST_MALLOC(InspectorTaskRunner);
-public:
-    InspectorTaskRunner();
-    ~InspectorTaskRunner();
+  WTF_MAKE_NONCOPYABLE(InspectorTaskRunner);
+  USING_FAST_MALLOC(InspectorTaskRunner);
 
-    using Task = WTF::CrossThreadClosure;
-    void appendTask(std::unique_ptr<Task>);
+ public:
+  InspectorTaskRunner();
+  ~InspectorTaskRunner();
 
-    enum WaitMode { WaitForTask, DontWaitForTask };
-    std::unique_ptr<Task> takeNextTask(WaitMode);
+  using Task = WTF::CrossThreadClosure;
+  void appendTask(std::unique_ptr<Task>);
 
-    void interruptAndRunAllTasksDontWait(v8::Isolate*);
-    void runAllTasksDontWait();
+  enum WaitMode { WaitForTask, DontWaitForTask };
+  std::unique_ptr<Task> takeNextTask(WaitMode);
 
-    void kill();
+  void interruptAndRunAllTasksDontWait(v8::Isolate*);
+  void runAllTasksDontWait();
 
-    class CORE_EXPORT IgnoreInterruptsScope final {
-        USING_FAST_MALLOC(IgnoreInterruptsScope);
-    public:
-        explicit IgnoreInterruptsScope(InspectorTaskRunner*);
-        ~IgnoreInterruptsScope();
+  void kill();
 
-    private:
-        bool m_wasIgnoring;
-        InspectorTaskRunner* m_taskRunner;
-    };
+  class CORE_EXPORT IgnoreInterruptsScope final {
+    USING_FAST_MALLOC(IgnoreInterruptsScope);
 
-private:
-    static void v8InterruptCallback(v8::Isolate*, void* data);
+   public:
+    explicit IgnoreInterruptsScope(InspectorTaskRunner*);
+    ~IgnoreInterruptsScope();
 
-    bool m_ignoreInterrupts;
-    Mutex m_mutex;
-    ThreadCondition m_condition;
-    Deque<std::unique_ptr<Task>> m_queue;
-    bool m_killed;
+   private:
+    bool m_wasIgnoring;
+    InspectorTaskRunner* m_taskRunner;
+  };
+
+ private:
+  static void v8InterruptCallback(v8::Isolate*, void* data);
+
+  bool m_ignoreInterrupts;
+  Mutex m_mutex;
+  ThreadCondition m_condition;
+  Deque<std::unique_ptr<Task>> m_queue;
+  bool m_killed;
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // !defined(InspectorTaskRunner_h)
+#endif  // !defined(InspectorTaskRunner_h)

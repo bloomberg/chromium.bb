@@ -26,67 +26,67 @@
 
 namespace blink {
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext& graphicsContext, const IntRect& dirtyRect)
-    : LocalCurrentGraphicsContext(graphicsContext.canvas(), graphicsContext.deviceScaleFactor(), dirtyRect)
-{
-}
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
+    GraphicsContext& graphicsContext,
+    const IntRect& dirtyRect)
+    : LocalCurrentGraphicsContext(graphicsContext.canvas(),
+                                  graphicsContext.deviceScaleFactor(),
+                                  dirtyRect) {}
 
-static IntRect clampRect(int size, const IntRect& rect)
-{
-    IntRect clampedRect(rect);
-    clampedRect.setSize(IntSize(
-        std::min(size, clampedRect.width()),
-        std::min(size, clampedRect.height())));
-    return clampedRect;
+static IntRect clampRect(int size, const IntRect& rect) {
+  IntRect clampedRect(rect);
+  clampedRect.setSize(IntSize(std::min(size, clampedRect.width()),
+                              std::min(size, clampedRect.height())));
+  return clampedRect;
 }
 
 static const int kMaxDirtyRectPixelSize = 10000;
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(SkCanvas* canvas, float deviceScaleFactor, const IntRect& dirtyRect)
-    : m_didSetGraphicsContext(false)
-    , m_inflatedDirtyRect(ThemeMac::inflateRectForAA(dirtyRect))
-    , m_skiaBitLocker(canvas,
-                      m_inflatedDirtyRect,
-                      deviceScaleFactor)
-{
-    m_savedCanvas = canvas;
-    canvas->save();
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
+    SkCanvas* canvas,
+    float deviceScaleFactor,
+    const IntRect& dirtyRect)
+    : m_didSetGraphicsContext(false),
+      m_inflatedDirtyRect(ThemeMac::inflateRectForAA(dirtyRect)),
+      m_skiaBitLocker(canvas, m_inflatedDirtyRect, deviceScaleFactor) {
+  m_savedCanvas = canvas;
+  canvas->save();
 
-    // Constrain the maximum size of what we paint to something reasonable. This accordingly
-    // means we will not paint the entirety of truly huge native form elements, which is
-    // deemed an acceptable tradeoff for this simple approach to manage such an edge case.
-    if (dirtyRect.width() > kMaxDirtyRectPixelSize || dirtyRect.height() > kMaxDirtyRectPixelSize)
-        canvas->clipRect(clampRect(kMaxDirtyRectPixelSize, dirtyRect), SkRegion::kIntersect_Op);
+  // Constrain the maximum size of what we paint to something reasonable. This accordingly
+  // means we will not paint the entirety of truly huge native form elements, which is
+  // deemed an acceptable tradeoff for this simple approach to manage such an edge case.
+  if (dirtyRect.width() > kMaxDirtyRectPixelSize ||
+      dirtyRect.height() > kMaxDirtyRectPixelSize)
+    canvas->clipRect(clampRect(kMaxDirtyRectPixelSize, dirtyRect),
+                     SkRegion::kIntersect_Op);
 
-    CGContextRef cgContext = this->cgContext();
-    if (cgContext == [[NSGraphicsContext currentContext] graphicsPort]) {
-        m_savedNSGraphicsContext = 0;
-        return;
-    }
+  CGContextRef cgContext = this->cgContext();
+  if (cgContext == [[NSGraphicsContext currentContext] graphicsPort]) {
+    m_savedNSGraphicsContext = 0;
+    return;
+  }
 
-    m_savedNSGraphicsContext = [[NSGraphicsContext currentContext] retain];
-    NSGraphicsContext* newContext = [NSGraphicsContext graphicsContextWithGraphicsPort:cgContext flipped:YES];
-    [NSGraphicsContext setCurrentContext:newContext];
-    m_didSetGraphicsContext = true;
+  m_savedNSGraphicsContext = [[NSGraphicsContext currentContext] retain];
+  NSGraphicsContext* newContext =
+      [NSGraphicsContext graphicsContextWithGraphicsPort:cgContext flipped:YES];
+  [NSGraphicsContext setCurrentContext:newContext];
+  m_didSetGraphicsContext = true;
 }
 
-LocalCurrentGraphicsContext::~LocalCurrentGraphicsContext()
-{
-    if (m_didSetGraphicsContext) {
-        [NSGraphicsContext setCurrentContext:m_savedNSGraphicsContext];
-        [m_savedNSGraphicsContext release];
-    }
+LocalCurrentGraphicsContext::~LocalCurrentGraphicsContext() {
+  if (m_didSetGraphicsContext) {
+    [NSGraphicsContext setCurrentContext:m_savedNSGraphicsContext];
+    [m_savedNSGraphicsContext release];
+  }
 
-    m_savedCanvas->restore();
+  m_savedCanvas->restore();
 }
 
-CGContextRef LocalCurrentGraphicsContext::cgContext()
-{
-    // This synchronizes the CGContext to reflect the current SkCanvas state.
-    // The implementation may not return the same CGContext each time.
-    CGContextRef cgContext = m_skiaBitLocker.cgContext();
+CGContextRef LocalCurrentGraphicsContext::cgContext() {
+  // This synchronizes the CGContext to reflect the current SkCanvas state.
+  // The implementation may not return the same CGContext each time.
+  CGContextRef cgContext = m_skiaBitLocker.cgContext();
 
-    return cgContext;
+  return cgContext;
 }
-
 }

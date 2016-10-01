@@ -35,9 +35,9 @@ namespace blink {
 
 // Represents scroll restoration type for history item.
 enum WebHistoryScrollRestorationType {
-    WebHistoryScrollRestorationAuto,
-    WebHistoryScrollRestorationManual
+  WebHistoryScrollRestorationAuto,
+  WebHistoryScrollRestorationManual
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

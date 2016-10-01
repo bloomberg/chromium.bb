@@ -28,22 +28,27 @@
 namespace blink {
 
 class HTMLLIElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLLIElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit HTMLLIElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLLIElement);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  explicit HTMLLIElement(Document&);
 
-    void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    void parseValue(const AtomicString&);
+  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+
+  void parseValue(const AtomicString&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLLIElement_h
+#endif  // HTMLLIElement_h

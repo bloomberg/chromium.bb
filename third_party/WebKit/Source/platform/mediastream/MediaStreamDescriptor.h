@@ -41,74 +41,94 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT MediaStreamDescriptorClient : public GarbageCollectedMixin {
-public:
-    virtual ~MediaStreamDescriptorClient() { }
+class PLATFORM_EXPORT MediaStreamDescriptorClient
+    : public GarbageCollectedMixin {
+ public:
+  virtual ~MediaStreamDescriptorClient() {}
 
-    virtual void streamEnded() = 0;
-    virtual void addRemoteTrack(MediaStreamComponent*) = 0;
-    virtual void removeRemoteTrack(MediaStreamComponent*) = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual void streamEnded() = 0;
+  virtual void addRemoteTrack(MediaStreamComponent*) = 0;
+  virtual void removeRemoteTrack(MediaStreamComponent*) = 0;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-class PLATFORM_EXPORT MediaStreamDescriptor final : public GarbageCollectedFinalized<MediaStreamDescriptor> {
-public:
-    class ExtraData {
-        USING_FAST_MALLOC(ExtraData);
-    public:
-        virtual ~ExtraData() { }
-    };
+class PLATFORM_EXPORT MediaStreamDescriptor final
+    : public GarbageCollectedFinalized<MediaStreamDescriptor> {
+ public:
+  class ExtraData {
+    USING_FAST_MALLOC(ExtraData);
 
-    // Only used for AudioDestinationNode.
-    static MediaStreamDescriptor* create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
+   public:
+    virtual ~ExtraData() {}
+  };
 
-    static MediaStreamDescriptor* create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
+  // Only used for AudioDestinationNode.
+  static MediaStreamDescriptor* create(
+      const MediaStreamSourceVector& audioSources,
+      const MediaStreamSourceVector& videoSources);
 
-    static MediaStreamDescriptor* create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
+  static MediaStreamDescriptor* create(
+      const MediaStreamComponentVector& audioComponents,
+      const MediaStreamComponentVector& videoComponents);
 
-    MediaStreamDescriptorClient* client() const { return m_client; }
-    void setClient(MediaStreamDescriptorClient* client) { m_client = client; }
+  static MediaStreamDescriptor* create(
+      const String& id,
+      const MediaStreamComponentVector& audioComponents,
+      const MediaStreamComponentVector& videoComponents);
 
-    String id() const { return m_id; }
+  MediaStreamDescriptorClient* client() const { return m_client; }
+  void setClient(MediaStreamDescriptorClient* client) { m_client = client; }
 
-    unsigned numberOfAudioComponents() const { return m_audioComponents.size(); }
-    MediaStreamComponent* audioComponent(unsigned index) const { return m_audioComponents[index].get(); }
+  String id() const { return m_id; }
 
-    unsigned numberOfVideoComponents() const { return m_videoComponents.size(); }
-    MediaStreamComponent* videoComponent(unsigned index) const { return m_videoComponents[index].get(); }
+  unsigned numberOfAudioComponents() const { return m_audioComponents.size(); }
+  MediaStreamComponent* audioComponent(unsigned index) const {
+    return m_audioComponents[index].get();
+  }
 
-    void addComponent(MediaStreamComponent*);
-    void removeComponent(MediaStreamComponent*);
+  unsigned numberOfVideoComponents() const { return m_videoComponents.size(); }
+  MediaStreamComponent* videoComponent(unsigned index) const {
+    return m_videoComponents[index].get();
+  }
 
-    void addRemoteTrack(MediaStreamComponent*);
-    void removeRemoteTrack(MediaStreamComponent*);
+  void addComponent(MediaStreamComponent*);
+  void removeComponent(MediaStreamComponent*);
 
-    bool active() const { return m_active; }
-    void setActive(bool active) { m_active = active; }
+  void addRemoteTrack(MediaStreamComponent*);
+  void removeRemoteTrack(MediaStreamComponent*);
 
-    ExtraData* getExtraData() const { return m_extraData.get(); }
-    void setExtraData(std::unique_ptr<ExtraData> extraData) { m_extraData = std::move(extraData); }
+  bool active() const { return m_active; }
+  void setActive(bool active) { m_active = active; }
 
-    // |m_extraData| may hold pointers to GC objects, and it may touch them in destruction.
-    // So this class is eagerly finalized to finalize |m_extraData| promptly.
-    EAGERLY_FINALIZE();
-    DECLARE_TRACE();
+  ExtraData* getExtraData() const { return m_extraData.get(); }
+  void setExtraData(std::unique_ptr<ExtraData> extraData) {
+    m_extraData = std::move(extraData);
+  }
 
-private:
-    MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
-    MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
+  // |m_extraData| may hold pointers to GC objects, and it may touch them in destruction.
+  // So this class is eagerly finalized to finalize |m_extraData| promptly.
+  EAGERLY_FINALIZE();
+  DECLARE_TRACE();
 
-    Member<MediaStreamDescriptorClient> m_client;
-    String m_id;
-    HeapVector<Member<MediaStreamComponent>> m_audioComponents;
-    HeapVector<Member<MediaStreamComponent>> m_videoComponents;
-    bool m_active;
+ private:
+  MediaStreamDescriptor(const String& id,
+                        const MediaStreamSourceVector& audioSources,
+                        const MediaStreamSourceVector& videoSources);
+  MediaStreamDescriptor(const String& id,
+                        const MediaStreamComponentVector& audioComponents,
+                        const MediaStreamComponentVector& videoComponents);
 
-    std::unique_ptr<ExtraData> m_extraData;
+  Member<MediaStreamDescriptorClient> m_client;
+  String m_id;
+  HeapVector<Member<MediaStreamComponent>> m_audioComponents;
+  HeapVector<Member<MediaStreamComponent>> m_videoComponents;
+  bool m_active;
+
+  std::unique_ptr<ExtraData> m_extraData;
 };
 
 typedef HeapVector<Member<MediaStreamDescriptor>> MediaStreamDescriptorVector;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamDescriptor_h
+#endif  // MediaStreamDescriptor_h

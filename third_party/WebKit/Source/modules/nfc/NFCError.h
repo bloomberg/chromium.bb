@@ -14,14 +14,15 @@ class DOMException;
 class ScriptPromiseResolver;
 
 class NFCError {
-    STATIC_ONLY(NFCError);
+  STATIC_ONLY(NFCError);
 
-public:
-    // Required by CallbackPromiseAdapter
-    using WebType = const device::nfc::mojom::blink::NFCErrorType&;
-    static DOMException* take(ScriptPromiseResolver*, const device::nfc::mojom::blink::NFCErrorType&);
+ public:
+  // Required by CallbackPromiseAdapter
+  using WebType = const device::nfc::mojom::blink::NFCErrorType&;
+  static DOMException* take(ScriptPromiseResolver*,
+                            const device::nfc::mojom::blink::NFCErrorType&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NFCError_h
+#endif  // NFCError_h

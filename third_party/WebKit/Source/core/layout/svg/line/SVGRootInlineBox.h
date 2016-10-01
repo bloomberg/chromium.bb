@@ -28,38 +28,42 @@
 namespace blink {
 
 class SVGRootInlineBox final : public RootInlineBox {
-public:
-    SVGRootInlineBox(LineLayoutItem block)
-        : RootInlineBox(block)
-    {
-    }
+ public:
+  SVGRootInlineBox(LineLayoutItem block) : RootInlineBox(block) {}
 
-    bool isSVGRootInlineBox() const override { return true; }
+  bool isSVGRootInlineBox() const override { return true; }
 
-    LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
-    void setLogicalHeight(LayoutUnit height) { m_logicalHeight = height; }
+  LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+  void setLogicalHeight(LayoutUnit height) { m_logicalHeight = height; }
 
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const override;
+  void paint(const PaintInfo&,
+             const LayoutPoint&,
+             LayoutUnit lineTop,
+             LayoutUnit lineBottom) const override;
 
-    void markDirty() override;
+  void markDirty() override;
 
-    void computePerCharacterLayoutInformation();
+  void computePerCharacterLayoutInformation();
 
-    InlineBox* closestLeafChildForPosition(const LayoutPoint&);
+  InlineBox* closestLeafChildForPosition(const LayoutPoint&);
 
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) final;
+  bool nodeAtPoint(HitTestResult&,
+                   const HitTestLocation& locationInContainer,
+                   const LayoutPoint& accumulatedOffset,
+                   LayoutUnit lineTop,
+                   LayoutUnit lineBottom) final;
 
-private:
-    void reorderValueLists();
-    void layoutChildBoxes(InlineFlowBox*, LayoutRect* = nullptr);
-    void layoutRootBox(const LayoutRect&);
+ private:
+  void reorderValueLists();
+  void layoutChildBoxes(InlineFlowBox*, LayoutRect* = nullptr);
+  void layoutRootBox(const LayoutRect&);
 
-private:
-    LayoutUnit m_logicalHeight;
+ private:
+  LayoutUnit m_logicalHeight;
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGRootInlineBox);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGRootInlineBox_h
+#endif  // SVGRootInlineBox_h

@@ -10,18 +10,17 @@
 
 namespace blink {
 
-DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(InProcessWorkerBase* workerObject, WorkerClients* workerClients)
-    : InProcessWorkerMessagingProxy(workerObject, workerClients)
-{
+DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
+    InProcessWorkerBase* workerObject,
+    WorkerClients* workerClients)
+    : InProcessWorkerMessagingProxy(workerObject, workerClients) {}
+
+DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() {}
+
+std::unique_ptr<WorkerThread> DedicatedWorkerMessagingProxy::createWorkerThread(
+    double originTime) {
+  return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(),
+                                       originTime);
 }
 
-DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy()
-{
-}
-
-std::unique_ptr<WorkerThread> DedicatedWorkerMessagingProxy::createWorkerThread(double originTime)
-{
-    return DedicatedWorkerThread::create(loaderProxy(), workerObjectProxy(), originTime);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -43,161 +43,148 @@ class VTTCue;
 class VTTScanner;
 
 struct VTTDisplayParameters {
-    STACK_ALLOCATED();
-    VTTDisplayParameters();
+  STACK_ALLOCATED();
+  VTTDisplayParameters();
 
-    FloatPoint position;
-    float size;
-    CSSValueID direction;
-    CSSValueID textAlign;
-    CSSValueID writingMode;
-    float snapToLinesPosition;
+  FloatPoint position;
+  float size;
+  CSSValueID direction;
+  CSSValueID textAlign;
+  CSSValueID writingMode;
+  float snapToLinesPosition;
 };
 
 class VTTCueBox final : public HTMLDivElement {
-public:
-    static VTTCueBox* create(Document& document)
-    {
-        return new VTTCueBox(document);
-    }
+ public:
+  static VTTCueBox* create(Document& document) {
+    return new VTTCueBox(document);
+  }
 
-    void applyCSSProperties(const VTTDisplayParameters&);
+  void applyCSSProperties(const VTTDisplayParameters&);
 
-private:
-    explicit VTTCueBox(Document&);
+ private:
+  explicit VTTCueBox(Document&);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    // The computed line position for snap-to-lines layout, and NaN for
-    // non-snap-to-lines layout where no adjustment should take place.
-    // This is set in applyCSSProperties and propagated to LayoutVTTCue.
-    float m_snapToLinesPosition;
+  // The computed line position for snap-to-lines layout, and NaN for
+  // non-snap-to-lines layout where no adjustment should take place.
+  // This is set in applyCSSProperties and propagated to LayoutVTTCue.
+  float m_snapToLinesPosition;
 };
 
 class VTTCue final : public TextTrackCue {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static VTTCue* create(Document& document, double startTime, double endTime, const String& text)
-    {
-        return new VTTCue(document, startTime, endTime, text);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~VTTCue() override;
+ public:
+  static VTTCue* create(Document& document,
+                        double startTime,
+                        double endTime,
+                        const String& text) {
+    return new VTTCue(document, startTime, endTime, text);
+  }
 
-    const String& vertical() const;
-    void setVertical(const String&);
+  ~VTTCue() override;
 
-    bool snapToLines() const { return m_snapToLines; }
-    void setSnapToLines(bool);
+  const String& vertical() const;
+  void setVertical(const String&);
 
-    void line(DoubleOrAutoKeyword&) const;
-    void setLine(const DoubleOrAutoKeyword&);
+  bool snapToLines() const { return m_snapToLines; }
+  void setSnapToLines(bool);
 
-    void position(DoubleOrAutoKeyword&) const;
-    void setPosition(const DoubleOrAutoKeyword&, ExceptionState&);
+  void line(DoubleOrAutoKeyword&) const;
+  void setLine(const DoubleOrAutoKeyword&);
 
-    double size() const { return m_cueSize; }
-    void setSize(double, ExceptionState&);
+  void position(DoubleOrAutoKeyword&) const;
+  void setPosition(const DoubleOrAutoKeyword&, ExceptionState&);
 
-    const String& align() const;
-    void setAlign(const String&);
+  double size() const { return m_cueSize; }
+  void setSize(double, ExceptionState&);
 
-    const String& text() const { return m_text; }
-    void setText(const String&);
+  const String& align() const;
+  void setAlign(const String&);
 
-    void parseSettings(const String&);
+  const String& text() const { return m_text; }
+  void setText(const String&);
 
-    // Applies CSS override style from user settings.
-    void applyUserOverrideCSSProperties();
+  void parseSettings(const String&);
 
-    DocumentFragment* getCueAsHTML();
+  // Applies CSS override style from user settings.
+  void applyUserOverrideCSSProperties();
 
-    const String& regionId() const { return m_regionId; }
-    void setRegionId(const String&);
+  DocumentFragment* getCueAsHTML();
 
-    void updateDisplay(HTMLDivElement& container) override;
+  const String& regionId() const { return m_regionId; }
+  void setRegionId(const String&);
 
-    void updatePastAndFutureNodes(double movieTime) override;
+  void updateDisplay(HTMLDivElement& container) override;
 
-    void removeDisplayTree(RemovalNotification) override;
+  void updatePastAndFutureNodes(double movieTime) override;
 
-    float calculateComputedLinePosition() const;
+  void removeDisplayTree(RemovalNotification) override;
 
-    enum WritingDirection {
-        Horizontal = 0,
-        VerticalGrowingLeft,
-        VerticalGrowingRight,
-        NumberOfWritingDirections
-    };
-    WritingDirection getWritingDirection() const { return m_writingDirection; }
+  float calculateComputedLinePosition() const;
 
-    enum CueAlignment {
-        Start = 0,
-        Middle,
-        End,
-        Left,
-        Right,
-        NumberOfAlignments
-    };
-    CueAlignment getCueAlignment() const { return m_cueAlignment; }
+  enum WritingDirection {
+    Horizontal = 0,
+    VerticalGrowingLeft,
+    VerticalGrowingRight,
+    NumberOfWritingDirections
+  };
+  WritingDirection getWritingDirection() const { return m_writingDirection; }
 
-    ExecutionContext* getExecutionContext() const override;
+  enum CueAlignment { Start = 0, Middle, End, Left, Right, NumberOfAlignments };
+  CueAlignment getCueAlignment() const { return m_cueAlignment; }
+
+  ExecutionContext* getExecutionContext() const override;
 
 #ifndef NDEBUG
-    String toString() const override;
+  String toString() const override;
 #endif
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    VTTCue(Document&, double startTime, double endTime, const String& text);
+ private:
+  VTTCue(Document&, double startTime, double endTime, const String& text);
 
-    Document& document() const;
+  Document& document() const;
 
-    VTTCueBox* getDisplayTree();
+  VTTCueBox* getDisplayTree();
 
-    void cueDidChange() override;
+  void cueDidChange() override;
 
-    void createVTTNodeTree();
-    void copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* root);
+  void createVTTNodeTree();
+  void copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* root);
 
-    bool lineIsAuto() const;
-    bool textPositionIsAuto() const;
+  bool lineIsAuto() const;
+  bool textPositionIsAuto() const;
 
-    VTTDisplayParameters calculateDisplayParameters() const;
-    float calculateComputedTextPosition() const;
-    CueAlignment calculateComputedCueAlignment() const;
+  VTTDisplayParameters calculateDisplayParameters() const;
+  float calculateComputedTextPosition() const;
+  CueAlignment calculateComputedCueAlignment() const;
 
-    enum CueSetting {
-        None,
-        Vertical,
-        Line,
-        Position,
-        Size,
-        Align,
-        RegionId
-    };
-    CueSetting settingName(VTTScanner&) const;
+  enum CueSetting { None, Vertical, Line, Position, Size, Align, RegionId };
+  CueSetting settingName(VTTScanner&) const;
 
-    String m_text;
-    float m_linePosition;
-    float m_textPosition;
-    float m_cueSize;
-    WritingDirection m_writingDirection;
-    CueAlignment m_cueAlignment;
-    String m_regionId;
+  String m_text;
+  float m_linePosition;
+  float m_textPosition;
+  float m_cueSize;
+  WritingDirection m_writingDirection;
+  CueAlignment m_cueAlignment;
+  String m_regionId;
 
-    Member<DocumentFragment> m_vttNodeTree;
-    Member<HTMLDivElement> m_cueBackgroundBox;
-    Member<VTTCueBox> m_displayTree;
+  Member<DocumentFragment> m_vttNodeTree;
+  Member<HTMLDivElement> m_cueBackgroundBox;
+  Member<VTTCueBox> m_displayTree;
 
-    bool m_snapToLines : 1;
-    bool m_displayTreeShouldChange : 1;
+  bool m_snapToLines : 1;
+  bool m_displayTreeShouldChange : 1;
 };
 
 // VTTCue is currently the only TextTrackCue subclass.
 DEFINE_TYPE_CASTS(VTTCue, TextTrackCue, cue, true, true);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VTTCue_h
+#endif  // VTTCue_h

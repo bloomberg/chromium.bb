@@ -39,49 +39,41 @@ namespace blink {
 
 using namespace HTMLNames;
 
-LinkResource::LinkResource(HTMLLinkElement* owner)
-    : m_owner(owner)
-{
+LinkResource::LinkResource(HTMLLinkElement* owner) : m_owner(owner) {}
+
+LinkResource::~LinkResource() {}
+
+bool LinkResource::shouldLoadResource() const {
+  return m_owner->document().frame() || m_owner->document().importsController();
 }
 
-LinkResource::~LinkResource()
-{
+LocalFrame* LinkResource::loadingFrame() const {
+  HTMLImportsController* importsController =
+      m_owner->document().importsController();
+  if (!importsController)
+    return m_owner->document().frame();
+  return importsController->master()->frame();
 }
 
-bool LinkResource::shouldLoadResource() const
-{
-    return m_owner->document().frame() || m_owner->document().importsController();
-}
-
-LocalFrame* LinkResource::loadingFrame() const
-{
-    HTMLImportsController* importsController = m_owner->document().importsController();
-    if (!importsController)
-        return m_owner->document().frame();
-    return importsController->master()->frame();
-}
-
-DEFINE_TRACE(LinkResource)
-{
-    visitor->trace(m_owner);
+DEFINE_TRACE(LinkResource) {
+  visitor->trace(m_owner);
 }
 
 LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
-    : m_owner(owner)
-    , m_url(owner->getNonEmptyURLAttribute(hrefAttr))
-{
-    m_charset = m_owner->getAttribute(charsetAttr);
-    if (m_charset.isEmpty() && m_owner->document().frame())
-        m_charset = m_owner->document().characterSet();
+    : m_owner(owner), m_url(owner->getNonEmptyURLAttribute(hrefAttr)) {
+  m_charset = m_owner->getAttribute(charsetAttr);
+  if (m_charset.isEmpty() && m_owner->document().frame())
+    m_charset = m_owner->document().characterSet();
 }
 
-FetchRequest LinkRequestBuilder::build(bool lowPriority) const
-{
-    FetchRequest request(ResourceRequest(m_owner->document().completeURL(m_url)), m_owner->localName(), m_charset);
-    if (lowPriority)
-        request.setDefer(FetchRequest::LazyLoad);
-    request.setContentSecurityPolicyNonce(m_owner->fastGetAttribute(HTMLNames::nonceAttr));
-    return request;
+FetchRequest LinkRequestBuilder::build(bool lowPriority) const {
+  FetchRequest request(ResourceRequest(m_owner->document().completeURL(m_url)),
+                       m_owner->localName(), m_charset);
+  if (lowPriority)
+    request.setDefer(FetchRequest::LazyLoad);
+  request.setContentSecurityPolicyNonce(
+      m_owner->fastGetAttribute(HTMLNames::nonceAttr));
+  return request;
 }
 
-} // namespace blink
+}  // namespace blink

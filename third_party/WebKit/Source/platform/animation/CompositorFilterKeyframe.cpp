@@ -9,28 +9,28 @@
 
 namespace blink {
 
-CompositorFilterKeyframe::CompositorFilterKeyframe(double time, CompositorFilterOperations value, const TimingFunction& timingFunction)
-    : m_filterKeyframe(cc::FilterKeyframe::Create(base::TimeDelta::FromSecondsD(time), value.releaseCcFilterOperations(), timingFunction.cloneToCC()))
-{
+CompositorFilterKeyframe::CompositorFilterKeyframe(
+    double time,
+    CompositorFilterOperations value,
+    const TimingFunction& timingFunction)
+    : m_filterKeyframe(
+          cc::FilterKeyframe::Create(base::TimeDelta::FromSecondsD(time),
+                                     value.releaseCcFilterOperations(),
+                                     timingFunction.cloneToCC())) {}
+
+CompositorFilterKeyframe::~CompositorFilterKeyframe() {}
+
+double CompositorFilterKeyframe::time() const {
+  return m_filterKeyframe->Time().InSecondsF();
 }
 
-CompositorFilterKeyframe::~CompositorFilterKeyframe()
-{
+const cc::TimingFunction* CompositorFilterKeyframe::ccTimingFunction() const {
+  return m_filterKeyframe->timing_function();
 }
 
-double CompositorFilterKeyframe::time() const
-{
-    return m_filterKeyframe->Time().InSecondsF();
+std::unique_ptr<cc::FilterKeyframe> CompositorFilterKeyframe::cloneToCC()
+    const {
+  return m_filterKeyframe->Clone();
 }
 
-const cc::TimingFunction* CompositorFilterKeyframe::ccTimingFunction() const
-{
-    return m_filterKeyframe->timing_function();
-}
-
-std::unique_ptr<cc::FilterKeyframe> CompositorFilterKeyframe::cloneToCC() const
-{
-    return m_filterKeyframe->Clone();
-}
-
-} // namespace blink
+}  // namespace blink

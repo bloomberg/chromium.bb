@@ -58,352 +58,348 @@
 namespace blink {
 namespace {
 
-WebNotificationManager* notificationManager()
-{
-    return Platform::current()->notificationManager();
+WebNotificationManager* notificationManager() {
+  return Platform::current()->notificationManager();
 }
 
-} // namespace
+}  // namespace
 
-Notification* Notification::create(ExecutionContext* context, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
-{
-    // The Web Notification constructor may be disabled through a runtime feature. The
-    // behavior of the constructor is changing, but not completely agreed upon yet.
-    if (!RuntimeEnabledFeatures::notificationConstructorEnabled()) {
-        exceptionState.throwTypeError("Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.");
-        return nullptr;
-    }
+Notification* Notification::create(ExecutionContext* context,
+                                   const String& title,
+                                   const NotificationOptions& options,
+                                   ExceptionState& exceptionState) {
+  // The Web Notification constructor may be disabled through a runtime feature. The
+  // behavior of the constructor is changing, but not completely agreed upon yet.
+  if (!RuntimeEnabledFeatures::notificationConstructorEnabled()) {
+    exceptionState.throwTypeError(
+        "Illegal constructor. Use ServiceWorkerRegistration.showNotification() "
+        "instead.");
+    return nullptr;
+  }
 
-    // The Web Notification constructor may not be used in Service Worker contexts.
-    if (context->isServiceWorkerGlobalScope()) {
-        exceptionState.throwTypeError("Illegal constructor.");
-        return nullptr;
-    }
+  // The Web Notification constructor may not be used in Service Worker contexts.
+  if (context->isServiceWorkerGlobalScope()) {
+    exceptionState.throwTypeError("Illegal constructor.");
+    return nullptr;
+  }
 
-    if (!options.actions().isEmpty()) {
-        exceptionState.throwTypeError("Actions are only supported for persistent notifications shown using ServiceWorkerRegistration.showNotification().");
-        return nullptr;
-    }
+  if (!options.actions().isEmpty()) {
+    exceptionState.throwTypeError(
+        "Actions are only supported for persistent notifications shown using "
+        "ServiceWorkerRegistration.showNotification().");
+    return nullptr;
+  }
 
-    String insecureOriginMessage;
-    if (context->isSecureContext(insecureOriginMessage)) {
-        UseCounter::count(context, UseCounter::NotificationSecureOrigin);
-        if (context->isDocument())
-            UseCounter::countCrossOriginIframe(*toDocument(context),  UseCounter::NotificationAPISecureOriginIframe);
-    } else {
-        UseCounter::count(context, UseCounter::NotificationInsecureOrigin);
-        if (context->isDocument())
-            UseCounter::countCrossOriginIframe(*toDocument(context),  UseCounter::NotificationAPIInsecureOriginIframe);
-    }
+  String insecureOriginMessage;
+  if (context->isSecureContext(insecureOriginMessage)) {
+    UseCounter::count(context, UseCounter::NotificationSecureOrigin);
+    if (context->isDocument())
+      UseCounter::countCrossOriginIframe(
+          *toDocument(context), UseCounter::NotificationAPISecureOriginIframe);
+  } else {
+    UseCounter::count(context, UseCounter::NotificationInsecureOrigin);
+    if (context->isDocument())
+      UseCounter::countCrossOriginIframe(
+          *toDocument(context),
+          UseCounter::NotificationAPIInsecureOriginIframe);
+  }
 
-    WebNotificationData data = createWebNotificationData(context, title, options, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
+  WebNotificationData data =
+      createWebNotificationData(context, title, options, exceptionState);
+  if (exceptionState.hadException())
+    return nullptr;
 
-    Notification* notification = new Notification(context, Type::NonPersistent, data);
-    notification->schedulePrepareShow();
+  Notification* notification =
+      new Notification(context, Type::NonPersistent, data);
+  notification->schedulePrepareShow();
 
-    notification->suspendIfNeeded();
-    return notification;
+  notification->suspendIfNeeded();
+  return notification;
 }
 
-Notification* Notification::create(ExecutionContext* context, const String& notificationId, const WebNotificationData& data, bool showing)
-{
-    Notification* notification = new Notification(context, Type::Persistent, data);
-    notification->setState(showing ? State::Showing : State::Closed);
-    notification->setNotificationId(notificationId);
+Notification* Notification::create(ExecutionContext* context,
+                                   const String& notificationId,
+                                   const WebNotificationData& data,
+                                   bool showing) {
+  Notification* notification =
+      new Notification(context, Type::Persistent, data);
+  notification->setState(showing ? State::Showing : State::Closed);
+  notification->setNotificationId(notificationId);
 
-    notification->suspendIfNeeded();
-    return notification;
+  notification->suspendIfNeeded();
+  return notification;
 }
 
-Notification::Notification(ExecutionContext* context, Type type, const WebNotificationData& data)
-    : ActiveScriptWrappable(this)
-    , ActiveDOMObject(context)
-    , m_type(type)
-    , m_state(State::Loading)
-    , m_data(data)
-{
-    DCHECK(notificationManager());
+Notification::Notification(ExecutionContext* context,
+                           Type type,
+                           const WebNotificationData& data)
+    : ActiveScriptWrappable(this),
+      ActiveDOMObject(context),
+      m_type(type),
+      m_state(State::Loading),
+      m_data(data) {
+  DCHECK(notificationManager());
 }
 
-Notification::~Notification()
-{
+Notification::~Notification() {}
+
+void Notification::schedulePrepareShow() {
+  DCHECK_EQ(m_state, State::Loading);
+  DCHECK(!m_prepareShowMethodRunner);
+
+  m_prepareShowMethodRunner =
+      AsyncMethodRunner<Notification>::create(this, &Notification::prepareShow);
+  m_prepareShowMethodRunner->runAsync();
 }
 
-void Notification::schedulePrepareShow()
-{
-    DCHECK_EQ(m_state, State::Loading);
-    DCHECK(!m_prepareShowMethodRunner);
+void Notification::prepareShow() {
+  DCHECK_EQ(m_state, State::Loading);
+  if (NotificationManager::from(getExecutionContext())->permissionStatus() !=
+      mojom::blink::PermissionStatus::GRANTED) {
+    dispatchErrorEvent();
+    return;
+  }
 
-    m_prepareShowMethodRunner = AsyncMethodRunner<Notification>::create(this, &Notification::prepareShow);
-    m_prepareShowMethodRunner->runAsync();
+  m_loader = new NotificationResourcesLoader(
+      WTF::bind(&Notification::didLoadResources, wrapWeakPersistent(this)));
+  m_loader->start(getExecutionContext(), m_data);
 }
 
-void Notification::prepareShow()
-{
-    DCHECK_EQ(m_state, State::Loading);
-    if (NotificationManager::from(getExecutionContext())->permissionStatus() != mojom::blink::PermissionStatus::GRANTED) {
-        dispatchErrorEvent();
-        return;
-    }
+void Notification::didLoadResources(NotificationResourcesLoader* loader) {
+  DCHECK_EQ(loader, m_loader.get());
 
-    m_loader = new NotificationResourcesLoader(WTF::bind(&Notification::didLoadResources, wrapWeakPersistent(this)));
-    m_loader->start(getExecutionContext(), m_data);
+  SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
+  DCHECK(origin);
+
+  notificationManager()->show(WebSecurityOrigin(origin), m_data,
+                              loader->getResources(), this);
+  m_loader.clear();
+
+  m_state = State::Showing;
 }
 
-void Notification::didLoadResources(NotificationResourcesLoader* loader)
-{
-    DCHECK_EQ(loader, m_loader.get());
+void Notification::close() {
+  if (m_state != State::Showing)
+    return;
 
-    SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
-    DCHECK(origin);
+  // Schedule the "close" event to be fired for non-persistent notifications.
+  // Persistent notifications won't get such events for programmatic closes.
+  if (m_type == Type::NonPersistent) {
+    getExecutionContext()->postTask(
+        BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent,
+                                              wrapPersistent(this)));
+    m_state = State::Closing;
 
-    notificationManager()->show(WebSecurityOrigin(origin), m_data, loader->getResources(), this);
-    m_loader.clear();
+    notificationManager()->close(this);
+    return;
+  }
 
-    m_state = State::Showing;
+  m_state = State::Closed;
+
+  SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
+  DCHECK(origin);
+
+  notificationManager()->closePersistent(WebSecurityOrigin(origin), m_data.tag,
+                                         m_notificationId);
 }
 
-void Notification::close()
-{
-    if (m_state != State::Showing)
-        return;
-
-    // Schedule the "close" event to be fired for non-persistent notifications.
-    // Persistent notifications won't get such events for programmatic closes.
-    if (m_type == Type::NonPersistent) {
-        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, wrapPersistent(this)));
-        m_state = State::Closing;
-
-        notificationManager()->close(this);
-        return;
-    }
-
-    m_state = State::Closed;
-
-    SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
-    DCHECK(origin);
-
-    notificationManager()->closePersistent(WebSecurityOrigin(origin), m_data.tag, m_notificationId);
+void Notification::dispatchShowEvent() {
+  dispatchEvent(Event::create(EventTypeNames::show));
 }
 
-void Notification::dispatchShowEvent()
-{
-    dispatchEvent(Event::create(EventTypeNames::show));
+void Notification::dispatchClickEvent() {
+  UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+  ScopedWindowFocusAllowedIndicator windowFocusAllowed(getExecutionContext());
+  dispatchEvent(Event::create(EventTypeNames::click));
 }
 
-void Notification::dispatchClickEvent()
-{
-    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    ScopedWindowFocusAllowedIndicator windowFocusAllowed(getExecutionContext());
-    dispatchEvent(Event::create(EventTypeNames::click));
+void Notification::dispatchErrorEvent() {
+  dispatchEvent(Event::create(EventTypeNames::error));
 }
 
-void Notification::dispatchErrorEvent()
-{
-    dispatchEvent(Event::create(EventTypeNames::error));
+void Notification::dispatchCloseEvent() {
+  // The notification will be showing when the user initiated the close, or it will be
+  // closing if the developer initiated the close.
+  if (m_state != State::Showing && m_state != State::Closing)
+    return;
+
+  m_state = State::Closed;
+  dispatchEvent(Event::create(EventTypeNames::close));
 }
 
-void Notification::dispatchCloseEvent()
-{
-    // The notification will be showing when the user initiated the close, or it will be
-    // closing if the developer initiated the close.
-    if (m_state != State::Showing && m_state != State::Closing)
-        return;
-
-    m_state = State::Closed;
-    dispatchEvent(Event::create(EventTypeNames::close));
+String Notification::title() const {
+  return m_data.title;
 }
 
-String Notification::title() const
-{
-    return m_data.title;
-}
-
-String Notification::dir() const
-{
-    switch (m_data.direction) {
+String Notification::dir() const {
+  switch (m_data.direction) {
     case WebNotificationData::DirectionLeftToRight:
-        return "ltr";
+      return "ltr";
     case WebNotificationData::DirectionRightToLeft:
-        return "rtl";
+      return "rtl";
     case WebNotificationData::DirectionAuto:
-        return "auto";
+      return "auto";
+  }
+
+  NOTREACHED();
+  return String();
+}
+
+String Notification::lang() const {
+  return m_data.lang;
+}
+
+String Notification::body() const {
+  return m_data.body;
+}
+
+String Notification::tag() const {
+  return m_data.tag;
+}
+
+String Notification::image() const {
+  return m_data.image.string();
+}
+
+String Notification::icon() const {
+  return m_data.icon.string();
+}
+
+String Notification::badge() const {
+  return m_data.badge.string();
+}
+
+NavigatorVibration::VibrationPattern Notification::vibrate() const {
+  NavigatorVibration::VibrationPattern pattern;
+  pattern.appendRange(m_data.vibrate.begin(), m_data.vibrate.end());
+
+  return pattern;
+}
+
+DOMTimeStamp Notification::timestamp() const {
+  return m_data.timestamp;
+}
+
+bool Notification::renotify() const {
+  return m_data.renotify;
+}
+
+bool Notification::silent() const {
+  return m_data.silent;
+}
+
+bool Notification::requireInteraction() const {
+  return m_data.requireInteraction;
+}
+
+ScriptValue Notification::data(ScriptState* scriptState) {
+  const WebVector<char>& serializedData = m_data.data;
+  RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(
+      serializedData.data(), serializedData.size());
+
+  return ScriptValue(scriptState,
+                     serializedValue->deserialize(scriptState->isolate()));
+}
+
+Vector<v8::Local<v8::Value>> Notification::actions(
+    ScriptState* scriptState) const {
+  Vector<v8::Local<v8::Value>> actions;
+  actions.grow(m_data.actions.size());
+
+  for (size_t i = 0; i < m_data.actions.size(); ++i) {
+    NotificationAction action;
+
+    switch (m_data.actions[i].type) {
+      case WebNotificationAction::Button:
+        action.setType("button");
+        break;
+      case WebNotificationAction::Text:
+        action.setType("text");
+        break;
+      default:
+        NOTREACHED() << "Unknown action type: " << m_data.actions[i].type;
     }
 
-    NOTREACHED();
-    return String();
+    action.setAction(m_data.actions[i].action);
+    action.setTitle(m_data.actions[i].title);
+    action.setIcon(m_data.actions[i].icon.string());
+    action.setPlaceholder(m_data.actions[i].placeholder);
+
+    // Not just the sequence of actions itself, but also the actions contained within the
+    // sequence should be frozen per the Web Notification specification.
+    actions[i] =
+        freezeV8Object(toV8(action, scriptState), scriptState->isolate());
+  }
+
+  return actions;
 }
 
-String Notification::lang() const
-{
-    return m_data.lang;
-}
-
-String Notification::body() const
-{
-    return m_data.body;
-}
-
-String Notification::tag() const
-{
-    return m_data.tag;
-}
-
-String Notification::image() const
-{
-    return m_data.image.string();
-}
-
-String Notification::icon() const
-{
-    return m_data.icon.string();
-}
-
-String Notification::badge() const
-{
-    return m_data.badge.string();
-}
-
-NavigatorVibration::VibrationPattern Notification::vibrate() const
-{
-    NavigatorVibration::VibrationPattern pattern;
-    pattern.appendRange(m_data.vibrate.begin(), m_data.vibrate.end());
-
-    return pattern;
-}
-
-DOMTimeStamp Notification::timestamp() const
-{
-    return m_data.timestamp;
-}
-
-bool Notification::renotify() const
-{
-    return m_data.renotify;
-}
-
-bool Notification::silent() const
-{
-    return m_data.silent;
-}
-
-bool Notification::requireInteraction() const
-{
-    return m_data.requireInteraction;
-}
-
-ScriptValue Notification::data(ScriptState* scriptState)
-{
-    const WebVector<char>& serializedData = m_data.data;
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(serializedData.data(), serializedData.size());
-
-    return ScriptValue(scriptState, serializedValue->deserialize(scriptState->isolate()));
-}
-
-Vector<v8::Local<v8::Value>> Notification::actions(ScriptState* scriptState) const
-{
-    Vector<v8::Local<v8::Value>> actions;
-    actions.grow(m_data.actions.size());
-
-    for (size_t i = 0; i < m_data.actions.size(); ++i) {
-        NotificationAction action;
-
-        switch (m_data.actions[i].type) {
-        case WebNotificationAction::Button:
-            action.setType("button");
-            break;
-        case WebNotificationAction::Text:
-            action.setType("text");
-            break;
-        default:
-            NOTREACHED() << "Unknown action type: " << m_data.actions[i].type;
-        }
-
-        action.setAction(m_data.actions[i].action);
-        action.setTitle(m_data.actions[i].title);
-        action.setIcon(m_data.actions[i].icon.string());
-        action.setPlaceholder(m_data.actions[i].placeholder);
-
-        // Not just the sequence of actions itself, but also the actions contained within the
-        // sequence should be frozen per the Web Notification specification.
-        actions[i] = freezeV8Object(toV8(action, scriptState), scriptState->isolate());
-    }
-
-    return actions;
-}
-
-String Notification::permissionString(mojom::blink::PermissionStatus permission)
-{
-    switch (permission) {
+String Notification::permissionString(
+    mojom::blink::PermissionStatus permission) {
+  switch (permission) {
     case mojom::blink::PermissionStatus::GRANTED:
-        return "granted";
+      return "granted";
     case mojom::blink::PermissionStatus::DENIED:
-        return "denied";
+      return "denied";
     case mojom::blink::PermissionStatus::ASK:
-        return "default";
-    }
+      return "default";
+  }
 
-    NOTREACHED();
-    return "denied";
+  NOTREACHED();
+  return "denied";
 }
 
-String Notification::permission(ExecutionContext* context)
-{
-    return permissionString(NotificationManager::from(context)->permissionStatus());
+String Notification::permission(ExecutionContext* context) {
+  return permissionString(
+      NotificationManager::from(context)->permissionStatus());
 }
 
-ScriptPromise Notification::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)
-{
-    return NotificationManager::from(scriptState->getExecutionContext())->requestPermission(scriptState, deprecatedCallback);
+ScriptPromise Notification::requestPermission(
+    ScriptState* scriptState,
+    NotificationPermissionCallback* deprecatedCallback) {
+  return NotificationManager::from(scriptState->getExecutionContext())
+      ->requestPermission(scriptState, deprecatedCallback);
 }
 
-size_t Notification::maxActions()
-{
-    return kWebNotificationMaxActions;
+size_t Notification::maxActions() {
+  return kWebNotificationMaxActions;
 }
 
-DispatchEventResult Notification::dispatchEventInternal(Event* event)
-{
-    DCHECK(getExecutionContext()->isContextThread());
-    return EventTarget::dispatchEventInternal(event);
+DispatchEventResult Notification::dispatchEventInternal(Event* event) {
+  DCHECK(getExecutionContext()->isContextThread());
+  return EventTarget::dispatchEventInternal(event);
 }
 
-const AtomicString& Notification::interfaceName() const
-{
-    return EventTargetNames::Notification;
+const AtomicString& Notification::interfaceName() const {
+  return EventTargetNames::Notification;
 }
 
-void Notification::stop()
-{
-    notificationManager()->notifyDelegateDestroyed(this);
+void Notification::stop() {
+  notificationManager()->notifyDelegateDestroyed(this);
 
-    m_state = State::Closed;
+  m_state = State::Closed;
 
-    if (m_prepareShowMethodRunner)
-        m_prepareShowMethodRunner->stop();
+  if (m_prepareShowMethodRunner)
+    m_prepareShowMethodRunner->stop();
 
-    if (m_loader)
-        m_loader->stop();
+  if (m_loader)
+    m_loader->stop();
 }
 
-bool Notification::hasPendingActivity() const
-{
-    // Non-persistent notification can receive events until they've been closed.
-    // Persistent notifications should be subject to regular garbage collection.
-    if (m_type == Type::NonPersistent)
-        return m_state != State::Closed;
+bool Notification::hasPendingActivity() const {
+  // Non-persistent notification can receive events until they've been closed.
+  // Persistent notifications should be subject to regular garbage collection.
+  if (m_type == Type::NonPersistent)
+    return m_state != State::Closed;
 
-    return false;
+  return false;
 }
 
-DEFINE_TRACE(Notification)
-{
-    visitor->trace(m_prepareShowMethodRunner);
-    visitor->trace(m_loader);
-    EventTargetWithInlineData::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+DEFINE_TRACE(Notification) {
+  visitor->trace(m_prepareShowMethodRunner);
+  visitor->trace(m_loader);
+  EventTargetWithInlineData::trace(visitor);
+  ActiveDOMObject::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

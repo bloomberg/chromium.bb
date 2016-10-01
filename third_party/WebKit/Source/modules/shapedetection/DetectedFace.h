@@ -12,12 +12,12 @@
 namespace blink {
 
 class MODULES_EXPORT DetectedFace final : public DetectedObject {
-    DEFINE_WRAPPERTYPEINFO();
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static DetectedFace* create();
+ public:
+  static DetectedFace* create();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DetectedFace_h
+#endif  // DetectedFace_h

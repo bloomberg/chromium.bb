@@ -20,24 +20,28 @@ namespace blink {
 //   calls 'onSensorReadingChanged()' however considering the given polling period:
 //   guaranteed not to be called more often than expected.
 class SensorPollingStrategy {
-public:
-    static std::unique_ptr<SensorPollingStrategy> create(double pollingPeriod, std::unique_ptr<Function<void()>> pollFunc, device::mojom::blink::ReportingMode);
+ public:
+  static std::unique_ptr<SensorPollingStrategy> create(
+      double pollingPeriod,
+      std::unique_ptr<Function<void()>> pollFunc,
+      device::mojom::blink::ReportingMode);
 
-    virtual void onSensorReadingChanged() {}
-    virtual void startPolling() = 0;
-    virtual void stopPolling() = 0;
+  virtual void onSensorReadingChanged() {}
+  virtual void startPolling() = 0;
+  virtual void stopPolling() = 0;
 
-    virtual ~SensorPollingStrategy();
+  virtual ~SensorPollingStrategy();
 
-protected:
-    SensorPollingStrategy(double pollingPeriod, std::unique_ptr<Function<void()>>);
-    virtual void pollForData(TimerBase*) = 0;
+ protected:
+  SensorPollingStrategy(double pollingPeriod,
+                        std::unique_ptr<Function<void()>>);
+  virtual void pollForData(TimerBase*) = 0;
 
-    double m_pollingPeriod;
-    std::unique_ptr<Function<void()>> m_pollFunc;
-    Timer<SensorPollingStrategy> m_timer;
+  double m_pollingPeriod;
+  std::unique_ptr<Function<void()>> m_pollFunc;
+  Timer<SensorPollingStrategy> m_timer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SensorPollingStrategy_h
+#endif  // SensorPollingStrategy_h

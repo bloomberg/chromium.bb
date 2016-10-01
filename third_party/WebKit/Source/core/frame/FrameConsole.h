@@ -46,30 +46,37 @@ class SourceLocation;
 // FrameConsole takes per-frame console messages and routes them up through the FrameHost to the ChromeClient and Inspector.
 // It's meant as an abstraction around ChromeClient calls and the way that Blink core/ can add messages to the console.
 class CORE_EXPORT FrameConsole final : public GarbageCollected<FrameConsole> {
-public:
-    static FrameConsole* create(LocalFrame& frame)
-    {
-        return new FrameConsole(frame);
-    }
+ public:
+  static FrameConsole* create(LocalFrame& frame) {
+    return new FrameConsole(frame);
+  }
 
-    void addMessage(ConsoleMessage*);
-    void addMessageFromWorker(MessageLevel, const String& message, std::unique_ptr<SourceLocation>, const String& workerId);
+  void addMessage(ConsoleMessage*);
+  void addMessageFromWorker(MessageLevel,
+                            const String& message,
+                            std::unique_ptr<SourceLocation>,
+                            const String& workerId);
 
-    bool addMessageToStorage(ConsoleMessage*);
-    void reportMessageToClient(MessageSource, MessageLevel, const String& message, SourceLocation*);
+  bool addMessageToStorage(ConsoleMessage*);
+  void reportMessageToClient(MessageSource,
+                             MessageLevel,
+                             const String& message,
+                             SourceLocation*);
 
-    void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);
+  void reportResourceResponseReceived(DocumentLoader*,
+                                      unsigned long requestIdentifier,
+                                      const ResourceResponse&);
 
-    void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
+  void didFailLoading(unsigned long requestIdentifier, const ResourceError&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit FrameConsole(LocalFrame&);
+ private:
+  explicit FrameConsole(LocalFrame&);
 
-    Member<LocalFrame> m_frame;
+  Member<LocalFrame> m_frame;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FrameConsole_h
+#endif  // FrameConsole_h

@@ -17,24 +17,24 @@ class WebViewImpl;
 class Document;
 
 class SimTest : public ::testing::Test {
-protected:
-    SimTest();
-    ~SimTest() override;
+ protected:
+  SimTest();
+  ~SimTest() override;
 
-    void loadURL(const String& url);
+  void loadURL(const String& url);
 
-    Document& document();
-    WebViewImpl& webView();
-    const SimWebViewClient& webViewClient() const;
-    SimCompositor& compositor();
+  Document& document();
+  WebViewImpl& webView();
+  const SimWebViewClient& webViewClient() const;
+  SimCompositor& compositor();
 
-private:
-    SimNetwork m_network;
-    SimCompositor m_compositor;
-    SimWebViewClient m_webViewClient;
-    FrameTestHelpers::WebViewHelper m_webViewHelper;
+ private:
+  SimNetwork m_network;
+  SimCompositor m_compositor;
+  SimWebViewClient m_webViewClient;
+  FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

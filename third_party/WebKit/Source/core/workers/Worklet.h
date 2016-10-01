@@ -19,37 +19,40 @@ class ResourceFetcher;
 class WorkletGlobalScopeProxy;
 class WorkletScriptLoader;
 
-class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>, public ScriptWrappable, public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(Worklet);
-    WTF_MAKE_NONCOPYABLE(Worklet);
-public:
-    virtual void initialize() {}
-    virtual bool isInitialized() const { return true; }
+class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
+                            public ScriptWrappable,
+                            public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(Worklet);
+  WTF_MAKE_NONCOPYABLE(Worklet);
 
-    virtual WorkletGlobalScopeProxy* workletGlobalScopeProxy() const = 0;
+ public:
+  virtual void initialize() {}
+  virtual bool isInitialized() const { return true; }
 
-    // Worklet
-    ScriptPromise import(ScriptState*, const String& url);
+  virtual WorkletGlobalScopeProxy* workletGlobalScopeProxy() const = 0;
 
-    void notifyFinished(WorkletScriptLoader*);
+  // Worklet
+  ScriptPromise import(ScriptState*, const String& url);
 
-    // ActiveDOMObject
-    void stop() final;
+  void notifyFinished(WorkletScriptLoader*);
 
-    DECLARE_VIRTUAL_TRACE();
+  // ActiveDOMObject
+  void stop() final;
 
-protected:
-    // The Worklet inherits the url and userAgent from the frame->document().
-    explicit Worklet(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    ResourceFetcher* fetcher() const { return m_fetcher.get(); }
+ protected:
+  // The Worklet inherits the url and userAgent from the frame->document().
+  explicit Worklet(LocalFrame*);
 
-    Member<ResourceFetcher> m_fetcher;
-    HeapHashSet<Member<WorkletScriptLoader>> m_scriptLoaders;
+ private:
+  ResourceFetcher* fetcher() const { return m_fetcher.get(); }
+
+  Member<ResourceFetcher> m_fetcher;
+  HeapHashSet<Member<WorkletScriptLoader>> m_scriptLoaders;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Worklet_h
+#endif  // Worklet_h

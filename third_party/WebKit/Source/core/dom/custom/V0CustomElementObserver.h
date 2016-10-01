@@ -38,24 +38,25 @@ namespace blink {
 
 class Element;
 
-class V0CustomElementObserver : public GarbageCollectedFinalized<V0CustomElementObserver> {
-public:
-    virtual ~V0CustomElementObserver() { }
+class V0CustomElementObserver
+    : public GarbageCollectedFinalized<V0CustomElementObserver> {
+ public:
+  virtual ~V0CustomElementObserver() {}
 
-    // API for CustomElement to kick off notifications
-    static void notifyElementWasDestroyed(Element*);
+  // API for CustomElement to kick off notifications
+  static void notifyElementWasDestroyed(Element*);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    V0CustomElementObserver() { }
+ protected:
+  V0CustomElementObserver() {}
 
-    void observe(Element*);
-    void unobserve(Element*);
+  void observe(Element*);
+  void unobserve(Element*);
 
-    virtual void elementWasDestroyed(Element* element) { unobserve(element); }
+  virtual void elementWasDestroyed(Element* element) { unobserve(element); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementObserver_h
+#endif  // V0CustomElementObserver_h

@@ -40,18 +40,22 @@ class ContextMenuProvider;
 class LocalFrame;
 
 class InspectorFrontendClient {
-public:
-    virtual ~InspectorFrontendClient() { }
+ public:
+  virtual ~InspectorFrontendClient() {}
 
-    virtual void sendMessageToEmbedder(const String&) = 0;
+  virtual void sendMessageToEmbedder(const String&) = 0;
 
-    virtual bool isUnderTest() = 0;
+  virtual bool isUnderTest() = 0;
 
-    virtual void showContextMenu(LocalFrame* targetFrame, float x, float y, ContextMenuProvider*) = 0;
+  virtual void showContextMenu(LocalFrame* targetFrame,
+                               float x,
+                               float y,
+                               ContextMenuProvider*) = 0;
 
-    virtual void setInjectedScriptForOrigin(const String& origin, const String& source) = 0;
+  virtual void setInjectedScriptForOrigin(const String& origin,
+                                          const String& source) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

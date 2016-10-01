@@ -11,35 +11,37 @@
 namespace blink {
 
 class CORE_EXPORT ComputedStylePropertyMap : public ImmutableStylePropertyMap {
-    WTF_MAKE_NONCOPYABLE(ComputedStylePropertyMap);
+  WTF_MAKE_NONCOPYABLE(ComputedStylePropertyMap);
 
-public:
-    static ComputedStylePropertyMap* create(CSSComputedStyleDeclaration* computedStyleDeclaration)
-    {
-        return new ComputedStylePropertyMap(computedStyleDeclaration);
-    }
+ public:
+  static ComputedStylePropertyMap* create(
+      CSSComputedStyleDeclaration* computedStyleDeclaration) {
+    return new ComputedStylePropertyMap(computedStyleDeclaration);
+  }
 
-    Vector<String> getProperties() override;
+  Vector<String> getProperties() override;
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_computedStyleDeclaration);
-        ImmutableStylePropertyMap::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_computedStyleDeclaration);
+    ImmutableStylePropertyMap::trace(visitor);
+  }
 
-protected:
-    ComputedStylePropertyMap(CSSComputedStyleDeclaration* computedStyleDeclaration)
-        : ImmutableStylePropertyMap()
-        , m_computedStyleDeclaration(computedStyleDeclaration) { }
+ protected:
+  ComputedStylePropertyMap(
+      CSSComputedStyleDeclaration* computedStyleDeclaration)
+      : ImmutableStylePropertyMap(),
+        m_computedStyleDeclaration(computedStyleDeclaration) {}
 
-    CSSStyleValueVector getAllInternal(CSSPropertyID) override;
-    CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
+  CSSStyleValueVector getAllInternal(CSSPropertyID) override;
+  CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
 
-    HeapVector<StylePropertyMapEntry> getIterationEntries() override { return HeapVector<StylePropertyMapEntry>(); }
+  HeapVector<StylePropertyMapEntry> getIterationEntries() override {
+    return HeapVector<StylePropertyMapEntry>();
+  }
 
-    Member<CSSStyleDeclaration> m_computedStyleDeclaration;
+  Member<CSSStyleDeclaration> m_computedStyleDeclaration;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

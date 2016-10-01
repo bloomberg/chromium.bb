@@ -14,46 +14,51 @@ class CSSCalcDictionary;
 class ExceptionState;
 
 class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
-    WTF_MAKE_NONCOPYABLE(CSSLengthValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSPrimitiveValue::UnitType unitFromName(const String& name);
+  WTF_MAKE_NONCOPYABLE(CSSLengthValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    CSSLengthValue* add(const CSSLengthValue* other);
-    CSSLengthValue* subtract(const CSSLengthValue* other);
-    CSSLengthValue* multiply(double);
-    CSSLengthValue* divide(double, ExceptionState&);
+ public:
+  static CSSPrimitiveValue::UnitType unitFromName(const String& name);
 
-    virtual bool containsPercent() const = 0;
+  CSSLengthValue* add(const CSSLengthValue* other);
+  CSSLengthValue* subtract(const CSSLengthValue* other);
+  CSSLengthValue* multiply(double);
+  CSSLengthValue* divide(double, ExceptionState&);
 
-    static CSSLengthValue* from(const String& cssText, ExceptionState&);
-    static CSSLengthValue* from(double value, const String& typeStr, ExceptionState&);
-    static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
+  virtual bool containsPercent() const = 0;
 
-protected:
-    CSSLengthValue() {}
+  static CSSLengthValue* from(const String& cssText, ExceptionState&);
+  static CSSLengthValue* from(double value,
+                              const String& typeStr,
+                              ExceptionState&);
+  static CSSLengthValue* from(const CSSCalcDictionary&, ExceptionState&);
 
-    virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
-    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
-    virtual CSSLengthValue* multiplyInternal(double);
-    virtual CSSLengthValue* divideInternal(double);
+ protected:
+  CSSLengthValue() {}
 
-    static bool isSupportedLengthUnit(CSSPrimitiveValue::UnitType unit)
-    {
-        return (CSSPrimitiveValue::isLength(unit) || unit == CSSPrimitiveValue::UnitType::Percentage)
-            && unit != CSSPrimitiveValue::UnitType::QuirkyEms
-            && unit != CSSPrimitiveValue::UnitType::UserUnits;
-    }
+  virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
+  virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
+  virtual CSSLengthValue* multiplyInternal(double);
+  virtual CSSLengthValue* divideInternal(double);
 
-    static const int kNumSupportedUnits = 15;
+  static bool isSupportedLengthUnit(CSSPrimitiveValue::UnitType unit) {
+    return (CSSPrimitiveValue::isLength(unit) ||
+            unit == CSSPrimitiveValue::UnitType::Percentage) &&
+           unit != CSSPrimitiveValue::UnitType::QuirkyEms &&
+           unit != CSSPrimitiveValue::UnitType::UserUnits;
+  }
+
+  static const int kNumSupportedUnits = 15;
 };
 
-DEFINE_TYPE_CASTS(CSSLengthValue, CSSStyleValue, value,
-    (value->type() == CSSStyleValue::SimpleLengthType
-        || value->type() == CSSStyleValue::CalcLengthType),
-    (value.type() == CSSStyleValue::SimpleLengthType
-        || value.type() == CSSStyleValue::CalcLengthType));
+DEFINE_TYPE_CASTS(CSSLengthValue,
+                  CSSStyleValue,
+                  value,
+                  (value->type() == CSSStyleValue::SimpleLengthType ||
+                   value->type() == CSSStyleValue::CalcLengthType),
+                  (value.type() == CSSStyleValue::SimpleLengthType ||
+                   value.type() == CSSStyleValue::CalcLengthType));
 
-} // namespace blink
+}  // namespace blink
 
 #endif

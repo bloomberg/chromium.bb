@@ -38,12 +38,12 @@ namespace blink {
 class Database;
 
 class DatabaseCallback : public GarbageCollectedFinalized<DatabaseCallback> {
-public:
-    virtual ~DatabaseCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual bool handleEvent(Database*) = 0;
+ public:
+  virtual ~DatabaseCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual bool handleEvent(Database*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseCallback_h
+#endif  // DatabaseCallback_h

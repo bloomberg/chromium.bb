@@ -25,22 +25,13 @@
 
 #include "modules/quota/DOMError.h"
 
-
 namespace blink {
 
-DOMError::~DOMError()
-{
-}
+DOMError::~DOMError() {}
 
-DOMError::DOMError(const String& name)
-    : m_name(name)
-{
-}
+DOMError::DOMError(const String& name) : m_name(name) {}
 
 DOMError::DOMError(const String& name, const String& message)
-    : m_name(name)
-    , m_message(message)
-{
-}
+    : m_name(name), m_message(message) {}
 
-} // namespace blink
+}  // namespace blink

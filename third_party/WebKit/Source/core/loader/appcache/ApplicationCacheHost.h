@@ -39,144 +39,177 @@
 #include <memory>
 
 namespace blink {
-    class ApplicationCache;
-    class DocumentLoader;
-    class ResourceRequest;
-    class ResourceResponse;
+class ApplicationCache;
+class DocumentLoader;
+class ResourceRequest;
+class ResourceResponse;
 
-    class ApplicationCacheHost final : public GarbageCollectedFinalized<ApplicationCacheHost>, public WebApplicationCacheHostClient {
-        WTF_MAKE_NONCOPYABLE(ApplicationCacheHost);
-    public:
-        static ApplicationCacheHost* create(DocumentLoader* loader)
-        {
-            return new ApplicationCacheHost(loader);
-        }
+class ApplicationCacheHost final
+    : public GarbageCollectedFinalized<ApplicationCacheHost>,
+      public WebApplicationCacheHostClient {
+  WTF_MAKE_NONCOPYABLE(ApplicationCacheHost);
 
-        virtual ~ApplicationCacheHost();
-        void detachFromDocumentLoader();
+ public:
+  static ApplicationCacheHost* create(DocumentLoader* loader) {
+    return new ApplicationCacheHost(loader);
+  }
 
-        // The Status numeric values are specified in the HTML5 spec.
-        enum Status {
-            kUncached = 0,
-            kIdle = 1,
-            kChecking = 2,
-            kDownloading = 3,
-            kUpdateready = 4,
-            kObsolete = 5
-        };
+  virtual ~ApplicationCacheHost();
+  void detachFromDocumentLoader();
 
-        enum EventID {
-            kCheckingEvent = 0,
-            kErrorEvent,
-            kNoupdateEvent,
-            kDownloadingEvent,
-            kProgressEvent,
-            kUpdatereadyEvent,
-            kCachedEvent,
-            kObsoleteEvent // Must remain the last value, this is used to size arrays.
-        };
+  // The Status numeric values are specified in the HTML5 spec.
+  enum Status {
+    kUncached = 0,
+    kIdle = 1,
+    kChecking = 2,
+    kDownloading = 3,
+    kUpdateready = 4,
+    kObsolete = 5
+  };
 
-        struct CacheInfo {
-            STACK_ALLOCATED();
-            CacheInfo(const KURL& manifest, double creationTime, double updateTime, long long size)
-                : m_manifest(manifest)
-                , m_creationTime(creationTime)
-                , m_updateTime(updateTime)
-                , m_size(size) { }
-            KURL m_manifest;
-            double m_creationTime;
-            double m_updateTime;
-            long long m_size;
-        };
+  enum EventID {
+    kCheckingEvent = 0,
+    kErrorEvent,
+    kNoupdateEvent,
+    kDownloadingEvent,
+    kProgressEvent,
+    kUpdatereadyEvent,
+    kCachedEvent,
+    kObsoleteEvent  // Must remain the last value, this is used to size arrays.
+  };
 
-        struct ResourceInfo {
-            DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-            ResourceInfo(const KURL& resource, bool isMaster, bool isManifest, bool isFallback, bool isForeign, bool isExplicit, long long size)
-                : m_resource(resource)
-                , m_isMaster(isMaster)
-                , m_isManifest(isManifest)
-                , m_isFallback(isFallback)
-                , m_isForeign(isForeign)
-                , m_isExplicit(isExplicit)
-                , m_size(size) { }
-            KURL m_resource;
-            bool m_isMaster;
-            bool m_isManifest;
-            bool m_isFallback;
-            bool m_isForeign;
-            bool m_isExplicit;
-            long long m_size;
-        };
+  struct CacheInfo {
+    STACK_ALLOCATED();
+    CacheInfo(const KURL& manifest,
+              double creationTime,
+              double updateTime,
+              long long size)
+        : m_manifest(manifest),
+          m_creationTime(creationTime),
+          m_updateTime(updateTime),
+          m_size(size) {}
+    KURL m_manifest;
+    double m_creationTime;
+    double m_updateTime;
+    long long m_size;
+  };
 
-        typedef Vector<ResourceInfo> ResourceInfoList;
+  struct ResourceInfo {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    ResourceInfo(const KURL& resource,
+                 bool isMaster,
+                 bool isManifest,
+                 bool isFallback,
+                 bool isForeign,
+                 bool isExplicit,
+                 long long size)
+        : m_resource(resource),
+          m_isMaster(isMaster),
+          m_isManifest(isManifest),
+          m_isFallback(isFallback),
+          m_isForeign(isForeign),
+          m_isExplicit(isExplicit),
+          m_size(size) {}
+    KURL m_resource;
+    bool m_isMaster;
+    bool m_isManifest;
+    bool m_isFallback;
+    bool m_isForeign;
+    bool m_isExplicit;
+    long long m_size;
+  };
 
-        void selectCacheWithoutManifest();
-        void selectCacheWithManifest(const KURL& manifestURL);
+  typedef Vector<ResourceInfo> ResourceInfoList;
 
-        void willStartLoadingMainResource(ResourceRequest&);
-        void didReceiveResponseForMainResource(const ResourceResponse&);
-        void mainResourceDataReceived(const char* data, size_t length);
-        void finishedLoadingMainResource();
-        void failedLoadingMainResource();
+  void selectCacheWithoutManifest();
+  void selectCacheWithManifest(const KURL& manifestURL);
 
-        void willStartLoadingResource(ResourceRequest&);
+  void willStartLoadingMainResource(ResourceRequest&);
+  void didReceiveResponseForMainResource(const ResourceResponse&);
+  void mainResourceDataReceived(const char* data, size_t length);
+  void finishedLoadingMainResource();
+  void failedLoadingMainResource();
 
-        Status getStatus() const;
-        bool update();
-        bool swapCache();
-        void abort();
+  void willStartLoadingResource(ResourceRequest&);
 
-        void setApplicationCache(ApplicationCache*);
-        void notifyApplicationCache(EventID, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
+  Status getStatus() const;
+  bool update();
+  bool swapCache();
+  void abort();
 
-        void stopDeferringEvents(); // Also raises the events that have been queued up.
+  void setApplicationCache(ApplicationCache*);
+  void notifyApplicationCache(EventID,
+                              int progressTotal,
+                              int progressDone,
+                              WebApplicationCacheHost::ErrorReason,
+                              const String& errorURL,
+                              int errorStatus,
+                              const String& errorMessage);
 
-        void fillResourceList(ResourceInfoList*);
-        CacheInfo applicationCacheInfo();
+  void
+  stopDeferringEvents();  // Also raises the events that have been queued up.
 
-        DECLARE_TRACE();
+  void fillResourceList(ResourceInfoList*);
+  CacheInfo applicationCacheInfo();
 
-    private:
-        explicit ApplicationCacheHost(DocumentLoader*);
+  DECLARE_TRACE();
 
-        // WebApplicationCacheHostClient implementation
-        void didChangeCacheAssociation() final;
-        void notifyEventListener(WebApplicationCacheHost::EventID) final;
-        void notifyProgressEventListener(const WebURL&, int progressTotal, int progressDone) final;
-        void notifyErrorEventListener(WebApplicationCacheHost::ErrorReason, const WebURL&, int status, const WebString& message) final;
+ private:
+  explicit ApplicationCacheHost(DocumentLoader*);
 
-        bool isApplicationCacheEnabled();
-        DocumentLoader* documentLoader() const { return m_documentLoader; }
+  // WebApplicationCacheHostClient implementation
+  void didChangeCacheAssociation() final;
+  void notifyEventListener(WebApplicationCacheHost::EventID) final;
+  void notifyProgressEventListener(const WebURL&,
+                                   int progressTotal,
+                                   int progressDone) final;
+  void notifyErrorEventListener(WebApplicationCacheHost::ErrorReason,
+                                const WebURL&,
+                                int status,
+                                const WebString& message) final;
 
-        struct DeferredEvent {
-            EventID eventID;
-            int progressTotal;
-            int progressDone;
-            WebApplicationCacheHost::ErrorReason errorReason;
-            String errorURL;
-            int errorStatus;
-            String errorMessage;
-            DeferredEvent(EventID id, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
-                : eventID(id)
-                , progressTotal(progressTotal)
-                , progressDone(progressDone)
-                , errorReason(errorReason)
-                , errorURL(errorURL)
-                , errorStatus(errorStatus)
-                , errorMessage(errorMessage)
-            {
-            }
-        };
+  bool isApplicationCacheEnabled();
+  DocumentLoader* documentLoader() const { return m_documentLoader; }
 
-        WeakMember<ApplicationCache> m_domApplicationCache;
-        Member<DocumentLoader> m_documentLoader;
-        bool m_defersEvents; // Events are deferred until after document onload.
-        Vector<DeferredEvent> m_deferredEvents;
+  struct DeferredEvent {
+    EventID eventID;
+    int progressTotal;
+    int progressDone;
+    WebApplicationCacheHost::ErrorReason errorReason;
+    String errorURL;
+    int errorStatus;
+    String errorMessage;
+    DeferredEvent(EventID id,
+                  int progressTotal,
+                  int progressDone,
+                  WebApplicationCacheHost::ErrorReason errorReason,
+                  const String& errorURL,
+                  int errorStatus,
+                  const String& errorMessage)
+        : eventID(id),
+          progressTotal(progressTotal),
+          progressDone(progressDone),
+          errorReason(errorReason),
+          errorURL(errorURL),
+          errorStatus(errorStatus),
+          errorMessage(errorMessage) {}
+  };
 
-        void dispatchDOMEvent(EventID, int progressTotal, int progressDone, WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
+  WeakMember<ApplicationCache> m_domApplicationCache;
+  Member<DocumentLoader> m_documentLoader;
+  bool m_defersEvents;  // Events are deferred until after document onload.
+  Vector<DeferredEvent> m_deferredEvents;
 
-        std::unique_ptr<WebApplicationCacheHost> m_host;
-    };
+  void dispatchDOMEvent(EventID,
+                        int progressTotal,
+                        int progressDone,
+                        WebApplicationCacheHost::ErrorReason,
+                        const String& errorURL,
+                        int errorStatus,
+                        const String& errorMessage);
+
+  std::unique_ptr<WebApplicationCacheHost> m_host;
+};
 
 }  // namespace blink
 

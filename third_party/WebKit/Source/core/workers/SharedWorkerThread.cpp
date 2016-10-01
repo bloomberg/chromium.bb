@@ -38,30 +38,33 @@
 
 namespace blink {
 
-std::unique_ptr<SharedWorkerThread> SharedWorkerThread::create(const String& name, PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-{
-    return wrapUnique(new SharedWorkerThread(name, std::move(workerLoaderProxy), workerReportingProxy));
+std::unique_ptr<SharedWorkerThread> SharedWorkerThread::create(
+    const String& name,
+    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
+    WorkerReportingProxy& workerReportingProxy) {
+  return wrapUnique(new SharedWorkerThread(name, std::move(workerLoaderProxy),
+                                           workerReportingProxy));
 }
 
-SharedWorkerThread::SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy)
-    , m_workerBackingThread(WorkerBackingThread::create("SharedWorker Thread", BlinkGC::PerThreadHeapMode))
-    , m_name(name.isolatedCopy())
-{
+SharedWorkerThread::SharedWorkerThread(
+    const String& name,
+    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
+    WorkerReportingProxy& workerReportingProxy)
+    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy),
+      m_workerBackingThread(
+          WorkerBackingThread::create("SharedWorker Thread",
+                                      BlinkGC::PerThreadHeapMode)),
+      m_name(name.isolatedCopy()) {}
+
+SharedWorkerThread::~SharedWorkerThread() {}
+
+void SharedWorkerThread::clearWorkerBackingThread() {
+  m_workerBackingThread = nullptr;
 }
 
-SharedWorkerThread::~SharedWorkerThread()
-{
+WorkerOrWorkletGlobalScope* SharedWorkerThread::createWorkerGlobalScope(
+    std::unique_ptr<WorkerThreadStartupData> startupData) {
+  return SharedWorkerGlobalScope::create(m_name, this, std::move(startupData));
 }
 
-void SharedWorkerThread::clearWorkerBackingThread()
-{
-    m_workerBackingThread = nullptr;
-}
-
-WorkerOrWorkletGlobalScope* SharedWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
-{
-    return SharedWorkerGlobalScope::create(m_name, this, std::move(startupData));
-}
-
-} // namespace blink
+}  // namespace blink

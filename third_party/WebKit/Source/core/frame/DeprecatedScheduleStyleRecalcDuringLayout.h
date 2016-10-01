@@ -11,18 +11,19 @@
 namespace blink {
 
 class DeprecatedScheduleStyleRecalcDuringLayout {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(DeprecatedScheduleStyleRecalcDuringLayout);
-public:
-    explicit DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle&);
-    ~DeprecatedScheduleStyleRecalcDuringLayout();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(DeprecatedScheduleStyleRecalcDuringLayout);
 
-private:
-    DocumentLifecycle& m_lifecycle;
-    DocumentLifecycle::DeprecatedTransition m_deprecatedTransition;
-    bool m_wasInPerformLayout;
+ public:
+  explicit DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle&);
+  ~DeprecatedScheduleStyleRecalcDuringLayout();
+
+ private:
+  DocumentLifecycle& m_lifecycle;
+  DocumentLifecycle::DeprecatedTransition m_deprecatedTransition;
+  bool m_wasInPerformLayout;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

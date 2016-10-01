@@ -16,28 +16,30 @@ class CompositorMutator;
 struct CompositorMutations;
 class CompositorMutationsTarget;
 
-class PLATFORM_EXPORT CompositorMutatorClient : public WebCompositorMutatorClient {
-public:
-    CompositorMutatorClient(CompositorMutator*, CompositorMutationsTarget*);
-    virtual ~CompositorMutatorClient();
+class PLATFORM_EXPORT CompositorMutatorClient
+    : public WebCompositorMutatorClient {
+ public:
+  CompositorMutatorClient(CompositorMutator*, CompositorMutationsTarget*);
+  virtual ~CompositorMutatorClient();
 
-    void setNeedsMutate();
+  void setNeedsMutate();
 
-    // cc::LayerTreeMutator
-    bool Mutate(base::TimeTicks monotonicTime, cc::LayerTreeImpl*) override;
-    void SetClient(cc::LayerTreeMutatorClient*) override;
-    base::Closure TakeMutations() override;
+  // cc::LayerTreeMutator
+  bool Mutate(base::TimeTicks monotonicTime, cc::LayerTreeImpl*) override;
+  void SetClient(cc::LayerTreeMutatorClient*) override;
+  base::Closure TakeMutations() override;
 
-    CompositorMutator* mutator() { return m_mutator.get(); }
+  CompositorMutator* mutator() { return m_mutator.get(); }
 
-    void setMutationsForTesting(std::unique_ptr<CompositorMutations>);
-private:
-    cc::LayerTreeMutatorClient* m_client;
-    CompositorMutationsTarget* m_mutationsTarget;
-    Persistent<CompositorMutator> m_mutator;
-    std::unique_ptr<CompositorMutations> m_mutations;
+  void setMutationsForTesting(std::unique_ptr<CompositorMutations>);
+
+ private:
+  cc::LayerTreeMutatorClient* m_client;
+  CompositorMutationsTarget* m_mutationsTarget;
+  Persistent<CompositorMutator> m_mutator;
+  std::unique_ptr<CompositorMutations> m_mutations;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorMutatorClient_h
+#endif  // CompositorMutatorClient_h

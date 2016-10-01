@@ -32,16 +32,19 @@
 
 namespace blink {
 
-const char PlatformInstrumentation::CategoryName[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
+const char PlatformInstrumentation::CategoryName[] =
+    TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 
 const char PlatformInstrumentation::ImageDecodeEvent[] = "Decode Image";
 const char PlatformInstrumentation::ImageResizeEvent[] = "Resize Image";
-const char PlatformInstrumentation::DrawLazyPixelRefEvent[] = "Draw LazyPixelRef";
-const char PlatformInstrumentation::DecodeLazyPixelRefEvent[] = "Decode LazyPixelRef";
+const char PlatformInstrumentation::DrawLazyPixelRefEvent[] =
+    "Draw LazyPixelRef";
+const char PlatformInstrumentation::DecodeLazyPixelRefEvent[] =
+    "Decode LazyPixelRef";
 
 const char PlatformInstrumentation::LazyPixelRef[] = "LazyPixelRef";
 
 const char PlatformInstrumentation::ImageTypeArgument[] = "imageType";
 const char PlatformInstrumentation::CachedArgument[] = "cached";
 
-} // namespace blink
+}  // namespace blink

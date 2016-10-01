@@ -34,47 +34,52 @@ namespace WTF {
 class ArrayBuffer;
 
 class Uint16Array final : public IntegralTypedArrayBase<unsigned short> {
-public:
-    static inline PassRefPtr<Uint16Array> create(unsigned length);
-    static inline PassRefPtr<Uint16Array> create(const unsigned short* array, unsigned length);
-    static inline PassRefPtr<Uint16Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+ public:
+  static inline PassRefPtr<Uint16Array> create(unsigned length);
+  static inline PassRefPtr<Uint16Array> create(const unsigned short* array,
+                                               unsigned length);
+  static inline PassRefPtr<Uint16Array> create(PassRefPtr<ArrayBuffer>,
+                                               unsigned byteOffset,
+                                               unsigned length);
 
-    using TypedArrayBase<unsigned short>::set;
-    using IntegralTypedArrayBase<unsigned short>::set;
+  using TypedArrayBase<unsigned short>::set;
+  using IntegralTypedArrayBase<unsigned short>::set;
 
-    ViewType type() const override
-    {
-        return TypeUint16;
-    }
+  ViewType type() const override { return TypeUint16; }
 
-private:
-    inline Uint16Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
-    // Make constructor visible to superclass.
-    friend class TypedArrayBase<unsigned short>;
+ private:
+  inline Uint16Array(PassRefPtr<ArrayBuffer>,
+                     unsigned byteOffset,
+                     unsigned length);
+  // Make constructor visible to superclass.
+  friend class TypedArrayBase<unsigned short>;
 };
 
-PassRefPtr<Uint16Array> Uint16Array::create(unsigned length)
-{
-    return TypedArrayBase<unsigned short>::create<Uint16Array>(length);
+PassRefPtr<Uint16Array> Uint16Array::create(unsigned length) {
+  return TypedArrayBase<unsigned short>::create<Uint16Array>(length);
 }
 
-PassRefPtr<Uint16Array> Uint16Array::create(const unsigned short* array, unsigned length)
-{
-    return TypedArrayBase<unsigned short>::create<Uint16Array>(array, length);
+PassRefPtr<Uint16Array> Uint16Array::create(const unsigned short* array,
+                                            unsigned length) {
+  return TypedArrayBase<unsigned short>::create<Uint16Array>(array, length);
 }
 
-PassRefPtr<Uint16Array> Uint16Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-{
-    return TypedArrayBase<unsigned short>::create<Uint16Array>(std::move(buffer), byteOffset, length);
+PassRefPtr<Uint16Array> Uint16Array::create(PassRefPtr<ArrayBuffer> buffer,
+                                            unsigned byteOffset,
+                                            unsigned length) {
+  return TypedArrayBase<unsigned short>::create<Uint16Array>(
+      std::move(buffer), byteOffset, length);
 }
 
-Uint16Array::Uint16Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : IntegralTypedArrayBase<unsigned short>(std::move(buffer), byteOffset, length)
-{
-}
+Uint16Array::Uint16Array(PassRefPtr<ArrayBuffer> buffer,
+                         unsigned byteOffset,
+                         unsigned length)
+    : IntegralTypedArrayBase<unsigned short>(std::move(buffer),
+                                             byteOffset,
+                                             length) {}
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::Uint16Array;
 
-#endif // Uint16Array_h
+#endif  // Uint16Array_h

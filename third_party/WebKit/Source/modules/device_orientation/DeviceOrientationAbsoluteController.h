@@ -11,26 +11,28 @@
 
 namespace blink {
 
-class MODULES_EXPORT DeviceOrientationAbsoluteController final : public DeviceOrientationController {
-public:
-    ~DeviceOrientationAbsoluteController() override;
+class MODULES_EXPORT DeviceOrientationAbsoluteController final
+    : public DeviceOrientationController {
+ public:
+  ~DeviceOrientationAbsoluteController() override;
 
-    static const char* supplementName();
-    static DeviceOrientationAbsoluteController& from(Document&);
+  static const char* supplementName();
+  static DeviceOrientationAbsoluteController& from(Document&);
 
-    // Inherited from DeviceSingleWindowEventController.
-    void didAddEventListener(LocalDOMWindow*, const AtomicString& eventType) override;
+  // Inherited from DeviceSingleWindowEventController.
+  void didAddEventListener(LocalDOMWindow*,
+                           const AtomicString& eventType) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit DeviceOrientationAbsoluteController(Document&);
+ private:
+  explicit DeviceOrientationAbsoluteController(Document&);
 
-    // Inherited from DeviceOrientationController.
-    DeviceOrientationDispatcher& dispatcherInstance() const override;
-    const AtomicString& eventTypeName() const override;
+  // Inherited from DeviceOrientationController.
+  DeviceOrientationDispatcher& dispatcherInstance() const override;
+  const AtomicString& eventTypeName() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceOrientationAbsoluteController_h
+#endif  // DeviceOrientationAbsoluteController_h

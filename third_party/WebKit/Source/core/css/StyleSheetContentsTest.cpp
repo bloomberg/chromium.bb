@@ -10,40 +10,50 @@
 
 namespace blink {
 
-TEST(StyleSheetContentsTest, InsertMediaRule)
-{
-    CSSParserContext context(HTMLStandardMode, nullptr);
+TEST(StyleSheetContentsTest, InsertMediaRule) {
+  CSSParserContext context(HTMLStandardMode, nullptr);
 
-    StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-    styleSheet->parseString("@namespace ns url(test);");
-    EXPECT_EQ(1U, styleSheet->ruleCount());
+  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  styleSheet->parseString("@namespace ns url(test);");
+  EXPECT_EQ(1U, styleSheet->ruleCount());
 
-    styleSheet->setMutable();
-    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet, "@media all { div { color: pink } }"), 0);
-    EXPECT_EQ(1U, styleSheet->ruleCount());
-    EXPECT_TRUE(styleSheet->hasMediaQueries());
+  styleSheet->setMutable();
+  styleSheet->wrapperInsertRule(
+      CSSParser::parseRule(context, styleSheet,
+                           "@media all { div { color: pink } }"),
+      0);
+  EXPECT_EQ(1U, styleSheet->ruleCount());
+  EXPECT_TRUE(styleSheet->hasMediaQueries());
 
-    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet, "@media all { div { color: green } }"), 1);
-    EXPECT_EQ(2U, styleSheet->ruleCount());
-    EXPECT_TRUE(styleSheet->hasMediaQueries());
+  styleSheet->wrapperInsertRule(
+      CSSParser::parseRule(context, styleSheet,
+                           "@media all { div { color: green } }"),
+      1);
+  EXPECT_EQ(2U, styleSheet->ruleCount());
+  EXPECT_TRUE(styleSheet->hasMediaQueries());
 }
 
-TEST(StyleSheetContentsTest, InsertFontFaceRule)
-{
-    CSSParserContext context(HTMLStandardMode, nullptr);
+TEST(StyleSheetContentsTest, InsertFontFaceRule) {
+  CSSParserContext context(HTMLStandardMode, nullptr);
 
-    StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-    styleSheet->parseString("@namespace ns url(test);");
-    EXPECT_EQ(1U, styleSheet->ruleCount());
+  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+  styleSheet->parseString("@namespace ns url(test);");
+  EXPECT_EQ(1U, styleSheet->ruleCount());
 
-    styleSheet->setMutable();
-    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet, "@font-face { font-family: a }"), 0);
-    EXPECT_EQ(1U, styleSheet->ruleCount());
-    EXPECT_TRUE(styleSheet->hasFontFaceRule());
+  styleSheet->setMutable();
+  styleSheet->wrapperInsertRule(
+      CSSParser::parseRule(context, styleSheet,
+                           "@font-face { font-family: a }"),
+      0);
+  EXPECT_EQ(1U, styleSheet->ruleCount());
+  EXPECT_TRUE(styleSheet->hasFontFaceRule());
 
-    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet, "@font-face { font-family: b }"), 1);
-    EXPECT_EQ(2U, styleSheet->ruleCount());
-    EXPECT_TRUE(styleSheet->hasFontFaceRule());
+  styleSheet->wrapperInsertRule(
+      CSSParser::parseRule(context, styleSheet,
+                           "@font-face { font-family: b }"),
+      1);
+  EXPECT_EQ(2U, styleSheet->ruleCount());
+  EXPECT_TRUE(styleSheet->hasFontFaceRule());
 }
 
-} // namespace blink
+}  // namespace blink

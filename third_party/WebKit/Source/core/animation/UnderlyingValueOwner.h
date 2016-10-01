@@ -16,44 +16,39 @@ namespace blink {
 // Ensures we perform copy on write if we are not the owner of an underlying InterpolationValue.
 // This functions similar to a DataRef except on std::unique_ptr'd objects.
 class UnderlyingValueOwner {
-    WTF_MAKE_NONCOPYABLE(UnderlyingValueOwner);
-    STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(UnderlyingValueOwner);
+  STACK_ALLOCATED();
 
-public:
-    UnderlyingValueOwner()
-        : m_type(nullptr)
-        , m_valueOwner(nullptr)
-        , m_value(nullptr)
-    { }
+ public:
+  UnderlyingValueOwner()
+      : m_type(nullptr), m_valueOwner(nullptr), m_value(nullptr) {}
 
-    operator bool() const
-    {
-        DCHECK_EQ(static_cast<bool>(m_type), static_cast<bool>(m_value));
-        return m_type;
-    }
+  operator bool() const {
+    DCHECK_EQ(static_cast<bool>(m_type), static_cast<bool>(m_value));
+    return m_type;
+  }
 
-    const InterpolationType& type() const
-    {
-        DCHECK(m_type);
-        return *m_type;
-    }
+  const InterpolationType& type() const {
+    DCHECK(m_type);
+    return *m_type;
+  }
 
-    const InterpolationValue& value() const;
+  const InterpolationValue& value() const;
 
-    void set(std::nullptr_t);
-    void set(const InterpolationType&, const InterpolationValue&);
-    void set(const InterpolationType&, InterpolationValue&&);
-    void set(std::unique_ptr<TypedInterpolationValue>);
-    void set(const TypedInterpolationValue*);
+  void set(std::nullptr_t);
+  void set(const InterpolationType&, const InterpolationValue&);
+  void set(const InterpolationType&, InterpolationValue&&);
+  void set(std::unique_ptr<TypedInterpolationValue>);
+  void set(const TypedInterpolationValue*);
 
-    InterpolationValue& mutableValue();
+  InterpolationValue& mutableValue();
 
-private:
-    const InterpolationType* m_type;
-    InterpolationValue m_valueOwner;
-    const InterpolationValue* m_value;
+ private:
+  const InterpolationType* m_type;
+  InterpolationValue m_valueOwner;
+  const InterpolationValue* m_value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UnderlyingValueOwner_h
+#endif  // UnderlyingValueOwner_h

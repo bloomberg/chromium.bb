@@ -37,37 +37,31 @@
 
 namespace blink {
 
-WebString WebOptionElement::value() const
-{
-    return constUnwrap<HTMLOptionElement>()->value();
+WebString WebOptionElement::value() const {
+  return constUnwrap<HTMLOptionElement>()->value();
 }
 
-WebString WebOptionElement::text() const
-{
-    return constUnwrap<HTMLOptionElement>()->displayLabel();
+WebString WebOptionElement::text() const {
+  return constUnwrap<HTMLOptionElement>()->displayLabel();
 }
 
-WebString WebOptionElement::label() const
-{
-    return constUnwrap<HTMLOptionElement>()->label();
+WebString WebOptionElement::label() const {
+  return constUnwrap<HTMLOptionElement>()->label();
 }
 
-WebOptionElement::WebOptionElement(HTMLOptionElement*elem)
-    : WebElement(elem)
-{
+WebOptionElement::WebOptionElement(HTMLOptionElement* elem)
+    : WebElement(elem) {}
+
+DEFINE_WEB_NODE_TYPE_CASTS(WebOptionElement,
+                           isHTMLOptionElement(constUnwrap<Node>()));
+
+WebOptionElement& WebOptionElement::operator=(HTMLOptionElement* elem) {
+  m_private = elem;
+  return *this;
 }
 
-DEFINE_WEB_NODE_TYPE_CASTS(WebOptionElement, isHTMLOptionElement(constUnwrap<Node>()));
-
-WebOptionElement& WebOptionElement::operator=(HTMLOptionElement*elem)
-{
-    m_private = elem;
-    return *this;
+WebOptionElement::operator HTMLOptionElement*() const {
+  return toHTMLOptionElement(m_private.get());
 }
 
-WebOptionElement::operator HTMLOptionElement*() const
-{
-    return toHTMLOptionElement(m_private.get());
-}
-
-} // namespace blink
+}  // namespace blink

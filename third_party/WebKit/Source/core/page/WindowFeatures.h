@@ -39,61 +39,66 @@ namespace blink {
 class IntRect;
 
 struct CORE_EXPORT WindowFeatures {
-    DISALLOW_NEW();
-    WindowFeatures()
-        : x(0)
-        , xSet(false)
-        , y(0)
-        , ySet(false)
-        , width(0)
-        , widthSet(false)
-        , height(0)
-        , heightSet(false)
-        , menuBarVisible(true)
-        , statusBarVisible(true)
-        , toolBarVisible(true)
-        , locationBarVisible(true)
-        , scrollbarsVisible(true)
-        , resizable(true)
-        , fullscreen(false)
-        , dialog(false)
-        , noopener(false)
-    {
-    }
-    explicit WindowFeatures(const String& windowFeaturesString);
-    WindowFeatures(const String& dialogFeaturesString, const IntRect& screenAvailableRect);
+  DISALLOW_NEW();
+  WindowFeatures()
+      : x(0),
+        xSet(false),
+        y(0),
+        ySet(false),
+        width(0),
+        widthSet(false),
+        height(0),
+        heightSet(false),
+        menuBarVisible(true),
+        statusBarVisible(true),
+        toolBarVisible(true),
+        locationBarVisible(true),
+        scrollbarsVisible(true),
+        resizable(true),
+        fullscreen(false),
+        dialog(false),
+        noopener(false) {}
+  explicit WindowFeatures(const String& windowFeaturesString);
+  WindowFeatures(const String& dialogFeaturesString,
+                 const IntRect& screenAvailableRect);
 
-    int x;
-    bool xSet;
-    int y;
-    bool ySet;
-    int width;
-    bool widthSet;
-    int height;
-    bool heightSet;
+  int x;
+  bool xSet;
+  int y;
+  bool ySet;
+  int width;
+  bool widthSet;
+  int height;
+  bool heightSet;
 
-    bool menuBarVisible;
-    bool statusBarVisible;
-    bool toolBarVisible;
-    bool locationBarVisible;
-    bool scrollbarsVisible;
-    bool resizable;
+  bool menuBarVisible;
+  bool statusBarVisible;
+  bool toolBarVisible;
+  bool locationBarVisible;
+  bool scrollbarsVisible;
+  bool resizable;
 
-    bool fullscreen;
-    bool dialog;
+  bool fullscreen;
+  bool dialog;
 
-    bool noopener;
+  bool noopener;
 
-    Vector<String> additionalFeatures;
+  Vector<String> additionalFeatures;
 
-private:
-    using DialogFeaturesMap = HashMap<String, String>;
-    static void parseDialogFeatures(const String&, HashMap<String, String>&);
-    static bool boolFeature(const DialogFeaturesMap&, const char* key, bool defaultValue = false);
-    static int intFeature(const DialogFeaturesMap&, const char* key, int min, int max, int defaultValue);
-    void setWindowFeature(const String& keyString, const String& valueString);
+ private:
+  using DialogFeaturesMap = HashMap<String, String>;
+  static void parseDialogFeatures(const String&, HashMap<String, String>&);
+  static bool boolFeature(const DialogFeaturesMap&,
+                          const char* key,
+                          bool defaultValue = false);
+  static int intFeature(const DialogFeaturesMap&,
+                        const char* key,
+                        int min,
+                        int max,
+                        int defaultValue);
+  void setWindowFeature(const String& keyString, const String& valueString);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WindowFeatures_h
+#endif  // WindowFeatures_h

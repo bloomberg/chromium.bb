@@ -11,13 +11,16 @@
 
 namespace blink {
 
-template<typename T>
-class HeapTerminatedArrayBuilder final : public TerminatedArrayBuilder<T, HeapTerminatedArray> {
-    STACK_ALLOCATED();
-public:
-    explicit HeapTerminatedArrayBuilder(HeapTerminatedArray<T>* array) : TerminatedArrayBuilder<T, HeapTerminatedArray>(array) { }
+template <typename T>
+class HeapTerminatedArrayBuilder final
+    : public TerminatedArrayBuilder<T, HeapTerminatedArray> {
+  STACK_ALLOCATED();
+
+ public:
+  explicit HeapTerminatedArrayBuilder(HeapTerminatedArray<T>* array)
+      : TerminatedArrayBuilder<T, HeapTerminatedArray>(array) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HeapTerminatedArrayBuilder_h
+#endif  // HeapTerminatedArrayBuilder_h

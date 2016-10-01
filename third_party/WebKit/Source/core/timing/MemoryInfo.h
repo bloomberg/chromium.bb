@@ -39,41 +39,35 @@
 namespace blink {
 
 struct HeapInfo {
-    DISALLOW_NEW();
-    HeapInfo()
-        : usedJSHeapSize(0)
-        , totalJSHeapSize(0)
-        , jsHeapSizeLimit(0)
-    {
-    }
+  DISALLOW_NEW();
+  HeapInfo() : usedJSHeapSize(0), totalJSHeapSize(0), jsHeapSizeLimit(0) {}
 
-    size_t usedJSHeapSize;
-    size_t totalJSHeapSize;
-    size_t jsHeapSizeLimit;
+  size_t usedJSHeapSize;
+  size_t totalJSHeapSize;
+  size_t jsHeapSizeLimit;
 };
 
-class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MemoryInfo* create()
-    {
-        return new MemoryInfo();
-    }
+class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>,
+                                     public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    size_t totalJSHeapSize() const { return m_info.totalJSHeapSize; }
-    size_t usedJSHeapSize() const { return m_info.usedJSHeapSize; }
-    size_t jsHeapSizeLimit() const { return m_info.jsHeapSizeLimit; }
+ public:
+  static MemoryInfo* create() { return new MemoryInfo(); }
 
-    DEFINE_INLINE_TRACE() { }
+  size_t totalJSHeapSize() const { return m_info.totalJSHeapSize; }
+  size_t usedJSHeapSize() const { return m_info.usedJSHeapSize; }
+  size_t jsHeapSizeLimit() const { return m_info.jsHeapSizeLimit; }
 
-private:
-    MemoryInfo();
+  DEFINE_INLINE_TRACE() {}
 
-    HeapInfo m_info;
+ private:
+  MemoryInfo();
+
+  HeapInfo m_info;
 };
 
 CORE_EXPORT size_t quantizeMemorySize(size_t);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MemoryInfo_h
+#endif  // MemoryInfo_h

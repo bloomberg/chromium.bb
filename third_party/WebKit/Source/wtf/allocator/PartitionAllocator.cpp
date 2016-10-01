@@ -35,31 +35,28 @@
 
 namespace WTF {
 
-void* PartitionAllocator::allocateBacking(size_t size, const char* typeName)
-{
-    return Partitions::bufferMalloc(size, typeName);
+void* PartitionAllocator::allocateBacking(size_t size, const char* typeName) {
+  return Partitions::bufferMalloc(size, typeName);
 }
 
-void PartitionAllocator::freeVectorBacking(void* address)
-{
-    Partitions::bufferFree(address);
+void PartitionAllocator::freeVectorBacking(void* address) {
+  Partitions::bufferFree(address);
 }
 
-void PartitionAllocator::freeHashTableBacking(void* address)
-{
-    Partitions::bufferFree(address);
+void PartitionAllocator::freeHashTableBacking(void* address) {
+  Partitions::bufferFree(address);
 }
 
 template <>
-char* PartitionAllocator::allocateVectorBacking<char>(size_t size)
-{
-    return reinterpret_cast<char*>(allocateBacking(size, "PartitionAllocator::allocateVectorBacking<char>"));
+char* PartitionAllocator::allocateVectorBacking<char>(size_t size) {
+  return reinterpret_cast<char*>(
+      allocateBacking(size, "PartitionAllocator::allocateVectorBacking<char>"));
 }
 
 template <>
-char* PartitionAllocator::allocateExpandedVectorBacking<char>(size_t size)
-{
-    return reinterpret_cast<char*>(allocateBacking(size, "PartitionAllocator::allocateExpandedVectorBacking<char>"));
+char* PartitionAllocator::allocateExpandedVectorBacking<char>(size_t size) {
+  return reinterpret_cast<char*>(allocateBacking(
+      size, "PartitionAllocator::allocateExpandedVectorBacking<char>"));
 }
 
-} // namespace WTF
+}  // namespace WTF

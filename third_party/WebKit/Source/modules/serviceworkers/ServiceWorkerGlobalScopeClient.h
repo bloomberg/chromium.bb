@@ -54,50 +54,86 @@ class WebURL;
 class WorkerClients;
 
 // See WebServiceWorkerContextClient for documentation for the methods in this class.
-class MODULES_EXPORT ServiceWorkerGlobalScopeClient : public Supplement<WorkerClients> {
-    WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
-    DISALLOW_NEW();
-public:
-    virtual ~ServiceWorkerGlobalScopeClient() { }
+class MODULES_EXPORT ServiceWorkerGlobalScopeClient
+    : public Supplement<WorkerClients> {
+  WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
+  DISALLOW_NEW();
 
-    // Called from ServiceWorkerClients.
-    virtual void getClient(const WebString&, WebServiceWorkerClientCallbacks*) = 0;
-    virtual void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks*) = 0;
-    virtual void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
-    virtual void setCachedMetadata(const WebURL&, const char*, size_t) = 0;
-    virtual void clearCachedMetadata(const WebURL&) = 0;
+ public:
+  virtual ~ServiceWorkerGlobalScopeClient() {}
 
-    virtual WebURL scope() const = 0;
+  // Called from ServiceWorkerClients.
+  virtual void getClient(const WebString&,
+                         WebServiceWorkerClientCallbacks*) = 0;
+  virtual void getClients(const WebServiceWorkerClientQueryOptions&,
+                          WebServiceWorkerClientsCallbacks*) = 0;
+  virtual void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
+  virtual void setCachedMetadata(const WebURL&, const char*, size_t) = 0;
+  virtual void clearCachedMetadata(const WebURL&) = 0;
 
-    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    // Calling respondToFetchEvent without response means no response was
-    // provided by the service worker in the fetch events, so fallback to native.
-    virtual void respondToFetchEvent(int responseID, double eventDispatchTime) = 0;
-    virtual void respondToFetchEvent(int responseID, const WebServiceWorkerResponse&, double eventDispatchTime) = 0;
-    virtual void didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
-    virtual void postMessageToClient(const WebString& clientUUID, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) = 0;
-    virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) = 0;
-    virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;
-    virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
-    virtual void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) = 0;
-    virtual void navigate(const WebString& clientUUID, const WebURL&, WebServiceWorkerClientCallbacks*) = 0;
-    virtual void registerForeignFetchScopes(const WebVector<WebURL>& subScopes, const WebVector<WebSecurityOrigin>&) = 0;
+  virtual WebURL scope() const = 0;
 
-    static const char* supplementName();
-    static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);
+  virtual void didHandleActivateEvent(int eventID,
+                                      WebServiceWorkerEventResult,
+                                      double eventDispatchTime) = 0;
+  virtual void didHandleExtendableMessageEvent(int eventID,
+                                               WebServiceWorkerEventResult,
+                                               double eventDispatchTime) = 0;
+  // Calling respondToFetchEvent without response means no response was
+  // provided by the service worker in the fetch events, so fallback to native.
+  virtual void respondToFetchEvent(int responseID,
+                                   double eventDispatchTime) = 0;
+  virtual void respondToFetchEvent(int responseID,
+                                   const WebServiceWorkerResponse&,
+                                   double eventDispatchTime) = 0;
+  virtual void didHandleFetchEvent(int eventFinishID,
+                                   WebServiceWorkerEventResult,
+                                   double eventDispatchTime) = 0;
+  virtual void didHandleInstallEvent(int installEventID,
+                                     WebServiceWorkerEventResult,
+                                     double eventDispatchTime) = 0;
+  virtual void didHandleNotificationClickEvent(int eventID,
+                                               WebServiceWorkerEventResult,
+                                               double eventDispatchTime) = 0;
+  virtual void didHandleNotificationCloseEvent(int eventID,
+                                               WebServiceWorkerEventResult,
+                                               double eventDispatchTime) = 0;
+  virtual void didHandlePushEvent(int pushEventID,
+                                  WebServiceWorkerEventResult,
+                                  double eventDispatchTime) = 0;
+  virtual void didHandleSyncEvent(int syncEventID,
+                                  WebServiceWorkerEventResult,
+                                  double eventDispatchTime) = 0;
+  virtual void postMessageToClient(
+      const WebString& clientUUID,
+      const WebString& message,
+      std::unique_ptr<WebMessagePortChannelArray>) = 0;
+  virtual void postMessageToCrossOriginClient(
+      const WebCrossOriginServiceWorkerClient&,
+      const WebString& message,
+      std::unique_ptr<WebMessagePortChannelArray>) = 0;
+  virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;
+  virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
+  virtual void focus(const WebString& clientUUID,
+                     WebServiceWorkerClientCallbacks*) = 0;
+  virtual void navigate(const WebString& clientUUID,
+                        const WebURL&,
+                        WebServiceWorkerClientCallbacks*) = 0;
+  virtual void registerForeignFetchScopes(
+      const WebVector<WebURL>& subScopes,
+      const WebVector<WebSecurityOrigin>&) = 0;
 
-protected:
-    ServiceWorkerGlobalScopeClient() { }
+  static const char* supplementName();
+  static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);
+
+ protected:
+  ServiceWorkerGlobalScopeClient() {}
 };
 
-MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, ServiceWorkerGlobalScopeClient*);
+MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(
+    WorkerClients*,
+    ServiceWorkerGlobalScopeClient*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerGlobalScopeClient_h
+#endif  // ServiceWorkerGlobalScopeClient_h

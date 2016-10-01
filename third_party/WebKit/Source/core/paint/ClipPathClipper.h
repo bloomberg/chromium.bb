@@ -17,33 +17,29 @@ class GraphicsContext;
 class LayoutSVGResourceClipper;
 class LayoutObject;
 
-enum class ClipperState {
-    NotApplied,
-    AppliedPath,
-    AppliedMask
-};
+enum class ClipperState { NotApplied, AppliedPath, AppliedMask };
 
 class ClipPathClipper {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    ClipPathClipper(
-        GraphicsContext&,
-        ClipPathOperation&,
-        const LayoutObject&,
-        const FloatRect& referenceBox,
-        const FloatPoint& origin);
-    ~ClipPathClipper();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    bool usingMask() const { return m_clipperState == ClipperState::AppliedMask; }
+ public:
+  ClipPathClipper(GraphicsContext&,
+                  ClipPathOperation&,
+                  const LayoutObject&,
+                  const FloatRect& referenceBox,
+                  const FloatPoint& origin);
+  ~ClipPathClipper();
 
-private:
-    LayoutSVGResourceClipper* m_resourceClipper;
-    Optional<ClipPathRecorder> m_clipPathRecorder;
-    ClipperState m_clipperState;
-    const LayoutObject& m_layoutObject;
-    GraphicsContext& m_context;
+  bool usingMask() const { return m_clipperState == ClipperState::AppliedMask; }
+
+ private:
+  LayoutSVGResourceClipper* m_resourceClipper;
+  Optional<ClipPathRecorder> m_clipPathRecorder;
+  ClipperState m_clipperState;
+  const LayoutObject& m_layoutObject;
+  GraphicsContext& m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClipPathClipper_h
+#endif  // ClipPathClipper_h

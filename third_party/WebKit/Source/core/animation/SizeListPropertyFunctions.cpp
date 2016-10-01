@@ -8,60 +8,61 @@
 
 namespace blink {
 
-static const FillLayer* getFillLayer(CSSPropertyID property, const ComputedStyle& style)
-{
-    switch (property) {
+static const FillLayer* getFillLayer(CSSPropertyID property,
+                                     const ComputedStyle& style) {
+  switch (property) {
     case CSSPropertyBackgroundSize:
-        return &style.backgroundLayers();
+      return &style.backgroundLayers();
     case CSSPropertyWebkitMaskSize:
-        return &style.maskLayers();
+      return &style.maskLayers();
     default:
-        NOTREACHED();
-        return nullptr;
-    }
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
-static FillLayer* accessFillLayer(CSSPropertyID property, ComputedStyle& style)
-{
-    switch (property) {
+static FillLayer* accessFillLayer(CSSPropertyID property,
+                                  ComputedStyle& style) {
+  switch (property) {
     case CSSPropertyBackgroundSize:
-        return &style.accessBackgroundLayers();
+      return &style.accessBackgroundLayers();
     case CSSPropertyWebkitMaskSize:
-        return &style.accessMaskLayers();
+      return &style.accessMaskLayers();
     default:
-        NOTREACHED();
-        return nullptr;
-    }
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
-SizeList SizeListPropertyFunctions::getInitialSizeList(CSSPropertyID property)
-{
-    return getSizeList(property, ComputedStyle::initialStyle());
+SizeList SizeListPropertyFunctions::getInitialSizeList(CSSPropertyID property) {
+  return getSizeList(property, ComputedStyle::initialStyle());
 }
 
-SizeList SizeListPropertyFunctions::getSizeList(CSSPropertyID property, const ComputedStyle& style)
-{
-    SizeList result;
-    for (const FillLayer* fillLayer = getFillLayer(property, style); fillLayer && fillLayer->isSizeSet(); fillLayer = fillLayer->next())
-        result.append(fillLayer->size());
-    return result;
+SizeList SizeListPropertyFunctions::getSizeList(CSSPropertyID property,
+                                                const ComputedStyle& style) {
+  SizeList result;
+  for (const FillLayer* fillLayer = getFillLayer(property, style);
+       fillLayer && fillLayer->isSizeSet(); fillLayer = fillLayer->next())
+    result.append(fillLayer->size());
+  return result;
 }
 
-void SizeListPropertyFunctions::setSizeList(CSSPropertyID property, ComputedStyle& style, const SizeList& sizeList)
-{
-    FillLayer* fillLayer = accessFillLayer(property, style);
-    FillLayer* prev = nullptr;
-    for (const FillSize& size : sizeList) {
-        if (!fillLayer)
-            fillLayer = prev->ensureNext();
-        fillLayer->setSize(size);
-        prev = fillLayer;
-        fillLayer = fillLayer->next();
-    }
-    while (fillLayer) {
-        fillLayer->clearSize();
-        fillLayer = fillLayer->next();
-    }
+void SizeListPropertyFunctions::setSizeList(CSSPropertyID property,
+                                            ComputedStyle& style,
+                                            const SizeList& sizeList) {
+  FillLayer* fillLayer = accessFillLayer(property, style);
+  FillLayer* prev = nullptr;
+  for (const FillSize& size : sizeList) {
+    if (!fillLayer)
+      fillLayer = prev->ensureNext();
+    fillLayer->setSize(size);
+    prev = fillLayer;
+    fillLayer = fillLayer->next();
+  }
+  while (fillLayer) {
+    fillLayer->clearSize();
+    fillLayer = fillLayer->next();
+  }
 }
 
-} // namespace blink
+}  // namespace blink

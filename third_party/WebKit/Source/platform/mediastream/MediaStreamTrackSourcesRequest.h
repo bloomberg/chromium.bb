@@ -35,19 +35,20 @@ namespace blink {
 class SecurityOrigin;
 class WebSourceInfo;
 
-class MediaStreamTrackSourcesRequest : public GarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
-public:
-    virtual ~MediaStreamTrackSourcesRequest() { }
+class MediaStreamTrackSourcesRequest
+    : public GarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
+ public:
+  virtual ~MediaStreamTrackSourcesRequest() {}
 
-    virtual PassRefPtr<SecurityOrigin> origin() = 0;
-    virtual void requestSucceeded(const WebVector<WebSourceInfo>&) = 0;
+  virtual PassRefPtr<SecurityOrigin> origin() = 0;
+  virtual void requestSucceeded(const WebVector<WebSourceInfo>&) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    MediaStreamTrackSourcesRequest() { }
+ protected:
+  MediaStreamTrackSourcesRequest() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamTrackSourcesRequest_h
+#endif  // MediaStreamTrackSourcesRequest_h

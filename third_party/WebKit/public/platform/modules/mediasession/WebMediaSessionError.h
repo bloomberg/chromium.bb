@@ -7,11 +7,8 @@
 
 namespace blink {
 
-enum class WebMediaSessionError {
-    Activate = 0,
-    Last = Activate
-};
+enum class WebMediaSessionError { Activate = 0, Last = Activate };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaSessionError_h
+#endif  // WebMediaSessionError_h

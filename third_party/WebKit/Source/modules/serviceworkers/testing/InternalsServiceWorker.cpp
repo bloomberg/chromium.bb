@@ -8,9 +8,9 @@
 
 namespace blink {
 
-void InternalsServiceWorker::terminateServiceWorker(Internals& internals, ServiceWorker* worker)
-{
-    worker->internalsTerminate();
+void InternalsServiceWorker::terminateServiceWorker(Internals& internals,
+                                                    ServiceWorker* worker) {
+  worker->internalsTerminate();
 }
 
-} // namespace blink
+}  // namespace blink

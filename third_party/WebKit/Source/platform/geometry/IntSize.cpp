@@ -9,14 +9,12 @@
 
 namespace blink {
 
-IntSize::operator gfx::Size() const
-{
-    return gfx::Size(width(), height());
+IntSize::operator gfx::Size() const {
+  return gfx::Size(width(), height());
 }
 
-String IntSize::toString() const
-{
-    return String::format("%dx%d", width(), height());
+String IntSize::toString() const {
+  return String::format("%dx%d", width(), height());
 }
 
-} // namespace blink
+}  // namespace blink

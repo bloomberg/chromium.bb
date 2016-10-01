@@ -33,28 +33,27 @@
 
 namespace blink {
 
-class CORE_EXPORT ContextLifecycleObserver : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver> {
-public:
-    ExecutionContext* getExecutionContext() const { return lifecycleContext(); }
+class CORE_EXPORT ContextLifecycleObserver
+    : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver> {
+ public:
+  ExecutionContext* getExecutionContext() const { return lifecycleContext(); }
 
-    enum Type {
-        GenericType,
-        ActiveDOMObjectType,
-    };
+  enum Type {
+    GenericType,
+    ActiveDOMObjectType,
+  };
 
-    Type observerType() const { return m_observerType; }
+  Type observerType() const { return m_observerType; }
 
-protected:
-    explicit ContextLifecycleObserver(ExecutionContext* executionContext, Type type = GenericType)
-        : LifecycleObserver(executionContext)
-        , m_observerType(type)
-    {
-    }
+ protected:
+  explicit ContextLifecycleObserver(ExecutionContext* executionContext,
+                                    Type type = GenericType)
+      : LifecycleObserver(executionContext), m_observerType(type) {}
 
-private:
-    Type m_observerType;
+ private:
+  Type m_observerType;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ContextLifecycleObserver_h
+#endif  // ContextLifecycleObserver_h

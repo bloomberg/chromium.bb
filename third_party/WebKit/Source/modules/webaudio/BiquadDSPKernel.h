@@ -36,38 +36,47 @@ class BiquadProcessor;
 // BiquadDSPKernel is an AudioDSPKernel and is responsible for filtering one channel of a BiquadProcessor using a Biquad object.
 
 class BiquadDSPKernel final : public AudioDSPKernel {
-public:
-    explicit BiquadDSPKernel(BiquadProcessor* processor)
-        : AudioDSPKernel(processor)
-    {
-    }
+ public:
+  explicit BiquadDSPKernel(BiquadProcessor* processor)
+      : AudioDSPKernel(processor) {}
 
-    // AudioDSPKernel
-    void process(const float* source, float* dest, size_t framesToProcess) override;
-    void reset() override { m_biquad.reset(); }
+  // AudioDSPKernel
+  void process(const float* source,
+               float* dest,
+               size_t framesToProcess) override;
+  void reset() override { m_biquad.reset(); }
 
-    // Get the magnitude and phase response of the filter at the given
-    // set of frequencies (in Hz). The phase response is in radians.
-    void getFrequencyResponse(int nFrequencies, const float* frequencyHz, float* magResponse, float* phaseResponse);
+  // Get the magnitude and phase response of the filter at the given
+  // set of frequencies (in Hz). The phase response is in radians.
+  void getFrequencyResponse(int nFrequencies,
+                            const float* frequencyHz,
+                            float* magResponse,
+                            float* phaseResponse);
 
-    double tailTime() const override;
-    double latencyTime() const override;
+  double tailTime() const override;
+  double latencyTime() const override;
 
-protected:
-    Biquad m_biquad;
-    BiquadProcessor* getBiquadProcessor() { return static_cast<BiquadProcessor*>(processor()); }
+ protected:
+  Biquad m_biquad;
+  BiquadProcessor* getBiquadProcessor() {
+    return static_cast<BiquadProcessor*>(processor());
+  }
 
-    // To prevent audio glitches when parameters are changed,
-    // dezippering is used to slowly change the parameters.
-    void updateCoefficientsIfNecessary(int);
-    // Update the biquad cofficients with the given parameters
-    void updateCoefficients(int, const float* frequency, const float* Q, const float* gain, const float* detune);
+  // To prevent audio glitches when parameters are changed,
+  // dezippering is used to slowly change the parameters.
+  void updateCoefficientsIfNecessary(int);
+  // Update the biquad cofficients with the given parameters
+  void updateCoefficients(int,
+                          const float* frequency,
+                          const float* Q,
+                          const float* gain,
+                          const float* detune);
 
-private:
-    // Synchronize process() with getting and setting the filter coefficients.
-    mutable Mutex m_processLock;
+ private:
+  // Synchronize process() with getting and setting the filter coefficients.
+  mutable Mutex m_processLock;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BiquadDSPKernel_h
+#endif  // BiquadDSPKernel_h

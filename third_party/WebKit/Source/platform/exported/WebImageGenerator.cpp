@@ -34,9 +34,8 @@
 
 namespace blink {
 
-SkImageGenerator* WebImageGenerator::create(SkData* data)
-{
-    return DecodingImageGenerator::create(data);
+SkImageGenerator* WebImageGenerator::create(SkData* data) {
+  return DecodingImageGenerator::create(data);
 }
 
-} // namespace blink
+}  // namespace blink

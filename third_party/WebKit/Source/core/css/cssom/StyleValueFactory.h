@@ -14,12 +14,13 @@ namespace blink {
 class CSSValue;
 
 class StyleValueFactory {
-    STATIC_ONLY(StyleValueFactory);
+  STATIC_ONLY(StyleValueFactory);
 
-public:
-    static CSSStyleValueVector cssValueToStyleValueVector(CSSPropertyID, const CSSValue&);
+ public:
+  static CSSStyleValueVector cssValueToStyleValueVector(CSSPropertyID,
+                                                        const CSSValue&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

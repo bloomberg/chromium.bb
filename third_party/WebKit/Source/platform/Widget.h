@@ -48,83 +48,91 @@ class HostWindow;
 // scrollbars are always leaves of the tree. Only FrameView can have children
 // (and therefore the Widget class has no concept of children).
 class PLATFORM_EXPORT Widget : public GarbageCollectedFinalized<Widget> {
-public:
-    Widget();
-    virtual ~Widget();
+ public:
+  Widget();
+  virtual ~Widget();
 
-    int x() const { return frameRect().x(); }
-    int y() const { return frameRect().y(); }
-    int width() const { return frameRect().width(); }
-    int height() const { return frameRect().height(); }
-    IntSize size() const { return frameRect().size(); }
-    IntPoint location() const { return frameRect().location(); }
+  int x() const { return frameRect().x(); }
+  int y() const { return frameRect().y(); }
+  int width() const { return frameRect().width(); }
+  int height() const { return frameRect().height(); }
+  IntSize size() const { return frameRect().size(); }
+  IntPoint location() const { return frameRect().location(); }
 
-    virtual void setFrameRect(const IntRect& frameRect) { m_frameRect = frameRect; }
-    const IntRect& frameRect() const { return m_frameRect; }
-    IntRect boundsRect() const { return IntRect(0, 0, width(),  height()); }
+  virtual void setFrameRect(const IntRect& frameRect) {
+    m_frameRect = frameRect;
+  }
+  const IntRect& frameRect() const { return m_frameRect; }
+  IntRect boundsRect() const { return IntRect(0, 0, width(), height()); }
 
-    void resize(int w, int h) { setFrameRect(IntRect(x(), y(), w, h)); }
-    void resize(const IntSize& s) { setFrameRect(IntRect(location(), s)); }
+  void resize(int w, int h) { setFrameRect(IntRect(x(), y(), w, h)); }
+  void resize(const IntSize& s) { setFrameRect(IntRect(location(), s)); }
 
-    virtual void paint(GraphicsContext&, const CullRect&) const { }
-    void invalidate() { invalidateRect(boundsRect()); }
-    virtual void invalidateRect(const IntRect&) = 0;
+  virtual void paint(GraphicsContext&, const CullRect&) const {}
+  void invalidate() { invalidateRect(boundsRect()); }
+  virtual void invalidateRect(const IntRect&) = 0;
 
-    virtual void setFocus(bool, WebFocusType) { }
+  virtual void setFocus(bool, WebFocusType) {}
 
-    virtual void show() { }
-    virtual void hide() { }
-    bool isSelfVisible() const { return m_selfVisible; } // Whether or not we have been explicitly marked as visible or not.
-    bool isParentVisible() const { return m_parentVisible; } // Whether or not our parent is visible.
-    bool isVisible() const { return m_selfVisible && m_parentVisible; } // Whether or not we are actually visible.
-    virtual void setParentVisible(bool visible) { m_parentVisible = visible; }
-    void setSelfVisible(bool v) { m_selfVisible = v; }
+  virtual void show() {}
+  virtual void hide() {}
+  bool isSelfVisible() const {
+    return m_selfVisible;
+  }  // Whether or not we have been explicitly marked as visible or not.
+  bool isParentVisible() const {
+    return m_parentVisible;
+  }  // Whether or not our parent is visible.
+  bool isVisible() const {
+    return m_selfVisible && m_parentVisible;
+  }  // Whether or not we are actually visible.
+  virtual void setParentVisible(bool visible) { m_parentVisible = visible; }
+  void setSelfVisible(bool v) { m_selfVisible = v; }
 
-    virtual bool isFrameView() const { return false; }
-    virtual bool isRemoteFrameView() const { return false; }
-    virtual bool isPluginView() const { return false; }
-    virtual bool isPluginContainer() const { return false; }
-    virtual bool isScrollbar() const { return false; }
+  virtual bool isFrameView() const { return false; }
+  virtual bool isRemoteFrameView() const { return false; }
+  virtual bool isPluginView() const { return false; }
+  virtual bool isPluginContainer() const { return false; }
+  virtual bool isScrollbar() const { return false; }
 
-    virtual void setParent(Widget*);
-    Widget* parent() const { return m_parent; }
-    Widget* root() const;
+  virtual void setParent(Widget*);
+  Widget* parent() const { return m_parent; }
+  Widget* root() const;
 
-    virtual void handleEvent(Event*) { }
+  virtual void handleEvent(Event*) {}
 
-    IntRect convertToRootFrame(const IntRect&) const;
-    IntRect convertFromRootFrame(const IntRect&) const;
+  IntRect convertToRootFrame(const IntRect&) const;
+  IntRect convertFromRootFrame(const IntRect&) const;
 
-    IntPoint convertToRootFrame(const IntPoint&) const;
-    IntPoint convertFromRootFrame(const IntPoint&) const;
-    FloatPoint convertFromRootFrame(const FloatPoint&) const;
+  IntPoint convertToRootFrame(const IntPoint&) const;
+  IntPoint convertFromRootFrame(const IntPoint&) const;
+  FloatPoint convertFromRootFrame(const FloatPoint&) const;
 
-    virtual void frameRectsChanged() { }
+  virtual void frameRectsChanged() {}
 
-    virtual void widgetGeometryMayHaveChanged() { }
+  virtual void widgetGeometryMayHaveChanged() {}
 
-    virtual IntRect convertToContainingWidget(const IntRect&) const;
-    virtual IntRect convertFromContainingWidget(const IntRect&) const;
-    virtual IntPoint convertToContainingWidget(const IntPoint&) const;
-    virtual IntPoint convertFromContainingWidget(const IntPoint&) const;
+  virtual IntRect convertToContainingWidget(const IntRect&) const;
+  virtual IntRect convertFromContainingWidget(const IntRect&) const;
+  virtual IntPoint convertToContainingWidget(const IntPoint&) const;
+  virtual IntPoint convertFromContainingWidget(const IntPoint&) const;
 
-    // Virtual methods to convert points to/from child widgets
-    virtual IntPoint convertChildToSelf(const Widget*, const IntPoint&) const;
-    virtual IntPoint convertSelfToChild(const Widget*, const IntPoint&) const;
+  // Virtual methods to convert points to/from child widgets
+  virtual IntPoint convertChildToSelf(const Widget*, const IntPoint&) const;
+  virtual IntPoint convertSelfToChild(const Widget*, const IntPoint&) const;
 
-    // Notifies this widget that it will no longer be receiving events.
-    virtual void eventListenersRemoved() { }
+  // Notifies this widget that it will no longer be receiving events.
+  virtual void eventListenersRemoved() {}
 
-    DECLARE_VIRTUAL_TRACE();
-    virtual void dispose() { }
+  DECLARE_VIRTUAL_TRACE();
+  virtual void dispose() {}
 
-private:
-    Member<Widget> m_parent;
-    IntRect m_frameRect;
-    bool m_selfVisible;
-    bool m_parentVisible;
+ private:
+  Member<Widget> m_parent;
+  IntRect m_frameRect;
+  bool m_selfVisible;
+  bool m_parentVisible;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Widget_h
+#endif  // Widget_h

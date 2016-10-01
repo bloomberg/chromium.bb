@@ -40,192 +40,218 @@
 namespace blink {
 namespace XPath {
 
-static inline bool isWhitespace(UChar c)
-{
-    return c == ' ' || c == '\n' || c == '\r' || c == '\t';
+static inline bool isWhitespace(UChar c) {
+  return c == ' ' || c == '\n' || c == '\r' || c == '\t';
 }
 
-
-#define DEFINE_FUNCTION_CREATOR(Class) static Function* create##Class() { return new Class; }
+#define DEFINE_FUNCTION_CREATOR(Class) \
+  static Function* create##Class() { return new Class; }
 
 class Interval {
-public:
-    static const int Inf = -1;
+ public:
+  static const int Inf = -1;
 
-    Interval();
-    Interval(int value);
-    Interval(int min, int max);
+  Interval();
+  Interval(int value);
+  Interval(int min, int max);
 
-    bool contains(int value) const;
+  bool contains(int value) const;
 
-private:
-    int m_min;
-    int m_max;
+ private:
+  int m_min;
+  int m_max;
 };
 
 struct FunctionRec {
-    typedef Function *(*FactoryFn)();
-    FactoryFn factoryFn;
-    Interval args;
+  typedef Function* (*FactoryFn)();
+  FactoryFn factoryFn;
+  Interval args;
 };
 
 static HashMap<String, FunctionRec>* functionMap;
 
 class FunLast final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
-public:
-    FunLast() { setIsContextSizeSensitive(true); }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
+
+ public:
+  FunLast() { setIsContextSizeSensitive(true); }
 };
 
 class FunPosition final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
-public:
-    FunPosition() { setIsContextPositionSensitive(true); }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
+
+ public:
+  FunPosition() { setIsContextPositionSensitive(true); }
 };
 
 class FunCount final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
 };
 
 class FunId final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NodeSetValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NodeSetValue; }
 };
 
 class FunLocalName final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
-public:
-    FunLocalName() { setIsContextNodeSensitive(true); } // local-name() with no arguments uses context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
+
+ public:
+  FunLocalName() {
+    setIsContextNodeSensitive(true);
+  }  // local-name() with no arguments uses context node.
 };
 
 class FunNamespaceURI final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
-public:
-    FunNamespaceURI() { setIsContextNodeSensitive(true); } // namespace-uri() with no arguments uses context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
+
+ public:
+  FunNamespaceURI() {
+    setIsContextNodeSensitive(true);
+  }  // namespace-uri() with no arguments uses context node.
 };
 
 class FunName final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
-public:
-    FunName() { setIsContextNodeSensitive(true); } // name() with no arguments uses context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
+
+ public:
+  FunName() {
+    setIsContextNodeSensitive(true);
+  }  // name() with no arguments uses context node.
 };
 
 class FunString final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
-public:
-    FunString() { setIsContextNodeSensitive(true); } // string() with no arguments uses context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
+
+ public:
+  FunString() {
+    setIsContextNodeSensitive(true);
+  }  // string() with no arguments uses context node.
 };
 
 class FunConcat final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
 };
 
 class FunStartsWith final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::BooleanValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::BooleanValue; }
 };
 
 class FunContains final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::BooleanValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::BooleanValue; }
 };
 
 class FunSubstringBefore final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
 };
 
 class FunSubstringAfter final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
 };
 
 class FunSubstring final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
 };
 
 class FunStringLength final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
-public:
-    FunStringLength() { setIsContextNodeSensitive(true); } // string-length() with no arguments uses context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
+
+ public:
+  FunStringLength() {
+    setIsContextNodeSensitive(true);
+  }  // string-length() with no arguments uses context node.
 };
 
 class FunNormalizeSpace final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
-public:
-    FunNormalizeSpace() { setIsContextNodeSensitive(true); } // normalize-space() with no arguments uses context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
+
+ public:
+  FunNormalizeSpace() {
+    setIsContextNodeSensitive(true);
+  }  // normalize-space() with no arguments uses context node.
 };
 
 class FunTranslate final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::StringValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::StringValue; }
 };
 
 class FunBoolean final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::BooleanValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::BooleanValue; }
 };
 
 class FunNot final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::BooleanValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::BooleanValue; }
 };
 
 class FunTrue final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::BooleanValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::BooleanValue; }
 };
 
 class FunFalse final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::BooleanValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::BooleanValue; }
 };
 
 class FunLang final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::BooleanValue; }
-public:
-    FunLang() { setIsContextNodeSensitive(true); } // lang() always works on context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::BooleanValue; }
+
+ public:
+  FunLang() {
+    setIsContextNodeSensitive(true);
+  }  // lang() always works on context node.
 };
 
 class FunNumber final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
-public:
-    FunNumber() { setIsContextNodeSensitive(true); } // number() with no arguments uses context node.
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
+
+ public:
+  FunNumber() {
+    setIsContextNodeSensitive(true);
+  }  // number() with no arguments uses context node.
 };
 
 class FunSum final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
 };
 
 class FunFloor final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
 };
 
 class FunCeiling final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
 };
 
 class FunRound final : public Function {
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { return Value::NumberValue; }
-public:
-    static double round(double);
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override { return Value::NumberValue; }
+
+ public:
+  static double round(double);
 };
 
 DEFINE_FUNCTION_CREATOR(FunLast)
@@ -261,510 +287,469 @@ DEFINE_FUNCTION_CREATOR(FunRound)
 
 #undef DEFINE_FUNCTION_CREATOR
 
-inline Interval::Interval()
-    : m_min(Inf), m_max(Inf)
-{
-}
+inline Interval::Interval() : m_min(Inf), m_max(Inf) {}
 
-inline Interval::Interval(int value)
-    : m_min(value), m_max(value)
-{
-}
+inline Interval::Interval(int value) : m_min(value), m_max(value) {}
 
-inline Interval::Interval(int min, int max)
-    : m_min(min), m_max(max)
-{
-}
+inline Interval::Interval(int min, int max) : m_min(min), m_max(max) {}
 
-inline bool Interval::contains(int value) const
-{
-    if (m_min == Inf && m_max == Inf)
-        return true;
-
-    if (m_min == Inf)
-        return value <= m_max;
-
-    if (m_max == Inf)
-        return value >= m_min;
-
-    return value >= m_min && value <= m_max;
-}
-
-void Function::setArguments(HeapVector<Member<Expression>>& args)
-{
-    DCHECK(!subExprCount());
-
-    // Some functions use context node as implicit argument, so when explicit arguments are added, they may no longer be context node sensitive.
-    if (m_name != "lang" && !args.isEmpty())
-        setIsContextNodeSensitive(false);
-
-    for (Expression* arg : args)
-        addSubExpression(arg);
-}
-
-Value FunLast::evaluate(EvaluationContext& context) const
-{
-    return context.size;
-}
-
-Value FunPosition::evaluate(EvaluationContext& context) const
-{
-    return context.position;
-}
-
-Value FunId::evaluate(EvaluationContext& context) const
-{
-    Value a = arg(0)->evaluate(context);
-    StringBuilder idList; // A whitespace-separated list of IDs
-
-    if (a.isNodeSet()) {
-        const NodeSet& nodes = a.toNodeSet(&context);
-        for (size_t i = 0; i < nodes.size(); ++i) {
-            String str = stringValue(nodes[i]);
-            idList.append(str);
-            idList.append(' ');
-        }
-    } else {
-        String str = a.toString();
-        idList.append(str);
-    }
-
-    TreeScope& contextScope = context.node->treeScope();
-    NodeSet* result(NodeSet::create());
-    HeapHashSet<Member<Node>> resultSet;
-
-    unsigned startPos = 0;
-    unsigned length = idList.length();
-    while (true) {
-        while (startPos < length && isWhitespace(idList[startPos]))
-            ++startPos;
-
-        if (startPos == length)
-            break;
-
-        size_t endPos = startPos;
-        while (endPos < length && !isWhitespace(idList[endPos]))
-            ++endPos;
-
-        // If there are several nodes with the same id, id() should return the first one.
-        // In WebKit, getElementById behaves so, too, although its behavior in this case is formally undefined.
-        Node* node = contextScope.getElementById(AtomicString(idList.substring(startPos, endPos - startPos)));
-        if (node && resultSet.add(node).isNewEntry)
-            result->append(node);
-
-        startPos = endPos;
-    }
-
-    result->markSorted(false);
-
-    return Value(result, Value::adopt);
-}
-
-static inline String expandedNameLocalPart(Node* node)
-{
-    // The local part of an XPath expanded-name matches DOM local name for most node types, except for namespace nodes and processing instruction nodes.
-    // But note that Blink does not support namespace nodes.
-    switch (node->getNodeType()) {
-    case Node::kElementNode:
-        return toElement(node)->localName();
-    case Node::kAttributeNode:
-        return toAttr(node)->localName();
-    case Node::kProcessingInstructionNode:
-        return toProcessingInstruction(node)->target();
-    default:
-        return String();
-    }
-}
-
-static inline String expandedNamespaceURI(Node* node)
-{
-    switch (node->getNodeType()) {
-    case Node::kElementNode:
-        return toElement(node)->namespaceURI();
-    case Node::kAttributeNode:
-        return toAttr(node)->namespaceURI();
-    default:
-        return String();
-    }
-}
-
-static inline String expandedName(Node* node)
-{
-    AtomicString prefix;
-
-    switch (node->getNodeType()) {
-    case Node::kElementNode:
-        prefix = toElement(node)->prefix();
-        break;
-    case Node::kAttributeNode:
-        prefix = toAttr(node)->prefix();
-        break;
-    default:
-        break;
-    }
-
-    return prefix.isEmpty() ? expandedNameLocalPart(node) : prefix + ":" + expandedNameLocalPart(node);
-}
-
-Value FunLocalName::evaluate(EvaluationContext& context) const
-{
-    if (argCount() > 0) {
-        Value a = arg(0)->evaluate(context);
-        if (!a.isNodeSet())
-            return "";
-
-        Node* node = a.toNodeSet(&context).firstNode();
-        return node ? expandedNameLocalPart(node) : "";
-    }
-
-    return expandedNameLocalPart(context.node.get());
-}
-
-Value FunNamespaceURI::evaluate(EvaluationContext& context) const
-{
-    if (argCount() > 0) {
-        Value a = arg(0)->evaluate(context);
-        if (!a.isNodeSet())
-            return "";
-
-        Node* node = a.toNodeSet(&context).firstNode();
-        return node ? expandedNamespaceURI(node) : "";
-    }
-
-    return expandedNamespaceURI(context.node.get());
-}
-
-Value FunName::evaluate(EvaluationContext& context) const
-{
-    if (argCount() > 0) {
-        Value a = arg(0)->evaluate(context);
-        if (!a.isNodeSet())
-            return "";
-
-        Node* node = a.toNodeSet(&context).firstNode();
-        return node ? expandedName(node) : "";
-    }
-
-    return expandedName(context.node.get());
-}
-
-Value FunCount::evaluate(EvaluationContext& context) const
-{
-    Value a = arg(0)->evaluate(context);
-
-    return double(a.toNodeSet(&context).size());
-}
-
-Value FunString::evaluate(EvaluationContext& context) const
-{
-    if (!argCount())
-        return Value(context.node.get()).toString();
-    return arg(0)->evaluate(context).toString();
-}
-
-Value FunConcat::evaluate(EvaluationContext& context) const
-{
-    StringBuilder result;
-    result.reserveCapacity(1024);
-
-    unsigned count = argCount();
-    for (unsigned i = 0; i < count; ++i) {
-        String str(arg(i)->evaluate(context).toString());
-        result.append(str);
-    }
-
-    return result.toString();
-}
-
-Value FunStartsWith::evaluate(EvaluationContext& context) const
-{
-    String s1 = arg(0)->evaluate(context).toString();
-    String s2 = arg(1)->evaluate(context).toString();
-
-    if (s2.isEmpty())
-        return true;
-
-    return s1.startsWith(s2);
-}
-
-Value FunContains::evaluate(EvaluationContext& context) const
-{
-    String s1 = arg(0)->evaluate(context).toString();
-    String s2 = arg(1)->evaluate(context).toString();
-
-    if (s2.isEmpty())
-        return true;
-
-    return s1.contains(s2) != 0;
-}
-
-Value FunSubstringBefore::evaluate(EvaluationContext& context) const
-{
-    String s1 = arg(0)->evaluate(context).toString();
-    String s2 = arg(1)->evaluate(context).toString();
-
-    if (s2.isEmpty())
-        return "";
-
-    size_t i = s1.find(s2);
-
-    if (i == kNotFound)
-        return "";
-
-    return s1.left(i);
-}
-
-Value FunSubstringAfter::evaluate(EvaluationContext& context) const
-{
-    String s1 = arg(0)->evaluate(context).toString();
-    String s2 = arg(1)->evaluate(context).toString();
-
-    size_t i = s1.find(s2);
-    if (i == kNotFound)
-        return "";
-
-    return s1.substring(i + s2.length());
-}
-
-Value FunSubstring::evaluate(EvaluationContext& context) const
-{
-    String s = arg(0)->evaluate(context).toString();
-    double doublePos = arg(1)->evaluate(context).toNumber();
-    if (std::isnan(doublePos))
-        return "";
-    long pos = static_cast<long>(FunRound::round(doublePos));
-    bool haveLength = argCount() == 3;
-    long len = -1;
-    if (haveLength) {
-        double doubleLen = arg(2)->evaluate(context).toNumber();
-        if (std::isnan(doubleLen))
-            return "";
-        len = static_cast<long>(FunRound::round(doubleLen));
-    }
-
-    if (pos > long(s.length()))
-        return "";
-
-    if (pos < 1) {
-        if (haveLength) {
-            len -= 1 - pos;
-            if (len < 1)
-                return "";
-        }
-        pos = 1;
-    }
-
-    return s.substring(pos - 1, len);
-}
-
-Value FunStringLength::evaluate(EvaluationContext& context) const
-{
-    if (!argCount())
-        return Value(context.node.get()).toString().length();
-    return arg(0)->evaluate(context).toString().length();
-}
-
-Value FunNormalizeSpace::evaluate(EvaluationContext& context) const
-{
-    if (!argCount()) {
-        String s = Value(context.node.get()).toString();
-        return s.simplifyWhiteSpace();
-    }
-
-    String s = arg(0)->evaluate(context).toString();
-    return s.simplifyWhiteSpace();
-}
-
-Value FunTranslate::evaluate(EvaluationContext& context) const
-{
-    String s1 = arg(0)->evaluate(context).toString();
-    String s2 = arg(1)->evaluate(context).toString();
-    String s3 = arg(2)->evaluate(context).toString();
-    StringBuilder result;
-
-    for (unsigned i1 = 0; i1 < s1.length(); ++i1) {
-        UChar ch = s1[i1];
-        size_t i2 = s2.find(ch);
-
-        if (i2 == kNotFound)
-            result.append(ch);
-        else if (i2 < s3.length())
-            result.append(s3[i2]);
-    }
-
-    return result.toString();
-}
-
-Value FunBoolean::evaluate(EvaluationContext& context) const
-{
-    return arg(0)->evaluate(context).toBoolean();
-}
-
-Value FunNot::evaluate(EvaluationContext& context) const
-{
-    return !arg(0)->evaluate(context).toBoolean();
-}
-
-Value FunTrue::evaluate(EvaluationContext&) const
-{
+inline bool Interval::contains(int value) const {
+  if (m_min == Inf && m_max == Inf)
     return true;
+
+  if (m_min == Inf)
+    return value <= m_max;
+
+  if (m_max == Inf)
+    return value >= m_min;
+
+  return value >= m_min && value <= m_max;
 }
 
-Value FunLang::evaluate(EvaluationContext& context) const
-{
-    String lang = arg(0)->evaluate(context).toString();
+void Function::setArguments(HeapVector<Member<Expression>>& args) {
+  DCHECK(!subExprCount());
 
-    const Attribute* languageAttribute = nullptr;
-    Node* node = context.node.get();
-    while (node) {
-        if (node->isElementNode()) {
-            Element* element = toElement(node);
-            languageAttribute = element->attributes().find(XMLNames::langAttr);
-        }
-        if (languageAttribute)
-            break;
-        node = node->parentNode();
+  // Some functions use context node as implicit argument, so when explicit arguments are added, they may no longer be context node sensitive.
+  if (m_name != "lang" && !args.isEmpty())
+    setIsContextNodeSensitive(false);
+
+  for (Expression* arg : args)
+    addSubExpression(arg);
+}
+
+Value FunLast::evaluate(EvaluationContext& context) const {
+  return context.size;
+}
+
+Value FunPosition::evaluate(EvaluationContext& context) const {
+  return context.position;
+}
+
+Value FunId::evaluate(EvaluationContext& context) const {
+  Value a = arg(0)->evaluate(context);
+  StringBuilder idList;  // A whitespace-separated list of IDs
+
+  if (a.isNodeSet()) {
+    const NodeSet& nodes = a.toNodeSet(&context);
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      String str = stringValue(nodes[i]);
+      idList.append(str);
+      idList.append(' ');
     }
+  } else {
+    String str = a.toString();
+    idList.append(str);
+  }
 
-    if (!languageAttribute)
-        return false;
+  TreeScope& contextScope = context.node->treeScope();
+  NodeSet* result(NodeSet::create());
+  HeapHashSet<Member<Node>> resultSet;
 
-    String langValue = languageAttribute->value();
-    while (true) {
-        if (equalIgnoringCase(langValue, lang))
-            return true;
+  unsigned startPos = 0;
+  unsigned length = idList.length();
+  while (true) {
+    while (startPos < length && isWhitespace(idList[startPos]))
+      ++startPos;
 
-        // Remove suffixes one by one.
-        size_t index = langValue.reverseFind('-');
-        if (index == kNotFound)
-            break;
-        langValue = langValue.left(index);
-    }
+    if (startPos == length)
+      break;
 
-    return false;
+    size_t endPos = startPos;
+    while (endPos < length && !isWhitespace(idList[endPos]))
+      ++endPos;
+
+    // If there are several nodes with the same id, id() should return the first one.
+    // In WebKit, getElementById behaves so, too, although its behavior in this case is formally undefined.
+    Node* node = contextScope.getElementById(
+        AtomicString(idList.substring(startPos, endPos - startPos)));
+    if (node && resultSet.add(node).isNewEntry)
+      result->append(node);
+
+    startPos = endPos;
+  }
+
+  result->markSorted(false);
+
+  return Value(result, Value::adopt);
 }
 
-Value FunFalse::evaluate(EvaluationContext&) const
-{
-    return false;
+static inline String expandedNameLocalPart(Node* node) {
+  // The local part of an XPath expanded-name matches DOM local name for most node types, except for namespace nodes and processing instruction nodes.
+  // But note that Blink does not support namespace nodes.
+  switch (node->getNodeType()) {
+    case Node::kElementNode:
+      return toElement(node)->localName();
+    case Node::kAttributeNode:
+      return toAttr(node)->localName();
+    case Node::kProcessingInstructionNode:
+      return toProcessingInstruction(node)->target();
+    default:
+      return String();
+  }
 }
 
-Value FunNumber::evaluate(EvaluationContext& context) const
-{
-    if (!argCount())
-        return Value(context.node.get()).toNumber();
-    return arg(0)->evaluate(context).toNumber();
+static inline String expandedNamespaceURI(Node* node) {
+  switch (node->getNodeType()) {
+    case Node::kElementNode:
+      return toElement(node)->namespaceURI();
+    case Node::kAttributeNode:
+      return toAttr(node)->namespaceURI();
+    default:
+      return String();
+  }
 }
 
-Value FunSum::evaluate(EvaluationContext& context) const
-{
+static inline String expandedName(Node* node) {
+  AtomicString prefix;
+
+  switch (node->getNodeType()) {
+    case Node::kElementNode:
+      prefix = toElement(node)->prefix();
+      break;
+    case Node::kAttributeNode:
+      prefix = toAttr(node)->prefix();
+      break;
+    default:
+      break;
+  }
+
+  return prefix.isEmpty() ? expandedNameLocalPart(node)
+                          : prefix + ":" + expandedNameLocalPart(node);
+}
+
+Value FunLocalName::evaluate(EvaluationContext& context) const {
+  if (argCount() > 0) {
     Value a = arg(0)->evaluate(context);
     if (!a.isNodeSet())
-        return 0.0;
+      return "";
 
-    double sum = 0.0;
-    const NodeSet& nodes = a.toNodeSet(&context);
-    // To be really compliant, we should sort the node-set, as floating point addition is not associative.
-    // However, this is unlikely to ever become a practical issue, and sorting is slow.
+    Node* node = a.toNodeSet(&context).firstNode();
+    return node ? expandedNameLocalPart(node) : "";
+  }
 
-    for (unsigned i = 0; i < nodes.size(); i++)
-        sum += Value(stringValue(nodes[i])).toNumber();
-
-    return sum;
+  return expandedNameLocalPart(context.node.get());
 }
 
-Value FunFloor::evaluate(EvaluationContext& context) const
-{
-    return floor(arg(0)->evaluate(context).toNumber());
+Value FunNamespaceURI::evaluate(EvaluationContext& context) const {
+  if (argCount() > 0) {
+    Value a = arg(0)->evaluate(context);
+    if (!a.isNodeSet())
+      return "";
+
+    Node* node = a.toNodeSet(&context).firstNode();
+    return node ? expandedNamespaceURI(node) : "";
+  }
+
+  return expandedNamespaceURI(context.node.get());
 }
 
-Value FunCeiling::evaluate(EvaluationContext& context) const
-{
-    return ceil(arg(0)->evaluate(context).toNumber());
+Value FunName::evaluate(EvaluationContext& context) const {
+  if (argCount() > 0) {
+    Value a = arg(0)->evaluate(context);
+    if (!a.isNodeSet())
+      return "";
+
+    Node* node = a.toNodeSet(&context).firstNode();
+    return node ? expandedName(node) : "";
+  }
+
+  return expandedName(context.node.get());
 }
 
-double FunRound::round(double val)
-{
-    if (!std::isnan(val) && !std::isinf(val)) {
-        if (std::signbit(val) && val >= -0.5)
-            val *= 0; // negative zero
-        else
-            val = floor(val + 0.5);
+Value FunCount::evaluate(EvaluationContext& context) const {
+  Value a = arg(0)->evaluate(context);
+
+  return double(a.toNodeSet(&context).size());
+}
+
+Value FunString::evaluate(EvaluationContext& context) const {
+  if (!argCount())
+    return Value(context.node.get()).toString();
+  return arg(0)->evaluate(context).toString();
+}
+
+Value FunConcat::evaluate(EvaluationContext& context) const {
+  StringBuilder result;
+  result.reserveCapacity(1024);
+
+  unsigned count = argCount();
+  for (unsigned i = 0; i < count; ++i) {
+    String str(arg(i)->evaluate(context).toString());
+    result.append(str);
+  }
+
+  return result.toString();
+}
+
+Value FunStartsWith::evaluate(EvaluationContext& context) const {
+  String s1 = arg(0)->evaluate(context).toString();
+  String s2 = arg(1)->evaluate(context).toString();
+
+  if (s2.isEmpty())
+    return true;
+
+  return s1.startsWith(s2);
+}
+
+Value FunContains::evaluate(EvaluationContext& context) const {
+  String s1 = arg(0)->evaluate(context).toString();
+  String s2 = arg(1)->evaluate(context).toString();
+
+  if (s2.isEmpty())
+    return true;
+
+  return s1.contains(s2) != 0;
+}
+
+Value FunSubstringBefore::evaluate(EvaluationContext& context) const {
+  String s1 = arg(0)->evaluate(context).toString();
+  String s2 = arg(1)->evaluate(context).toString();
+
+  if (s2.isEmpty())
+    return "";
+
+  size_t i = s1.find(s2);
+
+  if (i == kNotFound)
+    return "";
+
+  return s1.left(i);
+}
+
+Value FunSubstringAfter::evaluate(EvaluationContext& context) const {
+  String s1 = arg(0)->evaluate(context).toString();
+  String s2 = arg(1)->evaluate(context).toString();
+
+  size_t i = s1.find(s2);
+  if (i == kNotFound)
+    return "";
+
+  return s1.substring(i + s2.length());
+}
+
+Value FunSubstring::evaluate(EvaluationContext& context) const {
+  String s = arg(0)->evaluate(context).toString();
+  double doublePos = arg(1)->evaluate(context).toNumber();
+  if (std::isnan(doublePos))
+    return "";
+  long pos = static_cast<long>(FunRound::round(doublePos));
+  bool haveLength = argCount() == 3;
+  long len = -1;
+  if (haveLength) {
+    double doubleLen = arg(2)->evaluate(context).toNumber();
+    if (std::isnan(doubleLen))
+      return "";
+    len = static_cast<long>(FunRound::round(doubleLen));
+  }
+
+  if (pos > long(s.length()))
+    return "";
+
+  if (pos < 1) {
+    if (haveLength) {
+      len -= 1 - pos;
+      if (len < 1)
+        return "";
     }
-    return val;
+    pos = 1;
+  }
+
+  return s.substring(pos - 1, len);
 }
 
-Value FunRound::evaluate(EvaluationContext& context) const
-{
-    return round(arg(0)->evaluate(context).toNumber());
+Value FunStringLength::evaluate(EvaluationContext& context) const {
+  if (!argCount())
+    return Value(context.node.get()).toString().length();
+  return arg(0)->evaluate(context).toString().length();
+}
+
+Value FunNormalizeSpace::evaluate(EvaluationContext& context) const {
+  if (!argCount()) {
+    String s = Value(context.node.get()).toString();
+    return s.simplifyWhiteSpace();
+  }
+
+  String s = arg(0)->evaluate(context).toString();
+  return s.simplifyWhiteSpace();
+}
+
+Value FunTranslate::evaluate(EvaluationContext& context) const {
+  String s1 = arg(0)->evaluate(context).toString();
+  String s2 = arg(1)->evaluate(context).toString();
+  String s3 = arg(2)->evaluate(context).toString();
+  StringBuilder result;
+
+  for (unsigned i1 = 0; i1 < s1.length(); ++i1) {
+    UChar ch = s1[i1];
+    size_t i2 = s2.find(ch);
+
+    if (i2 == kNotFound)
+      result.append(ch);
+    else if (i2 < s3.length())
+      result.append(s3[i2]);
+  }
+
+  return result.toString();
+}
+
+Value FunBoolean::evaluate(EvaluationContext& context) const {
+  return arg(0)->evaluate(context).toBoolean();
+}
+
+Value FunNot::evaluate(EvaluationContext& context) const {
+  return !arg(0)->evaluate(context).toBoolean();
+}
+
+Value FunTrue::evaluate(EvaluationContext&) const {
+  return true;
+}
+
+Value FunLang::evaluate(EvaluationContext& context) const {
+  String lang = arg(0)->evaluate(context).toString();
+
+  const Attribute* languageAttribute = nullptr;
+  Node* node = context.node.get();
+  while (node) {
+    if (node->isElementNode()) {
+      Element* element = toElement(node);
+      languageAttribute = element->attributes().find(XMLNames::langAttr);
+    }
+    if (languageAttribute)
+      break;
+    node = node->parentNode();
+  }
+
+  if (!languageAttribute)
+    return false;
+
+  String langValue = languageAttribute->value();
+  while (true) {
+    if (equalIgnoringCase(langValue, lang))
+      return true;
+
+    // Remove suffixes one by one.
+    size_t index = langValue.reverseFind('-');
+    if (index == kNotFound)
+      break;
+    langValue = langValue.left(index);
+  }
+
+  return false;
+}
+
+Value FunFalse::evaluate(EvaluationContext&) const {
+  return false;
+}
+
+Value FunNumber::evaluate(EvaluationContext& context) const {
+  if (!argCount())
+    return Value(context.node.get()).toNumber();
+  return arg(0)->evaluate(context).toNumber();
+}
+
+Value FunSum::evaluate(EvaluationContext& context) const {
+  Value a = arg(0)->evaluate(context);
+  if (!a.isNodeSet())
+    return 0.0;
+
+  double sum = 0.0;
+  const NodeSet& nodes = a.toNodeSet(&context);
+  // To be really compliant, we should sort the node-set, as floating point addition is not associative.
+  // However, this is unlikely to ever become a practical issue, and sorting is slow.
+
+  for (unsigned i = 0; i < nodes.size(); i++)
+    sum += Value(stringValue(nodes[i])).toNumber();
+
+  return sum;
+}
+
+Value FunFloor::evaluate(EvaluationContext& context) const {
+  return floor(arg(0)->evaluate(context).toNumber());
+}
+
+Value FunCeiling::evaluate(EvaluationContext& context) const {
+  return ceil(arg(0)->evaluate(context).toNumber());
+}
+
+double FunRound::round(double val) {
+  if (!std::isnan(val) && !std::isinf(val)) {
+    if (std::signbit(val) && val >= -0.5)
+      val *= 0;  // negative zero
+    else
+      val = floor(val + 0.5);
+  }
+  return val;
+}
+
+Value FunRound::evaluate(EvaluationContext& context) const {
+  return round(arg(0)->evaluate(context).toNumber());
 }
 
 struct FunctionMapping {
-    const char* name;
-    FunctionRec function;
+  const char* name;
+  FunctionRec function;
 };
 
-static void createFunctionMap()
-{
-    DCHECK(!functionMap);
-    const FunctionMapping functions[] = {
-        { "boolean", { &createFunBoolean, 1 } },
-        { "ceiling", { &createFunCeiling, 1 } },
-        { "concat", { &createFunConcat, Interval(2, Interval::Inf) } },
-        { "contains", { &createFunContains, 2 } },
-        { "count", { &createFunCount, 1 } },
-        { "false", { &createFunFalse, 0 } },
-        { "floor", { &createFunFloor, 1 } },
-        { "id", { &createFunId, 1 } },
-        { "lang", { &createFunLang, 1 } },
-        { "last", { &createFunLast, 0 } },
-        { "local-name", { &createFunLocalName, Interval(0, 1) } },
-        { "name", { &createFunName, Interval(0, 1) } },
-        { "namespace-uri", { &createFunNamespaceURI, Interval(0, 1) } },
-        { "normalize-space", { &createFunNormalizeSpace, Interval(0, 1) } },
-        { "not", { &createFunNot, 1 } },
-        { "number", { &createFunNumber, Interval(0, 1) } },
-        { "position", { &createFunPosition, 0 } },
-        { "round", { &createFunRound, 1 } },
-        { "starts-with", { &createFunStartsWith, 2 } },
-        { "string", { &createFunString, Interval(0, 1) } },
-        { "string-length", { &createFunStringLength, Interval(0, 1) } },
-        { "substring", { &createFunSubstring, Interval(2, 3) } },
-        { "substring-after", { &createFunSubstringAfter, 2 } },
-        { "substring-before", { &createFunSubstringBefore, 2 } },
-        { "sum", { &createFunSum, 1 } },
-        { "translate", { &createFunTranslate, 3 } },
-        { "true", { &createFunTrue, 0 } },
-    };
+static void createFunctionMap() {
+  DCHECK(!functionMap);
+  const FunctionMapping functions[] = {
+      {"boolean", {&createFunBoolean, 1}},
+      {"ceiling", {&createFunCeiling, 1}},
+      {"concat", {&createFunConcat, Interval(2, Interval::Inf)}},
+      {"contains", {&createFunContains, 2}},
+      {"count", {&createFunCount, 1}},
+      {"false", {&createFunFalse, 0}},
+      {"floor", {&createFunFloor, 1}},
+      {"id", {&createFunId, 1}},
+      {"lang", {&createFunLang, 1}},
+      {"last", {&createFunLast, 0}},
+      {"local-name", {&createFunLocalName, Interval(0, 1)}},
+      {"name", {&createFunName, Interval(0, 1)}},
+      {"namespace-uri", {&createFunNamespaceURI, Interval(0, 1)}},
+      {"normalize-space", {&createFunNormalizeSpace, Interval(0, 1)}},
+      {"not", {&createFunNot, 1}},
+      {"number", {&createFunNumber, Interval(0, 1)}},
+      {"position", {&createFunPosition, 0}},
+      {"round", {&createFunRound, 1}},
+      {"starts-with", {&createFunStartsWith, 2}},
+      {"string", {&createFunString, Interval(0, 1)}},
+      {"string-length", {&createFunStringLength, Interval(0, 1)}},
+      {"substring", {&createFunSubstring, Interval(2, 3)}},
+      {"substring-after", {&createFunSubstringAfter, 2}},
+      {"substring-before", {&createFunSubstringBefore, 2}},
+      {"sum", {&createFunSum, 1}},
+      {"translate", {&createFunTranslate, 3}},
+      {"true", {&createFunTrue, 0}},
+  };
 
-    functionMap = new HashMap<String, FunctionRec>;
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(functions); ++i)
-        functionMap->set(functions[i].name, functions[i].function);
+  functionMap = new HashMap<String, FunctionRec>;
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(functions); ++i)
+    functionMap->set(functions[i].name, functions[i].function);
 }
 
-
-Function* createFunction(const String& name)
-{
-    HeapVector<Member<Expression>> args;
-    return createFunction(name, args);
+Function* createFunction(const String& name) {
+  HeapVector<Member<Expression>> args;
+  return createFunction(name, args);
 }
 
-Function* createFunction(const String& name, HeapVector<Member<Expression>>& args)
-{
-    if (!functionMap)
-        createFunctionMap();
+Function* createFunction(const String& name,
+                         HeapVector<Member<Expression>>& args) {
+  if (!functionMap)
+    createFunctionMap();
 
-    HashMap<String, FunctionRec>::iterator functionMapIter = functionMap->find(name);
-    FunctionRec* functionRec = nullptr;
+  HashMap<String, FunctionRec>::iterator functionMapIter =
+      functionMap->find(name);
+  FunctionRec* functionRec = nullptr;
 
-    if (functionMapIter == functionMap->end() || !(functionRec = &functionMapIter->value)->args.contains(args.size()))
-        return nullptr;
+  if (functionMapIter == functionMap->end() ||
+      !(functionRec = &functionMapIter->value)->args.contains(args.size()))
+    return nullptr;
 
-    Function* function = functionRec->factoryFn();
-    function->setArguments(args);
-    function->setName(name);
-    return function;
+  Function* function = functionRec->factoryFn();
+  function->setArguments(args);
+  function->setName(name);
+  return function;
 }
 
-} // namespace XPath
-} // namespace blink
+}  // namespace XPath
+}  // namespace blink

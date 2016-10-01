@@ -14,18 +14,19 @@ class LayoutTable;
 struct PaintInfo;
 
 class TablePainter {
-    STACK_ALLOCATED();
-public:
-    TablePainter(const LayoutTable& layoutTable) : m_layoutTable(layoutTable) { }
+  STACK_ALLOCATED();
 
-    void paintObject(const PaintInfo&, const LayoutPoint&);
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-    void paintMask(const PaintInfo&, const LayoutPoint&);
+ public:
+  TablePainter(const LayoutTable& layoutTable) : m_layoutTable(layoutTable) {}
 
-private:
-    const LayoutTable& m_layoutTable;
+  void paintObject(const PaintInfo&, const LayoutPoint&);
+  void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+  void paintMask(const PaintInfo&, const LayoutPoint&);
+
+ private:
+  const LayoutTable& m_layoutTable;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TablePainter_h
+#endif  // TablePainter_h

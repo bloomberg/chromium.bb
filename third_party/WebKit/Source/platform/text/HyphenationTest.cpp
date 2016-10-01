@@ -10,23 +10,22 @@
 namespace blink {
 
 class NoHyphenation : public Hyphenation {
-public:
-    size_t lastHyphenLocation(const StringView&, size_t beforeIndex) const override
-    {
-        return 0;
-    }
+ public:
+  size_t lastHyphenLocation(const StringView&,
+                            size_t beforeIndex) const override {
+    return 0;
+  }
 };
 
-TEST(HyphenationTest, Get)
-{
-    RefPtr<Hyphenation> hyphenation = adoptRef(new NoHyphenation);
-    LayoutLocale::setHyphenationForTesting("en-US", hyphenation);
-    EXPECT_EQ(hyphenation.get(), LayoutLocale::get("en-US")->getHyphenation());
+TEST(HyphenationTest, Get) {
+  RefPtr<Hyphenation> hyphenation = adoptRef(new NoHyphenation);
+  LayoutLocale::setHyphenationForTesting("en-US", hyphenation);
+  EXPECT_EQ(hyphenation.get(), LayoutLocale::get("en-US")->getHyphenation());
 
-    LayoutLocale::setHyphenationForTesting("en-UK", nullptr);
-    EXPECT_EQ(nullptr, LayoutLocale::get("en-UK")->getHyphenation());
+  LayoutLocale::setHyphenationForTesting("en-UK", nullptr);
+  EXPECT_EQ(nullptr, LayoutLocale::get("en-UK")->getHyphenation());
 
-    LayoutLocale::clearForTesting();
+  LayoutLocale::clearForTesting();
 }
 
-} // namespace blink
+}  // namespace blink

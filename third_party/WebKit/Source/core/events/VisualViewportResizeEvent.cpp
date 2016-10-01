@@ -8,22 +8,17 @@
 
 namespace blink {
 
-VisualViewportResizeEvent::~VisualViewportResizeEvent()
-{
-}
+VisualViewportResizeEvent::~VisualViewportResizeEvent() {}
 
 VisualViewportResizeEvent::VisualViewportResizeEvent()
-    : Event(EventTypeNames::resize, false, false) // non-bubbling non-cancellable
-{
+    : Event(EventTypeNames::resize,
+            false,
+            false)  // non-bubbling non-cancellable
+{}
+
+void VisualViewportResizeEvent::doneDispatchingEventAtCurrentTarget() {
+  UseCounter::count(currentTarget()->getExecutionContext(),
+                    UseCounter::VisualViewportResizeFired);
 }
 
-void VisualViewportResizeEvent::doneDispatchingEventAtCurrentTarget()
-{
-    UseCounter::count(currentTarget()->getExecutionContext(),
-        UseCounter::VisualViewportResizeFired);
-}
-
-} // namespace blink
-
-
-
+}  // namespace blink

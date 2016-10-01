@@ -49,107 +49,114 @@ class ExceptionState;
 class GenericEventQueue;
 class WebSourceBuffer;
 
-class MediaSource final
-    : public EventTargetWithInlineData
-    , public HTMLMediaSource
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
-public:
-    static const AtomicString& openKeyword();
-    static const AtomicString& closedKeyword();
-    static const AtomicString& endedKeyword();
+class MediaSource final : public EventTargetWithInlineData,
+                          public HTMLMediaSource,
+                          public ActiveScriptWrappable,
+                          public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 
-    static MediaSource* create(ExecutionContext*);
-    ~MediaSource() override;
+ public:
+  static const AtomicString& openKeyword();
+  static const AtomicString& closedKeyword();
+  static const AtomicString& endedKeyword();
 
-    static void logAndThrowDOMException(ExceptionState&, const ExceptionCode& error, const String& message);
-    static void logAndThrowTypeError(ExceptionState&, const String&);
+  static MediaSource* create(ExecutionContext*);
+  ~MediaSource() override;
 
-    // MediaSource.idl methods
-    SourceBufferList* sourceBuffers() { return m_sourceBuffers.get(); }
-    SourceBufferList* activeSourceBuffers() { return m_activeSourceBuffers.get(); }
-    SourceBuffer* addSourceBuffer(const String& type, ExceptionState&);
-    void removeSourceBuffer(SourceBuffer*, ExceptionState&);
-    void setDuration(double, ExceptionState&);
+  static void logAndThrowDOMException(ExceptionState&,
+                                      const ExceptionCode& error,
+                                      const String& message);
+  static void logAndThrowTypeError(ExceptionState&, const String&);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose);
+  // MediaSource.idl methods
+  SourceBufferList* sourceBuffers() { return m_sourceBuffers.get(); }
+  SourceBufferList* activeSourceBuffers() {
+    return m_activeSourceBuffers.get();
+  }
+  SourceBuffer* addSourceBuffer(const String& type, ExceptionState&);
+  void removeSourceBuffer(SourceBuffer*, ExceptionState&);
+  void setDuration(double, ExceptionState&);
 
-    const AtomicString& readyState() const { return m_readyState; }
-    void endOfStream(const AtomicString& error, ExceptionState&);
-    void endOfStream(ExceptionState&);
-    void setLiveSeekableRange(double start, double end, ExceptionState&);
-    void clearLiveSeekableRange(ExceptionState&);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose);
 
-    static bool isTypeSupported(const String& type);
+  const AtomicString& readyState() const { return m_readyState; }
+  void endOfStream(const AtomicString& error, ExceptionState&);
+  void endOfStream(ExceptionState&);
+  void setLiveSeekableRange(double start, double end, ExceptionState&);
+  void clearLiveSeekableRange(ExceptionState&);
 
-    // HTMLMediaSource
-    bool attachToElement(HTMLMediaElement*) override;
-    void setWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) override;
-    void close() override;
-    bool isClosed() const override;
-    double duration() const override;
-    TimeRanges* buffered() const override;
-    TimeRanges* seekable() const override;
-    void onTrackChanged(TrackBase*) override;
+  static bool isTypeSupported(const String& type);
 
-    // EventTarget interface
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  // HTMLMediaSource
+  bool attachToElement(HTMLMediaElement*) override;
+  void setWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource>) override;
+  void close() override;
+  bool isClosed() const override;
+  double duration() const override;
+  TimeRanges* buffered() const override;
+  TimeRanges* seekable() const override;
+  void onTrackChanged(TrackBase*) override;
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // EventTarget interface
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ActiveDOMObject interface
-    void stop() override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    // URLRegistrable interface
-    URLRegistry& registry() const override;
+  // ActiveDOMObject interface
+  void stop() override;
 
-    // Used by SourceBuffer.
-    void openIfInEndedState();
-    bool isOpen() const;
-    void setSourceBufferActive(SourceBuffer*, bool);
-    HTMLMediaElement* mediaElement() const;
+  // URLRegistrable interface
+  URLRegistry& registry() const override;
 
-    // Used by MediaSourceRegistry.
-    void addedToRegistry();
-    void removedFromRegistry();
+  // Used by SourceBuffer.
+  void openIfInEndedState();
+  bool isOpen() const;
+  void setSourceBufferActive(SourceBuffer*, bool);
+  HTMLMediaElement* mediaElement() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  // Used by MediaSourceRegistry.
+  void addedToRegistry();
+  void removedFromRegistry();
 
-private:
-    explicit MediaSource(ExecutionContext*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void setReadyState(const AtomicString&);
-    void onReadyStateChange(const AtomicString&, const AtomicString&);
+ private:
+  explicit MediaSource(ExecutionContext*);
 
-    bool isUpdating() const;
+  void setReadyState(const AtomicString&);
+  void onReadyStateChange(const AtomicString&, const AtomicString&);
 
-    std::unique_ptr<WebSourceBuffer> createWebSourceBuffer(const String& type, const String& codecs, ExceptionState&);
-    void scheduleEvent(const AtomicString& eventName);
-    void endOfStreamInternal(const WebMediaSource::EndOfStreamStatus, ExceptionState&);
+  bool isUpdating() const;
 
-    // Implements the duration change algorithm.
-    // http://w3c.github.io/media-source/#duration-change-algorithm
-    void durationChangeAlgorithm(double newDuration, ExceptionState&);
+  std::unique_ptr<WebSourceBuffer> createWebSourceBuffer(const String& type,
+                                                         const String& codecs,
+                                                         ExceptionState&);
+  void scheduleEvent(const AtomicString& eventName);
+  void endOfStreamInternal(const WebMediaSource::EndOfStreamStatus,
+                           ExceptionState&);
 
-    std::unique_ptr<WebMediaSource> m_webMediaSource;
-    AtomicString m_readyState;
-    Member<GenericEventQueue> m_asyncEventQueue;
-    WeakMember<HTMLMediaElement> m_attachedElement;
+  // Implements the duration change algorithm.
+  // http://w3c.github.io/media-source/#duration-change-algorithm
+  void durationChangeAlgorithm(double newDuration, ExceptionState&);
 
-    Member<SourceBufferList> m_sourceBuffers;
-    Member<SourceBufferList> m_activeSourceBuffers;
+  std::unique_ptr<WebMediaSource> m_webMediaSource;
+  AtomicString m_readyState;
+  Member<GenericEventQueue> m_asyncEventQueue;
+  WeakMember<HTMLMediaElement> m_attachedElement;
 
-    Member<TimeRanges> m_liveSeekableRange;
+  Member<SourceBufferList> m_sourceBuffers;
+  Member<SourceBufferList> m_activeSourceBuffers;
 
-    int m_addedToRegistryCounter;
+  Member<TimeRanges> m_liveSeekableRange;
+
+  int m_addedToRegistryCounter;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaSource_h
+#endif  // MediaSource_h

@@ -61,198 +61,202 @@ class ExceptionState;
 class ExecutionContext;
 class StringOrStringSequence;
 
-class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject, public WebSocketChannelClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
-public:
-    static const char* subprotocolSeperator();
-    // DOMWebSocket instances must be used with a wrapper since this class's
-    // lifetime management is designed assuming the V8 holds a ref on it while
-    // hasPendingActivity() returns true.
-    static DOMWebSocket* create(ExecutionContext*, const String& url, ExceptionState&);
-    static DOMWebSocket* create(ExecutionContext*, const String& url, const StringOrStringSequence& protocols, ExceptionState&);
-    ~DOMWebSocket() override;
+class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
+                                    public ActiveScriptWrappable,
+                                    public ActiveDOMObject,
+                                    public WebSocketChannelClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 
-    enum State {
-        kConnecting = 0,
-        kOpen = 1,
-        kClosing = 2,
-        kClosed = 3
-    };
+ public:
+  static const char* subprotocolSeperator();
+  // DOMWebSocket instances must be used with a wrapper since this class's
+  // lifetime management is designed assuming the V8 holds a ref on it while
+  // hasPendingActivity() returns true.
+  static DOMWebSocket* create(ExecutionContext*,
+                              const String& url,
+                              ExceptionState&);
+  static DOMWebSocket* create(ExecutionContext*,
+                              const String& url,
+                              const StringOrStringSequence& protocols,
+                              ExceptionState&);
+  ~DOMWebSocket() override;
 
-    void connect(const String& url, const Vector<String>& protocols, ExceptionState&);
+  enum State { kConnecting = 0, kOpen = 1, kClosing = 2, kClosed = 3 };
 
-    void send(const String& message, ExceptionState&);
-    void send(DOMArrayBuffer*, ExceptionState&);
-    void send(DOMArrayBufferView*, ExceptionState&);
-    void send(Blob*, ExceptionState&);
+  void connect(const String& url,
+               const Vector<String>& protocols,
+               ExceptionState&);
 
-    // To distinguish close method call with the code parameter from one
-    // without, we have these three signatures. Use of
-    // Optional=DefaultIsUndefined in the IDL file doesn't help for now since
-    // it's bound to a value of 0 which is indistinguishable from the case 0
-    // is passed as code parameter.
-    void close(unsigned short code, const String& reason, ExceptionState&);
-    void close(ExceptionState&);
-    void close(unsigned short code, ExceptionState&);
+  void send(const String& message, ExceptionState&);
+  void send(DOMArrayBuffer*, ExceptionState&);
+  void send(DOMArrayBufferView*, ExceptionState&);
+  void send(Blob*, ExceptionState&);
 
-    const KURL& url() const;
-    State readyState() const;
-    unsigned bufferedAmount() const;
+  // To distinguish close method call with the code parameter from one
+  // without, we have these three signatures. Use of
+  // Optional=DefaultIsUndefined in the IDL file doesn't help for now since
+  // it's bound to a value of 0 which is indistinguishable from the case 0
+  // is passed as code parameter.
+  void close(unsigned short code, const String& reason, ExceptionState&);
+  void close(ExceptionState&);
+  void close(unsigned short code, ExceptionState&);
 
-    String protocol() const;
-    String extensions() const;
+  const KURL& url() const;
+  State readyState() const;
+  unsigned bufferedAmount() const;
 
-    String binaryType() const;
-    void setBinaryType(const String&);
+  String protocol() const;
+  String extensions() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(open);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+  String binaryType() const;
+  void setBinaryType(const String&);
 
-    // EventTarget functions.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(open);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
 
-    // ActiveDOMObject functions.
-    void contextDestroyed() override;
-    void suspend() override;
-    void resume() override;
-    void stop() override;
+  // EventTarget functions.
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ScriptWrappable functions.
-    // Prevent this instance from being collected while it's not in CLOSED
-    // state.
-    bool hasPendingActivity() const final;
+  // ActiveDOMObject functions.
+  void contextDestroyed() override;
+  void suspend() override;
+  void resume() override;
+  void stop() override;
 
-    // WebSocketChannelClient functions.
-    void didConnect(const String& subprotocol, const String& extensions) override;
-    void didReceiveTextMessage(const String& message) override;
-    void didReceiveBinaryMessage(std::unique_ptr<Vector<char>>) override;
-    void didError() override;
-    void didConsumeBufferedAmount(uint64_t) override;
-    void didStartClosingHandshake() override;
-    void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
+  // ScriptWrappable functions.
+  // Prevent this instance from being collected while it's not in CLOSED
+  // state.
+  bool hasPendingActivity() const final;
 
-    DECLARE_VIRTUAL_TRACE();
+  // WebSocketChannelClient functions.
+  void didConnect(const String& subprotocol, const String& extensions) override;
+  void didReceiveTextMessage(const String& message) override;
+  void didReceiveBinaryMessage(std::unique_ptr<Vector<char>>) override;
+  void didError() override;
+  void didConsumeBufferedAmount(uint64_t) override;
+  void didStartClosingHandshake() override;
+  void didClose(ClosingHandshakeCompletionStatus,
+                unsigned short code,
+                const String& reason) override;
 
-    static bool isValidSubprotocolString(const String&);
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    explicit DOMWebSocket(ExecutionContext*);
+  static bool isValidSubprotocolString(const String&);
 
-private:
-    // FIXME: This should inherit blink::EventQueue.
-    class EventQueue final : public GarbageCollectedFinalized<EventQueue> {
-    public:
-        static EventQueue* create(EventTarget* target)
-        {
-            return new EventQueue(target);
-        }
-        ~EventQueue();
+ protected:
+  explicit DOMWebSocket(ExecutionContext*);
 
-        // Dispatches the event if this queue is active.
-        // Queues the event if this queue is suspended.
-        // Does nothing otherwise.
-        void dispatch(Event* /* event */);
-
-        bool isEmpty() const;
-
-        void suspend();
-        void resume();
-        void stop();
-
-        DECLARE_TRACE();
-
-    private:
-        enum State {
-            Active,
-            Suspended,
-            Stopped,
-        };
-
-        explicit EventQueue(EventTarget*);
-
-        // Dispatches queued events if this queue is active.
-        // Does nothing otherwise.
-        void dispatchQueuedEvents();
-        void resumeTimerFired(TimerBase*);
-
-        State m_state;
-        Member<EventTarget> m_target;
-        HeapDeque<Member<Event>> m_events;
-        Timer<EventQueue> m_resumeTimer;
-    };
-
-    enum WebSocketSendType {
-        WebSocketSendTypeString,
-        WebSocketSendTypeArrayBuffer,
-        WebSocketSendTypeArrayBufferView,
-        WebSocketSendTypeBlob,
-        WebSocketSendTypeMax,
-    };
-
-    enum WebSocketReceiveType {
-        WebSocketReceiveTypeString,
-        WebSocketReceiveTypeArrayBuffer,
-        WebSocketReceiveTypeBlob,
-        WebSocketReceiveTypeMax,
-    };
-
-    enum BinaryType {
-        BinaryTypeBlob,
-        BinaryTypeArrayBuffer
-    };
-
-    // This function is virtual for unittests.
-    // FIXME: Move WebSocketChannel::create here.
-    virtual WebSocketChannel* createChannel(ExecutionContext* context, WebSocketChannelClient* client)
-    {
-        return WebSocketChannel::create(context, client);
+ private:
+  // FIXME: This should inherit blink::EventQueue.
+  class EventQueue final : public GarbageCollectedFinalized<EventQueue> {
+   public:
+    static EventQueue* create(EventTarget* target) {
+      return new EventQueue(target);
     }
+    ~EventQueue();
 
-    // Adds a console message with JSMessageSource and ErrorMessageLevel.
-    void logError(const String& message);
+    // Dispatches the event if this queue is active.
+    // Queues the event if this queue is suspended.
+    // Does nothing otherwise.
+    void dispatch(Event* /* event */);
 
-    // Handle the JavaScript close method call. close() methods on this class
-    // are just for determining if the optional code argument is supplied or
-    // not.
-    void closeInternal(int, const String&, ExceptionState&);
+    bool isEmpty() const;
 
-    // Updates m_bufferedAmountAfterClose given the amount of data passed to
-    // send() method after the state changed to CLOSING or CLOSED.
-    void updateBufferedAmountAfterClose(uint64_t);
-    void reflectBufferedAmountConsumption(TimerBase*);
+    void suspend();
+    void resume();
+    void stop();
 
-    void releaseChannel();
-    void recordSendTypeHistogram(WebSocketSendType);
-    void recordSendMessageSizeHistogram(WebSocketSendType, size_t);
-    void recordReceiveTypeHistogram(WebSocketReceiveType);
-    void recordReceiveMessageSizeHistogram(WebSocketReceiveType, size_t);
+    DECLARE_TRACE();
 
-    void setBinaryTypeInternal(BinaryType);
-    void logBinaryTypeChangesAfterOpen();
+   private:
+    enum State {
+      Active,
+      Suspended,
+      Stopped,
+    };
 
-    Member<WebSocketChannel> m_channel;
+    explicit EventQueue(EventTarget*);
+
+    // Dispatches queued events if this queue is active.
+    // Does nothing otherwise.
+    void dispatchQueuedEvents();
+    void resumeTimerFired(TimerBase*);
 
     State m_state;
-    KURL m_url;
-    uint64_t m_bufferedAmount;
-    // The consumed buffered amount that will be reflected to m_bufferedAmount
-    // later. It will be cleared once reflected.
-    uint64_t m_consumedBufferedAmount;
-    uint64_t m_bufferedAmountAfterClose;
-    BinaryType m_binaryType;
-    int m_binaryTypeChangesAfterOpen;
-    // The subprotocol the server selected.
-    String m_subprotocol;
-    String m_extensions;
+    Member<EventTarget> m_target;
+    HeapDeque<Member<Event>> m_events;
+    Timer<EventQueue> m_resumeTimer;
+  };
 
-    Member<EventQueue> m_eventQueue;
-    Timer<DOMWebSocket> m_bufferedAmountConsumeTimer;
+  enum WebSocketSendType {
+    WebSocketSendTypeString,
+    WebSocketSendTypeArrayBuffer,
+    WebSocketSendTypeArrayBufferView,
+    WebSocketSendTypeBlob,
+    WebSocketSendTypeMax,
+  };
+
+  enum WebSocketReceiveType {
+    WebSocketReceiveTypeString,
+    WebSocketReceiveTypeArrayBuffer,
+    WebSocketReceiveTypeBlob,
+    WebSocketReceiveTypeMax,
+  };
+
+  enum BinaryType { BinaryTypeBlob, BinaryTypeArrayBuffer };
+
+  // This function is virtual for unittests.
+  // FIXME: Move WebSocketChannel::create here.
+  virtual WebSocketChannel* createChannel(ExecutionContext* context,
+                                          WebSocketChannelClient* client) {
+    return WebSocketChannel::create(context, client);
+  }
+
+  // Adds a console message with JSMessageSource and ErrorMessageLevel.
+  void logError(const String& message);
+
+  // Handle the JavaScript close method call. close() methods on this class
+  // are just for determining if the optional code argument is supplied or
+  // not.
+  void closeInternal(int, const String&, ExceptionState&);
+
+  // Updates m_bufferedAmountAfterClose given the amount of data passed to
+  // send() method after the state changed to CLOSING or CLOSED.
+  void updateBufferedAmountAfterClose(uint64_t);
+  void reflectBufferedAmountConsumption(TimerBase*);
+
+  void releaseChannel();
+  void recordSendTypeHistogram(WebSocketSendType);
+  void recordSendMessageSizeHistogram(WebSocketSendType, size_t);
+  void recordReceiveTypeHistogram(WebSocketReceiveType);
+  void recordReceiveMessageSizeHistogram(WebSocketReceiveType, size_t);
+
+  void setBinaryTypeInternal(BinaryType);
+  void logBinaryTypeChangesAfterOpen();
+
+  Member<WebSocketChannel> m_channel;
+
+  State m_state;
+  KURL m_url;
+  uint64_t m_bufferedAmount;
+  // The consumed buffered amount that will be reflected to m_bufferedAmount
+  // later. It will be cleared once reflected.
+  uint64_t m_consumedBufferedAmount;
+  uint64_t m_bufferedAmountAfterClose;
+  BinaryType m_binaryType;
+  int m_binaryTypeChangesAfterOpen;
+  // The subprotocol the server selected.
+  String m_subprotocol;
+  String m_extensions;
+
+  Member<EventQueue> m_eventQueue;
+  Timer<DOMWebSocket> m_bufferedAmountConsumeTimer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWebSocket_h
+#endif  // DOMWebSocket_h

@@ -42,42 +42,48 @@ class SQLErrorData;
 class SQLResultSet;
 class SQLStatement;
 
-class SQLStatementBackend final : public GarbageCollectedFinalized<SQLStatementBackend> {
-public:
-    static SQLStatementBackend* create(SQLStatement*,
-        const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
-    DECLARE_TRACE();
+class SQLStatementBackend final
+    : public GarbageCollectedFinalized<SQLStatementBackend> {
+ public:
+  static SQLStatementBackend* create(SQLStatement*,
+                                     const String& sqlStatement,
+                                     const Vector<SQLValue>& arguments,
+                                     int permissions);
+  DECLARE_TRACE();
 
-    bool execute(Database*);
-    bool lastExecutionFailedDueToQuota() const;
+  bool execute(Database*);
+  bool lastExecutionFailedDueToQuota() const;
 
-    bool hasStatementCallback() const { return m_hasCallback; }
-    bool hasStatementErrorCallback() const { return m_hasErrorCallback; }
+  bool hasStatementCallback() const { return m_hasCallback; }
+  bool hasStatementErrorCallback() const { return m_hasErrorCallback; }
 
-    void setVersionMismatchedError(Database*);
+  void setVersionMismatchedError(Database*);
 
-    SQLStatement* frontend();
-    SQLErrorData* sqlError() const;
-    SQLResultSet* sqlResultSet() const;
+  SQLStatement* frontend();
+  SQLErrorData* sqlError() const;
+  SQLResultSet* sqlResultSet() const;
 
-private:
-    SQLStatementBackend(SQLStatement*, const String& statement, const Vector<SQLValue>& arguments, int permissions);
+ private:
+  SQLStatementBackend(SQLStatement*,
+                      const String& statement,
+                      const Vector<SQLValue>& arguments,
+                      int permissions);
 
-    void setFailureDueToQuota(Database*);
-    void clearFailureDueToQuota();
+  void setFailureDueToQuota(Database*);
+  void clearFailureDueToQuota();
 
-    Member<SQLStatement> m_frontend;
-    String m_statement;
-    Vector<SQLValue> m_arguments;
-    bool m_hasCallback;
-    bool m_hasErrorCallback;
+  Member<SQLStatement> m_frontend;
+  String m_statement;
+  Vector<SQLValue> m_arguments;
+  bool m_hasCallback;
+  bool m_hasErrorCallback;
 
-    std::unique_ptr<SQLErrorData> m_error;
-    Member<SQLResultSet> m_resultSet;
+  std::unique_ptr<SQLErrorData> m_error;
+  Member<SQLResultSet> m_resultSet;
 
-    int m_permissions;
+  int m_permissions;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLStatementBackend_h
+#endif  // SQLStatementBackend_h

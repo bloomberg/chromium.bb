@@ -41,51 +41,40 @@ namespace blink {
 //
 // Negative lengths can be used to express insets.
 class PLATFORM_EXPORT IntRectOutsets {
-    DISALLOW_NEW();
-public:
-    IntRectOutsets()
-        : m_top(0)
-        , m_right(0)
-        , m_bottom(0)
-        , m_left(0)
-    {
-    }
+  DISALLOW_NEW();
 
-    IntRectOutsets(int top, int right, int bottom, int left)
-        : m_top(top)
-        , m_right(right)
-        , m_bottom(bottom)
-        , m_left(left)
-    {
-    }
+ public:
+  IntRectOutsets() : m_top(0), m_right(0), m_bottom(0), m_left(0) {}
 
-    int top() const { return m_top; }
-    int right() const { return m_right; }
-    int bottom() const { return m_bottom; }
-    int left() const { return m_left; }
+  IntRectOutsets(int top, int right, int bottom, int left)
+      : m_top(top), m_right(right), m_bottom(bottom), m_left(left) {}
 
-    void setTop(int top) { m_top = top; }
-    void setRight(int right) { m_right = right; }
-    void setBottom(int bottom) { m_bottom = bottom; }
-    void setLeft(int left) { m_left = left; }
+  int top() const { return m_top; }
+  int right() const { return m_right; }
+  int bottom() const { return m_bottom; }
+  int left() const { return m_left; }
 
-    bool isZero() const { return !left() && !right() && !top() && !bottom(); }
+  void setTop(int top) { m_top = top; }
+  void setRight(int right) { m_right = right; }
+  void setBottom(int bottom) { m_bottom = bottom; }
+  void setLeft(int left) { m_left = left; }
 
-private:
-    int m_top;
-    int m_right;
-    int m_bottom;
-    int m_left;
+  bool isZero() const { return !left() && !right() && !top() && !bottom(); }
+
+ private:
+  int m_top;
+  int m_right;
+  int m_bottom;
+  int m_left;
 };
 
-inline void operator+=(IntRectOutsets& a, const IntRectOutsets& b)
-{
-    a.setTop(a.top() + b.top());
-    a.setRight(a.right() + b.right());
-    a.setBottom(a.bottom() + b.bottom());
-    a.setLeft(a.left() + b.left());
+inline void operator+=(IntRectOutsets& a, const IntRectOutsets& b) {
+  a.setTop(a.top() + b.top());
+  a.setRight(a.right() + b.right());
+  a.setBottom(a.bottom() + b.bottom());
+  a.setLeft(a.left() + b.left());
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IntRectOutsets_h
+#endif  // IntRectOutsets_h

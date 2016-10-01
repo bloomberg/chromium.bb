@@ -32,28 +32,25 @@
 
 namespace blink {
 
-void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
-{
-    for (const auto& cache : m_atomicNameCaches)
-        cache.value->invalidateCacheForAttribute(attrName);
+void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName) {
+  for (const auto& cache : m_atomicNameCaches)
+    cache.value->invalidateCacheForAttribute(attrName);
 
-    if (attrName)
-        return;
+  if (attrName)
+    return;
 
-    for (auto& cache : m_tagCollectionCacheNS)
-        cache.value->invalidateCache();
+  for (auto& cache : m_tagCollectionCacheNS)
+    cache.value->invalidateCache();
 }
 
-DEFINE_TRACE(NodeListsNodeData)
-{
-    visitor->trace(m_childNodeList);
-    visitor->trace(m_atomicNameCaches);
-    visitor->trace(m_tagCollectionCacheNS);
+DEFINE_TRACE(NodeListsNodeData) {
+  visitor->trace(m_childNodeList);
+  visitor->trace(m_atomicNameCaches);
+  visitor->trace(m_tagCollectionCacheNS);
 }
 
-DEFINE_TRACE_WRAPPERS(NodeListsNodeData)
-{
-    visitor->traceWrappers(m_childNodeList);
+DEFINE_TRACE_WRAPPERS(NodeListsNodeData) {
+  visitor->traceWrappers(m_childNodeList);
 }
 
-} // namespace blink
+}  // namespace blink

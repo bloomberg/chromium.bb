@@ -20,40 +20,42 @@ class InspectedFrames;
 
 // Inspector Agent for Web Performance APIs
 class CORE_EXPORT InspectorWebPerfAgent final
-    : public GarbageCollectedFinalized<InspectorWebPerfAgent>
-    , public WebThread::TaskObserver
-    , public scheduler::TaskTimeObserver {
-    WTF_MAKE_NONCOPYABLE(InspectorWebPerfAgent);
-    friend class InspectorWebPerfAgentTest;
-public:
-    explicit InspectorWebPerfAgent(InspectedFrames*);
-    ~InspectorWebPerfAgent();
-    DECLARE_VIRTUAL_TRACE();
+    : public GarbageCollectedFinalized<InspectorWebPerfAgent>,
+      public WebThread::TaskObserver,
+      public scheduler::TaskTimeObserver {
+  WTF_MAKE_NONCOPYABLE(InspectorWebPerfAgent);
+  friend class InspectorWebPerfAgentTest;
 
-    void enable();
-    void disable();
+ public:
+  explicit InspectorWebPerfAgent(InspectedFrames*);
+  ~InspectorWebPerfAgent();
+  DECLARE_VIRTUAL_TRACE();
 
-    void willExecuteScript(ExecutionContext*);
-    void didExecuteScript();
+  void enable();
+  void disable();
 
-    // WebThread::TaskObserver implementation.
-    void willProcessTask() override;
-    void didProcessTask() override;
+  void willExecuteScript(ExecutionContext*);
+  void didExecuteScript();
 
-    // scheduler::TaskTimeObserver implementation
-    void ReportTaskTime(
-        scheduler::TaskQueue*,
-        double startTime,
-        double endTime) override;
+  // WebThread::TaskObserver implementation.
+  void willProcessTask() override;
+  void didProcessTask() override;
 
-private:
-    bool m_enabled;
-    String sanitizedLongTaskName(const HeapHashSet<Member<Location>>& frameContextLocations, Frame* rootFrame);
+  // scheduler::TaskTimeObserver implementation
+  void ReportTaskTime(scheduler::TaskQueue*,
+                      double startTime,
+                      double endTime) override;
 
-    Member<InspectedFrames> m_inspectedFrames;
-    HeapHashSet<Member<Location>> m_frameContextLocations;
+ private:
+  bool m_enabled;
+  String sanitizedLongTaskName(
+      const HeapHashSet<Member<Location>>& frameContextLocations,
+      Frame* rootFrame);
+
+  Member<InspectedFrames> m_inspectedFrames;
+  HeapHashSet<Member<Location>> m_frameContextLocations;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InspectorWebPerfAgent_h
+#endif  // InspectorWebPerfAgent_h

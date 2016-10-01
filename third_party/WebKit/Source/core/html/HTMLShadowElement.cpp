@@ -40,43 +40,43 @@ namespace blink {
 class Document;
 
 inline HTMLShadowElement::HTMLShadowElement(Document& document)
-    : InsertionPoint(HTMLNames::shadowTag, document)
-{
-}
+    : InsertionPoint(HTMLNames::shadowTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLShadowElement)
 
-HTMLShadowElement::~HTMLShadowElement()
-{
+HTMLShadowElement::~HTMLShadowElement() {}
+
+ShadowRoot* HTMLShadowElement::olderShadowRoot() {
+  ShadowRoot* containingRoot = containingShadowRoot();
+  if (!containingRoot)
+    return nullptr;
+
+  updateDistribution();
+
+  ShadowRoot* older = containingRoot->olderShadowRoot();
+  if (!older || !older->isOpenOrV0() ||
+      older->shadowInsertionPointOfYoungerShadowRoot() != this)
+    return nullptr;
+
+  DCHECK(older->isOpenOrV0());
+  return older;
 }
 
-ShadowRoot* HTMLShadowElement::olderShadowRoot()
-{
-    ShadowRoot* containingRoot = containingShadowRoot();
-    if (!containingRoot)
-        return nullptr;
-
-    updateDistribution();
-
-    ShadowRoot* older = containingRoot->olderShadowRoot();
-    if (!older || !older->isOpenOrV0() || older->shadowInsertionPointOfYoungerShadowRoot() != this)
-        return nullptr;
-
-    DCHECK(older->isOpenOrV0());
-    return older;
-}
-
-Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode* insertionPoint)
-{
-    if (insertionPoint->isConnected()) {
-        // Warn if trying to reproject between user agent and author shadows.
-        ShadowRoot* root = containingShadowRoot();
-        if (root && root->olderShadowRoot() && root->type() != root->olderShadowRoot()->type()) {
-            String message = String::format("<shadow> doesn't work for %s element host.", root->host().tagName().utf8().data());
-            document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel, message));
-        }
+Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(
+    ContainerNode* insertionPoint) {
+  if (insertionPoint->isConnected()) {
+    // Warn if trying to reproject between user agent and author shadows.
+    ShadowRoot* root = containingShadowRoot();
+    if (root && root->olderShadowRoot() &&
+        root->type() != root->olderShadowRoot()->type()) {
+      String message =
+          String::format("<shadow> doesn't work for %s element host.",
+                         root->host().tagName().utf8().data());
+      document().addConsoleMessage(ConsoleMessage::create(
+          RenderingMessageSource, WarningMessageLevel, message));
     }
-    return InsertionPoint::insertedInto(insertionPoint);
+  }
+  return InsertionPoint::insertedInto(insertionPoint);
 }
 
-} // namespace blink
+}  // namespace blink

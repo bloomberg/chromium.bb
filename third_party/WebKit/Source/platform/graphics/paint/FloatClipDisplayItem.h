@@ -13,48 +13,54 @@ namespace blink {
 
 class RoundedRect;
 
-class PLATFORM_EXPORT FloatClipDisplayItem final : public PairedBeginDisplayItem {
-public:
-    FloatClipDisplayItem(const DisplayItemClient& client, Type type, const FloatRect& clipRect)
-        : PairedBeginDisplayItem(client, type, sizeof(*this))
-        , m_clipRect(clipRect)
-    {
-        ASSERT(isFloatClipType(type));
-    }
+class PLATFORM_EXPORT FloatClipDisplayItem final
+    : public PairedBeginDisplayItem {
+ public:
+  FloatClipDisplayItem(const DisplayItemClient& client,
+                       Type type,
+                       const FloatRect& clipRect)
+      : PairedBeginDisplayItem(client, type, sizeof(*this)),
+        m_clipRect(clipRect) {
+    ASSERT(isFloatClipType(type));
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-private:
+ private:
 #ifndef NDEBUG
-    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    bool equals(const DisplayItem& other) const final
-    {
-        return DisplayItem::equals(other)
-            && m_clipRect == static_cast<const FloatClipDisplayItem&>(other).m_clipRect;
-    }
+  bool equals(const DisplayItem& other) const final {
+    return DisplayItem::equals(other) &&
+           m_clipRect ==
+               static_cast<const FloatClipDisplayItem&>(other).m_clipRect;
+  }
 
-    const FloatRect m_clipRect;
+  const FloatRect m_clipRect;
 };
 
-class PLATFORM_EXPORT EndFloatClipDisplayItem final : public PairedEndDisplayItem {
-public:
-    EndFloatClipDisplayItem(const DisplayItemClient& client, Type type)
-        : PairedEndDisplayItem(client, type, sizeof(*this))
-    {
-        ASSERT(isEndFloatClipType(type));
-    }
+class PLATFORM_EXPORT EndFloatClipDisplayItem final
+    : public PairedEndDisplayItem {
+ public:
+  EndFloatClipDisplayItem(const DisplayItemClient& client, Type type)
+      : PairedEndDisplayItem(client, type, sizeof(*this)) {
+    ASSERT(isEndFloatClipType(type));
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-private:
+ private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return DisplayItem::isFloatClipType(otherType); }
+  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
+    return DisplayItem::isFloatClipType(otherType);
+  }
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FloatClipDisplayItem_h
+#endif  // FloatClipDisplayItem_h

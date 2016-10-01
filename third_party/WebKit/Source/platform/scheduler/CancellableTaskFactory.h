@@ -21,74 +21,77 @@ namespace blink {
 class TraceLocation;
 
 class PLATFORM_EXPORT CancellableTaskFactory {
-    WTF_MAKE_NONCOPYABLE(CancellableTaskFactory);
-    USING_FAST_MALLOC(CancellableTaskFactory);
-public:
-    // A pair of mutually exclusive factory methods are provided for constructing
-    // a CancellableTaskFactory, one for when a Oilpan heap object owns a
-    // CancellableTaskFactory, and one when that owning object isn't controlled
-    // by Oilpan.
-    //
-    // In the Oilpan case, as WTF::Closure objects are off-heap, we have to construct the
-    // closure in such a manner that it doesn't end up referring back to the owning heap
-    // object with a strong Persistent<> GC root reference. If we do, this will create
-    // a heap <-> off-heap cycle and leak, the owning object can never be GCed.
-    // Instead, the closure will keep an off-heap persistent reference of the weak
-    // variety, which will refer back to the owner heap object safely (but weakly.)
-    //
-    template<typename T>
-    static std::unique_ptr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<IsGarbageCollectedType<T>::value>::type* = nullptr)
-    {
-        return wrapUnique(new CancellableTaskFactory(WTF::bind(method, wrapWeakPersistent(thisObject))));
-    }
+  WTF_MAKE_NONCOPYABLE(CancellableTaskFactory);
+  USING_FAST_MALLOC(CancellableTaskFactory);
 
-    template<typename T>
-    static std::unique_ptr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<!IsGarbageCollectedType<T>::value>::type* = nullptr)
-    {
-        return wrapUnique(new CancellableTaskFactory(WTF::bind(method, WTF::unretained(thisObject))));
-    }
+ public:
+  // A pair of mutually exclusive factory methods are provided for constructing
+  // a CancellableTaskFactory, one for when a Oilpan heap object owns a
+  // CancellableTaskFactory, and one when that owning object isn't controlled
+  // by Oilpan.
+  //
+  // In the Oilpan case, as WTF::Closure objects are off-heap, we have to construct the
+  // closure in such a manner that it doesn't end up referring back to the owning heap
+  // object with a strong Persistent<> GC root reference. If we do, this will create
+  // a heap <-> off-heap cycle and leak, the owning object can never be GCed.
+  // Instead, the closure will keep an off-heap persistent reference of the weak
+  // variety, which will refer back to the owner heap object safely (but weakly.)
+  //
+  template <typename T>
+  static std::unique_ptr<CancellableTaskFactory> create(
+      T* thisObject,
+      void (T::*method)(),
+      typename std::enable_if<IsGarbageCollectedType<T>::value>::type* =
+          nullptr) {
+    return wrapUnique(new CancellableTaskFactory(
+        WTF::bind(method, wrapWeakPersistent(thisObject))));
+  }
 
-    bool isPending() const
-    {
-        return m_weakPtrFactory.hasWeakPtrs();
-    }
+  template <typename T>
+  static std::unique_ptr<CancellableTaskFactory> create(
+      T* thisObject,
+      void (T::*method)(),
+      typename std::enable_if<!IsGarbageCollectedType<T>::value>::type* =
+          nullptr) {
+    return wrapUnique(new CancellableTaskFactory(
+        WTF::bind(method, WTF::unretained(thisObject))));
+  }
 
-    void cancel();
+  bool isPending() const { return m_weakPtrFactory.hasWeakPtrs(); }
 
-    // Returns a task that can be disabled by calling cancel().  The user takes
-    // ownership of the task.  Creating a new task cancels any previous ones.
-    WebTaskRunner::Task* cancelAndCreate();
+  void cancel();
 
-protected:
-    // Only intended used by unit tests wanting to stack allocate and/or pass in a closure value.
-    // Please use the create() factory method elsewhere.
-    explicit CancellableTaskFactory(std::unique_ptr<WTF::Closure> closure)
-        : m_closure(std::move(closure))
-        , m_weakPtrFactory(this)
-    {
-    }
+  // Returns a task that can be disabled by calling cancel().  The user takes
+  // ownership of the task.  Creating a new task cancels any previous ones.
+  WebTaskRunner::Task* cancelAndCreate();
 
-private:
-    class CancellableTask : public WebTaskRunner::Task {
-        USING_FAST_MALLOC(CancellableTask);
-        WTF_MAKE_NONCOPYABLE(CancellableTask);
+ protected:
+  // Only intended used by unit tests wanting to stack allocate and/or pass in a closure value.
+  // Please use the create() factory method elsewhere.
+  explicit CancellableTaskFactory(std::unique_ptr<WTF::Closure> closure)
+      : m_closure(std::move(closure)), m_weakPtrFactory(this) {}
 
-    public:
-        explicit CancellableTask(WeakPtr<CancellableTaskFactory> weakPtr)
-            : m_weakPtr(weakPtr) {}
+ private:
+  class CancellableTask : public WebTaskRunner::Task {
+    USING_FAST_MALLOC(CancellableTask);
+    WTF_MAKE_NONCOPYABLE(CancellableTask);
 
-        ~CancellableTask() override {}
+   public:
+    explicit CancellableTask(WeakPtr<CancellableTaskFactory> weakPtr)
+        : m_weakPtr(weakPtr) {}
 
-        void run() override;
+    ~CancellableTask() override {}
 
-    private:
-        WeakPtr<CancellableTaskFactory> m_weakPtr;
-    };
+    void run() override;
 
-    std::unique_ptr<WTF::Closure> m_closure;
-    WeakPtrFactory<CancellableTaskFactory> m_weakPtrFactory;
+   private:
+    WeakPtr<CancellableTaskFactory> m_weakPtr;
+  };
+
+  std::unique_ptr<WTF::Closure> m_closure;
+  WeakPtrFactory<CancellableTaskFactory> m_weakPtrFactory;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CancellableTaskFactory_h
+#endif  // CancellableTaskFactory_h

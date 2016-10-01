@@ -32,51 +32,44 @@ extern "C" {
 // Kill ring calls. Would be better to use NSKillRing.h, but that's not available as API or SPI.
 
 void _NSInitializeKillRing();
-void _NSAppendToKillRing(NSString *);
-void _NSPrependToKillRing(NSString *);
-NSString *_NSYankFromKillRing();
+void _NSAppendToKillRing(NSString*);
+void _NSPrependToKillRing(NSString*);
+NSString* _NSYankFromKillRing();
 void _NSNewKillRingSequence();
 void _NSSetKillRingToYankedState();
-
 }
 
-static void initializeKillRingIfNeeded()
-{
-    static bool initializedKillRing = false;
-    if (!initializedKillRing) {
-        initializedKillRing = true;
-        _NSInitializeKillRing();
-    }
+static void initializeKillRingIfNeeded() {
+  static bool initializedKillRing = false;
+  if (!initializedKillRing) {
+    initializedKillRing = true;
+    _NSInitializeKillRing();
+  }
 }
 
-void KillRing::append(const String& string)
-{
-    initializeKillRingIfNeeded();
-    _NSAppendToKillRing(string);
+void KillRing::append(const String& string) {
+  initializeKillRingIfNeeded();
+  _NSAppendToKillRing(string);
 }
 
-void KillRing::prepend(const String& string)
-{
-    initializeKillRingIfNeeded();
-    _NSPrependToKillRing(string);
+void KillRing::prepend(const String& string) {
+  initializeKillRingIfNeeded();
+  _NSPrependToKillRing(string);
 }
 
-String KillRing::yank()
-{
-    initializeKillRingIfNeeded();
-    return _NSYankFromKillRing();
+String KillRing::yank() {
+  initializeKillRingIfNeeded();
+  return _NSYankFromKillRing();
 }
 
-void KillRing::startNewSequence()
-{
-    initializeKillRingIfNeeded();
-    _NSNewKillRingSequence();
+void KillRing::startNewSequence() {
+  initializeKillRingIfNeeded();
+  _NSNewKillRingSequence();
 }
 
-void KillRing::setToYankedState()
-{
-    initializeKillRingIfNeeded();
-    _NSSetKillRingToYankedState();
+void KillRing::setToYankedState() {
+  initializeKillRingIfNeeded();
+  _NSSetKillRingToYankedState();
 }
 
-} // namespace blink
+}  // namespace blink

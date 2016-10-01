@@ -13,31 +13,30 @@ namespace blink {
 class RTCAnswerOptionsPlatform;
 
 class BLINK_PLATFORM_EXPORT WebRTCAnswerOptions {
-public:
-    WebRTCAnswerOptions(const WebRTCAnswerOptions& other) { assign(other); }
-    ~WebRTCAnswerOptions() { reset(); }
+ public:
+  WebRTCAnswerOptions(const WebRTCAnswerOptions& other) { assign(other); }
+  ~WebRTCAnswerOptions() { reset(); }
 
-    WebRTCAnswerOptions& operator=(const WebRTCAnswerOptions& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebRTCAnswerOptions& operator=(const WebRTCAnswerOptions& other) {
+    assign(other);
+    return *this;
+  }
 
-    void assign(const WebRTCAnswerOptions&);
+  void assign(const WebRTCAnswerOptions&);
 
-    void reset();
-    bool isNull() const { return m_private.isNull(); }
+  void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    bool voiceActivityDetection() const;
+  bool voiceActivityDetection() const;
 
 #if INSIDE_BLINK
-    WebRTCAnswerOptions(RTCAnswerOptionsPlatform*);
+  WebRTCAnswerOptions(RTCAnswerOptionsPlatform*);
 #endif
 
-private:
-    WebPrivatePtr<RTCAnswerOptionsPlatform> m_private;
+ private:
+  WebPrivatePtr<RTCAnswerOptionsPlatform> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRTCAnswerOptions_h
+#endif  // WebRTCAnswerOptions_h

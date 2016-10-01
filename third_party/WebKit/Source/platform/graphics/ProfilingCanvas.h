@@ -38,25 +38,28 @@ namespace blink {
 
 class ProfilingCanvas;
 
-template<> class CanvasInterceptor<ProfilingCanvas> : protected InterceptingCanvasBase::CanvasInterceptorBase<ProfilingCanvas> {
-public:
-    CanvasInterceptor(InterceptingCanvasBase*);
-    ~CanvasInterceptor();
-private:
-    double m_startTime;
+template <>
+class CanvasInterceptor<ProfilingCanvas>
+    : protected InterceptingCanvasBase::CanvasInterceptorBase<ProfilingCanvas> {
+ public:
+  CanvasInterceptor(InterceptingCanvasBase*);
+  ~CanvasInterceptor();
+
+ private:
+  double m_startTime;
 };
 
 class ProfilingCanvas : public InterceptingCanvas<ProfilingCanvas> {
-public:
-    explicit ProfilingCanvas(SkBitmap);
-    void setTimings(Vector<double>*);
+ public:
+  explicit ProfilingCanvas(SkBitmap);
+  void setTimings(Vector<double>*);
 
-private:
-    friend class CanvasInterceptor<ProfilingCanvas>;
+ private:
+  friend class CanvasInterceptor<ProfilingCanvas>;
 
-    Vector<double>* m_timings;
+  Vector<double>* m_timings;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ProfilingCanvas_h
+#endif  // ProfilingCanvas_h

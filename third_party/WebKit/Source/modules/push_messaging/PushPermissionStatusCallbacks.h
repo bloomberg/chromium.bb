@@ -19,24 +19,25 @@ namespace blink {
 class ScriptPromiseResolver;
 
 // Will resolve the underlying promise depending on the permission received.
-class PushPermissionStatusCallbacks final : public WebPushPermissionStatusCallbacks {
-    WTF_MAKE_NONCOPYABLE(PushPermissionStatusCallbacks);
-    USING_FAST_MALLOC(PushPermissionStatusCallbacks);
+class PushPermissionStatusCallbacks final
+    : public WebPushPermissionStatusCallbacks {
+  WTF_MAKE_NONCOPYABLE(PushPermissionStatusCallbacks);
+  USING_FAST_MALLOC(PushPermissionStatusCallbacks);
 
-public:
-    explicit PushPermissionStatusCallbacks(ScriptPromiseResolver*);
-    ~PushPermissionStatusCallbacks() override;
+ public:
+  explicit PushPermissionStatusCallbacks(ScriptPromiseResolver*);
+  ~PushPermissionStatusCallbacks() override;
 
-    void onSuccess(WebPushPermissionStatus) override;
+  void onSuccess(WebPushPermissionStatus) override;
 
-    // Called if for some reason the status of the push permission cannot be checked.
-    void onError(const WebPushError&) override;
+  // Called if for some reason the status of the push permission cannot be checked.
+  void onError(const WebPushError&) override;
 
-private:
-    static WTF::String permissionString(WebPushPermissionStatus);
-    Persistent<ScriptPromiseResolver> m_resolver;
+ private:
+  static WTF::String permissionString(WebPushPermissionStatus);
+  Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PushPermissionStatusCallbacks_h
+#endif  // PushPermissionStatusCallbacks_h

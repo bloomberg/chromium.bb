@@ -38,61 +38,60 @@
 
 namespace blink {
 
-WebSurroundingText::WebSurroundingText()
-{
+WebSurroundingText::WebSurroundingText() {}
+
+WebSurroundingText::~WebSurroundingText() {}
+
+void WebSurroundingText::initialize(const WebNode& webNode,
+                                    const WebPoint& nodePoint,
+                                    size_t maxLength) {
+  const Node* node = webNode.constUnwrap<Node>();
+  if (!node)
+    return;
+
+  // VisiblePosition and SurroundingText must be created with clean layout.
+  node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      node->document().lifecycle());
+
+  if (!node->layoutObject())
+    return;
+
+  m_private.reset(new SurroundingText(
+      createVisiblePosition(node->layoutObject()->positionForPoint(
+                                static_cast<IntPoint>(nodePoint)))
+          .deepEquivalent()
+          .parentAnchoredEquivalent(),
+      maxLength));
 }
 
-WebSurroundingText::~WebSurroundingText()
-{
+void WebSurroundingText::initializeFromCurrentSelection(WebLocalFrame* frame,
+                                                        size_t maxLength) {
+  LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
+  if (Range* range = createRange(
+          webFrame->selection().selection().toNormalizedEphemeralRange()))
+    m_private.reset(new SurroundingText(*range, maxLength));
 }
 
-void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& nodePoint, size_t maxLength)
-{
-    const Node* node = webNode.constUnwrap<Node>();
-    if (!node)
-        return;
-
-    // VisiblePosition and SurroundingText must be created with clean layout.
-    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
-    DocumentLifecycle::DisallowTransitionScope disallowTransition(node->document().lifecycle());
-
-    if (!node->layoutObject())
-        return;
-
-    m_private.reset(new SurroundingText(createVisiblePosition(node->layoutObject()->positionForPoint(static_cast<IntPoint>(nodePoint))).deepEquivalent().parentAnchoredEquivalent(), maxLength));
+WebString WebSurroundingText::textContent() const {
+  return m_private->content();
 }
 
-void WebSurroundingText::initializeFromCurrentSelection(WebLocalFrame* frame, size_t maxLength)
-{
-    LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
-    if (Range* range = createRange(webFrame->selection().selection().toNormalizedEphemeralRange()))
-        m_private.reset(new SurroundingText(*range, maxLength));
+size_t WebSurroundingText::hitOffsetInTextContent() const {
+  DCHECK_EQ(m_private->startOffsetInContent(), m_private->endOffsetInContent());
+  return m_private->startOffsetInContent();
 }
 
-WebString WebSurroundingText::textContent() const
-{
-    return m_private->content();
+size_t WebSurroundingText::startOffsetInTextContent() const {
+  return m_private->startOffsetInContent();
 }
 
-size_t WebSurroundingText::hitOffsetInTextContent() const
-{
-    DCHECK_EQ(m_private->startOffsetInContent(), m_private->endOffsetInContent());
-    return m_private->startOffsetInContent();
+size_t WebSurroundingText::endOffsetInTextContent() const {
+  return m_private->endOffsetInContent();
 }
 
-size_t WebSurroundingText::startOffsetInTextContent() const
-{
-    return m_private->startOffsetInContent();
+bool WebSurroundingText::isNull() const {
+  return !m_private.get();
 }
 
-size_t WebSurroundingText::endOffsetInTextContent() const
-{
-    return m_private->endOffsetInContent();
-}
-
-bool WebSurroundingText::isNull() const
-{
-    return !m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

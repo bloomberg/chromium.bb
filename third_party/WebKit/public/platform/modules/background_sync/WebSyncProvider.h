@@ -17,22 +17,27 @@
 namespace blink {
 
 class WebServiceWorkerRegistration;
-using WebSyncRegistrationCallbacks = WebCallbacks<std::unique_ptr<WebSyncRegistration>, const WebSyncError&>;
-using WebSyncGetRegistrationsCallbacks = WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&>;
+using WebSyncRegistrationCallbacks =
+    WebCallbacks<std::unique_ptr<WebSyncRegistration>, const WebSyncError&>;
+using WebSyncGetRegistrationsCallbacks =
+    WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&>;
 
 class WebSyncProvider {
-public:
-    virtual ~WebSyncProvider() { }
+ public:
+  virtual ~WebSyncProvider() {}
 
-    // Takes ownership of the WebSyncRegistrationCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void registerBackgroundSync(const WebSyncRegistration*, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
+  // Takes ownership of the WebSyncRegistrationCallbacks.
+  // Does not take ownership of the WebServiceWorkerRegistration.
+  virtual void registerBackgroundSync(const WebSyncRegistration*,
+                                      WebServiceWorkerRegistration*,
+                                      WebSyncRegistrationCallbacks*) = 0;
 
-    // Takes ownership of the WebSyncGetRegistrationsCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getRegistrations(WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
+  // Takes ownership of the WebSyncGetRegistrationsCallbacks.
+  // Does not take ownership of the WebServiceWorkerRegistration.
+  virtual void getRegistrations(WebServiceWorkerRegistration*,
+                                WebSyncGetRegistrationsCallbacks*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSyncProvider_h
+#endif  // WebSyncProvider_h

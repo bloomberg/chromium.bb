@@ -10,15 +10,24 @@
 namespace blink {
 
 class AnimationWorkletGlobalScope : public ThreadedWorkletGlobalScope {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static AnimationWorkletGlobalScope* create(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*, WorkerThread*);
-    ~AnimationWorkletGlobalScope() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    AnimationWorkletGlobalScope(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*, WorkerThread*);
+ public:
+  static AnimationWorkletGlobalScope* create(const KURL&,
+                                             const String& userAgent,
+                                             PassRefPtr<SecurityOrigin>,
+                                             v8::Isolate*,
+                                             WorkerThread*);
+  ~AnimationWorkletGlobalScope() override;
+
+ private:
+  AnimationWorkletGlobalScope(const KURL&,
+                              const String& userAgent,
+                              PassRefPtr<SecurityOrigin>,
+                              v8::Isolate*,
+                              WorkerThread*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationWorkletGlobalScope_h
+#endif  // AnimationWorkletGlobalScope_h

@@ -34,36 +34,39 @@ int HashTableStats::numRehashes;
 int HashTableStats::numRemoves;
 int HashTableStats::numReinserts;
 
-static Mutex& hashTableStatsMutex()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
-    return mutex;
+static Mutex& hashTableStatsMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  return mutex;
 }
 
-void HashTableStats::recordCollisionAtCount(int count)
-{
-    MutexLocker lock(hashTableStatsMutex());
-    if (count > maxCollisions)
-        maxCollisions = count;
-    numCollisions++;
-    collisionGraph[count]++;
+void HashTableStats::recordCollisionAtCount(int count) {
+  MutexLocker lock(hashTableStatsMutex());
+  if (count > maxCollisions)
+    maxCollisions = count;
+  numCollisions++;
+  collisionGraph[count]++;
 }
 
-void HashTableStats::dumpStats()
-{
-    MutexLocker lock(hashTableStatsMutex());
+void HashTableStats::dumpStats() {
+  MutexLocker lock(hashTableStatsMutex());
 
-    dataLogF("\nWTF::HashTable statistics\n\n");
-    dataLogF("%d accesses\n", numAccesses);
-    dataLogF("%d total collisions, average %.2f probes per access\n", numCollisions, 1.0 * (numAccesses + numCollisions) / numAccesses);
-    dataLogF("longest collision chain: %d\n", maxCollisions);
-    for (int i = 1; i <= maxCollisions; i++) {
-        dataLogF("  %d lookups with exactly %d collisions (%.2f%% , %.2f%% with this many or more)\n", collisionGraph[i], i, 100.0 * (collisionGraph[i] - collisionGraph[i+1]) / numAccesses, 100.0 * collisionGraph[i] / numAccesses);
-    }
-    dataLogF("%d rehashes\n", numRehashes);
-    dataLogF("%d reinserts\n", numReinserts);
+  dataLogF("\nWTF::HashTable statistics\n\n");
+  dataLogF("%d accesses\n", numAccesses);
+  dataLogF("%d total collisions, average %.2f probes per access\n",
+           numCollisions, 1.0 * (numAccesses + numCollisions) / numAccesses);
+  dataLogF("longest collision chain: %d\n", maxCollisions);
+  for (int i = 1; i <= maxCollisions; i++) {
+    dataLogF(
+        "  %d lookups with exactly %d collisions (%.2f%% , %.2f%% with this "
+        "many or more)\n",
+        collisionGraph[i], i,
+        100.0 * (collisionGraph[i] - collisionGraph[i + 1]) / numAccesses,
+        100.0 * collisionGraph[i] / numAccesses);
+  }
+  dataLogF("%d rehashes\n", numRehashes);
+  dataLogF("%d reinserts\n", numReinserts);
 }
 
-} // namespace WTF
+}  // namespace WTF
 
 #endif

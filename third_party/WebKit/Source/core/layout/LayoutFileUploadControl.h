@@ -33,37 +33,42 @@ class HTMLInputElement;
 // associated with it to receive click/hover events.
 
 class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
-public:
-    LayoutFileUploadControl(HTMLInputElement*);
-    ~LayoutFileUploadControl() override;
+ public:
+  LayoutFileUploadControl(HTMLInputElement*);
+  ~LayoutFileUploadControl() override;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFileUploadControl || LayoutBlockFlow::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectFileUploadControl ||
+           LayoutBlockFlow::isOfType(type);
+  }
 
-    String buttonValue();
-    String fileTextValue() const;
+  String buttonValue();
+  String fileTextValue() const;
 
-    HTMLInputElement* uploadButton() const;
-    int uploadButtonWidth();
+  HTMLInputElement* uploadButton() const;
+  int uploadButtonWidth();
 
-    static const int afterButtonSpacing = 4;
+  static const int afterButtonSpacing = 4;
 
-    const char* name() const override { return "LayoutFileUploadControl"; }
+  const char* name() const override { return "LayoutFileUploadControl"; }
 
-private:
-    void updateFromElement() override;
-    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
-    void computePreferredLogicalWidths() override;
-    void paintObject(const PaintInfo&, const LayoutPoint&) const override;
+ private:
+  void updateFromElement() override;
+  void computeIntrinsicLogicalWidths(
+      LayoutUnit& minLogicalWidth,
+      LayoutUnit& maxLogicalWidth) const override;
+  void computePreferredLogicalWidths() override;
+  void paintObject(const PaintInfo&, const LayoutPoint&) const override;
 
-    int maxFilenameWidth() const;
+  int maxFilenameWidth() const;
 
-    PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
-    bool m_canReceiveDroppedFiles;
+  bool m_canReceiveDroppedFiles;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFileUploadControl, isFileUploadControl());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutFileUploadControl_h
+#endif  // LayoutFileUploadControl_h

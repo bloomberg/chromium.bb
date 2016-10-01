@@ -20,24 +20,35 @@ class LayoutObject;
 class ComputedStyle;
 
 class TableCellPainter {
-    STACK_ALLOCATED();
-public:
-    TableCellPainter(const LayoutTableCell& layoutTableCell) : m_layoutTableCell(layoutTableCell) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&, const LayoutPoint&);
+ public:
+  TableCellPainter(const LayoutTableCell& layoutTableCell)
+      : m_layoutTableCell(layoutTableCell) {}
 
-    void paintCollapsedBorders(const PaintInfo&, const LayoutPoint&, const CollapsedBorderValue&);
-    void paintContainerBackgroundBehindCell(const PaintInfo&, const LayoutPoint&, const LayoutObject& backgroundObject, DisplayItem::Type);
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset);
-    void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
+  void paint(const PaintInfo&, const LayoutPoint&);
 
-private:
-    LayoutRect paintRectNotIncludingVisualOverflow(const LayoutPoint& paintOffset);
-    void paintBackground(const PaintInfo&, const LayoutRect&, const LayoutObject& backgroundObject);
+  void paintCollapsedBorders(const PaintInfo&,
+                             const LayoutPoint&,
+                             const CollapsedBorderValue&);
+  void paintContainerBackgroundBehindCell(const PaintInfo&,
+                                          const LayoutPoint&,
+                                          const LayoutObject& backgroundObject,
+                                          DisplayItem::Type);
+  void paintBoxDecorationBackground(const PaintInfo&,
+                                    const LayoutPoint& paintOffset);
+  void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
 
-    const LayoutTableCell& m_layoutTableCell;
+ private:
+  LayoutRect paintRectNotIncludingVisualOverflow(
+      const LayoutPoint& paintOffset);
+  void paintBackground(const PaintInfo&,
+                       const LayoutRect&,
+                       const LayoutObject& backgroundObject);
+
+  const LayoutTableCell& m_layoutTableCell;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TableCellPainter_h
+#endif  // TableCellPainter_h

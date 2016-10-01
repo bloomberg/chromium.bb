@@ -12,34 +12,39 @@
 
 namespace blink {
 
-void V8ResizeObserverCallback::handleEvent(const HeapVector<Member<ResizeObserverEntry>>& entries, ResizeObserver* observer)
-{
-    if (!canInvokeCallback())
-        return;
+void V8ResizeObserverCallback::handleEvent(
+    const HeapVector<Member<ResizeObserverEntry>>& entries,
+    ResizeObserver* observer) {
+  if (!canInvokeCallback())
+    return;
 
-    v8::Isolate* isolate = m_scriptState->isolate();
+  v8::Isolate* isolate = m_scriptState->isolate();
 
-    if (!m_scriptState->contextIsValid())
-        return;
-    ScriptState::Scope scope(m_scriptState.get());
+  if (!m_scriptState->contextIsValid())
+    return;
+  ScriptState::Scope scope(m_scriptState.get());
 
-    if (m_callback.isEmpty())
-        return;
+  if (m_callback.isEmpty())
+    return;
 
-    v8::Local<v8::Value> observerHandle = toV8(observer, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (!observerHandle->IsObject())
-        return;
+  v8::Local<v8::Value> observerHandle = toV8(
+      observer, m_scriptState->context()->Global(), m_scriptState->isolate());
+  if (!observerHandle->IsObject())
+    return;
 
-    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(observerHandle);
-    v8::Local<v8::Value> entriesHandle = toV8(entries, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (entriesHandle.IsEmpty())
-        return;
-    v8::Local<v8::Value> argv[] = { entriesHandle, observerHandle };
+  v8::Local<v8::Object> thisObject =
+      v8::Local<v8::Object>::Cast(observerHandle);
+  v8::Local<v8::Value> entriesHandle = toV8(
+      entries, m_scriptState->context()->Global(), m_scriptState->isolate());
+  if (entriesHandle.IsEmpty())
+    return;
+  v8::Local<v8::Value> argv[] = {entriesHandle, observerHandle};
 
-    v8::TryCatch exceptionCatcher(m_scriptState->isolate());
-    exceptionCatcher.SetVerbose(true);
-    V8ScriptRunner::callFunction(m_callback.newLocal(isolate), getExecutionContext(), thisObject, WTF_ARRAY_LENGTH(argv), argv, isolate);
+  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
+  exceptionCatcher.SetVerbose(true);
+  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+                               getExecutionContext(), thisObject,
+                               WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
-
-} // namespace blink
+}  // namespace blink

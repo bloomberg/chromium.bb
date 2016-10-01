@@ -8,58 +8,57 @@
 
 namespace blink {
 
-const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
-{
-    switch (reason) {
+const char* paintInvalidationReasonToString(PaintInvalidationReason reason) {
+  switch (reason) {
     case PaintInvalidationNone:
-        return "none";
+      return "none";
     case PaintInvalidationIncremental:
-        return "incremental";
+      return "incremental";
     case PaintInvalidationRectangle:
-        return "invalidate paint rectangle";
+      return "invalidate paint rectangle";
     case PaintInvalidationFull:
-        return "full";
+      return "full";
     case PaintInvalidationStyleChange:
-        return "style change";
+      return "style change";
     case PaintInvalidationForcedByLayout:
-        return "forced by layout";
+      return "forced by layout";
     case PaintInvalidationCompositingUpdate:
-        return "compositing update";
+      return "compositing update";
     case PaintInvalidationBorderBoxChange:
-        return "border box change";
+      return "border box change";
     case PaintInvalidationContentBoxChange:
-        return "content box change";
+      return "content box change";
     case PaintInvalidationLayoutOverflowBoxChange:
-        return "layout overflow box change";
+      return "layout overflow box change";
     case PaintInvalidationBoundsChange:
-        return "bounds change";
+      return "bounds change";
     case PaintInvalidationLocationChange:
-        return "location change";
+      return "location change";
     case PaintInvalidationBackgroundObscurationChange:
-        return "background obscuration change";
+      return "background obscuration change";
     case PaintInvalidationBecameVisible:
-        return "became visible";
+      return "became visible";
     case PaintInvalidationBecameInvisible:
-        return "became invisible";
+      return "became invisible";
     case PaintInvalidationScroll:
-        return "scroll";
+      return "scroll";
     case PaintInvalidationSelection:
-        return "selection";
+      return "selection";
     case PaintInvalidationOutline:
-        return "outline";
+      return "outline";
     case PaintInvalidationSubtree:
-        return "subtree";
+      return "subtree";
     case PaintInvalidationLayoutObjectInsertion:
-        return "layoutObject insertion";
+      return "layoutObject insertion";
     case PaintInvalidationLayoutObjectRemoval:
-        return "layoutObject removal";
+      return "layoutObject removal";
     case PaintInvalidationSVGResourceChange:
-        return "SVG resource change";
+      return "SVG resource change";
     case PaintInvalidationDelayedFull:
-        return "delayed full";
-    }
-    ASSERT_NOT_REACHED();
-    return "";
+      return "delayed full";
+  }
+  ASSERT_NOT_REACHED();
+  return "";
 }
 
-} // namespace blink
+}  // namespace blink

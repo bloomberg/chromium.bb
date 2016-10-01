@@ -42,20 +42,24 @@ class DOMException;
 class ScriptPromiseResolver;
 
 class ServiceWorkerError {
-    STATIC_ONLY(ServiceWorkerError);
-public:
-    // For CallbackPromiseAdapter
-    using WebType = const WebServiceWorkerError&;
-    static DOMException* take(ScriptPromiseResolver*, const WebServiceWorkerError& webError);
+  STATIC_ONLY(ServiceWorkerError);
+
+ public:
+  // For CallbackPromiseAdapter
+  using WebType = const WebServiceWorkerError&;
+  static DOMException* take(ScriptPromiseResolver*,
+                            const WebServiceWorkerError& webError);
 };
 
 class ServiceWorkerErrorForUpdate : public ServiceWorkerError {
-    STATIC_ONLY(ServiceWorkerErrorForUpdate);
-public:
-    // For CallbackPromiseAdapter
-    static v8::Local<v8::Value> take(ScriptPromiseResolver* resolver, const WebServiceWorkerError& webError);
+  STATIC_ONLY(ServiceWorkerErrorForUpdate);
+
+ public:
+  // For CallbackPromiseAdapter
+  static v8::Local<v8::Value> take(ScriptPromiseResolver* resolver,
+                                   const WebServiceWorkerError& webError);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerError_h
+#endif  // ServiceWorkerError_h

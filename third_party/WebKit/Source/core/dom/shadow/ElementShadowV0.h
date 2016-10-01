@@ -35,44 +35,48 @@
 
 namespace blink {
 
-class CORE_EXPORT ElementShadowV0 final : public GarbageCollectedFinalized<ElementShadowV0> {
-    WTF_MAKE_NONCOPYABLE(ElementShadowV0);
-public:
-    static ElementShadowV0* create(ElementShadow&);
-    ~ElementShadowV0();
+class CORE_EXPORT ElementShadowV0 final
+    : public GarbageCollectedFinalized<ElementShadowV0> {
+  WTF_MAKE_NONCOPYABLE(ElementShadowV0);
 
-    void willAffectSelector();
-    const SelectRuleFeatureSet& ensureSelectFeatureSet();
+ public:
+  static ElementShadowV0* create(ElementShadow&);
+  ~ElementShadowV0();
 
-    const InsertionPoint* finalDestinationInsertionPointFor(const Node*) const;
-    const DestinationInsertionPoints* destinationInsertionPointsFor(const Node*) const;
+  void willAffectSelector();
+  const SelectRuleFeatureSet& ensureSelectFeatureSet();
 
-    void distribute();
-    void didDistributeNode(const Node*, InsertionPoint*);
-    void clearDistribution();
+  const InsertionPoint* finalDestinationInsertionPointFor(const Node*) const;
+  const DestinationInsertionPoints* destinationInsertionPointsFor(
+      const Node*) const;
 
-    DECLARE_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+  void distribute();
+  void didDistributeNode(const Node*, InsertionPoint*);
+  void clearDistribution();
 
-private:
-    explicit ElementShadowV0(ElementShadow&);
+  DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    ShadowRoot& youngestShadowRoot() const;
-    ShadowRoot& oldestShadowRoot() const;
+ private:
+  explicit ElementShadowV0(ElementShadow&);
 
-    void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
+  ShadowRoot& youngestShadowRoot() const;
+  ShadowRoot& oldestShadowRoot() const;
 
-    void collectSelectFeatureSetFrom(const ShadowRoot&);
-    bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
-    void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
+  void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
 
-    Member<ElementShadow> m_elementShadow;
-    using NodeToDestinationInsertionPoints = HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>>;
-    NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
-    SelectRuleFeatureSet m_selectFeatures;
-    bool m_needsSelectFeatureSet;
+  void collectSelectFeatureSetFrom(const ShadowRoot&);
+  bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
+  void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
+
+  Member<ElementShadow> m_elementShadow;
+  using NodeToDestinationInsertionPoints =
+      HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>>;
+  NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
+  SelectRuleFeatureSet m_selectFeatures;
+  bool m_needsSelectFeatureSet;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

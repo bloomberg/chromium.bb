@@ -37,49 +37,76 @@ namespace blink {
 using AbstractView = DOMWindow;
 
 class CORE_EXPORT UIEvent : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static UIEvent* create()
-    {
-        return new UIEvent;
-    }
-    static UIEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, int detail)
-    {
-        return new UIEvent(type, canBubble, cancelable, ComposedMode::Scoped, view, detail);
-    }
-    static UIEvent* create(const AtomicString& type, const UIEventInit& initializer)
-    {
-        return new UIEvent(type, initializer);
-    }
-    ~UIEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*, int detail);
-    void initUIEventInternal(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities);
+ public:
+  static UIEvent* create() { return new UIEvent; }
+  static UIEvent* create(const AtomicString& type,
+                         bool canBubble,
+                         bool cancelable,
+                         AbstractView* view,
+                         int detail) {
+    return new UIEvent(type, canBubble, cancelable, ComposedMode::Scoped, view,
+                       detail);
+  }
+  static UIEvent* create(const AtomicString& type,
+                         const UIEventInit& initializer) {
+    return new UIEvent(type, initializer);
+  }
+  ~UIEvent() override;
 
-    AbstractView* view() const { return m_view.get(); }
-    int detail() const { return m_detail; }
-    InputDeviceCapabilities* sourceCapabilities() const { return m_sourceCapabilities.get(); }
+  void initUIEvent(const AtomicString& type,
+                   bool canBubble,
+                   bool cancelable,
+                   AbstractView*,
+                   int detail);
+  void initUIEventInternal(const AtomicString& type,
+                           bool canBubble,
+                           bool cancelable,
+                           EventTarget* relatedTarget,
+                           AbstractView*,
+                           int detail,
+                           InputDeviceCapabilities* sourceCapabilities);
 
-    const AtomicString& interfaceName() const override;
-    bool isUIEvent() const final;
+  AbstractView* view() const { return m_view.get(); }
+  int detail() const { return m_detail; }
+  InputDeviceCapabilities* sourceCapabilities() const {
+    return m_sourceCapabilities.get();
+  }
 
-    virtual int which() const;
+  const AtomicString& interfaceName() const override;
+  bool isUIEvent() const final;
 
-    DECLARE_VIRTUAL_TRACE();
+  virtual int which() const;
 
-protected:
-    UIEvent();
-    // TODO(crbug.com/563542): Remove of this ctor in favor of making platformTimeStamp (and perhaps sourceCapabilities) required in all constructions sites
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode, double platformTimeStamp, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities);
-    UIEvent(const AtomicString&, const UIEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    Member<AbstractView> m_view;
-    int m_detail;
-    Member<InputDeviceCapabilities> m_sourceCapabilities;
+ protected:
+  UIEvent();
+  // TODO(crbug.com/563542): Remove of this ctor in favor of making platformTimeStamp (and perhaps sourceCapabilities) required in all constructions sites
+  UIEvent(const AtomicString& type,
+          bool canBubble,
+          bool cancelable,
+          ComposedMode,
+          AbstractView*,
+          int detail,
+          InputDeviceCapabilities* sourceCapabilities = nullptr);
+  UIEvent(const AtomicString& type,
+          bool canBubble,
+          bool cancelable,
+          ComposedMode,
+          double platformTimeStamp,
+          AbstractView*,
+          int detail,
+          InputDeviceCapabilities* sourceCapabilities);
+  UIEvent(const AtomicString&, const UIEventInit&);
+
+ private:
+  Member<AbstractView> m_view;
+  int m_detail;
+  Member<InputDeviceCapabilities> m_sourceCapabilities;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UIEvent_h
+#endif  // UIEvent_h

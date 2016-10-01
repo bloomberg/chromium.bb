@@ -38,113 +38,100 @@ namespace blink {
 using namespace HTMLNames;
 
 Attr::Attr(Element& element, const QualifiedName& name)
-    : Node(&element.document(), CreateOther)
-    , m_element(&element)
-    , m_name(name)
-{
+    : Node(&element.document(), CreateOther),
+      m_element(&element),
+      m_name(name) {}
+
+Attr::Attr(Document& document,
+           const QualifiedName& name,
+           const AtomicString& standaloneValue)
+    : Node(&document, CreateOther),
+      m_element(nullptr),
+      m_name(name),
+      m_standaloneValueOrAttachedLocalName(standaloneValue) {}
+
+Attr* Attr::create(Element& element, const QualifiedName& name) {
+  return new Attr(element, name);
 }
 
-Attr::Attr(Document& document, const QualifiedName& name, const AtomicString& standaloneValue)
-    : Node(&document, CreateOther)
-    , m_element(nullptr)
-    , m_name(name)
-    , m_standaloneValueOrAttachedLocalName(standaloneValue)
-{
+Attr* Attr::create(Document& document,
+                   const QualifiedName& name,
+                   const AtomicString& value) {
+  return new Attr(document, name, value);
 }
 
-Attr* Attr::create(Element& element, const QualifiedName& name)
-{
-    return new Attr(element, name);
+Attr::~Attr() {}
+
+const QualifiedName Attr::getQualifiedName() const {
+  if (m_element && !m_standaloneValueOrAttachedLocalName.isNull()) {
+    // In the unlikely case the Element attribute has a local name
+    // that differs by case, construct the qualified name based on
+    // it. This is the qualified name that must be used when
+    // looking up the attribute on the element.
+    return QualifiedName(m_name.prefix(), m_standaloneValueOrAttachedLocalName,
+                         m_name.namespaceURI());
+  }
+
+  return m_name;
 }
 
-Attr* Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
-{
-    return new Attr(document, name, value);
+const AtomicString& Attr::value() const {
+  if (m_element)
+    return m_element->getAttribute(getQualifiedName());
+  return m_standaloneValueOrAttachedLocalName;
 }
 
-Attr::~Attr()
-{
-}
-
-const QualifiedName Attr::getQualifiedName() const
-{
-    if (m_element && !m_standaloneValueOrAttachedLocalName.isNull()) {
-        // In the unlikely case the Element attribute has a local name
-        // that differs by case, construct the qualified name based on
-        // it. This is the qualified name that must be used when
-        // looking up the attribute on the element.
-        return QualifiedName(m_name.prefix(), m_standaloneValueOrAttachedLocalName, m_name.namespaceURI());
-    }
-
-    return m_name;
-}
-
-const AtomicString& Attr::value() const
-{
-    if (m_element)
-        return m_element->getAttribute(getQualifiedName());
-    return m_standaloneValueOrAttachedLocalName;
-}
-
-void Attr::setValue(const AtomicString& value)
-{
-    if (m_element)
-        m_element->setAttribute(getQualifiedName(), value);
-    else
-        m_standaloneValueOrAttachedLocalName = value;
-}
-
-const AtomicString& Attr::valueForBindings() const
-{
-    UseCounter::count(document(), UseCounter::AttrGetValue);
-    return value();
-}
-
-void Attr::setValueForBindings(const AtomicString& value)
-{
-    UseCounter::count(document(), UseCounter::AttrSetValue);
-    if (m_element)
-        UseCounter::count(document(), UseCounter::AttrSetValueWithElement);
-    setValue(value);
-}
-
-void Attr::setNodeValue(const String& v)
-{
-    // Attr uses AtomicString type for its value to save memory as there
-    // is duplication among Elements' attributes values.
-    setValue(AtomicString(v));
-}
-
-Node* Attr::cloneNode(bool /*deep*/)
-{
-    UseCounter::count(document(), UseCounter::AttrCloneNode);
-    return new Attr(document(), m_name, value());
-}
-
-void Attr::detachFromElementWithValue(const AtomicString& value)
-{
-    DCHECK(m_element);
+void Attr::setValue(const AtomicString& value) {
+  if (m_element)
+    m_element->setAttribute(getQualifiedName(), value);
+  else
     m_standaloneValueOrAttachedLocalName = value;
-    m_element = nullptr;
 }
 
-void Attr::attachToElement(Element* element, const AtomicString& attachedLocalName)
-{
-    DCHECK(!m_element);
-    m_element = element;
-    m_standaloneValueOrAttachedLocalName = attachedLocalName;
+const AtomicString& Attr::valueForBindings() const {
+  UseCounter::count(document(), UseCounter::AttrGetValue);
+  return value();
 }
 
-DEFINE_TRACE(Attr)
-{
-    visitor->trace(m_element);
-    Node::trace(visitor);
+void Attr::setValueForBindings(const AtomicString& value) {
+  UseCounter::count(document(), UseCounter::AttrSetValue);
+  if (m_element)
+    UseCounter::count(document(), UseCounter::AttrSetValueWithElement);
+  setValue(value);
 }
 
-DEFINE_TRACE_WRAPPERS(Attr)
-{
-    visitor->traceWrappers(m_element);
-    Node::traceWrappers(visitor);
+void Attr::setNodeValue(const String& v) {
+  // Attr uses AtomicString type for its value to save memory as there
+  // is duplication among Elements' attributes values.
+  setValue(AtomicString(v));
 }
 
-} // namespace blink
+Node* Attr::cloneNode(bool /*deep*/) {
+  UseCounter::count(document(), UseCounter::AttrCloneNode);
+  return new Attr(document(), m_name, value());
+}
+
+void Attr::detachFromElementWithValue(const AtomicString& value) {
+  DCHECK(m_element);
+  m_standaloneValueOrAttachedLocalName = value;
+  m_element = nullptr;
+}
+
+void Attr::attachToElement(Element* element,
+                           const AtomicString& attachedLocalName) {
+  DCHECK(!m_element);
+  m_element = element;
+  m_standaloneValueOrAttachedLocalName = attachedLocalName;
+}
+
+DEFINE_TRACE(Attr) {
+  visitor->trace(m_element);
+  Node::trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(Attr) {
+  visitor->traceWrappers(m_element);
+  Node::traceWrappers(visitor);
+}
+
+}  // namespace blink

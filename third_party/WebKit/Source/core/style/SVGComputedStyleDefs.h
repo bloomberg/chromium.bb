@@ -43,263 +43,285 @@ namespace blink {
 typedef RefVector<Length> SVGDashArray;
 
 enum SVGPaintType {
-    SVG_PAINTTYPE_RGBCOLOR,
-    SVG_PAINTTYPE_NONE,
-    SVG_PAINTTYPE_CURRENTCOLOR,
-    SVG_PAINTTYPE_URI_NONE,
-    SVG_PAINTTYPE_URI_CURRENTCOLOR,
-    SVG_PAINTTYPE_URI_RGBCOLOR,
-    SVG_PAINTTYPE_URI
+  SVG_PAINTTYPE_RGBCOLOR,
+  SVG_PAINTTYPE_NONE,
+  SVG_PAINTTYPE_CURRENTCOLOR,
+  SVG_PAINTTYPE_URI_NONE,
+  SVG_PAINTTYPE_URI_CURRENTCOLOR,
+  SVG_PAINTTYPE_URI_RGBCOLOR,
+  SVG_PAINTTYPE_URI
 };
 
-enum EBaselineShift {
-    BS_LENGTH, BS_SUB, BS_SUPER
-};
+enum EBaselineShift { BS_LENGTH, BS_SUB, BS_SUPER };
 
-enum ETextAnchor {
-    TA_START, TA_MIDDLE, TA_END
-};
+enum ETextAnchor { TA_START, TA_MIDDLE, TA_END };
 
-enum EColorInterpolation {
-    CI_AUTO, CI_SRGB, CI_LINEARRGB
-};
+enum EColorInterpolation { CI_AUTO, CI_SRGB, CI_LINEARRGB };
 
-enum EColorRendering {
-    CR_AUTO, CR_OPTIMIZESPEED, CR_OPTIMIZEQUALITY
-};
+enum EColorRendering { CR_AUTO, CR_OPTIMIZESPEED, CR_OPTIMIZEQUALITY };
 enum EShapeRendering {
-    SR_AUTO, SR_OPTIMIZESPEED, SR_CRISPEDGES, SR_GEOMETRICPRECISION
+  SR_AUTO,
+  SR_OPTIMIZESPEED,
+  SR_CRISPEDGES,
+  SR_GEOMETRICPRECISION
 };
 
 enum EAlignmentBaseline {
-    AB_AUTO, AB_BASELINE, AB_BEFORE_EDGE, AB_TEXT_BEFORE_EDGE,
-    AB_MIDDLE, AB_CENTRAL, AB_AFTER_EDGE, AB_TEXT_AFTER_EDGE,
-    AB_IDEOGRAPHIC, AB_ALPHABETIC, AB_HANGING, AB_MATHEMATICAL
+  AB_AUTO,
+  AB_BASELINE,
+  AB_BEFORE_EDGE,
+  AB_TEXT_BEFORE_EDGE,
+  AB_MIDDLE,
+  AB_CENTRAL,
+  AB_AFTER_EDGE,
+  AB_TEXT_AFTER_EDGE,
+  AB_IDEOGRAPHIC,
+  AB_ALPHABETIC,
+  AB_HANGING,
+  AB_MATHEMATICAL
 };
 
 enum EDominantBaseline {
-    DB_AUTO, DB_USE_SCRIPT, DB_NO_CHANGE, DB_RESET_SIZE,
-    DB_IDEOGRAPHIC, DB_ALPHABETIC, DB_HANGING, DB_MATHEMATICAL,
-    DB_CENTRAL, DB_MIDDLE, DB_TEXT_AFTER_EDGE, DB_TEXT_BEFORE_EDGE
+  DB_AUTO,
+  DB_USE_SCRIPT,
+  DB_NO_CHANGE,
+  DB_RESET_SIZE,
+  DB_IDEOGRAPHIC,
+  DB_ALPHABETIC,
+  DB_HANGING,
+  DB_MATHEMATICAL,
+  DB_CENTRAL,
+  DB_MIDDLE,
+  DB_TEXT_AFTER_EDGE,
+  DB_TEXT_BEFORE_EDGE
 };
 
-enum EVectorEffect {
-    VE_NONE,
-    VE_NON_SCALING_STROKE
-};
+enum EVectorEffect { VE_NONE, VE_NON_SCALING_STROKE };
 
-enum EBufferedRendering {
-    BR_AUTO,
-    BR_DYNAMIC,
-    BR_STATIC
-};
+enum EBufferedRendering { BR_AUTO, BR_DYNAMIC, BR_STATIC };
 
-enum EMaskType {
-    MT_LUMINANCE,
-    MT_ALPHA
-};
+enum EMaskType { MT_LUMINANCE, MT_ALPHA };
 
 enum EPaintOrderType {
-    PT_NONE    = 0,
-    PT_FILL    = 1,
-    PT_STROKE  = 2,
-    PT_MARKERS = 3
+  PT_NONE = 0,
+  PT_FILL = 1,
+  PT_STROKE = 2,
+  PT_MARKERS = 3
 };
 
 enum EPaintOrder {
-    PaintOrderNormal = 0,
-    PaintOrderFillStrokeMarkers = 1,
-    PaintOrderFillMarkersStroke = 2,
-    PaintOrderStrokeFillMarkers = 3,
-    PaintOrderStrokeMarkersFill = 4,
-    PaintOrderMarkersFillStroke = 5,
-    PaintOrderMarkersStrokeFill = 6
+  PaintOrderNormal = 0,
+  PaintOrderFillStrokeMarkers = 1,
+  PaintOrderFillMarkersStroke = 2,
+  PaintOrderStrokeFillMarkers = 3,
+  PaintOrderStrokeMarkersFill = 4,
+  PaintOrderMarkersFillStroke = 5,
+  PaintOrderMarkersStrokeFill = 6
 };
 
 // Inherited/Non-Inherited Style Datastructures
 class StyleFillData : public RefCounted<StyleFillData> {
-public:
-    static PassRefPtr<StyleFillData> create() { return adoptRef(new StyleFillData); }
-    PassRefPtr<StyleFillData> copy() const { return adoptRef(new StyleFillData(*this)); }
+ public:
+  static PassRefPtr<StyleFillData> create() {
+    return adoptRef(new StyleFillData);
+  }
+  PassRefPtr<StyleFillData> copy() const {
+    return adoptRef(new StyleFillData(*this));
+  }
 
-    bool operator==(const StyleFillData&) const;
-    bool operator!=(const StyleFillData& other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const StyleFillData&) const;
+  bool operator!=(const StyleFillData& other) const {
+    return !(*this == other);
+  }
 
-    float opacity;
-    SVGPaintType paintType;
-    Color paintColor;
-    String paintUri;
-    SVGPaintType visitedLinkPaintType;
-    Color visitedLinkPaintColor;
-    String visitedLinkPaintUri;
+  float opacity;
+  SVGPaintType paintType;
+  Color paintColor;
+  String paintUri;
+  SVGPaintType visitedLinkPaintType;
+  Color visitedLinkPaintColor;
+  String visitedLinkPaintUri;
 
-private:
-    StyleFillData();
-    StyleFillData(const StyleFillData&);
+ private:
+  StyleFillData();
+  StyleFillData(const StyleFillData&);
 };
 
 class UnzoomedLength {
-    DISALLOW_NEW();
-public:
-    explicit UnzoomedLength(const Length& length) : m_length(length) { }
+  DISALLOW_NEW();
 
-    bool isZero() const { return m_length.isZero(); }
+ public:
+  explicit UnzoomedLength(const Length& length) : m_length(length) {}
 
-    bool operator==(const UnzoomedLength& other) const { return m_length == other.m_length; }
-    bool operator!=(const UnzoomedLength& other) const { return !operator==(other); }
+  bool isZero() const { return m_length.isZero(); }
 
-    const Length& length() const { return m_length; }
+  bool operator==(const UnzoomedLength& other) const {
+    return m_length == other.m_length;
+  }
+  bool operator!=(const UnzoomedLength& other) const {
+    return !operator==(other);
+  }
 
-private:
-    Length m_length;
+  const Length& length() const { return m_length; }
+
+ private:
+  Length m_length;
 };
 
 class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
-public:
-    static PassRefPtr<StyleStrokeData> create()
-    {
-        return adoptRef(new StyleStrokeData);
-    }
+ public:
+  static PassRefPtr<StyleStrokeData> create() {
+    return adoptRef(new StyleStrokeData);
+  }
 
-    PassRefPtr<StyleStrokeData> copy() const
-    {
-        return adoptRef(new StyleStrokeData(*this));
-    }
+  PassRefPtr<StyleStrokeData> copy() const {
+    return adoptRef(new StyleStrokeData(*this));
+  }
 
-    bool operator==(const StyleStrokeData&) const;
-    bool operator!=(const StyleStrokeData& other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const StyleStrokeData&) const;
+  bool operator!=(const StyleStrokeData& other) const {
+    return !(*this == other);
+  }
 
-    float opacity;
-    float miterLimit;
+  float opacity;
+  float miterLimit;
 
-    UnzoomedLength width;
-    Length dashOffset;
-    RefPtr<SVGDashArray> dashArray;
+  UnzoomedLength width;
+  Length dashOffset;
+  RefPtr<SVGDashArray> dashArray;
 
-    SVGPaintType paintType;
-    Color paintColor;
-    String paintUri;
-    SVGPaintType visitedLinkPaintType;
-    Color visitedLinkPaintColor;
-    String visitedLinkPaintUri;
+  SVGPaintType paintType;
+  Color paintColor;
+  String paintUri;
+  SVGPaintType visitedLinkPaintType;
+  Color visitedLinkPaintColor;
+  String visitedLinkPaintUri;
 
-private:
-    StyleStrokeData();
-    StyleStrokeData(const StyleStrokeData&);
+ private:
+  StyleStrokeData();
+  StyleStrokeData(const StyleStrokeData&);
 };
 
 class StyleStopData : public RefCounted<StyleStopData> {
-public:
-    static PassRefPtr<StyleStopData> create() { return adoptRef(new StyleStopData); }
-    PassRefPtr<StyleStopData> copy() const { return adoptRef(new StyleStopData(*this)); }
+ public:
+  static PassRefPtr<StyleStopData> create() {
+    return adoptRef(new StyleStopData);
+  }
+  PassRefPtr<StyleStopData> copy() const {
+    return adoptRef(new StyleStopData(*this));
+  }
 
-    bool operator==(const StyleStopData&) const;
-    bool operator!=(const StyleStopData& other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const StyleStopData&) const;
+  bool operator!=(const StyleStopData& other) const {
+    return !(*this == other);
+  }
 
-    float opacity;
-    Color color;
+  float opacity;
+  Color color;
 
-private:
-    StyleStopData();
-    StyleStopData(const StyleStopData&);
+ private:
+  StyleStopData();
+  StyleStopData(const StyleStopData&);
 };
 
 // Note: the rule for this class is, *no inheritance* of these props
 class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
-public:
-    static PassRefPtr<StyleMiscData> create() { return adoptRef(new StyleMiscData); }
-    PassRefPtr<StyleMiscData> copy() const { return adoptRef(new StyleMiscData(*this)); }
+ public:
+  static PassRefPtr<StyleMiscData> create() {
+    return adoptRef(new StyleMiscData);
+  }
+  PassRefPtr<StyleMiscData> copy() const {
+    return adoptRef(new StyleMiscData(*this));
+  }
 
-    bool operator==(const StyleMiscData&) const;
-    bool operator!=(const StyleMiscData& other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const StyleMiscData&) const;
+  bool operator!=(const StyleMiscData& other) const {
+    return !(*this == other);
+  }
 
-    Color floodColor;
-    float floodOpacity;
-    Color lightingColor;
+  Color floodColor;
+  float floodOpacity;
+  Color lightingColor;
 
-    Length baselineShiftValue;
+  Length baselineShiftValue;
 
-private:
-    StyleMiscData();
-    StyleMiscData(const StyleMiscData&);
+ private:
+  StyleMiscData();
+  StyleMiscData(const StyleMiscData&);
 };
 
 // Non-inherited resources
 class StyleResourceData : public RefCounted<StyleResourceData> {
-public:
-    static PassRefPtr<StyleResourceData> create() { return adoptRef(new StyleResourceData); }
-    PassRefPtr<StyleResourceData> copy() const { return adoptRef(new StyleResourceData(*this)); }
+ public:
+  static PassRefPtr<StyleResourceData> create() {
+    return adoptRef(new StyleResourceData);
+  }
+  PassRefPtr<StyleResourceData> copy() const {
+    return adoptRef(new StyleResourceData(*this));
+  }
 
-    bool operator==(const StyleResourceData&) const;
-    bool operator!=(const StyleResourceData& other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const StyleResourceData&) const;
+  bool operator!=(const StyleResourceData& other) const {
+    return !(*this == other);
+  }
 
-    AtomicString masker;
+  AtomicString masker;
 
-private:
-    StyleResourceData();
-    StyleResourceData(const StyleResourceData&);
+ private:
+  StyleResourceData();
+  StyleResourceData(const StyleResourceData&);
 };
 
 // Inherited resources
-class StyleInheritedResourceData : public RefCounted<StyleInheritedResourceData> {
-public:
-    static PassRefPtr<StyleInheritedResourceData> create() { return adoptRef(new StyleInheritedResourceData); }
-    PassRefPtr<StyleInheritedResourceData> copy() const { return adoptRef(new StyleInheritedResourceData(*this)); }
+class StyleInheritedResourceData
+    : public RefCounted<StyleInheritedResourceData> {
+ public:
+  static PassRefPtr<StyleInheritedResourceData> create() {
+    return adoptRef(new StyleInheritedResourceData);
+  }
+  PassRefPtr<StyleInheritedResourceData> copy() const {
+    return adoptRef(new StyleInheritedResourceData(*this));
+  }
 
-    bool operator==(const StyleInheritedResourceData&) const;
-    bool operator!=(const StyleInheritedResourceData& other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const StyleInheritedResourceData&) const;
+  bool operator!=(const StyleInheritedResourceData& other) const {
+    return !(*this == other);
+  }
 
-    AtomicString markerStart;
-    AtomicString markerMid;
-    AtomicString markerEnd;
+  AtomicString markerStart;
+  AtomicString markerMid;
+  AtomicString markerEnd;
 
-private:
-    StyleInheritedResourceData();
-    StyleInheritedResourceData(const StyleInheritedResourceData&);
+ private:
+  StyleInheritedResourceData();
+  StyleInheritedResourceData(const StyleInheritedResourceData&);
 };
 
 // Geometry properties
 class StyleGeometryData : public RefCounted<StyleGeometryData> {
-public:
-    static PassRefPtr<StyleGeometryData> create() { return adoptRef(new StyleGeometryData); }
-    PassRefPtr<StyleGeometryData> copy() const;
-    bool operator==(const StyleGeometryData&) const;
-    bool operator!=(const StyleGeometryData& other) const
-    {
-        return !(*this == other);
-    }
-    RefPtr<StylePath> d;
-    Length cx;
-    Length cy;
-    Length x;
-    Length y;
-    Length r;
-    Length rx;
-    Length ry;
+ public:
+  static PassRefPtr<StyleGeometryData> create() {
+    return adoptRef(new StyleGeometryData);
+  }
+  PassRefPtr<StyleGeometryData> copy() const;
+  bool operator==(const StyleGeometryData&) const;
+  bool operator!=(const StyleGeometryData& other) const {
+    return !(*this == other);
+  }
+  RefPtr<StylePath> d;
+  Length cx;
+  Length cy;
+  Length x;
+  Length y;
+  Length r;
+  Length rx;
+  Length ry;
 
-private:
-    StyleGeometryData();
-    StyleGeometryData(const StyleGeometryData&);
+ private:
+  StyleGeometryData();
+  StyleGeometryData(const StyleGeometryData&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGComputedStyleDefs_h
+#endif  // SVGComputedStyleDefs_h

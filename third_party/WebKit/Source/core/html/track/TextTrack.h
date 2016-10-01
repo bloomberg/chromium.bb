@@ -45,113 +45,125 @@ class TextTrackList;
 class VTTRegion;
 class VTTRegionList;
 
-class CORE_EXPORT TextTrack : public EventTargetWithInlineData, public TrackBase {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
-public:
-    static TextTrack* create(const AtomicString& kind, const AtomicString& label, const AtomicString& language)
-    {
-        return new TextTrack(kind, label, language, emptyAtom, AddTrack);
-    }
-    ~TextTrack() override;
+class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
+                              public TrackBase {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 
-    virtual void setTrackList(TextTrackList*);
-    TextTrackList* trackList() { return m_trackList; }
+ public:
+  static TextTrack* create(const AtomicString& kind,
+                           const AtomicString& label,
+                           const AtomicString& language) {
+    return new TextTrack(kind, label, language, emptyAtom, AddTrack);
+  }
+  ~TextTrack() override;
 
-    bool isVisualKind() const;
+  virtual void setTrackList(TextTrackList*);
+  TextTrackList* trackList() { return m_trackList; }
 
-    static const AtomicString& subtitlesKeyword();
-    static const AtomicString& captionsKeyword();
-    static const AtomicString& descriptionsKeyword();
-    static const AtomicString& chaptersKeyword();
-    static const AtomicString& metadataKeyword();
-    static bool isValidKindKeyword(const String&);
+  bool isVisualKind() const;
 
-    static const AtomicString& disabledKeyword();
-    static const AtomicString& hiddenKeyword();
-    static const AtomicString& showingKeyword();
+  static const AtomicString& subtitlesKeyword();
+  static const AtomicString& captionsKeyword();
+  static const AtomicString& descriptionsKeyword();
+  static const AtomicString& chaptersKeyword();
+  static const AtomicString& metadataKeyword();
+  static bool isValidKindKeyword(const String&);
 
-    void setKind(const AtomicString& kind) { m_kind = kind; }
-    void setLabel(const AtomicString& label) { m_label = label; }
-    void setLanguage(const AtomicString& language) { m_language = language; }
-    void setId(const String& id) { m_id = id; }
+  static const AtomicString& disabledKeyword();
+  static const AtomicString& hiddenKeyword();
+  static const AtomicString& showingKeyword();
 
-    AtomicString mode() const { return m_mode; }
-    virtual void setMode(const AtomicString&);
+  void setKind(const AtomicString& kind) { m_kind = kind; }
+  void setLabel(const AtomicString& label) { m_label = label; }
+  void setLanguage(const AtomicString& language) { m_language = language; }
+  void setId(const String& id) { m_id = id; }
 
-    enum ReadinessState { NotLoaded = 0, Loading = 1, Loaded = 2, FailedToLoad = 3 };
-    ReadinessState getReadinessState() const { return m_readinessState; }
-    void setReadinessState(ReadinessState state) { m_readinessState = state; }
+  AtomicString mode() const { return m_mode; }
+  virtual void setMode(const AtomicString&);
 
-    TextTrackCueList* cues();
-    TextTrackCueList* activeCues();
+  enum ReadinessState {
+    NotLoaded = 0,
+    Loading = 1,
+    Loaded = 2,
+    FailedToLoad = 3
+  };
+  ReadinessState getReadinessState() const { return m_readinessState; }
+  void setReadinessState(ReadinessState state) { m_readinessState = state; }
 
-    HTMLMediaElement* mediaElement() const;
-    Node* owner() const;
+  TextTrackCueList* cues();
+  TextTrackCueList* activeCues();
 
-    void addCue(TextTrackCue*);
-    void removeCue(TextTrackCue*, ExceptionState&);
+  HTMLMediaElement* mediaElement() const;
+  Node* owner() const;
 
-    VTTRegionList* regions();
-    void addRegion(VTTRegion*);
-    void removeRegion(VTTRegion*, ExceptionState&);
+  void addCue(TextTrackCue*);
+  void removeCue(TextTrackCue*, ExceptionState&);
 
-    void cueWillChange(TextTrackCue*);
-    void cueDidChange(TextTrackCue*);
+  VTTRegionList* regions();
+  void addRegion(VTTRegion*);
+  void removeRegion(VTTRegion*, ExceptionState&);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(cuechange);
+  void cueWillChange(TextTrackCue*);
+  void cueDidChange(TextTrackCue*);
 
-    enum TextTrackType { TrackElement, AddTrack, InBand };
-    TextTrackType trackType() const { return m_trackType; }
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(cuechange);
 
-    int trackIndex();
-    void invalidateTrackIndex();
+  enum TextTrackType { TrackElement, AddTrack, InBand };
+  TextTrackType trackType() const { return m_trackType; }
 
-    bool isRendered() const;
-    bool canBeRendered() const;
-    int trackIndexRelativeToRenderedTracks();
+  int trackIndex();
+  void invalidateTrackIndex();
 
-    bool hasBeenConfigured() const { return m_hasBeenConfigured; }
-    void setHasBeenConfigured(bool flag) { m_hasBeenConfigured = flag; }
+  bool isRendered() const;
+  bool canBeRendered() const;
+  int trackIndexRelativeToRenderedTracks();
 
-    virtual bool isDefault() const { return false; }
+  bool hasBeenConfigured() const { return m_hasBeenConfigured; }
+  void setHasBeenConfigured(bool flag) { m_hasBeenConfigured = flag; }
 
-    void removeAllCues();
+  virtual bool isDefault() const { return false; }
 
-    // EventTarget methods
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  void removeAllCues();
 
-    DECLARE_VIRTUAL_TRACE();
+  // EventTarget methods
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    void addListOfCues(HeapVector<Member<TextTrackCue>>&);
+ protected:
+  TextTrack(const AtomicString& kind,
+            const AtomicString& label,
+            const AtomicString& language,
+            const AtomicString& id,
+            TextTrackType);
 
-private:
-    CueTimeline* cueTimeline() const;
+  void addListOfCues(HeapVector<Member<TextTrackCue>>&);
 
-    TextTrackCueList* ensureTextTrackCueList();
-    Member<TextTrackCueList> m_cues;
-    Member<TextTrackCueList> m_activeCues;
+ private:
+  CueTimeline* cueTimeline() const;
 
-    VTTRegionList* ensureVTTRegionList();
-    Member<VTTRegionList> m_regions;
+  TextTrackCueList* ensureTextTrackCueList();
+  Member<TextTrackCueList> m_cues;
+  Member<TextTrackCueList> m_activeCues;
 
-    Member<TextTrackList> m_trackList;
-    AtomicString m_mode;
-    TextTrackType m_trackType;
-    ReadinessState m_readinessState;
-    int m_trackIndex;
-    int m_renderedTrackIndex;
-    bool m_hasBeenConfigured;
+  VTTRegionList* ensureVTTRegionList();
+  Member<VTTRegionList> m_regions;
+
+  Member<TextTrackList> m_trackList;
+  AtomicString m_mode;
+  TextTrackType m_trackType;
+  ReadinessState m_readinessState;
+  int m_trackIndex;
+  int m_renderedTrackIndex;
+  bool m_hasBeenConfigured;
 };
 
 DEFINE_TRACK_TYPE_CASTS(TextTrack, WebMediaPlayer::TextTrack);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextTrack_h
+#endif  // TextTrack_h

@@ -8,9 +8,9 @@
 
 namespace blink {
 
-PassRefPtr<TimingFunction> CompositorKeyframe::getTimingFunctionForTesting() const
-{
-    return createCompositorTimingFunctionFromCC(ccTimingFunction());
+PassRefPtr<TimingFunction> CompositorKeyframe::getTimingFunctionForTesting()
+    const {
+  return createCompositorTimingFunctionFromCC(ccTimingFunction());
 }
 
-} // namespace blink
+}  // namespace blink

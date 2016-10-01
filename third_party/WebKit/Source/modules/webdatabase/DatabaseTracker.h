@@ -48,46 +48,56 @@ class Page;
 class SecurityOrigin;
 
 class MODULES_EXPORT DatabaseTracker {
-    WTF_MAKE_NONCOPYABLE(DatabaseTracker); USING_FAST_MALLOC(DatabaseTracker);
-public:
-    static DatabaseTracker& tracker();
-    // This singleton will potentially be used from multiple worker threads and the page's context thread simultaneously.  To keep this safe, it's
-    // currently using 4 locks.  In order to avoid deadlock when taking multiple locks, you must take them in the correct order:
-    // m_databaseGuard before quotaManager if both locks are needed.
-    // m_openDatabaseMapGuard before quotaManager if both locks are needed.
-    // m_databaseGuard and m_openDatabaseMapGuard currently don't overlap.
-    // notificationMutex() is currently independent of the other locks.
+  WTF_MAKE_NONCOPYABLE(DatabaseTracker);
+  USING_FAST_MALLOC(DatabaseTracker);
 
-    bool canEstablishDatabase(DatabaseContext*, const String& name, const String& displayName, unsigned estimatedSize, DatabaseError&);
-    String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
+ public:
+  static DatabaseTracker& tracker();
+  // This singleton will potentially be used from multiple worker threads and the page's context thread simultaneously.  To keep this safe, it's
+  // currently using 4 locks.  In order to avoid deadlock when taking multiple locks, you must take them in the correct order:
+  // m_databaseGuard before quotaManager if both locks are needed.
+  // m_openDatabaseMapGuard before quotaManager if both locks are needed.
+  // m_databaseGuard and m_openDatabaseMapGuard currently don't overlap.
+  // notificationMutex() is currently independent of the other locks.
 
-    void addOpenDatabase(Database*);
-    void removeOpenDatabase(Database*);
+  bool canEstablishDatabase(DatabaseContext*,
+                            const String& name,
+                            const String& displayName,
+                            unsigned estimatedSize,
+                            DatabaseError&);
+  String fullPathForDatabase(SecurityOrigin*,
+                             const String& name,
+                             bool createIfDoesNotExist = true);
 
-    unsigned long long getMaxSizeForDatabase(const Database*);
+  void addOpenDatabase(Database*);
+  void removeOpenDatabase(Database*);
 
-    void closeDatabasesImmediately(SecurityOrigin*, const String& name);
+  unsigned long long getMaxSizeForDatabase(const Database*);
 
-    using DatabaseCallback = Function<void(Database*)>;
-    void forEachOpenDatabaseInPage(Page*, std::unique_ptr<DatabaseCallback>);
+  void closeDatabasesImmediately(SecurityOrigin*, const String& name);
 
-    void prepareToOpenDatabase(Database*);
-    void failedToOpenDatabase(Database*);
+  using DatabaseCallback = Function<void(Database*)>;
+  void forEachOpenDatabaseInPage(Page*, std::unique_ptr<DatabaseCallback>);
 
-private:
-    using DatabaseSet = HashSet<CrossThreadPersistent<Database>>;
-    using DatabaseNameMap = HashMap<String, DatabaseSet*>;
-    using DatabaseOriginMap = HashMap<String, DatabaseNameMap*>;
+  void prepareToOpenDatabase(Database*);
+  void failedToOpenDatabase(Database*);
 
-    DatabaseTracker();
+ private:
+  using DatabaseSet = HashSet<CrossThreadPersistent<Database>>;
+  using DatabaseNameMap = HashMap<String, DatabaseSet*>;
+  using DatabaseOriginMap = HashMap<String, DatabaseNameMap*>;
 
-    void closeOneDatabaseImmediately(const String& originIdentifier, const String& name, Database*);
+  DatabaseTracker();
 
-    Mutex m_openDatabaseMapGuard;
+  void closeOneDatabaseImmediately(const String& originIdentifier,
+                                   const String& name,
+                                   Database*);
 
-    mutable std::unique_ptr<DatabaseOriginMap> m_openDatabaseMap;
+  Mutex m_openDatabaseMapGuard;
+
+  mutable std::unique_ptr<DatabaseOriginMap> m_openDatabaseMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseTracker_h
+#endif  // DatabaseTracker_h

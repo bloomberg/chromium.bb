@@ -12,58 +12,50 @@
 
 namespace blink {
 
-Presentation::Presentation(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
-}
+Presentation::Presentation(LocalFrame* frame) : DOMWindowProperty(frame) {}
 
 // static
-Presentation* Presentation::create(LocalFrame* frame)
-{
-    ASSERT(frame);
+Presentation* Presentation::create(LocalFrame* frame) {
+  ASSERT(frame);
 
-    Presentation* presentation = new Presentation(frame);
-    PresentationController* controller = PresentationController::from(*frame);
-    ASSERT(controller);
-    controller->setPresentation(presentation);
-    return presentation;
+  Presentation* presentation = new Presentation(frame);
+  PresentationController* controller = PresentationController::from(*frame);
+  ASSERT(controller);
+  controller->setPresentation(presentation);
+  return presentation;
 }
 
-DEFINE_TRACE(Presentation)
-{
-    visitor->trace(m_defaultRequest);
-    visitor->trace(m_receiver);
-    DOMWindowProperty::trace(visitor);
+DEFINE_TRACE(Presentation) {
+  visitor->trace(m_defaultRequest);
+  visitor->trace(m_receiver);
+  DOMWindowProperty::trace(visitor);
 }
 
-PresentationRequest* Presentation::defaultRequest() const
-{
-    return m_defaultRequest;
+PresentationRequest* Presentation::defaultRequest() const {
+  return m_defaultRequest;
 }
 
-void Presentation::setDefaultRequest(PresentationRequest* request)
-{
-    m_defaultRequest = request;
+void Presentation::setDefaultRequest(PresentationRequest* request) {
+  m_defaultRequest = request;
 
-    if (!frame())
-        return;
+  if (!frame())
+    return;
 
-    PresentationController* controller = PresentationController::from(*frame());
-    if (!controller)
-        return;
-    controller->setDefaultRequestUrl(request ? request->url() : KURL());
+  PresentationController* controller = PresentationController::from(*frame());
+  if (!controller)
+    return;
+  controller->setDefaultRequestUrl(request ? request->url() : KURL());
 }
 
-PresentationReceiver* Presentation::receiver()
-{
-    PresentationController* controller = PresentationController::from(*frame());
-    auto* client = controller ? controller->client() : nullptr;
-    // TODO(crbug.com/647296): only return something if the Blink instance is running in
-    // presentation receiver mode. The flag PresentationReceiver could be used
-    // for that.
-    if (!m_receiver)
-        m_receiver = new PresentationReceiver(frame(), client);
-    return m_receiver;
+PresentationReceiver* Presentation::receiver() {
+  PresentationController* controller = PresentationController::from(*frame());
+  auto* client = controller ? controller->client() : nullptr;
+  // TODO(crbug.com/647296): only return something if the Blink instance is running in
+  // presentation receiver mode. The flag PresentationReceiver could be used
+  // for that.
+  if (!m_receiver)
+    m_receiver = new PresentationReceiver(frame(), client);
+  return m_receiver;
 }
 
-} // namespace blink
+}  // namespace blink

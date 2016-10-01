@@ -48,115 +48,102 @@ class Document;
 class VTTScanner;
 
 class VTTParserClient : public GarbageCollectedMixin {
-public:
-    virtual ~VTTParserClient() { }
+ public:
+  virtual ~VTTParserClient() {}
 
-    virtual void newCuesParsed() = 0;
-    virtual void newRegionsParsed() = 0;
-    virtual void fileFailedToParse() = 0;
+  virtual void newCuesParsed() = 0;
+  virtual void newRegionsParsed() = 0;
+  virtual void fileFailedToParse() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 // Implementation of the WebVTT parser algorithm.
 // https://w3c.github.io/webvtt/#webvtt-parser-algorithm
 class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
-public:
-    enum ParseState {
-        Initial,
-        Header,
-        Id,
-        TimingsAndSettings,
-        CueText,
-        BadCue
-    };
+ public:
+  enum ParseState { Initial, Header, Id, TimingsAndSettings, CueText, BadCue };
 
-    static VTTParser* create(VTTParserClient* client, Document& document)
-    {
-        return new VTTParser(client, document);
-    }
-    ~VTTParser()
-    {
-    }
+  static VTTParser* create(VTTParserClient* client, Document& document) {
+    return new VTTParser(client, document);
+  }
+  ~VTTParser() {}
 
-    static inline bool isRecognizedTag(const AtomicString& tagName)
-    {
-        return tagName == HTMLNames::iTag
-            || tagName == HTMLNames::bTag
-            || tagName == HTMLNames::uTag
-            || tagName == HTMLNames::rubyTag
-            || tagName == HTMLNames::rtTag;
-    }
-    static inline bool isASpace(UChar c)
-    {
-        // WebVTT space characters are U+0020 SPACE, U+0009 CHARACTER
-        // TABULATION (tab), U+000A LINE FEED (LF), U+000C FORM FEED (FF), and
-        // U+000D CARRIAGE RETURN (CR).
-        return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
-    }
-    static inline bool isValidSettingDelimiter(UChar c)
-    {
-        // ... a WebVTT cue consists of zero or more of the following components, in any order, separated from each other by one or more
-        // U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
-        return c == ' ' || c == '\t';
-    }
-    static bool collectTimeStamp(const String&, double& timeStamp);
+  static inline bool isRecognizedTag(const AtomicString& tagName) {
+    return tagName == HTMLNames::iTag || tagName == HTMLNames::bTag ||
+           tagName == HTMLNames::uTag || tagName == HTMLNames::rubyTag ||
+           tagName == HTMLNames::rtTag;
+  }
+  static inline bool isASpace(UChar c) {
+    // WebVTT space characters are U+0020 SPACE, U+0009 CHARACTER
+    // TABULATION (tab), U+000A LINE FEED (LF), U+000C FORM FEED (FF), and
+    // U+000D CARRIAGE RETURN (CR).
+    return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
+  }
+  static inline bool isValidSettingDelimiter(UChar c) {
+    // ... a WebVTT cue consists of zero or more of the following components, in any order, separated from each other by one or more
+    // U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
+    return c == ' ' || c == '\t';
+  }
+  static bool collectTimeStamp(const String&, double& timeStamp);
 
-    // Useful functions for parsing percentage settings.
-    static bool parseFloatPercentageValue(VTTScanner& valueScanner, float& percentage);
-    static bool parseFloatPercentageValuePair(VTTScanner&, char, FloatPoint&);
+  // Useful functions for parsing percentage settings.
+  static bool parseFloatPercentageValue(VTTScanner& valueScanner,
+                                        float& percentage);
+  static bool parseFloatPercentageValuePair(VTTScanner&, char, FloatPoint&);
 
-    // Create the DocumentFragment representation of the WebVTT cue text.
-    static DocumentFragment* createDocumentFragmentFromCueText(Document&, const String&);
+  // Create the DocumentFragment representation of the WebVTT cue text.
+  static DocumentFragment* createDocumentFragmentFromCueText(Document&,
+                                                             const String&);
 
-    // Input data to the parser to parse.
-    void parseBytes(const char* data, size_t length);
-    void flush();
+  // Input data to the parser to parse.
+  void parseBytes(const char* data, size_t length);
+  void flush();
 
-    // Transfers ownership of last parsed cues to caller.
-    void getNewCues(HeapVector<Member<TextTrackCue>>&);
-    void getNewRegions(HeapVector<Member<VTTRegion>>&);
+  // Transfers ownership of last parsed cues to caller.
+  void getNewCues(HeapVector<Member<TextTrackCue>>&);
+  void getNewRegions(HeapVector<Member<VTTRegion>>&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    VTTParser(VTTParserClient*, Document&);
+ private:
+  VTTParser(VTTParserClient*, Document&);
 
-    Member<Document> m_document;
-    ParseState m_state;
+  Member<Document> m_document;
+  ParseState m_state;
 
-    void parse();
-    void flushPendingCue();
-    bool hasRequiredFileIdentifier(const String& line);
-    ParseState collectCueId(const String&);
-    ParseState collectTimingsAndSettings(const String&);
-    ParseState collectCueText(const String&);
-    ParseState recoverCue(const String&);
-    ParseState ignoreBadCue(const String&);
+  void parse();
+  void flushPendingCue();
+  bool hasRequiredFileIdentifier(const String& line);
+  ParseState collectCueId(const String&);
+  ParseState collectTimingsAndSettings(const String&);
+  ParseState collectCueText(const String&);
+  ParseState recoverCue(const String&);
+  ParseState ignoreBadCue(const String&);
 
-    void createNewCue();
-    void resetCueValues();
+  void createNewCue();
+  void resetCueValues();
 
-    void collectMetadataHeader(const String&);
-    void createNewRegion(const String& headerValue);
+  void collectMetadataHeader(const String&);
+  void createNewRegion(const String& headerValue);
 
-    static bool collectTimeStamp(VTTScanner& input, double& timeStamp);
+  static bool collectTimeStamp(VTTScanner& input, double& timeStamp);
 
-    BufferedLineReader m_lineReader;
-    std::unique_ptr<TextResourceDecoder> m_decoder;
-    AtomicString m_currentId;
-    double m_currentStartTime;
-    double m_currentEndTime;
-    StringBuilder m_currentContent;
-    String m_currentSettings;
+  BufferedLineReader m_lineReader;
+  std::unique_ptr<TextResourceDecoder> m_decoder;
+  AtomicString m_currentId;
+  double m_currentStartTime;
+  double m_currentEndTime;
+  StringBuilder m_currentContent;
+  String m_currentSettings;
 
-    Member<VTTParserClient> m_client;
+  Member<VTTParserClient> m_client;
 
-    HeapVector<Member<TextTrackCue>> m_cueList;
+  HeapVector<Member<TextTrackCue>> m_cueList;
 
-    HeapVector<Member<VTTRegion>> m_regionList;
+  HeapVector<Member<VTTRegion>> m_regionList;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -39,99 +39,98 @@ namespace blink {
 
 using namespace HTMLNames;
 
-HTMLContentElement* HTMLContentElement::create(Document& document, HTMLContentSelectFilter* filter)
-{
-    return new HTMLContentElement(document, filter);
+HTMLContentElement* HTMLContentElement::create(
+    Document& document,
+    HTMLContentSelectFilter* filter) {
+  return new HTMLContentElement(document, filter);
 }
 
-inline HTMLContentElement::HTMLContentElement(Document& document, HTMLContentSelectFilter* filter)
-    : InsertionPoint(contentTag, document)
-    , m_shouldParseSelect(false)
-    , m_isValidSelector(true)
-    , m_filter(filter)
-{
+inline HTMLContentElement::HTMLContentElement(Document& document,
+                                              HTMLContentSelectFilter* filter)
+    : InsertionPoint(contentTag, document),
+      m_shouldParseSelect(false),
+      m_isValidSelector(true),
+      m_filter(filter) {}
+
+HTMLContentElement::~HTMLContentElement() {}
+
+DEFINE_TRACE(HTMLContentElement) {
+  visitor->trace(m_filter);
+  InsertionPoint::trace(visitor);
 }
 
-HTMLContentElement::~HTMLContentElement()
-{
+void HTMLContentElement::parseSelect() {
+  DCHECK(m_shouldParseSelect);
+
+  m_selectorList = CSSParser::parseSelector(
+      CSSParserContext(document(), nullptr), nullptr, m_select);
+  m_shouldParseSelect = false;
+  m_isValidSelector = validateSelect();
+  if (!m_isValidSelector)
+    m_selectorList = CSSSelectorList();
 }
 
-DEFINE_TRACE(HTMLContentElement)
-{
-    visitor->trace(m_filter);
-    InsertionPoint::trace(visitor);
-}
-
-void HTMLContentElement::parseSelect()
-{
-    DCHECK(m_shouldParseSelect);
-
-    m_selectorList = CSSParser::parseSelector(CSSParserContext(document(), nullptr), nullptr, m_select);
-    m_shouldParseSelect = false;
-    m_isValidSelector = validateSelect();
-    if (!m_isValidSelector)
-        m_selectorList = CSSSelectorList();
-}
-
-void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
-{
-    if (name == selectAttr) {
-        if (ShadowRoot* root = containingShadowRoot()) {
-            if (!root->isV1() && root->owner())
-                root->owner()->v0().willAffectSelector();
-        }
-        m_shouldParseSelect = true;
-        m_select = value;
-    } else {
-        InsertionPoint::parseAttribute(name, oldValue, value);
+void HTMLContentElement::parseAttribute(const QualifiedName& name,
+                                        const AtomicString& oldValue,
+                                        const AtomicString& value) {
+  if (name == selectAttr) {
+    if (ShadowRoot* root = containingShadowRoot()) {
+      if (!root->isV1() && root->owner())
+        root->owner()->v0().willAffectSelector();
     }
+    m_shouldParseSelect = true;
+    m_select = value;
+  } else {
+    InsertionPoint::parseAttribute(name, oldValue, value);
+  }
 }
 
-static inline bool includesDisallowedPseudoClass(const CSSSelector& selector)
-{
-    if (selector.getPseudoType() == CSSSelector::PseudoNot) {
-        const CSSSelector* subSelector = selector.selectorList()->first();
-        return subSelector->match() == CSSSelector::PseudoClass;
-    }
-    return selector.match() == CSSSelector::PseudoClass;
+static inline bool includesDisallowedPseudoClass(const CSSSelector& selector) {
+  if (selector.getPseudoType() == CSSSelector::PseudoNot) {
+    const CSSSelector* subSelector = selector.selectorList()->first();
+    return subSelector->match() == CSSSelector::PseudoClass;
+  }
+  return selector.match() == CSSSelector::PseudoClass;
 }
 
-bool HTMLContentElement::validateSelect() const
-{
-    DCHECK(!m_shouldParseSelect);
+bool HTMLContentElement::validateSelect() const {
+  DCHECK(!m_shouldParseSelect);
 
-    if (m_select.isNull() || m_select.isEmpty())
-        return true;
-
-    if (!m_selectorList.isValid())
-        return false;
-
-    for (const CSSSelector* selector = m_selectorList.first(); selector; selector = m_selectorList.next(*selector)) {
-        if (!selector->isCompound())
-            return false;
-        for (const CSSSelector* subSelector = selector; subSelector; subSelector = subSelector->tagHistory()) {
-            if (includesDisallowedPseudoClass(*subSelector))
-                return false;
-        }
-    }
+  if (m_select.isNull() || m_select.isEmpty())
     return true;
+
+  if (!m_selectorList.isValid())
+    return false;
+
+  for (const CSSSelector* selector = m_selectorList.first(); selector;
+       selector = m_selectorList.next(*selector)) {
+    if (!selector->isCompound())
+      return false;
+    for (const CSSSelector* subSelector = selector; subSelector;
+         subSelector = subSelector->tagHistory()) {
+      if (includesDisallowedPseudoClass(*subSelector))
+        return false;
+    }
+  }
+  return true;
 }
 
 // TODO(esprehn): element should really be const, but matching a selector is not
 // const for some SelectorCheckingModes (mainly ResolvingStyle) where it sets
 // dynamic restyle flags on elements.
-bool HTMLContentElement::matchSelector(Element& element) const
-{
-    SelectorChecker::Init init;
-    init.mode = SelectorChecker::QueryingRules;
-    SelectorChecker checker(init);
-    SelectorChecker::SelectorCheckingContext context(&element, SelectorChecker::VisitedMatchDisabled);
-    for (const CSSSelector* selector = selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
-        context.selector = selector;
-        if (checker.match(context))
-            return true;
-    }
-    return false;
+bool HTMLContentElement::matchSelector(Element& element) const {
+  SelectorChecker::Init init;
+  init.mode = SelectorChecker::QueryingRules;
+  SelectorChecker checker(init);
+  SelectorChecker::SelectorCheckingContext context(
+      &element, SelectorChecker::VisitedMatchDisabled);
+  for (const CSSSelector* selector = selectorList().first(); selector;
+       selector = CSSSelectorList::next(*selector)) {
+    context.selector = selector;
+    if (checker.match(context))
+      return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

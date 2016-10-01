@@ -40,11 +40,12 @@ class MediaSource;
 class ExecutionContext;
 
 class URLMediaSource {
-    STATIC_ONLY(URLMediaSource);
-public:
-    static String createObjectURL(ExecutionContext*, MediaSource*);
+  STATIC_ONLY(URLMediaSource);
+
+ public:
+  static String createObjectURL(ExecutionContext*, MediaSource*);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -35,48 +35,40 @@
 
 namespace blink {
 
-EditorClientImpl::EditorClientImpl(WebViewImpl* webview)
-    : m_webView(webview)
-{
+EditorClientImpl::EditorClientImpl(WebViewImpl* webview) : m_webView(webview) {}
+
+EditorClientImpl::~EditorClientImpl() {}
+
+void EditorClientImpl::respondToChangedSelection(LocalFrame* frame,
+                                                 SelectionType selectionType) {
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  if (webFrame->client())
+    webFrame->client()->didChangeSelection(selectionType != RangeSelection);
 }
 
-EditorClientImpl::~EditorClientImpl()
-{
+void EditorClientImpl::respondToChangedContents() {
+  if (m_webView->client())
+    m_webView->client()->didChangeContents();
 }
 
-void EditorClientImpl::respondToChangedSelection(LocalFrame* frame, SelectionType selectionType)
-{
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    if (webFrame->client())
-        webFrame->client()->didChangeSelection(selectionType != RangeSelection);
+bool EditorClientImpl::canCopyCut(LocalFrame* frame, bool defaultValue) const {
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  if (!webFrame->contentSettingsClient())
+    return defaultValue;
+  return webFrame->contentSettingsClient()->allowWriteToClipboard(defaultValue);
 }
 
-void EditorClientImpl::respondToChangedContents()
-{
-    if (m_webView->client())
-        m_webView->client()->didChangeContents();
+bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const {
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  if (!webFrame->contentSettingsClient())
+    return defaultValue;
+  return webFrame->contentSettingsClient()->allowReadFromClipboard(
+      defaultValue);
 }
 
-bool EditorClientImpl::canCopyCut(LocalFrame* frame, bool defaultValue) const
-{
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    if (!webFrame->contentSettingsClient())
-        return defaultValue;
-    return webFrame->contentSettingsClient()->allowWriteToClipboard(defaultValue);
+bool EditorClientImpl::handleKeyboardEvent(LocalFrame* frame) {
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  return webFrame->client()->handleCurrentKeyboardEvent();
 }
 
-bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const
-{
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    if (!webFrame->contentSettingsClient())
-        return defaultValue;
-    return webFrame->contentSettingsClient()->allowReadFromClipboard(defaultValue);
-}
-
-bool EditorClientImpl::handleKeyboardEvent(LocalFrame* frame)
-{
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    return webFrame->client()->handleCurrentKeyboardEvent();
-}
-
-} // namespace blink
+}  // namespace blink

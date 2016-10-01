@@ -31,60 +31,71 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT RotateTransformOperation final : public TransformOperation {
-public:
-    static PassRefPtr<RotateTransformOperation> create(double angle, OperationType type)
-    {
-        return create(Rotation(FloatPoint3D(0, 0, 1), angle), type);
-    }
+class PLATFORM_EXPORT RotateTransformOperation final
+    : public TransformOperation {
+ public:
+  static PassRefPtr<RotateTransformOperation> create(double angle,
+                                                     OperationType type) {
+    return create(Rotation(FloatPoint3D(0, 0, 1), angle), type);
+  }
 
-    static PassRefPtr<RotateTransformOperation> create(double x, double y, double z, double angle, OperationType type)
-    {
-        return create(Rotation(FloatPoint3D(x, y, z), angle), type);
-    }
+  static PassRefPtr<RotateTransformOperation> create(double x,
+                                                     double y,
+                                                     double z,
+                                                     double angle,
+                                                     OperationType type) {
+    return create(Rotation(FloatPoint3D(x, y, z), angle), type);
+  }
 
-    static PassRefPtr<RotateTransformOperation> create(const Rotation& rotation, OperationType type)
-    {
-        return adoptRef(new RotateTransformOperation(rotation, type));
-    }
+  static PassRefPtr<RotateTransformOperation> create(const Rotation& rotation,
+                                                     OperationType type) {
+    return adoptRef(new RotateTransformOperation(rotation, type));
+  }
 
-    double x() const { return m_rotation.axis.x(); }
-    double y() const { return m_rotation.axis.y(); }
-    double z() const { return m_rotation.axis.z(); }
-    double angle() const { return m_rotation.angle; }
-    const FloatPoint3D& axis() const { return m_rotation.axis; }
+  double x() const { return m_rotation.axis.x(); }
+  double y() const { return m_rotation.axis.y(); }
+  double z() const { return m_rotation.axis.z(); }
+  double angle() const { return m_rotation.angle; }
+  const FloatPoint3D& axis() const { return m_rotation.axis; }
 
-    static bool getCommonAxis(const RotateTransformOperation*, const RotateTransformOperation*, FloatPoint3D& resultAxis, double& resultAngleA, double& resultAngleB);
+  static bool getCommonAxis(const RotateTransformOperation*,
+                            const RotateTransformOperation*,
+                            FloatPoint3D& resultAxis,
+                            double& resultAngleA,
+                            double& resultAngleB);
 
-    virtual bool canBlendWith(const TransformOperation& other) const;
-    OperationType type() const override { return m_type; }
+  virtual bool canBlendWith(const TransformOperation& other) const;
+  OperationType type() const override { return m_type; }
 
-    void apply(TransformationMatrix& transform, const FloatSize& /*borderBoxSize*/) const override
-    {
-        transform.rotate3d(m_rotation);
-    }
+  void apply(TransformationMatrix& transform,
+             const FloatSize& /*borderBoxSize*/) const override {
+    transform.rotate3d(m_rotation);
+  }
 
-    static bool isMatchingOperationType(OperationType type) { return type == Rotate || type == RotateX || type == RotateY || type == RotateZ || type == Rotate3D; }
+  static bool isMatchingOperationType(OperationType type) {
+    return type == Rotate || type == RotateX || type == RotateY ||
+           type == RotateZ || type == Rotate3D;
+  }
 
-private:
-    bool operator==(const TransformOperation&) const override;
+ private:
+  bool operator==(const TransformOperation&) const override;
 
-    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
-    PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
+  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+                                       double progress,
+                                       bool blendToIdentity = false) override;
+  PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
 
-    RotateTransformOperation(const Rotation& rotation, OperationType type)
-        : m_rotation(rotation)
-        , m_type(type)
-    {
-        ASSERT(isMatchingOperationType(type));
-    }
+  RotateTransformOperation(const Rotation& rotation, OperationType type)
+      : m_rotation(rotation), m_type(type) {
+    ASSERT(isMatchingOperationType(type));
+  }
 
-    const Rotation m_rotation;
-    const OperationType m_type;
+  const Rotation m_rotation;
+  const OperationType m_type;
 };
 
 DEFINE_TRANSFORM_TYPE_CASTS(RotateTransformOperation);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RotateTransformOperation_h
+#endif  // RotateTransformOperation_h

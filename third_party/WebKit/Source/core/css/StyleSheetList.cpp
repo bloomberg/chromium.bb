@@ -31,52 +31,45 @@ namespace blink {
 
 using namespace HTMLNames;
 
-StyleSheetList::StyleSheetList(TreeScope* treeScope)
-    : m_treeScope(treeScope)
-{
+StyleSheetList::StyleSheetList(TreeScope* treeScope) : m_treeScope(treeScope) {}
+
+inline const HeapVector<Member<StyleSheet>>& StyleSheetList::styleSheets()
+    const {
+  return document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
 }
 
-inline const HeapVector<Member<StyleSheet>>& StyleSheetList::styleSheets() const
-{
-    return document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
+unsigned StyleSheetList::length() {
+  return styleSheets().size();
 }
 
-unsigned StyleSheetList::length()
-{
-    return styleSheets().size();
+StyleSheet* StyleSheetList::item(unsigned index) {
+  const HeapVector<Member<StyleSheet>>& sheets = styleSheets();
+  return index < sheets.size() ? sheets[index].get() : nullptr;
 }
 
-StyleSheet* StyleSheetList::item(unsigned index)
-{
-    const HeapVector<Member<StyleSheet>>& sheets = styleSheets();
-    return index < sheets.size() ? sheets[index].get() : nullptr;
+HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const {
+  // IE also supports retrieving a stylesheet by name, using the name/id of the <style> tag
+  // (this is consistent with all the other collections)
+  // ### Bad implementation because returns a single element (are IDs always unique?)
+  // and doesn't look for name attribute.
+  // But unicity of stylesheet ids is good practice anyway ;)
+  // FIXME: We should figure out if we should change this or fix the spec.
+  Element* element = m_treeScope->getElementById(name);
+  return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : nullptr;
 }
 
-HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
-{
-    // IE also supports retrieving a stylesheet by name, using the name/id of the <style> tag
-    // (this is consistent with all the other collections)
-    // ### Bad implementation because returns a single element (are IDs always unique?)
-    // and doesn't look for name attribute.
-    // But unicity of stylesheet ids is good practice anyway ;)
-    // FIXME: We should figure out if we should change this or fix the spec.
-    Element* element = m_treeScope->getElementById(name);
-    return isHTMLStyleElement(element) ? toHTMLStyleElement(element) : nullptr;
+CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name) {
+  if (document())
+    UseCounter::count(*document(),
+                      UseCounter::StyleSheetListAnonymousNamedGetter);
+  HTMLStyleElement* item = getNamedItem(name);
+  if (!item)
+    return nullptr;
+  return item->sheet();
 }
 
-CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
-{
-    if (document())
-        UseCounter::count(*document(), UseCounter::StyleSheetListAnonymousNamedGetter);
-    HTMLStyleElement* item = getNamedItem(name);
-    if (!item)
-        return nullptr;
-    return item->sheet();
+DEFINE_TRACE(StyleSheetList) {
+  visitor->trace(m_treeScope);
 }
 
-DEFINE_TRACE(StyleSheetList)
-{
-    visitor->trace(m_treeScope);
-}
-
-} // namespace blink
+}  // namespace blink

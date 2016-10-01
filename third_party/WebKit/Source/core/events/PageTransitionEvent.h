@@ -32,37 +32,35 @@
 namespace blink {
 
 class PageTransitionEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PageTransitionEvent* create()
-    {
-        return new PageTransitionEvent;
-    }
-    static PageTransitionEvent* create(const AtomicString& type, bool persisted)
-    {
-        return new PageTransitionEvent(type, persisted);
-    }
-    static PageTransitionEvent* create(const AtomicString& type, const PageTransitionEventInit& initializer)
-    {
-        return new PageTransitionEvent(type, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~PageTransitionEvent() override;
+ public:
+  static PageTransitionEvent* create() { return new PageTransitionEvent; }
+  static PageTransitionEvent* create(const AtomicString& type, bool persisted) {
+    return new PageTransitionEvent(type, persisted);
+  }
+  static PageTransitionEvent* create(
+      const AtomicString& type,
+      const PageTransitionEventInit& initializer) {
+    return new PageTransitionEvent(type, initializer);
+  }
 
-    const AtomicString& interfaceName() const override;
+  ~PageTransitionEvent() override;
 
-    bool persisted() const { return m_persisted; }
+  const AtomicString& interfaceName() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  bool persisted() const { return m_persisted; }
 
-private:
-    PageTransitionEvent();
-    PageTransitionEvent(const AtomicString& type, bool persisted);
-    PageTransitionEvent(const AtomicString&, const PageTransitionEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool m_persisted;
+ private:
+  PageTransitionEvent();
+  PageTransitionEvent(const AtomicString& type, bool persisted);
+  PageTransitionEvent(const AtomicString&, const PageTransitionEventInit&);
+
+  bool m_persisted;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PageTransitionEvent_h
+#endif  // PageTransitionEvent_h

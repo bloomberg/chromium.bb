@@ -38,131 +38,119 @@
 namespace blink {
 
 DOMVisualViewport::DOMVisualViewport(LocalDOMWindow* window)
-    : m_window(window)
-{
+    : m_window(window) {}
+
+DOMVisualViewport::~DOMVisualViewport() {}
+
+DEFINE_TRACE(DOMVisualViewport) {
+  visitor->trace(m_window);
+  EventTargetWithInlineData::trace(visitor);
 }
 
-DOMVisualViewport::~DOMVisualViewport()
-{
+const AtomicString& DOMVisualViewport::interfaceName() const {
+  return EventTargetNames::DOMVisualViewport;
 }
 
-DEFINE_TRACE(DOMVisualViewport)
-{
-    visitor->trace(m_window);
-    EventTargetWithInlineData::trace(visitor);
+ExecutionContext* DOMVisualViewport::getExecutionContext() const {
+  return m_window->getExecutionContext();
 }
 
-const AtomicString& DOMVisualViewport::interfaceName() const
-{
-    return EventTargetNames::DOMVisualViewport;
-}
-
-ExecutionContext* DOMVisualViewport::getExecutionContext() const
-{
-    return m_window->getExecutionContext();
-}
-
-double DOMVisualViewport::scrollLeft()
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame || !frame->isMainFrame())
-        return 0;
-
-    if (FrameHost* host = frame->host())
-        return host->visualViewport().scrollLeft();
-
+double DOMVisualViewport::scrollLeft() {
+  LocalFrame* frame = m_window->frame();
+  if (!frame || !frame->isMainFrame())
     return 0;
+
+  if (FrameHost* host = frame->host())
+    return host->visualViewport().scrollLeft();
+
+  return 0;
 }
 
-double DOMVisualViewport::scrollTop()
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame || !frame->isMainFrame())
-        return 0;
-
-    if (FrameHost* host = frame->host())
-        return host->visualViewport().scrollTop();
-
+double DOMVisualViewport::scrollTop() {
+  LocalFrame* frame = m_window->frame();
+  if (!frame || !frame->isMainFrame())
     return 0;
+
+  if (FrameHost* host = frame->host())
+    return host->visualViewport().scrollTop();
+
+  return 0;
 }
 
-double DOMVisualViewport::pageX()
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame)
-        return 0;
-
-    FrameView* view = frame->view();
-    if (!view)
-        return 0;
-
-    frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-    double viewportX = view->getScrollableArea()->scrollPositionDouble().x();
-    return adjustScrollForAbsoluteZoom(viewportX, frame->pageZoomFactor());
-}
-
-double DOMVisualViewport::pageY()
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame)
-        return 0;
-
-    FrameView* view = frame->view();
-    if (!view)
-        return 0;
-
-    frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-    double viewportY = view->getScrollableArea()->scrollPositionDouble().y();
-    return adjustScrollForAbsoluteZoom(viewportY, frame->pageZoomFactor());
-}
-
-double DOMVisualViewport::clientWidth()
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame)
-        return 0;
-
-    if (!frame->isMainFrame()) {
-        FloatSize viewportSize = m_window->getViewportSize(ExcludeScrollbars);
-        return adjustForAbsoluteZoom(expandedIntSize(viewportSize).width(), frame->pageZoomFactor());
-    }
-
-    if (FrameHost* host = frame->host())
-        return host->visualViewport().clientWidth();
-
+double DOMVisualViewport::pageX() {
+  LocalFrame* frame = m_window->frame();
+  if (!frame)
     return 0;
-}
 
-double DOMVisualViewport::clientHeight()
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame)
-        return 0;
-
-    if (!frame->isMainFrame()) {
-        FloatSize viewportSize = m_window->getViewportSize(ExcludeScrollbars);
-        return adjustForAbsoluteZoom(expandedIntSize(viewportSize).height(), frame->pageZoomFactor());
-    }
-
-    if (FrameHost* host = frame->host())
-        return host->visualViewport().clientHeight();
-
+  FrameView* view = frame->view();
+  if (!view)
     return 0;
+
+  frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  double viewportX = view->getScrollableArea()->scrollPositionDouble().x();
+  return adjustScrollForAbsoluteZoom(viewportX, frame->pageZoomFactor());
 }
 
-double DOMVisualViewport::scale()
-{
-    LocalFrame* frame = m_window->frame();
-    if (!frame)
-        return 0;
-
-    if (!frame->isMainFrame())
-        return 1;
-
-    if (FrameHost* host = m_window->frame()->host())
-        return host->visualViewport().pageScale();
-
+double DOMVisualViewport::pageY() {
+  LocalFrame* frame = m_window->frame();
+  if (!frame)
     return 0;
+
+  FrameView* view = frame->view();
+  if (!view)
+    return 0;
+
+  frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  double viewportY = view->getScrollableArea()->scrollPositionDouble().y();
+  return adjustScrollForAbsoluteZoom(viewportY, frame->pageZoomFactor());
 }
 
-} // namespace blink
+double DOMVisualViewport::clientWidth() {
+  LocalFrame* frame = m_window->frame();
+  if (!frame)
+    return 0;
+
+  if (!frame->isMainFrame()) {
+    FloatSize viewportSize = m_window->getViewportSize(ExcludeScrollbars);
+    return adjustForAbsoluteZoom(expandedIntSize(viewportSize).width(),
+                                 frame->pageZoomFactor());
+  }
+
+  if (FrameHost* host = frame->host())
+    return host->visualViewport().clientWidth();
+
+  return 0;
+}
+
+double DOMVisualViewport::clientHeight() {
+  LocalFrame* frame = m_window->frame();
+  if (!frame)
+    return 0;
+
+  if (!frame->isMainFrame()) {
+    FloatSize viewportSize = m_window->getViewportSize(ExcludeScrollbars);
+    return adjustForAbsoluteZoom(expandedIntSize(viewportSize).height(),
+                                 frame->pageZoomFactor());
+  }
+
+  if (FrameHost* host = frame->host())
+    return host->visualViewport().clientHeight();
+
+  return 0;
+}
+
+double DOMVisualViewport::scale() {
+  LocalFrame* frame = m_window->frame();
+  if (!frame)
+    return 0;
+
+  if (!frame->isMainFrame())
+    return 1;
+
+  if (FrameHost* host = m_window->frame()->host())
+    return host->visualViewport().pageScale();
+
+  return 0;
+}
+
+}  // namespace blink

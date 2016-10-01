@@ -14,11 +14,12 @@ namespace blink {
 class ScriptState;
 
 class MIDIInputMap : public MIDIPortMap<MIDIInput>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    explicit MIDIInputMap(const HeapVector<Member<MIDIInput>>&);
+  DEFINE_WRAPPERTYPEINFO();
+
+ public:
+  explicit MIDIInputMap(const HeapVector<Member<MIDIInput>>&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

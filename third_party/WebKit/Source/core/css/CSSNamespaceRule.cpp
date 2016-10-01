@@ -10,43 +10,35 @@
 
 namespace blink {
 
-CSSNamespaceRule::CSSNamespaceRule(StyleRuleNamespace* namespaceRule, CSSStyleSheet* parent)
-    : CSSRule(parent)
-    , m_namespaceRule(namespaceRule)
-{
+CSSNamespaceRule::CSSNamespaceRule(StyleRuleNamespace* namespaceRule,
+                                   CSSStyleSheet* parent)
+    : CSSRule(parent), m_namespaceRule(namespaceRule) {}
+
+CSSNamespaceRule::~CSSNamespaceRule() {}
+
+String CSSNamespaceRule::cssText() const {
+  StringBuilder result;
+  result.append("@namespace ");
+  serializeIdentifier(prefix(), result);
+  if (!prefix().isEmpty())
+    result.append(' ');
+  result.append("url(");
+  result.append(serializeString(namespaceURI()));
+  result.append(");");
+  return result.toString();
 }
 
-CSSNamespaceRule::~CSSNamespaceRule()
-{
+AtomicString CSSNamespaceRule::namespaceURI() const {
+  return m_namespaceRule->uri();
 }
 
-String CSSNamespaceRule::cssText() const
-{
-    StringBuilder result;
-    result.append("@namespace ");
-    serializeIdentifier(prefix(), result);
-    if (!prefix().isEmpty())
-        result.append(' ');
-    result.append("url(");
-    result.append(serializeString(namespaceURI()));
-    result.append(");");
-    return result.toString();
+AtomicString CSSNamespaceRule::prefix() const {
+  return m_namespaceRule->prefix();
 }
 
-AtomicString CSSNamespaceRule::namespaceURI() const
-{
-    return m_namespaceRule->uri();
+DEFINE_TRACE(CSSNamespaceRule) {
+  visitor->trace(m_namespaceRule);
+  CSSRule::trace(visitor);
 }
 
-AtomicString CSSNamespaceRule::prefix() const
-{
-    return m_namespaceRule->prefix();
-}
-
-DEFINE_TRACE(CSSNamespaceRule)
-{
-    visitor->trace(m_namespaceRule);
-    CSSRule::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

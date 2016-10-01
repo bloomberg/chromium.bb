@@ -38,35 +38,36 @@ class Element;
 typedef int ExceptionCode;
 
 class ClassList final : public DOMTokenList {
-public:
-    static ClassList* create(Element* element)
-    {
-        return new ClassList(element);
-    }
+ public:
+  static ClassList* create(Element* element) { return new ClassList(element); }
 
-    unsigned length() const override;
-    const AtomicString item(unsigned index) const override;
+  unsigned length() const override;
+  const AtomicString item(unsigned index) const override;
 
-    Element* element() override { return m_element; }
+  Element* element() override { return m_element; }
 
-    void clearValueForQuirksMode() { m_classNamesForQuirksMode = nullptr; }
+  void clearValueForQuirksMode() { m_classNamesForQuirksMode = nullptr; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit ClassList(Element*);
+ private:
+  explicit ClassList(Element*);
 
-    bool containsInternal(const AtomicString&) const override;
+  bool containsInternal(const AtomicString&) const override;
 
-    const SpaceSplitString& classNames() const;
+  const SpaceSplitString& classNames() const;
 
-    const AtomicString& value() const override { return m_element->getAttribute(HTMLNames::classAttr); }
-    void setValue(const AtomicString& value) override { m_element->setAttribute(HTMLNames::classAttr, value); }
+  const AtomicString& value() const override {
+    return m_element->getAttribute(HTMLNames::classAttr);
+  }
+  void setValue(const AtomicString& value) override {
+    m_element->setAttribute(HTMLNames::classAttr, value);
+  }
 
-    Member<Element> m_element;
-    mutable std::unique_ptr<SpaceSplitString> m_classNamesForQuirksMode;
+  Member<Element> m_element;
+  mutable std::unique_ptr<SpaceSplitString> m_classNamesForQuirksMode;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClassList_h
+#endif  // ClassList_h

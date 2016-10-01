@@ -11,27 +11,23 @@
 
 namespace blink {
 
-WebString WebMetaElement::computeEncoding() const
-{
-    return String(constUnwrap<HTMLMetaElement>()->computeEncoding().name());
+WebString WebMetaElement::computeEncoding() const {
+  return String(constUnwrap<HTMLMetaElement>()->computeEncoding().name());
 }
 
-WebMetaElement::WebMetaElement(HTMLMetaElement*element)
-    : WebElement(element)
-{
+WebMetaElement::WebMetaElement(HTMLMetaElement* element)
+    : WebElement(element) {}
+
+DEFINE_WEB_NODE_TYPE_CASTS(WebMetaElement,
+                           isHTMLMetaElement(constUnwrap<Node>()));
+
+WebMetaElement& WebMetaElement::operator=(HTMLMetaElement* element) {
+  m_private = element;
+  return *this;
 }
 
-DEFINE_WEB_NODE_TYPE_CASTS(WebMetaElement, isHTMLMetaElement(constUnwrap<Node>()));
-
-WebMetaElement& WebMetaElement::operator=(HTMLMetaElement*element)
-{
-    m_private = element;
-    return *this;
+WebMetaElement::operator HTMLMetaElement*() const {
+  return toHTMLMetaElement(m_private.get());
 }
 
-WebMetaElement::operator HTMLMetaElement*() const
-{
-    return toHTMLMetaElement(m_private.get());
-}
-
-} // namespace blink
+}  // namespace blink

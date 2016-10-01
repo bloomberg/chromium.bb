@@ -35,57 +35,60 @@
 namespace blink {
 
 class PlatformSpeechSynthesisUtteranceClient : public GarbageCollectedMixin {
-public:
-    // Implement methods as needed.
-protected:
-    virtual ~PlatformSpeechSynthesisUtteranceClient() { }
+ public:
+  // Implement methods as needed.
+ protected:
+  virtual ~PlatformSpeechSynthesisUtteranceClient() {}
 };
 
-class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final : public GarbageCollectedFinalized<PlatformSpeechSynthesisUtterance> {
-public:
-    static PlatformSpeechSynthesisUtterance* create(PlatformSpeechSynthesisUtteranceClient*);
+class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
+    : public GarbageCollectedFinalized<PlatformSpeechSynthesisUtterance> {
+ public:
+  static PlatformSpeechSynthesisUtterance* create(
+      PlatformSpeechSynthesisUtteranceClient*);
 
-    const String& text() const { return m_text; }
-    void setText(const String& text) { m_text = text; }
+  const String& text() const { return m_text; }
+  void setText(const String& text) { m_text = text; }
 
-    const String& lang() const { return m_lang; }
-    void setLang(const String& lang) { m_lang = lang; }
+  const String& lang() const { return m_lang; }
+  void setLang(const String& lang) { m_lang = lang; }
 
-    PlatformSpeechSynthesisVoice* voice() const { return m_voice.get(); }
-    void setVoice(PlatformSpeechSynthesisVoice* voice) { m_voice = voice; }
+  PlatformSpeechSynthesisVoice* voice() const { return m_voice.get(); }
+  void setVoice(PlatformSpeechSynthesisVoice* voice) { m_voice = voice; }
 
-    // Range = [0, 1] where 1 is the default.
-    float volume() const { return m_volume; }
-    void setVolume(float volume) { m_volume = clampTo(volume, 0.0f, 1.0f); }
+  // Range = [0, 1] where 1 is the default.
+  float volume() const { return m_volume; }
+  void setVolume(float volume) { m_volume = clampTo(volume, 0.0f, 1.0f); }
 
-    // Range = [0.1, 10] where 1 is the default.
-    float rate() const { return m_rate; }
-    void setRate(float rate) { m_rate = clampTo(rate, 0.1f, 10.0f); }
+  // Range = [0.1, 10] where 1 is the default.
+  float rate() const { return m_rate; }
+  void setRate(float rate) { m_rate = clampTo(rate, 0.1f, 10.0f); }
 
-    // Range = [0, 2] where 1 is the default.
-    float pitch() const { return m_pitch; }
-    void setPitch(float pitch) { m_pitch = clampTo(pitch, 0.0f, 2.0f); }
+  // Range = [0, 2] where 1 is the default.
+  float pitch() const { return m_pitch; }
+  void setPitch(float pitch) { m_pitch = clampTo(pitch, 0.0f, 2.0f); }
 
-    double startTime() const { return m_startTime; }
-    void setStartTime(double startTime) { m_startTime = startTime; }
+  double startTime() const { return m_startTime; }
+  void setStartTime(double startTime) { m_startTime = startTime; }
 
-    PlatformSpeechSynthesisUtteranceClient* client() const { return m_client; }
+  PlatformSpeechSynthesisUtteranceClient* client() const { return m_client; }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit PlatformSpeechSynthesisUtterance(PlatformSpeechSynthesisUtteranceClient*);
+ private:
+  explicit PlatformSpeechSynthesisUtterance(
+      PlatformSpeechSynthesisUtteranceClient*);
 
-    Member<PlatformSpeechSynthesisUtteranceClient> m_client;
-    String m_text;
-    String m_lang;
-    RefPtr<PlatformSpeechSynthesisVoice> m_voice;
-    float m_volume;
-    float m_rate;
-    float m_pitch;
-    double m_startTime;
+  Member<PlatformSpeechSynthesisUtteranceClient> m_client;
+  String m_text;
+  String m_lang;
+  RefPtr<PlatformSpeechSynthesisVoice> m_voice;
+  float m_volume;
+  float m_rate;
+  float m_pitch;
+  double m_startTime;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformSpeechSynthesisUtterance_h
+#endif  // PlatformSpeechSynthesisUtterance_h

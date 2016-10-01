@@ -9,58 +9,52 @@
 namespace blink {
 
 // static
-void WebFontRendering::setSkiaFontManager(SkFontMgr* fontMgr)
-{
-    WTF::adopted(fontMgr);
-    FontCache::setFontManager(sk_ref_sp(fontMgr));
+void WebFontRendering::setSkiaFontManager(SkFontMgr* fontMgr) {
+  WTF::adopted(fontMgr);
+  FontCache::setFontManager(sk_ref_sp(fontMgr));
 }
 
 // static
-void WebFontRendering::setDeviceScaleFactor(float deviceScaleFactor)
-{
-    FontCache::setDeviceScaleFactor(deviceScaleFactor);
+void WebFontRendering::setDeviceScaleFactor(float deviceScaleFactor) {
+  FontCache::setDeviceScaleFactor(deviceScaleFactor);
 }
 
 // static
-void WebFontRendering::addSideloadedFontForTesting(SkTypeface* typeface)
-{
-    FontCache::addSideloadedFontForTesting(typeface);
+void WebFontRendering::addSideloadedFontForTesting(SkTypeface* typeface) {
+  FontCache::addSideloadedFontForTesting(typeface);
 }
 
 // static
-void WebFontRendering::setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight)
-{
-    FontCache::setMenuFontMetrics(familyName, fontHeight);
+void WebFontRendering::setMenuFontMetrics(const wchar_t* familyName,
+                                          int32_t fontHeight) {
+  FontCache::setMenuFontMetrics(familyName, fontHeight);
 }
 
 // static
-void WebFontRendering::setSmallCaptionFontMetrics(const wchar_t* familyName, int32_t fontHeight)
-{
-    FontCache::setSmallCaptionFontMetrics(familyName, fontHeight);
+void WebFontRendering::setSmallCaptionFontMetrics(const wchar_t* familyName,
+                                                  int32_t fontHeight) {
+  FontCache::setSmallCaptionFontMetrics(familyName, fontHeight);
 }
 
 // static
-void WebFontRendering::setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight)
-{
-    FontCache::setStatusFontMetrics(familyName, fontHeight);
+void WebFontRendering::setStatusFontMetrics(const wchar_t* familyName,
+                                            int32_t fontHeight) {
+  FontCache::setStatusFontMetrics(familyName, fontHeight);
 }
 
 // static
-void WebFontRendering::setAntialiasedTextEnabled(bool enabled)
-{
-    FontCache::setAntialiasedTextEnabled(enabled);
+void WebFontRendering::setAntialiasedTextEnabled(bool enabled) {
+  FontCache::setAntialiasedTextEnabled(enabled);
 }
 
 // static
-void WebFontRendering::setLCDTextEnabled(bool enabled)
-{
-    FontCache::setLCDTextEnabled(enabled);
+void WebFontRendering::setLCDTextEnabled(bool enabled) {
+  FontCache::setLCDTextEnabled(enabled);
 }
 
 // static
-void WebFontRendering::setUseSkiaFontFallback(bool useSkiaFontFallback)
-{
-    FontCache::setUseSkiaFontFallback(useSkiaFontFallback);
+void WebFontRendering::setUseSkiaFontFallback(bool useSkiaFontFallback) {
+  FontCache::setUseSkiaFontFallback(useSkiaFontFallback);
 }
 
-} // namespace blink
+}  // namespace blink

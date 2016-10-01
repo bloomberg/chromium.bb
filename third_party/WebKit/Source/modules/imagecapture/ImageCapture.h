@@ -24,53 +24,56 @@ class WebImageCaptureFrameGrabber;
 
 // TODO(mcasas): Consideradding a LayoutTest checking that this class is not
 // garbage collected while it has event listeners.
-class MODULES_EXPORT ImageCapture final
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(ImageCapture);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ImageCapture* create(ExecutionContext*, MediaStreamTrack*, ExceptionState&);
-    ~ImageCapture() override;
+class MODULES_EXPORT ImageCapture final : public EventTargetWithInlineData,
+                                          public ActiveScriptWrappable,
+                                          public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(ImageCapture);
+  DEFINE_WRAPPERTYPEINFO();
 
-    // EventTarget implementation.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+ public:
+  static ImageCapture* create(ExecutionContext*,
+                              MediaStreamTrack*,
+                              ExceptionState&);
+  ~ImageCapture() override;
 
-    // ScriptWrappable implementation.
-    bool hasPendingActivity() const final;
+  // EventTarget implementation.
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ContextLifecycleObserver
-    void contextDestroyed() override;
+  // ScriptWrappable implementation.
+  bool hasPendingActivity() const final;
 
-    MediaStreamTrack* videoStreamTrack() const { return m_streamTrack.get(); }
+  // ContextLifecycleObserver
+  void contextDestroyed() override;
 
-    ScriptPromise getPhotoCapabilities(ScriptState*, ExceptionState&);
+  MediaStreamTrack* videoStreamTrack() const { return m_streamTrack.get(); }
 
-    ScriptPromise setOptions(ScriptState*, const PhotoSettings&, ExceptionState&);
+  ScriptPromise getPhotoCapabilities(ScriptState*, ExceptionState&);
 
-    ScriptPromise takePhoto(ScriptState*, ExceptionState&);
+  ScriptPromise setOptions(ScriptState*, const PhotoSettings&, ExceptionState&);
 
-    ScriptPromise grabFrame(ScriptState*, ExceptionState&);
+  ScriptPromise takePhoto(ScriptState*, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  ScriptPromise grabFrame(ScriptState*, ExceptionState&);
 
-private:
-    ImageCapture(ExecutionContext*, MediaStreamTrack*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void onCapabilities(ScriptPromiseResolver*, media::mojom::blink::PhotoCapabilitiesPtr);
-    void onSetOptions(ScriptPromiseResolver*, bool);
-    void onTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
-    void onServiceConnectionError();
+ private:
+  ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
-    Member<MediaStreamTrack> m_streamTrack;
-    std::unique_ptr<WebImageCaptureFrameGrabber> m_frameGrabber;
-    media::mojom::blink::ImageCapturePtr m_service;
+  void onCapabilities(ScriptPromiseResolver*,
+                      media::mojom::blink::PhotoCapabilitiesPtr);
+  void onSetOptions(ScriptPromiseResolver*, bool);
+  void onTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
+  void onServiceConnectionError();
 
-    HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
+  Member<MediaStreamTrack> m_streamTrack;
+  std::unique_ptr<WebImageCaptureFrameGrabber> m_frameGrabber;
+  media::mojom::blink::ImageCapturePtr m_service;
+
+  HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ImageCapture_h
+#endif  // ImageCapture_h

@@ -37,45 +37,85 @@
 namespace blink {
 
 class AnimationAnimatableUnknownTest : public ::testing::Test {
-protected:
-    virtual void SetUp()
-    {
-        cssValue = CSSPrimitiveValue::createIdentifier(CSSValueYellow);
-        animatableUnknown = AnimatableUnknown::create(cssValue);
+ protected:
+  virtual void SetUp() {
+    cssValue = CSSPrimitiveValue::createIdentifier(CSSValueYellow);
+    animatableUnknown = AnimatableUnknown::create(cssValue);
 
-        otherCSSValue = CSSPrimitiveValue::createIdentifier(CSSValueOrange);
-        otherAnimatableUnknown = AnimatableUnknown::create(otherCSSValue);
-    }
+    otherCSSValue = CSSPrimitiveValue::createIdentifier(CSSValueOrange);
+    otherAnimatableUnknown = AnimatableUnknown::create(otherCSSValue);
+  }
 
-    Persistent<CSSValue> cssValue;
-    RefPtr<AnimatableValue> animatableUnknown;
-    Persistent<CSSValue> otherCSSValue;
-    RefPtr<AnimatableValue> otherAnimatableUnknown;
+  Persistent<CSSValue> cssValue;
+  RefPtr<AnimatableValue> animatableUnknown;
+  Persistent<CSSValue> otherCSSValue;
+  RefPtr<AnimatableValue> otherAnimatableUnknown;
 };
 
-TEST_F(AnimationAnimatableUnknownTest, Create)
-{
-    EXPECT_TRUE(animatableUnknown);
+TEST_F(AnimationAnimatableUnknownTest, Create) {
+  EXPECT_TRUE(animatableUnknown);
 }
 
-TEST_F(AnimationAnimatableUnknownTest, ToCSSValue)
-{
-    EXPECT_EQ(cssValue, toAnimatableUnknown(animatableUnknown.get())->toCSSValue());
+TEST_F(AnimationAnimatableUnknownTest, ToCSSValue) {
+  EXPECT_EQ(cssValue,
+            toAnimatableUnknown(animatableUnknown.get())->toCSSValue());
 }
 
-TEST_F(AnimationAnimatableUnknownTest, Interpolate)
-{
-    EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0).get())->toCSSValue());
-    EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0.4).get())->toCSSValue());
-    EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0.5).get())->toCSSValue());
-    EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 0.6).get())->toCSSValue());
-    EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::interpolate(animatableUnknown.get(), otherAnimatableUnknown.get(), 1).get())->toCSSValue());
+TEST_F(AnimationAnimatableUnknownTest, Interpolate) {
+  EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(
+                                              animatableUnknown.get(),
+                                              otherAnimatableUnknown.get(), 0)
+                                              .get())
+                          ->toCSSValue());
+  EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(
+                                              animatableUnknown.get(),
+                                              otherAnimatableUnknown.get(), 0.4)
+                                              .get())
+                          ->toCSSValue());
+  EXPECT_EQ(otherCSSValue,
+            toAnimatableUnknown(
+                AnimatableValue::interpolate(animatableUnknown.get(),
+                                             otherAnimatableUnknown.get(), 0.5)
+                    .get())
+                ->toCSSValue());
+  EXPECT_EQ(otherCSSValue,
+            toAnimatableUnknown(
+                AnimatableValue::interpolate(animatableUnknown.get(),
+                                             otherAnimatableUnknown.get(), 0.6)
+                    .get())
+                ->toCSSValue());
+  EXPECT_EQ(otherCSSValue,
+            toAnimatableUnknown(
+                AnimatableValue::interpolate(animatableUnknown.get(),
+                                             otherAnimatableUnknown.get(), 1)
+                    .get())
+                ->toCSSValue());
 
-    EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::interpolate(otherAnimatableUnknown.get(), animatableUnknown.get(), 0).get())->toCSSValue());
-    EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::interpolate(otherAnimatableUnknown.get(), animatableUnknown.get(), 0.4).get())->toCSSValue());
-    EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(otherAnimatableUnknown.get(), animatableUnknown.get(), 0.5).get())->toCSSValue());
-    EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(otherAnimatableUnknown.get(), animatableUnknown.get(), 0.6).get())->toCSSValue());
-    EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(otherAnimatableUnknown.get(), animatableUnknown.get(), 1).get())->toCSSValue());
+  EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::interpolate(
+                                                   otherAnimatableUnknown.get(),
+                                                   animatableUnknown.get(), 0)
+                                                   .get())
+                               ->toCSSValue());
+  EXPECT_EQ(otherCSSValue, toAnimatableUnknown(AnimatableValue::interpolate(
+                                                   otherAnimatableUnknown.get(),
+                                                   animatableUnknown.get(), 0.4)
+                                                   .get())
+                               ->toCSSValue());
+  EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(
+                                              otherAnimatableUnknown.get(),
+                                              animatableUnknown.get(), 0.5)
+                                              .get())
+                          ->toCSSValue());
+  EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(
+                                              otherAnimatableUnknown.get(),
+                                              animatableUnknown.get(), 0.6)
+                                              .get())
+                          ->toCSSValue());
+  EXPECT_EQ(cssValue, toAnimatableUnknown(AnimatableValue::interpolate(
+                                              otherAnimatableUnknown.get(),
+                                              animatableUnknown.get(), 1)
+                                              .get())
+                          ->toCSSValue());
 }
 
-} // namespace blink
+}  // namespace blink

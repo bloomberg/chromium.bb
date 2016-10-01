@@ -21,26 +21,27 @@ class Headers;
 
 // FIXME: Use IDL dictionary instead of this class.
 class RequestInit {
-    STACK_ALLOCATED();
-public:
-    explicit RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
+  STACK_ALLOCATED();
 
-    String method;
-    Member<Headers> headers;
-    Dictionary headersDictionary;
-    String contentType;
-    Member<BytesConsumer> body;
-    Referrer referrer;
-    String mode;
-    String credentials;
-    String redirect;
-    String integrity;
-    RefPtr<EncodedFormData> attachedCredential;
-    // True if any members in RequestInit are set and hence the referrer member
-    // should be used in the Request constructor.
-    bool areAnyMembersSet;
+ public:
+  explicit RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
+
+  String method;
+  Member<Headers> headers;
+  Dictionary headersDictionary;
+  String contentType;
+  Member<BytesConsumer> body;
+  Referrer referrer;
+  String mode;
+  String credentials;
+  String redirect;
+  String integrity;
+  RefPtr<EncodedFormData> attachedCredential;
+  // True if any members in RequestInit are set and hence the referrer member
+  // should be used in the Request constructor.
+  bool areAnyMembersSet;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RequestInit_h
+#endif  // RequestInit_h

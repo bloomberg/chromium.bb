@@ -31,78 +31,76 @@ namespace blink {
 
 const unsigned DateTimeFieldsState::emptyValue = static_cast<unsigned>(-1);
 
-static unsigned getNumberFromFormControlState(const FormControlState& state, size_t index)
-{
-    if (index >= state.valueSize())
-        return DateTimeFieldsState::emptyValue;
-    bool parsed;
-    unsigned const value = state[index].toUInt(&parsed);
-    return parsed ? value : DateTimeFieldsState::emptyValue;
+static unsigned getNumberFromFormControlState(const FormControlState& state,
+                                              size_t index) {
+  if (index >= state.valueSize())
+    return DateTimeFieldsState::emptyValue;
+  bool parsed;
+  unsigned const value = state[index].toUInt(&parsed);
+  return parsed ? value : DateTimeFieldsState::emptyValue;
 }
 
-static DateTimeFieldsState::AMPMValue getAMPMFromFormControlState(const FormControlState& state, size_t index)
-{
-    if (index >= state.valueSize())
-        return DateTimeFieldsState::AMPMValueEmpty;
-    const String value = state[index];
-    if (value == "A")
-        return DateTimeFieldsState::AMPMValueAM;
-    if (value == "P")
-        return DateTimeFieldsState::AMPMValuePM;
+static DateTimeFieldsState::AMPMValue getAMPMFromFormControlState(
+    const FormControlState& state,
+    size_t index) {
+  if (index >= state.valueSize())
     return DateTimeFieldsState::AMPMValueEmpty;
+  const String value = state[index];
+  if (value == "A")
+    return DateTimeFieldsState::AMPMValueAM;
+  if (value == "P")
+    return DateTimeFieldsState::AMPMValuePM;
+  return DateTimeFieldsState::AMPMValueEmpty;
 }
 
 DateTimeFieldsState::DateTimeFieldsState()
-    : m_year(emptyValue)
-    , m_month(emptyValue)
-    , m_dayOfMonth(emptyValue)
-    , m_hour(emptyValue)
-    , m_minute(emptyValue)
-    , m_second(emptyValue)
-    , m_millisecond(emptyValue)
-    , m_weekOfYear(emptyValue)
-    , m_ampm(AMPMValueEmpty)
-{
+    : m_year(emptyValue),
+      m_month(emptyValue),
+      m_dayOfMonth(emptyValue),
+      m_hour(emptyValue),
+      m_minute(emptyValue),
+      m_second(emptyValue),
+      m_millisecond(emptyValue),
+      m_weekOfYear(emptyValue),
+      m_ampm(AMPMValueEmpty) {}
+
+unsigned DateTimeFieldsState::hour23() const {
+  if (!hasHour() || !hasAMPM())
+    return emptyValue;
+  return (m_hour % 12) + (m_ampm == AMPMValuePM ? 12 : 0);
 }
 
-unsigned DateTimeFieldsState::hour23() const
-{
-    if (!hasHour() || !hasAMPM())
-        return emptyValue;
-    return (m_hour % 12) + (m_ampm == AMPMValuePM ? 12 : 0);
+DateTimeFieldsState DateTimeFieldsState::restoreFormControlState(
+    const FormControlState& state) {
+  DateTimeFieldsState dateTimeFieldsState;
+  dateTimeFieldsState.setYear(getNumberFromFormControlState(state, 0));
+  dateTimeFieldsState.setMonth(getNumberFromFormControlState(state, 1));
+  dateTimeFieldsState.setDayOfMonth(getNumberFromFormControlState(state, 2));
+  dateTimeFieldsState.setHour(getNumberFromFormControlState(state, 3));
+  dateTimeFieldsState.setMinute(getNumberFromFormControlState(state, 4));
+  dateTimeFieldsState.setSecond(getNumberFromFormControlState(state, 5));
+  dateTimeFieldsState.setMillisecond(getNumberFromFormControlState(state, 6));
+  dateTimeFieldsState.setWeekOfYear(getNumberFromFormControlState(state, 7));
+  dateTimeFieldsState.setAMPM(getAMPMFromFormControlState(state, 8));
+  return dateTimeFieldsState;
 }
 
-DateTimeFieldsState DateTimeFieldsState::restoreFormControlState(const FormControlState& state)
-{
-    DateTimeFieldsState dateTimeFieldsState;
-    dateTimeFieldsState.setYear(getNumberFromFormControlState(state, 0));
-    dateTimeFieldsState.setMonth(getNumberFromFormControlState(state, 1));
-    dateTimeFieldsState.setDayOfMonth(getNumberFromFormControlState(state, 2));
-    dateTimeFieldsState.setHour(getNumberFromFormControlState(state, 3));
-    dateTimeFieldsState.setMinute(getNumberFromFormControlState(state, 4));
-    dateTimeFieldsState.setSecond(getNumberFromFormControlState(state, 5));
-    dateTimeFieldsState.setMillisecond(getNumberFromFormControlState(state, 6));
-    dateTimeFieldsState.setWeekOfYear(getNumberFromFormControlState(state, 7));
-    dateTimeFieldsState.setAMPM(getAMPMFromFormControlState(state, 8));
-    return dateTimeFieldsState;
+FormControlState DateTimeFieldsState::saveFormControlState() const {
+  FormControlState state;
+  state.append(hasYear() ? String::number(m_year) : emptyString());
+  state.append(hasMonth() ? String::number(m_month) : emptyString());
+  state.append(hasDayOfMonth() ? String::number(m_dayOfMonth) : emptyString());
+  state.append(hasHour() ? String::number(m_hour) : emptyString());
+  state.append(hasMinute() ? String::number(m_minute) : emptyString());
+  state.append(hasSecond() ? String::number(m_second) : emptyString());
+  state.append(hasMillisecond() ? String::number(m_millisecond)
+                                : emptyString());
+  state.append(hasWeekOfYear() ? String::number(m_weekOfYear) : emptyString());
+  if (hasAMPM())
+    state.append(m_ampm == AMPMValueAM ? "A" : "P");
+  else
+    state.append(emptyString());
+  return state;
 }
 
-FormControlState DateTimeFieldsState::saveFormControlState() const
-{
-    FormControlState state;
-    state.append(hasYear() ? String::number(m_year) : emptyString());
-    state.append(hasMonth() ? String::number(m_month) : emptyString());
-    state.append(hasDayOfMonth() ? String::number(m_dayOfMonth) : emptyString());
-    state.append(hasHour() ? String::number(m_hour) : emptyString());
-    state.append(hasMinute() ? String::number(m_minute) : emptyString());
-    state.append(hasSecond() ? String::number(m_second) : emptyString());
-    state.append(hasMillisecond() ? String::number(m_millisecond) : emptyString());
-    state.append(hasWeekOfYear() ? String::number(m_weekOfYear) : emptyString());
-    if (hasAMPM())
-        state.append(m_ampm == AMPMValueAM ? "A" : "P");
-    else
-        state.append(emptyString());
-    return state;
-}
-
-} // namespace blink
+}  // namespace blink

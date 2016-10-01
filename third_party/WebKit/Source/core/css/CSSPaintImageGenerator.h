@@ -18,36 +18,44 @@ class LayoutObject;
 
 // Produces a PaintGeneratedImage from a CSS Paint API callback.
 // https://drafts.css-houdini.org/css-paint-api/
-class CORE_EXPORT CSSPaintImageGenerator : public GarbageCollectedFinalized<CSSPaintImageGenerator> {
-public:
-    // This observer is used if the paint worklet doesn't have a javascript
-    // class registered with the correct name yet.
-    // paintImageGeneratorReady is called when the javascript class is
-    // registered and ready to use.
-    class Observer : public GarbageCollectedFinalized<Observer> {
-    public:
-        virtual ~Observer() { };
-        virtual void paintImageGeneratorReady() = 0;
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
-    };
+class CORE_EXPORT CSSPaintImageGenerator
+    : public GarbageCollectedFinalized<CSSPaintImageGenerator> {
+ public:
+  // This observer is used if the paint worklet doesn't have a javascript
+  // class registered with the correct name yet.
+  // paintImageGeneratorReady is called when the javascript class is
+  // registered and ready to use.
+  class Observer : public GarbageCollectedFinalized<Observer> {
+   public:
+    virtual ~Observer(){};
+    virtual void paintImageGeneratorReady() = 0;
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+  };
 
-    static CSSPaintImageGenerator* create(const String& name, Document&, Observer*);
-    virtual ~CSSPaintImageGenerator();
+  static CSSPaintImageGenerator* create(const String& name,
+                                        Document&,
+                                        Observer*);
+  virtual ~CSSPaintImageGenerator();
 
-    typedef CSSPaintImageGenerator* (*CSSPaintImageGeneratorCreateFunction)(const String&, Document&, Observer*);
-    static void init(CSSPaintImageGeneratorCreateFunction);
+  typedef CSSPaintImageGenerator* (*CSSPaintImageGeneratorCreateFunction)(
+      const String&,
+      Document&,
+      Observer*);
+  static void init(CSSPaintImageGeneratorCreateFunction);
 
-    // Invokes the CSS Paint API 'paint' callback. May return a nullptr
-    // representing an invalid image if an error occurred.
-    virtual PassRefPtr<Image> paint(const LayoutObject&, const IntSize&, float zoom) = 0;
+  // Invokes the CSS Paint API 'paint' callback. May return a nullptr
+  // representing an invalid image if an error occurred.
+  virtual PassRefPtr<Image> paint(const LayoutObject&,
+                                  const IntSize&,
+                                  float zoom) = 0;
 
-    virtual const Vector<CSSPropertyID>& nativeInvalidationProperties() const = 0;
-    virtual const Vector<AtomicString>& customInvalidationProperties() const = 0;
-    virtual bool hasAlpha() const = 0;
+  virtual const Vector<CSSPropertyID>& nativeInvalidationProperties() const = 0;
+  virtual const Vector<AtomicString>& customInvalidationProperties() const = 0;
+  virtual bool hasAlpha() const = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSPaintImageGenerator_h
+#endif  // CSSPaintImageGenerator_h

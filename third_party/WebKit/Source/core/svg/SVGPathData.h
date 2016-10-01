@@ -27,78 +27,73 @@
 namespace blink {
 
 enum SVGPathSegType {
-    PathSegUnknown = 0,
-    PathSegClosePath = 1,
-    PathSegMoveToAbs = 2,
-    PathSegMoveToRel = 3,
-    PathSegLineToAbs = 4,
-    PathSegLineToRel = 5,
-    PathSegCurveToCubicAbs = 6,
-    PathSegCurveToCubicRel = 7,
-    PathSegCurveToQuadraticAbs = 8,
-    PathSegCurveToQuadraticRel = 9,
-    PathSegArcAbs = 10,
-    PathSegArcRel = 11,
-    PathSegLineToHorizontalAbs = 12,
-    PathSegLineToHorizontalRel = 13,
-    PathSegLineToVerticalAbs = 14,
-    PathSegLineToVerticalRel = 15,
-    PathSegCurveToCubicSmoothAbs = 16,
-    PathSegCurveToCubicSmoothRel = 17,
-    PathSegCurveToQuadraticSmoothAbs = 18,
-    PathSegCurveToQuadraticSmoothRel = 19
+  PathSegUnknown = 0,
+  PathSegClosePath = 1,
+  PathSegMoveToAbs = 2,
+  PathSegMoveToRel = 3,
+  PathSegLineToAbs = 4,
+  PathSegLineToRel = 5,
+  PathSegCurveToCubicAbs = 6,
+  PathSegCurveToCubicRel = 7,
+  PathSegCurveToQuadraticAbs = 8,
+  PathSegCurveToQuadraticRel = 9,
+  PathSegArcAbs = 10,
+  PathSegArcRel = 11,
+  PathSegLineToHorizontalAbs = 12,
+  PathSegLineToHorizontalRel = 13,
+  PathSegLineToVerticalAbs = 14,
+  PathSegLineToVerticalRel = 15,
+  PathSegCurveToCubicSmoothAbs = 16,
+  PathSegCurveToCubicSmoothRel = 17,
+  PathSegCurveToQuadraticSmoothAbs = 18,
+  PathSegCurveToQuadraticSmoothRel = 19
 };
 
-static inline SVGPathSegType toAbsolutePathSegType(const SVGPathSegType type)
-{
-    // Clear the LSB to get the absolute command.
-    return type >= PathSegMoveToAbs ? static_cast<SVGPathSegType>(type & ~1u) : type;
+static inline SVGPathSegType toAbsolutePathSegType(const SVGPathSegType type) {
+  // Clear the LSB to get the absolute command.
+  return type >= PathSegMoveToAbs ? static_cast<SVGPathSegType>(type & ~1u)
+                                  : type;
 }
 
-static inline bool isAbsolutePathSegType(const SVGPathSegType type)
-{
-    // For commands with an ordinal >= PathSegMoveToAbs, and odd number => relative command.
-    return type < PathSegMoveToAbs || type % 2 == 0;
+static inline bool isAbsolutePathSegType(const SVGPathSegType type) {
+  // For commands with an ordinal >= PathSegMoveToAbs, and odd number => relative command.
+  return type < PathSegMoveToAbs || type % 2 == 0;
 }
 
 struct PathSegmentData {
-    STACK_ALLOCATED();
-    PathSegmentData()
-        : command(PathSegUnknown)
-        , arcSweep(false)
-        , arcLarge(false)
-    {
-    }
+  STACK_ALLOCATED();
+  PathSegmentData()
+      : command(PathSegUnknown), arcSweep(false), arcLarge(false) {}
 
-    const FloatPoint& arcRadii() const { return point1; }
-    FloatPoint& arcRadii() { return point1; }
+  const FloatPoint& arcRadii() const { return point1; }
+  FloatPoint& arcRadii() { return point1; }
 
-    float arcAngle() const { return point2.x(); }
-    void setArcAngle(float angle) { point2.setX(angle); }
+  float arcAngle() const { return point2.x(); }
+  void setArcAngle(float angle) { point2.setX(angle); }
 
-    float r1() const { return arcRadii().x(); }
-    float r2() const { return arcRadii().y(); }
+  float r1() const { return arcRadii().x(); }
+  float r2() const { return arcRadii().y(); }
 
-    bool largeArcFlag() const { return arcLarge; }
-    bool sweepFlag() const { return arcSweep; }
+  bool largeArcFlag() const { return arcLarge; }
+  bool sweepFlag() const { return arcSweep; }
 
-    float x() const { return targetPoint.x(); }
-    float y() const { return targetPoint.y(); }
+  float x() const { return targetPoint.x(); }
+  float y() const { return targetPoint.y(); }
 
-    float x1() const { return point1.x(); }
-    float y1() const { return point1.y(); }
+  float x1() const { return point1.x(); }
+  float y1() const { return point1.y(); }
 
-    float x2() const { return point2.x(); }
-    float y2() const { return point2.y(); }
+  float x2() const { return point2.x(); }
+  float y2() const { return point2.y(); }
 
-    SVGPathSegType command;
-    FloatPoint targetPoint;
-    FloatPoint point1;
-    FloatPoint point2;
-    bool arcSweep;
-    bool arcLarge;
+  SVGPathSegType command;
+  FloatPoint targetPoint;
+  FloatPoint point1;
+  FloatPoint point2;
+  bool arcSweep;
+  bool arcLarge;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPathData_h
+#endif  // SVGPathData_h

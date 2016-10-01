@@ -39,18 +39,18 @@ namespace blink {
 class Element;
 
 class DateTimeChooserClient : public GarbageCollectedMixin {
-public:
-    virtual ~DateTimeChooserClient();
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+ public:
+  virtual ~DateTimeChooserClient();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    virtual Element& ownerElement() const = 0;
-    // Called when user picked a value.
-    virtual void didChooseValue(const String&) = 0;
-    // Called when user picked a value.
-    virtual void didChooseValue(double) = 0;
-    // Called when chooser has ended.
-    virtual void didEndChooser() = 0;
+  virtual Element& ownerElement() const = 0;
+  // Called when user picked a value.
+  virtual void didChooseValue(const String&) = 0;
+  // Called when user picked a value.
+  virtual void didChooseValue(double) = 0;
+  // Called when chooser has ended.
+  virtual void didEndChooser() = 0;
 };
 
-} // namespace blink
-#endif // DateTimeChooserClient_h
+}  // namespace blink
+#endif  // DateTimeChooserClient_h

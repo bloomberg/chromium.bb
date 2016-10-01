@@ -39,14 +39,17 @@ namespace blink {
 class StyleSheetResourceClient;
 
 class CORE_EXPORT StyleSheetResource : public TextResource {
-public:
-    using ClientType = StyleSheetResourceClient;
+ public:
+  using ClientType = StyleSheetResourceClient;
 
-    StyleSheetResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options, const String& mimeType, const String& charset)
-        : TextResource(request, type, options, mimeType, charset)
-    { }
+  StyleSheetResource(const ResourceRequest& request,
+                     Type type,
+                     const ResourceLoaderOptions& options,
+                     const String& mimeType,
+                     const String& charset)
+      : TextResource(request, type, options, mimeType, charset) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

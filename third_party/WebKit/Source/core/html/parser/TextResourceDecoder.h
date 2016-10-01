@@ -33,102 +33,115 @@ namespace blink {
 class HTMLMetaCharsetParser;
 
 class CORE_EXPORT TextResourceDecoder {
-    USING_FAST_MALLOC(TextResourceDecoder);
-    WTF_MAKE_NONCOPYABLE(TextResourceDecoder);
-public:
-    enum EncodingSource {
-        DefaultEncoding,
-        AutoDetectedEncoding,
-        EncodingFromContentSniffing,
-        EncodingFromXMLHeader,
-        EncodingFromMetaTag,
-        EncodingFromCSSCharset,
-        EncodingFromHTTPHeader,
-        EncodingFromParentFrame
-    };
+  USING_FAST_MALLOC(TextResourceDecoder);
+  WTF_MAKE_NONCOPYABLE(TextResourceDecoder);
 
-    static std::unique_ptr<TextResourceDecoder> create(const String& mimeType, const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(), bool usesEncodingDetector = false)
-    {
-        return wrapUnique(new TextResourceDecoder(mimeType, defaultEncoding, usesEncodingDetector ? UseAllAutoDetection : UseContentAndBOMBasedDetection));
-    }
-    // Corresponds to utf-8 decode in Encoding spec:
-    // https://encoding.spec.whatwg.org/#utf-8-decode.
-    static std::unique_ptr<TextResourceDecoder> createAlwaysUseUTF8ForText()
-    {
-        return wrapUnique(new TextResourceDecoder("plain/text", UTF8Encoding(), AlwaysUseUTF8ForText));
-    }
-    ~TextResourceDecoder();
+ public:
+  enum EncodingSource {
+    DefaultEncoding,
+    AutoDetectedEncoding,
+    EncodingFromContentSniffing,
+    EncodingFromXMLHeader,
+    EncodingFromMetaTag,
+    EncodingFromCSSCharset,
+    EncodingFromHTTPHeader,
+    EncodingFromParentFrame
+  };
 
-    void setEncoding(const WTF::TextEncoding&, EncodingSource);
-    const WTF::TextEncoding& encoding() const { return m_encoding; }
-    bool encodingWasDetectedHeuristically() const
-    {
-        return m_source == AutoDetectedEncoding
-            || m_source == EncodingFromContentSniffing;
-    }
+  static std::unique_ptr<TextResourceDecoder> create(
+      const String& mimeType,
+      const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding(),
+      bool usesEncodingDetector = false) {
+    return wrapUnique(new TextResourceDecoder(
+        mimeType, defaultEncoding, usesEncodingDetector
+                                       ? UseAllAutoDetection
+                                       : UseContentAndBOMBasedDetection));
+  }
+  // Corresponds to utf-8 decode in Encoding spec:
+  // https://encoding.spec.whatwg.org/#utf-8-decode.
+  static std::unique_ptr<TextResourceDecoder> createAlwaysUseUTF8ForText() {
+    return wrapUnique(new TextResourceDecoder("plain/text", UTF8Encoding(),
+                                              AlwaysUseUTF8ForText));
+  }
+  ~TextResourceDecoder();
 
-    String decode(const char* data, size_t length);
-    String flush();
+  void setEncoding(const WTF::TextEncoding&, EncodingSource);
+  const WTF::TextEncoding& encoding() const { return m_encoding; }
+  bool encodingWasDetectedHeuristically() const {
+    return m_source == AutoDetectedEncoding ||
+           m_source == EncodingFromContentSniffing;
+  }
 
-    void setHintEncoding(const WTF::TextEncoding& encoding)
-    {
-        m_hintEncoding = encoding.name();
-    }
+  String decode(const char* data, size_t length);
+  String flush();
 
-    void useLenientXMLDecoding() { m_useLenientXMLDecoding = true; }
-    bool sawError() const { return m_sawError; }
-    size_t checkForBOM(const char*, size_t);
+  void setHintEncoding(const WTF::TextEncoding& encoding) {
+    m_hintEncoding = encoding.name();
+  }
 
-protected:
-    // TextResourceDecoder does three kind of encoding detection:
-    // 1. By BOM,
-    // 2. By Content if |m_contentType| is not |PlainTextContext|
-    //    (e.g. <meta> tag for HTML), and
-    // 3. By detectTextEncoding().
-    enum EncodingDetectionOption {
-        // Use 1. + 2. + 3.
-        UseAllAutoDetection,
+  void useLenientXMLDecoding() { m_useLenientXMLDecoding = true; }
+  bool sawError() const { return m_sawError; }
+  size_t checkForBOM(const char*, size_t);
 
-        // Use 1. + 2.
-        UseContentAndBOMBasedDetection,
+ protected:
+  // TextResourceDecoder does three kind of encoding detection:
+  // 1. By BOM,
+  // 2. By Content if |m_contentType| is not |PlainTextContext|
+  //    (e.g. <meta> tag for HTML), and
+  // 3. By detectTextEncoding().
+  enum EncodingDetectionOption {
+    // Use 1. + 2. + 3.
+    UseAllAutoDetection,
 
-        // Use None of them.
-        // |m_contentType| must be |PlainTextContent| and
-        // |m_encoding| must be UTF8Encoding.
-        // This doesn't change encoding based on BOMs, but still processes
-        // utf-8 BOMs so that utf-8 BOMs don't appear in the decoded result.
-        AlwaysUseUTF8ForText
-    };
+    // Use 1. + 2.
+    UseContentAndBOMBasedDetection,
 
-    TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& defaultEncoding, EncodingDetectionOption);
+    // Use None of them.
+    // |m_contentType| must be |PlainTextContent| and
+    // |m_encoding| must be UTF8Encoding.
+    // This doesn't change encoding based on BOMs, but still processes
+    // utf-8 BOMs so that utf-8 BOMs don't appear in the decoded result.
+    AlwaysUseUTF8ForText
+  };
 
-private:
-    enum ContentType { PlainTextContent, HTMLContent, XMLContent, CSSContent }; // PlainText only checks for BOM.
-    static ContentType determineContentType(const String& mimeType);
-    static const WTF::TextEncoding& defaultEncoding(ContentType, const WTF::TextEncoding& defaultEncoding);
+  TextResourceDecoder(const String& mimeType,
+                      const WTF::TextEncoding& defaultEncoding,
+                      EncodingDetectionOption);
 
-    bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
-    bool checkForXMLCharset(const char*, size_t, bool& movedDataToBuffer);
-    void checkForMetaCharset(const char*, size_t);
-    bool shouldAutoDetect() const;
+ private:
+  enum ContentType {
+    PlainTextContent,
+    HTMLContent,
+    XMLContent,
+    CSSContent
+  };  // PlainText only checks for BOM.
+  static ContentType determineContentType(const String& mimeType);
+  static const WTF::TextEncoding& defaultEncoding(
+      ContentType,
+      const WTF::TextEncoding& defaultEncoding);
 
-    ContentType m_contentType;
-    WTF::TextEncoding m_encoding;
-    std::unique_ptr<TextCodec> m_codec;
-    EncodingSource m_source;
-    const char* m_hintEncoding;
-    Vector<char> m_buffer;
-    bool m_checkedForBOM;
-    bool m_checkedForCSSCharset;
-    bool m_checkedForXMLCharset;
-    bool m_checkedForMetaCharset;
-    bool m_useLenientXMLDecoding; // Don't stop on XML decoding errors.
-    bool m_sawError;
-    EncodingDetectionOption m_encodingDetectionOption;
+  bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
+  bool checkForXMLCharset(const char*, size_t, bool& movedDataToBuffer);
+  void checkForMetaCharset(const char*, size_t);
+  bool shouldAutoDetect() const;
 
-    std::unique_ptr<HTMLMetaCharsetParser> m_charsetParser;
+  ContentType m_contentType;
+  WTF::TextEncoding m_encoding;
+  std::unique_ptr<TextCodec> m_codec;
+  EncodingSource m_source;
+  const char* m_hintEncoding;
+  Vector<char> m_buffer;
+  bool m_checkedForBOM;
+  bool m_checkedForCSSCharset;
+  bool m_checkedForXMLCharset;
+  bool m_checkedForMetaCharset;
+  bool m_useLenientXMLDecoding;  // Don't stop on XML decoding errors.
+  bool m_sawError;
+  EncodingDetectionOption m_encodingDetectionOption;
+
+  std::unique_ptr<HTMLMetaCharsetParser> m_charsetParser;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

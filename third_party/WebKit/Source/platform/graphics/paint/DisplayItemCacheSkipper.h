@@ -13,23 +13,21 @@
 namespace blink {
 
 class DisplayItemCacheSkipper final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    WTF_MAKE_NONCOPYABLE(DisplayItemCacheSkipper);
-public:
-    DisplayItemCacheSkipper(GraphicsContext& context)
-        : m_context(context)
-    {
-        context.getPaintController().beginSkippingCache();
-    }
-    ~DisplayItemCacheSkipper()
-    {
-        m_context.getPaintController().endSkippingCache();
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  WTF_MAKE_NONCOPYABLE(DisplayItemCacheSkipper);
 
-private:
-    GraphicsContext& m_context;
+ public:
+  DisplayItemCacheSkipper(GraphicsContext& context) : m_context(context) {
+    context.getPaintController().beginSkippingCache();
+  }
+  ~DisplayItemCacheSkipper() {
+    m_context.getPaintController().endSkippingCache();
+  }
+
+ private:
+  GraphicsContext& m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DisplayItemCacheSkipper_h
+#endif  // DisplayItemCacheSkipper_h

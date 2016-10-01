@@ -10,11 +10,11 @@ namespace blink {
 // Indicates if an item is in a document tree or in a shadow tree, per the
 // Shadow DOM spec: https://w3c.github.io/webcomponents/spec/shadow/
 enum class WebTreeScopeType {
-    Document,
-    Shadow,
-    Last = Shadow,
+  Document,
+  Shadow,
+  Last = Shadow,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebTreeScopeType_h
+#endif  // WebTreeScopeType_h

@@ -53,69 +53,84 @@ namespace blink {
 
 // HTMLDocument ----------------------------------------------------------------
 
-void V8Document::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    Document* document = V8Document::toImpl(info.Holder());
+void V8Document::openMethodCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  Document* document = V8Document::toImpl(info.Holder());
 
-    if (info.Length() > 2) {
-        LocalFrame* frame = document->frame();
-        if (!frame)
-            return;
-        // Fetch the global object for the frame.
-        v8::Local<v8::Context> context = toV8Context(frame, DOMWrapperWorld::current(info.GetIsolate()));
-        // Bail out if we cannot get the context.
-        if (context.IsEmpty())
-            return;
-        v8::Local<v8::Object> global = context->Global();
-        // Get the open property of the global object.
-        v8::Local<v8::Value> function = global->Get(v8AtomicString(info.GetIsolate(), "open"));
-        // Failed; return without throwing (new) exception.
-        if (function.IsEmpty())
-            return;
-        // If the open property is not a function throw a type error.
-        if (!function->IsFunction()) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), "open is not a function");
-            return;
-        }
-        // Wrap up the arguments and call the function.
-        std::unique_ptr<v8::Local<v8::Value>[]> params = wrapArrayUnique(new v8::Local<v8::Value>[info.Length()]);
-        for (int i = 0; i < info.Length(); i++)
-            params[i] = info[i];
-
-        v8SetReturnValue(info, V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(function), frame->document(), global, info.Length(), params.get(), info.GetIsolate()));
-        return;
+  if (info.Length() > 2) {
+    LocalFrame* frame = document->frame();
+    if (!frame)
+      return;
+    // Fetch the global object for the frame.
+    v8::Local<v8::Context> context =
+        toV8Context(frame, DOMWrapperWorld::current(info.GetIsolate()));
+    // Bail out if we cannot get the context.
+    if (context.IsEmpty())
+      return;
+    v8::Local<v8::Object> global = context->Global();
+    // Get the open property of the global object.
+    v8::Local<v8::Value> function =
+        global->Get(v8AtomicString(info.GetIsolate(), "open"));
+    // Failed; return without throwing (new) exception.
+    if (function.IsEmpty())
+      return;
+    // If the open property is not a function throw a type error.
+    if (!function->IsFunction()) {
+      V8ThrowException::throwTypeError(info.GetIsolate(),
+                                       "open is not a function");
+      return;
     }
+    // Wrap up the arguments and call the function.
+    std::unique_ptr<v8::Local<v8::Value>[]> params =
+        wrapArrayUnique(new v8::Local<v8::Value>[ info.Length() ]);
+    for (int i = 0; i < info.Length(); i++)
+      params[i] = info[i];
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "Document", info.Holder(), info.GetIsolate());
-    document->open(enteredDOMWindow(info.GetIsolate())->document(), exceptionState);
+    v8SetReturnValue(
+        info, V8ScriptRunner::callFunction(
+                  v8::Local<v8::Function>::Cast(function), frame->document(),
+                  global, info.Length(), params.get(), info.GetIsolate()));
+    return;
+  }
 
-    v8SetReturnValue(info, info.Holder());
+  ExceptionState exceptionState(ExceptionState::ExecutionContext, "open",
+                                "Document", info.Holder(), info.GetIsolate());
+  document->open(enteredDOMWindow(info.GetIsolate())->document(),
+                 exceptionState);
+
+  v8SetReturnValue(info, info.Holder());
 }
 
-void V8Document::createTouchMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, Document*)
-{
-    v8::Local<v8::Value> v8Window = info[0];
-    if (isUndefinedOrNull(v8Window)) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-            UseCounter::DocumentCreateTouchWindowNull);
-    } else if (!toDOMWindow(info.GetIsolate(), v8Window)) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-            UseCounter::DocumentCreateTouchWindowWrongType);
-    }
+void V8Document::createTouchMethodPrologueCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    Document*) {
+  v8::Local<v8::Value> v8Window = info[0];
+  if (isUndefinedOrNull(v8Window)) {
+    UseCounter::countIfNotPrivateScript(
+        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+        UseCounter::DocumentCreateTouchWindowNull);
+  } else if (!toDOMWindow(info.GetIsolate(), v8Window)) {
+    UseCounter::countIfNotPrivateScript(
+        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+        UseCounter::DocumentCreateTouchWindowWrongType);
+  }
 
-    v8::Local<v8::Value> v8Target = info[1];
-    if (isUndefinedOrNull(v8Target)) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-            UseCounter::DocumentCreateTouchTargetNull);
-    } else if (!toEventTarget(info.GetIsolate(), v8Target)) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-            UseCounter::DocumentCreateTouchTargetWrongType);
-    }
+  v8::Local<v8::Value> v8Target = info[1];
+  if (isUndefinedOrNull(v8Target)) {
+    UseCounter::countIfNotPrivateScript(
+        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+        UseCounter::DocumentCreateTouchTargetNull);
+  } else if (!toEventTarget(info.GetIsolate(), v8Target)) {
+    UseCounter::countIfNotPrivateScript(
+        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+        UseCounter::DocumentCreateTouchTargetWrongType);
+  }
 
-    if (info.Length() < 7) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-            UseCounter::DocumentCreateTouchLessThanSevenArguments);
-    }
+  if (info.Length() < 7) {
+    UseCounter::countIfNotPrivateScript(
+        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+        UseCounter::DocumentCreateTouchLessThanSevenArguments);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

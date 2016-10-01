@@ -42,225 +42,230 @@
 
 namespace blink {
 
-static IntRect convertToContentCoordinatesWithoutCollapsingToZero(const IntRect& rectInViewport, const FrameView* view)
-{
-    IntRect rectInContents = view->viewportToContents(rectInViewport);
-    if (rectInViewport.width() > 0 && !rectInContents.width())
-        rectInContents.setWidth(1);
-    if (rectInViewport.height() > 0 && !rectInContents.height())
-        rectInContents.setHeight(1);
-    return rectInContents;
+static IntRect convertToContentCoordinatesWithoutCollapsingToZero(
+    const IntRect& rectInViewport,
+    const FrameView* view) {
+  IntRect rectInContents = view->viewportToContents(rectInViewport);
+  if (rectInViewport.width() > 0 && !rectInContents.width())
+    rectInContents.setWidth(1);
+  if (rectInViewport.height() > 0 && !rectInContents.height())
+    rectInContents.setHeight(1);
+  return rectInContents;
 }
 
-static Node* nodeInsideFrame(Node* node)
-{
-    if (node->isFrameOwnerElement())
-        return toHTMLFrameOwnerElement(node)->contentDocument();
-    return nullptr;
+static Node* nodeInsideFrame(Node* node) {
+  if (node->isFrameOwnerElement())
+    return toHTMLFrameOwnerElement(node)->contentDocument();
+  return nullptr;
 }
 
-IntRect SmartClipData::rectInViewport() const
-{
-    return m_rectInViewport;
+IntRect SmartClipData::rectInViewport() const {
+  return m_rectInViewport;
 }
 
-const String& SmartClipData::clipData() const
-{
-    return m_string;
+const String& SmartClipData::clipData() const {
+  return m_string;
 }
 
-SmartClip::SmartClip(LocalFrame* frame)
-    : m_frame(frame)
-{
+SmartClip::SmartClip(LocalFrame* frame) : m_frame(frame) {}
+
+SmartClipData SmartClip::dataForRect(const IntRect& cropRectInViewport) {
+  Node* bestNode =
+      findBestOverlappingNode(m_frame->document(), cropRectInViewport);
+  if (!bestNode)
+    return SmartClipData();
+
+  if (Node* nodeFromFrame = nodeInsideFrame(bestNode)) {
+    // FIXME: This code only hit-tests a single iframe. It seems like we ought support nested frames.
+    if (Node* bestNodeInFrame =
+            findBestOverlappingNode(nodeFromFrame, cropRectInViewport))
+      bestNode = bestNodeInFrame;
+  }
+
+  HeapVector<Member<Node>> hitNodes;
+  collectOverlappingChildNodes(bestNode, cropRectInViewport, hitNodes);
+
+  if (hitNodes.isEmpty() || hitNodes.size() == bestNode->countChildren()) {
+    hitNodes.clear();
+    hitNodes.append(bestNode);
+  }
+
+  // Unite won't work with the empty rect, so we initialize to the first rect.
+  IntRect unitedRects = hitNodes[0]->pixelSnappedBoundingBox();
+  StringBuilder collectedText;
+  for (size_t i = 0; i < hitNodes.size(); ++i) {
+    collectedText.append(extractTextFromNode(hitNodes[i]));
+    unitedRects.unite(hitNodes[i]->pixelSnappedBoundingBox());
+  }
+
+  return SmartClipData(
+      bestNode, m_frame->document()->view()->contentsToViewport(unitedRects),
+      collectedText.toString());
 }
 
-SmartClipData SmartClip::dataForRect(const IntRect& cropRectInViewport)
-{
-    Node* bestNode = findBestOverlappingNode(m_frame->document(), cropRectInViewport);
-    if (!bestNode)
-        return SmartClipData();
-
-    if (Node* nodeFromFrame = nodeInsideFrame(bestNode)) {
-        // FIXME: This code only hit-tests a single iframe. It seems like we ought support nested frames.
-        if (Node* bestNodeInFrame = findBestOverlappingNode(nodeFromFrame, cropRectInViewport))
-            bestNode = bestNodeInFrame;
-    }
-
-    HeapVector<Member<Node>> hitNodes;
-    collectOverlappingChildNodes(bestNode, cropRectInViewport, hitNodes);
-
-    if (hitNodes.isEmpty() || hitNodes.size() == bestNode->countChildren()) {
-        hitNodes.clear();
-        hitNodes.append(bestNode);
-    }
-
-    // Unite won't work with the empty rect, so we initialize to the first rect.
-    IntRect unitedRects = hitNodes[0]->pixelSnappedBoundingBox();
-    StringBuilder collectedText;
-    for (size_t i = 0; i < hitNodes.size(); ++i) {
-        collectedText.append(extractTextFromNode(hitNodes[i]));
-        unitedRects.unite(hitNodes[i]->pixelSnappedBoundingBox());
-    }
-
-    return SmartClipData(bestNode, m_frame->document()->view()->contentsToViewport(unitedRects), collectedText.toString());
-}
-
-float SmartClip::pageScaleFactor()
-{
-    return m_frame->page()->pageScaleFactor();
+float SmartClip::pageScaleFactor() {
+  return m_frame->page()->pageScaleFactor();
 }
 
 // This function is a bit of a mystery. If you understand what it does, please
 // consider adding a more descriptive name.
-Node* SmartClip::minNodeContainsNodes(Node* minNode, Node* newNode)
-{
-    if (!newNode)
-        return minNode;
-    if (!minNode)
-        return newNode;
+Node* SmartClip::minNodeContainsNodes(Node* minNode, Node* newNode) {
+  if (!newNode)
+    return minNode;
+  if (!minNode)
+    return newNode;
 
-    IntRect minNodeRect = minNode->pixelSnappedBoundingBox();
-    IntRect newNodeRect = newNode->pixelSnappedBoundingBox();
+  IntRect minNodeRect = minNode->pixelSnappedBoundingBox();
+  IntRect newNodeRect = newNode->pixelSnappedBoundingBox();
 
-    Node* parentMinNode = minNode->parentNode();
-    Node* parentNewNode = newNode->parentNode();
+  Node* parentMinNode = minNode->parentNode();
+  Node* parentNewNode = newNode->parentNode();
 
-    if (minNodeRect.contains(newNodeRect)) {
-        if (parentMinNode && parentNewNode && parentNewNode->parentNode() == parentMinNode)
-            return parentMinNode;
-        return minNode;
+  if (minNodeRect.contains(newNodeRect)) {
+    if (parentMinNode && parentNewNode &&
+        parentNewNode->parentNode() == parentMinNode)
+      return parentMinNode;
+    return minNode;
+  }
+
+  if (newNodeRect.contains(minNodeRect)) {
+    if (parentMinNode && parentNewNode &&
+        parentMinNode->parentNode() == parentNewNode)
+      return parentNewNode;
+    return newNode;
+  }
+
+  // This loop appears to find the nearest ancestor of minNode (in DOM order)
+  // that contains the newNodeRect. It's very unclear to me why that's an
+  // interesting node to find. Presumably this loop will often just return
+  // the documentElement.
+  Node* node = minNode;
+  while (node) {
+    if (node->layoutObject()) {
+      IntRect nodeRect = node->pixelSnappedBoundingBox();
+      if (nodeRect.contains(newNodeRect)) {
+        return node;
+      }
     }
+    node = node->parentNode();
+  }
 
-    if (newNodeRect.contains(minNodeRect)) {
-        if (parentMinNode && parentNewNode && parentMinNode->parentNode() == parentNewNode)
-            return parentNewNode;
-        return newNode;
-    }
-
-    // This loop appears to find the nearest ancestor of minNode (in DOM order)
-    // that contains the newNodeRect. It's very unclear to me why that's an
-    // interesting node to find. Presumably this loop will often just return
-    // the documentElement.
-    Node* node = minNode;
-    while (node) {
-        if (node->layoutObject()) {
-            IntRect nodeRect = node->pixelSnappedBoundingBox();
-            if (nodeRect.contains(newNodeRect)) {
-                return node;
-            }
-        }
-        node = node->parentNode();
-    }
-
-    return nullptr;
+  return nullptr;
 }
 
-Node* SmartClip::findBestOverlappingNode(Node* rootNode, const IntRect& cropRectInViewport)
-{
-    if (!rootNode)
-        return nullptr;
+Node* SmartClip::findBestOverlappingNode(Node* rootNode,
+                                         const IntRect& cropRectInViewport) {
+  if (!rootNode)
+    return nullptr;
 
-    IntRect resizedCropRect = convertToContentCoordinatesWithoutCollapsingToZero(cropRectInViewport, rootNode->document().view());
+  IntRect resizedCropRect = convertToContentCoordinatesWithoutCollapsingToZero(
+      cropRectInViewport, rootNode->document().view());
 
-    Node* node = rootNode;
-    Node* minNode = nullptr;
+  Node* node = rootNode;
+  Node* minNode = nullptr;
 
-    while (node) {
-        IntRect nodeRect = node->pixelSnappedBoundingBox();
+  while (node) {
+    IntRect nodeRect = node->pixelSnappedBoundingBox();
 
-        if (node->isElementNode() && equalIgnoringCase(toElement(node)->fastGetAttribute(HTMLNames::aria_hiddenAttr), "true")) {
-            node = NodeTraversal::nextSkippingChildren(*node, rootNode);
-            continue;
-        }
-
-        LayoutObject* layoutObject = node->layoutObject();
-        if (layoutObject && !nodeRect.isEmpty()) {
-            if (layoutObject->isText()
-                || layoutObject->isLayoutImage()
-                || node->isFrameOwnerElement()
-                || (layoutObject->style()->hasBackgroundImage() && !shouldSkipBackgroundImage(node))) {
-                if (resizedCropRect.intersects(nodeRect)) {
-                    minNode = minNodeContainsNodes(minNode, node);
-                } else {
-                    node = NodeTraversal::nextSkippingChildren(*node, rootNode);
-                    continue;
-                }
-            }
-        }
-        node = NodeTraversal::next(*node, rootNode);
+    if (node->isElementNode() &&
+        equalIgnoringCase(
+            toElement(node)->fastGetAttribute(HTMLNames::aria_hiddenAttr),
+            "true")) {
+      node = NodeTraversal::nextSkippingChildren(*node, rootNode);
+      continue;
     }
 
-    return minNode;
+    LayoutObject* layoutObject = node->layoutObject();
+    if (layoutObject && !nodeRect.isEmpty()) {
+      if (layoutObject->isText() || layoutObject->isLayoutImage() ||
+          node->isFrameOwnerElement() ||
+          (layoutObject->style()->hasBackgroundImage() &&
+           !shouldSkipBackgroundImage(node))) {
+        if (resizedCropRect.intersects(nodeRect)) {
+          minNode = minNodeContainsNodes(minNode, node);
+        } else {
+          node = NodeTraversal::nextSkippingChildren(*node, rootNode);
+          continue;
+        }
+      }
+    }
+    node = NodeTraversal::next(*node, rootNode);
+  }
+
+  return minNode;
 }
 
 // This function appears to heuristically guess whether to include a background
 // image in the smart clip. It seems to want to include sprites created from
 // CSS background images but to skip actual backgrounds.
-bool SmartClip::shouldSkipBackgroundImage(Node* node)
-{
-    ASSERT(node);
-    // Apparently we're only interested in background images on spans and divs.
-    if (!isHTMLSpanElement(*node) && !isHTMLDivElement(*node))
-        return true;
+bool SmartClip::shouldSkipBackgroundImage(Node* node) {
+  ASSERT(node);
+  // Apparently we're only interested in background images on spans and divs.
+  if (!isHTMLSpanElement(*node) && !isHTMLDivElement(*node))
+    return true;
 
-    // This check actually makes a bit of sense. If you're going to sprite an
-    // image out of a CSS background, you're probably going to specify a height
-    // or a width. On the other hand, if we've got a legit background image,
-    // it's very likely the height or the width will be set to auto.
-    LayoutObject* layoutObject = node->layoutObject();
-    if (layoutObject && (layoutObject->style()->logicalHeight().isAuto() || layoutObject->style()->logicalWidth().isAuto()))
-        return true;
+  // This check actually makes a bit of sense. If you're going to sprite an
+  // image out of a CSS background, you're probably going to specify a height
+  // or a width. On the other hand, if we've got a legit background image,
+  // it's very likely the height or the width will be set to auto.
+  LayoutObject* layoutObject = node->layoutObject();
+  if (layoutObject && (layoutObject->style()->logicalHeight().isAuto() ||
+                       layoutObject->style()->logicalWidth().isAuto()))
+    return true;
 
-    return false;
+  return false;
 }
 
-void SmartClip::collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRectInViewport, HeapVector<Member<Node>>& hitNodes)
-{
-    if (!parentNode)
-        return;
-    IntRect resizedCropRect = convertToContentCoordinatesWithoutCollapsingToZero(cropRectInViewport, parentNode->document().view());
-    for (Node* child = parentNode->firstChild(); child; child = child->nextSibling()) {
-        IntRect childRect = child->pixelSnappedBoundingBox();
-        if (resizedCropRect.intersects(childRect))
-            hitNodes.append(child);
-    }
+void SmartClip::collectOverlappingChildNodes(
+    Node* parentNode,
+    const IntRect& cropRectInViewport,
+    HeapVector<Member<Node>>& hitNodes) {
+  if (!parentNode)
+    return;
+  IntRect resizedCropRect = convertToContentCoordinatesWithoutCollapsingToZero(
+      cropRectInViewport, parentNode->document().view());
+  for (Node* child = parentNode->firstChild(); child;
+       child = child->nextSibling()) {
+    IntRect childRect = child->pixelSnappedBoundingBox();
+    if (resizedCropRect.intersects(childRect))
+      hitNodes.append(child);
+  }
 }
 
-String SmartClip::extractTextFromNode(Node* node)
-{
-    // Science has proven that no text nodes are ever positioned at y == -99999.
-    int prevYPos = -99999;
+String SmartClip::extractTextFromNode(Node* node) {
+  // Science has proven that no text nodes are ever positioned at y == -99999.
+  int prevYPos = -99999;
 
-    StringBuilder result;
-    for (Node& currentNode : NodeTraversal::inclusiveDescendantsOf(*node)) {
-        const ComputedStyle* style = currentNode.ensureComputedStyle();
-        if (style && style->userSelect() == SELECT_NONE)
-            continue;
+  StringBuilder result;
+  for (Node& currentNode : NodeTraversal::inclusiveDescendantsOf(*node)) {
+    const ComputedStyle* style = currentNode.ensureComputedStyle();
+    if (style && style->userSelect() == SELECT_NONE)
+      continue;
 
-        if (Node* nodeFromFrame = nodeInsideFrame(&currentNode))
-            result.append(extractTextFromNode(nodeFromFrame));
+    if (Node* nodeFromFrame = nodeInsideFrame(&currentNode))
+      result.append(extractTextFromNode(nodeFromFrame));
 
-        IntRect nodeRect = currentNode.pixelSnappedBoundingBox();
-        if (currentNode.layoutObject() && !nodeRect.isEmpty()) {
-            if (currentNode.isTextNode()) {
-                String nodeValue = currentNode.nodeValue();
+    IntRect nodeRect = currentNode.pixelSnappedBoundingBox();
+    if (currentNode.layoutObject() && !nodeRect.isEmpty()) {
+      if (currentNode.isTextNode()) {
+        String nodeValue = currentNode.nodeValue();
 
-                // It's unclear why we blacklist solitary "\n" node values.
-                // Maybe we're trying to ignore <br> tags somehow?
-                if (nodeValue == "\n")
-                    nodeValue = "";
+        // It's unclear why we blacklist solitary "\n" node values.
+        // Maybe we're trying to ignore <br> tags somehow?
+        if (nodeValue == "\n")
+          nodeValue = "";
 
-                if (nodeRect.y() != prevYPos) {
-                    prevYPos = nodeRect.y();
-                    result.append('\n');
-                }
-
-                result.append(nodeValue);
-            }
+        if (nodeRect.y() != prevYPos) {
+          prevYPos = nodeRect.y();
+          result.append('\n');
         }
-    }
 
-    return result.toString();
+        result.append(nodeValue);
+      }
+    }
+  }
+
+  return result.toString();
 }
 
-} // namespace blink
+}  // namespace blink

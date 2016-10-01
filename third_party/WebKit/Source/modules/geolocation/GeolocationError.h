@@ -31,32 +31,25 @@
 namespace blink {
 
 class GeolocationError : public GarbageCollectedFinalized<GeolocationError> {
-public:
-    enum ErrorCode {
-        PermissionDenied,
-        PositionUnavailable
-    };
+ public:
+  enum ErrorCode { PermissionDenied, PositionUnavailable };
 
-    static GeolocationError* create(ErrorCode code, const String& message)
-    {
-        return new GeolocationError(code, message);
-    }
-    DEFINE_INLINE_TRACE() { }
+  static GeolocationError* create(ErrorCode code, const String& message) {
+    return new GeolocationError(code, message);
+  }
+  DEFINE_INLINE_TRACE() {}
 
-    ErrorCode code() const { return m_code; }
-    const String& message() const { return m_message; }
+  ErrorCode code() const { return m_code; }
+  const String& message() const { return m_message; }
 
-private:
-    GeolocationError(ErrorCode code, const String& message)
-        : m_code(code)
-        , m_message(message)
-    {
-    }
+ private:
+  GeolocationError(ErrorCode code, const String& message)
+      : m_code(code), m_message(message) {}
 
-    ErrorCode m_code;
-    String m_message;
+  ErrorCode m_code;
+  String m_message;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GeolocationError_h
+#endif  // GeolocationError_h

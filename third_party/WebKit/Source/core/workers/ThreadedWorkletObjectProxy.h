@@ -21,35 +21,41 @@ class ThreadedWorkletMessagingProxy;
 // main thread, passed on to the worklet thread, and used just to proxy
 // messages to the ThreadedWorkletMessagingProxy on the main thread.
 class CORE_EXPORT ThreadedWorkletObjectProxy : public WorkerReportingProxy {
-    USING_FAST_MALLOC(ThreadedWorkletObjectProxy);
-    WTF_MAKE_NONCOPYABLE(ThreadedWorkletObjectProxy);
+  USING_FAST_MALLOC(ThreadedWorkletObjectProxy);
+  WTF_MAKE_NONCOPYABLE(ThreadedWorkletObjectProxy);
 
-public:
-    static std::unique_ptr<ThreadedWorkletObjectProxy> create(ThreadedWorkletMessagingProxy*);
-    ~ThreadedWorkletObjectProxy() override {}
+ public:
+  static std::unique_ptr<ThreadedWorkletObjectProxy> create(
+      ThreadedWorkletMessagingProxy*);
+  ~ThreadedWorkletObjectProxy() override {}
 
-    void postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask>);
-    void reportPendingActivity(bool hasPendingActivity);
+  void postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask>);
+  void reportPendingActivity(bool hasPendingActivity);
 
-    // WorkerReportingProxy overrides.
-    void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) override {}
-    void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) override;
-    void postMessageToPageInspector(const String&) override;
-    void didEvaluateWorkerScript(bool success) override {}
-    void didCloseWorkerGlobalScope() override;
-    void willDestroyWorkerGlobalScope() override {}
-    void didTerminateWorkerThread() override;
+  // WorkerReportingProxy overrides.
+  void reportException(const String& errorMessage,
+                       std::unique_ptr<SourceLocation>,
+                       int exceptionId) override {}
+  void reportConsoleMessage(MessageSource,
+                            MessageLevel,
+                            const String& message,
+                            SourceLocation*) override;
+  void postMessageToPageInspector(const String&) override;
+  void didEvaluateWorkerScript(bool success) override {}
+  void didCloseWorkerGlobalScope() override;
+  void willDestroyWorkerGlobalScope() override {}
+  void didTerminateWorkerThread() override;
 
-protected:
-    ThreadedWorkletObjectProxy(ThreadedWorkletMessagingProxy*);
+ protected:
+  ThreadedWorkletObjectProxy(ThreadedWorkletMessagingProxy*);
 
-private:
-    ExecutionContext* getExecutionContext() const;
+ private:
+  ExecutionContext* getExecutionContext() const;
 
-    // This object always outlives this proxy.
-    ThreadedWorkletMessagingProxy* m_messagingProxy;
+  // This object always outlives this proxy.
+  ThreadedWorkletMessagingProxy* m_messagingProxy;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ThreadedWorkletObjectProxy_h
+#endif  // ThreadedWorkletObjectProxy_h

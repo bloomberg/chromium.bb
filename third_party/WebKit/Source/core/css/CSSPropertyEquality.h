@@ -13,11 +13,14 @@ namespace blink {
 class ComputedStyle;
 
 class CSSPropertyEquality {
-    STATIC_ONLY(CSSPropertyEquality);
-public:
-    static bool propertiesEqual(CSSPropertyID, const ComputedStyle&, const ComputedStyle&);
+  STATIC_ONLY(CSSPropertyEquality);
+
+ public:
+  static bool propertiesEqual(CSSPropertyID,
+                              const ComputedStyle&,
+                              const ComputedStyle&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSPropertyEquality_h
+#endif  // CSSPropertyEquality_h

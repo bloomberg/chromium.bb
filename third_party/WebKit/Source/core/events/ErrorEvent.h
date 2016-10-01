@@ -42,58 +42,63 @@
 namespace blink {
 
 class ErrorEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ErrorEvent* create()
-    {
-        return new ErrorEvent;
-    }
-    static ErrorEvent* create(const String& message, std::unique_ptr<SourceLocation> location, DOMWrapperWorld* world)
-    {
-        return new ErrorEvent(message, std::move(location), world);
-    }
-    static ErrorEvent* create(const AtomicString& type, const ErrorEventInit& initializer)
-    {
-        return new ErrorEvent(type, initializer);
-    }
-    static ErrorEvent* createSanitizedError(DOMWrapperWorld* world)
-    {
-        return new ErrorEvent("Script error.", SourceLocation::create(String(), 0, 0, nullptr), world);
-    }
-    ~ErrorEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    // As 'message' is exposed to JavaScript, never return unsanitizedMessage.
-    const String& message() const { return m_sanitizedMessage; }
-    const String& filename() const { return m_location->url(); }
-    unsigned lineno() const { return m_location->lineNumber(); }
-    unsigned colno() const { return m_location->columnNumber(); }
-    ScriptValue error(ScriptState*) const;
+ public:
+  static ErrorEvent* create() { return new ErrorEvent; }
+  static ErrorEvent* create(const String& message,
+                            std::unique_ptr<SourceLocation> location,
+                            DOMWrapperWorld* world) {
+    return new ErrorEvent(message, std::move(location), world);
+  }
+  static ErrorEvent* create(const AtomicString& type,
+                            const ErrorEventInit& initializer) {
+    return new ErrorEvent(type, initializer);
+  }
+  static ErrorEvent* createSanitizedError(DOMWrapperWorld* world) {
+    return new ErrorEvent("Script error.",
+                          SourceLocation::create(String(), 0, 0, nullptr),
+                          world);
+  }
+  ~ErrorEvent() override;
 
-    // 'messageForConsole' is not exposed to JavaScript, and prefers 'm_unsanitizedMessage'.
-    const String& messageForConsole() const { return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage : m_sanitizedMessage; }
-    SourceLocation* location() const { return m_location.get(); }
+  // As 'message' is exposed to JavaScript, never return unsanitizedMessage.
+  const String& message() const { return m_sanitizedMessage; }
+  const String& filename() const { return m_location->url(); }
+  unsigned lineno() const { return m_location->lineNumber(); }
+  unsigned colno() const { return m_location->columnNumber(); }
+  ScriptValue error(ScriptState*) const;
 
-    const AtomicString& interfaceName() const override;
+  // 'messageForConsole' is not exposed to JavaScript, and prefers 'm_unsanitizedMessage'.
+  const String& messageForConsole() const {
+    return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage
+                                           : m_sanitizedMessage;
+  }
+  SourceLocation* location() const { return m_location.get(); }
 
-    DOMWrapperWorld* world() const { return m_world.get(); }
+  const AtomicString& interfaceName() const override;
 
-    void setUnsanitizedMessage(const String&);
+  DOMWrapperWorld* world() const { return m_world.get(); }
 
-    DECLARE_VIRTUAL_TRACE();
+  void setUnsanitizedMessage(const String&);
 
-private:
-    ErrorEvent();
-    ErrorEvent(const String& message, std::unique_ptr<SourceLocation>, DOMWrapperWorld*);
-    ErrorEvent(const AtomicString&, const ErrorEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_unsanitizedMessage;
-    String m_sanitizedMessage;
-    std::unique_ptr<SourceLocation> m_location;
-    ScriptValue m_error;
+ private:
+  ErrorEvent();
+  ErrorEvent(const String& message,
+             std::unique_ptr<SourceLocation>,
+             DOMWrapperWorld*);
+  ErrorEvent(const AtomicString&, const ErrorEventInit&);
 
-    RefPtr<DOMWrapperWorld> m_world;
+  String m_unsanitizedMessage;
+  String m_sanitizedMessage;
+  std::unique_ptr<SourceLocation> m_location;
+  ScriptValue m_error;
+
+  RefPtr<DOMWrapperWorld> m_world;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ErrorEvent_h
+#endif  // ErrorEvent_h

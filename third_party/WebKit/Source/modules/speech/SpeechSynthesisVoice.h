@@ -34,28 +34,33 @@
 
 namespace blink {
 
-class SpeechSynthesisVoice final : public GarbageCollectedFinalized<SpeechSynthesisVoice>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SpeechSynthesisVoice* create(PassRefPtr<PlatformSpeechSynthesisVoice>);
-    ~SpeechSynthesisVoice();
+class SpeechSynthesisVoice final
+    : public GarbageCollectedFinalized<SpeechSynthesisVoice>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    const String& voiceURI() const { return m_platformVoice->voiceURI(); }
-    const String& name() const { return m_platformVoice->name(); }
-    const String& lang() const { return m_platformVoice->lang(); }
-    bool localService() const { return m_platformVoice->localService(); }
-    bool isDefault() const { return m_platformVoice->isDefault(); }
+ public:
+  static SpeechSynthesisVoice* create(PassRefPtr<PlatformSpeechSynthesisVoice>);
+  ~SpeechSynthesisVoice();
 
-    PlatformSpeechSynthesisVoice* platformVoice() const { return m_platformVoice.get(); }
+  const String& voiceURI() const { return m_platformVoice->voiceURI(); }
+  const String& name() const { return m_platformVoice->name(); }
+  const String& lang() const { return m_platformVoice->lang(); }
+  bool localService() const { return m_platformVoice->localService(); }
+  bool isDefault() const { return m_platformVoice->isDefault(); }
 
-    DEFINE_INLINE_TRACE() { }
+  PlatformSpeechSynthesisVoice* platformVoice() const {
+    return m_platformVoice.get();
+  }
 
-private:
-    explicit SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice>);
+  DEFINE_INLINE_TRACE() {}
 
-    RefPtr<PlatformSpeechSynthesisVoice> m_platformVoice;
+ private:
+  explicit SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice>);
+
+  RefPtr<PlatformSpeechSynthesisVoice> m_platformVoice;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpeechSynthesisVoice_h
+#endif  // SpeechSynthesisVoice_h

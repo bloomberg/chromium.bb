@@ -57,193 +57,170 @@ class PrintStream;
 // space.
 
 class WTF_EXPORT BitVector {
-    DISALLOW_NEW();
-public:
-    BitVector()
-        : m_bitsOrPointer(makeInlineBits(0))
-    {
+  DISALLOW_NEW();
+
+ public:
+  BitVector() : m_bitsOrPointer(makeInlineBits(0)) {}
+
+  explicit BitVector(size_t numBits) : m_bitsOrPointer(makeInlineBits(0)) {
+    ensureSize(numBits);
+  }
+
+  BitVector(const BitVector& other) : m_bitsOrPointer(makeInlineBits(0)) {
+    (*this) = other;
+  }
+
+  ~BitVector() {
+    if (isInline())
+      return;
+    OutOfLineBits::destroy(outOfLineBits());
+  }
+
+  BitVector& operator=(const BitVector& other) {
+    if (isInline() && other.isInline())
+      m_bitsOrPointer = other.m_bitsOrPointer;
+    else
+      setSlow(other);
+    return *this;
+  }
+
+  size_t size() const {
+    if (isInline())
+      return maxInlineBits();
+    return outOfLineBits()->numBits();
+  }
+
+  void ensureSize(size_t numBits) {
+    if (numBits <= size())
+      return;
+    resizeOutOfLine(numBits);
+  }
+
+  // Like ensureSize(), but supports reducing the size of the bitvector.
+  void resize(size_t numBits);
+
+  void clearAll();
+
+  bool quickGet(size_t bit) const {
+    ASSERT_WITH_SECURITY_IMPLICATION(bit < size());
+    return !!(bits()[bit / bitsInPointer()] &
+              (static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1))));
+  }
+
+  void quickSet(size_t bit) {
+    ASSERT_WITH_SECURITY_IMPLICATION(bit < size());
+    bits()[bit / bitsInPointer()] |=
+        (static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1)));
+  }
+
+  void quickClear(size_t bit) {
+    ASSERT_WITH_SECURITY_IMPLICATION(bit < size());
+    bits()[bit / bitsInPointer()] &=
+        ~(static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1)));
+  }
+
+  void quickSet(size_t bit, bool value) {
+    if (value)
+      quickSet(bit);
+    else
+      quickClear(bit);
+  }
+
+  bool get(size_t bit) const {
+    if (bit >= size())
+      return false;
+    return quickGet(bit);
+  }
+
+  void set(size_t bit) {
+    ensureSize(bit + 1);
+    quickSet(bit);
+  }
+
+  void ensureSizeAndSet(size_t bit, size_t size) {
+    ensureSize(size);
+    quickSet(bit);
+  }
+
+  void clear(size_t bit) {
+    if (bit >= size())
+      return;
+    quickClear(bit);
+  }
+
+  void set(size_t bit, bool value) {
+    if (value)
+      set(bit);
+    else
+      clear(bit);
+  }
+
+  void dump(PrintStream& out);
+
+ private:
+  static unsigned bitsInPointer() { return sizeof(void*) << 3; }
+
+  static unsigned maxInlineBits() { return bitsInPointer() - 1; }
+
+  static size_t byteCount(size_t bitCount) { return (bitCount + 7) >> 3; }
+
+  static uintptr_t makeInlineBits(uintptr_t bits) {
+    ASSERT(!(bits & (static_cast<uintptr_t>(1) << maxInlineBits())));
+    return bits | (static_cast<uintptr_t>(1) << maxInlineBits());
+  }
+
+  class WTF_EXPORT OutOfLineBits {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+   public:
+    size_t numBits() const { return m_numBits; }
+    size_t numWords() const {
+      return (m_numBits + bitsInPointer() - 1) / bitsInPointer();
+    }
+    uintptr_t* bits() { return bitwiseCast<uintptr_t*>(this + 1); }
+    const uintptr_t* bits() const {
+      return bitwiseCast<const uintptr_t*>(this + 1);
     }
 
-    explicit BitVector(size_t numBits)
-        : m_bitsOrPointer(makeInlineBits(0))
-    {
-        ensureSize(numBits);
-    }
+    static OutOfLineBits* create(size_t numBits);
 
-    BitVector(const BitVector& other)
-        : m_bitsOrPointer(makeInlineBits(0))
-    {
-        (*this) = other;
-    }
+    static void destroy(OutOfLineBits*);
 
+   private:
+    OutOfLineBits(size_t numBits) : m_numBits(numBits) {}
 
-    ~BitVector()
-    {
-        if (isInline())
-            return;
-        OutOfLineBits::destroy(outOfLineBits());
-    }
+    size_t m_numBits;
+  };
 
-    BitVector& operator=(const BitVector& other)
-    {
-        if (isInline() && other.isInline())
-            m_bitsOrPointer = other.m_bitsOrPointer;
-        else
-            setSlow(other);
-        return *this;
-    }
+  bool isInline() const { return m_bitsOrPointer >> maxInlineBits(); }
 
-    size_t size() const
-    {
-        if (isInline())
-            return maxInlineBits();
-        return outOfLineBits()->numBits();
-    }
+  const OutOfLineBits* outOfLineBits() const {
+    return bitwiseCast<const OutOfLineBits*>(m_bitsOrPointer << 1);
+  }
+  OutOfLineBits* outOfLineBits() {
+    return bitwiseCast<OutOfLineBits*>(m_bitsOrPointer << 1);
+  }
 
-    void ensureSize(size_t numBits)
-    {
-        if (numBits <= size())
-            return;
-        resizeOutOfLine(numBits);
-    }
+  void resizeOutOfLine(size_t numBits);
+  void setSlow(const BitVector& other);
 
-    // Like ensureSize(), but supports reducing the size of the bitvector.
-    void resize(size_t numBits);
+  uintptr_t* bits() {
+    if (isInline())
+      return &m_bitsOrPointer;
+    return outOfLineBits()->bits();
+  }
 
-    void clearAll();
+  const uintptr_t* bits() const {
+    if (isInline())
+      return &m_bitsOrPointer;
+    return outOfLineBits()->bits();
+  }
 
-    bool quickGet(size_t bit) const
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(bit < size());
-        return !!(bits()[bit / bitsInPointer()] & (static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1))));
-    }
-
-    void quickSet(size_t bit)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(bit < size());
-        bits()[bit / bitsInPointer()] |= (static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1)));
-    }
-
-    void quickClear(size_t bit)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(bit < size());
-        bits()[bit / bitsInPointer()] &= ~(static_cast<uintptr_t>(1) << (bit & (bitsInPointer() - 1)));
-    }
-
-    void quickSet(size_t bit, bool value)
-    {
-        if (value)
-            quickSet(bit);
-        else
-            quickClear(bit);
-    }
-
-    bool get(size_t bit) const
-    {
-        if (bit >= size())
-            return false;
-        return quickGet(bit);
-    }
-
-    void set(size_t bit)
-    {
-        ensureSize(bit + 1);
-        quickSet(bit);
-    }
-
-    void ensureSizeAndSet(size_t bit, size_t size)
-    {
-        ensureSize(size);
-        quickSet(bit);
-    }
-
-    void clear(size_t bit)
-    {
-        if (bit >= size())
-            return;
-        quickClear(bit);
-    }
-
-    void set(size_t bit, bool value)
-    {
-        if (value)
-            set(bit);
-        else
-            clear(bit);
-    }
-
-    void dump(PrintStream& out);
-
-private:
-    static unsigned bitsInPointer()
-    {
-        return sizeof(void*) << 3;
-    }
-
-    static unsigned maxInlineBits()
-    {
-        return bitsInPointer() - 1;
-    }
-
-    static size_t byteCount(size_t bitCount)
-    {
-        return (bitCount + 7) >> 3;
-    }
-
-    static uintptr_t makeInlineBits(uintptr_t bits)
-    {
-        ASSERT(!(bits & (static_cast<uintptr_t>(1) << maxInlineBits())));
-        return bits | (static_cast<uintptr_t>(1) << maxInlineBits());
-    }
-
-    class WTF_EXPORT OutOfLineBits {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        size_t numBits() const { return m_numBits; }
-        size_t numWords() const { return (m_numBits + bitsInPointer() - 1) / bitsInPointer(); }
-        uintptr_t* bits() { return bitwiseCast<uintptr_t*>(this + 1); }
-        const uintptr_t* bits() const { return bitwiseCast<const uintptr_t*>(this + 1); }
-
-        static OutOfLineBits* create(size_t numBits);
-
-        static void destroy(OutOfLineBits*);
-
-    private:
-        OutOfLineBits(size_t numBits)
-            : m_numBits(numBits)
-        {
-        }
-
-        size_t m_numBits;
-    };
-
-    bool isInline() const { return m_bitsOrPointer >> maxInlineBits(); }
-
-    const OutOfLineBits* outOfLineBits() const { return bitwiseCast<const OutOfLineBits*>(m_bitsOrPointer << 1); }
-    OutOfLineBits* outOfLineBits() { return bitwiseCast<OutOfLineBits*>(m_bitsOrPointer << 1); }
-
-    void resizeOutOfLine(size_t numBits);
-    void setSlow(const BitVector& other);
-
-    uintptr_t* bits()
-    {
-        if (isInline())
-            return &m_bitsOrPointer;
-        return outOfLineBits()->bits();
-    }
-
-    const uintptr_t* bits() const
-    {
-        if (isInline())
-            return &m_bitsOrPointer;
-        return outOfLineBits()->bits();
-    }
-
-    uintptr_t m_bitsOrPointer;
+  uintptr_t m_bitsOrPointer;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::BitVector;
 
-#endif // BitVector_h
+#endif  // BitVector_h

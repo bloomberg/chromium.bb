@@ -29,147 +29,141 @@
 
 namespace blink {
 
-const float SmoothingTimeConstant = 0.020f; // 20ms
+const float SmoothingTimeConstant = 0.020f;  // 20ms
 
-AudioDelayDSPKernel::AudioDelayDSPKernel(AudioDSPKernelProcessor* processor, size_t processingSizeInFrames)
-    : AudioDSPKernel(processor)
-    , m_writeIndex(0)
-    , m_firstTime(true)
-    , m_delayTimes(processingSizeInFrames)
-{
-}
+AudioDelayDSPKernel::AudioDelayDSPKernel(AudioDSPKernelProcessor* processor,
+                                         size_t processingSizeInFrames)
+    : AudioDSPKernel(processor),
+      m_writeIndex(0),
+      m_firstTime(true),
+      m_delayTimes(processingSizeInFrames) {}
 
 AudioDelayDSPKernel::AudioDelayDSPKernel(double maxDelayTime, float sampleRate)
-    : AudioDSPKernel(sampleRate)
-    , m_maxDelayTime(maxDelayTime)
-    , m_writeIndex(0)
-    , m_firstTime(true)
-{
-    ASSERT(maxDelayTime > 0.0 && !std::isnan(maxDelayTime));
-    if (maxDelayTime <= 0.0 || std::isnan(maxDelayTime))
-        return;
+    : AudioDSPKernel(sampleRate),
+      m_maxDelayTime(maxDelayTime),
+      m_writeIndex(0),
+      m_firstTime(true) {
+  ASSERT(maxDelayTime > 0.0 && !std::isnan(maxDelayTime));
+  if (maxDelayTime <= 0.0 || std::isnan(maxDelayTime))
+    return;
 
-    size_t bufferLength = bufferLengthForDelay(maxDelayTime, sampleRate);
-    ASSERT(bufferLength);
-    if (!bufferLength)
-        return;
+  size_t bufferLength = bufferLengthForDelay(maxDelayTime, sampleRate);
+  ASSERT(bufferLength);
+  if (!bufferLength)
+    return;
 
-    m_buffer.allocate(bufferLength);
-    m_buffer.zero();
+  m_buffer.allocate(bufferLength);
+  m_buffer.zero();
 
-    m_smoothingRate = AudioUtilities::discreteTimeConstantForSampleRate(SmoothingTimeConstant, sampleRate);
+  m_smoothingRate = AudioUtilities::discreteTimeConstantForSampleRate(
+      SmoothingTimeConstant, sampleRate);
 }
 
-size_t AudioDelayDSPKernel::bufferLengthForDelay(double maxDelayTime, double sampleRate) const
-{
-    // Compute the length of the buffer needed to handle a max delay of |maxDelayTime|. One is
-    // added to handle the case where the actual delay equals the maximum delay.
-    return 1 + AudioUtilities::timeToSampleFrame(maxDelayTime, sampleRate);
+size_t AudioDelayDSPKernel::bufferLengthForDelay(double maxDelayTime,
+                                                 double sampleRate) const {
+  // Compute the length of the buffer needed to handle a max delay of |maxDelayTime|. One is
+  // added to handle the case where the actual delay equals the maximum delay.
+  return 1 + AudioUtilities::timeToSampleFrame(maxDelayTime, sampleRate);
 }
 
-bool AudioDelayDSPKernel::hasSampleAccurateValues()
-{
-    return false;
+bool AudioDelayDSPKernel::hasSampleAccurateValues() {
+  return false;
 }
 
-void AudioDelayDSPKernel::calculateSampleAccurateValues(float*, size_t)
-{
-    ASSERT_NOT_REACHED();
+void AudioDelayDSPKernel::calculateSampleAccurateValues(float*, size_t) {
+  ASSERT_NOT_REACHED();
 }
 
-double AudioDelayDSPKernel::delayTime(float sampleRate)
-{
-    return m_desiredDelayFrames / sampleRate;
+double AudioDelayDSPKernel::delayTime(float sampleRate) {
+  return m_desiredDelayFrames / sampleRate;
 }
 
-void AudioDelayDSPKernel::process(const float* source, float* destination, size_t framesToProcess)
-{
-    size_t bufferLength = m_buffer.size();
-    float* buffer = m_buffer.data();
+void AudioDelayDSPKernel::process(const float* source,
+                                  float* destination,
+                                  size_t framesToProcess) {
+  size_t bufferLength = m_buffer.size();
+  float* buffer = m_buffer.data();
 
-    ASSERT(bufferLength);
-    if (!bufferLength)
-        return;
+  ASSERT(bufferLength);
+  if (!bufferLength)
+    return;
 
-    ASSERT(source && destination);
-    if (!source || !destination)
-        return;
+  ASSERT(source && destination);
+  if (!source || !destination)
+    return;
 
-    float sampleRate = this->sampleRate();
-    double delayTime = 0;
-    float* delayTimes = m_delayTimes.data();
-    double maxTime = maxDelayTime();
+  float sampleRate = this->sampleRate();
+  double delayTime = 0;
+  float* delayTimes = m_delayTimes.data();
+  double maxTime = maxDelayTime();
 
-    bool sampleAccurate = hasSampleAccurateValues();
+  bool sampleAccurate = hasSampleAccurateValues();
 
+  if (sampleAccurate) {
+    calculateSampleAccurateValues(delayTimes, framesToProcess);
+  } else {
+    delayTime = this->delayTime(sampleRate);
+
+    // Make sure the delay time is in a valid range.
+    delayTime = clampTo(delayTime, 0.0, maxTime);
+
+    if (m_firstTime) {
+      m_currentDelayTime = delayTime;
+      m_firstTime = false;
+    }
+  }
+
+  for (unsigned i = 0; i < framesToProcess; ++i) {
     if (sampleAccurate) {
-        calculateSampleAccurateValues(delayTimes, framesToProcess);
-    } else {
-        delayTime = this->delayTime(sampleRate);
-
-        // Make sure the delay time is in a valid range.
+      delayTime = delayTimes[i];
+      if (std::isnan(delayTime))
+        delayTime = maxTime;
+      else
         delayTime = clampTo(delayTime, 0.0, maxTime);
-
-        if (m_firstTime) {
-            m_currentDelayTime = delayTime;
-            m_firstTime = false;
-        }
+      m_currentDelayTime = delayTime;
+    } else {
+      // Approach desired delay time.
+      m_currentDelayTime += (delayTime - m_currentDelayTime) * m_smoothingRate;
     }
 
-    for (unsigned i = 0; i < framesToProcess; ++i) {
-        if (sampleAccurate) {
-            delayTime = delayTimes[i];
-            if (std::isnan(delayTime))
-                delayTime = maxTime;
-            else
-                delayTime = clampTo(delayTime, 0.0, maxTime);
-            m_currentDelayTime = delayTime;
-        } else {
-            // Approach desired delay time.
-            m_currentDelayTime += (delayTime - m_currentDelayTime) * m_smoothingRate;
-        }
+    double desiredDelayFrames = m_currentDelayTime * sampleRate;
 
-        double desiredDelayFrames = m_currentDelayTime * sampleRate;
+    double readPosition = m_writeIndex + bufferLength - desiredDelayFrames;
+    if (readPosition >= bufferLength)
+      readPosition -= bufferLength;
 
-        double readPosition = m_writeIndex + bufferLength - desiredDelayFrames;
-        if (readPosition >= bufferLength)
-            readPosition -= bufferLength;
+    // Linearly interpolate in-between delay times.
+    int readIndex1 = static_cast<int>(readPosition);
+    int readIndex2 = (readIndex1 + 1) % bufferLength;
+    double interpolationFactor = readPosition - readIndex1;
 
-        // Linearly interpolate in-between delay times.
-        int readIndex1 = static_cast<int>(readPosition);
-        int readIndex2 = (readIndex1 + 1) % bufferLength;
-        double interpolationFactor = readPosition - readIndex1;
+    double input = static_cast<float>(*source++);
+    buffer[m_writeIndex] = static_cast<float>(input);
+    m_writeIndex = (m_writeIndex + 1) % bufferLength;
 
-        double input = static_cast<float>(*source++);
-        buffer[m_writeIndex] = static_cast<float>(input);
-        m_writeIndex = (m_writeIndex + 1) % bufferLength;
+    double sample1 = buffer[readIndex1];
+    double sample2 = buffer[readIndex2];
 
-        double sample1 = buffer[readIndex1];
-        double sample2 = buffer[readIndex2];
+    double output =
+        (1.0 - interpolationFactor) * sample1 + interpolationFactor * sample2;
 
-        double output = (1.0 - interpolationFactor) * sample1 + interpolationFactor * sample2;
-
-        *destination++ = static_cast<float>(output);
-    }
+    *destination++ = static_cast<float>(output);
+  }
 }
 
-void AudioDelayDSPKernel::reset()
-{
-    m_firstTime = true;
-    m_buffer.zero();
+void AudioDelayDSPKernel::reset() {
+  m_firstTime = true;
+  m_buffer.zero();
 }
 
-double AudioDelayDSPKernel::tailTime() const
-{
-    // Account for worst case delay.
-    // Don't try to track actual delay time which can change dynamically.
-    return m_maxDelayTime;
+double AudioDelayDSPKernel::tailTime() const {
+  // Account for worst case delay.
+  // Don't try to track actual delay time which can change dynamically.
+  return m_maxDelayTime;
 }
 
-double AudioDelayDSPKernel::latencyTime() const
-{
-    return 0;
+double AudioDelayDSPKernel::latencyTime() const {
+  return 0;
 }
 
-} // namespace blink
-
+}  // namespace blink

@@ -35,20 +35,17 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT PageVisibilityObserver : public LifecycleObserver<Page, PageVisibilityObserver> {
-public:
-    virtual void pageVisibilityChanged() { }
+class CORE_EXPORT PageVisibilityObserver
+    : public LifecycleObserver<Page, PageVisibilityObserver> {
+ public:
+  virtual void pageVisibilityChanged() {}
 
-    Page* page() const { return lifecycleContext(); }
+  Page* page() const { return lifecycleContext(); }
 
-protected:
-    explicit PageVisibilityObserver(Page* page)
-        : LifecycleObserver(page)
-    {
-    }
-
+ protected:
+  explicit PageVisibilityObserver(Page* page) : LifecycleObserver(page) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PageVisibilityObserver_h
+#endif  // PageVisibilityObserver_h

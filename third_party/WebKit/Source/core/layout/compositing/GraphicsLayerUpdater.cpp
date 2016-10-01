@@ -36,92 +36,96 @@
 namespace blink {
 
 class GraphicsLayerUpdater::UpdateContext {
-public:
-    UpdateContext()
-        : m_compositingStackingContext(nullptr)
-        , m_compositingAncestor(nullptr)
-    {
-    }
+ public:
+  UpdateContext()
+      : m_compositingStackingContext(nullptr), m_compositingAncestor(nullptr) {}
 
-    UpdateContext(const UpdateContext& other, const PaintLayer& layer)
-        : m_compositingStackingContext(other.m_compositingStackingContext)
-        , m_compositingAncestor(other.compositingContainer(layer))
-    {
-        CompositingState compositingState = layer.compositingState();
-        if (compositingState != NotComposited && compositingState != PaintsIntoGroupedBacking) {
-            m_compositingAncestor = &layer;
-            if (layer.stackingNode()->isStackingContext())
-                m_compositingStackingContext = &layer;
-        }
+  UpdateContext(const UpdateContext& other, const PaintLayer& layer)
+      : m_compositingStackingContext(other.m_compositingStackingContext),
+        m_compositingAncestor(other.compositingContainer(layer)) {
+    CompositingState compositingState = layer.compositingState();
+    if (compositingState != NotComposited &&
+        compositingState != PaintsIntoGroupedBacking) {
+      m_compositingAncestor = &layer;
+      if (layer.stackingNode()->isStackingContext())
+        m_compositingStackingContext = &layer;
     }
+  }
 
-    const PaintLayer* compositingContainer(const PaintLayer& layer) const
-    {
-        return layer.stackingNode()->isStacked() ? m_compositingStackingContext : m_compositingAncestor;
-    }
+  const PaintLayer* compositingContainer(const PaintLayer& layer) const {
+    return layer.stackingNode()->isStacked() ? m_compositingStackingContext
+                                             : m_compositingAncestor;
+  }
 
-    const PaintLayer* compositingStackingContext() const
-    {
-        return m_compositingStackingContext;
-    }
+  const PaintLayer* compositingStackingContext() const {
+    return m_compositingStackingContext;
+  }
 
-private:
-    const PaintLayer* m_compositingStackingContext;
-    const PaintLayer* m_compositingAncestor;
+ private:
+  const PaintLayer* m_compositingStackingContext;
+  const PaintLayer* m_compositingAncestor;
 };
 
-GraphicsLayerUpdater::GraphicsLayerUpdater()
-    : m_needsRebuildTree(false)
-{
+GraphicsLayerUpdater::GraphicsLayerUpdater() : m_needsRebuildTree(false) {}
+
+GraphicsLayerUpdater::~GraphicsLayerUpdater() {}
+
+void GraphicsLayerUpdater::update(
+    PaintLayer& layer,
+    Vector<PaintLayer*>& layersNeedingPaintInvalidation) {
+  TRACE_EVENT0("blink", "GraphicsLayerUpdater::update");
+  updateRecursive(layer, DoNotForceUpdate, UpdateContext(),
+                  layersNeedingPaintInvalidation);
+  layer.compositor()->updateRootLayerPosition();
 }
 
-GraphicsLayerUpdater::~GraphicsLayerUpdater()
-{
-}
+void GraphicsLayerUpdater::updateRecursive(
+    PaintLayer& layer,
+    UpdateType updateType,
+    const UpdateContext& context,
+    Vector<PaintLayer*>& layersNeedingPaintInvalidation) {
+  if (layer.hasCompositedLayerMapping()) {
+    CompositedLayerMapping* mapping = layer.compositedLayerMapping();
 
-void GraphicsLayerUpdater::update(PaintLayer& layer, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
-{
-    TRACE_EVENT0("blink", "GraphicsLayerUpdater::update");
-    updateRecursive(layer, DoNotForceUpdate, UpdateContext(), layersNeedingPaintInvalidation);
-    layer.compositor()->updateRootLayerPosition();
-}
+    if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
+      const PaintLayer* compositingContainer =
+          context.compositingContainer(layer);
+      ASSERT(compositingContainer ==
+             layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
 
-void GraphicsLayerUpdater::updateRecursive(PaintLayer& layer, UpdateType updateType, const UpdateContext& context, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
-{
-    if (layer.hasCompositedLayerMapping()) {
-        CompositedLayerMapping* mapping = layer.compositedLayerMapping();
+      if (mapping->updateGraphicsLayerConfiguration())
+        m_needsRebuildTree = true;
 
-        if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
-            const PaintLayer* compositingContainer = context.compositingContainer(layer);
-            ASSERT(compositingContainer == layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
-
-            if (mapping->updateGraphicsLayerConfiguration())
-                m_needsRebuildTree = true;
-
-            mapping->updateGraphicsLayerGeometry(compositingContainer, context.compositingStackingContext(), layersNeedingPaintInvalidation);
-            if (PaintLayerScrollableArea* scrollableArea = layer.getScrollableArea())
-                scrollableArea->positionOverflowControls();
-            updateType = mapping->updateTypeForChildren(updateType);
-            mapping->clearNeedsGraphicsLayerUpdate();
-        }
+      mapping->updateGraphicsLayerGeometry(compositingContainer,
+                                           context.compositingStackingContext(),
+                                           layersNeedingPaintInvalidation);
+      if (PaintLayerScrollableArea* scrollableArea = layer.getScrollableArea())
+        scrollableArea->positionOverflowControls();
+      updateType = mapping->updateTypeForChildren(updateType);
+      mapping->clearNeedsGraphicsLayerUpdate();
     }
+  }
 
-    UpdateContext childContext(context, layer);
-    for (PaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
-        updateRecursive(*child, updateType, childContext, layersNeedingPaintInvalidation);
+  UpdateContext childContext(context, layer);
+  for (PaintLayer* child = layer.firstChild(); child;
+       child = child->nextSibling())
+    updateRecursive(*child, updateType, childContext,
+                    layersNeedingPaintInvalidation);
 }
 
 #if ENABLE(ASSERT)
 
-void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(PaintLayer& layer)
-{
-    if (layer.hasCompositedLayerMapping())
-        layer.compositedLayerMapping()->assertNeedsToUpdateGraphicsLayerBitsCleared();
+void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(
+    PaintLayer& layer) {
+  if (layer.hasCompositedLayerMapping())
+    layer.compositedLayerMapping()
+        ->assertNeedsToUpdateGraphicsLayerBitsCleared();
 
-    for (PaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
-        assertNeedsToUpdateGraphicsLayerBitsCleared(*child);
+  for (PaintLayer* child = layer.firstChild(); child;
+       child = child->nextSibling())
+    assertNeedsToUpdateGraphicsLayerBitsCleared(*child);
 }
 
 #endif
 
-} // namespace blink
+}  // namespace blink

@@ -52,110 +52,108 @@ class WorkerGlobalScope;
 // WebKit does not allow duplicated HTML event handlers of the same type,
 // but ALLOWs duplicated non-HTML event handlers.
 class CORE_EXPORT V8AbstractEventListener : public EventListener {
-public:
-    ~V8AbstractEventListener() override;
+ public:
+  ~V8AbstractEventListener() override;
 
-    static const V8AbstractEventListener* cast(const EventListener* listener)
-    {
-        return listener->type() == JSEventListenerType
-            ? static_cast<const V8AbstractEventListener*>(listener)
-            : 0;
-    }
+  static const V8AbstractEventListener* cast(const EventListener* listener) {
+    return listener->type() == JSEventListenerType
+               ? static_cast<const V8AbstractEventListener*>(listener)
+               : 0;
+  }
 
-    static V8AbstractEventListener* cast(EventListener* listener)
-    {
-        return const_cast<V8AbstractEventListener*>(cast(const_cast<const EventListener*>(listener)));
-    }
+  static V8AbstractEventListener* cast(EventListener* listener) {
+    return const_cast<V8AbstractEventListener*>(
+        cast(const_cast<const EventListener*>(listener)));
+  }
 
-    // Implementation of EventListener interface.
+  // Implementation of EventListener interface.
 
-    bool operator==(const EventListener& other) const override { return this == &other; }
+  bool operator==(const EventListener& other) const override {
+    return this == &other;
+  }
 
-    void handleEvent(ExecutionContext*, Event*) final;
-    virtual void handleEvent(ScriptState*, Event*);
+  void handleEvent(ExecutionContext*, Event*) final;
+  virtual void handleEvent(ScriptState*, Event*);
 
-    v8::Local<v8::Value> getListenerOrNull(v8::Isolate* isolate, ExecutionContext* executionContext)
-    {
-        v8::Local<v8::Object> listener = getListenerObject(executionContext);
-        return listener.IsEmpty() ? v8::Null(isolate).As<v8::Value>() : listener.As<v8::Value>();
-    }
+  v8::Local<v8::Value> getListenerOrNull(v8::Isolate* isolate,
+                                         ExecutionContext* executionContext) {
+    v8::Local<v8::Object> listener = getListenerObject(executionContext);
+    return listener.IsEmpty() ? v8::Null(isolate).As<v8::Value>()
+                              : listener.As<v8::Value>();
+  }
 
-    // Returns the listener object, either a function or an object, or the empty
-    // handle if the user script is not compilable.  No exception will be thrown
-    // even if the user script is not compilable.
-    v8::Local<v8::Object> getListenerObject(ExecutionContext* executionContext)
-    {
-        return getListenerObjectInternal(executionContext);
-    }
+  // Returns the listener object, either a function or an object, or the empty
+  // handle if the user script is not compilable.  No exception will be thrown
+  // even if the user script is not compilable.
+  v8::Local<v8::Object> getListenerObject(ExecutionContext* executionContext) {
+    return getListenerObjectInternal(executionContext);
+  }
 
-    v8::Local<v8::Object> getExistingListenerObject()
-    {
-        return m_listener.newLocal(m_isolate);
-    }
+  v8::Local<v8::Object> getExistingListenerObject() {
+    return m_listener.newLocal(m_isolate);
+  }
 
-    // Provides access to the underlying handle for GC. Returned
-    // value is a weak handle and so not guaranteed to stay alive.
-    v8::Persistent<v8::Object>& existingListenerObjectPersistentHandle()
-    {
-        return m_listener.get();
-    }
+  // Provides access to the underlying handle for GC. Returned
+  // value is a weak handle and so not guaranteed to stay alive.
+  v8::Persistent<v8::Object>& existingListenerObjectPersistentHandle() {
+    return m_listener.get();
+  }
 
-    bool hasExistingListenerObject()
-    {
-        return !m_listener.isEmpty();
-    }
+  bool hasExistingListenerObject() { return !m_listener.isEmpty(); }
 
-    void clearListenerObject();
+  void clearListenerObject();
 
-    bool belongsToTheCurrentWorld() const final;
-    v8::Isolate* isolate() const { return m_isolate; }
-    DOMWrapperWorld& world() const { return *m_world; }
+  bool belongsToTheCurrentWorld() const final;
+  v8::Isolate* isolate() const { return m_isolate; }
+  DOMWrapperWorld& world() const { return *m_world; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-protected:
-    V8AbstractEventListener(bool isAttribute, DOMWrapperWorld&, v8::Isolate*);
+ protected:
+  V8AbstractEventListener(bool isAttribute, DOMWrapperWorld&, v8::Isolate*);
 
-    virtual v8::Local<v8::Object> getListenerObjectInternal(ExecutionContext* executionContext)
-    {
-        return getExistingListenerObject();
-    }
+  virtual v8::Local<v8::Object> getListenerObjectInternal(
+      ExecutionContext* executionContext) {
+    return getExistingListenerObject();
+  }
 
-    void setListenerObject(v8::Local<v8::Object>);
+  void setListenerObject(v8::Local<v8::Object>);
 
-    void invokeEventHandler(ScriptState*, Event*, v8::Local<v8::Value>);
+  void invokeEventHandler(ScriptState*, Event*, v8::Local<v8::Value>);
 
-    // Get the receiver object to use for event listener call.
-    v8::Local<v8::Object> getReceiverObject(ScriptState*, Event*);
+  // Get the receiver object to use for event listener call.
+  v8::Local<v8::Object> getReceiverObject(ScriptState*, Event*);
 
-private:
-    // Implementation of EventListener function.
-    bool virtualisAttribute() const override { return m_isAttribute; }
+ private:
+  // Implementation of EventListener function.
+  bool virtualisAttribute() const override { return m_isAttribute; }
 
-    // This could return an empty handle and callers need to check return value.
-    // We don't use v8::MaybeLocal because it can fail without exception.
-    virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value> jsevent, Event*) = 0;
+  // This could return an empty handle and callers need to check return value.
+  // We don't use v8::MaybeLocal because it can fail without exception.
+  virtual v8::Local<v8::Value>
+  callListenerFunction(ScriptState*, v8::Local<v8::Value> jsevent, Event*) = 0;
 
-    virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
+  virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 
-    static void wrapperCleared(const v8::WeakCallbackInfo<V8AbstractEventListener>&);
+  static void wrapperCleared(
+      const v8::WeakCallbackInfo<V8AbstractEventListener>&);
 
-    ScopedPersistent<v8::Object> m_listener;
+  ScopedPersistent<v8::Object> m_listener;
 
-    // Indicates if this is an HTML type listener.
-    bool m_isAttribute;
+  // Indicates if this is an HTML type listener.
+  bool m_isAttribute;
 
-    RefPtr<DOMWrapperWorld> m_world;
-    v8::Isolate* m_isolate;
+  RefPtr<DOMWrapperWorld> m_world;
+  v8::Isolate* m_isolate;
 
-    // nullptr unless this listener belongs to a worker.
-    Member<WorkerGlobalScope> m_workerGlobalScope;
+  // nullptr unless this listener belongs to a worker.
+  Member<WorkerGlobalScope> m_workerGlobalScope;
 
-    SelfKeepAlive<V8AbstractEventListener> m_keepAlive;
+  SelfKeepAlive<V8AbstractEventListener> m_keepAlive;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8AbstractEventListener_h
+#endif  // V8AbstractEventListener_h

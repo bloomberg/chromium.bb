@@ -39,34 +39,37 @@ class LayoutObject;
 const int PositionUndefined = 0x80000000;
 
 class VerticalPositionCache {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(VerticalPositionCache);
-public:
-    VerticalPositionCache()
-    { }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(VerticalPositionCache);
 
-    int get(LineLayoutItem layoutObject, FontBaseline baselineType) const
-    {
-        const HashMap<LineLayoutItem, int>& mapToCheck = baselineType == AlphabeticBaseline ? m_alphabeticPositions : m_ideographicPositions;
-        const HashMap<LineLayoutItem, int>::const_iterator it = mapToCheck.find(layoutObject);
-        if (it == mapToCheck.end())
-            return PositionUndefined;
-        return it->value;
-    }
+ public:
+  VerticalPositionCache() {}
 
-    void set(LineLayoutItem layoutObject, FontBaseline baselineType, int position)
-    {
-        if (baselineType == AlphabeticBaseline)
-            m_alphabeticPositions.set(layoutObject, position);
-        else
-            m_ideographicPositions.set(layoutObject, position);
-    }
+  int get(LineLayoutItem layoutObject, FontBaseline baselineType) const {
+    const HashMap<LineLayoutItem, int>& mapToCheck =
+        baselineType == AlphabeticBaseline ? m_alphabeticPositions
+                                           : m_ideographicPositions;
+    const HashMap<LineLayoutItem, int>::const_iterator it =
+        mapToCheck.find(layoutObject);
+    if (it == mapToCheck.end())
+      return PositionUndefined;
+    return it->value;
+  }
 
-private:
-    HashMap<LineLayoutItem, int> m_alphabeticPositions;
-    HashMap<LineLayoutItem, int> m_ideographicPositions;
+  void set(LineLayoutItem layoutObject,
+           FontBaseline baselineType,
+           int position) {
+    if (baselineType == AlphabeticBaseline)
+      m_alphabeticPositions.set(layoutObject, position);
+    else
+      m_ideographicPositions.set(layoutObject, position);
+  }
+
+ private:
+  HashMap<LineLayoutItem, int> m_alphabeticPositions;
+  HashMap<LineLayoutItem, int> m_ideographicPositions;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VerticalPositionCache_h
+#endif  // VerticalPositionCache_h

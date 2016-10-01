@@ -41,7 +41,7 @@
 #include "modules/webdatabase/SQLStatementErrorCallback.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "modules/webdatabase/SQLTransactionCallback.h"
-#include "modules/webdatabase/SQLTransactionClient.h" // FIXME: Should be used in the backend only.
+#include "modules/webdatabase/SQLTransactionClient.h"  // FIXME: Should be used in the backend only.
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/StorageLog.h"
 #include "wtf/StdLibExtras.h"
@@ -49,302 +49,316 @@
 
 namespace blink {
 
-SQLTransaction* SQLTransaction::create(Database* db, SQLTransactionCallback* callback,
-    VoidCallback* successCallback, SQLTransactionErrorCallback* errorCallback, bool readOnly)
-{
-    return new SQLTransaction(db, callback, successCallback, errorCallback, readOnly);
+SQLTransaction* SQLTransaction::create(
+    Database* db,
+    SQLTransactionCallback* callback,
+    VoidCallback* successCallback,
+    SQLTransactionErrorCallback* errorCallback,
+    bool readOnly) {
+  return new SQLTransaction(db, callback, successCallback, errorCallback,
+                            readOnly);
 }
 
-SQLTransaction::SQLTransaction(Database* db, SQLTransactionCallback* callback,
-    VoidCallback* successCallback, SQLTransactionErrorCallback* errorCallback,
-    bool readOnly)
-    : m_database(db)
-    , m_callback(callback)
-    , m_successCallback(successCallback)
-    , m_errorCallback(errorCallback)
-    , m_executeSqlAllowed(false)
-    , m_readOnly(readOnly)
-{
-    DCHECK(isMainThread());
-    ASSERT(m_database);
-    InspectorInstrumentation::asyncTaskScheduled(db->getExecutionContext(), "SQLTransaction", this, true);
+SQLTransaction::SQLTransaction(Database* db,
+                               SQLTransactionCallback* callback,
+                               VoidCallback* successCallback,
+                               SQLTransactionErrorCallback* errorCallback,
+                               bool readOnly)
+    : m_database(db),
+      m_callback(callback),
+      m_successCallback(successCallback),
+      m_errorCallback(errorCallback),
+      m_executeSqlAllowed(false),
+      m_readOnly(readOnly) {
+  DCHECK(isMainThread());
+  ASSERT(m_database);
+  InspectorInstrumentation::asyncTaskScheduled(db->getExecutionContext(),
+                                               "SQLTransaction", this, true);
 }
 
-SQLTransaction::~SQLTransaction()
-{
+SQLTransaction::~SQLTransaction() {}
+
+DEFINE_TRACE(SQLTransaction) {
+  visitor->trace(m_database);
+  visitor->trace(m_backend);
+  visitor->trace(m_callback);
+  visitor->trace(m_successCallback);
+  visitor->trace(m_errorCallback);
 }
 
-DEFINE_TRACE(SQLTransaction)
-{
-    visitor->trace(m_database);
-    visitor->trace(m_backend);
-    visitor->trace(m_callback);
-    visitor->trace(m_successCallback);
-    visitor->trace(m_errorCallback);
+bool SQLTransaction::hasCallback() const {
+  return m_callback;
 }
 
-bool SQLTransaction::hasCallback() const
-{
-    return m_callback;
+bool SQLTransaction::hasSuccessCallback() const {
+  return m_successCallback;
 }
 
-bool SQLTransaction::hasSuccessCallback() const
-{
-    return m_successCallback;
+bool SQLTransaction::hasErrorCallback() const {
+  return m_errorCallback;
 }
 
-bool SQLTransaction::hasErrorCallback() const
-{
-    return m_errorCallback;
+void SQLTransaction::setBackend(SQLTransactionBackend* backend) {
+  ASSERT(!m_backend);
+  m_backend = backend;
 }
 
-void SQLTransaction::setBackend(SQLTransactionBackend* backend)
-{
-    ASSERT(!m_backend);
-    m_backend = backend;
-}
+SQLTransaction::StateFunction SQLTransaction::stateFunctionFor(
+    SQLTransactionState state) {
+  static const StateFunction stateFunctions[] = {
+      &SQLTransaction::unreachableState,    // 0. illegal
+      &SQLTransaction::unreachableState,    // 1. idle
+      &SQLTransaction::unreachableState,    // 2. acquireLock
+      &SQLTransaction::unreachableState,    // 3. openTransactionAndPreflight
+      &SQLTransaction::sendToBackendState,  // 4. runStatements
+      &SQLTransaction::unreachableState,    // 5. postflightAndCommit
+      &SQLTransaction::sendToBackendState,  // 6. cleanupAndTerminate
+      &SQLTransaction::
+          sendToBackendState,  // 7. cleanupAfterTransactionErrorCallback
+      &SQLTransaction::deliverTransactionCallback,       // 8.
+      &SQLTransaction::deliverTransactionErrorCallback,  // 9.
+      &SQLTransaction::deliverStatementCallback,         // 10.
+      &SQLTransaction::deliverQuotaIncreaseCallback,     // 11.
+      &SQLTransaction::deliverSuccessCallback            // 12.
+  };
 
-SQLTransaction::StateFunction SQLTransaction::stateFunctionFor(SQLTransactionState state)
-{
-    static const StateFunction stateFunctions[] = {
-        &SQLTransaction::unreachableState,                // 0. illegal
-        &SQLTransaction::unreachableState,                // 1. idle
-        &SQLTransaction::unreachableState,                // 2. acquireLock
-        &SQLTransaction::unreachableState,                // 3. openTransactionAndPreflight
-        &SQLTransaction::sendToBackendState,              // 4. runStatements
-        &SQLTransaction::unreachableState,                // 5. postflightAndCommit
-        &SQLTransaction::sendToBackendState,              // 6. cleanupAndTerminate
-        &SQLTransaction::sendToBackendState,              // 7. cleanupAfterTransactionErrorCallback
-        &SQLTransaction::deliverTransactionCallback,      // 8.
-        &SQLTransaction::deliverTransactionErrorCallback, // 9.
-        &SQLTransaction::deliverStatementCallback,        // 10.
-        &SQLTransaction::deliverQuotaIncreaseCallback,    // 11.
-        &SQLTransaction::deliverSuccessCallback           // 12.
-    };
+  ASSERT(WTF_ARRAY_LENGTH(stateFunctions) ==
+         static_cast<int>(SQLTransactionState::NumberOfStates));
+  ASSERT(state < SQLTransactionState::NumberOfStates);
 
-    ASSERT(WTF_ARRAY_LENGTH(stateFunctions) == static_cast<int>(SQLTransactionState::NumberOfStates));
-    ASSERT(state < SQLTransactionState::NumberOfStates);
-
-    return stateFunctions[static_cast<int>(state)];
+  return stateFunctions[static_cast<int>(state)];
 }
 
 // requestTransitToState() can be called from the backend. Hence, it should
 // NOT be modifying SQLTransactionBackend in general. The only safe field to
 // modify is m_requestedState which is meant for this purpose.
-void SQLTransaction::requestTransitToState(SQLTransactionState nextState)
-{
+void SQLTransaction::requestTransitToState(SQLTransactionState nextState) {
 #if DCHECK_IS_ON()
-    STORAGE_DVLOG(1) << "Scheduling " << nameForSQLTransactionState(nextState) << " for transaction " << this;
+  STORAGE_DVLOG(1) << "Scheduling " << nameForSQLTransactionState(nextState)
+                   << " for transaction " << this;
 #endif
-    m_requestedState = nextState;
-    m_database->scheduleTransactionCallback(this);
+  m_requestedState = nextState;
+  m_database->scheduleTransactionCallback(this);
 }
 
-SQLTransactionState SQLTransaction::nextStateForTransactionError()
-{
-    ASSERT(m_transactionError);
-    if (hasErrorCallback())
-        return SQLTransactionState::DeliverTransactionErrorCallback;
+SQLTransactionState SQLTransaction::nextStateForTransactionError() {
+  ASSERT(m_transactionError);
+  if (hasErrorCallback())
+    return SQLTransactionState::DeliverTransactionErrorCallback;
 
-    // No error callback, so fast-forward to:
-    // Transaction Step 11 - Rollback the transaction.
-    return SQLTransactionState::CleanupAfterTransactionErrorCallback;
+  // No error callback, so fast-forward to:
+  // Transaction Step 11 - Rollback the transaction.
+  return SQLTransactionState::CleanupAfterTransactionErrorCallback;
 }
 
-SQLTransactionState SQLTransaction::deliverTransactionCallback()
-{
-    bool shouldDeliverErrorCallback = false;
-    InspectorInstrumentation::AsyncTask asyncTask(m_database->getExecutionContext(), this);
+SQLTransactionState SQLTransaction::deliverTransactionCallback() {
+  bool shouldDeliverErrorCallback = false;
+  InspectorInstrumentation::AsyncTask asyncTask(
+      m_database->getExecutionContext(), this);
 
-    // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction object
-    if (SQLTransactionCallback* callback = m_callback.release()) {
-        m_executeSqlAllowed = true;
-        shouldDeliverErrorCallback = !callback->handleEvent(this);
-        m_executeSqlAllowed = false;
-    }
-
-    // Spec 4.3.2 5: If the transaction callback was null or raised an exception, jump to the error callback
-    SQLTransactionState nextState = SQLTransactionState::RunStatements;
-    if (shouldDeliverErrorCallback) {
-        m_database->reportStartTransactionResult(5, SQLError::kUnknownErr, 0);
-        m_transactionError = SQLErrorData::create(SQLError::kUnknownErr, "the SQLTransactionCallback was null or threw an exception");
-        nextState = SQLTransactionState::DeliverTransactionErrorCallback;
-    }
-    m_database->reportStartTransactionResult(0, -1, 0); // OK
-    return nextState;
-}
-
-SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
-{
-    InspectorInstrumentation::AsyncTask asyncTask(m_database->getExecutionContext(), this);
-    InspectorInstrumentation::asyncTaskCanceled(m_database->getExecutionContext(), this);
-
-    // Spec 4.3.2.10: If exists, invoke error callback with the last
-    // error to have occurred in this transaction.
-    if (SQLTransactionErrorCallback* errorCallback = m_errorCallback.release()) {
-        // If we get here with an empty m_transactionError, then the backend
-        // must be waiting in the idle state waiting for this state to finish.
-        // Hence, it's thread safe to fetch the backend transactionError without
-        // a lock.
-        if (!m_transactionError) {
-            ASSERT(m_backend->transactionError());
-            m_transactionError = SQLErrorData::create(*m_backend->transactionError());
-        }
-        ASSERT(m_transactionError);
-        errorCallback->handleEvent(SQLError::create(*m_transactionError));
-
-        m_transactionError = nullptr;
-    }
-
-    clearCallbacks();
-
-    // Spec 4.3.2.10: Rollback the transaction.
-    return SQLTransactionState::CleanupAfterTransactionErrorCallback;
-}
-
-SQLTransactionState SQLTransaction::deliverStatementCallback()
-{
-    DCHECK(isMainThread());
-    // Spec 4.3.2.6.6 and 4.3.2.6.3: If the statement callback went wrong, jump to the transaction error callback
-    // Otherwise, continue to loop through the statement queue
+  // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction object
+  if (SQLTransactionCallback* callback = m_callback.release()) {
     m_executeSqlAllowed = true;
-
-    SQLStatement* currentStatement = m_backend->currentStatement();
-    ASSERT(currentStatement);
-
-    bool result = currentStatement->performCallback(this);
-
+    shouldDeliverErrorCallback = !callback->handleEvent(this);
     m_executeSqlAllowed = false;
+  }
 
-    if (result) {
-        m_database->reportCommitTransactionResult(2, SQLError::kUnknownErr, 0);
-        m_transactionError = SQLErrorData::create(SQLError::kUnknownErr, "the statement callback raised an exception or statement error callback did not return false");
-        return nextStateForTransactionError();
+  // Spec 4.3.2 5: If the transaction callback was null or raised an exception, jump to the error callback
+  SQLTransactionState nextState = SQLTransactionState::RunStatements;
+  if (shouldDeliverErrorCallback) {
+    m_database->reportStartTransactionResult(5, SQLError::kUnknownErr, 0);
+    m_transactionError = SQLErrorData::create(
+        SQLError::kUnknownErr,
+        "the SQLTransactionCallback was null or threw an exception");
+    nextState = SQLTransactionState::DeliverTransactionErrorCallback;
+  }
+  m_database->reportStartTransactionResult(0, -1, 0);  // OK
+  return nextState;
+}
+
+SQLTransactionState SQLTransaction::deliverTransactionErrorCallback() {
+  InspectorInstrumentation::AsyncTask asyncTask(
+      m_database->getExecutionContext(), this);
+  InspectorInstrumentation::asyncTaskCanceled(m_database->getExecutionContext(),
+                                              this);
+
+  // Spec 4.3.2.10: If exists, invoke error callback with the last
+  // error to have occurred in this transaction.
+  if (SQLTransactionErrorCallback* errorCallback = m_errorCallback.release()) {
+    // If we get here with an empty m_transactionError, then the backend
+    // must be waiting in the idle state waiting for this state to finish.
+    // Hence, it's thread safe to fetch the backend transactionError without
+    // a lock.
+    if (!m_transactionError) {
+      ASSERT(m_backend->transactionError());
+      m_transactionError = SQLErrorData::create(*m_backend->transactionError());
     }
-    return SQLTransactionState::RunStatements;
+    ASSERT(m_transactionError);
+    errorCallback->handleEvent(SQLError::create(*m_transactionError));
+
+    m_transactionError = nullptr;
+  }
+
+  clearCallbacks();
+
+  // Spec 4.3.2.10: Rollback the transaction.
+  return SQLTransactionState::CleanupAfterTransactionErrorCallback;
 }
 
-SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
-{
-    DCHECK(isMainThread());
-    ASSERT(m_backend->currentStatement());
+SQLTransactionState SQLTransaction::deliverStatementCallback() {
+  DCHECK(isMainThread());
+  // Spec 4.3.2.6.6 and 4.3.2.6.3: If the statement callback went wrong, jump to the transaction error callback
+  // Otherwise, continue to loop through the statement queue
+  m_executeSqlAllowed = true;
 
-    bool shouldRetryCurrentStatement = m_database->transactionClient()->didExceedQuota(database());
-    m_backend->setShouldRetryCurrentStatement(shouldRetryCurrentStatement);
+  SQLStatement* currentStatement = m_backend->currentStatement();
+  ASSERT(currentStatement);
 
-    return SQLTransactionState::RunStatements;
+  bool result = currentStatement->performCallback(this);
+
+  m_executeSqlAllowed = false;
+
+  if (result) {
+    m_database->reportCommitTransactionResult(2, SQLError::kUnknownErr, 0);
+    m_transactionError =
+        SQLErrorData::create(SQLError::kUnknownErr,
+                             "the statement callback raised an exception or "
+                             "statement error callback did not return false");
+    return nextStateForTransactionError();
+  }
+  return SQLTransactionState::RunStatements;
 }
 
-SQLTransactionState SQLTransaction::deliverSuccessCallback()
-{
-    DCHECK(isMainThread());
-    InspectorInstrumentation::AsyncTask asyncTask(m_database->getExecutionContext(), this);
-    InspectorInstrumentation::asyncTaskCanceled(m_database->getExecutionContext(), this);
+SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback() {
+  DCHECK(isMainThread());
+  ASSERT(m_backend->currentStatement());
 
-    // Spec 4.3.2.8: Deliver success callback.
-    if (VoidCallback* successCallback = m_successCallback.release())
-        successCallback->handleEvent();
+  bool shouldRetryCurrentStatement =
+      m_database->transactionClient()->didExceedQuota(database());
+  m_backend->setShouldRetryCurrentStatement(shouldRetryCurrentStatement);
 
-    clearCallbacks();
+  return SQLTransactionState::RunStatements;
+}
 
-    // Schedule a "post-success callback" step to return control to the database thread in case there
-    // are further transactions queued up for this Database
-    return SQLTransactionState::CleanupAndTerminate;
+SQLTransactionState SQLTransaction::deliverSuccessCallback() {
+  DCHECK(isMainThread());
+  InspectorInstrumentation::AsyncTask asyncTask(
+      m_database->getExecutionContext(), this);
+  InspectorInstrumentation::asyncTaskCanceled(m_database->getExecutionContext(),
+                                              this);
+
+  // Spec 4.3.2.8: Deliver success callback.
+  if (VoidCallback* successCallback = m_successCallback.release())
+    successCallback->handleEvent();
+
+  clearCallbacks();
+
+  // Schedule a "post-success callback" step to return control to the database thread in case there
+  // are further transactions queued up for this Database
+  return SQLTransactionState::CleanupAndTerminate;
 }
 
 // This state function is used as a stub function to plug unimplemented states
 // in the state dispatch table. They are unimplemented because they should
 // never be reached in the course of correct execution.
-SQLTransactionState SQLTransaction::unreachableState()
-{
-    ASSERT_NOT_REACHED();
-    return SQLTransactionState::End;
+SQLTransactionState SQLTransaction::unreachableState() {
+  ASSERT_NOT_REACHED();
+  return SQLTransactionState::End;
 }
 
-SQLTransactionState SQLTransaction::sendToBackendState()
-{
-    ASSERT(m_nextState != SQLTransactionState::Idle);
-    m_backend->requestTransitToState(m_nextState);
-    return SQLTransactionState::Idle;
+SQLTransactionState SQLTransaction::sendToBackendState() {
+  ASSERT(m_nextState != SQLTransactionState::Idle);
+  m_backend->requestTransitToState(m_nextState);
+  return SQLTransactionState::Idle;
 }
 
-void SQLTransaction::performPendingCallback()
-{
-    DCHECK(isMainThread());
-    computeNextStateAndCleanupIfNeeded();
-    runStateMachine();
+void SQLTransaction::performPendingCallback() {
+  DCHECK(isMainThread());
+  computeNextStateAndCleanupIfNeeded();
+  runStateMachine();
 }
 
-void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, SQLStatementCallback* callback, SQLStatementErrorCallback* callbackError, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-    if (!m_executeSqlAllowed) {
-        exceptionState.throwDOMException(InvalidStateError, "SQL execution is disallowed.");
-        return;
-    }
+void SQLTransaction::executeSQL(const String& sqlStatement,
+                                const Vector<SQLValue>& arguments,
+                                SQLStatementCallback* callback,
+                                SQLStatementErrorCallback* callbackError,
+                                ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+  if (!m_executeSqlAllowed) {
+    exceptionState.throwDOMException(InvalidStateError,
+                                     "SQL execution is disallowed.");
+    return;
+  }
 
-    if (!m_database->opened()) {
-        exceptionState.throwDOMException(InvalidStateError, "The database has not been opened.");
-        return;
-    }
+  if (!m_database->opened()) {
+    exceptionState.throwDOMException(InvalidStateError,
+                                     "The database has not been opened.");
+    return;
+  }
 
-    int permissions = DatabaseAuthorizer::ReadWriteMask;
-    if (!m_database->getDatabaseContext()->allowDatabaseAccess())
-        permissions |= DatabaseAuthorizer::NoAccessMask;
-    else if (m_readOnly)
-        permissions |= DatabaseAuthorizer::ReadOnlyMask;
+  int permissions = DatabaseAuthorizer::ReadWriteMask;
+  if (!m_database->getDatabaseContext()->allowDatabaseAccess())
+    permissions |= DatabaseAuthorizer::NoAccessMask;
+  else if (m_readOnly)
+    permissions |= DatabaseAuthorizer::ReadOnlyMask;
 
-    SQLStatement* statement = SQLStatement::create(m_database.get(), callback, callbackError);
-    m_backend->executeSQL(statement, sqlStatement, arguments, permissions);
+  SQLStatement* statement =
+      SQLStatement::create(m_database.get(), callback, callbackError);
+  m_backend->executeSQL(statement, sqlStatement, arguments, permissions);
 }
 
-void SQLTransaction::executeSql(ScriptState* scriptState, const String& sqlStatement, ExceptionState& exceptionState)
-{
-    executeSQL(sqlStatement, Vector<SQLValue>(), nullptr, nullptr, exceptionState);
+void SQLTransaction::executeSql(ScriptState* scriptState,
+                                const String& sqlStatement,
+                                ExceptionState& exceptionState) {
+  executeSQL(sqlStatement, Vector<SQLValue>(), nullptr, nullptr,
+             exceptionState);
 }
 
-void SQLTransaction::executeSql(ScriptState* scriptState, const String& sqlStatement, const Nullable<Vector<ScriptValue>>& arguments, SQLStatementCallback* callback, SQLStatementErrorCallback* callbackError, ExceptionState& exceptionState)
-{
-    Vector<SQLValue> sqlValues;
-    if (!arguments.isNull())
-        sqlValues = toImplArray<Vector<SQLValue>>(arguments.get(), scriptState->isolate(), exceptionState);
-    executeSQL(sqlStatement, sqlValues, callback, callbackError, exceptionState);
+void SQLTransaction::executeSql(ScriptState* scriptState,
+                                const String& sqlStatement,
+                                const Nullable<Vector<ScriptValue>>& arguments,
+                                SQLStatementCallback* callback,
+                                SQLStatementErrorCallback* callbackError,
+                                ExceptionState& exceptionState) {
+  Vector<SQLValue> sqlValues;
+  if (!arguments.isNull())
+    sqlValues = toImplArray<Vector<SQLValue>>(
+        arguments.get(), scriptState->isolate(), exceptionState);
+  executeSQL(sqlStatement, sqlValues, callback, callbackError, exceptionState);
 }
 
-bool SQLTransaction::computeNextStateAndCleanupIfNeeded()
-{
-    // Only honor the requested state transition if we're not supposed to be
-    // cleaning up and shutting down:
-    if (m_database->opened()) {
-        setStateToRequestedState();
-        ASSERT(m_nextState == SQLTransactionState::End
-            || m_nextState == SQLTransactionState::DeliverTransactionCallback
-            || m_nextState == SQLTransactionState::DeliverTransactionErrorCallback
-            || m_nextState == SQLTransactionState::DeliverStatementCallback
-            || m_nextState == SQLTransactionState::DeliverQuotaIncreaseCallback
-            || m_nextState == SQLTransactionState::DeliverSuccessCallback);
+bool SQLTransaction::computeNextStateAndCleanupIfNeeded() {
+  // Only honor the requested state transition if we're not supposed to be
+  // cleaning up and shutting down:
+  if (m_database->opened()) {
+    setStateToRequestedState();
+    ASSERT(m_nextState == SQLTransactionState::End ||
+           m_nextState == SQLTransactionState::DeliverTransactionCallback ||
+           m_nextState ==
+               SQLTransactionState::DeliverTransactionErrorCallback ||
+           m_nextState == SQLTransactionState::DeliverStatementCallback ||
+           m_nextState == SQLTransactionState::DeliverQuotaIncreaseCallback ||
+           m_nextState == SQLTransactionState::DeliverSuccessCallback);
 #if DCHECK_IS_ON()
-        STORAGE_DVLOG(1) << "Callback " << nameForSQLTransactionState(m_nextState);
+    STORAGE_DVLOG(1) << "Callback " << nameForSQLTransactionState(m_nextState);
 #endif
-        return false;
-    }
+    return false;
+  }
 
-    clearCallbacks();
-    m_nextState = SQLTransactionState::CleanupAndTerminate;
+  clearCallbacks();
+  m_nextState = SQLTransactionState::CleanupAndTerminate;
 
-    return true;
+  return true;
 }
 
-void SQLTransaction::clearCallbacks()
-{
-    m_callback.clear();
-    m_successCallback.clear();
-    m_errorCallback.clear();
+void SQLTransaction::clearCallbacks() {
+  m_callback.clear();
+  m_successCallback.clear();
+  m_errorCallback.clear();
 }
 
-SQLTransactionErrorCallback* SQLTransaction::releaseErrorCallback()
-{
-    return m_errorCallback.release();
+SQLTransactionErrorCallback* SQLTransaction::releaseErrorCallback() {
+  return m_errorCallback.release();
 }
 
-} // namespace blink
+}  // namespace blink

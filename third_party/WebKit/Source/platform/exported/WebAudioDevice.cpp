@@ -26,12 +26,11 @@
 
 namespace blink {
 
-void WebAudioDevice::RenderCallback::render(const WebVector<float*>& sourceData, const WebVector<float*>& destinationData, size_t numberOfFrames)
-{
-}
+void WebAudioDevice::RenderCallback::render(
+    const WebVector<float*>& sourceData,
+    const WebVector<float*>& destinationData,
+    size_t numberOfFrames) {}
 
-WebAudioDevice::RenderCallback::~RenderCallback()
-{
-}
+WebAudioDevice::RenderCallback::~RenderCallback() {}
 
-} // namespace blink
+}  // namespace blink

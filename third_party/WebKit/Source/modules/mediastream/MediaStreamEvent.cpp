@@ -26,53 +26,46 @@
 
 namespace blink {
 
-MediaStreamEvent* MediaStreamEvent::create(const AtomicString& type, MediaStream* stream)
-{
-    return new MediaStreamEvent(type, stream);
+MediaStreamEvent* MediaStreamEvent::create(const AtomicString& type,
+                                           MediaStream* stream) {
+  return new MediaStreamEvent(type, stream);
 }
 
-MediaStreamEvent* MediaStreamEvent::create(const AtomicString& type, const MediaStreamEventInit& initializer)
-{
-    return new MediaStreamEvent(type, initializer);
+MediaStreamEvent* MediaStreamEvent::create(
+    const AtomicString& type,
+    const MediaStreamEventInit& initializer) {
+  return new MediaStreamEvent(type, initializer);
 }
 
-MediaStreamEvent::MediaStreamEvent(const AtomicString& type, MediaStream* stream)
-    : Event(type, false, false)
-    , m_stream(stream)
-{
+MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
+                                   MediaStream* stream)
+    : Event(type, false, false), m_stream(stream) {}
+
+MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
+                                   const MediaStreamEventInit& initializer)
+    : Event(type, initializer) {
+  if (initializer.hasStream())
+    m_stream = initializer.stream();
 }
 
-MediaStreamEvent::MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit& initializer)
-    : Event(type, initializer)
-{
-    if (initializer.hasStream())
-        m_stream = initializer.stream();
+MediaStreamEvent::~MediaStreamEvent() {}
+
+MediaStream* MediaStreamEvent::stream() const {
+  return m_stream.get();
 }
 
-MediaStreamEvent::~MediaStreamEvent()
-{
+MediaStream* MediaStreamEvent::stream(bool& isNull) const {
+  isNull = !m_stream;
+  return m_stream.get();
 }
 
-MediaStream* MediaStreamEvent::stream() const
-{
-    return m_stream.get();
+const AtomicString& MediaStreamEvent::interfaceName() const {
+  return EventNames::MediaStreamEvent;
 }
 
-MediaStream* MediaStreamEvent::stream(bool& isNull) const
-{
-    isNull = !m_stream;
-    return m_stream.get();
+DEFINE_TRACE(MediaStreamEvent) {
+  visitor->trace(m_stream);
+  Event::trace(visitor);
 }
 
-const AtomicString& MediaStreamEvent::interfaceName() const
-{
-    return EventNames::MediaStreamEvent;
-}
-
-DEFINE_TRACE(MediaStreamEvent)
-{
-    visitor->trace(m_stream);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

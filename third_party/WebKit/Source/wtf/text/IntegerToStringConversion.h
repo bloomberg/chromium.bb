@@ -33,51 +33,50 @@ namespace WTF {
 // TODO(esprehn): See if we can generalize IntToStringT in
 // base/strings/string_number_conversions.cc, and use unsigned type expansion
 // optimization here instead of CheckedNumeric::UnsignedAbs().
-template<typename IntegerType>
+template <typename IntegerType>
 class IntegerToStringConverter {
-public:
-    static_assert(std::is_integral<IntegerType>::value,
-        "IntegerType must be a type of integer.");
+ public:
+  static_assert(std::is_integral<IntegerType>::value,
+                "IntegerType must be a type of integer.");
 
-    explicit IntegerToStringConverter(IntegerType input)
-    {
-        LChar* end = m_buffer + WTF_ARRAY_LENGTH(m_buffer);
-        m_begin = end;
+  explicit IntegerToStringConverter(IntegerType input) {
+    LChar* end = m_buffer + WTF_ARRAY_LENGTH(m_buffer);
+    m_begin = end;
 
-        // We need to switch to the unsigned type when negating the value since
-        // abs(INT_MIN) == INT_MAX + 1.
-        bool isNegative = base::IsValueNegative(input);
-        UnsignedIntegerType value = isNegative ? 0u-input : input;
+    // We need to switch to the unsigned type when negating the value since
+    // abs(INT_MIN) == INT_MAX + 1.
+    bool isNegative = base::IsValueNegative(input);
+    UnsignedIntegerType value = isNegative ? 0u - input : input;
 
-        do {
-            --m_begin;
-            ASSERT(m_begin != m_buffer);
-            *m_begin = static_cast<LChar>((value % 10) + '0');
-            value /= 10;
-        } while (value);
+    do {
+      --m_begin;
+      ASSERT(m_begin != m_buffer);
+      *m_begin = static_cast<LChar>((value % 10) + '0');
+      value /= 10;
+    } while (value);
 
-        if (isNegative) {
-            --m_begin;
-            ASSERT(m_begin != m_buffer);
-            *m_begin = static_cast<LChar>('-');
-        }
-
-        m_length = static_cast<unsigned>(end - m_begin);
+    if (isNegative) {
+      --m_begin;
+      ASSERT(m_begin != m_buffer);
+      *m_begin = static_cast<LChar>('-');
     }
 
-    const LChar* characters8() const { return m_begin; }
-    unsigned length() const { return m_length; }
+    m_length = static_cast<unsigned>(end - m_begin);
+  }
 
-private:
-    using UnsignedIntegerType = typename std::make_unsigned<IntegerType>::type;
-    static const size_t kBufferSize = 3 * sizeof(UnsignedIntegerType) +
-        std::numeric_limits<IntegerType>::is_signed;
+  const LChar* characters8() const { return m_begin; }
+  unsigned length() const { return m_length; }
 
-    LChar m_buffer[kBufferSize];
-    LChar* m_begin;
-    unsigned m_length;
+ private:
+  using UnsignedIntegerType = typename std::make_unsigned<IntegerType>::type;
+  static const size_t kBufferSize = 3 * sizeof(UnsignedIntegerType) +
+                                    std::numeric_limits<IntegerType>::is_signed;
+
+  LChar m_buffer[kBufferSize];
+  LChar* m_begin;
+  unsigned m_length;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // IntegerToStringConversion_h
+#endif  // IntegerToStringConversion_h

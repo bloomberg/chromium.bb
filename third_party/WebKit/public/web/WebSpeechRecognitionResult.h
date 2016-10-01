@@ -36,23 +36,27 @@ namespace blink {
 class SpeechRecognitionResult;
 
 class WebSpeechRecognitionResult {
-public:
-    WebSpeechRecognitionResult() { }
-    WebSpeechRecognitionResult(const WebSpeechRecognitionResult& result) { assign(result); }
-    ~WebSpeechRecognitionResult() { reset(); }
+ public:
+  WebSpeechRecognitionResult() {}
+  WebSpeechRecognitionResult(const WebSpeechRecognitionResult& result) {
+    assign(result);
+  }
+  ~WebSpeechRecognitionResult() { reset(); }
 
-    BLINK_EXPORT void assign(const WebVector<WebString>& transcripts, const WebVector<float>& confidences, bool final);
-    BLINK_EXPORT void assign(const WebSpeechRecognitionResult&);
-    BLINK_EXPORT void reset();
+  BLINK_EXPORT void assign(const WebVector<WebString>& transcripts,
+                           const WebVector<float>& confidences,
+                           bool final);
+  BLINK_EXPORT void assign(const WebSpeechRecognitionResult&);
+  BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    operator SpeechRecognitionResult*() const;
+  operator SpeechRecognitionResult*() const;
 #endif
 
-private:
-    WebPrivatePtr<SpeechRecognitionResult> m_private;
+ private:
+  WebPrivatePtr<SpeechRecognitionResult> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSpeechRecognitionResult_h
+#endif  // WebSpeechRecognitionResult_h

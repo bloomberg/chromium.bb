@@ -10,15 +10,18 @@
 namespace blink {
 
 class CORE_EXPORT StyleEngineContext {
-public:
-    StyleEngineContext();
-    ~StyleEngineContext() {}
-    bool addedPendingSheetBeforeBody() const { return m_addedPendingSheetBeforeBody; }
-    void addingPendingSheet(const Document&);
-private:
-    bool m_addedPendingSheetBeforeBody : 1;
+ public:
+  StyleEngineContext();
+  ~StyleEngineContext() {}
+  bool addedPendingSheetBeforeBody() const {
+    return m_addedPendingSheetBeforeBody;
+  }
+  void addingPendingSheet(const Document&);
+
+ private:
+  bool m_addedPendingSheetBeforeBody : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

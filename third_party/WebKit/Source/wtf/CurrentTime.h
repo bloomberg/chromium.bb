@@ -42,9 +42,8 @@ namespace WTF {
 WTF_EXPORT double currentTime();
 
 // Same thing, in milliseconds.
-inline double currentTimeMS()
-{
-    return currentTime() * 1000.0;
+inline double currentTimeMS() {
+  return currentTime() * 1000.0;
 }
 
 // Provides a monotonically increasing time in seconds since an arbitrary point in the past.
@@ -52,9 +51,8 @@ inline double currentTimeMS()
 WTF_EXPORT double monotonicallyIncreasingTime();
 
 // Same thing, in milliseconds.
-inline double monotonicallyIncreasingTimeMS()
-{
-    return monotonicallyIncreasingTime() * 1000.0;
+inline double monotonicallyIncreasingTimeMS() {
+  return monotonicallyIncreasingTime() * 1000.0;
 }
 
 using TimeFunction = double (*)();
@@ -64,7 +62,7 @@ using TimeFunction = double (*)();
 // using the default timing function returning the actual time.
 WTF_EXPORT TimeFunction setTimeFunctionsForTesting(TimeFunction);
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::currentTime;
 using WTF::currentTimeMS;
@@ -73,4 +71,4 @@ using WTF::monotonicallyIncreasingTimeMS;
 using WTF::TimeFunction;
 using WTF::setTimeFunctionsForTesting;
 
-#endif // CurrentTime_h
+#endif  // CurrentTime_h

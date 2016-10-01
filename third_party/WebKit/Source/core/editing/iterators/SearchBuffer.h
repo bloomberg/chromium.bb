@@ -42,50 +42,58 @@ namespace blink {
 // inside a word are permitted if TreatMedialCapitalAsWordStart is specified as
 // well.
 class SearchBuffer {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SearchBuffer);
-public:
-    SearchBuffer(const String& target, FindOptions);
-    ~SearchBuffer();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SearchBuffer);
 
-    // Returns number of characters appended; guaranteed to be in the range
-    // [1, length].
-    template<typename CharType>
-    void append(const CharType*, size_t length);
-    size_t numberOfCharactersJustAppended() const { return m_numberOfCharactersJustAppended; }
+ public:
+  SearchBuffer(const String& target, FindOptions);
+  ~SearchBuffer();
 
-    bool needsMoreContext() const;
-    void prependContext(const UChar*, size_t length);
-    void reachedBreak();
+  // Returns number of characters appended; guaranteed to be in the range
+  // [1, length].
+  template <typename CharType>
+  void append(const CharType*, size_t length);
+  size_t numberOfCharactersJustAppended() const {
+    return m_numberOfCharactersJustAppended;
+  }
 
-    // Result is the size in characters of what was found.
-    // And <startOffset> is the number of characters back to the start of what
-    // was found.
-    size_t search(size_t& startOffset);
-    bool atBreak() const;
+  bool needsMoreContext() const;
+  void prependContext(const UChar*, size_t length);
+  void reachedBreak();
 
-private:
-    bool isBadMatch(const UChar*, size_t length) const;
-    bool isWordStartMatch(size_t start, size_t length) const;
+  // Result is the size in characters of what was found.
+  // And <startOffset> is the number of characters back to the start of what
+  // was found.
+  size_t search(size_t& startOffset);
+  bool atBreak() const;
 
-    Vector<UChar> m_target;
-    FindOptions m_options;
+ private:
+  bool isBadMatch(const UChar*, size_t length) const;
+  bool isWordStartMatch(size_t start, size_t length) const;
 
-    Vector<UChar> m_buffer;
-    size_t m_overlap;
-    size_t m_prefixLength;
-    size_t m_numberOfCharactersJustAppended;
-    bool m_atBreak;
-    bool m_needsMoreContext;
+  Vector<UChar> m_target;
+  FindOptions m_options;
 
-    bool m_targetRequiresKanaWorkaround;
-    Vector<UChar> m_normalizedTarget;
-    mutable Vector<UChar> m_normalizedMatch;
+  Vector<UChar> m_buffer;
+  size_t m_overlap;
+  size_t m_prefixLength;
+  size_t m_numberOfCharactersJustAppended;
+  bool m_atBreak;
+  bool m_needsMoreContext;
+
+  bool m_targetRequiresKanaWorkaround;
+  Vector<UChar> m_normalizedTarget;
+  mutable Vector<UChar> m_normalizedMatch;
 };
 
-CORE_EXPORT EphemeralRange findPlainText(const EphemeralRange& inputRange, const String&, FindOptions);
-CORE_EXPORT EphemeralRangeInFlatTree findPlainText(const EphemeralRangeInFlatTree& inputRange, const String&, FindOptions);
+CORE_EXPORT EphemeralRange findPlainText(const EphemeralRange& inputRange,
+                                         const String&,
+                                         FindOptions);
+CORE_EXPORT EphemeralRangeInFlatTree
+findPlainText(const EphemeralRangeInFlatTree& inputRange,
+              const String&,
+              FindOptions);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SearchBuffer_h
+#endif  // SearchBuffer_h

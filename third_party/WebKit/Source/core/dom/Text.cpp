@@ -45,404 +45,401 @@
 
 namespace blink {
 
-Text* Text::create(Document& document, const String& data)
-{
-    return new Text(document, data, CreateText);
+Text* Text::create(Document& document, const String& data) {
+  return new Text(document, data, CreateText);
 }
 
-Text* Text::createEditingText(Document& document, const String& data)
-{
-    return new Text(document, data, CreateEditingText);
+Text* Text::createEditingText(Document& document, const String& data) {
+  return new Text(document, data, CreateEditingText);
 }
 
-Node* Text::mergeNextSiblingNodesIfPossible()
-{
+Node* Text::mergeNextSiblingNodesIfPossible() {
+  // Remove empty text nodes.
+  if (!length()) {
+    // Care must be taken to get the next node before removing the current node.
+    Node* nextNode = NodeTraversal::nextPostOrder(*this);
+    remove(IGNORE_EXCEPTION);
+    return nextNode;
+  }
+
+  // Merge text nodes.
+  while (Node* nextSibling = this->nextSibling()) {
+    if (nextSibling->getNodeType() != kTextNode)
+      break;
+
+    Text* nextText = toText(nextSibling);
+
     // Remove empty text nodes.
-    if (!length()) {
-        // Care must be taken to get the next node before removing the current node.
-        Node* nextNode = NodeTraversal::nextPostOrder(*this);
-        remove(IGNORE_EXCEPTION);
-        return nextNode;
+    if (!nextText->length()) {
+      nextText->remove(IGNORE_EXCEPTION);
+      continue;
     }
 
-    // Merge text nodes.
-    while (Node* nextSibling = this->nextSibling()) {
-        if (nextSibling->getNodeType() != kTextNode)
-            break;
+    // Both non-empty text nodes. Merge them.
+    unsigned offset = length();
+    String nextTextData = nextText->data();
+    String oldTextData = data();
+    setDataWithoutUpdate(data() + nextTextData);
+    updateTextLayoutObject(oldTextData.length(), 0);
 
-        Text* nextText = toText(nextSibling);
+    // Empty nextText for layout update.
+    nextText->setDataWithoutUpdate(emptyString());
+    nextText->updateTextLayoutObject(0, nextTextData.length());
 
-        // Remove empty text nodes.
-        if (!nextText->length()) {
-            nextText->remove(IGNORE_EXCEPTION);
-            continue;
-        }
+    document().didMergeTextNodes(*nextText, offset);
 
-        // Both non-empty text nodes. Merge them.
-        unsigned offset = length();
-        String nextTextData = nextText->data();
-        String oldTextData = data();
-        setDataWithoutUpdate(data() + nextTextData);
-        updateTextLayoutObject(oldTextData.length(), 0);
+    // Restore nextText for mutation event.
+    nextText->setDataWithoutUpdate(nextTextData);
+    nextText->updateTextLayoutObject(0, 0);
 
-        // Empty nextText for layout update.
-        nextText->setDataWithoutUpdate(emptyString());
-        nextText->updateTextLayoutObject(0, nextTextData.length());
+    document().incDOMTreeVersion();
+    didModifyData(oldTextData, CharacterData::UpdateFromNonParser);
+    nextText->remove(IGNORE_EXCEPTION);
+  }
 
-        document().didMergeTextNodes(*nextText, offset);
-
-        // Restore nextText for mutation event.
-        nextText->setDataWithoutUpdate(nextTextData);
-        nextText->updateTextLayoutObject(0, 0);
-
-        document().incDOMTreeVersion();
-        didModifyData(oldTextData, CharacterData::UpdateFromNonParser);
-        nextText->remove(IGNORE_EXCEPTION);
-    }
-
-    return NodeTraversal::nextPostOrder(*this);
+  return NodeTraversal::nextPostOrder(*this);
 }
 
-Text* Text::splitText(unsigned offset, ExceptionState& exceptionState)
-{
-    // IndexSizeError: Raised if the specified offset is negative or greater than
-    // the number of 16-bit units in data.
-    if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than the Text node's length.");
-        return nullptr;
-    }
+Text* Text::splitText(unsigned offset, ExceptionState& exceptionState) {
+  // IndexSizeError: Raised if the specified offset is negative or greater than
+  // the number of 16-bit units in data.
+  if (offset > length()) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The offset " + String::number(offset) +
+                            " is larger than the Text node's length.");
+    return nullptr;
+  }
 
-    EventQueueScope scope;
-    String oldStr = data();
-    Text* newText = cloneWithData(oldStr.substring(offset));
-    setDataWithoutUpdate(oldStr.substring(0, offset));
+  EventQueueScope scope;
+  String oldStr = data();
+  Text* newText = cloneWithData(oldStr.substring(offset));
+  setDataWithoutUpdate(oldStr.substring(0, offset));
 
-    didModifyData(oldStr, CharacterData::UpdateFromNonParser);
+  didModifyData(oldStr, CharacterData::UpdateFromNonParser);
 
-    if (parentNode())
-        parentNode()->insertBefore(newText, nextSibling(), exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
+  if (parentNode())
+    parentNode()->insertBefore(newText, nextSibling(), exceptionState);
+  if (exceptionState.hadException())
+    return nullptr;
 
-    if (layoutObject())
-        layoutObject()->setTextWithOffset(dataImpl(), 0, oldStr.length());
+  if (layoutObject())
+    layoutObject()->setTextWithOffset(dataImpl(), 0, oldStr.length());
 
-    if (parentNode())
-        document().didSplitTextNode(*this);
+  if (parentNode())
+    document().didSplitTextNode(*this);
 
-    // [NewObject] must always create a new wrapper.  Check that a wrapper
-    // does not exist yet.
-    DCHECK(DOMDataStore::getWrapper(newText, v8::Isolate::GetCurrent()).IsEmpty());
+  // [NewObject] must always create a new wrapper.  Check that a wrapper
+  // does not exist yet.
+  DCHECK(
+      DOMDataStore::getWrapper(newText, v8::Isolate::GetCurrent()).IsEmpty());
 
-    return newText;
+  return newText;
 }
 
-static const Text* earliestLogicallyAdjacentTextNode(const Text* t)
-{
-    for (const Node* n = t->previousSibling(); n; n = n->previousSibling()) {
-        Node::NodeType type = n->getNodeType();
-        if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
-            t = toText(n);
-            continue;
-        }
-
-        break;
+static const Text* earliestLogicallyAdjacentTextNode(const Text* t) {
+  for (const Node* n = t->previousSibling(); n; n = n->previousSibling()) {
+    Node::NodeType type = n->getNodeType();
+    if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
+      t = toText(n);
+      continue;
     }
-    return t;
+
+    break;
+  }
+  return t;
 }
 
-static const Text* latestLogicallyAdjacentTextNode(const Text* t)
-{
-    for (const Node* n = t->nextSibling(); n; n = n->nextSibling()) {
-        Node::NodeType type = n->getNodeType();
-        if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
-            t = toText(n);
-            continue;
-        }
-
-        break;
+static const Text* latestLogicallyAdjacentTextNode(const Text* t) {
+  for (const Node* n = t->nextSibling(); n; n = n->nextSibling()) {
+    Node::NodeType type = n->getNodeType();
+    if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
+      t = toText(n);
+      continue;
     }
-    return t;
+
+    break;
+  }
+  return t;
 }
 
-String Text::wholeText() const
-{
-    const Text* startText = earliestLogicallyAdjacentTextNode(this);
-    const Text* endText = latestLogicallyAdjacentTextNode(this);
+String Text::wholeText() const {
+  const Text* startText = earliestLogicallyAdjacentTextNode(this);
+  const Text* endText = latestLogicallyAdjacentTextNode(this);
 
+  Node* onePastEndText = endText->nextSibling();
+  unsigned resultLength = 0;
+  for (const Node* n = startText; n != onePastEndText; n = n->nextSibling()) {
+    if (!n->isTextNode())
+      continue;
+    const String& data = toText(n)->data();
+    if (std::numeric_limits<unsigned>::max() - data.length() < resultLength)
+      CRASH();
+    resultLength += data.length();
+  }
+  StringBuilder result;
+  result.reserveCapacity(resultLength);
+  for (const Node* n = startText; n != onePastEndText; n = n->nextSibling()) {
+    if (!n->isTextNode())
+      continue;
+    result.append(toText(n)->data());
+  }
+  DCHECK_EQ(result.length(), resultLength);
+
+  return result.toString();
+}
+
+Text* Text::replaceWholeText(const String& newText) {
+  // Remove all adjacent text nodes, and replace the contents of this one.
+
+  // Protect startText and endText against mutation event handlers removing the last ref
+  Text* startText = const_cast<Text*>(earliestLogicallyAdjacentTextNode(this));
+  Text* endText = const_cast<Text*>(latestLogicallyAdjacentTextNode(this));
+
+  ContainerNode* parent =
+      parentNode();  // Protect against mutation handlers moving this node during traversal
+  for (Node* n = startText;
+       n && n != this && n->isTextNode() && n->parentNode() == parent;) {
+    Node* nodeToRemove = n;
+    n = nodeToRemove->nextSibling();
+    parent->removeChild(nodeToRemove, IGNORE_EXCEPTION);
+  }
+
+  if (this != endText) {
     Node* onePastEndText = endText->nextSibling();
-    unsigned resultLength = 0;
-    for (const Node* n = startText; n != onePastEndText; n = n->nextSibling()) {
-        if (!n->isTextNode())
-            continue;
-        const String& data = toText(n)->data();
-        if (std::numeric_limits<unsigned>::max() - data.length() < resultLength)
-            CRASH();
-        resultLength += data.length();
+    for (Node* n = nextSibling(); n && n != onePastEndText && n->isTextNode() &&
+                                  n->parentNode() == parent;) {
+      Node* nodeToRemove = n;
+      n = nodeToRemove->nextSibling();
+      parent->removeChild(nodeToRemove, IGNORE_EXCEPTION);
     }
-    StringBuilder result;
-    result.reserveCapacity(resultLength);
-    for (const Node* n = startText; n != onePastEndText; n = n->nextSibling()) {
-        if (!n->isTextNode())
-            continue;
-        result.append(toText(n)->data());
-    }
-    DCHECK_EQ(result.length(), resultLength);
+  }
 
-    return result.toString();
+  if (newText.isEmpty()) {
+    if (parent && parentNode() == parent)
+      parent->removeChild(this, IGNORE_EXCEPTION);
+    return nullptr;
+  }
+
+  setData(newText);
+  return this;
 }
 
-Text* Text::replaceWholeText(const String& newText)
-{
-    // Remove all adjacent text nodes, and replace the contents of this one.
-
-    // Protect startText and endText against mutation event handlers removing the last ref
-    Text* startText = const_cast<Text*>(earliestLogicallyAdjacentTextNode(this));
-    Text* endText = const_cast<Text*>(latestLogicallyAdjacentTextNode(this));
-
-    ContainerNode* parent = parentNode(); // Protect against mutation handlers moving this node during traversal
-    for (Node* n = startText; n && n != this && n->isTextNode() && n->parentNode() == parent;) {
-        Node* nodeToRemove = n;
-        n = nodeToRemove->nextSibling();
-        parent->removeChild(nodeToRemove, IGNORE_EXCEPTION);
-    }
-
-    if (this != endText) {
-        Node* onePastEndText = endText->nextSibling();
-        for (Node* n = nextSibling(); n && n != onePastEndText && n->isTextNode() && n->parentNode() == parent;) {
-            Node* nodeToRemove = n;
-            n = nodeToRemove->nextSibling();
-            parent->removeChild(nodeToRemove, IGNORE_EXCEPTION);
-        }
-    }
-
-    if (newText.isEmpty()) {
-        if (parent && parentNode() == parent)
-            parent->removeChild(this, IGNORE_EXCEPTION);
-        return nullptr;
-    }
-
-    setData(newText);
-    return this;
+String Text::nodeName() const {
+  return "#text";
 }
 
-String Text::nodeName() const
-{
-    return "#text";
+Node::NodeType Text::getNodeType() const {
+  return kTextNode;
 }
 
-Node::NodeType Text::getNodeType() const
-{
-    return kTextNode;
+Node* Text::cloneNode(bool /*deep*/) {
+  return cloneWithData(data());
 }
 
-Node* Text::cloneNode(bool /*deep*/)
-{
-    return cloneWithData(data());
-}
-
-static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
-{
-    // <button> and <fieldset> should allow whitespace even though
-    // LayoutFlexibleBox doesn't.
-    if (parent.isLayoutButton() || parent.isFieldset())
-        return true;
-
-    if (parent.isTable() || parent.isTableRow() || parent.isTableSection()
-        || parent.isLayoutTableCol() || parent.isFrameSet()
-        || parent.isFlexibleBox() || parent.isLayoutGrid()
-        || parent.isSVGRoot()
-        || parent.isSVGContainer()
-        || parent.isSVGImage()
-        || parent.isSVGShape()) {
-        return false;
-    }
+static inline bool canHaveWhitespaceChildren(const LayoutObject& parent) {
+  // <button> and <fieldset> should allow whitespace even though
+  // LayoutFlexibleBox doesn't.
+  if (parent.isLayoutButton() || parent.isFieldset())
     return true;
+
+  if (parent.isTable() || parent.isTableRow() || parent.isTableSection() ||
+      parent.isLayoutTableCol() || parent.isFrameSet() ||
+      parent.isFlexibleBox() || parent.isLayoutGrid() || parent.isSVGRoot() ||
+      parent.isSVGContainer() || parent.isSVGImage() || parent.isSVGShape()) {
+    return false;
+  }
+  return true;
 }
 
-bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObject& parent) const
-{
-    if (!parent.canHaveChildren())
-        return false;
+bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
+                                    const LayoutObject& parent) const {
+  if (!parent.canHaveChildren())
+    return false;
 
-    if (isEditingText())
-        return true;
-
-    if (!length())
-        return false;
-
-    if (style.display() == EDisplay::None)
-        return false;
-
-    if (!containsOnlyWhitespace())
-        return true;
-
-    if (!canHaveWhitespaceChildren(parent))
-        return false;
-
-    // pre-wrap in SVG never makes layoutObject.
-    if (style.whiteSpace() == PRE_WRAP && parent.isSVG())
-        return false;
-
-    // pre/pre-wrap/pre-line always make layoutObjects.
-    if (style.preserveNewline())
-        return true;
-
-    // childNeedsDistributionRecalc() here is rare, only happens JS calling surroundContents() etc. from DOMNodeInsertedIntoDocument etc.
-    if (document().childNeedsDistributionRecalc())
-        return true;
-
-    const LayoutObject* prev = LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*this);
-    if (prev && prev->isBR()) // <span><br/> <br/></span>
-        return false;
-
-    if (parent.isLayoutInline()) {
-        // <span><div/> <div/></span>
-        if (prev && !prev->isInline() && !prev->isOutOfFlowPositioned())
-            return false;
-    } else {
-        if (parent.isLayoutBlock() && !parent.childrenInline() && (!prev || !prev->isInline()))
-            return false;
-
-        // Avoiding creation of a layoutObject for the text node is a non-essential memory optimization.
-        // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
-        unsigned maxSiblingsToVisit = 50;
-
-        LayoutObject* first = parent.slowFirstChild();
-        while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
-            first = first->nextSibling();
-        if (!first || first == layoutObject() || LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*this) == first) {
-            // If we're adding children to this flow our previous siblings are not in the layout tree yet so we
-            // cannot know if we will be the first child in the line and collapse away. We have to assume we need a layout object.
-            Node* firstChildNode = parent.node() ? LayoutTreeBuilderTraversal::firstChild(*parent.node()) : nullptr;
-            if (first && first == layoutObject() && firstChildNode && !firstChildNode->layoutObject())
-                return true;
-
-            // Whitespace at the start of a block just goes away.  Don't even
-            // make a layout object for this text.
-            return !firstChildNode;
-        }
-    }
+  if (isEditingText())
     return true;
-}
 
-static bool isSVGText(Text* text)
-{
-    Node* parentOrShadowHostNode = text->parentOrShadowHostNode();
-    DCHECK(parentOrShadowHostNode);
-    return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
-}
+  if (!length())
+    return false;
 
-LayoutText* Text::createTextLayoutObject(const ComputedStyle& style)
-{
-    if (isSVGText(this))
-        return new LayoutSVGInlineText(this, dataImpl());
+  if (style.display() == EDisplay::None)
+    return false;
 
-    if (style.hasTextCombine())
-        return new LayoutTextCombine(this, dataImpl());
+  if (!containsOnlyWhitespace())
+    return true;
 
-    return new LayoutText(this, dataImpl());
-}
+  if (!canHaveWhitespaceChildren(parent))
+    return false;
 
-void Text::attachLayoutTree(const AttachContext& context)
-{
-    if (ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this)) {
-        if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
-            if (textLayoutObjectIsNeeded(*parentLayoutObject->style(), *parentLayoutObject))
-                LayoutTreeBuilderForText(*this, parentLayoutObject).createLayoutObject();
-        }
+  // pre-wrap in SVG never makes layoutObject.
+  if (style.whiteSpace() == PRE_WRAP && parent.isSVG())
+    return false;
+
+  // pre/pre-wrap/pre-line always make layoutObjects.
+  if (style.preserveNewline())
+    return true;
+
+  // childNeedsDistributionRecalc() here is rare, only happens JS calling surroundContents() etc. from DOMNodeInsertedIntoDocument etc.
+  if (document().childNeedsDistributionRecalc())
+    return true;
+
+  const LayoutObject* prev =
+      LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*this);
+  if (prev && prev->isBR())  // <span><br/> <br/></span>
+    return false;
+
+  if (parent.isLayoutInline()) {
+    // <span><div/> <div/></span>
+    if (prev && !prev->isInline() && !prev->isOutOfFlowPositioned())
+      return false;
+  } else {
+    if (parent.isLayoutBlock() && !parent.childrenInline() &&
+        (!prev || !prev->isInline()))
+      return false;
+
+    // Avoiding creation of a layoutObject for the text node is a non-essential memory optimization.
+    // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
+    unsigned maxSiblingsToVisit = 50;
+
+    LayoutObject* first = parent.slowFirstChild();
+    while (first && first->isFloatingOrOutOfFlowPositioned() &&
+           maxSiblingsToVisit--)
+      first = first->nextSibling();
+    if (!first || first == layoutObject() ||
+        LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*this) == first) {
+      // If we're adding children to this flow our previous siblings are not in the layout tree yet so we
+      // cannot know if we will be the first child in the line and collapse away. We have to assume we need a layout object.
+      Node* firstChildNode =
+          parent.node() ? LayoutTreeBuilderTraversal::firstChild(*parent.node())
+                        : nullptr;
+      if (first && first == layoutObject() && firstChildNode &&
+          !firstChildNode->layoutObject())
+        return true;
+
+      // Whitespace at the start of a block just goes away.  Don't even
+      // make a layout object for this text.
+      return !firstChildNode;
     }
-    CharacterData::attachLayoutTree(context);
+  }
+  return true;
 }
 
-void Text::reattachLayoutTreeIfNeeded(const AttachContext& context)
-{
-    bool layoutObjectIsNeeded = false;
-    ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this);
-    if (layoutParent) {
-        if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
-            if (textLayoutObjectIsNeeded(*parentLayoutObject->style(), *parentLayoutObject))
-                layoutObjectIsNeeded = true;
-        }
-    }
-
-    if (layoutObjectIsNeeded == !!layoutObject())
-        return;
-
-    // The following is almost the same as Node::reattachLayoutTree() except that we create a layoutObject only if needed.
-    // Not calling reattachLayoutTree() to avoid repeated calls to Text::textLayoutObjectIsNeeded().
-    AttachContext reattachContext(context);
-    reattachContext.performingReattach = true;
-
-    if (getStyleChangeType() < NeedsReattachStyleChange)
-        detachLayoutTree(reattachContext);
-    if (layoutObjectIsNeeded)
-        LayoutTreeBuilderForText(*this, layoutParent->layoutObject()).createLayoutObject();
-    CharacterData::attachLayoutTree(reattachContext);
+static bool isSVGText(Text* text) {
+  Node* parentOrShadowHostNode = text->parentOrShadowHostNode();
+  DCHECK(parentOrShadowHostNode);
+  return parentOrShadowHostNode->isSVGElement() &&
+         !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
-void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
-{
-    if (LayoutTextItem layoutItem = LayoutTextItem(this->layoutObject())) {
-        if (change != NoChange || needsStyleRecalc())
-            layoutItem.setStyle(document().ensureStyleResolver().styleForText(this));
-        if (needsStyleRecalc())
-            layoutItem.setText(dataImpl());
-        clearNeedsStyleRecalc();
-    } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
-        reattachLayoutTree();
-        if (this->layoutObject())
-            reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
+LayoutText* Text::createTextLayoutObject(const ComputedStyle& style) {
+  if (isSVGText(this))
+    return new LayoutSVGInlineText(this, dataImpl());
+
+  if (style.hasTextCombine())
+    return new LayoutTextCombine(this, dataImpl());
+
+  return new LayoutText(this, dataImpl());
+}
+
+void Text::attachLayoutTree(const AttachContext& context) {
+  if (ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this)) {
+    if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
+      if (textLayoutObjectIsNeeded(*parentLayoutObject->style(),
+                                   *parentLayoutObject))
+        LayoutTreeBuilderForText(*this, parentLayoutObject)
+            .createLayoutObject();
     }
+  }
+  CharacterData::attachLayoutTree(context);
+}
+
+void Text::reattachLayoutTreeIfNeeded(const AttachContext& context) {
+  bool layoutObjectIsNeeded = false;
+  ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this);
+  if (layoutParent) {
+    if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
+      if (textLayoutObjectIsNeeded(*parentLayoutObject->style(),
+                                   *parentLayoutObject))
+        layoutObjectIsNeeded = true;
+    }
+  }
+
+  if (layoutObjectIsNeeded == !!layoutObject())
+    return;
+
+  // The following is almost the same as Node::reattachLayoutTree() except that we create a layoutObject only if needed.
+  // Not calling reattachLayoutTree() to avoid repeated calls to Text::textLayoutObjectIsNeeded().
+  AttachContext reattachContext(context);
+  reattachContext.performingReattach = true;
+
+  if (getStyleChangeType() < NeedsReattachStyleChange)
+    detachLayoutTree(reattachContext);
+  if (layoutObjectIsNeeded)
+    LayoutTreeBuilderForText(*this, layoutParent->layoutObject())
+        .createLayoutObject();
+  CharacterData::attachLayoutTree(reattachContext);
+}
+
+void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling) {
+  if (LayoutTextItem layoutItem = LayoutTextItem(this->layoutObject())) {
+    if (change != NoChange || needsStyleRecalc())
+      layoutItem.setStyle(document().ensureStyleResolver().styleForText(this));
+    if (needsStyleRecalc())
+      layoutItem.setText(dataImpl());
+    clearNeedsStyleRecalc();
+  } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
+    reattachLayoutTree();
+    if (this->layoutObject())
+      reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
+  }
 }
 
 // If a whitespace node had no layoutObject and goes through a recalcStyle it may
 // need to create one if the parent style now has white-space: pre.
-bool Text::needsWhitespaceLayoutObject()
-{
-    DCHECK(!layoutObject());
-    if (const ComputedStyle* style = parentComputedStyle())
-        return style->preserveNewline();
-    return false;
+bool Text::needsWhitespaceLayoutObject() {
+  DCHECK(!layoutObject());
+  if (const ComputedStyle* style = parentComputedStyle())
+    return style->preserveNewline();
+  return false;
 }
 
 // Passing both |textNode| and its layout object because repeated calls to
 // |Node::layoutObject()| are discouraged.
-static bool shouldUpdateLayoutByReattaching(const Text& textNode, LayoutText* textLayoutObject)
-{
-    DCHECK_EQ(textNode.layoutObject(), textLayoutObject);
-    if (!textLayoutObject)
-        return true;
-    if (!textNode.textLayoutObjectIsNeeded(*textLayoutObject->style(), *textLayoutObject->parent()))
-        return true;
-    if (textLayoutObject->isTextFragment()) {
-        // Changes of |textNode| may change first letter part, so we should
-        // reattach.
-        return toLayoutTextFragment(textLayoutObject)->firstLetterPseudoElement();
-    }
-    return false;
+static bool shouldUpdateLayoutByReattaching(const Text& textNode,
+                                            LayoutText* textLayoutObject) {
+  DCHECK_EQ(textNode.layoutObject(), textLayoutObject);
+  if (!textLayoutObject)
+    return true;
+  if (!textNode.textLayoutObjectIsNeeded(*textLayoutObject->style(),
+                                         *textLayoutObject->parent()))
+    return true;
+  if (textLayoutObject->isTextFragment()) {
+    // Changes of |textNode| may change first letter part, so we should
+    // reattach.
+    return toLayoutTextFragment(textLayoutObject)->firstLetterPseudoElement();
+  }
+  return false;
 }
 
-void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData)
-{
-    if (!inActiveDocument())
-        return;
-    LayoutText* textLayoutObject = layoutObject();
-    if (shouldUpdateLayoutByReattaching(*this, textLayoutObject)) {
-        lazyReattachIfAttached();
-        return;
-    }
-    textLayoutObject->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
+void Text::updateTextLayoutObject(unsigned offsetOfReplacedData,
+                                  unsigned lengthOfReplacedData) {
+  if (!inActiveDocument())
+    return;
+  LayoutText* textLayoutObject = layoutObject();
+  if (shouldUpdateLayoutByReattaching(*this, textLayoutObject)) {
+    lazyReattachIfAttached();
+    return;
+  }
+  textLayoutObject->setTextWithOffset(dataImpl(), offsetOfReplacedData,
+                                      lengthOfReplacedData);
 }
 
-Text* Text::cloneWithData(const String& data)
-{
-    return create(document(), data);
+Text* Text::cloneWithData(const String& data) {
+  return create(document(), data);
 }
 
-DEFINE_TRACE(Text)
-{
-    CharacterData::trace(visitor);
+DEFINE_TRACE(Text) {
+  CharacterData::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

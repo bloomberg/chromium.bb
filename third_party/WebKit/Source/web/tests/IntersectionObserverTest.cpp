@@ -19,47 +19,52 @@ namespace blink {
 namespace {
 
 class TestIntersectionObserverCallback : public IntersectionObserverCallback {
-public:
-    TestIntersectionObserverCallback(Document& document) : m_document(document), m_callCount(0) { }
-    void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&, IntersectionObserver&) override { m_callCount++; }
-    ExecutionContext* getExecutionContext() const override { return m_document; }
-    int callCount() const { return m_callCount; }
+ public:
+  TestIntersectionObserverCallback(Document& document)
+      : m_document(document), m_callCount(0) {}
+  void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&,
+                   IntersectionObserver&) override {
+    m_callCount++;
+  }
+  ExecutionContext* getExecutionContext() const override { return m_document; }
+  int callCount() const { return m_callCount; }
 
-    DEFINE_INLINE_TRACE() {
-        IntersectionObserverCallback::trace(visitor);
-        visitor->trace(m_document);
-    }
+  DEFINE_INLINE_TRACE() {
+    IntersectionObserverCallback::trace(visitor);
+    visitor->trace(m_document);
+  }
 
-private:
-    Member<Document> m_document;
-    int m_callCount;
+ private:
+  Member<Document> m_document;
+  int m_callCount;
 };
 
-} // namespace
+}  // namespace
 
-class IntersectionObserverTest : public SimTest { };
+class IntersectionObserverTest : public SimTest {};
 
-TEST_F(IntersectionObserverTest, ObserveSchedulesFrame)
-{
-    SimRequest mainResource("https://example.com/", "text/html");
-    loadURL("https://example.com/");
-    mainResource.complete("<div id='target'></div>");
+TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
+  SimRequest mainResource("https://example.com/", "text/html");
+  loadURL("https://example.com/");
+  mainResource.complete("<div id='target'></div>");
 
-    IntersectionObserverInit observerInit;
-    TrackExceptionState exceptionState;
-    TestIntersectionObserverCallback* observerCallback = new TestIntersectionObserverCallback(document());
-    IntersectionObserver* observer = IntersectionObserver::create(observerInit, *observerCallback, exceptionState);
-    ASSERT_FALSE(exceptionState.hadException());
+  IntersectionObserverInit observerInit;
+  TrackExceptionState exceptionState;
+  TestIntersectionObserverCallback* observerCallback =
+      new TestIntersectionObserverCallback(document());
+  IntersectionObserver* observer = IntersectionObserver::create(
+      observerInit, *observerCallback, exceptionState);
+  ASSERT_FALSE(exceptionState.hadException());
 
-    compositor().beginFrame();
-    ASSERT_FALSE(compositor().needsBeginFrame());
-    EXPECT_TRUE(observer->takeRecords(exceptionState).isEmpty());
-    EXPECT_EQ(observerCallback->callCount(), 0);
+  compositor().beginFrame();
+  ASSERT_FALSE(compositor().needsBeginFrame());
+  EXPECT_TRUE(observer->takeRecords(exceptionState).isEmpty());
+  EXPECT_EQ(observerCallback->callCount(), 0);
 
-    Element* target = document().getElementById("target");
-    ASSERT_TRUE(target);
-    observer->observe(target, exceptionState);
-    EXPECT_TRUE(compositor().needsBeginFrame());
+  Element* target = document().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exceptionState);
+  EXPECT_TRUE(compositor().needsBeginFrame());
 }
 
-} // namespace blink
+}  // namespace blink

@@ -38,119 +38,110 @@
 
 namespace blink {
 
-class ContextFeaturesCache final : public GarbageCollectedFinalized<ContextFeaturesCache>, public Supplement<Document> {
-    USING_GARBAGE_COLLECTED_MIXIN(ContextFeaturesCache);
-public:
-    class Entry {
-    public:
-        enum Value {
-            IsEnabled,
-            IsDisabled,
-            NeedsRefresh
-        };
+class ContextFeaturesCache final
+    : public GarbageCollectedFinalized<ContextFeaturesCache>,
+      public Supplement<Document> {
+  USING_GARBAGE_COLLECTED_MIXIN(ContextFeaturesCache);
 
-        Entry()
-            : m_value(NeedsRefresh)
-            , m_defaultValue(false)
-        { }
+ public:
+  class Entry {
+   public:
+    enum Value { IsEnabled, IsDisabled, NeedsRefresh };
 
-        bool isEnabled() const
-        {
-            DCHECK_NE(m_value, NeedsRefresh);
-            return m_value == IsEnabled;
-        }
+    Entry() : m_value(NeedsRefresh), m_defaultValue(false) {}
 
-        void set(bool value, bool defaultValue)
-        {
-            m_value = value ? IsEnabled : IsDisabled;
-            m_defaultValue = defaultValue;
-        }
-
-        bool needsRefresh(bool defaultValue) const
-        {
-            return m_value == NeedsRefresh || m_defaultValue != defaultValue;
-        }
-
-    private:
-        Value m_value;
-        bool m_defaultValue; // Needs to be traked as a part of the signature since it can be changed dynamically.
-    };
-
-    static const char* supplementName();
-    static ContextFeaturesCache& from(Document&);
-
-    Entry& entryFor(ContextFeatures::FeatureType type)
-    {
-        size_t index = static_cast<size_t>(type);
-        ASSERT_WITH_SECURITY_IMPLICATION(index < ContextFeatures::FeatureTypeSize);
-        return m_entries[index];
+    bool isEnabled() const {
+      DCHECK_NE(m_value, NeedsRefresh);
+      return m_value == IsEnabled;
     }
 
-    void validateAgainst(Document*);
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        Supplement<Document>::trace(visitor);
+    void set(bool value, bool defaultValue) {
+      m_value = value ? IsEnabled : IsDisabled;
+      m_defaultValue = defaultValue;
     }
 
-private:
-    String m_domain;
-    Entry m_entries[ContextFeatures::FeatureTypeSize];
+    bool needsRefresh(bool defaultValue) const {
+      return m_value == NeedsRefresh || m_defaultValue != defaultValue;
+    }
+
+   private:
+    Value m_value;
+    bool
+        m_defaultValue;  // Needs to be traked as a part of the signature since it can be changed dynamically.
+  };
+
+  static const char* supplementName();
+  static ContextFeaturesCache& from(Document&);
+
+  Entry& entryFor(ContextFeatures::FeatureType type) {
+    size_t index = static_cast<size_t>(type);
+    ASSERT_WITH_SECURITY_IMPLICATION(index < ContextFeatures::FeatureTypeSize);
+    return m_entries[index];
+  }
+
+  void validateAgainst(Document*);
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Document>::trace(visitor); }
+
+ private:
+  String m_domain;
+  Entry m_entries[ContextFeatures::FeatureTypeSize];
 };
 
-const char* ContextFeaturesCache::supplementName()
-{
-    return "ContextFeaturesCache";
+const char* ContextFeaturesCache::supplementName() {
+  return "ContextFeaturesCache";
 }
 
-ContextFeaturesCache& ContextFeaturesCache::from(Document& document)
-{
-    ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(Supplement<Document>::from(document, supplementName()));
-    if (!cache) {
-        cache = new ContextFeaturesCache();
-        Supplement<Document>::provideTo(document, supplementName(), cache);
-    }
+ContextFeaturesCache& ContextFeaturesCache::from(Document& document) {
+  ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(
+      Supplement<Document>::from(document, supplementName()));
+  if (!cache) {
+    cache = new ContextFeaturesCache();
+    Supplement<Document>::provideTo(document, supplementName(), cache);
+  }
 
-    return *cache;
+  return *cache;
 }
 
-void ContextFeaturesCache::validateAgainst(Document* document)
-{
-    String currentDomain = document->getSecurityOrigin()->domain();
-    if (currentDomain == m_domain)
-        return;
-    m_domain = currentDomain;
-    for (size_t i = 0; i < ContextFeatures::FeatureTypeSize; ++i)
-        m_entries[i] = Entry();
+void ContextFeaturesCache::validateAgainst(Document* document) {
+  String currentDomain = document->getSecurityOrigin()->domain();
+  if (currentDomain == m_domain)
+    return;
+  m_domain = currentDomain;
+  for (size_t i = 0; i < ContextFeatures::FeatureTypeSize; ++i)
+    m_entries[i] = Entry();
 }
 
-bool ContextFeaturesClientImpl::isEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)
-{
-    DCHECK(document);
-    ContextFeaturesCache::Entry& cache = ContextFeaturesCache::from(*document).entryFor(type);
-    if (cache.needsRefresh(defaultValue))
-        cache.set(askIfIsEnabled(document, type, defaultValue), defaultValue);
-    return cache.isEnabled();
+bool ContextFeaturesClientImpl::isEnabled(Document* document,
+                                          ContextFeatures::FeatureType type,
+                                          bool defaultValue) {
+  DCHECK(document);
+  ContextFeaturesCache::Entry& cache =
+      ContextFeaturesCache::from(*document).entryFor(type);
+  if (cache.needsRefresh(defaultValue))
+    cache.set(askIfIsEnabled(document, type, defaultValue), defaultValue);
+  return cache.isEnabled();
 }
 
-void ContextFeaturesClientImpl::urlDidChange(Document* document)
-{
-    DCHECK(document);
-    ContextFeaturesCache::from(*document).validateAgainst(document);
+void ContextFeaturesClientImpl::urlDidChange(Document* document) {
+  DCHECK(document);
+  ContextFeaturesCache::from(*document).validateAgainst(document);
 }
 
-bool ContextFeaturesClientImpl::askIfIsEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)
-{
-    WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(document->frame());
-    if (!frame || !frame->contentSettingsClient())
-        return defaultValue;
+bool ContextFeaturesClientImpl::askIfIsEnabled(
+    Document* document,
+    ContextFeatures::FeatureType type,
+    bool defaultValue) {
+  WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(document->frame());
+  if (!frame || !frame->contentSettingsClient())
+    return defaultValue;
 
-    switch (type) {
+  switch (type) {
     case ContextFeatures::MutationEvents:
-        return frame->contentSettingsClient()->allowMutationEvents(defaultValue);
+      return frame->contentSettingsClient()->allowMutationEvents(defaultValue);
     default:
-        return defaultValue;
-    }
+      return defaultValue;
+  }
 }
 
-} // namespace blink
+}  // namespace blink

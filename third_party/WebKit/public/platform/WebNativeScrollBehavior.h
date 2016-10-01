@@ -8,11 +8,11 @@
 namespace blink {
 
 enum class WebNativeScrollBehavior {
-    DisableNativeScroll,
-    PerformBeforeNativeScroll,
-    PerformAfterNativeScroll,
+  DisableNativeScroll,
+  PerformBeforeNativeScroll,
+  PerformAfterNativeScroll,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebNativeScrollBehavior_h
+#endif  // WebNativeScrollBehavior_h

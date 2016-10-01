@@ -40,90 +40,90 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLTableRowElement::HTMLTableRowElement(Document& document)
-    : HTMLTablePartElement(trTag, document)
-{
-}
+    : HTMLTablePartElement(trTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLTableRowElement)
 
-bool HTMLTableRowElement::hasLegalLinkAttribute(const QualifiedName& name) const
-{
-    return name == backgroundAttr || HTMLTablePartElement::hasLegalLinkAttribute(name);
+bool HTMLTableRowElement::hasLegalLinkAttribute(
+    const QualifiedName& name) const {
+  return name == backgroundAttr ||
+         HTMLTablePartElement::hasLegalLinkAttribute(name);
 }
 
-const QualifiedName& HTMLTableRowElement::subResourceAttributeName() const
-{
-    return backgroundAttr;
+const QualifiedName& HTMLTableRowElement::subResourceAttributeName() const {
+  return backgroundAttr;
 }
 
-int HTMLTableRowElement::rowIndex() const
-{
-    ContainerNode* maybeTable = parentNode();
-    if (maybeTable && isHTMLTableSectionElement(maybeTable)) {
-        // Skip THEAD, TBODY and TFOOT.
-        maybeTable = maybeTable->parentNode();
-    }
-    if (!(maybeTable && isHTMLTableElement(maybeTable)))
-        return -1;
-
-    HTMLTableRowsCollection* rows =
-        toHTMLTableElement(maybeTable)->rows();
-    HTMLTableRowElement* candidate = rows->item(0);
-    for (int i = 0; candidate; i++, candidate = rows->item(i)) {
-        if (this == candidate)
-            return i;
-    }
-
+int HTMLTableRowElement::rowIndex() const {
+  ContainerNode* maybeTable = parentNode();
+  if (maybeTable && isHTMLTableSectionElement(maybeTable)) {
+    // Skip THEAD, TBODY and TFOOT.
+    maybeTable = maybeTable->parentNode();
+  }
+  if (!(maybeTable && isHTMLTableElement(maybeTable)))
     return -1;
+
+  HTMLTableRowsCollection* rows = toHTMLTableElement(maybeTable)->rows();
+  HTMLTableRowElement* candidate = rows->item(0);
+  for (int i = 0; candidate; i++, candidate = rows->item(i)) {
+    if (this == candidate)
+      return i;
+  }
+
+  return -1;
 }
 
-int HTMLTableRowElement::sectionRowIndex() const
-{
-    int rIndex = 0;
-    const Node* n = this;
-    do {
-        n = n->previousSibling();
-        if (n && isHTMLTableRowElement(*n))
-            ++rIndex;
-    } while (n);
+int HTMLTableRowElement::sectionRowIndex() const {
+  int rIndex = 0;
+  const Node* n = this;
+  do {
+    n = n->previousSibling();
+    if (n && isHTMLTableRowElement(*n))
+      ++rIndex;
+  } while (n);
 
-    return rIndex;
+  return rIndex;
 }
 
-HTMLElement* HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
-{
-    HTMLCollection* children = cells();
-    int numCells = children ? children->length() : 0;
-    if (index < -1 || index > numCells) {
-        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(index) + ") is outside the range [-1, " + String::number(numCells) + "].");
-        return nullptr;
-    }
+HTMLElement* HTMLTableRowElement::insertCell(int index,
+                                             ExceptionState& exceptionState) {
+  HTMLCollection* children = cells();
+  int numCells = children ? children->length() : 0;
+  if (index < -1 || index > numCells) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The value provided (" + String::number(index) +
+                            ") is outside the range [-1, " +
+                            String::number(numCells) + "].");
+    return nullptr;
+  }
 
-    HTMLTableCellElement* cell = HTMLTableCellElement::create(tdTag, document());
-    if (numCells == index || index == -1)
-        appendChild(cell, exceptionState);
-    else
-        insertBefore(cell, children->item(index), exceptionState);
-    return cell;
+  HTMLTableCellElement* cell = HTMLTableCellElement::create(tdTag, document());
+  if (numCells == index || index == -1)
+    appendChild(cell, exceptionState);
+  else
+    insertBefore(cell, children->item(index), exceptionState);
+  return cell;
 }
 
-void HTMLTableRowElement::deleteCell(int index, ExceptionState& exceptionState)
-{
-    HTMLCollection* children = cells();
-    int numCells = children ? children->length() : 0;
-    if (index == -1)
-        index = numCells-1;
-    if (index >= 0 && index < numCells) {
-        Element* cell = children->item(index);
-        HTMLElement::removeChild(cell, exceptionState);
-    } else {
-        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(index) + ") is outside the range [0, " + String::number(numCells) + ").");
-    }
+void HTMLTableRowElement::deleteCell(int index,
+                                     ExceptionState& exceptionState) {
+  HTMLCollection* children = cells();
+  int numCells = children ? children->length() : 0;
+  if (index == -1)
+    index = numCells - 1;
+  if (index >= 0 && index < numCells) {
+    Element* cell = children->item(index);
+    HTMLElement::removeChild(cell, exceptionState);
+  } else {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The value provided (" + String::number(index) +
+                            ") is outside the range [0, " +
+                            String::number(numCells) + ").");
+  }
 }
 
-HTMLCollection* HTMLTableRowElement::cells()
-{
-    return ensureCachedCollection<HTMLCollection>(TRCells);
+HTMLCollection* HTMLTableRowElement::cells() {
+  return ensureCachedCollection<HTMLCollection>(TRCells);
 }
 
-} // namespace blink
+}  // namespace blink

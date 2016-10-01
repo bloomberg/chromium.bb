@@ -11,72 +11,69 @@ namespace blink {
 
 namespace {
 
-class TransformValueIterationSource final : public ValueIterable<CSSTransformComponent*>::IterationSource {
-public:
-    explicit TransformValueIterationSource(CSSTransformValue* transformValue)
-        : m_transformValue(transformValue)
-    {
-    }
+class TransformValueIterationSource final
+    : public ValueIterable<CSSTransformComponent*>::IterationSource {
+ public:
+  explicit TransformValueIterationSource(CSSTransformValue* transformValue)
+      : m_transformValue(transformValue) {}
 
-    bool next(ScriptState*, CSSTransformComponent*& value, ExceptionState&) override
-    {
-        if (m_index >= m_transformValue->size()) {
-            return false;
-        }
-        value = m_transformValue->componentAtIndex(m_index);
-        return true;
+  bool next(ScriptState*,
+            CSSTransformComponent*& value,
+            ExceptionState&) override {
+    if (m_index >= m_transformValue->size()) {
+      return false;
     }
+    value = m_transformValue->componentAtIndex(m_index);
+    return true;
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_transformValue);
-        ValueIterable<CSSTransformComponent*>::IterationSource::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_transformValue);
+    ValueIterable<CSSTransformComponent*>::IterationSource::trace(visitor);
+  }
 
-private:
-    const Member<CSSTransformValue> m_transformValue;
+ private:
+  const Member<CSSTransformValue> m_transformValue;
 };
 
-} // namespace
+}  // namespace
 
-CSSTransformValue* CSSTransformValue::fromCSSValue(const CSSValue& cssValue)
-{
-    if (!cssValue.isValueList()) {
-        // TODO(meade): Also need to check the separator here if we care.
-        return nullptr;
-    }
-    HeapVector<Member<CSSTransformComponent>> components;
-    for (const CSSValue* value : toCSSValueList(cssValue)) {
-        CSSTransformComponent* component = CSSTransformComponent::fromCSSValue(*value);
-        if (!component)
-            return nullptr;
-        components.append(component);
-    }
-    return CSSTransformValue::create(components);
+CSSTransformValue* CSSTransformValue::fromCSSValue(const CSSValue& cssValue) {
+  if (!cssValue.isValueList()) {
+    // TODO(meade): Also need to check the separator here if we care.
+    return nullptr;
+  }
+  HeapVector<Member<CSSTransformComponent>> components;
+  for (const CSSValue* value : toCSSValueList(cssValue)) {
+    CSSTransformComponent* component =
+        CSSTransformComponent::fromCSSValue(*value);
+    if (!component)
+      return nullptr;
+    components.append(component);
+  }
+  return CSSTransformValue::create(components);
 }
 
-ValueIterable<CSSTransformComponent*>::IterationSource* CSSTransformValue::startIteration(ScriptState*, ExceptionState&)
-{
-    return new TransformValueIterationSource(this);
+ValueIterable<CSSTransformComponent*>::IterationSource*
+CSSTransformValue::startIteration(ScriptState*, ExceptionState&) {
+  return new TransformValueIterationSource(this);
 }
 
-bool CSSTransformValue::is2D() const
-{
-    for (size_t i = 0; i < m_transformComponents.size(); i++) {
-        if (!m_transformComponents[i]->is2D()) {
-            return false;
-        }
+bool CSSTransformValue::is2D() const {
+  for (size_t i = 0; i < m_transformComponents.size(); i++) {
+    if (!m_transformComponents[i]->is2D()) {
+      return false;
     }
-    return true;
+  }
+  return true;
 }
 
-const CSSValue* CSSTransformValue::toCSSValue() const
-{
-    CSSValueList* transformCSSValue = CSSValueList::createSpaceSeparated();
-    for (size_t i = 0; i < m_transformComponents.size(); i++) {
-        transformCSSValue->append(*m_transformComponents[i]->toCSSValue());
-    }
-    return transformCSSValue;
+const CSSValue* CSSTransformValue::toCSSValue() const {
+  CSSValueList* transformCSSValue = CSSValueList::createSpaceSeparated();
+  for (size_t i = 0; i < m_transformComponents.size(); i++) {
+    transformCSSValue->append(*m_transformComponents[i]->toCSSValue());
+  }
+  return transformCSSValue;
 }
 
-} // namespace blink
+}  // namespace blink

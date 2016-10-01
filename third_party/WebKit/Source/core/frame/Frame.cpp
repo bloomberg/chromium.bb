@@ -53,275 +53,283 @@ namespace blink {
 
 using namespace HTMLNames;
 
-Frame::~Frame()
-{
-    InstanceCounters::decrementCounter(InstanceCounters::FrameCounter);
-    ASSERT(!m_owner);
+Frame::~Frame() {
+  InstanceCounters::decrementCounter(InstanceCounters::FrameCounter);
+  ASSERT(!m_owner);
 }
 
-DEFINE_TRACE(Frame)
-{
-    visitor->trace(m_treeNode);
-    visitor->trace(m_host);
-    visitor->trace(m_owner);
-    visitor->trace(m_client);
+DEFINE_TRACE(Frame) {
+  visitor->trace(m_treeNode);
+  visitor->trace(m_host);
+  visitor->trace(m_owner);
+  visitor->trace(m_client);
 }
 
-void Frame::detach(FrameDetachType type)
-{
-    ASSERT(m_client);
-    m_client->setOpener(0);
-    domWindow()->resetLocation();
-    disconnectOwnerElement();
-    // After this, we must no longer talk to the client since this clears
-    // its owning reference back to our owning LocalFrame.
-    m_client->detached(type);
-    m_client = nullptr;
-    m_host = nullptr;
+void Frame::detach(FrameDetachType type) {
+  ASSERT(m_client);
+  m_client->setOpener(0);
+  domWindow()->resetLocation();
+  disconnectOwnerElement();
+  // After this, we must no longer talk to the client since this clears
+  // its owning reference back to our owning LocalFrame.
+  m_client->detached(type);
+  m_client = nullptr;
+  m_host = nullptr;
 }
 
-void Frame::disconnectOwnerElement()
-{
-    if (m_owner) {
-        m_owner->clearContentFrame();
-        m_owner = nullptr;
-    }
+void Frame::disconnectOwnerElement() {
+  if (m_owner) {
+    m_owner->clearContentFrame();
+    m_owner = nullptr;
+  }
 }
 
-Page* Frame::page() const
-{
-    if (m_host)
-        return &m_host->page();
-    return nullptr;
+Page* Frame::page() const {
+  if (m_host)
+    return &m_host->page();
+  return nullptr;
 }
 
-FrameHost* Frame::host() const
-{
-    return m_host;
+FrameHost* Frame::host() const {
+  return m_host;
 }
 
-bool Frame::isMainFrame() const
-{
-    return !tree().parent();
+bool Frame::isMainFrame() const {
+  return !tree().parent();
 }
 
-bool Frame::isLocalRoot() const
-{
-    if (isRemoteFrame())
-        return false;
-
-    if (!tree().parent())
-        return true;
-
-    return tree().parent()->isRemoteFrame();
-}
-
-HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
-{
-    return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner) : nullptr;
-}
-
-static ChromeClient& emptyChromeClient()
-{
-    DEFINE_STATIC_LOCAL(EmptyChromeClient, client, (EmptyChromeClient::create()));
-    return client;
-}
-
-ChromeClient& Frame::chromeClient() const
-{
-    if (Page* page = this->page())
-        return page->chromeClient();
-    return emptyChromeClient();
-}
-
-Frame* Frame::findFrameForNavigation(const AtomicString& name, Frame& activeFrame)
-{
-    Frame* frame = tree().find(name);
-    if (!frame || !activeFrame.canNavigate(*frame))
-        return nullptr;
-    return frame;
-}
-
-static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, const Frame* targetFrame)
-{
-    // targetFrame can be 0 when we're trying to navigate a top-level frame
-    // that has a 0 opener.
-    if (!targetFrame)
-        return false;
-
-    const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
-    for (const Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
-        const SecurityOrigin* ancestorSecurityOrigin = ancestorFrame->securityContext()->getSecurityOrigin();
-        if (activeSecurityOrigin.canAccess(ancestorSecurityOrigin))
-            return true;
-
-        // Allow file URL descendant navigation even when allowFileAccessFromFileURLs is false.
-        // FIXME: It's a bit strange to special-case local origins here. Should we be doing
-        // something more general instead?
-        if (isLocalActiveOrigin && ancestorSecurityOrigin->isLocal())
-            return true;
-    }
-
+bool Frame::isLocalRoot() const {
+  if (isRemoteFrame())
     return false;
+
+  if (!tree().parent())
+    return true;
+
+  return tree().parent()->isRemoteFrame();
 }
 
-bool Frame::canNavigate(const Frame& targetFrame)
-{
-    String errorReason;
-    bool isAllowedNavigation = canNavigateWithoutFramebusting(targetFrame, errorReason);
-
-    if (targetFrame != this && !securityContext()->isSandboxed(SandboxTopNavigation) && targetFrame == tree().top()) {
-        DEFINE_STATIC_LOCAL(EnumerationHistogram, framebustHistogram, ("WebCore.Framebust", 4));
-        const unsigned userGestureBit = 0x1;
-        const unsigned allowedBit = 0x2;
-        unsigned framebustParams = 0;
-        UseCounter::count(&targetFrame, UseCounter::TopNavigationFromSubFrame);
-        bool hasUserGesture = UserGestureIndicator::processingUserGesture();
-        if (hasUserGesture)
-            framebustParams |= userGestureBit;
-        if (isAllowedNavigation)
-            framebustParams |= allowedBit;
-        framebustHistogram.count(framebustParams);
-        // Frame-busting used to be generally allowed in most situations, but may now blocked if there is no user gesture.
-        if (!RuntimeEnabledFeatures::framebustingNeedsSameOriginOrUserGestureEnabled())
-            return true;
-        if (hasUserGesture || isAllowedNavigation)
-            return true;
-        errorReason = "The frame attempting navigation is targeting its top-level window, but is neither same-origin with its target nor is it processing a user gesture. See https://www.chromestatus.com/features/5851021045661696.";
-        printNavigationErrorMessage(targetFrame, errorReason.latin1().data());
-        if (isLocalFrame())
-            toLocalFrame(this)->navigationScheduler().schedulePageBlock(toLocalFrame(this)->document());
-        return false;
-    }
-    if (!isAllowedNavigation && !errorReason.isNull())
-        printNavigationErrorMessage(targetFrame, errorReason.latin1().data());
-    return isAllowedNavigation;
+HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const {
+  return m_owner && m_owner->isLocal() ? toHTMLFrameOwnerElement(m_owner)
+                                       : nullptr;
 }
 
-bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame, String& reason)
-{
-    if (securityContext()->isSandboxed(SandboxNavigation)) {
-        // Sandboxed frames can navigate their own children.
-        if (targetFrame.tree().isDescendantOf(this))
-            return true;
+static ChromeClient& emptyChromeClient() {
+  DEFINE_STATIC_LOCAL(EmptyChromeClient, client, (EmptyChromeClient::create()));
+  return client;
+}
 
-        // They can also navigate popups, if the 'allow-sandbox-escape-via-popup' flag is specified.
-        if (targetFrame == targetFrame.tree().top() && targetFrame.tree().top() != tree().top() && !securityContext()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
-            return true;
+ChromeClient& Frame::chromeClient() const {
+  if (Page* page = this->page())
+    return page->chromeClient();
+  return emptyChromeClient();
+}
 
-        // Top navigation can be opted-in.
-        if (!securityContext()->isSandboxed(SandboxTopNavigation) && targetFrame == tree().top())
-            return true;
+Frame* Frame::findFrameForNavigation(const AtomicString& name,
+                                     Frame& activeFrame) {
+  Frame* frame = tree().find(name);
+  if (!frame || !activeFrame.canNavigate(*frame))
+    return nullptr;
+  return frame;
+}
 
-        // Otherwise, block the navigation.
-        if (securityContext()->isSandboxed(SandboxTopNavigation) && targetFrame == tree().top())
-            reason = "The frame attempting navigation of the top-level window is sandboxed, but the 'allow-top-navigation' flag is not set.";
-        else
-            reason = "The frame attempting navigation is sandboxed, and is therefore disallowed from navigating its ancestors.";
-        return false;
-    }
-
-    ASSERT(securityContext()->getSecurityOrigin());
-    SecurityOrigin& origin = *securityContext()->getSecurityOrigin();
-
-    // This is the normal case. A document can navigate its decendant frames,
-    // or, more generally, a document can navigate a frame if the document is
-    // in the same origin as any of that frame's ancestors (in the frame
-    // hierarchy).
-    //
-    // See http://www.adambarth.com/papers/2008/barth-jackson-mitchell.pdf for
-    // historical information about this security check.
-    if (canAccessAncestor(origin, &targetFrame))
-        return true;
-
-    // Top-level frames are easier to navigate than other frames because they
-    // display their URLs in the address bar (in most browsers). However, there
-    // are still some restrictions on navigation to avoid nuisance attacks.
-    // Specifically, a document can navigate a top-level frame if that frame
-    // opened the document or if the document is the same-origin with any of
-    // the top-level frame's opener's ancestors (in the frame hierarchy).
-    //
-    // In both of these cases, the document performing the navigation is in
-    // some way related to the frame being navigate (e.g., by the "opener"
-    // and/or "parent" relation). Requiring some sort of relation prevents a
-    // document from navigating arbitrary, unrelated top-level frames.
-    if (!targetFrame.tree().parent()) {
-        if (targetFrame == client()->opener())
-            return true;
-        if (canAccessAncestor(origin, targetFrame.client()->opener()))
-            return true;
-    }
-
-    reason = "The frame attempting navigation is neither same-origin with the target, nor is it the target's parent or opener.";
+static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin,
+                              const Frame* targetFrame) {
+  // targetFrame can be 0 when we're trying to navigate a top-level frame
+  // that has a 0 opener.
+  if (!targetFrame)
     return false;
+
+  const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
+  for (const Frame* ancestorFrame = targetFrame; ancestorFrame;
+       ancestorFrame = ancestorFrame->tree().parent()) {
+    const SecurityOrigin* ancestorSecurityOrigin =
+        ancestorFrame->securityContext()->getSecurityOrigin();
+    if (activeSecurityOrigin.canAccess(ancestorSecurityOrigin))
+      return true;
+
+    // Allow file URL descendant navigation even when allowFileAccessFromFileURLs is false.
+    // FIXME: It's a bit strange to special-case local origins here. Should we be doing
+    // something more general instead?
+    if (isLocalActiveOrigin && ancestorSecurityOrigin->isLocal())
+      return true;
+  }
+
+  return false;
 }
 
-Frame* Frame::findUnsafeParentScrollPropagationBoundary()
-{
-    Frame* currentFrame = this;
-    Frame* ancestorFrame = tree().parent();
+bool Frame::canNavigate(const Frame& targetFrame) {
+  String errorReason;
+  bool isAllowedNavigation =
+      canNavigateWithoutFramebusting(targetFrame, errorReason);
 
-    while (ancestorFrame) {
-        if (!ancestorFrame->securityContext()->getSecurityOrigin()->canAccess(securityContext()->getSecurityOrigin()))
-            return currentFrame;
-        currentFrame = ancestorFrame;
-        ancestorFrame = ancestorFrame->tree().parent();
-    }
+  if (targetFrame != this &&
+      !securityContext()->isSandboxed(SandboxTopNavigation) &&
+      targetFrame == tree().top()) {
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, framebustHistogram,
+                        ("WebCore.Framebust", 4));
+    const unsigned userGestureBit = 0x1;
+    const unsigned allowedBit = 0x2;
+    unsigned framebustParams = 0;
+    UseCounter::count(&targetFrame, UseCounter::TopNavigationFromSubFrame);
+    bool hasUserGesture = UserGestureIndicator::processingUserGesture();
+    if (hasUserGesture)
+      framebustParams |= userGestureBit;
+    if (isAllowedNavigation)
+      framebustParams |= allowedBit;
+    framebustHistogram.count(framebustParams);
+    // Frame-busting used to be generally allowed in most situations, but may now blocked if there is no user gesture.
+    if (!RuntimeEnabledFeatures::
+            framebustingNeedsSameOriginOrUserGestureEnabled())
+      return true;
+    if (hasUserGesture || isAllowedNavigation)
+      return true;
+    errorReason =
+        "The frame attempting navigation is targeting its top-level window, "
+        "but is neither same-origin with its target nor is it processing a "
+        "user gesture. See "
+        "https://www.chromestatus.com/features/5851021045661696.";
+    printNavigationErrorMessage(targetFrame, errorReason.latin1().data());
+    if (isLocalFrame())
+      toLocalFrame(this)->navigationScheduler().schedulePageBlock(
+          toLocalFrame(this)->document());
+    return false;
+  }
+  if (!isAllowedNavigation && !errorReason.isNull())
+    printNavigationErrorMessage(targetFrame, errorReason.latin1().data());
+  return isAllowedNavigation;
+}
+
+bool Frame::canNavigateWithoutFramebusting(const Frame& targetFrame,
+                                           String& reason) {
+  if (securityContext()->isSandboxed(SandboxNavigation)) {
+    // Sandboxed frames can navigate their own children.
+    if (targetFrame.tree().isDescendantOf(this))
+      return true;
+
+    // They can also navigate popups, if the 'allow-sandbox-escape-via-popup' flag is specified.
+    if (targetFrame == targetFrame.tree().top() &&
+        targetFrame.tree().top() != tree().top() &&
+        !securityContext()->isSandboxed(
+            SandboxPropagatesToAuxiliaryBrowsingContexts))
+      return true;
+
+    // Top navigation can be opted-in.
+    if (!securityContext()->isSandboxed(SandboxTopNavigation) &&
+        targetFrame == tree().top())
+      return true;
+
+    // Otherwise, block the navigation.
+    if (securityContext()->isSandboxed(SandboxTopNavigation) &&
+        targetFrame == tree().top())
+      reason =
+          "The frame attempting navigation of the top-level window is "
+          "sandboxed, but the 'allow-top-navigation' flag is not set.";
+    else
+      reason =
+          "The frame attempting navigation is sandboxed, and is therefore "
+          "disallowed from navigating its ancestors.";
+    return false;
+  }
+
+  ASSERT(securityContext()->getSecurityOrigin());
+  SecurityOrigin& origin = *securityContext()->getSecurityOrigin();
+
+  // This is the normal case. A document can navigate its decendant frames,
+  // or, more generally, a document can navigate a frame if the document is
+  // in the same origin as any of that frame's ancestors (in the frame
+  // hierarchy).
+  //
+  // See http://www.adambarth.com/papers/2008/barth-jackson-mitchell.pdf for
+  // historical information about this security check.
+  if (canAccessAncestor(origin, &targetFrame))
+    return true;
+
+  // Top-level frames are easier to navigate than other frames because they
+  // display their URLs in the address bar (in most browsers). However, there
+  // are still some restrictions on navigation to avoid nuisance attacks.
+  // Specifically, a document can navigate a top-level frame if that frame
+  // opened the document or if the document is the same-origin with any of
+  // the top-level frame's opener's ancestors (in the frame hierarchy).
+  //
+  // In both of these cases, the document performing the navigation is in
+  // some way related to the frame being navigate (e.g., by the "opener"
+  // and/or "parent" relation). Requiring some sort of relation prevents a
+  // document from navigating arbitrary, unrelated top-level frames.
+  if (!targetFrame.tree().parent()) {
+    if (targetFrame == client()->opener())
+      return true;
+    if (canAccessAncestor(origin, targetFrame.client()->opener()))
+      return true;
+  }
+
+  reason =
+      "The frame attempting navigation is neither same-origin with the target, "
+      "nor is it the target's parent or opener.";
+  return false;
+}
+
+Frame* Frame::findUnsafeParentScrollPropagationBoundary() {
+  Frame* currentFrame = this;
+  Frame* ancestorFrame = tree().parent();
+
+  while (ancestorFrame) {
+    if (!ancestorFrame->securityContext()->getSecurityOrigin()->canAccess(
+            securityContext()->getSecurityOrigin()))
+      return currentFrame;
+    currentFrame = ancestorFrame;
+    ancestorFrame = ancestorFrame->tree().parent();
+  }
+  return nullptr;
+}
+
+LayoutPart* Frame::ownerLayoutObject() const {
+  if (!deprecatedLocalOwner())
     return nullptr;
-}
-
-LayoutPart* Frame::ownerLayoutObject() const
-{
-    if (!deprecatedLocalOwner())
-        return nullptr;
-    LayoutObject* object = deprecatedLocalOwner()->layoutObject();
-    if (!object)
-        return nullptr;
-    // FIXME: If <object> is ever fixed to disassociate itself from frames
-    // that it has started but canceled, then this can turn into an ASSERT
-    // since ownerElement() would be 0 when the load is canceled.
-    // https://bugs.webkit.org/show_bug.cgi?id=18585
-    if (!object->isLayoutPart())
-        return nullptr;
-    return toLayoutPart(object);
-}
-
-LayoutPartItem Frame::ownerLayoutItem() const
-{
-    return LayoutPartItem(ownerLayoutObject());
-}
-
-Settings* Frame::settings() const
-{
-    if (m_host)
-        return &m_host->settings();
+  LayoutObject* object = deprecatedLocalOwner()->layoutObject();
+  if (!object)
     return nullptr;
+  // FIXME: If <object> is ever fixed to disassociate itself from frames
+  // that it has started but canceled, then this can turn into an ASSERT
+  // since ownerElement() would be 0 when the load is canceled.
+  // https://bugs.webkit.org/show_bug.cgi?id=18585
+  if (!object->isLayoutPart())
+    return nullptr;
+  return toLayoutPart(object);
 }
 
-void Frame::didChangeVisibilityState()
-{
-    HeapVector<Member<Frame>> childFrames;
-    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
-        childFrames.append(child);
-    for (size_t i = 0; i < childFrames.size(); ++i)
-        childFrames[i]->didChangeVisibilityState();
+LayoutPartItem Frame::ownerLayoutItem() const {
+  return LayoutPartItem(ownerLayoutObject());
+}
+
+Settings* Frame::settings() const {
+  if (m_host)
+    return &m_host->settings();
+  return nullptr;
+}
+
+void Frame::didChangeVisibilityState() {
+  HeapVector<Member<Frame>> childFrames;
+  for (Frame* child = tree().firstChild(); child;
+       child = child->tree().nextSibling())
+    childFrames.append(child);
+  for (size_t i = 0; i < childFrames.size(); ++i)
+    childFrames[i]->didChangeVisibilityState();
 }
 
 Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
-    : m_treeNode(this)
-    , m_host(host)
-    , m_owner(owner)
-    , m_client(client)
-    , m_isLoading(false)
-{
-    InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);
+    : m_treeNode(this),
+      m_host(host),
+      m_owner(owner),
+      m_client(client),
+      m_isLoading(false) {
+  InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);
 
-    ASSERT(page());
+  ASSERT(page());
 
-    if (m_owner)
-        m_owner->setContentFrame(*this);
-    else
-        page()->setMainFrame(this);
+  if (m_owner)
+    m_owner->setContentFrame(*this);
+  else
+    page()->setMainFrame(this);
 }
 
-} // namespace blink
+}  // namespace blink

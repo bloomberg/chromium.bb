@@ -45,98 +45,93 @@
 
 namespace blink {
 
-MediaStreamCenter& MediaStreamCenter::instance()
-{
-    ASSERT(isMainThread());
-    DEFINE_STATIC_LOCAL(MediaStreamCenter, center, ());
-    return center;
+MediaStreamCenter& MediaStreamCenter::instance() {
+  ASSERT(isMainThread());
+  DEFINE_STATIC_LOCAL(MediaStreamCenter, center, ());
+  return center;
 }
 
 MediaStreamCenter::MediaStreamCenter()
-    : m_private(wrapUnique(Platform::current()->createMediaStreamCenter(this)))
-{
-}
+    : m_private(
+          wrapUnique(Platform::current()->createMediaStreamCenter(this))) {}
 
-MediaStreamCenter::~MediaStreamCenter()
-{
-}
+MediaStreamCenter::~MediaStreamCenter() {}
 
-void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamComponent* component)
-{
-    if (m_private) {
-        if (component->enabled()) {
-            m_private->didEnableMediaStreamTrack(component);
-        } else {
-            m_private->didDisableMediaStreamTrack(component);
-        }
+void MediaStreamCenter::didSetMediaStreamTrackEnabled(
+    MediaStreamComponent* component) {
+  if (m_private) {
+    if (component->enabled()) {
+      m_private->didEnableMediaStreamTrack(component);
+    } else {
+      m_private->didDisableMediaStreamTrack(component);
     }
+  }
 }
 
-bool MediaStreamCenter::didAddMediaStreamTrack(MediaStreamDescriptor* stream, MediaStreamComponent* component)
-{
-    return m_private && m_private->didAddMediaStreamTrack(stream, component);
+bool MediaStreamCenter::didAddMediaStreamTrack(
+    MediaStreamDescriptor* stream,
+    MediaStreamComponent* component) {
+  return m_private && m_private->didAddMediaStreamTrack(stream, component);
 }
 
-bool MediaStreamCenter::didRemoveMediaStreamTrack(MediaStreamDescriptor* stream, MediaStreamComponent* component)
-{
-    return m_private && m_private->didRemoveMediaStreamTrack(stream, component);
+bool MediaStreamCenter::didRemoveMediaStreamTrack(
+    MediaStreamDescriptor* stream,
+    MediaStreamComponent* component) {
+  return m_private && m_private->didRemoveMediaStreamTrack(stream, component);
 }
 
-void MediaStreamCenter::didStopLocalMediaStream(MediaStreamDescriptor* stream)
-{
-    if (m_private)
-        m_private->didStopLocalMediaStream(stream);
+void MediaStreamCenter::didStopLocalMediaStream(MediaStreamDescriptor* stream) {
+  if (m_private)
+    m_private->didStopLocalMediaStream(stream);
 }
 
-bool MediaStreamCenter::didStopMediaStreamTrack(MediaStreamComponent* track)
-{
-    return m_private && m_private->didStopMediaStreamTrack(track);
+bool MediaStreamCenter::didStopMediaStreamTrack(MediaStreamComponent* track) {
+  return m_private && m_private->didStopMediaStreamTrack(track);
 }
 
-void MediaStreamCenter::didCreateMediaStreamAndTracks(MediaStreamDescriptor* stream)
-{
-    if (!m_private)
-        return;
+void MediaStreamCenter::didCreateMediaStreamAndTracks(
+    MediaStreamDescriptor* stream) {
+  if (!m_private)
+    return;
 
-    for (size_t i = 0; i < stream->numberOfAudioComponents(); ++i)
-        didCreateMediaStreamTrack(stream->audioComponent(i));
+  for (size_t i = 0; i < stream->numberOfAudioComponents(); ++i)
+    didCreateMediaStreamTrack(stream->audioComponent(i));
 
-    for (size_t i = 0; i < stream->numberOfVideoComponents(); ++i)
-        didCreateMediaStreamTrack(stream->videoComponent(i));
+  for (size_t i = 0; i < stream->numberOfVideoComponents(); ++i)
+    didCreateMediaStreamTrack(stream->videoComponent(i));
 
+  WebMediaStream webStream(stream);
+  m_private->didCreateMediaStream(webStream);
+}
+
+void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream) {
+  if (m_private) {
     WebMediaStream webStream(stream);
     m_private->didCreateMediaStream(webStream);
+  }
 }
 
-void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream)
-{
-    if (m_private) {
-        WebMediaStream webStream(stream);
-        m_private->didCreateMediaStream(webStream);
-    }
+void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track) {
+  if (m_private)
+    m_private->didCreateMediaStreamTrack(track);
 }
 
-void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track)
-{
-    if (m_private)
-        m_private->didCreateMediaStreamTrack(track);
+std::unique_ptr<AudioSourceProvider>
+MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
+    MediaStreamComponent* track) {
+  ASSERT_UNUSED(track, track);
+  if (m_private)
+    return MediaStreamWebAudioSource::create(
+        wrapUnique(m_private->createWebAudioSourceFromMediaStreamTrack(track)));
+
+  return nullptr;
 }
 
-std::unique_ptr<AudioSourceProvider> MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* track)
-{
-    ASSERT_UNUSED(track, track);
-    if (m_private)
-        return MediaStreamWebAudioSource::create(wrapUnique(m_private->createWebAudioSourceFromMediaStreamTrack(track)));
-
-    return nullptr;
+void MediaStreamCenter::stopLocalMediaStream(const WebMediaStream& webStream) {
+  MediaStreamDescriptor* stream = webStream;
+  MediaStreamDescriptorClient* client = stream->client();
+  if (client)
+    client->streamEnded();
 }
 
-void MediaStreamCenter::stopLocalMediaStream(const WebMediaStream& webStream)
-{
-    MediaStreamDescriptor* stream = webStream;
-    MediaStreamDescriptorClient* client = stream->client();
-    if (client)
-        client->streamEnded();
-}
-
-} // namespace blink
+}  // namespace blink

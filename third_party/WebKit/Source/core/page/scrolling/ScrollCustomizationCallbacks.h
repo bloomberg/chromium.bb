@@ -14,29 +14,30 @@ namespace blink {
 
 class ScrollStateCallback;
 
-class CORE_EXPORT ScrollCustomizationCallbacks : public GarbageCollected<ScrollCustomizationCallbacks> {
-    WTF_MAKE_NONCOPYABLE(ScrollCustomizationCallbacks);
+class CORE_EXPORT ScrollCustomizationCallbacks
+    : public GarbageCollected<ScrollCustomizationCallbacks> {
+  WTF_MAKE_NONCOPYABLE(ScrollCustomizationCallbacks);
 
-public:
-    ScrollCustomizationCallbacks() {}
-    void setDistributeScroll(Element*, ScrollStateCallback*);
-    ScrollStateCallback* getDistributeScroll(Element*);
-    void setApplyScroll(Element*, ScrollStateCallback*);
-    void removeApplyScroll(Element*);
-    ScrollStateCallback* getApplyScroll(Element*);
+ public:
+  ScrollCustomizationCallbacks() {}
+  void setDistributeScroll(Element*, ScrollStateCallback*);
+  ScrollStateCallback* getDistributeScroll(Element*);
+  void setApplyScroll(Element*, ScrollStateCallback*);
+  void removeApplyScroll(Element*);
+  ScrollStateCallback* getApplyScroll(Element*);
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_applyScrollCallbacks);
-        visitor->trace(m_distributeScrollCallbacks);
-    };
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_applyScrollCallbacks);
+    visitor->trace(m_distributeScrollCallbacks);
+  };
 
-private:
-    using ScrollStateCallbackList = HeapHashMap<WeakMember<Element>, Member<ScrollStateCallback>>;
-    ScrollStateCallbackList m_applyScrollCallbacks;
-    ScrollStateCallbackList m_distributeScrollCallbacks;
+ private:
+  using ScrollStateCallbackList =
+      HeapHashMap<WeakMember<Element>, Member<ScrollStateCallback>>;
+  ScrollStateCallbackList m_applyScrollCallbacks;
+  ScrollStateCallbackList m_distributeScrollCallbacks;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScrollCustomizationCallbacks_h
+#endif  // ScrollCustomizationCallbacks_h

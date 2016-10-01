@@ -35,18 +35,15 @@
 namespace blink {
 
 RTCCertificate::RTCCertificate(std::unique_ptr<WebRTCCertificate> certificate)
-    : m_certificate(wrapUnique(certificate.release()))
-{
+    : m_certificate(wrapUnique(certificate.release())) {}
+
+std::unique_ptr<WebRTCCertificate> RTCCertificate::certificateShallowCopy()
+    const {
+  return m_certificate->shallowCopy();
 }
 
-std::unique_ptr<WebRTCCertificate> RTCCertificate::certificateShallowCopy() const
-{
-    return m_certificate->shallowCopy();
+DOMTimeStamp RTCCertificate::expires() const {
+  return static_cast<DOMTimeStamp>(m_certificate->expires());
 }
 
-DOMTimeStamp RTCCertificate::expires() const
-{
-    return static_cast<DOMTimeStamp>(m_certificate->expires());
-}
-
-} // namespace blink
+}  // namespace blink

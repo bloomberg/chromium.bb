@@ -10,25 +10,24 @@
 namespace blink {
 
 class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
-    WTF_MAKE_NONCOPYABLE(CSSUnsupportedStyleValue);
-public:
-    static CSSUnsupportedStyleValue* create(const String& cssText)
-    {
-        return new CSSUnsupportedStyleValue(cssText);
-    }
+  WTF_MAKE_NONCOPYABLE(CSSUnsupportedStyleValue);
 
-    StyleValueType type() const override { return StyleValueType::Unknown; }
-    const CSSValue* toCSSValue() const override;
-    const CSSValue* toCSSValueWithProperty(CSSPropertyID) const override;
-    String cssText() const override { return m_cssText; }
+ public:
+  static CSSUnsupportedStyleValue* create(const String& cssText) {
+    return new CSSUnsupportedStyleValue(cssText);
+  }
 
-private:
-    CSSUnsupportedStyleValue(const String& cssText)
-        : m_cssText(cssText) {}
+  StyleValueType type() const override { return StyleValueType::Unknown; }
+  const CSSValue* toCSSValue() const override;
+  const CSSValue* toCSSValueWithProperty(CSSPropertyID) const override;
+  String cssText() const override { return m_cssText; }
 
-    String m_cssText;
+ private:
+  CSSUnsupportedStyleValue(const String& cssText) : m_cssText(cssText) {}
+
+  String m_cssText;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSUnsupportedStyleValue_h
+#endif  // CSSUnsupportedStyleValue_h

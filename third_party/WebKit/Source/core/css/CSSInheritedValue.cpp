@@ -25,14 +25,12 @@
 
 namespace blink {
 
-CSSInheritedValue* CSSInheritedValue::create()
-{
-    return cssValuePool().inheritedValue();
+CSSInheritedValue* CSSInheritedValue::create() {
+  return cssValuePool().inheritedValue();
 }
 
-String CSSInheritedValue::customCSSText() const
-{
-    return "inherit";
+String CSSInheritedValue::customCSSText() const {
+  return "inherit";
 }
 
-} // namespace blink
+}  // namespace blink

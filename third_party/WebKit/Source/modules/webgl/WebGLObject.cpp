@@ -30,59 +30,51 @@
 namespace blink {
 
 WebGLObject::WebGLObject(WebGLRenderingContextBase*)
-    : m_attachmentCount(0)
-    , m_deleted(false)
-{
+    : m_attachmentCount(0), m_deleted(false) {}
+
+WebGLObject::~WebGLObject() {
+  // Verify that platform objects have been explicitly deleted.
+  ASSERT(m_deleted);
 }
 
-WebGLObject::~WebGLObject()
-{
-    // Verify that platform objects have been explicitly deleted.
-    ASSERT(m_deleted);
-}
+void WebGLObject::deleteObject(gpu::gles2::GLES2Interface* gl) {
+  m_deleted = true;
+  if (!hasObject())
+    return;
 
-void WebGLObject::deleteObject(gpu::gles2::GLES2Interface* gl)
-{
-    m_deleted = true;
-    if (!hasObject())
-        return;
+  if (!hasGroupOrContext())
+    return;
 
-    if (!hasGroupOrContext())
-        return;
-
-    if (!m_attachmentCount) {
-        if (!gl)
-            gl = getAGLInterface();
-        if (gl) {
-            deleteObjectImpl(gl);
-            // Ensure the inherited class no longer claims to have a valid object
-            ASSERT(!hasObject());
-        }
+  if (!m_attachmentCount) {
+    if (!gl)
+      gl = getAGLInterface();
+    if (gl) {
+      deleteObjectImpl(gl);
+      // Ensure the inherited class no longer claims to have a valid object
+      ASSERT(!hasObject());
     }
+  }
 }
 
-void WebGLObject::detach()
-{
-    m_attachmentCount = 0; // Make sure OpenGL resource is deleted.
+void WebGLObject::detach() {
+  m_attachmentCount = 0;  // Make sure OpenGL resource is deleted.
 }
 
-void WebGLObject::detachAndDeleteObject()
-{
-    // To ensure that all platform objects are deleted after being detached,
-    // this method does them together.
-    //
-    // The individual WebGL destructors need to call detachAndDeleteObject()
-    // rather than do it based on Oilpan GC.
-    detach();
-    deleteObject(nullptr);
+void WebGLObject::detachAndDeleteObject() {
+  // To ensure that all platform objects are deleted after being detached,
+  // this method does them together.
+  //
+  // The individual WebGL destructors need to call detachAndDeleteObject()
+  // rather than do it based on Oilpan GC.
+  detach();
+  deleteObject(nullptr);
 }
 
-void WebGLObject::onDetached(gpu::gles2::GLES2Interface* gl)
-{
-    if (m_attachmentCount)
-        --m_attachmentCount;
-    if (m_deleted)
-        deleteObject(gl);
+void WebGLObject::onDetached(gpu::gles2::GLES2Interface* gl) {
+  if (m_attachmentCount)
+    --m_attachmentCount;
+  if (m_deleted)
+    deleteObject(gl);
 }
 
-} // namespace blink
+}  // namespace blink

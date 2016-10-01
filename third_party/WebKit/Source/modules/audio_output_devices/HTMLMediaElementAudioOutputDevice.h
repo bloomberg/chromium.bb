@@ -18,22 +18,27 @@ namespace blink {
 class HTMLMediaElement;
 class ScriptState;
 
-class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final : public GarbageCollectedFinalized<HTMLMediaElementAudioOutputDevice>, public Supplement<HTMLMediaElement> {
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementAudioOutputDevice);
-public:
-    DECLARE_VIRTUAL_TRACE();
-    static String sinkId(HTMLMediaElement&);
-    static ScriptPromise setSinkId(ScriptState*, HTMLMediaElement&, const String& sinkId);
-    static HTMLMediaElementAudioOutputDevice& from(HTMLMediaElement&);
-    void setSinkId(const String&);
+class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
+    : public GarbageCollectedFinalized<HTMLMediaElementAudioOutputDevice>,
+      public Supplement<HTMLMediaElement> {
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementAudioOutputDevice);
 
-private:
-    HTMLMediaElementAudioOutputDevice();
-    static const char* supplementName();
+ public:
+  DECLARE_VIRTUAL_TRACE();
+  static String sinkId(HTMLMediaElement&);
+  static ScriptPromise setSinkId(ScriptState*,
+                                 HTMLMediaElement&,
+                                 const String& sinkId);
+  static HTMLMediaElementAudioOutputDevice& from(HTMLMediaElement&);
+  void setSinkId(const String&);
 
-    String m_sinkId;
+ private:
+  HTMLMediaElementAudioOutputDevice();
+  static const char* supplementName();
+
+  String m_sinkId;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

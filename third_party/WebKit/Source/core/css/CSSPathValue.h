@@ -17,29 +17,31 @@ namespace blink {
 class StylePath;
 
 class CSSPathValue : public CSSValue {
-public:
-    static CSSPathValue* create(PassRefPtr<StylePath>);
-    static CSSPathValue* create(std::unique_ptr<SVGPathByteStream>);
+ public:
+  static CSSPathValue* create(PassRefPtr<StylePath>);
+  static CSSPathValue* create(std::unique_ptr<SVGPathByteStream>);
 
-    static CSSPathValue& emptyPathValue();
+  static CSSPathValue& emptyPathValue();
 
-    StylePath* stylePath() const { return m_stylePath.get(); }
-    String customCSSText() const;
+  StylePath* stylePath() const { return m_stylePath.get(); }
+  String customCSSText() const;
 
-    bool equals(const CSSPathValue&) const;
+  bool equals(const CSSPathValue&) const;
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-    const SVGPathByteStream& byteStream() const { return m_stylePath->byteStream(); }
+  const SVGPathByteStream& byteStream() const {
+    return m_stylePath->byteStream();
+  }
 
-private:
-    CSSPathValue(PassRefPtr<StylePath>);
+ private:
+  CSSPathValue(PassRefPtr<StylePath>);
 
-    RefPtr<StylePath> m_stylePath;
+  RefPtr<StylePath> m_stylePath;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPathValue, isPathValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSPathValue_h
+#endif  // CSSPathValue_h

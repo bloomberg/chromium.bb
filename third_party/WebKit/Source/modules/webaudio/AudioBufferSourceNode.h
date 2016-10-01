@@ -44,132 +44,155 @@ class BaseAudioContext;
 // It generally will be used for short sounds which require a high degree of scheduling flexibility (can playback in rhythmically perfect ways).
 
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
-public:
-    static PassRefPtr<AudioBufferSourceHandler> create(AudioNode&, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune);
-    ~AudioBufferSourceHandler() override;
+ public:
+  static PassRefPtr<AudioBufferSourceHandler> create(
+      AudioNode&,
+      float sampleRate,
+      AudioParamHandler& playbackRate,
+      AudioParamHandler& detune);
+  ~AudioBufferSourceHandler() override;
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
 
-    // setBuffer() is called on the main thread. This is the buffer we use for playback.
-    void setBuffer(AudioBuffer*, ExceptionState&);
-    AudioBuffer* buffer() { return m_buffer.get(); }
+  // setBuffer() is called on the main thread. This is the buffer we use for playback.
+  void setBuffer(AudioBuffer*, ExceptionState&);
+  AudioBuffer* buffer() { return m_buffer.get(); }
 
-    // numberOfChannels() returns the number of output channels.  This value equals the number of channels from the buffer.
-    // If a new buffer is set with a different number of channels, then this value will dynamically change.
-    unsigned numberOfChannels();
+  // numberOfChannels() returns the number of output channels.  This value equals the number of channels from the buffer.
+  // If a new buffer is set with a different number of channels, then this value will dynamically change.
+  unsigned numberOfChannels();
 
-    // Play-state
-    void start(double when, ExceptionState&);
-    void start(double when, double grainOffset, ExceptionState&);
-    void start(double when, double grainOffset, double grainDuration, ExceptionState&);
+  // Play-state
+  void start(double when, ExceptionState&);
+  void start(double when, double grainOffset, ExceptionState&);
+  void start(double when,
+             double grainOffset,
+             double grainDuration,
+             ExceptionState&);
 
-    // Note: the attribute was originally exposed as .looping, but to be more consistent in naming with <audio>
-    // and with how it's described in the specification, the proper attribute name is .loop
-    // The old attribute is kept for backwards compatibility.
-    bool loop() const { return m_isLooping; }
-    void setLoop(bool looping)
-    {
-        m_isLooping = looping;
-        m_didSetLooping = m_didSetLooping || looping;
-    }
+  // Note: the attribute was originally exposed as .looping, but to be more consistent in naming with <audio>
+  // and with how it's described in the specification, the proper attribute name is .loop
+  // The old attribute is kept for backwards compatibility.
+  bool loop() const { return m_isLooping; }
+  void setLoop(bool looping) {
+    m_isLooping = looping;
+    m_didSetLooping = m_didSetLooping || looping;
+  }
 
-    // Loop times in seconds.
-    double loopStart() const { return m_loopStart; }
-    double loopEnd() const { return m_loopEnd; }
-    void setLoopStart(double loopStart) { m_loopStart = loopStart; }
-    void setLoopEnd(double loopEnd) { m_loopEnd = loopEnd; }
+  // Loop times in seconds.
+  double loopStart() const { return m_loopStart; }
+  double loopEnd() const { return m_loopEnd; }
+  void setLoopStart(double loopStart) { m_loopStart = loopStart; }
+  void setLoopEnd(double loopEnd) { m_loopEnd = loopEnd; }
 
-    // If we are no longer playing, propogate silence ahead to downstream nodes.
-    bool propagatesSilence() const override;
+  // If we are no longer playing, propogate silence ahead to downstream nodes.
+  bool propagatesSilence() const override;
 
-    void handleStoppableSourceNode();
+  void handleStoppableSourceNode();
 
-private:
-    AudioBufferSourceHandler(AudioNode&, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune);
-    void startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState&);
+ private:
+  AudioBufferSourceHandler(AudioNode&,
+                           float sampleRate,
+                           AudioParamHandler& playbackRate,
+                           AudioParamHandler& detune);
+  void startSource(double when,
+                   double grainOffset,
+                   double grainDuration,
+                   bool isDurationGiven,
+                   ExceptionState&);
 
-    // Returns true on success.
-    bool renderFromBuffer(AudioBus*, unsigned destinationFrameOffset, size_t numberOfFrames);
+  // Returns true on success.
+  bool renderFromBuffer(AudioBus*,
+                        unsigned destinationFrameOffset,
+                        size_t numberOfFrames);
 
-    // Render silence starting from "index" frame in AudioBus.
-    inline bool renderSilenceAndFinishIfNotLooping(AudioBus*, unsigned index, size_t framesToProcess);
+  // Render silence starting from "index" frame in AudioBus.
+  inline bool renderSilenceAndFinishIfNotLooping(AudioBus*,
+                                                 unsigned index,
+                                                 size_t framesToProcess);
 
-    // Clamps grain parameters to the duration of the given AudioBuffer.
-    void clampGrainParameters(const AudioBuffer*);
+  // Clamps grain parameters to the duration of the given AudioBuffer.
+  void clampGrainParameters(const AudioBuffer*);
 
-    // m_buffer holds the sample data which this node outputs.
-    // This Persistent doesn't make a reference cycle including
-    // AudioBufferSourceNode.
-    Persistent<AudioBuffer> m_buffer;
+  // m_buffer holds the sample data which this node outputs.
+  // This Persistent doesn't make a reference cycle including
+  // AudioBufferSourceNode.
+  Persistent<AudioBuffer> m_buffer;
 
-    // Pointers for the buffer and destination.
-    std::unique_ptr<const float*[]> m_sourceChannels;
-    std::unique_ptr<float*[]> m_destinationChannels;
+  // Pointers for the buffer and destination.
+  std::unique_ptr<const float* []> m_sourceChannels;
+  std::unique_ptr<float* []> m_destinationChannels;
 
-    RefPtr<AudioParamHandler> m_playbackRate;
-    RefPtr<AudioParamHandler> m_detune;
+  RefPtr<AudioParamHandler> m_playbackRate;
+  RefPtr<AudioParamHandler> m_detune;
 
-    // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
-    // If true, it will wrap around to the start of the buffer each time it reaches the end.
-    bool m_isLooping;
+  // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
+  // If true, it will wrap around to the start of the buffer each time it reaches the end.
+  bool m_isLooping;
 
-    // True if the source .loop attribute was ever set.
-    bool m_didSetLooping;
+  // True if the source .loop attribute was ever set.
+  bool m_didSetLooping;
 
-    double m_loopStart;
-    double m_loopEnd;
+  double m_loopStart;
+  double m_loopEnd;
 
-    // m_virtualReadIndex is a sample-frame index into our buffer representing the current playback position.
-    // Since it's floating-point, it has sub-sample accuracy.
-    double m_virtualReadIndex;
+  // m_virtualReadIndex is a sample-frame index into our buffer representing the current playback position.
+  // Since it's floating-point, it has sub-sample accuracy.
+  double m_virtualReadIndex;
 
-    // Granular playback
-    bool m_isGrain;
-    double m_grainOffset; // in seconds
-    double m_grainDuration; // in seconds
-    // True if grainDuration is given explicitly (via 3 arg start method).
-    bool m_isDurationGiven;
+  // Granular playback
+  bool m_isGrain;
+  double m_grainOffset;    // in seconds
+  double m_grainDuration;  // in seconds
+  // True if grainDuration is given explicitly (via 3 arg start method).
+  bool m_isDurationGiven;
 
-    // Compute playback rate (k-rate) by incorporating the sample rate
-    // conversion factor, and the value of playbackRate and detune AudioParams.
-    double computePlaybackRate();
+  // Compute playback rate (k-rate) by incorporating the sample rate
+  // conversion factor, and the value of playbackRate and detune AudioParams.
+  double computePlaybackRate();
 
-    // The minimum playbackRate value ever used for this source.
-    double m_minPlaybackRate;
+  // The minimum playbackRate value ever used for this source.
+  double m_minPlaybackRate;
 };
 
 class AudioBufferSourceNode final : public AudioScheduledSourceNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static AudioBufferSourceNode* create(BaseAudioContext&, ExceptionState&);
-    static AudioBufferSourceNode* create(BaseAudioContext*, AudioBufferSourceOptions&, ExceptionState&);
-    DECLARE_VIRTUAL_TRACE();
-    AudioBufferSourceHandler& audioBufferSourceHandler() const;
+  DEFINE_WRAPPERTYPEINFO();
 
-    AudioBuffer* buffer() const;
-    void setBuffer(AudioBuffer*, ExceptionState&);
-    AudioParam* playbackRate() const;
-    AudioParam* detune() const;
-    bool loop() const;
-    void setLoop(bool);
-    double loopStart() const;
-    void setLoopStart(double);
-    double loopEnd() const;
-    void setLoopEnd(double);
+ public:
+  static AudioBufferSourceNode* create(BaseAudioContext&, ExceptionState&);
+  static AudioBufferSourceNode* create(BaseAudioContext*,
+                                       AudioBufferSourceOptions&,
+                                       ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
+  AudioBufferSourceHandler& audioBufferSourceHandler() const;
 
-    void start(ExceptionState&);
-    void start(double when, ExceptionState&);
-    void start(double when, double grainOffset, ExceptionState&);
-    void start(double when, double grainOffset, double grainDuration, ExceptionState&);
+  AudioBuffer* buffer() const;
+  void setBuffer(AudioBuffer*, ExceptionState&);
+  AudioParam* playbackRate() const;
+  AudioParam* detune() const;
+  bool loop() const;
+  void setLoop(bool);
+  double loopStart() const;
+  void setLoopStart(double);
+  double loopEnd() const;
+  void setLoopEnd(double);
 
-private:
-    AudioBufferSourceNode(BaseAudioContext&);
+  void start(ExceptionState&);
+  void start(double when, ExceptionState&);
+  void start(double when, double grainOffset, ExceptionState&);
+  void start(double when,
+             double grainOffset,
+             double grainDuration,
+             ExceptionState&);
 
-    Member<AudioParam> m_playbackRate;
-    Member<AudioParam> m_detune;
+ private:
+  AudioBufferSourceNode(BaseAudioContext&);
+
+  Member<AudioParam> m_playbackRate;
+  Member<AudioParam> m_detune;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioBufferSourceNode_h
+#endif  // AudioBufferSourceNode_h

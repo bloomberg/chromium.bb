@@ -34,41 +34,43 @@
 namespace blink {
 
 class DecodedHTMLEntity {
-    STACK_ALLOCATED();
-private:
-    // HTML entities contain at most four UTF-16 code units.
-    static const unsigned kMaxLength = 4;
+  STACK_ALLOCATED();
 
-public:
-    DecodedHTMLEntity() : length(0) { }
+ private:
+  // HTML entities contain at most four UTF-16 code units.
+  static const unsigned kMaxLength = 4;
 
-    bool isEmpty() const { return !length; }
+ public:
+  DecodedHTMLEntity() : length(0) {}
 
-    void append(UChar c)
-    {
-        RELEASE_ASSERT(length < kMaxLength);
-        data[length++] = c;
+  bool isEmpty() const { return !length; }
+
+  void append(UChar c) {
+    RELEASE_ASSERT(length < kMaxLength);
+    data[length++] = c;
+  }
+
+  void append(UChar32 c) {
+    if (U_IS_BMP(c)) {
+      append(static_cast<UChar>(c));
+      return;
     }
+    append(U16_LEAD(c));
+    append(U16_TRAIL(c));
+  }
 
-    void append(UChar32 c)
-    {
-        if (U_IS_BMP(c)) {
-            append(static_cast<UChar>(c));
-            return;
-        }
-        append(U16_LEAD(c));
-        append(U16_TRAIL(c));
-    }
-
-    unsigned length;
-    UChar data[kMaxLength];
+  unsigned length;
+  UChar data[kMaxLength];
 };
 
-CORE_EXPORT bool consumeHTMLEntity(SegmentedString&, DecodedHTMLEntity& decodedEntity, bool& notEnoughCharacters, UChar additionalAllowedCharacter = '\0');
+CORE_EXPORT bool consumeHTMLEntity(SegmentedString&,
+                                   DecodedHTMLEntity& decodedEntity,
+                                   bool& notEnoughCharacters,
+                                   UChar additionalAllowedCharacter = '\0');
 
 // Used by the XML parser.  Not suitable for use in HTML parsing.  Use consumeHTMLEntity instead.
 size_t decodeNamedEntityToUCharArray(const char*, UChar result[4]);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

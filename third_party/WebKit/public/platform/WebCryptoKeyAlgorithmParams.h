@@ -45,174 +45,142 @@ namespace blink {
 // dictionary.
 class WebCryptoKeyAlgorithmDictionary {
 #if INSIDE_BLINK
-    STACK_ALLOCATED();
+  STACK_ALLOCATED();
 #endif
-public:
-    virtual ~WebCryptoKeyAlgorithmDictionary() { }
+ public:
+  virtual ~WebCryptoKeyAlgorithmDictionary() {}
 
-    virtual void setString(const char*, const char*) = 0;
-    virtual void setUint(const char*, unsigned) = 0;
-    virtual void setAlgorithm(const char*, const WebCryptoAlgorithm&) = 0;
-    virtual void setUint8Array(const char*, const WebVector<unsigned char>&) = 0;
+  virtual void setString(const char*, const char*) = 0;
+  virtual void setUint(const char*, unsigned) = 0;
+  virtual void setAlgorithm(const char*, const WebCryptoAlgorithm&) = 0;
+  virtual void setUint8Array(const char*, const WebVector<unsigned char>&) = 0;
 };
 
 enum WebCryptoKeyAlgorithmParamsType {
-    WebCryptoKeyAlgorithmParamsTypeNone,
-    WebCryptoKeyAlgorithmParamsTypeHmac,
-    WebCryptoKeyAlgorithmParamsTypeAes,
-    WebCryptoKeyAlgorithmParamsTypeRsaHashed,
-    WebCryptoKeyAlgorithmParamsTypeEc,
+  WebCryptoKeyAlgorithmParamsTypeNone,
+  WebCryptoKeyAlgorithmParamsTypeHmac,
+  WebCryptoKeyAlgorithmParamsTypeAes,
+  WebCryptoKeyAlgorithmParamsTypeRsaHashed,
+  WebCryptoKeyAlgorithmParamsTypeEc,
 };
 
 class WebCryptoKeyAlgorithmParams {
-public:
-    virtual ~WebCryptoKeyAlgorithmParams() { }
-    virtual WebCryptoKeyAlgorithmParamsType type() const
-    {
-        return WebCryptoKeyAlgorithmParamsTypeNone;
-    }
+ public:
+  virtual ~WebCryptoKeyAlgorithmParams() {}
+  virtual WebCryptoKeyAlgorithmParamsType type() const {
+    return WebCryptoKeyAlgorithmParamsTypeNone;
+  }
 
-    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary*) const = 0;
+  virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary*) const = 0;
 };
 
 class WebCryptoAesKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
-public:
-    explicit WebCryptoAesKeyAlgorithmParams(unsigned short lengthBits)
-        : m_lengthBits(lengthBits)
-    {
-    }
+ public:
+  explicit WebCryptoAesKeyAlgorithmParams(unsigned short lengthBits)
+      : m_lengthBits(lengthBits) {}
 
-    unsigned short lengthBits() const
-    {
-        return m_lengthBits;
-    }
+  unsigned short lengthBits() const { return m_lengthBits; }
 
-    virtual WebCryptoKeyAlgorithmParamsType type() const
-    {
-        return WebCryptoKeyAlgorithmParamsTypeAes;
-    }
+  virtual WebCryptoKeyAlgorithmParamsType type() const {
+    return WebCryptoKeyAlgorithmParamsTypeAes;
+  }
 
-    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
-    {
-        dict->setUint("length", m_lengthBits);
-    }
+  virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+    dict->setUint("length", m_lengthBits);
+  }
 
-private:
-    unsigned short m_lengthBits;
+ private:
+  unsigned short m_lengthBits;
 };
 
 class WebCryptoHmacKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
-public:
-    WebCryptoHmacKeyAlgorithmParams(const WebCryptoAlgorithm& hash, unsigned lengthBits)
-        : m_hash(hash)
-        , m_lengthBits(lengthBits)
-    {
-    }
+ public:
+  WebCryptoHmacKeyAlgorithmParams(const WebCryptoAlgorithm& hash,
+                                  unsigned lengthBits)
+      : m_hash(hash), m_lengthBits(lengthBits) {}
 
-    const WebCryptoAlgorithm& hash() const
-    {
-        return m_hash;
-    }
+  const WebCryptoAlgorithm& hash() const { return m_hash; }
 
-    unsigned lengthBits() const
-    {
-        return m_lengthBits;
-    }
+  unsigned lengthBits() const { return m_lengthBits; }
 
-    virtual WebCryptoKeyAlgorithmParamsType type() const
-    {
-        return WebCryptoKeyAlgorithmParamsTypeHmac;
-    }
+  virtual WebCryptoKeyAlgorithmParamsType type() const {
+    return WebCryptoKeyAlgorithmParamsTypeHmac;
+  }
 
-    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
-    {
-        dict->setAlgorithm("hash", m_hash);
-        dict->setUint("length", m_lengthBits);
-    }
+  virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+    dict->setAlgorithm("hash", m_hash);
+    dict->setUint("length", m_lengthBits);
+  }
 
-private:
-    WebCryptoAlgorithm m_hash;
-    unsigned m_lengthBits;
+ private:
+  WebCryptoAlgorithm m_hash;
+  unsigned m_lengthBits;
 };
 
-class WebCryptoRsaHashedKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
-public:
-    WebCryptoRsaHashedKeyAlgorithmParams(unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, const WebCryptoAlgorithm& hash)
-        : m_modulusLengthBits(modulusLengthBits)
-        , m_publicExponent(publicExponent, publicExponentSize)
-        , m_hash(hash)
-    {
-    }
+class WebCryptoRsaHashedKeyAlgorithmParams
+    : public WebCryptoKeyAlgorithmParams {
+ public:
+  WebCryptoRsaHashedKeyAlgorithmParams(unsigned modulusLengthBits,
+                                       const unsigned char* publicExponent,
+                                       unsigned publicExponentSize,
+                                       const WebCryptoAlgorithm& hash)
+      : m_modulusLengthBits(modulusLengthBits),
+        m_publicExponent(publicExponent, publicExponentSize),
+        m_hash(hash) {}
 
-    unsigned modulusLengthBits() const
-    {
-        return m_modulusLengthBits;
-    }
+  unsigned modulusLengthBits() const { return m_modulusLengthBits; }
 
-    const WebVector<unsigned char>& publicExponent() const
-    {
-        return m_publicExponent;
-    }
+  const WebVector<unsigned char>& publicExponent() const {
+    return m_publicExponent;
+  }
 
-    const WebCryptoAlgorithm& hash() const
-    {
-        return m_hash;
-    }
+  const WebCryptoAlgorithm& hash() const { return m_hash; }
 
-    virtual WebCryptoKeyAlgorithmParamsType type() const
-    {
-        return WebCryptoKeyAlgorithmParamsTypeRsaHashed;
-    }
+  virtual WebCryptoKeyAlgorithmParamsType type() const {
+    return WebCryptoKeyAlgorithmParamsTypeRsaHashed;
+  }
 
-    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
-    {
-        dict->setAlgorithm("hash", m_hash);
-        dict->setUint("modulusLength", m_modulusLengthBits);
-        dict->setUint8Array("publicExponent", m_publicExponent);
-    }
+  virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+    dict->setAlgorithm("hash", m_hash);
+    dict->setUint("modulusLength", m_modulusLengthBits);
+    dict->setUint8Array("publicExponent", m_publicExponent);
+  }
 
-private:
-    unsigned m_modulusLengthBits;
-    WebVector<unsigned char> m_publicExponent;
-    WebCryptoAlgorithm m_hash;
+ private:
+  unsigned m_modulusLengthBits;
+  WebVector<unsigned char> m_publicExponent;
+  WebCryptoAlgorithm m_hash;
 };
 
 class WebCryptoEcKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
-public:
-    explicit WebCryptoEcKeyAlgorithmParams(WebCryptoNamedCurve namedCurve)
-        : m_namedCurve(namedCurve)
-    {
-    }
+ public:
+  explicit WebCryptoEcKeyAlgorithmParams(WebCryptoNamedCurve namedCurve)
+      : m_namedCurve(namedCurve) {}
 
-    WebCryptoNamedCurve namedCurve() const
-    {
-        return m_namedCurve;
-    }
+  WebCryptoNamedCurve namedCurve() const { return m_namedCurve; }
 
-    virtual WebCryptoKeyAlgorithmParamsType type() const
-    {
-        return WebCryptoKeyAlgorithmParamsTypeEc;
-    }
+  virtual WebCryptoKeyAlgorithmParamsType type() const {
+    return WebCryptoKeyAlgorithmParamsTypeEc;
+  }
 
-    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
-    {
-        switch (m_namedCurve) {
-        case WebCryptoNamedCurveP256:
-            dict->setString("namedCurve", "P-256");
-            break;
-        case WebCryptoNamedCurveP384:
-            dict->setString("namedCurve", "P-384");
-            break;
-        case WebCryptoNamedCurveP521:
-            dict->setString("namedCurve", "P-521");
-            break;
-        }
+  virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const {
+    switch (m_namedCurve) {
+      case WebCryptoNamedCurveP256:
+        dict->setString("namedCurve", "P-256");
+        break;
+      case WebCryptoNamedCurveP384:
+        dict->setString("namedCurve", "P-384");
+        break;
+      case WebCryptoNamedCurveP521:
+        dict->setString("namedCurve", "P-521");
+        break;
     }
+  }
 
-private:
-    const WebCryptoNamedCurve m_namedCurve;
+ private:
+  const WebCryptoNamedCurve m_namedCurve;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

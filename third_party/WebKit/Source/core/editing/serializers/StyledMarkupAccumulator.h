@@ -41,47 +41,57 @@ class StylePropertySet;
 class Text;
 
 class StyledMarkupAccumulator final {
-    WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
-    STACK_ALLOCATED();
-public:
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, Document*, EAnnotateForInterchange, ConvertBlocksToInlines);
+  WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
+  STACK_ALLOCATED();
 
-    void appendEndTag(const Element&);
-    void appendInterchangeNewline();
+ public:
+  StyledMarkupAccumulator(EAbsoluteURLs,
+                          const TextOffset& start,
+                          const TextOffset& end,
+                          Document*,
+                          EAnnotateForInterchange,
+                          ConvertBlocksToInlines);
 
-    void appendText(Text&);
-    void appendTextWithInlineStyle(Text&, EditingStyle*);
+  void appendEndTag(const Element&);
+  void appendInterchangeNewline();
 
-    void wrapWithStyleNode(StylePropertySet*);
-    String takeResults();
+  void appendText(Text&);
+  void appendTextWithInlineStyle(Text&, EditingStyle*);
 
-    void pushMarkup(const String&);
+  void wrapWithStyleNode(StylePropertySet*);
+  String takeResults();
 
-    void appendElement(const Element&);
-    void appendElement(StringBuilder&, const Element&);
-    void appendElementWithInlineStyle(const Element&, EditingStyle*);
-    void appendElementWithInlineStyle(StringBuilder&, const Element&, EditingStyle*);
-    void appendStartMarkup(Node&);
+  void pushMarkup(const String&);
 
-    bool shouldAnnotate() const;
-    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
+  void appendElement(const Element&);
+  void appendElement(StringBuilder&, const Element&);
+  void appendElementWithInlineStyle(const Element&, EditingStyle*);
+  void appendElementWithInlineStyle(StringBuilder&,
+                                    const Element&,
+                                    EditingStyle*);
+  void appendStartMarkup(Node&);
 
-private:
-    String renderedText(Text&);
-    String stringValueForRange(const Text&);
+  bool shouldAnnotate() const;
+  bool convertBlocksToInlines() const {
+    return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert;
+  }
 
-    void appendEndMarkup(StringBuilder&, const Element&);
+ private:
+  String renderedText(Text&);
+  String stringValueForRange(const Text&);
 
-    MarkupFormatter m_formatter;
-    const TextOffset m_start;
-    const TextOffset m_end;
-    const Member<Document> m_document;
-    const EAnnotateForInterchange m_shouldAnnotate;
-    StringBuilder m_result;
-    Vector<String> m_reversedPrecedingMarkup;
-    const ConvertBlocksToInlines m_convertBlocksToInlines;
+  void appendEndMarkup(StringBuilder&, const Element&);
+
+  MarkupFormatter m_formatter;
+  const TextOffset m_start;
+  const TextOffset m_end;
+  const Member<Document> m_document;
+  const EAnnotateForInterchange m_shouldAnnotate;
+  StringBuilder m_result;
+  Vector<String> m_reversedPrecedingMarkup;
+  const ConvertBlocksToInlines m_convertBlocksToInlines;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyledMarkupAccumulator_h
+#endif  // StyledMarkupAccumulator_h

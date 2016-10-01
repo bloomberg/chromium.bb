@@ -34,30 +34,29 @@
 
 namespace blink {
 
-class CORE_EXPORT FileList final : public GarbageCollected<FileList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static FileList* create()
-    {
-        return new FileList;
-    }
+class CORE_EXPORT FileList final : public GarbageCollected<FileList>,
+                                   public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned length() const { return m_files.size(); }
-    File* item(unsigned index) const;
+ public:
+  static FileList* create() { return new FileList; }
 
-    bool isEmpty() const { return m_files.isEmpty(); }
-    void clear() { m_files.clear(); }
-    void append(File* file) { m_files.append(file); }
-    Vector<String> pathsForUserVisibleFiles() const;
+  unsigned length() const { return m_files.size(); }
+  File* item(unsigned index) const;
 
-    DECLARE_TRACE();
+  bool isEmpty() const { return m_files.isEmpty(); }
+  void clear() { m_files.clear(); }
+  void append(File* file) { m_files.append(file); }
+  Vector<String> pathsForUserVisibleFiles() const;
 
-private:
-    FileList();
+  DECLARE_TRACE();
 
-    HeapVector<Member<File>> m_files;
+ private:
+  FileList();
+
+  HeapVector<Member<File>> m_files;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileList_h
+#endif  // FileList_h

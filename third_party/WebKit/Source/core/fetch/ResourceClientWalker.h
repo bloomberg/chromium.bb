@@ -35,34 +35,34 @@ namespace blink {
 // Just keep calling next() on this. It's safe from deletions of items.
 template <typename T>
 class ResourceClientWalker {
-    STACK_ALLOCATED();
-public:
-    explicit ResourceClientWalker(const HeapHashCountedSet<WeakMember<ResourceClient>>& set)
-        : m_clientSet(set)
-    {
-        copyToVector(m_clientSet, m_clientVector);
-    }
+  STACK_ALLOCATED();
 
-    T* next()
-    {
-        size_t size = m_clientVector.size();
-        while (m_index < size) {
-            ResourceClient* next = m_clientVector[m_index++];
-            DCHECK(next);
-            if (m_clientSet.contains(next)) {
-                DCHECK(T::isExpectedType(next));
-                return static_cast<T*>(next);
-            }
-        }
-        return nullptr;
-    }
+ public:
+  explicit ResourceClientWalker(
+      const HeapHashCountedSet<WeakMember<ResourceClient>>& set)
+      : m_clientSet(set) {
+    copyToVector(m_clientSet, m_clientVector);
+  }
 
-private:
-    const HeapHashCountedSet<WeakMember<ResourceClient>>& m_clientSet;
-    HeapVector<Member<ResourceClient>> m_clientVector;
-    size_t m_index = 0;
+  T* next() {
+    size_t size = m_clientVector.size();
+    while (m_index < size) {
+      ResourceClient* next = m_clientVector[m_index++];
+      DCHECK(next);
+      if (m_clientSet.contains(next)) {
+        DCHECK(T::isExpectedType(next));
+        return static_cast<T*>(next);
+      }
+    }
+    return nullptr;
+  }
+
+ private:
+  const HeapHashCountedSet<WeakMember<ResourceClient>>& m_clientSet;
+  HeapVector<Member<ResourceClient>> m_clientVector;
+  size_t m_index = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

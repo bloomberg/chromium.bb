@@ -14,14 +14,14 @@ namespace blink {
 // objects that wish to be notified when there is a presentation display
 // availability change for a given URL.
 class BLINK_PLATFORM_EXPORT WebPresentationAvailabilityObserver {
-public:
-    virtual ~WebPresentationAvailabilityObserver() = default;
+ public:
+  virtual ~WebPresentationAvailabilityObserver() = default;
 
-    virtual void availabilityChanged(bool) = 0;
+  virtual void availabilityChanged(bool) = 0;
 
-    virtual const WebURL url() const = 0;
+  virtual const WebURL url() const = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPresentationAvailabilityObserver_h
+#endif  // WebPresentationAvailabilityObserver_h

@@ -34,45 +34,44 @@
 
 namespace blink {
 
-bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt)
-{
-    const WebKeyboardEvent* keyEvent = evt->keyEvent();
-    // do not treat this as text input if it's a system key event
-    if (!keyEvent || keyEvent->isSystemKey)
-        return false;
+bool Editor::handleEditingKeyboardEvent(KeyboardEvent* evt) {
+  const WebKeyboardEvent* keyEvent = evt->keyEvent();
+  // do not treat this as text input if it's a system key event
+  if (!keyEvent || keyEvent->isSystemKey)
+    return false;
 
-    String commandName = behavior().interpretKeyEvent(*evt);
-    Command command = this->createCommand(commandName);
+  String commandName = behavior().interpretKeyEvent(*evt);
+  Command command = this->createCommand(commandName);
 
-    if (keyEvent->type == WebInputEvent::RawKeyDown) {
-        // WebKit doesn't have enough information about mode to decide how
-        // commands that just insert text if executed via Editor should be treated,
-        // so we leave it upon WebCore to either handle them immediately
-        // (e.g. Tab that changes focus) or let a keypress event be generated
-        // (e.g. Tab that inserts a Tab character, or Enter).
-        if (command.isTextInsertion() || commandName.isEmpty())
-            return false;
-        return command.execute(evt);
-    }
+  if (keyEvent->type == WebInputEvent::RawKeyDown) {
+    // WebKit doesn't have enough information about mode to decide how
+    // commands that just insert text if executed via Editor should be treated,
+    // so we leave it upon WebCore to either handle them immediately
+    // (e.g. Tab that changes focus) or let a keypress event be generated
+    // (e.g. Tab that inserts a Tab character, or Enter).
+    if (command.isTextInsertion() || commandName.isEmpty())
+      return false;
+    return command.execute(evt);
+  }
 
-    if (command.execute(evt))
-        return true;
+  if (command.execute(evt))
+    return true;
 
-    if (!behavior().shouldInsertCharacter(*evt) || !canEdit())
-        return false;
+  if (!behavior().shouldInsertCharacter(*evt) || !canEdit())
+    return false;
 
-    // Return true to prevent default action. e.g. Space key scroll.
-    if (dispatchBeforeInputInsertText(evt->target(), keyEvent->text) != DispatchEventResult::NotCanceled)
-        return true;
+  // Return true to prevent default action. e.g. Space key scroll.
+  if (dispatchBeforeInputInsertText(evt->target(), keyEvent->text) !=
+      DispatchEventResult::NotCanceled)
+    return true;
 
-    return insertText(keyEvent->text, evt);
+  return insertText(keyEvent->text, evt);
 }
 
-void Editor::handleKeyboardEvent(KeyboardEvent* evt)
-{
-    // Give the embedder a chance to handle the keyboard event.
-    if (client().handleKeyboardEvent(m_frame) || handleEditingKeyboardEvent(evt))
-        evt->setDefaultHandled();
+void Editor::handleKeyboardEvent(KeyboardEvent* evt) {
+  // Give the embedder a chance to handle the keyboard event.
+  if (client().handleKeyboardEvent(m_frame) || handleEditingKeyboardEvent(evt))
+    evt->setDefaultHandled();
 }
 
-} // namespace blink
+}  // namespace blink

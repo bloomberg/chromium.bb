@@ -31,24 +31,20 @@
 namespace blink {
 
 class WordMeasurement {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    WordMeasurement()
-        : layoutText(nullptr)
-        , width(0)
-        , startOffset(0)
-        , endOffset(0)
-    {
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    LineLayoutText layoutText;
-    float width;
-    int startOffset;
-    int endOffset;
-    HashSet<const SimpleFontData*> fallbackFonts;
-    FloatRect glyphBounds;
+ public:
+  WordMeasurement()
+      : layoutText(nullptr), width(0), startOffset(0), endOffset(0) {}
+
+  LineLayoutText layoutText;
+  float width;
+  int startOffset;
+  int endOffset;
+  HashSet<const SimpleFontData*> fallbackFonts;
+  FloatRect glyphBounds;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WordMeasurement_h
+#endif  // WordMeasurement_h

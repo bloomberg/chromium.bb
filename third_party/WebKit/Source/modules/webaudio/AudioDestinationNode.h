@@ -37,71 +37,81 @@ class AudioBus;
 class BaseAudioContext;
 
 class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
-public:
-    AudioDestinationHandler(AudioNode&, float sampleRate);
-    ~AudioDestinationHandler() override;
+ public:
+  AudioDestinationHandler(AudioNode&, float sampleRate);
+  ~AudioDestinationHandler() override;
 
-    // AudioHandler
-    void process(size_t) final { } // we're pulled by hardware so this is never called
+  // AudioHandler
+  void process(size_t) final {
+  }  // we're pulled by hardware so this is never called
 
-    // The audio hardware calls render() to get the next render quantum of audio into destinationBus.
-    // It will optionally give us local/live audio input in sourceBus (if it's not 0).
-    void render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames) final;
+  // The audio hardware calls render() to get the next render quantum of audio into destinationBus.
+  // It will optionally give us local/live audio input in sourceBus (if it's not 0).
+  void render(AudioBus* sourceBus,
+              AudioBus* destinationBus,
+              size_t numberOfFrames) final;
 
-    size_t currentSampleFrame() const { return acquireLoad(&m_currentSampleFrame); }
-    double currentTime() const { return currentSampleFrame() / static_cast<double>(sampleRate()); }
+  size_t currentSampleFrame() const {
+    return acquireLoad(&m_currentSampleFrame);
+  }
+  double currentTime() const {
+    return currentSampleFrame() / static_cast<double>(sampleRate());
+  }
 
-    virtual unsigned long maxChannelCount() const { return 0; }
+  virtual unsigned long maxChannelCount() const { return 0; }
 
-    virtual void startRendering() = 0;
-    virtual void stopRendering() = 0;
+  virtual void startRendering() = 0;
+  virtual void stopRendering() = 0;
 
-protected:
-    // LocalAudioInputProvider allows us to expose an AudioSourceProvider for local/live audio input.
-    // If there is local/live audio input, we call set() with the audio input data every render quantum.
-    class LocalAudioInputProvider final : public AudioSourceProvider {
-    public:
-        LocalAudioInputProvider()
-            : m_sourceBus(AudioBus::create(2, ProcessingSizeInFrames)) // FIXME: handle non-stereo local input.
-        {
-        }
+ protected:
+  // LocalAudioInputProvider allows us to expose an AudioSourceProvider for local/live audio input.
+  // If there is local/live audio input, we call set() with the audio input data every render quantum.
+  class LocalAudioInputProvider final : public AudioSourceProvider {
+   public:
+    LocalAudioInputProvider()
+        : m_sourceBus(AudioBus::create(
+              2,
+              ProcessingSizeInFrames))  // FIXME: handle non-stereo local input.
+    {}
 
-        void set(AudioBus* bus)
-        {
-            if (bus)
-                m_sourceBus->copyFrom(*bus);
-        }
+    void set(AudioBus* bus) {
+      if (bus)
+        m_sourceBus->copyFrom(*bus);
+    }
 
-        // AudioSourceProvider.
-        void provideInput(AudioBus* destinationBus, size_t numberOfFrames) override
-        {
-            bool isGood = destinationBus && destinationBus->length() == numberOfFrames && m_sourceBus->length() == numberOfFrames;
-            DCHECK(isGood);
-            if (isGood)
-                destinationBus->copyFrom(*m_sourceBus);
-        }
+    // AudioSourceProvider.
+    void provideInput(AudioBus* destinationBus,
+                      size_t numberOfFrames) override {
+      bool isGood = destinationBus &&
+                    destinationBus->length() == numberOfFrames &&
+                    m_sourceBus->length() == numberOfFrames;
+      DCHECK(isGood);
+      if (isGood)
+        destinationBus->copyFrom(*m_sourceBus);
+    }
 
-    private:
-        RefPtr<AudioBus> m_sourceBus;
-    };
+   private:
+    RefPtr<AudioBus> m_sourceBus;
+  };
 
-    // Counts the number of sample-frames processed by the destination.
-    size_t m_currentSampleFrame;
+  // Counts the number of sample-frames processed by the destination.
+  size_t m_currentSampleFrame;
 
-    LocalAudioInputProvider m_localAudioInputProvider;
+  LocalAudioInputProvider m_localAudioInputProvider;
 };
 
 class AudioDestinationNode : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    AudioDestinationHandler& audioDestinationHandler() const;
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned long maxChannelCount() const;
+ public:
+  AudioDestinationHandler& audioDestinationHandler() const;
 
-protected:
-    AudioDestinationNode(BaseAudioContext&);
+  unsigned long maxChannelCount() const;
+
+ protected:
+  AudioDestinationNode(BaseAudioContext&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioDestinationNode_h
+#endif  // AudioDestinationNode_h

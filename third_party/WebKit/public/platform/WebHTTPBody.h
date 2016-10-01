@@ -47,72 +47,78 @@ class EncodedFormData;
 class WebHTTPBodyPrivate;
 
 class WebHTTPBody {
-public:
-    struct Element {
-        enum Type { TypeData, TypeFile, TypeBlob, TypeFileSystemURL } type;
-        WebData data;
-        WebString filePath;
-        long long fileStart;
-        long long fileLength; // -1 means to the end of the file.
-        double modificationTime;
-        WebURL fileSystemURL;
-        WebString blobUUID;
-    };
+ public:
+  struct Element {
+    enum Type { TypeData, TypeFile, TypeBlob, TypeFileSystemURL } type;
+    WebData data;
+    WebString filePath;
+    long long fileStart;
+    long long fileLength;  // -1 means to the end of the file.
+    double modificationTime;
+    WebURL fileSystemURL;
+    WebString blobUUID;
+  };
 
-    ~WebHTTPBody() { reset(); }
+  ~WebHTTPBody() { reset(); }
 
-    WebHTTPBody() : m_private(0) { }
-    WebHTTPBody(const WebHTTPBody& b) : m_private(0) { assign(b); }
-    WebHTTPBody& operator=(const WebHTTPBody& b)
-    {
-        assign(b);
-        return *this;
-    }
+  WebHTTPBody() : m_private(0) {}
+  WebHTTPBody(const WebHTTPBody& b) : m_private(0) { assign(b); }
+  WebHTTPBody& operator=(const WebHTTPBody& b) {
+    assign(b);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void initialize();
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebHTTPBody&);
+  BLINK_PLATFORM_EXPORT void initialize();
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebHTTPBody&);
 
-    bool isNull() const { return !m_private; }
+  bool isNull() const { return !m_private; }
 
-    // Returns the number of elements comprising the http body.
-    BLINK_PLATFORM_EXPORT size_t elementCount() const;
+  // Returns the number of elements comprising the http body.
+  BLINK_PLATFORM_EXPORT size_t elementCount() const;
 
-    // Sets the values of the element at the given index. Returns false if
-    // index is out of bounds.
-    BLINK_PLATFORM_EXPORT bool elementAt(size_t index, Element&) const;
+  // Sets the values of the element at the given index. Returns false if
+  // index is out of bounds.
+  BLINK_PLATFORM_EXPORT bool elementAt(size_t index, Element&) const;
 
-    // Append to the list of elements.
-    BLINK_PLATFORM_EXPORT void appendData(const WebData&);
-    BLINK_PLATFORM_EXPORT void appendFile(const WebString&);
-    // Passing -1 to fileLength means to the end of the file.
-    BLINK_PLATFORM_EXPORT void appendFileRange(const WebString&, long long fileStart, long long fileLength, double modificationTime);
-    BLINK_PLATFORM_EXPORT void appendBlob(const WebString& uuid);
+  // Append to the list of elements.
+  BLINK_PLATFORM_EXPORT void appendData(const WebData&);
+  BLINK_PLATFORM_EXPORT void appendFile(const WebString&);
+  // Passing -1 to fileLength means to the end of the file.
+  BLINK_PLATFORM_EXPORT void appendFileRange(const WebString&,
+                                             long long fileStart,
+                                             long long fileLength,
+                                             double modificationTime);
+  BLINK_PLATFORM_EXPORT void appendBlob(const WebString& uuid);
 
-    // Append a resource which is identified by the FileSystem URL.
-    BLINK_PLATFORM_EXPORT void appendFileSystemURLRange(const WebURL&, long long start, long long length, double modificationTime);
+  // Append a resource which is identified by the FileSystem URL.
+  BLINK_PLATFORM_EXPORT void appendFileSystemURLRange(const WebURL&,
+                                                      long long start,
+                                                      long long length,
+                                                      double modificationTime);
 
-    // Identifies a particular form submission instance. A value of 0 is
-    // used to indicate an unspecified identifier.
-    BLINK_PLATFORM_EXPORT long long identifier() const;
-    BLINK_PLATFORM_EXPORT void setIdentifier(long long);
+  // Identifies a particular form submission instance. A value of 0 is
+  // used to indicate an unspecified identifier.
+  BLINK_PLATFORM_EXPORT long long identifier() const;
+  BLINK_PLATFORM_EXPORT void setIdentifier(long long);
 
-    BLINK_PLATFORM_EXPORT bool containsPasswordData() const;
-    BLINK_PLATFORM_EXPORT void setContainsPasswordData(bool);
+  BLINK_PLATFORM_EXPORT bool containsPasswordData() const;
+  BLINK_PLATFORM_EXPORT void setContainsPasswordData(bool);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebHTTPBody(WTF::PassRefPtr<EncodedFormData>);
-    BLINK_PLATFORM_EXPORT WebHTTPBody& operator=(WTF::PassRefPtr<EncodedFormData>);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<EncodedFormData>() const;
+  BLINK_PLATFORM_EXPORT WebHTTPBody(WTF::PassRefPtr<EncodedFormData>);
+  BLINK_PLATFORM_EXPORT WebHTTPBody& operator=(
+      WTF::PassRefPtr<EncodedFormData>);
+  BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<EncodedFormData>() const;
 #endif
 
-private:
-    BLINK_PLATFORM_EXPORT void assign(WebHTTPBodyPrivate*);
-    BLINK_PLATFORM_EXPORT void ensureMutable();
+ private:
+  BLINK_PLATFORM_EXPORT void assign(WebHTTPBodyPrivate*);
+  BLINK_PLATFORM_EXPORT void ensureMutable();
 
-    WebHTTPBodyPrivate* m_private;
+  WebHTTPBodyPrivate* m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

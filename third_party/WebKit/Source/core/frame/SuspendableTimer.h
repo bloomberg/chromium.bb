@@ -34,25 +34,25 @@
 namespace blink {
 
 class CORE_EXPORT SuspendableTimer : public TimerBase, public ActiveDOMObject {
-public:
-    explicit SuspendableTimer(ExecutionContext*);
-    ~SuspendableTimer() override;
+ public:
+  explicit SuspendableTimer(ExecutionContext*);
+  ~SuspendableTimer() override;
 
-    // ActiveDOMObject
-    void stop() override;
-    void suspend() final;
-    void resume() final;
+  // ActiveDOMObject
+  void stop() override;
+  void suspend() final;
+  void resume() final;
 
-private:
-    void fired() override = 0;
+ private:
+  void fired() override = 0;
 
-    double m_nextFireInterval;
-    double m_repeatInterval;
+  double m_nextFireInterval;
+  double m_repeatInterval;
 #if ENABLE(ASSERT)
-    bool m_suspended;
+  bool m_suspended;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SuspendableTimer_h
+#endif  // SuspendableTimer_h

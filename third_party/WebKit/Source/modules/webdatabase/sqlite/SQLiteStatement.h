@@ -35,47 +35,53 @@ namespace blink {
 class SQLValue;
 
 class SQLiteStatement {
-    WTF_MAKE_NONCOPYABLE(SQLiteStatement); USING_FAST_MALLOC(SQLiteStatement);
-public:
-    SQLiteStatement(SQLiteDatabase&, const String&);
-    ~SQLiteStatement();
+  WTF_MAKE_NONCOPYABLE(SQLiteStatement);
+  USING_FAST_MALLOC(SQLiteStatement);
 
-    int prepare();
-    int bindText(int index, const String&);
-    int bindDouble(int index, double);
-    int bindNull(int index);
-    int bindValue(int index, const SQLValue&);
-    unsigned bindParameterCount() const;
+ public:
+  SQLiteStatement(SQLiteDatabase&, const String&);
+  ~SQLiteStatement();
 
-    int step();
-    int finalize();
+  int prepare();
+  int bindText(int index, const String&);
+  int bindDouble(int index, double);
+  int bindNull(int index);
+  int bindValue(int index, const SQLValue&);
+  unsigned bindParameterCount() const;
 
-    int prepareAndStep() { if (int error = prepare()) return error; return step(); }
+  int step();
+  int finalize();
 
-    // prepares, steps, and finalizes the query.
-    // returns true if all 3 steps succeed with step() returning SQLITE_DONE
-    // returns false otherwise
-    bool executeCommand();
+  int prepareAndStep() {
+    if (int error = prepare())
+      return error;
+    return step();
+  }
 
-    // Returns -1 on last-step failing.  Otherwise, returns number of rows
-    // returned in the last step()
-    int columnCount();
+  // prepares, steps, and finalizes the query.
+  // returns true if all 3 steps succeed with step() returning SQLITE_DONE
+  // returns false otherwise
+  bool executeCommand();
 
-    String getColumnName(int col);
-    SQLValue getColumnValue(int col);
-    String getColumnText(int col);
-    int getColumnInt(int col);
-    int64_t getColumnInt64(int col);
+  // Returns -1 on last-step failing.  Otherwise, returns number of rows
+  // returned in the last step()
+  int columnCount();
 
-private:
-    SQLiteDatabase& m_database;
-    String m_query;
-    sqlite3_stmt* m_statement;
+  String getColumnName(int col);
+  SQLValue getColumnValue(int col);
+  String getColumnText(int col);
+  int getColumnInt(int col);
+  int64_t getColumnInt64(int col);
+
+ private:
+  SQLiteDatabase& m_database;
+  String m_query;
+  sqlite3_stmt* m_statement;
 #if ENABLE(ASSERT)
-    bool m_isPrepared;
+  bool m_isPrepared;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLiteStatement_h
+#endif  // SQLiteStatement_h

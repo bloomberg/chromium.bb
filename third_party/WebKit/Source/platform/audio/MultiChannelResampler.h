@@ -39,25 +39,28 @@ namespace blink {
 class AudioBus;
 
 class PLATFORM_EXPORT MultiChannelResampler {
-    USING_FAST_MALLOC(MultiChannelResampler);
-    WTF_MAKE_NONCOPYABLE(MultiChannelResampler);
-public:
-    MultiChannelResampler(double scaleFactor, unsigned numberOfChannels);
+  USING_FAST_MALLOC(MultiChannelResampler);
+  WTF_MAKE_NONCOPYABLE(MultiChannelResampler);
 
-    // Process given AudioSourceProvider for streaming applications.
-    void process(AudioSourceProvider*, AudioBus* destination, size_t framesToProcess);
+ public:
+  MultiChannelResampler(double scaleFactor, unsigned numberOfChannels);
 
-private:
-    // FIXME: the mac port can have a more highly optimized implementation based on CoreAudio
-    // instead of SincResampler. For now the default implementation will be used on all ports.
-    // https://bugs.webkit.org/show_bug.cgi?id=75118
+  // Process given AudioSourceProvider for streaming applications.
+  void process(AudioSourceProvider*,
+               AudioBus* destination,
+               size_t framesToProcess);
 
-    // Each channel will be resampled using a high-quality SincResampler.
-    Vector<std::unique_ptr<SincResampler>> m_kernels;
+ private:
+  // FIXME: the mac port can have a more highly optimized implementation based on CoreAudio
+  // instead of SincResampler. For now the default implementation will be used on all ports.
+  // https://bugs.webkit.org/show_bug.cgi?id=75118
 
-    unsigned m_numberOfChannels;
+  // Each channel will be resampled using a high-quality SincResampler.
+  Vector<std::unique_ptr<SincResampler>> m_kernels;
+
+  unsigned m_numberOfChannels;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MultiChannelResampler_h
+#endif  // MultiChannelResampler_h

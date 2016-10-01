@@ -14,34 +14,38 @@ namespace blink {
 class ExceptionState;
 
 class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
-    WTF_MAKE_NONCOPYABLE(CSSPerspective);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSPerspective* create(const CSSLengthValue*, ExceptionState&);
-    static CSSPerspective* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
+  WTF_MAKE_NONCOPYABLE(CSSPerspective);
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Bindings require a non const return value.
-    CSSLengthValue* length() const { return const_cast<CSSLengthValue*>(m_length.get()); }
+ public:
+  static CSSPerspective* create(const CSSLengthValue*, ExceptionState&);
+  static CSSPerspective* fromCSSValue(const CSSFunctionValue& value) {
+    return nullptr;
+  }
 
-    TransformComponentType type() const override { return PerspectiveType; }
+  // Bindings require a non const return value.
+  CSSLengthValue* length() const {
+    return const_cast<CSSLengthValue*>(m_length.get());
+  }
 
-    // TODO: Implement asMatrix for CSSPerspective.
-    CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
+  TransformComponentType type() const override { return PerspectiveType; }
 
-    CSSFunctionValue* toCSSValue() const override;
+  // TODO: Implement asMatrix for CSSPerspective.
+  CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_length);
-        CSSTransformComponent::trace(visitor);
-    }
+  CSSFunctionValue* toCSSValue() const override;
 
-private:
-    CSSPerspective(const CSSLengthValue* length) : m_length(length) {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_length);
+    CSSTransformComponent::trace(visitor);
+  }
 
-    Member<const CSSLengthValue> m_length;
+ private:
+  CSSPerspective(const CSSLengthValue* length) : m_length(length) {}
+
+  Member<const CSSLengthValue> m_length;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

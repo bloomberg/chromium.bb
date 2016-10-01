@@ -20,60 +20,58 @@
 namespace blink {
 
 Worklet::Worklet(LocalFrame* frame)
-    : ActiveDOMObject(frame->document())
-    , m_fetcher(frame->loader().documentLoader()->fetcher())
-{
+    : ActiveDOMObject(frame->document()),
+      m_fetcher(frame->loader().documentLoader()->fetcher()) {}
+
+ScriptPromise Worklet::import(ScriptState* scriptState, const String& url) {
+  if (!isInitialized()) {
+    initialize();
+  }
+
+  KURL scriptURL = getExecutionContext()->completeURL(url);
+  if (!scriptURL.isValid()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(SyntaxError, "'" + url + "' is not a valid URL."));
+  }
+
+  ResourceRequest resourceRequest(scriptURL);
+  resourceRequest.setRequestContext(WebURLRequest::RequestContextScript);
+  FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
+  ScriptResource* resource = ScriptResource::fetch(request, fetcher());
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  if (resource) {
+    WorkletScriptLoader* workletLoader =
+        WorkletScriptLoader::create(resolver, this, resource);
+    m_scriptLoaders.add(workletLoader);
+  } else {
+    resolver->reject(DOMException::create(NetworkError));
+  }
+  return promise;
 }
 
-ScriptPromise Worklet::import(ScriptState* scriptState, const String& url)
-{
-    if (!isInitialized()) {
-        initialize();
-    }
-
-    KURL scriptURL = getExecutionContext()->completeURL(url);
-    if (!scriptURL.isValid()) {
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SyntaxError, "'" + url + "' is not a valid URL."));
-    }
-
-    ResourceRequest resourceRequest(scriptURL);
-    resourceRequest.setRequestContext(WebURLRequest::RequestContextScript);
-    FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
-    ScriptResource* resource = ScriptResource::fetch(request, fetcher());
-
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    if (resource) {
-        WorkletScriptLoader* workletLoader = WorkletScriptLoader::create(resolver, this, resource);
-        m_scriptLoaders.add(workletLoader);
-    } else {
-        resolver->reject(DOMException::create(NetworkError));
-    }
-    return promise;
+void Worklet::notifyFinished(WorkletScriptLoader* scriptLoader) {
+  workletGlobalScopeProxy()->evaluateScript(
+      ScriptSourceCode(scriptLoader->resource()));
+  m_scriptLoaders.remove(scriptLoader);
 }
 
-void Worklet::notifyFinished(WorkletScriptLoader* scriptLoader)
-{
-    workletGlobalScopeProxy()->evaluateScript(ScriptSourceCode(scriptLoader->resource()));
-    m_scriptLoaders.remove(scriptLoader);
+void Worklet::stop() {
+  if (isInitialized()) {
+    workletGlobalScopeProxy()->terminateWorkletGlobalScope();
+  }
+
+  for (const auto& scriptLoader : m_scriptLoaders) {
+    scriptLoader->cancel();
+  }
 }
 
-void Worklet::stop()
-{
-    if (isInitialized()) {
-        workletGlobalScopeProxy()->terminateWorkletGlobalScope();
-    }
-
-    for (const auto& scriptLoader : m_scriptLoaders) {
-        scriptLoader->cancel();
-    }
+DEFINE_TRACE(Worklet) {
+  visitor->trace(m_fetcher);
+  visitor->trace(m_scriptLoaders);
+  ActiveDOMObject::trace(visitor);
 }
 
-DEFINE_TRACE(Worklet)
-{
-    visitor->trace(m_fetcher);
-    visitor->trace(m_scriptLoaders);
-    ActiveDOMObject::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

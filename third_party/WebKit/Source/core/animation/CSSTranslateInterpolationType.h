@@ -10,24 +10,30 @@
 namespace blink {
 
 class CSSTranslateInterpolationType : public CSSInterpolationType {
-public:
-    CSSTranslateInterpolationType(PropertyHandle property)
-        : CSSInterpolationType(property)
-    {
-        DCHECK_EQ(cssProperty(), CSSPropertyTranslate);
-    }
+ public:
+  CSSTranslateInterpolationType(PropertyHandle property)
+      : CSSInterpolationType(property) {
+    DCHECK_EQ(cssProperty(), CSSPropertyTranslate);
+  }
 
-    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertUnderlyingValue(
+      const InterpolationEnvironment&) const final;
+  void apply(const InterpolableValue&,
+             const NonInterpolableValue*,
+             InterpolationEnvironment&) const final;
 
-private:
-    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
-
+ private:
+  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertValue(const CSSValue&,
+                                       const StyleResolverState&,
+                                       ConversionCheckers&) const final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSTranslateInterpolationType_h
+#endif  // CSSTranslateInterpolationType_h

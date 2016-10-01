@@ -34,62 +34,61 @@
 namespace blink {
 
 LinkRelAttribute::LinkRelAttribute(const String& rel)
-    : m_iconType(InvalidIcon)
-    , m_isStyleSheet(false)
-    , m_isAlternate(false)
-    , m_isDNSPrefetch(false)
-    , m_isPreconnect(false)
-    , m_isLinkPrefetch(false)
-    , m_isLinkPreload(false)
-    , m_isLinkPrerender(false)
-    , m_isLinkNext(false)
-    , m_isImport(false)
-    , m_isManifest(false)
-    , m_isServiceWorker(false)
-{
-    if (rel.isEmpty())
-        return;
-    String relCopy = rel;
-    relCopy.replace('\n', ' ');
-    Vector<String> list;
-    relCopy.split(' ', list);
-    for (const String& linkType : list) {
-        if (equalIgnoringCase(linkType, "stylesheet")) {
-            if (!m_isImport)
-                m_isStyleSheet = true;
-        } else if (equalIgnoringCase(linkType, "import")) {
-            if (!m_isStyleSheet)
-                m_isImport = true;
-        } else if (equalIgnoringCase(linkType, "alternate")) {
-            m_isAlternate = true;
-        } else if (equalIgnoringCase(linkType, "icon")) {
-            // This also allows "shortcut icon" since we just ignore the non-standard "shortcut" token.
-            // FIXME: This doesn't really follow the spec that requires "shortcut icon" to be the
-            // entire string http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
-            m_iconType = Favicon;
-        } else if (equalIgnoringCase(linkType, "prefetch")) {
-            m_isLinkPrefetch = true;
-        } else if (equalIgnoringCase(linkType, "dns-prefetch")) {
-            m_isDNSPrefetch = true;
-        } else if (equalIgnoringCase(linkType, "preconnect")) {
-            m_isPreconnect = true;
-        } else if (equalIgnoringCase(linkType, "preload")) {
-            m_isLinkPreload = true;
-        } else if (equalIgnoringCase(linkType, "prerender")) {
-            m_isLinkPrerender = true;
-        } else if (equalIgnoringCase(linkType, "next")) {
-            m_isLinkNext = true;
-        } else if (equalIgnoringCase(linkType, "apple-touch-icon")) {
-            m_iconType = TouchIcon;
-        } else if (equalIgnoringCase(linkType, "apple-touch-icon-precomposed")) {
-            m_iconType = TouchPrecomposedIcon;
-        } else if (equalIgnoringCase(linkType, "manifest")) {
-            m_isManifest = true;
-        } else if (equalIgnoringCase(linkType, "serviceworker")) {
-            m_isServiceWorker = true;
-        }
-        // Adding or removing a value here requires you to update RelList::supportedTokens()
+    : m_iconType(InvalidIcon),
+      m_isStyleSheet(false),
+      m_isAlternate(false),
+      m_isDNSPrefetch(false),
+      m_isPreconnect(false),
+      m_isLinkPrefetch(false),
+      m_isLinkPreload(false),
+      m_isLinkPrerender(false),
+      m_isLinkNext(false),
+      m_isImport(false),
+      m_isManifest(false),
+      m_isServiceWorker(false) {
+  if (rel.isEmpty())
+    return;
+  String relCopy = rel;
+  relCopy.replace('\n', ' ');
+  Vector<String> list;
+  relCopy.split(' ', list);
+  for (const String& linkType : list) {
+    if (equalIgnoringCase(linkType, "stylesheet")) {
+      if (!m_isImport)
+        m_isStyleSheet = true;
+    } else if (equalIgnoringCase(linkType, "import")) {
+      if (!m_isStyleSheet)
+        m_isImport = true;
+    } else if (equalIgnoringCase(linkType, "alternate")) {
+      m_isAlternate = true;
+    } else if (equalIgnoringCase(linkType, "icon")) {
+      // This also allows "shortcut icon" since we just ignore the non-standard "shortcut" token.
+      // FIXME: This doesn't really follow the spec that requires "shortcut icon" to be the
+      // entire string http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
+      m_iconType = Favicon;
+    } else if (equalIgnoringCase(linkType, "prefetch")) {
+      m_isLinkPrefetch = true;
+    } else if (equalIgnoringCase(linkType, "dns-prefetch")) {
+      m_isDNSPrefetch = true;
+    } else if (equalIgnoringCase(linkType, "preconnect")) {
+      m_isPreconnect = true;
+    } else if (equalIgnoringCase(linkType, "preload")) {
+      m_isLinkPreload = true;
+    } else if (equalIgnoringCase(linkType, "prerender")) {
+      m_isLinkPrerender = true;
+    } else if (equalIgnoringCase(linkType, "next")) {
+      m_isLinkNext = true;
+    } else if (equalIgnoringCase(linkType, "apple-touch-icon")) {
+      m_iconType = TouchIcon;
+    } else if (equalIgnoringCase(linkType, "apple-touch-icon-precomposed")) {
+      m_iconType = TouchPrecomposedIcon;
+    } else if (equalIgnoringCase(linkType, "manifest")) {
+      m_isManifest = true;
+    } else if (equalIgnoringCase(linkType, "serviceworker")) {
+      m_isServiceWorker = true;
     }
+    // Adding or removing a value here requires you to update RelList::supportedTokens()
+  }
 }
 
-} // namespace blink
+}  // namespace blink

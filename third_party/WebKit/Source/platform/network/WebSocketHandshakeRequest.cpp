@@ -32,30 +32,28 @@
 
 namespace blink {
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url) : m_url(url)
-{
+WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url)
+    : m_url(url) {}
+
+WebSocketHandshakeRequest::WebSocketHandshakeRequest() {}
+
+WebSocketHandshakeRequest::WebSocketHandshakeRequest(
+    const WebSocketHandshakeRequest& request)
+    : m_url(request.m_url),
+      m_headerFields(request.m_headerFields),
+      m_headersText(request.m_headersText) {}
+
+WebSocketHandshakeRequest::~WebSocketHandshakeRequest() {}
+
+void WebSocketHandshakeRequest::addAndMergeHeader(HTTPHeaderMap* map,
+                                                  const AtomicString& name,
+                                                  const AtomicString& value) {
+  HTTPHeaderMap::AddResult result = map->add(name, value);
+  if (!result.isNewEntry) {
+    // Inspector expects the "\n" separated format.
+    result.storedValue->value =
+        result.storedValue->value + "\n" + String(value);
+  }
 }
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest()
-{
-}
-
-WebSocketHandshakeRequest::WebSocketHandshakeRequest(const WebSocketHandshakeRequest& request)
-    : m_url(request.m_url), m_headerFields(request.m_headerFields), m_headersText(request.m_headersText)
-{
-}
-
-WebSocketHandshakeRequest::~WebSocketHandshakeRequest()
-{
-}
-
-void WebSocketHandshakeRequest::addAndMergeHeader(HTTPHeaderMap* map, const AtomicString& name, const AtomicString& value)
-{
-    HTTPHeaderMap::AddResult result = map->add(name, value);
-    if (!result.isNewEntry) {
-        // Inspector expects the "\n" separated format.
-        result.storedValue->value = result.storedValue->value + "\n" + String(value);
-    }
-}
-
-} // namespace blink
+}  // namespace blink

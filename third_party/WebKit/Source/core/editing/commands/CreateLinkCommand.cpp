@@ -31,38 +31,38 @@
 namespace blink {
 
 CreateLinkCommand::CreateLinkCommand(Document& document, const String& url)
-    : CompositeEditCommand(document)
-{
-    m_url = url;
+    : CompositeEditCommand(document) {
+  m_url = url;
 }
 
-void CreateLinkCommand::doApply(EditingState* editingState)
-{
-    if (endingSelection().isNone())
-        return;
+void CreateLinkCommand::doApply(EditingState* editingState) {
+  if (endingSelection().isNone())
+    return;
 
-    HTMLAnchorElement* anchorElement = HTMLAnchorElement::create(document());
-    anchorElement->setHref(AtomicString(m_url));
+  HTMLAnchorElement* anchorElement = HTMLAnchorElement::create(document());
+  anchorElement->setHref(AtomicString(m_url));
 
-    if (endingSelection().isRange()) {
-        applyStyledElement(anchorElement, editingState);
-        if (editingState->isAborted())
-            return;
-    } else {
-        insertNodeAt(anchorElement, endingSelection().start(), editingState);
-        if (editingState->isAborted())
-            return;
-        Text* textNode = Text::create(document(), m_url);
-        appendNode(textNode, anchorElement, editingState);
-        if (editingState->isAborted())
-            return;
-        setEndingSelection(createVisibleSelectionDeprecated(Position::inParentBeforeNode(*anchorElement), Position::inParentAfterNode(*anchorElement), TextAffinity::Downstream, endingSelection().isDirectional()));
-    }
+  if (endingSelection().isRange()) {
+    applyStyledElement(anchorElement, editingState);
+    if (editingState->isAborted())
+      return;
+  } else {
+    insertNodeAt(anchorElement, endingSelection().start(), editingState);
+    if (editingState->isAborted())
+      return;
+    Text* textNode = Text::create(document(), m_url);
+    appendNode(textNode, anchorElement, editingState);
+    if (editingState->isAborted())
+      return;
+    setEndingSelection(createVisibleSelectionDeprecated(
+        Position::inParentBeforeNode(*anchorElement),
+        Position::inParentAfterNode(*anchorElement), TextAffinity::Downstream,
+        endingSelection().isDirectional()));
+  }
 }
 
-InputEvent::InputType CreateLinkCommand::inputType() const
-{
-    return InputEvent::InputType::CreateLink;
+InputEvent::InputType CreateLinkCommand::inputType() const {
+  return InputEvent::InputType::CreateLink;
 }
 
-} // namespace blink
+}  // namespace blink

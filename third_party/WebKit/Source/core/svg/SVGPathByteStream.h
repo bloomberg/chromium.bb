@@ -27,49 +27,51 @@
 
 namespace blink {
 
-template<typename DataType>
+template <typename DataType>
 union ByteType {
-    DataType value;
-    unsigned char bytes[sizeof(DataType)];
+  DataType value;
+  unsigned char bytes[sizeof(DataType)];
 };
 
 class SVGPathByteStream {
-    USING_FAST_MALLOC(SVGPathByteStream);
-public:
-    static std::unique_ptr<SVGPathByteStream> create()
-    {
-        return wrapUnique(new SVGPathByteStream);
-    }
+  USING_FAST_MALLOC(SVGPathByteStream);
 
-    std::unique_ptr<SVGPathByteStream> clone() const
-    {
-        return wrapUnique(new SVGPathByteStream(m_data));
-    }
+ public:
+  static std::unique_ptr<SVGPathByteStream> create() {
+    return wrapUnique(new SVGPathByteStream);
+  }
 
-    typedef Vector<unsigned char> Data;
-    typedef Data::const_iterator DataIterator;
+  std::unique_ptr<SVGPathByteStream> clone() const {
+    return wrapUnique(new SVGPathByteStream(m_data));
+  }
 
-    DataIterator begin() const { return m_data.begin(); }
-    DataIterator end() const { return m_data.end(); }
-    void append(const unsigned char* data, size_t dataSize) { m_data.append(data, dataSize); }
-    void clear() { m_data.clear(); }
-    void reserveInitialCapacity(size_t size) { m_data.reserveInitialCapacity(size); }
-    void shrinkToFit() { m_data.shrinkToFit(); }
-    bool isEmpty() const { return m_data.isEmpty(); }
-    unsigned size() const { return m_data.size(); }
+  typedef Vector<unsigned char> Data;
+  typedef Data::const_iterator DataIterator;
 
-    bool operator==(const SVGPathByteStream& other) const { return m_data == other.m_data; }
+  DataIterator begin() const { return m_data.begin(); }
+  DataIterator end() const { return m_data.end(); }
+  void append(const unsigned char* data, size_t dataSize) {
+    m_data.append(data, dataSize);
+  }
+  void clear() { m_data.clear(); }
+  void reserveInitialCapacity(size_t size) {
+    m_data.reserveInitialCapacity(size);
+  }
+  void shrinkToFit() { m_data.shrinkToFit(); }
+  bool isEmpty() const { return m_data.isEmpty(); }
+  unsigned size() const { return m_data.size(); }
 
-private:
-    SVGPathByteStream() { }
-    SVGPathByteStream(const Data& data)
-        : m_data(data)
-    {
-    }
+  bool operator==(const SVGPathByteStream& other) const {
+    return m_data == other.m_data;
+  }
 
-    Data m_data;
+ private:
+  SVGPathByteStream() {}
+  SVGPathByteStream(const Data& data) : m_data(data) {}
+
+  Data m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPathByteStream_h
+#endif  // SVGPathByteStream_h

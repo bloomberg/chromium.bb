@@ -33,26 +33,27 @@ namespace blink {
 class Text;
 
 class DeleteFromTextNodeCommand final : public SimpleEditCommand {
-public:
-    static DeleteFromTextNodeCommand* create(Text* node, unsigned offset, unsigned count)
-    {
-        return new DeleteFromTextNodeCommand(node, offset, count);
-    }
+ public:
+  static DeleteFromTextNodeCommand* create(Text* node,
+                                           unsigned offset,
+                                           unsigned count) {
+    return new DeleteFromTextNodeCommand(node, offset, count);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    DeleteFromTextNodeCommand(Text*, unsigned offset, unsigned count);
+ private:
+  DeleteFromTextNodeCommand(Text*, unsigned offset, unsigned count);
 
-    void doApply(EditingState*) override;
-    void doUnapply() override;
+  void doApply(EditingState*) override;
+  void doUnapply() override;
 
-    Member<Text> m_node;
-    unsigned m_offset;
-    unsigned m_count;
-    String m_text;
+  Member<Text> m_node;
+  unsigned m_offset;
+  unsigned m_count;
+  String m_text;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeleteFromTextNodeCommand_h
+#endif  // DeleteFromTextNodeCommand_h

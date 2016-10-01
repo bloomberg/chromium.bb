@@ -34,47 +34,52 @@ namespace WTF {
 class ArrayBuffer;
 
 class Int8Array final : public IntegralTypedArrayBase<signed char> {
-public:
-    static inline PassRefPtr<Int8Array> create(unsigned length);
-    static inline PassRefPtr<Int8Array> create(const signed char* array, unsigned length);
-    static inline PassRefPtr<Int8Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+ public:
+  static inline PassRefPtr<Int8Array> create(unsigned length);
+  static inline PassRefPtr<Int8Array> create(const signed char* array,
+                                             unsigned length);
+  static inline PassRefPtr<Int8Array> create(PassRefPtr<ArrayBuffer>,
+                                             unsigned byteOffset,
+                                             unsigned length);
 
-    using TypedArrayBase<signed char>::set;
-    using IntegralTypedArrayBase<signed char>::set;
+  using TypedArrayBase<signed char>::set;
+  using IntegralTypedArrayBase<signed char>::set;
 
-    ViewType type() const override
-    {
-        return TypeInt8;
-    }
+  ViewType type() const override { return TypeInt8; }
 
-private:
-    inline Int8Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
-    // Make constructor visible to superclass.
-    friend class TypedArrayBase<signed char>;
+ private:
+  inline Int8Array(PassRefPtr<ArrayBuffer>,
+                   unsigned byteOffset,
+                   unsigned length);
+  // Make constructor visible to superclass.
+  friend class TypedArrayBase<signed char>;
 };
 
-PassRefPtr<Int8Array> Int8Array::create(unsigned length)
-{
-    return TypedArrayBase<signed char>::create<Int8Array>(length);
+PassRefPtr<Int8Array> Int8Array::create(unsigned length) {
+  return TypedArrayBase<signed char>::create<Int8Array>(length);
 }
 
-PassRefPtr<Int8Array> Int8Array::create(const signed char* array, unsigned length)
-{
-    return TypedArrayBase<signed char>::create<Int8Array>(array, length);
+PassRefPtr<Int8Array> Int8Array::create(const signed char* array,
+                                        unsigned length) {
+  return TypedArrayBase<signed char>::create<Int8Array>(array, length);
 }
 
-PassRefPtr<Int8Array> Int8Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-{
-    return TypedArrayBase<signed char>::create<Int8Array>(std::move(buffer), byteOffset, length);
+PassRefPtr<Int8Array> Int8Array::create(PassRefPtr<ArrayBuffer> buffer,
+                                        unsigned byteOffset,
+                                        unsigned length) {
+  return TypedArrayBase<signed char>::create<Int8Array>(std::move(buffer),
+                                                        byteOffset, length);
 }
 
-Int8Array::Int8Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : IntegralTypedArrayBase<signed char>(std::move(buffer), byteOffset, length)
-{
-}
+Int8Array::Int8Array(PassRefPtr<ArrayBuffer> buffer,
+                     unsigned byteOffset,
+                     unsigned length)
+    : IntegralTypedArrayBase<signed char>(std::move(buffer),
+                                          byteOffset,
+                                          length) {}
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::Int8Array;
 
-#endif // Int8Array_h
+#endif  // Int8Array_h

@@ -43,31 +43,36 @@ class Document;
 class Prerender;
 class PrerenderClient;
 
-class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>, public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
-    WTF_MAKE_NONCOPYABLE(PrerenderHandle);
-public:
-    static PrerenderHandle* create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
+class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
+                              public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
+  WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 
-    virtual ~PrerenderHandle();
+ public:
+  static PrerenderHandle* create(Document&,
+                                 PrerenderClient*,
+                                 const KURL&,
+                                 unsigned prerenderRelTypes);
 
-    void cancel();
-    const KURL& url() const;
+  virtual ~PrerenderHandle();
 
-    // ContextLifecycleObserver:
-    void contextDestroyed() override;
+  void cancel();
+  const KURL& url() const;
 
-    DECLARE_VIRTUAL_TRACE();
-    EAGERLY_FINALIZE();
+  // ContextLifecycleObserver:
+  void contextDestroyed() override;
 
-private:
-    PrerenderHandle(Document&, Prerender*);
+  DECLARE_VIRTUAL_TRACE();
+  EAGERLY_FINALIZE();
 
-    void detach();
+ private:
+  PrerenderHandle(Document&, Prerender*);
 
-    Member<Prerender> m_prerender;
+  void detach();
+
+  Member<Prerender> m_prerender;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PrerenderHandle_h
+#endif  // PrerenderHandle_h

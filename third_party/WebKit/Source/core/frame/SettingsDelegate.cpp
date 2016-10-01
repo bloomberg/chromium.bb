@@ -36,16 +36,14 @@
 namespace blink {
 
 SettingsDelegate::SettingsDelegate(std::unique_ptr<Settings> settings)
-    : m_settings(std::move(settings))
-{
-    if (m_settings)
-        m_settings->setDelegate(this);
+    : m_settings(std::move(settings)) {
+  if (m_settings)
+    m_settings->setDelegate(this);
 }
 
-SettingsDelegate::~SettingsDelegate()
-{
-    if (m_settings)
-        m_settings->setDelegate(0);
+SettingsDelegate::~SettingsDelegate() {
+  if (m_settings)
+    m_settings->setDelegate(0);
 }
 
-} // namespace blink
+}  // namespace blink

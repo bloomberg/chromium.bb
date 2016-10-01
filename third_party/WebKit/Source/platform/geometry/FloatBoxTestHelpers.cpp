@@ -32,47 +32,50 @@ const static float kTestEpsilon = 1e-6;
 namespace blink {
 namespace FloatBoxTest {
 
-bool ApproximatelyEqual(const float& a, const float& b)
-{
-    return GeometryTest::ApproximatelyEqual(a, b, kTestEpsilon);
+bool ApproximatelyEqual(const float& a, const float& b) {
+  return GeometryTest::ApproximatelyEqual(a, b, kTestEpsilon);
 }
 
-bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b)
-{
-    if (!ApproximatelyEqual(a.x(), b.x())
-        || !ApproximatelyEqual(a.y(), b.y())
-        || !ApproximatelyEqual(a.z(), b.z())
-        || !ApproximatelyEqual(a.width(), b.width())
-        || !ApproximatelyEqual(a.height(), b.height())
-        || !ApproximatelyEqual(a.depth(), b.depth())) {
-        return false;
-    }
-    return true;
+bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b) {
+  if (!ApproximatelyEqual(a.x(), b.x()) || !ApproximatelyEqual(a.y(), b.y()) ||
+      !ApproximatelyEqual(a.z(), b.z()) ||
+      !ApproximatelyEqual(a.width(), b.width()) ||
+      !ApproximatelyEqual(a.height(), b.height()) ||
+      !ApproximatelyEqual(a.depth(), b.depth())) {
+    return false;
+  }
+  return true;
 }
 
-::testing::AssertionResult AssertAlmostEqual(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
-{
-    if (!ApproximatelyEqual(m, n)) {
-        return ::testing::AssertionFailure() << "       Value of:" << n_expr << std::endl
-            << "         Actual:" << testing::PrintToString(n) << std::endl
-            << "Expected Approx:" << m_expr << std::endl
-            << "       Which is:" << ::testing::PrintToString(m);
-    }
-    return ::testing::AssertionSuccess();
+::testing::AssertionResult AssertAlmostEqual(const char* m_expr,
+                                             const char* n_expr,
+                                             const FloatBox& m,
+                                             const FloatBox& n) {
+  if (!ApproximatelyEqual(m, n)) {
+    return ::testing::AssertionFailure()
+           << "       Value of:" << n_expr << std::endl
+           << "         Actual:" << testing::PrintToString(n) << std::endl
+           << "Expected Approx:" << m_expr << std::endl
+           << "       Which is:" << ::testing::PrintToString(m);
+  }
+  return ::testing::AssertionSuccess();
 }
 
-::testing::AssertionResult AssertContains(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
-{
-    FloatBox newM = m;
-    newM.expandTo(n);
-    if (!ApproximatelyEqual(m, newM)) {
-        return ::testing::AssertionFailure() << "        Value of:" << n_expr << std::endl
-            << "          Actual:" << testing::PrintToString(n) << std::endl
-            << "Not Contained in:" << m_expr << std::endl
-            << "        Which is:" << ::testing::PrintToString(m);
-    }
-    return ::testing::AssertionSuccess();
+::testing::AssertionResult AssertContains(const char* m_expr,
+                                          const char* n_expr,
+                                          const FloatBox& m,
+                                          const FloatBox& n) {
+  FloatBox newM = m;
+  newM.expandTo(n);
+  if (!ApproximatelyEqual(m, newM)) {
+    return ::testing::AssertionFailure()
+           << "        Value of:" << n_expr << std::endl
+           << "          Actual:" << testing::PrintToString(n) << std::endl
+           << "Not Contained in:" << m_expr << std::endl
+           << "        Which is:" << ::testing::PrintToString(m);
+  }
+  return ::testing::AssertionSuccess();
 }
 
-} // namespace FloatBoxTest
-} // namespace blink
+}  // namespace FloatBoxTest
+}  // namespace blink

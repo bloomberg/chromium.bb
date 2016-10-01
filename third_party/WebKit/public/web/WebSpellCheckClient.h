@@ -41,42 +41,43 @@ class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
 
 class WebSpellCheckClient {
-public:
-    // The client should perform spell-checking on the given text. If the
-    // text contains a misspelled word, then upon return misspelledOffset
-    // will point to the start of the misspelled word, and misspelledLength
-    // will indicates its length. Otherwise, if there was not a spelling
-    // error, then upon return misspelledLength is 0. If optional_suggestions
-    // is given, then it will be filled with suggested words (not a cheap step).
-    virtual void spellCheck(const WebString& text,
-                            int& misspelledOffset,
-                            int& misspelledLength,
-                            WebVector<WebString>* optionalSuggestions) { }
+ public:
+  // The client should perform spell-checking on the given text. If the
+  // text contains a misspelled word, then upon return misspelledOffset
+  // will point to the start of the misspelled word, and misspelledLength
+  // will indicates its length. Otherwise, if there was not a spelling
+  // error, then upon return misspelledLength is 0. If optional_suggestions
+  // is given, then it will be filled with suggested words (not a cheap step).
+  virtual void spellCheck(const WebString& text,
+                          int& misspelledOffset,
+                          int& misspelledLength,
+                          WebVector<WebString>* optionalSuggestions) {}
 
-    // Requests asynchronous spelling and grammar checking, whose result should be
-    // returned by passed completion object.
-    virtual void requestCheckingOfText(const WebString& textToCheck,
-                                       const WebVector<uint32_t>& markersInText,
-                                       const WebVector<unsigned>& markerOffsets,
-                                       WebTextCheckingCompletion* completionCallback) { }
+  // Requests asynchronous spelling and grammar checking, whose result should be
+  // returned by passed completion object.
+  virtual void requestCheckingOfText(
+      const WebString& textToCheck,
+      const WebVector<uint32_t>& markersInText,
+      const WebVector<unsigned>& markerOffsets,
+      WebTextCheckingCompletion* completionCallback) {}
 
-    // Clear all stored references to requests, so that it will not become a
-    // leak source.
-    virtual void cancelAllPendingRequests() { }
+  // Clear all stored references to requests, so that it will not become a
+  // leak source.
+  virtual void cancelAllPendingRequests() {}
 
-    // Show or hide the spelling UI.
-    virtual void showSpellingUI(bool show) { }
+  // Show or hide the spelling UI.
+  virtual void showSpellingUI(bool show) {}
 
-    // Returns true if the spelling UI is showing.
-    virtual bool isShowingSpellingUI() { return false; }
+  // Returns true if the spelling UI is showing.
+  virtual bool isShowingSpellingUI() { return false; }
 
-    // Update the spelling UI with the given word.
-    virtual void updateSpellingUIWithMisspelledWord(const WebString& word) { }
+  // Update the spelling UI with the given word.
+  virtual void updateSpellingUIWithMisspelledWord(const WebString& word) {}
 
-protected:
-    ~WebSpellCheckClient() { }
+ protected:
+  ~WebSpellCheckClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

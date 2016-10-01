@@ -12,6 +12,6 @@ namespace blink {
 
 PLATFORM_EXPORT String loadResourceAsASCIIString(const char* resource);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformResourceLoader_h
+#endif  // PlatformResourceLoader_h

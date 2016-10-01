@@ -36,38 +36,40 @@ namespace blink {
 class WebMediaDeviceInfoPrivate;
 
 class WebMediaDeviceInfo {
-public:
-    enum MediaDeviceKind {
-        MediaDeviceKindAudioInput,
-        MediaDeviceKindAudioOutput,
-        MediaDeviceKindVideoInput
-    };
+ public:
+  enum MediaDeviceKind {
+    MediaDeviceKindAudioInput,
+    MediaDeviceKindAudioOutput,
+    MediaDeviceKindVideoInput
+  };
 
-    WebMediaDeviceInfo() { }
-    WebMediaDeviceInfo(const WebMediaDeviceInfo& other) { assign(other); }
-    ~WebMediaDeviceInfo() { reset(); }
+  WebMediaDeviceInfo() {}
+  WebMediaDeviceInfo(const WebMediaDeviceInfo& other) { assign(other); }
+  ~WebMediaDeviceInfo() { reset(); }
 
-    WebMediaDeviceInfo& operator=(const WebMediaDeviceInfo& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebMediaDeviceInfo& operator=(const WebMediaDeviceInfo& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebMediaDeviceInfo&);
+  BLINK_PLATFORM_EXPORT void assign(const WebMediaDeviceInfo&);
 
-    BLINK_PLATFORM_EXPORT void initialize(const WebString& deviceId, MediaDeviceKind, const WebString& label, const WebString& groupId);
-    BLINK_PLATFORM_EXPORT void reset();
-    bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void initialize(const WebString& deviceId,
+                                        MediaDeviceKind,
+                                        const WebString& label,
+                                        const WebString& groupId);
+  BLINK_PLATFORM_EXPORT void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebString deviceId() const;
-    BLINK_PLATFORM_EXPORT MediaDeviceKind kind() const;
-    BLINK_PLATFORM_EXPORT WebString label() const;
-    BLINK_PLATFORM_EXPORT WebString groupId() const;
+  BLINK_PLATFORM_EXPORT WebString deviceId() const;
+  BLINK_PLATFORM_EXPORT MediaDeviceKind kind() const;
+  BLINK_PLATFORM_EXPORT WebString label() const;
+  BLINK_PLATFORM_EXPORT WebString groupId() const;
 
-private:
-    WebPrivatePtr<WebMediaDeviceInfoPrivate> m_private;
+ private:
+  WebPrivatePtr<WebMediaDeviceInfoPrivate> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaDeviceInfo_h
+#endif  // WebMediaDeviceInfo_h

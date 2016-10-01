@@ -12,212 +12,231 @@
 namespace blink {
 
 enum {
-    InitialWidth = 100,
-    InitialHeight = 100,
-    AlternateHeight = 50,
+  InitialWidth = 100,
+  InitialHeight = 100,
+  AlternateHeight = 50,
 };
 
 class DrawingBufferForTests : public DrawingBuffer {
-public:
-    static PassRefPtr<DrawingBufferForTests> create(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve)
-    {
-        std::unique_ptr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
-        RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(std::move(contextProvider), std::move(extensionsUtil), preserve));
-        bool multisampleExtensionSupported = false;
-        if (!drawingBuffer->initialize(size, multisampleExtensionSupported)) {
-            drawingBuffer->beginDestruction();
-            return nullptr;
-        }
-        return drawingBuffer.release();
+ public:
+  static PassRefPtr<DrawingBufferForTests> create(
+      std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+      const IntSize& size,
+      PreserveDrawingBuffer preserve) {
+    std::unique_ptr<Extensions3DUtil> extensionsUtil =
+        Extensions3DUtil::create(contextProvider->contextGL());
+    RefPtr<DrawingBufferForTests> drawingBuffer =
+        adoptRef(new DrawingBufferForTests(
+            std::move(contextProvider), std::move(extensionsUtil), preserve));
+    bool multisampleExtensionSupported = false;
+    if (!drawingBuffer->initialize(size, multisampleExtensionSupported)) {
+      drawingBuffer->beginDestruction();
+      return nullptr;
     }
+    return drawingBuffer.release();
+  }
 
-    DrawingBufferForTests(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, std::unique_ptr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
-        : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */,
-            true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve, WebGL1,
-            false /* wantDepth */, false /* wantStencil */,
-            DrawingBuffer::AllowChromiumImage /* ChromiumImageUsage */)
-        , m_live(0)
-    { }
+  DrawingBufferForTests(
+      std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+      std::unique_ptr<Extensions3DUtil> extensionsUtil,
+      PreserveDrawingBuffer preserve)
+      : DrawingBuffer(
+            std::move(contextProvider),
+            std::move(extensionsUtil),
+            false /* discardFramebufferSupported */,
+            true /* wantAlphaChannel */,
+            false /* premultipliedAlpha */,
+            preserve,
+            WebGL1,
+            false /* wantDepth */,
+            false /* wantStencil */,
+            DrawingBuffer::AllowChromiumImage /* ChromiumImageUsage */),
+        m_live(0) {}
 
-    ~DrawingBufferForTests() override
-    {
-        if (m_live)
-            *m_live = false;
-    }
+  ~DrawingBufferForTests() override {
+    if (m_live)
+      *m_live = false;
+  }
 
-    bool* m_live;
+  bool* m_live;
 
-    int recycledBitmapCount() { return m_recycledBitmaps.size(); }
+  int recycledBitmapCount() { return m_recycledBitmaps.size(); }
 };
 
-class WebGraphicsContext3DProviderForTests : public WebGraphicsContext3DProvider {
-public:
-    WebGraphicsContext3DProviderForTests(std::unique_ptr<gpu::gles2::GLES2Interface> gl)
-        : m_gl(std::move(gl))
-    {
-    }
+class WebGraphicsContext3DProviderForTests
+    : public WebGraphicsContext3DProvider {
+ public:
+  WebGraphicsContext3DProviderForTests(
+      std::unique_ptr<gpu::gles2::GLES2Interface> gl)
+      : m_gl(std::move(gl)) {}
 
-    gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
-    bool isSoftwareRendering() const override { return false; }
+  gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
+  bool isSoftwareRendering() const override { return false; }
 
-    // Not used by WebGL code.
-    GrContext* grContext() override { return nullptr; }
-    bool bindToCurrentThread() override { return false; }
-    gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
-    void setLostContextCallback(const base::Closure&) {}
-    void setErrorMessageCallback(const base::Callback<void(const char*, int32_t id)>&) {}
+  // Not used by WebGL code.
+  GrContext* grContext() override { return nullptr; }
+  bool bindToCurrentThread() override { return false; }
+  gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
+  void setLostContextCallback(const base::Closure&) {}
+  void setErrorMessageCallback(
+      const base::Callback<void(const char*, int32_t id)>&) {}
 
-private:
-    std::unique_ptr<gpu::gles2::GLES2Interface> m_gl;
+ private:
+  std::unique_ptr<gpu::gles2::GLES2Interface> m_gl;
 };
 
 // The target to use when binding a texture to a Chromium image.
-GLenum imageCHROMIUMTextureTarget()
-{
+GLenum imageCHROMIUMTextureTarget() {
 #if OS(MACOSX)
-    return GC3D_TEXTURE_RECTANGLE_ARB;
+  return GC3D_TEXTURE_RECTANGLE_ARB;
 #else
-    return GL_TEXTURE_2D;
+  return GL_TEXTURE_2D;
 #endif
 }
 
 // The target to use when preparing a mailbox texture.
-GLenum drawingBufferTextureTarget()
-{
-    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
-        return imageCHROMIUMTextureTarget();
-    return GL_TEXTURE_2D;
+GLenum drawingBufferTextureTarget() {
+  if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+    return imageCHROMIUMTextureTarget();
+  return GL_TEXTURE_2D;
 }
 
 class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub {
-public:
-    void BindTexture(GLenum target, GLuint texture) override
-    {
-        if (target != m_boundTextureTarget && texture == 0)
-            return;
+ public:
+  void BindTexture(GLenum target, GLuint texture) override {
+    if (target != m_boundTextureTarget && texture == 0)
+      return;
 
-        // For simplicity, only allow one target to ever be bound.
-        ASSERT_TRUE(m_boundTextureTarget == 0 || target == m_boundTextureTarget);
-        m_boundTextureTarget = target;
-        m_boundTexture = texture;
+    // For simplicity, only allow one target to ever be bound.
+    ASSERT_TRUE(m_boundTextureTarget == 0 || target == m_boundTextureTarget);
+    m_boundTextureTarget = target;
+    m_boundTexture = texture;
+  }
+
+  GLuint64 InsertFenceSyncCHROMIUM() override {
+    static GLuint64 syncPointGenerator = 0;
+    return ++syncPointGenerator;
+  }
+
+  void WaitSyncTokenCHROMIUM(const GLbyte* syncToken) override {
+    memcpy(&m_mostRecentlyWaitedSyncToken, syncToken,
+           sizeof(m_mostRecentlyWaitedSyncToken));
+  }
+
+  GLenum CheckFramebufferStatus(GLenum target) override {
+    return GL_FRAMEBUFFER_COMPLETE;
+  }
+
+  void GetIntegerv(GLenum pname, GLint* value) override {
+    if (pname == GL_MAX_TEXTURE_SIZE)
+      *value = 1024;
+  }
+
+  void GenMailboxCHROMIUM(GLbyte* mailbox) override {
+    ++m_currentMailboxByte;
+    memset(mailbox, m_currentMailboxByte, GL_MAILBOX_SIZE_CHROMIUM);
+  }
+
+  void ProduceTextureDirectCHROMIUM(GLuint texture,
+                                    GLenum target,
+                                    const GLbyte* mailbox) override {
+    ASSERT_EQ(target, drawingBufferTextureTarget());
+
+    if (!m_createImageChromiumFail) {
+      ASSERT_TRUE(m_textureSizes.contains(texture));
+      m_mostRecentlyProducedSize = m_textureSizes.get(texture);
     }
+  }
 
-    GLuint64 InsertFenceSyncCHROMIUM() override
-    {
-        static GLuint64 syncPointGenerator = 0;
-        return ++syncPointGenerator;
+  void TexImage2D(GLenum target,
+                  GLint level,
+                  GLint internalformat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLint border,
+                  GLenum format,
+                  GLenum type,
+                  const void* pixels) override {
+    if (target == GL_TEXTURE_2D && !level) {
+      m_textureSizes.set(m_boundTexture, IntSize(width, height));
     }
+  }
 
-    void WaitSyncTokenCHROMIUM(const GLbyte* syncToken) override
-    {
-        memcpy(&m_mostRecentlyWaitedSyncToken, syncToken, sizeof(m_mostRecentlyWaitedSyncToken));
+  GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
+                                            GLsizei height,
+                                            GLenum internalformat,
+                                            GLenum usage) override {
+    if (m_createImageChromiumFail)
+      return 0;
+    m_imageSizes.set(m_currentImageId, IntSize(width, height));
+    return m_currentImageId++;
+  }
+
+  MOCK_METHOD1(DestroyImageMock, void(GLuint imageId));
+  void DestroyImageCHROMIUM(GLuint imageId) {
+    m_imageSizes.remove(imageId);
+    // No textures should be bound to this.
+    CHECK(m_imageToTextureMap.find(imageId) == m_imageToTextureMap.end());
+    m_imageSizes.remove(imageId);
+    DestroyImageMock(imageId);
+  }
+
+  MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
+  void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
+    if (target == imageCHROMIUMTextureTarget()) {
+      m_textureSizes.set(m_boundTexture, m_imageSizes.find(imageId)->value);
+      m_imageToTextureMap.set(imageId, m_boundTexture);
+      BindTexImage2DMock(imageId);
     }
+  }
 
-    GLenum CheckFramebufferStatus(GLenum target) override
-    {
-        return GL_FRAMEBUFFER_COMPLETE;
+  MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
+  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
+    if (target == imageCHROMIUMTextureTarget()) {
+      m_imageSizes.set(m_currentImageId, IntSize());
+      m_imageToTextureMap.remove(imageId);
+      ReleaseTexImage2DMock(imageId);
     }
+  }
 
-    void GetIntegerv(GLenum pname, GLint* value) override
-    {
-        if (pname == GL_MAX_TEXTURE_SIZE)
-            *value = 1024;
-    }
+  void GenSyncTokenCHROMIUM(GLuint64 fenceSync, GLbyte* syncToken) override {
+    static uint64_t uniqueId = 1;
+    gpu::SyncToken source(gpu::GPU_IO, 1,
+                          gpu::CommandBufferId::FromUnsafeValue(uniqueId++), 2);
+    memcpy(syncToken, &source, sizeof(source));
+  }
 
-    void GenMailboxCHROMIUM(GLbyte* mailbox) override
-    {
-        ++m_currentMailboxByte;
-        memset(mailbox, m_currentMailboxByte, GL_MAILBOX_SIZE_CHROMIUM);
-    }
+  void GenTextures(GLsizei n, GLuint* textures) override {
+    static GLuint id = 1;
+    for (GLsizei i = 0; i < n; ++i)
+      textures[i] = id++;
+  }
 
-    void ProduceTextureDirectCHROMIUM(GLuint texture, GLenum target, const GLbyte* mailbox) override
-    {
-        ASSERT_EQ(target, drawingBufferTextureTarget());
+  GLuint boundTexture() const { return m_boundTexture; }
+  GLuint boundTextureTarget() const { return m_boundTextureTarget; }
+  gpu::SyncToken mostRecentlyWaitedSyncToken() const {
+    return m_mostRecentlyWaitedSyncToken;
+  }
+  GLuint nextImageIdToBeCreated() const { return m_currentImageId; }
+  IntSize mostRecentlyProducedSize() const {
+    return m_mostRecentlyProducedSize;
+  }
 
-        if (!m_createImageChromiumFail) {
-            ASSERT_TRUE(m_textureSizes.contains(texture));
-            m_mostRecentlyProducedSize = m_textureSizes.get(texture);
-        }
-    }
+  void setCreateImageChromiumFail(bool fail) {
+    m_createImageChromiumFail = fail;
+  }
 
-    void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels) override
-    {
-        if (target == GL_TEXTURE_2D && !level) {
-            m_textureSizes.set(m_boundTexture, IntSize(width, height));
-        }
-    }
-
-    GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width, GLsizei height, GLenum internalformat, GLenum usage) override
-    {
-        if (m_createImageChromiumFail)
-            return 0;
-        m_imageSizes.set(m_currentImageId, IntSize(width, height));
-        return m_currentImageId++;
-    }
-
-    MOCK_METHOD1(DestroyImageMock, void(GLuint imageId));
-    void DestroyImageCHROMIUM(GLuint imageId)
-    {
-        m_imageSizes.remove(imageId);
-        // No textures should be bound to this.
-        CHECK(m_imageToTextureMap.find(imageId) == m_imageToTextureMap.end());
-        m_imageSizes.remove(imageId);
-        DestroyImageMock(imageId);
-    }
-
-    MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
-    void BindTexImage2DCHROMIUM(GLenum target, GLint imageId)
-    {
-        if (target == imageCHROMIUMTextureTarget()) {
-            m_textureSizes.set(m_boundTexture, m_imageSizes.find(imageId)->value);
-            m_imageToTextureMap.set(imageId, m_boundTexture);
-            BindTexImage2DMock(imageId);
-        }
-    }
-
-    MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
-    void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId)
-    {
-        if (target == imageCHROMIUMTextureTarget()) {
-            m_imageSizes.set(m_currentImageId, IntSize());
-            m_imageToTextureMap.remove(imageId);
-            ReleaseTexImage2DMock(imageId);
-        }
-    }
-
-    void GenSyncTokenCHROMIUM(GLuint64 fenceSync, GLbyte* syncToken) override
-    {
-        static uint64_t uniqueId = 1;
-        gpu::SyncToken source(gpu::GPU_IO, 1, gpu::CommandBufferId::FromUnsafeValue(uniqueId++), 2);
-        memcpy(syncToken, &source, sizeof(source));
-    }
-
-    void GenTextures(GLsizei n, GLuint* textures) override
-    {
-        static GLuint id = 1;
-        for (GLsizei i = 0; i < n; ++i)
-            textures[i] = id++;
-    }
-
-    GLuint boundTexture() const { return m_boundTexture; }
-    GLuint boundTextureTarget() const { return m_boundTextureTarget; }
-    gpu::SyncToken mostRecentlyWaitedSyncToken() const { return m_mostRecentlyWaitedSyncToken; }
-    GLuint nextImageIdToBeCreated() const { return m_currentImageId; }
-    IntSize mostRecentlyProducedSize() const { return m_mostRecentlyProducedSize; }
-
-    void setCreateImageChromiumFail(bool fail) { m_createImageChromiumFail = fail; }
-
-private:
-    GLuint m_boundTexture = 0;
-    GLuint m_boundTextureTarget = 0;
-    gpu::SyncToken m_mostRecentlyWaitedSyncToken;
-    GLbyte m_currentMailboxByte = 0;
-    IntSize m_mostRecentlyProducedSize;
-    bool m_createImageChromiumFail = false;
-    GLuint m_currentImageId = 1;
-    HashMap<GLuint, IntSize> m_textureSizes;
-    HashMap<GLuint, IntSize> m_imageSizes;
-    HashMap<GLuint, GLuint> m_imageToTextureMap;
+ private:
+  GLuint m_boundTexture = 0;
+  GLuint m_boundTextureTarget = 0;
+  gpu::SyncToken m_mostRecentlyWaitedSyncToken;
+  GLbyte m_currentMailboxByte = 0;
+  IntSize m_mostRecentlyProducedSize;
+  bool m_createImageChromiumFail = false;
+  GLuint m_currentImageId = 1;
+  HashMap<GLuint, IntSize> m_textureSizes;
+  HashMap<GLuint, IntSize> m_imageSizes;
+  HashMap<GLuint, GLuint> m_imageToTextureMap;
 };
 
-} // blink
+}  // blink

@@ -31,50 +31,44 @@
 
 namespace blink {
 
-String DOMURLUtilsReadOnly::href()
-{
-    const KURL& kurl = url();
-    if (kurl.isNull())
-        return input();
-    return kurl.getString();
+String DOMURLUtilsReadOnly::href() {
+  const KURL& kurl = url();
+  if (kurl.isNull())
+    return input();
+  return kurl.getString();
 }
 
-String DOMURLUtilsReadOnly::origin(const KURL& kurl)
-{
-    if (kurl.isNull())
-        return "";
-    return SecurityOrigin::create(kurl)->toString();
+String DOMURLUtilsReadOnly::origin(const KURL& kurl) {
+  if (kurl.isNull())
+    return "";
+  return SecurityOrigin::create(kurl)->toString();
 }
 
-String DOMURLUtilsReadOnly::host(const KURL& kurl)
-{
-    if (kurl.hostEnd() == kurl.pathStart())
-        return kurl.host();
-    if (isDefaultPortForProtocol(kurl.port(), kurl.protocol()))
-        return kurl.host();
-    return kurl.host() + ":" + String::number(kurl.port());
+String DOMURLUtilsReadOnly::host(const KURL& kurl) {
+  if (kurl.hostEnd() == kurl.pathStart())
+    return kurl.host();
+  if (isDefaultPortForProtocol(kurl.port(), kurl.protocol()))
+    return kurl.host();
+  return kurl.host() + ":" + String::number(kurl.port());
 }
 
-String DOMURLUtilsReadOnly::port(const KURL& kurl)
-{
-    if (kurl.hasPort())
-        return String::number(kurl.port());
+String DOMURLUtilsReadOnly::port(const KURL& kurl) {
+  if (kurl.hasPort())
+    return String::number(kurl.port());
 
+  return emptyString();
+}
+
+String DOMURLUtilsReadOnly::search(const KURL& kurl) {
+  String query = kurl.query();
+  return query.isEmpty() ? emptyString() : "?" + query;
+}
+
+String DOMURLUtilsReadOnly::hash(const KURL& kurl) {
+  String fragmentIdentifier = kurl.fragmentIdentifier();
+  if (fragmentIdentifier.isEmpty())
     return emptyString();
+  return AtomicString(String("#" + fragmentIdentifier));
 }
 
-String DOMURLUtilsReadOnly::search(const KURL& kurl)
-{
-    String query = kurl.query();
-    return query.isEmpty() ? emptyString() : "?" + query;
-}
-
-String DOMURLUtilsReadOnly::hash(const KURL& kurl)
-{
-    String fragmentIdentifier = kurl.fragmentIdentifier();
-    if (fragmentIdentifier.isEmpty())
-        return emptyString();
-    return AtomicString(String("#" + fragmentIdentifier));
-}
-
-} // namespace blink
+}  // namespace blink

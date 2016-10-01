@@ -17,37 +17,37 @@ class ScriptPromiseResolver;
 // Expose whether there is a remote playback device available for a media
 // element. The object will be initialized with a default value passed via
 // ::take() and will then listen to availability changes.
-class RemotePlaybackAvailability final
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ContextLifecycleObserver {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(RemotePlaybackAvailability);
-public:
-    static RemotePlaybackAvailability* take(ScriptPromiseResolver*, bool);
-    ~RemotePlaybackAvailability() override;
+class RemotePlaybackAvailability final : public EventTargetWithInlineData,
+                                         public ActiveScriptWrappable,
+                                         public ContextLifecycleObserver {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(RemotePlaybackAvailability);
 
-    // EventTarget implementation.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+ public:
+  static RemotePlaybackAvailability* take(ScriptPromiseResolver*, bool);
+  ~RemotePlaybackAvailability() override;
 
-    void availabilityChanged(bool);
+  // EventTarget implementation.
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    bool value() const;
+  void availabilityChanged(bool);
 
-    // ScriptWrappable implementation.
-    bool hasPendingActivity() const final;
+  bool value() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  // ScriptWrappable implementation.
+  bool hasPendingActivity() const final;
 
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
-private:
-    RemotePlaybackAvailability(ExecutionContext*, bool);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool m_value;
+ private:
+  RemotePlaybackAvailability(ExecutionContext*, bool);
+
+  bool m_value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RemotePlaybackAvailability_h
+#endif  // RemotePlaybackAvailability_h

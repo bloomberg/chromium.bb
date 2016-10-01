@@ -36,43 +36,50 @@ class DeviceMotionData;
 class DeviceRotationRate;
 
 class DeviceMotionEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~DeviceMotionEvent() override;
-    static DeviceMotionEvent* create()
-    {
-        return new DeviceMotionEvent;
-    }
-    static DeviceMotionEvent* create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
-    {
-        return new DeviceMotionEvent(eventType, deviceMotionData);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    void initDeviceMotionEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceMotionData*);
+ public:
+  ~DeviceMotionEvent() override;
+  static DeviceMotionEvent* create() { return new DeviceMotionEvent; }
+  static DeviceMotionEvent* create(const AtomicString& eventType,
+                                   DeviceMotionData* deviceMotionData) {
+    return new DeviceMotionEvent(eventType, deviceMotionData);
+  }
 
-    DeviceMotionData* getDeviceMotionData() const { return m_deviceMotionData.get(); }
+  void initDeviceMotionEvent(const AtomicString& type,
+                             bool bubbles,
+                             bool cancelable,
+                             DeviceMotionData*);
 
-    DeviceAcceleration* acceleration();
-    DeviceAcceleration* accelerationIncludingGravity();
-    DeviceRotationRate* rotationRate();
-    double interval(bool& isNull) const;
+  DeviceMotionData* getDeviceMotionData() const {
+    return m_deviceMotionData.get();
+  }
 
-    const AtomicString& interfaceName() const override;
+  DeviceAcceleration* acceleration();
+  DeviceAcceleration* accelerationIncludingGravity();
+  DeviceRotationRate* rotationRate();
+  double interval(bool& isNull) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    DeviceMotionEvent();
-    DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<DeviceMotionData> m_deviceMotionData;
-    Member<DeviceAcceleration> m_acceleration;
-    Member<DeviceAcceleration> m_accelerationIncludingGravity;
-    Member<DeviceRotationRate> m_rotationRate;
+ private:
+  DeviceMotionEvent();
+  DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
+
+  Member<DeviceMotionData> m_deviceMotionData;
+  Member<DeviceAcceleration> m_acceleration;
+  Member<DeviceAcceleration> m_accelerationIncludingGravity;
+  Member<DeviceRotationRate> m_rotationRate;
 };
 
-DEFINE_TYPE_CASTS(DeviceMotionEvent, Event, event, event->interfaceName() == EventNames::DeviceMotionEvent, event.interfaceName() == EventNames::DeviceMotionEvent);
+DEFINE_TYPE_CASTS(DeviceMotionEvent,
+                  Event,
+                  event,
+                  event->interfaceName() == EventNames::DeviceMotionEvent,
+                  event.interfaceName() == EventNames::DeviceMotionEvent);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceMotionEvent_h
+#endif  // DeviceMotionEvent_h

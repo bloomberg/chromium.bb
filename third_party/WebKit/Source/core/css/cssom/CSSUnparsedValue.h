@@ -13,44 +13,46 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue, public ValueIterable<StringOrCSSVariableReferenceValue> {
-    WTF_MAKE_NONCOPYABLE(CSSUnparsedValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSUnparsedValue* create(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
-    {
-        return new CSSUnparsedValue(fragments);
-    }
+class CORE_EXPORT CSSUnparsedValue final
+    : public CSSStyleValue,
+      public ValueIterable<StringOrCSSVariableReferenceValue> {
+  WTF_MAKE_NONCOPYABLE(CSSUnparsedValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CSSUnparsedValue* fromCSSValue(const CSSVariableReferenceValue&);
+ public:
+  static CSSUnparsedValue* create(
+      const HeapVector<StringOrCSSVariableReferenceValue>& fragments) {
+    return new CSSUnparsedValue(fragments);
+  }
 
-    CSSValue* toCSSValue() const override;
+  static CSSUnparsedValue* fromCSSValue(const CSSVariableReferenceValue&);
 
-    StyleValueType type() const override { return UnparsedType; }
+  CSSValue* toCSSValue() const override;
 
-    StringOrCSSVariableReferenceValue fragmentAtIndex(int index) const { return m_fragments.at(index); }
+  StyleValueType type() const override { return UnparsedType; }
 
-    size_t size() const { return m_fragments.size(); }
+  StringOrCSSVariableReferenceValue fragmentAtIndex(int index) const {
+    return m_fragments.at(index);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_fragments);
-        CSSStyleValue::trace(visitor);
-    }
+  size_t size() const { return m_fragments.size(); }
 
-protected:
-    CSSUnparsedValue(const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
-        : CSSStyleValue()
-        , m_fragments(fragments)
-    {
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_fragments);
+    CSSStyleValue::trace(visitor);
+  }
 
-private:
-    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+ protected:
+  CSSUnparsedValue(
+      const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
+      : CSSStyleValue(), m_fragments(fragments) {}
 
-    HeapVector<StringOrCSSVariableReferenceValue> m_fragments;
+ private:
+  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+
+  HeapVector<StringOrCSSVariableReferenceValue> m_fragments;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSUnparsedValue_h
+#endif  // CSSUnparsedValue_h

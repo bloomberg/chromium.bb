@@ -12,44 +12,51 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginClipPathDisplayItem final : public PairedBeginDisplayItem {
-public:
-    BeginClipPathDisplayItem(const DisplayItemClient& client, const Path& clipPath)
-        : PairedBeginDisplayItem(client, kBeginClipPath, sizeof(*this))
-        , m_clipPath(clipPath.getSkPath()) { }
+class PLATFORM_EXPORT BeginClipPathDisplayItem final
+    : public PairedBeginDisplayItem {
+ public:
+  BeginClipPathDisplayItem(const DisplayItemClient& client,
+                           const Path& clipPath)
+      : PairedBeginDisplayItem(client, kBeginClipPath, sizeof(*this)),
+        m_clipPath(clipPath.getSkPath()) {}
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-    void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
+  void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
 
-private:
+ private:
 #ifndef NDEBUG
-    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    bool equals(const DisplayItem& other) const final
-    {
-        return DisplayItem::equals(other)
-            && m_clipPath == static_cast<const BeginClipPathDisplayItem&>(other).m_clipPath;
-    }
+  bool equals(const DisplayItem& other) const final {
+    return DisplayItem::equals(other) &&
+           m_clipPath ==
+               static_cast<const BeginClipPathDisplayItem&>(other).m_clipPath;
+  }
 
-    const SkPath m_clipPath;
+  const SkPath m_clipPath;
 };
 
-class PLATFORM_EXPORT EndClipPathDisplayItem final : public PairedEndDisplayItem {
-public:
-    EndClipPathDisplayItem(const DisplayItemClient& client)
-        : PairedEndDisplayItem(client, kEndClipPath, sizeof(*this)) { }
+class PLATFORM_EXPORT EndClipPathDisplayItem final
+    : public PairedEndDisplayItem {
+ public:
+  EndClipPathDisplayItem(const DisplayItemClient& client)
+      : PairedEndDisplayItem(client, kEndClipPath, sizeof(*this)) {}
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-private:
+ private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == kBeginClipPath; }
+  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
+    return otherType == kBeginClipPath;
+  }
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClipPathDisplayItem_h
+#endif  // ClipPathDisplayItem_h

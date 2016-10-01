@@ -11,77 +11,70 @@
 namespace blink {
 
 enum class UnionTypeConversionMode {
-    Nullable,
-    NotNullable,
+  Nullable,
+  NotNullable,
 };
 
 template <typename T>
 class Nullable {
-    DISALLOW_NEW();
-public:
-    Nullable()
-        : m_value()
-        , m_isNull(true) { }
+  DISALLOW_NEW();
 
-    Nullable(std::nullptr_t)
-        : m_value()
-        , m_isNull(true) { }
+ public:
+  Nullable() : m_value(), m_isNull(true) {}
 
-    Nullable(const T& value)
-        : m_value(value)
-        , m_isNull(false) { }
+  Nullable(std::nullptr_t) : m_value(), m_isNull(true) {}
 
-    Nullable(const Nullable& other)
-        : m_value(other.m_value)
-        , m_isNull(other.m_isNull) { }
+  Nullable(const T& value) : m_value(value), m_isNull(false) {}
 
-    Nullable& operator=(const Nullable& other)
-    {
-        m_value = other.m_value;
-        m_isNull = other.m_isNull;
-        return *this;
-    }
+  Nullable(const Nullable& other)
+      : m_value(other.m_value), m_isNull(other.m_isNull) {}
 
-    Nullable& operator=(std::nullptr_t)
-    {
-        m_value = T();
-        m_isNull = true;
-        return *this;
-    }
+  Nullable& operator=(const Nullable& other) {
+    m_value = other.m_value;
+    m_isNull = other.m_isNull;
+    return *this;
+  }
 
-    void set(const T& value)
-    {
-        m_value = value;
-        m_isNull = false;
-    }
+  Nullable& operator=(std::nullptr_t) {
+    m_value = T();
+    m_isNull = true;
+    return *this;
+  }
 
-    void set(std::nullptr_t)
-    {
-        m_value = T();
-        m_isNull = true;
-    }
+  void set(const T& value) {
+    m_value = value;
+    m_isNull = false;
+  }
 
-    const T& get() const { ASSERT(!m_isNull); return m_value; }
-    T& get() { ASSERT(!m_isNull); return m_value; }
-    bool isNull() const { return m_isNull; }
+  void set(std::nullptr_t) {
+    m_value = T();
+    m_isNull = true;
+  }
 
-    explicit operator bool() const { return !m_isNull; }
+  const T& get() const {
+    ASSERT(!m_isNull);
+    return m_value;
+  }
+  T& get() {
+    ASSERT(!m_isNull);
+    return m_value;
+  }
+  bool isNull() const { return m_isNull; }
 
-    bool operator==(const Nullable& other) const
-    {
-        return (m_isNull && other.m_isNull) || (!m_isNull && !other.m_isNull && m_value == other.m_value);
-    }
+  explicit operator bool() const { return !m_isNull; }
 
-    DEFINE_INLINE_TRACE()
-    {
-        TraceIfNeeded<T>::trace(visitor, m_value);
-    }
+  bool operator==(const Nullable& other) const {
+    return (m_isNull && other.m_isNull) ||
+           (!m_isNull && !other.m_isNull && m_value == other.m_value);
+  }
 
-private:
-    T m_value;
-    bool m_isNull;
+  DEFINE_INLINE_TRACE() { TraceIfNeeded<T>::trace(visitor, m_value); }
+
+ private:
+  T m_value;
+  bool m_isNull;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Nullable_h
+#endif  // Nullable_h

@@ -21,119 +21,129 @@
 namespace blink {
 
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
-    : DOMWindowProperty(navigator.frame())
-    , m_transmittedBytes(0)
-{
+    : DOMWindowProperty(navigator.frame()), m_transmittedBytes(0) {}
+
+NavigatorBeacon::~NavigatorBeacon() {}
+
+DEFINE_TRACE(NavigatorBeacon) {
+  DOMWindowProperty::trace(visitor);
+  Supplement<Navigator>::trace(visitor);
 }
 
-NavigatorBeacon::~NavigatorBeacon()
-{
+const char* NavigatorBeacon::supplementName() {
+  return "NavigatorBeacon";
 }
 
-DEFINE_TRACE(NavigatorBeacon)
-{
-    DOMWindowProperty::trace(visitor);
-    Supplement<Navigator>::trace(visitor);
+NavigatorBeacon& NavigatorBeacon::from(Navigator& navigator) {
+  NavigatorBeacon* supplement = static_cast<NavigatorBeacon*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new NavigatorBeacon(navigator);
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-const char* NavigatorBeacon::supplementName()
-{
-    return "NavigatorBeacon";
-}
-
-NavigatorBeacon& NavigatorBeacon::from(Navigator& navigator)
-{
-    NavigatorBeacon* supplement = static_cast<NavigatorBeacon*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new NavigatorBeacon(navigator);
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
-}
-
-bool NavigatorBeacon::canSendBeacon(ExecutionContext* context, const KURL& url, ExceptionState& exceptionState)
-{
-    if (!url.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The URL argument is ill-formed or unsupported.");
-        return false;
-    }
-    // For now, only support HTTP and related.
-    if (!url.protocolIsInHTTPFamily()) {
-        exceptionState.throwDOMException(SyntaxError, "Beacons are only supported over HTTP(S).");
-        return false;
-    }
-    // FIXME: CSP is not enforced on redirects, crbug.com/372197
-    if (!ContentSecurityPolicy::shouldBypassMainWorld(context) && !context->contentSecurityPolicy()->allowConnectToSource(url)) {
-        // We can safely expose the URL to JavaScript, as these checks happen synchronously before redirection. JavaScript receives no new information.
-        exceptionState.throwSecurityError("Refused to send beacon to '" + url.elidedString() + "' because it violates the document's Content Security Policy.");
-        return false;
-    }
-
-    // If detached from frame, do not allow sending a Beacon.
-    if (!frame() || !frame()->client())
-        return false;
-
-    return true;
-}
-
-int NavigatorBeacon::maxAllowance() const
-{
-    DCHECK(frame());
-    const Settings* settings = frame()->settings();
-    if (settings) {
-        int maxAllowed = settings->maxBeaconTransmission();
-        if (maxAllowed < m_transmittedBytes)
-            return 0;
-        return maxAllowed - m_transmittedBytes;
-    }
-    return m_transmittedBytes;
-}
-
-void NavigatorBeacon::addTransmittedBytes(int sentBytes)
-{
-    DCHECK_GE(sentBytes, 0);
-    m_transmittedBytes += sentBytes;
-}
-
-bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator, const String& urlstring, const ArrayBufferViewOrBlobOrStringOrFormData& data, ExceptionState& exceptionState)
-{
-    NavigatorBeacon& impl = NavigatorBeacon::from(navigator);
-
-    KURL url = context->completeURL(urlstring);
-    if (!impl.canSendBeacon(context, url, exceptionState))
-        return false;
-
-    int allowance = impl.maxAllowance();
-    int bytes = 0;
-    bool allowed;
-
-    if (data.isArrayBufferView()) {
-        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, data.getAsArrayBufferView(), bytes);
-    } else if (data.isBlob()) {
-        Blob* blob = data.getAsBlob();
-        if (!FetchUtils::isSimpleContentType(AtomicString(blob->type()))) {
-            UseCounter::count(context, UseCounter::SendBeaconWithNonSimpleContentType);
-            if (RuntimeEnabledFeatures::sendBeaconThrowForBlobWithNonSimpleTypeEnabled()) {
-                exceptionState.throwSecurityError("sendBeacon() with a Blob whose type is not CORS-safelisted MIME type is disallowed experimentally. See http://crbug.com/490015 for details.");
-                return false;
-            }
-        }
-        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, blob, bytes);
-    } else if (data.isString()) {
-        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, data.getAsString(), bytes);
-    } else if (data.isFormData()) {
-        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, data.getAsFormData(), bytes);
-    } else {
-        allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, String(), bytes);
-    }
-
-    if (allowed) {
-        impl.addTransmittedBytes(bytes);
-        return true;
-    }
-
-    UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
+bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
+                                    const KURL& url,
+                                    ExceptionState& exceptionState) {
+  if (!url.isValid()) {
+    exceptionState.throwDOMException(
+        SyntaxError, "The URL argument is ill-formed or unsupported.");
     return false;
+  }
+  // For now, only support HTTP and related.
+  if (!url.protocolIsInHTTPFamily()) {
+    exceptionState.throwDOMException(
+        SyntaxError, "Beacons are only supported over HTTP(S).");
+    return false;
+  }
+  // FIXME: CSP is not enforced on redirects, crbug.com/372197
+  if (!ContentSecurityPolicy::shouldBypassMainWorld(context) &&
+      !context->contentSecurityPolicy()->allowConnectToSource(url)) {
+    // We can safely expose the URL to JavaScript, as these checks happen synchronously before redirection. JavaScript receives no new information.
+    exceptionState.throwSecurityError(
+        "Refused to send beacon to '" + url.elidedString() +
+        "' because it violates the document's Content Security Policy.");
+    return false;
+  }
+
+  // If detached from frame, do not allow sending a Beacon.
+  if (!frame() || !frame()->client())
+    return false;
+
+  return true;
 }
 
-} // namespace blink
+int NavigatorBeacon::maxAllowance() const {
+  DCHECK(frame());
+  const Settings* settings = frame()->settings();
+  if (settings) {
+    int maxAllowed = settings->maxBeaconTransmission();
+    if (maxAllowed < m_transmittedBytes)
+      return 0;
+    return maxAllowed - m_transmittedBytes;
+  }
+  return m_transmittedBytes;
+}
+
+void NavigatorBeacon::addTransmittedBytes(int sentBytes) {
+  DCHECK_GE(sentBytes, 0);
+  m_transmittedBytes += sentBytes;
+}
+
+bool NavigatorBeacon::sendBeacon(
+    ExecutionContext* context,
+    Navigator& navigator,
+    const String& urlstring,
+    const ArrayBufferViewOrBlobOrStringOrFormData& data,
+    ExceptionState& exceptionState) {
+  NavigatorBeacon& impl = NavigatorBeacon::from(navigator);
+
+  KURL url = context->completeURL(urlstring);
+  if (!impl.canSendBeacon(context, url, exceptionState))
+    return false;
+
+  int allowance = impl.maxAllowance();
+  int bytes = 0;
+  bool allowed;
+
+  if (data.isArrayBufferView()) {
+    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url,
+                                     data.getAsArrayBufferView(), bytes);
+  } else if (data.isBlob()) {
+    Blob* blob = data.getAsBlob();
+    if (!FetchUtils::isSimpleContentType(AtomicString(blob->type()))) {
+      UseCounter::count(context,
+                        UseCounter::SendBeaconWithNonSimpleContentType);
+      if (RuntimeEnabledFeatures::
+              sendBeaconThrowForBlobWithNonSimpleTypeEnabled()) {
+        exceptionState.throwSecurityError(
+            "sendBeacon() with a Blob whose type is not CORS-safelisted MIME "
+            "type is disallowed experimentally. See http://crbug.com/490015 "
+            "for details.");
+        return false;
+      }
+    }
+    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url, blob, bytes);
+  } else if (data.isString()) {
+    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url,
+                                     data.getAsString(), bytes);
+  } else if (data.isFormData()) {
+    allowed = PingLoader::sendBeacon(impl.frame(), allowance, url,
+                                     data.getAsFormData(), bytes);
+  } else {
+    allowed =
+        PingLoader::sendBeacon(impl.frame(), allowance, url, String(), bytes);
+  }
+
+  if (allowed) {
+    impl.addTransmittedBytes(bytes);
+    return true;
+  }
+
+  UseCounter::count(context, UseCounter::SendBeaconQuotaExceeded);
+  return false;
+}
+
+}  // namespace blink

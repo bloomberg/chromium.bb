@@ -18,52 +18,44 @@ class ScopedFunctionCanceller;
 namespace internal {
 
 class WTF_EXPORT FunctionCanceller : public RefCounted<FunctionCanceller> {
-public:
-    virtual void cancel() = 0;
-    virtual bool isActive() const = 0;
+ public:
+  virtual void cancel() = 0;
+  virtual bool isActive() const = 0;
 
-protected:
-    FunctionCanceller();
-    virtual ~FunctionCanceller();
-    friend RefCounted<FunctionCanceller>;
+ protected:
+  FunctionCanceller();
+  virtual ~FunctionCanceller();
+  friend RefCounted<FunctionCanceller>;
 
-    DISALLOW_COPY_AND_ASSIGN(FunctionCanceller);
+  DISALLOW_COPY_AND_ASSIGN(FunctionCanceller);
 };
 
 template <typename... Params>
 class FunctionCancellerImpl final : public FunctionCanceller {
-public:
-    FunctionCancellerImpl(std::unique_ptr<Function<void(Params...)>> function)
-        : m_function(std::move(function))
-    {
-        DCHECK(m_function);
-    }
+ public:
+  FunctionCancellerImpl(std::unique_ptr<Function<void(Params...)>> function)
+      : m_function(std::move(function)) {
+    DCHECK(m_function);
+  }
 
-    void runUnlessCancelled(const ScopedFunctionCanceller&, Params... params)
-    {
-        if (m_function)
-            (*m_function)(std::forward<Params>(params)...);
-    }
+  void runUnlessCancelled(const ScopedFunctionCanceller&, Params... params) {
+    if (m_function)
+      (*m_function)(std::forward<Params>(params)...);
+  }
 
-    void cancel() override
-    {
-        m_function = nullptr;
-    }
+  void cancel() override { m_function = nullptr; }
 
-    bool isActive() const override
-    {
-        return !!m_function;
-    }
+  bool isActive() const override { return !!m_function; }
 
-private:
-    ~FunctionCancellerImpl() override = default;
+ private:
+  ~FunctionCancellerImpl() override = default;
 
-    std::unique_ptr<WTF::Function<void(Params...)>> m_function;
+  std::unique_ptr<WTF::Function<void(Params...)>> m_function;
 
-    DISALLOW_COPY_AND_ASSIGN(FunctionCancellerImpl);
+  DISALLOW_COPY_AND_ASSIGN(FunctionCancellerImpl);
 };
 
-} // namespace internal
+}  // namespace internal
 
 // ScopedFunctionCanceller is a handle associated to a Function, and cancels the
 // invocation of the Function on the scope out or cancel() call.
@@ -91,32 +83,34 @@ private:
 //   scopedCanceller.detach();
 //
 class WTF_EXPORT ScopedFunctionCanceller {
-    DISALLOW_NEW();
-public:
-    ScopedFunctionCanceller();
-    explicit ScopedFunctionCanceller(PassRefPtr<internal::FunctionCanceller>);
+  DISALLOW_NEW();
 
-    ScopedFunctionCanceller(ScopedFunctionCanceller&&);
-    ScopedFunctionCanceller& operator=(ScopedFunctionCanceller&&);
-    ScopedFunctionCanceller(const ScopedFunctionCanceller&) = delete;
-    ScopedFunctionCanceller& operator=(const ScopedFunctionCanceller&) = delete;
+ public:
+  ScopedFunctionCanceller();
+  explicit ScopedFunctionCanceller(PassRefPtr<internal::FunctionCanceller>);
 
-    ~ScopedFunctionCanceller();
-    void detach();
-    void cancel();
-    bool isActive() const;
+  ScopedFunctionCanceller(ScopedFunctionCanceller&&);
+  ScopedFunctionCanceller& operator=(ScopedFunctionCanceller&&);
+  ScopedFunctionCanceller(const ScopedFunctionCanceller&) = delete;
+  ScopedFunctionCanceller& operator=(const ScopedFunctionCanceller&) = delete;
 
-private:
-    RefPtr<internal::FunctionCanceller> m_canceller;
+  ~ScopedFunctionCanceller();
+  void detach();
+  void cancel();
+  bool isActive() const;
+
+ private:
+  RefPtr<internal::FunctionCanceller> m_canceller;
 };
 
 template <typename... Params>
 struct MakeCancellableResult {
-    ScopedFunctionCanceller canceller;
-    std::unique_ptr<Function<void(Params...)>> function;
+  ScopedFunctionCanceller canceller;
+  std::unique_ptr<Function<void(Params...)>> function;
 
-    MakeCancellableResult(ScopedFunctionCanceller canceller, std::unique_ptr<Function<void(Params...)>> function)
-        : canceller(std::move(canceller)), function(std::move(function)) { }
+  MakeCancellableResult(ScopedFunctionCanceller canceller,
+                        std::unique_ptr<Function<void(Params...)>> function)
+      : canceller(std::move(canceller)), function(std::move(function)) {}
 };
 
 // makeCancellable wraps a WTF::Function to make the function cancellable.
@@ -138,35 +132,37 @@ struct MakeCancellableResult {
 //   (*result.function)();  // Cancelled. foo() is not called.
 //
 template <typename... Params>
-MakeCancellableResult<Params...> makeCancellable(std::unique_ptr<Function<void(Params...)>> function)
-{
-    using Canceller = internal::FunctionCancellerImpl<Params...>;
-    RefPtr<Canceller> canceller = adoptRef(new Canceller(std::move(function)));
+MakeCancellableResult<Params...> makeCancellable(
+    std::unique_ptr<Function<void(Params...)>> function) {
+  using Canceller = internal::FunctionCancellerImpl<Params...>;
+  RefPtr<Canceller> canceller = adoptRef(new Canceller(std::move(function)));
 
-    // Implementation note:
-    // Keep a ScopedFunctionCanceller instance in |wrappedFunction| below, so
-    // that the destruction of |wrappedFunction| implies the destruction of
-    // |function|. This is needed to avoid a circular strong reference among a
-    // bound parameter, Function, and FunctionCanceller.
-    //
-    // E.g.:
-    //   struct Foo : GarbageCollectedFinalized<Foo> {
-    //       RefPtr<FunctionCanceller> m_canceller;
-    //       void bar();
-    //   };
-    //
-    //   Foo* foo = new Foo;
-    //   auto result = makeCancellable(bind(&Foo::bar, wrapPersistent(foo)));
-    //
-    //   // Destruction of the resulting Function implies the destruction of
-    //   // the original function via ScopedFunctionCanceller below, that
-    //   // resolves a circular strong reference:
-    //   //   foo -> m_canceller -> m_function -> foo
-    //   result.function = nullptr;
-    auto wrappedFunction = bind(&Canceller::runUnlessCancelled, canceller, ScopedFunctionCanceller(canceller));
-    return MakeCancellableResult<Params...>(ScopedFunctionCanceller(canceller.release()), std::move(wrappedFunction));
+  // Implementation note:
+  // Keep a ScopedFunctionCanceller instance in |wrappedFunction| below, so
+  // that the destruction of |wrappedFunction| implies the destruction of
+  // |function|. This is needed to avoid a circular strong reference among a
+  // bound parameter, Function, and FunctionCanceller.
+  //
+  // E.g.:
+  //   struct Foo : GarbageCollectedFinalized<Foo> {
+  //       RefPtr<FunctionCanceller> m_canceller;
+  //       void bar();
+  //   };
+  //
+  //   Foo* foo = new Foo;
+  //   auto result = makeCancellable(bind(&Foo::bar, wrapPersistent(foo)));
+  //
+  //   // Destruction of the resulting Function implies the destruction of
+  //   // the original function via ScopedFunctionCanceller below, that
+  //   // resolves a circular strong reference:
+  //   //   foo -> m_canceller -> m_function -> foo
+  //   result.function = nullptr;
+  auto wrappedFunction = bind(&Canceller::runUnlessCancelled, canceller,
+                              ScopedFunctionCanceller(canceller));
+  return MakeCancellableResult<Params...>(
+      ScopedFunctionCanceller(canceller.release()), std::move(wrappedFunction));
 }
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // WTF_MakeCancellable_h
+#endif  // WTF_MakeCancellable_h

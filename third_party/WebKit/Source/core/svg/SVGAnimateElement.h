@@ -33,59 +33,67 @@
 namespace blink {
 
 class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGAnimateElement* create(Document&);
-    ~SVGAnimateElement() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static SVGAnimateElement* create(Document&);
+  ~SVGAnimateElement() override;
 
-    bool isSVGAnimationAttributeSettingJavaScriptURL(const Attribute&) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-    AnimatedPropertyType animatedPropertyType();
-    bool animatedPropertyTypeSupportsAddition();
+  bool isSVGAnimationAttributeSettingJavaScriptURL(
+      const Attribute&) const override;
 
-protected:
-    SVGAnimateElement(const QualifiedName&, Document&);
+  AnimatedPropertyType animatedPropertyType();
+  bool animatedPropertyTypeSupportsAddition();
 
-    void resetAnimatedType() final;
-    void clearAnimatedType() final;
+ protected:
+  SVGAnimateElement(const QualifiedName&, Document&);
 
-    bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) final;
-    bool calculateFromAndToValues(const String& fromString, const String& toString) final;
-    bool calculateFromAndByValues(const String& fromString, const String& byString) final;
-    void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement) final;
-    void applyResultsToTarget() final;
-    float calculateDistance(const String& fromString, const String& toString) final;
-    bool isAdditive() final;
+  void resetAnimatedType() final;
+  void clearAnimatedType() final;
 
-    void setTargetElement(SVGElement*) final;
-    void setAttributeName(const QualifiedName&) final;
+  bool calculateToAtEndOfDurationValue(
+      const String& toAtEndOfDurationString) final;
+  bool calculateFromAndToValues(const String& fromString,
+                                const String& toString) final;
+  bool calculateFromAndByValues(const String& fromString,
+                                const String& byString) final;
+  void calculateAnimatedValue(float percentage,
+                              unsigned repeatCount,
+                              SVGSMILElement* resultElement) final;
+  void applyResultsToTarget() final;
+  float calculateDistance(const String& fromString,
+                          const String& toString) final;
+  bool isAdditive() final;
 
-    FRIEND_TEST_ALL_PREFIXES(UnsafeSVGAttributeSanitizationTest, stringsShouldNotSupportAddition);
+  void setTargetElement(SVGElement*) final;
+  void setAttributeName(const QualifiedName&) final;
 
-private:
-    void resetAnimatedPropertyType();
+  FRIEND_TEST_ALL_PREFIXES(UnsafeSVGAttributeSanitizationTest,
+                           stringsShouldNotSupportAddition);
 
-    bool hasValidAttributeType() override;
+ private:
+  void resetAnimatedPropertyType();
 
-    Member<SVGPropertyBase> m_fromProperty;
-    Member<SVGPropertyBase> m_toProperty;
-    Member<SVGPropertyBase> m_toAtEndOfDurationProperty;
-    Member<SVGPropertyBase> m_animatedProperty;
+  bool hasValidAttributeType() override;
 
-    SVGAnimatedTypeAnimator m_animator;
+  Member<SVGPropertyBase> m_fromProperty;
+  Member<SVGPropertyBase> m_toProperty;
+  Member<SVGPropertyBase> m_toAtEndOfDurationProperty;
+  Member<SVGPropertyBase> m_animatedProperty;
+
+  SVGAnimatedTypeAnimator m_animator;
 };
 
-inline bool isSVGAnimateElement(const SVGElement& element)
-{
-    return element.hasTagName(SVGNames::animateTag)
-        || element.hasTagName(SVGNames::animateTransformTag)
-        || element.hasTagName(SVGNames::setTag);
+inline bool isSVGAnimateElement(const SVGElement& element) {
+  return element.hasTagName(SVGNames::animateTag) ||
+         element.hasTagName(SVGNames::animateTransformTag) ||
+         element.hasTagName(SVGNames::setTag);
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimateElement_h
+#endif  // SVGAnimateElement_h

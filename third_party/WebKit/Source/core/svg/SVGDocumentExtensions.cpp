@@ -34,337 +34,326 @@ namespace blink {
 SVGDocumentExtensions::SVGDocumentExtensions(Document* document)
     : m_document(document)
 #if ENABLE(ASSERT)
-    , m_inRelativeLengthSVGRootsInvalidation(false)
+      ,
+      m_inRelativeLengthSVGRootsInvalidation(false)
 #endif
 {
 }
 
-SVGDocumentExtensions::~SVGDocumentExtensions()
-{
+SVGDocumentExtensions::~SVGDocumentExtensions() {}
+
+void SVGDocumentExtensions::addTimeContainer(SVGSVGElement* element) {
+  m_timeContainers.add(element);
 }
 
-void SVGDocumentExtensions::addTimeContainer(SVGSVGElement* element)
-{
-    m_timeContainers.add(element);
+void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element) {
+  m_timeContainers.remove(element);
 }
 
-void SVGDocumentExtensions::removeTimeContainer(SVGSVGElement* element)
-{
-    m_timeContainers.remove(element);
+void SVGDocumentExtensions::addWebAnimationsPendingSVGElement(
+    SVGElement& element) {
+  ASSERT(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
+  m_webAnimationsPendingSVGElements.add(&element);
 }
 
-void SVGDocumentExtensions::addWebAnimationsPendingSVGElement(SVGElement& element)
-{
-    ASSERT(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
-    m_webAnimationsPendingSVGElements.add(&element);
+void SVGDocumentExtensions::addResource(const AtomicString& id,
+                                        LayoutSVGResourceContainer* resource) {
+  ASSERT(resource);
+
+  if (id.isEmpty())
+    return;
+
+  // Replaces resource if already present, to handle potential id changes
+  m_resources.set(id, resource);
 }
 
-void SVGDocumentExtensions::addResource(const AtomicString& id, LayoutSVGResourceContainer* resource)
-{
-    ASSERT(resource);
+void SVGDocumentExtensions::removeResource(const AtomicString& id) {
+  if (id.isEmpty())
+    return;
 
-    if (id.isEmpty())
-        return;
-
-    // Replaces resource if already present, to handle potential id changes
-    m_resources.set(id, resource);
+  m_resources.remove(id);
 }
 
-void SVGDocumentExtensions::removeResource(const AtomicString& id)
-{
-    if (id.isEmpty())
-        return;
+LayoutSVGResourceContainer* SVGDocumentExtensions::resourceById(
+    const AtomicString& id) const {
+  if (id.isEmpty())
+    return nullptr;
 
-    m_resources.remove(id);
+  return m_resources.get(id);
 }
 
-LayoutSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicString& id) const
-{
-    if (id.isEmpty())
-        return nullptr;
-
-    return m_resources.get(id);
+void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document) {
+  if (!document.svgExtensions())
+    return;
+  document.accessSVGExtensions().serviceAnimations();
 }
 
-void SVGDocumentExtensions::serviceOnAnimationFrame(Document& document)
-{
-    if (!document.svgExtensions())
-        return;
-    document.accessSVGExtensions().serviceAnimations();
-}
-
-void SVGDocumentExtensions::serviceAnimations()
-{
-    if (RuntimeEnabledFeatures::smilEnabled()) {
-        HeapVector<Member<SVGSVGElement>> timeContainers;
-        copyToVector(m_timeContainers, timeContainers);
-        for (const auto& container : timeContainers)
-            container->timeContainer()->serviceAnimations();
-    }
-
-    SVGElementSet webAnimationsPendingSVGElements;
-    webAnimationsPendingSVGElements.swap(m_webAnimationsPendingSVGElements);
-
-    // TODO(alancutter): Make SVG animation effect application a separate document lifecycle phase from servicing animations to be responsive to Javascript manipulation of exposed animation objects.
-    for (auto& svgElement : webAnimationsPendingSVGElements)
-        svgElement->applyActiveWebAnimations();
-
-    ASSERT(m_webAnimationsPendingSVGElements.isEmpty());
-}
-
-void SVGDocumentExtensions::startAnimations()
-{
-    // FIXME: Eventually every "Time Container" will need a way to latch on to some global timer
-    // starting animations for a document will do this "latching"
-    // FIXME: We hold a ref pointers to prevent a shadow tree from getting removed out from underneath us.
-    // In the future we should refactor the use-element to avoid this. See https://webkit.org/b/53704
+void SVGDocumentExtensions::serviceAnimations() {
+  if (RuntimeEnabledFeatures::smilEnabled()) {
     HeapVector<Member<SVGSVGElement>> timeContainers;
     copyToVector(m_timeContainers, timeContainers);
-    for (const auto& container : timeContainers) {
-        SMILTimeContainer* timeContainer = container->timeContainer();
-        if (!timeContainer->isStarted())
-            timeContainer->start();
-    }
+    for (const auto& container : timeContainers)
+      container->timeContainer()->serviceAnimations();
+  }
+
+  SVGElementSet webAnimationsPendingSVGElements;
+  webAnimationsPendingSVGElements.swap(m_webAnimationsPendingSVGElements);
+
+  // TODO(alancutter): Make SVG animation effect application a separate document lifecycle phase from servicing animations to be responsive to Javascript manipulation of exposed animation objects.
+  for (auto& svgElement : webAnimationsPendingSVGElements)
+    svgElement->applyActiveWebAnimations();
+
+  ASSERT(m_webAnimationsPendingSVGElements.isEmpty());
 }
 
-void SVGDocumentExtensions::pauseAnimations()
-{
-    for (SVGSVGElement* element : m_timeContainers)
-        element->pauseAnimations();
+void SVGDocumentExtensions::startAnimations() {
+  // FIXME: Eventually every "Time Container" will need a way to latch on to some global timer
+  // starting animations for a document will do this "latching"
+  // FIXME: We hold a ref pointers to prevent a shadow tree from getting removed out from underneath us.
+  // In the future we should refactor the use-element to avoid this. See https://webkit.org/b/53704
+  HeapVector<Member<SVGSVGElement>> timeContainers;
+  copyToVector(m_timeContainers, timeContainers);
+  for (const auto& container : timeContainers) {
+    SMILTimeContainer* timeContainer = container->timeContainer();
+    if (!timeContainer->isStarted())
+      timeContainer->start();
+  }
 }
 
-void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
-{
-    HeapVector<Member<SVGSVGElement>> timeContainers;
-    copyToVector(m_timeContainers, timeContainers);
-    for (const auto& container : timeContainers) {
-        SVGSVGElement* outerSVG = container.get();
-        if (!outerSVG->isOutermostSVGSVGElement())
-            continue;
-
-        // don't dispatch the load event document is not wellformed (for XML/standalone svg)
-        if (outerSVG->document().wellFormed() || !outerSVG->document().isSVGDocument())
-            outerSVG->sendSVGLoadEventIfPossible();
-    }
+void SVGDocumentExtensions::pauseAnimations() {
+  for (SVGSVGElement* element : m_timeContainers)
+    element->pauseAnimations();
 }
 
-void SVGDocumentExtensions::reportError(const String& message)
-{
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel,  "Error: " + message);
-    m_document->addConsoleMessage(consoleMessage);
+void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements() {
+  HeapVector<Member<SVGSVGElement>> timeContainers;
+  copyToVector(m_timeContainers, timeContainers);
+  for (const auto& container : timeContainers) {
+    SVGSVGElement* outerSVG = container.get();
+    if (!outerSVG->isOutermostSVGSVGElement())
+      continue;
+
+    // don't dispatch the load event document is not wellformed (for XML/standalone svg)
+    if (outerSVG->document().wellFormed() ||
+        !outerSVG->document().isSVGDocument())
+      outerSVG->sendSVGLoadEventIfPossible();
+  }
 }
 
-void SVGDocumentExtensions::addPendingResource(const AtomicString& id, Element* element)
-{
-    ASSERT(element);
-    ASSERT(element->isConnected());
-
-    if (id.isEmpty())
-        return;
-
-    HeapHashMap<AtomicString, Member<SVGPendingElements>>::AddResult result = m_pendingResources.add(id, nullptr);
-    if (result.isNewEntry)
-        result.storedValue->value = new SVGPendingElements;
-    result.storedValue->value->add(element);
-
-    element->setHasPendingResources();
+void SVGDocumentExtensions::reportError(const String& message) {
+  ConsoleMessage* consoleMessage = ConsoleMessage::create(
+      RenderingMessageSource, ErrorMessageLevel, "Error: " + message);
+  m_document->addConsoleMessage(consoleMessage);
 }
 
-bool SVGDocumentExtensions::hasPendingResource(const AtomicString& id) const
-{
-    if (id.isEmpty())
-        return false;
+void SVGDocumentExtensions::addPendingResource(const AtomicString& id,
+                                               Element* element) {
+  ASSERT(element);
+  ASSERT(element->isConnected());
 
-    return m_pendingResources.contains(id);
+  if (id.isEmpty())
+    return;
+
+  HeapHashMap<AtomicString, Member<SVGPendingElements>>::AddResult result =
+      m_pendingResources.add(id, nullptr);
+  if (result.isNewEntry)
+    result.storedValue->value = new SVGPendingElements;
+  result.storedValue->value->add(element);
+
+  element->setHasPendingResources();
 }
 
-bool SVGDocumentExtensions::isElementPendingResources(Element* element) const
-{
-    // This algorithm takes time proportional to the number of pending resources and need not.
-    // If performance becomes an issue we can keep a counted set of elements and answer the question efficiently.
+bool SVGDocumentExtensions::hasPendingResource(const AtomicString& id) const {
+  if (id.isEmpty())
+    return false;
 
-    ASSERT(element);
+  return m_pendingResources.contains(id);
+}
 
+bool SVGDocumentExtensions::isElementPendingResources(Element* element) const {
+  // This algorithm takes time proportional to the number of pending resources and need not.
+  // If performance becomes an issue we can keep a counted set of elements and answer the question efficiently.
+
+  ASSERT(element);
+
+  for (const auto& entry : m_pendingResources) {
+    SVGPendingElements* elements = entry.value.get();
+    ASSERT(elements);
+
+    if (elements->contains(element))
+      return true;
+  }
+  return false;
+}
+
+bool SVGDocumentExtensions::isElementPendingResource(
+    Element* element,
+    const AtomicString& id) const {
+  ASSERT(element);
+
+  if (!hasPendingResource(id))
+    return false;
+
+  return m_pendingResources.get(id)->contains(element);
+}
+
+void SVGDocumentExtensions::clearHasPendingResourcesIfPossible(
+    Element* element) {
+  if (!isElementPendingResources(element))
+    element->clearHasPendingResources();
+}
+
+void SVGDocumentExtensions::removeElementFromPendingResources(
+    Element* element) {
+  ASSERT(element);
+
+  // Remove the element from pending resources.
+  if (!m_pendingResources.isEmpty() && element->hasPendingResources()) {
+    Vector<AtomicString> toBeRemoved;
     for (const auto& entry : m_pendingResources) {
-        SVGPendingElements* elements = entry.value.get();
-        ASSERT(elements);
+      SVGPendingElements* elements = entry.value.get();
+      ASSERT(elements);
+      ASSERT(!elements->isEmpty());
 
-        if (elements->contains(element))
-            return true;
-    }
-    return false;
-}
-
-bool SVGDocumentExtensions::isElementPendingResource(Element* element, const AtomicString& id) const
-{
-    ASSERT(element);
-
-    if (!hasPendingResource(id))
-        return false;
-
-    return m_pendingResources.get(id)->contains(element);
-}
-
-void SVGDocumentExtensions::clearHasPendingResourcesIfPossible(Element* element)
-{
-    if (!isElementPendingResources(element))
-        element->clearHasPendingResources();
-}
-
-void SVGDocumentExtensions::removeElementFromPendingResources(Element* element)
-{
-    ASSERT(element);
-
-    // Remove the element from pending resources.
-    if (!m_pendingResources.isEmpty() && element->hasPendingResources()) {
-        Vector<AtomicString> toBeRemoved;
-        for (const auto& entry : m_pendingResources) {
-            SVGPendingElements* elements = entry.value.get();
-            ASSERT(elements);
-            ASSERT(!elements->isEmpty());
-
-            elements->remove(element);
-            if (elements->isEmpty())
-                toBeRemoved.append(entry.key);
-        }
-
-        clearHasPendingResourcesIfPossible(element);
-
-        // We use the removePendingResource function here because it deals with set lifetime correctly.
-        for (const AtomicString& id : toBeRemoved)
-            removePendingResource(id);
+      elements->remove(element);
+      if (elements->isEmpty())
+        toBeRemoved.append(entry.key);
     }
 
-    // Remove the element from pending resources that were scheduled for removal.
-    if (!m_pendingResourcesForRemoval.isEmpty()) {
-        Vector<AtomicString> toBeRemoved;
-        for (const auto& entry : m_pendingResourcesForRemoval) {
-            SVGPendingElements* elements = entry.value.get();
-            ASSERT(elements);
-            ASSERT(!elements->isEmpty());
+    clearHasPendingResourcesIfPossible(element);
 
-            elements->remove(element);
-            if (elements->isEmpty())
-                toBeRemoved.append(entry.key);
-        }
+    // We use the removePendingResource function here because it deals with set lifetime correctly.
+    for (const AtomicString& id : toBeRemoved)
+      removePendingResource(id);
+  }
 
-        // We use the removePendingResourceForRemoval function here because it deals with set lifetime correctly.
-        for (const AtomicString& id : toBeRemoved)
-            removePendingResourceForRemoval(id);
+  // Remove the element from pending resources that were scheduled for removal.
+  if (!m_pendingResourcesForRemoval.isEmpty()) {
+    Vector<AtomicString> toBeRemoved;
+    for (const auto& entry : m_pendingResourcesForRemoval) {
+      SVGPendingElements* elements = entry.value.get();
+      ASSERT(elements);
+      ASSERT(!elements->isEmpty());
+
+      elements->remove(element);
+      if (elements->isEmpty())
+        toBeRemoved.append(entry.key);
     }
+
+    // We use the removePendingResourceForRemoval function here because it deals with set lifetime correctly.
+    for (const AtomicString& id : toBeRemoved)
+      removePendingResourceForRemoval(id);
+  }
 }
 
-SVGDocumentExtensions::SVGPendingElements* SVGDocumentExtensions::removePendingResource(const AtomicString& id)
-{
-    ASSERT(m_pendingResources.contains(id));
-    return m_pendingResources.take(id);
+SVGDocumentExtensions::SVGPendingElements*
+SVGDocumentExtensions::removePendingResource(const AtomicString& id) {
+  ASSERT(m_pendingResources.contains(id));
+  return m_pendingResources.take(id);
 }
 
-SVGDocumentExtensions::SVGPendingElements* SVGDocumentExtensions::removePendingResourceForRemoval(const AtomicString& id)
-{
-    ASSERT(m_pendingResourcesForRemoval.contains(id));
-    return m_pendingResourcesForRemoval.take(id);
+SVGDocumentExtensions::SVGPendingElements*
+SVGDocumentExtensions::removePendingResourceForRemoval(const AtomicString& id) {
+  ASSERT(m_pendingResourcesForRemoval.contains(id));
+  return m_pendingResourcesForRemoval.take(id);
 }
 
-void SVGDocumentExtensions::markPendingResourcesForRemoval(const AtomicString& id)
-{
-    if (id.isEmpty())
-        return;
+void SVGDocumentExtensions::markPendingResourcesForRemoval(
+    const AtomicString& id) {
+  if (id.isEmpty())
+    return;
 
-    ASSERT(!m_pendingResourcesForRemoval.contains(id));
+  ASSERT(!m_pendingResourcesForRemoval.contains(id));
 
-    Member<SVGPendingElements> existing = m_pendingResources.take(id);
-    if (existing && !existing->isEmpty())
-        m_pendingResourcesForRemoval.add(id, existing.release());
+  Member<SVGPendingElements> existing = m_pendingResources.take(id);
+  if (existing && !existing->isEmpty())
+    m_pendingResourcesForRemoval.add(id, existing.release());
 }
 
-Element* SVGDocumentExtensions::removeElementFromPendingResourcesForRemoval(const AtomicString& id)
-{
-    if (id.isEmpty())
-        return nullptr;
+Element* SVGDocumentExtensions::removeElementFromPendingResourcesForRemoval(
+    const AtomicString& id) {
+  if (id.isEmpty())
+    return nullptr;
 
-    SVGPendingElements* resourceSet = m_pendingResourcesForRemoval.get(id);
-    if (!resourceSet || resourceSet->isEmpty())
-        return nullptr;
+  SVGPendingElements* resourceSet = m_pendingResourcesForRemoval.get(id);
+  if (!resourceSet || resourceSet->isEmpty())
+    return nullptr;
 
-    SVGPendingElements::iterator firstElement = resourceSet->begin();
-    Element* element = *firstElement;
+  SVGPendingElements::iterator firstElement = resourceSet->begin();
+  Element* element = *firstElement;
 
-    resourceSet->remove(firstElement);
+  resourceSet->remove(firstElement);
 
-    if (resourceSet->isEmpty())
-        removePendingResourceForRemoval(id);
+  if (resourceSet->isEmpty())
+    removePendingResourceForRemoval(id);
 
-    return element;
+  return element;
 }
 
-void SVGDocumentExtensions::addSVGRootWithRelativeLengthDescendents(SVGSVGElement* svgRoot)
-{
-    ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
-    m_relativeLengthSVGRoots.add(svgRoot);
+void SVGDocumentExtensions::addSVGRootWithRelativeLengthDescendents(
+    SVGSVGElement* svgRoot) {
+  ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
+  m_relativeLengthSVGRoots.add(svgRoot);
 }
 
-void SVGDocumentExtensions::removeSVGRootWithRelativeLengthDescendents(SVGSVGElement* svgRoot)
-{
-    ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
-    m_relativeLengthSVGRoots.remove(svgRoot);
+void SVGDocumentExtensions::removeSVGRootWithRelativeLengthDescendents(
+    SVGSVGElement* svgRoot) {
+  ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
+  m_relativeLengthSVGRoots.remove(svgRoot);
 }
 
-bool SVGDocumentExtensions::isSVGRootWithRelativeLengthDescendents(SVGSVGElement* svgRoot) const
-{
-    return m_relativeLengthSVGRoots.contains(svgRoot);
+bool SVGDocumentExtensions::isSVGRootWithRelativeLengthDescendents(
+    SVGSVGElement* svgRoot) const {
+  return m_relativeLengthSVGRoots.contains(svgRoot);
 }
 
-void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(SubtreeLayoutScope* scope)
-{
-    ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
+void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(
+    SubtreeLayoutScope* scope) {
+  ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
 #if ENABLE(ASSERT)
-    AutoReset<bool> inRelativeLengthSVGRootsChange(&m_inRelativeLengthSVGRootsInvalidation, true);
+  AutoReset<bool> inRelativeLengthSVGRootsChange(
+      &m_inRelativeLengthSVGRootsInvalidation, true);
 #endif
 
-    for (SVGSVGElement* element : m_relativeLengthSVGRoots)
-        element->invalidateRelativeLengthClients(scope);
+  for (SVGSVGElement* element : m_relativeLengthSVGRoots)
+    element->invalidateRelativeLengthClients(scope);
 }
 
-bool SVGDocumentExtensions::zoomAndPanEnabled() const
-{
-    if (SVGSVGElement* svg = rootElement(*m_document))
-        return svg->zoomAndPanEnabled();
-    return false;
+bool SVGDocumentExtensions::zoomAndPanEnabled() const {
+  if (SVGSVGElement* svg = rootElement(*m_document))
+    return svg->zoomAndPanEnabled();
+  return false;
 }
 
-void SVGDocumentExtensions::startPan(const FloatPoint& start)
-{
-    if (SVGSVGElement* svg = rootElement(*m_document))
-        m_translate = FloatPoint(start.x() - svg->currentTranslate().x(), start.y() - svg->currentTranslate().y());
+void SVGDocumentExtensions::startPan(const FloatPoint& start) {
+  if (SVGSVGElement* svg = rootElement(*m_document))
+    m_translate = FloatPoint(start.x() - svg->currentTranslate().x(),
+                             start.y() - svg->currentTranslate().y());
 }
 
-void SVGDocumentExtensions::updatePan(const FloatPoint& pos) const
-{
-    if (SVGSVGElement* svg = rootElement(*m_document))
-        svg->setCurrentTranslate(FloatPoint(pos.x() - m_translate.x(), pos.y() - m_translate.y()));
+void SVGDocumentExtensions::updatePan(const FloatPoint& pos) const {
+  if (SVGSVGElement* svg = rootElement(*m_document))
+    svg->setCurrentTranslate(
+        FloatPoint(pos.x() - m_translate.x(), pos.y() - m_translate.y()));
 }
 
-SVGSVGElement* SVGDocumentExtensions::rootElement(const Document& document)
-{
-    Element* elem = document.documentElement();
-    return isSVGSVGElement(elem) ? toSVGSVGElement(elem) : 0;
+SVGSVGElement* SVGDocumentExtensions::rootElement(const Document& document) {
+  Element* elem = document.documentElement();
+  return isSVGSVGElement(elem) ? toSVGSVGElement(elem) : 0;
 }
 
-SVGSVGElement* SVGDocumentExtensions::rootElement() const
-{
-    ASSERT(m_document);
-    return rootElement(*m_document);
+SVGSVGElement* SVGDocumentExtensions::rootElement() const {
+  ASSERT(m_document);
+  return rootElement(*m_document);
 }
 
-DEFINE_TRACE(SVGDocumentExtensions)
-{
-    visitor->trace(m_document);
-    visitor->trace(m_timeContainers);
-    visitor->trace(m_webAnimationsPendingSVGElements);
-    visitor->trace(m_relativeLengthSVGRoots);
-    visitor->trace(m_pendingResources);
-    visitor->trace(m_pendingResourcesForRemoval);
+DEFINE_TRACE(SVGDocumentExtensions) {
+  visitor->trace(m_document);
+  visitor->trace(m_timeContainers);
+  visitor->trace(m_webAnimationsPendingSVGElements);
+  visitor->trace(m_relativeLengthSVGRoots);
+  visitor->trace(m_pendingResources);
+  visitor->trace(m_pendingResourcesForRemoval);
 }
 
-} // namespace blink
+}  // namespace blink

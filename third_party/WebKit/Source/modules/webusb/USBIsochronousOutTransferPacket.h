@@ -11,32 +11,32 @@
 
 namespace blink {
 
-class USBIsochronousOutTransferPacket final : public GarbageCollectedFinalized<USBIsochronousOutTransferPacket>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static USBIsochronousOutTransferPacket* create(const String& status, unsigned bytesWritten)
-    {
-        return new USBIsochronousOutTransferPacket(status, bytesWritten);
-    }
+class USBIsochronousOutTransferPacket final
+    : public GarbageCollectedFinalized<USBIsochronousOutTransferPacket>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    USBIsochronousOutTransferPacket(const String& status, unsigned bytesWritten)
-        : m_status(status)
-        , m_bytesWritten(bytesWritten)
-    {
-    }
+ public:
+  static USBIsochronousOutTransferPacket* create(const String& status,
+                                                 unsigned bytesWritten) {
+    return new USBIsochronousOutTransferPacket(status, bytesWritten);
+  }
 
-    virtual ~USBIsochronousOutTransferPacket() {}
+  USBIsochronousOutTransferPacket(const String& status, unsigned bytesWritten)
+      : m_status(status), m_bytesWritten(bytesWritten) {}
 
-    String status() const { return m_status; }
-    unsigned bytesWritten() const { return m_bytesWritten; }
+  virtual ~USBIsochronousOutTransferPacket() {}
 
-    DEFINE_INLINE_TRACE() {}
+  String status() const { return m_status; }
+  unsigned bytesWritten() const { return m_bytesWritten; }
 
-private:
-    const String m_status;
-    const unsigned m_bytesWritten;
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  const String m_status;
+  const unsigned m_bytesWritten;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // USBIsochronousOutTransferPacket_h
+#endif  // USBIsochronousOutTransferPacket_h

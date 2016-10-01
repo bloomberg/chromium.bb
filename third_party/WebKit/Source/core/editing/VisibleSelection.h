@@ -42,176 +42,285 @@ class LayoutPoint;
 class SelectionAdjuster;
 
 const TextAffinity SelDefaultAffinity = TextAffinity::Downstream;
-enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
+enum SelectionDirection {
+  DirectionForward,
+  DirectionBackward,
+  DirectionRight,
+  DirectionLeft
+};
 
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
-    DISALLOW_NEW();
-public:
-    VisibleSelectionTemplate();
-    VisibleSelectionTemplate(const VisibleSelectionTemplate&);
-    VisibleSelectionTemplate& operator=(const VisibleSelectionTemplate&);
+  DISALLOW_NEW();
 
-    // Note: |create()| should be used only by |createVisibleSelection| and
-    // |selectionFromContentsOfNode|.
-    // TODO(xiaochengh): Use enum class instead of boolean parameter.
-    static VisibleSelectionTemplate create(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity, bool isDirectional);
+ public:
+  VisibleSelectionTemplate();
+  VisibleSelectionTemplate(const VisibleSelectionTemplate&);
+  VisibleSelectionTemplate& operator=(const VisibleSelectionTemplate&);
 
-    static VisibleSelectionTemplate selectionFromContentsOfNode(Node*);
+  // Note: |create()| should be used only by |createVisibleSelection| and
+  // |selectionFromContentsOfNode|.
+  // TODO(xiaochengh): Use enum class instead of boolean parameter.
+  static VisibleSelectionTemplate create(
+      const PositionTemplate<Strategy>& base,
+      const PositionTemplate<Strategy>& extent,
+      TextAffinity,
+      bool isDirectional);
 
-    SelectionType getSelectionType() const { return m_selectionType; }
+  static VisibleSelectionTemplate selectionFromContentsOfNode(Node*);
 
-    void setAffinity(TextAffinity affinity) { m_affinity = affinity; }
-    TextAffinity affinity() const { return m_affinity; }
+  SelectionType getSelectionType() const { return m_selectionType; }
 
-    void setBase(const PositionTemplate<Strategy>&);
-    void setBase(const VisiblePositionTemplate<Strategy>&);
-    void setExtent(const PositionTemplate<Strategy>&);
-    void setExtent(const VisiblePositionTemplate<Strategy>&);
+  void setAffinity(TextAffinity affinity) { m_affinity = affinity; }
+  TextAffinity affinity() const { return m_affinity; }
 
-    PositionTemplate<Strategy> base() const { return m_base; }
-    PositionTemplate<Strategy> extent() const { return m_extent; }
-    PositionTemplate<Strategy> start() const { return m_start; }
-    PositionTemplate<Strategy> end() const { return m_end; }
+  void setBase(const PositionTemplate<Strategy>&);
+  void setBase(const VisiblePositionTemplate<Strategy>&);
+  void setExtent(const PositionTemplate<Strategy>&);
+  void setExtent(const VisiblePositionTemplate<Strategy>&);
 
-    VisiblePositionTemplate<Strategy> visibleStart() const { return createVisiblePosition(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
-    VisiblePositionTemplate<Strategy> visibleEnd() const { return createVisiblePosition(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
-    VisiblePositionTemplate<Strategy> visibleBase() const { return createVisiblePosition(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
-    VisiblePositionTemplate<Strategy> visibleExtent() const { return createVisiblePosition(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
+  PositionTemplate<Strategy> base() const { return m_base; }
+  PositionTemplate<Strategy> extent() const { return m_extent; }
+  PositionTemplate<Strategy> start() const { return m_start; }
+  PositionTemplate<Strategy> end() const { return m_end; }
 
-    // These deprecated functions perform synchronous layout, messing up the
-    // pipeline. Callers should ensure clean layout and then switch to the
-    // un-deprecated functions above.
-    VisiblePositionTemplate<Strategy> visibleStartDeprecated() const { return createVisiblePositionDeprecated(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
-    VisiblePositionTemplate<Strategy> visibleEndDeprecated() const { return createVisiblePositionDeprecated(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
+  VisiblePositionTemplate<Strategy> visibleStart() const {
+    return createVisiblePosition(
+        m_start, isRange() ? TextAffinity::Downstream : affinity());
+  }
+  VisiblePositionTemplate<Strategy> visibleEnd() const {
+    return createVisiblePosition(
+        m_end, isRange() ? TextAffinity::Upstream : affinity());
+  }
+  VisiblePositionTemplate<Strategy> visibleBase() const {
+    return createVisiblePosition(
+        m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream
+                                           : TextAffinity::Downstream)
+                          : affinity());
+  }
+  VisiblePositionTemplate<Strategy> visibleExtent() const {
+    return createVisiblePosition(
+        m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream
+                                             : TextAffinity::Upstream)
+                            : affinity());
+  }
 
-    bool operator==(const VisibleSelectionTemplate&) const;
-    bool operator!=(const VisibleSelectionTemplate& other) const { return !operator==(other); }
+  // These deprecated functions perform synchronous layout, messing up the
+  // pipeline. Callers should ensure clean layout and then switch to the
+  // un-deprecated functions above.
+  VisiblePositionTemplate<Strategy> visibleStartDeprecated() const {
+    return createVisiblePositionDeprecated(
+        m_start, isRange() ? TextAffinity::Downstream : affinity());
+  }
+  VisiblePositionTemplate<Strategy> visibleEndDeprecated() const {
+    return createVisiblePositionDeprecated(
+        m_end, isRange() ? TextAffinity::Upstream : affinity());
+  }
 
-    bool isNone() const { return getSelectionType() == NoSelection; }
-    bool isCaret() const { return getSelectionType() == CaretSelection; }
-    bool isRange() const { return getSelectionType() == RangeSelection; }
-    bool isNonOrphanedRange() const { return isRange() && !start().isOrphan() && !end().isOrphan(); }
-    bool isNonOrphanedCaretOrRange() const { return !isNone() && !start().isOrphan() && !end().isOrphan(); }
+  bool operator==(const VisibleSelectionTemplate&) const;
+  bool operator!=(const VisibleSelectionTemplate& other) const {
+    return !operator==(other);
+  }
 
-    bool isBaseFirst() const { return m_baseIsFirst; }
-    bool isDirectional() const { return m_isDirectional; }
-    void setIsDirectional(bool isDirectional) { m_isDirectional = isDirectional; }
+  bool isNone() const { return getSelectionType() == NoSelection; }
+  bool isCaret() const { return getSelectionType() == CaretSelection; }
+  bool isRange() const { return getSelectionType() == RangeSelection; }
+  bool isNonOrphanedRange() const {
+    return isRange() && !start().isOrphan() && !end().isOrphan();
+  }
+  bool isNonOrphanedCaretOrRange() const {
+    return !isNone() && !start().isOrphan() && !end().isOrphan();
+  }
 
-    void appendTrailingWhitespace();
+  bool isBaseFirst() const { return m_baseIsFirst; }
+  bool isDirectional() const { return m_isDirectional; }
+  void setIsDirectional(bool isDirectional) { m_isDirectional = isDirectional; }
 
-    void expandUsingGranularity(TextGranularity);
+  void appendTrailingWhitespace();
 
-    // TODO(yosin) Most callers probably don't want these functions, but
-    // are using them for historical reasons. |toNormalizedEphemeralRange()|
-    // contracts the range around text, and moves the caret most backward
-    // visually equivalent position before returning the range/positions.
-    EphemeralRangeTemplate<Strategy> toNormalizedEphemeralRange() const;
+  void expandUsingGranularity(TextGranularity);
 
-    Element* rootEditableElement() const;
-    bool isContentEditable() const;
-    bool hasEditableStyle() const;
-    bool isContentRichlyEditable() const;
+  // TODO(yosin) Most callers probably don't want these functions, but
+  // are using them for historical reasons. |toNormalizedEphemeralRange()|
+  // contracts the range around text, and moves the caret most backward
+  // visually equivalent position before returning the range/positions.
+  EphemeralRangeTemplate<Strategy> toNormalizedEphemeralRange() const;
 
-    bool isValidFor(const Document&) const;
-    void setWithoutValidation(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>&);
+  Element* rootEditableElement() const;
+  bool isContentEditable() const;
+  bool hasEditableStyle() const;
+  bool isContentRichlyEditable() const;
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_base);
-        visitor->trace(m_extent);
-        visitor->trace(m_start);
-        visitor->trace(m_end);
-    }
+  bool isValidFor(const Document&) const;
+  void setWithoutValidation(const PositionTemplate<Strategy>&,
+                            const PositionTemplate<Strategy>&);
 
-    void updateIfNeeded();
-    void validatePositionsIfNeeded();
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_base);
+    visitor->trace(m_extent);
+    visitor->trace(m_start);
+    visitor->trace(m_end);
+  }
+
+  void updateIfNeeded();
+  void validatePositionsIfNeeded();
 
 #ifndef NDEBUG
-    void showTreeForThis() const;
+  void showTreeForThis() const;
 #endif
-    static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);
+  static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);
 
-private:
-    friend class SelectionAdjuster;
+ private:
+  friend class SelectionAdjuster;
 
-    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity, bool isDirectional);
+  VisibleSelectionTemplate(const PositionTemplate<Strategy>& base,
+                           const PositionTemplate<Strategy>& extent,
+                           TextAffinity,
+                           bool isDirectional);
 
-    void validate(TextGranularity = CharacterGranularity);
+  void validate(TextGranularity = CharacterGranularity);
 
-    // Support methods for validate()
-    void setBaseAndExtentToDeepEquivalents();
-    void adjustSelectionToAvoidCrossingShadowBoundaries();
-    void adjustSelectionToAvoidCrossingEditingBoundaries();
-    void setEndRespectingGranularity(TextGranularity);
-    void setStartRespectingGranularity(TextGranularity);
-    void updateSelectionType();
+  // Support methods for validate()
+  void setBaseAndExtentToDeepEquivalents();
+  void adjustSelectionToAvoidCrossingShadowBoundaries();
+  void adjustSelectionToAvoidCrossingEditingBoundaries();
+  void setEndRespectingGranularity(TextGranularity);
+  void setStartRespectingGranularity(TextGranularity);
+  void updateSelectionType();
 
-    // We need to store these as Positions because VisibleSelection is
-    // used to store values in editing commands for use when
-    // undoing the command. We need to be able to create a selection that, while
-    // currently invalid, will be valid once the changes are undone.
+  // We need to store these as Positions because VisibleSelection is
+  // used to store values in editing commands for use when
+  // undoing the command. We need to be able to create a selection that, while
+  // currently invalid, will be valid once the changes are undone.
 
-    // Where the first click happened
-    PositionTemplate<Strategy> m_base;
-    // Where the end click happened
-    PositionTemplate<Strategy> m_extent;
-    // Leftmost position when expanded to respect granularity
-    PositionTemplate<Strategy> m_start;
-    // Rightmost position when expanded to respect granularity
-    PositionTemplate<Strategy> m_end;
+  // Where the first click happened
+  PositionTemplate<Strategy> m_base;
+  // Where the end click happened
+  PositionTemplate<Strategy> m_extent;
+  // Leftmost position when expanded to respect granularity
+  PositionTemplate<Strategy> m_start;
+  // Rightmost position when expanded to respect granularity
+  PositionTemplate<Strategy> m_end;
 
-    TextAffinity m_affinity; // the upstream/downstream affinity of the caret
+  TextAffinity m_affinity;  // the upstream/downstream affinity of the caret
 
-    // these are cached, can be recalculated by validate()
-    SelectionType m_selectionType; // None, Caret, Range
-    bool m_baseIsFirst : 1; // True if base is before the extent
-    bool m_isDirectional : 1; // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
+  // these are cached, can be recalculated by validate()
+  SelectionType m_selectionType;  // None, Caret, Range
+  bool m_baseIsFirst : 1;         // True if base is before the extent
+  bool
+      m_isDirectional : 1;  // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
 
-    TextGranularity m_granularity;
-    // |updateIfNeeded()| uses |m_hasTrailingWhitespace| for word granularity.
-    // |m_hasTrailingWhitespace| is set by |appendTrailingWhitespace()|.
-    // TODO(yosin): Once we unify start/end and base/extent, we should get rid
-    // of |m_hasTrailingWhitespace|.
-    bool m_hasTrailingWhitespace : 1;
+  TextGranularity m_granularity;
+  // |updateIfNeeded()| uses |m_hasTrailingWhitespace| for word granularity.
+  // |m_hasTrailingWhitespace| is set by |appendTrailingWhitespace()|.
+  // TODO(yosin): Once we unify start/end and base/extent, we should get rid
+  // of |m_hasTrailingWhitespace|.
+  bool m_hasTrailingWhitespace : 1;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    VisibleSelectionTemplate<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
 using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
-using VisibleSelectionInFlatTree = VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
+using VisibleSelectionInFlatTree =
+    VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
 // TODO(xiaochengh): Introduce builder class to get rid of these overloads.
-CORE_EXPORT VisibleSelection createVisibleSelection(const Position&, TextAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const Position& base, const Position& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const EphemeralRange&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelection(const PositionWithAffinity&, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const Position&,
+                                                    TextAffinity,
+                                                    bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelection(const Position& base,
+                       const Position& extent,
+                       TextAffinity = SelDefaultAffinity,
+                       bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelection(const EphemeralRange&,
+                       TextAffinity = SelDefaultAffinity,
+                       bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&,
+                                                    bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&,
+                                                    const VisiblePosition&,
+                                                    bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const PositionWithAffinity&,
+                                                    bool isDirectional = false);
 
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree&, TextAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree& base, const PositionInFlatTree& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const EphemeralRangeInFlatTree&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const VisiblePositionInFlatTree&, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const VisiblePositionInFlatTree&, const VisiblePositionInFlatTree&, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTreeWithAffinity&, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelection(const PositionInFlatTree&,
+                       TextAffinity,
+                       bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelection(const PositionInFlatTree& base,
+                       const PositionInFlatTree& extent,
+                       TextAffinity = SelDefaultAffinity,
+                       bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelection(const EphemeralRangeInFlatTree&,
+                       TextAffinity = SelDefaultAffinity,
+                       bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelection(const VisiblePositionInFlatTree&,
+                       bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelection(const VisiblePositionInFlatTree&,
+                       const VisiblePositionInFlatTree&,
+                       bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelection(const PositionInFlatTreeWithAffinity&,
+                       bool isDirectional = false);
 
 // Callers of these functions should ensure clean layout by themselves and then
 // switch to the proper versions (to be introduced).
-CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const Position&, TextAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const Position& base, const Position& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const EphemeralRange&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const VisiblePosition&, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);
-CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const PositionWithAffinity&, bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelectionDeprecated(const Position&,
+                                 TextAffinity,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelectionDeprecated(const Position& base,
+                                 const Position& extent,
+                                 TextAffinity = SelDefaultAffinity,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelectionDeprecated(const EphemeralRange&,
+                                 TextAffinity = SelDefaultAffinity,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelectionDeprecated(const VisiblePosition&,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelectionDeprecated(const VisiblePosition&,
+                                 const VisiblePosition&,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelection
+createVisibleSelectionDeprecated(const PositionWithAffinity&,
+                                 bool isDirectional = false);
 
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTree&, TextAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTree& base, const PositionInFlatTree& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const EphemeralRangeInFlatTree&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&, const VisiblePositionInFlatTree&, bool isDirectional = false);
-CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTreeWithAffinity&, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelectionDeprecated(const PositionInFlatTree&,
+                                 TextAffinity,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelectionDeprecated(const PositionInFlatTree& base,
+                                 const PositionInFlatTree& extent,
+                                 TextAffinity = SelDefaultAffinity,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelectionDeprecated(const EphemeralRangeInFlatTree&,
+                                 TextAffinity = SelDefaultAffinity,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&,
+                                 const VisiblePositionInFlatTree&,
+                                 bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree
+createVisibleSelectionDeprecated(const PositionInFlatTreeWithAffinity&,
+                                 bool isDirectional = false);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
@@ -221,9 +330,10 @@ CORE_EXPORT EphemeralRange firstEphemeralRangeOf(const VisibleSelection&);
 CORE_EXPORT Range* firstRangeOf(const VisibleSelection&);
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisibleSelection&);
-CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisibleSelectionInFlatTree&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&,
+                                     const VisibleSelectionInFlatTree&);
 
-} // namespace blink
+}  // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
@@ -233,4 +343,4 @@ void showTree(const blink::VisibleSelectionInFlatTree&);
 void showTree(const blink::VisibleSelectionInFlatTree*);
 #endif
 
-#endif // VisibleSelection_h
+#endif  // VisibleSelection_h

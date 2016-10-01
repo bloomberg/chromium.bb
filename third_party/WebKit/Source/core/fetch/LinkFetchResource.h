@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef LinkFetchResource_h
 #define LinkFetchResource_h
 
@@ -15,26 +14,26 @@ class FetchRequest;
 class ResourceFetcher;
 
 class LinkFetchResource final : public Resource {
-public:
-    using ClientType = ResourceClient;
+ public:
+  using ClientType = ResourceClient;
 
-    static Resource* fetch(Resource::Type, FetchRequest&, ResourceFetcher*);
-    ~LinkFetchResource() override;
+  static Resource* fetch(Resource::Type, FetchRequest&, ResourceFetcher*);
+  ~LinkFetchResource() override;
 
-private:
-    class LinkResourceFactory : public ResourceFactory {
-    public:
-        explicit LinkResourceFactory(Resource::Type type)
-            : ResourceFactory(type) { }
+ private:
+  class LinkResourceFactory : public ResourceFactory {
+   public:
+    explicit LinkResourceFactory(Resource::Type type) : ResourceFactory(type) {}
 
-        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
-        {
-            return new LinkFetchResource(request, type(), options);
-        }
-    };
-    LinkFetchResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
+    Resource* create(const ResourceRequest& request,
+                     const ResourceLoaderOptions& options,
+                     const String& charset) const override {
+      return new LinkFetchResource(request, type(), options);
+    }
+  };
+  LinkFetchResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LinkFetchResource_h
+#endif  // LinkFetchResource_h

@@ -37,27 +37,29 @@
 namespace blink {
 
 class RadioInputType final : public BaseCheckableInputType {
-public:
-    static InputType* create(HTMLInputElement&);
-    CORE_EXPORT static HTMLInputElement* nextRadioButtonInGroup(HTMLInputElement* , bool forward);
+ public:
+  static InputType* create(HTMLInputElement&);
+  CORE_EXPORT static HTMLInputElement* nextRadioButtonInGroup(HTMLInputElement*,
+                                                              bool forward);
 
-private:
-    RadioInputType(HTMLInputElement& element) : BaseCheckableInputType(element) { }
-    const AtomicString& formControlType() const override;
-    bool valueMissing(const String&) const override;
-    String valueMissingText() const override;
-    void handleClickEvent(MouseEvent*) override;
-    void handleKeydownEvent(KeyboardEvent*) override;
-    void handleKeyupEvent(KeyboardEvent*) override;
-    bool isKeyboardFocusable() const override;
-    bool shouldSendChangeEventAfterCheckedChanged() override;
-    ClickHandlingState* willDispatchClick() override;
-    void didDispatchClick(Event*, const ClickHandlingState&) override;
-    bool shouldAppearIndeterminate() const override;
+ private:
+  RadioInputType(HTMLInputElement& element) : BaseCheckableInputType(element) {}
+  const AtomicString& formControlType() const override;
+  bool valueMissing(const String&) const override;
+  String valueMissingText() const override;
+  void handleClickEvent(MouseEvent*) override;
+  void handleKeydownEvent(KeyboardEvent*) override;
+  void handleKeyupEvent(KeyboardEvent*) override;
+  bool isKeyboardFocusable() const override;
+  bool shouldSendChangeEventAfterCheckedChanged() override;
+  ClickHandlingState* willDispatchClick() override;
+  void didDispatchClick(Event*, const ClickHandlingState&) override;
+  bool shouldAppearIndeterminate() const override;
 
-    HTMLInputElement* findNextFocusableRadioButtonInGroup(HTMLInputElement*, bool);
+  HTMLInputElement* findNextFocusableRadioButtonInGroup(HTMLInputElement*,
+                                                        bool);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RadioInputType_h
+#endif  // RadioInputType_h

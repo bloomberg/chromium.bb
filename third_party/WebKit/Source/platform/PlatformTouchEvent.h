@@ -27,34 +27,38 @@
 namespace blink {
 
 class PlatformTouchEvent : public PlatformEvent {
-public:
-    PlatformTouchEvent()
-        : PlatformEvent(PlatformEvent::TouchStart)
-        , m_dispatchType(PlatformEvent::Blocking)
-        , m_causesScrollingIfUncanceled(false)
-        , m_dispatchedDuringFling(false)
-        , m_touchStartOrFirstTouchMove(false)
-    {
-    }
+ public:
+  PlatformTouchEvent()
+      : PlatformEvent(PlatformEvent::TouchStart),
+        m_dispatchType(PlatformEvent::Blocking),
+        m_causesScrollingIfUncanceled(false),
+        m_dispatchedDuringFling(false),
+        m_touchStartOrFirstTouchMove(false) {}
 
-    const Vector<PlatformTouchPoint>& touchPoints() const { return m_touchPoints; }
+  const Vector<PlatformTouchPoint>& touchPoints() const {
+    return m_touchPoints;
+  }
 
-    DispatchType dispatchType() const { return m_dispatchType; }
-    bool cancelable() const { return m_dispatchType == PlatformEvent::Blocking; }
-    bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
-    bool dispatchedDuringFling() const { return m_dispatchedDuringFling; }
-    bool touchStartOrFirstTouchMove() const { return m_touchStartOrFirstTouchMove; }
-    uint32_t uniqueTouchEventId() const { return m_uniqueTouchEventId; }
+  DispatchType dispatchType() const { return m_dispatchType; }
+  bool cancelable() const { return m_dispatchType == PlatformEvent::Blocking; }
+  bool causesScrollingIfUncanceled() const {
+    return m_causesScrollingIfUncanceled;
+  }
+  bool dispatchedDuringFling() const { return m_dispatchedDuringFling; }
+  bool touchStartOrFirstTouchMove() const {
+    return m_touchStartOrFirstTouchMove;
+  }
+  uint32_t uniqueTouchEventId() const { return m_uniqueTouchEventId; }
 
-protected:
-    Vector<PlatformTouchPoint> m_touchPoints;
-    DispatchType m_dispatchType;
-    bool m_causesScrollingIfUncanceled;
-    bool m_dispatchedDuringFling;
-    bool m_touchStartOrFirstTouchMove;
-    uint32_t m_uniqueTouchEventId;
+ protected:
+  Vector<PlatformTouchPoint> m_touchPoints;
+  DispatchType m_dispatchType;
+  bool m_causesScrollingIfUncanceled;
+  bool m_dispatchedDuringFling;
+  bool m_touchStartOrFirstTouchMove;
+  uint32_t m_uniqueTouchEventId;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformTouchEvent_h
+#endif  // PlatformTouchEvent_h

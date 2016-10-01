@@ -15,28 +15,38 @@ class WorkerInspectorController;
 class WorkerThread;
 
 class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
-public:
-    ~ThreadedWorkletGlobalScope() override;
-    void dispose() final;
+ public:
+  ~ThreadedWorkletGlobalScope() override;
+  void dispose() final;
 
-    // ExecutionContext
-    bool isThreadedWorkletGlobalScope() const final { return true; }
-    bool isContextThread() const final;
-    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, const String& taskNameForInstrumentation) final;
-    void addConsoleMessage(ConsoleMessage*) final;
-    void exceptionThrown(ErrorEvent*) final;
+  // ExecutionContext
+  bool isThreadedWorkletGlobalScope() const final { return true; }
+  bool isContextThread() const final;
+  void postTask(const WebTraceLocation&,
+                std::unique_ptr<ExecutionContextTask>,
+                const String& taskNameForInstrumentation) final;
+  void addConsoleMessage(ConsoleMessage*) final;
+  void exceptionThrown(ErrorEvent*) final;
 
-    WorkerThread* thread() const { return m_thread; }
+  WorkerThread* thread() const { return m_thread; }
 
-protected:
-    ThreadedWorkletGlobalScope(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*, WorkerThread*);
+ protected:
+  ThreadedWorkletGlobalScope(const KURL&,
+                             const String& userAgent,
+                             PassRefPtr<SecurityOrigin>,
+                             v8::Isolate*,
+                             WorkerThread*);
 
-private:
-    WorkerThread* m_thread;
+ private:
+  WorkerThread* m_thread;
 };
 
-DEFINE_TYPE_CASTS(ThreadedWorkletGlobalScope, ExecutionContext, context, context->isThreadedWorkletGlobalScope(), context.isThreadedWorkletGlobalScope());
+DEFINE_TYPE_CASTS(ThreadedWorkletGlobalScope,
+                  ExecutionContext,
+                  context,
+                  context->isThreadedWorkletGlobalScope(),
+                  context.isThreadedWorkletGlobalScope());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ThreadedWorkletGlobalScope_h
+#endif  // ThreadedWorkletGlobalScope_h

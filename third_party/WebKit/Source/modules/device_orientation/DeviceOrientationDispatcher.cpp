@@ -36,55 +36,53 @@
 
 namespace blink {
 
-DeviceOrientationDispatcher& DeviceOrientationDispatcher::instance(bool absolute)
-{
-    if (absolute) {
-        DEFINE_STATIC_LOCAL(DeviceOrientationDispatcher, deviceOrientationAbsoluteDispatcher, (new DeviceOrientationDispatcher(absolute)));
-        return deviceOrientationAbsoluteDispatcher;
-    }
-    DEFINE_STATIC_LOCAL(DeviceOrientationDispatcher, deviceOrientationDispatcher, (new DeviceOrientationDispatcher(absolute)));
-    return deviceOrientationDispatcher;
+DeviceOrientationDispatcher& DeviceOrientationDispatcher::instance(
+    bool absolute) {
+  if (absolute) {
+    DEFINE_STATIC_LOCAL(DeviceOrientationDispatcher,
+                        deviceOrientationAbsoluteDispatcher,
+                        (new DeviceOrientationDispatcher(absolute)));
+    return deviceOrientationAbsoluteDispatcher;
+  }
+  DEFINE_STATIC_LOCAL(DeviceOrientationDispatcher, deviceOrientationDispatcher,
+                      (new DeviceOrientationDispatcher(absolute)));
+  return deviceOrientationDispatcher;
 }
 
-DeviceOrientationDispatcher::DeviceOrientationDispatcher(bool absolute) : m_absolute(absolute)
-{
+DeviceOrientationDispatcher::DeviceOrientationDispatcher(bool absolute)
+    : m_absolute(absolute) {}
+
+DeviceOrientationDispatcher::~DeviceOrientationDispatcher() {}
+
+DEFINE_TRACE(DeviceOrientationDispatcher) {
+  visitor->trace(m_lastDeviceOrientationData);
+  PlatformEventDispatcher::trace(visitor);
 }
 
-DeviceOrientationDispatcher::~DeviceOrientationDispatcher()
-{
+void DeviceOrientationDispatcher::startListening() {
+  Platform::current()->startListening(getWebPlatformEventType(), this);
 }
 
-DEFINE_TRACE(DeviceOrientationDispatcher)
-{
-    visitor->trace(m_lastDeviceOrientationData);
-    PlatformEventDispatcher::trace(visitor);
+void DeviceOrientationDispatcher::stopListening() {
+  Platform::current()->stopListening(getWebPlatformEventType());
+  m_lastDeviceOrientationData.clear();
 }
 
-void DeviceOrientationDispatcher::startListening()
-{
-    Platform::current()->startListening(getWebPlatformEventType(), this);
+void DeviceOrientationDispatcher::didChangeDeviceOrientation(
+    const WebDeviceOrientationData& motion) {
+  m_lastDeviceOrientationData = DeviceOrientationData::create(motion);
+  notifyControllers();
 }
 
-void DeviceOrientationDispatcher::stopListening()
-{
-    Platform::current()->stopListening(getWebPlatformEventType());
-    m_lastDeviceOrientationData.clear();
+DeviceOrientationData*
+DeviceOrientationDispatcher::latestDeviceOrientationData() {
+  return m_lastDeviceOrientationData.get();
 }
 
-void DeviceOrientationDispatcher::didChangeDeviceOrientation(const WebDeviceOrientationData& motion)
-{
-    m_lastDeviceOrientationData = DeviceOrientationData::create(motion);
-    notifyControllers();
+WebPlatformEventType DeviceOrientationDispatcher::getWebPlatformEventType()
+    const {
+  return (m_absolute) ? WebPlatformEventTypeDeviceOrientationAbsolute
+                      : WebPlatformEventTypeDeviceOrientation;
 }
 
-DeviceOrientationData* DeviceOrientationDispatcher::latestDeviceOrientationData()
-{
-    return m_lastDeviceOrientationData.get();
-}
-
-WebPlatformEventType DeviceOrientationDispatcher::getWebPlatformEventType() const
-{
-    return (m_absolute) ? WebPlatformEventTypeDeviceOrientationAbsolute : WebPlatformEventTypeDeviceOrientation;
-}
-
-} // namespace blink
+}  // namespace blink

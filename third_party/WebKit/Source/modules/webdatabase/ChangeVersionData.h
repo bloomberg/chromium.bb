@@ -32,19 +32,20 @@
 namespace blink {
 
 class ChangeVersionData {
-    STACK_ALLOCATED();
-public:
-    ChangeVersionData(String oldVersion, String newVersion)
-        : m_oldVersion(oldVersion), m_newVersion(newVersion) { }
+  STACK_ALLOCATED();
 
-    String oldVersion() const { return m_oldVersion; }
-    String newVersion() const { return m_newVersion; }
+ public:
+  ChangeVersionData(String oldVersion, String newVersion)
+      : m_oldVersion(oldVersion), m_newVersion(newVersion) {}
 
-private:
-    String m_oldVersion;
-    String m_newVersion;
+  String oldVersion() const { return m_oldVersion; }
+  String newVersion() const { return m_newVersion; }
+
+ private:
+  String m_oldVersion;
+  String m_newVersion;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ChangeVersionData_h
+#endif  // ChangeVersionData_h

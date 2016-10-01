@@ -28,18 +28,10 @@
 
 namespace blink {
 
-ClientRect::ClientRect()
-{
-}
+ClientRect::ClientRect() {}
 
-ClientRect::ClientRect(const IntRect& rect)
-    : m_rect(rect)
-{
-}
+ClientRect::ClientRect(const IntRect& rect) : m_rect(rect) {}
 
-ClientRect::ClientRect(const FloatRect& rect)
-    : m_rect(rect)
-{
-}
+ClientRect::ClientRect(const FloatRect& rect) : m_rect(rect) {}
 
-} // namespace blink
+}  // namespace blink

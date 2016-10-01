@@ -27,8 +27,9 @@ PLATFORM_EXPORT void paintArtifactToSkCanvas(const PaintArtifact&, SkCanvas*);
 
 // Using the previous, converts the paint artifact to an SkPicture.
 PLATFORM_EXPORT sk_sp<const SkPicture> paintArtifactToSkPicture(
-    const PaintArtifact&, const SkRect& bounds);
+    const PaintArtifact&,
+    const SkRect& bounds);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintArtifactToSkCanvas_h
+#endif  // PaintArtifactToSkCanvas_h

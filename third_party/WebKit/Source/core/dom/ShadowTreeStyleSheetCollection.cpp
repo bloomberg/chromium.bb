@@ -40,52 +40,61 @@ namespace blink {
 
 using namespace HTMLNames;
 
-ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot& shadowRoot)
-    : TreeScopeStyleSheetCollection(shadowRoot)
-{
+ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(
+    ShadowRoot& shadowRoot)
+    : TreeScopeStyleSheetCollection(shadowRoot) {}
+
+void ShadowTreeStyleSheetCollection::collectStyleSheets(
+    StyleEngine& engine,
+    StyleSheetCollection& collection) {
+  for (Node* n : m_styleSheetCandidateNodes) {
+    StyleSheetCandidate candidate(*n);
+    DCHECK(!candidate.isXSL());
+
+    StyleSheet* sheet = candidate.sheet();
+    if (!sheet)
+      continue;
+
+    collection.appendSheetForList(sheet);
+    if (candidate.canBeActivated(nullAtom))
+      collection.appendActiveStyleSheet(toCSSStyleSheet(sheet));
+  }
 }
 
-void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine& engine, StyleSheetCollection& collection)
-{
-    for (Node* n : m_styleSheetCandidateNodes) {
-        StyleSheetCandidate candidate(*n);
-        DCHECK(!candidate.isXSL());
+void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(
+    StyleEngine& engine,
+    StyleResolverUpdateMode updateMode) {
+  // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
+  StyleSheetCollection* collection = StyleSheetCollection::create();
+  collectStyleSheets(engine, *collection);
 
-        StyleSheet* sheet = candidate.sheet();
-        if (!sheet)
-            continue;
+  StyleSheetChange change;
+  analyzeStyleSheetChange(updateMode, collection->activeAuthorStyleSheets(),
+                          change);
 
-        collection.appendSheetForList(sheet);
-        if (candidate.canBeActivated(nullAtom))
-            collection.appendActiveStyleSheet(toCSSStyleSheet(sheet));
+  if (StyleResolver* styleResolver = engine.resolver()) {
+    if (change.styleResolverUpdateType != Additive) {
+      // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
+      // In this case, we will reset rulesets created from style elements in the shadow tree.
+      styleResolver->resetAuthorStyle(treeScope());
+      styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
+      styleResolver->lazyAppendAuthorStyleSheets(
+          0, collection->activeAuthorStyleSheets());
+    } else {
+      styleResolver->lazyAppendAuthorStyleSheets(
+          m_activeAuthorStyleSheets.size(),
+          collection->activeAuthorStyleSheets());
     }
+  }
+  if (change.requiresFullStyleRecalc)
+    toShadowRoot(treeScope().rootNode())
+        .host()
+        .setNeedsStyleRecalc(SubtreeStyleChange,
+                             StyleChangeReasonForTracing::create(
+                                 StyleChangeReason::ActiveStylesheetsUpdate));
+
+  collection->swap(*this);
+  collection->dispose();
 }
 
-void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, StyleResolverUpdateMode updateMode)
-{
-    // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-    StyleSheetCollection* collection = StyleSheetCollection::create();
-    collectStyleSheets(engine, *collection);
-
-    StyleSheetChange change;
-    analyzeStyleSheetChange(updateMode, collection->activeAuthorStyleSheets(), change);
-
-    if (StyleResolver* styleResolver = engine.resolver()) {
-        if (change.styleResolverUpdateType != Additive) {
-            // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
-            // In this case, we will reset rulesets created from style elements in the shadow tree.
-            styleResolver->resetAuthorStyle(treeScope());
-            styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
-            styleResolver->lazyAppendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
-        } else {
-            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection->activeAuthorStyleSheets());
-        }
-    }
-    if (change.requiresFullStyleRecalc)
-        toShadowRoot(treeScope().rootNode()).host().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ActiveStylesheetsUpdate));
-
-    collection->swap(*this);
-    collection->dispose();
-}
-
-} // namespace blink
+}  // namespace blink

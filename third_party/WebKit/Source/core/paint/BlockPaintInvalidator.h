@@ -14,18 +14,20 @@ struct PaintInvalidatorContext;
 class LayoutBlock;
 
 class BlockPaintInvalidator {
-    STACK_ALLOCATED();
-public:
-    BlockPaintInvalidator(const LayoutBlock& block, const PaintInvalidatorContext& context)
-        : m_block(block), m_context(context) { }
+  STACK_ALLOCATED();
 
-    PaintInvalidationReason invalidatePaintIfNeeded();
+ public:
+  BlockPaintInvalidator(const LayoutBlock& block,
+                        const PaintInvalidatorContext& context)
+      : m_block(block), m_context(context) {}
 
-private:
-    const LayoutBlock& m_block;
-    const PaintInvalidatorContext& m_context;
+  PaintInvalidationReason invalidatePaintIfNeeded();
+
+ private:
+  const LayoutBlock& m_block;
+  const PaintInvalidatorContext& m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

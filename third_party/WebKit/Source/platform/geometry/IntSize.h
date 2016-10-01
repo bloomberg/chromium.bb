@@ -47,141 +47,119 @@ class Size;
 namespace blink {
 
 class PLATFORM_EXPORT IntSize {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    IntSize() : m_width(0), m_height(0) { }
-    IntSize(int width, int height) : m_width(width), m_height(height) { }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    int width() const { return m_width; }
-    int height() const { return m_height; }
+ public:
+  IntSize() : m_width(0), m_height(0) {}
+  IntSize(int width, int height) : m_width(width), m_height(height) {}
 
-    void setWidth(int width) { m_width = width; }
-    void setHeight(int height) { m_height = height; }
+  int width() const { return m_width; }
+  int height() const { return m_height; }
 
-    bool isEmpty() const { return m_width <= 0 || m_height <= 0; }
-    bool isZero() const { return !m_width && !m_height; }
+  void setWidth(int width) { m_width = width; }
+  void setHeight(int height) { m_height = height; }
 
-    float aspectRatio() const { return static_cast<float>(m_width) / static_cast<float>(m_height); }
+  bool isEmpty() const { return m_width <= 0 || m_height <= 0; }
+  bool isZero() const { return !m_width && !m_height; }
 
-    void expand(int width, int height)
-    {
-        m_width += width;
-        m_height += height;
-    }
+  float aspectRatio() const {
+    return static_cast<float>(m_width) / static_cast<float>(m_height);
+  }
 
-    void scale(float widthScale, float heightScale)
-    {
-        m_width = static_cast<int>(static_cast<float>(m_width) * widthScale);
-        m_height = static_cast<int>(static_cast<float>(m_height) * heightScale);
-    }
+  void expand(int width, int height) {
+    m_width += width;
+    m_height += height;
+  }
 
-    void scale(float scale)
-    {
-        this->scale(scale, scale);
-    }
+  void scale(float widthScale, float heightScale) {
+    m_width = static_cast<int>(static_cast<float>(m_width) * widthScale);
+    m_height = static_cast<int>(static_cast<float>(m_height) * heightScale);
+  }
 
-    IntSize expandedTo(const IntSize& other) const
-    {
-        return IntSize(m_width > other.m_width ? m_width : other.m_width,
-            m_height > other.m_height ? m_height : other.m_height);
-    }
+  void scale(float scale) { this->scale(scale, scale); }
 
-    IntSize shrunkTo(const IntSize& other) const
-    {
-        return IntSize(m_width < other.m_width ? m_width : other.m_width,
-            m_height < other.m_height ? m_height : other.m_height);
-    }
+  IntSize expandedTo(const IntSize& other) const {
+    return IntSize(m_width > other.m_width ? m_width : other.m_width,
+                   m_height > other.m_height ? m_height : other.m_height);
+  }
 
-    void clampNegativeToZero()
-    {
-        *this = expandedTo(IntSize());
-    }
+  IntSize shrunkTo(const IntSize& other) const {
+    return IntSize(m_width < other.m_width ? m_width : other.m_width,
+                   m_height < other.m_height ? m_height : other.m_height);
+  }
 
-    void clampToMinimumSize(const IntSize& minimumSize)
-    {
-        if (m_width < minimumSize.width())
-            m_width = minimumSize.width();
-        if (m_height < minimumSize.height())
-            m_height = minimumSize.height();
-    }
+  void clampNegativeToZero() { *this = expandedTo(IntSize()); }
 
-    // Return area in a uint64_t to avoid overflow.
-    uint64_t area() const
-    {
-        return static_cast<uint64_t>(width()) * height();
-    }
+  void clampToMinimumSize(const IntSize& minimumSize) {
+    if (m_width < minimumSize.width())
+      m_width = minimumSize.width();
+    if (m_height < minimumSize.height())
+      m_height = minimumSize.height();
+  }
 
-    int diagonalLengthSquared() const
-    {
-        return m_width * m_width + m_height * m_height;
-    }
+  // Return area in a uint64_t to avoid overflow.
+  uint64_t area() const { return static_cast<uint64_t>(width()) * height(); }
 
-    IntSize transposedSize() const
-    {
-        return IntSize(m_height, m_width);
-    }
+  int diagonalLengthSquared() const {
+    return m_width * m_width + m_height * m_height;
+  }
+
+  IntSize transposedSize() const { return IntSize(m_height, m_width); }
 
 #if OS(MACOSX)
-    explicit IntSize(const CGSize&); // don't do this implicitly since it's lossy
-    operator CGSize() const;
+  explicit IntSize(const CGSize&);  // don't do this implicitly since it's lossy
+  operator CGSize() const;
 
 #if defined(__OBJC__) && !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
-    explicit IntSize(const NSSize &); // don't do this implicitly since it's lossy
-    operator NSSize() const;
+  explicit IntSize(const NSSize&);  // don't do this implicitly since it's lossy
+  operator NSSize() const;
 #endif
 #endif
 
-    operator gfx::Size() const;
+  operator gfx::Size() const;
 
-    String toString() const;
+  String toString() const;
 
-private:
-    int m_width, m_height;
+ private:
+  int m_width, m_height;
 };
 
-inline IntSize& operator+=(IntSize& a, const IntSize& b)
-{
-    a.setWidth(a.width() + b.width());
-    a.setHeight(a.height() + b.height());
-    return a;
+inline IntSize& operator+=(IntSize& a, const IntSize& b) {
+  a.setWidth(a.width() + b.width());
+  a.setHeight(a.height() + b.height());
+  return a;
 }
 
-inline IntSize& operator-=(IntSize& a, const IntSize& b)
-{
-    a.setWidth(a.width() - b.width());
-    a.setHeight(a.height() - b.height());
-    return a;
+inline IntSize& operator-=(IntSize& a, const IntSize& b) {
+  a.setWidth(a.width() - b.width());
+  a.setHeight(a.height() - b.height());
+  return a;
 }
 
-inline IntSize operator+(const IntSize& a, const IntSize& b)
-{
-    return IntSize(a.width() + b.width(), a.height() + b.height());
+inline IntSize operator+(const IntSize& a, const IntSize& b) {
+  return IntSize(a.width() + b.width(), a.height() + b.height());
 }
 
-inline IntSize operator-(const IntSize& a, const IntSize& b)
-{
-    return IntSize(a.width() - b.width(), a.height() - b.height());
+inline IntSize operator-(const IntSize& a, const IntSize& b) {
+  return IntSize(a.width() - b.width(), a.height() - b.height());
 }
 
-inline IntSize operator-(const IntSize& size)
-{
-    return IntSize(-size.width(), -size.height());
+inline IntSize operator-(const IntSize& size) {
+  return IntSize(-size.width(), -size.height());
 }
 
-inline bool operator==(const IntSize& a, const IntSize& b)
-{
-    return a.width() == b.width() && a.height() == b.height();
+inline bool operator==(const IntSize& a, const IntSize& b) {
+  return a.width() == b.width() && a.height() == b.height();
 }
 
-inline bool operator!=(const IntSize& a, const IntSize& b)
-{
-    return a.width() != b.width() || a.height() != b.height();
+inline bool operator!=(const IntSize& a, const IntSize& b) {
+  return a.width() != b.width() || a.height() != b.height();
 }
 
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const IntSize&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IntSize_h
+#endif  // IntSize_h

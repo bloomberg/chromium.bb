@@ -11,31 +11,30 @@
 namespace blink {
 
 class CSSFontFamilyValue : public CSSValue {
-public:
-    static CSSFontFamilyValue* create(const String& familyName);
+ public:
+  static CSSFontFamilyValue* create(const String& familyName);
 
-    String value() const { return m_string; }
+  String value() const { return m_string; }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSFontFamilyValue& other) const
-    {
-        return m_string == other.m_string;
-    }
+  bool equals(const CSSFontFamilyValue& other) const {
+    return m_string == other.m_string;
+  }
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-private:
-    friend class CSSValuePool;
+ private:
+  friend class CSSValuePool;
 
-    CSSFontFamilyValue(const String&);
+  CSSFontFamilyValue(const String&);
 
-    // TODO(sashab): Change this to an AtomicString.
-    String m_string;
+  // TODO(sashab): Change this to an AtomicString.
+  String m_string;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFamilyValue, isFontFamilyValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSFontFamilyValue_h
+#endif  // CSSFontFamilyValue_h

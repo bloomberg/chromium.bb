@@ -42,46 +42,55 @@ namespace blink {
 class HRTFKernel;
 
 class PLATFORM_EXPORT HRTFDatabase {
-    USING_FAST_MALLOC(HRTFDatabase);
-    WTF_MAKE_NONCOPYABLE(HRTFDatabase);
-public:
-    static std::unique_ptr<HRTFDatabase> create(float sampleRate);
+  USING_FAST_MALLOC(HRTFDatabase);
+  WTF_MAKE_NONCOPYABLE(HRTFDatabase);
 
-    // getKernelsFromAzimuthElevation() returns a left and right ear kernel, and an interpolated left and right frame delay for the given azimuth and elevation.
-    // azimuthBlend must be in the range 0 -> 1.
-    // Valid values for azimuthIndex are 0 -> HRTFElevation::NumberOfTotalAzimuths - 1 (corresponding to angles of 0 -> 360).
-    // Valid values for elevationAngle are MinElevation -> MaxElevation.
-    void getKernelsFromAzimuthElevation(double azimuthBlend, unsigned azimuthIndex, double elevationAngle, HRTFKernel* &kernelL, HRTFKernel* &kernelR, double& frameDelayL, double& frameDelayR);
+ public:
+  static std::unique_ptr<HRTFDatabase> create(float sampleRate);
 
-    // Returns the number of different azimuth angles.
-    static unsigned numberOfAzimuths() { return HRTFElevation::NumberOfTotalAzimuths; }
+  // getKernelsFromAzimuthElevation() returns a left and right ear kernel, and an interpolated left and right frame delay for the given azimuth and elevation.
+  // azimuthBlend must be in the range 0 -> 1.
+  // Valid values for azimuthIndex are 0 -> HRTFElevation::NumberOfTotalAzimuths - 1 (corresponding to angles of 0 -> 360).
+  // Valid values for elevationAngle are MinElevation -> MaxElevation.
+  void getKernelsFromAzimuthElevation(double azimuthBlend,
+                                      unsigned azimuthIndex,
+                                      double elevationAngle,
+                                      HRTFKernel*& kernelL,
+                                      HRTFKernel*& kernelR,
+                                      double& frameDelayL,
+                                      double& frameDelayR);
 
-    float sampleRate() const { return m_sampleRate; }
+  // Returns the number of different azimuth angles.
+  static unsigned numberOfAzimuths() {
+    return HRTFElevation::NumberOfTotalAzimuths;
+  }
 
-    // Number of elevations loaded from resource.
-    static const unsigned NumberOfRawElevations;
+  float sampleRate() const { return m_sampleRate; }
 
-private:
-    explicit HRTFDatabase(float sampleRate);
+  // Number of elevations loaded from resource.
+  static const unsigned NumberOfRawElevations;
 
-    // Minimum and maximum elevation angles (inclusive) for a HRTFDatabase.
-    static const int MinElevation;
-    static const int MaxElevation;
-    static const unsigned RawElevationAngleSpacing;
+ private:
+  explicit HRTFDatabase(float sampleRate);
 
-    // Interpolates by this factor to get the total number of elevations from every elevation loaded from resource.
-    static const unsigned InterpolationFactor;
+  // Minimum and maximum elevation angles (inclusive) for a HRTFDatabase.
+  static const int MinElevation;
+  static const int MaxElevation;
+  static const unsigned RawElevationAngleSpacing;
 
-    // Total number of elevations after interpolation.
-    static const unsigned NumberOfTotalElevations;
+  // Interpolates by this factor to get the total number of elevations from every elevation loaded from resource.
+  static const unsigned InterpolationFactor;
 
-    // Returns the index for the correct HRTFElevation given the elevation angle.
-    static unsigned indexFromElevationAngle(double);
+  // Total number of elevations after interpolation.
+  static const unsigned NumberOfTotalElevations;
 
-    Vector<std::unique_ptr<HRTFElevation>> m_elevations;
-    float m_sampleRate;
+  // Returns the index for the correct HRTFElevation given the elevation angle.
+  static unsigned indexFromElevationAngle(double);
+
+  Vector<std::unique_ptr<HRTFElevation>> m_elevations;
+  float m_sampleRate;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HRTFDatabase_h
+#endif  // HRTFDatabase_h

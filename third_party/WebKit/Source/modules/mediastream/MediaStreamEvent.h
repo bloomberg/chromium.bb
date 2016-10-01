@@ -33,27 +33,29 @@
 namespace blink {
 
 class MediaStreamEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~MediaStreamEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static MediaStreamEvent* create(const AtomicString& type, MediaStream*);
-    static MediaStreamEvent* create(const AtomicString& type, const MediaStreamEventInit& initializer);
+ public:
+  ~MediaStreamEvent() override;
 
-    MediaStream* stream() const;
-    MediaStream* stream(bool&) const;
+  static MediaStreamEvent* create(const AtomicString& type, MediaStream*);
+  static MediaStreamEvent* create(const AtomicString& type,
+                                  const MediaStreamEventInit& initializer);
 
-    const AtomicString& interfaceName() const override;
+  MediaStream* stream() const;
+  MediaStream* stream(bool&) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    MediaStreamEvent(const AtomicString& type, MediaStream*);
-    MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<MediaStream> m_stream;
+ private:
+  MediaStreamEvent(const AtomicString& type, MediaStream*);
+  MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit&);
+
+  Member<MediaStream> m_stream;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamEvent_h
+#endif  // MediaStreamEvent_h

@@ -17,122 +17,149 @@
 namespace blink {
 
 CSSLengthInterpolationType::CSSLengthInterpolationType(PropertyHandle property)
-    : CSSInterpolationType(property)
-    , m_valueRange(LengthPropertyFunctions::getValueRange(cssProperty()))
-{ }
+    : CSSInterpolationType(property),
+      m_valueRange(LengthPropertyFunctions::getValueRange(cssProperty())) {}
 
-float CSSLengthInterpolationType::effectiveZoom(const ComputedStyle& style) const
-{
-    return LengthPropertyFunctions::isZoomedLength(cssProperty()) ? style.effectiveZoom() : 1;
+float CSSLengthInterpolationType::effectiveZoom(
+    const ComputedStyle& style) const {
+  return LengthPropertyFunctions::isZoomedLength(cssProperty())
+             ? style.effectiveZoom()
+             : 1;
 }
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
-public:
-    static std::unique_ptr<ParentLengthChecker> create(CSSPropertyID property, const Length& length)
-    {
-        return wrapUnique(new ParentLengthChecker(property, length));
-    }
+ public:
+  static std::unique_ptr<ParentLengthChecker> create(CSSPropertyID property,
+                                                     const Length& length) {
+    return wrapUnique(new ParentLengthChecker(property, length));
+  }
 
-private:
-    ParentLengthChecker(CSSPropertyID property, const Length& length)
-        : m_property(property)
-        , m_length(length)
-    { }
+ private:
+  ParentLengthChecker(CSSPropertyID property, const Length& length)
+      : m_property(property), m_length(length) {}
 
-    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
-    {
-        Length parentLength;
-        if (!LengthPropertyFunctions::getLength(m_property, *environment.state().parentStyle(), parentLength))
-            return false;
-        return parentLength == m_length;
-    }
+  bool isValid(const InterpolationEnvironment& environment,
+               const InterpolationValue& underlying) const final {
+    Length parentLength;
+    if (!LengthPropertyFunctions::getLength(
+            m_property, *environment.state().parentStyle(), parentLength))
+      return false;
+    return parentLength == m_length;
+  }
 
-    const CSSPropertyID m_property;
-    const Length m_length;
+  const CSSPropertyID m_property;
+  const Length m_length;
 };
 
-InterpolationValue CSSLengthInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
-{
-    return InterpolationValue(LengthInterpolationFunctions::createNeutralInterpolableValue());
+InterpolationValue CSSLengthInterpolationType::maybeConvertNeutral(
+    const InterpolationValue&,
+    ConversionCheckers&) const {
+  return InterpolationValue(
+      LengthInterpolationFunctions::createNeutralInterpolableValue());
 }
 
-InterpolationValue CSSLengthInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers& conversionCheckers) const
-{
-    Length initialLength;
-    if (!LengthPropertyFunctions::getInitialLength(cssProperty(), initialLength))
-        return nullptr;
-    return LengthInterpolationFunctions::maybeConvertLength(initialLength, 1);
+InterpolationValue CSSLengthInterpolationType::maybeConvertInitial(
+    const StyleResolverState&,
+    ConversionCheckers& conversionCheckers) const {
+  Length initialLength;
+  if (!LengthPropertyFunctions::getInitialLength(cssProperty(), initialLength))
+    return nullptr;
+  return LengthInterpolationFunctions::maybeConvertLength(initialLength, 1);
 }
 
-InterpolationValue CSSLengthInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
-{
-    if (!state.parentStyle())
-        return nullptr;
-    Length inheritedLength;
-    if (!LengthPropertyFunctions::getLength(cssProperty(), *state.parentStyle(), inheritedLength))
-        return nullptr;
-    conversionCheckers.append(ParentLengthChecker::create(cssProperty(), inheritedLength));
-    return LengthInterpolationFunctions::maybeConvertLength(inheritedLength, effectiveZoom(*state.parentStyle()));
+InterpolationValue CSSLengthInterpolationType::maybeConvertInherit(
+    const StyleResolverState& state,
+    ConversionCheckers& conversionCheckers) const {
+  if (!state.parentStyle())
+    return nullptr;
+  Length inheritedLength;
+  if (!LengthPropertyFunctions::getLength(cssProperty(), *state.parentStyle(),
+                                          inheritedLength))
+    return nullptr;
+  conversionCheckers.append(
+      ParentLengthChecker::create(cssProperty(), inheritedLength));
+  return LengthInterpolationFunctions::maybeConvertLength(
+      inheritedLength, effectiveZoom(*state.parentStyle()));
 }
 
-InterpolationValue CSSLengthInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers& conversionCheckers) const
-{
-    if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID()) {
-        CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
-        double pixels;
-        if (!LengthPropertyFunctions::getPixelsForKeyword(cssProperty(), valueID, pixels))
-            return nullptr;
-        return InterpolationValue(LengthInterpolationFunctions::createInterpolablePixels(pixels));
-    }
+InterpolationValue CSSLengthInterpolationType::maybeConvertValue(
+    const CSSValue& value,
+    const StyleResolverState&,
+    ConversionCheckers& conversionCheckers) const {
+  if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID()) {
+    CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
+    double pixels;
+    if (!LengthPropertyFunctions::getPixelsForKeyword(cssProperty(), valueID,
+                                                      pixels))
+      return nullptr;
+    return InterpolationValue(
+        LengthInterpolationFunctions::createInterpolablePixels(pixels));
+  }
 
-    return LengthInterpolationFunctions::maybeConvertCSSValue(value);
+  return LengthInterpolationFunctions::maybeConvertCSSValue(value);
 }
 
-PairwiseInterpolationValue CSSLengthInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
-{
-    return LengthInterpolationFunctions::mergeSingles(std::move(start), std::move(end));
+PairwiseInterpolationValue CSSLengthInterpolationType::maybeMergeSingles(
+    InterpolationValue&& start,
+    InterpolationValue&& end) const {
+  return LengthInterpolationFunctions::mergeSingles(std::move(start),
+                                                    std::move(end));
 }
 
-InterpolationValue CSSLengthInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
-{
-    Length underlyingLength;
-    if (!LengthPropertyFunctions::getLength(cssProperty(), *environment.state().style(), underlyingLength))
-        return nullptr;
-    return LengthInterpolationFunctions::maybeConvertLength(underlyingLength, effectiveZoom(*environment.state().style()));
+InterpolationValue CSSLengthInterpolationType::maybeConvertUnderlyingValue(
+    const InterpolationEnvironment& environment) const {
+  Length underlyingLength;
+  if (!LengthPropertyFunctions::getLength(
+          cssProperty(), *environment.state().style(), underlyingLength))
+    return nullptr;
+  return LengthInterpolationFunctions::maybeConvertLength(
+      underlyingLength, effectiveZoom(*environment.state().style()));
 }
 
-void CSSLengthInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
-{
-    InterpolationValue& underlying = underlyingValueOwner.mutableValue();
-    LengthInterpolationFunctions::composite(underlying.interpolableValue, underlying.nonInterpolableValue,
-        underlyingFraction, *value.interpolableValue, value.nonInterpolableValue.get());
+void CSSLengthInterpolationType::composite(
+    UnderlyingValueOwner& underlyingValueOwner,
+    double underlyingFraction,
+    const InterpolationValue& value,
+    double interpolationFraction) const {
+  InterpolationValue& underlying = underlyingValueOwner.mutableValue();
+  LengthInterpolationFunctions::composite(
+      underlying.interpolableValue, underlying.nonInterpolableValue,
+      underlyingFraction, *value.interpolableValue,
+      value.nonInterpolableValue.get());
 }
 
-void CSSLengthInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
-{
-    StyleResolverState& state = environment.state();
-    ComputedStyle& style = *state.style();
-    float zoom = effectiveZoom(style);
-    Length length = LengthInterpolationFunctions::createLength(interpolableValue, nonInterpolableValue, state.cssToLengthConversionData(), m_valueRange);
-    if (LengthPropertyFunctions::setLength(cssProperty(), style, length)) {
+void CSSLengthInterpolationType::apply(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue* nonInterpolableValue,
+    InterpolationEnvironment& environment) const {
+  StyleResolverState& state = environment.state();
+  ComputedStyle& style = *state.style();
+  float zoom = effectiveZoom(style);
+  Length length = LengthInterpolationFunctions::createLength(
+      interpolableValue, nonInterpolableValue,
+      state.cssToLengthConversionData(), m_valueRange);
+  if (LengthPropertyFunctions::setLength(cssProperty(), style, length)) {
 #if DCHECK_IS_ON()
-        // Assert that setting the length on ComputedStyle directly is identical to the StyleBuilder code path.
-        // This check is useful for catching differences in clamping behaviour.
-        Length before;
-        Length after;
-        DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, before));
-        StyleBuilder::applyProperty(cssProperty(), state, *CSSPrimitiveValue::create(length, zoom));
-        DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, after));
-        DCHECK_EQ(before.type(), after.type());
-        if (before.isSpecified()) {
-            const float kSlack = 0.1;
-            float delta = floatValueForLength(after, 100) - floatValueForLength(before, 100);
-            DCHECK_LT(std::abs(delta), kSlack);
-        }
-#endif
-        return;
+    // Assert that setting the length on ComputedStyle directly is identical to the StyleBuilder code path.
+    // This check is useful for catching differences in clamping behaviour.
+    Length before;
+    Length after;
+    DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, before));
+    StyleBuilder::applyProperty(cssProperty(), state,
+                                *CSSPrimitiveValue::create(length, zoom));
+    DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, after));
+    DCHECK_EQ(before.type(), after.type());
+    if (before.isSpecified()) {
+      const float kSlack = 0.1;
+      float delta =
+          floatValueForLength(after, 100) - floatValueForLength(before, 100);
+      DCHECK_LT(std::abs(delta), kSlack);
     }
-    StyleBuilder::applyProperty(cssProperty(), state, *CSSPrimitiveValue::create(length, zoom));
+#endif
+    return;
+  }
+  StyleBuilder::applyProperty(cssProperty(), state,
+                              *CSSPrimitiveValue::create(length, zoom));
 }
 
-} // namespace blink
+}  // namespace blink

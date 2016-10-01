@@ -31,7 +31,6 @@
 namespace blink {
 
 void registerXSLTExtensions(xsltTransformContextPtr ctxt);
-
 }
 
 #endif

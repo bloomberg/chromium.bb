@@ -32,46 +32,43 @@ class Document;
 class Element;
 
 class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
-public:
-    StyleElement(Document*, bool createdByParser);
-    virtual ~StyleElement();
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  StyleElement(Document*, bool createdByParser);
+  virtual ~StyleElement();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    enum ProcessingResult {
-        ProcessingSuccessful,
-        ProcessingFatalError
-    };
+ protected:
+  enum ProcessingResult { ProcessingSuccessful, ProcessingFatalError };
 
-    virtual const AtomicString& type() const = 0;
-    virtual const AtomicString& media() const = 0;
+  virtual const AtomicString& type() const = 0;
+  virtual const AtomicString& media() const = 0;
 
-    CSSStyleSheet* sheet() const { return m_sheet.get(); }
+  CSSStyleSheet* sheet() const { return m_sheet.get(); }
 
-    bool isLoading() const;
-    bool sheetLoaded(Document&);
-    void startLoadingDynamicSheet(Document&);
+  bool isLoading() const;
+  bool sheetLoaded(Document&);
+  void startLoadingDynamicSheet(Document&);
 
-    void insertedInto(const Element&, ContainerNode* insertionPoint);
-    void removedFrom(Element&, ContainerNode* insertionPoint);
-    ProcessingResult processStyleSheet(Document&, Element&);
-    ProcessingResult childrenChanged(Element&);
-    ProcessingResult finishParsingChildren(Element&);
+  void insertedInto(const Element&, ContainerNode* insertionPoint);
+  void removedFrom(Element&, ContainerNode* insertionPoint);
+  ProcessingResult processStyleSheet(Document&, Element&);
+  ProcessingResult childrenChanged(Element&);
+  ProcessingResult finishParsingChildren(Element&);
 
-    Member<CSSStyleSheet> m_sheet;
+  Member<CSSStyleSheet> m_sheet;
 
-private:
-    ProcessingResult createSheet(Element&, const String& text = String());
-    ProcessingResult process(Element&);
-    void clearSheet(Element& ownerElement);
+ private:
+  ProcessingResult createSheet(Element&, const String& text = String());
+  ProcessingResult process(Element&);
+  void clearSheet(Element& ownerElement);
 
-    bool m_createdByParser : 1;
-    bool m_loading : 1;
-    bool m_registeredAsCandidate : 1;
-    TextPosition m_startPosition;
-    StyleEngineContext m_styleEngineContext;
+  bool m_createdByParser : 1;
+  bool m_loading : 1;
+  bool m_registeredAsCandidate : 1;
+  TextPosition m_startPosition;
+  StyleEngineContext m_styleEngineContext;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

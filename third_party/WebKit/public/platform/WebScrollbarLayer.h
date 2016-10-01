@@ -33,14 +33,14 @@
 namespace blink {
 
 class WebScrollbarLayer {
-public:
-    virtual ~WebScrollbarLayer() { }
+ public:
+  virtual ~WebScrollbarLayer() {}
 
-    virtual WebLayer* layer() = 0;
+  virtual WebLayer* layer() = 0;
 
-    virtual void setScrollLayer(WebLayer*) = 0;
+  virtual void setScrollLayer(WebLayer*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebScrollbarLayer_h
+#endif  // WebScrollbarLayer_h

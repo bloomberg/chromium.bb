@@ -26,6 +26,6 @@ class TransformationMatrix;
 void PrintTo(const AffineTransform&, std::ostream*);
 void PrintTo(const TransformationMatrix&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TransformPrinters_h
+#endif  // TransformPrinters_h

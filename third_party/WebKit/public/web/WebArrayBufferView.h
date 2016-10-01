@@ -34,7 +34,8 @@
 
 namespace v8 {
 class Value;
-template <class T> class Local;
+template <class T>
+class Local;
 }
 
 namespace blink {
@@ -43,30 +44,31 @@ class DOMArrayBufferView;
 
 // Provides access to an ArrayBufferView.
 class WebArrayBufferView {
-public:
-    ~WebArrayBufferView() { reset(); }
-    WebArrayBufferView() { }
-    WebArrayBufferView(const WebArrayBufferView& v) { assign(v); }
+ public:
+  ~WebArrayBufferView() { reset(); }
+  WebArrayBufferView() {}
+  WebArrayBufferView(const WebArrayBufferView& v) { assign(v); }
 
-    BLINK_EXPORT void* baseAddress() const;
-    BLINK_EXPORT unsigned byteOffset() const;
-    BLINK_EXPORT unsigned byteLength() const;
+  BLINK_EXPORT void* baseAddress() const;
+  BLINK_EXPORT unsigned byteOffset() const;
+  BLINK_EXPORT unsigned byteLength() const;
 
-    BLINK_EXPORT void assign(const WebArrayBufferView&);
-    BLINK_EXPORT void reset();
+  BLINK_EXPORT void assign(const WebArrayBufferView&);
+  BLINK_EXPORT void reset();
 
-    BLINK_EXPORT static WebArrayBufferView* createFromV8Value(v8::Local<v8::Value>);
+  BLINK_EXPORT static WebArrayBufferView* createFromV8Value(
+      v8::Local<v8::Value>);
 
 #if BLINK_IMPLEMENTATION
-    WebArrayBufferView(DOMArrayBufferView*);
-    WebArrayBufferView& operator=(DOMArrayBufferView*);
-    operator DOMArrayBufferView*() const;
+  WebArrayBufferView(DOMArrayBufferView*);
+  WebArrayBufferView& operator=(DOMArrayBufferView*);
+  operator DOMArrayBufferView*() const;
 #endif
 
-private:
-    WebPrivatePtr<DOMArrayBufferView> m_private;
+ private:
+  WebPrivatePtr<DOMArrayBufferView> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebArrayBufferView_h
+#endif  // WebArrayBufferView_h

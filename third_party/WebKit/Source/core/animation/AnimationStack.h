@@ -50,30 +50,38 @@ class InertEffect;
 // Represents the order in which a sequence of SampledEffects should apply.
 // This sequence is broken down to per PropertyHandle granularity.
 class CORE_EXPORT AnimationStack {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(AnimationStack);
-public:
-    AnimationStack();
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(AnimationStack);
 
-    void add(SampledEffect* sampledEffect) { m_sampledEffects.append(sampledEffect); }
-    bool isEmpty() const { return m_sampledEffects.isEmpty(); }
-    bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
+ public:
+  AnimationStack();
 
-    using PropertyHandleFilter = bool (*)(const PropertyHandle&);
-    static ActiveInterpolationsMap activeInterpolations(AnimationStack*, const HeapVector<Member<const InertEffect>>* newAnimations, const HeapHashSet<Member<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, PropertyHandleFilter = nullptr);
+  void add(SampledEffect* sampledEffect) {
+    m_sampledEffects.append(sampledEffect);
+  }
+  bool isEmpty() const { return m_sampledEffects.isEmpty(); }
+  bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
 
-    bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
-    DECLARE_TRACE();
+  using PropertyHandleFilter = bool (*)(const PropertyHandle&);
+  static ActiveInterpolationsMap activeInterpolations(
+      AnimationStack*,
+      const HeapVector<Member<const InertEffect>>* newAnimations,
+      const HeapHashSet<Member<const Animation>>* suppressedAnimations,
+      KeyframeEffect::Priority,
+      PropertyHandleFilter = nullptr);
 
-private:
-    void removeRedundantSampledEffects();
+  bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
+  DECLARE_TRACE();
 
-    // Effects sorted by priority. Lower priority at the start of the list.
-    HeapVector<Member<SampledEffect>> m_sampledEffects;
+ private:
+  void removeRedundantSampledEffects();
 
-    friend class AnimationAnimationStackTest;
+  // Effects sorted by priority. Lower priority at the start of the list.
+  HeapVector<Member<SampledEffect>> m_sampledEffects;
+
+  friend class AnimationAnimationStackTest;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationStack_h
+#endif  // AnimationStack_h

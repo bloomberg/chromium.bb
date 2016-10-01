@@ -34,33 +34,32 @@
 
 namespace blink {
 
-WindowEventContext::WindowEventContext(Event& event, const NodeEventContext& topNodeEventContext)
-{
-    // We don't dispatch load events to the window. This quirk was originally
-    // added because Mozilla doesn't propagate load events to the window object.
-    if (event.type() == EventTypeNames::load)
-        return;
-    if (!topNodeEventContext.node()->isDocumentNode())
-        return;
-    m_window = toDocument(topNodeEventContext.node())->domWindow();
-    m_target = topNodeEventContext.target();
+WindowEventContext::WindowEventContext(
+    Event& event,
+    const NodeEventContext& topNodeEventContext) {
+  // We don't dispatch load events to the window. This quirk was originally
+  // added because Mozilla doesn't propagate load events to the window object.
+  if (event.type() == EventTypeNames::load)
+    return;
+  if (!topNodeEventContext.node()->isDocumentNode())
+    return;
+  m_window = toDocument(topNodeEventContext.node())->domWindow();
+  m_target = topNodeEventContext.target();
 }
 
-bool WindowEventContext::handleLocalEvents(Event& event)
-{
-    if (!m_window)
-        return false;
+bool WindowEventContext::handleLocalEvents(Event& event) {
+  if (!m_window)
+    return false;
 
-    event.setTarget(target());
-    event.setCurrentTarget(window());
-    m_window->fireEventListeners(&event);
-    return true;
+  event.setTarget(target());
+  event.setCurrentTarget(window());
+  m_window->fireEventListeners(&event);
+  return true;
 }
 
-DEFINE_TRACE(WindowEventContext)
-{
-    visitor->trace(m_window);
-    visitor->trace(m_target);
+DEFINE_TRACE(WindowEventContext) {
+  visitor->trace(m_window);
+  visitor->trace(m_target);
 }
 
-} // namespace blink
+}  // namespace blink

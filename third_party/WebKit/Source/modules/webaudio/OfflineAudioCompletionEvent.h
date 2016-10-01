@@ -35,26 +35,27 @@ namespace blink {
 class AudioBuffer;
 
 class OfflineAudioCompletionEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static OfflineAudioCompletionEvent* create();
-    static OfflineAudioCompletionEvent* create(AudioBuffer* renderedBuffer);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~OfflineAudioCompletionEvent() override;
+ public:
+  static OfflineAudioCompletionEvent* create();
+  static OfflineAudioCompletionEvent* create(AudioBuffer* renderedBuffer);
 
-    AudioBuffer* renderedBuffer() { return m_renderedBuffer.get(); }
+  ~OfflineAudioCompletionEvent() override;
 
-    const AtomicString& interfaceName() const override;
+  AudioBuffer* renderedBuffer() { return m_renderedBuffer.get(); }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    OfflineAudioCompletionEvent();
-    explicit OfflineAudioCompletionEvent(AudioBuffer* renderedBuffer);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<AudioBuffer> m_renderedBuffer;
+ private:
+  OfflineAudioCompletionEvent();
+  explicit OfflineAudioCompletionEvent(AudioBuffer* renderedBuffer);
+
+  Member<AudioBuffer> m_renderedBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OfflineAudioCompletionEvent_h
+#endif  // OfflineAudioCompletionEvent_h

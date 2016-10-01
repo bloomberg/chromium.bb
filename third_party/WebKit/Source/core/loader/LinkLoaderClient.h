@@ -36,22 +36,22 @@
 namespace blink {
 
 class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {
-public:
-    virtual ~LinkLoaderClient() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+ public:
+  virtual ~LinkLoaderClient() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    virtual bool shouldLoadLink() = 0;
+  virtual bool shouldLoadLink() = 0;
 
-    virtual void linkLoaded() = 0;
-    virtual void linkLoadingErrored() = 0;
-    // There is no notification for cancellation.
+  virtual void linkLoaded() = 0;
+  virtual void linkLoadingErrored() = 0;
+  // There is no notification for cancellation.
 
-    virtual void didStartLinkPrerender() = 0;
-    virtual void didStopLinkPrerender() = 0;
-    virtual void didSendLoadForLinkPrerender() = 0;
-    virtual void didSendDOMContentLoadedForLinkPrerender() = 0;
+  virtual void didStartLinkPrerender() = 0;
+  virtual void didStopLinkPrerender() = 0;
+  virtual void didSendLoadForLinkPrerender() = 0;
+  virtual void didSendDOMContentLoadedForLinkPrerender() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

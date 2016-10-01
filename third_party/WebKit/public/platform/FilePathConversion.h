@@ -17,6 +17,6 @@ class WebString;
 
 BLINK_COMMON_EXPORT base::FilePath WebStringToFilePath(const WebString&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FilePathConversion_h
+#endif  // FilePathConversion_h

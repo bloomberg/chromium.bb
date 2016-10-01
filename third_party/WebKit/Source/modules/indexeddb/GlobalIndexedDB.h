@@ -14,12 +14,13 @@ class DOMWindow;
 class WorkerGlobalScope;
 
 class GlobalIndexedDB {
-    STATIC_ONLY(GlobalIndexedDB);
-public:
-    static IDBFactory* indexedDB(DOMWindow&);
-    static IDBFactory* indexedDB(WorkerGlobalScope&);
+  STATIC_ONLY(GlobalIndexedDB);
+
+ public:
+  static IDBFactory* indexedDB(DOMWindow&);
+  static IDBFactory* indexedDB(WorkerGlobalScope&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GlobalIndexedDB_h
+#endif  // GlobalIndexedDB_h

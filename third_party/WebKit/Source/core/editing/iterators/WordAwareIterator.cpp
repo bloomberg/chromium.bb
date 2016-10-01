@@ -29,76 +29,73 @@
 namespace blink {
 
 WordAwareIterator::WordAwareIterator(const Position& start, const Position& end)
-    : m_didLookAhead(true) // So we consider the first chunk from the text iterator.
-    , m_textIterator(start, end)
-{
-    advance(); // Get in position over the first chunk of text.
+    : m_didLookAhead(
+          true)  // So we consider the first chunk from the text iterator.
+      ,
+      m_textIterator(start, end) {
+  advance();  // Get in position over the first chunk of text.
 }
 
-WordAwareIterator::~WordAwareIterator()
-{
-}
+WordAwareIterator::~WordAwareIterator() {}
 
 // FIXME: Performance could be bad for huge spans next to each other that don't fall on word boundaries.
 
-void WordAwareIterator::advance()
-{
-    m_buffer.clear();
+void WordAwareIterator::advance() {
+  m_buffer.clear();
 
-    // If last time we did a look-ahead, start with that looked-ahead chunk now
-    if (!m_didLookAhead) {
-        DCHECK(!m_textIterator.atEnd());
-        m_textIterator.advance();
+  // If last time we did a look-ahead, start with that looked-ahead chunk now
+  if (!m_didLookAhead) {
+    DCHECK(!m_textIterator.atEnd());
+    m_textIterator.advance();
+  }
+  m_didLookAhead = false;
+
+  // Go to next non-empty chunk.
+  while (!m_textIterator.atEnd() && !m_textIterator.length())
+    m_textIterator.advance();
+
+  if (m_textIterator.atEnd())
+    return;
+
+  while (1) {
+    // If this chunk ends in whitespace we can just use it as our chunk.
+    if (isSpaceOrNewline(
+            m_textIterator.characterAt(m_textIterator.length() - 1)))
+      return;
+
+    // If this is the first chunk that failed, save it in m_buffer before look ahead.
+    if (m_buffer.isEmpty())
+      m_textIterator.copyTextTo(&m_buffer);
+
+    // Look ahead to next chunk. If it is whitespace or a break, we can use the previous stuff
+    m_textIterator.advance();
+    if (m_textIterator.atEnd() || !m_textIterator.length() ||
+        isSpaceOrNewline(m_textIterator.text().characterAt(0))) {
+      m_didLookAhead = true;
+      return;
     }
-    m_didLookAhead = false;
 
-    // Go to next non-empty chunk.
-    while (!m_textIterator.atEnd() && !m_textIterator.length())
-        m_textIterator.advance();
-
-    if (m_textIterator.atEnd())
-        return;
-
-    while (1) {
-        // If this chunk ends in whitespace we can just use it as our chunk.
-        if (isSpaceOrNewline(m_textIterator.characterAt(m_textIterator.length() - 1)))
-            return;
-
-        // If this is the first chunk that failed, save it in m_buffer before look ahead.
-        if (m_buffer.isEmpty())
-            m_textIterator.copyTextTo(&m_buffer);
-
-        // Look ahead to next chunk. If it is whitespace or a break, we can use the previous stuff
-        m_textIterator.advance();
-        if (m_textIterator.atEnd() || !m_textIterator.length() || isSpaceOrNewline(m_textIterator.text().characterAt(0))) {
-            m_didLookAhead = true;
-            return;
-        }
-
-        // Start gobbling chunks until we get to a suitable stopping point
-        m_textIterator.copyTextTo(&m_buffer);
-    }
+    // Start gobbling chunks until we get to a suitable stopping point
+    m_textIterator.copyTextTo(&m_buffer);
+  }
 }
 
-int WordAwareIterator::length() const
-{
-    if (!m_buffer.isEmpty())
-        return m_buffer.size();
-    return m_textIterator.length();
+int WordAwareIterator::length() const {
+  if (!m_buffer.isEmpty())
+    return m_buffer.size();
+  return m_textIterator.length();
 }
 
-String WordAwareIterator::substring(unsigned position, unsigned length) const
-{
-    if (!m_buffer.isEmpty())
-        return String(m_buffer.data() + position, length);
-    return m_textIterator.text().substring(position, length);
+String WordAwareIterator::substring(unsigned position, unsigned length) const {
+  if (!m_buffer.isEmpty())
+    return String(m_buffer.data() + position, length);
+  return m_textIterator.text().substring(position, length);
 }
 
-UChar WordAwareIterator::characterAt(unsigned index) const
-{
-    if (!m_buffer.isEmpty())
-        return m_buffer[index];
-    return m_textIterator.text().characterAt(index);
+UChar WordAwareIterator::characterAt(unsigned index) const {
+  if (!m_buffer.isEmpty())
+    return m_buffer[index];
+  return m_textIterator.text().characterAt(index);
 }
 
-} // namespace blink
+}  // namespace blink

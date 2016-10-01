@@ -10,37 +10,43 @@
 
 namespace blink {
 
-InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
-{
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(2);
-    result->set(0, InterpolableNumber::create(0));
-    result->set(1, InterpolableNumber::create(0));
-    return InterpolationValue(std::move(result));
+InterpolationValue
+SVGIntegerOptionalIntegerInterpolationType::maybeConvertNeutral(
+    const InterpolationValue&,
+    ConversionCheckers&) const {
+  std::unique_ptr<InterpolableList> result = InterpolableList::create(2);
+  result->set(0, InterpolableNumber::create(0));
+  result->set(1, InterpolableNumber::create(0));
+  return InterpolationValue(std::move(result));
 }
 
-InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
-{
-    if (svgValue.type() != AnimatedIntegerOptionalInteger)
-        return nullptr;
+InterpolationValue
+SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGValue(
+    const SVGPropertyBase& svgValue) const {
+  if (svgValue.type() != AnimatedIntegerOptionalInteger)
+    return nullptr;
 
-    const SVGIntegerOptionalInteger& integerOptionalInteger = toSVGIntegerOptionalInteger(svgValue);
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(2);
-    result->set(0, InterpolableNumber::create(integerOptionalInteger.firstInteger()->value()));
-    result->set(1, InterpolableNumber::create(integerOptionalInteger.secondInteger()->value()));
-    return InterpolationValue(std::move(result));
+  const SVGIntegerOptionalInteger& integerOptionalInteger =
+      toSVGIntegerOptionalInteger(svgValue);
+  std::unique_ptr<InterpolableList> result = InterpolableList::create(2);
+  result->set(0, InterpolableNumber::create(
+                     integerOptionalInteger.firstInteger()->value()));
+  result->set(1, InterpolableNumber::create(
+                     integerOptionalInteger.secondInteger()->value()));
+  return InterpolationValue(std::move(result));
 }
 
-static SVGInteger* toPositiveInteger(const InterpolableValue* number)
-{
-    return SVGInteger::create(clampTo<int>(roundf(toInterpolableNumber(number)->value()), 1));
+static SVGInteger* toPositiveInteger(const InterpolableValue* number) {
+  return SVGInteger::create(
+      clampTo<int>(roundf(toInterpolableNumber(number)->value()), 1));
 }
 
-SVGPropertyBase* SVGIntegerOptionalIntegerInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
-{
-    const InterpolableList& list = toInterpolableList(interpolableValue);
-    return SVGIntegerOptionalInteger::create(
-        toPositiveInteger(list.get(0)),
-        toPositiveInteger(list.get(1)));
+SVGPropertyBase* SVGIntegerOptionalIntegerInterpolationType::appliedSVGValue(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue*) const {
+  const InterpolableList& list = toInterpolableList(interpolableValue);
+  return SVGIntegerOptionalInteger::create(toPositiveInteger(list.get(0)),
+                                           toPositiveInteger(list.get(1)));
 }
 
-} // namespace blink
+}  // namespace blink

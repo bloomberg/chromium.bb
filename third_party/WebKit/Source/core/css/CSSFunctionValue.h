@@ -11,32 +11,31 @@
 namespace blink {
 
 class CSSFunctionValue : public CSSValueList {
-public:
-    static CSSFunctionValue* create(CSSValueID id)
-    {
-        return new CSSFunctionValue(id);
-    }
+ public:
+  static CSSFunctionValue* create(CSSValueID id) {
+    return new CSSFunctionValue(id);
+  }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSFunctionValue& other) const { return m_valueID == other.m_valueID && CSSValueList::equals(other); }
-    CSSValueID functionType() const { return m_valueID; }
+  bool equals(const CSSFunctionValue& other) const {
+    return m_valueID == other.m_valueID && CSSValueList::equals(other);
+  }
+  CSSValueID functionType() const { return m_valueID; }
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValueList::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValueList::traceAfterDispatch(visitor);
+  }
 
-private:
-    CSSFunctionValue(CSSValueID id)
-        : CSSValueList(FunctionClass, CommaSeparator)
-        , m_valueID(id)
-    {
-    }
+ private:
+  CSSFunctionValue(CSSValueID id)
+      : CSSValueList(FunctionClass, CommaSeparator), m_valueID(id) {}
 
-    const CSSValueID m_valueID;
+  const CSSValueID m_valueID;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFunctionValue, isFunctionValue());
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

@@ -42,66 +42,72 @@ class FontCustomPlatformData;
 class FontResourceClient;
 
 class FontResource final : public Resource {
-public:
-    using ClientType = FontResourceClient;
+ public:
+  using ClientType = FontResourceClient;
 
-    static FontResource* fetch(FetchRequest&, ResourceFetcher*);
-    ~FontResource() override;
+  static FontResource* fetch(FetchRequest&, ResourceFetcher*);
+  ~FontResource() override;
 
-    void didAddClient(ResourceClient*) override;
+  void didAddClient(ResourceClient*) override;
 
-    void setRevalidatingRequest(const ResourceRequest&) override;
+  void setRevalidatingRequest(const ResourceRequest&) override;
 
-    void allClientsAndObserversRemoved() override;
-    void startLoadLimitTimersIfNeeded();
+  void allClientsAndObserversRemoved() override;
+  void startLoadLimitTimersIfNeeded();
 
-    void setCORSFailed() override { m_corsFailed = true; }
-    bool isCORSFailed() const { return m_corsFailed; }
-    String otsParsingMessage() const { return m_otsParsingMessage; }
+  void setCORSFailed() override { m_corsFailed = true; }
+  bool isCORSFailed() const { return m_corsFailed; }
+  String otsParsingMessage() const { return m_otsParsingMessage; }
 
-    bool ensureCustomFontData();
-    FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = FontOrientation::Horizontal);
+  bool ensureCustomFontData();
+  FontPlatformData platformDataFromCustomData(
+      float size,
+      bool bold,
+      bool italic,
+      FontOrientation = FontOrientation::Horizontal);
 
-private:
-    class FontResourceFactory : public ResourceFactory {
-    public:
-        FontResourceFactory()
-            : ResourceFactory(Resource::Font) { }
+ private:
+  class FontResourceFactory : public ResourceFactory {
+   public:
+    FontResourceFactory() : ResourceFactory(Resource::Font) {}
 
-        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
-        {
-            return new FontResource(request, options);
-        }
-    };
-    FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
+    Resource* create(const ResourceRequest& request,
+                     const ResourceLoaderOptions& options,
+                     const String& charset) const override {
+      return new FontResource(request, options);
+    }
+  };
+  FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
-    void checkNotify() override;
-    void fontLoadShortLimitCallback(TimerBase*);
-    void fontLoadLongLimitCallback(TimerBase*);
+  void checkNotify() override;
+  void fontLoadShortLimitCallback(TimerBase*);
+  void fontLoadLongLimitCallback(TimerBase*);
 
-    enum LoadLimitState { UnderLimit, ShortLimitExceeded, LongLimitExceeded };
+  enum LoadLimitState { UnderLimit, ShortLimitExceeded, LongLimitExceeded };
 
-    std::unique_ptr<FontCustomPlatformData> m_fontData;
-    String m_otsParsingMessage;
-    LoadLimitState m_loadLimitState;
-    bool m_corsFailed;
-    Timer<FontResource> m_fontLoadShortLimitTimer;
-    Timer<FontResource> m_fontLoadLongLimitTimer;
+  std::unique_ptr<FontCustomPlatformData> m_fontData;
+  String m_otsParsingMessage;
+  LoadLimitState m_loadLimitState;
+  bool m_corsFailed;
+  Timer<FontResource> m_fontLoadShortLimitTimer;
+  Timer<FontResource> m_fontLoadLongLimitTimer;
 
-    friend class MemoryCache;
+  friend class MemoryCache;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Font);
 
 class FontResourceClient : public ResourceClient {
-public:
-    ~FontResourceClient() override {}
-    static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == FontType; }
-    ResourceClientType getResourceClientType() const final { return FontType; }
-    virtual void fontLoadShortLimitExceeded(FontResource*) {}
-    virtual void fontLoadLongLimitExceeded(FontResource*) {}
+ public:
+  ~FontResourceClient() override {}
+  static bool isExpectedType(ResourceClient* client) {
+    return client->getResourceClientType() == FontType;
+  }
+  ResourceClientType getResourceClientType() const final { return FontType; }
+  virtual void fontLoadShortLimitExceeded(FontResource*) {}
+  virtual void fontLoadLongLimitExceeded(FontResource*) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

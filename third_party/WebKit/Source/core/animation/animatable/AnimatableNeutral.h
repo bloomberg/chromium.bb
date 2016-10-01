@@ -36,27 +36,28 @@
 namespace blink {
 
 class AnimatableNeutral final : public AnimatableValue {
-public:
-    ~AnimatableNeutral() override { }
+ public:
+  ~AnimatableNeutral() override {}
 
-protected:
-    static PassRefPtr<AnimatableNeutral> create() { return adoptRef(new AnimatableNeutral()); }
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const override
-    {
-        NOTREACHED();
-        return nullptr;
-    }
+ protected:
+  static PassRefPtr<AnimatableNeutral> create() {
+    return adoptRef(new AnimatableNeutral());
+  }
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value,
+                                            double fraction) const override {
+    NOTREACHED();
+    return nullptr;
+  }
 
-private:
-    friend class AnimatableValue;
-    AnimatableType type() const override { return TypeNeutral; }
-    bool equalTo(const AnimatableValue* value) const override
-    {
-        NOTREACHED();
-        return true;
-    }
+ private:
+  friend class AnimatableValue;
+  AnimatableType type() const override { return TypeNeutral; }
+  bool equalTo(const AnimatableValue* value) const override {
+    NOTREACHED();
+    return true;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableNeutral_h
+#endif  // AnimatableNeutral_h

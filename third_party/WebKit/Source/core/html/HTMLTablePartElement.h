@@ -34,18 +34,18 @@ namespace blink {
 class HTMLTableElement;
 
 class CORE_EXPORT HTMLTablePartElement : public HTMLElement {
-protected:
-    HTMLTablePartElement(const QualifiedName& tagName, Document& document)
-        : HTMLElement(tagName, document)
-    {
-    }
+ protected:
+  HTMLTablePartElement(const QualifiedName& tagName, Document& document)
+      : HTMLElement(tagName, document) {}
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    HTMLTableElement* findParentTable() const;
+  HTMLTableElement* findParentTable() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

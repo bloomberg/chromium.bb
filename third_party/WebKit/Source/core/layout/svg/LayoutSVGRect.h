@@ -33,25 +33,31 @@
 namespace blink {
 
 class LayoutSVGRect final : public LayoutSVGShape {
-public:
-    explicit LayoutSVGRect(SVGRectElement*);
-    ~LayoutSVGRect() override;
+ public:
+  explicit LayoutSVGRect(SVGRectElement*);
+  ~LayoutSVGRect() override;
 
-    ShapeGeometryCodePath geometryCodePath() const override { return m_usePathFallback ? PathGeometry : RectGeometryFastPath; }
+  ShapeGeometryCodePath geometryCodePath() const override {
+    return m_usePathFallback ? PathGeometry : RectGeometryFastPath;
+  }
 
-    const char* name() const override { return "LayoutSVGRect"; }
+  const char* name() const override { return "LayoutSVGRect"; }
 
-private:
-    void updateShapeFromElement() override;
-    bool isShapeEmpty() const override { return m_usePathFallback ? LayoutSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
-    bool shapeDependentStrokeContains(const FloatPoint&) override;
-    bool shapeDependentFillContains(const FloatPoint&, const WindRule) const override;
-    bool definitelyHasSimpleStroke() const;
+ private:
+  void updateShapeFromElement() override;
+  bool isShapeEmpty() const override {
+    return m_usePathFallback ? LayoutSVGShape::isShapeEmpty()
+                             : m_fillBoundingBox.isEmpty();
+  }
+  bool shapeDependentStrokeContains(const FloatPoint&) override;
+  bool shapeDependentFillContains(const FloatPoint&,
+                                  const WindRule) const override;
+  bool definitelyHasSimpleStroke() const;
 
-private:
-    bool m_usePathFallback;
+ private:
+  bool m_usePathFallback;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

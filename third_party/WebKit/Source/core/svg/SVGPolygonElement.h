@@ -27,16 +27,17 @@
 namespace blink {
 
 class SVGPolygonElement final : public SVGPolyElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGPolygonElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    Path asPath() const override;
+ public:
+  DECLARE_NODE_FACTORY(SVGPolygonElement);
 
-private:
-    explicit SVGPolygonElement(Document&);
+  Path asPath() const override;
+
+ private:
+  explicit SVGPolygonElement(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPolygonElement_h
+#endif  // SVGPolygonElement_h

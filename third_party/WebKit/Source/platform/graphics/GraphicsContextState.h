@@ -45,91 +45,93 @@ namespace blink {
 // Encapsulates the state information we store for each pushed graphics state.
 // Only GraphicsContext can use this class.
 class PLATFORM_EXPORT GraphicsContextState final {
-    USING_FAST_MALLOC(GraphicsContextState);
-public:
-    static std::unique_ptr<GraphicsContextState> create()
-    {
-        return wrapUnique(new GraphicsContextState());
-    }
+  USING_FAST_MALLOC(GraphicsContextState);
 
-    static std::unique_ptr<GraphicsContextState> createAndCopy(const GraphicsContextState& other)
-    {
-        return wrapUnique(new GraphicsContextState(other));
-    }
+ public:
+  static std::unique_ptr<GraphicsContextState> create() {
+    return wrapUnique(new GraphicsContextState());
+  }
 
-    void copy(const GraphicsContextState&);
+  static std::unique_ptr<GraphicsContextState> createAndCopy(
+      const GraphicsContextState& other) {
+    return wrapUnique(new GraphicsContextState(other));
+  }
 
-    // SkPaint objects that reflect the current state. If the length of the
-    // path to be stroked is known, pass it in for correct dash or dot placement.
-    const SkPaint& strokePaint(int strokedPathLength = 0) const;
-    const SkPaint& fillPaint() const { return m_fillPaint; }
+  void copy(const GraphicsContextState&);
 
-    uint16_t saveCount() const { return m_saveCount; }
-    void incrementSaveCount() { ++m_saveCount; }
-    void decrementSaveCount() { --m_saveCount; }
+  // SkPaint objects that reflect the current state. If the length of the
+  // path to be stroked is known, pass it in for correct dash or dot placement.
+  const SkPaint& strokePaint(int strokedPathLength = 0) const;
+  const SkPaint& fillPaint() const { return m_fillPaint; }
 
-    // Stroke data
-    Color strokeColor() const { return m_strokePaint.getColor(); }
-    void setStrokeColor(const Color&);
+  uint16_t saveCount() const { return m_saveCount; }
+  void incrementSaveCount() { ++m_saveCount; }
+  void decrementSaveCount() { --m_saveCount; }
 
-    const StrokeData& getStrokeData() const { return m_strokeData; }
-    void setStrokeStyle(StrokeStyle);
-    void setStrokeThickness(float);
-    void setLineCap(LineCap);
-    void setLineJoin(LineJoin);
-    void setMiterLimit(float);
-    void setLineDash(const DashArray&, float);
+  // Stroke data
+  Color strokeColor() const { return m_strokePaint.getColor(); }
+  void setStrokeColor(const Color&);
 
-    // Fill data
-    Color fillColor() const { return m_fillPaint.getColor(); }
-    void setFillColor(const Color&);
+  const StrokeData& getStrokeData() const { return m_strokeData; }
+  void setStrokeStyle(StrokeStyle);
+  void setStrokeThickness(float);
+  void setLineCap(LineCap);
+  void setLineJoin(LineJoin);
+  void setMiterLimit(float);
+  void setLineDash(const DashArray&, float);
 
-    // Shadow. (This will need tweaking if we use draw loopers for other things.)
-    SkDrawLooper* drawLooper() const
-    {
-        DCHECK_EQ(m_fillPaint.getLooper(), m_strokePaint.getLooper());
-        return m_fillPaint.getLooper();
-    }
-    void setDrawLooper(sk_sp<SkDrawLooper>);
+  // Fill data
+  Color fillColor() const { return m_fillPaint.getColor(); }
+  void setFillColor(const Color&);
 
-    // Text. (See TextModeFill & friends.)
-    TextDrawingModeFlags textDrawingMode() const { return m_textDrawingMode; }
-    void setTextDrawingMode(TextDrawingModeFlags mode) { m_textDrawingMode = mode; }
+  // Shadow. (This will need tweaking if we use draw loopers for other things.)
+  SkDrawLooper* drawLooper() const {
+    DCHECK_EQ(m_fillPaint.getLooper(), m_strokePaint.getLooper());
+    return m_fillPaint.getLooper();
+  }
+  void setDrawLooper(sk_sp<SkDrawLooper>);
 
-    SkColorFilter* getColorFilter() const
-    {
-        DCHECK_EQ(m_fillPaint.getColorFilter(), m_strokePaint.getColorFilter());
-        return m_fillPaint.getColorFilter();
-    }
-    void setColorFilter(sk_sp<SkColorFilter>);
+  // Text. (See TextModeFill & friends.)
+  TextDrawingModeFlags textDrawingMode() const { return m_textDrawingMode; }
+  void setTextDrawingMode(TextDrawingModeFlags mode) {
+    m_textDrawingMode = mode;
+  }
 
-    // Image interpolation control.
-    InterpolationQuality getInterpolationQuality() const { return m_interpolationQuality; }
-    void setInterpolationQuality(InterpolationQuality);
+  SkColorFilter* getColorFilter() const {
+    DCHECK_EQ(m_fillPaint.getColorFilter(), m_strokePaint.getColorFilter());
+    return m_fillPaint.getColorFilter();
+  }
+  void setColorFilter(sk_sp<SkColorFilter>);
 
-    bool shouldAntialias() const { return m_shouldAntialias; }
-    void setShouldAntialias(bool);
+  // Image interpolation control.
+  InterpolationQuality getInterpolationQuality() const {
+    return m_interpolationQuality;
+  }
+  void setInterpolationQuality(InterpolationQuality);
 
-private:
-    GraphicsContextState();
-    explicit GraphicsContextState(const GraphicsContextState&);
-    GraphicsContextState& operator=(const GraphicsContextState&);
+  bool shouldAntialias() const { return m_shouldAntialias; }
+  void setShouldAntialias(bool);
 
-    // This is mutable to enable dash path effect updates when the paint is fetched for use.
-    mutable SkPaint m_strokePaint;
-    SkPaint m_fillPaint;
+ private:
+  GraphicsContextState();
+  explicit GraphicsContextState(const GraphicsContextState&);
+  GraphicsContextState& operator=(const GraphicsContextState&);
 
-    StrokeData m_strokeData;
+  // This is mutable to enable dash path effect updates when the paint is fetched for use.
+  mutable SkPaint m_strokePaint;
+  SkPaint m_fillPaint;
 
-    TextDrawingModeFlags m_textDrawingMode;
+  StrokeData m_strokeData;
 
-    InterpolationQuality m_interpolationQuality;
+  TextDrawingModeFlags m_textDrawingMode;
 
-    uint16_t m_saveCount;
+  InterpolationQuality m_interpolationQuality;
 
-    bool m_shouldAntialias : 1;
+  uint16_t m_saveCount;
+
+  bool m_shouldAntialias : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GraphicsContextState_h
+#endif  // GraphicsContextState_h

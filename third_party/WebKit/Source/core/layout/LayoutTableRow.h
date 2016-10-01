@@ -34,7 +34,7 @@ namespace blink {
 // inserting the LayoutTableRow or during LayoutTableSection::recalcCells.
 // This value is used to detect that case.
 static const unsigned unsetRowIndex = 0x7FFFFFFF;
-static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
+static const unsigned maxRowIndex = 0x7FFFFFFE;  // 2,147,483,646
 
 // LayoutTableRow is used to represent a table row (display: table-row).
 //
@@ -63,128 +63,136 @@ static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 // LayoutTableSection. See LayoutTableSection::layoutRows() for the placement
 // logic.
 class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
-public:
-    explicit LayoutTableRow(Element*);
+ public:
+  explicit LayoutTableRow(Element*);
 
-    LayoutTableCell* firstCell() const;
-    LayoutTableCell* lastCell() const;
+  LayoutTableCell* firstCell() const;
+  LayoutTableCell* lastCell() const;
 
-    LayoutTableRow* previousRow() const;
-    LayoutTableRow* nextRow() const;
+  LayoutTableRow* previousRow() const;
+  LayoutTableRow* nextRow() const;
 
-    LayoutTableSection* section() const { return toLayoutTableSection(parent()); }
-    LayoutTable* table() const { return toLayoutTable(parent()->parent()); }
+  LayoutTableSection* section() const { return toLayoutTableSection(parent()); }
+  LayoutTable* table() const { return toLayoutTable(parent()->parent()); }
 
-    static LayoutTableRow* createAnonymous(Document*);
-    static LayoutTableRow* createAnonymousWithParent(const LayoutObject*);
-    LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
-    {
-        return createAnonymousWithParent(parent);
-    }
+  static LayoutTableRow* createAnonymous(Document*);
+  static LayoutTableRow* createAnonymousWithParent(const LayoutObject*);
+  LayoutBox* createAnonymousBoxWithSameTypeAs(
+      const LayoutObject* parent) const override {
+    return createAnonymousWithParent(parent);
+  }
 
-    void setRowIndex(unsigned rowIndex)
-    {
-        if (UNLIKELY(rowIndex > maxRowIndex))
-            CRASH();
+  void setRowIndex(unsigned rowIndex) {
+    if (UNLIKELY(rowIndex > maxRowIndex))
+      CRASH();
 
-        m_rowIndex = rowIndex;
-    }
+    m_rowIndex = rowIndex;
+  }
 
-    bool rowIndexWasSet() const { return m_rowIndex != unsetRowIndex; }
-    unsigned rowIndex() const
-    {
-        ASSERT(rowIndexWasSet());
-        ASSERT(!section() || !section()->needsCellRecalc()); // index may be bogus if cells need recalc.
-        return m_rowIndex;
-    }
+  bool rowIndexWasSet() const { return m_rowIndex != unsetRowIndex; }
+  unsigned rowIndex() const {
+    ASSERT(rowIndexWasSet());
+    ASSERT(
+        !section() ||
+        !section()
+             ->needsCellRecalc());  // index may be bogus if cells need recalc.
+    return m_rowIndex;
+  }
 
-    const BorderValue& borderAdjoiningTableStart() const
-    {
-        if (section()->hasSameDirectionAs(table()))
-            return style()->borderStart();
+  const BorderValue& borderAdjoiningTableStart() const {
+    if (section()->hasSameDirectionAs(table()))
+      return style()->borderStart();
 
-        return style()->borderEnd();
-    }
+    return style()->borderEnd();
+  }
 
-    const BorderValue& borderAdjoiningTableEnd() const
-    {
-        if (section()->hasSameDirectionAs(table()))
-            return style()->borderEnd();
+  const BorderValue& borderAdjoiningTableEnd() const {
+    if (section()->hasSameDirectionAs(table()))
+      return style()->borderEnd();
 
-        return style()->borderStart();
-    }
+    return style()->borderStart();
+  }
 
-    const BorderValue& borderAdjoiningStartCell(const LayoutTableCell*) const;
-    const BorderValue& borderAdjoiningEndCell(const LayoutTableCell*) const;
+  const BorderValue& borderAdjoiningStartCell(const LayoutTableCell*) const;
+  const BorderValue& borderAdjoiningEndCell(const LayoutTableCell*) const;
 
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+  bool nodeAtPoint(HitTestResult&,
+                   const HitTestLocation& locationInContainer,
+                   const LayoutPoint& accumulatedOffset,
+                   HitTestAction) override;
 
-    void computeOverflow();
+  void computeOverflow();
 
-    const char* name() const override { return "LayoutTableRow"; }
+  const char* name() const override { return "LayoutTableRow"; }
 
-    // Whether a row has opaque background depends on many factors, e.g. border spacing,
-    // border collapsing, missing cells, etc.
-    // For simplicity, just conservatively assume all table rows are not opaque.
-    bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&, unsigned) const override { return false; }
-    bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override { return false; }
+  // Whether a row has opaque background depends on many factors, e.g. border spacing,
+  // border collapsing, missing cells, etc.
+  // For simplicity, just conservatively assume all table rows are not opaque.
+  bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&,
+                                         unsigned) const override {
+    return false;
+  }
+  bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override {
+    return false;
+  }
 
-private:
-    void addOverflowFromCell(const LayoutTableCell*);
+ private:
+  void addOverflowFromCell(const LayoutTableCell*);
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || LayoutTableBoxComponent::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectTableRow ||
+           LayoutTableBoxComponent::isOfType(type);
+  }
 
-    void willBeRemovedFromTree() override;
+  void willBeRemovedFromTree() override;
 
-    void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
-    void layout() override;
+  void addChild(LayoutObject* child,
+                LayoutObject* beforeChild = nullptr) override;
+  void layout() override;
 
-    PaintLayerType layerTypeRequired() const override
-    {
-        if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations() || isStickyPositioned() || style()->hasCompositorProxy())
-            return NormalPaintLayer;
+  PaintLayerType layerTypeRequired() const override {
+    if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() ||
+        createsGroup() || style()->shouldCompositeForCurrentAnimations() ||
+        isStickyPositioned() || style()->hasCompositorProxy())
+      return NormalPaintLayer;
 
-        if (hasOverflowClip())
-            return OverflowClipPaintLayer;
+    if (hasOverflowClip())
+      return OverflowClipPaintLayer;
 
-        return NoPaintLayer;
-    }
+    return NoPaintLayer;
+  }
 
-    void paint(const PaintInfo&, const LayoutPoint&) const override;
+  void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
-    void nextSibling() const = delete;
-    void previousSibling() const = delete;
+  void nextSibling() const = delete;
+  void previousSibling() const = delete;
 
-    // This field should never be read directly. It should be read through
-    // rowIndex() above instead. This is to ensure that we never read this
-    // value before it is set.
-    unsigned m_rowIndex : 31;
+  // This field should never be read directly. It should be read through
+  // rowIndex() above instead. This is to ensure that we never read this
+  // value before it is set.
+  unsigned m_rowIndex : 31;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableRow, isTableRow());
 
-inline LayoutTableRow* LayoutTableRow::previousRow() const
-{
-    return toLayoutTableRow(LayoutObject::previousSibling());
+inline LayoutTableRow* LayoutTableRow::previousRow() const {
+  return toLayoutTableRow(LayoutObject::previousSibling());
 }
 
-inline LayoutTableRow* LayoutTableRow::nextRow() const
-{
-    return toLayoutTableRow(LayoutObject::nextSibling());
+inline LayoutTableRow* LayoutTableRow::nextRow() const {
+  return toLayoutTableRow(LayoutObject::nextSibling());
 }
 
-inline LayoutTableRow* LayoutTableSection::firstRow() const
-{
-    return toLayoutTableRow(firstChild());
+inline LayoutTableRow* LayoutTableSection::firstRow() const {
+  return toLayoutTableRow(firstChild());
 }
 
-inline LayoutTableRow* LayoutTableSection::lastRow() const
-{
-    return toLayoutTableRow(lastChild());
+inline LayoutTableRow* LayoutTableSection::lastRow() const {
+  return toLayoutTableRow(lastChild());
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutTableRow_h
+#endif  // LayoutTableRow_h

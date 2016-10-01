@@ -29,23 +29,25 @@ namespace blink {
 class LayoutObject;
 
 class SVGTextQuery {
-    STACK_ALLOCATED();
-public:
-    SVGTextQuery(LayoutObject* layoutObject) : m_queryRootLayoutObject(layoutObject) { }
+  STACK_ALLOCATED();
 
-    unsigned numberOfCharacters() const;
-    float textLength() const;
-    float subStringLength(unsigned startPosition, unsigned length) const;
-    FloatPoint startPositionOfCharacter(unsigned position) const;
-    FloatPoint endPositionOfCharacter(unsigned position) const;
-    float rotationOfCharacter(unsigned position) const;
-    FloatRect extentOfCharacter(unsigned position) const;
-    int characterNumberAtPosition(const FloatPoint&) const;
+ public:
+  SVGTextQuery(LayoutObject* layoutObject)
+      : m_queryRootLayoutObject(layoutObject) {}
 
-private:
-    LayoutObject* m_queryRootLayoutObject;
+  unsigned numberOfCharacters() const;
+  float textLength() const;
+  float subStringLength(unsigned startPosition, unsigned length) const;
+  FloatPoint startPositionOfCharacter(unsigned position) const;
+  FloatPoint endPositionOfCharacter(unsigned position) const;
+  float rotationOfCharacter(unsigned position) const;
+  FloatRect extentOfCharacter(unsigned position) const;
+  int characterNumberAtPosition(const FloatPoint&) const;
+
+ private:
+  LayoutObject* m_queryRootLayoutObject;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -20,25 +20,26 @@ using IntegrityMetadataPair = std::pair<WTF::String, HashAlgorithm>;
 using IntegrityMetadataSet = WTF::HashSet<IntegrityMetadataPair>;
 
 class CORE_EXPORT IntegrityMetadata {
-public:
-    IntegrityMetadata() {}
-    IntegrityMetadata(WTF::String digest, HashAlgorithm);
-    IntegrityMetadata(std::pair<WTF::String, HashAlgorithm>);
+ public:
+  IntegrityMetadata() {}
+  IntegrityMetadata(WTF::String digest, HashAlgorithm);
+  IntegrityMetadata(std::pair<WTF::String, HashAlgorithm>);
 
-    WTF::String digest() const { return m_digest; }
-    void setDigest(const WTF::String& digest) { m_digest = digest; }
-    HashAlgorithm algorithm() const { return m_algorithm; }
-    void setAlgorithm(HashAlgorithm algorithm) { m_algorithm = algorithm; }
+  WTF::String digest() const { return m_digest; }
+  void setDigest(const WTF::String& digest) { m_digest = digest; }
+  HashAlgorithm algorithm() const { return m_algorithm; }
+  void setAlgorithm(HashAlgorithm algorithm) { m_algorithm = algorithm; }
 
-    IntegrityMetadataPair toPair() const;
+  IntegrityMetadataPair toPair() const;
 
-    static bool setsEqual(const IntegrityMetadataSet& set1, const IntegrityMetadataSet& set2);
+  static bool setsEqual(const IntegrityMetadataSet& set1,
+                        const IntegrityMetadataSet& set2);
 
-private:
-    WTF::String m_digest;
-    HashAlgorithm m_algorithm;
+ private:
+  WTF::String m_digest;
+  HashAlgorithm m_algorithm;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

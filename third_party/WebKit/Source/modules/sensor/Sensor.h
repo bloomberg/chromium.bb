@@ -23,93 +23,96 @@ class ScriptState;
 class SensorReading;
 class SensorPollingStrategy;
 
-class Sensor
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ContextLifecycleObserver
-    , public PageVisibilityObserver
-    , public SensorProxy::Observer {
-    USING_GARBAGE_COLLECTED_MIXIN(Sensor);
-    DEFINE_WRAPPERTYPEINFO();
+class Sensor : public EventTargetWithInlineData,
+               public ActiveScriptWrappable,
+               public ContextLifecycleObserver,
+               public PageVisibilityObserver,
+               public SensorProxy::Observer {
+  USING_GARBAGE_COLLECTED_MIXIN(Sensor);
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    enum class SensorState {
-        IDLE,
-        ACTIVATING,
-        ACTIVE,
-        ERRORED
-    };
+ public:
+  enum class SensorState { IDLE, ACTIVATING, ACTIVE, ERRORED };
 
-    ~Sensor() override;
+  ~Sensor() override;
 
-    void start(ScriptState*, ExceptionState&);
-    void stop(ScriptState*, ExceptionState&);
+  void start(ScriptState*, ExceptionState&);
+  void stop(ScriptState*, ExceptionState&);
 
-    // EventTarget overrides.
-    const AtomicString& interfaceName() const override { return EventTargetNames::Sensor; }
-    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
+  // EventTarget overrides.
+  const AtomicString& interfaceName() const override {
+    return EventTargetNames::Sensor;
+  }
+  ExecutionContext* getExecutionContext() const override {
+    return ContextLifecycleObserver::getExecutionContext();
+  }
 
-    // Getters
-    String state() const;
-    // TODO(riju): crbug.com/614797 .
-    SensorReading* reading() const;
+  // Getters
+  String state() const;
+  // TODO(riju): crbug.com/614797 .
+  SensorReading* reading() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
-    // ActiveScriptWrappable overrides.
-    bool hasPendingActivity() const override;
+  // ActiveScriptWrappable overrides.
+  bool hasPendingActivity() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    Sensor(ScriptState*, const SensorOptions&, ExceptionState&, device::mojom::blink::SensorType);
-    virtual SensorReading* createSensorReading(SensorProxy*) = 0;
+ protected:
+  Sensor(ScriptState*,
+         const SensorOptions&,
+         ExceptionState&,
+         device::mojom::blink::SensorType);
+  virtual SensorReading* createSensorReading(SensorProxy*) = 0;
 
-    using SensorConfigurationPtr = device::mojom::blink::SensorConfigurationPtr;
-    using SensorConfiguration = device::mojom::blink::SensorConfiguration;
-    virtual SensorConfigurationPtr createSensorConfig(const SensorOptions&, const SensorConfiguration& defaultConfiguration) = 0;
+  using SensorConfigurationPtr = device::mojom::blink::SensorConfigurationPtr;
+  using SensorConfiguration = device::mojom::blink::SensorConfiguration;
+  virtual SensorConfigurationPtr createSensorConfig(
+      const SensorOptions&,
+      const SensorConfiguration& defaultConfiguration) = 0;
 
-private:
-    void initSensorProxyIfNeeded();
+ private:
+  void initSensorProxyIfNeeded();
 
-    // ContextLifecycleObserver overrides.
-    void contextDestroyed() override;
+  // ContextLifecycleObserver overrides.
+  void contextDestroyed() override;
 
-    // SensorController::Observer overrides.
-    void onSensorInitialized() override;
-    void onSensorReadingChanged() override;
-    void onSensorError() override;
+  // SensorController::Observer overrides.
+  void onSensorInitialized() override;
+  void onSensorReadingChanged() override;
+  void onSensorError() override;
 
-    void onStartRequestCompleted(bool);
-    void onStopRequestCompleted(bool);
+  void onStartRequestCompleted(bool);
+  void onStopRequestCompleted(bool);
 
-    // PageVisibilityObserver overrides.
-    void pageVisibilityChanged() override;
+  // PageVisibilityObserver overrides.
+  void pageVisibilityChanged() override;
 
-    void startListening();
-    void stopListening();
+  void startListening();
+  void stopListening();
 
-    // Makes sensor reading refresh its values from the shared buffer.
-    void pollForData();
+  // Makes sensor reading refresh its values from the shared buffer.
+  void pollForData();
 
-    void updateState(SensorState newState);
-    void reportError();
+  void updateState(SensorState newState);
+  void reportError();
 
-    void updatePollingStatus();
+  void updatePollingStatus();
 
-private:
-    Member<SensorReading> m_sensorReading;
-    SensorOptions m_sensorOptions;
-    device::mojom::blink::SensorType m_type;
-    SensorState m_state;
-    Member<SensorProxy> m_sensorProxy;
-    std::unique_ptr<SensorPollingStrategy> m_polling;
-    SensorProxy::Reading m_storedData;
-    SensorConfigurationPtr m_configuration;
+ private:
+  Member<SensorReading> m_sensorReading;
+  SensorOptions m_sensorOptions;
+  device::mojom::blink::SensorType m_type;
+  SensorState m_state;
+  Member<SensorProxy> m_sensorProxy;
+  std::unique_ptr<SensorPollingStrategy> m_polling;
+  SensorProxy::Reading m_storedData;
+  SensorConfigurationPtr m_configuration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Sensor_h
+#endif  // Sensor_h

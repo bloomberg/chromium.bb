@@ -28,32 +28,38 @@
 
 namespace blink {
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyOperatorType>();
+template <>
+const SVGEnumerationStringEntries&
+getStaticStringEntries<MorphologyOperatorType>();
 
-class SVGFEMorphologyElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
+class SVGFEMorphologyElement final
+    : public SVGFilterPrimitiveStandardAttributes {
+  DEFINE_WRAPPERTYPEINFO();
 
-    SVGAnimatedNumber* radiusX() { return m_radius->firstNumber(); }
-    SVGAnimatedNumber* radiusY() { return m_radius->secondNumber(); }
-    SVGAnimatedString* in1() { return m_in1.get(); }
-    SVGAnimatedEnumeration<MorphologyOperatorType>* svgOperator() { return m_svgOperator.get(); }
+ public:
+  DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedNumber* radiusX() { return m_radius->firstNumber(); }
+  SVGAnimatedNumber* radiusY() { return m_radius->secondNumber(); }
+  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedEnumeration<MorphologyOperatorType>* svgOperator() {
+    return m_svgOperator.get();
+  }
 
-private:
-    explicit SVGFEMorphologyElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-    void svgAttributeChanged(const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+ private:
+  explicit SVGFEMorphologyElement(Document&);
 
-    Member<SVGAnimatedNumberOptionalNumber> m_radius;
-    Member<SVGAnimatedString> m_in1;
-    Member<SVGAnimatedEnumeration<MorphologyOperatorType>> m_svgOperator;
+  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+
+  Member<SVGAnimatedNumberOptionalNumber> m_radius;
+  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedEnumeration<MorphologyOperatorType>> m_svgOperator;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEMorphologyElement_h
+#endif  // SVGFEMorphologyElement_h

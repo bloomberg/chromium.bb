@@ -18,39 +18,33 @@ class Element;
 
 // https://html.spec.whatwg.org/multipage/scripting.html#cereactions
 class CORE_EXPORT CEReactionsScope final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(CEReactionsScope);
-public:
-    static CEReactionsScope* current()
-    {
-        return s_topOfStack;
-    }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(CEReactionsScope);
 
-    CEReactionsScope()
-        : m_prev(s_topOfStack)
-        , m_workToDo(false)
-    {
-        s_topOfStack = this;
-    }
+ public:
+  static CEReactionsScope* current() { return s_topOfStack; }
 
-    ~CEReactionsScope()
-    {
-        if (m_workToDo)
-            invokeReactions();
-        s_topOfStack = s_topOfStack->m_prev;
-    }
+  CEReactionsScope() : m_prev(s_topOfStack), m_workToDo(false) {
+    s_topOfStack = this;
+  }
 
-    void enqueueToCurrentQueue(Element*, CustomElementReaction*);
+  ~CEReactionsScope() {
+    if (m_workToDo)
+      invokeReactions();
+    s_topOfStack = s_topOfStack->m_prev;
+  }
 
-private:
-    static CEReactionsScope* s_topOfStack;
+  void enqueueToCurrentQueue(Element*, CustomElementReaction*);
 
-    void invokeReactions();
+ private:
+  static CEReactionsScope* s_topOfStack;
 
-    CEReactionsScope* m_prev;
-    bool m_workToDo;
+  void invokeReactions();
+
+  CEReactionsScope* m_prev;
+  bool m_workToDo;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CEReactionsScope_h
+#endif  // CEReactionsScope_h

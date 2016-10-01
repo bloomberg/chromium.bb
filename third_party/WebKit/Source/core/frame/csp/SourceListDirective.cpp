@@ -12,65 +12,57 @@
 
 namespace blink {
 
-SourceListDirective::SourceListDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
-    : CSPDirective(name, value, policy)
-    , m_sourceList(policy, name)
-{
-    Vector<UChar> characters;
-    value.appendTo(characters);
+SourceListDirective::SourceListDirective(const String& name,
+                                         const String& value,
+                                         ContentSecurityPolicy* policy)
+    : CSPDirective(name, value, policy), m_sourceList(policy, name) {
+  Vector<UChar> characters;
+  value.appendTo(characters);
 
-    m_sourceList.parse(characters.data(), characters.data() + characters.size());
+  m_sourceList.parse(characters.data(), characters.data() + characters.size());
 }
 
-bool SourceListDirective::allows(const KURL& url, ResourceRequest::RedirectStatus redirectStatus) const
-{
-    return m_sourceList.matches(url, redirectStatus);
+bool SourceListDirective::allows(
+    const KURL& url,
+    ResourceRequest::RedirectStatus redirectStatus) const {
+  return m_sourceList.matches(url, redirectStatus);
 }
 
-bool SourceListDirective::allowInline() const
-{
-    return m_sourceList.allowInline();
+bool SourceListDirective::allowInline() const {
+  return m_sourceList.allowInline();
 }
 
-bool SourceListDirective::allowEval() const
-{
-    return m_sourceList.allowEval();
+bool SourceListDirective::allowEval() const {
+  return m_sourceList.allowEval();
 }
 
-bool SourceListDirective::allowDynamic() const
-{
-    return m_sourceList.allowDynamic();
+bool SourceListDirective::allowDynamic() const {
+  return m_sourceList.allowDynamic();
 }
 
-bool SourceListDirective::allowNonce(const String& nonce) const
-{
-    return m_sourceList.allowNonce(nonce.stripWhiteSpace());
+bool SourceListDirective::allowNonce(const String& nonce) const {
+  return m_sourceList.allowNonce(nonce.stripWhiteSpace());
 }
 
-bool SourceListDirective::allowHash(const CSPHashValue& hashValue) const
-{
-    return m_sourceList.allowHash(hashValue);
+bool SourceListDirective::allowHash(const CSPHashValue& hashValue) const {
+  return m_sourceList.allowHash(hashValue);
 }
 
-bool SourceListDirective::allowHashedAttributes() const
-{
-    return m_sourceList.allowHashedAttributes();
+bool SourceListDirective::allowHashedAttributes() const {
+  return m_sourceList.allowHashedAttributes();
 }
 
-bool SourceListDirective::isHashOrNoncePresent() const
-{
-    return m_sourceList.isHashOrNoncePresent();
+bool SourceListDirective::isHashOrNoncePresent() const {
+  return m_sourceList.isHashOrNoncePresent();
 }
 
-uint8_t SourceListDirective::hashAlgorithmsUsed() const
-{
-    return m_sourceList.hashAlgorithmsUsed();
+uint8_t SourceListDirective::hashAlgorithmsUsed() const {
+  return m_sourceList.hashAlgorithmsUsed();
 }
 
-DEFINE_TRACE(SourceListDirective)
-{
-    visitor->trace(m_sourceList);
-    CSPDirective::trace(visitor);
+DEFINE_TRACE(SourceListDirective) {
+  visitor->trace(m_sourceList);
+  CSPDirective::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

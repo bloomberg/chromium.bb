@@ -17,31 +17,39 @@ class WebServiceWorkerRegistration;
 struct WebPushError;
 struct WebPushSubscriptionOptions;
 
-using WebPushSubscriptionCallbacks = WebCallbacks<std::unique_ptr<WebPushSubscription>, const WebPushError&>;
-using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus, const WebPushError&>;
+using WebPushSubscriptionCallbacks =
+    WebCallbacks<std::unique_ptr<WebPushSubscription>, const WebPushError&>;
+using WebPushPermissionStatusCallbacks =
+    WebCallbacks<WebPushPermissionStatus, const WebPushError&>;
 using WebPushUnsubscribeCallbacks = WebCallbacks<bool, const WebPushError&>;
 
 class WebPushProvider {
-public:
-    virtual ~WebPushProvider() { }
+ public:
+  virtual ~WebPushProvider() {}
 
-    // Takes ownership of the WebPushSubscriptionCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void subscribe(WebServiceWorkerRegistration*, const WebPushSubscriptionOptions&, WebPushSubscriptionCallbacks*) = 0;
+  // Takes ownership of the WebPushSubscriptionCallbacks.
+  // Does not take ownership of the WebServiceWorkerRegistration.
+  virtual void subscribe(WebServiceWorkerRegistration*,
+                         const WebPushSubscriptionOptions&,
+                         WebPushSubscriptionCallbacks*) = 0;
 
-    // Takes ownership of the WebPushSubscriptionCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getSubscription(WebServiceWorkerRegistration*, WebPushSubscriptionCallbacks*) = 0;
+  // Takes ownership of the WebPushSubscriptionCallbacks.
+  // Does not take ownership of the WebServiceWorkerRegistration.
+  virtual void getSubscription(WebServiceWorkerRegistration*,
+                               WebPushSubscriptionCallbacks*) = 0;
 
-    // Takes ownership of the WebPushPermissionStatusCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getPermissionStatus(WebServiceWorkerRegistration*, const WebPushSubscriptionOptions&, WebPushPermissionStatusCallbacks*) = 0;
+  // Takes ownership of the WebPushPermissionStatusCallbacks.
+  // Does not take ownership of the WebServiceWorkerRegistration.
+  virtual void getPermissionStatus(WebServiceWorkerRegistration*,
+                                   const WebPushSubscriptionOptions&,
+                                   WebPushPermissionStatusCallbacks*) = 0;
 
-    // Takes ownership if the WebPushUnsubscribeCallbacks.
-    // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unsubscribe(WebServiceWorkerRegistration*, WebPushUnsubscribeCallbacks*) = 0;
+  // Takes ownership if the WebPushUnsubscribeCallbacks.
+  // Does not take ownership of the WebServiceWorkerRegistration.
+  virtual void unsubscribe(WebServiceWorkerRegistration*,
+                           WebPushUnsubscribeCallbacks*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPushProvider_h
+#endif  // WebPushProvider_h

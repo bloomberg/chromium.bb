@@ -34,91 +34,89 @@ class VRPose;
 
 class WebGLRenderingContextBase;
 
-enum VREye {
-    VREyeNone,
-    VREyeLeft,
-    VREyeRight
-};
+enum VREye { VREyeNone, VREyeLeft, VREyeRight };
 
-class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~VRDisplay();
+class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
+                        public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned displayId() const { return m_displayId; }
-    const String& displayName() const { return m_displayName; }
+ public:
+  ~VRDisplay();
 
-    VRDisplayCapabilities* capabilities() const { return m_capabilities; }
-    VRStageParameters* stageParameters() const { return m_stageParameters; }
+  unsigned displayId() const { return m_displayId; }
+  const String& displayName() const { return m_displayName; }
 
-    bool isConnected() const { return m_isConnected; }
-    bool isPresenting() const { return m_isPresenting; }
+  VRDisplayCapabilities* capabilities() const { return m_capabilities; }
+  VRStageParameters* stageParameters() const { return m_stageParameters; }
 
-    bool getFrameData(VRFrameData*);
-    VRPose* getPose();
-    void resetPose();
+  bool isConnected() const { return m_isConnected; }
+  bool isPresenting() const { return m_isPresenting; }
 
-    double depthNear() const { return m_depthNear; }
-    double depthFar() const { return m_depthFar; }
+  bool getFrameData(VRFrameData*);
+  VRPose* getPose();
+  void resetPose();
 
-    void setDepthNear(double value) { m_depthNear = value; }
-    void setDepthFar(double value) { m_depthFar = value; }
+  double depthNear() const { return m_depthNear; }
+  double depthFar() const { return m_depthFar; }
 
-    VREyeParameters* getEyeParameters(const String&);
+  void setDepthNear(double value) { m_depthNear = value; }
+  void setDepthFar(double value) { m_depthFar = value; }
 
-    int requestAnimationFrame(FrameRequestCallback*);
-    void cancelAnimationFrame(int id);
+  VREyeParameters* getEyeParameters(const String&);
 
-    ScriptPromise requestPresent(ScriptState*, const HeapVector<VRLayer>& layers);
-    ScriptPromise exitPresent(ScriptState*);
+  int requestAnimationFrame(FrameRequestCallback*);
+  void cancelAnimationFrame(int id);
 
-    HeapVector<VRLayer> getLayers();
+  ScriptPromise requestPresent(ScriptState*, const HeapVector<VRLayer>& layers);
+  ScriptPromise exitPresent(ScriptState*);
 
-    void submitFrame();
+  HeapVector<VRLayer> getLayers();
 
-    DECLARE_VIRTUAL_TRACE();
+  void submitFrame();
 
-protected:
-    friend class VRController;
+  DECLARE_VIRTUAL_TRACE();
 
-    VRDisplay(NavigatorVR*);
+ protected:
+  friend class VRController;
 
-    void update(const device::blink::VRDisplayPtr&);
+  VRDisplay(NavigatorVR*);
 
-    void updatePose();
+  void update(const device::blink::VRDisplayPtr&);
 
-    void beginPresent(ScriptPromiseResolver*);
-    void forceExitPresent();
+  void updatePose();
 
-    void updateLayerBounds();
-    void disconnected();
+  void beginPresent(ScriptPromiseResolver*);
+  void forceExitPresent();
 
-    VRController* controller();
+  void updateLayerBounds();
+  void disconnected();
 
-private:
-    void onFullscreenCheck(TimerBase*);
+  VRController* controller();
 
-    Member<NavigatorVR> m_navigatorVR;
-    unsigned m_displayId;
-    String m_displayName;
-    bool m_isConnected;
-    bool m_isPresenting;
-    bool m_canUpdateFramePose;
-    unsigned m_compositorHandle;
-    Member<VRDisplayCapabilities> m_capabilities;
-    Member<VRStageParameters> m_stageParameters;
-    Member<VREyeParameters> m_eyeParametersLeft;
-    Member<VREyeParameters> m_eyeParametersRight;
-    device::blink::VRPosePtr m_framePose;
-    VRLayer m_layer;
-    double m_depthNear;
-    double m_depthFar;
+ private:
+  void onFullscreenCheck(TimerBase*);
 
-    Timer<VRDisplay> m_fullscreenCheckTimer;
+  Member<NavigatorVR> m_navigatorVR;
+  unsigned m_displayId;
+  String m_displayName;
+  bool m_isConnected;
+  bool m_isPresenting;
+  bool m_canUpdateFramePose;
+  unsigned m_compositorHandle;
+  Member<VRDisplayCapabilities> m_capabilities;
+  Member<VRStageParameters> m_stageParameters;
+  Member<VREyeParameters> m_eyeParametersLeft;
+  Member<VREyeParameters> m_eyeParametersRight;
+  device::blink::VRPosePtr m_framePose;
+  VRLayer m_layer;
+  double m_depthNear;
+  double m_depthFar;
+
+  Timer<VRDisplay> m_fullscreenCheckTimer;
 };
 
 using VRDisplayVector = HeapVector<Member<VRDisplay>>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VRDisplay_h
+#endif  // VRDisplay_h

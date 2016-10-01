@@ -13,77 +13,72 @@ using DurationBehavior = cc::ScrollOffsetAnimationCurve::DurationBehavior;
 
 namespace blink {
 
-static DurationBehavior GetDurationBehavior(CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior webDurationBehavior)
-{
-    switch (webDurationBehavior) {
+static DurationBehavior GetDurationBehavior(
+    CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior
+        webDurationBehavior) {
+  switch (webDurationBehavior) {
     case CompositorScrollOffsetAnimationCurve::ScrollDurationDeltaBased:
-        return DurationBehavior::DELTA_BASED;
+      return DurationBehavior::DELTA_BASED;
 
     case CompositorScrollOffsetAnimationCurve::ScrollDurationConstant:
-        return DurationBehavior::CONSTANT;
+      return DurationBehavior::CONSTANT;
 
     case CompositorScrollOffsetAnimationCurve::ScrollDurationInverseDelta:
-        return DurationBehavior::INVERSE_DELTA;
-    }
-    NOTREACHED();
-    return DurationBehavior::DELTA_BASED;
+      return DurationBehavior::INVERSE_DELTA;
+  }
+  NOTREACHED();
+  return DurationBehavior::DELTA_BASED;
 }
 
 CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
     FloatPoint targetValue,
     ScrollDurationBehavior durationBehavior)
     : m_curve(cc::ScrollOffsetAnimationCurve::Create(
-        gfx::ScrollOffset(targetValue.x(), targetValue.y()),
-        cc::CubicBezierTimingFunction::CreatePreset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
-        GetDurationBehavior(durationBehavior)))
-{
-}
+          gfx::ScrollOffset(targetValue.x(), targetValue.y()),
+          cc::CubicBezierTimingFunction::CreatePreset(
+              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
+          GetDurationBehavior(durationBehavior))) {}
 
 CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
     cc::ScrollOffsetAnimationCurve* curve)
-    : m_curve(curve->CloneToScrollOffsetAnimationCurve())
-{
+    : m_curve(curve->CloneToScrollOffsetAnimationCurve()) {}
+
+CompositorScrollOffsetAnimationCurve::~CompositorScrollOffsetAnimationCurve() {}
+
+void CompositorScrollOffsetAnimationCurve::setInitialValue(
+    FloatPoint initialValue) {
+  m_curve->SetInitialValue(
+      gfx::ScrollOffset(initialValue.x(), initialValue.y()));
 }
 
-CompositorScrollOffsetAnimationCurve::~CompositorScrollOffsetAnimationCurve()
-{
+FloatPoint CompositorScrollOffsetAnimationCurve::getValue(double time) const {
+  gfx::ScrollOffset value =
+      m_curve->GetValue(base::TimeDelta::FromSecondsD(time));
+  return FloatPoint(value.x(), value.y());
 }
 
-void CompositorScrollOffsetAnimationCurve::setInitialValue(FloatPoint initialValue)
-{
-    m_curve->SetInitialValue(gfx::ScrollOffset(initialValue.x(), initialValue.y()));
+void CompositorScrollOffsetAnimationCurve::applyAdjustment(IntSize adjustment) {
+  m_curve->ApplyAdjustment(
+      gfx::Vector2dF(adjustment.width(), adjustment.height()));
 }
 
-FloatPoint CompositorScrollOffsetAnimationCurve::getValue(double time) const
-{
-    gfx::ScrollOffset value = m_curve->GetValue(base::TimeDelta::FromSecondsD(time));
-    return FloatPoint(value.x(), value.y());
+double CompositorScrollOffsetAnimationCurve::duration() const {
+  return m_curve->Duration().InSecondsF();
 }
 
-void CompositorScrollOffsetAnimationCurve::applyAdjustment(IntSize adjustment)
-{
-    m_curve->ApplyAdjustment(gfx::Vector2dF(adjustment.width(), adjustment.height()));
+FloatPoint CompositorScrollOffsetAnimationCurve::targetValue() const {
+  gfx::ScrollOffset target = m_curve->target_value();
+  return FloatPoint(target.x(), target.y());
 }
 
-double CompositorScrollOffsetAnimationCurve::duration() const
-{
-    return m_curve->Duration().InSecondsF();
+void CompositorScrollOffsetAnimationCurve::updateTarget(double time,
+                                                        FloatPoint newTarget) {
+  m_curve->UpdateTarget(time, gfx::ScrollOffset(newTarget.x(), newTarget.y()));
 }
 
-FloatPoint CompositorScrollOffsetAnimationCurve::targetValue() const
-{
-    gfx::ScrollOffset target = m_curve->target_value();
-    return FloatPoint(target.x(), target.y());
+std::unique_ptr<cc::AnimationCurve>
+CompositorScrollOffsetAnimationCurve::cloneToAnimationCurve() const {
+  return m_curve->Clone();
 }
 
-void CompositorScrollOffsetAnimationCurve::updateTarget(double time, FloatPoint newTarget)
-{
-    m_curve->UpdateTarget(time, gfx::ScrollOffset(newTarget.x(), newTarget.y()));
-}
-
-std::unique_ptr<cc::AnimationCurve> CompositorScrollOffsetAnimationCurve::cloneToAnimationCurve() const
-{
-    return m_curve->Clone();
-}
-
-} // namespace blink
+}  // namespace blink

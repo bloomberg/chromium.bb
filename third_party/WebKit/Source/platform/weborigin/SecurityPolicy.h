@@ -41,36 +41,51 @@ class KURL;
 class SecurityOrigin;
 
 class PLATFORM_EXPORT SecurityPolicy {
-    STATIC_ONLY(SecurityPolicy);
-public:
-    // This must be called during initialization (before we create
-    // other threads).
-    static void init();
+  STATIC_ONLY(SecurityPolicy);
 
-    // True if the referrer should be omitted according to the
-    // ReferrerPolicyNoReferrerWhenDowngrade. If you intend to send a
-    // referrer header, you should use generateReferrer instead.
-    static bool shouldHideReferrer(const KURL&, const String& referrer);
+ public:
+  // This must be called during initialization (before we create
+  // other threads).
+  static void init();
 
-    // Returns the referrer modified according to the referrer policy for a
-    // navigation to a given URL. If the referrer returned is empty, the
-    // referrer header should be omitted.
-    static Referrer generateReferrer(ReferrerPolicy, const KURL&, const String& referrer);
+  // True if the referrer should be omitted according to the
+  // ReferrerPolicyNoReferrerWhenDowngrade. If you intend to send a
+  // referrer header, you should use generateReferrer instead.
+  static bool shouldHideReferrer(const KURL&, const String& referrer);
 
-    static void addOriginAccessWhitelistEntry(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomain, bool allowDestinationSubdomains);
-    static void removeOriginAccessWhitelistEntry(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomain, bool allowDestinationSubdomains);
-    static void resetOriginAccessWhitelists();
+  // Returns the referrer modified according to the referrer policy for a
+  // navigation to a given URL. If the referrer returned is empty, the
+  // referrer header should be omitted.
+  static Referrer generateReferrer(ReferrerPolicy,
+                                   const KURL&,
+                                   const String& referrer);
 
-    static bool isAccessWhiteListed(const SecurityOrigin* activeOrigin, const SecurityOrigin* targetOrigin);
-    static bool isAccessToURLWhiteListed(const SecurityOrigin* activeOrigin, const KURL&);
+  static void addOriginAccessWhitelistEntry(const SecurityOrigin& sourceOrigin,
+                                            const String& destinationProtocol,
+                                            const String& destinationDomain,
+                                            bool allowDestinationSubdomains);
+  static void removeOriginAccessWhitelistEntry(
+      const SecurityOrigin& sourceOrigin,
+      const String& destinationProtocol,
+      const String& destinationDomain,
+      bool allowDestinationSubdomains);
+  static void resetOriginAccessWhitelists();
 
-    static void addOriginTrustworthyWhiteList(PassRefPtr<SecurityOrigin>);
-    static bool isOriginWhiteListedTrustworthy(const SecurityOrigin&);
+  static bool isAccessWhiteListed(const SecurityOrigin* activeOrigin,
+                                  const SecurityOrigin* targetOrigin);
+  static bool isAccessToURLWhiteListed(const SecurityOrigin* activeOrigin,
+                                       const KURL&);
 
-    static bool referrerPolicyFromString(const String& policy, ReferrerPolicy* result);
-    static bool referrerPolicyFromStringWithLegacyKeywords(const String& policy, ReferrerPolicy* result);
+  static void addOriginTrustworthyWhiteList(PassRefPtr<SecurityOrigin>);
+  static bool isOriginWhiteListedTrustworthy(const SecurityOrigin&);
+
+  static bool referrerPolicyFromString(const String& policy,
+                                       ReferrerPolicy* result);
+  static bool referrerPolicyFromStringWithLegacyKeywords(
+      const String& policy,
+      ReferrerPolicy* result);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SecurityPolicy_h
+#endif  // SecurityPolicy_h

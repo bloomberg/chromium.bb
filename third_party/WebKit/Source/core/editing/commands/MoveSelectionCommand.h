@@ -33,26 +33,32 @@ namespace blink {
 class DocumentFragment;
 
 class MoveSelectionCommand final : public CompositeEditCommand {
-public:
-    static MoveSelectionCommand* create(DocumentFragment* fragment, const Position& position, bool smartInsert = false, bool smartDelete = false)
-    {
-        return new MoveSelectionCommand(fragment, position, smartInsert, smartDelete);
-    }
+ public:
+  static MoveSelectionCommand* create(DocumentFragment* fragment,
+                                      const Position& position,
+                                      bool smartInsert = false,
+                                      bool smartDelete = false) {
+    return new MoveSelectionCommand(fragment, position, smartInsert,
+                                    smartDelete);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    MoveSelectionCommand(DocumentFragment*, const Position&, bool smartInsert, bool smartDelete);
+ private:
+  MoveSelectionCommand(DocumentFragment*,
+                       const Position&,
+                       bool smartInsert,
+                       bool smartDelete);
 
-    void doApply(EditingState*) override;
-    InputEvent::InputType inputType() const override;
+  void doApply(EditingState*) override;
+  InputEvent::InputType inputType() const override;
 
-    Member<DocumentFragment> m_fragment;
-    Position m_position;
-    bool m_smartInsert;
-    bool m_smartDelete;
+  Member<DocumentFragment> m_fragment;
+  Position m_position;
+  bool m_smartInsert;
+  bool m_smartDelete;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MoveSelectionCommand_h
+#endif  // MoveSelectionCommand_h

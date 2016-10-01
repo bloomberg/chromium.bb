@@ -31,30 +31,26 @@
 
 namespace blink {
 
-DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
-    : m_frame(frame)
-{
-    // FIXME: For now it *is* acceptable for a DOMWindowProperty to be created with a null frame.
-    // See fast/dom/navigator-detached-no-crash.html for the recipe.
-    // We should fix that.  <rdar://problem/11567132>
-    if (m_frame) {
-        // FIXME: Need to figure out what to do with DOMWindowProperties on
-        // remote DOM windows.
-        m_frame->localDOMWindow()->registerProperty(this);
-    }
+DOMWindowProperty::DOMWindowProperty(LocalFrame* frame) : m_frame(frame) {
+  // FIXME: For now it *is* acceptable for a DOMWindowProperty to be created with a null frame.
+  // See fast/dom/navigator-detached-no-crash.html for the recipe.
+  // We should fix that.  <rdar://problem/11567132>
+  if (m_frame) {
+    // FIXME: Need to figure out what to do with DOMWindowProperties on
+    // remote DOM windows.
+    m_frame->localDOMWindow()->registerProperty(this);
+  }
 }
 
-void DOMWindowProperty::frameDestroyed()
-{
-    // If the property is getting this callback it must have been
-    // created with a LocalFrame and it should still have it.
-    ASSERT(m_frame);
-    m_frame = nullptr;
+void DOMWindowProperty::frameDestroyed() {
+  // If the property is getting this callback it must have been
+  // created with a LocalFrame and it should still have it.
+  ASSERT(m_frame);
+  m_frame = nullptr;
 }
 
-DEFINE_TRACE(DOMWindowProperty)
-{
-    visitor->trace(m_frame);
+DEFINE_TRACE(DOMWindowProperty) {
+  visitor->trace(m_frame);
 }
 
-} // namespace blink
+}  // namespace blink

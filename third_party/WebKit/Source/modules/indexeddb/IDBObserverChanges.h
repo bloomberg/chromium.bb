@@ -17,29 +17,36 @@ namespace blink {
 
 class ScriptState;
 
-class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static IDBObserverChanges* create(IDBDatabase*, const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
+class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
+                                 public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DECLARE_TRACE();
+ public:
+  static IDBObserverChanges* create(IDBDatabase*,
+                                    const WebVector<WebIDBObservation>&,
+                                    const WebVector<int32_t>& observationIndex);
 
-    // Implement IDL
-    IDBTransaction* transaction() const { return m_transaction.get(); }
-    IDBDatabase* database() const { return m_database.get(); }
-    ScriptValue records(ScriptState*);
+  DECLARE_TRACE();
 
-private:
-    IDBObserverChanges(IDBDatabase*, const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
+  // Implement IDL
+  IDBTransaction* transaction() const { return m_transaction.get(); }
+  IDBDatabase* database() const { return m_database.get(); }
+  ScriptValue records(ScriptState*);
 
-    void extractChanges(const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
+ private:
+  IDBObserverChanges(IDBDatabase*,
+                     const WebVector<WebIDBObservation>&,
+                     const WebVector<int32_t>& observationIndex);
 
-    Member<IDBDatabase> m_database;
-    Member<IDBTransaction> m_transaction;
-    // Map objectStoreId to IDBObservation list.
-    HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> m_records;
+  void extractChanges(const WebVector<WebIDBObservation>&,
+                      const WebVector<int32_t>& observationIndex);
+
+  Member<IDBDatabase> m_database;
+  Member<IDBTransaction> m_transaction;
+  // Map objectStoreId to IDBObservation list.
+  HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> m_records;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBObserverChanges_h
+#endif  // IDBObserverChanges_h

@@ -12,11 +12,11 @@
 namespace blink {
 
 class ThreadedWorkletGlobalScopeProxy : public WorkletGlobalScopeProxy {
-public:
-    void evaluateScript(const ScriptSourceCode&) final {}
-    void terminateWorkletGlobalScope() final {}
+ public:
+  void evaluateScript(const ScriptSourceCode&) final {}
+  void terminateWorkletGlobalScope() final {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ThreadedWorkletGlobalScopeProxy_h
+#endif  // ThreadedWorkletGlobalScopeProxy_h

@@ -35,18 +35,18 @@ namespace blink {
 class LocalFrame;
 
 class EditorClient {
-public:
-    virtual ~EditorClient() { }
+ public:
+  virtual ~EditorClient() {}
 
-    virtual void respondToChangedContents() = 0;
-    virtual void respondToChangedSelection(LocalFrame*, SelectionType) = 0;
+  virtual void respondToChangedContents() = 0;
+  virtual void respondToChangedSelection(LocalFrame*, SelectionType) = 0;
 
-    virtual bool canCopyCut(LocalFrame*, bool defaultValue) const = 0;
-    virtual bool canPaste(LocalFrame*, bool defaultValue) const = 0;
+  virtual bool canCopyCut(LocalFrame*, bool defaultValue) const = 0;
+  virtual bool canPaste(LocalFrame*, bool defaultValue) const = 0;
 
-    virtual bool handleKeyboardEvent(LocalFrame*) = 0;
+  virtual bool handleKeyboardEvent(LocalFrame*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EditorClient_h
+#endif  // EditorClient_h

@@ -15,27 +15,27 @@
 namespace blink {
 
 class CORE_EXPORT SizesAttributeParser {
-    STACK_ALLOCATED();
-public:
-    SizesAttributeParser(MediaValues*, const String&);
+  STACK_ALLOCATED();
 
-    float length();
+ public:
+  SizesAttributeParser(MediaValues*, const String&);
 
-private:
-    bool parse(CSSParserTokenRange);
-    float effectiveSize();
-    bool calculateLengthInPixels(CSSParserTokenRange, float& result);
-    bool mediaConditionMatches(MediaQuerySet* mediaCondition);
-    unsigned effectiveSizeDefaultValue();
+  float length();
 
-    Member<MediaQuerySet> m_mediaCondition;
-    Member<MediaValues> m_mediaValues;
-    float m_length;
-    bool m_lengthWasSet;
-    bool m_isValid;
+ private:
+  bool parse(CSSParserTokenRange);
+  float effectiveSize();
+  bool calculateLengthInPixels(CSSParserTokenRange, float& result);
+  bool mediaConditionMatches(MediaQuerySet* mediaCondition);
+  unsigned effectiveSizeDefaultValue();
+
+  Member<MediaQuerySet> m_mediaCondition;
+  Member<MediaValues> m_mediaValues;
+  float m_length;
+  bool m_lengthWasSet;
+  bool m_isValid;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

@@ -25,140 +25,141 @@
 
 namespace blink {
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPathMethodType>()
-{
-    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-    if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGTextPathMethodAlign, "align"));
-        entries.append(std::make_pair(SVGTextPathMethodStretch, "stretch"));
-    }
-    return entries;
+template <>
+const SVGEnumerationStringEntries&
+getStaticStringEntries<SVGTextPathMethodType>() {
+  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+  if (entries.isEmpty()) {
+    entries.append(std::make_pair(SVGTextPathMethodAlign, "align"));
+    entries.append(std::make_pair(SVGTextPathMethodStretch, "stretch"));
+  }
+  return entries;
 }
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPathSpacingType>()
-{
-    DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-    if (entries.isEmpty()) {
-        entries.append(std::make_pair(SVGTextPathSpacingAuto, "auto"));
-        entries.append(std::make_pair(SVGTextPathSpacingExact, "exact"));
-    }
-    return entries;
+template <>
+const SVGEnumerationStringEntries&
+getStaticStringEntries<SVGTextPathSpacingType>() {
+  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
+  if (entries.isEmpty()) {
+    entries.append(std::make_pair(SVGTextPathSpacingAuto, "auto"));
+    entries.append(std::make_pair(SVGTextPathSpacingExact, "exact"));
+  }
+  return entries;
 }
 
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
-    : SVGTextContentElement(SVGNames::textPathTag, document)
-    , SVGURIReference(this)
-    , m_startOffset(SVGAnimatedLength::create(this, SVGNames::startOffsetAttr, SVGLength::create(SVGLengthMode::Width)))
-    , m_method(SVGAnimatedEnumeration<SVGTextPathMethodType>::create(this, SVGNames::methodAttr, SVGTextPathMethodAlign))
-    , m_spacing(SVGAnimatedEnumeration<SVGTextPathSpacingType>::create(this, SVGNames::spacingAttr, SVGTextPathSpacingExact))
-{
-    addToPropertyMap(m_startOffset);
-    addToPropertyMap(m_method);
-    addToPropertyMap(m_spacing);
+    : SVGTextContentElement(SVGNames::textPathTag, document),
+      SVGURIReference(this),
+      m_startOffset(
+          SVGAnimatedLength::create(this,
+                                    SVGNames::startOffsetAttr,
+                                    SVGLength::create(SVGLengthMode::Width))),
+      m_method(SVGAnimatedEnumeration<SVGTextPathMethodType>::create(
+          this,
+          SVGNames::methodAttr,
+          SVGTextPathMethodAlign)),
+      m_spacing(SVGAnimatedEnumeration<SVGTextPathSpacingType>::create(
+          this,
+          SVGNames::spacingAttr,
+          SVGTextPathSpacingExact)) {
+  addToPropertyMap(m_startOffset);
+  addToPropertyMap(m_method);
+  addToPropertyMap(m_spacing);
 }
 
 DEFINE_NODE_FACTORY(SVGTextPathElement)
 
-SVGTextPathElement::~SVGTextPathElement()
-{
+SVGTextPathElement::~SVGTextPathElement() {}
+
+DEFINE_TRACE(SVGTextPathElement) {
+  visitor->trace(m_startOffset);
+  visitor->trace(m_method);
+  visitor->trace(m_spacing);
+  SVGTextContentElement::trace(visitor);
+  SVGURIReference::trace(visitor);
 }
 
-DEFINE_TRACE(SVGTextPathElement)
-{
-    visitor->trace(m_startOffset);
-    visitor->trace(m_method);
-    visitor->trace(m_spacing);
-    SVGTextContentElement::trace(visitor);
-    SVGURIReference::trace(visitor);
+void SVGTextPathElement::clearResourceReferences() {
+  removeAllOutgoingReferences();
 }
 
-void SVGTextPathElement::clearResourceReferences()
-{
-    removeAllOutgoingReferences();
-}
-
-void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (SVGURIReference::isKnownAttribute(attrName)) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
-        buildPendingResource();
-        return;
-    }
-
-    if (attrName == SVGNames::startOffsetAttr)
-        updateRelativeLengthsInformation();
-
-    if (attrName == SVGNames::startOffsetAttr
-        || attrName == SVGNames::methodAttr
-        || attrName == SVGNames::spacingAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
-        if (LayoutObject* object = layoutObject())
-            markForLayoutAndParentResourceInvalidation(object);
-
-        return;
-    }
-
-    SVGTextContentElement::svgAttributeChanged(attrName);
-}
-
-LayoutObject* SVGTextPathElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutSVGTextPath(this);
-}
-
-bool SVGTextPathElement::layoutObjectIsNeeded(const ComputedStyle& style)
-{
-    if (parentNode() && (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
-        return Element::layoutObjectIsNeeded(style);
-
-    return false;
-}
-
-void SVGTextPathElement::buildPendingResource()
-{
-    clearResourceReferences();
-    if (!isConnected())
-        return;
-
-    AtomicString id;
-    Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), treeScope(), &id);
-    if (!target) {
-        // Do not register as pending if we are already pending this resource.
-        if (document().accessSVGExtensions().isElementPendingResource(this, id))
-            return;
-
-        if (!id.isEmpty()) {
-            document().accessSVGExtensions().addPendingResource(id, this);
-            ASSERT(hasPendingResources());
-        }
-    } else if (isSVGPathElement(*target)) {
-        // Register us with the target in the dependencies map. Any change of hrefElement
-        // that leads to relayout/repainting now informs us, so we can react to it.
-        addReferenceTo(toSVGElement((target)));
-    }
-
-    if (LayoutObject* layoutObject = this->layoutObject())
-        markForLayoutAndParentResourceInvalidation(layoutObject);
-}
-
-Node::InsertionNotificationRequest SVGTextPathElement::insertedInto(ContainerNode* rootParent)
-{
-    SVGTextContentElement::insertedInto(rootParent);
+void SVGTextPathElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (SVGURIReference::isKnownAttribute(attrName)) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
     buildPendingResource();
-    return InsertionDone;
+    return;
+  }
+
+  if (attrName == SVGNames::startOffsetAttr)
+    updateRelativeLengthsInformation();
+
+  if (attrName == SVGNames::startOffsetAttr ||
+      attrName == SVGNames::methodAttr || attrName == SVGNames::spacingAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
+    if (LayoutObject* object = layoutObject())
+      markForLayoutAndParentResourceInvalidation(object);
+
+    return;
+  }
+
+  SVGTextContentElement::svgAttributeChanged(attrName);
 }
 
-void SVGTextPathElement::removedFrom(ContainerNode* rootParent)
-{
-    SVGTextContentElement::removedFrom(rootParent);
-    if (rootParent->isConnected())
-        clearResourceReferences();
+LayoutObject* SVGTextPathElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutSVGTextPath(this);
 }
 
-bool SVGTextPathElement::selfHasRelativeLengths() const
-{
-    return m_startOffset->currentValue()->isRelative()
-        || SVGTextContentElement::selfHasRelativeLengths();
+bool SVGTextPathElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+  if (parentNode() &&
+      (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode())))
+    return Element::layoutObjectIsNeeded(style);
+
+  return false;
 }
 
-} // namespace blink
+void SVGTextPathElement::buildPendingResource() {
+  clearResourceReferences();
+  if (!isConnected())
+    return;
+
+  AtomicString id;
+  Element* target = SVGURIReference::targetElementFromIRIString(
+      hrefString(), treeScope(), &id);
+  if (!target) {
+    // Do not register as pending if we are already pending this resource.
+    if (document().accessSVGExtensions().isElementPendingResource(this, id))
+      return;
+
+    if (!id.isEmpty()) {
+      document().accessSVGExtensions().addPendingResource(id, this);
+      ASSERT(hasPendingResources());
+    }
+  } else if (isSVGPathElement(*target)) {
+    // Register us with the target in the dependencies map. Any change of hrefElement
+    // that leads to relayout/repainting now informs us, so we can react to it.
+    addReferenceTo(toSVGElement((target)));
+  }
+
+  if (LayoutObject* layoutObject = this->layoutObject())
+    markForLayoutAndParentResourceInvalidation(layoutObject);
+}
+
+Node::InsertionNotificationRequest SVGTextPathElement::insertedInto(
+    ContainerNode* rootParent) {
+  SVGTextContentElement::insertedInto(rootParent);
+  buildPendingResource();
+  return InsertionDone;
+}
+
+void SVGTextPathElement::removedFrom(ContainerNode* rootParent) {
+  SVGTextContentElement::removedFrom(rootParent);
+  if (rootParent->isConnected())
+    clearResourceReferences();
+}
+
+bool SVGTextPathElement::selfHasRelativeLengths() const {
+  return m_startOffset->currentValue()->isRelative() ||
+         SVGTextContentElement::selfHasRelativeLengths();
+}
+
+}  // namespace blink

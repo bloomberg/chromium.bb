@@ -28,14 +28,15 @@
 namespace blink {
 
 class HTMLDListElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLDListElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit HTMLDListElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLDListElement);
+
+ private:
+  explicit HTMLDListElement(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLDListElement_h
+#endif  // HTMLDListElement_h

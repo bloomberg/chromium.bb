@@ -35,20 +35,29 @@ namespace blink {
 class CSSStyleSheetResource;
 
 class CORE_EXPORT StyleSheetResourceClient : public ResourceClient {
-public:
-    static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == StyleSheetType; }
-    ResourceClientType getResourceClientType() const final { return StyleSheetType; }
-    virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) {}
-    virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) {}
+ public:
+  static bool isExpectedType(ResourceClient* client) {
+    return client->getResourceClientType() == StyleSheetType;
+  }
+  ResourceClientType getResourceClientType() const final {
+    return StyleSheetType;
+  }
+  virtual void setCSSStyleSheet(const String& /* href */,
+                                const KURL& /* baseURL */,
+                                const String& /* charset */,
+                                const CSSStyleSheetResource*) {}
+  virtual void setXSLStyleSheet(const String& /* href */,
+                                const KURL& /* baseURL */,
+                                const String& /* sheet */) {}
 
-    // This gets called on the very first appendData call for the
-    // CSSStyleSheetResource. Note this is not called for StyleSheetResources
-    // other than CSSStyleSheetResources.
-    virtual void didAppendFirstData(const CSSStyleSheetResource*) {}
+  // This gets called on the very first appendData call for the
+  // CSSStyleSheetResource. Note this is not called for StyleSheetResources
+  // other than CSSStyleSheetResources.
+  virtual void didAppendFirstData(const CSSStyleSheetResource*) {}
 
-    DEFINE_INLINE_TRACE() { ResourceClient::trace(visitor); }
+  DEFINE_INLINE_TRACE() { ResourceClient::trace(visitor); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleSheetResourceClient_h
+#endif  // StyleSheetResourceClient_h

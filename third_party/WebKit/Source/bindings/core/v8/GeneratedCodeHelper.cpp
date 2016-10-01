@@ -9,21 +9,24 @@
 
 namespace blink {
 
-void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> data = info.Data();
-    DCHECK(data->IsExternal());
-    V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-    if (!perContextData)
-        return;
-    v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
+void v8ConstructorAttributeGetter(
+    v8::Local<v8::Name> propertyName,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Value> data = info.Data();
+  DCHECK(data->IsExternal());
+  V8PerContextData* perContextData =
+      V8PerContextData::from(info.Holder()->CreationContext());
+  if (!perContextData)
+    return;
+  v8SetReturnValue(
+      info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
 }
 
-v8::Local<v8::Value> v8Deserialize(v8::Isolate* isolate, PassRefPtr<SerializedScriptValue> value)
-{
-    if (value)
-        return value->deserialize();
-    return v8::Null(isolate);
+v8::Local<v8::Value> v8Deserialize(v8::Isolate* isolate,
+                                   PassRefPtr<SerializedScriptValue> value) {
+  if (value)
+    return value->deserialize();
+  return v8::Null(isolate);
 }
 
-} // namespace blink
+}  // namespace blink

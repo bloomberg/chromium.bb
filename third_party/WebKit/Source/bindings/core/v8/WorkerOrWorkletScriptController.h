@@ -48,72 +48,88 @@ class ExceptionState;
 class ScriptSourceCode;
 class WorkerOrWorkletGlobalScope;
 
-class CORE_EXPORT WorkerOrWorkletScriptController : public GarbageCollectedFinalized<WorkerOrWorkletScriptController> {
-    WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
-public:
-    static WorkerOrWorkletScriptController* create(WorkerOrWorkletGlobalScope*, v8::Isolate*);
-    virtual ~WorkerOrWorkletScriptController();
-    void dispose();
+class CORE_EXPORT WorkerOrWorkletScriptController
+    : public GarbageCollectedFinalized<WorkerOrWorkletScriptController> {
+  WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
 
-    bool isExecutionForbidden() const;
+ public:
+  static WorkerOrWorkletScriptController* create(WorkerOrWorkletGlobalScope*,
+                                                 v8::Isolate*);
+  virtual ~WorkerOrWorkletScriptController();
+  void dispose();
 
-    // Returns true if the evaluation completed with no uncaught exception.
-    bool evaluate(const ScriptSourceCode&, ErrorEvent** = nullptr, CachedMetadataHandler* = nullptr, V8CacheOptions = V8CacheOptionsDefault);
+  bool isExecutionForbidden() const;
 
-    // Prevents future JavaScript execution.
-    void forbidExecution();
+  // Returns true if the evaluation completed with no uncaught exception.
+  bool evaluate(const ScriptSourceCode&,
+                ErrorEvent** = nullptr,
+                CachedMetadataHandler* = nullptr,
+                V8CacheOptions = V8CacheOptionsDefault);
 
-    // Used by WorkerThread. Returns true if the context is successfully
-    // initialized or already initialized.
-    bool initializeContextIfNeeded();
+  // Prevents future JavaScript execution.
+  void forbidExecution();
 
-    // Used by WorkerGlobalScope:
-    void rethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
-    void disableEval(const String&);
+  // Used by WorkerThread. Returns true if the context is successfully
+  // initialized or already initialized.
+  bool initializeContextIfNeeded();
 
-    // Used by Inspector agents:
-    ScriptState* getScriptState() { return m_scriptState.get(); }
+  // Used by WorkerGlobalScope:
+  void rethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
+  void disableEval(const String&);
 
-    // Used by V8 bindings:
-    v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
+  // Used by Inspector agents:
+  ScriptState* getScriptState() { return m_scriptState.get(); }
 
-    RejectedPromises* getRejectedPromises() const { return m_rejectedPromises.get(); }
+  // Used by V8 bindings:
+  v8::Local<v8::Context> context() {
+    return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>();
+  }
 
-    DECLARE_TRACE();
+  RejectedPromises* getRejectedPromises() const {
+    return m_rejectedPromises.get();
+  }
 
-    bool isContextInitialized() const { return m_scriptState && !!m_scriptState->perContextData(); }
+  DECLARE_TRACE();
 
-private:
-    WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
-    class ExecutionState;
+  bool isContextInitialized() const {
+    return m_scriptState && !!m_scriptState->perContextData();
+  }
 
-    // Evaluate a script file in the current execution environment.
-    ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
-    void disposeContextIfNeeded();
+ private:
+  WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
+  class ExecutionState;
 
-    Member<WorkerOrWorkletGlobalScope> m_globalScope;
+  // Evaluate a script file in the current execution environment.
+  ScriptValue evaluate(const String& script,
+                       const String& fileName,
+                       const TextPosition& scriptStartPosition,
+                       CachedMetadataHandler*,
+                       V8CacheOptions);
+  void disposeContextIfNeeded();
 
-    // The v8 isolate associated to the (worker or worklet) global scope. For
-    // workers this should be the worker thread's isolate, while for worklets
-    // usually the main thread's isolate is used.
-    v8::Isolate* m_isolate;
+  Member<WorkerOrWorkletGlobalScope> m_globalScope;
 
-    RefPtr<ScriptState> m_scriptState;
-    RefPtr<DOMWrapperWorld> m_world;
-    String m_disableEvalPending;
-    bool m_executionForbidden;
+  // The v8 isolate associated to the (worker or worklet) global scope. For
+  // workers this should be the worker thread's isolate, while for worklets
+  // usually the main thread's isolate is used.
+  v8::Isolate* m_isolate;
 
-    RefPtr<RejectedPromises> m_rejectedPromises;
+  RefPtr<ScriptState> m_scriptState;
+  RefPtr<DOMWrapperWorld> m_world;
+  String m_disableEvalPending;
+  bool m_executionForbidden;
 
-    // |m_executionState| refers to a stack object that evaluate() allocates;
-    // evaluate() ensuring that the pointer reference to it is removed upon
-    // returning. Hence kept as a bare pointer here, and not a Persistent with
-    // Oilpan enabled; stack scanning will visit the object and
-    // trace its on-heap fields.
-    GC_PLUGIN_IGNORE("394615")
-    ExecutionState* m_executionState;
+  RefPtr<RejectedPromises> m_rejectedPromises;
+
+  // |m_executionState| refers to a stack object that evaluate() allocates;
+  // evaluate() ensuring that the pointer reference to it is removed upon
+  // returning. Hence kept as a bare pointer here, and not a Persistent with
+  // Oilpan enabled; stack scanning will visit the object and
+  // trace its on-heap fields.
+  GC_PLUGIN_IGNORE("394615")
+  ExecutionState* m_executionState;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerOrWorkletScriptController_h
+#endif  // WorkerOrWorkletScriptController_h

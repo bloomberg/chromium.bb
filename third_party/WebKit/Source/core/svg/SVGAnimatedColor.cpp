@@ -27,81 +27,98 @@
 namespace blink {
 
 SVGColorProperty::SVGColorProperty(const String& colorString)
-    : m_styleColor(StyleColor::currentColor())
-{
-    Color color;
-    if (CSSParser::parseColor(color, colorString.stripWhiteSpace()))
-        m_styleColor = color;
+    : m_styleColor(StyleColor::currentColor()) {
+  Color color;
+  if (CSSParser::parseColor(color, colorString.stripWhiteSpace()))
+    m_styleColor = color;
 }
 
-String SVGColorProperty::valueAsString() const
-{
-    return m_styleColor.isCurrentColor() ? "currentColor" : m_styleColor.getColor().serializedAsCSSComponentValue();
+String SVGColorProperty::valueAsString() const {
+  return m_styleColor.isCurrentColor()
+             ? "currentColor"
+             : m_styleColor.getColor().serializedAsCSSComponentValue();
 }
 
-SVGPropertyBase* SVGColorProperty::cloneForAnimation(const String&) const
-{
-    // SVGAnimatedColor is deprecated. So No SVG DOM animation.
-    ASSERT_NOT_REACHED();
-    return nullptr;
+SVGPropertyBase* SVGColorProperty::cloneForAnimation(const String&) const {
+  // SVGAnimatedColor is deprecated. So No SVG DOM animation.
+  ASSERT_NOT_REACHED();
+  return nullptr;
 }
 
-static inline Color fallbackColorForCurrentColor(SVGElement* targetElement)
-{
-    ASSERT(targetElement);
-    if (LayoutObject* targetLayoutObject = targetElement->layoutObject())
-        return targetLayoutObject->resolveColor(CSSPropertyColor);
-    return Color::transparent;
+static inline Color fallbackColorForCurrentColor(SVGElement* targetElement) {
+  ASSERT(targetElement);
+  if (LayoutObject* targetLayoutObject = targetElement->layoutObject())
+    return targetLayoutObject->resolveColor(CSSPropertyColor);
+  return Color::transparent;
 }
 
-void SVGColorProperty::add(SVGPropertyBase* other, SVGElement* contextElement)
-{
-    ASSERT(contextElement);
+void SVGColorProperty::add(SVGPropertyBase* other, SVGElement* contextElement) {
+  ASSERT(contextElement);
 
-    Color fallbackColor = fallbackColorForCurrentColor(contextElement);
-    Color fromColor = toSVGColorProperty(other)->m_styleColor.resolve(fallbackColor);
-    Color toColor = m_styleColor.resolve(fallbackColor);
-    m_styleColor = StyleColor(ColorDistance::addColors(fromColor, toColor));
+  Color fallbackColor = fallbackColorForCurrentColor(contextElement);
+  Color fromColor =
+      toSVGColorProperty(other)->m_styleColor.resolve(fallbackColor);
+  Color toColor = m_styleColor.resolve(fallbackColor);
+  m_styleColor = StyleColor(ColorDistance::addColors(fromColor, toColor));
 }
 
-void SVGColorProperty::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement)
-{
-    StyleColor fromStyleColor = toSVGColorProperty(fromValue)->m_styleColor;
-    StyleColor toStyleColor = toSVGColorProperty(toValue)->m_styleColor;
-    StyleColor toAtEndOfDurationStyleColor = toSVGColorProperty(toAtEndOfDurationValue)->m_styleColor;
+void SVGColorProperty::calculateAnimatedValue(
+    SVGAnimationElement* animationElement,
+    float percentage,
+    unsigned repeatCount,
+    SVGPropertyBase* fromValue,
+    SVGPropertyBase* toValue,
+    SVGPropertyBase* toAtEndOfDurationValue,
+    SVGElement* contextElement) {
+  StyleColor fromStyleColor = toSVGColorProperty(fromValue)->m_styleColor;
+  StyleColor toStyleColor = toSVGColorProperty(toValue)->m_styleColor;
+  StyleColor toAtEndOfDurationStyleColor =
+      toSVGColorProperty(toAtEndOfDurationValue)->m_styleColor;
 
-    // Apply currentColor rules.
-    ASSERT(contextElement);
-    Color fallbackColor = fallbackColorForCurrentColor(contextElement);
-    Color fromColor = fromStyleColor.resolve(fallbackColor);
-    Color toColor = toStyleColor.resolve(fallbackColor);
-    Color toAtEndOfDurationColor = toAtEndOfDurationStyleColor.resolve(fallbackColor);
-    Color animatedColor = m_styleColor.resolve(fallbackColor);
+  // Apply currentColor rules.
+  ASSERT(contextElement);
+  Color fallbackColor = fallbackColorForCurrentColor(contextElement);
+  Color fromColor = fromStyleColor.resolve(fallbackColor);
+  Color toColor = toStyleColor.resolve(fallbackColor);
+  Color toAtEndOfDurationColor =
+      toAtEndOfDurationStyleColor.resolve(fallbackColor);
+  Color animatedColor = m_styleColor.resolve(fallbackColor);
 
-    ASSERT(animationElement);
-    float animatedRed = animatedColor.red();
-    animationElement->animateAdditiveNumber(percentage, repeatCount, fromColor.red(), toColor.red(), toAtEndOfDurationColor.red(), animatedRed);
+  ASSERT(animationElement);
+  float animatedRed = animatedColor.red();
+  animationElement->animateAdditiveNumber(
+      percentage, repeatCount, fromColor.red(), toColor.red(),
+      toAtEndOfDurationColor.red(), animatedRed);
 
-    float animatedGreen = animatedColor.green();
-    animationElement->animateAdditiveNumber(percentage, repeatCount, fromColor.green(), toColor.green(), toAtEndOfDurationColor.green(), animatedGreen);
+  float animatedGreen = animatedColor.green();
+  animationElement->animateAdditiveNumber(
+      percentage, repeatCount, fromColor.green(), toColor.green(),
+      toAtEndOfDurationColor.green(), animatedGreen);
 
-    float animatedBlue = animatedColor.blue();
-    animationElement->animateAdditiveNumber(percentage, repeatCount, fromColor.blue(), toColor.blue(), toAtEndOfDurationColor.blue(), animatedBlue);
+  float animatedBlue = animatedColor.blue();
+  animationElement->animateAdditiveNumber(
+      percentage, repeatCount, fromColor.blue(), toColor.blue(),
+      toAtEndOfDurationColor.blue(), animatedBlue);
 
-    float animatedAlpha = animatedColor.alpha();
-    animationElement->animateAdditiveNumber(percentage, repeatCount, fromColor.alpha(), toColor.alpha(), toAtEndOfDurationColor.alpha(), animatedAlpha);
+  float animatedAlpha = animatedColor.alpha();
+  animationElement->animateAdditiveNumber(
+      percentage, repeatCount, fromColor.alpha(), toColor.alpha(),
+      toAtEndOfDurationColor.alpha(), animatedAlpha);
 
-    m_styleColor = StyleColor(makeRGBA(roundf(animatedRed), roundf(animatedGreen), roundf(animatedBlue), roundf(animatedAlpha)));
+  m_styleColor =
+      StyleColor(makeRGBA(roundf(animatedRed), roundf(animatedGreen),
+                          roundf(animatedBlue), roundf(animatedAlpha)));
 }
 
-float SVGColorProperty::calculateDistance(SVGPropertyBase* toValue, SVGElement* contextElement)
-{
-    ASSERT(contextElement);
-    Color fallbackColor = fallbackColorForCurrentColor(contextElement);
+float SVGColorProperty::calculateDistance(SVGPropertyBase* toValue,
+                                          SVGElement* contextElement) {
+  ASSERT(contextElement);
+  Color fallbackColor = fallbackColorForCurrentColor(contextElement);
 
-    Color fromColor = m_styleColor.resolve(fallbackColor);
-    Color toColor = toSVGColorProperty(toValue)->m_styleColor.resolve(fallbackColor);
-    return ColorDistance::distance(fromColor, toColor);
+  Color fromColor = m_styleColor.resolve(fallbackColor);
+  Color toColor =
+      toSVGColorProperty(toValue)->m_styleColor.resolve(fallbackColor);
+  return ColorDistance::distance(fromColor, toColor);
 }
 
-} // namespace blink
+}  // namespace blink

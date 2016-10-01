@@ -8,19 +8,15 @@
 
 namespace blink {
 
-DOMPoint* DOMPoint::create(const DOMPointInit& point)
-{
-    return new DOMPoint(point.x(), point.y(), point.z(), point.w());
+DOMPoint* DOMPoint::create(const DOMPointInit& point) {
+  return new DOMPoint(point.x(), point.y(), point.z(), point.w());
 }
 
-DOMPoint* DOMPoint::create(double x, double y, double z, double w)
-{
-    return new DOMPoint(x, y, z, w);
+DOMPoint* DOMPoint::create(double x, double y, double z, double w) {
+  return new DOMPoint(x, y, z, w);
 }
 
 DOMPoint::DOMPoint(double x, double y, double z, double w)
-    : DOMPointReadOnly(x, y, z, w)
-{
-}
+    : DOMPointReadOnly(x, y, z, w) {}
 
-} // namespace blink
+}  // namespace blink

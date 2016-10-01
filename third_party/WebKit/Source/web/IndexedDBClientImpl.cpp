@@ -41,29 +41,31 @@
 
 namespace blink {
 
-IndexedDBClient* IndexedDBClientImpl::create()
-{
-    return new IndexedDBClientImpl();
+IndexedDBClient* IndexedDBClientImpl::create() {
+  return new IndexedDBClientImpl();
 }
 
-bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context, const String& name)
-{
-    DCHECK(context->isContextThread());
-    ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() || context->isWorkerGlobalScope());
+bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context,
+                                         const String& name) {
+  DCHECK(context->isContextThread());
+  ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() ||
+                                   context->isWorkerGlobalScope());
 
-    if (context->isDocument()) {
-        WebSecurityOrigin origin(context->getSecurityOrigin());
-        Document* document = toDocument(context);
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-        if (!webFrame)
-            return false;
-        if (webFrame->contentSettingsClient())
-            return webFrame->contentSettingsClient()->allowIndexedDB(name, origin);
-        return true;
-    }
+  if (context->isDocument()) {
+    WebSecurityOrigin origin(context->getSecurityOrigin());
+    Document* document = toDocument(context);
+    WebLocalFrameImpl* webFrame =
+        WebLocalFrameImpl::fromFrame(document->frame());
+    if (!webFrame)
+      return false;
+    if (webFrame->contentSettingsClient())
+      return webFrame->contentSettingsClient()->allowIndexedDB(name, origin);
+    return true;
+  }
 
-    WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);
-    return WorkerContentSettingsClient::from(workerGlobalScope)->allowIndexedDB(name);
+  WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);
+  return WorkerContentSettingsClient::from(workerGlobalScope)
+      ->allowIndexedDB(name);
 }
 
-} // namespace blink
+}  // namespace blink

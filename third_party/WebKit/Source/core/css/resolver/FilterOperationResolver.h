@@ -32,12 +32,14 @@ class CSSValue;
 class StyleResolverState;
 
 class FilterOperationResolver {
-    STATIC_ONLY(FilterOperationResolver);
-public:
-    static FilterOperation::OperationType filterOperationForType(CSSValueID);
-    static FilterOperations createFilterOperations(StyleResolverState&, const CSSValue&);
+  STATIC_ONLY(FilterOperationResolver);
+
+ public:
+  static FilterOperation::OperationType filterOperationForType(CSSValueID);
+  static FilterOperations createFilterOperations(StyleResolverState&,
+                                                 const CSSValue&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FilterOperationResolver_h
+#endif  // FilterOperationResolver_h

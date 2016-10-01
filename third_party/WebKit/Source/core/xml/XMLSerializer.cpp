@@ -25,11 +25,10 @@
 
 namespace blink {
 
-String XMLSerializer::serializeToString(Node* root)
-{
-    DCHECK(root);
-    MarkupAccumulator accumulator(DoNotResolveURLs, SerializationType::ForcedXML);
-    return serializeNodes<EditingStrategy>(accumulator, *root, IncludeNode);
+String XMLSerializer::serializeToString(Node* root) {
+  DCHECK(root);
+  MarkupAccumulator accumulator(DoNotResolveURLs, SerializationType::ForcedXML);
+  return serializeNodes<EditingStrategy>(accumulator, *root, IncludeNode);
 }
 
-} // namespace blink
+}  // namespace blink

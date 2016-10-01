@@ -15,31 +15,33 @@ class ExceptionState;
 class USBDevice;
 class USBInterface;
 
-class USBConfiguration
-    : public GarbageCollected<USBConfiguration>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static USBConfiguration* create(const USBDevice*, size_t configurationIndex);
-    static USBConfiguration* create(const USBDevice*, size_t configurationValue, ExceptionState&);
+class USBConfiguration : public GarbageCollected<USBConfiguration>,
+                         public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    USBConfiguration(const USBDevice*, size_t configurationIndex);
+ public:
+  static USBConfiguration* create(const USBDevice*, size_t configurationIndex);
+  static USBConfiguration* create(const USBDevice*,
+                                  size_t configurationValue,
+                                  ExceptionState&);
 
-    const USBDevice* device() const;
-    size_t index() const;
-    const device::usb::blink::ConfigurationInfo& info() const;
+  USBConfiguration(const USBDevice*, size_t configurationIndex);
 
-    uint8_t configurationValue() const { return info().configuration_value; }
-    String configurationName() const { return info().configuration_name; }
-    HeapVector<Member<USBInterface>> interfaces() const;
+  const USBDevice* device() const;
+  size_t index() const;
+  const device::usb::blink::ConfigurationInfo& info() const;
 
-    DECLARE_TRACE();
+  uint8_t configurationValue() const { return info().configuration_value; }
+  String configurationName() const { return info().configuration_name; }
+  HeapVector<Member<USBInterface>> interfaces() const;
 
-private:
-    Member<const USBDevice> m_device;
-    const size_t m_configurationIndex;
+  DECLARE_TRACE();
+
+ private:
+  Member<const USBDevice> m_device;
+  const size_t m_configurationIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // USBConfiguration_h
+#endif  // USBConfiguration_h

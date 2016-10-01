@@ -34,86 +34,88 @@ class CSSRuleList;
 class CSSStyleSheet;
 class StyleRuleBase;
 
-class CORE_EXPORT CSSRule : public GarbageCollectedFinalized<CSSRule>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    virtual ~CSSRule() { }
+class CORE_EXPORT CSSRule : public GarbageCollectedFinalized<CSSRule>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    enum Type {
-        kStyleRule = 1,
-        kCharsetRule = 2,
-        kImportRule = 3,
-        kMediaRule = 4,
-        kFontFaceRule = 5,
-        kPageRule = 6,
-        kKeyframesRule = 7,
-        kWebkitKeyframesRule = kKeyframesRule,
-        kKeyframeRule = 8,
-        kWebkitKeyframeRule = kKeyframeRule,
-        kNamespaceRule = 10,
-        kSupportsRule = 12,
-        kViewportRule = 15,
-    };
+ public:
+  virtual ~CSSRule() {}
 
-    virtual Type type() const = 0;
-    virtual String cssText() const = 0;
-    virtual void reattach(StyleRuleBase*) = 0;
+  enum Type {
+    kStyleRule = 1,
+    kCharsetRule = 2,
+    kImportRule = 3,
+    kMediaRule = 4,
+    kFontFaceRule = 5,
+    kPageRule = 6,
+    kKeyframesRule = 7,
+    kWebkitKeyframesRule = kKeyframesRule,
+    kKeyframeRule = 8,
+    kWebkitKeyframeRule = kKeyframeRule,
+    kNamespaceRule = 10,
+    kSupportsRule = 12,
+    kViewportRule = 15,
+  };
 
-    virtual CSSRuleList* cssRules() const { return 0; }
+  virtual Type type() const = 0;
+  virtual String cssText() const = 0;
+  virtual void reattach(StyleRuleBase*) = 0;
 
-    void setParentStyleSheet(CSSStyleSheet* styleSheet)
-    {
-        m_parentIsRule = false;
-        m_parentStyleSheet = styleSheet;
-    }
+  virtual CSSRuleList* cssRules() const { return 0; }
 
-    void setParentRule(CSSRule* rule)
-    {
-        m_parentIsRule = true;
-        m_parentRule = rule;
-    }
+  void setParentStyleSheet(CSSStyleSheet* styleSheet) {
+    m_parentIsRule = false;
+    m_parentStyleSheet = styleSheet;
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  void setParentRule(CSSRule* rule) {
+    m_parentIsRule = true;
+    m_parentRule = rule;
+  }
 
-    CSSStyleSheet* parentStyleSheet() const
-    {
-        if (m_parentIsRule)
-            return m_parentRule ? m_parentRule->parentStyleSheet() : nullptr;
-        return m_parentStyleSheet;
-    }
+  DECLARE_VIRTUAL_TRACE();
 
-    CSSRule* parentRule() const { return m_parentIsRule ? m_parentRule : nullptr; }
+  CSSStyleSheet* parentStyleSheet() const {
+    if (m_parentIsRule)
+      return m_parentRule ? m_parentRule->parentStyleSheet() : nullptr;
+    return m_parentStyleSheet;
+  }
 
-    // The CSSOM spec states that "setting the cssText attribute must do nothing."
-    void setCSSText(const String&) { }
+  CSSRule* parentRule() const {
+    return m_parentIsRule ? m_parentRule : nullptr;
+  }
 
-protected:
-    CSSRule(CSSStyleSheet* parent)
-        : m_hasCachedSelectorText(false)
-        , m_parentIsRule(false)
-        , m_parentStyleSheet(parent)
-    {
-    }
+  // The CSSOM spec states that "setting the cssText attribute must do nothing."
+  void setCSSText(const String&) {}
 
-    bool hasCachedSelectorText() const { return m_hasCachedSelectorText; }
-    void setHasCachedSelectorText(bool hasCachedSelectorText) const { m_hasCachedSelectorText = hasCachedSelectorText; }
+ protected:
+  CSSRule(CSSStyleSheet* parent)
+      : m_hasCachedSelectorText(false),
+        m_parentIsRule(false),
+        m_parentStyleSheet(parent) {}
 
-    const CSSParserContext& parserContext() const;
+  bool hasCachedSelectorText() const { return m_hasCachedSelectorText; }
+  void setHasCachedSelectorText(bool hasCachedSelectorText) const {
+    m_hasCachedSelectorText = hasCachedSelectorText;
+  }
 
-private:
-    mutable unsigned char m_hasCachedSelectorText : 1;
-    unsigned char m_parentIsRule : 1;
+  const CSSParserContext& parserContext() const;
 
-    // These should be Members, but no Members in unions.
-    union {
-        CSSRule* m_parentRule;
-        CSSStyleSheet* m_parentStyleSheet;
-    };
+ private:
+  mutable unsigned char m_hasCachedSelectorText : 1;
+  unsigned char m_parentIsRule : 1;
+
+  // These should be Members, but no Members in unions.
+  union {
+    CSSRule* m_parentRule;
+    CSSStyleSheet* m_parentStyleSheet;
+  };
 };
 
-#define DEFINE_CSS_RULE_TYPE_CASTS(ToType, TYPE_NAME) \
-    DEFINE_TYPE_CASTS(ToType, CSSRule, rule, rule->type() == CSSRule::TYPE_NAME, rule.type() == CSSRule::TYPE_NAME)
+#define DEFINE_CSS_RULE_TYPE_CASTS(ToType, TYPE_NAME)                          \
+  DEFINE_TYPE_CASTS(ToType, CSSRule, rule, rule->type() == CSSRule::TYPE_NAME, \
+                    rule.type() == CSSRule::TYPE_NAME)
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSRule_h
+#endif  // CSSRule_h

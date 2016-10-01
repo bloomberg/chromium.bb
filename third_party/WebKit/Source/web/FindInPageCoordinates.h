@@ -51,9 +51,10 @@ class LayoutObject;
 // are scroll-independent, representing any contents scaled to the visible area of their container.
 // The provided methods support scroll:overflow and are CSS position and transform-friendly.
 
-WEB_EXPORT FloatRect findInPageRectFromAbsoluteRect(const FloatRect&, const LayoutObject*);
+WEB_EXPORT FloatRect findInPageRectFromAbsoluteRect(const FloatRect&,
+                                                    const LayoutObject*);
 WEB_EXPORT FloatRect findInPageRectFromRange(Range*);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

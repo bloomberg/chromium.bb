@@ -13,61 +13,58 @@ namespace blink {
 
 namespace {
 
-bool isInRemoteFrame(Element* element)
-{
-    Frame* mainFrame = element->document().frame()->tree().top();
-    return !mainFrame || mainFrame->isRemoteFrame();
+bool isInRemoteFrame(Element* element) {
+  Frame* mainFrame = element->document().frame()->tree().top();
+  return !mainFrame || mainFrame->isRemoteFrame();
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
-ElementVisibilityObserver::ElementVisibilityObserver(Element* element, std::unique_ptr<VisibilityCallback> callback)
-    : m_element(element)
-    , m_callback(std::move(callback))
-{
-}
+ElementVisibilityObserver::ElementVisibilityObserver(
+    Element* element,
+    std::unique_ptr<VisibilityCallback> callback)
+    : m_element(element), m_callback(std::move(callback)) {}
 
 ElementVisibilityObserver::~ElementVisibilityObserver() = default;
 
-void ElementVisibilityObserver::start()
-{
-    // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame.
-    // Remove this early return when it's fixed. See https://crbug.com/615156
-    if (isInRemoteFrame(m_element)) {
-        m_element.release();
-        return;
-    }
+void ElementVisibilityObserver::start() {
+  // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame.
+  // Remove this early return when it's fixed. See https://crbug.com/615156
+  if (isInRemoteFrame(m_element)) {
+    m_element.release();
+    return;
+  }
 
-    DCHECK(!m_intersectionObserver);
-    m_intersectionObserver = IntersectionObserver::create(
-        Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}), &m_element->document(),
-        WTF::bind(&ElementVisibilityObserver::onVisibilityChanged, wrapWeakPersistent(this)));
-    DCHECK(m_intersectionObserver);
-    m_intersectionObserver->observe(m_element.release());
+  DCHECK(!m_intersectionObserver);
+  m_intersectionObserver = IntersectionObserver::create(
+      Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}),
+      &m_element->document(),
+      WTF::bind(&ElementVisibilityObserver::onVisibilityChanged,
+                wrapWeakPersistent(this)));
+  DCHECK(m_intersectionObserver);
+  m_intersectionObserver->observe(m_element.release());
 }
 
-void ElementVisibilityObserver::stop()
-{
-    // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame,
-    // so |m_intersectionObserver| may be null at this point after start().
-    // Replace this early return with DCHECK when this has been fixed. See https://crbug.com/615156
-    if (!m_intersectionObserver)
-        return;
+void ElementVisibilityObserver::stop() {
+  // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame,
+  // so |m_intersectionObserver| may be null at this point after start().
+  // Replace this early return with DCHECK when this has been fixed. See https://crbug.com/615156
+  if (!m_intersectionObserver)
+    return;
 
-    m_intersectionObserver->disconnect();
-    m_intersectionObserver = nullptr;
+  m_intersectionObserver->disconnect();
+  m_intersectionObserver = nullptr;
 }
 
-DEFINE_TRACE(ElementVisibilityObserver)
-{
-    visitor->trace(m_element);
-    visitor->trace(m_intersectionObserver);
+DEFINE_TRACE(ElementVisibilityObserver) {
+  visitor->trace(m_element);
+  visitor->trace(m_intersectionObserver);
 }
 
-void ElementVisibilityObserver::onVisibilityChanged(const HeapVector<Member<IntersectionObserverEntry>>& entries)
-{
-    bool isVisible = entries.last()->intersectionRatio() > 0.f;
-    (*m_callback.get())(isVisible);
+void ElementVisibilityObserver::onVisibilityChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool isVisible = entries.last()->intersectionRatio() > 0.f;
+  (*m_callback.get())(isVisible);
 }
 
-} // namespace blink
+}  // namespace blink

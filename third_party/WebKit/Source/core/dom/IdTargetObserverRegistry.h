@@ -36,35 +36,36 @@ namespace blink {
 
 class IdTargetObserver;
 
-class IdTargetObserverRegistry final : public GarbageCollected<IdTargetObserverRegistry> {
-    WTF_MAKE_NONCOPYABLE(IdTargetObserverRegistry);
-    friend class IdTargetObserver;
-public:
-    static IdTargetObserverRegistry* create();
-    DECLARE_TRACE();
-    void notifyObservers(const AtomicString& id);
-    bool hasObservers(const AtomicString& id) const;
+class IdTargetObserverRegistry final
+    : public GarbageCollected<IdTargetObserverRegistry> {
+  WTF_MAKE_NONCOPYABLE(IdTargetObserverRegistry);
+  friend class IdTargetObserver;
 
-private:
-    IdTargetObserverRegistry() : m_notifyingObserversInSet(nullptr) { }
-    void addObserver(const AtomicString& id, IdTargetObserver*);
-    void removeObserver(const AtomicString& id, IdTargetObserver*);
-    void notifyObserversInternal(const AtomicString& id);
+ public:
+  static IdTargetObserverRegistry* create();
+  DECLARE_TRACE();
+  void notifyObservers(const AtomicString& id);
+  bool hasObservers(const AtomicString& id) const;
 
-    typedef HeapHashSet<Member<IdTargetObserver>> ObserverSet;
-    typedef HeapHashMap<StringImpl*, Member<ObserverSet>> IdToObserverSetMap;
-    IdToObserverSetMap m_registry;
-    Member<ObserverSet> m_notifyingObserversInSet;
+ private:
+  IdTargetObserverRegistry() : m_notifyingObserversInSet(nullptr) {}
+  void addObserver(const AtomicString& id, IdTargetObserver*);
+  void removeObserver(const AtomicString& id, IdTargetObserver*);
+  void notifyObserversInternal(const AtomicString& id);
+
+  typedef HeapHashSet<Member<IdTargetObserver>> ObserverSet;
+  typedef HeapHashMap<StringImpl*, Member<ObserverSet>> IdToObserverSetMap;
+  IdToObserverSetMap m_registry;
+  Member<ObserverSet> m_notifyingObserversInSet;
 };
 
-inline void IdTargetObserverRegistry::notifyObservers(const AtomicString& id)
-{
-    DCHECK(!m_notifyingObserversInSet);
-    if (id.isEmpty() || m_registry.isEmpty())
-        return;
-    IdTargetObserverRegistry::notifyObserversInternal(id);
+inline void IdTargetObserverRegistry::notifyObservers(const AtomicString& id) {
+  DCHECK(!m_notifyingObserversInSet);
+  if (id.isEmpty() || m_registry.isEmpty())
+    return;
+  IdTargetObserverRegistry::notifyObserversInternal(id);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IdTargetObserverRegistry_h
+#endif  // IdTargetObserverRegistry_h

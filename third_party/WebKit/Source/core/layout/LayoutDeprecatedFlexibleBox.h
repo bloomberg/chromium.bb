@@ -30,40 +30,43 @@ namespace blink {
 class FlexBoxIterator;
 
 class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
-public:
-    LayoutDeprecatedFlexibleBox(Element&);
-    ~LayoutDeprecatedFlexibleBox() override;
+ public:
+  LayoutDeprecatedFlexibleBox(Element&);
+  ~LayoutDeprecatedFlexibleBox() override;
 
-    const char* name() const override { return "LayoutDeprecatedFlexibleBox"; }
+  const char* name() const override { return "LayoutDeprecatedFlexibleBox"; }
 
-    void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+  void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
 
-    void layoutBlock(bool relayoutChildren) override;
-    void layoutHorizontalBox(bool relayoutChildren);
-    void layoutVerticalBox(bool relayoutChildren);
+  void layoutBlock(bool relayoutChildren) override;
+  void layoutHorizontalBox(bool relayoutChildren);
+  void layoutVerticalBox(bool relayoutChildren);
 
-    bool isDeprecatedFlexibleBox() const override { return true; }
-    bool isStretchingChildren() const { return m_stretchingChildren; }
+  bool isDeprecatedFlexibleBox() const override { return true; }
+  bool isStretchingChildren() const { return m_stretchingChildren; }
 
-    void placeChild(LayoutBox* child, const LayoutPoint& location);
+  void placeChild(LayoutBox* child, const LayoutPoint& location);
 
-private:
-    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
+ private:
+  void computeIntrinsicLogicalWidths(
+      LayoutUnit& minLogicalWidth,
+      LayoutUnit& maxLogicalWidth) const override;
 
-    LayoutUnit allowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
+  LayoutUnit allowedChildFlex(LayoutBox* child, bool expanding, unsigned group);
 
-    bool hasMultipleLines() const { return style()->boxLines() == MULTIPLE; }
-    bool isVertical() const { return style()->boxOrient() == VERTICAL; }
-    bool isHorizontal() const { return style()->boxOrient() == HORIZONTAL; }
+  bool hasMultipleLines() const { return style()->boxLines() == MULTIPLE; }
+  bool isVertical() const { return style()->boxOrient() == VERTICAL; }
+  bool isHorizontal() const { return style()->boxOrient() == HORIZONTAL; }
 
-    void applyLineClamp(FlexBoxIterator&, bool relayoutChildren);
-    void clearLineClamp();
+  void applyLineClamp(FlexBoxIterator&, bool relayoutChildren);
+  void clearLineClamp();
 
-    bool m_stretchingChildren;
+  bool m_stretchingChildren;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDeprecatedFlexibleBox, isDeprecatedFlexibleBox());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDeprecatedFlexibleBox,
+                                isDeprecatedFlexibleBox());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutDeprecatedFlexibleBox_h
+#endif  // LayoutDeprecatedFlexibleBox_h

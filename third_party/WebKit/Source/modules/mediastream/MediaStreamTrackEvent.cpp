@@ -28,48 +28,43 @@
 
 namespace blink {
 
-MediaStreamTrackEvent* MediaStreamTrackEvent::create(const AtomicString& type, MediaStreamTrack* track)
-{
-    return new MediaStreamTrackEvent(type, track);
+MediaStreamTrackEvent* MediaStreamTrackEvent::create(const AtomicString& type,
+                                                     MediaStreamTrack* track) {
+  return new MediaStreamTrackEvent(type, track);
 }
 
-MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type, MediaStreamTrack* track)
-    : Event(type, false, false)
-    , m_track(track)
-{
-    DCHECK(m_track);
+MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type,
+                                             MediaStreamTrack* track)
+    : Event(type, false, false), m_track(track) {
+  DCHECK(m_track);
 }
 
-MediaStreamTrackEvent* MediaStreamTrackEvent::create(const AtomicString& type, const MediaStreamTrackEventInit& initializer)
-{
-    return new MediaStreamTrackEvent(type, initializer);
+MediaStreamTrackEvent* MediaStreamTrackEvent::create(
+    const AtomicString& type,
+    const MediaStreamTrackEventInit& initializer) {
+  return new MediaStreamTrackEvent(type, initializer);
 }
 
-MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type, const MediaStreamTrackEventInit& initializer)
-    : Event(type, initializer)
-    , m_track(initializer.track())
-{
-    DCHECK(m_track);
+MediaStreamTrackEvent::MediaStreamTrackEvent(
+    const AtomicString& type,
+    const MediaStreamTrackEventInit& initializer)
+    : Event(type, initializer), m_track(initializer.track()) {
+  DCHECK(m_track);
 }
 
-MediaStreamTrackEvent::~MediaStreamTrackEvent()
-{
+MediaStreamTrackEvent::~MediaStreamTrackEvent() {}
+
+MediaStreamTrack* MediaStreamTrackEvent::track() const {
+  return m_track.get();
 }
 
-MediaStreamTrack* MediaStreamTrackEvent::track() const
-{
-    return m_track.get();
+const AtomicString& MediaStreamTrackEvent::interfaceName() const {
+  return EventNames::MediaStreamTrackEvent;
 }
 
-const AtomicString& MediaStreamTrackEvent::interfaceName() const
-{
-    return EventNames::MediaStreamTrackEvent;
+DEFINE_TRACE(MediaStreamTrackEvent) {
+  visitor->trace(m_track);
+  Event::trace(visitor);
 }
 
-DEFINE_TRACE(MediaStreamTrackEvent)
-{
-    visitor->trace(m_track);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

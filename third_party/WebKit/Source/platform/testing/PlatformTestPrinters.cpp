@@ -12,19 +12,17 @@
 
 namespace blink {
 
-std::ostream& operator<<(std::ostream& os, const ResourceError& error)
-{
-    return os
-        << "domain = " << error.domain()
-        << ", errorCode = " << error.errorCode()
-        << ", failingURL = " << error.failingURL()
-        << ", localizedDescription = " << error.localizedDescription()
-        << ", isNull = " << error.isNull()
-        << ", isCancellation = " << error.isCancellation()
-        << ", isAccessCheck = " << error.isAccessCheck()
-        << ", isTimeout = " << error.isTimeout()
-        << ", staleCopyInCache = " << error.staleCopyInCache()
-        << ", wasIgnoredByHandler = " << error.wasIgnoredByHandler();
+std::ostream& operator<<(std::ostream& os, const ResourceError& error) {
+  return os << "domain = " << error.domain()
+            << ", errorCode = " << error.errorCode()
+            << ", failingURL = " << error.failingURL()
+            << ", localizedDescription = " << error.localizedDescription()
+            << ", isNull = " << error.isNull()
+            << ", isCancellation = " << error.isCancellation()
+            << ", isAccessCheck = " << error.isAccessCheck()
+            << ", isTimeout = " << error.isTimeout()
+            << ", staleCopyInCache = " << error.staleCopyInCache()
+            << ", wasIgnoredByHandler = " << error.wasIgnoredByHandler();
 }
 
-} // namespace blink
+}  // namespace blink

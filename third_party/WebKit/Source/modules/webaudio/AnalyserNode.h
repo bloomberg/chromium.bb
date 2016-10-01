@@ -36,73 +36,80 @@ class AnalyserOptions;
 class ExceptionState;
 
 class AnalyserHandler final : public AudioBasicInspectorHandler {
-public:
-    static PassRefPtr<AnalyserHandler> create(AudioNode&, float sampleRate);
-    ~AnalyserHandler() override;
+ public:
+  static PassRefPtr<AnalyserHandler> create(AudioNode&, float sampleRate);
+  ~AnalyserHandler() override;
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
 
-    unsigned fftSize() const { return m_analyser.fftSize(); }
-    void setFftSize(unsigned size, ExceptionState&);
+  unsigned fftSize() const { return m_analyser.fftSize(); }
+  void setFftSize(unsigned size, ExceptionState&);
 
-    unsigned frequencyBinCount() const { return m_analyser.frequencyBinCount(); }
+  unsigned frequencyBinCount() const { return m_analyser.frequencyBinCount(); }
 
-    void setMinDecibels(double k, ExceptionState&);
-    double minDecibels() const { return m_analyser.minDecibels(); }
+  void setMinDecibels(double k, ExceptionState&);
+  double minDecibels() const { return m_analyser.minDecibels(); }
 
-    void setMaxDecibels(double k, ExceptionState&);
-    double maxDecibels() const { return m_analyser.maxDecibels(); }
+  void setMaxDecibels(double k, ExceptionState&);
+  double maxDecibels() const { return m_analyser.maxDecibels(); }
 
-    void setMinMaxDecibels(double min, double max, ExceptionState&);
+  void setMinMaxDecibels(double min, double max, ExceptionState&);
 
-    void setSmoothingTimeConstant(double k, ExceptionState&);
-    double smoothingTimeConstant() const { return m_analyser.smoothingTimeConstant(); }
+  void setSmoothingTimeConstant(double k, ExceptionState&);
+  double smoothingTimeConstant() const {
+    return m_analyser.smoothingTimeConstant();
+  }
 
-    void getFloatFrequencyData(DOMFloat32Array* array, double currentTime)
-    {
-        m_analyser.getFloatFrequencyData(array, currentTime);
-    }
-    void getByteFrequencyData(DOMUint8Array* array, double currentTime)
-    {
-        m_analyser.getByteFrequencyData(array, currentTime);
-    }
-    void getFloatTimeDomainData(DOMFloat32Array* array) { m_analyser.getFloatTimeDomainData(array); }
-    void getByteTimeDomainData(DOMUint8Array* array) { m_analyser.getByteTimeDomainData(array); }
+  void getFloatFrequencyData(DOMFloat32Array* array, double currentTime) {
+    m_analyser.getFloatFrequencyData(array, currentTime);
+  }
+  void getByteFrequencyData(DOMUint8Array* array, double currentTime) {
+    m_analyser.getByteFrequencyData(array, currentTime);
+  }
+  void getFloatTimeDomainData(DOMFloat32Array* array) {
+    m_analyser.getFloatTimeDomainData(array);
+  }
+  void getByteTimeDomainData(DOMUint8Array* array) {
+    m_analyser.getByteTimeDomainData(array);
+  }
 
-private:
-    AnalyserHandler(AudioNode&, float sampleRate);
+ private:
+  AnalyserHandler(AudioNode&, float sampleRate);
 
-    RealtimeAnalyser m_analyser;
+  RealtimeAnalyser m_analyser;
 };
 
 class AnalyserNode final : public AudioBasicInspectorNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static AnalyserNode* create(BaseAudioContext&, ExceptionState&);
-    static AnalyserNode* create(BaseAudioContext*, const AnalyserOptions&, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned fftSize() const;
-    void setFftSize(unsigned size, ExceptionState&);
-    unsigned frequencyBinCount() const;
-    void setMinDecibels(double, ExceptionState&);
-    double minDecibels() const;
-    void setMaxDecibels(double, ExceptionState&);
-    double maxDecibels() const;
-    void setSmoothingTimeConstant(double, ExceptionState&);
-    double smoothingTimeConstant() const;
-    void getFloatFrequencyData(DOMFloat32Array*);
-    void getByteFrequencyData(DOMUint8Array*);
-    void getFloatTimeDomainData(DOMFloat32Array*);
-    void getByteTimeDomainData(DOMUint8Array*);
+ public:
+  static AnalyserNode* create(BaseAudioContext&, ExceptionState&);
+  static AnalyserNode* create(BaseAudioContext*,
+                              const AnalyserOptions&,
+                              ExceptionState&);
 
-private:
-    AnalyserNode(BaseAudioContext&);
-    AnalyserHandler& analyserHandler() const;
+  unsigned fftSize() const;
+  void setFftSize(unsigned size, ExceptionState&);
+  unsigned frequencyBinCount() const;
+  void setMinDecibels(double, ExceptionState&);
+  double minDecibels() const;
+  void setMaxDecibels(double, ExceptionState&);
+  double maxDecibels() const;
+  void setSmoothingTimeConstant(double, ExceptionState&);
+  double smoothingTimeConstant() const;
+  void getFloatFrequencyData(DOMFloat32Array*);
+  void getByteFrequencyData(DOMUint8Array*);
+  void getFloatTimeDomainData(DOMFloat32Array*);
+  void getByteTimeDomainData(DOMUint8Array*);
 
-    void setMinMaxDecibels(double min, double max, ExceptionState&);
+ private:
+  AnalyserNode(BaseAudioContext&);
+  AnalyserHandler& analyserHandler() const;
+
+  void setMinMaxDecibels(double min, double max, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnalyserNode_h
+#endif  // AnalyserNode_h

@@ -36,98 +36,105 @@ namespace blink {
 // Link relation bitmask values.
 // FIXME: Uncomment as the various link relations are implemented.
 enum {
-    //     RelationAlternate   = 0x00000001,
-    //     RelationArchives    = 0x00000002,
-    //     RelationAuthor      = 0x00000004,
-    //     RelationBoomark     = 0x00000008,
-    //     RelationExternal    = 0x00000010,
-    //     RelationFirst       = 0x00000020,
-    //     RelationHelp        = 0x00000040,
-    //     RelationIndex       = 0x00000080,
-    //     RelationLast        = 0x00000100,
-    //     RelationLicense     = 0x00000200,
-    //     RelationNext        = 0x00000400,
-    //     RelationNoFolow    = 0x00000800,
-    RelationNoReferrer = 0x00001000,
-    //     RelationPrev        = 0x00002000,
-    //     RelationSearch      = 0x00004000,
-    //     RelationSidebar     = 0x00008000,
-    //     RelationTag         = 0x00010000,
-    //     RelationUp          = 0x00020000,
-    RelationNoOpener = 0x00040000,
+  //     RelationAlternate   = 0x00000001,
+  //     RelationArchives    = 0x00000002,
+  //     RelationAuthor      = 0x00000004,
+  //     RelationBoomark     = 0x00000008,
+  //     RelationExternal    = 0x00000010,
+  //     RelationFirst       = 0x00000020,
+  //     RelationHelp        = 0x00000040,
+  //     RelationIndex       = 0x00000080,
+  //     RelationLast        = 0x00000100,
+  //     RelationLicense     = 0x00000200,
+  //     RelationNext        = 0x00000400,
+  //     RelationNoFolow    = 0x00000800,
+  RelationNoReferrer = 0x00001000,
+  //     RelationPrev        = 0x00002000,
+  //     RelationSearch      = 0x00004000,
+  //     RelationSidebar     = 0x00008000,
+  //     RelationTag         = 0x00010000,
+  //     RelationUp          = 0x00020000,
+  RelationNoOpener = 0x00040000,
 };
 
 class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLAnchorElement* create(Document&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~HTMLAnchorElement() override;
+ public:
+  static HTMLAnchorElement* create(Document&);
 
-    KURL href() const;
-    void setHref(const AtomicString&);
+  ~HTMLAnchorElement() override;
 
-    const AtomicString& name() const;
+  KURL href() const;
+  void setHref(const AtomicString&);
 
-    KURL url() const final;
-    void setURL(const KURL&) final;
+  const AtomicString& name() const;
 
-    String input() const final;
-    void setInput(const String&) final;
+  KURL url() const final;
+  void setURL(const KURL&) final;
 
-    bool isLiveLink() const final;
+  String input() const final;
+  void setInput(const String&) final;
 
-    bool willRespondToMouseClickEvents() final;
+  bool isLiveLink() const final;
 
-    bool hasRel(uint32_t relation) const;
-    void setRel(const AtomicString&);
+  bool willRespondToMouseClickEvents() final;
 
-    LinkHash visitedLinkHash() const;
-    void invalidateCachedVisitedLinkHash() { m_cachedVisitedLinkHash = 0; }
+  bool hasRel(uint32_t relation) const;
+  void setRel(const AtomicString&);
 
-    void sendPings(const KURL& destinationURL) const;
+  LinkHash visitedLinkHash() const;
+  void invalidateCachedVisitedLinkHash() { m_cachedVisitedLinkHash = 0; }
 
-    DECLARE_VIRTUAL_TRACE();
+  void sendPings(const KURL& destinationURL) const;
 
-protected:
-    HTMLAnchorElement(const QualifiedName&, Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool supportsFocus() const override;
-    bool matchesEnabledPseudoClass() const override;
+ protected:
+  HTMLAnchorElement(const QualifiedName&, Document&);
 
-private:
-    class NavigationHintSender;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool supportsFocus() const override;
+  bool matchesEnabledPseudoClass() const override;
 
-    bool shouldHaveFocusAppearance() const final;
-    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
-    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
-    bool isMouseFocusable() const override;
-    bool isKeyboardFocusable() const override;
-    void defaultEventHandler(Event*) final;
-    void setActive(bool = true) final;
-    void accessKeyAction(bool sendMouseEvents) final;
-    bool isURLAttribute(const Attribute&) const final;
-    bool hasLegalLinkAttribute(const QualifiedName&) const final;
-    bool canStartSelection() const final;
-    short tabIndex() const final;
-    bool draggable() const final;
-    bool isInteractiveContent() const final;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void handleClick(Event*);
-    NavigationHintSender* ensureNavigationHintSender();
+ private:
+  class NavigationHintSender;
 
-    uint32_t m_linkRelations;
-    mutable LinkHash m_cachedVisitedLinkHash;
-    bool m_wasFocusedByMouse;
-    Member<NavigationHintSender> m_navigationHintSender;
+  bool shouldHaveFocusAppearance() const final;
+  void dispatchFocusEvent(Element* oldFocusedElement,
+                          WebFocusType,
+                          InputDeviceCapabilities* sourceCapabilities) override;
+  void dispatchBlurEvent(Element* newFocusedElement,
+                         WebFocusType,
+                         InputDeviceCapabilities* sourceCapabilities) override;
+  bool isMouseFocusable() const override;
+  bool isKeyboardFocusable() const override;
+  void defaultEventHandler(Event*) final;
+  void setActive(bool = true) final;
+  void accessKeyAction(bool sendMouseEvents) final;
+  bool isURLAttribute(const Attribute&) const final;
+  bool hasLegalLinkAttribute(const QualifiedName&) const final;
+  bool canStartSelection() const final;
+  short tabIndex() const final;
+  bool draggable() const final;
+  bool isInteractiveContent() const final;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void handleClick(Event*);
+  NavigationHintSender* ensureNavigationHintSender();
+
+  uint32_t m_linkRelations;
+  mutable LinkHash m_cachedVisitedLinkHash;
+  bool m_wasFocusedByMouse;
+  Member<NavigationHintSender> m_navigationHintSender;
 };
 
-inline LinkHash HTMLAnchorElement::visitedLinkHash() const
-{
-    if (!m_cachedVisitedLinkHash)
-        m_cachedVisitedLinkHash = blink::visitedLinkHash(document().baseURL(), fastGetAttribute(HTMLNames::hrefAttr));
-    return m_cachedVisitedLinkHash;
+inline LinkHash HTMLAnchorElement::visitedLinkHash() const {
+  if (!m_cachedVisitedLinkHash)
+    m_cachedVisitedLinkHash = blink::visitedLinkHash(
+        document().baseURL(), fastGetAttribute(HTMLNames::hrefAttr));
+  return m_cachedVisitedLinkHash;
 }
 
 // Functions shared with the other anchor elements (i.e., SVG).
@@ -135,6 +142,6 @@ inline LinkHash HTMLAnchorElement::visitedLinkHash() const
 bool isEnterKeyKeydownEvent(Event*);
 bool isLinkClick(Event*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLAnchorElement_h
+#endif  // HTMLAnchorElement_h

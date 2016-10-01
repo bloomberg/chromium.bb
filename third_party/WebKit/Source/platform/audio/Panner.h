@@ -43,35 +43,45 @@ class HRTFDatabaseLoader;
 // Abstract base class for panning a mono or stereo source.
 
 class PLATFORM_EXPORT Panner {
-    USING_FAST_MALLOC(Panner);
-    WTF_MAKE_NONCOPYABLE(Panner);
-public:
-    // This values are used in histograms and should not be renumbered or deleted.
-    enum {
-        PanningModelEqualPower = 0,
-        PanningModelHRTF = 1
-    };
+  USING_FAST_MALLOC(Panner);
+  WTF_MAKE_NONCOPYABLE(Panner);
 
-    typedef unsigned PanningModel;
+ public:
+  // This values are used in histograms and should not be renumbered or deleted.
+  enum { PanningModelEqualPower = 0, PanningModelHRTF = 1 };
 
-    static std::unique_ptr<Panner> create(PanningModel, float sampleRate, HRTFDatabaseLoader*);
+  typedef unsigned PanningModel;
 
-    virtual ~Panner() { };
+  static std::unique_ptr<Panner> create(PanningModel,
+                                        float sampleRate,
+                                        HRTFDatabaseLoader*);
 
-    virtual void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation) = 0;
-    virtual void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation) = 0;
+  virtual ~Panner(){};
 
-    virtual void reset() = 0;
+  virtual void pan(double azimuth,
+                   double elevation,
+                   const AudioBus* inputBus,
+                   AudioBus* outputBus,
+                   size_t framesToProcess,
+                   AudioBus::ChannelInterpretation) = 0;
+  virtual void panWithSampleAccurateValues(double* azimuth,
+                                           double* elevation,
+                                           const AudioBus* inputBus,
+                                           AudioBus* outputBus,
+                                           size_t framesToProcess,
+                                           AudioBus::ChannelInterpretation) = 0;
 
-    virtual double tailTime() const = 0;
-    virtual double latencyTime() const = 0;
+  virtual void reset() = 0;
 
-protected:
-    Panner(PanningModel model) : m_panningModel(model) { }
+  virtual double tailTime() const = 0;
+  virtual double latencyTime() const = 0;
 
-    PanningModel m_panningModel;
+ protected:
+  Panner(PanningModel model) : m_panningModel(model) {}
+
+  PanningModel m_panningModel;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Panner_h
+#endif  // Panner_h

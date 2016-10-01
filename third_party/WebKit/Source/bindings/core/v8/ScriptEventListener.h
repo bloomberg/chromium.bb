@@ -43,12 +43,25 @@ class LocalFrame;
 class Node;
 class QualifiedName;
 
-V8LazyEventListener* createAttributeEventListener(Node*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
-V8LazyEventListener* createAttributeEventListener(LocalFrame*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
+V8LazyEventListener* createAttributeEventListener(
+    Node*,
+    const QualifiedName&,
+    const AtomicString& value,
+    const AtomicString& eventParameterName);
+V8LazyEventListener* createAttributeEventListener(
+    LocalFrame*,
+    const QualifiedName&,
+    const AtomicString& value,
+    const AtomicString& eventParameterName);
 v8::Local<v8::Object> eventListenerHandler(ExecutionContext*, EventListener*);
-v8::Local<v8::Function> eventListenerEffectiveFunction(v8::Isolate*, v8::Local<v8::Object> handler);
-void getFunctionLocation(v8::Local<v8::Function>, String& scriptId, int& lineNumber, int& columnNumber);
+v8::Local<v8::Function> eventListenerEffectiveFunction(
+    v8::Isolate*,
+    v8::Local<v8::Object> handler);
+void getFunctionLocation(v8::Local<v8::Function>,
+                         String& scriptId,
+                         int& lineNumber,
+                         int& columnNumber);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptEventListener_h
+#endif  // ScriptEventListener_h

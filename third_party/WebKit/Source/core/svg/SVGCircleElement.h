@@ -29,36 +29,39 @@
 namespace blink {
 
 class SVGCircleElement final : public SVGGeometryElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGCircleElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    Path asPath() const override;
+ public:
+  DECLARE_NODE_FACTORY(SVGCircleElement);
 
-    SVGAnimatedLength* cx() const { return m_cx.get(); }
-    SVGAnimatedLength* cy() const { return m_cy.get(); }
-    SVGAnimatedLength* r() const { return m_r.get(); }
+  Path asPath() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedLength* cx() const { return m_cx.get(); }
+  SVGAnimatedLength* cy() const { return m_cy.get(); }
+  SVGAnimatedLength* r() const { return m_r.get(); }
 
-private:
-    explicit SVGCircleElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void svgAttributeChanged(const QualifiedName&) override;
+ private:
+  explicit SVGCircleElement(Document&);
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    bool selfHasRelativeLengths() const override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool selfHasRelativeLengths() const override;
 
-    Member<SVGAnimatedLength> m_cx;
-    Member<SVGAnimatedLength> m_cy;
-    Member<SVGAnimatedLength> m_r;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+
+  Member<SVGAnimatedLength> m_cx;
+  Member<SVGAnimatedLength> m_cy;
+  Member<SVGAnimatedLength> m_r;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGCircleElement_h
+#endif  // SVGCircleElement_h

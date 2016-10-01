@@ -39,32 +39,37 @@ class AXObjectCacheImpl;
 class HTMLSelectElement;
 
 class AXListBoxOption final : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AXListBoxOption);
+  WTF_MAKE_NONCOPYABLE(AXListBoxOption);
 
-private:
-    AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
+ private:
+  AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);
 
-public:
-    static AXListBoxOption* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXListBoxOption() override;
+ public:
+  static AXListBoxOption* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXListBoxOption() override;
 
-    bool isAXListBoxOption() const override { return true; }
-    AccessibilityRole determineAccessibilityRole() final;
-    bool isSelected() const override;
-    bool isEnabled() const override;
-    bool isSelectedOptionActive() const override;
-    void setSelected(bool) override;
-    bool canSetSelectedAttribute() const override;
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
+  bool isAXListBoxOption() const override { return true; }
+  AccessibilityRole determineAccessibilityRole() final;
+  bool isSelected() const override;
+  bool isEnabled() const override;
+  bool isSelectedOptionActive() const override;
+  void setSelected(bool) override;
+  bool canSetSelectedAttribute() const override;
+  String textAlternative(bool recursive,
+                         bool inAriaLabelledByTraversal,
+                         AXObjectSet& visited,
+                         AXNameFrom&,
+                         AXRelatedObjectVector*,
+                         NameSources*) const override;
 
-private:
-    bool canHaveChildren() const override { return false; }
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+ private:
+  bool canHaveChildren() const override { return false; }
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-    HTMLSelectElement* listBoxOptionParentNode() const;
-    bool isParentPresentationalRole() const;
+  HTMLSelectElement* listBoxOptionParentNode() const;
+  bool isParentPresentationalRole() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXListBoxOption_h
+#endif  // AXListBoxOption_h

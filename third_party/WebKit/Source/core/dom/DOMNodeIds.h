@@ -15,13 +15,13 @@ namespace blink {
 DECLARE_WEAK_IDENTIFIER_MAP(Node);
 
 class CORE_EXPORT DOMNodeIds {
-    STATIC_ONLY(DOMNodeIds);
-public:
-    static int idForNode(Node*);
-    static Node* nodeForId(int id);
+  STATIC_ONLY(DOMNodeIds);
+
+ public:
+  static int idForNode(Node*);
+  static Node* nodeForId(int id);
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // DOMNodeIds_h
+#endif  // DOMNodeIds_h

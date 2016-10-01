@@ -26,27 +26,21 @@
 namespace blink {
 
 inline SVGTSpanElement::SVGTSpanElement(Document& document)
-    : SVGTextPositioningElement(SVGNames::tspanTag, document)
-{
-}
+    : SVGTextPositioningElement(SVGNames::tspanTag, document) {}
 
 DEFINE_NODE_FACTORY(SVGTSpanElement)
 
-LayoutObject* SVGTSpanElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutSVGTSpan(this);
+LayoutObject* SVGTSpanElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutSVGTSpan(this);
 }
 
-bool SVGTSpanElement::layoutObjectIsNeeded(const ComputedStyle& style)
-{
-    if (parentNode()
-        && (isSVGAElement(*parentNode())
-            || isSVGTextElement(*parentNode())
-            || isSVGTextPathElement(*parentNode())
-            || isSVGTSpanElement(*parentNode())))
-        return Element::layoutObjectIsNeeded(style);
+bool SVGTSpanElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+  if (parentNode() &&
+      (isSVGAElement(*parentNode()) || isSVGTextElement(*parentNode()) ||
+       isSVGTextPathElement(*parentNode()) || isSVGTSpanElement(*parentNode())))
+    return Element::layoutObjectIsNeeded(style);
 
-    return false;
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

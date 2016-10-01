@@ -35,34 +35,35 @@ namespace blink {
 class PlatformSpeechSynthesisVoice;
 
 class WebSpeechSynthesisVoice {
-public:
-    BLINK_PLATFORM_EXPORT WebSpeechSynthesisVoice();
-    WebSpeechSynthesisVoice(const WebSpeechSynthesisVoice& other) { assign(other); }
-    ~WebSpeechSynthesisVoice() { reset(); }
+ public:
+  BLINK_PLATFORM_EXPORT WebSpeechSynthesisVoice();
+  WebSpeechSynthesisVoice(const WebSpeechSynthesisVoice& other) {
+    assign(other);
+  }
+  ~WebSpeechSynthesisVoice() { reset(); }
 
-    WebSpeechSynthesisVoice& operator=(const WebSpeechSynthesisVoice& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebSpeechSynthesisVoice& operator=(const WebSpeechSynthesisVoice& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebSpeechSynthesisVoice&);
-    BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebSpeechSynthesisVoice&);
+  BLINK_PLATFORM_EXPORT void reset();
 
-    BLINK_PLATFORM_EXPORT void setVoiceURI(const WebString&);
-    BLINK_PLATFORM_EXPORT void setName(const WebString&);
-    BLINK_PLATFORM_EXPORT void setLanguage(const WebString&);
-    BLINK_PLATFORM_EXPORT void setIsLocalService(bool);
-    BLINK_PLATFORM_EXPORT void setIsDefault(bool);
+  BLINK_PLATFORM_EXPORT void setVoiceURI(const WebString&);
+  BLINK_PLATFORM_EXPORT void setName(const WebString&);
+  BLINK_PLATFORM_EXPORT void setLanguage(const WebString&);
+  BLINK_PLATFORM_EXPORT void setIsLocalService(bool);
+  BLINK_PLATFORM_EXPORT void setIsDefault(bool);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT operator PlatformSpeechSynthesisVoice*() const;
+  BLINK_PLATFORM_EXPORT operator PlatformSpeechSynthesisVoice*() const;
 #endif
 
-private:
-    WebPrivatePtr<PlatformSpeechSynthesisVoice> m_private;
+ private:
+  WebPrivatePtr<PlatformSpeechSynthesisVoice> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSpeechSynthesisVoice_h
+#endif  // WebSpeechSynthesisVoice_h

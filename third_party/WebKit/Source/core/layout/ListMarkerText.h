@@ -42,8 +42,8 @@ UChar suffix(EListStyleType, int count);
 // type and item count number. Does not include any suffix character.
 String text(EListStyleType, int count);
 
-} // namespace ListMarkerText
+}  // namespace ListMarkerText
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ListMarkerText_h
+#endif  // ListMarkerText_h

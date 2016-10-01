@@ -19,14 +19,20 @@ class TimingFunction;
 class QualifiedName;
 
 class CORE_EXPORT AnimationInputHelpers {
-    STATIC_ONLY(AnimationInputHelpers);
-public:
-    static CSSPropertyID keyframeAttributeToCSSProperty(const String&, const Document&);
-    static CSSPropertyID keyframeAttributeToPresentationAttribute(const String&, const Element&);
-    static const QualifiedName* keyframeAttributeToSVGAttribute(const String&, Element&);
-    static PassRefPtr<TimingFunction> parseTimingFunction(const String&, Document*, ExceptionState&);
+  STATIC_ONLY(AnimationInputHelpers);
+
+ public:
+  static CSSPropertyID keyframeAttributeToCSSProperty(const String&,
+                                                      const Document&);
+  static CSSPropertyID keyframeAttributeToPresentationAttribute(const String&,
+                                                                const Element&);
+  static const QualifiedName* keyframeAttributeToSVGAttribute(const String&,
+                                                              Element&);
+  static PassRefPtr<TimingFunction> parseTimingFunction(const String&,
+                                                        Document*,
+                                                        ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationInputHelpers_h
+#endif  // AnimationInputHelpers_h

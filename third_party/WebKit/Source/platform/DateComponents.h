@@ -46,172 +46,188 @@ namespace blink {
 // * Time type: hour-minute-second-millisecond
 // * DateTime or DateTimeLocal type: year-month-day hour-minute-second-millisecond
 class PLATFORM_EXPORT DateComponents {
-    DISALLOW_NEW();
-public:
-    DateComponents()
-        : m_millisecond(0)
-        , m_second(0)
-        , m_minute(0)
-        , m_hour(0)
-        , m_monthDay(0)
-        , m_month(0)
-        , m_year(0)
-        , m_week(0)
-        , m_type(Invalid)
-    {
-    }
+  DISALLOW_NEW();
 
-    enum Type {
-        Invalid,
-        Date,
-        DateTime,
-        DateTimeLocal,
-        Month,
-        Time,
-        Week,
-    };
+ public:
+  DateComponents()
+      : m_millisecond(0),
+        m_second(0),
+        m_minute(0),
+        m_hour(0),
+        m_monthDay(0),
+        m_month(0),
+        m_year(0),
+        m_week(0),
+        m_type(Invalid) {}
 
-    int millisecond() const { return m_millisecond; }
-    int second() const { return m_second; }
-    int minute() const { return m_minute; }
-    int hour() const { return m_hour; }
-    int monthDay() const { return m_monthDay; }
-    int weekDay() const;
-    int month() const { return m_month; }
-    int fullYear() const { return m_year; }
-    int week() const { return m_week; }
-    Type getType() const { return m_type; }
+  enum Type {
+    Invalid,
+    Date,
+    DateTime,
+    DateTimeLocal,
+    Month,
+    Time,
+    Week,
+  };
 
-    enum SecondFormat {
-        None, // Suppress the second part and the millisecond part if they are 0.
-        Second, // Always show the second part, and suppress the millisecond part if it is 0.
-        Millisecond // Always show the second part and the millisecond part.
-    };
+  int millisecond() const { return m_millisecond; }
+  int second() const { return m_second; }
+  int minute() const { return m_minute; }
+  int hour() const { return m_hour; }
+  int monthDay() const { return m_monthDay; }
+  int weekDay() const;
+  int month() const { return m_month; }
+  int fullYear() const { return m_year; }
+  int week() const { return m_week; }
+  Type getType() const { return m_type; }
 
-    // Returns an ISO 8601 representation for this instance.
-    // The format argument is valid for DateTime, DateTimeLocal, and Time types.
-    String toString(SecondFormat format = None) const;
+  enum SecondFormat {
+    None,  // Suppress the second part and the millisecond part if they are 0.
+    Second,  // Always show the second part, and suppress the millisecond part if it is 0.
+    Millisecond  // Always show the second part and the millisecond part.
+  };
 
-    // parse*() and setMillisecondsSince*() functions are initializers for an
-    // DateComponents instance. If these functions return false, the instance
-    // might be invalid.
+  // Returns an ISO 8601 representation for this instance.
+  // The format argument is valid for DateTime, DateTimeLocal, and Time types.
+  String toString(SecondFormat format = None) const;
 
-    // The following six functions parse the input 'src' whose length is
-    // 'length', and updates some fields of this instance. The parsing starts at
-    // src[start] and examines characters before src[length].
-    // 'src' must be non-null. The 'src' string doesn't need to be
-    // null-terminated.
-    // The functions return true if the parsing succeeds, and set 'end' to the
-    // next index after the last consumed. Extra leading characters cause parse
-    // failures, and the trailing extra characters don't cause parse failures.
+  // parse*() and setMillisecondsSince*() functions are initializers for an
+  // DateComponents instance. If these functions return false, the instance
+  // might be invalid.
 
-    // Sets year and month.
-    bool parseMonth(const String&, unsigned start, unsigned& end);
-    // Sets year, month and monthDay.
-    bool parseDate(const String&, unsigned start, unsigned& end);
-    // Sets year and week.
-    bool parseWeek(const String&, unsigned start, unsigned& end);
-    // Sets hour, minute, second and millisecond.
-    bool parseTime(const String&, unsigned start, unsigned& end);
-    // Sets year, month, monthDay, hour, minute, second and millisecond.
-    bool parseDateTimeLocal(const String&, unsigned start, unsigned& end);
+  // The following six functions parse the input 'src' whose length is
+  // 'length', and updates some fields of this instance. The parsing starts at
+  // src[start] and examines characters before src[length].
+  // 'src' must be non-null. The 'src' string doesn't need to be
+  // null-terminated.
+  // The functions return true if the parsing succeeds, and set 'end' to the
+  // next index after the last consumed. Extra leading characters cause parse
+  // failures, and the trailing extra characters don't cause parse failures.
 
-    // The following setMillisecondsSinceEpochFor*() functions take
-    // the number of milliseconds since 1970-01-01 00:00:00.000 UTC as
-    // the argument, and update all fields for the corresponding
-    // DateComponents type. The functions return true if it succeeds, and
-    // false if they fail.
+  // Sets year and month.
+  bool parseMonth(const String&, unsigned start, unsigned& end);
+  // Sets year, month and monthDay.
+  bool parseDate(const String&, unsigned start, unsigned& end);
+  // Sets year and week.
+  bool parseWeek(const String&, unsigned start, unsigned& end);
+  // Sets hour, minute, second and millisecond.
+  bool parseTime(const String&, unsigned start, unsigned& end);
+  // Sets year, month, monthDay, hour, minute, second and millisecond.
+  bool parseDateTimeLocal(const String&, unsigned start, unsigned& end);
 
-    // For Date type. Updates m_year, m_month and m_monthDay.
-    bool setMillisecondsSinceEpochForDate(double ms);
-    // For DateTime type. Updates m_year, m_month, m_monthDay, m_hour, m_minute, m_second and m_millisecond.
-    bool setMillisecondsSinceEpochForDateTime(double ms);
-    // For DateTimeLocal type. Updates m_year, m_month, m_monthDay, m_hour, m_minute, m_second and m_millisecond.
-    bool setMillisecondsSinceEpochForDateTimeLocal(double ms);
-    // For Month type. Updates m_year and m_month.
-    bool setMillisecondsSinceEpochForMonth(double ms);
-    // For Week type. Updates m_year and m_week.
-    bool setMillisecondsSinceEpochForWeek(double ms);
+  // The following setMillisecondsSinceEpochFor*() functions take
+  // the number of milliseconds since 1970-01-01 00:00:00.000 UTC as
+  // the argument, and update all fields for the corresponding
+  // DateComponents type. The functions return true if it succeeds, and
+  // false if they fail.
 
-    // For Time type. Updates m_hour, m_minute, m_second and m_millisecond.
-    bool setMillisecondsSinceMidnight(double ms);
+  // For Date type. Updates m_year, m_month and m_monthDay.
+  bool setMillisecondsSinceEpochForDate(double ms);
+  // For DateTime type. Updates m_year, m_month, m_monthDay, m_hour, m_minute, m_second and m_millisecond.
+  bool setMillisecondsSinceEpochForDateTime(double ms);
+  // For DateTimeLocal type. Updates m_year, m_month, m_monthDay, m_hour, m_minute, m_second and m_millisecond.
+  bool setMillisecondsSinceEpochForDateTimeLocal(double ms);
+  // For Month type. Updates m_year and m_month.
+  bool setMillisecondsSinceEpochForMonth(double ms);
+  // For Week type. Updates m_year and m_week.
+  bool setMillisecondsSinceEpochForWeek(double ms);
 
-    // Another initializer for Month type. Updates m_year and m_month.
-    bool setMonthsSinceEpoch(double months);
-    // Another initializer for Week type. Updates m_year and m_week.
-    bool setWeek(int year, int weekNumber);
+  // For Time type. Updates m_hour, m_minute, m_second and m_millisecond.
+  bool setMillisecondsSinceMidnight(double ms);
 
-    // Returns the number of milliseconds from 1970-01-01 00:00:00 UTC.
-    // For a DateComponents initialized with parseDateTimeLocal(),
-    // millisecondsSinceEpoch() returns a value for UTC timezone.
-    double millisecondsSinceEpoch() const;
-    // Returns the number of months from 1970-01.
-    // Do not call this for types other than Month.
-    double monthsSinceEpoch() const;
-    static inline double invalidMilliseconds() { return std::numeric_limits<double>::quiet_NaN(); }
+  // Another initializer for Month type. Updates m_year and m_month.
+  bool setMonthsSinceEpoch(double months);
+  // Another initializer for Week type. Updates m_year and m_week.
+  bool setWeek(int year, int weekNumber);
 
-    // Minimum and maxmimum limits for setMillisecondsSince*(),
-    // setMonthsSinceEpoch(), millisecondsSinceEpoch(), and monthsSinceEpoch().
-    static inline double minimumDate() { return -62135596800000.0; } // 0001-01-01T00:00Z
-    static inline double minimumDateTime() { return -62135596800000.0; } // ditto.
-    static inline double minimumMonth() { return (1 - 1970) * 12.0 + 1 - 1; } // 0001-01
-    static inline double minimumTime() { return 0; } // 00:00:00.000
-    static inline double minimumWeek() { return -62135596800000.0; } // 0001-01-01, the first Monday of 0001.
-    static inline double maximumDate() { return 8640000000000000.0; } // 275760-09-13T00:00Z
-    static inline double maximumDateTime() { return 8640000000000000.0; } // ditto.
-    static inline double maximumMonth() { return (275760 - 1970) * 12.0 + 9 - 1; } // 275760-09
-    static inline double maximumTime() { return 86399999; } // 23:59:59.999
-    static inline double maximumWeek() { return 8639999568000000.0; } // 275760-09-08, the Monday of the week including 275760-09-13.
+  // Returns the number of milliseconds from 1970-01-01 00:00:00 UTC.
+  // For a DateComponents initialized with parseDateTimeLocal(),
+  // millisecondsSinceEpoch() returns a value for UTC timezone.
+  double millisecondsSinceEpoch() const;
+  // Returns the number of months from 1970-01.
+  // Do not call this for types other than Month.
+  double monthsSinceEpoch() const;
+  static inline double invalidMilliseconds() {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
 
-    // HTML5 uses ISO-8601 format with year >= 1. Gregorian calendar started in
-    // 1582. However, we need to support 0001-01-01 in Gregorian calendar rule.
-    static inline int minimumYear() { return 1; }
-    // Date in ECMAScript can't represent dates later than 275760-09-13T00:00Z.
-    // So, we have the same upper limit in HTML5 date/time types.
-    static inline int maximumYear() { return 275760; }
-    static const int minimumWeekNumber;
-    static const int maximumWeekNumber;
+  // Minimum and maxmimum limits for setMillisecondsSince*(),
+  // setMonthsSinceEpoch(), millisecondsSinceEpoch(), and monthsSinceEpoch().
+  static inline double minimumDate() {
+    return -62135596800000.0;
+  }  // 0001-01-01T00:00Z
+  static inline double minimumDateTime() {
+    return -62135596800000.0;
+  }  // ditto.
+  static inline double minimumMonth() {
+    return (1 - 1970) * 12.0 + 1 - 1;
+  }                                                 // 0001-01
+  static inline double minimumTime() { return 0; }  // 00:00:00.000
+  static inline double minimumWeek() {
+    return -62135596800000.0;
+  }  // 0001-01-01, the first Monday of 0001.
+  static inline double maximumDate() {
+    return 8640000000000000.0;
+  }  // 275760-09-13T00:00Z
+  static inline double maximumDateTime() {
+    return 8640000000000000.0;
+  }  // ditto.
+  static inline double maximumMonth() {
+    return (275760 - 1970) * 12.0 + 9 - 1;
+  }                                                        // 275760-09
+  static inline double maximumTime() { return 86399999; }  // 23:59:59.999
+  static inline double maximumWeek() {
+    return 8639999568000000.0;
+  }  // 275760-09-08, the Monday of the week including 275760-09-13.
 
-private:
-    // Returns the maximum week number in this DateComponents's year.
-    // The result is either of 52 and 53.
-    int maxWeekNumberInYear() const;
-    bool parseYear(const String&, unsigned start, unsigned& end);
-    bool addDay(int);
-    bool addMinute(int);
-    bool parseTimeZone(const String&, unsigned start, unsigned& end);
-    // Helper for millisecondsSinceEpoch().
-    double millisecondsSinceEpochForTime() const;
-    // Helpers for setMillisecondsSinceEpochFor*().
-    bool setMillisecondsSinceEpochForDateInternal(double ms);
-    void setMillisecondsSinceMidnightInternal(double ms);
-    // Helper for toString().
-    String toStringForTime(SecondFormat) const;
+  // HTML5 uses ISO-8601 format with year >= 1. Gregorian calendar started in
+  // 1582. However, we need to support 0001-01-01 in Gregorian calendar rule.
+  static inline int minimumYear() { return 1; }
+  // Date in ECMAScript can't represent dates later than 275760-09-13T00:00Z.
+  // So, we have the same upper limit in HTML5 date/time types.
+  static inline int maximumYear() { return 275760; }
+  static const int minimumWeekNumber;
+  static const int maximumWeekNumber;
 
-    // m_weekDay values
-    enum {
-        Sunday = 0,
-        Monday,
-        Tuesday,
-        Wednesday,
-        Thursday,
-        Friday,
-        Saturday,
-    };
+ private:
+  // Returns the maximum week number in this DateComponents's year.
+  // The result is either of 52 and 53.
+  int maxWeekNumberInYear() const;
+  bool parseYear(const String&, unsigned start, unsigned& end);
+  bool addDay(int);
+  bool addMinute(int);
+  bool parseTimeZone(const String&, unsigned start, unsigned& end);
+  // Helper for millisecondsSinceEpoch().
+  double millisecondsSinceEpochForTime() const;
+  // Helpers for setMillisecondsSinceEpochFor*().
+  bool setMillisecondsSinceEpochForDateInternal(double ms);
+  void setMillisecondsSinceMidnightInternal(double ms);
+  // Helper for toString().
+  String toStringForTime(SecondFormat) const;
 
-    int m_millisecond; // 0 - 999
-    int m_second;
-    int m_minute;
-    int m_hour;
-    int m_monthDay; // 1 - 31
-    int m_month; // 0:January - 11:December
-    int m_year; //  1582 -
-    int m_week; // 1 - 53
+  // m_weekDay values
+  enum {
+    Sunday = 0,
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+  };
 
-    Type m_type;
+  int m_millisecond;  // 0 - 999
+  int m_second;
+  int m_minute;
+  int m_hour;
+  int m_monthDay;  // 1 - 31
+  int m_month;     // 0:January - 11:December
+  int m_year;      //  1582 -
+  int m_week;      // 1 - 53
+
+  Type m_type;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // DateComponents_h
+#endif  // DateComponents_h

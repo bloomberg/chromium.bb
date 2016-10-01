@@ -32,49 +32,50 @@ class SkShader;
 namespace blink {
 
 enum TurbulenceType {
-    FETURBULENCE_TYPE_UNKNOWN = 0,
-    FETURBULENCE_TYPE_FRACTALNOISE = 1,
-    FETURBULENCE_TYPE_TURBULENCE = 2
+  FETURBULENCE_TYPE_UNKNOWN = 0,
+  FETURBULENCE_TYPE_FRACTALNOISE = 1,
+  FETURBULENCE_TYPE_TURBULENCE = 2
 };
 
 class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
-public:
-    static FETurbulence* create(Filter*, TurbulenceType, float, float, int, float, bool);
+ public:
+  static FETurbulence*
+  create(Filter*, TurbulenceType, float, float, int, float, bool);
 
-    TurbulenceType type() const;
-    bool setType(TurbulenceType);
+  TurbulenceType type() const;
+  bool setType(TurbulenceType);
 
-    float baseFrequencyY() const;
-    bool setBaseFrequencyY(float);
+  float baseFrequencyY() const;
+  bool setBaseFrequencyY(float);
 
-    float baseFrequencyX() const;
-    bool setBaseFrequencyX(float);
+  float baseFrequencyX() const;
+  bool setBaseFrequencyX(float);
 
-    float seed() const;
-    bool setSeed(float);
+  float seed() const;
+  bool setSeed(float);
 
-    int numOctaves() const;
-    bool setNumOctaves(int);
+  int numOctaves() const;
+  bool setNumOctaves(int);
 
-    bool stitchTiles() const;
-    bool setStitchTiles(bool);
+  bool stitchTiles() const;
+  bool setStitchTiles(bool);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
+ private:
+  FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
 
-    sk_sp<SkImageFilter> createImageFilter() override;
-    sk_sp<SkShader> createShader() const;
+  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkShader> createShader() const;
 
-    TurbulenceType m_type;
-    float m_baseFrequencyX;
-    float m_baseFrequencyY;
-    int m_numOctaves;
-    float m_seed;
-    bool m_stitchTiles;
+  TurbulenceType m_type;
+  float m_baseFrequencyX;
+  float m_baseFrequencyY;
+  int m_numOctaves;
+  float m_seed;
+  bool m_stitchTiles;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FETurbulence_h
+#endif  // FETurbulence_h

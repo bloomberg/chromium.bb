@@ -40,33 +40,36 @@ namespace blink {
 // The default constructor defaults to single-channel (mono).
 
 class PLATFORM_EXPORT AudioResampler {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(AudioResampler);
-public:
-    AudioResampler();
-    AudioResampler(unsigned numberOfChannels);
-    ~AudioResampler() { }
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(AudioResampler);
 
-    // Given an AudioSourceProvider, process() resamples the source stream into destinationBus.
-    void process(AudioSourceProvider*, AudioBus* destinationBus, size_t framesToProcess);
+ public:
+  AudioResampler();
+  AudioResampler(unsigned numberOfChannels);
+  ~AudioResampler() {}
 
-    // Resets the processing state.
-    void reset();
+  // Given an AudioSourceProvider, process() resamples the source stream into destinationBus.
+  void process(AudioSourceProvider*,
+               AudioBus* destinationBus,
+               size_t framesToProcess);
 
-    void configureChannels(unsigned numberOfChannels);
+  // Resets the processing state.
+  void reset();
 
-    // 0 < rate <= MaxRate
-    void setRate(double rate);
-    double rate() const { return m_rate; }
+  void configureChannels(unsigned numberOfChannels);
 
-    static const double MaxRate;
+  // 0 < rate <= MaxRate
+  void setRate(double rate);
+  double rate() const { return m_rate; }
 
-private:
-    double m_rate;
-    Vector<std::unique_ptr<AudioResamplerKernel>> m_kernels;
-    RefPtr<AudioBus> m_sourceBus;
+  static const double MaxRate;
+
+ private:
+  double m_rate;
+  Vector<std::unique_ptr<AudioResamplerKernel>> m_kernels;
+  RefPtr<AudioBus> m_sourceBus;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioResampler_h
+#endif  // AudioResampler_h

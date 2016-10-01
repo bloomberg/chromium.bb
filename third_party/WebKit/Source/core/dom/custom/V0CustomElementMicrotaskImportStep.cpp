@@ -38,57 +38,50 @@
 
 namespace blink {
 
-V0CustomElementMicrotaskImportStep::V0CustomElementMicrotaskImportStep(HTMLImportChild* import)
-    : m_import(import)
-    , m_queue(import->loader()->microtaskQueue())
-{
+V0CustomElementMicrotaskImportStep::V0CustomElementMicrotaskImportStep(
+    HTMLImportChild* import)
+    : m_import(import), m_queue(import->loader()->microtaskQueue()) {}
+
+V0CustomElementMicrotaskImportStep::~V0CustomElementMicrotaskImportStep() {}
+
+void V0CustomElementMicrotaskImportStep::invalidate() {
+  m_queue = V0CustomElementSyncMicrotaskQueue::create();
+  m_import.clear();
 }
 
-V0CustomElementMicrotaskImportStep::~V0CustomElementMicrotaskImportStep()
-{
+bool V0CustomElementMicrotaskImportStep::shouldWaitForImport() const {
+  return m_import && !m_import->loader()->isDone();
 }
 
-void V0CustomElementMicrotaskImportStep::invalidate()
-{
-    m_queue = V0CustomElementSyncMicrotaskQueue::create();
-    m_import.clear();
+void V0CustomElementMicrotaskImportStep::didUpgradeAllCustomElements() {
+  DCHECK(m_queue);
+  if (m_import)
+    m_import->didFinishUpgradingCustomElements();
 }
 
-bool V0CustomElementMicrotaskImportStep::shouldWaitForImport() const
-{
-    return m_import && !m_import->loader()->isDone();
+V0CustomElementMicrotaskStep::Result
+V0CustomElementMicrotaskImportStep::process() {
+  m_queue->dispatch();
+  if (!m_queue->isEmpty() || shouldWaitForImport())
+    return Processing;
+
+  didUpgradeAllCustomElements();
+  return FinishedProcessing;
 }
 
-void V0CustomElementMicrotaskImportStep::didUpgradeAllCustomElements()
-{
-    DCHECK(m_queue);
-    if (m_import)
-        m_import->didFinishUpgradingCustomElements();
-}
-
-V0CustomElementMicrotaskStep::Result V0CustomElementMicrotaskImportStep::process()
-{
-    m_queue->dispatch();
-    if (!m_queue->isEmpty() || shouldWaitForImport())
-        return Processing;
-
-    didUpgradeAllCustomElements();
-    return FinishedProcessing;
-}
-
-DEFINE_TRACE(V0CustomElementMicrotaskImportStep)
-{
-    visitor->trace(m_import);
-    visitor->trace(m_queue);
-    V0CustomElementMicrotaskStep::trace(visitor);
+DEFINE_TRACE(V0CustomElementMicrotaskImportStep) {
+  visitor->trace(m_import);
+  visitor->trace(m_queue);
+  V0CustomElementMicrotaskStep::trace(visitor);
 }
 
 #if !defined(NDEBUG)
-void V0CustomElementMicrotaskImportStep::show(unsigned indent)
-{
-    fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "", shouldWaitForImport(), m_import && m_import->isSync(), m_import ? m_import->url().getString().utf8().data() : "null");
-    m_queue->show(indent + 1);
+void V0CustomElementMicrotaskImportStep::show(unsigned indent) {
+  fprintf(stderr, "%*sImport(wait=%d sync=%d, url=%s)\n", indent, "",
+          shouldWaitForImport(), m_import && m_import->isSync(),
+          m_import ? m_import->url().getString().utf8().data() : "null");
+  m_queue->show(indent + 1);
 }
 #endif
 
-} // namespace blink
+}  // namespace blink

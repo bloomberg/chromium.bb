@@ -38,60 +38,60 @@
 namespace blink {
 
 class PLATFORM_EXPORT PlatformInstrumentation {
-public:
-    class LazyPixelRefTracker: TraceEvent::TraceScopedTrackableObject<void*> {
-    public:
-        LazyPixelRefTracker(void* instance)
-            : TraceEvent::TraceScopedTrackableObject<void*>(CategoryName, LazyPixelRef, instance)
-        {
-        }
-    };
+ public:
+  class LazyPixelRefTracker : TraceEvent::TraceScopedTrackableObject<void*> {
+   public:
+    LazyPixelRefTracker(void* instance)
+        : TraceEvent::TraceScopedTrackableObject<void*>(CategoryName,
+                                                        LazyPixelRef,
+                                                        instance) {}
+  };
 
-    static const char ImageDecodeEvent[];
-    static const char ImageResizeEvent[];
-    static const char DrawLazyPixelRefEvent[];
-    static const char DecodeLazyPixelRefEvent[];
+  static const char ImageDecodeEvent[];
+  static const char ImageResizeEvent[];
+  static const char DrawLazyPixelRefEvent[];
+  static const char DecodeLazyPixelRefEvent[];
 
-    static const char ImageTypeArgument[];
-    static const char CachedArgument[];
+  static const char ImageTypeArgument[];
+  static const char CachedArgument[];
 
-    static const char LazyPixelRef[];
+  static const char LazyPixelRef[];
 
-    static void willDecodeImage(const String& imageType);
-    static void didDecodeImage();
-    static void didDrawLazyPixelRef(unsigned long long lazyPixelRefId);
-    static void willDecodeLazyPixelRef(unsigned long long lazyPixelRefId);
-    static void didDecodeLazyPixelRef();
+  static void willDecodeImage(const String& imageType);
+  static void didDecodeImage();
+  static void didDrawLazyPixelRef(unsigned long long lazyPixelRefId);
+  static void willDecodeLazyPixelRef(unsigned long long lazyPixelRefId);
+  static void didDecodeLazyPixelRef();
 
-private:
-    static const char CategoryName[];
+ private:
+  static const char CategoryName[];
 };
 
-inline void PlatformInstrumentation::willDecodeImage(const String& imageType)
-{
-    TRACE_EVENT_BEGIN1(CategoryName, ImageDecodeEvent, ImageTypeArgument, imageType.ascii());
+inline void PlatformInstrumentation::willDecodeImage(const String& imageType) {
+  TRACE_EVENT_BEGIN1(CategoryName, ImageDecodeEvent, ImageTypeArgument,
+                     imageType.ascii());
 }
 
-inline void PlatformInstrumentation::didDecodeImage()
-{
-    TRACE_EVENT_END0(CategoryName, ImageDecodeEvent);
+inline void PlatformInstrumentation::didDecodeImage() {
+  TRACE_EVENT_END0(CategoryName, ImageDecodeEvent);
 }
 
-inline void PlatformInstrumentation::didDrawLazyPixelRef(unsigned long long lazyPixelRefId)
-{
-    TRACE_EVENT_INSTANT1(CategoryName, DrawLazyPixelRefEvent, TRACE_EVENT_SCOPE_THREAD, LazyPixelRef, lazyPixelRefId);
+inline void PlatformInstrumentation::didDrawLazyPixelRef(
+    unsigned long long lazyPixelRefId) {
+  TRACE_EVENT_INSTANT1(CategoryName, DrawLazyPixelRefEvent,
+                       TRACE_EVENT_SCOPE_THREAD, LazyPixelRef, lazyPixelRefId);
 }
 
-inline void PlatformInstrumentation::willDecodeLazyPixelRef(unsigned long long lazyPixelRefId)
-{
-    TRACE_EVENT_BEGIN1(CategoryName, DecodeLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
+inline void PlatformInstrumentation::willDecodeLazyPixelRef(
+    unsigned long long lazyPixelRefId) {
+  TRACE_EVENT_BEGIN1(CategoryName, DecodeLazyPixelRefEvent, LazyPixelRef,
+                     lazyPixelRefId);
 }
 
-inline void PlatformInstrumentation::didDecodeLazyPixelRef()
-{
-    TRACE_EVENT_END0(CategoryName, DecodeLazyPixelRefEvent);
+inline void PlatformInstrumentation::didDecodeLazyPixelRef() {
+  TRACE_EVENT_END0(CategoryName, DecodeLazyPixelRefEvent);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformInstrumentation_h
+#endif  // PlatformInstrumentation_h

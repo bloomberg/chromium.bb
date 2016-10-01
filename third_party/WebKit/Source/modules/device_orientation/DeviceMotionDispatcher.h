@@ -42,31 +42,35 @@ class DeviceMotionData;
 class WebDeviceMotionData;
 
 // This class listens to device motion data and notifies all registered controllers.
-class DeviceMotionDispatcher final : public GarbageCollectedFinalized<DeviceMotionDispatcher>, public PlatformEventDispatcher, public WebDeviceMotionListener {
-    USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionDispatcher);
-public:
-    static DeviceMotionDispatcher& instance();
-    ~DeviceMotionDispatcher() override;
+class DeviceMotionDispatcher final
+    : public GarbageCollectedFinalized<DeviceMotionDispatcher>,
+      public PlatformEventDispatcher,
+      public WebDeviceMotionListener {
+  USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionDispatcher);
 
-    // Note that the returned object is owned by this class.
-    // FIXME: make the return value const, see crbug.com/233174.
-    DeviceMotionData* latestDeviceMotionData();
+ public:
+  static DeviceMotionDispatcher& instance();
+  ~DeviceMotionDispatcher() override;
 
-    // Inherited from WebDeviceMotionListener.
-    void didChangeDeviceMotion(const WebDeviceMotionData&) override;
+  // Note that the returned object is owned by this class.
+  // FIXME: make the return value const, see crbug.com/233174.
+  DeviceMotionData* latestDeviceMotionData();
 
-    DECLARE_VIRTUAL_TRACE();
+  // Inherited from WebDeviceMotionListener.
+  void didChangeDeviceMotion(const WebDeviceMotionData&) override;
 
-private:
-    DeviceMotionDispatcher();
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from PlatformEventDispatcher.
-    void startListening() override;
-    void stopListening() override;
+ private:
+  DeviceMotionDispatcher();
 
-    Member<DeviceMotionData> m_lastDeviceMotionData;
+  // Inherited from PlatformEventDispatcher.
+  void startListening() override;
+  void stopListening() override;
+
+  Member<DeviceMotionData> m_lastDeviceMotionData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceMotionDispatcher_h
+#endif  // DeviceMotionDispatcher_h

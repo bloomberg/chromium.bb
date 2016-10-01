@@ -27,109 +27,118 @@
 namespace blink {
 
 inline SVGCircleElement::SVGCircleElement(Document& document)
-    : SVGGeometryElement(SVGNames::circleTag, document)
-    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(SVGLengthMode::Width)))
-    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(SVGLengthMode::Height)))
-    , m_r(SVGAnimatedLength::create(this, SVGNames::rAttr, SVGLength::create(SVGLengthMode::Other)))
-{
-    addToPropertyMap(m_cx);
-    addToPropertyMap(m_cy);
-    addToPropertyMap(m_r);
+    : SVGGeometryElement(SVGNames::circleTag, document),
+      m_cx(SVGAnimatedLength::create(this,
+                                     SVGNames::cxAttr,
+                                     SVGLength::create(SVGLengthMode::Width))),
+      m_cy(SVGAnimatedLength::create(this,
+                                     SVGNames::cyAttr,
+                                     SVGLength::create(SVGLengthMode::Height))),
+      m_r(SVGAnimatedLength::create(this,
+                                    SVGNames::rAttr,
+                                    SVGLength::create(SVGLengthMode::Other))) {
+  addToPropertyMap(m_cx);
+  addToPropertyMap(m_cy);
+  addToPropertyMap(m_r);
 }
 
-DEFINE_TRACE(SVGCircleElement)
-{
-    visitor->trace(m_cx);
-    visitor->trace(m_cy);
-    visitor->trace(m_r);
-    SVGGeometryElement::trace(visitor);
+DEFINE_TRACE(SVGCircleElement) {
+  visitor->trace(m_cx);
+  visitor->trace(m_cy);
+  visitor->trace(m_r);
+  SVGGeometryElement::trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGCircleElement)
 
-Path SVGCircleElement::asPath() const
-{
-    Path path;
+Path SVGCircleElement::asPath() const {
+  Path path;
 
-    SVGLengthContext lengthContext(this);
-    ASSERT(layoutObject());
-    const ComputedStyle& style = layoutObject()->styleRef();
-    const SVGComputedStyle& svgStyle = style.svgStyle();
+  SVGLengthContext lengthContext(this);
+  ASSERT(layoutObject());
+  const ComputedStyle& style = layoutObject()->styleRef();
+  const SVGComputedStyle& svgStyle = style.svgStyle();
 
-    float r = lengthContext.valueForLength(svgStyle.r(), style, SVGLengthMode::Other);
-    if (r > 0) {
-        path.addEllipse(FloatRect(
-            lengthContext.valueForLength(svgStyle.cx(), style, SVGLengthMode::Width) - r,
-            lengthContext.valueForLength(svgStyle.cy(), style, SVGLengthMode::Height) - r,
-            r * 2, r * 2));
-    }
+  float r =
+      lengthContext.valueForLength(svgStyle.r(), style, SVGLengthMode::Other);
+  if (r > 0) {
+    path.addEllipse(FloatRect(lengthContext.valueForLength(
+                                  svgStyle.cx(), style, SVGLengthMode::Width) -
+                                  r,
+                              lengthContext.valueForLength(
+                                  svgStyle.cy(), style, SVGLengthMode::Height) -
+                                  r,
+                              r * 2, r * 2));
+  }
 
-    return path;
+  return path;
 }
 
-bool SVGCircleElement::isPresentationAttribute(const QualifiedName& attrName) const
-{
-    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
-        || attrName == SVGNames::rAttr)
-        return true;
-    return SVGGeometryElement::isPresentationAttribute(attrName);
+bool SVGCircleElement::isPresentationAttribute(
+    const QualifiedName& attrName) const {
+  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
+      attrName == SVGNames::rAttr)
+    return true;
+  return SVGGeometryElement::isPresentationAttribute(attrName);
 }
 
-bool SVGCircleElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
-{
-    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
-        || attrName == SVGNames::rAttr)
-        return true;
-    return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
+bool SVGCircleElement::isPresentationAttributeWithSVGDOM(
+    const QualifiedName& attrName) const {
+  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
+      attrName == SVGNames::rAttr)
+    return true;
+  return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
-void SVGCircleElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-    if (property == m_cx)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
-    else if (property == m_cy)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
-    else if (property == m_r)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyR, m_r->currentValue()->asCSSPrimitiveValue());
-    else
-        SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
+void SVGCircleElement::collectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
+  SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
+  if (property == m_cx)
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
+  else if (property == m_cy)
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
+  else if (property == m_r)
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyR, m_r->currentValue()->asCSSPrimitiveValue());
+  else
+    SVGGeometryElement::collectStyleForPresentationAttribute(name, value,
+                                                             style);
 }
 
-void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (attrName == SVGNames::rAttr
-        || attrName == SVGNames::cxAttr
-        || attrName == SVGNames::cyAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (attrName == SVGNames::rAttr || attrName == SVGNames::cxAttr ||
+      attrName == SVGNames::cyAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange,
-            StyleChangeReasonForTracing::fromAttribute(attrName));
-        updateRelativeLengthsInformation();
+    invalidateSVGPresentationAttributeStyle();
+    setNeedsStyleRecalc(LocalStyleChange,
+                        StyleChangeReasonForTracing::fromAttribute(attrName));
+    updateRelativeLengthsInformation();
 
-        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
-        if (!layoutObject)
-            return;
+    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+    if (!layoutObject)
+      return;
 
-        layoutObject->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(layoutObject);
-        return;
-    }
+    layoutObject->setNeedsShapeUpdate();
+    markForLayoutAndParentResourceInvalidation(layoutObject);
+    return;
+  }
 
-    SVGGraphicsElement::svgAttributeChanged(attrName);
+  SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-bool SVGCircleElement::selfHasRelativeLengths() const
-{
-    return m_cx->currentValue()->isRelative()
-        || m_cy->currentValue()->isRelative()
-        || m_r->currentValue()->isRelative();
+bool SVGCircleElement::selfHasRelativeLengths() const {
+  return m_cx->currentValue()->isRelative() ||
+         m_cy->currentValue()->isRelative() ||
+         m_r->currentValue()->isRelative();
 }
 
-LayoutObject* SVGCircleElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutSVGEllipse(this);
+LayoutObject* SVGCircleElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutSVGEllipse(this);
 }
 
-} // namespace blink
+}  // namespace blink

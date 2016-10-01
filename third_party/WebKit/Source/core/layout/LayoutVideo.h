@@ -33,54 +33,58 @@ namespace blink {
 class HTMLVideoElement;
 
 class LayoutVideo final : public LayoutMedia {
-public:
-    LayoutVideo(HTMLVideoElement*);
-    ~LayoutVideo() override;
+ public:
+  LayoutVideo(HTMLVideoElement*);
+  ~LayoutVideo() override;
 
-    static LayoutSize defaultSize();
+  static LayoutSize defaultSize();
 
-    LayoutRect replacedContentRect() const final;
+  LayoutRect replacedContentRect() const final;
 
-    bool supportsAcceleratedRendering() const;
+  bool supportsAcceleratedRendering() const;
 
-    bool shouldDisplayVideo() const;
-    HTMLVideoElement* videoElement() const;
+  bool shouldDisplayVideo() const;
+  HTMLVideoElement* videoElement() const;
 
-    const char* name() const override { return "LayoutVideo"; }
+  const char* name() const override { return "LayoutVideo"; }
 
-private:
-    void updateFromElement() override;
+ private:
+  void updateFromElement() override;
 
-    void intrinsicSizeChanged() override;
-    LayoutSize calculateIntrinsicSize();
-    void updateIntrinsicSize();
+  void intrinsicSizeChanged() override;
+  LayoutSize calculateIntrinsicSize();
+  void updateIntrinsicSize();
 
-    void imageChanged(WrappedImagePtr, const IntRect*) override;
+  void imageChanged(WrappedImagePtr, const IntRect*) override;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectVideo || LayoutMedia::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectVideo || LayoutMedia::isOfType(type);
+  }
 
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
+  void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
-    void layout() override;
+  void layout() override;
 
-    LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred = ComputeActual) const override;
-    LayoutUnit computeReplacedLogicalHeight(LayoutUnit estimatedUsedWidth = LayoutUnit()) const override;
-    LayoutUnit minimumReplacedHeight() const override;
+  LayoutUnit computeReplacedLogicalWidth(
+      ShouldComputePreferred = ComputeActual) const override;
+  LayoutUnit computeReplacedLogicalHeight(
+      LayoutUnit estimatedUsedWidth = LayoutUnit()) const override;
+  LayoutUnit minimumReplacedHeight() const override;
 
-    LayoutUnit offsetLeft(const Element*) const override;
-    LayoutUnit offsetTop(const Element*) const override;
-    LayoutUnit offsetWidth() const override;
-    LayoutUnit offsetHeight() const override;
+  LayoutUnit offsetLeft(const Element*) const override;
+  LayoutUnit offsetTop(const Element*) const override;
+  LayoutUnit offsetWidth() const override;
+  LayoutUnit offsetHeight() const override;
 
-    CompositingReasons additionalCompositingReasons() const override;
+  CompositingReasons additionalCompositingReasons() const override;
 
-    void updatePlayer();
+  void updatePlayer();
 
-    LayoutSize m_cachedImageSize;
+  LayoutSize m_cachedImageSize;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutVideo, isVideo());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutVideo_h
+#endif  // LayoutVideo_h

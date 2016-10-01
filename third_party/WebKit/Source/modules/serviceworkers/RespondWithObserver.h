@@ -23,52 +23,67 @@ class ScriptValue;
 
 // This class observes the service worker's handling of a FetchEvent and
 // notifies the client.
-class MODULES_EXPORT RespondWithObserver : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
-public:
-    virtual ~RespondWithObserver();
+class MODULES_EXPORT RespondWithObserver
+    : public GarbageCollectedFinalized<RespondWithObserver>,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 
-    static RespondWithObserver* create(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext, WaitUntilObserver*);
+ public:
+  virtual ~RespondWithObserver();
 
-    void contextDestroyed() override;
+  static RespondWithObserver* create(ExecutionContext*,
+                                     int eventID,
+                                     const KURL& requestURL,
+                                     WebURLRequest::FetchRequestMode,
+                                     WebURLRequest::FrameType,
+                                     WebURLRequest::RequestContext,
+                                     WaitUntilObserver*);
 
-    void willDispatchEvent();
-    void didDispatchEvent(DispatchEventResult dispatchResult);
+  void contextDestroyed() override;
 
-    // Observes the promise and delays calling didHandleFetchEvent() until the
-    // given promise is resolved or rejected.
-    void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
+  void willDispatchEvent();
+  void didDispatchEvent(DispatchEventResult dispatchResult);
 
-    void responseWasRejected(WebServiceWorkerResponseError);
-    virtual void responseWasFulfilled(const ScriptValue&);
+  // Observes the promise and delays calling didHandleFetchEvent() until the
+  // given promise is resolved or rejected.
+  void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  void responseWasRejected(WebServiceWorkerResponseError);
+  virtual void responseWasFulfilled(const ScriptValue&);
 
-protected:
-    RespondWithObserver(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext, WaitUntilObserver*);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    class ThenFunction;
+ protected:
+  RespondWithObserver(ExecutionContext*,
+                      int eventID,
+                      const KURL& requestURL,
+                      WebURLRequest::FetchRequestMode,
+                      WebURLRequest::FrameType,
+                      WebURLRequest::RequestContext,
+                      WaitUntilObserver*);
 
-    int m_eventID;
-    KURL m_requestURL;
-    WebURLRequest::FetchRequestMode m_requestMode;
-    WebURLRequest::FrameType m_frameType;
-    WebURLRequest::RequestContext m_requestContext;
+ private:
+  class ThenFunction;
 
-    double m_eventDispatchTime = 0;
+  int m_eventID;
+  KURL m_requestURL;
+  WebURLRequest::FetchRequestMode m_requestMode;
+  WebURLRequest::FrameType m_frameType;
+  WebURLRequest::RequestContext m_requestContext;
 
-    enum State { Initial, Pending, Done };
-    State m_state;
+  double m_eventDispatchTime = 0;
 
-    // RespondWith should ensure the ExtendableEvent is alive until the promise
-    // passed to RespondWith is resolved. The lifecycle of the ExtendableEvent
-    // is controlled by WaitUntilObserver, so not only
-    // WaitUntilObserver::ThenFunction but RespondWith needs to have a strong
-    // reference to the WaitUntilObserver.
-    Member<WaitUntilObserver> m_observer;
+  enum State { Initial, Pending, Done };
+  State m_state;
+
+  // RespondWith should ensure the ExtendableEvent is alive until the promise
+  // passed to RespondWith is resolved. The lifecycle of the ExtendableEvent
+  // is controlled by WaitUntilObserver, so not only
+  // WaitUntilObserver::ThenFunction but RespondWith needs to have a strong
+  // reference to the WaitUntilObserver.
+  Member<WaitUntilObserver> m_observer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RespondWithObserver_h
+#endif  // RespondWithObserver_h

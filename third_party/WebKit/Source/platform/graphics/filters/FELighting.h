@@ -38,28 +38,32 @@ namespace blink {
 class LightSource;
 
 class PLATFORM_EXPORT FELighting : public FilterEffect {
-protected:
-    enum LightingType {
-        DiffuseLighting,
-        SpecularLighting
-    };
+ protected:
+  enum LightingType { DiffuseLighting, SpecularLighting };
 
-    sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilter() override;
 
-    bool affectsTransparentPixels() const override { return true; }
+  bool affectsTransparentPixels() const override { return true; }
 
-    FELighting(Filter*, LightingType, const Color&, float, float, float, float, PassRefPtr<LightSource>);
+  FELighting(Filter*,
+             LightingType,
+             const Color&,
+             float,
+             float,
+             float,
+             float,
+             PassRefPtr<LightSource>);
 
-    LightingType m_lightingType;
-    RefPtr<LightSource> m_lightSource;
+  LightingType m_lightingType;
+  RefPtr<LightSource> m_lightSource;
 
-    Color m_lightingColor;
-    float m_surfaceScale;
-    float m_diffuseConstant;
-    float m_specularConstant;
-    float m_specularExponent;
+  Color m_lightingColor;
+  float m_surfaceScale;
+  float m_diffuseConstant;
+  float m_specularConstant;
+  float m_specularExponent;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FELighting_h
+#endif  // FELighting_h

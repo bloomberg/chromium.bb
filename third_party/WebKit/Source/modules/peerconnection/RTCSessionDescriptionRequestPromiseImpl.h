@@ -14,26 +14,30 @@ class RTCPeerConnection;
 class ScriptPromiseResolver;
 class WebRTCSessionDescription;
 
-class RTCSessionDescriptionRequestPromiseImpl final : public RTCSessionDescriptionRequest {
-public:
-    static RTCSessionDescriptionRequestPromiseImpl* create(RTCPeerConnection*, ScriptPromiseResolver*);
-    ~RTCSessionDescriptionRequestPromiseImpl() override;
+class RTCSessionDescriptionRequestPromiseImpl final
+    : public RTCSessionDescriptionRequest {
+ public:
+  static RTCSessionDescriptionRequestPromiseImpl* create(
+      RTCPeerConnection*,
+      ScriptPromiseResolver*);
+  ~RTCSessionDescriptionRequestPromiseImpl() override;
 
-    // RTCSessionDescriptionRequest
-    void requestSucceeded(const WebRTCSessionDescription&) override;
-    void requestFailed(const String& error) override;
+  // RTCSessionDescriptionRequest
+  void requestSucceeded(const WebRTCSessionDescription&) override;
+  void requestFailed(const String& error) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    RTCSessionDescriptionRequestPromiseImpl(RTCPeerConnection*, ScriptPromiseResolver*);
+ private:
+  RTCSessionDescriptionRequestPromiseImpl(RTCPeerConnection*,
+                                          ScriptPromiseResolver*);
 
-    void clear();
+  void clear();
 
-    Member<RTCPeerConnection> m_requester;
-    Member<ScriptPromiseResolver> m_resolver;
+  Member<RTCPeerConnection> m_requester;
+  Member<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCSessionDescriptionRequestPromiseImpl_h
+#endif  // RTCSessionDescriptionRequestPromiseImpl_h

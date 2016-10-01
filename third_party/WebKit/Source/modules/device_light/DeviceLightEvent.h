@@ -12,32 +12,37 @@
 namespace blink {
 
 class DeviceLightEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~DeviceLightEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static DeviceLightEvent* create(const AtomicString& eventType, double value)
-    {
-        return new DeviceLightEvent(eventType, value);
-    }
-    static DeviceLightEvent* create(const AtomicString& eventType, const DeviceLightEventInit& initializer)
-    {
-        return new DeviceLightEvent(eventType, initializer);
-    }
+ public:
+  ~DeviceLightEvent() override;
 
-    double value() const { return m_value; }
+  static DeviceLightEvent* create(const AtomicString& eventType, double value) {
+    return new DeviceLightEvent(eventType, value);
+  }
+  static DeviceLightEvent* create(const AtomicString& eventType,
+                                  const DeviceLightEventInit& initializer) {
+    return new DeviceLightEvent(eventType, initializer);
+  }
 
-    const AtomicString& interfaceName() const override;
+  double value() const { return m_value; }
 
-private:
-    DeviceLightEvent(const AtomicString& eventType, double value);
-    DeviceLightEvent(const AtomicString& eventType, const DeviceLightEventInit& initializer);
+  const AtomicString& interfaceName() const override;
 
-    double m_value;
+ private:
+  DeviceLightEvent(const AtomicString& eventType, double value);
+  DeviceLightEvent(const AtomicString& eventType,
+                   const DeviceLightEventInit& initializer);
+
+  double m_value;
 };
 
-DEFINE_TYPE_CASTS(DeviceLightEvent, Event, event, event->interfaceName() == EventNames::DeviceLightEvent, event.interfaceName() == EventNames::DeviceLightEvent);
+DEFINE_TYPE_CASTS(DeviceLightEvent,
+                  Event,
+                  event,
+                  event->interfaceName() == EventNames::DeviceLightEvent,
+                  event.interfaceName() == EventNames::DeviceLightEvent);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceLightEvent_h
+#endif  // DeviceLightEvent_h

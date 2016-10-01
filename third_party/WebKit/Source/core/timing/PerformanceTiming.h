@@ -48,79 +48,83 @@ class ResourceLoadTiming;
 class ScriptState;
 class ScriptValue;
 
-class CORE_EXPORT PerformanceTiming final : public GarbageCollected<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
-public:
-    static PerformanceTiming* create(LocalFrame* frame)
-    {
-        return new PerformanceTiming(frame);
-    }
+class CORE_EXPORT PerformanceTiming final
+    : public GarbageCollected<PerformanceTiming>,
+      public ScriptWrappable,
+      public DOMWindowProperty {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 
-    unsigned long long navigationStart() const;
-    unsigned long long unloadEventStart() const;
-    unsigned long long unloadEventEnd() const;
-    unsigned long long redirectStart() const;
-    unsigned long long redirectEnd() const;
-    unsigned long long fetchStart() const;
-    unsigned long long domainLookupStart() const;
-    unsigned long long domainLookupEnd() const;
-    unsigned long long connectStart() const;
-    unsigned long long connectEnd() const;
-    unsigned long long secureConnectionStart() const;
-    unsigned long long requestStart() const;
-    unsigned long long responseStart() const;
-    unsigned long long responseEnd() const;
-    unsigned long long domLoading() const;
-    unsigned long long domInteractive() const;
-    unsigned long long domContentLoadedEventStart() const;
-    unsigned long long domContentLoadedEventEnd() const;
-    unsigned long long domComplete() const;
-    unsigned long long loadEventStart() const;
-    unsigned long long loadEventEnd() const;
+ public:
+  static PerformanceTiming* create(LocalFrame* frame) {
+    return new PerformanceTiming(frame);
+  }
 
-    // The below are non-spec timings, for Page Load UMA metrics.
+  unsigned long long navigationStart() const;
+  unsigned long long unloadEventStart() const;
+  unsigned long long unloadEventEnd() const;
+  unsigned long long redirectStart() const;
+  unsigned long long redirectEnd() const;
+  unsigned long long fetchStart() const;
+  unsigned long long domainLookupStart() const;
+  unsigned long long domainLookupEnd() const;
+  unsigned long long connectStart() const;
+  unsigned long long connectEnd() const;
+  unsigned long long secureConnectionStart() const;
+  unsigned long long requestStart() const;
+  unsigned long long responseStart() const;
+  unsigned long long responseEnd() const;
+  unsigned long long domLoading() const;
+  unsigned long long domInteractive() const;
+  unsigned long long domContentLoadedEventStart() const;
+  unsigned long long domContentLoadedEventEnd() const;
+  unsigned long long domComplete() const;
+  unsigned long long loadEventStart() const;
+  unsigned long long loadEventEnd() const;
 
-    // The time the first document layout is performed.
-    unsigned long long firstLayout() const;
-    // The time the first paint operation was performed.
-    unsigned long long firstPaint() const;
-    // The time the first paint operation for visible text was performed.
-    unsigned long long firstTextPaint() const;
-    // The time the first paint operation for image was performed.
-    unsigned long long firstImagePaint() const;
-    // The time of the first 'contentful' paint. A contentful paint is a paint
-    // that includes content of some kind (for example, text or image content).
-    unsigned long long firstContentfulPaint() const;
-    // The time of the first 'meaningful' paint, A meaningful paint is a paint
-    // where the page's primary content is visible.
-    unsigned long long firstMeaningfulPaint() const;
+  // The below are non-spec timings, for Page Load UMA metrics.
 
-    unsigned long long parseStart() const;
-    unsigned long long parseStop() const;
-    unsigned long long parseBlockedOnScriptLoadDuration() const;
-    unsigned long long parseBlockedOnScriptLoadFromDocumentWriteDuration() const;
-    unsigned long long parseBlockedOnScriptExecutionDuration() const;
-    unsigned long long parseBlockedOnScriptExecutionFromDocumentWriteDuration() const;
+  // The time the first document layout is performed.
+  unsigned long long firstLayout() const;
+  // The time the first paint operation was performed.
+  unsigned long long firstPaint() const;
+  // The time the first paint operation for visible text was performed.
+  unsigned long long firstTextPaint() const;
+  // The time the first paint operation for image was performed.
+  unsigned long long firstImagePaint() const;
+  // The time of the first 'contentful' paint. A contentful paint is a paint
+  // that includes content of some kind (for example, text or image content).
+  unsigned long long firstContentfulPaint() const;
+  // The time of the first 'meaningful' paint, A meaningful paint is a paint
+  // where the page's primary content is visible.
+  unsigned long long firstMeaningfulPaint() const;
 
-    ScriptValue toJSONForBinding(ScriptState*) const;
+  unsigned long long parseStart() const;
+  unsigned long long parseStop() const;
+  unsigned long long parseBlockedOnScriptLoadDuration() const;
+  unsigned long long parseBlockedOnScriptLoadFromDocumentWriteDuration() const;
+  unsigned long long parseBlockedOnScriptExecutionDuration() const;
+  unsigned long long parseBlockedOnScriptExecutionFromDocumentWriteDuration()
+      const;
 
-    DECLARE_VIRTUAL_TRACE();
+  ScriptValue toJSONForBinding(ScriptState*) const;
 
-    unsigned long long monotonicTimeToIntegerMilliseconds(double) const;
-    double integerMillisecondsToMonotonicTime(unsigned long long) const;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit PerformanceTiming(LocalFrame*);
+  unsigned long long monotonicTimeToIntegerMilliseconds(double) const;
+  double integerMillisecondsToMonotonicTime(unsigned long long) const;
 
-    const DocumentTiming* documentTiming() const;
-    const DocumentParserTiming* documentParserTiming() const;
-    const PaintTiming* paintTiming() const;
-    DocumentLoader* documentLoader() const;
-    DocumentLoadTiming* documentLoadTiming() const;
-    ResourceLoadTiming* resourceLoadTiming() const;
+ private:
+  explicit PerformanceTiming(LocalFrame*);
+
+  const DocumentTiming* documentTiming() const;
+  const DocumentParserTiming* documentParserTiming() const;
+  const PaintTiming* paintTiming() const;
+  DocumentLoader* documentLoader() const;
+  DocumentLoadTiming* documentLoadTiming() const;
+  ResourceLoadTiming* resourceLoadTiming() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PerformanceTiming_h
+#endif  // PerformanceTiming_h

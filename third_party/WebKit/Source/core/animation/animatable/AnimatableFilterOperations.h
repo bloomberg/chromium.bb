@@ -37,37 +37,36 @@
 namespace blink {
 
 class AnimatableFilterOperations final : public AnimatableValue {
-public:
-    static PassRefPtr<AnimatableFilterOperations> create(const FilterOperations& operations)
-    {
-        return adoptRef(new AnimatableFilterOperations(operations));
-    }
+ public:
+  static PassRefPtr<AnimatableFilterOperations> create(
+      const FilterOperations& operations) {
+    return adoptRef(new AnimatableFilterOperations(operations));
+  }
 
-    ~AnimatableFilterOperations() override { }
+  ~AnimatableFilterOperations() override {}
 
-    const FilterOperations& operations() const
-    {
-        return m_operationWrapper->operations();
-    }
+  const FilterOperations& operations() const {
+    return m_operationWrapper->operations();
+  }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    AnimatableFilterOperations(const FilterOperations& operations)
-        : m_operationWrapper(FilterOperationsWrapper::create(operations))
-    {
-    }
+ private:
+  AnimatableFilterOperations(const FilterOperations& operations)
+      : m_operationWrapper(FilterOperationsWrapper::create(operations)) {}
 
-    bool equalTo(const AnimatableValue*) const override;
-    AnimatableType type() const override { return TypeFilterOperations; }
+  bool equalTo(const AnimatableValue*) const override;
+  AnimatableType type() const override { return TypeFilterOperations; }
 
-    Persistent<FilterOperationsWrapper> m_operationWrapper;
+  Persistent<FilterOperationsWrapper> m_operationWrapper;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableFilterOperations, isFilterOperations());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableFilterOperations,
+                                   isFilterOperations());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableFilterOperations_h
+#endif  // AnimatableFilterOperations_h

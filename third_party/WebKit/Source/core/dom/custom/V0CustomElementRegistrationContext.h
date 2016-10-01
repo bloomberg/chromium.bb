@@ -42,45 +42,50 @@ namespace blink {
 
 class CustomElementRegistry;
 
-class V0CustomElementRegistrationContext final : public GarbageCollectedFinalized<V0CustomElementRegistrationContext> {
-public:
-    static V0CustomElementRegistrationContext* create()
-    {
-        return new V0CustomElementRegistrationContext();
-    }
+class V0CustomElementRegistrationContext final
+    : public GarbageCollectedFinalized<V0CustomElementRegistrationContext> {
+ public:
+  static V0CustomElementRegistrationContext* create() {
+    return new V0CustomElementRegistrationContext();
+  }
 
-    ~V0CustomElementRegistrationContext() { }
-    void documentWasDetached() { m_registry.documentWasDetached(); }
+  ~V0CustomElementRegistrationContext() {}
+  void documentWasDetached() { m_registry.documentWasDetached(); }
 
-    // Definitions
-    void registerElement(Document*, V0CustomElementConstructorBuilder*, const AtomicString& type, V0CustomElement::NameSet validNames, ExceptionState&);
+  // Definitions
+  void registerElement(Document*,
+                       V0CustomElementConstructorBuilder*,
+                       const AtomicString& type,
+                       V0CustomElement::NameSet validNames,
+                       ExceptionState&);
 
-    Element* createCustomTagElement(Document&, const QualifiedName&);
-    static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
-    static void setTypeExtension(Element*, const AtomicString& type);
+  Element* createCustomTagElement(Document&, const QualifiedName&);
+  static void setIsAttributeAndTypeExtension(Element*,
+                                             const AtomicString& type);
+  static void setTypeExtension(Element*, const AtomicString& type);
 
-    void resolve(Element*, const V0CustomElementDescriptor&);
+  void resolve(Element*, const V0CustomElementDescriptor&);
 
-    bool nameIsDefined(const AtomicString& name) const;
-    void setV1(const CustomElementRegistry*);
+  bool nameIsDefined(const AtomicString& name) const;
+  void setV1(const CustomElementRegistry*);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-protected:
-    V0CustomElementRegistrationContext();
+ protected:
+  V0CustomElementRegistrationContext();
 
-    // Instance creation
-    void didGiveTypeExtension(Element*, const AtomicString& type);
+  // Instance creation
+  void didGiveTypeExtension(Element*, const AtomicString& type);
 
-private:
-    void resolveOrScheduleResolution(Element*, const AtomicString& typeExtension);
+ private:
+  void resolveOrScheduleResolution(Element*, const AtomicString& typeExtension);
 
-    V0CustomElementRegistry m_registry;
+  V0CustomElementRegistry m_registry;
 
-    // Element creation
-    Member<V0CustomElementUpgradeCandidateMap> m_candidates;
+  // Element creation
+  Member<V0CustomElementUpgradeCandidateMap> m_candidates;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementRegistrationContext_h
+#endif  // V0CustomElementRegistrationContext_h

@@ -33,53 +33,59 @@ class RuleSet;
 class StyleSheetContents;
 
 class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
-    WTF_MAKE_NONCOPYABLE(CSSDefaultStyleSheets);
-public:
-    static CSSDefaultStyleSheets& instance();
+  WTF_MAKE_NONCOPYABLE(CSSDefaultStyleSheets);
 
-    void ensureDefaultStyleSheetsForElement(const Element&, bool& changedDefaultStyle);
-    void ensureDefaultStyleSheetForFullscreen();
+ public:
+  static CSSDefaultStyleSheets& instance();
 
-    RuleSet* defaultStyle() { return m_defaultStyle.get(); }
-    RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
-    RuleSet* defaultPrintStyle() { return m_defaultPrintStyle.get(); }
-    RuleSet* defaultViewSourceStyle();
-    RuleSet* defaultMobileViewportStyle();
-    RuleSet* defaultTelevisionViewportStyle();
+  void ensureDefaultStyleSheetsForElement(const Element&,
+                                          bool& changedDefaultStyle);
+  void ensureDefaultStyleSheetForFullscreen();
 
-    // FIXME: Remove WAP support.
-    RuleSet* defaultXHTMLMobileProfileStyle();
+  RuleSet* defaultStyle() { return m_defaultStyle.get(); }
+  RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
+  RuleSet* defaultPrintStyle() { return m_defaultPrintStyle.get(); }
+  RuleSet* defaultViewSourceStyle();
+  RuleSet* defaultMobileViewportStyle();
+  RuleSet* defaultTelevisionViewportStyle();
 
-    StyleSheetContents* defaultStyleSheet() { return m_defaultStyleSheet.get(); }
-    StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet.get(); }
-    StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet.get(); }
-    StyleSheetContents* mathmlStyleSheet() { return m_mathmlStyleSheet.get(); }
-    StyleSheetContents* mediaControlsStyleSheet() { return m_mediaControlsStyleSheet.get(); }
-    StyleSheetContents* fullscreenStyleSheet() { return m_fullscreenStyleSheet.get(); }
+  // FIXME: Remove WAP support.
+  RuleSet* defaultXHTMLMobileProfileStyle();
 
-    DECLARE_TRACE();
+  StyleSheetContents* defaultStyleSheet() { return m_defaultStyleSheet.get(); }
+  StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet.get(); }
+  StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet.get(); }
+  StyleSheetContents* mathmlStyleSheet() { return m_mathmlStyleSheet.get(); }
+  StyleSheetContents* mediaControlsStyleSheet() {
+    return m_mediaControlsStyleSheet.get();
+  }
+  StyleSheetContents* fullscreenStyleSheet() {
+    return m_fullscreenStyleSheet.get();
+  }
 
-private:
-    CSSDefaultStyleSheets();
+  DECLARE_TRACE();
 
-    Member<RuleSet> m_defaultStyle;
-    Member<RuleSet> m_defaultMobileViewportStyle;
-    Member<RuleSet> m_defaultTelevisionViewportStyle;
-    Member<RuleSet> m_defaultQuirksStyle;
-    Member<RuleSet> m_defaultPrintStyle;
-    Member<RuleSet> m_defaultViewSourceStyle;
-    Member<RuleSet> m_defaultXHTMLMobileProfileStyle;
+ private:
+  CSSDefaultStyleSheets();
 
-    Member<StyleSheetContents> m_defaultStyleSheet;
-    Member<StyleSheetContents> m_mobileViewportStyleSheet;
-    Member<StyleSheetContents> m_televisionViewportStyleSheet;
-    Member<StyleSheetContents> m_quirksStyleSheet;
-    Member<StyleSheetContents> m_svgStyleSheet;
-    Member<StyleSheetContents> m_mathmlStyleSheet;
-    Member<StyleSheetContents> m_mediaControlsStyleSheet;
-    Member<StyleSheetContents> m_fullscreenStyleSheet;
+  Member<RuleSet> m_defaultStyle;
+  Member<RuleSet> m_defaultMobileViewportStyle;
+  Member<RuleSet> m_defaultTelevisionViewportStyle;
+  Member<RuleSet> m_defaultQuirksStyle;
+  Member<RuleSet> m_defaultPrintStyle;
+  Member<RuleSet> m_defaultViewSourceStyle;
+  Member<RuleSet> m_defaultXHTMLMobileProfileStyle;
+
+  Member<StyleSheetContents> m_defaultStyleSheet;
+  Member<StyleSheetContents> m_mobileViewportStyleSheet;
+  Member<StyleSheetContents> m_televisionViewportStyleSheet;
+  Member<StyleSheetContents> m_quirksStyleSheet;
+  Member<StyleSheetContents> m_svgStyleSheet;
+  Member<StyleSheetContents> m_mathmlStyleSheet;
+  Member<StyleSheetContents> m_mediaControlsStyleSheet;
+  Member<StyleSheetContents> m_fullscreenStyleSheet;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSDefaultStyleSheets_h
+#endif  // CSSDefaultStyleSheets_h

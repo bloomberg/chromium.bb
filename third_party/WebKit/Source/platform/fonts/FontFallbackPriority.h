@@ -12,18 +12,18 @@ namespace blink {
 // EmojiEmoji wording is taken from there.  Also compare
 // http://unicode.org/Public/emoji/1.0/emoji-data.txt
 enum class FontFallbackPriority {
-    // For regular non-symbols text,
-    // normal text fallback in FontFallbackIterator
-    Text,
-    // For emoji in text presentaiton
-    EmojiText,
-    // For emoji in emoji presentation
-    EmojiEmoji,
-    Invalid
+  // For regular non-symbols text,
+  // normal text fallback in FontFallbackIterator
+  Text,
+  // For emoji in text presentaiton
+  EmojiText,
+  // For emoji in emoji presentation
+  EmojiEmoji,
+  Invalid
 };
 
 bool isNonTextFallbackPriority(FontFallbackPriority);
 
-}; // namespace blink
+};  // namespace blink
 
 #endif

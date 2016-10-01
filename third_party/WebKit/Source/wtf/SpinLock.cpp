@@ -59,25 +59,25 @@
 
 namespace WTF {
 
-void SpinLock::lockSlow()
-{
-    // The value of kYieldProcessorTries is cargo culted from TCMalloc, Windows
-    // critical section defaults, and various other recommendations.
-    // TODO(jschuh): Further tuning may be warranted.
-    static const int kYieldProcessorTries = 1000;
+void SpinLock::lockSlow() {
+  // The value of kYieldProcessorTries is cargo culted from TCMalloc, Windows
+  // critical section defaults, and various other recommendations.
+  // TODO(jschuh): Further tuning may be warranted.
+  static const int kYieldProcessorTries = 1000;
+  do {
     do {
-        do {
-            for (int count = 0; count < kYieldProcessorTries; ++count) {
-                // Let the Processor know we're spinning.
-                YIELD_PROCESSOR;
-                if (!m_lock.load(std::memory_order_relaxed) && LIKELY(!m_lock.exchange(true, std::memory_order_acquire)))
-                    return;
-            }
+      for (int count = 0; count < kYieldProcessorTries; ++count) {
+        // Let the Processor know we're spinning.
+        YIELD_PROCESSOR;
+        if (!m_lock.load(std::memory_order_relaxed) &&
+            LIKELY(!m_lock.exchange(true, std::memory_order_acquire)))
+          return;
+      }
 
-            // Give the OS a chance to schedule something on this core.
-            YIELD_THREAD;
-        } while (m_lock.load(std::memory_order_relaxed));
-    } while (UNLIKELY(m_lock.exchange(true, std::memory_order_acquire)));
+      // Give the OS a chance to schedule something on this core.
+      YIELD_THREAD;
+    } while (m_lock.load(std::memory_order_relaxed));
+  } while (UNLIKELY(m_lock.exchange(true, std::memory_order_acquire)));
 }
 
-} // namespace WTF
+}  // namespace WTF

@@ -58,228 +58,229 @@ using blink::URLTestHelpers::toKURL;
 namespace blink {
 
 class LineReader {
-public:
-    LineReader(const std::string& text) : m_text(text), m_index(0) { }
-    bool getNextLine(std::string* line)
-    {
-        line->clear();
-        if (m_index >= m_text.length())
-            return false;
+ public:
+  LineReader(const std::string& text) : m_text(text), m_index(0) {}
+  bool getNextLine(std::string* line) {
+    line->clear();
+    if (m_index >= m_text.length())
+      return false;
 
-        size_t endOfLineIndex = m_text.find("\r\n", m_index);
-        if (endOfLineIndex == std::string::npos) {
-            *line = m_text.substr(m_index);
-            m_index = m_text.length();
-            return true;
-        }
-
-        *line = m_text.substr(m_index, endOfLineIndex - m_index);
-        m_index = endOfLineIndex + 2;
-        return true;
+    size_t endOfLineIndex = m_text.find("\r\n", m_index);
+    if (endOfLineIndex == std::string::npos) {
+      *line = m_text.substr(m_index);
+      m_index = m_text.length();
+      return true;
     }
 
-private:
-    std::string m_text;
-    size_t m_index;
+    *line = m_text.substr(m_index, endOfLineIndex - m_index);
+    m_index = endOfLineIndex + 2;
+    return true;
+  }
+
+ private:
+  std::string m_text;
+  size_t m_index;
 };
 
 class MHTMLTest : public ::testing::Test {
-public:
-    MHTMLTest()
-    {
-        m_filePath = testing::blinkRootDir();
-        m_filePath.append("/Source/web/tests/data/mhtml/");
+ public:
+  MHTMLTest() {
+    m_filePath = testing::blinkRootDir();
+    m_filePath.append("/Source/web/tests/data/mhtml/");
+  }
+
+ protected:
+  void SetUp() override { m_helper.initialize(); }
+
+  void TearDown() override {
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    WebCache::clear();
+  }
+
+  void registerMockedURLLoad(const std::string& url,
+                             const WebString& fileName) {
+    URLTestHelpers::registerMockedURLLoad(
+        toKURL(url), fileName, WebString::fromUTF8("mhtml/"),
+        WebString::fromUTF8("multipart/related"));
+  }
+
+  void loadURLInTopFrame(const WebURL& url) {
+    FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(),
+                                url.string().utf8().data());
+  }
+
+  Page* page() const { return m_helper.webView()->page(); }
+
+  void addResource(const char* url,
+                   const char* mime,
+                   PassRefPtr<SharedBuffer> data) {
+    SerializedResource resource(toKURL(url), mime, data);
+    m_resources.append(resource);
+  }
+
+  void addResource(const char* url, const char* mime, const char* fileName) {
+    addResource(url, mime, readFile(fileName));
+  }
+
+  void addTestResources() {
+    addResource("http://www.test.com", "text/html", "css_test_page.html");
+    addResource("http://www.test.com/link_styles.css", "text/css",
+                "link_styles.css");
+    addResource("http://www.test.com/import_style_from_link.css", "text/css",
+                "import_style_from_link.css");
+    addResource("http://www.test.com/import_styles.css", "text/css",
+                "import_styles.css");
+    addResource("http://www.test.com/red_background.png", "image/png",
+                "red_background.png");
+    addResource("http://www.test.com/orange_background.png", "image/png",
+                "orange_background.png");
+    addResource("http://www.test.com/yellow_background.png", "image/png",
+                "yellow_background.png");
+    addResource("http://www.test.com/green_background.png", "image/png",
+                "green_background.png");
+    addResource("http://www.test.com/blue_background.png", "image/png",
+                "blue_background.png");
+    addResource("http://www.test.com/purple_background.png", "image/png",
+                "purple_background.png");
+    addResource("http://www.test.com/ul-dot.png", "image/png", "ul-dot.png");
+    addResource("http://www.test.com/ol-dot.png", "image/png", "ol-dot.png");
+  }
+
+  static PassRefPtr<SharedBuffer> generateMHTMLData(
+      const Vector<SerializedResource>& resources,
+      MHTMLArchive::EncodingPolicy encodingPolicy,
+      const String& title,
+      const String& mimeType) {
+    // This boundary is as good as any other.  Plus it gets used in almost
+    // all the examples in the MHTML spec - RFC 2557.
+    String boundary = String::fromUTF8("boundary-example");
+
+    RefPtr<SharedBuffer> mhtmlData = SharedBuffer::create();
+    MHTMLArchive::generateMHTMLHeader(boundary, title, mimeType, *mhtmlData);
+    for (const auto& resource : resources) {
+      MHTMLArchive::generateMHTMLPart(boundary, String(), encodingPolicy,
+                                      resource, *mhtmlData);
     }
+    MHTMLArchive::generateMHTMLFooter(boundary, *mhtmlData);
+    return mhtmlData.release();
+  }
 
-protected:
-    void SetUp() override
-    {
-        m_helper.initialize();
-    }
+  PassRefPtr<SharedBuffer> serialize(
+      const char* title,
+      const char* mime,
+      MHTMLArchive::EncodingPolicy encodingPolicy) {
+    return generateMHTMLData(m_resources, encodingPolicy, title, mime);
+  }
 
-    void TearDown() override
-    {
-        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-        WebCache::clear();
-    }
+ private:
+  PassRefPtr<SharedBuffer> readFile(const char* fileName) {
+    String filePath = m_filePath + fileName;
+    return testing::readFromFile(filePath);
+  }
 
-    void registerMockedURLLoad(const std::string& url, const WebString& fileName)
-    {
-        URLTestHelpers::registerMockedURLLoad(toKURL(url), fileName, WebString::fromUTF8("mhtml/"), WebString::fromUTF8("multipart/related"));
-    }
-
-    void loadURLInTopFrame(const WebURL& url)
-    {
-        FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), url.string().utf8().data());
-    }
-
-    Page* page() const { return m_helper.webView()->page(); }
-
-
-    void addResource(const char* url, const char* mime, PassRefPtr<SharedBuffer> data)
-    {
-        SerializedResource resource(toKURL(url), mime, data);
-        m_resources.append(resource);
-    }
-
-    void addResource(const char* url, const char* mime, const char* fileName)
-    {
-        addResource(url, mime, readFile(fileName));
-    }
-
-    void addTestResources()
-    {
-        addResource("http://www.test.com", "text/html", "css_test_page.html");
-        addResource("http://www.test.com/link_styles.css", "text/css", "link_styles.css");
-        addResource("http://www.test.com/import_style_from_link.css", "text/css", "import_style_from_link.css");
-        addResource("http://www.test.com/import_styles.css", "text/css", "import_styles.css");
-        addResource("http://www.test.com/red_background.png", "image/png", "red_background.png");
-        addResource("http://www.test.com/orange_background.png", "image/png", "orange_background.png");
-        addResource("http://www.test.com/yellow_background.png", "image/png", "yellow_background.png");
-        addResource("http://www.test.com/green_background.png", "image/png", "green_background.png");
-        addResource("http://www.test.com/blue_background.png", "image/png", "blue_background.png");
-        addResource("http://www.test.com/purple_background.png", "image/png", "purple_background.png");
-        addResource("http://www.test.com/ul-dot.png", "image/png", "ul-dot.png");
-        addResource("http://www.test.com/ol-dot.png", "image/png", "ol-dot.png");
-    }
-
-    static PassRefPtr<SharedBuffer> generateMHTMLData(
-        const Vector<SerializedResource>& resources,
-        MHTMLArchive::EncodingPolicy encodingPolicy,
-        const String& title, const String& mimeType)
-    {
-        // This boundary is as good as any other.  Plus it gets used in almost
-        // all the examples in the MHTML spec - RFC 2557.
-        String boundary = String::fromUTF8("boundary-example");
-
-        RefPtr<SharedBuffer> mhtmlData = SharedBuffer::create();
-        MHTMLArchive::generateMHTMLHeader(boundary, title, mimeType, *mhtmlData);
-        for (const auto& resource : resources) {
-            MHTMLArchive::generateMHTMLPart(
-                boundary, String(), encodingPolicy, resource, *mhtmlData);
-        }
-        MHTMLArchive::generateMHTMLFooter(boundary, *mhtmlData);
-        return mhtmlData.release();
-    }
-
-    PassRefPtr<SharedBuffer> serialize(const char *title, const char *mime,  MHTMLArchive::EncodingPolicy encodingPolicy)
-    {
-        return generateMHTMLData(m_resources, encodingPolicy, title, mime);
-    }
-
-private:
-    PassRefPtr<SharedBuffer> readFile(const char* fileName)
-    {
-        String filePath = m_filePath + fileName;
-        return testing::readFromFile(filePath);
-    }
-
-    String m_filePath;
-    Vector<SerializedResource> m_resources;
-    FrameTestHelpers::WebViewHelper m_helper;
+  String m_filePath;
+  Vector<SerializedResource> m_resources;
+  FrameTestHelpers::WebViewHelper m_helper;
 };
 
 // Checks that the domain is set to the actual MHTML file, not the URL it was
 // generated from.
-TEST_F(MHTMLTest, CheckDomain)
-{
-    const char kFileURL[] = "file:///simple_test.mht";
+TEST_F(MHTMLTest, CheckDomain) {
+  const char kFileURL[] = "file:///simple_test.mht";
 
-    // Register the mocked frame and load it.
-    WebURL url = toKURL(kFileURL);
-    registerMockedURLLoad(kFileURL, WebString::fromUTF8("simple_test.mht"));
-    loadURLInTopFrame(url);
-    ASSERT_TRUE(page());
-    LocalFrame* frame = toLocalFrame(page()->mainFrame());
-    ASSERT_TRUE(frame);
-    Document* document = frame->document();
-    ASSERT_TRUE(document);
+  // Register the mocked frame and load it.
+  WebURL url = toKURL(kFileURL);
+  registerMockedURLLoad(kFileURL, WebString::fromUTF8("simple_test.mht"));
+  loadURLInTopFrame(url);
+  ASSERT_TRUE(page());
+  LocalFrame* frame = toLocalFrame(page()->mainFrame());
+  ASSERT_TRUE(frame);
+  Document* document = frame->document();
+  ASSERT_TRUE(document);
 
-    EXPECT_STREQ(kFileURL, frame->domWindow()->location()->href().ascii().data());
+  EXPECT_STREQ(kFileURL, frame->domWindow()->location()->href().ascii().data());
 
-    SecurityOrigin* origin = document->getSecurityOrigin();
-    EXPECT_STRNE("localhost", origin->domain().ascii().data());
+  SecurityOrigin* origin = document->getSecurityOrigin();
+  EXPECT_STRNE("localhost", origin->domain().ascii().data());
 }
 
-TEST_F(MHTMLTest, TestMHTMLEncoding)
-{
-    addTestResources();
-    RefPtr<SharedBuffer> data  = serialize("Test Serialization", "text/html", MHTMLArchive::UseDefaultEncoding);
+TEST_F(MHTMLTest, TestMHTMLEncoding) {
+  addTestResources();
+  RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html",
+                                        MHTMLArchive::UseDefaultEncoding);
 
-    // Read the MHTML data line per line and do some pseudo-parsing to make sure the right encoding is used for the different sections.
-    LineReader lineReader(std::string(data->data(), data->size()));
-    int sectionCheckedCount = 0;
-    const char* expectedEncoding = 0;
-    std::string line;
-    while (lineReader.getNextLine(&line)) {
-        if (line.compare(0, 13, "Content-Type:") == 0) {
-            ASSERT_FALSE(expectedEncoding);
-            if (line.find("multipart/related;") != std::string::npos) {
-                // Skip this one, it's part of the MHTML header.
-                continue;
-            }
-            if (line.find("text/") != std::string::npos)
-                expectedEncoding = "quoted-printable";
-            else if (line.find("image/") != std::string::npos)
-                expectedEncoding = "base64";
-            else
-                FAIL() << "Unexpected Content-Type: " << line;
-            continue;
-        }
-        if (line.compare(0, 26, "Content-Transfer-Encoding:") == 0) {
-            ASSERT_TRUE(expectedEncoding);
-            EXPECT_NE(line.find(expectedEncoding), std::string::npos);
-            expectedEncoding = 0;
-            sectionCheckedCount++;
-        }
+  // Read the MHTML data line per line and do some pseudo-parsing to make sure the right encoding is used for the different sections.
+  LineReader lineReader(std::string(data->data(), data->size()));
+  int sectionCheckedCount = 0;
+  const char* expectedEncoding = 0;
+  std::string line;
+  while (lineReader.getNextLine(&line)) {
+    if (line.compare(0, 13, "Content-Type:") == 0) {
+      ASSERT_FALSE(expectedEncoding);
+      if (line.find("multipart/related;") != std::string::npos) {
+        // Skip this one, it's part of the MHTML header.
+        continue;
+      }
+      if (line.find("text/") != std::string::npos)
+        expectedEncoding = "quoted-printable";
+      else if (line.find("image/") != std::string::npos)
+        expectedEncoding = "base64";
+      else
+        FAIL() << "Unexpected Content-Type: " << line;
+      continue;
     }
-    EXPECT_EQ(12, sectionCheckedCount);
+    if (line.compare(0, 26, "Content-Transfer-Encoding:") == 0) {
+      ASSERT_TRUE(expectedEncoding);
+      EXPECT_NE(line.find(expectedEncoding), std::string::npos);
+      expectedEncoding = 0;
+      sectionCheckedCount++;
+    }
+  }
+  EXPECT_EQ(12, sectionCheckedCount);
 }
 
-TEST_F(MHTMLTest, MHTMLFromScheme)
-{
-    addTestResources();
-    RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html", MHTMLArchive::UseDefaultEncoding);
-    KURL httpURL = toKURL("http://www.example.com");
-    KURL contentURL = toKURL("content://foo");
-    KURL fileURL = toKURL("file://foo");
-    KURL specialSchemeURL = toKURL("fooscheme://bar");
+TEST_F(MHTMLTest, MHTMLFromScheme) {
+  addTestResources();
+  RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html",
+                                        MHTMLArchive::UseDefaultEncoding);
+  KURL httpURL = toKURL("http://www.example.com");
+  KURL contentURL = toKURL("content://foo");
+  KURL fileURL = toKURL("file://foo");
+  KURL specialSchemeURL = toKURL("fooscheme://bar");
 
-    // MHTMLArchives can only be initialized from local schemes, http/https schemes, and content scheme(Android specific).
-    EXPECT_NE(nullptr, MHTMLArchive::create(httpURL, data.get()));
+  // MHTMLArchives can only be initialized from local schemes, http/https schemes, and content scheme(Android specific).
+  EXPECT_NE(nullptr, MHTMLArchive::create(httpURL, data.get()));
 #if OS(ANDROID)
-    EXPECT_NE(nullptr, MHTMLArchive::create(contentURL, data.get()));
+  EXPECT_NE(nullptr, MHTMLArchive::create(contentURL, data.get()));
 #else
-    EXPECT_EQ(nullptr, MHTMLArchive::create(contentURL, data.get()));
+  EXPECT_EQ(nullptr, MHTMLArchive::create(contentURL, data.get()));
 #endif
-    EXPECT_NE(nullptr, MHTMLArchive::create(fileURL, data.get()));
-    EXPECT_EQ(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
-    SchemeRegistry::registerURLSchemeAsLocal("fooscheme");
-    EXPECT_NE(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
+  EXPECT_NE(nullptr, MHTMLArchive::create(fileURL, data.get()));
+  EXPECT_EQ(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
+  SchemeRegistry::registerURLSchemeAsLocal("fooscheme");
+  EXPECT_NE(nullptr, MHTMLArchive::create(specialSchemeURL, data.get()));
 }
 
 // Checks that full sandboxing protection has been turned on.
-TEST_F(MHTMLTest, EnforceSandboxFlags)
-{
-    const char kURL[] = "http://www.example.com";
+TEST_F(MHTMLTest, EnforceSandboxFlags) {
+  const char kURL[] = "http://www.example.com";
 
-    // Register the mocked frame and load it.
-    registerMockedURLLoad(kURL, WebString::fromUTF8("simple_test.mht"));
-    loadURLInTopFrame(toKURL(kURL));
-    ASSERT_TRUE(page());
-    LocalFrame* frame = toLocalFrame(page()->mainFrame());
-    ASSERT_TRUE(frame);
-    Document* document = frame->document();
-    ASSERT_TRUE(document);
+  // Register the mocked frame and load it.
+  registerMockedURLLoad(kURL, WebString::fromUTF8("simple_test.mht"));
+  loadURLInTopFrame(toKURL(kURL));
+  ASSERT_TRUE(page());
+  LocalFrame* frame = toLocalFrame(page()->mainFrame());
+  ASSERT_TRUE(frame);
+  Document* document = frame->document();
+  ASSERT_TRUE(document);
 
-    // Full sandboxing should be turned on.
-    EXPECT_TRUE(document->isSandboxed(SandboxAll));
+  // Full sandboxing should be turned on.
+  EXPECT_TRUE(document->isSandboxed(SandboxAll));
 
-    // MHTML document should be loaded into unique origin.
-    EXPECT_TRUE(document->getSecurityOrigin()->isUnique());
-    // Script execution should be disabled.
-    EXPECT_FALSE(frame->script().canExecuteScripts(NotAboutToExecuteScript));
+  // MHTML document should be loaded into unique origin.
+  EXPECT_TRUE(document->getSecurityOrigin()->isUnique());
+  // Script execution should be disabled.
+  EXPECT_FALSE(frame->script().canExecuteScripts(NotAboutToExecuteScript));
 }
 
-
-} // namespace blink
+}  // namespace blink

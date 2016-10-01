@@ -12,29 +12,35 @@
 
 namespace blink {
 
+class MODULES_EXPORT InspectorCacheStorageAgent final
+    : public InspectorBaseAgent<protocol::CacheStorage::Metainfo> {
+  WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
-class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgent<protocol::CacheStorage::Metainfo> {
-    WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
+ public:
+  static InspectorCacheStorageAgent* create() {
+    return new InspectorCacheStorageAgent();
+  }
 
-public:
-    static InspectorCacheStorageAgent* create()
-    {
-        return new InspectorCacheStorageAgent();
-    }
+  ~InspectorCacheStorageAgent() override;
 
-    ~InspectorCacheStorageAgent() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    DECLARE_VIRTUAL_TRACE();
+  void requestCacheNames(const String& securityOrigin,
+                         std::unique_ptr<RequestCacheNamesCallback>) override;
+  void requestEntries(const String& cacheId,
+                      int skipCount,
+                      int pageSize,
+                      std::unique_ptr<RequestEntriesCallback>) override;
+  void deleteCache(const String& cacheId,
+                   std::unique_ptr<DeleteCacheCallback>) override;
+  void deleteEntry(const String& cacheId,
+                   const String& request,
+                   std::unique_ptr<DeleteEntryCallback>) override;
 
-    void requestCacheNames(const String& securityOrigin, std::unique_ptr<RequestCacheNamesCallback>) override;
-    void requestEntries(const String& cacheId, int skipCount, int pageSize, std::unique_ptr<RequestEntriesCallback>) override;
-    void deleteCache(const String& cacheId, std::unique_ptr<DeleteCacheCallback>) override;
-    void deleteEntry(const String& cacheId, const String& request, std::unique_ptr<DeleteEntryCallback>) override;
-
-private:
-    explicit InspectorCacheStorageAgent();
+ private:
+  explicit InspectorCacheStorageAgent();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InspectorCacheStorageAgent_h
+#endif  // InspectorCacheStorageAgent_h

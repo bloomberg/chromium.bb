@@ -30,47 +30,47 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT Matrix3DTransformOperation final : public TransformOperation {
-public:
-    static PassRefPtr<Matrix3DTransformOperation> create(const TransformationMatrix& matrix)
-    {
-        return adoptRef(new Matrix3DTransformOperation(matrix));
-    }
+class PLATFORM_EXPORT Matrix3DTransformOperation final
+    : public TransformOperation {
+ public:
+  static PassRefPtr<Matrix3DTransformOperation> create(
+      const TransformationMatrix& matrix) {
+    return adoptRef(new Matrix3DTransformOperation(matrix));
+  }
 
-    TransformationMatrix matrix() const {return m_matrix; }
+  TransformationMatrix matrix() const { return m_matrix; }
 
-    virtual bool canBlendWith(const TransformOperation& other) const
-    {
-        return false;
-    }
+  virtual bool canBlendWith(const TransformOperation& other) const {
+    return false;
+  }
 
-private:
-    OperationType type() const override { return Matrix3D; }
+ private:
+  OperationType type() const override { return Matrix3D; }
 
-    bool operator==(const TransformOperation& o) const override
-    {
-        if (!isSameType(o))
-            return false;
-        const Matrix3DTransformOperation* m = static_cast<const Matrix3DTransformOperation*>(&o);
-        return m_matrix == m->m_matrix;
-    }
+  bool operator==(const TransformOperation& o) const override {
+    if (!isSameType(o))
+      return false;
+    const Matrix3DTransformOperation* m =
+        static_cast<const Matrix3DTransformOperation*>(&o);
+    return m_matrix == m->m_matrix;
+  }
 
-    void apply(TransformationMatrix& transform, const FloatSize&) const override
-    {
-        transform.multiply(TransformationMatrix(m_matrix));
-    }
+  void apply(TransformationMatrix& transform, const FloatSize&) const override {
+    transform.multiply(TransformationMatrix(m_matrix));
+  }
 
-    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
-    PassRefPtr<TransformOperation> zoom(double factor) final;
+  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+                                       double progress,
+                                       bool blendToIdentity = false) override;
+  PassRefPtr<TransformOperation> zoom(double factor) final;
 
-    Matrix3DTransformOperation(const TransformationMatrix& mat)
-    {
-        m_matrix = mat;
-    }
+  Matrix3DTransformOperation(const TransformationMatrix& mat) {
+    m_matrix = mat;
+  }
 
-    TransformationMatrix m_matrix;
+  TransformationMatrix m_matrix;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Matrix3DTransformOperation_h
+#endif  // Matrix3DTransformOperation_h

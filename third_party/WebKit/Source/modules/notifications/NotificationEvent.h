@@ -16,36 +16,40 @@ namespace blink {
 class NotificationEventInit;
 
 class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static NotificationEvent* create(const AtomicString& type, const NotificationEventInit& initializer)
-    {
-        return new NotificationEvent(type, initializer);
-    }
-    static NotificationEvent* create(const AtomicString& type, const NotificationEventInit& initializer, WaitUntilObserver* observer)
-    {
-        return new NotificationEvent(type, initializer, observer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~NotificationEvent() override;
+ public:
+  static NotificationEvent* create(const AtomicString& type,
+                                   const NotificationEventInit& initializer) {
+    return new NotificationEvent(type, initializer);
+  }
+  static NotificationEvent* create(const AtomicString& type,
+                                   const NotificationEventInit& initializer,
+                                   WaitUntilObserver* observer) {
+    return new NotificationEvent(type, initializer, observer);
+  }
 
-    Notification* getNotification() const { return m_notification.get(); }
-    String action() const { return m_action; }
-    String reply() const { return m_reply; }
+  ~NotificationEvent() override;
 
-    const AtomicString& interfaceName() const override;
+  Notification* getNotification() const { return m_notification.get(); }
+  String action() const { return m_action; }
+  String reply() const { return m_reply; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    NotificationEvent(const AtomicString& type, const NotificationEventInit&);
-    NotificationEvent(const AtomicString& type, const NotificationEventInit&, WaitUntilObserver*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<Notification> m_notification;
-    String m_action;
-    String m_reply;
+ private:
+  NotificationEvent(const AtomicString& type, const NotificationEventInit&);
+  NotificationEvent(const AtomicString& type,
+                    const NotificationEventInit&,
+                    WaitUntilObserver*);
+
+  Member<Notification> m_notification;
+  String m_action;
+  String m_reply;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NotificationEvent_h
+#endif  // NotificationEvent_h

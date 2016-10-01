@@ -4,4 +4,3 @@
 
 // TODO: This is a dummy header file required by the generated binding code.
 // This file should be removed after fixing the code generator.
-

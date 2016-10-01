@@ -20,82 +20,81 @@ using ::testing::Invoke;
 namespace blink {
 
 class MediaSessionTest : public ::testing::Test {
-protected:
-    MediaSessionTest()
-        : m_page(DummyPageHolder::create(IntSize(1, 1)))
-    {}
+ protected:
+  MediaSessionTest() : m_page(DummyPageHolder::create(IntSize(1, 1))) {}
 
-    MediaSession* createMediaSession(WebMediaSession* webMediaSession)
-    {
-        // The MediaSession takes ownership of the WebMediaSession, and the
-        // caller must take care to not end up with a stale pointer.
-        return new MediaSession(wrapUnique(webMediaSession));
-    }
+  MediaSession* createMediaSession(WebMediaSession* webMediaSession) {
+    // The MediaSession takes ownership of the WebMediaSession, and the
+    // caller must take care to not end up with a stale pointer.
+    return new MediaSession(wrapUnique(webMediaSession));
+  }
 
-    Document& document() { return m_page->document(); }
-    ScriptState* mainScriptState() { return ScriptState::forMainWorld(document().frame()); }
-private:
-    std::unique_ptr<DummyPageHolder> m_page;
+  Document& document() { return m_page->document(); }
+  ScriptState* mainScriptState() {
+    return ScriptState::forMainWorld(document().frame());
+  }
+
+ private:
+  std::unique_ptr<DummyPageHolder> m_page;
 };
 
 namespace {
 
 class MockWebMediaSession : public WebMediaSession {
-public:
-    MOCK_METHOD1(activate, void(WebMediaSessionActivateCallback*));
-    MOCK_METHOD1(deactivate, void(WebMediaSessionDeactivateCallback*));
-    MOCK_METHOD1(setMetadata, void(const WebMediaMetadata*));
+ public:
+  MOCK_METHOD1(activate, void(WebMediaSessionActivateCallback*));
+  MOCK_METHOD1(deactivate, void(WebMediaSessionDeactivateCallback*));
+  MOCK_METHOD1(setMetadata, void(const WebMediaMetadata*));
 };
 
 class Helper {
-public:
-    void activate(WebMediaSessionActivateCallback* cb) { delete cb; }
-    void deactivate(WebMediaSessionDeactivateCallback* cb) { delete cb; }
+ public:
+  void activate(WebMediaSessionActivateCallback* cb) { delete cb; }
+  void deactivate(WebMediaSessionDeactivateCallback* cb) { delete cb; }
 };
 
-TEST_F(MediaSessionTest, Activate)
-{
-    ScriptState::Scope scope(mainScriptState());
-    MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
-    MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
+TEST_F(MediaSessionTest, Activate) {
+  ScriptState::Scope scope(mainScriptState());
+  MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
+  MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
 
-    Helper helper;
-    EXPECT_CALL(*mockWebMediaSession, activate(_)).WillOnce(Invoke(&helper, &Helper::activate));
-    mediaSession->activate(mainScriptState());
+  Helper helper;
+  EXPECT_CALL(*mockWebMediaSession, activate(_))
+      .WillOnce(Invoke(&helper, &Helper::activate));
+  mediaSession->activate(mainScriptState());
 }
 
-TEST_F(MediaSessionTest, Deactivate)
-{
-    ScriptState::Scope scope(mainScriptState());
-    MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
-    MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
+TEST_F(MediaSessionTest, Deactivate) {
+  ScriptState::Scope scope(mainScriptState());
+  MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
+  MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
 
-    Helper helper;
-    EXPECT_CALL(*mockWebMediaSession, deactivate(_)).WillOnce(Invoke(&helper, &Helper::deactivate));
-    mediaSession->deactivate(mainScriptState());
+  Helper helper;
+  EXPECT_CALL(*mockWebMediaSession, deactivate(_))
+      .WillOnce(Invoke(&helper, &Helper::deactivate));
+  mediaSession->deactivate(mainScriptState());
 }
 
-TEST_F(MediaSessionTest, SetMetadata_Null)
-{
-    MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
-    MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
+TEST_F(MediaSessionTest, SetMetadata_Null) {
+  MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
+  MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
 
-    EXPECT_CALL(*mockWebMediaSession, setMetadata(testing::IsNull()));
-    mediaSession->setMetadata(nullptr);
+  EXPECT_CALL(*mockWebMediaSession, setMetadata(testing::IsNull()));
+  mediaSession->setMetadata(nullptr);
 
-    EXPECT_EQ(nullptr, mediaSession->metadata());
+  EXPECT_EQ(nullptr, mediaSession->metadata());
 }
 
-TEST_F(MediaSessionTest, SetMetadata_NotNull)
-{
-    MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
-    MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
+TEST_F(MediaSessionTest, SetMetadata_NotNull) {
+  MockWebMediaSession* mockWebMediaSession = new MockWebMediaSession;
+  MediaSession* mediaSession = createMediaSession(mockWebMediaSession);
 
-    EXPECT_CALL(*mockWebMediaSession, setMetadata(testing::NotNull()));
-    mediaSession->setMetadata(MediaMetadata::create(&document(), MediaMetadataInit()));
+  EXPECT_CALL(*mockWebMediaSession, setMetadata(testing::NotNull()));
+  mediaSession->setMetadata(
+      MediaMetadata::create(&document(), MediaMetadataInit()));
 
-    EXPECT_NE(nullptr, mediaSession->metadata());
+  EXPECT_NE(nullptr, mediaSession->metadata());
 }
 
-} // namespace
-} // namespace blink
+}  // namespace
+}  // namespace blink

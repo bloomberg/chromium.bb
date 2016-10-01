@@ -32,27 +32,21 @@
 namespace blink {
 
 class RawDataDocumentParser : public DocumentParser {
-protected:
-    explicit RawDataDocumentParser(Document* document)
-        : DocumentParser(document)
-    {
-    }
+ protected:
+  explicit RawDataDocumentParser(Document* document)
+      : DocumentParser(document) {}
 
-    void finish() override
-    {
-        if (!isStopped())
-            document()->finishedParsing();
-    }
+  void finish() override {
+    if (!isStopped())
+      document()->finishedParsing();
+  }
 
-private:
-    void insert(const SegmentedString&) final {}
+ private:
+  void insert(const SegmentedString&) final {}
 
-    void append(const String&) final
-    {
-        ASSERT_NOT_REACHED();
-    }
+  void append(const String&) final { ASSERT_NOT_REACHED(); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RawDataDocumentParser_h
+#endif  // RawDataDocumentParser_h

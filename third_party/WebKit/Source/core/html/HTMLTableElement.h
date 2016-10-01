@@ -38,75 +38,97 @@ class HTMLTableRowsCollection;
 class HTMLTableSectionElement;
 
 class CORE_EXPORT HTMLTableElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLTableElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    HTMLTableCaptionElement* caption() const;
-    void setCaption(HTMLTableCaptionElement*, ExceptionState&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLTableElement);
 
-    HTMLTableSectionElement* tHead() const;
-    void setTHead(HTMLTableSectionElement*, ExceptionState&);
+  HTMLTableCaptionElement* caption() const;
+  void setCaption(HTMLTableCaptionElement*, ExceptionState&);
 
-    HTMLTableSectionElement* tFoot() const;
-    void setTFoot(HTMLTableSectionElement*, ExceptionState&);
+  HTMLTableSectionElement* tHead() const;
+  void setTHead(HTMLTableSectionElement*, ExceptionState&);
 
-    HTMLTableSectionElement* createTHead();
-    void deleteTHead();
-    HTMLTableSectionElement* createTFoot();
-    void deleteTFoot();
-    HTMLTableSectionElement* createTBody();
-    HTMLTableCaptionElement* createCaption();
-    void deleteCaption();
-    HTMLTableRowElement* insertRow(int index, ExceptionState&);
-    void deleteRow(int index, ExceptionState&);
+  HTMLTableSectionElement* tFoot() const;
+  void setTFoot(HTMLTableSectionElement*, ExceptionState&);
 
-    HTMLTableRowsCollection* rows();
-    HTMLCollection* tBodies();
+  HTMLTableSectionElement* createTHead();
+  void deleteTHead();
+  HTMLTableSectionElement* createTFoot();
+  void deleteTFoot();
+  HTMLTableSectionElement* createTBody();
+  HTMLTableCaptionElement* createCaption();
+  void deleteCaption();
+  HTMLTableRowElement* insertRow(int index, ExceptionState&);
+  void deleteRow(int index, ExceptionState&);
 
-    const AtomicString& rules() const;
-    const AtomicString& summary() const;
+  HTMLTableRowsCollection* rows();
+  HTMLCollection* tBodies();
 
-    const StylePropertySet* additionalCellStyle();
-    const StylePropertySet* additionalGroupStyle(bool rows);
+  const AtomicString& rules() const;
+  const AtomicString& summary() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const StylePropertySet* additionalCellStyle();
+  const StylePropertySet* additionalGroupStyle(bool rows);
 
-private:
-    explicit HTMLTableElement(Document&);
-    ~HTMLTableElement();
+  DECLARE_VIRTUAL_TRACE();
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    bool isURLAttribute(const Attribute&) const override;
-    bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    const QualifiedName& subResourceAttributeName() const override;
+ private:
+  explicit HTMLTableElement(Document&);
+  ~HTMLTableElement();
 
-    // Used to obtain either a solid or outset border decl and to deal with the frame and rules attributes.
-    const StylePropertySet* additionalPresentationAttributeStyle() override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
+  bool isURLAttribute(const Attribute&) const override;
+  bool hasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& subResourceAttributeName() const override;
 
-    enum TableRules { UnsetRules, NoneRules, GroupsRules, RowsRules, ColsRules, AllRules };
-    enum CellBorders { NoBorders, SolidBorders, InsetBorders, SolidBordersColsOnly, SolidBordersRowsOnly };
+  // Used to obtain either a solid or outset border decl and to deal with the frame and rules attributes.
+  const StylePropertySet* additionalPresentationAttributeStyle() override;
 
-    CellBorders getCellBorders() const;
+  enum TableRules {
+    UnsetRules,
+    NoneRules,
+    GroupsRules,
+    RowsRules,
+    ColsRules,
+    AllRules
+  };
+  enum CellBorders {
+    NoBorders,
+    SolidBorders,
+    InsetBorders,
+    SolidBordersColsOnly,
+    SolidBordersRowsOnly
+  };
 
-    StylePropertySet* createSharedCellStyle();
+  CellBorders getCellBorders() const;
 
-    HTMLTableSectionElement* lastBody() const;
+  StylePropertySet* createSharedCellStyle();
 
-    void setNeedsTableStyleRecalc() const;
+  HTMLTableSectionElement* lastBody() const;
 
-    bool m_borderAttr;          // Sets a precise border width and creates an outset border for the table and for its cells.
-    bool m_borderColorAttr;     // Overrides the outset border and makes it solid for the table and cells instead.
-    bool m_frameAttr;           // Implies a thin border width if no border is set and then a certain set of solid/hidden borders based off the value.
-    TableRules m_rulesAttr;     // Implies a thin border width, a collapsing border model, and all borders on the table becoming set to hidden (if frame/border
-                                // are present, to none otherwise).
+  void setNeedsTableStyleRecalc() const;
 
-    unsigned short m_padding;
-    Member<StylePropertySet> m_sharedCellStyle;
+  bool
+      m_borderAttr;  // Sets a precise border width and creates an outset border for the table and for its cells.
+  bool
+      m_borderColorAttr;  // Overrides the outset border and makes it solid for the table and cells instead.
+  bool
+      m_frameAttr;  // Implies a thin border width if no border is set and then a certain set of solid/hidden borders based off the value.
+  TableRules
+      m_rulesAttr;  // Implies a thin border width, a collapsing border model, and all borders on the table becoming set to hidden (if frame/border
+                    // are present, to none otherwise).
+
+  unsigned short m_padding;
+  Member<StylePropertySet> m_sharedCellStyle;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLTableElement_h
+#endif  // HTMLTableElement_h

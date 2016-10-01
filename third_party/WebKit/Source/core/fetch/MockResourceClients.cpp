@@ -10,80 +10,68 @@
 namespace blink {
 
 MockResourceClient::MockResourceClient(Resource* resource)
-    : m_resource(resource)
-    , m_notifyFinishedCalled(false)
-{
-    ThreadState::current()->registerPreFinalizer(this);
-    m_resource->addClient(this);
+    : m_resource(resource), m_notifyFinishedCalled(false) {
+  ThreadState::current()->registerPreFinalizer(this);
+  m_resource->addClient(this);
 }
 
 MockResourceClient::~MockResourceClient() {}
 
-void MockResourceClient::notifyFinished(Resource*)
-{
-    ASSERT_FALSE(m_notifyFinishedCalled);
-    m_notifyFinishedCalled = true;
+void MockResourceClient::notifyFinished(Resource*) {
+  ASSERT_FALSE(m_notifyFinishedCalled);
+  m_notifyFinishedCalled = true;
 }
 
-void MockResourceClient::removeAsClient()
-{
+void MockResourceClient::removeAsClient() {
+  m_resource->removeClient(this);
+  m_resource = nullptr;
+}
+
+void MockResourceClient::dispose() {
+  if (m_resource) {
     m_resource->removeClient(this);
     m_resource = nullptr;
+  }
 }
 
-void MockResourceClient::dispose()
-{
-    if (m_resource) {
-        m_resource->removeClient(this);
-        m_resource = nullptr;
-    }
-}
-
-DEFINE_TRACE(MockResourceClient)
-{
-    visitor->trace(m_resource);
-    ResourceClient::trace(visitor);
+DEFINE_TRACE(MockResourceClient) {
+  visitor->trace(m_resource);
+  ResourceClient::trace(visitor);
 }
 
 MockImageResourceClient::MockImageResourceClient(ImageResource* resource)
-    : MockResourceClient(resource)
-    , m_imageChangedCount(0)
-    , m_imageNotifyFinishedCount(0)
-{
-    toImageResource(m_resource.get())->addObserver(this);
+    : MockResourceClient(resource),
+      m_imageChangedCount(0),
+      m_imageNotifyFinishedCount(0) {
+  toImageResource(m_resource.get())->addObserver(this);
 }
 
 MockImageResourceClient::~MockImageResourceClient() {}
 
-void MockImageResourceClient::removeAsClient()
-{
+void MockImageResourceClient::removeAsClient() {
+  toImageResource(m_resource.get())->removeObserver(this);
+  MockResourceClient::removeAsClient();
+}
+
+void MockImageResourceClient::dispose() {
+  if (m_resource)
     toImageResource(m_resource.get())->removeObserver(this);
-    MockResourceClient::removeAsClient();
+  MockResourceClient::dispose();
 }
 
-void MockImageResourceClient::dispose()
-{
-    if (m_resource)
-        toImageResource(m_resource.get())->removeObserver(this);
-    MockResourceClient::dispose();
+void MockImageResourceClient::imageChanged(ImageResource*, const IntRect*) {
+  m_imageChangedCount++;
 }
 
-void MockImageResourceClient::imageChanged(ImageResource*, const IntRect*)
-{
-    m_imageChangedCount++;
+void MockImageResourceClient::imageNotifyFinished(ImageResource*) {
+  ASSERT_EQ(0, m_imageNotifyFinishedCount);
+  m_imageNotifyFinishedCount++;
 }
 
-void MockImageResourceClient::imageNotifyFinished(ImageResource*)
-{
-    ASSERT_EQ(0, m_imageNotifyFinishedCount);
-    m_imageNotifyFinishedCount++;
+bool MockImageResourceClient::notifyFinishedCalled() const {
+  EXPECT_EQ(m_notifyFinishedCalled ? 1 : 0, m_imageNotifyFinishedCount);
+
+  return m_notifyFinishedCalled;
 }
 
-bool MockImageResourceClient::notifyFinishedCalled() const
-{
-    EXPECT_EQ(m_notifyFinishedCalled ? 1 : 0, m_imageNotifyFinishedCount);
-
-    return m_notifyFinishedCalled;
-}
-
-} // namespace blink
+}  // namespace blink

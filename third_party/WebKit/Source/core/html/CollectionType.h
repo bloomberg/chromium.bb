@@ -26,62 +26,59 @@
 namespace blink {
 
 enum CollectionType {
-    // Unnamed HTMLCollection types cached in the document.
-    DocImages,    // all <img> elements in the document
-    DocApplets,   // all <object> and <applet> elements
-    DocEmbeds,    // all <embed> elements
-    DocForms,     // all <form> elements
-    DocLinks,     // all <a> _and_ <area> elements with a value for href
-    DocAnchors,   // all <a> elements with a value for name
-    DocScripts,   // all <script> elements
-    DocAll,       // "all" elements (IE)
+  // Unnamed HTMLCollection types cached in the document.
+  DocImages,   // all <img> elements in the document
+  DocApplets,  // all <object> and <applet> elements
+  DocEmbeds,   // all <embed> elements
+  DocForms,    // all <form> elements
+  DocLinks,    // all <a> _and_ <area> elements with a value for href
+  DocAnchors,  // all <a> elements with a value for name
+  DocScripts,  // all <script> elements
+  DocAll,      // "all" elements (IE)
 
-    // Unnamed HTMLCollection types cached in elements.
-    NodeChildren, // first-level children (ParentNode DOM interface)
-    TableTBodies, // all <tbody> elements in this table
-    TSectionRows, // all row elements in this table section
-    TableRows,
-    TRCells,      // all cells in this row
-    SelectOptions,
-    SelectedOptions,
-    DataListOptions,
-    MapAreas,
-    FormControls,
+  // Unnamed HTMLCollection types cached in elements.
+  NodeChildren,  // first-level children (ParentNode DOM interface)
+  TableTBodies,  // all <tbody> elements in this table
+  TSectionRows,  // all row elements in this table section
+  TableRows,
+  TRCells,  // all cells in this row
+  SelectOptions,
+  SelectedOptions,
+  DataListOptions,
+  MapAreas,
+  FormControls,
 
-    // Named HTMLCollection types cached in the document.
-    WindowNamedItems,
-    DocumentNamedItems,
+  // Named HTMLCollection types cached in the document.
+  WindowNamedItems,
+  DocumentNamedItems,
 
-    // Named HTMLCollection types cached in elements.
-    ClassCollectionType,
-    TagCollectionType,
-    HTMLTagCollectionType,
+  // Named HTMLCollection types cached in elements.
+  ClassCollectionType,
+  TagCollectionType,
+  HTMLTagCollectionType,
 
-    // Live NodeList.
-    NameNodeListType,
-    RadioNodeListType,
-    RadioImgNodeListType,
-    LabelsNodeListType,
+  // Live NodeList.
+  NameNodeListType,
+  RadioNodeListType,
+  RadioImgNodeListType,
+  LabelsNodeListType,
 };
 
 static const CollectionType FirstNamedCollectionType = WindowNamedItems;
 static const CollectionType FirstLiveNodeListType = NameNodeListType;
 
-inline bool isUnnamedHTMLCollectionType(CollectionType type)
-{
-    return type < FirstNamedCollectionType;
+inline bool isUnnamedHTMLCollectionType(CollectionType type) {
+  return type < FirstNamedCollectionType;
 }
 
-inline bool isHTMLCollectionType(CollectionType type)
-{
-    return type < FirstLiveNodeListType;
+inline bool isHTMLCollectionType(CollectionType type) {
+  return type < FirstLiveNodeListType;
 }
 
-inline bool isLiveNodeListType(CollectionType type)
-{
-    return type >= FirstLiveNodeListType;
+inline bool isLiveNodeListType(CollectionType type) {
+  return type >= FirstLiveNodeListType;
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

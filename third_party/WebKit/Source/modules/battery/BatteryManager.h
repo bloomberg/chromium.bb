@@ -17,54 +17,64 @@
 
 namespace blink {
 
-class BatteryManager final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject, public PlatformEventController {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
-public:
-    static BatteryManager* create(ExecutionContext*);
-    ~BatteryManager() override;
+class BatteryManager final : public EventTargetWithInlineData,
+                             public ActiveScriptWrappable,
+                             public ActiveDOMObject,
+                             public PlatformEventController {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 
-    // Returns a promise object that will be resolved with this BatteryManager.
-    ScriptPromise startRequest(ScriptState*);
+ public:
+  static BatteryManager* create(ExecutionContext*);
+  ~BatteryManager() override;
 
-    // EventTarget implementation.
-    const WTF::AtomicString& interfaceName() const override { return EventTargetNames::BatteryManager; }
-    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
+  // Returns a promise object that will be resolved with this BatteryManager.
+  ScriptPromise startRequest(ScriptState*);
 
-    bool charging();
-    double chargingTime();
-    double dischargingTime();
-    double level();
+  // EventTarget implementation.
+  const WTF::AtomicString& interfaceName() const override {
+    return EventTargetNames::BatteryManager;
+  }
+  ExecutionContext* getExecutionContext() const override {
+    return ContextLifecycleObserver::getExecutionContext();
+  }
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
+  bool charging();
+  double chargingTime();
+  double dischargingTime();
+  double level();
 
-    // Inherited from PlatformEventController.
-    void didUpdateData() override;
-    void registerWithDispatcher() override;
-    void unregisterWithDispatcher() override;
-    bool hasLastData() override;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
 
-    // ActiveDOMObject implementation.
-    void suspend() override;
-    void resume() override;
-    void stop() override;
+  // Inherited from PlatformEventController.
+  void didUpdateData() override;
+  void registerWithDispatcher() override;
+  void unregisterWithDispatcher() override;
+  bool hasLastData() override;
 
-    // ScriptWrappable implementation.
-    bool hasPendingActivity() const final;
+  // ActiveDOMObject implementation.
+  void suspend() override;
+  void resume() override;
+  void stop() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  // ScriptWrappable implementation.
+  bool hasPendingActivity() const final;
 
-private:
-    explicit BatteryManager(ExecutionContext*);
+  DECLARE_VIRTUAL_TRACE();
 
-    using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>, Member<BatteryManager>, Member<DOMException>>;
-    Member<BatteryProperty> m_batteryProperty;
-    BatteryStatus m_batteryStatus;
+ private:
+  explicit BatteryManager(ExecutionContext*);
+
+  using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>,
+                                                Member<BatteryManager>,
+                                                Member<DOMException>>;
+  Member<BatteryProperty> m_batteryProperty;
+  BatteryStatus m_batteryStatus;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BatteryManager_h
+#endif  // BatteryManager_h

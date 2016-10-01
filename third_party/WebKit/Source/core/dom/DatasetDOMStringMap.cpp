@@ -34,169 +34,175 @@
 
 namespace blink {
 
-static bool isValidAttributeName(const String& name)
-{
-    if (!name.startsWith("data-"))
+static bool isValidAttributeName(const String& name) {
+  if (!name.startsWith("data-"))
+    return false;
+
+  unsigned length = name.length();
+  for (unsigned i = 5; i < length; ++i) {
+    if (isASCIIUpper(name[i]))
+      return false;
+  }
+
+  return true;
+}
+
+static String convertAttributeNameToPropertyName(const String& name) {
+  StringBuilder stringBuilder;
+
+  unsigned length = name.length();
+  for (unsigned i = 5; i < length; ++i) {
+    UChar character = name[i];
+    if (character != '-') {
+      stringBuilder.append(character);
+    } else {
+      if ((i + 1 < length) && isASCIILower(name[i + 1])) {
+        stringBuilder.append(toASCIIUpper(name[i + 1]));
+        ++i;
+      } else {
+        stringBuilder.append(character);
+      }
+    }
+  }
+
+  return stringBuilder.toString();
+}
+
+template <typename CharType1, typename CharType2>
+static bool propertyNameMatchesAttributeName(const CharType1* propertyName,
+                                             const CharType2* attributeName,
+                                             unsigned propertyLength,
+                                             unsigned attributeLength) {
+  unsigned a = 5;
+  unsigned p = 0;
+  bool wordBoundary = false;
+  while (a < attributeLength && p < propertyLength) {
+    if (attributeName[a] == '-' && a + 1 < attributeLength &&
+        isASCIILower(attributeName[a + 1])) {
+      wordBoundary = true;
+    } else {
+      if ((wordBoundary ? toASCIIUpper(attributeName[a]) : attributeName[a]) !=
+          propertyName[p])
         return false;
-
-    unsigned length = name.length();
-    for (unsigned i = 5; i < length; ++i) {
-        if (isASCIIUpper(name[i]))
-            return false;
+      p++;
+      wordBoundary = false;
     }
+    a++;
+  }
 
-    return true;
+  return (a == attributeLength && p == propertyLength);
 }
 
-static String convertAttributeNameToPropertyName(const String& name)
-{
-    StringBuilder stringBuilder;
+static bool propertyNameMatchesAttributeName(const String& propertyName,
+                                             const String& attributeName) {
+  if (!attributeName.startsWith("data-"))
+    return false;
 
-    unsigned length = name.length();
-    for (unsigned i = 5; i < length; ++i) {
-        UChar character = name[i];
-        if (character != '-') {
-            stringBuilder.append(character);
-        } else {
-            if ((i + 1 < length) && isASCIILower(name[i + 1])) {
-                stringBuilder.append(toASCIIUpper(name[i + 1]));
-                ++i;
-            } else {
-                stringBuilder.append(character);
-            }
-        }
-    }
+  unsigned propertyLength = propertyName.length();
+  unsigned attributeLength = attributeName.length();
 
-    return stringBuilder.toString();
-}
-
-template<typename CharType1, typename CharType2>
-static bool propertyNameMatchesAttributeName(const CharType1* propertyName, const CharType2* attributeName, unsigned propertyLength, unsigned attributeLength)
-{
-    unsigned a = 5;
-    unsigned p = 0;
-    bool wordBoundary = false;
-    while (a < attributeLength && p < propertyLength) {
-        if (attributeName[a] == '-' && a + 1 < attributeLength && isASCIILower(attributeName[a + 1])) {
-            wordBoundary = true;
-        } else {
-            if ((wordBoundary ? toASCIIUpper(attributeName[a]) : attributeName[a]) != propertyName[p])
-                return false;
-            p++;
-            wordBoundary = false;
-        }
-        a++;
-    }
-
-    return (a == attributeLength && p == propertyLength);
-}
-
-static bool propertyNameMatchesAttributeName(const String& propertyName, const String& attributeName)
-{
-    if (!attributeName.startsWith("data-"))
-        return false;
-
-    unsigned propertyLength = propertyName.length();
-    unsigned attributeLength = attributeName.length();
-
-    if (propertyName.is8Bit()) {
-        if (attributeName.is8Bit())
-            return propertyNameMatchesAttributeName(propertyName.characters8(), attributeName.characters8(), propertyLength, attributeLength);
-        return propertyNameMatchesAttributeName(propertyName.characters8(), attributeName.characters16(), propertyLength, attributeLength);
-    }
-
+  if (propertyName.is8Bit()) {
     if (attributeName.is8Bit())
-        return propertyNameMatchesAttributeName(propertyName.characters16(), attributeName.characters8(), propertyLength, attributeLength);
-    return propertyNameMatchesAttributeName(propertyName.characters16(), attributeName.characters16(), propertyLength, attributeLength);
+      return propertyNameMatchesAttributeName(propertyName.characters8(),
+                                              attributeName.characters8(),
+                                              propertyLength, attributeLength);
+    return propertyNameMatchesAttributeName(propertyName.characters8(),
+                                            attributeName.characters16(),
+                                            propertyLength, attributeLength);
+  }
+
+  if (attributeName.is8Bit())
+    return propertyNameMatchesAttributeName(propertyName.characters16(),
+                                            attributeName.characters8(),
+                                            propertyLength, attributeLength);
+  return propertyNameMatchesAttributeName(propertyName.characters16(),
+                                          attributeName.characters16(),
+                                          propertyLength, attributeLength);
 }
 
-static bool isValidPropertyName(const String& name)
-{
-    unsigned length = name.length();
-    for (unsigned i = 0; i < length; ++i) {
-        if (name[i] == '-' && (i + 1 < length) && isASCIILower(name[i + 1]))
-            return false;
-    }
-    return true;
+static bool isValidPropertyName(const String& name) {
+  unsigned length = name.length();
+  for (unsigned i = 0; i < length; ++i) {
+    if (name[i] == '-' && (i + 1 < length) && isASCIILower(name[i + 1]))
+      return false;
+  }
+  return true;
 }
 
 // This returns an AtomicString because attribute names are always stored
 // as AtomicString types in Element (see setAttribute()).
-static AtomicString convertPropertyNameToAttributeName(const String& name)
-{
-    StringBuilder builder;
-    builder.append("data-");
+static AtomicString convertPropertyNameToAttributeName(const String& name) {
+  StringBuilder builder;
+  builder.append("data-");
 
-    unsigned length = name.length();
-    for (unsigned i = 0; i < length; ++i) {
-        UChar character = name[i];
-        if (isASCIIUpper(character)) {
-            builder.append('-');
-            builder.append(toASCIILower(character));
-        } else {
-            builder.append(character);
-        }
+  unsigned length = name.length();
+  for (unsigned i = 0; i < length; ++i) {
+    UChar character = name[i];
+    if (isASCIIUpper(character)) {
+      builder.append('-');
+      builder.append(toASCIILower(character));
+    } else {
+      builder.append(character);
     }
+  }
 
-    return builder.toAtomicString();
+  return builder.toAtomicString();
 }
 
-void DatasetDOMStringMap::getNames(Vector<String>& names)
-{
-    AttributeCollection attributes = m_element->attributes();
-    for (const Attribute& attr : attributes) {
-        if (isValidAttributeName(attr.localName()))
-            names.append(convertAttributeNameToPropertyName(attr.localName()));
+void DatasetDOMStringMap::getNames(Vector<String>& names) {
+  AttributeCollection attributes = m_element->attributes();
+  for (const Attribute& attr : attributes) {
+    if (isValidAttributeName(attr.localName()))
+      names.append(convertAttributeNameToPropertyName(attr.localName()));
+  }
+}
+
+String DatasetDOMStringMap::item(const String& name) {
+  AttributeCollection attributes = m_element->attributes();
+  for (const Attribute& attr : attributes) {
+    if (propertyNameMatchesAttributeName(name, attr.localName()))
+      return attr.value();
+  }
+
+  return String();
+}
+
+bool DatasetDOMStringMap::contains(const String& name) {
+  AttributeCollection attributes = m_element->attributes();
+  for (const Attribute& attr : attributes) {
+    if (propertyNameMatchesAttributeName(name, attr.localName()))
+      return true;
+  }
+  return false;
+}
+
+void DatasetDOMStringMap::setItem(const String& name,
+                                  const String& value,
+                                  ExceptionState& exceptionState) {
+  if (!isValidPropertyName(name)) {
+    exceptionState.throwDOMException(
+        SyntaxError, "'" + name + "' is not a valid property name.");
+    return;
+  }
+
+  m_element->setAttribute(convertPropertyNameToAttributeName(name),
+                          AtomicString(value), exceptionState);
+}
+
+bool DatasetDOMStringMap::deleteItem(const String& name) {
+  if (isValidPropertyName(name)) {
+    AtomicString attributeName = convertPropertyNameToAttributeName(name);
+    if (m_element->hasAttribute(attributeName)) {
+      m_element->removeAttribute(attributeName);
+      return true;
     }
+  }
+  return false;
 }
 
-String DatasetDOMStringMap::item(const String& name)
-{
-    AttributeCollection attributes = m_element->attributes();
-    for (const Attribute& attr : attributes) {
-        if (propertyNameMatchesAttributeName(name, attr.localName()))
-            return attr.value();
-    }
-
-    return String();
+DEFINE_TRACE(DatasetDOMStringMap) {
+  visitor->trace(m_element);
+  DOMStringMap::trace(visitor);
 }
 
-bool DatasetDOMStringMap::contains(const String& name)
-{
-    AttributeCollection attributes = m_element->attributes();
-    for (const Attribute& attr : attributes) {
-        if (propertyNameMatchesAttributeName(name, attr.localName()))
-            return true;
-    }
-    return false;
-}
-
-void DatasetDOMStringMap::setItem(const String& name, const String& value, ExceptionState& exceptionState)
-{
-    if (!isValidPropertyName(name)) {
-        exceptionState.throwDOMException(SyntaxError, "'" + name + "' is not a valid property name.");
-        return;
-    }
-
-    m_element->setAttribute(convertPropertyNameToAttributeName(name), AtomicString(value), exceptionState);
-}
-
-bool DatasetDOMStringMap::deleteItem(const String& name)
-{
-    if (isValidPropertyName(name)) {
-        AtomicString attributeName = convertPropertyNameToAttributeName(name);
-        if (m_element->hasAttribute(attributeName)) {
-            m_element->removeAttribute(attributeName);
-            return true;
-        }
-    }
-    return false;
-}
-
-DEFINE_TRACE(DatasetDOMStringMap)
-{
-    visitor->trace(m_element);
-    DOMStringMap::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

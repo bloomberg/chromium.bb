@@ -35,36 +35,37 @@ namespace blink {
 class DOMException;
 class IDBDatabase;
 
-class MODULES_EXPORT IDBDatabaseCallbacks : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
-public:
-    static IDBDatabaseCallbacks* create();
-    virtual ~IDBDatabaseCallbacks();
-    DECLARE_TRACE();
+class MODULES_EXPORT IDBDatabaseCallbacks
+    : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
+ public:
+  static IDBDatabaseCallbacks* create();
+  virtual ~IDBDatabaseCallbacks();
+  DECLARE_TRACE();
 
-    // IDBDatabaseCallbacks
-    virtual void onForcedClose();
-    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
+  // IDBDatabaseCallbacks
+  virtual void onForcedClose();
+  virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
 
-    virtual void onAbort(int64_t transactionId, DOMException*);
-    virtual void onComplete(int64_t transactionId);
+  virtual void onAbort(int64_t transactionId, DOMException*);
+  virtual void onComplete(int64_t transactionId);
 
-    void connect(IDBDatabase*);
+  void connect(IDBDatabase*);
 
-protected:
-    // Exposed to subclasses for unit tests.
-    IDBDatabaseCallbacks();
+ protected:
+  // Exposed to subclasses for unit tests.
+  IDBDatabaseCallbacks();
 
-private:
-    // The initial IDBOpenDBRequest, final IDBDatabase, and/or
-    // WebIDBDatabaseCallbacks have strong references to an IDBDatabaseCallbacks
-    // object.
-    // Oilpan: We'd like to delete an IDBDatabase object by a
-    // GC. WebIDBDatabaseCallbacks can survive the GC, and IDBDatabaseCallbacks
-    // can survive too. m_database should be a weak reference to avoid that an
-    // IDBDatabase survives the GC with the IDBDatabaseCallbacks.
-    WeakMember<IDBDatabase> m_database;
+ private:
+  // The initial IDBOpenDBRequest, final IDBDatabase, and/or
+  // WebIDBDatabaseCallbacks have strong references to an IDBDatabaseCallbacks
+  // object.
+  // Oilpan: We'd like to delete an IDBDatabase object by a
+  // GC. WebIDBDatabaseCallbacks can survive the GC, and IDBDatabaseCallbacks
+  // can survive too. m_database should be a weak reference to avoid that an
+  // IDBDatabase survives the GC with the IDBDatabaseCallbacks.
+  WeakMember<IDBDatabase> m_database;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBDatabaseCallbacks_h
+#endif  // IDBDatabaseCallbacks_h

@@ -15,23 +15,24 @@ namespace blink {
 class TimingFunction;
 
 class PLATFORM_EXPORT CompositorFloatKeyframe : public CompositorKeyframe {
-    WTF_MAKE_NONCOPYABLE(CompositorFloatKeyframe);
-public:
-    CompositorFloatKeyframe(double time, float value, const TimingFunction&);
-    CompositorFloatKeyframe(std::unique_ptr<cc::FloatKeyframe>);
-    ~CompositorFloatKeyframe() override;
+  WTF_MAKE_NONCOPYABLE(CompositorFloatKeyframe);
 
-    // CompositorKeyframe implementation.
-    double time() const override;
-    const cc::TimingFunction* ccTimingFunction() const override;
+ public:
+  CompositorFloatKeyframe(double time, float value, const TimingFunction&);
+  CompositorFloatKeyframe(std::unique_ptr<cc::FloatKeyframe>);
+  ~CompositorFloatKeyframe() override;
 
-    float value() { return m_floatKeyframe->Value(); }
-    std::unique_ptr<cc::FloatKeyframe> cloneToCC() const;
+  // CompositorKeyframe implementation.
+  double time() const override;
+  const cc::TimingFunction* ccTimingFunction() const override;
 
-private:
-    std::unique_ptr<cc::FloatKeyframe> m_floatKeyframe;
+  float value() { return m_floatKeyframe->Value(); }
+  std::unique_ptr<cc::FloatKeyframe> cloneToCC() const;
+
+ private:
+  std::unique_ptr<cc::FloatKeyframe> m_floatKeyframe;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorFloatKeyframe_h
+#endif  // CompositorFloatKeyframe_h

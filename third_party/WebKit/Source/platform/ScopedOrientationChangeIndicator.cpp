@@ -8,27 +8,26 @@
 
 namespace blink {
 
-ScopedOrientationChangeIndicator::State ScopedOrientationChangeIndicator::s_state = ScopedOrientationChangeIndicator::State::NotProcessing;
+ScopedOrientationChangeIndicator::State
+    ScopedOrientationChangeIndicator::s_state =
+        ScopedOrientationChangeIndicator::State::NotProcessing;
 
-ScopedOrientationChangeIndicator::ScopedOrientationChangeIndicator()
-{
-    DCHECK(isMainThread());
+ScopedOrientationChangeIndicator::ScopedOrientationChangeIndicator() {
+  DCHECK(isMainThread());
 
-    m_previousState = s_state;
-    s_state = State::Processing;
+  m_previousState = s_state;
+  s_state = State::Processing;
 }
 
-ScopedOrientationChangeIndicator::~ScopedOrientationChangeIndicator()
-{
-    DCHECK(isMainThread());
-    s_state = m_previousState;
+ScopedOrientationChangeIndicator::~ScopedOrientationChangeIndicator() {
+  DCHECK(isMainThread());
+  s_state = m_previousState;
 }
 
 // static
-bool ScopedOrientationChangeIndicator::processingOrientationChange()
-{
-    DCHECK(isMainThread());
-    return s_state == State::Processing;
+bool ScopedOrientationChangeIndicator::processingOrientationChange() {
+  DCHECK(isMainThread());
+  return s_state == State::Processing;
 }
 
-} // namespace blink
+}  // namespace blink

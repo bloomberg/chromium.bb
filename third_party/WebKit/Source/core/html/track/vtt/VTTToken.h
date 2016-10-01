@@ -36,61 +36,59 @@
 namespace blink {
 
 class VTTTokenTypes {
-    STATIC_ONLY(VTTTokenTypes);
-public:
-    enum Type {
-        Uninitialized,
-        Character,
-        StartTag,
-        EndTag,
-        TimestampTag,
-    };
+  STATIC_ONLY(VTTTokenTypes);
+
+ public:
+  enum Type {
+    Uninitialized,
+    Character,
+    StartTag,
+    EndTag,
+    TimestampTag,
+  };
 };
 
 class VTTToken {
-    STACK_ALLOCATED();
-public:
-    typedef VTTTokenTypes Type;
+  STACK_ALLOCATED();
 
-    VTTToken() : m_type(Type::Uninitialized) { }
+ public:
+  typedef VTTTokenTypes Type;
 
-    static VTTToken StringToken(const String& characterData)
-    {
-        return VTTToken(Type::Character, characterData);
-    }
-    static VTTToken StartTag(const String& tagName, const AtomicString& classes = emptyAtom, const AtomicString& annotation = emptyAtom)
-    {
-        VTTToken token(Type::StartTag, tagName);
-        token.m_classes = classes;
-        token.m_annotation = annotation;
-        return token;
-    }
-    static VTTToken EndTag(const String& tagName)
-    {
-        return VTTToken(Type::EndTag, tagName);
-    }
-    static VTTToken TimestampTag(const String& timestampData)
-    {
-        return VTTToken(Type::TimestampTag, timestampData);
-    }
+  VTTToken() : m_type(Type::Uninitialized) {}
 
-    Type::Type type() const { return m_type; }
-    const String& name() const { return m_data; }
-    const String& characters() const { return m_data; }
-    const AtomicString& classes() const { return m_classes; }
-    const AtomicString& annotation() const { return m_annotation; }
+  static VTTToken StringToken(const String& characterData) {
+    return VTTToken(Type::Character, characterData);
+  }
+  static VTTToken StartTag(const String& tagName,
+                           const AtomicString& classes = emptyAtom,
+                           const AtomicString& annotation = emptyAtom) {
+    VTTToken token(Type::StartTag, tagName);
+    token.m_classes = classes;
+    token.m_annotation = annotation;
+    return token;
+  }
+  static VTTToken EndTag(const String& tagName) {
+    return VTTToken(Type::EndTag, tagName);
+  }
+  static VTTToken TimestampTag(const String& timestampData) {
+    return VTTToken(Type::TimestampTag, timestampData);
+  }
 
-private:
-    VTTToken(Type::Type type, const String& data)
-        : m_type(type)
-        , m_data(data) { }
+  Type::Type type() const { return m_type; }
+  const String& name() const { return m_data; }
+  const String& characters() const { return m_data; }
+  const AtomicString& classes() const { return m_classes; }
+  const AtomicString& annotation() const { return m_annotation; }
 
-    Type::Type m_type;
-    String m_data;
-    AtomicString m_annotation;
-    AtomicString m_classes;
+ private:
+  VTTToken(Type::Type type, const String& data) : m_type(type), m_data(data) {}
+
+  Type::Type m_type;
+  String m_data;
+  AtomicString m_annotation;
+  AtomicString m_classes;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

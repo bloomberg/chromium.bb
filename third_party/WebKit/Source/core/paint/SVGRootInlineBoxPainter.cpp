@@ -17,28 +17,47 @@
 
 namespace blink {
 
-void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
+void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo,
+                                    const LayoutPoint& paintOffset) {
+  ASSERT(paintInfo.phase == PaintPhaseForeground ||
+         paintInfo.phase == PaintPhaseSelection);
 
-    bool hasSelection = !paintInfo.isPrinting() && m_svgRootInlineBox.getSelectionState() != SelectionNone;
+  bool hasSelection = !paintInfo.isPrinting() &&
+                      m_svgRootInlineBox.getSelectionState() != SelectionNone;
 
-    PaintInfo paintInfoBeforeFiltering(paintInfo);
-    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering.phase)) {
-        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering.phase, paintInfoBeforeFiltering.cullRect().m_rect);
-        for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
-            if (child->isSVGInlineTextBox())
-                SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(paintInfoBeforeFiltering);
-            else if (child->isSVGInlineFlowBox())
-                SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child)).paintSelectionBackground(paintInfoBeforeFiltering);
-        }
+  PaintInfo paintInfoBeforeFiltering(paintInfo);
+  if (hasSelection &&
+      !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
+          paintInfoBeforeFiltering.context,
+          *LineLayoutAPIShim::constLayoutObjectFrom(
+              m_svgRootInlineBox.getLineLayoutItem()),
+          paintInfoBeforeFiltering.phase)) {
+    LayoutObjectDrawingRecorder recorder(
+        paintInfoBeforeFiltering.context,
+        *LineLayoutAPIShim::constLayoutObjectFrom(
+            m_svgRootInlineBox.getLineLayoutItem()),
+        paintInfoBeforeFiltering.phase,
+        paintInfoBeforeFiltering.cullRect().m_rect);
+    for (InlineBox* child = m_svgRootInlineBox.firstChild(); child;
+         child = child->nextOnLine()) {
+      if (child->isSVGInlineTextBox())
+        SVGInlineTextBoxPainter(*toSVGInlineTextBox(child))
+            .paintSelectionBackground(paintInfoBeforeFiltering);
+      else if (child->isSVGInlineFlowBox())
+        SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child))
+            .paintSelectionBackground(paintInfoBeforeFiltering);
     }
+  }
 
-    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.getLineLayoutItem()), paintInfoBeforeFiltering);
-    if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-        for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(), LayoutUnit());
-    }
+  SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(
+                                   m_svgRootInlineBox.getLineLayoutItem()),
+                               paintInfoBeforeFiltering);
+  if (paintContext.applyClipMaskAndFilterIfNecessary()) {
+    for (InlineBox* child = m_svgRootInlineBox.firstChild(); child;
+         child = child->nextOnLine())
+      child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(),
+                   LayoutUnit());
+  }
 }
 
-} // namespace blink
+}  // namespace blink

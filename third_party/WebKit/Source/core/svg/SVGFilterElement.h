@@ -36,47 +36,53 @@ namespace blink {
 
 class SVGResourceClient;
 
-class CORE_EXPORT SVGFilterElement final : public SVGElement, public SVGURIReference {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGFilterElement);
-public:
-    DECLARE_NODE_FACTORY(SVGFilterElement);
-    DECLARE_VIRTUAL_TRACE();
+class CORE_EXPORT SVGFilterElement final : public SVGElement,
+                                           public SVGURIReference {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGFilterElement);
 
-    ~SVGFilterElement() override;
+ public:
+  DECLARE_NODE_FACTORY(SVGFilterElement);
+  DECLARE_VIRTUAL_TRACE();
 
-    void addClient(SVGResourceClient*);
-    void removeClient(SVGResourceClient*);
+  ~SVGFilterElement() override;
 
-    SVGAnimatedLength* x() const { return m_x.get(); }
-    SVGAnimatedLength* y() const { return m_y.get(); }
-    SVGAnimatedLength* width() const { return m_width.get(); }
-    SVGAnimatedLength* height() const { return m_height.get(); }
-    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* filterUnits() { return m_filterUnits.get(); }
-    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* primitiveUnits() { return m_primitiveUnits.get(); }
+  void addClient(SVGResourceClient*);
+  void removeClient(SVGResourceClient*);
 
-private:
-    explicit SVGFilterElement(Document&);
+  SVGAnimatedLength* x() const { return m_x.get(); }
+  SVGAnimatedLength* y() const { return m_y.get(); }
+  SVGAnimatedLength* width() const { return m_width.get(); }
+  SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* filterUnits() {
+    return m_filterUnits.get();
+  }
+  SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* primitiveUnits() {
+    return m_primitiveUnits.get();
+  }
 
-    bool needsPendingResourceHandling() const override { return false; }
+ private:
+  explicit SVGFilterElement(Document&);
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    void childrenChanged(const ChildrenChange&) override;
+  bool needsPendingResourceHandling() const override { return false; }
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  void childrenChanged(const ChildrenChange&) override;
 
-    bool selfHasRelativeLengths() const override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    Member<SVGAnimatedLength> m_x;
-    Member<SVGAnimatedLength> m_y;
-    Member<SVGAnimatedLength> m_width;
-    Member<SVGAnimatedLength> m_height;
-    Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_filterUnits;
-    Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_primitiveUnits;
+  bool selfHasRelativeLengths() const override;
 
-    HeapHashSet<WeakMember<SVGResourceClient>> m_clientsToAdd;
+  Member<SVGAnimatedLength> m_x;
+  Member<SVGAnimatedLength> m_y;
+  Member<SVGAnimatedLength> m_width;
+  Member<SVGAnimatedLength> m_height;
+  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_filterUnits;
+  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_primitiveUnits;
+
+  HeapHashSet<WeakMember<SVGResourceClient>> m_clientsToAdd;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFilterElement_h
+#endif  // SVGFilterElement_h

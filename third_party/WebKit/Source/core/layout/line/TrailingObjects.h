@@ -36,9 +36,12 @@ class InlineIterator;
 struct BidiRun;
 struct BidiIsolatedRun;
 
-template <class Iterator, class Run, class IsolatedRun> class BidiResolver;
-template <class Iterator> class MidpointState;
-typedef BidiResolver<InlineIterator, BidiRun, BidiIsolatedRun> InlineBidiResolver;
+template <class Iterator, class Run, class IsolatedRun>
+class BidiResolver;
+template <class Iterator>
+class MidpointState;
+typedef BidiResolver<InlineIterator, BidiRun, BidiIsolatedRun>
+    InlineBidiResolver;
 typedef MidpointState<InlineIterator> LineMidpointState;
 
 // This class allows us to ensure lineboxes are created in the right place on the line when
@@ -55,43 +58,40 @@ typedef MidpointState<InlineIterator> LineMidpointState;
 // them in the right place when we start ignoring surplus whitespace.
 
 class TrailingObjects {
-    STACK_ALLOCATED();
-public:
-    TrailingObjects()
-        : m_whitespace(nullptr)
-    {
-    }
+  STACK_ALLOCATED();
 
-    void setTrailingWhitespace(LineLayoutText whitespace)
-    {
-        ASSERT(whitespace);
-        m_whitespace = whitespace;
-    }
+ public:
+  TrailingObjects() : m_whitespace(nullptr) {}
 
-    void clear()
-    {
-        m_whitespace = LineLayoutText();
-        // Using resize(0) rather than clear() here saves 2% on
-        // PerformanceTests/Layout/line-layout.html because we avoid freeing and
-        // re-allocating the underlying buffer repeatedly.
-        m_objects.resize(0);
-    }
+  void setTrailingWhitespace(LineLayoutText whitespace) {
+    ASSERT(whitespace);
+    m_whitespace = whitespace;
+  }
 
-    void appendObjectIfNeeded(LineLayoutItem object)
-    {
-        if (m_whitespace)
-            m_objects.append(object);
-    }
+  void clear() {
+    m_whitespace = LineLayoutText();
+    // Using resize(0) rather than clear() here saves 2% on
+    // PerformanceTests/Layout/line-layout.html because we avoid freeing and
+    // re-allocating the underlying buffer repeatedly.
+    m_objects.resize(0);
+  }
 
-    enum CollapseFirstSpaceOrNot { DoNotCollapseFirstSpace, CollapseFirstSpace };
+  void appendObjectIfNeeded(LineLayoutItem object) {
+    if (m_whitespace)
+      m_objects.append(object);
+  }
 
-    void updateMidpointsForTrailingObjects(LineMidpointState&, const InlineIterator& lBreak, CollapseFirstSpaceOrNot);
+  enum CollapseFirstSpaceOrNot { DoNotCollapseFirstSpace, CollapseFirstSpace };
 
-private:
-    LineLayoutText m_whitespace;
-    Vector<LineLayoutItem, 4> m_objects;
+  void updateMidpointsForTrailingObjects(LineMidpointState&,
+                                         const InlineIterator& lBreak,
+                                         CollapseFirstSpaceOrNot);
+
+ private:
+  LineLayoutText m_whitespace;
+  Vector<LineLayoutItem, 4> m_objects;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TrailingObjects_h
+#endif  // TrailingObjects_h

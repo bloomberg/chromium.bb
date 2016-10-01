@@ -36,157 +36,161 @@
 
 namespace blink {
 
-PlainTextRange::PlainTextRange()
-    : m_start(kNotFound)
-    , m_end(kNotFound)
-{
-}
+PlainTextRange::PlainTextRange() : m_start(kNotFound), m_end(kNotFound) {}
 
 PlainTextRange::PlainTextRange(int location)
-    : m_start(location)
-    , m_end(location)
-{
-    DCHECK_GE(location, 0);
+    : m_start(location), m_end(location) {
+  DCHECK_GE(location, 0);
 }
 
 PlainTextRange::PlainTextRange(int start, int end)
-    : m_start(start)
-    , m_end(end)
-{
-    DCHECK_GE(start, 0);
-    DCHECK_GE(end, 0);
-    DCHECK_LE(start, end);
+    : m_start(start), m_end(end) {
+  DCHECK_GE(start, 0);
+  DCHECK_GE(end, 0);
+  DCHECK_LE(start, end);
 }
 
-EphemeralRange PlainTextRange::createRange(const ContainerNode& scope) const
-{
-    return createRangeFor(scope, ForGeneric);
+EphemeralRange PlainTextRange::createRange(const ContainerNode& scope) const {
+  return createRangeFor(scope, ForGeneric);
 }
 
-EphemeralRange PlainTextRange::createRangeForSelection(const ContainerNode& scope) const
-{
-    return createRangeFor(scope, ForSelection);
+EphemeralRange PlainTextRange::createRangeForSelection(
+    const ContainerNode& scope) const {
+  return createRangeFor(scope, ForSelection);
 }
 
-EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRangeFor getRangeFor) const
-{
-    DCHECK(isNotNull());
+EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope,
+                                              GetRangeFor getRangeFor) const {
+  DCHECK(isNotNull());
 
-    size_t docTextPosition = 0;
-    bool startRangeFound = false;
+  size_t docTextPosition = 0;
+  bool startRangeFound = false;
 
-    Position textRunStartPosition;
-    Position textRunEndPosition;
+  Position textRunStartPosition;
+  Position textRunEndPosition;
 
-    TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
-    if (getRangeFor == ForSelection)
-        behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
-    auto range = EphemeralRange::rangeOfContents(scope);
+  TextIteratorBehaviorFlags behaviorFlags =
+      TextIteratorEmitsObjectReplacementCharacter;
+  if (getRangeFor == ForSelection)
+    behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
+  auto range = EphemeralRange::rangeOfContents(scope);
 
-    TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
+  TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
 
-    // FIXME: the atEnd() check shouldn't be necessary, workaround for
-    // <http://bugs.webkit.org/show_bug.cgi?id=6289>.
-    if (!start() && !length() && it.atEnd())
-        return EphemeralRange(Position(it.currentContainer(), 0));
+  // FIXME: the atEnd() check shouldn't be necessary, workaround for
+  // <http://bugs.webkit.org/show_bug.cgi?id=6289>.
+  if (!start() && !length() && it.atEnd())
+    return EphemeralRange(Position(it.currentContainer(), 0));
 
-    Position resultStart = Position(&scope.document(), 0);
-    Position resultEnd = resultStart;
+  Position resultStart = Position(&scope.document(), 0);
+  Position resultEnd = resultStart;
 
-    for (; !it.atEnd(); it.advance()) {
-        int len = it.length();
+  for (; !it.atEnd(); it.advance()) {
+    int len = it.length();
 
-        textRunStartPosition = it.startPositionInCurrentContainer();
-        textRunEndPosition = it.endPositionInCurrentContainer();
+    textRunStartPosition = it.startPositionInCurrentContainer();
+    textRunEndPosition = it.endPositionInCurrentContainer();
 
-        bool foundStart = start() >= docTextPosition && start() <= docTextPosition + len;
-        bool foundEnd = end() >= docTextPosition && end() <= docTextPosition + len;
+    bool foundStart =
+        start() >= docTextPosition && start() <= docTextPosition + len;
+    bool foundEnd = end() >= docTextPosition && end() <= docTextPosition + len;
 
-        // Fix textRunRange->endPosition(), but only if foundStart || foundEnd, because it is only
-        // in those cases that textRunRange is used.
-        if (foundEnd) {
-            // FIXME: This is a workaround for the fact that the end of a run
-            // is often at the wrong position for emitted '\n's or if the
-            // layoutObject of the current node is a replaced element.
-            if (len == 1 && (it.characterAt(0) == '\n' || it.isInsideAtomicInlineElement())) {
-                it.advance();
-                if (!it.atEnd()) {
-                    textRunEndPosition = it.startPositionInCurrentContainer();
-                } else {
-                    Position runEnd = nextPositionOf(createVisiblePosition(textRunStartPosition)).deepEquivalent();
-                    if (runEnd.isNotNull())
-                        textRunEndPosition = runEnd;
-                }
-            }
+    // Fix textRunRange->endPosition(), but only if foundStart || foundEnd, because it is only
+    // in those cases that textRunRange is used.
+    if (foundEnd) {
+      // FIXME: This is a workaround for the fact that the end of a run
+      // is often at the wrong position for emitted '\n's or if the
+      // layoutObject of the current node is a replaced element.
+      if (len == 1 &&
+          (it.characterAt(0) == '\n' || it.isInsideAtomicInlineElement())) {
+        it.advance();
+        if (!it.atEnd()) {
+          textRunEndPosition = it.startPositionInCurrentContainer();
+        } else {
+          Position runEnd =
+              nextPositionOf(createVisiblePosition(textRunStartPosition))
+                  .deepEquivalent();
+          if (runEnd.isNotNull())
+            textRunEndPosition = runEnd;
         }
-
-        if (foundStart) {
-            startRangeFound = true;
-            if (textRunStartPosition.computeContainerNode()->isTextNode()) {
-                int offset = start() - docTextPosition;
-                resultStart = Position(textRunStartPosition.computeContainerNode(), offset + textRunStartPosition.offsetInContainerNode());
-            } else {
-                if (start() == docTextPosition)
-                    resultStart = textRunStartPosition;
-                else
-                    resultStart = textRunEndPosition;
-            }
-        }
-
-        if (foundEnd) {
-            if (textRunStartPosition.computeContainerNode()->isTextNode()) {
-                int offset = end() - docTextPosition;
-                resultEnd = Position(textRunStartPosition.computeContainerNode(), offset + textRunStartPosition.offsetInContainerNode());
-            } else {
-                if (end() == docTextPosition)
-                    resultEnd = textRunStartPosition;
-                else
-                    resultEnd = textRunEndPosition;
-            }
-            docTextPosition += len;
-            break;
-        }
-        docTextPosition += len;
+      }
     }
 
-    if (!startRangeFound)
-        return EphemeralRange();
-
-    if (length() && end() > docTextPosition) { // end() is out of bounds
-        resultEnd = textRunEndPosition;
+    if (foundStart) {
+      startRangeFound = true;
+      if (textRunStartPosition.computeContainerNode()->isTextNode()) {
+        int offset = start() - docTextPosition;
+        resultStart =
+            Position(textRunStartPosition.computeContainerNode(),
+                     offset + textRunStartPosition.offsetInContainerNode());
+      } else {
+        if (start() == docTextPosition)
+          resultStart = textRunStartPosition;
+        else
+          resultStart = textRunEndPosition;
+      }
     }
 
-    return EphemeralRange(resultStart.toOffsetInAnchor(), resultEnd.toOffsetInAnchor());
+    if (foundEnd) {
+      if (textRunStartPosition.computeContainerNode()->isTextNode()) {
+        int offset = end() - docTextPosition;
+        resultEnd =
+            Position(textRunStartPosition.computeContainerNode(),
+                     offset + textRunStartPosition.offsetInContainerNode());
+      } else {
+        if (end() == docTextPosition)
+          resultEnd = textRunStartPosition;
+        else
+          resultEnd = textRunEndPosition;
+      }
+      docTextPosition += len;
+      break;
+    }
+    docTextPosition += len;
+  }
+
+  if (!startRangeFound)
+    return EphemeralRange();
+
+  if (length() && end() > docTextPosition) {  // end() is out of bounds
+    resultEnd = textRunEndPosition;
+  }
+
+  return EphemeralRange(resultStart.toOffsetInAnchor(),
+                        resultEnd.toOffsetInAnchor());
 }
 
-PlainTextRange PlainTextRange::create(const ContainerNode& scope, const EphemeralRange& range)
-{
-    if (range.isNull())
-        return PlainTextRange();
+PlainTextRange PlainTextRange::create(const ContainerNode& scope,
+                                      const EphemeralRange& range) {
+  if (range.isNull())
+    return PlainTextRange();
 
-    // The critical assumption is that this only gets called with ranges that
-    // concentrate on a given area containing the selection root. This is done
-    // because of text fields and textareas. The DOM for those is not
-    // directly in the document DOM, so ensure that the range does not cross a
-    // boundary of one of those.
-    Node* startContainer = range.startPosition().computeContainerNode();
-    if (startContainer != &scope && !startContainer->isDescendantOf(&scope))
-        return PlainTextRange();
-    Node* endContainer = range.endPosition().computeContainerNode();
-    if (endContainer != scope && !endContainer->isDescendantOf(&scope))
-        return PlainTextRange();
+  // The critical assumption is that this only gets called with ranges that
+  // concentrate on a given area containing the selection root. This is done
+  // because of text fields and textareas. The DOM for those is not
+  // directly in the document DOM, so ensure that the range does not cross a
+  // boundary of one of those.
+  Node* startContainer = range.startPosition().computeContainerNode();
+  if (startContainer != &scope && !startContainer->isDescendantOf(&scope))
+    return PlainTextRange();
+  Node* endContainer = range.endPosition().computeContainerNode();
+  if (endContainer != scope && !endContainer->isDescendantOf(&scope))
+    return PlainTextRange();
 
-    DocumentLifecycle::DisallowTransitionScope disallowTransition(scope.document().lifecycle());
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      scope.document().lifecycle());
 
-    size_t start = TextIterator::rangeLength(Position(&const_cast<ContainerNode&>(scope), 0), range.startPosition());
-    size_t end = TextIterator::rangeLength(Position(&const_cast<ContainerNode&>(scope), 0), range.endPosition());
+  size_t start = TextIterator::rangeLength(
+      Position(&const_cast<ContainerNode&>(scope), 0), range.startPosition());
+  size_t end = TextIterator::rangeLength(
+      Position(&const_cast<ContainerNode&>(scope), 0), range.endPosition());
 
-    return PlainTextRange(start, end);
+  return PlainTextRange(start, end);
 }
 
-PlainTextRange PlainTextRange::create(const ContainerNode& scope, const Range& range)
-{
-    return create(scope, EphemeralRange(&range));
+PlainTextRange PlainTextRange::create(const ContainerNode& scope,
+                                      const Range& range) {
+  return create(scope, EphemeralRange(&range));
 }
 
-} // namespace blink
+}  // namespace blink

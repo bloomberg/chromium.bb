@@ -42,62 +42,67 @@
 namespace blink {
 
 class DOMActivityLoggerContainer : public V8DOMActivityLogger {
-public:
-    explicit DOMActivityLoggerContainer(std::unique_ptr<WebDOMActivityLogger> logger)
-        : m_domActivityLogger(std::move(logger))
-    {
-    }
+ public:
+  explicit DOMActivityLoggerContainer(
+      std::unique_ptr<WebDOMActivityLogger> logger)
+      : m_domActivityLogger(std::move(logger)) {}
 
-    void logGetter(const String& apiName) override
-    {
-        m_domActivityLogger->logGetter(WebString(apiName), getURL(), getTitle());
-    }
+  void logGetter(const String& apiName) override {
+    m_domActivityLogger->logGetter(WebString(apiName), getURL(), getTitle());
+  }
 
-    void logSetter(const String& apiName, const v8::Local<v8::Value>& newValue) override
-    {
-        m_domActivityLogger->logSetter(WebString(apiName), newValue, getURL(), getTitle());
-    }
+  void logSetter(const String& apiName,
+                 const v8::Local<v8::Value>& newValue) override {
+    m_domActivityLogger->logSetter(WebString(apiName), newValue, getURL(),
+                                   getTitle());
+  }
 
-    void logMethod(const String& apiName, int argc, const v8::Local<v8::Value>* argv) override
-    {
-        m_domActivityLogger->logMethod(WebString(apiName), argc, argv, getURL(), getTitle());
-    }
+  void logMethod(const String& apiName,
+                 int argc,
+                 const v8::Local<v8::Value>* argv) override {
+    m_domActivityLogger->logMethod(WebString(apiName), argc, argv, getURL(),
+                                   getTitle());
+  }
 
-    void logEvent(const String& eventName, int argc, const String* argv) override
-    {
-        Vector<WebString> webStringArgv;
-        for (int i = 0; i < argc; i++)
-            webStringArgv.append(argv[i]);
-        m_domActivityLogger->logEvent(WebString(eventName), argc, webStringArgv.data(), getURL(), getTitle());
-    }
+  void logEvent(const String& eventName,
+                int argc,
+                const String* argv) override {
+    Vector<WebString> webStringArgv;
+    for (int i = 0; i < argc; i++)
+      webStringArgv.append(argv[i]);
+    m_domActivityLogger->logEvent(WebString(eventName), argc,
+                                  webStringArgv.data(), getURL(), getTitle());
+  }
 
-private:
-    WebURL getURL()
-    {
-        if (Document* document = currentDOMWindow(v8::Isolate::GetCurrent())->document())
-            return WebURL(document->url());
-        return WebURL();
-    }
+ private:
+  WebURL getURL() {
+    if (Document* document =
+            currentDOMWindow(v8::Isolate::GetCurrent())->document())
+      return WebURL(document->url());
+    return WebURL();
+  }
 
-    WebString getTitle()
-    {
-        if (Document* document = currentDOMWindow(v8::Isolate::GetCurrent())->document())
-            return WebString(document->title());
-        return WebString();
-    }
+  WebString getTitle() {
+    if (Document* document =
+            currentDOMWindow(v8::Isolate::GetCurrent())->document())
+      return WebString(document->title());
+    return WebString();
+  }
 
-    std::unique_ptr<WebDOMActivityLogger> m_domActivityLogger;
+  std::unique_ptr<WebDOMActivityLogger> m_domActivityLogger;
 };
 
-bool hasDOMActivityLogger(int worldId, const WebString& extensionId)
-{
-    return V8DOMActivityLogger::activityLogger(worldId, extensionId);
+bool hasDOMActivityLogger(int worldId, const WebString& extensionId) {
+  return V8DOMActivityLogger::activityLogger(worldId, extensionId);
 }
 
-void setDOMActivityLogger(int worldId, const WebString& extensionId, WebDOMActivityLogger* logger)
-{
-    DCHECK(logger);
-    V8DOMActivityLogger::setActivityLogger(worldId, extensionId, wrapUnique(new DOMActivityLoggerContainer(wrapUnique(logger))));
+void setDOMActivityLogger(int worldId,
+                          const WebString& extensionId,
+                          WebDOMActivityLogger* logger) {
+  DCHECK(logger);
+  V8DOMActivityLogger::setActivityLogger(
+      worldId, extensionId,
+      wrapUnique(new DOMActivityLoggerContainer(wrapUnique(logger))));
 }
 
-} // namespace blink
+}  // namespace blink

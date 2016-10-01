@@ -40,270 +40,290 @@
 
 namespace blink {
 
-CSSPreloadScanner::CSSPreloadScanner()
-{
+CSSPreloadScanner::CSSPreloadScanner() {}
+
+CSSPreloadScanner::~CSSPreloadScanner() {}
+
+void CSSPreloadScanner::reset() {
+  m_state = Initial;
+  m_rule.clear();
+  m_ruleValue.clear();
 }
 
-CSSPreloadScanner::~CSSPreloadScanner()
-{
+template <typename Char>
+void CSSPreloadScanner::scanCommon(const Char* begin,
+                                   const Char* end,
+                                   const SegmentedString& source,
+                                   PreloadRequestStream& requests,
+                                   const KURL& predictedBaseElementURL) {
+  m_requests = &requests;
+  m_predictedBaseElementURL = &predictedBaseElementURL;
+
+  for (const Char* it = begin; it != end && m_state != DoneParsingImportRules;
+       ++it)
+    tokenize(*it, source);
+
+  m_requests = nullptr;
+  m_predictedBaseElementURL = nullptr;
 }
 
-void CSSPreloadScanner::reset()
-{
-    m_state = Initial;
-    m_rule.clear();
-    m_ruleValue.clear();
+void CSSPreloadScanner::scan(const HTMLToken::DataVector& data,
+                             const SegmentedString& source,
+                             PreloadRequestStream& requests,
+                             const KURL& predictedBaseElementURL) {
+  scanCommon(data.data(), data.data() + data.size(), source, requests,
+             predictedBaseElementURL);
 }
 
-template<typename Char>
-void CSSPreloadScanner::scanCommon(const Char* begin, const Char* end, const SegmentedString& source, PreloadRequestStream& requests, const KURL& predictedBaseElementURL)
-{
-    m_requests = &requests;
-    m_predictedBaseElementURL = &predictedBaseElementURL;
-
-    for (const Char* it = begin; it != end && m_state != DoneParsingImportRules; ++it)
-        tokenize(*it, source);
-
-    m_requests = nullptr;
-    m_predictedBaseElementURL = nullptr;
+void CSSPreloadScanner::scan(const String& tagName,
+                             const SegmentedString& source,
+                             PreloadRequestStream& requests,
+                             const KURL& predictedBaseElementURL) {
+  if (tagName.is8Bit()) {
+    const LChar* begin = tagName.characters8();
+    scanCommon(begin, begin + tagName.length(), source, requests,
+               predictedBaseElementURL);
+    return;
+  }
+  const UChar* begin = tagName.characters16();
+  scanCommon(begin, begin + tagName.length(), source, requests,
+             predictedBaseElementURL);
 }
 
-void CSSPreloadScanner::scan(const HTMLToken::DataVector& data, const SegmentedString& source, PreloadRequestStream& requests, const KURL& predictedBaseElementURL)
-{
-    scanCommon(data.data(), data.data() + data.size(), source, requests, predictedBaseElementURL);
+void CSSPreloadScanner::setReferrerPolicy(const ReferrerPolicy policy) {
+  m_referrerPolicy = policy;
 }
 
-void CSSPreloadScanner::scan(const String& tagName, const SegmentedString& source, PreloadRequestStream& requests, const KURL& predictedBaseElementURL)
-{
-    if (tagName.is8Bit()) {
-        const LChar* begin = tagName.characters8();
-        scanCommon(begin, begin + tagName.length(), source, requests, predictedBaseElementURL);
-        return;
-    }
-    const UChar* begin = tagName.characters16();
-    scanCommon(begin, begin + tagName.length(), source, requests, predictedBaseElementURL);
-}
-
-void CSSPreloadScanner::setReferrerPolicy(const ReferrerPolicy policy)
-{
-    m_referrerPolicy = policy;
-}
-
-inline void CSSPreloadScanner::tokenize(UChar c, const SegmentedString& source)
-{
-    // We are just interested in @import rules, no need for real tokenization here
-    // Searching for other types of resources is probably low payoff.
-    switch (m_state) {
+inline void CSSPreloadScanner::tokenize(UChar c,
+                                        const SegmentedString& source) {
+  // We are just interested in @import rules, no need for real tokenization here
+  // Searching for other types of resources is probably low payoff.
+  switch (m_state) {
     case Initial:
-        if (isHTMLSpace<UChar>(c))
-            break;
-        if (c == '@')
-            m_state = RuleStart;
-        else if (c == '/')
-            m_state = MaybeComment;
-        else
-            m_state = DoneParsingImportRules;
+      if (isHTMLSpace<UChar>(c))
         break;
-    case MaybeComment:
-        if (c == '*')
-            m_state = Comment;
-        else
-            m_state = Initial;
-        break;
-    case Comment:
-        if (c == '*')
-            m_state = MaybeCommentEnd;
-        break;
-    case MaybeCommentEnd:
-        if (c == '*')
-            break;
-        if (c == '/')
-            m_state = Initial;
-        else
-            m_state = Comment;
-        break;
-    case RuleStart:
-        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-            m_rule.clear();
-            m_ruleValue.clear();
-            m_rule.append(c);
-            m_state = Rule;
-        } else
-            m_state = Initial;
-        break;
-    case Rule:
-        if (isHTMLSpace<UChar>(c))
-            m_state = AfterRule;
-        else if (c == ';')
-            m_state = Initial;
-        else
-            m_rule.append(c);
-        break;
-    case AfterRule:
-        if (isHTMLSpace<UChar>(c))
-            break;
-        if (c == ';')
-            m_state = Initial;
-        else if (c == '{')
-            m_state = DoneParsingImportRules;
-        else {
-            m_state = RuleValue;
-            m_ruleValue.append(c);
-        }
-        break;
-    case RuleValue:
-        if (isHTMLSpace<UChar>(c))
-            m_state = AfterRuleValue;
-        else if (c == ';')
-            emitRule(source);
-        else
-            m_ruleValue.append(c);
-        break;
-    case AfterRuleValue:
-        if (isHTMLSpace<UChar>(c))
-            break;
-        if (c == ';')
-            emitRule(source);
-        else if (c == '{')
-            m_state = DoneParsingImportRules;
-        else {
-            // FIXME: media rules
-            m_state = Initial;
-        }
-        break;
-    case DoneParsingImportRules:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-}
-
-static String parseCSSStringOrURL(const String& string)
-{
-    size_t offset = 0;
-    size_t reducedLength = string.length();
-
-    while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
-        ++offset;
-        --reducedLength;
-    }
-    while (reducedLength && isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
-        --reducedLength;
-
-    if (reducedLength >= 5
-        && (string[offset] == 'u' || string[offset] == 'U')
-        && (string[offset + 1] == 'r' || string[offset + 1] == 'R')
-        && (string[offset + 2] == 'l' || string[offset + 2] == 'L')
-        && string[offset + 3] == '('
-        && string[offset + reducedLength - 1] == ')') {
-        offset += 4;
-        reducedLength -= 5;
-    }
-
-    while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
-        ++offset;
-        --reducedLength;
-    }
-    while (reducedLength && isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
-        --reducedLength;
-
-    if (reducedLength < 2 || string[offset] != string[offset + reducedLength - 1] || !(string[offset] == '\'' || string[offset] == '"'))
-        return String();
-    offset++;
-    reducedLength -= 2;
-
-    while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
-        ++offset;
-        --reducedLength;
-    }
-    while (reducedLength && isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
-        --reducedLength;
-
-    return string.substring(offset, reducedLength);
-}
-
-void CSSPreloadScanner::emitRule(const SegmentedString& source)
-{
-    if (equalIgnoringCase(m_rule, "import")) {
-        String url = parseCSSStringOrURL(m_ruleValue.toString());
-        if (!url.isEmpty()) {
-            TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
-            std::unique_ptr<PreloadRequest> request = PreloadRequest::create(FetchInitiatorTypeNames::css, position, url, *m_predictedBaseElementURL, Resource::CSSStyleSheet, m_referrerPolicy);
-            // FIXME: Should this be including the charset in the preload request?
-            m_requests->append(std::move(request));
-        }
-        m_state = Initial;
-    } else if (equalIgnoringCase(m_rule, "charset"))
-        m_state = Initial;
-    else
+      if (c == '@')
+        m_state = RuleStart;
+      else if (c == '/')
+        m_state = MaybeComment;
+      else
         m_state = DoneParsingImportRules;
-    m_rule.clear();
-    m_ruleValue.clear();
+      break;
+    case MaybeComment:
+      if (c == '*')
+        m_state = Comment;
+      else
+        m_state = Initial;
+      break;
+    case Comment:
+      if (c == '*')
+        m_state = MaybeCommentEnd;
+      break;
+    case MaybeCommentEnd:
+      if (c == '*')
+        break;
+      if (c == '/')
+        m_state = Initial;
+      else
+        m_state = Comment;
+      break;
+    case RuleStart:
+      if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+        m_rule.clear();
+        m_ruleValue.clear();
+        m_rule.append(c);
+        m_state = Rule;
+      } else
+        m_state = Initial;
+      break;
+    case Rule:
+      if (isHTMLSpace<UChar>(c))
+        m_state = AfterRule;
+      else if (c == ';')
+        m_state = Initial;
+      else
+        m_rule.append(c);
+      break;
+    case AfterRule:
+      if (isHTMLSpace<UChar>(c))
+        break;
+      if (c == ';')
+        m_state = Initial;
+      else if (c == '{')
+        m_state = DoneParsingImportRules;
+      else {
+        m_state = RuleValue;
+        m_ruleValue.append(c);
+      }
+      break;
+    case RuleValue:
+      if (isHTMLSpace<UChar>(c))
+        m_state = AfterRuleValue;
+      else if (c == ';')
+        emitRule(source);
+      else
+        m_ruleValue.append(c);
+      break;
+    case AfterRuleValue:
+      if (isHTMLSpace<UChar>(c))
+        break;
+      if (c == ';')
+        emitRule(source);
+      else if (c == '{')
+        m_state = DoneParsingImportRules;
+      else {
+        // FIXME: media rules
+        m_state = Initial;
+      }
+      break;
+    case DoneParsingImportRules:
+      ASSERT_NOT_REACHED();
+      break;
+  }
 }
 
-CSSPreloaderResourceClient::CSSPreloaderResourceClient(Resource* resource, HTMLResourcePreloader* preloader)
-    : m_policy(preloader->document()->settings()->cssExternalScannerPreload() ? ScanAndPreload : ScanOnly)
-    , m_preloader(preloader)
-{
-    DCHECK(resource->getType() == Resource::Type::CSSStyleSheet);
-    setResource(toCSSStyleSheetResource(resource), Resource::DontMarkAsReferenced);
+static String parseCSSStringOrURL(const String& string) {
+  size_t offset = 0;
+  size_t reducedLength = string.length();
+
+  while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
+    ++offset;
+    --reducedLength;
+  }
+  while (reducedLength &&
+         isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
+    --reducedLength;
+
+  if (reducedLength >= 5 && (string[offset] == 'u' || string[offset] == 'U') &&
+      (string[offset + 1] == 'r' || string[offset + 1] == 'R') &&
+      (string[offset + 2] == 'l' || string[offset + 2] == 'L') &&
+      string[offset + 3] == '(' && string[offset + reducedLength - 1] == ')') {
+    offset += 4;
+    reducedLength -= 5;
+  }
+
+  while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
+    ++offset;
+    --reducedLength;
+  }
+  while (reducedLength &&
+         isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
+    --reducedLength;
+
+  if (reducedLength < 2 ||
+      string[offset] != string[offset + reducedLength - 1] ||
+      !(string[offset] == '\'' || string[offset] == '"'))
+    return String();
+  offset++;
+  reducedLength -= 2;
+
+  while (reducedLength && isHTMLSpace<UChar>(string[offset])) {
+    ++offset;
+    --reducedLength;
+  }
+  while (reducedLength &&
+         isHTMLSpace<UChar>(string[offset + reducedLength - 1]))
+    --reducedLength;
+
+  return string.substring(offset, reducedLength);
 }
 
-CSSPreloaderResourceClient::~CSSPreloaderResourceClient()
-{
+void CSSPreloadScanner::emitRule(const SegmentedString& source) {
+  if (equalIgnoringCase(m_rule, "import")) {
+    String url = parseCSSStringOrURL(m_ruleValue.toString());
+    if (!url.isEmpty()) {
+      TextPosition position =
+          TextPosition(source.currentLine(), source.currentColumn());
+      std::unique_ptr<PreloadRequest> request =
+          PreloadRequest::create(FetchInitiatorTypeNames::css, position, url,
+                                 *m_predictedBaseElementURL,
+                                 Resource::CSSStyleSheet, m_referrerPolicy);
+      // FIXME: Should this be including the charset in the preload request?
+      m_requests->append(std::move(request));
+    }
+    m_state = Initial;
+  } else if (equalIgnoringCase(m_rule, "charset"))
+    m_state = Initial;
+  else
+    m_state = DoneParsingImportRules;
+  m_rule.clear();
+  m_ruleValue.clear();
 }
 
-void CSSPreloaderResourceClient::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*)
-{
-    clearResource();
+CSSPreloaderResourceClient::CSSPreloaderResourceClient(
+    Resource* resource,
+    HTMLResourcePreloader* preloader)
+    : m_policy(preloader->document()->settings()->cssExternalScannerPreload()
+                   ? ScanAndPreload
+                   : ScanOnly),
+      m_preloader(preloader) {
+  DCHECK(resource->getType() == Resource::Type::CSSStyleSheet);
+  setResource(toCSSStyleSheetResource(resource),
+              Resource::DontMarkAsReferenced);
+}
+
+CSSPreloaderResourceClient::~CSSPreloaderResourceClient() {}
+
+void CSSPreloaderResourceClient::setCSSStyleSheet(
+    const String& href,
+    const KURL& baseURL,
+    const String& charset,
+    const CSSStyleSheetResource*) {
+  clearResource();
 }
 
 // Only attach for one appendData call, as that's where most imports will likely
 // be (according to spec).
-void CSSPreloaderResourceClient::didAppendFirstData(const CSSStyleSheetResource* resource)
-{
-    if (m_preloader)
-        scanCSS(resource);
-    clearResource();
+void CSSPreloaderResourceClient::didAppendFirstData(
+    const CSSStyleSheetResource* resource) {
+  if (m_preloader)
+    scanCSS(resource);
+  clearResource();
 }
 
-void CSSPreloaderResourceClient::scanCSS(const CSSStyleSheetResource* resource)
-{
-    DCHECK(m_preloader);
-    // Passing an empty SegmentedString here results in PreloadRequest with no
-    // file/line information.
-    // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
-    // augmented to take care of this case without performing an additional
-    // copy.
-    double startTime = monotonicallyIncreasingTimeMS();
-    const String& chunk = resource->decodedText();
-    if (chunk.isNull())
-        return;
-    CSSPreloadScanner cssPreloadScanner;
-    PreloadRequestStream preloads;
-    cssPreloadScanner.scan(chunk, SegmentedString(), preloads, resource->response().url());
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, cssScanTimeHistogram, ("PreloadScanner.ExternalCSS.ScanTime", 1, 1000000, 50));
-    cssScanTimeHistogram.count((monotonicallyIncreasingTimeMS() - startTime) * 1000);
-    fetchPreloads(preloads);
+void CSSPreloaderResourceClient::scanCSS(
+    const CSSStyleSheetResource* resource) {
+  DCHECK(m_preloader);
+  // Passing an empty SegmentedString here results in PreloadRequest with no
+  // file/line information.
+  // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
+  // augmented to take care of this case without performing an additional
+  // copy.
+  double startTime = monotonicallyIncreasingTimeMS();
+  const String& chunk = resource->decodedText();
+  if (chunk.isNull())
+    return;
+  CSSPreloadScanner cssPreloadScanner;
+  PreloadRequestStream preloads;
+  cssPreloadScanner.scan(chunk, SegmentedString(), preloads,
+                         resource->response().url());
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, cssScanTimeHistogram,
+                      ("PreloadScanner.ExternalCSS.ScanTime", 1, 1000000, 50));
+  cssScanTimeHistogram.count((monotonicallyIncreasingTimeMS() - startTime) *
+                             1000);
+  fetchPreloads(preloads);
 }
 
-void CSSPreloaderResourceClient::fetchPreloads(PreloadRequestStream& preloads)
-{
-    if (preloads.size()) {
-        m_preloader->document()->loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound);
-    }
+void CSSPreloaderResourceClient::fetchPreloads(PreloadRequestStream& preloads) {
+  if (preloads.size()) {
+    m_preloader->document()->loader()->didObserveLoadingBehavior(
+        WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound);
+  }
 
-    if (m_policy == ScanAndPreload) {
-        int currentPreloadCount = m_preloader->countPreloads();
-        m_preloader->takeAndPreload(preloads);
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, cssImportHistogram, ("PreloadScanner.ExternalCSS.PreloadCount", 1, 100, 50));
-        cssImportHistogram.count(m_preloader->countPreloads() - currentPreloadCount);
-    }
+  if (m_policy == ScanAndPreload) {
+    int currentPreloadCount = m_preloader->countPreloads();
+    m_preloader->takeAndPreload(preloads);
+    DEFINE_STATIC_LOCAL(
+        CustomCountHistogram, cssImportHistogram,
+        ("PreloadScanner.ExternalCSS.PreloadCount", 1, 100, 50));
+    cssImportHistogram.count(m_preloader->countPreloads() -
+                             currentPreloadCount);
+  }
 }
 
-DEFINE_TRACE(CSSPreloaderResourceClient)
-{
-    visitor->trace(m_preloader);
-    ResourceOwner<CSSStyleSheetResource>::trace(visitor);
+DEFINE_TRACE(CSSPreloaderResourceClient) {
+  visitor->trace(m_preloader);
+  ResourceOwner<CSSStyleSheetResource>::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

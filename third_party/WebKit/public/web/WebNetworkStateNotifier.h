@@ -37,14 +37,15 @@
 namespace blink {
 
 class WebNetworkStateNotifier {
-public:
-    BLINK_EXPORT static void setOnLine(bool);
-    BLINK_EXPORT static void setWebConnection(WebConnectionType, double maxBandwidthMbps);
+ public:
+  BLINK_EXPORT static void setOnLine(bool);
+  BLINK_EXPORT static void setWebConnection(WebConnectionType,
+                                            double maxBandwidthMbps);
 
-private:
-    WebNetworkStateNotifier();
+ private:
+  WebNetworkStateNotifier();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

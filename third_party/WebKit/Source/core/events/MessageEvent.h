@@ -42,106 +42,173 @@
 namespace blink {
 
 class CORE_EXPORT MessageEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MessageEvent* create()
-    {
-        return new MessageEvent;
-    }
-    static MessageEvent* create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
-    {
-        return new MessageEvent(origin, lastEventId, source, ports, suborigin);
-    }
-    static MessageEvent* create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
-    {
-        return new MessageEvent(std::move(data), origin, lastEventId, source, ports, suborigin);
-    }
-    static MessageEvent* create(std::unique_ptr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
-    {
-        return new MessageEvent(std::move(data), origin, lastEventId, source, std::move(channels), suborigin);
-    }
-    static MessageEvent* create(const String& data, const String& origin = String(), const String& suborigin = String())
-    {
-        return new MessageEvent(data, origin, suborigin);
-    }
-    static MessageEvent* create(Blob* data, const String& origin = String(), const String& suborigin = String())
-    {
-        return new MessageEvent(data, origin, suborigin);
-    }
-    static MessageEvent* create(DOMArrayBuffer* data, const String& origin = String(), const String& suborigin = String())
-    {
-        return new MessageEvent(data, origin, suborigin);
-    }
-    static MessageEvent* create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
-    ~MessageEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray*);
-    void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray*);
+ public:
+  static MessageEvent* create() { return new MessageEvent; }
+  static MessageEvent* create(MessagePortArray* ports,
+                              const String& origin = String(),
+                              const String& lastEventId = String(),
+                              EventTarget* source = nullptr,
+                              const String& suborigin = String()) {
+    return new MessageEvent(origin, lastEventId, source, ports, suborigin);
+  }
+  static MessageEvent* create(MessagePortArray* ports,
+                              PassRefPtr<SerializedScriptValue> data,
+                              const String& origin = String(),
+                              const String& lastEventId = String(),
+                              EventTarget* source = nullptr,
+                              const String& suborigin = String()) {
+    return new MessageEvent(std::move(data), origin, lastEventId, source, ports,
+                            suborigin);
+  }
+  static MessageEvent* create(std::unique_ptr<MessagePortChannelArray> channels,
+                              PassRefPtr<SerializedScriptValue> data,
+                              const String& origin = String(),
+                              const String& lastEventId = String(),
+                              EventTarget* source = nullptr,
+                              const String& suborigin = String()) {
+    return new MessageEvent(std::move(data), origin, lastEventId, source,
+                            std::move(channels), suborigin);
+  }
+  static MessageEvent* create(const String& data,
+                              const String& origin = String(),
+                              const String& suborigin = String()) {
+    return new MessageEvent(data, origin, suborigin);
+  }
+  static MessageEvent* create(Blob* data,
+                              const String& origin = String(),
+                              const String& suborigin = String()) {
+    return new MessageEvent(data, origin, suborigin);
+  }
+  static MessageEvent* create(DOMArrayBuffer* data,
+                              const String& origin = String(),
+                              const String& suborigin = String()) {
+    return new MessageEvent(data, origin, suborigin);
+  }
+  static MessageEvent* create(const AtomicString& type,
+                              const MessageEventInit& initializer,
+                              ExceptionState&);
+  ~MessageEvent() override;
 
-    const String& origin() const { return m_origin; }
-    const String& suborigin() const { return m_suborigin; }
-    const String& lastEventId() const { return m_lastEventId; }
-    EventTarget* source() const { return m_source.get(); }
-    MessagePortArray ports(bool& isNull) const;
-    MessagePortArray ports() const;
-    MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : nullptr; }
+  void initMessageEvent(const AtomicString& type,
+                        bool canBubble,
+                        bool cancelable,
+                        ScriptValue data,
+                        const String& origin,
+                        const String& lastEventId,
+                        DOMWindow* source,
+                        MessagePortArray*);
+  void initMessageEvent(const AtomicString& type,
+                        bool canBubble,
+                        bool cancelable,
+                        PassRefPtr<SerializedScriptValue> data,
+                        const String& origin,
+                        const String& lastEventId,
+                        DOMWindow* source,
+                        MessagePortArray*);
 
-    const AtomicString& interfaceName() const override;
+  const String& origin() const { return m_origin; }
+  const String& suborigin() const { return m_suborigin; }
+  const String& lastEventId() const { return m_lastEventId; }
+  EventTarget* source() const { return m_source.get(); }
+  MessagePortArray ports(bool& isNull) const;
+  MessagePortArray ports() const;
+  MessagePortChannelArray* channels() const {
+    return m_channels ? m_channels.get() : nullptr;
+  }
 
-    enum DataType {
-        DataTypeScriptValue,
-        DataTypeSerializedScriptValue,
-        DataTypeString,
-        DataTypeBlob,
-        DataTypeArrayBuffer
-    };
-    DataType getDataType() const { return m_dataType; }
-    ScriptValue dataAsScriptValue() const { DCHECK_EQ(m_dataType, DataTypeScriptValue); return m_dataAsScriptValue; }
-    SerializedScriptValue* dataAsSerializedScriptValue() const { DCHECK_EQ(m_dataType, DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
-    String dataAsString() const { DCHECK_EQ(m_dataType, DataTypeString); return m_dataAsString; }
-    Blob* dataAsBlob() const { DCHECK_EQ(m_dataType, DataTypeBlob); return m_dataAsBlob.get(); }
-    DOMArrayBuffer* dataAsArrayBuffer() const { DCHECK_EQ(m_dataType, DataTypeArrayBuffer); return m_dataAsArrayBuffer.get(); }
+  const AtomicString& interfaceName() const override;
 
-    void setSerializedData(PassRefPtr<SerializedScriptValue> data)
-    {
-        DCHECK(!m_dataAsSerializedScriptValue);
-        m_dataAsSerializedScriptValue = data;
-    }
+  enum DataType {
+    DataTypeScriptValue,
+    DataTypeSerializedScriptValue,
+    DataTypeString,
+    DataTypeBlob,
+    DataTypeArrayBuffer
+  };
+  DataType getDataType() const { return m_dataType; }
+  ScriptValue dataAsScriptValue() const {
+    DCHECK_EQ(m_dataType, DataTypeScriptValue);
+    return m_dataAsScriptValue;
+  }
+  SerializedScriptValue* dataAsSerializedScriptValue() const {
+    DCHECK_EQ(m_dataType, DataTypeSerializedScriptValue);
+    return m_dataAsSerializedScriptValue.get();
+  }
+  String dataAsString() const {
+    DCHECK_EQ(m_dataType, DataTypeString);
+    return m_dataAsString;
+  }
+  Blob* dataAsBlob() const {
+    DCHECK_EQ(m_dataType, DataTypeBlob);
+    return m_dataAsBlob.get();
+  }
+  DOMArrayBuffer* dataAsArrayBuffer() const {
+    DCHECK_EQ(m_dataType, DataTypeArrayBuffer);
+    return m_dataAsArrayBuffer.get();
+  }
 
-    void entangleMessagePorts(ExecutionContext*);
+  void setSerializedData(PassRefPtr<SerializedScriptValue> data) {
+    DCHECK(!m_dataAsSerializedScriptValue);
+    m_dataAsSerializedScriptValue = data;
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  void entangleMessagePorts(ExecutionContext*);
 
-    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    MessageEvent();
-    MessageEvent(const AtomicString&, const MessageEventInit&);
-    MessageEvent(const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray*, const String& suborigin);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray*, const String& suborigin);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, std::unique_ptr<MessagePortChannelArray>, const String& suborigin);
+  v8::Local<v8::Object> associateWithWrapper(
+      v8::Isolate*,
+      const WrapperTypeInfo*,
+      v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
 
-    MessageEvent(const String& data, const String& origin, const String& suborigin);
-    MessageEvent(Blob* data, const String& origin, const String& suborigin);
-    MessageEvent(DOMArrayBuffer* data, const String& origin, const String& suborigin);
+ private:
+  MessageEvent();
+  MessageEvent(const AtomicString&, const MessageEventInit&);
+  MessageEvent(const String& origin,
+               const String& lastEventId,
+               EventTarget* source,
+               MessagePortArray*,
+               const String& suborigin);
+  MessageEvent(PassRefPtr<SerializedScriptValue> data,
+               const String& origin,
+               const String& lastEventId,
+               EventTarget* source,
+               MessagePortArray*,
+               const String& suborigin);
+  MessageEvent(PassRefPtr<SerializedScriptValue> data,
+               const String& origin,
+               const String& lastEventId,
+               EventTarget* source,
+               std::unique_ptr<MessagePortChannelArray>,
+               const String& suborigin);
 
-    DataType m_dataType;
-    ScriptValue m_dataAsScriptValue;
-    RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
-    String m_dataAsString;
-    Member<Blob> m_dataAsBlob;
-    Member<DOMArrayBuffer> m_dataAsArrayBuffer;
-    String m_origin;
-    String m_lastEventId;
-    Member<EventTarget> m_source;
-    // m_ports are the MessagePorts in an engtangled state, and m_channels are
-    // the MessageChannels in a disentangled state. Only one of them can be
-    // non-empty at a time. entangleMessagePorts() moves between the states.
-    Member<MessagePortArray> m_ports;
-    std::unique_ptr<MessagePortChannelArray> m_channels;
-    String m_suborigin;
+  MessageEvent(const String& data,
+               const String& origin,
+               const String& suborigin);
+  MessageEvent(Blob* data, const String& origin, const String& suborigin);
+  MessageEvent(DOMArrayBuffer* data,
+               const String& origin,
+               const String& suborigin);
+
+  DataType m_dataType;
+  ScriptValue m_dataAsScriptValue;
+  RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
+  String m_dataAsString;
+  Member<Blob> m_dataAsBlob;
+  Member<DOMArrayBuffer> m_dataAsArrayBuffer;
+  String m_origin;
+  String m_lastEventId;
+  Member<EventTarget> m_source;
+  // m_ports are the MessagePorts in an engtangled state, and m_channels are
+  // the MessageChannels in a disentangled state. Only one of them can be
+  // non-empty at a time. entangleMessagePorts() moves between the states.
+  Member<MessagePortArray> m_ports;
+  std::unique_ptr<MessagePortChannelArray> m_channels;
+  String m_suborigin;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MessageEvent_h
+#endif  // MessageEvent_h

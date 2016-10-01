@@ -37,50 +37,47 @@
 namespace blink {
 
 class SearchBufferTest : public EditingTestBase {
-protected:
-    Range* getBodyRange() const;
+ protected:
+  Range* getBodyRange() const;
 };
 
-Range* SearchBufferTest::getBodyRange() const
-{
-    Range* range(Range::create(document()));
-    range->selectNode(document().body());
-    return range;
+Range* SearchBufferTest::getBodyRange() const {
+  Range* range(Range::create(document()));
+  range->selectNode(document().body());
+  return range;
 }
 
-TEST_F(SearchBufferTest, FindPlainTextInvalidTarget)
-{
-    static const char* bodyContent = "<div>foo bar test</div>";
-    setBodyContent(bodyContent);
-    Range* range = getBodyRange();
+TEST_F(SearchBufferTest, FindPlainTextInvalidTarget) {
+  static const char* bodyContent = "<div>foo bar test</div>";
+  setBodyContent(bodyContent);
+  Range* range = getBodyRange();
 
-    Range* expectedRange = range->cloneRange();
-    expectedRange->collapse(false);
+  Range* expectedRange = range->cloneRange();
+  expectedRange->collapse(false);
 
-    // A lone lead surrogate (0xDA0A) example taken from fuzz-58.
-    static const UChar invalid1[] = {
-        0x1461u, 0x2130u, 0x129bu, 0xd711u, 0xd6feu, 0xccadu, 0x7064u,
-        0xd6a0u, 0x4e3bu, 0x03abu, 0x17dcu, 0xb8b7u, 0xbf55u, 0xfca0u,
-        0x07fau, 0x0427u, 0xda0au, 0
-    };
+  // A lone lead surrogate (0xDA0A) example taken from fuzz-58.
+  static const UChar invalid1[] = {0x1461u, 0x2130u, 0x129bu, 0xd711u, 0xd6feu,
+                                   0xccadu, 0x7064u, 0xd6a0u, 0x4e3bu, 0x03abu,
+                                   0x17dcu, 0xb8b7u, 0xbf55u, 0xfca0u, 0x07fau,
+                                   0x0427u, 0xda0au, 0};
 
-    // A lone trailing surrogate (U+DC01).
-    static const UChar invalid2[] = {
-        0x1461u, 0x2130u, 0x129bu, 0xdc01u, 0xd6feu, 0xccadu, 0
-    };
-    // A trailing surrogate followed by a lead surrogate (U+DC03 U+D901).
-    static const UChar invalid3[] = {
-        0xd800u, 0xdc00u, 0x0061u, 0xdc03u, 0xd901u, 0xccadu, 0
-    };
+  // A lone trailing surrogate (U+DC01).
+  static const UChar invalid2[] = {0x1461u, 0x2130u, 0x129bu, 0xdc01u,
+                                   0xd6feu, 0xccadu, 0};
+  // A trailing surrogate followed by a lead surrogate (U+DC03 U+D901).
+  static const UChar invalid3[] = {0xd800u, 0xdc00u, 0x0061u, 0xdc03u,
+                                   0xd901u, 0xccadu, 0};
 
-    static const UChar* invalidUStrings[] = { invalid1, invalid2, invalid3 };
+  static const UChar* invalidUStrings[] = {invalid1, invalid2, invalid3};
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidUStrings); ++i) {
-        String invalidTarget(invalidUStrings[i]);
-        EphemeralRange foundRange = findPlainText(EphemeralRange(range), invalidTarget, 0);
-        Range* actualRange = Range::create(document(), foundRange.startPosition(), foundRange.endPosition());
-        EXPECT_TRUE(areRangesEqual(expectedRange, actualRange));
-    }
+  for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidUStrings); ++i) {
+    String invalidTarget(invalidUStrings[i]);
+    EphemeralRange foundRange =
+        findPlainText(EphemeralRange(range), invalidTarget, 0);
+    Range* actualRange = Range::create(document(), foundRange.startPosition(),
+                                       foundRange.endPosition());
+    EXPECT_TRUE(areRangesEqual(expectedRange, actualRange));
+  }
 }
 
-} // namespace blink
+}  // namespace blink

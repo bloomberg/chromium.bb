@@ -11,25 +11,26 @@
 namespace blink {
 
 class PLATFORM_EXPORT CanvasMetrics {
-    STATIC_ONLY(CanvasMetrics);
-public:
-    enum CanvasContextUsage {
-        CanvasCreated = 0,
-        GPUAccelerated2DCanvasImageBufferCreated = 1,
-        DisplayList2DCanvasImageBufferCreated = 2,
-        Unaccelerated2DCanvasImageBufferCreated = 3,
-        Accelerated2DCanvasGPUContextLost = 4,
-        Unaccelerated2DCanvasImageBufferCreationFailed = 5,
-        GPUAccelerated2DCanvasImageBufferCreationFailed = 6,
-        DisplayList2DCanvasFallbackToRaster = 7,
-        GPUAccelerated2DCanvasDeferralDisabled = 8,
-        GPUAccelerated2DCanvasSurfaceCreationFailed = 9,
-        NumberOfUsages
-    };
+  STATIC_ONLY(CanvasMetrics);
 
-    static void countCanvasContextUsage(const CanvasContextUsage);
+ public:
+  enum CanvasContextUsage {
+    CanvasCreated = 0,
+    GPUAccelerated2DCanvasImageBufferCreated = 1,
+    DisplayList2DCanvasImageBufferCreated = 2,
+    Unaccelerated2DCanvasImageBufferCreated = 3,
+    Accelerated2DCanvasGPUContextLost = 4,
+    Unaccelerated2DCanvasImageBufferCreationFailed = 5,
+    GPUAccelerated2DCanvasImageBufferCreationFailed = 6,
+    DisplayList2DCanvasFallbackToRaster = 7,
+    GPUAccelerated2DCanvasDeferralDisabled = 8,
+    GPUAccelerated2DCanvasSurfaceCreationFailed = 9,
+    NumberOfUsages
+  };
+
+  static void countCanvasContextUsage(const CanvasContextUsage);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CanvasMetrics_h
+#endif  // CanvasMetrics_h

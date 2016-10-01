@@ -9,18 +9,19 @@
 
 namespace blink {
 
-WebGLSync* WebGLFenceSync::create(WebGL2RenderingContextBase* ctx, GLenum condition, GLbitfield flags)
-{
-    return new WebGLFenceSync(ctx, condition, flags);
+WebGLSync* WebGLFenceSync::create(WebGL2RenderingContextBase* ctx,
+                                  GLenum condition,
+                                  GLbitfield flags) {
+  return new WebGLFenceSync(ctx, condition, flags);
 }
 
-WebGLFenceSync::~WebGLFenceSync()
-{
-}
+WebGLFenceSync::~WebGLFenceSync() {}
 
-WebGLFenceSync::WebGLFenceSync(WebGL2RenderingContextBase* ctx, GLenum condition, GLbitfield flags)
-    : WebGLSync(ctx, ctx->contextGL()->FenceSync(condition, flags), GL_SYNC_FENCE)
-{
-}
+WebGLFenceSync::WebGLFenceSync(WebGL2RenderingContextBase* ctx,
+                               GLenum condition,
+                               GLbitfield flags)
+    : WebGLSync(ctx,
+                ctx->contextGL()->FenceSync(condition, flags),
+                GL_SYNC_FENCE) {}
 
-} // namespace blink
+}  // namespace blink

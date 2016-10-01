@@ -38,90 +38,96 @@ class HTMLFormElement;
 class SavedFormState;
 
 class FormControlState {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    FormControlState() : m_type(TypeSkip) { }
-    explicit FormControlState(const String& value) : m_type(TypeRestore) { m_values.append(value); }
-    static FormControlState deserialize(const Vector<String>& stateVector, size_t& index);
-    FormControlState(const FormControlState& another) : m_type(another.m_type), m_values(another.m_values) { }
-    FormControlState& operator=(const FormControlState&);
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    bool isFailure() const { return m_type == TypeFailure; }
-    size_t valueSize() const { return m_values.size(); }
-    const String& operator[](size_t i) const { return m_values[i]; }
-    void append(const String&);
-    void serializeTo(Vector<String>& stateVector) const;
+ public:
+  FormControlState() : m_type(TypeSkip) {}
+  explicit FormControlState(const String& value) : m_type(TypeRestore) {
+    m_values.append(value);
+  }
+  static FormControlState deserialize(const Vector<String>& stateVector,
+                                      size_t& index);
+  FormControlState(const FormControlState& another)
+      : m_type(another.m_type), m_values(another.m_values) {}
+  FormControlState& operator=(const FormControlState&);
 
-private:
-    enum Type { TypeSkip, TypeRestore, TypeFailure };
-    explicit FormControlState(Type type) : m_type(type) { }
+  bool isFailure() const { return m_type == TypeFailure; }
+  size_t valueSize() const { return m_values.size(); }
+  const String& operator[](size_t i) const { return m_values[i]; }
+  void append(const String&);
+  void serializeTo(Vector<String>& stateVector) const;
 
-    Type m_type;
-    Vector<String> m_values;
+ private:
+  enum Type { TypeSkip, TypeRestore, TypeFailure };
+  explicit FormControlState(Type type) : m_type(type) {}
+
+  Type m_type;
+  Vector<String> m_values;
 };
 
-inline FormControlState& FormControlState::operator=(const FormControlState& another)
-{
-    m_type = another.m_type;
-    m_values = another.m_values;
-    return *this;
+inline FormControlState& FormControlState::operator=(
+    const FormControlState& another) {
+  m_type = another.m_type;
+  m_values = another.m_values;
+  return *this;
 }
 
-inline void FormControlState::append(const String& value)
-{
-    m_type = TypeRestore;
-    m_values.append(value);
+inline void FormControlState::append(const String& value) {
+  m_type = TypeRestore;
+  m_values.append(value);
 }
 
-using SavedFormStateMap = HashMap<AtomicString, std::unique_ptr<SavedFormState>>;
+using SavedFormStateMap =
+    HashMap<AtomicString, std::unique_ptr<SavedFormState>>;
 
 class DocumentState final : public GarbageCollected<DocumentState> {
-public:
-    static DocumentState* create();
-    DECLARE_TRACE();
+ public:
+  static DocumentState* create();
+  DECLARE_TRACE();
 
-    void addControl(HTMLFormControlElementWithState*);
-    void removeControl(HTMLFormControlElementWithState*);
-    Vector<String> toStateVector();
+  void addControl(HTMLFormControlElementWithState*);
+  void removeControl(HTMLFormControlElementWithState*);
+  Vector<String> toStateVector();
 
-private:
-    using FormElementListHashSet = HeapListHashSet<Member<HTMLFormControlElementWithState>, 64>;
-    FormElementListHashSet m_formControls;
+ private:
+  using FormElementListHashSet =
+      HeapListHashSet<Member<HTMLFormControlElementWithState>, 64>;
+  FormElementListHashSet m_formControls;
 };
 
 class FormController final : public GarbageCollectedFinalized<FormController> {
-public:
-    static FormController* create()
-    {
-        return new FormController;
-    }
-    ~FormController();
-    DECLARE_TRACE();
+ public:
+  static FormController* create() { return new FormController; }
+  ~FormController();
+  DECLARE_TRACE();
 
-    void registerStatefulFormControl(HTMLFormControlElementWithState&);
-    void unregisterStatefulFormControl(HTMLFormControlElementWithState&);
-    // This should be callled only by Document::formElementsState().
-    DocumentState* formElementsState() const;
-    // This should be callled only by Document::setStateForNewFormElements().
-    void setStateForNewFormElements(const Vector<String>&);
-    // Returns true if saved state is set to this object and there are entries
-    // which are not consumed yet.
-    bool hasFormStates() const;
-    void willDeleteForm(HTMLFormElement*);
-    void restoreControlStateFor(HTMLFormControlElementWithState&);
-    void restoreControlStateIn(HTMLFormElement&);
+  void registerStatefulFormControl(HTMLFormControlElementWithState&);
+  void unregisterStatefulFormControl(HTMLFormControlElementWithState&);
+  // This should be callled only by Document::formElementsState().
+  DocumentState* formElementsState() const;
+  // This should be callled only by Document::setStateForNewFormElements().
+  void setStateForNewFormElements(const Vector<String>&);
+  // Returns true if saved state is set to this object and there are entries
+  // which are not consumed yet.
+  bool hasFormStates() const;
+  void willDeleteForm(HTMLFormElement*);
+  void restoreControlStateFor(HTMLFormControlElementWithState&);
+  void restoreControlStateIn(HTMLFormElement&);
 
-    static Vector<String> getReferencedFilePaths(const Vector<String>& stateVector);
+  static Vector<String> getReferencedFilePaths(
+      const Vector<String>& stateVector);
 
-private:
-    FormController();
-    FormControlState takeStateForFormElement(const HTMLFormControlElementWithState&);
-    static void formStatesFromStateVector(const Vector<String>&, SavedFormStateMap&);
+ private:
+  FormController();
+  FormControlState takeStateForFormElement(
+      const HTMLFormControlElementWithState&);
+  static void formStatesFromStateVector(const Vector<String>&,
+                                        SavedFormStateMap&);
 
-    Member<DocumentState> m_documentState;
-    SavedFormStateMap m_savedFormStateMap;
-    Member<FormKeyGenerator> m_formKeyGenerator;
+  Member<DocumentState> m_documentState;
+  SavedFormStateMap m_savedFormStateMap;
+  Member<FormKeyGenerator> m_formKeyGenerator;
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

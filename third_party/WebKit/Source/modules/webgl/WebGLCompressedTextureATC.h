@@ -31,19 +31,20 @@
 namespace blink {
 
 class WebGLCompressedTextureATC final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WebGLCompressedTextureATC* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~WebGLCompressedTextureATC() override;
-    WebGLExtensionName name() const override;
+ public:
+  static WebGLCompressedTextureATC* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-private:
-    explicit WebGLCompressedTextureATC(WebGLRenderingContextBase*);
+  ~WebGLCompressedTextureATC() override;
+  WebGLExtensionName name() const override;
+
+ private:
+  explicit WebGLCompressedTextureATC(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLCompressedTextureATC_h
+#endif  // WebGLCompressedTextureATC_h

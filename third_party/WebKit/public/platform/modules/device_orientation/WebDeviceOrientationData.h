@@ -38,27 +38,29 @@ namespace blink {
 #pragma pack(push, 1)
 
 class WebDeviceOrientationData {
-public:
-    BLINK_PLATFORM_EXPORT WebDeviceOrientationData();
-    ~WebDeviceOrientationData() { }
+ public:
+  BLINK_PLATFORM_EXPORT WebDeviceOrientationData();
+  ~WebDeviceOrientationData() {}
 
-    double alpha;
-    double beta;
-    double gamma;
+  double alpha;
+  double beta;
+  double gamma;
 
-    bool hasAlpha : 1;
-    bool hasBeta : 1;
-    bool hasGamma : 1;
+  bool hasAlpha : 1;
+  bool hasBeta : 1;
+  bool hasGamma : 1;
 
-    bool absolute : 1;
+  bool absolute : 1;
 
-    bool allAvailableSensorsAreActive : 1;
+  bool allAvailableSensorsAreActive : 1;
 };
 
-static_assert(sizeof(WebDeviceOrientationData) == (3 * sizeof(double) + 1 * sizeof(char)), "WebDeviceOrientationData has wrong size");
+static_assert(sizeof(WebDeviceOrientationData) ==
+                  (3 * sizeof(double) + 1 * sizeof(char)),
+              "WebDeviceOrientationData has wrong size");
 
 #pragma pack(pop)
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebDeviceOrientationData_h
+#endif  // WebDeviceOrientationData_h

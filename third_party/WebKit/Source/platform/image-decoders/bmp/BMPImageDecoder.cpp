@@ -40,85 +40,85 @@ namespace blink {
 // don't pack).
 static const size_t sizeOfFileHeader = 14;
 
-BMPImageDecoder::BMPImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
-    , m_decodedOffset(0)
-{
+BMPImageDecoder::BMPImageDecoder(AlphaOption alphaOption,
+                                 GammaAndColorProfileOption colorOptions,
+                                 size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
+      m_decodedOffset(0) {}
+
+void BMPImageDecoder::onSetData(SegmentReader* data) {
+  if (m_reader)
+    m_reader->setData(data);
 }
 
-void BMPImageDecoder::onSetData(SegmentReader* data)
-{
-    if (m_reader)
-        m_reader->setData(data);
+bool BMPImageDecoder::setFailed() {
+  m_reader.reset();
+  return ImageDecoder::setFailed();
 }
 
-bool BMPImageDecoder::setFailed()
-{
+void BMPImageDecoder::decode(bool onlySize) {
+  if (failed())
+    return;
+
+  // If we couldn't decode the image but we've received all the data, decoding
+  // has failed.
+  if (!decodeHelper(onlySize) && isAllDataReceived())
+    setFailed();
+  // If we're done decoding the image, we don't need the BMPImageReader
+  // anymore.  (If we failed, |m_reader| has already been cleared.)
+  else if (!m_frameBufferCache.isEmpty() &&
+           (m_frameBufferCache.first().getStatus() ==
+            ImageFrame::FrameComplete))
     m_reader.reset();
-    return ImageDecoder::setFailed();
 }
 
-void BMPImageDecoder::decode(bool onlySize)
-{
-    if (failed())
-        return;
+bool BMPImageDecoder::decodeHelper(bool onlySize) {
+  size_t imgDataOffset = 0;
+  if ((m_decodedOffset < sizeOfFileHeader) && !processFileHeader(imgDataOffset))
+    return false;
 
-    // If we couldn't decode the image but we've received all the data, decoding
-    // has failed.
-    if (!decodeHelper(onlySize) && isAllDataReceived())
-        setFailed();
-    // If we're done decoding the image, we don't need the BMPImageReader
-    // anymore.  (If we failed, |m_reader| has already been cleared.)
-    else if (!m_frameBufferCache.isEmpty() && (m_frameBufferCache.first().getStatus() == ImageFrame::FrameComplete))
-        m_reader.reset();
+  if (!m_reader) {
+    m_reader = wrapUnique(
+        new BMPImageReader(this, m_decodedOffset, imgDataOffset, false));
+    m_reader->setData(m_data.get());
+  }
+
+  if (!m_frameBufferCache.isEmpty())
+    m_reader->setBuffer(&m_frameBufferCache.first());
+
+  return m_reader->decodeBMP(onlySize);
 }
 
-bool BMPImageDecoder::decodeHelper(bool onlySize)
-{
-    size_t imgDataOffset = 0;
-    if ((m_decodedOffset < sizeOfFileHeader) && !processFileHeader(imgDataOffset))
-        return false;
+bool BMPImageDecoder::processFileHeader(size_t& imgDataOffset) {
+  // Read file header.
+  ASSERT(!m_decodedOffset);
+  if (m_data->size() < sizeOfFileHeader)
+    return false;
 
-    if (!m_reader) {
-        m_reader = wrapUnique(new BMPImageReader(this, m_decodedOffset, imgDataOffset, false));
-        m_reader->setData(m_data.get());
-    }
+  char buffer[sizeOfFileHeader];
+  FastSharedBufferReader fastReader(m_data);
+  const char* fileHeader =
+      fastReader.getConsecutiveData(0, sizeOfFileHeader, buffer);
+  const uint16_t fileType =
+      (fileHeader[0] << 8) | static_cast<uint8_t>(fileHeader[1]);
+  imgDataOffset = BMPImageReader::readUint32(&fileHeader[10]);
+  m_decodedOffset = sizeOfFileHeader;
 
-    if (!m_frameBufferCache.isEmpty())
-        m_reader->setBuffer(&m_frameBufferCache.first());
-
-    return m_reader->decodeBMP(onlySize);
-}
-
-bool BMPImageDecoder::processFileHeader(size_t& imgDataOffset)
-{
-    // Read file header.
-    ASSERT(!m_decodedOffset);
-    if (m_data->size() < sizeOfFileHeader)
-        return false;
-
-    char buffer[sizeOfFileHeader];
-    FastSharedBufferReader fastReader(m_data);
-    const char* fileHeader = fastReader.getConsecutiveData(0, sizeOfFileHeader, buffer);
-    const uint16_t fileType = (fileHeader[0] << 8) | static_cast<uint8_t>(fileHeader[1]);
-    imgDataOffset = BMPImageReader::readUint32(&fileHeader[10]);
-    m_decodedOffset = sizeOfFileHeader;
-
-    // See if this is a bitmap filetype we understand.
-    enum {
-        BMAP = 0x424D,  // "BM"
-        // The following additional OS/2 2.x header values (see
-        // http://www.fileformat.info/format/os2bmp/egff.htm ) aren't widely
-        // decoded, and are unlikely to be in much use.
-        /*
+  // See if this is a bitmap filetype we understand.
+  enum {
+    BMAP = 0x424D,  // "BM"
+                    // The following additional OS/2 2.x header values (see
+    // http://www.fileformat.info/format/os2bmp/egff.htm ) aren't widely
+    // decoded, and are unlikely to be in much use.
+    /*
         ICON = 0x4943,  // "IC"
         POINTER = 0x5054,  // "PT"
         COLORICON = 0x4349,  // "CI"
         COLORPOINTER = 0x4350,  // "CP"
         BITMAPARRAY = 0x4241,  // "BA"
         */
-    };
-    return (fileType == BMAP) || setFailed();
+  };
+  return (fileType == BMAP) || setFailed();
 }
 
-} // namespace blink
+}  // namespace blink

@@ -28,64 +28,76 @@
 
 namespace blink {
 
-class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
-public:
-    static SVGViewSpec* create(SVGSVGElement* contextElement)
-    {
-        return new SVGViewSpec(contextElement);
-    }
+class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
+                          public ScriptWrappable,
+                          public SVGZoomAndPan,
+                          public SVGFitToViewBox {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
 
-    bool parseViewSpec(const String&);
-    void reset();
-    void detachContextElement();
-    template<typename T> void inheritViewAttributesFromElement(T*);
+ public:
+  static SVGViewSpec* create(SVGSVGElement* contextElement) {
+    return new SVGViewSpec(contextElement);
+  }
 
-    // JS API
-    SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
-    SVGTransformListTearOff* transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
-    SVGElement* viewTarget() const;
-    String viewBoxString() const;
-    String preserveAspectRatioString() const;
-    String transformString() const;
-    String viewTargetString() const { return m_viewTargetString; }
-    // override SVGZoomAndPan.setZoomAndPan so can throw exception on write
-    void setZoomAndPan(unsigned short value) { } // read only
-    void setZoomAndPan(unsigned short value, ExceptionState&);
+  bool parseViewSpec(const String&);
+  void reset();
+  void detachContextElement();
+  template <typename T>
+  void inheritViewAttributesFromElement(T*);
 
-    DECLARE_VIRTUAL_TRACE();
+  // JS API
+  SVGTransformList* transform() {
+    return m_transform ? m_transform->baseValue() : 0;
+  }
+  SVGTransformListTearOff* transformFromJavascript() {
+    return m_transform ? m_transform->baseVal() : 0;
+  }
+  SVGElement* viewTarget() const;
+  String viewBoxString() const;
+  String preserveAspectRatioString() const;
+  String transformString() const;
+  String viewTargetString() const { return m_viewTargetString; }
+  // override SVGZoomAndPan.setZoomAndPan so can throw exception on write
+  void setZoomAndPan(unsigned short value) {}  // read only
+  void setZoomAndPan(unsigned short value, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE();
 
-    SVGSVGElement* contextElement() { return m_contextElement.get(); }
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-private:
-    explicit SVGViewSpec(SVGSVGElement*);
+  SVGSVGElement* contextElement() { return m_contextElement.get(); }
 
-    template<typename CharType>
-    bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
+ private:
+  explicit SVGViewSpec(SVGSVGElement*);
 
-    Member<SVGSVGElement> m_contextElement;
-    Member<SVGAnimatedTransformList> m_transform;
-    String m_viewTargetString;
+  template <typename CharType>
+  bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
+
+  Member<SVGSVGElement> m_contextElement;
+  Member<SVGAnimatedTransformList> m_transform;
+  String m_viewTargetString;
 };
 
 template <typename T>
-void SVGViewSpec::inheritViewAttributesFromElement(T* inheritFromElement)
-{
-    if (!inheritFromElement->hasEmptyViewBox())
-        viewBox()->baseValue()->setValue(inheritFromElement->viewBox()->currentValue()->value());
+void SVGViewSpec::inheritViewAttributesFromElement(T* inheritFromElement) {
+  if (!inheritFromElement->hasEmptyViewBox())
+    viewBox()->baseValue()->setValue(
+        inheritFromElement->viewBox()->currentValue()->value());
 
-    if (inheritFromElement->preserveAspectRatio()->isSpecified()) {
-        preserveAspectRatio()->baseValue()->setAlign(inheritFromElement->preserveAspectRatio()->currentValue()->align());
-        preserveAspectRatio()->baseValue()->setMeetOrSlice(inheritFromElement->preserveAspectRatio()->currentValue()->meetOrSlice());
-    }
+  if (inheritFromElement->preserveAspectRatio()->isSpecified()) {
+    preserveAspectRatio()->baseValue()->setAlign(
+        inheritFromElement->preserveAspectRatio()->currentValue()->align());
+    preserveAspectRatio()->baseValue()->setMeetOrSlice(
+        inheritFromElement->preserveAspectRatio()
+            ->currentValue()
+            ->meetOrSlice());
+  }
 
-    if (inheritFromElement->hasAttribute(SVGNames::zoomAndPanAttr))
-        setZoomAndPan(inheritFromElement->zoomAndPan());
+  if (inheritFromElement->hasAttribute(SVGNames::zoomAndPanAttr))
+    setZoomAndPan(inheritFromElement->zoomAndPan());
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGViewSpec_h
+#endif  // SVGViewSpec_h

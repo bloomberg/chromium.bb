@@ -38,190 +38,200 @@ namespace blink {
 
 namespace {
 
-size_t totalLength(const Vector<String>& strings)
-{
-    size_t length = 0;
-    for (const auto& string : strings)
-        length += string.length();
-    return length;
+size_t totalLength(const Vector<String>& strings) {
+  size_t length = 0;
+  for (const auto& string : strings)
+    length += string.length();
+  return length;
 }
 
-} // namespace
+}  // namespace
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, Document* document, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines)
-    : m_formatter(shouldResolveURLs)
-    , m_start(start)
-    , m_end(end)
-    , m_document(document)
-    , m_shouldAnnotate(shouldAnnotate)
-    , m_convertBlocksToInlines(convertBlocksToInlines)
-{
+StyledMarkupAccumulator::StyledMarkupAccumulator(
+    EAbsoluteURLs shouldResolveURLs,
+    const TextOffset& start,
+    const TextOffset& end,
+    Document* document,
+    EAnnotateForInterchange shouldAnnotate,
+    ConvertBlocksToInlines convertBlocksToInlines)
+    : m_formatter(shouldResolveURLs),
+      m_start(start),
+      m_end(end),
+      m_document(document),
+      m_shouldAnnotate(shouldAnnotate),
+      m_convertBlocksToInlines(convertBlocksToInlines) {}
+
+void StyledMarkupAccumulator::appendEndTag(const Element& element) {
+  appendEndMarkup(m_result, element);
 }
 
-void StyledMarkupAccumulator::appendEndTag(const Element& element)
-{
-    appendEndMarkup(m_result, element);
+void StyledMarkupAccumulator::appendStartMarkup(Node& node) {
+  m_formatter.appendStartMarkup(m_result, node, nullptr);
 }
 
-void StyledMarkupAccumulator::appendStartMarkup(Node& node)
-{
-    m_formatter.appendStartMarkup(m_result, node, nullptr);
+void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result,
+                                              const Element& element) {
+  m_formatter.appendEndMarkup(result, element);
 }
 
-void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
-{
-    m_formatter.appendEndMarkup(result, element);
-}
-
-void StyledMarkupAccumulator::appendText(Text& text)
-{
-    const String& str = text.data();
-    unsigned length = str.length();
-    unsigned start = 0;
-    if (m_end.isNotNull()) {
-        if (text == m_end.text())
-            length = m_end.offset();
+void StyledMarkupAccumulator::appendText(Text& text) {
+  const String& str = text.data();
+  unsigned length = str.length();
+  unsigned start = 0;
+  if (m_end.isNotNull()) {
+    if (text == m_end.text())
+      length = m_end.offset();
+  }
+  if (m_start.isNotNull()) {
+    if (text == m_start.text()) {
+      start = m_start.offset();
+      length -= start;
     }
-    if (m_start.isNotNull()) {
-        if (text == m_start.text()) {
-            start = m_start.offset();
-            length -= start;
-        }
-    }
-    MarkupFormatter::appendCharactersReplacingEntities(m_result, str, start, length, m_formatter.entityMaskForText(text));
+  }
+  MarkupFormatter::appendCharactersReplacingEntities(
+      m_result, str, start, length, m_formatter.entityMaskForText(text));
 }
 
-void StyledMarkupAccumulator::appendTextWithInlineStyle(Text& text, EditingStyle* inlineStyle)
-{
-    if (inlineStyle) {
-        // wrappingStyleForAnnotatedSerialization should have removed -webkit-text-decorations-in-effect
-        DCHECK(!shouldAnnotate() || propertyMissingOrEqualToNone(inlineStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
-        DCHECK(m_document);
-
-        m_result.append("<span style=\"");
-        MarkupFormatter::appendAttributeValue(m_result, inlineStyle->style()->asText(), m_document->isHTMLDocument());
-        m_result.append("\">");
-    }
-    if (!shouldAnnotate()) {
-        appendText(text);
-    } else {
-        const bool useRenderedText = !enclosingElementWithTag(Position::firstPositionInNode(&text), selectTag);
-        String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
-        StringBuilder buffer;
-        MarkupFormatter::appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
-        m_result.append(convertHTMLTextToInterchangeFormat(buffer.toString(), text));
-    }
-    if (inlineStyle)
-        m_result.append("</span>");
-}
-
-void StyledMarkupAccumulator::appendElementWithInlineStyle(const Element& element, EditingStyle* style)
-{
-    appendElementWithInlineStyle(m_result, element, style);
-}
-
-void StyledMarkupAccumulator::appendElementWithInlineStyle(StringBuilder& out, const Element& element, EditingStyle* style)
-{
-    const bool documentIsHTML = element.document().isHTMLDocument();
-    m_formatter.appendOpenTag(out, element, nullptr);
-    AttributeCollection attributes = element.attributes();
-    for (const auto& attribute : attributes) {
-        // We'll handle the style attribute separately, below.
-        if (attribute.name() == styleAttr)
-            continue;
-        m_formatter.appendAttribute(out, element, attribute, nullptr);
-    }
-    if (style && !style->isEmpty()) {
-        out.append(" style=\"");
-        MarkupFormatter::appendAttributeValue(out, style->style()->asText(), documentIsHTML);
-        out.append('\"');
-    }
-    m_formatter.appendCloseTag(out, element);
-}
-
-void StyledMarkupAccumulator::appendElement(const Element& element)
-{
-    appendElement(m_result, element);
-}
-
-void StyledMarkupAccumulator::appendElement(StringBuilder& out, const Element& element)
-{
-    m_formatter.appendOpenTag(out, element, nullptr);
-    AttributeCollection attributes = element.attributes();
-    for (const auto& attribute : attributes)
-        m_formatter.appendAttribute(out, element, attribute, nullptr);
-    m_formatter.appendCloseTag(out, element);
-}
-
-void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style)
-{
-    // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
-    DCHECK(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
+void StyledMarkupAccumulator::appendTextWithInlineStyle(
+    Text& text,
+    EditingStyle* inlineStyle) {
+  if (inlineStyle) {
+    // wrappingStyleForAnnotatedSerialization should have removed -webkit-text-decorations-in-effect
+    DCHECK(!shouldAnnotate() ||
+           propertyMissingOrEqualToNone(
+               inlineStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
     DCHECK(m_document);
 
-    StringBuilder openTag;
-    openTag.append("<div style=\"");
-    MarkupFormatter::appendAttributeValue(openTag, style->asText(), m_document->isHTMLDocument());
-    openTag.append("\">");
-    m_reversedPrecedingMarkup.append(openTag.toString());
-
-    m_result.append("</div>");
+    m_result.append("<span style=\"");
+    MarkupFormatter::appendAttributeValue(
+        m_result, inlineStyle->style()->asText(), m_document->isHTMLDocument());
+    m_result.append("\">");
+  }
+  if (!shouldAnnotate()) {
+    appendText(text);
+  } else {
+    const bool useRenderedText = !enclosingElementWithTag(
+        Position::firstPositionInNode(&text), selectTag);
+    String content =
+        useRenderedText ? renderedText(text) : stringValueForRange(text);
+    StringBuilder buffer;
+    MarkupFormatter::appendCharactersReplacingEntities(
+        buffer, content, 0, content.length(), EntityMaskInPCDATA);
+    m_result.append(
+        convertHTMLTextToInterchangeFormat(buffer.toString(), text));
+  }
+  if (inlineStyle)
+    m_result.append("</span>");
 }
 
-String StyledMarkupAccumulator::takeResults()
-{
-    StringBuilder result;
-    result.reserveCapacity(totalLength(m_reversedPrecedingMarkup) + m_result.length());
-
-    for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
-        result.append(m_reversedPrecedingMarkup[i - 1]);
-
-    result.append(m_result);
-
-    // We remove '\0' characters because they are not visibly rendered to the user.
-    return result.toString().replace(0, "");
+void StyledMarkupAccumulator::appendElementWithInlineStyle(
+    const Element& element,
+    EditingStyle* style) {
+  appendElementWithInlineStyle(m_result, element, style);
 }
 
-String StyledMarkupAccumulator::renderedText(Text& textNode)
-{
-    int startOffset = 0;
-    int endOffset = textNode.length();
-    if (m_start.text() == textNode)
-        startOffset = m_start.offset();
-    if (m_end.text() == textNode)
-        endOffset = m_end.offset();
-    return plainText(EphemeralRange(Position(&textNode, startOffset), Position(&textNode, endOffset)));
+void StyledMarkupAccumulator::appendElementWithInlineStyle(
+    StringBuilder& out,
+    const Element& element,
+    EditingStyle* style) {
+  const bool documentIsHTML = element.document().isHTMLDocument();
+  m_formatter.appendOpenTag(out, element, nullptr);
+  AttributeCollection attributes = element.attributes();
+  for (const auto& attribute : attributes) {
+    // We'll handle the style attribute separately, below.
+    if (attribute.name() == styleAttr)
+      continue;
+    m_formatter.appendAttribute(out, element, attribute, nullptr);
+  }
+  if (style && !style->isEmpty()) {
+    out.append(" style=\"");
+    MarkupFormatter::appendAttributeValue(out, style->style()->asText(),
+                                          documentIsHTML);
+    out.append('\"');
+  }
+  m_formatter.appendCloseTag(out, element);
 }
 
-String StyledMarkupAccumulator::stringValueForRange(const Text& node)
-{
-    if (m_start.isNull())
-        return node.data();
-
-    String str = node.data();
-    if (m_start.text() == node)
-        str.truncate(m_end.offset());
-    if (m_end.text() == node)
-        str.remove(0, m_start.offset());
-    return str;
+void StyledMarkupAccumulator::appendElement(const Element& element) {
+  appendElement(m_result, element);
 }
 
-bool StyledMarkupAccumulator::shouldAnnotate() const
-{
-    return m_shouldAnnotate == AnnotateForInterchange;
+void StyledMarkupAccumulator::appendElement(StringBuilder& out,
+                                            const Element& element) {
+  m_formatter.appendOpenTag(out, element, nullptr);
+  AttributeCollection attributes = element.attributes();
+  for (const auto& attribute : attributes)
+    m_formatter.appendAttribute(out, element, attribute, nullptr);
+  m_formatter.appendCloseTag(out, element);
 }
 
-void StyledMarkupAccumulator::pushMarkup(const String& str)
-{
-    m_reversedPrecedingMarkup.append(str);
+void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style) {
+  // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
+  DCHECK(propertyMissingOrEqualToNone(
+      style, CSSPropertyWebkitTextDecorationsInEffect));
+  DCHECK(m_document);
+
+  StringBuilder openTag;
+  openTag.append("<div style=\"");
+  MarkupFormatter::appendAttributeValue(openTag, style->asText(),
+                                        m_document->isHTMLDocument());
+  openTag.append("\">");
+  m_reversedPrecedingMarkup.append(openTag.toString());
+
+  m_result.append("</div>");
 }
 
-void StyledMarkupAccumulator::appendInterchangeNewline()
-{
-    DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
-    m_result.append(interchangeNewlineString);
+String StyledMarkupAccumulator::takeResults() {
+  StringBuilder result;
+  result.reserveCapacity(totalLength(m_reversedPrecedingMarkup) +
+                         m_result.length());
+
+  for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
+    result.append(m_reversedPrecedingMarkup[i - 1]);
+
+  result.append(m_result);
+
+  // We remove '\0' characters because they are not visibly rendered to the user.
+  return result.toString().replace(0, "");
 }
 
-} // namespace blink
+String StyledMarkupAccumulator::renderedText(Text& textNode) {
+  int startOffset = 0;
+  int endOffset = textNode.length();
+  if (m_start.text() == textNode)
+    startOffset = m_start.offset();
+  if (m_end.text() == textNode)
+    endOffset = m_end.offset();
+  return plainText(EphemeralRange(Position(&textNode, startOffset),
+                                  Position(&textNode, endOffset)));
+}
+
+String StyledMarkupAccumulator::stringValueForRange(const Text& node) {
+  if (m_start.isNull())
+    return node.data();
+
+  String str = node.data();
+  if (m_start.text() == node)
+    str.truncate(m_end.offset());
+  if (m_end.text() == node)
+    str.remove(0, m_start.offset());
+  return str;
+}
+
+bool StyledMarkupAccumulator::shouldAnnotate() const {
+  return m_shouldAnnotate == AnnotateForInterchange;
+}
+
+void StyledMarkupAccumulator::pushMarkup(const String& str) {
+  m_reversedPrecedingMarkup.append(str);
+}
+
+void StyledMarkupAccumulator::appendInterchangeNewline() {
+  DEFINE_STATIC_LOCAL(const String, interchangeNewlineString,
+                      ("<br class=\"" AppleInterchangeNewline "\">"));
+  m_result.append(interchangeNewlineString);
+}
+
+}  // namespace blink

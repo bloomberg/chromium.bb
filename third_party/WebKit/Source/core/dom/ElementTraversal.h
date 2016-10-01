@@ -33,12 +33,16 @@
 namespace blink {
 
 class HasTagName {
-    STACK_ALLOCATED();
-public:
-    explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) { }
-    bool operator() (const Element& element) const { return element.hasTagName(m_tagName); }
-private:
-    const QualifiedName m_tagName;
+  STACK_ALLOCATED();
+
+ public:
+  explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) {}
+  bool operator()(const Element& element) const {
+    return element.hasTagName(m_tagName);
+  }
+
+ private:
+  const QualifiedName m_tagName;
 };
 
 // This class is used to traverse the DOM tree. It isn't meant to be
@@ -71,410 +75,470 @@ private:
 // ElementTraversal is a specialized version of Traversal<Element>.
 template <class ElementType>
 class Traversal {
-    STATIC_ONLY(Traversal);
-public:
-    using TraversalNodeType = ElementType;
-    // First or last ElementType child of the node.
-    static ElementType* firstChild(const ContainerNode& current) { return firstChildTemplate(current); }
-    static ElementType* firstChild(const Node& current) { return firstChildTemplate(current); }
-    template <class MatchFunc>
-    static ElementType* firstChild(const ContainerNode&, MatchFunc);
-    static ElementType* lastChild(const ContainerNode& current) { return lastChildTemplate(current); }
-    static ElementType* lastChild(const Node& current) { return lastChildTemplate(current); }
-    template <class MatchFunc>
-    static ElementType* lastChild(const ContainerNode&, MatchFunc);
+  STATIC_ONLY(Traversal);
 
-    // First ElementType ancestor of the node.
-    static ElementType* firstAncestor(const Node& current);
-    static ElementType* firstAncestorOrSelf(Node& current) { return firstAncestorOrSelfTemplate(current); }
-    static ElementType* firstAncestorOrSelf(Element& current) { return firstAncestorOrSelfTemplate(current); }
-    static const ElementType* firstAncestorOrSelf(const Node& current) { return firstAncestorOrSelfTemplate(const_cast<Node&>(current)); }
-    static const ElementType* firstAncestorOrSelf(const Element& current) { return firstAncestorOrSelfTemplate(const_cast<Element&>(current)); }
+ public:
+  using TraversalNodeType = ElementType;
+  // First or last ElementType child of the node.
+  static ElementType* firstChild(const ContainerNode& current) {
+    return firstChildTemplate(current);
+  }
+  static ElementType* firstChild(const Node& current) {
+    return firstChildTemplate(current);
+  }
+  template <class MatchFunc>
+  static ElementType* firstChild(const ContainerNode&, MatchFunc);
+  static ElementType* lastChild(const ContainerNode& current) {
+    return lastChildTemplate(current);
+  }
+  static ElementType* lastChild(const Node& current) {
+    return lastChildTemplate(current);
+  }
+  template <class MatchFunc>
+  static ElementType* lastChild(const ContainerNode&, MatchFunc);
 
-    // First or last ElementType descendant of the node.
-    // For Elements firstWithin() is always the same as firstChild().
-    static ElementType* firstWithin(const ContainerNode& current) { return firstWithinTemplate(current); }
-    static ElementType* firstWithin(const Node& current) { return firstWithinTemplate(current); }
-    template <typename MatchFunc>
-    static ElementType* firstWithin(const ContainerNode&, MatchFunc);
-    static ElementType* lastWithin(const ContainerNode& current) { return lastWithinTemplate(current); }
-    static ElementType* lastWithin(const Node& current) { return lastWithinTemplate(current); }
-    template <class MatchFunc>
-    static ElementType* lastWithin(const ContainerNode&, MatchFunc);
-    static ElementType* lastWithinOrSelf(ElementType&);
+  // First ElementType ancestor of the node.
+  static ElementType* firstAncestor(const Node& current);
+  static ElementType* firstAncestorOrSelf(Node& current) {
+    return firstAncestorOrSelfTemplate(current);
+  }
+  static ElementType* firstAncestorOrSelf(Element& current) {
+    return firstAncestorOrSelfTemplate(current);
+  }
+  static const ElementType* firstAncestorOrSelf(const Node& current) {
+    return firstAncestorOrSelfTemplate(const_cast<Node&>(current));
+  }
+  static const ElementType* firstAncestorOrSelf(const Element& current) {
+    return firstAncestorOrSelfTemplate(const_cast<Element&>(current));
+  }
 
-    // Pre-order traversal skipping non-element nodes.
-    static ElementType* next(const ContainerNode& current) { return nextTemplate(current); }
-    static ElementType* next(const Node& current) { return nextTemplate(current); }
-    static ElementType* next(const ContainerNode& current, const Node* stayWithin) { return nextTemplate(current, stayWithin); }
-    static ElementType* next(const Node& current, const Node* stayWithin) { return nextTemplate(current, stayWithin); }
-    template <class MatchFunc>
-    static ElementType* next(const ContainerNode& current, const Node* stayWithin, MatchFunc);
-    static ElementType* previous(const Node&);
-    static ElementType* previous(const Node&, const Node* stayWithin);
-    template <class MatchFunc>
-    static ElementType* previous(const ContainerNode& current, const Node* stayWithin, MatchFunc);
+  // First or last ElementType descendant of the node.
+  // For Elements firstWithin() is always the same as firstChild().
+  static ElementType* firstWithin(const ContainerNode& current) {
+    return firstWithinTemplate(current);
+  }
+  static ElementType* firstWithin(const Node& current) {
+    return firstWithinTemplate(current);
+  }
+  template <typename MatchFunc>
+  static ElementType* firstWithin(const ContainerNode&, MatchFunc);
+  static ElementType* lastWithin(const ContainerNode& current) {
+    return lastWithinTemplate(current);
+  }
+  static ElementType* lastWithin(const Node& current) {
+    return lastWithinTemplate(current);
+  }
+  template <class MatchFunc>
+  static ElementType* lastWithin(const ContainerNode&, MatchFunc);
+  static ElementType* lastWithinOrSelf(ElementType&);
 
-    // Like next, but skips children.
-    static ElementType* nextSkippingChildren(const Node&);
-    static ElementType* nextSkippingChildren(const Node&, const Node* stayWithin);
+  // Pre-order traversal skipping non-element nodes.
+  static ElementType* next(const ContainerNode& current) {
+    return nextTemplate(current);
+  }
+  static ElementType* next(const Node& current) {
+    return nextTemplate(current);
+  }
+  static ElementType* next(const ContainerNode& current,
+                           const Node* stayWithin) {
+    return nextTemplate(current, stayWithin);
+  }
+  static ElementType* next(const Node& current, const Node* stayWithin) {
+    return nextTemplate(current, stayWithin);
+  }
+  template <class MatchFunc>
+  static ElementType* next(const ContainerNode& current,
+                           const Node* stayWithin,
+                           MatchFunc);
+  static ElementType* previous(const Node&);
+  static ElementType* previous(const Node&, const Node* stayWithin);
+  template <class MatchFunc>
+  static ElementType* previous(const ContainerNode& current,
+                               const Node* stayWithin,
+                               MatchFunc);
 
-    // Pre-order traversal including the pseudo-elements.
-    static ElementType* previousIncludingPseudo(const Node&, const Node* stayWithin = 0);
-    static ElementType* nextIncludingPseudo(const Node&, const Node* stayWithin = 0);
-    static ElementType* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin = 0);
+  // Like next, but skips children.
+  static ElementType* nextSkippingChildren(const Node&);
+  static ElementType* nextSkippingChildren(const Node&, const Node* stayWithin);
 
-    // Utility function to traverse only the element and pseudo-element siblings of a node.
-    static ElementType* pseudoAwarePreviousSibling(const Node&);
+  // Pre-order traversal including the pseudo-elements.
+  static ElementType* previousIncludingPseudo(const Node&,
+                                              const Node* stayWithin = 0);
+  static ElementType* nextIncludingPseudo(const Node&,
+                                          const Node* stayWithin = 0);
+  static ElementType* nextIncludingPseudoSkippingChildren(
+      const Node&,
+      const Node* stayWithin = 0);
 
-    // Previous / Next sibling.
-    static ElementType* previousSibling(const Node&);
-    template <class MatchFunc>
-    static ElementType* previousSibling(const Node&, MatchFunc);
-    static ElementType* nextSibling(const Node&);
-    template <class MatchFunc>
-    static ElementType* nextSibling(const Node&, MatchFunc);
+  // Utility function to traverse only the element and pseudo-element siblings of a node.
+  static ElementType* pseudoAwarePreviousSibling(const Node&);
 
-    static TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>> childrenOf(const Node&);
-    static TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>> descendantsOf(const Node&);
-    static TraversalRange<TraversalInclusiveDescendantIterator<Traversal<ElementType>>> inclusiveDescendantsOf(const ElementType&);
-    static TraversalRange<TraversalNextIterator<Traversal<ElementType>>> startsAt(const ElementType*);
-    static TraversalRange<TraversalNextIterator<Traversal<ElementType>>> startsAfter(const Node&);
+  // Previous / Next sibling.
+  static ElementType* previousSibling(const Node&);
+  template <class MatchFunc>
+  static ElementType* previousSibling(const Node&, MatchFunc);
+  static ElementType* nextSibling(const Node&);
+  template <class MatchFunc>
+  static ElementType* nextSibling(const Node&, MatchFunc);
 
-private:
-    template <class NodeType>
-    static ElementType* firstChildTemplate(NodeType&);
-    template <class NodeType>
-    static ElementType* lastChildTemplate(NodeType&);
-    template <class NodeType>
-    static ElementType* firstAncestorOrSelfTemplate(NodeType&);
-    template <class NodeType>
-    static ElementType* firstWithinTemplate(NodeType&);
-    template <class NodeType>
-    static ElementType* lastWithinTemplate(NodeType&);
-    template <class NodeType>
-    static ElementType* nextTemplate(NodeType&);
-    template <class NodeType>
-    static ElementType* nextTemplate(NodeType&, const Node* stayWithin);
+  static TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>>
+  childrenOf(const Node&);
+  static TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>>
+  descendantsOf(const Node&);
+  static TraversalRange<
+      TraversalInclusiveDescendantIterator<Traversal<ElementType>>>
+  inclusiveDescendantsOf(const ElementType&);
+  static TraversalRange<TraversalNextIterator<Traversal<ElementType>>> startsAt(
+      const ElementType*);
+  static TraversalRange<TraversalNextIterator<Traversal<ElementType>>>
+  startsAfter(const Node&);
+
+ private:
+  template <class NodeType>
+  static ElementType* firstChildTemplate(NodeType&);
+  template <class NodeType>
+  static ElementType* lastChildTemplate(NodeType&);
+  template <class NodeType>
+  static ElementType* firstAncestorOrSelfTemplate(NodeType&);
+  template <class NodeType>
+  static ElementType* firstWithinTemplate(NodeType&);
+  template <class NodeType>
+  static ElementType* lastWithinTemplate(NodeType&);
+  template <class NodeType>
+  static ElementType* nextTemplate(NodeType&);
+  template <class NodeType>
+  static ElementType* nextTemplate(NodeType&, const Node* stayWithin);
 };
 
 typedef Traversal<Element> ElementTraversal;
 
 template <class ElementType>
-inline TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>> Traversal<ElementType>::childrenOf(const Node& start)
-{
-    return TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>>(&start);
+inline TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>>
+Traversal<ElementType>::childrenOf(const Node& start) {
+  return TraversalRange<TraversalChildrenIterator<Traversal<ElementType>>>(
+      &start);
 };
 
 template <class ElementType>
-inline TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>> Traversal<ElementType>::descendantsOf(const Node& root)
-{
-    return TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>>(&root);
+inline TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>>
+Traversal<ElementType>::descendantsOf(const Node& root) {
+  return TraversalRange<TraversalDescendantIterator<Traversal<ElementType>>>(
+      &root);
 };
 
 template <class ElementType>
-inline TraversalRange<TraversalInclusiveDescendantIterator<Traversal<ElementType>>> Traversal<ElementType>::inclusiveDescendantsOf(const ElementType& root)
-{
-    return TraversalRange<TraversalInclusiveDescendantIterator<Traversal<ElementType>>>(&root);
+inline TraversalRange<
+    TraversalInclusiveDescendantIterator<Traversal<ElementType>>>
+Traversal<ElementType>::inclusiveDescendantsOf(const ElementType& root) {
+  return TraversalRange<
+      TraversalInclusiveDescendantIterator<Traversal<ElementType>>>(&root);
 };
 
 template <class ElementType>
-inline TraversalRange<TraversalNextIterator<Traversal<ElementType>>> Traversal<ElementType>::startsAt(const ElementType* start)
-{
-    return TraversalRange<TraversalNextIterator<Traversal<ElementType>>>(start);
+inline TraversalRange<TraversalNextIterator<Traversal<ElementType>>>
+Traversal<ElementType>::startsAt(const ElementType* start) {
+  return TraversalRange<TraversalNextIterator<Traversal<ElementType>>>(start);
 };
 
 template <class ElementType>
-inline TraversalRange<TraversalNextIterator<Traversal<ElementType>>> Traversal<ElementType>::startsAfter(const Node& start)
-{
-    return startsAt(Traversal<ElementType>::next(start));
+inline TraversalRange<TraversalNextIterator<Traversal<ElementType>>>
+Traversal<ElementType>::startsAfter(const Node& start) {
+  return startsAt(Traversal<ElementType>::next(start));
 };
 
 // Specialized for pure Element to exploit the fact that Elements parent is always either another Element or the root.
 template <>
 template <class NodeType>
-inline Element* Traversal<Element>::firstWithinTemplate(NodeType& current)
-{
-    return firstChildTemplate(current);
+inline Element* Traversal<Element>::firstWithinTemplate(NodeType& current) {
+  return firstChildTemplate(current);
 }
 
 template <>
 template <class NodeType>
-inline Element* Traversal<Element>::nextTemplate(NodeType& current)
-{
-    Node* node = NodeTraversal::next(current);
-    while (node && !node->isElementNode())
-        node = NodeTraversal::nextSkippingChildren(*node);
-    return toElement(node);
+inline Element* Traversal<Element>::nextTemplate(NodeType& current) {
+  Node* node = NodeTraversal::next(current);
+  while (node && !node->isElementNode())
+    node = NodeTraversal::nextSkippingChildren(*node);
+  return toElement(node);
 }
 
 template <>
 template <class NodeType>
-inline Element* Traversal<Element>::nextTemplate(NodeType& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::next(current, stayWithin);
-    while (node && !node->isElementNode())
-        node = NodeTraversal::nextSkippingChildren(*node, stayWithin);
-    return toElement(node);
+inline Element* Traversal<Element>::nextTemplate(NodeType& current,
+                                                 const Node* stayWithin) {
+  Node* node = NodeTraversal::next(current, stayWithin);
+  while (node && !node->isElementNode())
+    node = NodeTraversal::nextSkippingChildren(*node, stayWithin);
+  return toElement(node);
 }
 
 // Generic versions.
 template <class ElementType>
 template <class NodeType>
-inline ElementType* Traversal<ElementType>::firstChildTemplate(NodeType& current)
-{
-    Node* node = current.firstChild();
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = node->nextSibling();
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::firstChildTemplate(
+    NodeType& current) {
+  Node* node = current.firstChild();
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = node->nextSibling();
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <class MatchFunc>
-inline ElementType* Traversal<ElementType>::firstChild(const ContainerNode& current, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::firstChild(current);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::nextSibling(*element);
-    return element;
+inline ElementType* Traversal<ElementType>::firstChild(
+    const ContainerNode& current,
+    MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::firstChild(current);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::nextSibling(*element);
+  return element;
 }
 
 template <class ElementType>
-inline ElementType* Traversal<ElementType>::firstAncestor(const Node& current)
-{
-    ContainerNode* ancestor = current.parentNode();
-    while (ancestor && !isElementOfType<const ElementType>(*ancestor))
-        ancestor = ancestor->parentNode();
-    return toElement<ElementType>(ancestor);
-}
-
-template <class ElementType>
-template <class NodeType>
-inline ElementType* Traversal<ElementType>::firstAncestorOrSelfTemplate(NodeType& current)
-{
-    if (isElementOfType<const ElementType>(current))
-        return &toElement<ElementType>(current);
-    return firstAncestor(current);
+inline ElementType* Traversal<ElementType>::firstAncestor(const Node& current) {
+  ContainerNode* ancestor = current.parentNode();
+  while (ancestor && !isElementOfType<const ElementType>(*ancestor))
+    ancestor = ancestor->parentNode();
+  return toElement<ElementType>(ancestor);
 }
 
 template <class ElementType>
 template <class NodeType>
-inline ElementType* Traversal<ElementType>::lastChildTemplate(NodeType& current)
-{
-    Node* node = current.lastChild();
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = node->previousSibling();
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::firstAncestorOrSelfTemplate(
+    NodeType& current) {
+  if (isElementOfType<const ElementType>(current))
+    return &toElement<ElementType>(current);
+  return firstAncestor(current);
+}
+
+template <class ElementType>
+template <class NodeType>
+inline ElementType* Traversal<ElementType>::lastChildTemplate(
+    NodeType& current) {
+  Node* node = current.lastChild();
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = node->previousSibling();
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <class MatchFunc>
-inline ElementType* Traversal<ElementType>::lastChild(const ContainerNode& current, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::lastChild(current);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::previousSibling(*element);
-    return element;
+inline ElementType* Traversal<ElementType>::lastChild(
+    const ContainerNode& current,
+    MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::lastChild(current);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::previousSibling(*element);
+  return element;
 }
 
 template <class ElementType>
 template <class NodeType>
-inline ElementType* Traversal<ElementType>::firstWithinTemplate(NodeType& current)
-{
-    Node* node = current.firstChild();
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::next(*node, &current);
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::firstWithinTemplate(
+    NodeType& current) {
+  Node* node = current.firstChild();
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::next(*node, &current);
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <typename MatchFunc>
-inline ElementType* Traversal<ElementType>::firstWithin(const ContainerNode& current, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::firstWithin(current);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::next(*element, &current, isMatch);
-    return element;
+inline ElementType* Traversal<ElementType>::firstWithin(
+    const ContainerNode& current,
+    MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::firstWithin(current);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::next(*element, &current, isMatch);
+  return element;
 }
 
 template <class ElementType>
 template <class NodeType>
-inline ElementType* Traversal<ElementType>::lastWithinTemplate(NodeType& current)
-{
-    Node* node = NodeTraversal::lastWithin(current);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::previous(*node, &current);
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::lastWithinTemplate(
+    NodeType& current) {
+  Node* node = NodeTraversal::lastWithin(current);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::previous(*node, &current);
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <class MatchFunc>
-inline ElementType* Traversal<ElementType>::lastWithin(const ContainerNode& current, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::lastWithin(current);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::previous(*element, &current, isMatch);
-    return element;
+inline ElementType* Traversal<ElementType>::lastWithin(
+    const ContainerNode& current,
+    MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::lastWithin(current);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::previous(*element, &current, isMatch);
+  return element;
 }
 
 template <class ElementType>
-inline ElementType* Traversal<ElementType>::lastWithinOrSelf(ElementType& current)
-{
-    if (ElementType* lastDescendant = lastWithin(current))
-        return lastDescendant;
-    return &current;
+inline ElementType* Traversal<ElementType>::lastWithinOrSelf(
+    ElementType& current) {
+  if (ElementType* lastDescendant = lastWithin(current))
+    return lastDescendant;
+  return &current;
 }
 
 template <class ElementType>
 template <class NodeType>
-inline ElementType* Traversal<ElementType>::nextTemplate(NodeType& current)
-{
-    Node* node = NodeTraversal::next(current);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::next(*node);
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::nextTemplate(NodeType& current) {
+  Node* node = NodeTraversal::next(current);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::next(*node);
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <class NodeType>
-inline ElementType* Traversal<ElementType>::nextTemplate(NodeType& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::next(current, stayWithin);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::next(*node, stayWithin);
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::nextTemplate(
+    NodeType& current,
+    const Node* stayWithin) {
+  Node* node = NodeTraversal::next(current, stayWithin);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::next(*node, stayWithin);
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <class MatchFunc>
-inline ElementType* Traversal<ElementType>::next(const ContainerNode& current, const Node* stayWithin, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::next(current, stayWithin);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::next(*element, stayWithin);
-    return element;
+inline ElementType* Traversal<ElementType>::next(const ContainerNode& current,
+                                                 const Node* stayWithin,
+                                                 MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::next(current, stayWithin);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::next(*element, stayWithin);
+  return element;
 }
 
 template <class ElementType>
-inline ElementType* Traversal<ElementType>::previous(const Node& current)
-{
-    Node* node = NodeTraversal::previous(current);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::previous(*node);
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::previous(const Node& current) {
+  Node* node = NodeTraversal::previous(current);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::previous(*node);
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
-inline ElementType* Traversal<ElementType>::previous(const Node& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::previous(current, stayWithin);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::previous(*node, stayWithin);
-    return toElement<ElementType>(node);
-}
-
-template <class ElementType>
-template <class MatchFunc>
-inline ElementType* Traversal<ElementType>::previous(const ContainerNode& current, const Node* stayWithin, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::previous(current, stayWithin);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::previous(*element, stayWithin);
-    return element;
-}
-
-template <class ElementType>
-inline ElementType* Traversal<ElementType>::nextSkippingChildren(const Node& current)
-{
-    Node* node = NodeTraversal::nextSkippingChildren(current);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::nextSkippingChildren(*node);
-    return toElement<ElementType>(node);
-}
-
-template <class ElementType>
-inline ElementType* Traversal<ElementType>::nextSkippingChildren(const Node& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::nextSkippingChildren(current, stayWithin);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::nextSkippingChildren(*node, stayWithin);
-    return toElement<ElementType>(node);
-}
-
-template <class ElementType>
-inline ElementType* Traversal<ElementType>::previousIncludingPseudo(const Node& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::previousIncludingPseudo(current, stayWithin);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::previousIncludingPseudo(*node, stayWithin);
-    return toElement<ElementType>(node);
-}
-
-template <class ElementType>
-inline ElementType* Traversal<ElementType>::nextIncludingPseudo(const Node& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::nextIncludingPseudo(current, stayWithin);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::nextIncludingPseudo(*node, stayWithin);
-    return toElement<ElementType>(node);
-}
-
-template <class ElementType>
-inline ElementType* Traversal<ElementType>::nextIncludingPseudoSkippingChildren(const Node& current, const Node* stayWithin)
-{
-    Node* node = NodeTraversal::nextIncludingPseudoSkippingChildren(current, stayWithin);
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = NodeTraversal::nextIncludingPseudoSkippingChildren(*node, stayWithin);
-    return toElement<ElementType>(node);
-}
-
-template <class ElementType>
-inline ElementType* Traversal<ElementType>::pseudoAwarePreviousSibling(const Node& current)
-{
-    Node* node = current.pseudoAwarePreviousSibling();
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = node->pseudoAwarePreviousSibling();
-    return toElement<ElementType>(node);
-}
-
-template <class ElementType>
-inline ElementType* Traversal<ElementType>::previousSibling(const Node& current)
-{
-    Node* node = current.previousSibling();
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = node->previousSibling();
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::previous(const Node& current,
+                                                     const Node* stayWithin) {
+  Node* node = NodeTraversal::previous(current, stayWithin);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::previous(*node, stayWithin);
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <class MatchFunc>
-inline ElementType* Traversal<ElementType>::previousSibling(const Node& current, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::previousSibling(current);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::previousSibling(*element);
-    return element;
+inline ElementType* Traversal<ElementType>::previous(
+    const ContainerNode& current,
+    const Node* stayWithin,
+    MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::previous(current, stayWithin);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::previous(*element, stayWithin);
+  return element;
 }
 
 template <class ElementType>
-inline ElementType* Traversal<ElementType>::nextSibling(const Node& current)
-{
-    Node* node = current.nextSibling();
-    while (node && !isElementOfType<const ElementType>(*node))
-        node = node->nextSibling();
-    return toElement<ElementType>(node);
+inline ElementType* Traversal<ElementType>::nextSkippingChildren(
+    const Node& current) {
+  Node* node = NodeTraversal::nextSkippingChildren(current);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::nextSkippingChildren(*node);
+  return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::nextSkippingChildren(
+    const Node& current,
+    const Node* stayWithin) {
+  Node* node = NodeTraversal::nextSkippingChildren(current, stayWithin);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::nextSkippingChildren(*node, stayWithin);
+  return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::previousIncludingPseudo(
+    const Node& current,
+    const Node* stayWithin) {
+  Node* node = NodeTraversal::previousIncludingPseudo(current, stayWithin);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::previousIncludingPseudo(*node, stayWithin);
+  return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::nextIncludingPseudo(
+    const Node& current,
+    const Node* stayWithin) {
+  Node* node = NodeTraversal::nextIncludingPseudo(current, stayWithin);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = NodeTraversal::nextIncludingPseudo(*node, stayWithin);
+  return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::nextIncludingPseudoSkippingChildren(
+    const Node& current,
+    const Node* stayWithin) {
+  Node* node =
+      NodeTraversal::nextIncludingPseudoSkippingChildren(current, stayWithin);
+  while (node && !isElementOfType<const ElementType>(*node))
+    node =
+        NodeTraversal::nextIncludingPseudoSkippingChildren(*node, stayWithin);
+  return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::pseudoAwarePreviousSibling(
+    const Node& current) {
+  Node* node = current.pseudoAwarePreviousSibling();
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = node->pseudoAwarePreviousSibling();
+  return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::previousSibling(
+    const Node& current) {
+  Node* node = current.previousSibling();
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = node->previousSibling();
+  return toElement<ElementType>(node);
 }
 
 template <class ElementType>
 template <class MatchFunc>
-inline ElementType* Traversal<ElementType>::nextSibling(const Node& current, MatchFunc isMatch)
-{
-    ElementType* element = Traversal<ElementType>::nextSibling(current);
-    while (element && !isMatch(*element))
-        element = Traversal<ElementType>::nextSibling(*element);
-    return element;
+inline ElementType* Traversal<ElementType>::previousSibling(const Node& current,
+                                                            MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::previousSibling(current);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::previousSibling(*element);
+  return element;
 }
 
-} // namespace blink
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::nextSibling(const Node& current) {
+  Node* node = current.nextSibling();
+  while (node && !isElementOfType<const ElementType>(*node))
+    node = node->nextSibling();
+  return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+template <class MatchFunc>
+inline ElementType* Traversal<ElementType>::nextSibling(const Node& current,
+                                                        MatchFunc isMatch) {
+  ElementType* element = Traversal<ElementType>::nextSibling(current);
+  while (element && !isMatch(*element))
+    element = Traversal<ElementType>::nextSibling(*element);
+  return element;
+}
+
+}  // namespace blink
 
 #endif

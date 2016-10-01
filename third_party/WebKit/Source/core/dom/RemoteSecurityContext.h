@@ -11,22 +11,25 @@
 
 namespace blink {
 
-class CORE_EXPORT RemoteSecurityContext : public GarbageCollectedFinalized<RemoteSecurityContext>, public SecurityContext {
-    USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
-public:
-    DECLARE_VIRTUAL_TRACE();
+class CORE_EXPORT RemoteSecurityContext
+    : public GarbageCollectedFinalized<RemoteSecurityContext>,
+      public SecurityContext {
+  USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
 
-    static RemoteSecurityContext* create();
-    void setReplicatedOrigin(PassRefPtr<SecurityOrigin>);
-    void resetReplicatedContentSecurityPolicy();
+ public:
+  DECLARE_VIRTUAL_TRACE();
 
-    // FIXME: implement
-    void didUpdateSecurityOrigin() override { }
+  static RemoteSecurityContext* create();
+  void setReplicatedOrigin(PassRefPtr<SecurityOrigin>);
+  void resetReplicatedContentSecurityPolicy();
 
-private:
-    RemoteSecurityContext();
+  // FIXME: implement
+  void didUpdateSecurityOrigin() override {}
+
+ private:
+  RemoteSecurityContext();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RemoteSecurityContext_h
+#endif  // RemoteSecurityContext_h

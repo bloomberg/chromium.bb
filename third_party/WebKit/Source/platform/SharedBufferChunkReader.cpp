@@ -34,116 +34,118 @@
 
 namespace blink {
 
-SharedBufferChunkReader::SharedBufferChunkReader(PassRefPtr<const SharedBuffer> buffer, const Vector<char>& separator)
-    : m_buffer(buffer)
-    , m_bufferPosition(0)
-    , m_segment(0)
-    , m_segmentLength(0)
-    , m_segmentIndex(0)
-    , m_reachedEndOfFile(false)
-    , m_separator(separator)
-    , m_separatorIndex(0)
-{
+SharedBufferChunkReader::SharedBufferChunkReader(
+    PassRefPtr<const SharedBuffer> buffer,
+    const Vector<char>& separator)
+    : m_buffer(buffer),
+      m_bufferPosition(0),
+      m_segment(0),
+      m_segmentLength(0),
+      m_segmentIndex(0),
+      m_reachedEndOfFile(false),
+      m_separator(separator),
+      m_separatorIndex(0) {}
+
+SharedBufferChunkReader::SharedBufferChunkReader(
+    PassRefPtr<const SharedBuffer> buffer,
+    const char* separator)
+    : m_buffer(buffer),
+      m_bufferPosition(0),
+      m_segment(0),
+      m_segmentLength(0),
+      m_segmentIndex(0),
+      m_reachedEndOfFile(false),
+      m_separatorIndex(0) {
+  setSeparator(separator);
 }
 
-SharedBufferChunkReader::SharedBufferChunkReader(PassRefPtr<const SharedBuffer> buffer, const char* separator)
-    : m_buffer(buffer)
-    , m_bufferPosition(0)
-    , m_segment(0)
-    , m_segmentLength(0)
-    , m_segmentIndex(0)
-    , m_reachedEndOfFile(false)
-    , m_separatorIndex(0)
-{
-    setSeparator(separator);
+void SharedBufferChunkReader::setSeparator(const Vector<char>& separator) {
+  m_separator = separator;
 }
 
-void SharedBufferChunkReader::setSeparator(const Vector<char>& separator)
-{
-    m_separator = separator;
+void SharedBufferChunkReader::setSeparator(const char* separator) {
+  m_separator.clear();
+  m_separator.append(separator, strlen(separator));
 }
 
-void SharedBufferChunkReader::setSeparator(const char* separator)
-{
-    m_separator.clear();
-    m_separator.append(separator, strlen(separator));
-}
-
-bool SharedBufferChunkReader::nextChunk(Vector<char>& chunk, bool includeSeparator)
-{
-    if (m_reachedEndOfFile)
-        return false;
-
-    chunk.clear();
-    while (true) {
-        while (m_segmentIndex < m_segmentLength) {
-            char currentCharacter = m_segment[m_segmentIndex++];
-            if (currentCharacter != m_separator[m_separatorIndex]) {
-                if (m_separatorIndex > 0) {
-                    ASSERT_WITH_SECURITY_IMPLICATION(m_separatorIndex <= m_separator.size());
-                    chunk.append(m_separator.data(), m_separatorIndex);
-                    m_separatorIndex = 0;
-                }
-                chunk.append(currentCharacter);
-                continue;
-            }
-            m_separatorIndex++;
-            if (m_separatorIndex == m_separator.size()) {
-                if (includeSeparator)
-                    chunk.appendVector(m_separator);
-                m_separatorIndex = 0;
-                return true;
-            }
-        }
-
-        // Read the next segment.
-        m_segmentIndex = 0;
-        m_bufferPosition += m_segmentLength;
-        m_segmentLength = m_buffer->getSomeData(m_segment, m_bufferPosition);
-        if (!m_segmentLength) {
-            m_reachedEndOfFile = true;
-            if (m_separatorIndex > 0)
-                chunk.append(m_separator.data(), m_separatorIndex);
-            return !chunk.isEmpty();
-        }
-    }
-    ASSERT_NOT_REACHED();
+bool SharedBufferChunkReader::nextChunk(Vector<char>& chunk,
+                                        bool includeSeparator) {
+  if (m_reachedEndOfFile)
     return false;
-}
 
-String SharedBufferChunkReader::nextChunkAsUTF8StringWithLatin1Fallback(bool includeSeparator)
-{
-    Vector<char> data;
-    if (!nextChunk(data, includeSeparator))
-        return String();
-
-    return data.size() ? String::fromUTF8WithLatin1Fallback(data.data(), data.size()) : emptyString();
-}
-
-size_t SharedBufferChunkReader::peek(Vector<char>& data, size_t requestedSize)
-{
-    data.clear();
-    if (requestedSize <= m_segmentLength - m_segmentIndex) {
-        data.append(m_segment + m_segmentIndex, requestedSize);
-        return requestedSize;
-    }
-
-    size_t readBytesCount = m_segmentLength - m_segmentIndex;
-    data.append(m_segment + m_segmentIndex, readBytesCount);
-
-    size_t bufferPosition = m_bufferPosition + m_segmentLength;
-    const char* segment = 0;
-    while (size_t segmentLength = m_buffer->getSomeData(segment, bufferPosition)) {
-        if (requestedSize <= readBytesCount + segmentLength) {
-            data.append(segment, requestedSize - readBytesCount);
-            readBytesCount += (requestedSize - readBytesCount);
-            break;
+  chunk.clear();
+  while (true) {
+    while (m_segmentIndex < m_segmentLength) {
+      char currentCharacter = m_segment[m_segmentIndex++];
+      if (currentCharacter != m_separator[m_separatorIndex]) {
+        if (m_separatorIndex > 0) {
+          ASSERT_WITH_SECURITY_IMPLICATION(m_separatorIndex <=
+                                           m_separator.size());
+          chunk.append(m_separator.data(), m_separatorIndex);
+          m_separatorIndex = 0;
         }
-        data.append(segment, segmentLength);
-        readBytesCount += segmentLength;
-        bufferPosition += segmentLength;
+        chunk.append(currentCharacter);
+        continue;
+      }
+      m_separatorIndex++;
+      if (m_separatorIndex == m_separator.size()) {
+        if (includeSeparator)
+          chunk.appendVector(m_separator);
+        m_separatorIndex = 0;
+        return true;
+      }
     }
-    return readBytesCount;
+
+    // Read the next segment.
+    m_segmentIndex = 0;
+    m_bufferPosition += m_segmentLength;
+    m_segmentLength = m_buffer->getSomeData(m_segment, m_bufferPosition);
+    if (!m_segmentLength) {
+      m_reachedEndOfFile = true;
+      if (m_separatorIndex > 0)
+        chunk.append(m_separator.data(), m_separatorIndex);
+      return !chunk.isEmpty();
+    }
+  }
+  ASSERT_NOT_REACHED();
+  return false;
 }
 
-} // namespace blink
+String SharedBufferChunkReader::nextChunkAsUTF8StringWithLatin1Fallback(
+    bool includeSeparator) {
+  Vector<char> data;
+  if (!nextChunk(data, includeSeparator))
+    return String();
+
+  return data.size()
+             ? String::fromUTF8WithLatin1Fallback(data.data(), data.size())
+             : emptyString();
+}
+
+size_t SharedBufferChunkReader::peek(Vector<char>& data, size_t requestedSize) {
+  data.clear();
+  if (requestedSize <= m_segmentLength - m_segmentIndex) {
+    data.append(m_segment + m_segmentIndex, requestedSize);
+    return requestedSize;
+  }
+
+  size_t readBytesCount = m_segmentLength - m_segmentIndex;
+  data.append(m_segment + m_segmentIndex, readBytesCount);
+
+  size_t bufferPosition = m_bufferPosition + m_segmentLength;
+  const char* segment = 0;
+  while (size_t segmentLength =
+             m_buffer->getSomeData(segment, bufferPosition)) {
+    if (requestedSize <= readBytesCount + segmentLength) {
+      data.append(segment, requestedSize - readBytesCount);
+      readBytesCount += (requestedSize - readBytesCount);
+      break;
+    }
+    data.append(segment, segmentLength);
+    readBytesCount += segmentLength;
+    bufferPosition += segmentLength;
+  }
+  return readBytesCount;
+}
+
+}  // namespace blink

@@ -9,18 +9,18 @@
 
 namespace blink {
 
-FontCacheMemoryDumpProvider* FontCacheMemoryDumpProvider::instance()
-{
-    DEFINE_STATIC_LOCAL(FontCacheMemoryDumpProvider, instance, ());
-    return &instance;
+FontCacheMemoryDumpProvider* FontCacheMemoryDumpProvider::instance() {
+  DEFINE_STATIC_LOCAL(FontCacheMemoryDumpProvider, instance, ());
+  return &instance;
 }
 
-bool FontCacheMemoryDumpProvider::OnMemoryDump(const base::trace_event::MemoryDumpArgs&, base::trace_event::ProcessMemoryDump* memoryDump)
-{
-    ASSERT(isMainThread());
-    FontCache::fontCache()->dumpFontPlatformDataCache(memoryDump);
-    FontCache::fontCache()->dumpShapeResultCache(memoryDump);
-    return true;
+bool FontCacheMemoryDumpProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs&,
+    base::trace_event::ProcessMemoryDump* memoryDump) {
+  ASSERT(isMainThread());
+  FontCache::fontCache()->dumpFontPlatformDataCache(memoryDump);
+  FontCache::fontCache()->dumpShapeResultCache(memoryDump);
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

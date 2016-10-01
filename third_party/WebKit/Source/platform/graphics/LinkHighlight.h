@@ -12,15 +12,15 @@ namespace blink {
 class WebLayer;
 
 class PLATFORM_EXPORT LinkHighlight {
-public:
-    virtual void invalidate() = 0;
-    virtual void clearCurrentGraphicsLayer() = 0;
-    virtual WebLayer* layer() = 0;
+ public:
+  virtual void invalidate() = 0;
+  virtual void clearCurrentGraphicsLayer() = 0;
+  virtual WebLayer* layer() = 0;
 
-protected:
-    virtual ~LinkHighlight() { }
+ protected:
+  virtual ~LinkHighlight() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LinkHighlight_h
+#endif  // LinkHighlight_h

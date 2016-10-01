@@ -13,39 +13,50 @@
 namespace blink {
 
 class ApplicationCacheErrorEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~ApplicationCacheErrorEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static ApplicationCacheErrorEvent* create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
-    {
-        return new ApplicationCacheErrorEvent(reason, url, status, message);
-    }
+ public:
+  ~ApplicationCacheErrorEvent() override;
 
-    static ApplicationCacheErrorEvent* create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
-    {
-        return new ApplicationCacheErrorEvent(eventType, initializer);
-    }
+  static ApplicationCacheErrorEvent* create(
+      WebApplicationCacheHost::ErrorReason reason,
+      const String& url,
+      int status,
+      const String& message) {
+    return new ApplicationCacheErrorEvent(reason, url, status, message);
+  }
 
-    const String& reason() const { return m_reason; }
-    const String& url() const { return m_url; }
-    int status() const { return m_status; }
-    const String& message() const { return m_message; }
+  static ApplicationCacheErrorEvent* create(
+      const AtomicString& eventType,
+      const ApplicationCacheErrorEventInit& initializer) {
+    return new ApplicationCacheErrorEvent(eventType, initializer);
+  }
 
-    const AtomicString& interfaceName() const override { return EventNames::ApplicationCacheErrorEvent; }
+  const String& reason() const { return m_reason; }
+  const String& url() const { return m_url; }
+  int status() const { return m_status; }
+  const String& message() const { return m_message; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override {
+    return EventNames::ApplicationCacheErrorEvent;
+  }
 
-private:
-    ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason, const String& url, int status, const String& message);
-    ApplicationCacheErrorEvent(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer);
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_reason;
-    String m_url;
-    int m_status;
-    String m_message;
+ private:
+  ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason,
+                             const String& url,
+                             int status,
+                             const String& message);
+  ApplicationCacheErrorEvent(const AtomicString& eventType,
+                             const ApplicationCacheErrorEventInit& initializer);
+
+  String m_reason;
+  String m_url;
+  int m_status;
+  String m_message;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ApplicationCacheErrorEvent_h
+#endif  // ApplicationCacheErrorEvent_h

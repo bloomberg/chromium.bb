@@ -33,28 +33,30 @@ namespace blink {
 class ExceptionState;
 
 class HTMLTableSectionElement final : public HTMLTablePartElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    HTMLElement* insertRow(int index, ExceptionState&);
-    void deleteRow(int index, ExceptionState&);
+ public:
+  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
 
-    HTMLCollection* rows();
+  HTMLElement* insertRow(int index, ExceptionState&);
+  void deleteRow(int index, ExceptionState&);
 
-private:
-    HTMLTableSectionElement(const QualifiedName& tagName, Document&);
+  HTMLCollection* rows();
 
-    const StylePropertySet* additionalPresentationAttributeStyle() override;
+ private:
+  HTMLTableSectionElement(const QualifiedName& tagName, Document&);
+
+  const StylePropertySet* additionalPresentationAttributeStyle() override;
 };
 
-inline bool isHTMLTableSectionElement(const HTMLElement& element)
-{
-    return element.hasTagName(HTMLNames::tbodyTag) || element.hasTagName(HTMLNames::tfootTag) || element.hasTagName(HTMLNames::theadTag);
+inline bool isHTMLTableSectionElement(const HTMLElement& element) {
+  return element.hasTagName(HTMLNames::tbodyTag) ||
+         element.hasTagName(HTMLNames::tfootTag) ||
+         element.hasTagName(HTMLNames::theadTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLTableSectionElement_h
+#endif  // HTMLTableSectionElement_h

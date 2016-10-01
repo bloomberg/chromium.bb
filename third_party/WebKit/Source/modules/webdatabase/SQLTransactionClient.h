@@ -41,13 +41,15 @@ class Database;
 // A client to the SQLTransaction class. Allows SQLTransaction to notify interested
 // parties that certain things have happened in a transaction.
 class SQLTransactionClient {
-    WTF_MAKE_NONCOPYABLE(SQLTransactionClient); USING_FAST_MALLOC(SQLTransactionClient);
-public:
-    SQLTransactionClient() { }
-    void didCommitWriteTransaction(Database*);
-    bool didExceedQuota(Database*);
+  WTF_MAKE_NONCOPYABLE(SQLTransactionClient);
+  USING_FAST_MALLOC(SQLTransactionClient);
+
+ public:
+  SQLTransactionClient() {}
+  void didCommitWriteTransaction(Database*);
+  bool didExceedQuota(Database*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLTransactionClient_h
+#endif  // SQLTransactionClient_h

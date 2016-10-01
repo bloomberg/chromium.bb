@@ -18,32 +18,34 @@ namespace blink {
 class PushEventInit;
 
 class MODULES_EXPORT PushEvent final : public ExtendableEvent {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PushEvent* create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
-    {
-        return new PushEvent(type, data, observer);
-    }
-    static PushEvent* create(const AtomicString& type, const PushEventInit& initializer)
-    {
-        return new PushEvent(type, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~PushEvent() override;
+ public:
+  static PushEvent* create(const AtomicString& type,
+                           PushMessageData* data,
+                           WaitUntilObserver* observer) {
+    return new PushEvent(type, data, observer);
+  }
+  static PushEvent* create(const AtomicString& type,
+                           const PushEventInit& initializer) {
+    return new PushEvent(type, initializer);
+  }
 
-    const AtomicString& interfaceName() const override;
+  ~PushEvent() override;
 
-    PushMessageData* data();
+  const AtomicString& interfaceName() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  PushMessageData* data();
 
-private:
-    PushEvent(const AtomicString& type, PushMessageData*, WaitUntilObserver*);
-    PushEvent(const AtomicString& type, const PushEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<PushMessageData> m_data;
+ private:
+  PushEvent(const AtomicString& type, PushMessageData*, WaitUntilObserver*);
+  PushEvent(const AtomicString& type, const PushEventInit&);
+
+  Member<PushMessageData> m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PushEvent_h
+#endif  // PushEvent_h

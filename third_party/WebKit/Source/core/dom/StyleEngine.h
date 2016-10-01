@@ -56,230 +56,272 @@ class StyleRuleFontFace;
 class StyleSheet;
 class StyleSheetContents;
 
-class CORE_EXPORT StyleEngine final : public GarbageCollectedFinalized<StyleEngine>, public CSSFontSelectorClient  {
-    USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
-public:
+class CORE_EXPORT StyleEngine final
+    : public GarbageCollectedFinalized<StyleEngine>,
+      public CSSFontSelectorClient {
+  USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
 
-    class IgnoringPendingStylesheet {
-        DISALLOW_NEW();
-    public:
-        IgnoringPendingStylesheet(StyleEngine& engine)
-            : m_scope(&engine.m_ignorePendingStylesheets, true)
-        {
-        }
-    private:
-        AutoReset<bool> m_scope;
-    };
+ public:
+  class IgnoringPendingStylesheet {
+    DISALLOW_NEW();
 
-    friend class IgnoringPendingStylesheet;
+   public:
+    IgnoringPendingStylesheet(StyleEngine& engine)
+        : m_scope(&engine.m_ignorePendingStylesheets, true) {}
 
-    static StyleEngine* create(Document& document) { return new StyleEngine(document); }
+   private:
+    AutoReset<bool> m_scope;
+  };
 
-    ~StyleEngine();
+  friend class IgnoringPendingStylesheet;
 
-    const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList(TreeScope&);
+  static StyleEngine* create(Document& document) {
+    return new StyleEngine(document);
+  }
 
-    const HeapVector<Member<CSSStyleSheet>>& injectedAuthorStyleSheets() const { return m_injectedAuthorStyleSheets; }
-    CSSStyleSheet* inspectorStyleSheet() const { return m_inspectorStyleSheet; }
+  ~StyleEngine();
 
-    const HeapVector<Member<CSSStyleSheet>> activeStyleSheetsForInspector() const;
+  const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList(
+      TreeScope&);
 
-    void setNeedsActiveStyleUpdate(StyleSheet*, StyleResolverUpdateMode);
-    void addStyleSheetCandidateNode(Node&);
-    void removeStyleSheetCandidateNode(Node&);
-    void removeStyleSheetCandidateNode(Node&, TreeScope&);
-    void modifiedStyleSheetCandidateNode(Node&);
-    void watchedSelectorsChanged();
+  const HeapVector<Member<CSSStyleSheet>>& injectedAuthorStyleSheets() const {
+    return m_injectedAuthorStyleSheets;
+  }
+  CSSStyleSheet* inspectorStyleSheet() const { return m_inspectorStyleSheet; }
 
-    void injectAuthorSheet(StyleSheetContents* authorSheet);
-    CSSStyleSheet& ensureInspectorStyleSheet();
+  const HeapVector<Member<CSSStyleSheet>> activeStyleSheetsForInspector() const;
 
-    void clearMediaQueryRuleSetStyleSheets();
-    void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
-    void updateActiveStyleSheets(StyleResolverUpdateMode);
+  void setNeedsActiveStyleUpdate(StyleSheet*, StyleResolverUpdateMode);
+  void addStyleSheetCandidateNode(Node&);
+  void removeStyleSheetCandidateNode(Node&);
+  void removeStyleSheetCandidateNode(Node&, TreeScope&);
+  void modifiedStyleSheetCandidateNode(Node&);
+  void watchedSelectorsChanged();
 
-    enum ActiveSheetsUpdate { DontUpdateActiveSheets, UpdateActiveSheets };
-    String preferredStylesheetSetName() const { return m_preferredStylesheetSetName; }
-    String selectedStylesheetSetName() const { return m_selectedStylesheetSetName; }
-    void setPreferredStylesheetSetNameIfNotSet(const String&, ActiveSheetsUpdate);
-    void setSelectedStylesheetSetName(const String&);
-    void setHttpDefaultStyle(const String&);
+  void injectAuthorSheet(StyleSheetContents* authorSheet);
+  CSSStyleSheet& ensureInspectorStyleSheet();
 
-    void addPendingSheet(StyleEngineContext&);
-    void removePendingSheet(Node& styleSheetCandidateNode, const StyleEngineContext&);
+  void clearMediaQueryRuleSetStyleSheets();
+  void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
+  void updateActiveStyleSheets(StyleResolverUpdateMode);
 
-    bool hasPendingScriptBlockingSheets() const { return m_pendingScriptBlockingStylesheets > 0; }
-    bool hasPendingRenderBlockingSheets() const { return m_pendingRenderBlockingStylesheets > 0; }
-    bool haveScriptBlockingStylesheetsLoaded() const { return !hasPendingScriptBlockingSheets() || m_ignorePendingStylesheets; }
-    bool haveRenderBlockingStylesheetsLoaded() const { return !hasPendingRenderBlockingSheets() || m_ignorePendingStylesheets; }
-    bool ignoringPendingStylesheets() const { return m_ignorePendingStylesheets; }
+  enum ActiveSheetsUpdate { DontUpdateActiveSheets, UpdateActiveSheets };
+  String preferredStylesheetSetName() const {
+    return m_preferredStylesheetSetName;
+  }
+  String selectedStylesheetSetName() const {
+    return m_selectedStylesheetSetName;
+  }
+  void setPreferredStylesheetSetNameIfNotSet(const String&, ActiveSheetsUpdate);
+  void setSelectedStylesheetSetName(const String&);
+  void setHttpDefaultStyle(const String&);
 
-    unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
-    bool usesSiblingRules() const { return m_usesSiblingRules; }
-    bool usesFirstLineRules() const { return m_usesFirstLineRules; }
-    bool usesWindowInactiveSelector() const { return m_usesWindowInactiveSelector; }
+  void addPendingSheet(StyleEngineContext&);
+  void removePendingSheet(Node& styleSheetCandidateNode,
+                          const StyleEngineContext&);
 
-    bool usesRemUnits() const { return m_usesRemUnits; }
-    void setUsesRemUnit(bool b) { m_usesRemUnits = b; }
+  bool hasPendingScriptBlockingSheets() const {
+    return m_pendingScriptBlockingStylesheets > 0;
+  }
+  bool hasPendingRenderBlockingSheets() const {
+    return m_pendingRenderBlockingStylesheets > 0;
+  }
+  bool haveScriptBlockingStylesheetsLoaded() const {
+    return !hasPendingScriptBlockingSheets() || m_ignorePendingStylesheets;
+  }
+  bool haveRenderBlockingStylesheetsLoaded() const {
+    return !hasPendingRenderBlockingSheets() || m_ignorePendingStylesheets;
+  }
+  bool ignoringPendingStylesheets() const { return m_ignorePendingStylesheets; }
 
-    void resetCSSFeatureFlags(const RuleFeatureSet&);
+  unsigned maxDirectAdjacentSelectors() const {
+    return m_maxDirectAdjacentSelectors;
+  }
+  bool usesSiblingRules() const { return m_usesSiblingRules; }
+  bool usesFirstLineRules() const { return m_usesFirstLineRules; }
+  bool usesWindowInactiveSelector() const {
+    return m_usesWindowInactiveSelector;
+  }
 
-    void didRemoveShadowRoot(ShadowRoot*);
-    void shadowRootRemovedFromDocument(ShadowRoot*);
-    void appendActiveAuthorStyleSheets();
+  bool usesRemUnits() const { return m_usesRemUnits; }
+  void setUsesRemUnit(bool b) { m_usesRemUnits = b; }
 
-    StyleResolver* resolver() const
-    {
-        return m_resolver.get();
+  void resetCSSFeatureFlags(const RuleFeatureSet&);
+
+  void didRemoveShadowRoot(ShadowRoot*);
+  void shadowRootRemovedFromDocument(ShadowRoot*);
+  void appendActiveAuthorStyleSheets();
+
+  StyleResolver* resolver() const { return m_resolver.get(); }
+
+  StyleResolver& ensureResolver() {
+    if (!m_resolver) {
+      createResolver();
+    } else if (m_resolver->hasPendingAuthorStyleSheets()) {
+      m_resolver->appendPendingAuthorStyleSheets();
     }
+    return *m_resolver.get();
+  }
 
-    StyleResolver& ensureResolver()
-    {
-        if (!m_resolver) {
-            createResolver();
-        } else if (m_resolver->hasPendingAuthorStyleSheets()) {
-            m_resolver->appendPendingAuthorStyleSheets();
-        }
-        return *m_resolver.get();
-    }
+  bool hasResolver() const { return m_resolver.get(); }
+  void clearResolver();
+  void clearMasterResolver();
 
-    bool hasResolver() const { return m_resolver.get(); }
-    void clearResolver();
-    void clearMasterResolver();
+  StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
 
-    StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
+  CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
+  void setFontSelector(CSSFontSelector*);
 
-    CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
-    void setFontSelector(CSSFontSelector*);
+  void removeFontFaceRules(const HeapVector<Member<const StyleRuleFontFace>>&);
+  void clearFontCache();
+  // updateGenericFontFamilySettings is used from WebSettingsImpl.
+  void updateGenericFontFamilySettings();
 
-    void removeFontFaceRules(const HeapVector<Member<const StyleRuleFontFace>>&);
-    void clearFontCache();
-    // updateGenericFontFamilySettings is used from WebSettingsImpl.
-    void updateGenericFontFamilySettings();
+  void didDetach();
+  bool shouldClearResolver() const;
+  void resolverChanged(StyleResolverUpdateMode);
 
-    void didDetach();
-    bool shouldClearResolver() const;
-    void resolverChanged(StyleResolverUpdateMode);
+  CSSStyleSheet* createSheet(Element&,
+                             const String& text,
+                             TextPosition startPosition,
+                             StyleEngineContext&);
 
-    CSSStyleSheet* createSheet(Element&, const String& text, TextPosition startPosition, StyleEngineContext&);
+  void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
+  void ensureFullscreenUAStyle();
 
-    void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
-    void ensureFullscreenUAStyle();
+  void platformColorsChanged();
 
-    void platformColorsChanged();
+  void classChangedForElement(const SpaceSplitString& changedClasses, Element&);
+  void classChangedForElement(const SpaceSplitString& oldClasses,
+                              const SpaceSplitString& newClasses,
+                              Element&);
+  void attributeChangedForElement(const QualifiedName& attributeName, Element&);
+  void idChangedForElement(const AtomicString& oldId,
+                           const AtomicString& newId,
+                           Element&);
+  void pseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
+  void scheduleSiblingInvalidationsForElement(Element&,
+                                              ContainerNode& schedulingParent,
+                                              unsigned minDirectAdjacent);
+  void scheduleInvalidationsForInsertedSibling(Element* beforeElement,
+                                               Element& insertedElement);
+  void scheduleInvalidationsForRemovedSibling(Element* beforeElement,
+                                              Element& removedElement,
+                                              Element& afterElement);
+  void scheduleNthPseudoInvalidations(ContainerNode&);
+  void scheduleInvalidationsForRuleSets(
+      TreeScope&,
+      const HeapVector<Member<const RuleSet>>&);
 
-    void classChangedForElement(const SpaceSplitString& changedClasses, Element&);
-    void classChangedForElement(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element&);
-    void attributeChangedForElement(const QualifiedName& attributeName, Element&);
-    void idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element&);
-    void pseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
-    void scheduleSiblingInvalidationsForElement(Element&, ContainerNode& schedulingParent, unsigned minDirectAdjacent);
-    void scheduleInvalidationsForInsertedSibling(Element* beforeElement, Element& insertedElement);
-    void scheduleInvalidationsForRemovedSibling(Element* beforeElement, Element& removedElement, Element& afterElement);
-    void scheduleNthPseudoInvalidations(ContainerNode&);
-    void scheduleInvalidationsForRuleSets(TreeScope&, const HeapVector<Member<const RuleSet>>&);
+  unsigned styleForElementCount() const { return m_styleForElementCount; }
+  void incStyleForElementCount() { m_styleForElementCount++; }
 
-    unsigned styleForElementCount() const { return m_styleForElementCount; }
-    void incStyleForElementCount() { m_styleForElementCount++; }
+  StyleResolverStats* stats() { return m_styleResolverStats.get(); }
+  void setStatsEnabled(bool);
 
-    StyleResolverStats* stats() { return m_styleResolverStats.get(); }
-    void setStatsEnabled(bool);
+  DECLARE_VIRTUAL_TRACE();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    DECLARE_TRACE_WRAPPERS();
+ private:
+  // CSSFontSelectorClient implementation.
+  void fontsNeedUpdate(CSSFontSelector*) override;
 
-private:
-    // CSSFontSelectorClient implementation.
-    void fontsNeedUpdate(CSSFontSelector*) override;
+ private:
+  StyleEngine(Document&);
 
-private:
-    StyleEngine(Document&);
+  TreeScopeStyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
+  TreeScopeStyleSheetCollection* styleSheetCollectionFor(TreeScope&);
+  bool shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode) const;
+  bool shouldUpdateShadowTreeStyleSheetCollection(
+      StyleResolverUpdateMode) const;
 
-    TreeScopeStyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
-    TreeScopeStyleSheetCollection* styleSheetCollectionFor(TreeScope&);
-    bool shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode) const;
-    bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode) const;
+  void markDocumentDirty();
+  void markTreeScopeDirty(TreeScope&);
 
-    void markDocumentDirty();
-    void markTreeScopeDirty(TreeScope&);
+  bool isMaster() const { return m_isMaster; }
+  Document* master();
+  Document& document() const { return *m_document; }
 
-    bool isMaster() const { return m_isMaster; }
-    Document* master();
-    Document& document() const { return *m_document; }
+  typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
 
-    typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
+  void clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet&);
 
-    void clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet&);
+  void createResolver();
 
-    void createResolver();
+  CSSStyleSheet* parseSheet(Element&,
+                            const String& text,
+                            TextPosition startPosition);
 
-    CSSStyleSheet* parseSheet(Element&, const String& text, TextPosition startPosition);
+  const DocumentStyleSheetCollection* documentStyleSheetCollection() const {
+    return m_documentStyleSheetCollection.get();
+  }
 
-    const DocumentStyleSheetCollection* documentStyleSheetCollection() const
-    {
-        return m_documentStyleSheetCollection.get();
-    }
+  DocumentStyleSheetCollection* documentStyleSheetCollection() {
+    return m_documentStyleSheetCollection.get();
+  }
 
-    DocumentStyleSheetCollection* documentStyleSheetCollection()
-    {
-        return m_documentStyleSheetCollection.get();
-    }
+  void updateActiveStyleSheetsInShadow(
+      StyleResolverUpdateMode,
+      TreeScope*,
+      UnorderedTreeScopeSet& treeScopesRemoved);
 
-    void updateActiveStyleSheetsInShadow(StyleResolverUpdateMode, TreeScope*, UnorderedTreeScopeSet& treeScopesRemoved);
+  bool shouldSkipInvalidationFor(const Element&) const;
+  void scheduleRuleSetInvalidationsForElement(
+      Element&,
+      const HeapVector<Member<const RuleSet>>&);
+  void invalidateSlottedElements(HTMLSlotElement&);
 
-    bool shouldSkipInvalidationFor(const Element&) const;
-    void scheduleRuleSetInvalidationsForElement(Element&, const HeapVector<Member<const RuleSet>>&);
-    void invalidateSlottedElements(HTMLSlotElement&);
+  Member<Document> m_document;
+  bool m_isMaster;
 
-    Member<Document> m_document;
-    bool m_isMaster;
+  // Track the number of currently loading top-level stylesheets needed for layout.
+  // Sheets loaded using the @import directive are not included in this count.
+  // We use this count of pending sheets to detect when we can begin attaching
+  // elements and when it is safe to execute scripts.
+  int m_pendingScriptBlockingStylesheets = 0;
+  int m_pendingRenderBlockingStylesheets = 0;
 
-    // Track the number of currently loading top-level stylesheets needed for layout.
-    // Sheets loaded using the @import directive are not included in this count.
-    // We use this count of pending sheets to detect when we can begin attaching
-    // elements and when it is safe to execute scripts.
-    int m_pendingScriptBlockingStylesheets = 0;
-    int m_pendingRenderBlockingStylesheets = 0;
+  HeapVector<Member<CSSStyleSheet>> m_injectedAuthorStyleSheets;
+  Member<CSSStyleSheet> m_inspectorStyleSheet;
 
-    HeapVector<Member<CSSStyleSheet>> m_injectedAuthorStyleSheets;
-    Member<CSSStyleSheet> m_inspectorStyleSheet;
+  Member<DocumentStyleSheetCollection> m_documentStyleSheetCollection;
 
-    Member<DocumentStyleSheetCollection> m_documentStyleSheetCollection;
+  typedef HeapHashMap<WeakMember<TreeScope>,
+                      Member<ShadowTreeStyleSheetCollection>>
+      StyleSheetCollectionMap;
+  StyleSheetCollectionMap m_styleSheetCollectionMap;
 
-    typedef HeapHashMap<WeakMember<TreeScope>, Member<ShadowTreeStyleSheetCollection>> StyleSheetCollectionMap;
-    StyleSheetCollectionMap m_styleSheetCollectionMap;
+  bool m_documentScopeDirty = true;
+  UnorderedTreeScopeSet m_dirtyTreeScopes;
+  UnorderedTreeScopeSet m_activeTreeScopes;
 
-    bool m_documentScopeDirty = true;
-    UnorderedTreeScopeSet m_dirtyTreeScopes;
-    UnorderedTreeScopeSet m_activeTreeScopes;
+  String m_preferredStylesheetSetName;
+  String m_selectedStylesheetSetName;
 
-    String m_preferredStylesheetSetName;
-    String m_selectedStylesheetSetName;
+  bool m_usesSiblingRules = false;
+  bool m_usesFirstLineRules = false;
+  bool m_usesWindowInactiveSelector = false;
+  bool m_usesRemUnits = false;
+  unsigned m_maxDirectAdjacentSelectors = 0;
 
-    bool m_usesSiblingRules = false;
-    bool m_usesFirstLineRules = false;
-    bool m_usesWindowInactiveSelector = false;
-    bool m_usesRemUnits = false;
-    unsigned m_maxDirectAdjacentSelectors = 0;
+  bool m_ignorePendingStylesheets = false;
+  bool m_didCalculateResolver = false;
 
-    bool m_ignorePendingStylesheets = false;
-    bool m_didCalculateResolver = false;
+  Member<StyleResolver> m_resolver;
+  StyleInvalidator m_styleInvalidator;
 
-    Member<StyleResolver> m_resolver;
-    StyleInvalidator m_styleInvalidator;
+  Member<CSSFontSelector> m_fontSelector;
 
-    Member<CSSFontSelector> m_fontSelector;
+  HeapHashMap<AtomicString, WeakMember<StyleSheetContents>> m_textToSheetCache;
+  HeapHashMap<WeakMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
 
-    HeapHashMap<AtomicString, WeakMember<StyleSheetContents>> m_textToSheetCache;
-    HeapHashMap<WeakMember<StyleSheetContents>, AtomicString> m_sheetToTextCache;
+  std::unique_ptr<StyleResolverStats> m_styleResolverStats;
+  unsigned m_styleForElementCount = 0;
 
-    std::unique_ptr<StyleResolverStats> m_styleResolverStats;
-    unsigned m_styleForElementCount = 0;
-
-    friend class StyleEngineTest;
+  friend class StyleEngineTest;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -41,52 +41,55 @@ class AffineTransform;
 class SVGPointTearOff;
 
 class SVGPoint final : public SVGPropertyHelper<SVGPoint> {
-public:
-    typedef SVGPointTearOff TearOffType;
+ public:
+  typedef SVGPointTearOff TearOffType;
 
-    static SVGPoint* create()
-    {
-        return new SVGPoint();
-    }
+  static SVGPoint* create() { return new SVGPoint(); }
 
-    static SVGPoint* create(const FloatPoint& point)
-    {
-        return new SVGPoint(point);
-    }
+  static SVGPoint* create(const FloatPoint& point) {
+    return new SVGPoint(point);
+  }
 
-    SVGPoint* clone() const;
+  SVGPoint* clone() const;
 
-    const FloatPoint& value() const { return m_value; }
-    void setValue(const FloatPoint& value) { m_value = value; }
+  const FloatPoint& value() const { return m_value; }
+  void setValue(const FloatPoint& value) { m_value = value; }
 
-    float x() const { return m_value.x(); }
-    float y() const { return m_value.y(); }
-    void setX(float f) { m_value.setX(f); }
-    void setY(float f) { m_value.setY(f); }
+  float x() const { return m_value.x(); }
+  float y() const { return m_value.y(); }
+  void setX(float f) { m_value.setX(f); }
+  void setY(float f) { m_value.setY(f); }
 
-    FloatPoint matrixTransform(const AffineTransform&) const;
+  FloatPoint matrixTransform(const AffineTransform&) const;
 
-    String valueAsString() const override;
-    SVGParsingError setValueAsString(const String&);
+  String valueAsString() const override;
+  SVGParsingError setValueAsString(const String&);
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement* contextElement) override;
+  float calculateDistance(SVGPropertyBase* to,
+                          SVGElement* contextElement) override;
 
-    static AnimatedPropertyType classType() { return AnimatedPoint; }
+  static AnimatedPropertyType classType() { return AnimatedPoint; }
 
-private:
-    SVGPoint();
-    explicit SVGPoint(const FloatPoint&);
+ private:
+  SVGPoint();
+  explicit SVGPoint(const FloatPoint&);
 
-    template<typename CharType>
-    SVGParsingError parse(const CharType*& ptr, const CharType* end);
+  template <typename CharType>
+  SVGParsingError parse(const CharType*& ptr, const CharType* end);
 
-    FloatPoint m_value;
+  FloatPoint m_value;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPoint);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPoint_h
+#endif  // SVGPoint_h

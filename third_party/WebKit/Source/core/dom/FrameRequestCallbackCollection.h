@@ -14,29 +14,31 @@ class ExecutionContext;
 class FrameRequestCallback;
 
 class CORE_EXPORT FrameRequestCallbackCollection final {
-    DISALLOW_NEW();
-public:
-    explicit FrameRequestCallbackCollection(ExecutionContext*);
+  DISALLOW_NEW();
 
-    using CallbackId = int;
-    CallbackId registerCallback(FrameRequestCallback*);
-    void cancelCallback(CallbackId);
-    void executeCallbacks(double highResNowMs, double highResNowMsLegacy);
+ public:
+  explicit FrameRequestCallbackCollection(ExecutionContext*);
 
-    bool isEmpty() const { return !m_callbacks.size(); }
+  using CallbackId = int;
+  CallbackId registerCallback(FrameRequestCallback*);
+  void cancelCallback(CallbackId);
+  void executeCallbacks(double highResNowMs, double highResNowMsLegacy);
 
-    DECLARE_TRACE();
+  bool isEmpty() const { return !m_callbacks.size(); }
 
-private:
-    using CallbackList = HeapVector<Member<FrameRequestCallback>>;
-    CallbackList m_callbacks;
-    CallbackList m_callbacksToInvoke; // only non-empty while inside executeCallbacks
+  DECLARE_TRACE();
 
-    CallbackId m_nextCallbackId = 0;
+ private:
+  using CallbackList = HeapVector<Member<FrameRequestCallback>>;
+  CallbackList m_callbacks;
+  CallbackList
+      m_callbacksToInvoke;  // only non-empty while inside executeCallbacks
 
-    Member<ExecutionContext> m_context;
+  CallbackId m_nextCallbackId = 0;
+
+  Member<ExecutionContext> m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FrameRequestCallbackCollection_h
+#endif  // FrameRequestCallbackCollection_h

@@ -11,26 +11,22 @@
 namespace blink {
 
 enum class WebPresentationConnectionState {
-    Connected = 0,
-    Closed,
-    Terminated,
+  Connected = 0,
+  Closed,
+  Terminated,
 };
 
-enum class WebPresentationConnectionCloseReason {
-    Error = 0,
-    Closed,
-    WentAway
-};
+enum class WebPresentationConnectionCloseReason { Error = 0, Closed, WentAway };
 
 // The implementation the embedder has to provide for the Presentation API to work.
 class WebPresentationConnectionClient {
-public:
-    virtual ~WebPresentationConnectionClient() { }
+ public:
+  virtual ~WebPresentationConnectionClient() {}
 
-    virtual WebString getId() = 0;
-    virtual WebURL getUrl() = 0;
+  virtual WebString getId() = 0;
+  virtual WebURL getUrl() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPresentationConnectionClient_h
+#endif  // WebPresentationConnectionClient_h

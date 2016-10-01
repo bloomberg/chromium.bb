@@ -35,6 +35,6 @@ namespace blink {
 
 bool isCharacterSmartReplaceExempt(UChar32, bool isPreviousCharacter);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SmartReplace_h
+#endif  // SmartReplace_h

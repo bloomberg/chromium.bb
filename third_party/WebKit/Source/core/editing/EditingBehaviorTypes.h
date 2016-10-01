@@ -37,12 +37,12 @@ namespace blink {
 // selecting the space after a double click) that could be combined with this if
 // if possible in the future.
 enum EditingBehaviorType {
-    EditingMacBehavior,
-    EditingWindowsBehavior,
-    EditingUnixBehavior,
-    EditingAndroidBehavior
+  EditingMacBehavior,
+  EditingWindowsBehavior,
+  EditingUnixBehavior,
+  EditingAndroidBehavior
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EditingBehaviorTypes_h
+#endif  // EditingBehaviorTypes_h

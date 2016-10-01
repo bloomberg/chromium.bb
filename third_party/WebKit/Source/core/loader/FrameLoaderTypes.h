@@ -33,81 +33,72 @@ namespace blink {
 
 // See WebFrameLoadType in public/web/WebFrameLoadType.h for details.
 enum FrameLoadType {
-    FrameLoadTypeStandard,
-    FrameLoadTypeBackForward,
-    FrameLoadTypeReload,
-    FrameLoadTypeReloadMainResource,
-    FrameLoadTypeReplaceCurrentItem,
-    FrameLoadTypeInitialInChildFrame,
-    FrameLoadTypeInitialHistoryLoad,
-    FrameLoadTypeReloadBypassingCache,
+  FrameLoadTypeStandard,
+  FrameLoadTypeBackForward,
+  FrameLoadTypeReload,
+  FrameLoadTypeReloadMainResource,
+  FrameLoadTypeReplaceCurrentItem,
+  FrameLoadTypeInitialInChildFrame,
+  FrameLoadTypeInitialHistoryLoad,
+  FrameLoadTypeReloadBypassingCache,
 };
 
 enum NavigationType {
-    NavigationTypeLinkClicked,
-    NavigationTypeFormSubmitted,
-    NavigationTypeBackForward,
-    NavigationTypeReload,
-    NavigationTypeFormResubmitted,
-    NavigationTypeOther
+  NavigationTypeLinkClicked,
+  NavigationTypeFormSubmitted,
+  NavigationTypeBackForward,
+  NavigationTypeReload,
+  NavigationTypeFormResubmitted,
+  NavigationTypeOther
 };
 
 enum ObjectContentType {
-    ObjectContentNone,
-    ObjectContentImage,
-    ObjectContentFrame,
-    ObjectContentNetscapePlugin,
+  ObjectContentNone,
+  ObjectContentImage,
+  ObjectContentFrame,
+  ObjectContentNetscapePlugin,
 };
 
-enum ShouldSendReferrer {
-    MaybeSendReferrer,
-    NeverSendReferrer
-};
+enum ShouldSendReferrer { MaybeSendReferrer, NeverSendReferrer };
 
-enum ShouldSetOpener {
-    MaybeSetOpener,
-    NeverSetOpener
-};
+enum ShouldSetOpener { MaybeSetOpener, NeverSetOpener };
 
 enum ReasonForCallingAllowPlugins {
-    AboutToInstantiatePlugin,
-    NotAboutToInstantiatePlugin
+  AboutToInstantiatePlugin,
+  NotAboutToInstantiatePlugin
 };
 
 enum LoadStartType {
-    NavigationToDifferentDocument,
-    NavigationWithinSameDocument
+  NavigationToDifferentDocument,
+  NavigationWithinSameDocument
 };
 
 enum SameDocumentNavigationSource {
-    SameDocumentNavigationDefault,
-    SameDocumentNavigationHistoryApi,
+  SameDocumentNavigationDefault,
+  SameDocumentNavigationHistoryApi,
 };
 
-enum HistoryLoadType {
-    HistorySameDocumentLoad,
-    HistoryDifferentDocumentLoad
-};
+enum HistoryLoadType { HistorySameDocumentLoad, HistoryDifferentDocumentLoad };
 
 enum HistoryCommitType {
-    StandardCommit,
-    BackForwardCommit,
-    InitialCommitInChildFrame,
-    HistoryInertCommit
+  StandardCommit,
+  BackForwardCommit,
+  InitialCommitInChildFrame,
+  HistoryInertCommit
 };
 
 enum HistoryScrollRestorationType {
-    ScrollRestorationAuto,
-    ScrollRestorationManual
+  ScrollRestorationAuto,
+  ScrollRestorationManual
 };
 
 enum class ProgressBarCompletion {
-    LoadEvent,
-    ResourcesBeforeDCL,
-    DOMContentLoaded,
-    ResourcesBeforeDCLAndSameOriginIFrames
+  LoadEvent,
+  ResourcesBeforeDCL,
+  DOMContentLoaded,
+  ResourcesBeforeDCLAndSameOriginIFrames
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

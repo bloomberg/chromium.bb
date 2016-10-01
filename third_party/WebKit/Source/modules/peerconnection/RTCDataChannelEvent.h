@@ -32,24 +32,31 @@
 namespace blink {
 
 class RTCDataChannelEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~RTCDataChannelEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static RTCDataChannelEvent* create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
+ public:
+  ~RTCDataChannelEvent() override;
 
-    RTCDataChannel* channel() const;
+  static RTCDataChannelEvent* create(const AtomicString& type,
+                                     bool canBubble,
+                                     bool cancelable,
+                                     RTCDataChannel*);
 
-    const AtomicString& interfaceName() const override;
+  RTCDataChannel* channel() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<RTCDataChannel> m_channel;
+ private:
+  RTCDataChannelEvent(const AtomicString& type,
+                      bool canBubble,
+                      bool cancelable,
+                      RTCDataChannel*);
+
+  Member<RTCDataChannel> m_channel;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCDataChannelEvent_h
+#endif  // RTCDataChannelEvent_h

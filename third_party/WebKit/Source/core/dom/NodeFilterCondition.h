@@ -32,14 +32,15 @@ namespace blink {
 class ExceptionState;
 class Node;
 
-class NodeFilterCondition : public GarbageCollectedFinalized<NodeFilterCondition> {
-public:
-    virtual ~NodeFilterCondition() { }
-    virtual unsigned acceptNode(Node*, ExceptionState&) const = 0;
+class NodeFilterCondition
+    : public GarbageCollectedFinalized<NodeFilterCondition> {
+ public:
+  virtual ~NodeFilterCondition() {}
+  virtual unsigned acceptNode(Node*, ExceptionState&) const = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NodeFilterCondition_h
+#endif  // NodeFilterCondition_h

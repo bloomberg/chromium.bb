@@ -37,126 +37,114 @@
 namespace blink {
 
 PumpSession::PumpSession(unsigned& nestingLevel)
-    : NestingLevelIncrementer(nestingLevel)
-{
-}
+    : NestingLevelIncrementer(nestingLevel) {}
 
-PumpSession::~PumpSession()
-{
-}
+PumpSession::~PumpSession() {}
 
 SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nestingLevel)
-    : NestingLevelIncrementer(nestingLevel)
-    , m_startTime(currentTime())
-    , m_processedElementTokens(0)
-{
+    : NestingLevelIncrementer(nestingLevel),
+      m_startTime(currentTime()),
+      m_processedElementTokens(0) {}
+
+SpeculationsPumpSession::~SpeculationsPumpSession() {}
+
+inline double SpeculationsPumpSession::elapsedTime() const {
+  return currentTime() - m_startTime;
 }
 
-SpeculationsPumpSession::~SpeculationsPumpSession()
-{
+void SpeculationsPumpSession::addedElementTokens(size_t count) {
+  m_processedElementTokens += count;
 }
 
-inline double SpeculationsPumpSession::elapsedTime() const
-{
-    return currentTime() - m_startTime;
+HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser,
+                                         WebTaskRunner* loadingTaskRunner)
+    : m_parser(parser),
+      m_loadingTaskRunner(loadingTaskRunner->clone()),
+      m_cancellableContinueParse(CancellableTaskFactory::create(
+          this,
+          &HTMLParserScheduler::continueParsing)),
+      m_isSuspendedWithActiveTimer(false) {}
+
+HTMLParserScheduler::~HTMLParserScheduler() {}
+
+DEFINE_TRACE(HTMLParserScheduler) {
+  visitor->trace(m_parser);
 }
 
-void SpeculationsPumpSession::addedElementTokens(size_t count)
-{
-    m_processedElementTokens += count;
+void HTMLParserScheduler::scheduleForResume() {
+  ASSERT(!m_isSuspendedWithActiveTimer);
+  m_loadingTaskRunner->postTask(BLINK_FROM_HERE,
+                                m_cancellableContinueParse->cancelAndCreate());
 }
 
-HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser, WebTaskRunner* loadingTaskRunner)
-    : m_parser(parser)
-    , m_loadingTaskRunner(loadingTaskRunner->clone())
-    , m_cancellableContinueParse(CancellableTaskFactory::create(this, &HTMLParserScheduler::continueParsing))
-    , m_isSuspendedWithActiveTimer(false)
-{
+void HTMLParserScheduler::suspend() {
+  ASSERT(!m_isSuspendedWithActiveTimer);
+  if (!m_cancellableContinueParse->isPending())
+    return;
+  m_isSuspendedWithActiveTimer = true;
+  m_cancellableContinueParse->cancel();
 }
 
-HTMLParserScheduler::~HTMLParserScheduler()
-{
+void HTMLParserScheduler::resume() {
+  ASSERT(!m_cancellableContinueParse->isPending());
+  if (!m_isSuspendedWithActiveTimer)
+    return;
+  m_isSuspendedWithActiveTimer = false;
+
+  m_loadingTaskRunner->postTask(BLINK_FROM_HERE,
+                                m_cancellableContinueParse->cancelAndCreate());
 }
 
-DEFINE_TRACE(HTMLParserScheduler)
-{
-    visitor->trace(m_parser);
+void HTMLParserScheduler::detach() {
+  m_cancellableContinueParse->cancel();
+  m_isSuspendedWithActiveTimer = false;
 }
 
-void HTMLParserScheduler::scheduleForResume()
-{
-    ASSERT(!m_isSuspendedWithActiveTimer);
-    m_loadingTaskRunner->postTask(BLINK_FROM_HERE, m_cancellableContinueParse->cancelAndCreate());
+inline bool HTMLParserScheduler::shouldYield(
+    const SpeculationsPumpSession& session,
+    bool startingScript) const {
+  if (Platform::current()
+          ->currentThread()
+          ->scheduler()
+          ->shouldYieldForHighPriorityWork())
+    return true;
+
+  const double parserTimeLimit = 0.5;
+  if (session.elapsedTime() > parserTimeLimit)
+    return true;
+
+  // Yield if a lot of DOM work has been done in this session and a script tag is
+  // about to be parsed. This significantly improves render performance for documents
+  // that place their scripts at the bottom of the page. Yielding too often
+  // significantly slows down the parsing so a balance needs to be struck to
+  // only yield when enough changes have happened to make it worthwhile.
+  // Emperical testing shows that anything > ~40 and < ~200 gives all of the benefit
+  // without impacting parser performance, only adding a few yields per page but at
+  // just the right times.
+  const size_t sufficientWork = 50;
+  if (startingScript && session.processedElementTokens() > sufficientWork)
+    return true;
+
+  return false;
 }
 
-void HTMLParserScheduler::suspend()
-{
-    ASSERT(!m_isSuspendedWithActiveTimer);
-    if (!m_cancellableContinueParse->isPending())
-        return;
-    m_isSuspendedWithActiveTimer = true;
-    m_cancellableContinueParse->cancel();
+bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session,
+                                        bool startingScript) {
+  if (shouldYield(session, startingScript)) {
+    scheduleForResume();
+    return true;
+  }
+
+  return false;
 }
 
-void HTMLParserScheduler::resume()
-{
-    ASSERT(!m_cancellableContinueParse->isPending());
-    if (!m_isSuspendedWithActiveTimer)
-        return;
-    m_isSuspendedWithActiveTimer = false;
-
-    m_loadingTaskRunner->postTask(BLINK_FROM_HERE, m_cancellableContinueParse->cancelAndCreate());
+void HTMLParserScheduler::forceResumeAfterYield() {
+  ASSERT(!m_cancellableContinueParse->isPending());
+  m_isSuspendedWithActiveTimer = true;
 }
 
-void HTMLParserScheduler::detach()
-{
-    m_cancellableContinueParse->cancel();
-    m_isSuspendedWithActiveTimer = false;
+void HTMLParserScheduler::continueParsing() {
+  m_parser->resumeParsingAfterYield();
 }
 
-inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session, bool startingScript) const
-{
-    if (Platform::current()->currentThread()->scheduler()->shouldYieldForHighPriorityWork())
-        return true;
-
-    const double parserTimeLimit = 0.5;
-    if (session.elapsedTime() > parserTimeLimit)
-        return true;
-
-    // Yield if a lot of DOM work has been done in this session and a script tag is
-    // about to be parsed. This significantly improves render performance for documents
-    // that place their scripts at the bottom of the page. Yielding too often
-    // significantly slows down the parsing so a balance needs to be struck to
-    // only yield when enough changes have happened to make it worthwhile.
-    // Emperical testing shows that anything > ~40 and < ~200 gives all of the benefit
-    // without impacting parser performance, only adding a few yields per page but at
-    // just the right times.
-    const size_t sufficientWork = 50;
-    if (startingScript && session.processedElementTokens() > sufficientWork)
-        return true;
-
-    return false;
-}
-
-bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session, bool startingScript)
-{
-    if (shouldYield(session, startingScript)) {
-        scheduleForResume();
-        return true;
-    }
-
-    return false;
-}
-
-void HTMLParserScheduler::forceResumeAfterYield()
-{
-    ASSERT(!m_cancellableContinueParse->isPending());
-    m_isSuspendedWithActiveTimer = true;
-}
-
-void HTMLParserScheduler::continueParsing()
-{
-    m_parser->resumeParsingAfterYield();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -41,23 +41,23 @@ class WebURLRequest;
 // serviceWorkerID() are to be implemented only by SharedWorker's provider,
 // as they are needed only for controllee workers.
 class WebServiceWorkerNetworkProvider {
-public:
-    virtual ~WebServiceWorkerNetworkProvider() { }
+ public:
+  virtual ~WebServiceWorkerNetworkProvider() {}
 
-    // A request is about to be sent out, and the client may modify it. Request
-    // is writable, and changes to the URL, for example, will change the request
-    // made.
-    virtual void willSendRequest(WebDataSource*, WebURLRequest&) { }
+  // A request is about to be sent out, and the client may modify it. Request
+  // is writable, and changes to the URL, for example, will change the request
+  // made.
+  virtual void willSendRequest(WebDataSource*, WebURLRequest&) {}
 
-    // Whether the document associated with WebDataSource is controlled by the
-    // ServiceWorker.
-    virtual bool isControlledByServiceWorker(WebDataSource&) { return false; }
+  // Whether the document associated with WebDataSource is controlled by the
+  // ServiceWorker.
+  virtual bool isControlledByServiceWorker(WebDataSource&) { return false; }
 
-    // Returns an identifier of the service worker controlling the document
-    // associated with the WebDataSource.
-    virtual int64_t serviceWorkerID(WebDataSource&) { return -1; }
+  // Returns an identifier of the service worker controlling the document
+  // associated with the WebDataSource.
+  virtual int64_t serviceWorkerID(WebDataSource&) { return -1; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerNetworkProvider_h
+#endif  // WebServiceWorkerNetworkProvider_h

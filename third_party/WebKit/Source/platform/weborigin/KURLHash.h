@@ -38,26 +38,25 @@ namespace blink {
 // KURLs.
 
 struct KURLHash {
-    STATIC_ONLY(KURLHash);
-    static unsigned hash(const KURL& key)
-    {
-        return key.getString().impl()->hash();
-    }
+  STATIC_ONLY(KURLHash);
+  static unsigned hash(const KURL& key) {
+    return key.getString().impl()->hash();
+  }
 
-    static bool equal(const KURL& a, const KURL& b)
-    {
-        return StringHash::equal(a.getString(), b.getString());
-    }
+  static bool equal(const KURL& a, const KURL& b) {
+    return StringHash::equal(a.getString(), b.getString());
+  }
 
-    static const bool safeToCompareToEmptyOrDeleted = false;
+  static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
-} // namespace blink
+}  // namespace blink
 
 namespace WTF {
 
-template<> struct HashTraits<blink::KURL> : SimpleClassHashTraits<blink::KURL> { };
+template <>
+struct HashTraits<blink::KURL> : SimpleClassHashTraits<blink::KURL> {};
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // KURLHash_h
+#endif  // KURLHash_h

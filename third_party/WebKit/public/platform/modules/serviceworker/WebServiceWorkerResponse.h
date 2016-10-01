@@ -30,72 +30,73 @@ class WebServiceWorkerResponsePrivate;
 // respond to a FetchEvent dispatched by the browser. The plan is for the Cache
 // and fetch() API to also use it.
 class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
-public:
-    ~WebServiceWorkerResponse() { reset(); }
-    WebServiceWorkerResponse();
-    WebServiceWorkerResponse(const WebServiceWorkerResponse& other) { assign(other); }
-    WebServiceWorkerResponse& operator=(const WebServiceWorkerResponse& other)
-    {
-        assign(other);
-        return *this;
-    }
+ public:
+  ~WebServiceWorkerResponse() { reset(); }
+  WebServiceWorkerResponse();
+  WebServiceWorkerResponse(const WebServiceWorkerResponse& other) {
+    assign(other);
+  }
+  WebServiceWorkerResponse& operator=(const WebServiceWorkerResponse& other) {
+    assign(other);
+    return *this;
+  }
 
-    void reset();
-    void assign(const WebServiceWorkerResponse&);
+  void reset();
+  void assign(const WebServiceWorkerResponse&);
 
-    void setURL(const WebURL&);
-    WebURL url() const;
+  void setURL(const WebURL&);
+  WebURL url() const;
 
-    void setStatus(unsigned short);
-    unsigned short status() const;
+  void setStatus(unsigned short);
+  unsigned short status() const;
 
-    void setStatusText(const WebString&);
-    WebString statusText() const;
+  void setStatusText(const WebString&);
+  WebString statusText() const;
 
-    void setResponseType(WebServiceWorkerResponseType);
-    WebServiceWorkerResponseType responseType() const;
+  void setResponseType(WebServiceWorkerResponseType);
+  WebServiceWorkerResponseType responseType() const;
 
-    void setHeader(const WebString& key, const WebString& value);
+  void setHeader(const WebString& key, const WebString& value);
 
-    // If the key already exists, appends the value to the same key (comma
-    // delimited) else creates a new entry.
-    void appendHeader(const WebString& key, const WebString& value);
+  // If the key already exists, appends the value to the same key (comma
+  // delimited) else creates a new entry.
+  void appendHeader(const WebString& key, const WebString& value);
 
-    WebVector<WebString> getHeaderKeys() const;
-    WebString getHeader(const WebString& key) const;
-    void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+  WebVector<WebString> getHeaderKeys() const;
+  WebString getHeader(const WebString& key) const;
+  void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-    void setBlob(const WebString& uuid, uint64_t size);
-    WebString blobUUID() const;
-    uint64_t blobSize() const;
+  void setBlob(const WebString& uuid, uint64_t size);
+  WebString blobUUID() const;
+  uint64_t blobSize() const;
 
-    void setStreamURL(const WebURL&);
-    WebURL streamURL() const;
+  void setStreamURL(const WebURL&);
+  WebURL streamURL() const;
 
-    // Provides a more detailed error when status() is zero.
-    void setError(WebServiceWorkerResponseError);
-    WebServiceWorkerResponseError error() const;
+  // Provides a more detailed error when status() is zero.
+  void setError(WebServiceWorkerResponseError);
+  WebServiceWorkerResponseError error() const;
 
-    void setResponseTime(int64_t);
-    int64_t responseTime() const;
+  void setResponseTime(int64_t);
+  int64_t responseTime() const;
 
-    void setCacheStorageCacheName(const WebString&);
-    WebString cacheStorageCacheName() const;
+  void setCacheStorageCacheName(const WebString&);
+  WebString cacheStorageCacheName() const;
 
-    void setCorsExposedHeaderNames(const WebVector<WebString>&);
-    WebVector<WebString> corsExposedHeaderNames() const;
+  void setCorsExposedHeaderNames(const WebVector<WebString>&);
+  WebVector<WebString> corsExposedHeaderNames() const;
 
 #if INSIDE_BLINK
-    const HTTPHeaderMap& headers() const;
+  const HTTPHeaderMap& headers() const;
 
-    void setBlobDataHandle(PassRefPtr<BlobDataHandle>);
-    PassRefPtr<BlobDataHandle> blobDataHandle() const;
+  void setBlobDataHandle(PassRefPtr<BlobDataHandle>);
+  PassRefPtr<BlobDataHandle> blobDataHandle() const;
 #endif
 
-private:
-    WebPrivatePtr<WebServiceWorkerResponsePrivate> m_private;
+ private:
+  WebPrivatePtr<WebServiceWorkerResponsePrivate> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerResponse_h
+#endif  // WebServiceWorkerResponse_h

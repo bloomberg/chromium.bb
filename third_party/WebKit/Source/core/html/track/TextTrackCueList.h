@@ -32,41 +32,42 @@
 
 namespace blink {
 
-class TextTrackCueList final : public GarbageCollected<TextTrackCueList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static TextTrackCueList* create()
-    {
-        return new TextTrackCueList;
-    }
+class TextTrackCueList final : public GarbageCollected<TextTrackCueList>,
+                               public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned long length() const;
+ public:
+  static TextTrackCueList* create() { return new TextTrackCueList; }
 
-    TextTrackCue* anonymousIndexedGetter(unsigned index) const;
-    TextTrackCue* getCueById(const AtomicString&) const;
+  unsigned long length() const;
 
-    bool add(TextTrackCue*);
-    bool remove(TextTrackCue*);
+  TextTrackCue* anonymousIndexedGetter(unsigned index) const;
+  TextTrackCue* getCueById(const AtomicString&) const;
 
-    void collectActiveCues(TextTrackCueList&) const;
-    void updateCueIndex(TextTrackCue*);
-    bool isCueIndexValid(unsigned probeIndex) const { return probeIndex < m_firstInvalidIndex; }
-    void validateCueIndexes();
+  bool add(TextTrackCue*);
+  bool remove(TextTrackCue*);
 
-    DECLARE_TRACE();
+  void collectActiveCues(TextTrackCueList&) const;
+  void updateCueIndex(TextTrackCue*);
+  bool isCueIndexValid(unsigned probeIndex) const {
+    return probeIndex < m_firstInvalidIndex;
+  }
+  void validateCueIndexes();
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_TRACE();
 
-private:
-    TextTrackCueList();
-    size_t findInsertionIndex(const TextTrackCue*) const;
-    void invalidateCueIndex(size_t index);
-    void clear();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    HeapVector<Member<TextTrackCue>> m_list;
-    size_t m_firstInvalidIndex;
+ private:
+  TextTrackCueList();
+  size_t findInsertionIndex(const TextTrackCue*) const;
+  void invalidateCueIndex(size_t index);
+  void clear();
+
+  HeapVector<Member<TextTrackCue>> m_list;
+  size_t m_firstInvalidIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextTrackCueList_h
+#endif  // TextTrackCueList_h

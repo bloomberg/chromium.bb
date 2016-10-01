@@ -13,57 +13,41 @@ namespace blink {
 class LayoutBoxModelObject;
 
 class LayoutBoxModel : public LayoutItem {
-public:
-    explicit LayoutBoxModel(LayoutBoxModelObject* layoutBox)
-        : LayoutItem(layoutBox)
-    {
-    }
+ public:
+  explicit LayoutBoxModel(LayoutBoxModelObject* layoutBox)
+      : LayoutItem(layoutBox) {}
 
-    explicit LayoutBoxModel(const LayoutItem& item)
-        : LayoutItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isBoxModelObject());
-    }
+  explicit LayoutBoxModel(const LayoutItem& item) : LayoutItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isBoxModelObject());
+  }
 
-    explicit LayoutBoxModel(std::nullptr_t) : LayoutItem(nullptr) { }
+  explicit LayoutBoxModel(std::nullptr_t) : LayoutItem(nullptr) {}
 
-    LayoutBoxModel() { }
+  LayoutBoxModel() {}
 
-    PaintLayer* layer() const
-    {
-        return toBoxModel()->layer();
-    }
+  PaintLayer* layer() const { return toBoxModel()->layer(); }
 
-    PaintLayerScrollableArea* getScrollableArea() const
-    {
-        return toBoxModel()->getScrollableArea();
-    }
+  PaintLayerScrollableArea* getScrollableArea() const {
+    return toBoxModel()->getScrollableArea();
+  }
 
-    int borderTop() const
-    {
-        return toBoxModel()->borderTop();
-    }
+  int borderTop() const { return toBoxModel()->borderTop(); }
 
-    int borderLeft() const
-    {
-        return toBoxModel()->borderLeft();
-    }
+  int borderLeft() const { return toBoxModel()->borderLeft(); }
 
-    LayoutUnit paddingTop() const
-    {
-        return toBoxModel()->paddingTop();
-    }
+  LayoutUnit paddingTop() const { return toBoxModel()->paddingTop(); }
 
-    LayoutUnit paddingLeft() const
-    {
-        return toBoxModel()->paddingLeft();
-    }
+  LayoutUnit paddingLeft() const { return toBoxModel()->paddingLeft(); }
 
-private:
-    LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
-    const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }
+ private:
+  LayoutBoxModelObject* toBoxModel() {
+    return toLayoutBoxModelObject(layoutObject());
+  }
+  const LayoutBoxModelObject* toBoxModel() const {
+    return toLayoutBoxModelObject(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutBoxModel_h
+#endif  // LayoutBoxModel_h

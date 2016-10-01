@@ -33,53 +33,45 @@
 
 namespace blink {
 
-AXObjectCache::AXObjectCacheCreateFunction AXObjectCache::m_createFunction = nullptr;
+AXObjectCache::AXObjectCacheCreateFunction AXObjectCache::m_createFunction =
+    nullptr;
 
-void AXObjectCache::init(AXObjectCacheCreateFunction function)
-{
-    DCHECK(!m_createFunction);
-    m_createFunction = function;
+void AXObjectCache::init(AXObjectCacheCreateFunction function) {
+  DCHECK(!m_createFunction);
+  m_createFunction = function;
 }
 
-AXObjectCache* AXObjectCache::create(Document& document)
-{
-    DCHECK(m_createFunction);
-    return m_createFunction(document);
+AXObjectCache* AXObjectCache::create(Document& document) {
+  DCHECK(m_createFunction);
+  return m_createFunction(document);
 }
 
-AXObjectCache::AXObjectCache()
-{
-}
+AXObjectCache::AXObjectCache() {}
 
-AXObjectCache::~AXObjectCache()
-{
-}
+AXObjectCache::~AXObjectCache() {}
 
-std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::create(Document& document)
-{
-    return wrapUnique(new ScopedAXObjectCache(document));
+std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::create(
+    Document& document) {
+  return wrapUnique(new ScopedAXObjectCache(document));
 }
 
 ScopedAXObjectCache::ScopedAXObjectCache(Document& document)
-    : m_document(&document)
-{
-    if (!m_document->axObjectCache())
-        m_cache = AXObjectCache::create(*m_document);
+    : m_document(&document) {
+  if (!m_document->axObjectCache())
+    m_cache = AXObjectCache::create(*m_document);
 }
 
-ScopedAXObjectCache::~ScopedAXObjectCache()
-{
-    if (m_cache)
-        m_cache->dispose();
+ScopedAXObjectCache::~ScopedAXObjectCache() {
+  if (m_cache)
+    m_cache->dispose();
 }
 
-AXObjectCache* ScopedAXObjectCache::get()
-{
-    if (m_cache)
-        return m_cache.get();
-    AXObjectCache* cache = m_document->axObjectCache();
-    DCHECK(cache);
-    return cache;
+AXObjectCache* ScopedAXObjectCache::get() {
+  if (m_cache)
+    return m_cache.get();
+  AXObjectCache* cache = m_document->axObjectCache();
+  DCHECK(cache);
+  return cache;
 }
 
-} // namespace blink
+}  // namespace blink

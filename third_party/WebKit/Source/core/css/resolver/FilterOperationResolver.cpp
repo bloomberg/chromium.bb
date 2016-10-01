@@ -39,177 +39,197 @@
 
 namespace blink {
 
-FilterOperation::OperationType FilterOperationResolver::filterOperationForType(CSSValueID type)
-{
-    switch (type) {
+FilterOperation::OperationType FilterOperationResolver::filterOperationForType(
+    CSSValueID type) {
+  switch (type) {
     case CSSValueGrayscale:
-        return FilterOperation::GRAYSCALE;
+      return FilterOperation::GRAYSCALE;
     case CSSValueSepia:
-        return FilterOperation::SEPIA;
+      return FilterOperation::SEPIA;
     case CSSValueSaturate:
-        return FilterOperation::SATURATE;
+      return FilterOperation::SATURATE;
     case CSSValueHueRotate:
-        return FilterOperation::HUE_ROTATE;
+      return FilterOperation::HUE_ROTATE;
     case CSSValueInvert:
-        return FilterOperation::INVERT;
+      return FilterOperation::INVERT;
     case CSSValueOpacity:
-        return FilterOperation::OPACITY;
+      return FilterOperation::OPACITY;
     case CSSValueBrightness:
-        return FilterOperation::BRIGHTNESS;
+      return FilterOperation::BRIGHTNESS;
     case CSSValueContrast:
-        return FilterOperation::CONTRAST;
+      return FilterOperation::CONTRAST;
     case CSSValueBlur:
-        return FilterOperation::BLUR;
+      return FilterOperation::BLUR;
     case CSSValueDropShadow:
-        return FilterOperation::DROP_SHADOW;
+      return FilterOperation::DROP_SHADOW;
     default:
-        ASSERT_NOT_REACHED();
-        // FIXME: We shouldn't have a type None since we never create them
-        return FilterOperation::NONE;
-    }
+      ASSERT_NOT_REACHED();
+      // FIXME: We shouldn't have a type None since we never create them
+      return FilterOperation::NONE;
+  }
 }
 
-static void countFilterUse(FilterOperation::OperationType operationType, const Document& document)
-{
-    // This variable is always reassigned, but MSVC thinks it might be left
-    // uninitialized.
-    UseCounter::Feature feature = UseCounter::NumberOfFeatures;
-    switch (operationType) {
+static void countFilterUse(FilterOperation::OperationType operationType,
+                           const Document& document) {
+  // This variable is always reassigned, but MSVC thinks it might be left
+  // uninitialized.
+  UseCounter::Feature feature = UseCounter::NumberOfFeatures;
+  switch (operationType) {
     case FilterOperation::NONE:
     case FilterOperation::BOX_REFLECT:
-        ASSERT_NOT_REACHED();
-        return;
+      ASSERT_NOT_REACHED();
+      return;
     case FilterOperation::REFERENCE:
-        feature = UseCounter::CSSFilterReference;
-        break;
+      feature = UseCounter::CSSFilterReference;
+      break;
     case FilterOperation::GRAYSCALE:
-        feature = UseCounter::CSSFilterGrayscale;
-        break;
+      feature = UseCounter::CSSFilterGrayscale;
+      break;
     case FilterOperation::SEPIA:
-        feature = UseCounter::CSSFilterSepia;
-        break;
+      feature = UseCounter::CSSFilterSepia;
+      break;
     case FilterOperation::SATURATE:
-        feature = UseCounter::CSSFilterSaturate;
-        break;
+      feature = UseCounter::CSSFilterSaturate;
+      break;
     case FilterOperation::HUE_ROTATE:
-        feature = UseCounter::CSSFilterHueRotate;
-        break;
+      feature = UseCounter::CSSFilterHueRotate;
+      break;
     case FilterOperation::INVERT:
-        feature = UseCounter::CSSFilterInvert;
-        break;
+      feature = UseCounter::CSSFilterInvert;
+      break;
     case FilterOperation::OPACITY:
-        feature = UseCounter::CSSFilterOpacity;
-        break;
+      feature = UseCounter::CSSFilterOpacity;
+      break;
     case FilterOperation::BRIGHTNESS:
-        feature = UseCounter::CSSFilterBrightness;
-        break;
+      feature = UseCounter::CSSFilterBrightness;
+      break;
     case FilterOperation::CONTRAST:
-        feature = UseCounter::CSSFilterContrast;
-        break;
+      feature = UseCounter::CSSFilterContrast;
+      break;
     case FilterOperation::BLUR:
-        feature = UseCounter::CSSFilterBlur;
-        break;
+      feature = UseCounter::CSSFilterBlur;
+      break;
     case FilterOperation::DROP_SHADOW:
-        feature = UseCounter::CSSFilterDropShadow;
-        break;
-    };
-    UseCounter::count(document, feature);
+      feature = UseCounter::CSSFilterDropShadow;
+      break;
+  };
+  UseCounter::count(document, feature);
 }
 
-FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverState& state, const CSSValue& inValue)
-{
-    FilterOperations operations;
+FilterOperations FilterOperationResolver::createFilterOperations(
+    StyleResolverState& state,
+    const CSSValue& inValue) {
+  FilterOperations operations;
 
-    if (inValue.isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(inValue).getValueID() == CSSValueNone);
-        return operations;
-    }
-
-    const CSSToLengthConversionData& conversionData = state.cssToLengthConversionData();
-    for (auto& currValue : toCSSValueList(inValue)) {
-        if (currValue->isURIValue()) {
-            countFilterUse(FilterOperation::REFERENCE, state.document());
-
-            const CSSURIValue& urlValue = toCSSURIValue(*currValue);
-            SVGURLReferenceResolver resolver(urlValue.value(), state.document());
-            ReferenceFilterOperation* operation = ReferenceFilterOperation::create(urlValue.value(), resolver.fragmentIdentifier());
-            if (!resolver.isLocal()) {
-                if (!urlValue.loadRequested())
-                    state.elementStyleResources().addPendingSVGDocument(operation, &urlValue);
-                else if (urlValue.cachedDocument())
-                    ReferenceFilterBuilder::setDocumentResourceReference(operation, new DocumentResourceReference(urlValue.cachedDocument()));
-            }
-            operations.operations().append(operation);
-            continue;
-        }
-
-        const CSSFunctionValue* filterValue = toCSSFunctionValue(currValue.get());
-        FilterOperation::OperationType operationType = filterOperationForType(filterValue->functionType());
-        countFilterUse(operationType, state.document());
-        DCHECK_LE(filterValue->length(), 1u);
-
-        const CSSPrimitiveValue* firstValue = filterValue->length() && filterValue->item(0).isPrimitiveValue() ? &toCSSPrimitiveValue(filterValue->item(0)) : nullptr;
-        switch (filterValue->functionType()) {
-        case CSSValueGrayscale:
-        case CSSValueSepia:
-        case CSSValueSaturate: {
-            double amount = 1;
-            if (filterValue->length() == 1) {
-                amount = firstValue->getDoubleValue();
-                if (firstValue->isPercentage())
-                    amount /= 100;
-            }
-
-            operations.operations().append(BasicColorMatrixFilterOperation::create(amount, operationType));
-            break;
-        }
-        case CSSValueHueRotate: {
-            double angle = 0;
-            if (filterValue->length() == 1)
-                angle = firstValue->computeDegrees();
-
-            operations.operations().append(BasicColorMatrixFilterOperation::create(angle, operationType));
-            break;
-        }
-        case CSSValueInvert:
-        case CSSValueBrightness:
-        case CSSValueContrast:
-        case CSSValueOpacity: {
-            double amount = (filterValue->functionType() == CSSValueBrightness) ? 0 : 1;
-            if (filterValue->length() == 1) {
-                amount = firstValue->getDoubleValue();
-                if (firstValue->isPercentage())
-                    amount /= 100;
-            }
-
-            operations.operations().append(BasicComponentTransferFilterOperation::create(amount, operationType));
-            break;
-        }
-        case CSSValueBlur: {
-            Length stdDeviation = Length(0, Fixed);
-            if (filterValue->length() >= 1)
-                stdDeviation = firstValue->convertToLength(conversionData);
-            operations.operations().append(BlurFilterOperation::create(stdDeviation));
-            break;
-        }
-        case CSSValueDropShadow: {
-            const CSSShadowValue& item = toCSSShadowValue(filterValue->item(0));
-            IntPoint location(item.x->computeLength<int>(conversionData), item.y->computeLength<int>(conversionData));
-            int blur = item.blur ? item.blur->computeLength<int>(conversionData) : 0;
-            Color shadowColor = Color::black;
-            if (item.color)
-                shadowColor = state.document().textLinkColors().colorFromCSSValue(*item.color, state.style()->color());
-
-            operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor));
-            break;
-        }
-        default:
-            ASSERT_NOT_REACHED();
-            break;
-        }
-    }
-
+  if (inValue.isPrimitiveValue()) {
+    ASSERT(toCSSPrimitiveValue(inValue).getValueID() == CSSValueNone);
     return operations;
+  }
+
+  const CSSToLengthConversionData& conversionData =
+      state.cssToLengthConversionData();
+  for (auto& currValue : toCSSValueList(inValue)) {
+    if (currValue->isURIValue()) {
+      countFilterUse(FilterOperation::REFERENCE, state.document());
+
+      const CSSURIValue& urlValue = toCSSURIValue(*currValue);
+      SVGURLReferenceResolver resolver(urlValue.value(), state.document());
+      ReferenceFilterOperation* operation = ReferenceFilterOperation::create(
+          urlValue.value(), resolver.fragmentIdentifier());
+      if (!resolver.isLocal()) {
+        if (!urlValue.loadRequested())
+          state.elementStyleResources().addPendingSVGDocument(operation,
+                                                              &urlValue);
+        else if (urlValue.cachedDocument())
+          ReferenceFilterBuilder::setDocumentResourceReference(
+              operation,
+              new DocumentResourceReference(urlValue.cachedDocument()));
+      }
+      operations.operations().append(operation);
+      continue;
+    }
+
+    const CSSFunctionValue* filterValue = toCSSFunctionValue(currValue.get());
+    FilterOperation::OperationType operationType =
+        filterOperationForType(filterValue->functionType());
+    countFilterUse(operationType, state.document());
+    DCHECK_LE(filterValue->length(), 1u);
+
+    const CSSPrimitiveValue* firstValue =
+        filterValue->length() && filterValue->item(0).isPrimitiveValue()
+            ? &toCSSPrimitiveValue(filterValue->item(0))
+            : nullptr;
+    switch (filterValue->functionType()) {
+      case CSSValueGrayscale:
+      case CSSValueSepia:
+      case CSSValueSaturate: {
+        double amount = 1;
+        if (filterValue->length() == 1) {
+          amount = firstValue->getDoubleValue();
+          if (firstValue->isPercentage())
+            amount /= 100;
+        }
+
+        operations.operations().append(
+            BasicColorMatrixFilterOperation::create(amount, operationType));
+        break;
+      }
+      case CSSValueHueRotate: {
+        double angle = 0;
+        if (filterValue->length() == 1)
+          angle = firstValue->computeDegrees();
+
+        operations.operations().append(
+            BasicColorMatrixFilterOperation::create(angle, operationType));
+        break;
+      }
+      case CSSValueInvert:
+      case CSSValueBrightness:
+      case CSSValueContrast:
+      case CSSValueOpacity: {
+        double amount =
+            (filterValue->functionType() == CSSValueBrightness) ? 0 : 1;
+        if (filterValue->length() == 1) {
+          amount = firstValue->getDoubleValue();
+          if (firstValue->isPercentage())
+            amount /= 100;
+        }
+
+        operations.operations().append(
+            BasicComponentTransferFilterOperation::create(amount,
+                                                          operationType));
+        break;
+      }
+      case CSSValueBlur: {
+        Length stdDeviation = Length(0, Fixed);
+        if (filterValue->length() >= 1)
+          stdDeviation = firstValue->convertToLength(conversionData);
+        operations.operations().append(
+            BlurFilterOperation::create(stdDeviation));
+        break;
+      }
+      case CSSValueDropShadow: {
+        const CSSShadowValue& item = toCSSShadowValue(filterValue->item(0));
+        IntPoint location(item.x->computeLength<int>(conversionData),
+                          item.y->computeLength<int>(conversionData));
+        int blur =
+            item.blur ? item.blur->computeLength<int>(conversionData) : 0;
+        Color shadowColor = Color::black;
+        if (item.color)
+          shadowColor = state.document().textLinkColors().colorFromCSSValue(
+              *item.color, state.style()->color());
+
+        operations.operations().append(
+            DropShadowFilterOperation::create(location, blur, shadowColor));
+        break;
+      }
+      default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+  }
+
+  return operations;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -49,141 +49,159 @@ class IDBDatabase;
 class IDBObjectStore;
 class IDBOpenDBRequest;
 
-class MODULES_EXPORT IDBTransaction final
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static IDBTransaction* createNonVersionChange(ScriptState*, int64_t, const HashSet<String>& scope, WebIDBTransactionMode, IDBDatabase*);
-    static IDBTransaction* createVersionChange(ScriptState*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& oldMetadata);
-    ~IDBTransaction() override;
-    DECLARE_VIRTUAL_TRACE();
+class MODULES_EXPORT IDBTransaction final : public EventTargetWithInlineData,
+                                            public ActiveScriptWrappable,
+                                            public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebIDBTransactionMode stringToMode(const String&);
+ public:
+  static IDBTransaction* createNonVersionChange(ScriptState*,
+                                                int64_t,
+                                                const HashSet<String>& scope,
+                                                WebIDBTransactionMode,
+                                                IDBDatabase*);
+  static IDBTransaction* createVersionChange(
+      ScriptState*,
+      int64_t,
+      IDBDatabase*,
+      IDBOpenDBRequest*,
+      const IDBDatabaseMetadata& oldMetadata);
+  ~IDBTransaction() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // When the connection is closed backend will be 0.
-    WebIDBDatabase* backendDB() const;
+  static WebIDBTransactionMode stringToMode(const String&);
 
-    int64_t id() const { return m_id; }
-    bool isActive() const { return m_state == Active; }
-    bool isFinished() const { return m_state == Finished; }
-    bool isFinishing() const { return m_state == Finishing; }
-    bool isReadOnly() const { return m_mode == WebIDBTransactionModeReadOnly; }
-    bool isVersionChange() const { return m_mode == WebIDBTransactionModeVersionChange; }
+  // When the connection is closed backend will be 0.
+  WebIDBDatabase* backendDB() const;
 
-    // Implement the IDBTransaction IDL
-    const String& mode() const;
-    DOMStringList* objectStoreNames() const;
-    IDBDatabase* db() const { return m_database.get(); }
-    DOMException* error() const { return m_error; }
-    IDBObjectStore* objectStore(const String& name, ExceptionState&);
-    void abort(ExceptionState&);
+  int64_t id() const { return m_id; }
+  bool isActive() const { return m_state == Active; }
+  bool isFinished() const { return m_state == Finished; }
+  bool isFinishing() const { return m_state == Finishing; }
+  bool isReadOnly() const { return m_mode == WebIDBTransactionModeReadOnly; }
+  bool isVersionChange() const {
+    return m_mode == WebIDBTransactionModeVersionChange;
+  }
 
-    void registerRequest(IDBRequest*);
-    void unregisterRequest(IDBRequest*);
-    void objectStoreCreated(const String&, IDBObjectStore*);
-    void objectStoreDeleted(const String&);
-    void objectStoreRenamed(const String& oldName, const String& newName);
-    void setActive(bool);
-    void setError(DOMException*);
+  // Implement the IDBTransaction IDL
+  const String& mode() const;
+  DOMStringList* objectStoreNames() const;
+  IDBDatabase* db() const { return m_database.get(); }
+  DOMException* error() const { return m_error; }
+  IDBObjectStore* objectStore(const String& name, ExceptionState&);
+  void abort(ExceptionState&);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  void registerRequest(IDBRequest*);
+  void unregisterRequest(IDBRequest*);
+  void objectStoreCreated(const String&, IDBObjectStore*);
+  void objectStoreDeleted(const String&);
+  void objectStoreRenamed(const String& oldName, const String& newName);
+  void setActive(bool);
+  void setError(DOMException*);
 
-    void onAbort(DOMException*);
-    void onComplete();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  void onAbort(DOMException*);
+  void onComplete();
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ActiveDOMObject
-    void stop() override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-protected:
-    // EventTarget
-    DispatchEventResult dispatchEventInternal(Event*) override;
+  // ActiveDOMObject
+  void stop() override;
 
-private:
-    IDBTransaction(ScriptState*, int64_t, const HashSet<String>&, WebIDBTransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
+ protected:
+  // EventTarget
+  DispatchEventResult dispatchEventInternal(Event*) override;
 
-    void enqueueEvent(Event*);
+ private:
+  IDBTransaction(ScriptState*,
+                 int64_t,
+                 const HashSet<String>&,
+                 WebIDBTransactionMode,
+                 IDBDatabase*,
+                 IDBOpenDBRequest*,
+                 const IDBDatabaseMetadata&);
 
-    // Called when a transaction is aborted.
-    void abortOutstandingRequests();
-    void revertDatabaseMetadata();
+  void enqueueEvent(Event*);
 
-    // Called when a transaction is completed (committed or aborted).
-    void finished();
+  // Called when a transaction is aborted.
+  void abortOutstandingRequests();
+  void revertDatabaseMetadata();
 
-    enum State {
-        Inactive, // Created or started, but not in an event callback
-        Active, // Created or started, in creation scope or an event callback
-        Finishing, // In the process of aborting or completing.
-        Finished, // No more events will fire and no new requests may be filed.
-    };
+  // Called when a transaction is completed (committed or aborted).
+  void finished();
 
-    const int64_t m_id;
-    Member<IDBDatabase> m_database;
-    Member<IDBOpenDBRequest> m_openDBRequest;
-    const WebIDBTransactionMode m_mode;
+  enum State {
+    Inactive,   // Created or started, but not in an event callback
+    Active,     // Created or started, in creation scope or an event callback
+    Finishing,  // In the process of aborting or completing.
+    Finished,   // No more events will fire and no new requests may be filed.
+  };
 
-    // The names of the object stores that make up this transaction's scope.
-    //
-    // Transactions may not access object stores outside their scope.
-    //
-    // The scope of versionchange transactions is the entire database. We
-    // represent this case with an empty m_scope, because copying all the store
-    // names would waste both time and memory.
-    //
-    // Using object store names to represent a transaction's scope is safe
-    // because object stores cannot be renamed in non-versionchange
-    // transactions.
-    const HashSet<String> m_scope;
+  const int64_t m_id;
+  Member<IDBDatabase> m_database;
+  Member<IDBOpenDBRequest> m_openDBRequest;
+  const WebIDBTransactionMode m_mode;
 
-    State m_state = Active;
-    bool m_hasPendingActivity = true;
-    bool m_contextStopped = false;
-    Member<DOMException> m_error;
+  // The names of the object stores that make up this transaction's scope.
+  //
+  // Transactions may not access object stores outside their scope.
+  //
+  // The scope of versionchange transactions is the entire database. We
+  // represent this case with an empty m_scope, because copying all the store
+  // names would waste both time and memory.
+  //
+  // Using object store names to represent a transaction's scope is safe
+  // because object stores cannot be renamed in non-versionchange
+  // transactions.
+  const HashSet<String> m_scope;
 
-    HeapListHashSet<Member<IDBRequest>> m_requestList;
+  State m_state = Active;
+  bool m_hasPendingActivity = true;
+  bool m_contextStopped = false;
+  Member<DOMException> m_error;
+
+  HeapListHashSet<Member<IDBRequest>> m_requestList;
 
 #if DCHECK_IS_ON()
-    bool m_finishCalled = false;
-#endif // DCHECK_IS_ON()
+  bool m_finishCalled = false;
+#endif  // DCHECK_IS_ON()
 
-    // Caches the IDBObjectStore instances returned by the objectStore() method.
-    //
-    // The spec requires that a transaction's objectStore() returns the same
-    // IDBObjectStore instance for a specific store, so this cache is necessary
-    // for correctness.
-    //
-    // objectStore() throws for completed/aborted transactions, so this is not
-    // used after a transaction is finished, and can be cleared.
-    using IDBObjectStoreMap = HeapHashMap<String, Member<IDBObjectStore>>;
-    IDBObjectStoreMap m_objectStoreMap;
+  // Caches the IDBObjectStore instances returned by the objectStore() method.
+  //
+  // The spec requires that a transaction's objectStore() returns the same
+  // IDBObjectStore instance for a specific store, so this cache is necessary
+  // for correctness.
+  //
+  // objectStore() throws for completed/aborted transactions, so this is not
+  // used after a transaction is finished, and can be cleared.
+  using IDBObjectStoreMap = HeapHashMap<String, Member<IDBObjectStore>>;
+  IDBObjectStoreMap m_objectStoreMap;
 
-    // Used to mark stores created in an aborted upgrade transaction as
-    // deleted.
-    HeapHashSet<Member<IDBObjectStore>> m_createdObjectStores;
+  // Used to mark stores created in an aborted upgrade transaction as
+  // deleted.
+  HeapHashSet<Member<IDBObjectStore>> m_createdObjectStores;
 
-    // Used to notify object stores (which are no longer in m_objectStoreMap)
-    // when the transaction is finished.
-    HeapHashSet<Member<IDBObjectStore>> m_deletedObjectStores;
+  // Used to notify object stores (which are no longer in m_objectStoreMap)
+  // when the transaction is finished.
+  HeapHashSet<Member<IDBObjectStore>> m_deletedObjectStores;
 
-    // Holds stores created, deleted, or used during upgrade transactions to
-    // reset metadata in case of abort.
-    HeapHashMap<Member<IDBObjectStore>, IDBObjectStoreMetadata> m_objectStoreCleanupMap;
+  // Holds stores created, deleted, or used during upgrade transactions to
+  // reset metadata in case of abort.
+  HeapHashMap<Member<IDBObjectStore>, IDBObjectStoreMetadata>
+      m_objectStoreCleanupMap;
 
-    IDBDatabaseMetadata m_oldDatabaseMetadata;
+  IDBDatabaseMetadata m_oldDatabaseMetadata;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBTransaction_h
+#endif  // IDBTransaction_h

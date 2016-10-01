@@ -31,155 +31,167 @@
 namespace blink {
 
 WebGLDrawBuffers::WebGLDrawBuffers(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_draw_buffers");
+    : WebGLExtension(context) {
+  context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_draw_buffers");
 }
 
-WebGLDrawBuffers::~WebGLDrawBuffers()
-{
+WebGLDrawBuffers::~WebGLDrawBuffers() {}
+
+WebGLExtensionName WebGLDrawBuffers::name() const {
+  return WebGLDrawBuffersName;
 }
 
-WebGLExtensionName WebGLDrawBuffers::name() const
-{
-    return WebGLDrawBuffersName;
-}
-
-WebGLDrawBuffers* WebGLDrawBuffers::create(WebGLRenderingContextBase* context)
-{
-    return new WebGLDrawBuffers(context);
+WebGLDrawBuffers* WebGLDrawBuffers::create(WebGLRenderingContextBase* context) {
+  return new WebGLDrawBuffers(context);
 }
 
 // static
-bool WebGLDrawBuffers::supported(WebGLRenderingContextBase* context)
-{
-    return (context->extensionsUtil()->supportsExtension("GL_EXT_draw_buffers")
-        && satisfiesWebGLRequirements(context));
+bool WebGLDrawBuffers::supported(WebGLRenderingContextBase* context) {
+  return (context->extensionsUtil()->supportsExtension("GL_EXT_draw_buffers") &&
+          satisfiesWebGLRequirements(context));
 }
 
 // static
-const char* WebGLDrawBuffers::extensionName()
-{
-    return "WEBGL_draw_buffers";
+const char* WebGLDrawBuffers::extensionName() {
+  return "WEBGL_draw_buffers";
 }
 
-void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
-{
-    WebGLExtensionScopedContext scoped(this);
-    if (scoped.isLost())
+void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers) {
+  WebGLExtensionScopedContext scoped(this);
+  if (scoped.isLost())
+    return;
+  GLsizei n = buffers.size();
+  const GLenum* bufs = buffers.data();
+  if (!scoped.context()->m_framebufferBinding) {
+    if (n != 1) {
+      scoped.context()->synthesizeGLError(GL_INVALID_OPERATION,
+                                          "drawBuffersWEBGL",
+                                          "must provide exactly one buffer");
+      return;
+    }
+    if (bufs[0] != GL_BACK && bufs[0] != GL_NONE) {
+      scoped.context()->synthesizeGLError(GL_INVALID_OPERATION,
+                                          "drawBuffersWEBGL", "BACK or NONE");
+      return;
+    }
+    // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
+    GLenum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
+    scoped.context()->contextGL()->DrawBuffersEXT(1, &value);
+    scoped.context()->setBackDrawBuffer(bufs[0]);
+  } else {
+    if (n > scoped.context()->maxDrawBuffers()) {
+      scoped.context()->synthesizeGLError(GL_INVALID_VALUE, "drawBuffersWEBGL",
+                                          "more than max draw buffers");
+      return;
+    }
+    for (GLsizei i = 0; i < n; ++i) {
+      if (bufs[i] != GL_NONE &&
+          bufs[i] != static_cast<GLenum>(GL_COLOR_ATTACHMENT0_EXT + i)) {
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION,
+                                            "drawBuffersWEBGL",
+                                            "COLOR_ATTACHMENTi_EXT or NONE");
         return;
-    GLsizei n = buffers.size();
-    const GLenum* bufs = buffers.data();
-    if (!scoped.context()->m_framebufferBinding) {
-        if (n != 1) {
-            scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "drawBuffersWEBGL", "must provide exactly one buffer");
-            return;
-        }
-        if (bufs[0] != GL_BACK && bufs[0] != GL_NONE) {
-            scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "drawBuffersWEBGL", "BACK or NONE");
-            return;
-        }
-        // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
-        GLenum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
-        scoped.context()->contextGL()->DrawBuffersEXT(1, &value);
-        scoped.context()->setBackDrawBuffer(bufs[0]);
-    } else {
-        if (n > scoped.context()->maxDrawBuffers()) {
-            scoped.context()->synthesizeGLError(GL_INVALID_VALUE, "drawBuffersWEBGL", "more than max draw buffers");
-            return;
-        }
-        for (GLsizei i = 0; i < n; ++i) {
-            if (bufs[i] != GL_NONE && bufs[i] != static_cast<GLenum>(GL_COLOR_ATTACHMENT0_EXT + i)) {
-                scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "drawBuffersWEBGL", "COLOR_ATTACHMENTi_EXT or NONE");
-                return;
-            }
-        }
-        scoped.context()->m_framebufferBinding->drawBuffers(buffers);
+      }
     }
+    scoped.context()->m_framebufferBinding->drawBuffers(buffers);
+  }
 }
 
 // static
-bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* webglContext)
-{
-    gpu::gles2::GLES2Interface* gl = webglContext->contextGL();
-    Extensions3DUtil* extensionsUtil = webglContext->extensionsUtil();
+bool WebGLDrawBuffers::satisfiesWebGLRequirements(
+    WebGLRenderingContextBase* webglContext) {
+  gpu::gles2::GLES2Interface* gl = webglContext->contextGL();
+  Extensions3DUtil* extensionsUtil = webglContext->extensionsUtil();
 
-    // This is called after we make sure GL_EXT_draw_buffers is supported.
-    GLint maxDrawBuffers = 0;
-    GLint maxColorAttachments = 0;
-    gl->GetIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &maxDrawBuffers);
-    gl->GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
-    if (maxDrawBuffers < 4 || maxColorAttachments < 4)
-        return false;
+  // This is called after we make sure GL_EXT_draw_buffers is supported.
+  GLint maxDrawBuffers = 0;
+  GLint maxColorAttachments = 0;
+  gl->GetIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &maxDrawBuffers);
+  gl->GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
+  if (maxDrawBuffers < 4 || maxColorAttachments < 4)
+    return false;
 
-    GLuint fbo;
-    gl->GenFramebuffers(1, &fbo);
-    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
+  GLuint fbo;
+  gl->GenFramebuffers(1, &fbo);
+  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    const unsigned char* buffer = 0; // Chromium doesn't allow init data for depth/stencil tetxures.
-    bool supportsDepth = (extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture")
-        || extensionsUtil->supportsExtension("GL_OES_depth_texture")
-        || extensionsUtil->supportsExtension("GL_ARB_depth_texture"));
-    bool supportsDepthStencil = (extensionsUtil->supportsExtension("GL_EXT_packed_depth_stencil")
-        || extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"));
-    GLuint depthStencil = 0;
-    if (supportsDepthStencil) {
-        gl->GenTextures(1, &depthStencil);
-        gl->BindTexture(GL_TEXTURE_2D, depthStencil);
-        gl->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_OES, 1, 1, 0, GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, buffer);
+  const unsigned char* buffer =
+      0;  // Chromium doesn't allow init data for depth/stencil tetxures.
+  bool supportsDepth =
+      (extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture") ||
+       extensionsUtil->supportsExtension("GL_OES_depth_texture") ||
+       extensionsUtil->supportsExtension("GL_ARB_depth_texture"));
+  bool supportsDepthStencil =
+      (extensionsUtil->supportsExtension("GL_EXT_packed_depth_stencil") ||
+       extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"));
+  GLuint depthStencil = 0;
+  if (supportsDepthStencil) {
+    gl->GenTextures(1, &depthStencil);
+    gl->BindTexture(GL_TEXTURE_2D, depthStencil);
+    gl->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_OES, 1, 1, 0,
+                   GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, buffer);
+  }
+  GLuint depth = 0;
+  if (supportsDepth) {
+    gl->GenTextures(1, &depth);
+    gl->BindTexture(GL_TEXTURE_2D, depth);
+    gl->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1, 0,
+                   GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, buffer);
+  }
+
+  Vector<GLuint> colors;
+  bool ok = true;
+  GLint maxAllowedBuffers = std::min(maxDrawBuffers, maxColorAttachments);
+  for (GLint i = 0; i < maxAllowedBuffers; ++i) {
+    GLuint color;
+
+    gl->GenTextures(1, &color);
+    colors.append(color);
+    gl->BindTexture(GL_TEXTURE_2D, color);
+    gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                   GL_UNSIGNED_BYTE, buffer);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+                             GL_TEXTURE_2D, color, 0);
+    if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+      ok = false;
+      break;
     }
-    GLuint depth = 0;
     if (supportsDepth) {
-        gl->GenTextures(1, &depth);
-        gl->BindTexture(GL_TEXTURE_2D, depth);
-        gl->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, buffer);
+      gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                               GL_TEXTURE_2D, depth, 0);
+      if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) !=
+          GL_FRAMEBUFFER_COMPLETE) {
+        ok = false;
+        break;
+      }
+      gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                               GL_TEXTURE_2D, 0, 0);
     }
-
-    Vector<GLuint> colors;
-    bool ok = true;
-    GLint maxAllowedBuffers = std::min(maxDrawBuffers, maxColorAttachments);
-    for (GLint i = 0; i < maxAllowedBuffers; ++i) {
-        GLuint color;
-
-        gl->GenTextures(1, &color);
-        colors.append(color);
-        gl->BindTexture(GL_TEXTURE_2D, color);
-        gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, color, 0);
-        if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            ok = false;
-            break;
-        }
-        if (supportsDepth) {
-            gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
-            if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                ok = false;
-                break;
-            }
-            gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-        }
-        if (supportsDepthStencil) {
-            // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we emulate it
-            // at the command buffer level for WebGL contexts.
-            gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthStencil, 0);
-            if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                ok = false;
-                break;
-            }
-            gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-        }
+    if (supportsDepthStencil) {
+      // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we emulate it
+      // at the command buffer level for WebGL contexts.
+      gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                               GL_TEXTURE_2D, depthStencil, 0);
+      if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) !=
+          GL_FRAMEBUFFER_COMPLETE) {
+        ok = false;
+        break;
+      }
+      gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                               GL_TEXTURE_2D, 0, 0);
     }
+  }
 
-    webglContext->restoreCurrentFramebuffer();
-    gl->DeleteFramebuffers(1, &fbo);
-    webglContext->restoreCurrentTexture2D();
-    if (supportsDepth)
-        gl->DeleteTextures(1, &depth);
-    if (supportsDepthStencil)
-        gl->DeleteTextures(1, &depthStencil);
-    gl->DeleteTextures(colors.size(), colors.data());
+  webglContext->restoreCurrentFramebuffer();
+  gl->DeleteFramebuffers(1, &fbo);
+  webglContext->restoreCurrentTexture2D();
+  if (supportsDepth)
+    gl->DeleteTextures(1, &depth);
+  if (supportsDepthStencil)
+    gl->DeleteTextures(1, &depthStencil);
+  gl->DeleteTextures(colors.size(), colors.data());
 
-    return ok;
+  return ok;
 }
 
-} // namespace blink
+}  // namespace blink

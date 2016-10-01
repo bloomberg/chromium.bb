@@ -11,35 +11,34 @@
 namespace blink {
 
 class AmbientLightSensorReading final : public SensorReading {
-    DEFINE_WRAPPERTYPEINFO();
-public:
+  DEFINE_WRAPPERTYPEINFO();
 
-    static AmbientLightSensorReading* create(const AmbientLightSensorReadingInit& init)
-    {
-        return new AmbientLightSensorReading(init);
-    }
+ public:
+  static AmbientLightSensorReading* create(
+      const AmbientLightSensorReadingInit& init) {
+    return new AmbientLightSensorReading(init);
+  }
 
-    static AmbientLightSensorReading* create(SensorProxy* proxy)
-    {
-        return new AmbientLightSensorReading(proxy);
-    }
+  static AmbientLightSensorReading* create(SensorProxy* proxy) {
+    return new AmbientLightSensorReading(proxy);
+  }
 
-    ~AmbientLightSensorReading() override;
+  ~AmbientLightSensorReading() override;
 
-    double illuminance() const;
+  double illuminance() const;
 
-    bool isReadingUpdated(const SensorProxy::Reading&) const override;
+  bool isReadingUpdated(const SensorProxy::Reading&) const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit AmbientLightSensorReading(const AmbientLightSensorReadingInit&);
-    explicit AmbientLightSensorReading(SensorProxy*);
+ private:
+  explicit AmbientLightSensorReading(const AmbientLightSensorReadingInit&);
+  explicit AmbientLightSensorReading(SensorProxy*);
 
-private:
-    AmbientLightSensorReadingInit mAmbientLightSensorReadingInit;
+ private:
+  AmbientLightSensorReadingInit mAmbientLightSensorReadingInit;
 };
 
-} // namepsace blink
+}  // namepsace blink
 
-#endif // AmbientLightSensorReading_h
+#endif  // AmbientLightSensorReading_h

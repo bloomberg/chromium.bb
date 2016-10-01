@@ -34,27 +34,31 @@ namespace blink {
 class MediaStreamTrack;
 
 class MediaStreamTrackEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~MediaStreamTrackEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static MediaStreamTrackEvent* create(const AtomicString& type, MediaStreamTrack*);
-    static MediaStreamTrackEvent* create(const AtomicString& type, const MediaStreamTrackEventInit&);
+ public:
+  ~MediaStreamTrackEvent() override;
 
-    MediaStreamTrack* track() const;
+  static MediaStreamTrackEvent* create(const AtomicString& type,
+                                       MediaStreamTrack*);
+  static MediaStreamTrackEvent* create(const AtomicString& type,
+                                       const MediaStreamTrackEventInit&);
 
-    // Event
-    const AtomicString& interfaceName() const override;
+  MediaStreamTrack* track() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  // Event
+  const AtomicString& interfaceName() const override;
 
-private:
-    MediaStreamTrackEvent(const AtomicString& type, MediaStreamTrack*);
-    MediaStreamTrackEvent(const AtomicString& type, const MediaStreamTrackEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<MediaStreamTrack> m_track;
+ private:
+  MediaStreamTrackEvent(const AtomicString& type, MediaStreamTrack*);
+  MediaStreamTrackEvent(const AtomicString& type,
+                        const MediaStreamTrackEventInit&);
+
+  Member<MediaStreamTrack> m_track;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamTrackEvent_h
+#endif  // MediaStreamTrackEvent_h

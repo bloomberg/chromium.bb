@@ -31,57 +31,59 @@ namespace blink {
 
 class ScriptLoader;
 
-class SVGScriptElement final
-    : public SVGElement
-    , public SVGURIReference
-    , public ScriptLoaderClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
-public:
-    static SVGScriptElement* create(Document&, bool wasInsertedByParser);
+class SVGScriptElement final : public SVGElement,
+                               public SVGURIReference,
+                               public ScriptLoaderClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
 
-    ScriptLoader* loader() const { return m_loader.get(); }
+ public:
+  static SVGScriptElement* create(Document&, bool wasInsertedByParser);
+
+  ScriptLoader* loader() const { return m_loader.get(); }
 
 #if ENABLE(ASSERT)
-    bool isAnimatableAttribute(const QualifiedName&) const override;
+  bool isAnimatableAttribute(const QualifiedName&) const override;
 #endif
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
+ private:
+  SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void didNotifySubtreeInsertionsToDocument() override;
-    void childrenChanged(const ChildrenChange&) override;
-    void didMoveToNewDocument(Document& oldDocument) override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void didNotifySubtreeInsertionsToDocument() override;
+  void childrenChanged(const ChildrenChange&) override;
+  void didMoveToNewDocument(Document& oldDocument) override;
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    bool isURLAttribute(const Attribute&) const override;
-    bool isStructurallyExternal() const override { return hasSourceAttribute(); }
-    void finishParsingChildren() override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  bool isURLAttribute(const Attribute&) const override;
+  bool isStructurallyExternal() const override { return hasSourceAttribute(); }
+  void finishParsingChildren() override;
 
-    bool haveLoadedRequiredResources() override;
+  bool haveLoadedRequiredResources() override;
 
-    String sourceAttributeValue() const override;
-    String charsetAttributeValue() const override;
-    String typeAttributeValue() const override;
-    String languageAttributeValue() const override;
-    String forAttributeValue() const override;
-    String eventAttributeValue() const override;
-    bool asyncAttributeValue() const override;
-    bool deferAttributeValue() const override;
-    bool hasSourceAttribute() const override;
+  String sourceAttributeValue() const override;
+  String charsetAttributeValue() const override;
+  String typeAttributeValue() const override;
+  String languageAttributeValue() const override;
+  String forAttributeValue() const override;
+  String eventAttributeValue() const override;
+  bool asyncAttributeValue() const override;
+  bool deferAttributeValue() const override;
+  bool hasSourceAttribute() const override;
 
-    void dispatchLoadEvent() override;
+  void dispatchLoadEvent() override;
 
-    Element* cloneElementWithoutAttributesAndChildren() override;
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  Element* cloneElementWithoutAttributesAndChildren() override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-    Member<ScriptLoader> m_loader;
+  Member<ScriptLoader> m_loader;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGScriptElement_h
+#endif  // SVGScriptElement_h

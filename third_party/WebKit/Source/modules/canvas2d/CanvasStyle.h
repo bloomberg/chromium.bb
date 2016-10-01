@@ -42,38 +42,47 @@ class CanvasPattern;
 class HTMLCanvasElement;
 
 class CanvasStyle final : public GarbageCollected<CanvasStyle> {
-public:
-    static CanvasStyle* createFromRGBA(RGBA32 rgba) { return new CanvasStyle(rgba); }
-    static CanvasStyle* createFromGradient(CanvasGradient*);
-    static CanvasStyle* createFromPattern(CanvasPattern*);
+ public:
+  static CanvasStyle* createFromRGBA(RGBA32 rgba) {
+    return new CanvasStyle(rgba);
+  }
+  static CanvasStyle* createFromGradient(CanvasGradient*);
+  static CanvasStyle* createFromPattern(CanvasPattern*);
 
-    String color() const { ASSERT(m_type == ColorRGBA); return Color(m_rgba).serialized(); }
-    CanvasGradient* getCanvasGradient() const { return m_gradient.get(); }
-    CanvasPattern* getCanvasPattern() const { return m_pattern; }
+  String color() const {
+    ASSERT(m_type == ColorRGBA);
+    return Color(m_rgba).serialized();
+  }
+  CanvasGradient* getCanvasGradient() const { return m_gradient.get(); }
+  CanvasPattern* getCanvasPattern() const { return m_pattern; }
 
-    void applyToPaint(SkPaint&) const;
-    RGBA32 paintColor() const;
+  void applyToPaint(SkPaint&) const;
+  RGBA32 paintColor() const;
 
-    bool isEquivalentRGBA(RGBA32 rgba) const { return m_type == ColorRGBA && m_rgba == rgba; }
+  bool isEquivalentRGBA(RGBA32 rgba) const {
+    return m_type == ColorRGBA && m_rgba == rgba;
+  }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    enum Type { ColorRGBA, Gradient, ImagePattern };
+ private:
+  enum Type { ColorRGBA, Gradient, ImagePattern };
 
-    CanvasStyle(RGBA32);
-    CanvasStyle(CanvasGradient*);
-    CanvasStyle(CanvasPattern*);
+  CanvasStyle(RGBA32);
+  CanvasStyle(CanvasGradient*);
+  CanvasStyle(CanvasPattern*);
 
-    Type m_type;
-    RGBA32 m_rgba;
+  Type m_type;
+  RGBA32 m_rgba;
 
-    Member<CanvasGradient> m_gradient;
-    Member<CanvasPattern> m_pattern;
+  Member<CanvasGradient> m_gradient;
+  Member<CanvasPattern> m_pattern;
 };
 
-bool parseColorOrCurrentColor(Color& parsedColor, const String& colorString, HTMLCanvasElement*);
+bool parseColorOrCurrentColor(Color& parsedColor,
+                              const String& colorString,
+                              HTMLCanvasElement*);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -29,13 +29,14 @@
 #include "modules/mediastream/SourceInfo.h"
 namespace blink {
 
-class MediaStreamTrackSourcesCallback : public GarbageCollectedFinalized<MediaStreamTrackSourcesCallback> {
-public:
-    virtual ~MediaStreamTrackSourcesCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(const SourceInfoVector&) = 0;
+class MediaStreamTrackSourcesCallback
+    : public GarbageCollectedFinalized<MediaStreamTrackSourcesCallback> {
+ public:
+  virtual ~MediaStreamTrackSourcesCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(const SourceInfoVector&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamTrackSourcesCallback_h
+#endif  // MediaStreamTrackSourcesCallback_h

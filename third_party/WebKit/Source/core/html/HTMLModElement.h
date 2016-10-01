@@ -29,18 +29,19 @@
 namespace blink {
 
 class HTMLModElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    HTMLModElement(const QualifiedName&, Document&);
+ public:
+  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement);
 
-    bool isURLAttribute(const Attribute&) const override;
-    bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    const QualifiedName& subResourceAttributeName() const override;
+ private:
+  HTMLModElement(const QualifiedName&, Document&);
+
+  bool isURLAttribute(const Attribute&) const override;
+  bool hasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& subResourceAttributeName() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLModElement_h
+#endif  // HTMLModElement_h

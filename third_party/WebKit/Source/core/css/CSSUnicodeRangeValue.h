@@ -32,35 +32,32 @@
 namespace blink {
 
 class CSSUnicodeRangeValue : public CSSValue {
-public:
-    static CSSUnicodeRangeValue* create(UChar32 from, UChar32 to)
-    {
-        return new CSSUnicodeRangeValue(from, to);
-    }
+ public:
+  static CSSUnicodeRangeValue* create(UChar32 from, UChar32 to) {
+    return new CSSUnicodeRangeValue(from, to);
+  }
 
-    UChar32 from() const { return m_from; }
-    UChar32 to() const { return m_to; }
+  UChar32 from() const { return m_from; }
+  UChar32 to() const { return m_to; }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSUnicodeRangeValue&) const;
+  bool equals(const CSSUnicodeRangeValue&) const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValue::traceAfterDispatch(visitor);
+  }
 
-private:
-    CSSUnicodeRangeValue(UChar32 from, UChar32 to)
-        : CSSValue(UnicodeRangeClass)
-        , m_from(from)
-        , m_to(to)
-    {
-    }
+ private:
+  CSSUnicodeRangeValue(UChar32 from, UChar32 to)
+      : CSSValue(UnicodeRangeClass), m_from(from), m_to(to) {}
 
-    UChar32 m_from;
-    UChar32 m_to;
+  UChar32 m_from;
+  UChar32 m_to;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnicodeRangeValue, isUnicodeRangeValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSUnicodeRangeValue_h
+#endif  // CSSUnicodeRangeValue_h

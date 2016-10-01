@@ -32,140 +32,161 @@
 
 namespace blink {
 
-class CORE_EXPORT HTMLCollection : public GarbageCollectedFinalized<HTMLCollection>, public ScriptWrappable, public LiveNodeListBase {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
-public:
-    enum ItemAfterOverrideType {
-        OverridesItemAfter,
-        DoesNotOverrideItemAfter,
-    };
+class CORE_EXPORT HTMLCollection
+    : public GarbageCollectedFinalized<HTMLCollection>,
+      public ScriptWrappable,
+      public LiveNodeListBase {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
 
-    static HTMLCollection* create(ContainerNode& base, CollectionType);
-    virtual ~HTMLCollection();
-    void invalidateCache(Document* oldDocument = 0) const override;
-    void invalidateCacheForAttribute(const QualifiedName*) const;
+ public:
+  enum ItemAfterOverrideType {
+    OverridesItemAfter,
+    DoesNotOverrideItemAfter,
+  };
 
-    // DOM API
-    unsigned length() const;
-    Element* item(unsigned offset) const;
-    virtual Element* namedItem(const AtomicString& name) const;
-    bool namedPropertyQuery(const AtomicString&, ExceptionState&);
-    void namedPropertyEnumerator(Vector<String>& names, ExceptionState&);
+  static HTMLCollection* create(ContainerNode& base, CollectionType);
+  virtual ~HTMLCollection();
+  void invalidateCache(Document* oldDocument = 0) const override;
+  void invalidateCacheForAttribute(const QualifiedName*) const;
 
-    // Non-DOM API
-    void namedItems(const AtomicString& name, HeapVector<Member<Element>>&) const;
-    bool isEmpty() const { return m_collectionItemsCache.isEmpty(*this); }
-    bool hasExactlyOneItem() const { return m_collectionItemsCache.hasExactlyOneNode(*this); }
-    bool elementMatches(const Element&) const;
+  // DOM API
+  unsigned length() const;
+  Element* item(unsigned offset) const;
+  virtual Element* namedItem(const AtomicString& name) const;
+  bool namedPropertyQuery(const AtomicString&, ExceptionState&);
+  void namedPropertyEnumerator(Vector<String>& names, ExceptionState&);
 
-    // CollectionIndexCache API.
-    bool canTraverseBackward() const { return !overridesItemAfter(); }
-    Element* traverseToFirst() const;
-    Element* traverseToLast() const;
-    Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
-    Element* traverseBackwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const;
+  // Non-DOM API
+  void namedItems(const AtomicString& name, HeapVector<Member<Element>>&) const;
+  bool isEmpty() const { return m_collectionItemsCache.isEmpty(*this); }
+  bool hasExactlyOneItem() const {
+    return m_collectionItemsCache.hasExactlyOneNode(*this);
+  }
+  bool elementMatches(const Element&) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  // CollectionIndexCache API.
+  bool canTraverseBackward() const { return !overridesItemAfter(); }
+  Element* traverseToFirst() const;
+  Element* traverseToLast() const;
+  Element* traverseForwardToOffset(unsigned offset,
+                                   Element& currentElement,
+                                   unsigned& currentOffset) const;
+  Element* traverseBackwardToOffset(unsigned offset,
+                                    Element& currentElement,
+                                    unsigned& currentOffset) const;
 
-protected:
-    HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);
+  DECLARE_VIRTUAL_TRACE();
 
-    class NamedItemCache final : public GarbageCollected<NamedItemCache> {
-    public:
-        static NamedItemCache* create()
-        {
-            return new NamedItemCache;
-        }
+ protected:
+  HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);
 
-        HeapVector<Member<Element>>* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
-        HeapVector<Member<Element>>* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
-        void addElementWithId(const AtomicString& id, Element* element) { addElementToMap(m_idCache, id, element); }
-        void addElementWithName(const AtomicString& name, Element* element) { addElementToMap(m_nameCache, name, element); }
+  class NamedItemCache final : public GarbageCollected<NamedItemCache> {
+   public:
+    static NamedItemCache* create() { return new NamedItemCache; }
 
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_idCache);
-            visitor->trace(m_nameCache);
-        }
-
-    private:
-        NamedItemCache();
-        typedef HeapHashMap<StringImpl*, Member<HeapVector<Member<Element>>>> StringToElementsMap;
-        static void addElementToMap(StringToElementsMap& map, const AtomicString& key, Element* element)
-        {
-            Member<HeapVector<Member<Element>>>& vector = map.add(key.impl(), nullptr).storedValue->value;
-            if (!vector)
-                vector = new HeapVector<Member<Element>>;
-            vector->append(element);
-        }
-
-        StringToElementsMap m_idCache;
-        StringToElementsMap m_nameCache;
-    };
-
-    bool overridesItemAfter() const { return m_overridesItemAfter; }
-    virtual Element* virtualItemAfter(Element*) const;
-    bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
-    virtual void supportedPropertyNames(Vector<String>& names);
-
-    virtual void updateIdNameCache() const;
-    bool hasValidIdNameCache() const { return m_namedItemCache; }
-
-    void setNamedItemCache(NamedItemCache* cache) const
-    {
-        DCHECK(!m_namedItemCache);
-        // Do not repeat registration for the same invalidation type.
-        if (invalidationType() != InvalidateOnIdNameAttrChange)
-            document().registerNodeListWithIdNameCache(this);
-        m_namedItemCache = std::move(cache);
+    HeapVector<Member<Element>>* getElementsById(const AtomicString& id) const {
+      return m_idCache.get(id.impl());
+    }
+    HeapVector<Member<Element>>* getElementsByName(
+        const AtomicString& name) const {
+      return m_nameCache.get(name.impl());
+    }
+    void addElementWithId(const AtomicString& id, Element* element) {
+      addElementToMap(m_idCache, id, element);
+    }
+    void addElementWithName(const AtomicString& name, Element* element) {
+      addElementToMap(m_nameCache, name, element);
     }
 
-    NamedItemCache& namedItemCache() const
-    {
-        DCHECK(m_namedItemCache);
-        return *m_namedItemCache;
+    DEFINE_INLINE_TRACE() {
+      visitor->trace(m_idCache);
+      visitor->trace(m_nameCache);
     }
 
-private:
-    void invalidateIdNameCacheMaps(Document* oldDocument = 0) const
-    {
-        if (!hasValidIdNameCache())
-            return;
-
-        // Make sure we decrement the NodeListWithIdNameCache count from
-        // the old document instead of the new one in the case the collection
-        // is moved to a new document.
-        unregisterIdNameCacheFromDocument(oldDocument ? *oldDocument : document());
-
-        m_namedItemCache.clear();
+   private:
+    NamedItemCache();
+    typedef HeapHashMap<StringImpl*, Member<HeapVector<Member<Element>>>>
+        StringToElementsMap;
+    static void addElementToMap(StringToElementsMap& map,
+                                const AtomicString& key,
+                                Element* element) {
+      Member<HeapVector<Member<Element>>>& vector =
+          map.add(key.impl(), nullptr).storedValue->value;
+      if (!vector)
+        vector = new HeapVector<Member<Element>>;
+      vector->append(element);
     }
 
-    void unregisterIdNameCacheFromDocument(Document& document) const
-    {
-        DCHECK(hasValidIdNameCache());
-        // Do not repeat unregistration for the same invalidation type.
-        if (invalidationType() != InvalidateOnIdNameAttrChange)
-            document.unregisterNodeListWithIdNameCache(this);
-    }
+    StringToElementsMap m_idCache;
+    StringToElementsMap m_nameCache;
+  };
 
-    const unsigned m_overridesItemAfter : 1;
-    const unsigned m_shouldOnlyIncludeDirectChildren : 1;
-    mutable Member<NamedItemCache> m_namedItemCache;
-    mutable CollectionItemsCache<HTMLCollection, Element> m_collectionItemsCache;
+  bool overridesItemAfter() const { return m_overridesItemAfter; }
+  virtual Element* virtualItemAfter(Element*) const;
+  bool shouldOnlyIncludeDirectChildren() const {
+    return m_shouldOnlyIncludeDirectChildren;
+  }
+  virtual void supportedPropertyNames(Vector<String>& names);
+
+  virtual void updateIdNameCache() const;
+  bool hasValidIdNameCache() const { return m_namedItemCache; }
+
+  void setNamedItemCache(NamedItemCache* cache) const {
+    DCHECK(!m_namedItemCache);
+    // Do not repeat registration for the same invalidation type.
+    if (invalidationType() != InvalidateOnIdNameAttrChange)
+      document().registerNodeListWithIdNameCache(this);
+    m_namedItemCache = std::move(cache);
+  }
+
+  NamedItemCache& namedItemCache() const {
+    DCHECK(m_namedItemCache);
+    return *m_namedItemCache;
+  }
+
+ private:
+  void invalidateIdNameCacheMaps(Document* oldDocument = 0) const {
+    if (!hasValidIdNameCache())
+      return;
+
+    // Make sure we decrement the NodeListWithIdNameCache count from
+    // the old document instead of the new one in the case the collection
+    // is moved to a new document.
+    unregisterIdNameCacheFromDocument(oldDocument ? *oldDocument : document());
+
+    m_namedItemCache.clear();
+  }
+
+  void unregisterIdNameCacheFromDocument(Document& document) const {
+    DCHECK(hasValidIdNameCache());
+    // Do not repeat unregistration for the same invalidation type.
+    if (invalidationType() != InvalidateOnIdNameAttrChange)
+      document.unregisterNodeListWithIdNameCache(this);
+  }
+
+  const unsigned m_overridesItemAfter : 1;
+  const unsigned m_shouldOnlyIncludeDirectChildren : 1;
+  mutable Member<NamedItemCache> m_namedItemCache;
+  mutable CollectionItemsCache<HTMLCollection, Element> m_collectionItemsCache;
 };
 
-DEFINE_TYPE_CASTS(HTMLCollection, LiveNodeListBase, collection, isHTMLCollectionType(collection->type()), isHTMLCollectionType(collection.type()));
+DEFINE_TYPE_CASTS(HTMLCollection,
+                  LiveNodeListBase,
+                  collection,
+                  isHTMLCollectionType(collection->type()),
+                  isHTMLCollectionType(collection.type()));
 
 DISABLE_CFI_PERF
-inline void HTMLCollection::invalidateCacheForAttribute(const QualifiedName* attrName) const
-{
-    if (!attrName || shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
-        invalidateCache();
-    else if (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr)
-        invalidateIdNameCacheMaps();
+inline void HTMLCollection::invalidateCacheForAttribute(
+    const QualifiedName* attrName) const {
+  if (!attrName ||
+      shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
+    invalidateCache();
+  else if (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr)
+    invalidateIdNameCacheMaps();
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLCollection_h
+#endif  // HTMLCollection_h

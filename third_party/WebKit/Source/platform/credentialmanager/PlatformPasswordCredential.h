@@ -11,22 +11,30 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT PlatformPasswordCredential final : public PlatformCredential {
-    WTF_MAKE_NONCOPYABLE(PlatformPasswordCredential);
-public:
-    static PlatformPasswordCredential* create(const String& id, const String& password, const String& name, const KURL& iconURL);
-    ~PlatformPasswordCredential() override;
+class PLATFORM_EXPORT PlatformPasswordCredential final
+    : public PlatformCredential {
+  WTF_MAKE_NONCOPYABLE(PlatformPasswordCredential);
 
-    const String& password() const { return m_password; }
+ public:
+  static PlatformPasswordCredential* create(const String& id,
+                                            const String& password,
+                                            const String& name,
+                                            const KURL& iconURL);
+  ~PlatformPasswordCredential() override;
 
-    bool isPassword() override { return true; }
+  const String& password() const { return m_password; }
 
-private:
-    PlatformPasswordCredential(const String& id, const String& password, const String& name, const KURL& iconURL);
+  bool isPassword() override { return true; }
 
-    String m_password;
+ private:
+  PlatformPasswordCredential(const String& id,
+                             const String& password,
+                             const String& name,
+                             const KURL& iconURL);
+
+  String m_password;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformPasswordCredential_h
+#endif  // PlatformPasswordCredential_h

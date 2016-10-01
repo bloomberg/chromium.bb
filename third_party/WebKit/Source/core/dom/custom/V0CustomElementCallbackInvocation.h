@@ -38,25 +38,31 @@
 namespace blink {
 
 class V0CustomElementCallbackInvocation : public V0CustomElementProcessingStep {
-    WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackInvocation);
-public:
-    static V0CustomElementCallbackInvocation* createInvocation(V0CustomElementLifecycleCallbacks*, V0CustomElementLifecycleCallbacks::CallbackType);
-    static V0CustomElementCallbackInvocation* createAttributeChangedInvocation(V0CustomElementLifecycleCallbacks*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+  WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackInvocation);
 
-protected:
-    V0CustomElementCallbackInvocation(V0CustomElementLifecycleCallbacks* callbacks)
-        : m_callbacks(callbacks)
-    {
-    }
+ public:
+  static V0CustomElementCallbackInvocation* createInvocation(
+      V0CustomElementLifecycleCallbacks*,
+      V0CustomElementLifecycleCallbacks::CallbackType);
+  static V0CustomElementCallbackInvocation* createAttributeChangedInvocation(
+      V0CustomElementLifecycleCallbacks*,
+      const AtomicString& name,
+      const AtomicString& oldValue,
+      const AtomicString& newValue);
 
-    V0CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
+ protected:
+  V0CustomElementCallbackInvocation(
+      V0CustomElementLifecycleCallbacks* callbacks)
+      : m_callbacks(callbacks) {}
 
-    DECLARE_VIRTUAL_TRACE();
+  V0CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
 
-private:
-    Member<V0CustomElementLifecycleCallbacks> m_callbacks;
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  Member<V0CustomElementLifecycleCallbacks> m_callbacks;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementCallbackInvocation_h
+#endif  // V0CustomElementCallbackInvocation_h

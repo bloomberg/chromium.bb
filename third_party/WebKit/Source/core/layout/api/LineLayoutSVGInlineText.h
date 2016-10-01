@@ -11,116 +11,105 @@
 namespace blink {
 
 class LineLayoutSVGInlineText : public LineLayoutText {
-public:
-    explicit LineLayoutSVGInlineText(LayoutSVGInlineText* layoutSVGInlineText)
-        : LineLayoutText(layoutSVGInlineText)
-    {
-    }
+ public:
+  explicit LineLayoutSVGInlineText(LayoutSVGInlineText* layoutSVGInlineText)
+      : LineLayoutText(layoutSVGInlineText) {}
 
-    explicit LineLayoutSVGInlineText(const LineLayoutItem& item)
-        : LineLayoutText(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGInlineText());
-    }
+  explicit LineLayoutSVGInlineText(const LineLayoutItem& item)
+      : LineLayoutText(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGInlineText());
+  }
 
-    explicit LineLayoutSVGInlineText(std::nullptr_t) : LineLayoutText(nullptr) { }
+  explicit LineLayoutSVGInlineText(std::nullptr_t) : LineLayoutText(nullptr) {}
 
-    LineLayoutSVGInlineText() { }
+  LineLayoutSVGInlineText() {}
 
-    const Vector<SVGTextMetrics>& metricsList() const
-    {
-        return toSVGInlineText()->metricsList();
-    }
+  const Vector<SVGTextMetrics>& metricsList() const {
+    return toSVGInlineText()->metricsList();
+  }
 
-    SVGCharacterDataMap& characterDataMap()
-    {
-        return toSVGInlineText()->characterDataMap();
-    }
+  SVGCharacterDataMap& characterDataMap() {
+    return toSVGInlineText()->characterDataMap();
+  }
 
-    bool characterStartsNewTextChunk(int position) const
-    {
-        return toSVGInlineText()->characterStartsNewTextChunk(position);
-    }
+  bool characterStartsNewTextChunk(int position) const {
+    return toSVGInlineText()->characterStartsNewTextChunk(position);
+  }
 
-    float scalingFactor() const
-    {
-        return toSVGInlineText()->scalingFactor();
-    }
+  float scalingFactor() const { return toSVGInlineText()->scalingFactor(); }
 
-    const Font& scaledFont() const
-    {
-        return toSVGInlineText()->scaledFont();
-    }
+  const Font& scaledFont() const { return toSVGInlineText()->scaledFont(); }
 
-private:
-    LayoutSVGInlineText* toSVGInlineText()
-    {
-        return toLayoutSVGInlineText(layoutObject());
-    }
+ private:
+  LayoutSVGInlineText* toSVGInlineText() {
+    return toLayoutSVGInlineText(layoutObject());
+  }
 
-    const LayoutSVGInlineText* toSVGInlineText() const
-    {
-        return toLayoutSVGInlineText(layoutObject());
-    }
+  const LayoutSVGInlineText* toSVGInlineText() const {
+    return toLayoutSVGInlineText(layoutObject());
+  }
 };
 
 class SVGInlineTextMetricsIterator {
-    DISALLOW_NEW();
-public:
-    SVGInlineTextMetricsIterator() { reset(LineLayoutSVGInlineText()); }
-    explicit SVGInlineTextMetricsIterator(LineLayoutSVGInlineText textLineLayout) { reset(textLineLayout); }
+  DISALLOW_NEW();
 
-    void advanceToTextStart(LineLayoutSVGInlineText textLineLayout, unsigned startCharacterOffset)
-    {
-        ASSERT(textLineLayout);
-        if (!m_textLineLayout || m_textLineLayout != textLineLayout) {
-            reset(textLineLayout);
-            ASSERT(!metricsList().isEmpty());
-        }
+ public:
+  SVGInlineTextMetricsIterator() { reset(LineLayoutSVGInlineText()); }
+  explicit SVGInlineTextMetricsIterator(
+      LineLayoutSVGInlineText textLineLayout) {
+    reset(textLineLayout);
+  }
 
-        if (m_characterOffset == startCharacterOffset)
-            return;
-
-        // TODO(fs): We could walk backwards through the metrics list in these cases.
-        if (m_characterOffset > startCharacterOffset)
-            reset(textLineLayout);
-
-        while (m_characterOffset < startCharacterOffset)
-            next();
-        ASSERT(m_characterOffset == startCharacterOffset);
+  void advanceToTextStart(LineLayoutSVGInlineText textLineLayout,
+                          unsigned startCharacterOffset) {
+    ASSERT(textLineLayout);
+    if (!m_textLineLayout || m_textLineLayout != textLineLayout) {
+      reset(textLineLayout);
+      ASSERT(!metricsList().isEmpty());
     }
 
-    void next()
-    {
-        m_characterOffset += metrics().length();
-        ASSERT(m_characterOffset <= m_textLineLayout.length());
-        ASSERT(m_metricsListOffset < metricsList().size());
-        ++m_metricsListOffset;
-    }
+    if (m_characterOffset == startCharacterOffset)
+      return;
 
-    const SVGTextMetrics& metrics() const
-    {
-        ASSERT(m_textLineLayout && m_metricsListOffset < metricsList().size());
-        return metricsList()[m_metricsListOffset];
-    }
-    const Vector<SVGTextMetrics>& metricsList() const { return m_textLineLayout.metricsList(); }
-    unsigned metricsListOffset() const { return m_metricsListOffset; }
-    unsigned characterOffset() const { return m_characterOffset; }
-    bool isAtEnd() const { return m_metricsListOffset == metricsList().size(); }
+    // TODO(fs): We could walk backwards through the metrics list in these cases.
+    if (m_characterOffset > startCharacterOffset)
+      reset(textLineLayout);
 
-private:
-    void reset(LineLayoutSVGInlineText textLineLayout)
-    {
-        m_textLineLayout = textLineLayout;
-        m_characterOffset = 0;
-        m_metricsListOffset = 0;
-    }
+    while (m_characterOffset < startCharacterOffset)
+      next();
+    ASSERT(m_characterOffset == startCharacterOffset);
+  }
 
-    LineLayoutSVGInlineText m_textLineLayout;
-    unsigned m_metricsListOffset;
-    unsigned m_characterOffset;
+  void next() {
+    m_characterOffset += metrics().length();
+    ASSERT(m_characterOffset <= m_textLineLayout.length());
+    ASSERT(m_metricsListOffset < metricsList().size());
+    ++m_metricsListOffset;
+  }
+
+  const SVGTextMetrics& metrics() const {
+    ASSERT(m_textLineLayout && m_metricsListOffset < metricsList().size());
+    return metricsList()[m_metricsListOffset];
+  }
+  const Vector<SVGTextMetrics>& metricsList() const {
+    return m_textLineLayout.metricsList();
+  }
+  unsigned metricsListOffset() const { return m_metricsListOffset; }
+  unsigned characterOffset() const { return m_characterOffset; }
+  bool isAtEnd() const { return m_metricsListOffset == metricsList().size(); }
+
+ private:
+  void reset(LineLayoutSVGInlineText textLineLayout) {
+    m_textLineLayout = textLineLayout;
+    m_characterOffset = 0;
+    m_metricsListOffset = 0;
+  }
+
+  LineLayoutSVGInlineText m_textLineLayout;
+  unsigned m_metricsListOffset;
+  unsigned m_characterOffset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutSVGInlineText_h
+#endif  // LineLayoutSVGInlineText_h

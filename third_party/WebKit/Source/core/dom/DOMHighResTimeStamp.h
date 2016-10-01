@@ -9,16 +9,15 @@ namespace blink {
 
 typedef double DOMHighResTimeStamp;
 
-inline DOMHighResTimeStamp convertSecondsToDOMHighResTimeStamp(double seconds)
-{
-    return static_cast<DOMHighResTimeStamp>(seconds * 1000.0);
+inline DOMHighResTimeStamp convertSecondsToDOMHighResTimeStamp(double seconds) {
+  return static_cast<DOMHighResTimeStamp>(seconds * 1000.0);
 }
 
-inline double convertDOMHighResTimeStampToSeconds(DOMHighResTimeStamp milliseconds)
-{
-    return milliseconds / 1000.0;
+inline double convertDOMHighResTimeStampToSeconds(
+    DOMHighResTimeStamp milliseconds) {
+  return milliseconds / 1000.0;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMHighResTimeStamp_h
+#endif  // DOMHighResTimeStamp_h

@@ -33,57 +33,64 @@ namespace blink {
 
 class SVGImageElement final : public SVGGraphicsElement,
                               public SVGURIReference {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
-public:
-    DECLARE_NODE_FACTORY(SVGImageElement);
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
 
-    bool currentFrameHasSingleSecurityOrigin() const;
+ public:
+  DECLARE_NODE_FACTORY(SVGImageElement);
+  DECLARE_VIRTUAL_TRACE();
 
-    SVGAnimatedLength* x() const { return m_x.get(); }
-    SVGAnimatedLength* y() const { return m_y.get(); }
-    SVGAnimatedLength* width() const { return m_width.get(); }
-    SVGAnimatedLength* height() const { return m_height.get(); }
-    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
+  bool currentFrameHasSingleSecurityOrigin() const;
 
-    // Exposed for testing.
-    ImageResource* cachedImage() const { return imageLoader().image(); }
+  SVGAnimatedLength* x() const { return m_x.get(); }
+  SVGAnimatedLength* y() const { return m_y.get(); }
+  SVGAnimatedLength* width() const { return m_width.get(); }
+  SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedPreserveAspectRatio* preserveAspectRatio() {
+    return m_preserveAspectRatio.get();
+  }
 
-private:
-    explicit SVGImageElement(Document&);
+  // Exposed for testing.
+  ImageResource* cachedImage() const { return imageLoader().image(); }
 
-    bool isStructurallyExternal() const override { return !hrefString().isNull(); }
+ private:
+  explicit SVGImageElement(Document&);
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+  bool isStructurallyExternal() const override {
+    return !hrefString().isNull();
+  }
 
-    void svgAttributeChanged(const QualifiedName&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    const AtomicString imageSourceURL() const override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    bool haveLoadedRequiredResources() override;
+  const AtomicString imageSourceURL() const override;
 
-    bool selfHasRelativeLengths() const override;
-    void didMoveToNewDocument(Document& oldDocument) override;
-    SVGImageLoader& imageLoader() const { return *m_imageLoader; }
+  bool haveLoadedRequiredResources() override;
 
-    Member<SVGAnimatedLength> m_x;
-    Member<SVGAnimatedLength> m_y;
-    Member<SVGAnimatedLength> m_width;
-    Member<SVGAnimatedLength> m_height;
-    Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+  bool selfHasRelativeLengths() const override;
+  void didMoveToNewDocument(Document& oldDocument) override;
+  SVGImageLoader& imageLoader() const { return *m_imageLoader; }
 
-    Member<SVGImageLoader> m_imageLoader;
-    bool m_needsLoaderURIUpdate : 1;
+  Member<SVGAnimatedLength> m_x;
+  Member<SVGAnimatedLength> m_y;
+  Member<SVGAnimatedLength> m_width;
+  Member<SVGAnimatedLength> m_height;
+  Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+
+  Member<SVGImageLoader> m_imageLoader;
+  bool m_needsLoaderURIUpdate : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGImageElement_h
+#endif  // SVGImageElement_h

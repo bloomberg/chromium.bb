@@ -9,29 +9,26 @@
 
 namespace blink {
 
-SensorErrorEvent::~SensorErrorEvent()
-{
-}
+SensorErrorEvent::~SensorErrorEvent() {}
 
 SensorErrorEvent::SensorErrorEvent(const AtomicString& eventType)
-    : Event(eventType, true, false) // let default be bubbles but is not cancelable.
-{
+    : Event(eventType,
+            true,
+            false)  // let default be bubbles but is not cancelable.
+{}
+
+SensorErrorEvent::SensorErrorEvent(const AtomicString& eventType,
+                                   const SensorErrorEventInit& initializer)
+    : Event(eventType, initializer) {
+  setCanBubble(true);
 }
 
-SensorErrorEvent::SensorErrorEvent(const AtomicString& eventType, const SensorErrorEventInit& initializer)
-    : Event(eventType, initializer)
-{
-    setCanBubble(true);
+const AtomicString& SensorErrorEvent::interfaceName() const {
+  return EventNames::SensorErrorEvent;
 }
 
-const AtomicString& SensorErrorEvent::interfaceName() const
-{
-    return EventNames::SensorErrorEvent;
+DEFINE_TRACE(SensorErrorEvent) {
+  Event::trace(visitor);
 }
 
-DEFINE_TRACE(SensorErrorEvent)
-{
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

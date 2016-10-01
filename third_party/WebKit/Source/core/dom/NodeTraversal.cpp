@@ -29,153 +29,152 @@
 
 namespace blink {
 
-Node* NodeTraversal::previousIncludingPseudo(const Node& current, const Node* stayWithin)
-{
-    if (current == stayWithin)
-        return 0;
-    if (Node* previous = current.pseudoAwarePreviousSibling()) {
-        while (previous->pseudoAwareLastChild())
-            previous = previous->pseudoAwareLastChild();
-        return previous;
-    }
-    return current.parentNode();
-}
-
-Node* NodeTraversal::nextIncludingPseudo(const Node& current, const Node* stayWithin)
-{
-    if (Node* next = current.pseudoAwareFirstChild())
-        return next;
-    if (current == stayWithin)
-        return 0;
-    if (Node* next = current.pseudoAwareNextSibling())
-        return next;
-    for (Node& parent : ancestorsOf(current)) {
-        if (parent == stayWithin)
-            return 0;
-        if (Node* next = parent.pseudoAwareNextSibling())
-            return next;
-    }
+Node* NodeTraversal::previousIncludingPseudo(const Node& current,
+                                             const Node* stayWithin) {
+  if (current == stayWithin)
     return 0;
+  if (Node* previous = current.pseudoAwarePreviousSibling()) {
+    while (previous->pseudoAwareLastChild())
+      previous = previous->pseudoAwareLastChild();
+    return previous;
+  }
+  return current.parentNode();
 }
 
-Node* NodeTraversal::nextIncludingPseudoSkippingChildren(const Node& current, const Node* stayWithin)
-{
-    if (current == stayWithin)
-        return 0;
-    if (Node* next = current.pseudoAwareNextSibling())
-        return next;
-    for (Node& parent : ancestorsOf(current)) {
-        if (parent == stayWithin)
-            return 0;
-        if (Node* next = parent.pseudoAwareNextSibling())
-            return next;
-    }
-    return 0;
-}
-
-Node* NodeTraversal::nextAncestorSibling(const Node& current)
-{
-    DCHECK(!current.nextSibling());
-    for (Node& parent : ancestorsOf(current)) {
-        if (parent.nextSibling())
-            return parent.nextSibling();
-    }
-    return 0;
-}
-
-Node* NodeTraversal::nextAncestorSibling(const Node& current, const Node* stayWithin)
-{
-    DCHECK(!current.nextSibling());
-    DCHECK_NE(current, stayWithin);
-    for (Node& parent : ancestorsOf(current)) {
-        if (parent == stayWithin)
-            return 0;
-        if (parent.nextSibling())
-            return parent.nextSibling();
-    }
-    return 0;
-}
-
-Node* NodeTraversal::lastWithin(const ContainerNode& current)
-{
-    Node* descendant = current.lastChild();
-    for (Node* child = descendant; child; child = child->lastChild())
-        descendant = child;
-    return descendant;
-}
-
-Node& NodeTraversal::lastWithinOrSelf(Node& current)
-{
-    Node* lastDescendant = current.isContainerNode() ? NodeTraversal::lastWithin(toContainerNode(current)) : 0;
-    return lastDescendant ? *lastDescendant : current;
-}
-
-Node* NodeTraversal::previous(const Node& current, const Node* stayWithin)
-{
-    if (current == stayWithin)
-        return 0;
-    if (current.previousSibling()) {
-        Node* previous = current.previousSibling();
-        while (Node* child = previous->lastChild())
-            previous = child;
-        return previous;
-    }
-    return current.parentNode();
-}
-
-Node* NodeTraversal::previousSkippingChildren(const Node& current, const Node* stayWithin)
-{
-    if (current == stayWithin)
-        return 0;
-    if (current.previousSibling())
-        return current.previousSibling();
-    for (Node& parent : ancestorsOf(current)) {
-        if (parent == stayWithin)
-            return 0;
-        if (parent.previousSibling())
-            return parent.previousSibling();
-    }
-    return 0;
-}
-
-Node* NodeTraversal::nextPostOrder(const Node& current, const Node* stayWithin)
-{
-    if (current == stayWithin)
-        return 0;
-    if (!current.nextSibling())
-        return current.parentNode();
-    Node* next = current.nextSibling();
-    while (Node* child = next->firstChild())
-        next = child;
+Node* NodeTraversal::nextIncludingPseudo(const Node& current,
+                                         const Node* stayWithin) {
+  if (Node* next = current.pseudoAwareFirstChild())
     return next;
-}
-
-static Node* previousAncestorSiblingPostOrder(const Node& current, const Node* stayWithin)
-{
-    DCHECK(!current.previousSibling());
-    for (Node& parent : NodeTraversal::ancestorsOf(current)) {
-        if (parent == stayWithin)
-            return 0;
-        if (parent.previousSibling())
-            return parent.previousSibling();
-    }
+  if (current == stayWithin)
     return 0;
+  if (Node* next = current.pseudoAwareNextSibling())
+    return next;
+  for (Node& parent : ancestorsOf(current)) {
+    if (parent == stayWithin)
+      return 0;
+    if (Node* next = parent.pseudoAwareNextSibling())
+      return next;
+  }
+  return 0;
 }
 
-Node* NodeTraversal::previousPostOrder(const Node& current, const Node* stayWithin)
-{
-    if (Node* lastChild = current.lastChild())
-        return lastChild;
-    if (current == stayWithin)
-        return 0;
-    if (current.previousSibling())
-        return current.previousSibling();
-    return previousAncestorSiblingPostOrder(current, stayWithin);
+Node* NodeTraversal::nextIncludingPseudoSkippingChildren(
+    const Node& current,
+    const Node* stayWithin) {
+  if (current == stayWithin)
+    return 0;
+  if (Node* next = current.pseudoAwareNextSibling())
+    return next;
+  for (Node& parent : ancestorsOf(current)) {
+    if (parent == stayWithin)
+      return 0;
+    if (Node* next = parent.pseudoAwareNextSibling())
+      return next;
+  }
+  return 0;
 }
 
-Node* NodeTraversal::commonAncestor(const Node& nodeA, const Node& nodeB)
-{
-    return Range::commonAncestorContainer(&nodeA, &nodeB);
+Node* NodeTraversal::nextAncestorSibling(const Node& current) {
+  DCHECK(!current.nextSibling());
+  for (Node& parent : ancestorsOf(current)) {
+    if (parent.nextSibling())
+      return parent.nextSibling();
+  }
+  return 0;
 }
 
-} // namespace blink
+Node* NodeTraversal::nextAncestorSibling(const Node& current,
+                                         const Node* stayWithin) {
+  DCHECK(!current.nextSibling());
+  DCHECK_NE(current, stayWithin);
+  for (Node& parent : ancestorsOf(current)) {
+    if (parent == stayWithin)
+      return 0;
+    if (parent.nextSibling())
+      return parent.nextSibling();
+  }
+  return 0;
+}
+
+Node* NodeTraversal::lastWithin(const ContainerNode& current) {
+  Node* descendant = current.lastChild();
+  for (Node* child = descendant; child; child = child->lastChild())
+    descendant = child;
+  return descendant;
+}
+
+Node& NodeTraversal::lastWithinOrSelf(Node& current) {
+  Node* lastDescendant =
+      current.isContainerNode()
+          ? NodeTraversal::lastWithin(toContainerNode(current))
+          : 0;
+  return lastDescendant ? *lastDescendant : current;
+}
+
+Node* NodeTraversal::previous(const Node& current, const Node* stayWithin) {
+  if (current == stayWithin)
+    return 0;
+  if (current.previousSibling()) {
+    Node* previous = current.previousSibling();
+    while (Node* child = previous->lastChild())
+      previous = child;
+    return previous;
+  }
+  return current.parentNode();
+}
+
+Node* NodeTraversal::previousSkippingChildren(const Node& current,
+                                              const Node* stayWithin) {
+  if (current == stayWithin)
+    return 0;
+  if (current.previousSibling())
+    return current.previousSibling();
+  for (Node& parent : ancestorsOf(current)) {
+    if (parent == stayWithin)
+      return 0;
+    if (parent.previousSibling())
+      return parent.previousSibling();
+  }
+  return 0;
+}
+
+Node* NodeTraversal::nextPostOrder(const Node& current,
+                                   const Node* stayWithin) {
+  if (current == stayWithin)
+    return 0;
+  if (!current.nextSibling())
+    return current.parentNode();
+  Node* next = current.nextSibling();
+  while (Node* child = next->firstChild())
+    next = child;
+  return next;
+}
+
+static Node* previousAncestorSiblingPostOrder(const Node& current,
+                                              const Node* stayWithin) {
+  DCHECK(!current.previousSibling());
+  for (Node& parent : NodeTraversal::ancestorsOf(current)) {
+    if (parent == stayWithin)
+      return 0;
+    if (parent.previousSibling())
+      return parent.previousSibling();
+  }
+  return 0;
+}
+
+Node* NodeTraversal::previousPostOrder(const Node& current,
+                                       const Node* stayWithin) {
+  if (Node* lastChild = current.lastChild())
+    return lastChild;
+  if (current == stayWithin)
+    return 0;
+  if (current.previousSibling())
+    return current.previousSibling();
+  return previousAncestorSiblingPostOrder(current, stayWithin);
+}
+
+Node* NodeTraversal::commonAncestor(const Node& nodeA, const Node& nodeB) {
+  return Range::commonAncestorContainer(&nodeA, &nodeB);
+}
+
+}  // namespace blink

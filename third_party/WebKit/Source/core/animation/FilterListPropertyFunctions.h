@@ -12,42 +12,43 @@
 namespace blink {
 
 class FilterListPropertyFunctions {
-    STATIC_ONLY(FilterListPropertyFunctions);
-public:
-    static const FilterOperations& getInitialFilterList(CSSPropertyID property)
-    {
-        return getFilterList(property, ComputedStyle::initialStyle());
-    }
+  STATIC_ONLY(FilterListPropertyFunctions);
 
-    static const FilterOperations& getFilterList(CSSPropertyID property, const ComputedStyle& style)
-    {
-        switch (property) {
-        default:
-            NOTREACHED();
-            // Fall through.
-        case CSSPropertyBackdropFilter:
-            return style.backdropFilter();
-        case CSSPropertyFilter:
-            return style.filter();
-        }
-    }
+ public:
+  static const FilterOperations& getInitialFilterList(CSSPropertyID property) {
+    return getFilterList(property, ComputedStyle::initialStyle());
+  }
 
-    static void setFilterList(CSSPropertyID property, ComputedStyle& style, const FilterOperations& filterOperations)
-    {
-        switch (property) {
-        case CSSPropertyBackdropFilter:
-            style.setBackdropFilter(filterOperations);
-            break;
-        case CSSPropertyFilter:
-            style.setFilter(filterOperations);
-            break;
-        default:
-            NOTREACHED();
-            break;
-        }
+  static const FilterOperations& getFilterList(CSSPropertyID property,
+                                               const ComputedStyle& style) {
+    switch (property) {
+      default:
+        NOTREACHED();
+      // Fall through.
+      case CSSPropertyBackdropFilter:
+        return style.backdropFilter();
+      case CSSPropertyFilter:
+        return style.filter();
     }
+  }
+
+  static void setFilterList(CSSPropertyID property,
+                            ComputedStyle& style,
+                            const FilterOperations& filterOperations) {
+    switch (property) {
+      case CSSPropertyBackdropFilter:
+        style.setBackdropFilter(filterOperations);
+        break;
+      case CSSPropertyFilter:
+        style.setFilter(filterOperations);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FilterListPropertyFunctions_h
+#endif  // FilterListPropertyFunctions_h

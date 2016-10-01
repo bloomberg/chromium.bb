@@ -6,25 +6,26 @@
 
 namespace blink {
 
-void ObjectPaintProperties::getContentsPropertyTreeState(GeometryPropertyTreeState& state, LayoutPoint& paintOffsetFromState) const
-{
-    state = localBorderBoxProperties()->geometryPropertyTreeState;
-    if (svgLocalToBorderBoxTransform()) {
-        state.transform = svgLocalToBorderBoxTransform();
-        // No paint offset from the state because svgLocalToBorderTransform
-        // embeds the paint offset in it.
-        paintOffsetFromState = LayoutPoint();
-    } else {
-        if (scrollTranslation())
-            state.transform = scrollTranslation();
-        paintOffsetFromState = localBorderBoxProperties()->paintOffset;
-    }
+void ObjectPaintProperties::getContentsPropertyTreeState(
+    GeometryPropertyTreeState& state,
+    LayoutPoint& paintOffsetFromState) const {
+  state = localBorderBoxProperties()->geometryPropertyTreeState;
+  if (svgLocalToBorderBoxTransform()) {
+    state.transform = svgLocalToBorderBoxTransform();
+    // No paint offset from the state because svgLocalToBorderTransform
+    // embeds the paint offset in it.
+    paintOffsetFromState = LayoutPoint();
+  } else {
+    if (scrollTranslation())
+      state.transform = scrollTranslation();
+    paintOffsetFromState = localBorderBoxProperties()->paintOffset;
+  }
 
-    if (overflowClip())
-        state.clip = overflowClip();
-    else if (cssClip())
-        state.clip = cssClip();
-    // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
+  if (overflowClip())
+    state.clip = overflowClip();
+  else if (cssClip())
+    state.clip = cssClip();
+  // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
 }
 
-} // namespace blink
+}  // namespace blink

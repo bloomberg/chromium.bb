@@ -29,34 +29,31 @@
 
 namespace blink {
 
-void WebSpeechRecognitionHandle::reset()
-{
-    m_private.reset();
+void WebSpeechRecognitionHandle::reset() {
+  m_private.reset();
 }
 
-void WebSpeechRecognitionHandle::assign(const WebSpeechRecognitionHandle& other)
-{
-    m_private = other.m_private;
+void WebSpeechRecognitionHandle::assign(
+    const WebSpeechRecognitionHandle& other) {
+  m_private = other.m_private;
 }
 
-bool WebSpeechRecognitionHandle::equals(const WebSpeechRecognitionHandle& other) const
-{
-    return m_private.get() == other.m_private.get();
+bool WebSpeechRecognitionHandle::equals(
+    const WebSpeechRecognitionHandle& other) const {
+  return m_private.get() == other.m_private.get();
 }
 
-bool WebSpeechRecognitionHandle::lessThan(const WebSpeechRecognitionHandle& other) const
-{
-    return m_private.get() < other.m_private.get();
+bool WebSpeechRecognitionHandle::lessThan(
+    const WebSpeechRecognitionHandle& other) const {
+  return m_private.get() < other.m_private.get();
 }
 
-WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(SpeechRecognition* speechRecognition)
-    : m_private(speechRecognition)
-{
+WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(
+    SpeechRecognition* speechRecognition)
+    : m_private(speechRecognition) {}
+
+WebSpeechRecognitionHandle::operator SpeechRecognition*() const {
+  return m_private.get();
 }
 
-WebSpeechRecognitionHandle::operator SpeechRecognition*() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

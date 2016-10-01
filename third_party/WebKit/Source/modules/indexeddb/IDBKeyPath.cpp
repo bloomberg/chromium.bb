@@ -34,178 +34,170 @@ using namespace WTF::Unicode;
 
 namespace blink {
 
-
 namespace {
 
 using namespace WTF::Unicode;
 
 // The following correspond to grammar in ECMA-262.
-const uint32_t unicodeLetter = Letter_Uppercase | Letter_Lowercase | Letter_Titlecase | Letter_Modifier | Letter_Other | Number_Letter;
+const uint32_t unicodeLetter = Letter_Uppercase | Letter_Lowercase |
+                               Letter_Titlecase | Letter_Modifier |
+                               Letter_Other | Number_Letter;
 const uint32_t unicodeCombiningMark = Mark_NonSpacing | Mark_SpacingCombining;
 const uint32_t unicodeDigit = Number_DecimalDigit;
 const uint32_t unicodeConnectorPunctuation = Punctuation_Connector;
 
-static inline bool isIdentifierStartCharacter(UChar c)
-{
-    return (category(c) & unicodeLetter) || (c == '$') || (c == '_');
+static inline bool isIdentifierStartCharacter(UChar c) {
+  return (category(c) & unicodeLetter) || (c == '$') || (c == '_');
 }
 
-static inline bool isIdentifierCharacter(UChar c)
-{
-    return (category(c) & (unicodeLetter | unicodeCombiningMark | unicodeDigit | unicodeConnectorPunctuation)) || (c == '$') || (c == '_') || (c == zeroWidthNonJoinerCharacter) || (c == zeroWidthJoinerCharacter);
+static inline bool isIdentifierCharacter(UChar c) {
+  return (category(c) & (unicodeLetter | unicodeCombiningMark | unicodeDigit |
+                         unicodeConnectorPunctuation)) ||
+         (c == '$') || (c == '_') || (c == zeroWidthNonJoinerCharacter) ||
+         (c == zeroWidthJoinerCharacter);
 }
 
-bool isIdentifier(const String& s)
-{
-    size_t length = s.length();
-    if (!length)
-        return false;
-    if (!isIdentifierStartCharacter(s[0]))
-        return false;
-    for (size_t i = 1; i < length; ++i) {
-        if (!isIdentifierCharacter(s[i]))
-            return false;
-    }
-    return true;
+bool isIdentifier(const String& s) {
+  size_t length = s.length();
+  if (!length)
+    return false;
+  if (!isIdentifierStartCharacter(s[0]))
+    return false;
+  for (size_t i = 1; i < length; ++i) {
+    if (!isIdentifierCharacter(s[i]))
+      return false;
+  }
+  return true;
 }
 
-} // namespace
+}  // namespace
 
-bool IDBIsValidKeyPath(const String& keyPath)
-{
-    IDBKeyPathParseError error;
-    Vector<String> keyPathElements;
-    IDBParseKeyPath(keyPath, keyPathElements, error);
-    return error == IDBKeyPathParseErrorNone;
+bool IDBIsValidKeyPath(const String& keyPath) {
+  IDBKeyPathParseError error;
+  Vector<String> keyPathElements;
+  IDBParseKeyPath(keyPath, keyPathElements, error);
+  return error == IDBKeyPathParseErrorNone;
 }
 
-void IDBParseKeyPath(const String& keyPath, Vector<String>& elements, IDBKeyPathParseError& error)
-{
-    // IDBKeyPath ::= EMPTY_STRING | identifier ('.' identifier)*
+void IDBParseKeyPath(const String& keyPath,
+                     Vector<String>& elements,
+                     IDBKeyPathParseError& error) {
+  // IDBKeyPath ::= EMPTY_STRING | identifier ('.' identifier)*
 
-    if (keyPath.isEmpty()) {
-        error = IDBKeyPathParseErrorNone;
-        return;
-    }
-
-    keyPath.split('.', /*allowEmptyEntries*/true, elements);
-    for (size_t i = 0; i < elements.size(); ++i) {
-        if (!isIdentifier(elements[i])) {
-            error = IDBKeyPathParseErrorIdentifier;
-            return;
-        }
-    }
+  if (keyPath.isEmpty()) {
     error = IDBKeyPathParseErrorNone;
+    return;
+  }
+
+  keyPath.split('.', /*allowEmptyEntries*/ true, elements);
+  for (size_t i = 0; i < elements.size(); ++i) {
+    if (!isIdentifier(elements[i])) {
+      error = IDBKeyPathParseErrorIdentifier;
+      return;
+    }
+  }
+  error = IDBKeyPathParseErrorNone;
 }
 
 IDBKeyPath::IDBKeyPath(const String& string)
-    : m_type(StringType)
-    , m_string(string)
-{
-    ASSERT(!m_string.isNull());
+    : m_type(StringType), m_string(string) {
+  ASSERT(!m_string.isNull());
 }
 
 IDBKeyPath::IDBKeyPath(const Vector<String>& array)
-    : m_type(ArrayType)
-    , m_array(array)
-{
+    : m_type(ArrayType), m_array(array) {
+#if ENABLE(ASSERT)
+  for (size_t i = 0; i < m_array.size(); ++i)
+    ASSERT(!m_array[i].isNull());
+#endif
+}
+
+IDBKeyPath::IDBKeyPath(const StringOrStringSequence& keyPath) {
+  if (keyPath.isNull()) {
+    m_type = NullType;
+  } else if (keyPath.isString()) {
+    m_type = StringType;
+    m_string = keyPath.getAsString();
+    ASSERT(!m_string.isNull());
+  } else {
+    ASSERT(keyPath.isStringSequence());
+    m_type = ArrayType;
+    m_array = keyPath.getAsStringSequence();
 #if ENABLE(ASSERT)
     for (size_t i = 0; i < m_array.size(); ++i)
-        ASSERT(!m_array[i].isNull());
+      ASSERT(!m_array[i].isNull());
 #endif
+  }
 }
 
-IDBKeyPath::IDBKeyPath(const StringOrStringSequence& keyPath)
-{
-    if (keyPath.isNull()) {
-        m_type = NullType;
-    } else if (keyPath.isString()) {
-        m_type = StringType;
-        m_string = keyPath.getAsString();
-        ASSERT(!m_string.isNull());
-    } else {
-        ASSERT(keyPath.isStringSequence());
-        m_type = ArrayType;
-        m_array = keyPath.getAsStringSequence();
-#if ENABLE(ASSERT)
-        for (size_t i = 0; i < m_array.size(); ++i)
-            ASSERT(!m_array[i].isNull());
-#endif
-    }
-}
-
-IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& keyPath)
-{
-    switch (keyPath.keyPathType()) {
+IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& keyPath) {
+  switch (keyPath.keyPathType()) {
     case WebIDBKeyPathTypeNull:
-        m_type = NullType;
-        return;
+      m_type = NullType;
+      return;
 
     case WebIDBKeyPathTypeString:
-        m_type = StringType;
-        m_string = keyPath.string();
-        return;
+      m_type = StringType;
+      m_string = keyPath.string();
+      return;
 
     case WebIDBKeyPathTypeArray:
-        m_type = ArrayType;
-        for (size_t i = 0, size = keyPath.array().size(); i < size; ++i)
-            m_array.append(keyPath.array()[i]);
-        return;
-    }
-    ASSERT_NOT_REACHED();
+      m_type = ArrayType;
+      for (size_t i = 0, size = keyPath.array().size(); i < size; ++i)
+        m_array.append(keyPath.array()[i]);
+      return;
+  }
+  ASSERT_NOT_REACHED();
 }
 
-IDBKeyPath::operator WebIDBKeyPath() const
-{
-    switch (m_type) {
+IDBKeyPath::operator WebIDBKeyPath() const {
+  switch (m_type) {
     case NullType:
-        return WebIDBKeyPath();
+      return WebIDBKeyPath();
     case StringType:
-        return WebIDBKeyPath(WebString(m_string));
+      return WebIDBKeyPath(WebString(m_string));
     case ArrayType:
-        return WebIDBKeyPath(m_array);
-    }
-    ASSERT_NOT_REACHED();
-    return WebIDBKeyPath();
+      return WebIDBKeyPath(m_array);
+  }
+  ASSERT_NOT_REACHED();
+  return WebIDBKeyPath();
 }
 
-bool IDBKeyPath::isValid() const
-{
-    switch (m_type) {
+bool IDBKeyPath::isValid() const {
+  switch (m_type) {
     case NullType:
+      return false;
+
+    case StringType:
+      return IDBIsValidKeyPath(m_string);
+
+    case ArrayType:
+      if (m_array.isEmpty())
         return false;
-
-    case StringType:
-        return IDBIsValidKeyPath(m_string);
-
-    case ArrayType:
-        if (m_array.isEmpty())
-            return false;
-        for (size_t i = 0; i < m_array.size(); ++i) {
-            if (!IDBIsValidKeyPath(m_array[i]))
-                return false;
-        }
-        return true;
-    }
-    ASSERT_NOT_REACHED();
-    return false;
+      for (size_t i = 0; i < m_array.size(); ++i) {
+        if (!IDBIsValidKeyPath(m_array[i]))
+          return false;
+      }
+      return true;
+  }
+  ASSERT_NOT_REACHED();
+  return false;
 }
 
-bool IDBKeyPath::operator==(const IDBKeyPath& other) const
-{
-    if (m_type != other.m_type)
-        return false;
+bool IDBKeyPath::operator==(const IDBKeyPath& other) const {
+  if (m_type != other.m_type)
+    return false;
 
-    switch (m_type) {
+  switch (m_type) {
     case NullType:
-        return true;
+      return true;
     case StringType:
-        return m_string == other.m_string;
+      return m_string == other.m_string;
     case ArrayType:
-        return m_array == other.m_array;
-    }
-    ASSERT_NOT_REACHED();
-    return false;
+      return m_array == other.m_array;
+  }
+  ASSERT_NOT_REACHED();
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

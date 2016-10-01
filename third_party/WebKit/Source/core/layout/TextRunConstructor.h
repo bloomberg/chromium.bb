@@ -51,23 +51,47 @@ class LineLayoutText;
 class LineLayoutItem;
 
 enum TextRunFlag {
-    DefaultTextRunFlags = 0,
-    RespectDirection = 1 << 0,
-    RespectDirectionOverride = 1 << 1
+  DefaultTextRunFlags = 0,
+  RespectDirection = 1 << 0,
+  RespectDirectionOverride = 1 << 1
 };
 
 typedef unsigned TextRunFlags;
 
 // Direction resolved from string value.
-TextRun constructTextRun(const Font&, const String&, const ComputedStyle&, TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(const Font&, const LineLayoutText, unsigned offset, unsigned length, const ComputedStyle&);
+TextRun constructTextRun(const Font&,
+                         const String&,
+                         const ComputedStyle&,
+                         TextRunFlags = DefaultTextRunFlags);
+TextRun constructTextRun(const Font&,
+                         const LineLayoutText,
+                         unsigned offset,
+                         unsigned length,
+                         const ComputedStyle&);
 
 // Explicit direction.
-TextRun constructTextRun(const Font&, const String&, const ComputedStyle&, TextDirection, TextRunFlags = DefaultTextRunFlags);
-TextRun constructTextRun(const Font&, const LayoutText*, unsigned offset, unsigned length, const ComputedStyle&, TextDirection);
-TextRun constructTextRun(const Font&, const LChar*, int length, const ComputedStyle&, TextDirection);
-TextRun constructTextRun(const Font&, const UChar*, int length, const ComputedStyle&, TextDirection);
+TextRun constructTextRun(const Font&,
+                         const String&,
+                         const ComputedStyle&,
+                         TextDirection,
+                         TextRunFlags = DefaultTextRunFlags);
+TextRun constructTextRun(const Font&,
+                         const LayoutText*,
+                         unsigned offset,
+                         unsigned length,
+                         const ComputedStyle&,
+                         TextDirection);
+TextRun constructTextRun(const Font&,
+                         const LChar*,
+                         int length,
+                         const ComputedStyle&,
+                         TextDirection);
+TextRun constructTextRun(const Font&,
+                         const UChar*,
+                         int length,
+                         const ComputedStyle&,
+                         TextDirection);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

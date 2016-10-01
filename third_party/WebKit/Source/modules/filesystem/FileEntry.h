@@ -42,26 +42,27 @@ class BlobCallback;
 class FileWriterCallback;
 
 class MODULES_EXPORT FileEntry final : public Entry {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static FileEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)
-    {
-        return new FileEntry(fileSystem, fullPath);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    void createWriter(FileWriterCallback*, ErrorCallback* = nullptr);
-    void file(BlobCallback*, ErrorCallback* = nullptr);
+ public:
+  static FileEntry* create(DOMFileSystemBase* fileSystem,
+                           const String& fullPath) {
+    return new FileEntry(fileSystem, fullPath);
+  }
 
-    bool isFile() const override { return true; }
+  void createWriter(FileWriterCallback*, ErrorCallback* = nullptr);
+  void file(BlobCallback*, ErrorCallback* = nullptr);
 
-    DECLARE_VIRTUAL_TRACE();
+  bool isFile() const override { return true; }
 
-private:
-    FileEntry(DOMFileSystemBase*, const String& fullPath);
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  FileEntry(DOMFileSystemBase*, const String& fullPath);
 };
 
 DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileEntry_h
+#endif  // FileEntry_h

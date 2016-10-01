@@ -13,12 +13,12 @@ class CompositorAnimationPlayer;
 
 // A client for compositor representation of AnimationPlayer.
 class BLINK_PLATFORM_EXPORT CompositorAnimationPlayerClient {
-public:
-    virtual ~CompositorAnimationPlayerClient();
+ public:
+  virtual ~CompositorAnimationPlayerClient();
 
-    virtual CompositorAnimationPlayer* compositorPlayer() const = 0;
+  virtual CompositorAnimationPlayer* compositorPlayer() const = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorAnimationPlayerClient_h
+#endif  // CompositorAnimationPlayerClient_h

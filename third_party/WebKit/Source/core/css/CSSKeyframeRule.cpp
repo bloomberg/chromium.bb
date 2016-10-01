@@ -33,45 +33,42 @@
 
 namespace blink {
 
-CSSKeyframeRule::CSSKeyframeRule(StyleRuleKeyframe* keyframe, CSSKeyframesRule* parent)
-    : CSSRule(nullptr)
-    , m_keyframe(keyframe)
-{
-    setParentRule(parent);
+CSSKeyframeRule::CSSKeyframeRule(StyleRuleKeyframe* keyframe,
+                                 CSSKeyframesRule* parent)
+    : CSSRule(nullptr), m_keyframe(keyframe) {
+  setParentRule(parent);
 }
 
-CSSKeyframeRule::~CSSKeyframeRule()
-{
+CSSKeyframeRule::~CSSKeyframeRule() {}
+
+void CSSKeyframeRule::setKeyText(const String& keyText,
+                                 ExceptionState& exceptionState) {
+  CSSStyleSheet::RuleMutationScope(this);
+
+  if (!m_keyframe->setKeyText(keyText))
+    exceptionState.throwDOMException(
+        SyntaxError,
+        "The key '" + keyText + "' is invalid and cannot be parsed");
+
+  toCSSKeyframesRule(parentRule())->styleChanged();
 }
 
-void CSSKeyframeRule::setKeyText(const String& keyText, ExceptionState& exceptionState)
-{
-    CSSStyleSheet::RuleMutationScope(this);
-
-    if (!m_keyframe->setKeyText(keyText))
-        exceptionState.throwDOMException(SyntaxError, "The key '" + keyText + "' is invalid and cannot be parsed");
-
-    toCSSKeyframesRule(parentRule())->styleChanged();
+CSSStyleDeclaration* CSSKeyframeRule::style() const {
+  if (!m_propertiesCSSOMWrapper)
+    m_propertiesCSSOMWrapper = KeyframeStyleRuleCSSStyleDeclaration::create(
+        m_keyframe->mutableProperties(), const_cast<CSSKeyframeRule*>(this));
+  return m_propertiesCSSOMWrapper.get();
 }
 
-CSSStyleDeclaration* CSSKeyframeRule::style() const
-{
-    if (!m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper = KeyframeStyleRuleCSSStyleDeclaration::create(m_keyframe->mutableProperties(), const_cast<CSSKeyframeRule*>(this));
-    return m_propertiesCSSOMWrapper.get();
+void CSSKeyframeRule::reattach(StyleRuleBase*) {
+  // No need to reattach, the underlying data is shareable on mutation.
+  ASSERT_NOT_REACHED();
 }
 
-void CSSKeyframeRule::reattach(StyleRuleBase*)
-{
-    // No need to reattach, the underlying data is shareable on mutation.
-    ASSERT_NOT_REACHED();
+DEFINE_TRACE(CSSKeyframeRule) {
+  visitor->trace(m_keyframe);
+  visitor->trace(m_propertiesCSSOMWrapper);
+  CSSRule::trace(visitor);
 }
 
-DEFINE_TRACE(CSSKeyframeRule)
-{
-    visitor->trace(m_keyframe);
-    visitor->trace(m_propertiesCSSOMWrapper);
-    CSSRule::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

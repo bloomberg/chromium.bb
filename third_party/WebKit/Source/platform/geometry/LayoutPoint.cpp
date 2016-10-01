@@ -8,11 +8,9 @@
 
 namespace blink {
 
-String LayoutPoint::toString() const
-{
-    return String::format("%s,%s",
-        x().toString().ascii().data(),
-        y().toString().ascii().data());
+String LayoutPoint::toString() const {
+  return String::format("%s,%s", x().toString().ascii().data(),
+                        y().toString().ascii().data());
 }
 
-} // namespace blink
+}  // namespace blink

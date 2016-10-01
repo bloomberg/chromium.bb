@@ -18,34 +18,39 @@ class ContentSecurityPolicy;
 class KURL;
 
 class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
-public:
-    enum WildcardDisposition {
-        HasWildcard,
-        NoWildcard
-    };
+ public:
+  enum WildcardDisposition { HasWildcard, NoWildcard };
 
-    CSPSource(ContentSecurityPolicy*, const String& scheme, const String& host, int port, const String& path, WildcardDisposition hostWildcard, WildcardDisposition portWildcard);
-    bool matches(const KURL&, ResourceRequest::RedirectStatus = ResourceRequest::RedirectStatus::NoRedirect) const;
+  CSPSource(ContentSecurityPolicy*,
+            const String& scheme,
+            const String& host,
+            int port,
+            const String& path,
+            WildcardDisposition hostWildcard,
+            WildcardDisposition portWildcard);
+  bool matches(const KURL&,
+               ResourceRequest::RedirectStatus =
+                   ResourceRequest::RedirectStatus::NoRedirect) const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    bool schemeMatches(const KURL&) const;
-    bool hostMatches(const KURL&) const;
-    bool pathMatches(const KURL&) const;
-    bool portMatches(const KURL&) const;
-    bool isSchemeOnly() const;
+ private:
+  bool schemeMatches(const KURL&) const;
+  bool hostMatches(const KURL&) const;
+  bool pathMatches(const KURL&) const;
+  bool portMatches(const KURL&) const;
+  bool isSchemeOnly() const;
 
-    Member<ContentSecurityPolicy> m_policy;
-    String m_scheme;
-    String m_host;
-    int m_port;
-    String m_path;
+  Member<ContentSecurityPolicy> m_policy;
+  String m_scheme;
+  String m_host;
+  int m_port;
+  String m_path;
 
-    WildcardDisposition m_hostWildcard;
-    WildcardDisposition m_portWildcard;
+  WildcardDisposition m_hostWildcard;
+  WildcardDisposition m_portWildcard;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

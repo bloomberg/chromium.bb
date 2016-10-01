@@ -31,33 +31,28 @@
 
 namespace WTF {
 
-template<typename T>
+template <typename T>
 using WeakPtr = base::WeakPtr<T>;
 
-template<typename T>
+template <typename T>
 class WeakPtrFactory {
-    WTF_MAKE_NONCOPYABLE(WeakPtrFactory<T>);
-    USING_FAST_MALLOC(WeakPtrFactory);
-public:
-    explicit WeakPtrFactory(T* ptr) : m_factory(ptr) { }
+  WTF_MAKE_NONCOPYABLE(WeakPtrFactory<T>);
+  USING_FAST_MALLOC(WeakPtrFactory);
 
-    WeakPtr<T> createWeakPtr() { return m_factory.GetWeakPtr(); }
+ public:
+  explicit WeakPtrFactory(T* ptr) : m_factory(ptr) {}
 
-    void revokeAll()
-    {
-        m_factory.InvalidateWeakPtrs();
-    }
+  WeakPtr<T> createWeakPtr() { return m_factory.GetWeakPtr(); }
 
-    bool hasWeakPtrs() const
-    {
-        return m_factory.HasWeakPtrs();
-    }
+  void revokeAll() { m_factory.InvalidateWeakPtrs(); }
 
-private:
-    base::WeakPtrFactory<T> m_factory;
+  bool hasWeakPtrs() const { return m_factory.HasWeakPtrs(); }
+
+ private:
+  base::WeakPtrFactory<T> m_factory;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::WeakPtr;
 using WTF::WeakPtrFactory;

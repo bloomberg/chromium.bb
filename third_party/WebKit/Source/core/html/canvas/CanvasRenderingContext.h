@@ -47,124 +47,148 @@ class ImageBitmap;
 class WebLayer;
 
 enum CanvasColorSpace {
-    kLegacyCanvasColorSpace,
-    kSRGBCanvasColorSpace,
-    kLinearRGBCanvasColorSpace,
+  kLegacyCanvasColorSpace,
+  kSRGBCanvasColorSpace,
+  kLinearRGBCanvasColorSpace,
 };
 
-class CORE_EXPORT CanvasRenderingContext : public GarbageCollectedFinalized<CanvasRenderingContext>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
-    USING_PRE_FINALIZER(CanvasRenderingContext, dispose);
-public:
-    virtual ~CanvasRenderingContext() { }
+class CORE_EXPORT CanvasRenderingContext
+    : public GarbageCollectedFinalized<CanvasRenderingContext>,
+      public ScriptWrappable {
+  WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
+  USING_PRE_FINALIZER(CanvasRenderingContext, dispose);
 
-    // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D canvas and the existing
-    // context is already 2D, just return that. If the existing context is WebGL, then destroy it
-    // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
-    // context with any other type string will destroy any existing context.
-    enum ContextType {
-        // Do not change assigned numbers of existing items: add new features to the end of the list.
-        Context2d = 0,
-        ContextExperimentalWebgl = 2,
-        ContextWebgl = 3,
-        ContextWebgl2 = 4,
-        ContextImageBitmap = 5,
-        ContextTypeCount,
-    };
+ public:
+  virtual ~CanvasRenderingContext() {}
 
-    static ContextType contextTypeFromId(const String& id);
-    static ContextType resolveContextTypeAliases(ContextType);
+  // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D canvas and the existing
+  // context is already 2D, just return that. If the existing context is WebGL, then destroy it
+  // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
+  // context with any other type string will destroy any existing context.
+  enum ContextType {
+    // Do not change assigned numbers of existing items: add new features to the end of the list.
+    Context2d = 0,
+    ContextExperimentalWebgl = 2,
+    ContextWebgl = 3,
+    ContextWebgl2 = 4,
+    ContextImageBitmap = 5,
+    ContextTypeCount,
+  };
 
-    HTMLCanvasElement* canvas() const { return m_canvas; }
+  static ContextType contextTypeFromId(const String& id);
+  static ContextType resolveContextTypeAliases(ContextType);
 
-    CanvasColorSpace colorSpace() const { return m_colorSpace; };
-    WTF::String colorSpaceAsString() const;
-    sk_sp<SkColorSpace> skColorSpace() const;
+  HTMLCanvasElement* canvas() const { return m_canvas; }
 
-    virtual PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const = 0;
-    virtual ContextType getContextType() const = 0;
-    virtual bool isAccelerated() const { return false; }
-    virtual bool shouldAntialias() const { return false; }
-    virtual void setIsHidden(bool) = 0;
-    virtual bool isContextLost() const { return true; }
-    virtual void setCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
-    virtual void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) { NOTREACHED(); }
-    virtual bool isPaintable() const = 0;
+  CanvasColorSpace colorSpace() const { return m_colorSpace; };
+  WTF::String colorSpaceAsString() const;
+  sk_sp<SkColorSpace> skColorSpace() const;
 
-    // Return true if the content is updated.
-    virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) { return false; }
+  virtual PassRefPtr<Image> getImage(AccelerationHint,
+                                     SnapshotReason) const = 0;
+  virtual ContextType getContextType() const = 0;
+  virtual bool isAccelerated() const { return false; }
+  virtual bool shouldAntialias() const { return false; }
+  virtual void setIsHidden(bool) = 0;
+  virtual bool isContextLost() const { return true; }
+  virtual void setCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
+  virtual void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) {
+    NOTREACHED();
+  }
+  virtual bool isPaintable() const = 0;
 
+  // Return true if the content is updated.
+  virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) {
+    return false;
+  }
 
-    virtual WebLayer* platformLayer() const { return nullptr; }
+  virtual WebLayer* platformLayer() const { return nullptr; }
 
-    enum LostContextMode {
-        NotLostContext,
+  enum LostContextMode {
+    NotLostContext,
 
-        // Lost context occurred at the graphics system level.
-        RealLostContext,
+    // Lost context occurred at the graphics system level.
+    RealLostContext,
 
-        // Lost context provoked by WEBGL_lose_context.
-        WebGLLoseContextLostContext,
+    // Lost context provoked by WEBGL_lose_context.
+    WebGLLoseContextLostContext,
 
-        // Lost context occurred due to internal implementation reasons.
-        SyntheticLostContext,
-    };
-    virtual void loseContext(LostContextMode) { }
+    // Lost context occurred due to internal implementation reasons.
+    SyntheticLostContext,
+  };
+  virtual void loseContext(LostContextMode) {}
 
-    // Canvas2D-specific interface
-    virtual bool is2d() const { return false; }
-    virtual void restoreCanvasMatrixClipStack(SkCanvas*) const { }
-    virtual void reset() { }
-    virtual void clearRect(double x, double y, double width, double height) { }
-    virtual void didSetSurfaceSize() { }
-    virtual void setShouldAntialias(bool) { }
-    virtual unsigned hitRegionsCount() const { return 0; }
-    virtual void setFont(const String&) { }
-    virtual void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) { }
-    virtual HitTestCanvasResult* getControlAndIdIfHitRegionExists(const LayoutPoint& location) { NOTREACHED(); return HitTestCanvasResult::create(String(), nullptr); }
-    virtual String getIdFromControl(const Element* element) { return String(); }
-    virtual bool isAccelerationOptimalForCanvasContent() const { return true; }
-    virtual void resetUsageTracking() { };
-    virtual void incrementFrameCount() { };
+  // Canvas2D-specific interface
+  virtual bool is2d() const { return false; }
+  virtual void restoreCanvasMatrixClipStack(SkCanvas*) const {}
+  virtual void reset() {}
+  virtual void clearRect(double x, double y, double width, double height) {}
+  virtual void didSetSurfaceSize() {}
+  virtual void setShouldAntialias(bool) {}
+  virtual unsigned hitRegionsCount() const { return 0; }
+  virtual void setFont(const String&) {}
+  virtual void styleDidChange(const ComputedStyle* oldStyle,
+                              const ComputedStyle& newStyle) {}
+  virtual HitTestCanvasResult* getControlAndIdIfHitRegionExists(
+      const LayoutPoint& location) {
+    NOTREACHED();
+    return HitTestCanvasResult::create(String(), nullptr);
+  }
+  virtual String getIdFromControl(const Element* element) { return String(); }
+  virtual bool isAccelerationOptimalForCanvasContent() const { return true; }
+  virtual void resetUsageTracking(){};
+  virtual void incrementFrameCount(){};
 
-    // WebGL-specific interface
-    virtual bool is3d() const { return false; }
-    virtual void setFilterQuality(SkFilterQuality) { NOTREACHED(); }
-    virtual void reshape(int width, int height) { NOTREACHED(); }
-    virtual void markLayerComposited() { NOTREACHED(); }
-    virtual ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) { NOTREACHED(); return nullptr; }
-    virtual int externallyAllocatedBytesPerPixel() { NOTREACHED(); return 0; }
+  // WebGL-specific interface
+  virtual bool is3d() const { return false; }
+  virtual void setFilterQuality(SkFilterQuality) { NOTREACHED(); }
+  virtual void reshape(int width, int height) { NOTREACHED(); }
+  virtual void markLayerComposited() { NOTREACHED(); }
+  virtual ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) {
+    NOTREACHED();
+    return nullptr;
+  }
+  virtual int externallyAllocatedBytesPerPixel() {
+    NOTREACHED();
+    return 0;
+  }
 
-    // ImageBitmap-specific interface
-    virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
+  // ImageBitmap-specific interface
+  virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
 
-    // OffscreenCanvas-specific methods
-    OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
-    virtual ImageBitmap* transferToImageBitmap(ExceptionState&) { return nullptr; }
+  // OffscreenCanvas-specific methods
+  OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
+  virtual ImageBitmap* transferToImageBitmap(ExceptionState&) {
+    return nullptr;
+  }
 
-    bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
-    void didMoveToNewDocument(Document*);
+  bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
+  void didMoveToNewDocument(Document*);
 
-    void detachCanvas() { m_canvas = nullptr; }
+  void detachCanvas() { m_canvas = nullptr; }
 
-    const CanvasContextCreationAttributes& creationAttributes() const { return m_creationAttributes; }
+  const CanvasContextCreationAttributes& creationAttributes() const {
+    return m_creationAttributes;
+  }
 
-protected:
-    CanvasRenderingContext(HTMLCanvasElement*, OffscreenCanvas*, const CanvasContextCreationAttributes&);
-    DECLARE_VIRTUAL_TRACE();
-    virtual void stop() = 0;
+ protected:
+  CanvasRenderingContext(HTMLCanvasElement*,
+                         OffscreenCanvas*,
+                         const CanvasContextCreationAttributes&);
+  DECLARE_VIRTUAL_TRACE();
+  virtual void stop() = 0;
 
-private:
-    void dispose();
+ private:
+  void dispose();
 
-    Member<HTMLCanvasElement> m_canvas;
-    Member<OffscreenCanvas> m_offscreenCanvas;
-    HashSet<String> m_cleanURLs;
-    HashSet<String> m_dirtyURLs;
-    CanvasColorSpace m_colorSpace;
-    CanvasContextCreationAttributes m_creationAttributes;
+  Member<HTMLCanvasElement> m_canvas;
+  Member<OffscreenCanvas> m_offscreenCanvas;
+  HashSet<String> m_cleanURLs;
+  HashSet<String> m_dirtyURLs;
+  CanvasColorSpace m_colorSpace;
+  CanvasContextCreationAttributes m_creationAttributes;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

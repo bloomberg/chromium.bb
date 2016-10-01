@@ -16,42 +16,39 @@ class Node;
 // Does a shadow-including tree order sort of a subset of elements.
 // https://dom.spec.whatwg.org/#concept-shadow-including-tree-order
 class CORE_EXPORT CustomElementUpgradeSorter {
-    STACK_ALLOCATED();
-public:
-    CustomElementUpgradeSorter();
+  STACK_ALLOCATED();
 
-    // Record an element of interest. The DOM tree must not be
-    // modified between calls to add and the call to sorted.
-    void add(Element*);
+ public:
+  CustomElementUpgradeSorter();
 
-    // Adds shadow-including descendents of parent to result in
-    // shadow-including tree order. This operation is destroys the
-    // state of this sorter; after calling sorted, you must not call
-    // add or sorted again with this object.
-    void sorted(HeapVector<Member<Element>>* result, Node* parent);
+  // Record an element of interest. The DOM tree must not be
+  // modified between calls to add and the call to sorted.
+  void add(Element*);
 
-private:
-    using ChildSet = HeapHashSet<Member<Node>>;
-    using ParentChildMap = HeapHashMap<Member<Node>, Member<ChildSet>>;
+  // Adds shadow-including descendents of parent to result in
+  // shadow-including tree order. This operation is destroys the
+  // state of this sorter; after calling sorted, you must not call
+  // add or sorted again with this object.
+  void sorted(HeapVector<Member<Element>>* result, Node* parent);
 
-    enum AddResult {
-        kParentAlreadyExistsInMap,
-        kParentAddedToMap
-    };
+ private:
+  using ChildSet = HeapHashSet<Member<Node>>;
+  using ParentChildMap = HeapHashMap<Member<Node>, Member<ChildSet>>;
 
-    AddResult addToParentChildMap(Node* parent, Node* child);
-    void visit(
-        HeapVector<Member<Element>>* result,
-        ChildSet&,
-        const ChildSet::iterator&);
+  enum AddResult { kParentAlreadyExistsInMap, kParentAddedToMap };
 
-    Member<HeapHashSet<Member<Element>>> m_elements;
+  AddResult addToParentChildMap(Node* parent, Node* child);
+  void visit(HeapVector<Member<Element>>* result,
+             ChildSet&,
+             const ChildSet::iterator&);
 
-    // This is the subset of the tree, from root node (usually
-    // document) through elements and shadow roots, to candidates.
-    Member<ParentChildMap> m_parentChildMap;
+  Member<HeapHashSet<Member<Element>>> m_elements;
+
+  // This is the subset of the tree, from root node (usually
+  // document) through elements and shadow roots, to candidates.
+  Member<ParentChildMap> m_parentChildMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementUpgradeSorter_h
+#endif  // CustomElementUpgradeSorter_h

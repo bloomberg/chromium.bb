@@ -38,110 +38,114 @@
 namespace blink {
 
 ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& webView)
-    : m_webView(webView)
-    , m_currentAnchor(nullptr)
-    , m_lastPageScaleFactor(1)
-    , m_finishTime(0)
-    , m_timer(this, &ValidationMessageClientImpl::checkAnchorStatus)
-{
+    : m_webView(webView),
+      m_currentAnchor(nullptr),
+      m_lastPageScaleFactor(1),
+      m_finishTime(0),
+      m_timer(this, &ValidationMessageClientImpl::checkAnchorStatus) {}
+
+ValidationMessageClientImpl* ValidationMessageClientImpl::create(
+    WebViewImpl& webView) {
+  return new ValidationMessageClientImpl(webView);
 }
 
-ValidationMessageClientImpl* ValidationMessageClientImpl::create(WebViewImpl& webView)
-{
-    return new ValidationMessageClientImpl(webView);
+ValidationMessageClientImpl::~ValidationMessageClientImpl() {}
+
+FrameView* ValidationMessageClientImpl::currentView() {
+  return m_currentAnchor->document().view();
 }
 
-ValidationMessageClientImpl::~ValidationMessageClientImpl()
-{
+void ValidationMessageClientImpl::showValidationMessage(
+    const Element& anchor,
+    const String& message,
+    TextDirection messageDir,
+    const String& subMessage,
+    TextDirection subMessageDir) {
+  if (message.isEmpty()) {
+    hideValidationMessage(anchor);
+    return;
+  }
+  if (!anchor.layoutBox())
+    return;
+  if (m_currentAnchor)
+    hideValidationMessage(*m_currentAnchor);
+  m_currentAnchor = &anchor;
+  IntRect anchorInViewport =
+      currentView()->contentsToViewport(anchor.pixelSnappedBoundingBox());
+  m_lastAnchorRectInScreen = currentView()->getHostWindow()->viewportToScreen(
+      anchorInViewport, currentView());
+  m_lastPageScaleFactor = m_webView.pageScaleFactor();
+  m_message = message;
+  const double minimumSecondToShowValidationMessage = 5.0;
+  const double secondPerCharacter = 0.05;
+  const double statusCheckInterval = 0.1;
+
+  m_webView.client()->showValidationMessage(
+      anchorInViewport, m_message, toWebTextDirection(messageDir), subMessage,
+      toWebTextDirection(subMessageDir));
+
+  m_finishTime =
+      monotonicallyIncreasingTime() +
+      std::max(minimumSecondToShowValidationMessage,
+               (message.length() + subMessage.length()) * secondPerCharacter);
+  // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
+  // or page scale change happen.
+  m_timer.startRepeating(statusCheckInterval, BLINK_FROM_HERE);
 }
 
-FrameView* ValidationMessageClientImpl::currentView()
-{
-    return m_currentAnchor->document().view();
+void ValidationMessageClientImpl::hideValidationMessage(const Element& anchor) {
+  if (!m_currentAnchor || !isValidationMessageVisible(anchor))
+    return;
+  m_timer.stop();
+  m_currentAnchor = nullptr;
+  m_message = String();
+  m_finishTime = 0;
+  m_webView.client()->hideValidationMessage();
 }
 
-void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir)
-{
-    if (message.isEmpty()) {
-        hideValidationMessage(anchor);
-        return;
-    }
-    if (!anchor.layoutBox())
-        return;
-    if (m_currentAnchor)
-        hideValidationMessage(*m_currentAnchor);
-    m_currentAnchor = &anchor;
-    IntRect anchorInViewport = currentView()->contentsToViewport(anchor.pixelSnappedBoundingBox());
-    m_lastAnchorRectInScreen = currentView()->getHostWindow()->viewportToScreen(anchorInViewport, currentView());
-    m_lastPageScaleFactor = m_webView.pageScaleFactor();
-    m_message = message;
-    const double minimumSecondToShowValidationMessage = 5.0;
-    const double secondPerCharacter = 0.05;
-    const double statusCheckInterval = 0.1;
-
-    m_webView.client()->showValidationMessage(anchorInViewport, m_message, toWebTextDirection(messageDir),
-        subMessage, toWebTextDirection(subMessageDir));
-
-    m_finishTime = monotonicallyIncreasingTime() + std::max(minimumSecondToShowValidationMessage, (message.length() + subMessage.length()) * secondPerCharacter);
-    // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
-    // or page scale change happen.
-    m_timer.startRepeating(statusCheckInterval, BLINK_FROM_HERE);
+bool ValidationMessageClientImpl::isValidationMessageVisible(
+    const Element& anchor) {
+  return m_currentAnchor == &anchor;
 }
 
-void ValidationMessageClientImpl::hideValidationMessage(const Element& anchor)
-{
-    if (!m_currentAnchor || !isValidationMessageVisible(anchor))
-        return;
-    m_timer.stop();
-    m_currentAnchor = nullptr;
-    m_message = String();
-    m_finishTime = 0;
-    m_webView.client()->hideValidationMessage();
+void ValidationMessageClientImpl::documentDetached(const Document& document) {
+  if (m_currentAnchor && m_currentAnchor->document() == document)
+    hideValidationMessage(*m_currentAnchor);
 }
 
-bool ValidationMessageClientImpl::isValidationMessageVisible(const Element& anchor)
-{
-    return m_currentAnchor == &anchor;
+void ValidationMessageClientImpl::checkAnchorStatus(TimerBase*) {
+  DCHECK(m_currentAnchor);
+  if (monotonicallyIncreasingTime() >= m_finishTime || !currentView()) {
+    hideValidationMessage(*m_currentAnchor);
+    return;
+  }
+
+  IntRect newAnchorRectInViewport =
+      m_currentAnchor->visibleBoundsInVisualViewport();
+  if (newAnchorRectInViewport.isEmpty()) {
+    hideValidationMessage(*m_currentAnchor);
+    return;
+  }
+
+  IntRect newAnchorRectInViewportInScreen =
+      currentView()->getHostWindow()->viewportToScreen(newAnchorRectInViewport,
+                                                       currentView());
+  if (newAnchorRectInViewportInScreen == m_lastAnchorRectInScreen &&
+      m_webView.pageScaleFactor() == m_lastPageScaleFactor)
+    return;
+  m_lastAnchorRectInScreen = newAnchorRectInViewportInScreen;
+  m_lastPageScaleFactor = m_webView.pageScaleFactor();
+  m_webView.client()->moveValidationMessage(newAnchorRectInViewport);
 }
 
-void ValidationMessageClientImpl::documentDetached(const Document& document)
-{
-    if (m_currentAnchor && m_currentAnchor->document() == document)
-        hideValidationMessage(*m_currentAnchor);
+void ValidationMessageClientImpl::willBeDestroyed() {
+  if (m_currentAnchor)
+    hideValidationMessage(*m_currentAnchor);
 }
 
-void ValidationMessageClientImpl::checkAnchorStatus(TimerBase*)
-{
-    DCHECK(m_currentAnchor);
-    if (monotonicallyIncreasingTime() >= m_finishTime || !currentView()) {
-        hideValidationMessage(*m_currentAnchor);
-        return;
-    }
-
-    IntRect newAnchorRectInViewport = m_currentAnchor->visibleBoundsInVisualViewport();
-    if (newAnchorRectInViewport.isEmpty()) {
-        hideValidationMessage(*m_currentAnchor);
-        return;
-    }
-
-    IntRect newAnchorRectInViewportInScreen = currentView()->getHostWindow()->viewportToScreen(newAnchorRectInViewport, currentView());
-    if (newAnchorRectInViewportInScreen == m_lastAnchorRectInScreen && m_webView.pageScaleFactor() == m_lastPageScaleFactor)
-        return;
-    m_lastAnchorRectInScreen = newAnchorRectInViewportInScreen;
-    m_lastPageScaleFactor = m_webView.pageScaleFactor();
-    m_webView.client()->moveValidationMessage(newAnchorRectInViewport);
+DEFINE_TRACE(ValidationMessageClientImpl) {
+  visitor->trace(m_currentAnchor);
+  ValidationMessageClient::trace(visitor);
 }
 
-void ValidationMessageClientImpl::willBeDestroyed()
-{
-    if (m_currentAnchor)
-        hideValidationMessage(*m_currentAnchor);
-}
-
-DEFINE_TRACE(ValidationMessageClientImpl)
-{
-    visitor->trace(m_currentAnchor);
-    ValidationMessageClient::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

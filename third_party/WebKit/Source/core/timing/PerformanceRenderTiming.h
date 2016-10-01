@@ -42,28 +42,35 @@ namespace blink {
 class Document;
 
 class PerformanceRenderTiming final : public PerformanceEntry {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PerformanceRenderTiming* create(Document* requestingDocument, unsigned sourceFrame, double startTime, double finishTime)
-    {
-        return new PerformanceRenderTiming(requestingDocument, sourceFrame, startTime, finishTime);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned sourceFrame() const;
+ public:
+  static PerformanceRenderTiming* create(Document* requestingDocument,
+                                         unsigned sourceFrame,
+                                         double startTime,
+                                         double finishTime) {
+    return new PerformanceRenderTiming(requestingDocument, sourceFrame,
+                                       startTime, finishTime);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  unsigned sourceFrame() const;
 
-protected:
-    void buildJSONValue(V8ObjectBuilder&) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    PerformanceRenderTiming(Document* requestingDocument, unsigned sourceFrame, double startTime, double finishTime);
-    ~PerformanceRenderTiming() override;
+ protected:
+  void buildJSONValue(V8ObjectBuilder&) const override;
 
-    unsigned m_sourceFrame;
-    Member<Document> m_requestingDocument;
+ private:
+  PerformanceRenderTiming(Document* requestingDocument,
+                          unsigned sourceFrame,
+                          double startTime,
+                          double finishTime);
+  ~PerformanceRenderTiming() override;
+
+  unsigned m_sourceFrame;
+  Member<Document> m_requestingDocument;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PerformanceRenderTiming_h
+#endif  // PerformanceRenderTiming_h

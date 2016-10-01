@@ -37,18 +37,14 @@
 namespace blink {
 
 ActiveDOMCallback::ActiveDOMCallback(ExecutionContext* context)
-    : ContextLifecycleObserver(context)
-{
+    : ContextLifecycleObserver(context) {}
+
+ActiveDOMCallback::~ActiveDOMCallback() {}
+
+bool ActiveDOMCallback::canInvokeCallback() const {
+  ExecutionContext* context = getExecutionContext();
+  return context && !context->activeDOMObjectsAreSuspended() &&
+         !context->activeDOMObjectsAreStopped();
 }
 
-ActiveDOMCallback::~ActiveDOMCallback()
-{
-}
-
-bool ActiveDOMCallback::canInvokeCallback() const
-{
-    ExecutionContext* context = getExecutionContext();
-    return context && !context->activeDOMObjectsAreSuspended() && !context->activeDOMObjectsAreStopped();
-}
-
-} // namespace blink
+}  // namespace blink

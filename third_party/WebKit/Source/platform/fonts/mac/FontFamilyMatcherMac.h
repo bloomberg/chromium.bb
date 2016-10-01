@@ -33,11 +33,13 @@
 
 namespace blink {
 
-PLATFORM_EXPORT NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits,
-    FontWeight desiredWeight, float size);
+PLATFORM_EXPORT NSFont* MatchNSFontFamily(NSString* desiredFamily,
+                                          NSFontTraitMask desiredTraits,
+                                          FontWeight desiredWeight,
+                                          float size);
 
 // Converts a blink::FontWeight to an AppKit font weight.
 int toAppKitFontWeight(FontWeight);
 }
 
-#endif // FontFamilyMatcherMac_h
+#endif  // FontFamilyMatcherMac_h

@@ -10,16 +10,17 @@
 namespace blink {
 
 class HTMLMenuItemElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLMenuItemElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit HTMLMenuItemElement(Document&);
-    bool isURLAttribute(const Attribute&) const override;
-    void defaultEventHandler(Event*) override;
+ public:
+  DECLARE_NODE_FACTORY(HTMLMenuItemElement);
+
+ private:
+  explicit HTMLMenuItemElement(Document&);
+  bool isURLAttribute(const Attribute&) const override;
+  void defaultEventHandler(Event*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLMenuItemElement_h
+#endif  // HTMLMenuItemElement_h

@@ -11,45 +11,46 @@
 namespace blink {
 
 class StyleInvalidImage final : public StyleImage {
-public:
-    static StyleInvalidImage* create(const String& url)
-    {
-        return new StyleInvalidImage(url);
-    }
+ public:
+  static StyleInvalidImage* create(const String& url) {
+    return new StyleInvalidImage(url);
+  }
 
-    WrappedImagePtr data() const override { return m_url.impl(); }
+  WrappedImagePtr data() const override { return m_url.impl(); }
 
-    CSSValue* cssValue() const override { return CSSImageValue::create(AtomicString(m_url)); }
+  CSSValue* cssValue() const override {
+    return CSSImageValue::create(AtomicString(m_url));
+  }
 
-    CSSValue* computedCSSValue() const override { return cssValue(); }
+  CSSValue* computedCSSValue() const override { return cssValue(); }
 
-    LayoutSize imageSize(const LayoutObject&, float /*multiplier*/, const LayoutSize& /*defaultObjectSize*/) const override { return LayoutSize(); }
-    bool imageHasRelativeSize() const override { return false; }
-    bool usesImageContainerSize() const override { return false; }
-    void addClient(LayoutObject*) override { }
-    void removeClient(LayoutObject*) override { }
-    PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float) const override
-    {
-        return nullptr;
-    }
-    bool knownToBeOpaque(const LayoutObject&) const override { return false; }
+  LayoutSize imageSize(const LayoutObject&,
+                       float /*multiplier*/,
+                       const LayoutSize& /*defaultObjectSize*/) const override {
+    return LayoutSize();
+  }
+  bool imageHasRelativeSize() const override { return false; }
+  bool usesImageContainerSize() const override { return false; }
+  void addClient(LayoutObject*) override {}
+  void removeClient(LayoutObject*) override {}
+  PassRefPtr<Image> image(const LayoutObject&,
+                          const IntSize&,
+                          float) const override {
+    return nullptr;
+  }
+  bool knownToBeOpaque(const LayoutObject&) const override { return false; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        StyleImage::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() { StyleImage::trace(visitor); }
 
-private:
-    explicit StyleInvalidImage(const String& url)
-        : m_url(url)
-    {
-        m_isInvalidImage = true;
-    }
+ private:
+  explicit StyleInvalidImage(const String& url) : m_url(url) {
+    m_isInvalidImage = true;
+  }
 
-    String m_url;
+  String m_url;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleInvalidImage, isInvalidImage());
 
-} // namespace blink
+}  // namespace blink
 #endif

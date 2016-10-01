@@ -26,19 +26,21 @@
 namespace blink {
 
 class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
-public:
-    static SourceAlpha* create(FilterEffect*);
+ public:
+  static SourceAlpha* create(FilterEffect*);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    explicit SourceAlpha(FilterEffect*);
+ private:
+  explicit SourceAlpha(FilterEffect*);
 
-    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeSourceInput; }
+  FilterEffectType getFilterEffectType() const override {
+    return FilterEffectTypeSourceInput;
+  }
 
-    sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilter() override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SourceAlpha_h
+#endif  // SourceAlpha_h

@@ -27,72 +27,90 @@ class ScriptState;
 class WebServiceWorkerResponse;
 
 class MODULES_EXPORT Response final : public Body {
-    DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(Response);
-public:
-    // These "create" function which takes a ScriptState* must be called with
-    // entering an appropriate V8 context.
-    // From Response.idl:
-    static Response* create(ScriptState*, ExceptionState&);
-    static Response* create(ScriptState*, ScriptValue body, const Dictionary&, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
+  WTF_MAKE_NONCOPYABLE(Response);
 
-    static Response* create(ScriptState*, BodyStreamBuffer*, const String& contentType, const ResponseInit&, ExceptionState&);
-    static Response* create(ExecutionContext*, FetchResponseData*);
-    static Response* create(ScriptState*, const WebServiceWorkerResponse&);
+ public:
+  // These "create" function which takes a ScriptState* must be called with
+  // entering an appropriate V8 context.
+  // From Response.idl:
+  static Response* create(ScriptState*, ExceptionState&);
+  static Response* create(ScriptState*,
+                          ScriptValue body,
+                          const Dictionary&,
+                          ExceptionState&);
 
-    static Response* createClone(const Response&);
+  static Response* create(ScriptState*,
+                          BodyStreamBuffer*,
+                          const String& contentType,
+                          const ResponseInit&,
+                          ExceptionState&);
+  static Response* create(ExecutionContext*, FetchResponseData*);
+  static Response* create(ScriptState*, const WebServiceWorkerResponse&);
 
-    static Response* error(ExecutionContext*);
-    static Response* redirect(ExecutionContext*, const String& url, unsigned short status, ExceptionState&);
+  static Response* createClone(const Response&);
 
-    const FetchResponseData* response() const { return m_response; }
+  static Response* error(ExecutionContext*);
+  static Response* redirect(ExecutionContext*,
+                            const String& url,
+                            unsigned short status,
+                            ExceptionState&);
 
-    // From Response.idl:
-    String type() const;
-    String url() const;
-    unsigned short status() const;
-    bool ok() const;
-    String statusText() const;
-    Headers* headers() const;
+  const FetchResponseData* response() const { return m_response; }
 
-    // From Response.idl:
-    // This function must be called with entering an appropriate V8 context.
-    Response* clone(ScriptState*, ExceptionState&);
+  // From Response.idl:
+  String type() const;
+  String url() const;
+  unsigned short status() const;
+  bool ok() const;
+  String statusText() const;
+  Headers* headers() const;
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // From Response.idl:
+  // This function must be called with entering an appropriate V8 context.
+  Response* clone(ScriptState*, ExceptionState&);
 
-    // Does not call response.setBlobDataHandle().
-    void populateWebServiceWorkerResponse(WebServiceWorkerResponse& /* response */);
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    bool hasBody() const;
-    BodyStreamBuffer* bodyBuffer() override { return m_response->buffer(); }
-    // Returns the BodyStreamBuffer of |m_response|. This method doesn't check
-    // the internal response of |m_response| even if |m_response| has it.
-    const BodyStreamBuffer* bodyBuffer() const override { return m_response->buffer(); }
-    // Returns the BodyStreamBuffer of the internal response of |m_response| if
-    // any. Otherwise, returns one of |m_response|.
-    BodyStreamBuffer* internalBodyBuffer() { return m_response->internalBuffer(); }
-    const BodyStreamBuffer* internalBodyBuffer() const { return m_response->internalBuffer(); }
-    bool bodyUsed() override;
+  // Does not call response.setBlobDataHandle().
+  void populateWebServiceWorkerResponse(
+      WebServiceWorkerResponse& /* response */);
 
-    String mimeType() const override;
-    String internalMIMEType() const;
+  bool hasBody() const;
+  BodyStreamBuffer* bodyBuffer() override { return m_response->buffer(); }
+  // Returns the BodyStreamBuffer of |m_response|. This method doesn't check
+  // the internal response of |m_response| even if |m_response| has it.
+  const BodyStreamBuffer* bodyBuffer() const override {
+    return m_response->buffer();
+  }
+  // Returns the BodyStreamBuffer of the internal response of |m_response| if
+  // any. Otherwise, returns one of |m_response|.
+  BodyStreamBuffer* internalBodyBuffer() {
+    return m_response->internalBuffer();
+  }
+  const BodyStreamBuffer* internalBodyBuffer() const {
+    return m_response->internalBuffer();
+  }
+  bool bodyUsed() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  String mimeType() const override;
+  String internalMIMEType() const;
 
-private:
-    explicit Response(ExecutionContext*);
-    Response(ExecutionContext*, FetchResponseData*);
-    Response(ExecutionContext*, FetchResponseData*, Headers*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void installBody();
-    void refreshBody(ScriptState*);
+ private:
+  explicit Response(ExecutionContext*);
+  Response(ExecutionContext*, FetchResponseData*);
+  Response(ExecutionContext*, FetchResponseData*, Headers*);
 
-    const Member<FetchResponseData> m_response;
-    const Member<Headers> m_headers;
+  void installBody();
+  void refreshBody(ScriptState*);
+
+  const Member<FetchResponseData> m_response;
+  const Member<Headers> m_headers;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Response_h
+#endif  // Response_h

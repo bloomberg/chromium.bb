@@ -11,38 +11,36 @@
 namespace blink {
 
 // static
-ScreenScreenOrientation& ScreenScreenOrientation::from(Screen& screen)
-{
-    ScreenScreenOrientation* supplement = static_cast<ScreenScreenOrientation*>(Supplement<Screen>::from(screen, supplementName()));
-    if (!supplement) {
-        supplement = new ScreenScreenOrientation();
-        provideTo(screen, supplementName(), supplement);
-    }
-    return *supplement;
+ScreenScreenOrientation& ScreenScreenOrientation::from(Screen& screen) {
+  ScreenScreenOrientation* supplement = static_cast<ScreenScreenOrientation*>(
+      Supplement<Screen>::from(screen, supplementName()));
+  if (!supplement) {
+    supplement = new ScreenScreenOrientation();
+    provideTo(screen, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
 // static
-ScreenOrientation* ScreenScreenOrientation::orientation(ScriptState* state, Screen& screen)
-{
-    ScreenScreenOrientation& self = ScreenScreenOrientation::from(screen);
-    if (!screen.frame())
-        return nullptr;
+ScreenOrientation* ScreenScreenOrientation::orientation(ScriptState* state,
+                                                        Screen& screen) {
+  ScreenScreenOrientation& self = ScreenScreenOrientation::from(screen);
+  if (!screen.frame())
+    return nullptr;
 
-    if (!self.m_orientation)
-        self.m_orientation = ScreenOrientation::create(screen.frame());
+  if (!self.m_orientation)
+    self.m_orientation = ScreenOrientation::create(screen.frame());
 
-    return self.m_orientation;
+  return self.m_orientation;
 }
 
-const char* ScreenScreenOrientation::supplementName()
-{
-    return "ScreenScreenOrientation";
+const char* ScreenScreenOrientation::supplementName() {
+  return "ScreenScreenOrientation";
 }
 
-DEFINE_TRACE(ScreenScreenOrientation)
-{
-    visitor->trace(m_orientation);
-    Supplement<Screen>::trace(visitor);
+DEFINE_TRACE(ScreenScreenOrientation) {
+  visitor->trace(m_orientation);
+  Supplement<Screen>::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -34,93 +34,99 @@ namespace blink {
 using SVGUseEventSender = EventSender<SVGUseElement>;
 
 class SVGUseElement final : public SVGGraphicsElement,
-    public SVGURIReference,
-    public DocumentResourceClient {
+                            public SVGURIReference,
+                            public DocumentResourceClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
+  USING_PRE_FINALIZER(SVGUseElement, dispose);
 
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
-    USING_PRE_FINALIZER(SVGUseElement, dispose);
-public:
-    static SVGUseElement* create(Document&);
-    ~SVGUseElement() override;
+ public:
+  static SVGUseElement* create(Document&);
+  ~SVGUseElement() override;
 
-    void invalidateShadowTree();
+  void invalidateShadowTree();
 
-    // Return the element that should be used for clipping,
-    // or null if a valid clip element is not directly referenced.
-    SVGGraphicsElement* visibleTargetGraphicsElementForClipping() const;
+  // Return the element that should be used for clipping,
+  // or null if a valid clip element is not directly referenced.
+  SVGGraphicsElement* visibleTargetGraphicsElementForClipping() const;
 
-    SVGAnimatedLength* x() const { return m_x.get(); }
-    SVGAnimatedLength* y() const { return m_y.get(); }
-    SVGAnimatedLength* width() const { return m_width.get(); }
-    SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedLength* x() const { return m_x.get(); }
+  SVGAnimatedLength* y() const { return m_y.get(); }
+  SVGAnimatedLength* width() const { return m_width.get(); }
+  SVGAnimatedLength* height() const { return m_height.get(); }
 
-    void buildPendingResource() override;
+  void buildPendingResource() override;
 
-    void dispatchPendingEvent(SVGUseEventSender*);
-    void toClipPath(Path&) const;
+  void dispatchPendingEvent(SVGUseEventSender*);
+  void toClipPath(Path&) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit SVGUseElement(Document&);
+ private:
+  explicit SVGUseElement(Document&);
 
-    void dispose();
+  void dispose();
 
-    FloatRect getBBox() override;
+  FloatRect getBBox() override;
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
+  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
 
-    bool isStructurallyExternal() const override;
+  bool isStructurallyExternal() const override;
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
 
-    void svgAttributeChanged(const QualifiedName&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    void scheduleShadowTreeRecreation();
-    void cancelShadowTreeRecreation();
-    bool haveLoadedRequiredResources() override { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
+  void scheduleShadowTreeRecreation();
+  void cancelShadowTreeRecreation();
+  bool haveLoadedRequiredResources() override {
+    return !isStructurallyExternal() || m_haveFiredLoadEvent;
+  }
 
-    bool selfHasRelativeLengths() const override;
+  bool selfHasRelativeLengths() const override;
 
-    // Instance tree handling
-    Element* resolveTargetElement();
-    void buildShadowAndInstanceTree(SVGElement& target);
-    void clearInstanceRoot();
-    Element* createInstanceTree(SVGElement& targetRoot) const;
-    void clearShadowTree();
-    bool hasCycleUseReferencing(const SVGUseElement&, const ContainerNode& targetInstance, SVGElement*& newTarget) const;
-    bool expandUseElementsInShadowTree();
-    void addReferencesToFirstDegreeNestedUseElements(SVGElement& target);
+  // Instance tree handling
+  Element* resolveTargetElement();
+  void buildShadowAndInstanceTree(SVGElement& target);
+  void clearInstanceRoot();
+  Element* createInstanceTree(SVGElement& targetRoot) const;
+  void clearShadowTree();
+  bool hasCycleUseReferencing(const SVGUseElement&,
+                              const ContainerNode& targetInstance,
+                              SVGElement*& newTarget) const;
+  bool expandUseElementsInShadowTree();
+  void addReferencesToFirstDegreeNestedUseElements(SVGElement& target);
 
-    void invalidateDependentShadowTrees();
+  void invalidateDependentShadowTrees();
 
-    bool resourceIsStillLoading() const;
-    bool resourceIsValid() const;
-    bool instanceTreeIsLoading() const;
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "SVGUseElement"; }
-    void updateTargetReference();
-    void setDocumentResource(DocumentResource*);
+  bool resourceIsStillLoading() const;
+  bool resourceIsValid() const;
+  bool instanceTreeIsLoading() const;
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "SVGUseElement"; }
+  void updateTargetReference();
+  void setDocumentResource(DocumentResource*);
 
-    Member<SVGAnimatedLength> m_x;
-    Member<SVGAnimatedLength> m_y;
-    Member<SVGAnimatedLength> m_width;
-    Member<SVGAnimatedLength> m_height;
+  Member<SVGAnimatedLength> m_x;
+  Member<SVGAnimatedLength> m_y;
+  Member<SVGAnimatedLength> m_width;
+  Member<SVGAnimatedLength> m_height;
 
-    AtomicString m_elementIdentifier;
-    bool m_elementIdentifierIsLocal;
-    bool m_haveFiredLoadEvent;
-    bool m_needsShadowTreeRecreation;
-    Member<SVGElement> m_targetElementInstance;
-    Member<DocumentResource> m_resource;
+  AtomicString m_elementIdentifier;
+  bool m_elementIdentifierIsLocal;
+  bool m_haveFiredLoadEvent;
+  bool m_needsShadowTreeRecreation;
+  Member<SVGElement> m_targetElementInstance;
+  Member<DocumentResource> m_resource;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGUseElement_h
+#endif  // SVGUseElement_h

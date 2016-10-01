@@ -13,23 +13,24 @@ namespace blink {
 class Text;
 
 class TextOffset {
-    STACK_ALLOCATED();
-public:
-    TextOffset();
-    TextOffset(Text*, int);
-    TextOffset(const TextOffset&);
+  STACK_ALLOCATED();
 
-    Text* text() const { return m_text.get(); }
-    int offset() const { return m_offset; }
+ public:
+  TextOffset();
+  TextOffset(Text*, int);
+  TextOffset(const TextOffset&);
 
-    bool isNull() const;
-    bool isNotNull() const;
+  Text* text() const { return m_text.get(); }
+  int offset() const { return m_offset; }
 
-private:
-    Member<Text> m_text;
-    int m_offset;
+  bool isNull() const;
+  bool isNotNull() const;
+
+ private:
+  Member<Text> m_text;
+  int m_offset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextOffset_h
+#endif  // TextOffset_h

@@ -34,43 +34,49 @@ namespace blink {
 
 class BaseAudioContext;
 
-class MediaStreamAudioDestinationHandler final : public AudioBasicInspectorHandler {
-public:
-    static PassRefPtr<MediaStreamAudioDestinationHandler> create(AudioNode&, size_t numberOfChannels);
-    ~MediaStreamAudioDestinationHandler() override;
+class MediaStreamAudioDestinationHandler final
+    : public AudioBasicInspectorHandler {
+ public:
+  static PassRefPtr<MediaStreamAudioDestinationHandler> create(
+      AudioNode&,
+      size_t numberOfChannels);
+  ~MediaStreamAudioDestinationHandler() override;
 
-    MediaStream* stream() { return m_stream.get(); }
+  MediaStream* stream() { return m_stream.get(); }
 
-    // AudioHandler.
-    void process(size_t framesToProcess) override;
-    void setChannelCount(unsigned long, ExceptionState&) override;
+  // AudioHandler.
+  void process(size_t framesToProcess) override;
+  void setChannelCount(unsigned long, ExceptionState&) override;
 
-    unsigned long maxChannelCount() const;
+  unsigned long maxChannelCount() const;
 
-private:
-    MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
-    // As an audio source, we will never propagate silence.
-    bool propagatesSilence() const override { return false; }
+ private:
+  MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
+  // As an audio source, we will never propagate silence.
+  bool propagatesSilence() const override { return false; }
 
-    // This Persistent doesn't make a reference cycle.
-    Persistent<MediaStream> m_stream;
-    Persistent<MediaStreamSource> m_source;
+  // This Persistent doesn't make a reference cycle.
+  Persistent<MediaStream> m_stream;
+  Persistent<MediaStreamSource> m_source;
 
-    // This internal mix bus is for up/down mixing the input to the actual
-    // number of channels in the destination.
-    RefPtr<AudioBus> m_mixBus;
+  // This internal mix bus is for up/down mixing the input to the actual
+  // number of channels in the destination.
+  RefPtr<AudioBus> m_mixBus;
 };
 
 class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MediaStreamAudioDestinationNode* create(BaseAudioContext&, size_t numberOfChannels, ExceptionState&);
-    MediaStream* stream() const;
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    MediaStreamAudioDestinationNode(BaseAudioContext&, size_t numberOfChannels);
+ public:
+  static MediaStreamAudioDestinationNode* create(BaseAudioContext&,
+                                                 size_t numberOfChannels,
+                                                 ExceptionState&);
+  MediaStream* stream() const;
+
+ private:
+  MediaStreamAudioDestinationNode(BaseAudioContext&, size_t numberOfChannels);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamAudioDestinationNode_h
+#endif  // MediaStreamAudioDestinationNode_h

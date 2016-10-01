@@ -34,38 +34,45 @@ namespace blink {
 class LayoutBlockFlow;
 
 class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
-public:
-    static LayoutFullScreen* createAnonymous(Document*);
+ public:
+  static LayoutFullScreen* createAnonymous(Document*);
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreen || LayoutFlexibleBox::isOfType(type); }
-    const char* name() const override { return "LayoutFullScreen"; }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectLayoutFullScreen ||
+           LayoutFlexibleBox::isOfType(type);
+  }
+  const char* name() const override { return "LayoutFullScreen"; }
 
-    void resetPlaceholder() { m_placeholder = nullptr; }
-    LayoutBlockFlow* placeholder() { return m_placeholder; }
-    void createPlaceholder(PassRefPtr<ComputedStyle>, const LayoutRect& frameRect);
+  void resetPlaceholder() { m_placeholder = nullptr; }
+  LayoutBlockFlow* placeholder() { return m_placeholder; }
+  void createPlaceholder(PassRefPtr<ComputedStyle>,
+                         const LayoutRect& frameRect);
 
+  static LayoutObject* wrapLayoutObject(LayoutObject*,
+                                        LayoutObject*,
+                                        Document*);
+  void unwrapLayoutObject();
 
-    static LayoutObject* wrapLayoutObject(LayoutObject*, LayoutObject*, Document*);
-    void unwrapLayoutObject();
+  void updateStyle();
+  void updateStyle(LayoutObject* parent);
+  bool anonymousHasStylePropagationOverride() override { return true; }
 
-    void updateStyle();
-    void updateStyle(LayoutObject* parent);
-    bool anonymousHasStylePropagationOverride() override { return true; }
+  // Must call setStyleWithWritingModeOfParent() instead.
+  void setStyle(PassRefPtr<ComputedStyle>) = delete;
 
-    // Must call setStyleWithWritingModeOfParent() instead.
-    void setStyle(PassRefPtr<ComputedStyle>) = delete;
+ private:
+  LayoutFullScreen();
+  void willBeDestroyed() override;
 
-private:
-    LayoutFullScreen();
-    void willBeDestroyed() override;
-
-protected:
-    LayoutBlockFlow* m_placeholder;
-    ItemPosition selfAlignmentNormalBehavior() const override { return ItemPositionCenter; }
+ protected:
+  LayoutBlockFlow* m_placeholder;
+  ItemPosition selfAlignmentNormalBehavior() const override {
+    return ItemPositionCenter;
+  }
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFullScreen, isLayoutFullScreen());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

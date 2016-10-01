@@ -46,42 +46,47 @@ class HTMLImportLoader;
 class HTMLImportTreeRoot;
 class KURL;
 
-class HTMLImportsController final : public GarbageCollected<HTMLImportsController> {
-public:
-    static HTMLImportsController* create(Document& master)
-    {
-        return new HTMLImportsController(master);
-    }
+class HTMLImportsController final
+    : public GarbageCollected<HTMLImportsController> {
+ public:
+  static HTMLImportsController* create(Document& master) {
+    return new HTMLImportsController(master);
+  }
 
-    HTMLImportTreeRoot* root() const { return m_root; }
+  HTMLImportTreeRoot* root() const { return m_root; }
 
-    bool shouldBlockScriptExecution(const Document&) const;
-    HTMLImportChild* load(HTMLImport* parent, HTMLImportChildClient*, FetchRequest);
+  bool shouldBlockScriptExecution(const Document&) const;
+  HTMLImportChild* load(HTMLImport* parent,
+                        HTMLImportChildClient*,
+                        FetchRequest);
 
-    Document* master() const;
+  Document* master() const;
 
-    HTMLImportLoader* createLoader();
+  HTMLImportLoader* createLoader();
 
-    size_t loaderCount() const { return m_loaders.size(); }
-    HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i]; }
-    HTMLImportLoader* loaderFor(const Document&) const;
+  size_t loaderCount() const { return m_loaders.size(); }
+  HTMLImportLoader* loaderAt(size_t i) const { return m_loaders[i]; }
+  HTMLImportLoader* loaderFor(const Document&) const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-    void dispose();
+  void dispose();
 
-    DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE_WRAPPERS();
 
-private:
-    explicit HTMLImportsController(Document&);
+ private:
+  explicit HTMLImportsController(Document&);
 
-    HTMLImportChild* createChild(const KURL&, HTMLImportLoader*, HTMLImport* parent, HTMLImportChildClient*);
+  HTMLImportChild* createChild(const KURL&,
+                               HTMLImportLoader*,
+                               HTMLImport* parent,
+                               HTMLImportChildClient*);
 
-    Member<HTMLImportTreeRoot> m_root;
-    using LoaderList = HeapVector<Member<HTMLImportLoader>>;
-    LoaderList m_loaders;
+  Member<HTMLImportTreeRoot> m_root;
+  using LoaderList = HeapVector<Member<HTMLImportLoader>>;
+  LoaderList m_loaders;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLImportsController_h
+#endif  // HTMLImportsController_h

@@ -38,15 +38,15 @@ namespace blink {
 // <noscript> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's layoutObjectIsNeeded doesn't need to know about it.
 class HTMLNoScriptElement final : public HTMLElement {
-public:
-    DECLARE_NODE_FACTORY(HTMLNoScriptElement);
+ public:
+  DECLARE_NODE_FACTORY(HTMLNoScriptElement);
 
-private:
-    explicit HTMLNoScriptElement(Document&);
+ private:
+  explicit HTMLNoScriptElement(Document&);
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

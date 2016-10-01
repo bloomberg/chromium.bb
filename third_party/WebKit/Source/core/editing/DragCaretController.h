@@ -30,32 +30,34 @@
 
 namespace blink {
 
-class DragCaretController final : public GarbageCollectedFinalized<DragCaretController> {
-    WTF_MAKE_NONCOPYABLE(DragCaretController);
-public:
-    static DragCaretController* create();
+class DragCaretController final
+    : public GarbageCollectedFinalized<DragCaretController> {
+  WTF_MAKE_NONCOPYABLE(DragCaretController);
 
-    void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
+ public:
+  static DragCaretController* create();
 
-    bool hasCaretIn(const LayoutBlock&) const;
-    bool isContentRichlyEditable() const;
+  void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
 
-    bool hasCaret() const { return m_position.isNotNull(); }
-    const VisiblePosition& caretPosition() { return m_position; }
-    void setCaretPosition(const PositionWithAffinity&);
-    void clear() { setCaretPosition(PositionWithAffinity()); }
+  bool hasCaretIn(const LayoutBlock&) const;
+  bool isContentRichlyEditable() const;
 
-    void nodeWillBeRemoved(Node&);
+  bool hasCaret() const { return m_position.isNotNull(); }
+  const VisiblePosition& caretPosition() { return m_position; }
+  void setCaretPosition(const PositionWithAffinity&);
+  void clear() { setCaretPosition(PositionWithAffinity()); }
 
-    DECLARE_TRACE();
+  void nodeWillBeRemoved(Node&);
 
-private:
-    DragCaretController();
+  DECLARE_TRACE();
 
-    VisiblePosition m_position;
-    const Member<CaretBase> m_caretBase;
+ private:
+  DragCaretController();
+
+  VisiblePosition m_position;
+  const Member<CaretBase> m_caretBase;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DragCaretController_h
+#endif  // DragCaretController_h

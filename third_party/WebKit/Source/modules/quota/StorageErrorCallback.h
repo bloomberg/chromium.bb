@@ -43,18 +43,20 @@ class DOMError;
 
 typedef int ExceptionCode;
 
-class StorageErrorCallback : public GarbageCollectedFinalized<StorageErrorCallback> {
-public:
-    virtual ~StorageErrorCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(DOMError*) = 0;
+class StorageErrorCallback
+    : public GarbageCollectedFinalized<StorageErrorCallback> {
+ public:
+  virtual ~StorageErrorCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(DOMError*) = 0;
 
-    MODULES_EXPORT static std::unique_ptr<ExecutionContextTask> createSameThreadTask(StorageErrorCallback*, ExceptionCode);
+  MODULES_EXPORT static std::unique_ptr<ExecutionContextTask>
+  createSameThreadTask(StorageErrorCallback*, ExceptionCode);
 
-private:
-    static void run(StorageErrorCallback*, ExceptionCode);
+ private:
+  static void run(StorageErrorCallback*, ExceptionCode);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageErrorCallback_h
+#endif  // StorageErrorCallback_h

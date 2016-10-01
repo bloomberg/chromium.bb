@@ -42,39 +42,52 @@ class SourceLocation;
 class WorkerThread;
 
 class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
-public:
-    explicit WorkerThreadDebugger(WorkerThread*, v8::Isolate*);
-    ~WorkerThreadDebugger() override;
+  WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
 
-    static WorkerThreadDebugger* from(v8::Isolate*);
-    bool isWorker() override { return true; }
+ public:
+  explicit WorkerThreadDebugger(WorkerThread*, v8::Isolate*);
+  ~WorkerThreadDebugger() override;
 
-    int contextGroupId();
-    void contextCreated(v8::Local<v8::Context>);
-    void contextWillBeDestroyed(v8::Local<v8::Context>);
-    void exceptionThrown(ErrorEvent*);
+  static WorkerThreadDebugger* from(v8::Isolate*);
+  bool isWorker() override { return true; }
 
-private:
-    int contextGroupId(ExecutionContext*) override;
-    void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) override;
+  int contextGroupId();
+  void contextCreated(v8::Local<v8::Context>);
+  void contextWillBeDestroyed(v8::Local<v8::Context>);
+  void exceptionThrown(ErrorEvent*);
 
-    // V8InspectorClient implementation.
-    void runMessageLoopOnPause(int contextGroupId) override;
-    void quitMessageLoopOnPause() override;
-    void muteMetrics(int contextGroupId) override;
-    void unmuteMetrics(int contextGroupId) override;
-    v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
-    void beginEnsureAllContextsInGroup(int contextGroupId) override;
-    void endEnsureAllContextsInGroup(int contextGroupId) override;
-    bool canExecuteScripts(int contextGroupId) override;
-    void runIfWaitingForDebugger(int contextGroupId) override;
-    v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
-    void consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType, const v8_inspector::StringView& message, const v8_inspector::StringView& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace*) override;
+ private:
+  int contextGroupId(ExecutionContext*) override;
+  void reportConsoleMessage(ExecutionContext*,
+                            MessageSource,
+                            MessageLevel,
+                            const String& message,
+                            SourceLocation*) override;
 
-    WorkerThread* m_workerThread;
+  // V8InspectorClient implementation.
+  void runMessageLoopOnPause(int contextGroupId) override;
+  void quitMessageLoopOnPause() override;
+  void muteMetrics(int contextGroupId) override;
+  void unmuteMetrics(int contextGroupId) override;
+  v8::Local<v8::Context> ensureDefaultContextInGroup(
+      int contextGroupId) override;
+  void beginEnsureAllContextsInGroup(int contextGroupId) override;
+  void endEnsureAllContextsInGroup(int contextGroupId) override;
+  bool canExecuteScripts(int contextGroupId) override;
+  void runIfWaitingForDebugger(int contextGroupId) override;
+  v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*,
+                                       v8::Local<v8::Context>) override;
+  void consoleAPIMessage(int contextGroupId,
+                         v8_inspector::V8ConsoleAPIType,
+                         const v8_inspector::StringView& message,
+                         const v8_inspector::StringView& url,
+                         unsigned lineNumber,
+                         unsigned columnNumber,
+                         v8_inspector::V8StackTrace*) override;
+
+  WorkerThread* m_workerThread;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerThreadDebugger_h
+#endif  // WorkerThreadDebugger_h

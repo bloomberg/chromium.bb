@@ -50,70 +50,77 @@ class WebDragData;
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation. This is the data that WebCore is aware
 // of and is not specific to a platform.
-class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>, public Supplementable<DataObject> {
-    USING_GARBAGE_COLLECTED_MIXIN(DataObject);
-public:
-    static DataObject* createFromPasteboard(PasteMode);
-    static DataObject* create();
-    static DataObject* create(WebDragData);
+class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
+                               public Supplementable<DataObject> {
+  USING_GARBAGE_COLLECTED_MIXIN(DataObject);
 
-    virtual ~DataObject();
+ public:
+  static DataObject* createFromPasteboard(PasteMode);
+  static DataObject* create();
+  static DataObject* create(WebDragData);
 
-    // DataTransferItemList support.
-    size_t length() const;
-    DataObjectItem* item(unsigned long index);
-    // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this called.
-    void deleteItem(unsigned long index);
-    void clearAll();
-    // Returns null if an item already exists with the provided type.
-    DataObjectItem* add(const String& data, const String& type);
-    DataObjectItem* add(File*);
+  virtual ~DataObject();
 
-    // WebCore helpers.
-    void clearData(const String& type);
+  // DataTransferItemList support.
+  size_t length() const;
+  DataObjectItem* item(unsigned long index);
+  // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this called.
+  void deleteItem(unsigned long index);
+  void clearAll();
+  // Returns null if an item already exists with the provided type.
+  DataObjectItem* add(const String& data, const String& type);
+  DataObjectItem* add(File*);
 
-    Vector<String> types() const;
-    String getData(const String& type) const;
-    void setData(const String& type, const String& data);
+  // WebCore helpers.
+  void clearData(const String& type);
 
-    void urlAndTitle(String& url, String* title = 0) const;
-    void setURLAndTitle(const String& url, const String& title);
-    void htmlAndBaseURL(String& html, KURL& baseURL) const;
-    void setHTMLAndBaseURL(const String& html, const KURL& baseURL);
+  Vector<String> types() const;
+  String getData(const String& type) const;
+  void setData(const String& type, const String& data);
 
-    // Used for dragging in files from the desktop.
-    bool containsFilenames() const;
-    Vector<String> filenames() const;
-    void addFilename(const String& filename, const String& displayName);
+  void urlAndTitle(String& url, String* title = 0) const;
+  void setURLAndTitle(const String& url, const String& title);
+  void htmlAndBaseURL(String& html, KURL& baseURL) const;
+  void setHTMLAndBaseURL(const String& html, const KURL& baseURL);
 
-    // Used for dragging in filesystem from the desktop.
-    void setFilesystemId(const String& fileSystemId) { m_filesystemId = fileSystemId; }
-    const String& filesystemId() const { ASSERT(!m_filesystemId.isEmpty()); return m_filesystemId; }
+  // Used for dragging in files from the desktop.
+  bool containsFilenames() const;
+  Vector<String> filenames() const;
+  void addFilename(const String& filename, const String& displayName);
 
-    // Used to handle files (images) being dragged out.
-    void addSharedBuffer(const String& name, PassRefPtr<SharedBuffer>);
+  // Used for dragging in filesystem from the desktop.
+  void setFilesystemId(const String& fileSystemId) {
+    m_filesystemId = fileSystemId;
+  }
+  const String& filesystemId() const {
+    ASSERT(!m_filesystemId.isEmpty());
+    return m_filesystemId;
+  }
 
-    int modifiers() const { return m_modifiers; }
-    void setModifiers(int modifiers) { m_modifiers = modifiers; }
+  // Used to handle files (images) being dragged out.
+  void addSharedBuffer(const String& name, PassRefPtr<SharedBuffer>);
 
-    DECLARE_TRACE();
+  int modifiers() const { return m_modifiers; }
+  void setModifiers(int modifiers) { m_modifiers = modifiers; }
 
-    WebDragData toWebDragData();
+  DECLARE_TRACE();
 
-private:
-    DataObject();
+  WebDragData toWebDragData();
 
-    DataObjectItem* findStringItem(const String& type) const;
-    bool internalAddStringItem(DataObjectItem*);
-    void internalAddFileItem(DataObjectItem*);
+ private:
+  DataObject();
 
-    HeapVector<Member<DataObjectItem>> m_itemList;
+  DataObjectItem* findStringItem(const String& type) const;
+  bool internalAddStringItem(DataObjectItem*);
+  void internalAddFileItem(DataObjectItem*);
 
-    // State of Shift/Ctrl/Alt/Meta keys and Left/Right/Middle mouse buttons
-    int m_modifiers;
-    String m_filesystemId;
+  HeapVector<Member<DataObjectItem>> m_itemList;
+
+  // State of Shift/Ctrl/Alt/Meta keys and Left/Right/Middle mouse buttons
+  int m_modifiers;
+  String m_filesystemId;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

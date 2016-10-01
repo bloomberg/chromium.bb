@@ -40,24 +40,29 @@
 
 namespace blink {
 
-WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Local<v8::Object> algorithmObject, WebCryptoOperation operation, int* exceptionCode, WebString* errorDetails, v8::Isolate* isolate)
-{
-    // FIXME: Avoid using NonThrowableExceptionState.
-    NonThrowableExceptionState exceptionState;
-    Dictionary algorithmDictionary(algorithmObject, isolate, exceptionState);
-    if (!algorithmDictionary.isUndefinedOrNull() && !algorithmDictionary.isObject())
-        return WebCryptoAlgorithm();
-    WebCryptoAlgorithm algorithm;
-    AlgorithmError error;
-    AlgorithmIdentifier algorithmIdentifier;
-    algorithmIdentifier.setDictionary(algorithmDictionary);
-    if (!normalizeAlgorithm(algorithmIdentifier, operation, algorithm, &error)) {
-        *exceptionCode = webCryptoErrorToExceptionCode(error.errorType);
-        *errorDetails = error.errorDetails;
-        return WebCryptoAlgorithm();
-    }
+WebCryptoAlgorithm normalizeCryptoAlgorithm(
+    v8::Local<v8::Object> algorithmObject,
+    WebCryptoOperation operation,
+    int* exceptionCode,
+    WebString* errorDetails,
+    v8::Isolate* isolate) {
+  // FIXME: Avoid using NonThrowableExceptionState.
+  NonThrowableExceptionState exceptionState;
+  Dictionary algorithmDictionary(algorithmObject, isolate, exceptionState);
+  if (!algorithmDictionary.isUndefinedOrNull() &&
+      !algorithmDictionary.isObject())
+    return WebCryptoAlgorithm();
+  WebCryptoAlgorithm algorithm;
+  AlgorithmError error;
+  AlgorithmIdentifier algorithmIdentifier;
+  algorithmIdentifier.setDictionary(algorithmDictionary);
+  if (!normalizeAlgorithm(algorithmIdentifier, operation, algorithm, &error)) {
+    *exceptionCode = webCryptoErrorToExceptionCode(error.errorType);
+    *errorDetails = error.errorDetails;
+    return WebCryptoAlgorithm();
+  }
 
-    return algorithm;
+  return algorithm;
 }
 
-} // namespace blink
+}  // namespace blink

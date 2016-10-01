@@ -12,37 +12,29 @@
 namespace blink {
 
 class LayoutBlockItem : public LayoutBoxItem {
-public:
-    explicit LayoutBlockItem(LayoutBlock* layoutBlock)
-        : LayoutBoxItem(layoutBlock)
-    {
-    }
+ public:
+  explicit LayoutBlockItem(LayoutBlock* layoutBlock)
+      : LayoutBoxItem(layoutBlock) {}
 
-    explicit LayoutBlockItem(const LayoutBoxItem& item)
-        : LayoutBoxItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutBlock());
-    }
+  explicit LayoutBlockItem(const LayoutBoxItem& item) : LayoutBoxItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutBlock());
+  }
 
-    explicit LayoutBlockItem(std::nullptr_t) : LayoutBoxItem(nullptr) { }
+  explicit LayoutBlockItem(std::nullptr_t) : LayoutBoxItem(nullptr) {}
 
-    LayoutBlockItem() { }
+  LayoutBlockItem() {}
 
-    bool recalcOverflowAfterStyleChange()
-    {
-        return toBlock()->recalcOverflowAfterStyleChange();
-    }
+  bool recalcOverflowAfterStyleChange() {
+    return toBlock()->recalcOverflowAfterStyleChange();
+  }
 
-    LayoutItem firstChild() const
-    {
-        return LayoutItem(toBlock()->firstChild());
-    }
+  LayoutItem firstChild() const { return LayoutItem(toBlock()->firstChild()); }
 
-private:
-    LayoutBlock* toBlock() { return toLayoutBlock(layoutObject()); }
-    const LayoutBlock* toBlock() const { return toLayoutBlock(layoutObject()); }
+ private:
+  LayoutBlock* toBlock() { return toLayoutBlock(layoutObject()); }
+  const LayoutBlock* toBlock() const { return toLayoutBlock(layoutObject()); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutBlockItem_h
+#endif  // LayoutBlockItem_h

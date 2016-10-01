@@ -9,10 +9,13 @@
 
 namespace blink {
 
-void CanvasMetrics::countCanvasContextUsage(const CanvasContextUsage canvasContextUsage)
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, usageHistogram, new EnumerationHistogram("WebCore.CanvasContextUsage", CanvasContextUsage::NumberOfUsages));
-    usageHistogram.count(canvasContextUsage);
+void CanvasMetrics::countCanvasContextUsage(
+    const CanvasContextUsage canvasContextUsage) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      EnumerationHistogram, usageHistogram,
+      new EnumerationHistogram("WebCore.CanvasContextUsage",
+                               CanvasContextUsage::NumberOfUsages));
+  usageHistogram.count(canvasContextUsage);
 }
 
-} // namespace blink
+}  // namespace blink

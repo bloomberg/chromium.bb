@@ -39,25 +39,30 @@ class XPathExpression;
 class XPathNSResolver;
 class XPathResult;
 
-class XPathEvaluator final : public GarbageCollected<XPathEvaluator>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static XPathEvaluator* create()
-    {
-        return new XPathEvaluator;
-    }
+class XPathEvaluator final : public GarbageCollected<XPathEvaluator>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    XPathExpression* createExpression(const String& expression, XPathNSResolver*, ExceptionState&);
-    XPathNSResolver* createNSResolver(Node* nodeResolver);
-    XPathResult* evaluate(const String& expression, Node* contextNode,
-        XPathNSResolver*, unsigned short type, const ScriptValue&, ExceptionState&);
+ public:
+  static XPathEvaluator* create() { return new XPathEvaluator; }
 
-    DEFINE_INLINE_TRACE() { }
+  XPathExpression* createExpression(const String& expression,
+                                    XPathNSResolver*,
+                                    ExceptionState&);
+  XPathNSResolver* createNSResolver(Node* nodeResolver);
+  XPathResult* evaluate(const String& expression,
+                        Node* contextNode,
+                        XPathNSResolver*,
+                        unsigned short type,
+                        const ScriptValue&,
+                        ExceptionState&);
 
-private:
-    XPathEvaluator() { }
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  XPathEvaluator() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XPathEvaluator_h
+#endif  // XPathEvaluator_h

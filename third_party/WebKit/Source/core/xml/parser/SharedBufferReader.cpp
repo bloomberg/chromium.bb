@@ -40,37 +40,31 @@
 namespace blink {
 
 SharedBufferReader::SharedBufferReader(PassRefPtr<const SharedBuffer> buffer)
-    : m_buffer(buffer)
-    , m_currentOffset(0)
-{
+    : m_buffer(buffer), m_currentOffset(0) {}
+
+SharedBufferReader::~SharedBufferReader() {}
+
+int SharedBufferReader::readData(char* outputBuffer, int askedToRead) {
+  if (!m_buffer || m_currentOffset > m_buffer->size())
+    return 0;
+
+  size_t bytesCopied = 0;
+  size_t bytesLeft = m_buffer->size() - m_currentOffset;
+  size_t lenToCopy = std::min(safeCast<size_t>(askedToRead), bytesLeft);
+
+  while (bytesCopied < lenToCopy) {
+    const char* data;
+    size_t segmentSize = m_buffer->getSomeData(data, m_currentOffset);
+    if (!segmentSize)
+      break;
+
+    segmentSize = std::min(segmentSize, lenToCopy - bytesCopied);
+    memcpy(outputBuffer + bytesCopied, data, segmentSize);
+    bytesCopied += segmentSize;
+    m_currentOffset += segmentSize;
+  }
+
+  return safeCast<int>(bytesCopied);
 }
 
-SharedBufferReader::~SharedBufferReader()
-{
-}
-
-int SharedBufferReader::readData(char* outputBuffer, int askedToRead)
-{
-    if (!m_buffer || m_currentOffset > m_buffer->size())
-        return 0;
-
-    size_t bytesCopied = 0;
-    size_t bytesLeft = m_buffer->size() - m_currentOffset;
-    size_t lenToCopy = std::min(safeCast<size_t>(askedToRead), bytesLeft);
-
-    while (bytesCopied < lenToCopy) {
-        const char* data;
-        size_t segmentSize = m_buffer->getSomeData(data, m_currentOffset);
-        if (!segmentSize)
-            break;
-
-        segmentSize = std::min(segmentSize, lenToCopy - bytesCopied);
-        memcpy(outputBuffer + bytesCopied, data, segmentSize);
-        bytesCopied += segmentSize;
-        m_currentOffset += segmentSize;
-    }
-
-    return safeCast<int>(bytesCopied);
-}
-
-} // namespace blink
+}  // namespace blink

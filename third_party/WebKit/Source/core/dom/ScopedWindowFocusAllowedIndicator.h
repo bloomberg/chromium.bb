@@ -12,43 +12,39 @@
 namespace blink {
 
 class ScopedWindowFocusAllowedIndicator final {
-    USING_FAST_MALLOC(ScopedWindowFocusAllowedIndicator);
-    WTF_MAKE_NONCOPYABLE(ScopedWindowFocusAllowedIndicator);
-public:
-    explicit ScopedWindowFocusAllowedIndicator(ExecutionContext* executionContext)
-        : m_observer(new Observer(executionContext))
-    {
+  USING_FAST_MALLOC(ScopedWindowFocusAllowedIndicator);
+  WTF_MAKE_NONCOPYABLE(ScopedWindowFocusAllowedIndicator);
+
+ public:
+  explicit ScopedWindowFocusAllowedIndicator(ExecutionContext* executionContext)
+      : m_observer(new Observer(executionContext)) {}
+  ~ScopedWindowFocusAllowedIndicator() { m_observer->dispose(); }
+
+ private:
+  class Observer final : public GarbageCollected<Observer>,
+                         public ContextLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(Observer);
+
+   public:
+    explicit Observer(ExecutionContext* executionContext)
+        : ContextLifecycleObserver(executionContext) {
+      if (executionContext)
+        executionContext->allowWindowInteraction();
     }
-    ~ScopedWindowFocusAllowedIndicator()
-    {
-        m_observer->dispose();
+
+    void dispose() {
+      if (getExecutionContext())
+        getExecutionContext()->consumeWindowInteraction();
     }
+  };
 
-private:
-    class Observer final : public GarbageCollected<Observer>, public ContextLifecycleObserver {
-        USING_GARBAGE_COLLECTED_MIXIN(Observer);
-    public:
-        explicit Observer(ExecutionContext* executionContext)
-            : ContextLifecycleObserver(executionContext)
-        {
-            if (executionContext)
-                executionContext->allowWindowInteraction();
-        }
-
-        void dispose()
-        {
-            if (getExecutionContext())
-                getExecutionContext()->consumeWindowInteraction();
-        }
-    };
-
-    // In Oilpan, destructors are not allowed to touch other on-heap objects.
-    // The Observer indirection is needed to keep
-    // ScopedWindowFocusAllowedIndicator off-heap and thus allows its destructor
-    // to call getExecutionContext()->consumeWindowInteraction().
-    Persistent<Observer> m_observer;
+  // In Oilpan, destructors are not allowed to touch other on-heap objects.
+  // The Observer indirection is needed to keep
+  // ScopedWindowFocusAllowedIndicator off-heap and thus allows its destructor
+  // to call getExecutionContext()->consumeWindowInteraction().
+  Persistent<Observer> m_observer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScopedWindowFocusAllowedIndicator_h
+#endif  // ScopedWindowFocusAllowedIndicator_h

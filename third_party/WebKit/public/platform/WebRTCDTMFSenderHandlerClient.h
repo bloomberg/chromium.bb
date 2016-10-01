@@ -33,12 +33,12 @@ namespace blink {
 class WebString;
 
 class WebRTCDTMFSenderHandlerClient {
-public:
-    virtual ~WebRTCDTMFSenderHandlerClient() { }
+ public:
+  virtual ~WebRTCDTMFSenderHandlerClient() {}
 
-    virtual void didPlayTone(const WebString& tone) = 0;
+  virtual void didPlayTone(const WebString& tone) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRTCDTMFSenderHandlerClient_h
+#endif  // WebRTCDTMFSenderHandlerClient_h

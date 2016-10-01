@@ -31,17 +31,15 @@ namespace WTF {
 // object. CF objects need to be "made collectable" for autorelease to work
 // properly under GC.
 
-static inline id HardAutorelease(CFTypeRef object)
-{
-    if (object)
-        CFMakeCollectable(object);
-    [(id)object autorelease];
-    return (id)object;
+static inline id HardAutorelease(CFTypeRef object) {
+  if (object)
+    CFMakeCollectable(object);
+  [(id)object autorelease];
+  return (id)object;
 }
 
-StringImpl::operator NSString *()
-{
-    return HardAutorelease(createCFString().leakRef());
+StringImpl::operator NSString*() {
+  return HardAutorelease(createCFString().leakRef());
 }
 
-} // namespace WTF
+}  // namespace WTF

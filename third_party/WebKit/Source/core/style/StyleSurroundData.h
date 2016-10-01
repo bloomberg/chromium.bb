@@ -36,26 +36,27 @@ namespace blink {
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleSurroundData : public RefCounted<StyleSurroundData> {
-public:
-    static PassRefPtr<StyleSurroundData> create() { return adoptRef(new StyleSurroundData); }
-    PassRefPtr<StyleSurroundData> copy() const { return adoptRef(new StyleSurroundData(*this)); }
+ public:
+  static PassRefPtr<StyleSurroundData> create() {
+    return adoptRef(new StyleSurroundData);
+  }
+  PassRefPtr<StyleSurroundData> copy() const {
+    return adoptRef(new StyleSurroundData(*this));
+  }
 
-    bool operator==(const StyleSurroundData&) const;
-    bool operator!=(const StyleSurroundData& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const StyleSurroundData&) const;
+  bool operator!=(const StyleSurroundData& o) const { return !(*this == o); }
 
-    LengthBox offset;
-    LengthBox margin;
-    LengthBox padding;
-    BorderData border;
+  LengthBox offset;
+  LengthBox margin;
+  LengthBox padding;
+  BorderData border;
 
-private:
-    StyleSurroundData();
-    StyleSurroundData(const StyleSurroundData&);
+ private:
+  StyleSurroundData();
+  StyleSurroundData(const StyleSurroundData&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleSurroundData_h
+#endif  // StyleSurroundData_h

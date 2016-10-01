@@ -31,38 +31,38 @@
 
 namespace blink {
 
-void ZeroPole::process(const float *source, float *destination, unsigned framesToProcess)
-{
-    float zero = m_zero;
-    float pole = m_pole;
+void ZeroPole::process(const float* source,
+                       float* destination,
+                       unsigned framesToProcess) {
+  float zero = m_zero;
+  float pole = m_pole;
 
-    // Gain compensation to make 0dB @ 0Hz
-    const float k1 = 1 / (1 - zero);
-    const float k2 = 1 - pole;
+  // Gain compensation to make 0dB @ 0Hz
+  const float k1 = 1 / (1 - zero);
+  const float k2 = 1 - pole;
 
-    // Member variables to locals.
-    float lastX = m_lastX;
-    float lastY = m_lastY;
+  // Member variables to locals.
+  float lastX = m_lastX;
+  float lastY = m_lastY;
 
-    while (framesToProcess--) {
-        float input = *source++;
+  while (framesToProcess--) {
+    float input = *source++;
 
-        // Zero
-        float output1 = k1 * (input - zero * lastX);
-        lastX = input;
+    // Zero
+    float output1 = k1 * (input - zero * lastX);
+    lastX = input;
 
-        // Pole
-        float output2 = k2 * output1 + pole * lastY;
-        lastY = output2;
+    // Pole
+    float output2 = k2 * output1 + pole * lastY;
+    lastY = output2;
 
-        *destination++ = output2;
-    }
+    *destination++ = output2;
+  }
 
-    // Locals to member variables. Flush denormals here so we don't
-    // slow down the inner loop above.
-    m_lastX = DenormalDisabler::flushDenormalFloatToZero(lastX);
-    m_lastY = DenormalDisabler::flushDenormalFloatToZero(lastY);
+  // Locals to member variables. Flush denormals here so we don't
+  // slow down the inner loop above.
+  m_lastX = DenormalDisabler::flushDenormalFloatToZero(lastX);
+  m_lastY = DenormalDisabler::flushDenormalFloatToZero(lastY);
 }
 
-} // namespace blink
-
+}  // namespace blink

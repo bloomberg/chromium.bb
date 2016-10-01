@@ -22,81 +22,91 @@
 
 #include "core/events/UIEvent.h"
 
-
 namespace blink {
 
-UIEvent::UIEvent()
-    : m_detail(0)
-    , m_sourceCapabilities(nullptr)
-{
-}
+UIEvent::UIEvent() : m_detail(0), m_sourceCapabilities(nullptr) {}
 
 // TODO(lanwei): Will add sourceCapabilities to all the subclass of UIEvent later, see https://crbug.com/476530.
-UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, ComposedMode composedMode, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
-    : Event(eventType, canBubbleArg, cancelableArg, composedMode)
-    , m_view(viewArg)
-    , m_detail(detailArg)
-    , m_sourceCapabilities(sourceCapabilitiesArg)
-{
-}
+UIEvent::UIEvent(const AtomicString& eventType,
+                 bool canBubbleArg,
+                 bool cancelableArg,
+                 ComposedMode composedMode,
+                 AbstractView* viewArg,
+                 int detailArg,
+                 InputDeviceCapabilities* sourceCapabilitiesArg)
+    : Event(eventType, canBubbleArg, cancelableArg, composedMode),
+      m_view(viewArg),
+      m_detail(detailArg),
+      m_sourceCapabilities(sourceCapabilitiesArg) {}
 
-UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, ComposedMode composedMode, double platformTimeStamp, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
-    : Event(eventType, canBubbleArg, cancelableArg, composedMode, platformTimeStamp)
-    , m_view(viewArg)
-    , m_detail(detailArg)
-    , m_sourceCapabilities(sourceCapabilitiesArg)
-{
-}
+UIEvent::UIEvent(const AtomicString& eventType,
+                 bool canBubbleArg,
+                 bool cancelableArg,
+                 ComposedMode composedMode,
+                 double platformTimeStamp,
+                 AbstractView* viewArg,
+                 int detailArg,
+                 InputDeviceCapabilities* sourceCapabilitiesArg)
+    : Event(eventType,
+            canBubbleArg,
+            cancelableArg,
+            composedMode,
+            platformTimeStamp),
+      m_view(viewArg),
+      m_detail(detailArg),
+      m_sourceCapabilities(sourceCapabilitiesArg) {}
 
 UIEvent::UIEvent(const AtomicString& eventType, const UIEventInit& initializer)
-    : Event(eventType, initializer)
-    , m_view(initializer.view())
-    , m_detail(initializer.detail())
-    , m_sourceCapabilities(initializer.sourceCapabilities())
-{
+    : Event(eventType, initializer),
+      m_view(initializer.view()),
+      m_detail(initializer.detail()),
+      m_sourceCapabilities(initializer.sourceCapabilities()) {}
+
+UIEvent::~UIEvent() {}
+
+void UIEvent::initUIEvent(const AtomicString& typeArg,
+                          bool canBubbleArg,
+                          bool cancelableArg,
+                          AbstractView* viewArg,
+                          int detailArg) {
+  initUIEventInternal(typeArg, canBubbleArg, cancelableArg, nullptr, viewArg,
+                      detailArg, nullptr);
 }
 
-UIEvent::~UIEvent()
-{
+void UIEvent::initUIEventInternal(
+    const AtomicString& typeArg,
+    bool canBubbleArg,
+    bool cancelableArg,
+    EventTarget* relatedTarget,
+    AbstractView* viewArg,
+    int detailArg,
+    InputDeviceCapabilities* sourceCapabilitiesArg) {
+  if (isBeingDispatched())
+    return;
+
+  initEvent(typeArg, canBubbleArg, cancelableArg, relatedTarget);
+
+  m_view = viewArg;
+  m_detail = detailArg;
+  m_sourceCapabilities = sourceCapabilitiesArg;
 }
 
-void UIEvent::initUIEvent(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, AbstractView* viewArg, int detailArg)
-{
-    initUIEventInternal(typeArg, canBubbleArg, cancelableArg, nullptr, viewArg, detailArg, nullptr);
+bool UIEvent::isUIEvent() const {
+  return true;
 }
 
-void UIEvent::initUIEventInternal(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
-{
-    if (isBeingDispatched())
-        return;
-
-    initEvent(typeArg, canBubbleArg, cancelableArg, relatedTarget);
-
-    m_view = viewArg;
-    m_detail = detailArg;
-    m_sourceCapabilities = sourceCapabilitiesArg;
+const AtomicString& UIEvent::interfaceName() const {
+  return EventNames::UIEvent;
 }
 
-bool UIEvent::isUIEvent() const
-{
-    return true;
+int UIEvent::which() const {
+  return 0;
 }
 
-const AtomicString& UIEvent::interfaceName() const
-{
-    return EventNames::UIEvent;
+DEFINE_TRACE(UIEvent) {
+  visitor->trace(m_view);
+  visitor->trace(m_sourceCapabilities);
+  Event::trace(visitor);
 }
 
-int UIEvent::which() const
-{
-    return 0;
-}
-
-DEFINE_TRACE(UIEvent)
-{
-    visitor->trace(m_view);
-    visitor->trace(m_sourceCapabilities);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

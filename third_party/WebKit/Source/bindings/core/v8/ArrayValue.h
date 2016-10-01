@@ -36,28 +36,27 @@ namespace blink {
 class Dictionary;
 
 class CORE_EXPORT ArrayValue final {
-    STACK_ALLOCATED();
-public:
-    ArrayValue() : m_isolate(nullptr) { }
-    ArrayValue(const v8::Local<v8::Array>& array, v8::Isolate* isolate)
-        : m_array(array)
-        , m_isolate(isolate)
-    {
-        DCHECK(m_isolate);
-    }
+  STACK_ALLOCATED();
 
-    ArrayValue& operator=(const ArrayValue&);
+ public:
+  ArrayValue() : m_isolate(nullptr) {}
+  ArrayValue(const v8::Local<v8::Array>& array, v8::Isolate* isolate)
+      : m_array(array), m_isolate(isolate) {
+    DCHECK(m_isolate);
+  }
 
-    bool isUndefinedOrNull() const;
+  ArrayValue& operator=(const ArrayValue&);
 
-    bool length(size_t&) const;
-    bool get(size_t index, Dictionary&) const;
+  bool isUndefinedOrNull() const;
 
-private:
-    v8::Local<v8::Array> m_array;
-    v8::Isolate* m_isolate;
+  bool length(size_t&) const;
+  bool get(size_t index, Dictionary&) const;
+
+ private:
+  v8::Local<v8::Array> m_array;
+  v8::Isolate* m_isolate;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ArrayValue_h
+#endif  // ArrayValue_h

@@ -16,19 +16,20 @@ class Element;
 
 class CORE_EXPORT CustomElementReaction
     : public GarbageCollectedFinalized<CustomElementReaction> {
-    WTF_MAKE_NONCOPYABLE(CustomElementReaction);
-public:
-    CustomElementReaction(CustomElementDefinition*);
-    virtual ~CustomElementReaction() = default;
+  WTF_MAKE_NONCOPYABLE(CustomElementReaction);
 
-    virtual void invoke(Element*) = 0;
+ public:
+  CustomElementReaction(CustomElementDefinition*);
+  virtual ~CustomElementReaction() = default;
 
-    DECLARE_VIRTUAL_TRACE();
+  virtual void invoke(Element*) = 0;
 
-protected:
-    Member<CustomElementDefinition> m_definition;
+  DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  Member<CustomElementDefinition> m_definition;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementReaction_h
+#endif  // CustomElementReaction_h

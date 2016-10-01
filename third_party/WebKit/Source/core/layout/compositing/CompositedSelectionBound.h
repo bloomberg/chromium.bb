@@ -38,23 +38,19 @@
 namespace blink {
 
 struct CompositedSelectionBound {
-    STACK_ALLOCATED();
-    CompositedSelectionBound()
-        : layer(nullptr)
-        , isTextDirectionRTL(false)
-    {
-    }
+  STACK_ALLOCATED();
+  CompositedSelectionBound() : layer(nullptr), isTextDirectionRTL(false) {}
 
-    // The structure describes the position of a caret in space of the GraphicsLayer the caret resides in.
-    // Where edgeTopInLayer is the top point of the caret, usually on the ascend line of the line box,
-    // and edgeBottomInLayer it the bottom point, on the baseline of the line box.
-    GraphicsLayer* layer;
-    FloatPoint edgeTopInLayer;
-    FloatPoint edgeBottomInLayer;
+  // The structure describes the position of a caret in space of the GraphicsLayer the caret resides in.
+  // Where edgeTopInLayer is the top point of the caret, usually on the ascend line of the line box,
+  // and edgeBottomInLayer it the bottom point, on the baseline of the line box.
+  GraphicsLayer* layer;
+  FloatPoint edgeTopInLayer;
+  FloatPoint edgeBottomInLayer;
 
-    bool isTextDirectionRTL;
+  bool isTextDirectionRTL;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

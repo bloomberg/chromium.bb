@@ -32,69 +32,72 @@ namespace blink {
 namespace OpenType {
 
 struct Int16 {
-    DISALLOW_NEW();
-    Int16(int16_t u) : v(htons(static_cast<uint16_t>(u))) { }
-    operator int16_t() const { return static_cast<int16_t>(ntohs(v)); }
-    uint16_t v; // in BigEndian
+  DISALLOW_NEW();
+  Int16(int16_t u) : v(htons(static_cast<uint16_t>(u))) {}
+  operator int16_t() const { return static_cast<int16_t>(ntohs(v)); }
+  uint16_t v;  // in BigEndian
 };
 
 struct UInt16 {
-    DISALLOW_NEW();
-    UInt16(uint16_t u) : v(htons(u)) { }
-    operator uint16_t() const { return ntohs(v); }
-    uint16_t v; // in BigEndian
+  DISALLOW_NEW();
+  UInt16(uint16_t u) : v(htons(u)) {}
+  operator uint16_t() const { return ntohs(v); }
+  uint16_t v;  // in BigEndian
 };
 
 struct Int32 {
-    DISALLOW_NEW();
-    Int32(int32_t u) : v(htonl(static_cast<uint32_t>(u))) { }
-    operator int32_t() const { return static_cast<int32_t>(ntohl(v)); }
-    uint32_t v; // in BigEndian
+  DISALLOW_NEW();
+  Int32(int32_t u) : v(htonl(static_cast<uint32_t>(u))) {}
+  operator int32_t() const { return static_cast<int32_t>(ntohl(v)); }
+  uint32_t v;  // in BigEndian
 };
 
 struct UInt32 {
-    DISALLOW_NEW();
-    UInt32(uint32_t u) : v(htonl(u)) { }
-    operator uint32_t() const { return ntohl(v); }
-    uint32_t v; // in BigEndian
+  DISALLOW_NEW();
+  UInt32(uint32_t u) : v(htonl(u)) {}
+  operator uint32_t() const { return ntohl(v); }
+  uint32_t v;  // in BigEndian
 };
 
 typedef UInt32 Fixed;
 typedef UInt16 Offset;
 typedef UInt16 GlyphID;
 
-template <typename T> static const T* validateTable(const RefPtr<SharedBuffer>& buffer, size_t count = 1)
-{
-    if (!buffer || buffer->size() < sizeof(T) * count)
-        return 0;
-    return reinterpret_cast<const T*>(buffer->data());
+template <typename T>
+static const T* validateTable(const RefPtr<SharedBuffer>& buffer,
+                              size_t count = 1) {
+  if (!buffer || buffer->size() < sizeof(T) * count)
+    return 0;
+  return reinterpret_cast<const T*>(buffer->data());
 }
 
 struct TableBase {
-    DISALLOW_NEW();
-protected:
-    static bool isValidEnd(const SharedBuffer& buffer, const void* position)
-    {
-        if (position < buffer.data())
-            return false;
-        size_t offset = reinterpret_cast<const char*>(position) - buffer.data();
-        return offset <= buffer.size(); // "<=" because end is included as valid
-    }
+  DISALLOW_NEW();
 
-    template <typename T> static const T* validatePtr(const SharedBuffer& buffer, const void* position)
-    {
-        const T* casted = reinterpret_cast<const T*>(position);
-        if (!isValidEnd(buffer, &casted[1]))
-            return 0;
-        return casted;
-    }
+ protected:
+  static bool isValidEnd(const SharedBuffer& buffer, const void* position) {
+    if (position < buffer.data())
+      return false;
+    size_t offset = reinterpret_cast<const char*>(position) - buffer.data();
+    return offset <= buffer.size();  // "<=" because end is included as valid
+  }
 
-    template <typename T> const T* validateOffset(const SharedBuffer& buffer, uint16_t offset) const
-    {
-        return validatePtr<T>(buffer, reinterpret_cast<const int8_t*>(this) + offset);
-    }
+  template <typename T>
+  static const T* validatePtr(const SharedBuffer& buffer,
+                              const void* position) {
+    const T* casted = reinterpret_cast<const T*>(position);
+    if (!isValidEnd(buffer, &casted[1]))
+      return 0;
+    return casted;
+  }
+
+  template <typename T>
+  const T* validateOffset(const SharedBuffer& buffer, uint16_t offset) const {
+    return validatePtr<T>(buffer,
+                          reinterpret_cast<const int8_t*>(this) + offset);
+  }
 };
 
-} // namespace OpenType
-} // namespace blink
-#endif // OpenTypeTypes_h
+}  // namespace OpenType
+}  // namespace blink
+#endif  // OpenTypeTypes_h

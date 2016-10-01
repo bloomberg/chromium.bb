@@ -36,33 +36,37 @@ namespace blink {
 class ExceptionState;
 class Image;
 
-class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Pattern::RepeatMode parseRepetitionType(const String&, ExceptionState&);
+class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CanvasPattern* create(PassRefPtr<Image> image, Pattern::RepeatMode repeat, bool originClean)
-    {
-        return new CanvasPattern(std::move(image), repeat, originClean);
-    }
+ public:
+  static Pattern::RepeatMode parseRepetitionType(const String&,
+                                                 ExceptionState&);
 
-    Pattern* getPattern() const { return m_pattern.get(); }
-    const AffineTransform& getTransform() const { return m_patternTransform; }
+  static CanvasPattern* create(PassRefPtr<Image> image,
+                               Pattern::RepeatMode repeat,
+                               bool originClean) {
+    return new CanvasPattern(std::move(image), repeat, originClean);
+  }
 
-    bool originClean() const { return m_originClean; }
+  Pattern* getPattern() const { return m_pattern.get(); }
+  const AffineTransform& getTransform() const { return m_patternTransform; }
 
-    DEFINE_INLINE_TRACE() { }
+  bool originClean() const { return m_originClean; }
 
-    void setTransform(SVGMatrixTearOff*);
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    CanvasPattern(PassRefPtr<Image>, Pattern::RepeatMode, bool originClean);
+  void setTransform(SVGMatrixTearOff*);
 
-    RefPtr<Pattern> m_pattern;
-    AffineTransform m_patternTransform;
-    bool m_originClean;
+ private:
+  CanvasPattern(PassRefPtr<Image>, Pattern::RepeatMode, bool originClean);
+
+  RefPtr<Pattern> m_pattern;
+  AffineTransform m_patternTransform;
+  bool m_originClean;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CanvasPattern_h
+#endif  // CanvasPattern_h

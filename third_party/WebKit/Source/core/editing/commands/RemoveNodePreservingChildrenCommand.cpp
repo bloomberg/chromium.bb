@@ -31,39 +31,40 @@
 
 namespace blink {
 
-RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(Node* node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
-    : CompositeEditCommand(node->document())
-    , m_node(node)
-    , m_shouldAssumeContentIsAlwaysEditable(shouldAssumeContentIsAlwaysEditable)
-{
-    DCHECK(m_node);
+RemoveNodePreservingChildrenCommand::RemoveNodePreservingChildrenCommand(
+    Node* node,
+    ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+    : CompositeEditCommand(node->document()),
+      m_node(node),
+      m_shouldAssumeContentIsAlwaysEditable(
+          shouldAssumeContentIsAlwaysEditable) {
+  DCHECK(m_node);
 }
 
-void RemoveNodePreservingChildrenCommand::doApply(EditingState* editingState)
-{
-    ABORT_EDITING_COMMAND_IF(!m_node->parentNode());
-    ABORT_EDITING_COMMAND_IF(!hasEditableStyle(*m_node->parentNode()));
-    if (m_node->isContainerNode()) {
-        NodeVector children;
-        getChildNodes(toContainerNode(*m_node), children);
+void RemoveNodePreservingChildrenCommand::doApply(EditingState* editingState) {
+  ABORT_EDITING_COMMAND_IF(!m_node->parentNode());
+  ABORT_EDITING_COMMAND_IF(!hasEditableStyle(*m_node->parentNode()));
+  if (m_node->isContainerNode()) {
+    NodeVector children;
+    getChildNodes(toContainerNode(*m_node), children);
 
-        for (auto& currentChild : children) {
-            Node* child = currentChild.release();
-            removeNode(child, editingState, m_shouldAssumeContentIsAlwaysEditable);
-            if (editingState->isAborted())
-                return;
-            insertNodeBefore(child, m_node, editingState, m_shouldAssumeContentIsAlwaysEditable);
-            if (editingState->isAborted())
-                return;
-        }
+    for (auto& currentChild : children) {
+      Node* child = currentChild.release();
+      removeNode(child, editingState, m_shouldAssumeContentIsAlwaysEditable);
+      if (editingState->isAborted())
+        return;
+      insertNodeBefore(child, m_node, editingState,
+                       m_shouldAssumeContentIsAlwaysEditable);
+      if (editingState->isAborted())
+        return;
     }
-    removeNode(m_node, editingState, m_shouldAssumeContentIsAlwaysEditable);
+  }
+  removeNode(m_node, editingState, m_shouldAssumeContentIsAlwaysEditable);
 }
 
-DEFINE_TRACE(RemoveNodePreservingChildrenCommand)
-{
-    visitor->trace(m_node);
-    CompositeEditCommand::trace(visitor);
+DEFINE_TRACE(RemoveNodePreservingChildrenCommand) {
+  visitor->trace(m_node);
+  CompositeEditCommand::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

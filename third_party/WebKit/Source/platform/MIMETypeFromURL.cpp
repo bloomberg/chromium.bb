@@ -32,27 +32,25 @@
 
 namespace blink {
 
-String mimeTypeFromDataURL(const String& url)
-{
-    ASSERT(protocolIs(url, "data"));
-    size_t index = url.find(';');
-    if (index == kNotFound)
-        index = url.find(',');
-    if (index != kNotFound) {
-        if (index > 5)
-            return url.substring(5, index - 5).lower();
-        return "text/plain"; // Data URLs with no MIME type are considered text/plain.
-    }
-    return "";
+String mimeTypeFromDataURL(const String& url) {
+  ASSERT(protocolIs(url, "data"));
+  size_t index = url.find(';');
+  if (index == kNotFound)
+    index = url.find(',');
+  if (index != kNotFound) {
+    if (index > 5)
+      return url.substring(5, index - 5).lower();
+    return "text/plain";  // Data URLs with no MIME type are considered text/plain.
+  }
+  return "";
 }
 
-String mimeTypeFromURL(const KURL& url)
-{
-    String decodedPath = decodeURLEscapeSequences(url.path());
-    String extension = decodedPath.substring(decodedPath.reverseFind('.') + 1);
+String mimeTypeFromURL(const KURL& url) {
+  String decodedPath = decodeURLEscapeSequences(url.path());
+  String extension = decodedPath.substring(decodedPath.reverseFind('.') + 1);
 
-    // We don't use MIMETypeRegistry::getMIMETypeForPath() because it returns "application/octet-stream" upon failure
-    return MIMETypeRegistry::getMIMETypeForExtension(extension);
+  // We don't use MIMETypeRegistry::getMIMETypeForPath() because it returns "application/octet-stream" upon failure
+  return MIMETypeRegistry::getMIMETypeForExtension(extension);
 }
 
-} // namespace blink
+}  // namespace blink

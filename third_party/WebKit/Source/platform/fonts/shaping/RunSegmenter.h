@@ -23,42 +23,41 @@ namespace blink {
 // OrientationIterator and SmallCapsIterator, depending on orientaton and
 // font-variant of the text run.
 class PLATFORM_EXPORT RunSegmenter {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(RunSegmenter);
-public:
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(RunSegmenter);
 
-    // Indices into the UTF-16 buffer that is passed in
-    struct RunSegmenterRange {
-        DISALLOW_NEW();
-        unsigned start;
-        unsigned end;
-        UScriptCode script;
-        OrientationIterator::RenderOrientation renderOrientation;
-        FontFallbackPriority fontFallbackPriority;
-    };
+ public:
+  // Indices into the UTF-16 buffer that is passed in
+  struct RunSegmenterRange {
+    DISALLOW_NEW();
+    unsigned start;
+    unsigned end;
+    UScriptCode script;
+    OrientationIterator::RenderOrientation renderOrientation;
+    FontFallbackPriority fontFallbackPriority;
+  };
 
-    RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrientation);
+  RunSegmenter(const UChar* buffer, unsigned bufferSize, FontOrientation);
 
-    bool consume(RunSegmenterRange*);
+  bool consume(RunSegmenterRange*);
 
-private:
+ private:
+  void consumeOrientationIteratorPastLastSplit();
+  void consumeScriptIteratorPastLastSplit();
+  void consumeSymbolsIteratorPastLastSplit();
 
-    void consumeOrientationIteratorPastLastSplit();
-    void consumeScriptIteratorPastLastSplit();
-    void consumeSymbolsIteratorPastLastSplit();
-
-    unsigned m_bufferSize;
-    RunSegmenterRange m_candidateRange;
-    std::unique_ptr<ScriptRunIterator> m_scriptRunIterator;
-    std::unique_ptr<OrientationIterator> m_orientationIterator;
-    std::unique_ptr<SymbolsIterator> m_symbolsIterator;
-    unsigned m_lastSplit;
-    unsigned m_scriptRunIteratorPosition;
-    unsigned m_orientationIteratorPosition;
-    unsigned m_symbolsIteratorPosition;
-    bool m_atEnd;
+  unsigned m_bufferSize;
+  RunSegmenterRange m_candidateRange;
+  std::unique_ptr<ScriptRunIterator> m_scriptRunIterator;
+  std::unique_ptr<OrientationIterator> m_orientationIterator;
+  std::unique_ptr<SymbolsIterator> m_symbolsIterator;
+  unsigned m_lastSplit;
+  unsigned m_scriptRunIteratorPosition;
+  unsigned m_orientationIteratorPosition;
+  unsigned m_symbolsIteratorPosition;
+  bool m_atEnd;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

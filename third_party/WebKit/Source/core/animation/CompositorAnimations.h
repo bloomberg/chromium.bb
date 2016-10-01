@@ -48,37 +48,70 @@ class FloatBox;
 class KeyframeEffectModelBase;
 
 class CORE_EXPORT CompositorAnimations {
-    STATIC_ONLY(CompositorAnimations);
-public:
-    static bool isCompositableProperty(CSSPropertyID);
-    static const CSSPropertyID compositableProperties[7];
+  STATIC_ONLY(CompositorAnimations);
 
-    static bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const Animation*, const EffectModel&, double animationPlaybackRate);
-    static void cancelIncompatibleAnimationsOnCompositor(const Element&, const Animation&, const EffectModel&);
-    static bool canStartAnimationOnCompositor(const Element&);
-    static void startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const Animation&, const EffectModel&, Vector<int>& startedAnimationIds, double animationPlaybackRate);
-    static void cancelAnimationOnCompositor(const Element&, const Animation&, int id);
-    static void pauseAnimationForTestingOnCompositor(const Element&, const Animation&, int id, double pauseTime);
+ public:
+  static bool isCompositableProperty(CSSPropertyID);
+  static const CSSPropertyID compositableProperties[7];
 
-    static void attachCompositedLayers(Element&, const Animation&);
+  static bool isCandidateForAnimationOnCompositor(const Timing&,
+                                                  const Element&,
+                                                  const Animation*,
+                                                  const EffectModel&,
+                                                  double animationPlaybackRate);
+  static void cancelIncompatibleAnimationsOnCompositor(const Element&,
+                                                       const Animation&,
+                                                       const EffectModel&);
+  static bool canStartAnimationOnCompositor(const Element&);
+  static void startAnimationOnCompositor(const Element&,
+                                         int group,
+                                         double startTime,
+                                         double timeOffset,
+                                         const Timing&,
+                                         const Animation&,
+                                         const EffectModel&,
+                                         Vector<int>& startedAnimationIds,
+                                         double animationPlaybackRate);
+  static void cancelAnimationOnCompositor(const Element&,
+                                          const Animation&,
+                                          int id);
+  static void pauseAnimationForTestingOnCompositor(const Element&,
+                                                   const Animation&,
+                                                   int id,
+                                                   double pauseTime);
 
-    static bool getAnimatedBoundingBox(FloatBox&, const EffectModel&, double minValue, double maxValue);
+  static void attachCompositedLayers(Element&, const Animation&);
 
-    struct CompositorTiming {
-        Timing::PlaybackDirection direction;
-        double scaledDuration;
-        double scaledTimeOffset;
-        double adjustedIterationCount;
-        double playbackRate;
-        Timing::FillMode fillMode;
-        double iterationStart;
-    };
+  static bool getAnimatedBoundingBox(FloatBox&,
+                                     const EffectModel&,
+                                     double minValue,
+                                     double maxValue);
 
-    static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out, double animationPlaybackRate);
+  struct CompositorTiming {
+    Timing::PlaybackDirection direction;
+    double scaledDuration;
+    double scaledTimeOffset;
+    double adjustedIterationCount;
+    double playbackRate;
+    Timing::FillMode fillMode;
+    double iterationStart;
+  };
 
-    static void getAnimationOnCompositor(const Timing&, int group, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<std::unique_ptr<CompositorAnimation>>& animations, double animationPlaybackRate);
+  static bool convertTimingForCompositor(const Timing&,
+                                         double timeOffset,
+                                         CompositorTiming& out,
+                                         double animationPlaybackRate);
+
+  static void getAnimationOnCompositor(
+      const Timing&,
+      int group,
+      double startTime,
+      double timeOffset,
+      const KeyframeEffectModelBase&,
+      Vector<std::unique_ptr<CompositorAnimation>>& animations,
+      double animationPlaybackRate);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

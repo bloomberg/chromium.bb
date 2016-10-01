@@ -30,51 +30,59 @@ namespace blink {
 class Range;
 
 class TextCheckingParagraph {
-    STACK_ALLOCATED();
-public:
-    explicit TextCheckingParagraph(const EphemeralRange& checkingRange);
-    TextCheckingParagraph(const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange);
-    TextCheckingParagraph(Range* checkingRange, Range* paragraphRange);
-    ~TextCheckingParagraph();
+  STACK_ALLOCATED();
 
-    int rangeLength() const;
-    EphemeralRange subrange(int characterOffset, int characterCount) const;
-    int offsetTo(const Position&) const;
-    void expandRangeToNextEnd();
+ public:
+  explicit TextCheckingParagraph(const EphemeralRange& checkingRange);
+  TextCheckingParagraph(const EphemeralRange& checkingRange,
+                        const EphemeralRange& paragraphRange);
+  TextCheckingParagraph(Range* checkingRange, Range* paragraphRange);
+  ~TextCheckingParagraph();
 
-    const String& text() const;
-    // Why not let clients call these functions on text() themselves?
-    String textSubstring(unsigned pos, unsigned len = INT_MAX) const { return text().substring(pos, len); }
-    UChar textCharAt(int index) const { return text()[static_cast<unsigned>(index)]; }
+  int rangeLength() const;
+  EphemeralRange subrange(int characterOffset, int characterCount) const;
+  int offsetTo(const Position&) const;
+  void expandRangeToNextEnd();
 
-    bool isEmpty() const;
+  const String& text() const;
+  // Why not let clients call these functions on text() themselves?
+  String textSubstring(unsigned pos, unsigned len = INT_MAX) const {
+    return text().substring(pos, len);
+  }
+  UChar textCharAt(int index) const {
+    return text()[static_cast<unsigned>(index)];
+  }
 
-    int checkingStart() const;
-    int checkingEnd() const;
-    int checkingLength() const;
+  bool isEmpty() const;
 
-    bool checkingRangeCovers(int location, int length) const { return location < checkingEnd() && location + length > checkingStart(); }
-    EphemeralRange paragraphRange() const;
-    void setParagraphRange(const EphemeralRange&);
+  int checkingStart() const;
+  int checkingEnd() const;
+  int checkingLength() const;
 
-    EphemeralRange checkingRange() const { return m_checkingRange; }
+  bool checkingRangeCovers(int location, int length) const {
+    return location < checkingEnd() && location + length > checkingStart();
+  }
+  EphemeralRange paragraphRange() const;
+  void setParagraphRange(const EphemeralRange&);
 
-private:
-    void invalidateParagraphRangeValues();
-    EphemeralRange offsetAsRange() const;
+  EphemeralRange checkingRange() const { return m_checkingRange; }
 
-    bool isTextEmpty() const { return text().isEmpty(); }
-    bool isRangeEmpty() const { return checkingStart() >= checkingEnd(); }
+ private:
+  void invalidateParagraphRangeValues();
+  EphemeralRange offsetAsRange() const;
 
-    EphemeralRange m_checkingRange;
-    mutable EphemeralRange m_paragraphRange;
-    mutable EphemeralRange m_offsetAsRange;
-    mutable String m_text;
-    mutable int m_checkingStart;
-    mutable int m_checkingEnd;
-    mutable int m_checkingLength;
+  bool isTextEmpty() const { return text().isEmpty(); }
+  bool isRangeEmpty() const { return checkingStart() >= checkingEnd(); }
+
+  EphemeralRange m_checkingRange;
+  mutable EphemeralRange m_paragraphRange;
+  mutable EphemeralRange m_offsetAsRange;
+  mutable String m_text;
+  mutable int m_checkingStart;
+  mutable int m_checkingEnd;
+  mutable int m_checkingLength;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextCheckingParagraph_h
+#endif  // TextCheckingParagraph_h

@@ -15,37 +15,45 @@ class InterpolationType;
 
 // Represents an interpolated value between an adjacent pair of PropertySpecificKeyframes.
 class TypedInterpolationValue {
-public:
-    static std::unique_ptr<TypedInterpolationValue> create(const InterpolationType& type, std::unique_ptr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-    {
-        return wrapUnique(new TypedInterpolationValue(type, std::move(interpolableValue), std::move(nonInterpolableValue)));
-    }
+ public:
+  static std::unique_ptr<TypedInterpolationValue> create(
+      const InterpolationType& type,
+      std::unique_ptr<InterpolableValue> interpolableValue,
+      PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr) {
+    return wrapUnique(new TypedInterpolationValue(
+        type, std::move(interpolableValue), std::move(nonInterpolableValue)));
+  }
 
-    std::unique_ptr<TypedInterpolationValue> clone() const
-    {
-        InterpolationValue copy = m_value.clone();
-        return create(m_type, std::move(copy.interpolableValue), copy.nonInterpolableValue.release());
-    }
+  std::unique_ptr<TypedInterpolationValue> clone() const {
+    InterpolationValue copy = m_value.clone();
+    return create(m_type, std::move(copy.interpolableValue),
+                  copy.nonInterpolableValue.release());
+  }
 
-    const InterpolationType& type() const { return m_type; }
-    const InterpolableValue& interpolableValue() const { return *m_value.interpolableValue; }
-    const NonInterpolableValue* getNonInterpolableValue() const { return m_value.nonInterpolableValue.get(); }
-    const InterpolationValue& value() const { return m_value; }
+  const InterpolationType& type() const { return m_type; }
+  const InterpolableValue& interpolableValue() const {
+    return *m_value.interpolableValue;
+  }
+  const NonInterpolableValue* getNonInterpolableValue() const {
+    return m_value.nonInterpolableValue.get();
+  }
+  const InterpolationValue& value() const { return m_value; }
 
-    InterpolationValue& mutableValue() { return m_value; }
+  InterpolationValue& mutableValue() { return m_value; }
 
-private:
-    TypedInterpolationValue(const InterpolationType& type, std::unique_ptr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue)
-        : m_type(type)
-        , m_value(std::move(interpolableValue), std::move(nonInterpolableValue))
-    {
-        DCHECK(m_value.interpolableValue);
-    }
+ private:
+  TypedInterpolationValue(const InterpolationType& type,
+                          std::unique_ptr<InterpolableValue> interpolableValue,
+                          PassRefPtr<NonInterpolableValue> nonInterpolableValue)
+      : m_type(type),
+        m_value(std::move(interpolableValue), std::move(nonInterpolableValue)) {
+    DCHECK(m_value.interpolableValue);
+  }
 
-    const InterpolationType& m_type;
-    InterpolationValue m_value;
+  const InterpolationType& m_type;
+  InterpolationValue m_value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TypedInterpolationValue_h
+#endif  // TypedInterpolationValue_h

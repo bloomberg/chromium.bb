@@ -56,81 +56,70 @@ class WebString;
 // WARNING: It is not safe to pass a WebCString across threads!!!
 //
 class WebCString {
-public:
-    ~WebCString() { reset(); }
+ public:
+  ~WebCString() { reset(); }
 
-    WebCString() { }
+  WebCString() {}
 
-    WebCString(const char* data, size_t len)
-    {
-        assign(data, len);
-    }
+  WebCString(const char* data, size_t len) { assign(data, len); }
 
-    WebCString(const WebCString& s) { assign(s); }
+  WebCString(const WebCString& s) { assign(s); }
 
-    WebCString& operator=(const WebCString& s)
-    {
-        assign(s);
-        return *this;
-    }
+  WebCString& operator=(const WebCString& s) {
+    assign(s);
+    return *this;
+  }
 
-    // Returns 0 if both strings are equals, a value greater than zero if the
-    // first character that does not match has a greater value in this string
-    // than in |other|, or a value less than zero to indicate the opposite.
-    BLINK_COMMON_EXPORT int compare(const WebCString& other) const;
+  // Returns 0 if both strings are equals, a value greater than zero if the
+  // first character that does not match has a greater value in this string
+  // than in |other|, or a value less than zero to indicate the opposite.
+  BLINK_COMMON_EXPORT int compare(const WebCString& other) const;
 
-    BLINK_COMMON_EXPORT void reset();
-    BLINK_COMMON_EXPORT void assign(const WebCString&);
-    BLINK_COMMON_EXPORT void assign(const char* data, size_t len);
+  BLINK_COMMON_EXPORT void reset();
+  BLINK_COMMON_EXPORT void assign(const WebCString&);
+  BLINK_COMMON_EXPORT void assign(const char* data, size_t len);
 
-    BLINK_COMMON_EXPORT size_t length() const;
-    BLINK_COMMON_EXPORT const char* data() const;
+  BLINK_COMMON_EXPORT size_t length() const;
+  BLINK_COMMON_EXPORT const char* data() const;
 
-    bool isEmpty() const { return !length(); }
-    bool isNull() const { return m_private.isNull(); }
+  bool isEmpty() const { return !length(); }
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_COMMON_EXPORT WebString utf16() const;
+  BLINK_COMMON_EXPORT WebString utf16() const;
 
 #if INSIDE_BLINK
-    BLINK_COMMON_EXPORT WebCString(const WTF::CString&);
-    BLINK_COMMON_EXPORT WebCString& operator=(const WTF::CString&);
-    BLINK_COMMON_EXPORT operator WTF::CString() const;
+  BLINK_COMMON_EXPORT WebCString(const WTF::CString&);
+  BLINK_COMMON_EXPORT WebCString& operator=(const WTF::CString&);
+  BLINK_COMMON_EXPORT operator WTF::CString() const;
 #else
-    WebCString(const std::string& s)
-    {
-        assign(s.data(), s.length());
-    }
+  WebCString(const std::string& s) { assign(s.data(), s.length()); }
 
-    WebCString& operator=(const std::string& s)
-    {
-        assign(s.data(), s.length());
-        return *this;
-    }
+  WebCString& operator=(const std::string& s) {
+    assign(s.data(), s.length());
+    return *this;
+  }
 #endif
 #if !INSIDE_BLINK || defined(UNIT_TEST)
-    operator std::string() const
-    {
-        size_t len = length();
-        return len ? std::string(data(), len) : std::string();
-    }
+  operator std::string() const {
+    size_t len = length();
+    return len ? std::string(data(), len) : std::string();
+  }
 
-    template <class UTF16String>
-    static WebCString fromUTF16(const UTF16String& s)
-    {
-        return fromUTF16(s.data(), s.length());
-    }
+  template <class UTF16String>
+  static WebCString fromUTF16(const UTF16String& s) {
+    return fromUTF16(s.data(), s.length());
+  }
 #endif
 
-private:
-    BLINK_COMMON_EXPORT void assign(WTF::CStringBuffer*);
-    WebPrivatePtr<WTF::CStringBuffer> m_private;
+ private:
+  BLINK_COMMON_EXPORT void assign(WTF::CStringBuffer*);
+  WebPrivatePtr<WTF::CStringBuffer> m_private;
 };
 
-inline bool operator<(const WebCString& a, const WebCString& b)
-{
-    return a.compare(b) < 0;
+inline bool operator<(const WebCString& a, const WebCString& b) {
+  return a.compare(b) < 0;
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

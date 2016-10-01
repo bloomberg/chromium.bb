@@ -42,15 +42,15 @@ namespace blink {
 // The main purpose of this class at the moment is to override layoutObjectIsNeeded() to return
 // false to make sure we don't attempt to layout such elements.
 class SVGUnknownElement final : public SVGElement {
-public:
-    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement);
+ public:
+  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement);
 
-private:
-    SVGUnknownElement(const QualifiedName&, Document&);
+ private:
+  SVGUnknownElement(const QualifiedName&, Document&);
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGUnknownElement_h
+#endif  // SVGUnknownElement_h

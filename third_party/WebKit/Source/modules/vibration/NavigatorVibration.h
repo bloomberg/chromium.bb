@@ -35,48 +35,49 @@ class Navigator;
 class VibrationController;
 
 enum NavigatorVibrationType {
-    MainFrameNoUserGesture = 0,
-    MainFrameWithUserGesture = 1,
-    SameOriginSubFrameNoUserGesture = 2,
-    SameOriginSubFrameWithUserGesture = 3,
-    CrossOriginSubFrameNoUserGesture = 4,
-    CrossOriginSubFrameWithUserGesture = 5,
-    EnumMax = 6
+  MainFrameNoUserGesture = 0,
+  MainFrameWithUserGesture = 1,
+  SameOriginSubFrameNoUserGesture = 2,
+  SameOriginSubFrameWithUserGesture = 3,
+  CrossOriginSubFrameNoUserGesture = 4,
+  CrossOriginSubFrameWithUserGesture = 5,
+  EnumMax = 6
 };
 
 class MODULES_EXPORT NavigatorVibration final
-    : public GarbageCollectedFinalized<NavigatorVibration>
-    , public Supplement<Navigator>
-    , public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
-    WTF_MAKE_NONCOPYABLE(NavigatorVibration);
-public:
-    using VibrationPattern = Vector<unsigned>;
+    : public GarbageCollectedFinalized<NavigatorVibration>,
+      public Supplement<Navigator>,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
+  WTF_MAKE_NONCOPYABLE(NavigatorVibration);
 
-    virtual ~NavigatorVibration();
+ public:
+  using VibrationPattern = Vector<unsigned>;
 
-    static NavigatorVibration& from(Navigator&);
+  virtual ~NavigatorVibration();
 
-    static bool vibrate(Navigator&, unsigned time);
-    static bool vibrate(Navigator&, const VibrationPattern&);
+  static NavigatorVibration& from(Navigator&);
 
-    VibrationController* controller(const LocalFrame&);
+  static bool vibrate(Navigator&, unsigned time);
+  static bool vibrate(Navigator&, const VibrationPattern&);
 
-    DECLARE_VIRTUAL_TRACE();
+  VibrationController* controller(const LocalFrame&);
 
-private:
-    static const char* supplementName();
+  DECLARE_VIRTUAL_TRACE();
 
-    explicit NavigatorVibration(Navigator&);
+ private:
+  static const char* supplementName();
 
-    // Inherited from ContextLifecycleObserver.
-    void contextDestroyed() override;
+  explicit NavigatorVibration(Navigator&);
 
-    static void collectHistogramMetrics(const LocalFrame&);
+  // Inherited from ContextLifecycleObserver.
+  void contextDestroyed() override;
 
-    Member<VibrationController> m_controller;
+  static void collectHistogramMetrics(const LocalFrame&);
+
+  Member<VibrationController> m_controller;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorVibration_h
+#endif  // NavigatorVibration_h

@@ -39,192 +39,203 @@
 
 namespace blink {
 
-const double ImageQualityController::cLowQualityTimeThreshold = 0.500; // 500 ms
-const double ImageQualityController::cTimerRestartThreshold = 0.250; // 250 ms
+const double ImageQualityController::cLowQualityTimeThreshold =
+    0.500;                                                            // 500 ms
+const double ImageQualityController::cTimerRestartThreshold = 0.250;  // 250 ms
 
 static ImageQualityController* gImageQualityController = nullptr;
 
-ImageQualityController* ImageQualityController::imageQualityController()
-{
-    if (!gImageQualityController)
-        gImageQualityController = new ImageQualityController;
+ImageQualityController* ImageQualityController::imageQualityController() {
+  if (!gImageQualityController)
+    gImageQualityController = new ImageQualityController;
 
-    return gImageQualityController;
+  return gImageQualityController;
 }
 
-void ImageQualityController::remove(LayoutObject& layoutObject)
-{
-    if (gImageQualityController) {
-        gImageQualityController->objectDestroyed(layoutObject);
-        if (gImageQualityController->isEmpty()) {
-            delete gImageQualityController;
-            gImageQualityController = nullptr;
-        }
+void ImageQualityController::remove(LayoutObject& layoutObject) {
+  if (gImageQualityController) {
+    gImageQualityController->objectDestroyed(layoutObject);
+    if (gImageQualityController->isEmpty()) {
+      delete gImageQualityController;
+      gImageQualityController = nullptr;
     }
+  }
 }
 
-bool ImageQualityController::has(const LayoutObject& layoutObject)
-{
-    return gImageQualityController && gImageQualityController->m_objectLayerSizeMap.contains(&layoutObject);
+bool ImageQualityController::has(const LayoutObject& layoutObject) {
+  return gImageQualityController &&
+         gImageQualityController->m_objectLayerSizeMap.contains(&layoutObject);
 }
 
-InterpolationQuality ImageQualityController::chooseInterpolationQuality(const LayoutObject& object, Image* image, const void* layer, const LayoutSize& layoutSize)
-{
-    if (object.style()->imageRendering() == ImageRenderingPixelated)
-        return InterpolationNone;
+InterpolationQuality ImageQualityController::chooseInterpolationQuality(
+    const LayoutObject& object,
+    Image* image,
+    const void* layer,
+    const LayoutSize& layoutSize) {
+  if (object.style()->imageRendering() == ImageRenderingPixelated)
+    return InterpolationNone;
 
-    if (InterpolationDefault == InterpolationLow)
-        return InterpolationLow;
+  if (InterpolationDefault == InterpolationLow)
+    return InterpolationLow;
 
-    if (shouldPaintAtLowQuality(object, image, layer, layoutSize, object.frameView()->page()->chromeClient().lastFrameTimeMonotonic()))
-        return InterpolationLow;
+  if (shouldPaintAtLowQuality(
+          object, image, layer, layoutSize,
+          object.frameView()->page()->chromeClient().lastFrameTimeMonotonic()))
+    return InterpolationLow;
 
-    // For images that are potentially animated we paint them at medium quality.
-    if (image && image->maybeAnimated())
-        return InterpolationMedium;
+  // For images that are potentially animated we paint them at medium quality.
+  if (image && image->maybeAnimated())
+    return InterpolationMedium;
 
-    return InterpolationDefault;
+  return InterpolationDefault;
 }
 
-ImageQualityController::~ImageQualityController()
-{
-    // This will catch users of ImageQualityController that forget to call cleanUp.
-    ASSERT(!gImageQualityController || gImageQualityController->isEmpty());
+ImageQualityController::~ImageQualityController() {
+  // This will catch users of ImageQualityController that forget to call cleanUp.
+  ASSERT(!gImageQualityController || gImageQualityController->isEmpty());
 }
 
 ImageQualityController::ImageQualityController()
-    : m_timer(wrapUnique(new Timer<ImageQualityController>(this, &ImageQualityController::highQualityRepaintTimerFired)))
-    , m_frameTimeWhenTimerStarted(0.0)
-{
+    : m_timer(wrapUnique(new Timer<ImageQualityController>(
+          this,
+          &ImageQualityController::highQualityRepaintTimerFired))),
+      m_frameTimeWhenTimerStarted(0.0) {}
+
+void ImageQualityController::setTimer(std::unique_ptr<TimerBase> newTimer) {
+  m_timer = std::move(newTimer);
 }
 
-void ImageQualityController::setTimer(std::unique_ptr<TimerBase> newTimer)
-{
-    m_timer = std::move(newTimer);
+void ImageQualityController::removeLayer(const LayoutObject& object,
+                                         LayerSizeMap* innerMap,
+                                         const void* layer) {
+  if (innerMap) {
+    innerMap->remove(layer);
+    if (innerMap->isEmpty())
+      objectDestroyed(object);
+  }
 }
 
-void ImageQualityController::removeLayer(const LayoutObject& object, LayerSizeMap* innerMap, const void* layer)
-{
-    if (innerMap) {
-        innerMap->remove(layer);
-        if (innerMap->isEmpty())
-            objectDestroyed(object);
-    }
+void ImageQualityController::set(const LayoutObject& object,
+                                 LayerSizeMap* innerMap,
+                                 const void* layer,
+                                 const LayoutSize& size,
+                                 bool isResizing) {
+  if (innerMap) {
+    innerMap->set(layer, size);
+    m_objectLayerSizeMap.find(&object)->value.isResizing = isResizing;
+  } else {
+    ObjectResizeInfo newResizeInfo;
+    newResizeInfo.layerSizeMap.set(layer, size);
+    newResizeInfo.isResizing = isResizing;
+    m_objectLayerSizeMap.set(&object, newResizeInfo);
+  }
 }
 
-void ImageQualityController::set(const LayoutObject& object, LayerSizeMap* innerMap, const void* layer, const LayoutSize& size, bool isResizing)
-{
-    if (innerMap) {
-        innerMap->set(layer, size);
-        m_objectLayerSizeMap.find(&object)->value.isResizing = isResizing;
-    } else {
-        ObjectResizeInfo newResizeInfo;
-        newResizeInfo.layerSizeMap.set(layer, size);
-        newResizeInfo.isResizing = isResizing;
-        m_objectLayerSizeMap.set(&object, newResizeInfo);
-    }
+void ImageQualityController::objectDestroyed(const LayoutObject& object) {
+  m_objectLayerSizeMap.remove(&object);
+  if (m_objectLayerSizeMap.isEmpty()) {
+    m_timer->stop();
+  }
 }
 
-void ImageQualityController::objectDestroyed(const LayoutObject& object)
-{
-    m_objectLayerSizeMap.remove(&object);
-    if (m_objectLayerSizeMap.isEmpty()) {
-        m_timer->stop();
-    }
+void ImageQualityController::highQualityRepaintTimerFired(TimerBase*) {
+  for (auto& i : m_objectLayerSizeMap) {
+    // Only invalidate the object if it is animating.
+    if (!i.value.isResizing)
+      continue;
+
+    // TODO(wangxianzhu): Use LayoutObject::getMutableForPainting().
+    const_cast<LayoutObject*>(i.key)->setShouldDoFullPaintInvalidation();
+    i.value.isResizing = false;
+  }
+  m_frameTimeWhenTimerStarted = 0.0;
 }
 
-void ImageQualityController::highQualityRepaintTimerFired(TimerBase*)
-{
-    for (auto& i : m_objectLayerSizeMap) {
-        // Only invalidate the object if it is animating.
-        if (!i.value.isResizing)
-            continue;
-
-        // TODO(wangxianzhu): Use LayoutObject::getMutableForPainting().
-        const_cast<LayoutObject*>(i.key)->setShouldDoFullPaintInvalidation();
-        i.value.isResizing = false;
-    }
-    m_frameTimeWhenTimerStarted = 0.0;
+void ImageQualityController::restartTimer(double lastFrameTimeMonotonic) {
+  if (!m_timer->isActive() || lastFrameTimeMonotonic == 0.0 ||
+      m_frameTimeWhenTimerStarted == 0.0 ||
+      (lastFrameTimeMonotonic - m_frameTimeWhenTimerStarted >
+       cTimerRestartThreshold)) {
+    m_timer->startOneShot(cLowQualityTimeThreshold, BLINK_FROM_HERE);
+    m_frameTimeWhenTimerStarted = lastFrameTimeMonotonic;
+  }
 }
 
-void ImageQualityController::restartTimer(double lastFrameTimeMonotonic)
-{
-    if (!m_timer->isActive() || lastFrameTimeMonotonic == 0.0 || m_frameTimeWhenTimerStarted == 0.0 || (lastFrameTimeMonotonic - m_frameTimeWhenTimerStarted > cTimerRestartThreshold)) {
-        m_timer->startOneShot(cLowQualityTimeThreshold, BLINK_FROM_HERE);
-        m_frameTimeWhenTimerStarted = lastFrameTimeMonotonic;
-    }
-}
+bool ImageQualityController::shouldPaintAtLowQuality(
+    const LayoutObject& object,
+    Image* image,
+    const void* layer,
+    const LayoutSize& layoutSize,
+    double lastFrameTimeMonotonic) {
+  // If the image is not a bitmap image, then none of this is relevant and we just paint at high
+  // quality.
+  if (!image || !image->isBitmapImage())
+    return false;
 
-bool ImageQualityController::shouldPaintAtLowQuality(const LayoutObject& object, Image* image, const void *layer, const LayoutSize& layoutSize, double lastFrameTimeMonotonic)
-{
-    // If the image is not a bitmap image, then none of this is relevant and we just paint at high
-    // quality.
-    if (!image || !image->isBitmapImage())
-        return false;
+  if (!layer)
+    return false;
 
-    if (!layer)
-        return false;
-
-    if (object.style()->imageRendering() == ImageRenderingOptimizeContrast)
-        return true;
-
-    if (LocalFrame* frame = object.frame()) {
-        if (frame->settings() && frame->settings()->useDefaultImageInterpolationQuality())
-            return false;
-    }
-
-    // Look ourselves up in the hashtables.
-    ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(&object);
-    LayerSizeMap* innerMap = nullptr;
-    bool objectIsResizing = false;
-    if (i != m_objectLayerSizeMap.end()) {
-        innerMap = &i->value.layerSizeMap;
-        objectIsResizing = i->value.isResizing;
-    }
-    LayoutSize oldSize;
-    bool isFirstResize = true;
-    if (innerMap) {
-        LayerSizeMap::iterator j = innerMap->find(layer);
-        if (j != innerMap->end()) {
-            isFirstResize = false;
-            oldSize = j->value;
-        }
-    }
-
-    if (layoutSize == image->size()) {
-        // There is no scale in effect. If we had a scale in effect before, we can just remove this object from the list.
-        removeLayer(object, innerMap, layer);
-        return false;
-    }
-
-    // If an animated resize is active for this object, paint in low quality and kick the timer ahead.
-    if (objectIsResizing) {
-        bool sizesChanged = oldSize != layoutSize;
-        set(object, innerMap, layer, layoutSize, sizesChanged);
-        if (sizesChanged)
-            restartTimer(lastFrameTimeMonotonic);
-        return true;
-    }
-    // If this is the first time resizing this image, or its size is the
-    // same as the last resize, draw at high res, but record the paint
-    // size and set the timer.
-    if (isFirstResize || oldSize == layoutSize) {
-        restartTimer(lastFrameTimeMonotonic);
-        set(object, innerMap, layer, layoutSize, false);
-        return false;
-    }
-    // If the timer is no longer active, draw at high quality and don't
-    // set the timer.
-    if (!m_timer->isActive()) {
-        removeLayer(object, innerMap, layer);
-        return false;
-    }
-    // This object has been resized to two different sizes while the timer
-    // is active, so draw at low quality, set the flag for animated resizes and
-    // the object to the list for high quality redraw.
-    set(object, innerMap, layer, layoutSize, true);
-    restartTimer(lastFrameTimeMonotonic);
+  if (object.style()->imageRendering() == ImageRenderingOptimizeContrast)
     return true;
+
+  if (LocalFrame* frame = object.frame()) {
+    if (frame->settings() &&
+        frame->settings()->useDefaultImageInterpolationQuality())
+      return false;
+  }
+
+  // Look ourselves up in the hashtables.
+  ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(&object);
+  LayerSizeMap* innerMap = nullptr;
+  bool objectIsResizing = false;
+  if (i != m_objectLayerSizeMap.end()) {
+    innerMap = &i->value.layerSizeMap;
+    objectIsResizing = i->value.isResizing;
+  }
+  LayoutSize oldSize;
+  bool isFirstResize = true;
+  if (innerMap) {
+    LayerSizeMap::iterator j = innerMap->find(layer);
+    if (j != innerMap->end()) {
+      isFirstResize = false;
+      oldSize = j->value;
+    }
+  }
+
+  if (layoutSize == image->size()) {
+    // There is no scale in effect. If we had a scale in effect before, we can just remove this object from the list.
+    removeLayer(object, innerMap, layer);
+    return false;
+  }
+
+  // If an animated resize is active for this object, paint in low quality and kick the timer ahead.
+  if (objectIsResizing) {
+    bool sizesChanged = oldSize != layoutSize;
+    set(object, innerMap, layer, layoutSize, sizesChanged);
+    if (sizesChanged)
+      restartTimer(lastFrameTimeMonotonic);
+    return true;
+  }
+  // If this is the first time resizing this image, or its size is the
+  // same as the last resize, draw at high res, but record the paint
+  // size and set the timer.
+  if (isFirstResize || oldSize == layoutSize) {
+    restartTimer(lastFrameTimeMonotonic);
+    set(object, innerMap, layer, layoutSize, false);
+    return false;
+  }
+  // If the timer is no longer active, draw at high quality and don't
+  // set the timer.
+  if (!m_timer->isActive()) {
+    removeLayer(object, innerMap, layer);
+    return false;
+  }
+  // This object has been resized to two different sizes while the timer
+  // is active, so draw at low quality, set the flag for animated resizes and
+  // the object to the list for high quality redraw.
+  set(object, innerMap, layer, layoutSize, true);
+  restartTimer(lastFrameTimeMonotonic);
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

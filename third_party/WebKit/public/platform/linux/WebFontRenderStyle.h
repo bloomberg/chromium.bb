@@ -38,26 +38,29 @@ namespace blink {
 struct FontRenderStyle;
 
 struct BLINK_EXPORT WebFontRenderStyle {
-    // Each of the use* members below can take one of three values:
-    //   0: off
-    //   1: on
-    //   2: no preference expressed
-    char useBitmaps; // use embedded bitmap strike if possible
-    char useAutoHint; // use 'auto' hinting (FreeType specific)
-    char useHinting; // hint glyphs to the pixel grid
-    char hintStyle; // level of hinting, 0..3
-    char useAntiAlias; // antialias glyph shapes
-    char useSubpixelRendering; // use subpixel rendering (partially-filled pixels)
-    char useSubpixelPositioning; // use subpixel positioning (fractional X positions for glyphs)
+  // Each of the use* members below can take one of three values:
+  //   0: off
+  //   1: on
+  //   2: no preference expressed
+  char useBitmaps;    // use embedded bitmap strike if possible
+  char useAutoHint;   // use 'auto' hinting (FreeType specific)
+  char useHinting;    // hint glyphs to the pixel grid
+  char hintStyle;     // level of hinting, 0..3
+  char useAntiAlias;  // antialias glyph shapes
+  char
+      useSubpixelRendering;  // use subpixel rendering (partially-filled pixels)
+  char
+      useSubpixelPositioning;  // use subpixel positioning (fractional X positions for glyphs)
 
-#if BLINK_IMPLEMENTATION || BLINK_PLATFORM_IMPLEMENTATION || BLINK_COMMON_IMPLEMENTATION
-    // Translates the members of this struct to a FontRenderStyle
-    void toFontRenderStyle(FontRenderStyle*);
+#if BLINK_IMPLEMENTATION || BLINK_PLATFORM_IMPLEMENTATION || \
+    BLINK_COMMON_IMPLEMENTATION
+  // Translates the members of this struct to a FontRenderStyle
+  void toFontRenderStyle(FontRenderStyle*);
 #endif
 
-    void setDefaults();
+  void setDefaults();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFontRenderStyle_h
+#endif  // WebFontRenderStyle_h

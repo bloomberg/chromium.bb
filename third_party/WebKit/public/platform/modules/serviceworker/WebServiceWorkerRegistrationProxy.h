@@ -15,20 +15,20 @@ namespace blink {
 // blink to the embedder, to talk to the ServiceWorkerRegistration object from
 // embedder.
 class WebServiceWorkerRegistrationProxy {
-public:
-    // Notifies that the registration entered the installation process.
-    // The installing worker should be accessible via
-    // WebServiceWorkerRegistration.installing.
-    virtual void dispatchUpdateFoundEvent() = 0;
+ public:
+  // Notifies that the registration entered the installation process.
+  // The installing worker should be accessible via
+  // WebServiceWorkerRegistration.installing.
+  virtual void dispatchUpdateFoundEvent() = 0;
 
-    virtual void setInstalling(std::unique_ptr<WebServiceWorker::Handle>) = 0;
-    virtual void setWaiting(std::unique_ptr<WebServiceWorker::Handle>) = 0;
-    virtual void setActive(std::unique_ptr<WebServiceWorker::Handle>) = 0;
+  virtual void setInstalling(std::unique_ptr<WebServiceWorker::Handle>) = 0;
+  virtual void setWaiting(std::unique_ptr<WebServiceWorker::Handle>) = 0;
+  virtual void setActive(std::unique_ptr<WebServiceWorker::Handle>) = 0;
 
-protected:
-    virtual ~WebServiceWorkerRegistrationProxy() { }
+ protected:
+  virtual ~WebServiceWorkerRegistrationProxy() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerRegistrationProxy_h
+#endif  // WebServiceWorkerRegistrationProxy_h

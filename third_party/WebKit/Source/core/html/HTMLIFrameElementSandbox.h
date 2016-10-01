@@ -12,28 +12,29 @@ namespace blink {
 
 class HTMLIFrameElement;
 
-class HTMLIFrameElementSandbox final : public DOMTokenList, public DOMTokenListObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementSandbox);
-public:
-    static HTMLIFrameElementSandbox* create(HTMLIFrameElement* element)
-    {
-        return new HTMLIFrameElementSandbox(element);
-    }
+class HTMLIFrameElementSandbox final : public DOMTokenList,
+                                       public DOMTokenListObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementSandbox);
 
-    ~HTMLIFrameElementSandbox() override;
+ public:
+  static HTMLIFrameElementSandbox* create(HTMLIFrameElement* element) {
+    return new HTMLIFrameElementSandbox(element);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  ~HTMLIFrameElementSandbox() override;
 
-private:
-    explicit HTMLIFrameElementSandbox(HTMLIFrameElement*);
-    bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // DOMTokenListObserver.
-    void valueWasSet() override;
+ private:
+  explicit HTMLIFrameElementSandbox(HTMLIFrameElement*);
+  bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
 
-    Member<HTMLIFrameElement> m_element;
+  // DOMTokenListObserver.
+  void valueWasSet() override;
+
+  Member<HTMLIFrameElement> m_element;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

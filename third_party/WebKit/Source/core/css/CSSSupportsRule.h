@@ -36,29 +36,30 @@ namespace blink {
 class StyleRuleSupports;
 
 class CSSSupportsRule final : public CSSGroupingRule {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSSupportsRule* create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
-    {
-        return new CSSSupportsRule(rule, sheet);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~CSSSupportsRule() override { }
+ public:
+  static CSSSupportsRule* create(StyleRuleSupports* rule,
+                                 CSSStyleSheet* sheet) {
+    return new CSSSupportsRule(rule, sheet);
+  }
 
-    String cssText() const override;
+  ~CSSSupportsRule() override {}
 
-    String conditionText() const;
+  String cssText() const override;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { CSSGroupingRule::trace(visitor); }
+  String conditionText() const;
 
-private:
-    CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
+  DEFINE_INLINE_VIRTUAL_TRACE() { CSSGroupingRule::trace(visitor); }
 
-    CSSRule::Type type() const override { return kSupportsRule; }
+ private:
+  CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
+
+  CSSRule::Type type() const override { return kSupportsRule; }
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSSupportsRule, kSupportsRule);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSSupportsRule_h
+#endif  // CSSSupportsRule_h

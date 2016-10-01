@@ -38,64 +38,72 @@ namespace blink {
 
 using PortState = MIDIAccessor::MIDIPortState;
 
-MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
-{
-    DCHECK(access);
-    MIDIInput* input = new MIDIInput(access, id, manufacturer, name, version, state);
-    input->suspendIfNeeded();
-    return input;
+MIDIInput* MIDIInput::create(MIDIAccess* access,
+                             const String& id,
+                             const String& manufacturer,
+                             const String& name,
+                             const String& version,
+                             PortState state) {
+  DCHECK(access);
+  MIDIInput* input =
+      new MIDIInput(access, id, manufacturer, name, version, state);
+  input->suspendIfNeeded();
+  return input;
 }
 
-MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
-    : MIDIPort(access, id, manufacturer, name, TypeInput, version, state)
-{
+MIDIInput::MIDIInput(MIDIAccess* access,
+                     const String& id,
+                     const String& manufacturer,
+                     const String& name,
+                     const String& version,
+                     PortState state)
+    : MIDIPort(access, id, manufacturer, name, TypeInput, version, state) {}
+
+EventListener* MIDIInput::onmidimessage() {
+  return getAttributeEventListener(EventTypeNames::midimessage);
 }
 
-EventListener* MIDIInput::onmidimessage()
-{
-    return getAttributeEventListener(EventTypeNames::midimessage);
+void MIDIInput::setOnmidimessage(EventListener* listener) {
+  // Implicit open. It does nothing if the port is already opened.
+  // See http://www.w3.org/TR/webmidi/#widl-MIDIPort-open-Promise-MIDIPort
+  open();
+
+  setAttributeEventListener(EventTypeNames::midimessage, listener);
 }
 
-void MIDIInput::setOnmidimessage(EventListener* listener)
-{
-    // Implicit open. It does nothing if the port is already opened.
-    // See http://www.w3.org/TR/webmidi/#widl-MIDIPort-open-Promise-MIDIPort
+void MIDIInput::addedEventListener(
+    const AtomicString& eventType,
+    RegisteredEventListener& registeredListener) {
+  MIDIPort::addedEventListener(eventType, registeredListener);
+  if (eventType == EventTypeNames::midimessage) {
+    // Implicit open. See setOnmidimessage().
     open();
-
-    setAttributeEventListener(EventTypeNames::midimessage, listener);
+  }
 }
 
-void MIDIInput::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
-{
-    MIDIPort::addedEventListener(eventType, registeredListener);
-    if (eventType == EventTypeNames::midimessage) {
-        // Implicit open. See setOnmidimessage().
-        open();
-    }
+void MIDIInput::didReceiveMIDIData(unsigned portIndex,
+                                   const unsigned char* data,
+                                   size_t length,
+                                   double timeStamp) {
+  DCHECK(isMainThread());
+
+  if (!length)
+    return;
+
+  if (getConnection() != ConnectionStateOpen)
+    return;
+
+  // Drop sysex message here when the client does not request it. Note that this is not a security check but an
+  // automatic filtering for clients that do not want sysex message. Also note that sysex message will never be sent
+  // unless the current process has an explicit permission to handle sysex message.
+  if (data[0] == 0xf0 && !midiAccess()->sysexEnabled())
+    return;
+  DOMUint8Array* array = DOMUint8Array::create(data, length);
+  dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
 }
 
-void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
-{
-    DCHECK(isMainThread());
-
-    if (!length)
-        return;
-
-    if (getConnection() != ConnectionStateOpen)
-        return;
-
-    // Drop sysex message here when the client does not request it. Note that this is not a security check but an
-    // automatic filtering for clients that do not want sysex message. Also note that sysex message will never be sent
-    // unless the current process has an explicit permission to handle sysex message.
-    if (data[0] == 0xf0 && !midiAccess()->sysexEnabled())
-        return;
-    DOMUint8Array* array = DOMUint8Array::create(data, length);
-    dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
+DEFINE_TRACE(MIDIInput) {
+  MIDIPort::trace(visitor);
 }
 
-DEFINE_TRACE(MIDIInput)
-{
-    MIDIPort::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

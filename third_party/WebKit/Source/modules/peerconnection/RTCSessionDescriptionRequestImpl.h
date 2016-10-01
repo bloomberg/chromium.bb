@@ -43,30 +43,40 @@ class RTCPeerConnectionErrorCallback;
 class RTCSessionDescriptionCallback;
 class WebRTCSessionDescription;
 
-class RTCSessionDescriptionRequestImpl final : public RTCSessionDescriptionRequest, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
-public:
-    static RTCSessionDescriptionRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*);
-    ~RTCSessionDescriptionRequestImpl() override;
+class RTCSessionDescriptionRequestImpl final
+    : public RTCSessionDescriptionRequest,
+      public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 
-    void requestSucceeded(const WebRTCSessionDescription&) override;
-    void requestFailed(const String& error) override;
+ public:
+  static RTCSessionDescriptionRequestImpl* create(
+      ExecutionContext*,
+      RTCPeerConnection*,
+      RTCSessionDescriptionCallback*,
+      RTCPeerConnectionErrorCallback*);
+  ~RTCSessionDescriptionRequestImpl() override;
 
-    // ActiveDOMObject
-    void stop() override;
+  void requestSucceeded(const WebRTCSessionDescription&) override;
+  void requestFailed(const String& error) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  // ActiveDOMObject
+  void stop() override;
 
-private:
-    RTCSessionDescriptionRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void clear();
+ private:
+  RTCSessionDescriptionRequestImpl(ExecutionContext*,
+                                   RTCPeerConnection*,
+                                   RTCSessionDescriptionCallback*,
+                                   RTCPeerConnectionErrorCallback*);
 
-    Member<RTCSessionDescriptionCallback> m_successCallback;
-    Member<RTCPeerConnectionErrorCallback> m_errorCallback;
-    Member<RTCPeerConnection> m_requester;
+  void clear();
+
+  Member<RTCSessionDescriptionCallback> m_successCallback;
+  Member<RTCPeerConnectionErrorCallback> m_errorCallback;
+  Member<RTCPeerConnection> m_requester;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCSessionDescriptionRequestImpl_h
+#endif  // RTCSessionDescriptionRequestImpl_h

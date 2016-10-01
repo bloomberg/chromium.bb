@@ -37,26 +37,33 @@
 
 namespace blink {
 
-class SVGAnimatedPreserveAspectRatio : public SVGAnimatedProperty<SVGPreserveAspectRatio>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGAnimatedPreserveAspectRatio* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGPreserveAspectRatio* initialValue)
-    {
-        return new SVGAnimatedPreserveAspectRatio(contextElement, attributeName, initialValue);
-    }
+class SVGAnimatedPreserveAspectRatio
+    : public SVGAnimatedProperty<SVGPreserveAspectRatio>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
-    {
-        visitor->traceWrappers(contextElement());
-    }
+ public:
+  static SVGAnimatedPreserveAspectRatio* create(
+      SVGElement* contextElement,
+      const QualifiedName& attributeName,
+      SVGPreserveAspectRatio* initialValue) {
+    return new SVGAnimatedPreserveAspectRatio(contextElement, attributeName,
+                                              initialValue);
+  }
 
-protected:
-    SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, SVGPreserveAspectRatio* initialValue)
-        : SVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement, attributeName, initialValue)
-    {
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(contextElement());
+  }
+
+ protected:
+  SVGAnimatedPreserveAspectRatio(SVGElement* contextElement,
+                                 const QualifiedName& attributeName,
+                                 SVGPreserveAspectRatio* initialValue)
+      : SVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement,
+                                                    attributeName,
+                                                    initialValue) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedPreserveAspectRatio_h
+#endif  // SVGAnimatedPreserveAspectRatio_h

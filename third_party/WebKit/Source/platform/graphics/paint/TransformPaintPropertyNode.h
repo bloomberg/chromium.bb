@@ -21,73 +21,78 @@ namespace blink {
 //
 // The transform tree is rooted at a node with no parent. This root node should
 // not be modified.
-class PLATFORM_EXPORT TransformPaintPropertyNode : public RefCounted<TransformPaintPropertyNode> {
-public:
-    static PassRefPtr<TransformPaintPropertyNode> create(
-        PassRefPtr<const TransformPaintPropertyNode> parent,
-        const TransformationMatrix& matrix,
-        const FloatPoint3D& origin,
-        bool flattensInheritedTransform = false,
-        unsigned renderingContextID = 0)
-    {
-        return adoptRef(new TransformPaintPropertyNode(matrix, origin, std::move(parent), flattensInheritedTransform, renderingContextID));
-    }
+class PLATFORM_EXPORT TransformPaintPropertyNode
+    : public RefCounted<TransformPaintPropertyNode> {
+ public:
+  static PassRefPtr<TransformPaintPropertyNode> create(
+      PassRefPtr<const TransformPaintPropertyNode> parent,
+      const TransformationMatrix& matrix,
+      const FloatPoint3D& origin,
+      bool flattensInheritedTransform = false,
+      unsigned renderingContextID = 0) {
+    return adoptRef(new TransformPaintPropertyNode(
+        matrix, origin, std::move(parent), flattensInheritedTransform,
+        renderingContextID));
+  }
 
-    void update(PassRefPtr<const TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin, bool flattensInheritedTransform = false, unsigned renderingContextID = 0)
-    {
-        DCHECK(!isRoot());
-        DCHECK(parent != this);
-        m_parent = parent;
-        m_matrix = matrix;
-        m_origin = origin;
-        m_flattensInheritedTransform = flattensInheritedTransform;
-        m_renderingContextID = renderingContextID;
-    }
+  void update(PassRefPtr<const TransformPaintPropertyNode> parent,
+              const TransformationMatrix& matrix,
+              const FloatPoint3D& origin,
+              bool flattensInheritedTransform = false,
+              unsigned renderingContextID = 0) {
+    DCHECK(!isRoot());
+    DCHECK(parent != this);
+    m_parent = parent;
+    m_matrix = matrix;
+    m_origin = origin;
+    m_flattensInheritedTransform = flattensInheritedTransform;
+    m_renderingContextID = renderingContextID;
+  }
 
-    const TransformationMatrix& matrix() const { return m_matrix; }
-    const FloatPoint3D& origin() const { return m_origin; }
+  const TransformationMatrix& matrix() const { return m_matrix; }
+  const FloatPoint3D& origin() const { return m_origin; }
 
-    // Parent transform that this transform is relative to, or nullptr if this
-    // is the root transform.
-    const TransformPaintPropertyNode* parent() const { return m_parent.get(); }
-    bool isRoot() const { return !m_parent; }
+  // Parent transform that this transform is relative to, or nullptr if this
+  // is the root transform.
+  const TransformPaintPropertyNode* parent() const { return m_parent.get(); }
+  bool isRoot() const { return !m_parent; }
 
-    // If true, content with this transform node (or its descendant) appears in
-    // the plane of its parent. This is implemented by flattening the total
-    // accumulated transform from its ancestors.
-    bool flattensInheritedTransform() const { return m_flattensInheritedTransform; }
+  // If true, content with this transform node (or its descendant) appears in
+  // the plane of its parent. This is implemented by flattening the total
+  // accumulated transform from its ancestors.
+  bool flattensInheritedTransform() const {
+    return m_flattensInheritedTransform;
+  }
 
-    // Content whose transform nodes have a common rendering context ID are 3D
-    // sorted. If this is 0, content will not be 3D sorted.
-    unsigned renderingContextID() const { return m_renderingContextID; }
-    bool hasRenderingContext() const { return m_renderingContextID; }
+  // Content whose transform nodes have a common rendering context ID are 3D
+  // sorted. If this is 0, content will not be 3D sorted.
+  unsigned renderingContextID() const { return m_renderingContextID; }
+  bool hasRenderingContext() const { return m_renderingContextID; }
 
-private:
-    TransformPaintPropertyNode(
-        const TransformationMatrix& matrix,
-        const FloatPoint3D& origin,
-        PassRefPtr<const TransformPaintPropertyNode> parent,
-        bool flattensInheritedTransform,
-        unsigned renderingContextID)
-        : m_matrix(matrix)
-        , m_origin(origin)
-        , m_parent(parent)
-        , m_flattensInheritedTransform(flattensInheritedTransform)
-        , m_renderingContextID(renderingContextID)
-    {
-    }
+ private:
+  TransformPaintPropertyNode(
+      const TransformationMatrix& matrix,
+      const FloatPoint3D& origin,
+      PassRefPtr<const TransformPaintPropertyNode> parent,
+      bool flattensInheritedTransform,
+      unsigned renderingContextID)
+      : m_matrix(matrix),
+        m_origin(origin),
+        m_parent(parent),
+        m_flattensInheritedTransform(flattensInheritedTransform),
+        m_renderingContextID(renderingContextID) {}
 
-    TransformationMatrix m_matrix;
-    FloatPoint3D m_origin;
-    RefPtr<const TransformPaintPropertyNode> m_parent;
-    bool m_flattensInheritedTransform;
-    unsigned m_renderingContextID;
+  TransformationMatrix m_matrix;
+  FloatPoint3D m_origin;
+  RefPtr<const TransformPaintPropertyNode> m_parent;
+  bool m_flattensInheritedTransform;
+  unsigned m_renderingContextID;
 };
 
 // Redeclared here to avoid ODR issues.
 // See platform/testing/PaintPrinters.h.
 void PrintTo(const TransformPaintPropertyNode&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TransformPaintPropertyNode_h
+#endif  // TransformPaintPropertyNode_h

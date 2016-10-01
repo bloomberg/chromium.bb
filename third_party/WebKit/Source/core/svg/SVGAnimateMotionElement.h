@@ -27,50 +27,55 @@
 namespace blink {
 
 class SVGAnimateMotionElement final : public SVGAnimationElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~SVGAnimateMotionElement() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    DECLARE_NODE_FACTORY(SVGAnimateMotionElement);
-    void updateAnimationPath();
+ public:
+  ~SVGAnimateMotionElement() override;
 
-private:
-    explicit SVGAnimateMotionElement(Document&);
+  DECLARE_NODE_FACTORY(SVGAnimateMotionElement);
+  void updateAnimationPath();
 
-    bool hasValidAttributeType() override;
-    bool hasValidAttributeName() override;
+ private:
+  explicit SVGAnimateMotionElement(Document&);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
+  bool hasValidAttributeType() override;
+  bool hasValidAttributeName() override;
 
-    void resetAnimatedType() override;
-    void clearAnimatedType() override;
-    bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) override;
-    bool calculateFromAndToValues(const String& fromString, const String& toString) override;
-    bool calculateFromAndByValues(const String& fromString, const String& byString) override;
-    void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement) override;
-    void applyResultsToTarget() override;
-    float calculateDistance(const String& fromString, const String& toString) override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
 
-    enum RotateMode {
-        RotateAngle,
-        RotateAuto,
-        RotateAutoReverse
-    };
-    RotateMode getRotateMode() const;
+  void resetAnimatedType() override;
+  void clearAnimatedType() override;
+  bool calculateToAtEndOfDurationValue(
+      const String& toAtEndOfDurationString) override;
+  bool calculateFromAndToValues(const String& fromString,
+                                const String& toString) override;
+  bool calculateFromAndByValues(const String& fromString,
+                                const String& byString) override;
+  void calculateAnimatedValue(float percentage,
+                              unsigned repeatCount,
+                              SVGSMILElement* resultElement) override;
+  void applyResultsToTarget() override;
+  float calculateDistance(const String& fromString,
+                          const String& toString) override;
 
-    bool m_hasToPointAtEndOfDuration;
+  enum RotateMode { RotateAngle, RotateAuto, RotateAutoReverse };
+  RotateMode getRotateMode() const;
 
-    void updateAnimationMode() override;
+  bool m_hasToPointAtEndOfDuration;
 
-    // Note: we do not support percentage values for to/from coords as the spec implies we should (opera doesn't either)
-    FloatPoint m_fromPoint;
-    FloatPoint m_toPoint;
-    FloatPoint m_toPointAtEndOfDuration;
+  void updateAnimationMode() override;
 
-    Path m_path;
-    Path m_animationPath;
+  // Note: we do not support percentage values for to/from coords as the spec implies we should (opera doesn't either)
+  FloatPoint m_fromPoint;
+  FloatPoint m_toPoint;
+  FloatPoint m_toPointAtEndOfDuration;
+
+  Path m_path;
+  Path m_animationPath;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimateMotionElement_h
+#endif  // SVGAnimateMotionElement_h

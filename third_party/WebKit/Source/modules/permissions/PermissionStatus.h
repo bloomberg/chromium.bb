@@ -20,52 +20,55 @@ class ScriptPromiseResolver;
 
 // Expose the status of a given WebPermissionType for the current
 // ExecutionContext.
-class PermissionStatus final
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
-    DEFINE_WRAPPERTYPEINFO();
+class PermissionStatus final : public EventTargetWithInlineData,
+                               public ActiveScriptWrappable,
+                               public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
+  DEFINE_WRAPPERTYPEINFO();
 
-    using MojoPermissionName = mojom::blink::PermissionName;
-    using MojoPermissionStatus = mojom::blink::PermissionStatus;
+  using MojoPermissionName = mojom::blink::PermissionName;
+  using MojoPermissionStatus = mojom::blink::PermissionStatus;
 
-public:
-    static PermissionStatus* take(ScriptPromiseResolver*, MojoPermissionStatus, MojoPermissionName);
+ public:
+  static PermissionStatus* take(ScriptPromiseResolver*,
+                                MojoPermissionStatus,
+                                MojoPermissionName);
 
-    static PermissionStatus* createAndListen(ExecutionContext*, MojoPermissionStatus, MojoPermissionName);
-    ~PermissionStatus() override;
+  static PermissionStatus* createAndListen(ExecutionContext*,
+                                           MojoPermissionStatus,
+                                           MojoPermissionName);
+  ~PermissionStatus() override;
 
-    // EventTarget implementation.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  // EventTarget implementation.
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ScriptWrappable implementation.
-    bool hasPendingActivity() const final;
+  // ScriptWrappable implementation.
+  bool hasPendingActivity() const final;
 
-    // ActiveDOMObject implementation.
-    void suspend() override;
-    void resume() override;
-    void stop() override;
+  // ActiveDOMObject implementation.
+  void suspend() override;
+  void resume() override;
+  void stop() override;
 
-    String state() const;
-    void permissionChanged(mojom::blink::PermissionStatus);
+  String state() const;
+  void permissionChanged(mojom::blink::PermissionStatus);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    PermissionStatus(ExecutionContext*, MojoPermissionStatus, MojoPermissionName);
+ private:
+  PermissionStatus(ExecutionContext*, MojoPermissionStatus, MojoPermissionName);
 
-    void startListening();
-    void stopListening();
+  void startListening();
+  void stopListening();
 
-    MojoPermissionStatus m_status;
-    MojoPermissionName m_name;
-    mojom::blink::PermissionServicePtr m_service;
+  MojoPermissionStatus m_status;
+  MojoPermissionName m_name;
+  mojom::blink::PermissionServicePtr m_service;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PermissionStatus_h
+#endif  // PermissionStatus_h

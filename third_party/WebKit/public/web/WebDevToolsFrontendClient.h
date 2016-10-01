@@ -36,17 +36,17 @@ namespace blink {
 class WebString;
 
 class WebDevToolsFrontendClient {
-public:
-    WebDevToolsFrontendClient() { }
+ public:
+  WebDevToolsFrontendClient() {}
 
-    virtual void sendMessageToEmbedder(const WebString&) { }
+  virtual void sendMessageToEmbedder(const WebString&) {}
 
-    virtual bool isUnderTest() { return false; }
+  virtual bool isUnderTest() { return false; }
 
-protected:
-    virtual ~WebDevToolsFrontendClient() {}
+ protected:
+  virtual ~WebDevToolsFrontendClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

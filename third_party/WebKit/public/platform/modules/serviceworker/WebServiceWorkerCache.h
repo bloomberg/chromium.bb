@@ -19,50 +19,63 @@ namespace blink {
 // to operate on entries.
 // This object is owned by Blink, and should be destroyed as each Cache instance is no longer in use.
 class WebServiceWorkerCache {
-public:
-    using CacheMatchCallbacks = WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError>;
-    using CacheWithResponsesCallbacks = WebCallbacks<const WebVector<WebServiceWorkerResponse>&, WebServiceWorkerCacheError>;
-    using CacheWithRequestsCallbacks = WebCallbacks<const WebVector<WebServiceWorkerRequest>&, WebServiceWorkerCacheError>;
-    using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
+ public:
+  using CacheMatchCallbacks =
+      WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError>;
+  using CacheWithResponsesCallbacks =
+      WebCallbacks<const WebVector<WebServiceWorkerResponse>&,
+                   WebServiceWorkerCacheError>;
+  using CacheWithRequestsCallbacks =
+      WebCallbacks<const WebVector<WebServiceWorkerRequest>&,
+                   WebServiceWorkerCacheError>;
+  using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
 
-    virtual ~WebServiceWorkerCache() { }
+  virtual ~WebServiceWorkerCache() {}
 
-    // Options that affect the scope of searches.
-    struct QueryParams {
-        QueryParams() : ignoreSearch(false), ignoreMethod(false), ignoreVary(false) { }
+  // Options that affect the scope of searches.
+  struct QueryParams {
+    QueryParams()
+        : ignoreSearch(false), ignoreMethod(false), ignoreVary(false) {}
 
-        bool ignoreSearch;
-        bool ignoreMethod;
-        bool ignoreVary;
-        WebString cacheName;
-    };
+    bool ignoreSearch;
+    bool ignoreMethod;
+    bool ignoreVary;
+    WebString cacheName;
+  };
 
-    enum OperationType {
-        OperationTypeUndefined,
-        OperationTypePut,
-        OperationTypeDelete,
-        OperationTypeLast = OperationTypeDelete
-    };
+  enum OperationType {
+    OperationTypeUndefined,
+    OperationTypePut,
+    OperationTypeDelete,
+    OperationTypeLast = OperationTypeDelete
+  };
 
-    struct BatchOperation {
-        BatchOperation() : operationType(OperationTypeUndefined) { }
+  struct BatchOperation {
+    BatchOperation() : operationType(OperationTypeUndefined) {}
 
-        OperationType operationType;
-        WebServiceWorkerRequest request;
-        WebServiceWorkerResponse response;
-        QueryParams matchParams;
-    };
+    OperationType operationType;
+    WebServiceWorkerRequest request;
+    WebServiceWorkerResponse response;
+    QueryParams matchParams;
+  };
 
-    WebServiceWorkerCache() { }
+  WebServiceWorkerCache() {}
 
-    // Ownership of the Cache*Callbacks methods passes to the WebServiceWorkerCache instance, which will delete it after
-    // calling onSuccess or onFailure.
-    virtual void dispatchMatch(CacheMatchCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
-    virtual void dispatchMatchAll(CacheWithResponsesCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
-    virtual void dispatchKeys(CacheWithRequestsCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
-    virtual void dispatchBatch(CacheBatchCallbacks*, const WebVector<BatchOperation>&) = 0;
+  // Ownership of the Cache*Callbacks methods passes to the WebServiceWorkerCache instance, which will delete it after
+  // calling onSuccess or onFailure.
+  virtual void dispatchMatch(CacheMatchCallbacks*,
+                             const WebServiceWorkerRequest&,
+                             const QueryParams&) = 0;
+  virtual void dispatchMatchAll(CacheWithResponsesCallbacks*,
+                                const WebServiceWorkerRequest&,
+                                const QueryParams&) = 0;
+  virtual void dispatchKeys(CacheWithRequestsCallbacks*,
+                            const WebServiceWorkerRequest&,
+                            const QueryParams&) = 0;
+  virtual void dispatchBatch(CacheBatchCallbacks*,
+                             const WebVector<BatchOperation>&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerCache_h
+#endif  // WebServiceWorkerCache_h

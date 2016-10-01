@@ -31,17 +31,18 @@
 namespace blink {
 
 enum FontWidthVariant {
-    RegularWidth,
-    HalfWidth,
-    ThirdWidth,
-    QuarterWidth,
-    LastFontWidthVariant = QuarterWidth
+  RegularWidth,
+  HalfWidth,
+  ThirdWidth,
+  QuarterWidth,
+  LastFontWidthVariant = QuarterWidth
 };
 
 const unsigned FontWidthVariantWidth = 2;
 
-static_assert(LastFontWidthVariant >> FontWidthVariantWidth == 0, "FontWidthVariantWidth must be correct");
+static_assert(LastFontWidthVariant >> FontWidthVariantWidth == 0,
+              "FontWidthVariantWidth must be correct");
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FontWidthVariant_h
+#endif  // FontWidthVariant_h

@@ -9,23 +9,28 @@
 
 namespace blink {
 
-HistogramTester::HistogramTester() : m_histogramTester(wrapUnique(new base::HistogramTester)) { }
+HistogramTester::HistogramTester()
+    : m_histogramTester(wrapUnique(new base::HistogramTester)) {}
 
-HistogramTester::~HistogramTester() { }
+HistogramTester::~HistogramTester() {}
 
-void HistogramTester::expectUniqueSample(const std::string& name, base::HistogramBase::Sample sample, base::HistogramBase::Count count) const
-{
-    m_histogramTester->ExpectUniqueSample(name, sample, count);
+void HistogramTester::expectUniqueSample(
+    const std::string& name,
+    base::HistogramBase::Sample sample,
+    base::HistogramBase::Count count) const {
+  m_histogramTester->ExpectUniqueSample(name, sample, count);
 }
 
-void HistogramTester::expectBucketCount(const std::string& name, base::HistogramBase::Sample sample, base::HistogramBase::Count count) const
-{
-    m_histogramTester->ExpectBucketCount(name, sample, count);
+void HistogramTester::expectBucketCount(
+    const std::string& name,
+    base::HistogramBase::Sample sample,
+    base::HistogramBase::Count count) const {
+  m_histogramTester->ExpectBucketCount(name, sample, count);
 }
 
-void HistogramTester::expectTotalCount(const std::string& name, base::HistogramBase::Count count) const
-{
-    m_histogramTester->ExpectTotalCount(name, count);
+void HistogramTester::expectTotalCount(const std::string& name,
+                                       base::HistogramBase::Count count) const {
+  m_histogramTester->ExpectTotalCount(name, count);
 }
 
-} // namespace blink
+}  // namespace blink

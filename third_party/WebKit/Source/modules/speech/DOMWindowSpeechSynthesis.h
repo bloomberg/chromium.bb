@@ -36,23 +36,27 @@ namespace blink {
 
 class DOMWindow;
 
-class MODULES_EXPORT DOMWindowSpeechSynthesis final : public GarbageCollected<DOMWindowSpeechSynthesis>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
-public:
-    static SpeechSynthesis* speechSynthesis(DOMWindow&);
-    static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);
+class MODULES_EXPORT DOMWindowSpeechSynthesis final
+    : public GarbageCollected<DOMWindowSpeechSynthesis>,
+      public Supplement<LocalDOMWindow>,
+      public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
 
-    DECLARE_TRACE();
+ public:
+  static SpeechSynthesis* speechSynthesis(DOMWindow&);
+  static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);
 
-private:
-    explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);
+  DECLARE_TRACE();
 
-    SpeechSynthesis* speechSynthesis();
-    static const char* supplementName();
+ private:
+  explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);
 
-    Member<SpeechSynthesis> m_speechSynthesis;
+  SpeechSynthesis* speechSynthesis();
+  static const char* supplementName();
+
+  Member<SpeechSynthesis> m_speechSynthesis;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowSpeechSynthesis_h
+#endif  // DOMWindowSpeechSynthesis_h

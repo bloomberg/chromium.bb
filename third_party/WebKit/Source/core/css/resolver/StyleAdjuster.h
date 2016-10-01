@@ -33,13 +33,17 @@ class ComputedStyle;
 // and the web expects that we expose "adjusted" values when
 // for those property/element pairs.
 class StyleAdjuster {
-    STATIC_ONLY(StyleAdjuster);
-public:
-    static void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*);
-    static void adjustStyleForEditing(ComputedStyle&);
-    static void adjustStyleForAlignment(ComputedStyle&, const ComputedStyle& parentStyle);
+  STATIC_ONLY(StyleAdjuster);
+
+ public:
+  static void adjustComputedStyle(ComputedStyle& styleToAdjust,
+                                  const ComputedStyle& parentStyle,
+                                  Element*);
+  static void adjustStyleForEditing(ComputedStyle&);
+  static void adjustStyleForAlignment(ComputedStyle&,
+                                      const ComputedStyle& parentStyle);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleAdjuster_h
+#endif  // StyleAdjuster_h

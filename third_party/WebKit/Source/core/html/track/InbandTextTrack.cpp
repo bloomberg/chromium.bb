@@ -37,66 +37,68 @@ namespace blink {
 
 namespace {
 
-const AtomicString& textTrackKindToString(WebInbandTextTrack::Kind kind)
-{
-    switch (kind) {
+const AtomicString& textTrackKindToString(WebInbandTextTrack::Kind kind) {
+  switch (kind) {
     case WebInbandTextTrack::KindSubtitles:
-        return TextTrack::subtitlesKeyword();
+      return TextTrack::subtitlesKeyword();
     case WebInbandTextTrack::KindCaptions:
-        return TextTrack::captionsKeyword();
+      return TextTrack::captionsKeyword();
     case WebInbandTextTrack::KindDescriptions:
-        return TextTrack::descriptionsKeyword();
+      return TextTrack::descriptionsKeyword();
     case WebInbandTextTrack::KindChapters:
-        return TextTrack::chaptersKeyword();
+      return TextTrack::chaptersKeyword();
     case WebInbandTextTrack::KindMetadata:
-        return TextTrack::metadataKeyword();
+      return TextTrack::metadataKeyword();
     case WebInbandTextTrack::KindNone:
     default:
-        break;
-    }
-    NOTREACHED();
-    return TextTrack::subtitlesKeyword();
+      break;
+  }
+  NOTREACHED();
+  return TextTrack::subtitlesKeyword();
 }
 
-} // namespace
+}  // namespace
 
-InbandTextTrack* InbandTextTrack::create(WebInbandTextTrack* webTrack)
-{
-    return new InbandTextTrack(webTrack);
+InbandTextTrack* InbandTextTrack::create(WebInbandTextTrack* webTrack) {
+  return new InbandTextTrack(webTrack);
 }
 
 InbandTextTrack::InbandTextTrack(WebInbandTextTrack* webTrack)
-    : TextTrack(textTrackKindToString(webTrack->kind()), webTrack->label(), webTrack->language(), webTrack->id(), InBand)
-    , m_webTrack(webTrack)
-{
-    m_webTrack->setClient(this);
+    : TextTrack(textTrackKindToString(webTrack->kind()),
+                webTrack->label(),
+                webTrack->language(),
+                webTrack->id(),
+                InBand),
+      m_webTrack(webTrack) {
+  m_webTrack->setClient(this);
 }
 
-InbandTextTrack::~InbandTextTrack()
-{
-    if (m_webTrack)
-        m_webTrack->setClient(nullptr);
-}
-
-void InbandTextTrack::setTrackList(TextTrackList* trackList)
-{
-    TextTrack::setTrackList(trackList);
-    if (trackList)
-        return;
-
-    DCHECK(m_webTrack);
+InbandTextTrack::~InbandTextTrack() {
+  if (m_webTrack)
     m_webTrack->setClient(nullptr);
-    m_webTrack = nullptr;
 }
 
-void InbandTextTrack::addWebVTTCue(double start, double end, const WebString& id, const WebString& content, const WebString& settings)
-{
-    HTMLMediaElement* owner = mediaElement();
-    DCHECK(owner);
-    VTTCue* cue = VTTCue::create(owner->document(), start, end, content);
-    cue->setId(id);
-    cue->parseSettings(settings);
-    addCue(cue);
+void InbandTextTrack::setTrackList(TextTrackList* trackList) {
+  TextTrack::setTrackList(trackList);
+  if (trackList)
+    return;
+
+  DCHECK(m_webTrack);
+  m_webTrack->setClient(nullptr);
+  m_webTrack = nullptr;
 }
 
-} // namespace blink
+void InbandTextTrack::addWebVTTCue(double start,
+                                   double end,
+                                   const WebString& id,
+                                   const WebString& content,
+                                   const WebString& settings) {
+  HTMLMediaElement* owner = mediaElement();
+  DCHECK(owner);
+  VTTCue* cue = VTTCue::create(owner->document(), start, end, content);
+  cue->setId(id);
+  cue->parseSettings(settings);
+  addCue(cue);
+}
+
+}  // namespace blink

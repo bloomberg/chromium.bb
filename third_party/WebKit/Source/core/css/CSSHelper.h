@@ -28,11 +28,11 @@ namespace blink {
 
 // These conversions are defined in css-values
 const double cssPixelsPerInch = 96;
-const double cssPixelsPerCentimeter = cssPixelsPerInch / 2.54; // 2.54 cm/in
+const double cssPixelsPerCentimeter = cssPixelsPerInch / 2.54;  // 2.54 cm/in
 const double cssPixelsPerMillimeter = cssPixelsPerCentimeter / 10;
 const double cssPixelsPerPoint = cssPixelsPerInch / 72;
 const double cssPixelsPerPica = cssPixelsPerInch / 6;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSHelper_h
+#endif  // CSSHelper_h

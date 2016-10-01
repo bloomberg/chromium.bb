@@ -12,23 +12,26 @@
 
 namespace blink {
 
-void V8PromiseRejectionEvent::promiseAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Isolate* isolate = info.GetIsolate();
-    PromiseRejectionEvent* event = V8PromiseRejectionEvent::toImpl(info.Holder());
-    ScriptPromise promise = event->promise(ScriptState::current(isolate));
-    if (promise.isEmpty()) {
-        v8SetReturnValue(info, v8::Null(isolate));
-        return;
-    }
+void V8PromiseRejectionEvent::promiseAttributeGetterCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  PromiseRejectionEvent* event = V8PromiseRejectionEvent::toImpl(info.Holder());
+  ScriptPromise promise = event->promise(ScriptState::current(isolate));
+  if (promise.isEmpty()) {
+    v8SetReturnValue(info, v8::Null(isolate));
+    return;
+  }
 
-    v8SetReturnValue(info, promise.v8Value());
+  v8SetReturnValue(info, promise.v8Value());
 }
 
-void V8PromiseRejectionEvent::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
-{
-    PromiseRejectionEvent* event = scriptWrappable->toImpl<PromiseRejectionEvent>();
-    event->setWrapperReference(isolate, wrapper);
+void V8PromiseRejectionEvent::visitDOMWrapperCustom(
+    v8::Isolate* isolate,
+    ScriptWrappable* scriptWrappable,
+    const v8::Persistent<v8::Object>& wrapper) {
+  PromiseRejectionEvent* event =
+      scriptWrappable->toImpl<PromiseRejectionEvent>();
+  event->setWrapperReference(isolate, wrapper);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -23,58 +23,66 @@ class CompositorFloatAnimationCurve;
 
 // A compositor driven animation.
 class PLATFORM_EXPORT CompositorAnimation {
-    WTF_MAKE_NONCOPYABLE(CompositorAnimation);
-public:
-    using Direction = cc::Animation::Direction;
-    using FillMode = cc::Animation::FillMode;
+  WTF_MAKE_NONCOPYABLE(CompositorAnimation);
 
-    static std::unique_ptr<CompositorAnimation> create(const blink::CompositorAnimationCurve& curve, CompositorTargetProperty::Type target, int groupId, int animationId)
-    {
-        return wrapUnique(new CompositorAnimation(curve, target, animationId, groupId));
-    }
+ public:
+  using Direction = cc::Animation::Direction;
+  using FillMode = cc::Animation::FillMode;
 
-    ~CompositorAnimation();
+  static std::unique_ptr<CompositorAnimation> create(
+      const blink::CompositorAnimationCurve& curve,
+      CompositorTargetProperty::Type target,
+      int groupId,
+      int animationId) {
+    return wrapUnique(
+        new CompositorAnimation(curve, target, animationId, groupId));
+  }
 
-    // An id must be unique.
-    int id() const;
-    int group() const;
+  ~CompositorAnimation();
 
-    CompositorTargetProperty::Type targetProperty() const;
+  // An id must be unique.
+  int id() const;
+  int group() const;
 
-    // This is the number of times that the animation will play. If this
-    // value is zero the animation will not play. If it is negative, then
-    // the animation will loop indefinitely.
-    double iterations() const;
-    void setIterations(double);
+  CompositorTargetProperty::Type targetProperty() const;
 
-    double startTime() const;
-    void setStartTime(double monotonicTime);
+  // This is the number of times that the animation will play. If this
+  // value is zero the animation will not play. If it is negative, then
+  // the animation will loop indefinitely.
+  double iterations() const;
+  void setIterations(double);
 
-    double timeOffset() const;
-    void setTimeOffset(double monotonicTime);
+  double startTime() const;
+  void setStartTime(double monotonicTime);
 
-    Direction getDirection() const;
-    void setDirection(Direction);
+  double timeOffset() const;
+  void setTimeOffset(double monotonicTime);
 
-    double playbackRate() const;
-    void setPlaybackRate(double);
+  Direction getDirection() const;
+  void setDirection(Direction);
 
-    FillMode getFillMode() const;
-    void setFillMode(FillMode);
+  double playbackRate() const;
+  void setPlaybackRate(double);
 
-    double iterationStart() const;
-    void setIterationStart(double);
+  FillMode getFillMode() const;
+  void setFillMode(FillMode);
 
-    std::unique_ptr<cc::Animation> releaseCcAnimation();
+  double iterationStart() const;
+  void setIterationStart(double);
 
-    std::unique_ptr<CompositorFloatAnimationCurve> floatCurveForTesting() const;
+  std::unique_ptr<cc::Animation> releaseCcAnimation();
 
-private:
-    CompositorAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int animationId, int groupId);
+  std::unique_ptr<CompositorFloatAnimationCurve> floatCurveForTesting() const;
 
-    std::unique_ptr<cc::Animation> m_animation;
+ private:
+  CompositorAnimation(const CompositorAnimationCurve&,
+                      CompositorTargetProperty::Type,
+                      int animationId,
+                      int groupId);
+
+  std::unique_ptr<cc::Animation> m_animation;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorAnimation_h
+#endif  // CompositorAnimation_h

@@ -32,31 +32,30 @@
 
 namespace blink {
 
-class CORE_EXPORT MediaError final : public GarbageCollected<MediaError>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum ErrorCode {
-        kMediaErrAborted = 1,
-        kMediaErrNetwork,
-        kMediaErrDecode,
-        kMediaErrSrcNotSupported,
-    };
+class CORE_EXPORT MediaError final : public GarbageCollected<MediaError>,
+                                     public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static MediaError* create(ErrorCode code)
-    {
-        return new MediaError(code);
-    }
+ public:
+  enum ErrorCode {
+    kMediaErrAborted = 1,
+    kMediaErrNetwork,
+    kMediaErrDecode,
+    kMediaErrSrcNotSupported,
+  };
 
-    ErrorCode code() const { return m_code; }
+  static MediaError* create(ErrorCode code) { return new MediaError(code); }
 
-    DEFINE_INLINE_TRACE() { }
+  ErrorCode code() const { return m_code; }
 
-private:
-    MediaError(ErrorCode code) : m_code(code) { }
+  DEFINE_INLINE_TRACE() {}
 
-    ErrorCode m_code;
+ private:
+  MediaError(ErrorCode code) : m_code(code) {}
+
+  ErrorCode m_code;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaError_h
+#endif  // MediaError_h

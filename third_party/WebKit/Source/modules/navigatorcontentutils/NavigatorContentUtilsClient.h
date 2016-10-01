@@ -36,25 +36,31 @@ namespace blink {
 
 class LocalFrame;
 
-class NavigatorContentUtilsClient : public GarbageCollectedFinalized<NavigatorContentUtilsClient> {
-public:
-    virtual ~NavigatorContentUtilsClient() { }
-    virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title) = 0;
+class NavigatorContentUtilsClient
+    : public GarbageCollectedFinalized<NavigatorContentUtilsClient> {
+ public:
+  virtual ~NavigatorContentUtilsClient() {}
+  virtual void registerProtocolHandler(const String& scheme,
+                                       const KURL&,
+                                       const String& title) = 0;
 
-    enum CustomHandlersState {
-        CustomHandlersNew,
-        CustomHandlersRegistered,
-        CustomHandlersDeclined
-    };
+  enum CustomHandlersState {
+    CustomHandlersNew,
+    CustomHandlersRegistered,
+    CustomHandlersDeclined
+  };
 
-    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL&) = 0;
-    virtual void unregisterProtocolHandler(const String& scheme, const KURL&) = 0;
+  virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme,
+                                                          const KURL&) = 0;
+  virtual void unregisterProtocolHandler(const String& scheme, const KURL&) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, NavigatorContentUtilsClient*);
+MODULES_EXPORT void provideNavigatorContentUtilsTo(
+    LocalFrame&,
+    NavigatorContentUtilsClient*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorContentUtilsClient_h
+#endif  // NavigatorContentUtilsClient_h

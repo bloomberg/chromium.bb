@@ -39,15 +39,15 @@ namespace blink {
 struct ColorSuggestion;
 
 struct WebColorSuggestion {
-    WebColor color;
-    WebString label;
+  WebColor color;
+  WebString label;
 
 #if BLINK_IMPLEMENTATION
-    WebColorSuggestion(const ColorSuggestion&);
-    WebColorSuggestion& operator=(const ColorSuggestion&);
+  WebColorSuggestion(const ColorSuggestion&);
+  WebColorSuggestion& operator=(const ColorSuggestion&);
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebColorSuggestion_h
+#endif  // WebColorSuggestion_h

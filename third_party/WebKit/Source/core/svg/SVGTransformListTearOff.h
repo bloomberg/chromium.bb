@@ -40,26 +40,35 @@ class SVGMatrixTearOff;
 class SVGTransformTearOff;
 
 class SVGTransformListTearOff final
-    : public SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGTransformListTearOff* create(SVGTransformList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
-    {
-        return new SVGTransformListTearOff(target, contextElement, propertyIsAnimVal, attributeName);
-    }
+    : public SVGListPropertyTearOffHelper<SVGTransformListTearOff,
+                                          SVGTransformList>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~SVGTransformListTearOff() override;
+ public:
+  static SVGTransformListTearOff* create(
+      SVGTransformList* target,
+      SVGElement* contextElement,
+      PropertyIsAnimValType propertyIsAnimVal,
+      const QualifiedName& attributeName = QualifiedName::null()) {
+    return new SVGTransformListTearOff(target, contextElement,
+                                       propertyIsAnimVal, attributeName);
+  }
 
-    SVGTransformTearOff* createSVGTransformFromMatrix(SVGMatrixTearOff*) const;
-    SVGTransformTearOff* consolidate(ExceptionState&);
+  ~SVGTransformListTearOff() override;
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  SVGTransformTearOff* createSVGTransformFromMatrix(SVGMatrixTearOff*) const;
+  SVGTransformTearOff* consolidate(ExceptionState&);
 
-private:
-    SVGTransformListTearOff(SVGTransformList*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
+ private:
+  SVGTransformListTearOff(SVGTransformList*,
+                          SVGElement*,
+                          PropertyIsAnimValType,
+                          const QualifiedName&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGTransformListTearOff_h
+#endif  // SVGTransformListTearOff_h

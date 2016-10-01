@@ -30,62 +30,58 @@
 
 namespace blink {
 
-DocumentResource* DocumentResource::fetchSVGDocument(FetchRequest& request, ResourceFetcher* fetcher)
-{
-    DCHECK_EQ(request.resourceRequest().frameType(), WebURLRequest::FrameTypeNone);
-    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
-    return toDocumentResource(fetcher->requestResource(request, SVGDocumentResourceFactory()));
+DocumentResource* DocumentResource::fetchSVGDocument(FetchRequest& request,
+                                                     ResourceFetcher* fetcher) {
+  DCHECK_EQ(request.resourceRequest().frameType(),
+            WebURLRequest::FrameTypeNone);
+  request.mutableResourceRequest().setRequestContext(
+      WebURLRequest::RequestContextImage);
+  return toDocumentResource(
+      fetcher->requestResource(request, SVGDocumentResourceFactory()));
 }
 
-DocumentResource::DocumentResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
-    : TextResource(request, type, options, "application/xml", String())
-{
-    // FIXME: We'll support more types to support HTMLImports.
-    DCHECK_EQ(type, SVGDocument);
+DocumentResource::DocumentResource(const ResourceRequest& request,
+                                   Type type,
+                                   const ResourceLoaderOptions& options)
+    : TextResource(request, type, options, "application/xml", String()) {
+  // FIXME: We'll support more types to support HTMLImports.
+  DCHECK_EQ(type, SVGDocument);
 }
 
-DocumentResource::~DocumentResource()
-{
+DocumentResource::~DocumentResource() {}
+
+DEFINE_TRACE(DocumentResource) {
+  visitor->trace(m_document);
+  Resource::trace(visitor);
 }
 
-DEFINE_TRACE(DocumentResource)
-{
-    visitor->trace(m_document);
-    Resource::trace(visitor);
+void DocumentResource::checkNotify() {
+  if (data() && mimeTypeAllowed()) {
+    // We don't need to create a new frame because the new document belongs to the parent UseElement.
+    m_document = createDocument(response().url());
+    m_document->setContent(decodedText());
+  }
+  Resource::checkNotify();
 }
 
-void DocumentResource::checkNotify()
-{
-    if (data() && mimeTypeAllowed()) {
-        // We don't need to create a new frame because the new document belongs to the parent UseElement.
-        m_document = createDocument(response().url());
-        m_document->setContent(decodedText());
-    }
-    Resource::checkNotify();
+bool DocumentResource::mimeTypeAllowed() const {
+  DCHECK_EQ(getType(), SVGDocument);
+  AtomicString mimeType = response().mimeType();
+  if (response().isHTTP())
+    mimeType = httpContentType();
+  return mimeType == "image/svg+xml" || mimeType == "text/xml" ||
+         mimeType == "application/xml" || mimeType == "application/xhtml+xml";
 }
 
-bool DocumentResource::mimeTypeAllowed() const
-{
-    DCHECK_EQ(getType(), SVGDocument);
-    AtomicString mimeType = response().mimeType();
-    if (response().isHTTP())
-        mimeType = httpContentType();
-    return mimeType == "image/svg+xml"
-        || mimeType == "text/xml"
-        || mimeType == "application/xml"
-        || mimeType == "application/xhtml+xml";
-}
-
-Document* DocumentResource::createDocument(const KURL& url)
-{
-    switch (getType()) {
+Document* DocumentResource::createDocument(const KURL& url) {
+  switch (getType()) {
     case SVGDocument:
-        return XMLDocument::createSVG(DocumentInit(url));
+      return XMLDocument::createSVG(DocumentInit(url));
     default:
-        // FIXME: We'll add more types to support HTMLImports.
-        NOTREACHED();
-        return nullptr;
-    }
+      // FIXME: We'll add more types to support HTMLImports.
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
-} // namespace blink
+}  // namespace blink

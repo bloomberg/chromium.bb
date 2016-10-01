@@ -35,98 +35,103 @@
 
 namespace blink {
 
-MediaStreamDescriptor* MediaStreamDescriptor::create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
-{
-    return new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources);
+MediaStreamDescriptor* MediaStreamDescriptor::create(
+    const MediaStreamSourceVector& audioSources,
+    const MediaStreamSourceVector& videoSources) {
+  return new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources,
+                                   videoSources);
 }
 
-MediaStreamDescriptor* MediaStreamDescriptor::create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
-{
-    return new MediaStreamDescriptor(createCanonicalUUIDString(), audioComponents, videoComponents);
+MediaStreamDescriptor* MediaStreamDescriptor::create(
+    const MediaStreamComponentVector& audioComponents,
+    const MediaStreamComponentVector& videoComponents) {
+  return new MediaStreamDescriptor(createCanonicalUUIDString(), audioComponents,
+                                   videoComponents);
 }
 
-MediaStreamDescriptor* MediaStreamDescriptor::create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
-{
-    return new MediaStreamDescriptor(id, audioComponents, videoComponents);
+MediaStreamDescriptor* MediaStreamDescriptor::create(
+    const String& id,
+    const MediaStreamComponentVector& audioComponents,
+    const MediaStreamComponentVector& videoComponents) {
+  return new MediaStreamDescriptor(id, audioComponents, videoComponents);
 }
 
-void MediaStreamDescriptor::addComponent(MediaStreamComponent* component)
-{
-    switch (component->source()->type()) {
+void MediaStreamDescriptor::addComponent(MediaStreamComponent* component) {
+  switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
-        if (m_audioComponents.find(component) == kNotFound)
-            m_audioComponents.append(component);
-        break;
+      if (m_audioComponents.find(component) == kNotFound)
+        m_audioComponents.append(component);
+      break;
     case MediaStreamSource::TypeVideo:
-        if (m_videoComponents.find(component) == kNotFound)
-            m_videoComponents.append(component);
-        break;
-    }
+      if (m_videoComponents.find(component) == kNotFound)
+        m_videoComponents.append(component);
+      break;
+  }
 }
 
-void MediaStreamDescriptor::removeComponent(MediaStreamComponent* component)
-{
-    size_t pos = kNotFound;
-    switch (component->source()->type()) {
+void MediaStreamDescriptor::removeComponent(MediaStreamComponent* component) {
+  size_t pos = kNotFound;
+  switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
-        pos = m_audioComponents.find(component);
-        if (pos != kNotFound)
-            m_audioComponents.remove(pos);
-        break;
+      pos = m_audioComponents.find(component);
+      if (pos != kNotFound)
+        m_audioComponents.remove(pos);
+      break;
     case MediaStreamSource::TypeVideo:
-        pos = m_videoComponents.find(component);
-        if (pos != kNotFound)
-            m_videoComponents.remove(pos);
-        break;
-    }
+      pos = m_videoComponents.find(component);
+      if (pos != kNotFound)
+        m_videoComponents.remove(pos);
+      break;
+  }
 }
 
-void MediaStreamDescriptor::addRemoteTrack(MediaStreamComponent* component)
-{
-    if (m_client)
-        m_client->addRemoteTrack(component);
-    else
-        addComponent(component);
+void MediaStreamDescriptor::addRemoteTrack(MediaStreamComponent* component) {
+  if (m_client)
+    m_client->addRemoteTrack(component);
+  else
+    addComponent(component);
 }
 
-void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component)
-{
-    if (m_client)
-        m_client->removeRemoteTrack(component);
-    else
-        removeComponent(component);
+void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component) {
+  if (m_client)
+    m_client->removeRemoteTrack(component);
+  else
+    removeComponent(component);
 }
 
-MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
-    : m_client(nullptr)
-    , m_id(id)
-    , m_active(true)
-{
-    ASSERT(m_id.length());
-    for (size_t i = 0; i < audioSources.size(); i++)
-        m_audioComponents.append(MediaStreamComponent::create(audioSources[i]));
+MediaStreamDescriptor::MediaStreamDescriptor(
+    const String& id,
+    const MediaStreamSourceVector& audioSources,
+    const MediaStreamSourceVector& videoSources)
+    : m_client(nullptr), m_id(id), m_active(true) {
+  ASSERT(m_id.length());
+  for (size_t i = 0; i < audioSources.size(); i++)
+    m_audioComponents.append(MediaStreamComponent::create(audioSources[i]));
 
-    for (size_t i = 0; i < videoSources.size(); i++)
-        m_videoComponents.append(MediaStreamComponent::create(videoSources[i]));
+  for (size_t i = 0; i < videoSources.size(); i++)
+    m_videoComponents.append(MediaStreamComponent::create(videoSources[i]));
 }
 
-MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
-    : m_client(nullptr)
-    , m_id(id)
-    , m_active(true)
-{
-    ASSERT(m_id.length());
-    for (MediaStreamComponentVector::const_iterator iter = audioComponents.begin(); iter != audioComponents.end(); ++iter)
-        m_audioComponents.append((*iter));
-    for (MediaStreamComponentVector::const_iterator iter = videoComponents.begin(); iter != videoComponents.end(); ++iter)
-        m_videoComponents.append((*iter));
+MediaStreamDescriptor::MediaStreamDescriptor(
+    const String& id,
+    const MediaStreamComponentVector& audioComponents,
+    const MediaStreamComponentVector& videoComponents)
+    : m_client(nullptr), m_id(id), m_active(true) {
+  ASSERT(m_id.length());
+  for (MediaStreamComponentVector::const_iterator iter =
+           audioComponents.begin();
+       iter != audioComponents.end(); ++iter)
+    m_audioComponents.append((*iter));
+  for (MediaStreamComponentVector::const_iterator iter =
+           videoComponents.begin();
+       iter != videoComponents.end(); ++iter)
+    m_videoComponents.append((*iter));
 }
 
-DEFINE_TRACE(MediaStreamDescriptor)
-{
-    visitor->trace(m_audioComponents);
-    visitor->trace(m_videoComponents);
-    visitor->trace(m_client);
+DEFINE_TRACE(MediaStreamDescriptor) {
+  visitor->trace(m_audioComponents);
+  visitor->trace(m_videoComponents);
+  visitor->trace(m_client);
 }
 
-} // namespace blink
+}  // namespace blink

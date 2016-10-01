@@ -17,56 +17,70 @@
 
 namespace {
 const double kDefaultFrameRate = 60.0;
-} // anonymous namespace
+}  // anonymous namespace
 
 namespace blink {
 
-MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, ExceptionState& exceptionState)
-{
-    return HTMLCanvasElementCapture::captureStream(element, false, 0, exceptionState);
+MediaStream* HTMLCanvasElementCapture::captureStream(
+    HTMLCanvasElement& element,
+    ExceptionState& exceptionState) {
+  return HTMLCanvasElementCapture::captureStream(element, false, 0,
+                                                 exceptionState);
 }
 
-MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, double frameRate, ExceptionState& exceptionState)
-{
-    if (frameRate < 0.0) {
-        exceptionState.throwDOMException(NotSupportedError, "Given frame rate is not supported.");
-        return nullptr;
-    }
+MediaStream* HTMLCanvasElementCapture::captureStream(
+    HTMLCanvasElement& element,
+    double frameRate,
+    ExceptionState& exceptionState) {
+  if (frameRate < 0.0) {
+    exceptionState.throwDOMException(NotSupportedError,
+                                     "Given frame rate is not supported.");
+    return nullptr;
+  }
 
-    return HTMLCanvasElementCapture::captureStream(element, true, frameRate, exceptionState);
+  return HTMLCanvasElementCapture::captureStream(element, true, frameRate,
+                                                 exceptionState);
 }
 
-MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, bool givenFrameRate, double frameRate, ExceptionState& exceptionState)
-{
-    if (!element.originClean()) {
-        exceptionState.throwSecurityError("Canvas is not origin-clean.");
-        return nullptr;
-    }
+MediaStream* HTMLCanvasElementCapture::captureStream(
+    HTMLCanvasElement& element,
+    bool givenFrameRate,
+    double frameRate,
+    ExceptionState& exceptionState) {
+  if (!element.originClean()) {
+    exceptionState.throwSecurityError("Canvas is not origin-clean.");
+    return nullptr;
+  }
 
-    WebMediaStreamTrack track;
-    const WebSize size(element.width(), element.height());
-    std::unique_ptr<WebCanvasCaptureHandler> handler;
-    if (givenFrameRate)
-        handler = wrapUnique(Platform::current()->createCanvasCaptureHandler(size, frameRate, &track));
-    else
-        handler = wrapUnique(Platform::current()->createCanvasCaptureHandler(size, kDefaultFrameRate, &track));
+  WebMediaStreamTrack track;
+  const WebSize size(element.width(), element.height());
+  std::unique_ptr<WebCanvasCaptureHandler> handler;
+  if (givenFrameRate)
+    handler = wrapUnique(Platform::current()->createCanvasCaptureHandler(
+        size, frameRate, &track));
+  else
+    handler = wrapUnique(Platform::current()->createCanvasCaptureHandler(
+        size, kDefaultFrameRate, &track));
 
-    if (!handler) {
-        exceptionState.throwDOMException(NotSupportedError, "No CanvasCapture handler can be created.");
-        return nullptr;
-    }
+  if (!handler) {
+    exceptionState.throwDOMException(
+        NotSupportedError, "No CanvasCapture handler can be created.");
+    return nullptr;
+  }
 
-    CanvasCaptureMediaStreamTrack* canvasTrack;
-    if (givenFrameRate)
-        canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element, std::move(handler), frameRate);
-    else
-        canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element, std::move(handler));
-    // We want to capture a frame in the beginning.
-    canvasTrack->requestFrame();
+  CanvasCaptureMediaStreamTrack* canvasTrack;
+  if (givenFrameRate)
+    canvasTrack = CanvasCaptureMediaStreamTrack::create(
+        track, &element, std::move(handler), frameRate);
+  else
+    canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element,
+                                                        std::move(handler));
+  // We want to capture a frame in the beginning.
+  canvasTrack->requestFrame();
 
-    MediaStreamTrackVector tracks;
-    tracks.append(canvasTrack);
-    return MediaStream::create(element.getExecutionContext(), tracks);
+  MediaStreamTrackVector tracks;
+  tracks.append(canvasTrack);
+  return MediaStream::create(element.getExecutionContext(), tracks);
 }
 
-} // namespace blink
+}  // namespace blink

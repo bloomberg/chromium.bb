@@ -42,73 +42,73 @@ namespace blink {
 class CSSParserToken;
 
 struct MediaQueryExpValue {
-    DISALLOW_NEW();
-    CSSValueID id;
-    double value;
-    CSSPrimitiveValue::UnitType unit;
-    unsigned numerator;
-    unsigned denominator;
+  DISALLOW_NEW();
+  CSSValueID id;
+  double value;
+  CSSPrimitiveValue::UnitType unit;
+  unsigned numerator;
+  unsigned denominator;
 
-    bool isID;
-    bool isValue;
-    bool isRatio;
+  bool isID;
+  bool isValue;
+  bool isRatio;
 
-    MediaQueryExpValue()
-        : id(CSSValueInvalid)
-        , value(0)
-        , unit(CSSPrimitiveValue::UnitType::Unknown)
-        , numerator(0)
-        , denominator(1)
-        , isID(false)
-        , isValue(false)
-        , isRatio(false)
-    {
-    }
+  MediaQueryExpValue()
+      : id(CSSValueInvalid),
+        value(0),
+        unit(CSSPrimitiveValue::UnitType::Unknown),
+        numerator(0),
+        denominator(1),
+        isID(false),
+        isValue(false),
+        isRatio(false) {}
 
-    bool isValid() const { return (isID || isValue || isRatio); }
-    String cssText() const;
-    bool equals(const MediaQueryExpValue& expValue) const
-    {
-        if (isID)
-            return (id == expValue.id);
-        if (isValue)
-            return (value == expValue.value);
-        if (isRatio)
-            return (numerator == expValue.numerator && denominator == expValue.denominator);
-        return !expValue.isValid();
-    }
+  bool isValid() const { return (isID || isValue || isRatio); }
+  String cssText() const;
+  bool equals(const MediaQueryExpValue& expValue) const {
+    if (isID)
+      return (id == expValue.id);
+    if (isValue)
+      return (value == expValue.value);
+    if (isRatio)
+      return (numerator == expValue.numerator &&
+              denominator == expValue.denominator);
+    return !expValue.isValid();
+  }
 };
 
-class CORE_EXPORT MediaQueryExp  : public GarbageCollectedFinalized<MediaQueryExp> {
-public:
-    static MediaQueryExp* createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>&);
-    ~MediaQueryExp();
+class CORE_EXPORT MediaQueryExp
+    : public GarbageCollectedFinalized<MediaQueryExp> {
+ public:
+  static MediaQueryExp* createIfValid(const String& mediaFeature,
+                                      const Vector<CSSParserToken, 4>&);
+  ~MediaQueryExp();
 
-    const String& mediaFeature() const { return m_mediaFeature; }
+  const String& mediaFeature() const { return m_mediaFeature; }
 
-    MediaQueryExpValue expValue() const { return m_expValue; }
+  MediaQueryExpValue expValue() const { return m_expValue; }
 
-    bool operator==(const MediaQueryExp& other) const;
+  bool operator==(const MediaQueryExp& other) const;
 
-    bool isViewportDependent() const;
+  bool isViewportDependent() const;
 
-    bool isDeviceDependent() const;
+  bool isDeviceDependent() const;
 
-    String serialize() const;
+  String serialize() const;
 
-    MediaQueryExp* copy() const { return new MediaQueryExp(*this); }
+  MediaQueryExp* copy() const { return new MediaQueryExp(*this); }
 
-    MediaQueryExp(const MediaQueryExp& other);
+  MediaQueryExp(const MediaQueryExp& other);
 
-    DEFINE_INLINE_TRACE() { }
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    MediaQueryExp(const String&, const MediaQueryExpValue&);
+ private:
+  MediaQueryExp(const String&, const MediaQueryExpValue&);
 
-    String m_mediaFeature;
-    MediaQueryExpValue m_expValue;
+  String m_mediaFeature;
+  MediaQueryExpValue m_expValue;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

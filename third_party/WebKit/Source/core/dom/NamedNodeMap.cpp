@@ -33,64 +33,64 @@ namespace blink {
 
 using namespace HTMLNames;
 
-Attr* NamedNodeMap::getNamedItem(const AtomicString& name) const
-{
-    return m_element->getAttributeNode(name);
+Attr* NamedNodeMap::getNamedItem(const AtomicString& name) const {
+  return m_element->getAttributeNode(name);
 }
 
-Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const
-{
-    return m_element->getAttributeNodeNS(namespaceURI, localName);
+Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI,
+                                   const AtomicString& localName) const {
+  return m_element->getAttributeNodeNS(namespaceURI, localName);
 }
 
-Attr* NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& exceptionState)
-{
-    size_t index = m_element->attributes().findIndex(name, m_element->shouldIgnoreAttributeCase());
-    if (index == kNotFound) {
-        exceptionState.throwDOMException(NotFoundError, "No item with name '" + name + "' was found.");
-        return nullptr;
-    }
-    return m_element->detachAttribute(index);
+Attr* NamedNodeMap::removeNamedItem(const AtomicString& name,
+                                    ExceptionState& exceptionState) {
+  size_t index = m_element->attributes().findIndex(
+      name, m_element->shouldIgnoreAttributeCase());
+  if (index == kNotFound) {
+    exceptionState.throwDOMException(
+        NotFoundError, "No item with name '" + name + "' was found.");
+    return nullptr;
+  }
+  return m_element->detachAttribute(index);
 }
 
-Attr* NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& exceptionState)
-{
-    size_t index = m_element->attributes().findIndex(QualifiedName(nullAtom, localName, namespaceURI));
-    if (index == kNotFound) {
-        exceptionState.throwDOMException(NotFoundError, "No item with name '" + namespaceURI + "::" + localName + "' was found.");
-        return nullptr;
-    }
-    return m_element->detachAttribute(index);
+Attr* NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI,
+                                      const AtomicString& localName,
+                                      ExceptionState& exceptionState) {
+  size_t index = m_element->attributes().findIndex(
+      QualifiedName(nullAtom, localName, namespaceURI));
+  if (index == kNotFound) {
+    exceptionState.throwDOMException(
+        NotFoundError, "No item with name '" + namespaceURI + "::" + localName +
+                           "' was found.");
+    return nullptr;
+  }
+  return m_element->detachAttribute(index);
 }
 
-Attr* NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exceptionState)
-{
-    DCHECK(attr);
-    return m_element->setAttributeNode(attr, exceptionState);
+Attr* NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exceptionState) {
+  DCHECK(attr);
+  return m_element->setAttributeNode(attr, exceptionState);
 }
 
-Attr* NamedNodeMap::setNamedItemNS(Attr* attr, ExceptionState& exceptionState)
-{
-    DCHECK(attr);
-    return m_element->setAttributeNodeNS(attr, exceptionState);
+Attr* NamedNodeMap::setNamedItemNS(Attr* attr, ExceptionState& exceptionState) {
+  DCHECK(attr);
+  return m_element->setAttributeNodeNS(attr, exceptionState);
 }
 
-Attr* NamedNodeMap::item(unsigned index) const
-{
-    AttributeCollection attributes = m_element->attributes();
-    if (index >= attributes.size())
-        return nullptr;
-    return m_element->ensureAttr(attributes[index].name());
+Attr* NamedNodeMap::item(unsigned index) const {
+  AttributeCollection attributes = m_element->attributes();
+  if (index >= attributes.size())
+    return nullptr;
+  return m_element->ensureAttr(attributes[index].name());
 }
 
-size_t NamedNodeMap::length() const
-{
-    return m_element->attributes().size();
+size_t NamedNodeMap::length() const {
+  return m_element->attributes().size();
 }
 
-DEFINE_TRACE(NamedNodeMap)
-{
-    visitor->trace(m_element);
+DEFINE_TRACE(NamedNodeMap) {
+  visitor->trace(m_element);
 }
 
-} // namespace blink
+}  // namespace blink

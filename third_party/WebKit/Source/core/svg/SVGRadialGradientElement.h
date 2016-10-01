@@ -31,38 +31,39 @@ namespace blink {
 struct RadialGradientAttributes;
 
 class SVGRadialGradientElement final : public SVGGradientElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGRadialGradientElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool collectGradientAttributes(RadialGradientAttributes&);
+ public:
+  DECLARE_NODE_FACTORY(SVGRadialGradientElement);
 
-    SVGAnimatedLength* cx() const { return m_cx.get(); }
-    SVGAnimatedLength* cy() const { return m_cy.get(); }
-    SVGAnimatedLength* r() const { return m_r.get(); }
-    SVGAnimatedLength* fx() const { return m_fx.get(); }
-    SVGAnimatedLength* fy() const { return m_fy.get(); }
-    SVGAnimatedLength* fr() const { return m_fr.get(); }
+  bool collectGradientAttributes(RadialGradientAttributes&);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedLength* cx() const { return m_cx.get(); }
+  SVGAnimatedLength* cy() const { return m_cy.get(); }
+  SVGAnimatedLength* r() const { return m_r.get(); }
+  SVGAnimatedLength* fx() const { return m_fx.get(); }
+  SVGAnimatedLength* fy() const { return m_fy.get(); }
+  SVGAnimatedLength* fr() const { return m_fr.get(); }
 
-private:
-    explicit SVGRadialGradientElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void svgAttributeChanged(const QualifiedName&) override;
+ private:
+  explicit SVGRadialGradientElement(Document&);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    bool selfHasRelativeLengths() const override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    Member<SVGAnimatedLength> m_cx;
-    Member<SVGAnimatedLength> m_cy;
-    Member<SVGAnimatedLength> m_r;
-    Member<SVGAnimatedLength> m_fx;
-    Member<SVGAnimatedLength> m_fy;
-    Member<SVGAnimatedLength> m_fr;
+  bool selfHasRelativeLengths() const override;
+
+  Member<SVGAnimatedLength> m_cx;
+  Member<SVGAnimatedLength> m_cy;
+  Member<SVGAnimatedLength> m_r;
+  Member<SVGAnimatedLength> m_fx;
+  Member<SVGAnimatedLength> m_fy;
+  Member<SVGAnimatedLength> m_fr;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGRadialGradientElement_h
+#endif  // SVGRadialGradientElement_h

@@ -36,34 +36,34 @@
 namespace blink {
 
 class AnimatableLengthPoint final : public AnimatableValue {
-public:
-    ~AnimatableLengthPoint() override { }
-    static PassRefPtr<AnimatableLengthPoint> create(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y)
-    {
-        return adoptRef(new AnimatableLengthPoint(std::move(x), std::move(y)));
-    }
-    const AnimatableValue* x() const { return m_x.get(); }
-    const AnimatableValue* y() const { return m_y.get(); }
+ public:
+  ~AnimatableLengthPoint() override {}
+  static PassRefPtr<AnimatableLengthPoint> create(
+      PassRefPtr<AnimatableValue> x,
+      PassRefPtr<AnimatableValue> y) {
+    return adoptRef(new AnimatableLengthPoint(std::move(x), std::move(y)));
+  }
+  const AnimatableValue* x() const { return m_x.get(); }
+  const AnimatableValue* y() const { return m_y.get(); }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    AnimatableLengthPoint(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y)
-        : m_x(x)
-        , m_y(y)
-    {
-    }
-    AnimatableType type() const override { return TypeLengthPoint; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  AnimatableLengthPoint(PassRefPtr<AnimatableValue> x,
+                        PassRefPtr<AnimatableValue> y)
+      : m_x(x), m_y(y) {}
+  AnimatableType type() const override { return TypeLengthPoint; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    RefPtr<AnimatableValue> m_x;
-    RefPtr<AnimatableValue> m_y;
+  RefPtr<AnimatableValue> m_x;
+  RefPtr<AnimatableValue> m_y;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthPoint, isLengthPoint());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableLengthPoint_h
+#endif  // AnimatableLengthPoint_h

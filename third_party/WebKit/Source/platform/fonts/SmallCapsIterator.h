@@ -15,28 +15,30 @@
 namespace blink {
 
 class PLATFORM_EXPORT SmallCapsIterator {
-    USING_FAST_MALLOC(SmallCapsIterator);
-    WTF_MAKE_NONCOPYABLE(SmallCapsIterator);
-public:
-    enum SmallCapsBehavior {
-        SmallCapsSameCase,
-        SmallCapsUppercaseNeeded,
-        SmallCapsInvalid
-    };
+  USING_FAST_MALLOC(SmallCapsIterator);
+  WTF_MAKE_NONCOPYABLE(SmallCapsIterator);
 
-    SmallCapsIterator(const UChar* buffer, unsigned bufferSize);
+ public:
+  enum SmallCapsBehavior {
+    SmallCapsSameCase,
+    SmallCapsUppercaseNeeded,
+    SmallCapsInvalid
+  };
 
-    bool consume(unsigned* capsLimit, SmallCapsBehavior*);
-private:
-    std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
-    unsigned m_bufferSize;
-    UChar32 m_nextUChar32;
-    bool m_atEnd;
+  SmallCapsIterator(const UChar* buffer, unsigned bufferSize);
 
-    SmallCapsBehavior m_currentSmallCapsBehavior;
-    SmallCapsBehavior m_previousSmallCapsBehavior;
+  bool consume(unsigned* capsLimit, SmallCapsBehavior*);
+
+ private:
+  std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
+  unsigned m_bufferSize;
+  UChar32 m_nextUChar32;
+  bool m_atEnd;
+
+  SmallCapsBehavior m_currentSmallCapsBehavior;
+  SmallCapsBehavior m_previousSmallCapsBehavior;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

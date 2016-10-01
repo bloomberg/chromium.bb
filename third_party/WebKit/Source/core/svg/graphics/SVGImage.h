@@ -54,124 +54,137 @@ class SVGImageForContainer;
 // have the full Page machinery but still has the sandboxing security guarantees
 // needed by SVGImage.
 class CORE_EXPORT SVGImage final : public Image {
-public:
-    static PassRefPtr<SVGImage> create(ImageObserver* observer)
-    {
-        return adoptRef(new SVGImage(observer));
-    }
+ public:
+  static PassRefPtr<SVGImage> create(ImageObserver* observer) {
+    return adoptRef(new SVGImage(observer));
+  }
 
-    static bool isInSVGImage(const Node*);
+  static bool isInSVGImage(const Node*);
 
-    LayoutReplaced* embeddedReplacedContent() const;
+  LayoutReplaced* embeddedReplacedContent() const;
 
-    bool isSVGImage() const override { return true; }
-    bool isTextureBacked() override { return false; }
-    IntSize size() const override { return m_intrinsicSize; }
+  bool isSVGImage() const override { return true; }
+  bool isTextureBacked() override { return false; }
+  IntSize size() const override { return m_intrinsicSize; }
 
-    bool currentFrameHasSingleSecurityOrigin() const override;
+  bool currentFrameHasSingleSecurityOrigin() const override;
 
-    void startAnimation(CatchUpAnimation = CatchUp) override;
-    void resetAnimation() override;
+  void startAnimation(CatchUpAnimation = CatchUp) override;
+  void resetAnimation() override;
 
-    // Advances an animated image. This will trigger an animation update for CSS
-    // and advance the SMIL timeline by one frame.
-    void advanceAnimationForTesting() override;
-    SVGImageChromeClient& chromeClientForTesting();
+  // Advances an animated image. This will trigger an animation update for CSS
+  // and advance the SMIL timeline by one frame.
+  void advanceAnimationForTesting() override;
+  SVGImageChromeClient& chromeClientForTesting();
 
-    sk_sp<SkImage> imageForCurrentFrame() override;
+  sk_sp<SkImage> imageForCurrentFrame() override;
 
-    // Does the SVG image/document contain any animations?
-    bool hasAnimations() const;
-    // Service CSS and SMIL animations.
-    void serviceAnimations(double monotonicAnimationStartTime);
+  // Does the SVG image/document contain any animations?
+  bool hasAnimations() const;
+  // Service CSS and SMIL animations.
+  void serviceAnimations(double monotonicAnimationStartTime);
 
-    void updateUseCounters(const Document&) const;
+  void updateUseCounters(const Document&) const;
 
-    // The defaultObjectSize is assumed to be unzoomed, i.e. it should
-    // not have the effective zoom level applied. The returned size is
-    // thus also independent of current zoom level.
-    FloatSize concreteObjectSize(const FloatSize& defaultObjectSize) const;
+  // The defaultObjectSize is assumed to be unzoomed, i.e. it should
+  // not have the effective zoom level applied. The returned size is
+  // thus also independent of current zoom level.
+  FloatSize concreteObjectSize(const FloatSize& defaultObjectSize) const;
 
-    bool hasIntrinsicDimensions() const;
+  bool hasIntrinsicDimensions() const;
 
-private:
-    // Accesses m_page.
-    friend class SVGImageChromeClient;
-    // Forwards calls to the various *ForContainer methods and other parts of
-    // the the Image interface.
-    friend class SVGImageForContainer;
+ private:
+  // Accesses m_page.
+  friend class SVGImageChromeClient;
+  // Forwards calls to the various *ForContainer methods and other parts of
+  // the the Image interface.
+  friend class SVGImageForContainer;
 
-    SVGImage(ImageObserver*);
-    ~SVGImage() override;
+  SVGImage(ImageObserver*);
+  ~SVGImage() override;
 
-    String filenameExtension() const override;
+  String filenameExtension() const override;
 
-    IntSize containerSize() const;
-    bool usesContainerSize() const override { return true; }
+  IntSize containerSize() const;
+  bool usesContainerSize() const override { return true; }
 
-    SizeAvailability dataChanged(bool allDataReceived) override;
+  SizeAvailability dataChanged(bool allDataReceived) override;
 
-    // FIXME: SVGImages are underreporting decoded sizes and will be unable
-    // to prune because these functions are not implemented yet.
-    void destroyDecodedData() override { }
+  // FIXME: SVGImages are underreporting decoded sizes and will be unable
+  // to prune because these functions are not implemented yet.
+  void destroyDecodedData() override {}
 
-    // FIXME: Implement this to be less conservative.
-    bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override
-    {
-        return false;
-    }
+  // FIXME: Implement this to be less conservative.
+  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override {
+    return false;
+  }
 
-    void draw(SkCanvas*, const SkPaint&, const FloatRect& fromRect,
-        const FloatRect& toRect, RespectImageOrientationEnum,
-        ImageClampingMode) override;
-    void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float,
-        const FloatRect&, const FloatRect&, const KURL&);
-    void drawPatternForContainer(GraphicsContext&, const FloatSize, float,
-        const FloatRect&, const FloatSize&, const FloatPoint&,
-        SkXfermode::Mode, const FloatRect&, const FloatSize& repeatSpacing,
-        const KURL&);
-    sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&,
-        const IntSize& containerSize);
-    void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect,
-        const FloatRect& toRect, RespectImageOrientationEnum, ImageClampingMode,
-        const KURL&);
+  void draw(SkCanvas*,
+            const SkPaint&,
+            const FloatRect& fromRect,
+            const FloatRect& toRect,
+            RespectImageOrientationEnum,
+            ImageClampingMode) override;
+  void drawForContainer(SkCanvas*,
+                        const SkPaint&,
+                        const FloatSize,
+                        float,
+                        const FloatRect&,
+                        const FloatRect&,
+                        const KURL&);
+  void drawPatternForContainer(GraphicsContext&,
+                               const FloatSize,
+                               float,
+                               const FloatRect&,
+                               const FloatSize&,
+                               const FloatPoint&,
+                               SkXfermode::Mode,
+                               const FloatRect&,
+                               const FloatSize& repeatSpacing,
+                               const KURL&);
+  sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&,
+                                                  const IntSize& containerSize);
+  void drawInternal(SkCanvas*,
+                    const SkPaint&,
+                    const FloatRect& fromRect,
+                    const FloatRect& toRect,
+                    RespectImageOrientationEnum,
+                    ImageClampingMode,
+                    const KURL&);
 
-    void stopAnimation();
-    void scheduleTimelineRewind();
-    void flushPendingTimelineRewind();
+  void stopAnimation();
+  void scheduleTimelineRewind();
+  void flushPendingTimelineRewind();
 
-    Persistent<SVGImageChromeClient> m_chromeClient;
-    Persistent<Page> m_page;
+  Persistent<SVGImageChromeClient> m_chromeClient;
+  Persistent<Page> m_page;
 
-    // When an SVG image has no intrinsic size, the size depends on the default
-    // object size, which in turn depends on the container. One SVGImage may
-    // belong to multiple containers so the final image size can't be known in
-    // SVGImage. SVGImageForContainer carries the final image size, also called
-    // the "concrete object size". For more, see: SVGImageForContainer.h
-    IntSize m_intrinsicSize;
-    bool m_hasPendingTimelineRewind;
+  // When an SVG image has no intrinsic size, the size depends on the default
+  // object size, which in turn depends on the container. One SVGImage may
+  // belong to multiple containers so the final image size can't be known in
+  // SVGImage. SVGImageForContainer carries the final image size, also called
+  // the "concrete object size". For more, see: SVGImageForContainer.h
+  IntSize m_intrinsicSize;
+  bool m_hasPendingTimelineRewind;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);
 
 class ImageObserverDisabler {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ImageObserverDisabler);
-public:
-    ImageObserverDisabler(Image* image)
-        : m_image(image)
-    {
-        m_image->setImageObserverDisabled(true);
-    }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ImageObserverDisabler);
 
-    ~ImageObserverDisabler()
-    {
-        m_image->setImageObserverDisabled(false);
-    }
-private:
-    Image* m_image;
+ public:
+  ImageObserverDisabler(Image* image) : m_image(image) {
+    m_image->setImageObserverDisabled(true);
+  }
+
+  ~ImageObserverDisabler() { m_image->setImageObserverDisabled(false); }
+
+ private:
+  Image* m_image;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGImage_h
+#endif  // SVGImage_h

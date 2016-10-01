@@ -37,42 +37,40 @@
 namespace blink {
 
 class XMLParserInput {
-    STACK_ALLOCATED();
-public:
-    explicit XMLParserInput(const String& source)
-        : m_source(source)
-        , m_encoding(0)
-        , m_data(0)
-        , m_size(0)
-    {
-        if (m_source.isEmpty())
-            return;
+  STACK_ALLOCATED();
 
-        const UChar BOM = 0xFEFF;
-        const unsigned char BOMHighByte = *reinterpret_cast<const unsigned char*>(&BOM);
+ public:
+  explicit XMLParserInput(const String& source)
+      : m_source(source), m_encoding(0), m_data(0), m_size(0) {
+    if (m_source.isEmpty())
+      return;
 
-        if (m_source.is8Bit()) {
-            m_encoding = "iso-8859-1";
-            m_data = reinterpret_cast<const char*>(m_source.characters8());
-            m_size = m_source.length() * sizeof(LChar);
-        } else {
-            m_encoding = BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE";
-            m_data = reinterpret_cast<const char*>(m_source.characters16());
-            m_size = m_source.length() * sizeof(UChar);
-        }
+    const UChar BOM = 0xFEFF;
+    const unsigned char BOMHighByte =
+        *reinterpret_cast<const unsigned char*>(&BOM);
+
+    if (m_source.is8Bit()) {
+      m_encoding = "iso-8859-1";
+      m_data = reinterpret_cast<const char*>(m_source.characters8());
+      m_size = m_source.length() * sizeof(LChar);
+    } else {
+      m_encoding = BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE";
+      m_data = reinterpret_cast<const char*>(m_source.characters16());
+      m_size = m_source.length() * sizeof(UChar);
     }
+  }
 
-    const char* encoding() const { return m_encoding; }
-    const char* data() const { return m_data; }
-    int size() const { return m_size; }
+  const char* encoding() const { return m_encoding; }
+  const char* data() const { return m_data; }
+  int size() const { return m_size; }
 
-private:
-    String m_source;
-    const char* m_encoding;
-    const char* m_data;
-    int m_size;
+ private:
+  String m_source;
+  const char* m_encoding;
+  const char* m_data;
+  int m_size;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

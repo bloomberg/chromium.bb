@@ -12,39 +12,34 @@
 namespace blink {
 
 class LayoutTextControlItem : public LayoutBoxModel {
-public:
-    explicit LayoutTextControlItem(LayoutTextControl* layoutTextControl)
-        : LayoutBoxModel(layoutTextControl)
-    {
-    }
+ public:
+  explicit LayoutTextControlItem(LayoutTextControl* layoutTextControl)
+      : LayoutBoxModel(layoutTextControl) {}
 
-    explicit LayoutTextControlItem(const LayoutItem& item)
-        : LayoutBoxModel(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isTextControl());
-    }
+  explicit LayoutTextControlItem(const LayoutItem& item)
+      : LayoutBoxModel(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isTextControl());
+  }
 
-    explicit LayoutTextControlItem(std::nullptr_t) : LayoutBoxModel(nullptr) { }
+  explicit LayoutTextControlItem(std::nullptr_t) : LayoutBoxModel(nullptr) {}
 
-    LayoutTextControlItem() { }
+  LayoutTextControlItem() {}
 
-    PassRefPtr<ComputedStyle> createInnerEditorStyle(const ComputedStyle& startStyle) const
-    {
-        return toTextControl()->createInnerEditorStyle(startStyle);
-    }
+  PassRefPtr<ComputedStyle> createInnerEditorStyle(
+      const ComputedStyle& startStyle) const {
+    return toTextControl()->createInnerEditorStyle(startStyle);
+  }
 
-private:
-    LayoutTextControl* toTextControl()
-    {
-        return toLayoutTextControl(layoutObject());
-    }
+ private:
+  LayoutTextControl* toTextControl() {
+    return toLayoutTextControl(layoutObject());
+  }
 
-    const LayoutTextControl* toTextControl() const
-    {
-        return toLayoutTextControl(layoutObject());
-    }
+  const LayoutTextControl* toTextControl() const {
+    return toLayoutTextControl(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutTextControlItem_h
+#endif  // LayoutTextControlItem_h

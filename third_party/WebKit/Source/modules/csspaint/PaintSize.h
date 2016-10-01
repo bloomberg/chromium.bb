@@ -11,26 +11,26 @@
 
 namespace blink {
 
-class PaintSize : public GarbageCollectedFinalized<PaintSize>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(PaintSize);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PaintSize* create(IntSize size)
-    {
-        return new PaintSize(size);
-    }
-    virtual ~PaintSize() {}
+class PaintSize : public GarbageCollectedFinalized<PaintSize>,
+                  public ScriptWrappable {
+  WTF_MAKE_NONCOPYABLE(PaintSize);
+  DEFINE_WRAPPERTYPEINFO();
 
-    int width() const { return m_size.width(); }
-    int height() const { return m_size.height(); }
+ public:
+  static PaintSize* create(IntSize size) { return new PaintSize(size); }
+  virtual ~PaintSize() {}
 
-    DEFINE_INLINE_TRACE() { }
-private:
-    explicit PaintSize(IntSize size) : m_size(size) { }
+  int width() const { return m_size.width(); }
+  int height() const { return m_size.height(); }
 
-    IntSize m_size;
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  explicit PaintSize(IntSize size) : m_size(size) {}
+
+  IntSize m_size;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintSize_h
+#endif  // PaintSize_h

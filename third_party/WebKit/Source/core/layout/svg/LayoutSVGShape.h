@@ -40,114 +40,132 @@ class PointerEventsHitRules;
 class SVGGeometryElement;
 
 enum ShapeGeometryCodePath {
-    PathGeometry,
-    RectGeometryFastPath,
-    EllipseGeometryFastPath
+  PathGeometry,
+  RectGeometryFastPath,
+  EllipseGeometryFastPath
 };
 
 struct LayoutSVGShapeRareData {
-    WTF_MAKE_NONCOPYABLE(LayoutSVGShapeRareData);
-    USING_FAST_MALLOC(LayoutSVGShapeRareData);
-public:
-    LayoutSVGShapeRareData() {}
-    Path m_cachedNonScalingStrokePath;
-    AffineTransform m_cachedNonScalingStrokeTransform;
+  WTF_MAKE_NONCOPYABLE(LayoutSVGShapeRareData);
+  USING_FAST_MALLOC(LayoutSVGShapeRareData);
+
+ public:
+  LayoutSVGShapeRareData() {}
+  Path m_cachedNonScalingStrokePath;
+  AffineTransform m_cachedNonScalingStrokeTransform;
 };
 
 class LayoutSVGShape : public LayoutSVGModelObject {
-public:
-    explicit LayoutSVGShape(SVGGeometryElement*);
-    ~LayoutSVGShape() override;
+ public:
+  explicit LayoutSVGShape(SVGGeometryElement*);
+  ~LayoutSVGShape() override;
 
-    void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }
-    void setNeedsBoundariesUpdate() final { m_needsBoundariesUpdate = true; }
-    void setNeedsTransformUpdate() final { m_needsTransformUpdate = true; }
+  void setNeedsShapeUpdate() { m_needsShapeUpdate = true; }
+  void setNeedsBoundariesUpdate() final { m_needsBoundariesUpdate = true; }
+  void setNeedsTransformUpdate() final { m_needsTransformUpdate = true; }
 
-    bool nodeAtFloatPointInternal(const HitTestRequest&, const FloatPoint&, PointerEventsHitRules);
+  bool nodeAtFloatPointInternal(const HitTestRequest&,
+                                const FloatPoint&,
+                                PointerEventsHitRules);
 
-    Path& path() const
-    {
-        DCHECK(m_path);
-        return *m_path;
-    }
-    bool hasPath() const { return m_path.get(); }
-    float dashScaleFactor() const;
+  Path& path() const {
+    DCHECK(m_path);
+    return *m_path;
+  }
+  bool hasPath() const { return m_path.get(); }
+  float dashScaleFactor() const;
 
-    // This method is sometimes (rarely) called with a null path and crashes. The code managing
-    // the path enforces the necessary invariants to ensure a valid path but somehow that fails.
-    // The assert and check for hasPath() are intended to detect and prevent crashes.
-    virtual bool isShapeEmpty() const
-    {
-        DCHECK(m_path);
-        return !hasPath() || path().isEmpty();
-    }
+  // This method is sometimes (rarely) called with a null path and crashes. The code managing
+  // the path enforces the necessary invariants to ensure a valid path but somehow that fails.
+  // The assert and check for hasPath() are intended to detect and prevent crashes.
+  virtual bool isShapeEmpty() const {
+    DCHECK(m_path);
+    return !hasPath() || path().isEmpty();
+  }
 
-    bool hasNonScalingStroke() const { return style()->svgStyle().vectorEffect() == VE_NON_SCALING_STROKE; }
-    Path* nonScalingStrokePath(const Path*, const AffineTransform&) const;
-    AffineTransform nonScalingStrokeTransform() const;
-    AffineTransform localSVGTransform() const final { return m_localTransform; }
+  bool hasNonScalingStroke() const {
+    return style()->svgStyle().vectorEffect() == VE_NON_SCALING_STROKE;
+  }
+  Path* nonScalingStrokePath(const Path*, const AffineTransform&) const;
+  AffineTransform nonScalingStrokeTransform() const;
+  AffineTransform localSVGTransform() const final { return m_localTransform; }
 
-    virtual const Vector<MarkerPosition>* markerPositions() const { return nullptr; }
+  virtual const Vector<MarkerPosition>* markerPositions() const {
+    return nullptr;
+  }
 
-    float strokeWidth() const;
+  float strokeWidth() const;
 
-    virtual ShapeGeometryCodePath geometryCodePath() const { return PathGeometry; }
+  virtual ShapeGeometryCodePath geometryCodePath() const {
+    return PathGeometry;
+  }
 
-    FloatRect objectBoundingBox() const final { return m_fillBoundingBox; }
+  FloatRect objectBoundingBox() const final { return m_fillBoundingBox; }
 
-    const char* name() const override { return "LayoutSVGShape"; }
+  const char* name() const override { return "LayoutSVGShape"; }
 
-protected:
-    void clearPath() { m_path.reset(); }
-    void createPath();
+ protected:
+  void clearPath() { m_path.reset(); }
+  void createPath();
 
-    virtual void updateShapeFromElement();
-    // Calculates an inclusive bounding box of this shape as if this shape has
-    // a stroke. If this shape has a stroke, then m_strokeBoundingBox is returned;
-    // otherwise, estimates a bounding box (not necessarily tight) that would
-    // include this shape's stroke bounding box if it had a stroke.
-    virtual FloatRect hitTestStrokeBoundingBox() const;
-    virtual bool shapeDependentStrokeContains(const FloatPoint&);
-    virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
+  virtual void updateShapeFromElement();
+  // Calculates an inclusive bounding box of this shape as if this shape has
+  // a stroke. If this shape has a stroke, then m_strokeBoundingBox is returned;
+  // otherwise, estimates a bounding box (not necessarily tight) that would
+  // include this shape's stroke bounding box if it had a stroke.
+  virtual FloatRect hitTestStrokeBoundingBox() const;
+  virtual bool shapeDependentStrokeContains(const FloatPoint&);
+  virtual bool shapeDependentFillContains(const FloatPoint&,
+                                          const WindRule) const;
 
-    FloatRect m_fillBoundingBox;
-    FloatRect m_strokeBoundingBox;
-    LayoutSVGShapeRareData& ensureRareData() const;
+  FloatRect m_fillBoundingBox;
+  FloatRect m_strokeBoundingBox;
+  LayoutSVGShapeRareData& ensureRareData() const;
 
-private:
-    // Hit-detection separated for the fill and the stroke
-    bool fillContains(const FloatPoint&, bool requiresFill = true, const WindRule fillRule = RULE_NONZERO);
-    bool strokeContains(const FloatPoint&, bool requiresStroke = true);
+ private:
+  // Hit-detection separated for the fill and the stroke
+  bool fillContains(const FloatPoint&,
+                    bool requiresFill = true,
+                    const WindRule fillRule = RULE_NONZERO);
+  bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
-    const AffineTransform& localToSVGParentTransform() const final { return m_localTransform; }
+  const AffineTransform& localToSVGParentTransform() const final {
+    return m_localTransform;
+  }
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGShape || LayoutSVGModelObject::isOfType(type); }
-    void layout() final;
-    void paint(const PaintInfo&, const LayoutPoint&) const final;
-    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const final;
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGShape || LayoutSVGModelObject::isOfType(type);
+  }
+  void layout() final;
+  void paint(const PaintInfo&, const LayoutPoint&) const final;
+  void addOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additionalOffset,
+                       IncludeBlockVisualOverflowOrNot) const final;
 
-    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) final;
+  bool nodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& pointInParent,
+                        HitTestAction) final;
 
-    FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
-    FloatRect calculateObjectBoundingBox() const;
-    FloatRect calculateStrokeBoundingBox() const;
-    void updateLocalTransform();
+  FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
+  FloatRect calculateObjectBoundingBox() const;
+  FloatRect calculateStrokeBoundingBox() const;
+  void updateLocalTransform();
 
-private:
-    AffineTransform m_localTransform;
-    // TODO(fmalita): the Path is now cached in SVGPath; while this additional cache is just a
-    // shallow copy, it certainly has a complexity/state management cost (plus allocation & storage
-    // overhead) - so we should look into removing it.
-    std::unique_ptr<Path> m_path;
-    mutable std::unique_ptr<LayoutSVGShapeRareData> m_rareData;
+ private:
+  AffineTransform m_localTransform;
+  // TODO(fmalita): the Path is now cached in SVGPath; while this additional cache is just a
+  // shallow copy, it certainly has a complexity/state management cost (plus allocation & storage
+  // overhead) - so we should look into removing it.
+  std::unique_ptr<Path> m_path;
+  mutable std::unique_ptr<LayoutSVGShapeRareData> m_rareData;
 
-    bool m_needsBoundariesUpdate : 1;
-    bool m_needsShapeUpdate : 1;
-    bool m_needsTransformUpdate : 1;
+  bool m_needsBoundariesUpdate : 1;
+  bool m_needsShapeUpdate : 1;
+  bool m_needsTransformUpdate : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGShape, isSVGShape());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

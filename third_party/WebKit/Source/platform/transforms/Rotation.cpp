@@ -30,96 +30,99 @@ namespace {
 
 const double kAngleEpsilon = 1e-4;
 
-Rotation extractFromMatrix(const TransformationMatrix& matrix, const Rotation& fallbackValue)
-{
-    TransformationMatrix::DecomposedType decomp;
-    if (!matrix.decompose(decomp))
-        return fallbackValue;
-    double x = -decomp.quaternionX;
-    double y = -decomp.quaternionY;
-    double z = -decomp.quaternionZ;
-    double length = std::sqrt(x * x + y * y + z * z);
-    double angle = 0;
-    if (length > 0.00001) {
-        x /= length;
-        y /= length;
-        z /= length;
-        angle = rad2deg(std::acos(decomp.quaternionW) * 2);
-    } else {
-        x = 0;
-        y = 0;
-        z = 1;
-    }
-    return Rotation(FloatPoint3D(x, y, z), angle);
+Rotation extractFromMatrix(const TransformationMatrix& matrix,
+                           const Rotation& fallbackValue) {
+  TransformationMatrix::DecomposedType decomp;
+  if (!matrix.decompose(decomp))
+    return fallbackValue;
+  double x = -decomp.quaternionX;
+  double y = -decomp.quaternionY;
+  double z = -decomp.quaternionZ;
+  double length = std::sqrt(x * x + y * y + z * z);
+  double angle = 0;
+  if (length > 0.00001) {
+    x /= length;
+    y /= length;
+    z /= length;
+    angle = rad2deg(std::acos(decomp.quaternionW) * 2);
+  } else {
+    x = 0;
+    y = 0;
+    z = 1;
+  }
+  return Rotation(FloatPoint3D(x, y, z), angle);
 }
 
-} // namespace
+}  // namespace
 
-bool Rotation::getCommonAxis(const Rotation& a, const Rotation& b, FloatPoint3D& resultAxis, double& resultAngleA, double& resultAngleB)
-{
-    resultAxis = FloatPoint3D(0, 0, 1);
-    resultAngleA = 0;
-    resultAngleB = 0;
+bool Rotation::getCommonAxis(const Rotation& a,
+                             const Rotation& b,
+                             FloatPoint3D& resultAxis,
+                             double& resultAngleA,
+                             double& resultAngleB) {
+  resultAxis = FloatPoint3D(0, 0, 1);
+  resultAngleA = 0;
+  resultAngleB = 0;
 
-    bool isZeroA = a.axis.isZero() || fabs(a.angle) < kAngleEpsilon;
-    bool isZeroB = b.axis.isZero() || fabs(b.angle) < kAngleEpsilon;
+  bool isZeroA = a.axis.isZero() || fabs(a.angle) < kAngleEpsilon;
+  bool isZeroB = b.axis.isZero() || fabs(b.angle) < kAngleEpsilon;
 
-    if (isZeroA && isZeroB)
-        return true;
+  if (isZeroA && isZeroB)
+    return true;
 
-    if (isZeroA) {
-        resultAxis = b.axis;
-        resultAngleB = b.angle;
-        return true;
-    }
-
-    if (isZeroB) {
-        resultAxis = a.axis;
-        resultAngleA = a.angle;
-        return true;
-    }
-
-    double aSquared = a.axis.lengthSquared();
-    double bSquared = b.axis.lengthSquared();
-    double dot = a.axis.dot(b.axis);
-    double error = std::abs(1 - (dot * dot) / (aSquared * bSquared));
-    if (error > kAngleEpsilon)
-        return false;
-
-    resultAxis = a.axis;
-    resultAngleA = a.angle;
+  if (isZeroA) {
+    resultAxis = b.axis;
     resultAngleB = b.angle;
     return true;
+  }
+
+  if (isZeroB) {
+    resultAxis = a.axis;
+    resultAngleA = a.angle;
+    return true;
+  }
+
+  double aSquared = a.axis.lengthSquared();
+  double bSquared = b.axis.lengthSquared();
+  double dot = a.axis.dot(b.axis);
+  double error = std::abs(1 - (dot * dot) / (aSquared * bSquared));
+  if (error > kAngleEpsilon)
+    return false;
+
+  resultAxis = a.axis;
+  resultAngleA = a.angle;
+  resultAngleB = b.angle;
+  return true;
 }
 
-Rotation Rotation::slerp(const Rotation& from, const Rotation& to, double progress)
-{
-    double fromAngle;
-    double toAngle;
-    FloatPoint3D axis;
-    if (getCommonAxis(from, to, axis, fromAngle, toAngle))
-        return Rotation(axis, blink::blend(fromAngle, toAngle, progress));
+Rotation Rotation::slerp(const Rotation& from,
+                         const Rotation& to,
+                         double progress) {
+  double fromAngle;
+  double toAngle;
+  FloatPoint3D axis;
+  if (getCommonAxis(from, to, axis, fromAngle, toAngle))
+    return Rotation(axis, blink::blend(fromAngle, toAngle, progress));
 
-    TransformationMatrix fromMatrix;
-    TransformationMatrix toMatrix;
-    fromMatrix.rotate3d(from);
-    toMatrix.rotate3d(to);
-    toMatrix.blend(fromMatrix, progress);
-    return extractFromMatrix(toMatrix, progress < 0.5 ? from : to);
+  TransformationMatrix fromMatrix;
+  TransformationMatrix toMatrix;
+  fromMatrix.rotate3d(from);
+  toMatrix.rotate3d(to);
+  toMatrix.blend(fromMatrix, progress);
+  return extractFromMatrix(toMatrix, progress < 0.5 ? from : to);
 }
 
-Rotation Rotation::add(const Rotation& a, const Rotation& b)
-{
-    double angleA;
-    double angleB;
-    FloatPoint3D axis;
-    if (getCommonAxis(a, b, axis, angleA, angleB))
-        return Rotation(axis, angleA + angleB);
+Rotation Rotation::add(const Rotation& a, const Rotation& b) {
+  double angleA;
+  double angleB;
+  FloatPoint3D axis;
+  if (getCommonAxis(a, b, axis, angleA, angleB))
+    return Rotation(axis, angleA + angleB);
 
-    TransformationMatrix matrix;
-    matrix.rotate3d(a);
-    matrix.rotate3d(b);
-    return extractFromMatrix(matrix, b);
+  TransformationMatrix matrix;
+  matrix.rotate3d(a);
+  matrix.rotate3d(b);
+  return extractFromMatrix(matrix, b);
 }
 
-} // namespace blink
+}  // namespace blink

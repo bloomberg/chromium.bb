@@ -34,36 +34,36 @@
 
 namespace blink {
 
-WebFontDescription::WebFontDescription(const FontDescription& desc)
-{
-    family = desc.family().family();
-    genericFamily = static_cast<GenericFamily>(desc.genericFamily());
-    size = desc.specifiedSize();
-    italic = desc.style() == FontStyleItalic;
-    smallCaps = desc.variantCaps() == FontDescription::SmallCaps;
-    weight = static_cast<Weight>(desc.weight());
-    smoothing = static_cast<Smoothing>(desc.fontSmoothing());
-    letterSpacing = desc.letterSpacing();
-    wordSpacing = desc.wordSpacing();
+WebFontDescription::WebFontDescription(const FontDescription& desc) {
+  family = desc.family().family();
+  genericFamily = static_cast<GenericFamily>(desc.genericFamily());
+  size = desc.specifiedSize();
+  italic = desc.style() == FontStyleItalic;
+  smallCaps = desc.variantCaps() == FontDescription::SmallCaps;
+  weight = static_cast<Weight>(desc.weight());
+  smoothing = static_cast<Smoothing>(desc.fontSmoothing());
+  letterSpacing = desc.letterSpacing();
+  wordSpacing = desc.wordSpacing();
 }
 
-WebFontDescription::operator FontDescription() const
-{
-    FontFamily fontFamily;
-    fontFamily.setFamily(family);
+WebFontDescription::operator FontDescription() const {
+  FontFamily fontFamily;
+  fontFamily.setFamily(family);
 
-    FontDescription desc;
-    desc.setFamily(fontFamily);
-    desc.setGenericFamily(static_cast<FontDescription::GenericFamilyType>(genericFamily));
-    desc.setSpecifiedSize(size);
-    desc.setComputedSize(size);
-    desc.setStyle(italic ? FontStyleItalic : FontStyleNormal);
-    desc.setVariantCaps(smallCaps ? FontDescription::SmallCaps : FontDescription::CapsNormal);
-    desc.setWeight(static_cast<FontWeight>(weight));
-    desc.setFontSmoothing(static_cast<FontSmoothingMode>(smoothing));
-    desc.setLetterSpacing(letterSpacing);
-    desc.setWordSpacing(wordSpacing);
-    return desc;
+  FontDescription desc;
+  desc.setFamily(fontFamily);
+  desc.setGenericFamily(
+      static_cast<FontDescription::GenericFamilyType>(genericFamily));
+  desc.setSpecifiedSize(size);
+  desc.setComputedSize(size);
+  desc.setStyle(italic ? FontStyleItalic : FontStyleNormal);
+  desc.setVariantCaps(smallCaps ? FontDescription::SmallCaps
+                                : FontDescription::CapsNormal);
+  desc.setWeight(static_cast<FontWeight>(weight));
+  desc.setFontSmoothing(static_cast<FontSmoothingMode>(smoothing));
+  desc.setLetterSpacing(letterSpacing);
+  desc.setWordSpacing(wordSpacing);
+  return desc;
 }
 
-} // namespace blink
+}  // namespace blink

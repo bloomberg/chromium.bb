@@ -17,18 +17,24 @@ class PaintLayer;
 class LayerClipRecorder;
 
 class FilterPainter {
-    STACK_ALLOCATED();
-public:
-    FilterPainter(PaintLayer&, GraphicsContext&, const LayoutPoint& offsetFromRoot, const ClipRect&, PaintLayerPaintingInfo&, PaintLayerFlags paintFlags);
-    ~FilterPainter();
+  STACK_ALLOCATED();
 
-private:
-    bool m_filterInProgress;
-    GraphicsContext& m_context;
-    std::unique_ptr<LayerClipRecorder> m_clipRecorder;
-    LayoutObject* m_layoutObject;
+ public:
+  FilterPainter(PaintLayer&,
+                GraphicsContext&,
+                const LayoutPoint& offsetFromRoot,
+                const ClipRect&,
+                PaintLayerPaintingInfo&,
+                PaintLayerFlags paintFlags);
+  ~FilterPainter();
+
+ private:
+  bool m_filterInProgress;
+  GraphicsContext& m_context;
+  std::unique_ptr<LayerClipRecorder> m_clipRecorder;
+  LayoutObject* m_layoutObject;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FilterPainter_h
+#endif  // FilterPainter_h

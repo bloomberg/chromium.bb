@@ -61,26 +61,29 @@ class ScriptState;
 // NodeIterator  --HiddenValue--> NodeFilter --HiddenValue--> JS Callback
 // (V8)
 class V8NodeFilterCondition final : public NodeFilterCondition {
-public:
-    static V8NodeFilterCondition* create(v8::Local<v8::Value> filter, v8::Local<v8::Object> owner, ScriptState* scriptState)
-    {
-        return new V8NodeFilterCondition(filter, owner, scriptState);
-    }
+ public:
+  static V8NodeFilterCondition* create(v8::Local<v8::Value> filter,
+                                       v8::Local<v8::Object> owner,
+                                       ScriptState* scriptState) {
+    return new V8NodeFilterCondition(filter, owner, scriptState);
+  }
 
-    ~V8NodeFilterCondition() override;
+  ~V8NodeFilterCondition() override;
 
-    unsigned acceptNode(Node*, ExceptionState&) const override;
+  unsigned acceptNode(Node*, ExceptionState&) const override;
 
-private:
-    // As the value |filter| is maintained by V8GC, the |owner| which references
-    // V8NodeFilterCondition, usually a wrapper of NodeFilter, is specified here
-    // to hold a strong reference to |filter|.
-    V8NodeFilterCondition(v8::Local<v8::Value> filter, v8::Local<v8::Object> owner, ScriptState*);
+ private:
+  // As the value |filter| is maintained by V8GC, the |owner| which references
+  // V8NodeFilterCondition, usually a wrapper of NodeFilter, is specified here
+  // to hold a strong reference to |filter|.
+  V8NodeFilterCondition(v8::Local<v8::Value> filter,
+                        v8::Local<v8::Object> owner,
+                        ScriptState*);
 
-    RefPtr<ScriptState> m_scriptState;
-    ScopedPersistent<v8::Value> m_filter;
+  RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Value> m_filter;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8NodeFilterCondition_h
+#endif  // V8NodeFilterCondition_h

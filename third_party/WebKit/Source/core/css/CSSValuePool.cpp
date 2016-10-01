@@ -30,48 +30,47 @@
 
 namespace blink {
 
-CSSValuePool& cssValuePool()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<CSSValuePool>>, threadSpecificPool, new ThreadSpecific<Persistent<CSSValuePool>>());
-    Persistent<CSSValuePool>& poolHandle = *threadSpecificPool;
-    if (!poolHandle) {
-        poolHandle = new CSSValuePool;
-        poolHandle.registerAsStaticReference();
-    }
-    return *poolHandle;
+CSSValuePool& cssValuePool() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      ThreadSpecific<Persistent<CSSValuePool>>, threadSpecificPool,
+      new ThreadSpecific<Persistent<CSSValuePool>>());
+  Persistent<CSSValuePool>& poolHandle = *threadSpecificPool;
+  if (!poolHandle) {
+    poolHandle = new CSSValuePool;
+    poolHandle.registerAsStaticReference();
+  }
+  return *poolHandle;
 }
 
 CSSValuePool::CSSValuePool()
-    : m_inheritedValue(new CSSInheritedValue)
-    , m_implicitInitialValue(new CSSInitialValue(/* implicit */ true))
-    , m_explicitInitialValue(new CSSInitialValue(/* implicit */ false))
-    , m_unsetValue(new CSSUnsetValue)
-    , m_colorTransparent(new CSSColorValue(Color::transparent))
-    , m_colorWhite(new CSSColorValue(Color::white))
-    , m_colorBlack(new CSSColorValue(Color::black))
-{
-    m_identifierValueCache.resize(numCSSValueKeywords);
-    m_pixelValueCache.resize(maximumCacheableIntegerValue + 1);
-    m_percentValueCache.resize(maximumCacheableIntegerValue + 1);
-    m_numberValueCache.resize(maximumCacheableIntegerValue + 1);
+    : m_inheritedValue(new CSSInheritedValue),
+      m_implicitInitialValue(new CSSInitialValue(/* implicit */ true)),
+      m_explicitInitialValue(new CSSInitialValue(/* implicit */ false)),
+      m_unsetValue(new CSSUnsetValue),
+      m_colorTransparent(new CSSColorValue(Color::transparent)),
+      m_colorWhite(new CSSColorValue(Color::white)),
+      m_colorBlack(new CSSColorValue(Color::black)) {
+  m_identifierValueCache.resize(numCSSValueKeywords);
+  m_pixelValueCache.resize(maximumCacheableIntegerValue + 1);
+  m_percentValueCache.resize(maximumCacheableIntegerValue + 1);
+  m_numberValueCache.resize(maximumCacheableIntegerValue + 1);
 }
 
-DEFINE_TRACE(CSSValuePool)
-{
-    visitor->trace(m_inheritedValue);
-    visitor->trace(m_implicitInitialValue);
-    visitor->trace(m_explicitInitialValue);
-    visitor->trace(m_unsetValue);
-    visitor->trace(m_colorTransparent);
-    visitor->trace(m_colorWhite);
-    visitor->trace(m_colorBlack);
-    visitor->trace(m_identifierValueCache);
-    visitor->trace(m_pixelValueCache);
-    visitor->trace(m_percentValueCache);
-    visitor->trace(m_numberValueCache);
-    visitor->trace(m_colorValueCache);
-    visitor->trace(m_fontFaceValueCache);
-    visitor->trace(m_fontFamilyValueCache);
+DEFINE_TRACE(CSSValuePool) {
+  visitor->trace(m_inheritedValue);
+  visitor->trace(m_implicitInitialValue);
+  visitor->trace(m_explicitInitialValue);
+  visitor->trace(m_unsetValue);
+  visitor->trace(m_colorTransparent);
+  visitor->trace(m_colorWhite);
+  visitor->trace(m_colorBlack);
+  visitor->trace(m_identifierValueCache);
+  visitor->trace(m_pixelValueCache);
+  visitor->trace(m_percentValueCache);
+  visitor->trace(m_numberValueCache);
+  visitor->trace(m_colorValueCache);
+  visitor->trace(m_fontFaceValueCache);
+  visitor->trace(m_fontFamilyValueCache);
 }
 
-} // namespace blink
+}  // namespace blink

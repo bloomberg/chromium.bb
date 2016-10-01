@@ -16,13 +16,13 @@ namespace blink {
 // type and a failure notification comes with an information about the type of
 // failure.
 class WebLockOrientationCallback {
-public:
-    virtual ~WebLockOrientationCallback() { }
+ public:
+  virtual ~WebLockOrientationCallback() {}
 
-    virtual void onSuccess() = 0;
-    virtual void onError(WebLockOrientationError) = 0;
+  virtual void onSuccess() = 0;
+  virtual void onError(WebLockOrientationError) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebLockOrientationCallback_h
+#endif  // WebLockOrientationCallback_h

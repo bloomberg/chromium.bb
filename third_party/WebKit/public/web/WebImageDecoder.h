@@ -42,48 +42,45 @@ class WebData;
 typedef ImageDecoder WebImageDecoderPrivate;
 
 class WebImageDecoder : public WebNonCopyable {
-public:
-    enum Type {
-        TypeBMP,
-        TypeICO
-    };
+ public:
+  enum Type { TypeBMP, TypeICO };
 
-    ~WebImageDecoder() { reset(); }
+  ~WebImageDecoder() { reset(); }
 
-    explicit WebImageDecoder(Type type) { init(type); }
+  explicit WebImageDecoder(Type type) { init(type); }
 
-    // Sets data contents for underlying decoder. All the API methods
-    // require that setData() is called prior to their use.
-    BLINK_EXPORT void setData(const WebData& data, bool allDataReceived);
+  // Sets data contents for underlying decoder. All the API methods
+  // require that setData() is called prior to their use.
+  BLINK_EXPORT void setData(const WebData& data, bool allDataReceived);
 
-    // Deletes owned decoder.
-    BLINK_EXPORT void reset();
+  // Deletes owned decoder.
+  BLINK_EXPORT void reset();
 
-    // Returns true if image decoding failed.
-    BLINK_EXPORT bool isFailed() const;
+  // Returns true if image decoding failed.
+  BLINK_EXPORT bool isFailed() const;
 
-    // Returns true if size information is available for the decoder.
-    BLINK_EXPORT bool isSizeAvailable() const;
+  // Returns true if size information is available for the decoder.
+  BLINK_EXPORT bool isSizeAvailable() const;
 
-    // Returns the size of the image.
-    BLINK_EXPORT WebSize size() const;
+  // Returns the size of the image.
+  BLINK_EXPORT WebSize size() const;
 
-    // Gives frame count for the image. For multiple frames, decoder scans the image data for the count.
-    BLINK_EXPORT size_t frameCount() const;
+  // Gives frame count for the image. For multiple frames, decoder scans the image data for the count.
+  BLINK_EXPORT size_t frameCount() const;
 
-    // Returns if the frame at given index is completely decoded.
-    BLINK_EXPORT bool isFrameCompleteAtIndex(int index) const;
+  // Returns if the frame at given index is completely decoded.
+  BLINK_EXPORT bool isFrameCompleteAtIndex(int index) const;
 
-    // Creates and returns WebImage from buffer at the index.
-    BLINK_EXPORT WebImage getFrameAtIndex(int index) const;
+  // Creates and returns WebImage from buffer at the index.
+  BLINK_EXPORT WebImage getFrameAtIndex(int index) const;
 
-private:
-    // Creates type-specific decoder.
-    BLINK_EXPORT void init(Type type);
+ private:
+  // Creates type-specific decoder.
+  BLINK_EXPORT void init(Type type);
 
-    WebImageDecoderPrivate* m_private;
+  WebImageDecoderPrivate* m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

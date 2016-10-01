@@ -25,16 +25,17 @@
 namespace blink {
 
 class SVGFEDistantLightElement final : public SVGFELightElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEDistantLightElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGFEDistantLightElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGFEDistantLightElement);
 
-    PassRefPtr<LightSource> lightSource(Filter*) const override;
+ private:
+  explicit SVGFEDistantLightElement(Document&);
+
+  PassRefPtr<LightSource> lightSource(Filter*) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEDistantLightElement_h
+#endif  // SVGFEDistantLightElement_h

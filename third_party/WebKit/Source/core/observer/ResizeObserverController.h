@@ -18,36 +18,39 @@ class ResizeObserver;
 // and the event loop. It delivers notification in a loop.
 // In each iteration, only notifications deeper than the
 // shallowest notification from previous iteration are delivered.
-class ResizeObserverController final : public GarbageCollected<ResizeObserverController> {
-public:
-    static const size_t kDepthBottom = 4096;
+class ResizeObserverController final
+    : public GarbageCollected<ResizeObserverController> {
+ public:
+  static const size_t kDepthBottom = 4096;
 
-    ResizeObserverController();
+  ResizeObserverController();
 
-    void addObserver(ResizeObserver&);
+  void addObserver(ResizeObserver&);
 
-    // observation API
-    // Returns depth of shallowest observed node, kDepthLimit if none.
-    size_t gatherObservations(size_t deeperThan);
-    // Returns true if gatherObservations has skipped observations
-    // because they were too shallow.
-    bool skippedObservations();
-    void deliverObservations();
-    void clearObservations();
-    void observerChanged()  { m_observersChanged = true; }
+  // observation API
+  // Returns depth of shallowest observed node, kDepthLimit if none.
+  size_t gatherObservations(size_t deeperThan);
+  // Returns true if gatherObservations has skipped observations
+  // because they were too shallow.
+  bool skippedObservations();
+  void deliverObservations();
+  void clearObservations();
+  void observerChanged() { m_observersChanged = true; }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-    // For testing only.
-    const HeapHashSet<WeakMember<ResizeObserver>>& observers() { return m_observers; }
+  // For testing only.
+  const HeapHashSet<WeakMember<ResizeObserver>>& observers() {
+    return m_observers;
+  }
 
-private:
-    // Active observers
-    HeapHashSet<WeakMember<ResizeObserver>> m_observers;
-    // True if any observers were changed since last notification.
-    bool m_observersChanged;
+ private:
+  // Active observers
+  HeapHashSet<WeakMember<ResizeObserver>> m_observers;
+  // True if any observers were changed since last notification.
+  bool m_observersChanged;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

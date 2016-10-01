@@ -35,32 +35,36 @@ namespace blink {
 class PaintLayer;
 
 class GraphicsLayerUpdater {
-    STACK_ALLOCATED();
-public:
-    GraphicsLayerUpdater();
-    ~GraphicsLayerUpdater();
+  STACK_ALLOCATED();
 
-    enum UpdateType {
-        DoNotForceUpdate,
-        ForceUpdate,
-    };
+ public:
+  GraphicsLayerUpdater();
+  ~GraphicsLayerUpdater();
 
-    void update(PaintLayer&, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+  enum UpdateType {
+    DoNotForceUpdate,
+    ForceUpdate,
+  };
 
-    bool needsRebuildTree() const { return m_needsRebuildTree; }
+  void update(PaintLayer&, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+
+  bool needsRebuildTree() const { return m_needsRebuildTree; }
 
 #if ENABLE(ASSERT)
-    static void assertNeedsToUpdateGraphicsLayerBitsCleared(PaintLayer&);
+  static void assertNeedsToUpdateGraphicsLayerBitsCleared(PaintLayer&);
 #endif
 
-private:
-    class UpdateContext;
+ private:
+  class UpdateContext;
 
-    void updateRecursive(PaintLayer&, UpdateType, const UpdateContext&, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+  void updateRecursive(PaintLayer&,
+                       UpdateType,
+                       const UpdateContext&,
+                       Vector<PaintLayer*>& layersNeedingPaintInvalidation);
 
-    bool m_needsRebuildTree;
+  bool m_needsRebuildTree;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GraphicsLayerUpdater_h
+#endif  // GraphicsLayerUpdater_h

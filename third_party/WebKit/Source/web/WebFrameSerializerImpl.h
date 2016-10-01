@@ -58,130 +58,117 @@ class WebLocalFrameImpl;
 // Responsible for serializing the specified frame into html
 // (replacing links with paths to local files).
 class WebFrameSerializerImpl {
+  STACK_ALLOCATED();
+
+ public:
+  // Do serialization action.
+  //
+  // Returns false to indicate that no data has been serialized (i.e. because
+  // the target frame didn't have a valid url).
+  //
+  // Synchronously calls WebFrameSerializerClient methods to report
+  // serialization results.  See WebFrameSerializerClient comments for more
+  // details.
+  bool serialize();
+
+  // The parameter specifies which frame need to be serialized.
+  // The parameter delegate specifies the pointer of interface
+  // DomSerializerDelegate provide sink interface which can receive the
+  // individual chunks of data to be saved.
+  WebFrameSerializerImpl(WebLocalFrame*,
+                         WebFrameSerializerClient*,
+                         WebFrameSerializer::LinkRewritingDelegate*);
+
+ private:
+  // Specified frame which need to be serialized;
+  Member<WebLocalFrameImpl> m_specifiedWebLocalFrameImpl;
+  // Pointer of WebFrameSerializerClient
+  WebFrameSerializerClient* m_client;
+  // Pointer of WebFrameSerializer::LinkRewritingDelegate
+  WebFrameSerializer::LinkRewritingDelegate* m_delegate;
+  // Data buffer for saving result of serialized DOM data.
+  StringBuilder m_dataBuffer;
+
+  // Web entities conversion maps.
+  WebEntities m_htmlEntities;
+  WebEntities m_xmlEntities;
+
+  class SerializeDomParam {
     STACK_ALLOCATED();
-public:
-    // Do serialization action.
-    //
-    // Returns false to indicate that no data has been serialized (i.e. because
-    // the target frame didn't have a valid url).
-    //
-    // Synchronously calls WebFrameSerializerClient methods to report
-    // serialization results.  See WebFrameSerializerClient comments for more
-    // details.
-    bool serialize();
 
-    // The parameter specifies which frame need to be serialized.
-    // The parameter delegate specifies the pointer of interface
-    // DomSerializerDelegate provide sink interface which can receive the
-    // individual chunks of data to be saved.
-    WebFrameSerializerImpl(
-        WebLocalFrame*,
-        WebFrameSerializerClient*,
-        WebFrameSerializer::LinkRewritingDelegate*);
+   public:
+    SerializeDomParam(const KURL&, const WTF::TextEncoding&, Document*);
 
-private:
-    // Specified frame which need to be serialized;
-    Member<WebLocalFrameImpl> m_specifiedWebLocalFrameImpl;
-    // Pointer of WebFrameSerializerClient
-    WebFrameSerializerClient* m_client;
-    // Pointer of WebFrameSerializer::LinkRewritingDelegate
-    WebFrameSerializer::LinkRewritingDelegate* m_delegate;
-    // Data buffer for saving result of serialized DOM data.
-    StringBuilder m_dataBuffer;
+    const KURL& url;
+    const WTF::TextEncoding& textEncoding;
+    Member<Document> document;
+    bool isHTMLDocument;  // document.isHTMLDocument()
+    bool haveSeenDocType;
+    bool haveAddedCharsetDeclaration;
+    // This meta element need to be skipped when serializing DOM.
+    Member<const Element> skipMetaElement;
+    bool haveAddedXMLProcessingDirective;
+    // Flag indicates whether we have added additional contents before end tag.
+    // This flag will be re-assigned in each call of function
+    // PostActionAfterSerializeOpenTag and it could be changed in function
+    // PreActionBeforeSerializeEndTag if the function adds new contents into
+    // serialization stream.
+    bool haveAddedContentsBeforeEnd;
+  };
 
-    // Web entities conversion maps.
-    WebEntities m_htmlEntities;
-    WebEntities m_xmlEntities;
+  // Before we begin serializing open tag of a element, we give the target
+  // element a chance to do some work prior to add some additional data.
+  WTF::String preActionBeforeSerializeOpenTag(const Element*,
+                                              SerializeDomParam*,
+                                              bool* needSkip);
 
-    class SerializeDomParam {
-        STACK_ALLOCATED();
-    public:
-        SerializeDomParam(const KURL&, const WTF::TextEncoding&, Document*);
+  // After we finish serializing open tag of a element, we give the target
+  // element a chance to do some post work to add some additional data.
+  WTF::String postActionAfterSerializeOpenTag(const Element*,
+                                              SerializeDomParam*);
 
-        const KURL& url;
-        const WTF::TextEncoding& textEncoding;
-        Member<Document> document;
-        bool isHTMLDocument; // document.isHTMLDocument()
-        bool haveSeenDocType;
-        bool haveAddedCharsetDeclaration;
-        // This meta element need to be skipped when serializing DOM.
-        Member<const Element> skipMetaElement;
-        bool haveAddedXMLProcessingDirective;
-        // Flag indicates whether we have added additional contents before end tag.
-        // This flag will be re-assigned in each call of function
-        // PostActionAfterSerializeOpenTag and it could be changed in function
-        // PreActionBeforeSerializeEndTag if the function adds new contents into
-        // serialization stream.
-        bool haveAddedContentsBeforeEnd;
-    };
+  // Before we begin serializing end tag of a element, we give the target
+  // element a chance to do some work prior to add some additional data.
+  WTF::String preActionBeforeSerializeEndTag(const Element*,
+                                             SerializeDomParam*,
+                                             bool* needSkip);
 
-    // Before we begin serializing open tag of a element, we give the target
-    // element a chance to do some work prior to add some additional data.
-    WTF::String preActionBeforeSerializeOpenTag(
-        const Element*,
-        SerializeDomParam*,
-        bool* needSkip);
+  // After we finish serializing end tag of a element, we give the target
+  // element a chance to do some post work to add some additional data.
+  WTF::String postActionAfterSerializeEndTag(const Element*,
+                                             SerializeDomParam*);
 
-    // After we finish serializing open tag of a element, we give the target
-    // element a chance to do some post work to add some additional data.
-    WTF::String postActionAfterSerializeOpenTag(
-        const Element*,
-        SerializeDomParam*);
+  // Save generated html content to data buffer.
+  void saveHTMLContentToBuffer(const WTF::String& content, SerializeDomParam*);
 
-    // Before we begin serializing end tag of a element, we give the target
-    // element a chance to do some work prior to add some additional data.
-    WTF::String preActionBeforeSerializeEndTag(
-        const Element*,
-        SerializeDomParam*,
-        bool* needSkip);
+  enum FlushOption {
+    ForceFlush,
+    DoNotForceFlush,
+  };
 
-    // After we finish serializing end tag of a element, we give the target
-    // element a chance to do some post work to add some additional data.
-    WTF::String postActionAfterSerializeEndTag(
-        const Element*,
-        SerializeDomParam*);
+  // Flushes the content buffer by encoding and sending the content to the
+  // WebFrameSerializerClient. Content is not flushed if the buffer is not full
+  // unless force is 1.
+  void encodeAndFlushBuffer(WebFrameSerializerClient::FrameSerializationStatus,
+                            SerializeDomParam*,
+                            FlushOption);
 
-    // Save generated html content to data buffer.
-    void saveHTMLContentToBuffer(
-        const WTF::String& content,
-        SerializeDomParam*);
+  // Serialize open tag of an specified element.
+  void openTagToString(Element*, SerializeDomParam*);
 
-    enum FlushOption {
-        ForceFlush,
-        DoNotForceFlush,
-    };
+  // Serialize end tag of an specified element.
+  void endTagToString(Element*, SerializeDomParam*);
 
-    // Flushes the content buffer by encoding and sending the content to the
-    // WebFrameSerializerClient. Content is not flushed if the buffer is not full
-    // unless force is 1.
-    void encodeAndFlushBuffer(
-        WebFrameSerializerClient::FrameSerializationStatus,
-        SerializeDomParam*,
-        FlushOption);
+  // Build content for a specified node
+  void buildContentForNode(Node*, SerializeDomParam*);
 
-    // Serialize open tag of an specified element.
-    void openTagToString(
-        Element*,
-        SerializeDomParam*);
-
-    // Serialize end tag of an specified element.
-    void endTagToString(
-        Element*,
-        SerializeDomParam*);
-
-    // Build content for a specified node
-    void buildContentForNode(
-        Node*,
-        SerializeDomParam*);
-
-    // Appends attrName="escapedAttrValue" to result.
-    void appendAttribute(
-        StringBuilder& result,
-        bool isHTMLDocument,
-        const String& attrName,
-        const String& attrValue);
+  // Appends attrName="escapedAttrValue" to result.
+  void appendAttribute(StringBuilder& result,
+                       bool isHTMLDocument,
+                       const String& attrName,
+                       const String& attrValue);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

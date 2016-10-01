@@ -28,22 +28,25 @@
 namespace blink {
 
 class HTMLBaseElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLBaseElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    KURL href() const;
-    void setHref(const AtomicString&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLBaseElement);
 
-private:
-    explicit HTMLBaseElement(Document&);
+  KURL href() const;
+  void setHref(const AtomicString&);
 
-    bool isURLAttribute(const Attribute&) const override;
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+ private:
+  explicit HTMLBaseElement(Document&);
+
+  bool isURLAttribute(const Attribute&) const override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLBaseElement_h
+#endif  // HTMLBaseElement_h

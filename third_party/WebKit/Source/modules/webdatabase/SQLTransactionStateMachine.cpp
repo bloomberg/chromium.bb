@@ -30,39 +30,38 @@
 namespace blink {
 
 #if DCHECK_IS_ON()
-const char* nameForSQLTransactionState(SQLTransactionState state)
-{
-    switch (state) {
+const char* nameForSQLTransactionState(SQLTransactionState state) {
+  switch (state) {
     case SQLTransactionState::End:
-        return "end";
+      return "end";
     case SQLTransactionState::Idle:
-        return "idle";
+      return "idle";
     case SQLTransactionState::AcquireLock:
-        return "acquireLock";
+      return "acquireLock";
     case SQLTransactionState::OpenTransactionAndPreflight:
-        return "openTransactionAndPreflight";
+      return "openTransactionAndPreflight";
     case SQLTransactionState::RunStatements:
-        return "runStatements";
+      return "runStatements";
     case SQLTransactionState::PostflightAndCommit:
-        return "postflightAndCommit";
+      return "postflightAndCommit";
     case SQLTransactionState::CleanupAndTerminate:
-        return "cleanupAndTerminate";
+      return "cleanupAndTerminate";
     case SQLTransactionState::CleanupAfterTransactionErrorCallback:
-        return "cleanupAfterTransactionErrorCallback";
+      return "cleanupAfterTransactionErrorCallback";
     case SQLTransactionState::DeliverTransactionCallback:
-        return "deliverTransactionCallback";
+      return "deliverTransactionCallback";
     case SQLTransactionState::DeliverTransactionErrorCallback:
-        return "deliverTransactionErrorCallback";
+      return "deliverTransactionErrorCallback";
     case SQLTransactionState::DeliverStatementCallback:
-        return "deliverStatementCallback";
+      return "deliverStatementCallback";
     case SQLTransactionState::DeliverQuotaIncreaseCallback:
-        return "deliverQuotaIncreaseCallback";
+      return "deliverQuotaIncreaseCallback";
     case SQLTransactionState::DeliverSuccessCallback:
-        return "deliverSuccessCallback";
+      return "deliverSuccessCallback";
     default:
-        return "UNKNOWN";
-    }
+      return "UNKNOWN";
+  }
 }
 #endif
 
-} // namespace blink
+}  // namespace blink

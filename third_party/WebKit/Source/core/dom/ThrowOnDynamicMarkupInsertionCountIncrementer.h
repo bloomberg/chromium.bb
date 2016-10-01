@@ -11,28 +11,28 @@
 namespace blink {
 
 class ThrowOnDynamicMarkupInsertionCountIncrementer {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ThrowOnDynamicMarkupInsertionCountIncrementer);
-public:
-    explicit ThrowOnDynamicMarkupInsertionCountIncrementer(Document* document)
-        : m_count(document ? &document->m_throwOnDynamicMarkupInsertionCount : 0)
-    {
-        if (!m_count)
-            return;
-        ++(*m_count);
-    }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ThrowOnDynamicMarkupInsertionCountIncrementer);
 
-    ~ThrowOnDynamicMarkupInsertionCountIncrementer()
-    {
-        if (!m_count)
-            return;
-        --(*m_count);
-    }
+ public:
+  explicit ThrowOnDynamicMarkupInsertionCountIncrementer(Document* document)
+      : m_count(document ? &document->m_throwOnDynamicMarkupInsertionCount
+                         : 0) {
+    if (!m_count)
+      return;
+    ++(*m_count);
+  }
 
-private:
-    unsigned* m_count;
+  ~ThrowOnDynamicMarkupInsertionCountIncrementer() {
+    if (!m_count)
+      return;
+    --(*m_count);
+  }
+
+ private:
+  unsigned* m_count;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

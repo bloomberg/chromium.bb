@@ -35,39 +35,34 @@
 namespace blink {
 
 BarProp::BarProp(LocalFrame* frame, Type type)
-    : DOMWindowProperty(frame)
-    , m_type(type)
-{
+    : DOMWindowProperty(frame), m_type(type) {}
+
+DEFINE_TRACE(BarProp) {
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(BarProp)
-{
-    DOMWindowProperty::trace(visitor);
-}
+bool BarProp::visible() const {
+  if (!frame())
+    return false;
+  FrameHost* host = frame()->host();
+  if (!host)
+    return false;
 
-bool BarProp::visible() const
-{
-    if (!frame())
-        return false;
-    FrameHost* host = frame()->host();
-    if (!host)
-        return false;
-
-    switch (m_type) {
+  switch (m_type) {
     case Locationbar:
     case Personalbar:
     case Toolbar:
-        return host->chromeClient().toolbarsVisible();
+      return host->chromeClient().toolbarsVisible();
     case Menubar:
-        return host->chromeClient().menubarVisible();
+      return host->chromeClient().menubarVisible();
     case Scrollbars:
-        return host->chromeClient().scrollbarsVisible();
+      return host->chromeClient().scrollbarsVisible();
     case Statusbar:
-        return host->chromeClient().statusbarVisible();
-    }
+      return host->chromeClient().statusbarVisible();
+  }
 
-    ASSERT_NOT_REACHED();
-    return false;
+  ASSERT_NOT_REACHED();
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -45,44 +45,47 @@ struct ProgressItem;
 // FIXME: This is only used on Android. Android is the only Chrome
 // browser which shows a progress bar during loading.
 // We should find a better way for Android to get this data and remove this!
-class CORE_EXPORT ProgressTracker final : public GarbageCollectedFinalized<ProgressTracker> {
-    WTF_MAKE_NONCOPYABLE(ProgressTracker);
-public:
-    static ProgressTracker* create(LocalFrame*);
+class CORE_EXPORT ProgressTracker final
+    : public GarbageCollectedFinalized<ProgressTracker> {
+  WTF_MAKE_NONCOPYABLE(ProgressTracker);
 
-    ~ProgressTracker();
-    DECLARE_TRACE();
-    void dispose();
+ public:
+  static ProgressTracker* create(LocalFrame*);
 
-    double estimatedProgress() const;
+  ~ProgressTracker();
+  DECLARE_TRACE();
+  void dispose();
 
-    void progressStarted();
-    void progressCompleted();
+  double estimatedProgress() const;
 
-    void finishedParsing();
+  void progressStarted();
+  void progressCompleted();
 
-    void willStartLoading(unsigned long identifier, ResourceLoadPriority);
-    void incrementProgress(unsigned long identifier, const ResourceResponse&);
-    void incrementProgress(unsigned long identifier, int);
-    void completeProgress(unsigned long identifier);
+  void finishedParsing();
 
-private:
-    explicit ProgressTracker(LocalFrame*);
+  void willStartLoading(unsigned long identifier, ResourceLoadPriority);
+  void incrementProgress(unsigned long identifier, const ResourceResponse&);
+  void incrementProgress(unsigned long identifier, int);
+  void completeProgress(unsigned long identifier);
 
-    void incrementProgressForMainResourceOnly(unsigned long identifier, int length);
-    void maybeSendProgress();
-    void sendFinalProgress();
-    void reset();
+ private:
+  explicit ProgressTracker(LocalFrame*);
 
-    Member<LocalFrame> m_frame;
-    double m_lastNotifiedProgressValue;
-    double m_lastNotifiedProgressTime;
-    bool m_finishedParsing;
-    double m_progressValue;
+  void incrementProgressForMainResourceOnly(unsigned long identifier,
+                                            int length);
+  void maybeSendProgress();
+  void sendFinalProgress();
+  void reset();
 
-    HashMap<unsigned long, std::unique_ptr<ProgressItem>> m_progressItems;
+  Member<LocalFrame> m_frame;
+  double m_lastNotifiedProgressValue;
+  double m_lastNotifiedProgressTime;
+  bool m_finishedParsing;
+  double m_progressValue;
+
+  HashMap<unsigned long, std::unique_ptr<ProgressItem>> m_progressItems;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

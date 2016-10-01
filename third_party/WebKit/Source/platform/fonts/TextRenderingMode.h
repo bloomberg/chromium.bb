@@ -28,8 +28,13 @@
 
 namespace blink {
 
-enum TextRenderingMode { AutoTextRendering, OptimizeSpeed, OptimizeLegibility, GeometricPrecision };
+enum TextRenderingMode {
+  AutoTextRendering,
+  OptimizeSpeed,
+  OptimizeLegibility,
+  GeometricPrecision
+};
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextRenderingMode_h
+#endif  // TextRenderingMode_h

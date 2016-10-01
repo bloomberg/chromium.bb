@@ -35,126 +35,109 @@
 
 namespace blink {
 
-inline HTMLOutputElement::HTMLOutputElement(Document& document, HTMLFormElement* form)
-    : HTMLFormControlElement(HTMLNames::outputTag, document, form)
-    , m_isDefaultValueMode(true)
-    , m_defaultValue("")
-    , m_tokens(DOMTokenList::create(this))
-{
+inline HTMLOutputElement::HTMLOutputElement(Document& document,
+                                            HTMLFormElement* form)
+    : HTMLFormControlElement(HTMLNames::outputTag, document, form),
+      m_isDefaultValueMode(true),
+      m_defaultValue(""),
+      m_tokens(DOMTokenList::create(this)) {}
+
+HTMLOutputElement::~HTMLOutputElement() {}
+
+HTMLOutputElement* HTMLOutputElement::create(Document& document,
+                                             HTMLFormElement* form) {
+  return new HTMLOutputElement(document, form);
 }
 
-HTMLOutputElement::~HTMLOutputElement()
-{
+const AtomicString& HTMLOutputElement::formControlType() const {
+  DEFINE_STATIC_LOCAL(const AtomicString, output, ("output"));
+  return output;
 }
 
-HTMLOutputElement* HTMLOutputElement::create(Document& document, HTMLFormElement* form)
-{
-    return new HTMLOutputElement(document, form);
+bool HTMLOutputElement::isDisabledFormControl() const {
+  return false;
 }
 
-const AtomicString& HTMLOutputElement::formControlType() const
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, output, ("output"));
-    return output;
+bool HTMLOutputElement::matchesEnabledPseudoClass() const {
+  return false;
 }
 
-bool HTMLOutputElement::isDisabledFormControl() const
-{
-    return false;
+bool HTMLOutputElement::supportsFocus() const {
+  return HTMLElement::supportsFocus();
 }
 
-bool HTMLOutputElement::matchesEnabledPseudoClass() const
-{
-    return false;
+void HTMLOutputElement::parseAttribute(const QualifiedName& name,
+                                       const AtomicString& oldValue,
+                                       const AtomicString& value) {
+  if (name == HTMLNames::forAttr)
+    setFor(value);
+  else
+    HTMLFormControlElement::parseAttribute(name, oldValue, value);
 }
 
-bool HTMLOutputElement::supportsFocus() const
-{
-    return HTMLElement::supportsFocus();
+DOMTokenList* HTMLOutputElement::htmlFor() const {
+  return m_tokens.get();
 }
 
-void HTMLOutputElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
-{
-    if (name == HTMLNames::forAttr)
-        setFor(value);
-    else
-        HTMLFormControlElement::parseAttribute(name, oldValue, value);
+void HTMLOutputElement::setFor(const AtomicString& value) {
+  m_tokens->setValue(value);
 }
 
-DOMTokenList* HTMLOutputElement::htmlFor() const
-{
-    return m_tokens.get();
+void HTMLOutputElement::childrenChanged(const ChildrenChange& change) {
+  HTMLFormControlElement::childrenChanged(change);
+
+  if (m_isDefaultValueMode)
+    m_defaultValue = textContent();
 }
 
-void HTMLOutputElement::setFor(const AtomicString& value)
-{
-    m_tokens->setValue(value);
+void HTMLOutputElement::resetImpl() {
+  // The reset algorithm for output elements is to set the element's
+  // value mode flag to "default" and then to set the element's textContent
+  // attribute to the default value.
+  if (m_defaultValue == value())
+    return;
+  setTextContent(m_defaultValue);
+  m_isDefaultValueMode = true;
 }
 
-void HTMLOutputElement::childrenChanged(const ChildrenChange& change)
-{
-    HTMLFormControlElement::childrenChanged(change);
-
-    if (m_isDefaultValueMode)
-        m_defaultValue = textContent();
+String HTMLOutputElement::value() const {
+  return textContent();
 }
 
-void HTMLOutputElement::resetImpl()
-{
-    // The reset algorithm for output elements is to set the element's
-    // value mode flag to "default" and then to set the element's textContent
-    // attribute to the default value.
-    if (m_defaultValue == value())
-        return;
-    setTextContent(m_defaultValue);
-    m_isDefaultValueMode = true;
+void HTMLOutputElement::setValue(const String& value) {
+  // The value mode flag set to "value" when the value attribute is set.
+  m_isDefaultValueMode = false;
+  if (value == this->value())
+    return;
+  setTextContent(value);
 }
 
-String HTMLOutputElement::value() const
-{
-    return textContent();
+void HTMLOutputElement::valueWasSet() {
+  setSynchronizedLazyAttribute(HTMLNames::forAttr, m_tokens->value());
 }
 
-void HTMLOutputElement::setValue(const String& value)
-{
-    // The value mode flag set to "value" when the value attribute is set.
-    m_isDefaultValueMode = false;
-    if (value == this->value())
-        return;
+String HTMLOutputElement::defaultValue() const {
+  return m_defaultValue;
+}
+
+void HTMLOutputElement::setDefaultValue(const String& value) {
+  if (m_defaultValue == value)
+    return;
+  m_defaultValue = value;
+  // The spec requires the value attribute set to the default value
+  // when the element's value mode flag to "default".
+  if (m_isDefaultValueMode)
     setTextContent(value);
 }
 
-void HTMLOutputElement::valueWasSet()
-{
-    setSynchronizedLazyAttribute(HTMLNames::forAttr, m_tokens->value());
+short HTMLOutputElement::tabIndex() const {
+  return HTMLElement::tabIndex();
 }
 
-String HTMLOutputElement::defaultValue() const
-{
-    return m_defaultValue;
+DEFINE_TRACE(HTMLOutputElement) {
+  visitor->trace(m_tokens);
+  HTMLFormControlElement::trace(visitor);
+  DOMTokenListObserver::trace(visitor);
 }
 
-void HTMLOutputElement::setDefaultValue(const String& value)
-{
-    if (m_defaultValue == value)
-        return;
-    m_defaultValue = value;
-    // The spec requires the value attribute set to the default value
-    // when the element's value mode flag to "default".
-    if (m_isDefaultValueMode)
-        setTextContent(value);
-}
-
-short HTMLOutputElement::tabIndex() const
-{
-    return HTMLElement::tabIndex();
-}
-
-DEFINE_TRACE(HTMLOutputElement)
-{
-    visitor->trace(m_tokens);
-    HTMLFormControlElement::trace(visitor);
-    DOMTokenListObserver::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

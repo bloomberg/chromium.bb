@@ -28,15 +28,16 @@ namespace blink {
 
 // SVGAnimateElement implements superset of the functionality.
 class CORE_EXPORT SVGSetElement final : public SVGAnimateElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGSetElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGSetElement(Document&);
-    void updateAnimationMode() override;
+ public:
+  DECLARE_NODE_FACTORY(SVGSetElement);
+
+ private:
+  explicit SVGSetElement(Document&);
+  void updateAnimationMode() override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGSetElement_h
+#endif  // SVGSetElement_h

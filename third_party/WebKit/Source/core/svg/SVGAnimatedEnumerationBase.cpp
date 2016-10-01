@@ -34,34 +34,37 @@
 
 namespace blink {
 
-SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase()
-{
+SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase() {}
+
+void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value,
+                                            ExceptionState& exceptionState) {
+  if (this->isReadOnly()) {
+    exceptionState.throwDOMException(NoModificationAllowedError,
+                                     "The attribute is read-only.");
+    return;
+  }
+
+  if (!value) {
+    exceptionState.throwTypeError(
+        "The enumeration value provided is 0, which is not settable.");
+    return;
+  }
+
+  if (value > baseValue()->maxExposedEnumValue()) {
+    exceptionState.throwTypeError(
+        "The enumeration value provided (" + String::number(value) +
+        ") is larger than the largest allowed value (" +
+        String::number(baseValue()->maxExposedEnumValue()) + ").");
+    return;
+  }
+
+  baseValue()->setValue(value);
+
+  m_baseValueUpdated = true;
+
+  ASSERT(this->attributeName() != QualifiedName::null());
+  contextElement()->invalidateSVGAttributes();
+  contextElement()->svgAttributeBaseValChanged(this->attributeName());
 }
 
-void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value, ExceptionState& exceptionState)
-{
-    if (this->isReadOnly()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
-        return;
-    }
-
-    if (!value) {
-        exceptionState.throwTypeError("The enumeration value provided is 0, which is not settable.");
-        return;
-    }
-
-    if (value > baseValue()->maxExposedEnumValue()) {
-        exceptionState.throwTypeError("The enumeration value provided (" + String::number(value) + ") is larger than the largest allowed value (" + String::number(baseValue()->maxExposedEnumValue()) + ").");
-        return;
-    }
-
-    baseValue()->setValue(value);
-
-    m_baseValueUpdated = true;
-
-    ASSERT(this->attributeName() != QualifiedName::null());
-    contextElement()->invalidateSVGAttributes();
-    contextElement()->svgAttributeBaseValChanged(this->attributeName());
-}
-
-} // namespace blink
+}  // namespace blink

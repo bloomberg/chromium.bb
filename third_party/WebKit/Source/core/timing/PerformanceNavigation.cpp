@@ -37,48 +37,43 @@
 namespace blink {
 
 PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
-}
+    : DOMWindowProperty(frame) {}
 
-unsigned short PerformanceNavigation::type() const
-{
-    if (!frame())
-        return kTypeNavigate;
+unsigned short PerformanceNavigation::type() const {
+  if (!frame())
+    return kTypeNavigate;
 
-    DocumentLoader* documentLoader = frame()->loader().documentLoader();
-    if (!documentLoader)
-        return kTypeNavigate;
+  DocumentLoader* documentLoader = frame()->loader().documentLoader();
+  if (!documentLoader)
+    return kTypeNavigate;
 
-    switch (documentLoader->getNavigationType()) {
+  switch (documentLoader->getNavigationType()) {
     case NavigationTypeReload:
-        return kTypeReload;
+      return kTypeReload;
     case NavigationTypeBackForward:
-        return kTypeBackForward;
+      return kTypeBackForward;
     default:
-        return kTypeNavigate;
-    }
+      return kTypeNavigate;
+  }
 }
 
-unsigned short PerformanceNavigation::redirectCount() const
-{
-    if (!frame())
-        return 0;
+unsigned short PerformanceNavigation::redirectCount() const {
+  if (!frame())
+    return 0;
 
-    DocumentLoader* loader = frame()->loader().documentLoader();
-    if (!loader)
-        return 0;
+  DocumentLoader* loader = frame()->loader().documentLoader();
+  if (!loader)
+    return 0;
 
-    const DocumentLoadTiming& timing = loader->timing();
-    if (timing.hasCrossOriginRedirect())
-        return 0;
+  const DocumentLoadTiming& timing = loader->timing();
+  if (timing.hasCrossOriginRedirect())
+    return 0;
 
-    return timing.redirectCount();
+  return timing.redirectCount();
 }
 
-DEFINE_TRACE(PerformanceNavigation)
-{
-    DOMWindowProperty::trace(visitor);
+DEFINE_TRACE(PerformanceNavigation) {
+  DOMWindowProperty::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -32,26 +32,28 @@
 
 namespace blink {
 
-class SourceInfo final : public GarbageCollectedFinalized<SourceInfo>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SourceInfo* create(const WebSourceInfo&);
+class SourceInfo final : public GarbageCollectedFinalized<SourceInfo>,
+                         public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    String id() const;
-    String kind() const;
-    String label() const;
-    String facing() const;
+ public:
+  static SourceInfo* create(const WebSourceInfo&);
 
-    DEFINE_INLINE_TRACE() { }
+  String id() const;
+  String kind() const;
+  String label() const;
+  String facing() const;
 
-private:
-    explicit SourceInfo(const WebSourceInfo&);
+  DEFINE_INLINE_TRACE() {}
 
-    WebSourceInfo m_webSourceInfo;
+ private:
+  explicit SourceInfo(const WebSourceInfo&);
+
+  WebSourceInfo m_webSourceInfo;
 };
 
 typedef HeapVector<Member<SourceInfo>> SourceInfoVector;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SourceInfo_h
+#endif  // SourceInfo_h

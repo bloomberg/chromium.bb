@@ -39,26 +39,30 @@
 namespace blink {
 
 void WebStorageEventDispatcher::dispatchLocalStorageEvent(
-        const WebString& key, const WebString& oldValue,
-        const WebString& newValue, const WebURL& origin,
-        const WebURL& pageURL, WebStorageArea* sourceAreaInstance)
-{
-    RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
-    StorageArea::dispatchLocalStorageEvent(
-            key, oldValue, newValue, securityOrigin.get(), pageURL,
-            sourceAreaInstance);
+    const WebString& key,
+    const WebString& oldValue,
+    const WebString& newValue,
+    const WebURL& origin,
+    const WebURL& pageURL,
+    WebStorageArea* sourceAreaInstance) {
+  RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
+  StorageArea::dispatchLocalStorageEvent(key, oldValue, newValue,
+                                         securityOrigin.get(), pageURL,
+                                         sourceAreaInstance);
 }
 
 void WebStorageEventDispatcher::dispatchSessionStorageEvent(
-        const WebString& key, const WebString& oldValue,
-        const WebString& newValue, const WebURL& origin,
-        const WebURL& pageURL, const WebStorageNamespace& sessionNamespace,
-        WebStorageArea* sourceAreaInstance)
-{
-    RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
-    StorageArea::dispatchSessionStorageEvent(
-            key, oldValue, newValue, securityOrigin.get(), pageURL,
-            sessionNamespace, sourceAreaInstance);
+    const WebString& key,
+    const WebString& oldValue,
+    const WebString& newValue,
+    const WebURL& origin,
+    const WebURL& pageURL,
+    const WebStorageNamespace& sessionNamespace,
+    WebStorageArea* sourceAreaInstance) {
+  RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(origin);
+  StorageArea::dispatchSessionStorageEvent(
+      key, oldValue, newValue, securityOrigin.get(), pageURL, sessionNamespace,
+      sourceAreaInstance);
 }
 
-} // namespace blink
+}  // namespace blink

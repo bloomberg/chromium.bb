@@ -40,79 +40,68 @@
 
 namespace blink {
 
-static double toTimeOrigin(LocalFrame* frame)
-{
-    if (!frame)
-        return 0.0;
+static double toTimeOrigin(LocalFrame* frame) {
+  if (!frame)
+    return 0.0;
 
-    Document* document = frame->document();
-    if (!document)
-        return 0.0;
+  Document* document = frame->document();
+  if (!document)
+    return 0.0;
 
-    DocumentLoader* loader = document->loader();
-    if (!loader)
-        return 0.0;
+  DocumentLoader* loader = document->loader();
+  if (!loader)
+    return 0.0;
 
-    return loader->timing().referenceMonotonicTime();
+  return loader->timing().referenceMonotonicTime();
 }
 
 Performance::Performance(LocalFrame* frame)
-    : PerformanceBase(toTimeOrigin(frame))
-    , DOMWindowProperty(frame)
-{
+    : PerformanceBase(toTimeOrigin(frame)), DOMWindowProperty(frame) {}
+
+Performance::~Performance() {}
+
+ExecutionContext* Performance::getExecutionContext() const {
+  if (!frame())
+    return nullptr;
+  return frame()->document();
 }
 
-Performance::~Performance()
-{
+MemoryInfo* Performance::memory() {
+  return MemoryInfo::create();
 }
 
-ExecutionContext* Performance::getExecutionContext() const
-{
-    if (!frame())
-        return nullptr;
-    return frame()->document();
+PerformanceNavigation* Performance::navigation() const {
+  if (!m_navigation)
+    m_navigation = PerformanceNavigation::create(frame());
+
+  return m_navigation.get();
 }
 
-MemoryInfo* Performance::memory()
-{
-    return MemoryInfo::create();
+PerformanceTiming* Performance::timing() const {
+  if (!m_timing)
+    m_timing = PerformanceTiming::create(frame());
+
+  return m_timing.get();
 }
 
-PerformanceNavigation* Performance::navigation() const
-{
-    if (!m_navigation)
-        m_navigation = PerformanceNavigation::create(frame());
-
-    return m_navigation.get();
+void Performance::updateLongTaskInstrumentation() {
+  if (hasObserverFor(PerformanceEntry::LongTask) && !m_longTaskInspectorAgent) {
+    m_longTaskInspectorAgent =
+        new InspectorWebPerfAgent(InspectedFrames::create(frame()));
+    m_longTaskInspectorAgent->enable();
+  } else if (!hasObserverFor(PerformanceEntry::LongTask) &&
+             m_longTaskInspectorAgent) {
+    m_longTaskInspectorAgent->disable();
+    m_longTaskInspectorAgent = nullptr;
+  }
 }
 
-PerformanceTiming* Performance::timing() const
-{
-    if (!m_timing)
-        m_timing = PerformanceTiming::create(frame());
-
-    return m_timing.get();
+DEFINE_TRACE(Performance) {
+  visitor->trace(m_navigation);
+  visitor->trace(m_timing);
+  visitor->trace(m_longTaskInspectorAgent);
+  DOMWindowProperty::trace(visitor);
+  PerformanceBase::trace(visitor);
 }
 
-void Performance::updateLongTaskInstrumentation()
-{
-    if (hasObserverFor(PerformanceEntry::LongTask) && !m_longTaskInspectorAgent) {
-        m_longTaskInspectorAgent = new InspectorWebPerfAgent(
-            InspectedFrames::create(frame()));
-        m_longTaskInspectorAgent->enable();
-    } else if (!hasObserverFor(PerformanceEntry::LongTask) && m_longTaskInspectorAgent) {
-        m_longTaskInspectorAgent->disable();
-        m_longTaskInspectorAgent = nullptr;
-    }
-}
-
-DEFINE_TRACE(Performance)
-{
-    visitor->trace(m_navigation);
-    visitor->trace(m_timing);
-    visitor->trace(m_longTaskInspectorAgent);
-    DOMWindowProperty::trace(visitor);
-    PerformanceBase::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

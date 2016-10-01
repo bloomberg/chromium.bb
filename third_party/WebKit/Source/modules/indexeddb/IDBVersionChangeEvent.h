@@ -40,42 +40,51 @@
 namespace blink {
 
 class IDBVersionChangeEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static IDBVersionChangeEvent* create()
-    {
-        return new IDBVersionChangeEvent();
-    }
-    static IDBVersionChangeEvent* create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss = WebIDBDataLossNone, const String& dataLossMessage = String())
-    {
-        return new IDBVersionChangeEvent(eventType, oldVersion, newVersion, dataLoss, dataLossMessage);
-    }
-    static IDBVersionChangeEvent* create(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
-    {
-        return new IDBVersionChangeEvent(eventType, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned long long oldVersion() const { return m_oldVersion; }
-    unsigned long long newVersion(bool& isNull) const;
+ public:
+  static IDBVersionChangeEvent* create() { return new IDBVersionChangeEvent(); }
+  static IDBVersionChangeEvent* create(
+      const AtomicString& eventType,
+      unsigned long long oldVersion,
+      const Nullable<unsigned long long>& newVersion,
+      WebIDBDataLoss dataLoss = WebIDBDataLossNone,
+      const String& dataLossMessage = String()) {
+    return new IDBVersionChangeEvent(eventType, oldVersion, newVersion,
+                                     dataLoss, dataLossMessage);
+  }
+  static IDBVersionChangeEvent* create(
+      const AtomicString& eventType,
+      const IDBVersionChangeEventInit& initializer) {
+    return new IDBVersionChangeEvent(eventType, initializer);
+  }
 
-    const AtomicString& dataLoss() const;
-    const String& dataLossMessage() const { return m_dataLossMessage; }
+  unsigned long long oldVersion() const { return m_oldVersion; }
+  unsigned long long newVersion(bool& isNull) const;
 
-    const AtomicString& interfaceName() const override;
+  const AtomicString& dataLoss() const;
+  const String& dataLossMessage() const { return m_dataLossMessage; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    IDBVersionChangeEvent();
-    IDBVersionChangeEvent(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss, const String& dataLoss);
-    IDBVersionChangeEvent(const AtomicString& eventType, const IDBVersionChangeEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    unsigned long long m_oldVersion;
-    Nullable<unsigned long long> m_newVersion;
-    WebIDBDataLoss m_dataLoss;
-    String m_dataLossMessage;
+ private:
+  IDBVersionChangeEvent();
+  IDBVersionChangeEvent(const AtomicString& eventType,
+                        unsigned long long oldVersion,
+                        const Nullable<unsigned long long>& newVersion,
+                        WebIDBDataLoss,
+                        const String& dataLoss);
+  IDBVersionChangeEvent(const AtomicString& eventType,
+                        const IDBVersionChangeEventInit&);
+
+  unsigned long long m_oldVersion;
+  Nullable<unsigned long long> m_newVersion;
+  WebIDBDataLoss m_dataLoss;
+  String m_dataLossMessage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBVersionChangeEvent_h
+#endif  // IDBVersionChangeEvent_h

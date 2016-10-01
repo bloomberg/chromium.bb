@@ -37,54 +37,59 @@ namespace blink {
 
 namespace {
 
-using ResourceReferenceMap = PersistentHeapHashMap<WeakMember<const FilterOperation>, Member<DocumentResourceReference>>;
+using ResourceReferenceMap =
+    PersistentHeapHashMap<WeakMember<const FilterOperation>,
+                          Member<DocumentResourceReference>>;
 
-ResourceReferenceMap& documentResourceReferences()
-{
-    DEFINE_STATIC_LOCAL(ResourceReferenceMap, documentResourceReferences, ());
-    return documentResourceReferences;
+ResourceReferenceMap& documentResourceReferences() {
+  DEFINE_STATIC_LOCAL(ResourceReferenceMap, documentResourceReferences, ());
+  return documentResourceReferences;
 }
 
-} // namespace
+}  // namespace
 
-DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(const FilterOperation* filterOperation)
-{
-    return documentResourceReferences().get(filterOperation);
+DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(
+    const FilterOperation* filterOperation) {
+  return documentResourceReferences().get(filterOperation);
 }
 
-void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation* filterOperation, DocumentResourceReference* documentResourceReference)
-{
-    ASSERT(!documentResourceReferences().contains(filterOperation));
-    documentResourceReferences().add(filterOperation, documentResourceReference);
+void ReferenceFilterBuilder::setDocumentResourceReference(
+    const FilterOperation* filterOperation,
+    DocumentResourceReference* documentResourceReference) {
+  ASSERT(!documentResourceReferences().contains(filterOperation));
+  documentResourceReferences().add(filterOperation, documentResourceReference);
 }
 
-SVGFilterElement* ReferenceFilterBuilder::resolveFilterReference(const ReferenceFilterOperation& filterOperation, Element& element)
-{
-    TreeScope* treeScope = &element.treeScope();
+SVGFilterElement* ReferenceFilterBuilder::resolveFilterReference(
+    const ReferenceFilterOperation& filterOperation,
+    Element& element) {
+  TreeScope* treeScope = &element.treeScope();
 
-    if (DocumentResourceReference* documentResourceRef = documentResourceReference(&filterOperation)) {
-        // If we have an SVG document, this is an external reference. Otherwise
-        // we look up the referenced node in the current document.
-        if (DocumentResource* cachedSVGDocument = documentResourceRef->document())
-            treeScope = cachedSVGDocument->document();
-    }
+  if (DocumentResourceReference* documentResourceRef =
+          documentResourceReference(&filterOperation)) {
+    // If we have an SVG document, this is an external reference. Otherwise
+    // we look up the referenced node in the current document.
+    if (DocumentResource* cachedSVGDocument = documentResourceRef->document())
+      treeScope = cachedSVGDocument->document();
+  }
 
-    if (!treeScope)
-        return nullptr;
+  if (!treeScope)
+    return nullptr;
 
-    Element* filter = treeScope->getElementById(filterOperation.fragment());
+  Element* filter = treeScope->getElementById(filterOperation.fragment());
 
-    if (!filter) {
-        // Although we did not find the referenced filter, it might exist later
-        // in the document.
-        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation.fragment(), &element);
-        return nullptr;
-    }
+  if (!filter) {
+    // Although we did not find the referenced filter, it might exist later
+    // in the document.
+    treeScope->document().accessSVGExtensions().addPendingResource(
+        filterOperation.fragment(), &element);
+    return nullptr;
+  }
 
-    if (!isSVGFilterElement(*filter))
-        return nullptr;
+  if (!isSVGFilterElement(*filter))
+    return nullptr;
 
-    return toSVGFilterElement(filter);
+  return toSVGFilterElement(filter);
 }
 
-} // namespace blink
+}  // namespace blink

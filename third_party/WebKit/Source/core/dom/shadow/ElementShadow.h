@@ -36,79 +36,86 @@ namespace blink {
 
 class ElementShadowV0;
 
-class CORE_EXPORT ElementShadow final : public GarbageCollectedFinalized<ElementShadow> {
-    WTF_MAKE_NONCOPYABLE(ElementShadow);
-public:
-    static ElementShadow* create();
-    ~ElementShadow();
+class CORE_EXPORT ElementShadow final
+    : public GarbageCollectedFinalized<ElementShadow> {
+  WTF_MAKE_NONCOPYABLE(ElementShadow);
 
-    Element& host() const { DCHECK(m_shadowRoot); return m_shadowRoot->host(); }
+ public:
+  static ElementShadow* create();
+  ~ElementShadow();
 
-    // TODO(hayato): Remove youngestShadowRoot() and oldestShadowRoot() from ElementShadow
-    ShadowRoot& youngestShadowRoot() const;
-    ShadowRoot& oldestShadowRoot() const { DCHECK(m_shadowRoot); return *m_shadowRoot; }
+  Element& host() const {
+    DCHECK(m_shadowRoot);
+    return m_shadowRoot->host();
+  }
 
-    ElementShadow* containingShadow() const;
+  // TODO(hayato): Remove youngestShadowRoot() and oldestShadowRoot() from ElementShadow
+  ShadowRoot& youngestShadowRoot() const;
+  ShadowRoot& oldestShadowRoot() const {
+    DCHECK(m_shadowRoot);
+    return *m_shadowRoot;
+  }
 
-    ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRootType);
+  ElementShadow* containingShadow() const;
 
-    bool hasSameStyles(const ElementShadow&) const;
+  ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRootType);
 
-    void attach(const Node::AttachContext&);
-    void detach(const Node::AttachContext&);
+  bool hasSameStyles(const ElementShadow&) const;
 
-    void distributeIfNeeded();
+  void attach(const Node::AttachContext&);
+  void detach(const Node::AttachContext&);
 
-    void setNeedsDistributionRecalc();
-    bool needsDistributionRecalc() const { return m_needsDistributionRecalc; }
+  void distributeIfNeeded();
 
-    bool isV1() const { return youngestShadowRoot().isV1(); }
-    bool isOpenOrV0() const { return youngestShadowRoot().isOpenOrV0(); }
+  void setNeedsDistributionRecalc();
+  bool needsDistributionRecalc() const { return m_needsDistributionRecalc; }
 
-    ElementShadowV0& v0() const { DCHECK(m_elementShadowV0); return *m_elementShadowV0; }
+  bool isV1() const { return youngestShadowRoot().isV1(); }
+  bool isOpenOrV0() const { return youngestShadowRoot().isOpenOrV0(); }
 
-    DECLARE_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+  ElementShadowV0& v0() const {
+    DCHECK(m_elementShadowV0);
+    return *m_elementShadowV0;
+  }
 
-private:
-    ElementShadow();
+  DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    void appendShadowRoot(ShadowRoot&);
-    void distribute();
+ private:
+  ElementShadow();
 
-    Member<ElementShadowV0> m_elementShadowV0;
-    Member<ShadowRoot> m_shadowRoot;
-    bool m_needsDistributionRecalc;
+  void appendShadowRoot(ShadowRoot&);
+  void distribute();
+
+  Member<ElementShadowV0> m_elementShadowV0;
+  Member<ShadowRoot> m_shadowRoot;
+  bool m_needsDistributionRecalc;
 };
 
-inline ShadowRoot* Node::youngestShadowRoot() const
-{
-    if (!isElementNode())
-        return nullptr;
-    return toElement(this)->youngestShadowRoot();
-}
-
-inline ShadowRoot* Element::youngestShadowRoot() const
-{
-    if (ElementShadow* shadow = this->shadow())
-        return &shadow->youngestShadowRoot();
+inline ShadowRoot* Node::youngestShadowRoot() const {
+  if (!isElementNode())
     return nullptr;
+  return toElement(this)->youngestShadowRoot();
 }
 
-inline ElementShadow* ElementShadow::containingShadow() const
-{
-    if (ShadowRoot* parentRoot = host().containingShadowRoot())
-        return parentRoot->owner();
-    return nullptr;
+inline ShadowRoot* Element::youngestShadowRoot() const {
+  if (ElementShadow* shadow = this->shadow())
+    return &shadow->youngestShadowRoot();
+  return nullptr;
 }
 
-inline void ElementShadow::distributeIfNeeded()
-{
-    if (m_needsDistributionRecalc)
-        distribute();
-    m_needsDistributionRecalc = false;
+inline ElementShadow* ElementShadow::containingShadow() const {
+  if (ShadowRoot* parentRoot = host().containingShadowRoot())
+    return parentRoot->owner();
+  return nullptr;
 }
 
-} // namespace blink
+inline void ElementShadow::distributeIfNeeded() {
+  if (m_needsDistributionRecalc)
+    distribute();
+  m_needsDistributionRecalc = false;
+}
+
+}  // namespace blink
 
 #endif

@@ -41,36 +41,47 @@
 
 namespace blink {
 
-void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "MutationObserver", info.Holder(), info.GetIsolate());
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        return;
-    }
+void V8MutationObserver::constructorCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(ExceptionState::ConstructionContext,
+                                "MutationObserver", info.Holder(),
+                                info.GetIsolate());
+  if (info.Length() < 1) {
+    exceptionState.throwTypeError(
+        ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
 
-    v8::Local<v8::Value> arg = info[0];
-    if (!arg->IsFunction()) {
-        exceptionState.throwTypeError("Callback argument must be a function");
-        return;
-    }
+  v8::Local<v8::Value> arg = info[0];
+  if (!arg->IsFunction()) {
+    exceptionState.throwTypeError("Callback argument must be a function");
+    return;
+  }
 
-    v8::Local<v8::Object> wrapper = info.Holder();
+  v8::Local<v8::Object> wrapper = info.Holder();
 
-    MutationCallback* callback = V8MutationCallback::create(v8::Local<v8::Function>::Cast(arg), wrapper, ScriptState::current(info.GetIsolate()));
-    MutationObserver* observer = MutationObserver::create(callback);
+  MutationCallback* callback =
+      V8MutationCallback::create(v8::Local<v8::Function>::Cast(arg), wrapper,
+                                 ScriptState::current(info.GetIsolate()));
+  MutationObserver* observer = MutationObserver::create(callback);
 
-    v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
+  v8SetReturnValue(info,
+                   V8DOMWrapper::associateObjectWithWrapper(
+                       info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
 }
 
-void V8MutationObserver::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
-{
-    MutationObserver* observer = scriptWrappable->toImpl<MutationObserver>();
-    HeapHashSet<Member<Node>> observedNodes = observer->getObservedNodes();
-    for (HeapHashSet<Member<Node>>::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it) {
-        v8::UniqueId id(reinterpret_cast<intptr_t>(V8GCController::opaqueRootForGC(isolate, *it)));
-        isolate->SetReferenceFromGroup(id, wrapper);
-    }
+void V8MutationObserver::visitDOMWrapperCustom(
+    v8::Isolate* isolate,
+    ScriptWrappable* scriptWrappable,
+    const v8::Persistent<v8::Object>& wrapper) {
+  MutationObserver* observer = scriptWrappable->toImpl<MutationObserver>();
+  HeapHashSet<Member<Node>> observedNodes = observer->getObservedNodes();
+  for (HeapHashSet<Member<Node>>::iterator it = observedNodes.begin();
+       it != observedNodes.end(); ++it) {
+    v8::UniqueId id(reinterpret_cast<intptr_t>(
+        V8GCController::opaqueRootForGC(isolate, *it)));
+    isolate->SetReferenceFromGroup(id, wrapper);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

@@ -25,93 +25,92 @@
 namespace blink {
 
 GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
-    : m_compositingReasons(CompositingReasonNone)
-    , m_squashingDisallowedReasons(SquashingDisallowedReasonsNone)
-    , m_ownerNodeId(0)
-    , m_mainThreadScrollingReasons(0)
-{
+    : m_compositingReasons(CompositingReasonNone),
+      m_squashingDisallowedReasons(SquashingDisallowedReasonsNone),
+      m_ownerNodeId(0),
+      m_mainThreadScrollingReasons(0) {}
+
+GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() {}
+
+std::unique_ptr<base::trace_event::TracedValue>
+GraphicsLayerDebugInfo::asTracedValue() const {
+  std::unique_ptr<base::trace_event::TracedValue> tracedValue(
+      new base::trace_event::TracedValue());
+  appendAnnotatedInvalidateRects(tracedValue.get());
+  appendCompositingReasons(tracedValue.get());
+  appendSquashingDisallowedReasons(tracedValue.get());
+  appendOwnerNodeId(tracedValue.get());
+  appendMainThreadScrollingReasons(tracedValue.get());
+  return tracedValue;
 }
 
-GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() { }
-
-std::unique_ptr<base::trace_event::TracedValue> GraphicsLayerDebugInfo::asTracedValue() const
-{
-    std::unique_ptr<base::trace_event::TracedValue> tracedValue(
-        new base::trace_event::TracedValue());
-    appendAnnotatedInvalidateRects(tracedValue.get());
-    appendCompositingReasons(tracedValue.get());
-    appendSquashingDisallowedReasons(tracedValue.get());
-    appendOwnerNodeId(tracedValue.get());
-    appendMainThreadScrollingReasons(tracedValue.get());
-    return tracedValue;
-}
-
-void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(base::trace_event::TracedValue* tracedValue) const
-{
-    tracedValue->BeginArray("annotated_invalidation_rects");
-    for (const auto& annotatedRect : m_previousInvalidations) {
-        const FloatRect& rect = annotatedRect.rect;
-        tracedValue->BeginDictionary();
-        tracedValue->BeginArray("geometry_rect");
-        tracedValue->AppendDouble(rect.x());
-        tracedValue->AppendDouble(rect.y());
-        tracedValue->AppendDouble(rect.width());
-        tracedValue->AppendDouble(rect.height());
-        tracedValue->EndArray();
-        tracedValue->SetString("reason", paintInvalidationReasonToString(annotatedRect.reason));
-        tracedValue->EndDictionary();
-    }
+void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(
+    base::trace_event::TracedValue* tracedValue) const {
+  tracedValue->BeginArray("annotated_invalidation_rects");
+  for (const auto& annotatedRect : m_previousInvalidations) {
+    const FloatRect& rect = annotatedRect.rect;
+    tracedValue->BeginDictionary();
+    tracedValue->BeginArray("geometry_rect");
+    tracedValue->AppendDouble(rect.x());
+    tracedValue->AppendDouble(rect.y());
+    tracedValue->AppendDouble(rect.width());
+    tracedValue->AppendDouble(rect.height());
     tracedValue->EndArray();
+    tracedValue->SetString(
+        "reason", paintInvalidationReasonToString(annotatedRect.reason));
+    tracedValue->EndDictionary();
+  }
+  tracedValue->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendCompositingReasons(base::trace_event::TracedValue* tracedValue) const
-{
-    tracedValue->BeginArray("compositing_reasons");
-    for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
-        if (!(m_compositingReasons & kCompositingReasonStringMap[i].reason))
-            continue;
-        tracedValue->AppendString(kCompositingReasonStringMap[i].description);
-    }
-    tracedValue->EndArray();
+void GraphicsLayerDebugInfo::appendCompositingReasons(
+    base::trace_event::TracedValue* tracedValue) const {
+  tracedValue->BeginArray("compositing_reasons");
+  for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
+    if (!(m_compositingReasons & kCompositingReasonStringMap[i].reason))
+      continue;
+    tracedValue->AppendString(kCompositingReasonStringMap[i].description);
+  }
+  tracedValue->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendSquashingDisallowedReasons(base::trace_event::TracedValue* tracedValue) const
-{
-    tracedValue->BeginArray("squashing_disallowed_reasons");
-    for (size_t i = 0; i < kNumberOfSquashingDisallowedReasons; ++i) {
-        if (!(m_squashingDisallowedReasons & kSquashingDisallowedReasonStringMap[i].reason))
-            continue;
-        tracedValue->AppendString(kSquashingDisallowedReasonStringMap[i].description);
-    }
-    tracedValue->EndArray();
+void GraphicsLayerDebugInfo::appendSquashingDisallowedReasons(
+    base::trace_event::TracedValue* tracedValue) const {
+  tracedValue->BeginArray("squashing_disallowed_reasons");
+  for (size_t i = 0; i < kNumberOfSquashingDisallowedReasons; ++i) {
+    if (!(m_squashingDisallowedReasons &
+          kSquashingDisallowedReasonStringMap[i].reason))
+      continue;
+    tracedValue->AppendString(
+        kSquashingDisallowedReasonStringMap[i].description);
+  }
+  tracedValue->EndArray();
 }
 
-void GraphicsLayerDebugInfo::appendOwnerNodeId(base::trace_event::TracedValue* tracedValue) const
-{
-    if (!m_ownerNodeId)
-        return;
+void GraphicsLayerDebugInfo::appendOwnerNodeId(
+    base::trace_event::TracedValue* tracedValue) const {
+  if (!m_ownerNodeId)
+    return;
 
-    tracedValue->SetInteger("owner_node", m_ownerNodeId);
+  tracedValue->SetInteger("owner_node", m_ownerNodeId);
 }
 
-void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(const FloatRect& rect, PaintInvalidationReason invalidationReason)
-{
-    AnnotatedInvalidationRect annotatedRect = {
-        rect,
-        invalidationReason
-    };
-    m_invalidations.append(annotatedRect);
+void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRect(
+    const FloatRect& rect,
+    PaintInvalidationReason invalidationReason) {
+  AnnotatedInvalidationRect annotatedRect = {rect, invalidationReason};
+  m_invalidations.append(annotatedRect);
 }
 
-void GraphicsLayerDebugInfo::clearAnnotatedInvalidateRects()
-{
-    m_previousInvalidations.clear();
-    m_previousInvalidations.swap(m_invalidations);
+void GraphicsLayerDebugInfo::clearAnnotatedInvalidateRects() {
+  m_previousInvalidations.clear();
+  m_previousInvalidations.swap(m_invalidations);
 }
 
-void GraphicsLayerDebugInfo::appendMainThreadScrollingReasons(base::trace_event::TracedValue* tracedValue) const
-{
-    MainThreadScrollingReason::mainThreadScrollingReasonsAsTracedValue(m_mainThreadScrollingReasons, tracedValue);
+void GraphicsLayerDebugInfo::appendMainThreadScrollingReasons(
+    base::trace_event::TracedValue* tracedValue) const {
+  MainThreadScrollingReason::mainThreadScrollingReasonsAsTracedValue(
+      m_mainThreadScrollingReasons, tracedValue);
 }
 
-} // namespace blink
+}  // namespace blink

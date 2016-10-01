@@ -45,6 +45,6 @@ PLATFORM_EXPORT String convertURIListToURL(const String& uriList);
 // FIXME: This should probably be implemented in the embedder rather than here.
 PLATFORM_EXPORT void validateFilename(String& name, String& extension);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClipboardUtilities_h
+#endif  // ClipboardUtilities_h

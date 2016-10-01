@@ -40,35 +40,32 @@
 
 namespace blink {
 
-inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }
-inline bool isValidFileTime(double time) { return std::isfinite(time); }
+inline double invalidFileTime() {
+  return std::numeric_limits<double>::quiet_NaN();
+}
+inline bool isValidFileTime(double time) {
+  return std::isfinite(time);
+}
 
 class FileMetadata {
-    DISALLOW_NEW();
-public:
-    FileMetadata()
-        : modificationTime(invalidFileTime())
-        , length(-1)
-        , type(TypeUnknown)
-    {
-    }
+  DISALLOW_NEW();
 
-    // The last modification time of the file, in milliseconds.
-    // The value NaN means that the time is not known.
-    double modificationTime;
+ public:
+  FileMetadata()
+      : modificationTime(invalidFileTime()), length(-1), type(TypeUnknown) {}
 
-    // The length of the file in bytes.
-    // The value -1 means that the length is not set.
-    long long length;
+  // The last modification time of the file, in milliseconds.
+  // The value NaN means that the time is not known.
+  double modificationTime;
 
-    enum Type {
-        TypeUnknown = 0,
-        TypeFile,
-        TypeDirectory
-    };
+  // The length of the file in bytes.
+  // The value -1 means that the length is not set.
+  long long length;
 
-    Type type;
-    String platformPath;
+  enum Type { TypeUnknown = 0, TypeFile, TypeDirectory };
+
+  Type type;
+  String platformPath;
 };
 
 PLATFORM_EXPORT bool getFileSize(const String&, long long& result);
@@ -77,6 +74,6 @@ PLATFORM_EXPORT bool getFileMetadata(const String&, FileMetadata&);
 PLATFORM_EXPORT String directoryName(const String&);
 PLATFORM_EXPORT KURL filePathToURL(const String&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileMetadata_h
+#endif  // FileMetadata_h

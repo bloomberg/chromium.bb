@@ -35,44 +35,48 @@
 namespace blink {
 
 class AudioFIFO {
-    USING_FAST_MALLOC(AudioFIFO);
-    WTF_MAKE_NONCOPYABLE(AudioFIFO);
-public:
-    // Create a FIFO large enough to hold |fifoLength| frames of data of |numberOfChannels| channels.
-    AudioFIFO(unsigned numberOfChannels, size_t fifoLength);
+  USING_FAST_MALLOC(AudioFIFO);
+  WTF_MAKE_NONCOPYABLE(AudioFIFO);
 
-    // Push the data from the bus into the FIFO.
-    void push(const AudioBus*);
+ public:
+  // Create a FIFO large enough to hold |fifoLength| frames of data of |numberOfChannels| channels.
+  AudioFIFO(unsigned numberOfChannels, size_t fifoLength);
 
-    // Consume |framesToConsume| frames of data from the FIFO and put them in |destination|. The
-    // corresponding frames are removed from the FIFO.
-    void consume(AudioBus* destination, size_t framesToConsume);
+  // Push the data from the bus into the FIFO.
+  void push(const AudioBus*);
 
-    // Number of frames of data that are currently in the FIFO.
-    size_t framesInFifo() const { return m_framesInFifo; }
+  // Consume |framesToConsume| frames of data from the FIFO and put them in |destination|. The
+  // corresponding frames are removed from the FIFO.
+  void consume(AudioBus* destination, size_t framesToConsume);
 
-private:
-    // Update the FIFO index by the step, with appropriate wrapping around the endpoint.
-    int updateIndex(int index, int step) { return (index + step) % m_fifoLength; }
+  // Number of frames of data that are currently in the FIFO.
+  size_t framesInFifo() const { return m_framesInFifo; }
 
-    void findWrapLengths(size_t index, size_t providerSize, size_t& part1Length, size_t& part2Length);
+ private:
+  // Update the FIFO index by the step, with appropriate wrapping around the endpoint.
+  int updateIndex(int index, int step) { return (index + step) % m_fifoLength; }
 
-    // The FIFO itself. In reality, the FIFO is a circular buffer.
-    RefPtr<AudioBus> m_fifoAudioBus;
+  void findWrapLengths(size_t index,
+                       size_t providerSize,
+                       size_t& part1Length,
+                       size_t& part2Length);
 
-    // The total available space in the FIFO.
-    size_t m_fifoLength;
+  // The FIFO itself. In reality, the FIFO is a circular buffer.
+  RefPtr<AudioBus> m_fifoAudioBus;
 
-    // The number of actual elements in the FIFO
-    size_t m_framesInFifo;
+  // The total available space in the FIFO.
+  size_t m_fifoLength;
 
-    // Where to start reading from the FIFO.
-    size_t m_readIndex;
+  // The number of actual elements in the FIFO
+  size_t m_framesInFifo;
 
-    // Where to start writing to the FIFO.
-    size_t m_writeIndex;
+  // Where to start reading from the FIFO.
+  size_t m_readIndex;
+
+  // Where to start writing to the FIFO.
+  size_t m_writeIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioFIFO.h
+#endif  // AudioFIFO.h

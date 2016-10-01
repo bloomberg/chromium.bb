@@ -33,24 +33,31 @@
 
 namespace blink {
 
-class MODULES_EXPORT SpeechRecognitionResult final : public GarbageCollected<SpeechRecognitionResult>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SpeechRecognitionResult* create(const HeapVector<Member<SpeechRecognitionAlternative>>&, bool final);
+class MODULES_EXPORT SpeechRecognitionResult final
+    : public GarbageCollected<SpeechRecognitionResult>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned length() { return m_alternatives.size(); }
-    SpeechRecognitionAlternative* item(unsigned index);
-    bool isFinal() { return m_final; }
+ public:
+  static SpeechRecognitionResult* create(
+      const HeapVector<Member<SpeechRecognitionAlternative>>&,
+      bool final);
 
-    DECLARE_TRACE();
+  unsigned length() { return m_alternatives.size(); }
+  SpeechRecognitionAlternative* item(unsigned index);
+  bool isFinal() { return m_final; }
 
-private:
-    SpeechRecognitionResult(const HeapVector<Member<SpeechRecognitionAlternative>>&, bool final);
+  DECLARE_TRACE();
 
-    bool m_final;
-    HeapVector<Member<SpeechRecognitionAlternative>> m_alternatives;
+ private:
+  SpeechRecognitionResult(
+      const HeapVector<Member<SpeechRecognitionAlternative>>&,
+      bool final);
+
+  bool m_final;
+  HeapVector<Member<SpeechRecognitionAlternative>> m_alternatives;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpeechRecognitionResult_h
+#endif  // SpeechRecognitionResult_h

@@ -27,51 +27,50 @@
 namespace blink {
 
 class HashChangeEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HashChangeEvent* create()
-    {
-        return new HashChangeEvent;
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    static HashChangeEvent* create(const String& oldURL, const String& newURL)
-    {
-        return new HashChangeEvent(oldURL, newURL);
-    }
+ public:
+  static HashChangeEvent* create() { return new HashChangeEvent; }
 
-    static HashChangeEvent* create(const AtomicString& type, const HashChangeEventInit& initializer)
-    {
-        return new HashChangeEvent(type, initializer);
-    }
+  static HashChangeEvent* create(const String& oldURL, const String& newURL) {
+    return new HashChangeEvent(oldURL, newURL);
+  }
 
-    const String& oldURL() const { return m_oldURL; }
-    const String& newURL() const { return m_newURL; }
+  static HashChangeEvent* create(const AtomicString& type,
+                                 const HashChangeEventInit& initializer) {
+    return new HashChangeEvent(type, initializer);
+  }
 
-    const AtomicString& interfaceName() const override { return EventNames::HashChangeEvent; }
+  const String& oldURL() const { return m_oldURL; }
+  const String& newURL() const { return m_newURL; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  const AtomicString& interfaceName() const override {
+    return EventNames::HashChangeEvent;
+  }
 
-private:
-    HashChangeEvent() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
-    HashChangeEvent(const String& oldURL, const String& newURL)
-        : Event(EventTypeNames::hashchange, false, false)
-        , m_oldURL(oldURL)
-        , m_newURL(newURL) { }
+ private:
+  HashChangeEvent() {}
 
-    HashChangeEvent(const AtomicString& type, const HashChangeEventInit& initializer)
-        : Event(type, initializer)
-    {
-        if (initializer.hasOldURL())
-            m_oldURL = initializer.oldURL();
-        if (initializer.hasNewURL())
-            m_newURL = initializer.newURL();
-    }
+  HashChangeEvent(const String& oldURL, const String& newURL)
+      : Event(EventTypeNames::hashchange, false, false),
+        m_oldURL(oldURL),
+        m_newURL(newURL) {}
 
-    String m_oldURL;
-    String m_newURL;
+  HashChangeEvent(const AtomicString& type,
+                  const HashChangeEventInit& initializer)
+      : Event(type, initializer) {
+    if (initializer.hasOldURL())
+      m_oldURL = initializer.oldURL();
+    if (initializer.hasNewURL())
+      m_newURL = initializer.newURL();
+  }
+
+  String m_oldURL;
+  String m_newURL;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HashChangeEvent_h
+#endif  // HashChangeEvent_h

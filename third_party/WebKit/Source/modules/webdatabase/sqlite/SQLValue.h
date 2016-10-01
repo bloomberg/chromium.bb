@@ -35,26 +35,27 @@
 namespace blink {
 
 class SQLValue {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    enum Type { NullValue, NumberValue, StringValue };
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    SQLValue() : m_type(NullValue), m_number(0.0) { }
-    SQLValue(double number) : m_type(NumberValue), m_number(number) { }
-    SQLValue(const String& s) : m_type(StringValue), m_number(0.0), m_string(s) { }
-    SQLValue(const SQLValue&);
+ public:
+  enum Type { NullValue, NumberValue, StringValue };
 
-    Type getType() const { return m_type; }
+  SQLValue() : m_type(NullValue), m_number(0.0) {}
+  SQLValue(double number) : m_type(NumberValue), m_number(number) {}
+  SQLValue(const String& s) : m_type(StringValue), m_number(0.0), m_string(s) {}
+  SQLValue(const SQLValue&);
 
-    String string() const;
-    double number() const;
+  Type getType() const { return m_type; }
 
-private:
-    Type m_type;
-    double m_number;
-    String m_string;
+  String string() const;
+  double number() const;
+
+ private:
+  Type m_type;
+  double m_number;
+  String m_string;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

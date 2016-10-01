@@ -50,88 +50,112 @@ class ResourceResponse;
 class ExecutionContext;
 class TextResourceDecoder;
 
-class CORE_EXPORT WorkerScriptLoader final : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
-    USING_FAST_MALLOC(WorkerScriptLoader);
-public:
-    static PassRefPtr<WorkerScriptLoader> create()
-    {
-        return adoptRef(new WorkerScriptLoader());
-    }
+class CORE_EXPORT WorkerScriptLoader final
+    : public RefCounted<WorkerScriptLoader>,
+      public ThreadableLoaderClient {
+  USING_FAST_MALLOC(WorkerScriptLoader);
 
-    void loadSynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy, WebAddressSpace);
-    // TODO: |finishedCallback| is not currently guaranteed to be invoked if
-    // used from worker context and the worker shuts down in the middle of an
-    // operation. This will cause leaks when we support nested workers.
-    // Note that callbacks could be invoked before loadAsynchronously() returns.
-    void loadAsynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy, WebAddressSpace, std::unique_ptr<WTF::Closure> responseCallback, std::unique_ptr<WTF::Closure> finishedCallback);
+ public:
+  static PassRefPtr<WorkerScriptLoader> create() {
+    return adoptRef(new WorkerScriptLoader());
+  }
 
-    // This will immediately invoke |finishedCallback| if loadAsynchronously()
-    // is in progress.
-    void cancel();
+  void loadSynchronously(ExecutionContext&,
+                         const KURL&,
+                         CrossOriginRequestPolicy,
+                         WebAddressSpace);
+  // TODO: |finishedCallback| is not currently guaranteed to be invoked if
+  // used from worker context and the worker shuts down in the middle of an
+  // operation. This will cause leaks when we support nested workers.
+  // Note that callbacks could be invoked before loadAsynchronously() returns.
+  void loadAsynchronously(ExecutionContext&,
+                          const KURL&,
+                          CrossOriginRequestPolicy,
+                          WebAddressSpace,
+                          std::unique_ptr<WTF::Closure> responseCallback,
+                          std::unique_ptr<WTF::Closure> finishedCallback);
 
-    String script();
-    const KURL& url() const { return m_url; }
-    const KURL& responseURL() const;
-    bool failed() const { return m_failed; }
-    unsigned long identifier() const { return m_identifier; }
-    long long appCacheID() const { return m_appCacheID; }
+  // This will immediately invoke |finishedCallback| if loadAsynchronously()
+  // is in progress.
+  void cancel();
 
-    std::unique_ptr<Vector<char>> releaseCachedMetadata() { return std::move(m_cachedMetadata); }
-    const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
+  String script();
+  const KURL& url() const { return m_url; }
+  const KURL& responseURL() const;
+  bool failed() const { return m_failed; }
+  unsigned long identifier() const { return m_identifier; }
+  long long appCacheID() const { return m_appCacheID; }
 
-    ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
-    ContentSecurityPolicy* releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+  std::unique_ptr<Vector<char>> releaseCachedMetadata() {
+    return std::move(m_cachedMetadata);
+  }
+  const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
-    String referrerPolicy() { return m_referrerPolicy; }
+  ContentSecurityPolicy* contentSecurityPolicy() {
+    return m_contentSecurityPolicy.get();
+  }
+  ContentSecurityPolicy* releaseContentSecurityPolicy() {
+    return m_contentSecurityPolicy.release();
+  }
 
-    WebAddressSpace responseAddressSpace() const { return m_responseAddressSpace; }
+  String referrerPolicy() { return m_referrerPolicy; }
 
-    const Vector<String>* originTrialTokens() const { return m_originTrialTokens.get(); }
+  WebAddressSpace responseAddressSpace() const {
+    return m_responseAddressSpace;
+  }
 
-    // ThreadableLoaderClient
-    void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
-    void didReceiveData(const char* data, unsigned dataLength) override;
-    void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-    void didFinishLoading(unsigned long identifier, double) override;
-    void didFail(const ResourceError&) override;
-    void didFailRedirectCheck() override;
+  const Vector<String>* originTrialTokens() const {
+    return m_originTrialTokens.get();
+  }
 
-    void setRequestContext(WebURLRequest::RequestContext requestContext) { m_requestContext = requestContext; }
+  // ThreadableLoaderClient
+  void didReceiveResponse(unsigned long /*identifier*/,
+                          const ResourceResponse&,
+                          std::unique_ptr<WebDataConsumerHandle>) override;
+  void didReceiveData(const char* data, unsigned dataLength) override;
+  void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
+  void didFinishLoading(unsigned long identifier, double) override;
+  void didFail(const ResourceError&) override;
+  void didFailRedirectCheck() override;
 
-private:
-    friend class WTF::RefCounted<WorkerScriptLoader>;
+  void setRequestContext(WebURLRequest::RequestContext requestContext) {
+    m_requestContext = requestContext;
+  }
 
-    WorkerScriptLoader();
-    ~WorkerScriptLoader() override;
+ private:
+  friend class WTF::RefCounted<WorkerScriptLoader>;
 
-    ResourceRequest createResourceRequest(WebAddressSpace);
-    void notifyError();
-    void notifyFinished();
+  WorkerScriptLoader();
+  ~WorkerScriptLoader() override;
 
-    void processContentSecurityPolicy(const ResourceResponse&);
+  ResourceRequest createResourceRequest(WebAddressSpace);
+  void notifyError();
+  void notifyFinished();
 
-    // Callbacks for loadAsynchronously().
-    std::unique_ptr<WTF::Closure> m_responseCallback;
-    std::unique_ptr<WTF::Closure> m_finishedCallback;
+  void processContentSecurityPolicy(const ResourceResponse&);
 
-    Persistent<ThreadableLoader> m_threadableLoader;
-    String m_responseEncoding;
-    std::unique_ptr<TextResourceDecoder> m_decoder;
-    StringBuilder m_script;
-    KURL m_url;
-    KURL m_responseURL;
-    bool m_failed;
-    bool m_needToCancel;
-    unsigned long m_identifier;
-    long long m_appCacheID;
-    std::unique_ptr<Vector<char>> m_cachedMetadata;
-    WebURLRequest::RequestContext m_requestContext;
-    Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
-    WebAddressSpace m_responseAddressSpace;
-    std::unique_ptr<Vector<String>> m_originTrialTokens;
-    String m_referrerPolicy;
+  // Callbacks for loadAsynchronously().
+  std::unique_ptr<WTF::Closure> m_responseCallback;
+  std::unique_ptr<WTF::Closure> m_finishedCallback;
+
+  Persistent<ThreadableLoader> m_threadableLoader;
+  String m_responseEncoding;
+  std::unique_ptr<TextResourceDecoder> m_decoder;
+  StringBuilder m_script;
+  KURL m_url;
+  KURL m_responseURL;
+  bool m_failed;
+  bool m_needToCancel;
+  unsigned long m_identifier;
+  long long m_appCacheID;
+  std::unique_ptr<Vector<char>> m_cachedMetadata;
+  WebURLRequest::RequestContext m_requestContext;
+  Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
+  WebAddressSpace m_responseAddressSpace;
+  std::unique_ptr<Vector<String>> m_originTrialTokens;
+  String m_referrerPolicy;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerScriptLoader_h
+#endif  // WorkerScriptLoader_h

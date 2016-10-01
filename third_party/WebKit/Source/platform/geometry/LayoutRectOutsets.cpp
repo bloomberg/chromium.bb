@@ -35,157 +35,149 @@
 
 namespace blink {
 
-LayoutUnit LayoutRectOutsets::logicalTop(WritingMode writingMode) const
-{
-    return isHorizontalWritingMode(writingMode) ? m_top : m_left;
+LayoutUnit LayoutRectOutsets::logicalTop(WritingMode writingMode) const {
+  return isHorizontalWritingMode(writingMode) ? m_top : m_left;
 }
 
-LayoutUnit LayoutRectOutsets::logicalBottom(WritingMode writingMode) const
-{
-    return isHorizontalWritingMode(writingMode) ? m_bottom : m_right;
+LayoutUnit LayoutRectOutsets::logicalBottom(WritingMode writingMode) const {
+  return isHorizontalWritingMode(writingMode) ? m_bottom : m_right;
 }
 
-LayoutUnit LayoutRectOutsets::logicalLeft(WritingMode writingMode) const
-{
-    return isHorizontalWritingMode(writingMode) ? m_left : m_top;
+LayoutUnit LayoutRectOutsets::logicalLeft(WritingMode writingMode) const {
+  return isHorizontalWritingMode(writingMode) ? m_left : m_top;
 }
 
-LayoutUnit LayoutRectOutsets::logicalRight(WritingMode writingMode) const
-{
-    return isHorizontalWritingMode(writingMode) ? m_right : m_bottom;
+LayoutUnit LayoutRectOutsets::logicalRight(WritingMode writingMode) const {
+  return isHorizontalWritingMode(writingMode) ? m_right : m_bottom;
 }
 
-LayoutRectOutsets LayoutRectOutsets::logicalOutsets(WritingMode writingMode) const
-{
-    if (!isHorizontalWritingMode(writingMode))
-        return LayoutRectOutsets(m_left, m_bottom, m_right, m_top);
-    return *this;
+LayoutRectOutsets LayoutRectOutsets::logicalOutsets(
+    WritingMode writingMode) const {
+  if (!isHorizontalWritingMode(writingMode))
+    return LayoutRectOutsets(m_left, m_bottom, m_right, m_top);
+  return *this;
 }
 
-LayoutRectOutsets LayoutRectOutsets::logicalOutsetsWithFlippedLines(WritingMode writingMode) const
-{
-    LayoutRectOutsets outsets = logicalOutsets(writingMode);
-    if (isFlippedLinesWritingMode(writingMode))
-        std::swap(outsets.m_top, outsets.m_bottom);
-    return outsets;
+LayoutRectOutsets LayoutRectOutsets::logicalOutsetsWithFlippedLines(
+    WritingMode writingMode) const {
+  LayoutRectOutsets outsets = logicalOutsets(writingMode);
+  if (isFlippedLinesWritingMode(writingMode))
+    std::swap(outsets.m_top, outsets.m_bottom);
+  return outsets;
 }
 
-LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const
-{
-    switch (writingMode) {
+LayoutUnit LayoutRectOutsets::before(WritingMode writingMode) const {
+  switch (writingMode) {
     case TopToBottomWritingMode:
-        return m_top;
+      return m_top;
     case LeftToRightWritingMode:
-        return m_left;
+      return m_left;
     case RightToLeftWritingMode:
-        return m_right;
-    }
-    ASSERT_NOT_REACHED();
-    return m_top;
+      return m_right;
+  }
+  ASSERT_NOT_REACHED();
+  return m_top;
 }
 
-LayoutUnit LayoutRectOutsets::after(WritingMode writingMode) const
-{
-    switch (writingMode) {
+LayoutUnit LayoutRectOutsets::after(WritingMode writingMode) const {
+  switch (writingMode) {
     case TopToBottomWritingMode:
-        return m_bottom;
+      return m_bottom;
     case LeftToRightWritingMode:
-        return m_right;
+      return m_right;
     case RightToLeftWritingMode:
-        return m_left;
-    }
-    ASSERT_NOT_REACHED();
-    return m_bottom;
+      return m_left;
+  }
+  ASSERT_NOT_REACHED();
+  return m_bottom;
 }
 
-LayoutUnit LayoutRectOutsets::start(WritingMode writingMode, TextDirection direction) const
-{
-    if (isHorizontalWritingMode(writingMode))
-        return isLeftToRightDirection(direction) ? m_left : m_right;
-    return isLeftToRightDirection(direction) ? m_top : m_bottom;
+LayoutUnit LayoutRectOutsets::start(WritingMode writingMode,
+                                    TextDirection direction) const {
+  if (isHorizontalWritingMode(writingMode))
+    return isLeftToRightDirection(direction) ? m_left : m_right;
+  return isLeftToRightDirection(direction) ? m_top : m_bottom;
 }
 
-LayoutUnit LayoutRectOutsets::end(WritingMode writingMode, TextDirection direction) const
-{
-    if (isHorizontalWritingMode(writingMode))
-        return isLeftToRightDirection(direction) ? m_right : m_left;
-    return isLeftToRightDirection(direction) ? m_bottom : m_top;
+LayoutUnit LayoutRectOutsets::end(WritingMode writingMode,
+                                  TextDirection direction) const {
+  if (isHorizontalWritingMode(writingMode))
+    return isLeftToRightDirection(direction) ? m_right : m_left;
+  return isLeftToRightDirection(direction) ? m_bottom : m_top;
 }
 
-LayoutUnit LayoutRectOutsets::over(WritingMode writingMode) const
-{
-    return isHorizontalWritingMode(writingMode) ? m_top : m_right;
+LayoutUnit LayoutRectOutsets::over(WritingMode writingMode) const {
+  return isHorizontalWritingMode(writingMode) ? m_top : m_right;
 }
 
-LayoutUnit LayoutRectOutsets::under(WritingMode writingMode) const
-{
-    return isHorizontalWritingMode(writingMode) ? m_bottom : m_left;
+LayoutUnit LayoutRectOutsets::under(WritingMode writingMode) const {
+  return isHorizontalWritingMode(writingMode) ? m_bottom : m_left;
 }
 
-void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value)
-{
-    switch (writingMode) {
+void LayoutRectOutsets::setBefore(WritingMode writingMode, LayoutUnit value) {
+  switch (writingMode) {
     case TopToBottomWritingMode:
-        m_top = value;
-        break;
+      m_top = value;
+      break;
     case LeftToRightWritingMode:
-        m_left = value;
-        break;
+      m_left = value;
+      break;
     case RightToLeftWritingMode:
-        m_right = value;
-        break;
+      m_right = value;
+      break;
     default:
-        ASSERT_NOT_REACHED();
-        m_top = value;
-    }
+      ASSERT_NOT_REACHED();
+      m_top = value;
+  }
 }
 
-void LayoutRectOutsets::setAfter(WritingMode writingMode, LayoutUnit value)
-{
-    switch (writingMode) {
+void LayoutRectOutsets::setAfter(WritingMode writingMode, LayoutUnit value) {
+  switch (writingMode) {
     case TopToBottomWritingMode:
-        m_bottom = value;
-        break;
+      m_bottom = value;
+      break;
     case LeftToRightWritingMode:
-        m_right = value;
-        break;
+      m_right = value;
+      break;
     case RightToLeftWritingMode:
-        m_left = value;
-        break;
+      m_left = value;
+      break;
     default:
-        ASSERT_NOT_REACHED();
-        m_bottom = value;
-    }
+      ASSERT_NOT_REACHED();
+      m_bottom = value;
+  }
 }
 
-void LayoutRectOutsets::setStart(WritingMode writingMode, TextDirection direction, LayoutUnit value)
-{
-    if (isHorizontalWritingMode(writingMode)) {
-        if (isLeftToRightDirection(direction))
-            m_left = value;
-        else
-            m_right = value;
-    } else {
-        if (isLeftToRightDirection(direction))
-            m_top = value;
-        else
-            m_bottom = value;
-    }
+void LayoutRectOutsets::setStart(WritingMode writingMode,
+                                 TextDirection direction,
+                                 LayoutUnit value) {
+  if (isHorizontalWritingMode(writingMode)) {
+    if (isLeftToRightDirection(direction))
+      m_left = value;
+    else
+      m_right = value;
+  } else {
+    if (isLeftToRightDirection(direction))
+      m_top = value;
+    else
+      m_bottom = value;
+  }
 }
 
-void LayoutRectOutsets::setEnd(WritingMode writingMode, TextDirection direction, LayoutUnit value)
-{
-    if (isHorizontalWritingMode(writingMode)) {
-        if (isLeftToRightDirection(direction))
-            m_right = value;
-        else
-            m_left = value;
-    } else {
-        if (isLeftToRightDirection(direction))
-            m_bottom = value;
-        else
-            m_top = value;
-    }
+void LayoutRectOutsets::setEnd(WritingMode writingMode,
+                               TextDirection direction,
+                               LayoutUnit value) {
+  if (isHorizontalWritingMode(writingMode)) {
+    if (isLeftToRightDirection(direction))
+      m_right = value;
+    else
+      m_left = value;
+  } else {
+    if (isLeftToRightDirection(direction))
+      m_bottom = value;
+    else
+      m_top = value;
+  }
 }
 
-} // namespace blink
+}  // namespace blink

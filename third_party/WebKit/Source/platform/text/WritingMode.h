@@ -34,27 +34,26 @@
 namespace blink {
 
 enum WritingMode {
-    TopToBottomWritingMode, RightToLeftWritingMode, LeftToRightWritingMode
+  TopToBottomWritingMode,
+  RightToLeftWritingMode,
+  LeftToRightWritingMode
 };
 
 // Lines have horizontal orientation; modes horizontal-tb.
-inline bool isHorizontalWritingMode(WritingMode writingMode)
-{
-    return writingMode == TopToBottomWritingMode;
+inline bool isHorizontalWritingMode(WritingMode writingMode) {
+  return writingMode == TopToBottomWritingMode;
 }
 
 // Bottom of the line occurs earlier in the block; modes vertical-lr.
-inline bool isFlippedLinesWritingMode(WritingMode writingMode)
-{
-    return writingMode == LeftToRightWritingMode;
+inline bool isFlippedLinesWritingMode(WritingMode writingMode) {
+  return writingMode == LeftToRightWritingMode;
 }
 
 // Block progression increases in the opposite direction to normal; modes vertical-rl.
-inline bool isFlippedBlocksWritingMode(WritingMode writingMode)
-{
-    return writingMode == RightToLeftWritingMode;
+inline bool isFlippedBlocksWritingMode(WritingMode writingMode) {
+  return writingMode == RightToLeftWritingMode;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WritingMode_h
+#endif  // WritingMode_h

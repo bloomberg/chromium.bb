@@ -9,41 +9,35 @@
 
 namespace blink {
 
-NavigatorBluetooth& NavigatorBluetooth::from(Navigator& navigator)
-{
-    NavigatorBluetooth* supplement = static_cast<NavigatorBluetooth*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new NavigatorBluetooth();
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+NavigatorBluetooth& NavigatorBluetooth::from(Navigator& navigator) {
+  NavigatorBluetooth* supplement = static_cast<NavigatorBluetooth*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new NavigatorBluetooth();
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-Bluetooth* NavigatorBluetooth::bluetooth(Navigator& navigator)
-{
-    return NavigatorBluetooth::from(navigator).bluetooth();
+Bluetooth* NavigatorBluetooth::bluetooth(Navigator& navigator) {
+  return NavigatorBluetooth::from(navigator).bluetooth();
 }
 
-Bluetooth* NavigatorBluetooth::bluetooth()
-{
-    if (!m_bluetooth)
-        m_bluetooth = Bluetooth::create();
-    return m_bluetooth.get();
+Bluetooth* NavigatorBluetooth::bluetooth() {
+  if (!m_bluetooth)
+    m_bluetooth = Bluetooth::create();
+  return m_bluetooth.get();
 }
 
-DEFINE_TRACE(NavigatorBluetooth)
-{
-    visitor->trace(m_bluetooth);
-    Supplement<Navigator>::trace(visitor);
+DEFINE_TRACE(NavigatorBluetooth) {
+  visitor->trace(m_bluetooth);
+  Supplement<Navigator>::trace(visitor);
 }
 
-NavigatorBluetooth::NavigatorBluetooth()
-{
+NavigatorBluetooth::NavigatorBluetooth() {}
+
+const char* NavigatorBluetooth::supplementName() {
+  return "NavigatorBluetooth";
 }
 
-const char* NavigatorBluetooth::supplementName()
-{
-    return "NavigatorBluetooth";
-}
-
-} // namespace blink
+}  // namespace blink

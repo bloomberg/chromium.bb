@@ -10,18 +10,22 @@
 
 namespace blink {
 
-FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, const DisplayItemClient& client, PaintPhase paintPhase, const FloatRect& clipRect)
-    : m_context(context)
-    , m_client(client)
-    , m_clipType(DisplayItem::paintPhaseToFloatClipType(paintPhase))
-{
-    m_context.getPaintController().createAndAppend<FloatClipDisplayItem>(m_client, m_clipType, clipRect);
+FloatClipRecorder::FloatClipRecorder(GraphicsContext& context,
+                                     const DisplayItemClient& client,
+                                     PaintPhase paintPhase,
+                                     const FloatRect& clipRect)
+    : m_context(context),
+      m_client(client),
+      m_clipType(DisplayItem::paintPhaseToFloatClipType(paintPhase)) {
+  m_context.getPaintController().createAndAppend<FloatClipDisplayItem>(
+      m_client, m_clipType, clipRect);
 }
 
-FloatClipRecorder::~FloatClipRecorder()
-{
-    DisplayItem::Type endType = DisplayItem::floatClipTypeToEndFloatClipType(m_clipType);
-    m_context.getPaintController().endItem<EndFloatClipDisplayItem>(m_client, endType);
+FloatClipRecorder::~FloatClipRecorder() {
+  DisplayItem::Type endType =
+      DisplayItem::floatClipTypeToEndFloatClipType(m_clipType);
+  m_context.getPaintController().endItem<EndFloatClipDisplayItem>(m_client,
+                                                                  endType);
 }
 
-} // namespace blink
+}  // namespace blink

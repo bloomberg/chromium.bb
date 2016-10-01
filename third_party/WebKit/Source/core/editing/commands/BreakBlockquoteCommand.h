@@ -31,17 +31,16 @@
 namespace blink {
 
 class BreakBlockquoteCommand final : public CompositeEditCommand {
-public:
-    static BreakBlockquoteCommand* create(Document& document)
-    {
-        return new BreakBlockquoteCommand(document);
-    }
+ public:
+  static BreakBlockquoteCommand* create(Document& document) {
+    return new BreakBlockquoteCommand(document);
+  }
 
-private:
-    explicit BreakBlockquoteCommand(Document&);
-    void doApply(EditingState*) override;
+ private:
+  explicit BreakBlockquoteCommand(Document&);
+  void doApply(EditingState*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

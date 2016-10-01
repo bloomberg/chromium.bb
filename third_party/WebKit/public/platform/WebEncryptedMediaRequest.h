@@ -15,32 +15,37 @@ class EncryptedMediaRequest;
 class WebContentDecryptionModuleAccess;
 struct WebMediaKeySystemConfiguration;
 class WebSecurityOrigin;
-template <typename T> class WebVector;
+template <typename T>
+class WebVector;
 
 class WebEncryptedMediaRequest {
-public:
-    BLINK_PLATFORM_EXPORT WebEncryptedMediaRequest(const WebEncryptedMediaRequest&);
-    BLINK_PLATFORM_EXPORT ~WebEncryptedMediaRequest();
+ public:
+  BLINK_PLATFORM_EXPORT WebEncryptedMediaRequest(
+      const WebEncryptedMediaRequest&);
+  BLINK_PLATFORM_EXPORT ~WebEncryptedMediaRequest();
 
-    BLINK_PLATFORM_EXPORT WebString keySystem() const;
-    BLINK_PLATFORM_EXPORT const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const;
+  BLINK_PLATFORM_EXPORT WebString keySystem() const;
+  BLINK_PLATFORM_EXPORT const WebVector<WebMediaKeySystemConfiguration>&
+  supportedConfigurations() const;
 
-    BLINK_PLATFORM_EXPORT WebSecurityOrigin getSecurityOrigin() const;
+  BLINK_PLATFORM_EXPORT WebSecurityOrigin getSecurityOrigin() const;
 
-    BLINK_PLATFORM_EXPORT void requestSucceeded(WebContentDecryptionModuleAccess*);
-    BLINK_PLATFORM_EXPORT void requestNotSupported(const WebString& errorMessage);
+  BLINK_PLATFORM_EXPORT void requestSucceeded(
+      WebContentDecryptionModuleAccess*);
+  BLINK_PLATFORM_EXPORT void requestNotSupported(const WebString& errorMessage);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebEncryptedMediaRequest(EncryptedMediaRequest*);
+  BLINK_PLATFORM_EXPORT explicit WebEncryptedMediaRequest(
+      EncryptedMediaRequest*);
 #endif
 
-private:
-    void assign(const WebEncryptedMediaRequest&);
-    void reset();
+ private:
+  void assign(const WebEncryptedMediaRequest&);
+  void reset();
 
-    WebPrivatePtr<EncryptedMediaRequest> m_private;
+  WebPrivatePtr<EncryptedMediaRequest> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebEncryptedMediaRequest_h
+#endif  // WebEncryptedMediaRequest_h

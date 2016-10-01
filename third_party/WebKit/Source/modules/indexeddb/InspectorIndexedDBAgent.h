@@ -42,28 +42,43 @@ namespace blink {
 
 class InspectedFrames;
 
-class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<protocol::IndexedDB::Metainfo> {
-public:
-    InspectorIndexedDBAgent(InspectedFrames*, v8_inspector::V8InspectorSession*);
-    ~InspectorIndexedDBAgent() override;
-    DECLARE_VIRTUAL_TRACE();
+class MODULES_EXPORT InspectorIndexedDBAgent final
+    : public InspectorBaseAgent<protocol::IndexedDB::Metainfo> {
+ public:
+  InspectorIndexedDBAgent(InspectedFrames*, v8_inspector::V8InspectorSession*);
+  ~InspectorIndexedDBAgent() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void restore() override;
-    void didCommitLoadForLocalFrame(LocalFrame*) override;
+  void restore() override;
+  void didCommitLoadForLocalFrame(LocalFrame*) override;
 
-    // Called from the front-end.
-    void enable(ErrorString*) override;
-    void disable(ErrorString*) override;
-    void requestDatabaseNames(const String& securityOrigin, std::unique_ptr<RequestDatabaseNamesCallback>) override;
-    void requestDatabase(const String& securityOrigin, const String& databaseName, std::unique_ptr<RequestDatabaseCallback>) override;
-    void requestData(const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const Maybe<protocol::IndexedDB::KeyRange>&, std::unique_ptr<RequestDataCallback>) override;
-    void clearObjectStore(const String& securityOrigin, const String& databaseName, const String& objectStoreName, std::unique_ptr<ClearObjectStoreCallback>) override;
+  // Called from the front-end.
+  void enable(ErrorString*) override;
+  void disable(ErrorString*) override;
+  void requestDatabaseNames(
+      const String& securityOrigin,
+      std::unique_ptr<RequestDatabaseNamesCallback>) override;
+  void requestDatabase(const String& securityOrigin,
+                       const String& databaseName,
+                       std::unique_ptr<RequestDatabaseCallback>) override;
+  void requestData(const String& securityOrigin,
+                   const String& databaseName,
+                   const String& objectStoreName,
+                   const String& indexName,
+                   int skipCount,
+                   int pageSize,
+                   const Maybe<protocol::IndexedDB::KeyRange>&,
+                   std::unique_ptr<RequestDataCallback>) override;
+  void clearObjectStore(const String& securityOrigin,
+                        const String& databaseName,
+                        const String& objectStoreName,
+                        std::unique_ptr<ClearObjectStoreCallback>) override;
 
-private:
-    Member<InspectedFrames> m_inspectedFrames;
-    v8_inspector::V8InspectorSession* m_v8Session;
+ private:
+  Member<InspectedFrames> m_inspectedFrames;
+  v8_inspector::V8InspectorSession* m_v8Session;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !defined(InspectorIndexedDBAgent_h)
+#endif  // !defined(InspectorIndexedDBAgent_h)

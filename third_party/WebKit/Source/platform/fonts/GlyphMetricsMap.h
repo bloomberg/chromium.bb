@@ -42,96 +42,97 @@ namespace blink {
 
 const float cGlyphSizeUnknown = -1;
 
-template<class T> class GlyphMetricsMap {
-    USING_FAST_MALLOC(GlyphMetricsMap);
-    WTF_MAKE_NONCOPYABLE(GlyphMetricsMap);
-public:
-    GlyphMetricsMap() : m_filledPrimaryPage(false) { }
-    T metricsForGlyph(Glyph glyph)
-    {
-        return locatePage(glyph / GlyphMetricsPage::size)->metricsForGlyph(glyph);
+template <class T>
+class GlyphMetricsMap {
+  USING_FAST_MALLOC(GlyphMetricsMap);
+  WTF_MAKE_NONCOPYABLE(GlyphMetricsMap);
+
+ public:
+  GlyphMetricsMap() : m_filledPrimaryPage(false) {}
+  T metricsForGlyph(Glyph glyph) {
+    return locatePage(glyph / GlyphMetricsPage::size)->metricsForGlyph(glyph);
+  }
+
+  void setMetricsForGlyph(Glyph glyph, const T& metrics) {
+    locatePage(glyph / GlyphMetricsPage::size)
+        ->setMetricsForGlyph(glyph, metrics);
+  }
+
+ private:
+  class GlyphMetricsPage {
+    USING_FAST_MALLOC(GlyphMetricsPage);
+    WTF_MAKE_NONCOPYABLE(GlyphMetricsPage);
+
+   public:
+    static const size_t size = 256;  // Usually covers Latin-1 in a single page.
+    GlyphMetricsPage() {}
+
+    T metricsForGlyph(Glyph glyph) const { return m_metrics[glyph % size]; }
+    void setMetricsForGlyph(Glyph glyph, const T& metrics) {
+      setMetricsForIndex(glyph % size, metrics);
+    }
+    void setMetricsForIndex(unsigned index, const T& metrics) {
+      ASSERT_WITH_SECURITY_IMPLICATION(index < size);
+      m_metrics[index] = metrics;
     }
 
-    void setMetricsForGlyph(Glyph glyph, const T& metrics)
-    {
-        locatePage(glyph / GlyphMetricsPage::size)->setMetricsForGlyph(glyph, metrics);
-    }
+   private:
+    T m_metrics[size];
+  };
 
-private:
-    class GlyphMetricsPage {
-        USING_FAST_MALLOC(GlyphMetricsPage);
-        WTF_MAKE_NONCOPYABLE(GlyphMetricsPage);
-    public:
-        static const size_t size = 256; // Usually covers Latin-1 in a single page.
-        GlyphMetricsPage() { }
+  GlyphMetricsPage* locatePage(unsigned pageNumber) {
+    if (!pageNumber && m_filledPrimaryPage)
+      return &m_primaryPage;
+    return locatePageSlowCase(pageNumber);
+  }
 
-        T metricsForGlyph(Glyph glyph) const { return m_metrics[glyph % size]; }
-        void setMetricsForGlyph(Glyph glyph, const T& metrics)
-        {
-            setMetricsForIndex(glyph % size, metrics);
-        }
-        void setMetricsForIndex(unsigned index, const T& metrics)
-        {
-            ASSERT_WITH_SECURITY_IMPLICATION(index < size);
-            m_metrics[index] = metrics;
-        }
+  GlyphMetricsPage* locatePageSlowCase(unsigned pageNumber);
 
-    private:
-        T m_metrics[size];
-    };
+  static T unknownMetrics();
 
-    GlyphMetricsPage* locatePage(unsigned pageNumber)
-    {
-        if (!pageNumber && m_filledPrimaryPage)
-            return &m_primaryPage;
-        return locatePageSlowCase(pageNumber);
-    }
-
-    GlyphMetricsPage* locatePageSlowCase(unsigned pageNumber);
-
-    static T unknownMetrics();
-
-    bool m_filledPrimaryPage;
-    GlyphMetricsPage m_primaryPage; // We optimize for the page that contains glyph indices 0-255.
-    std::unique_ptr<HashMap<int, std::unique_ptr<GlyphMetricsPage>>> m_pages;
+  bool m_filledPrimaryPage;
+  GlyphMetricsPage
+      m_primaryPage;  // We optimize for the page that contains glyph indices 0-255.
+  std::unique_ptr<HashMap<int, std::unique_ptr<GlyphMetricsPage>>> m_pages;
 };
 
-template<> inline float GlyphMetricsMap<float>::unknownMetrics()
-{
-    return cGlyphSizeUnknown;
+template <>
+inline float GlyphMetricsMap<float>::unknownMetrics() {
+  return cGlyphSizeUnknown;
 }
 
-template<> inline FloatRect GlyphMetricsMap<FloatRect>::unknownMetrics()
-{
-    return FloatRect(0, 0, cGlyphSizeUnknown, cGlyphSizeUnknown);
+template <>
+inline FloatRect GlyphMetricsMap<FloatRect>::unknownMetrics() {
+  return FloatRect(0, 0, cGlyphSizeUnknown, cGlyphSizeUnknown);
 }
 
-template<class T> typename GlyphMetricsMap<T>::GlyphMetricsPage* GlyphMetricsMap<T>::locatePageSlowCase(unsigned pageNumber)
-{
-    GlyphMetricsPage* page;
-    if (!pageNumber) {
-        ASSERT(!m_filledPrimaryPage);
-        page = &m_primaryPage;
-        m_filledPrimaryPage = true;
+template <class T>
+typename GlyphMetricsMap<T>::GlyphMetricsPage*
+GlyphMetricsMap<T>::locatePageSlowCase(unsigned pageNumber) {
+  GlyphMetricsPage* page;
+  if (!pageNumber) {
+    ASSERT(!m_filledPrimaryPage);
+    page = &m_primaryPage;
+    m_filledPrimaryPage = true;
+  } else {
+    if (m_pages) {
+      page = m_pages->get(pageNumber);
+      if (page)
+        return page;
     } else {
-        if (m_pages) {
-            page = m_pages->get(pageNumber);
-            if (page)
-                return page;
-        } else {
-            m_pages = wrapUnique(new HashMap<int, std::unique_ptr<GlyphMetricsPage>>);
-        }
-        page = new GlyphMetricsPage;
-        m_pages->set(pageNumber, wrapUnique(page));
+      m_pages = wrapUnique(new HashMap<int, std::unique_ptr<GlyphMetricsPage>>);
     }
+    page = new GlyphMetricsPage;
+    m_pages->set(pageNumber, wrapUnique(page));
+  }
 
-    // Fill in the whole page with the unknown glyph information.
-    for (unsigned i = 0; i < GlyphMetricsPage::size; i++)
-        page->setMetricsForIndex(i, unknownMetrics());
+  // Fill in the whole page with the unknown glyph information.
+  for (unsigned i = 0; i < GlyphMetricsPage::size; i++)
+    page->setMetricsForIndex(i, unknownMetrics());
 
-    return page;
+  return page;
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

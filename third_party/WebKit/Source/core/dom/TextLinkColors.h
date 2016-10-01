@@ -37,32 +37,35 @@ namespace blink {
 class CSSValue;
 
 class TextLinkColors {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(TextLinkColors);
-public:
-    TextLinkColors();
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(TextLinkColors);
 
-    void setTextColor(const Color& color) { m_textColor = color; }
-    Color textColor() const { return m_textColor; }
+ public:
+  TextLinkColors();
 
-    const Color& linkColor() const { return m_linkColor; }
-    const Color& visitedLinkColor() const { return m_visitedLinkColor; }
-    const Color& activeLinkColor() const { return m_activeLinkColor; }
-    void setLinkColor(const Color& color) { m_linkColor = color; }
-    void setVisitedLinkColor(const Color& color) { m_visitedLinkColor = color; }
-    void setActiveLinkColor(const Color& color) { m_activeLinkColor = color; }
-    void resetLinkColor();
-    void resetVisitedLinkColor();
-    void resetActiveLinkColor();
-    Color colorFromCSSValue(const CSSValue&, Color currentColor, bool forVisitedLink = false) const;
-private:
+  void setTextColor(const Color& color) { m_textColor = color; }
+  Color textColor() const { return m_textColor; }
 
-    Color m_textColor;
-    Color m_linkColor;
-    Color m_visitedLinkColor;
-    Color m_activeLinkColor;
+  const Color& linkColor() const { return m_linkColor; }
+  const Color& visitedLinkColor() const { return m_visitedLinkColor; }
+  const Color& activeLinkColor() const { return m_activeLinkColor; }
+  void setLinkColor(const Color& color) { m_linkColor = color; }
+  void setVisitedLinkColor(const Color& color) { m_visitedLinkColor = color; }
+  void setActiveLinkColor(const Color& color) { m_activeLinkColor = color; }
+  void resetLinkColor();
+  void resetVisitedLinkColor();
+  void resetActiveLinkColor();
+  Color colorFromCSSValue(const CSSValue&,
+                          Color currentColor,
+                          bool forVisitedLink = false) const;
+
+ private:
+  Color m_textColor;
+  Color m_linkColor;
+  Color m_visitedLinkColor;
+  Color m_activeLinkColor;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

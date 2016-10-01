@@ -37,27 +37,27 @@ namespace WTF {
 // (non-floating-point) values.
 template <typename T>
 class IntegralTypedArrayBase : public TypedArrayBase<T> {
-public:
-    void set(unsigned index, double value)
-    {
-        if (index >= TypedArrayBase<T>::m_length)
-            return;
-        if (std::isnan(value)) // Clamp NaN to 0
-            value = 0;
-        // The double cast is necessary to get the correct wrapping
-        // for out-of-range values with Int32Array and Uint32Array.
-        TypedArrayBase<T>::data()[index] = static_cast<T>(static_cast<int64_t>(value));
-    }
+ public:
+  void set(unsigned index, double value) {
+    if (index >= TypedArrayBase<T>::m_length)
+      return;
+    if (std::isnan(value))  // Clamp NaN to 0
+      value = 0;
+    // The double cast is necessary to get the correct wrapping
+    // for out-of-range values with Int32Array and Uint32Array.
+    TypedArrayBase<T>::data()[index] =
+        static_cast<T>(static_cast<int64_t>(value));
+  }
 
-protected:
-    IntegralTypedArrayBase(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-        : TypedArrayBase<T>(std::move(buffer), byteOffset, length)
-    {
-    }
+ protected:
+  IntegralTypedArrayBase(PassRefPtr<ArrayBuffer> buffer,
+                         unsigned byteOffset,
+                         unsigned length)
+      : TypedArrayBase<T>(std::move(buffer), byteOffset, length) {}
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::IntegralTypedArrayBase;
 
-#endif // IntegralTypedArrayBase_h
+#endif  // IntegralTypedArrayBase_h

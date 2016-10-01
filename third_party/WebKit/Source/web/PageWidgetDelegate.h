@@ -48,40 +48,46 @@ class WebMouseWheelEvent;
 class WebTouchEvent;
 
 class WEB_EXPORT PageWidgetEventHandler {
-public:
-    virtual void handleMouseMove(LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent&);
-    virtual WebInputEventResult handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent&);
-    virtual WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) = 0;
-    virtual WebInputEventResult handleCharEvent(const WebKeyboardEvent&) = 0;
-    virtual WebInputEventResult handleGestureEvent(const WebGestureEvent&) = 0;
-    virtual WebInputEventResult handleTouchEvent(LocalFrame& mainFrame, const WebTouchEvent&);
-    virtual ~PageWidgetEventHandler() { }
+ public:
+  virtual void handleMouseMove(LocalFrame& mainFrame, const WebMouseEvent&);
+  virtual void handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent&);
+  virtual void handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent&);
+  virtual void handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent&);
+  virtual WebInputEventResult handleMouseWheel(LocalFrame& mainFrame,
+                                               const WebMouseWheelEvent&);
+  virtual WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) = 0;
+  virtual WebInputEventResult handleCharEvent(const WebKeyboardEvent&) = 0;
+  virtual WebInputEventResult handleGestureEvent(const WebGestureEvent&) = 0;
+  virtual WebInputEventResult handleTouchEvent(LocalFrame& mainFrame,
+                                               const WebTouchEvent&);
+  virtual ~PageWidgetEventHandler() {}
 };
-
 
 // Common implementation of WebViewImpl and WebPagePopupImpl.
 class PageWidgetDelegate {
-public:
-    static void animate(Page&, double monotonicFrameBeginTime);
+ public:
+  static void animate(Page&, double monotonicFrameBeginTime);
 
-    // For the following methods, the |root| argument indicates a root localFrame from which
-    // to start performing the specified operation.
+  // For the following methods, the |root| argument indicates a root localFrame from which
+  // to start performing the specified operation.
 
-    // See documents of methods with the same names in FrameView class.
-    static void updateAllLifecyclePhases(Page&, LocalFrame& root);
+  // See documents of methods with the same names in FrameView class.
+  static void updateAllLifecyclePhases(Page&, LocalFrame& root);
 
-    static void paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
-    static void paintIgnoringCompositing(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
+  static void paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
+  static void paintIgnoringCompositing(Page&,
+                                       WebCanvas*,
+                                       const WebRect&,
+                                       LocalFrame& root);
 
-    // See FIXME in the function body about nullptr |root|.
-    static WebInputEventResult handleInputEvent(PageWidgetEventHandler&, const WebInputEvent&, LocalFrame* root);
+  // See FIXME in the function body about nullptr |root|.
+  static WebInputEventResult handleInputEvent(PageWidgetEventHandler&,
+                                              const WebInputEvent&,
+                                              LocalFrame* root);
 
-private:
-    PageWidgetDelegate() { }
+ private:
+  PageWidgetDelegate() {}
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

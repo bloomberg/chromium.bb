@@ -29,41 +29,44 @@
 namespace blink {
 
 class SVGRectElement final : public SVGGeometryElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGRectElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    Path asPath() const override;
+ public:
+  DECLARE_NODE_FACTORY(SVGRectElement);
 
-    SVGAnimatedLength* x() const { return m_x.get(); }
-    SVGAnimatedLength* y() const { return m_y.get(); }
-    SVGAnimatedLength* width() const { return m_width.get(); }
-    SVGAnimatedLength* height() const { return m_height.get(); }
-    SVGAnimatedLength* rx() const { return m_rx.get(); }
-    SVGAnimatedLength* ry() const { return m_ry.get(); }
+  Path asPath() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedLength* x() const { return m_x.get(); }
+  SVGAnimatedLength* y() const { return m_y.get(); }
+  SVGAnimatedLength* width() const { return m_width.get(); }
+  SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedLength* rx() const { return m_rx.get(); }
+  SVGAnimatedLength* ry() const { return m_ry.get(); }
 
-private:
-    explicit SVGRectElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    void svgAttributeChanged(const QualifiedName&) override;
+ private:
+  explicit SVGRectElement(Document&);
 
-    bool selfHasRelativeLengths() const override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool selfHasRelativeLengths() const override;
 
-    Member<SVGAnimatedLength> m_x;
-    Member<SVGAnimatedLength> m_y;
-    Member<SVGAnimatedLength> m_width;
-    Member<SVGAnimatedLength> m_height;
-    Member<SVGAnimatedLength> m_rx;
-    Member<SVGAnimatedLength> m_ry;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+
+  Member<SVGAnimatedLength> m_x;
+  Member<SVGAnimatedLength> m_y;
+  Member<SVGAnimatedLength> m_width;
+  Member<SVGAnimatedLength> m_height;
+  Member<SVGAnimatedLength> m_rx;
+  Member<SVGAnimatedLength> m_ry;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGRectElement_h
+#endif  // SVGRectElement_h

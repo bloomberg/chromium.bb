@@ -14,44 +14,59 @@
 namespace blink {
 
 class MODULES_EXPORT ServiceWorkerMessageEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ServiceWorkerMessageEvent* create(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)
-    {
-        return new ServiceWorkerMessageEvent(type, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    static ServiceWorkerMessageEvent* create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, ServiceWorker* source, const String& origin)
-    {
-        return new ServiceWorkerMessageEvent(std::move(data), origin, String(), source, ports);
-    }
+ public:
+  static ServiceWorkerMessageEvent* create(
+      const AtomicString& type,
+      const ServiceWorkerMessageEventInit& initializer) {
+    return new ServiceWorkerMessageEvent(type, initializer);
+  }
 
-    ~ServiceWorkerMessageEvent() override;
+  static ServiceWorkerMessageEvent* create(
+      MessagePortArray* ports,
+      PassRefPtr<SerializedScriptValue> data,
+      ServiceWorker* source,
+      const String& origin) {
+    return new ServiceWorkerMessageEvent(std::move(data), origin, String(),
+                                         source, ports);
+  }
 
-    SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
-    void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) { m_serializedData = serializedData; }
-    const String& origin() const { return m_origin; }
-    const String& lastEventId() const { return m_lastEventId; }
-    MessagePortArray ports(bool& isNull) const;
-    MessagePortArray ports() const;
-    void source(ServiceWorkerOrMessagePort& result) const;
+  ~ServiceWorkerMessageEvent() override;
 
-    const AtomicString& interfaceName() const override;
+  SerializedScriptValue* serializedData() const {
+    return m_serializedData.get();
+  }
+  void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) {
+    m_serializedData = serializedData;
+  }
+  const String& origin() const { return m_origin; }
+  const String& lastEventId() const { return m_lastEventId; }
+  MessagePortArray ports(bool& isNull) const;
+  MessagePortArray ports() const;
+  void source(ServiceWorkerOrMessagePort& result) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    ServiceWorkerMessageEvent(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer);
-    ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, ServiceWorker* source, MessagePortArray* ports);
+  DECLARE_VIRTUAL_TRACE();
 
-    RefPtr<SerializedScriptValue> m_serializedData;
-    String m_origin;
-    String m_lastEventId;
-    Member<ServiceWorker> m_sourceAsServiceWorker;
-    Member<MessagePort> m_sourceAsMessagePort;
-    Member<MessagePortArray> m_ports;
+ private:
+  ServiceWorkerMessageEvent(const AtomicString& type,
+                            const ServiceWorkerMessageEventInit& initializer);
+  ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data,
+                            const String& origin,
+                            const String& lastEventId,
+                            ServiceWorker* source,
+                            MessagePortArray* ports);
+
+  RefPtr<SerializedScriptValue> m_serializedData;
+  String m_origin;
+  String m_lastEventId;
+  Member<ServiceWorker> m_sourceAsServiceWorker;
+  Member<MessagePort> m_sourceAsMessagePort;
+  Member<MessagePortArray> m_ports;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerMessageEvent_h
+#endif  // ServiceWorkerMessageEvent_h

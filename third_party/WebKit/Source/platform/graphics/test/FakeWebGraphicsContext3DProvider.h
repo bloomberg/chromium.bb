@@ -12,41 +12,31 @@
 namespace blink {
 
 class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
-public:
-    FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl)
-        : m_gl(gl)
-    {
-        RefPtr<const GrGLInterface> glInterface = adoptRef(GrGLCreateNullInterface());
-        m_grContext = adoptRef(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(glInterface.get())));
-    }
+ public:
+  FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl) : m_gl(gl) {
+    RefPtr<const GrGLInterface> glInterface =
+        adoptRef(GrGLCreateNullInterface());
+    m_grContext = adoptRef(GrContext::Create(
+        kOpenGL_GrBackend,
+        reinterpret_cast<GrBackendContext>(glInterface.get())));
+  }
 
-    GrContext* grContext() override
-    {
-        return m_grContext.get();
-    }
+  GrContext* grContext() override { return m_grContext.get(); }
 
-    gpu::Capabilities getCapabilities() override
-    {
-        return gpu::Capabilities();
-    }
+  gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
 
-    bool isSoftwareRendering() const override
-    {
-        return false;
-    }
+  bool isSoftwareRendering() const override { return false; }
 
-    gpu::gles2::GLES2Interface* contextGL() override
-    {
-        return m_gl;
-    }
+  gpu::gles2::GLES2Interface* contextGL() override { return m_gl; }
 
-    bool bindToCurrentThread() override { return false; }
-    void setLostContextCallback(const base::Closure&) override {}
-    void setErrorMessageCallback(const base::Callback<void(const char*, int32_t id)>&) {}
+  bool bindToCurrentThread() override { return false; }
+  void setLostContextCallback(const base::Closure&) override {}
+  void setErrorMessageCallback(
+      const base::Callback<void(const char*, int32_t id)>&) {}
 
-private:
-    gpu::gles2::GLES2Interface* m_gl;
-    RefPtr<GrContext> m_grContext;
+ private:
+  gpu::gles2::GLES2Interface* m_gl;
+  RefPtr<GrContext> m_grContext;
 };
 
-} // namespace blink
+}  // namespace blink

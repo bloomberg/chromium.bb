@@ -18,34 +18,42 @@ namespace blink {
 
 namespace {
 
-TEST(PrivateScriptTestTest, invokePrivateScriptMethodFromCPP)
-{
-    V8TestingScope scope;
-    PrivateScriptTest* privateScriptTest = PrivateScriptTest::create(&scope.document());
-    bool success;
-    int result;
-    success = V8PrivateScriptTest::PrivateScript::addIntegerForPrivateScriptOnlyMethod(&scope.frame(), privateScriptTest, 100, 200, &result);
-    EXPECT_TRUE(success);
-    EXPECT_EQ(result, 300);
+TEST(PrivateScriptTestTest, invokePrivateScriptMethodFromCPP) {
+  V8TestingScope scope;
+  PrivateScriptTest* privateScriptTest =
+      PrivateScriptTest::create(&scope.document());
+  bool success;
+  int result;
+  success =
+      V8PrivateScriptTest::PrivateScript::addIntegerForPrivateScriptOnlyMethod(
+          &scope.frame(), privateScriptTest, 100, 200, &result);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(result, 300);
 }
 
-TEST(PrivateScriptTestTest, invokePrivateScriptAttributeFromCPP)
-{
-    V8TestingScope scope;
-    PrivateScriptTest* privateScriptTest = PrivateScriptTest::create(&scope.document());
-    bool success;
-    String result;
-    success = V8PrivateScriptTest::PrivateScript::stringAttributeForPrivateScriptOnlyAttributeGetter(&scope.frame(), privateScriptTest, &result);
-    EXPECT_TRUE(success);
-    EXPECT_EQ(result, "yyy");
-    success = V8PrivateScriptTest::PrivateScript::stringAttributeForPrivateScriptOnlyAttributeSetter(&scope.frame(), privateScriptTest, "foo");
-    EXPECT_TRUE(success);
-    success = V8PrivateScriptTest::PrivateScript::stringAttributeForPrivateScriptOnlyAttributeGetter(&scope.frame(), privateScriptTest, &result);
-    EXPECT_TRUE(success);
-    EXPECT_EQ(result, "foo");
+TEST(PrivateScriptTestTest, invokePrivateScriptAttributeFromCPP) {
+  V8TestingScope scope;
+  PrivateScriptTest* privateScriptTest =
+      PrivateScriptTest::create(&scope.document());
+  bool success;
+  String result;
+  success = V8PrivateScriptTest::PrivateScript::
+      stringAttributeForPrivateScriptOnlyAttributeGetter(
+          &scope.frame(), privateScriptTest, &result);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(result, "yyy");
+  success = V8PrivateScriptTest::PrivateScript::
+      stringAttributeForPrivateScriptOnlyAttributeSetter(
+          &scope.frame(), privateScriptTest, "foo");
+  EXPECT_TRUE(success);
+  success = V8PrivateScriptTest::PrivateScript::
+      stringAttributeForPrivateScriptOnlyAttributeGetter(
+          &scope.frame(), privateScriptTest, &result);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(result, "foo");
 }
 
-} // namespace
+}  // namespace
 
-} // namespace blink
+}  // namespace blink
 #endif

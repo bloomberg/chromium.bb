@@ -44,113 +44,119 @@
 
 namespace blink {
 
-class WebFileSystemCallbacksPrivate : public RefCounted<WebFileSystemCallbacksPrivate> {
-public:
-    static PassRefPtr<WebFileSystemCallbacksPrivate> create(std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
-    {
-        return adoptRef(new WebFileSystemCallbacksPrivate(std::move(callbacks)));
-    }
+class WebFileSystemCallbacksPrivate
+    : public RefCounted<WebFileSystemCallbacksPrivate> {
+ public:
+  static PassRefPtr<WebFileSystemCallbacksPrivate> create(
+      std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    return adoptRef(new WebFileSystemCallbacksPrivate(std::move(callbacks)));
+  }
 
-    AsyncFileSystemCallbacks* callbacks() { return m_callbacks.get(); }
+  AsyncFileSystemCallbacks* callbacks() { return m_callbacks.get(); }
 
-private:
-    WebFileSystemCallbacksPrivate(std::unique_ptr<AsyncFileSystemCallbacks> callbacks) : m_callbacks(std::move(callbacks)) { }
-    std::unique_ptr<AsyncFileSystemCallbacks> m_callbacks;
+ private:
+  WebFileSystemCallbacksPrivate(
+      std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
+      : m_callbacks(std::move(callbacks)) {}
+  std::unique_ptr<AsyncFileSystemCallbacks> m_callbacks;
 };
 
-WebFileSystemCallbacks::WebFileSystemCallbacks(std::unique_ptr<AsyncFileSystemCallbacks>&& callbacks)
-{
-    m_private = WebFileSystemCallbacksPrivate::create(std::move(callbacks));
+WebFileSystemCallbacks::WebFileSystemCallbacks(
+    std::unique_ptr<AsyncFileSystemCallbacks>&& callbacks) {
+  m_private = WebFileSystemCallbacksPrivate::create(std::move(callbacks));
 }
 
-void WebFileSystemCallbacks::reset()
-{
-    m_private.reset();
+void WebFileSystemCallbacks::reset() {
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::assign(const WebFileSystemCallbacks& other)
-{
-    m_private = other.m_private;
+void WebFileSystemCallbacks::assign(const WebFileSystemCallbacks& other) {
+  m_private = other.m_private;
 }
 
-void WebFileSystemCallbacks::didSucceed()
-{
-    ASSERT(!m_private.isNull());
-    m_private->callbacks()->didSucceed();
-    m_private.reset();
+void WebFileSystemCallbacks::didSucceed() {
+  ASSERT(!m_private.isNull());
+  m_private->callbacks()->didSucceed();
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::didReadMetadata(const WebFileInfo& webFileInfo)
-{
-    ASSERT(!m_private.isNull());
-    FileMetadata fileMetadata;
-    fileMetadata.modificationTime = webFileInfo.modificationTime;
-    fileMetadata.length = webFileInfo.length;
-    fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
-    fileMetadata.platformPath = webFileInfo.platformPath;
-    m_private->callbacks()->didReadMetadata(fileMetadata);
-    m_private.reset();
+void WebFileSystemCallbacks::didReadMetadata(const WebFileInfo& webFileInfo) {
+  ASSERT(!m_private.isNull());
+  FileMetadata fileMetadata;
+  fileMetadata.modificationTime = webFileInfo.modificationTime;
+  fileMetadata.length = webFileInfo.length;
+  fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
+  fileMetadata.platformPath = webFileInfo.platformPath;
+  m_private->callbacks()->didReadMetadata(fileMetadata);
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::didCreateSnapshotFile(const WebFileInfo& webFileInfo)
-{
-    ASSERT(!m_private.isNull());
-    // It's important to create a BlobDataHandle that refers to the platform file path prior
-    // to return from this method so the underlying file will not be deleted.
-    std::unique_ptr<BlobData> blobData = BlobData::create();
-    blobData->appendFile(webFileInfo.platformPath, 0, webFileInfo.length, invalidFileTime());
-    RefPtr<BlobDataHandle> snapshotBlob = BlobDataHandle::create(std::move(blobData), webFileInfo.length);
+void WebFileSystemCallbacks::didCreateSnapshotFile(
+    const WebFileInfo& webFileInfo) {
+  ASSERT(!m_private.isNull());
+  // It's important to create a BlobDataHandle that refers to the platform file path prior
+  // to return from this method so the underlying file will not be deleted.
+  std::unique_ptr<BlobData> blobData = BlobData::create();
+  blobData->appendFile(webFileInfo.platformPath, 0, webFileInfo.length,
+                       invalidFileTime());
+  RefPtr<BlobDataHandle> snapshotBlob =
+      BlobDataHandle::create(std::move(blobData), webFileInfo.length);
 
-    FileMetadata fileMetadata;
-    fileMetadata.modificationTime = webFileInfo.modificationTime;
-    fileMetadata.length = webFileInfo.length;
-    fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
-    fileMetadata.platformPath = webFileInfo.platformPath;
-    m_private->callbacks()->didCreateSnapshotFile(fileMetadata, snapshotBlob);
-    m_private.reset();
+  FileMetadata fileMetadata;
+  fileMetadata.modificationTime = webFileInfo.modificationTime;
+  fileMetadata.length = webFileInfo.length;
+  fileMetadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
+  fileMetadata.platformPath = webFileInfo.platformPath;
+  m_private->callbacks()->didCreateSnapshotFile(fileMetadata, snapshotBlob);
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::didReadDirectory(const WebVector<WebFileSystemEntry>& entries, bool hasMore)
-{
-    ASSERT(!m_private.isNull());
-    for (size_t i = 0; i < entries.size(); ++i)
-        m_private->callbacks()->didReadDirectoryEntry(entries[i].name, entries[i].isDirectory);
-    m_private->callbacks()->didReadDirectoryEntries(hasMore);
-    m_private.reset();
+void WebFileSystemCallbacks::didReadDirectory(
+    const WebVector<WebFileSystemEntry>& entries,
+    bool hasMore) {
+  ASSERT(!m_private.isNull());
+  for (size_t i = 0; i < entries.size(); ++i)
+    m_private->callbacks()->didReadDirectoryEntry(entries[i].name,
+                                                  entries[i].isDirectory);
+  m_private->callbacks()->didReadDirectoryEntries(hasMore);
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::didOpenFileSystem(const WebString& name, const WebURL& rootURL)
-{
-    ASSERT(!m_private.isNull());
-    m_private->callbacks()->didOpenFileSystem(name, rootURL);
-    m_private.reset();
+void WebFileSystemCallbacks::didOpenFileSystem(const WebString& name,
+                                               const WebURL& rootURL) {
+  ASSERT(!m_private.isNull());
+  m_private->callbacks()->didOpenFileSystem(name, rootURL);
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::didResolveURL(const WebString& name, const WebURL& rootURL, WebFileSystemType type, const WebString& filePath, bool isDirectory)
-{
-    ASSERT(!m_private.isNull());
-    m_private->callbacks()->didResolveURL(name, rootURL, static_cast<FileSystemType>(type), filePath, isDirectory);
-    m_private.reset();
+void WebFileSystemCallbacks::didResolveURL(const WebString& name,
+                                           const WebURL& rootURL,
+                                           WebFileSystemType type,
+                                           const WebString& filePath,
+                                           bool isDirectory) {
+  ASSERT(!m_private.isNull());
+  m_private->callbacks()->didResolveURL(
+      name, rootURL, static_cast<FileSystemType>(type), filePath, isDirectory);
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::didCreateFileWriter(WebFileWriter* webFileWriter, long long length)
-{
-    ASSERT(!m_private.isNull());
-    m_private->callbacks()->didCreateFileWriter(wrapUnique(webFileWriter), length);
-    m_private.reset();
+void WebFileSystemCallbacks::didCreateFileWriter(WebFileWriter* webFileWriter,
+                                                 long long length) {
+  ASSERT(!m_private.isNull());
+  m_private->callbacks()->didCreateFileWriter(wrapUnique(webFileWriter),
+                                              length);
+  m_private.reset();
 }
 
-void WebFileSystemCallbacks::didFail(WebFileError error)
-{
-    ASSERT(!m_private.isNull());
-    m_private->callbacks()->didFail(error);
-    m_private.reset();
+void WebFileSystemCallbacks::didFail(WebFileError error) {
+  ASSERT(!m_private.isNull());
+  m_private->callbacks()->didFail(error);
+  m_private.reset();
 }
 
-bool WebFileSystemCallbacks::shouldBlockUntilCompletion() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->callbacks()->shouldBlockUntilCompletion();
+bool WebFileSystemCallbacks::shouldBlockUntilCompletion() const {
+  ASSERT(!m_private.isNull());
+  return m_private->callbacks()->shouldBlockUntilCompletion();
 }
 
-} // namespace blink
+}  // namespace blink

@@ -11,11 +11,14 @@
 namespace blink {
 
 class DocumentAnimation {
-    STATIC_ONLY(DocumentAnimation);
-public:
-    static DocumentTimeline* timeline(Document& document) { return &document.timeline(); }
+  STATIC_ONLY(DocumentAnimation);
+
+ public:
+  static DocumentTimeline* timeline(Document& document) {
+    return &document.timeline();
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentAnimation_h
+#endif  // DocumentAnimation_h

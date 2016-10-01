@@ -34,14 +34,14 @@
 namespace blink {
 
 enum WebDragStatus {
-    WebDragStatusUnknown = 0,
-    WebDragStatusEnter,
-    WebDragStatusOver,
-    WebDragStatusLeave,
-    WebDragStatusDrop,
-    WebDragStatusLast = WebDragStatusDrop
+  WebDragStatusUnknown = 0,
+  WebDragStatusEnter,
+  WebDragStatusOver,
+  WebDragStatusLeave,
+  WebDragStatusDrop,
+  WebDragStatusLast = WebDragStatusDrop
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

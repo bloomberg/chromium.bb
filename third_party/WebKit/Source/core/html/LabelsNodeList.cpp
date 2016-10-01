@@ -34,17 +34,16 @@ namespace blink {
 using namespace HTMLNames;
 
 LabelsNodeList::LabelsNodeList(ContainerNode& ownerNode)
-    : LiveNodeList(ownerNode, LabelsNodeListType, InvalidateOnForAttrChange, NodeListRootType::TreeScope)
-{
+    : LiveNodeList(ownerNode,
+                   LabelsNodeListType,
+                   InvalidateOnForAttrChange,
+                   NodeListRootType::TreeScope) {}
+
+LabelsNodeList::~LabelsNodeList() {}
+
+bool LabelsNodeList::elementMatches(const Element& element) const {
+  return isHTMLLabelElement(element) &&
+         toHTMLLabelElement(element).control() == ownerNode();
 }
 
-LabelsNodeList::~LabelsNodeList()
-{
-}
-
-bool LabelsNodeList::elementMatches(const Element& element) const
-{
-    return isHTMLLabelElement(element) && toHTMLLabelElement(element).control() == ownerNode();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -51,71 +51,83 @@ class SQLValue;
 class ScriptValue;
 class VoidCallback;
 
-class SQLTransaction final
-    : public GarbageCollectedFinalized<SQLTransaction>
-    , public SQLTransactionStateMachine<SQLTransaction>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SQLTransaction* create(Database*, SQLTransactionCallback*,
-        VoidCallback* successCallback, SQLTransactionErrorCallback*, bool readOnly);
-    ~SQLTransaction();
-    DECLARE_TRACE();
+class SQLTransaction final : public GarbageCollectedFinalized<SQLTransaction>,
+                             public SQLTransactionStateMachine<SQLTransaction>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    void performPendingCallback();
+ public:
+  static SQLTransaction* create(Database*,
+                                SQLTransactionCallback*,
+                                VoidCallback* successCallback,
+                                SQLTransactionErrorCallback*,
+                                bool readOnly);
+  ~SQLTransaction();
+  DECLARE_TRACE();
 
-    void executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments,
-        SQLStatementCallback*, SQLStatementErrorCallback*, ExceptionState&);
-    void executeSql(ScriptState*, const String& sqlStatement, ExceptionState&);
-    void executeSql(ScriptState*, const String& sqlStatement, const Nullable<Vector<ScriptValue>>& arguments,
-        SQLStatementCallback*, SQLStatementErrorCallback*, ExceptionState&);
+  void performPendingCallback();
 
-    Database* database() { return m_database.get(); }
+  void executeSQL(const String& sqlStatement,
+                  const Vector<SQLValue>& arguments,
+                  SQLStatementCallback*,
+                  SQLStatementErrorCallback*,
+                  ExceptionState&);
+  void executeSql(ScriptState*, const String& sqlStatement, ExceptionState&);
+  void executeSql(ScriptState*,
+                  const String& sqlStatement,
+                  const Nullable<Vector<ScriptValue>>& arguments,
+                  SQLStatementCallback*,
+                  SQLStatementErrorCallback*,
+                  ExceptionState&);
 
-    SQLTransactionErrorCallback* releaseErrorCallback();
+  Database* database() { return m_database.get(); }
 
-    // APIs called from the backend published:
-    void requestTransitToState(SQLTransactionState);
-    bool hasCallback() const;
-    bool hasSuccessCallback() const;
-    bool hasErrorCallback() const;
-    void setBackend(SQLTransactionBackend*);
+  SQLTransactionErrorCallback* releaseErrorCallback();
 
-private:
-    SQLTransaction(Database*, SQLTransactionCallback*,
-        VoidCallback* successCallback, SQLTransactionErrorCallback*,
-        bool readOnly);
+  // APIs called from the backend published:
+  void requestTransitToState(SQLTransactionState);
+  bool hasCallback() const;
+  bool hasSuccessCallback() const;
+  bool hasErrorCallback() const;
+  void setBackend(SQLTransactionBackend*);
 
-    void clearCallbacks();
+ private:
+  SQLTransaction(Database*,
+                 SQLTransactionCallback*,
+                 VoidCallback* successCallback,
+                 SQLTransactionErrorCallback*,
+                 bool readOnly);
 
-    // State Machine functions:
-    StateFunction stateFunctionFor(SQLTransactionState) override;
-    bool computeNextStateAndCleanupIfNeeded();
+  void clearCallbacks();
 
-    // State functions:
-    SQLTransactionState deliverTransactionCallback();
-    SQLTransactionState deliverTransactionErrorCallback();
-    SQLTransactionState deliverStatementCallback();
-    SQLTransactionState deliverQuotaIncreaseCallback();
-    SQLTransactionState deliverSuccessCallback();
+  // State Machine functions:
+  StateFunction stateFunctionFor(SQLTransactionState) override;
+  bool computeNextStateAndCleanupIfNeeded();
 
-    SQLTransactionState unreachableState();
-    SQLTransactionState sendToBackendState();
+  // State functions:
+  SQLTransactionState deliverTransactionCallback();
+  SQLTransactionState deliverTransactionErrorCallback();
+  SQLTransactionState deliverStatementCallback();
+  SQLTransactionState deliverQuotaIncreaseCallback();
+  SQLTransactionState deliverSuccessCallback();
 
-    SQLTransactionState nextStateForTransactionError();
+  SQLTransactionState unreachableState();
+  SQLTransactionState sendToBackendState();
 
-    Member<Database> m_database;
-    Member<SQLTransactionBackend> m_backend;
-    Member<SQLTransactionCallback> m_callback;
-    Member<VoidCallback> m_successCallback;
-    Member<SQLTransactionErrorCallback> m_errorCallback;
+  SQLTransactionState nextStateForTransactionError();
 
-    bool m_executeSqlAllowed;
-    std::unique_ptr<SQLErrorData> m_transactionError;
+  Member<Database> m_database;
+  Member<SQLTransactionBackend> m_backend;
+  Member<SQLTransactionCallback> m_callback;
+  Member<VoidCallback> m_successCallback;
+  Member<SQLTransactionErrorCallback> m_errorCallback;
 
-    bool m_readOnly;
+  bool m_executeSqlAllowed;
+  std::unique_ptr<SQLErrorData> m_transactionError;
+
+  bool m_readOnly;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLTransaction_h
+#endif  // SQLTransaction_h

@@ -34,39 +34,46 @@ class Image;
 class LayoutObject;
 
 class FEImage final : public FilterEffect {
-public:
-    static FEImage* createWithImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
-    static FEImage* createWithIRIReference(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
+ public:
+  static FEImage* createWithImage(Filter*,
+                                  PassRefPtr<Image>,
+                                  SVGPreserveAspectRatio*);
+  static FEImage* createWithIRIReference(Filter*,
+                                         TreeScope&,
+                                         const String&,
+                                         SVGPreserveAspectRatio*);
 
-    // feImage does not perform color interpolation of any kind, so doesn't
-    // depend on the value of color-interpolation-filters.
-    void setOperatingColorSpace(ColorSpace) override { }
+  // feImage does not perform color interpolation of any kind, so doesn't
+  // depend on the value of color-interpolation-filters.
+  void setOperatingColorSpace(ColorSpace) override {}
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    ~FEImage() override {}
-    FEImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
-    FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
-    LayoutObject* referencedLayoutObject() const;
+ private:
+  ~FEImage() override {}
+  FEImage(Filter*, PassRefPtr<Image>, SVGPreserveAspectRatio*);
+  FEImage(Filter*, TreeScope&, const String&, SVGPreserveAspectRatio*);
+  LayoutObject* referencedLayoutObject() const;
 
-    FilterEffectType getFilterEffectType() const override { return FilterEffectTypeImage; }
+  FilterEffectType getFilterEffectType() const override {
+    return FilterEffectTypeImage;
+  }
 
-    FloatRect mapInputs(const FloatRect&) const override;
+  FloatRect mapInputs(const FloatRect&) const override;
 
-    sk_sp<SkImageFilter> createImageFilter() override;
-    sk_sp<SkImageFilter> createImageFilterForLayoutObject(const LayoutObject&);
+  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilterForLayoutObject(const LayoutObject&);
 
-    RefPtr<Image> m_image;
+  RefPtr<Image> m_image;
 
-    // m_treeScope will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
-    Member<TreeScope> m_treeScope;
-    String m_href;
-    Member<SVGPreserveAspectRatio> m_preserveAspectRatio;
+  // m_treeScope will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
+  Member<TreeScope> m_treeScope;
+  String m_href;
+  Member<SVGPreserveAspectRatio> m_preserveAspectRatio;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEImage_h
+#endif  // SVGFEImage_h

@@ -6,9 +6,9 @@
 
 namespace blink {
 
-std::unique_ptr<WebDataConsumerHandle::Reader> FetchDataConsumerHandle::obtainReader(Client* client)
-{
-    return obtainFetchDataReader(client);
+std::unique_ptr<WebDataConsumerHandle::Reader>
+FetchDataConsumerHandle::obtainReader(Client* client) {
+  return obtainFetchDataReader(client);
 }
 
-} // namespace blink
+}  // namespace blink

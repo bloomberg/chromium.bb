@@ -10,17 +10,18 @@
 namespace blink {
 
 class CORE_EXPORT BackwardsTextBuffer final : public TextBufferBase {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(BackwardsTextBuffer);
-public:
-    BackwardsTextBuffer() {}
-    const UChar* data() const override;
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(BackwardsTextBuffer);
 
-private:
-    UChar* calcDestination(size_t length) override;
-    void shiftData(size_t oldCapacity) override;
+ public:
+  BackwardsTextBuffer() {}
+  const UChar* data() const override;
+
+ private:
+  UChar* calcDestination(size_t length) override;
+  void shiftData(size_t oldCapacity) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextBuffer_h
+#endif  // TextBuffer_h

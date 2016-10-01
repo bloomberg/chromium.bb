@@ -29,24 +29,20 @@
 
 namespace blink {
 
-bool DocumentFullscreen::fullscreenEnabled(Document& document)
-{
-    return Fullscreen::fullscreenEnabled(document);
+bool DocumentFullscreen::fullscreenEnabled(Document& document) {
+  return Fullscreen::fullscreenEnabled(document);
 }
 
-Element* DocumentFullscreen::fullscreenElement(Document& document)
-{
-    return Fullscreen::fullscreenElementFrom(document);
+Element* DocumentFullscreen::fullscreenElement(Document& document) {
+  return Fullscreen::fullscreenElementFrom(document);
 }
 
-void DocumentFullscreen::exitFullscreen(Document& document)
-{
-    Fullscreen::exitFullscreen(document);
+void DocumentFullscreen::exitFullscreen(Document& document) {
+  Fullscreen::exitFullscreen(document);
 }
 
-Element* DocumentFullscreen::currentFullScreenElement(Document& document)
-{
-    return Fullscreen::currentFullScreenElementFrom(document);
+Element* DocumentFullscreen::currentFullScreenElement(Document& document) {
+  return Fullscreen::currentFullScreenElementFrom(document);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -17,47 +17,52 @@
 
 namespace blink {
 
-ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate, WorkerThread* thread)
-    : WorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate)
-    , m_thread(thread)
-{
+ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
+    const KURL& url,
+    const String& userAgent,
+    PassRefPtr<SecurityOrigin> securityOrigin,
+    v8::Isolate* isolate,
+    WorkerThread* thread)
+    : WorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate),
+      m_thread(thread) {}
+
+ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope() {
+  DCHECK(!m_thread);
 }
 
-ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope()
-{
-    DCHECK(!m_thread);
+void ThreadedWorkletGlobalScope::dispose() {
+  DCHECK(isContextThread());
+  m_thread = nullptr;
+
+  WorkletGlobalScope::dispose();
 }
 
-void ThreadedWorkletGlobalScope::dispose()
-{
-    DCHECK(isContextThread());
-    m_thread = nullptr;
-
-    WorkletGlobalScope::dispose();
+bool ThreadedWorkletGlobalScope::isContextThread() const {
+  return thread()->isCurrentThread();
 }
 
-bool ThreadedWorkletGlobalScope::isContextThread() const
-{
-    return thread()->isCurrentThread();
+void ThreadedWorkletGlobalScope::postTask(
+    const WebTraceLocation& location,
+    std::unique_ptr<ExecutionContextTask> task,
+    const String& taskNameForInstrumentation) {
+  thread()->postTask(location, std::move(task),
+                     !taskNameForInstrumentation.isEmpty());
 }
 
-void ThreadedWorkletGlobalScope::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, const String& taskNameForInstrumentation)
-{
-    thread()->postTask(location, std::move(task), !taskNameForInstrumentation.isEmpty());
+void ThreadedWorkletGlobalScope::addConsoleMessage(
+    ConsoleMessage* consoleMessage) {
+  DCHECK(isContextThread());
+  thread()->workerReportingProxy().reportConsoleMessage(
+      consoleMessage->source(), consoleMessage->level(),
+      consoleMessage->message(), consoleMessage->location());
+  thread()->consoleMessageStorage()->addConsoleMessage(this, consoleMessage);
 }
 
-void ThreadedWorkletGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
-{
-    DCHECK(isContextThread());
-    thread()->workerReportingProxy().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location());
-    thread()->consoleMessageStorage()->addConsoleMessage(this, consoleMessage);
+void ThreadedWorkletGlobalScope::exceptionThrown(ErrorEvent* errorEvent) {
+  DCHECK(isContextThread());
+  if (WorkerThreadDebugger* debugger =
+          WorkerThreadDebugger::from(thread()->isolate()))
+    debugger->exceptionThrown(errorEvent);
 }
 
-void ThreadedWorkletGlobalScope::exceptionThrown(ErrorEvent* errorEvent)
-{
-    DCHECK(isContextThread());
-    if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
-        debugger->exceptionThrown(errorEvent);
-}
-
-} // namespace blink
+}  // namespace blink

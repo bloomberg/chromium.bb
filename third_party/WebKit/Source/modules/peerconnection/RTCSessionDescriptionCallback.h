@@ -37,13 +37,14 @@ namespace blink {
 
 class RTCSessionDescription;
 
-class RTCSessionDescriptionCallback : public GarbageCollectedFinalized<RTCSessionDescriptionCallback> {
-public:
-    virtual ~RTCSessionDescriptionCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(RTCSessionDescription*) = 0;
+class RTCSessionDescriptionCallback
+    : public GarbageCollectedFinalized<RTCSessionDescriptionCallback> {
+ public:
+  virtual ~RTCSessionDescriptionCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(RTCSessionDescription*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCSessionDescriptionCallback_h
+#endif  // RTCSessionDescriptionCallback_h

@@ -40,28 +40,27 @@ class WebPlugin;
 
 // Wraps a WebDocument for full page plugins.
 class WebPluginDocument final : public WebDocument {
-public:
-    WebPluginDocument() { }
-    WebPluginDocument(const WebPluginDocument& e) : WebDocument(e) { }
+ public:
+  WebPluginDocument() {}
+  WebPluginDocument(const WebPluginDocument& e) : WebDocument(e) {}
 
-    WebPluginDocument& operator=(const WebPluginDocument& e)
-    {
-        WebNode::assign(e);
-        return *this;
-    }
-    void assign(const WebPluginDocument& d) { WebNode::assign(d); }
+  WebPluginDocument& operator=(const WebPluginDocument& e) {
+    WebNode::assign(e);
+    return *this;
+  }
+  void assign(const WebPluginDocument& d) { WebNode::assign(d); }
 
-    BLINK_EXPORT WebPlugin* plugin();
+  BLINK_EXPORT WebPlugin* plugin();
 
 #if BLINK_IMPLEMENTATION
-    WebPluginDocument(PluginDocument*);
-    WebPluginDocument& operator=(PluginDocument*);
-    operator PluginDocument*() const;
+  WebPluginDocument(PluginDocument*);
+  WebPluginDocument& operator=(PluginDocument*);
+  operator PluginDocument*() const;
 #endif
 };
 
 DECLARE_WEB_NODE_TYPE_CASTS(WebPluginDocument);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -17,30 +17,30 @@ class ContentSettingCallbacks;
 class WebContentSettingCallbacksPrivate;
 
 class WebContentSettingCallbacks {
-public:
-    ~WebContentSettingCallbacks() { reset(); }
-    WebContentSettingCallbacks() { }
-    WebContentSettingCallbacks(const WebContentSettingCallbacks& c) { assign(c); }
-    WebContentSettingCallbacks& operator=(const WebContentSettingCallbacks& c)
-    {
-        assign(c);
-        return *this;
-    }
+ public:
+  ~WebContentSettingCallbacks() { reset(); }
+  WebContentSettingCallbacks() {}
+  WebContentSettingCallbacks(const WebContentSettingCallbacks& c) { assign(c); }
+  WebContentSettingCallbacks& operator=(const WebContentSettingCallbacks& c) {
+    assign(c);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebContentSettingCallbacks&);
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebContentSettingCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebContentSettingCallbacks(std::unique_ptr<ContentSettingCallbacks>&&);
+  BLINK_PLATFORM_EXPORT WebContentSettingCallbacks(
+      std::unique_ptr<ContentSettingCallbacks>&&);
 #endif
 
-    BLINK_PLATFORM_EXPORT void doAllow();
-    BLINK_PLATFORM_EXPORT void doDeny();
+  BLINK_PLATFORM_EXPORT void doAllow();
+  BLINK_PLATFORM_EXPORT void doDeny();
 
-private:
-    WebPrivatePtr<WebContentSettingCallbacksPrivate> m_private;
+ private:
+  WebPrivatePtr<WebContentSettingCallbacksPrivate> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

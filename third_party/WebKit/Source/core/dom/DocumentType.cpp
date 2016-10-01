@@ -27,45 +27,42 @@
 
 namespace blink {
 
-DocumentType::DocumentType(Document* document, const String& name, const String& publicId, const String& systemId)
-    : Node(document, CreateOther)
-    , m_name(name)
-    , m_publicId(publicId)
-    , m_systemId(systemId)
-{
+DocumentType::DocumentType(Document* document,
+                           const String& name,
+                           const String& publicId,
+                           const String& systemId)
+    : Node(document, CreateOther),
+      m_name(name),
+      m_publicId(publicId),
+      m_systemId(systemId) {}
+
+String DocumentType::nodeName() const {
+  return name();
 }
 
-String DocumentType::nodeName() const
-{
-    return name();
+Node::NodeType DocumentType::getNodeType() const {
+  return kDocumentTypeNode;
 }
 
-Node::NodeType DocumentType::getNodeType() const
-{
-    return kDocumentTypeNode;
+Node* DocumentType::cloneNode(bool /*deep*/) {
+  return create(&document(), m_name, m_publicId, m_systemId);
 }
 
-Node* DocumentType::cloneNode(bool /*deep*/)
-{
-    return create(&document(), m_name, m_publicId, m_systemId);
+Node::InsertionNotificationRequest DocumentType::insertedInto(
+    ContainerNode* insertionPoint) {
+  Node::insertedInto(insertionPoint);
+
+  // DocumentType can only be inserted into a Document.
+  DCHECK(parentNode()->isDocumentNode());
+
+  document().setDoctype(this);
+
+  return InsertionDone;
 }
 
-Node::InsertionNotificationRequest DocumentType::insertedInto(ContainerNode* insertionPoint)
-{
-    Node::insertedInto(insertionPoint);
-
-    // DocumentType can only be inserted into a Document.
-    DCHECK(parentNode()->isDocumentNode());
-
-    document().setDoctype(this);
-
-    return InsertionDone;
+void DocumentType::removedFrom(ContainerNode* insertionPoint) {
+  document().setDoctype(nullptr);
+  Node::removedFrom(insertionPoint);
 }
 
-void DocumentType::removedFrom(ContainerNode* insertionPoint)
-{
-    document().setDoctype(nullptr);
-    Node::removedFrom(insertionPoint);
-}
-
-} // namespace blink
+}  // namespace blink

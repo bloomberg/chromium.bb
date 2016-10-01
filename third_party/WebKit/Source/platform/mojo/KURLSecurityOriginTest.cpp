@@ -13,81 +13,77 @@ namespace blink {
 namespace {
 
 class UrlTestImpl : public url::mojom::blink::UrlTest {
-public:
-    explicit UrlTestImpl(url::mojom::blink::UrlTestRequest request)
-        : m_binding(this, std::move(request))
-    {
-    }
+ public:
+  explicit UrlTestImpl(url::mojom::blink::UrlTestRequest request)
+      : m_binding(this, std::move(request)) {}
 
-    // UrlTest:
-    void BounceUrl(const KURL& in, const BounceUrlCallback& callback) override
-    {
-        callback.Run(in);
-    }
+  // UrlTest:
+  void BounceUrl(const KURL& in, const BounceUrlCallback& callback) override {
+    callback.Run(in);
+  }
 
-    void BounceOrigin(const RefPtr<SecurityOrigin>& in,
-        const BounceOriginCallback& callback) override
-    {
-        callback.Run(in);
-    }
+  void BounceOrigin(const RefPtr<SecurityOrigin>& in,
+                    const BounceOriginCallback& callback) override {
+    callback.Run(in);
+  }
 
-private:
-    mojo::Binding<UrlTest> m_binding;
+ private:
+  mojo::Binding<UrlTest> m_binding;
 };
 
-} // namespace
+}  // namespace
 
 // Mojo version of chrome IPC test in url/ipc/url_param_traits_unittest.cc.
-TEST(KURLSecurityOriginStructTraitsTest, Basic)
-{
-    base::MessageLoop messageLoop;
+TEST(KURLSecurityOriginStructTraitsTest, Basic) {
+  base::MessageLoop messageLoop;
 
-    url::mojom::blink::UrlTestPtr proxy;
-    UrlTestImpl impl(GetProxy(&proxy));
+  url::mojom::blink::UrlTestPtr proxy;
+  UrlTestImpl impl(GetProxy(&proxy));
 
-    const char* serializeCases[] = {
-        "http://www.google.com/",
-        "http://user:pass@host.com:888/foo;bar?baz#nop",
-    };
+  const char* serializeCases[] = {
+      "http://www.google.com/", "http://user:pass@host.com:888/foo;bar?baz#nop",
+  };
 
-    for (const char* testCase : serializeCases) {
-        KURL input(KURL(), testCase);
-        KURL output;
-        EXPECT_TRUE(proxy->BounceUrl(input, &output));
+  for (const char* testCase : serializeCases) {
+    KURL input(KURL(), testCase);
+    KURL output;
+    EXPECT_TRUE(proxy->BounceUrl(input, &output));
 
-        // We want to test each component individually to make sure its range was
-        // correctly serialized and deserialized, not just the spec.
-        EXPECT_EQ(input.getString(), output.getString());
-        EXPECT_EQ(input.isValid(), output.isValid());
-        EXPECT_EQ(input.protocol(), output.protocol());
-        EXPECT_EQ(input.user(), output.user());
-        EXPECT_EQ(input.pass(), output.pass());
-        EXPECT_EQ(input.host(), output.host());
-        EXPECT_EQ(input.port(), output.port());
-        EXPECT_EQ(input.path(), output.path());
-        EXPECT_EQ(input.query(), output.query());
-        EXPECT_EQ(input.fragmentIdentifier(), output.fragmentIdentifier());
-    }
+    // We want to test each component individually to make sure its range was
+    // correctly serialized and deserialized, not just the spec.
+    EXPECT_EQ(input.getString(), output.getString());
+    EXPECT_EQ(input.isValid(), output.isValid());
+    EXPECT_EQ(input.protocol(), output.protocol());
+    EXPECT_EQ(input.user(), output.user());
+    EXPECT_EQ(input.pass(), output.pass());
+    EXPECT_EQ(input.host(), output.host());
+    EXPECT_EQ(input.port(), output.port());
+    EXPECT_EQ(input.path(), output.path());
+    EXPECT_EQ(input.query(), output.query());
+    EXPECT_EQ(input.fragmentIdentifier(), output.fragmentIdentifier());
+  }
 
-    // Test an excessively long GURL.
-    {
-        const std::string url = std::string("http://example.org/").append(url::kMaxURLChars + 1, 'a');
-        KURL input(KURL(), url.c_str());
-        KURL output;
-        EXPECT_TRUE(proxy->BounceUrl(input, &output));
-        EXPECT_TRUE(output.isEmpty());
-    }
+  // Test an excessively long GURL.
+  {
+    const std::string url =
+        std::string("http://example.org/").append(url::kMaxURLChars + 1, 'a');
+    KURL input(KURL(), url.c_str());
+    KURL output;
+    EXPECT_TRUE(proxy->BounceUrl(input, &output));
+    EXPECT_TRUE(output.isEmpty());
+  }
 
-    // Test basic Origin serialization.
-    RefPtr<SecurityOrigin> nonUnique = SecurityOrigin::create("http", "www.google.com", 80);
-    RefPtr<SecurityOrigin> output;
-    EXPECT_TRUE(proxy->BounceOrigin(nonUnique, &output));
-    EXPECT_TRUE(nonUnique->isSameSchemeHostPort(output.get()));
-    EXPECT_FALSE(nonUnique->isUnique());
+  // Test basic Origin serialization.
+  RefPtr<SecurityOrigin> nonUnique =
+      SecurityOrigin::create("http", "www.google.com", 80);
+  RefPtr<SecurityOrigin> output;
+  EXPECT_TRUE(proxy->BounceOrigin(nonUnique, &output));
+  EXPECT_TRUE(nonUnique->isSameSchemeHostPort(output.get()));
+  EXPECT_FALSE(nonUnique->isUnique());
 
-    RefPtr<SecurityOrigin> unique = SecurityOrigin::createUnique();
-    EXPECT_TRUE(proxy->BounceOrigin(unique, &output));
-    EXPECT_TRUE(output->isUnique());
+  RefPtr<SecurityOrigin> unique = SecurityOrigin::createUnique();
+  EXPECT_TRUE(proxy->BounceOrigin(unique, &output));
+  EXPECT_TRUE(output->isUnique());
 }
 
-} // namespace url
+}  // namespace url

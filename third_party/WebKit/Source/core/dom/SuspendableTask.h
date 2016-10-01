@@ -10,14 +10,15 @@
 namespace blink {
 
 class SuspendableTask {
-    USING_FAST_MALLOC(SuspendableTask);
-public:
-    SuspendableTask() { }
-    virtual void run() = 0;
-    virtual void contextDestroyed() { }
-    virtual ~SuspendableTask() { }
+  USING_FAST_MALLOC(SuspendableTask);
+
+ public:
+  SuspendableTask() {}
+  virtual void run() = 0;
+  virtual void contextDestroyed() {}
+  virtual ~SuspendableTask() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SuspendableTask_h
+#endif  // SuspendableTask_h

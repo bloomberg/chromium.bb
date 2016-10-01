@@ -16,36 +16,36 @@ namespace blink {
 class StyleResolverState;
 
 class CORE_EXPORT StyleInterpolation : public Interpolation {
-public:
-    // 1) convert m_cachedValue into an X
-    // 2) shove X into StyleResolverState
-    // X can be:
-    // (1) a CSSValue (and applied via StyleBuilder::applyProperty)
-    // (2) an AnimatableValue (and applied via // AnimatedStyleBuilder::applyProperty)
-    // (3) a custom value that is inserted directly into the StyleResolverState.
-    virtual void apply(StyleResolverState&) const = 0;
+ public:
+  // 1) convert m_cachedValue into an X
+  // 2) shove X into StyleResolverState
+  // X can be:
+  // (1) a CSSValue (and applied via StyleBuilder::applyProperty)
+  // (2) an AnimatableValue (and applied via // AnimatedStyleBuilder::applyProperty)
+  // (3) a custom value that is inserted directly into the StyleResolverState.
+  virtual void apply(StyleResolverState&) const = 0;
 
-    bool isStyleInterpolation() const final { return true; }
+  bool isStyleInterpolation() const final { return true; }
 
-    CSSPropertyID id() const { return m_id; }
+  CSSPropertyID id() const { return m_id; }
 
-    PropertyHandle getProperty() const final
-    {
-        return PropertyHandle(id());
-    }
+  PropertyHandle getProperty() const final { return PropertyHandle(id()); }
 
-protected:
-    CSSPropertyID m_id;
+ protected:
+  CSSPropertyID m_id;
 
-    StyleInterpolation(std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end, CSSPropertyID id)
-        : Interpolation(std::move(start), std::move(end))
-        , m_id(id)
-    {
-    }
+  StyleInterpolation(std::unique_ptr<InterpolableValue> start,
+                     std::unique_ptr<InterpolableValue> end,
+                     CSSPropertyID id)
+      : Interpolation(std::move(start), std::move(end)), m_id(id) {}
 };
 
-DEFINE_TYPE_CASTS(StyleInterpolation, Interpolation, value, value->isStyleInterpolation(), value.isStyleInterpolation());
+DEFINE_TYPE_CASTS(StyleInterpolation,
+                  Interpolation,
+                  value,
+                  value->isStyleInterpolation(),
+                  value.isStyleInterpolation());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

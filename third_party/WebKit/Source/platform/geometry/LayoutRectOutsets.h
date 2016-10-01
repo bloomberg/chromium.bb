@@ -47,79 +47,79 @@ namespace blink {
 //
 // Negative lengths can be used to express insets.
 class PLATFORM_EXPORT LayoutRectOutsets {
-    DISALLOW_NEW();
-public:
-    LayoutRectOutsets() { }
-    LayoutRectOutsets(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
-        : m_top(top), m_right(right), m_bottom(bottom), m_left(left) { }
-    LayoutRectOutsets(int top, int right, int bottom, int left)
-        : m_top(LayoutUnit(top)), m_right(LayoutUnit(right)), m_bottom(LayoutUnit(bottom)), m_left(LayoutUnit(left)) { }
+  DISALLOW_NEW();
 
-    LayoutRectOutsets(const IntRectOutsets& outsets)
-        : m_top(LayoutUnit(outsets.top()))
-        , m_right(LayoutUnit(outsets.right()))
-        , m_bottom(LayoutUnit(outsets.bottom()))
-        , m_left(LayoutUnit(outsets.left()))
-    {
-    }
+ public:
+  LayoutRectOutsets() {}
+  LayoutRectOutsets(LayoutUnit top,
+                    LayoutUnit right,
+                    LayoutUnit bottom,
+                    LayoutUnit left)
+      : m_top(top), m_right(right), m_bottom(bottom), m_left(left) {}
+  LayoutRectOutsets(int top, int right, int bottom, int left)
+      : m_top(LayoutUnit(top)),
+        m_right(LayoutUnit(right)),
+        m_bottom(LayoutUnit(bottom)),
+        m_left(LayoutUnit(left)) {}
 
-    LayoutRectOutsets(const FloatRectOutsets& outsets)
-        : m_top(LayoutUnit(outsets.top()))
-        , m_right(LayoutUnit(outsets.right()))
-        , m_bottom(LayoutUnit(outsets.bottom()))
-        , m_left(LayoutUnit(outsets.left()))
-    {
-    }
+  LayoutRectOutsets(const IntRectOutsets& outsets)
+      : m_top(LayoutUnit(outsets.top())),
+        m_right(LayoutUnit(outsets.right())),
+        m_bottom(LayoutUnit(outsets.bottom())),
+        m_left(LayoutUnit(outsets.left())) {}
 
-    LayoutUnit top() const { return m_top; }
-    LayoutUnit right() const { return m_right; }
-    LayoutUnit bottom() const { return m_bottom; }
-    LayoutUnit left() const { return m_left; }
+  LayoutRectOutsets(const FloatRectOutsets& outsets)
+      : m_top(LayoutUnit(outsets.top())),
+        m_right(LayoutUnit(outsets.right())),
+        m_bottom(LayoutUnit(outsets.bottom())),
+        m_left(LayoutUnit(outsets.left())) {}
 
-    void setTop(LayoutUnit value) { m_top = value; }
-    void setRight(LayoutUnit value) { m_right = value; }
-    void setBottom(LayoutUnit value) { m_bottom = value; }
-    void setLeft(LayoutUnit value) { m_left = value; }
+  LayoutUnit top() const { return m_top; }
+  LayoutUnit right() const { return m_right; }
+  LayoutUnit bottom() const { return m_bottom; }
+  LayoutUnit left() const { return m_left; }
 
-    LayoutUnit logicalTop(WritingMode) const;
-    LayoutUnit logicalBottom(WritingMode) const;
-    LayoutUnit logicalLeft(WritingMode) const;
-    LayoutUnit logicalRight(WritingMode) const;
+  void setTop(LayoutUnit value) { m_top = value; }
+  void setRight(LayoutUnit value) { m_right = value; }
+  void setBottom(LayoutUnit value) { m_bottom = value; }
+  void setLeft(LayoutUnit value) { m_left = value; }
 
-    // Produces a new LayoutRectOutsets whose |top| is the |logicalTop| of this
-    // one, and so on.
-    LayoutRectOutsets logicalOutsets(WritingMode) const;
+  LayoutUnit logicalTop(WritingMode) const;
+  LayoutUnit logicalBottom(WritingMode) const;
+  LayoutUnit logicalLeft(WritingMode) const;
+  LayoutUnit logicalRight(WritingMode) const;
 
-    // The same as |logicalOutsets|, but also adjusting for flipped lines.
-    LayoutRectOutsets logicalOutsetsWithFlippedLines(WritingMode) const;
+  // Produces a new LayoutRectOutsets whose |top| is the |logicalTop| of this
+  // one, and so on.
+  LayoutRectOutsets logicalOutsets(WritingMode) const;
 
-    LayoutUnit before(WritingMode) const;
-    LayoutUnit after(WritingMode) const;
-    LayoutUnit start(WritingMode, TextDirection) const;
-    LayoutUnit end(WritingMode, TextDirection) const;
-    LayoutUnit over(WritingMode) const;
-    LayoutUnit under(WritingMode) const;
+  // The same as |logicalOutsets|, but also adjusting for flipped lines.
+  LayoutRectOutsets logicalOutsetsWithFlippedLines(WritingMode) const;
 
-    void setBefore(WritingMode, LayoutUnit);
-    void setAfter(WritingMode, LayoutUnit);
-    void setStart(WritingMode, TextDirection, LayoutUnit);
-    void setEnd(WritingMode, TextDirection, LayoutUnit);
+  LayoutUnit before(WritingMode) const;
+  LayoutUnit after(WritingMode) const;
+  LayoutUnit start(WritingMode, TextDirection) const;
+  LayoutUnit end(WritingMode, TextDirection) const;
+  LayoutUnit over(WritingMode) const;
+  LayoutUnit under(WritingMode) const;
 
-    bool operator==(const LayoutRectOutsets other) const
-    {
-        return top() == other.top()
-            && right() == other.right()
-            && bottom() == other.bottom()
-            && left() == other.left();
-    }
+  void setBefore(WritingMode, LayoutUnit);
+  void setAfter(WritingMode, LayoutUnit);
+  void setStart(WritingMode, TextDirection, LayoutUnit);
+  void setEnd(WritingMode, TextDirection, LayoutUnit);
 
-private:
-    LayoutUnit m_top;
-    LayoutUnit m_right;
-    LayoutUnit m_bottom;
-    LayoutUnit m_left;
+  bool operator==(const LayoutRectOutsets other) const {
+    return top() == other.top() && right() == other.right() &&
+           bottom() == other.bottom() && left() == other.left();
+  }
+
+ private:
+  LayoutUnit m_top;
+  LayoutUnit m_right;
+  LayoutUnit m_bottom;
+  LayoutUnit m_left;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutRectOutsets_h
+#endif  // LayoutRectOutsets_h

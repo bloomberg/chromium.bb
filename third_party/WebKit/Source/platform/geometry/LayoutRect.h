@@ -45,233 +45,264 @@ class FloatRect;
 class DoubleRect;
 
 class PLATFORM_EXPORT LayoutRect {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    LayoutRect() { }
-    LayoutRect(const LayoutPoint& location, const LayoutSize& size)
-        : m_location(location), m_size(size) { }
-    LayoutRect(LayoutUnit x, LayoutUnit y, LayoutUnit width, LayoutUnit height)
-        : m_location(LayoutPoint(x, y)), m_size(LayoutSize(width, height)) { }
-    LayoutRect(int x, int y, int width, int height)
-        : m_location(LayoutPoint(x, y)), m_size(LayoutSize(width, height)) { }
-    LayoutRect(const FloatPoint& location, const FloatSize& size)
-        : m_location(location), m_size(size) { }
-    LayoutRect(const DoublePoint& location, const DoubleSize& size)
-        : m_location(location), m_size(size) { }
-    LayoutRect(const IntPoint& location, const IntSize& size)
-        : m_location(location), m_size(size) { }
-    explicit LayoutRect(const IntRect& rect) : m_location(rect.location()), m_size(rect.size()) { }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    explicit LayoutRect(const FloatRect&); // don't do this implicitly since it's lossy
-    explicit LayoutRect(const DoubleRect&); // don't do this implicitly since it's lossy
+ public:
+  LayoutRect() {}
+  LayoutRect(const LayoutPoint& location, const LayoutSize& size)
+      : m_location(location), m_size(size) {}
+  LayoutRect(LayoutUnit x, LayoutUnit y, LayoutUnit width, LayoutUnit height)
+      : m_location(LayoutPoint(x, y)), m_size(LayoutSize(width, height)) {}
+  LayoutRect(int x, int y, int width, int height)
+      : m_location(LayoutPoint(x, y)), m_size(LayoutSize(width, height)) {}
+  LayoutRect(const FloatPoint& location, const FloatSize& size)
+      : m_location(location), m_size(size) {}
+  LayoutRect(const DoublePoint& location, const DoubleSize& size)
+      : m_location(location), m_size(size) {}
+  LayoutRect(const IntPoint& location, const IntSize& size)
+      : m_location(location), m_size(size) {}
+  explicit LayoutRect(const IntRect& rect)
+      : m_location(rect.location()), m_size(rect.size()) {}
 
-    LayoutPoint location() const { return m_location; }
-    LayoutSize size() const { return m_size; }
+  explicit LayoutRect(
+      const FloatRect&);  // don't do this implicitly since it's lossy
+  explicit LayoutRect(
+      const DoubleRect&);  // don't do this implicitly since it's lossy
 
-    IntPoint pixelSnappedLocation() const { return roundedIntPoint(m_location); }
-    IntSize pixelSnappedSize() const { return IntSize(snapSizeToPixel(m_size.width(), m_location.x()), snapSizeToPixel(m_size.height(), m_location.y())); }
+  LayoutPoint location() const { return m_location; }
+  LayoutSize size() const { return m_size; }
 
-    void setLocation(const LayoutPoint& location) { m_location = location; }
-    void setSize(const LayoutSize& size) { m_size = size; }
+  IntPoint pixelSnappedLocation() const { return roundedIntPoint(m_location); }
+  IntSize pixelSnappedSize() const {
+    return IntSize(snapSizeToPixel(m_size.width(), m_location.x()),
+                   snapSizeToPixel(m_size.height(), m_location.y()));
+  }
 
-    ALWAYS_INLINE LayoutUnit x() const { return m_location.x(); }
-    ALWAYS_INLINE LayoutUnit y() const { return m_location.y(); }
-    ALWAYS_INLINE LayoutUnit maxX() const { return x() + width(); }
-    ALWAYS_INLINE LayoutUnit maxY() const { return y() + height(); }
-    LayoutUnit width() const { return m_size.width(); }
-    LayoutUnit height() const { return m_size.height(); }
+  void setLocation(const LayoutPoint& location) { m_location = location; }
+  void setSize(const LayoutSize& size) { m_size = size; }
 
-    int pixelSnappedWidth() const { return snapSizeToPixel(width(), x()); }
-    int pixelSnappedHeight() const { return snapSizeToPixel(height(), y()); }
+  ALWAYS_INLINE LayoutUnit x() const { return m_location.x(); }
+  ALWAYS_INLINE LayoutUnit y() const { return m_location.y(); }
+  ALWAYS_INLINE LayoutUnit maxX() const { return x() + width(); }
+  ALWAYS_INLINE LayoutUnit maxY() const { return y() + height(); }
+  LayoutUnit width() const { return m_size.width(); }
+  LayoutUnit height() const { return m_size.height(); }
 
-    void setX(LayoutUnit x) { m_location.setX(x); }
-    void setY(LayoutUnit y) { m_location.setY(y); }
-    void setWidth(LayoutUnit width) { m_size.setWidth(width); }
-    void setHeight(LayoutUnit height) { m_size.setHeight(height); }
+  int pixelSnappedWidth() const { return snapSizeToPixel(width(), x()); }
+  int pixelSnappedHeight() const { return snapSizeToPixel(height(), y()); }
 
-    ALWAYS_INLINE bool isEmpty() const { return m_size.isEmpty(); }
+  void setX(LayoutUnit x) { m_location.setX(x); }
+  void setY(LayoutUnit y) { m_location.setY(y); }
+  void setWidth(LayoutUnit width) { m_size.setWidth(width); }
+  void setHeight(LayoutUnit height) { m_size.setHeight(height); }
 
-    // NOTE: The result is rounded to integer values, and thus may be not the exact
-    // center point.
-    LayoutPoint center() const { return LayoutPoint(x() + width() / 2, y() + height() / 2); }
+  ALWAYS_INLINE bool isEmpty() const { return m_size.isEmpty(); }
 
-    void move(const LayoutSize& size) { m_location += size; }
-    void move(const IntSize& size) { m_location.move(LayoutUnit(size.width()), LayoutUnit(size.height())); }
-    void moveBy(const LayoutPoint& offset) { m_location.move(offset.x(), offset.y()); }
-    void moveBy(const IntPoint& offset) { m_location.move(LayoutUnit(offset.x()), LayoutUnit(offset.y())); }
-    void move(LayoutUnit dx, LayoutUnit dy) { m_location.move(dx, dy); }
-    void move(int dx, int dy) { m_location.move(LayoutUnit(dx), LayoutUnit(dy)); }
+  // NOTE: The result is rounded to integer values, and thus may be not the exact
+  // center point.
+  LayoutPoint center() const {
+    return LayoutPoint(x() + width() / 2, y() + height() / 2);
+  }
 
-    void expand(const LayoutSize& size) { m_size += size; }
-    void expand(const LayoutRectOutsets& box)
-    {
-        m_location.move(-box.left(), -box.top());
-        m_size.expand(box.left() + box.right(), box.top() + box.bottom());
-    }
-    void expand(LayoutUnit dw, LayoutUnit dh) { m_size.expand(dw, dh); }
-    void expandEdges(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
-    {
-        m_location.move(-left, -top);
-        m_size.expand(left + right, top + bottom);
-    }
-    void contract(const LayoutSize& size) { m_size -= size; }
-    void contract(LayoutUnit dw, LayoutUnit dh) { m_size.expand(-dw, -dh); }
-    void contract(int dw, int dh) { m_size.expand(-dw, -dh); }
-    void contractEdges(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
-    {
-        m_location.move(left, top);
-        m_size.shrink(left + right, top + bottom);
-    }
+  void move(const LayoutSize& size) { m_location += size; }
+  void move(const IntSize& size) {
+    m_location.move(LayoutUnit(size.width()), LayoutUnit(size.height()));
+  }
+  void moveBy(const LayoutPoint& offset) {
+    m_location.move(offset.x(), offset.y());
+  }
+  void moveBy(const IntPoint& offset) {
+    m_location.move(LayoutUnit(offset.x()), LayoutUnit(offset.y()));
+  }
+  void move(LayoutUnit dx, LayoutUnit dy) { m_location.move(dx, dy); }
+  void move(int dx, int dy) { m_location.move(LayoutUnit(dx), LayoutUnit(dy)); }
 
-    void shiftXEdgeTo(LayoutUnit edge)
-    {
-        LayoutUnit delta = edge - x();
-        setX(edge);
-        setWidth((width() - delta).clampNegativeToZero());
-    }
-    void shiftMaxXEdgeTo(LayoutUnit edge)
-    {
-        LayoutUnit delta = edge - maxX();
-        setWidth((width() + delta).clampNegativeToZero());
-    }
-    void shiftYEdgeTo(LayoutUnit edge)
-    {
-        LayoutUnit delta = edge - y();
-        setY(edge);
-        setHeight((height() - delta).clampNegativeToZero());
-    }
-    void shiftMaxYEdgeTo(LayoutUnit edge)
-    {
-        LayoutUnit delta = edge - maxY();
-        setHeight((height() + delta).clampNegativeToZero());
-    }
+  void expand(const LayoutSize& size) { m_size += size; }
+  void expand(const LayoutRectOutsets& box) {
+    m_location.move(-box.left(), -box.top());
+    m_size.expand(box.left() + box.right(), box.top() + box.bottom());
+  }
+  void expand(LayoutUnit dw, LayoutUnit dh) { m_size.expand(dw, dh); }
+  void expandEdges(LayoutUnit top,
+                   LayoutUnit right,
+                   LayoutUnit bottom,
+                   LayoutUnit left) {
+    m_location.move(-left, -top);
+    m_size.expand(left + right, top + bottom);
+  }
+  void contract(const LayoutSize& size) { m_size -= size; }
+  void contract(LayoutUnit dw, LayoutUnit dh) { m_size.expand(-dw, -dh); }
+  void contract(int dw, int dh) { m_size.expand(-dw, -dh); }
+  void contractEdges(LayoutUnit top,
+                     LayoutUnit right,
+                     LayoutUnit bottom,
+                     LayoutUnit left) {
+    m_location.move(left, top);
+    m_size.shrink(left + right, top + bottom);
+  }
 
-    LayoutPoint minXMinYCorner() const { return m_location; } // typically topLeft
-    LayoutPoint maxXMinYCorner() const { return LayoutPoint(m_location.x() + m_size.width(), m_location.y()); } // typically topRight
-    LayoutPoint minXMaxYCorner() const { return LayoutPoint(m_location.x(), m_location.y() + m_size.height()); } // typically bottomLeft
-    LayoutPoint maxXMaxYCorner() const { return LayoutPoint(m_location.x() + m_size.width(), m_location.y() + m_size.height()); } // typically bottomRight
+  void shiftXEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - x();
+    setX(edge);
+    setWidth((width() - delta).clampNegativeToZero());
+  }
+  void shiftMaxXEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - maxX();
+    setWidth((width() + delta).clampNegativeToZero());
+  }
+  void shiftYEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - y();
+    setY(edge);
+    setHeight((height() - delta).clampNegativeToZero());
+  }
+  void shiftMaxYEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - maxY();
+    setHeight((height() + delta).clampNegativeToZero());
+  }
 
-    bool intersects(const LayoutRect&) const;
-    bool contains(const LayoutRect&) const;
+  LayoutPoint minXMinYCorner() const {
+    return m_location;
+  }  // typically topLeft
+  LayoutPoint maxXMinYCorner() const {
+    return LayoutPoint(m_location.x() + m_size.width(), m_location.y());
+  }  // typically topRight
+  LayoutPoint minXMaxYCorner() const {
+    return LayoutPoint(m_location.x(), m_location.y() + m_size.height());
+  }  // typically bottomLeft
+  LayoutPoint maxXMaxYCorner() const {
+    return LayoutPoint(m_location.x() + m_size.width(),
+                       m_location.y() + m_size.height());
+  }  // typically bottomRight
 
-    // This checks to see if the rect contains x,y in the traditional sense.
-    // Equivalent to checking if the rect contains a 1x1 rect below and to the right of (px,py).
-    bool contains(LayoutUnit px, LayoutUnit py) const
-        { return px >= x() && px < maxX() && py >= y() && py < maxY(); }
-    bool contains(const LayoutPoint& point) const { return contains(point.x(), point.y()); }
+  bool intersects(const LayoutRect&) const;
+  bool contains(const LayoutRect&) const;
 
-    void intersect(const LayoutRect&);
-    void unite(const LayoutRect&);
-    void uniteIfNonZero(const LayoutRect&);
+  // This checks to see if the rect contains x,y in the traditional sense.
+  // Equivalent to checking if the rect contains a 1x1 rect below and to the right of (px,py).
+  bool contains(LayoutUnit px, LayoutUnit py) const {
+    return px >= x() && px < maxX() && py >= y() && py < maxY();
+  }
+  bool contains(const LayoutPoint& point) const {
+    return contains(point.x(), point.y());
+  }
 
-    // Set this rect to be the intersection of itself and the argument rect
-    // using edge-inclusive geometry.  If the two rectangles overlap but the
-    // overlap region is zero-area (either because one of the two rectangles
-    // is zero-area, or because the rectangles overlap at an edge or a corner),
-    // the result is the zero-area intersection.  The return value indicates
-    // whether the two rectangle actually have an intersection, since checking
-    // the result for isEmpty() is not conclusive.
-    bool inclusiveIntersect(const LayoutRect&);
+  void intersect(const LayoutRect&);
+  void unite(const LayoutRect&);
+  void uniteIfNonZero(const LayoutRect&);
 
-    // Besides non-empty rects, this method also unites empty rects (as points or line segments).
-    // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
-    void uniteEvenIfEmpty(const LayoutRect&);
+  // Set this rect to be the intersection of itself and the argument rect
+  // using edge-inclusive geometry.  If the two rectangles overlap but the
+  // overlap region is zero-area (either because one of the two rectangles
+  // is zero-area, or because the rectangles overlap at an edge or a corner),
+  // the result is the zero-area intersection.  The return value indicates
+  // whether the two rectangle actually have an intersection, since checking
+  // the result for isEmpty() is not conclusive.
+  bool inclusiveIntersect(const LayoutRect&);
 
-    void inflateX(LayoutUnit dx)
-    {
-        m_location.setX(m_location.x() - dx);
-        m_size.setWidth(m_size.width() + dx + dx);
-    }
-    void inflateY(LayoutUnit dy)
-    {
-        m_location.setY(m_location.y() - dy);
-        m_size.setHeight(m_size.height() + dy + dy);
-    }
-    void inflate(LayoutUnit d) { inflateX(d); inflateY(d); }
-    void inflate(int d) { inflate(LayoutUnit(d)); }
-    void scale(float s);
-    void scale(float xAxisScale, float yAxisScale);
+  // Besides non-empty rects, this method also unites empty rects (as points or line segments).
+  // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
+  void uniteEvenIfEmpty(const LayoutRect&);
 
-    LayoutRect transposedRect() const { return LayoutRect(m_location.transposedPoint(), m_size.transposedSize()); }
+  void inflateX(LayoutUnit dx) {
+    m_location.setX(m_location.x() - dx);
+    m_size.setWidth(m_size.width() + dx + dx);
+  }
+  void inflateY(LayoutUnit dy) {
+    m_location.setY(m_location.y() - dy);
+    m_size.setHeight(m_size.height() + dy + dy);
+  }
+  void inflate(LayoutUnit d) {
+    inflateX(d);
+    inflateY(d);
+  }
+  void inflate(int d) { inflate(LayoutUnit(d)); }
+  void scale(float s);
+  void scale(float xAxisScale, float yAxisScale);
 
-    static IntRect infiniteIntRect()
-    {
-        // Due to saturated arithemetic this value is not the same as LayoutRect(IntRect(INT_MIN/2, INT_MIN/2, INT_MAX, INT_MAX)).
-        static IntRect infiniteIntRect(LayoutRect(LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMax(), LayoutUnit::nearlyMax()));
-        return infiniteIntRect;
-    }
+  LayoutRect transposedRect() const {
+    return LayoutRect(m_location.transposedPoint(), m_size.transposedSize());
+  }
 
-    String toString() const;
+  static IntRect infiniteIntRect() {
+    // Due to saturated arithemetic this value is not the same as LayoutRect(IntRect(INT_MIN/2, INT_MIN/2, INT_MAX, INT_MAX)).
+    static IntRect infiniteIntRect(
+        LayoutRect(LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMin() / 2,
+                   LayoutUnit::nearlyMax(), LayoutUnit::nearlyMax()));
+    return infiniteIntRect;
+  }
 
-private:
-    LayoutPoint m_location;
-    LayoutSize m_size;
+  String toString() const;
+
+ private:
+  LayoutPoint m_location;
+  LayoutSize m_size;
 };
 
-inline LayoutRect intersection(const LayoutRect& a, const LayoutRect& b)
-{
-    LayoutRect c = a;
-    c.intersect(b);
-    return c;
+inline LayoutRect intersection(const LayoutRect& a, const LayoutRect& b) {
+  LayoutRect c = a;
+  c.intersect(b);
+  return c;
 }
 
-inline LayoutRect unionRect(const LayoutRect& a, const LayoutRect& b)
-{
-    LayoutRect c = a;
-    c.unite(b);
-    return c;
+inline LayoutRect unionRect(const LayoutRect& a, const LayoutRect& b) {
+  LayoutRect c = a;
+  c.unite(b);
+  return c;
 }
 
 PLATFORM_EXPORT LayoutRect unionRect(const Vector<LayoutRect>&);
 
-inline LayoutRect unionRectEvenIfEmpty(const LayoutRect& a, const LayoutRect& b)
-{
-    LayoutRect c = a;
-    c.uniteEvenIfEmpty(b);
-    return c;
+inline LayoutRect unionRectEvenIfEmpty(const LayoutRect& a,
+                                       const LayoutRect& b) {
+  LayoutRect c = a;
+  c.uniteEvenIfEmpty(b);
+  return c;
 }
 
 PLATFORM_EXPORT LayoutRect unionRectEvenIfEmpty(const Vector<LayoutRect>&);
 
-ALWAYS_INLINE bool operator==(const LayoutRect& a, const LayoutRect& b)
-{
-    return a.location() == b.location() && a.size() == b.size();
+ALWAYS_INLINE bool operator==(const LayoutRect& a, const LayoutRect& b) {
+  return a.location() == b.location() && a.size() == b.size();
 }
 
-inline bool operator!=(const LayoutRect& a, const LayoutRect& b)
-{
-    return a.location() != b.location() || a.size() != b.size();
+inline bool operator!=(const LayoutRect& a, const LayoutRect& b) {
+  return a.location() != b.location() || a.size() != b.size();
 }
 
-inline IntRect pixelSnappedIntRect(const LayoutRect& rect)
-{
-    return IntRect(roundedIntPoint(rect.location()), IntSize(
-        snapSizeToPixel(rect.width(), rect.x()),
-        snapSizeToPixel(rect.height(), rect.y())));
+inline IntRect pixelSnappedIntRect(const LayoutRect& rect) {
+  return IntRect(roundedIntPoint(rect.location()),
+                 IntSize(snapSizeToPixel(rect.width(), rect.x()),
+                         snapSizeToPixel(rect.height(), rect.y())));
 }
 
 PLATFORM_EXPORT IntRect enclosingIntRect(const LayoutRect&);
 PLATFORM_EXPORT LayoutRect enclosingLayoutRect(const FloatRect&);
 
-inline IntRect pixelSnappedIntRect(LayoutUnit left, LayoutUnit top, LayoutUnit width, LayoutUnit height)
-{
-    return IntRect(left.round(), top.round(), snapSizeToPixel(width, left), snapSizeToPixel(height, top));
+inline IntRect pixelSnappedIntRect(LayoutUnit left,
+                                   LayoutUnit top,
+                                   LayoutUnit width,
+                                   LayoutUnit height) {
+  return IntRect(left.round(), top.round(), snapSizeToPixel(width, left),
+                 snapSizeToPixel(height, top));
 }
 
-inline IntRect pixelSnappedIntRectFromEdges(LayoutUnit left, LayoutUnit top, LayoutUnit right, LayoutUnit bottom)
-{
-    return IntRect(left.round(), top.round(), snapSizeToPixel(right - left, left), snapSizeToPixel(bottom - top, top));
+inline IntRect pixelSnappedIntRectFromEdges(LayoutUnit left,
+                                            LayoutUnit top,
+                                            LayoutUnit right,
+                                            LayoutUnit bottom) {
+  return IntRect(left.round(), top.round(), snapSizeToPixel(right - left, left),
+                 snapSizeToPixel(bottom - top, top));
 }
 
-inline IntRect pixelSnappedIntRect(LayoutPoint location, LayoutSize size)
-{
-    return IntRect(roundedIntPoint(location), pixelSnappedIntSize(size, location));
+inline IntRect pixelSnappedIntRect(LayoutPoint location, LayoutSize size) {
+  return IntRect(roundedIntPoint(location),
+                 pixelSnappedIntSize(size, location));
 }
 
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const LayoutRect&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutRect_h
+#endif  // LayoutRect_h

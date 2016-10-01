@@ -13,32 +13,30 @@
 namespace blink {
 
 class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
-public:
-    static std::unique_ptr<UnderlyingLengthChecker> create(size_t underlyingLength)
-    {
-        return wrapUnique(new UnderlyingLengthChecker(underlyingLength));
-    }
+ public:
+  static std::unique_ptr<UnderlyingLengthChecker> create(
+      size_t underlyingLength) {
+    return wrapUnique(new UnderlyingLengthChecker(underlyingLength));
+  }
 
-    static size_t getUnderlyingLength(const InterpolationValue& underlying)
-    {
-        if (!underlying)
-            return 0;
-        return toInterpolableList(*underlying.interpolableValue).length();
-    }
+  static size_t getUnderlyingLength(const InterpolationValue& underlying) {
+    if (!underlying)
+      return 0;
+    return toInterpolableList(*underlying.interpolableValue).length();
+  }
 
-    bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
-    {
-        return m_underlyingLength == getUnderlyingLength(underlying);
-    }
+  bool isValid(const InterpolationEnvironment&,
+               const InterpolationValue& underlying) const final {
+    return m_underlyingLength == getUnderlyingLength(underlying);
+  }
 
-private:
-    UnderlyingLengthChecker(size_t underlyingLength)
-        : m_underlyingLength(underlyingLength)
-    {}
+ private:
+  UnderlyingLengthChecker(size_t underlyingLength)
+      : m_underlyingLength(underlyingLength) {}
 
-    size_t m_underlyingLength;
+  size_t m_underlyingLength;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UnderlyingLengthChecker_h
+#endif  // UnderlyingLengthChecker_h

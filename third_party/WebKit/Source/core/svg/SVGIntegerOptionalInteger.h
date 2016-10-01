@@ -38,43 +38,53 @@
 namespace blink {
 
 class SVGIntegerOptionalInteger final : public SVGPropertyBase {
-public:
-    // Tearoff of SVGIntegerOptionalInteger is never created.
-    typedef void TearOffType;
-    typedef void PrimitiveType;
+ public:
+  // Tearoff of SVGIntegerOptionalInteger is never created.
+  typedef void TearOffType;
+  typedef void PrimitiveType;
 
-    static SVGIntegerOptionalInteger* create(SVGInteger* firstInteger, SVGInteger* secondInteger)
-    {
-        return new SVGIntegerOptionalInteger(firstInteger, secondInteger);
-    }
+  static SVGIntegerOptionalInteger* create(SVGInteger* firstInteger,
+                                           SVGInteger* secondInteger) {
+    return new SVGIntegerOptionalInteger(firstInteger, secondInteger);
+  }
 
-    SVGIntegerOptionalInteger* clone() const;
-    SVGPropertyBase* cloneForAnimation(const String&) const override;
+  SVGIntegerOptionalInteger* clone() const;
+  SVGPropertyBase* cloneForAnimation(const String&) const override;
 
-    String valueAsString() const override;
-    SVGParsingError setValueAsString(const String&);
+  String valueAsString() const override;
+  SVGParsingError setValueAsString(const String&);
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement* contextElement) override;
+  float calculateDistance(SVGPropertyBase* to,
+                          SVGElement* contextElement) override;
 
-    static AnimatedPropertyType classType() { return AnimatedIntegerOptionalInteger; }
-    AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType classType() {
+    return AnimatedIntegerOptionalInteger;
+  }
+  AnimatedPropertyType type() const override { return classType(); }
 
-    SVGInteger* firstInteger() const { return m_firstInteger; }
-    SVGInteger* secondInteger() const { return m_secondInteger; }
+  SVGInteger* firstInteger() const { return m_firstInteger; }
+  SVGInteger* secondInteger() const { return m_secondInteger; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    SVGIntegerOptionalInteger(SVGInteger* firstInteger, SVGInteger* secondInteger);
+ protected:
+  SVGIntegerOptionalInteger(SVGInteger* firstInteger,
+                            SVGInteger* secondInteger);
 
-    Member<SVGInteger> m_firstInteger;
-    Member<SVGInteger> m_secondInteger;
+  Member<SVGInteger> m_firstInteger;
+  Member<SVGInteger> m_secondInteger;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGIntegerOptionalInteger);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGIntegerOptionalInteger_h
+#endif  // SVGIntegerOptionalInteger_h

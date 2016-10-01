@@ -30,86 +30,91 @@
 
 namespace blink {
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const String& charset)
-    : m_resourceRequest(resourceRequest)
-    , m_charset(charset)
-    , m_options(ResourceFetcher::defaultResourceOptions())
-    , m_forPreload(false)
-    , m_linkPreload(false)
-    , m_preloadDiscoveryTime(0.0)
-    , m_defer(NoDefer)
-    , m_originRestriction(UseDefaultOriginRestrictionForType)
-{
-    m_options.initiatorInfo.name = initiator;
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
+                           const AtomicString& initiator,
+                           const String& charset)
+    : m_resourceRequest(resourceRequest),
+      m_charset(charset),
+      m_options(ResourceFetcher::defaultResourceOptions()),
+      m_forPreload(false),
+      m_linkPreload(false),
+      m_preloadDiscoveryTime(0.0),
+      m_defer(NoDefer),
+      m_originRestriction(UseDefaultOriginRestrictionForType) {
+  m_options.initiatorInfo.name = initiator;
 }
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const ResourceLoaderOptions& options)
-    : m_resourceRequest(resourceRequest)
-    , m_options(options)
-    , m_forPreload(false)
-    , m_linkPreload(false)
-    , m_preloadDiscoveryTime(0.0)
-    , m_defer(NoDefer)
-    , m_originRestriction(UseDefaultOriginRestrictionForType)
-{
-    m_options.initiatorInfo.name = initiator;
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
+                           const AtomicString& initiator,
+                           const ResourceLoaderOptions& options)
+    : m_resourceRequest(resourceRequest),
+      m_options(options),
+      m_forPreload(false),
+      m_linkPreload(false),
+      m_preloadDiscoveryTime(0.0),
+      m_defer(NoDefer),
+      m_originRestriction(UseDefaultOriginRestrictionForType) {
+  m_options.initiatorInfo.name = initiator;
 }
 
-FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const FetchInitiatorInfo& initiator)
-    : m_resourceRequest(resourceRequest)
-    , m_options(ResourceFetcher::defaultResourceOptions())
-    , m_forPreload(false)
-    , m_linkPreload(false)
-    , m_preloadDiscoveryTime(0.0)
-    , m_defer(NoDefer)
-    , m_originRestriction(UseDefaultOriginRestrictionForType)
-{
-    m_options.initiatorInfo = initiator;
+FetchRequest::FetchRequest(const ResourceRequest& resourceRequest,
+                           const FetchInitiatorInfo& initiator)
+    : m_resourceRequest(resourceRequest),
+      m_options(ResourceFetcher::defaultResourceOptions()),
+      m_forPreload(false),
+      m_linkPreload(false),
+      m_preloadDiscoveryTime(0.0),
+      m_defer(NoDefer),
+      m_originRestriction(UseDefaultOriginRestrictionForType) {
+  m_options.initiatorInfo = initiator;
 }
 
-FetchRequest::~FetchRequest()
-{
+FetchRequest::~FetchRequest() {}
+
+void FetchRequest::setCrossOriginAccessControl(
+    SecurityOrigin* origin,
+    CrossOriginAttributeValue crossOrigin) {
+  DCHECK_NE(crossOrigin, CrossOriginAttributeNotSet);
+  const bool useCredentials = crossOrigin == CrossOriginAttributeUseCredentials;
+  const bool isSameOriginRequest =
+      origin && origin->canRequestNoSuborigin(m_resourceRequest.url());
+
+  // Currently FetchRequestMode and FetchCredentialsMode are only used when the request goes to Service Worker.
+  m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
+  m_resourceRequest.setFetchCredentialsMode(
+      useCredentials ? WebURLRequest::FetchCredentialsModeInclude
+                     : WebURLRequest::FetchCredentialsModeSameOrigin);
+
+  m_options.allowCredentials = (isSameOriginRequest || useCredentials)
+                                   ? AllowStoredCredentials
+                                   : DoNotAllowStoredCredentials;
+  m_options.corsEnabled = IsCORSEnabled;
+  m_options.securityOrigin = origin;
+  m_options.credentialsRequested = useCredentials
+                                       ? ClientRequestedCredentials
+                                       : ClientDidNotRequestCredentials;
+
+  updateRequestForAccessControl(m_resourceRequest, origin,
+                                m_options.allowCredentials);
 }
 
-void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, CrossOriginAttributeValue crossOrigin)
-{
-    DCHECK_NE(crossOrigin, CrossOriginAttributeNotSet);
-    const bool useCredentials = crossOrigin == CrossOriginAttributeUseCredentials;
-    const bool isSameOriginRequest = origin && origin->canRequestNoSuborigin(m_resourceRequest.url());
-
-    // Currently FetchRequestMode and FetchCredentialsMode are only used when the request goes to Service Worker.
-    m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
-    m_resourceRequest.setFetchCredentialsMode(useCredentials ? WebURLRequest::FetchCredentialsModeInclude : WebURLRequest::FetchCredentialsModeSameOrigin);
-
-    m_options.allowCredentials = (isSameOriginRequest || useCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-    m_options.corsEnabled = IsCORSEnabled;
-    m_options.securityOrigin = origin;
-    m_options.credentialsRequested = useCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
-
-    updateRequestForAccessControl(m_resourceRequest, origin, m_options.allowCredentials);
+void FetchRequest::setResourceWidth(ResourceWidth resourceWidth) {
+  if (resourceWidth.isSet) {
+    m_resourceWidth.width = resourceWidth.width;
+    m_resourceWidth.isSet = true;
+  }
 }
 
-
-void FetchRequest::setResourceWidth(ResourceWidth resourceWidth)
-{
-    if (resourceWidth.isSet) {
-        m_resourceWidth.width = resourceWidth.width;
-        m_resourceWidth.isSet = true;
-    }
+void FetchRequest::setForPreload(bool forPreload, double discoveryTime) {
+  m_forPreload = forPreload;
+  m_preloadDiscoveryTime = discoveryTime;
 }
 
-void FetchRequest::setForPreload(bool forPreload, double discoveryTime)
-{
-    m_forPreload = forPreload;
-    m_preloadDiscoveryTime = discoveryTime;
+void FetchRequest::makeSynchronous() {
+  // Synchronous requests should always be max priority, lest they hang the renderer.
+  m_resourceRequest.setPriority(ResourceLoadPriorityHighest);
+  m_resourceRequest.setTimeoutInterval(10);
+  m_options.synchronousPolicy = RequestSynchronously;
 }
 
-void FetchRequest::makeSynchronous()
-{
-    // Synchronous requests should always be max priority, lest they hang the renderer.
-    m_resourceRequest.setPriority(ResourceLoadPriorityHighest);
-    m_resourceRequest.setTimeoutInterval(10);
-    m_options.synchronousPolicy = RequestSynchronously;
-}
-
-} // namespace blink
+}  // namespace blink

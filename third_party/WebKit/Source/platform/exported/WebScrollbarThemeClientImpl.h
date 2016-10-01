@@ -35,55 +35,57 @@
 namespace blink {
 
 // Adapts a WebScrollbar to the ScrollbarThemeClient interface
-class PLATFORM_EXPORT WebScrollbarThemeClientImpl : public ScrollbarThemeClient {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(WebScrollbarThemeClientImpl);
-public:
-    // Caller must retain ownership of this pointer and ensure that its lifetime
-    // exceeds this instance.
-    WebScrollbarThemeClientImpl(WebScrollbar&);
-    ~WebScrollbarThemeClientImpl() override;
+class PLATFORM_EXPORT WebScrollbarThemeClientImpl
+    : public ScrollbarThemeClient {
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(WebScrollbarThemeClientImpl);
 
-    // Implement ScrollbarThemeClient interface
-    int x() const override;
-    int y() const override;
-    int width() const override;
-    int height() const override;
-    IntSize size() const override;
-    IntPoint location() const override;
-    Widget* parent() const override;
-    Widget* root() const override;
-    void setFrameRect(const IntRect&) override;
-    IntRect frameRect() const override;
-    void invalidate() override;
-    void invalidateRect(const IntRect&) override;
-    ScrollbarOverlayStyle getScrollbarOverlayStyle() const override;
-    void getTickmarks(Vector<IntRect>&) const override;
-    bool isScrollableAreaActive() const override;
-    IntPoint convertFromRootFrame(const IntPoint&) const override;
-    bool isCustomScrollbar() const override;
-    ScrollbarOrientation orientation() const override;
-    bool isLeftSideVerticalScrollbar() const override;
-    int value() const override;
-    float currentPos() const override;
-    int visibleSize() const override;
-    int totalSize() const override;
-    int maximum() const override;
-    ScrollbarControlSize controlSize() const override;
-    ScrollbarPart pressedPart() const override;
-    ScrollbarPart hoveredPart() const override;
-    void styleChanged() override;
-    void visibilityChanged() override;
-    bool enabled() const override;
-    void setEnabled(bool) override;
-    bool isOverlayScrollbar() const override;
-    float elasticOverscroll() const override;
-    void setElasticOverscroll(float) override;
+ public:
+  // Caller must retain ownership of this pointer and ensure that its lifetime
+  // exceeds this instance.
+  WebScrollbarThemeClientImpl(WebScrollbar&);
+  ~WebScrollbarThemeClientImpl() override;
 
-private:
-    WebScrollbar& m_scrollbar;
+  // Implement ScrollbarThemeClient interface
+  int x() const override;
+  int y() const override;
+  int width() const override;
+  int height() const override;
+  IntSize size() const override;
+  IntPoint location() const override;
+  Widget* parent() const override;
+  Widget* root() const override;
+  void setFrameRect(const IntRect&) override;
+  IntRect frameRect() const override;
+  void invalidate() override;
+  void invalidateRect(const IntRect&) override;
+  ScrollbarOverlayStyle getScrollbarOverlayStyle() const override;
+  void getTickmarks(Vector<IntRect>&) const override;
+  bool isScrollableAreaActive() const override;
+  IntPoint convertFromRootFrame(const IntPoint&) const override;
+  bool isCustomScrollbar() const override;
+  ScrollbarOrientation orientation() const override;
+  bool isLeftSideVerticalScrollbar() const override;
+  int value() const override;
+  float currentPos() const override;
+  int visibleSize() const override;
+  int totalSize() const override;
+  int maximum() const override;
+  ScrollbarControlSize controlSize() const override;
+  ScrollbarPart pressedPart() const override;
+  ScrollbarPart hoveredPart() const override;
+  void styleChanged() override;
+  void visibilityChanged() override;
+  bool enabled() const override;
+  void setEnabled(bool) override;
+  bool isOverlayScrollbar() const override;
+  float elasticOverscroll() const override;
+  void setElasticOverscroll(float) override;
+
+ private:
+  WebScrollbar& m_scrollbar;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebScrollbarThemeClientImpl_h
+#endif  // WebScrollbarThemeClientImpl_h

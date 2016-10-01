@@ -31,33 +31,38 @@
 namespace blink {
 
 class HTMLTableColElement final : public HTMLTablePartElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned span() const { return m_span; }
-    void setSpan(unsigned);
+ public:
+  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement);
 
-    const AtomicString& width() const;
+  unsigned span() const { return m_span; }
+  void setSpan(unsigned);
 
-private:
-    HTMLTableColElement(const QualifiedName& tagName, Document&);
+  const AtomicString& width() const;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    const StylePropertySet* additionalPresentationAttributeStyle() override;
+ private:
+  HTMLTableColElement(const QualifiedName& tagName, Document&);
 
-    unsigned m_span;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
+  const StylePropertySet* additionalPresentationAttributeStyle() override;
+
+  unsigned m_span;
 };
 
-inline bool isHTMLTableColElement(const HTMLElement& element)
-{
-    return element.hasTagName(HTMLNames::colTag) || element.hasTagName(HTMLNames::colgroupTag);
+inline bool isHTMLTableColElement(const HTMLElement& element) {
+  return element.hasTagName(HTMLNames::colTag) ||
+         element.hasTagName(HTMLNames::colgroupTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableColElement);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLTableColElement_h
+#endif  // HTMLTableColElement_h

@@ -36,33 +36,35 @@
 namespace blink {
 
 class EmailInputType final : public BaseTextInputType {
-public:
-    static InputType* create(HTMLInputElement&);
+ public:
+  static InputType* create(HTMLInputElement&);
 
-    // They are public for unit testing.
-    CORE_EXPORT static String convertEmailAddressToASCII(const ScriptRegexp&, const String&);
-    CORE_EXPORT static bool isValidEmailAddress(const ScriptRegexp&, const String&);
-    CORE_EXPORT static std::unique_ptr<ScriptRegexp> createEmailRegexp();
+  // They are public for unit testing.
+  CORE_EXPORT static String convertEmailAddressToASCII(const ScriptRegexp&,
+                                                       const String&);
+  CORE_EXPORT static bool isValidEmailAddress(const ScriptRegexp&,
+                                              const String&);
+  CORE_EXPORT static std::unique_ptr<ScriptRegexp> createEmailRegexp();
 
-private:
-    explicit EmailInputType(HTMLInputElement&);
-    void countUsage() override;
-    const AtomicString& formControlType() const override;
-    bool typeMismatchFor(const String&) const override;
-    bool typeMismatch() const override;
-    String typeMismatchText() const override;
-    bool supportsSelectionAPI() const override;
-    String sanitizeValue(const String&) const override;
-    String convertFromVisibleValue(const String&) const override;
-    String visibleValue() const override;
+ private:
+  explicit EmailInputType(HTMLInputElement&);
+  void countUsage() override;
+  const AtomicString& formControlType() const override;
+  bool typeMismatchFor(const String&) const override;
+  bool typeMismatch() const override;
+  String typeMismatchText() const override;
+  bool supportsSelectionAPI() const override;
+  String sanitizeValue(const String&) const override;
+  String convertFromVisibleValue(const String&) const override;
+  String visibleValue() const override;
 
-    ScriptRegexp& ensureEmailRegexp() const;
-    String convertEmailAddressToUnicode(const String&) const;
-    String findInvalidAddress(const String&) const;
+  ScriptRegexp& ensureEmailRegexp() const;
+  String convertEmailAddressToUnicode(const String&) const;
+  String findInvalidAddress(const String&) const;
 
-    mutable std::unique_ptr<ScriptRegexp> m_emailRegexp;
+  mutable std::unique_ptr<ScriptRegexp> m_emailRegexp;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ButtonInputType_h
+#endif  // ButtonInputType_h

@@ -37,27 +37,32 @@
 
 namespace blink {
 
-class SVGAnimatedString : public SVGAnimatedProperty<SVGString>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGAnimatedString* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGString* initialValue)
-    {
-        return new SVGAnimatedString(contextElement, attributeName, initialValue);
-    }
+class SVGAnimatedString : public SVGAnimatedProperty<SVGString>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    virtual String baseVal();
-    virtual void setBaseVal(const String&, ExceptionState&);
-    virtual String animVal();
+ public:
+  static SVGAnimatedString* create(SVGElement* contextElement,
+                                   const QualifiedName& attributeName,
+                                   SVGString* initialValue) {
+    return new SVGAnimatedString(contextElement, attributeName, initialValue);
+  }
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual String baseVal();
+  virtual void setBaseVal(const String&, ExceptionState&);
+  virtual String animVal();
 
-protected:
-    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, SVGString* initialValue)
-        : SVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
-    {
-    }
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
+ protected:
+  SVGAnimatedString(SVGElement* contextElement,
+                    const QualifiedName& attributeName,
+                    SVGString* initialValue)
+      : SVGAnimatedProperty<SVGString>(contextElement,
+                                       attributeName,
+                                       initialValue) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedString_h
+#endif  // SVGAnimatedString_h

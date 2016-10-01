@@ -14,12 +14,15 @@ class Element;
 class ComputedStyle;
 
 class HTMLImageFallbackHelper {
-    STATIC_ONLY(HTMLImageFallbackHelper);
-public:
-    static void createAltTextShadowTree(Element&);
-    static PassRefPtr<ComputedStyle> customStyleForAltText(Element&, PassRefPtr<ComputedStyle> newStyle);
+  STATIC_ONLY(HTMLImageFallbackHelper);
+
+ public:
+  static void createAltTextShadowTree(Element&);
+  static PassRefPtr<ComputedStyle> customStyleForAltText(
+      Element&,
+      PassRefPtr<ComputedStyle> newStyle);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLImageFallbackHelper_h
+#endif  // HTMLImageFallbackHelper_h

@@ -44,109 +44,123 @@
 namespace blink {
 
 class DatabaseTask {
-    WTF_MAKE_NONCOPYABLE(DatabaseTask); USING_FAST_MALLOC(DatabaseTask);
-public:
-    virtual ~DatabaseTask();
+  WTF_MAKE_NONCOPYABLE(DatabaseTask);
+  USING_FAST_MALLOC(DatabaseTask);
 
-    void run();
+ public:
+  virtual ~DatabaseTask();
 
-    Database* database() const { return m_database.get(); }
+  void run();
 
-protected:
-    DatabaseTask(Database*, WaitableEvent* completeEvent);
+  Database* database() const { return m_database.get(); }
 
-private:
-    virtual void doPerformTask() = 0;
-    virtual void taskCancelled() { }
+ protected:
+  DatabaseTask(Database*, WaitableEvent* completeEvent);
 
-    CrossThreadPersistent<Database> m_database;
-    WaitableEvent* m_completeEvent;
+ private:
+  virtual void doPerformTask() = 0;
+  virtual void taskCancelled() {}
+
+  CrossThreadPersistent<Database> m_database;
+  WaitableEvent* m_completeEvent;
 
 #if DCHECK_IS_ON()
-    virtual const char* debugTaskName() const = 0;
-    bool m_complete;
+  virtual const char* debugTaskName() const = 0;
+  bool m_complete;
 #endif
 };
 
 class Database::DatabaseOpenTask final : public DatabaseTask {
-public:
-    static std::unique_ptr<DatabaseOpenTask> create(Database* db, bool setVersionInNewDatabase, WaitableEvent* completeEvent, DatabaseError& error, String& errorMessage, bool& success)
-    {
-        return wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase, completeEvent, error, errorMessage, success));
-    }
+ public:
+  static std::unique_ptr<DatabaseOpenTask> create(Database* db,
+                                                  bool setVersionInNewDatabase,
+                                                  WaitableEvent* completeEvent,
+                                                  DatabaseError& error,
+                                                  String& errorMessage,
+                                                  bool& success) {
+    return wrapUnique(new DatabaseOpenTask(db, setVersionInNewDatabase,
+                                           completeEvent, error, errorMessage,
+                                           success));
+  }
 
-private:
-    DatabaseOpenTask(Database*, bool setVersionInNewDatabase, WaitableEvent*, DatabaseError&, String& errorMessage, bool& success);
+ private:
+  DatabaseOpenTask(Database*,
+                   bool setVersionInNewDatabase,
+                   WaitableEvent*,
+                   DatabaseError&,
+                   String& errorMessage,
+                   bool& success);
 
-    void doPerformTask() override;
+  void doPerformTask() override;
 #if DCHECK_IS_ON()
-    const char* debugTaskName() const override;
+  const char* debugTaskName() const override;
 #endif
 
-    bool m_setVersionInNewDatabase;
-    DatabaseError& m_error;
-    String& m_errorMessage;
-    bool& m_success;
+  bool m_setVersionInNewDatabase;
+  DatabaseError& m_error;
+  String& m_errorMessage;
+  bool& m_success;
 };
 
 class Database::DatabaseCloseTask final : public DatabaseTask {
-public:
-    static std::unique_ptr<DatabaseCloseTask> create(Database* db, WaitableEvent* synchronizer)
-    {
-        return wrapUnique(new DatabaseCloseTask(db, synchronizer));
-    }
+ public:
+  static std::unique_ptr<DatabaseCloseTask> create(
+      Database* db,
+      WaitableEvent* synchronizer) {
+    return wrapUnique(new DatabaseCloseTask(db, synchronizer));
+  }
 
-private:
-    DatabaseCloseTask(Database*, WaitableEvent*);
+ private:
+  DatabaseCloseTask(Database*, WaitableEvent*);
 
-    void doPerformTask() override;
+  void doPerformTask() override;
 #if DCHECK_IS_ON()
-    const char* debugTaskName() const override;
+  const char* debugTaskName() const override;
 #endif
 };
 
 class Database::DatabaseTransactionTask final : public DatabaseTask {
-public:
-    ~DatabaseTransactionTask() override;
+ public:
+  ~DatabaseTransactionTask() override;
 
-    // Transaction task is never synchronous, so no 'synchronizer' parameter.
-    static std::unique_ptr<DatabaseTransactionTask> create(SQLTransactionBackend* transaction)
-    {
-        return wrapUnique(new DatabaseTransactionTask(transaction));
-    }
+  // Transaction task is never synchronous, so no 'synchronizer' parameter.
+  static std::unique_ptr<DatabaseTransactionTask> create(
+      SQLTransactionBackend* transaction) {
+    return wrapUnique(new DatabaseTransactionTask(transaction));
+  }
 
-    SQLTransactionBackend* transaction() const { return m_transaction.get(); }
+  SQLTransactionBackend* transaction() const { return m_transaction.get(); }
 
-private:
-    explicit DatabaseTransactionTask(SQLTransactionBackend*);
+ private:
+  explicit DatabaseTransactionTask(SQLTransactionBackend*);
 
-    void doPerformTask() override;
-    void taskCancelled() override;
+  void doPerformTask() override;
+  void taskCancelled() override;
 #if DCHECK_IS_ON()
-    const char* debugTaskName() const override;
+  const char* debugTaskName() const override;
 #endif
 
-    CrossThreadPersistent<SQLTransactionBackend> m_transaction;
+  CrossThreadPersistent<SQLTransactionBackend> m_transaction;
 };
 
 class Database::DatabaseTableNamesTask final : public DatabaseTask {
-public:
-    static std::unique_ptr<DatabaseTableNamesTask> create(Database* db, WaitableEvent* synchronizer, Vector<String>& names)
-    {
-        return wrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
-    }
+ public:
+  static std::unique_ptr<DatabaseTableNamesTask>
+  create(Database* db, WaitableEvent* synchronizer, Vector<String>& names) {
+    return wrapUnique(new DatabaseTableNamesTask(db, synchronizer, names));
+  }
 
-private:
-    DatabaseTableNamesTask(Database*, WaitableEvent*, Vector<String>& names);
+ private:
+  DatabaseTableNamesTask(Database*, WaitableEvent*, Vector<String>& names);
 
-    void doPerformTask() override;
+  void doPerformTask() override;
 #if DCHECK_IS_ON()
-    const char* debugTaskName() const override;
+  const char* debugTaskName() const override;
 #endif
 
-    Vector<String>& m_tableNames;
+  Vector<String>& m_tableNames;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseTask_h
+#endif  // DatabaseTask_h

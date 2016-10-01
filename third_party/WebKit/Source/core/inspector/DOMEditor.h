@@ -47,43 +47,58 @@ class Text;
 using protocol::ErrorString;
 
 class DOMEditor final : public GarbageCollected<DOMEditor> {
-    WTF_MAKE_NONCOPYABLE(DOMEditor);
-public:
-    explicit DOMEditor(InspectorHistory*);
+  WTF_MAKE_NONCOPYABLE(DOMEditor);
 
-    DECLARE_TRACE();
+ public:
+  explicit DOMEditor(InspectorHistory*);
 
-    bool insertBefore(ContainerNode* parentNode, Node*, Node* anchorNode, ExceptionState&);
-    bool removeChild(ContainerNode* parentNode, Node*, ExceptionState&);
-    bool setAttribute(Element*, const String& name, const String& value, ExceptionState&);
-    bool removeAttribute(Element*, const String& name, ExceptionState&);
-    bool setOuterHTML(Node*, const String& html, Node** newNode, ExceptionState&);
-    bool replaceWholeText(Text*, const String& text, ExceptionState&);
-    bool replaceChild(ContainerNode* parentNode, Node* newNode, Node* oldNode, ExceptionState&);
-    bool setNodeValue(Node* parentNode, const String& value, ExceptionState&);
+  DECLARE_TRACE();
 
-    bool insertBefore(ContainerNode* parentNode, Node*, Node* anchorNode, ErrorString*);
-    bool removeChild(ContainerNode* parentNode, Node*, ErrorString*);
-    bool setAttribute(Element*, const String& name, const String& value, ErrorString*);
-    bool removeAttribute(Element*, const String& name, ErrorString*);
-    bool setOuterHTML(Node*, const String& html, Node** newNode, ErrorString*);
-    bool replaceWholeText(Text*, const String& text, ErrorString*);
+  bool insertBefore(ContainerNode* parentNode,
+                    Node*,
+                    Node* anchorNode,
+                    ExceptionState&);
+  bool removeChild(ContainerNode* parentNode, Node*, ExceptionState&);
+  bool setAttribute(Element*,
+                    const String& name,
+                    const String& value,
+                    ExceptionState&);
+  bool removeAttribute(Element*, const String& name, ExceptionState&);
+  bool setOuterHTML(Node*, const String& html, Node** newNode, ExceptionState&);
+  bool replaceWholeText(Text*, const String& text, ExceptionState&);
+  bool replaceChild(ContainerNode* parentNode,
+                    Node* newNode,
+                    Node* oldNode,
+                    ExceptionState&);
+  bool setNodeValue(Node* parentNode, const String& value, ExceptionState&);
 
-private:
-    class DOMAction;
-    class RemoveChildAction;
-    class InsertBeforeAction;
-    class RemoveAttributeAction;
-    class SetAttributeAction;
-    class SetOuterHTMLAction;
-    class ReplaceWholeTextAction;
-    class ReplaceChildNodeAction;
-    class SetNodeValueAction;
+  bool insertBefore(ContainerNode* parentNode,
+                    Node*,
+                    Node* anchorNode,
+                    ErrorString*);
+  bool removeChild(ContainerNode* parentNode, Node*, ErrorString*);
+  bool setAttribute(Element*,
+                    const String& name,
+                    const String& value,
+                    ErrorString*);
+  bool removeAttribute(Element*, const String& name, ErrorString*);
+  bool setOuterHTML(Node*, const String& html, Node** newNode, ErrorString*);
+  bool replaceWholeText(Text*, const String& text, ErrorString*);
 
-    Member<InspectorHistory> m_history;
+ private:
+  class DOMAction;
+  class RemoveChildAction;
+  class InsertBeforeAction;
+  class RemoveAttributeAction;
+  class SetAttributeAction;
+  class SetOuterHTMLAction;
+  class ReplaceWholeTextAction;
+  class ReplaceChildNodeAction;
+  class SetNodeValueAction;
+
+  Member<InspectorHistory> m_history;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // !defined(DOMEditor_h)
+#endif  // !defined(DOMEditor_h)

@@ -39,39 +39,44 @@ class GainOptions;
 // De-zippering (smoothing) is applied when the gain value is changed dynamically.
 
 class GainHandler final : public AudioHandler {
-public:
-    static PassRefPtr<GainHandler> create(AudioNode&, float sampleRate, AudioParamHandler& gain);
+ public:
+  static PassRefPtr<GainHandler> create(AudioNode&,
+                                        float sampleRate,
+                                        AudioParamHandler& gain);
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
 
-    // Called in the main thread when the number of channels for the input may have changed.
-    void checkNumberOfChannelsForInput(AudioNodeInput*) override;
+  // Called in the main thread when the number of channels for the input may have changed.
+  void checkNumberOfChannelsForInput(AudioNodeInput*) override;
 
-private:
-    GainHandler(AudioNode&, float sampleRate, AudioParamHandler& gain);
+ private:
+  GainHandler(AudioNode&, float sampleRate, AudioParamHandler& gain);
 
-    float m_lastGain; // for de-zippering
-    RefPtr<AudioParamHandler> m_gain;
+  float m_lastGain;  // for de-zippering
+  RefPtr<AudioParamHandler> m_gain;
 
-    AudioFloatArray m_sampleAccurateGainValues;
+  AudioFloatArray m_sampleAccurateGainValues;
 };
 
 class GainNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static GainNode* create(BaseAudioContext&, ExceptionState&);
-    static GainNode* create(BaseAudioContext*, const GainOptions&, ExceptionState&);
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_WRAPPERTYPEINFO();
 
-    AudioParam* gain() const;
+ public:
+  static GainNode* create(BaseAudioContext&, ExceptionState&);
+  static GainNode* create(BaseAudioContext*,
+                          const GainOptions&,
+                          ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    GainNode(BaseAudioContext&);
+  AudioParam* gain() const;
 
-    Member<AudioParam> m_gain;
+ private:
+  GainNode(BaseAudioContext&);
+
+  Member<AudioParam> m_gain;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GainNode_h
+#endif  // GainNode_h

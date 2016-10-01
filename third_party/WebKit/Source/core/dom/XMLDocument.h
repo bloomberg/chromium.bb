@@ -32,29 +32,29 @@
 namespace blink {
 
 class XMLDocument final : public Document {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static XMLDocument* create(const DocumentInit& initializer = DocumentInit())
-    {
-        return new XMLDocument(initializer, XMLDocumentClass);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    static XMLDocument* createXHTML(const DocumentInit& initializer = DocumentInit())
-    {
-        return new XMLDocument(initializer, XMLDocumentClass | XHTMLDocumentClass);
-    }
+ public:
+  static XMLDocument* create(const DocumentInit& initializer = DocumentInit()) {
+    return new XMLDocument(initializer, XMLDocumentClass);
+  }
 
-    static XMLDocument* createSVG(const DocumentInit& initializer = DocumentInit())
-    {
-        return new XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass);
-    }
+  static XMLDocument* createXHTML(
+      const DocumentInit& initializer = DocumentInit()) {
+    return new XMLDocument(initializer, XMLDocumentClass | XHTMLDocumentClass);
+  }
 
-protected:
-    XMLDocument(const DocumentInit&, DocumentClassFlags documentClasses);
+  static XMLDocument* createSVG(
+      const DocumentInit& initializer = DocumentInit()) {
+    return new XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass);
+  }
+
+ protected:
+  XMLDocument(const DocumentInit&, DocumentClassFlags documentClasses);
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(XMLDocument);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XMLDocument_h
+#endif  // XMLDocument_h

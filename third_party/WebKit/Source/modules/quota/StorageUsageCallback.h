@@ -35,13 +35,15 @@
 
 namespace blink {
 
-class StorageUsageCallback : public GarbageCollectedFinalized<StorageUsageCallback> {
-public:
-    virtual ~StorageUsageCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes) = 0;
+class StorageUsageCallback
+    : public GarbageCollectedFinalized<StorageUsageCallback> {
+ public:
+  virtual ~StorageUsageCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(unsigned long long currentUsageInBytes,
+                           unsigned long long currentQuotaInBytes) = 0;
 };
 
-} // namespace
+}  // namespace
 
-#endif // StorageUsageCallback_h
+#endif  // StorageUsageCallback_h

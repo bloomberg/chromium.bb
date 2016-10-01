@@ -31,13 +31,14 @@
 namespace blink {
 
 class WebGestureCurveTarget {
-public:
-    virtual bool scrollBy(const WebFloatSize& delta, const WebFloatSize& velocity) = 0;
+ public:
+  virtual bool scrollBy(const WebFloatSize& delta,
+                        const WebFloatSize& velocity) = 0;
 
-protected:
-    virtual ~WebGestureCurveTarget() { }
+ protected:
+  virtual ~WebGestureCurveTarget() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

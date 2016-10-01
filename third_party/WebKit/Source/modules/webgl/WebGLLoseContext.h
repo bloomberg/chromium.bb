@@ -33,23 +33,24 @@ namespace blink {
 class WebGLRenderingContextBase;
 
 class WebGLLoseContext final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WebGLLoseContext* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~WebGLLoseContext() override;
-    WebGLExtensionName name() const override;
-    void lose(bool) override;
+ public:
+  static WebGLLoseContext* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-    void loseContext();
-    void restoreContext();
+  ~WebGLLoseContext() override;
+  WebGLExtensionName name() const override;
+  void lose(bool) override;
 
-private:
-    explicit WebGLLoseContext(WebGLRenderingContextBase*);
+  void loseContext();
+  void restoreContext();
+
+ private:
+  explicit WebGLLoseContext(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLLoseContext_h
+#endif  // WebGLLoseContext_h

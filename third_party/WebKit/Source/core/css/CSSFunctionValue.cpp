@@ -8,14 +8,13 @@
 
 namespace blink {
 
-String CSSFunctionValue::customCSSText() const
-{
-    StringBuilder result;
-    result.append(getValueName(m_valueID));
-    result.append('(');
-    result.append(CSSValueList::customCSSText());
-    result.append(')');
-    return result.toString();
+String CSSFunctionValue::customCSSText() const {
+  StringBuilder result;
+  result.append(getValueName(m_valueID));
+  result.append('(');
+  result.append(CSSValueList::customCSSText());
+  result.append(')');
+  return result.toString();
 }
 
-} // namespace blink
+}  // namespace blink

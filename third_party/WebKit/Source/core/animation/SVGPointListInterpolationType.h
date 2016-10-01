@@ -10,19 +10,26 @@
 namespace blink {
 
 class SVGPointListInterpolationType : public SVGInterpolationType {
-public:
-    SVGPointListInterpolationType(const QualifiedName& attribute)
-        : SVGInterpolationType(attribute)
-    { }
+ public:
+  SVGPointListInterpolationType(const QualifiedName& attribute)
+      : SVGInterpolationType(attribute) {}
 
-private:
-    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
-    PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const final;
-    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
-    SVGPropertyBase* appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
+ private:
+  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertSVGValue(
+      const SVGPropertyBase& svgValue) const final;
+  PairwiseInterpolationValue maybeMergeSingles(
+      InterpolationValue&& start,
+      InterpolationValue&& end) const final;
+  void composite(UnderlyingValueOwner&,
+                 double underlyingFraction,
+                 const InterpolationValue&,
+                 double interpolationFraction) const final;
+  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+                                   const NonInterpolableValue*) const final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPointListInterpolationType_h
+#endif  // SVGPointListInterpolationType_h

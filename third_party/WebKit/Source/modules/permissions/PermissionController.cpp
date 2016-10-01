@@ -10,49 +10,41 @@
 
 namespace blink {
 
-PermissionController::~PermissionController()
-{
+PermissionController::~PermissionController() {}
+
+void PermissionController::provideTo(LocalFrame& frame,
+                                     WebPermissionClient* client) {
+  ASSERT(RuntimeEnabledFeatures::permissionsEnabled());
+
+  PermissionController* controller = new PermissionController(frame, client);
+  Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
-void PermissionController::provideTo(LocalFrame& frame, WebPermissionClient* client)
-{
-    ASSERT(RuntimeEnabledFeatures::permissionsEnabled());
-
-    PermissionController* controller = new PermissionController(frame, client);
-    Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
+PermissionController* PermissionController::from(LocalFrame& frame) {
+  return static_cast<PermissionController*>(
+      Supplement<LocalFrame>::from(frame, supplementName()));
 }
 
-PermissionController* PermissionController::from(LocalFrame& frame)
-{
-    return static_cast<PermissionController*>(Supplement<LocalFrame>::from(frame, supplementName()));
+PermissionController::PermissionController(LocalFrame& frame,
+                                           WebPermissionClient* client)
+    : DOMWindowProperty(&frame), m_client(client) {}
+
+const char* PermissionController::supplementName() {
+  return "PermissionController";
 }
 
-PermissionController::PermissionController(LocalFrame& frame, WebPermissionClient* client)
-    : DOMWindowProperty(&frame)
-    , m_client(client)
-{
+WebPermissionClient* PermissionController::client() const {
+  return m_client;
 }
 
-const char* PermissionController::supplementName()
-{
-    return "PermissionController";
+void PermissionController::frameDestroyed() {
+  m_client = nullptr;
+  DOMWindowProperty::frameDestroyed();
 }
 
-WebPermissionClient* PermissionController::client() const
-{
-    return m_client;
+DEFINE_TRACE(PermissionController) {
+  DOMWindowProperty::trace(visitor);
+  Supplement<LocalFrame>::trace(visitor);
 }
 
-void PermissionController::frameDestroyed()
-{
-    m_client = nullptr;
-    DOMWindowProperty::frameDestroyed();
-}
-
-DEFINE_TRACE(PermissionController)
-{
-    DOMWindowProperty::trace(visitor);
-    Supplement<LocalFrame>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

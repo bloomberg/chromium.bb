@@ -16,120 +16,82 @@ class LayoutInline;
 class LayoutObject;
 
 class LineLayoutInline : public LineLayoutBoxModel {
-public:
-    explicit LineLayoutInline(LayoutInline* layoutInline)
-        : LineLayoutBoxModel(layoutInline)
-    {
-    }
+ public:
+  explicit LineLayoutInline(LayoutInline* layoutInline)
+      : LineLayoutBoxModel(layoutInline) {}
 
-    explicit LineLayoutInline(const LineLayoutItem& item)
-        : LineLayoutBoxModel(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutInline());
-    }
+  explicit LineLayoutInline(const LineLayoutItem& item)
+      : LineLayoutBoxModel(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutInline());
+  }
 
-    explicit LineLayoutInline(std::nullptr_t) : LineLayoutBoxModel(nullptr) { }
+  explicit LineLayoutInline(std::nullptr_t) : LineLayoutBoxModel(nullptr) {}
 
-    LineLayoutInline() { }
+  LineLayoutInline() {}
 
-    LineLayoutItem firstChild() const
-    {
-        return LineLayoutItem(toInline()->firstChild());
-    }
+  LineLayoutItem firstChild() const {
+    return LineLayoutItem(toInline()->firstChild());
+  }
 
-    LineLayoutItem lastChild() const
-    {
-        return LineLayoutItem(toInline()->lastChild());
-    }
+  LineLayoutItem lastChild() const {
+    return LineLayoutItem(toInline()->lastChild());
+  }
 
-    LayoutUnit marginStart() const
-    {
-        return toInline()->marginStart();
-    }
+  LayoutUnit marginStart() const { return toInline()->marginStart(); }
 
-    LayoutUnit marginEnd() const
-    {
-        return toInline()->marginEnd();
-    }
+  LayoutUnit marginEnd() const { return toInline()->marginEnd(); }
 
-    int borderStart() const
-    {
-        return toInline()->borderStart();
-    }
+  int borderStart() const { return toInline()->borderStart(); }
 
-    int borderEnd() const
-    {
-        return toInline()->borderEnd();
-    }
+  int borderEnd() const { return toInline()->borderEnd(); }
 
-    LayoutUnit paddingStart() const
-    {
-        return toInline()->paddingStart();
-    }
+  LayoutUnit paddingStart() const { return toInline()->paddingStart(); }
 
-    LayoutUnit paddingEnd() const
-    {
-        return toInline()->paddingEnd();
-    }
+  LayoutUnit paddingEnd() const { return toInline()->paddingEnd(); }
 
-    bool hasInlineDirectionBordersPaddingOrMargin() const
-    {
-        return toInline()->hasInlineDirectionBordersPaddingOrMargin();
-    }
+  bool hasInlineDirectionBordersPaddingOrMargin() const {
+    return toInline()->hasInlineDirectionBordersPaddingOrMargin();
+  }
 
-    bool alwaysCreateLineBoxes() const
-    {
-        return toInline()->alwaysCreateLineBoxes();
-    }
+  bool alwaysCreateLineBoxes() const {
+    return toInline()->alwaysCreateLineBoxes();
+  }
 
-    InlineBox* firstLineBoxIncludingCulling() const
-    {
-        return toInline()->firstLineBoxIncludingCulling();
-    }
+  InlineBox* firstLineBoxIncludingCulling() const {
+    return toInline()->firstLineBoxIncludingCulling();
+  }
 
-    InlineBox* lastLineBoxIncludingCulling() const
-    {
-        return toInline()->lastLineBoxIncludingCulling();
-    }
+  InlineBox* lastLineBoxIncludingCulling() const {
+    return toInline()->lastLineBoxIncludingCulling();
+  }
 
-    LineBoxList* lineBoxes()
-    {
-        return toInline()->lineBoxes();
-    }
+  LineBoxList* lineBoxes() { return toInline()->lineBoxes(); }
 
-    bool hitTestCulledInline(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
-    {
-        return toInline()->hitTestCulledInline(result, locationInContainer, accumulatedOffset);
-    }
+  bool hitTestCulledInline(HitTestResult& result,
+                           const HitTestLocation& locationInContainer,
+                           const LayoutPoint& accumulatedOffset) {
+    return toInline()->hitTestCulledInline(result, locationInContainer,
+                                           accumulatedOffset);
+  }
 
-    LayoutBoxModelObject* continuation() const
-    {
-        return toInline()->continuation();
-    }
+  LayoutBoxModelObject* continuation() const {
+    return toInline()->continuation();
+  }
 
-    InlineBox* createAndAppendInlineFlowBox()
-    {
-        return toInline()->createAndAppendInlineFlowBox();
-    }
+  InlineBox* createAndAppendInlineFlowBox() {
+    return toInline()->createAndAppendInlineFlowBox();
+  }
 
-    InlineFlowBox* lastLineBox()
-    {
-        return toInline()->lastLineBox();
-    }
+  InlineFlowBox* lastLineBox() { return toInline()->lastLineBox(); }
 
-protected:
-    LayoutInline* toInline()
-    {
-        return toLayoutInline(layoutObject());
-    }
+ protected:
+  LayoutInline* toInline() { return toLayoutInline(layoutObject()); }
 
-    const LayoutInline* toInline() const
-    {
-        return toLayoutInline(layoutObject());
-    }
-
+  const LayoutInline* toInline() const {
+    return toLayoutInline(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutInline_h
+#endif  // LineLayoutInline_h

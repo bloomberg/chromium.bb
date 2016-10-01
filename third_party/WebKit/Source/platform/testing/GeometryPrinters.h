@@ -55,6 +55,6 @@ void PrintTo(const LayoutPoint&, std::ostream*);
 void PrintTo(const LayoutRect&, std::ostream*);
 void PrintTo(const LayoutSize&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GeometryPrinters_h
+#endif  // GeometryPrinters_h

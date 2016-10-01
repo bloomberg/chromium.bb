@@ -54,66 +54,64 @@ MODULES_EXPORT ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType);
 //  * One of the completeWith***() functions must be called, or the
 //    m_resolver will be leaked until the ExecutionContext is destroyed.
 class CryptoResultImpl final : public CryptoResult {
-public:
-    static CryptoResultImpl* create(ScriptState*);
+ public:
+  static CryptoResultImpl* create(ScriptState*);
 
-    ~CryptoResultImpl();
+  ~CryptoResultImpl();
 
-    void completeWithError(WebCryptoErrorType, const WebString&) override;
-    void completeWithBuffer(const void* bytes, unsigned bytesSize) override;
-    void completeWithJson(const char* utf8Data, unsigned length) override;
-    void completeWithBoolean(bool) override;
-    void completeWithKey(const WebCryptoKey&) override;
-    void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey) override;
+  void completeWithError(WebCryptoErrorType, const WebString&) override;
+  void completeWithBuffer(const void* bytes, unsigned bytesSize) override;
+  void completeWithJson(const char* utf8Data, unsigned length) override;
+  void completeWithBoolean(bool) override;
+  void completeWithKey(const WebCryptoKey&) override;
+  void completeWithKeyPair(const WebCryptoKey& publicKey,
+                           const WebCryptoKey& privateKey) override;
 
-    // If called after completion (including cancellation) will return an empty
-    // ScriptPromise.
-    ScriptPromise promise();
+  // If called after completion (including cancellation) will return an empty
+  // ScriptPromise.
+  ScriptPromise promise();
 
-    WebCryptoResult result()
-    {
-        return WebCryptoResult(this, m_cancel.get());
+  WebCryptoResult result() { return WebCryptoResult(this, m_cancel.get()); }
+
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  class Resolver;
+  class ResultCancel : public CryptoResultCancel {
+   public:
+    static PassRefPtr<ResultCancel> create() {
+      return adoptRef(new ResultCancel);
     }
 
-    DECLARE_VIRTUAL_TRACE();
-
-private:
-    class Resolver;
-    class ResultCancel : public CryptoResultCancel {
-    public:
-        static PassRefPtr<ResultCancel> create()
-        {
-            return adoptRef(new ResultCancel);
-        }
-
-        bool cancelled() const override;
-
-        void cancel();
-    private:
-        ResultCancel();
-
-        int m_cancelled;
-    };
-
-    explicit CryptoResultImpl(ScriptState*);
+    bool cancelled() const override;
 
     void cancel();
-    void clearResolver();
 
-    Member<Resolver> m_resolver;
+   private:
+    ResultCancel();
 
-    // Separately communicate cancellation to WebCryptoResults so as to
-    // allow this result object, which will be on the Oilpan heap, to be
-    // GCed and destructed as needed. That is, it may end being GCed while
-    // the thread owning the heap is detached and shut down, which will
-    // in some cases happen before corresponding webcrypto operations have
-    // all been processed. Hence these webcrypto operations cannot reliably
-    // check cancellation status via this result object. So, keep a separate
-    // cancellation status object for the purpose, which will outlive the
-    // result object and can be safely accessed by multiple threads.
-    RefPtr<ResultCancel> m_cancel;
+    int m_cancelled;
+  };
+
+  explicit CryptoResultImpl(ScriptState*);
+
+  void cancel();
+  void clearResolver();
+
+  Member<Resolver> m_resolver;
+
+  // Separately communicate cancellation to WebCryptoResults so as to
+  // allow this result object, which will be on the Oilpan heap, to be
+  // GCed and destructed as needed. That is, it may end being GCed while
+  // the thread owning the heap is detached and shut down, which will
+  // in some cases happen before corresponding webcrypto operations have
+  // all been processed. Hence these webcrypto operations cannot reliably
+  // check cancellation status via this result object. So, keep a separate
+  // cancellation status object for the purpose, which will outlive the
+  // result object and can be safely accessed by multiple threads.
+  RefPtr<ResultCancel> m_cancel;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CryptoResultImpl_h
+#endif  // CryptoResultImpl_h

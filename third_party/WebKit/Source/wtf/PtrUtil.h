@@ -12,26 +12,24 @@
 namespace WTF {
 
 template <typename T>
-std::unique_ptr<T> wrapUnique(T* ptr)
-{
-    static_assert(
-        !WTF::IsGarbageCollectedType<T>::value,
-        "Garbage collected types should not be stored in std::unique_ptr!");
-    return std::unique_ptr<T>(ptr);
+std::unique_ptr<T> wrapUnique(T* ptr) {
+  static_assert(
+      !WTF::IsGarbageCollectedType<T>::value,
+      "Garbage collected types should not be stored in std::unique_ptr!");
+  return std::unique_ptr<T>(ptr);
 }
 
 template <typename T>
-std::unique_ptr<T[]> wrapArrayUnique(T* ptr)
-{
-    static_assert(
-        !WTF::IsGarbageCollectedType<T>::value,
-        "Garbage collected types should not be stored in std::unique_ptr!");
-    return std::unique_ptr<T[]>(ptr);
+std::unique_ptr<T[]> wrapArrayUnique(T* ptr) {
+  static_assert(
+      !WTF::IsGarbageCollectedType<T>::value,
+      "Garbage collected types should not be stored in std::unique_ptr!");
+  return std::unique_ptr<T[]>(ptr);
 }
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::wrapUnique;
 using WTF::wrapArrayUnique;
 
-#endif // PtrUtil_h
+#endif  // PtrUtil_h

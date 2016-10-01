@@ -25,15 +25,12 @@
 namespace blink {
 
 inline SVGTextElement::SVGTextElement(Document& doc)
-    : SVGTextPositioningElement(SVGNames::textTag, doc)
-{
-}
+    : SVGTextPositioningElement(SVGNames::textTag, doc) {}
 
 DEFINE_NODE_FACTORY(SVGTextElement)
 
-LayoutObject* SVGTextElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutSVGText(this);
+LayoutObject* SVGTextElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutSVGText(this);
 }
 
-} // namespace blink
+}  // namespace blink

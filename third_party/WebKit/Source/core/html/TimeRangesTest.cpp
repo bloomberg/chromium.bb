@@ -36,285 +36,270 @@
 
 namespace blink {
 
-static std::string ToString(const TimeRanges& ranges)
-{
-    std::stringstream ss;
-    ss << "{";
-    for (unsigned i = 0; i < ranges.length(); ++i)
-        ss << " [" << ranges.start(i, IGNORE_EXCEPTION) << "," << ranges.end(i, IGNORE_EXCEPTION) << ")";
-    ss << " }";
+static std::string ToString(const TimeRanges& ranges) {
+  std::stringstream ss;
+  ss << "{";
+  for (unsigned i = 0; i < ranges.length(); ++i)
+    ss << " [" << ranges.start(i, IGNORE_EXCEPTION) << ","
+       << ranges.end(i, IGNORE_EXCEPTION) << ")";
+  ss << " }";
 
-    return ss.str();
+  return ss.str();
 }
 
 #define ASSERT_RANGE(expected, range) ASSERT_EQ(expected, ToString(*range))
 
-TEST(TimeRangesTest, Empty)
-{
-    ASSERT_RANGE("{ }", TimeRanges::create());
+TEST(TimeRangesTest, Empty) {
+  ASSERT_RANGE("{ }", TimeRanges::create());
 }
 
-TEST(TimeRangesTest, SingleRange)
-{
-    ASSERT_RANGE("{ [1,2) }", TimeRanges::create(1, 2));
+TEST(TimeRangesTest, SingleRange) {
+  ASSERT_RANGE("{ [1,2) }", TimeRanges::create(1, 2));
 }
 
-TEST(TimeRangesTest, CreateFromWebTimeRanges)
-{
-    blink::WebTimeRanges webRanges(static_cast<size_t>(2));
-    webRanges[0].start = 0;
-    webRanges[0].end = 1;
-    webRanges[1].start = 2;
-    webRanges[1].end = 3;
-    ASSERT_RANGE("{ [0,1) [2,3) }", TimeRanges::create(webRanges));
+TEST(TimeRangesTest, CreateFromWebTimeRanges) {
+  blink::WebTimeRanges webRanges(static_cast<size_t>(2));
+  webRanges[0].start = 0;
+  webRanges[0].end = 1;
+  webRanges[1].start = 2;
+  webRanges[1].end = 3;
+  ASSERT_RANGE("{ [0,1) [2,3) }", TimeRanges::create(webRanges));
 }
 
-TEST(TimeRangesTest, AddOrder)
-{
-    TimeRanges* rangeA = TimeRanges::create();
-    TimeRanges* rangeB = TimeRanges::create();
+TEST(TimeRangesTest, AddOrder) {
+  TimeRanges* rangeA = TimeRanges::create();
+  TimeRanges* rangeB = TimeRanges::create();
 
-    rangeA->add(0, 2);
-    rangeA->add(3, 4);
-    rangeA->add(5, 100);
+  rangeA->add(0, 2);
+  rangeA->add(3, 4);
+  rangeA->add(5, 100);
 
-    std::string expected = "{ [0,2) [3,4) [5,100) }";
-    ASSERT_RANGE(expected, rangeA);
+  std::string expected = "{ [0,2) [3,4) [5,100) }";
+  ASSERT_RANGE(expected, rangeA);
 
-    // Add the values in rangeA to rangeB in reverse order.
-    for (int i = rangeA->length() - 1; i >= 0; --i)
-        rangeB->add(rangeA->start(i, IGNORE_EXCEPTION), rangeA->end(i, IGNORE_EXCEPTION));
+  // Add the values in rangeA to rangeB in reverse order.
+  for (int i = rangeA->length() - 1; i >= 0; --i)
+    rangeB->add(rangeA->start(i, IGNORE_EXCEPTION),
+                rangeA->end(i, IGNORE_EXCEPTION));
 
-    ASSERT_RANGE(expected, rangeB);
+  ASSERT_RANGE(expected, rangeB);
 }
 
-TEST(TimeRangesTest, OverlappingAdds)
-{
-    TimeRanges* ranges = TimeRanges::create();
+TEST(TimeRangesTest, OverlappingAdds) {
+  TimeRanges* ranges = TimeRanges::create();
 
-    ranges->add(0, 2);
-    ranges->add(10, 11);
-    ASSERT_RANGE("{ [0,2) [10,11) }", ranges);
+  ranges->add(0, 2);
+  ranges->add(10, 11);
+  ASSERT_RANGE("{ [0,2) [10,11) }", ranges);
 
-    ranges->add(0, 2);
-    ASSERT_RANGE("{ [0,2) [10,11) }", ranges);
+  ranges->add(0, 2);
+  ASSERT_RANGE("{ [0,2) [10,11) }", ranges);
 
-    ranges->add(2, 3);
-    ASSERT_RANGE("{ [0,3) [10,11) }", ranges);
+  ranges->add(2, 3);
+  ASSERT_RANGE("{ [0,3) [10,11) }", ranges);
 
-    ranges->add(2, 6);
-    ASSERT_RANGE("{ [0,6) [10,11) }", ranges);
+  ranges->add(2, 6);
+  ASSERT_RANGE("{ [0,6) [10,11) }", ranges);
 
-    ranges->add(9, 10);
-    ASSERT_RANGE("{ [0,6) [9,11) }", ranges);
+  ranges->add(9, 10);
+  ASSERT_RANGE("{ [0,6) [9,11) }", ranges);
 
-    ranges->add(8, 10);
-    ASSERT_RANGE("{ [0,6) [8,11) }", ranges);
+  ranges->add(8, 10);
+  ASSERT_RANGE("{ [0,6) [8,11) }", ranges);
 
-    ranges->add(-1, 7);
-    ASSERT_RANGE("{ [-1,7) [8,11) }", ranges);
+  ranges->add(-1, 7);
+  ASSERT_RANGE("{ [-1,7) [8,11) }", ranges);
 
-    ranges->add(6, 9);
-    ASSERT_RANGE("{ [-1,11) }", ranges);
+  ranges->add(6, 9);
+  ASSERT_RANGE("{ [-1,11) }", ranges);
 }
 
-TEST(TimeRangesTest, IntersectWith_Self)
-{
-    TimeRanges* ranges = TimeRanges::create(0, 2);
+TEST(TimeRangesTest, IntersectWith_Self) {
+  TimeRanges* ranges = TimeRanges::create(0, 2);
 
-    ASSERT_RANGE("{ [0,2) }", ranges);
+  ASSERT_RANGE("{ [0,2) }", ranges);
 
-    ranges->intersectWith(ranges);
+  ranges->intersectWith(ranges);
 
-    ASSERT_RANGE("{ [0,2) }", ranges);
+  ASSERT_RANGE("{ [0,2) }", ranges);
 }
 
-TEST(TimeRangesTest, IntersectWith_IdenticalRange)
-{
-    TimeRanges* rangesA = TimeRanges::create(0, 2);
-    TimeRanges* rangesB = rangesA->copy();
+TEST(TimeRangesTest, IntersectWith_IdenticalRange) {
+  TimeRanges* rangesA = TimeRanges::create(0, 2);
+  TimeRanges* rangesB = rangesA->copy();
 
-    ASSERT_RANGE("{ [0,2) }", rangesA);
-    ASSERT_RANGE("{ [0,2) }", rangesB);
+  ASSERT_RANGE("{ [0,2) }", rangesA);
+  ASSERT_RANGE("{ [0,2) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ [0,2) }", rangesA);
-    ASSERT_RANGE("{ [0,2) }", rangesB);
+  ASSERT_RANGE("{ [0,2) }", rangesA);
+  ASSERT_RANGE("{ [0,2) }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_Empty)
-{
-    TimeRanges* rangesA = TimeRanges::create(0, 2);
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_Empty) {
+  TimeRanges* rangesA = TimeRanges::create(0, 2);
+  TimeRanges* rangesB = TimeRanges::create();
 
-    ASSERT_RANGE("{ [0,2) }", rangesA);
-    ASSERT_RANGE("{ }", rangesB);
+  ASSERT_RANGE("{ [0,2) }", rangesA);
+  ASSERT_RANGE("{ }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ }", rangesA);
-    ASSERT_RANGE("{ }", rangesB);
+  ASSERT_RANGE("{ }", rangesA);
+  ASSERT_RANGE("{ }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_DisjointRanges1)
-{
-    TimeRanges* rangesA = TimeRanges::create();
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_DisjointRanges1) {
+  TimeRanges* rangesA = TimeRanges::create();
+  TimeRanges* rangesB = TimeRanges::create();
 
-    rangesA->add(0, 1);
-    rangesA->add(4, 5);
+  rangesA->add(0, 1);
+  rangesA->add(4, 5);
 
-    rangesB->add(2, 3);
-    rangesB->add(6, 7);
+  rangesB->add(2, 3);
+  rangesB->add(6, 7);
 
-    ASSERT_RANGE("{ [0,1) [4,5) }", rangesA);
-    ASSERT_RANGE("{ [2,3) [6,7) }", rangesB);
+  ASSERT_RANGE("{ [0,1) [4,5) }", rangesA);
+  ASSERT_RANGE("{ [2,3) [6,7) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ }", rangesA);
-    ASSERT_RANGE("{ [2,3) [6,7) }", rangesB);
+  ASSERT_RANGE("{ }", rangesA);
+  ASSERT_RANGE("{ [2,3) [6,7) }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_DisjointRanges2)
-{
-    TimeRanges* rangesA = TimeRanges::create();
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_DisjointRanges2) {
+  TimeRanges* rangesA = TimeRanges::create();
+  TimeRanges* rangesB = TimeRanges::create();
 
-    rangesA->add(0, 1);
-    rangesA->add(4, 5);
+  rangesA->add(0, 1);
+  rangesA->add(4, 5);
 
-    rangesB->add(1, 4);
-    rangesB->add(5, 7);
+  rangesB->add(1, 4);
+  rangesB->add(5, 7);
 
-    ASSERT_RANGE("{ [0,1) [4,5) }", rangesA);
-    ASSERT_RANGE("{ [1,4) [5,7) }", rangesB);
+  ASSERT_RANGE("{ [0,1) [4,5) }", rangesA);
+  ASSERT_RANGE("{ [1,4) [5,7) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ }", rangesA);
-    ASSERT_RANGE("{ [1,4) [5,7) }", rangesB);
+  ASSERT_RANGE("{ }", rangesA);
+  ASSERT_RANGE("{ [1,4) [5,7) }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_CompleteOverlap1)
-{
-    TimeRanges* rangesA = TimeRanges::create();
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_CompleteOverlap1) {
+  TimeRanges* rangesA = TimeRanges::create();
+  TimeRanges* rangesB = TimeRanges::create();
 
-    rangesA->add(1, 3);
-    rangesA->add(4, 5);
-    rangesA->add(6, 9);
+  rangesA->add(1, 3);
+  rangesA->add(4, 5);
+  rangesA->add(6, 9);
 
-    rangesB->add(0, 10);
+  rangesB->add(0, 10);
 
-    ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
-    ASSERT_RANGE("{ [0,10) }", rangesB);
+  ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
+  ASSERT_RANGE("{ [0,10) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
-    ASSERT_RANGE("{ [0,10) }", rangesB);
+  ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
+  ASSERT_RANGE("{ [0,10) }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_CompleteOverlap2)
-{
-    TimeRanges* rangesA = TimeRanges::create();
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_CompleteOverlap2) {
+  TimeRanges* rangesA = TimeRanges::create();
+  TimeRanges* rangesB = TimeRanges::create();
 
-    rangesA->add(1, 3);
-    rangesA->add(4, 5);
-    rangesA->add(6, 9);
+  rangesA->add(1, 3);
+  rangesA->add(4, 5);
+  rangesA->add(6, 9);
 
-    rangesB->add(1, 9);
+  rangesB->add(1, 9);
 
-    ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
-    ASSERT_RANGE("{ [1,9) }", rangesB);
+  ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
+  ASSERT_RANGE("{ [1,9) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
-    ASSERT_RANGE("{ [1,9) }", rangesB);
+  ASSERT_RANGE("{ [1,3) [4,5) [6,9) }", rangesA);
+  ASSERT_RANGE("{ [1,9) }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_Gaps1)
-{
-    TimeRanges* rangesA = TimeRanges::create();
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_Gaps1) {
+  TimeRanges* rangesA = TimeRanges::create();
+  TimeRanges* rangesB = TimeRanges::create();
 
-    rangesA->add(0, 2);
-    rangesA->add(4, 6);
+  rangesA->add(0, 2);
+  rangesA->add(4, 6);
 
-    rangesB->add(1, 5);
+  rangesB->add(1, 5);
 
-    ASSERT_RANGE("{ [0,2) [4,6) }", rangesA);
-    ASSERT_RANGE("{ [1,5) }", rangesB);
+  ASSERT_RANGE("{ [0,2) [4,6) }", rangesA);
+  ASSERT_RANGE("{ [1,5) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ [1,2) [4,5) }", rangesA);
-    ASSERT_RANGE("{ [1,5) }", rangesB);
+  ASSERT_RANGE("{ [1,2) [4,5) }", rangesA);
+  ASSERT_RANGE("{ [1,5) }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_Gaps2)
-{
-    TimeRanges* rangesA = TimeRanges::create();
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_Gaps2) {
+  TimeRanges* rangesA = TimeRanges::create();
+  TimeRanges* rangesB = TimeRanges::create();
 
-    rangesA->add(0, 2);
-    rangesA->add(4, 6);
-    rangesA->add(8, 10);
+  rangesA->add(0, 2);
+  rangesA->add(4, 6);
+  rangesA->add(8, 10);
 
-    rangesB->add(1, 9);
+  rangesB->add(1, 9);
 
-    ASSERT_RANGE("{ [0,2) [4,6) [8,10) }", rangesA);
-    ASSERT_RANGE("{ [1,9) }", rangesB);
+  ASSERT_RANGE("{ [0,2) [4,6) [8,10) }", rangesA);
+  ASSERT_RANGE("{ [1,9) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ [1,2) [4,6) [8,9) }", rangesA);
-    ASSERT_RANGE("{ [1,9) }", rangesB);
+  ASSERT_RANGE("{ [1,2) [4,6) [8,9) }", rangesA);
+  ASSERT_RANGE("{ [1,9) }", rangesB);
 }
 
-TEST(TimeRangesTest, IntersectWith_Gaps3)
-{
-    TimeRanges* rangesA = TimeRanges::create();
-    TimeRanges* rangesB = TimeRanges::create();
+TEST(TimeRangesTest, IntersectWith_Gaps3) {
+  TimeRanges* rangesA = TimeRanges::create();
+  TimeRanges* rangesB = TimeRanges::create();
 
-    rangesA->add(0, 2);
-    rangesA->add(4, 7);
-    rangesA->add(8, 10);
+  rangesA->add(0, 2);
+  rangesA->add(4, 7);
+  rangesA->add(8, 10);
 
-    rangesB->add(1, 5);
-    rangesB->add(6, 9);
+  rangesB->add(1, 5);
+  rangesB->add(6, 9);
 
-    ASSERT_RANGE("{ [0,2) [4,7) [8,10) }", rangesA);
-    ASSERT_RANGE("{ [1,5) [6,9) }", rangesB);
+  ASSERT_RANGE("{ [0,2) [4,7) [8,10) }", rangesA);
+  ASSERT_RANGE("{ [1,5) [6,9) }", rangesB);
 
-    rangesA->intersectWith(rangesB);
+  rangesA->intersectWith(rangesB);
 
-    ASSERT_RANGE("{ [1,2) [4,5) [6,7) [8,9) }", rangesA);
-    ASSERT_RANGE("{ [1,5) [6,9) }", rangesB);
+  ASSERT_RANGE("{ [1,2) [4,5) [6,7) [8,9) }", rangesA);
+  ASSERT_RANGE("{ [1,5) [6,9) }", rangesB);
 }
 
-TEST(TimeRangesTest, Nearest)
-{
-    TimeRanges* ranges = TimeRanges::create();
-    ranges->add(0, 2);
-    ranges->add(5, 7);
+TEST(TimeRangesTest, Nearest) {
+  TimeRanges* ranges = TimeRanges::create();
+  ranges->add(0, 2);
+  ranges->add(5, 7);
 
-    ASSERT_EQ(0, ranges->nearest(0, 0));
-    ASSERT_EQ(1, ranges->nearest(1, 0));
-    ASSERT_EQ(2, ranges->nearest(2, 0));
-    ASSERT_EQ(2, ranges->nearest(3, 0));
-    ASSERT_EQ(5, ranges->nearest(4, 0));
-    ASSERT_EQ(5, ranges->nearest(5, 0));
-    ASSERT_EQ(7, ranges->nearest(8, 0));
+  ASSERT_EQ(0, ranges->nearest(0, 0));
+  ASSERT_EQ(1, ranges->nearest(1, 0));
+  ASSERT_EQ(2, ranges->nearest(2, 0));
+  ASSERT_EQ(2, ranges->nearest(3, 0));
+  ASSERT_EQ(5, ranges->nearest(4, 0));
+  ASSERT_EQ(5, ranges->nearest(5, 0));
+  ASSERT_EQ(7, ranges->nearest(8, 0));
 
-    ranges->add(9, 11);
-    ASSERT_EQ(7, ranges->nearest(8, 6));
-    ASSERT_EQ(7, ranges->nearest(8, 8));
-    ASSERT_EQ(9, ranges->nearest(8, 10));
+  ranges->add(9, 11);
+  ASSERT_EQ(7, ranges->nearest(8, 6));
+  ASSERT_EQ(7, ranges->nearest(8, 8));
+  ASSERT_EQ(9, ranges->nearest(8, 10));
 }
 
-} // namespace blink
+}  // namespace blink

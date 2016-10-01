@@ -41,53 +41,53 @@
 namespace blink {
 
 class PLATFORM_EXPORT LocaleWin : public Locale {
-public:
-    static std::unique_ptr<LocaleWin> create(LCID, bool defaultsForLocale);
-    ~LocaleWin();
-    const Vector<String>& weekDayShortLabels() override;
-    unsigned firstDayOfWeek() override;
-    bool isRTL() override;
-    String dateFormat() override;
-    String monthFormat() override;
-    String shortMonthFormat() override;
-    String timeFormat() override;
-    String shortTimeFormat() override;
-    String dateTimeFormatWithSeconds() override;
-    String dateTimeFormatWithoutSeconds() override;
-    const Vector<String>& monthLabels() override;
-    const Vector<String>& shortMonthLabels() override;
-    const Vector<String>& standAloneMonthLabels() override;
-    const Vector<String>& shortStandAloneMonthLabels() override;
-    const Vector<String>& timeAMPMLabels() override;
+ public:
+  static std::unique_ptr<LocaleWin> create(LCID, bool defaultsForLocale);
+  ~LocaleWin();
+  const Vector<String>& weekDayShortLabels() override;
+  unsigned firstDayOfWeek() override;
+  bool isRTL() override;
+  String dateFormat() override;
+  String monthFormat() override;
+  String shortMonthFormat() override;
+  String timeFormat() override;
+  String shortTimeFormat() override;
+  String dateTimeFormatWithSeconds() override;
+  String dateTimeFormatWithoutSeconds() override;
+  const Vector<String>& monthLabels() override;
+  const Vector<String>& shortMonthLabels() override;
+  const Vector<String>& standAloneMonthLabels() override;
+  const Vector<String>& shortStandAloneMonthLabels() override;
+  const Vector<String>& timeAMPMLabels() override;
 
-    static String dateFormat(const String&);
+  static String dateFormat(const String&);
 
-private:
-    explicit LocaleWin(LCID, bool defaultsForLocale);
-    String getLocaleInfoString(LCTYPE);
-    void getLocaleInfo(LCTYPE, DWORD&);
-    void ensureShortMonthLabels();
-    void ensureMonthLabels();
-    void ensureWeekDayShortLabels();
-    // Locale function:
-    void initializeLocaleData() override;
+ private:
+  explicit LocaleWin(LCID, bool defaultsForLocale);
+  String getLocaleInfoString(LCTYPE);
+  void getLocaleInfo(LCTYPE, DWORD&);
+  void ensureShortMonthLabels();
+  void ensureMonthLabels();
+  void ensureWeekDayShortLabels();
+  // Locale function:
+  void initializeLocaleData() override;
 
-    LCID m_lcid;
-    Vector<String> m_shortMonthLabels;
-    Vector<String> m_monthLabels;
-    String m_dateFormat;
-    String m_monthFormat;
-    String m_shortMonthFormat;
-    String m_timeFormatWithSeconds;
-    String m_timeFormatWithoutSeconds;
-    String m_dateTimeFormatWithSeconds;
-    String m_dateTimeFormatWithoutSeconds;
-    Vector<String> m_timeAMPMLabels;
-    Vector<String> m_weekDayShortLabels;
-    unsigned m_firstDayOfWeek;
-    bool m_didInitializeNumberData;
-    bool m_defaultsForLocale;
+  LCID m_lcid;
+  Vector<String> m_shortMonthLabels;
+  Vector<String> m_monthLabels;
+  String m_dateFormat;
+  String m_monthFormat;
+  String m_shortMonthFormat;
+  String m_timeFormatWithSeconds;
+  String m_timeFormatWithoutSeconds;
+  String m_dateTimeFormatWithSeconds;
+  String m_dateTimeFormatWithoutSeconds;
+  Vector<String> m_timeAMPMLabels;
+  Vector<String> m_weekDayShortLabels;
+  unsigned m_firstDayOfWeek;
+  bool m_didInitializeNumberData;
+  bool m_defaultsForLocale;
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

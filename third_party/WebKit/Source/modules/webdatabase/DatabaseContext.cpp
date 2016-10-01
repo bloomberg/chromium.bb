@@ -88,39 +88,35 @@ namespace blink {
 // DatabaseContext will outlive Database and ExecutionContext regardless of
 // which of the 2 destructs first.
 
-DatabaseContext* DatabaseContext::create(ExecutionContext* context)
-{
-    DatabaseContext* self = new DatabaseContext(context);
-    DatabaseManager::manager().registerDatabaseContext(self);
-    return self;
+DatabaseContext* DatabaseContext::create(ExecutionContext* context) {
+  DatabaseContext* self = new DatabaseContext(context);
+  DatabaseManager::manager().registerDatabaseContext(self);
+  return self;
 }
 
 DatabaseContext::DatabaseContext(ExecutionContext* context)
-    : ActiveDOMObject(context)
-    , m_hasOpenDatabases(false)
-    , m_hasRequestedTermination(false)
-{
-    DCHECK(isMainThread());
+    : ActiveDOMObject(context),
+      m_hasOpenDatabases(false),
+      m_hasRequestedTermination(false) {
+  DCHECK(isMainThread());
 
-    // ActiveDOMObject expects this to be called to set internal flags.
-    suspendIfNeeded();
+  // ActiveDOMObject expects this to be called to set internal flags.
+  suspendIfNeeded();
 
-    // For debug accounting only. We must do this before we register the
-    // instance. The assertions assume this.
-    DatabaseManager::manager().didConstructDatabaseContext();
+  // For debug accounting only. We must do this before we register the
+  // instance. The assertions assume this.
+  DatabaseManager::manager().didConstructDatabaseContext();
 }
 
-DatabaseContext::~DatabaseContext()
-{
-    // For debug accounting only. We must call this last. The assertions assume
-    // this.
-    DatabaseManager::manager().didDestructDatabaseContext();
+DatabaseContext::~DatabaseContext() {
+  // For debug accounting only. We must call this last. The assertions assume
+  // this.
+  DatabaseManager::manager().didDestructDatabaseContext();
 }
 
-DEFINE_TRACE(DatabaseContext)
-{
-    visitor->trace(m_databaseThread);
-    ActiveDOMObject::trace(visitor);
+DEFINE_TRACE(DatabaseContext) {
+  visitor->trace(m_databaseThread);
+  ActiveDOMObject::trace(visitor);
 }
 
 // This is called if the associated ExecutionContext is destructing while
@@ -128,81 +124,72 @@ DEFINE_TRACE(DatabaseContext)
 // To do this, we stop the database and let everything shutdown naturally
 // because the database closing process may still make use of this context.
 // It is not safe to just delete the context here.
-void DatabaseContext::contextDestroyed()
-{
-    stopDatabases();
-    DatabaseManager::manager().unregisterDatabaseContext(this);
-    ActiveDOMObject::contextDestroyed();
+void DatabaseContext::contextDestroyed() {
+  stopDatabases();
+  DatabaseManager::manager().unregisterDatabaseContext(this);
+  ActiveDOMObject::contextDestroyed();
 }
 
 // stop() is from stopActiveDOMObjects() which indicates that the owner
 // LocalFrame is shutting down. Initiate the orderly shutdown by stopping the
 // associated databases.
-void DatabaseContext::stop()
-{
-    stopDatabases();
+void DatabaseContext::stop() {
+  stopDatabases();
 }
 
-DatabaseContext* DatabaseContext::backend()
-{
-    return this;
+DatabaseContext* DatabaseContext::backend() {
+  return this;
 }
 
-DatabaseThread* DatabaseContext::databaseThread()
-{
-    if (!m_databaseThread && !m_hasOpenDatabases) {
-        // It's OK to ask for the m_databaseThread after we've requested
-        // termination because we're still using it to execute the closing
-        // of the database. However, it is NOT OK to create a new thread
-        // after we've requested termination.
-        ASSERT(!m_hasRequestedTermination);
+DatabaseThread* DatabaseContext::databaseThread() {
+  if (!m_databaseThread && !m_hasOpenDatabases) {
+    // It's OK to ask for the m_databaseThread after we've requested
+    // termination because we're still using it to execute the closing
+    // of the database. However, it is NOT OK to create a new thread
+    // after we've requested termination.
+    ASSERT(!m_hasRequestedTermination);
 
-        // Create the database thread on first request - but not if at least one database was already opened,
-        // because in that case we already had a database thread and terminated it and should not create another.
-        m_databaseThread = DatabaseThread::create();
-        m_databaseThread->start();
-    }
+    // Create the database thread on first request - but not if at least one database was already opened,
+    // because in that case we already had a database thread and terminated it and should not create another.
+    m_databaseThread = DatabaseThread::create();
+    m_databaseThread->start();
+  }
 
-    return m_databaseThread.get();
+  return m_databaseThread.get();
 }
 
-bool DatabaseContext::databaseThreadAvailable()
-{
-    return databaseThread() && !m_hasRequestedTermination;
+bool DatabaseContext::databaseThreadAvailable() {
+  return databaseThread() && !m_hasRequestedTermination;
 }
 
-void DatabaseContext::stopDatabases()
-{
-    // Though we initiate termination of the DatabaseThread here in
-    // stopDatabases(), we can't clear the m_databaseThread ref till we get to
-    // the destructor. This is because the Databases that are managed by
-    // DatabaseThread still rely on this ref between the context and the thread
-    // to execute the task for closing the database. By the time we get to the
-    // destructor, we're guaranteed that the databases are destructed (which is
-    // why our ref count is 0 then and we're destructing). Then, the
-    // m_databaseThread RefPtr destructor will deref and delete the
-    // DatabaseThread.
+void DatabaseContext::stopDatabases() {
+  // Though we initiate termination of the DatabaseThread here in
+  // stopDatabases(), we can't clear the m_databaseThread ref till we get to
+  // the destructor. This is because the Databases that are managed by
+  // DatabaseThread still rely on this ref between the context and the thread
+  // to execute the task for closing the database. By the time we get to the
+  // destructor, we're guaranteed that the databases are destructed (which is
+  // why our ref count is 0 then and we're destructing). Then, the
+  // m_databaseThread RefPtr destructor will deref and delete the
+  // DatabaseThread.
 
-    if (databaseThreadAvailable()) {
-        m_hasRequestedTermination = true;
-        // This blocks until the database thread finishes the cleanup task.
-        m_databaseThread->terminate();
-    }
+  if (databaseThreadAvailable()) {
+    m_hasRequestedTermination = true;
+    // This blocks until the database thread finishes the cleanup task.
+    m_databaseThread->terminate();
+  }
 }
 
-bool DatabaseContext::allowDatabaseAccess() const
-{
-    return toDocument(getExecutionContext())->isActive();
+bool DatabaseContext::allowDatabaseAccess() const {
+  return toDocument(getExecutionContext())->isActive();
 }
 
-SecurityOrigin* DatabaseContext::getSecurityOrigin() const
-{
-    return getExecutionContext()->getSecurityOrigin();
+SecurityOrigin* DatabaseContext::getSecurityOrigin() const {
+  return getExecutionContext()->getSecurityOrigin();
 }
 
-bool DatabaseContext::isContextThread() const
-{
-    return getExecutionContext()->isContextThread();
+bool DatabaseContext::isContextThread() const {
+  return getExecutionContext()->isContextThread();
 }
 
-} // namespace blink
+}  // namespace blink

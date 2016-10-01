@@ -38,15 +38,15 @@ namespace blink {
 // <noembed> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's layoutObjectIsNeeded doesn't need to know about it.
 class HTMLNoEmbedElement final : public HTMLElement {
-public:
-    DECLARE_NODE_FACTORY(HTMLNoEmbedElement);
+ public:
+  DECLARE_NODE_FACTORY(HTMLNoEmbedElement);
 
-private:
-    explicit HTMLNoEmbedElement(Document&);
+ private:
+  explicit HTMLNoEmbedElement(Document&);
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

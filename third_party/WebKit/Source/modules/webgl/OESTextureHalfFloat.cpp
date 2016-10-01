@@ -28,33 +28,29 @@
 namespace blink {
 
 OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->extensionsUtil()->ensureExtensionEnabled("GL_OES_texture_half_float");
+    : WebGLExtension(context) {
+  context->extensionsUtil()->ensureExtensionEnabled(
+      "GL_OES_texture_half_float");
 }
 
-OESTextureHalfFloat::~OESTextureHalfFloat()
-{
+OESTextureHalfFloat::~OESTextureHalfFloat() {}
+
+WebGLExtensionName OESTextureHalfFloat::name() const {
+  return OESTextureHalfFloatName;
 }
 
-WebGLExtensionName OESTextureHalfFloat::name() const
-{
-    return OESTextureHalfFloatName;
+OESTextureHalfFloat* OESTextureHalfFloat::create(
+    WebGLRenderingContextBase* context) {
+  return new OESTextureHalfFloat(context);
 }
 
-OESTextureHalfFloat* OESTextureHalfFloat::create(WebGLRenderingContextBase* context)
-{
-    return new OESTextureHalfFloat(context);
+bool OESTextureHalfFloat::supported(WebGLRenderingContextBase* context) {
+  return context->extensionsUtil()->supportsExtension(
+      "GL_OES_texture_half_float");
 }
 
-bool OESTextureHalfFloat::supported(WebGLRenderingContextBase* context)
-{
-    return context->extensionsUtil()->supportsExtension("GL_OES_texture_half_float");
+const char* OESTextureHalfFloat::extensionName() {
+  return "OES_texture_half_float";
 }
 
-const char* OESTextureHalfFloat::extensionName()
-{
-    return "OES_texture_half_float";
-}
-
-} // namespace blink
+}  // namespace blink

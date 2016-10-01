@@ -8,46 +8,37 @@
 
 namespace blink {
 
-TEST(ScopedOrientationChangeIndicatorTest, InitialState)
-{
-    EXPECT_FALSE(ScopedOrientationChangeIndicator::processingOrientationChange());
+TEST(ScopedOrientationChangeIndicatorTest, InitialState) {
+  EXPECT_FALSE(ScopedOrientationChangeIndicator::processingOrientationChange());
 }
 
-TEST(ScopedOrientationChangeIndicatorTest, ConstructOneIndicatorWithGesture)
-{
-    ScopedOrientationChangeIndicator indicator;
+TEST(ScopedOrientationChangeIndicatorTest, ConstructOneIndicatorWithGesture) {
+  ScopedOrientationChangeIndicator indicator;
 
-    EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
 }
 
-TEST(ScopedOrientationChangeIndicatorTest, MultipleIndicatorInTheSameScope)
-{
-    ScopedOrientationChangeIndicator indicator1;
+TEST(ScopedOrientationChangeIndicatorTest, MultipleIndicatorInTheSameScope) {
+  ScopedOrientationChangeIndicator indicator1;
 
-    EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
 
-    ScopedOrientationChangeIndicator indicator2;
+  ScopedOrientationChangeIndicator indicator2;
 
-    EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
 }
 
-TEST(ScopedOrientationChangeIndicatorTest, DestructResetsStateUsingGesture)
-{
-    {
-        ScopedOrientationChangeIndicator indicator;
-    }
+TEST(ScopedOrientationChangeIndicatorTest, DestructResetsStateUsingGesture) {
+  { ScopedOrientationChangeIndicator indicator; }
 
-    EXPECT_FALSE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_FALSE(ScopedOrientationChangeIndicator::processingOrientationChange());
 }
 
-TEST(ScopedOrientationChangeIndicatorTest, DestructResetsStateUsingNoGesture)
-{
-    ScopedOrientationChangeIndicator indicator;
-    {
-        ScopedOrientationChangeIndicator indicator;
-    }
+TEST(ScopedOrientationChangeIndicatorTest, DestructResetsStateUsingNoGesture) {
+  ScopedOrientationChangeIndicator indicator;
+  { ScopedOrientationChangeIndicator indicator; }
 
-    EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
+  EXPECT_TRUE(ScopedOrientationChangeIndicator::processingOrientationChange());
 }
 
-} // namespace blink
+}  // namespace blink

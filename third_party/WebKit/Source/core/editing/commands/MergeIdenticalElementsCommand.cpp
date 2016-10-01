@@ -32,63 +32,63 @@
 
 namespace blink {
 
-MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(Element* first, Element* second)
-    : SimpleEditCommand(first->document())
-    , m_element1(first)
-    , m_element2(second)
-{
-    DCHECK(m_element1);
-    DCHECK(m_element2);
-    DCHECK_EQ(m_element1->nextSibling(), m_element2);
+MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(Element* first,
+                                                             Element* second)
+    : SimpleEditCommand(first->document()),
+      m_element1(first),
+      m_element2(second) {
+  DCHECK(m_element1);
+  DCHECK(m_element2);
+  DCHECK_EQ(m_element1->nextSibling(), m_element2);
 }
 
-void MergeIdenticalElementsCommand::doApply(EditingState*)
-{
-    if (m_element1->nextSibling() != m_element2 || !hasEditableStyle(*m_element1) || !hasEditableStyle(*m_element2))
-        return;
+void MergeIdenticalElementsCommand::doApply(EditingState*) {
+  if (m_element1->nextSibling() != m_element2 ||
+      !hasEditableStyle(*m_element1) || !hasEditableStyle(*m_element2))
+    return;
 
-    m_atChild = m_element2->firstChild();
+  m_atChild = m_element2->firstChild();
 
-    NodeVector children;
-    getChildNodes(*m_element1, children);
+  NodeVector children;
+  getChildNodes(*m_element1, children);
 
-    for (auto& child : children)
-        m_element2->insertBefore(child.release(), m_atChild.get(), IGNORE_EXCEPTION);
+  for (auto& child : children)
+    m_element2->insertBefore(child.release(), m_atChild.get(),
+                             IGNORE_EXCEPTION);
 
-    m_element1->remove(IGNORE_EXCEPTION);
+  m_element1->remove(IGNORE_EXCEPTION);
 }
 
-void MergeIdenticalElementsCommand::doUnapply()
-{
-    DCHECK(m_element1);
-    DCHECK(m_element2);
+void MergeIdenticalElementsCommand::doUnapply() {
+  DCHECK(m_element1);
+  DCHECK(m_element2);
 
-    Node* atChild = m_atChild.release();
+  Node* atChild = m_atChild.release();
 
-    ContainerNode* parent = m_element2->parentNode();
-    if (!parent || !hasEditableStyle(*parent))
-        return;
+  ContainerNode* parent = m_element2->parentNode();
+  if (!parent || !hasEditableStyle(*parent))
+    return;
 
-    TrackExceptionState exceptionState;
+  TrackExceptionState exceptionState;
 
-    parent->insertBefore(m_element1.get(), m_element2.get(), exceptionState);
-    if (exceptionState.hadException())
-        return;
+  parent->insertBefore(m_element1.get(), m_element2.get(), exceptionState);
+  if (exceptionState.hadException())
+    return;
 
-    HeapVector<Member<Node>> children;
-    for (Node* child = m_element2->firstChild(); child && child != atChild; child = child->nextSibling())
-        children.append(child);
+  HeapVector<Member<Node>> children;
+  for (Node* child = m_element2->firstChild(); child && child != atChild;
+       child = child->nextSibling())
+    children.append(child);
 
-    for (auto& child : children)
-        m_element1->appendChild(child.release(), exceptionState);
+  for (auto& child : children)
+    m_element1->appendChild(child.release(), exceptionState);
 }
 
-DEFINE_TRACE(MergeIdenticalElementsCommand)
-{
-    visitor->trace(m_element1);
-    visitor->trace(m_element2);
-    visitor->trace(m_atChild);
-    SimpleEditCommand::trace(visitor);
+DEFINE_TRACE(MergeIdenticalElementsCommand) {
+  visitor->trace(m_element1);
+  visitor->trace(m_element2);
+  visitor->trace(m_atChild);
+  SimpleEditCommand::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

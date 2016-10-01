@@ -17,102 +17,100 @@
 namespace blink {
 
 // TODO(tyoshino): Rename this to ReadableStreamDefaultControllerWrapper.
-class CORE_EXPORT ReadableStreamController final : public GarbageCollectedFinalized<ReadableStreamController> {
-public:
-    DEFINE_INLINE_TRACE() {}
+class CORE_EXPORT ReadableStreamController final
+    : public GarbageCollectedFinalized<ReadableStreamController> {
+ public:
+  DEFINE_INLINE_TRACE() {}
 
-    explicit ReadableStreamController(ScriptValue controller)
-        : m_scriptState(controller.getScriptState())
-        , m_jsController(controller.isolate(), controller.v8Value())
-    {
-        m_jsController.setPhantom();
-    }
+  explicit ReadableStreamController(ScriptValue controller)
+      : m_scriptState(controller.getScriptState()),
+        m_jsController(controller.isolate(), controller.v8Value()) {
+    m_jsController.setPhantom();
+  }
 
-    // Users of the ReadableStreamController can call this to note that the stream has been canceled and thus they
-    // don't anticipate using the ReadableStreamController anymore. (close/desiredSize/enqueue/error will become no-ops
-    // afterward.)
-    void noteHasBeenCanceled()
-    {
-        m_jsController.clear();
-    }
+  // Users of the ReadableStreamController can call this to note that the stream has been canceled and thus they
+  // don't anticipate using the ReadableStreamController anymore. (close/desiredSize/enqueue/error will become no-ops
+  // afterward.)
+  void noteHasBeenCanceled() { m_jsController.clear(); }
 
-    bool isActive() const
-    {
-        return !m_jsController.isEmpty();
-    }
+  bool isActive() const { return !m_jsController.isEmpty(); }
 
-    void close()
-    {
-        ScriptState* scriptState = m_scriptState.get();
-        ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
-        v8::Isolate* isolate = scriptState->isolate();
+  void close() {
+    ScriptState* scriptState = m_scriptState.get();
+    ScriptState::Scope scope(
+        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    v8::Isolate* isolate = scriptState->isolate();
 
-        v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
-        if (controller.IsEmpty())
-            return;
+    v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
+    if (controller.IsEmpty())
+      return;
 
-        v8::Local<v8::Value> args[] = { controller };
-        v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerClose", args);
-        m_jsController.clear();
-        result.ToLocalChecked();
-    }
+    v8::Local<v8::Value> args[] = {controller};
+    v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(
+        scriptState, "ReadableStreamDefaultControllerClose", args);
+    m_jsController.clear();
+    result.ToLocalChecked();
+  }
 
-    double desiredSize() const
-    {
-        ScriptState* scriptState = m_scriptState.get();
-        ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
-        v8::Isolate* isolate = scriptState->isolate();
+  double desiredSize() const {
+    ScriptState* scriptState = m_scriptState.get();
+    ScriptState::Scope scope(
+        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    v8::Isolate* isolate = scriptState->isolate();
 
-        v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
-        if (controller.IsEmpty())
-            return 0;
+    v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
+    if (controller.IsEmpty())
+      return 0;
 
-        v8::Local<v8::Value> args[] = { controller };
-        v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerGetDesiredSize", args);
+    v8::Local<v8::Value> args[] = {controller};
+    v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(
+        scriptState, "ReadableStreamDefaultControllerGetDesiredSize", args);
 
-        return result.ToLocalChecked().As<v8::Number>()->Value();
-    }
+    return result.ToLocalChecked().As<v8::Number>()->Value();
+  }
 
-    template <typename ChunkType>
-    void enqueue(ChunkType chunk) const
-    {
-        ScriptState* scriptState = m_scriptState.get();
-        ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
-        v8::Isolate* isolate = scriptState->isolate();
+  template <typename ChunkType>
+  void enqueue(ChunkType chunk) const {
+    ScriptState* scriptState = m_scriptState.get();
+    ScriptState::Scope scope(
+        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    v8::Isolate* isolate = scriptState->isolate();
 
-        v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
-        if (controller.IsEmpty())
-            return;
+    v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
+    if (controller.IsEmpty())
+      return;
 
-        v8::Local<v8::Value> jsChunk = toV8(chunk, scriptState);
-        v8::Local<v8::Value> args[] = { controller, jsChunk };
-        v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerEnqueue", args);
-        result.ToLocalChecked();
-    }
+    v8::Local<v8::Value> jsChunk = toV8(chunk, scriptState);
+    v8::Local<v8::Value> args[] = {controller, jsChunk};
+    v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(
+        scriptState, "ReadableStreamDefaultControllerEnqueue", args);
+    result.ToLocalChecked();
+  }
 
-    template <typename ErrorType>
-    void error(ErrorType error)
-    {
-        ScriptState* scriptState = m_scriptState.get();
-        ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
-        v8::Isolate* isolate = scriptState->isolate();
+  template <typename ErrorType>
+  void error(ErrorType error) {
+    ScriptState* scriptState = m_scriptState.get();
+    ScriptState::Scope scope(
+        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    v8::Isolate* isolate = scriptState->isolate();
 
-        v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
-        if (controller.IsEmpty())
-            return;
+    v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
+    if (controller.IsEmpty())
+      return;
 
-        v8::Local<v8::Value> jsError = toV8(error, scriptState);
-        v8::Local<v8::Value> args[] = { controller, jsError };
-        v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerError", args);
-        m_jsController.clear();
-        result.ToLocalChecked();
-    }
+    v8::Local<v8::Value> jsError = toV8(error, scriptState);
+    v8::Local<v8::Value> args[] = {controller, jsError};
+    v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(
+        scriptState, "ReadableStreamDefaultControllerError", args);
+    m_jsController.clear();
+    result.ToLocalChecked();
+  }
 
-private:
-    RefPtr<ScriptState> m_scriptState;
-    ScopedPersistent<v8::Value> m_jsController;
+ private:
+  RefPtr<ScriptState> m_scriptState;
+  ScopedPersistent<v8::Value> m_jsController;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ReadableStreamController_h
+#endif  // ReadableStreamController_h

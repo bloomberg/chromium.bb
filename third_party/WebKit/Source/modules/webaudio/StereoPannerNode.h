@@ -20,42 +20,47 @@ class StereoPannerOptions;
 // StereoPannerNode is an AudioNode with one input and one output. It is
 // specifically designed for equal-power stereo panning.
 class StereoPannerHandler final : public AudioHandler {
-public:
-    static PassRefPtr<StereoPannerHandler> create(AudioNode&, float sampleRate, AudioParamHandler& pan);
-    ~StereoPannerHandler() override;
+ public:
+  static PassRefPtr<StereoPannerHandler> create(AudioNode&,
+                                                float sampleRate,
+                                                AudioParamHandler& pan);
+  ~StereoPannerHandler() override;
 
-    void process(size_t framesToProcess) override;
-    void initialize() override;
+  void process(size_t framesToProcess) override;
+  void initialize() override;
 
-    void setChannelCount(unsigned long, ExceptionState&) final;
-    void setChannelCountMode(const String&, ExceptionState&) final;
+  void setChannelCount(unsigned long, ExceptionState&) final;
+  void setChannelCountMode(const String&, ExceptionState&) final;
 
-private:
-    StereoPannerHandler(AudioNode&, float sampleRate, AudioParamHandler& pan);
+ private:
+  StereoPannerHandler(AudioNode&, float sampleRate, AudioParamHandler& pan);
 
-    std::unique_ptr<StereoPanner> m_stereoPanner;
-    RefPtr<AudioParamHandler> m_pan;
+  std::unique_ptr<StereoPanner> m_stereoPanner;
+  RefPtr<AudioParamHandler> m_pan;
 
-    AudioFloatArray m_sampleAccuratePanValues;
+  AudioFloatArray m_sampleAccuratePanValues;
 
-    FRIEND_TEST_ALL_PREFIXES(StereoPannerNodeTest, StereoPannerLifetime);
+  FRIEND_TEST_ALL_PREFIXES(StereoPannerNodeTest, StereoPannerLifetime);
 };
 
 class StereoPannerNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static StereoPannerNode* create(BaseAudioContext&, ExceptionState&);
-    static StereoPannerNode* create(BaseAudioContext*, const StereoPannerOptions&, ExceptionState&);
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_WRAPPERTYPEINFO();
 
-    AudioParam* pan() const;
+ public:
+  static StereoPannerNode* create(BaseAudioContext&, ExceptionState&);
+  static StereoPannerNode* create(BaseAudioContext*,
+                                  const StereoPannerOptions&,
+                                  ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    StereoPannerNode(BaseAudioContext&);
+  AudioParam* pan() const;
 
-    Member<AudioParam> m_pan;
+ private:
+  StereoPannerNode(BaseAudioContext&);
+
+  Member<AudioParam> m_pan;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StereoPannerNode_h
+#endif  // StereoPannerNode_h

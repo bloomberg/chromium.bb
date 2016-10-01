@@ -34,54 +34,53 @@
 
 namespace blink {
 
-SVGRectTearOff::SVGRectTearOff(SVGRect* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
-    : SVGPropertyTearOff<SVGRect>(target, contextElement, propertyIsAnimVal, attributeName)
-{
+SVGRectTearOff::SVGRectTearOff(SVGRect* target,
+                               SVGElement* contextElement,
+                               PropertyIsAnimValType propertyIsAnimVal,
+                               const QualifiedName& attributeName)
+    : SVGPropertyTearOff<SVGRect>(target,
+                                  contextElement,
+                                  propertyIsAnimVal,
+                                  attributeName) {}
+
+void SVGRectTearOff::setX(float f, ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  target()->setX(f);
+  commitChange();
 }
 
-void SVGRectTearOff::setX(float f, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    target()->setX(f);
-    commitChange();
+void SVGRectTearOff::setY(float f, ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  target()->setY(f);
+  commitChange();
 }
 
-void SVGRectTearOff::setY(float f, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    target()->setY(f);
-    commitChange();
+void SVGRectTearOff::setWidth(float f, ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  target()->setWidth(f);
+  commitChange();
 }
 
-void SVGRectTearOff::setWidth(float f, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    target()->setWidth(f);
-    commitChange();
+void SVGRectTearOff::setHeight(float f, ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  target()->setHeight(f);
+  commitChange();
 }
 
-void SVGRectTearOff::setHeight(float f, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    target()->setHeight(f);
-    commitChange();
+DEFINE_TRACE_WRAPPERS(SVGRectTearOff) {
+  visitor->traceWrappers(contextElement());
 }
 
-DEFINE_TRACE_WRAPPERS(SVGRectTearOff)
-{
-    visitor->traceWrappers(contextElement());
-}
-
-} // namespace blink
+}  // namespace blink

@@ -30,22 +30,25 @@ namespace blink {
 class HTMLSelectElement;
 
 class HTMLHRElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLHRElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool canContainRangeEndPoint() const override { return hasChildren(); }
+ public:
+  DECLARE_NODE_FACTORY(HTMLHRElement);
 
-private:
-    explicit HTMLHRElement(Document&);
-    HTMLSelectElement* ownerSelectElement() const;
+  bool canContainRangeEndPoint() const override { return hasChildren(); }
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+ private:
+  explicit HTMLHRElement(Document&);
+  HTMLSelectElement* ownerSelectElement() const;
+
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLHRElement_h
+#endif  // HTMLHRElement_h

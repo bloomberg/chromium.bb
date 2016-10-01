@@ -40,52 +40,59 @@ namespace blink {
 // SincResampler is a high-quality sample-rate converter.
 
 class PLATFORM_EXPORT SincResampler {
-    USING_FAST_MALLOC(SincResampler);
-    WTF_MAKE_NONCOPYABLE(SincResampler);
-public:
-    // scaleFactor == sourceSampleRate / destinationSampleRate
-    // kernelSize can be adjusted for quality (higher is better)
-    // numberOfKernelOffsets is used for interpolation and is the number of sub-sample kernel shifts.
-    SincResampler(double scaleFactor, unsigned kernelSize = 32, unsigned numberOfKernelOffsets = 32);
+  USING_FAST_MALLOC(SincResampler);
+  WTF_MAKE_NONCOPYABLE(SincResampler);
 
-    // Processes numberOfSourceFrames from source to produce numberOfSourceFrames / scaleFactor frames in destination.
-    void process(const float* source, float* destination, unsigned numberOfSourceFrames);
+ public:
+  // scaleFactor == sourceSampleRate / destinationSampleRate
+  // kernelSize can be adjusted for quality (higher is better)
+  // numberOfKernelOffsets is used for interpolation and is the number of sub-sample kernel shifts.
+  SincResampler(double scaleFactor,
+                unsigned kernelSize = 32,
+                unsigned numberOfKernelOffsets = 32);
 
-    // Process with input source callback function for streaming applications.
-    void process(AudioSourceProvider*, float* destination, size_t framesToProcess);
+  // Processes numberOfSourceFrames from source to produce numberOfSourceFrames / scaleFactor frames in destination.
+  void process(const float* source,
+               float* destination,
+               unsigned numberOfSourceFrames);
 
-protected:
-    void initializeKernel();
-    void consumeSource(float* buffer, unsigned numberOfSourceFrames);
+  // Process with input source callback function for streaming applications.
+  void process(AudioSourceProvider*,
+               float* destination,
+               size_t framesToProcess);
 
-    double m_scaleFactor;
-    unsigned m_kernelSize;
-    unsigned m_numberOfKernelOffsets;
+ protected:
+  void initializeKernel();
+  void consumeSource(float* buffer, unsigned numberOfSourceFrames);
 
-    // m_kernelStorage has m_numberOfKernelOffsets kernels back-to-back, each of size m_kernelSize.
-    // The kernel offsets are sub-sample shifts of a windowed sinc() shifted from 0.0 to 1.0 sample.
-    AudioFloatArray m_kernelStorage;
+  double m_scaleFactor;
+  unsigned m_kernelSize;
+  unsigned m_numberOfKernelOffsets;
 
-    // m_virtualSourceIndex is an index on the source input buffer with sub-sample precision.
-    // It must be double precision to avoid drift.
-    double m_virtualSourceIndex;
+  // m_kernelStorage has m_numberOfKernelOffsets kernels back-to-back, each of size m_kernelSize.
+  // The kernel offsets are sub-sample shifts of a windowed sinc() shifted from 0.0 to 1.0 sample.
+  AudioFloatArray m_kernelStorage;
 
-    // This is the number of destination frames we generate per processing pass on the buffer.
-    unsigned m_blockSize;
+  // m_virtualSourceIndex is an index on the source input buffer with sub-sample precision.
+  // It must be double precision to avoid drift.
+  double m_virtualSourceIndex;
 
-    // Source is copied into this buffer for each processing pass.
-    AudioFloatArray m_inputBuffer;
+  // This is the number of destination frames we generate per processing pass on the buffer.
+  unsigned m_blockSize;
 
-    const float* m_source;
-    unsigned m_sourceFramesAvailable;
+  // Source is copied into this buffer for each processing pass.
+  AudioFloatArray m_inputBuffer;
 
-    // m_sourceProvider is used to provide the audio input stream to the resampler.
-    AudioSourceProvider* m_sourceProvider;
+  const float* m_source;
+  unsigned m_sourceFramesAvailable;
 
-    // The buffer is primed once at the very beginning of processing.
-    bool m_isBufferPrimed;
+  // m_sourceProvider is used to provide the audio input stream to the resampler.
+  AudioSourceProvider* m_sourceProvider;
+
+  // The buffer is primed once at the very beginning of processing.
+  bool m_isBufferPrimed;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SincResampler_h
+#endif  // SincResampler_h

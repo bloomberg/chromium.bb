@@ -30,60 +30,54 @@
 
 namespace blink {
 
-FileChooserClient::~FileChooserClient()
-{
-    discardChooser();
+FileChooserClient::~FileChooserClient() {
+  discardChooser();
 }
 
-FileChooser* FileChooserClient::newFileChooser(const FileChooserSettings& settings)
-{
-    discardChooser();
+FileChooser* FileChooserClient::newFileChooser(
+    const FileChooserSettings& settings) {
+  discardChooser();
 
-    m_chooser = FileChooser::create(this, settings);
-    return m_chooser.get();
+  m_chooser = FileChooser::create(this, settings);
+  return m_chooser.get();
 }
 
-void FileChooserClient::discardChooser()
-{
-    if (m_chooser)
-        m_chooser->disconnectClient();
+void FileChooserClient::discardChooser() {
+  if (m_chooser)
+    m_chooser->disconnectClient();
 }
 
-inline FileChooser::FileChooser(FileChooserClient* client, const FileChooserSettings& settings)
-    : m_client(client)
-    , m_settings(settings)
-{
+inline FileChooser::FileChooser(FileChooserClient* client,
+                                const FileChooserSettings& settings)
+    : m_client(client), m_settings(settings) {}
+
+PassRefPtr<FileChooser> FileChooser::create(
+    FileChooserClient* client,
+    const FileChooserSettings& settings) {
+  return adoptRef(new FileChooser(client, settings));
 }
 
-PassRefPtr<FileChooser> FileChooser::create(FileChooserClient* client, const FileChooserSettings& settings)
-{
-    return adoptRef(new FileChooser(client, settings));
+FileChooser::~FileChooser() {}
+
+void FileChooser::chooseFiles(const Vector<FileChooserFileInfo>& files) {
+  // FIXME: This is inelegant. We should not be looking at settings here.
+  Vector<String> paths;
+  for (unsigned i = 0; i < files.size(); ++i)
+    paths.append(files[i].path);
+  if (m_settings.selectedFiles == paths)
+    return;
+
+  if (m_client)
+    m_client->filesChosen(files);
 }
 
-FileChooser::~FileChooser()
-{
+Vector<String> FileChooserSettings::acceptTypes() const {
+  Vector<String> acceptTypes;
+  acceptTypes.reserveCapacity(acceptMIMETypes.size() +
+                              acceptFileExtensions.size());
+  acceptTypes.appendVector(acceptMIMETypes);
+  acceptTypes.appendVector(acceptFileExtensions);
+  return acceptTypes;
 }
 
-void FileChooser::chooseFiles(const Vector<FileChooserFileInfo>& files)
-{
-    // FIXME: This is inelegant. We should not be looking at settings here.
-    Vector<String> paths;
-    for (unsigned i = 0; i < files.size(); ++i)
-        paths.append(files[i].path);
-    if (m_settings.selectedFiles == paths)
-        return;
-
-    if (m_client)
-        m_client->filesChosen(files);
-}
-
-Vector<String> FileChooserSettings::acceptTypes() const
-{
-    Vector<String> acceptTypes;
-    acceptTypes.reserveCapacity(acceptMIMETypes.size() + acceptFileExtensions.size());
-    acceptTypes.appendVector(acceptMIMETypes);
-    acceptTypes.appendVector(acceptFileExtensions);
-    return acceptTypes;
-}
-
-} // namespace blink
+}  // namespace blink

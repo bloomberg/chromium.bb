@@ -14,48 +14,53 @@
 
 namespace blink {
 
-V8IDBObserverCallback::V8IDBObserverCallback(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
-    : ActiveDOMCallback(scriptState->getExecutionContext())
-    , m_callback(scriptState->isolate(), callback)
-    , m_scriptState(scriptState)
-{
-    V8PrivateProperty::getIDBObserverCallback(scriptState->isolate()).set(scriptState->context(), owner, callback);
-    m_callback.setPhantom();
+V8IDBObserverCallback::V8IDBObserverCallback(v8::Local<v8::Function> callback,
+                                             v8::Local<v8::Object> owner,
+                                             ScriptState* scriptState)
+    : ActiveDOMCallback(scriptState->getExecutionContext()),
+      m_callback(scriptState->isolate(), callback),
+      m_scriptState(scriptState) {
+  V8PrivateProperty::getIDBObserverCallback(scriptState->isolate())
+      .set(scriptState->context(), owner, callback);
+  m_callback.setPhantom();
 }
 
-V8IDBObserverCallback::~V8IDBObserverCallback()
-{
+V8IDBObserverCallback::~V8IDBObserverCallback() {}
+
+void V8IDBObserverCallback::handleChanges(IDBObserverChanges& changes,
+                                          IDBObserver& observer) {
+  if (!canInvokeCallback())
+    return;
+
+  if (!m_scriptState->contextIsValid())
+    return;
+  ScriptState::Scope scope(m_scriptState.get());
+
+  if (m_callback.isEmpty())
+    return;
+  v8::Local<v8::Value> observerHandle = toV8(
+      &observer, m_scriptState->context()->Global(), m_scriptState->isolate());
+  if (!observerHandle->IsObject())
+    return;
+
+  v8::Local<v8::Object> thisObject =
+      v8::Local<v8::Object>::Cast(observerHandle);
+  v8::Local<v8::Value> changesHandle = toV8(
+      &changes, m_scriptState->context()->Global(), m_scriptState->isolate());
+  if (changesHandle.IsEmpty())
+    return;
+
+  v8::Local<v8::Value> argv[] = {changesHandle};
+
+  V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()),
+                               m_scriptState->getExecutionContext(), thisObject,
+                               WTF_ARRAY_LENGTH(argv), argv,
+                               m_scriptState->isolate());
 }
 
-void V8IDBObserverCallback::handleChanges(IDBObserverChanges& changes, IDBObserver& observer)
-{
-    if (!canInvokeCallback())
-        return;
-
-    if (!m_scriptState->contextIsValid())
-        return;
-    ScriptState::Scope scope(m_scriptState.get());
-
-    if (m_callback.isEmpty())
-        return;
-    v8::Local<v8::Value> observerHandle = toV8(&observer, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (!observerHandle->IsObject())
-        return;
-
-    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(observerHandle);
-    v8::Local<v8::Value> changesHandle = toV8(&changes, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (changesHandle.IsEmpty())
-        return;
-
-    v8::Local<v8::Value> argv[] = { changesHandle };
-
-    V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisObject, WTF_ARRAY_LENGTH(argv), argv, m_scriptState->isolate());
+DEFINE_TRACE(V8IDBObserverCallback) {
+  IDBObserverCallback::trace(visitor);
+  ActiveDOMCallback::trace(visitor);
 }
 
-DEFINE_TRACE(V8IDBObserverCallback)
-{
-    IDBObserverCallback::trace(visitor);
-    ActiveDOMCallback::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

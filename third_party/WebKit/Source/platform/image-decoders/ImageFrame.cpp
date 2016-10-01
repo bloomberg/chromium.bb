@@ -33,158 +33,149 @@
 namespace blink {
 
 ImageFrame::ImageFrame()
-    : m_allocator(0)
-    , m_hasAlpha(true)
-    , m_status(FrameEmpty)
-    , m_duration(0)
-    , m_disposalMethod(DisposeNotSpecified)
-    , m_alphaBlendSource(BlendAtopPreviousFrame)
-    , m_premultiplyAlpha(true)
-    , m_pixelsChanged(false)
-    , m_requiredPreviousFrameIndex(kNotFound)
-{
-}
+    : m_allocator(0),
+      m_hasAlpha(true),
+      m_status(FrameEmpty),
+      m_duration(0),
+      m_disposalMethod(DisposeNotSpecified),
+      m_alphaBlendSource(BlendAtopPreviousFrame),
+      m_premultiplyAlpha(true),
+      m_pixelsChanged(false),
+      m_requiredPreviousFrameIndex(kNotFound) {}
 
-ImageFrame& ImageFrame::operator=(const ImageFrame& other)
-{
-    if (this == &other)
-        return *this;
-
-    m_bitmap = other.m_bitmap;
-    // Keep the pixels locked since we will be writing directly into the
-    // bitmap throughout this object's lifetime.
-    m_bitmap.lockPixels();
-    // Be sure to assign this before calling setStatus(), since setStatus() may
-    // call notifyBitmapIfPixelsChanged().
-    m_pixelsChanged = other.m_pixelsChanged;
-    setMemoryAllocator(other.allocator());
-    setOriginalFrameRect(other.originalFrameRect());
-    setStatus(other.getStatus());
-    setDuration(other.duration());
-    setDisposalMethod(other.getDisposalMethod());
-    setAlphaBlendSource(other.getAlphaBlendSource());
-    setPremultiplyAlpha(other.premultiplyAlpha());
-    // Be sure that this is called after we've called setStatus(), since we
-    // look at our status to know what to do with the alpha value.
-    setHasAlpha(other.hasAlpha());
-    setRequiredPreviousFrameIndex(other.requiredPreviousFrameIndex());
+ImageFrame& ImageFrame::operator=(const ImageFrame& other) {
+  if (this == &other)
     return *this;
+
+  m_bitmap = other.m_bitmap;
+  // Keep the pixels locked since we will be writing directly into the
+  // bitmap throughout this object's lifetime.
+  m_bitmap.lockPixels();
+  // Be sure to assign this before calling setStatus(), since setStatus() may
+  // call notifyBitmapIfPixelsChanged().
+  m_pixelsChanged = other.m_pixelsChanged;
+  setMemoryAllocator(other.allocator());
+  setOriginalFrameRect(other.originalFrameRect());
+  setStatus(other.getStatus());
+  setDuration(other.duration());
+  setDisposalMethod(other.getDisposalMethod());
+  setAlphaBlendSource(other.getAlphaBlendSource());
+  setPremultiplyAlpha(other.premultiplyAlpha());
+  // Be sure that this is called after we've called setStatus(), since we
+  // look at our status to know what to do with the alpha value.
+  setHasAlpha(other.hasAlpha());
+  setRequiredPreviousFrameIndex(other.requiredPreviousFrameIndex());
+  return *this;
 }
 
-void ImageFrame::clearPixelData()
-{
-    m_bitmap.reset();
-    m_status = FrameEmpty;
-    // NOTE: Do not reset other members here; clearFrameBufferCache()
-    // calls this to free the bitmap data, but other functions like
-    // initFrameBuffer() and frameComplete() may still need to read
-    // other metadata out of this frame later.
+void ImageFrame::clearPixelData() {
+  m_bitmap.reset();
+  m_status = FrameEmpty;
+  // NOTE: Do not reset other members here; clearFrameBufferCache()
+  // calls this to free the bitmap data, but other functions like
+  // initFrameBuffer() and frameComplete() may still need to read
+  // other metadata out of this frame later.
 }
 
-void ImageFrame::zeroFillPixelData()
-{
-    m_bitmap.eraseARGB(0, 0, 0, 0);
-    m_hasAlpha = true;
+void ImageFrame::zeroFillPixelData() {
+  m_bitmap.eraseARGB(0, 0, 0, 0);
+  m_hasAlpha = true;
 }
 
-bool ImageFrame::copyBitmapData(const ImageFrame& other)
-{
-    DCHECK_NE(this, &other);
-    m_hasAlpha = other.m_hasAlpha;
-    m_bitmap.reset();
-    return other.m_bitmap.copyTo(&m_bitmap, other.m_bitmap.colorType());
+bool ImageFrame::copyBitmapData(const ImageFrame& other) {
+  DCHECK_NE(this, &other);
+  m_hasAlpha = other.m_hasAlpha;
+  m_bitmap.reset();
+  return other.m_bitmap.copyTo(&m_bitmap, other.m_bitmap.colorType());
 }
 
-bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other)
-{
-    DCHECK(other);
-    DCHECK_EQ(FrameComplete, other->m_status);
-    DCHECK_EQ(FrameEmpty, m_status);
-    DCHECK_NE(this, other);
-    if (other->m_bitmap.isImmutable())
-        return false;
-    m_hasAlpha = other->m_hasAlpha;
-    m_bitmap.reset();
-    m_bitmap.swap(other->m_bitmap);
-    other->m_status = FrameEmpty;
-    return true;
+bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other) {
+  DCHECK(other);
+  DCHECK_EQ(FrameComplete, other->m_status);
+  DCHECK_EQ(FrameEmpty, m_status);
+  DCHECK_NE(this, other);
+  if (other->m_bitmap.isImmutable())
+    return false;
+  m_hasAlpha = other->m_hasAlpha;
+  m_bitmap.reset();
+  m_bitmap.swap(other->m_bitmap);
+  other->m_status = FrameEmpty;
+  return true;
 }
 
-bool ImageFrame::setSizeAndColorProfile(int newWidth, int newHeight, const ICCProfile& newIccProfile)
-{
-    // setSizeAndColorProfile() should only be called once, it leaks memory otherwise.
-    ASSERT(!width() && !height());
+bool ImageFrame::setSizeAndColorProfile(int newWidth,
+                                        int newHeight,
+                                        const ICCProfile& newIccProfile) {
+  // setSizeAndColorProfile() should only be called once, it leaks memory otherwise.
+  ASSERT(!width() && !height());
 
-    sk_sp<SkColorSpace> colorSpace;
-    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
-        if (newIccProfile.isEmpty())
-            colorSpace = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
-        else
-            colorSpace = SkColorSpace::NewICC(newIccProfile.data(), newIccProfile.size());
-        DCHECK(colorSpace);
-    }
+  sk_sp<SkColorSpace> colorSpace;
+  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+    if (newIccProfile.isEmpty())
+      colorSpace = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+    else
+      colorSpace =
+          SkColorSpace::NewICC(newIccProfile.data(), newIccProfile.size());
+    DCHECK(colorSpace);
+  }
 
-    m_bitmap.setInfo(SkImageInfo::MakeN32(newWidth, newHeight,
-        m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType, colorSpace));
-    if (!m_bitmap.tryAllocPixels(m_allocator, 0))
-        return false;
+  m_bitmap.setInfo(SkImageInfo::MakeN32(
+      newWidth, newHeight,
+      m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
+      colorSpace));
+  if (!m_bitmap.tryAllocPixels(m_allocator, 0))
+    return false;
 
-    zeroFillPixelData();
-    return true;
+  zeroFillPixelData();
+  return true;
 }
 
-bool ImageFrame::hasAlpha() const
-{
-    return m_hasAlpha;
+bool ImageFrame::hasAlpha() const {
+  return m_hasAlpha;
 }
 
-sk_sp<SkImage> ImageFrame::finalizePixelsAndGetImage()
-{
-    DCHECK_EQ(FrameComplete, m_status);
-    m_bitmap.setImmutable();
-    return SkImage::MakeFromBitmap(m_bitmap);
+sk_sp<SkImage> ImageFrame::finalizePixelsAndGetImage() {
+  DCHECK_EQ(FrameComplete, m_status);
+  m_bitmap.setImmutable();
+  return SkImage::MakeFromBitmap(m_bitmap);
 }
 
-void ImageFrame::setHasAlpha(bool alpha)
-{
-    m_hasAlpha = alpha;
+void ImageFrame::setHasAlpha(bool alpha) {
+  m_hasAlpha = alpha;
 
+  m_bitmap.setAlphaType(computeAlphaType());
+}
+
+void ImageFrame::setStatus(Status status) {
+  m_status = status;
+  if (m_status == FrameComplete) {
     m_bitmap.setAlphaType(computeAlphaType());
+    // Send pending pixels changed notifications now, because we can't do
+    // this after the bitmap has been marked immutable.  We don't set the
+    // bitmap immutable here because it would defeat
+    // takeBitmapDataIfWritable().  Instead we let the bitmap stay mutable
+    // until someone calls finalizePixelsAndGetImage() to actually get the
+    // SkImage.
+    notifyBitmapIfPixelsChanged();
+  }
 }
 
-void ImageFrame::setStatus(Status status)
-{
-    m_status = status;
-    if (m_status == FrameComplete) {
-        m_bitmap.setAlphaType(computeAlphaType());
-        // Send pending pixels changed notifications now, because we can't do
-        // this after the bitmap has been marked immutable.  We don't set the
-        // bitmap immutable here because it would defeat
-        // takeBitmapDataIfWritable().  Instead we let the bitmap stay mutable
-        // until someone calls finalizePixelsAndGetImage() to actually get the
-        // SkImage.
-        notifyBitmapIfPixelsChanged();
-    }
+void ImageFrame::zeroFillFrameRect(const IntRect& rect) {
+  if (rect.isEmpty())
+    return;
+
+  m_bitmap.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
+  setHasAlpha(true);
 }
 
-void ImageFrame::zeroFillFrameRect(const IntRect& rect)
-{
-    if (rect.isEmpty())
-        return;
+SkAlphaType ImageFrame::computeAlphaType() const {
+  // If the frame is not fully loaded, there will be transparent pixels,
+  // so we can't tell skia we're opaque, even for image types that logically
+  // always are (e.g. jpeg).
+  if (!m_hasAlpha && m_status == FrameComplete)
+    return kOpaque_SkAlphaType;
 
-    m_bitmap.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
-    setHasAlpha(true);
+  return m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
 }
 
-SkAlphaType ImageFrame::computeAlphaType() const
-{
-    // If the frame is not fully loaded, there will be transparent pixels,
-    // so we can't tell skia we're opaque, even for image types that logically
-    // always are (e.g. jpeg).
-    if (!m_hasAlpha && m_status == FrameComplete)
-        return kOpaque_SkAlphaType;
-
-    return m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
-}
-
-} // namespace blink
+}  // namespace blink

@@ -8,14 +8,14 @@
 namespace blink {
 
 enum WebScrollbarButtonsPlacement {
-    WebScrollbarButtonsPlacementNone,
-    WebScrollbarButtonsPlacementSingle,
-    WebScrollbarButtonsPlacementDoubleStart,
-    WebScrollbarButtonsPlacementDoubleEnd,
-    WebScrollbarButtonsPlacementDoubleBoth,
-    WebScrollbarButtonsPlacementLast = WebScrollbarButtonsPlacementDoubleBoth
+  WebScrollbarButtonsPlacementNone,
+  WebScrollbarButtonsPlacementSingle,
+  WebScrollbarButtonsPlacementDoubleStart,
+  WebScrollbarButtonsPlacementDoubleEnd,
+  WebScrollbarButtonsPlacementDoubleBoth,
+  WebScrollbarButtonsPlacementLast = WebScrollbarButtonsPlacementDoubleBoth
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebScrollbarButtonsPlacement_h
+#endif  // WebScrollbarButtonsPlacement_h

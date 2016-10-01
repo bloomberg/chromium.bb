@@ -26,48 +26,48 @@
 namespace blink {
 
 inline SVGClipPathElement::SVGClipPathElement(Document& document)
-    : SVGGraphicsElement(SVGNames::clipPathTag, document)
-    , m_clipPathUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::clipPathUnitsAttr, SVGUnitTypes::kSvgUnitTypeUserspaceonuse))
-{
-    addToPropertyMap(m_clipPathUnits);
+    : SVGGraphicsElement(SVGNames::clipPathTag, document),
+      m_clipPathUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
+          this,
+          SVGNames::clipPathUnitsAttr,
+          SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
+  addToPropertyMap(m_clipPathUnits);
 }
 
-DEFINE_TRACE(SVGClipPathElement)
-{
-    visitor->trace(m_clipPathUnits);
-    SVGGraphicsElement::trace(visitor);
+DEFINE_TRACE(SVGClipPathElement) {
+  visitor->trace(m_clipPathUnits);
+  SVGGraphicsElement::trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGClipPathElement)
 
-void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (attrName == SVGNames::clipPathUnitsAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (attrName == SVGNames::clipPathUnitsAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutSVGResourceContainer* layoutObject = toLayoutSVGResourceContainer(this->layoutObject());
-        if (layoutObject)
-            layoutObject->invalidateCacheAndMarkForLayout();
-        return;
-    }
+    LayoutSVGResourceContainer* layoutObject =
+        toLayoutSVGResourceContainer(this->layoutObject());
+    if (layoutObject)
+      layoutObject->invalidateCacheAndMarkForLayout();
+    return;
+  }
 
-    SVGGraphicsElement::svgAttributeChanged(attrName);
+  SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-void SVGClipPathElement::childrenChanged(const ChildrenChange& change)
-{
-    SVGGraphicsElement::childrenChanged(change);
+void SVGClipPathElement::childrenChanged(const ChildrenChange& change) {
+  SVGGraphicsElement::childrenChanged(change);
 
-    if (change.byParser)
-        return;
+  if (change.byParser)
+    return;
 
-    if (LayoutObject* object = layoutObject())
-        object->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ChildChanged);
+  if (LayoutObject* object = layoutObject())
+    object->setNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::ChildChanged);
 }
 
-LayoutObject* SVGClipPathElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutSVGResourceClipper(this);
+LayoutObject* SVGClipPathElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutSVGResourceClipper(this);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -42,24 +42,25 @@ class ExecutionContext;
 class Node;
 
 class CORE_EXPORT V8GCController {
-    STATIC_ONLY(V8GCController);
-public:
-    static void gcPrologue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
-    static void gcEpilogue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
+  STATIC_ONLY(V8GCController);
 
-    static void collectGarbage(v8::Isolate*);
-    // You should use collectAllGarbageForTesting() when you want to collect all
-    // V8 & Blink objects. It runs multiple V8 GCs to collect references
-    // that cross the binding boundary. collectAllGarbage() also runs multipe
-    // Oilpan GCs to collect a chain of persistent handles.
-    static void collectAllGarbageForTesting(v8::Isolate*);
+ public:
+  static void gcPrologue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
+  static void gcEpilogue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
 
-    static Node* opaqueRootForGC(v8::Isolate*, Node*);
+  static void collectGarbage(v8::Isolate*);
+  // You should use collectAllGarbageForTesting() when you want to collect all
+  // V8 & Blink objects. It runs multiple V8 GCs to collect references
+  // that cross the binding boundary. collectAllGarbage() also runs multipe
+  // Oilpan GCs to collect a chain of persistent handles.
+  static void collectAllGarbageForTesting(v8::Isolate*);
 
-    static void traceDOMWrappers(v8::Isolate*, Visitor*);
-    static bool hasPendingActivity(v8::Isolate*, ExecutionContext*);
+  static Node* opaqueRootForGC(v8::Isolate*, Node*);
+
+  static void traceDOMWrappers(v8::Isolate*, Visitor*);
+  static bool hasPendingActivity(v8::Isolate*, ExecutionContext*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8GCController_h
+#endif  // V8GCController_h

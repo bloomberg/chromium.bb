@@ -32,8 +32,6 @@
 
 namespace blink {
 
-AudioProcessor::~AudioProcessor()
-{
-}
+AudioProcessor::~AudioProcessor() {}
 
-} // namespace blink
+}  // namespace blink

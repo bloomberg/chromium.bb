@@ -14,31 +14,32 @@ namespace blink {
 class WebPermissionClient;
 
 class MODULES_EXPORT PermissionController final
-    : public GarbageCollectedFinalized<PermissionController>
-    , public Supplement<LocalFrame>
-    , public DOMWindowProperty {
-    WTF_MAKE_NONCOPYABLE(PermissionController);
-    USING_GARBAGE_COLLECTED_MIXIN(PermissionController);
-public:
-    virtual ~PermissionController();
+    : public GarbageCollectedFinalized<PermissionController>,
+      public Supplement<LocalFrame>,
+      public DOMWindowProperty {
+  WTF_MAKE_NONCOPYABLE(PermissionController);
+  USING_GARBAGE_COLLECTED_MIXIN(PermissionController);
 
-    static void provideTo(LocalFrame&, WebPermissionClient*);
-    static PermissionController* from(LocalFrame&);
-    static const char* supplementName();
+ public:
+  virtual ~PermissionController();
 
-    WebPermissionClient* client() const;
+  static void provideTo(LocalFrame&, WebPermissionClient*);
+  static PermissionController* from(LocalFrame&);
+  static const char* supplementName();
 
-    DECLARE_VIRTUAL_TRACE();
+  WebPermissionClient* client() const;
 
-private:
-    PermissionController(LocalFrame&, WebPermissionClient*);
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from DOMWindowProperty.
-    void frameDestroyed() override;
+ private:
+  PermissionController(LocalFrame&, WebPermissionClient*);
 
-    WebPermissionClient* m_client;
+  // Inherited from DOMWindowProperty.
+  void frameDestroyed() override;
+
+  WebPermissionClient* m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PermissionController_h
+#endif  // PermissionController_h

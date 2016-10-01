@@ -43,106 +43,110 @@ class SVGElement;
 class SVGSMILElement;
 class SVGSVGElement;
 
-class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer>  {
-public:
-    static SMILTimeContainer* create(SVGSVGElement& owner) { return new SMILTimeContainer(owner); }
-    ~SMILTimeContainer();
+class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
+ public:
+  static SMILTimeContainer* create(SVGSVGElement& owner) {
+    return new SMILTimeContainer(owner);
+  }
+  ~SMILTimeContainer();
 
-    void schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
-    void unschedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
-    void notifyIntervalsChanged();
+  void schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
+  void unschedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
+  void notifyIntervalsChanged();
 
-    double elapsed() const;
+  double elapsed() const;
 
-    bool isPaused() const;
-    bool isStarted() const;
+  bool isPaused() const;
+  bool isStarted() const;
 
-    void start();
-    void pause();
-    void resume();
-    void setElapsed(double);
+  void start();
+  void pause();
+  void resume();
+  void setElapsed(double);
 
-    void serviceAnimations();
-    bool hasAnimations() const;
+  void serviceAnimations();
+  bool hasAnimations() const;
 
-    void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
+  void setDocumentOrderIndexesDirty() { m_documentOrderIndexesDirty = true; }
 
-    // Advance the animation timeline a single frame.
-    void advanceFrameForTesting();
+  // Advance the animation timeline a single frame.
+  void advanceFrameForTesting();
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit SMILTimeContainer(SVGSVGElement& owner);
+ private:
+  explicit SMILTimeContainer(SVGSVGElement& owner);
 
-    enum FrameSchedulingState {
-        // No frame scheduled.
-        Idle,
-        // Scheduled a wakeup to update the animation values.
-        SynchronizeAnimations,
-        // Scheduled a wakeup to trigger an animation frame.
-        FutureAnimationFrame,
-        // Scheduled a animation frame for continuous update.
-        AnimationFrame
-    };
+  enum FrameSchedulingState {
+    // No frame scheduled.
+    Idle,
+    // Scheduled a wakeup to update the animation values.
+    SynchronizeAnimations,
+    // Scheduled a wakeup to trigger an animation frame.
+    FutureAnimationFrame,
+    // Scheduled a animation frame for continuous update.
+    AnimationFrame
+  };
 
-    enum AnimationPolicyOnceAction {
-        // Restart OnceTimer if the timeline is not paused.
-        RestartOnceTimerIfNotPaused,
-        // Restart OnceTimer.
-        RestartOnceTimer,
-        // Cancel OnceTimer.
-        CancelOnceTimer
-    };
+  enum AnimationPolicyOnceAction {
+    // Restart OnceTimer if the timeline is not paused.
+    RestartOnceTimerIfNotPaused,
+    // Restart OnceTimer.
+    RestartOnceTimer,
+    // Cancel OnceTimer.
+    CancelOnceTimer
+  };
 
-    bool isTimelineRunning() const;
-    void synchronizeToDocumentTimeline();
-    void scheduleAnimationFrame(double delayTime);
-    void cancelAnimationFrame();
-    void wakeupTimerFired(TimerBase*);
-    void scheduleAnimationPolicyTimer();
-    void cancelAnimationPolicyTimer();
-    void animationPolicyTimerFired(TimerBase*);
-    ImageAnimationPolicy animationPolicy() const;
-    bool handleAnimationPolicy(AnimationPolicyOnceAction);
-    bool canScheduleFrame(SMILTime earliestFireTime) const;
-    void updateAnimationsAndScheduleFrameIfNeeded(double elapsed, bool seekToTime = false);
-    SMILTime updateAnimations(double elapsed, bool seekToTime);
-    void serviceOnNextFrame();
-    void scheduleWakeUp(double delayTime, FrameSchedulingState);
-    bool hasPendingSynchronization() const;
+  bool isTimelineRunning() const;
+  void synchronizeToDocumentTimeline();
+  void scheduleAnimationFrame(double delayTime);
+  void cancelAnimationFrame();
+  void wakeupTimerFired(TimerBase*);
+  void scheduleAnimationPolicyTimer();
+  void cancelAnimationPolicyTimer();
+  void animationPolicyTimerFired(TimerBase*);
+  ImageAnimationPolicy animationPolicy() const;
+  bool handleAnimationPolicy(AnimationPolicyOnceAction);
+  bool canScheduleFrame(SMILTime earliestFireTime) const;
+  void updateAnimationsAndScheduleFrameIfNeeded(double elapsed,
+                                                bool seekToTime = false);
+  SMILTime updateAnimations(double elapsed, bool seekToTime);
+  void serviceOnNextFrame();
+  void scheduleWakeUp(double delayTime, FrameSchedulingState);
+  bool hasPendingSynchronization() const;
 
-    void updateDocumentOrderIndexes();
+  void updateDocumentOrderIndexes();
 
-    SVGSVGElement& ownerSVGElement() const;
-    Document& document() const;
+  SVGSVGElement& ownerSVGElement() const;
+  Document& document() const;
 
-    // The latest "restart" time for the time container's timeline. If the
-    // timeline has not been manipulated (seeked, paused) this will be zero.
-    double m_presentationTime;
-    // The time on the document timeline corresponding to |m_presentationTime|.
-    double m_referenceTime;
+  // The latest "restart" time for the time container's timeline. If the
+  // timeline has not been manipulated (seeked, paused) this will be zero.
+  double m_presentationTime;
+  // The time on the document timeline corresponding to |m_presentationTime|.
+  double m_referenceTime;
 
-    FrameSchedulingState m_frameSchedulingState;
-    bool m_started; // The timeline has been started.
-    bool m_paused; // The timeline is paused.
+  FrameSchedulingState m_frameSchedulingState;
+  bool m_started;  // The timeline has been started.
+  bool m_paused;   // The timeline is paused.
 
-    bool m_documentOrderIndexesDirty;
+  bool m_documentOrderIndexesDirty;
 
-    Timer<SMILTimeContainer> m_wakeupTimer;
-    Timer<SMILTimeContainer> m_animationPolicyOnceTimer;
+  Timer<SMILTimeContainer> m_wakeupTimer;
+  Timer<SMILTimeContainer> m_animationPolicyOnceTimer;
 
-    using ElementAttributePair = std::pair<WeakMember<SVGElement>, QualifiedName>;
-    using AnimationsLinkedHashSet = HeapLinkedHashSet<WeakMember<SVGSMILElement>>;
-    using GroupedAnimationsMap = HeapHashMap<ElementAttributePair, Member<AnimationsLinkedHashSet>>;
-    GroupedAnimationsMap m_scheduledAnimations;
+  using ElementAttributePair = std::pair<WeakMember<SVGElement>, QualifiedName>;
+  using AnimationsLinkedHashSet = HeapLinkedHashSet<WeakMember<SVGSMILElement>>;
+  using GroupedAnimationsMap =
+      HeapHashMap<ElementAttributePair, Member<AnimationsLinkedHashSet>>;
+  GroupedAnimationsMap m_scheduledAnimations;
 
-    Member<SVGSVGElement> m_ownerSVGElement;
+  Member<SVGSVGElement> m_ownerSVGElement;
 
 #if ENABLE(ASSERT)
-    bool m_preventScheduledAnimationsChanges;
+  bool m_preventScheduledAnimationsChanges;
 #endif
 };
-} // namespace blink
+}  // namespace blink
 
-#endif // SMILTimeContainer_h
+#endif  // SMILTimeContainer_h

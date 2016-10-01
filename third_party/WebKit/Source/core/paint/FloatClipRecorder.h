@@ -14,19 +14,23 @@
 namespace blink {
 
 class FloatClipRecorder {
-    USING_FAST_MALLOC(FloatClipRecorder);
-    WTF_MAKE_NONCOPYABLE(FloatClipRecorder);
-public:
-    FloatClipRecorder(GraphicsContext&, const DisplayItemClient&, PaintPhase, const FloatRect&);
+  USING_FAST_MALLOC(FloatClipRecorder);
+  WTF_MAKE_NONCOPYABLE(FloatClipRecorder);
 
-    ~FloatClipRecorder();
+ public:
+  FloatClipRecorder(GraphicsContext&,
+                    const DisplayItemClient&,
+                    PaintPhase,
+                    const FloatRect&);
 
-private:
-    GraphicsContext& m_context;
-    const DisplayItemClient& m_client;
-    DisplayItem::Type m_clipType;
+  ~FloatClipRecorder();
+
+ private:
+  GraphicsContext& m_context;
+  const DisplayItemClient& m_client;
+  DisplayItem::Type m_clipType;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FloatClipRecorder_h
+#endif  // FloatClipRecorder_h

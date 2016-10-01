@@ -39,27 +39,28 @@ namespace blink {
 // Result cancellation status interface to allow non-Blink webcrypto threads
 // to query for status.
 class CryptoResultCancel : public ThreadSafeRefCounted<CryptoResultCancel> {
-public:
-    virtual ~CryptoResultCancel() { }
+ public:
+  virtual ~CryptoResultCancel() {}
 
-    virtual bool cancelled() const = 0;
+  virtual bool cancelled() const = 0;
 };
 
 // Receives notification of completion of the crypto operation.
 class CryptoResult : public GarbageCollectedFinalized<CryptoResult> {
-public:
-    virtual ~CryptoResult() { }
+ public:
+  virtual ~CryptoResult() {}
 
-    virtual void completeWithError(WebCryptoErrorType, const WebString&) = 0;
-    virtual void completeWithBuffer(const void* bytes, unsigned bytesSize) = 0;
-    virtual void completeWithJson(const char* utf8Data, unsigned length) = 0;
-    virtual void completeWithBoolean(bool) = 0;
-    virtual void completeWithKey(const WebCryptoKey&) = 0;
-    virtual void completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey) = 0;
+  virtual void completeWithError(WebCryptoErrorType, const WebString&) = 0;
+  virtual void completeWithBuffer(const void* bytes, unsigned bytesSize) = 0;
+  virtual void completeWithJson(const char* utf8Data, unsigned length) = 0;
+  virtual void completeWithBoolean(bool) = 0;
+  virtual void completeWithKey(const WebCryptoKey&) = 0;
+  virtual void completeWithKeyPair(const WebCryptoKey& publicKey,
+                                   const WebCryptoKey& privateKey) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CryptoResult_h
+#endif  // CryptoResult_h

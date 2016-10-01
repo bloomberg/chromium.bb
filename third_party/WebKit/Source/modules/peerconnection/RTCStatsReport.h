@@ -17,24 +17,29 @@
 namespace blink {
 
 // https://w3c.github.io/webrtc-pc/#rtcstatsreport-object
-class RTCStatsReport final
-    : public GarbageCollectedFinalized<RTCStatsReport>
-    , public ScriptWrappable
-    , public Maplike<String, v8::Local<v8::Value>> {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    RTCStatsReport(std::unique_ptr<WebRTCStatsReport>);
+class RTCStatsReport final : public GarbageCollectedFinalized<RTCStatsReport>,
+                             public ScriptWrappable,
+                             public Maplike<String, v8::Local<v8::Value>> {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Maplike<String, v8::Local<v8::Value>>
-    PairIterable<String, v8::Local<v8::Value>>::IterationSource* startIteration(ScriptState*, ExceptionState&) override;
-    bool getMapEntry(ScriptState*, const String& key, v8::Local<v8::Value>&, ExceptionState&) override;
+ public:
+  RTCStatsReport(std::unique_ptr<WebRTCStatsReport>);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  // Maplike<String, v8::Local<v8::Value>>
+  PairIterable<String, v8::Local<v8::Value>>::IterationSource* startIteration(
+      ScriptState*,
+      ExceptionState&) override;
+  bool getMapEntry(ScriptState*,
+                   const String& key,
+                   v8::Local<v8::Value>&,
+                   ExceptionState&) override;
 
-private:
-    std::unique_ptr<WebRTCStatsReport> m_report;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ private:
+  std::unique_ptr<WebRTCStatsReport> m_report;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCStatsReport_h
+#endif  // RTCStatsReport_h

@@ -24,49 +24,57 @@ class ScriptState;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
 
-class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public GarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>, public Supplement<HTMLMediaElement>, public WebMediaPlayerEncryptedMediaClient {
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
-public:
-    static MediaKeys* mediaKeys(HTMLMediaElement&);
-    static ScriptPromise setMediaKeys(ScriptState*, HTMLMediaElement&, MediaKeys*);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey);
+class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
+    : public GarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>,
+      public Supplement<HTMLMediaElement>,
+      public WebMediaPlayerEncryptedMediaClient {
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
 
-    // WebMediaPlayerEncryptedMediaClient methods
-    void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) final;
-    void didBlockPlaybackWaitingForKey() final;
-    void didResumePlaybackBlockedForKey() final;
-    WebContentDecryptionModule* contentDecryptionModule();
+ public:
+  static MediaKeys* mediaKeys(HTMLMediaElement&);
+  static ScriptPromise setMediaKeys(ScriptState*,
+                                    HTMLMediaElement&,
+                                    MediaKeys*);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(encrypted);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waitingforkey);
 
-    static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
-    static const char* supplementName();
+  // WebMediaPlayerEncryptedMediaClient methods
+  void encrypted(WebEncryptedMediaInitDataType,
+                 const unsigned char* initData,
+                 unsigned initDataLength) final;
+  void didBlockPlaybackWaitingForKey() final;
+  void didResumePlaybackBlockedForKey() final;
+  WebContentDecryptionModule* contentDecryptionModule();
 
-    ~HTMLMediaElementEncryptedMedia();
+  static HTMLMediaElementEncryptedMedia& from(HTMLMediaElement&);
+  static const char* supplementName();
 
-    DECLARE_VIRTUAL_TRACE();
+  ~HTMLMediaElementEncryptedMedia();
 
-private:
-    friend class SetMediaKeysHandler;
+  DECLARE_VIRTUAL_TRACE();
 
-    HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
+ private:
+  friend class SetMediaKeysHandler;
 
-    // EventTarget
-    bool setAttributeEventListener(const AtomicString& eventType, EventListener*);
-    EventListener* getAttributeEventListener(const AtomicString& eventType);
+  HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
 
-    Member<HTMLMediaElement> m_mediaElement;
+  // EventTarget
+  bool setAttributeEventListener(const AtomicString& eventType, EventListener*);
+  EventListener* getAttributeEventListener(const AtomicString& eventType);
 
-    // Internal values specified by the EME spec:
-    // http://w3c.github.io/encrypted-media/#idl-def-HTMLMediaElement
-    // The following internal values are added to the HTMLMediaElement:
-    // - waiting for key, which shall have a boolean value
-    // - attaching media keys, which shall have a boolean value
-    bool m_isWaitingForKey;
-    bool m_isAttachingMediaKeys;
+  Member<HTMLMediaElement> m_mediaElement;
 
-    Member<MediaKeys> m_mediaKeys;
+  // Internal values specified by the EME spec:
+  // http://w3c.github.io/encrypted-media/#idl-def-HTMLMediaElement
+  // The following internal values are added to the HTMLMediaElement:
+  // - waiting for key, which shall have a boolean value
+  // - attaching media keys, which shall have a boolean value
+  bool m_isWaitingForKey;
+  bool m_isAttachingMediaKeys;
+
+  Member<MediaKeys> m_mediaKeys;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

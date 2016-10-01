@@ -23,50 +23,61 @@ class StyleInheritedVariables;
 class StyleNonInheritedVariables;
 
 class CSSVariableResolver {
-    STACK_ALLOCATED();
-public:
-    static void resolveVariableDefinitions(const StyleResolverState&);
+  STACK_ALLOCATED();
 
-    // Shorthand properties are not supported.
-    static const CSSValue* resolveVariableReferences(const StyleResolverState&, CSSPropertyID, const CSSValue&);
+ public:
+  static void resolveVariableDefinitions(const StyleResolverState&);
 
-    DECLARE_TRACE();
+  // Shorthand properties are not supported.
+  static const CSSValue* resolveVariableReferences(const StyleResolverState&,
+                                                   CSSPropertyID,
+                                                   const CSSValue&);
 
-private:
-    CSSVariableResolver(const StyleResolverState&);
+  DECLARE_TRACE();
 
-    static const CSSValue* resolvePendingSubstitutions(const StyleResolverState&, CSSPropertyID, const CSSPendingSubstitutionValue&);
-    static const CSSValue* resolveVariableReferences(const StyleResolverState&, CSSPropertyID, const CSSVariableReferenceValue&);
+ private:
+  CSSVariableResolver(const StyleResolverState&);
 
-    // These return false if we encounter a reference to an invalid variable with no fallback
+  static const CSSValue* resolvePendingSubstitutions(
+      const StyleResolverState&,
+      CSSPropertyID,
+      const CSSPendingSubstitutionValue&);
+  static const CSSValue* resolveVariableReferences(
+      const StyleResolverState&,
+      CSSPropertyID,
+      const CSSVariableReferenceValue&);
 
-    // Resolves a range which may contain var() references or @apply rules
-    bool resolveTokenRange(CSSParserTokenRange, Vector<CSSParserToken>& result);
-    // Resolves the fallback (if present) of a var() reference, starting from the comma
-    bool resolveFallback(CSSParserTokenRange, Vector<CSSParserToken>& result);
-    // Resolves the contents of a var() reference
-    bool resolveVariableReference(CSSParserTokenRange, Vector<CSSParserToken>& result);
-    // Consumes and resolves an @apply rule
-    void resolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
+  // These return false if we encounter a reference to an invalid variable with no fallback
 
-    // These return null if the custom property is invalid
+  // Resolves a range which may contain var() references or @apply rules
+  bool resolveTokenRange(CSSParserTokenRange, Vector<CSSParserToken>& result);
+  // Resolves the fallback (if present) of a var() reference, starting from the comma
+  bool resolveFallback(CSSParserTokenRange, Vector<CSSParserToken>& result);
+  // Resolves the contents of a var() reference
+  bool resolveVariableReference(CSSParserTokenRange,
+                                Vector<CSSParserToken>& result);
+  // Consumes and resolves an @apply rule
+  void resolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
 
-    // Returns the CSSVariableData for a custom property, resolving and storing it if necessary
-    CSSVariableData* valueForCustomProperty(AtomicString name);
-    // Resolves the CSSVariableData from a custom property declaration
-    PassRefPtr<CSSVariableData> resolveCustomProperty(AtomicString name, const CSSVariableData&);
+  // These return null if the custom property is invalid
 
-    const StyleResolverState& m_styleResolverState;
-    StyleInheritedVariables* m_inheritedVariables;
-    StyleNonInheritedVariables* m_nonInheritedVariables;
-    Member<const PropertyRegistry> m_registry;
-    HashSet<AtomicString> m_variablesSeen;
-    // Resolution doesn't finish when a cycle is detected. Fallbacks still
-    // need to be tracked for additional cycles, and invalidation only
-    // applies back to cycle starts.
-    HashSet<AtomicString> m_cycleStartPoints;
+  // Returns the CSSVariableData for a custom property, resolving and storing it if necessary
+  CSSVariableData* valueForCustomProperty(AtomicString name);
+  // Resolves the CSSVariableData from a custom property declaration
+  PassRefPtr<CSSVariableData> resolveCustomProperty(AtomicString name,
+                                                    const CSSVariableData&);
+
+  const StyleResolverState& m_styleResolverState;
+  StyleInheritedVariables* m_inheritedVariables;
+  StyleNonInheritedVariables* m_nonInheritedVariables;
+  Member<const PropertyRegistry> m_registry;
+  HashSet<AtomicString> m_variablesSeen;
+  // Resolution doesn't finish when a cycle is detected. Fallbacks still
+  // need to be tracked for additional cycles, and invalidation only
+  // applies back to cycle starts.
+  HashSet<AtomicString> m_cycleStartPoints;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSVariableResolver
+#endif  // CSSVariableResolver

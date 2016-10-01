@@ -39,50 +39,45 @@
 #include <sstream>
 #include <string>
 
-
 namespace blink {
 
 class AnimationAnimatableValueTestHelperTest : public ::testing::Test {
-protected:
-    ::std::string PrintToString(PassRefPtr<AnimatableValue> animValue)
-    {
-        return ::testing::PrintToString(*animValue.get());
-    }
+ protected:
+  ::std::string PrintToString(PassRefPtr<AnimatableValue> animValue) {
+    return ::testing::PrintToString(*animValue.get());
+  }
 };
 
-TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
-{
-    EXPECT_THAT(
-        PrintToString(AnimatableClipPathOperation::create(ShapeClipPathOperation::create(BasicShapeCircle::create()).get())),
-        testing::StartsWith("AnimatableClipPathOperation")
-        );
+TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo) {
+  EXPECT_THAT(
+      PrintToString(AnimatableClipPathOperation::create(
+          ShapeClipPathOperation::create(BasicShapeCircle::create()).get())),
+      testing::StartsWith("AnimatableClipPathOperation"));
 
-    EXPECT_EQ(
-        ::std::string("AnimatableColor(rgba(0, 0, 0, 0), #ff0000)"),
-        PrintToString(AnimatableColor::create(Color(0x000000FF), Color(0xFFFF0000))));
+  EXPECT_EQ(::std::string("AnimatableColor(rgba(0, 0, 0, 0), #ff0000)"),
+            PrintToString(
+                AnimatableColor::create(Color(0x000000FF), Color(0xFFFF0000))));
 
-    EXPECT_THAT(
-        PrintToString(AnimatableValue::neutralValue().get()),
-        testing::StartsWith("AnimatableNeutral@"));
+  EXPECT_THAT(PrintToString(AnimatableValue::neutralValue().get()),
+              testing::StartsWith("AnimatableNeutral@"));
 
-    EXPECT_THAT(
-        PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create(), ContentBox))),
-        testing::StartsWith("AnimatableShapeValue@"));
+  EXPECT_THAT(
+      PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(
+          BasicShapeCircle::create(), ContentBox))),
+      testing::StartsWith("AnimatableShapeValue@"));
 
-    RefPtr<SVGDashArray> l2 = SVGDashArray::create();
-    l2->append(Length(1, blink::Fixed));
-    l2->append(Length(2, blink::Percent));
-    EXPECT_EQ(
-        ::std::string("AnimatableStrokeDasharrayList(1+0%, 0+2%)"),
-        PrintToString(AnimatableStrokeDasharrayList::create(l2, 1)));
+  RefPtr<SVGDashArray> l2 = SVGDashArray::create();
+  l2->append(Length(1, blink::Fixed));
+  l2->append(Length(2, blink::Percent));
+  EXPECT_EQ(::std::string("AnimatableStrokeDasharrayList(1+0%, 0+2%)"),
+            PrintToString(AnimatableStrokeDasharrayList::create(l2, 1)));
 
-    EXPECT_EQ(
-        ::std::string("AnimatableUnknown(none)"),
-        PrintToString(AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueNone))));
+  EXPECT_EQ(::std::string("AnimatableUnknown(none)"),
+            PrintToString(AnimatableUnknown::create(
+                CSSPrimitiveValue::createIdentifier(CSSValueNone))));
 
-    EXPECT_EQ(
-        ::std::string("AnimatableVisibility(EVisibility::Visible)"),
-        PrintToString(AnimatableVisibility::create(EVisibility::Visible)));
+  EXPECT_EQ(::std::string("AnimatableVisibility(EVisibility::Visible)"),
+            PrintToString(AnimatableVisibility::create(EVisibility::Visible)));
 }
 
-} // namespace blink
+}  // namespace blink

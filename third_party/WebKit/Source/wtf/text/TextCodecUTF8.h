@@ -32,33 +32,41 @@
 namespace WTF {
 
 class TextCodecUTF8 : public TextCodec {
-public:
-    static void registerEncodingNames(EncodingNameRegistrar);
-    static void registerCodecs(TextCodecRegistrar);
+ public:
+  static void registerEncodingNames(EncodingNameRegistrar);
+  static void registerCodecs(TextCodecRegistrar);
 
-protected:
-    TextCodecUTF8() : m_partialSequenceSize(0) { }
+ protected:
+  TextCodecUTF8() : m_partialSequenceSize(0) {}
 
-private:
-    static std::unique_ptr<TextCodec> create(const TextEncoding&, const void*);
+ private:
+  static std::unique_ptr<TextCodec> create(const TextEncoding&, const void*);
 
-    String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
-    CString encode(const UChar*, size_t length, UnencodableHandling) override;
-    CString encode(const LChar*, size_t length, UnencodableHandling) override;
+  String decode(const char*,
+                size_t length,
+                FlushBehavior,
+                bool stopOnError,
+                bool& sawError) override;
+  CString encode(const UChar*, size_t length, UnencodableHandling) override;
+  CString encode(const LChar*, size_t length, UnencodableHandling) override;
 
-    template<typename CharType>
-    CString encodeCommon(const CharType* characters, size_t length);
+  template <typename CharType>
+  CString encodeCommon(const CharType* characters, size_t length);
 
-    template <typename CharType>
-    bool handlePartialSequence(CharType*& destination, const uint8_t*& source, const uint8_t* end, bool flush, bool stopOnError, bool& sawError);
-    void handleError(UChar*& destination, bool stopOnError, bool& sawError);
-    void consumePartialSequenceByte();
+  template <typename CharType>
+  bool handlePartialSequence(CharType*& destination,
+                             const uint8_t*& source,
+                             const uint8_t* end,
+                             bool flush,
+                             bool stopOnError,
+                             bool& sawError);
+  void handleError(UChar*& destination, bool stopOnError, bool& sawError);
+  void consumePartialSequenceByte();
 
-    int m_partialSequenceSize;
-    uint8_t m_partialSequence[U8_MAX_LENGTH];
-
+  int m_partialSequenceSize;
+  uint8_t m_partialSequence[U8_MAX_LENGTH];
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // TextCodecUTF8_h
+#endif  // TextCodecUTF8_h

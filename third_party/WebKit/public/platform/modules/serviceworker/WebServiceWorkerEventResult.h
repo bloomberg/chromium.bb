@@ -9,14 +9,14 @@ namespace blink {
 
 // Indicates how the service worker handled an event.
 enum WebServiceWorkerEventResult {
-    // The event dispatch completed with no rejections.
-    WebServiceWorkerEventResultCompleted = 0,
-    // The service worker associated the event with a promise that was rejected
-    // (e.g., the promise passed to waitUntil for an install event was rejected).
-    WebServiceWorkerEventResultRejected,
-    WebServiceWorkerEventResultLast = WebServiceWorkerEventResultRejected
+  // The event dispatch completed with no rejections.
+  WebServiceWorkerEventResultCompleted = 0,
+  // The service worker associated the event with a promise that was rejected
+  // (e.g., the promise passed to waitUntil for an install event was rejected).
+  WebServiceWorkerEventResultRejected,
+  WebServiceWorkerEventResultLast = WebServiceWorkerEventResultRejected
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerEventResult_h
+#endif  // WebServiceWorkerEventResult_h

@@ -28,54 +28,51 @@ using namespace Unicode;
 namespace blink {
 
 UTF16TextIterator::UTF16TextIterator(const UChar* characters, int length)
-    : m_characters(characters)
-    , m_charactersEnd(characters + length)
-    , m_offset(0)
-    , m_endOffset(length)
-    , m_currentGlyphLength(0)
-{
+    : m_characters(characters),
+      m_charactersEnd(characters + length),
+      m_offset(0),
+      m_endOffset(length),
+      m_currentGlyphLength(0) {}
+
+UTF16TextIterator::UTF16TextIterator(const UChar* characters,
+                                     int currentCharacter,
+                                     int endOffset,
+                                     int endCharacter)
+    : m_characters(characters),
+      m_charactersEnd(characters + (endCharacter - currentCharacter)),
+      m_offset(currentCharacter),
+      m_endOffset(endOffset),
+      m_currentGlyphLength(0) {}
+
+bool UTF16TextIterator::isValidSurrogatePair(UChar32& character) {
+  // If we have a surrogate pair, make sure it starts with the high part.
+  if (!U16_IS_SURROGATE_LEAD(character))
+    return false;
+
+  // Do we have a surrogate pair? If so, determine the full Unicode (32 bit)
+  // code point before glyph lookup.
+  // Make sure we have another character and it's a low surrogate.
+  if (m_characters + 1 >= m_charactersEnd)
+    return false;
+
+  UChar low = m_characters[1];
+  if (!U16_IS_TRAIL(low))
+    return false;
+  return true;
 }
 
-UTF16TextIterator::UTF16TextIterator(const UChar* characters, int currentCharacter, int endOffset, int endCharacter)
-    : m_characters(characters)
-    , m_charactersEnd(characters + (endCharacter - currentCharacter))
-    , m_offset(currentCharacter)
-    , m_endOffset(endOffset)
-    , m_currentGlyphLength(0)
-{
-}
+bool UTF16TextIterator::consumeSurrogatePair(UChar32& character) {
+  ASSERT(U16_IS_SURROGATE(character));
 
-bool UTF16TextIterator::isValidSurrogatePair(UChar32& character)
-{
-    // If we have a surrogate pair, make sure it starts with the high part.
-    if (!U16_IS_SURROGATE_LEAD(character))
-        return false;
-
-    // Do we have a surrogate pair? If so, determine the full Unicode (32 bit)
-    // code point before glyph lookup.
-    // Make sure we have another character and it's a low surrogate.
-    if (m_characters + 1 >= m_charactersEnd)
-        return false;
-
-    UChar low = m_characters[1];
-    if (!U16_IS_TRAIL(low))
-        return false;
+  if (!isValidSurrogatePair(character)) {
+    character = replacementCharacter;
     return true;
+  }
+
+  UChar low = m_characters[1];
+  character = U16_GET_SUPPLEMENTARY(character, low);
+  m_currentGlyphLength = 2;
+  return true;
 }
 
-bool UTF16TextIterator::consumeSurrogatePair(UChar32& character)
-{
-    ASSERT(U16_IS_SURROGATE(character));
-
-    if (!isValidSurrogatePair(character)) {
-        character = replacementCharacter;
-        return true;
-    }
-
-    UChar low = m_characters[1];
-    character = U16_GET_SUPPLEMENTARY(character, low);
-    m_currentGlyphLength = 2;
-    return true;
-}
-
-} // namespace blink
+}  // namespace blink

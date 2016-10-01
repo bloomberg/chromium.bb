@@ -33,36 +33,41 @@ namespace blink {
 class Document;
 
 class CORE_EXPORT HTMLBodyElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLBodyElement);
-    ~HTMLBodyElement() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
-    DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(focus);
-    DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(load);
-    DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(resize);
-    DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(scroll);
-    DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(orientationchange);
+ public:
+  DECLARE_NODE_FACTORY(HTMLBodyElement);
+  ~HTMLBodyElement() override;
 
-private:
-    explicit HTMLBodyElement(Document&);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(focus);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(load);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(resize);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(scroll);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(orientationchange);
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  explicit HTMLBodyElement(Document&);
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void didNotifySubtreeInsertionsToDocument() override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    bool isURLAttribute(const Attribute&) const override;
-    bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    const QualifiedName& subResourceAttributeName() const override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void didNotifySubtreeInsertionsToDocument() override;
 
-    bool supportsFocus() const override;
+  bool isURLAttribute(const Attribute&) const override;
+  bool hasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& subResourceAttributeName() const override;
+
+  bool supportsFocus() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLBodyElement_h
+#endif  // HTMLBodyElement_h

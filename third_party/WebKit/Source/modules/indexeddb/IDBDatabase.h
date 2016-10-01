@@ -53,117 +53,136 @@ class DOMException;
 class ExceptionState;
 class ExecutionContext;
 
-class MODULES_EXPORT IDBDatabase final
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static IDBDatabase* create(ExecutionContext*, std::unique_ptr<WebIDBDatabase>, IDBDatabaseCallbacks*);
-    ~IDBDatabase() override;
-    DECLARE_VIRTUAL_TRACE();
+class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
+                                         public ActiveScriptWrappable,
+                                         public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
+  DEFINE_WRAPPERTYPEINFO();
 
-    void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
-    void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
-    void indexDeleted(int64_t objectStoreId, int64_t indexId);
-    void indexRenamed(int64_t objectStoreId, int64_t indexId, const String& newName);
-    void transactionCreated(IDBTransaction*);
-    void transactionFinished(const IDBTransaction*);
-    const String& getObjectStoreName(int64_t objectStoreId) const;
+ public:
+  static IDBDatabase* create(ExecutionContext*,
+                             std::unique_ptr<WebIDBDatabase>,
+                             IDBDatabaseCallbacks*);
+  ~IDBDatabase() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // Implement the IDL
-    const String& name() const { return m_metadata.name; }
-    unsigned long long version() const { return m_metadata.version; }
-    DOMStringList* objectStoreNames() const;
+  void setMetadata(const IDBDatabaseMetadata& metadata) {
+    m_metadata = metadata;
+  }
+  void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
+  void indexDeleted(int64_t objectStoreId, int64_t indexId);
+  void indexRenamed(int64_t objectStoreId,
+                    int64_t indexId,
+                    const String& newName);
+  void transactionCreated(IDBTransaction*);
+  void transactionFinished(const IDBTransaction*);
+  const String& getObjectStoreName(int64_t objectStoreId) const;
 
-    IDBObjectStore* createObjectStore(const String& name, const IDBObjectStoreParameters& options, ExceptionState& exceptionState) { return createObjectStore(name, IDBKeyPath(options.keyPath()), options.autoIncrement(), exceptionState); }
-    IDBTransaction* transaction(ScriptState*, const StringOrStringSequenceOrDOMStringList& storeNames, const String& mode, ExceptionState&);
-    void deleteObjectStore(const String& name, ExceptionState&);
-    void close();
+  // Implement the IDL
+  const String& name() const { return m_metadata.name; }
+  unsigned long long version() const { return m_metadata.version; }
+  DOMStringList* objectStoreNames() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange);
+  IDBObjectStore* createObjectStore(const String& name,
+                                    const IDBObjectStoreParameters& options,
+                                    ExceptionState& exceptionState) {
+    return createObjectStore(name, IDBKeyPath(options.keyPath()),
+                             options.autoIncrement(), exceptionState);
+  }
+  IDBTransaction* transaction(
+      ScriptState*,
+      const StringOrStringSequenceOrDOMStringList& storeNames,
+      const String& mode,
+      ExceptionState&);
+  void deleteObjectStore(const String& name, ExceptionState&);
+  void close();
 
-    // IDBDatabaseCallbacks
-    void onVersionChange(int64_t oldVersion, int64_t newVersion);
-    void onAbort(int64_t, DOMException*);
-    void onComplete(int64_t);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange);
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // IDBDatabaseCallbacks
+  void onVersionChange(int64_t oldVersion, int64_t newVersion);
+  void onAbort(int64_t, DOMException*);
+  void onComplete(int64_t);
 
-    // ActiveDOMObject
-    void stop() override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  // ActiveDOMObject
+  void stop() override;
 
-    bool isClosePending() const { return m_closePending; }
-    void forceClose();
-    const IDBDatabaseMetadata& metadata() const { return m_metadata; }
-    void enqueueEvent(Event*);
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    int64_t findObjectStoreId(const String& name) const;
-    bool containsObjectStore(const String& name) const
-    {
-        return findObjectStoreId(name) != IDBObjectStoreMetadata::InvalidId;
-    }
-    void objectStoreRenamed(int64_t storeId, const String& newName);
+  bool isClosePending() const { return m_closePending; }
+  void forceClose();
+  const IDBDatabaseMetadata& metadata() const { return m_metadata; }
+  void enqueueEvent(Event*);
 
-    // Will return nullptr if this database is stopped.
-    WebIDBDatabase* backend() const { return m_backend.get(); }
+  int64_t findObjectStoreId(const String& name) const;
+  bool containsObjectStore(const String& name) const {
+    return findObjectStoreId(name) != IDBObjectStoreMetadata::InvalidId;
+  }
+  void objectStoreRenamed(int64_t storeId, const String& newName);
 
-    static int64_t nextTransactionId();
+  // Will return nullptr if this database is stopped.
+  WebIDBDatabase* backend() const { return m_backend.get(); }
 
-    static const char indexDeletedErrorMessage[];
-    static const char indexNameTakenErrorMessage[];
-    static const char isKeyCursorErrorMessage[];
-    static const char noKeyOrKeyRangeErrorMessage[];
-    static const char noSuchIndexErrorMessage[];
-    static const char noSuchObjectStoreErrorMessage[];
-    static const char noValueErrorMessage[];
-    static const char notValidKeyErrorMessage[];
-    static const char notVersionChangeTransactionErrorMessage[];
-    static const char objectStoreDeletedErrorMessage[];
-    static const char objectStoreNameTakenErrorMessage[];
-    static const char requestNotFinishedErrorMessage[];
-    static const char sourceDeletedErrorMessage[];
-    static const char transactionFinishedErrorMessage[];
-    static const char transactionInactiveErrorMessage[];
-    static const char transactionReadOnlyErrorMessage[];
-    static const char databaseClosedErrorMessage[];
+  static int64_t nextTransactionId();
 
-    static void recordApiCallsHistogram(IndexedDatabaseMethods);
+  static const char indexDeletedErrorMessage[];
+  static const char indexNameTakenErrorMessage[];
+  static const char isKeyCursorErrorMessage[];
+  static const char noKeyOrKeyRangeErrorMessage[];
+  static const char noSuchIndexErrorMessage[];
+  static const char noSuchObjectStoreErrorMessage[];
+  static const char noValueErrorMessage[];
+  static const char notValidKeyErrorMessage[];
+  static const char notVersionChangeTransactionErrorMessage[];
+  static const char objectStoreDeletedErrorMessage[];
+  static const char objectStoreNameTakenErrorMessage[];
+  static const char requestNotFinishedErrorMessage[];
+  static const char sourceDeletedErrorMessage[];
+  static const char transactionFinishedErrorMessage[];
+  static const char transactionInactiveErrorMessage[];
+  static const char transactionReadOnlyErrorMessage[];
+  static const char databaseClosedErrorMessage[];
 
-protected:
-    // EventTarget
-    DispatchEventResult dispatchEventInternal(Event*) override;
+  static void recordApiCallsHistogram(IndexedDatabaseMethods);
 
-private:
-    IDBDatabase(ExecutionContext*, std::unique_ptr<WebIDBDatabase>, IDBDatabaseCallbacks*);
+ protected:
+  // EventTarget
+  DispatchEventResult dispatchEventInternal(Event*) override;
 
-    IDBObjectStore* createObjectStore(const String& name, const IDBKeyPath&, bool autoIncrement, ExceptionState&);
-    void closeConnection();
+ private:
+  IDBDatabase(ExecutionContext*,
+              std::unique_ptr<WebIDBDatabase>,
+              IDBDatabaseCallbacks*);
 
-    IDBDatabaseMetadata m_metadata;
-    std::unique_ptr<WebIDBDatabase> m_backend;
-    Member<IDBTransaction> m_versionChangeTransaction;
-    HeapHashMap<int64_t, Member<IDBTransaction>> m_transactions;
+  IDBObjectStore* createObjectStore(const String& name,
+                                    const IDBKeyPath&,
+                                    bool autoIncrement,
+                                    ExceptionState&);
+  void closeConnection();
 
-    bool m_closePending = false;
-    bool m_contextStopped = false;
+  IDBDatabaseMetadata m_metadata;
+  std::unique_ptr<WebIDBDatabase> m_backend;
+  Member<IDBTransaction> m_versionChangeTransaction;
+  HeapHashMap<int64_t, Member<IDBTransaction>> m_transactions;
 
-    // Keep track of the versionchange events waiting to be fired on this
-    // database so that we can cancel them if the database closes.
-    HeapVector<Member<Event>> m_enqueuedEvents;
+  bool m_closePending = false;
+  bool m_contextStopped = false;
 
-    Member<IDBDatabaseCallbacks> m_databaseCallbacks;
+  // Keep track of the versionchange events waiting to be fired on this
+  // database so that we can cancel them if the database closes.
+  HeapVector<Member<Event>> m_enqueuedEvents;
+
+  Member<IDBDatabaseCallbacks> m_databaseCallbacks;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBDatabase_h
+#endif  // IDBDatabase_h

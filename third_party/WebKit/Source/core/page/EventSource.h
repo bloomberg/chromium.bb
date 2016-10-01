@@ -50,85 +50,93 @@ class EventSourceInit;
 class ExceptionState;
 class ResourceResponse;
 
-class CORE_EXPORT EventSource final : public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveScriptWrappable, public ActiveDOMObject, public EventSourceParser::Client {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(EventSource);
-public:
-    static EventSource* create(ExecutionContext*, const String& url, const EventSourceInit&, ExceptionState&);
-    ~EventSource() override;
+class CORE_EXPORT EventSource final : public EventTargetWithInlineData,
+                                      private ThreadableLoaderClient,
+                                      public ActiveScriptWrappable,
+                                      public ActiveDOMObject,
+                                      public EventSourceParser::Client {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(EventSource);
 
-    static const unsigned long long defaultReconnectDelay;
+ public:
+  static EventSource* create(ExecutionContext*,
+                             const String& url,
+                             const EventSourceInit&,
+                             ExceptionState&);
+  ~EventSource() override;
 
-    String url() const;
-    bool withCredentials() const;
+  static const unsigned long long defaultReconnectDelay;
 
-    enum State : short {
-        kConnecting = 0,
-        kOpen = 1,
-        kClosed = 2
-    };
+  String url() const;
+  bool withCredentials() const;
 
-    State readyState() const;
+  enum State : short { kConnecting = 0, kOpen = 1, kClosed = 2 };
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(open);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  State readyState() const;
 
-    void close();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(open);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  void close();
 
-    // ActiveDOMObject
-    //
-    // Note: suspend() is noop since ScopedPageLoadDeferrer calls
-    // Page::setDefersLoading() and it defers delivery of events from the
-    // loader, and therefore the methods of this class for receiving
-    // asynchronous events from the loader won't be invoked.
-    void stop() override;
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // ActiveDOMObject
+  //
+  // Note: suspend() is noop since ScopedPageLoadDeferrer calls
+  // Page::setDefersLoading() and it defers delivery of events from the
+  // loader, and therefore the methods of this class for receiving
+  // asynchronous events from the loader won't be invoked.
+  void stop() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-private:
-    EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void didReceiveResponse(unsigned long, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
-    void didReceiveData(const char*, unsigned) override;
-    void didFinishLoading(unsigned long, double) override;
-    void didFail(const ResourceError&) override;
-    void didFailAccessControlCheck(const ResourceError&) override;
-    void didFailRedirectCheck() override;
+ private:
+  EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
-    void onMessageEvent(const AtomicString& event, const String& data, const AtomicString& id) override;
-    void onReconnectionTimeSet(unsigned long long reconnectionTime) override;
+  void didReceiveResponse(unsigned long,
+                          const ResourceResponse&,
+                          std::unique_ptr<WebDataConsumerHandle>) override;
+  void didReceiveData(const char*, unsigned) override;
+  void didFinishLoading(unsigned long, double) override;
+  void didFail(const ResourceError&) override;
+  void didFailAccessControlCheck(const ResourceError&) override;
+  void didFailRedirectCheck() override;
 
-    void scheduleInitialConnect();
-    void connect();
-    void networkRequestEnded();
-    void scheduleReconnect();
-    void connectTimerFired(TimerBase*);
-    void abortConnectionAttempt();
+  void onMessageEvent(const AtomicString& event,
+                      const String& data,
+                      const AtomicString& id) override;
+  void onReconnectionTimeSet(unsigned long long reconnectionTime) override;
 
-    // The original URL specified when constructing EventSource instance. Used
-    // for the 'url' attribute getter.
-    const KURL m_url;
-    // The URL used to connect to the server, which may be different from
-    // |m_url| as it may be redirected.
-    KURL m_currentURL;
-    bool m_withCredentials;
-    State m_state;
+  void scheduleInitialConnect();
+  void connect();
+  void networkRequestEnded();
+  void scheduleReconnect();
+  void connectTimerFired(TimerBase*);
+  void abortConnectionAttempt();
 
-    Member<EventSourceParser> m_parser;
-    Member<ThreadableLoader> m_loader;
-    Timer<EventSource> m_connectTimer;
+  // The original URL specified when constructing EventSource instance. Used
+  // for the 'url' attribute getter.
+  const KURL m_url;
+  // The URL used to connect to the server, which may be different from
+  // |m_url| as it may be redirected.
+  KURL m_currentURL;
+  bool m_withCredentials;
+  State m_state;
 
-    unsigned long long m_reconnectDelay;
-    String m_eventStreamOrigin;
+  Member<EventSourceParser> m_parser;
+  Member<ThreadableLoader> m_loader;
+  Timer<EventSource> m_connectTimer;
+
+  unsigned long long m_reconnectDelay;
+  String m_eventStreamOrigin;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EventSource_h
+#endif  // EventSource_h

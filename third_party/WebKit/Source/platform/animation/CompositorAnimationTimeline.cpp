@@ -13,38 +13,37 @@
 namespace blink {
 
 CompositorAnimationTimeline::CompositorAnimationTimeline()
-    : m_animationTimeline(cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId()))
-{
+    : m_animationTimeline(cc::AnimationTimeline::Create(
+          cc::AnimationIdProvider::NextTimelineId())) {}
+
+CompositorAnimationTimeline::~CompositorAnimationTimeline() {
+  // Detach timeline from host, otherwise it stays there (leaks) until
+  // compositor shutdown.
+  if (m_animationTimeline->animation_host())
+    m_animationTimeline->animation_host()->RemoveAnimationTimeline(
+        m_animationTimeline);
 }
 
-CompositorAnimationTimeline::~CompositorAnimationTimeline()
-{
-    // Detach timeline from host, otherwise it stays there (leaks) until
-    // compositor shutdown.
-    if (m_animationTimeline->animation_host())
-        m_animationTimeline->animation_host()->RemoveAnimationTimeline(m_animationTimeline);
+cc::AnimationTimeline* CompositorAnimationTimeline::animationTimeline() const {
+  return m_animationTimeline.get();
 }
 
-cc::AnimationTimeline* CompositorAnimationTimeline::animationTimeline() const
-{
-    return m_animationTimeline.get();
+CompositorAnimationHost CompositorAnimationTimeline::compositorAnimationHost() {
+  return CompositorAnimationHost(m_animationTimeline->animation_host());
 }
 
-CompositorAnimationHost CompositorAnimationTimeline::compositorAnimationHost()
-{
-    return CompositorAnimationHost(m_animationTimeline->animation_host());
+void CompositorAnimationTimeline::playerAttached(
+    const blink::CompositorAnimationPlayerClient& client) {
+  if (client.compositorPlayer())
+    m_animationTimeline->AttachPlayer(
+        client.compositorPlayer()->ccAnimationPlayer());
 }
 
-void CompositorAnimationTimeline::playerAttached(const blink::CompositorAnimationPlayerClient& client)
-{
-    if (client.compositorPlayer())
-        m_animationTimeline->AttachPlayer(client.compositorPlayer()->ccAnimationPlayer());
+void CompositorAnimationTimeline::playerDestroyed(
+    const blink::CompositorAnimationPlayerClient& client) {
+  if (client.compositorPlayer())
+    m_animationTimeline->DetachPlayer(
+        client.compositorPlayer()->ccAnimationPlayer());
 }
 
-void CompositorAnimationTimeline::playerDestroyed(const blink::CompositorAnimationPlayerClient& client)
-{
-    if (client.compositorPlayer())
-        m_animationTimeline->DetachPlayer(client.compositorPlayer()->ccAnimationPlayer());
-}
-
-} // namespace blink
+}  // namespace blink

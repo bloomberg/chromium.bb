@@ -32,25 +32,27 @@
 
 namespace blink {
 
-class DeviceAcceleration final : public GarbageCollected<DeviceAcceleration>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DeviceAcceleration* create(DeviceMotionData::Acceleration* acceleration)
-    {
-        return new DeviceAcceleration(acceleration);
-    }
-    DECLARE_TRACE();
+class DeviceAcceleration final : public GarbageCollected<DeviceAcceleration>,
+                                 public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    double x(bool& isNull) const;
-    double y(bool& isNull) const;
-    double z(bool& isNull) const;
+ public:
+  static DeviceAcceleration* create(
+      DeviceMotionData::Acceleration* acceleration) {
+    return new DeviceAcceleration(acceleration);
+  }
+  DECLARE_TRACE();
 
-private:
-    explicit DeviceAcceleration(DeviceMotionData::Acceleration*);
+  double x(bool& isNull) const;
+  double y(bool& isNull) const;
+  double z(bool& isNull) const;
 
-    Member<DeviceMotionData::Acceleration> m_acceleration;
+ private:
+  explicit DeviceAcceleration(DeviceMotionData::Acceleration*);
+
+  Member<DeviceMotionData::Acceleration> m_acceleration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceAcceleration_h
+#endif  // DeviceAcceleration_h

@@ -35,11 +35,12 @@ class LocalFrame;
 class Page;
 class PageVisibilityObserver;
 
-class CORE_EXPORT PageVisibilityNotifier : public LifecycleNotifier<Page, PageVisibilityObserver> {
-public:
-    void notifyPageVisibilityChanged();
+class CORE_EXPORT PageVisibilityNotifier
+    : public LifecycleNotifier<Page, PageVisibilityObserver> {
+ public:
+  void notifyPageVisibilityChanged();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PageVisibilityNotifier_h
+#endif  // PageVisibilityNotifier_h

@@ -19,61 +19,59 @@
 namespace blink {
 
 MediaSession::MediaSession(std::unique_ptr<WebMediaSession> webMediaSession)
-    : m_webMediaSession(std::move(webMediaSession))
-{
-    DCHECK(m_webMediaSession);
+    : m_webMediaSession(std::move(webMediaSession)) {
+  DCHECK(m_webMediaSession);
 }
 
-MediaSession* MediaSession::create(ExecutionContext* context, ExceptionState& exceptionState)
-{
-    Document* document = toDocument(context);
-    LocalFrame* frame = document->frame();
-    FrameLoaderClient* client = frame->loader().client();
-    std::unique_ptr<WebMediaSession> webMediaSession = client->createWebMediaSession();
-    if (!webMediaSession) {
-        exceptionState.throwDOMException(NotSupportedError, "Missing platform implementation.");
-        return nullptr;
-    }
-    return new MediaSession(std::move(webMediaSession));
+MediaSession* MediaSession::create(ExecutionContext* context,
+                                   ExceptionState& exceptionState) {
+  Document* document = toDocument(context);
+  LocalFrame* frame = document->frame();
+  FrameLoaderClient* client = frame->loader().client();
+  std::unique_ptr<WebMediaSession> webMediaSession =
+      client->createWebMediaSession();
+  if (!webMediaSession) {
+    exceptionState.throwDOMException(NotSupportedError,
+                                     "Missing platform implementation.");
+    return nullptr;
+  }
+  return new MediaSession(std::move(webMediaSession));
 }
 
-ScriptPromise MediaSession::activate(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+ScriptPromise MediaSession::activate(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
 
-    m_webMediaSession->activate(new CallbackPromiseAdapter<void, MediaSessionError>(resolver));
-    return promise;
+  m_webMediaSession->activate(
+      new CallbackPromiseAdapter<void, MediaSessionError>(resolver));
+  return promise;
 }
 
-ScriptPromise MediaSession::deactivate(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+ScriptPromise MediaSession::deactivate(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
 
-    m_webMediaSession->deactivate(new CallbackPromiseAdapter<void, void>(resolver));
-    return promise;
+  m_webMediaSession->deactivate(
+      new CallbackPromiseAdapter<void, void>(resolver));
+  return promise;
 }
 
-void MediaSession::setMetadata(MediaMetadata* metadata)
-{
-    m_metadata = metadata;
-    if (metadata) {
-        WebMediaMetadata webMetadata = (WebMediaMetadata) *metadata;
-        m_webMediaSession->setMetadata(&webMetadata);
-    } else {
-        m_webMediaSession->setMetadata(nullptr);
-    }
+void MediaSession::setMetadata(MediaMetadata* metadata) {
+  m_metadata = metadata;
+  if (metadata) {
+    WebMediaMetadata webMetadata = (WebMediaMetadata)*metadata;
+    m_webMediaSession->setMetadata(&webMetadata);
+  } else {
+    m_webMediaSession->setMetadata(nullptr);
+  }
 }
 
-MediaMetadata* MediaSession::metadata() const
-{
-    return m_metadata;
+MediaMetadata* MediaSession::metadata() const {
+  return m_metadata;
 }
 
-DEFINE_TRACE(MediaSession)
-{
-    visitor->trace(m_metadata);
+DEFINE_TRACE(MediaSession) {
+  visitor->trace(m_metadata);
 }
 
-} // namespace blink
+}  // namespace blink

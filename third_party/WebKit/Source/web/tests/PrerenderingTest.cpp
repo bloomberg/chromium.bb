@@ -54,451 +54,414 @@ using blink::URLTestHelpers::toKURL;
 
 namespace {
 
-WebURL toWebURL(const char* url)
-{
-    return WebURL(toKURL(url));
+WebURL toWebURL(const char* url) {
+  return WebURL(toKURL(url));
 }
 
 class TestPrerendererClient : public WebPrerendererClient {
-public:
-    TestPrerendererClient() { }
-    virtual ~TestPrerendererClient() { }
+ public:
+  TestPrerendererClient() {}
+  virtual ~TestPrerendererClient() {}
 
-    void setExtraDataForNextPrerender(WebPrerender::ExtraData* extraData)
-    {
-        DCHECK(!m_extraData);
-        m_extraData = wrapUnique(extraData);
-    }
+  void setExtraDataForNextPrerender(WebPrerender::ExtraData* extraData) {
+    DCHECK(!m_extraData);
+    m_extraData = wrapUnique(extraData);
+  }
 
-    WebPrerender releaseWebPrerender()
-    {
-        DCHECK(!m_webPrerenders.empty());
-        WebPrerender retval(m_webPrerenders.front());
-        m_webPrerenders.pop_front();
-        return retval;
-    }
+  WebPrerender releaseWebPrerender() {
+    DCHECK(!m_webPrerenders.empty());
+    WebPrerender retval(m_webPrerenders.front());
+    m_webPrerenders.pop_front();
+    return retval;
+  }
 
-    bool empty() const
-    {
-        return m_webPrerenders.empty();
-    }
+  bool empty() const { return m_webPrerenders.empty(); }
 
-    void clear()
-    {
-        m_webPrerenders.clear();
-    }
+  void clear() { m_webPrerenders.clear(); }
 
-private:
-    // From WebPrerendererClient:
-    void willAddPrerender(WebPrerender* prerender) override
-    {
-        prerender->setExtraData(m_extraData.release());
+ private:
+  // From WebPrerendererClient:
+  void willAddPrerender(WebPrerender* prerender) override {
+    prerender->setExtraData(m_extraData.release());
 
-        DCHECK(!prerender->isNull());
-        m_webPrerenders.push_back(*prerender);
-    }
+    DCHECK(!prerender->isNull());
+    m_webPrerenders.push_back(*prerender);
+  }
 
-    bool isPrefetchOnly() override
-    {
-        return false;
-    }
+  bool isPrefetchOnly() override { return false; }
 
-    std::unique_ptr<WebPrerender::ExtraData> m_extraData;
-    std::list<WebPrerender> m_webPrerenders;
+  std::unique_ptr<WebPrerender::ExtraData> m_extraData;
+  std::list<WebPrerender> m_webPrerenders;
 };
 
 class TestPrerenderingSupport : public WebPrerenderingSupport {
-public:
-    TestPrerenderingSupport()
-    {
-        initialize(this);
-    }
+ public:
+  TestPrerenderingSupport() { initialize(this); }
 
-    ~TestPrerenderingSupport() override
-    {
-        shutdown();
-    }
+  ~TestPrerenderingSupport() override { shutdown(); }
 
-    void clear()
-    {
-        m_addedPrerenders.clear();
-        m_canceledPrerenders.clear();
-        m_abandonedPrerenders.clear();
-    }
+  void clear() {
+    m_addedPrerenders.clear();
+    m_canceledPrerenders.clear();
+    m_abandonedPrerenders.clear();
+  }
 
-    size_t totalCount() const
-    {
-        return m_addedPrerenders.size() + m_canceledPrerenders.size() + m_abandonedPrerenders.size();
-    }
+  size_t totalCount() const {
+    return m_addedPrerenders.size() + m_canceledPrerenders.size() +
+           m_abandonedPrerenders.size();
+  }
 
-    size_t addCount(const WebPrerender& prerender) const
-    {
-        return std::count_if(m_addedPrerenders.begin(), m_addedPrerenders.end(),
-                             [&prerender](const WebPrerender& other) { return other.toPrerender() == prerender.toPrerender(); });
-    }
+  size_t addCount(const WebPrerender& prerender) const {
+    return std::count_if(m_addedPrerenders.begin(), m_addedPrerenders.end(),
+                         [&prerender](const WebPrerender& other) {
+                           return other.toPrerender() ==
+                                  prerender.toPrerender();
+                         });
+  }
 
-    size_t cancelCount(const WebPrerender& prerender) const
-    {
-        return std::count_if(m_canceledPrerenders.begin(), m_canceledPrerenders.end(),
-                             [&prerender](const WebPrerender& other) { return other.toPrerender() == prerender.toPrerender(); });
-    }
+  size_t cancelCount(const WebPrerender& prerender) const {
+    return std::count_if(
+        m_canceledPrerenders.begin(), m_canceledPrerenders.end(),
+        [&prerender](const WebPrerender& other) {
+          return other.toPrerender() == prerender.toPrerender();
+        });
+  }
 
-    size_t abandonCount(const WebPrerender& prerender) const
-    {
-        return std::count_if(m_abandonedPrerenders.begin(), m_abandonedPrerenders.end(),
-                             [&prerender](const WebPrerender& other) { return other.toPrerender() == prerender.toPrerender(); });
-    }
+  size_t abandonCount(const WebPrerender& prerender) const {
+    return std::count_if(
+        m_abandonedPrerenders.begin(), m_abandonedPrerenders.end(),
+        [&prerender](const WebPrerender& other) {
+          return other.toPrerender() == prerender.toPrerender();
+        });
+  }
 
-private:
-    // From WebPrerenderingSupport:
-    void add(const WebPrerender& prerender) override
-    {
-        m_addedPrerenders.append(prerender);
-    }
+ private:
+  // From WebPrerenderingSupport:
+  void add(const WebPrerender& prerender) override {
+    m_addedPrerenders.append(prerender);
+  }
 
-    void cancel(const WebPrerender& prerender) override
-    {
-        m_canceledPrerenders.append(prerender);
-    }
+  void cancel(const WebPrerender& prerender) override {
+    m_canceledPrerenders.append(prerender);
+  }
 
-    void abandon(const WebPrerender& prerender) override
-    {
-        m_abandonedPrerenders.append(prerender);
-    }
+  void abandon(const WebPrerender& prerender) override {
+    m_abandonedPrerenders.append(prerender);
+  }
 
-    Vector<WebPrerender> m_addedPrerenders;
-    Vector<WebPrerender> m_canceledPrerenders;
-    Vector<WebPrerender> m_abandonedPrerenders;
+  Vector<WebPrerender> m_addedPrerenders;
+  Vector<WebPrerender> m_canceledPrerenders;
+  Vector<WebPrerender> m_abandonedPrerenders;
 };
 
 class PrerenderingTest : public testing::Test {
-public:
-    ~PrerenderingTest() override
-    {
-        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-        WebCache::clear();
-    }
+ public:
+  ~PrerenderingTest() override {
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    WebCache::clear();
+  }
 
-    void initialize(const char* baseURL, const char* fileName)
-    {
-        URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL), WebString::fromUTF8(fileName));
-        const bool RunJavascript = true;
-        m_webViewHelper.initialize(RunJavascript);
-        m_webViewHelper.webView()->setPrerendererClient(&m_prerendererClient);
+  void initialize(const char* baseURL, const char* fileName) {
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL),
+                                                 WebString::fromUTF8(fileName));
+    const bool RunJavascript = true;
+    m_webViewHelper.initialize(RunJavascript);
+    m_webViewHelper.webView()->setPrerendererClient(&m_prerendererClient);
 
-        FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), std::string(baseURL) + fileName);
-    }
+    FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(),
+                                std::string(baseURL) + fileName);
+  }
 
-    void navigateAway()
-    {
-        FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), "about:blank");
-    }
+  void navigateAway() {
+    FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(),
+                                "about:blank");
+  }
 
-    void close()
-    {
-        m_webViewHelper.webView()->mainFrame()->collectGarbage();
-        m_webViewHelper.reset();
+  void close() {
+    m_webViewHelper.webView()->mainFrame()->collectGarbage();
+    m_webViewHelper.reset();
 
-        WebCache::clear();
-    }
+    WebCache::clear();
+  }
 
-    Element& console()
-    {
-        Document* document = m_webViewHelper.webView()->mainFrameImpl()->frame()->document();
-        Element* console = document->getElementById("console");
-        DCHECK(isHTMLUListElement(console));
-        return *console;
-    }
+  Element& console() {
+    Document* document =
+        m_webViewHelper.webView()->mainFrameImpl()->frame()->document();
+    Element* console = document->getElementById("console");
+    DCHECK(isHTMLUListElement(console));
+    return *console;
+  }
 
-    unsigned consoleLength()
-    {
-        return console().countChildren() - 1;
-    }
+  unsigned consoleLength() { return console().countChildren() - 1; }
 
-    WebString consoleAt(unsigned i)
-    {
-        DCHECK_GT(consoleLength(), i);
+  WebString consoleAt(unsigned i) {
+    DCHECK_GT(consoleLength(), i);
 
-        Node* item = NodeTraversal::childAt(console(), 1 + i);
+    Node* item = NodeTraversal::childAt(console(), 1 + i);
 
-        DCHECK(item);
-        DCHECK(isHTMLLIElement(item));
-        DCHECK(item->hasChildren());
+    DCHECK(item);
+    DCHECK(isHTMLLIElement(item));
+    DCHECK(item->hasChildren());
 
-        return item->textContent();
-    }
+    return item->textContent();
+  }
 
-    void executeScript(const char* code)
-    {
-        m_webViewHelper.webView()->mainFrame()->executeScript(WebScriptSource(WebString::fromUTF8(code)));
-    }
+  void executeScript(const char* code) {
+    m_webViewHelper.webView()->mainFrame()->executeScript(
+        WebScriptSource(WebString::fromUTF8(code)));
+  }
 
-    TestPrerenderingSupport* prerenderingSupport()
-    {
-        return &m_prerenderingSupport;
-    }
+  TestPrerenderingSupport* prerenderingSupport() {
+    return &m_prerenderingSupport;
+  }
 
-    TestPrerendererClient* prerendererClient()
-    {
-        return &m_prerendererClient;
-    }
+  TestPrerendererClient* prerendererClient() { return &m_prerendererClient; }
 
-private:
-    TestPrerenderingSupport m_prerenderingSupport;
-    TestPrerendererClient m_prerendererClient;
+ private:
+  TestPrerenderingSupport m_prerenderingSupport;
+  TestPrerendererClient m_prerendererClient;
 
-    FrameTestHelpers::WebViewHelper m_webViewHelper;
+  FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
-TEST_F(PrerenderingTest, SinglePrerender)
-{
-    initialize("http://www.foo.com/", "prerender/single_prerender.html");
+TEST_F(PrerenderingTest, SinglePrerender) {
+  initialize("http://www.foo.com/", "prerender/single_prerender.html");
 
-    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(webPrerender.isNull());
-    EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
-    EXPECT_EQ(PrerenderRelTypePrerender, webPrerender.relTypes());
+  WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(webPrerender.isNull());
+  EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
+  EXPECT_EQ(PrerenderRelTypePrerender, webPrerender.relTypes());
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
-    webPrerender.didStartPrerender();
-    EXPECT_EQ(1u, consoleLength());
-    EXPECT_EQ("webkitprerenderstart", consoleAt(0));
+  webPrerender.didStartPrerender();
+  EXPECT_EQ(1u, consoleLength());
+  EXPECT_EQ("webkitprerenderstart", consoleAt(0));
 
-    webPrerender.didSendDOMContentLoadedForPrerender();
-    EXPECT_EQ(2u, consoleLength());
-    EXPECT_EQ("webkitprerenderdomcontentloaded", consoleAt(1));
+  webPrerender.didSendDOMContentLoadedForPrerender();
+  EXPECT_EQ(2u, consoleLength());
+  EXPECT_EQ("webkitprerenderdomcontentloaded", consoleAt(1));
 
-    webPrerender.didSendLoadForPrerender();
-    EXPECT_EQ(3u, consoleLength());
-    EXPECT_EQ("webkitprerenderload", consoleAt(2));
+  webPrerender.didSendLoadForPrerender();
+  EXPECT_EQ(3u, consoleLength());
+  EXPECT_EQ("webkitprerenderload", consoleAt(2));
 
-    webPrerender.didStopPrerender();
-    EXPECT_EQ(4u, consoleLength());
-    EXPECT_EQ("webkitprerenderstop", consoleAt(3));
+  webPrerender.didStopPrerender();
+  EXPECT_EQ(4u, consoleLength());
+  EXPECT_EQ("webkitprerenderstop", consoleAt(3));
 }
 
-TEST_F(PrerenderingTest, CancelPrerender)
-{
+TEST_F(PrerenderingTest, CancelPrerender) {
+  initialize("http://www.foo.com/", "prerender/single_prerender.html");
+
+  WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(webPrerender.isNull());
+
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+
+  executeScript("removePrerender()");
+
+  EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
+  EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+}
+
+TEST_F(PrerenderingTest, AbandonPrerender) {
+  initialize("http://www.foo.com/", "prerender/single_prerender.html");
+
+  WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(webPrerender.isNull());
+
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+
+  navigateAway();
+
+  EXPECT_EQ(1u, prerenderingSupport()->abandonCount(webPrerender));
+  EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+
+  // Check that the prerender does not emit an extra cancel when garbage-collecting everything.
+  close();
+
+  EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+}
+
+TEST_F(PrerenderingTest, ExtraData) {
+  class TestExtraData : public WebPrerender::ExtraData {
+   public:
+    explicit TestExtraData(bool* alive) : m_alive(alive) { *alive = true; }
+
+    ~TestExtraData() override { *m_alive = false; }
+
+   private:
+    bool* m_alive;
+  };
+
+  bool alive = false;
+  {
+    prerendererClient()->setExtraDataForNextPrerender(
+        new TestExtraData(&alive));
     initialize("http://www.foo.com/", "prerender/single_prerender.html");
+    EXPECT_TRUE(alive);
 
     WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(webPrerender.isNull());
-
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
     executeScript("removePrerender()");
-
-    EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
-    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
-}
-
-TEST_F(PrerenderingTest, AbandonPrerender)
-{
-    initialize("http://www.foo.com/", "prerender/single_prerender.html");
-
-    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(webPrerender.isNull());
-
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
-
-    navigateAway();
-
-    EXPECT_EQ(1u, prerenderingSupport()->abandonCount(webPrerender));
-    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
-
-    // Check that the prerender does not emit an extra cancel when garbage-collecting everything.
     close();
-
-    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+    prerenderingSupport()->clear();
+  }
+  EXPECT_FALSE(alive);
 }
 
-TEST_F(PrerenderingTest, ExtraData)
-{
-    class TestExtraData : public WebPrerender::ExtraData {
-    public:
-        explicit TestExtraData(bool* alive) : m_alive(alive)
-        {
-            *alive = true;
-        }
+TEST_F(PrerenderingTest, TwoPrerenders) {
+  initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
 
-        ~TestExtraData() override { *m_alive = false; }
+  WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(firstPrerender.isNull());
+  EXPECT_EQ(toWebURL("http://first-prerender.com/"), firstPrerender.url());
 
-    private:
-        bool* m_alive;
-    };
+  WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(firstPrerender.isNull());
+  EXPECT_EQ(toWebURL("http://second-prerender.com/"), secondPrerender.url());
 
-    bool alive = false;
-    {
-        prerendererClient()->setExtraDataForNextPrerender(new TestExtraData(&alive));
-        initialize("http://www.foo.com/", "prerender/single_prerender.html");
-        EXPECT_TRUE(alive);
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(firstPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(secondPrerender));
+  EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 
-        WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  firstPrerender.didStartPrerender();
+  EXPECT_EQ(1u, consoleLength());
+  EXPECT_EQ("first_webkitprerenderstart", consoleAt(0));
 
-        executeScript("removePrerender()");
-        close();
-        prerenderingSupport()->clear();
-    }
-    EXPECT_FALSE(alive);
+  secondPrerender.didStartPrerender();
+  EXPECT_EQ(2u, consoleLength());
+  EXPECT_EQ("second_webkitprerenderstart", consoleAt(1));
 }
 
-TEST_F(PrerenderingTest, TwoPrerenders)
-{
-    initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
+TEST_F(PrerenderingTest, TwoPrerendersRemovingFirstThenNavigating) {
+  initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
 
-    WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(firstPrerender.isNull());
-    EXPECT_EQ(toWebURL("http://first-prerender.com/"), firstPrerender.url());
+  WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
+  WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
 
-    WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(firstPrerender.isNull());
-    EXPECT_EQ(toWebURL("http://second-prerender.com/"), secondPrerender.url());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(firstPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(secondPrerender));
+  EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(firstPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(secondPrerender));
-    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+  executeScript("removeFirstPrerender()");
 
-    firstPrerender.didStartPrerender();
-    EXPECT_EQ(1u, consoleLength());
-    EXPECT_EQ("first_webkitprerenderstart", consoleAt(0));
+  EXPECT_EQ(1u, prerenderingSupport()->cancelCount(firstPrerender));
+  EXPECT_EQ(3u, prerenderingSupport()->totalCount());
 
-    secondPrerender.didStartPrerender();
-    EXPECT_EQ(2u, consoleLength());
-    EXPECT_EQ("second_webkitprerenderstart", consoleAt(1));
+  navigateAway();
+
+  EXPECT_EQ(1u, prerenderingSupport()->abandonCount(secondPrerender));
+  EXPECT_EQ(4u, prerenderingSupport()->totalCount());
 }
 
-TEST_F(PrerenderingTest, TwoPrerendersRemovingFirstThenNavigating)
-{
-    initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
+TEST_F(PrerenderingTest, TwoPrerendersAddingThird) {
+  initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
 
-    WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
-    WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
+  WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
+  WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(firstPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(secondPrerender));
-    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(firstPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(secondPrerender));
+  EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 
-    executeScript("removeFirstPrerender()");
+  executeScript("addThirdPrerender()");
 
-    EXPECT_EQ(1u, prerenderingSupport()->cancelCount(firstPrerender));
-    EXPECT_EQ(3u, prerenderingSupport()->totalCount());
-
-    navigateAway();
-
-    EXPECT_EQ(1u, prerenderingSupport()->abandonCount(secondPrerender));
-    EXPECT_EQ(4u, prerenderingSupport()->totalCount());
+  WebPrerender thirdPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(thirdPrerender));
+  EXPECT_EQ(3u, prerenderingSupport()->totalCount());
 }
 
-TEST_F(PrerenderingTest, TwoPrerendersAddingThird)
-{
-    initialize("http://www.foo.com/", "prerender/multiple_prerenders.html");
+TEST_F(PrerenderingTest, ShortLivedClient) {
+  initialize("http://www.foo.com/", "prerender/single_prerender.html");
 
-    WebPrerender firstPrerender = prerendererClient()->releaseWebPrerender();
-    WebPrerender secondPrerender = prerendererClient()->releaseWebPrerender();
+  WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(webPrerender.isNull());
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(firstPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(secondPrerender));
-    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
-    executeScript("addThirdPrerender()");
+  navigateAway();
+  close();
 
-    WebPrerender thirdPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(thirdPrerender));
-    EXPECT_EQ(3u, prerenderingSupport()->totalCount());
+  // This test passes if this next line doesn't crash.
+  webPrerender.didStartPrerender();
 }
 
-TEST_F(PrerenderingTest, ShortLivedClient)
-{
-    initialize("http://www.foo.com/", "prerender/single_prerender.html");
+TEST_F(PrerenderingTest, FastRemoveElement) {
+  initialize("http://www.foo.com/", "prerender/single_prerender.html");
 
-    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(webPrerender.isNull());
+  WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(webPrerender.isNull());
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
-    navigateAway();
-    close();
+  // Race removing & starting the prerender against each other, as if the element was removed very quickly.
+  executeScript("removePrerender()");
+  EXPECT_FALSE(webPrerender.isNull());
+  webPrerender.didStartPrerender();
 
-    // This test passes if this next line doesn't crash.
-    webPrerender.didStartPrerender();
+  // The page should be totally disconnected from the Prerender at this point, so the console should not have updated.
+  EXPECT_EQ(0u, consoleLength());
 }
 
-TEST_F(PrerenderingTest, FastRemoveElement)
-{
-    initialize("http://www.foo.com/", "prerender/single_prerender.html");
+TEST_F(PrerenderingTest, MutateTarget) {
+  initialize("http://www.foo.com/", "prerender/single_prerender.html");
 
-    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(webPrerender.isNull());
+  WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(webPrerender.isNull());
+  EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(0u, prerenderingSupport()->cancelCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
-    // Race removing & starting the prerender against each other, as if the element was removed very quickly.
-    executeScript("removePrerender()");
-    EXPECT_FALSE(webPrerender.isNull());
-    webPrerender.didStartPrerender();
+  // Change the href of this prerender, make sure this is treated as a remove and add.
+  executeScript("mutateTarget()");
+  EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
 
-    // The page should be totally disconnected from the Prerender at this point, so the console should not have updated.
-    EXPECT_EQ(0u, consoleLength());
+  WebPrerender mutatedPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_EQ(toWebURL("http://mutated.com/"), mutatedPrerender.url());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(mutatedPrerender));
+  EXPECT_EQ(3u, prerenderingSupport()->totalCount());
 }
 
-TEST_F(PrerenderingTest, MutateTarget)
-{
-    initialize("http://www.foo.com/", "prerender/single_prerender.html");
+TEST_F(PrerenderingTest, MutateRel) {
+  initialize("http://www.foo.com/", "prerender/single_prerender.html");
 
-    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(webPrerender.isNull());
-    EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
+  WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_FALSE(webPrerender.isNull());
+  EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(0u, prerenderingSupport()->cancelCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
+  EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
+  EXPECT_EQ(0u, prerenderingSupport()->cancelCount(webPrerender));
+  EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
-    // Change the href of this prerender, make sure this is treated as a remove and add.
-    executeScript("mutateTarget()");
-    EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
-
-    WebPrerender mutatedPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_EQ(toWebURL("http://mutated.com/"), mutatedPrerender.url());
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(mutatedPrerender));
-    EXPECT_EQ(3u, prerenderingSupport()->totalCount());
+  // Change the rel of this prerender, make sure this is treated as a remove.
+  executeScript("mutateRel()");
+  EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
+  EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 }
 
-TEST_F(PrerenderingTest, MutateRel)
-{
-    initialize("http://www.foo.com/", "prerender/single_prerender.html");
+TEST_F(PrerenderingTest, RelNext) {
+  initialize("http://www.foo.com/", "prerender/rel_next_prerender.html");
 
-    WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_FALSE(webPrerender.isNull());
-    EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
+  WebPrerender relNextOnly = prerendererClient()->releaseWebPrerender();
+  EXPECT_EQ(toWebURL("http://rel-next-only.com/"), relNextOnly.url());
+  EXPECT_EQ(PrerenderRelTypeNext, relNextOnly.relTypes());
 
-    EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
-    EXPECT_EQ(0u, prerenderingSupport()->cancelCount(webPrerender));
-    EXPECT_EQ(1u, prerenderingSupport()->totalCount());
-
-    // Change the rel of this prerender, make sure this is treated as a remove.
-    executeScript("mutateRel()");
-    EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
-    EXPECT_EQ(2u, prerenderingSupport()->totalCount());
+  WebPrerender relNextAndPrerender = prerendererClient()->releaseWebPrerender();
+  EXPECT_EQ(toWebURL("http://rel-next-and-prerender.com/"),
+            relNextAndPrerender.url());
+  EXPECT_EQ(
+      static_cast<unsigned>(PrerenderRelTypeNext | PrerenderRelTypePrerender),
+      relNextAndPrerender.relTypes());
 }
 
-TEST_F(PrerenderingTest, RelNext)
-{
-    initialize("http://www.foo.com/", "prerender/rel_next_prerender.html");
-
-    WebPrerender relNextOnly = prerendererClient()->releaseWebPrerender();
-    EXPECT_EQ(toWebURL("http://rel-next-only.com/"), relNextOnly.url());
-    EXPECT_EQ(PrerenderRelTypeNext, relNextOnly.relTypes());
-
-    WebPrerender relNextAndPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_EQ(toWebURL("http://rel-next-and-prerender.com/"), relNextAndPrerender.url());
-    EXPECT_EQ(static_cast<unsigned>(PrerenderRelTypeNext | PrerenderRelTypePrerender), relNextAndPrerender.relTypes());
-}
-
-} // namespace
+}  // namespace

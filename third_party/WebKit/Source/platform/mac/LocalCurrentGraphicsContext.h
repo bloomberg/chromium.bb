@@ -33,19 +33,21 @@ class GraphicsContext;
 // This class automatically saves and restores the current NSGraphicsContext for
 // functions which call out into AppKit and rely on the currentContext being set
 class PLATFORM_EXPORT LocalCurrentGraphicsContext {
-    WTF_MAKE_NONCOPYABLE(LocalCurrentGraphicsContext);
-public:
-    LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirtyRect);
-    LocalCurrentGraphicsContext(SkCanvas*, float deviceScaleFactor, const IntRect& dirtyRect);
-    ~LocalCurrentGraphicsContext();
-    CGContextRef cgContext();
-private:
+  WTF_MAKE_NONCOPYABLE(LocalCurrentGraphicsContext);
 
-    SkCanvas* m_savedCanvas;
-    NSGraphicsContext* m_savedNSGraphicsContext;
-    bool m_didSetGraphicsContext;
-    IntRect m_inflatedDirtyRect;
-    skia::SkiaBitLocker m_skiaBitLocker;
+ public:
+  LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirtyRect);
+  LocalCurrentGraphicsContext(SkCanvas*,
+                              float deviceScaleFactor,
+                              const IntRect& dirtyRect);
+  ~LocalCurrentGraphicsContext();
+  CGContextRef cgContext();
+
+ private:
+  SkCanvas* m_savedCanvas;
+  NSGraphicsContext* m_savedNSGraphicsContext;
+  bool m_didSetGraphicsContext;
+  IntRect m_inflatedDirtyRect;
+  skia::SkiaBitLocker m_skiaBitLocker;
 };
-
 }

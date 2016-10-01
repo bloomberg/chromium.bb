@@ -21,36 +21,34 @@ class VisualViewport;
 // scroll events if the user continuously scrolls past the extent but reset it
 // as soon as a gesture ends.
 class OverscrollController : public GarbageCollected<OverscrollController> {
-public:
-    static OverscrollController* create(
-        const VisualViewport& visualViewport,
-        ChromeClient& chromeClient) {
-        return new OverscrollController(visualViewport, chromeClient);
-    }
+ public:
+  static OverscrollController* create(const VisualViewport& visualViewport,
+                                      ChromeClient& chromeClient) {
+    return new OverscrollController(visualViewport, chromeClient);
+  }
 
-    void resetAccumulated(bool resetX, bool resetY);
+  void resetAccumulated(bool resetX, bool resetY);
 
-    // Reports unused scroll as overscroll to the content layer. The position
-    // argument is the most recent location of the gesture, the finger position
-    // for touch scrolling and the cursor position for wheel. Velocity is used
-    // in the case of a fling gesture where we want the overscroll to feel like
-    // it has momentum.
-    void handleOverscroll(
-        const ScrollResult&,
-        const FloatPoint& positionInRootFrame,
-        const FloatSize& velocityInRootFrame);
+  // Reports unused scroll as overscroll to the content layer. The position
+  // argument is the most recent location of the gesture, the finger position
+  // for touch scrolling and the cursor position for wheel. Velocity is used
+  // in the case of a fling gesture where we want the overscroll to feel like
+  // it has momentum.
+  void handleOverscroll(const ScrollResult&,
+                        const FloatPoint& positionInRootFrame,
+                        const FloatSize& velocityInRootFrame);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    OverscrollController(const VisualViewport&, ChromeClient&);
+ private:
+  OverscrollController(const VisualViewport&, ChromeClient&);
 
-    WeakMember<const VisualViewport> m_visualViewport;
-    WeakMember<ChromeClient> m_chromeClient;
+  WeakMember<const VisualViewport> m_visualViewport;
+  WeakMember<ChromeClient> m_chromeClient;
 
-    FloatSize m_accumulatedRootOverscroll;
+  FloatSize m_accumulatedRootOverscroll;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OverscrollController_h
+#endif  // OverscrollController_h

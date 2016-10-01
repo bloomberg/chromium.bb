@@ -32,8 +32,8 @@ class SkPaint;
 namespace blink {
 
 enum LayoutSVGResourceMode {
-    ApplyToFillMode,
-    ApplyToStrokeMode,
+  ApplyToFillMode,
+  ApplyToStrokeMode,
 };
 
 class LayoutObject;
@@ -41,57 +41,82 @@ class LayoutSVGResourcePaintServer;
 class ComputedStyle;
 
 class SVGPaintServer {
-    STACK_ALLOCATED();
-public:
-    explicit SVGPaintServer(Color);
-    SVGPaintServer(PassRefPtr<Gradient>, const AffineTransform&);
-    SVGPaintServer(PassRefPtr<Pattern>, const AffineTransform&);
+  STACK_ALLOCATED();
 
-    static SVGPaintServer requestForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
-    static bool existsForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
+ public:
+  explicit SVGPaintServer(Color);
+  SVGPaintServer(PassRefPtr<Gradient>, const AffineTransform&);
+  SVGPaintServer(PassRefPtr<Pattern>, const AffineTransform&);
 
-    void applyToSkPaint(SkPaint&, float paintAlpha);
+  static SVGPaintServer requestForLayoutObject(const LayoutObject&,
+                                               const ComputedStyle&,
+                                               LayoutSVGResourceMode);
+  static bool existsForLayoutObject(const LayoutObject&,
+                                    const ComputedStyle&,
+                                    LayoutSVGResourceMode);
 
-    static SVGPaintServer invalid() { return SVGPaintServer(Color(Color::transparent)); }
-    bool isValid() const { return m_color != Color::transparent; }
+  void applyToSkPaint(SkPaint&, float paintAlpha);
 
-    bool isTransformDependent() const { return m_gradient || m_pattern; }
-    void prependTransform(const AffineTransform&);
+  static SVGPaintServer invalid() {
+    return SVGPaintServer(Color(Color::transparent));
+  }
+  bool isValid() const { return m_color != Color::transparent; }
 
-private:
-    RefPtr<Gradient> m_gradient;
-    RefPtr<Pattern> m_pattern;
-    AffineTransform m_transform; // Used for gradient/pattern shaders.
-    Color m_color;
+  bool isTransformDependent() const { return m_gradient || m_pattern; }
+  void prependTransform(const AffineTransform&);
+
+ private:
+  RefPtr<Gradient> m_gradient;
+  RefPtr<Pattern> m_pattern;
+  AffineTransform m_transform;  // Used for gradient/pattern shaders.
+  Color m_color;
 };
 
 // If |SVGPaintDescription::hasFallback| is true, |SVGPaintDescription::color| is set to a fallback color.
 struct SVGPaintDescription {
-    STACK_ALLOCATED();
-    SVGPaintDescription() : resource(nullptr), isValid(false), hasFallback(false) { }
-    SVGPaintDescription(Color color) : resource(nullptr), color(color), isValid(true), hasFallback(false) { }
-    SVGPaintDescription(LayoutSVGResourcePaintServer* resource) : resource(resource), isValid(true), hasFallback(false) { ASSERT(resource); }
-    SVGPaintDescription(LayoutSVGResourcePaintServer* resource, Color fallbackColor) : resource(resource), color(fallbackColor), isValid(true), hasFallback(true) { ASSERT(resource); }
+  STACK_ALLOCATED();
+  SVGPaintDescription()
+      : resource(nullptr), isValid(false), hasFallback(false) {}
+  SVGPaintDescription(Color color)
+      : resource(nullptr), color(color), isValid(true), hasFallback(false) {}
+  SVGPaintDescription(LayoutSVGResourcePaintServer* resource)
+      : resource(resource), isValid(true), hasFallback(false) {
+    ASSERT(resource);
+  }
+  SVGPaintDescription(LayoutSVGResourcePaintServer* resource,
+                      Color fallbackColor)
+      : resource(resource),
+        color(fallbackColor),
+        isValid(true),
+        hasFallback(true) {
+    ASSERT(resource);
+  }
 
-    LayoutSVGResourcePaintServer* resource;
-    Color color;
-    bool isValid;
-    bool hasFallback;
+  LayoutSVGResourcePaintServer* resource;
+  Color color;
+  bool isValid;
+  bool hasFallback;
 };
 
 class LayoutSVGResourcePaintServer : public LayoutSVGResourceContainer {
-public:
-    LayoutSVGResourcePaintServer(SVGElement*);
-    ~LayoutSVGResourcePaintServer() override;
+ public:
+  LayoutSVGResourcePaintServer(SVGElement*);
+  ~LayoutSVGResourcePaintServer() override;
 
-    virtual SVGPaintServer preparePaintServer(const LayoutObject&) = 0;
+  virtual SVGPaintServer preparePaintServer(const LayoutObject&) = 0;
 
-    // Helper utilities used in to access the underlying resources for DRT.
-    static SVGPaintDescription requestPaintDescription(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
+  // Helper utilities used in to access the underlying resources for DRT.
+  static SVGPaintDescription requestPaintDescription(const LayoutObject&,
+                                                     const ComputedStyle&,
+                                                     LayoutSVGResourceMode);
 };
 
-DEFINE_TYPE_CASTS(LayoutSVGResourcePaintServer, LayoutSVGResourceContainer, resource, resource->isSVGPaintServer(), resource.isSVGPaintServer());
+DEFINE_TYPE_CASTS(LayoutSVGResourcePaintServer,
+                  LayoutSVGResourceContainer,
+                  resource,
+                  resource->isSVGPaintServer(),
+                  resource.isSVGPaintServer());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

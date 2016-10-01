@@ -34,11 +34,11 @@
 namespace blink {
 
 enum WebPopupType {
-    WebPopupTypeNone, // Not a popup.
-    WebPopupTypePage, // An HTML-capable popup.
-    WebPopupTypeLast = WebPopupTypePage
+  WebPopupTypeNone,  // Not a popup.
+  WebPopupTypePage,  // An HTML-capable popup.
+  WebPopupTypeLast = WebPopupTypePage
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

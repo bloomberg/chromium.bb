@@ -25,29 +25,31 @@ namespace blink {
 //
 // [1] http://www.w3.org/TR/css3-break/#fragmentation-model
 class CORE_EXPORT FragmentationContext {
-public:
-    virtual ~FragmentationContext() { }
+ public:
+  virtual ~FragmentationContext() {}
 
-    // The height of the fragmentainers may depend on the total height of the contents (column
-    // balancing), in which case false is returned if we haven't laid out yet. Otherwise, true is
-    // returned.
-    virtual bool isFragmentainerLogicalHeightKnown() = 0;
+  // The height of the fragmentainers may depend on the total height of the contents (column
+  // balancing), in which case false is returned if we haven't laid out yet. Otherwise, true is
+  // returned.
+  virtual bool isFragmentainerLogicalHeightKnown() = 0;
 
-    // Return the height of the fragmentainer at the specified offset. The fragmentainer height
-    // isn't necessarily uniform all across the fragmentation context.
-    virtual LayoutUnit fragmentainerLogicalHeightAt(LayoutUnit blockOffset) = 0;
+  // Return the height of the fragmentainer at the specified offset. The fragmentainer height
+  // isn't necessarily uniform all across the fragmentation context.
+  virtual LayoutUnit fragmentainerLogicalHeightAt(LayoutUnit blockOffset) = 0;
 
-    // Return how much is left of the fragmentainer at the specified offset. Callers typically want
-    // this information to decide whether some piece of content fits in this fragmentainer, or if it
-    // has to push the content to the next fragmentainer.
-    virtual LayoutUnit remainingLogicalHeightAt(LayoutUnit blockOffset) = 0;
+  // Return how much is left of the fragmentainer at the specified offset. Callers typically want
+  // this information to decide whether some piece of content fits in this fragmentainer, or if it
+  // has to push the content to the next fragmentainer.
+  virtual LayoutUnit remainingLogicalHeightAt(LayoutUnit blockOffset) = 0;
 
-    // Return the flow thread of the fragmentation context, if it is a multicol fragmentation
-    // context. Since multicol containers may be nested inside other fragmentation contexts,
-    // sometimes we need to know if it's a multicol container that we're dealing with.
-    virtual class LayoutMultiColumnFlowThread* associatedFlowThread() { return nullptr; }
+  // Return the flow thread of the fragmentation context, if it is a multicol fragmentation
+  // context. Since multicol containers may be nested inside other fragmentation contexts,
+  // sometimes we need to know if it's a multicol container that we're dealing with.
+  virtual class LayoutMultiColumnFlowThread* associatedFlowThread() {
+    return nullptr;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FragmentationContext_h
+#endif  // FragmentationContext_h

@@ -42,43 +42,44 @@ namespace blink {
 class AXObject;
 
 struct DateTimeSuggestion {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    double value;
-    String localizedValue;
-    String label;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  double value;
+  String localizedValue;
+  String label;
 };
 
 struct DateTimeChooserParameters {
-    DISALLOW_NEW();
-    AtomicString type;
-    IntRect anchorRectInScreen;
-    // Locale name for which the chooser should be localized. This
-    // might be an invalid name because it comes from HTML lang
-    // attributes.
-    AtomicString locale;
-    // FIXME: Remove. Deprecated in favor of doubleValue.
-    String currentValue;
-    double doubleValue;
-    Vector<DateTimeSuggestion> suggestions;
-    double minimum;
-    double maximum;
-    double step;
-    double stepBase;
-    bool required;
-    bool isAnchorElementRTL;
+  DISALLOW_NEW();
+  AtomicString type;
+  IntRect anchorRectInScreen;
+  // Locale name for which the chooser should be localized. This
+  // might be an invalid name because it comes from HTML lang
+  // attributes.
+  AtomicString locale;
+  // FIXME: Remove. Deprecated in favor of doubleValue.
+  String currentValue;
+  double doubleValue;
+  Vector<DateTimeSuggestion> suggestions;
+  double minimum;
+  double maximum;
+  double step;
+  double stepBase;
+  bool required;
+  bool isAnchorElementRTL;
 };
 
 // For pickers like color pickers and date pickers.
-class CORE_EXPORT DateTimeChooser : public GarbageCollectedFinalized<DateTimeChooser> {
-public:
-    virtual ~DateTimeChooser();
+class CORE_EXPORT DateTimeChooser
+    : public GarbageCollectedFinalized<DateTimeChooser> {
+ public:
+  virtual ~DateTimeChooser();
 
-    virtual void endChooser() = 0;
-    // Returns a root AXObject in the DateTimeChooser if it's available.
-    virtual AXObject* rootAXObject() = 0;
+  virtual void endChooser() = 0;
+  // Returns a root AXObject in the DateTimeChooser if it's available.
+  virtual AXObject* rootAXObject() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
-#endif // DateTimeChooser_h
+}  // namespace blink
+#endif  // DateTimeChooser_h

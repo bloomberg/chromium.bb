@@ -20,59 +20,49 @@ namespace blink {
 // WebSocketChannelClient needs to be on Oilpan's heap whereas
 // WebPepperSocketImpl cannot be on Oilpan's heap. Thus we need to introduce a
 // proxy class to decouple WebPepperSocketImpl from WebSocketChannelClient.
-class WebPepperSocketChannelClientProxy final : public GarbageCollectedFinalized<WebPepperSocketChannelClientProxy>, public WebSocketChannelClient {
-    USING_GARBAGE_COLLECTED_MIXIN(WebPepperSocketChannelClientProxy)
-public:
-    static WebPepperSocketChannelClientProxy* create(WebPepperSocketImpl* impl)
-    {
-        return new WebPepperSocketChannelClientProxy(impl);
-    }
+class WebPepperSocketChannelClientProxy final
+    : public GarbageCollectedFinalized<WebPepperSocketChannelClientProxy>,
+      public WebSocketChannelClient {
+  USING_GARBAGE_COLLECTED_MIXIN(WebPepperSocketChannelClientProxy)
+ public:
+  static WebPepperSocketChannelClientProxy* create(WebPepperSocketImpl* impl) {
+    return new WebPepperSocketChannelClientProxy(impl);
+  }
 
-    void didConnect(const String& subprotocol, const String& extensions) override
-    {
-        m_impl->didConnect(subprotocol, extensions);
-    }
-    void didReceiveTextMessage(const String& payload) override
-    {
-        m_impl->didReceiveTextMessage(payload);
-    }
-    void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override
-    {
-        m_impl->didReceiveBinaryMessage(std::move(payload));
-    }
-    void didError() override
-    {
-        m_impl->didError();
-    }
-    void didConsumeBufferedAmount(uint64_t consumed) override
-    {
-        m_impl->didConsumeBufferedAmount(consumed);
-    }
-    void didStartClosingHandshake() override
-    {
-        m_impl->didStartClosingHandshake();
-    }
-    void didClose(ClosingHandshakeCompletionStatus status, unsigned short code, const String& reason) override
-    {
-        WebPepperSocketImpl* impl = m_impl;
-        m_impl = nullptr;
-        impl->didClose(status, code, reason);
-    }
+  void didConnect(const String& subprotocol,
+                  const String& extensions) override {
+    m_impl->didConnect(subprotocol, extensions);
+  }
+  void didReceiveTextMessage(const String& payload) override {
+    m_impl->didReceiveTextMessage(payload);
+  }
+  void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload) override {
+    m_impl->didReceiveBinaryMessage(std::move(payload));
+  }
+  void didError() override { m_impl->didError(); }
+  void didConsumeBufferedAmount(uint64_t consumed) override {
+    m_impl->didConsumeBufferedAmount(consumed);
+  }
+  void didStartClosingHandshake() override {
+    m_impl->didStartClosingHandshake();
+  }
+  void didClose(ClosingHandshakeCompletionStatus status,
+                unsigned short code,
+                const String& reason) override {
+    WebPepperSocketImpl* impl = m_impl;
+    m_impl = nullptr;
+    impl->didClose(status, code, reason);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        WebSocketChannelClient::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() { WebSocketChannelClient::trace(visitor); }
 
-private:
-    explicit WebPepperSocketChannelClientProxy(WebPepperSocketImpl* impl)
-        : m_impl(impl)
-    {
-    }
+ private:
+  explicit WebPepperSocketChannelClientProxy(WebPepperSocketImpl* impl)
+      : m_impl(impl) {}
 
-    WebPepperSocketImpl* m_impl;
+  WebPepperSocketImpl* m_impl;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPepperSocketChannelClientProxy_h
+#endif  // WebPepperSocketChannelClientProxy_h

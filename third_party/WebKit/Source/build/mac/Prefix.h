@@ -41,7 +41,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <new>
-#endif // __cplusplus
+#endif  // __cplusplus
 
 #include <sys/param.h>
 #include <sys/stat.h>

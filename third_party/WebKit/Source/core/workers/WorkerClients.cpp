@@ -8,4 +8,4 @@ namespace blink {
 
 template class CORE_TEMPLATE_EXPORT Supplement<WorkerClients>;
 
-} // namespace blink
+}  // namespace blink

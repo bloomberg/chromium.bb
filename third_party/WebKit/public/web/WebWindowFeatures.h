@@ -42,95 +42,89 @@
 namespace blink {
 
 struct WebWindowFeatures {
-    float x;
-    bool xSet;
-    float y;
-    bool ySet;
-    float width;
-    bool widthSet;
-    float height;
-    bool heightSet;
+  float x;
+  bool xSet;
+  float y;
+  bool ySet;
+  float width;
+  bool widthSet;
+  float height;
+  bool heightSet;
 
-    bool menuBarVisible;
-    bool statusBarVisible;
-    bool toolBarVisible;
-    bool locationBarVisible;
-    bool scrollbarsVisible;
-    bool resizable;
+  bool menuBarVisible;
+  bool statusBarVisible;
+  bool toolBarVisible;
+  bool locationBarVisible;
+  bool scrollbarsVisible;
+  bool resizable;
 
-    bool fullscreen;
-    bool dialog;
-    WebVector<WebString> additionalFeatures;
+  bool fullscreen;
+  bool dialog;
+  WebVector<WebString> additionalFeatures;
 
-    WebWindowFeatures()
-        : x(0)
-        , xSet(false)
-        , y(0)
-        , ySet(false)
-        , width(0)
-        , widthSet(false)
-        , height(0)
-        , heightSet(false)
-        , menuBarVisible(true)
-        , statusBarVisible(true)
-        , toolBarVisible(true)
-        , locationBarVisible(true)
-        , scrollbarsVisible(true)
-        , resizable(true)
-        , fullscreen(false)
-        , dialog(false)
-    {
-    }
-
+  WebWindowFeatures()
+      : x(0),
+        xSet(false),
+        y(0),
+        ySet(false),
+        width(0),
+        widthSet(false),
+        height(0),
+        heightSet(false),
+        menuBarVisible(true),
+        statusBarVisible(true),
+        toolBarVisible(true),
+        locationBarVisible(true),
+        scrollbarsVisible(true),
+        resizable(true),
+        fullscreen(false),
+        dialog(false) {}
 
 #if BLINK_IMPLEMENTATION
-    WebWindowFeatures(const WindowFeatures& f)
-        : x(f.x)
-        , xSet(f.xSet)
-        , y(f.y)
-        , ySet(f.ySet)
-        , width(f.width)
-        , widthSet(f.widthSet)
-        , height(f.height)
-        , heightSet(f.heightSet)
-        , menuBarVisible(f.menuBarVisible)
-        , statusBarVisible(f.statusBarVisible)
-        , toolBarVisible(f.toolBarVisible)
-        , locationBarVisible(f.locationBarVisible)
-        , scrollbarsVisible(f.scrollbarsVisible)
-        , resizable(f.resizable)
-        , fullscreen(f.fullscreen)
-        , dialog(f.dialog)
-        , additionalFeatures(f.additionalFeatures)
-    {
-    }
+  WebWindowFeatures(const WindowFeatures& f)
+      : x(f.x),
+        xSet(f.xSet),
+        y(f.y),
+        ySet(f.ySet),
+        width(f.width),
+        widthSet(f.widthSet),
+        height(f.height),
+        heightSet(f.heightSet),
+        menuBarVisible(f.menuBarVisible),
+        statusBarVisible(f.statusBarVisible),
+        toolBarVisible(f.toolBarVisible),
+        locationBarVisible(f.locationBarVisible),
+        scrollbarsVisible(f.scrollbarsVisible),
+        resizable(f.resizable),
+        fullscreen(f.fullscreen),
+        dialog(f.dialog),
+        additionalFeatures(f.additionalFeatures) {}
 
-    operator WindowFeatures() const
-    {
-        WindowFeatures result;
-        result.x = x;
-        result.xSet = xSet;
-        result.y = y;
-        result.ySet = ySet;
-        result.width = width;
-        result.widthSet = widthSet;
-        result.height = height;
-        result.heightSet = heightSet;
-        result.menuBarVisible = menuBarVisible;
-        result.statusBarVisible = statusBarVisible;
-        result.toolBarVisible = toolBarVisible;
-        result.locationBarVisible = locationBarVisible;
-        result.scrollbarsVisible = scrollbarsVisible;
-        result.resizable = resizable;
-        result.fullscreen = fullscreen;
-        result.dialog = dialog;
-        for (size_t i = 0; i < additionalFeatures.size(); ++i)
-            result.additionalFeatures.append(additionalFeatures[i]);
-        return result;
-    }
+  operator WindowFeatures() const {
+    WindowFeatures result;
+    result.x = x;
+    result.xSet = xSet;
+    result.y = y;
+    result.ySet = ySet;
+    result.width = width;
+    result.widthSet = widthSet;
+    result.height = height;
+    result.heightSet = heightSet;
+    result.menuBarVisible = menuBarVisible;
+    result.statusBarVisible = statusBarVisible;
+    result.toolBarVisible = toolBarVisible;
+    result.locationBarVisible = locationBarVisible;
+    result.scrollbarsVisible = scrollbarsVisible;
+    result.resizable = resizable;
+    result.fullscreen = fullscreen;
+    result.dialog = dialog;
+    for (size_t i = 0; i < additionalFeatures.size(); ++i)
+      result.additionalFeatures.append(additionalFeatures[i]);
+    return result;
+  }
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

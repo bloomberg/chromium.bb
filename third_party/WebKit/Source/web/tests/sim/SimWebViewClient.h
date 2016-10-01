@@ -12,26 +12,32 @@ namespace blink {
 class WebLayerTreeView;
 
 class SimWebViewClient final : public FrameTestHelpers::TestWebViewClient {
-public:
-    explicit SimWebViewClient(WebLayerTreeView&);
+ public:
+  explicit SimWebViewClient(WebLayerTreeView&);
 
-    WebLayerTreeView* layerTreeView() override { return m_layerTreeView; }
+  WebLayerTreeView* layerTreeView() override { return m_layerTreeView; }
 
-    int visuallyNonEmptyLayoutCount() const { return m_visuallyNonEmptyLayoutCount; }
-    int finishedParsingLayoutCount() const { return m_finishedParsingLayoutCount; }
-    int finishedLoadingLayoutCount() const { return m_finishedLoadingLayoutCount; }
+  int visuallyNonEmptyLayoutCount() const {
+    return m_visuallyNonEmptyLayoutCount;
+  }
+  int finishedParsingLayoutCount() const {
+    return m_finishedParsingLayoutCount;
+  }
+  int finishedLoadingLayoutCount() const {
+    return m_finishedLoadingLayoutCount;
+  }
 
-private:
-    // WebWidgetClient overrides.
-    void didMeaningfulLayout(WebMeaningfulLayout) override;
+ private:
+  // WebWidgetClient overrides.
+  void didMeaningfulLayout(WebMeaningfulLayout) override;
 
-    int m_visuallyNonEmptyLayoutCount;
-    int m_finishedParsingLayoutCount;
-    int m_finishedLoadingLayoutCount;
+  int m_visuallyNonEmptyLayoutCount;
+  int m_finishedParsingLayoutCount;
+  int m_finishedLoadingLayoutCount;
 
-    WebLayerTreeView* m_layerTreeView;
+  WebLayerTreeView* m_layerTreeView;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

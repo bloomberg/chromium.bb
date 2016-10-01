@@ -32,23 +32,24 @@
 namespace blink {
 
 class WebGLDrawBuffers final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WebGLDrawBuffers* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~WebGLDrawBuffers() override;
-    WebGLExtensionName name() const override;
+ public:
+  static WebGLDrawBuffers* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-    void drawBuffersWEBGL(const Vector<GLenum>& buffers);
+  ~WebGLDrawBuffers() override;
+  WebGLExtensionName name() const override;
 
-private:
-    explicit WebGLDrawBuffers(WebGLRenderingContextBase*);
+  void drawBuffersWEBGL(const Vector<GLenum>& buffers);
 
-    static bool satisfiesWebGLRequirements(WebGLRenderingContextBase*);
+ private:
+  explicit WebGLDrawBuffers(WebGLRenderingContextBase*);
+
+  static bool satisfiesWebGLRequirements(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLDrawBuffers_h
+#endif  // WebGLDrawBuffers_h

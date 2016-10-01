@@ -37,11 +37,11 @@
 namespace WTF {
 
 class StringStatics {
-    STATIC_ONLY(StringStatics);
-public:
-    WTF_EXPORT static void init();
-};
+  STATIC_ONLY(StringStatics);
 
+ public:
+  WTF_EXPORT static void init();
+};
 }
 
 #endif

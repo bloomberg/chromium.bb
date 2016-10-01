@@ -43,31 +43,37 @@ class ExceptionState;
 class ExecutionContext;
 class FileReaderLoader;
 
-class FileReaderSync final : public GarbageCollected<FileReaderSync>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static FileReaderSync* create()
-    {
-        return new FileReaderSync();
-    }
+class FileReaderSync final : public GarbageCollected<FileReaderSync>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DOMArrayBuffer* readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
-    String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);
-    String readAsText(ExecutionContext* executionContext, Blob* blob, ExceptionState& ec)
-    {
-        return readAsText(executionContext, blob, "", ec);
-    }
-    String readAsText(ExecutionContext*, Blob*, const String& encoding, ExceptionState&);
-    String readAsDataURL(ExecutionContext*, Blob*, ExceptionState&);
+ public:
+  static FileReaderSync* create() { return new FileReaderSync(); }
 
-    DEFINE_INLINE_TRACE() { }
+  DOMArrayBuffer* readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
+  String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);
+  String readAsText(ExecutionContext* executionContext,
+                    Blob* blob,
+                    ExceptionState& ec) {
+    return readAsText(executionContext, blob, "", ec);
+  }
+  String readAsText(ExecutionContext*,
+                    Blob*,
+                    const String& encoding,
+                    ExceptionState&);
+  String readAsDataURL(ExecutionContext*, Blob*, ExceptionState&);
 
-private:
-    FileReaderSync();
+  DEFINE_INLINE_TRACE() {}
 
-    void startLoading(ExecutionContext*, FileReaderLoader&, const Blob&, ExceptionState&);
+ private:
+  FileReaderSync();
+
+  void startLoading(ExecutionContext*,
+                    FileReaderLoader&,
+                    const Blob&,
+                    ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileReaderSync_h
+#endif  // FileReaderSync_h

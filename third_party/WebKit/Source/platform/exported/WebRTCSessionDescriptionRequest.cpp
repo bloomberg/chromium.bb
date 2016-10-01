@@ -36,31 +36,29 @@
 
 namespace blink {
 
-WebRTCSessionDescriptionRequest::WebRTCSessionDescriptionRequest(RTCSessionDescriptionRequest* constraints)
-    : m_private(constraints)
-{
+WebRTCSessionDescriptionRequest::WebRTCSessionDescriptionRequest(
+    RTCSessionDescriptionRequest* constraints)
+    : m_private(constraints) {}
+
+void WebRTCSessionDescriptionRequest::assign(
+    const WebRTCSessionDescriptionRequest& other) {
+  m_private = other.m_private;
 }
 
-void WebRTCSessionDescriptionRequest::assign(const WebRTCSessionDescriptionRequest& other)
-{
-    m_private = other.m_private;
+void WebRTCSessionDescriptionRequest::reset() {
+  m_private.reset();
 }
 
-void WebRTCSessionDescriptionRequest::reset()
-{
-    m_private.reset();
+void WebRTCSessionDescriptionRequest::requestSucceeded(
+    const WebRTCSessionDescription& sessionDescription) const {
+  ASSERT(m_private.get());
+  m_private->requestSucceeded(sessionDescription);
 }
 
-void WebRTCSessionDescriptionRequest::requestSucceeded(const WebRTCSessionDescription& sessionDescription) const
-{
-    ASSERT(m_private.get());
-    m_private->requestSucceeded(sessionDescription);
+void WebRTCSessionDescriptionRequest::requestFailed(
+    const WebString& error) const {
+  ASSERT(m_private.get());
+  m_private->requestFailed(error);
 }
 
-void WebRTCSessionDescriptionRequest::requestFailed(const WebString& error) const
-{
-    ASSERT(m_private.get());
-    m_private->requestFailed(error);
-}
-
-} // namespace blink
+}  // namespace blink

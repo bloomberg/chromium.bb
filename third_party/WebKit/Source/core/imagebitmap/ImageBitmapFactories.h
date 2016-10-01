@@ -56,71 +56,108 @@ class ImageBitmapOptions;
 class ImageDecoder;
 class WebTaskRunner;
 
-typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap ImageBitmapSourceUnion;
+typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap
+    ImageBitmapSourceUnion;
 
-class ImageBitmapFactories final : public GarbageCollectedFinalized<ImageBitmapFactories>, public Supplement<LocalDOMWindow>, public Supplement<WorkerGlobalScope> {
-    USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
-public:
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, const ImageBitmapOptions&, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&);
-    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageBitmapSource*, Optional<IntRect> cropRect, const ImageBitmapOptions&, ExceptionState&);
-    static ScriptPromise createImageBitmapFromBlob(ScriptState*, EventTarget&, ImageBitmapSource*, Optional<IntRect> cropRect, const ImageBitmapOptions&, ExceptionState&);
+class ImageBitmapFactories final
+    : public GarbageCollectedFinalized<ImageBitmapFactories>,
+      public Supplement<LocalDOMWindow>,
+      public Supplement<WorkerGlobalScope> {
+  USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
-    virtual ~ImageBitmapFactories() { }
+ public:
+  static ScriptPromise createImageBitmap(ScriptState*,
+                                         EventTarget&,
+                                         const ImageBitmapSourceUnion&,
+                                         const ImageBitmapOptions&,
+                                         ExceptionState&);
+  static ScriptPromise createImageBitmap(ScriptState*,
+                                         EventTarget&,
+                                         const ImageBitmapSourceUnion&,
+                                         int sx,
+                                         int sy,
+                                         int sw,
+                                         int sh,
+                                         const ImageBitmapOptions&,
+                                         ExceptionState&);
+  static ScriptPromise createImageBitmap(ScriptState*,
+                                         EventTarget&,
+                                         ImageBitmapSource*,
+                                         Optional<IntRect> cropRect,
+                                         const ImageBitmapOptions&,
+                                         ExceptionState&);
+  static ScriptPromise createImageBitmapFromBlob(ScriptState*,
+                                                 EventTarget&,
+                                                 ImageBitmapSource*,
+                                                 Optional<IntRect> cropRect,
+                                                 const ImageBitmapOptions&,
+                                                 ExceptionState&);
+
+  virtual ~ImageBitmapFactories() {}
+
+  DECLARE_TRACE();
+
+ protected:
+  static const char* supplementName();
+
+ private:
+  class ImageBitmapLoader final
+      : public GarbageCollectedFinalized<ImageBitmapLoader>,
+        public FileReaderLoaderClient {
+   public:
+    static ImageBitmapLoader* create(ImageBitmapFactories& factory,
+                                     Optional<IntRect> cropRect,
+                                     const ImageBitmapOptions& options,
+                                     ScriptState* scriptState) {
+      return new ImageBitmapLoader(factory, cropRect, scriptState, options);
+    }
+
+    void loadBlobAsync(ExecutionContext*, Blob*);
+    ScriptPromise promise() { return m_resolver->promise(); }
 
     DECLARE_TRACE();
 
-protected:
-    static const char* supplementName();
+    ~ImageBitmapLoader() override {}
 
-private:
-    class ImageBitmapLoader final : public GarbageCollectedFinalized<ImageBitmapLoader>, public FileReaderLoaderClient {
-    public:
-        static ImageBitmapLoader* create(ImageBitmapFactories& factory, Optional<IntRect> cropRect, const ImageBitmapOptions& options, ScriptState* scriptState)
-        {
-            return new ImageBitmapLoader(factory, cropRect, scriptState, options);
-        }
+   private:
+    ImageBitmapLoader(ImageBitmapFactories&,
+                      Optional<IntRect> cropRect,
+                      ScriptState*,
+                      const ImageBitmapOptions&);
 
-        void loadBlobAsync(ExecutionContext*, Blob*);
-        ScriptPromise promise() { return m_resolver->promise(); }
+    void rejectPromise();
 
-        DECLARE_TRACE();
+    void scheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
+    void decodeImageOnDecoderThread(WebTaskRunner*,
+                                    DOMArrayBuffer*,
+                                    const String& premultiplyAlphaOption,
+                                    const String& colorSpaceConversionOption);
+    void resolvePromiseOnOriginalThread(sk_sp<SkImage>);
 
-        ~ImageBitmapLoader() override { }
+    // FileReaderLoaderClient
+    void didStartLoading() override {}
+    void didReceiveData() override {}
+    void didFinishLoading() override;
+    void didFail(FileError::ErrorCode) override;
 
-    private:
-        ImageBitmapLoader(ImageBitmapFactories&, Optional<IntRect> cropRect, ScriptState*, const ImageBitmapOptions&);
+    std::unique_ptr<FileReaderLoader> m_loader;
+    Member<ImageBitmapFactories> m_factory;
+    Member<ScriptPromiseResolver> m_resolver;
+    Optional<IntRect> m_cropRect;
+    ImageBitmapOptions m_options;
+  };
 
-        void rejectPromise();
+  static ImageBitmapFactories& from(EventTarget&);
 
-        void scheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
-        void decodeImageOnDecoderThread(WebTaskRunner*, DOMArrayBuffer*, const String& premultiplyAlphaOption, const String& colorSpaceConversionOption);
-        void resolvePromiseOnOriginalThread(sk_sp<SkImage>);
+  template <class GlobalObject>
+  static ImageBitmapFactories& fromInternal(GlobalObject&);
 
-        // FileReaderLoaderClient
-        void didStartLoading() override { }
-        void didReceiveData() override { }
-        void didFinishLoading() override;
-        void didFail(FileError::ErrorCode) override;
+  void addLoader(ImageBitmapLoader*);
+  void didFinishLoading(ImageBitmapLoader*);
 
-        std::unique_ptr<FileReaderLoader> m_loader;
-        Member<ImageBitmapFactories> m_factory;
-        Member<ScriptPromiseResolver> m_resolver;
-        Optional<IntRect> m_cropRect;
-        ImageBitmapOptions m_options;
-    };
-
-    static ImageBitmapFactories& from(EventTarget&);
-
-    template<class GlobalObject>
-    static ImageBitmapFactories& fromInternal(GlobalObject&);
-
-    void addLoader(ImageBitmapLoader*);
-    void didFinishLoading(ImageBitmapLoader*);
-
-    HeapHashSet<Member<ImageBitmapLoader>> m_pendingLoaders;
+  HeapHashSet<Member<ImageBitmapLoader>> m_pendingLoaders;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ImageBitmapFactories_h
+#endif  // ImageBitmapFactories_h

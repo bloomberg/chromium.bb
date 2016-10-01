@@ -31,8 +31,8 @@
 // relative addressing.
 
 // Use an array of pointers instead of an array of char in case there is some alignment issue.
-#define DEFINE_GLOBAL(type, name, ...) \
-    void* name##Storage[(sizeof(type) + sizeof(void *) - 1) / sizeof(void *)]; \
-    const type& name = *reinterpret_cast<type*>(&name##Storage);
+#define DEFINE_GLOBAL(type, name, ...)                                     \
+  void* name##Storage[(sizeof(type) + sizeof(void*) - 1) / sizeof(void*)]; \
+  const type& name = *reinterpret_cast<type*>(&name##Storage);
 
-#endif // StaticConstructors_h
+#endif  // StaticConstructors_h

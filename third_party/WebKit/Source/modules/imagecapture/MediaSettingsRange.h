@@ -9,33 +9,30 @@
 
 namespace blink {
 
-class MediaSettingsRange final
-    : public GarbageCollected<MediaSettingsRange>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MediaSettingsRange* create(long max, long min, long current)
-    {
-        return new MediaSettingsRange(max, min, current);
-    }
+class MediaSettingsRange final : public GarbageCollected<MediaSettingsRange>,
+                                 public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    long max() const { return m_max; }
-    long min() const { return m_min; }
-    long current() const { return m_current; }
+ public:
+  static MediaSettingsRange* create(long max, long min, long current) {
+    return new MediaSettingsRange(max, min, current);
+  }
 
-    DEFINE_INLINE_TRACE() {}
+  long max() const { return m_max; }
+  long min() const { return m_min; }
+  long current() const { return m_current; }
 
-private:
-    MediaSettingsRange(long max, long min, long current)
-        : m_max(max)
-        , m_min(min)
-        , m_current(current) { }
+  DEFINE_INLINE_TRACE() {}
 
-    long m_max;
-    long m_min;
-    long m_current;
+ private:
+  MediaSettingsRange(long max, long min, long current)
+      : m_max(max), m_min(min), m_current(current) {}
+
+  long m_max;
+  long m_min;
+  long m_current;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaSettingsRange_h
+#endif  // MediaSettingsRange_h

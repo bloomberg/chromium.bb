@@ -32,39 +32,42 @@ namespace blink {
 class TreeScope;
 
 class TreeScopeAdopter {
-    STACK_ALLOCATED();
-public:
-    TreeScopeAdopter(Node& toAdopt, TreeScope& newScope);
+  STACK_ALLOCATED();
 
-    void execute() const { moveTreeToNewScope(*m_toAdopt); }
-    bool needsScopeChange() const { return m_oldScope != m_newScope; }
+ public:
+  TreeScopeAdopter(Node& toAdopt, TreeScope& newScope);
+
+  void execute() const { moveTreeToNewScope(*m_toAdopt); }
+  bool needsScopeChange() const { return m_oldScope != m_newScope; }
 
 #if DCHECK_IS_ON()
-    static void ensureDidMoveToNewDocumentWasCalled(Document&);
+  static void ensureDidMoveToNewDocumentWasCalled(Document&);
 #else
-    static void ensureDidMoveToNewDocumentWasCalled(Document&) { }
+  static void ensureDidMoveToNewDocumentWasCalled(Document&) {}
 #endif
 
-private:
-    void updateTreeScope(Node&) const;
-    void moveTreeToNewScope(Node&) const;
-    void moveTreeToNewDocument(Node&, Document& oldDocument, Document& newDocument) const;
-    void moveNodeToNewDocument(Node&, Document& oldDocument, Document& newDocument) const;
-    TreeScope& oldScope() const { return *m_oldScope; }
-    TreeScope& newScope() const { return *m_newScope; }
+ private:
+  void updateTreeScope(Node&) const;
+  void moveTreeToNewScope(Node&) const;
+  void moveTreeToNewDocument(Node&,
+                             Document& oldDocument,
+                             Document& newDocument) const;
+  void moveNodeToNewDocument(Node&,
+                             Document& oldDocument,
+                             Document& newDocument) const;
+  TreeScope& oldScope() const { return *m_oldScope; }
+  TreeScope& newScope() const { return *m_newScope; }
 
-    Member<Node> m_toAdopt;
-    Member<TreeScope> m_newScope;
-    Member<TreeScope> m_oldScope;
+  Member<Node> m_toAdopt;
+  Member<TreeScope> m_newScope;
+  Member<TreeScope> m_oldScope;
 };
 
 inline TreeScopeAdopter::TreeScopeAdopter(Node& toAdopt, TreeScope& newScope)
-    : m_toAdopt(toAdopt)
-    , m_newScope(newScope)
-    , m_oldScope(toAdopt.treeScope())
-{
-}
+    : m_toAdopt(toAdopt),
+      m_newScope(newScope),
+      m_oldScope(toAdopt.treeScope()) {}
 
-} // namespace blink
+}  // namespace blink
 
 #endif

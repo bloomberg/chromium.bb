@@ -40,84 +40,81 @@
 
 namespace blink {
 
-const v8::HeapGraphNode* GetProperty(const v8::HeapGraphNode* node, v8::HeapGraphEdge::Type type, const char* name)
-{
-    for (int i = 0, count = node->GetChildrenCount(); i < count; ++i) {
-        const v8::HeapGraphEdge* prop = node->GetChild(i);
-        if (prop->GetType() == type) {
-            v8::String::Utf8Value propName(prop->GetName());
-            if (!strcmp(name, *propName))
-                return prop->GetToNode();
-        }
+const v8::HeapGraphNode* GetProperty(const v8::HeapGraphNode* node,
+                                     v8::HeapGraphEdge::Type type,
+                                     const char* name) {
+  for (int i = 0, count = node->GetChildrenCount(); i < count; ++i) {
+    const v8::HeapGraphEdge* prop = node->GetChild(i);
+    if (prop->GetType() == type) {
+      v8::String::Utf8Value propName(prop->GetName());
+      if (!strcmp(name, *propName))
+        return prop->GetToNode();
     }
-    return nullptr;
+  }
+  return nullptr;
 }
 
-int GetNumObjects(const char* constructor)
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
-    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot();
-    if (!snapshot)
-        return -1;
-    int count = 0;
-    for (int i = 0; i < snapshot->GetNodesCount(); ++i) {
-        const v8::HeapGraphNode* node = snapshot->GetNode(i);
-        if (node->GetType() != v8::HeapGraphNode::kObject)
-            continue;
-        v8::String::Utf8Value nodeName(node->GetName());
-        if (!strcmp(constructor, *nodeName)) {
-            const v8::HeapGraphNode* constructorProp = GetProperty(node, v8::HeapGraphEdge::kProperty, "constructor");
-            // Skip an Object instance named after the constructor.
-            if (constructorProp) {
-                v8::String::Utf8Value constructorName(constructorProp->GetName());
-                if (!strcmp(constructor, *constructorName))
-                    continue;
-            }
-            ++count;
-        }
+int GetNumObjects(const char* constructor) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope scope(isolate);
+  v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+  const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot();
+  if (!snapshot)
+    return -1;
+  int count = 0;
+  for (int i = 0; i < snapshot->GetNodesCount(); ++i) {
+    const v8::HeapGraphNode* node = snapshot->GetNode(i);
+    if (node->GetType() != v8::HeapGraphNode::kObject)
+      continue;
+    v8::String::Utf8Value nodeName(node->GetName());
+    if (!strcmp(constructor, *nodeName)) {
+      const v8::HeapGraphNode* constructorProp =
+          GetProperty(node, v8::HeapGraphEdge::kProperty, "constructor");
+      // Skip an Object instance named after the constructor.
+      if (constructorProp) {
+        v8::String::Utf8Value constructorName(constructorProp->GetName());
+        if (!strcmp(constructor, *constructorName))
+          continue;
+      }
+      ++count;
     }
-    return count;
+  }
+  return count;
 }
-
 
 class ListenerLeakTest : public testing::Test {
-public:
-    void RunTest(const std::string& filename)
-    {
-        std::string baseURL("http://www.example.com/");
-        std::string fileName(filename);
-        bool executeScript = true;
-        URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8(fileName.c_str()));
-        webViewHelper.initializeAndLoad(baseURL + fileName, executeScript);
-    }
+ public:
+  void RunTest(const std::string& filename) {
+    std::string baseURL("http://www.example.com/");
+    std::string fileName(filename);
+    bool executeScript = true;
+    URLTestHelpers::registerMockedURLFromBaseURL(
+        WebString::fromUTF8(baseURL.c_str()),
+        WebString::fromUTF8(fileName.c_str()));
+    webViewHelper.initializeAndLoad(baseURL + fileName, executeScript);
+  }
 
-    void TearDown() override
-    {
-        Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
-        WebCache::clear();
-    }
+  void TearDown() override {
+    Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
+    WebCache::clear();
+  }
 
-protected:
-    FrameTestHelpers::WebViewHelper webViewHelper;
+ protected:
+  FrameTestHelpers::WebViewHelper webViewHelper;
 };
-
 
 // This test tries to create a reference cycle between node and its listener.
 // See http://crbug/17400.
-TEST_F(ListenerLeakTest, ReferenceCycle)
-{
-    RunTest("listener/listener_leak1.html");
-    ASSERT_EQ(0, GetNumObjects("EventListenerLeakTestObject1"));
+TEST_F(ListenerLeakTest, ReferenceCycle) {
+  RunTest("listener/listener_leak1.html");
+  ASSERT_EQ(0, GetNumObjects("EventListenerLeakTestObject1"));
 }
 
 // This test sets node onclick many times to expose a possible memory
 // leak where all listeners get referenced by the node.
-TEST_F(ListenerLeakTest, HiddenReferences)
-{
-    RunTest("listener/listener_leak2.html");
-    ASSERT_EQ(1, GetNumObjects("EventListenerLeakTestObject2"));
+TEST_F(ListenerLeakTest, HiddenReferences) {
+  RunTest("listener/listener_leak2.html");
+  ASSERT_EQ(1, GetNumObjects("EventListenerLeakTestObject2"));
 }
 
-} // namespace blink
+}  // namespace blink

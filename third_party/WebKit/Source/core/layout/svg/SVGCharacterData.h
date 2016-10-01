@@ -27,36 +27,34 @@
 namespace blink {
 
 struct SVGCharacterData {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    SVGCharacterData();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  SVGCharacterData();
 
-    static float emptyValue() { return std::numeric_limits<float>::quiet_NaN(); }
-    static bool isEmptyValue(float value) { return std::isnan(value); }
+  static float emptyValue() { return std::numeric_limits<float>::quiet_NaN(); }
+  static bool isEmptyValue(float value) { return std::isnan(value); }
 
-    bool hasX() const { return !isEmptyValue(x); }
-    bool hasY() const { return !isEmptyValue(y); }
-    bool hasDx() const { return !isEmptyValue(dx); }
-    bool hasDy() const { return !isEmptyValue(dy); }
-    bool hasRotate() const { return !isEmptyValue(rotate); }
+  bool hasX() const { return !isEmptyValue(x); }
+  bool hasY() const { return !isEmptyValue(y); }
+  bool hasDx() const { return !isEmptyValue(dx); }
+  bool hasDy() const { return !isEmptyValue(dy); }
+  bool hasRotate() const { return !isEmptyValue(rotate); }
 
-    float x;
-    float y;
-    float dx;
-    float dy;
-    float rotate;
+  float x;
+  float y;
+  float dx;
+  float dy;
+  float rotate;
 };
 
 inline SVGCharacterData::SVGCharacterData()
-    : x(emptyValue())
-    , y(emptyValue())
-    , dx(emptyValue())
-    , dy(emptyValue())
-    , rotate(emptyValue())
-{
-}
+    : x(emptyValue()),
+      y(emptyValue()),
+      dx(emptyValue()),
+      dy(emptyValue()),
+      rotate(emptyValue()) {}
 
 typedef HashMap<unsigned, SVGCharacterData> SVGCharacterDataMap;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -37,104 +37,108 @@
 
 namespace blink {
 
-class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGStringListTearOff* create(SVGStringList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
-    {
-        return new SVGStringListTearOff(target, contextElement, propertyIsAnimVal, attributeName);
+class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
+ public:
+  static SVGStringListTearOff* create(
+      SVGStringList* target,
+      SVGElement* contextElement,
+      PropertyIsAnimValType propertyIsAnimVal,
+      const QualifiedName& attributeName = QualifiedName::null()) {
+    return new SVGStringListTearOff(target, contextElement, propertyIsAnimVal,
+                                    attributeName);
+  }
+
+  // SVGStringList DOM interface:
+
+  // WebIDL requires "unsigned long" type instead of size_t.
+  unsigned long length() { return target()->length(); }
+
+  void clear(ExceptionState& exceptionState) {
+    if (isImmutable()) {
+      throwReadOnly(exceptionState);
+      return;
     }
+    target()->clear();
+    commitChange();
+  }
 
-    // SVGStringList DOM interface:
-
-    // WebIDL requires "unsigned long" type instead of size_t.
-    unsigned long length()
-    {
-        return target()->length();
+  String initialize(const String& item, ExceptionState& exceptionState) {
+    if (isImmutable()) {
+      throwReadOnly(exceptionState);
+      return String();
     }
+    target()->initialize(item);
+    commitChange();
+    return item;
+  }
 
-    void clear(ExceptionState& exceptionState)
-    {
-        if (isImmutable()) {
-            throwReadOnly(exceptionState);
-            return;
-        }
-        target()->clear();
-        commitChange();
+  String getItem(unsigned long index, ExceptionState& exceptionState) {
+    return target()->getItem(index, exceptionState);
+  }
+
+  String insertItemBefore(const String& item,
+                          unsigned long index,
+                          ExceptionState& exceptionState) {
+    if (isImmutable()) {
+      throwReadOnly(exceptionState);
+      return String();
     }
+    target()->insertItemBefore(item, index);
+    commitChange();
+    return item;
+  }
 
-    String initialize(const String& item, ExceptionState& exceptionState)
-    {
-        if (isImmutable()) {
-            throwReadOnly(exceptionState);
-            return String();
-        }
-        target()->initialize(item);
-        commitChange();
-        return item;
+  String replaceItem(const String& item,
+                     unsigned long index,
+                     ExceptionState& exceptionState) {
+    if (isImmutable()) {
+      throwReadOnly(exceptionState);
+      return String();
     }
+    target()->replaceItem(item, index, exceptionState);
+    commitChange();
+    return item;
+  }
 
-    String getItem(unsigned long index, ExceptionState& exceptionState)
-    {
-        return target()->getItem(index, exceptionState);
+  bool anonymousIndexedSetter(unsigned index,
+                              const String& item,
+                              ExceptionState& exceptionState) {
+    replaceItem(item, index, exceptionState);
+    return true;
+  }
+
+  String removeItem(unsigned long index, ExceptionState& exceptionState) {
+    if (isImmutable()) {
+      throwReadOnly(exceptionState);
+      return String();
     }
+    String removedItem = target()->removeItem(index, exceptionState);
+    commitChange();
+    return removedItem;
+  }
 
-    String insertItemBefore(const String& item, unsigned long index, ExceptionState& exceptionState)
-    {
-        if (isImmutable()) {
-            throwReadOnly(exceptionState);
-            return String();
-        }
-        target()->insertItemBefore(item, index);
-        commitChange();
-        return item;
+  String appendItem(const String& item, ExceptionState& exceptionState) {
+    if (isImmutable()) {
+      throwReadOnly(exceptionState);
+      return String();
     }
+    target()->appendItem(item);
+    commitChange();
+    return item;
+  }
 
-    String replaceItem(const String& item, unsigned long index, ExceptionState& exceptionState)
-    {
-        if (isImmutable()) {
-            throwReadOnly(exceptionState);
-            return String();
-        }
-        target()->replaceItem(item, index, exceptionState);
-        commitChange();
-        return item;
-    }
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    bool anonymousIndexedSetter(unsigned index, const String& item, ExceptionState& exceptionState)
-    {
-        replaceItem(item, index, exceptionState);
-        return true;
-    }
-
-    String removeItem(unsigned long index, ExceptionState& exceptionState)
-    {
-        if (isImmutable()) {
-            throwReadOnly(exceptionState);
-            return String();
-        }
-        String removedItem = target()->removeItem(index, exceptionState);
-        commitChange();
-        return removedItem;
-    }
-
-    String appendItem(const String& item, ExceptionState& exceptionState)
-    {
-        if (isImmutable()) {
-            throwReadOnly(exceptionState);
-            return String();
-        }
-        target()->appendItem(item);
-        commitChange();
-        return item;
-    }
-
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
-
-protected:
-    SVGStringListTearOff(SVGStringList*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
+ protected:
+  SVGStringListTearOff(SVGStringList*,
+                       SVGElement*,
+                       PropertyIsAnimValType,
+                       const QualifiedName&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGStringListTearOff_h
+#endif  // SVGStringListTearOff_h

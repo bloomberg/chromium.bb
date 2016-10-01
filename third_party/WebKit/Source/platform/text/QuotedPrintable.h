@@ -42,6 +42,6 @@ PLATFORM_EXPORT void quotedPrintableEncode(const char*, size_t, Vector<char>&);
 PLATFORM_EXPORT void quotedPrintableDecode(const Vector<char>&, Vector<char>&);
 PLATFORM_EXPORT void quotedPrintableDecode(const char*, size_t, Vector<char>&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // QuotedPrintable_h
+#endif  // QuotedPrintable_h

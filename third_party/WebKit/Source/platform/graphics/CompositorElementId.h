@@ -10,16 +10,13 @@
 
 namespace blink {
 
-enum class CompositorSubElementId {
-    Primary,
-    Scroll,
-    LinkHighlight
-};
+enum class CompositorSubElementId { Primary, Scroll, LinkHighlight };
 
 using CompositorElementId = cc::ElementId;
 
-CompositorElementId PLATFORM_EXPORT createCompositorElementId(int domNodeId, CompositorSubElementId);
+CompositorElementId PLATFORM_EXPORT
+createCompositorElementId(int domNodeId, CompositorSubElementId);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorElementId_h
+#endif  // CompositorElementId_h

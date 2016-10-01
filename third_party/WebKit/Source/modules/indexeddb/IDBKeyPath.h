@@ -36,53 +36,50 @@
 namespace blink {
 
 enum IDBKeyPathParseError {
-    IDBKeyPathParseErrorNone,
-    IDBKeyPathParseErrorIdentifier,
+  IDBKeyPathParseErrorNone,
+  IDBKeyPathParseErrorIdentifier,
 };
 
-MODULES_EXPORT void IDBParseKeyPath(const String&, Vector<String>&, IDBKeyPathParseError&);
+MODULES_EXPORT void IDBParseKeyPath(const String&,
+                                    Vector<String>&,
+                                    IDBKeyPathParseError&);
 
 class MODULES_EXPORT IDBKeyPath {
-    DISALLOW_NEW();
-public:
-    IDBKeyPath() : m_type(NullType) { }
-    explicit IDBKeyPath(const String&);
-    explicit IDBKeyPath(const Vector<String>& array);
-    explicit IDBKeyPath(const StringOrStringSequence& keyPath);
-    IDBKeyPath(const WebIDBKeyPath&);
+  DISALLOW_NEW();
 
-    operator WebIDBKeyPath() const;
+ public:
+  IDBKeyPath() : m_type(NullType) {}
+  explicit IDBKeyPath(const String&);
+  explicit IDBKeyPath(const Vector<String>& array);
+  explicit IDBKeyPath(const StringOrStringSequence& keyPath);
+  IDBKeyPath(const WebIDBKeyPath&);
 
-    enum Type {
-        NullType = 0,
-        StringType,
-        ArrayType
-    };
+  operator WebIDBKeyPath() const;
 
-    Type getType() const { return m_type; }
+  enum Type { NullType = 0, StringType, ArrayType };
 
-    const Vector<String>& array() const
-    {
-        ASSERT(m_type == ArrayType);
-        return m_array;
-    }
+  Type getType() const { return m_type; }
 
-    const String& string() const
-    {
-        ASSERT(m_type == StringType);
-        return m_string;
-    }
+  const Vector<String>& array() const {
+    ASSERT(m_type == ArrayType);
+    return m_array;
+  }
 
-    bool isNull() const { return m_type == NullType; }
-    bool isValid() const;
-    bool operator==(const IDBKeyPath& other) const;
+  const String& string() const {
+    ASSERT(m_type == StringType);
+    return m_string;
+  }
 
-private:
-    Type m_type;
-    String m_string;
-    Vector<String> m_array;
+  bool isNull() const { return m_type == NullType; }
+  bool isValid() const;
+  bool operator==(const IDBKeyPath& other) const;
+
+ private:
+  Type m_type;
+  String m_string;
+  Vector<String> m_array;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBKeyPath_h
+#endif  // IDBKeyPath_h

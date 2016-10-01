@@ -35,195 +35,157 @@
 
 namespace blink {
 
-void WebURLLoadTiming::initialize()
-{
-    m_private = ResourceLoadTiming::create();
+void WebURLLoadTiming::initialize() {
+  m_private = ResourceLoadTiming::create();
 }
 
-void WebURLLoadTiming::reset()
-{
-    m_private.reset();
+void WebURLLoadTiming::reset() {
+  m_private.reset();
 }
 
-void WebURLLoadTiming::assign(const WebURLLoadTiming& other)
-{
-    m_private = other.m_private;
+void WebURLLoadTiming::assign(const WebURLLoadTiming& other) {
+  m_private = other.m_private;
 }
 
-double WebURLLoadTiming::requestTime() const
-{
-    return m_private->requestTime();
+double WebURLLoadTiming::requestTime() const {
+  return m_private->requestTime();
 }
 
-void WebURLLoadTiming::setRequestTime(double time)
-{
-    m_private->setRequestTime(time);
+void WebURLLoadTiming::setRequestTime(double time) {
+  m_private->setRequestTime(time);
 }
 
-double WebURLLoadTiming::proxyStart() const
-{
-    return m_private->proxyStart();
+double WebURLLoadTiming::proxyStart() const {
+  return m_private->proxyStart();
 }
 
-void WebURLLoadTiming::setProxyStart(double start)
-{
-    m_private->setProxyStart(start);
+void WebURLLoadTiming::setProxyStart(double start) {
+  m_private->setProxyStart(start);
 }
 
-double WebURLLoadTiming::proxyEnd() const
-{
-    return m_private->proxyEnd();
+double WebURLLoadTiming::proxyEnd() const {
+  return m_private->proxyEnd();
 }
 
-void WebURLLoadTiming::setProxyEnd(double end)
-{
-    m_private->setProxyEnd(end);
+void WebURLLoadTiming::setProxyEnd(double end) {
+  m_private->setProxyEnd(end);
 }
 
-double WebURLLoadTiming::dnsStart() const
-{
-    return m_private->dnsStart();
+double WebURLLoadTiming::dnsStart() const {
+  return m_private->dnsStart();
 }
 
-void WebURLLoadTiming::setDNSStart(double start)
-{
-    m_private->setDnsStart(start);
+void WebURLLoadTiming::setDNSStart(double start) {
+  m_private->setDnsStart(start);
 }
 
-double WebURLLoadTiming::dnsEnd() const
-{
-    return m_private->dnsEnd();
+double WebURLLoadTiming::dnsEnd() const {
+  return m_private->dnsEnd();
 }
 
-void WebURLLoadTiming::setDNSEnd(double end)
-{
-    m_private->setDnsEnd(end);
+void WebURLLoadTiming::setDNSEnd(double end) {
+  m_private->setDnsEnd(end);
 }
 
-double WebURLLoadTiming::connectStart() const
-{
-    return m_private->connectStart();
+double WebURLLoadTiming::connectStart() const {
+  return m_private->connectStart();
 }
 
-void WebURLLoadTiming::setConnectStart(double start)
-{
-    m_private->setConnectStart(start);
+void WebURLLoadTiming::setConnectStart(double start) {
+  m_private->setConnectStart(start);
 }
 
-double WebURLLoadTiming::connectEnd() const
-{
-    return m_private->connectEnd();
+double WebURLLoadTiming::connectEnd() const {
+  return m_private->connectEnd();
 }
 
-void WebURLLoadTiming::setConnectEnd(double end)
-{
-    m_private->setConnectEnd(end);
+void WebURLLoadTiming::setConnectEnd(double end) {
+  m_private->setConnectEnd(end);
 }
 
-double WebURLLoadTiming::workerStart() const
-{
-    return m_private->workerStart();
+double WebURLLoadTiming::workerStart() const {
+  return m_private->workerStart();
 }
 
-void WebURLLoadTiming::setWorkerStart(double start)
-{
-    m_private->setWorkerStart(start);
+void WebURLLoadTiming::setWorkerStart(double start) {
+  m_private->setWorkerStart(start);
 }
 
-double WebURLLoadTiming::workerReady() const
-{
-    return m_private->workerReady();
+double WebURLLoadTiming::workerReady() const {
+  return m_private->workerReady();
 }
 
-void WebURLLoadTiming::setWorkerReady(double ready)
-{
-    m_private->setWorkerReady(ready);
+void WebURLLoadTiming::setWorkerReady(double ready) {
+  m_private->setWorkerReady(ready);
 }
 
-double WebURLLoadTiming::sendStart() const
-{
-    return m_private->sendStart();
+double WebURLLoadTiming::sendStart() const {
+  return m_private->sendStart();
 }
 
-void WebURLLoadTiming::setSendStart(double start)
-{
-    m_private->setSendStart(start);
+void WebURLLoadTiming::setSendStart(double start) {
+  m_private->setSendStart(start);
 }
 
-double WebURLLoadTiming::sendEnd() const
-{
-    return m_private->sendEnd();
+double WebURLLoadTiming::sendEnd() const {
+  return m_private->sendEnd();
 }
 
-void WebURLLoadTiming::setSendEnd(double end)
-{
-    m_private->setSendEnd(end);
+void WebURLLoadTiming::setSendEnd(double end) {
+  m_private->setSendEnd(end);
 }
 
-double WebURLLoadTiming::receiveHeadersEnd() const
-{
-    return m_private->receiveHeadersEnd();
+double WebURLLoadTiming::receiveHeadersEnd() const {
+  return m_private->receiveHeadersEnd();
 }
 
-void WebURLLoadTiming::setReceiveHeadersEnd(double end)
-{
-    m_private->setReceiveHeadersEnd(end);
+void WebURLLoadTiming::setReceiveHeadersEnd(double end) {
+  m_private->setReceiveHeadersEnd(end);
 }
 
-double WebURLLoadTiming::sslStart() const
-{
-    return m_private->sslStart();
+double WebURLLoadTiming::sslStart() const {
+  return m_private->sslStart();
 }
 
-void WebURLLoadTiming::setSSLStart(double start)
-{
-    m_private->setSslStart(start);
+void WebURLLoadTiming::setSSLStart(double start) {
+  m_private->setSslStart(start);
 }
 
-double WebURLLoadTiming::sslEnd() const
-{
-    return m_private->sslEnd();
+double WebURLLoadTiming::sslEnd() const {
+  return m_private->sslEnd();
 }
 
-void WebURLLoadTiming::setSSLEnd(double end)
-{
-    m_private->setSslEnd(end);
+void WebURLLoadTiming::setSSLEnd(double end) {
+  m_private->setSslEnd(end);
 }
 
-double WebURLLoadTiming::pushStart() const
-{
-    return m_private->pushStart();
+double WebURLLoadTiming::pushStart() const {
+  return m_private->pushStart();
 }
 
-void WebURLLoadTiming::setPushStart(double start)
-{
-    m_private->setPushStart(start);
+void WebURLLoadTiming::setPushStart(double start) {
+  m_private->setPushStart(start);
 }
 
-double WebURLLoadTiming::pushEnd() const
-{
-    return m_private->pushEnd();
+double WebURLLoadTiming::pushEnd() const {
+  return m_private->pushEnd();
 }
 
-void WebURLLoadTiming::setPushEnd(double end)
-{
-    m_private->setPushEnd(end);
+void WebURLLoadTiming::setPushEnd(double end) {
+  m_private->setPushEnd(end);
 }
 
 WebURLLoadTiming::WebURLLoadTiming(PassRefPtr<ResourceLoadTiming> value)
-    : m_private(value)
-{
+    : m_private(value) {}
+
+WebURLLoadTiming& WebURLLoadTiming::operator=(
+    PassRefPtr<ResourceLoadTiming> value) {
+  m_private = value;
+  return *this;
 }
 
-WebURLLoadTiming& WebURLLoadTiming::operator=(PassRefPtr<ResourceLoadTiming> value)
-{
-    m_private = value;
-    return *this;
+WebURLLoadTiming::operator PassRefPtr<ResourceLoadTiming>() const {
+  return m_private.get();
 }
 
-WebURLLoadTiming::operator PassRefPtr<ResourceLoadTiming>() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

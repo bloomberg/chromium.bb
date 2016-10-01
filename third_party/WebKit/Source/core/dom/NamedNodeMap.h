@@ -34,44 +34,46 @@ namespace blink {
 class Attr;
 class ExceptionState;
 
-class NamedNodeMap final : public GarbageCollected<NamedNodeMap>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-    friend class Element;
-public:
-    static NamedNodeMap* create(Element* element)
-    {
-        return new NamedNodeMap(element);
-    }
+class NamedNodeMap final : public GarbageCollected<NamedNodeMap>,
+                           public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+  friend class Element;
 
-    // Public DOM interface.
+ public:
+  static NamedNodeMap* create(Element* element) {
+    return new NamedNodeMap(element);
+  }
 
-    Attr* getNamedItem(const AtomicString&) const;
-    Attr* removeNamedItem(const AtomicString& name, ExceptionState&);
+  // Public DOM interface.
 
-    Attr* getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
-    Attr* removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState&);
+  Attr* getNamedItem(const AtomicString&) const;
+  Attr* removeNamedItem(const AtomicString& name, ExceptionState&);
 
-    Attr* setNamedItem(Attr*, ExceptionState&);
-    Attr* setNamedItemNS(Attr*, ExceptionState&);
+  Attr* getNamedItemNS(const AtomicString& namespaceURI,
+                       const AtomicString& localName) const;
+  Attr* removeNamedItemNS(const AtomicString& namespaceURI,
+                          const AtomicString& localName,
+                          ExceptionState&);
 
-    Attr* item(unsigned index) const;
-    size_t length() const;
+  Attr* setNamedItem(Attr*, ExceptionState&);
+  Attr* setNamedItemNS(Attr*, ExceptionState&);
 
-    Element* element() const { return m_element; }
+  Attr* item(unsigned index) const;
+  size_t length() const;
 
-    DECLARE_TRACE();
+  Element* element() const { return m_element; }
 
-private:
-    explicit NamedNodeMap(Element* element)
-        : m_element(element)
-    {
-        // Only supports NamedNodeMaps with Element associated.
-        DCHECK(m_element);
-    }
+  DECLARE_TRACE();
 
-    Member<Element> m_element;
+ private:
+  explicit NamedNodeMap(Element* element) : m_element(element) {
+    // Only supports NamedNodeMaps with Element associated.
+    DCHECK(m_element);
+  }
+
+  Member<Element> m_element;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NamedNodeMap_h
+#endif  // NamedNodeMap_h

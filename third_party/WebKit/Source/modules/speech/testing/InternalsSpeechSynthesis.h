@@ -39,11 +39,12 @@ class Document;
 class Internals;
 
 class InternalsSpeechSynthesis {
-    STATIC_ONLY(InternalsSpeechSynthesis);
-public:
-    static void enableMockSpeechSynthesizer(Internals&, Document*);
+  STATIC_ONLY(InternalsSpeechSynthesis);
+
+ public:
+  static void enableMockSpeechSynthesizer(Internals&, Document*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InternalsSpeechSynthesis_h
+#endif  // InternalsSpeechSynthesis_h

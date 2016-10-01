@@ -4,10 +4,9 @@
 namespace blink {
 
 enum ParserSynchronizationPolicy {
-    AllowAsynchronousParsing,
-    ForceSynchronousParsing,
+  AllowAsynchronousParsing,
+  ForceSynchronousParsing,
 };
-
 }
 
-#endif // ParserSynchronizationPolicy_h
+#endif  // ParserSynchronizationPolicy_h

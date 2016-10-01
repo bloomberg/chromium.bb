@@ -33,94 +33,91 @@
 
 namespace blink {
 
-template<typename T>
+template <typename T>
 class EventSender final : public GarbageCollectedFinalized<EventSender<T>> {
-    WTF_MAKE_NONCOPYABLE(EventSender);
-public:
-    static EventSender* create(const AtomicString& eventType)
-    {
-        return new EventSender(eventType);
-    }
+  WTF_MAKE_NONCOPYABLE(EventSender);
 
-    const AtomicString& eventType() const { return m_eventType; }
-    void dispatchEventSoon(T*);
-    void cancelEvent(T*);
-    void dispatchPendingEvents();
+ public:
+  static EventSender* create(const AtomicString& eventType) {
+    return new EventSender(eventType);
+  }
+
+  const AtomicString& eventType() const { return m_eventType; }
+  void dispatchEventSoon(T*);
+  void cancelEvent(T*);
+  void dispatchPendingEvents();
 
 #if DCHECK_IS_ON()
-    bool hasPendingEvents(T* sender) const
-    {
-        return m_dispatchSoonList.find(sender) != kNotFound || m_dispatchingList.find(sender) != kNotFound;
-    }
+  bool hasPendingEvents(T* sender) const {
+    return m_dispatchSoonList.find(sender) != kNotFound ||
+           m_dispatchingList.find(sender) != kNotFound;
+  }
 #endif
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_dispatchSoonList);
-        visitor->trace(m_dispatchingList);
-    }
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_dispatchSoonList);
+    visitor->trace(m_dispatchingList);
+  }
 
-private:
-    explicit EventSender(const AtomicString& eventType);
+ private:
+  explicit EventSender(const AtomicString& eventType);
 
-    void timerFired(TimerBase*) { dispatchPendingEvents(); }
+  void timerFired(TimerBase*) { dispatchPendingEvents(); }
 
-    AtomicString m_eventType;
-    Timer<EventSender<T>> m_timer;
-    HeapVector<Member<T>> m_dispatchSoonList;
-    HeapVector<Member<T>> m_dispatchingList;
+  AtomicString m_eventType;
+  Timer<EventSender<T>> m_timer;
+  HeapVector<Member<T>> m_dispatchSoonList;
+  HeapVector<Member<T>> m_dispatchingList;
 };
 
-template<typename T> EventSender<T>::EventSender(const AtomicString& eventType)
-    : m_eventType(eventType)
-    , m_timer(this, &EventSender::timerFired)
-{
+template <typename T>
+EventSender<T>::EventSender(const AtomicString& eventType)
+    : m_eventType(eventType), m_timer(this, &EventSender::timerFired) {}
+
+template <typename T>
+void EventSender<T>::dispatchEventSoon(T* sender) {
+  m_dispatchSoonList.append(sender);
+  if (!m_timer.isActive())
+    m_timer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-template<typename T> void EventSender<T>::dispatchEventSoon(T* sender)
-{
-    m_dispatchSoonList.append(sender);
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0, BLINK_FROM_HERE);
+template <typename T>
+void EventSender<T>::cancelEvent(T* sender) {
+  // Remove instances of this sender from both lists.
+  // Use loops because we allow multiple instances to get into the lists.
+  size_t size = m_dispatchSoonList.size();
+  for (size_t i = 0; i < size; ++i) {
+    if (m_dispatchSoonList[i] == sender)
+      m_dispatchSoonList[i] = nullptr;
+  }
+  size = m_dispatchingList.size();
+  for (size_t i = 0; i < size; ++i) {
+    if (m_dispatchingList[i] == sender)
+      m_dispatchingList[i] = nullptr;
+  }
 }
 
-template<typename T> void EventSender<T>::cancelEvent(T* sender)
-{
-    // Remove instances of this sender from both lists.
-    // Use loops because we allow multiple instances to get into the lists.
-    size_t size = m_dispatchSoonList.size();
-    for (size_t i = 0; i < size; ++i) {
-        if (m_dispatchSoonList[i] == sender)
-            m_dispatchSoonList[i] = nullptr;
+template <typename T>
+void EventSender<T>::dispatchPendingEvents() {
+  // Need to avoid re-entering this function; if new dispatches are
+  // scheduled before the parent finishes processing the list, they
+  // will set a timer and eventually be processed.
+  if (!m_dispatchingList.isEmpty())
+    return;
+
+  m_timer.stop();
+
+  m_dispatchingList.swap(m_dispatchSoonList);
+  size_t size = m_dispatchingList.size();
+  for (size_t i = 0; i < size; ++i) {
+    if (T* sender = m_dispatchingList[i]) {
+      m_dispatchingList[i] = nullptr;
+      sender->dispatchPendingEvent(this);
     }
-    size = m_dispatchingList.size();
-    for (size_t i = 0; i < size; ++i) {
-        if (m_dispatchingList[i] == sender)
-            m_dispatchingList[i] = nullptr;
-    }
+  }
+  m_dispatchingList.clear();
 }
 
-template<typename T> void EventSender<T>::dispatchPendingEvents()
-{
-    // Need to avoid re-entering this function; if new dispatches are
-    // scheduled before the parent finishes processing the list, they
-    // will set a timer and eventually be processed.
-    if (!m_dispatchingList.isEmpty())
-        return;
+}  // namespace blink
 
-    m_timer.stop();
-
-    m_dispatchingList.swap(m_dispatchSoonList);
-    size_t size = m_dispatchingList.size();
-    for (size_t i = 0; i < size; ++i) {
-        if (T* sender = m_dispatchingList[i]) {
-            m_dispatchingList[i] = nullptr;
-            sender->dispatchPendingEvent(this);
-        }
-    }
-    m_dispatchingList.clear();
-}
-
-} // namespace blink
-
-#endif // EventSender_h
+#endif  // EventSender_h

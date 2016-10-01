@@ -38,8 +38,10 @@ namespace blink {
 class CompositorTransformOperations;
 class TransformOperations;
 
-PLATFORM_EXPORT void toCompositorTransformOperations(const TransformOperations& inOperations, CompositorTransformOperations* outOperations);
+PLATFORM_EXPORT void toCompositorTransformOperations(
+    const TransformOperations& inOperations,
+    CompositorTransformOperations* outOperations);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationTranslationUtil_h
+#endif  // AnimationTranslationUtil_h

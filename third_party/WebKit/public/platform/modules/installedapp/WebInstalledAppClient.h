@@ -12,16 +12,19 @@
 
 namespace blink {
 
-using AppInstalledCallbacks = WebCallbacks<const WebVector<WebRelatedApplication>&, void>;
+using AppInstalledCallbacks =
+    WebCallbacks<const WebVector<WebRelatedApplication>&, void>;
 
 class WebInstalledAppClient {
-public:
-    virtual ~WebInstalledAppClient() {}
+ public:
+  virtual ~WebInstalledAppClient() {}
 
-    // Takes ownership of the AppInstalledCallbacks.
-    virtual void getInstalledRelatedApps(const WebSecurityOrigin&, std::unique_ptr<AppInstalledCallbacks>) = 0;
+  // Takes ownership of the AppInstalledCallbacks.
+  virtual void getInstalledRelatedApps(
+      const WebSecurityOrigin&,
+      std::unique_ptr<AppInstalledCallbacks>) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebInstalledAppClient_h
+#endif  // WebInstalledAppClient_h

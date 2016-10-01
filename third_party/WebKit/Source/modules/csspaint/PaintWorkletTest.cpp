@@ -18,54 +18,53 @@
 namespace blink {
 
 class PaintWorkletTest : public testing::Test {
-public:
-    PaintWorkletTest()
-        : m_page(DummyPageHolder::create())
-    {
-    }
+ public:
+  PaintWorkletTest() : m_page(DummyPageHolder::create()) {}
 
-    PaintWorklet* paintWorklet()
-    {
-        return WindowPaintWorklet::from(*m_page->frame().localDOMWindow()).paintWorklet();
-    }
+  PaintWorklet* paintWorklet() {
+    return WindowPaintWorklet::from(*m_page->frame().localDOMWindow())
+        .paintWorklet();
+  }
 
-protected:
-    std::unique_ptr<DummyPageHolder> m_page;
+ protected:
+  std::unique_ptr<DummyPageHolder> m_page;
 };
 
-TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition)
-{
-    PaintWorkletGlobalScope* globalScope = paintWorklet()->workletGlobalScopeProxy();
-    globalScope->scriptController()->evaluate(ScriptSourceCode("registerPaint('foo', class { paint() { } });"));
+TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {
+  PaintWorkletGlobalScope* globalScope =
+      paintWorklet()->workletGlobalScopeProxy();
+  globalScope->scriptController()->evaluate(
+      ScriptSourceCode("registerPaint('foo', class { paint() { } });"));
 
-    CSSPaintDefinition* definition = globalScope->findDefinition("foo");
-    ASSERT(definition);
+  CSSPaintDefinition* definition = globalScope->findDefinition("foo");
+  ASSERT(definition);
 
-    v8::Isolate* isolate = globalScope->scriptController()->getScriptState()->isolate();
-    ASSERT(isolate);
+  v8::Isolate* isolate =
+      globalScope->scriptController()->getScriptState()->isolate();
+  ASSERT(isolate);
 
-    // Set our ScopedPersistent to the paint function, and make weak.
-    ScopedPersistent<v8::Function> handle;
-    {
-        v8::HandleScope handleScope(isolate);
-        handle.set(isolate, definition->paintFunctionForTesting(isolate));
-        handle.setPhantom();
-    }
-    ASSERT(!handle.isEmpty());
-    ASSERT(handle.isWeak());
+  // Set our ScopedPersistent to the paint function, and make weak.
+  ScopedPersistent<v8::Function> handle;
+  {
+    v8::HandleScope handleScope(isolate);
+    handle.set(isolate, definition->paintFunctionForTesting(isolate));
+    handle.setPhantom();
+  }
+  ASSERT(!handle.isEmpty());
+  ASSERT(handle.isWeak());
 
-    // Run a GC, persistent shouldn't have been collected yet.
-    ThreadState::current()-> collectAllGarbage();
-    V8GCController::collectAllGarbageForTesting(isolate);
-    ASSERT(!handle.isEmpty());
+  // Run a GC, persistent shouldn't have been collected yet.
+  ThreadState::current()->collectAllGarbage();
+  V8GCController::collectAllGarbageForTesting(isolate);
+  ASSERT(!handle.isEmpty());
 
-    // Delete the page & associated objects.
-    m_page.reset();
+  // Delete the page & associated objects.
+  m_page.reset();
 
-    // Run a GC, the persistent should have been collected.
-    ThreadState::current()-> collectAllGarbage();
-    V8GCController::collectAllGarbageForTesting(isolate);
-    ASSERT(handle.isEmpty());
+  // Run a GC, the persistent should have been collected.
+  ThreadState::current()->collectAllGarbage();
+  V8GCController::collectAllGarbageForTesting(isolate);
+  ASSERT(handle.isEmpty());
 }
 
-} // naespace blink
+}  // naespace blink

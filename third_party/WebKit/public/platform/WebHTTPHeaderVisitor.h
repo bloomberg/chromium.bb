@@ -36,13 +36,13 @@ namespace blink {
 class WebString;
 
 class WebHTTPHeaderVisitor {
-public:
-    virtual void visitHeader(const WebString& name, const WebString& value) = 0;
+ public:
+  virtual void visitHeader(const WebString& name, const WebString& value) = 0;
 
-protected:
-    virtual ~WebHTTPHeaderVisitor() { }
+ protected:
+  virtual ~WebHTTPHeaderVisitor() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

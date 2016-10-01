@@ -31,38 +31,33 @@
 namespace blink {
 
 AppendNodeCommand::AppendNodeCommand(ContainerNode* parent, Node* node)
-    : SimpleEditCommand(parent->document())
-    , m_parent(parent)
-    , m_node(node)
-{
-    DCHECK(m_parent);
-    DCHECK(m_node);
-    DCHECK(!m_node->parentNode()) << m_node;
+    : SimpleEditCommand(parent->document()), m_parent(parent), m_node(node) {
+  DCHECK(m_parent);
+  DCHECK(m_node);
+  DCHECK(!m_node->parentNode()) << m_node;
 
-    DCHECK(hasEditableStyle(*m_parent) || !m_parent->inActiveDocument()) << m_parent;
+  DCHECK(hasEditableStyle(*m_parent) || !m_parent->inActiveDocument())
+      << m_parent;
 }
 
-void AppendNodeCommand::doApply(EditingState*)
-{
-    if (!hasEditableStyle(*m_parent) && m_parent->inActiveDocument())
-        return;
+void AppendNodeCommand::doApply(EditingState*) {
+  if (!hasEditableStyle(*m_parent) && m_parent->inActiveDocument())
+    return;
 
-    m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION);
+  m_parent->appendChild(m_node.get(), IGNORE_EXCEPTION);
 }
 
-void AppendNodeCommand::doUnapply()
-{
-    if (!hasEditableStyle(*m_parent))
-        return;
+void AppendNodeCommand::doUnapply() {
+  if (!hasEditableStyle(*m_parent))
+    return;
 
-    m_node->remove(IGNORE_EXCEPTION);
+  m_node->remove(IGNORE_EXCEPTION);
 }
 
-DEFINE_TRACE(AppendNodeCommand)
-{
-    visitor->trace(m_parent);
-    visitor->trace(m_node);
-    SimpleEditCommand::trace(visitor);
+DEFINE_TRACE(AppendNodeCommand) {
+  visitor->trace(m_parent);
+  visitor->trace(m_node);
+  SimpleEditCommand::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

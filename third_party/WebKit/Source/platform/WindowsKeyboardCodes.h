@@ -50,97 +50,97 @@
 #define VK_SHIFT 0x10
 #endif
 #ifndef VK_CONTROL
-#define VK_CONTROL 0x11 // CTRL key
+#define VK_CONTROL 0x11  // CTRL key
 #endif
 #ifndef VK_MENU
-#define VK_MENU 0x12 // ALT key
+#define VK_MENU 0x12  // ALT key
 #endif
 #ifndef VK_PAUSE
-#define VK_PAUSE 0x13 // PAUSE key
+#define VK_PAUSE 0x13  // PAUSE key
 #endif
 #ifndef VK_CAPITAL
-#define VK_CAPITAL 0x14 // CAPS LOCK key
+#define VK_CAPITAL 0x14  // CAPS LOCK key
 #endif
 #ifndef VK_KANA
-#define VK_KANA 0x15 // Input Method Editor (IME) Kana mode
+#define VK_KANA 0x15  // Input Method Editor (IME) Kana mode
 #endif
 #ifndef VK_HANGUL
-#define VK_HANGUL 0x15 // IME Hangul mode
+#define VK_HANGUL 0x15  // IME Hangul mode
 #endif
 #ifndef VK_JUNJA
-#define VK_JUNJA 0x17 // IME Junja mode
+#define VK_JUNJA 0x17  // IME Junja mode
 #endif
 #ifndef VK_FINAL
-#define VK_FINAL 0x18 // IME final mode
+#define VK_FINAL 0x18  // IME final mode
 #endif
 #ifndef VK_HANJA
-#define VK_HANJA 0x19 // IME Hanja mode
+#define VK_HANJA 0x19  // IME Hanja mode
 #endif
 #ifndef VK_KANJI
-#define VK_KANJI 0x19 // IME Kanji mode
+#define VK_KANJI 0x19  // IME Kanji mode
 #endif
 #ifndef VK_ESCAPE
-#define VK_ESCAPE 0x1B // ESC key
+#define VK_ESCAPE 0x1B  // ESC key
 #endif
 #ifndef VK_CONVERT
-#define VK_CONVERT 0x1C // IME convert
+#define VK_CONVERT 0x1C  // IME convert
 #endif
 #ifndef VK_NONCONVERT
-#define VK_NONCONVERT 0x1D // IME nonconvert
+#define VK_NONCONVERT 0x1D  // IME nonconvert
 #endif
 #ifndef VK_ACCEPT
-#define VK_ACCEPT 0x1E // IME accept
+#define VK_ACCEPT 0x1E  // IME accept
 #endif
 #ifndef VK_MODECHANGE
-#define VK_MODECHANGE 0x1F // IME mode change request
+#define VK_MODECHANGE 0x1F  // IME mode change request
 #endif
 #ifndef VK_SPACE
-#define VK_SPACE 0x20 // SPACE key
+#define VK_SPACE 0x20  // SPACE key
 #endif
 #ifndef VK_PRIOR
-#define VK_PRIOR 0x21 // PAGE UP key
+#define VK_PRIOR 0x21  // PAGE UP key
 #endif
 #ifndef VK_NEXT
-#define VK_NEXT 0x22 // PAGE DOWN key
+#define VK_NEXT 0x22  // PAGE DOWN key
 #endif
 #ifndef VK_END
-#define VK_END 0x23 // END key
+#define VK_END 0x23  // END key
 #endif
 #ifndef VK_HOME
-#define VK_HOME 0x24 // HOME key
+#define VK_HOME 0x24  // HOME key
 #endif
 #ifndef VK_LEFT
-#define VK_LEFT 0x25 // LEFT ARROW key
+#define VK_LEFT 0x25  // LEFT ARROW key
 #endif
 #ifndef VK_UP
-#define VK_UP 0x26 // UP ARROW key
+#define VK_UP 0x26  // UP ARROW key
 #endif
 #ifndef VK_RIGHT
-#define VK_RIGHT 0x27 // RIGHT ARROW key
+#define VK_RIGHT 0x27  // RIGHT ARROW key
 #endif
 #ifndef VK_DOWN
-#define VK_DOWN 0x28 // DOWN ARROW key
+#define VK_DOWN 0x28  // DOWN ARROW key
 #endif
 #ifndef VK_SELECT
-#define VK_SELECT 0x29 // SELECT key
+#define VK_SELECT 0x29  // SELECT key
 #endif
 #ifndef VK_PRINT
-#define VK_PRINT 0x2A // PRINT key
+#define VK_PRINT 0x2A  // PRINT key
 #endif
 #ifndef VK_EXECUTE
-#define VK_EXECUTE 0x2B // EXECUTE key
+#define VK_EXECUTE 0x2B  // EXECUTE key
 #endif
 #ifndef VK_SNAPSHOT
-#define VK_SNAPSHOT 0x2C // PRINT SCREEN key
+#define VK_SNAPSHOT 0x2C  // PRINT SCREEN key
 #endif
 #ifndef VK_INSERT
-#define VK_INSERT 0x2D // INS key
+#define VK_INSERT 0x2D  // INS key
 #endif
 #ifndef VK_DELETE
-#define VK_DELETE 0x2E // DEL key
+#define VK_DELETE 0x2E  // DEL key
 #endif
 #ifndef VK_HELP
-#define VK_HELP 0x2F // HELP key
+#define VK_HELP 0x2F  // HELP key
 #endif
 
 #define VK_0 0x30
@@ -180,13 +180,13 @@
 #define VK_Y 0x59
 #define VK_Z 0x5A
 
-#define VK_LWIN 0x5B // Left Windows key (Microsoft Natural keyboard)
+#define VK_LWIN 0x5B  // Left Windows key (Microsoft Natural keyboard)
 
-#define VK_RWIN 0x5C // Right Windows key (Natural keyboard)
+#define VK_RWIN 0x5C  // Right Windows key (Natural keyboard)
 
-#define VK_APPS 0x5D // Applications key (Natural keyboard)
+#define VK_APPS 0x5D  // Applications key (Natural keyboard)
 
-#define VK_SLEEP 0x5F // Computer Sleep key
+#define VK_SLEEP 0x5F  // Computer Sleep key
 
 // Num pad keys
 #define VK_NUMPAD0 0x60
@@ -240,24 +240,26 @@
 #define VK_LMENU 0xA4
 #define VK_RMENU 0xA5
 
-#define VK_BROWSER_BACK 0xA6 // Windows 2000/XP: Browser Back key
-#define VK_BROWSER_FORWARD 0xA7 // Windows 2000/XP: Browser Forward key
-#define VK_BROWSER_REFRESH 0xA8 // Windows 2000/XP: Browser Refresh key
-#define VK_BROWSER_STOP 0xA9 // Windows 2000/XP: Browser Stop key
-#define VK_BROWSER_SEARCH 0xAA // Windows 2000/XP: Browser Search key
-#define VK_BROWSER_FAVORITES 0xAB // Windows 2000/XP: Browser Favorites key
-#define VK_BROWSER_HOME 0xAC // Windows 2000/XP: Browser Start and Home key
-#define VK_VOLUME_MUTE 0xAD // Windows 2000/XP: Volume Mute key
-#define VK_VOLUME_DOWN 0xAE // Windows 2000/XP: Volume Down key
-#define VK_VOLUME_UP 0xAF // Windows 2000/XP: Volume Up key
-#define VK_MEDIA_NEXT_TRACK 0xB0 // Windows 2000/XP: Next Track key
-#define VK_MEDIA_PREV_TRACK 0xB1 // Windows 2000/XP: Previous Track key
-#define VK_MEDIA_STOP 0xB2 // Windows 2000/XP: Stop Media key
-#define VK_MEDIA_PLAY_PAUSE 0xB3 // Windows 2000/XP: Play/Pause Media key
-#define VK_MEDIA_LAUNCH_MAIL 0xB4 // Windows 2000/XP: Start Mail key
-#define VK_MEDIA_LAUNCH_MEDIA_SELECT 0xB5 // Windows 2000/XP: Select Media key
-#define VK_MEDIA_LAUNCH_APP1 0xB6 // VK_LAUNCH_APP1 (B6) Windows 2000/XP: Start Application 1 key
-#define VK_MEDIA_LAUNCH_APP2 0xB7 // VK_LAUNCH_APP2 (B7) Windows 2000/XP: Start Application 2 key
+#define VK_BROWSER_BACK 0xA6       // Windows 2000/XP: Browser Back key
+#define VK_BROWSER_FORWARD 0xA7    // Windows 2000/XP: Browser Forward key
+#define VK_BROWSER_REFRESH 0xA8    // Windows 2000/XP: Browser Refresh key
+#define VK_BROWSER_STOP 0xA9       // Windows 2000/XP: Browser Stop key
+#define VK_BROWSER_SEARCH 0xAA     // Windows 2000/XP: Browser Search key
+#define VK_BROWSER_FAVORITES 0xAB  // Windows 2000/XP: Browser Favorites key
+#define VK_BROWSER_HOME 0xAC      // Windows 2000/XP: Browser Start and Home key
+#define VK_VOLUME_MUTE 0xAD       // Windows 2000/XP: Volume Mute key
+#define VK_VOLUME_DOWN 0xAE       // Windows 2000/XP: Volume Down key
+#define VK_VOLUME_UP 0xAF         // Windows 2000/XP: Volume Up key
+#define VK_MEDIA_NEXT_TRACK 0xB0  // Windows 2000/XP: Next Track key
+#define VK_MEDIA_PREV_TRACK 0xB1  // Windows 2000/XP: Previous Track key
+#define VK_MEDIA_STOP 0xB2        // Windows 2000/XP: Stop Media key
+#define VK_MEDIA_PLAY_PAUSE 0xB3  // Windows 2000/XP: Play/Pause Media key
+#define VK_MEDIA_LAUNCH_MAIL 0xB4          // Windows 2000/XP: Start Mail key
+#define VK_MEDIA_LAUNCH_MEDIA_SELECT 0xB5  // Windows 2000/XP: Select Media key
+#define VK_MEDIA_LAUNCH_APP1 \
+  0xB6  // VK_LAUNCH_APP1 (B6) Windows 2000/XP: Start Application 1 key
+#define VK_MEDIA_LAUNCH_APP2 \
+  0xB7  // VK_LAUNCH_APP2 (B7) Windows 2000/XP: Start Application 2 key
 
 // VK_OEM_1 (BA) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the ';:' key
 #define VK_OEM_1 0xBA
@@ -304,17 +306,17 @@
 // Windows 2000/XP: Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in KEYBDINPUT,SendInput, WM_KEYDOWN, and WM_KEYUP
 #define VK_PACKET 0xE7
 
-#define VK_ATTN 0xF6 // Attn key
-#define VK_CRSEL 0xF7 // CrSel key
-#define VK_EXSEL 0xF8 // ExSel key
-#define VK_EREOF 0xF9 // Erase EOF key
-#define VK_PLAY 0xFA // Play key
-#define VK_ZOOM 0xFB // Zoom key
+#define VK_ATTN 0xF6   // Attn key
+#define VK_CRSEL 0xF7  // CrSel key
+#define VK_EXSEL 0xF8  // ExSel key
+#define VK_EREOF 0xF9  // Erase EOF key
+#define VK_PLAY 0xFA   // Play key
+#define VK_ZOOM 0xFB   // Zoom key
 
-#define VK_NONAME 0xFC // Reserved for future use
+#define VK_NONAME 0xFC  // Reserved for future use
 
-#define VK_PA1 0xFD // VK_PA1 (FD) PA1 key
+#define VK_PA1 0xFD  // VK_PA1 (FD) PA1 key
 
-#define VK_OEM_CLEAR 0xFE // Clear key
+#define VK_OEM_CLEAR 0xFE  // Clear key
 
-#endif // VK_UNKNOWN
+#endif  // VK_UNKNOWN

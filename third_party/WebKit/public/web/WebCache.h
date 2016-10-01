@@ -37,53 +37,53 @@ namespace blink {
 
 // An interface to query and configure WebKit's resource cache.
 class WebCache {
-public:
-    struct UsageStats {
-        // Capacities.
-        size_t minDeadCapacity;
-        size_t maxDeadCapacity;
-        size_t capacity;
-        // Utilization.
-        size_t liveSize;
-        size_t deadSize;
-    };
+ public:
+  struct UsageStats {
+    // Capacities.
+    size_t minDeadCapacity;
+    size_t maxDeadCapacity;
+    size_t capacity;
+    // Utilization.
+    size_t liveSize;
+    size_t deadSize;
+  };
 
-    // A struct mirroring blink::MemoryCache::TypeStatistic.
-    struct ResourceTypeStat {
-        size_t count;
-        size_t size;
-        size_t liveSize;
-        size_t decodedSize;
-    };
+  // A struct mirroring blink::MemoryCache::TypeStatistic.
+  struct ResourceTypeStat {
+    size_t count;
+    size_t size;
+    size_t liveSize;
+    size_t decodedSize;
+  };
 
-    // A struct mirroring blink::MemoryCache::Statistics.
-    struct ResourceTypeStats {
-        ResourceTypeStat images;
-        ResourceTypeStat cssStyleSheets;
-        ResourceTypeStat scripts;
-        ResourceTypeStat xslStyleSheets;
-        ResourceTypeStat fonts;
-        ResourceTypeStat other;
-    };
+  // A struct mirroring blink::MemoryCache::Statistics.
+  struct ResourceTypeStats {
+    ResourceTypeStat images;
+    ResourceTypeStat cssStyleSheets;
+    ResourceTypeStat scripts;
+    ResourceTypeStat xslStyleSheets;
+    ResourceTypeStat fonts;
+    ResourceTypeStat other;
+  };
 
-    // Sets the capacities of the resource cache, evicting objects as necessary.
-    BLINK_EXPORT static void setCapacities(size_t minDeadCapacity,
-                                            size_t maxDeadCapacity,
-                                            size_t capacity);
+  // Sets the capacities of the resource cache, evicting objects as necessary.
+  BLINK_EXPORT static void setCapacities(size_t minDeadCapacity,
+                                         size_t maxDeadCapacity,
+                                         size_t capacity);
 
-    // Clears the cache (as much as possible; some resources may not be
-    // cleared if they are actively referenced). Note that this method
-    // only removes resources from live list, w/o releasing cache memory.
-    BLINK_EXPORT static void clear();
+  // Clears the cache (as much as possible; some resources may not be
+  // cleared if they are actively referenced). Note that this method
+  // only removes resources from live list, w/o releasing cache memory.
+  BLINK_EXPORT static void clear();
 
-    // Gets the usage statistics from the resource cache.
-    BLINK_EXPORT static void getUsageStats(UsageStats*);
+  // Gets the usage statistics from the resource cache.
+  BLINK_EXPORT static void getUsageStats(UsageStats*);
 
-    // Get usage stats about the resource cache.
-    BLINK_EXPORT static void getResourceTypeStats(ResourceTypeStats*);
+  // Get usage stats about the resource cache.
+  BLINK_EXPORT static void getResourceTypeStats(ResourceTypeStats*);
 
-private:
-    WebCache();  // Not intended to be instanced.
+ private:
+  WebCache();  // Not intended to be instanced.
 };
 
 }  // namespace blink

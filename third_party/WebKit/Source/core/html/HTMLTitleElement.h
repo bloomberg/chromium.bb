@@ -27,23 +27,24 @@
 namespace blink {
 
 class HTMLTitleElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLTitleElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    String text() const;
-    void setText(const String&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLTitleElement);
 
-private:
-    explicit HTMLTitleElement(Document&);
+  String text() const;
+  void setText(const String&);
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
-    void childrenChanged(const ChildrenChange&) override;
+ private:
+  explicit HTMLTitleElement(Document&);
 
-    bool m_ignoreTitleUpdatesWhenChildrenChange;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
+  void childrenChanged(const ChildrenChange&) override;
+
+  bool m_ignoreTitleUpdatesWhenChildrenChange;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLTitleElement_h
+#endif  // HTMLTitleElement_h

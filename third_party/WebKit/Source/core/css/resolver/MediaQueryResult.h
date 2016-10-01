@@ -29,28 +29,23 @@
 namespace blink {
 
 class MediaQueryResult : public GarbageCollected<MediaQueryResult> {
-    WTF_MAKE_NONCOPYABLE(MediaQueryResult);
-public:
-    MediaQueryResult(const MediaQueryExp& expr, bool result)
-        : m_expression(&expr)
-        , m_result(result)
-    {
-    }
+  WTF_MAKE_NONCOPYABLE(MediaQueryResult);
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_expression); }
+ public:
+  MediaQueryResult(const MediaQueryExp& expr, bool result)
+      : m_expression(&expr), m_result(result) {}
 
-    const MediaQueryExp* expression() const
-    {
-        return m_expression;
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_expression); }
 
-    bool result() const { return m_result; }
+  const MediaQueryExp* expression() const { return m_expression; }
 
-private:
-    Member<const MediaQueryExp> m_expression;
-    bool m_result;
+  bool result() const { return m_result; }
+
+ private:
+  Member<const MediaQueryExp> m_expression;
+  bool m_result;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

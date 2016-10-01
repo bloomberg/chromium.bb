@@ -32,121 +32,124 @@
 
 namespace blink {
 
-LayoutRubyBase::LayoutRubyBase()
-    : LayoutBlockFlow(nullptr)
-{
-    setInline(false);
+LayoutRubyBase::LayoutRubyBase() : LayoutBlockFlow(nullptr) {
+  setInline(false);
 }
 
-LayoutRubyBase::~LayoutRubyBase()
-{
+LayoutRubyBase::~LayoutRubyBase() {}
+
+LayoutRubyBase* LayoutRubyBase::createAnonymous(Document* document) {
+  LayoutRubyBase* layoutObject = new LayoutRubyBase();
+  layoutObject->setDocumentForAnonymous(document);
+  return layoutObject;
 }
 
-LayoutRubyBase* LayoutRubyBase::createAnonymous(Document* document)
-{
-    LayoutRubyBase* layoutObject = new LayoutRubyBase();
-    layoutObject->setDocumentForAnonymous(document);
-    return layoutObject;
+bool LayoutRubyBase::isChildAllowed(LayoutObject* child,
+                                    const ComputedStyle&) const {
+  return child->isInline();
 }
 
-bool LayoutRubyBase::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
-{
-    return child->isInline();
+void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase,
+                                  LayoutObject* beforeChild) {
+  // This function removes all children that are before (!) beforeChild
+  // and appends them to toBase.
+  DCHECK(toBase);
+  // Callers should have handled the percent height descendant map.
+  ASSERT(!hasPercentHeightDescendants());
+
+  if (beforeChild && beforeChild->parent() != this)
+    beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
+
+  if (childrenInline())
+    moveInlineChildren(toBase, beforeChild);
+  else
+    moveBlockChildren(toBase, beforeChild);
+
+  setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+      LayoutInvalidationReason::Unknown);
+  toBase->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+      LayoutInvalidationReason::Unknown);
 }
 
-void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
-{
-    // This function removes all children that are before (!) beforeChild
-    // and appends them to toBase.
-    DCHECK(toBase);
-    // Callers should have handled the percent height descendant map.
-    ASSERT(!hasPercentHeightDescendants());
+void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase,
+                                        LayoutObject* beforeChild) {
+  ASSERT(childrenInline());
+  DCHECK(toBase);
 
-    if (beforeChild && beforeChild->parent() != this)
-        beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
+  if (!firstChild())
+    return;
 
-    if (childrenInline())
-        moveInlineChildren(toBase, beforeChild);
-    else
-        moveBlockChildren(toBase, beforeChild);
-
-    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
-    toBase->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
-}
-
-void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
-{
-    ASSERT(childrenInline());
-    DCHECK(toBase);
-
-    if (!firstChild())
-        return;
-
-    LayoutBlock* toBlock;
-    if (toBase->childrenInline()) {
-        // The standard and easy case: move the children into the target base
-        toBlock = toBase;
+  LayoutBlock* toBlock;
+  if (toBase->childrenInline()) {
+    // The standard and easy case: move the children into the target base
+    toBlock = toBase;
+  } else {
+    // We need to wrap the inline objects into an anonymous block.
+    // If toBase has a suitable block, we re-use it, otherwise create a new one.
+    LayoutObject* lastChild = toBase->lastChild();
+    if (lastChild && lastChild->isAnonymousBlock() &&
+        lastChild->childrenInline()) {
+      toBlock = toLayoutBlock(lastChild);
     } else {
-        // We need to wrap the inline objects into an anonymous block.
-        // If toBase has a suitable block, we re-use it, otherwise create a new one.
-        LayoutObject* lastChild = toBase->lastChild();
-        if (lastChild && lastChild->isAnonymousBlock() && lastChild->childrenInline()) {
-            toBlock = toLayoutBlock(lastChild);
-        } else {
-            toBlock = toBase->createAnonymousBlock();
-            toBase->children()->appendChildNode(toBase, toBlock);
-        }
+      toBlock = toBase->createAnonymousBlock();
+      toBase->children()->appendChildNode(toBase, toBlock);
     }
-    // Move our inline children into the target block we determined above.
-    moveChildrenTo(toBlock, firstChild(), beforeChild);
+  }
+  // Move our inline children into the target block we determined above.
+  moveChildrenTo(toBlock, firstChild(), beforeChild);
 }
 
-void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
-{
-    ASSERT(!childrenInline());
-    DCHECK(toBase);
+void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase,
+                                       LayoutObject* beforeChild) {
+  ASSERT(!childrenInline());
+  DCHECK(toBase);
 
-    if (!firstChild())
-        return;
+  if (!firstChild())
+    return;
 
-    if (toBase->childrenInline())
-        toBase->makeChildrenNonInline();
+  if (toBase->childrenInline())
+    toBase->makeChildrenNonInline();
 
-    // If an anonymous block would be put next to another such block, then merge those.
-    LayoutObject* firstChildHere = firstChild();
-    LayoutObject* lastChildThere = toBase->lastChild();
-    if (firstChildHere->isAnonymousBlock() && firstChildHere->childrenInline()
-        && lastChildThere && lastChildThere->isAnonymousBlock() && lastChildThere->childrenInline()) {
-        LayoutBlockFlow* anonBlockHere = toLayoutBlockFlow(firstChildHere);
-        LayoutBlockFlow* anonBlockThere = toLayoutBlockFlow(lastChildThere);
-        anonBlockHere->moveAllChildrenTo(anonBlockThere, anonBlockThere->children());
-        anonBlockHere->deleteLineBoxTree();
-        anonBlockHere->destroy();
-    }
-    // Move all remaining children normally.
-    moveChildrenTo(toBase, firstChild(), beforeChild);
+  // If an anonymous block would be put next to another such block, then merge those.
+  LayoutObject* firstChildHere = firstChild();
+  LayoutObject* lastChildThere = toBase->lastChild();
+  if (firstChildHere->isAnonymousBlock() && firstChildHere->childrenInline() &&
+      lastChildThere && lastChildThere->isAnonymousBlock() &&
+      lastChildThere->childrenInline()) {
+    LayoutBlockFlow* anonBlockHere = toLayoutBlockFlow(firstChildHere);
+    LayoutBlockFlow* anonBlockThere = toLayoutBlockFlow(lastChildThere);
+    anonBlockHere->moveAllChildrenTo(anonBlockThere,
+                                     anonBlockThere->children());
+    anonBlockHere->deleteLineBoxTree();
+    anonBlockHere->destroy();
+  }
+  // Move all remaining children normally.
+  moveChildrenTo(toBase, firstChild(), beforeChild);
 }
 
-ETextAlign LayoutRubyBase::textAlignmentForLine(bool /* endsWithSoftBreak */) const
-{
-    return JUSTIFY;
+ETextAlign LayoutRubyBase::textAlignmentForLine(
+    bool /* endsWithSoftBreak */) const {
+  return JUSTIFY;
 }
 
-void LayoutRubyBase::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const
-{
-    int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth().toInt();
-    if (maxPreferredLogicalWidth >= logicalWidth)
-        return;
+void LayoutRubyBase::adjustInlineDirectionLineBounds(
+    unsigned expansionOpportunityCount,
+    LayoutUnit& logicalLeft,
+    LayoutUnit& logicalWidth) const {
+  int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth().toInt();
+  if (maxPreferredLogicalWidth >= logicalWidth)
+    return;
 
-    unsigned maxCount = static_cast<unsigned>(LayoutUnit::max().floor());
-    if (expansionOpportunityCount > maxCount)
-        expansionOpportunityCount = maxCount;
+  unsigned maxCount = static_cast<unsigned>(LayoutUnit::max().floor());
+  if (expansionOpportunityCount > maxCount)
+    expansionOpportunityCount = maxCount;
 
-    // Inset the ruby base by half the inter-ideograph expansion amount.
-    LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) / (expansionOpportunityCount + 1);
+  // Inset the ruby base by half the inter-ideograph expansion amount.
+  LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) /
+                     (expansionOpportunityCount + 1);
 
-    logicalLeft += inset / 2;
-    logicalWidth -= inset;
+  logicalLeft += inset / 2;
+  logicalWidth -= inset;
 }
 
-} // namespace blink
+}  // namespace blink

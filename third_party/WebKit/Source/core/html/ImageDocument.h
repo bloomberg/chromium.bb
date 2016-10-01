@@ -34,57 +34,54 @@ namespace blink {
 class ImageResource;
 
 class CORE_EXPORT ImageDocument final : public HTMLDocument {
-public:
-    static ImageDocument* create(const DocumentInit& initializer = DocumentInit())
-    {
-        return new ImageDocument(initializer);
-    }
+ public:
+  static ImageDocument* create(
+      const DocumentInit& initializer = DocumentInit()) {
+    return new ImageDocument(initializer);
+  }
 
-    ImageResource* cachedImage();
-    HTMLImageElement* imageElement() const { return m_imageElement.get(); }
+  ImageResource* cachedImage();
+  HTMLImageElement* imageElement() const { return m_imageElement.get(); }
 
-    void windowSizeChanged();
-    void imageUpdated();
-    void imageClicked(int x, int y);
+  void windowSizeChanged();
+  void imageUpdated();
+  void imageClicked(int x, int y);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit ImageDocument(const DocumentInit&);
+ private:
+  explicit ImageDocument(const DocumentInit&);
 
-    DocumentParser* createParser() override;
+  DocumentParser* createParser() override;
 
-    void createDocumentStructure();
+  void createDocumentStructure();
 
-    // These methods are for m_shrinkToFitMode == Desktop.
-    void resizeImageToFit();
-    void restoreImageSize();
-    bool imageFitsInWindow() const;
-    bool shouldShrinkToFit() const;
-    // Calculates the image size multiplier that's needed to fit the image to
-    // the window, taking into account page zoom and device scale.
-    float scale() const;
+  // These methods are for m_shrinkToFitMode == Desktop.
+  void resizeImageToFit();
+  void restoreImageSize();
+  bool imageFitsInWindow() const;
+  bool shouldShrinkToFit() const;
+  // Calculates the image size multiplier that's needed to fit the image to
+  // the window, taking into account page zoom and device scale.
+  float scale() const;
 
-    Member<HTMLImageElement> m_imageElement;
+  Member<HTMLImageElement> m_imageElement;
 
-    // Whether enough of the image has been loaded to determine its size
-    bool m_imageSizeIsKnown;
+  // Whether enough of the image has been loaded to determine its size
+  bool m_imageSizeIsKnown;
 
-    // Whether the image is shrunk to fit or not
-    bool m_didShrinkImage;
+  // Whether the image is shrunk to fit or not
+  bool m_didShrinkImage;
 
-    // Whether the image should be shrunk or not
-    bool m_shouldShrinkImage;
+  // Whether the image should be shrunk or not
+  bool m_shouldShrinkImage;
 
-    enum ShrinkToFitMode {
-        Viewport,
-        Desktop
-    };
-    ShrinkToFitMode m_shrinkToFitMode;
+  enum ShrinkToFitMode { Viewport, Desktop };
+  ShrinkToFitMode m_shrinkToFitMode;
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ImageDocument_h
+#endif  // ImageDocument_h

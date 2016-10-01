@@ -31,132 +31,120 @@
 
 namespace blink {
 
-DOMURLUtils::~DOMURLUtils()
-{
+DOMURLUtils::~DOMURLUtils() {}
+
+void DOMURLUtils::setHref(const String& value) {
+  setInput(value);
 }
 
-void DOMURLUtils::setHref(const String& value)
-{
-    setInput(value);
+void DOMURLUtils::setProtocol(const String& value) {
+  KURL kurl = url();
+  if (kurl.isNull())
+    return;
+  kurl.setProtocol(value);
+  setURL(kurl);
 }
 
-void DOMURLUtils::setProtocol(const String& value)
-{
-    KURL kurl = url();
-    if (kurl.isNull())
-        return;
-    kurl.setProtocol(value);
-    setURL(kurl);
+void DOMURLUtils::setUsername(const String& value) {
+  KURL kurl = url();
+  if (kurl.isNull())
+    return;
+  kurl.setUser(value);
+  setURL(kurl);
 }
 
-void DOMURLUtils::setUsername(const String& value)
-{
-    KURL kurl = url();
-    if (kurl.isNull())
-        return;
-    kurl.setUser(value);
-    setURL(kurl);
+void DOMURLUtils::setPassword(const String& value) {
+  KURL kurl = url();
+  if (kurl.isNull())
+    return;
+  kurl.setPass(value);
+  setURL(kurl);
 }
 
-void DOMURLUtils::setPassword(const String& value)
-{
-    KURL kurl = url();
-    if (kurl.isNull())
-        return;
-    kurl.setPass(value);
-    setURL(kurl);
+void DOMURLUtils::setHost(const String& value) {
+  if (value.isEmpty())
+    return;
+
+  KURL kurl = url();
+  if (!kurl.canSetHostOrPort())
+    return;
+
+  kurl.setHostAndPort(value);
+  setURL(kurl);
 }
 
-void DOMURLUtils::setHost(const String& value)
-{
-    if (value.isEmpty())
-        return;
+void DOMURLUtils::setHostname(const String& value) {
+  KURL kurl = url();
+  if (!kurl.canSetHostOrPort())
+    return;
 
-    KURL kurl = url();
-    if (!kurl.canSetHostOrPort())
-        return;
+  // Before setting new value:
+  // Remove all leading U+002F SOLIDUS ("/") characters.
+  unsigned i = 0;
+  unsigned hostLength = value.length();
+  while (value[i] == '/')
+    i++;
 
-    kurl.setHostAndPort(value);
-    setURL(kurl);
+  if (i == hostLength)
+    return;
+
+  kurl.setHost(value.substring(i));
+
+  setURL(kurl);
 }
 
-void DOMURLUtils::setHostname(const String& value)
-{
-    KURL kurl = url();
-    if (!kurl.canSetHostOrPort())
-        return;
+void DOMURLUtils::setPort(const String& value) {
+  KURL kurl = url();
+  if (!kurl.canSetHostOrPort())
+    return;
 
-    // Before setting new value:
-    // Remove all leading U+002F SOLIDUS ("/") characters.
-    unsigned i = 0;
-    unsigned hostLength = value.length();
-    while (value[i] == '/')
-        i++;
-
-    if (i == hostLength)
-        return;
-
-    kurl.setHost(value.substring(i));
-
-    setURL(kurl);
+  kurl.setPort(value);
+  setURL(kurl);
 }
 
-void DOMURLUtils::setPort(const String& value)
-{
-    KURL kurl = url();
-    if (!kurl.canSetHostOrPort())
-        return;
-
-    kurl.setPort(value);
-    setURL(kurl);
+void DOMURLUtils::setPathname(const String& value) {
+  KURL kurl = url();
+  if (!kurl.canSetPathname())
+    return;
+  kurl.setPath(value);
+  setURL(kurl);
 }
 
-void DOMURLUtils::setPathname(const String& value)
-{
-    KURL kurl = url();
-    if (!kurl.canSetPathname())
-        return;
-    kurl.setPath(value);
-    setURL(kurl);
+void DOMURLUtils::setSearch(const String& value) {
+  setSearchInternal(value);
 }
 
-void DOMURLUtils::setSearch(const String& value)
-{
-    setSearchInternal(value);
+void DOMURLUtils::setSearchInternal(const String& value) {
+  ASSERT(!m_isInUpdate);
+  KURL kurl = url();
+  if (!kurl.isValid())
+    return;
+
+  // FIXME: have KURL do this clearing of the query component
+  // instead, if practical. Will require addressing
+  // http://crbug.com/108690, for one.
+  if (value[0] == '?')
+    kurl.setQuery(value.length() == 1 ? String() : value.substring(1));
+  else
+    kurl.setQuery(value.isEmpty() ? String() : value);
+
+  setURL(kurl);
 }
 
-void DOMURLUtils::setSearchInternal(const String& value)
-{
-    ASSERT(!m_isInUpdate);
-    KURL kurl = url();
-    if (!kurl.isValid())
-        return;
+void DOMURLUtils::setHash(const String& value) {
+  KURL kurl = url();
+  if (kurl.isNull())
+    return;
 
-    // FIXME: have KURL do this clearing of the query component
-    // instead, if practical. Will require addressing
-    // http://crbug.com/108690, for one.
-    if (value[0] == '?')
-        kurl.setQuery(value.length() == 1 ? String() : value.substring(1));
-    else
-        kurl.setQuery(value.isEmpty() ? String() : value);
+  // FIXME: have KURL handle the clearing of the fragment component
+  // on the same input.
+  if (value[0] == '#')
+    kurl.setFragmentIdentifier(value.length() == 1 ? String()
+                                                   : value.substring(1));
+  else
+    kurl.setFragmentIdentifier(value.isEmpty() ? String() : value);
 
-    setURL(kurl);
+  setURL(kurl);
 }
 
-void DOMURLUtils::setHash(const String& value)
-{
-    KURL kurl = url();
-    if (kurl.isNull())
-        return;
-
-    // FIXME: have KURL handle the clearing of the fragment component
-    // on the same input.
-    if (value[0] == '#')
-        kurl.setFragmentIdentifier(value.length() == 1 ? String() : value.substring(1));
-    else
-        kurl.setFragmentIdentifier(value.isEmpty() ? String() : value);
-
-    setURL(kurl);
-}
-
-} // namespace blink
+}  // namespace blink

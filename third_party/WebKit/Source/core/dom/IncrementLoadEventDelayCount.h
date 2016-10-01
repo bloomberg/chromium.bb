@@ -17,20 +17,20 @@ class Document;
 // A helper class that will increment a document's loadEventDelayCount on
 // contruction and decrement it on destruction (semantics similar to RefPtr).
 class IncrementLoadEventDelayCount {
-    USING_FAST_MALLOC(IncrementLoadEventDelayCount);
-    WTF_MAKE_NONCOPYABLE(IncrementLoadEventDelayCount);
+  USING_FAST_MALLOC(IncrementLoadEventDelayCount);
+  WTF_MAKE_NONCOPYABLE(IncrementLoadEventDelayCount);
 
-public:
-    static std::unique_ptr<IncrementLoadEventDelayCount> create(Document&);
-    ~IncrementLoadEventDelayCount();
+ public:
+  static std::unique_ptr<IncrementLoadEventDelayCount> create(Document&);
+  ~IncrementLoadEventDelayCount();
 
-    // Increments the new document's count and decrements the old count.
-    void documentChanged(Document& newDocument);
+  // Increments the new document's count and decrements the old count.
+  void documentChanged(Document& newDocument);
 
-private:
-    IncrementLoadEventDelayCount(Document&);
-    Persistent<Document> m_document;
+ private:
+  IncrementLoadEventDelayCount(Document&);
+  Persistent<Document> m_document;
 };
-} // namespace blink
+}  // namespace blink
 
 #endif

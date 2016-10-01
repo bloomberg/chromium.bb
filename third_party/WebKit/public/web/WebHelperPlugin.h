@@ -44,34 +44,35 @@ class WebPlugin;
 class WebString;
 
 class WebHelperPlugin {
-public:
-    // May return null if initialization fails. If the returned pointer is
-    // non-null, the caller must free it by calling destroy().
-    BLINK_EXPORT static WebHelperPlugin* create(const WebString& PluginType, WebLocalFrame*);
+ public:
+  // May return null if initialization fails. If the returned pointer is
+  // non-null, the caller must free it by calling destroy().
+  BLINK_EXPORT static WebHelperPlugin* create(const WebString& PluginType,
+                                              WebLocalFrame*);
 
-    // Returns a WebPlugin corresponding to the instantiated plugin. This will
-    // never return null.
-    virtual WebPlugin* getPlugin() = 0;
+  // Returns a WebPlugin corresponding to the instantiated plugin. This will
+  // never return null.
+  virtual WebPlugin* getPlugin() = 0;
 
-    // Initiates destruction of the WebHelperPlugin.
-    virtual void destroy() = 0;
+  // Initiates destruction of the WebHelperPlugin.
+  virtual void destroy() = 0;
 
-protected:
-    virtual ~WebHelperPlugin() { }
+ protected:
+  virtual ~WebHelperPlugin() {}
 };
 
 #if INSIDE_BLINK
 struct WebHelperPluginDeleter {
-    void operator()(WebHelperPlugin* plugin)
-    {
-        if (plugin)
-            plugin->destroy();
-    }
+  void operator()(WebHelperPlugin* plugin) {
+    if (plugin)
+      plugin->destroy();
+  }
 };
 
-using WebHelperPluginUniquePtr = std::unique_ptr<WebHelperPlugin, WebHelperPluginDeleter>;
+using WebHelperPluginUniquePtr =
+    std::unique_ptr<WebHelperPlugin, WebHelperPluginDeleter>;
 #endif
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -34,10 +34,9 @@ namespace blink {
 
 URLRegistry* HTMLMediaSource::s_registry = 0;
 
-void HTMLMediaSource::setRegistry(URLRegistry* registry)
-{
-    DCHECK(!s_registry);
-    s_registry = registry;
+void HTMLMediaSource::setRegistry(URLRegistry* registry) {
+  DCHECK(!s_registry);
+  s_registry = registry;
 }
 
-} // namespace blink
+}  // namespace blink

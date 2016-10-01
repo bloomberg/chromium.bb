@@ -35,14 +35,16 @@ class AudioBus;
 
 // Abstract base-class for isochronous audio I/O client.
 class AudioIOCallback {
-public:
-    // render() is called periodically to get the next render quantum of audio into destinationBus.
-    // Optional audio input is given in sourceBus (if it's not 0).
-    virtual void render(AudioBus* sourceBus, AudioBus* destinationBus, size_t framesToProcess) = 0;
+ public:
+  // render() is called periodically to get the next render quantum of audio into destinationBus.
+  // Optional audio input is given in sourceBus (if it's not 0).
+  virtual void render(AudioBus* sourceBus,
+                      AudioBus* destinationBus,
+                      size_t framesToProcess) = 0;
 
-    virtual ~AudioIOCallback() { }
+  virtual ~AudioIOCallback() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioIOCallback_h
+#endif  // AudioIOCallback_h

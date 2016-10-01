@@ -7,7 +7,11 @@
 
 #include <memory>
 
-namespace gpu { namespace gles2 { class GLES2Interface; } }
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
 class GrContext;
 
 namespace blink {
@@ -20,34 +24,36 @@ class WebGraphicsContext3DProvider;
 // When on the main thread, provides access to the same context as
 // Platform::createSharedOffscreenGraphicsContext3DProvider
 class PLATFORM_EXPORT SharedGpuContext {
-public:
-    // The contextId is incremented each time a new underlying context
-    // is created. For example, when the context is lost, then restored.
-    // User code can rely on this Id to determine whether long-lived
-    // gpu resources are still alive in the current context.
-    static unsigned contextId();
-    static gpu::gles2::GLES2Interface* gl(); // May re-create context if context was lost
-    static GrContext* gr(); // May re-create context if context was lost
-    static bool isValid(); // May re-create context if context was lost
-    static bool isValidWithoutRestoring();
-    typedef std::function<std::unique_ptr<WebGraphicsContext3DProvider>()> ContextProviderFactory;
-    static void setContextProviderFactoryForTesting(ContextProviderFactory);
+ public:
+  // The contextId is incremented each time a new underlying context
+  // is created. For example, when the context is lost, then restored.
+  // User code can rely on this Id to determine whether long-lived
+  // gpu resources are still alive in the current context.
+  static unsigned contextId();
+  static gpu::gles2::GLES2Interface*
+  gl();                    // May re-create context if context was lost
+  static GrContext* gr();  // May re-create context if context was lost
+  static bool isValid();   // May re-create context if context was lost
+  static bool isValidWithoutRestoring();
+  typedef std::function<std::unique_ptr<WebGraphicsContext3DProvider>()>
+      ContextProviderFactory;
+  static void setContextProviderFactoryForTesting(ContextProviderFactory);
 
-    enum {
-        kNoSharedContext = 0,
-    };
+  enum {
+    kNoSharedContext = 0,
+  };
 
-private:
-    static SharedGpuContext* getInstanceForCurrentThread();
+ private:
+  static SharedGpuContext* getInstanceForCurrentThread();
 
-    SharedGpuContext();
-    void createContextProviderOnMainThread(WaitableEvent*);
-    void createContextProviderIfNeeded();
+  SharedGpuContext();
+  void createContextProviderOnMainThread(WaitableEvent*);
+  void createContextProviderIfNeeded();
 
-    ContextProviderFactory m_contextProviderFactory = nullptr;
-    std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
-    unsigned m_contextId;
-    friend class WTF::ThreadSpecific<SharedGpuContext>;
+  ContextProviderFactory m_contextProviderFactory = nullptr;
+  std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
+  unsigned m_contextId;
+  friend class WTF::ThreadSpecific<SharedGpuContext>;
 };
 
-} // blink
+}  // blink

@@ -15,11 +15,12 @@ namespace blink {
 class ScriptPromiseResolver;
 
 class SyncError {
-    STATIC_ONLY(SyncError);
-public:
-    static DOMException* take(ScriptPromiseResolver*, const WebSyncError&);
+  STATIC_ONLY(SyncError);
+
+ public:
+  static DOMException* take(ScriptPromiseResolver*, const WebSyncError&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SyncError_h
+#endif  // SyncError_h

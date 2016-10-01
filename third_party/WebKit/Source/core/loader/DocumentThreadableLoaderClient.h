@@ -39,17 +39,20 @@ class ResourceRequest;
 class ResourceResponse;
 
 class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
-    WTF_MAKE_NONCOPYABLE(DocumentThreadableLoaderClient);
-    USING_FAST_MALLOC(DocumentThreadableLoaderClient);
-public:
-    bool isDocumentThreadableLoaderClient() final { return true; }
+  WTF_MAKE_NONCOPYABLE(DocumentThreadableLoaderClient);
+  USING_FAST_MALLOC(DocumentThreadableLoaderClient);
 
-    virtual void willFollowRedirect(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/) { }
+ public:
+  bool isDocumentThreadableLoaderClient() final { return true; }
 
-protected:
-    DocumentThreadableLoaderClient() { }
+  virtual void willFollowRedirect(
+      ResourceRequest& /*newRequest*/,
+      const ResourceResponse& /*redirectResponse*/) {}
+
+ protected:
+  DocumentThreadableLoaderClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentThreadableLoaderClient_h
+#endif  // DocumentThreadableLoaderClient_h

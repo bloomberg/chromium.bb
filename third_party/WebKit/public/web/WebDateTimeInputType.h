@@ -33,15 +33,15 @@
 namespace blink {
 
 enum WebDateTimeInputType {
-    WebDateTimeInputTypeNone,
-    WebDateTimeInputTypeDate,
-    WebDateTimeInputTypeDateTime,
-    WebDateTimeInputTypeDateTimeLocal,
-    WebDateTimeInputTypeMonth,
-    WebDateTimeInputTypeTime,
-    WebDateTimeInputTypeWeek,
+  WebDateTimeInputTypeNone,
+  WebDateTimeInputTypeDate,
+  WebDateTimeInputTypeDateTime,
+  WebDateTimeInputTypeDateTimeLocal,
+  WebDateTimeInputTypeMonth,
+  WebDateTimeInputTypeTime,
+  WebDateTimeInputTypeWeek,
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -38,17 +38,21 @@ using namespace WTF;
 
 namespace blink {
 
-void V8CSSStyleRule::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
-{
-    CSSStyleRule* impl = scriptWrappable->toImpl<CSSStyleRule>();
-    CSSRule* parentRule = impl->parentRule();
-    if (parentRule) {
-        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, parentRule, isolate);
-    }
-    CSSStyleSheet* parentStyleSheet = impl->parentStyleSheet();
-    if (parentStyleSheet) {
-        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, parentStyleSheet, isolate);
-    }
+void V8CSSStyleRule::visitDOMWrapperCustom(
+    v8::Isolate* isolate,
+    ScriptWrappable* scriptWrappable,
+    const v8::Persistent<v8::Object>& wrapper) {
+  CSSStyleRule* impl = scriptWrappable->toImpl<CSSStyleRule>();
+  CSSRule* parentRule = impl->parentRule();
+  if (parentRule) {
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, parentRule,
+                                                     isolate);
+  }
+  CSSStyleSheet* parentStyleSheet = impl->parentStyleSheet();
+  if (parentStyleSheet) {
+    DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, parentStyleSheet,
+                                                     isolate);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

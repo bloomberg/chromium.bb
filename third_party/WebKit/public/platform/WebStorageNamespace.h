@@ -42,18 +42,20 @@ class WebString;
 // multiple StorageNamespaces to represent the SessionStorage for each tab and a single
 // StorageNamespace to represent LocalStorage for the entire browser.
 class WebStorageNamespace {
-public:
-    virtual ~WebStorageNamespace() { }
+ public:
+  virtual ~WebStorageNamespace() {}
 
-    // Create a new WebStorageArea object. Two subsequent calls with the same origin
-    // will return two different WebStorageArea objects that share the same backing store.
-    // You should call delete on the returned object when you're finished.
-    virtual WebStorageArea* createStorageArea(const WebString& origin) = 0;
+  // Create a new WebStorageArea object. Two subsequent calls with the same origin
+  // will return two different WebStorageArea objects that share the same backing store.
+  // You should call delete on the returned object when you're finished.
+  virtual WebStorageArea* createStorageArea(const WebString& origin) = 0;
 
-    // Returns true of the two instances represent the same storage namespace.
-    virtual bool isSameNamespace(const WebStorageNamespace&) const { return false; }
+  // Returns true of the two instances represent the same storage namespace.
+  virtual bool isSameNamespace(const WebStorageNamespace&) const {
+    return false;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebStorageNamespace_h
+#endif  // WebStorageNamespace_h

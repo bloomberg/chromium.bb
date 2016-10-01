@@ -9,9 +9,6 @@
 namespace blink {
 
 MIDIInputMap::MIDIInputMap(const HeapVector<Member<MIDIInput>>& entries)
-    : MIDIPortMap<MIDIInput>(entries)
-{
-}
+    : MIDIPortMap<MIDIInput>(entries) {}
 
-} // namespace blink
-
+}  // namespace blink

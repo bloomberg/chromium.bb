@@ -32,21 +32,34 @@ namespace blink {
 // Common type of stereo panner as found in normal audio mixing equipment.
 
 class PLATFORM_EXPORT EqualPowerPanner final : public Panner {
-public:
-    EqualPowerPanner(float sampleRate);
+ public:
+  EqualPowerPanner(float sampleRate);
 
-    void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBuf, size_t framesToProcess, AudioBus::ChannelInterpretation) override;
-    void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation) override;
+  void pan(double azimuth,
+           double elevation,
+           const AudioBus* inputBus,
+           AudioBus* outputBuf,
+           size_t framesToProcess,
+           AudioBus::ChannelInterpretation) override;
+  void panWithSampleAccurateValues(double* azimuth,
+                                   double* elevation,
+                                   const AudioBus* inputBus,
+                                   AudioBus* outputBus,
+                                   size_t framesToProcess,
+                                   AudioBus::ChannelInterpretation) override;
 
-    void reset() override { }
+  void reset() override {}
 
-    double tailTime() const override { return 0; }
-    double latencyTime() const override { return 0; }
+  double tailTime() const override { return 0; }
+  double latencyTime() const override { return 0; }
 
-private:
-    void calculateDesiredGain(double& desiredGainL, double& desiredGainR, double azimuth, int numberOfChannels);
+ private:
+  void calculateDesiredGain(double& desiredGainL,
+                            double& desiredGainR,
+                            double azimuth,
+                            int numberOfChannels);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EqualPowerPanner_h
+#endif  // EqualPowerPanner_h

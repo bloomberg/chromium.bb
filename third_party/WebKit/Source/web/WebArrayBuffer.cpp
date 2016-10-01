@@ -34,49 +34,40 @@
 
 namespace blink {
 
-WebArrayBuffer WebArrayBuffer::create(unsigned numElements, unsigned elementByteSize)
-{
-    return WebArrayBuffer(DOMArrayBuffer::create(numElements, elementByteSize));
+WebArrayBuffer WebArrayBuffer::create(unsigned numElements,
+                                      unsigned elementByteSize) {
+  return WebArrayBuffer(DOMArrayBuffer::create(numElements, elementByteSize));
 }
 
-void WebArrayBuffer::reset()
-{
-    m_private.reset();
+void WebArrayBuffer::reset() {
+  m_private.reset();
 }
 
-void WebArrayBuffer::assign(const WebArrayBuffer& other)
-{
-    m_private = other.m_private;
+void WebArrayBuffer::assign(const WebArrayBuffer& other) {
+  m_private = other.m_private;
 }
 
-void* WebArrayBuffer::data() const
-{
-    if (!isNull())
-        return const_cast<void*>(m_private->data());
-    return 0;
+void* WebArrayBuffer::data() const {
+  if (!isNull())
+    return const_cast<void*>(m_private->data());
+  return 0;
 }
 
-unsigned WebArrayBuffer::byteLength() const
-{
-    if (!isNull())
-        return m_private->byteLength();
-    return 0;
+unsigned WebArrayBuffer::byteLength() const {
+  if (!isNull())
+    return m_private->byteLength();
+  return 0;
 }
 
-WebArrayBuffer::WebArrayBuffer(DOMArrayBuffer* buffer)
-    : m_private(buffer)
-{
+WebArrayBuffer::WebArrayBuffer(DOMArrayBuffer* buffer) : m_private(buffer) {}
+
+WebArrayBuffer& WebArrayBuffer::operator=(DOMArrayBuffer* buffer) {
+  m_private = buffer;
+  return *this;
 }
 
-WebArrayBuffer& WebArrayBuffer::operator=(DOMArrayBuffer* buffer)
-{
-    m_private = buffer;
-    return *this;
+WebArrayBuffer::operator DOMArrayBuffer*() const {
+  return m_private.get();
 }
 
-WebArrayBuffer::operator DOMArrayBuffer*() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -25,17 +25,17 @@
 
 namespace blink {
 
-inline void uniteLayoutOverflowRect(LayoutRect& layoutOverflow, const LayoutRect& rect)
-{
-    LayoutUnit maxX = std::max(rect.maxX(), layoutOverflow.maxX());
-    LayoutUnit maxY = std::max(rect.maxY(), layoutOverflow.maxY());
-    LayoutUnit minX = std::min(rect.x(), layoutOverflow.x());
-    LayoutUnit minY = std::min(rect.y(), layoutOverflow.y());
-    // In case the width/height is larger than LayoutUnit can represent, fix the right/bottom edge and shift the top/left ones.
-    layoutOverflow.setWidth(maxX - minX);
-    layoutOverflow.setHeight(maxY - minY);
-    layoutOverflow.setX(maxX - layoutOverflow.width());
-    layoutOverflow.setY(maxY - layoutOverflow.height());
+inline void uniteLayoutOverflowRect(LayoutRect& layoutOverflow,
+                                    const LayoutRect& rect) {
+  LayoutUnit maxX = std::max(rect.maxX(), layoutOverflow.maxX());
+  LayoutUnit maxY = std::max(rect.maxY(), layoutOverflow.maxY());
+  LayoutUnit minX = std::min(rect.x(), layoutOverflow.x());
+  LayoutUnit minY = std::min(rect.y(), layoutOverflow.y());
+  // In case the width/height is larger than LayoutUnit can represent, fix the right/bottom edge and shift the top/left ones.
+  layoutOverflow.setWidth(maxX - minX);
+  layoutOverflow.setHeight(maxY - minY);
+  layoutOverflow.setX(maxX - layoutOverflow.width());
+  layoutOverflow.setY(maxY - layoutOverflow.height());
 }
 
 // OverflowModel classes track content that spills out of an object.
@@ -79,32 +79,34 @@ inline void uniteLayoutOverflowRect(LayoutRect& layoutOverflow, const LayoutRect
 // functions (addLayoutOverflow, addVisualOverflow, etc.) to keep this invariant.
 
 class SimpleOverflowModel {
-    WTF_MAKE_NONCOPYABLE(SimpleOverflowModel);
-    USING_FAST_MALLOC(SimpleOverflowModel);
-public:
-    SimpleOverflowModel(const LayoutRect& layoutRect, const LayoutRect& visualRect)
-        : m_layoutOverflow(layoutRect)
-        , m_visualOverflow(visualRect)
-    {
-    }
+  WTF_MAKE_NONCOPYABLE(SimpleOverflowModel);
+  USING_FAST_MALLOC(SimpleOverflowModel);
 
-    const LayoutRect& layoutOverflowRect() const { return m_layoutOverflow; }
-    void setLayoutOverflow(const LayoutRect& rect) { m_layoutOverflow = rect; }
-    void addLayoutOverflow(const LayoutRect& rect) { uniteLayoutOverflowRect(m_layoutOverflow, rect); }
+ public:
+  SimpleOverflowModel(const LayoutRect& layoutRect,
+                      const LayoutRect& visualRect)
+      : m_layoutOverflow(layoutRect), m_visualOverflow(visualRect) {}
 
-    const LayoutRect& visualOverflowRect() const { return m_visualOverflow; }
-    void setVisualOverflow(const LayoutRect& rect) { m_visualOverflow = rect; }
-    void addVisualOverflow(const LayoutRect& rect) { m_visualOverflow.unite(rect); }
+  const LayoutRect& layoutOverflowRect() const { return m_layoutOverflow; }
+  void setLayoutOverflow(const LayoutRect& rect) { m_layoutOverflow = rect; }
+  void addLayoutOverflow(const LayoutRect& rect) {
+    uniteLayoutOverflowRect(m_layoutOverflow, rect);
+  }
 
-    void move(LayoutUnit dx, LayoutUnit dy)
-    {
-        m_layoutOverflow.move(dx, dy);
-        m_visualOverflow.move(dx, dy);
-    }
+  const LayoutRect& visualOverflowRect() const { return m_visualOverflow; }
+  void setVisualOverflow(const LayoutRect& rect) { m_visualOverflow = rect; }
+  void addVisualOverflow(const LayoutRect& rect) {
+    m_visualOverflow.unite(rect);
+  }
 
-private:
-    LayoutRect m_layoutOverflow;
-    LayoutRect m_visualOverflow;
+  void move(LayoutUnit dx, LayoutUnit dy) {
+    m_layoutOverflow.move(dx, dy);
+    m_visualOverflow.move(dx, dy);
+  }
+
+ private:
+  LayoutRect m_layoutOverflow;
+  LayoutRect m_visualOverflow;
 };
 
 // BoxModelOverflow tracks overflows of a LayoutBox. It separates visual overflow
@@ -135,40 +137,50 @@ private:
 // visual overflow.
 
 class BoxOverflowModel {
-public:
-    BoxOverflowModel(const LayoutRect& layoutRect, const LayoutRect& selfVisualOverflowRect)
-        : m_layoutOverflow(layoutRect)
-        , m_selfVisualOverflow(selfVisualOverflowRect)
-    {
-    }
+ public:
+  BoxOverflowModel(const LayoutRect& layoutRect,
+                   const LayoutRect& selfVisualOverflowRect)
+      : m_layoutOverflow(layoutRect),
+        m_selfVisualOverflow(selfVisualOverflowRect) {}
 
-    const LayoutRect& layoutOverflowRect() const { return m_layoutOverflow; }
-    void setLayoutOverflow(const LayoutRect& rect) { m_layoutOverflow = rect; }
-    void addLayoutOverflow(const LayoutRect& rect) { uniteLayoutOverflowRect(m_layoutOverflow, rect); }
+  const LayoutRect& layoutOverflowRect() const { return m_layoutOverflow; }
+  void setLayoutOverflow(const LayoutRect& rect) { m_layoutOverflow = rect; }
+  void addLayoutOverflow(const LayoutRect& rect) {
+    uniteLayoutOverflowRect(m_layoutOverflow, rect);
+  }
 
-    const LayoutRect& selfVisualOverflowRect() const { return m_selfVisualOverflow; }
-    void addSelfVisualOverflow(const LayoutRect& rect) { m_selfVisualOverflow.unite(rect); }
+  const LayoutRect& selfVisualOverflowRect() const {
+    return m_selfVisualOverflow;
+  }
+  void addSelfVisualOverflow(const LayoutRect& rect) {
+    m_selfVisualOverflow.unite(rect);
+  }
 
-    const LayoutRect& contentsVisualOverflowRect() const { return m_contentsVisualOverflow; }
-    void addContentsVisualOverflow(const LayoutRect& rect) { m_contentsVisualOverflow.unite(rect); }
+  const LayoutRect& contentsVisualOverflowRect() const {
+    return m_contentsVisualOverflow;
+  }
+  void addContentsVisualOverflow(const LayoutRect& rect) {
+    m_contentsVisualOverflow.unite(rect);
+  }
 
-    void move(LayoutUnit dx, LayoutUnit dy)
-    {
-        m_layoutOverflow.move(dx, dy);
-        m_selfVisualOverflow.move(dx, dy);
-        m_contentsVisualOverflow.move(dx, dy);
-    }
+  void move(LayoutUnit dx, LayoutUnit dy) {
+    m_layoutOverflow.move(dx, dy);
+    m_selfVisualOverflow.move(dx, dy);
+    m_contentsVisualOverflow.move(dx, dy);
+  }
 
-    LayoutUnit layoutClientAfterEdge() const { return m_layoutClientAfterEdge; }
-    void setLayoutClientAfterEdge(LayoutUnit clientAfterEdge) { m_layoutClientAfterEdge = clientAfterEdge; }
+  LayoutUnit layoutClientAfterEdge() const { return m_layoutClientAfterEdge; }
+  void setLayoutClientAfterEdge(LayoutUnit clientAfterEdge) {
+    m_layoutClientAfterEdge = clientAfterEdge;
+  }
 
-private:
-    LayoutRect m_layoutOverflow;
-    LayoutRect m_selfVisualOverflow;
-    LayoutRect m_contentsVisualOverflow;
-    LayoutUnit m_layoutClientAfterEdge;
+ private:
+  LayoutRect m_layoutOverflow;
+  LayoutRect m_selfVisualOverflow;
+  LayoutRect m_contentsVisualOverflow;
+  LayoutUnit m_layoutClientAfterEdge;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OverflowModel_h
+#endif  // OverflowModel_h

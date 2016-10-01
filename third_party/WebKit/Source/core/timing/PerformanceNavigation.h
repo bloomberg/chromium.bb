@@ -40,31 +40,34 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT PerformanceNavigation final : public GarbageCollected<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
-public:
-    static PerformanceNavigation* create(LocalFrame* frame)
-    {
-        return new PerformanceNavigation(frame);
-    }
+class CORE_EXPORT PerformanceNavigation final
+    : public GarbageCollected<PerformanceNavigation>,
+      public ScriptWrappable,
+      public DOMWindowProperty {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
 
-    enum PerformanceNavigationType {
-        kTypeNavigate,
-        kTypeReload,
-        kTypeBackForward,
-        kTypeReserved = 255
-    };
+ public:
+  static PerformanceNavigation* create(LocalFrame* frame) {
+    return new PerformanceNavigation(frame);
+  }
 
-    unsigned short type() const;
-    unsigned short redirectCount() const;
+  enum PerformanceNavigationType {
+    kTypeNavigate,
+    kTypeReload,
+    kTypeBackForward,
+    kTypeReserved = 255
+  };
 
-    DECLARE_VIRTUAL_TRACE();
+  unsigned short type() const;
+  unsigned short redirectCount() const;
 
-private:
-    explicit PerformanceNavigation(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  explicit PerformanceNavigation(LocalFrame*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PerformanceNavigation_h
+#endif  // PerformanceNavigation_h

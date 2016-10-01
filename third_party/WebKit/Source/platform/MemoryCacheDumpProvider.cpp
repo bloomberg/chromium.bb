@@ -6,48 +6,42 @@
 
 namespace blink {
 
-DEFINE_TRACE(MemoryCacheDumpClient)
-{
+DEFINE_TRACE(MemoryCacheDumpClient) {}
+
+MemoryCacheDumpProvider* MemoryCacheDumpProvider::instance() {
+  DEFINE_STATIC_LOCAL(MemoryCacheDumpProvider, instance, ());
+  return &instance;
 }
 
-MemoryCacheDumpProvider* MemoryCacheDumpProvider::instance()
-{
-    DEFINE_STATIC_LOCAL(MemoryCacheDumpProvider, instance, ());
-    return &instance;
-}
+bool MemoryCacheDumpProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* memoryDump) {
+  DCHECK(isMainThread());
+  if (!m_client)
+    return false;
 
-bool MemoryCacheDumpProvider::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args, base::trace_event::ProcessMemoryDump* memoryDump)
-{
-    DCHECK(isMainThread());
-    if (!m_client)
-        return false;
-
-    WebMemoryDumpLevelOfDetail level;
-    switch (args.level_of_detail) {
+  WebMemoryDumpLevelOfDetail level;
+  switch (args.level_of_detail) {
     case base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND:
-        level = blink::WebMemoryDumpLevelOfDetail::Background;
-        break;
+      level = blink::WebMemoryDumpLevelOfDetail::Background;
+      break;
     case base::trace_event::MemoryDumpLevelOfDetail::LIGHT:
-        level = blink::WebMemoryDumpLevelOfDetail::Light;
-        break;
+      level = blink::WebMemoryDumpLevelOfDetail::Light;
+      break;
     case base::trace_event::MemoryDumpLevelOfDetail::DETAILED:
-        level = blink::WebMemoryDumpLevelOfDetail::Detailed;
-        break;
+      level = blink::WebMemoryDumpLevelOfDetail::Detailed;
+      break;
     default:
-        NOTREACHED();
-        return false;
-    }
+      NOTREACHED();
+      return false;
+  }
 
-    WebProcessMemoryDump dump(args.level_of_detail, memoryDump);
-    return m_client->onMemoryDump(level, &dump);
+  WebProcessMemoryDump dump(args.level_of_detail, memoryDump);
+  return m_client->onMemoryDump(level, &dump);
 }
 
-MemoryCacheDumpProvider::MemoryCacheDumpProvider()
-{
-}
+MemoryCacheDumpProvider::MemoryCacheDumpProvider() {}
 
-MemoryCacheDumpProvider::~MemoryCacheDumpProvider()
-{
-}
+MemoryCacheDumpProvider::~MemoryCacheDumpProvider() {}
 
-} // namespace blink
+}  // namespace blink

@@ -34,40 +34,40 @@
 
 namespace blink {
 
-PagePopupSupplement::PagePopupSupplement(PagePopup& popup, PagePopupClient* popupClient)
-    : m_controller(PagePopupController::create(popup, popupClient))
-{
-    ASSERT(popupClient);
+PagePopupSupplement::PagePopupSupplement(PagePopup& popup,
+                                         PagePopupClient* popupClient)
+    : m_controller(PagePopupController::create(popup, popupClient)) {
+  ASSERT(popupClient);
 }
 
-const char* PagePopupSupplement::supplementName()
-{
-    return "PagePopupSupplement";
+const char* PagePopupSupplement::supplementName() {
+  return "PagePopupSupplement";
 }
 
-PagePopupController* PagePopupSupplement::pagePopupController(LocalFrame& frame)
-{
-    PagePopupSupplement* supplement = static_cast<PagePopupSupplement*>(from(&frame, supplementName()));
-    ASSERT(supplement);
-    return supplement->m_controller.get();
+PagePopupController* PagePopupSupplement::pagePopupController(
+    LocalFrame& frame) {
+  PagePopupSupplement* supplement =
+      static_cast<PagePopupSupplement*>(from(&frame, supplementName()));
+  ASSERT(supplement);
+  return supplement->m_controller.get();
 }
 
-void PagePopupSupplement::install(LocalFrame& frame, PagePopup& popup, PagePopupClient* popupClient)
-{
-    ASSERT(popupClient);
-    provideTo(frame, supplementName(), new PagePopupSupplement(popup, popupClient));
+void PagePopupSupplement::install(LocalFrame& frame,
+                                  PagePopup& popup,
+                                  PagePopupClient* popupClient) {
+  ASSERT(popupClient);
+  provideTo(frame, supplementName(),
+            new PagePopupSupplement(popup, popupClient));
 }
 
-void PagePopupSupplement::uninstall(LocalFrame& frame)
-{
-    pagePopupController(frame)->clearPagePopupClient();
-    frame.removeSupplement(supplementName());
+void PagePopupSupplement::uninstall(LocalFrame& frame) {
+  pagePopupController(frame)->clearPagePopupClient();
+  frame.removeSupplement(supplementName());
 }
 
-DEFINE_TRACE(PagePopupSupplement)
-{
-    visitor->trace(m_controller);
-    Supplement<LocalFrame>::trace(visitor);
+DEFINE_TRACE(PagePopupSupplement) {
+  visitor->trace(m_controller);
+  Supplement<LocalFrame>::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

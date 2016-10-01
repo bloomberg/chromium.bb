@@ -30,46 +30,43 @@ namespace blink {
 
 // TODO(flackr): Combine with WebLayerPositionConstraint.
 struct WebLayerStickyPositionConstraint {
-    // True if the layer is sticky.
-    bool isSticky         : 1;
+  // True if the layer is sticky.
+  bool isSticky : 1;
 
-    // For each edge, true if the layer should stick to that edge of its
-    // ancestor scroller (or the viewport).
-    bool isAnchoredLeft   : 1;
-    bool isAnchoredRight  : 1;
-    bool isAnchoredTop    : 1;
-    bool isAnchoredBottom : 1;
+  // For each edge, true if the layer should stick to that edge of its
+  // ancestor scroller (or the viewport).
+  bool isAnchoredLeft : 1;
+  bool isAnchoredRight : 1;
+  bool isAnchoredTop : 1;
+  bool isAnchoredBottom : 1;
 
-    // For each edge, when the anchored bit above is set this gives the distance
-    // to keep the element from that edge of the ancestor scroller or viewport.
-    float leftOffset;
-    float rightOffset;
-    float topOffset;
-    float bottomOffset;
+  // For each edge, when the anchored bit above is set this gives the distance
+  // to keep the element from that edge of the ancestor scroller or viewport.
+  float leftOffset;
+  float rightOffset;
+  float topOffset;
+  float bottomOffset;
 
-    // The layout rectangle of the sticky element before it has been shifted
-    // to stick.
-    WebRect scrollContainerRelativeStickyBoxRect;
+  // The layout rectangle of the sticky element before it has been shifted
+  // to stick.
+  WebRect scrollContainerRelativeStickyBoxRect;
 
-    // The layout rectangle of the containing block edges which this sticky
-    // element should not be shifted beyond.
-    WebRect scrollContainerRelativeContainingBlockRect;
+  // The layout rectangle of the containing block edges which this sticky
+  // element should not be shifted beyond.
+  WebRect scrollContainerRelativeContainingBlockRect;
 
-    WebLayerStickyPositionConstraint()
-        : isSticky(false)
-        , isAnchoredLeft(false)
-        , isAnchoredRight(false)
-        , isAnchoredTop(false)
-        , isAnchoredBottom(false)
-        , leftOffset(0.f)
-        , rightOffset(0.f)
-        , topOffset(0.f)
-        , bottomOffset(0.f)
-    {
-    }
+  WebLayerStickyPositionConstraint()
+      : isSticky(false),
+        isAnchoredLeft(false),
+        isAnchoredRight(false),
+        isAnchoredTop(false),
+        isAnchoredBottom(false),
+        leftOffset(0.f),
+        rightOffset(0.f),
+        topOffset(0.f),
+        bottomOffset(0.f) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebLayerStickyPositionConstraint_h
-
+#endif  // WebLayerStickyPositionConstraint_h

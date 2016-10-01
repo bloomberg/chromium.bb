@@ -40,73 +40,73 @@
 namespace blink {
 
 ContentLayerDelegate::ContentLayerDelegate(GraphicsLayer* graphicsLayer)
-    : m_graphicsLayer(graphicsLayer)
-{
+    : m_graphicsLayer(graphicsLayer) {}
+
+ContentLayerDelegate::~ContentLayerDelegate() {}
+
+static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list,
+                                              const PaintArtifact& artifact,
+                                              const gfx::Rect& bounds) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    // This is a temporary path to paint the artifact using the paint chunk
+    // properties. Ultimately, we should instead split the artifact into
+    // separate layers and send those to the compositor, instead of sending
+    // one big flat SkPicture.
+    SkRect skBounds = SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(),
+                                       bounds.height());
+    list->appendDrawingItem(
+        WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
+        paintArtifactToSkPicture(artifact, skBounds));
+    return;
+  }
+  artifact.appendToWebDisplayItemList(list);
 }
 
-ContentLayerDelegate::~ContentLayerDelegate()
-{
-}
-
-static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const PaintArtifact& artifact, const gfx::Rect& bounds)
-{
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        // This is a temporary path to paint the artifact using the paint chunk
-        // properties. Ultimately, we should instead split the artifact into
-        // separate layers and send those to the compositor, instead of sending
-        // one big flat SkPicture.
-        SkRect skBounds = SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height());
-        list->appendDrawingItem(WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
-            paintArtifactToSkPicture(artifact, skBounds));
-        return;
-    }
-    artifact.appendToWebDisplayItemList(list);
-}
-
-gfx::Rect ContentLayerDelegate::paintableRegion()
-{
-    IntRect interestRect = m_graphicsLayer->interestRect();
-    return gfx::Rect(interestRect.x(), interestRect.y(), interestRect.width(), interestRect.height());
+gfx::Rect ContentLayerDelegate::paintableRegion() {
+  IntRect interestRect = m_graphicsLayer->interestRect();
+  return gfx::Rect(interestRect.x(), interestRect.y(), interestRect.width(),
+                   interestRect.height());
 }
 
 void ContentLayerDelegate::paintContents(
-    WebDisplayItemList* webDisplayItemList, WebContentLayerClient::PaintingControlSetting paintingControl)
-{
-    TRACE_EVENT0("blink,benchmark", "ContentLayerDelegate::paintContents");
+    WebDisplayItemList* webDisplayItemList,
+    WebContentLayerClient::PaintingControlSetting paintingControl) {
+  TRACE_EVENT0("blink,benchmark", "ContentLayerDelegate::paintContents");
 
-    PaintController& paintController = m_graphicsLayer->getPaintController();
-    paintController.setDisplayItemConstructionIsDisabled(
-        paintingControl == WebContentLayerClient::DisplayListConstructionDisabled);
-    paintController.setSubsequenceCachingIsDisabled(
-        paintingControl == WebContentLayerClient::SubsequenceCachingDisabled);
+  PaintController& paintController = m_graphicsLayer->getPaintController();
+  paintController.setDisplayItemConstructionIsDisabled(
+      paintingControl ==
+      WebContentLayerClient::DisplayListConstructionDisabled);
+  paintController.setSubsequenceCachingIsDisabled(
+      paintingControl == WebContentLayerClient::SubsequenceCachingDisabled);
 
-    // We also disable caching when Painting or Construction are disabled. In both cases we would like
-    // to compare assuming the full cost of recording, not the cost of re-using cached content.
-    if (paintingControl != WebContentLayerClient::PaintDefaultBehavior
-        && paintingControl != WebContentLayerClient::PaintDefaultBehaviorForTest
-        && paintingControl != WebContentLayerClient::SubsequenceCachingDisabled)
-        paintController.invalidateAll();
+  // We also disable caching when Painting or Construction are disabled. In both cases we would like
+  // to compare assuming the full cost of recording, not the cost of re-using cached content.
+  if (paintingControl != WebContentLayerClient::PaintDefaultBehavior &&
+      paintingControl != WebContentLayerClient::PaintDefaultBehaviorForTest &&
+      paintingControl != WebContentLayerClient::SubsequenceCachingDisabled)
+    paintController.invalidateAll();
 
-    GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
-    if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled
-        || paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
-        disabledMode = GraphicsContext::FullyDisabled;
+  GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
+  if (paintingControl == WebContentLayerClient::DisplayListPaintingDisabled ||
+      paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
+    disabledMode = GraphicsContext::FullyDisabled;
 
-    // Anything other than PaintDefaultBehavior is for testing. In non-testing scenarios,
-    // it is an error to call GraphicsLayer::paint. Actual painting occurs in FrameView::synchronizedPaint;
-    // this method merely copies the painted output to the WebDisplayItemList.
-    if (paintingControl != PaintDefaultBehavior)
-        m_graphicsLayer->paint(nullptr, disabledMode);
+  // Anything other than PaintDefaultBehavior is for testing. In non-testing scenarios,
+  // it is an error to call GraphicsLayer::paint. Actual painting occurs in FrameView::synchronizedPaint;
+  // this method merely copies the painted output to the WebDisplayItemList.
+  if (paintingControl != PaintDefaultBehavior)
+    m_graphicsLayer->paint(nullptr, disabledMode);
 
-    paintArtifactToWebDisplayItemList(webDisplayItemList, paintController.paintArtifact(), paintableRegion());
+  paintArtifactToWebDisplayItemList(
+      webDisplayItemList, paintController.paintArtifact(), paintableRegion());
 
-    paintController.setDisplayItemConstructionIsDisabled(false);
-    paintController.setSubsequenceCachingIsDisabled(false);
+  paintController.setDisplayItemConstructionIsDisabled(false);
+  paintController.setSubsequenceCachingIsDisabled(false);
 }
 
-size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const
-{
-    return m_graphicsLayer->getPaintController().approximateUnsharedMemoryUsage();
+size_t ContentLayerDelegate::approximateUnsharedMemoryUsage() const {
+  return m_graphicsLayer->getPaintController().approximateUnsharedMemoryUsage();
 }
 
-} // namespace blink
+}  // namespace blink

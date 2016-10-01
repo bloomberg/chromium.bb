@@ -20,43 +20,44 @@ class WebGL2RenderingContextBase;
 class WebTaskRunner;
 
 class WebGLQuery : public WebGLSharedPlatform3DObject {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~WebGLQuery() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebGLQuery* create(WebGL2RenderingContextBase*);
+ public:
+  ~WebGLQuery() override;
 
-    void setTarget(GLenum);
-    bool hasTarget() const { return m_target != 0; }
-    GLenum getTarget() const { return m_target; }
+  static WebGLQuery* create(WebGL2RenderingContextBase*);
 
-    void resetCachedResult();
-    void updateCachedResult(gpu::gles2::GLES2Interface*);
+  void setTarget(GLenum);
+  bool hasTarget() const { return m_target != 0; }
+  GLenum getTarget() const { return m_target; }
 
-    bool isQueryResultAvailable();
-    GLuint getQueryResult();
+  void resetCachedResult();
+  void updateCachedResult(gpu::gles2::GLES2Interface*);
 
-protected:
-    explicit WebGLQuery(WebGL2RenderingContextBase*);
+  bool isQueryResultAvailable();
+  GLuint getQueryResult();
 
-    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+ protected:
+  explicit WebGLQuery(WebGL2RenderingContextBase*);
 
-private:
-    bool isQuery() const override { return true; }
+  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    void scheduleAllowAvailabilityUpdate();
-    void allowAvailabilityUpdate();
+ private:
+  bool isQuery() const override { return true; }
 
-    GLenum m_target;
+  void scheduleAllowAvailabilityUpdate();
+  void allowAvailabilityUpdate();
 
-    bool m_canUpdateAvailability;
-    bool m_queryResultAvailable;
-    GLuint m_queryResult;
+  GLenum m_target;
 
-    std::unique_ptr<WebTaskRunner> m_taskRunner;
-    std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
+  bool m_canUpdateAvailability;
+  bool m_queryResultAvailable;
+  GLuint m_queryResult;
+
+  std::unique_ptr<WebTaskRunner> m_taskRunner;
+  std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLQuery_h
+#endif  // WebGLQuery_h

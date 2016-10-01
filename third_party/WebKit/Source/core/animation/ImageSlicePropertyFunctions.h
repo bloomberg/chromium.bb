@@ -12,49 +12,51 @@ namespace blink {
 
 // This struct doesn't retain ownership of the slices, treat it like a reference.
 struct ImageSlice {
-    ImageSlice(const LengthBox& slices, bool fill)
-        : slices(slices)
-        , fill(fill)
-    { }
+  ImageSlice(const LengthBox& slices, bool fill) : slices(slices), fill(fill) {}
 
-    const LengthBox& slices;
-    bool fill;
+  const LengthBox& slices;
+  bool fill;
 };
 
 class ImageSlicePropertyFunctions {
-public:
-    static ImageSlice getInitialImageSlice(CSSPropertyID property) { return getImageSlice(property, ComputedStyle::initialStyle()); }
+ public:
+  static ImageSlice getInitialImageSlice(CSSPropertyID property) {
+    return getImageSlice(property, ComputedStyle::initialStyle());
+  }
 
-    static ImageSlice getImageSlice(CSSPropertyID property, const ComputedStyle& style)
-    {
-        switch (property) {
-        default:
-            NOTREACHED();
-            // Fall through.
-        case CSSPropertyBorderImageSlice:
-            return ImageSlice(style.borderImageSlices(), style.borderImageSlicesFill());
-        case CSSPropertyWebkitMaskBoxImageSlice:
-            return ImageSlice(style.maskBoxImageSlices(), style.maskBoxImageSlicesFill());
-        }
+  static ImageSlice getImageSlice(CSSPropertyID property,
+                                  const ComputedStyle& style) {
+    switch (property) {
+      default:
+        NOTREACHED();
+      // Fall through.
+      case CSSPropertyBorderImageSlice:
+        return ImageSlice(style.borderImageSlices(),
+                          style.borderImageSlicesFill());
+      case CSSPropertyWebkitMaskBoxImageSlice:
+        return ImageSlice(style.maskBoxImageSlices(),
+                          style.maskBoxImageSlicesFill());
     }
+  }
 
-    static void setImageSlice(CSSPropertyID property, ComputedStyle& style, const ImageSlice& slice)
-    {
-        switch (property) {
-        case CSSPropertyBorderImageSlice:
-            style.setBorderImageSlices(slice.slices);
-            style.setBorderImageSlicesFill(slice.fill);
-            break;
-        case CSSPropertyWebkitMaskBoxImageSlice:
-            style.setMaskBoxImageSlices(slice.slices);
-            style.setMaskBoxImageSlicesFill(slice.fill);
-            break;
-        default:
-            NOTREACHED();
-        }
+  static void setImageSlice(CSSPropertyID property,
+                            ComputedStyle& style,
+                            const ImageSlice& slice) {
+    switch (property) {
+      case CSSPropertyBorderImageSlice:
+        style.setBorderImageSlices(slice.slices);
+        style.setBorderImageSlicesFill(slice.fill);
+        break;
+      case CSSPropertyWebkitMaskBoxImageSlice:
+        style.setMaskBoxImageSlices(slice.slices);
+        style.setMaskBoxImageSlicesFill(slice.fill);
+        break;
+      default:
+        NOTREACHED();
     }
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ImageSlicePropertyFunctions_h
+#endif  // ImageSlicePropertyFunctions_h

@@ -17,18 +17,19 @@ class ScriptPromiseResolver;
 // Success and failure callbacks for getDisplays.
 using WebVRGetDisplaysCallback = WebCallbacks<VRDisplayVector, void>;
 class VRGetDevicesCallback final : public WebVRGetDisplaysCallback {
-    USING_FAST_MALLOC(VRGetDevicesCallback);
-public:
-    VRGetDevicesCallback(ScriptPromiseResolver*);
-    ~VRGetDevicesCallback() override;
+  USING_FAST_MALLOC(VRGetDevicesCallback);
 
-    void onSuccess(VRDisplayVector) override;
-    void onError() override;
+ public:
+  VRGetDevicesCallback(ScriptPromiseResolver*);
+  ~VRGetDevicesCallback() override;
 
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
+  void onSuccess(VRDisplayVector) override;
+  void onError() override;
+
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VRGetDevicesCallback_h
+#endif  // VRGetDevicesCallback_h

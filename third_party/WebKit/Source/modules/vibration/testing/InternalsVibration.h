@@ -40,12 +40,13 @@ class Internals;
 class Navigator;
 
 class InternalsVibration {
-    STATIC_ONLY(InternalsVibration);
-public:
-    static bool isVibrating(Internals&, Navigator*);
-    static Vector<unsigned> pendingVibrationPattern(Internals&, Navigator*);
+  STATIC_ONLY(InternalsVibration);
+
+ public:
+  static bool isVibrating(Internals&, Navigator*);
+  static Vector<unsigned> pendingVibrationPattern(Internals&, Navigator*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InternalsVibration_h
+#endif  // InternalsVibration_h

@@ -32,19 +32,17 @@
 namespace blink {
 
 struct DragSession {
-    STACK_ALLOCATED();
-    DragOperation operation;
-    bool mouseIsOverFileInput;
-    unsigned numberOfItemsToBeAccepted;
+  STACK_ALLOCATED();
+  DragOperation operation;
+  bool mouseIsOverFileInput;
+  unsigned numberOfItemsToBeAccepted;
 
-    DragSession()
-        : operation(DragOperationNone)
-        , mouseIsOverFileInput(false)
-        , numberOfItemsToBeAccepted(0)
-    {
-    }
+  DragSession()
+      : operation(DragOperationNone),
+        mouseIsOverFileInput(false),
+        numberOfItemsToBeAccepted(0) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

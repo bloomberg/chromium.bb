@@ -15,28 +15,28 @@ namespace blink {
 class ExecutionContext;
 class ScriptState;
 
-class SensorReading
-    : public GarbageCollectedFinalized<SensorReading>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_VIRTUAL_TRACE();
+class SensorReading : public GarbageCollectedFinalized<SensorReading>,
+                      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DOMHighResTimeStamp timeStamp(ScriptState*) const;
+ public:
+  DECLARE_VIRTUAL_TRACE();
 
-    // Returns 'true' if the current reading value is different than the given
-    // previous one; otherwise returns 'false'.
-    virtual bool isReadingUpdated(const SensorProxy::Reading& previous) const = 0;
+  DOMHighResTimeStamp timeStamp(ScriptState*) const;
 
-    virtual ~SensorReading();
+  // Returns 'true' if the current reading value is different than the given
+  // previous one; otherwise returns 'false'.
+  virtual bool isReadingUpdated(const SensorProxy::Reading& previous) const = 0;
 
-protected:
-    explicit SensorReading(SensorProxy*);
+  virtual ~SensorReading();
 
-protected:
-    Member<SensorProxy> m_sensorProxy;
+ protected:
+  explicit SensorReading(SensorProxy*);
+
+ protected:
+  Member<SensorProxy> m_sensorProxy;
 };
 
-} // namepsace blink
+}  // namepsace blink
 
-#endif // SensorReading_h
+#endif  // SensorReading_h

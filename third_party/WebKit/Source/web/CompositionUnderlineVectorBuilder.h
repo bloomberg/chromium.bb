@@ -42,10 +42,10 @@ namespace blink {
 // to Vector<CompositionUnderline>.
 
 class CompositionUnderlineVectorBuilder : public Vector<CompositionUnderline> {
-public:
-    CompositionUnderlineVectorBuilder(const WebVector<WebCompositionUnderline>&);
+ public:
+  CompositionUnderlineVectorBuilder(const WebVector<WebCompositionUnderline>&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

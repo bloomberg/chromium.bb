@@ -40,86 +40,86 @@ class Node;
 class ValidityState;
 
 class CORE_EXPORT FormAssociatedElement : public GarbageCollectedMixin {
-public:
-    virtual ~FormAssociatedElement();
+ public:
+  virtual ~FormAssociatedElement();
 
-    static HTMLFormElement* findAssociatedForm(const HTMLElement*);
-    HTMLFormElement* form() const { return m_form.get(); }
-    ValidityState* validity();
+  static HTMLFormElement* findAssociatedForm(const HTMLElement*);
+  HTMLFormElement* form() const { return m_form.get(); }
+  ValidityState* validity();
 
-    virtual bool isFormControlElement() const = 0;
-    virtual bool isFormControlElementWithState() const;
-    virtual bool isEnumeratable() const = 0;
+  virtual bool isFormControlElement() const = 0;
+  virtual bool isFormControlElementWithState() const;
+  virtual bool isEnumeratable() const = 0;
 
-    // Returns the 'name' attribute value. If this element has no name
-    // attribute, it returns an empty string instead of null string.
-    // Note that the 'name' IDL attribute doesn't use this function.
-    virtual const AtomicString& name() const;
+  // Returns the 'name' attribute value. If this element has no name
+  // attribute, it returns an empty string instead of null string.
+  // Note that the 'name' IDL attribute doesn't use this function.
+  virtual const AtomicString& name() const;
 
-    // Override in derived classes to get the encoded name=value pair for
-    // submitting.
-    virtual void appendToFormData(FormData&) { }
+  // Override in derived classes to get the encoded name=value pair for
+  // submitting.
+  virtual void appendToFormData(FormData&) {}
 
-    void resetFormOwner();
+  void resetFormOwner();
 
-    void formRemovedFromTree(const Node& formRoot);
+  void formRemovedFromTree(const Node& formRoot);
 
-    // ValidityState attribute implementations
-    bool customError() const;
+  // ValidityState attribute implementations
+  bool customError() const;
 
-    // Override functions for patterMismatch, rangeOverflow, rangerUnderflow,
-    // stepMismatch, tooLong, tooShort and valueMissing must call willValidate method.
-    virtual bool hasBadInput() const;
-    virtual bool patternMismatch() const;
-    virtual bool rangeOverflow() const;
-    virtual bool rangeUnderflow() const;
-    virtual bool stepMismatch() const;
-    virtual bool tooLong() const;
-    virtual bool tooShort() const;
-    virtual bool typeMismatch() const;
-    virtual bool valueMissing() const;
-    virtual String validationMessage() const;
-    virtual String validationSubMessage() const;
-    bool valid() const;
-    virtual void setCustomValidity(const String&);
+  // Override functions for patterMismatch, rangeOverflow, rangerUnderflow,
+  // stepMismatch, tooLong, tooShort and valueMissing must call willValidate method.
+  virtual bool hasBadInput() const;
+  virtual bool patternMismatch() const;
+  virtual bool rangeOverflow() const;
+  virtual bool rangeUnderflow() const;
+  virtual bool stepMismatch() const;
+  virtual bool tooLong() const;
+  virtual bool tooShort() const;
+  virtual bool typeMismatch() const;
+  virtual bool valueMissing() const;
+  virtual String validationMessage() const;
+  virtual String validationSubMessage() const;
+  bool valid() const;
+  virtual void setCustomValidity(const String&);
 
-    void formAttributeTargetChanged();
+  void formAttributeTargetChanged();
 
-    typedef HeapVector<Member<FormAssociatedElement>> List;
+  typedef HeapVector<Member<FormAssociatedElement>> List;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    FormAssociatedElement();
+ protected:
+  FormAssociatedElement();
 
-    void insertedInto(ContainerNode*);
-    void removedFrom(ContainerNode*);
-    void didMoveToNewDocument(Document& oldDocument);
+  void insertedInto(ContainerNode*);
+  void removedFrom(ContainerNode*);
+  void didMoveToNewDocument(Document& oldDocument);
 
-    // FIXME: Remove usage of setForm. resetFormOwner should be enough, and
-    // setForm is confusing.
-    void setForm(HTMLFormElement*);
-    void associateByParser(HTMLFormElement*);
-    void formAttributeChanged();
+  // FIXME: Remove usage of setForm. resetFormOwner should be enough, and
+  // setForm is confusing.
+  void setForm(HTMLFormElement*);
+  void associateByParser(HTMLFormElement*);
+  void formAttributeChanged();
 
-    // If you add an override of willChangeForm() or didChangeForm() to a class
-    // derived from this one, you will need to add a call to setForm(0) to the
-    // destructor of that class.
-    virtual void willChangeForm();
-    virtual void didChangeForm();
+  // If you add an override of willChangeForm() or didChangeForm() to a class
+  // derived from this one, you will need to add a call to setForm(0) to the
+  // destructor of that class.
+  virtual void willChangeForm();
+  virtual void didChangeForm();
 
-    String customValidationMessage() const;
+  String customValidationMessage() const;
 
-private:
-    void setFormAttributeTargetObserver(FormAttributeTargetObserver*);
-    void resetFormAttributeTargetObserver();
+ private:
+  void setFormAttributeTargetObserver(FormAttributeTargetObserver*);
+  void resetFormAttributeTargetObserver();
 
-    Member<FormAttributeTargetObserver> m_formAttributeTargetObserver;
-    Member<HTMLFormElement> m_form;
-    Member<ValidityState> m_validityState;
-    String m_customValidationMessage;
-    // If m_formWasSetByParser is true, m_form is always non-null.
-    bool m_formWasSetByParser;
+  Member<FormAttributeTargetObserver> m_formAttributeTargetObserver;
+  Member<HTMLFormElement> m_form;
+  Member<ValidityState> m_validityState;
+  String m_customValidationMessage;
+  // If m_formWasSetByParser is true, m_form is always non-null.
+  bool m_formWasSetByParser;
 };
 
 CORE_EXPORT HTMLElement* toHTMLElement(FormAssociatedElement*);
@@ -127,6 +127,6 @@ CORE_EXPORT HTMLElement& toHTMLElement(FormAssociatedElement&);
 CORE_EXPORT const HTMLElement* toHTMLElement(const FormAssociatedElement*);
 CORE_EXPORT const HTMLElement& toHTMLElement(const FormAssociatedElement&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FormAssociatedElement_h
+#endif  // FormAssociatedElement_h

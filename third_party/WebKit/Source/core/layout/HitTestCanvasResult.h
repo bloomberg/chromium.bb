@@ -10,26 +10,24 @@
 namespace blink {
 
 class CORE_EXPORT HitTestCanvasResult final
-    : public GarbageCollectedFinalized<HitTestCanvasResult>  {
+    : public GarbageCollectedFinalized<HitTestCanvasResult> {
+ public:
+  static HitTestCanvasResult* create(String id, Member<Element> control) {
+    return new HitTestCanvasResult(id, control);
+  }
 
-public:
-    static HitTestCanvasResult* create(String id, Member<Element> control)
-    {
-        return new HitTestCanvasResult(id, control);
-    }
+  String getId() const;
+  Element* getControl() const;
 
-    String getId() const;
-    Element* getControl() const;
+  DECLARE_TRACE();
 
-    DECLARE_TRACE();
+ private:
+  HitTestCanvasResult(String id, Member<Element> control);
 
-private:
-    HitTestCanvasResult(String id, Member<Element> control);
-
-    String m_id;
-    Member<Element> m_control;
+  String m_id;
+  Member<Element> m_control;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HitTestCanvasResult_h
+#endif  // HitTestCanvasResult_h

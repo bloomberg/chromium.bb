@@ -33,19 +33,22 @@
 namespace blink {
 
 // static
-WebMixedContent::ContextType WebMixedContent::contextTypeFromRequestContext(WebURLRequest::RequestContext context, bool strictMixedContentCheckingForPlugin)
-{
-    switch (context) {
+WebMixedContent::ContextType WebMixedContent::contextTypeFromRequestContext(
+    WebURLRequest::RequestContext context,
+    bool strictMixedContentCheckingForPlugin) {
+  switch (context) {
     // "Optionally-blockable" mixed content
     case WebURLRequest::RequestContextAudio:
     case WebURLRequest::RequestContextFavicon:
     case WebURLRequest::RequestContextImage:
     case WebURLRequest::RequestContextVideo:
-        return ContextType::OptionallyBlockable;
+      return ContextType::OptionallyBlockable;
 
     // Plugins! Oh how dearly we love plugin-loaded content!
     case WebURLRequest::RequestContextPlugin: {
-        return strictMixedContentCheckingForPlugin ? ContextType::Blockable : ContextType::OptionallyBlockable;
+      return strictMixedContentCheckingForPlugin
+                 ? ContextType::Blockable
+                 : ContextType::OptionallyBlockable;
     }
 
     // "Blockable" mixed content
@@ -75,95 +78,95 @@ WebMixedContent::ContextType WebMixedContent::contextTypeFromRequestContext(WebU
     case WebURLRequest::RequestContextWorker:
     case WebURLRequest::RequestContextXMLHttpRequest:
     case WebURLRequest::RequestContextXSLT:
-        return ContextType::Blockable;
+      return ContextType::Blockable;
 
     // FIXME: Contexts that we should block, but don't currently. https://crbug.com/388650
     case WebURLRequest::RequestContextDownload:
     case WebURLRequest::RequestContextPrefetch:
-        return ContextType::ShouldBeBlockable;
+      return ContextType::ShouldBeBlockable;
 
     case WebURLRequest::RequestContextUnspecified:
-        NOTREACHED();
-    }
-    NOTREACHED();
-    return ContextType::Blockable;
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return ContextType::Blockable;
 }
 
 // static
-const char* WebMixedContent::requestContextName(WebURLRequest::RequestContext context)
-{
-    switch (context) {
+const char* WebMixedContent::requestContextName(
+    WebURLRequest::RequestContext context) {
+  switch (context) {
     case WebURLRequest::RequestContextAudio:
-        return "audio file";
+      return "audio file";
     case WebURLRequest::RequestContextBeacon:
-        return "Beacon endpoint";
+      return "Beacon endpoint";
     case WebURLRequest::RequestContextCSPReport:
-        return "Content Security Policy reporting endpoint";
+      return "Content Security Policy reporting endpoint";
     case WebURLRequest::RequestContextDownload:
-        return "download";
+      return "download";
     case WebURLRequest::RequestContextEmbed:
-        return "plugin resource";
+      return "plugin resource";
     case WebURLRequest::RequestContextEventSource:
-        return "EventSource endpoint";
+      return "EventSource endpoint";
     case WebURLRequest::RequestContextFavicon:
-        return "favicon";
+      return "favicon";
     case WebURLRequest::RequestContextFetch:
-        return "resource";
+      return "resource";
     case WebURLRequest::RequestContextFont:
-        return "font";
+      return "font";
     case WebURLRequest::RequestContextForm:
-        return "form action";
+      return "form action";
     case WebURLRequest::RequestContextFrame:
-        return "frame";
+      return "frame";
     case WebURLRequest::RequestContextHyperlink:
-        return "resource";
+      return "resource";
     case WebURLRequest::RequestContextIframe:
-        return "frame";
+      return "frame";
     case WebURLRequest::RequestContextImage:
-        return "image";
+      return "image";
     case WebURLRequest::RequestContextImageSet:
-        return "image";
+      return "image";
     case WebURLRequest::RequestContextImport:
-        return "HTML Import";
+      return "HTML Import";
     case WebURLRequest::RequestContextInternal:
-        return "resource";
+      return "resource";
     case WebURLRequest::RequestContextLocation:
-        return "resource";
+      return "resource";
     case WebURLRequest::RequestContextManifest:
-        return "manifest";
+      return "manifest";
     case WebURLRequest::RequestContextObject:
-        return "plugin resource";
+      return "plugin resource";
     case WebURLRequest::RequestContextPing:
-        return "hyperlink auditing endpoint";
+      return "hyperlink auditing endpoint";
     case WebURLRequest::RequestContextPlugin:
-        return "plugin data";
+      return "plugin data";
     case WebURLRequest::RequestContextPrefetch:
-        return "prefetch resource";
+      return "prefetch resource";
     case WebURLRequest::RequestContextScript:
-        return "script";
+      return "script";
     case WebURLRequest::RequestContextServiceWorker:
-        return "Service Worker script";
+      return "Service Worker script";
     case WebURLRequest::RequestContextSharedWorker:
-        return "Shared Worker script";
+      return "Shared Worker script";
     case WebURLRequest::RequestContextStyle:
-        return "stylesheet";
+      return "stylesheet";
     case WebURLRequest::RequestContextSubresource:
-        return "resource";
+      return "resource";
     case WebURLRequest::RequestContextTrack:
-        return "Text Track";
+      return "Text Track";
     case WebURLRequest::RequestContextUnspecified:
-        return "resource";
+      return "resource";
     case WebURLRequest::RequestContextVideo:
-        return "video";
+      return "video";
     case WebURLRequest::RequestContextWorker:
-        return "Worker script";
+      return "Worker script";
     case WebURLRequest::RequestContextXMLHttpRequest:
-        return "XMLHttpRequest endpoint";
+      return "XMLHttpRequest endpoint";
     case WebURLRequest::RequestContextXSLT:
-        return "XSLT";
-    }
-    NOTREACHED();
-    return "resource";
+      return "XSLT";
+  }
+  NOTREACHED();
+  return "resource";
 }
 
-} // namespace blink
+}  // namespace blink

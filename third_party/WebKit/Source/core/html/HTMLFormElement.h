@@ -40,133 +40,141 @@ class HTMLImageElement;
 class RadioNodeListOrElement;
 
 class CORE_EXPORT HTMLFormElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLFormElement* create(Document&);
-    ~HTMLFormElement() override;
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_WRAPPERTYPEINFO();
 
-    HTMLFormControlsCollection* elements();
-    void getNamedElements(const AtomicString&, HeapVector<Member<Element>>&);
+ public:
+  static HTMLFormElement* create(Document&);
+  ~HTMLFormElement() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    unsigned length() const;
-    HTMLElement* item(unsigned index);
+  HTMLFormControlsCollection* elements();
+  void getNamedElements(const AtomicString&, HeapVector<Member<Element>>&);
 
-    String enctype() const { return m_attributes.encodingType(); }
-    void setEnctype(const AtomicString&);
+  unsigned length() const;
+  HTMLElement* item(unsigned index);
 
-    String encoding() const { return m_attributes.encodingType(); }
-    void setEncoding(const AtomicString& value) { setEnctype(value); }
+  String enctype() const { return m_attributes.encodingType(); }
+  void setEnctype(const AtomicString&);
 
-    bool shouldAutocomplete() const;
+  String encoding() const { return m_attributes.encodingType(); }
+  void setEncoding(const AtomicString& value) { setEnctype(value); }
 
-    void associate(FormAssociatedElement&);
-    void disassociate(FormAssociatedElement&);
-    void associate(HTMLImageElement&);
-    void disassociate(HTMLImageElement&);
-    void didAssociateByParser();
+  bool shouldAutocomplete() const;
 
-    void prepareForSubmission(Event*, HTMLFormControlElement* submitButton);
-    void submitFromJavaScript();
-    void reset();
+  void associate(FormAssociatedElement&);
+  void disassociate(FormAssociatedElement&);
+  void associate(HTMLImageElement&);
+  void disassociate(HTMLImageElement&);
+  void didAssociateByParser();
 
-    void setDemoted(bool);
+  void prepareForSubmission(Event*, HTMLFormControlElement* submitButton);
+  void submitFromJavaScript();
+  void reset();
 
-    void submitImplicitly(Event*, bool fromImplicitSubmissionTrigger);
+  void setDemoted(bool);
 
-    String name() const;
+  void submitImplicitly(Event*, bool fromImplicitSubmissionTrigger);
 
-    bool noValidate() const;
+  String name() const;
 
-    const AtomicString& action() const;
+  bool noValidate() const;
 
-    String method() const;
-    void setMethod(const AtomicString&);
+  const AtomicString& action() const;
 
-    // Find the 'default button.'
-    // https://html.spec.whatwg.org/multipage/forms.html#default-button
-    HTMLFormControlElement* findDefaultButton() const;
+  String method() const;
+  void setMethod(const AtomicString&);
 
-    bool checkValidity();
-    bool reportValidity();
-    bool matchesValidityPseudoClasses() const final;
-    bool isValidElement() final;
+  // Find the 'default button.'
+  // https://html.spec.whatwg.org/multipage/forms.html#default-button
+  HTMLFormControlElement* findDefaultButton() const;
 
-    RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
+  bool checkValidity();
+  bool reportValidity();
+  bool matchesValidityPseudoClasses() const final;
+  bool isValidElement() final;
 
-    const FormAssociatedElement::List& associatedElements() const;
-    const HeapVector<Member<HTMLImageElement>>& imageElements();
+  RadioButtonGroupScope& radioButtonGroupScope() {
+    return m_radioButtonGroupScope;
+  }
 
-    void anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
-    void invalidateDefaultButtonStyle() const;
+  const FormAssociatedElement::List& associatedElements() const;
+  const HeapVector<Member<HTMLImageElement>>& imageElements();
 
-private:
-    explicit HTMLFormElement(Document&);
+  void anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
+  void invalidateDefaultButtonStyle() const;
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
-    void finishParsingChildren() override;
+ private:
+  explicit HTMLFormElement(Document&);
 
-    void handleLocalEvents(Event&) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
+  void finishParsingChildren() override;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isURLAttribute(const Attribute&) const override;
-    bool hasLegalLinkAttribute(const QualifiedName&) const override;
+  void handleLocalEvents(Event&) override;
 
-    bool shouldRegisterAsNamedItem() const override { return true; }
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isURLAttribute(const Attribute&) const override;
+  bool hasLegalLinkAttribute(const QualifiedName&) const override;
 
-    void copyNonAttributePropertiesFromElement(const Element&) override;
+  bool shouldRegisterAsNamedItem() const override { return true; }
 
-    void submitDialog(FormSubmission*);
-    void submit(Event*, HTMLFormControlElement* submitButton);
+  void copyNonAttributePropertiesFromElement(const Element&) override;
 
-    void scheduleFormSubmission(FormSubmission*);
+  void submitDialog(FormSubmission*);
+  void submit(Event*, HTMLFormControlElement* submitButton);
 
-    void collectAssociatedElements(Node& root, FormAssociatedElement::List&) const;
-    void collectImageElements(Node& root, HeapVector<Member<HTMLImageElement>>&);
+  void scheduleFormSubmission(FormSubmission*);
 
-    // Returns true if the submission should proceed.
-    bool validateInteractively();
+  void collectAssociatedElements(Node& root,
+                                 FormAssociatedElement::List&) const;
+  void collectImageElements(Node& root, HeapVector<Member<HTMLImageElement>>&);
 
-    // Validates each of the controls, and stores controls of which 'invalid'
-    // event was not canceled to the specified vector. Returns true if there
-    // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(HeapVector<Member<HTMLFormControlElement>>*, CheckValidityEventBehavior);
+  // Returns true if the submission should proceed.
+  bool validateInteractively();
 
-    Element* elementFromPastNamesMap(const AtomicString&);
-    void addToPastNamesMap(Element*, const AtomicString& pastName);
-    void removeFromPastNamesMap(HTMLElement&);
+  // Validates each of the controls, and stores controls of which 'invalid'
+  // event was not canceled to the specified vector. Returns true if there
+  // are any invalid controls in this form.
+  bool checkInvalidControlsAndCollectUnhandled(
+      HeapVector<Member<HTMLFormControlElement>>*,
+      CheckValidityEventBehavior);
 
-    typedef HeapHashMap<AtomicString, Member<Element>> PastNamesMap;
+  Element* elementFromPastNamesMap(const AtomicString&);
+  void addToPastNamesMap(Element*, const AtomicString& pastName);
+  void removeFromPastNamesMap(HTMLElement&);
 
-    FormSubmission::Attributes m_attributes;
-    Member<PastNamesMap> m_pastNamesMap;
+  typedef HeapHashMap<AtomicString, Member<Element>> PastNamesMap;
 
-    RadioButtonGroupScope m_radioButtonGroupScope;
+  FormSubmission::Attributes m_attributes;
+  Member<PastNamesMap> m_pastNamesMap;
 
-    // Do not access m_associatedElements directly. Use associatedElements() instead.
-    FormAssociatedElement::List m_associatedElements;
-    // Do not access m_imageElements directly. Use imageElements() instead.
-    HeapVector<Member<HTMLImageElement>> m_imageElements;
+  RadioButtonGroupScope m_radioButtonGroupScope;
 
-    // https://html.spec.whatwg.org/multipage/forms.html#planned-navigation
-    // Unlike the specification, we use this only for web-exposed submit()
-    // function in 'submit' event handler.
-    Member<FormSubmission> m_plannedNavigation;
+  // Do not access m_associatedElements directly. Use associatedElements() instead.
+  FormAssociatedElement::List m_associatedElements;
+  // Do not access m_imageElements directly. Use imageElements() instead.
+  HeapVector<Member<HTMLImageElement>> m_imageElements;
 
-    bool m_isSubmitting = false;
-    bool m_inUserJSSubmitEvent = false;
+  // https://html.spec.whatwg.org/multipage/forms.html#planned-navigation
+  // Unlike the specification, we use this only for web-exposed submit()
+  // function in 'submit' event handler.
+  Member<FormSubmission> m_plannedNavigation;
 
-    bool m_associatedElementsAreDirty : 1;
-    bool m_imageElementsAreDirty : 1;
-    bool m_hasElementsAssociatedByParser : 1;
-    bool m_hasElementsAssociatedByFormAttribute : 1;
-    bool m_didFinishParsingChildren : 1;
-    bool m_isInResetFunction : 1;
-    bool m_wasDemoted : 1;
+  bool m_isSubmitting = false;
+  bool m_inUserJSSubmitEvent = false;
+
+  bool m_associatedElementsAreDirty : 1;
+  bool m_imageElementsAreDirty : 1;
+  bool m_hasElementsAssociatedByParser : 1;
+  bool m_hasElementsAssociatedByFormAttribute : 1;
+  bool m_didFinishParsingChildren : 1;
+  bool m_isInResetFunction : 1;
+  bool m_wasDemoted : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLFormElement_h
+#endif  // HTMLFormElement_h

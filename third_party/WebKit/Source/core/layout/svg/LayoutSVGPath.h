@@ -31,26 +31,28 @@
 namespace blink {
 
 class LayoutSVGPath final : public LayoutSVGShape {
-public:
-    explicit LayoutSVGPath(SVGGeometryElement*);
-    ~LayoutSVGPath() override;
+ public:
+  explicit LayoutSVGPath(SVGGeometryElement*);
+  ~LayoutSVGPath() override;
 
-    const Vector<MarkerPosition>* markerPositions() const override { return &m_markerPositions; }
+  const Vector<MarkerPosition>* markerPositions() const override {
+    return &m_markerPositions;
+  }
 
-    const char* name() const override { return "LayoutSVGPath"; }
+  const char* name() const override { return "LayoutSVGPath"; }
 
-private:
-    void updateShapeFromElement() override;
-    FloatRect hitTestStrokeBoundingBox() const override;
-    FloatRect calculateUpdatedStrokeBoundingBox() const;
+ private:
+  void updateShapeFromElement() override;
+  FloatRect hitTestStrokeBoundingBox() const override;
+  FloatRect calculateUpdatedStrokeBoundingBox() const;
 
-    FloatRect markerRect(float strokeWidth) const;
-    bool shouldGenerateMarkerPositions() const;
-    void processMarkerPositions();
+  FloatRect markerRect(float strokeWidth) const;
+  bool shouldGenerateMarkerPositions() const;
+  void processMarkerPositions();
 
-    Vector<MarkerPosition> m_markerPositions;
+  Vector<MarkerPosition> m_markerPositions;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

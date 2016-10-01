@@ -41,34 +41,41 @@
 
 namespace blink {
 
-class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final : public StorageQuotaCallbacks {
-public:
-    static DeprecatedStorageQuotaCallbacksImpl* create(StorageUsageCallback* success, StorageErrorCallback* error)
-    {
-        return new DeprecatedStorageQuotaCallbacksImpl(success, error);
-    }
+class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final
+    : public StorageQuotaCallbacks {
+ public:
+  static DeprecatedStorageQuotaCallbacksImpl* create(
+      StorageUsageCallback* success,
+      StorageErrorCallback* error) {
+    return new DeprecatedStorageQuotaCallbacksImpl(success, error);
+  }
 
-    static DeprecatedStorageQuotaCallbacksImpl* create(StorageQuotaCallback* success, StorageErrorCallback* error)
-    {
-        return new DeprecatedStorageQuotaCallbacksImpl(success, error);
-    }
+  static DeprecatedStorageQuotaCallbacksImpl* create(
+      StorageQuotaCallback* success,
+      StorageErrorCallback* error) {
+    return new DeprecatedStorageQuotaCallbacksImpl(success, error);
+  }
 
-    ~DeprecatedStorageQuotaCallbacksImpl() override;
-    DECLARE_VIRTUAL_TRACE();
+  ~DeprecatedStorageQuotaCallbacksImpl() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) override;
-    void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) override;
-    void didFail(WebStorageQuotaError) override;
+  void didQueryStorageUsageAndQuota(unsigned long long usageInBytes,
+                                    unsigned long long quotaInBytes) override;
+  void didGrantStorageQuota(unsigned long long usageInBytes,
+                            unsigned long long grantedQuotaInBytes) override;
+  void didFail(WebStorageQuotaError) override;
 
-private:
-    DeprecatedStorageQuotaCallbacksImpl(StorageUsageCallback*, StorageErrorCallback*);
-    DeprecatedStorageQuotaCallbacksImpl(StorageQuotaCallback*, StorageErrorCallback*);
+ private:
+  DeprecatedStorageQuotaCallbacksImpl(StorageUsageCallback*,
+                                      StorageErrorCallback*);
+  DeprecatedStorageQuotaCallbacksImpl(StorageQuotaCallback*,
+                                      StorageErrorCallback*);
 
-    Member<StorageUsageCallback> m_usageCallback;
-    Member<StorageQuotaCallback> m_quotaCallback;
-    Member<StorageErrorCallback> m_errorCallback;
+  Member<StorageUsageCallback> m_usageCallback;
+  Member<StorageQuotaCallback> m_quotaCallback;
+  Member<StorageErrorCallback> m_errorCallback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeprecatedStorageQuotaCallbacksImpl_h
+#endif  // DeprecatedStorageQuotaCallbacksImpl_h

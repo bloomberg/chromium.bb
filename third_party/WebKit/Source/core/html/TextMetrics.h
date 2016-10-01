@@ -32,84 +32,105 @@
 
 namespace blink {
 
-class CORE_EXPORT TextMetrics final : public GarbageCollected<TextMetrics>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static TextMetrics* create()
-    {
-        return new TextMetrics;
-    }
+class CORE_EXPORT TextMetrics final : public GarbageCollected<TextMetrics>,
+                                      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    float width() const { return m_width; }
-    void setWidth(float w) { m_width = w; }
+ public:
+  static TextMetrics* create() { return new TextMetrics; }
 
-    float actualBoundingBoxLeft() const { return m_actualBoundingBoxLeft; }
-    void setActualBoundingBoxLeft(float actualBoundingBoxLeft) { m_actualBoundingBoxLeft = actualBoundingBoxLeft; }
+  float width() const { return m_width; }
+  void setWidth(float w) { m_width = w; }
 
-    float actualBoundingBoxRight() const { return m_actualBoundingBoxRight; }
-    void setActualBoundingBoxRight(float actualBoundingBoxRight) { m_actualBoundingBoxRight = actualBoundingBoxRight; }
+  float actualBoundingBoxLeft() const { return m_actualBoundingBoxLeft; }
+  void setActualBoundingBoxLeft(float actualBoundingBoxLeft) {
+    m_actualBoundingBoxLeft = actualBoundingBoxLeft;
+  }
 
-    float fontBoundingBoxAscent() const { return m_fontBoundingBoxAscent; }
-    void setFontBoundingBoxAscent(float fontBoundingBoxAscent) { m_fontBoundingBoxAscent = fontBoundingBoxAscent; }
+  float actualBoundingBoxRight() const { return m_actualBoundingBoxRight; }
+  void setActualBoundingBoxRight(float actualBoundingBoxRight) {
+    m_actualBoundingBoxRight = actualBoundingBoxRight;
+  }
 
-    float fontBoundingBoxDescent() const { return m_fontBoundingBoxDescent; }
-    void setFontBoundingBoxDescent(float fontBoundingBoxDescent) { m_fontBoundingBoxDescent = fontBoundingBoxDescent; }
+  float fontBoundingBoxAscent() const { return m_fontBoundingBoxAscent; }
+  void setFontBoundingBoxAscent(float fontBoundingBoxAscent) {
+    m_fontBoundingBoxAscent = fontBoundingBoxAscent;
+  }
 
-    float actualBoundingBoxAscent() const { return m_actualBoundingBoxAscent; }
-    void setActualBoundingBoxAscent(float actualBoundingBoxAscent) { m_actualBoundingBoxAscent = actualBoundingBoxAscent; }
+  float fontBoundingBoxDescent() const { return m_fontBoundingBoxDescent; }
+  void setFontBoundingBoxDescent(float fontBoundingBoxDescent) {
+    m_fontBoundingBoxDescent = fontBoundingBoxDescent;
+  }
 
-    float actualBoundingBoxDescent() const { return m_actualBoundingBoxDescent; }
-    void setActualBoundingBoxDescent(float actualBoundingBoxDescent) { m_actualBoundingBoxDescent = actualBoundingBoxDescent; }
+  float actualBoundingBoxAscent() const { return m_actualBoundingBoxAscent; }
+  void setActualBoundingBoxAscent(float actualBoundingBoxAscent) {
+    m_actualBoundingBoxAscent = actualBoundingBoxAscent;
+  }
 
-    float emHeightAscent() const { return m_emHeightAscent; }
-    void setEmHeightAscent(float emHeightAscent) { m_emHeightAscent = emHeightAscent; }
+  float actualBoundingBoxDescent() const { return m_actualBoundingBoxDescent; }
+  void setActualBoundingBoxDescent(float actualBoundingBoxDescent) {
+    m_actualBoundingBoxDescent = actualBoundingBoxDescent;
+  }
 
-    float emHeightDescent() const { return m_emHeightDescent; }
-    void setEmHeightDescent(float emHeightDescent) { m_emHeightDescent = emHeightDescent; }
+  float emHeightAscent() const { return m_emHeightAscent; }
+  void setEmHeightAscent(float emHeightAscent) {
+    m_emHeightAscent = emHeightAscent;
+  }
 
-    float hangingBaseline() const { return m_hangingBaseline; }
-    void setHangingBaseline(float hangingBaseline) { m_hangingBaseline = hangingBaseline; }
+  float emHeightDescent() const { return m_emHeightDescent; }
+  void setEmHeightDescent(float emHeightDescent) {
+    m_emHeightDescent = emHeightDescent;
+  }
 
-    float alphabeticBaseline() const { return m_alphabeticBaseline; }
-    void setAlphabeticBaseline(float alphabeticBaseline) { m_alphabeticBaseline = alphabeticBaseline; }
+  float hangingBaseline() const { return m_hangingBaseline; }
+  void setHangingBaseline(float hangingBaseline) {
+    m_hangingBaseline = hangingBaseline;
+  }
 
-    float ideographicBaseline() const { return m_ideographicBaseline; }
-    void setIdeographicBaseline(float ideographicBaseline) { m_ideographicBaseline = ideographicBaseline; }
+  float alphabeticBaseline() const { return m_alphabeticBaseline; }
+  void setAlphabeticBaseline(float alphabeticBaseline) {
+    m_alphabeticBaseline = alphabeticBaseline;
+  }
 
-    DEFINE_INLINE_TRACE() { }
+  float ideographicBaseline() const { return m_ideographicBaseline; }
+  void setIdeographicBaseline(float ideographicBaseline) {
+    m_ideographicBaseline = ideographicBaseline;
+  }
 
-private:
-    TextMetrics()
-        : m_width(0)
-        , m_actualBoundingBoxLeft(0)
-        , m_actualBoundingBoxRight(0)
-        , m_fontBoundingBoxAscent(0)
-        , m_fontBoundingBoxDescent(0)
-        , m_actualBoundingBoxAscent(0)
-        , m_actualBoundingBoxDescent(0)
-        , m_emHeightAscent(0)
-        , m_emHeightDescent(0)
-        , m_hangingBaseline(0)
-        , m_alphabeticBaseline(0)
-        , m_ideographicBaseline(0) { }
+  DEFINE_INLINE_TRACE() {}
 
-    // x-direction
-    float m_width;
-    float m_actualBoundingBoxLeft;
-    float m_actualBoundingBoxRight;
+ private:
+  TextMetrics()
+      : m_width(0),
+        m_actualBoundingBoxLeft(0),
+        m_actualBoundingBoxRight(0),
+        m_fontBoundingBoxAscent(0),
+        m_fontBoundingBoxDescent(0),
+        m_actualBoundingBoxAscent(0),
+        m_actualBoundingBoxDescent(0),
+        m_emHeightAscent(0),
+        m_emHeightDescent(0),
+        m_hangingBaseline(0),
+        m_alphabeticBaseline(0),
+        m_ideographicBaseline(0) {}
 
-    // y-direction
-    float m_fontBoundingBoxAscent;
-    float m_fontBoundingBoxDescent;
-    float m_actualBoundingBoxAscent;
-    float m_actualBoundingBoxDescent;
-    float m_emHeightAscent;
-    float m_emHeightDescent;
-    float m_hangingBaseline;
-    float m_alphabeticBaseline;
-    float m_ideographicBaseline;
+  // x-direction
+  float m_width;
+  float m_actualBoundingBoxLeft;
+  float m_actualBoundingBoxRight;
+
+  // y-direction
+  float m_fontBoundingBoxAscent;
+  float m_fontBoundingBoxDescent;
+  float m_actualBoundingBoxAscent;
+  float m_actualBoundingBoxDescent;
+  float m_emHeightAscent;
+  float m_emHeightDescent;
+  float m_hangingBaseline;
+  float m_alphabeticBaseline;
+  float m_ideographicBaseline;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextMetrics_h
+#endif  // TextMetrics_h

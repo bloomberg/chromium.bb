@@ -43,44 +43,45 @@
 namespace blink {
 
 NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
+    : DOMWindowProperty(frame) {}
+
+DEFINE_TRACE(NavigatorWebMIDI) {
+  Supplement<Navigator>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(NavigatorWebMIDI)
-{
-    Supplement<Navigator>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+const char* NavigatorWebMIDI::supplementName() {
+  return "NavigatorWebMIDI";
 }
 
-const char* NavigatorWebMIDI::supplementName()
-{
-    return "NavigatorWebMIDI";
+NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator) {
+  NavigatorWebMIDI* supplement = static_cast<NavigatorWebMIDI*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new NavigatorWebMIDI(navigator.frame());
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator)
-{
-    NavigatorWebMIDI* supplement = static_cast<NavigatorWebMIDI*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new NavigatorWebMIDI(navigator.frame());
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState,
+                                                  Navigator& navigator,
+                                                  const MIDIOptions& options) {
+  return NavigatorWebMIDI::from(navigator).requestMIDIAccess(scriptState,
+                                                             options);
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navigator& navigator, const MIDIOptions& options)
-{
-    return NavigatorWebMIDI::from(navigator).requestMIDIAccess(scriptState, options);
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState,
+                                                  const MIDIOptions& options) {
+  if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(AbortError, "The frame is not working."));
+  }
+
+  UseCounter::countCrossOriginIframe(*frame()->document(),
+                                     UseCounter::RequestMIDIAccessIframe);
+  return MIDIAccessInitializer::start(scriptState, options);
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const MIDIOptions& options)
-{
-    if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "The frame is not working."));
-    }
-
-    UseCounter::countCrossOriginIframe(*frame()->document(), UseCounter::RequestMIDIAccessIframe);
-    return MIDIAccessInitializer::start(scriptState, options);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -13,7 +13,7 @@ namespace WTF {
 
 class String;
 
-} // namespace WTF
+}  // namespace WTF
 
 namespace blink {
 
@@ -22,34 +22,32 @@ class ExceptionState;
 class ExecutionContext;
 
 class CORE_EXPORT DictionaryIterator {
-    STACK_ALLOCATED();
-public:
-    DictionaryIterator(std::nullptr_t)
-        : m_isolate(nullptr)
-        , m_done(true)
-    { }
+  STACK_ALLOCATED();
 
-    DictionaryIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
+ public:
+  DictionaryIterator(std::nullptr_t) : m_isolate(nullptr), m_done(true) {}
 
-    bool isNull() const { return m_iterator.IsEmpty(); }
+  DictionaryIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
 
-    // Returns true if the iterator is still not done.
-    bool next(ExecutionContext*, ExceptionState&);
+  bool isNull() const { return m_iterator.IsEmpty(); }
 
-    v8::MaybeLocal<v8::Value> value() { return m_value; }
-    bool valueAsDictionary(Dictionary& result, ExceptionState&);
-    bool valueAsString(WTF::String& result);
+  // Returns true if the iterator is still not done.
+  bool next(ExecutionContext*, ExceptionState&);
 
-private:
-    v8::Isolate* m_isolate;
-    v8::Local<v8::Object> m_iterator;
-    v8::Local<v8::String> m_nextKey;
-    v8::Local<v8::String> m_doneKey;
-    v8::Local<v8::String> m_valueKey;
-    bool m_done;
-    v8::MaybeLocal<v8::Value> m_value;
+  v8::MaybeLocal<v8::Value> value() { return m_value; }
+  bool valueAsDictionary(Dictionary& result, ExceptionState&);
+  bool valueAsString(WTF::String& result);
+
+ private:
+  v8::Isolate* m_isolate;
+  v8::Local<v8::Object> m_iterator;
+  v8::Local<v8::String> m_nextKey;
+  v8::Local<v8::String> m_doneKey;
+  v8::Local<v8::String> m_valueKey;
+  bool m_done;
+  v8::MaybeLocal<v8::Value> m_value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DictionaryIterator_h
+#endif  // DictionaryIterator_h

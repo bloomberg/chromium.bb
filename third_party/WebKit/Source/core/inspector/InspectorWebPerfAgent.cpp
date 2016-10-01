@@ -22,110 +22,100 @@ static const double kLongTaskThresholdMillis = 50.0;
 static const char* unknownAttribution = "unknown";
 static const char* ambiguousAttribution = "multiple-contexts";
 
-bool canAccessOrigin(Frame* frame1, Frame* frame2)
-{
-    SecurityOrigin* securityOrigin1 = frame1->securityContext()->getSecurityOrigin();
-    SecurityOrigin* securityOrigin2 = frame2->securityContext()->getSecurityOrigin();
-    // TODO(panicker): Confirm this pending security review.
-    return securityOrigin1->canAccess(securityOrigin2);
+bool canAccessOrigin(Frame* frame1, Frame* frame2) {
+  SecurityOrigin* securityOrigin1 =
+      frame1->securityContext()->getSecurityOrigin();
+  SecurityOrigin* securityOrigin2 =
+      frame2->securityContext()->getSecurityOrigin();
+  // TODO(panicker): Confirm this pending security review.
+  return securityOrigin1->canAccess(securityOrigin2);
 }
-} // namespace
+}  // namespace
 
 InspectorWebPerfAgent::InspectorWebPerfAgent(InspectedFrames* inspectedFrames)
-    : m_inspectedFrames(inspectedFrames)
-{
+    : m_inspectedFrames(inspectedFrames) {}
+
+InspectorWebPerfAgent::~InspectorWebPerfAgent() {
+  DCHECK(!m_enabled);
 }
 
-InspectorWebPerfAgent::~InspectorWebPerfAgent()
-{
-    DCHECK(!m_enabled);
+void InspectorWebPerfAgent::enable() {
+  Platform::current()->currentThread()->addTaskTimeObserver(this);
+  Platform::current()->currentThread()->addTaskObserver(this);
+  m_inspectedFrames->root()->instrumentingAgents()->addInspectorWebPerfAgent(
+      this);
+  m_enabled = true;
 }
 
-void InspectorWebPerfAgent::enable()
-{
-    Platform::current()->currentThread()->addTaskTimeObserver(this);
-    Platform::current()->currentThread()->addTaskObserver(this);
-    m_inspectedFrames->root()->instrumentingAgents()->addInspectorWebPerfAgent(this);
-    m_enabled = true;
+void InspectorWebPerfAgent::disable() {
+  Platform::current()->currentThread()->removeTaskTimeObserver(this);
+  Platform::current()->currentThread()->removeTaskObserver(this);
+  m_inspectedFrames->root()->instrumentingAgents()->removeInspectorWebPerfAgent(
+      this);
+  m_enabled = false;
 }
 
-void InspectorWebPerfAgent::disable()
-{
-    Platform::current()->currentThread()->removeTaskTimeObserver(this);
-    Platform::current()->currentThread()->removeTaskObserver(this);
-    m_inspectedFrames->root()->instrumentingAgents()->removeInspectorWebPerfAgent(this);
-    m_enabled = false;
+void InspectorWebPerfAgent::willExecuteScript(ExecutionContext* context) {
+  // Heuristic for minimal frame context attribution: note the Location URL
+  // for each script execution. When a long task is encountered,
+  // if there is only one Location URL involved, then report it.
+  // Otherwise don't report Location URL.
+  // NOTE: This heuristic is imperfect and will be improved in V2 API.
+  // In V2, timing of script execution along with style & layout updates will be
+  // accounted for detailed and more accurate attribution.
+  if (context->isDocument())
+    m_frameContextLocations.add(toDocument(context)->location());
 }
 
-void InspectorWebPerfAgent::willExecuteScript(ExecutionContext* context)
-{
-    // Heuristic for minimal frame context attribution: note the Location URL
-    // for each script execution. When a long task is encountered,
-    // if there is only one Location URL involved, then report it.
-    // Otherwise don't report Location URL.
-    // NOTE: This heuristic is imperfect and will be improved in V2 API.
-    // In V2, timing of script execution along with style & layout updates will be
-    // accounted for detailed and more accurate attribution.
-    if (context->isDocument())
-        m_frameContextLocations.add(toDocument(context)->location());
+void InspectorWebPerfAgent::didExecuteScript() {}
+
+void InspectorWebPerfAgent::willProcessTask() {
+  // Reset m_frameContextLocations. We don't clear this in didProcessTask
+  // as it is needed in ReportTaskTime which occurs after didProcessTask.
+  m_frameContextLocations.clear();
 }
 
-void InspectorWebPerfAgent::didExecuteScript()
-{
-}
+void InspectorWebPerfAgent::didProcessTask() {}
 
-void InspectorWebPerfAgent::willProcessTask()
-{
-    // Reset m_frameContextLocations. We don't clear this in didProcessTask
-    // as it is needed in ReportTaskTime which occurs after didProcessTask.
-    m_frameContextLocations.clear();
-}
-
-void InspectorWebPerfAgent::didProcessTask()
-{
-}
-
-void InspectorWebPerfAgent::ReportTaskTime(
-    scheduler::TaskQueue*,
-    double startTime,
-    double endTime)
-{
-    if (((endTime - startTime) * 1000) <= kLongTaskThresholdMillis)
-        return;
-    DOMWindow* domWindow = m_inspectedFrames->root()->domWindow();
-    if (!domWindow)
-        return;
-    Performance* performance = DOMWindowPerformance::performance(*domWindow);
-    DCHECK(performance);
-    performance->addLongTaskTiming(startTime, endTime, sanitizedLongTaskName(
-        m_frameContextLocations, m_inspectedFrames->root()));
+void InspectorWebPerfAgent::ReportTaskTime(scheduler::TaskQueue*,
+                                           double startTime,
+                                           double endTime) {
+  if (((endTime - startTime) * 1000) <= kLongTaskThresholdMillis)
+    return;
+  DOMWindow* domWindow = m_inspectedFrames->root()->domWindow();
+  if (!domWindow)
+    return;
+  Performance* performance = DOMWindowPerformance::performance(*domWindow);
+  DCHECK(performance);
+  performance->addLongTaskTiming(
+      startTime, endTime, sanitizedLongTaskName(m_frameContextLocations,
+                                                m_inspectedFrames->root()));
 }
 
 String InspectorWebPerfAgent::sanitizedLongTaskName(
-    const HeapHashSet<Member<Location>>& frameContextLocations, Frame* rootFrame)
-{
-    if (frameContextLocations.size() == 0) {
-        // Unable to attribute as no script was involved.
-        return unknownAttribution;
-    }
-    if (frameContextLocations.size() > 1) {
-        // Unable to attribute, multiple script execution contents were involved.
-        return ambiguousAttribution;
-    }
-    // Exactly one culprit location, attribute based on origin boundary.
-    DCHECK_EQ(1u, frameContextLocations.size());
-    Location* culpritLocation = *frameContextLocations.begin();
-    if (canAccessOrigin(rootFrame, culpritLocation->frame())) {
-        // For same origin, it's safe to to return culprit location URL.
-        return culpritLocation->href();
-    }
-    return "cross-origin";
+    const HeapHashSet<Member<Location>>& frameContextLocations,
+    Frame* rootFrame) {
+  if (frameContextLocations.size() == 0) {
+    // Unable to attribute as no script was involved.
+    return unknownAttribution;
+  }
+  if (frameContextLocations.size() > 1) {
+    // Unable to attribute, multiple script execution contents were involved.
+    return ambiguousAttribution;
+  }
+  // Exactly one culprit location, attribute based on origin boundary.
+  DCHECK_EQ(1u, frameContextLocations.size());
+  Location* culpritLocation = *frameContextLocations.begin();
+  if (canAccessOrigin(rootFrame, culpritLocation->frame())) {
+    // For same origin, it's safe to to return culprit location URL.
+    return culpritLocation->href();
+  }
+  return "cross-origin";
 }
 
-DEFINE_TRACE(InspectorWebPerfAgent)
-{
-    visitor->trace(m_inspectedFrames);
-    visitor->trace(m_frameContextLocations);
+DEFINE_TRACE(InspectorWebPerfAgent) {
+  visitor->trace(m_inspectedFrames);
+  visitor->trace(m_frameContextLocations);
 }
 
-} // namespace blink
+}  // namespace blink

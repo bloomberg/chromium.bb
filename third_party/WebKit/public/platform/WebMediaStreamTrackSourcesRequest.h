@@ -38,33 +38,38 @@ class MediaStreamTrackSourcesRequest;
 class WebSourceInfo;
 
 class WebMediaStreamTrackSourcesRequest {
-public:
-    WebMediaStreamTrackSourcesRequest() { }
-    WebMediaStreamTrackSourcesRequest(const WebMediaStreamTrackSourcesRequest& other) { assign(other); }
-    ~WebMediaStreamTrackSourcesRequest() { reset(); }
+ public:
+  WebMediaStreamTrackSourcesRequest() {}
+  WebMediaStreamTrackSourcesRequest(
+      const WebMediaStreamTrackSourcesRequest& other) {
+    assign(other);
+  }
+  ~WebMediaStreamTrackSourcesRequest() { reset(); }
 
-    WebMediaStreamTrackSourcesRequest& operator=(const WebMediaStreamTrackSourcesRequest& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebMediaStreamTrackSourcesRequest& operator=(
+      const WebMediaStreamTrackSourcesRequest& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebMediaStreamTrackSourcesRequest&);
+  BLINK_PLATFORM_EXPORT void assign(const WebMediaStreamTrackSourcesRequest&);
 
-    BLINK_PLATFORM_EXPORT void reset();
-    bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebSecurityOrigin origin() const;
-    BLINK_PLATFORM_EXPORT void requestSucceeded(const WebVector<WebSourceInfo>&) const;
+  BLINK_PLATFORM_EXPORT WebSecurityOrigin origin() const;
+  BLINK_PLATFORM_EXPORT void requestSucceeded(
+      const WebVector<WebSourceInfo>&) const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(MediaStreamTrackSourcesRequest*);
+  BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(
+      MediaStreamTrackSourcesRequest*);
 #endif
 
-private:
-    WebPrivatePtr<MediaStreamTrackSourcesRequest> m_private;
+ private:
+  WebPrivatePtr<MediaStreamTrackSourcesRequest> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaStreamTrackSourcesRequest_h
+#endif  // WebMediaStreamTrackSourcesRequest_h

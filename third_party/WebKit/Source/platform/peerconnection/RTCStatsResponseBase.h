@@ -30,16 +30,16 @@
 
 namespace blink {
 
-class RTCStatsResponseBase : public GarbageCollectedFinalized<RTCStatsResponseBase> {
-public:
-    virtual ~RTCStatsResponseBase() { }
+class RTCStatsResponseBase
+    : public GarbageCollectedFinalized<RTCStatsResponseBase> {
+ public:
+  virtual ~RTCStatsResponseBase() {}
 
-    virtual void addStats(const WebRTCLegacyStats&) = 0;
+  virtual void addStats(const WebRTCLegacyStats&) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCStatsResponseBase_h
-
+#endif  // RTCStatsResponseBase_h

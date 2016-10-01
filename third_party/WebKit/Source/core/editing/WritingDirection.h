@@ -26,6 +26,10 @@
 #ifndef WritingDirection_h
 #define WritingDirection_h
 
-enum WritingDirection { NaturalWritingDirection, LeftToRightWritingDirection, RightToLeftWritingDirection };
+enum WritingDirection {
+  NaturalWritingDirection,
+  LeftToRightWritingDirection,
+  RightToLeftWritingDirection
+};
 
 #endif

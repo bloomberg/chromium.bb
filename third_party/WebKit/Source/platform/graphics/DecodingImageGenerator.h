@@ -45,38 +45,46 @@ class ImageFrameGenerator;
 // with a decoded image frame. ImageFrameGenerator does the actual decoding.
 //
 class PLATFORM_EXPORT DecodingImageGenerator final : public SkImageGenerator {
-    USING_FAST_MALLOC(DecodingImageGenerator);
-    WTF_MAKE_NONCOPYABLE(DecodingImageGenerator);
-public:
-    // Make SkImageGenerator::kNeedNewImageUniqueID accessible.
-    enum {
-        kNeedNewImageUniqueID = SkImageGenerator::kNeedNewImageUniqueID
-    };
+  USING_FAST_MALLOC(DecodingImageGenerator);
+  WTF_MAKE_NONCOPYABLE(DecodingImageGenerator);
 
-    static SkImageGenerator* create(SkData*);
+ public:
+  // Make SkImageGenerator::kNeedNewImageUniqueID accessible.
+  enum { kNeedNewImageUniqueID = SkImageGenerator::kNeedNewImageUniqueID };
 
-    DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>, const SkImageInfo&, PassRefPtr<SegmentReader>, bool allDataReceived, size_t index, uint32_t uniqueID = kNeedNewImageUniqueID);
-    ~DecodingImageGenerator() override;
+  static SkImageGenerator* create(SkData*);
 
-    void setCanYUVDecode(bool yes) { m_canYUVDecode = yes; }
+  DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>,
+                         const SkImageInfo&,
+                         PassRefPtr<SegmentReader>,
+                         bool allDataReceived,
+                         size_t index,
+                         uint32_t uniqueID = kNeedNewImageUniqueID);
+  ~DecodingImageGenerator() override;
 
-protected:
-    SkData* onRefEncodedData(GrContext* ctx) override;
+  void setCanYUVDecode(bool yes) { m_canYUVDecode = yes; }
 
-    bool onGetPixels(const SkImageInfo&, void* pixels, size_t rowBytes, SkPMColor table[], int* tableCount) override;
+ protected:
+  SkData* onRefEncodedData(GrContext* ctx) override;
 
-    bool onQueryYUV8(SkYUVSizeInfo*, SkYUVColorSpace*) const override;
+  bool onGetPixels(const SkImageInfo&,
+                   void* pixels,
+                   size_t rowBytes,
+                   SkPMColor table[],
+                   int* tableCount) override;
 
-    bool onGetYUV8Planes(const SkYUVSizeInfo&, void* planes[3]) override;
+  bool onQueryYUV8(SkYUVSizeInfo*, SkYUVColorSpace*) const override;
 
-private:
-    RefPtr<ImageFrameGenerator> m_frameGenerator;
-    const RefPtr<SegmentReader> m_data; // Data source.
-    const bool m_allDataReceived;
-    const size_t m_frameIndex;
-    bool m_canYUVDecode;
+  bool onGetYUV8Planes(const SkYUVSizeInfo&, void* planes[3]) override;
+
+ private:
+  RefPtr<ImageFrameGenerator> m_frameGenerator;
+  const RefPtr<SegmentReader> m_data;  // Data source.
+  const bool m_allDataReceived;
+  const size_t m_frameIndex;
+  bool m_canYUVDecode;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DecodingImageGenerator_h_
+#endif  // DecodingImageGenerator_h_

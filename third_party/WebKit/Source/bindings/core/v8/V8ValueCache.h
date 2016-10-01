@@ -38,75 +38,86 @@
 
 namespace blink {
 
-class StringCacheMapTraits : public V8GlobalValueMapTraits<StringImpl*, v8::String, v8::kWeakWithParameter> {
-    STATIC_ONLY(StringCacheMapTraits);
-public:
-    // Weak traits:
-    typedef StringImpl WeakCallbackDataType;
-    typedef v8::GlobalValueMap<StringImpl*, v8::String, StringCacheMapTraits> MapType;
+class StringCacheMapTraits
+    : public V8GlobalValueMapTraits<StringImpl*,
+                                    v8::String,
+                                    v8::kWeakWithParameter> {
+  STATIC_ONLY(StringCacheMapTraits);
 
-    static WeakCallbackDataType* WeakCallbackParameter(
-        MapType* map, StringImpl* key, v8::Local<v8::String>& value) { return key; }
-    static void DisposeCallbackData(WeakCallbackDataType* callbackData) { }
+ public:
+  // Weak traits:
+  typedef StringImpl WeakCallbackDataType;
+  typedef v8::GlobalValueMap<StringImpl*, v8::String, StringCacheMapTraits>
+      MapType;
 
-    static MapType* MapFromWeakCallbackInfo(
-        const v8::WeakCallbackInfo<WeakCallbackDataType>&);
+  static WeakCallbackDataType* WeakCallbackParameter(
+      MapType* map,
+      StringImpl* key,
+      v8::Local<v8::String>& value) {
+    return key;
+  }
+  static void DisposeCallbackData(WeakCallbackDataType* callbackData) {}
 
-    static StringImpl* KeyFromWeakCallbackInfo(
-        const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
-    {
-        return data.GetParameter();
-    }
+  static MapType* MapFromWeakCallbackInfo(
+      const v8::WeakCallbackInfo<WeakCallbackDataType>&);
 
-    static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
+  static StringImpl* KeyFromWeakCallbackInfo(
+      const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
+    return data.GetParameter();
+  }
 
-    static void Dispose(v8::Isolate*, v8::Global<v8::String> value, StringImpl* key);
-    static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
+  static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
+
+  static void Dispose(v8::Isolate*,
+                      v8::Global<v8::String> value,
+                      StringImpl* key);
+  static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
 };
-
 
 class CORE_EXPORT StringCache {
-    USING_FAST_MALLOC(StringCache);
-    WTF_MAKE_NONCOPYABLE(StringCache);
-public:
-    explicit StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }
+  USING_FAST_MALLOC(StringCache);
+  WTF_MAKE_NONCOPYABLE(StringCache);
 
-    v8::Local<v8::String> v8ExternalString(v8::Isolate* isolate, StringImpl* stringImpl)
-    {
-        ASSERT(stringImpl);
-        if (m_lastStringImpl.get() == stringImpl)
-            return m_lastV8String.NewLocal(isolate);
-        return v8ExternalStringSlow(isolate, stringImpl);
-    }
+ public:
+  explicit StringCache(v8::Isolate* isolate) : m_stringCache(isolate) {}
 
-    void setReturnValueFromString(v8::ReturnValue<v8::Value> returnValue, StringImpl* stringImpl)
-    {
-        ASSERT(stringImpl);
-        if (m_lastStringImpl.get() == stringImpl)
-            m_lastV8String.SetReturnValue(returnValue);
-        else
-            setReturnValueFromStringSlow(returnValue, stringImpl);
-    }
+  v8::Local<v8::String> v8ExternalString(v8::Isolate* isolate,
+                                         StringImpl* stringImpl) {
+    ASSERT(stringImpl);
+    if (m_lastStringImpl.get() == stringImpl)
+      return m_lastV8String.NewLocal(isolate);
+    return v8ExternalStringSlow(isolate, stringImpl);
+  }
 
-    void dispose();
+  void setReturnValueFromString(v8::ReturnValue<v8::Value> returnValue,
+                                StringImpl* stringImpl) {
+    ASSERT(stringImpl);
+    if (m_lastStringImpl.get() == stringImpl)
+      m_lastV8String.SetReturnValue(returnValue);
+    else
+      setReturnValueFromStringSlow(returnValue, stringImpl);
+  }
 
-    friend class StringCacheMapTraits;
+  void dispose();
 
-private:
-    v8::Local<v8::String> v8ExternalStringSlow(v8::Isolate*, StringImpl*);
-    void setReturnValueFromStringSlow(v8::ReturnValue<v8::Value>, StringImpl*);
-    v8::Local<v8::String> createStringAndInsertIntoCache(v8::Isolate*, StringImpl*);
-    void InvalidateLastString();
+  friend class StringCacheMapTraits;
 
-    StringCacheMapTraits::MapType m_stringCache;
-    StringCacheMapTraits::MapType::PersistentValueReference m_lastV8String;
+ private:
+  v8::Local<v8::String> v8ExternalStringSlow(v8::Isolate*, StringImpl*);
+  void setReturnValueFromStringSlow(v8::ReturnValue<v8::Value>, StringImpl*);
+  v8::Local<v8::String> createStringAndInsertIntoCache(v8::Isolate*,
+                                                       StringImpl*);
+  void InvalidateLastString();
 
-    // Note: RefPtr is a must as we cache by StringImpl* equality, not identity
-    // hence lastStringImpl might be not a key of the cache (in sense of identity)
-    // and hence it's not refed on addition.
-    RefPtr<StringImpl> m_lastStringImpl;
+  StringCacheMapTraits::MapType m_stringCache;
+  StringCacheMapTraits::MapType::PersistentValueReference m_lastV8String;
+
+  // Note: RefPtr is a must as we cache by StringImpl* equality, not identity
+  // hence lastStringImpl might be not a key of the cache (in sense of identity)
+  // and hence it's not refed on addition.
+  RefPtr<StringImpl> m_lastStringImpl;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ValueCache_h
+#endif  // V8ValueCache_h

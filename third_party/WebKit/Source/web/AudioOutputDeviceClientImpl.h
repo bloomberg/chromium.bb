@@ -11,24 +11,30 @@
 
 namespace blink {
 
-class AudioOutputDeviceClientImpl : public GarbageCollectedFinalized<AudioOutputDeviceClientImpl>, public AudioOutputDeviceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(AudioOutputDeviceClientImpl);
-    WTF_MAKE_NONCOPYABLE(AudioOutputDeviceClientImpl);
-public:
-    static AudioOutputDeviceClientImpl* create();
+class AudioOutputDeviceClientImpl
+    : public GarbageCollectedFinalized<AudioOutputDeviceClientImpl>,
+      public AudioOutputDeviceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(AudioOutputDeviceClientImpl);
+  WTF_MAKE_NONCOPYABLE(AudioOutputDeviceClientImpl);
 
-    ~AudioOutputDeviceClientImpl() override;
+ public:
+  static AudioOutputDeviceClientImpl* create();
 
-    // AudioOutputDeviceClient implementation.
-    void checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext*, const WebString& sinkId, std::unique_ptr<WebSetSinkIdCallbacks>) override;
+  ~AudioOutputDeviceClientImpl() override;
 
-    // GarbageCollectedFinalized implementation.
-    DEFINE_INLINE_VIRTUAL_TRACE() { AudioOutputDeviceClient::trace(visitor); }
+  // AudioOutputDeviceClient implementation.
+  void checkIfAudioSinkExistsAndIsAuthorized(
+      ExecutionContext*,
+      const WebString& sinkId,
+      std::unique_ptr<WebSetSinkIdCallbacks>) override;
 
-private:
-    AudioOutputDeviceClientImpl();
+  // GarbageCollectedFinalized implementation.
+  DEFINE_INLINE_VIRTUAL_TRACE() { AudioOutputDeviceClient::trace(visitor); }
+
+ private:
+  AudioOutputDeviceClientImpl();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioOutputDeviceClientImpl_h
+#endif  // AudioOutputDeviceClientImpl_h

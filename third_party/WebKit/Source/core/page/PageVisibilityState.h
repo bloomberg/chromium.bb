@@ -39,13 +39,13 @@ namespace blink {
 // The enum is not flag protected as it is used in the WebKit chromium API
 // without flag protection.
 enum PageVisibilityState {
-    PageVisibilityStateVisible,
-    PageVisibilityStateHidden,
-    PageVisibilityStatePrerender,
+  PageVisibilityStateVisible,
+  PageVisibilityStateHidden,
+  PageVisibilityStatePrerender,
 };
 
 CORE_EXPORT String pageVisibilityStateString(PageVisibilityState);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ifndef PageVisibilityState_h
+#endif  // ifndef PageVisibilityState_h

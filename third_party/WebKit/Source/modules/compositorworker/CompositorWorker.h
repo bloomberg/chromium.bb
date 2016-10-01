@@ -17,19 +17,23 @@ class ExecutionContext;
 class InProcessWorkerMessagingProxy;
 
 class MODULES_EXPORT CompositorWorker final : public InProcessWorkerBase {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(CompositorWorker);
-public:
-    static CompositorWorker* create(ExecutionContext*, const String& url, ExceptionState&);
-    ~CompositorWorker() override;
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(CompositorWorker);
 
-    const AtomicString& interfaceName() const override;
-    InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(ExecutionContext*) override;
+ public:
+  static CompositorWorker* create(ExecutionContext*,
+                                  const String& url,
+                                  ExceptionState&);
+  ~CompositorWorker() override;
 
-private:
-    explicit CompositorWorker(ExecutionContext*);
+  const AtomicString& interfaceName() const override;
+  InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(
+      ExecutionContext*) override;
+
+ private:
+  explicit CompositorWorker(ExecutionContext*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorWorker_h
+#endif  // CompositorWorker_h

@@ -34,15 +34,15 @@
 namespace blink {
 
 enum WebIDBDatabaseException {
-    WebIDBDatabaseExceptionUnknownError = 23,
-    WebIDBDatabaseExceptionConstraintError = 24,
-    WebIDBDatabaseExceptionDataError = 25,
-    WebIDBDatabaseExceptionVersionError = 28,
-    WebIDBDatabaseExceptionAbortError = 17,
-    WebIDBDatabaseExceptionQuotaError = 19,
-    WebIDBDatabaseExceptionTimeoutError = 20,
+  WebIDBDatabaseExceptionUnknownError = 23,
+  WebIDBDatabaseExceptionConstraintError = 24,
+  WebIDBDatabaseExceptionDataError = 25,
+  WebIDBDatabaseExceptionVersionError = 28,
+  WebIDBDatabaseExceptionAbortError = 17,
+  WebIDBDatabaseExceptionQuotaError = 19,
+  WebIDBDatabaseExceptionTimeoutError = 20,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBDatabaseException_h
+#endif  // WebIDBDatabaseException_h

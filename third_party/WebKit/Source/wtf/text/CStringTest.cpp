@@ -32,178 +32,171 @@ namespace WTF {
 
 namespace {
 
-CString printedString(const CString& string)
-{
-    std::ostringstream output;
-    output << string;
-    const std::string& result = output.str();
-    return CString(result.data(), result.length());
+CString printedString(const CString& string) {
+  std::ostringstream output;
+  output << string;
+  const std::string& result = output.str();
+  return CString(result.data(), result.length());
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
-TEST(CStringTest, NullStringConstructor)
-{
-    CString string;
-    EXPECT_TRUE(string.isNull());
-    EXPECT_EQ(static_cast<const char*>(0), string.data());
-    EXPECT_EQ(static_cast<size_t>(0), string.length());
+TEST(CStringTest, NullStringConstructor) {
+  CString string;
+  EXPECT_TRUE(string.isNull());
+  EXPECT_EQ(static_cast<const char*>(0), string.data());
+  EXPECT_EQ(static_cast<size_t>(0), string.length());
 
-    CString stringFromCharPointer(static_cast<const char*>(0));
-    EXPECT_TRUE(stringFromCharPointer.isNull());
-    EXPECT_EQ(static_cast<const char*>(0), stringFromCharPointer.data());
-    EXPECT_EQ(static_cast<size_t>(0), stringFromCharPointer.length());
+  CString stringFromCharPointer(static_cast<const char*>(0));
+  EXPECT_TRUE(stringFromCharPointer.isNull());
+  EXPECT_EQ(static_cast<const char*>(0), stringFromCharPointer.data());
+  EXPECT_EQ(static_cast<size_t>(0), stringFromCharPointer.length());
 
-    CString stringFromCharAndLength(static_cast<const char*>(0), 0);
-    EXPECT_TRUE(stringFromCharAndLength.isNull());
-    EXPECT_EQ(static_cast<const char*>(0), stringFromCharAndLength.data());
-    EXPECT_EQ(static_cast<size_t>(0), stringFromCharAndLength.length());
+  CString stringFromCharAndLength(static_cast<const char*>(0), 0);
+  EXPECT_TRUE(stringFromCharAndLength.isNull());
+  EXPECT_EQ(static_cast<const char*>(0), stringFromCharAndLength.data());
+  EXPECT_EQ(static_cast<size_t>(0), stringFromCharAndLength.length());
 }
 
-TEST(CStringTest, EmptyEmptyConstructor)
-{
-    const char* emptyString = "";
-    CString string(emptyString);
-    EXPECT_FALSE(string.isNull());
-    EXPECT_EQ(static_cast<size_t>(0), string.length());
-    EXPECT_EQ(0, string.data()[0]);
+TEST(CStringTest, EmptyEmptyConstructor) {
+  const char* emptyString = "";
+  CString string(emptyString);
+  EXPECT_FALSE(string.isNull());
+  EXPECT_EQ(static_cast<size_t>(0), string.length());
+  EXPECT_EQ(0, string.data()[0]);
 
-    CString stringWithLength(emptyString, 0);
-    EXPECT_FALSE(stringWithLength.isNull());
-    EXPECT_EQ(static_cast<size_t>(0), stringWithLength.length());
-    EXPECT_EQ(0, stringWithLength.data()[0]);
+  CString stringWithLength(emptyString, 0);
+  EXPECT_FALSE(stringWithLength.isNull());
+  EXPECT_EQ(static_cast<size_t>(0), stringWithLength.length());
+  EXPECT_EQ(0, stringWithLength.data()[0]);
 }
 
-TEST(CStringTest, EmptyRegularConstructor)
-{
-    const char* referenceString = "WebKit";
+TEST(CStringTest, EmptyRegularConstructor) {
+  const char* referenceString = "WebKit";
 
-    CString string(referenceString);
-    EXPECT_FALSE(string.isNull());
-    EXPECT_EQ(strlen(referenceString), string.length());
-    EXPECT_STREQ(referenceString, string.data());
+  CString string(referenceString);
+  EXPECT_FALSE(string.isNull());
+  EXPECT_EQ(strlen(referenceString), string.length());
+  EXPECT_STREQ(referenceString, string.data());
 
-    CString stringWithLength(referenceString, 6);
-    EXPECT_FALSE(stringWithLength.isNull());
-    EXPECT_EQ(strlen(referenceString), stringWithLength.length());
-    EXPECT_STREQ(referenceString, stringWithLength.data());
+  CString stringWithLength(referenceString, 6);
+  EXPECT_FALSE(stringWithLength.isNull());
+  EXPECT_EQ(strlen(referenceString), stringWithLength.length());
+  EXPECT_STREQ(referenceString, stringWithLength.data());
 }
 
-TEST(CStringTest, UninitializedConstructor)
-{
-    char* buffer;
-    CString emptyString = CString::newUninitialized(0, buffer);
-    EXPECT_FALSE(emptyString.isNull());
-    EXPECT_EQ(buffer, emptyString.data());
-    EXPECT_EQ(0, buffer[0]);
+TEST(CStringTest, UninitializedConstructor) {
+  char* buffer;
+  CString emptyString = CString::newUninitialized(0, buffer);
+  EXPECT_FALSE(emptyString.isNull());
+  EXPECT_EQ(buffer, emptyString.data());
+  EXPECT_EQ(0, buffer[0]);
 
-    const size_t length = 25;
-    CString uninitializedString = CString::newUninitialized(length, buffer);
-    EXPECT_FALSE(uninitializedString.isNull());
-    EXPECT_EQ(buffer, uninitializedString.data());
-    EXPECT_EQ(0, uninitializedString.data()[length]);
+  const size_t length = 25;
+  CString uninitializedString = CString::newUninitialized(length, buffer);
+  EXPECT_FALSE(uninitializedString.isNull());
+  EXPECT_EQ(buffer, uninitializedString.data());
+  EXPECT_EQ(0, uninitializedString.data()[length]);
 }
 
-TEST(CStringTest, ZeroTerminated)
-{
-    const char* referenceString = "WebKit";
-    CString stringWithLength(referenceString, 3);
-    EXPECT_EQ(0, stringWithLength.data()[3]);
+TEST(CStringTest, ZeroTerminated) {
+  const char* referenceString = "WebKit";
+  CString stringWithLength(referenceString, 3);
+  EXPECT_EQ(0, stringWithLength.data()[3]);
 }
 
-TEST(CStringTest, Comparison)
-{
-    // Comparison with another CString.
-    CString a;
-    CString b;
-    EXPECT_TRUE(a == b);
-    EXPECT_FALSE(a != b);
-    a = "a";
-    b = CString();
-    EXPECT_FALSE(a == b);
-    EXPECT_TRUE(a != b);
-    a = "a";
-    b = "b";
-    EXPECT_FALSE(a == b);
-    EXPECT_TRUE(a != b);
-    a = "a";
-    b = "a";
-    EXPECT_TRUE(a == b);
-    EXPECT_FALSE(a != b);
-    a = "a";
-    b = "aa";
-    EXPECT_FALSE(a == b);
-    EXPECT_TRUE(a != b);
-    a = "";
-    b = "";
-    EXPECT_TRUE(a == b);
-    EXPECT_FALSE(a != b);
-    a = "";
-    b = CString();
-    EXPECT_FALSE(a == b);
-    EXPECT_TRUE(a != b);
-    a = "a";
-    b = "";
-    EXPECT_FALSE(a == b);
-    EXPECT_TRUE(a != b);
+TEST(CStringTest, Comparison) {
+  // Comparison with another CString.
+  CString a;
+  CString b;
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+  a = "a";
+  b = CString();
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
+  a = "a";
+  b = "b";
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
+  a = "a";
+  b = "a";
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+  a = "a";
+  b = "aa";
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
+  a = "";
+  b = "";
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a != b);
+  a = "";
+  b = CString();
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
+  a = "a";
+  b = "";
+  EXPECT_FALSE(a == b);
+  EXPECT_TRUE(a != b);
 
-    // Comparison with a const char*.
-    CString c;
-    const char* d = 0;
-    EXPECT_TRUE(c == d);
-    EXPECT_FALSE(c != d);
-    c = "c";
-    d = 0;
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = CString();
-    d = "d";
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = "c";
-    d = "d";
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = "c";
-    d = "c";
-    EXPECT_TRUE(c == d);
-    EXPECT_FALSE(c != d);
-    c = "c";
-    d = "cc";
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = "cc";
-    d = "c";
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = "";
-    d = "";
-    EXPECT_TRUE(c == d);
-    EXPECT_FALSE(c != d);
-    c = "";
-    d = 0;
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = CString();
-    d = "";
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = "a";
-    d = "";
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
-    c = "";
-    d = "b";
-    EXPECT_FALSE(c == d);
-    EXPECT_TRUE(c != d);
+  // Comparison with a const char*.
+  CString c;
+  const char* d = 0;
+  EXPECT_TRUE(c == d);
+  EXPECT_FALSE(c != d);
+  c = "c";
+  d = 0;
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = CString();
+  d = "d";
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = "c";
+  d = "d";
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = "c";
+  d = "c";
+  EXPECT_TRUE(c == d);
+  EXPECT_FALSE(c != d);
+  c = "c";
+  d = "cc";
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = "cc";
+  d = "c";
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = "";
+  d = "";
+  EXPECT_TRUE(c == d);
+  EXPECT_FALSE(c != d);
+  c = "";
+  d = 0;
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = CString();
+  d = "";
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = "a";
+  d = "";
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
+  c = "";
+  d = "b";
+  EXPECT_FALSE(c == d);
+  EXPECT_TRUE(c != d);
 }
 
-TEST(CStringTest, Printer)
-{
-    EXPECT_STREQ("<null>", printedString(CString()).data());
-    EXPECT_STREQ("\"abc\"", printedString("abc").data());
-    EXPECT_STREQ("\"\\t\\n\\r\\\"\\\\\"", printedString("\t\n\r\"\\").data());
-    EXPECT_STREQ("\"\\xFF\\x00\\x01xyz\"", printedString(CString("\xff\0\x01xyz", 6)).data());
+TEST(CStringTest, Printer) {
+  EXPECT_STREQ("<null>", printedString(CString()).data());
+  EXPECT_STREQ("\"abc\"", printedString("abc").data());
+  EXPECT_STREQ("\"\\t\\n\\r\\\"\\\\\"", printedString("\t\n\r\"\\").data());
+  EXPECT_STREQ("\"\\xFF\\x00\\x01xyz\"",
+               printedString(CString("\xff\0\x01xyz", 6)).data());
 }
 
-} // namespace WTF
+}  // namespace WTF

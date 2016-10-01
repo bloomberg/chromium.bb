@@ -19,60 +19,50 @@
 namespace blink {
 
 class CreateElement {
-    STACK_ALLOCATED()
-public:
-    CreateElement(const AtomicString& localName)
-        : m_namespaceURI(HTMLNames::xhtmlNamespaceURI)
-        , m_localName(localName)
-    {
-    }
+  STACK_ALLOCATED()
+ public:
+  CreateElement(const AtomicString& localName)
+      : m_namespaceURI(HTMLNames::xhtmlNamespaceURI), m_localName(localName) {}
 
-    CreateElement& inDocument(Document* document)
-    {
-        m_document = document;
-        return *this;
-    }
+  CreateElement& inDocument(Document* document) {
+    m_document = document;
+    return *this;
+  }
 
-    CreateElement& inNamespace(const AtomicString& uri)
-    {
-        m_namespaceURI = uri;
-        return *this;
-    }
+  CreateElement& inNamespace(const AtomicString& uri) {
+    m_namespaceURI = uri;
+    return *this;
+  }
 
-    CreateElement& withId(const AtomicString& id)
-    {
-        m_attributes.push_back(std::make_pair(HTMLNames::idAttr, id));
-        return *this;
-    }
+  CreateElement& withId(const AtomicString& id) {
+    m_attributes.push_back(std::make_pair(HTMLNames::idAttr, id));
+    return *this;
+  }
 
-    CreateElement& withIsAttribute(const AtomicString& value)
-    {
-        m_attributes.push_back(std::make_pair(HTMLNames::isAttr, value));
-        return *this;
-    }
+  CreateElement& withIsAttribute(const AtomicString& value) {
+    m_attributes.push_back(std::make_pair(HTMLNames::isAttr, value));
+    return *this;
+  }
 
-    operator Element*() const
-    {
-        Document* document = m_document.get();
-        if (!document)
-            document = HTMLDocument::create();
-        NonThrowableExceptionState noExceptions;
-        Element* element = document->createElementNS(
-            m_namespaceURI,
-            m_localName,
-            noExceptions);
-        for (const auto& attribute : m_attributes)
-            element->setAttribute(attribute.first, attribute.second);
-        return element;
-    }
+  operator Element*() const {
+    Document* document = m_document.get();
+    if (!document)
+      document = HTMLDocument::create();
+    NonThrowableExceptionState noExceptions;
+    Element* element =
+        document->createElementNS(m_namespaceURI, m_localName, noExceptions);
+    for (const auto& attribute : m_attributes)
+      element->setAttribute(attribute.first, attribute.second);
+    return element;
+  }
 
-private:
-    Member<Document> m_document;
-    AtomicString m_namespaceURI;
-    AtomicString m_localName;
-    std::vector<std::pair<QualifiedName, AtomicString>> m_attributes;
+ private:
+  Member<Document> m_document;
+  AtomicString m_namespaceURI;
+  AtomicString m_localName;
+  std::vector<std::pair<QualifiedName, AtomicString>> m_attributes;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementTestHelpers_h
+#endif  // CustomElementTestHelpers_h

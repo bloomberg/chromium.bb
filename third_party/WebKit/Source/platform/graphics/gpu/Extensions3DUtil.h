@@ -23,31 +23,35 @@ class GLES2Interface;
 namespace blink {
 
 class PLATFORM_EXPORT Extensions3DUtil final {
-    USING_FAST_MALLOC(Extensions3DUtil);
-    WTF_MAKE_NONCOPYABLE(Extensions3DUtil);
-public:
-    // Creates a new Extensions3DUtil. If the passed GLES2Interface has been spontaneously lost, returns null.
-    static std::unique_ptr<Extensions3DUtil> create(gpu::gles2::GLES2Interface*);
-    ~Extensions3DUtil();
+  USING_FAST_MALLOC(Extensions3DUtil);
+  WTF_MAKE_NONCOPYABLE(Extensions3DUtil);
 
-    bool isValid() { return m_isValid; }
+ public:
+  // Creates a new Extensions3DUtil. If the passed GLES2Interface has been spontaneously lost, returns null.
+  static std::unique_ptr<Extensions3DUtil> create(gpu::gles2::GLES2Interface*);
+  ~Extensions3DUtil();
 
-    bool supportsExtension(const String& name);
-    bool ensureExtensionEnabled(const String& name);
-    bool isExtensionEnabled(const String& name);
+  bool isValid() { return m_isValid; }
 
-    static bool canUseCopyTextureCHROMIUM(GLenum destTarget, GLenum destFormat, GLenum destType, GLint level);
+  bool supportsExtension(const String& name);
+  bool ensureExtensionEnabled(const String& name);
+  bool isExtensionEnabled(const String& name);
 
-private:
-    Extensions3DUtil(gpu::gles2::GLES2Interface*);
-    void initializeExtensions();
+  static bool canUseCopyTextureCHROMIUM(GLenum destTarget,
+                                        GLenum destFormat,
+                                        GLenum destType,
+                                        GLint level);
 
-    gpu::gles2::GLES2Interface* m_gl;
-    HashSet<String> m_enabledExtensions;
-    HashSet<String> m_requestableExtensions;
-    bool m_isValid;
+ private:
+  Extensions3DUtil(gpu::gles2::GLES2Interface*);
+  void initializeExtensions();
+
+  gpu::gles2::GLES2Interface* m_gl;
+  HashSet<String> m_enabledExtensions;
+  HashSet<String> m_requestableExtensions;
+  bool m_isValid;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Extensions3DUtil_h
+#endif  // Extensions3DUtil_h

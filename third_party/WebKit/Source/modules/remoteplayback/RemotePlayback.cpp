@@ -18,161 +18,152 @@ namespace blink {
 
 namespace {
 
-const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state)
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected"));
-    DEFINE_STATIC_LOCAL(const AtomicString, disconnectedValue, ("disconnected"));
+const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state) {
+  DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected"));
+  DEFINE_STATIC_LOCAL(const AtomicString, disconnectedValue, ("disconnected"));
 
-    switch (state) {
+  switch (state) {
     case WebRemotePlaybackState::Connected:
-        return connectedValue;
+      return connectedValue;
     case WebRemotePlaybackState::Disconnected:
-        return disconnectedValue;
-    }
+      return disconnectedValue;
+  }
 
-    ASSERT_NOT_REACHED();
-    return disconnectedValue;
+  ASSERT_NOT_REACHED();
+  return disconnectedValue;
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
 // static
-RemotePlayback* RemotePlayback::create(HTMLMediaElement& element)
-{
-    ASSERT(element.document().frame());
+RemotePlayback* RemotePlayback::create(HTMLMediaElement& element) {
+  ASSERT(element.document().frame());
 
-    RemotePlayback* remotePlayback = new RemotePlayback(element);
-    element.setRemotePlaybackClient(remotePlayback);
+  RemotePlayback* remotePlayback = new RemotePlayback(element);
+  element.setRemotePlaybackClient(remotePlayback);
 
-    return remotePlayback;
+  return remotePlayback;
 }
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
-    : ActiveScriptWrappable(this)
-    , m_state(element.isPlayingRemotely() ? WebRemotePlaybackState::Connected : WebRemotePlaybackState::Disconnected)
-    , m_availability(element.hasRemoteRoutes())
-    , m_mediaElement(&element)
-{
+    : ActiveScriptWrappable(this),
+      m_state(element.isPlayingRemotely()
+                  ? WebRemotePlaybackState::Connected
+                  : WebRemotePlaybackState::Disconnected),
+      m_availability(element.hasRemoteRoutes()),
+      m_mediaElement(&element) {}
+
+const AtomicString& RemotePlayback::interfaceName() const {
+  return EventTargetNames::RemotePlayback;
 }
 
-const AtomicString& RemotePlayback::interfaceName() const
-{
-    return EventTargetNames::RemotePlayback;
+ExecutionContext* RemotePlayback::getExecutionContext() const {
+  return &m_mediaElement->document();
 }
 
-ExecutionContext* RemotePlayback::getExecutionContext() const
-{
-    return &m_mediaElement->document();
+ScriptPromise RemotePlayback::getAvailability(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+
+  // TODO(avayvod): currently the availability is tracked for each media element
+  // as soon as it's created, we probably want to limit that to when the page/element
+  // is visible (see https://crbug.com/597281) and has default controls. If there's
+  // no default controls, we should also start tracking availability on demand
+  // meaning the Promise returned by getAvailability() will be resolved asynchronously.
+  RemotePlaybackAvailability* availability =
+      RemotePlaybackAvailability::take(resolver, m_availability);
+  m_availabilityObjects.append(availability);
+  resolver->resolve(availability);
+  return promise;
 }
 
-ScriptPromise RemotePlayback::getAvailability(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+ScriptPromise RemotePlayback::prompt(ScriptState* scriptState) {
+  // TODO(avayvod): implement steps 4, 5, 8, 9 of the algorithm.
+  // https://crbug.com/647441
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
 
-    // TODO(avayvod): currently the availability is tracked for each media element
-    // as soon as it's created, we probably want to limit that to when the page/element
-    // is visible (see https://crbug.com/597281) and has default controls. If there's
-    // no default controls, we should also start tracking availability on demand
-    // meaning the Promise returned by getAvailability() will be resolved asynchronously.
-    RemotePlaybackAvailability* availability = RemotePlaybackAvailability::take(resolver, m_availability);
-    m_availabilityObjects.append(availability);
-    resolver->resolve(availability);
+  if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+    resolver->reject(DOMException::create(
+        InvalidStateError, "disableRemotePlayback attribute is present."));
     return promise;
-}
+  }
 
-ScriptPromise RemotePlayback::prompt(ScriptState* scriptState)
-{
-    // TODO(avayvod): implement steps 4, 5, 8, 9 of the algorithm.
+  // TODO(avayvod): should we have a separate flag to disable the user gesture
+  // requirement (for tests) or reuse the one for the PresentationRequest::start()?
+  if (!UserGestureIndicator::utilizeUserGesture()) {
+    resolver->reject(DOMException::create(
+        InvalidAccessError, "RemotePlayback::prompt() requires user gesture."));
+    return promise;
+  }
+
+  if (m_state == WebRemotePlaybackState::Disconnected) {
+    m_promptPromiseResolvers.append(resolver);
+    m_mediaElement->requestRemotePlayback();
+  } else {
+    m_mediaElement->requestRemotePlaybackControl();
+    // TODO(avayvod): Need to keep the resolver until user chooses to stop
+    // the remote playback (resolve) or dismisses the UI (reject).
+    // Steps 11 and 12 of the prompt() algorithm.
     // https://crbug.com/647441
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+    resolver->resolve();
+  }
 
-    if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
-        resolver->reject(DOMException::create(InvalidStateError, "disableRemotePlayback attribute is present."));
-        return promise;
-    }
-
-    // TODO(avayvod): should we have a separate flag to disable the user gesture
-    // requirement (for tests) or reuse the one for the PresentationRequest::start()?
-    if (!UserGestureIndicator::utilizeUserGesture()) {
-        resolver->reject(DOMException::create(InvalidAccessError, "RemotePlayback::prompt() requires user gesture."));
-        return promise;
-    }
-
-    if (m_state == WebRemotePlaybackState::Disconnected) {
-        m_promptPromiseResolvers.append(resolver);
-        m_mediaElement->requestRemotePlayback();
-    } else {
-        m_mediaElement->requestRemotePlaybackControl();
-        // TODO(avayvod): Need to keep the resolver until user chooses to stop
-        // the remote playback (resolve) or dismisses the UI (reject).
-        // Steps 11 and 12 of the prompt() algorithm.
-        // https://crbug.com/647441
-        resolver->resolve();
-    }
-
-    return promise;
+  return promise;
 }
 
-String RemotePlayback::state() const
-{
-    return remotePlaybackStateToString(m_state);
+String RemotePlayback::state() const {
+  return remotePlaybackStateToString(m_state);
 }
 
-bool RemotePlayback::hasPendingActivity() const
-{
-    return hasEventListeners()
-        || !m_availabilityObjects.isEmpty()
-        || !m_promptPromiseResolvers.isEmpty();
+bool RemotePlayback::hasPendingActivity() const {
+  return hasEventListeners() || !m_availabilityObjects.isEmpty() ||
+         !m_promptPromiseResolvers.isEmpty();
 }
 
-void RemotePlayback::stateChanged(WebRemotePlaybackState state)
-{
-    // We may get a "disconnected" state change while in the "disconnected"
-    // state if initiated connection fails. So cleanup the promise resolvers
-    // before checking if anything changed.
-    // TODO(avayvod): cleanup this logic when we implementing the "connecting"
-    // state.
-    if (state != WebRemotePlaybackState::Disconnected) {
-        for (auto& resolver : m_promptPromiseResolvers)
-            resolver->resolve();
-    } else {
-        for (auto& resolver : m_promptPromiseResolvers)
-            resolver->reject(DOMException::create(AbortError, "Failed to connect to the remote device."));
-    }
-    m_promptPromiseResolvers.clear();
-
-    if (m_state == state)
-        return;
-
-    m_state = state;
-    dispatchEvent(Event::create(EventTypeNames::statechange));
-}
-
-void RemotePlayback::availabilityChanged(bool available)
-{
-    if (m_availability == available)
-        return;
-
-    m_availability = available;
-    for (auto& availabilityObject : m_availabilityObjects)
-        availabilityObject->availabilityChanged(available);
-}
-
-void RemotePlayback::promptCancelled()
-{
+void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
+  // We may get a "disconnected" state change while in the "disconnected"
+  // state if initiated connection fails. So cleanup the promise resolvers
+  // before checking if anything changed.
+  // TODO(avayvod): cleanup this logic when we implementing the "connecting"
+  // state.
+  if (state != WebRemotePlaybackState::Disconnected) {
     for (auto& resolver : m_promptPromiseResolvers)
-        resolver->resolve();
-    m_promptPromiseResolvers.clear();
+      resolver->resolve();
+  } else {
+    for (auto& resolver : m_promptPromiseResolvers)
+      resolver->reject(DOMException::create(
+          AbortError, "Failed to connect to the remote device."));
+  }
+  m_promptPromiseResolvers.clear();
+
+  if (m_state == state)
+    return;
+
+  m_state = state;
+  dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
-DEFINE_TRACE(RemotePlayback)
-{
-    visitor->trace(m_availabilityObjects);
-    visitor->trace(m_promptPromiseResolvers);
-    visitor->trace(m_mediaElement);
-    EventTargetWithInlineData::trace(visitor);
+void RemotePlayback::availabilityChanged(bool available) {
+  if (m_availability == available)
+    return;
+
+  m_availability = available;
+  for (auto& availabilityObject : m_availabilityObjects)
+    availabilityObject->availabilityChanged(available);
 }
 
-} // namespace blink
+void RemotePlayback::promptCancelled() {
+  for (auto& resolver : m_promptPromiseResolvers)
+    resolver->resolve();
+  m_promptPromiseResolvers.clear();
+}
+
+DEFINE_TRACE(RemotePlayback) {
+  visitor->trace(m_availabilityObjects);
+  visitor->trace(m_promptPromiseResolvers);
+  visitor->trace(m_mediaElement);
+  EventTargetWithInlineData::trace(visitor);
+}
+
+}  // namespace blink

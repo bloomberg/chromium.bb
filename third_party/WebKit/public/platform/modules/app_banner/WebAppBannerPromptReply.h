@@ -7,11 +7,8 @@
 
 namespace blink {
 
-enum class WebAppBannerPromptReply {
-    None = 0,
-    Cancel
-};
+enum class WebAppBannerPromptReply { None = 0, Cancel };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebAppBannerPromptReply_h
+#endif  // WebAppBannerPromptReply_h

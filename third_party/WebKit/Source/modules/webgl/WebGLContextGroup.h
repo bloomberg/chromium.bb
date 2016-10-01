@@ -39,37 +39,38 @@ class WebGLRenderingContextBase;
 typedef int ExceptionCode;
 
 class WebGLContextGroup final : public RefCounted<WebGLContextGroup> {
-public:
-    static PassRefPtr<WebGLContextGroup> create();
-    ~WebGLContextGroup();
+ public:
+  static PassRefPtr<WebGLContextGroup> create();
+  ~WebGLContextGroup();
 
-    void addContext(WebGLRenderingContextBase*);
-    void removeContext(WebGLRenderingContextBase*);
+  void addContext(WebGLRenderingContextBase*);
+  void removeContext(WebGLRenderingContextBase*);
 
-    void addObject(WebGLSharedObject*);
-    void removeObject(WebGLSharedObject*);
+  void addObject(WebGLSharedObject*);
+  void removeObject(WebGLSharedObject*);
 
-    gpu::gles2::GLES2Interface* getAGLInterface();
+  gpu::gles2::GLES2Interface* getAGLInterface();
 
-    void loseContextGroup(WebGLRenderingContextBase::LostContextMode, WebGLRenderingContextBase::AutoRecoveryMethod);
+  void loseContextGroup(WebGLRenderingContextBase::LostContextMode,
+                        WebGLRenderingContextBase::AutoRecoveryMethod);
 
-private:
-    friend class WebGLObject;
+ private:
+  friend class WebGLObject;
 
-    WebGLContextGroup();
+  WebGLContextGroup();
 
-    void detachAndRemoveAllObjects();
+  void detachAndRemoveAllObjects();
 
-    // FIXME: Oilpan: this object is not on the heap, but keeps untraced
-    // pointers to on-heap objects in the two hash sets below.
-    // The objects are responsible for managing their
-    // registration with WebGLContextGroup, and vice versa, the
-    // WebGLContextGroup takes care of detaching the group objects if
-    // the set of WebGLRenderingContextBase contexts becomes empty.
-    HashSet<UntracedMember<WebGLRenderingContextBase>> m_contexts;
-    HashSet<UntracedMember<WebGLSharedObject>> m_groupObjects;
+  // FIXME: Oilpan: this object is not on the heap, but keeps untraced
+  // pointers to on-heap objects in the two hash sets below.
+  // The objects are responsible for managing their
+  // registration with WebGLContextGroup, and vice versa, the
+  // WebGLContextGroup takes care of detaching the group objects if
+  // the set of WebGLRenderingContextBase contexts becomes empty.
+  HashSet<UntracedMember<WebGLRenderingContextBase>> m_contexts;
+  HashSet<UntracedMember<WebGLSharedObject>> m_groupObjects;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLContextGroup_h
+#endif  // WebGLContextGroup_h

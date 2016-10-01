@@ -46,88 +46,86 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileWriter final
-    : public EventTargetWithInlineData
-    , public FileWriterBase
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject
-    , public WebFileWriterClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
-public:
-    static FileWriter* create(ExecutionContext*);
-    ~FileWriter() override;
+class FileWriter final : public EventTargetWithInlineData,
+                         public FileWriterBase,
+                         public ActiveScriptWrappable,
+                         public ActiveDOMObject,
+                         public WebFileWriterClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 
-    enum ReadyState {
-        kInit = 0,
-        kWriting = 1,
-        kDone = 2
-    };
+ public:
+  static FileWriter* create(ExecutionContext*);
+  ~FileWriter() override;
 
-    void write(Blob*, ExceptionState&);
-    void seek(long long position, ExceptionState&);
-    void truncate(long long length, ExceptionState&);
-    void abort(ExceptionState&);
-    ReadyState getReadyState() const { return m_readyState; }
-    DOMException* error() const { return m_error.get(); }
+  enum ReadyState { kInit = 0, kWriting = 1, kDone = 2 };
 
-    // WebFileWriterClient
-    void didWrite(long long bytes, bool complete) override;
-    void didTruncate() override;
-    void didFail(WebFileError) override;
+  void write(Blob*, ExceptionState&);
+  void seek(long long position, ExceptionState&);
+  void truncate(long long length, ExceptionState&);
+  void abort(ExceptionState&);
+  ReadyState getReadyState() const { return m_readyState; }
+  DOMException* error() const { return m_error.get(); }
 
-    // ActiveDOMObject
-    void stop() override;
+  // WebFileWriterClient
+  void didWrite(long long bytes, bool complete) override;
+  void didTruncate() override;
+  void didFail(WebFileError) override;
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // ActiveDOMObject
+  void stop() override;
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(write);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(writeend);
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override {
+    return ActiveDOMObject::getExecutionContext();
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(write);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(writeend);
 
-private:
-    enum Operation {
-        OperationNone,
-        OperationWrite,
-        OperationTruncate,
-        OperationAbort
-    };
+  DECLARE_VIRTUAL_TRACE();
 
-    explicit FileWriter(ExecutionContext*);
+ private:
+  enum Operation {
+    OperationNone,
+    OperationWrite,
+    OperationTruncate,
+    OperationAbort
+  };
 
-    void completeAbort();
+  explicit FileWriter(ExecutionContext*);
 
-    void doOperation(Operation);
+  void completeAbort();
 
-    void signalCompletion(FileError::ErrorCode);
+  void doOperation(Operation);
 
-    void fireEvent(const AtomicString& type);
+  void signalCompletion(FileError::ErrorCode);
 
-    void setError(FileError::ErrorCode, ExceptionState&);
+  void fireEvent(const AtomicString& type);
 
-    Member<DOMException> m_error;
-    ReadyState m_readyState;
-    Operation m_operationInProgress;
-    Operation m_queuedOperation;
-    long long m_bytesWritten;
-    long long m_bytesToWrite;
-    long long m_truncateLength;
-    long long m_numAborts;
-    long long m_recursionDepth;
-    double m_lastProgressNotificationTimeMS;
-    Member<Blob> m_blobBeingWritten;
+  void setError(FileError::ErrorCode, ExceptionState&);
+
+  Member<DOMException> m_error;
+  ReadyState m_readyState;
+  Operation m_operationInProgress;
+  Operation m_queuedOperation;
+  long long m_bytesWritten;
+  long long m_bytesToWrite;
+  long long m_truncateLength;
+  long long m_numAborts;
+  long long m_recursionDepth;
+  double m_lastProgressNotificationTimeMS;
+  Member<Blob> m_blobBeingWritten;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileWriter_h
+#endif  // FileWriter_h

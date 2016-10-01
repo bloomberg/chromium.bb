@@ -45,46 +45,50 @@ static const size_t bufferSize = 16;
 
 static SpinLock lock;
 
-static void fillBuffer(volatile char* buffer, char fillPattern)
-{
-    for (size_t i = 0; i < bufferSize; ++i)
-        buffer[i] = fillPattern;
+static void fillBuffer(volatile char* buffer, char fillPattern) {
+  for (size_t i = 0; i < bufferSize; ++i)
+    buffer[i] = fillPattern;
 }
 
-static void changeAndCheckBuffer(volatile char* buffer)
-{
-    fillBuffer(buffer, '\0');
-    int total = 0;
-    for (size_t i = 0; i < bufferSize; ++i)
-        total += buffer[i];
+static void changeAndCheckBuffer(volatile char* buffer) {
+  fillBuffer(buffer, '\0');
+  int total = 0;
+  for (size_t i = 0; i < bufferSize; ++i)
+    total += buffer[i];
 
-    EXPECT_EQ(0, total);
+  EXPECT_EQ(0, total);
 
-    // This will mess with the other thread's calculation if we accidentally get
-    // concurrency.
-    fillBuffer(buffer, '!');
+  // This will mess with the other thread's calculation if we accidentally get
+  // concurrency.
+  fillBuffer(buffer, '!');
 }
 
-static void threadMain(volatile char* buffer)
-{
-    for (int i = 0; i < 500000; ++i) {
-        SpinLock::Guard guard(lock);
-        changeAndCheckBuffer(buffer);
-    }
+static void threadMain(volatile char* buffer) {
+  for (int i = 0; i < 500000; ++i) {
+    SpinLock::Guard guard(lock);
+    changeAndCheckBuffer(buffer);
+  }
 }
 
-TEST(SpinLockTest, Torture)
-{
-    char sharedBuffer[bufferSize];
+TEST(SpinLockTest, Torture) {
+  char sharedBuffer[bufferSize];
 
-    std::unique_ptr<WebThread> thread1 = wrapUnique(Platform::current()->createThread("thread1"));
-    std::unique_ptr<WebThread> thread2 = wrapUnique(Platform::current()->createThread("thread2"));
+  std::unique_ptr<WebThread> thread1 =
+      wrapUnique(Platform::current()->createThread("thread1"));
+  std::unique_ptr<WebThread> thread2 =
+      wrapUnique(Platform::current()->createThread("thread2"));
 
-    thread1->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&threadMain, crossThreadUnretained(static_cast<char*>(sharedBuffer))));
-    thread2->getWebTaskRunner()->postTask(BLINK_FROM_HERE, crossThreadBind(&threadMain, crossThreadUnretained(static_cast<char*>(sharedBuffer))));
+  thread1->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE,
+      crossThreadBind(&threadMain,
+                      crossThreadUnretained(static_cast<char*>(sharedBuffer))));
+  thread2->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE,
+      crossThreadBind(&threadMain,
+                      crossThreadUnretained(static_cast<char*>(sharedBuffer))));
 
-    thread1.reset();
-    thread2.reset();
+  thread1.reset();
+  thread2.reset();
 }
 
-} // namespace blink
+}  // namespace blink

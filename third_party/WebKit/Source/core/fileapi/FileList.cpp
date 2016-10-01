@@ -25,38 +25,32 @@
 
 #include "core/fileapi/FileList.h"
 
-
 namespace blink {
 
-FileList::FileList()
-{
+FileList::FileList() {}
+
+File* FileList::item(unsigned index) const {
+  if (index >= m_files.size())
+    return 0;
+  return m_files[index].get();
 }
 
-File* FileList::item(unsigned index) const
-{
-    if (index >= m_files.size())
-        return 0;
-    return m_files[index].get();
-}
-
-Vector<String> FileList::pathsForUserVisibleFiles() const
-{
-    Vector<String> paths;
-    for (unsigned i = 0; i < m_files.size(); ++i) {
-        if (m_files[i]->getUserVisibility() == File::IsUserVisible) {
-            if (m_files[i]->hasBackingFile())
-                paths.append(m_files[i]->path());
-            else
-                paths.append(m_files[i]->name());
-        }
+Vector<String> FileList::pathsForUserVisibleFiles() const {
+  Vector<String> paths;
+  for (unsigned i = 0; i < m_files.size(); ++i) {
+    if (m_files[i]->getUserVisibility() == File::IsUserVisible) {
+      if (m_files[i]->hasBackingFile())
+        paths.append(m_files[i]->path());
+      else
+        paths.append(m_files[i]->name());
     }
+  }
 
-    return paths;
+  return paths;
 }
 
-DEFINE_TRACE(FileList)
-{
-    visitor->trace(m_files);
+DEFINE_TRACE(FileList) {
+  visitor->trace(m_files);
 }
 
-} // namespace blink
+}  // namespace blink

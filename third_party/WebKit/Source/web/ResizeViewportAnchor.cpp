@@ -14,50 +14,47 @@
 
 namespace blink {
 
-void ResizeViewportAnchor::resizeFrameView(IntSize size)
-{
-    FrameView* frameView = rootFrameView();
-    DCHECK(frameView);
+void ResizeViewportAnchor::resizeFrameView(IntSize size) {
+  FrameView* frameView = rootFrameView();
+  DCHECK(frameView);
 
-    ScrollableArea* rootViewport = frameView->getScrollableArea();
-    DoublePoint position = rootViewport->scrollPositionDouble();
+  ScrollableArea* rootViewport = frameView->getScrollableArea();
+  DoublePoint position = rootViewport->scrollPositionDouble();
 
-    frameView->resize(size);
-    m_drift += rootViewport->scrollPositionDouble() - position;
+  frameView->resize(size);
+  m_drift += rootViewport->scrollPositionDouble() - position;
 }
 
-void ResizeViewportAnchor::endScope()
-{
-    if (--m_scopeCount > 0)
-        return;
+void ResizeViewportAnchor::endScope() {
+  if (--m_scopeCount > 0)
+    return;
 
-    FrameView* frameView = rootFrameView();
-    if (!frameView)
-        return;
+  FrameView* frameView = rootFrameView();
+  if (!frameView)
+    return;
 
-    DoublePoint visualViewportInDocument =
-        frameView->getScrollableArea()->scrollPositionDouble() - m_drift;
+  DoublePoint visualViewportInDocument =
+      frameView->getScrollableArea()->scrollPositionDouble() - m_drift;
 
-    // TODO(bokan): Don't use RootFrameViewport::setScrollPosition since it
-    // assumes we can just set a sub-pixel precision offset on the FrameView.
-    // While we "can" do this, the offset that will be shipped to CC will be the
-    // truncated number and this class is used to handle TopControl movement
-    // which needs the two threads to match exactly pixel-for-pixel. We can
-    // replace this with RFV::setScrollPosition once Blink is sub-pixel scroll
-    // offset aware. crbug.com/414283.
-    DCHECK(frameView->getRootFrameViewport());
-    frameView->getRootFrameViewport()->restoreToAnchor(visualViewportInDocument);
+  // TODO(bokan): Don't use RootFrameViewport::setScrollPosition since it
+  // assumes we can just set a sub-pixel precision offset on the FrameView.
+  // While we "can" do this, the offset that will be shipped to CC will be the
+  // truncated number and this class is used to handle TopControl movement
+  // which needs the two threads to match exactly pixel-for-pixel. We can
+  // replace this with RFV::setScrollPosition once Blink is sub-pixel scroll
+  // offset aware. crbug.com/414283.
+  DCHECK(frameView->getRootFrameViewport());
+  frameView->getRootFrameViewport()->restoreToAnchor(visualViewportInDocument);
 
-    m_drift = DoubleSize();
+  m_drift = DoubleSize();
 }
 
-FrameView* ResizeViewportAnchor::rootFrameView()
-{
-    if (Frame* frame = m_page->mainFrame()) {
-        if (frame->isLocalFrame())
-            return toLocalFrame(frame)->view();
-    }
-    return nullptr;
+FrameView* ResizeViewportAnchor::rootFrameView() {
+  if (Frame* frame = m_page->mainFrame()) {
+    if (frame->isLocalFrame())
+      return toLocalFrame(frame)->view();
+  }
+  return nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

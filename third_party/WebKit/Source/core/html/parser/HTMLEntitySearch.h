@@ -34,41 +34,43 @@ namespace blink {
 struct HTMLEntityTableEntry;
 
 class HTMLEntitySearch {
-    STACK_ALLOCATED();
-public:
-    HTMLEntitySearch();
+  STACK_ALLOCATED();
 
-    void advance(UChar);
+ public:
+  HTMLEntitySearch();
 
-    bool isEntityPrefix() const { return !!m_first; }
-    int currentLength() const { return m_currentLength; }
+  void advance(UChar);
 
-    const HTMLEntityTableEntry* mostRecentMatch() const { return m_mostRecentMatch; }
+  bool isEntityPrefix() const { return !!m_first; }
+  int currentLength() const { return m_currentLength; }
 
-private:
-    enum CompareResult {
-        Before,
-        Prefix,
-        After,
-    };
+  const HTMLEntityTableEntry* mostRecentMatch() const {
+    return m_mostRecentMatch;
+  }
 
-    CompareResult compare(const HTMLEntityTableEntry*, UChar) const;
-    const HTMLEntityTableEntry* findFirst(UChar) const;
-    const HTMLEntityTableEntry* findLast(UChar) const;
+ private:
+  enum CompareResult {
+    Before,
+    Prefix,
+    After,
+  };
 
-    void fail()
-    {
-        m_first = 0;
-        m_last = 0;
-    }
+  CompareResult compare(const HTMLEntityTableEntry*, UChar) const;
+  const HTMLEntityTableEntry* findFirst(UChar) const;
+  const HTMLEntityTableEntry* findLast(UChar) const;
 
-    int m_currentLength;
+  void fail() {
+    m_first = 0;
+    m_last = 0;
+  }
 
-    const HTMLEntityTableEntry* m_mostRecentMatch;
-    const HTMLEntityTableEntry* m_first;
-    const HTMLEntityTableEntry* m_last;
+  int m_currentLength;
+
+  const HTMLEntityTableEntry* m_mostRecentMatch;
+  const HTMLEntityTableEntry* m_first;
+  const HTMLEntityTableEntry* m_last;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

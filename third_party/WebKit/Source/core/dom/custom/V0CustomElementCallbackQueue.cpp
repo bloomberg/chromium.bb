@@ -34,54 +34,48 @@
 
 namespace blink {
 
-V0CustomElementCallbackQueue* V0CustomElementCallbackQueue::create(Element* element)
-{
-    return new V0CustomElementCallbackQueue(element);
+V0CustomElementCallbackQueue* V0CustomElementCallbackQueue::create(
+    Element* element) {
+  return new V0CustomElementCallbackQueue(element);
 }
 
 V0CustomElementCallbackQueue::V0CustomElementCallbackQueue(Element* element)
-    : m_element(element)
-    , m_owner(-1)
-    , m_index(0)
-    , m_inCreatedCallback(false)
-{
-}
+    : m_element(element), m_owner(-1), m_index(0), m_inCreatedCallback(false) {}
 
-bool V0CustomElementCallbackQueue::processInElementQueue(ElementQueueId caller)
-{
-    DCHECK(!m_inCreatedCallback);
-    bool didWork = false;
+bool V0CustomElementCallbackQueue::processInElementQueue(
+    ElementQueueId caller) {
+  DCHECK(!m_inCreatedCallback);
+  bool didWork = false;
 
-    // Never run custom element callbacks in UA shadow roots since that would
-    // leak the UA root and it's elements into the page.
-    ShadowRoot* shadowRoot = m_element->containingShadowRoot();
-    if (!shadowRoot || shadowRoot->type() != ShadowRootType::UserAgent) {
-        while (m_index < m_queue.size() && owner() == caller) {
-            m_inCreatedCallback = m_queue[m_index]->isCreatedCallback();
+  // Never run custom element callbacks in UA shadow roots since that would
+  // leak the UA root and it's elements into the page.
+  ShadowRoot* shadowRoot = m_element->containingShadowRoot();
+  if (!shadowRoot || shadowRoot->type() != ShadowRootType::UserAgent) {
+    while (m_index < m_queue.size() && owner() == caller) {
+      m_inCreatedCallback = m_queue[m_index]->isCreatedCallback();
 
-            // dispatch() may cause recursion which steals this callback
-            // queue and reenters processInQueue. owner() == caller
-            // detects this recursion and cedes processing.
-            m_queue[m_index++]->dispatch(m_element.get());
-            m_inCreatedCallback = false;
-            didWork = true;
-        }
+      // dispatch() may cause recursion which steals this callback
+      // queue and reenters processInQueue. owner() == caller
+      // detects this recursion and cedes processing.
+      m_queue[m_index++]->dispatch(m_element.get());
+      m_inCreatedCallback = false;
+      didWork = true;
     }
+  }
 
-    if (owner() == caller && m_index == m_queue.size()) {
-        // This processInQueue exhausted the queue; shrink it.
-        m_index = 0;
-        m_queue.resize(0);
-        m_owner = -1;
-    }
+  if (owner() == caller && m_index == m_queue.size()) {
+    // This processInQueue exhausted the queue; shrink it.
+    m_index = 0;
+    m_queue.resize(0);
+    m_owner = -1;
+  }
 
-    return didWork;
+  return didWork;
 }
 
-DEFINE_TRACE(V0CustomElementCallbackQueue)
-{
-    visitor->trace(m_element);
-    visitor->trace(m_queue);
+DEFINE_TRACE(V0CustomElementCallbackQueue) {
+  visitor->trace(m_element);
+  visitor->trace(m_queue);
 }
 
-} // namespace blink
+}  // namespace blink

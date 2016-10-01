@@ -33,71 +33,67 @@
 
 namespace blink {
 
-WorkerEventQueue* WorkerEventQueue::create(ExecutionContext* context)
-{
-    return new WorkerEventQueue(context);
+WorkerEventQueue* WorkerEventQueue::create(ExecutionContext* context) {
+  return new WorkerEventQueue(context);
 }
 
 WorkerEventQueue::WorkerEventQueue(ExecutionContext* context)
-    : m_executionContext(context)
-    , m_isClosed(false)
-{
+    : m_executionContext(context), m_isClosed(false) {}
+
+WorkerEventQueue::~WorkerEventQueue() {
+  DCHECK(m_pendingEvents.isEmpty());
 }
 
-WorkerEventQueue::~WorkerEventQueue()
-{
-    DCHECK(m_pendingEvents.isEmpty());
+DEFINE_TRACE(WorkerEventQueue) {
+  visitor->trace(m_executionContext);
+  visitor->trace(m_pendingEvents);
+  EventQueue::trace(visitor);
 }
 
-DEFINE_TRACE(WorkerEventQueue)
-{
-    visitor->trace(m_executionContext);
-    visitor->trace(m_pendingEvents);
-    EventQueue::trace(visitor);
+bool WorkerEventQueue::enqueueEvent(Event* event) {
+  if (m_isClosed)
+    return false;
+  InspectorInstrumentation::asyncTaskScheduled(
+      event->target()->getExecutionContext(), event->type(), event);
+  m_pendingEvents.add(event);
+  m_executionContext->postTask(
+      BLINK_FROM_HERE,
+      createSameThreadTask(&WorkerEventQueue::dispatchEvent,
+                           wrapPersistent(this), wrapWeakPersistent(event)));
+  return true;
 }
 
-bool WorkerEventQueue::enqueueEvent(Event* event)
-{
-    if (m_isClosed)
-        return false;
-    InspectorInstrumentation::asyncTaskScheduled(event->target()->getExecutionContext(), event->type(), event);
-    m_pendingEvents.add(event);
-    m_executionContext->postTask(BLINK_FROM_HERE, createSameThreadTask(&WorkerEventQueue::dispatchEvent, wrapPersistent(this), wrapWeakPersistent(event)));
-    return true;
+bool WorkerEventQueue::cancelEvent(Event* event) {
+  if (!removeEvent(event))
+    return false;
+  InspectorInstrumentation::asyncTaskCanceled(
+      event->target()->getExecutionContext(), event);
+  return true;
 }
 
-bool WorkerEventQueue::cancelEvent(Event* event)
-{
-    if (!removeEvent(event))
-        return false;
-    InspectorInstrumentation::asyncTaskCanceled(event->target()->getExecutionContext(), event);
-    return true;
+void WorkerEventQueue::close() {
+  m_isClosed = true;
+  for (const auto& event : m_pendingEvents)
+    InspectorInstrumentation::asyncTaskCanceled(
+        event->target()->getExecutionContext(), event);
+  m_pendingEvents.clear();
 }
 
-void WorkerEventQueue::close()
-{
-    m_isClosed = true;
-    for (const auto& event : m_pendingEvents)
-        InspectorInstrumentation::asyncTaskCanceled(event->target()->getExecutionContext(), event);
-    m_pendingEvents.clear();
+bool WorkerEventQueue::removeEvent(Event* event) {
+  auto found = m_pendingEvents.find(event);
+  if (found == m_pendingEvents.end())
+    return false;
+  m_pendingEvents.remove(found);
+  return true;
 }
 
-bool WorkerEventQueue::removeEvent(Event* event)
-{
-    auto found = m_pendingEvents.find(event);
-    if (found == m_pendingEvents.end())
-        return false;
-    m_pendingEvents.remove(found);
-    return true;
+void WorkerEventQueue::dispatchEvent(Event* event,
+                                     ExecutionContext* executionContext) {
+  if (!event || !removeEvent(event))
+    return;
+
+  InspectorInstrumentation::AsyncTask asyncTask(executionContext, event);
+  event->target()->dispatchEvent(event);
 }
 
-void WorkerEventQueue::dispatchEvent(Event* event, ExecutionContext* executionContext)
-{
-    if (!event || !removeEvent(event))
-        return;
-
-    InspectorInstrumentation::AsyncTask asyncTask(executionContext, event);
-    event->target()->dispatchEvent(event);
-}
-
-} // namespace blink
+}  // namespace blink

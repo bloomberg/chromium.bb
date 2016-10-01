@@ -15,44 +15,48 @@ class DeviceOrientationData;
 class DeviceOrientationDispatcher;
 class Event;
 
-class MODULES_EXPORT DeviceOrientationController : public DeviceSingleWindowEventController, public Supplement<Document> {
-    USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
-public:
-    ~DeviceOrientationController() override;
+class MODULES_EXPORT DeviceOrientationController
+    : public DeviceSingleWindowEventController,
+      public Supplement<Document> {
+  USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 
-    static const char* supplementName();
-    static DeviceOrientationController& from(Document&);
+ public:
+  ~DeviceOrientationController() override;
 
-    // Inherited from DeviceSingleWindowEventController.
-    void didUpdateData() override;
-    void didAddEventListener(LocalDOMWindow*, const AtomicString& eventType) override;
+  static const char* supplementName();
+  static DeviceOrientationController& from(Document&);
 
-    void setOverride(DeviceOrientationData*);
-    void clearOverride();
+  // Inherited from DeviceSingleWindowEventController.
+  void didUpdateData() override;
+  void didAddEventListener(LocalDOMWindow*,
+                           const AtomicString& eventType) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  void setOverride(DeviceOrientationData*);
+  void clearOverride();
 
-protected:
-    explicit DeviceOrientationController(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    virtual DeviceOrientationDispatcher& dispatcherInstance() const;
+ protected:
+  explicit DeviceOrientationController(Document&);
 
-private:
-    // Inherited from DeviceEventControllerBase.
-    void registerWithDispatcher() override;
-    void unregisterWithDispatcher() override;
-    bool hasLastData() override;
+  virtual DeviceOrientationDispatcher& dispatcherInstance() const;
 
-    // Inherited from DeviceSingleWindowEventController.
-    Event* lastEvent() const override;
-    const AtomicString& eventTypeName() const override;
-    bool isNullEvent(Event*) const override;
+ private:
+  // Inherited from DeviceEventControllerBase.
+  void registerWithDispatcher() override;
+  void unregisterWithDispatcher() override;
+  bool hasLastData() override;
 
-    DeviceOrientationData* lastData() const;
+  // Inherited from DeviceSingleWindowEventController.
+  Event* lastEvent() const override;
+  const AtomicString& eventTypeName() const override;
+  bool isNullEvent(Event*) const override;
 
-    Member<DeviceOrientationData> m_overrideOrientationData;
+  DeviceOrientationData* lastData() const;
+
+  Member<DeviceOrientationData> m_overrideOrientationData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceOrientationController_h
+#endif  // DeviceOrientationController_h

@@ -34,13 +34,9 @@ namespace WTF {
 ThreadSpecific<WTFThreadData>* WTFThreadData::staticData;
 
 WTFThreadData::WTFThreadData()
-    : m_atomicStringTable(new AtomicStringTable)
-    , m_cachedConverterICU(new ICUConverterWrapper)
-{
-}
+    : m_atomicStringTable(new AtomicStringTable),
+      m_cachedConverterICU(new ICUConverterWrapper) {}
 
-WTFThreadData::~WTFThreadData()
-{
-}
+WTFThreadData::~WTFThreadData() {}
 
-} // namespace WTF
+}  // namespace WTF

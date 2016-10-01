@@ -33,30 +33,29 @@
 
 namespace blink {
 
-class VTTRegionList final : public GarbageCollected<VTTRegionList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static VTTRegionList* create()
-    {
-        return new VTTRegionList;
-    }
+class VTTRegionList final : public GarbageCollected<VTTRegionList>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned long length() const;
+ public:
+  static VTTRegionList* create() { return new VTTRegionList; }
 
-    VTTRegion* item(unsigned index) const;
-    VTTRegion* getRegionById(const String&) const;
+  unsigned long length() const;
 
-    void add(VTTRegion*);
-    bool remove(VTTRegion*);
+  VTTRegion* item(unsigned index) const;
+  VTTRegion* getRegionById(const String&) const;
 
-    DECLARE_TRACE();
+  void add(VTTRegion*);
+  bool remove(VTTRegion*);
 
-private:
-    VTTRegionList();
+  DECLARE_TRACE();
 
-    HeapVector<Member<VTTRegion>> m_list;
+ private:
+  VTTRegionList();
+
+  HeapVector<Member<VTTRegion>> m_list;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VTTRegionList_h
+#endif  // VTTRegionList_h

@@ -39,16 +39,19 @@
 namespace blink {
 
 class V0CustomElementBinding {
-    USING_FAST_MALLOC(V0CustomElementBinding);
-public:
-    static std::unique_ptr<V0CustomElementBinding> create(v8::Isolate*, v8::Local<v8::Object> prototype);
-    ~V0CustomElementBinding();
+  USING_FAST_MALLOC(V0CustomElementBinding);
 
-private:
-    V0CustomElementBinding(v8::Isolate*, v8::Local<v8::Object> prototype);
-    ScopedPersistent<v8::Object> m_prototype;
+ public:
+  static std::unique_ptr<V0CustomElementBinding> create(
+      v8::Isolate*,
+      v8::Local<v8::Object> prototype);
+  ~V0CustomElementBinding();
+
+ private:
+  V0CustomElementBinding(v8::Isolate*, v8::Local<v8::Object> prototype);
+  ScopedPersistent<v8::Object> m_prototype;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementBinding_h
+#endif  // V0CustomElementBinding_h

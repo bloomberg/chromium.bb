@@ -52,67 +52,75 @@ class WebFileSystemCallbacksPrivate;
 struct WebFileInfo;
 
 class WebFileSystemCallbacks {
-public:
-    ~WebFileSystemCallbacks() { reset(); }
-    WebFileSystemCallbacks() { }
-    WebFileSystemCallbacks(const WebFileSystemCallbacks& c) { assign(c); }
-    WebFileSystemCallbacks& operator=(const WebFileSystemCallbacks& c)
-    {
-        assign(c);
-        return *this;
-    }
+ public:
+  ~WebFileSystemCallbacks() { reset(); }
+  WebFileSystemCallbacks() {}
+  WebFileSystemCallbacks(const WebFileSystemCallbacks& c) { assign(c); }
+  WebFileSystemCallbacks& operator=(const WebFileSystemCallbacks& c) {
+    assign(c);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebFileSystemCallbacks&);
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebFileSystemCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebFileSystemCallbacks(std::unique_ptr<AsyncFileSystemCallbacks>&&);
+  BLINK_PLATFORM_EXPORT WebFileSystemCallbacks(
+      std::unique_ptr<AsyncFileSystemCallbacks>&&);
 #endif
 
-    // Callback for WebFileSystem's various operations that don't require
-    // return values.
-    BLINK_PLATFORM_EXPORT void didSucceed();
+  // Callback for WebFileSystem's various operations that don't require
+  // return values.
+  BLINK_PLATFORM_EXPORT void didSucceed();
 
-    // Callback for WebFileSystem::readMetadata. Called with the file metadata
-    // for the requested path.
-    BLINK_PLATFORM_EXPORT void didReadMetadata(const WebFileInfo&);
+  // Callback for WebFileSystem::readMetadata. Called with the file metadata
+  // for the requested path.
+  BLINK_PLATFORM_EXPORT void didReadMetadata(const WebFileInfo&);
 
-    // Callback for WebFileSystem::createSnapshot. The metadata also includes the
-    // platform file path.
-    BLINK_PLATFORM_EXPORT void didCreateSnapshotFile(const WebFileInfo&);
+  // Callback for WebFileSystem::createSnapshot. The metadata also includes the
+  // platform file path.
+  BLINK_PLATFORM_EXPORT void didCreateSnapshotFile(const WebFileInfo&);
 
-    // Callback for WebFileSystem::readDirectory. Called with a vector of
-    // file entries in the requested directory. This callback might be called
-    // multiple times if the directory has many entries. |hasMore| must be
-    // true when there are more entries.
-    BLINK_PLATFORM_EXPORT void didReadDirectory(const WebVector<WebFileSystemEntry>&, bool hasMore);
+  // Callback for WebFileSystem::readDirectory. Called with a vector of
+  // file entries in the requested directory. This callback might be called
+  // multiple times if the directory has many entries. |hasMore| must be
+  // true when there are more entries.
+  BLINK_PLATFORM_EXPORT void didReadDirectory(
+      const WebVector<WebFileSystemEntry>&,
+      bool hasMore);
 
-    // Callback for WebFileSystem::openFileSystem. Called with a name and
-    // root URL for the FileSystem when the request is accepted.
-    BLINK_PLATFORM_EXPORT void didOpenFileSystem(const WebString& name, const WebURL& rootURL);
+  // Callback for WebFileSystem::openFileSystem. Called with a name and
+  // root URL for the FileSystem when the request is accepted.
+  BLINK_PLATFORM_EXPORT void didOpenFileSystem(const WebString& name,
+                                               const WebURL& rootURL);
 
-    // Callback for WebFileSystem::resolveURL. Called with a name, root URL and
-    // file path for the FileSystem when the request is accepted. |isDirectory|
-    // must be true when an entry to be resolved is a directory.
-    BLINK_PLATFORM_EXPORT void didResolveURL(const WebString& name, const WebURL& rootURL, WebFileSystemType, const WebString& filePath, bool isDirectory);
+  // Callback for WebFileSystem::resolveURL. Called with a name, root URL and
+  // file path for the FileSystem when the request is accepted. |isDirectory|
+  // must be true when an entry to be resolved is a directory.
+  BLINK_PLATFORM_EXPORT void didResolveURL(const WebString& name,
+                                           const WebURL& rootURL,
+                                           WebFileSystemType,
+                                           const WebString& filePath,
+                                           bool isDirectory);
 
-    // Callback for WebFileSystem::createFileWriter. Called with an instance
-    // of WebFileWriter and the target file length. The writer's ownership
-    // is transferred to the callback.
-    BLINK_PLATFORM_EXPORT void didCreateFileWriter(WebFileWriter*, long long length);
+  // Callback for WebFileSystem::createFileWriter. Called with an instance
+  // of WebFileWriter and the target file length. The writer's ownership
+  // is transferred to the callback.
+  BLINK_PLATFORM_EXPORT void didCreateFileWriter(WebFileWriter*,
+                                                 long long length);
 
-    // Called with an error code when a requested operation hasn't been
-    // completed.
-    BLINK_PLATFORM_EXPORT void didFail(WebFileError);
+  // Called with an error code when a requested operation hasn't been
+  // completed.
+  BLINK_PLATFORM_EXPORT void didFail(WebFileError);
 
-    // Returns true if the caller expects to be blocked until the request
-    // is fullfilled.
-    BLINK_PLATFORM_EXPORT bool shouldBlockUntilCompletion() const;
+  // Returns true if the caller expects to be blocked until the request
+  // is fullfilled.
+  BLINK_PLATFORM_EXPORT bool shouldBlockUntilCompletion() const;
 
-private:
-    WebPrivatePtr<WebFileSystemCallbacksPrivate> m_private;
+ private:
+  WebPrivatePtr<WebFileSystemCallbacksPrivate> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

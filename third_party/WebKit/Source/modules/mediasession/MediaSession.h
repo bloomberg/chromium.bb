@@ -18,31 +18,32 @@ class MediaMetadata;
 class ScriptState;
 
 class MODULES_EXPORT MediaSession final
-    : public GarbageCollectedFinalized<MediaSession>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MediaSession* create(ExecutionContext*, ExceptionState&);
+    : public GarbageCollectedFinalized<MediaSession>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    WebMediaSession* getWebMediaSession() { return m_webMediaSession.get(); }
+ public:
+  static MediaSession* create(ExecutionContext*, ExceptionState&);
 
-    ScriptPromise activate(ScriptState*);
-    ScriptPromise deactivate(ScriptState*);
+  WebMediaSession* getWebMediaSession() { return m_webMediaSession.get(); }
 
-    void setMetadata(MediaMetadata*);
-    MediaMetadata* metadata() const;
+  ScriptPromise activate(ScriptState*);
+  ScriptPromise deactivate(ScriptState*);
 
-    DECLARE_VIRTUAL_TRACE();
+  void setMetadata(MediaMetadata*);
+  MediaMetadata* metadata() const;
 
-private:
-    friend class MediaSessionTest;
+  DECLARE_VIRTUAL_TRACE();
 
-    explicit MediaSession(std::unique_ptr<WebMediaSession>);
+ private:
+  friend class MediaSessionTest;
 
-    std::unique_ptr<WebMediaSession> m_webMediaSession;
-    Member<MediaMetadata> m_metadata;
+  explicit MediaSession(std::unique_ptr<WebMediaSession>);
+
+  std::unique_ptr<WebMediaSession> m_webMediaSession;
+  Member<MediaMetadata> m_metadata;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaSession_h
+#endif  // MediaSession_h

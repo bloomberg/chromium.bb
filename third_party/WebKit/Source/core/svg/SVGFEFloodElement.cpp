@@ -29,40 +29,39 @@
 namespace blink {
 
 inline SVGFEFloodElement::SVGFEFloodElement(Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feFloodTag, document)
-{
-}
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feFloodTag, document) {}
 
 DEFINE_NODE_FACTORY(SVGFEFloodElement)
 
-bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
-{
-    LayoutObject* layoutObject = this->layoutObject();
-    ASSERT(layoutObject);
-    const ComputedStyle& style = layoutObject->styleRef();
-    FEFlood* flood = static_cast<FEFlood*>(effect);
+bool SVGFEFloodElement::setFilterEffectAttribute(
+    FilterEffect* effect,
+    const QualifiedName& attrName) {
+  LayoutObject* layoutObject = this->layoutObject();
+  ASSERT(layoutObject);
+  const ComputedStyle& style = layoutObject->styleRef();
+  FEFlood* flood = static_cast<FEFlood*>(effect);
 
-    if (attrName == SVGNames::flood_colorAttr)
-        return flood->setFloodColor(style.svgStyle().floodColor());
-    if (attrName == SVGNames::flood_opacityAttr)
-        return flood->setFloodOpacity(style.svgStyle().floodOpacity());
+  if (attrName == SVGNames::flood_colorAttr)
+    return flood->setFloodColor(style.svgStyle().floodColor());
+  if (attrName == SVGNames::flood_opacityAttr)
+    return flood->setFloodOpacity(style.svgStyle().floodOpacity());
 
-    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
+  return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(
+      effect, attrName);
 }
 
-FilterEffect* SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter)
-{
-    LayoutObject* layoutObject = this->layoutObject();
-    if (!layoutObject)
-        return nullptr;
+FilterEffect* SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter) {
+  LayoutObject* layoutObject = this->layoutObject();
+  if (!layoutObject)
+    return nullptr;
 
-    ASSERT(layoutObject->style());
-    const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
+  ASSERT(layoutObject->style());
+  const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
 
-    Color color = svgStyle.floodColor();
-    float opacity = svgStyle.floodOpacity();
+  Color color = svgStyle.floodColor();
+  float opacity = svgStyle.floodOpacity();
 
-    return FEFlood::create(filter, color, opacity);
+  return FEFlood::create(filter, color, opacity);
 }
 
-} // namespace blink
+}  // namespace blink

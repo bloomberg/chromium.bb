@@ -38,35 +38,32 @@ static const unsigned maxFilenameLength = 255;
 
 // Returns true if the specified character is not valid in a file name. This
 // is intended for use with removeCharacters.
-static bool isInvalidFileCharacter(UChar c)
-{
-    return !(PathGetCharType(c) & (GCT_LFNCHAR | GCT_SHORTCHAR));
+static bool isInvalidFileCharacter(UChar c) {
+  return !(PathGetCharType(c) & (GCT_LFNCHAR | GCT_SHORTCHAR));
 }
 
-void replaceNewlinesWithWindowsStyleNewlines(String& str)
-{
-    DEFINE_STATIC_LOCAL(String, windowsNewline, ("\r\n"));
-    StringBuilder result;
-    for (unsigned index = 0; index < str.length(); ++index) {
-        if (str[index] != '\n' || (index > 0 && str[index - 1] == '\r'))
-            result.append(str[index]);
-        else
-            result.append(windowsNewline);
-    }
-    str = result.toString();
+void replaceNewlinesWithWindowsStyleNewlines(String& str) {
+  DEFINE_STATIC_LOCAL(String, windowsNewline, ("\r\n"));
+  StringBuilder result;
+  for (unsigned index = 0; index < str.length(); ++index) {
+    if (str[index] != '\n' || (index > 0 && str[index - 1] == '\r'))
+      result.append(str[index]);
+    else
+      result.append(windowsNewline);
+  }
+  str = result.toString();
 }
 
-void validateFilename(String& name, String& extension)
-{
-    // Remove any invalid file system characters.
-    name = name.removeCharacters(&isInvalidFileCharacter);
-    extension = extension.removeCharacters(&isInvalidFileCharacter);
+void validateFilename(String& name, String& extension) {
+  // Remove any invalid file system characters.
+  name = name.removeCharacters(&isInvalidFileCharacter);
+  extension = extension.removeCharacters(&isInvalidFileCharacter);
 
-    if (extension.length() >= maxFilenameLength)
-        extension = String();
+  if (extension.length() >= maxFilenameLength)
+    extension = String();
 
-    // Truncate overly-long filenames, reserving one character for a dot.
-    name.truncate(maxFilenameLength - extension.length() - 1);
+  // Truncate overly-long filenames, reserving one character for a dot.
+  name.truncate(maxFilenameLength - extension.length() - 1);
 }
 
-} // namespace blink
+}  // namespace blink

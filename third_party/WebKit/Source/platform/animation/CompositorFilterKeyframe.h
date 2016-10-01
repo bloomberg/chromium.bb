@@ -16,21 +16,24 @@ namespace blink {
 class TimingFunction;
 
 class PLATFORM_EXPORT CompositorFilterKeyframe : public CompositorKeyframe {
-    WTF_MAKE_NONCOPYABLE(CompositorFilterKeyframe);
-public:
-    CompositorFilterKeyframe(double time, CompositorFilterOperations value, const TimingFunction&);
-    ~CompositorFilterKeyframe();
+  WTF_MAKE_NONCOPYABLE(CompositorFilterKeyframe);
 
-    std::unique_ptr<cc::FilterKeyframe> cloneToCC() const;
+ public:
+  CompositorFilterKeyframe(double time,
+                           CompositorFilterOperations value,
+                           const TimingFunction&);
+  ~CompositorFilterKeyframe();
 
-    // CompositorKeyframe implementation.
-    double time() const override;
-    const cc::TimingFunction* ccTimingFunction() const override;
+  std::unique_ptr<cc::FilterKeyframe> cloneToCC() const;
 
-private:
-    std::unique_ptr<cc::FilterKeyframe> m_filterKeyframe;
+  // CompositorKeyframe implementation.
+  double time() const override;
+  const cc::TimingFunction* ccTimingFunction() const override;
+
+ private:
+  std::unique_ptr<cc::FilterKeyframe> m_filterKeyframe;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorFilterKeyframe_h
+#endif  // CompositorFilterKeyframe_h

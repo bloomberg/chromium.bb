@@ -13,18 +13,21 @@ namespace blink {
 
 class OriginTrialsTest;
 
-class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WorkerInternals* create(ScriptState*);
-    virtual ~WorkerInternals();
-    OriginTrialsTest* originTrialsTest() const;
+class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
+                              public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DEFINE_INLINE_TRACE() {}
-private:
-    explicit WorkerInternals(ScriptState*);
+ public:
+  static WorkerInternals* create(ScriptState*);
+  virtual ~WorkerInternals();
+  OriginTrialsTest* originTrialsTest() const;
+
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  explicit WorkerInternals(ScriptState*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerInternals_h
+#endif  // WorkerInternals_h

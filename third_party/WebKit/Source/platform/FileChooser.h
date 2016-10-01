@@ -43,72 +43,69 @@ namespace blink {
 class FileChooser;
 
 struct FileChooserFileInfo {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    FileChooserFileInfo(const String& path, const String& displayName = String())
-        : path(path)
-        , displayName(displayName)
-    {
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  FileChooserFileInfo(const String& path, const String& displayName = String())
+      : path(path), displayName(displayName) {}
 
-    FileChooserFileInfo(const KURL& fileSystemURL, const FileMetadata metadata) : fileSystemURL(fileSystemURL), metadata(metadata)
-    {
-    }
+  FileChooserFileInfo(const KURL& fileSystemURL, const FileMetadata metadata)
+      : fileSystemURL(fileSystemURL), metadata(metadata) {}
 
-    // Members for native files.
-    const String path;
-    const String displayName;
+  // Members for native files.
+  const String path;
+  const String displayName;
 
-    // Members for file system API files.
-    const KURL fileSystemURL;
-    const FileMetadata metadata;
+  // Members for file system API files.
+  const KURL fileSystemURL;
+  const FileMetadata metadata;
 };
 
 struct FileChooserSettings {
-    DISALLOW_NEW();
-    bool allowsMultipleFiles;
-    bool allowsDirectoryUpload;
-    Vector<String> acceptMIMETypes;
-    Vector<String> acceptFileExtensions;
-    Vector<String> selectedFiles;
-    bool useMediaCapture;
+  DISALLOW_NEW();
+  bool allowsMultipleFiles;
+  bool allowsDirectoryUpload;
+  Vector<String> acceptMIMETypes;
+  Vector<String> acceptFileExtensions;
+  Vector<String> selectedFiles;
+  bool useMediaCapture;
 
-    // Returns a combined vector of acceptMIMETypes and acceptFileExtensions.
-    Vector<String> PLATFORM_EXPORT acceptTypes() const;
+  // Returns a combined vector of acceptMIMETypes and acceptFileExtensions.
+  Vector<String> PLATFORM_EXPORT acceptTypes() const;
 };
 
 class PLATFORM_EXPORT FileChooserClient {
-public:
-    virtual void filesChosen(const Vector<FileChooserFileInfo>&) = 0;
-    virtual ~FileChooserClient();
+ public:
+  virtual void filesChosen(const Vector<FileChooserFileInfo>&) = 0;
+  virtual ~FileChooserClient();
 
-protected:
-    FileChooser* newFileChooser(const FileChooserSettings&);
+ protected:
+  FileChooser* newFileChooser(const FileChooserSettings&);
 
-private:
-    void discardChooser();
+ private:
+  void discardChooser();
 
-    RefPtr<FileChooser> m_chooser;
+  RefPtr<FileChooser> m_chooser;
 };
 
 class PLATFORM_EXPORT FileChooser : public RefCounted<FileChooser> {
-public:
-    static PassRefPtr<FileChooser> create(FileChooserClient*, const FileChooserSettings&);
-    ~FileChooser();
+ public:
+  static PassRefPtr<FileChooser> create(FileChooserClient*,
+                                        const FileChooserSettings&);
+  ~FileChooser();
 
-    void disconnectClient() { m_client = 0; }
+  void disconnectClient() { m_client = 0; }
 
-    // FIXME: We should probably just pass file paths that could be virtual paths with proper display names rather than passing structs.
-    void chooseFiles(const Vector<FileChooserFileInfo>& files);
+  // FIXME: We should probably just pass file paths that could be virtual paths with proper display names rather than passing structs.
+  void chooseFiles(const Vector<FileChooserFileInfo>& files);
 
-    const FileChooserSettings& settings() const { return m_settings; }
+  const FileChooserSettings& settings() const { return m_settings; }
 
-private:
-    FileChooser(FileChooserClient*, const FileChooserSettings&);
+ private:
+  FileChooser(FileChooserClient*, const FileChooserSettings&);
 
-    FileChooserClient* m_client;
-    FileChooserSettings m_settings;
+  FileChooserClient* m_client;
+  FileChooserSettings m_settings;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileChooser_h
+#endif  // FileChooser_h

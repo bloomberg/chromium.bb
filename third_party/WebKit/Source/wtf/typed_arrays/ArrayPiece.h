@@ -21,36 +21,37 @@ namespace WTF {
 // IMPORTANT: The data contained by ArrayPiece is NOT OWNED, so caution must be
 //            taken to ensure it is kept alive.
 class WTF_EXPORT ArrayPiece {
-    DISALLOW_NEW();
-public:
-    // Constructs a "null" ArrayPiece object.
-    ArrayPiece();
+  DISALLOW_NEW();
 
-    ArrayPiece(void* data, unsigned byteLength);
+ public:
+  // Constructs a "null" ArrayPiece object.
+  ArrayPiece();
 
-    // Constructs an ArrayPiece from the given ArrayBuffer. If the input is a
-    // nullptr, then the constructed instance will be isNull().
-    ArrayPiece(ArrayBuffer*);
-    ArrayPiece(ArrayBufferView*);
+  ArrayPiece(void* data, unsigned byteLength);
 
-    bool isNull() const;
-    void* data() const;
-    unsigned char* bytes() const;
-    unsigned byteLength() const;
+  // Constructs an ArrayPiece from the given ArrayBuffer. If the input is a
+  // nullptr, then the constructed instance will be isNull().
+  ArrayPiece(ArrayBuffer*);
+  ArrayPiece(ArrayBufferView*);
 
-protected:
-    void initWithData(void* data, unsigned byteLength);
+  bool isNull() const;
+  void* data() const;
+  unsigned char* bytes() const;
+  unsigned byteLength() const;
 
-private:
-    void initNull();
+ protected:
+  void initWithData(void* data, unsigned byteLength);
 
-    void* m_data;
-    unsigned m_byteLength;
-    bool m_isNull;
+ private:
+  void initNull();
+
+  void* m_data;
+  unsigned m_byteLength;
+  bool m_isNull;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::ArrayPiece;
 
-#endif // ArrayPiece_h
+#endif  // ArrayPiece_h

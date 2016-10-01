@@ -38,16 +38,14 @@
 namespace blink {
 
 struct ColorSuggestion {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    Color color;
-    String label;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  Color color;
+  String label;
 
-    ColorSuggestion(const Color& colorValue, const String& label)
-    : color(colorValue)
-    , label(label)
-    { }
+  ColorSuggestion(const Color& colorValue, const String& label)
+      : color(colorValue), label(label) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ColorSuggestion_h
+#endif  // ColorSuggestion_h

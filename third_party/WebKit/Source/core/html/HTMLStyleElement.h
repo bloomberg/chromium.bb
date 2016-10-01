@@ -30,49 +30,57 @@ namespace blink {
 
 class HTMLStyleElement;
 
-template<typename T> class EventSender;
+template <typename T>
+class EventSender;
 using StyleEventSender = EventSender<HTMLStyleElement>;
 
-class CORE_EXPORT HTMLStyleElement final : public HTMLElement, private StyleElement {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
-public:
-    static HTMLStyleElement* create(Document&, bool createdByParser);
-    ~HTMLStyleElement() override;
+class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
+                                           private StyleElement {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 
-    using StyleElement::sheet;
+ public:
+  static HTMLStyleElement* create(Document&, bool createdByParser);
+  ~HTMLStyleElement() override;
 
-    bool disabled() const;
-    void setDisabled(bool);
+  using StyleElement::sheet;
 
-    void dispatchPendingEvent(StyleEventSender*);
-    static void dispatchPendingLoadEvents();
+  bool disabled() const;
+  void setDisabled(bool);
 
-    DECLARE_VIRTUAL_TRACE();
+  void dispatchPendingEvent(StyleEventSender*);
+  static void dispatchPendingLoadEvents();
 
-private:
-    HTMLStyleElement(Document&, bool createdByParser);
+  DECLARE_VIRTUAL_TRACE();
 
-    // overload from HTMLElement
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void didNotifySubtreeInsertionsToDocument() override;
-    void removedFrom(ContainerNode*) override;
-    void childrenChanged(const ChildrenChange&) override;
+ private:
+  HTMLStyleElement(Document&, bool createdByParser);
 
-    void finishParsingChildren() override;
+  // overload from HTMLElement
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void didNotifySubtreeInsertionsToDocument() override;
+  void removedFrom(ContainerNode*) override;
+  void childrenChanged(const ChildrenChange&) override;
 
-    bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
-    void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
-    void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
+  void finishParsingChildren() override;
 
-    const AtomicString& media() const override;
-    const AtomicString& type() const override;
+  bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
+  void notifyLoadedSheetAndAllCriticalSubresources(
+      LoadedSheetErrorStatus) override;
+  void startLoadingDynamicSheet() override {
+    StyleElement::startLoadingDynamicSheet(document());
+  }
 
-    bool m_firedLoad;
-    bool m_loadedSheet;
+  const AtomicString& media() const override;
+  const AtomicString& type() const override;
+
+  bool m_firedLoad;
+  bool m_loadedSheet;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLStyleElement_h
+#endif  // HTMLStyleElement_h

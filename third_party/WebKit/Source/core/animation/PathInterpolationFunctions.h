@@ -14,20 +14,29 @@ namespace blink {
 class StylePath;
 
 class PathInterpolationFunctions {
-public:
-    static std::unique_ptr<SVGPathByteStream> appliedValue(const InterpolableValue&, const NonInterpolableValue*);
+ public:
+  static std::unique_ptr<SVGPathByteStream> appliedValue(
+      const InterpolableValue&,
+      const NonInterpolableValue*);
 
-    static void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationType&, const InterpolationValue&);
+  static void composite(UnderlyingValueOwner&,
+                        double underlyingFraction,
+                        const InterpolationType&,
+                        const InterpolationValue&);
 
-    static InterpolationValue convertValue(const SVGPathByteStream&);
+  static InterpolationValue convertValue(const SVGPathByteStream&);
 
-    static InterpolationValue convertValue(const StylePath*);
+  static InterpolationValue convertValue(const StylePath*);
 
-    static InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, InterpolationType::ConversionCheckers&);
+  static InterpolationValue maybeConvertNeutral(
+      const InterpolationValue& underlying,
+      InterpolationType::ConversionCheckers&);
 
-    static PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end);
+  static PairwiseInterpolationValue maybeMergeSingles(
+      InterpolationValue&& start,
+      InterpolationValue&& end);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PathInterpolationFunctions_h
+#endif  // PathInterpolationFunctions_h

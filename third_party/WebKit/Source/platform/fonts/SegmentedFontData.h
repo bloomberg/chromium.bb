@@ -34,32 +34,38 @@
 namespace blink {
 
 class PLATFORM_EXPORT SegmentedFontData : public FontData {
-public:
-    static PassRefPtr<SegmentedFontData> create() { return adoptRef(new SegmentedFontData); }
+ public:
+  static PassRefPtr<SegmentedFontData> create() {
+    return adoptRef(new SegmentedFontData);
+  }
 
-    ~SegmentedFontData() override;
+  ~SegmentedFontData() override;
 
-    void appendFace(PassRefPtr<FontDataForRangeSet> fontDataForRangeSet) { m_faces.append(fontDataForRangeSet); }
-    unsigned numFaces() const { return m_faces.size(); }
-    PassRefPtr<FontDataForRangeSet> faceAt(unsigned i) const { return m_faces[i]; }
-    bool containsCharacter(UChar32) const;
+  void appendFace(PassRefPtr<FontDataForRangeSet> fontDataForRangeSet) {
+    m_faces.append(fontDataForRangeSet);
+  }
+  unsigned numFaces() const { return m_faces.size(); }
+  PassRefPtr<FontDataForRangeSet> faceAt(unsigned i) const {
+    return m_faces[i];
+  }
+  bool containsCharacter(UChar32) const;
 
-private:
-    SegmentedFontData() { }
+ private:
+  SegmentedFontData() {}
 
-    const SimpleFontData* fontDataForCharacter(UChar32) const override;
+  const SimpleFontData* fontDataForCharacter(UChar32) const override;
 
-    bool isCustomFont() const override;
-    bool isLoading() const override;
-    bool isLoadingFallback() const override;
-    bool isSegmented() const override;
-    bool shouldSkipDrawing() const override;
+  bool isCustomFont() const override;
+  bool isLoading() const override;
+  bool isLoadingFallback() const override;
+  bool isSegmented() const override;
+  bool shouldSkipDrawing() const override;
 
-    Vector<RefPtr<FontDataForRangeSet>, 1> m_faces;
+  Vector<RefPtr<FontDataForRangeSet>, 1> m_faces;
 };
 
 DEFINE_FONT_DATA_TYPE_CASTS(SegmentedFontData, true);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SegmentedFontData_h
+#endif  // SegmentedFontData_h

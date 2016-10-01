@@ -12,39 +12,41 @@
 namespace blink {
 
 class InterpolatedSVGPathSource {
-    WTF_MAKE_NONCOPYABLE(InterpolatedSVGPathSource);
-    STACK_ALLOCATED();
-public:
-    InterpolatedSVGPathSource(const InterpolableList& listValue, const Vector<SVGPathSegType>& pathSegTypes)
-        : m_currentIndex(0)
-        , m_interpolablePathSegs(listValue)
-        , m_pathSegTypes(pathSegTypes)
-    {
-        DCHECK_EQ(m_interpolablePathSegs.length(), m_pathSegTypes.size());
-    }
+  WTF_MAKE_NONCOPYABLE(InterpolatedSVGPathSource);
+  STACK_ALLOCATED();
 
-    bool hasMoreData() const;
-    PathSegmentData parseSegment();
+ public:
+  InterpolatedSVGPathSource(const InterpolableList& listValue,
+                            const Vector<SVGPathSegType>& pathSegTypes)
+      : m_currentIndex(0),
+        m_interpolablePathSegs(listValue),
+        m_pathSegTypes(pathSegTypes) {
+    DCHECK_EQ(m_interpolablePathSegs.length(), m_pathSegTypes.size());
+  }
 
-private:
-    PathCoordinates m_currentCoordinates;
-    size_t m_currentIndex;
-    const InterpolableList& m_interpolablePathSegs;
-    const Vector<SVGPathSegType>& m_pathSegTypes;
+  bool hasMoreData() const;
+  PathSegmentData parseSegment();
+
+ private:
+  PathCoordinates m_currentCoordinates;
+  size_t m_currentIndex;
+  const InterpolableList& m_interpolablePathSegs;
+  const Vector<SVGPathSegType>& m_pathSegTypes;
 };
 
-bool InterpolatedSVGPathSource::hasMoreData() const
-{
-    return m_currentIndex < m_interpolablePathSegs.length();
+bool InterpolatedSVGPathSource::hasMoreData() const {
+  return m_currentIndex < m_interpolablePathSegs.length();
 }
 
-PathSegmentData InterpolatedSVGPathSource::parseSegment()
-{
-    PathSegmentData segment = SVGPathSegInterpolationFunctions::consumeInterpolablePathSeg(*m_interpolablePathSegs.get(m_currentIndex), m_pathSegTypes.at(m_currentIndex), m_currentCoordinates);
-    m_currentIndex++;
-    return segment;
+PathSegmentData InterpolatedSVGPathSource::parseSegment() {
+  PathSegmentData segment =
+      SVGPathSegInterpolationFunctions::consumeInterpolablePathSeg(
+          *m_interpolablePathSegs.get(m_currentIndex),
+          m_pathSegTypes.at(m_currentIndex), m_currentCoordinates);
+  m_currentIndex++;
+  return segment;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InterpolatedSVGPathSource_h
+#endif  // InterpolatedSVGPathSource_h

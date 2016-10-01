@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef V8CustomXPathNSResolver_h
 #define V8CustomXPathNSResolver_h
 
@@ -44,20 +43,21 @@ namespace blink {
 // given resolver object. So the lifetime of V8CustomXPathNSResolver
 // must not exceed the lifetime of the passed handle.
 class V8CustomXPathNSResolver final : public XPathNSResolver {
-public:
-    static V8CustomXPathNSResolver* create(ScriptState*, v8::Local<v8::Object> resolver);
+ public:
+  static V8CustomXPathNSResolver* create(ScriptState*,
+                                         v8::Local<v8::Object> resolver);
 
-    AtomicString lookupNamespaceURI(const String& prefix) override;
+  AtomicString lookupNamespaceURI(const String& prefix) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    V8CustomXPathNSResolver(ScriptState*, v8::Local<v8::Object> resolver);
+ private:
+  V8CustomXPathNSResolver(ScriptState*, v8::Local<v8::Object> resolver);
 
-    RefPtr<ScriptState> m_scriptState;
-    v8::Local<v8::Object> m_resolver; // Handle to resolver object.
+  RefPtr<ScriptState> m_scriptState;
+  v8::Local<v8::Object> m_resolver;  // Handle to resolver object.
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8CustomXPathNSResolver_h
+#endif  // V8CustomXPathNSResolver_h

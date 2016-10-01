@@ -41,41 +41,43 @@ class Node;
 
 // Implements v8::RetainedObjectInfo.
 class RetainedDOMInfo final : public RetainedObjectInfo {
-public:
-    explicit RetainedDOMInfo(Node* root);
-    ~RetainedDOMInfo() override;
-    void Dispose() override;
-    bool IsEquivalent(v8::RetainedObjectInfo* other) override;
-    intptr_t GetHash() override;
-    const char* GetGroupLabel() override;
-    const char* GetLabel() override;
-    intptr_t GetElementCount() override;
-    intptr_t GetEquivalenceClass() override;
+ public:
+  explicit RetainedDOMInfo(Node* root);
+  ~RetainedDOMInfo() override;
+  void Dispose() override;
+  bool IsEquivalent(v8::RetainedObjectInfo* other) override;
+  intptr_t GetHash() override;
+  const char* GetGroupLabel() override;
+  const char* GetLabel() override;
+  intptr_t GetElementCount() override;
+  intptr_t GetEquivalenceClass() override;
 
-    static v8::RetainedObjectInfo* createRetainedDOMInfo(uint16_t classId, v8::Local<v8::Value> wrapper);
+  static v8::RetainedObjectInfo* createRetainedDOMInfo(
+      uint16_t classId,
+      v8::Local<v8::Value> wrapper);
 
-private:
-    // V8 guarantees to keep RetainedObjectInfos alive only during a GC or heap snapshotting round, when renderer
-    // doesn't get control. This allows us to use raw pointers.
-    UntracedMember<Node> m_root;
+ private:
+  // V8 guarantees to keep RetainedObjectInfos alive only during a GC or heap snapshotting round, when renderer
+  // doesn't get control. This allows us to use raw pointers.
+  UntracedMember<Node> m_root;
 };
 
 class ActiveDOMObjectsInfo final : public RetainedObjectInfo {
-public:
-    explicit ActiveDOMObjectsInfo(int numberOfObjectsWithPendingActivity);
-    ~ActiveDOMObjectsInfo() override;
-    void Dispose() override;
-    bool IsEquivalent(v8::RetainedObjectInfo* other) override;
-    intptr_t GetHash() override;
-    const char* GetGroupLabel() override;
-    const char* GetLabel() override;
-    intptr_t GetElementCount() override;
-    intptr_t GetEquivalenceClass() override;
+ public:
+  explicit ActiveDOMObjectsInfo(int numberOfObjectsWithPendingActivity);
+  ~ActiveDOMObjectsInfo() override;
+  void Dispose() override;
+  bool IsEquivalent(v8::RetainedObjectInfo* other) override;
+  intptr_t GetHash() override;
+  const char* GetGroupLabel() override;
+  const char* GetLabel() override;
+  intptr_t GetElementCount() override;
+  intptr_t GetEquivalenceClass() override;
 
-private:
-    int m_numberOfObjectsWithPendingActivity;
+ private:
+  int m_numberOfObjectsWithPendingActivity;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RetainedDOMInfo_h
+#endif  // RetainedDOMInfo_h

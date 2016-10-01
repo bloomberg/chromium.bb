@@ -31,31 +31,41 @@
 namespace blink {
 
 class IndentOutdentCommand final : public ApplyBlockElementCommand {
-public:
-    enum EIndentType { Indent, Outdent };
-    static IndentOutdentCommand* create(Document& document, EIndentType type)
-    {
-        return new IndentOutdentCommand(document, type);
-    }
+ public:
+  enum EIndentType { Indent, Outdent };
+  static IndentOutdentCommand* create(Document& document, EIndentType type) {
+    return new IndentOutdentCommand(document, type);
+  }
 
-    bool preservesTypingStyle() const override { return true; }
+  bool preservesTypingStyle() const override { return true; }
 
-private:
-    IndentOutdentCommand(Document&, EIndentType);
+ private:
+  IndentOutdentCommand(Document&, EIndentType);
 
-    InputEvent::InputType inputType() const override;
+  InputEvent::InputType inputType() const override;
 
-    void outdentRegion(const VisiblePosition&, const VisiblePosition&, EditingState*);
-    void outdentParagraph(EditingState*);
-    bool tryIndentingAsListItem(const Position&, const Position&, EditingState*);
-    void indentIntoBlockquote(const Position&, const Position&, HTMLElement*&, EditingState*);
+  void outdentRegion(const VisiblePosition&,
+                     const VisiblePosition&,
+                     EditingState*);
+  void outdentParagraph(EditingState*);
+  bool tryIndentingAsListItem(const Position&, const Position&, EditingState*);
+  void indentIntoBlockquote(const Position&,
+                            const Position&,
+                            HTMLElement*&,
+                            EditingState*);
 
-    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*) override;
-    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, HTMLElement*& blockquoteForNextIndent, EditingState*) override;
+  void formatSelection(const VisiblePosition& startOfSelection,
+                       const VisiblePosition& endOfSelection,
+                       EditingState*) override;
+  void formatRange(const Position& start,
+                   const Position& end,
+                   const Position& endOfSelection,
+                   HTMLElement*& blockquoteForNextIndent,
+                   EditingState*) override;
 
-    EIndentType m_typeOfAction;
+  EIndentType m_typeOfAction;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IndentOutdentCommand_h
+#endif  // IndentOutdentCommand_h

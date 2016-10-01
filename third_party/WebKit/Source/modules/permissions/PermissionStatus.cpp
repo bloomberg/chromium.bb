@@ -15,103 +15,103 @@
 namespace blink {
 
 // static
-PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, MojoPermissionStatus status, MojoPermissionName name)
-{
-    return PermissionStatus::createAndListen(resolver->getExecutionContext(), status, name);
+PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver,
+                                         MojoPermissionStatus status,
+                                         MojoPermissionName name) {
+  return PermissionStatus::createAndListen(resolver->getExecutionContext(),
+                                           status, name);
 }
 
-PermissionStatus* PermissionStatus::createAndListen(ExecutionContext* executionContext, MojoPermissionStatus status, MojoPermissionName name)
-{
-    PermissionStatus* permissionStatus = new PermissionStatus(executionContext, status, name);
-    permissionStatus->suspendIfNeeded();
-    permissionStatus->startListening();
-    return permissionStatus;
+PermissionStatus* PermissionStatus::createAndListen(
+    ExecutionContext* executionContext,
+    MojoPermissionStatus status,
+    MojoPermissionName name) {
+  PermissionStatus* permissionStatus =
+      new PermissionStatus(executionContext, status, name);
+  permissionStatus->suspendIfNeeded();
+  permissionStatus->startListening();
+  return permissionStatus;
 }
 
-PermissionStatus::PermissionStatus(ExecutionContext* executionContext, MojoPermissionStatus status, MojoPermissionName name)
-    : ActiveScriptWrappable(this)
-    , ActiveDOMObject(executionContext)
-    , m_status(status)
-    , m_name(name)
-{
+PermissionStatus::PermissionStatus(ExecutionContext* executionContext,
+                                   MojoPermissionStatus status,
+                                   MojoPermissionName name)
+    : ActiveScriptWrappable(this),
+      ActiveDOMObject(executionContext),
+      m_status(status),
+      m_name(name) {}
+
+PermissionStatus::~PermissionStatus() {
+  stopListening();
 }
 
-PermissionStatus::~PermissionStatus()
-{
-    stopListening();
+const AtomicString& PermissionStatus::interfaceName() const {
+  return EventTargetNames::PermissionStatus;
 }
 
-const AtomicString& PermissionStatus::interfaceName() const
-{
-    return EventTargetNames::PermissionStatus;
+ExecutionContext* PermissionStatus::getExecutionContext() const {
+  return ActiveDOMObject::getExecutionContext();
 }
 
-ExecutionContext* PermissionStatus::getExecutionContext() const
-{
-    return ActiveDOMObject::getExecutionContext();
+void PermissionStatus::permissionChanged(MojoPermissionStatus status) {
+  if (m_status == status)
+    return;
+
+  m_status = status;
+  dispatchEvent(Event::create(EventTypeNames::change));
+  m_service->GetNextPermissionChange(
+      m_name, getExecutionContext()->getSecurityOrigin(), m_status,
+      convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged,
+                                      wrapWeakPersistent(this))));
 }
 
-void PermissionStatus::permissionChanged(MojoPermissionStatus status)
-{
-    if (m_status == status)
-        return;
-
-    m_status = status;
-    dispatchEvent(Event::create(EventTypeNames::change));
-    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
+bool PermissionStatus::hasPendingActivity() const {
+  return m_service;
 }
 
-bool PermissionStatus::hasPendingActivity() const
-{
-    return m_service;
+void PermissionStatus::resume() {
+  startListening();
 }
 
-void PermissionStatus::resume()
-{
-    startListening();
+void PermissionStatus::suspend() {
+  stopListening();
 }
 
-void PermissionStatus::suspend()
-{
-    stopListening();
+void PermissionStatus::stop() {
+  stopListening();
 }
 
-void PermissionStatus::stop()
-{
-    stopListening();
+void PermissionStatus::startListening() {
+  DCHECK(!m_service);
+  Permissions::connectToService(getExecutionContext(),
+                                mojo::GetProxy(&m_service));
+  m_service->GetNextPermissionChange(
+      m_name, getExecutionContext()->getSecurityOrigin(), m_status,
+      convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged,
+                                      wrapWeakPersistent(this))));
 }
 
-void PermissionStatus::startListening()
-{
-    DCHECK(!m_service);
-    Permissions::connectToService(getExecutionContext(), mojo::GetProxy(&m_service));
-    m_service->GetNextPermissionChange(m_name, getExecutionContext()->getSecurityOrigin(), m_status, convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged, wrapWeakPersistent(this))));
+void PermissionStatus::stopListening() {
+  m_service.reset();
 }
 
-void PermissionStatus::stopListening()
-{
-    m_service.reset();
-}
-
-String PermissionStatus::state() const
-{
-    switch (m_status) {
+String PermissionStatus::state() const {
+  switch (m_status) {
     case MojoPermissionStatus::GRANTED:
-        return "granted";
+      return "granted";
     case MojoPermissionStatus::DENIED:
-        return "denied";
+      return "denied";
     case MojoPermissionStatus::ASK:
-        return "prompt";
-    }
+      return "prompt";
+  }
 
-    ASSERT_NOT_REACHED();
-    return "denied";
+  ASSERT_NOT_REACHED();
+  return "denied";
 }
 
-DEFINE_TRACE(PermissionStatus)
-{
-    EventTargetWithInlineData::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+DEFINE_TRACE(PermissionStatus) {
+  EventTargetWithInlineData::trace(visitor);
+  ActiveDOMObject::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

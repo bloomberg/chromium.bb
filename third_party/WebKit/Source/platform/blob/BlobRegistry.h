@@ -47,25 +47,30 @@ class SecurityOrigin;
 
 // A bridging class for calling blink::WebBlobRegistry methods.
 class PLATFORM_EXPORT BlobRegistry {
-    STATIC_ONLY(BlobRegistry);
-public:
-    // Methods for controlling Blobs.
-    static void registerBlobData(const String& uuid, std::unique_ptr<BlobData>);
-    static void addBlobDataRef(const String& uuid);
-    static void removeBlobDataRef(const String& uuid);
-    static void registerPublicBlobURL(SecurityOrigin*, const KURL&, PassRefPtr<BlobDataHandle>);
-    static void revokePublicBlobURL(const KURL&);
+  STATIC_ONLY(BlobRegistry);
 
-    // Methods for controlling Streams.
-    static void registerStreamURL(const KURL&, const String&);
-    static void registerStreamURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
-    static void addDataToStream(const KURL&, PassRefPtr<RawData>);
-    static void flushStream(const KURL&);
-    static void finalizeStream(const KURL&);
-    static void abortStream(const KURL&);
-    static void unregisterStreamURL(const KURL&);
+ public:
+  // Methods for controlling Blobs.
+  static void registerBlobData(const String& uuid, std::unique_ptr<BlobData>);
+  static void addBlobDataRef(const String& uuid);
+  static void removeBlobDataRef(const String& uuid);
+  static void registerPublicBlobURL(SecurityOrigin*,
+                                    const KURL&,
+                                    PassRefPtr<BlobDataHandle>);
+  static void revokePublicBlobURL(const KURL&);
+
+  // Methods for controlling Streams.
+  static void registerStreamURL(const KURL&, const String&);
+  static void registerStreamURL(SecurityOrigin*,
+                                const KURL&,
+                                const KURL& srcURL);
+  static void addDataToStream(const KURL&, PassRefPtr<RawData>);
+  static void flushStream(const KURL&);
+  static void finalizeStream(const KURL&);
+  static void abortStream(const KURL&);
+  static void unregisterStreamURL(const KURL&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BlobRegistry_h
+#endif  // BlobRegistry_h

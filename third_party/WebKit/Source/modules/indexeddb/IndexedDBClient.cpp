@@ -12,39 +12,35 @@
 
 namespace blink {
 
-IndexedDBClient::IndexedDBClient()
-{
+IndexedDBClient::IndexedDBClient() {}
+
+IndexedDBClient* IndexedDBClient::from(ExecutionContext* context) {
+  if (context->isDocument())
+    return static_cast<IndexedDBClient*>(Supplement<LocalFrame>::from(
+        toDocument(*context).frame(), supplementName()));
+
+  WorkerClients* clients = toWorkerGlobalScope(*context).clients();
+  ASSERT(clients);
+  return static_cast<IndexedDBClient*>(
+      Supplement<WorkerClients>::from(clients, supplementName()));
 }
 
-IndexedDBClient* IndexedDBClient::from(ExecutionContext* context)
-{
-    if (context->isDocument())
-        return static_cast<IndexedDBClient*>(Supplement<LocalFrame>::from(toDocument(*context).frame(), supplementName()));
-
-    WorkerClients* clients = toWorkerGlobalScope(*context).clients();
-    ASSERT(clients);
-    return static_cast<IndexedDBClient*>(Supplement<WorkerClients>::from(clients, supplementName()));
+const char* IndexedDBClient::supplementName() {
+  return "IndexedDBClient";
 }
 
-const char* IndexedDBClient::supplementName()
-{
-    return "IndexedDBClient";
+DEFINE_TRACE(IndexedDBClient) {
+  Supplement<LocalFrame>::trace(visitor);
+  Supplement<WorkerClients>::trace(visitor);
 }
 
-DEFINE_TRACE(IndexedDBClient)
-{
-    Supplement<LocalFrame>::trace(visitor);
-    Supplement<WorkerClients>::trace(visitor);
+void provideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client) {
+  frame.provideSupplement(IndexedDBClient::supplementName(), client);
 }
 
-void provideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client)
-{
-    frame.provideSupplement(IndexedDBClient::supplementName(), client);
+void provideIndexedDBClientToWorker(WorkerClients* clients,
+                                    IndexedDBClient* client) {
+  clients->provideSupplement(IndexedDBClient::supplementName(), client);
 }
 
-void provideIndexedDBClientToWorker(WorkerClients* clients, IndexedDBClient* client)
-{
-    clients->provideSupplement(IndexedDBClient::supplementName(), client);
-}
-
-} // namespace blink
+}  // namespace blink

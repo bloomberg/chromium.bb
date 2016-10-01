@@ -33,34 +33,37 @@ class SVGElement;
 class SVGAnimationElement;
 
 class SVGAnimatedTypeAnimator final {
-    DISALLOW_NEW();
-public:
-    SVGAnimatedTypeAnimator(SVGAnimationElement*);
+  DISALLOW_NEW();
 
-    void clear();
-    void reset(SVGElement* contextElement);
+ public:
+  SVGAnimatedTypeAnimator(SVGAnimationElement*);
 
-    SVGPropertyBase* createAnimatedValue() const;
-    SVGPropertyBase* createPropertyForAnimation(const String&) const;
+  void clear();
+  void reset(SVGElement* contextElement);
 
-    void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
-    AnimatedPropertyType type() const { return m_type; }
+  SVGPropertyBase* createAnimatedValue() const;
+  SVGPropertyBase* createPropertyForAnimation(const String&) const;
 
-    bool isAnimatingSVGDom() const { return m_animatedProperty; }
-    bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
+  void setContextElement(SVGElement* contextElement) {
+    m_contextElement = contextElement;
+  }
+  AnimatedPropertyType type() const { return m_type; }
 
-    DECLARE_TRACE();
+  bool isAnimatingSVGDom() const { return m_animatedProperty; }
+  bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
 
-private:
-    SVGPropertyBase* createPropertyForAttributeAnimation(const String&) const;
-    SVGPropertyBase* createPropertyForCSSAnimation(const String&) const;
+  DECLARE_TRACE();
 
-    Member<SVGAnimationElement> m_animationElement;
-    Member<SVGElement> m_contextElement;
-    Member<SVGAnimatedPropertyBase> m_animatedProperty;
-    AnimatedPropertyType m_type;
+ private:
+  SVGPropertyBase* createPropertyForAttributeAnimation(const String&) const;
+  SVGPropertyBase* createPropertyForCSSAnimation(const String&) const;
+
+  Member<SVGAnimationElement> m_animationElement;
+  Member<SVGElement> m_contextElement;
+  Member<SVGAnimatedPropertyBase> m_animatedProperty;
+  AnimatedPropertyType m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedTypeAnimator_h
+#endif  // SVGAnimatedTypeAnimator_h

@@ -45,55 +45,55 @@ OBJC_CLASS NSLocale;
 namespace blink {
 
 class PLATFORM_EXPORT LocaleMac : public Locale {
-public:
-    static std::unique_ptr<LocaleMac> create(const String&);
-    static std::unique_ptr<LocaleMac> create(NSLocale*);
-    ~LocaleMac();
+ public:
+  static std::unique_ptr<LocaleMac> create(const String&);
+  static std::unique_ptr<LocaleMac> create(NSLocale*);
+  ~LocaleMac();
 
-    const Vector<String>& weekDayShortLabels() override;
-    unsigned firstDayOfWeek() override;
-    bool isRTL() override;
+  const Vector<String>& weekDayShortLabels() override;
+  unsigned firstDayOfWeek() override;
+  bool isRTL() override;
 
-    String dateFormat() override;
-    String monthFormat() override;
-    String shortMonthFormat() override;
-    String timeFormat() override;
-    String shortTimeFormat() override;
-    String dateTimeFormatWithSeconds() override;
-    String dateTimeFormatWithoutSeconds() override;
-    const Vector<String>& monthLabels() override;
-    const Vector<String>& shortMonthLabels() override;
-    const Vector<String>& standAloneMonthLabels() override;
-    const Vector<String>& shortStandAloneMonthLabels() override;
-    const Vector<String>& timeAMPMLabels() override;
+  String dateFormat() override;
+  String monthFormat() override;
+  String shortMonthFormat() override;
+  String timeFormat() override;
+  String shortTimeFormat() override;
+  String dateTimeFormatWithSeconds() override;
+  String dateTimeFormatWithoutSeconds() override;
+  const Vector<String>& monthLabels() override;
+  const Vector<String>& shortMonthLabels() override;
+  const Vector<String>& standAloneMonthLabels() override;
+  const Vector<String>& shortStandAloneMonthLabels() override;
+  const Vector<String>& timeAMPMLabels() override;
 
-private:
-    explicit LocaleMac(NSLocale*);
-    RetainPtr<NSDateFormatter> shortDateFormatter();
-    void initializeLocaleData() override;
+ private:
+  explicit LocaleMac(NSLocale*);
+  RetainPtr<NSDateFormatter> shortDateFormatter();
+  void initializeLocaleData() override;
 
-    RetainPtr<NSLocale> m_locale;
-    RetainPtr<NSCalendar> m_gregorianCalendar;
-    Vector<String> m_weekDayShortLabels;
-    Vector<String> m_monthLabels;
-    RetainPtr<NSDateFormatter> timeFormatter();
-    RetainPtr<NSDateFormatter> shortTimeFormatter();
-    RetainPtr<NSDateFormatter> dateTimeFormatterWithSeconds();
-    RetainPtr<NSDateFormatter> dateTimeFormatterWithoutSeconds();
+  RetainPtr<NSLocale> m_locale;
+  RetainPtr<NSCalendar> m_gregorianCalendar;
+  Vector<String> m_weekDayShortLabels;
+  Vector<String> m_monthLabels;
+  RetainPtr<NSDateFormatter> timeFormatter();
+  RetainPtr<NSDateFormatter> shortTimeFormatter();
+  RetainPtr<NSDateFormatter> dateTimeFormatterWithSeconds();
+  RetainPtr<NSDateFormatter> dateTimeFormatterWithoutSeconds();
 
-    String m_dateFormat;
-    String m_monthFormat;
-    String m_shortMonthFormat;
-    String m_timeFormatWithSeconds;
-    String m_timeFormatWithoutSeconds;
-    String m_dateTimeFormatWithSeconds;
-    String m_dateTimeFormatWithoutSeconds;
-    Vector<String> m_shortMonthLabels;
-    Vector<String> m_standAloneMonthLabels;
-    Vector<String> m_shortStandAloneMonthLabels;
-    Vector<String> m_timeAMPMLabels;
-    bool m_didInitializeNumberData;
+  String m_dateFormat;
+  String m_monthFormat;
+  String m_shortMonthFormat;
+  String m_timeFormatWithSeconds;
+  String m_timeFormatWithoutSeconds;
+  String m_dateTimeFormatWithSeconds;
+  String m_dateTimeFormatWithoutSeconds;
+  Vector<String> m_shortMonthLabels;
+  Vector<String> m_standAloneMonthLabels;
+  Vector<String> m_shortStandAloneMonthLabels;
+  Vector<String> m_timeAMPMLabels;
+  bool m_didInitializeNumberData;
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

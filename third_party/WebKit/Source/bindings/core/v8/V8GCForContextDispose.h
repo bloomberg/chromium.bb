@@ -36,24 +36,25 @@
 namespace blink {
 
 class V8GCForContextDispose {
-    USING_FAST_MALLOC(V8GCForContextDispose);
-    WTF_MAKE_NONCOPYABLE(V8GCForContextDispose);
-public:
-    void notifyContextDisposed(bool isMainFrame);
-    void notifyIdle();
+  USING_FAST_MALLOC(V8GCForContextDispose);
+  WTF_MAKE_NONCOPYABLE(V8GCForContextDispose);
 
-    static V8GCForContextDispose& instance();
+ public:
+  void notifyContextDisposed(bool isMainFrame);
+  void notifyIdle();
 
-private:
-    V8GCForContextDispose(); // Use instance() instead.
-    void pseudoIdleTimerFired(TimerBase*);
-    void reset();
+  static V8GCForContextDispose& instance();
 
-    Timer<V8GCForContextDispose> m_pseudoIdleTimer;
-    bool m_didDisposeContextForMainFrame;
-    double m_lastContextDisposalTime;
+ private:
+  V8GCForContextDispose();  // Use instance() instead.
+  void pseudoIdleTimerFired(TimerBase*);
+  void reset();
+
+  Timer<V8GCForContextDispose> m_pseudoIdleTimer;
+  bool m_didDisposeContextForMainFrame;
+  double m_lastContextDisposalTime;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8GCForContextDispose_h
+#endif  // V8GCForContextDispose_h

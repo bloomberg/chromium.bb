@@ -40,14 +40,14 @@ class ScopedWindowFocusAllowedIndicator;
 class WebDocument;
 
 class WebScopedWindowFocusAllowedIndicator {
-public:
-    BLINK_EXPORT explicit WebScopedWindowFocusAllowedIndicator(WebDocument* document);
-    BLINK_EXPORT ~WebScopedWindowFocusAllowedIndicator();
+ public:
+  BLINK_EXPORT explicit WebScopedWindowFocusAllowedIndicator(
+      WebDocument* document);
+  BLINK_EXPORT ~WebScopedWindowFocusAllowedIndicator();
 
-private:
-    std::unique_ptr<ScopedWindowFocusAllowedIndicator> m_private;
+ private:
+  std::unique_ptr<ScopedWindowFocusAllowedIndicator> m_private;
 };
-
 }
 
-#endif // WebScopedWindowFocusAllowedIndicator_h
+#endif  // WebScopedWindowFocusAllowedIndicator_h

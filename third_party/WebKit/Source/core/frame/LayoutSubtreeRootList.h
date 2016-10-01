@@ -27,22 +27,25 @@ namespace blink {
 // TODO(leviw): This should really be something akin to a LayoutController
 // that FrameView delegates layout work to.
 class LayoutSubtreeRootList : public DepthOrderedLayoutObjectList {
-    DISALLOW_NEW();
-public:
-    LayoutSubtreeRootList()
-    { }
+  DISALLOW_NEW();
 
-    void clearAndMarkContainingBlocksForLayout();
+ public:
+  LayoutSubtreeRootList() {}
 
-    // TODO(leviw): Remove this once we stop exposing to DevTools one root
-    // for a layout crbug.com/460596
-    LayoutObject* randomRoot();
+  void clearAndMarkContainingBlocksForLayout();
 
-    void countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects);
+  // TODO(leviw): Remove this once we stop exposing to DevTools one root
+  // for a layout crbug.com/460596
+  LayoutObject* randomRoot();
 
-    static void countObjectsNeedingLayoutInRoot(const LayoutObject* root, unsigned& needsLayoutObjects, unsigned& totalObjects);
+  void countObjectsNeedingLayout(unsigned& needsLayoutObjects,
+                                 unsigned& totalObjects);
+
+  static void countObjectsNeedingLayoutInRoot(const LayoutObject* root,
+                                              unsigned& needsLayoutObjects,
+                                              unsigned& totalObjects);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSubtreeRootList_h
+#endif  // LayoutSubtreeRootList_h

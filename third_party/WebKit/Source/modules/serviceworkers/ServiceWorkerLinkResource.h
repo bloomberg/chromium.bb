@@ -15,22 +15,21 @@ namespace blink {
 class HTMLLinkElement;
 
 class MODULES_EXPORT ServiceWorkerLinkResource final : public LinkResource {
-public:
+ public:
+  static ServiceWorkerLinkResource* create(HTMLLinkElement* owner);
 
-    static ServiceWorkerLinkResource* create(HTMLLinkElement* owner);
+  ~ServiceWorkerLinkResource() override;
 
-    ~ServiceWorkerLinkResource() override;
+  // LinkResource implementation:
+  void process() override;
+  LinkResourceType type() const override { return Other; }
+  bool hasLoaded() const override;
+  void ownerRemoved() override;
 
-    // LinkResource implementation:
-    void process() override;
-    LinkResourceType type() const override { return Other; }
-    bool hasLoaded() const override;
-    void ownerRemoved() override;
-
-private:
-    explicit ServiceWorkerLinkResource(HTMLLinkElement* owner);
+ private:
+  explicit ServiceWorkerLinkResource(HTMLLinkElement* owner);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerLinkResource_h
+#endif  // ServiceWorkerLinkResource_h

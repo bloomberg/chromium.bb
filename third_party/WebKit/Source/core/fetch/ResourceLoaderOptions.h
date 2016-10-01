@@ -39,165 +39,151 @@
 
 namespace blink {
 
-enum DataBufferingPolicy {
-    BufferData,
-    DoNotBufferData
-};
+enum DataBufferingPolicy { BufferData, DoNotBufferData };
 
 enum ContentSecurityPolicyDisposition {
-    CheckContentSecurityPolicy,
-    DoNotCheckContentSecurityPolicy
+  CheckContentSecurityPolicy,
+  DoNotCheckContentSecurityPolicy
 };
 
 enum RequestInitiatorContext {
-    DocumentContext,
-    WorkerContext,
+  DocumentContext,
+  WorkerContext,
 };
 
-enum StoredCredentials {
-    AllowStoredCredentials,
-    DoNotAllowStoredCredentials
-};
+enum StoredCredentials { AllowStoredCredentials, DoNotAllowStoredCredentials };
 
 // APIs like XMLHttpRequest and EventSource let the user decide
 // whether to send credentials, but they're always sent for
 // same-origin requests. Additional information is needed to handle
 // cross-origin redirects correctly.
 enum CredentialRequest {
-    ClientRequestedCredentials,
-    ClientDidNotRequestCredentials
+  ClientRequestedCredentials,
+  ClientDidNotRequestCredentials
 };
 
-enum SynchronousPolicy {
-    RequestSynchronously,
-    RequestAsynchronously
-};
+enum SynchronousPolicy { RequestSynchronously, RequestAsynchronously };
 
 // A resource fetch can be marked as being CORS enabled. The loader
 // must perform an access check upon seeing the response.
-enum CORSEnabled {
-    NotCORSEnabled,
-    IsCORSEnabled
-};
+enum CORSEnabled { NotCORSEnabled, IsCORSEnabled };
 
 struct ResourceLoaderOptions {
-    USING_FAST_MALLOC(ResourceLoaderOptions);
-public:
-    ResourceLoaderOptions()
-        : dataBufferingPolicy(BufferData)
-        , allowCredentials(DoNotAllowStoredCredentials)
-        , credentialsRequested(ClientDidNotRequestCredentials)
-        , contentSecurityPolicyOption(CheckContentSecurityPolicy)
-        , requestInitiatorContext(DocumentContext)
-        , synchronousPolicy(RequestAsynchronously)
-        , corsEnabled(NotCORSEnabled)
-    {
-    }
+  USING_FAST_MALLOC(ResourceLoaderOptions);
 
-    ResourceLoaderOptions(
-        DataBufferingPolicy dataBufferingPolicy,
-        StoredCredentials allowCredentials,
-        CredentialRequest credentialsRequested,
-        ContentSecurityPolicyDisposition contentSecurityPolicyOption,
-        RequestInitiatorContext requestInitiatorContext)
-        : dataBufferingPolicy(dataBufferingPolicy)
-        , allowCredentials(allowCredentials)
-        , credentialsRequested(credentialsRequested)
-        , contentSecurityPolicyOption(contentSecurityPolicyOption)
-        , requestInitiatorContext(requestInitiatorContext)
-        , synchronousPolicy(RequestAsynchronously)
-        , corsEnabled(NotCORSEnabled)
-    {
-    }
+ public:
+  ResourceLoaderOptions()
+      : dataBufferingPolicy(BufferData),
+        allowCredentials(DoNotAllowStoredCredentials),
+        credentialsRequested(ClientDidNotRequestCredentials),
+        contentSecurityPolicyOption(CheckContentSecurityPolicy),
+        requestInitiatorContext(DocumentContext),
+        synchronousPolicy(RequestAsynchronously),
+        corsEnabled(NotCORSEnabled) {}
 
-    // Answers the question "can a separate request with these
-    // different options be re-used" (e.g. preload request)
-    // The safe (but possibly slow) answer is always false.
-    bool canReuseRequest(const ResourceLoaderOptions& other) const
-    {
-        // dataBufferingPolicy differences are believed to be safe for re-use.
-        // FIXME: check allowCredentials.
-        // FIXME: check credentialsRequested.
-        // FIXME: check contentSecurityPolicyOption.
-        // initiatorInfo is purely informational and should be benign for re-use.
-        // requestInitiatorContext is benign (indicates document vs. worker)
-        // synchronousPolicy (safe to re-use an async XHR response for sync, etc.)
-        return corsEnabled == other.corsEnabled;
-        // securityOrigin has more complicated checks which callers are responsible for.
-    }
+  ResourceLoaderOptions(
+      DataBufferingPolicy dataBufferingPolicy,
+      StoredCredentials allowCredentials,
+      CredentialRequest credentialsRequested,
+      ContentSecurityPolicyDisposition contentSecurityPolicyOption,
+      RequestInitiatorContext requestInitiatorContext)
+      : dataBufferingPolicy(dataBufferingPolicy),
+        allowCredentials(allowCredentials),
+        credentialsRequested(credentialsRequested),
+        contentSecurityPolicyOption(contentSecurityPolicyOption),
+        requestInitiatorContext(requestInitiatorContext),
+        synchronousPolicy(RequestAsynchronously),
+        corsEnabled(NotCORSEnabled) {}
 
-    // When adding members, CrossThreadResourceLoaderOptionsData should be
-    // updated.
-    DataBufferingPolicy dataBufferingPolicy;
-    StoredCredentials allowCredentials; // Whether HTTP credentials and cookies are sent with the request.
-    CredentialRequest credentialsRequested; // Whether the client (e.g. XHR) wanted credentials in the first place.
-    ContentSecurityPolicyDisposition contentSecurityPolicyOption;
-    FetchInitiatorInfo initiatorInfo;
-    RequestInitiatorContext requestInitiatorContext;
-    SynchronousPolicy synchronousPolicy;
-    CORSEnabled corsEnabled; // If the resource is loaded out-of-origin, whether or not to use CORS.
-    RefPtr<SecurityOrigin> securityOrigin;
-    String contentSecurityPolicyNonce;
-    IntegrityMetadataSet integrityMetadata;
+  // Answers the question "can a separate request with these
+  // different options be re-used" (e.g. preload request)
+  // The safe (but possibly slow) answer is always false.
+  bool canReuseRequest(const ResourceLoaderOptions& other) const {
+    // dataBufferingPolicy differences are believed to be safe for re-use.
+    // FIXME: check allowCredentials.
+    // FIXME: check credentialsRequested.
+    // FIXME: check contentSecurityPolicyOption.
+    // initiatorInfo is purely informational and should be benign for re-use.
+    // requestInitiatorContext is benign (indicates document vs. worker)
+    // synchronousPolicy (safe to re-use an async XHR response for sync, etc.)
+    return corsEnabled == other.corsEnabled;
+    // securityOrigin has more complicated checks which callers are responsible for.
+  }
+
+  // When adding members, CrossThreadResourceLoaderOptionsData should be
+  // updated.
+  DataBufferingPolicy dataBufferingPolicy;
+  StoredCredentials
+      allowCredentials;  // Whether HTTP credentials and cookies are sent with the request.
+  CredentialRequest
+      credentialsRequested;  // Whether the client (e.g. XHR) wanted credentials in the first place.
+  ContentSecurityPolicyDisposition contentSecurityPolicyOption;
+  FetchInitiatorInfo initiatorInfo;
+  RequestInitiatorContext requestInitiatorContext;
+  SynchronousPolicy synchronousPolicy;
+  CORSEnabled
+      corsEnabled;  // If the resource is loaded out-of-origin, whether or not to use CORS.
+  RefPtr<SecurityOrigin> securityOrigin;
+  String contentSecurityPolicyNonce;
+  IntegrityMetadataSet integrityMetadata;
 };
 
 // Encode AtomicString (in FetchInitiatorInfo) as String to cross threads.
 struct CrossThreadResourceLoaderOptionsData {
-    DISALLOW_NEW();
-    explicit CrossThreadResourceLoaderOptionsData(const ResourceLoaderOptions& options)
-        : dataBufferingPolicy(options.dataBufferingPolicy)
-        , allowCredentials(options.allowCredentials)
-        , credentialsRequested(options.credentialsRequested)
-        , contentSecurityPolicyOption(options.contentSecurityPolicyOption)
-        , initiatorInfo(options.initiatorInfo)
-        , requestInitiatorContext(options.requestInitiatorContext)
-        , synchronousPolicy(options.synchronousPolicy)
-        , corsEnabled(options.corsEnabled)
-        , securityOrigin(options.securityOrigin ? options.securityOrigin->isolatedCopy() : nullptr)
-        , contentSecurityPolicyNonce(options.contentSecurityPolicyNonce)
-        , integrityMetadata(options.integrityMetadata)
-    {
-    }
+  DISALLOW_NEW();
+  explicit CrossThreadResourceLoaderOptionsData(
+      const ResourceLoaderOptions& options)
+      : dataBufferingPolicy(options.dataBufferingPolicy),
+        allowCredentials(options.allowCredentials),
+        credentialsRequested(options.credentialsRequested),
+        contentSecurityPolicyOption(options.contentSecurityPolicyOption),
+        initiatorInfo(options.initiatorInfo),
+        requestInitiatorContext(options.requestInitiatorContext),
+        synchronousPolicy(options.synchronousPolicy),
+        corsEnabled(options.corsEnabled),
+        securityOrigin(options.securityOrigin
+                           ? options.securityOrigin->isolatedCopy()
+                           : nullptr),
+        contentSecurityPolicyNonce(options.contentSecurityPolicyNonce),
+        integrityMetadata(options.integrityMetadata) {}
 
-    operator ResourceLoaderOptions() const
-    {
-        ResourceLoaderOptions options;
-        options.dataBufferingPolicy = dataBufferingPolicy;
-        options.allowCredentials = allowCredentials;
-        options.credentialsRequested = credentialsRequested;
-        options.contentSecurityPolicyOption = contentSecurityPolicyOption;
-        options.initiatorInfo = initiatorInfo;
-        options.requestInitiatorContext = requestInitiatorContext;
-        options.synchronousPolicy = synchronousPolicy;
-        options.corsEnabled = corsEnabled;
-        options.securityOrigin = securityOrigin;
-        options.contentSecurityPolicyNonce = contentSecurityPolicyNonce;
-        options.integrityMetadata = integrityMetadata;
-        return options;
-    }
+  operator ResourceLoaderOptions() const {
+    ResourceLoaderOptions options;
+    options.dataBufferingPolicy = dataBufferingPolicy;
+    options.allowCredentials = allowCredentials;
+    options.credentialsRequested = credentialsRequested;
+    options.contentSecurityPolicyOption = contentSecurityPolicyOption;
+    options.initiatorInfo = initiatorInfo;
+    options.requestInitiatorContext = requestInitiatorContext;
+    options.synchronousPolicy = synchronousPolicy;
+    options.corsEnabled = corsEnabled;
+    options.securityOrigin = securityOrigin;
+    options.contentSecurityPolicyNonce = contentSecurityPolicyNonce;
+    options.integrityMetadata = integrityMetadata;
+    return options;
+  }
 
-    DataBufferingPolicy dataBufferingPolicy;
-    StoredCredentials allowCredentials;
-    CredentialRequest credentialsRequested;
-    ContentSecurityPolicyDisposition contentSecurityPolicyOption;
-    CrossThreadFetchInitiatorInfoData initiatorInfo;
-    RequestInitiatorContext requestInitiatorContext;
-    SynchronousPolicy synchronousPolicy;
-    CORSEnabled corsEnabled;
-    RefPtr<SecurityOrigin> securityOrigin;
-    String contentSecurityPolicyNonce;
-    IntegrityMetadataSet integrityMetadata;
+  DataBufferingPolicy dataBufferingPolicy;
+  StoredCredentials allowCredentials;
+  CredentialRequest credentialsRequested;
+  ContentSecurityPolicyDisposition contentSecurityPolicyOption;
+  CrossThreadFetchInitiatorInfoData initiatorInfo;
+  RequestInitiatorContext requestInitiatorContext;
+  SynchronousPolicy synchronousPolicy;
+  CORSEnabled corsEnabled;
+  RefPtr<SecurityOrigin> securityOrigin;
+  String contentSecurityPolicyNonce;
+  IntegrityMetadataSet integrityMetadata;
 };
 
 template <>
 struct CrossThreadCopier<ResourceLoaderOptions> {
-    using Type = CrossThreadResourceLoaderOptionsData;
-    static Type copy(const ResourceLoaderOptions& options)
-    {
-        return CrossThreadResourceLoaderOptionsData(options);
-    }
+  using Type = CrossThreadResourceLoaderOptionsData;
+  static Type copy(const ResourceLoaderOptions& options) {
+    return CrossThreadResourceLoaderOptionsData(options);
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ResourceLoaderOptions_h
+#endif  // ResourceLoaderOptions_h

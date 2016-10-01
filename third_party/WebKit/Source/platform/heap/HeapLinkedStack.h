@@ -39,85 +39,77 @@ namespace blink {
 
 template <typename T>
 class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T>> {
-public:
-    HeapLinkedStack() : m_size(0) { }
+ public:
+  HeapLinkedStack() : m_size(0) {}
 
-    bool isEmpty();
+  bool isEmpty();
 
-    void push(const T&);
-    const T& peek();
-    void pop();
+  void push(const T&);
+  const T& peek();
+  void pop();
 
-    size_t size();
+  size_t size();
 
-    DEFINE_INLINE_TRACE()
-    {
-        for (Node* current = m_head; current; current = current->m_next)
-            visitor->trace(current);
-    }
+  DEFINE_INLINE_TRACE() {
+    for (Node* current = m_head; current; current = current->m_next)
+      visitor->trace(current);
+  }
 
-private:
-    class Node : public GarbageCollected<Node> {
-    public:
-        Node(const T&, Node* next);
+ private:
+  class Node : public GarbageCollected<Node> {
+   public:
+    Node(const T&, Node* next);
 
-        DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
 
-        T m_data;
-        Member<Node> m_next;
-    };
+    T m_data;
+    Member<Node> m_next;
+  };
 
-    Member<Node> m_head;
-    size_t m_size;
+  Member<Node> m_head;
+  size_t m_size;
 };
 
 template <typename T>
 HeapLinkedStack<T>::Node::Node(const T& data, Node* next)
-    : m_data(data)
-    , m_next(next)
-{
+    : m_data(data), m_next(next) {}
+
+template <typename T>
+inline bool HeapLinkedStack<T>::isEmpty() {
+  return !m_head;
 }
 
 template <typename T>
-inline bool HeapLinkedStack<T>::isEmpty()
-{
-    return !m_head;
+inline void HeapLinkedStack<T>::push(const T& data) {
+  m_head = new Node(data, m_head);
+  ++m_size;
 }
 
 template <typename T>
-inline void HeapLinkedStack<T>::push(const T& data)
-{
-    m_head = new Node(data, m_head);
-    ++m_size;
+inline const T& HeapLinkedStack<T>::peek() {
+  return m_head->m_data;
 }
 
 template <typename T>
-inline const T& HeapLinkedStack<T>::peek()
-{
-    return m_head->m_data;
+inline void HeapLinkedStack<T>::pop() {
+  ASSERT(m_head && m_size);
+  m_head = m_head->m_next;
+  --m_size;
 }
 
 template <typename T>
-inline void HeapLinkedStack<T>::pop()
-{
-    ASSERT(m_head && m_size);
-    m_head = m_head->m_next;
-    --m_size;
+inline size_t HeapLinkedStack<T>::size() {
+  return m_size;
 }
 
 template <typename T>
-inline size_t HeapLinkedStack<T>::size()
-{
-    return m_size;
-}
-
-template<typename T>
 class TraceEagerlyTrait<HeapLinkedStack<T>> {
-    STATIC_ONLY(TraceEagerlyTrait);
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
+  STATIC_ONLY(TraceEagerlyTrait);
+
+ public:
+  static const bool value = TraceEagerlyTrait<T>::value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HeapLinkedStack_h
+#endif  // HeapLinkedStack_h

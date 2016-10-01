@@ -18,38 +18,40 @@ namespace blink {
 // which represents set of presentation connections in the set of
 // presentation controllers.
 class MODULES_EXPORT PresentationConnectionList final
-    : public EventTargetWithInlineData
-    , public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(PresentationConnectionList);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    explicit PresentationConnectionList(ExecutionContext*);
-    ~PresentationConnectionList() = default;
+    : public EventTargetWithInlineData,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(PresentationConnectionList);
+  DEFINE_WRAPPERTYPEINFO();
 
-    // EventTarget implementation.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+ public:
+  explicit PresentationConnectionList(ExecutionContext*);
+  ~PresentationConnectionList() = default;
 
-    // PresentationConnectionList.idl implementation.
-    const HeapVector<Member<PresentationConnection>>& connections() const;
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
+  // EventTarget implementation.
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    void addConnection(PresentationConnection*);
-    void dispatchConnectionAvailableEvent(PresentationConnection*);
-    bool isEmpty();
+  // PresentationConnectionList.idl implementation.
+  const HeapVector<Member<PresentationConnection>>& connections() const;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable);
 
-    DECLARE_VIRTUAL_TRACE();
+  void addConnection(PresentationConnection*);
+  void dispatchConnectionAvailableEvent(PresentationConnection*);
+  bool isEmpty();
 
-protected:
-    // EventTarget implementation.
-    void addedEventListener(const AtomicString& eventType, RegisteredEventListener&) override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    friend class PresentationReceiverTest;
+ protected:
+  // EventTarget implementation.
+  void addedEventListener(const AtomicString& eventType,
+                          RegisteredEventListener&) override;
 
-    HeapVector<Member<PresentationConnection>> m_connections;
+ private:
+  friend class PresentationReceiverTest;
+
+  HeapVector<Member<PresentationConnection>> m_connections;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PresentationConnectionList_h
+#endif  // PresentationConnectionList_h

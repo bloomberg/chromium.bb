@@ -10,25 +10,26 @@
 
 namespace blink {
 
-PrivateScriptTest::PrivateScriptTest(Document* document)
-{
-    v8::Local<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(document, "PrivateScriptTest");
-    RELEASE_ASSERT(!classObject.IsEmpty());
+PrivateScriptTest::PrivateScriptTest(Document* document) {
+  v8::Local<v8::Value> classObject =
+      PrivateScriptRunner::installClassIfNeeded(document, "PrivateScriptTest");
+  RELEASE_ASSERT(!classObject.IsEmpty());
 }
 
-int PrivateScriptTest::addIntegerImplementedInCPPForPrivateScriptOnly(int value1, int value2)
-{
-    return value1 + value2;
+int PrivateScriptTest::addIntegerImplementedInCPPForPrivateScriptOnly(
+    int value1,
+    int value2) {
+  return value1 + value2;
 }
 
-String PrivateScriptTest::stringAttributeImplementedInCPPForPrivateScriptOnly()
-{
-    return m_stringAttributeImplementedInCPPForPrivateSriptOnly;
+String
+PrivateScriptTest::stringAttributeImplementedInCPPForPrivateScriptOnly() {
+  return m_stringAttributeImplementedInCPPForPrivateSriptOnly;
 }
 
-void PrivateScriptTest::setStringAttributeImplementedInCPPForPrivateScriptOnly(String value)
-{
-    m_stringAttributeImplementedInCPPForPrivateSriptOnly = value;
+void PrivateScriptTest::setStringAttributeImplementedInCPPForPrivateScriptOnly(
+    String value) {
+  m_stringAttributeImplementedInCPPForPrivateSriptOnly = value;
 }
 
-} // namespace blink
+}  // namespace blink

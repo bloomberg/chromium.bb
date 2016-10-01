@@ -16,22 +16,26 @@ class DOMWindow;
 class AnimationWorklet;
 class Worklet;
 
-class MODULES_EXPORT WindowAnimationWorklet final : public GarbageCollected<WindowAnimationWorklet>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(WindowAnimationWorklet);
-public:
-    static WindowAnimationWorklet& from(LocalDOMWindow&);
-    static Worklet* animationWorklet(DOMWindow&);
-    AnimationWorklet* animationWorklet();
+class MODULES_EXPORT WindowAnimationWorklet final
+    : public GarbageCollected<WindowAnimationWorklet>,
+      public Supplement<LocalDOMWindow>,
+      public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(WindowAnimationWorklet);
 
-    DECLARE_TRACE();
+ public:
+  static WindowAnimationWorklet& from(LocalDOMWindow&);
+  static Worklet* animationWorklet(DOMWindow&);
+  AnimationWorklet* animationWorklet();
 
-private:
-    explicit WindowAnimationWorklet(LocalDOMWindow&);
-    static const char* supplementName();
+  DECLARE_TRACE();
 
-    Member<AnimationWorklet> m_animationWorklet;
+ private:
+  explicit WindowAnimationWorklet(LocalDOMWindow&);
+  static const char* supplementName();
+
+  Member<AnimationWorklet> m_animationWorklet;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WindowAnimationWorklet_h
+#endif  // WindowAnimationWorklet_h

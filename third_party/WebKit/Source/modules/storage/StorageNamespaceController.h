@@ -16,28 +16,37 @@ class InspectorDOMStorageAgent;
 class StorageClient;
 class StorageNamespace;
 
-class MODULES_EXPORT StorageNamespaceController final : public GarbageCollectedFinalized<StorageNamespaceController>, public Supplement<Page> {
-    USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
-public:
-    StorageNamespace* sessionStorage(bool optionalCreate = true);
-    StorageClient* getStorageClient() { return m_client; }
-    ~StorageNamespaceController();
+class MODULES_EXPORT StorageNamespaceController final
+    : public GarbageCollectedFinalized<StorageNamespaceController>,
+      public Supplement<Page> {
+  USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
 
-    static void provideStorageNamespaceTo(Page&, StorageClient*);
-    static StorageNamespaceController* from(Page* page) { return static_cast<StorageNamespaceController*>(Supplement<Page>::from(page, supplementName())); }
+ public:
+  StorageNamespace* sessionStorage(bool optionalCreate = true);
+  StorageClient* getStorageClient() { return m_client; }
+  ~StorageNamespaceController();
 
-    DECLARE_TRACE();
+  static void provideStorageNamespaceTo(Page&, StorageClient*);
+  static StorageNamespaceController* from(Page* page) {
+    return static_cast<StorageNamespaceController*>(
+        Supplement<Page>::from(page, supplementName()));
+  }
 
-    InspectorDOMStorageAgent* inspectorAgent() { return m_inspectorAgent; }
-    void setInspectorAgent(InspectorDOMStorageAgent* agent) { m_inspectorAgent = agent; }
-private:
-    explicit StorageNamespaceController(StorageClient*);
-    static const char* supplementName();
-    std::unique_ptr<StorageNamespace> m_sessionStorage;
-    StorageClient* m_client;
-    Member<InspectorDOMStorageAgent> m_inspectorAgent;
+  DECLARE_TRACE();
+
+  InspectorDOMStorageAgent* inspectorAgent() { return m_inspectorAgent; }
+  void setInspectorAgent(InspectorDOMStorageAgent* agent) {
+    m_inspectorAgent = agent;
+  }
+
+ private:
+  explicit StorageNamespaceController(StorageClient*);
+  static const char* supplementName();
+  std::unique_ptr<StorageNamespace> m_sessionStorage;
+  StorageClient* m_client;
+  Member<InspectorDOMStorageAgent> m_inspectorAgent;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageNamespaceController_h
+#endif  // StorageNamespaceController_h

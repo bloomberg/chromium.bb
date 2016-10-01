@@ -19,33 +19,34 @@ class ScriptState;
 // This is an BaseAudioContext which actually plays sound, unlike an
 // OfflineAudioContext which renders sound into a buffer.
 class AudioContext : public BaseAudioContext {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static AudioContext* create(Document&, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~AudioContext() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static AudioContext* create(Document&, ExceptionState&);
 
-    ScriptPromise closeContext(ScriptState*);
-    bool isContextClosed() const final;
+  ~AudioContext() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    ScriptPromise suspendContext(ScriptState*) final;
-    ScriptPromise resumeContext(ScriptState*) final;
+  ScriptPromise closeContext(ScriptState*);
+  bool isContextClosed() const final;
 
-    bool hasRealtimeConstraint() final { return true; }
+  ScriptPromise suspendContext(ScriptState*) final;
+  ScriptPromise resumeContext(ScriptState*) final;
 
-protected:
-    AudioContext(Document&);
+  bool hasRealtimeConstraint() final { return true; }
 
-    void didClose() final;
+ protected:
+  AudioContext(Document&);
 
-private:
-    void stopRendering();
+  void didClose() final;
 
-    unsigned m_contextId;
-    Member<ScriptPromiseResolver> m_closeResolver;
+ private:
+  void stopRendering();
+
+  unsigned m_contextId;
+  Member<ScriptPromiseResolver> m_closeResolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioContext_h
+#endif  // AudioContext_h

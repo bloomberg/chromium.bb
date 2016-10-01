@@ -33,36 +33,37 @@ namespace blink {
 class SVGCursorElement final : public SVGElement,
                                public SVGTests,
                                public SVGURIReference {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGCursorElement);
-public:
-    DECLARE_NODE_FACTORY(SVGCursorElement);
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGCursorElement);
 
-    ~SVGCursorElement() override;
+ public:
+  DECLARE_NODE_FACTORY(SVGCursorElement);
 
-    void addClient(SVGElement*);
-    void removeReferencedElement(SVGElement*);
+  ~SVGCursorElement() override;
 
-    SVGAnimatedLength* x() const { return m_x.get(); }
-    SVGAnimatedLength* y() const { return m_y.get(); }
+  void addClient(SVGElement*);
+  void removeReferencedElement(SVGElement*);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedLength* x() const { return m_x.get(); }
+  SVGAnimatedLength* y() const { return m_y.get(); }
 
-private:
-    explicit SVGCursorElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool isValid() const override { return SVGTests::isValid(); }
+ private:
+  explicit SVGCursorElement(Document&);
 
-    void svgAttributeChanged(const QualifiedName&) override;
+  bool isValid() const override { return SVGTests::isValid(); }
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    Member<SVGAnimatedLength> m_x;
-    Member<SVGAnimatedLength> m_y;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-    HeapHashSet<WeakMember<SVGElement>> m_clients;
+  Member<SVGAnimatedLength> m_x;
+  Member<SVGAnimatedLength> m_y;
+
+  HeapHashSet<WeakMember<SVGElement>> m_clients;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGCursorElement_h
+#endif  // SVGCursorElement_h

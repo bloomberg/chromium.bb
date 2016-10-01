@@ -13,46 +13,51 @@ namespace blink {
 
 class CSSMatrixTransformComponent;
 
-class CORE_EXPORT CSSTransformComponent : public GarbageCollectedFinalized<CSSTransformComponent>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(CSSTransformComponent);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum TransformComponentType {
-        MatrixType, PerspectiveType, RotationType, ScaleType, SkewType, TranslationType,
-        Matrix3DType, Rotation3DType, Scale3DType, Translation3DType
-    };
+class CORE_EXPORT CSSTransformComponent
+    : public GarbageCollectedFinalized<CSSTransformComponent>,
+      public ScriptWrappable {
+  WTF_MAKE_NONCOPYABLE(CSSTransformComponent);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CSSTransformComponent* fromCSSValue(const CSSValue&);
+ public:
+  enum TransformComponentType {
+    MatrixType,
+    PerspectiveType,
+    RotationType,
+    ScaleType,
+    SkewType,
+    TranslationType,
+    Matrix3DType,
+    Rotation3DType,
+    Scale3DType,
+    Translation3DType
+  };
 
-    static bool is2DComponentType(TransformComponentType transformType)
-    {
-        return transformType != Matrix3DType
-            && transformType != PerspectiveType
-            && transformType != Rotation3DType
-            && transformType != Scale3DType
-            && transformType != Translation3DType;
-    }
+  static CSSTransformComponent* fromCSSValue(const CSSValue&);
 
-    virtual ~CSSTransformComponent() { }
+  static bool is2DComponentType(TransformComponentType transformType) {
+    return transformType != Matrix3DType && transformType != PerspectiveType &&
+           transformType != Rotation3DType && transformType != Scale3DType &&
+           transformType != Translation3DType;
+  }
 
-    virtual TransformComponentType type() const = 0;
+  virtual ~CSSTransformComponent() {}
 
-    bool is2D() const { return is2DComponentType(type()); }
+  virtual TransformComponentType type() const = 0;
 
-    String cssText() const
-    {
-        return toCSSValue()->cssText();
-    }
+  bool is2D() const { return is2DComponentType(type()); }
 
-    virtual CSSFunctionValue* toCSSValue() const = 0;
-    virtual CSSMatrixTransformComponent* asMatrix() const = 0;
+  String cssText() const { return toCSSValue()->cssText(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual CSSFunctionValue* toCSSValue() const = 0;
+  virtual CSSMatrixTransformComponent* asMatrix() const = 0;
 
-protected:
-    CSSTransformComponent() = default;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ protected:
+  CSSTransformComponent() = default;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

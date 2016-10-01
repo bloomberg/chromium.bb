@@ -30,19 +30,21 @@ namespace blink {
 class HTMLInputElement;
 
 class LayoutSearchField final : public LayoutTextControlSingleLine {
-public:
-    LayoutSearchField(HTMLInputElement*);
-    ~LayoutSearchField() override;
+ public:
+  LayoutSearchField(HTMLInputElement*);
+  ~LayoutSearchField() override;
 
-private:
-    LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
+ private:
+  LayoutUnit computeControlLogicalHeight(
+      LayoutUnit lineHeight,
+      LayoutUnit nonContentHeight) const override;
 
-    Element* searchDecorationElement() const;
-    Element* cancelButtonElement() const;
+  Element* searchDecorationElement() const;
+  Element* cancelButtonElement() const;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSearchField, isTextField());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSearchField_h
+#endif  // LayoutSearchField_h

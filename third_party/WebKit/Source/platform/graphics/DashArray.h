@@ -32,4 +32,4 @@ typedef float DashArrayElement;
 
 typedef Vector<DashArrayElement> DashArray;
 
-#endif // DashArray_h
+#endif  // DashArray_h

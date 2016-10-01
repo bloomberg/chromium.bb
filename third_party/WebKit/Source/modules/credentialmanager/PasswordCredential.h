@@ -25,36 +25,45 @@ class WebPasswordCredential;
 using CredentialPostBodyType = FormDataOrURLSearchParams;
 
 class MODULES_EXPORT PasswordCredential final : public SiteBoundCredential {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PasswordCredential* create(const PasswordCredentialData&, ExceptionState&);
-    static PasswordCredential* create(HTMLFormElement*, ExceptionState&);
-    static PasswordCredential* create(WebPasswordCredential*);
+  DEFINE_WRAPPERTYPEINFO();
 
-    // PasswordCredential.idl
-    void setIdName(const String& name) { m_idName = name; }
-    const String& idName() const { return m_idName; }
+ public:
+  static PasswordCredential* create(const PasswordCredentialData&,
+                                    ExceptionState&);
+  static PasswordCredential* create(HTMLFormElement*, ExceptionState&);
+  static PasswordCredential* create(WebPasswordCredential*);
 
-    void setPasswordName(const String& name) { m_passwordName = name; }
-    const String& passwordName() const { return m_passwordName; }
+  // PasswordCredential.idl
+  void setIdName(const String& name) { m_idName = name; }
+  const String& idName() const { return m_idName; }
 
-    void setAdditionalData(const CredentialPostBodyType& data) { m_additionalData = data; }
-    void additionalData(CredentialPostBodyType& out) const { out = m_additionalData; }
+  void setPasswordName(const String& name) { m_passwordName = name; }
+  const String& passwordName() const { return m_passwordName; }
 
-    // Internal methods
-    PassRefPtr<EncodedFormData> encodeFormData(String& contentType) const;
-    const String& password() const;
-    DECLARE_VIRTUAL_TRACE();
+  void setAdditionalData(const CredentialPostBodyType& data) {
+    m_additionalData = data;
+  }
+  void additionalData(CredentialPostBodyType& out) const {
+    out = m_additionalData;
+  }
 
-private:
-    PasswordCredential(WebPasswordCredential*);
-    PasswordCredential(const String& id, const String& password, const String& name, const KURL& icon);
+  // Internal methods
+  PassRefPtr<EncodedFormData> encodeFormData(String& contentType) const;
+  const String& password() const;
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_idName;
-    String m_passwordName;
-    CredentialPostBodyType m_additionalData;
+ private:
+  PasswordCredential(WebPasswordCredential*);
+  PasswordCredential(const String& id,
+                     const String& password,
+                     const String& name,
+                     const KURL& icon);
+
+  String m_idName;
+  String m_passwordName;
+  CredentialPostBodyType m_additionalData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PasswordCredential_h
+#endif  // PasswordCredential_h

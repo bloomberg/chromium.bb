@@ -33,71 +33,79 @@
 namespace blink {
 
 class CSSCubicBezierTimingFunctionValue : public CSSValue {
-public:
-    static CSSCubicBezierTimingFunctionValue* create(double x1, double y1, double x2, double y2)
-    {
-        return new CSSCubicBezierTimingFunctionValue(x1, y1, x2, y2);
-    }
+ public:
+  static CSSCubicBezierTimingFunctionValue* create(double x1,
+                                                   double y1,
+                                                   double x2,
+                                                   double y2) {
+    return new CSSCubicBezierTimingFunctionValue(x1, y1, x2, y2);
+  }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    double x1() const { return m_x1; }
-    double y1() const { return m_y1; }
-    double x2() const { return m_x2; }
-    double y2() const { return m_y2; }
+  double x1() const { return m_x1; }
+  double y1() const { return m_y1; }
+  double x2() const { return m_x2; }
+  double y2() const { return m_y2; }
 
-    bool equals(const CSSCubicBezierTimingFunctionValue&) const;
+  bool equals(const CSSCubicBezierTimingFunctionValue&) const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValue::traceAfterDispatch(visitor);
+  }
 
-private:
-    CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
-        : CSSValue(CubicBezierTimingFunctionClass)
-        , m_x1(x1)
-        , m_y1(y1)
-        , m_x2(x2)
-        , m_y2(y2)
-    {
-    }
+ private:
+  CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
+      : CSSValue(CubicBezierTimingFunctionClass),
+        m_x1(x1),
+        m_y1(y1),
+        m_x2(x2),
+        m_y2(y2) {}
 
-    double m_x1;
-    double m_y1;
-    double m_x2;
-    double m_y2;
+  double m_x1;
+  double m_y1;
+  double m_x2;
+  double m_y2;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCubicBezierTimingFunctionValue, isCubicBezierTimingFunctionValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCubicBezierTimingFunctionValue,
+                            isCubicBezierTimingFunctionValue());
 
 class CSSStepsTimingFunctionValue : public CSSValue {
-public:
-    static CSSStepsTimingFunctionValue* create(int steps, StepsTimingFunction::StepPosition stepPosition)
-    {
-        return new CSSStepsTimingFunctionValue(steps, stepPosition);
-    }
+ public:
+  static CSSStepsTimingFunctionValue* create(
+      int steps,
+      StepsTimingFunction::StepPosition stepPosition) {
+    return new CSSStepsTimingFunctionValue(steps, stepPosition);
+  }
 
-    int numberOfSteps() const { return m_steps; }
-    StepsTimingFunction::StepPosition getStepPosition() const { return m_stepPosition; }
+  int numberOfSteps() const { return m_steps; }
+  StepsTimingFunction::StepPosition getStepPosition() const {
+    return m_stepPosition;
+  }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSStepsTimingFunctionValue&) const;
+  bool equals(const CSSStepsTimingFunctionValue&) const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValue::traceAfterDispatch(visitor);
+  }
 
-private:
-    CSSStepsTimingFunctionValue(int steps, StepsTimingFunction::StepPosition stepPosition)
-        : CSSValue(StepsTimingFunctionClass)
-        , m_steps(steps)
-        , m_stepPosition(stepPosition)
-    {
-    }
+ private:
+  CSSStepsTimingFunctionValue(int steps,
+                              StepsTimingFunction::StepPosition stepPosition)
+      : CSSValue(StepsTimingFunctionClass),
+        m_steps(steps),
+        m_stepPosition(stepPosition) {}
 
-    int m_steps;
-    StepsTimingFunction::StepPosition m_stepPosition;
+  int m_steps;
+  StepsTimingFunction::StepPosition m_stepPosition;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSStepsTimingFunctionValue, isStepsTimingFunctionValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSStepsTimingFunctionValue,
+                            isStepsTimingFunctionValue());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

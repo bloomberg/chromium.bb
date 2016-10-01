@@ -19,21 +19,31 @@ class LayoutSVGResourceClipper;
 enum class ClipperState;
 
 class SVGClipPainter {
-    STACK_ALLOCATED();
-public:
-    SVGClipPainter(LayoutSVGResourceClipper& clip) : m_clip(clip) { }
+  STACK_ALLOCATED();
 
-    bool prepareEffect(const LayoutObject&, const FloatRect&, const FloatRect&, const FloatPoint&, GraphicsContext&, ClipperState&);
-    void finishEffect(const LayoutObject&, GraphicsContext&, ClipperState&);
+ public:
+  SVGClipPainter(LayoutSVGResourceClipper& clip) : m_clip(clip) {}
 
-private:
-    // Return false if there is a problem drawing the mask.
-    bool drawClipAsMask(GraphicsContext&, const LayoutObject&, const FloatRect& targetBoundingBox,
-        const FloatRect& targetPaintInvalidationRect, const AffineTransform&, const FloatPoint&);
+  bool prepareEffect(const LayoutObject&,
+                     const FloatRect&,
+                     const FloatRect&,
+                     const FloatPoint&,
+                     GraphicsContext&,
+                     ClipperState&);
+  void finishEffect(const LayoutObject&, GraphicsContext&, ClipperState&);
 
-    LayoutSVGResourceClipper& m_clip;
+ private:
+  // Return false if there is a problem drawing the mask.
+  bool drawClipAsMask(GraphicsContext&,
+                      const LayoutObject&,
+                      const FloatRect& targetBoundingBox,
+                      const FloatRect& targetPaintInvalidationRect,
+                      const AffineTransform&,
+                      const FloatPoint&);
+
+  LayoutSVGResourceClipper& m_clip;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGClipPainter_h
+#endif  // SVGClipPainter_h

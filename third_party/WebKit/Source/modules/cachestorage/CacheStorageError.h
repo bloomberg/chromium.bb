@@ -15,16 +15,20 @@ class DOMException;
 class ScriptPromiseResolver;
 
 class CacheStorageError {
-    STATIC_ONLY(CacheStorageError);
-public:
-    // For CallbackPromiseAdapter. Ownership of a given error is not
-    // transferred.
-    using WebType = WebServiceWorkerCacheError;
-    static DOMException* take(ScriptPromiseResolver*, WebServiceWorkerCacheError webError) { return createException(webError); }
+  STATIC_ONLY(CacheStorageError);
 
-    static DOMException* createException(WebServiceWorkerCacheError webError);
+ public:
+  // For CallbackPromiseAdapter. Ownership of a given error is not
+  // transferred.
+  using WebType = WebServiceWorkerCacheError;
+  static DOMException* take(ScriptPromiseResolver*,
+                            WebServiceWorkerCacheError webError) {
+    return createException(webError);
+  }
+
+  static DOMException* createException(WebServiceWorkerCacheError webError);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CacheStorageError_h
+#endif  // CacheStorageError_h

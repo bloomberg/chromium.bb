@@ -29,59 +29,58 @@
 namespace blink {
 
 StyleGeneratedImage::StyleGeneratedImage(const CSSImageGeneratorValue& value)
-    : m_imageGeneratorValue(const_cast<CSSImageGeneratorValue*>(&value))
-    , m_fixedSize(m_imageGeneratorValue->isFixedSize())
-{
-    m_isGeneratedImage = true;
-    if (value.isPaintValue())
-        m_isPaintImage = true;
+    : m_imageGeneratorValue(const_cast<CSSImageGeneratorValue*>(&value)),
+      m_fixedSize(m_imageGeneratorValue->isFixedSize()) {
+  m_isGeneratedImage = true;
+  if (value.isPaintValue())
+    m_isPaintImage = true;
 }
 
-CSSValue* StyleGeneratedImage::cssValue() const
-{
-    return m_imageGeneratorValue.get();
+CSSValue* StyleGeneratedImage::cssValue() const {
+  return m_imageGeneratorValue.get();
 }
 
-CSSValue* StyleGeneratedImage::computedCSSValue() const
-{
-    return m_imageGeneratorValue->valueWithURLsMadeAbsolute();
+CSSValue* StyleGeneratedImage::computedCSSValue() const {
+  return m_imageGeneratorValue->valueWithURLsMadeAbsolute();
 }
 
-LayoutSize StyleGeneratedImage::imageSize(const LayoutObject& layoutObject, float multiplier, const LayoutSize& defaultObjectSize) const
-{
-    if (m_fixedSize) {
-        FloatSize unzoomedDefaultObjectSize(defaultObjectSize);
-        unzoomedDefaultObjectSize.scale(1 / multiplier);
-        return applyZoom(LayoutSize(m_imageGeneratorValue->fixedSize(layoutObject, unzoomedDefaultObjectSize)), multiplier);
-    }
+LayoutSize StyleGeneratedImage::imageSize(
+    const LayoutObject& layoutObject,
+    float multiplier,
+    const LayoutSize& defaultObjectSize) const {
+  if (m_fixedSize) {
+    FloatSize unzoomedDefaultObjectSize(defaultObjectSize);
+    unzoomedDefaultObjectSize.scale(1 / multiplier);
+    return applyZoom(LayoutSize(m_imageGeneratorValue->fixedSize(
+                         layoutObject, unzoomedDefaultObjectSize)),
+                     multiplier);
+  }
 
-    return defaultObjectSize;
+  return defaultObjectSize;
 }
 
-void StyleGeneratedImage::addClient(LayoutObject* layoutObject)
-{
-    m_imageGeneratorValue->addClient(layoutObject, IntSize());
+void StyleGeneratedImage::addClient(LayoutObject* layoutObject) {
+  m_imageGeneratorValue->addClient(layoutObject, IntSize());
 }
 
-void StyleGeneratedImage::removeClient(LayoutObject* layoutObject)
-{
-    m_imageGeneratorValue->removeClient(layoutObject);
+void StyleGeneratedImage::removeClient(LayoutObject* layoutObject) {
+  m_imageGeneratorValue->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject& layoutObject, const IntSize& size, float zoom) const
-{
-    return m_imageGeneratorValue->image(layoutObject, size, zoom);
+PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject& layoutObject,
+                                             const IntSize& size,
+                                             float zoom) const {
+  return m_imageGeneratorValue->image(layoutObject, size, zoom);
 }
 
-bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject& layoutObject) const
-{
-    return m_imageGeneratorValue->knownToBeOpaque(layoutObject);
+bool StyleGeneratedImage::knownToBeOpaque(
+    const LayoutObject& layoutObject) const {
+  return m_imageGeneratorValue->knownToBeOpaque(layoutObject);
 }
 
-DEFINE_TRACE(StyleGeneratedImage)
-{
-    visitor->trace(m_imageGeneratorValue);
-    StyleImage::trace(visitor);
+DEFINE_TRACE(StyleGeneratedImage) {
+  visitor->trace(m_imageGeneratorValue);
+  StyleImage::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

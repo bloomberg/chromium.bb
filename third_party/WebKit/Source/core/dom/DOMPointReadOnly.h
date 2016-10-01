@@ -11,27 +11,29 @@
 
 namespace blink {
 
-class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMPointReadOnly* create(double x, double y, double z, double w);
+class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
+                                     public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    double x() const { return m_x; }
-    double y() const { return m_y; }
-    double z() const { return m_z; }
-    double w() const { return m_w; }
+ public:
+  static DOMPointReadOnly* create(double x, double y, double z, double w);
 
-    DEFINE_INLINE_TRACE() { }
+  double x() const { return m_x; }
+  double y() const { return m_y; }
+  double z() const { return m_z; }
+  double w() const { return m_w; }
 
-protected:
-    DOMPointReadOnly(double x, double y, double z, double w);
+  DEFINE_INLINE_TRACE() {}
 
-    double m_x;
-    double m_y;
-    double m_z;
-    double m_w;
+ protected:
+  DOMPointReadOnly(double x, double y, double z, double w);
+
+  double m_x;
+  double m_y;
+  double m_z;
+  double m_w;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

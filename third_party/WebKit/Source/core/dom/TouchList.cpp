@@ -27,21 +27,18 @@
 
 namespace blink {
 
-Touch* TouchList::item(unsigned index)
-{
-    if (index >= m_values.size())
-        return 0;
-    return m_values[index].get();
+Touch* TouchList::item(unsigned index) {
+  if (index >= m_values.size())
+    return 0;
+  return m_values[index].get();
 }
 
-const Touch* TouchList::item(unsigned index) const
-{
-    return const_cast<TouchList*>(this)->item(index);
+const Touch* TouchList::item(unsigned index) const {
+  return const_cast<TouchList*>(this)->item(index);
 }
 
-DEFINE_TRACE(TouchList)
-{
-    visitor->trace(m_values);
+DEFINE_TRACE(TouchList) {
+  visitor->trace(m_values);
 }
 
-} // namespace blink
+}  // namespace blink

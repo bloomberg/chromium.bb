@@ -40,21 +40,18 @@ namespace blink {
 // WrappedResourceRequest doesn't take ownership of given ResourceRequest,
 // but just holds a pointer to it. It is not copyable.
 class WrappedResourceRequest : public WebURLRequest {
-    WTF_MAKE_NONCOPYABLE(WrappedResourceRequest);
-public:
-    ~WrappedResourceRequest() {}
+  WTF_MAKE_NONCOPYABLE(WrappedResourceRequest);
 
-    explicit WrappedResourceRequest(ResourceRequest& resourceRequest)
-        : WebURLRequest(resourceRequest)
-    {
-    }
+ public:
+  ~WrappedResourceRequest() {}
 
-    explicit WrappedResourceRequest(const ResourceRequest& resourceRequest)
-        : WrappedResourceRequest(const_cast<ResourceRequest&>(resourceRequest))
-    {
-    }
+  explicit WrappedResourceRequest(ResourceRequest& resourceRequest)
+      : WebURLRequest(resourceRequest) {}
+
+  explicit WrappedResourceRequest(const ResourceRequest& resourceRequest)
+      : WrappedResourceRequest(const_cast<ResourceRequest&>(resourceRequest)) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

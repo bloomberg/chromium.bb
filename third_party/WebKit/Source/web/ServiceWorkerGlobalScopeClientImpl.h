@@ -42,46 +42,80 @@ class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
 class WebURL;
 
-class ServiceWorkerGlobalScopeClientImpl final : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
-    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
-public:
-    static ServiceWorkerGlobalScopeClient* create(WebServiceWorkerContextClient&);
-    ~ServiceWorkerGlobalScopeClientImpl() override;
+class ServiceWorkerGlobalScopeClientImpl final
+    : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>,
+      public ServiceWorkerGlobalScopeClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
 
-    void getClient(const WebString&, WebServiceWorkerClientCallbacks*) override;
-    void getClients(const WebServiceWorkerClientQueryOptions&, WebServiceWorkerClientsCallbacks*) override;
-    void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) override;
-    void setCachedMetadata(const WebURL&, const char*, size_t) override;
-    void clearCachedMetadata(const WebURL&) override;
+ public:
+  static ServiceWorkerGlobalScopeClient* create(WebServiceWorkerContextClient&);
+  ~ServiceWorkerGlobalScopeClientImpl() override;
 
-    WebURL scope() const override;
+  void getClient(const WebString&, WebServiceWorkerClientCallbacks*) override;
+  void getClients(const WebServiceWorkerClientQueryOptions&,
+                  WebServiceWorkerClientsCallbacks*) override;
+  void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) override;
+  void setCachedMetadata(const WebURL&, const char*, size_t) override;
+  void clearCachedMetadata(const WebURL&) override;
 
-    void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void respondToFetchEvent(int responseID, double eventDispatchTime) override;
-    void respondToFetchEvent(int responseID, const WebServiceWorkerResponse&, double eventDispatchTime) override;
-    void didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult, double eventDispatchTime) override;
-    void postMessageToClient(const WebString& clientUUID, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) override;
-    void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) override;
-    void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
-    void claim(WebServiceWorkerClientsClaimCallbacks*) override;
-    void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) override;
-    void navigate(const WebString& clientUUID, const WebURL&, WebServiceWorkerClientCallbacks*) override;
-    void registerForeignFetchScopes(const WebVector<WebURL>& subScopes, const WebVector<WebSecurityOrigin>&) override;
+  WebURL scope() const override;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { ServiceWorkerGlobalScopeClient::trace(visitor); }
+  void didHandleActivateEvent(int eventID,
+                              WebServiceWorkerEventResult,
+                              double eventDispatchTime) override;
+  void didHandleExtendableMessageEvent(int eventID,
+                                       WebServiceWorkerEventResult,
+                                       double eventDispatchTime) override;
+  void respondToFetchEvent(int responseID, double eventDispatchTime) override;
+  void respondToFetchEvent(int responseID,
+                           const WebServiceWorkerResponse&,
+                           double eventDispatchTime) override;
+  void didHandleFetchEvent(int eventFinishID,
+                           WebServiceWorkerEventResult,
+                           double eventDispatchTime) override;
+  void didHandleInstallEvent(int installEventID,
+                             WebServiceWorkerEventResult,
+                             double eventDispatchTime) override;
+  void didHandleNotificationClickEvent(int eventID,
+                                       WebServiceWorkerEventResult,
+                                       double eventDispatchTime) override;
+  void didHandleNotificationCloseEvent(int eventID,
+                                       WebServiceWorkerEventResult,
+                                       double eventDispatchTime) override;
+  void didHandlePushEvent(int pushEventID,
+                          WebServiceWorkerEventResult,
+                          double eventDispatchTime) override;
+  void didHandleSyncEvent(int syncEventID,
+                          WebServiceWorkerEventResult,
+                          double eventDispatchTime) override;
+  void postMessageToClient(
+      const WebString& clientUUID,
+      const WebString& message,
+      std::unique_ptr<WebMessagePortChannelArray>) override;
+  void postMessageToCrossOriginClient(
+      const WebCrossOriginServiceWorkerClient&,
+      const WebString& message,
+      std::unique_ptr<WebMessagePortChannelArray>) override;
+  void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
+  void claim(WebServiceWorkerClientsClaimCallbacks*) override;
+  void focus(const WebString& clientUUID,
+             WebServiceWorkerClientCallbacks*) override;
+  void navigate(const WebString& clientUUID,
+                const WebURL&,
+                WebServiceWorkerClientCallbacks*) override;
+  void registerForeignFetchScopes(const WebVector<WebURL>& subScopes,
+                                  const WebVector<WebSecurityOrigin>&) override;
 
-private:
-    explicit ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient&);
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    ServiceWorkerGlobalScopeClient::trace(visitor);
+  }
 
-    WebServiceWorkerContextClient& m_client;
+ private:
+  explicit ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient&);
+
+  WebServiceWorkerContextClient& m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerGlobalScopeClientImpl_h
+#endif  // ServiceWorkerGlobalScopeClientImpl_h

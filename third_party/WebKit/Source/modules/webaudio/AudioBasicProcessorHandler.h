@@ -38,31 +38,38 @@ class AudioProcessor;
 // AudioBasicProcessorHandler is an AudioHandler with one input and one output
 // where the input and output have the same number of channels.
 class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
-public:
-    static PassRefPtr<AudioBasicProcessorHandler> create(NodeType, AudioNode&, float sampleRate, std::unique_ptr<AudioProcessor>);
-    ~AudioBasicProcessorHandler() override;
+ public:
+  static PassRefPtr<AudioBasicProcessorHandler> create(
+      NodeType,
+      AudioNode&,
+      float sampleRate,
+      std::unique_ptr<AudioProcessor>);
+  ~AudioBasicProcessorHandler() override;
 
-    // AudioHandler
-    void process(size_t framesToProcess) final;
-    void pullInputs(size_t framesToProcess) final;
-    void initialize() final;
-    void uninitialize() final;
+  // AudioHandler
+  void process(size_t framesToProcess) final;
+  void pullInputs(size_t framesToProcess) final;
+  void initialize() final;
+  void uninitialize() final;
 
-    // Called in the main thread when the number of channels for the input may have changed.
-    void checkNumberOfChannelsForInput(AudioNodeInput*) final;
+  // Called in the main thread when the number of channels for the input may have changed.
+  void checkNumberOfChannelsForInput(AudioNodeInput*) final;
 
-    // Returns the number of channels for both the input and the output.
-    unsigned numberOfChannels();
-    AudioProcessor* processor() { return m_processor.get(); }
+  // Returns the number of channels for both the input and the output.
+  unsigned numberOfChannels();
+  AudioProcessor* processor() { return m_processor.get(); }
 
-private:
-    AudioBasicProcessorHandler(NodeType, AudioNode&, float sampleRate, std::unique_ptr<AudioProcessor>);
-    double tailTime() const final;
-    double latencyTime() const final;
+ private:
+  AudioBasicProcessorHandler(NodeType,
+                             AudioNode&,
+                             float sampleRate,
+                             std::unique_ptr<AudioProcessor>);
+  double tailTime() const final;
+  double latencyTime() const final;
 
-    std::unique_ptr<AudioProcessor> m_processor;
+  std::unique_ptr<AudioProcessor> m_processor;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioBasicProcessorHandler_h
+#endif  // AudioBasicProcessorHandler_h

@@ -37,40 +37,39 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT ArchiveResource final : public GarbageCollectedFinalized<ArchiveResource> {
-public:
-    static ArchiveResource* create(
-        PassRefPtr<SharedBuffer>,
-        const KURL&,
-        const String& contentId,
-        const AtomicString& mimeType,
-        const AtomicString& textEncoding);
+class PLATFORM_EXPORT ArchiveResource final
+    : public GarbageCollectedFinalized<ArchiveResource> {
+ public:
+  static ArchiveResource* create(PassRefPtr<SharedBuffer>,
+                                 const KURL&,
+                                 const String& contentId,
+                                 const AtomicString& mimeType,
+                                 const AtomicString& textEncoding);
 
-    ~ArchiveResource();
+  ~ArchiveResource();
 
-    const KURL& url() const { return m_url; }
-    const String& contentID() const { return m_contentID; }
-    SharedBuffer* data() const { return m_data.get(); }
-    const AtomicString& mimeType() const { return m_mimeType; }
-    const AtomicString& textEncoding() const { return m_textEncoding; }
+  const KURL& url() const { return m_url; }
+  const String& contentID() const { return m_contentID; }
+  SharedBuffer* data() const { return m_data.get(); }
+  const AtomicString& mimeType() const { return m_mimeType; }
+  const AtomicString& textEncoding() const { return m_textEncoding; }
 
-    DEFINE_INLINE_TRACE() { }
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    ArchiveResource(
-        PassRefPtr<SharedBuffer>,
-        const KURL&,
-        const String& contentID,
-        const AtomicString& mimeType,
-        const AtomicString& textEncoding);
+ private:
+  ArchiveResource(PassRefPtr<SharedBuffer>,
+                  const KURL&,
+                  const String& contentID,
+                  const AtomicString& mimeType,
+                  const AtomicString& textEncoding);
 
-    KURL m_url;
-    String m_contentID;
-    RefPtr<SharedBuffer> m_data;
-    AtomicString m_mimeType;
-    AtomicString m_textEncoding;
+  KURL m_url;
+  String m_contentID;
+  RefPtr<SharedBuffer> m_data;
+  AtomicString m_mimeType;
+  AtomicString m_textEncoding;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ArchiveResource_h
+#endif  // ArchiveResource_h

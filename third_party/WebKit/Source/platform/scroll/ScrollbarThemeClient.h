@@ -38,58 +38,59 @@ namespace blink {
 class Widget;
 
 class PLATFORM_EXPORT ScrollbarThemeClient {
-public:
-    virtual int x() const = 0;
-    virtual int y() const = 0;
-    virtual int width() const = 0;
-    virtual int height() const = 0;
-    virtual IntSize size() const = 0;
-    virtual IntPoint location() const = 0;
+ public:
+  virtual int x() const = 0;
+  virtual int y() const = 0;
+  virtual int width() const = 0;
+  virtual int height() const = 0;
+  virtual IntSize size() const = 0;
+  virtual IntPoint location() const = 0;
 
-    virtual Widget* parent() const = 0;
-    virtual Widget* root() const = 0;
+  virtual Widget* parent() const = 0;
+  virtual Widget* root() const = 0;
 
-    virtual void setFrameRect(const IntRect&) = 0;
-    virtual IntRect frameRect() const = 0;
+  virtual void setFrameRect(const IntRect&) = 0;
+  virtual IntRect frameRect() const = 0;
 
-    virtual void invalidate() = 0;
-    virtual void invalidateRect(const IntRect&) = 0;
+  virtual void invalidate() = 0;
+  virtual void invalidateRect(const IntRect&) = 0;
 
-    virtual ScrollbarOverlayStyle getScrollbarOverlayStyle() const = 0;
-    virtual void getTickmarks(Vector<IntRect>&) const = 0;
-    virtual bool isScrollableAreaActive() const = 0;
+  virtual ScrollbarOverlayStyle getScrollbarOverlayStyle() const = 0;
+  virtual void getTickmarks(Vector<IntRect>&) const = 0;
+  virtual bool isScrollableAreaActive() const = 0;
 
-    virtual IntPoint convertFromRootFrame(const IntPoint& pointInRootFrame) const = 0;
+  virtual IntPoint convertFromRootFrame(
+      const IntPoint& pointInRootFrame) const = 0;
 
-    virtual bool isCustomScrollbar() const = 0;
-    virtual ScrollbarOrientation orientation() const = 0;
-    virtual bool isLeftSideVerticalScrollbar() const = 0;
+  virtual bool isCustomScrollbar() const = 0;
+  virtual ScrollbarOrientation orientation() const = 0;
+  virtual bool isLeftSideVerticalScrollbar() const = 0;
 
-    virtual int value() const = 0;
-    virtual float currentPos() const = 0;
-    virtual int visibleSize() const = 0;
-    virtual int totalSize() const = 0;
-    virtual int maximum() const = 0;
-    virtual ScrollbarControlSize controlSize() const = 0;
+  virtual int value() const = 0;
+  virtual float currentPos() const = 0;
+  virtual int visibleSize() const = 0;
+  virtual int totalSize() const = 0;
+  virtual int maximum() const = 0;
+  virtual ScrollbarControlSize controlSize() const = 0;
 
-    virtual ScrollbarPart pressedPart() const = 0;
-    virtual ScrollbarPart hoveredPart() const = 0;
+  virtual ScrollbarPart pressedPart() const = 0;
+  virtual ScrollbarPart hoveredPart() const = 0;
 
-    virtual void styleChanged() = 0;
-    virtual void visibilityChanged() = 0;
+  virtual void styleChanged() = 0;
+  virtual void visibilityChanged() = 0;
 
-    virtual bool enabled() const = 0;
-    virtual void setEnabled(bool) = 0;
+  virtual bool enabled() const = 0;
+  virtual void setEnabled(bool) = 0;
 
-    virtual bool isOverlayScrollbar() const = 0;
+  virtual bool isOverlayScrollbar() const = 0;
 
-    virtual float elasticOverscroll() const = 0;
-    virtual void setElasticOverscroll(float) = 0;
+  virtual float elasticOverscroll() const = 0;
+  virtual void setElasticOverscroll(float) = 0;
 
-protected:
-    virtual ~ScrollbarThemeClient() { }
+ protected:
+  virtual ~ScrollbarThemeClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScollbarThemeClient_h
+#endif  // ScollbarThemeClient_h

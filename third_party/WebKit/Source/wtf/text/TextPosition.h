@@ -38,58 +38,73 @@ namespace WTF {
 // This type should be used instead of integer because 2 contradicting traditions can
 // call a first element '0' or '1' which makes integer type ambiguous.
 class OrdinalNumber final {
-    DISALLOW_NEW();
-public:
-    static OrdinalNumber fromZeroBasedInt(int zeroBasedInt) { return OrdinalNumber(zeroBasedInt); }
-    static OrdinalNumber fromOneBasedInt(int oneBasedInt) { return OrdinalNumber(oneBasedInt - 1); }
-    OrdinalNumber() : m_zeroBasedValue(0) { }
+  DISALLOW_NEW();
 
-    int zeroBasedInt() const { return m_zeroBasedValue; }
-    int oneBasedInt() const { return m_zeroBasedValue + 1; }
+ public:
+  static OrdinalNumber fromZeroBasedInt(int zeroBasedInt) {
+    return OrdinalNumber(zeroBasedInt);
+  }
+  static OrdinalNumber fromOneBasedInt(int oneBasedInt) {
+    return OrdinalNumber(oneBasedInt - 1);
+  }
+  OrdinalNumber() : m_zeroBasedValue(0) {}
 
-    bool operator==(OrdinalNumber other) const { return m_zeroBasedValue == other.m_zeroBasedValue; }
-    bool operator!=(OrdinalNumber other) const { return !((*this) == other); }
+  int zeroBasedInt() const { return m_zeroBasedValue; }
+  int oneBasedInt() const { return m_zeroBasedValue + 1; }
 
-    static OrdinalNumber first() { return OrdinalNumber(0); }
-    static OrdinalNumber beforeFirst() { return OrdinalNumber(-1); }
+  bool operator==(OrdinalNumber other) const {
+    return m_zeroBasedValue == other.m_zeroBasedValue;
+  }
+  bool operator!=(OrdinalNumber other) const { return !((*this) == other); }
 
-private:
-    OrdinalNumber(int zeroBasedInt) : m_zeroBasedValue(zeroBasedInt) { }
-    int m_zeroBasedValue;
+  static OrdinalNumber first() { return OrdinalNumber(0); }
+  static OrdinalNumber beforeFirst() { return OrdinalNumber(-1); }
+
+ private:
+  OrdinalNumber(int zeroBasedInt) : m_zeroBasedValue(zeroBasedInt) {}
+  int m_zeroBasedValue;
 };
-
 
 // TextPosition structure specifies coordinates within an text resource. It is used mostly
 // for saving script source position.
 class TextPosition final {
-    DISALLOW_NEW();
-public:
-    TextPosition(OrdinalNumber line, OrdinalNumber column)
-        : m_line(line)
-        , m_column(column)
-    {
-    }
-    TextPosition() { }
-    bool operator==(const TextPosition& other) const { return m_line == other.m_line && m_column == other.m_column; }
-    bool operator!=(const TextPosition& other) const { return !((*this) == other); }
-    WTF_EXPORT OrdinalNumber toOffset(const Vector<unsigned>&);
+  DISALLOW_NEW();
 
-    // A 'minimum' value of position, used as a default value.
-    static TextPosition minimumPosition() { return TextPosition(OrdinalNumber::first(), OrdinalNumber::first()); }
+ public:
+  TextPosition(OrdinalNumber line, OrdinalNumber column)
+      : m_line(line), m_column(column) {}
+  TextPosition() {}
+  bool operator==(const TextPosition& other) const {
+    return m_line == other.m_line && m_column == other.m_column;
+  }
+  bool operator!=(const TextPosition& other) const {
+    return !((*this) == other);
+  }
+  WTF_EXPORT OrdinalNumber toOffset(const Vector<unsigned>&);
 
-    // A value with line value less than a minimum; used as an impossible position.
-    static TextPosition belowRangePosition() { return TextPosition(OrdinalNumber::beforeFirst(), OrdinalNumber::beforeFirst()); }
+  // A 'minimum' value of position, used as a default value.
+  static TextPosition minimumPosition() {
+    return TextPosition(OrdinalNumber::first(), OrdinalNumber::first());
+  }
 
-    // A value corresponding to a position with given offset within text having the specified line ending offsets.
-    WTF_EXPORT static TextPosition fromOffsetAndLineEndings(unsigned, const Vector<unsigned>&);
+  // A value with line value less than a minimum; used as an impossible position.
+  static TextPosition belowRangePosition() {
+    return TextPosition(OrdinalNumber::beforeFirst(),
+                        OrdinalNumber::beforeFirst());
+  }
 
-    OrdinalNumber m_line;
-    OrdinalNumber m_column;
+  // A value corresponding to a position with given offset within text having the specified line ending offsets.
+  WTF_EXPORT static TextPosition fromOffsetAndLineEndings(
+      unsigned,
+      const Vector<unsigned>&);
+
+  OrdinalNumber m_line;
+  OrdinalNumber m_column;
 };
 
 WTF_EXPORT std::unique_ptr<Vector<unsigned>> lineEndings(const String&);
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::OrdinalNumber;
 
@@ -97,4 +112,4 @@ using WTF::TextPosition;
 
 using WTF::lineEndings;
 
-#endif // TextPosition_h
+#endif  // TextPosition_h

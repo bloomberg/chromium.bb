@@ -31,66 +31,66 @@
 
 namespace blink {
 
-class TypeConversions final : public GarbageCollectedFinalized<TypeConversions>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static TypeConversions* create()
-    {
-        return new TypeConversions();
-    }
+class TypeConversions final : public GarbageCollectedFinalized<TypeConversions>,
+                              public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    long testLong() { return m_long; }
-    void setTestLong(long value) { m_long = value; }
-    unsigned long testUnsignedLong() { return m_unsignedLong; }
-    void setTestUnsignedLong(unsigned long value) { m_unsignedLong = value; }
+ public:
+  static TypeConversions* create() { return new TypeConversions(); }
 
-    long long testLongLong() { return m_longLong; }
-    void setTestLongLong(long long value) { m_longLong = value; }
-    unsigned long long testUnsignedLongLong() { return m_unsignedLongLong; }
-    void setTestUnsignedLongLong(unsigned long long value) { m_unsignedLongLong = value; }
+  long testLong() { return m_long; }
+  void setTestLong(long value) { m_long = value; }
+  unsigned long testUnsignedLong() { return m_unsignedLong; }
+  void setTestUnsignedLong(unsigned long value) { m_unsignedLong = value; }
 
-    int8_t testByte() { return m_byte; }
-    void setTestByte(int8_t value) { m_byte = value; }
-    uint8_t testOctet() { return m_octet; }
-    void setTestOctet(uint8_t value) { m_octet = value; }
+  long long testLongLong() { return m_longLong; }
+  void setTestLongLong(long long value) { m_longLong = value; }
+  unsigned long long testUnsignedLongLong() { return m_unsignedLongLong; }
+  void setTestUnsignedLongLong(unsigned long long value) {
+    m_unsignedLongLong = value;
+  }
 
-    int16_t testShort() { return m_short; }
-    void setTestShort(int16_t value) { m_short = value; }
-    uint16_t testUnsignedShort() { return m_unsignedShort; }
-    void setTestUnsignedShort(uint16_t value) { m_unsignedShort = value; }
+  int8_t testByte() { return m_byte; }
+  void setTestByte(int8_t value) { m_byte = value; }
+  uint8_t testOctet() { return m_octet; }
+  void setTestOctet(uint8_t value) { m_octet = value; }
 
-    const String& testByteString() const { return m_byteString; }
-    void setTestByteString(const String& value) { m_byteString = value; }
+  int16_t testShort() { return m_short; }
+  void setTestShort(int16_t value) { m_short = value; }
+  uint16_t testUnsignedShort() { return m_unsignedShort; }
+  void setTestUnsignedShort(uint16_t value) { m_unsignedShort = value; }
 
-    const String& testUSVString() const { return m_usvString; }
-    void setTestUSVString(const String& value) { m_usvString = value; }
+  const String& testByteString() const { return m_byteString; }
+  void setTestByteString(const String& value) { m_byteString = value; }
 
-    DEFINE_INLINE_TRACE() { }
+  const String& testUSVString() const { return m_usvString; }
+  void setTestUSVString(const String& value) { m_usvString = value; }
 
-private:
-    TypeConversions()
-        : m_long(0)
-        , m_unsignedLong(0)
-        , m_longLong(0)
-        , m_unsignedLongLong(0)
-        , m_byte(0)
-        , m_octet(0)
-        , m_short(0)
-        , m_unsignedShort(0)
-    { }
+  DEFINE_INLINE_TRACE() {}
 
-    long m_long;
-    unsigned long m_unsignedLong;
-    long long m_longLong;
-    unsigned long long m_unsignedLongLong;
-    int8_t m_byte;
-    uint8_t m_octet;
-    int16_t m_short;
-    uint16_t m_unsignedShort;
-    String m_byteString;
-    String m_usvString;
+ private:
+  TypeConversions()
+      : m_long(0),
+        m_unsignedLong(0),
+        m_longLong(0),
+        m_unsignedLongLong(0),
+        m_byte(0),
+        m_octet(0),
+        m_short(0),
+        m_unsignedShort(0) {}
+
+  long m_long;
+  unsigned long m_unsignedLong;
+  long long m_longLong;
+  unsigned long long m_unsignedLongLong;
+  int8_t m_byte;
+  uint8_t m_octet;
+  int16_t m_short;
+  uint16_t m_unsignedShort;
+  String m_byteString;
+  String m_usvString;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TypeConversions_h
+#endif  // TypeConversions_h

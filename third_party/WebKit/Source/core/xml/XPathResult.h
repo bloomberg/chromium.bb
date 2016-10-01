@@ -42,57 +42,60 @@ namespace XPath {
 struct EvaluationContext;
 }
 
-class XPathResult final : public GarbageCollected<XPathResult>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum XPathResultType {
-        kAnyType = 0,
-        kNumberType = 1,
-        kStringType = 2,
-        kBooleanType = 3,
-        kUnorderedNodeIteratorType = 4,
-        kOrderedNodeIteratorType = 5,
-        kUnorderedNodeSnapshotType = 6,
-        kOrderedNodeSnapshotType = 7,
-        kAnyUnorderedNodeType = 8,
-        kFirstOrderedNodeType = 9
-    };
+class XPathResult final : public GarbageCollected<XPathResult>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static XPathResult* create(XPath::EvaluationContext& context, const XPath::Value& value)
-    {
-        return new XPathResult(context, value);
-    }
+ public:
+  enum XPathResultType {
+    kAnyType = 0,
+    kNumberType = 1,
+    kStringType = 2,
+    kBooleanType = 3,
+    kUnorderedNodeIteratorType = 4,
+    kOrderedNodeIteratorType = 5,
+    kUnorderedNodeSnapshotType = 6,
+    kOrderedNodeSnapshotType = 7,
+    kAnyUnorderedNodeType = 8,
+    kFirstOrderedNodeType = 9
+  };
 
-    void convertTo(unsigned short type, ExceptionState&);
+  static XPathResult* create(XPath::EvaluationContext& context,
+                             const XPath::Value& value) {
+    return new XPathResult(context, value);
+  }
 
-    unsigned short resultType() const;
+  void convertTo(unsigned short type, ExceptionState&);
 
-    double numberValue(ExceptionState&) const;
-    String stringValue(ExceptionState&) const;
-    bool booleanValue(ExceptionState&) const;
-    Node* singleNodeValue(ExceptionState&) const;
+  unsigned short resultType() const;
 
-    bool invalidIteratorState() const;
-    unsigned snapshotLength(ExceptionState&) const;
-    Node* iterateNext(ExceptionState&);
-    Node* snapshotItem(unsigned index, ExceptionState&);
+  double numberValue(ExceptionState&) const;
+  String stringValue(ExceptionState&) const;
+  bool booleanValue(ExceptionState&) const;
+  Node* singleNodeValue(ExceptionState&) const;
 
-    const XPath::Value& value() const { return m_value; }
+  bool invalidIteratorState() const;
+  unsigned snapshotLength(ExceptionState&) const;
+  Node* iterateNext(ExceptionState&);
+  Node* snapshotItem(unsigned index, ExceptionState&);
 
-    DECLARE_TRACE();
+  const XPath::Value& value() const { return m_value; }
 
-private:
-    XPathResult(XPath::EvaluationContext&, const XPath::Value&);
-    XPath::NodeSet& nodeSet() { return *m_nodeSet; }
+  DECLARE_TRACE();
 
-    XPath::Value m_value;
-    unsigned m_nodeSetPosition;
-    Member<XPath::NodeSet> m_nodeSet; // FIXME: why duplicate the node set stored in m_value?
-    unsigned short m_resultType;
-    Member<Document> m_document;
-    uint64_t m_domTreeVersion;
+ private:
+  XPathResult(XPath::EvaluationContext&, const XPath::Value&);
+  XPath::NodeSet& nodeSet() { return *m_nodeSet; }
+
+  XPath::Value m_value;
+  unsigned m_nodeSetPosition;
+  Member<XPath::NodeSet>
+      m_nodeSet;  // FIXME: why duplicate the node set stored in m_value?
+  unsigned short m_resultType;
+  Member<Document> m_document;
+  uint64_t m_domTreeVersion;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XPathResult_h
+#endif  // XPathResult_h

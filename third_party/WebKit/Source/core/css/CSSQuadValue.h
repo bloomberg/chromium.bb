@@ -29,55 +29,58 @@
 namespace blink {
 
 class CORE_EXPORT CSSQuadValue : public CSSValue {
-public:
-    enum TypeForSerialization {
-        SerializeAsRect,
-        SerializeAsQuad
-    };
+ public:
+  enum TypeForSerialization { SerializeAsRect, SerializeAsQuad };
 
-    static CSSQuadValue* create(CSSPrimitiveValue* top, CSSPrimitiveValue* right, CSSPrimitiveValue* bottom, CSSPrimitiveValue* left, TypeForSerialization serializationType)
-    {
-        return new CSSQuadValue(top, right, bottom, left, serializationType);
-    }
+  static CSSQuadValue* create(CSSPrimitiveValue* top,
+                              CSSPrimitiveValue* right,
+                              CSSPrimitiveValue* bottom,
+                              CSSPrimitiveValue* left,
+                              TypeForSerialization serializationType) {
+    return new CSSQuadValue(top, right, bottom, left, serializationType);
+  }
 
-    CSSPrimitiveValue* top() const { return m_top.get(); }
-    CSSPrimitiveValue* right() const { return m_right.get(); }
-    CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
-    CSSPrimitiveValue* left() const { return m_left.get(); }
+  CSSPrimitiveValue* top() const { return m_top.get(); }
+  CSSPrimitiveValue* right() const { return m_right.get(); }
+  CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
+  CSSPrimitiveValue* left() const { return m_left.get(); }
 
-    TypeForSerialization serializationType() { return m_serializationType; }
+  TypeForSerialization serializationType() { return m_serializationType; }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSQuadValue& other) const
-    {
-        return compareCSSValuePtr(m_top, other.m_top)
-            && compareCSSValuePtr(m_right, other.m_right)
-            && compareCSSValuePtr(m_left, other.m_left)
-            && compareCSSValuePtr(m_bottom, other.m_bottom);
-    }
+  bool equals(const CSSQuadValue& other) const {
+    return compareCSSValuePtr(m_top, other.m_top) &&
+           compareCSSValuePtr(m_right, other.m_right) &&
+           compareCSSValuePtr(m_left, other.m_left) &&
+           compareCSSValuePtr(m_bottom, other.m_bottom);
+  }
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-protected:
-    CSSQuadValue(CSSPrimitiveValue* top, CSSPrimitiveValue* right, CSSPrimitiveValue* bottom, CSSPrimitiveValue* left, TypeForSerialization serializationType)
-        : CSSValue(QuadClass)
-        , m_serializationType(serializationType)
-        , m_top(top)
-        , m_right(right)
-        , m_bottom(bottom)
-        , m_left(left) { }
+ protected:
+  CSSQuadValue(CSSPrimitiveValue* top,
+               CSSPrimitiveValue* right,
+               CSSPrimitiveValue* bottom,
+               CSSPrimitiveValue* left,
+               TypeForSerialization serializationType)
+      : CSSValue(QuadClass),
+        m_serializationType(serializationType),
+        m_top(top),
+        m_right(right),
+        m_bottom(bottom),
+        m_left(left) {}
 
-private:
-    TypeForSerialization m_serializationType;
-    Member<CSSPrimitiveValue> m_top;
-    Member<CSSPrimitiveValue> m_right;
-    Member<CSSPrimitiveValue> m_bottom;
-    Member<CSSPrimitiveValue> m_left;
+ private:
+  TypeForSerialization m_serializationType;
+  Member<CSSPrimitiveValue> m_top;
+  Member<CSSPrimitiveValue> m_right;
+  Member<CSSPrimitiveValue> m_bottom;
+  Member<CSSPrimitiveValue> m_left;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSQuadValue, isQuadValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSQuadValue_h
+#endif  // CSSQuadValue_h

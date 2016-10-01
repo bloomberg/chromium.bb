@@ -8,45 +8,49 @@
 
 namespace blink {
 
-v8_inspector::StringView toV8InspectorStringView(const StringView& string)
-{
-    if (string.isNull())
-        return v8_inspector::StringView();
-    if (string.is8Bit())
-        return v8_inspector::StringView(reinterpret_cast<const uint8_t*>(string.characters8()), string.length());
-    return v8_inspector::StringView(reinterpret_cast<const uint16_t*>(string.characters16()), string.length());
+v8_inspector::StringView toV8InspectorStringView(const StringView& string) {
+  if (string.isNull())
+    return v8_inspector::StringView();
+  if (string.is8Bit())
+    return v8_inspector::StringView(
+        reinterpret_cast<const uint8_t*>(string.characters8()),
+        string.length());
+  return v8_inspector::StringView(
+      reinterpret_cast<const uint16_t*>(string.characters16()),
+      string.length());
 }
 
-std::unique_ptr<v8_inspector::StringBuffer> toV8InspectorStringBuffer(const StringView& string)
-{
-    return v8_inspector::StringBuffer::create(toV8InspectorStringView(string));
+std::unique_ptr<v8_inspector::StringBuffer> toV8InspectorStringBuffer(
+    const StringView& string) {
+  return v8_inspector::StringBuffer::create(toV8InspectorStringView(string));
 }
 
-String toCoreString(const v8_inspector::StringView& string)
-{
-    if (string.is8Bit())
-        return String(reinterpret_cast<const LChar*>(string.characters8()), string.length());
-    return String(reinterpret_cast<const UChar*>(string.characters16()), string.length());
+String toCoreString(const v8_inspector::StringView& string) {
+  if (string.is8Bit())
+    return String(reinterpret_cast<const LChar*>(string.characters8()),
+                  string.length());
+  return String(reinterpret_cast<const UChar*>(string.characters16()),
+                string.length());
 }
 
-String toCoreString(std::unique_ptr<v8_inspector::StringBuffer> buffer)
-{
-    if (!buffer)
-        return String();
-    return toCoreString(buffer->string());
+String toCoreString(std::unique_ptr<v8_inspector::StringBuffer> buffer) {
+  if (!buffer)
+    return String();
+  return toCoreString(buffer->string());
 }
 
 namespace protocol {
 
-std::unique_ptr<protocol::Value> parseJSON(const String& string)
-{
-    if (string.isNull())
-        return nullptr;
-    if (string.is8Bit())
-        return parseJSON(reinterpret_cast<const uint8_t*>(string.characters8()), string.length());
-    return parseJSON(reinterpret_cast<const uint16_t*>(string.characters16()), string.length());
+std::unique_ptr<protocol::Value> parseJSON(const String& string) {
+  if (string.isNull())
+    return nullptr;
+  if (string.is8Bit())
+    return parseJSON(reinterpret_cast<const uint8_t*>(string.characters8()),
+                     string.length());
+  return parseJSON(reinterpret_cast<const uint16_t*>(string.characters16()),
+                   string.length());
 }
 
-} // namespace protocol
+}  // namespace protocol
 
-} // namespace blink
+}  // namespace blink

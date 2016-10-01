@@ -38,34 +38,34 @@ namespace blink {
 // Class WebCompositionUnderline is intended to be used with WebWidget's
 // setComposition() method.
 struct WebCompositionUnderline {
-    WebCompositionUnderline()
-        : startOffset(0)
-        , endOffset(0)
-        , color(0)
-        , thick(false)
-        , backgroundColor(0) { }
+  WebCompositionUnderline()
+      : startOffset(0),
+        endOffset(0),
+        color(0),
+        thick(false),
+        backgroundColor(0) {}
 
-    WebCompositionUnderline(unsigned s, unsigned e, WebColor c, bool t, WebColor bc)
-        : startOffset(s)
-        , endOffset(e)
-        , color(c)
-        , thick(t)
-        , backgroundColor(bc) { }
+  WebCompositionUnderline(unsigned s,
+                          unsigned e,
+                          WebColor c,
+                          bool t,
+                          WebColor bc)
+      : startOffset(s), endOffset(e), color(c), thick(t), backgroundColor(bc) {}
 
-    bool operator<(const WebCompositionUnderline& other) const
-    {
-        return startOffset != other.startOffset ? startOffset < other.startOffset : endOffset < other.endOffset;
-    }
+  bool operator<(const WebCompositionUnderline& other) const {
+    return startOffset != other.startOffset ? startOffset < other.startOffset
+                                            : endOffset < other.endOffset;
+  }
 
-    // Need to update IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
-    // if members change.
-    unsigned startOffset;
-    unsigned endOffset;
-    WebColor color;
-    bool thick;
-    WebColor backgroundColor;
+  // Need to update IPC_STRUCT_TRAITS_BEGIN(blink::WebCompositionUnderline)
+  // if members change.
+  unsigned startOffset;
+  unsigned endOffset;
+  WebColor color;
+  bool thick;
+  WebColor backgroundColor;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

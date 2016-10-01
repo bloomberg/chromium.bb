@@ -34,9 +34,8 @@
 
 namespace blink {
 
-TEST(AnimationAnimatableNeutralTest, Create)
-{
-    EXPECT_TRUE(AnimatableValue::neutralValue());
+TEST(AnimationAnimatableNeutralTest, Create) {
+  EXPECT_TRUE(AnimatableValue::neutralValue());
 }
 
-} // namespace blink
+}  // namespace blink

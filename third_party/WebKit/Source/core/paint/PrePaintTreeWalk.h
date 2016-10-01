@@ -18,17 +18,17 @@ struct PrePaintTreeWalkContext;
 // frame boundaries. Helper classes are called for each tree node to perform actual actions.
 // It expects to be invoked in InPrePaint phase.
 class PrePaintTreeWalk {
-public:
-    void walk(FrameView& rootFrame);
+ public:
+  void walk(FrameView& rootFrame);
 
-private:
-    void walk(FrameView&, const PrePaintTreeWalkContext&);
-    void walk(const LayoutObject&, const PrePaintTreeWalkContext&);
+ private:
+  void walk(FrameView&, const PrePaintTreeWalkContext&);
+  void walk(const LayoutObject&, const PrePaintTreeWalkContext&);
 
-    PaintPropertyTreeBuilder m_propertyTreeBuilder;
-    PaintInvalidator m_paintInvalidator;
+  PaintPropertyTreeBuilder m_propertyTreeBuilder;
+  PaintInvalidator m_paintInvalidator;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PrePaintTreeWalk_h
+#endif  // PrePaintTreeWalk_h

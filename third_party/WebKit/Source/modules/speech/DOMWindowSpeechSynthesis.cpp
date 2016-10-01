@@ -37,44 +37,41 @@
 namespace blink {
 
 DOMWindowSpeechSynthesis::DOMWindowSpeechSynthesis(LocalDOMWindow& window)
-    : DOMWindowProperty(window.frame())
-{
-}
+    : DOMWindowProperty(window.frame()) {}
 
-const char* DOMWindowSpeechSynthesis::supplementName()
-{
-    return "DOMWindowSpeechSynthesis";
+const char* DOMWindowSpeechSynthesis::supplementName() {
+  return "DOMWindowSpeechSynthesis";
 }
 
 // static
-DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(LocalDOMWindow& window)
-{
-    DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowSpeechSynthesis(window);
-        provideTo(window, supplementName(), supplement);
-    }
-    return *supplement;
+DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(
+    LocalDOMWindow& window) {
+  DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(
+      Supplement<LocalDOMWindow>::from(window, supplementName()));
+  if (!supplement) {
+    supplement = new DOMWindowSpeechSynthesis(window);
+    provideTo(window, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
 // static
-SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(DOMWindow& window)
-{
-    return DOMWindowSpeechSynthesis::from(toLocalDOMWindow(window)).speechSynthesis();
+SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(DOMWindow& window) {
+  return DOMWindowSpeechSynthesis::from(toLocalDOMWindow(window))
+      .speechSynthesis();
 }
 
-SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis()
-{
-    if (!m_speechSynthesis && frame())
-        m_speechSynthesis = SpeechSynthesis::create(frame()->domWindow()->getExecutionContext());
-    return m_speechSynthesis;
+SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis() {
+  if (!m_speechSynthesis && frame())
+    m_speechSynthesis =
+        SpeechSynthesis::create(frame()->domWindow()->getExecutionContext());
+  return m_speechSynthesis;
 }
 
-DEFINE_TRACE(DOMWindowSpeechSynthesis)
-{
-    visitor->trace(m_speechSynthesis);
-    Supplement<LocalDOMWindow>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+DEFINE_TRACE(DOMWindowSpeechSynthesis) {
+  visitor->trace(m_speechSynthesis);
+  Supplement<LocalDOMWindow>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -34,73 +34,101 @@ class EditingStyle;
 class HTMLTableRowElement;
 
 class DeleteSelectionCommand final : public CompositeEditCommand {
-public:
-    static DeleteSelectionCommand* create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true, InputEvent::InputType inputType = InputEvent::InputType::None)
-    {
-        return new DeleteSelectionCommand(document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup, inputType);
-    }
-    static DeleteSelectionCommand* create(const VisibleSelection& selection, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true, InputEvent::InputType inputType = InputEvent::InputType::None)
-    {
-        return new DeleteSelectionCommand(selection, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements, sanitizeMarkup, inputType);
-    }
+ public:
+  static DeleteSelectionCommand* create(
+      Document& document,
+      bool smartDelete = false,
+      bool mergeBlocksAfterDelete = true,
+      bool expandForSpecialElements = false,
+      bool sanitizeMarkup = true,
+      InputEvent::InputType inputType = InputEvent::InputType::None) {
+    return new DeleteSelectionCommand(
+        document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements,
+        sanitizeMarkup, inputType);
+  }
+  static DeleteSelectionCommand* create(
+      const VisibleSelection& selection,
+      bool smartDelete = false,
+      bool mergeBlocksAfterDelete = true,
+      bool expandForSpecialElements = false,
+      bool sanitizeMarkup = true,
+      InputEvent::InputType inputType = InputEvent::InputType::None) {
+    return new DeleteSelectionCommand(
+        selection, smartDelete, mergeBlocksAfterDelete,
+        expandForSpecialElements, sanitizeMarkup, inputType);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    DeleteSelectionCommand(Document&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool santizeMarkup, InputEvent::InputType);
-    DeleteSelectionCommand(const VisibleSelection&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup, InputEvent::InputType);
+ private:
+  DeleteSelectionCommand(Document&,
+                         bool smartDelete,
+                         bool mergeBlocksAfterDelete,
+                         bool expandForSpecialElements,
+                         bool santizeMarkup,
+                         InputEvent::InputType);
+  DeleteSelectionCommand(const VisibleSelection&,
+                         bool smartDelete,
+                         bool mergeBlocksAfterDelete,
+                         bool expandForSpecialElements,
+                         bool sanitizeMarkup,
+                         InputEvent::InputType);
 
-    void doApply(EditingState*) override;
-    InputEvent::InputType inputType() const override;
+  void doApply(EditingState*) override;
+  InputEvent::InputType inputType() const override;
 
-    bool preservesTypingStyle() const override;
+  bool preservesTypingStyle() const override;
 
-    void initializeStartEnd(Position&, Position&);
-    void setStartingSelectionOnSmartDelete(const Position&, const Position&);
-    void initializePositionData(EditingState*);
-    void saveTypingStyleState();
-    bool handleSpecialCaseBRDelete(EditingState*);
-    void handleGeneralDelete(EditingState*);
-    void fixupWhitespace();
-    void mergeParagraphs(EditingState*);
-    void removePreviouslySelectedEmptyTableRows(EditingState*);
-    void calculateTypingStyleAfterDelete();
-    void clearTransientState();
-    void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(EditingState*);
-    void removeNode(Node*, EditingState*, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) override;
-    void deleteTextFromNode(Text*, unsigned, unsigned) override;
-    void removeRedundantBlocks(EditingState*);
+  void initializeStartEnd(Position&, Position&);
+  void setStartingSelectionOnSmartDelete(const Position&, const Position&);
+  void initializePositionData(EditingState*);
+  void saveTypingStyleState();
+  bool handleSpecialCaseBRDelete(EditingState*);
+  void handleGeneralDelete(EditingState*);
+  void fixupWhitespace();
+  void mergeParagraphs(EditingState*);
+  void removePreviouslySelectedEmptyTableRows(EditingState*);
+  void calculateTypingStyleAfterDelete();
+  void clearTransientState();
+  void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(
+      EditingState*);
+  void removeNode(Node*,
+                  EditingState*,
+                  ShouldAssumeContentIsAlwaysEditable =
+                      DoNotAssumeContentIsAlwaysEditable) override;
+  void deleteTextFromNode(Text*, unsigned, unsigned) override;
+  void removeRedundantBlocks(EditingState*);
 
-    bool m_hasSelectionToDelete;
-    bool m_smartDelete;
-    bool m_mergeBlocksAfterDelete;
-    bool m_needPlaceholder;
-    bool m_expandForSpecialElements;
-    bool m_pruneStartBlockIfNecessary;
-    bool m_startsAtEmptyLine;
-    bool m_sanitizeMarkup;
-    InputEvent::InputType m_inputType;
+  bool m_hasSelectionToDelete;
+  bool m_smartDelete;
+  bool m_mergeBlocksAfterDelete;
+  bool m_needPlaceholder;
+  bool m_expandForSpecialElements;
+  bool m_pruneStartBlockIfNecessary;
+  bool m_startsAtEmptyLine;
+  bool m_sanitizeMarkup;
+  InputEvent::InputType m_inputType;
 
-    // This data is transient and should be cleared at the end of the doApply function.
-    VisibleSelection m_selectionToDelete;
-    Position m_upstreamStart;
-    Position m_downstreamStart;
-    Position m_upstreamEnd;
-    Position m_downstreamEnd;
-    Position m_endingPosition;
-    Position m_leadingWhitespace;
-    Position m_trailingWhitespace;
-    Member<Node> m_startBlock;
-    Member<Node> m_endBlock;
-    Member<EditingStyle> m_typingStyle;
-    Member<EditingStyle> m_deleteIntoBlockquoteStyle;
-    Member<Element> m_startRoot;
-    Member<Element> m_endRoot;
-    Member<HTMLTableRowElement> m_startTableRow;
-    Member<HTMLTableRowElement> m_endTableRow;
-    Member<Node> m_temporaryPlaceholder;
+  // This data is transient and should be cleared at the end of the doApply function.
+  VisibleSelection m_selectionToDelete;
+  Position m_upstreamStart;
+  Position m_downstreamStart;
+  Position m_upstreamEnd;
+  Position m_downstreamEnd;
+  Position m_endingPosition;
+  Position m_leadingWhitespace;
+  Position m_trailingWhitespace;
+  Member<Node> m_startBlock;
+  Member<Node> m_endBlock;
+  Member<EditingStyle> m_typingStyle;
+  Member<EditingStyle> m_deleteIntoBlockquoteStyle;
+  Member<Element> m_startRoot;
+  Member<Element> m_endRoot;
+  Member<HTMLTableRowElement> m_startTableRow;
+  Member<HTMLTableRowElement> m_endTableRow;
+  Member<Node> m_temporaryPlaceholder;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeleteSelectionCommand_h
+#endif  // DeleteSelectionCommand_h

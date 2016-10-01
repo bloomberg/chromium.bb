@@ -39,9 +39,12 @@ PLATFORM_EXPORT AtomicString defaultLanguage();
 // in production.  This is not a value of Accept-Languages header.  See
 // ChromeClient::acceptLanguages.
 PLATFORM_EXPORT Vector<AtomicString> userPreferredLanguages();
-PLATFORM_EXPORT void overrideUserPreferredLanguages(const Vector<AtomicString>&);
-PLATFORM_EXPORT size_t indexOfBestMatchingLanguageInList(const AtomicString& language, const Vector<AtomicString>& languageList);
+PLATFORM_EXPORT void overrideUserPreferredLanguages(
+    const Vector<AtomicString>&);
+PLATFORM_EXPORT size_t
+indexOfBestMatchingLanguageInList(const AtomicString& language,
+                                  const Vector<AtomicString>& languageList);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

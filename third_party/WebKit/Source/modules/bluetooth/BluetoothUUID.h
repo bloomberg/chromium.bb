@@ -14,22 +14,21 @@ namespace blink {
 class ExceptionState;
 
 // This class provides a way for script to look up UUIDs by name so they don't need to be replicated in each application.
-class BluetoothUUID final
-    : public GarbageCollected<BluetoothUUID>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
+class BluetoothUUID final : public GarbageCollected<BluetoothUUID>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // IDL exposed interface:
-    static String getService(StringOrUnsignedLong name, ExceptionState&);
-    static String getCharacteristic(StringOrUnsignedLong name, ExceptionState&);
-    static String getDescriptor(StringOrUnsignedLong name, ExceptionState&);
-    static String canonicalUUID(unsigned alias);
+ public:
+  // IDL exposed interface:
+  static String getService(StringOrUnsignedLong name, ExceptionState&);
+  static String getCharacteristic(StringOrUnsignedLong name, ExceptionState&);
+  static String getDescriptor(StringOrUnsignedLong name, ExceptionState&);
+  static String canonicalUUID(unsigned alias);
 
-    // Interface required by garbage collection.
-    DEFINE_INLINE_TRACE() { }
+  // Interface required by garbage collection.
+  DEFINE_INLINE_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BluetoothUUID_h
+#endif  // BluetoothUUID_h

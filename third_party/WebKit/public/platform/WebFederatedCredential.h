@@ -13,20 +13,22 @@
 namespace blink {
 
 class WebFederatedCredential : public WebCredential {
-public:
-    BLINK_PLATFORM_EXPORT WebFederatedCredential(const WebString& id, const WebSecurityOrigin& federation, const WebString& name, const WebURL& iconURL);
+ public:
+  BLINK_PLATFORM_EXPORT WebFederatedCredential(
+      const WebString& id,
+      const WebSecurityOrigin& federation,
+      const WebString& name,
+      const WebURL& iconURL);
 
-    BLINK_PLATFORM_EXPORT void assign(const WebFederatedCredential&);
-    BLINK_PLATFORM_EXPORT WebSecurityOrigin provider() const;
+  BLINK_PLATFORM_EXPORT void assign(const WebFederatedCredential&);
+  BLINK_PLATFORM_EXPORT WebSecurityOrigin provider() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebFederatedCredential(PlatformCredential*);
-    BLINK_PLATFORM_EXPORT WebFederatedCredential& operator=(PlatformCredential*);
+  BLINK_PLATFORM_EXPORT WebFederatedCredential(PlatformCredential*);
+  BLINK_PLATFORM_EXPORT WebFederatedCredential& operator=(PlatformCredential*);
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFederatedCredential_h
-
-
+#endif  // WebFederatedCredential_h

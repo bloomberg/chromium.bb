@@ -14,76 +14,74 @@ namespace blink {
 
 namespace {
 
-ScrollState* CreateScrollState(double deltaX, double deltaY, bool beginning, bool ending)
-{
-    std::unique_ptr<ScrollStateData> scrollStateData = wrapUnique(new ScrollStateData());
-    scrollStateData->delta_x = deltaX;
-    scrollStateData->delta_y = deltaY;
-    scrollStateData->is_beginning = beginning;
-    scrollStateData->is_ending = ending;
-    return ScrollState::create(std::move(scrollStateData));
+ScrollState* CreateScrollState(double deltaX,
+                               double deltaY,
+                               bool beginning,
+                               bool ending) {
+  std::unique_ptr<ScrollStateData> scrollStateData =
+      wrapUnique(new ScrollStateData());
+  scrollStateData->delta_x = deltaX;
+  scrollStateData->delta_y = deltaY;
+  scrollStateData->is_beginning = beginning;
+  scrollStateData->is_ending = ending;
+  return ScrollState::create(std::move(scrollStateData));
 }
 
-class ScrollStateTest : public testing::Test {
-};
+class ScrollStateTest : public testing::Test {};
 
-TEST_F(ScrollStateTest, ConsumeDeltaNative)
-{
-    const float deltaX = 12.3;
-    const float deltaY = 3.9;
+TEST_F(ScrollStateTest, ConsumeDeltaNative) {
+  const float deltaX = 12.3;
+  const float deltaY = 3.9;
 
-    const float deltaXToConsume = 1.2;
-    const float deltaYToConsume = 2.3;
+  const float deltaXToConsume = 1.2;
+  const float deltaYToConsume = 2.3;
 
-    ScrollState* scrollState = CreateScrollState(deltaX, deltaY, false, false);
-    EXPECT_FLOAT_EQ(deltaX, scrollState->deltaX());
-    EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
-    EXPECT_FALSE(scrollState->deltaConsumedForScrollSequence());
-    EXPECT_FALSE(scrollState->fullyConsumed());
+  ScrollState* scrollState = CreateScrollState(deltaX, deltaY, false, false);
+  EXPECT_FLOAT_EQ(deltaX, scrollState->deltaX());
+  EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
+  EXPECT_FALSE(scrollState->deltaConsumedForScrollSequence());
+  EXPECT_FALSE(scrollState->fullyConsumed());
 
-    scrollState->consumeDeltaNative(0, 0);
-    EXPECT_FLOAT_EQ(deltaX, scrollState->deltaX());
-    EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
-    EXPECT_FALSE(scrollState->deltaConsumedForScrollSequence());
-    EXPECT_FALSE(scrollState->fullyConsumed());
+  scrollState->consumeDeltaNative(0, 0);
+  EXPECT_FLOAT_EQ(deltaX, scrollState->deltaX());
+  EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
+  EXPECT_FALSE(scrollState->deltaConsumedForScrollSequence());
+  EXPECT_FALSE(scrollState->fullyConsumed());
 
-    scrollState->consumeDeltaNative(deltaXToConsume, 0);
-    EXPECT_FLOAT_EQ(deltaX - deltaXToConsume, scrollState->deltaX());
-    EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
-    EXPECT_TRUE(scrollState->deltaConsumedForScrollSequence());
-    EXPECT_FALSE(scrollState->fullyConsumed());
+  scrollState->consumeDeltaNative(deltaXToConsume, 0);
+  EXPECT_FLOAT_EQ(deltaX - deltaXToConsume, scrollState->deltaX());
+  EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
+  EXPECT_TRUE(scrollState->deltaConsumedForScrollSequence());
+  EXPECT_FALSE(scrollState->fullyConsumed());
 
-    scrollState->consumeDeltaNative(0, deltaYToConsume);
-    EXPECT_FLOAT_EQ(deltaX - deltaXToConsume, scrollState->deltaX());
-    EXPECT_FLOAT_EQ(deltaY - deltaYToConsume, scrollState->deltaY());
-    EXPECT_TRUE(scrollState->deltaConsumedForScrollSequence());
-    EXPECT_FALSE(scrollState->fullyConsumed());
+  scrollState->consumeDeltaNative(0, deltaYToConsume);
+  EXPECT_FLOAT_EQ(deltaX - deltaXToConsume, scrollState->deltaX());
+  EXPECT_FLOAT_EQ(deltaY - deltaYToConsume, scrollState->deltaY());
+  EXPECT_TRUE(scrollState->deltaConsumedForScrollSequence());
+  EXPECT_FALSE(scrollState->fullyConsumed());
 
-    scrollState->consumeDeltaNative(scrollState->deltaX(), scrollState->deltaY());
-    EXPECT_TRUE(scrollState->deltaConsumedForScrollSequence());
-    EXPECT_TRUE(scrollState->fullyConsumed());
+  scrollState->consumeDeltaNative(scrollState->deltaX(), scrollState->deltaY());
+  EXPECT_TRUE(scrollState->deltaConsumedForScrollSequence());
+  EXPECT_TRUE(scrollState->fullyConsumed());
 }
 
-TEST_F(ScrollStateTest, CurrentNativeScrollingElement)
-{
-    ScrollState* scrollState = CreateScrollState(0, 0, false, false);
-    Element* element = Element::create(
-        QualifiedName::null(), Document::create());
-    scrollState->setCurrentNativeScrollingElement(element);
+TEST_F(ScrollStateTest, CurrentNativeScrollingElement) {
+  ScrollState* scrollState = CreateScrollState(0, 0, false, false);
+  Element* element = Element::create(QualifiedName::null(), Document::create());
+  scrollState->setCurrentNativeScrollingElement(element);
 
-    EXPECT_EQ(element, scrollState->currentNativeScrollingElement());
+  EXPECT_EQ(element, scrollState->currentNativeScrollingElement());
 }
 
-TEST_F(ScrollStateTest, FullyConsumed)
-{
-    ScrollState* scrollStateBegin = CreateScrollState(0, 0, true, false);
-    ScrollState* scrollState = CreateScrollState(0, 0, false, false);
-    ScrollState* scrollStateEnd = CreateScrollState(0, 0, false, true);
-    EXPECT_FALSE(scrollStateBegin->fullyConsumed());
-    EXPECT_TRUE(scrollState->fullyConsumed());
-    EXPECT_FALSE(scrollStateEnd->fullyConsumed());
+TEST_F(ScrollStateTest, FullyConsumed) {
+  ScrollState* scrollStateBegin = CreateScrollState(0, 0, true, false);
+  ScrollState* scrollState = CreateScrollState(0, 0, false, false);
+  ScrollState* scrollStateEnd = CreateScrollState(0, 0, false, true);
+  EXPECT_FALSE(scrollStateBegin->fullyConsumed());
+  EXPECT_TRUE(scrollState->fullyConsumed());
+  EXPECT_FALSE(scrollStateEnd->fullyConsumed());
 }
 
-} // namespace
+}  // namespace
 
-} // namespace blink
+}  // namespace blink

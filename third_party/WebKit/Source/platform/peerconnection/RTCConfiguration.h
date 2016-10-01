@@ -43,81 +43,88 @@
 namespace blink {
 
 class RTCIceServer final : public GarbageCollectedFinalized<RTCIceServer> {
-public:
-    static RTCIceServer* create(const KURL& uri, const String& username, const String& credential)
-    {
-        return new RTCIceServer(uri, username, credential);
-    }
+ public:
+  static RTCIceServer* create(const KURL& uri,
+                              const String& username,
+                              const String& credential) {
+    return new RTCIceServer(uri, username, credential);
+  }
 
-    const KURL& uri() { return m_uri; }
-    const String& username() { return m_username; }
-    const String& credential() { return m_credential; }
+  const KURL& uri() { return m_uri; }
+  const String& username() { return m_username; }
+  const String& credential() { return m_credential; }
 
-    DEFINE_INLINE_TRACE() { }
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    RTCIceServer(const KURL& uri, const String& username, const String& credential)
-        : m_uri(uri)
-        , m_username(username)
-        , m_credential(credential)
-    {
-    }
+ private:
+  RTCIceServer(const KURL& uri,
+               const String& username,
+               const String& credential)
+      : m_uri(uri), m_username(username), m_credential(credential) {}
 
-    KURL m_uri;
-    String m_username;
-    String m_credential;
+  KURL m_uri;
+  String m_username;
+  String m_credential;
 };
 
 enum RTCIceTransports {
-    RTCIceTransportsNone,
-    RTCIceTransportsRelay,
-    RTCIceTransportsAll
+  RTCIceTransportsNone,
+  RTCIceTransportsRelay,
+  RTCIceTransportsAll
 };
 
 enum RTCBundlePolicy {
-    RTCBundlePolicyBalanced,
-    RTCBundlePolicyMaxCompat,
-    RTCBundlePolicyMaxBundle
+  RTCBundlePolicyBalanced,
+  RTCBundlePolicyMaxCompat,
+  RTCBundlePolicyMaxBundle
 };
 
-enum RTCRtcpMuxPolicy {
-    RTCRtcpMuxPolicyNegotiate,
-    RTCRtcpMuxPolicyRequire
-};
+enum RTCRtcpMuxPolicy { RTCRtcpMuxPolicyNegotiate, RTCRtcpMuxPolicyRequire };
 
-class PLATFORM_EXPORT RTCConfiguration final : public GarbageCollectedFinalized<RTCConfiguration> {
-public:
-    static RTCConfiguration* create() { return new RTCConfiguration(); }
-    void appendServer(RTCIceServer* server) { m_servers.append(server); }
-    size_t numberOfServers() { return m_servers.size(); }
-    RTCIceServer* server(size_t index) { return m_servers[index].get(); }
+class PLATFORM_EXPORT RTCConfiguration final
+    : public GarbageCollectedFinalized<RTCConfiguration> {
+ public:
+  static RTCConfiguration* create() { return new RTCConfiguration(); }
+  void appendServer(RTCIceServer* server) { m_servers.append(server); }
+  size_t numberOfServers() { return m_servers.size(); }
+  RTCIceServer* server(size_t index) { return m_servers[index].get(); }
 
-    void setIceTransports(RTCIceTransports iceTransports) { m_iceTransports = iceTransports; }
-    RTCIceTransports iceTransports() { return m_iceTransports; }
-    void setBundlePolicy(RTCBundlePolicy bundlePolicy) { m_bundlePolicy = bundlePolicy; }
-    RTCBundlePolicy bundlePolicy() { return m_bundlePolicy; }
-    void setRtcpMuxPolicy(RTCRtcpMuxPolicy rtcpMuxPolicy) { m_rtcpMuxPolicy = rtcpMuxPolicy; }
-    RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
+  void setIceTransports(RTCIceTransports iceTransports) {
+    m_iceTransports = iceTransports;
+  }
+  RTCIceTransports iceTransports() { return m_iceTransports; }
+  void setBundlePolicy(RTCBundlePolicy bundlePolicy) {
+    m_bundlePolicy = bundlePolicy;
+  }
+  RTCBundlePolicy bundlePolicy() { return m_bundlePolicy; }
+  void setRtcpMuxPolicy(RTCRtcpMuxPolicy rtcpMuxPolicy) {
+    m_rtcpMuxPolicy = rtcpMuxPolicy;
+  }
+  RTCRtcpMuxPolicy rtcpMuxPolicy() { return m_rtcpMuxPolicy; }
 
-    void appendCertificate(std::unique_ptr<WebRTCCertificate> certificate) { m_certificates.append(wrapUnique(certificate.release())); }
-    size_t numberOfCertificates() const { return m_certificates.size(); }
-    WebRTCCertificate* certificate(size_t index) const { return m_certificates[index].get(); }
+  void appendCertificate(std::unique_ptr<WebRTCCertificate> certificate) {
+    m_certificates.append(wrapUnique(certificate.release()));
+  }
+  size_t numberOfCertificates() const { return m_certificates.size(); }
+  WebRTCCertificate* certificate(size_t index) const {
+    return m_certificates[index].get();
+  }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_servers); }
 
-private:
-    RTCConfiguration() :
-        m_iceTransports(RTCIceTransportsAll),
+ private:
+  RTCConfiguration()
+      : m_iceTransports(RTCIceTransportsAll),
         m_bundlePolicy(RTCBundlePolicyBalanced),
-        m_rtcpMuxPolicy(RTCRtcpMuxPolicyNegotiate) { }
+        m_rtcpMuxPolicy(RTCRtcpMuxPolicyNegotiate) {}
 
-    HeapVector<Member<RTCIceServer>> m_servers;
-    RTCIceTransports m_iceTransports;
-    RTCBundlePolicy m_bundlePolicy;
-    RTCRtcpMuxPolicy m_rtcpMuxPolicy;
-    Vector<std::unique_ptr<WebRTCCertificate>> m_certificates;
+  HeapVector<Member<RTCIceServer>> m_servers;
+  RTCIceTransports m_iceTransports;
+  RTCBundlePolicy m_bundlePolicy;
+  RTCRtcpMuxPolicy m_rtcpMuxPolicy;
+  Vector<std::unique_ptr<WebRTCCertificate>> m_certificates;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCConfiguration_h
+#endif  // RTCConfiguration_h

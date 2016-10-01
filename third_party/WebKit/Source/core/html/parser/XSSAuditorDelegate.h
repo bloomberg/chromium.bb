@@ -40,52 +40,60 @@ class Document;
 class EncodedFormData;
 
 class XSSInfo {
-    USING_FAST_MALLOC(XSSInfo);
-    WTF_MAKE_NONCOPYABLE(XSSInfo);
-public:
-    static std::unique_ptr<XSSInfo> create(const String& originalURL, bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
-    {
-        return wrapUnique(new XSSInfo(originalURL, didBlockEntirePage, didSendXSSProtectionHeader, didSendCSPHeader));
-    }
+  USING_FAST_MALLOC(XSSInfo);
+  WTF_MAKE_NONCOPYABLE(XSSInfo);
 
-    String buildConsoleError() const;
-    bool isSafeToSendToAnotherThread() const;
+ public:
+  static std::unique_ptr<XSSInfo> create(const String& originalURL,
+                                         bool didBlockEntirePage,
+                                         bool didSendXSSProtectionHeader,
+                                         bool didSendCSPHeader) {
+    return wrapUnique(new XSSInfo(originalURL, didBlockEntirePage,
+                                  didSendXSSProtectionHeader,
+                                  didSendCSPHeader));
+  }
 
-    String m_originalURL;
-    bool m_didBlockEntirePage;
-    bool m_didSendXSSProtectionHeader;
-    bool m_didSendCSPHeader;
-    TextPosition m_textPosition;
+  String buildConsoleError() const;
+  bool isSafeToSendToAnotherThread() const;
 
-private:
-    XSSInfo(const String& originalURL, bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
-        : m_originalURL(originalURL.isolatedCopy())
-        , m_didBlockEntirePage(didBlockEntirePage)
-        , m_didSendXSSProtectionHeader(didSendXSSProtectionHeader)
-        , m_didSendCSPHeader(didSendCSPHeader)
-    { }
+  String m_originalURL;
+  bool m_didBlockEntirePage;
+  bool m_didSendXSSProtectionHeader;
+  bool m_didSendCSPHeader;
+  TextPosition m_textPosition;
+
+ private:
+  XSSInfo(const String& originalURL,
+          bool didBlockEntirePage,
+          bool didSendXSSProtectionHeader,
+          bool didSendCSPHeader)
+      : m_originalURL(originalURL.isolatedCopy()),
+        m_didBlockEntirePage(didBlockEntirePage),
+        m_didSendXSSProtectionHeader(didSendXSSProtectionHeader),
+        m_didSendCSPHeader(didSendCSPHeader) {}
 };
 
 class XSSAuditorDelegate final {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(XSSAuditorDelegate);
-public:
-    explicit XSSAuditorDelegate(Document*);
-    DECLARE_TRACE();
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(XSSAuditorDelegate);
 
-    void didBlockScript(const XSSInfo&);
-    void setReportURL(const KURL& url) { m_reportURL = url; }
+ public:
+  explicit XSSAuditorDelegate(Document*);
+  DECLARE_TRACE();
 
-private:
-    PassRefPtr<EncodedFormData> generateViolationReport(const XSSInfo&);
+  void didBlockScript(const XSSInfo&);
+  void setReportURL(const KURL& url) { m_reportURL = url; }
 
-    Member<Document> m_document;
-    bool m_didSendNotifications;
-    KURL m_reportURL;
+ private:
+  PassRefPtr<EncodedFormData> generateViolationReport(const XSSInfo&);
+
+  Member<Document> m_document;
+  bool m_didSendNotifications;
+  KURL m_reportURL;
 };
 
 typedef Vector<std::unique_ptr<XSSInfo>> XSSInfoStream;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

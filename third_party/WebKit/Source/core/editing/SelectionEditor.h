@@ -34,70 +34,78 @@ namespace blink {
 // TODO(yosin): We will rename |SelectionEditor| to appropriate name since
 // it is no longer have a changing selection functionality, it was moved to
 // |SelectionModifier| class.
-class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor> {
-    WTF_MAKE_NONCOPYABLE(SelectionEditor);
-public:
-    static SelectionEditor* create(FrameSelection& frameSelection)
-    {
-        return new SelectionEditor(frameSelection);
-    }
-    virtual ~SelectionEditor();
-    void dispose();
+class SelectionEditor final
+    : public GarbageCollectedFinalized<SelectionEditor> {
+  WTF_MAKE_NONCOPYABLE(SelectionEditor);
 
-    bool hasEditableStyle() const { return m_selection.hasEditableStyle(); }
-    bool isContentEditable() const { return m_selection.isContentEditable(); }
-    bool isContentRichlyEditable() const { return m_selection.isContentRichlyEditable(); }
+ public:
+  static SelectionEditor* create(FrameSelection& frameSelection) {
+    return new SelectionEditor(frameSelection);
+  }
+  virtual ~SelectionEditor();
+  void dispose();
 
-    bool setSelectedRange(const EphemeralRange&, TextAffinity, SelectionDirectionalMode, FrameSelection::SetSelectionOptions);
+  bool hasEditableStyle() const { return m_selection.hasEditableStyle(); }
+  bool isContentEditable() const { return m_selection.isContentEditable(); }
+  bool isContentRichlyEditable() const {
+    return m_selection.isContentRichlyEditable();
+  }
 
-    template <typename Strategy>
-    const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
-    void setVisibleSelection(const VisibleSelection&, FrameSelection::SetSelectionOptions);
-    void setVisibleSelection(const VisibleSelectionInFlatTree&, FrameSelection::SetSelectionOptions);
+  bool setSelectedRange(const EphemeralRange&,
+                        TextAffinity,
+                        SelectionDirectionalMode,
+                        FrameSelection::SetSelectionOptions);
 
-    void setWithoutValidation(const Position& base, const Position& extent);
+  template <typename Strategy>
+  const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
+  void setVisibleSelection(const VisibleSelection&,
+                           FrameSelection::SetSelectionOptions);
+  void setVisibleSelection(const VisibleSelectionInFlatTree&,
+                           FrameSelection::SetSelectionOptions);
 
-    void documentAttached(Document*);
-    void documentDetached(const Document&);
+  void setWithoutValidation(const Position& base, const Position& extent);
 
-    // If this FrameSelection has a logical range which is still valid, this
-    // function return its clone. Otherwise, the return value from underlying
-    // |VisibleSelection|'s |firstRange()| is returned.
-    Range* firstRange() const;
+  void documentAttached(Document*);
+  void documentDetached(const Document&);
 
-    // There functions are exposed for |FrameSelection|.
-    void resetLogicalRange();
-    void setLogicalRange(Range*);
+  // If this FrameSelection has a logical range which is still valid, this
+  // function return its clone. Otherwise, the return value from underlying
+  // |VisibleSelection|'s |firstRange()| is returned.
+  Range* firstRange() const;
 
-    // Updates |m_selection| and |m_selectionInFlatTree| with up-to-date
-    // layout if needed.
-    void updateIfNeeded();
+  // There functions are exposed for |FrameSelection|.
+  void resetLogicalRange();
+  void setLogicalRange(Range*);
 
-    DECLARE_VIRTUAL_TRACE();
+  // Updates |m_selection| and |m_selectionInFlatTree| with up-to-date
+  // layout if needed.
+  void updateIfNeeded();
 
-private:
-    explicit SelectionEditor(FrameSelection&);
+  DECLARE_VIRTUAL_TRACE();
 
-    const Document& document() const;
-    LocalFrame* frame() const;
+ private:
+  explicit SelectionEditor(FrameSelection&);
 
-    void clearVisibleSelection();
-    bool shouldAlwaysUseDirectionalSelection() const;
+  const Document& document() const;
+  LocalFrame* frame() const;
 
-    Member<Document> m_document;
-    Member<FrameSelection> m_frameSelection;
+  void clearVisibleSelection();
+  bool shouldAlwaysUseDirectionalSelection() const;
 
-    VisibleSelection m_selection;
-    VisibleSelectionInFlatTree m_selectionInFlatTree;
-    bool m_observingVisibleSelection;
+  Member<Document> m_document;
+  Member<FrameSelection> m_frameSelection;
 
-    // The range specified by the user, which may not be visually canonicalized
-    // (hence "logical"). This will be invalidated if the underlying
-    // |VisibleSelection| changes. If that happens, this variable will
-    // become |nullptr|, in which case logical positions == visible positions.
-    Member<Range> m_logicalRange;
+  VisibleSelection m_selection;
+  VisibleSelectionInFlatTree m_selectionInFlatTree;
+  bool m_observingVisibleSelection;
+
+  // The range specified by the user, which may not be visually canonicalized
+  // (hence "logical"). This will be invalidated if the underlying
+  // |VisibleSelection| changes. If that happens, this variable will
+  // become |nullptr|, in which case logical positions == visible positions.
+  Member<Range> m_logicalRange;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SelectionEditor_h
+#endif  // SelectionEditor_h

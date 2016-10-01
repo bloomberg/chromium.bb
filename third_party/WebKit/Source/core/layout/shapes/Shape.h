@@ -43,24 +43,15 @@ namespace blink {
 class FloatRoundedRect;
 
 struct LineSegment {
-    STACK_ALLOCATED();
-    LineSegment()
-        : logicalLeft(0)
-        , logicalRight(0)
-        , isValid(false)
-    {
-    }
+  STACK_ALLOCATED();
+  LineSegment() : logicalLeft(0), logicalRight(0), isValid(false) {}
 
-    LineSegment(float logicalLeft, float logicalRight)
-        : logicalLeft(logicalLeft)
-        , logicalRight(logicalRight)
-        , isValid(true)
-    {
-    }
+  LineSegment(float logicalLeft, float logicalRight)
+      : logicalLeft(logicalLeft), logicalRight(logicalRight), isValid(true) {}
 
-    float logicalLeft;
-    float logicalRight;
-    bool isValid;
+  float logicalLeft;
+  float logicalRight;
+  bool isValid;
 };
 
 // A representation of a BasicShape that enables layout code to determine how to break a line up into segments
@@ -69,42 +60,61 @@ struct LineSegment {
 // physical coordinates.
 
 class CORE_EXPORT Shape {
-    USING_FAST_MALLOC(Shape);
-public:
-    struct DisplayPaths {
-        STACK_ALLOCATED();
-        Path shape;
-        Path marginShape;
-    };
-    static std::unique_ptr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, float margin);
-    static std::unique_ptr<Shape> createRasterShape(Image*, float threshold, const LayoutRect& imageRect, const LayoutRect& marginRect, WritingMode, float margin);
-    static std::unique_ptr<Shape> createEmptyRasterShape(WritingMode, float margin);
-    static std::unique_ptr<Shape> createLayoutBoxShape(const FloatRoundedRect&, WritingMode, float margin);
+  USING_FAST_MALLOC(Shape);
 
-    virtual ~Shape() { }
+ public:
+  struct DisplayPaths {
+    STACK_ALLOCATED();
+    Path shape;
+    Path marginShape;
+  };
+  static std::unique_ptr<Shape> createShape(const BasicShape*,
+                                            const LayoutSize& logicalBoxSize,
+                                            WritingMode,
+                                            float margin);
+  static std::unique_ptr<Shape> createRasterShape(Image*,
+                                                  float threshold,
+                                                  const LayoutRect& imageRect,
+                                                  const LayoutRect& marginRect,
+                                                  WritingMode,
+                                                  float margin);
+  static std::unique_ptr<Shape> createEmptyRasterShape(WritingMode,
+                                                       float margin);
+  static std::unique_ptr<Shape> createLayoutBoxShape(const FloatRoundedRect&,
+                                                     WritingMode,
+                                                     float margin);
 
-    virtual LayoutRect shapeMarginLogicalBoundingBox() const = 0;
-    virtual bool isEmpty() const = 0;
-    virtual LineSegment getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const = 0;
+  virtual ~Shape() {}
 
-    bool lineOverlapsShapeMarginBounds(LayoutUnit lineTop, LayoutUnit lineHeight) const { return lineOverlapsBoundingBox(lineTop, lineHeight, shapeMarginLogicalBoundingBox()); }
-    virtual void buildDisplayPaths(DisplayPaths&) const = 0;
+  virtual LayoutRect shapeMarginLogicalBoundingBox() const = 0;
+  virtual bool isEmpty() const = 0;
+  virtual LineSegment getExcludedInterval(LayoutUnit logicalTop,
+                                          LayoutUnit logicalHeight) const = 0;
 
-protected:
-    float shapeMargin() const { return m_margin; }
+  bool lineOverlapsShapeMarginBounds(LayoutUnit lineTop,
+                                     LayoutUnit lineHeight) const {
+    return lineOverlapsBoundingBox(lineTop, lineHeight,
+                                   shapeMarginLogicalBoundingBox());
+  }
+  virtual void buildDisplayPaths(DisplayPaths&) const = 0;
 
-private:
-    bool lineOverlapsBoundingBox(LayoutUnit lineTop, LayoutUnit lineHeight, const LayoutRect& rect) const
-    {
-        if (rect.isEmpty())
-            return false;
-        return (lineTop < rect.maxY() && lineTop + lineHeight > rect.y()) || (!lineHeight && lineTop == rect.y());
-    }
+ protected:
+  float shapeMargin() const { return m_margin; }
 
-    WritingMode m_writingMode;
-    float m_margin;
+ private:
+  bool lineOverlapsBoundingBox(LayoutUnit lineTop,
+                               LayoutUnit lineHeight,
+                               const LayoutRect& rect) const {
+    if (rect.isEmpty())
+      return false;
+    return (lineTop < rect.maxY() && lineTop + lineHeight > rect.y()) ||
+           (!lineHeight && lineTop == rect.y());
+  }
+
+  WritingMode m_writingMode;
+  float m_margin;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Shape_h
+#endif  // Shape_h

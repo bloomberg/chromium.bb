@@ -28,12 +28,7 @@
 
 namespace WTF {
 
-enum TriState {
-    FalseTriState,
-    TrueTriState,
-    MixedTriState
-};
-
+enum TriState { FalseTriState, TrueTriState, MixedTriState };
 }
 
 using WTF::TriState;
@@ -41,4 +36,4 @@ using WTF::FalseTriState;
 using WTF::TrueTriState;
 using WTF::MixedTriState;
 
-#endif // TriState_h
+#endif  // TriState_h

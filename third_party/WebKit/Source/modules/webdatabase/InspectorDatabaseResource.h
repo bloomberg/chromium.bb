@@ -39,26 +39,33 @@
 namespace blink {
 class Database;
 
-class InspectorDatabaseResource : public GarbageCollectedFinalized<InspectorDatabaseResource> {
-public:
-    static InspectorDatabaseResource* create(Database*, const String& domain, const String& name, const String& version);
-    DECLARE_TRACE();
+class InspectorDatabaseResource
+    : public GarbageCollectedFinalized<InspectorDatabaseResource> {
+ public:
+  static InspectorDatabaseResource* create(Database*,
+                                           const String& domain,
+                                           const String& name,
+                                           const String& version);
+  DECLARE_TRACE();
 
-    void bind(protocol::Database::Frontend*);
-    Database* database() { return m_database.get(); }
-    void setDatabase(Database* database) { m_database = database; }
-    String id() const { return m_id; }
+  void bind(protocol::Database::Frontend*);
+  Database* database() { return m_database.get(); }
+  void setDatabase(Database* database) { m_database = database; }
+  String id() const { return m_id; }
 
-private:
-    InspectorDatabaseResource(Database*, const String& domain, const String& name, const String& version);
+ private:
+  InspectorDatabaseResource(Database*,
+                            const String& domain,
+                            const String& name,
+                            const String& version);
 
-    Member<Database> m_database;
-    String m_id;
-    String m_domain;
-    String m_name;
-    String m_version;
+  Member<Database> m_database;
+  String m_id;
+  String m_domain;
+  String m_name;
+  String m_version;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InspectorDatabaseResource_h
+#endif  // InspectorDatabaseResource_h

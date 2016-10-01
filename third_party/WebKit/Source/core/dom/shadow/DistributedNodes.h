@@ -38,35 +38,39 @@
 namespace blink {
 
 class DistributedNodes final {
-    DISALLOW_NEW();
-public:
-    DistributedNodes() { }
+  DISALLOW_NEW();
 
-    Node* first() const { return m_nodes.first(); }
-    Node* last() const { return m_nodes.last(); }
-    Node* at(size_t index) const { return m_nodes.at(index); }
+ public:
+  DistributedNodes() {}
 
-    size_t size() const { return m_nodes.size(); }
-    bool isEmpty() const { return m_nodes.isEmpty(); }
+  Node* first() const { return m_nodes.first(); }
+  Node* last() const { return m_nodes.last(); }
+  Node* at(size_t index) const { return m_nodes.at(index); }
 
-    void append(Node*);
-    void clear() { m_nodes.clear(); m_indices.clear(); }
-    void shrinkToFit() { m_nodes.shrinkToFit(); }
+  size_t size() const { return m_nodes.size(); }
+  bool isEmpty() const { return m_nodes.isEmpty(); }
 
-    bool contains(const Node* node) const { return m_indices.contains(node); }
-    size_t find(const Node*) const;
-    Node* nextTo(const Node*) const;
-    Node* previousTo(const Node*) const;
+  void append(Node*);
+  void clear() {
+    m_nodes.clear();
+    m_indices.clear();
+  }
+  void shrinkToFit() { m_nodes.shrinkToFit(); }
 
-    void swap(DistributedNodes& other);
+  bool contains(const Node* node) const { return m_indices.contains(node); }
+  size_t find(const Node*) const;
+  Node* nextTo(const Node*) const;
+  Node* previousTo(const Node*) const;
 
-    DECLARE_TRACE();
+  void swap(DistributedNodes& other);
 
-private:
-    HeapVector<Member<Node>> m_nodes;
-    HeapHashMap<Member<const Node>, size_t> m_indices;
+  DECLARE_TRACE();
+
+ private:
+  HeapVector<Member<Node>> m_nodes;
+  HeapHashMap<Member<const Node>, size_t> m_indices;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

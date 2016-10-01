@@ -70,301 +70,327 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 
-class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient, public cc::LayerClient, public DisplayItemClient {
-    WTF_MAKE_NONCOPYABLE(GraphicsLayer); USING_FAST_MALLOC(GraphicsLayer);
-public:
-    static std::unique_ptr<GraphicsLayer> create(GraphicsLayerClient*);
+class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
+                                      public cc::LayerClient,
+                                      public DisplayItemClient {
+  WTF_MAKE_NONCOPYABLE(GraphicsLayer);
+  USING_FAST_MALLOC(GraphicsLayer);
 
-    ~GraphicsLayer() override;
+ public:
+  static std::unique_ptr<GraphicsLayer> create(GraphicsLayerClient*);
 
-    GraphicsLayerClient* client() const { return m_client; }
+  ~GraphicsLayer() override;
 
-    GraphicsLayerDebugInfo& debugInfo();
+  GraphicsLayerClient* client() const { return m_client; }
 
-    void setCompositingReasons(CompositingReasons);
-    CompositingReasons getCompositingReasons() const { return m_debugInfo.getCompositingReasons(); }
-    void setSquashingDisallowedReasons(SquashingDisallowedReasons);
-    void setOwnerNodeId(int);
+  GraphicsLayerDebugInfo& debugInfo();
 
-    GraphicsLayer* parent() const { return m_parent; }
-    void setParent(GraphicsLayer*); // Internal use only.
+  void setCompositingReasons(CompositingReasons);
+  CompositingReasons getCompositingReasons() const {
+    return m_debugInfo.getCompositingReasons();
+  }
+  void setSquashingDisallowedReasons(SquashingDisallowedReasons);
+  void setOwnerNodeId(int);
 
-    const Vector<GraphicsLayer*>& children() const { return m_children; }
-    // Returns true if the child list changed.
-    bool setChildren(const GraphicsLayerVector&);
+  GraphicsLayer* parent() const { return m_parent; }
+  void setParent(GraphicsLayer*);  // Internal use only.
 
-    // Add child layers. If the child is already parented, it will be removed from its old parent.
-    void addChild(GraphicsLayer*);
-    void addChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
+  const Vector<GraphicsLayer*>& children() const { return m_children; }
+  // Returns true if the child list changed.
+  bool setChildren(const GraphicsLayerVector&);
 
-    void removeAllChildren();
-    void removeFromParent();
+  // Add child layers. If the child is already parented, it will be removed from its old parent.
+  void addChild(GraphicsLayer*);
+  void addChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
 
-    GraphicsLayer* maskLayer() const { return m_maskLayer; }
-    void setMaskLayer(GraphicsLayer*);
+  void removeAllChildren();
+  void removeFromParent();
 
-    GraphicsLayer* contentsClippingMaskLayer() const { return m_contentsClippingMaskLayer; }
-    void setContentsClippingMaskLayer(GraphicsLayer*);
+  GraphicsLayer* maskLayer() const { return m_maskLayer; }
+  void setMaskLayer(GraphicsLayer*);
 
-    enum ShouldSetNeedsDisplay {
-        DontSetNeedsDisplay,
-        SetNeedsDisplay
-    };
+  GraphicsLayer* contentsClippingMaskLayer() const {
+    return m_contentsClippingMaskLayer;
+  }
+  void setContentsClippingMaskLayer(GraphicsLayer*);
 
-    // Offset is origin of the layoutObject minus origin of the graphics layer (so either zero or negative).
-    IntSize offsetFromLayoutObject() const { return flooredIntSize(m_offsetFromLayoutObject); }
-    void setOffsetFromLayoutObject(const IntSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
-    LayoutSize offsetFromLayoutObjectWithSubpixelAccumulation() const;
+  enum ShouldSetNeedsDisplay { DontSetNeedsDisplay, SetNeedsDisplay };
 
-    // The double version is only used in |updateScrollingLayerGeometry()| for detecting
-    // scroll offset change at floating point precision.
-    DoubleSize offsetDoubleFromLayoutObject() const { return m_offsetFromLayoutObject; }
-    void setOffsetDoubleFromLayoutObject(const DoubleSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
+  // Offset is origin of the layoutObject minus origin of the graphics layer (so either zero or negative).
+  IntSize offsetFromLayoutObject() const {
+    return flooredIntSize(m_offsetFromLayoutObject);
+  }
+  void setOffsetFromLayoutObject(const IntSize&,
+                                 ShouldSetNeedsDisplay = SetNeedsDisplay);
+  LayoutSize offsetFromLayoutObjectWithSubpixelAccumulation() const;
 
-    // The position of the layer (the location of its top-left corner in its parent)
-    const FloatPoint& position() const { return m_position; }
-    void setPosition(const FloatPoint&);
+  // The double version is only used in |updateScrollingLayerGeometry()| for detecting
+  // scroll offset change at floating point precision.
+  DoubleSize offsetDoubleFromLayoutObject() const {
+    return m_offsetFromLayoutObject;
+  }
+  void setOffsetDoubleFromLayoutObject(const DoubleSize&,
+                                       ShouldSetNeedsDisplay = SetNeedsDisplay);
 
-    const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
-    void setTransformOrigin(const FloatPoint3D&);
+  // The position of the layer (the location of its top-left corner in its parent)
+  const FloatPoint& position() const { return m_position; }
+  void setPosition(const FloatPoint&);
 
-    // The size of the layer.
-    const FloatSize& size() const { return m_size; }
-    void setSize(const FloatSize&);
+  const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
+  void setTransformOrigin(const FloatPoint3D&);
 
-    const TransformationMatrix& transform() const { return m_transform; }
-    void setTransform(const TransformationMatrix&);
-    void setShouldFlattenTransform(bool);
-    void setRenderingContext(int id);
+  // The size of the layer.
+  const FloatSize& size() const { return m_size; }
+  void setSize(const FloatSize&);
 
-    bool masksToBounds() const;
-    void setMasksToBounds(bool);
+  const TransformationMatrix& transform() const { return m_transform; }
+  void setTransform(const TransformationMatrix&);
+  void setShouldFlattenTransform(bool);
+  void setRenderingContext(int id);
 
-    bool drawsContent() const { return m_drawsContent; }
-    void setDrawsContent(bool);
+  bool masksToBounds() const;
+  void setMasksToBounds(bool);
 
-    bool contentsAreVisible() const { return m_contentsVisible; }
-    void setContentsVisible(bool);
+  bool drawsContent() const { return m_drawsContent; }
+  void setDrawsContent(bool);
 
-    void setScrollParent(WebLayer*);
-    void setClipParent(WebLayer*);
+  bool contentsAreVisible() const { return m_contentsVisible; }
+  void setContentsVisible(bool);
 
-    // For special cases, e.g. drawing missing tiles on Android.
-    // The compositor should never paint this color in normal cases because the Layer
-    // will paint background by itself.
-    void setBackgroundColor(const Color&);
+  void setScrollParent(WebLayer*);
+  void setClipParent(WebLayer*);
 
-    // opaque means that we know the layer contents have no alpha
-    bool contentsOpaque() const { return m_contentsOpaque; }
-    void setContentsOpaque(bool);
+  // For special cases, e.g. drawing missing tiles on Android.
+  // The compositor should never paint this color in normal cases because the Layer
+  // will paint background by itself.
+  void setBackgroundColor(const Color&);
 
-    bool backfaceVisibility() const { return m_backfaceVisibility; }
-    void setBackfaceVisibility(bool visible);
+  // opaque means that we know the layer contents have no alpha
+  bool contentsOpaque() const { return m_contentsOpaque; }
+  void setContentsOpaque(bool);
 
-    float opacity() const { return m_opacity; }
-    void setOpacity(float);
+  bool backfaceVisibility() const { return m_backfaceVisibility; }
+  void setBackfaceVisibility(bool visible);
 
-    void setBlendMode(WebBlendMode);
-    void setIsRootForIsolatedGroup(bool);
+  float opacity() const { return m_opacity; }
+  void setOpacity(float);
 
-    void setFilters(CompositorFilterOperations);
-    void setBackdropFilters(CompositorFilterOperations);
+  void setBlendMode(WebBlendMode);
+  void setIsRootForIsolatedGroup(bool);
 
-    void setStickyPositionConstraint(const WebLayerStickyPositionConstraint&);
+  void setFilters(CompositorFilterOperations);
+  void setBackdropFilters(CompositorFilterOperations);
 
-    void setFilterQuality(SkFilterQuality);
+  void setStickyPositionConstraint(const WebLayerStickyPositionConstraint&);
 
-    // Some GraphicsLayers paint only the foreground or the background content
-    GraphicsLayerPaintingPhase paintingPhase() const { return m_paintingPhase; }
-    void setPaintingPhase(GraphicsLayerPaintingPhase);
+  void setFilterQuality(SkFilterQuality);
 
-    void setNeedsDisplay();
-    // Mark the given rect (in layer coords) as needing display. Never goes deep.
-    void setNeedsDisplayInRect(const IntRect&, PaintInvalidationReason, const DisplayItemClient&);
+  // Some GraphicsLayers paint only the foreground or the background content
+  GraphicsLayerPaintingPhase paintingPhase() const { return m_paintingPhase; }
+  void setPaintingPhase(GraphicsLayerPaintingPhase);
 
-    void setContentsNeedsDisplay();
+  void setNeedsDisplay();
+  // Mark the given rect (in layer coords) as needing display. Never goes deep.
+  void setNeedsDisplayInRect(const IntRect&,
+                             PaintInvalidationReason,
+                             const DisplayItemClient&);
 
-    // Set that the position/size of the contents (image or video).
-    void setContentsRect(const IntRect&);
+  void setContentsNeedsDisplay();
 
-    // Layer contents
-    void setContentsToImage(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
-    void setContentsToPlatformLayer(WebLayer* layer) { setContentsTo(layer); }
-    bool hasContentsLayer() const { return m_contentsLayer; }
+  // Set that the position/size of the contents (image or video).
+  void setContentsRect(const IntRect&);
 
-    // For hosting this GraphicsLayer in a native layer hierarchy.
-    WebLayer* platformLayer() const;
+  // Layer contents
+  void setContentsToImage(
+      Image*,
+      RespectImageOrientationEnum = DoNotRespectImageOrientation);
+  void setContentsToPlatformLayer(WebLayer* layer) { setContentsTo(layer); }
+  bool hasContentsLayer() const { return m_contentsLayer; }
 
-    int paintCount() const { return m_paintCount; }
+  // For hosting this GraphicsLayer in a native layer hierarchy.
+  WebLayer* platformLayer() const;
 
-    // Return a string with a human readable form of the layer tree, If debug is true
-    // pointers for the layers and timing data will be included in the returned string.
-    String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
+  int paintCount() const { return m_paintCount; }
 
-    std::unique_ptr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
+  // Return a string with a human readable form of the layer tree, If debug is true
+  // pointers for the layers and timing data will be included in the returned string.
+  String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
 
-    void setTracksPaintInvalidations(bool);
-    bool isTrackingOrCheckingPaintInvalidations() const
-    {
-        return RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() || m_isTrackingPaintInvalidations;
-    }
+  std::unique_ptr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
 
-    void resetTrackedPaintInvalidations();
-    bool hasTrackedPaintInvalidations() const;
-    void trackPaintInvalidation(const DisplayItemClient&, const IntRect&, PaintInvalidationReason);
+  void setTracksPaintInvalidations(bool);
+  bool isTrackingOrCheckingPaintInvalidations() const {
+    return RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() ||
+           m_isTrackingPaintInvalidations;
+  }
 
-    void addLinkHighlight(LinkHighlight*);
-    void removeLinkHighlight(LinkHighlight*);
-    // Exposed for tests
-    unsigned numLinkHighlights() { return m_linkHighlights.size(); }
-    LinkHighlight* getLinkHighlight(int i) { return m_linkHighlights[i]; }
+  void resetTrackedPaintInvalidations();
+  bool hasTrackedPaintInvalidations() const;
+  void trackPaintInvalidation(const DisplayItemClient&,
+                              const IntRect&,
+                              PaintInvalidationReason);
 
-    void setScrollableArea(ScrollableArea*, bool isVisualViewport);
-    ScrollableArea* getScrollableArea() const { return m_scrollableArea; }
+  void addLinkHighlight(LinkHighlight*);
+  void removeLinkHighlight(LinkHighlight*);
+  // Exposed for tests
+  unsigned numLinkHighlights() { return m_linkHighlights.size(); }
+  LinkHighlight* getLinkHighlight(int i) { return m_linkHighlights[i]; }
 
-    WebContentLayer* contentLayer() const { return m_layer.get(); }
+  void setScrollableArea(ScrollableArea*, bool isVisualViewport);
+  ScrollableArea* getScrollableArea() const { return m_scrollableArea; }
 
-    static void registerContentsLayer(WebLayer*);
-    static void unregisterContentsLayer(WebLayer*);
+  WebContentLayer* contentLayer() const { return m_layer.get(); }
 
-    IntRect interestRect();
-    void paint(const IntRect* interestRect, GraphicsContext::DisabledMode = GraphicsContext::NothingDisabled);
+  static void registerContentsLayer(WebLayer*);
+  static void unregisterContentsLayer(WebLayer*);
 
-    // WebLayerScrollClient implementation.
-    void didScroll() override;
+  IntRect interestRect();
+  void paint(const IntRect* interestRect,
+             GraphicsContext::DisabledMode = GraphicsContext::NothingDisabled);
 
-    // cc::LayerClient implementation.
-    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
-    void didUpdateMainThreadScrollingReasons() override;
+  // WebLayerScrollClient implementation.
+  void didScroll() override;
 
-    PaintController& getPaintController();
+  // cc::LayerClient implementation.
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
+      cc::Layer*) override;
+  void didUpdateMainThreadScrollingReasons() override;
 
-    // Exposed for tests.
-    WebLayer* contentsLayer() const { return m_contentsLayer; }
+  PaintController& getPaintController();
 
-    void setElementId(const CompositorElementId&);
-    void setCompositorMutableProperties(uint32_t);
+  // Exposed for tests.
+  WebLayer* contentsLayer() const { return m_contentsLayer; }
 
-    ContentLayerDelegate* contentLayerDelegateForTesting() const { return m_contentLayerDelegate.get(); }
+  void setElementId(const CompositorElementId&);
+  void setCompositorMutableProperties(uint32_t);
 
-    // DisplayItemClient methods
-    String debugName() const final { return m_client->debugName(this); }
-    LayoutRect visualRect() const override;
+  ContentLayerDelegate* contentLayerDelegateForTesting() const {
+    return m_contentLayerDelegate.get();
+  }
 
-    void setHasWillChangeTransformHint(bool);
+  // DisplayItemClient methods
+  String debugName() const final { return m_client->debugName(this); }
+  LayoutRect visualRect() const override;
 
-protected:
-    String debugName(cc::Layer*) const;
-    bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
+  void setHasWillChangeTransformHint(bool);
 
-    explicit GraphicsLayer(GraphicsLayerClient*);
-    // for testing
-    friend class CompositedLayerMappingTest;
-    friend class PaintControllerPaintTestBase;
+ protected:
+  String debugName(cc::Layer*) const;
+  bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }
 
-private:
-    // Returns true if PaintController::paintArtifact() changed and needs commit.
-    bool paintWithoutCommit(const IntRect* interestRect, GraphicsContext::DisabledMode = GraphicsContext::NothingDisabled);
+  explicit GraphicsLayer(GraphicsLayerClient*);
+  // for testing
+  friend class CompositedLayerMappingTest;
+  friend class PaintControllerPaintTestBase;
 
-    // Adds a child without calling updateChildList(), so that adding children
-    // can be batched before updating.
-    void addChildInternal(GraphicsLayer*);
+ private:
+  // Returns true if PaintController::paintArtifact() changed and needs commit.
+  bool paintWithoutCommit(
+      const IntRect* interestRect,
+      GraphicsContext::DisabledMode = GraphicsContext::NothingDisabled);
+
+  // Adds a child without calling updateChildList(), so that adding children
+  // can be batched before updating.
+  void addChildInternal(GraphicsLayer*);
 
 #if ENABLE(ASSERT)
-    bool hasAncestor(GraphicsLayer*) const;
+  bool hasAncestor(GraphicsLayer*) const;
 #endif
 
-    void incrementPaintCount() { ++m_paintCount; }
+  void incrementPaintCount() { ++m_paintCount; }
 
-    void notifyFirstPaintToClient();
+  void notifyFirstPaintToClient();
 
-    // Helper functions used by settors to keep layer's the state consistent.
-    void updateChildList();
-    void updateLayerIsDrawable();
-    void updateContentsRect();
+  // Helper functions used by settors to keep layer's the state consistent.
+  void updateChildList();
+  void updateLayerIsDrawable();
+  void updateContentsRect();
 
-    void setContentsTo(WebLayer*);
-    void setupContentsLayer(WebLayer*);
-    void clearContentsLayerIfUnregistered();
-    WebLayer* contentsLayerIfRegistered();
+  void setContentsTo(WebLayer*);
+  void setupContentsLayer(WebLayer*);
+  void clearContentsLayerIfUnregistered();
+  WebLayer* contentsLayerIfRegistered();
 
-    typedef HashMap<int, int> RenderingContextMap;
-    std::unique_ptr<JSONObject> layerTreeAsJSONInternal(LayerTreeFlags, RenderingContextMap&) const;
+  typedef HashMap<int, int> RenderingContextMap;
+  std::unique_ptr<JSONObject> layerTreeAsJSONInternal(
+      LayerTreeFlags,
+      RenderingContextMap&) const;
 
-    sk_sp<SkPicture> capturePicture();
-    void checkPaintUnderInvalidations(const SkPicture&);
+  sk_sp<SkPicture> capturePicture();
+  void checkPaintUnderInvalidations(const SkPicture&);
 
-    GraphicsLayerClient* m_client;
+  GraphicsLayerClient* m_client;
 
-    // Offset from the owning layoutObject
-    DoubleSize m_offsetFromLayoutObject;
+  // Offset from the owning layoutObject
+  DoubleSize m_offsetFromLayoutObject;
 
-    // Position is relative to the parent GraphicsLayer
-    FloatPoint m_position;
-    FloatSize m_size;
+  // Position is relative to the parent GraphicsLayer
+  FloatPoint m_position;
+  FloatSize m_size;
 
-    TransformationMatrix m_transform;
-    FloatPoint3D m_transformOrigin;
+  TransformationMatrix m_transform;
+  FloatPoint3D m_transformOrigin;
 
-    Color m_backgroundColor;
-    float m_opacity;
+  Color m_backgroundColor;
+  float m_opacity;
 
-    WebBlendMode m_blendMode;
+  WebBlendMode m_blendMode;
 
-    bool m_hasTransformOrigin : 1;
-    bool m_contentsOpaque : 1;
-    bool m_shouldFlattenTransform: 1;
-    bool m_backfaceVisibility : 1;
-    bool m_drawsContent : 1;
-    bool m_contentsVisible : 1;
-    bool m_isRootForIsolatedGroup : 1;
+  bool m_hasTransformOrigin : 1;
+  bool m_contentsOpaque : 1;
+  bool m_shouldFlattenTransform : 1;
+  bool m_backfaceVisibility : 1;
+  bool m_drawsContent : 1;
+  bool m_contentsVisible : 1;
+  bool m_isRootForIsolatedGroup : 1;
 
-    bool m_hasScrollParent : 1;
-    bool m_hasClipParent : 1;
+  bool m_hasScrollParent : 1;
+  bool m_hasClipParent : 1;
 
-    bool m_painted : 1;
+  bool m_painted : 1;
 
-    bool m_isTrackingPaintInvalidations : 1;
+  bool m_isTrackingPaintInvalidations : 1;
 
-    GraphicsLayerPaintingPhase m_paintingPhase;
+  GraphicsLayerPaintingPhase m_paintingPhase;
 
-    Vector<GraphicsLayer*> m_children;
-    GraphicsLayer* m_parent;
+  Vector<GraphicsLayer*> m_children;
+  GraphicsLayer* m_parent;
 
-    GraphicsLayer* m_maskLayer; // Reference to mask layer. We don't own this.
-    GraphicsLayer* m_contentsClippingMaskLayer; // Reference to clipping mask layer. We don't own this.
+  GraphicsLayer* m_maskLayer;  // Reference to mask layer. We don't own this.
+  GraphicsLayer*
+      m_contentsClippingMaskLayer;  // Reference to clipping mask layer. We don't own this.
 
-    IntRect m_contentsRect;
+  IntRect m_contentsRect;
 
-    int m_paintCount;
+  int m_paintCount;
 
-    std::unique_ptr<WebContentLayer> m_layer;
-    std::unique_ptr<WebImageLayer> m_imageLayer;
-    WebLayer* m_contentsLayer;
-    // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
-    // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
-    // we stash an ID away when we know m_contentsLayer is alive and use that for comparisons from that point
-    // on.
-    int m_contentsLayerId;
+  std::unique_ptr<WebContentLayer> m_layer;
+  std::unique_ptr<WebImageLayer> m_imageLayer;
+  WebLayer* m_contentsLayer;
+  // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
+  // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
+  // we stash an ID away when we know m_contentsLayer is alive and use that for comparisons from that point
+  // on.
+  int m_contentsLayerId;
 
-    Vector<LinkHighlight*> m_linkHighlights;
+  Vector<LinkHighlight*> m_linkHighlights;
 
-    std::unique_ptr<ContentLayerDelegate> m_contentLayerDelegate;
+  std::unique_ptr<ContentLayerDelegate> m_contentLayerDelegate;
 
-    WeakPersistent<ScrollableArea> m_scrollableArea;
-    GraphicsLayerDebugInfo m_debugInfo;
-    int m_renderingContext3d;
+  WeakPersistent<ScrollableArea> m_scrollableArea;
+  GraphicsLayerDebugInfo m_debugInfo;
+  int m_renderingContext3d;
 
-    std::unique_ptr<PaintController> m_paintController;
+  std::unique_ptr<PaintController> m_paintController;
 
-    IntRect m_previousInterestRect;
+  IntRect m_previousInterestRect;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #ifndef NDEBUG
 // Outside the blink namespace for ease of invocation from gdb.
 void PLATFORM_EXPORT showGraphicsLayerTree(const blink::GraphicsLayer*);
 #endif
 
-#endif // GraphicsLayer_h
+#endif  // GraphicsLayer_h

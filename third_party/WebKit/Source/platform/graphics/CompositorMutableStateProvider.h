@@ -11,7 +11,7 @@
 
 namespace cc {
 class LayerTreeImpl;
-} // namespace cc
+}  // namespace cc
 
 namespace blink {
 
@@ -21,17 +21,18 @@ struct CompositorMutations;
 // This class is a window onto compositor-owned state. It vends out wrappers
 // around per-element bits of this state.
 class PLATFORM_EXPORT CompositorMutableStateProvider {
-public:
-    CompositorMutableStateProvider(cc::LayerTreeImpl*, CompositorMutations*);
-    ~CompositorMutableStateProvider();
+ public:
+  CompositorMutableStateProvider(cc::LayerTreeImpl*, CompositorMutations*);
+  ~CompositorMutableStateProvider();
 
-    std::unique_ptr<CompositorMutableState> getMutableStateFor(uint64_t elementId);
+  std::unique_ptr<CompositorMutableState> getMutableStateFor(
+      uint64_t elementId);
 
-private:
-    cc::LayerTreeImpl* m_tree;
-    CompositorMutations* m_mutations;
+ private:
+  cc::LayerTreeImpl* m_tree;
+  CompositorMutations* m_mutations;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorMutableStateProvider_h
+#endif  // CompositorMutableStateProvider_h

@@ -36,32 +36,27 @@
 namespace blink {
 
 WebDOMMediaStreamTrack::WebDOMMediaStreamTrack(MediaStreamTrack* track)
-    : m_private(track)
-{
+    : m_private(track) {}
+
+WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(
+    v8::Local<v8::Value> value) {
+  if (V8MediaStreamTrack::hasInstance(value, v8::Isolate::GetCurrent())) {
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
+    return WebDOMMediaStreamTrack(V8MediaStreamTrack::toImpl(object));
+  }
+  return WebDOMMediaStreamTrack(nullptr);
 }
 
-WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(v8::Local<v8::Value> value)
-{
-    if (V8MediaStreamTrack::hasInstance(value, v8::Isolate::GetCurrent())) {
-        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-        return WebDOMMediaStreamTrack(V8MediaStreamTrack::toImpl(object));
-    }
-    return WebDOMMediaStreamTrack(nullptr);
+void WebDOMMediaStreamTrack::reset() {
+  m_private.reset();
 }
 
-void WebDOMMediaStreamTrack::reset()
-{
-    m_private.reset();
+void WebDOMMediaStreamTrack::assign(const WebDOMMediaStreamTrack& b) {
+  m_private = b.m_private;
 }
 
-void WebDOMMediaStreamTrack::assign(const WebDOMMediaStreamTrack& b)
-{
-    m_private = b.m_private;
+WebMediaStreamTrack WebDOMMediaStreamTrack::component() const {
+  return WebMediaStreamTrack(m_private->component());
 }
 
-WebMediaStreamTrack WebDOMMediaStreamTrack::component() const
-{
-    return WebMediaStreamTrack(m_private->component());
-}
-
-} // namespace blink
+}  // namespace blink

@@ -29,54 +29,43 @@
 
 namespace blink {
 
-IDBDatabaseCallbacks* IDBDatabaseCallbacks::create()
-{
-    return new IDBDatabaseCallbacks();
+IDBDatabaseCallbacks* IDBDatabaseCallbacks::create() {
+  return new IDBDatabaseCallbacks();
 }
 
-IDBDatabaseCallbacks::IDBDatabaseCallbacks()
-    : m_database(nullptr)
-{
+IDBDatabaseCallbacks::IDBDatabaseCallbacks() : m_database(nullptr) {}
+
+IDBDatabaseCallbacks::~IDBDatabaseCallbacks() {}
+
+DEFINE_TRACE(IDBDatabaseCallbacks) {
+  visitor->trace(m_database);
 }
 
-IDBDatabaseCallbacks::~IDBDatabaseCallbacks()
-{
+void IDBDatabaseCallbacks::onForcedClose() {
+  if (m_database)
+    m_database->forceClose();
 }
 
-DEFINE_TRACE(IDBDatabaseCallbacks)
-{
-    visitor->trace(m_database);
+void IDBDatabaseCallbacks::onVersionChange(int64_t oldVersion,
+                                           int64_t newVersion) {
+  if (m_database)
+    m_database->onVersionChange(oldVersion, newVersion);
 }
 
-void IDBDatabaseCallbacks::onForcedClose()
-{
-    if (m_database)
-        m_database->forceClose();
+void IDBDatabaseCallbacks::connect(IDBDatabase* database) {
+  ASSERT(!m_database);
+  ASSERT(database);
+  m_database = database;
 }
 
-void IDBDatabaseCallbacks::onVersionChange(int64_t oldVersion, int64_t newVersion)
-{
-    if (m_database)
-        m_database->onVersionChange(oldVersion, newVersion);
+void IDBDatabaseCallbacks::onAbort(int64_t transactionId, DOMException* error) {
+  if (m_database)
+    m_database->onAbort(transactionId, error);
 }
 
-void IDBDatabaseCallbacks::connect(IDBDatabase* database)
-{
-    ASSERT(!m_database);
-    ASSERT(database);
-    m_database = database;
+void IDBDatabaseCallbacks::onComplete(int64_t transactionId) {
+  if (m_database)
+    m_database->onComplete(transactionId);
 }
 
-void IDBDatabaseCallbacks::onAbort(int64_t transactionId, DOMException* error)
-{
-    if (m_database)
-        m_database->onAbort(transactionId, error);
-}
-
-void IDBDatabaseCallbacks::onComplete(int64_t transactionId)
-{
-    if (m_database)
-        m_database->onComplete(transactionId);
-}
-
-} // namespace blink
+}  // namespace blink

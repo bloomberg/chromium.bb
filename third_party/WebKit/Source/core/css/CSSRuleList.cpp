@@ -25,15 +25,11 @@
 
 namespace blink {
 
-StaticCSSRuleList::StaticCSSRuleList()
-{
+StaticCSSRuleList::StaticCSSRuleList() {}
+
+DEFINE_TRACE(StaticCSSRuleList) {
+  visitor->trace(m_rules);
+  CSSRuleList::trace(visitor);
 }
 
-DEFINE_TRACE(StaticCSSRuleList)
-{
-    visitor->trace(m_rules);
-    CSSRuleList::trace(visitor);
-}
-
-
-} // namespace blink
+}  // namespace blink

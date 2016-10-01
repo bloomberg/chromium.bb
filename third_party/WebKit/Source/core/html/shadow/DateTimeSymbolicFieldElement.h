@@ -33,49 +33,56 @@ namespace blink {
 
 // DateTimeSymbolicFieldElement represents non-numeric field of data time
 // format, such as: AM/PM, and month.
-class DateTimeSymbolicFieldElement : public DateTimeFieldElement, public TypeAheadDataSource {
-    WTF_MAKE_NONCOPYABLE(DateTimeSymbolicFieldElement);
+class DateTimeSymbolicFieldElement : public DateTimeFieldElement,
+                                     public TypeAheadDataSource {
+  WTF_MAKE_NONCOPYABLE(DateTimeSymbolicFieldElement);
 
-protected:
-    DateTimeSymbolicFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
-    size_t symbolsSize() const { return m_symbols.size(); }
-    bool hasValue() const final;
-    void initialize(const AtomicString& pseudo, const String& axHelpText);
-    void setEmptyValue(EventBehavior = DispatchNoEvent) final;
-    void setValueAsInteger(int, EventBehavior = DispatchNoEvent) final;
-    int valueAsInteger() const final;
+ protected:
+  DateTimeSymbolicFieldElement(Document&,
+                               FieldOwner&,
+                               const Vector<String>&,
+                               int minimum,
+                               int maximum);
+  size_t symbolsSize() const { return m_symbols.size(); }
+  bool hasValue() const final;
+  void initialize(const AtomicString& pseudo, const String& axHelpText);
+  void setEmptyValue(EventBehavior = DispatchNoEvent) final;
+  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) final;
+  int valueAsInteger() const final;
 
-private:
-    static const int invalidIndex = -1;
+ private:
+  static const int invalidIndex = -1;
 
-    String visibleEmptyValue() const;
-    bool indexIsInRange(int index) const { return index >= m_minimumIndex && index <= m_maximumIndex; }
+  String visibleEmptyValue() const;
+  bool indexIsInRange(int index) const {
+    return index >= m_minimumIndex && index <= m_maximumIndex;
+  }
 
-    // DateTimeFieldElement functions.
-    void handleKeyboardEvent(KeyboardEvent*) final;
-    float maximumWidth(const ComputedStyle&) override;
-    void stepDown() final;
-    void stepUp() final;
-    String value() const final;
-    int valueForARIAValueNow() const final;
-    String visibleValue() const final;
+  // DateTimeFieldElement functions.
+  void handleKeyboardEvent(KeyboardEvent*) final;
+  float maximumWidth(const ComputedStyle&) override;
+  void stepDown() final;
+  void stepUp() final;
+  String value() const final;
+  int valueForARIAValueNow() const final;
+  String visibleValue() const final;
 
-    // TypeAheadDataSource functions.
-    int indexOfSelectedOption() const override;
-    int optionCount() const override;
-    String optionAtIndex(int index) const override;
+  // TypeAheadDataSource functions.
+  int indexOfSelectedOption() const override;
+  int optionCount() const override;
+  String optionAtIndex(int index) const override;
 
-    const Vector<String> m_symbols;
+  const Vector<String> m_symbols;
 
-    // We use AtomicString to share visible empty value among multiple
-    // DateTimeEditElements in the page.
-    const AtomicString m_visibleEmptyValue;
-    int m_selectedIndex;
-    TypeAhead m_typeAhead;
-    const int m_minimumIndex;
-    const int m_maximumIndex;
+  // We use AtomicString to share visible empty value among multiple
+  // DateTimeEditElements in the page.
+  const AtomicString m_visibleEmptyValue;
+  int m_selectedIndex;
+  TypeAhead m_typeAhead;
+  const int m_minimumIndex;
+  const int m_maximumIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -34,29 +34,33 @@
 namespace blink {
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0, const FloatPoint& p1)
-    : m_gradient(Gradient::create(p0, p1))
-{
+    : m_gradient(Gradient::create(p0, p1)) {}
+
+CanvasGradient::CanvasGradient(const FloatPoint& p0,
+                               float r0,
+                               const FloatPoint& p1,
+                               float r1)
+    : m_gradient(Gradient::create(p0, r0, p1, r1)) {}
+
+void CanvasGradient::addColorStop(float value,
+                                  const String& colorString,
+                                  ExceptionState& exceptionState) {
+  if (!(value >= 0 && value <= 1.0f)) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The provided value (" + String::number(value) +
+                            ") is outside the range (0.0, 1.0).");
+    return;
+  }
+
+  Color color = 0;
+  if (!parseColorOrCurrentColor(color, colorString, 0 /*canvas*/)) {
+    exceptionState.throwDOMException(SyntaxError,
+                                     "The value provided ('" + colorString +
+                                         "') could not be parsed as a color.");
+    return;
+  }
+
+  m_gradient->addColorStop(value, color);
 }
 
-CanvasGradient::CanvasGradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1)
-    : m_gradient(Gradient::create(p0, r0, p1, r1))
-{
-}
-
-void CanvasGradient::addColorStop(float value, const String& colorString, ExceptionState& exceptionState)
-{
-    if (!(value >= 0 && value <= 1.0f)) {
-        exceptionState.throwDOMException(IndexSizeError, "The provided value (" + String::number(value) + ") is outside the range (0.0, 1.0).");
-        return;
-    }
-
-    Color color = 0;
-    if (!parseColorOrCurrentColor(color, colorString, 0 /*canvas*/)) {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + colorString + "') could not be parsed as a color.");
-        return;
-    }
-
-    m_gradient->addColorStop(value, color);
-}
-
-} // namespace blink
+}  // namespace blink

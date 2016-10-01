@@ -44,65 +44,66 @@ class SVGTransformTearOff;
 // SVGMatrixTearOff wraps a AffineTransform for Javascript.
 // Its instance can either hold a static value, or this can be teared off from |SVGTransform.matrix|.
 // This does not derive from SVGPropertyTearOff, as its instances are never tied to an animated property nor an XML attribute.
-class CORE_EXPORT SVGMatrixTearOff final : public GarbageCollected<SVGMatrixTearOff>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGMatrixTearOff* create(const AffineTransform& value)
-    {
-        return new SVGMatrixTearOff(value);
-    }
+class CORE_EXPORT SVGMatrixTearOff final
+    : public GarbageCollected<SVGMatrixTearOff>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static SVGMatrixTearOff* create(SVGTransformTearOff* target)
-    {
-        return new SVGMatrixTearOff(target);
-    }
+ public:
+  static SVGMatrixTearOff* create(const AffineTransform& value) {
+    return new SVGMatrixTearOff(value);
+  }
 
-    double a() { return value().a(); }
-    double b() { return value().b(); }
-    double c() { return value().c(); }
-    double d() { return value().d(); }
-    double e() { return value().e(); }
-    double f() { return value().f(); }
+  static SVGMatrixTearOff* create(SVGTransformTearOff* target) {
+    return new SVGMatrixTearOff(target);
+  }
 
-    void setA(double, ExceptionState&);
-    void setB(double, ExceptionState&);
-    void setC(double, ExceptionState&);
-    void setD(double, ExceptionState&);
-    void setE(double, ExceptionState&);
-    void setF(double, ExceptionState&);
+  double a() { return value().a(); }
+  double b() { return value().b(); }
+  double c() { return value().c(); }
+  double d() { return value().d(); }
+  double e() { return value().e(); }
+  double f() { return value().f(); }
 
-    SVGMatrixTearOff* translate(double tx, double ty);
-    SVGMatrixTearOff* scale(double);
-    SVGMatrixTearOff* scaleNonUniform(double sx, double sy);
-    SVGMatrixTearOff* rotate(double);
-    SVGMatrixTearOff* flipX();
-    SVGMatrixTearOff* flipY();
-    SVGMatrixTearOff* skewX(double);
-    SVGMatrixTearOff* skewY(double);
-    SVGMatrixTearOff* multiply(SVGMatrixTearOff*);
-    SVGMatrixTearOff* inverse(ExceptionState&);
-    SVGMatrixTearOff* rotateFromVector(double x, double y, ExceptionState&);
+  void setA(double, ExceptionState&);
+  void setB(double, ExceptionState&);
+  void setC(double, ExceptionState&);
+  void setD(double, ExceptionState&);
+  void setE(double, ExceptionState&);
+  void setF(double, ExceptionState&);
 
-    SVGTransformTearOff* contextTransform() { return m_contextTransform; }
+  SVGMatrixTearOff* translate(double tx, double ty);
+  SVGMatrixTearOff* scale(double);
+  SVGMatrixTearOff* scaleNonUniform(double sx, double sy);
+  SVGMatrixTearOff* rotate(double);
+  SVGMatrixTearOff* flipX();
+  SVGMatrixTearOff* flipY();
+  SVGMatrixTearOff* skewX(double);
+  SVGMatrixTearOff* skewY(double);
+  SVGMatrixTearOff* multiply(SVGMatrixTearOff*);
+  SVGMatrixTearOff* inverse(ExceptionState&);
+  SVGMatrixTearOff* rotateFromVector(double x, double y, ExceptionState&);
 
-    const AffineTransform& value() const;
+  SVGTransformTearOff* contextTransform() { return m_contextTransform; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AffineTransform& value() const;
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit SVGMatrixTearOff(const AffineTransform&);
-    explicit SVGMatrixTearOff(SVGTransformTearOff*);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    AffineTransform* mutableValue();
-    void commitChange();
+ private:
+  explicit SVGMatrixTearOff(const AffineTransform&);
+  explicit SVGMatrixTearOff(SVGTransformTearOff*);
 
-    AffineTransform m_staticValue;
+  AffineTransform* mutableValue();
+  void commitChange();
 
-    Member<SVGTransformTearOff> m_contextTransform;
+  AffineTransform m_staticValue;
+
+  Member<SVGTransformTearOff> m_contextTransform;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGMatrixTearOff_h
+#endif  // SVGMatrixTearOff_h

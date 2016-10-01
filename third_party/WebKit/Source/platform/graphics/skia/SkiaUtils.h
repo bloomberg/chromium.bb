@@ -51,16 +51,18 @@ class GraphicsContext;
 /**** constants ****/
 
 enum {
-    // Firefox limits width/height to 32767 pixels, but slows down dramatically before it
-    // reaches that limit. We limit by area instead, giving us larger maximum dimensions,
-    // in exchange for a smaller maximum canvas size.
-    kMaxCanvasArea = 32768 * 8192, // Maximum canvas area in CSS pixels
+  // Firefox limits width/height to 32767 pixels, but slows down dramatically before it
+  // reaches that limit. We limit by area instead, giving us larger maximum dimensions,
+  // in exchange for a smaller maximum canvas size.
+  kMaxCanvasArea = 32768 * 8192,  // Maximum canvas area in CSS pixels
 
-    // In Skia, we will also limit width/height to 32767.
-    kMaxSkiaDim = 32767 // Maximum width/height in CSS pixels.
+  // In Skia, we will also limit width/height to 32767.
+  kMaxSkiaDim = 32767  // Maximum width/height in CSS pixels.
 };
 
-SkXfermode::Mode PLATFORM_EXPORT WebCoreCompositeToSkiaComposite(CompositeOperator, WebBlendMode = WebBlendModeNormal);
+SkXfermode::Mode PLATFORM_EXPORT
+    WebCoreCompositeToSkiaComposite(CompositeOperator,
+                                    WebBlendMode = WebBlendModeNormal);
 CompositeOperator PLATFORM_EXPORT compositeOperatorFromSkia(SkXfermode::Mode);
 WebBlendMode PLATFORM_EXPORT blendModeFromSkia(SkXfermode::Mode);
 
@@ -76,70 +78,65 @@ SkColor PLATFORM_EXPORT scaleAlpha(SkColor, float);
 SkColor PLATFORM_EXPORT scaleAlpha(SkColor, int);
 
 // Skia has problems when passed infinite, etc floats, filter them to 0.
-inline SkScalar WebCoreFloatToSkScalar(float f)
-{
-    return SkFloatToScalar(std::isfinite(f) ? f : 0);
+inline SkScalar WebCoreFloatToSkScalar(float f) {
+  return SkFloatToScalar(std::isfinite(f) ? f : 0);
 }
 
-inline SkScalar WebCoreDoubleToSkScalar(double d)
-{
-    return SkDoubleToScalar(std::isfinite(d) ? d : 0);
+inline SkScalar WebCoreDoubleToSkScalar(double d) {
+  return SkDoubleToScalar(std::isfinite(d) ? d : 0);
 }
 
-inline bool WebCoreFloatNearlyEqual(float a, float b)
-{
-    return SkScalarNearlyEqual(WebCoreFloatToSkScalar(a), WebCoreFloatToSkScalar(b));
+inline bool WebCoreFloatNearlyEqual(float a, float b) {
+  return SkScalarNearlyEqual(WebCoreFloatToSkScalar(a),
+                             WebCoreFloatToSkScalar(b));
 }
 
-inline SkPath::FillType WebCoreWindRuleToSkFillType(WindRule rule)
-{
-    return static_cast<SkPath::FillType>(rule);
+inline SkPath::FillType WebCoreWindRuleToSkFillType(WindRule rule) {
+  return static_cast<SkPath::FillType>(rule);
 }
 
-inline WindRule SkFillTypeToWindRule(SkPath::FillType fillType)
-{
-    switch (fillType) {
+inline WindRule SkFillTypeToWindRule(SkPath::FillType fillType) {
+  switch (fillType) {
     case SkPath::kWinding_FillType:
     case SkPath::kEvenOdd_FillType:
-        return static_cast<WindRule>(fillType);
+      return static_cast<WindRule>(fillType);
     default:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    return RULE_NONZERO;
+      ASSERT_NOT_REACHED();
+      break;
+  }
+  return RULE_NONZERO;
 }
 
 SkMatrix PLATFORM_EXPORT affineTransformToSkMatrix(const AffineTransform&);
 
 bool nearlyIntegral(float value);
 
-InterpolationQuality limitInterpolationQuality(const GraphicsContext&, InterpolationQuality resampling);
+InterpolationQuality limitInterpolationQuality(const GraphicsContext&,
+                                               InterpolationQuality resampling);
 
-InterpolationQuality computeInterpolationQuality(
-    float srcWidth,
-    float srcHeight,
-    float destWidth,
-    float destHeight,
-    bool isDataComplete = true);
+InterpolationQuality computeInterpolationQuality(float srcWidth,
+                                                 float srcHeight,
+                                                 float destWidth,
+                                                 float destHeight,
+                                                 bool isDataComplete = true);
 
 // This replicates the old skia behavior when it used to take radius for blur. Now it takes sigma.
-inline SkScalar skBlurRadiusToSigma(SkScalar radius)
-{
-    SkASSERT(radius >= 0);
-    if (radius == 0)
-        return 0.0f;
-    return 0.288675f * radius + 0.5f;
+inline SkScalar skBlurRadiusToSigma(SkScalar radius) {
+  SkASSERT(radius >= 0);
+  if (radius == 0)
+    return 0.0f;
+  return 0.288675f * radius + 0.5f;
 }
 
-template<typename PrimitiveType>
+template <typename PrimitiveType>
 void drawPlatformFocusRing(const PrimitiveType&, SkCanvas*, SkColor, int width);
 
 // TODO(fmalita): remove in favor of direct SrcRectConstraint use.
-inline SkCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(Image::ImageClampingMode clampMode)
-{
-    return clampMode == Image::ClampImageToSourceRect
-        ? SkCanvas::kStrict_SrcRectConstraint
-        : SkCanvas::kFast_SrcRectConstraint;
+inline SkCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(
+    Image::ImageClampingMode clampMode) {
+  return clampMode == Image::ClampImageToSourceRect
+             ? SkCanvas::kStrict_SrcRectConstraint
+             : SkCanvas::kFast_SrcRectConstraint;
 }
 
 // Skia's smart pointer APIs are preferable over their legacy raw pointer counterparts.
@@ -176,6 +173,6 @@ inline SkCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(Image
 //     sk_sp<SkShader> shader = SkShader::MakeFoo(...);
 //     paint.setShader(shader);
 
-} // namespace blink
+}  // namespace blink
 
 #endif  // SkiaUtils_h

@@ -11,53 +11,48 @@
 namespace blink {
 
 class DataObjectTest : public ::testing::Test {
-public:
-    DataObjectTest()
-        : m_dataObject(DataObject::create())
-    {
-    }
+ public:
+  DataObjectTest() : m_dataObject(DataObject::create()) {}
 
-protected:
-    Persistent<DataObject> m_dataObject;
+ protected:
+  Persistent<DataObject> m_dataObject;
 };
 
-TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle)
-{
-    String filePath = testing::blinkRootDir();
-    filePath.append("/Source/core/clipboard/DataObjectTest.cpp");
+TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle) {
+  String filePath = testing::blinkRootDir();
+  filePath.append("/Source/core/clipboard/DataObjectTest.cpp");
 
-    m_dataObject->addFilename(filePath, String());
-    EXPECT_EQ(1U, m_dataObject->length());
+  m_dataObject->addFilename(filePath, String());
+  EXPECT_EQ(1U, m_dataObject->length());
 
-    DataObjectItem* item = m_dataObject->item(0);
-    EXPECT_EQ(DataObjectItem::FileKind, item->kind());
+  DataObjectItem* item = m_dataObject->item(0);
+  EXPECT_EQ(DataObjectItem::FileKind, item->kind());
 
-    Blob* blob = item->getAsFile();
-    ASSERT_TRUE(blob->isFile());
-    File* file = toFile(blob);
-    EXPECT_TRUE(file->hasBackingFile());
-    EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
-    EXPECT_EQ(filePath, file->path());
+  Blob* blob = item->getAsFile();
+  ASSERT_TRUE(blob->isFile());
+  File* file = toFile(blob);
+  EXPECT_TRUE(file->hasBackingFile());
+  EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
+  EXPECT_EQ(filePath, file->path());
 }
 
-TEST_F(DataObjectTest, addItemWithFilenameAndTitle)
-{
-    String filePath = testing::blinkRootDir();
-    filePath.append("/Source/core/clipboard/DataObjectTest.cpp");
+TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
+  String filePath = testing::blinkRootDir();
+  filePath.append("/Source/core/clipboard/DataObjectTest.cpp");
 
-    m_dataObject->addFilename(filePath, "name.cpp");
-    EXPECT_EQ(1U, m_dataObject->length());
+  m_dataObject->addFilename(filePath, "name.cpp");
+  EXPECT_EQ(1U, m_dataObject->length());
 
-    DataObjectItem* item = m_dataObject->item(0);
-    EXPECT_EQ(DataObjectItem::FileKind, item->kind());
+  DataObjectItem* item = m_dataObject->item(0);
+  EXPECT_EQ(DataObjectItem::FileKind, item->kind());
 
-    Blob* blob = item->getAsFile();
-    ASSERT_TRUE(blob->isFile());
-    File* file = toFile(blob);
-    EXPECT_TRUE(file->hasBackingFile());
-    EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
-    EXPECT_EQ(filePath, file->path());
-    EXPECT_EQ("name.cpp", file->name());
+  Blob* blob = item->getAsFile();
+  ASSERT_TRUE(blob->isFile());
+  File* file = toFile(blob);
+  EXPECT_TRUE(file->hasBackingFile());
+  EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
+  EXPECT_EQ(filePath, file->path());
+  EXPECT_EQ("name.cpp", file->name());
 }
 
-} // namespace blink
+}  // namespace blink

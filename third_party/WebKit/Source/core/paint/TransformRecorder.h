@@ -15,17 +15,20 @@ class GraphicsContext;
 class AffineTransform;
 
 class CORE_EXPORT TransformRecorder {
-    STACK_ALLOCATED();
-public:
-    TransformRecorder(GraphicsContext&, const DisplayItemClient&, const AffineTransform&);
-    ~TransformRecorder();
+  STACK_ALLOCATED();
 
-private:
-    GraphicsContext& m_context;
-    const DisplayItemClient& m_client;
-    bool m_skipRecordingForIdentityTransform;
+ public:
+  TransformRecorder(GraphicsContext&,
+                    const DisplayItemClient&,
+                    const AffineTransform&);
+  ~TransformRecorder();
+
+ private:
+  GraphicsContext& m_context;
+  const DisplayItemClient& m_client;
+  bool m_skipRecordingForIdentityTransform;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TransformRecorder_h
+#endif  // TransformRecorder_h

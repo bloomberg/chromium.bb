@@ -11,57 +11,51 @@
 namespace blink {
 
 // static
-MediaMetadata* MediaMetadata::create(ExecutionContext* context, const MediaMetadataInit& metadata)
-{
-    return new MediaMetadata(context, metadata);
+MediaMetadata* MediaMetadata::create(ExecutionContext* context,
+                                     const MediaMetadataInit& metadata) {
+  return new MediaMetadata(context, metadata);
 }
 
-MediaMetadata::MediaMetadata(ExecutionContext* context, const MediaMetadataInit& metadata)
-{
-    m_title = metadata.title();
-    m_artist = metadata.artist();
-    m_album = metadata.album();
-    for (const auto &artwork : metadata.artwork())
-        m_artwork.append(MediaArtwork::create(context, artwork));
+MediaMetadata::MediaMetadata(ExecutionContext* context,
+                             const MediaMetadataInit& metadata) {
+  m_title = metadata.title();
+  m_artist = metadata.artist();
+  m_album = metadata.album();
+  for (const auto& artwork : metadata.artwork())
+    m_artwork.append(MediaArtwork::create(context, artwork));
 }
 
-String MediaMetadata::title() const
-{
-    return m_title;
+String MediaMetadata::title() const {
+  return m_title;
 }
 
-String MediaMetadata::artist() const
-{
-    return m_artist;
+String MediaMetadata::artist() const {
+  return m_artist;
 }
 
-String MediaMetadata::album() const
-{
-    return m_album;
+String MediaMetadata::album() const {
+  return m_album;
 }
 
-const HeapVector<Member<MediaArtwork>>& MediaMetadata::artwork() const
-{
-    return m_artwork;
+const HeapVector<Member<MediaArtwork>>& MediaMetadata::artwork() const {
+  return m_artwork;
 }
 
-MediaMetadata::operator WebMediaMetadata() const
-{
-    WebMediaMetadata webMetadata;
-    webMetadata.title = m_title;
-    webMetadata.artist = m_artist;
-    webMetadata.album = m_album;
-    WebVector<WebMediaArtwork> webArtwork(m_artwork.size());
-    for (size_t i = 0; i < m_artwork.size(); ++i) {
-        webArtwork[i] = *m_artwork[i]->data();
-    }
-    webMetadata.artwork.swap(webArtwork);
-    return webMetadata;
+MediaMetadata::operator WebMediaMetadata() const {
+  WebMediaMetadata webMetadata;
+  webMetadata.title = m_title;
+  webMetadata.artist = m_artist;
+  webMetadata.album = m_album;
+  WebVector<WebMediaArtwork> webArtwork(m_artwork.size());
+  for (size_t i = 0; i < m_artwork.size(); ++i) {
+    webArtwork[i] = *m_artwork[i]->data();
+  }
+  webMetadata.artwork.swap(webArtwork);
+  return webMetadata;
 }
 
-DEFINE_TRACE(MediaMetadata)
-{
-    visitor->trace(m_artwork);
+DEFINE_TRACE(MediaMetadata) {
+  visitor->trace(m_artwork);
 }
 
-} // namespace blink
+}  // namespace blink

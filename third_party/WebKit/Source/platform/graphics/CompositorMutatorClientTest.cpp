@@ -19,41 +19,39 @@ namespace blink {
 namespace {
 
 class StubCompositorMutator : public CompositorMutator {
-public:
-    StubCompositorMutator() {}
+ public:
+  StubCompositorMutator() {}
 
-    bool mutate(double monotonicTimeNow,
-        CompositorMutableStateProvider* stateProvider) override
-    {
-        return false;
-    }
+  bool mutate(double monotonicTimeNow,
+              CompositorMutableStateProvider* stateProvider) override {
+    return false;
+  }
 };
 
 class MockCompositoMutationsTarget : public CompositorMutationsTarget {
-public:
-    MOCK_METHOD1(applyMutations, void(CompositorMutations*));
+ public:
+  MOCK_METHOD1(applyMutations, void(CompositorMutations*));
 };
 
-TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply)
-{
-    MockCompositoMutationsTarget target;
+TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply) {
+  MockCompositoMutationsTarget target;
 
-    CompositorMutatorClient client(new StubCompositorMutator, &target);
-    std::unique_ptr<CompositorMutations> mutations = wrapUnique(new CompositorMutations());
-    client.setMutationsForTesting(std::move(mutations));
+  CompositorMutatorClient client(new StubCompositorMutator, &target);
+  std::unique_ptr<CompositorMutations> mutations =
+      wrapUnique(new CompositorMutations());
+  client.setMutationsForTesting(std::move(mutations));
 
-    EXPECT_CALL(target, applyMutations(_));
-    client.TakeMutations().Run();
+  EXPECT_CALL(target, applyMutations(_));
+  client.TakeMutations().Run();
 }
 
-TEST(CompositorMutatorClient, CallbackForNullMutationsShouldBeNoop)
-{
-    MockCompositoMutationsTarget target;
-    CompositorMutatorClient client(new StubCompositorMutator, &target);
+TEST(CompositorMutatorClient, CallbackForNullMutationsShouldBeNoop) {
+  MockCompositoMutationsTarget target;
+  CompositorMutatorClient client(new StubCompositorMutator, &target);
 
-    EXPECT_CALL(target, applyMutations(_)).Times(0);
-    EXPECT_TRUE(client.TakeMutations().is_null());
+  EXPECT_CALL(target, applyMutations(_)).Times(0);
+  EXPECT_TRUE(client.TakeMutations().is_null());
 }
 
-} // namespace
-} // namespace blink
+}  // namespace
+}  // namespace blink

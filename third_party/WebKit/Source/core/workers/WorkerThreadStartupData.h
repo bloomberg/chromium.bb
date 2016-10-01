@@ -50,57 +50,86 @@ namespace blink {
 class WorkerClients;
 
 class CORE_EXPORT WorkerThreadStartupData final {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
-    USING_FAST_MALLOC(WorkerThreadStartupData);
-public:
-    static std::unique_ptr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, std::unique_ptr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const String& referrerPolicy, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, std::unique_ptr<WorkerSettings> workerSettings, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
-    {
-        return wrapUnique(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode, contentSecurityPolicyHeaders, referrerPolicy, starterOrigin, workerClients, addressSpace, originTrialTokens, std::move(workerSettings), v8CacheOptions));
-    }
+  WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
+  USING_FAST_MALLOC(WorkerThreadStartupData);
 
-    ~WorkerThreadStartupData();
+ public:
+  static std::unique_ptr<WorkerThreadStartupData> create(
+      const KURL& scriptURL,
+      const String& userAgent,
+      const String& sourceCode,
+      std::unique_ptr<Vector<char>> cachedMetaData,
+      WorkerThreadStartMode startMode,
+      const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders,
+      const String& referrerPolicy,
+      const SecurityOrigin* starterOrigin,
+      WorkerClients* workerClients,
+      WebAddressSpace addressSpace,
+      const Vector<String>* originTrialTokens,
+      std::unique_ptr<WorkerSettings> workerSettings,
+      V8CacheOptions v8CacheOptions = V8CacheOptionsDefault) {
+    return wrapUnique(new WorkerThreadStartupData(
+        scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode,
+        contentSecurityPolicyHeaders, referrerPolicy, starterOrigin,
+        workerClients, addressSpace, originTrialTokens,
+        std::move(workerSettings), v8CacheOptions));
+  }
 
-    KURL m_scriptURL;
-    String m_userAgent;
-    String m_sourceCode;
-    std::unique_ptr<Vector<char>> m_cachedMetaData;
-    WorkerThreadStartMode m_startMode;
-    std::unique_ptr<Vector<CSPHeaderAndType>> m_contentSecurityPolicyHeaders;
-    String m_referrerPolicy;
-    std::unique_ptr<Vector<String>> m_originTrialTokens;
+  ~WorkerThreadStartupData();
 
+  KURL m_scriptURL;
+  String m_userAgent;
+  String m_sourceCode;
+  std::unique_ptr<Vector<char>> m_cachedMetaData;
+  WorkerThreadStartMode m_startMode;
+  std::unique_ptr<Vector<CSPHeaderAndType>> m_contentSecurityPolicyHeaders;
+  String m_referrerPolicy;
+  std::unique_ptr<Vector<String>> m_originTrialTokens;
 
-    // The SecurityOrigin of the Document creating a Worker may have
-    // been configured with extra policy privileges when it was created
-    // (e.g., enforce path-based file:// origins.)
-    // To ensure that these are transferred to the origin of a new worker
-    // global scope, supply the Document's SecurityOrigin as the
-    // 'starter origin'.
-    //
-    // See SecurityOrigin::transferPrivilegesFrom() for details on what
-    // privileges are transferred.
-    std::unique_ptr<SecurityOrigin::PrivilegeData> m_starterOriginPrivilegeData;
+  // The SecurityOrigin of the Document creating a Worker may have
+  // been configured with extra policy privileges when it was created
+  // (e.g., enforce path-based file:// origins.)
+  // To ensure that these are transferred to the origin of a new worker
+  // global scope, supply the Document's SecurityOrigin as the
+  // 'starter origin'.
+  //
+  // See SecurityOrigin::transferPrivilegesFrom() for details on what
+  // privileges are transferred.
+  std::unique_ptr<SecurityOrigin::PrivilegeData> m_starterOriginPrivilegeData;
 
-    // This object is created and initialized on the thread creating
-    // a new worker context, but ownership of it and this WorkerThreadStartupData
-    // structure is passed along to the new worker thread, where it is finalized.
-    //
-    // Hence, CrossThreadPersistent<> is required to allow finalization
-    // to happen on a thread different than the thread creating the
-    // persistent reference. If the worker thread creation context
-    // supplies no extra 'clients', m_workerClients can be left as empty/null.
-    CrossThreadPersistent<WorkerClients> m_workerClients;
+  // This object is created and initialized on the thread creating
+  // a new worker context, but ownership of it and this WorkerThreadStartupData
+  // structure is passed along to the new worker thread, where it is finalized.
+  //
+  // Hence, CrossThreadPersistent<> is required to allow finalization
+  // to happen on a thread different than the thread creating the
+  // persistent reference. If the worker thread creation context
+  // supplies no extra 'clients', m_workerClients can be left as empty/null.
+  CrossThreadPersistent<WorkerClients> m_workerClients;
 
-    WebAddressSpace m_addressSpace;
+  WebAddressSpace m_addressSpace;
 
-    std::unique_ptr<WorkerSettings> m_workerSettings;
+  std::unique_ptr<WorkerSettings> m_workerSettings;
 
-    V8CacheOptions m_v8CacheOptions;
+  V8CacheOptions m_v8CacheOptions;
 
-private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, std::unique_ptr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const String& referrerPolicy, const SecurityOrigin*, WorkerClients*, WebAddressSpace, const Vector<String>* originTrialTokens, std::unique_ptr<WorkerSettings>, V8CacheOptions);
+ private:
+  WorkerThreadStartupData(
+      const KURL& scriptURL,
+      const String& userAgent,
+      const String& sourceCode,
+      std::unique_ptr<Vector<char>> cachedMetaData,
+      WorkerThreadStartMode,
+      const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders,
+      const String& referrerPolicy,
+      const SecurityOrigin*,
+      WorkerClients*,
+      WebAddressSpace,
+      const Vector<String>* originTrialTokens,
+      std::unique_ptr<WorkerSettings>,
+      V8CacheOptions);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerThreadStartupData_h
+#endif  // WorkerThreadStartupData_h

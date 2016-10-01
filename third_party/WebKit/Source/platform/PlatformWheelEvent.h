@@ -38,77 +38,78 @@ namespace blink {
 // The ScrollByPageWheelEvent indicates that the wheel event should scroll an entire page. In this case WebCore's built in paging behavior is used to page
 // up and down (you get the same behavior as if the user was clicking in a scrollbar track to page up or page down).
 enum PlatformWheelEventGranularity {
-    ScrollByPageWheelEvent,
-    ScrollByPixelWheelEvent,
+  ScrollByPageWheelEvent,
+  ScrollByPixelWheelEvent,
 };
 
 #if OS(MACOSX)
 enum PlatformWheelEventPhase {
-    PlatformWheelEventPhaseNone        = 0,
-    PlatformWheelEventPhaseBegan       = 1 << 0,
-    PlatformWheelEventPhaseStationary  = 1 << 1,
-    PlatformWheelEventPhaseChanged     = 1 << 2,
-    PlatformWheelEventPhaseEnded       = 1 << 3,
-    PlatformWheelEventPhaseCancelled   = 1 << 4,
-    PlatformWheelEventPhaseMayBegin    = 1 << 5,
+  PlatformWheelEventPhaseNone = 0,
+  PlatformWheelEventPhaseBegan = 1 << 0,
+  PlatformWheelEventPhaseStationary = 1 << 1,
+  PlatformWheelEventPhaseChanged = 1 << 2,
+  PlatformWheelEventPhaseEnded = 1 << 3,
+  PlatformWheelEventPhaseCancelled = 1 << 4,
+  PlatformWheelEventPhaseMayBegin = 1 << 5,
 };
 #endif
 
 class PlatformWheelEvent : public PlatformMouseEvent {
-public:
-    PlatformWheelEvent()
-        : PlatformMouseEvent(PlatformEvent::Wheel)
-        , m_deltaX(0)
-        , m_deltaY(0)
-        , m_wheelTicksX(0)
-        , m_wheelTicksY(0)
-        , m_granularity(ScrollByPixelWheelEvent)
-        , m_hasPreciseScrollingDeltas(false)
-        , m_resendingPluginId(-1)
-        , m_railsMode(RailsModeFree)
-        , m_dispatchType(Blocking)
+ public:
+  PlatformWheelEvent()
+      : PlatformMouseEvent(PlatformEvent::Wheel),
+        m_deltaX(0),
+        m_deltaY(0),
+        m_wheelTicksX(0),
+        m_wheelTicksY(0),
+        m_granularity(ScrollByPixelWheelEvent),
+        m_hasPreciseScrollingDeltas(false),
+        m_resendingPluginId(-1),
+        m_railsMode(RailsModeFree),
+        m_dispatchType(Blocking)
 #if OS(MACOSX)
-        , m_phase(PlatformWheelEventPhaseNone)
-        , m_momentumPhase(PlatformWheelEventPhaseNone)
+        ,
+        m_phase(PlatformWheelEventPhaseNone),
+        m_momentumPhase(PlatformWheelEventPhaseNone)
 #endif
-    {
-    }
+  {
+  }
 
-    float deltaX() const { return m_deltaX; }
-    float deltaY() const { return m_deltaY; }
+  float deltaX() const { return m_deltaX; }
+  float deltaY() const { return m_deltaY; }
 
-    float wheelTicksX() const { return m_wheelTicksX; }
-    float wheelTicksY() const { return m_wheelTicksY; }
+  float wheelTicksX() const { return m_wheelTicksX; }
+  float wheelTicksY() const { return m_wheelTicksY; }
 
-    PlatformWheelEventGranularity granularity() const { return m_granularity; }
+  PlatformWheelEventGranularity granularity() const { return m_granularity; }
 
-    bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
-    void setHasPreciseScrollingDeltas(bool b) { m_hasPreciseScrollingDeltas = b; }
-    int resendingPluginId() const { return m_resendingPluginId; }
-    RailsMode getRailsMode() const { return m_railsMode; }
-    DispatchType dispatchType() const { return m_dispatchType; }
-    bool cancelable() const { return m_dispatchType == PlatformEvent::Blocking; }
+  bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
+  void setHasPreciseScrollingDeltas(bool b) { m_hasPreciseScrollingDeltas = b; }
+  int resendingPluginId() const { return m_resendingPluginId; }
+  RailsMode getRailsMode() const { return m_railsMode; }
+  DispatchType dispatchType() const { return m_dispatchType; }
+  bool cancelable() const { return m_dispatchType == PlatformEvent::Blocking; }
 #if OS(MACOSX)
-    PlatformWheelEventPhase phase() const { return m_phase; }
-    PlatformWheelEventPhase momentumPhase() const { return m_momentumPhase; }
+  PlatformWheelEventPhase phase() const { return m_phase; }
+  PlatformWheelEventPhase momentumPhase() const { return m_momentumPhase; }
 #endif
 
-protected:
-    float m_deltaX;
-    float m_deltaY;
-    float m_wheelTicksX;
-    float m_wheelTicksY;
-    PlatformWheelEventGranularity m_granularity;
-    bool m_hasPreciseScrollingDeltas;
-    int m_resendingPluginId;
-    RailsMode m_railsMode;
-    DispatchType m_dispatchType;
+ protected:
+  float m_deltaX;
+  float m_deltaY;
+  float m_wheelTicksX;
+  float m_wheelTicksY;
+  PlatformWheelEventGranularity m_granularity;
+  bool m_hasPreciseScrollingDeltas;
+  int m_resendingPluginId;
+  RailsMode m_railsMode;
+  DispatchType m_dispatchType;
 #if OS(MACOSX)
-    PlatformWheelEventPhase m_phase;
-    PlatformWheelEventPhase m_momentumPhase;
+  PlatformWheelEventPhase m_phase;
+  PlatformWheelEventPhase m_momentumPhase;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformWheelEvent_h
+#endif  // PlatformWheelEvent_h

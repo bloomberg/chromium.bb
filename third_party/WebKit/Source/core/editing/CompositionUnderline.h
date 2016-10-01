@@ -33,24 +33,29 @@
 namespace blink {
 
 class CORE_EXPORT CompositionUnderline {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    CompositionUnderline(unsigned startOffset, unsigned endOffset, const Color&, bool thick, const Color& backgroundColor);
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    unsigned startOffset() const { return m_startOffset; }
-    unsigned endOffset() const { return m_endOffset; }
-    const Color& color() const { return m_color; }
-    bool thick() const { return m_thick; }
-    const Color& backgroundColor() const { return m_backgroundColor; }
+ public:
+  CompositionUnderline(unsigned startOffset,
+                       unsigned endOffset,
+                       const Color&,
+                       bool thick,
+                       const Color& backgroundColor);
 
-private:
-    unsigned m_startOffset;
-    unsigned m_endOffset;
-    Color m_color;
-    bool m_thick;
-    Color m_backgroundColor;
+  unsigned startOffset() const { return m_startOffset; }
+  unsigned endOffset() const { return m_endOffset; }
+  const Color& color() const { return m_color; }
+  bool thick() const { return m_thick; }
+  const Color& backgroundColor() const { return m_backgroundColor; }
+
+ private:
+  unsigned m_startOffset;
+  unsigned m_endOffset;
+  Color m_color;
+  bool m_thick;
+  Color m_backgroundColor;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositionUnderline_h
+#endif  // CompositionUnderline_h

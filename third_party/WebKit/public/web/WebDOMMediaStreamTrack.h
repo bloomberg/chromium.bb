@@ -40,7 +40,8 @@
 
 namespace v8 {
 class Value;
-template <class T> class Local;
+template <class T>
+class Local;
 }
 
 namespace blink {
@@ -48,32 +49,31 @@ namespace blink {
 class MediaStreamTrack;
 
 class WebDOMMediaStreamTrack {
-public:
-    WebDOMMediaStreamTrack(const WebDOMMediaStreamTrack& b) { assign(b); }
-    ~WebDOMMediaStreamTrack() { reset(); }
+ public:
+  WebDOMMediaStreamTrack(const WebDOMMediaStreamTrack& b) { assign(b); }
+  ~WebDOMMediaStreamTrack() { reset(); }
 
-    WebDOMMediaStreamTrack& operator=(const WebDOMMediaStreamTrack& b)
-    {
-        assign(b);
-        return *this;
-    }
+  WebDOMMediaStreamTrack& operator=(const WebDOMMediaStreamTrack& b) {
+    assign(b);
+    return *this;
+  }
 
-    bool isNull() const { return m_private.isNull(); }
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT static WebDOMMediaStreamTrack fromV8Value(v8::Local<v8::Value>);
+  BLINK_EXPORT static WebDOMMediaStreamTrack fromV8Value(v8::Local<v8::Value>);
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebDOMMediaStreamTrack&);
-    BLINK_EXPORT WebMediaStreamTrack component() const;
+  BLINK_EXPORT void reset();
+  BLINK_EXPORT void assign(const WebDOMMediaStreamTrack&);
+  BLINK_EXPORT WebMediaStreamTrack component() const;
 
-private:
+ private:
 #if BLINK_IMPLEMENTATION
-    WebDOMMediaStreamTrack(MediaStreamTrack*);
+  WebDOMMediaStreamTrack(MediaStreamTrack*);
 #endif
 
-    WebPrivatePtr<MediaStreamTrack> m_private;
+  WebPrivatePtr<MediaStreamTrack> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

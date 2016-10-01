@@ -37,37 +37,32 @@ namespace blink {
 
 using namespace HTMLNames;
 
-InputType* TextInputType::create(HTMLInputElement& element)
-{
-    return new TextInputType(element);
+InputType* TextInputType::create(HTMLInputElement& element) {
+  return new TextInputType(element);
 }
 
-void TextInputType::countUsage()
-{
-    countUsageIfVisible(UseCounter::InputTypeText);
-    if (element().fastHasAttribute(maxlengthAttr))
-        countUsageIfVisible(UseCounter::InputTypeTextMaxLength);
-    const AtomicString& type = element().fastGetAttribute(typeAttr);
-    if (equalIgnoringCase(type, InputTypeNames::datetime))
-        countUsageIfVisible(UseCounter::InputTypeDateTimeFallback);
-    else if (equalIgnoringCase(type, InputTypeNames::week))
-        countUsageIfVisible(UseCounter::InputTypeWeekFallback);
+void TextInputType::countUsage() {
+  countUsageIfVisible(UseCounter::InputTypeText);
+  if (element().fastHasAttribute(maxlengthAttr))
+    countUsageIfVisible(UseCounter::InputTypeTextMaxLength);
+  const AtomicString& type = element().fastGetAttribute(typeAttr);
+  if (equalIgnoringCase(type, InputTypeNames::datetime))
+    countUsageIfVisible(UseCounter::InputTypeDateTimeFallback);
+  else if (equalIgnoringCase(type, InputTypeNames::week))
+    countUsageIfVisible(UseCounter::InputTypeWeekFallback);
 }
 
-const AtomicString& TextInputType::formControlType() const
-{
-    return InputTypeNames::text;
+const AtomicString& TextInputType::formControlType() const {
+  return InputTypeNames::text;
 }
 
-bool TextInputType::supportsInputModeAttribute() const
-{
-    return true;
+bool TextInputType::supportsInputModeAttribute() const {
+  return true;
 }
 
-const AtomicString& TextInputType::defaultAutocapitalize() const
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
-    return sentences;
+const AtomicString& TextInputType::defaultAutocapitalize() const {
+  DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
+  return sentences;
 }
 
-} // namespace blink
+}  // namespace blink

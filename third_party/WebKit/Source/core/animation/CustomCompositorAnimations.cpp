@@ -24,65 +24,85 @@ namespace {
 // Create keyframe effect with zero duration, fill mode forward, and two key
 // frames with same value. This corresponding animation is always running and by
 // updating the key frames we are able to control the applied value.
-static KeyframeEffect* createInfiniteKeyFrameEffect(Element& element, CSSPropertyID propertyId, PassRefPtr<AnimatableValue> value)
-{
-    AnimatableValueKeyframeVector keyframes(2);
-    keyframes[0] = AnimatableValueKeyframe::create();
-    keyframes[0]->setOffset(0.0);
-    keyframes[0]->setPropertyValue(propertyId, value.get());
-    keyframes[1] = AnimatableValueKeyframe::create();
-    keyframes[1]->setOffset(1.0);
-    keyframes[1]->setPropertyValue(propertyId, value.get());
-    keyframes[1]->setComposite(EffectModel::CompositeReplace);
+static KeyframeEffect* createInfiniteKeyFrameEffect(
+    Element& element,
+    CSSPropertyID propertyId,
+    PassRefPtr<AnimatableValue> value) {
+  AnimatableValueKeyframeVector keyframes(2);
+  keyframes[0] = AnimatableValueKeyframe::create();
+  keyframes[0]->setOffset(0.0);
+  keyframes[0]->setPropertyValue(propertyId, value.get());
+  keyframes[1] = AnimatableValueKeyframe::create();
+  keyframes[1]->setOffset(1.0);
+  keyframes[1]->setPropertyValue(propertyId, value.get());
+  keyframes[1]->setComposite(EffectModel::CompositeReplace);
 
-    Timing timing;
-    timing.iterationDuration = 0;
-    timing.fillMode = Timing::FillMode::FORWARDS;
+  Timing timing;
+  timing.iterationDuration = 0;
+  timing.fillMode = Timing::FillMode::FORWARDS;
 
-    AnimatableValueKeyframeEffectModel* effectModel = AnimatableValueKeyframeEffectModel::create(keyframes);
-    return KeyframeEffect::create(&element, effectModel, timing);
+  AnimatableValueKeyframeEffectModel* effectModel =
+      AnimatableValueKeyframeEffectModel::create(keyframes);
+  return KeyframeEffect::create(&element, effectModel, timing);
 }
 
-static KeyframeEffect* updateInfiniteKeyframeEffect(const KeyframeEffect& keyframeEffect, CSSPropertyID propertyId, PassRefPtr<AnimatableValue> value)
-{
-    const KeyframeVector& oldFrames = toAnimatableValueKeyframeEffectModel(keyframeEffect.model())->getFrames();
-    AnimatableValueKeyframeVector keyframes(2);
-    keyframes[0] = toAnimatableValueKeyframe(oldFrames[0]->clone().get());
-    keyframes[1] = toAnimatableValueKeyframe(oldFrames[1]->clone().get());
-    keyframes[0]->setPropertyValue(propertyId, value.get());
-    keyframes[1]->setPropertyValue(propertyId, value.get());
+static KeyframeEffect* updateInfiniteKeyframeEffect(
+    const KeyframeEffect& keyframeEffect,
+    CSSPropertyID propertyId,
+    PassRefPtr<AnimatableValue> value) {
+  const KeyframeVector& oldFrames =
+      toAnimatableValueKeyframeEffectModel(keyframeEffect.model())->getFrames();
+  AnimatableValueKeyframeVector keyframes(2);
+  keyframes[0] = toAnimatableValueKeyframe(oldFrames[0]->clone().get());
+  keyframes[1] = toAnimatableValueKeyframe(oldFrames[1]->clone().get());
+  keyframes[0]->setPropertyValue(propertyId, value.get());
+  keyframes[1]->setPropertyValue(propertyId, value.get());
 
-    AnimatableValueKeyframeEffectModel* effectModel = AnimatableValueKeyframeEffectModel::create(keyframes);
-    return KeyframeEffect::create(keyframeEffect.target(), effectModel, keyframeEffect.specifiedTiming());
+  AnimatableValueKeyframeEffectModel* effectModel =
+      AnimatableValueKeyframeEffectModel::create(keyframes);
+  return KeyframeEffect::create(keyframeEffect.target(), effectModel,
+                                keyframeEffect.specifiedTiming());
 }
 
-static Animation* createOrUpdateAnimation(Animation* animation, Element& element, CSSPropertyID propertyId, PassRefPtr<AnimatableValue> newValue)
-{
-    if (!animation) {
-        KeyframeEffect* keyframeEffect = createInfiniteKeyFrameEffect(element, propertyId, std::move(newValue));
-        return element.document().timeline().play(keyframeEffect);
-    }
-    KeyframeEffect* keyframeEffect = updateInfiniteKeyframeEffect(*toKeyframeEffect(animation->effect()), propertyId, std::move(newValue));
-    animation->setEffect(keyframeEffect);
-    return animation;
+static Animation* createOrUpdateAnimation(
+    Animation* animation,
+    Element& element,
+    CSSPropertyID propertyId,
+    PassRefPtr<AnimatableValue> newValue) {
+  if (!animation) {
+    KeyframeEffect* keyframeEffect =
+        createInfiniteKeyFrameEffect(element, propertyId, std::move(newValue));
+    return element.document().timeline().play(keyframeEffect);
+  }
+  KeyframeEffect* keyframeEffect = updateInfiniteKeyframeEffect(
+      *toKeyframeEffect(animation->effect()), propertyId, std::move(newValue));
+  animation->setEffect(keyframeEffect);
+  return animation;
 }
 
-} // namespace
+}  // namespace
 
-void CustomCompositorAnimations::applyUpdate(Element& element, const CompositorMutation& mutation)
-{
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CustomCompositorAnimations::applyUpdate");
+void CustomCompositorAnimations::applyUpdate(
+    Element& element,
+    const CompositorMutation& mutation) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
+               "CustomCompositorAnimations::applyUpdate");
 
-    if (mutation.isOpacityMutated()) {
-        RefPtr<AnimatableValue> animatableValue = AnimatableDouble::create(mutation.opacity());
-        m_animation = createOrUpdateAnimation(m_animation, element, CSSPropertyOpacity, animatableValue.release());
-    }
-    if (mutation.isTransformMutated()) {
-        TransformOperations ops;
-        ops.operations().append(Matrix3DTransformOperation::create(TransformationMatrix(mutation.transform())));
-        RefPtr<AnimatableValue> animatableValue = AnimatableTransform::create(ops, 1);
-        m_animation = createOrUpdateAnimation(m_animation, element, CSSPropertyTransform, animatableValue.release());
-    }
+  if (mutation.isOpacityMutated()) {
+    RefPtr<AnimatableValue> animatableValue =
+        AnimatableDouble::create(mutation.opacity());
+    m_animation = createOrUpdateAnimation(
+        m_animation, element, CSSPropertyOpacity, animatableValue.release());
+  }
+  if (mutation.isTransformMutated()) {
+    TransformOperations ops;
+    ops.operations().append(Matrix3DTransformOperation::create(
+        TransformationMatrix(mutation.transform())));
+    RefPtr<AnimatableValue> animatableValue =
+        AnimatableTransform::create(ops, 1);
+    m_animation = createOrUpdateAnimation(
+        m_animation, element, CSSPropertyTransform, animatableValue.release());
+  }
 }
 
-} // namespace blink
+}  // namespace blink

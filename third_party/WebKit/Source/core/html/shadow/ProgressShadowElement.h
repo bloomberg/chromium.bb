@@ -40,15 +40,15 @@ namespace blink {
 class HTMLProgressElement;
 
 class ProgressShadowElement : public HTMLDivElement {
-public:
-    DECLARE_NODE_FACTORY(ProgressShadowElement);
+ public:
+  DECLARE_NODE_FACTORY(ProgressShadowElement);
 
-private:
-    explicit ProgressShadowElement(Document&);
-    HTMLProgressElement* progressElement() const;
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+ private:
+  explicit ProgressShadowElement(Document&);
+  HTMLProgressElement* progressElement() const;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ProgressShadowElement_h
+#endif  // ProgressShadowElement_h

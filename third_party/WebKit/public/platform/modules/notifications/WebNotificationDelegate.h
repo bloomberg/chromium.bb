@@ -11,13 +11,13 @@ namespace blink {
 // Web Notifications object. Service Worker-bound Web Notifications will not have
 // a delegate, as their events will be fired on a Service Worker instead.
 class WebNotificationDelegate {
-public:
-    virtual void dispatchClickEvent() = 0;
-    virtual void dispatchShowEvent() = 0;
-    virtual void dispatchErrorEvent() = 0;
-    virtual void dispatchCloseEvent() = 0;
+ public:
+  virtual void dispatchClickEvent() = 0;
+  virtual void dispatchShowEvent() = 0;
+  virtual void dispatchErrorEvent() = 0;
+  virtual void dispatchCloseEvent() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebNotificationDelegate_h
+#endif  // WebNotificationDelegate_h

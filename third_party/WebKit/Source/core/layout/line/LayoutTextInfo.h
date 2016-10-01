@@ -32,18 +32,14 @@ class Font;
 class LayoutText;
 
 struct LayoutTextInfo {
-    STACK_ALLOCATED();
-    LayoutTextInfo()
-        : m_text(nullptr)
-        , m_font(nullptr)
-    {
-    }
+  STACK_ALLOCATED();
+  LayoutTextInfo() : m_text(nullptr), m_font(nullptr) {}
 
-    LineLayoutText m_text;
-    LazyLineBreakIterator m_lineBreakIterator;
-    const Font* m_font;
+  LineLayoutText m_text;
+  LazyLineBreakIterator m_lineBreakIterator;
+  const Font* m_font;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutTextInfo_h
+#endif  // LayoutTextInfo_h

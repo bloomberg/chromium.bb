@@ -38,26 +38,26 @@
 namespace blink {
 
 class PLATFORM_EXPORT WebSocketHandshakeResponse final {
-public:
-    WebSocketHandshakeResponse();
-    ~WebSocketHandshakeResponse();
+ public:
+  WebSocketHandshakeResponse();
+  ~WebSocketHandshakeResponse();
 
-    int statusCode() const;
-    void setStatusCode(int);
-    const String& statusText() const;
-    void setStatusText(const String&);
-    const HTTPHeaderMap& headerFields() const;
-    void addHeaderField(const AtomicString& name, const AtomicString& value);
-    const String& headersText() const { return m_headersText; }
-    void setHeadersText(const String& text) { m_headersText = text; }
+  int statusCode() const;
+  void setStatusCode(int);
+  const String& statusText() const;
+  void setStatusText(const String&);
+  const HTTPHeaderMap& headerFields() const;
+  void addHeaderField(const AtomicString& name, const AtomicString& value);
+  const String& headersText() const { return m_headersText; }
+  void setHeadersText(const String& text) { m_headersText = text; }
 
-private:
-    int m_statusCode;
-    String m_statusText;
-    HTTPHeaderMap m_headerFields;
-    String m_headersText;
+ private:
+  int m_statusCode;
+  String m_statusText;
+  HTTPHeaderMap m_headerFields;
+  String m_headersText;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSocketHandshakeResponse_h
+#endif  // WebSocketHandshakeResponse_h

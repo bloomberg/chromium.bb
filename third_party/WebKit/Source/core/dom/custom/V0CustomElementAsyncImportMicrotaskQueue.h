@@ -35,17 +35,20 @@
 
 namespace blink {
 
-class V0CustomElementAsyncImportMicrotaskQueue : public V0CustomElementMicrotaskQueueBase {
-public:
-    static V0CustomElementAsyncImportMicrotaskQueue* create() { return new V0CustomElementAsyncImportMicrotaskQueue(); }
+class V0CustomElementAsyncImportMicrotaskQueue
+    : public V0CustomElementMicrotaskQueueBase {
+ public:
+  static V0CustomElementAsyncImportMicrotaskQueue* create() {
+    return new V0CustomElementAsyncImportMicrotaskQueue();
+  }
 
-    void enqueue(V0CustomElementMicrotaskStep*);
+  void enqueue(V0CustomElementMicrotaskStep*);
 
-private:
-    V0CustomElementAsyncImportMicrotaskQueue() { }
-    void doDispatch() override;
+ private:
+  V0CustomElementAsyncImportMicrotaskQueue() {}
+  void doDispatch() override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementAsyncImportMicrotaskQueue_h
+#endif  // V0CustomElementAsyncImportMicrotaskQueue_h

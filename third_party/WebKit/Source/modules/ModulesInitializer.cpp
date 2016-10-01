@@ -28,46 +28,52 @@
 
 namespace blink {
 
-void ModulesInitializer::initialize()
-{
-    ASSERT(!isInitialized());
+void ModulesInitializer::initialize() {
+  ASSERT(!isInitialized());
 
-    // Strings must be initialized before calling CoreInitializer::init().
-    const unsigned modulesStaticStringsCount = EventNames::EventModulesNamesCount
-        + EventTargetNames::EventTargetModulesNamesCount
-        + IndexedDBNames::IndexedDBNamesCount;
-    StringImpl::reserveStaticStringsCapacityForSize(modulesStaticStringsCount);
+  // Strings must be initialized before calling CoreInitializer::init().
+  const unsigned modulesStaticStringsCount =
+      EventNames::EventModulesNamesCount +
+      EventTargetNames::EventTargetModulesNamesCount +
+      IndexedDBNames::IndexedDBNamesCount;
+  StringImpl::reserveStaticStringsCapacityForSize(modulesStaticStringsCount);
 
-    EventNames::initModules();
-    EventTargetNames::initModules();
-    Document::registerEventFactory(EventModulesFactory::create());
-    ModuleBindingsInitializer::init();
-    IndexedDBNames::init();
-    AXObjectCache::init(AXObjectCacheImpl::create);
-    DraggedIsolatedFileSystem::init(DraggedIsolatedFileSystemImpl::prepareForDataObject);
-    CSSPaintImageGenerator::init(CSSPaintImageGeneratorImpl::create);
+  EventNames::initModules();
+  EventTargetNames::initModules();
+  Document::registerEventFactory(EventModulesFactory::create());
+  ModuleBindingsInitializer::init();
+  IndexedDBNames::init();
+  AXObjectCache::init(AXObjectCacheImpl::create);
+  DraggedIsolatedFileSystem::init(
+      DraggedIsolatedFileSystemImpl::prepareForDataObject);
+  CSSPaintImageGenerator::init(CSSPaintImageGeneratorImpl::create);
 
-    CoreInitializer::initialize();
+  CoreInitializer::initialize();
 
-    // Canvas context types must be registered with the HTMLCanvasElement.
-    HTMLCanvasElement::registerRenderingContextFactory(wrapUnique(new CanvasRenderingContext2D::Factory()));
-    HTMLCanvasElement::registerRenderingContextFactory(wrapUnique(new WebGLRenderingContext::Factory()));
-    HTMLCanvasElement::registerRenderingContextFactory(wrapUnique(new WebGL2RenderingContext::Factory()));
-    HTMLCanvasElement::registerRenderingContextFactory(wrapUnique(new ImageBitmapRenderingContext::Factory()));
+  // Canvas context types must be registered with the HTMLCanvasElement.
+  HTMLCanvasElement::registerRenderingContextFactory(
+      wrapUnique(new CanvasRenderingContext2D::Factory()));
+  HTMLCanvasElement::registerRenderingContextFactory(
+      wrapUnique(new WebGLRenderingContext::Factory()));
+  HTMLCanvasElement::registerRenderingContextFactory(
+      wrapUnique(new WebGL2RenderingContext::Factory()));
+  HTMLCanvasElement::registerRenderingContextFactory(
+      wrapUnique(new ImageBitmapRenderingContext::Factory()));
 
-    // OffscreenCanvas context types must be registered with the OffscreenCanvas.
-    OffscreenCanvas::registerRenderingContextFactory(wrapUnique(new OffscreenCanvasRenderingContext2D::Factory()));
-    OffscreenCanvas::registerRenderingContextFactory(wrapUnique(new WebGLRenderingContext::Factory()));
+  // OffscreenCanvas context types must be registered with the OffscreenCanvas.
+  OffscreenCanvas::registerRenderingContextFactory(
+      wrapUnique(new OffscreenCanvasRenderingContext2D::Factory()));
+  OffscreenCanvas::registerRenderingContextFactory(
+      wrapUnique(new WebGLRenderingContext::Factory()));
 
-    ASSERT(isInitialized());
+  ASSERT(isInitialized());
 }
 
-void ModulesInitializer::shutdown()
-{
-    ASSERT(isInitialized());
-    DatabaseManager::terminateDatabaseThread();
-    CoreInitializer::shutdown();
-    CompositorWorkerThread::clearSharedBackingThread();
+void ModulesInitializer::shutdown() {
+  ASSERT(isInitialized());
+  DatabaseManager::terminateDatabaseThread();
+  CoreInitializer::shutdown();
+  CompositorWorkerThread::clearSharedBackingThread();
 }
 
-} // namespace blink
+}  // namespace blink

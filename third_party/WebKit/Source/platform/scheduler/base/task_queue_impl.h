@@ -187,8 +187,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   };
 
   struct AnyThread {
-    AnyThread(TaskQueueManager* task_queue_manager,
-              TimeDomain* time_domain);
+    AnyThread(TaskQueueManager* task_queue_manager, TimeDomain* time_domain);
     ~AnyThread();
 
     // TaskQueueManager and TimeDomain are maintained in two copies:
@@ -248,11 +247,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
   // empty.
   void PushOntoImmediateIncomingQueueLocked(
-         const tracked_objects::Location& posted_from,
-         const base::Closure& task,
-         base::TimeTicks desired_run_time,
-         EnqueueOrder sequence_number,
-         bool nestable);
+      const tracked_objects::Location& posted_from,
+      const base::Closure& task,
+      base::TimeTicks desired_run_time,
+      EnqueueOrder sequence_number,
+      bool nestable);
 
   // As BlockedByFence but safe to be called while locked.
   bool BlockedByFenceLocked() const;

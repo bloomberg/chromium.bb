@@ -37,31 +37,31 @@
 namespace blink {
 
 class SearchInputType final : public BaseTextInputType {
-public:
-    static InputType* create(HTMLInputElement&);
+ public:
+  static InputType* create(HTMLInputElement&);
 
-private:
-    SearchInputType(HTMLInputElement&);
-    void countUsage() override;
-    LayoutObject* createLayoutObject(const ComputedStyle&) const override;
-    const AtomicString& formControlType() const override;
-    bool needsContainer() const override;
-    void createShadowSubtree() override;
-    void handleKeydownEvent(KeyboardEvent*) override;
-    void didSetValueByUserEdit(ValueChangeState) override;
-    bool supportsInputModeAttribute() const override;
-    void updateView() override;
-    const AtomicString& defaultAutocapitalize() const override;
-    void dispatchSearchEvent() override;
+ private:
+  SearchInputType(HTMLInputElement&);
+  void countUsage() override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) const override;
+  const AtomicString& formControlType() const override;
+  bool needsContainer() const override;
+  void createShadowSubtree() override;
+  void handleKeydownEvent(KeyboardEvent*) override;
+  void didSetValueByUserEdit(ValueChangeState) override;
+  bool supportsInputModeAttribute() const override;
+  void updateView() override;
+  const AtomicString& defaultAutocapitalize() const override;
+  void dispatchSearchEvent() override;
 
-    void searchEventTimerFired(TimerBase*);
-    bool searchEventsShouldBeDispatched() const;
-    void startSearchEventTimer();
-    void updateCancelButtonVisibility();
+  void searchEventTimerFired(TimerBase*);
+  bool searchEventsShouldBeDispatched() const;
+  void startSearchEventTimer();
+  void updateCancelButtonVisibility();
 
-    Timer<SearchInputType> m_searchEventTimer;
+  Timer<SearchInputType> m_searchEventTimer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SearchInputType_h
+#endif  // SearchInputType_h

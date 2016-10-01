@@ -32,29 +32,19 @@ namespace blink {
 namespace XPath {
 
 EvaluationContext::EvaluationContext(Node& contextNode)
-    : node(contextNode)
-    , size(1)
-    , position(1)
-    , hadTypeConversionError(false)
-{
-}
+    : node(contextNode), size(1), position(1), hadTypeConversionError(false) {}
 
 Expression::Expression()
-    : m_isContextNodeSensitive(false)
-    , m_isContextPositionSensitive(false)
-    , m_isContextSizeSensitive(false)
-{
+    : m_isContextNodeSensitive(false),
+      m_isContextPositionSensitive(false),
+      m_isContextSizeSensitive(false) {}
+
+Expression::~Expression() {}
+
+DEFINE_TRACE(Expression) {
+  visitor->trace(m_subExpressions);
+  ParseNode::trace(visitor);
 }
 
-Expression::~Expression()
-{
-}
-
-DEFINE_TRACE(Expression)
-{
-    visitor->trace(m_subExpressions);
-    ParseNode::trace(visitor);
-}
-
-} // namespace XPath
-} // namespace blink
+}  // namespace XPath
+}  // namespace blink

@@ -32,33 +32,45 @@ class TextEncoding;
 namespace blink {
 
 class PLATFORM_EXPORT FormDataEncoder {
-    STATIC_ONLY(FormDataEncoder);
-public:
-    // Specifies how to handle CRs and LFs. When NormalizeCRLF is passed, the
-    // method replaces the following characters with a CRLF pair:
-    // - a CR not followed by an LF
-    // - an LF not preceded by a CR
-    enum Mode {
-        NormalizeCRLF,
-        DoNotNormalizeCRLF
-    };
+  STATIC_ONLY(FormDataEncoder);
 
-    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const WTF::TextEncoding& fallbackEncoding);
+ public:
+  // Specifies how to handle CRs and LFs. When NormalizeCRLF is passed, the
+  // method replaces the following characters with a CRLF pair:
+  // - a CR not followed by an LF
+  // - an LF not preceded by a CR
+  enum Mode { NormalizeCRLF, DoNotNormalizeCRLF };
 
-    // Helper functions used by HTMLFormElement for multi-part form data
-    static Vector<char> generateUniqueBoundaryString();
-    static void beginMultiPartHeader(Vector<char>&, const CString& boundary, const CString& name);
-    static void addBoundaryToMultiPartHeader(Vector<char>&, const CString& boundary, bool isLastBoundary = false);
-    static void addFilenameToMultiPartHeader(Vector<char>&, const WTF::TextEncoding&, const String& filename);
-    static void addContentTypeToMultiPartHeader(Vector<char>&, const CString& mimeType);
-    static void finishMultiPartHeader(Vector<char>&);
+  static WTF::TextEncoding encodingFromAcceptCharset(
+      const String& acceptCharset,
+      const WTF::TextEncoding& fallbackEncoding);
 
-    // Helper functions used by HTMLFormElement for non multi-part form data. Mode
-    // argument is not used for TextPlain type.
-    static void addKeyValuePairAsFormData(Vector<char>&, const CString& key, const CString& value, EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded, Mode = NormalizeCRLF);
-    static void encodeStringAsFormData(Vector<char>&, const CString&, Mode);
+  // Helper functions used by HTMLFormElement for multi-part form data
+  static Vector<char> generateUniqueBoundaryString();
+  static void beginMultiPartHeader(Vector<char>&,
+                                   const CString& boundary,
+                                   const CString& name);
+  static void addBoundaryToMultiPartHeader(Vector<char>&,
+                                           const CString& boundary,
+                                           bool isLastBoundary = false);
+  static void addFilenameToMultiPartHeader(Vector<char>&,
+                                           const WTF::TextEncoding&,
+                                           const String& filename);
+  static void addContentTypeToMultiPartHeader(Vector<char>&,
+                                              const CString& mimeType);
+  static void finishMultiPartHeader(Vector<char>&);
+
+  // Helper functions used by HTMLFormElement for non multi-part form data. Mode
+  // argument is not used for TextPlain type.
+  static void addKeyValuePairAsFormData(
+      Vector<char>&,
+      const CString& key,
+      const CString& value,
+      EncodedFormData::EncodingType = EncodedFormData::FormURLEncoded,
+      Mode = NormalizeCRLF);
+  static void encodeStringAsFormData(Vector<char>&, const CString&, Mode);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -30,28 +30,24 @@
 namespace blink {
 
 StyleFlexibleBoxData::StyleFlexibleBoxData()
-    : m_flexGrow(ComputedStyle::initialFlexGrow())
-    , m_flexShrink(ComputedStyle::initialFlexShrink())
-    , m_flexBasis(ComputedStyle::initialFlexBasis())
-    , m_flexDirection(ComputedStyle::initialFlexDirection())
-    , m_flexWrap(ComputedStyle::initialFlexWrap())
-{
-}
+    : m_flexGrow(ComputedStyle::initialFlexGrow()),
+      m_flexShrink(ComputedStyle::initialFlexShrink()),
+      m_flexBasis(ComputedStyle::initialFlexBasis()),
+      m_flexDirection(ComputedStyle::initialFlexDirection()),
+      m_flexWrap(ComputedStyle::initialFlexWrap()) {}
 
 StyleFlexibleBoxData::StyleFlexibleBoxData(const StyleFlexibleBoxData& o)
-    : RefCounted<StyleFlexibleBoxData>()
-    , m_flexGrow(o.m_flexGrow)
-    , m_flexShrink(o.m_flexShrink)
-    , m_flexBasis(o.m_flexBasis)
-    , m_flexDirection(o.m_flexDirection)
-    , m_flexWrap(o.m_flexWrap)
-{
+    : RefCounted<StyleFlexibleBoxData>(),
+      m_flexGrow(o.m_flexGrow),
+      m_flexShrink(o.m_flexShrink),
+      m_flexBasis(o.m_flexBasis),
+      m_flexDirection(o.m_flexDirection),
+      m_flexWrap(o.m_flexWrap) {}
+
+bool StyleFlexibleBoxData::operator==(const StyleFlexibleBoxData& o) const {
+  return m_flexGrow == o.m_flexGrow && m_flexShrink == o.m_flexShrink &&
+         m_flexBasis == o.m_flexBasis && m_flexDirection == o.m_flexDirection &&
+         m_flexWrap == o.m_flexWrap;
 }
 
-bool StyleFlexibleBoxData::operator==(const StyleFlexibleBoxData& o) const
-{
-    return m_flexGrow == o.m_flexGrow && m_flexShrink == o.m_flexShrink && m_flexBasis == o.m_flexBasis
-        && m_flexDirection == o.m_flexDirection && m_flexWrap == o.m_flexWrap;
-}
-
-} // namespace blink
+}  // namespace blink

@@ -11,13 +11,14 @@ namespace blink {
 
 // Describes the type of context (secure or non-secure) that created a SharedWorker.
 enum WebSharedWorkerCreationContextType {
-    // The shared worker was created from a nonsecure context.
-    WebSharedWorkerCreationContextTypeNonsecure = 0,
-    // The shared worker was created from a secure context.
-    WebSharedWorkerCreationContextTypeSecure,
-    WebSharedWorkerCreationContextTypeLast = WebSharedWorkerCreationContextTypeSecure
+  // The shared worker was created from a nonsecure context.
+  WebSharedWorkerCreationContextTypeNonsecure = 0,
+  // The shared worker was created from a secure context.
+  WebSharedWorkerCreationContextTypeSecure,
+  WebSharedWorkerCreationContextTypeLast =
+      WebSharedWorkerCreationContextTypeSecure
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSharedWorkerCreationContextType_h
+#endif  // WebSharedWorkerCreationContextType_h

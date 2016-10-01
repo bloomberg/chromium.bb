@@ -28,7 +28,8 @@ const char Inspector[] = "Inspector";
 const char Language[] = "Language";
 const char LinkColorChange[] = "LinkColorChange";
 const char PlatformColorChange[] = "PlatformColorChange";
-const char PropagateInheritChangeToDistributedNodes[] = "PropagateInheritChangeToDistributedNodes";
+const char PropagateInheritChangeToDistributedNodes[] =
+    "PropagateInheritChangeToDistributedNodes";
 const char PropertyRegistration[] = "PropertyRegistration";
 const char PropertyUnregistration[] = "PropertyUnregistration";
 const char PseudoClass[] = "PseudoClass";
@@ -44,7 +45,7 @@ const char VisitedLink[] = "VisitedLink";
 const char VisuallyOrdered[] = "VisuallyOrdered";
 const char WritingModeChange[] = "WritingModeChange";
 const char Zoom[] = "Zoom";
-} // namespace StyleChangeReason
+}  // namespace StyleChangeReason
 
 namespace StyleChangeExtraData {
 DEFINE_GLOBAL(AtomicString, Active)
@@ -55,19 +56,18 @@ DEFINE_GLOBAL(AtomicString, Hover)
 DEFINE_GLOBAL(AtomicString, Past)
 DEFINE_GLOBAL(AtomicString, Unresolved)
 
-void init()
-{
-    DCHECK(isMainThread());
+void init() {
+  DCHECK(isMainThread());
 
-    new (NotNull, (void*)&Active) AtomicString(":active");
-    new (NotNull, (void*)&Disabled) AtomicString(":disabled");
-    new (NotNull, (void*)&Drag) AtomicString(":-webkit-drag");
-    new (NotNull, (void*)&Focus) AtomicString(":focus");
-    new (NotNull, (void*)&Hover) AtomicString(":hover");
-    new (NotNull, (void*)&Past) AtomicString(":past");
-    new (NotNull, (void*)&Unresolved) AtomicString(":unresolved");
+  new (NotNull, (void*)&Active) AtomicString(":active");
+  new (NotNull, (void*)&Disabled) AtomicString(":disabled");
+  new (NotNull, (void*)&Drag) AtomicString(":-webkit-drag");
+  new (NotNull, (void*)&Focus) AtomicString(":focus");
+  new (NotNull, (void*)&Hover) AtomicString(":hover");
+  new (NotNull, (void*)&Past) AtomicString(":past");
+  new (NotNull, (void*)&Unresolved) AtomicString(":unresolved");
 }
 
-} // namespace StyleChangeExtraData
+}  // namespace StyleChangeExtraData
 
-} // namespace blink
+}  // namespace blink

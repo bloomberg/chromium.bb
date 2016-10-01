@@ -33,64 +33,71 @@ namespace blink {
 // Like LayoutState for layout(), LineLayoutState keeps track of global information
 // during an entire linebox tree layout pass (aka layoutInlineChildren).
 class LineLayoutState {
-    STACK_ALLOCATED();
-public:
-    LineLayoutState(bool fullLayout)
-        : m_lastFloat(nullptr)
-        , m_endLine(nullptr)
-        , m_floatIndex(0)
-        , m_endLineMatched(false)
-        , m_hasInlineChild(false)
-        , m_isFullLayout(fullLayout)
-    { }
+  STACK_ALLOCATED();
 
-    void markForFullLayout() { m_isFullLayout = true; }
-    bool isFullLayout() const { return m_isFullLayout; }
+ public:
+  LineLayoutState(bool fullLayout)
+      : m_lastFloat(nullptr),
+        m_endLine(nullptr),
+        m_floatIndex(0),
+        m_endLineMatched(false),
+        m_hasInlineChild(false),
+        m_isFullLayout(fullLayout) {}
 
-    bool endLineMatched() const { return m_endLineMatched; }
-    void setEndLineMatched(bool endLineMatched) { m_endLineMatched = endLineMatched; }
+  void markForFullLayout() { m_isFullLayout = true; }
+  bool isFullLayout() const { return m_isFullLayout; }
 
-    bool hasInlineChild() const { return m_hasInlineChild; }
-    void setHasInlineChild(bool hasInlineChild) { m_hasInlineChild = hasInlineChild; }
+  bool endLineMatched() const { return m_endLineMatched; }
+  void setEndLineMatched(bool endLineMatched) {
+    m_endLineMatched = endLineMatched;
+  }
 
+  bool hasInlineChild() const { return m_hasInlineChild; }
+  void setHasInlineChild(bool hasInlineChild) {
+    m_hasInlineChild = hasInlineChild;
+  }
 
-    LineInfo& lineInfo() { return m_lineInfo; }
-    const LineInfo& lineInfo() const { return m_lineInfo; }
+  LineInfo& lineInfo() { return m_lineInfo; }
+  const LineInfo& lineInfo() const { return m_lineInfo; }
 
-    LayoutUnit endLineLogicalTop() const { return m_endLineLogicalTop; }
-    void setEndLineLogicalTop(LayoutUnit logicalTop) { m_endLineLogicalTop = logicalTop; }
+  LayoutUnit endLineLogicalTop() const { return m_endLineLogicalTop; }
+  void setEndLineLogicalTop(LayoutUnit logicalTop) {
+    m_endLineLogicalTop = logicalTop;
+  }
 
-    RootInlineBox* endLine() const { return m_endLine; }
-    void setEndLine(RootInlineBox* line) { m_endLine = line; }
+  RootInlineBox* endLine() const { return m_endLine; }
+  void setEndLine(RootInlineBox* line) { m_endLine = line; }
 
-    FloatingObject* lastFloat() const { return m_lastFloat; }
-    void setLastFloat(FloatingObject* lastFloat) { m_lastFloat = lastFloat; }
+  FloatingObject* lastFloat() const { return m_lastFloat; }
+  void setLastFloat(FloatingObject* lastFloat) { m_lastFloat = lastFloat; }
 
-    Vector<LayoutBlockFlow::FloatWithRect>& floats() { return m_floats; }
+  Vector<LayoutBlockFlow::FloatWithRect>& floats() { return m_floats; }
 
-    unsigned floatIndex() const { return m_floatIndex; }
-    void setFloatIndex(unsigned floatIndex) { m_floatIndex = floatIndex; }
+  unsigned floatIndex() const { return m_floatIndex; }
+  void setFloatIndex(unsigned floatIndex) { m_floatIndex = floatIndex; }
 
-    LayoutUnit adjustedLogicalLineTop() const { return m_adjustedLogicalLineTop; }
-    void setAdjustedLogicalLineTop(LayoutUnit value) { m_adjustedLogicalLineTop = value; }
+  LayoutUnit adjustedLogicalLineTop() const { return m_adjustedLogicalLineTop; }
+  void setAdjustedLogicalLineTop(LayoutUnit value) {
+    m_adjustedLogicalLineTop = value;
+  }
 
-private:
-    Vector<LayoutBlockFlow::FloatWithRect> m_floats;
-    FloatingObject* m_lastFloat;
-    RootInlineBox* m_endLine;
-    LineInfo m_lineInfo;
-    unsigned m_floatIndex;
-    LayoutUnit m_endLineLogicalTop;
-    bool m_endLineMatched;
-    // Used as a performance optimization to avoid doing a full paint invalidation when our floats
-    // change but we don't have any inline children.
-    bool m_hasInlineChild;
+ private:
+  Vector<LayoutBlockFlow::FloatWithRect> m_floats;
+  FloatingObject* m_lastFloat;
+  RootInlineBox* m_endLine;
+  LineInfo m_lineInfo;
+  unsigned m_floatIndex;
+  LayoutUnit m_endLineLogicalTop;
+  bool m_endLineMatched;
+  // Used as a performance optimization to avoid doing a full paint invalidation when our floats
+  // change but we don't have any inline children.
+  bool m_hasInlineChild;
 
-    bool m_isFullLayout;
+  bool m_isFullLayout;
 
-    LayoutUnit m_adjustedLogicalLineTop;
+  LayoutUnit m_adjustedLogicalLineTop;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutState_h
+#endif  // LineLayoutState_h

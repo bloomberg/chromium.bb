@@ -13,39 +13,32 @@ namespace blink {
 namespace {
 
 class IdleTaskRunner : public WebThread::IdleTask {
-    USING_FAST_MALLOC(IdleTaskRunner);
-    WTF_MAKE_NONCOPYABLE(IdleTaskRunner);
+  USING_FAST_MALLOC(IdleTaskRunner);
+  WTF_MAKE_NONCOPYABLE(IdleTaskRunner);
 
-public:
-    explicit IdleTaskRunner(std::unique_ptr<WebScheduler::IdleTask> task)
-        : m_task(std::move(task))
-    {
-    }
+ public:
+  explicit IdleTaskRunner(std::unique_ptr<WebScheduler::IdleTask> task)
+      : m_task(std::move(task)) {}
 
-    ~IdleTaskRunner() override
-    {
-    }
+  ~IdleTaskRunner() override {}
 
-    // WebThread::IdleTask implementation.
-    void run(double deadlineSeconds) override
-    {
-        (*m_task)(deadlineSeconds);
-    }
+  // WebThread::IdleTask implementation.
+  void run(double deadlineSeconds) override { (*m_task)(deadlineSeconds); }
 
-private:
-    std::unique_ptr<WebScheduler::IdleTask> m_task;
+ private:
+  std::unique_ptr<WebScheduler::IdleTask> m_task;
 };
 
-} // namespace
+}  // namespace
 
-void WebScheduler::postIdleTask(const WebTraceLocation& location, std::unique_ptr<IdleTask> idleTask)
-{
-    postIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
+void WebScheduler::postIdleTask(const WebTraceLocation& location,
+                                std::unique_ptr<IdleTask> idleTask) {
+  postIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
 }
 
-void WebScheduler::postNonNestableIdleTask(const WebTraceLocation& location, std::unique_ptr<IdleTask> idleTask)
-{
-    postNonNestableIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
+void WebScheduler::postNonNestableIdleTask(const WebTraceLocation& location,
+                                           std::unique_ptr<IdleTask> idleTask) {
+  postNonNestableIdleTask(location, new IdleTaskRunner(std::move(idleTask)));
 }
 
-} // namespace blink
+}  // namespace blink

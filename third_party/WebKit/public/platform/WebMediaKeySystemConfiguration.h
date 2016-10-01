@@ -12,36 +12,36 @@
 namespace blink {
 
 struct WebMediaKeySystemConfiguration {
-    enum class Requirement {
-        Required,
-        Optional,
-        NotAllowed,
-    };
+  enum class Requirement {
+    Required,
+    Optional,
+    NotAllowed,
+  };
 
-    // As MediaKeySystemConfiguration is a dictionary, some members may be
-    // not-present. Because requestMediaKeySystemAccess() distinguishes empty
-    // from not-present, we require a presence flag for each member.
-    bool hasInitDataTypes = false;
-    WebVector<WebEncryptedMediaInitDataType> initDataTypes;
+  // As MediaKeySystemConfiguration is a dictionary, some members may be
+  // not-present. Because requestMediaKeySystemAccess() distinguishes empty
+  // from not-present, we require a presence flag for each member.
+  bool hasInitDataTypes = false;
+  WebVector<WebEncryptedMediaInitDataType> initDataTypes;
 
-    bool hasAudioCapabilities = false;
-    WebVector<WebMediaKeySystemMediaCapability> audioCapabilities;
+  bool hasAudioCapabilities = false;
+  WebVector<WebMediaKeySystemMediaCapability> audioCapabilities;
 
-    bool hasVideoCapabilities = false;
-    WebVector<WebMediaKeySystemMediaCapability> videoCapabilities;
+  bool hasVideoCapabilities = false;
+  WebVector<WebMediaKeySystemMediaCapability> videoCapabilities;
 
-    // |distinctiveIdentifier| and |persistentState| are always present because
-    // they have default values.
-    Requirement distinctiveIdentifier = Requirement::Optional;
-    Requirement persistentState = Requirement::Optional;
+  // |distinctiveIdentifier| and |persistentState| are always present because
+  // they have default values.
+  Requirement distinctiveIdentifier = Requirement::Optional;
+  Requirement persistentState = Requirement::Optional;
 
-    bool hasSessionTypes = false;
-    WebVector<WebEncryptedMediaSessionType> sessionTypes;
+  bool hasSessionTypes = false;
+  WebVector<WebEncryptedMediaSessionType> sessionTypes;
 
-    // |label| may be not-present, but we use a null string to represent that.
-    WebString label;
+  // |label| may be not-present, but we use a null string to represent that.
+  WebString label;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaKeySystemConfiguration_h
+#endif  // WebMediaKeySystemConfiguration_h

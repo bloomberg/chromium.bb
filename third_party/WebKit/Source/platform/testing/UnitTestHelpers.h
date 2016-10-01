@@ -49,7 +49,7 @@ void exitRunLoop();
 
 void yieldCurrentThread();
 
-} // namespace testing
-} // namespace blink
+}  // namespace testing
+}  // namespace blink
 
 #endif

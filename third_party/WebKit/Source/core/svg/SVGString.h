@@ -37,53 +37,51 @@
 namespace blink {
 
 class SVGString final : public SVGPropertyBase {
-public:
-    // SVGString does not have a tear-off type.
-    typedef void TearOffType;
-    typedef String PrimitiveType;
+ public:
+  // SVGString does not have a tear-off type.
+  typedef void TearOffType;
+  typedef String PrimitiveType;
 
-    static SVGString* create()
-    {
-        return new SVGString();
-    }
+  static SVGString* create() { return new SVGString(); }
 
-    static SVGString* create(const String& value)
-    {
-        return new SVGString(value);
-    }
+  static SVGString* create(const String& value) { return new SVGString(value); }
 
-    SVGString* clone() const { return create(m_value); }
-    SVGPropertyBase* cloneForAnimation(const String& value) const override
-    {
-        return create(value);
-    }
+  SVGString* clone() const { return create(m_value); }
+  SVGPropertyBase* cloneForAnimation(const String& value) const override {
+    return create(value);
+  }
 
-    String valueAsString() const override { return m_value; }
-    SVGParsingError setValueAsString(const String& value)
-    {
-        m_value = value;
-        return SVGParseStatus::NoError;
-    }
+  String valueAsString() const override { return m_value; }
+  SVGParsingError setValueAsString(const String& value) {
+    m_value = value;
+    return SVGParseStatus::NoError;
+  }
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement*) override;
+  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-    const String& value() const { return m_value; }
-    void setValue(const String& value) { m_value = value; }
+  const String& value() const { return m_value; }
+  void setValue(const String& value) { m_value = value; }
 
-    static AnimatedPropertyType classType() { return AnimatedString; }
-    AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType classType() { return AnimatedString; }
+  AnimatedPropertyType type() const override { return classType(); }
 
-private:
-    SVGString() { }
-    explicit SVGString(const String& value) : m_value(value) {}
+ private:
+  SVGString() {}
+  explicit SVGString(const String& value) : m_value(value) {}
 
-    String m_value;
+  String m_value;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGString);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGString_h
+#endif  // SVGString_h

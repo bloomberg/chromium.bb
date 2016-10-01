@@ -32,40 +32,39 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLBRElement::HTMLBRElement(Document& document)
-    : HTMLElement(brTag, document)
-{
-}
+    : HTMLElement(brTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLBRElement)
 
-bool HTMLBRElement::isPresentationAttribute(const QualifiedName& name) const
-{
-    if (name == clearAttr)
-        return true;
-    return HTMLElement::isPresentationAttribute(name);
+bool HTMLBRElement::isPresentationAttribute(const QualifiedName& name) const {
+  if (name == clearAttr)
+    return true;
+  return HTMLElement::isPresentationAttribute(name);
 }
 
-void HTMLBRElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    if (name == clearAttr) {
-        // If the string is empty, then don't add the clear property.
-        // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE, etc. -dwh
-        if (!value.isEmpty()) {
-            if (equalIgnoringCase(value, "all"))
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyClear, CSSValueBoth);
-            else
-                addPropertyToPresentationAttributeStyle(style, CSSPropertyClear, value);
-        }
-    } else {
-        HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+void HTMLBRElement::collectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
+  if (name == clearAttr) {
+    // If the string is empty, then don't add the clear property.
+    // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE, etc. -dwh
+    if (!value.isEmpty()) {
+      if (equalIgnoringCase(value, "all"))
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyClear,
+                                                CSSValueBoth);
+      else
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyClear, value);
     }
+  } else {
+    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+  }
 }
 
-LayoutObject* HTMLBRElement::createLayoutObject(const ComputedStyle& style)
-{
-    if (style.hasContent())
-        return LayoutObject::createObject(this, style);
-    return new LayoutBR(this);
+LayoutObject* HTMLBRElement::createLayoutObject(const ComputedStyle& style) {
+  if (style.hasContent())
+    return LayoutObject::createObject(this, style);
+  return new LayoutBR(this);
 }
 
-} // namespace blink
+}  // namespace blink

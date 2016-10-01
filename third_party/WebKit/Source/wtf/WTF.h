@@ -46,10 +46,10 @@ WTF_EXPORT bool isMainThread();
 
 namespace internal {
 void callOnMainThread(MainThreadFunction*, void* context);
-} // namespace internal
+}  // namespace internal
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::isMainThread;
 
-#endif // WTF_h
+#endif  // WTF_h

@@ -6,9 +6,8 @@
 
 namespace blink {
 
-void PaintInfo::updateCullRect(const AffineTransform& localToParentTransform)
-{
-    m_cullRect.updateCullRect(localToParentTransform);
+void PaintInfo::updateCullRect(const AffineTransform& localToParentTransform) {
+  m_cullRect.updateCullRect(localToParentTransform);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -12,42 +12,39 @@
 namespace blink {
 
 class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
-    WTF_MAKE_NONCOPYABLE(CSSResourceValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    virtual ~CSSResourceValue() { }
+  WTF_MAKE_NONCOPYABLE(CSSResourceValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    StyleValueType type() const override { return ResourceType; }
+ public:
+  virtual ~CSSResourceValue() {}
 
-    const String state() const
-    {
-        switch (status()) {
-        case Resource::Status::NotStarted:
-            return "unloaded";
-        case Resource::Status::Pending:
-            return "loading";
-        case Resource::Status::Cached:
-            return "loaded";
-        case Resource::Status::LoadError:
-        case Resource::Status::DecodeError:
-            return "error";
-        default:
-            NOTREACHED();
-            return "";
-        }
+  StyleValueType type() const override { return ResourceType; }
+
+  const String state() const {
+    switch (status()) {
+      case Resource::Status::NotStarted:
+        return "unloaded";
+      case Resource::Status::Pending:
+        return "loading";
+      case Resource::Status::Cached:
+        return "loaded";
+      case Resource::Status::LoadError:
+      case Resource::Status::DecodeError:
+        return "error";
+      default:
+        NOTREACHED();
+        return "";
     }
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        CSSStyleValue::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() { CSSStyleValue::trace(visitor); }
 
-protected:
-    CSSResourceValue() { }
+ protected:
+  CSSResourceValue() {}
 
-    virtual Resource::Status status() const = 0;
+  virtual Resource::Status status() const = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSResourceValue_h
+#endif  // CSSResourceValue_h

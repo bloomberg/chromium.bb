@@ -40,59 +40,58 @@ size_t V0CustomElementProcessingStack::s_elementQueueStart = 0;
 // The base of the stack has a null sentinel value.
 size_t V0CustomElementProcessingStack::s_elementQueueEnd = kNumSentinels;
 
-V0CustomElementProcessingStack& V0CustomElementProcessingStack::instance()
-{
-    DEFINE_STATIC_LOCAL(V0CustomElementProcessingStack, instance, (new V0CustomElementProcessingStack));
-    return instance;
+V0CustomElementProcessingStack& V0CustomElementProcessingStack::instance() {
+  DEFINE_STATIC_LOCAL(V0CustomElementProcessingStack, instance,
+                      (new V0CustomElementProcessingStack));
+  return instance;
 }
 
 // Dispatches callbacks when popping the processing stack.
-void V0CustomElementProcessingStack::processElementQueueAndPop()
-{
-    instance().processElementQueueAndPop(s_elementQueueStart, s_elementQueueEnd);
+void V0CustomElementProcessingStack::processElementQueueAndPop() {
+  instance().processElementQueueAndPop(s_elementQueueStart, s_elementQueueEnd);
 }
 
-void V0CustomElementProcessingStack::processElementQueueAndPop(size_t start, size_t end)
-{
-    DCHECK(isMainThread());
-    V0CustomElementCallbackQueue::ElementQueueId thisQueue = currentElementQueue();
+void V0CustomElementProcessingStack::processElementQueueAndPop(size_t start,
+                                                               size_t end) {
+  DCHECK(isMainThread());
+  V0CustomElementCallbackQueue::ElementQueueId thisQueue =
+      currentElementQueue();
 
-    for (size_t i = start; i < end; ++i) {
-        {
-            // The created callback may schedule entered document
-            // callbacks.
-            CallbackDeliveryScope deliveryScope;
-            m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
-        }
-
-        DCHECK_EQ(start, s_elementQueueStart);
-        DCHECK_EQ(end, s_elementQueueEnd);
+  for (size_t i = start; i < end; ++i) {
+    {
+      // The created callback may schedule entered document
+      // callbacks.
+      CallbackDeliveryScope deliveryScope;
+      m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
     }
 
-    // Pop the element queue from the processing stack
-    m_flattenedProcessingStack.resize(start);
-    s_elementQueueEnd = start;
+    DCHECK_EQ(start, s_elementQueueStart);
+    DCHECK_EQ(end, s_elementQueueEnd);
+  }
 
-    if (s_elementQueueStart == kNumSentinels)
-        V0CustomElementScheduler::callbackDispatcherDidFinish();
+  // Pop the element queue from the processing stack
+  m_flattenedProcessingStack.resize(start);
+  s_elementQueueEnd = start;
+
+  if (s_elementQueueStart == kNumSentinels)
+    V0CustomElementScheduler::callbackDispatcherDidFinish();
 }
 
-void V0CustomElementProcessingStack::enqueue(V0CustomElementCallbackQueue* callbackQueue)
-{
-    DCHECK(inCallbackDeliveryScope());
+void V0CustomElementProcessingStack::enqueue(
+    V0CustomElementCallbackQueue* callbackQueue) {
+  DCHECK(inCallbackDeliveryScope());
 
-    if (callbackQueue->owner() == currentElementQueue())
-        return;
+  if (callbackQueue->owner() == currentElementQueue())
+    return;
 
-    callbackQueue->setOwner(currentElementQueue());
+  callbackQueue->setOwner(currentElementQueue());
 
-    m_flattenedProcessingStack.append(callbackQueue);
-    ++s_elementQueueEnd;
+  m_flattenedProcessingStack.append(callbackQueue);
+  ++s_elementQueueEnd;
 }
 
-DEFINE_TRACE(V0CustomElementProcessingStack)
-{
-    visitor->trace(m_flattenedProcessingStack);
+DEFINE_TRACE(V0CustomElementProcessingStack) {
+  visitor->trace(m_flattenedProcessingStack);
 }
 
-} // namespace blink
+}  // namespace blink

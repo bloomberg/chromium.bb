@@ -43,25 +43,29 @@ namespace XPath {
 class Expression;
 }
 
-class XPathExpression : public GarbageCollected<XPathExpression>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static XPathExpression* create()
-    {
-        return new XPathExpression;
-    }
+class XPathExpression : public GarbageCollected<XPathExpression>,
+                        public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static XPathExpression* createExpression(const String& expression, XPathNSResolver*, ExceptionState&);
-    XPathResult* evaluate(Node* contextNode, unsigned short type, const ScriptValue&, ExceptionState&);
+ public:
+  static XPathExpression* create() { return new XPathExpression; }
 
-    DECLARE_TRACE();
+  static XPathExpression* createExpression(const String& expression,
+                                           XPathNSResolver*,
+                                           ExceptionState&);
+  XPathResult* evaluate(Node* contextNode,
+                        unsigned short type,
+                        const ScriptValue&,
+                        ExceptionState&);
 
-private:
-    XPathExpression();
+  DECLARE_TRACE();
 
-    Member<XPath::Expression> m_topExpression;
+ private:
+  XPathExpression();
+
+  Member<XPath::Expression> m_topExpression;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XPathExpression_h
+#endif  // XPathExpression_h

@@ -39,354 +39,381 @@
 
 namespace blink {
 
-EventTarget* EventPath::eventTargetRespectingTargetRules(Node& referenceNode)
-{
-    if (referenceNode.isPseudoElement()) {
-        DCHECK(referenceNode.parentNode());
-        return referenceNode.parentNode();
-    }
+EventTarget* EventPath::eventTargetRespectingTargetRules(Node& referenceNode) {
+  if (referenceNode.isPseudoElement()) {
+    DCHECK(referenceNode.parentNode());
+    return referenceNode.parentNode();
+  }
 
-    return &referenceNode;
+  return &referenceNode;
 }
 
-static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, EventTarget& target)
-{
-    if (shadowRoot.isV1()) {
-        // In v1, an event is scoped by default unless event.composed flag is set.
-        return !event.composed() && target.toNode() && target.toNode()->ownerShadowHost() == shadowRoot.host();
-    }
-    // Ignores event.composed() for v0.
-    // Instead, use event.isScopedInV0() for backward compatibility.
-    return event.isScopedInV0() && target.toNode() && target.toNode()->ownerShadowHost() == shadowRoot.host();
+static inline bool shouldStopAtShadowRoot(Event& event,
+                                          ShadowRoot& shadowRoot,
+                                          EventTarget& target) {
+  if (shadowRoot.isV1()) {
+    // In v1, an event is scoped by default unless event.composed flag is set.
+    return !event.composed() && target.toNode() &&
+           target.toNode()->ownerShadowHost() == shadowRoot.host();
+  }
+  // Ignores event.composed() for v0.
+  // Instead, use event.isScopedInV0() for backward compatibility.
+  return event.isScopedInV0() && target.toNode() &&
+         target.toNode()->ownerShadowHost() == shadowRoot.host();
 }
 
-EventPath::EventPath(Node& node, Event* event)
-    : m_node(node)
-    , m_event(event)
-{
-    initialize();
+EventPath::EventPath(Node& node, Event* event) : m_node(node), m_event(event) {
+  initialize();
 }
 
-void EventPath::initializeWith(Node& node, Event* event)
-{
-    m_node = &node;
-    m_event = event;
-    m_windowEventContext = nullptr;
-    m_nodeEventContexts.clear();
-    m_treeScopeEventContexts.clear();
-    initialize();
+void EventPath::initializeWith(Node& node, Event* event) {
+  m_node = &node;
+  m_event = event;
+  m_windowEventContext = nullptr;
+  m_nodeEventContexts.clear();
+  m_treeScopeEventContexts.clear();
+  initialize();
 }
 
-static inline bool eventPathShouldBeEmptyFor(Node& node, Event* event)
-{
-    if (node.isPseudoElement() && !node.parentElement())
-        return true;
+static inline bool eventPathShouldBeEmptyFor(Node& node, Event* event) {
+  if (node.isPseudoElement() && !node.parentElement())
+    return true;
 
-    // Do not dispatch non-composed events in SVG use trees.
-    if (node.isSVGElement()) {
-        if (toSVGElement(node).inUseShadowTree() && event && !event->composed())
-            return true;
-    }
+  // Do not dispatch non-composed events in SVG use trees.
+  if (node.isSVGElement()) {
+    if (toSVGElement(node).inUseShadowTree() && event && !event->composed())
+      return true;
+  }
 
-    return false;
+  return false;
 }
 
-void EventPath::initialize()
-{
-    if (eventPathShouldBeEmptyFor(*m_node, m_event))
-        return;
+void EventPath::initialize() {
+  if (eventPathShouldBeEmptyFor(*m_node, m_event))
+    return;
 
-    calculatePath();
-    calculateAdjustedTargets();
-    calculateTreeOrderAndSetNearestAncestorClosedTree();
+  calculatePath();
+  calculateAdjustedTargets();
+  calculateTreeOrderAndSetNearestAncestorClosedTree();
 }
 
-void EventPath::calculatePath()
-{
-    DCHECK(m_node);
-    DCHECK(m_nodeEventContexts.isEmpty());
-    m_node->updateDistribution();
+void EventPath::calculatePath() {
+  DCHECK(m_node);
+  DCHECK(m_nodeEventContexts.isEmpty());
+  m_node->updateDistribution();
 
-    // For performance and memory usage reasons we want to store the
-    // path using as few bytes as possible and with as few allocations
-    // as possible which is why we gather the data on the stack before
-    // storing it in a perfectly sized m_nodeEventContexts Vector.
-    HeapVector<Member<Node>, 64> nodesInPath;
-    Node* current = m_node;
+  // For performance and memory usage reasons we want to store the
+  // path using as few bytes as possible and with as few allocations
+  // as possible which is why we gather the data on the stack before
+  // storing it in a perfectly sized m_nodeEventContexts Vector.
+  HeapVector<Member<Node>, 64> nodesInPath;
+  Node* current = m_node;
 
-    // Exclude nodes in SVG <use>'s shadow tree from event path.
-    // See crbug.com/630870
-    while (current->isSVGElement()) {
-        SVGUseElement* correspondingUseElement = toSVGElement(current)->correspondingUseElement();
-        if (!correspondingUseElement)
-            break;
-        current = correspondingUseElement;
-    }
+  // Exclude nodes in SVG <use>'s shadow tree from event path.
+  // See crbug.com/630870
+  while (current->isSVGElement()) {
+    SVGUseElement* correspondingUseElement =
+        toSVGElement(current)->correspondingUseElement();
+    if (!correspondingUseElement)
+      break;
+    current = correspondingUseElement;
+  }
 
-    nodesInPath.append(current);
-    while (current) {
-        if (m_event && current->keepEventInNode(m_event))
-            break;
-        HeapVector<Member<InsertionPoint>, 8> insertionPoints;
-        collectDestinationInsertionPoints(*current, insertionPoints);
-        if (!insertionPoints.isEmpty()) {
-            for (const auto& insertionPoint : insertionPoints) {
-                if (insertionPoint->isShadowInsertionPoint()) {
-                    ShadowRoot* containingShadowRoot = insertionPoint->containingShadowRoot();
-                    DCHECK(containingShadowRoot);
-                    if (!containingShadowRoot->isOldest())
-                        nodesInPath.append(containingShadowRoot->olderShadowRoot());
-                }
-                nodesInPath.append(insertionPoint);
-            }
-            current = insertionPoints.last();
-            continue;
+  nodesInPath.append(current);
+  while (current) {
+    if (m_event && current->keepEventInNode(m_event))
+      break;
+    HeapVector<Member<InsertionPoint>, 8> insertionPoints;
+    collectDestinationInsertionPoints(*current, insertionPoints);
+    if (!insertionPoints.isEmpty()) {
+      for (const auto& insertionPoint : insertionPoints) {
+        if (insertionPoint->isShadowInsertionPoint()) {
+          ShadowRoot* containingShadowRoot =
+              insertionPoint->containingShadowRoot();
+          DCHECK(containingShadowRoot);
+          if (!containingShadowRoot->isOldest())
+            nodesInPath.append(containingShadowRoot->olderShadowRoot());
         }
-        if (current->isChildOfV1ShadowHost()) {
-            if (HTMLSlotElement* slot = current->assignedSlot()) {
-                current = slot;
-                nodesInPath.append(current);
-                continue;
-            }
-        }
-        if (current->isShadowRoot()) {
-            if (m_event && shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
-                break;
-            current = current->ownerShadowHost();
-            nodesInPath.append(current);
-        } else {
-            current = current->parentNode();
-            if (current)
-                nodesInPath.append(current);
-        }
+        nodesInPath.append(insertionPoint);
+      }
+      current = insertionPoints.last();
+      continue;
     }
+    if (current->isChildOfV1ShadowHost()) {
+      if (HTMLSlotElement* slot = current->assignedSlot()) {
+        current = slot;
+        nodesInPath.append(current);
+        continue;
+      }
+    }
+    if (current->isShadowRoot()) {
+      if (m_event &&
+          shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
+        break;
+      current = current->ownerShadowHost();
+      nodesInPath.append(current);
+    } else {
+      current = current->parentNode();
+      if (current)
+        nodesInPath.append(current);
+    }
+  }
 
-    m_nodeEventContexts.reserveCapacity(nodesInPath.size());
-    for (Node* nodeInPath : nodesInPath) {
-        m_nodeEventContexts.append(NodeEventContext(nodeInPath, eventTargetRespectingTargetRules(*nodeInPath)));
-    }
+  m_nodeEventContexts.reserveCapacity(nodesInPath.size());
+  for (Node* nodeInPath : nodesInPath) {
+    m_nodeEventContexts.append(NodeEventContext(
+        nodeInPath, eventTargetRespectingTargetRules(*nodeInPath)));
+  }
 }
 
-void EventPath::calculateTreeOrderAndSetNearestAncestorClosedTree()
-{
-    // Precondition:
-    //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same composed tree.
-    //   - The root tree must be included.
-    HeapHashMap<Member<const TreeScope>, Member<TreeScopeEventContext>> treeScopeEventContextMap;
-    for (const auto& treeScopeEventContext : m_treeScopeEventContexts)
-        treeScopeEventContextMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext.get());
-    TreeScopeEventContext* rootTree = nullptr;
-    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
-        // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
-        // See the definition of trees of trees in the Shadow DOM spec:
-        // http://w3c.github.io/webcomponents/spec/shadow/
-        TreeScope* parent = treeScopeEventContext.get()->treeScope().olderShadowRootOrParentTreeScope();
-        if (!parent) {
-            DCHECK(!rootTree);
-            rootTree = treeScopeEventContext.get();
-            continue;
-        }
-        DCHECK_NE(treeScopeEventContextMap.find(parent), treeScopeEventContextMap.end());
-        treeScopeEventContextMap.find(parent)->value->addChild(*treeScopeEventContext.get());
+void EventPath::calculateTreeOrderAndSetNearestAncestorClosedTree() {
+  // Precondition:
+  //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same composed tree.
+  //   - The root tree must be included.
+  HeapHashMap<Member<const TreeScope>, Member<TreeScopeEventContext>>
+      treeScopeEventContextMap;
+  for (const auto& treeScopeEventContext : m_treeScopeEventContexts)
+    treeScopeEventContextMap.add(&treeScopeEventContext->treeScope(),
+                                 treeScopeEventContext.get());
+  TreeScopeEventContext* rootTree = nullptr;
+  for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
+    // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
+    // See the definition of trees of trees in the Shadow DOM spec:
+    // http://w3c.github.io/webcomponents/spec/shadow/
+    TreeScope* parent = treeScopeEventContext.get()
+                            ->treeScope()
+                            .olderShadowRootOrParentTreeScope();
+    if (!parent) {
+      DCHECK(!rootTree);
+      rootTree = treeScopeEventContext.get();
+      continue;
     }
-    DCHECK(rootTree);
-    rootTree->calculateTreeOrderAndSetNearestAncestorClosedTree(0, nullptr);
+    DCHECK_NE(treeScopeEventContextMap.find(parent),
+              treeScopeEventContextMap.end());
+    treeScopeEventContextMap.find(parent)->value->addChild(
+        *treeScopeEventContext.get());
+  }
+  DCHECK(rootTree);
+  rootTree->calculateTreeOrderAndSetNearestAncestorClosedTree(0, nullptr);
 }
 
-TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarget, TreeScope* treeScope, TreeScopeEventContextMap& treeScopeEventContextMap)
-{
-    if (!treeScope)
-        return nullptr;
-    TreeScopeEventContext* treeScopeEventContext;
-    bool isNewEntry;
-    {
-        TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(treeScope, nullptr);
-        isNewEntry = addResult.isNewEntry;
-        if (isNewEntry)
-            addResult.storedValue->value = TreeScopeEventContext::create(*treeScope);
-        treeScopeEventContext = addResult.storedValue->value.get();
+TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(
+    Node* currentTarget,
+    TreeScope* treeScope,
+    TreeScopeEventContextMap& treeScopeEventContextMap) {
+  if (!treeScope)
+    return nullptr;
+  TreeScopeEventContext* treeScopeEventContext;
+  bool isNewEntry;
+  {
+    TreeScopeEventContextMap::AddResult addResult =
+        treeScopeEventContextMap.add(treeScope, nullptr);
+    isNewEntry = addResult.isNewEntry;
+    if (isNewEntry)
+      addResult.storedValue->value = TreeScopeEventContext::create(*treeScope);
+    treeScopeEventContext = addResult.storedValue->value.get();
+  }
+  if (isNewEntry) {
+    TreeScopeEventContext* parentTreeScopeEventContext =
+        ensureTreeScopeEventContext(
+            0, treeScope->olderShadowRootOrParentTreeScope(),
+            treeScopeEventContextMap);
+    if (parentTreeScopeEventContext && parentTreeScopeEventContext->target()) {
+      treeScopeEventContext->setTarget(parentTreeScopeEventContext->target());
+    } else if (currentTarget) {
+      treeScopeEventContext->setTarget(
+          eventTargetRespectingTargetRules(*currentTarget));
     }
-    if (isNewEntry) {
-        TreeScopeEventContext* parentTreeScopeEventContext = ensureTreeScopeEventContext(0, treeScope->olderShadowRootOrParentTreeScope(), treeScopeEventContextMap);
-        if (parentTreeScopeEventContext && parentTreeScopeEventContext->target()) {
-            treeScopeEventContext->setTarget(parentTreeScopeEventContext->target());
-        } else if (currentTarget) {
-            treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(*currentTarget));
-        }
-    } else if (!treeScopeEventContext->target() && currentTarget) {
-        treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(*currentTarget));
-    }
-    return treeScopeEventContext;
+  } else if (!treeScopeEventContext->target() && currentTarget) {
+    treeScopeEventContext->setTarget(
+        eventTargetRespectingTargetRules(*currentTarget));
+  }
+  return treeScopeEventContext;
 }
 
-void EventPath::calculateAdjustedTargets()
-{
-    const TreeScope* lastTreeScope = nullptr;
+void EventPath::calculateAdjustedTargets() {
+  const TreeScope* lastTreeScope = nullptr;
 
-    TreeScopeEventContextMap treeScopeEventContextMap;
-    TreeScopeEventContext* lastTreeScopeEventContext = nullptr;
+  TreeScopeEventContextMap treeScopeEventContextMap;
+  TreeScopeEventContext* lastTreeScopeEventContext = nullptr;
 
-    for (size_t i = 0; i < size(); ++i) {
-        Node* currentNode = at(i).node();
-        TreeScope& currentTreeScope = currentNode->treeScope();
-        if (lastTreeScope != &currentTreeScope) {
-            lastTreeScopeEventContext = ensureTreeScopeEventContext(currentNode, &currentTreeScope, treeScopeEventContextMap);
-        }
-        DCHECK(lastTreeScopeEventContext);
-        at(i).setTreeScopeEventContext(lastTreeScopeEventContext);
-        lastTreeScope = &currentTreeScope;
+  for (size_t i = 0; i < size(); ++i) {
+    Node* currentNode = at(i).node();
+    TreeScope& currentTreeScope = currentNode->treeScope();
+    if (lastTreeScope != &currentTreeScope) {
+      lastTreeScopeEventContext = ensureTreeScopeEventContext(
+          currentNode, &currentTreeScope, treeScopeEventContextMap);
     }
-    m_treeScopeEventContexts.appendRange(treeScopeEventContextMap.values().begin(), treeScopeEventContextMap.values().end());
+    DCHECK(lastTreeScopeEventContext);
+    at(i).setTreeScopeEventContext(lastTreeScopeEventContext);
+    lastTreeScope = &currentTreeScope;
+  }
+  m_treeScopeEventContexts.appendRange(
+      treeScopeEventContextMap.values().begin(),
+      treeScopeEventContextMap.values().end());
 }
 
-void EventPath::buildRelatedNodeMap(const Node& relatedNode, RelatedTargetMap& relatedTargetMap)
-{
-    EventPath* relatedTargetEventPath = new EventPath(const_cast<Node&>(relatedNode));
-    for (size_t i = 0; i < relatedTargetEventPath->m_treeScopeEventContexts.size(); ++i) {
-        TreeScopeEventContext* treeScopeEventContext = relatedTargetEventPath->m_treeScopeEventContexts[i].get();
-        relatedTargetMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext->target());
+void EventPath::buildRelatedNodeMap(const Node& relatedNode,
+                                    RelatedTargetMap& relatedTargetMap) {
+  EventPath* relatedTargetEventPath =
+      new EventPath(const_cast<Node&>(relatedNode));
+  for (size_t i = 0;
+       i < relatedTargetEventPath->m_treeScopeEventContexts.size(); ++i) {
+    TreeScopeEventContext* treeScopeEventContext =
+        relatedTargetEventPath->m_treeScopeEventContexts[i].get();
+    relatedTargetMap.add(&treeScopeEventContext->treeScope(),
+                         treeScopeEventContext->target());
+  }
+  // Oilpan: It is important to explicitly clear the vectors to reuse
+  // the memory in subsequent event dispatchings.
+  relatedTargetEventPath->clear();
+}
+
+EventTarget* EventPath::findRelatedNode(TreeScope& scope,
+                                        RelatedTargetMap& relatedTargetMap) {
+  HeapVector<Member<TreeScope>, 32> parentTreeScopes;
+  EventTarget* relatedNode = nullptr;
+  for (TreeScope* current = &scope; current;
+       current = current->olderShadowRootOrParentTreeScope()) {
+    parentTreeScopes.append(current);
+    RelatedTargetMap::const_iterator iter = relatedTargetMap.find(current);
+    if (iter != relatedTargetMap.end() && iter->value) {
+      relatedNode = iter->value;
+      break;
     }
-    // Oilpan: It is important to explicitly clear the vectors to reuse
-    // the memory in subsequent event dispatchings.
-    relatedTargetEventPath->clear();
+  }
+  DCHECK(relatedNode);
+  for (const auto& entry : parentTreeScopes)
+    relatedTargetMap.add(entry, relatedNode);
+
+  return relatedNode;
 }
 
-EventTarget* EventPath::findRelatedNode(TreeScope& scope, RelatedTargetMap& relatedTargetMap)
-{
-    HeapVector<Member<TreeScope>, 32> parentTreeScopes;
-    EventTarget* relatedNode = nullptr;
-    for (TreeScope* current = &scope; current; current = current->olderShadowRootOrParentTreeScope()) {
-        parentTreeScopes.append(current);
-        RelatedTargetMap::const_iterator iter = relatedTargetMap.find(current);
-        if (iter != relatedTargetMap.end() && iter->value) {
-            relatedNode = iter->value;
-            break;
-        }
+void EventPath::adjustForRelatedTarget(Node& target,
+                                       EventTarget* relatedTarget) {
+  if (!relatedTarget)
+    return;
+  Node* relatedNode = relatedTarget->toNode();
+  if (!relatedNode)
+    return;
+  if (target.document() != relatedNode->document())
+    return;
+  retargetRelatedTarget(*relatedNode);
+  shrinkForRelatedTarget(target, *relatedNode);
+}
+
+void EventPath::retargetRelatedTarget(const Node& relatedTargetNode) {
+  RelatedTargetMap relatedNodeMap;
+  buildRelatedNodeMap(relatedTargetNode, relatedNodeMap);
+
+  for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
+    EventTarget* adjustedRelatedTarget =
+        findRelatedNode(treeScopeEventContext->treeScope(), relatedNodeMap);
+    DCHECK(adjustedRelatedTarget);
+    treeScopeEventContext.get()->setRelatedTarget(adjustedRelatedTarget);
+  }
+}
+
+void EventPath::shrinkForRelatedTarget(const Node& target,
+                                       const Node& relatedTarget) {
+  if (!target.isInShadowTree() && !relatedTarget.isInShadowTree())
+    return;
+  for (size_t i = 0; i < size(); ++i) {
+    if (at(i).target() == at(i).relatedTarget()) {
+      // Event dispatching should be stopped here.
+      shrink(i);
+      break;
     }
-    DCHECK(relatedNode);
-    for (const auto& entry : parentTreeScopes)
-        relatedTargetMap.add(entry, relatedNode);
-
-    return relatedNode;
+  }
 }
 
-void EventPath::adjustForRelatedTarget(Node& target, EventTarget* relatedTarget)
-{
-    if (!relatedTarget)
-        return;
-    Node* relatedNode = relatedTarget->toNode();
-    if (!relatedNode)
-        return;
-    if (target.document() != relatedNode->document())
-        return;
-    retargetRelatedTarget(*relatedNode);
-    shrinkForRelatedTarget(target, *relatedNode);
+void EventPath::adjustForTouchEvent(TouchEvent& touchEvent) {
+  HeapVector<Member<TouchList>> adjustedTouches;
+  HeapVector<Member<TouchList>> adjustedTargetTouches;
+  HeapVector<Member<TouchList>> adjustedChangedTouches;
+  HeapVector<Member<TreeScope>> treeScopes;
+
+  for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
+    TouchEventContext* touchEventContext =
+        treeScopeEventContext->ensureTouchEventContext();
+    adjustedTouches.append(&touchEventContext->touches());
+    adjustedTargetTouches.append(&touchEventContext->targetTouches());
+    adjustedChangedTouches.append(&touchEventContext->changedTouches());
+    treeScopes.append(&treeScopeEventContext->treeScope());
+  }
+
+  adjustTouchList(touchEvent.touches(), adjustedTouches, treeScopes);
+  adjustTouchList(touchEvent.targetTouches(), adjustedTargetTouches,
+                  treeScopes);
+  adjustTouchList(touchEvent.changedTouches(), adjustedChangedTouches,
+                  treeScopes);
+
+#if DCHECK_IS_ON()
+  for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
+    TreeScope& treeScope = treeScopeEventContext->treeScope();
+    TouchEventContext* touchEventContext =
+        treeScopeEventContext->touchEventContext();
+    checkReachability(treeScope, touchEventContext->touches());
+    checkReachability(treeScope, touchEventContext->targetTouches());
+    checkReachability(treeScope, touchEventContext->changedTouches());
+  }
+#endif
 }
 
-void EventPath::retargetRelatedTarget(const Node& relatedTargetNode)
-{
+void EventPath::adjustTouchList(
+    const TouchList* touchList,
+    HeapVector<Member<TouchList>> adjustedTouchList,
+    const HeapVector<Member<TreeScope>>& treeScopes) {
+  if (!touchList)
+    return;
+  for (size_t i = 0; i < touchList->length(); ++i) {
+    const Touch& touch = *touchList->item(i);
+    if (!touch.target())
+      continue;
+
+    Node* targetNode = touch.target()->toNode();
+    if (!targetNode)
+      continue;
+
     RelatedTargetMap relatedNodeMap;
-    buildRelatedNodeMap(relatedTargetNode, relatedNodeMap);
-
-    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
-        EventTarget* adjustedRelatedTarget = findRelatedNode(treeScopeEventContext->treeScope(), relatedNodeMap);
-        DCHECK(adjustedRelatedTarget);
-        treeScopeEventContext.get()->setRelatedTarget(adjustedRelatedTarget);
+    buildRelatedNodeMap(*targetNode, relatedNodeMap);
+    for (size_t j = 0; j < treeScopes.size(); ++j) {
+      adjustedTouchList[j]->append(touch.cloneWithNewTarget(
+          findRelatedNode(*treeScopes[j], relatedNodeMap)));
     }
+  }
 }
 
-void EventPath::shrinkForRelatedTarget(const Node& target, const Node& relatedTarget)
-{
-    if (!target.isInShadowTree() && !relatedTarget.isInShadowTree())
-        return;
-    for (size_t i = 0; i < size(); ++i) {
-        if (at(i).target() == at(i).relatedTarget()) {
-            // Event dispatching should be stopped here.
-            shrink(i);
-            break;
-        }
-    }
+const NodeEventContext& EventPath::topNodeEventContext() {
+  DCHECK(!isEmpty());
+  return last();
 }
 
-void EventPath::adjustForTouchEvent(TouchEvent& touchEvent)
-{
-    HeapVector<Member<TouchList>> adjustedTouches;
-    HeapVector<Member<TouchList>> adjustedTargetTouches;
-    HeapVector<Member<TouchList>> adjustedChangedTouches;
-    HeapVector<Member<TreeScope>> treeScopes;
-
-    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
-        TouchEventContext* touchEventContext = treeScopeEventContext->ensureTouchEventContext();
-        adjustedTouches.append(&touchEventContext->touches());
-        adjustedTargetTouches.append(&touchEventContext->targetTouches());
-        adjustedChangedTouches.append(&touchEventContext->changedTouches());
-        treeScopes.append(&treeScopeEventContext->treeScope());
-    }
-
-    adjustTouchList(touchEvent.touches(), adjustedTouches, treeScopes);
-    adjustTouchList(touchEvent.targetTouches(), adjustedTargetTouches, treeScopes);
-    adjustTouchList(touchEvent.changedTouches(), adjustedChangedTouches, treeScopes);
-
-#if DCHECK_IS_ON()
-    for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
-        TreeScope& treeScope = treeScopeEventContext->treeScope();
-        TouchEventContext* touchEventContext = treeScopeEventContext->touchEventContext();
-        checkReachability(treeScope, touchEventContext->touches());
-        checkReachability(treeScope, touchEventContext->targetTouches());
-        checkReachability(treeScope, touchEventContext->changedTouches());
-    }
-#endif
-}
-
-void EventPath::adjustTouchList(const TouchList* touchList, HeapVector<Member<TouchList>> adjustedTouchList, const HeapVector<Member<TreeScope>>& treeScopes)
-{
-    if (!touchList)
-        return;
-    for (size_t i = 0; i < touchList->length(); ++i) {
-        const Touch& touch = *touchList->item(i);
-        if (!touch.target())
-            continue;
-
-        Node* targetNode = touch.target()->toNode();
-        if (!targetNode)
-            continue;
-
-        RelatedTargetMap relatedNodeMap;
-        buildRelatedNodeMap(*targetNode, relatedNodeMap);
-        for (size_t j = 0; j < treeScopes.size(); ++j) {
-            adjustedTouchList[j]->append(touch.cloneWithNewTarget(findRelatedNode(*treeScopes[j], relatedNodeMap)));
-        }
-    }
-}
-
-const NodeEventContext& EventPath::topNodeEventContext()
-{
-    DCHECK(!isEmpty());
-    return last();
-}
-
-void EventPath::ensureWindowEventContext()
-{
-    DCHECK(m_event);
-    if (!m_windowEventContext)
-        m_windowEventContext = new WindowEventContext(*m_event, topNodeEventContext());
+void EventPath::ensureWindowEventContext() {
+  DCHECK(m_event);
+  if (!m_windowEventContext)
+    m_windowEventContext =
+        new WindowEventContext(*m_event, topNodeEventContext());
 }
 
 #if DCHECK_IS_ON()
-void EventPath::checkReachability(TreeScope& treeScope, TouchList& touchList)
-{
-    for (size_t i = 0; i < touchList.length(); ++i)
-        DCHECK(touchList.item(i)->target()->toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScope));
+void EventPath::checkReachability(TreeScope& treeScope, TouchList& touchList) {
+  for (size_t i = 0; i < touchList.length(); ++i)
+    DCHECK(
+        touchList.item(i)
+            ->target()
+            ->toNode()
+            ->treeScope()
+            .isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScope));
 }
 #endif
 
-DEFINE_TRACE(EventPath)
-{
-    visitor->trace(m_nodeEventContexts);
-    visitor->trace(m_node);
-    visitor->trace(m_event);
-    visitor->trace(m_treeScopeEventContexts);
-    visitor->trace(m_windowEventContext);
+DEFINE_TRACE(EventPath) {
+  visitor->trace(m_nodeEventContexts);
+  visitor->trace(m_node);
+  visitor->trace(m_event);
+  visitor->trace(m_treeScopeEventContexts);
+  visitor->trace(m_windowEventContext);
 }
 
-} // namespace blink
+}  // namespace blink

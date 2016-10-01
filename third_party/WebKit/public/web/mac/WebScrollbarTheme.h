@@ -37,25 +37,24 @@
 namespace blink {
 
 // This enum must match NSScrollerStyle in the 10.7 SDK.
-enum ScrollerStyle {
-    ScrollerStyleLegacy  = 0,
-    ScrollerStyleOverlay = 1
-};
+enum ScrollerStyle { ScrollerStyleLegacy = 0, ScrollerStyleOverlay = 1 };
 
 class WebScrollbarTheme {
-public:
-    // Updates the scrollbar appearance and behavior.
-    // |initialButtonDelay| is the current value of NSScrollerButtonDelay from NSUserDefaults.
-    // |autoscrollButtonDelay| is the current value of NSScrollerButtonPeriod from NSUserDefaults.
-    // |preferredScrollerStyle| is the current value of +[NSScroller preferredScrollerStyle].
-    // |redraw| is true if the update requires a redraw to include the change.
-    // |buttonPlacement| is the current value of AppleScrollBarVariant
-    BLINK_EXPORT static void updateScrollbarsWithNSDefaults(
-        float initialButtonDelay, float autoscrollButtonDelay,
-        ScrollerStyle preferredScrollerStyle, bool redraw,
-        WebScrollbarButtonsPlacement);
+ public:
+  // Updates the scrollbar appearance and behavior.
+  // |initialButtonDelay| is the current value of NSScrollerButtonDelay from NSUserDefaults.
+  // |autoscrollButtonDelay| is the current value of NSScrollerButtonPeriod from NSUserDefaults.
+  // |preferredScrollerStyle| is the current value of +[NSScroller preferredScrollerStyle].
+  // |redraw| is true if the update requires a redraw to include the change.
+  // |buttonPlacement| is the current value of AppleScrollBarVariant
+  BLINK_EXPORT static void updateScrollbarsWithNSDefaults(
+      float initialButtonDelay,
+      float autoscrollButtonDelay,
+      ScrollerStyle preferredScrollerStyle,
+      bool redraw,
+      WebScrollbarButtonsPlacement);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

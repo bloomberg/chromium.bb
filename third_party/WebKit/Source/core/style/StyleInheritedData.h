@@ -38,34 +38,35 @@ namespace blink {
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleInheritedData : public RefCounted<StyleInheritedData> {
-public:
-    static PassRefPtr<StyleInheritedData> create() { return adoptRef(new StyleInheritedData); }
-    PassRefPtr<StyleInheritedData> copy() const { return adoptRef(new StyleInheritedData(*this)); }
-    ~StyleInheritedData();
+ public:
+  static PassRefPtr<StyleInheritedData> create() {
+    return adoptRef(new StyleInheritedData);
+  }
+  PassRefPtr<StyleInheritedData> copy() const {
+    return adoptRef(new StyleInheritedData(*this));
+  }
+  ~StyleInheritedData();
 
-    bool operator==(const StyleInheritedData&) const;
-    bool operator!=(const StyleInheritedData& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const StyleInheritedData&) const;
+  bool operator!=(const StyleInheritedData& o) const { return !(*this == o); }
 
-    short horizontal_border_spacing;
-    short vertical_border_spacing;
+  short horizontal_border_spacing;
+  short vertical_border_spacing;
 
-    // could be packed in a short but doesn't
-    // make a difference currently because of padding
-    Length line_height;
+  // could be packed in a short but doesn't
+  // make a difference currently because of padding
+  Length line_height;
 
-    Font font;
-    Color color;
-    Color visitedLinkColor;
-    float textAutosizingMultiplier;
+  Font font;
+  Color color;
+  Color visitedLinkColor;
+  float textAutosizingMultiplier;
 
-private:
-    StyleInheritedData();
-    StyleInheritedData(const StyleInheritedData&);
+ private:
+  StyleInheritedData();
+  StyleInheritedData(const StyleInheritedData&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleInheritedData_h
+#endif  // StyleInheritedData_h

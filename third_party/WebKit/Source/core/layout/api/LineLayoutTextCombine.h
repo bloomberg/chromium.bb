@@ -11,39 +11,31 @@
 namespace blink {
 
 class LineLayoutTextCombine : public LineLayoutText {
-public:
-    explicit LineLayoutTextCombine(LayoutTextCombine* layoutTextCombine)
-        : LineLayoutText(layoutTextCombine)
-    {
-    }
+ public:
+  explicit LineLayoutTextCombine(LayoutTextCombine* layoutTextCombine)
+      : LineLayoutText(layoutTextCombine) {}
 
-    explicit LineLayoutTextCombine(const LineLayoutItem& item)
-        : LineLayoutText(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isCombineText());
-    }
+  explicit LineLayoutTextCombine(const LineLayoutItem& item)
+      : LineLayoutText(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isCombineText());
+  }
 
-    explicit LineLayoutTextCombine(std::nullptr_t) : LineLayoutText(nullptr) { }
+  explicit LineLayoutTextCombine(std::nullptr_t) : LineLayoutText(nullptr) {}
 
-    LineLayoutTextCombine() { }
+  LineLayoutTextCombine() {}
 
-    bool isCombined() const
-    {
-        return toTextCombine()->isCombined();
-    }
+  bool isCombined() const { return toTextCombine()->isCombined(); }
 
-private:
-    LayoutTextCombine* toTextCombine()
-    {
-        return toLayoutTextCombine(layoutObject());
-    }
+ private:
+  LayoutTextCombine* toTextCombine() {
+    return toLayoutTextCombine(layoutObject());
+  }
 
-    const LayoutTextCombine* toTextCombine() const
-    {
-        return toLayoutTextCombine(layoutObject());
-    }
+  const LayoutTextCombine* toTextCombine() const {
+    return toLayoutTextCombine(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutTextCombine_h
+#endif  // LineLayoutTextCombine_h

@@ -33,30 +33,35 @@
 
 namespace blink {
 
-class RTCLegacyStatsReport final : public GarbageCollectedFinalized<RTCLegacyStatsReport>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RTCLegacyStatsReport* create(const String& id, const String& type, double timestamp);
+class RTCLegacyStatsReport final
+    : public GarbageCollectedFinalized<RTCLegacyStatsReport>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    double timestamp() const { return m_timestamp; }
-    String id() { return m_id; }
-    String type() { return m_type; }
-    String stat(const String& name) { return m_stats.get(name); }
-    Vector<String> names() const;
+ public:
+  static RTCLegacyStatsReport* create(const String& id,
+                                      const String& type,
+                                      double timestamp);
 
-    void addStatistic(const String& name, const String& value);
+  double timestamp() const { return m_timestamp; }
+  String id() { return m_id; }
+  String type() { return m_type; }
+  String stat(const String& name) { return m_stats.get(name); }
+  Vector<String> names() const;
 
-    DEFINE_INLINE_TRACE() { }
+  void addStatistic(const String& name, const String& value);
 
-private:
-    RTCLegacyStatsReport(const String& id, const String& type, double timestamp);
+  DEFINE_INLINE_TRACE() {}
 
-    String m_id;
-    String m_type;
-    double m_timestamp;
-    HashMap<String, String> m_stats;
+ private:
+  RTCLegacyStatsReport(const String& id, const String& type, double timestamp);
+
+  String m_id;
+  String m_type;
+  double m_timestamp;
+  HashMap<String, String> m_stats;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCLegacyStatsReport_h
+#endif  // RTCLegacyStatsReport_h

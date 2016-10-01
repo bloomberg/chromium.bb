@@ -33,78 +33,78 @@
 namespace blink {
 
 enum FontWeight {
-    FontWeight100 = 0,
-    FontWeight200 = 1,
-    FontWeight300 = 2,
-    FontWeight400 = 3,
-    FontWeight500 = 4,
-    FontWeight600 = 5,
-    FontWeight700 = 6,
-    FontWeight800 = 7,
-    FontWeight900 = 8,
-    FontWeightNormal = FontWeight400,
-    FontWeightBold = FontWeight700
+  FontWeight100 = 0,
+  FontWeight200 = 1,
+  FontWeight300 = 2,
+  FontWeight400 = 3,
+  FontWeight500 = 4,
+  FontWeight600 = 5,
+  FontWeight700 = 6,
+  FontWeight800 = 7,
+  FontWeight900 = 8,
+  FontWeightNormal = FontWeight400,
+  FontWeightBold = FontWeight700
 };
 
 // Converts a FontWeight to its corresponding numeric value
-inline int numericFontWeight(FontWeight weight)
-{
-    return (weight - FontWeight100 + 1) * 100;
+inline int numericFontWeight(FontWeight weight) {
+  return (weight - FontWeight100 + 1) * 100;
 }
 
 // Numeric values matching OS/2 & Windows Metrics usWidthClass table.
 // https://www.microsoft.com/typography/otspec/os2.htm
 enum FontStretch {
-    FontStretchUltraCondensed = 1,
-    FontStretchExtraCondensed = 2,
-    FontStretchCondensed = 3,
-    FontStretchSemiCondensed = 4,
-    FontStretchNormal = 5,
-    FontStretchSemiExpanded = 6,
-    FontStretchExpanded = 7,
-    FontStretchExtraExpanded = 8,
-    FontStretchUltraExpanded = 9
+  FontStretchUltraCondensed = 1,
+  FontStretchExtraCondensed = 2,
+  FontStretchCondensed = 3,
+  FontStretchSemiCondensed = 4,
+  FontStretchNormal = 5,
+  FontStretchSemiExpanded = 6,
+  FontStretchExpanded = 7,
+  FontStretchExtraExpanded = 8,
+  FontStretchUltraExpanded = 9
 };
 
 enum FontStyle {
-    FontStyleNormal = 0,
-    FontStyleOblique = 1,
-    FontStyleItalic = 2
+  FontStyleNormal = 0,
+  FontStyleOblique = 1,
+  FontStyleItalic = 2
 };
 
 typedef unsigned FontTraitsBitfield;
 
 struct FontTraits {
-    DISALLOW_NEW();
-    FontTraits(FontStyle style, FontWeight weight, FontStretch stretch)
-    {
-        m_traits.m_style = style;
-        m_traits.m_weight = weight;
-        m_traits.m_stretch = stretch;
-        m_traits.m_filler = 0;
-        DCHECK_EQ(m_bitfield >> 10, 0u);
-    }
-    FontTraits(FontTraitsBitfield bitfield)
-        : m_bitfield(bitfield)
-    {
-        DCHECK_EQ(m_traits.m_filler, 0u);
-        DCHECK_EQ(m_bitfield >> 10, 0u);
-    }
-    FontStyle style() const { return static_cast<FontStyle>(m_traits.m_style); }
-    FontWeight weight() const { return static_cast<FontWeight>(m_traits.m_weight); }
-    FontStretch stretch() const { return static_cast<FontStretch>(m_traits.m_stretch); }
-    FontTraitsBitfield bitfield() const { return m_bitfield; }
+  DISALLOW_NEW();
+  FontTraits(FontStyle style, FontWeight weight, FontStretch stretch) {
+    m_traits.m_style = style;
+    m_traits.m_weight = weight;
+    m_traits.m_stretch = stretch;
+    m_traits.m_filler = 0;
+    DCHECK_EQ(m_bitfield >> 10, 0u);
+  }
+  FontTraits(FontTraitsBitfield bitfield) : m_bitfield(bitfield) {
+    DCHECK_EQ(m_traits.m_filler, 0u);
+    DCHECK_EQ(m_bitfield >> 10, 0u);
+  }
+  FontStyle style() const { return static_cast<FontStyle>(m_traits.m_style); }
+  FontWeight weight() const {
+    return static_cast<FontWeight>(m_traits.m_weight);
+  }
+  FontStretch stretch() const {
+    return static_cast<FontStretch>(m_traits.m_stretch);
+  }
+  FontTraitsBitfield bitfield() const { return m_bitfield; }
 
-    union {
-        struct {
-            unsigned m_style : 2;
-            unsigned m_weight : 4;
-            unsigned m_stretch : 4;
-            unsigned m_filler : 22;
-        } m_traits;
-        FontTraitsBitfield m_bitfield;
-    };
+  union {
+    struct {
+      unsigned m_style : 2;
+      unsigned m_weight : 4;
+      unsigned m_stretch : 4;
+      unsigned m_filler : 22;
+    } m_traits;
+    FontTraitsBitfield m_bitfield;
+  };
 };
 
-} // namespace blink
-#endif // FontTraits_h
+}  // namespace blink
+#endif  // FontTraits_h

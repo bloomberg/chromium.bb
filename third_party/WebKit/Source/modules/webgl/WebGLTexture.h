@@ -31,34 +31,35 @@
 namespace blink {
 
 class WebGLTexture final : public WebGLSharedPlatform3DObject {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~WebGLTexture() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebGLTexture* create(WebGLRenderingContextBase*);
+ public:
+  ~WebGLTexture() override;
 
-    void setTarget(GLenum);
+  static WebGLTexture* create(WebGLRenderingContextBase*);
 
-    GLenum getTarget() const { return m_target; }
+  void setTarget(GLenum);
 
-    static GLenum getValidFormatForInternalFormat(GLenum);
+  GLenum getTarget() const { return m_target; }
 
-    bool hasEverBeenBound() const { return object() && m_target; }
+  static GLenum getValidFormatForInternalFormat(GLenum);
 
-    static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
+  bool hasEverBeenBound() const { return object() && m_target; }
 
-private:
-    explicit WebGLTexture(WebGLRenderingContextBase*);
+  static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
 
-    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+ private:
+  explicit WebGLTexture(WebGLRenderingContextBase*);
 
-    bool isTexture() const override { return true; }
+  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    int mapTargetToIndex(GLenum) const;
+  bool isTexture() const override { return true; }
 
-    GLenum m_target;
+  int mapTargetToIndex(GLenum) const;
+
+  GLenum m_target;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLTexture_h
+#endif  // WebGLTexture_h

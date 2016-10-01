@@ -26,39 +26,36 @@
 namespace blink {
 
 StyleMultiColData::StyleMultiColData()
-    : m_width(0)
-    , m_count(ComputedStyle::initialColumnCount())
-    , m_gap(0)
-    , m_visitedLinkColumnRuleColor(StyleColor::currentColor())
-    , m_autoWidth(true)
-    , m_autoCount(true)
-    , m_normalGap(true)
-    , m_fill(ComputedStyle::initialColumnFill())
-    , m_columnSpan(false)
-{
-}
+    : m_width(0),
+      m_count(ComputedStyle::initialColumnCount()),
+      m_gap(0),
+      m_visitedLinkColumnRuleColor(StyleColor::currentColor()),
+      m_autoWidth(true),
+      m_autoCount(true),
+      m_normalGap(true),
+      m_fill(ComputedStyle::initialColumnFill()),
+      m_columnSpan(false) {}
 
 StyleMultiColData::StyleMultiColData(const StyleMultiColData& o)
-    : RefCounted<StyleMultiColData>()
-    , m_width(o.m_width)
-    , m_count(o.m_count)
-    , m_gap(o.m_gap)
-    , m_rule(o.m_rule)
-    , m_visitedLinkColumnRuleColor(o.m_visitedLinkColumnRuleColor)
-    , m_autoWidth(o.m_autoWidth)
-    , m_autoCount(o.m_autoCount)
-    , m_normalGap(o.m_normalGap)
-    , m_fill(o.m_fill)
-    , m_columnSpan(o.m_columnSpan)
-{
+    : RefCounted<StyleMultiColData>(),
+      m_width(o.m_width),
+      m_count(o.m_count),
+      m_gap(o.m_gap),
+      m_rule(o.m_rule),
+      m_visitedLinkColumnRuleColor(o.m_visitedLinkColumnRuleColor),
+      m_autoWidth(o.m_autoWidth),
+      m_autoCount(o.m_autoCount),
+      m_normalGap(o.m_normalGap),
+      m_fill(o.m_fill),
+      m_columnSpan(o.m_columnSpan) {}
+
+bool StyleMultiColData::operator==(const StyleMultiColData& o) const {
+  return m_width == o.m_width && m_count == o.m_count && m_gap == o.m_gap &&
+         m_rule == o.m_rule &&
+         m_visitedLinkColumnRuleColor == o.m_visitedLinkColumnRuleColor &&
+         m_autoWidth == o.m_autoWidth && m_autoCount == o.m_autoCount &&
+         m_normalGap == o.m_normalGap && m_fill == o.m_fill &&
+         m_columnSpan == o.m_columnSpan;
 }
 
-bool StyleMultiColData::operator==(const StyleMultiColData& o) const
-{
-    return m_width == o.m_width && m_count == o.m_count && m_gap == o.m_gap
-        && m_rule == o.m_rule && m_visitedLinkColumnRuleColor == o.m_visitedLinkColumnRuleColor
-        && m_autoWidth == o.m_autoWidth && m_autoCount == o.m_autoCount && m_normalGap == o.m_normalGap
-        && m_fill == o.m_fill && m_columnSpan == o.m_columnSpan;
-}
-
-} // namespace blink
+}  // namespace blink

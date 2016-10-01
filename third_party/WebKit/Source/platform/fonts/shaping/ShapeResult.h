@@ -51,66 +51,70 @@ class TextRun;
 struct GlyphData;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
-public:
-    static PassRefPtr<ShapeResult> create(const Font* font,
-        unsigned numCharacters, TextDirection direction)
-    {
-        return adoptRef(new ShapeResult(font, numCharacters, direction));
-    }
-    static PassRefPtr<ShapeResult> createForTabulationCharacters(const Font*,
-        const TextRun&, float positionOffset, unsigned count);
-    ~ShapeResult();
+ public:
+  static PassRefPtr<ShapeResult> create(const Font* font,
+                                        unsigned numCharacters,
+                                        TextDirection direction) {
+    return adoptRef(new ShapeResult(font, numCharacters, direction));
+  }
+  static PassRefPtr<ShapeResult> createForTabulationCharacters(
+      const Font*,
+      const TextRun&,
+      float positionOffset,
+      unsigned count);
+  ~ShapeResult();
 
-    float width() const { return m_width; }
-    const FloatRect& bounds() const { return m_glyphBoundingBox; }
-    unsigned numCharacters() const { return m_numCharacters; }
-    void fallbackFonts(HashSet<const SimpleFontData*>*) const;
-    bool rtl() const { return m_direction == RTL; }
-    bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
+  float width() const { return m_width; }
+  const FloatRect& bounds() const { return m_glyphBoundingBox; }
+  unsigned numCharacters() const { return m_numCharacters; }
+  void fallbackFonts(HashSet<const SimpleFontData*>*) const;
+  bool rtl() const { return m_direction == RTL; }
+  bool hasVerticalOffsets() const { return m_hasVerticalOffsets; }
 
-    // For memory reporting.
-    size_t byteSize() const;
+  // For memory reporting.
+  size_t byteSize() const;
 
-    int offsetForPosition(float targetX, bool includePartialGlyphs) const;
+  int offsetForPosition(float targetX, bool includePartialGlyphs) const;
 
-    PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
-        const TextRun&) const;
+  PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
+                                             const TextRun&) const;
 
-protected:
-    struct RunInfo;
+ protected:
+  struct RunInfo;
 
-    ShapeResult(const Font*, unsigned numCharacters, TextDirection);
-    ShapeResult(const ShapeResult&);
+  ShapeResult(const Font*, unsigned numCharacters, TextDirection);
+  ShapeResult(const ShapeResult&);
 
-    static PassRefPtr<ShapeResult> create(const ShapeResult& other)
-    {
-        return adoptRef(new ShapeResult(other));
-    }
+  static PassRefPtr<ShapeResult> create(const ShapeResult& other) {
+    return adoptRef(new ShapeResult(other));
+  }
 
-    void applySpacing(ShapeResultSpacing&, const TextRun&);
-    void insertRun(std::unique_ptr<ShapeResult::RunInfo>, unsigned startGlyph,
-        unsigned numGlyphs, hb_buffer_t*);
+  void applySpacing(ShapeResultSpacing&, const TextRun&);
+  void insertRun(std::unique_ptr<ShapeResult::RunInfo>,
+                 unsigned startGlyph,
+                 unsigned numGlyphs,
+                 hb_buffer_t*);
 
-    float m_width;
-    FloatRect m_glyphBoundingBox;
-    Vector<std::unique_ptr<RunInfo>> m_runs;
-    RefPtr<SimpleFontData> m_primaryFont;
+  float m_width;
+  FloatRect m_glyphBoundingBox;
+  Vector<std::unique_ptr<RunInfo>> m_runs;
+  RefPtr<SimpleFontData> m_primaryFont;
 
-    unsigned m_numCharacters;
-    unsigned m_numGlyphs : 30;
+  unsigned m_numCharacters;
+  unsigned m_numGlyphs : 30;
 
-    // Overall direction for the TextRun, dictates which order each individual
-    // sub run (represented by RunInfo structs in the m_runs vector) can have a
-    // different text direction.
-    unsigned m_direction : 1;
+  // Overall direction for the TextRun, dictates which order each individual
+  // sub run (represented by RunInfo structs in the m_runs vector) can have a
+  // different text direction.
+  unsigned m_direction : 1;
 
-    // Tracks whether any runs contain glyphs with a y-offset != 0.
-    unsigned m_hasVerticalOffsets : 1;
+  // Tracks whether any runs contain glyphs with a y-offset != 0.
+  unsigned m_hasVerticalOffsets : 1;
 
-    friend class HarfBuzzShaper;
-    friend class ShapeResultBuffer;
+  friend class HarfBuzzShaper;
+  friend class ShapeResultBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ShapeResult_h
+#endif  // ShapeResult_h

@@ -33,20 +33,25 @@ namespace blink {
 class NodeListOrElement;
 
 class HTMLAllCollection final : public HTMLCollection {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLAllCollection* create(ContainerNode&, CollectionType);
-    ~HTMLAllCollection() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
-    void namedGetter(const AtomicString& name, NodeListOrElement&);
+ public:
+  static HTMLAllCollection* create(ContainerNode&, CollectionType);
+  ~HTMLAllCollection() override;
 
-private:
-    explicit HTMLAllCollection(ContainerNode&);
+  Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
+  void namedGetter(const AtomicString& name, NodeListOrElement&);
+
+ private:
+  explicit HTMLAllCollection(ContainerNode&);
 };
 
-DEFINE_TYPE_CASTS(HTMLAllCollection, LiveNodeListBase, collection, collection->type() == DocAll, collection.type() == DocAll);
+DEFINE_TYPE_CASTS(HTMLAllCollection,
+                  LiveNodeListBase,
+                  collection,
+                  collection->type() == DocAll,
+                  collection.type() == DocAll);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLAllCollection_h
+#endif  // HTMLAllCollection_h

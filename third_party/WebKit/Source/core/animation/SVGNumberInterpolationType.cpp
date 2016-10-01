@@ -11,22 +11,25 @@
 
 namespace blink {
 
-InterpolationValue SVGNumberInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
-{
-    return InterpolationValue(InterpolableNumber::create(0));
+InterpolationValue SVGNumberInterpolationType::maybeConvertNeutral(
+    const InterpolationValue&,
+    ConversionCheckers&) const {
+  return InterpolationValue(InterpolableNumber::create(0));
 }
 
-InterpolationValue SVGNumberInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
-{
-    if (svgValue.type() != AnimatedNumber)
-        return nullptr;
-    return InterpolationValue(InterpolableNumber::create(toSVGNumber(svgValue).value()));
+InterpolationValue SVGNumberInterpolationType::maybeConvertSVGValue(
+    const SVGPropertyBase& svgValue) const {
+  if (svgValue.type() != AnimatedNumber)
+    return nullptr;
+  return InterpolationValue(
+      InterpolableNumber::create(toSVGNumber(svgValue).value()));
 }
 
-SVGPropertyBase* SVGNumberInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
-{
-    double value = toInterpolableNumber(interpolableValue).value();
-    return SVGNumber::create(m_isNonNegative && value < 0 ? 0 : value);
+SVGPropertyBase* SVGNumberInterpolationType::appliedSVGValue(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue*) const {
+  double value = toInterpolableNumber(interpolableValue).value();
+  return SVGNumber::create(m_isNonNegative && value < 0 ? 0 : value);
 }
 
-} // namespace blink
+}  // namespace blink

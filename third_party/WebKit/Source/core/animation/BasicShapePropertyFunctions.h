@@ -15,51 +15,53 @@ namespace blink {
 class ComputedStyle;
 
 class BasicShapePropertyFunctions {
-    STATIC_ONLY(BasicShapePropertyFunctions);
-public:
-    static const BasicShape* getInitialBasicShape(CSSPropertyID property)
-    {
-        return getBasicShape(property, ComputedStyle::initialStyle());
-    }
+  STATIC_ONLY(BasicShapePropertyFunctions);
 
-    static const BasicShape* getBasicShape(CSSPropertyID property, const ComputedStyle& style)
-    {
-        switch (property) {
-        case CSSPropertyShapeOutside:
-            if (!style.shapeOutside())
-                return nullptr;
-            if (style.shapeOutside()->type() != ShapeValue::Shape)
-                return nullptr;
-            if (style.shapeOutside()->cssBox() != BoxMissing)
-                return nullptr;
-            return style.shapeOutside()->shape();
-        case CSSPropertyClipPath:
-            if (!style.clipPath())
-                return nullptr;
-            if (style.clipPath()->type() != ClipPathOperation::SHAPE)
-                return nullptr;
-            return toShapeClipPathOperation(style.clipPath())->basicShape();
-        default:
-            NOTREACHED();
-            return nullptr;
-        }
-    }
+ public:
+  static const BasicShape* getInitialBasicShape(CSSPropertyID property) {
+    return getBasicShape(property, ComputedStyle::initialStyle());
+  }
 
-    static void setBasicShape(CSSPropertyID property, ComputedStyle& style, PassRefPtr<BasicShape> shape)
-    {
-        switch (property) {
-        case CSSPropertyShapeOutside:
-            style.setShapeOutside(ShapeValue::createShapeValue(std::move(shape), BoxMissing));
-            break;
-        case CSSPropertyClipPath:
-            style.setClipPath(ShapeClipPathOperation::create(std::move(shape)));
-            break;
-        default:
-            NOTREACHED();
-        }
+  static const BasicShape* getBasicShape(CSSPropertyID property,
+                                         const ComputedStyle& style) {
+    switch (property) {
+      case CSSPropertyShapeOutside:
+        if (!style.shapeOutside())
+          return nullptr;
+        if (style.shapeOutside()->type() != ShapeValue::Shape)
+          return nullptr;
+        if (style.shapeOutside()->cssBox() != BoxMissing)
+          return nullptr;
+        return style.shapeOutside()->shape();
+      case CSSPropertyClipPath:
+        if (!style.clipPath())
+          return nullptr;
+        if (style.clipPath()->type() != ClipPathOperation::SHAPE)
+          return nullptr;
+        return toShapeClipPathOperation(style.clipPath())->basicShape();
+      default:
+        NOTREACHED();
+        return nullptr;
     }
+  }
+
+  static void setBasicShape(CSSPropertyID property,
+                            ComputedStyle& style,
+                            PassRefPtr<BasicShape> shape) {
+    switch (property) {
+      case CSSPropertyShapeOutside:
+        style.setShapeOutside(
+            ShapeValue::createShapeValue(std::move(shape), BoxMissing));
+        break;
+      case CSSPropertyClipPath:
+        style.setClipPath(ShapeClipPathOperation::create(std::move(shape)));
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BasicShapePropertyFunctions_h
+#endif  // BasicShapePropertyFunctions_h

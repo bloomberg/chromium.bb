@@ -33,32 +33,36 @@
 namespace blink {
 
 class RadioNodeList final : public LiveNodeList {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RadioNodeList* create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
-    {
-        DCHECK(type == RadioNodeListType || type == RadioImgNodeListType);
-        return new RadioNodeList(ownerNode, name, type);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    virtual ~RadioNodeList();
+ public:
+  static RadioNodeList* create(ContainerNode& ownerNode,
+                               CollectionType type,
+                               const AtomicString& name) {
+    DCHECK(type == RadioNodeListType || type == RadioImgNodeListType);
+    return new RadioNodeList(ownerNode, name, type);
+  }
 
-    String value() const;
-    void setValue(const String&);
+  virtual ~RadioNodeList();
 
-private:
-    RadioNodeList(ContainerNode&, const AtomicString& name, CollectionType);
+  String value() const;
+  void setValue(const String&);
 
-    bool checkElementMatchesRadioNodeListFilter(const Element&) const;
+ private:
+  RadioNodeList(ContainerNode&, const AtomicString& name, CollectionType);
 
-    bool matchesByIdOrName(const Element&) const;
-    bool shouldOnlyMatchImgElements() const { return type() == RadioImgNodeListType; }
+  bool checkElementMatchesRadioNodeListFilter(const Element&) const;
 
-    bool elementMatches(const Element&) const override;
+  bool matchesByIdOrName(const Element&) const;
+  bool shouldOnlyMatchImgElements() const {
+    return type() == RadioImgNodeListType;
+  }
 
-    AtomicString m_name;
+  bool elementMatches(const Element&) const override;
+
+  AtomicString m_name;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RadioNodeList_h
+#endif  // RadioNodeList_h

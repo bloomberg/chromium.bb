@@ -36,35 +36,36 @@
 namespace blink {
 
 class AnimatableLengthSize final : public AnimatableValue {
-public:
-    ~AnimatableLengthSize() override { }
-    static PassRefPtr<AnimatableLengthSize> create(PassRefPtr<AnimatableValue> width, PassRefPtr<AnimatableValue> height)
-    {
-        return adoptRef(new AnimatableLengthSize(std::move(width), std::move(height)));
-    }
-    const AnimatableValue* width() const { return m_width.get(); }
-    const AnimatableValue* height() const { return m_height.get(); }
+ public:
+  ~AnimatableLengthSize() override {}
+  static PassRefPtr<AnimatableLengthSize> create(
+      PassRefPtr<AnimatableValue> width,
+      PassRefPtr<AnimatableValue> height) {
+    return adoptRef(
+        new AnimatableLengthSize(std::move(width), std::move(height)));
+  }
+  const AnimatableValue* width() const { return m_width.get(); }
+  const AnimatableValue* height() const { return m_height.get(); }
 
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
 
-private:
-    AnimatableLengthSize(PassRefPtr<AnimatableValue> width, PassRefPtr<AnimatableValue> height)
-        : m_width(width)
-        , m_height(height)
-    {
-    }
-    AnimatableType type() const override { return TypeLengthSize; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  AnimatableLengthSize(PassRefPtr<AnimatableValue> width,
+                       PassRefPtr<AnimatableValue> height)
+      : m_width(width), m_height(height) {}
+  AnimatableType type() const override { return TypeLengthSize; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    RefPtr<AnimatableValue> m_width;
-    RefPtr<AnimatableValue> m_height;
+  RefPtr<AnimatableValue> m_width;
+  RefPtr<AnimatableValue> m_height;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthSize, isLengthSize());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableLengthSize_h
+#endif  // AnimatableLengthSize_h

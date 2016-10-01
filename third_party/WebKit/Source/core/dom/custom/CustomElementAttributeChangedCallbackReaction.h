@@ -15,20 +15,22 @@ namespace blink {
 
 class CORE_EXPORT CustomElementAttributeChangedCallbackReaction final
     : public CustomElementReaction {
-    WTF_MAKE_NONCOPYABLE(CustomElementAttributeChangedCallbackReaction);
-public:
-    CustomElementAttributeChangedCallbackReaction(CustomElementDefinition*,
-        const QualifiedName&,
-        const AtomicString& oldValue, const AtomicString& newValue);
+  WTF_MAKE_NONCOPYABLE(CustomElementAttributeChangedCallbackReaction);
 
-private:
-    void invoke(Element*) override;
+ public:
+  CustomElementAttributeChangedCallbackReaction(CustomElementDefinition*,
+                                                const QualifiedName&,
+                                                const AtomicString& oldValue,
+                                                const AtomicString& newValue);
 
-    QualifiedName m_name;
-    AtomicString m_oldValue;
-    AtomicString m_newValue;
+ private:
+  void invoke(Element*) override;
+
+  QualifiedName m_name;
+  AtomicString m_oldValue;
+  AtomicString m_newValue;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementAttributeChangedCallbackReaction_h
+#endif  // CustomElementAttributeChangedCallbackReaction_h

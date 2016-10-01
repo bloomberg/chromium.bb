@@ -11,53 +11,58 @@
 
 namespace blink {
 
-ExceptionCode WebCdmExceptionToExceptionCode(WebContentDecryptionModuleException);
+ExceptionCode WebCdmExceptionToExceptionCode(
+    WebContentDecryptionModuleException);
 
 // This class wraps the promise resolver to simplify creation of
 // ContentDecryptionModuleResult objects. The default implementations of the
 // complete(), completeWithSession(), etc. methods will reject the promise
 // with an error. It needs to be subclassed and the appropriate complete()
 // method overridden to resolve the promise as needed.
-class ContentDecryptionModuleResultPromise : public ContentDecryptionModuleResult {
-public:
-    ~ContentDecryptionModuleResultPromise() override;
+class ContentDecryptionModuleResultPromise
+    : public ContentDecryptionModuleResult {
+ public:
+  ~ContentDecryptionModuleResultPromise() override;
 
-    // ContentDecryptionModuleResult implementation.
-    void complete() override;
-    void completeWithContentDecryptionModule(WebContentDecryptionModule*) override;
-    void completeWithSession(WebContentDecryptionModuleResult::SessionStatus) override;
-    void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString&) override;
+  // ContentDecryptionModuleResult implementation.
+  void complete() override;
+  void completeWithContentDecryptionModule(
+      WebContentDecryptionModule*) override;
+  void completeWithSession(
+      WebContentDecryptionModuleResult::SessionStatus) override;
+  void completeWithError(WebContentDecryptionModuleException,
+                         unsigned long systemCode,
+                         const WebString&) override;
 
-    // It is only valid to call this before completion.
-    ScriptPromise promise();
+  // It is only valid to call this before completion.
+  ScriptPromise promise();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    explicit ContentDecryptionModuleResultPromise(ScriptState*);
+ protected:
+  explicit ContentDecryptionModuleResultPromise(ScriptState*);
 
-    // Resolves the promise with |value|. Used by subclasses to resolve the
-    // promise.
-    template <typename... T>
-    void resolve(T... value)
-    {
-        m_resolver->resolve(value...);
-        m_resolver.clear();
-    }
+  // Resolves the promise with |value|. Used by subclasses to resolve the
+  // promise.
+  template <typename... T>
+  void resolve(T... value) {
+    m_resolver->resolve(value...);
+    m_resolver.clear();
+  }
 
-    // Rejects the promise with a DOMException. This will post a task to
-    // actually reject the promise later on.
-    void reject(ExceptionCode, const String& errorMessage);
+  // Rejects the promise with a DOMException. This will post a task to
+  // actually reject the promise later on.
+  void reject(ExceptionCode, const String& errorMessage);
 
-    ExecutionContext* getExecutionContext() const;
+  ExecutionContext* getExecutionContext() const;
 
-private:
-    // Rejects the promise with a DOMException.
-    void rejectInternal(ExceptionCode, const String& errorMessage);
+ private:
+  // Rejects the promise with a DOMException.
+  void rejectInternal(ExceptionCode, const String& errorMessage);
 
-    Member<ScriptPromiseResolver> m_resolver;
+  Member<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ContentDecryptionModuleResultPromise_h
+#endif  // ContentDecryptionModuleResultPromise_h

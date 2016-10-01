@@ -38,44 +38,36 @@ class Node;
 class StyleSheet;
 
 class StyleSheetCandidate {
-    STACK_ALLOCATED();
-public:
-    enum Type {
-        HTMLLink,
-        HTMLStyle,
-        SVGStyle,
-        Pi
-    };
+  STACK_ALLOCATED();
 
-    StyleSheetCandidate(Node& node)
-        : m_node(node)
-        , m_type(typeOf(node))
-    { }
+ public:
+  enum Type { HTMLLink, HTMLStyle, SVGStyle, Pi };
 
-    bool isXSL() const;
-    bool isImport() const;
-    bool isAlternate() const;
-    bool isEnabledViaScript() const;
-    bool isEnabledAndLoading() const;
-    bool canBeActivated(const String& currentPreferrableName) const;
-    bool isCSSStyle() const;
+  StyleSheetCandidate(Node& node) : m_node(node), m_type(typeOf(node)) {}
 
-    StyleSheet* sheet() const;
-    AtomicString title() const;
-    Document* importedDocument() const;
+  bool isXSL() const;
+  bool isImport() const;
+  bool isAlternate() const;
+  bool isEnabledViaScript() const;
+  bool isEnabledAndLoading() const;
+  bool canBeActivated(const String& currentPreferrableName) const;
+  bool isCSSStyle() const;
 
-private:
-    bool isElement() const { return m_type != Pi; }
-    bool isHTMLLink() const { return m_type == HTMLLink; }
-    Node& node() const { return *m_node; }
+  StyleSheet* sheet() const;
+  AtomicString title() const;
+  Document* importedDocument() const;
 
-    static Type typeOf(Node&);
+ private:
+  bool isElement() const { return m_type != Pi; }
+  bool isHTMLLink() const { return m_type == HTMLLink; }
+  Node& node() const { return *m_node; }
 
-    Member<Node> m_node;
-    Type m_type;
+  static Type typeOf(Node&);
+
+  Member<Node> m_node;
+  Type m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

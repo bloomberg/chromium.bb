@@ -39,47 +39,32 @@ namespace blink {
 class WebFileWriter;
 
 class FileWriterBase : public GarbageCollectedMixin {
-public:
-    virtual ~FileWriterBase();
-    void initialize(std::unique_ptr<WebFileWriter>, long long length);
+ public:
+  virtual ~FileWriterBase();
+  void initialize(std::unique_ptr<WebFileWriter>, long long length);
 
-    long long position() const
-    {
-        return m_position;
-    }
-    long long length() const
-    {
-        return m_length;
-    }
+  long long position() const { return m_position; }
+  long long length() const { return m_length; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    FileWriterBase();
+ protected:
+  FileWriterBase();
 
-    WebFileWriter* writer()
-    {
-        return m_writer.get();
-    }
+  WebFileWriter* writer() { return m_writer.get(); }
 
-    void setPosition(long long position)
-    {
-        m_position = position;
-    }
+  void setPosition(long long position) { m_position = position; }
 
-    void setLength(long long length)
-    {
-        m_length = length;
-    }
+  void setLength(long long length) { m_length = length; }
 
-    void seekInternal(long long position);
+  void seekInternal(long long position);
 
-private:
-    std::unique_ptr<WebFileWriter> m_writer;
-    long long m_position;
-    long long m_length;
+ private:
+  std::unique_ptr<WebFileWriter> m_writer;
+  long long m_position;
+  long long m_length;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileWriterBase_h
+#endif  // FileWriterBase_h

@@ -35,184 +35,183 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // This contextElement will be only used for keeping this alive from the tearoff.
     // SVGSVGElement holds a strong-ref to this SVGViewSpec, so this is kept alive as:
     // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)-> SVGViewSpec.
-    : SVGFitToViewBox(contextElement, PropertyMapPolicySkip)
-    , m_contextElement(contextElement)
-    , m_transform(SVGAnimatedTransformList::create(contextElement, SVGNames::transformAttr, SVGTransformList::create()))
-{
-    ASSERT(m_contextElement);
+    : SVGFitToViewBox(contextElement, PropertyMapPolicySkip),
+      m_contextElement(contextElement),
+      m_transform(
+          SVGAnimatedTransformList::create(contextElement,
+                                           SVGNames::transformAttr,
+                                           SVGTransformList::create())) {
+  ASSERT(m_contextElement);
 
-    viewBox()->setReadOnly();
-    preserveAspectRatio()->setReadOnly();
-    m_transform->setReadOnly();
-    // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.
+  viewBox()->setReadOnly();
+  preserveAspectRatio()->setReadOnly();
+  m_transform->setReadOnly();
+  // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.
 }
 
-DEFINE_TRACE(SVGViewSpec)
-{
-    visitor->trace(m_contextElement);
-    visitor->trace(m_transform);
-    SVGFitToViewBox::trace(visitor);
+DEFINE_TRACE(SVGViewSpec) {
+  visitor->trace(m_contextElement);
+  visitor->trace(m_transform);
+  SVGFitToViewBox::trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(SVGViewSpec)
-{
-    visitor->traceWrappers(m_contextElement);
+DEFINE_TRACE_WRAPPERS(SVGViewSpec) {
+  visitor->traceWrappers(m_contextElement);
 }
 
-bool SVGViewSpec::parseViewSpec(const String& spec)
-{
-    if (spec.isEmpty() || !m_contextElement)
-        return false;
-    if (spec.is8Bit()) {
-        const LChar* ptr = spec.characters8();
-        const LChar* end = ptr + spec.length();
-        return parseViewSpecInternal(ptr, end);
-    }
-    const UChar* ptr = spec.characters16();
-    const UChar* end = ptr + spec.length();
+bool SVGViewSpec::parseViewSpec(const String& spec) {
+  if (spec.isEmpty() || !m_contextElement)
+    return false;
+  if (spec.is8Bit()) {
+    const LChar* ptr = spec.characters8();
+    const LChar* end = ptr + spec.length();
     return parseViewSpecInternal(ptr, end);
+  }
+  const UChar* ptr = spec.characters16();
+  const UChar* end = ptr + spec.length();
+  return parseViewSpecInternal(ptr, end);
 }
 
-void SVGViewSpec::reset()
-{
-    resetZoomAndPan();
-    m_transform->baseValue()->clear();
-    updateViewBox(FloatRect());
-    ASSERT(preserveAspectRatio());
-    preserveAspectRatio()->baseValue()->setAlign(SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymid);
-    preserveAspectRatio()->baseValue()->setMeetOrSlice(SVGPreserveAspectRatio::kSvgMeetorsliceMeet);
-    m_viewTargetString = emptyString();
+void SVGViewSpec::reset() {
+  resetZoomAndPan();
+  m_transform->baseValue()->clear();
+  updateViewBox(FloatRect());
+  ASSERT(preserveAspectRatio());
+  preserveAspectRatio()->baseValue()->setAlign(
+      SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymid);
+  preserveAspectRatio()->baseValue()->setMeetOrSlice(
+      SVGPreserveAspectRatio::kSvgMeetorsliceMeet);
+  m_viewTargetString = emptyString();
 }
 
-void SVGViewSpec::detachContextElement()
-{
-    m_transform = nullptr;
-    clearViewBox();
-    clearPreserveAspectRatio();
-    m_contextElement = nullptr;
+void SVGViewSpec::detachContextElement() {
+  m_transform = nullptr;
+  clearViewBox();
+  clearPreserveAspectRatio();
+  m_contextElement = nullptr;
 }
 
-SVGElement* SVGViewSpec::viewTarget() const
-{
-    if (!m_contextElement)
-        return nullptr;
-    Element* element = m_contextElement->treeScope().getElementById(AtomicString(m_viewTargetString));
-    if (!element || !element->isSVGElement())
-        return nullptr;
-    return toSVGElement(element);
+SVGElement* SVGViewSpec::viewTarget() const {
+  if (!m_contextElement)
+    return nullptr;
+  Element* element = m_contextElement->treeScope().getElementById(
+      AtomicString(m_viewTargetString));
+  if (!element || !element->isSVGElement())
+    return nullptr;
+  return toSVGElement(element);
 }
 
-String SVGViewSpec::viewBoxString() const
-{
-    if (!viewBox())
-        return String();
+String SVGViewSpec::viewBoxString() const {
+  if (!viewBox())
+    return String();
 
-    return viewBox()->currentValue()->valueAsString();
+  return viewBox()->currentValue()->valueAsString();
 }
 
-String SVGViewSpec::preserveAspectRatioString() const
-{
-    if (!preserveAspectRatio())
-        return String();
+String SVGViewSpec::preserveAspectRatioString() const {
+  if (!preserveAspectRatio())
+    return String();
 
-    return preserveAspectRatio()->baseValue()->valueAsString();
+  return preserveAspectRatio()->baseValue()->valueAsString();
 }
 
-String SVGViewSpec::transformString() const
-{
-    if (!m_transform)
-        return String();
+String SVGViewSpec::transformString() const {
+  if (!m_transform)
+    return String();
 
-    return m_transform->baseValue()->valueAsString();
+  return m_transform->baseValue()->valueAsString();
 }
 
-void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionState& exceptionState)
-{
-    // SVGViewSpec and all of its content is read-only.
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
+void SVGViewSpec::setZoomAndPan(unsigned short,
+                                ExceptionState& exceptionState) {
+  // SVGViewSpec and all of its content is read-only.
+  exceptionState.throwDOMException(NoModificationAllowedError,
+                                   ExceptionMessages::readOnly());
 }
 
-template<typename CharType>
-bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end)
-{
-    if (!skipToken(ptr, end, "svgView"))
+template <typename CharType>
+bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr,
+                                        const CharType* end) {
+  if (!skipToken(ptr, end, "svgView"))
+    return false;
+
+  if (ptr >= end || *ptr != '(')
+    return false;
+  ptr++;
+
+  while (ptr < end && *ptr != ')') {
+    if (*ptr == 'v') {
+      if (skipToken(ptr, end, "viewBox")) {
+        if (ptr >= end || *ptr != '(')
+          return false;
+        ptr++;
+        float x = 0.0f;
+        float y = 0.0f;
+        float width = 0.0f;
+        float height = 0.0f;
+        if (!(parseNumber(ptr, end, x) && parseNumber(ptr, end, y) &&
+              parseNumber(ptr, end, width) &&
+              parseNumber(ptr, end, height, DisallowWhitespace)))
+          return false;
+        updateViewBox(FloatRect(x, y, width, height));
+        if (ptr >= end || *ptr != ')')
+          return false;
+        ptr++;
+      } else if (skipToken(ptr, end, "viewTarget")) {
+        if (ptr >= end || *ptr != '(')
+          return false;
+        const CharType* viewTargetStart = ++ptr;
+        while (ptr < end && *ptr != ')')
+          ptr++;
+        if (ptr >= end)
+          return false;
+        m_viewTargetString = String(viewTargetStart, ptr - viewTargetStart);
+        ptr++;
+      } else
         return false;
-
-    if (ptr >= end || *ptr != '(')
+    } else if (*ptr == 'z') {
+      if (!skipToken(ptr, end, "zoomAndPan"))
         return false;
-    ptr++;
-
-    while (ptr < end && *ptr != ')') {
-        if (*ptr == 'v') {
-            if (skipToken(ptr, end, "viewBox")) {
-                if (ptr >= end || *ptr != '(')
-                    return false;
-                ptr++;
-                float x = 0.0f;
-                float y = 0.0f;
-                float width = 0.0f;
-                float height = 0.0f;
-                if (!(parseNumber(ptr, end, x) && parseNumber(ptr, end, y) && parseNumber(ptr, end, width) && parseNumber(ptr, end, height, DisallowWhitespace)))
-                    return false;
-                updateViewBox(FloatRect(x, y, width, height));
-                if (ptr >= end || *ptr != ')')
-                    return false;
-                ptr++;
-            } else if (skipToken(ptr, end, "viewTarget")) {
-                if (ptr >= end || *ptr != '(')
-                    return false;
-                const CharType* viewTargetStart = ++ptr;
-                while (ptr < end && *ptr != ')')
-                    ptr++;
-                if (ptr >= end)
-                    return false;
-                m_viewTargetString = String(viewTargetStart, ptr - viewTargetStart);
-                ptr++;
-            } else
-                return false;
-        } else if (*ptr == 'z') {
-            if (!skipToken(ptr, end, "zoomAndPan"))
-                return false;
-            if (ptr >= end || *ptr != '(')
-                return false;
-            ptr++;
-            if (!parseZoomAndPan(ptr, end))
-                return false;
-            if (ptr >= end || *ptr != ')')
-                return false;
-            ptr++;
-        } else if (*ptr == 'p') {
-            if (!skipToken(ptr, end, "preserveAspectRatio"))
-                return false;
-            if (ptr >= end || *ptr != '(')
-                return false;
-            ptr++;
-            if (!preserveAspectRatio()->baseValue()->parse(ptr, end, false))
-                return false;
-            if (ptr >= end || *ptr != ')')
-                return false;
-            ptr++;
-        } else if (*ptr == 't') {
-            if (!skipToken(ptr, end, "transform"))
-                return false;
-            if (ptr >= end || *ptr != '(')
-                return false;
-            ptr++;
-            m_transform->baseValue()->parse(ptr, end);
-            if (ptr >= end || *ptr != ')')
-                return false;
-            ptr++;
-        } else
-            return false;
-
-        if (ptr < end && *ptr == ';')
-            ptr++;
-    }
-
-    if (ptr >= end || *ptr != ')')
+      if (ptr >= end || *ptr != '(')
         return false;
+      ptr++;
+      if (!parseZoomAndPan(ptr, end))
+        return false;
+      if (ptr >= end || *ptr != ')')
+        return false;
+      ptr++;
+    } else if (*ptr == 'p') {
+      if (!skipToken(ptr, end, "preserveAspectRatio"))
+        return false;
+      if (ptr >= end || *ptr != '(')
+        return false;
+      ptr++;
+      if (!preserveAspectRatio()->baseValue()->parse(ptr, end, false))
+        return false;
+      if (ptr >= end || *ptr != ')')
+        return false;
+      ptr++;
+    } else if (*ptr == 't') {
+      if (!skipToken(ptr, end, "transform"))
+        return false;
+      if (ptr >= end || *ptr != '(')
+        return false;
+      ptr++;
+      m_transform->baseValue()->parse(ptr, end);
+      if (ptr >= end || *ptr != ')')
+        return false;
+      ptr++;
+    } else
+      return false;
 
-    return true;
+    if (ptr < end && *ptr == ';')
+      ptr++;
+  }
+
+  if (ptr >= end || *ptr != ')')
+    return false;
+
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

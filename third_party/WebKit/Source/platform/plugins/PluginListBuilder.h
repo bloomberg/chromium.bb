@@ -39,19 +39,23 @@
 namespace blink {
 
 class PluginListBuilder final : public WebPluginListBuilder {
-    DISALLOW_NEW();
-public:
-    PluginListBuilder(Vector<PluginInfo>* results) : m_results(results) { }
+  DISALLOW_NEW();
 
-    // WebPluginListBuilder methods:
-    void addPlugin(const WebString& name, const WebString& description, const WebString& fileName) override;
-    void addMediaTypeToLastPlugin(const WebString& name, const WebString& description) override;
-    void addFileExtensionToLastMediaType(const WebString& extension) override;
+ public:
+  PluginListBuilder(Vector<PluginInfo>* results) : m_results(results) {}
 
-private:
-    Vector<PluginInfo>* m_results;
+  // WebPluginListBuilder methods:
+  void addPlugin(const WebString& name,
+                 const WebString& description,
+                 const WebString& fileName) override;
+  void addMediaTypeToLastPlugin(const WebString& name,
+                                const WebString& description) override;
+  void addFileExtensionToLastMediaType(const WebString& extension) override;
+
+ private:
+  Vector<PluginInfo>* m_results;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

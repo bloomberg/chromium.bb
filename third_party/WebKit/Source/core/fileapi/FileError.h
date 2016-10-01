@@ -40,39 +40,39 @@ class ExceptionState;
 
 namespace FileError {
 
-    enum ErrorCode {
-        kOK = 0,
-        kNotFoundErr = 1,
-        kSecurityErr = 2,
-        kAbortErr = 3,
-        kNotReadableErr = 4,
-        kEncodingErr = 5,
-        kNoModificationAllowedErr = 6,
-        kInvalidStateErr = 7,
-        kSyntaxErr = 8,
-        kInvalidModificationErr = 9,
-        kQuotaExceededErr = 10,
-        kTypeMismatchErr = 11,
-        kPathExistsErr = 12,
-    };
+enum ErrorCode {
+  kOK = 0,
+  kNotFoundErr = 1,
+  kSecurityErr = 2,
+  kAbortErr = 3,
+  kNotReadableErr = 4,
+  kEncodingErr = 5,
+  kNoModificationAllowedErr = 6,
+  kInvalidStateErr = 7,
+  kSyntaxErr = 8,
+  kInvalidModificationErr = 9,
+  kQuotaExceededErr = 10,
+  kTypeMismatchErr = 11,
+  kPathExistsErr = 12,
+};
 
-    CORE_EXPORT extern const char abortErrorMessage[];
-    CORE_EXPORT extern const char encodingErrorMessage[];
-    CORE_EXPORT extern const char invalidStateErrorMessage[];
-    CORE_EXPORT extern const char noModificationAllowedErrorMessage[];
-    CORE_EXPORT extern const char notFoundErrorMessage[];
-    CORE_EXPORT extern const char notReadableErrorMessage[];
-    CORE_EXPORT extern const char pathExistsErrorMessage[];
-    CORE_EXPORT extern const char quotaExceededErrorMessage[];
-    CORE_EXPORT extern const char securityErrorMessage[];
-    CORE_EXPORT extern const char syntaxErrorMessage[];
-    CORE_EXPORT extern const char typeMismatchErrorMessage[];
+CORE_EXPORT extern const char abortErrorMessage[];
+CORE_EXPORT extern const char encodingErrorMessage[];
+CORE_EXPORT extern const char invalidStateErrorMessage[];
+CORE_EXPORT extern const char noModificationAllowedErrorMessage[];
+CORE_EXPORT extern const char notFoundErrorMessage[];
+CORE_EXPORT extern const char notReadableErrorMessage[];
+CORE_EXPORT extern const char pathExistsErrorMessage[];
+CORE_EXPORT extern const char quotaExceededErrorMessage[];
+CORE_EXPORT extern const char securityErrorMessage[];
+CORE_EXPORT extern const char syntaxErrorMessage[];
+CORE_EXPORT extern const char typeMismatchErrorMessage[];
 
-    CORE_EXPORT void throwDOMException(ExceptionState&, ErrorCode);
-    CORE_EXPORT DOMException* createDOMException(ErrorCode);
+CORE_EXPORT void throwDOMException(ExceptionState&, ErrorCode);
+CORE_EXPORT DOMException* createDOMException(ErrorCode);
 
-} // namespace FileError
+}  // namespace FileError
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileError_h
+#endif  // FileError_h

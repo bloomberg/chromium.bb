@@ -38,12 +38,12 @@ namespace blink {
 class Entry;
 
 class EntryCallback : public GarbageCollectedFinalized<EntryCallback> {
-public:
-    virtual ~EntryCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(Entry*) = 0;
+ public:
+  virtual ~EntryCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(Entry*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EntryCallback_h
+#endif  // EntryCallback_h

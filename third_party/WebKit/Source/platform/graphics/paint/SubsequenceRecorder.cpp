@@ -11,34 +11,34 @@
 
 namespace blink {
 
-SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const DisplayItemClient& client)
-    : m_paintController(context.getPaintController())
-    , m_client(client)
-    , m_beginSubsequenceIndex(0)
-{
-    if (m_paintController.displayItemConstructionIsDisabled())
-        return;
+SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context,
+                                         const DisplayItemClient& client)
+    : m_paintController(context.getPaintController()),
+      m_client(client),
+      m_beginSubsequenceIndex(0) {
+  if (m_paintController.displayItemConstructionIsDisabled())
+    return;
 
-    m_beginSubsequenceIndex = m_paintController.newDisplayItemList().size();
-    m_paintController.createAndAppend<BeginSubsequenceDisplayItem>(m_client);
+  m_beginSubsequenceIndex = m_paintController.newDisplayItemList().size();
+  m_paintController.createAndAppend<BeginSubsequenceDisplayItem>(m_client);
 }
 
-SubsequenceRecorder::~SubsequenceRecorder()
-{
-    if (m_paintController.displayItemConstructionIsDisabled())
-        return;
+SubsequenceRecorder::~SubsequenceRecorder() {
+  if (m_paintController.displayItemConstructionIsDisabled())
+    return;
 
-    if (m_paintController.lastDisplayItemIsNoopBegin()) {
-        ASSERT(m_beginSubsequenceIndex == m_paintController.newDisplayItemList().size() - 1);
-        // Remove uncacheable no-op BeginSubsequence/EndSubsequence pairs.
-        // Don't remove cacheable no-op pairs because we need to match them later with CachedSubsequences.
-        if (m_paintController.newDisplayItemList().last().skippedCache()) {
-            m_paintController.removeLastDisplayItem();
-            return;
-        }
+  if (m_paintController.lastDisplayItemIsNoopBegin()) {
+    ASSERT(m_beginSubsequenceIndex ==
+           m_paintController.newDisplayItemList().size() - 1);
+    // Remove uncacheable no-op BeginSubsequence/EndSubsequence pairs.
+    // Don't remove cacheable no-op pairs because we need to match them later with CachedSubsequences.
+    if (m_paintController.newDisplayItemList().last().skippedCache()) {
+      m_paintController.removeLastDisplayItem();
+      return;
     }
+  }
 
-    m_paintController.createAndAppend<EndSubsequenceDisplayItem>(m_client);
+  m_paintController.createAndAppend<EndSubsequenceDisplayItem>(m_client);
 }
 
-} // namespace blink
+}  // namespace blink

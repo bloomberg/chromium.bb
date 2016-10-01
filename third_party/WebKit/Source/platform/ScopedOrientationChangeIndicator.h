@@ -12,25 +12,26 @@
 namespace blink {
 
 class PLATFORM_EXPORT ScopedOrientationChangeIndicator final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ScopedOrientationChangeIndicator);
-public:
-    static bool processingOrientationChange();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ScopedOrientationChangeIndicator);
 
-    explicit ScopedOrientationChangeIndicator();
-    ~ScopedOrientationChangeIndicator();
+ public:
+  static bool processingOrientationChange();
 
-private:
-    enum class State {
-        Processing,
-        NotProcessing,
-    };
+  explicit ScopedOrientationChangeIndicator();
+  ~ScopedOrientationChangeIndicator();
 
-    static State s_state;
+ private:
+  enum class State {
+    Processing,
+    NotProcessing,
+  };
 
-    State m_previousState = State::NotProcessing;
+  static State s_state;
+
+  State m_previousState = State::NotProcessing;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

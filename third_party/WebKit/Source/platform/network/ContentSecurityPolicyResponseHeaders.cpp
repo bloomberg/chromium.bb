@@ -30,10 +30,10 @@
 
 namespace blink {
 
-ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(const ResourceResponse& response)
-    : m_contentSecurityPolicy(response.httpHeaderField(HTTPNames::Content_Security_Policy))
-    , m_contentSecurityPolicyReportOnly(response.httpHeaderField(HTTPNames::Content_Security_Policy_Report_Only))
-{
-}
-
+ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(
+    const ResourceResponse& response)
+    : m_contentSecurityPolicy(
+          response.httpHeaderField(HTTPNames::Content_Security_Policy)),
+      m_contentSecurityPolicyReportOnly(response.httpHeaderField(
+          HTTPNames::Content_Security_Policy_Report_Only)) {}
 }

@@ -9,32 +9,29 @@
 
 namespace blink {
 
-USBConnectionEvent* USBConnectionEvent::create(const AtomicString& type, const USBConnectionEventInit& initializer)
-{
-    return new USBConnectionEvent(type, initializer);
+USBConnectionEvent* USBConnectionEvent::create(
+    const AtomicString& type,
+    const USBConnectionEventInit& initializer) {
+  return new USBConnectionEvent(type, initializer);
 }
 
-USBConnectionEvent* USBConnectionEvent::create(const AtomicString& type, USBDevice* device)
-{
-    return new USBConnectionEvent(type, device);
+USBConnectionEvent* USBConnectionEvent::create(const AtomicString& type,
+                                               USBDevice* device) {
+  return new USBConnectionEvent(type, device);
 }
 
-USBConnectionEvent::USBConnectionEvent(const AtomicString& type, const USBConnectionEventInit& initializer)
-    : Event(type, initializer)
-    , m_device(initializer.device())
-{
+USBConnectionEvent::USBConnectionEvent(
+    const AtomicString& type,
+    const USBConnectionEventInit& initializer)
+    : Event(type, initializer), m_device(initializer.device()) {}
+
+USBConnectionEvent::USBConnectionEvent(const AtomicString& type,
+                                       USBDevice* device)
+    : Event(type, false, false), m_device(device) {}
+
+DEFINE_TRACE(USBConnectionEvent) {
+  visitor->trace(m_device);
+  Event::trace(visitor);
 }
 
-USBConnectionEvent::USBConnectionEvent(const AtomicString& type, USBDevice* device)
-    : Event(type, false, false)
-    , m_device(device)
-{
-}
-
-DEFINE_TRACE(USBConnectionEvent)
-{
-    visitor->trace(m_device);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

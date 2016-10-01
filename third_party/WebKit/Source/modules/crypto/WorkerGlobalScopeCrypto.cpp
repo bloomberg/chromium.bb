@@ -35,41 +35,37 @@
 
 namespace blink {
 
-WorkerGlobalScopeCrypto::WorkerGlobalScopeCrypto()
-{
+WorkerGlobalScopeCrypto::WorkerGlobalScopeCrypto() {}
+
+const char* WorkerGlobalScopeCrypto::supplementName() {
+  return "WorkerGlobalScopeCrypto";
 }
 
-const char* WorkerGlobalScopeCrypto::supplementName()
-{
-    return "WorkerGlobalScopeCrypto";
+WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::from(
+    Supplementable<WorkerGlobalScope>& context) {
+  WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(
+      Supplement<WorkerGlobalScope>::from(context, supplementName()));
+  if (!supplement) {
+    supplement = new WorkerGlobalScopeCrypto;
+    provideTo(context, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::from(Supplementable<WorkerGlobalScope>& context)
-{
-    WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(Supplement<WorkerGlobalScope>::from(context, supplementName()));
-    if (!supplement) {
-        supplement = new WorkerGlobalScopeCrypto;
-        provideTo(context, supplementName(), supplement);
-    }
-    return *supplement;
+Crypto* WorkerGlobalScopeCrypto::crypto(
+    Supplementable<WorkerGlobalScope>& context) {
+  return WorkerGlobalScopeCrypto::from(context).crypto();
 }
 
-Crypto* WorkerGlobalScopeCrypto::crypto(Supplementable<WorkerGlobalScope>& context)
-{
-    return WorkerGlobalScopeCrypto::from(context).crypto();
+Crypto* WorkerGlobalScopeCrypto::crypto() const {
+  if (!m_crypto)
+    m_crypto = Crypto::create();
+  return m_crypto.get();
 }
 
-Crypto* WorkerGlobalScopeCrypto::crypto() const
-{
-    if (!m_crypto)
-        m_crypto = Crypto::create();
-    return m_crypto.get();
+DEFINE_TRACE(WorkerGlobalScopeCrypto) {
+  visitor->trace(m_crypto);
+  Supplement<WorkerGlobalScope>::trace(visitor);
 }
 
-DEFINE_TRACE(WorkerGlobalScopeCrypto)
-{
-    visitor->trace(m_crypto);
-    Supplement<WorkerGlobalScope>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

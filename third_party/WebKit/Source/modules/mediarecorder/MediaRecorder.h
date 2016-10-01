@@ -23,94 +23,100 @@ class Blob;
 class BlobData;
 class ExceptionState;
 
-class MODULES_EXPORT MediaRecorder final
-    : public EventTargetWithInlineData
-    , public WebMediaRecorderHandlerClient
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum class State {
-        Inactive = 0,
-        Recording,
-        Paused
-    };
+class MODULES_EXPORT MediaRecorder final : public EventTargetWithInlineData,
+                                           public WebMediaRecorderHandlerClient,
+                                           public ActiveScriptWrappable,
+                                           public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static MediaRecorder* create(ExecutionContext*, MediaStream*, ExceptionState&);
-    static MediaRecorder* create(ExecutionContext*, MediaStream*, const MediaRecorderOptions&, ExceptionState&);
+ public:
+  enum class State { Inactive = 0, Recording, Paused };
 
-    virtual ~MediaRecorder() {}
+  static MediaRecorder* create(ExecutionContext*,
+                               MediaStream*,
+                               ExceptionState&);
+  static MediaRecorder* create(ExecutionContext*,
+                               MediaStream*,
+                               const MediaRecorderOptions&,
+                               ExceptionState&);
 
-    MediaStream* stream() const { return m_stream.get(); }
-    const String& mimeType() const { return m_mimeType; }
-    String state() const;
-    bool ignoreMutedMedia() const { return m_ignoreMutedMedia; }
-    void setIgnoreMutedMedia(bool ignoreMutedMedia) { m_ignoreMutedMedia = ignoreMutedMedia; }
-    unsigned long videoBitsPerSecond() const { return m_videoBitsPerSecond; }
-    unsigned long audioBitsPerSecond() const { return m_audioBitsPerSecond; }
+  virtual ~MediaRecorder() {}
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(stop);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(dataavailable);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  MediaStream* stream() const { return m_stream.get(); }
+  const String& mimeType() const { return m_mimeType; }
+  String state() const;
+  bool ignoreMutedMedia() const { return m_ignoreMutedMedia; }
+  void setIgnoreMutedMedia(bool ignoreMutedMedia) {
+    m_ignoreMutedMedia = ignoreMutedMedia;
+  }
+  unsigned long videoBitsPerSecond() const { return m_videoBitsPerSecond; }
+  unsigned long audioBitsPerSecond() const { return m_audioBitsPerSecond; }
 
-    void start(ExceptionState&);
-    void start(int timeSlice, ExceptionState&);
-    void stop(ExceptionState&);
-    void pause(ExceptionState&);
-    void resume(ExceptionState&);
-    void requestData(ExceptionState&);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(stop);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dataavailable);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    static bool isTypeSupported(const String& type);
+  void start(ExceptionState&);
+  void start(int timeSlice, ExceptionState&);
+  void stop(ExceptionState&);
+  void pause(ExceptionState&);
+  void resume(ExceptionState&);
+  void requestData(ExceptionState&);
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  static bool isTypeSupported(const String& type);
 
-    // ActiveDOMObject
-    void suspend() override;
-    void resume() override;
-    void stop() override;
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final { return !m_stopped; }
+  // ActiveDOMObject
+  void suspend() override;
+  void resume() override;
+  void stop() override;
 
-    // WebMediaRecorderHandlerClient
-    void writeData(const char* data, size_t length, bool lastInSlice) override;
-    void onError(const WebString& message) override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final { return !m_stopped; }
 
-    DECLARE_VIRTUAL_TRACE();
+  // WebMediaRecorderHandlerClient
+  void writeData(const char* data, size_t length, bool lastInSlice) override;
+  void onError(const WebString& message) override;
 
-private:
-    MediaRecorder(ExecutionContext*, MediaStream*, const MediaRecorderOptions&, ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void createBlobEvent(Blob*);
+ private:
+  MediaRecorder(ExecutionContext*,
+                MediaStream*,
+                const MediaRecorderOptions&,
+                ExceptionState&);
 
-    void stopRecording();
-    void scheduleDispatchEvent(Event*);
-    void dispatchScheduledEvent();
+  void createBlobEvent(Blob*);
 
-    Member<MediaStream> m_stream;
-    size_t m_streamAmountOfTracks;
-    String m_mimeType;
-    bool m_stopped;
-    bool m_ignoreMutedMedia;
-    int m_audioBitsPerSecond;
-    int m_videoBitsPerSecond;
+  void stopRecording();
+  void scheduleDispatchEvent(Event*);
+  void dispatchScheduledEvent();
 
-    State m_state;
+  Member<MediaStream> m_stream;
+  size_t m_streamAmountOfTracks;
+  String m_mimeType;
+  bool m_stopped;
+  bool m_ignoreMutedMedia;
+  int m_audioBitsPerSecond;
+  int m_videoBitsPerSecond;
 
-    std::unique_ptr<BlobData> m_blobData;
+  State m_state;
 
-    std::unique_ptr<WebMediaRecorderHandler> m_recorderHandler;
+  std::unique_ptr<BlobData> m_blobData;
 
-    Member<AsyncMethodRunner<MediaRecorder>> m_dispatchScheduledEventRunner;
-    HeapVector<Member<Event>> m_scheduledEvents;
+  std::unique_ptr<WebMediaRecorderHandler> m_recorderHandler;
+
+  Member<AsyncMethodRunner<MediaRecorder>> m_dispatchScheduledEventRunner;
+  HeapVector<Member<Event>> m_scheduledEvents;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaRecorder_h
+#endif  // MediaRecorder_h

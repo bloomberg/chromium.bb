@@ -37,17 +37,17 @@ class Element;
 class LayoutVideo;
 
 class LayoutTextTrackContainer final : public LayoutBlockFlow {
-public:
-    LayoutTextTrackContainer(Element*);
+ public:
+  LayoutTextTrackContainer(Element*);
 
-private:
-    void layout() override;
+ private:
+  void layout() override;
 
-    bool updateSizes(const LayoutVideo&);
+  bool updateSizes(const LayoutVideo&);
 
-    float m_fontSize;
+  float m_fontSize;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutTextTrackContainer_h
+#endif  // LayoutTextTrackContainer_h

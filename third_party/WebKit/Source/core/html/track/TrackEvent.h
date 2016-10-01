@@ -35,45 +35,39 @@ namespace blink {
 class VideoTrackOrAudioTrackOrTextTrack;
 
 class CORE_EXPORT TrackEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~TrackEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static TrackEvent* create()
-    {
-        return new TrackEvent;
-    }
+ public:
+  ~TrackEvent() override;
 
-    static TrackEvent* create(const AtomicString& type, const TrackEventInit& initializer)
-    {
-        return new TrackEvent(type, initializer);
-    }
+  static TrackEvent* create() { return new TrackEvent; }
 
-    template <typename T>
-    static TrackEvent* create(const AtomicString& type, T* track)
-    {
-        return new TrackEvent(type, track);
-    }
+  static TrackEvent* create(const AtomicString& type,
+                            const TrackEventInit& initializer) {
+    return new TrackEvent(type, initializer);
+  }
 
-    const AtomicString& interfaceName() const override;
+  template <typename T>
+  static TrackEvent* create(const AtomicString& type, T* track) {
+    return new TrackEvent(type, track);
+  }
 
-    void track(VideoTrackOrAudioTrackOrTextTrack&);
+  const AtomicString& interfaceName() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  void track(VideoTrackOrAudioTrackOrTextTrack&);
 
-private:
-    TrackEvent();
-    TrackEvent(const AtomicString& type, const TrackEventInit& initializer);
-    template <typename T>
-    TrackEvent(const AtomicString& type, T* track)
-        : Event(type, false, false)
-        , m_track(track)
-    {
-    }
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<TrackBase> m_track;
+ private:
+  TrackEvent();
+  TrackEvent(const AtomicString& type, const TrackEventInit& initializer);
+  template <typename T>
+  TrackEvent(const AtomicString& type, T* track)
+      : Event(type, false, false), m_track(track) {}
+
+  Member<TrackBase> m_track;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TrackEvent_h
+#endif  // TrackEvent_h

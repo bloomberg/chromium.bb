@@ -52,139 +52,150 @@
 namespace blink {
 
 // static
-DOMFileSystem* DOMFileSystem::create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
-{
-    DOMFileSystem* fileSystem(new DOMFileSystem(context, name, type, rootURL));
-    fileSystem->suspendIfNeeded();
-    return fileSystem;
+DOMFileSystem* DOMFileSystem::create(ExecutionContext* context,
+                                     const String& name,
+                                     FileSystemType type,
+                                     const KURL& rootURL) {
+  DOMFileSystem* fileSystem(new DOMFileSystem(context, name, type, rootURL));
+  fileSystem->suspendIfNeeded();
+  return fileSystem;
 }
 
-DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context, const String& filesystemId)
-{
-    if (filesystemId.isEmpty())
-        return 0;
+DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(
+    ExecutionContext* context,
+    const String& filesystemId) {
+  if (filesystemId.isEmpty())
+    return 0;
 
-    StringBuilder filesystemName;
-    filesystemName.append(Platform::current()->fileSystemCreateOriginIdentifier(WebSecurityOrigin(context->getSecurityOrigin())));
-    filesystemName.append(":Isolated_");
-    filesystemName.append(filesystemId);
+  StringBuilder filesystemName;
+  filesystemName.append(Platform::current()->fileSystemCreateOriginIdentifier(
+      WebSecurityOrigin(context->getSecurityOrigin())));
+  filesystemName.append(":Isolated_");
+  filesystemName.append(filesystemId);
 
-    // The rootURL created here is going to be attached to each filesystem request and
-    // is to be validated each time the request is being handled.
-    StringBuilder rootURL;
-    rootURL.append("filesystem:");
-    rootURL.append(context->getSecurityOrigin()->toString());
-    rootURL.append('/');
-    rootURL.append(isolatedPathPrefix);
-    rootURL.append('/');
-    rootURL.append(filesystemId);
-    rootURL.append('/');
+  // The rootURL created here is going to be attached to each filesystem request and
+  // is to be validated each time the request is being handled.
+  StringBuilder rootURL;
+  rootURL.append("filesystem:");
+  rootURL.append(context->getSecurityOrigin()->toString());
+  rootURL.append('/');
+  rootURL.append(isolatedPathPrefix);
+  rootURL.append('/');
+  rootURL.append(filesystemId);
+  rootURL.append('/');
 
-    return DOMFileSystem::create(context, filesystemName.toString(), FileSystemTypeIsolated, KURL(ParsedURLString, rootURL.toString()));
+  return DOMFileSystem::create(context, filesystemName.toString(),
+                               FileSystemTypeIsolated,
+                               KURL(ParsedURLString, rootURL.toString()));
 }
 
-DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
-    : DOMFileSystemBase(context, name, type, rootURL)
-    , ActiveScriptWrappable(this)
-    , ActiveDOMObject(context)
-    , m_numberOfPendingCallbacks(0)
-    , m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root))
-{
+DOMFileSystem::DOMFileSystem(ExecutionContext* context,
+                             const String& name,
+                             FileSystemType type,
+                             const KURL& rootURL)
+    : DOMFileSystemBase(context, name, type, rootURL),
+      ActiveScriptWrappable(this),
+      ActiveDOMObject(context),
+      m_numberOfPendingCallbacks(0),
+      m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root)) {}
+
+DirectoryEntry* DOMFileSystem::root() const {
+  return m_rootEntry.get();
 }
 
-DirectoryEntry* DOMFileSystem::root() const
-{
-    return m_rootEntry.get();
+void DOMFileSystem::addPendingCallbacks() {
+  ++m_numberOfPendingCallbacks;
 }
 
-void DOMFileSystem::addPendingCallbacks()
-{
-    ++m_numberOfPendingCallbacks;
+void DOMFileSystem::removePendingCallbacks() {
+  ASSERT(m_numberOfPendingCallbacks > 0);
+  --m_numberOfPendingCallbacks;
 }
 
-void DOMFileSystem::removePendingCallbacks()
-{
-    ASSERT(m_numberOfPendingCallbacks > 0);
-    --m_numberOfPendingCallbacks;
+bool DOMFileSystem::hasPendingActivity() const {
+  ASSERT(m_numberOfPendingCallbacks >= 0);
+  return m_numberOfPendingCallbacks;
 }
 
-bool DOMFileSystem::hasPendingActivity() const
-{
-    ASSERT(m_numberOfPendingCallbacks >= 0);
-    return m_numberOfPendingCallbacks;
+void DOMFileSystem::reportError(ErrorCallbackBase* errorCallback,
+                                FileError::ErrorCode fileError) {
+  reportError(getExecutionContext(), errorCallback, fileError);
 }
 
-void DOMFileSystem::reportError(ErrorCallbackBase* errorCallback, FileError::ErrorCode fileError)
-{
-    reportError(getExecutionContext(), errorCallback, fileError);
-}
-
-void DOMFileSystem::reportError(ExecutionContext* executionContext, ErrorCallbackBase* errorCallback, FileError::ErrorCode fileError)
-{
-    if (errorCallback)
-        scheduleCallback(executionContext, createSameThreadTask(&ErrorCallbackBase::invoke, wrapPersistent(errorCallback), fileError));
+void DOMFileSystem::reportError(ExecutionContext* executionContext,
+                                ErrorCallbackBase* errorCallback,
+                                FileError::ErrorCode fileError) {
+  if (errorCallback)
+    scheduleCallback(
+        executionContext,
+        createSameThreadTask(&ErrorCallbackBase::invoke,
+                             wrapPersistent(errorCallback), fileError));
 }
 
 namespace {
 
 class ConvertToFileWriterCallback : public FileWriterBaseCallback {
-public:
-    static ConvertToFileWriterCallback* create(FileWriterCallback* callback)
-    {
-        return new ConvertToFileWriterCallback(callback);
-    }
+ public:
+  static ConvertToFileWriterCallback* create(FileWriterCallback* callback) {
+    return new ConvertToFileWriterCallback(callback);
+  }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_callback);
-        FileWriterBaseCallback::trace(visitor);
-    }
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_callback);
+    FileWriterBaseCallback::trace(visitor);
+  }
 
-    void handleEvent(FileWriterBase* fileWriterBase)
-    {
-        m_callback->handleEvent(static_cast<FileWriter*>(fileWriterBase));
-    }
-private:
-    explicit ConvertToFileWriterCallback(FileWriterCallback* callback)
-        : m_callback(callback)
-    {
-    }
-    Member<FileWriterCallback> m_callback;
+  void handleEvent(FileWriterBase* fileWriterBase) {
+    m_callback->handleEvent(static_cast<FileWriter*>(fileWriterBase));
+  }
+
+ private:
+  explicit ConvertToFileWriterCallback(FileWriterCallback* callback)
+      : m_callback(callback) {}
+  Member<FileWriterCallback> m_callback;
 };
 
-} // namespace
+}  // namespace
 
-void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback* successCallback, ErrorCallbackBase* errorCallback)
-{
-    ASSERT(fileEntry);
+void DOMFileSystem::createWriter(const FileEntry* fileEntry,
+                                 FileWriterCallback* successCallback,
+                                 ErrorCallbackBase* errorCallback) {
+  ASSERT(fileEntry);
 
-    if (!fileSystem()) {
-        reportError(errorCallback, FileError::kAbortErr);
-        return;
-    }
+  if (!fileSystem()) {
+    reportError(errorCallback, FileError::kAbortErr);
+    return;
+  }
 
-    FileWriter* fileWriter = FileWriter::create(getExecutionContext());
-    FileWriterBaseCallback* conversionCallback = ConvertToFileWriterCallback::create(successCallback);
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback, m_context);
-    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, std::move(callbacks));
+  FileWriter* fileWriter = FileWriter::create(getExecutionContext());
+  FileWriterBaseCallback* conversionCallback =
+      ConvertToFileWriterCallback::create(successCallback);
+  std::unique_ptr<AsyncFileSystemCallbacks> callbacks =
+      FileWriterBaseCallbacks::create(fileWriter, conversionCallback,
+                                      errorCallback, m_context);
+  fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter,
+                                 std::move(callbacks));
 }
 
-void DOMFileSystem::createFile(const FileEntry* fileEntry, BlobCallback* successCallback, ErrorCallbackBase* errorCallback)
-{
-    KURL fileSystemURL = createFileSystemURL(fileEntry);
-    if (!fileSystem()) {
-        reportError(errorCallback, FileError::kAbortErr);
-        return;
-    }
+void DOMFileSystem::createFile(const FileEntry* fileEntry,
+                               BlobCallback* successCallback,
+                               ErrorCallbackBase* errorCallback) {
+  KURL fileSystemURL = createFileSystemURL(fileEntry);
+  if (!fileSystem()) {
+    reportError(errorCallback, FileError::kAbortErr);
+    return;
+  }
 
-    fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL, successCallback, errorCallback, m_context));
+  fileSystem()->createSnapshotFileAndReadMetadata(
+      fileSystemURL,
+      SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL,
+                                   successCallback, errorCallback, m_context));
 }
 
-DEFINE_TRACE(DOMFileSystem)
-{
-    DOMFileSystemBase::trace(visitor);
-    ActiveDOMObject::trace(visitor);
-    visitor->trace(m_rootEntry);
+DEFINE_TRACE(DOMFileSystem) {
+  DOMFileSystemBase::trace(visitor);
+  ActiveDOMObject::trace(visitor);
+  visitor->trace(m_rootEntry);
 }
 
-} // namespace blink
+}  // namespace blink

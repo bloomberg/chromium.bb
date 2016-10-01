@@ -26,16 +26,17 @@
 namespace blink {
 
 class SVGSwitchElement final : public SVGGraphicsElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGSwitchElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGSwitchElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGSwitchElement);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+ private:
+  explicit SVGSwitchElement(Document&);
+
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGSwitchElement_h
+#endif  // SVGSwitchElement_h

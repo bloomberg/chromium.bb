@@ -9,13 +9,13 @@ namespace blink {
 
 // UA style if viewport is enabled.
 enum class WebViewportStyle {
-    Default,
-    // Includes viewportAndroid.css.
-    Mobile,
-    // Includes viewportTelevision.css.
-    Television
+  Default,
+  // Includes viewportAndroid.css.
+  Mobile,
+  // Includes viewportTelevision.css.
+  Television
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebViewportStyle_h
+#endif  // WebViewportStyle_h

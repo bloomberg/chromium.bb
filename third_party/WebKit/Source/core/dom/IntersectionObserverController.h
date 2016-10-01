@@ -18,35 +18,38 @@ namespace blink {
 
 class Document;
 
-class IntersectionObserverController : public GarbageCollectedFinalized<IntersectionObserverController>, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
-public:
-    static IntersectionObserverController* create(Document*);
-    ~IntersectionObserverController();
+class IntersectionObserverController
+    : public GarbageCollectedFinalized<IntersectionObserverController>,
+      public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 
-    void resume() override;
+ public:
+  static IntersectionObserverController* create(Document*);
+  ~IntersectionObserverController();
 
-    void scheduleIntersectionObserverForDelivery(IntersectionObserver&);
-    void deliverIntersectionObservations();
-    void computeTrackedIntersectionObservations();
-    void addTrackedObserver(IntersectionObserver&);
-    void removeTrackedObserversForRoot(const Node&);
+  void resume() override;
 
-    DECLARE_TRACE();
+  void scheduleIntersectionObserverForDelivery(IntersectionObserver&);
+  void deliverIntersectionObservations();
+  void computeTrackedIntersectionObservations();
+  void addTrackedObserver(IntersectionObserver&);
+  void removeTrackedObserversForRoot(const Node&);
 
-private:
-    explicit IntersectionObserverController(Document*);
+  DECLARE_TRACE();
 
-private:
-    // IntersectionObservers for which this is the tracking document.
-    HeapHashSet<WeakMember<IntersectionObserver>> m_trackedIntersectionObservers;
-    // IntersectionObservers for which this is the execution context of the callback.
-    HeapHashSet<Member<IntersectionObserver>> m_pendingIntersectionObservers;
-    WTF::WeakPtrFactory<IntersectionObserverController> m_weakPtrFactory;
+ private:
+  explicit IntersectionObserverController(Document*);
 
-    bool m_callbackFiredWhileSuspended;
+ private:
+  // IntersectionObservers for which this is the tracking document.
+  HeapHashSet<WeakMember<IntersectionObserver>> m_trackedIntersectionObservers;
+  // IntersectionObservers for which this is the execution context of the callback.
+  HeapHashSet<Member<IntersectionObserver>> m_pendingIntersectionObservers;
+  WTF::WeakPtrFactory<IntersectionObserverController> m_weakPtrFactory;
+
+  bool m_callbackFiredWhileSuspended;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IntersectionObserverController_h
+#endif  // IntersectionObserverController_h

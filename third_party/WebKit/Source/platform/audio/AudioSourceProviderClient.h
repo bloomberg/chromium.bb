@@ -31,21 +31,22 @@
 namespace blink {
 
 class AudioSourceProviderClient : public GarbageCollectedMixin {
-public:
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
-    // Oilpan: Callers should keep this object alive during lock() and unlock().
-    virtual void lock() { }
-    virtual void unlock() { }
+ public:
+  virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
+  // Oilpan: Callers should keep this object alive during lock() and unlock().
+  virtual void lock() {}
+  virtual void unlock() {}
 
-    // Called on the main thread when HTMLMediaElement::currentSrc() is
-    // changed.
-    virtual void onCurrentSrcChanged(const KURL& currentSrc) { }
+  // Called on the main thread when HTMLMediaElement::currentSrc() is
+  // changed.
+  virtual void onCurrentSrcChanged(const KURL& currentSrc) {}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-protected:
-    virtual ~AudioSourceProviderClient() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ protected:
+  virtual ~AudioSourceProviderClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioSourceProviderClient_h
+#endif  // AudioSourceProviderClient_h

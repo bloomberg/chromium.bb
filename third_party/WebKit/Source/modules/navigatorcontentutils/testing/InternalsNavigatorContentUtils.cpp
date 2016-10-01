@@ -11,11 +11,14 @@
 
 namespace blink {
 
-void InternalsNavigatorContentUtils::setNavigatorContentUtilsClientMock(Internals&, Document* document)
-{
-    ASSERT(document && document->page());
-    NavigatorContentUtils* navigatorContentUtils = NavigatorContentUtils::from(*document->frame());
-    navigatorContentUtils->setClientForTest(NavigatorContentUtilsClientMock::create());
+void InternalsNavigatorContentUtils::setNavigatorContentUtilsClientMock(
+    Internals&,
+    Document* document) {
+  ASSERT(document && document->page());
+  NavigatorContentUtils* navigatorContentUtils =
+      NavigatorContentUtils::from(*document->frame());
+  navigatorContentUtils->setClientForTest(
+      NavigatorContentUtilsClientMock::create());
 }
 
-} // namespace blink
+}  // namespace blink

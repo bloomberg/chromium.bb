@@ -33,65 +33,65 @@
 
 namespace blink {
 
-static inline float ellipseXIntercept(float y, float rx, float ry)
-{
-    ASSERT(ry > 0);
-    return rx * sqrt(1 - (y * y) / (ry * ry));
+static inline float ellipseXIntercept(float y, float rx, float ry) {
+  ASSERT(ry > 0);
+  return rx * sqrt(1 - (y * y) / (ry * ry));
 }
 
-FloatRect RectangleShape::shapeMarginBounds() const
-{
-    ASSERT(shapeMargin() >= 0);
-    if (!shapeMargin())
-        return m_bounds;
+FloatRect RectangleShape::shapeMarginBounds() const {
+  ASSERT(shapeMargin() >= 0);
+  if (!shapeMargin())
+    return m_bounds;
 
-    float boundsX = x() - shapeMargin();
-    float boundsY = y() - shapeMargin();
-    float boundsWidth = width() + shapeMargin() * 2;
-    float boundsHeight = height() + shapeMargin() * 2;
-    return FloatRect(boundsX, boundsY, boundsWidth, boundsHeight);
+  float boundsX = x() - shapeMargin();
+  float boundsY = y() - shapeMargin();
+  float boundsWidth = width() + shapeMargin() * 2;
+  float boundsHeight = height() + shapeMargin() * 2;
+  return FloatRect(boundsX, boundsY, boundsWidth, boundsHeight);
 }
 
-LineSegment RectangleShape::getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const
-{
-    const FloatRect& bounds = shapeMarginBounds();
-    if (bounds.isEmpty())
-        return LineSegment();
+LineSegment RectangleShape::getExcludedInterval(
+    LayoutUnit logicalTop,
+    LayoutUnit logicalHeight) const {
+  const FloatRect& bounds = shapeMarginBounds();
+  if (bounds.isEmpty())
+    return LineSegment();
 
-    float y1 = logicalTop.toFloat();
-    float y2 = (logicalTop + logicalHeight).toFloat();
+  float y1 = logicalTop.toFloat();
+  float y2 = (logicalTop + logicalHeight).toFloat();
 
-    if (y2 < bounds.y() || y1 >= bounds.maxY())
-        return LineSegment();
+  if (y2 < bounds.y() || y1 >= bounds.maxY())
+    return LineSegment();
 
-    float x1 = bounds.x();
-    float x2 = bounds.maxX();
+  float x1 = bounds.x();
+  float x2 = bounds.maxX();
 
-    float marginRadiusX = rx() + shapeMargin();
-    float marginRadiusY = ry() + shapeMargin();
+  float marginRadiusX = rx() + shapeMargin();
+  float marginRadiusY = ry() + shapeMargin();
 
-    if (marginRadiusY > 0) {
-        if (y2 < bounds.y() + marginRadiusY) {
-            float yi = y2 - bounds.y() - marginRadiusY;
-            float xi = ellipseXIntercept(yi, marginRadiusX, marginRadiusY);
-            x1 = bounds.x() + marginRadiusX - xi;
-            x2 = bounds.maxX() - marginRadiusX + xi;
-        } else if (y1 > bounds.maxY() - marginRadiusY) {
-            float yi =  y1 - (bounds.maxY() - marginRadiusY);
-            float xi = ellipseXIntercept(yi, marginRadiusX, marginRadiusY);
-            x1 = bounds.x() + marginRadiusX - xi;
-            x2 = bounds.maxX() - marginRadiusX + xi;
-        }
+  if (marginRadiusY > 0) {
+    if (y2 < bounds.y() + marginRadiusY) {
+      float yi = y2 - bounds.y() - marginRadiusY;
+      float xi = ellipseXIntercept(yi, marginRadiusX, marginRadiusY);
+      x1 = bounds.x() + marginRadiusX - xi;
+      x2 = bounds.maxX() - marginRadiusX + xi;
+    } else if (y1 > bounds.maxY() - marginRadiusY) {
+      float yi = y1 - (bounds.maxY() - marginRadiusY);
+      float xi = ellipseXIntercept(yi, marginRadiusX, marginRadiusY);
+      x1 = bounds.x() + marginRadiusX - xi;
+      x2 = bounds.maxX() - marginRadiusX + xi;
     }
+  }
 
-    return LineSegment(x1, x2);
+  return LineSegment(x1, x2);
 }
 
-void RectangleShape::buildDisplayPaths(DisplayPaths& paths) const
-{
-    paths.shape.addRoundedRect(m_bounds, m_radii);
-    if (shapeMargin())
-        paths.marginShape.addRoundedRect(shapeMarginBounds(), FloatSize(m_radii.width() + shapeMargin(), m_radii.height() + shapeMargin()));
+void RectangleShape::buildDisplayPaths(DisplayPaths& paths) const {
+  paths.shape.addRoundedRect(m_bounds, m_radii);
+  if (shapeMargin())
+    paths.marginShape.addRoundedRect(
+        shapeMarginBounds(), FloatSize(m_radii.width() + shapeMargin(),
+                                       m_radii.height() + shapeMargin()));
 }
 
-} // namespace blink
+}  // namespace blink

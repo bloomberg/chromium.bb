@@ -29,64 +29,64 @@
 namespace blink {
 
 enum WebIDBKeyType {
-    WebIDBKeyTypeInvalid = 0,
-    WebIDBKeyTypeArray,
-    WebIDBKeyTypeBinary,
-    WebIDBKeyTypeString,
-    WebIDBKeyTypeDate,
-    WebIDBKeyTypeNumber,
-    WebIDBKeyTypeNull,
-    WebIDBKeyTypeMin,
+  WebIDBKeyTypeInvalid = 0,
+  WebIDBKeyTypeArray,
+  WebIDBKeyTypeBinary,
+  WebIDBKeyTypeString,
+  WebIDBKeyTypeDate,
+  WebIDBKeyTypeNumber,
+  WebIDBKeyTypeNull,
+  WebIDBKeyTypeMin,
 };
 
 enum WebIDBKeyPathType {
-    WebIDBKeyPathTypeNull = 0,
-    WebIDBKeyPathTypeString,
-    WebIDBKeyPathTypeArray,
+  WebIDBKeyPathTypeNull = 0,
+  WebIDBKeyPathTypeString,
+  WebIDBKeyPathTypeArray,
 };
 
 enum WebIDBDataLoss {
-    WebIDBDataLossNone = 0,
-    WebIDBDataLossTotal,
+  WebIDBDataLossNone = 0,
+  WebIDBDataLossTotal,
 };
 
 enum WebIDBCursorDirection {
-    WebIDBCursorDirectionNext = 0,
-    WebIDBCursorDirectionNextNoDuplicate = 1,
-    WebIDBCursorDirectionPrev = 2,
-    WebIDBCursorDirectionPrevNoDuplicate = 3,
-    WebIDBCursorDirectionLast = WebIDBCursorDirectionPrevNoDuplicate
+  WebIDBCursorDirectionNext = 0,
+  WebIDBCursorDirectionNextNoDuplicate = 1,
+  WebIDBCursorDirectionPrev = 2,
+  WebIDBCursorDirectionPrevNoDuplicate = 3,
+  WebIDBCursorDirectionLast = WebIDBCursorDirectionPrevNoDuplicate
 };
 
 enum WebIDBTaskType {
-    WebIDBTaskTypeNormal = 0,
-    WebIDBTaskTypePreemptive,
-    WebIDBTaskTypeLast = WebIDBTaskTypePreemptive
+  WebIDBTaskTypeNormal = 0,
+  WebIDBTaskTypePreemptive,
+  WebIDBTaskTypeLast = WebIDBTaskTypePreemptive
 };
 
 enum WebIDBPutMode {
-    WebIDBPutModeAddOrUpdate,
-    WebIDBPutModeAddOnly,
-    WebIDBPutModeCursorUpdate,
-    WebIDBPutModeLast = WebIDBPutModeCursorUpdate
+  WebIDBPutModeAddOrUpdate,
+  WebIDBPutModeAddOnly,
+  WebIDBPutModeCursorUpdate,
+  WebIDBPutModeLast = WebIDBPutModeCursorUpdate
 };
 
 enum WebIDBOperationType {
-    WebIDBAdd = 0,
-    WebIDBPut,
-    WebIDBDelete,
-    WebIDBClear,
-    WebIDBOperationTypeCount,
-    WebIDBOperationTypeLast = WebIDBClear
+  WebIDBAdd = 0,
+  WebIDBPut,
+  WebIDBDelete,
+  WebIDBClear,
+  WebIDBOperationTypeCount,
+  WebIDBOperationTypeLast = WebIDBClear
 };
 
 enum WebIDBTransactionMode {
-    WebIDBTransactionModeReadOnly = 0,
-    WebIDBTransactionModeReadWrite,
-    WebIDBTransactionModeVersionChange,
-    WebIDBTransactionModeLast = WebIDBTransactionModeVersionChange
+  WebIDBTransactionModeReadOnly = 0,
+  WebIDBTransactionModeReadWrite,
+  WebIDBTransactionModeVersionChange,
+  WebIDBTransactionModeLast = WebIDBTransactionModeVersionChange
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBTypes_h
+#endif  // WebIDBTypes_h

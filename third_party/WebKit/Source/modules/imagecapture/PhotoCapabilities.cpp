@@ -8,73 +8,66 @@ namespace blink {
 
 namespace {
 
-String meteringModeToString(media::mojom::blink::MeteringMode mode)
-{
-    switch (mode) {
+String meteringModeToString(media::mojom::blink::MeteringMode mode) {
+  switch (mode) {
     case media::mojom::blink::MeteringMode::NONE:
-        return "none";
+      return "none";
     case media::mojom::blink::MeteringMode::MANUAL:
-        return "manual";
+      return "manual";
     case media::mojom::blink::MeteringMode::SINGLE_SHOT:
-        return "single-shot";
+      return "single-shot";
     case media::mojom::blink::MeteringMode::CONTINUOUS:
-        return "continuous";
+      return "continuous";
     default:
-        NOTREACHED();
-    }
-    return emptyString();
+      NOTREACHED();
+  }
+  return emptyString();
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
 // static
-PhotoCapabilities* PhotoCapabilities::create()
-{
-    return new PhotoCapabilities();
+PhotoCapabilities* PhotoCapabilities::create() {
+  return new PhotoCapabilities();
 }
 
-String PhotoCapabilities::focusMode() const
-{
-    return meteringModeToString(m_focusMode);
+String PhotoCapabilities::focusMode() const {
+  return meteringModeToString(m_focusMode);
 }
 
-String PhotoCapabilities::exposureMode() const
-{
-    return meteringModeToString(m_exposureMode);
+String PhotoCapabilities::exposureMode() const {
+  return meteringModeToString(m_exposureMode);
 }
 
-String PhotoCapabilities::whiteBalanceMode() const
-{
-    return meteringModeToString(m_whiteBalanceMode);
+String PhotoCapabilities::whiteBalanceMode() const {
+  return meteringModeToString(m_whiteBalanceMode);
 }
 
-String PhotoCapabilities::fillLightMode() const
-{
-    switch (m_fillLightMode) {
+String PhotoCapabilities::fillLightMode() const {
+  switch (m_fillLightMode) {
     case media::mojom::blink::FillLightMode::NONE:
-        return "none";
+      return "none";
     case media::mojom::blink::FillLightMode::OFF:
-        return "off";
+      return "off";
     case media::mojom::blink::FillLightMode::AUTO:
-        return "auto";
+      return "auto";
     case media::mojom::blink::FillLightMode::FLASH:
-        return "flash";
+      return "flash";
     case media::mojom::blink::FillLightMode::TORCH:
-        return "torch";
+      return "torch";
     default:
-        NOTREACHED();
-    }
-    return emptyString();
+      NOTREACHED();
+  }
+  return emptyString();
 }
 
-DEFINE_TRACE(PhotoCapabilities)
-{
-    visitor->trace(m_iso);
-    visitor->trace(m_imageHeight);
-    visitor->trace(m_imageWidth);
-    visitor->trace(m_zoom);
-    visitor->trace(m_exposureCompensation);
-    visitor->trace(m_colorTemperature);
+DEFINE_TRACE(PhotoCapabilities) {
+  visitor->trace(m_iso);
+  visitor->trace(m_imageHeight);
+  visitor->trace(m_imageWidth);
+  visitor->trace(m_zoom);
+  visitor->trace(m_exposureCompensation);
+  visitor->trace(m_colorTemperature);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -35,71 +35,91 @@ namespace blink {
 class CanvasContextCreationAttributes;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    class Factory : public CanvasRenderingContextFactory {
-        WTF_MAKE_NONCOPYABLE(Factory);
-    public:
-        Factory() {}
-        ~Factory() override {}
+  DEFINE_WRAPPERTYPEINFO();
 
-        CanvasRenderingContext* create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
-        CanvasRenderingContext* create(ScriptState*, OffscreenCanvas*, const CanvasContextCreationAttributes&) override;
-        CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl; }
-        void onError(HTMLCanvasElement*, const String& error) override;
-    };
+ public:
+  class Factory : public CanvasRenderingContextFactory {
+    WTF_MAKE_NONCOPYABLE(Factory);
 
-    ~WebGLRenderingContext() override;
+   public:
+    Factory() {}
+    ~Factory() override {}
 
-    CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl; }
-    ImageBitmap* transferToImageBitmap(ExceptionState&) final;
-    String contextName() const override { return "WebGLRenderingContext"; }
-    void registerContextExtensions() override;
-    void setCanvasGetContextResult(RenderingContext&) final;
-    void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
+    CanvasRenderingContext* create(HTMLCanvasElement*,
+                                   const CanvasContextCreationAttributes&,
+                                   Document&) override;
+    CanvasRenderingContext* create(
+        ScriptState*,
+        OffscreenCanvas*,
+        const CanvasContextCreationAttributes&) override;
+    CanvasRenderingContext::ContextType getContextType() const override {
+      return CanvasRenderingContext::ContextWebgl;
+    }
+    void onError(HTMLCanvasElement*, const String& error) override;
+  };
 
-    EAGERLY_FINALIZE();
-    DECLARE_VIRTUAL_TRACE();
+  ~WebGLRenderingContext() override;
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  CanvasRenderingContext::ContextType getContextType() const override {
+    return CanvasRenderingContext::ContextWebgl;
+  }
+  ImageBitmap* transferToImageBitmap(ExceptionState&) final;
+  String contextName() const override { return "WebGLRenderingContext"; }
+  void registerContextExtensions() override;
+  void setCanvasGetContextResult(RenderingContext&) final;
+  void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-private:
-    WebGLRenderingContext(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&);
-    WebGLRenderingContext(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&);
+  EAGERLY_FINALIZE();
+  DECLARE_VIRTUAL_TRACE();
 
-    // Enabled extension objects.
-    Member<ANGLEInstancedArrays> m_angleInstancedArrays;
-    Member<EXTBlendMinMax> m_extBlendMinMax;
-    Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
-    Member<EXTFragDepth> m_extFragDepth;
-    Member<EXTShaderTextureLOD> m_extShaderTextureLOD;
-    Member<EXTsRGB> m_extsRGB;
-    Member<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
-    Member<OESTextureFloat> m_oesTextureFloat;
-    Member<OESTextureFloatLinear> m_oesTextureFloatLinear;
-    Member<OESTextureHalfFloat> m_oesTextureHalfFloat;
-    Member<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
-    Member<OESStandardDerivatives> m_oesStandardDerivatives;
-    Member<OESVertexArrayObject> m_oesVertexArrayObject;
-    Member<OESElementIndexUint> m_oesElementIndexUint;
-    Member<WebGLLoseContext> m_webglLoseContext;
-    Member<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-    Member<WebGLDebugShaders> m_webglDebugShaders;
-    Member<WebGLDrawBuffers> m_webglDrawBuffers;
-    Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
-    Member<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-    Member<WebGLCompressedTextureES30> m_webglCompressedTextureES30;
-    Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
-    Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
-    Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
-    Member<WebGLCompressedTextureS3TCsRGB> m_webglCompressedTextureS3TCsRGB;
-    Member<WebGLDepthTexture> m_webglDepthTexture;
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
+ private:
+  WebGLRenderingContext(HTMLCanvasElement*,
+                        std::unique_ptr<WebGraphicsContext3DProvider>,
+                        const CanvasContextCreationAttributes&);
+  WebGLRenderingContext(OffscreenCanvas*,
+                        std::unique_ptr<WebGraphicsContext3DProvider>,
+                        const CanvasContextCreationAttributes&);
+
+  // Enabled extension objects.
+  Member<ANGLEInstancedArrays> m_angleInstancedArrays;
+  Member<EXTBlendMinMax> m_extBlendMinMax;
+  Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
+  Member<EXTFragDepth> m_extFragDepth;
+  Member<EXTShaderTextureLOD> m_extShaderTextureLOD;
+  Member<EXTsRGB> m_extsRGB;
+  Member<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
+  Member<OESTextureFloat> m_oesTextureFloat;
+  Member<OESTextureFloatLinear> m_oesTextureFloatLinear;
+  Member<OESTextureHalfFloat> m_oesTextureHalfFloat;
+  Member<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
+  Member<OESStandardDerivatives> m_oesStandardDerivatives;
+  Member<OESVertexArrayObject> m_oesVertexArrayObject;
+  Member<OESElementIndexUint> m_oesElementIndexUint;
+  Member<WebGLLoseContext> m_webglLoseContext;
+  Member<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
+  Member<WebGLDebugShaders> m_webglDebugShaders;
+  Member<WebGLDrawBuffers> m_webglDrawBuffers;
+  Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
+  Member<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+  Member<WebGLCompressedTextureES30> m_webglCompressedTextureES30;
+  Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
+  Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
+  Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+  Member<WebGLCompressedTextureS3TCsRGB> m_webglCompressedTextureS3TCsRGB;
+  Member<WebGLDepthTexture> m_webglDepthTexture;
 };
 
-DEFINE_TYPE_CASTS(WebGLRenderingContext, CanvasRenderingContext, context,
-    context->is3d() && WebGLRenderingContextBase::getWebGLVersion(context) == 1,
-    context.is3d() && WebGLRenderingContextBase::getWebGLVersion(&context) == 1);
+DEFINE_TYPE_CASTS(WebGLRenderingContext,
+                  CanvasRenderingContext,
+                  context,
+                  context->is3d() &&
+                      WebGLRenderingContextBase::getWebGLVersion(context) == 1,
+                  context.is3d() &&
+                      WebGLRenderingContextBase::getWebGLVersion(&context) ==
+                          1);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLRenderingContext_h
+#endif  // WebGLRenderingContext_h

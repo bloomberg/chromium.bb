@@ -32,37 +32,32 @@
 
 namespace blink {
 
-enum LightType {
-    LS_DISTANT,
-    LS_POINT,
-    LS_SPOT
-};
+enum LightType { LS_DISTANT, LS_POINT, LS_SPOT };
 
 class TextStream;
 
 class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
-    WTF_MAKE_NONCOPYABLE(LightSource);
-public:
-    LightSource(LightType type)
-        : m_type(type)
-    { }
+  WTF_MAKE_NONCOPYABLE(LightSource);
 
-    virtual ~LightSource();
+ public:
+  LightSource(LightType type) : m_type(type) {}
 
-    LightType type() const { return m_type; }
-    virtual TextStream& externalRepresentation(TextStream&) const = 0;
+  virtual ~LightSource();
 
-    virtual bool setAzimuth(float) { return false; }
-    virtual bool setElevation(float) { return false; }
-    virtual bool setPosition(const FloatPoint3D&) { return false; }
-    virtual bool setPointsAt(const FloatPoint3D&) { return false; }
-    virtual bool setSpecularExponent(float) { return false; }
-    virtual bool setLimitingConeAngle(float) { return false; }
+  LightType type() const { return m_type; }
+  virtual TextStream& externalRepresentation(TextStream&) const = 0;
 
-private:
-    LightType m_type;
+  virtual bool setAzimuth(float) { return false; }
+  virtual bool setElevation(float) { return false; }
+  virtual bool setPosition(const FloatPoint3D&) { return false; }
+  virtual bool setPointsAt(const FloatPoint3D&) { return false; }
+  virtual bool setSpecularExponent(float) { return false; }
+  virtual bool setLimitingConeAngle(float) { return false; }
+
+ private:
+  LightType m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LightSource_h
+#endif  // LightSource_h

@@ -35,25 +35,22 @@
 
 namespace blink {
 
-void SVGAnimatedInteger::synchronizeAttribute()
-{
-    if (m_parentIntegerOptionalInteger) {
-        m_parentIntegerOptionalInteger->synchronizeAttribute();
-        return;
-    }
+void SVGAnimatedInteger::synchronizeAttribute() {
+  if (m_parentIntegerOptionalInteger) {
+    m_parentIntegerOptionalInteger->synchronizeAttribute();
+    return;
+  }
 
-    SVGAnimatedProperty<SVGInteger>::synchronizeAttribute();
+  SVGAnimatedProperty<SVGInteger>::synchronizeAttribute();
 }
 
-DEFINE_TRACE(SVGAnimatedInteger)
-{
-    visitor->trace(m_parentIntegerOptionalInteger);
-    SVGAnimatedProperty<SVGInteger>::trace(visitor);
+DEFINE_TRACE(SVGAnimatedInteger) {
+  visitor->trace(m_parentIntegerOptionalInteger);
+  SVGAnimatedProperty<SVGInteger>::trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(SVGAnimatedInteger)
-{
-    visitor->traceWrappers(contextElement());
+DEFINE_TRACE_WRAPPERS(SVGAnimatedInteger) {
+  visitor->traceWrappers(contextElement());
 }
 
-} // namespace blink
+}  // namespace blink

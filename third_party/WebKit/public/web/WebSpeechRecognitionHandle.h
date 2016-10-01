@@ -37,49 +37,51 @@ class SpeechRecognition;
 // recognition session, and by WebSpeechRecognizerClient to route
 // recognition events.
 class WebSpeechRecognitionHandle {
-public:
-    ~WebSpeechRecognitionHandle() { reset(); }
-    WebSpeechRecognitionHandle() { }
+ public:
+  ~WebSpeechRecognitionHandle() { reset(); }
+  WebSpeechRecognitionHandle() {}
 
-    WebSpeechRecognitionHandle(const WebSpeechRecognitionHandle& other) { assign(other); }
-    WebSpeechRecognitionHandle& operator=(const WebSpeechRecognitionHandle& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebSpeechRecognitionHandle(const WebSpeechRecognitionHandle& other) {
+    assign(other);
+  }
+  WebSpeechRecognitionHandle& operator=(
+      const WebSpeechRecognitionHandle& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebSpeechRecognitionHandle&);
+  BLINK_EXPORT void reset();
+  BLINK_EXPORT void assign(const WebSpeechRecognitionHandle&);
 
-    // Comparison functions are provided so that WebSpeechRecognitionHandle objects
-    // can be stored in a hash map.
-    BLINK_EXPORT bool equals(const WebSpeechRecognitionHandle&) const;
-    BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
+  // Comparison functions are provided so that WebSpeechRecognitionHandle objects
+  // can be stored in a hash map.
+  BLINK_EXPORT bool equals(const WebSpeechRecognitionHandle&) const;
+  BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
 
 #if BLINK_IMPLEMENTATION
-    WebSpeechRecognitionHandle(SpeechRecognition*);
-    operator SpeechRecognition*() const;
+  WebSpeechRecognitionHandle(SpeechRecognition*);
+  operator SpeechRecognition*() const;
 #endif
 
-private:
-    WebPrivatePtr<SpeechRecognition> m_private;
+ private:
+  WebPrivatePtr<SpeechRecognition> m_private;
 };
 
-inline bool operator==(const WebSpeechRecognitionHandle& a, const WebSpeechRecognitionHandle& b)
-{
-    return a.equals(b);
+inline bool operator==(const WebSpeechRecognitionHandle& a,
+                       const WebSpeechRecognitionHandle& b) {
+  return a.equals(b);
 }
 
-inline bool operator!=(const WebSpeechRecognitionHandle& a, const WebSpeechRecognitionHandle& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebSpeechRecognitionHandle& a,
+                       const WebSpeechRecognitionHandle& b) {
+  return !(a == b);
 }
 
-inline bool operator<(const WebSpeechRecognitionHandle& a, const WebSpeechRecognitionHandle& b)
-{
-    return a.lessThan(b);
+inline bool operator<(const WebSpeechRecognitionHandle& a,
+                      const WebSpeechRecognitionHandle& b) {
+  return a.lessThan(b);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSpeechRecognitionHandle_h
+#endif  // WebSpeechRecognitionHandle_h

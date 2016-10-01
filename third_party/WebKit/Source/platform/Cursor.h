@@ -35,89 +35,92 @@
 namespace blink {
 
 class PLATFORM_EXPORT Cursor {
-    USING_FAST_MALLOC(Cursor);
-public:
-    enum Type {
-        Pointer = 0,
-        Cross,
-        Hand,
-        IBeam,
-        Wait,
-        Help,
-        EastResize,
-        NorthResize,
-        NorthEastResize,
-        NorthWestResize,
-        SouthResize,
-        SouthEastResize,
-        SouthWestResize,
-        WestResize,
-        NorthSouthResize,
-        EastWestResize,
-        NorthEastSouthWestResize,
-        NorthWestSouthEastResize,
-        ColumnResize,
-        RowResize,
-        MiddlePanning,
-        EastPanning,
-        NorthPanning,
-        NorthEastPanning,
-        NorthWestPanning,
-        SouthPanning,
-        SouthEastPanning,
-        SouthWestPanning,
-        WestPanning,
-        Move,
-        VerticalText,
-        Cell,
-        ContextMenu,
-        Alias,
-        Progress,
-        NoDrop,
-        Copy,
-        None,
-        NotAllowed,
-        ZoomIn,
-        ZoomOut,
-        Grab,
-        Grabbing,
-        Custom
-    };
+  USING_FAST_MALLOC(Cursor);
 
-    Cursor()
-        // This is an invalid Cursor and should never actually get used.
-        : m_type(static_cast<Type>(-1))
-    {
-    }
+ public:
+  enum Type {
+    Pointer = 0,
+    Cross,
+    Hand,
+    IBeam,
+    Wait,
+    Help,
+    EastResize,
+    NorthResize,
+    NorthEastResize,
+    NorthWestResize,
+    SouthResize,
+    SouthEastResize,
+    SouthWestResize,
+    WestResize,
+    NorthSouthResize,
+    EastWestResize,
+    NorthEastSouthWestResize,
+    NorthWestSouthEastResize,
+    ColumnResize,
+    RowResize,
+    MiddlePanning,
+    EastPanning,
+    NorthPanning,
+    NorthEastPanning,
+    NorthWestPanning,
+    SouthPanning,
+    SouthEastPanning,
+    SouthWestPanning,
+    WestPanning,
+    Move,
+    VerticalText,
+    Cell,
+    ContextMenu,
+    Alias,
+    Progress,
+    NoDrop,
+    Copy,
+    None,
+    NotAllowed,
+    ZoomIn,
+    ZoomOut,
+    Grab,
+    Grabbing,
+    Custom
+  };
 
-    Cursor(Image*, bool hotSpotSpecified, const IntPoint& hotSpot);
+  Cursor()
+      // This is an invalid Cursor and should never actually get used.
+      : m_type(static_cast<Type>(-1)) {}
 
-    // Hot spot is in image pixels.
-    Cursor(Image*, bool hotSpotSpecified, const IntPoint& hotSpot, float imageScaleFactor);
+  Cursor(Image*, bool hotSpotSpecified, const IntPoint& hotSpot);
 
-    Cursor(const Cursor&);
-    ~Cursor();
-    Cursor& operator=(const Cursor&);
+  // Hot spot is in image pixels.
+  Cursor(Image*,
+         bool hotSpotSpecified,
+         const IntPoint& hotSpot,
+         float imageScaleFactor);
 
-    explicit Cursor(Type);
-    Type getType() const
-    {
-        ASSERT(m_type >= 0 && m_type <= Custom);
-        return m_type;
-    }
-    Image* getImage() const { return m_image.get(); }
-    const IntPoint& hotSpot() const { return m_hotSpot; }
-    // Image scale in image pixels per logical (UI) pixel.
-    float imageScaleFactor() const { return m_imageScaleFactor; }
+  Cursor(const Cursor&);
+  ~Cursor();
+  Cursor& operator=(const Cursor&);
 
-private:
-    Type m_type;
-    RefPtr<Image> m_image;
-    IntPoint m_hotSpot;
-    float m_imageScaleFactor;
+  explicit Cursor(Type);
+  Type getType() const {
+    ASSERT(m_type >= 0 && m_type <= Custom);
+    return m_type;
+  }
+  Image* getImage() const { return m_image.get(); }
+  const IntPoint& hotSpot() const { return m_hotSpot; }
+  // Image scale in image pixels per logical (UI) pixel.
+  float imageScaleFactor() const { return m_imageScaleFactor; }
+
+ private:
+  Type m_type;
+  RefPtr<Image> m_image;
+  IntPoint m_hotSpot;
+  float m_imageScaleFactor;
 };
 
-PLATFORM_EXPORT IntPoint determineHotSpot(Image*, bool hotSpotSpecified, const IntPoint& specifiedHotSpot);
+PLATFORM_EXPORT IntPoint determineHotSpot(Image*,
+                                          bool hotSpotSpecified,
+                                          const IntPoint& specifiedHotSpot);
 
 PLATFORM_EXPORT const Cursor& pointerCursor();
 PLATFORM_EXPORT const Cursor& crossCursor();
@@ -163,6 +166,6 @@ PLATFORM_EXPORT const Cursor& noneCursor();
 PLATFORM_EXPORT const Cursor& grabCursor();
 PLATFORM_EXPORT const Cursor& grabbingCursor();
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Cursor_h
+#endif  // Cursor_h

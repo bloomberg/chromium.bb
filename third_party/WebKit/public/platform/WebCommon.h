@@ -44,39 +44,38 @@
 #endif
 
 #if defined(COMPONENT_BUILD)
-    #if defined(WIN32)
-        #if BLINK_IMPLEMENTATION
-            #define BLINK_EXPORT __declspec(dllexport)
-        #else // BLINK_IMPLEMENTATION
-            #define BLINK_EXPORT __declspec(dllimport)
-        #endif
-        #if BLINK_PLATFORM_IMPLEMENTATION
-            #define BLINK_PLATFORM_EXPORT __declspec(dllexport)
-        #else // BLINK_PLATFORM_IMPLEMENTATION
-            #define BLINK_PLATFORM_EXPORT __declspec(dllimport)
-        #endif
-        #if BLINK_COMMON_IMPLEMENTATION
-            #define BLINK_COMMON_EXPORT __declspec(dllexport)
-        #else // BLINK_COMMON_IMPLEMENTATION
-            #define BLINK_COMMON_EXPORT __declspec(dllimport)
-        #endif
-    #else // defined(WIN32)
-        #define BLINK_EXPORT __attribute__((visibility("default")))
-        #define BLINK_PLATFORM_EXPORT __attribute__((visibility("default")))
-        #define BLINK_COMMON_EXPORT __attribute__((visibility("default")))
-    #endif
-#else // defined(COMPONENT_BUILD)
-    #define BLINK_EXPORT
-    #define BLINK_PLATFORM_EXPORT
-    #define BLINK_COMMON_EXPORT
+#if defined(WIN32)
+#if BLINK_IMPLEMENTATION
+#define BLINK_EXPORT __declspec(dllexport)
+#else  // BLINK_IMPLEMENTATION
+#define BLINK_EXPORT __declspec(dllimport)
 #endif
-
+#if BLINK_PLATFORM_IMPLEMENTATION
+#define BLINK_PLATFORM_EXPORT __declspec(dllexport)
+#else  // BLINK_PLATFORM_IMPLEMENTATION
+#define BLINK_PLATFORM_EXPORT __declspec(dllimport)
+#endif
+#if BLINK_COMMON_IMPLEMENTATION
+#define BLINK_COMMON_EXPORT __declspec(dllexport)
+#else  // BLINK_COMMON_IMPLEMENTATION
+#define BLINK_COMMON_EXPORT __declspec(dllimport)
+#endif
+#else  // defined(WIN32)
+#define BLINK_EXPORT __attribute__((visibility("default")))
+#define BLINK_PLATFORM_EXPORT __attribute__((visibility("default")))
+#define BLINK_COMMON_EXPORT __attribute__((visibility("default")))
+#endif
+#else  // defined(COMPONENT_BUILD)
+#define BLINK_EXPORT
+#define BLINK_PLATFORM_EXPORT
+#define BLINK_COMMON_EXPORT
+#endif
 
 // -----------------------------------------------------------------------------
 // Basic types
 
-#include <stddef.h> // For size_t
-#include <stdint.h> // For int32_t
+#include <stddef.h>  // For size_t
+#include <stdint.h>  // For int32_t
 
 namespace blink {
 
@@ -93,6 +92,6 @@ typedef unsigned short WebUChar;
 // Latin-1 character type
 typedef unsigned char WebLChar;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

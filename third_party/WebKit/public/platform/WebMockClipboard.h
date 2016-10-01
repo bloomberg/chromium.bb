@@ -13,10 +13,10 @@ namespace blink {
 // Provides convenience methods for retrieving data from the mock clipboard
 // used in layout and unit tests.
 class WebMockClipboard : public WebClipboard {
-public:
-    virtual WebImage readRawImage(Buffer) { return WebImage(); }
+ public:
+  virtual WebImage readRawImage(Buffer) { return WebImage(); }
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

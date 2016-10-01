@@ -9,14 +9,10 @@
 
 namespace blink {
 
-TEST(FloatQuadTest, ToString)
-{
-    FloatQuad quad(
-        FloatPoint(2, 3),
-        FloatPoint(5, 7),
-        FloatPoint(11, 13),
-        FloatPoint(17, 19));
-    EXPECT_EQ("2,3; 5,7; 11,13; 17,19", quad.toString());
+TEST(FloatQuadTest, ToString) {
+  FloatQuad quad(FloatPoint(2, 3), FloatPoint(5, 7), FloatPoint(11, 13),
+                 FloatPoint(17, 19));
+  EXPECT_EQ("2,3; 5,7; 11,13; 17,19", quad.toString());
 }
 
-} // namespace blink
+}  // namespace blink

@@ -18,45 +18,46 @@ namespace blink {
 class LocalFrame;
 class Resource;
 
-class CORE_EXPORT InspectorResourceContentLoader final : public GarbageCollectedFinalized<InspectorResourceContentLoader> {
-    WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
-public:
-    static InspectorResourceContentLoader* create(LocalFrame* inspectedFrame)
-    {
-        return new InspectorResourceContentLoader(inspectedFrame);
-    }
-    ~InspectorResourceContentLoader();
-    void dispose();
-    DECLARE_TRACE();
+class CORE_EXPORT InspectorResourceContentLoader final
+    : public GarbageCollectedFinalized<InspectorResourceContentLoader> {
+  WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
 
-    int createClientId();
-    void ensureResourcesContentLoaded(int clientId, std::unique_ptr<WTF::Closure> callback);
-    void cancel(int clientId);
-    void didCommitLoadForLocalFrame(LocalFrame*);
+ public:
+  static InspectorResourceContentLoader* create(LocalFrame* inspectedFrame) {
+    return new InspectorResourceContentLoader(inspectedFrame);
+  }
+  ~InspectorResourceContentLoader();
+  void dispose();
+  DECLARE_TRACE();
 
-private:
-    class ResourceClient;
+  int createClientId();
+  void ensureResourcesContentLoaded(int clientId,
+                                    std::unique_ptr<WTF::Closure> callback);
+  void cancel(int clientId);
+  void didCommitLoadForLocalFrame(LocalFrame*);
 
-    explicit InspectorResourceContentLoader(LocalFrame*);
-    void resourceFinished(ResourceClient*);
-    void checkDone();
-    void start();
-    void stop();
-    bool hasFinished();
+ private:
+  class ResourceClient;
 
-    using Callbacks = Vector<std::unique_ptr<WTF::Closure>>;
-    HashMap<int, Callbacks> m_callbacks;
-    bool m_allRequestsStarted;
-    bool m_started;
-    Member<LocalFrame> m_inspectedFrame;
-    HeapHashSet<Member<ResourceClient>> m_pendingResourceClients;
-    HeapVector<Member<Resource>> m_resources;
-    int m_lastClientId;
+  explicit InspectorResourceContentLoader(LocalFrame*);
+  void resourceFinished(ResourceClient*);
+  void checkDone();
+  void start();
+  void stop();
+  bool hasFinished();
 
-    friend class ResourceClient;
+  using Callbacks = Vector<std::unique_ptr<WTF::Closure>>;
+  HashMap<int, Callbacks> m_callbacks;
+  bool m_allRequestsStarted;
+  bool m_started;
+  Member<LocalFrame> m_inspectedFrame;
+  HeapHashSet<Member<ResourceClient>> m_pendingResourceClients;
+  HeapVector<Member<Resource>> m_resources;
+  int m_lastClientId;
+
+  friend class ResourceClient;
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // !defined(InspectorResourceContentLoader_h)
+#endif  // !defined(InspectorResourceContentLoader_h)

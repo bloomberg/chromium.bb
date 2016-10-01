@@ -13,20 +13,21 @@ namespace blink {
 class DOMPointInit;
 
 class CORE_EXPORT DOMPoint final : public DOMPointReadOnly {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMPoint* create(const DOMPointInit&);
-    static DOMPoint* create(double x, double y, double z = 0, double w = 1);
+  DEFINE_WRAPPERTYPEINFO();
 
-    void setX(double x) { m_x = x; }
-    void setY(double y) { m_y = y; }
-    void setZ(double z) { m_z = z; }
-    void setW(double w) { m_w = w; }
+ public:
+  static DOMPoint* create(const DOMPointInit&);
+  static DOMPoint* create(double x, double y, double z = 0, double w = 1);
 
-protected:
-    DOMPoint(double x, double y, double z, double w);
+  void setX(double x) { m_x = x; }
+  void setY(double y) { m_y = y; }
+  void setZ(double z) { m_z = z; }
+  void setW(double w) { m_w = w; }
+
+ protected:
+  DOMPoint(double x, double y, double z, double w);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

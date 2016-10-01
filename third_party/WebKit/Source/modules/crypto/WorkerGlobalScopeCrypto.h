@@ -40,22 +40,25 @@ namespace blink {
 class Crypto;
 class WorkerGlobalScope;
 
-class WorkerGlobalScopeCrypto final : public GarbageCollected<WorkerGlobalScopeCrypto>, public Supplement<WorkerGlobalScope> {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeCrypto);
-public:
-    static WorkerGlobalScopeCrypto& from(Supplementable<WorkerGlobalScope>&);
-    static Crypto* crypto(Supplementable<WorkerGlobalScope>&);
-    Crypto* crypto() const;
+class WorkerGlobalScopeCrypto final
+    : public GarbageCollected<WorkerGlobalScopeCrypto>,
+      public Supplement<WorkerGlobalScope> {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeCrypto);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static WorkerGlobalScopeCrypto& from(Supplementable<WorkerGlobalScope>&);
+  static Crypto* crypto(Supplementable<WorkerGlobalScope>&);
+  Crypto* crypto() const;
 
-private:
-    WorkerGlobalScopeCrypto();
-    static const char* supplementName();
+  DECLARE_VIRTUAL_TRACE();
 
-    mutable Member<Crypto> m_crypto;
+ private:
+  WorkerGlobalScopeCrypto();
+  static const char* supplementName();
+
+  mutable Member<Crypto> m_crypto;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerGlobalScopeCrypto_h
+#endif  // WorkerGlobalScopeCrypto_h

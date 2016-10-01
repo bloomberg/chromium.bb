@@ -34,52 +34,53 @@ class FilterEffect;
 class SVGFilterBuilder;
 
 class SVGFilterPrimitiveStandardAttributes : public SVGElement {
-    // No DEFINE_WRAPPERTYPEINFO() here because a) this class is never
-    // instantiated, and b) we don't generate corresponding V8T.h or V8T.cpp.
-    // The subclasses must write DEFINE_WRAPPERTYPEINFO().
-public:
-    void setStandardAttributes(
-        FilterEffect*, SVGUnitTypes::SVGUnitType, const FloatRect& referenceBox) const;
+  // No DEFINE_WRAPPERTYPEINFO() here because a) this class is never
+  // instantiated, and b) we don't generate corresponding V8T.h or V8T.cpp.
+  // The subclasses must write DEFINE_WRAPPERTYPEINFO().
+ public:
+  void setStandardAttributes(FilterEffect*,
+                             SVGUnitTypes::SVGUnitType,
+                             const FloatRect& referenceBox) const;
 
-    virtual FilterEffect* build(SVGFilterBuilder*, Filter*) = 0;
-    // Returns true, if the new value is different from the old one.
-    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&);
+  virtual FilterEffect* build(SVGFilterBuilder*, Filter*) = 0;
+  // Returns true, if the new value is different from the old one.
+  virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&);
 
-    virtual bool taintsOrigin(bool inputsTaintOrigin) const { return true; }
+  virtual bool taintsOrigin(bool inputsTaintOrigin) const { return true; }
 
-    // JS API
-    SVGAnimatedLength* x() const { return m_x.get(); }
-    SVGAnimatedLength* y() const { return m_y.get(); }
-    SVGAnimatedLength* width() const { return m_width.get(); }
-    SVGAnimatedLength* height() const { return m_height.get(); }
-    SVGAnimatedString* result() const { return m_result.get(); }
+  // JS API
+  SVGAnimatedLength* x() const { return m_x.get(); }
+  SVGAnimatedLength* y() const { return m_y.get(); }
+  SVGAnimatedLength* width() const { return m_width.get(); }
+  SVGAnimatedLength* height() const { return m_height.get(); }
+  SVGAnimatedString* result() const { return m_result.get(); }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    SVGFilterPrimitiveStandardAttributes(const QualifiedName&, Document&);
+ protected:
+  SVGFilterPrimitiveStandardAttributes(const QualifiedName&, Document&);
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    void childrenChanged(const ChildrenChange&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  void childrenChanged(const ChildrenChange&) override;
 
-    void invalidate();
-    void primitiveAttributeChanged(const QualifiedName&);
+  void invalidate();
+  void primitiveAttributeChanged(const QualifiedName&);
 
-private:
-    bool isFilterEffect() const final { return true; }
+ private:
+  bool isFilterEffect() const final { return true; }
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    bool layoutObjectIsNeeded(const ComputedStyle&) final;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) final;
 
-    Member<SVGAnimatedLength> m_x;
-    Member<SVGAnimatedLength> m_y;
-    Member<SVGAnimatedLength> m_width;
-    Member<SVGAnimatedLength> m_height;
-    Member<SVGAnimatedString> m_result;
+  Member<SVGAnimatedLength> m_x;
+  Member<SVGAnimatedLength> m_y;
+  Member<SVGAnimatedLength> m_width;
+  Member<SVGAnimatedLength> m_height;
+  Member<SVGAnimatedString> m_result;
 };
 
 void invalidateFilterPrimitiveParent(SVGElement*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFilterPrimitiveStandardAttributes_h
+#endif  // SVGFilterPrimitiveStandardAttributes_h

@@ -28,48 +28,42 @@
 
 namespace blink {
 
-CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* fontFaceRule, CSSStyleSheet* parent)
-    : CSSRule(parent)
-    , m_fontFaceRule(fontFaceRule)
-{
+CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* fontFaceRule,
+                                 CSSStyleSheet* parent)
+    : CSSRule(parent), m_fontFaceRule(fontFaceRule) {}
+
+CSSFontFaceRule::~CSSFontFaceRule() {}
+
+CSSStyleDeclaration* CSSFontFaceRule::style() const {
+  if (!m_propertiesCSSOMWrapper)
+    m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(
+        m_fontFaceRule->mutableProperties(),
+        const_cast<CSSFontFaceRule*>(this));
+  return m_propertiesCSSOMWrapper.get();
 }
 
-CSSFontFaceRule::~CSSFontFaceRule()
-{
+String CSSFontFaceRule::cssText() const {
+  StringBuilder result;
+  result.append("@font-face { ");
+  String descs = m_fontFaceRule->properties().asText();
+  result.append(descs);
+  if (!descs.isEmpty())
+    result.append(' ');
+  result.append('}');
+  return result.toString();
 }
 
-CSSStyleDeclaration* CSSFontFaceRule::style() const
-{
-    if (!m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_fontFaceRule->mutableProperties(), const_cast<CSSFontFaceRule*>(this));
-    return m_propertiesCSSOMWrapper.get();
+void CSSFontFaceRule::reattach(StyleRuleBase* rule) {
+  ASSERT(rule);
+  m_fontFaceRule = toStyleRuleFontFace(rule);
+  if (m_propertiesCSSOMWrapper)
+    m_propertiesCSSOMWrapper->reattach(m_fontFaceRule->mutableProperties());
 }
 
-String CSSFontFaceRule::cssText() const
-{
-    StringBuilder result;
-    result.append("@font-face { ");
-    String descs = m_fontFaceRule->properties().asText();
-    result.append(descs);
-    if (!descs.isEmpty())
-        result.append(' ');
-    result.append('}');
-    return result.toString();
+DEFINE_TRACE(CSSFontFaceRule) {
+  visitor->trace(m_fontFaceRule);
+  visitor->trace(m_propertiesCSSOMWrapper);
+  CSSRule::trace(visitor);
 }
 
-void CSSFontFaceRule::reattach(StyleRuleBase* rule)
-{
-    ASSERT(rule);
-    m_fontFaceRule = toStyleRuleFontFace(rule);
-    if (m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper->reattach(m_fontFaceRule->mutableProperties());
-}
-
-DEFINE_TRACE(CSSFontFaceRule)
-{
-    visitor->trace(m_fontFaceRule);
-    visitor->trace(m_propertiesCSSOMWrapper);
-    CSSRule::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

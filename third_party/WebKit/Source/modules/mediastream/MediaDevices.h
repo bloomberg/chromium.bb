@@ -20,56 +20,63 @@ class MediaTrackSupportedConstraints;
 class ScriptState;
 class UserMediaController;
 
-class MODULES_EXPORT MediaDevices final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(MediaDevices);
-    DEFINE_WRAPPERTYPEINFO();
-    USING_PRE_FINALIZER(MediaDevices, dispose);
-public:
-    static MediaDevices* create(ExecutionContext*);
-    ~MediaDevices() override;
+class MODULES_EXPORT MediaDevices final : public EventTargetWithInlineData,
+                                          public ActiveScriptWrappable,
+                                          public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaDevices);
+  DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(MediaDevices, dispose);
 
-    ScriptPromise enumerateDevices(ScriptState*);
-    void getSupportedConstraints(MediaTrackSupportedConstraints& result) { }
-    ScriptPromise getUserMedia(ScriptState*, const MediaStreamConstraints&, ExceptionState&);
-    void didChangeMediaDevices();
+ public:
+  static MediaDevices* create(ExecutionContext*);
+  ~MediaDevices() override;
 
-    // EventTarget overrides.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
-    void removeAllEventListeners() override;
+  ScriptPromise enumerateDevices(ScriptState*);
+  void getSupportedConstraints(MediaTrackSupportedConstraints& result) {}
+  ScriptPromise getUserMedia(ScriptState*,
+                             const MediaStreamConstraints&,
+                             ExceptionState&);
+  void didChangeMediaDevices();
 
-    // ScriptWrappable
-    bool hasPendingActivity() const override;
+  // EventTarget overrides.
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
+  void removeAllEventListeners() override;
 
-    // ActiveDOMObject overrides.
-    void stop() override;
-    void suspend() override;
-    void resume() override;
+  // ScriptWrappable
+  bool hasPendingActivity() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  // ActiveDOMObject overrides.
+  void stop() override;
+  void suspend() override;
+  void resume() override;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    // EventTarget overrides.
-    void addedEventListener(const AtomicString& eventType, RegisteredEventListener&) override;
-    void removedEventListener(const AtomicString& eventType, const RegisteredEventListener&) override;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange);
 
-private:
-    explicit MediaDevices(ExecutionContext*);
-    void scheduleDispatchEvent(Event*);
-    void dispatchScheduledEvent();
-    void startObserving();
-    void stopObserving();
-    UserMediaController* getUserMediaController();
-    void dispose();
+ protected:
+  // EventTarget overrides.
+  void addedEventListener(const AtomicString& eventType,
+                          RegisteredEventListener&) override;
+  void removedEventListener(const AtomicString& eventType,
+                            const RegisteredEventListener&) override;
 
-    bool m_observing;
-    bool m_stopped;
-    Member<AsyncMethodRunner<MediaDevices>> m_dispatchScheduledEventRunner;
-    HeapVector<Member<Event>> m_scheduledEvents;
+ private:
+  explicit MediaDevices(ExecutionContext*);
+  void scheduleDispatchEvent(Event*);
+  void dispatchScheduledEvent();
+  void startObserving();
+  void stopObserving();
+  UserMediaController* getUserMediaController();
+  void dispose();
+
+  bool m_observing;
+  bool m_stopped;
+  Member<AsyncMethodRunner<MediaDevices>> m_dispatchScheduledEventRunner;
+  HeapVector<Member<Event>> m_scheduledEvents;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

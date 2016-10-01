@@ -11,31 +11,26 @@
 namespace blink {
 
 PaintFilterEffect::PaintFilterEffect(Filter* filter, const SkPaint& paint)
-    : FilterEffect(filter)
-    , m_paint(paint)
-{
-    setOperatingColorSpace(ColorSpaceDeviceRGB);
+    : FilterEffect(filter), m_paint(paint) {
+  setOperatingColorSpace(ColorSpaceDeviceRGB);
 }
 
-PaintFilterEffect::~PaintFilterEffect()
-{
+PaintFilterEffect::~PaintFilterEffect() {}
+
+PaintFilterEffect* PaintFilterEffect::create(Filter* filter,
+                                             const SkPaint& paint) {
+  return new PaintFilterEffect(filter, paint);
 }
 
-PaintFilterEffect* PaintFilterEffect::create(Filter* filter, const SkPaint& paint)
-{
-    return new PaintFilterEffect(filter, paint);
+sk_sp<SkImageFilter> PaintFilterEffect::createImageFilter() {
+  return SkPaintImageFilter::Make(m_paint, nullptr);
 }
 
-sk_sp<SkImageFilter> PaintFilterEffect::createImageFilter()
-{
-    return SkPaintImageFilter::Make(m_paint, nullptr);
+TextStream& PaintFilterEffect::externalRepresentation(TextStream& ts,
+                                                      int indent) const {
+  writeIndent(ts, indent);
+  ts << "[PaintFilterEffect]\n";
+  return ts;
 }
 
-TextStream& PaintFilterEffect::externalRepresentation(TextStream& ts, int indent) const
-{
-    writeIndent(ts, indent);
-    ts << "[PaintFilterEffect]\n";
-    return ts;
-}
-
-} // namespace blink
+}  // namespace blink

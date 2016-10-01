@@ -16,20 +16,22 @@ class Document;
 
 class CORE_EXPORT CustomElementAdoptedCallbackReaction final
     : public CustomElementReaction {
-    WTF_MAKE_NONCOPYABLE(CustomElementAdoptedCallbackReaction);
-public:
-    CustomElementAdoptedCallbackReaction(
-        CustomElementDefinition*, Document* oldOwner, Document* newOwner);
+  WTF_MAKE_NONCOPYABLE(CustomElementAdoptedCallbackReaction);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  CustomElementAdoptedCallbackReaction(CustomElementDefinition*,
+                                       Document* oldOwner,
+                                       Document* newOwner);
 
-private:
-    void invoke(Element*) override;
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<Document> m_oldOwner;
-    Member<Document> m_newOwner;
+ private:
+  void invoke(Element*) override;
+
+  Member<Document> m_oldOwner;
+  Member<Document> m_newOwner;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementAdoptedCallbackReaction_h
+#endif  // CustomElementAdoptedCallbackReaction_h

@@ -19,72 +19,81 @@ namespace blink {
 namespace {
 
 template <typename T>
-class GlobalCacheStorageImpl final : public GarbageCollectedFinalized<GlobalCacheStorageImpl<T>>, public Supplement<T> {
-    USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
-public:
-    static GlobalCacheStorageImpl& from(T& supplementable, ExecutionContext* executionContext)
-    {
-        GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(Supplement<T>::from(supplementable, name()));
-        if (!supplement) {
-            supplement = new GlobalCacheStorageImpl;
-            Supplement<T>::provideTo(supplementable, name(), supplement);
-        }
-        return *supplement;
+class GlobalCacheStorageImpl final
+    : public GarbageCollectedFinalized<GlobalCacheStorageImpl<T>>,
+      public Supplement<T> {
+  USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
+
+ public:
+  static GlobalCacheStorageImpl& from(T& supplementable,
+                                      ExecutionContext* executionContext) {
+    GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(
+        Supplement<T>::from(supplementable, name()));
+    if (!supplement) {
+      supplement = new GlobalCacheStorageImpl;
+      Supplement<T>::provideTo(supplementable, name(), supplement);
+    }
+    return *supplement;
+  }
+
+  ~GlobalCacheStorageImpl() {
+    if (m_caches)
+      m_caches->dispose();
+  }
+
+  CacheStorage* caches(T& fetchingScope, ExceptionState& exceptionState) {
+    ExecutionContext* context = fetchingScope.getExecutionContext();
+    if (!context->getSecurityOrigin()->canAccessCacheStorage()) {
+      if (context->securityContext().isSandboxed(SandboxOrigin))
+        exceptionState.throwSecurityError(
+            "Cache storage is disabled because the context is sandboxed and "
+            "lacks the 'allow-same-origin' flag.");
+      else if (context->url().protocolIs("data"))
+        exceptionState.throwSecurityError(
+            "Cache storage is disabled inside 'data:' URLs.");
+      else
+        exceptionState.throwSecurityError("Access to cache storage is denied.");
+      return nullptr;
     }
 
-    ~GlobalCacheStorageImpl()
-    {
-        if (m_caches)
-            m_caches->dispose();
+    if (!m_caches) {
+      m_caches = CacheStorage::create(
+          GlobalFetch::ScopedFetcher::from(fetchingScope),
+          Platform::current()->cacheStorage(
+              WebSecurityOrigin(context->getSecurityOrigin())));
     }
+    return m_caches;
+  }
 
-    CacheStorage* caches(T& fetchingScope, ExceptionState& exceptionState)
-    {
-        ExecutionContext* context = fetchingScope.getExecutionContext();
-        if (!context->getSecurityOrigin()->canAccessCacheStorage()) {
-            if (context->securityContext().isSandboxed(SandboxOrigin))
-                exceptionState.throwSecurityError("Cache storage is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag.");
-            else if (context->url().protocolIs("data"))
-                exceptionState.throwSecurityError("Cache storage is disabled inside 'data:' URLs.");
-            else
-                exceptionState.throwSecurityError("Access to cache storage is denied.");
-            return nullptr;
-        }
+  // Promptly dispose of associated CacheStorage.
+  EAGERLY_FINALIZE();
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_caches);
+    Supplement<T>::trace(visitor);
+  }
 
-        if (!m_caches) {
-            m_caches = CacheStorage::create(GlobalFetch::ScopedFetcher::from(fetchingScope), Platform::current()->cacheStorage(WebSecurityOrigin(context->getSecurityOrigin())));
-        }
-        return m_caches;
-    }
+ private:
+  GlobalCacheStorageImpl() {}
 
-    // Promptly dispose of associated CacheStorage.
-    EAGERLY_FINALIZE();
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_caches);
-        Supplement<T>::trace(visitor);
-    }
+  static const char* name() { return "CacheStorage"; }
 
-private:
-    GlobalCacheStorageImpl()
-    {
-    }
-
-    static const char* name() { return "CacheStorage"; }
-
-    Member<CacheStorage> m_caches;
+  Member<CacheStorage> m_caches;
 };
 
-} // namespace
+}  // namespace
 
-CacheStorage* GlobalCacheStorage::caches(DOMWindow& window, ExceptionState& exceptionState)
-{
-    return GlobalCacheStorageImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.getExecutionContext()).caches(toLocalDOMWindow(window), exceptionState);
+CacheStorage* GlobalCacheStorage::caches(DOMWindow& window,
+                                         ExceptionState& exceptionState) {
+  return GlobalCacheStorageImpl<LocalDOMWindow>::from(
+             toLocalDOMWindow(window), window.getExecutionContext())
+      .caches(toLocalDOMWindow(window), exceptionState);
 }
 
-CacheStorage* GlobalCacheStorage::caches(WorkerGlobalScope& worker, ExceptionState& exceptionState)
-{
-    return GlobalCacheStorageImpl<WorkerGlobalScope>::from(worker, worker.getExecutionContext()).caches(worker, exceptionState);
+CacheStorage* GlobalCacheStorage::caches(WorkerGlobalScope& worker,
+                                         ExceptionState& exceptionState) {
+  return GlobalCacheStorageImpl<WorkerGlobalScope>::from(
+             worker, worker.getExecutionContext())
+      .caches(worker, exceptionState);
 }
 
-} // namespace blink
+}  // namespace blink

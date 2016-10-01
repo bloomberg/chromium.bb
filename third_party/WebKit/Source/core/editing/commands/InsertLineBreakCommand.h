@@ -31,22 +31,21 @@
 namespace blink {
 
 class InsertLineBreakCommand final : public CompositeEditCommand {
-public:
-    static InsertLineBreakCommand* create(Document& document)
-    {
-        return new InsertLineBreakCommand(document);
-    }
+ public:
+  static InsertLineBreakCommand* create(Document& document) {
+    return new InsertLineBreakCommand(document);
+  }
 
-private:
-    explicit InsertLineBreakCommand(Document&);
+ private:
+  explicit InsertLineBreakCommand(Document&);
 
-    void doApply(EditingState*) override;
+  void doApply(EditingState*) override;
 
-    bool preservesTypingStyle() const override;
+  bool preservesTypingStyle() const override;
 
-    bool shouldUseBreakElement(const Position&);
+  bool shouldUseBreakElement(const Position&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InsertLineBreakCommand_h
+#endif  // InsertLineBreakCommand_h

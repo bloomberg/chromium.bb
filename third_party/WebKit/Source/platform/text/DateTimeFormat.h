@@ -37,81 +37,83 @@ namespace blink {
 // standard 35, Locale Data Markup Language (LDML)[1].
 // [1] LDML http://unicode.org/reports/tr35/tr35-6.html#Date_Format_Patterns
 class PLATFORM_EXPORT DateTimeFormat {
-    STATIC_ONLY(DateTimeFormat);
-public:
-    enum FieldType {
-        FieldTypeInvalid,
-        FieldTypeLiteral,
+  STATIC_ONLY(DateTimeFormat);
 
-        // Era: AD
-        FieldTypeEra = 'G',
+ public:
+  enum FieldType {
+    FieldTypeInvalid,
+    FieldTypeLiteral,
 
-        // Year: 1996
-        FieldTypeYear = 'y',
-        FieldTypeYearOfWeekOfYear = 'Y',
-        FieldTypeExtendedYear = 'u',
+    // Era: AD
+    FieldTypeEra = 'G',
 
-        // Quater: Q2
-        FieldTypeQuater = 'Q',
-        FieldTypeQuaterStandAlone = 'q',
+    // Year: 1996
+    FieldTypeYear = 'y',
+    FieldTypeYearOfWeekOfYear = 'Y',
+    FieldTypeExtendedYear = 'u',
 
-        // Month: September
-        FieldTypeMonth = 'M',
-        FieldTypeMonthStandAlone = 'L',
+    // Quater: Q2
+    FieldTypeQuater = 'Q',
+    FieldTypeQuaterStandAlone = 'q',
 
-        // Week: 42
-        FieldTypeWeekOfYear = 'w',
-        FieldTypeWeekOfMonth = 'W',
+    // Month: September
+    FieldTypeMonth = 'M',
+    FieldTypeMonthStandAlone = 'L',
 
-        // Day: 12
-        FieldTypeDayOfMonth = 'd',
-        FieldTypeDayOfYear = 'D',
-        FieldTypeDayOfWeekInMonth = 'F',
-        FieldTypeModifiedJulianDay = 'g',
+    // Week: 42
+    FieldTypeWeekOfYear = 'w',
+    FieldTypeWeekOfMonth = 'W',
 
-        // Week Day: Tuesday
-        FieldTypeDayOfWeek = 'E',
-        FieldTypeLocalDayOfWeek = 'e',
-        FieldTypeLocalDayOfWeekStandAlon = 'c',
+    // Day: 12
+    FieldTypeDayOfMonth = 'd',
+    FieldTypeDayOfYear = 'D',
+    FieldTypeDayOfWeekInMonth = 'F',
+    FieldTypeModifiedJulianDay = 'g',
 
-        // Period: AM or PM
-        FieldTypePeriod = 'a',
+    // Week Day: Tuesday
+    FieldTypeDayOfWeek = 'E',
+    FieldTypeLocalDayOfWeek = 'e',
+    FieldTypeLocalDayOfWeekStandAlon = 'c',
 
-        // Hour: 7
-        FieldTypeHour12 = 'h',
-        FieldTypeHour23 = 'H',
-        FieldTypeHour11 = 'K',
-        FieldTypeHour24 = 'k',
+    // Period: AM or PM
+    FieldTypePeriod = 'a',
 
-        // Minute: 59
-        FieldTypeMinute = 'm',
+    // Hour: 7
+    FieldTypeHour12 = 'h',
+    FieldTypeHour23 = 'H',
+    FieldTypeHour11 = 'K',
+    FieldTypeHour24 = 'k',
 
-        // Second: 12
-        FieldTypeSecond = 's',
-        FieldTypeFractionalSecond = 'S',
-        FieldTypeMillisecondsInDay = 'A',
+    // Minute: 59
+    FieldTypeMinute = 'm',
 
-        // Zone: PDT
-        FieldTypeZone = 'z',
-        FieldTypeRFC822Zone = 'Z',
-        FieldTypeNonLocationZone = 'v',
-    };
+    // Second: 12
+    FieldTypeSecond = 's',
+    FieldTypeFractionalSecond = 'S',
+    FieldTypeMillisecondsInDay = 'A',
 
-    class TokenHandler {
-        STACK_ALLOCATED();
-        WTF_MAKE_NONCOPYABLE(TokenHandler);
-    public:
-        TokenHandler() { }
-        virtual ~TokenHandler() { }
-        virtual void visitField(FieldType, int numberOfPatternCharacters) = 0;
-        virtual void visitLiteral(const String&) = 0;
-    };
+    // Zone: PDT
+    FieldTypeZone = 'z',
+    FieldTypeRFC822Zone = 'Z',
+    FieldTypeNonLocationZone = 'v',
+  };
 
-    // Returns true if succeeded, false if failed.
-    static bool parse(const String&, TokenHandler&);
-    static void quoteAndappend(const String&, StringBuilder&);
+  class TokenHandler {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(TokenHandler);
+
+   public:
+    TokenHandler() {}
+    virtual ~TokenHandler() {}
+    virtual void visitField(FieldType, int numberOfPatternCharacters) = 0;
+    virtual void visitLiteral(const String&) = 0;
+  };
+
+  // Returns true if succeeded, false if failed.
+  static bool parse(const String&, TokenHandler&);
+  static void quoteAndappend(const String&, StringBuilder&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DateTimeFormat_h
+#endif  // DateTimeFormat_h

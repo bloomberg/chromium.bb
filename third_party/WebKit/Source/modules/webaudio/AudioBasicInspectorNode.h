@@ -36,30 +36,38 @@ class ExceptionState;
 // If the output is not connected to any other node, then the AudioBasicInspectorNode's processIfNecessary() function will be called automatically by
 // BaseAudioContext before the end of each render quantum so that it can inspect the audio stream.
 class AudioBasicInspectorHandler : public AudioHandler {
-public:
-    AudioBasicInspectorHandler(NodeType, AudioNode&, float sampleRate, unsigned outputChannelCount);
+ public:
+  AudioBasicInspectorHandler(NodeType,
+                             AudioNode&,
+                             float sampleRate,
+                             unsigned outputChannelCount);
 
-    // AudioHandler
-    void pullInputs(size_t framesToProcess) final;
-    void checkNumberOfChannelsForInput(AudioNodeInput*) final;
+  // AudioHandler
+  void pullInputs(size_t framesToProcess) final;
+  void checkNumberOfChannelsForInput(AudioNodeInput*) final;
 
-    void updatePullStatus();
+  void updatePullStatus();
 
-private:
-    bool m_needAutomaticPull; // When setting to true, AudioBasicInspectorHandler will be pulled automaticlly by BaseAudioContext before the end of each render quantum.
+ private:
+  bool
+      m_needAutomaticPull;  // When setting to true, AudioBasicInspectorHandler will be pulled automaticlly by BaseAudioContext before the end of each render quantum.
 };
 
 class AudioBasicInspectorNode : public AudioNode {
-protected:
-    explicit AudioBasicInspectorNode(BaseAudioContext& context) : AudioNode(context) { }
+ protected:
+  explicit AudioBasicInspectorNode(BaseAudioContext& context)
+      : AudioNode(context) {}
 
-private:
-    // TODO(tkent): Should AudioBasicInspectorNode override other variants of
-    // connect() and disconnect()?
-    AudioNode* connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) final;
-    void disconnect(unsigned outputIndex, ExceptionState&) final;
+ private:
+  // TODO(tkent): Should AudioBasicInspectorNode override other variants of
+  // connect() and disconnect()?
+  AudioNode* connect(AudioNode*,
+                     unsigned outputIndex,
+                     unsigned inputIndex,
+                     ExceptionState&) final;
+  void disconnect(unsigned outputIndex, ExceptionState&) final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioBasicInspectorNode_h
+#endif  // AudioBasicInspectorNode_h

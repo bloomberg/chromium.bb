@@ -37,177 +37,169 @@ class LayoutObject;
 class ComputedStyle;
 
 class ContentData : public GarbageCollectedFinalized<ContentData> {
-public:
-    static ContentData* create(StyleImage*);
-    static ContentData* create(const String&);
-    static ContentData* create(std::unique_ptr<CounterContent>);
-    static ContentData* create(QuoteType);
+ public:
+  static ContentData* create(StyleImage*);
+  static ContentData* create(const String&);
+  static ContentData* create(std::unique_ptr<CounterContent>);
+  static ContentData* create(QuoteType);
 
-    virtual ~ContentData() { }
+  virtual ~ContentData() {}
 
-    virtual bool isCounter() const { return false; }
-    virtual bool isImage() const { return false; }
-    virtual bool isQuote() const { return false; }
-    virtual bool isText() const { return false; }
+  virtual bool isCounter() const { return false; }
+  virtual bool isImage() const { return false; }
+  virtual bool isQuote() const { return false; }
+  virtual bool isText() const { return false; }
 
-    virtual LayoutObject* createLayoutObject(Document&, ComputedStyle&) const = 0;
+  virtual LayoutObject* createLayoutObject(Document&, ComputedStyle&) const = 0;
 
-    virtual ContentData* clone() const;
+  virtual ContentData* clone() const;
 
-    ContentData* next() const { return m_next.get(); }
-    void setNext(ContentData* next) { m_next = next; }
+  ContentData* next() const { return m_next.get(); }
+  void setNext(ContentData* next) { m_next = next; }
 
-    virtual bool equals(const ContentData&) const = 0;
+  virtual bool equals(const ContentData&) const = 0;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    virtual ContentData* cloneInternal() const = 0;
+ private:
+  virtual ContentData* cloneInternal() const = 0;
 
-    Member<ContentData> m_next;
+  Member<ContentData> m_next;
 };
 
-#define DEFINE_CONTENT_DATA_TYPE_CASTS(typeName) \
-    DEFINE_TYPE_CASTS(typeName##ContentData, ContentData, content, content->is##typeName(), content.is##typeName())
+#define DEFINE_CONTENT_DATA_TYPE_CASTS(typeName)                 \
+  DEFINE_TYPE_CASTS(typeName##ContentData, ContentData, content, \
+                    content->is##typeName(), content.is##typeName())
 
 class ImageContentData final : public ContentData {
-    friend class ContentData;
-public:
-    const StyleImage* image() const { return m_image.get(); }
-    StyleImage* image() { return m_image.get(); }
-    void setImage(StyleImage* image) { ASSERT(image); m_image = image; }
+  friend class ContentData;
 
-    bool isImage() const override { return true; }
-    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+ public:
+  const StyleImage* image() const { return m_image.get(); }
+  StyleImage* image() { return m_image.get(); }
+  void setImage(StyleImage* image) {
+    ASSERT(image);
+    m_image = image;
+  }
 
-    bool equals(const ContentData& data) const override
-    {
-        if (!data.isImage())
-            return false;
-        return *static_cast<const ImageContentData&>(data).image() == *image();
-    }
+  bool isImage() const override { return true; }
+  LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  bool equals(const ContentData& data) const override {
+    if (!data.isImage())
+      return false;
+    return *static_cast<const ImageContentData&>(data).image() == *image();
+  }
 
-private:
-    ImageContentData(StyleImage* image)
-        : m_image(image)
-    {
-        ASSERT(m_image);
-    }
+  DECLARE_VIRTUAL_TRACE();
 
-    ContentData* cloneInternal() const override
-    {
-        StyleImage* image = const_cast<StyleImage*>(this->image());
-        return create(image);
-    }
+ private:
+  ImageContentData(StyleImage* image) : m_image(image) { ASSERT(m_image); }
 
-    Member<StyleImage> m_image;
+  ContentData* cloneInternal() const override {
+    StyleImage* image = const_cast<StyleImage*>(this->image());
+    return create(image);
+  }
+
+  Member<StyleImage> m_image;
 };
 
 DEFINE_CONTENT_DATA_TYPE_CASTS(Image);
 
 class TextContentData final : public ContentData {
-    friend class ContentData;
-public:
-    const String& text() const { return m_text; }
-    void setText(const String& text) { m_text = text; }
+  friend class ContentData;
 
-    bool isText() const override { return true; }
-    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+ public:
+  const String& text() const { return m_text; }
+  void setText(const String& text) { m_text = text; }
 
-    bool equals(const ContentData& data) const override
-    {
-        if (!data.isText())
-            return false;
-        return static_cast<const TextContentData&>(data).text() == text();
-    }
+  bool isText() const override { return true; }
+  LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
-private:
-    TextContentData(const String& text)
-        : m_text(text)
-    {
-    }
+  bool equals(const ContentData& data) const override {
+    if (!data.isText())
+      return false;
+    return static_cast<const TextContentData&>(data).text() == text();
+  }
 
-    ContentData* cloneInternal() const override { return create(text()); }
+ private:
+  TextContentData(const String& text) : m_text(text) {}
 
-    String m_text;
+  ContentData* cloneInternal() const override { return create(text()); }
+
+  String m_text;
 };
 
 DEFINE_CONTENT_DATA_TYPE_CASTS(Text);
 
 class CounterContentData final : public ContentData {
-    friend class ContentData;
-public:
-    const CounterContent* counter() const { return m_counter.get(); }
-    void setCounter(std::unique_ptr<CounterContent> counter) { m_counter = std::move(counter); }
+  friend class ContentData;
 
-    bool isCounter() const override { return true; }
-    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+ public:
+  const CounterContent* counter() const { return m_counter.get(); }
+  void setCounter(std::unique_ptr<CounterContent> counter) {
+    m_counter = std::move(counter);
+  }
 
-private:
-    CounterContentData(std::unique_ptr<CounterContent> counter)
-        : m_counter(std::move(counter))
-    {
-    }
+  bool isCounter() const override { return true; }
+  LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
-    ContentData* cloneInternal() const override
-    {
-        std::unique_ptr<CounterContent> counterData = wrapUnique(new CounterContent(*counter()));
-        return create(std::move(counterData));
-    }
+ private:
+  CounterContentData(std::unique_ptr<CounterContent> counter)
+      : m_counter(std::move(counter)) {}
 
-    bool equals(const ContentData& data) const override
-    {
-        if (!data.isCounter())
-            return false;
-        return *static_cast<const CounterContentData&>(data).counter() == *counter();
-    }
+  ContentData* cloneInternal() const override {
+    std::unique_ptr<CounterContent> counterData =
+        wrapUnique(new CounterContent(*counter()));
+    return create(std::move(counterData));
+  }
 
-    std::unique_ptr<CounterContent> m_counter;
+  bool equals(const ContentData& data) const override {
+    if (!data.isCounter())
+      return false;
+    return *static_cast<const CounterContentData&>(data).counter() ==
+           *counter();
+  }
+
+  std::unique_ptr<CounterContent> m_counter;
 };
 
 DEFINE_CONTENT_DATA_TYPE_CASTS(Counter);
 
 class QuoteContentData final : public ContentData {
-    friend class ContentData;
-public:
-    QuoteType quote() const { return m_quote; }
-    void setQuote(QuoteType quote) { m_quote = quote; }
+  friend class ContentData;
 
-    bool isQuote() const override { return true; }
-    LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
+ public:
+  QuoteType quote() const { return m_quote; }
+  void setQuote(QuoteType quote) { m_quote = quote; }
 
-    bool equals(const ContentData& data) const override
-    {
-        if (!data.isQuote())
-            return false;
-        return static_cast<const QuoteContentData&>(data).quote() == quote();
-    }
+  bool isQuote() const override { return true; }
+  LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
 
-private:
-    QuoteContentData(QuoteType quote)
-        : m_quote(quote)
-    {
-    }
+  bool equals(const ContentData& data) const override {
+    if (!data.isQuote())
+      return false;
+    return static_cast<const QuoteContentData&>(data).quote() == quote();
+  }
 
-    ContentData* cloneInternal() const override { return create(quote()); }
+ private:
+  QuoteContentData(QuoteType quote) : m_quote(quote) {}
 
-    QuoteType m_quote;
+  ContentData* cloneInternal() const override { return create(quote()); }
+
+  QuoteType m_quote;
 };
 
 DEFINE_CONTENT_DATA_TYPE_CASTS(Quote);
 
-inline bool operator==(const ContentData& a, const ContentData& b)
-{
-    return a.equals(b);
+inline bool operator==(const ContentData& a, const ContentData& b) {
+  return a.equals(b);
 }
 
-inline bool operator!=(const ContentData& a, const ContentData& b)
-{
-    return !(a == b);
+inline bool operator!=(const ContentData& a, const ContentData& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ContentData_h
+#endif  // ContentData_h

@@ -45,29 +45,30 @@ PLATFORM_EXPORT bool isValidContentType(const String&);
 
 // FIXME: add support for comments.
 class PLATFORM_EXPORT ParsedContentType final {
-    STACK_ALLOCATED();
-public:
-    explicit ParsedContentType(const String&);
+  STACK_ALLOCATED();
 
-    String mimeType() const { return m_mimeType; }
-    String charset() const;
+ public:
+  explicit ParsedContentType(const String&);
 
-    // Note that in the case of multiple values for the same name, the last value is returned.
-    String parameterValueForName(const String&) const;
-    size_t parameterCount() const;
+  String mimeType() const { return m_mimeType; }
+  String charset() const;
 
-private:
-    template<class ReceiverType>
-    friend bool parseContentType(const String&, ReceiverType&);
-    void setContentType(const SubstringRange&);
-    void setContentTypeParameter(const SubstringRange&, const SubstringRange&);
+  // Note that in the case of multiple values for the same name, the last value is returned.
+  String parameterValueForName(const String&) const;
+  size_t parameterCount() const;
 
-    typedef HashMap<String, String> KeyValuePairs;
-    String m_contentType;
-    KeyValuePairs m_parameters;
-    String m_mimeType;
+ private:
+  template <class ReceiverType>
+  friend bool parseContentType(const String&, ReceiverType&);
+  void setContentType(const SubstringRange&);
+  void setContentTypeParameter(const SubstringRange&, const SubstringRange&);
+
+  typedef HashMap<String, String> KeyValuePairs;
+  String m_contentType;
+  KeyValuePairs m_parameters;
+  String m_mimeType;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

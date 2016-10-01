@@ -11,6 +11,6 @@ namespace blink {
 
 using CompositorMutableProperty = cc::MutableProperty;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorMutableProperties_h
+#endif  // CompositorMutableProperties_h

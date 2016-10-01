@@ -29,17 +29,20 @@
 namespace blink {
 
 class CORE_EXPORT HTMLDivElement : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLDivElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-protected:
-    explicit HTMLDivElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLDivElement);
 
-private:
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ protected:
+  explicit HTMLDivElement(Document&);
+
+ private:
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLDivElement_h
+#endif  // HTMLDivElement_h

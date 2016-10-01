@@ -28,45 +28,42 @@
 
 namespace blink {
 
-ChildNodeList::ChildNodeList(ContainerNode& parent)
-    : m_parent(parent)
-{
+ChildNodeList::ChildNodeList(ContainerNode& parent) : m_parent(parent) {}
+
+Node* ChildNodeList::virtualOwnerNode() const {
+  return &ownerNode();
 }
 
-Node* ChildNodeList::virtualOwnerNode() const
-{
-    return &ownerNode();
+ChildNodeList::~ChildNodeList() {}
+
+Node* ChildNodeList::traverseForwardToOffset(unsigned offset,
+                                             Node& currentNode,
+                                             unsigned& currentOffset) const {
+  DCHECK_LT(currentOffset, offset);
+  for (Node* next = currentNode.nextSibling(); next;
+       next = next->nextSibling()) {
+    if (++currentOffset == offset)
+      return next;
+  }
+  return 0;
 }
 
-ChildNodeList::~ChildNodeList()
-{
+Node* ChildNodeList::traverseBackwardToOffset(unsigned offset,
+                                              Node& currentNode,
+                                              unsigned& currentOffset) const {
+  DCHECK_GT(currentOffset, offset);
+  for (Node* previous = currentNode.previousSibling(); previous;
+       previous = previous->previousSibling()) {
+    if (--currentOffset == offset)
+      return previous;
+  }
+  return 0;
 }
 
-Node* ChildNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const
-{
-    DCHECK_LT(currentOffset, offset);
-    for (Node* next = currentNode.nextSibling(); next; next = next->nextSibling()) {
-        if (++currentOffset == offset)
-            return next;
-    }
-    return 0;
+DEFINE_TRACE(ChildNodeList) {
+  visitor->trace(m_parent);
+  visitor->trace(m_collectionIndexCache);
+  NodeList::trace(visitor);
 }
 
-Node* ChildNodeList::traverseBackwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const
-{
-    DCHECK_GT(currentOffset, offset);
-    for (Node* previous = currentNode.previousSibling(); previous; previous = previous->previousSibling()) {
-        if (--currentOffset == offset)
-            return previous;
-    }
-    return 0;
-}
-
-DEFINE_TRACE(ChildNodeList)
-{
-    visitor->trace(m_parent);
-    visitor->trace(m_collectionIndexCache);
-    NodeList::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -30,37 +30,33 @@
 
 namespace blink {
 
-FEMerge::FEMerge(Filter* filter)
-    : FilterEffect(filter)
-{
+FEMerge::FEMerge(Filter* filter) : FilterEffect(filter) {}
+
+FEMerge* FEMerge::create(Filter* filter) {
+  return new FEMerge(filter);
 }
 
-FEMerge* FEMerge::create(Filter* filter)
-{
-    return new FEMerge(filter);
+sk_sp<SkImageFilter> FEMerge::createImageFilter() {
+  unsigned size = numberOfEffectInputs();
+
+  std::unique_ptr<sk_sp<SkImageFilter>[]> inputRefs =
+      wrapArrayUnique(new sk_sp<SkImageFilter>[ size ]);
+  for (unsigned i = 0; i < size; ++i)
+    inputRefs[i] =
+        SkiaImageFilterBuilder::build(inputEffect(i), operatingColorSpace());
+  SkImageFilter::CropRect rect = getCropRect();
+  return SkMergeImageFilter::Make(inputRefs.get(), size, 0, &rect);
 }
 
-sk_sp<SkImageFilter> FEMerge::createImageFilter()
-{
-    unsigned size = numberOfEffectInputs();
-
-    std::unique_ptr<sk_sp<SkImageFilter>[]> inputRefs = wrapArrayUnique(new sk_sp<SkImageFilter>[size]);
-    for (unsigned i = 0; i < size; ++i)
-        inputRefs[i] = SkiaImageFilterBuilder::build(inputEffect(i), operatingColorSpace());
-    SkImageFilter::CropRect rect = getCropRect();
-    return SkMergeImageFilter::Make(inputRefs.get(), size, 0, &rect);
+TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const {
+  writeIndent(ts, indent);
+  ts << "[feMerge";
+  FilterEffect::externalRepresentation(ts);
+  unsigned size = numberOfEffectInputs();
+  ts << " mergeNodes=\"" << size << "\"]\n";
+  for (unsigned i = 0; i < size; ++i)
+    inputEffect(i)->externalRepresentation(ts, indent + 1);
+  return ts;
 }
 
-TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const
-{
-    writeIndent(ts, indent);
-    ts << "[feMerge";
-    FilterEffect::externalRepresentation(ts);
-    unsigned size = numberOfEffectInputs();
-    ts << " mergeNodes=\"" << size << "\"]\n";
-    for (unsigned i = 0; i < size; ++i)
-        inputEffect(i)->externalRepresentation(ts, indent + 1);
-    return ts;
-}
-
-} // namespace blink
+}  // namespace blink

@@ -28,31 +28,31 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT FEFlood final: public FilterEffect {
-public:
-    static FEFlood* create(Filter*, const Color&, float);
+class PLATFORM_EXPORT FEFlood final : public FilterEffect {
+ public:
+  static FEFlood* create(Filter*, const Color&, float);
 
-    Color floodColor() const;
-    bool setFloodColor(const Color &);
+  Color floodColor() const;
+  bool setFloodColor(const Color&);
 
-    float floodOpacity() const;
-    bool setFloodOpacity(float);
+  float floodOpacity() const;
+  bool setFloodOpacity(float);
 
-    // feFlood does not perform color interpolation of any kind, so the result is always in the current
-    // color space regardless of the value of color-interpolation-filters.
-    void setOperatingColorSpace(ColorSpace) override { }
+  // feFlood does not perform color interpolation of any kind, so the result is always in the current
+  // color space regardless of the value of color-interpolation-filters.
+  void setOperatingColorSpace(ColorSpace) override {}
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    FEFlood(Filter*, const Color&, float);
+ private:
+  FEFlood(Filter*, const Color&, float);
 
-    sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilter() override;
 
-    Color m_floodColor;
-    float m_floodOpacity;
+  Color m_floodColor;
+  float m_floodOpacity;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FEFlood_h
+#endif  // FEFlood_h

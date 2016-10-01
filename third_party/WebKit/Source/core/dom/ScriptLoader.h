@@ -37,117 +37,145 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 class LocalFrame;
 
-class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>, public ScriptResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
-public:
-    static ScriptLoader* create(Element* element, bool createdByParser, bool isEvaluated, bool createdDuringDocumentWrite = false)
-    {
-        return new ScriptLoader(element, createdByParser, isEvaluated, createdDuringDocumentWrite);
-    }
+class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
+                                 public ScriptResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
 
-    ~ScriptLoader() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static ScriptLoader* create(Element* element,
+                              bool createdByParser,
+                              bool isEvaluated,
+                              bool createdDuringDocumentWrite = false) {
+    return new ScriptLoader(element, createdByParser, isEvaluated,
+                            createdDuringDocumentWrite);
+  }
 
-    Element* element() const { return m_element; }
+  ~ScriptLoader() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    enum LegacyTypeSupport { DisallowLegacyTypeInTypeAttribute, AllowLegacyTypeInTypeAttribute };
-    static bool isValidScriptTypeAndLanguage(const String& typeAttributeValue, const String& languageAttributeValue, LegacyTypeSupport supportLegacyTypes);
+  Element* element() const { return m_element; }
 
-    bool prepareScript(const TextPosition& scriptStartPosition = TextPosition::minimumPosition(), LegacyTypeSupport = DisallowLegacyTypeInTypeAttribute);
+  enum LegacyTypeSupport {
+    DisallowLegacyTypeInTypeAttribute,
+    AllowLegacyTypeInTypeAttribute
+  };
+  static bool isValidScriptTypeAndLanguage(
+      const String& typeAttributeValue,
+      const String& languageAttributeValue,
+      LegacyTypeSupport supportLegacyTypes);
 
-    String scriptCharset() const { return m_characterEncoding; }
-    String scriptContent() const;
-    // Returns false if and only if execution was blocked.
-    bool executeScript(const ScriptSourceCode&);
-    virtual void execute();
+  bool prepareScript(
+      const TextPosition& scriptStartPosition = TextPosition::minimumPosition(),
+      LegacyTypeSupport = DisallowLegacyTypeInTypeAttribute);
 
-    // XML parser calls these
-    void dispatchLoadEvent();
-    void dispatchErrorEvent();
-    bool isScriptTypeSupported(LegacyTypeSupport) const;
+  String scriptCharset() const { return m_characterEncoding; }
+  String scriptContent() const;
+  // Returns false if and only if execution was blocked.
+  bool executeScript(const ScriptSourceCode&);
+  virtual void execute();
 
-    bool haveFiredLoadEvent() const { return m_haveFiredLoad; }
-    bool willBeParserExecuted() const { return m_willBeParserExecuted; }
-    bool readyToBeParserExecuted() const { return m_readyToBeParserExecuted; }
-    bool willExecuteWhenDocumentFinishedParsing() const { return m_willExecuteWhenDocumentFinishedParsing; }
-    ScriptResource* resource() { return m_resource.get(); }
+  // XML parser calls these
+  void dispatchLoadEvent();
+  void dispatchErrorEvent();
+  bool isScriptTypeSupported(LegacyTypeSupport) const;
 
-    void setHaveFiredLoadEvent(bool haveFiredLoad) { m_haveFiredLoad = haveFiredLoad; }
-    bool isParserInserted() const { return m_parserInserted; }
-    bool alreadyStarted() const { return m_alreadyStarted; }
-    bool forceAsync() const { return m_forceAsync; }
+  bool haveFiredLoadEvent() const { return m_haveFiredLoad; }
+  bool willBeParserExecuted() const { return m_willBeParserExecuted; }
+  bool readyToBeParserExecuted() const { return m_readyToBeParserExecuted; }
+  bool willExecuteWhenDocumentFinishedParsing() const {
+    return m_willExecuteWhenDocumentFinishedParsing;
+  }
+  ScriptResource* resource() { return m_resource.get(); }
 
-    // Helper functions used by our parent classes.
-    void didNotifySubtreeInsertionsToDocument();
-    void childrenChanged();
-    void handleSourceAttribute(const String& sourceUrl);
-    void handleAsyncAttribute();
+  void setHaveFiredLoadEvent(bool haveFiredLoad) {
+    m_haveFiredLoad = haveFiredLoad;
+  }
+  bool isParserInserted() const { return m_parserInserted; }
+  bool alreadyStarted() const { return m_alreadyStarted; }
+  bool forceAsync() const { return m_forceAsync; }
 
-    virtual bool isReady() const { return m_pendingScript && m_pendingScript->isReady(); }
-    bool errorOccurred() const { return m_pendingScript && m_pendingScript->errorOccurred(); }
+  // Helper functions used by our parent classes.
+  void didNotifySubtreeInsertionsToDocument();
+  void childrenChanged();
+  void handleSourceAttribute(const String& sourceUrl);
+  void handleAsyncAttribute();
 
-    // Clears the connection to the PendingScript (and Element and Resource).
-    void detach();
+  virtual bool isReady() const {
+    return m_pendingScript && m_pendingScript->isReady();
+  }
+  bool errorOccurred() const {
+    return m_pendingScript && m_pendingScript->errorOccurred();
+  }
 
-    bool wasCreatedDuringDocumentWrite() { return m_createdDuringDocumentWrite; }
+  // Clears the connection to the PendingScript (and Element and Resource).
+  void detach();
 
-    bool disallowedFetchForDocWrittenScript() { return m_documentWriteIntervention == DocumentWriteIntervention::DoNotFetchDocWrittenScript; }
-    void setFetchDocWrittenScriptDeferIdle();
+  bool wasCreatedDuringDocumentWrite() { return m_createdDuringDocumentWrite; }
 
-protected:
-    ScriptLoader(Element*, bool createdByParser, bool isEvaluated, bool createdDuringDocumentWrite);
+  bool disallowedFetchForDocWrittenScript() {
+    return m_documentWriteIntervention ==
+           DocumentWriteIntervention::DoNotFetchDocWrittenScript;
+  }
+  void setFetchDocWrittenScriptDeferIdle();
 
-private:
-    bool ignoresLoadRequest() const;
-    bool isScriptForEventSupported() const;
-    void logScriptMimetype(ScriptResource*, LocalFrame*, String);
+ protected:
+  ScriptLoader(Element*,
+               bool createdByParser,
+               bool isEvaluated,
+               bool createdDuringDocumentWrite);
 
-    bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
-    bool doExecuteScript(const ScriptSourceCode&);
+ private:
+  bool ignoresLoadRequest() const;
+  bool isScriptForEventSupported() const;
+  void logScriptMimetype(ScriptResource*, LocalFrame*, String);
 
-    ScriptLoaderClient* client() const;
+  bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
+  bool doExecuteScript(const ScriptSourceCode&);
 
-    // ResourceClient
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "ScriptLoader"; }
+  ScriptLoaderClient* client() const;
 
-    Member<Element> m_element;
-    Member<ScriptResource> m_resource;
-    WTF::OrdinalNumber m_startLineNumber;
-    String m_characterEncoding;
-    String m_fallbackCharacterEncoding;
+  // ResourceClient
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "ScriptLoader"; }
 
-    bool m_parserInserted : 1;
-    bool m_isExternalScript : 1;
-    bool m_alreadyStarted : 1;
-    bool m_haveFiredLoad : 1;
-    bool m_willBeParserExecuted : 1; // Same as "The parser will handle executing the script."
-    bool m_readyToBeParserExecuted : 1;
-    bool m_willExecuteWhenDocumentFinishedParsing : 1;
-    bool m_forceAsync : 1;
-    const bool m_createdDuringDocumentWrite : 1;
+  Member<Element> m_element;
+  Member<ScriptResource> m_resource;
+  WTF::OrdinalNumber m_startLineNumber;
+  String m_characterEncoding;
+  String m_fallbackCharacterEncoding;
 
-    ScriptRunner::AsyncExecutionType m_asyncExecType;
-    enum DocumentWriteIntervention {
-        DocumentWriteInterventionNone = 0,
-        // Based on what shouldDisallowFetchForMainFrameScript() returns.
-        // This script will be blocked if not present in http cache.
-        DoNotFetchDocWrittenScript,
-        // If a parser blocking doc.written script was not fetched and was not
-        // present in the http cache, send a GET for it with an interventions
-        // header to allow the server to know of the intervention. This fetch
-        // will be using DeferOption::IdleLoad to keep it out of the critical
-        // path.
-        FetchDocWrittenScriptDeferIdle,
-    };
+  bool m_parserInserted : 1;
+  bool m_isExternalScript : 1;
+  bool m_alreadyStarted : 1;
+  bool m_haveFiredLoad : 1;
+  bool
+      m_willBeParserExecuted : 1;  // Same as "The parser will handle executing the script."
+  bool m_readyToBeParserExecuted : 1;
+  bool m_willExecuteWhenDocumentFinishedParsing : 1;
+  bool m_forceAsync : 1;
+  const bool m_createdDuringDocumentWrite : 1;
 
-    DocumentWriteIntervention m_documentWriteIntervention;
+  ScriptRunner::AsyncExecutionType m_asyncExecType;
+  enum DocumentWriteIntervention {
+    DocumentWriteInterventionNone = 0,
+    // Based on what shouldDisallowFetchForMainFrameScript() returns.
+    // This script will be blocked if not present in http cache.
+    DoNotFetchDocWrittenScript,
+    // If a parser blocking doc.written script was not fetched and was not
+    // present in the http cache, send a GET for it with an interventions
+    // header to allow the server to know of the intervention. This fetch
+    // will be using DeferOption::IdleLoad to keep it out of the critical
+    // path.
+    FetchDocWrittenScriptDeferIdle,
+  };
 
-    Member<PendingScript> m_pendingScript;
+  DocumentWriteIntervention m_documentWriteIntervention;
+
+  Member<PendingScript> m_pendingScript;
 };
 
 ScriptLoader* toScriptLoaderIfPossible(Element*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptLoader_h
+#endif  // ScriptLoader_h

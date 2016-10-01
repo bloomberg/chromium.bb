@@ -29,15 +29,15 @@
 namespace blink {
 
 class HTMLNameCollection : public HTMLCollection {
-public:
-    ~HTMLNameCollection() override;
+ public:
+  ~HTMLNameCollection() override;
 
-protected:
-    HTMLNameCollection(ContainerNode&, CollectionType, const AtomicString& name);
+ protected:
+  HTMLNameCollection(ContainerNode&, CollectionType, const AtomicString& name);
 
-    AtomicString m_name;
+  AtomicString m_name;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

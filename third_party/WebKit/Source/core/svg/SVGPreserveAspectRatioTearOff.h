@@ -38,45 +38,67 @@
 
 namespace blink {
 
-class SVGPreserveAspectRatioTearOff final : public SVGPropertyTearOff<SVGPreserveAspectRatio>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum {
-        kSvgPreserveaspectratioUnknown = SVGPreserveAspectRatio::kSvgPreserveaspectratioUnknown,
-        kSvgPreserveaspectratioNone = SVGPreserveAspectRatio::kSvgPreserveaspectratioNone,
-        kSvgPreserveaspectratioXminymin = SVGPreserveAspectRatio::kSvgPreserveaspectratioXminymin,
-        kSvgPreserveaspectratioXmidymin = SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymin,
-        kSvgPreserveaspectratioXmaxymin = SVGPreserveAspectRatio::kSvgPreserveaspectratioXmaxymin,
-        kSvgPreserveaspectratioXminymid = SVGPreserveAspectRatio::kSvgPreserveaspectratioXminymid,
-        kSvgPreserveaspectratioXmidymid = SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymid,
-        kSvgPreserveaspectratioXmaxymid = SVGPreserveAspectRatio::kSvgPreserveaspectratioXmaxymid,
-        kSvgPreserveaspectratioXminymax = SVGPreserveAspectRatio::kSvgPreserveaspectratioXminymax,
-        kSvgPreserveaspectratioXmidymax = SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymax,
-        kSvgPreserveaspectratioXmaxymax = SVGPreserveAspectRatio::kSvgPreserveaspectratioXmaxymax
-    };
+class SVGPreserveAspectRatioTearOff final
+    : public SVGPropertyTearOff<SVGPreserveAspectRatio>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    enum {
-        kSvgMeetorsliceUnknown = SVGPreserveAspectRatio::kSvgMeetorsliceUnknown,
-        kSvgMeetorsliceMeet = SVGPreserveAspectRatio::kSvgMeetorsliceMeet,
-        kSvgMeetorsliceSlice = SVGPreserveAspectRatio::kSvgMeetorsliceSlice
-    };
+ public:
+  enum {
+    kSvgPreserveaspectratioUnknown =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioUnknown,
+    kSvgPreserveaspectratioNone =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioNone,
+    kSvgPreserveaspectratioXminymin =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXminymin,
+    kSvgPreserveaspectratioXmidymin =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymin,
+    kSvgPreserveaspectratioXmaxymin =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXmaxymin,
+    kSvgPreserveaspectratioXminymid =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXminymid,
+    kSvgPreserveaspectratioXmidymid =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymid,
+    kSvgPreserveaspectratioXmaxymid =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXmaxymid,
+    kSvgPreserveaspectratioXminymax =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXminymax,
+    kSvgPreserveaspectratioXmidymax =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymax,
+    kSvgPreserveaspectratioXmaxymax =
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioXmaxymax
+  };
 
-    static SVGPreserveAspectRatioTearOff* create(SVGPreserveAspectRatio* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
-    {
-        return new SVGPreserveAspectRatioTearOff(target, contextElement, propertyIsAnimVal, attributeName);
-    }
+  enum {
+    kSvgMeetorsliceUnknown = SVGPreserveAspectRatio::kSvgMeetorsliceUnknown,
+    kSvgMeetorsliceMeet = SVGPreserveAspectRatio::kSvgMeetorsliceMeet,
+    kSvgMeetorsliceSlice = SVGPreserveAspectRatio::kSvgMeetorsliceSlice
+  };
 
-    void setAlign(unsigned short, ExceptionState&);
-    unsigned short align() { return target()->align(); }
-    void setMeetOrSlice(unsigned short, ExceptionState&);
-    unsigned short meetOrSlice() { return target()->meetOrSlice(); }
+  static SVGPreserveAspectRatioTearOff* create(
+      SVGPreserveAspectRatio* target,
+      SVGElement* contextElement,
+      PropertyIsAnimValType propertyIsAnimVal,
+      const QualifiedName& attributeName = QualifiedName::null()) {
+    return new SVGPreserveAspectRatioTearOff(target, contextElement,
+                                             propertyIsAnimVal, attributeName);
+  }
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  void setAlign(unsigned short, ExceptionState&);
+  unsigned short align() { return target()->align(); }
+  void setMeetOrSlice(unsigned short, ExceptionState&);
+  unsigned short meetOrSlice() { return target()->meetOrSlice(); }
 
-private:
-    SVGPreserveAspectRatioTearOff(SVGPreserveAspectRatio*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
+ private:
+  SVGPreserveAspectRatioTearOff(
+      SVGPreserveAspectRatio*,
+      SVGElement* contextElement,
+      PropertyIsAnimValType,
+      const QualifiedName& attributeName = QualifiedName::null());
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPreserveAspectRatioTearOff_h
+#endif  // SVGPreserveAspectRatioTearOff_h

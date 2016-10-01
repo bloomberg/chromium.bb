@@ -34,74 +34,88 @@ class HTMLSelectElement;
 class LayoutText;
 
 class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
-public:
-    explicit LayoutMenuList(Element*);
-    ~LayoutMenuList() override;
+ public:
+  explicit LayoutMenuList(Element*);
+  ~LayoutMenuList() override;
 
-    HTMLSelectElement* selectElement() const;
-    void didSelectOption(HTMLOptionElement*);
-    String text() const;
+  HTMLSelectElement* selectElement() const;
+  void didSelectOption(HTMLOptionElement*);
+  String text() const;
 
-    const char* name() const override { return "LayoutMenuList"; }
+  const char* name() const override { return "LayoutMenuList"; }
 
-    LayoutUnit clientPaddingLeft() const;
-    LayoutUnit clientPaddingRight() const;
+  LayoutUnit clientPaddingLeft() const;
+  LayoutUnit clientPaddingRight() const;
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || LayoutFlexibleBox::isOfType(type); }
-    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectMenuList || LayoutFlexibleBox::isOfType(type);
+  }
+  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
-    void removeChild(LayoutObject*) override;
-    bool createsAnonymousWrapper() const override { return true; }
+  void addChild(LayoutObject* newChild,
+                LayoutObject* beforeChild = nullptr) override;
+  void removeChild(LayoutObject*) override;
+  bool createsAnonymousWrapper() const override { return true; }
 
-    void updateFromElement() override;
+  void updateFromElement() override;
 
-    LayoutRect controlClipRect(const LayoutPoint&) const override;
-    bool hasControlClip() const override { return true; }
+  LayoutRect controlClipRect(const LayoutPoint&) const override;
+  bool hasControlClip() const override { return true; }
 
-    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
-    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+  void computeIntrinsicLogicalWidths(
+      LayoutUnit& minLogicalWidth,
+      LayoutUnit& maxLogicalWidth) const override;
+  void computeLogicalHeight(LayoutUnit logicalHeight,
+                            LayoutUnit logicalTop,
+                            LogicalExtentComputedValues&) const override;
 
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
-    bool hasLineIfEmpty() const override { return true; }
+  bool hasLineIfEmpty() const override { return true; }
 
-    // Flexbox defines baselines differently than regular blocks.
-    // For backwards compatibility, menulists need to do the regular block behavior.
-    int baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode position) const override
-    {
-        return LayoutBlock::baselinePosition(baseline, firstLine, direction, position);
-    }
-    int firstLineBoxBaseline() const override { return LayoutBlock::firstLineBoxBaseline(); }
-    int inlineBlockBaseline(LineDirectionMode direction) const override { return LayoutBlock::inlineBlockBaseline(direction); }
+  // Flexbox defines baselines differently than regular blocks.
+  // For backwards compatibility, menulists need to do the regular block behavior.
+  int baselinePosition(FontBaseline baseline,
+                       bool firstLine,
+                       LineDirectionMode direction,
+                       LinePositionMode position) const override {
+    return LayoutBlock::baselinePosition(baseline, firstLine, direction,
+                                         position);
+  }
+  int firstLineBoxBaseline() const override {
+    return LayoutBlock::firstLineBoxBaseline();
+  }
+  int inlineBlockBaseline(LineDirectionMode direction) const override {
+    return LayoutBlock::inlineBlockBaseline(direction);
+  }
 
-    void createInnerBlock();
-    void adjustInnerStyle();
-    void setText(const String&);
-    void updateInnerBlockHeight();
-    void updateOptionsWidth() const;
-    void setIndexToSelectOnCancel(int listIndex);
+  void createInnerBlock();
+  void adjustInnerStyle();
+  void setText(const String&);
+  void updateInnerBlockHeight();
+  void updateOptionsWidth() const;
+  void setIndexToSelectOnCancel(int listIndex);
 
-    void didUpdateActiveOption(HTMLOptionElement*);
+  void didUpdateActiveOption(HTMLOptionElement*);
 
-    LayoutText* m_buttonText;
-    LayoutBlock* m_innerBlock;
+  LayoutText* m_buttonText;
+  LayoutBlock* m_innerBlock;
 
-    bool m_isEmpty : 1;
-    bool m_hasUpdatedActiveOption : 1;
-    LayoutUnit m_innerBlockHeight;
-    // m_optionsWidth is calculated and cached on demand.
-    // updateOptionsWidth() should be called before reading them.
-    mutable int m_optionsWidth;
+  bool m_isEmpty : 1;
+  bool m_hasUpdatedActiveOption : 1;
+  LayoutUnit m_innerBlockHeight;
+  // m_optionsWidth is calculated and cached on demand.
+  // updateOptionsWidth() should be called before reading them.
+  mutable int m_optionsWidth;
 
-    int m_lastActiveIndex;
+  int m_lastActiveIndex;
 
-    RefPtr<ComputedStyle> m_optionStyle;
+  RefPtr<ComputedStyle> m_optionStyle;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, isMenuList());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

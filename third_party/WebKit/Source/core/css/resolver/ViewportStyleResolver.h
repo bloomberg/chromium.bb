@@ -41,34 +41,34 @@ class Document;
 class MutableStylePropertySet;
 class StyleRuleViewport;
 
-class CORE_EXPORT ViewportStyleResolver : public GarbageCollected<ViewportStyleResolver> {
-public:
-    static ViewportStyleResolver* create(Document* document)
-    {
-        return new ViewportStyleResolver(document);
-    }
+class CORE_EXPORT ViewportStyleResolver
+    : public GarbageCollected<ViewportStyleResolver> {
+ public:
+  static ViewportStyleResolver* create(Document* document) {
+    return new ViewportStyleResolver(document);
+  }
 
-    enum Origin { UserAgentOrigin, AuthorOrigin };
+  enum Origin { UserAgentOrigin, AuthorOrigin };
 
-    void collectViewportRules();
-    void collectViewportRules(RuleSet*, Origin);
-    void resolve();
+  void collectViewportRules();
+  void collectViewportRules(RuleSet*, Origin);
+  void resolve();
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit ViewportStyleResolver(Document*);
+ private:
+  explicit ViewportStyleResolver(Document*);
 
-    void addViewportRule(StyleRuleViewport*, Origin);
+  void addViewportRule(StyleRuleViewport*, Origin);
 
-    float viewportArgumentValue(CSSPropertyID) const;
-    Length viewportLengthValue(CSSPropertyID) const;
+  float viewportArgumentValue(CSSPropertyID) const;
+  Length viewportLengthValue(CSSPropertyID) const;
 
-    Member<Document> m_document;
-    Member<MutableStylePropertySet> m_propertySet;
-    bool m_hasAuthorStyle;
+  Member<Document> m_document;
+  Member<MutableStylePropertySet> m_propertySet;
+  bool m_hasAuthorStyle;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ViewportStyleResolver_h
+#endif  // ViewportStyleResolver_h

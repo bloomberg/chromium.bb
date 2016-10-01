@@ -40,255 +40,278 @@
 namespace blink {
 
 template <typename Strategy>
-static inline LayoutObject* layoutObjectFromPosition(const PositionTemplate<Strategy>& position)
-{
-    DCHECK(position.isNotNull());
-    Node* layoutObjectNode = nullptr;
-    switch (position.anchorType()) {
+static inline LayoutObject* layoutObjectFromPosition(
+    const PositionTemplate<Strategy>& position) {
+  DCHECK(position.isNotNull());
+  Node* layoutObjectNode = nullptr;
+  switch (position.anchorType()) {
     case PositionAnchorType::OffsetInAnchor:
-        layoutObjectNode = position.computeNodeAfterPosition();
-        if (!layoutObjectNode || !layoutObjectNode->layoutObject())
-            layoutObjectNode = position.anchorNode()->lastChild();
-        break;
+      layoutObjectNode = position.computeNodeAfterPosition();
+      if (!layoutObjectNode || !layoutObjectNode->layoutObject())
+        layoutObjectNode = position.anchorNode()->lastChild();
+      break;
 
     case PositionAnchorType::BeforeAnchor:
     case PositionAnchorType::AfterAnchor:
-        break;
+      break;
 
     case PositionAnchorType::BeforeChildren:
-        layoutObjectNode = Strategy::firstChild(*position.anchorNode());
-        break;
+      layoutObjectNode = Strategy::firstChild(*position.anchorNode());
+      break;
     case PositionAnchorType::AfterChildren:
-        layoutObjectNode = Strategy::lastChild(*position.anchorNode());
-        break;
-    }
-    if (!layoutObjectNode || !layoutObjectNode->layoutObject())
-        layoutObjectNode = position.anchorNode();
-    return layoutObjectNode->layoutObject();
+      layoutObjectNode = Strategy::lastChild(*position.anchorNode());
+      break;
+  }
+  if (!layoutObjectNode || !layoutObjectNode->layoutObject())
+    layoutObjectNode = position.anchorNode();
+  return layoutObjectNode->layoutObject();
 }
 
 RenderedPosition::RenderedPosition(const VisiblePosition& position)
-    : RenderedPosition(position.deepEquivalent(), position.affinity())
-{
-}
+    : RenderedPosition(position.deepEquivalent(), position.affinity()) {}
 
 RenderedPosition::RenderedPosition(const VisiblePositionInFlatTree& position)
-    : RenderedPosition(position.deepEquivalent(), position.affinity())
-{
+    : RenderedPosition(position.deepEquivalent(), position.affinity()) {}
+
+RenderedPosition::RenderedPosition(const Position& position,
+                                   TextAffinity affinity)
+    : m_layoutObject(nullptr),
+      m_inlineBox(nullptr),
+      m_offset(0),
+      m_prevLeafChild(uncachedInlineBox()),
+      m_nextLeafChild(uncachedInlineBox()) {
+  if (position.isNull())
+    return;
+  InlineBoxPosition boxPosition = computeInlineBoxPosition(position, affinity);
+  m_inlineBox = boxPosition.inlineBox;
+  m_offset = boxPosition.offsetInBox;
+  if (m_inlineBox)
+    m_layoutObject =
+        LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->getLineLayoutItem());
+  else
+    m_layoutObject = layoutObjectFromPosition(position);
 }
 
-RenderedPosition::RenderedPosition(const Position& position, TextAffinity affinity)
-    : m_layoutObject(nullptr)
-    , m_inlineBox(nullptr)
-    , m_offset(0)
-    , m_prevLeafChild(uncachedInlineBox())
-    , m_nextLeafChild(uncachedInlineBox())
-{
-    if (position.isNull())
-        return;
-    InlineBoxPosition boxPosition = computeInlineBoxPosition(position, affinity);
-    m_inlineBox = boxPosition.inlineBox;
-    m_offset = boxPosition.offsetInBox;
-    if (m_inlineBox)
-        m_layoutObject = LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->getLineLayoutItem());
-    else
-        m_layoutObject = layoutObjectFromPosition(position);
+RenderedPosition::RenderedPosition(const PositionInFlatTree& position,
+                                   TextAffinity affinity)
+    : m_layoutObject(nullptr),
+      m_inlineBox(nullptr),
+      m_offset(0),
+      m_prevLeafChild(uncachedInlineBox()),
+      m_nextLeafChild(uncachedInlineBox()) {
+  if (position.isNull())
+    return;
+  InlineBoxPosition boxPosition = computeInlineBoxPosition(position, affinity);
+  m_inlineBox = boxPosition.inlineBox;
+  m_offset = boxPosition.offsetInBox;
+  if (m_inlineBox)
+    m_layoutObject =
+        LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->getLineLayoutItem());
+  else
+    m_layoutObject = layoutObjectFromPosition(position);
 }
 
-RenderedPosition::RenderedPosition(const PositionInFlatTree& position, TextAffinity affinity)
-    : m_layoutObject(nullptr)
-    , m_inlineBox(nullptr)
-    , m_offset(0)
-    , m_prevLeafChild(uncachedInlineBox())
-    , m_nextLeafChild(uncachedInlineBox())
-{
-    if (position.isNull())
-        return;
-    InlineBoxPosition boxPosition = computeInlineBoxPosition(position, affinity);
-    m_inlineBox = boxPosition.inlineBox;
-    m_offset = boxPosition.offsetInBox;
-    if (m_inlineBox)
-        m_layoutObject = LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->getLineLayoutItem());
-    else
-        m_layoutObject = layoutObjectFromPosition(position);
+InlineBox* RenderedPosition::prevLeafChild() const {
+  if (m_prevLeafChild == uncachedInlineBox())
+    m_prevLeafChild = m_inlineBox->prevLeafChildIgnoringLineBreak();
+  return m_prevLeafChild;
 }
 
-InlineBox* RenderedPosition::prevLeafChild() const
-{
-    if (m_prevLeafChild == uncachedInlineBox())
-        m_prevLeafChild = m_inlineBox->prevLeafChildIgnoringLineBreak();
-    return m_prevLeafChild;
+InlineBox* RenderedPosition::nextLeafChild() const {
+  if (m_nextLeafChild == uncachedInlineBox())
+    m_nextLeafChild = m_inlineBox->nextLeafChildIgnoringLineBreak();
+  return m_nextLeafChild;
 }
 
-InlineBox* RenderedPosition::nextLeafChild() const
-{
-    if (m_nextLeafChild == uncachedInlineBox())
-        m_nextLeafChild = m_inlineBox->nextLeafChildIgnoringLineBreak();
-    return m_nextLeafChild;
+bool RenderedPosition::isEquivalent(const RenderedPosition& other) const {
+  return (m_layoutObject == other.m_layoutObject &&
+          m_inlineBox == other.m_inlineBox && m_offset == other.m_offset) ||
+         (atLeftmostOffsetInBox() && other.atRightmostOffsetInBox() &&
+          prevLeafChild() == other.m_inlineBox) ||
+         (atRightmostOffsetInBox() && other.atLeftmostOffsetInBox() &&
+          nextLeafChild() == other.m_inlineBox);
 }
 
-bool RenderedPosition::isEquivalent(const RenderedPosition& other) const
-{
-    return (m_layoutObject == other.m_layoutObject && m_inlineBox == other.m_inlineBox && m_offset == other.m_offset)
-        || (atLeftmostOffsetInBox() && other.atRightmostOffsetInBox() && prevLeafChild() == other.m_inlineBox)
-        || (atRightmostOffsetInBox() && other.atLeftmostOffsetInBox() && nextLeafChild() == other.m_inlineBox);
+unsigned char RenderedPosition::bidiLevelOnLeft() const {
+  InlineBox* box = atLeftmostOffsetInBox() ? prevLeafChild() : m_inlineBox;
+  return box ? box->bidiLevel() : 0;
 }
 
-unsigned char RenderedPosition::bidiLevelOnLeft() const
-{
-    InlineBox* box = atLeftmostOffsetInBox() ? prevLeafChild() : m_inlineBox;
-    return box ? box->bidiLevel() : 0;
+unsigned char RenderedPosition::bidiLevelOnRight() const {
+  InlineBox* box = atRightmostOffsetInBox() ? nextLeafChild() : m_inlineBox;
+  return box ? box->bidiLevel() : 0;
 }
 
-unsigned char RenderedPosition::bidiLevelOnRight() const
-{
-    InlineBox* box = atRightmostOffsetInBox() ? nextLeafChild() : m_inlineBox;
-    return box ? box->bidiLevel() : 0;
-}
-
-RenderedPosition RenderedPosition::leftBoundaryOfBidiRun(unsigned char bidiLevelOfRun)
-{
-    if (!m_inlineBox || bidiLevelOfRun > m_inlineBox->bidiLevel())
-        return RenderedPosition();
-
-    InlineBox* box = m_inlineBox;
-    do {
-        InlineBox* prev = box->prevLeafChildIgnoringLineBreak();
-        if (!prev || prev->bidiLevel() < bidiLevelOfRun)
-            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem()), box, box->caretLeftmostOffset());
-        box = prev;
-    } while (box);
-
-    NOTREACHED();
+RenderedPosition RenderedPosition::leftBoundaryOfBidiRun(
+    unsigned char bidiLevelOfRun) {
+  if (!m_inlineBox || bidiLevelOfRun > m_inlineBox->bidiLevel())
     return RenderedPosition();
+
+  InlineBox* box = m_inlineBox;
+  do {
+    InlineBox* prev = box->prevLeafChildIgnoringLineBreak();
+    if (!prev || prev->bidiLevel() < bidiLevelOfRun)
+      return RenderedPosition(
+          LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem()), box,
+          box->caretLeftmostOffset());
+    box = prev;
+  } while (box);
+
+  NOTREACHED();
+  return RenderedPosition();
 }
 
-RenderedPosition RenderedPosition::rightBoundaryOfBidiRun(unsigned char bidiLevelOfRun)
-{
-    if (!m_inlineBox || bidiLevelOfRun > m_inlineBox->bidiLevel())
-        return RenderedPosition();
-
-    InlineBox* box = m_inlineBox;
-    do {
-        InlineBox* next = box->nextLeafChildIgnoringLineBreak();
-        if (!next || next->bidiLevel() < bidiLevelOfRun)
-            return RenderedPosition(LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem()), box, box->caretRightmostOffset());
-        box = next;
-    } while (box);
-
-    NOTREACHED();
+RenderedPosition RenderedPosition::rightBoundaryOfBidiRun(
+    unsigned char bidiLevelOfRun) {
+  if (!m_inlineBox || bidiLevelOfRun > m_inlineBox->bidiLevel())
     return RenderedPosition();
+
+  InlineBox* box = m_inlineBox;
+  do {
+    InlineBox* next = box->nextLeafChildIgnoringLineBreak();
+    if (!next || next->bidiLevel() < bidiLevelOfRun)
+      return RenderedPosition(
+          LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem()), box,
+          box->caretRightmostOffset());
+    box = next;
+  } while (box);
+
+  NOTREACHED();
+  return RenderedPosition();
 }
 
-bool RenderedPosition::atLeftBoundaryOfBidiRun(ShouldMatchBidiLevel shouldMatchBidiLevel, unsigned char bidiLevelOfRun) const
-{
-    if (!m_inlineBox)
-        return false;
-
-    if (atLeftmostOffsetInBox()) {
-        if (shouldMatchBidiLevel == IgnoreBidiLevel)
-            return !prevLeafChild() || prevLeafChild()->bidiLevel() < m_inlineBox->bidiLevel();
-        return m_inlineBox->bidiLevel() >= bidiLevelOfRun && (!prevLeafChild() || prevLeafChild()->bidiLevel() < bidiLevelOfRun);
-    }
-
-    if (atRightmostOffsetInBox()) {
-        if (shouldMatchBidiLevel == IgnoreBidiLevel)
-            return nextLeafChild() && m_inlineBox->bidiLevel() < nextLeafChild()->bidiLevel();
-        return nextLeafChild() && m_inlineBox->bidiLevel() < bidiLevelOfRun && nextLeafChild()->bidiLevel() >= bidiLevelOfRun;
-    }
-
+bool RenderedPosition::atLeftBoundaryOfBidiRun(
+    ShouldMatchBidiLevel shouldMatchBidiLevel,
+    unsigned char bidiLevelOfRun) const {
+  if (!m_inlineBox)
     return false;
+
+  if (atLeftmostOffsetInBox()) {
+    if (shouldMatchBidiLevel == IgnoreBidiLevel)
+      return !prevLeafChild() ||
+             prevLeafChild()->bidiLevel() < m_inlineBox->bidiLevel();
+    return m_inlineBox->bidiLevel() >= bidiLevelOfRun &&
+           (!prevLeafChild() || prevLeafChild()->bidiLevel() < bidiLevelOfRun);
+  }
+
+  if (atRightmostOffsetInBox()) {
+    if (shouldMatchBidiLevel == IgnoreBidiLevel)
+      return nextLeafChild() &&
+             m_inlineBox->bidiLevel() < nextLeafChild()->bidiLevel();
+    return nextLeafChild() && m_inlineBox->bidiLevel() < bidiLevelOfRun &&
+           nextLeafChild()->bidiLevel() >= bidiLevelOfRun;
+  }
+
+  return false;
 }
 
-bool RenderedPosition::atRightBoundaryOfBidiRun(ShouldMatchBidiLevel shouldMatchBidiLevel, unsigned char bidiLevelOfRun) const
-{
-    if (!m_inlineBox)
-        return false;
-
-    if (atRightmostOffsetInBox()) {
-        if (shouldMatchBidiLevel == IgnoreBidiLevel)
-            return !nextLeafChild() || nextLeafChild()->bidiLevel() < m_inlineBox->bidiLevel();
-        return m_inlineBox->bidiLevel() >= bidiLevelOfRun && (!nextLeafChild() || nextLeafChild()->bidiLevel() < bidiLevelOfRun);
-    }
-
-    if (atLeftmostOffsetInBox()) {
-        if (shouldMatchBidiLevel == IgnoreBidiLevel)
-            return prevLeafChild() && m_inlineBox->bidiLevel() < prevLeafChild()->bidiLevel();
-        return prevLeafChild() && m_inlineBox->bidiLevel() < bidiLevelOfRun && prevLeafChild()->bidiLevel() >= bidiLevelOfRun;
-    }
-
+bool RenderedPosition::atRightBoundaryOfBidiRun(
+    ShouldMatchBidiLevel shouldMatchBidiLevel,
+    unsigned char bidiLevelOfRun) const {
+  if (!m_inlineBox)
     return false;
+
+  if (atRightmostOffsetInBox()) {
+    if (shouldMatchBidiLevel == IgnoreBidiLevel)
+      return !nextLeafChild() ||
+             nextLeafChild()->bidiLevel() < m_inlineBox->bidiLevel();
+    return m_inlineBox->bidiLevel() >= bidiLevelOfRun &&
+           (!nextLeafChild() || nextLeafChild()->bidiLevel() < bidiLevelOfRun);
+  }
+
+  if (atLeftmostOffsetInBox()) {
+    if (shouldMatchBidiLevel == IgnoreBidiLevel)
+      return prevLeafChild() &&
+             m_inlineBox->bidiLevel() < prevLeafChild()->bidiLevel();
+    return prevLeafChild() && m_inlineBox->bidiLevel() < bidiLevelOfRun &&
+           prevLeafChild()->bidiLevel() >= bidiLevelOfRun;
+  }
+
+  return false;
 }
 
-Position RenderedPosition::positionAtLeftBoundaryOfBiDiRun() const
-{
-    DCHECK(atLeftBoundaryOfBidiRun());
+Position RenderedPosition::positionAtLeftBoundaryOfBiDiRun() const {
+  DCHECK(atLeftBoundaryOfBidiRun());
 
-    if (atLeftmostOffsetInBox())
-        return Position::editingPositionOf(m_layoutObject->node(), m_offset);
+  if (atLeftmostOffsetInBox())
+    return Position::editingPositionOf(m_layoutObject->node(), m_offset);
 
-    return Position::editingPositionOf(nextLeafChild()->getLineLayoutItem().node(), nextLeafChild()->caretLeftmostOffset());
+  return Position::editingPositionOf(
+      nextLeafChild()->getLineLayoutItem().node(),
+      nextLeafChild()->caretLeftmostOffset());
 }
 
-Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const
-{
-    DCHECK(atRightBoundaryOfBidiRun());
+Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const {
+  DCHECK(atRightBoundaryOfBidiRun());
 
-    if (atRightmostOffsetInBox())
-        return Position::editingPositionOf(m_layoutObject->node(), m_offset);
+  if (atRightmostOffsetInBox())
+    return Position::editingPositionOf(m_layoutObject->node(), m_offset);
 
-    return Position::editingPositionOf(prevLeafChild()->getLineLayoutItem().node(), prevLeafChild()->caretRightmostOffset());
+  return Position::editingPositionOf(
+      prevLeafChild()->getLineLayoutItem().node(),
+      prevLeafChild()->caretRightmostOffset());
 }
 
-IntRect RenderedPosition::absoluteRect(LayoutUnit* extraWidthToEndOfLine) const
-{
-    if (isNull())
-        return IntRect();
+IntRect RenderedPosition::absoluteRect(
+    LayoutUnit* extraWidthToEndOfLine) const {
+  if (isNull())
+    return IntRect();
 
-    IntRect localRect = pixelSnappedIntRect(m_layoutObject->localCaretRect(m_inlineBox, m_offset, extraWidthToEndOfLine));
-    return localRect == IntRect() ? IntRect() : m_layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
+  IntRect localRect = pixelSnappedIntRect(m_layoutObject->localCaretRect(
+      m_inlineBox, m_offset, extraWidthToEndOfLine));
+  return localRect == IntRect()
+             ? IntRect()
+             : m_layoutObject->localToAbsoluteQuad(FloatRect(localRect))
+                   .enclosingBoundingBox();
 }
 
-void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& bound, bool selectionStart) const
-{
-    bound.layer = nullptr;
-    bound.edgeTopInLayer = bound.edgeBottomInLayer = FloatPoint();
+void RenderedPosition::positionInGraphicsLayerBacking(
+    CompositedSelectionBound& bound,
+    bool selectionStart) const {
+  bound.layer = nullptr;
+  bound.edgeTopInLayer = bound.edgeBottomInLayer = FloatPoint();
 
-    if (isNull())
-        return;
+  if (isNull())
+    return;
 
-    LayoutRect rect = m_layoutObject->localCaretRect(m_inlineBox, m_offset);
-    PaintLayer* layer = nullptr;
-    if (m_layoutObject->style()->isHorizontalWritingMode()) {
-        bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
-        bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
-    } else {
-        bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
-        bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.maxXMinYCorner(), nullptr);
+  LayoutRect rect = m_layoutObject->localCaretRect(m_inlineBox, m_offset);
+  PaintLayer* layer = nullptr;
+  if (m_layoutObject->style()->isHorizontalWritingMode()) {
+    bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(
+        rect.minXMinYCorner(), &layer);
+    bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(
+        rect.minXMaxYCorner(), nullptr);
+  } else {
+    bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(
+        rect.minXMinYCorner(), &layer);
+    bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(
+        rect.maxXMinYCorner(), nullptr);
 
-        // When text is vertical, it looks better for the start handle baseline to
-        // be at the starting edge, to enclose the selection fully between the
-        // handles.
-        if (selectionStart) {
-            float xSwap = bound.edgeBottomInLayer.x();
-            bound.edgeBottomInLayer.setX(bound.edgeTopInLayer.x());
-            bound.edgeTopInLayer.setX(xSwap);
-        }
-
-        // Flipped blocks writing mode is not only vertical but also right to left.
-        bound.isTextDirectionRTL = m_layoutObject->hasFlippedBlocksWritingMode();
+    // When text is vertical, it looks better for the start handle baseline to
+    // be at the starting edge, to enclose the selection fully between the
+    // handles.
+    if (selectionStart) {
+      float xSwap = bound.edgeBottomInLayer.x();
+      bound.edgeBottomInLayer.setX(bound.edgeTopInLayer.x());
+      bound.edgeTopInLayer.setX(xSwap);
     }
 
-    bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;
+    // Flipped blocks writing mode is not only vertical but also right to left.
+    bound.isTextDirectionRTL = m_layoutObject->hasFlippedBlocksWritingMode();
+  }
+
+  bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;
 }
 
-bool layoutObjectContainsPosition(LayoutObject* target, const Position& position)
-{
-    for (LayoutObject* layoutObject = layoutObjectFromPosition(position); layoutObject && layoutObject->node(); layoutObject = layoutObject->parent()) {
-        if (layoutObject == target)
-            return true;
-    }
-    return false;
+bool layoutObjectContainsPosition(LayoutObject* target,
+                                  const Position& position) {
+  for (LayoutObject* layoutObject = layoutObjectFromPosition(position);
+       layoutObject && layoutObject->node();
+       layoutObject = layoutObject->parent()) {
+    if (layoutObject == target)
+      return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

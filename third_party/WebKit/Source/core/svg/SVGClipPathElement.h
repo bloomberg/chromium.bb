@@ -32,28 +32,31 @@ namespace blink {
 class LayoutObject;
 
 class SVGClipPathElement final : public SVGGraphicsElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGClipPathElement);
-    SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() { return m_clipPathUnits.get(); }
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool supportsFocus() const override { return false; }
+ public:
+  DECLARE_NODE_FACTORY(SVGClipPathElement);
+  SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() {
+    return m_clipPathUnits.get();
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  bool supportsFocus() const override { return false; }
 
-private:
-    explicit SVGClipPathElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool needsPendingResourceHandling() const override { return false; }
+ private:
+  explicit SVGClipPathElement(Document&);
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    void childrenChanged(const ChildrenChange&) override;
+  bool needsPendingResourceHandling() const override { return false; }
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  void childrenChanged(const ChildrenChange&) override;
 
-    Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_clipPathUnits;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+
+  Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_clipPathUnits;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGClipPathElement_h
+#endif  // SVGClipPathElement_h

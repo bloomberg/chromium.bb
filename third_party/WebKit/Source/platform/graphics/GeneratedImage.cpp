@@ -38,35 +38,38 @@
 
 namespace blink {
 
-void GeneratedImage::drawPattern(GraphicsContext& destContext, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect,
-    const FloatSize& repeatSpacing)
-{
-    FloatRect tileRect = srcRect;
-    tileRect.expand(FloatSize(repeatSpacing));
+void GeneratedImage::drawPattern(GraphicsContext& destContext,
+                                 const FloatRect& srcRect,
+                                 const FloatSize& scale,
+                                 const FloatPoint& phase,
+                                 SkXfermode::Mode compositeOp,
+                                 const FloatRect& destRect,
+                                 const FloatSize& repeatSpacing) {
+  FloatRect tileRect = srcRect;
+  tileRect.expand(FloatSize(repeatSpacing));
 
-    SkPictureBuilder builder(tileRect, nullptr, &destContext);
-    builder.context().beginRecording(tileRect);
-    drawTile(builder.context(), srcRect);
-    sk_sp<SkPicture> tilePicture = builder.endRecording();
+  SkPictureBuilder builder(tileRect, nullptr, &destContext);
+  builder.context().beginRecording(tileRect);
+  drawTile(builder.context(), srcRect);
+  sk_sp<SkPicture> tilePicture = builder.endRecording();
 
-    SkMatrix patternMatrix = SkMatrix::MakeTrans(phase.x(), phase.y());
-    patternMatrix.preScale(scale.width(), scale.height());
-    patternMatrix.preTranslate(tileRect.x(), tileRect.y());
+  SkMatrix patternMatrix = SkMatrix::MakeTrans(phase.x(), phase.y());
+  patternMatrix.preScale(scale.width(), scale.height());
+  patternMatrix.preTranslate(tileRect.x(), tileRect.y());
 
-    RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(std::move(tilePicture));
+  RefPtr<Pattern> picturePattern =
+      Pattern::createPicturePattern(std::move(tilePicture));
 
-    SkPaint fillPaint = destContext.fillPaint();
-    picturePattern->applyToPaint(fillPaint, patternMatrix);
-    fillPaint.setColor(SK_ColorBLACK);
-    fillPaint.setXfermodeMode(compositeOp);
+  SkPaint fillPaint = destContext.fillPaint();
+  picturePattern->applyToPaint(fillPaint, patternMatrix);
+  fillPaint.setColor(SK_ColorBLACK);
+  fillPaint.setXfermodeMode(compositeOp);
 
-    destContext.drawRect(destRect, fillPaint);
+  destContext.drawRect(destRect, fillPaint);
 }
 
-sk_sp<SkImage> GeneratedImage::imageForCurrentFrame()
-{
-    return nullptr;
+sk_sp<SkImage> GeneratedImage::imageForCurrentFrame() {
+  return nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

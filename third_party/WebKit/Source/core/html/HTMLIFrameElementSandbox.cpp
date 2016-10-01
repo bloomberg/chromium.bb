@@ -10,53 +10,44 @@ namespace blink {
 
 namespace {
 
-const char* kSupportedTokens[] = {
-    "allow-forms",
-    "allow-modals",
-    "allow-pointer-lock",
-    "allow-popups",
-    "allow-popups-to-escape-sandbox",
-    "allow-same-origin",
-    "allow-scripts",
-    "allow-top-navigation"
-};
+const char* kSupportedTokens[] = {"allow-forms",
+                                  "allow-modals",
+                                  "allow-pointer-lock",
+                                  "allow-popups",
+                                  "allow-popups-to-escape-sandbox",
+                                  "allow-same-origin",
+                                  "allow-scripts",
+                                  "allow-top-navigation"};
 
-bool isTokenSupported(const AtomicString& token)
-{
-    for (const char* supportedToken : kSupportedTokens) {
-        if (token == supportedToken)
-            return true;
-    }
-    return false;
+bool isTokenSupported(const AtomicString& token) {
+  for (const char* supportedToken : kSupportedTokens) {
+    if (token == supportedToken)
+      return true;
+  }
+  return false;
 }
 
-} // namespace
+}  // namespace
 
 HTMLIFrameElementSandbox::HTMLIFrameElementSandbox(HTMLIFrameElement* element)
-    : DOMTokenList(this)
-    , m_element(element)
-{
+    : DOMTokenList(this), m_element(element) {}
+
+HTMLIFrameElementSandbox::~HTMLIFrameElementSandbox() {}
+
+DEFINE_TRACE(HTMLIFrameElementSandbox) {
+  visitor->trace(m_element);
+  DOMTokenList::trace(visitor);
+  DOMTokenListObserver::trace(visitor);
 }
 
-HTMLIFrameElementSandbox::~HTMLIFrameElementSandbox()
-{
+bool HTMLIFrameElementSandbox::validateTokenValue(
+    const AtomicString& tokenValue,
+    ExceptionState&) const {
+  return isTokenSupported(tokenValue);
 }
 
-DEFINE_TRACE(HTMLIFrameElementSandbox)
-{
-    visitor->trace(m_element);
-    DOMTokenList::trace(visitor);
-    DOMTokenListObserver::trace(visitor);
+void HTMLIFrameElementSandbox::valueWasSet() {
+  m_element->sandboxValueWasSet();
 }
 
-bool HTMLIFrameElementSandbox::validateTokenValue(const AtomicString& tokenValue, ExceptionState&) const
-{
-    return isTokenSupported(tokenValue);
-}
-
-void HTMLIFrameElementSandbox::valueWasSet()
-{
-    m_element->sandboxValueWasSet();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -28,21 +28,22 @@
 namespace blink {
 
 class HTMLParamElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLParamElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    const AtomicString& name() const;
-    const AtomicString& value() const;
+ public:
+  DECLARE_NODE_FACTORY(HTMLParamElement);
 
-    static bool isURLParameter(const String&);
+  const AtomicString& name() const;
+  const AtomicString& value() const;
 
-private:
-    explicit HTMLParamElement(Document&);
+  static bool isURLParameter(const String&);
 
-    bool isURLAttribute(const Attribute&) const override;
+ private:
+  explicit HTMLParamElement(Document&);
+
+  bool isURLAttribute(const Attribute&) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLParamElement_h
+#endif  // HTMLParamElement_h

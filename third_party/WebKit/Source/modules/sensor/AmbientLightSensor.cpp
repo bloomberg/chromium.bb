@@ -13,42 +13,42 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 // static
-AmbientLightSensor* AmbientLightSensor::create(ScriptState* scriptState, const SensorOptions& options, ExceptionState& exceptionState)
-{
-    return new AmbientLightSensor(scriptState, options, exceptionState);
+AmbientLightSensor* AmbientLightSensor::create(ScriptState* scriptState,
+                                               const SensorOptions& options,
+                                               ExceptionState& exceptionState) {
+  return new AmbientLightSensor(scriptState, options, exceptionState);
 }
 
 // static
-AmbientLightSensor* AmbientLightSensor::create(ScriptState* scriptState, ExceptionState& exceptionState)
-{
-    return create(scriptState, SensorOptions(), exceptionState);
+AmbientLightSensor* AmbientLightSensor::create(ScriptState* scriptState,
+                                               ExceptionState& exceptionState) {
+  return create(scriptState, SensorOptions(), exceptionState);
 }
 
-AmbientLightSensor::AmbientLightSensor(ScriptState* scriptState, const SensorOptions& options, ExceptionState& exceptionState)
-    : Sensor(scriptState, options, exceptionState, SensorType::AMBIENT_LIGHT)
-{
+AmbientLightSensor::AmbientLightSensor(ScriptState* scriptState,
+                                       const SensorOptions& options,
+                                       ExceptionState& exceptionState)
+    : Sensor(scriptState, options, exceptionState, SensorType::AMBIENT_LIGHT) {}
+
+AmbientLightSensorReading* AmbientLightSensor::reading() const {
+  return static_cast<AmbientLightSensorReading*>(Sensor::reading());
 }
 
-AmbientLightSensorReading* AmbientLightSensor::reading() const
-{
-    return static_cast<AmbientLightSensorReading*>(Sensor::reading());
+SensorReading* AmbientLightSensor::createSensorReading(SensorProxy* proxy) {
+  return AmbientLightSensorReading::create(proxy);
 }
 
-SensorReading* AmbientLightSensor::createSensorReading(SensorProxy* proxy)
-{
-    return AmbientLightSensorReading::create(proxy);
+auto AmbientLightSensor::createSensorConfig(
+    const SensorOptions& options,
+    const SensorConfiguration& defaultConfig) -> SensorConfigurationPtr {
+  auto result = device::mojom::blink::SensorConfiguration::New();
+  result->frequency =
+      options.hasFrequency() ? options.frequency() : defaultConfig.frequency;
+  return result;
 }
 
-auto AmbientLightSensor::createSensorConfig(const SensorOptions& options, const SensorConfiguration& defaultConfig) -> SensorConfigurationPtr
-{
-    auto result = device::mojom::blink::SensorConfiguration::New();
-    result->frequency = options.hasFrequency() ? options.frequency() : defaultConfig.frequency;
-    return result;
+DEFINE_TRACE(AmbientLightSensor) {
+  Sensor::trace(visitor);
 }
 
-DEFINE_TRACE(AmbientLightSensor)
-{
-    Sensor::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

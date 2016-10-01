@@ -38,75 +38,71 @@
 
 namespace blink {
 
-class MockActiveDOMObject final : public GarbageCollectedFinalized<MockActiveDOMObject>, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(MockActiveDOMObject);
-public:
-    explicit MockActiveDOMObject(ExecutionContext* context) : ActiveDOMObject(context) { }
+class MockActiveDOMObject final
+    : public GarbageCollectedFinalized<MockActiveDOMObject>,
+      public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(MockActiveDOMObject);
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        ActiveDOMObject::trace(visitor);
-    }
+ public:
+  explicit MockActiveDOMObject(ExecutionContext* context)
+      : ActiveDOMObject(context) {}
 
-    MOCK_METHOD0(suspend, void());
-    MOCK_METHOD0(resume, void());
-    MOCK_METHOD0(stop, void());
+  DEFINE_INLINE_VIRTUAL_TRACE() { ActiveDOMObject::trace(visitor); }
+
+  MOCK_METHOD0(suspend, void());
+  MOCK_METHOD0(resume, void());
+  MOCK_METHOD0(stop, void());
 };
 
 class ActiveDOMObjectTest : public ::testing::Test {
-protected:
-    ActiveDOMObjectTest();
+ protected:
+  ActiveDOMObjectTest();
 
-    Document& srcDocument() const { return m_srcPageHolder->document(); }
-    Document& destDocument() const { return m_destPageHolder->document(); }
-    MockActiveDOMObject& activeDOMObject() { return *m_activeDOMObject; }
+  Document& srcDocument() const { return m_srcPageHolder->document(); }
+  Document& destDocument() const { return m_destPageHolder->document(); }
+  MockActiveDOMObject& activeDOMObject() { return *m_activeDOMObject; }
 
-private:
-    std::unique_ptr<DummyPageHolder> m_srcPageHolder;
-    std::unique_ptr<DummyPageHolder> m_destPageHolder;
-    Persistent<MockActiveDOMObject> m_activeDOMObject;
+ private:
+  std::unique_ptr<DummyPageHolder> m_srcPageHolder;
+  std::unique_ptr<DummyPageHolder> m_destPageHolder;
+  Persistent<MockActiveDOMObject> m_activeDOMObject;
 };
 
 ActiveDOMObjectTest::ActiveDOMObjectTest()
-    : m_srcPageHolder(DummyPageHolder::create(IntSize(800, 600)))
-    , m_destPageHolder(DummyPageHolder::create(IntSize(800, 600)))
-    , m_activeDOMObject(new MockActiveDOMObject(&m_srcPageHolder->document()))
-{
-    m_activeDOMObject->suspendIfNeeded();
+    : m_srcPageHolder(DummyPageHolder::create(IntSize(800, 600))),
+      m_destPageHolder(DummyPageHolder::create(IntSize(800, 600))),
+      m_activeDOMObject(new MockActiveDOMObject(&m_srcPageHolder->document())) {
+  m_activeDOMObject->suspendIfNeeded();
 }
 
-TEST_F(ActiveDOMObjectTest, NewContextObserved)
-{
-    unsigned initialSrcCount = srcDocument().activeDOMObjectCount();
-    unsigned initialDestCount = destDocument().activeDOMObjectCount();
+TEST_F(ActiveDOMObjectTest, NewContextObserved) {
+  unsigned initialSrcCount = srcDocument().activeDOMObjectCount();
+  unsigned initialDestCount = destDocument().activeDOMObjectCount();
 
-    EXPECT_CALL(activeDOMObject(), resume());
-    activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(activeDOMObject(), resume());
+  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 
-    EXPECT_EQ(initialSrcCount - 1, srcDocument().activeDOMObjectCount());
-    EXPECT_EQ(initialDestCount + 1, destDocument().activeDOMObjectCount());
+  EXPECT_EQ(initialSrcCount - 1, srcDocument().activeDOMObjectCount());
+  EXPECT_EQ(initialDestCount + 1, destDocument().activeDOMObjectCount());
 }
 
-TEST_F(ActiveDOMObjectTest, MoveToActiveDocument)
-{
-    EXPECT_CALL(activeDOMObject(), resume());
-    activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+TEST_F(ActiveDOMObjectTest, MoveToActiveDocument) {
+  EXPECT_CALL(activeDOMObject(), resume());
+  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 }
 
-TEST_F(ActiveDOMObjectTest, MoveToSuspendedDocument)
-{
-    destDocument().suspendScheduledTasks();
+TEST_F(ActiveDOMObjectTest, MoveToSuspendedDocument) {
+  destDocument().suspendScheduledTasks();
 
-    EXPECT_CALL(activeDOMObject(), suspend());
-    activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(activeDOMObject(), suspend());
+  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 }
 
-TEST_F(ActiveDOMObjectTest, MoveToStoppedDocument)
-{
-    destDocument().shutdown();
+TEST_F(ActiveDOMObjectTest, MoveToStoppedDocument) {
+  destDocument().shutdown();
 
-    EXPECT_CALL(activeDOMObject(), stop());
-    activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(activeDOMObject(), stop());
+  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 }
 
-} // namespace blink
+}  // namespace blink

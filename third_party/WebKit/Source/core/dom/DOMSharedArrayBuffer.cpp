@@ -8,14 +8,16 @@
 
 namespace blink {
 
-v8::Local<v8::Object> DOMSharedArrayBuffer::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
-{
-    DCHECK(!DOMDataStore::containsWrapper(this, isolate));
+v8::Local<v8::Object> DOMSharedArrayBuffer::wrap(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creationContext) {
+  DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
-    const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
-    v8::Local<v8::Object> wrapper = v8::SharedArrayBuffer::New(isolate, data(), byteLength());
+  const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
+  v8::Local<v8::Object> wrapper =
+      v8::SharedArrayBuffer::New(isolate, data(), byteLength());
 
-    return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
+  return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
-} // namespace blink
+}  // namespace blink

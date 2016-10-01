@@ -14,30 +14,29 @@ namespace mojo {
 
 template <>
 struct StructTraits<url::mojom::blink::Url::DataView, ::blink::KURL> {
-    static WTF::String url(const ::blink::KURL& blinkUrl)
-    {
-        if (!blinkUrl.isValid() || blinkUrl.getString().length() > url::kMaxURLChars) {
-            return emptyString();
-        }
-
-        return blinkUrl.getString();
+  static WTF::String url(const ::blink::KURL& blinkUrl) {
+    if (!blinkUrl.isValid() ||
+        blinkUrl.getString().length() > url::kMaxURLChars) {
+      return emptyString();
     }
-    static bool Read(url::mojom::blink::Url::DataView data, ::blink::KURL* out)
-    {
-        WTF::String urlString;
-        if (!data.ReadUrl(&urlString))
-            return false;
 
-        if (urlString.length() > url::kMaxURLChars)
-            return false;
+    return blinkUrl.getString();
+  }
+  static bool Read(url::mojom::blink::Url::DataView data, ::blink::KURL* out) {
+    WTF::String urlString;
+    if (!data.ReadUrl(&urlString))
+      return false;
 
-        *out = ::blink::KURL(::blink::KURL(), urlString);
-        if (!urlString.isEmpty() && !out->isValid())
-            return false;
+    if (urlString.length() > url::kMaxURLChars)
+      return false;
 
-        return true;
-    }
+    *out = ::blink::KURL(::blink::KURL(), urlString);
+    if (!urlString.isEmpty() && !out->isValid())
+      return false;
+
+    return true;
+  }
 };
 }
 
-#endif // KURLStructTraits_h
+#endif  // KURLStructTraits_h

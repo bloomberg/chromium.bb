@@ -35,41 +35,43 @@ class AXMenuListOption;
 class HTMLElement;
 
 class AXMenuListPopup final : public AXMockObject {
-    WTF_MAKE_NONCOPYABLE(AXMenuListPopup);
+  WTF_MAKE_NONCOPYABLE(AXMenuListPopup);
 
-public:
-    static AXMenuListPopup* create(AXObjectCacheImpl& axObjectCache) { return new AXMenuListPopup(axObjectCache); }
+ public:
+  static AXMenuListPopup* create(AXObjectCacheImpl& axObjectCache) {
+    return new AXMenuListPopup(axObjectCache);
+  }
 
-    bool isEnabled() const override;
-    bool isOffScreen() const override;
+  bool isEnabled() const override;
+  bool isOffScreen() const override;
 
-    void didUpdateActiveOption(int optionIndex);
-    void didShow();
-    void didHide();
-    AXObject* activeDescendant() final;
+  void didUpdateActiveOption(int optionIndex);
+  void didShow();
+  void didHide();
+  AXObject* activeDescendant() final;
 
-private:
-    explicit AXMenuListPopup(AXObjectCacheImpl&);
+ private:
+  explicit AXMenuListPopup(AXObjectCacheImpl&);
 
-    bool isMenuListPopup() const override { return true; }
+  bool isMenuListPopup() const override { return true; }
 
-    AccessibilityRole roleValue() const override { return MenuListPopupRole; }
+  AccessibilityRole roleValue() const override { return MenuListPopupRole; }
 
-    bool isVisible() const override;
-    bool press() const override;
-    void addChildren() override;
-    void updateChildrenIfNecessary() override;
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool isVisible() const override;
+  bool press() const override;
+  void addChildren() override;
+  void updateChildrenIfNecessary() override;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-    AXMenuListOption* menuListOptionAXObject(HTMLElement*) const;
-    int getSelectedIndex() const;
+  AXMenuListOption* menuListOptionAXObject(HTMLElement*) const;
+  int getSelectedIndex() const;
 
-    // Note that this may be -1 if nothing is selected.
-    int m_activeIndex;
+  // Note that this may be -1 if nothing is selected.
+  int m_activeIndex;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListPopup, isMenuListPopup());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXMenuListPopup_h
+#endif  // AXMenuListPopup_h

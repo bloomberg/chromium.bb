@@ -38,85 +38,72 @@
 namespace blink {
 
 // Skia has problems when passed infinite, etc floats, filter them to 0.
-static inline SkScalar WebCoreFloatToSkScalar(float f)
-{
-    return SkFloatToScalar(std::isfinite(f) ? f : 0);
+static inline SkScalar WebCoreFloatToSkScalar(float f) {
+  return SkFloatToScalar(std::isfinite(f) ? f : 0);
 }
 
-FloatPoint::FloatPoint(const IntPoint& p) : m_x(p.x()), m_y(p.y())
-{
-}
+FloatPoint::FloatPoint(const IntPoint& p) : m_x(p.x()), m_y(p.y()) {}
 
-FloatPoint::FloatPoint(const DoublePoint& p) : m_x(p.x()), m_y(p.y())
-{
-}
+FloatPoint::FloatPoint(const DoublePoint& p) : m_x(p.x()), m_y(p.y()) {}
 
 FloatPoint::FloatPoint(const LayoutPoint& p)
-    : m_x(p.x().toFloat())
-    , m_y(p.y().toFloat())
-{
-}
+    : m_x(p.x().toFloat()), m_y(p.y().toFloat()) {}
 
 FloatPoint::FloatPoint(const LayoutSize& size)
-    : m_x(size.width().toFloat()), m_y(size.height().toFloat())
-{
+    : m_x(size.width().toFloat()), m_y(size.height().toFloat()) {}
+
+float FloatPoint::slopeAngleRadians() const {
+  return atan2f(m_y, m_x);
 }
 
-float FloatPoint::slopeAngleRadians() const
-{
-    return atan2f(m_y, m_x);
+float FloatPoint::length() const {
+  return hypotf(m_x, m_y);
 }
 
-float FloatPoint::length() const
-{
-    return hypotf(m_x, m_y);
+void FloatPoint::move(const LayoutSize& size) {
+  m_x += size.width();
+  m_y += size.height();
 }
 
-void FloatPoint::move(const LayoutSize& size)
-{
-    m_x += size.width();
-    m_y += size.height();
+void FloatPoint::moveBy(const LayoutPoint& point) {
+  m_x += point.x();
+  m_y += point.y();
 }
 
-void FloatPoint::moveBy(const LayoutPoint& point)
-{
-    m_x += point.x();
-    m_y += point.y();
+SkPoint FloatPoint::data() const {
+  SkPoint p = {WebCoreFloatToSkScalar(m_x), WebCoreFloatToSkScalar(m_y)};
+  return p;
 }
 
-SkPoint FloatPoint::data() const
-{
-    SkPoint p = { WebCoreFloatToSkScalar(m_x), WebCoreFloatToSkScalar(m_y) };
-    return p;
+FloatPoint FloatPoint::narrowPrecision(double x, double y) {
+  return FloatPoint(clampTo<float>(x), clampTo<float>(y));
 }
 
-FloatPoint FloatPoint::narrowPrecision(double x, double y)
-{
-    return FloatPoint(clampTo<float>(x), clampTo<float>(y));
+bool findIntersection(const FloatPoint& p1,
+                      const FloatPoint& p2,
+                      const FloatPoint& d1,
+                      const FloatPoint& d2,
+                      FloatPoint& intersection) {
+  float pxLength = p2.x() - p1.x();
+  float pyLength = p2.y() - p1.y();
+
+  float dxLength = d2.x() - d1.x();
+  float dyLength = d2.y() - d1.y();
+
+  float denom = pxLength * dyLength - pyLength * dxLength;
+  if (!denom)
+    return false;
+
+  float param =
+      ((d1.x() - p1.x()) * dyLength - (d1.y() - p1.y()) * dxLength) / denom;
+
+  intersection.setX(p1.x() + param * pxLength);
+  intersection.setY(p1.y() + param * pyLength);
+  return true;
 }
 
-bool findIntersection(const FloatPoint& p1, const FloatPoint& p2, const FloatPoint& d1, const FloatPoint& d2, FloatPoint& intersection)
-{
-    float pxLength = p2.x() - p1.x();
-    float pyLength = p2.y() - p1.y();
-
-    float dxLength = d2.x() - d1.x();
-    float dyLength = d2.y() - d1.y();
-
-    float denom = pxLength * dyLength - pyLength * dxLength;
-    if (!denom)
-        return false;
-
-    float param = ((d1.x() - p1.x()) * dyLength - (d1.y() - p1.y()) * dxLength) / denom;
-
-    intersection.setX(p1.x() + param * pxLength);
-    intersection.setY(p1.y() + param * pyLength);
-    return true;
+String FloatPoint::toString() const {
+  return String::format("%lg,%lg", x(), y());
 }
 
-String FloatPoint::toString() const
-{
-    return String::format("%lg,%lg", x(), y());
-}
-
-} // namespace blink
+}  // namespace blink

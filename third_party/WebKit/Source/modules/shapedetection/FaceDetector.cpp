@@ -9,17 +9,16 @@
 
 namespace blink {
 
-FaceDetector* FaceDetector::create()
-{
-    return new FaceDetector();
+FaceDetector* FaceDetector::create() {
+  return new FaceDetector();
 }
 
-ScriptPromise FaceDetector::detect(ScriptState* scriptState, const HTMLImageElement* image)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    resolver->reject(DOMException::create(NotSupportedError, "Not implemented"));
-    return promise;
+ScriptPromise FaceDetector::detect(ScriptState* scriptState,
+                                   const HTMLImageElement* image) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  resolver->reject(DOMException::create(NotSupportedError, "Not implemented"));
+  return promise;
 }
 
-} // namespace blink
+}  // namespace blink

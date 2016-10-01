@@ -31,26 +31,26 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLPreElement::HTMLPreElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
-{
-}
+inline HTMLPreElement::HTMLPreElement(const QualifiedName& tagName,
+                                      Document& document)
+    : HTMLElement(tagName, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLPreElement)
 
-bool HTMLPreElement::isPresentationAttribute(const QualifiedName& name) const
-{
-    if (name == wrapAttr)
-        return true;
-    return HTMLElement::isPresentationAttribute(name);
+bool HTMLPreElement::isPresentationAttribute(const QualifiedName& name) const {
+  if (name == wrapAttr)
+    return true;
+  return HTMLElement::isPresentationAttribute(name);
 }
 
-void HTMLPreElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    if (name == wrapAttr)
-        style->setProperty(CSSPropertyWhiteSpace, CSSValuePreWrap);
-    else
-        HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+void HTMLPreElement::collectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
+  if (name == wrapAttr)
+    style->setProperty(CSSPropertyWhiteSpace, CSSValuePreWrap);
+  else
+    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-} // namespace blink
+}  // namespace blink

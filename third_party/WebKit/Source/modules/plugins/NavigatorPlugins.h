@@ -15,30 +15,33 @@ class DOMPluginArray;
 class LocalFrame;
 class Navigator;
 
-class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>, public Supplement<Navigator>, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
-public:
-    static NavigatorPlugins& from(Navigator&);
-    static NavigatorPlugins* toNavigatorPlugins(Navigator&);
+class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
+                               public Supplement<Navigator>,
+                               public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
 
-    static DOMPluginArray* plugins(Navigator&);
-    static DOMMimeTypeArray* mimeTypes(Navigator&);
-    static bool javaEnabled(Navigator&);
+ public:
+  static NavigatorPlugins& from(Navigator&);
+  static NavigatorPlugins* toNavigatorPlugins(Navigator&);
 
-    DECLARE_VIRTUAL_TRACE();
+  static DOMPluginArray* plugins(Navigator&);
+  static DOMMimeTypeArray* mimeTypes(Navigator&);
+  static bool javaEnabled(Navigator&);
 
-private:
-    explicit NavigatorPlugins(Navigator&);
+  DECLARE_VIRTUAL_TRACE();
 
-    static const char* supplementName();
+ private:
+  explicit NavigatorPlugins(Navigator&);
 
-    DOMPluginArray* plugins(LocalFrame*) const;
-    DOMMimeTypeArray* mimeTypes(LocalFrame*) const;
+  static const char* supplementName();
 
-    mutable Member<DOMPluginArray> m_plugins;
-    mutable Member<DOMMimeTypeArray> m_mimeTypes;
+  DOMPluginArray* plugins(LocalFrame*) const;
+  DOMMimeTypeArray* mimeTypes(LocalFrame*) const;
+
+  mutable Member<DOMPluginArray> m_plugins;
+  mutable Member<DOMMimeTypeArray> m_mimeTypes;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorPlugins_h
+#endif  // NavigatorPlugins_h

@@ -26,35 +26,32 @@
 
 namespace blink {
 
-RTCDataChannelEvent* RTCDataChannelEvent::create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
-{
-    return new RTCDataChannelEvent(type, canBubble, cancelable, channel);
+RTCDataChannelEvent* RTCDataChannelEvent::create(const AtomicString& type,
+                                                 bool canBubble,
+                                                 bool cancelable,
+                                                 RTCDataChannel* channel) {
+  return new RTCDataChannelEvent(type, canBubble, cancelable, channel);
 }
 
-RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)
-    : Event(type, canBubble, cancelable)
-    , m_channel(channel)
-{
+RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,
+                                         bool canBubble,
+                                         bool cancelable,
+                                         RTCDataChannel* channel)
+    : Event(type, canBubble, cancelable), m_channel(channel) {}
+
+RTCDataChannelEvent::~RTCDataChannelEvent() {}
+
+RTCDataChannel* RTCDataChannelEvent::channel() const {
+  return m_channel.get();
 }
 
-RTCDataChannelEvent::~RTCDataChannelEvent()
-{
+const AtomicString& RTCDataChannelEvent::interfaceName() const {
+  return EventNames::RTCDataChannelEvent;
 }
 
-RTCDataChannel* RTCDataChannelEvent::channel() const
-{
-    return m_channel.get();
+DEFINE_TRACE(RTCDataChannelEvent) {
+  visitor->trace(m_channel);
+  Event::trace(visitor);
 }
 
-const AtomicString& RTCDataChannelEvent::interfaceName() const
-{
-    return EventNames::RTCDataChannelEvent;
-}
-
-DEFINE_TRACE(RTCDataChannelEvent)
-{
-    visitor->trace(m_channel);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

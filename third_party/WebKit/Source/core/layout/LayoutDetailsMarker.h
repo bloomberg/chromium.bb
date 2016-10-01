@@ -26,24 +26,26 @@
 namespace blink {
 
 class LayoutDetailsMarker final : public LayoutBlockFlow {
-public:
-    LayoutDetailsMarker(Element*);
+ public:
+  LayoutDetailsMarker(Element*);
 
-    enum Orientation { Up, Down, Left, Right };
+  enum Orientation { Up, Down, Left, Right };
 
-    Orientation getOrientation() const;
+  Orientation getOrientation() const;
 
-    const char* name() const override { return "LayoutDetailsMarker"; }
+  const char* name() const override { return "LayoutDetailsMarker"; }
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectDetailsMarker || LayoutBlockFlow::isOfType(type); }
-    void paint(const PaintInfo&, const LayoutPoint&) const override;
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectDetailsMarker || LayoutBlockFlow::isOfType(type);
+  }
+  void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    bool isOpen() const;
+  bool isOpen() const;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDetailsMarker, isDetailsMarker());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutDetailsMarker_h
+#endif  // LayoutDetailsMarker_h

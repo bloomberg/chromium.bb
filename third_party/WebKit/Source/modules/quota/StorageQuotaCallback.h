@@ -35,13 +35,14 @@
 
 namespace blink {
 
-class StorageQuotaCallback : public GarbageCollectedFinalized<StorageQuotaCallback> {
-public:
-    virtual ~StorageQuotaCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(unsigned long long grantedQuotaInBytes) = 0;
+class StorageQuotaCallback
+    : public GarbageCollectedFinalized<StorageQuotaCallback> {
+ public:
+  virtual ~StorageQuotaCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(unsigned long long grantedQuotaInBytes) = 0;
 };
 
-} // namespace
+}  // namespace
 
-#endif // StorageQuotaCallback_h
+#endif  // StorageQuotaCallback_h

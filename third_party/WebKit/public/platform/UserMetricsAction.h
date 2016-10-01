@@ -12,12 +12,13 @@ namespace blink {
 // WebKit equivalent to base::UserMetricsAction.  Included here so that it's
 // self-contained within WebKit.
 class UserMetricsAction : public WebNonCopyable {
-public:
-    explicit UserMetricsAction(const char* action) : m_action(action) {}
-    const char* action() const { return m_action; }
-private:
-    const char* const m_action;
+ public:
+  explicit UserMetricsAction(const char* action) : m_action(action) {}
+  const char* action() const { return m_action; }
+
+ private:
+  const char* const m_action;
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

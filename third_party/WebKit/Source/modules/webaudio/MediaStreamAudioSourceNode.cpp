@@ -32,145 +32,161 @@
 
 namespace blink {
 
-MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
-    : AudioHandler(NodeTypeMediaStreamAudioSource, node, node.context()->sampleRate())
-    , m_mediaStream(mediaStream)
-    , m_audioTrack(audioTrack)
-    , m_audioSourceProvider(std::move(audioSourceProvider))
-    , m_sourceNumberOfChannels(0)
-{
-    // Default to stereo. This could change depending on the format of the
-    // MediaStream's audio track.
-    addOutput(2);
+MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(
+    AudioNode& node,
+    MediaStream& mediaStream,
+    MediaStreamTrack* audioTrack,
+    std::unique_ptr<AudioSourceProvider> audioSourceProvider)
+    : AudioHandler(NodeTypeMediaStreamAudioSource,
+                   node,
+                   node.context()->sampleRate()),
+      m_mediaStream(mediaStream),
+      m_audioTrack(audioTrack),
+      m_audioSourceProvider(std::move(audioSourceProvider)),
+      m_sourceNumberOfChannels(0) {
+  // Default to stereo. This could change depending on the format of the
+  // MediaStream's audio track.
+  addOutput(2);
 
-    initialize();
+  initialize();
 }
 
-PassRefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::create(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
-{
-    return adoptRef(new MediaStreamAudioSourceHandler(node, mediaStream, audioTrack, std::move(audioSourceProvider)));
+PassRefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::create(
+    AudioNode& node,
+    MediaStream& mediaStream,
+    MediaStreamTrack* audioTrack,
+    std::unique_ptr<AudioSourceProvider> audioSourceProvider) {
+  return adoptRef(new MediaStreamAudioSourceHandler(
+      node, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
 
-MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler()
-{
-    uninitialize();
+MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler() {
+  uninitialize();
 }
 
-void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sourceSampleRate)
-{
-    if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != sampleRate()) {
-        // The sample-rate must be equal to the context's sample-rate.
-        if (!numberOfChannels || numberOfChannels > BaseAudioContext::maxNumberOfChannels() || sourceSampleRate != sampleRate()) {
-            // process() will generate silence for these uninitialized values.
-            DLOG(ERROR) << "setFormat(" << numberOfChannels << ", " << sourceSampleRate << ") - unhandled format change";
-            m_sourceNumberOfChannels = 0;
-            return;
-        }
-
-        // Synchronize with process().
-        MutexLocker locker(m_processLock);
-
-        m_sourceNumberOfChannels = numberOfChannels;
-
-        {
-            // The context must be locked when changing the number of output channels.
-            BaseAudioContext::AutoLocker contextLocker(context());
-
-            // Do any necesssary re-configuration to the output's number of channels.
-            output(0).setNumberOfChannels(numberOfChannels);
-        }
+void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels,
+                                              float sourceSampleRate) {
+  if (numberOfChannels != m_sourceNumberOfChannels ||
+      sourceSampleRate != sampleRate()) {
+    // The sample-rate must be equal to the context's sample-rate.
+    if (!numberOfChannels ||
+        numberOfChannels > BaseAudioContext::maxNumberOfChannels() ||
+        sourceSampleRate != sampleRate()) {
+      // process() will generate silence for these uninitialized values.
+      DLOG(ERROR) << "setFormat(" << numberOfChannels << ", "
+                  << sourceSampleRate << ") - unhandled format change";
+      m_sourceNumberOfChannels = 0;
+      return;
     }
+
+    // Synchronize with process().
+    MutexLocker locker(m_processLock);
+
+    m_sourceNumberOfChannels = numberOfChannels;
+
+    {
+      // The context must be locked when changing the number of output channels.
+      BaseAudioContext::AutoLocker contextLocker(context());
+
+      // Do any necesssary re-configuration to the output's number of channels.
+      output(0).setNumberOfChannels(numberOfChannels);
+    }
+  }
 }
 
-void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
-{
-    AudioBus* outputBus = output(0).bus();
+void MediaStreamAudioSourceHandler::process(size_t numberOfFrames) {
+  AudioBus* outputBus = output(0).bus();
 
-    if (!getAudioSourceProvider()) {
-        outputBus->zero();
-        return;
-    }
+  if (!getAudioSourceProvider()) {
+    outputBus->zero();
+    return;
+  }
 
-    if (!getMediaStream() || m_sourceNumberOfChannels != outputBus->numberOfChannels()) {
-        outputBus->zero();
-        return;
-    }
+  if (!getMediaStream() ||
+      m_sourceNumberOfChannels != outputBus->numberOfChannels()) {
+    outputBus->zero();
+    return;
+  }
 
-    // Use a tryLock() to avoid contention in the real-time audio thread.
-    // If we fail to acquire the lock then the MediaStream must be in the middle of
-    // a format change, so we output silence in this case.
-    MutexTryLocker tryLocker(m_processLock);
-    if (tryLocker.locked()) {
-        getAudioSourceProvider()->provideInput(outputBus, numberOfFrames);
-    } else {
-        // We failed to acquire the lock.
-        outputBus->zero();
-    }
+  // Use a tryLock() to avoid contention in the real-time audio thread.
+  // If we fail to acquire the lock then the MediaStream must be in the middle of
+  // a format change, so we output silence in this case.
+  MutexTryLocker tryLocker(m_processLock);
+  if (tryLocker.locked()) {
+    getAudioSourceProvider()->provideInput(outputBus, numberOfFrames);
+  } else {
+    // We failed to acquire the lock.
+    outputBus->zero();
+  }
 }
 
 // ----------------------------------------------------------------
 
-MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(BaseAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, std::unique_ptr<AudioSourceProvider> audioSourceProvider)
-    : AudioSourceNode(context)
-{
-    setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, std::move(audioSourceProvider)));
+MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(
+    BaseAudioContext& context,
+    MediaStream& mediaStream,
+    MediaStreamTrack* audioTrack,
+    std::unique_ptr<AudioSourceProvider> audioSourceProvider)
+    : AudioSourceNode(context) {
+  setHandler(MediaStreamAudioSourceHandler::create(
+      *this, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
 
-MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(BaseAudioContext& context, MediaStream& mediaStream, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(
+    BaseAudioContext& context,
+    MediaStream& mediaStream,
+    ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    if (context.isContextClosed()) {
-        context.throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
+  if (context.isContextClosed()) {
+    context.throwExceptionForClosedState(exceptionState);
+    return nullptr;
+  }
 
-    MediaStreamTrackVector audioTracks = mediaStream.getAudioTracks();
-    if (audioTracks.isEmpty()) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "MediaStream has no audio track");
-        return nullptr;
-    }
+  MediaStreamTrackVector audioTracks = mediaStream.getAudioTracks();
+  if (audioTracks.isEmpty()) {
+    exceptionState.throwDOMException(InvalidStateError,
+                                     "MediaStream has no audio track");
+    return nullptr;
+  }
 
-    // Use the first audio track in the media stream.
-    MediaStreamTrack* audioTrack = audioTracks[0];
-    std::unique_ptr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
+  // Use the first audio track in the media stream.
+  MediaStreamTrack* audioTrack = audioTracks[0];
+  std::unique_ptr<AudioSourceProvider> provider =
+      audioTrack->createWebAudioSource();
 
-    MediaStreamAudioSourceNode* node = new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, std::move(provider));
+  MediaStreamAudioSourceNode* node = new MediaStreamAudioSourceNode(
+      context, mediaStream, audioTrack, std::move(provider));
 
-    if (!node)
-        return nullptr;
+  if (!node)
+    return nullptr;
 
-    // TODO(hongchan): Only stereo streams are supported right now. We should be
-    // able to accept multi-channel streams.
-    node->setFormat(2, context.sampleRate());
-    // context keeps reference until node is disconnected
-    context.notifySourceNodeStartedProcessing(node);
+  // TODO(hongchan): Only stereo streams are supported right now. We should be
+  // able to accept multi-channel streams.
+  node->setFormat(2, context.sampleRate());
+  // context keeps reference until node is disconnected
+  context.notifySourceNodeStartedProcessing(node);
 
-    return node;
+  return node;
 }
 
-DEFINE_TRACE(MediaStreamAudioSourceNode)
-{
-    AudioSourceProviderClient::trace(visitor);
-    AudioSourceNode::trace(visitor);
+DEFINE_TRACE(MediaStreamAudioSourceNode) {
+  AudioSourceProviderClient::trace(visitor);
+  AudioSourceNode::trace(visitor);
 }
 
-MediaStreamAudioSourceHandler& MediaStreamAudioSourceNode::mediaStreamAudioSourceHandler() const
-{
-    return static_cast<MediaStreamAudioSourceHandler&>(handler());
+MediaStreamAudioSourceHandler&
+MediaStreamAudioSourceNode::mediaStreamAudioSourceHandler() const {
+  return static_cast<MediaStreamAudioSourceHandler&>(handler());
 }
 
-MediaStream* MediaStreamAudioSourceNode::getMediaStream() const
-{
-    return mediaStreamAudioSourceHandler().getMediaStream();
+MediaStream* MediaStreamAudioSourceNode::getMediaStream() const {
+  return mediaStreamAudioSourceHandler().getMediaStream();
 }
 
-void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels, float sourceSampleRate)
-{
-    mediaStreamAudioSourceHandler().setFormat(numberOfChannels, sourceSampleRate);
+void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels,
+                                           float sourceSampleRate) {
+  mediaStreamAudioSourceHandler().setFormat(numberOfChannels, sourceSampleRate);
 }
 
-} // namespace blink
-
+}  // namespace blink

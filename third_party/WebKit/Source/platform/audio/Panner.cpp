@@ -34,20 +34,20 @@
 
 namespace blink {
 
-std::unique_ptr<Panner> Panner::create(PanningModel model, float sampleRate, HRTFDatabaseLoader* databaseLoader)
-{
-    switch (model) {
+std::unique_ptr<Panner> Panner::create(PanningModel model,
+                                       float sampleRate,
+                                       HRTFDatabaseLoader* databaseLoader) {
+  switch (model) {
     case PanningModelEqualPower:
-        return wrapUnique(new EqualPowerPanner(sampleRate));
+      return wrapUnique(new EqualPowerPanner(sampleRate));
 
     case PanningModelHRTF:
-        return wrapUnique(new HRTFPanner(sampleRate, databaseLoader));
+      return wrapUnique(new HRTFPanner(sampleRate, databaseLoader));
 
     default:
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+      ASSERT_NOT_REACHED();
+      return nullptr;
+  }
 }
 
-} // namespace blink
-
+}  // namespace blink

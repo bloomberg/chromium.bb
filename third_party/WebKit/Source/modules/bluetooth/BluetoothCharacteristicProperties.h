@@ -14,44 +14,45 @@ namespace blink {
 // through a BluetoothCharacteristicProperties object. These properties express
 // what operations are valid on the characteristic.
 class BluetoothCharacteristicProperties final
-    : public GarbageCollected<BluetoothCharacteristicProperties>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static BluetoothCharacteristicProperties* create(uint32_t properties);
+    : public GarbageCollected<BluetoothCharacteristicProperties>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool broadcast() const;
-    bool read() const;
-    bool writeWithoutResponse() const;
-    bool write() const;
-    bool notify() const;
-    bool indicate() const;
-    bool authenticatedSignedWrites() const;
-    bool reliableWrite() const;
-    bool writableAuxiliaries() const;
+ public:
+  static BluetoothCharacteristicProperties* create(uint32_t properties);
 
-    DEFINE_INLINE_TRACE() { }
+  bool broadcast() const;
+  bool read() const;
+  bool writeWithoutResponse() const;
+  bool write() const;
+  bool notify() const;
+  bool indicate() const;
+  bool authenticatedSignedWrites() const;
+  bool reliableWrite() const;
+  bool writableAuxiliaries() const;
 
-private:
-    explicit BluetoothCharacteristicProperties(uint32_t properties);
+  DEFINE_INLINE_TRACE() {}
 
-    enum Property {
-        None = 0,
-        Broadcast = 1 << 0,
-        Read = 1 << 1,
-        WriteWithoutResponse = 1 << 2,
-        Write = 1 << 3,
-        Notify = 1 << 4,
-        Indicate = 1 << 5,
-        AuthenticatedSignedWrites = 1 << 6,
-        ExtendedProperties = 1 << 7, // Not used in class.
-        ReliableWrite = 1 << 8,
-        WritableAuxiliaries = 1 << 9,
-    };
+ private:
+  explicit BluetoothCharacteristicProperties(uint32_t properties);
 
-    uint32_t properties;
+  enum Property {
+    None = 0,
+    Broadcast = 1 << 0,
+    Read = 1 << 1,
+    WriteWithoutResponse = 1 << 2,
+    Write = 1 << 3,
+    Notify = 1 << 4,
+    Indicate = 1 << 5,
+    AuthenticatedSignedWrites = 1 << 6,
+    ExtendedProperties = 1 << 7,  // Not used in class.
+    ReliableWrite = 1 << 8,
+    WritableAuxiliaries = 1 << 9,
+  };
+
+  uint32_t properties;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GamepadButton_h
+#endif  // GamepadButton_h

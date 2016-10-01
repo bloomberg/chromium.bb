@@ -8,86 +8,92 @@
 
 namespace blink {
 
-CSSSupportsParser::SupportsResult CSSSupportsParser::supportsCondition(CSSParserTokenRange range, CSSParserImpl& parser)
-{
-    // FIXME: The spec allows leading whitespace in @supports but not CSS.supports,
-    // but major browser vendors allow it in CSS.supports also.
-    range.consumeWhitespace();
-    return CSSSupportsParser(parser).consumeCondition(range);
+CSSSupportsParser::SupportsResult CSSSupportsParser::supportsCondition(
+    CSSParserTokenRange range,
+    CSSParserImpl& parser) {
+  // FIXME: The spec allows leading whitespace in @supports but not CSS.supports,
+  // but major browser vendors allow it in CSS.supports also.
+  range.consumeWhitespace();
+  return CSSSupportsParser(parser).consumeCondition(range);
 }
 
 enum ClauseType { Unresolved, Conjunction, Disjunction };
 
-CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(CSSParserTokenRange range)
-{
-    if (range.peek().type() == IdentToken)
-        return consumeNegation(range);
+CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(
+    CSSParserTokenRange range) {
+  if (range.peek().type() == IdentToken)
+    return consumeNegation(range);
 
-    bool result;
-    ClauseType clauseType = Unresolved;
+  bool result;
+  ClauseType clauseType = Unresolved;
 
-    while (true) {
-        SupportsResult nextResult = consumeConditionInParenthesis(range);
-        if (nextResult == Invalid)
-            return Invalid;
-        bool nextSupported = nextResult;
-        if (clauseType == Unresolved)
-            result = nextSupported;
-        else if (clauseType == Conjunction)
-            result &= nextSupported;
-        else
-            result |= nextSupported;
+  while (true) {
+    SupportsResult nextResult = consumeConditionInParenthesis(range);
+    if (nextResult == Invalid)
+      return Invalid;
+    bool nextSupported = nextResult;
+    if (clauseType == Unresolved)
+      result = nextSupported;
+    else if (clauseType == Conjunction)
+      result &= nextSupported;
+    else
+      result |= nextSupported;
 
-        if (range.atEnd())
-            break;
-        if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
-            return Invalid;
-        if (range.atEnd())
-            break;
-
-        const CSSParserToken& token = range.consume();
-        if (token.type() != IdentToken)
-            return Invalid;
-        if (clauseType == Unresolved)
-            clauseType = token.value().length() == 3 ? Conjunction : Disjunction;
-        if ((clauseType == Conjunction && !equalIgnoringASCIICase(token.value(), "and"))
-            || (clauseType == Disjunction && !equalIgnoringASCIICase(token.value(), "or")))
-            return Invalid;
-
-        if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
-            return Invalid;
-    }
-    return result ? Supported : Unsupported;
-}
-
-CSSSupportsParser::SupportsResult CSSSupportsParser::consumeNegation(CSSParserTokenRange range)
-{
-    ASSERT(range.peek().type() == IdentToken);
-    if (!equalIgnoringASCIICase(range.consume().value(), "not"))
-        return Invalid;
+    if (range.atEnd())
+      break;
     if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
-        return Invalid;
-    SupportsResult result = consumeConditionInParenthesis(range);
-    range.consumeWhitespace();
-    if (!range.atEnd() || result == Invalid)
-        return Invalid;
-    return result ? Unsupported : Supported;
+      return Invalid;
+    if (range.atEnd())
+      break;
+
+    const CSSParserToken& token = range.consume();
+    if (token.type() != IdentToken)
+      return Invalid;
+    if (clauseType == Unresolved)
+      clauseType = token.value().length() == 3 ? Conjunction : Disjunction;
+    if ((clauseType == Conjunction &&
+         !equalIgnoringASCIICase(token.value(), "and")) ||
+        (clauseType == Disjunction &&
+         !equalIgnoringASCIICase(token.value(), "or")))
+      return Invalid;
+
+    if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
+      return Invalid;
+  }
+  return result ? Supported : Unsupported;
 }
 
-CSSSupportsParser::SupportsResult CSSSupportsParser::consumeConditionInParenthesis(CSSParserTokenRange& range)
-{
-    if (range.peek().type() == FunctionToken) {
-        range.consumeComponentValue();
-        return Unsupported;
-    }
-    if (range.peek().type() != LeftParenthesisToken)
-        return Invalid;
-    CSSParserTokenRange innerRange = range.consumeBlock();
-    innerRange.consumeWhitespace();
-    SupportsResult result = consumeCondition(innerRange);
-    if (result != Invalid)
-        return result;
-    return innerRange.peek().type() == IdentToken && m_parser.supportsDeclaration(innerRange) ? Supported : Unsupported;
+CSSSupportsParser::SupportsResult CSSSupportsParser::consumeNegation(
+    CSSParserTokenRange range) {
+  ASSERT(range.peek().type() == IdentToken);
+  if (!equalIgnoringASCIICase(range.consume().value(), "not"))
+    return Invalid;
+  if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
+    return Invalid;
+  SupportsResult result = consumeConditionInParenthesis(range);
+  range.consumeWhitespace();
+  if (!range.atEnd() || result == Invalid)
+    return Invalid;
+  return result ? Unsupported : Supported;
 }
 
-} // namespace blink
+CSSSupportsParser::SupportsResult
+CSSSupportsParser::consumeConditionInParenthesis(CSSParserTokenRange& range) {
+  if (range.peek().type() == FunctionToken) {
+    range.consumeComponentValue();
+    return Unsupported;
+  }
+  if (range.peek().type() != LeftParenthesisToken)
+    return Invalid;
+  CSSParserTokenRange innerRange = range.consumeBlock();
+  innerRange.consumeWhitespace();
+  SupportsResult result = consumeCondition(innerRange);
+  if (result != Invalid)
+    return result;
+  return innerRange.peek().type() == IdentToken &&
+                 m_parser.supportsDeclaration(innerRange)
+             ? Supported
+             : Unsupported;
+}
+
+}  // namespace blink

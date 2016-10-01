@@ -38,34 +38,32 @@ namespace blink {
 // WaveShaperProcessor is an AudioDSPKernelProcessor which uses WaveShaperDSPKernel objects to implement non-linear distortion effects.
 
 class WaveShaperProcessor final : public AudioDSPKernelProcessor {
-public:
-    enum OverSampleType {
-        OverSampleNone,
-        OverSample2x,
-        OverSample4x
-    };
+ public:
+  enum OverSampleType { OverSampleNone, OverSample2x, OverSample4x };
 
-    WaveShaperProcessor(float sampleRate, size_t numberOfChannels);
+  WaveShaperProcessor(float sampleRate, size_t numberOfChannels);
 
-    ~WaveShaperProcessor() override;
+  ~WaveShaperProcessor() override;
 
-    std::unique_ptr<AudioDSPKernel> createKernel() override;
+  std::unique_ptr<AudioDSPKernel> createKernel() override;
 
-    void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
+  void process(const AudioBus* source,
+               AudioBus* destination,
+               size_t framesToProcess) override;
 
-    void setCurve(const float* curveData, unsigned curveLength);
-    Vector<float>* curve() const { return m_curve.get(); };
+  void setCurve(const float* curveData, unsigned curveLength);
+  Vector<float>* curve() const { return m_curve.get(); };
 
-    void setOversample(OverSampleType);
-    OverSampleType oversample() const { return m_oversample; }
+  void setOversample(OverSampleType);
+  OverSampleType oversample() const { return m_oversample; }
 
-private:
-    // m_curve represents the non-linear shaping curve.
-    std::unique_ptr<Vector<float>> m_curve;
+ private:
+  // m_curve represents the non-linear shaping curve.
+  std::unique_ptr<Vector<float>> m_curve;
 
-    OverSampleType m_oversample;
+  OverSampleType m_oversample;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WaveShaperProcessor_h
+#endif  // WaveShaperProcessor_h

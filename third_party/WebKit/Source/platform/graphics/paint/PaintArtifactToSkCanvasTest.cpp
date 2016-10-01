@@ -33,214 +33,224 @@ static const int kCanvasWidth = 800;
 static const int kCanvasHeight = 600;
 
 class MockCanvas : public SkCanvas {
-public:
-    MockCanvas(int width, int height) : SkCanvas(width, height) {}
+ public:
+  MockCanvas(int width, int height) : SkCanvas(width, height) {}
 
-    MOCK_METHOD3(onDrawRect, void(const SkRect&, const SkPaint&, MockCanvas*));
-    MOCK_METHOD2(willSaveLayer, void(unsigned alpha, MockCanvas*));
+  MOCK_METHOD3(onDrawRect, void(const SkRect&, const SkPaint&, MockCanvas*));
+  MOCK_METHOD2(willSaveLayer, void(unsigned alpha, MockCanvas*));
 
-private:
-    void onDrawRect(const SkRect& rect, const SkPaint& paint) override
-    {
-        onDrawRect(rect, paint, this);
-    }
+ private:
+  void onDrawRect(const SkRect& rect, const SkPaint& paint) override {
+    onDrawRect(rect, paint, this);
+  }
 
-    SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override
-    {
-        willSaveLayer(rec.fPaint->getAlpha(), this);
-        return SaveLayerStrategy::kFullLayer_SaveLayerStrategy;
-    }
+  SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override {
+    willSaveLayer(rec.fPaint->getAlpha(), this);
+    return SaveLayerStrategy::kFullLayer_SaveLayerStrategy;
+  }
 };
 
 class PaintArtifactToSkCanvasTest : public ::testing::Test {
-protected:
-    void SetUp() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-    }
+ protected:
+  void SetUp() override {
+    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
+  }
 
-    void TearDown() override
-    {
-        m_featuresBackup.restore();
-    }
+  void TearDown() override { m_featuresBackup.restore(); }
 
-private:
-    RuntimeEnabledFeatures::Backup m_featuresBackup;
+ private:
+  RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
-TEST_F(PaintArtifactToSkCanvasTest, Empty)
-{
-    MockCanvas canvas(kCanvasWidth, kCanvasHeight);
-    EXPECT_CALL(canvas, onDrawRect(_, _, _)).Times(0);
+TEST_F(PaintArtifactToSkCanvasTest, Empty) {
+  MockCanvas canvas(kCanvasWidth, kCanvasHeight);
+  EXPECT_CALL(canvas, onDrawRect(_, _, _)).Times(0);
 
-    PaintArtifact artifact;
-    paintArtifactToSkCanvas(artifact, &canvas);
+  PaintArtifact artifact;
+  paintArtifactToSkCanvas(artifact, &canvas);
 }
 
-TEST_F(PaintArtifactToSkCanvasTest, OneChunkWithDrawingsInOrder)
-{
-    MockCanvas canvas(kCanvasWidth, kCanvasHeight);
-    {
-        testing::InSequence sequence;
-        EXPECT_CALL(canvas, onDrawRect(
-            SkRect::MakeXYWH(100, 100, 100, 100),
-            Property(&SkPaint::getColor, SK_ColorRED), _));
-        EXPECT_CALL(canvas, onDrawRect(
-            SkRect::MakeXYWH(100, 150, 300, 200),
-            Property(&SkPaint::getColor, SK_ColorBLUE), _));
-    }
+TEST_F(PaintArtifactToSkCanvasTest, OneChunkWithDrawingsInOrder) {
+  MockCanvas canvas(kCanvasWidth, kCanvasHeight);
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(canvas,
+                onDrawRect(SkRect::MakeXYWH(100, 100, 100, 100),
+                           Property(&SkPaint::getColor, SK_ColorRED), _));
+    EXPECT_CALL(canvas,
+                onDrawRect(SkRect::MakeXYWH(100, 150, 300, 200),
+                           Property(&SkPaint::getColor, SK_ColorBLUE), _));
+  }
 
-    TestPaintArtifact artifact;
-    artifact.chunk(PaintChunkProperties())
-        .rectDrawing(FloatRect(100, 100, 100, 100), SK_ColorRED)
-        .rectDrawing(FloatRect(100, 150, 300, 200), SK_ColorBLUE);
-    paintArtifactToSkCanvas(artifact.build(), &canvas);
+  TestPaintArtifact artifact;
+  artifact.chunk(PaintChunkProperties())
+      .rectDrawing(FloatRect(100, 100, 100, 100), SK_ColorRED)
+      .rectDrawing(FloatRect(100, 150, 300, 200), SK_ColorBLUE);
+  paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-TEST_F(PaintArtifactToSkCanvasTest, TransformCombining)
-{
-    // We expect a matrix which applies the inner translation to the points
-    // first, followed by the origin-adjusted scale.
-    SkMatrix adjustedScale;
-    adjustedScale.setTranslate(-10, -10);
-    adjustedScale.postScale(2, 2);
-    adjustedScale.postTranslate(10, 10);
-    SkMatrix combinedMatrix(adjustedScale);
-    combinedMatrix.preTranslate(5, 5);
-    MockCanvas canvas(kCanvasWidth, kCanvasHeight);
-    {
-        testing::InSequence sequence;
-        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED),
-            Pointee(Property(&SkCanvas::getTotalMatrix, adjustedScale))));
-        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorBLUE),
-            Pointee(Property(&SkCanvas::getTotalMatrix, combinedMatrix))));
-    }
+TEST_F(PaintArtifactToSkCanvasTest, TransformCombining) {
+  // We expect a matrix which applies the inner translation to the points
+  // first, followed by the origin-adjusted scale.
+  SkMatrix adjustedScale;
+  adjustedScale.setTranslate(-10, -10);
+  adjustedScale.postScale(2, 2);
+  adjustedScale.postTranslate(10, 10);
+  SkMatrix combinedMatrix(adjustedScale);
+  combinedMatrix.preTranslate(5, 5);
+  MockCanvas canvas(kCanvasWidth, kCanvasHeight);
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200),
+                                   Property(&SkPaint::getColor, SK_ColorRED),
+                                   Pointee(Property(&SkCanvas::getTotalMatrix,
+                                                    adjustedScale))));
+    EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200),
+                                   Property(&SkPaint::getColor, SK_ColorBLUE),
+                                   Pointee(Property(&SkCanvas::getTotalMatrix,
+                                                    combinedMatrix))));
+  }
 
-    // Build the transform tree.
-    TransformationMatrix matrix1;
-    matrix1.scale(2);
-    FloatPoint3D origin1(10, 10, 0);
-    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(nullptr, matrix1, origin1);
-    TransformationMatrix matrix2;
-    matrix2.translate(5, 5);
-    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(transform1, matrix2, FloatPoint3D());
+  // Build the transform tree.
+  TransformationMatrix matrix1;
+  matrix1.scale(2);
+  FloatPoint3D origin1(10, 10, 0);
+  RefPtr<TransformPaintPropertyNode> transform1 =
+      TransformPaintPropertyNode::create(nullptr, matrix1, origin1);
+  TransformationMatrix matrix2;
+  matrix2.translate(5, 5);
+  RefPtr<TransformPaintPropertyNode> transform2 =
+      TransformPaintPropertyNode::create(transform1, matrix2, FloatPoint3D());
 
-    TestPaintArtifact artifact;
-    artifact.chunk(transform1.get(), nullptr, nullptr)
-        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
-    artifact.chunk(transform2.get(), nullptr, nullptr)
-        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
-    paintArtifactToSkCanvas(artifact.build(), &canvas);
+  TestPaintArtifact artifact;
+  artifact.chunk(transform1.get(), nullptr, nullptr)
+      .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+  artifact.chunk(transform2.get(), nullptr, nullptr)
+      .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
+  paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-TEST_F(PaintArtifactToSkCanvasTest, OpacityEffectsCombining)
-{
-    unsigned expectedFirstOpacity = 127; // floor(0.5 * 255)
-    unsigned expectedSecondOpacity = 63; // floor(0.25 * 255)
-    MockCanvas canvas(kCanvasWidth, kCanvasHeight);
-    {
-        testing::InSequence sequence;
-        EXPECT_CALL(canvas, willSaveLayer(expectedFirstOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED), _));
-        EXPECT_CALL(canvas, willSaveLayer(expectedSecondOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorBLUE), _));
-    }
+TEST_F(PaintArtifactToSkCanvasTest, OpacityEffectsCombining) {
+  unsigned expectedFirstOpacity = 127;  // floor(0.5 * 255)
+  unsigned expectedSecondOpacity = 63;  // floor(0.25 * 255)
+  MockCanvas canvas(kCanvasWidth, kCanvasHeight);
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(canvas, willSaveLayer(expectedFirstOpacity, _));
+    EXPECT_CALL(canvas,
+                onDrawRect(SkRect::MakeWH(300, 200),
+                           Property(&SkPaint::getColor, SK_ColorRED), _));
+    EXPECT_CALL(canvas, willSaveLayer(expectedSecondOpacity, _));
+    EXPECT_CALL(canvas,
+                onDrawRect(SkRect::MakeWH(300, 200),
+                           Property(&SkPaint::getColor, SK_ColorBLUE), _));
+  }
 
-    // Build an opacity effect tree.
-    RefPtr<EffectPaintPropertyNode> opacityEffect1 = EffectPaintPropertyNode::create(nullptr, 0.5);
-    RefPtr<EffectPaintPropertyNode> opacityEffect2 = EffectPaintPropertyNode::create(opacityEffect1, 0.25);
+  // Build an opacity effect tree.
+  RefPtr<EffectPaintPropertyNode> opacityEffect1 =
+      EffectPaintPropertyNode::create(nullptr, 0.5);
+  RefPtr<EffectPaintPropertyNode> opacityEffect2 =
+      EffectPaintPropertyNode::create(opacityEffect1, 0.25);
 
-    TestPaintArtifact artifact;
-    artifact.chunk(nullptr, nullptr, opacityEffect1.get())
-        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
-    artifact.chunk(nullptr, nullptr, opacityEffect2.get())
-        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
-    paintArtifactToSkCanvas(artifact.build(), &canvas);
+  TestPaintArtifact artifact;
+  artifact.chunk(nullptr, nullptr, opacityEffect1.get())
+      .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+  artifact.chunk(nullptr, nullptr, opacityEffect2.get())
+      .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
+  paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-TEST_F(PaintArtifactToSkCanvasTest, ChangingOpacityEffects)
-{
-    unsigned expectedAOpacity = 25; // floor(0.1 * 255)
-    unsigned expectedBOpacity = 51; // floor(0.2 * 255)
-    unsigned expectedCOpacity = 76; // floor(0.3 * 255)
-    unsigned expectedDOpacity = 102; // floor(0.4 * 255)
-    MockCanvas canvas(kCanvasWidth, kCanvasHeight);
-    {
-        testing::InSequence sequence;
-        EXPECT_CALL(canvas, willSaveLayer(expectedAOpacity, _));
-        EXPECT_CALL(canvas, willSaveLayer(expectedBOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED), _));
-        EXPECT_CALL(canvas, willSaveLayer(expectedCOpacity, _));
-        EXPECT_CALL(canvas, willSaveLayer(expectedDOpacity, _));
-        EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorBLUE), _));
-    }
+TEST_F(PaintArtifactToSkCanvasTest, ChangingOpacityEffects) {
+  unsigned expectedAOpacity = 25;   // floor(0.1 * 255)
+  unsigned expectedBOpacity = 51;   // floor(0.2 * 255)
+  unsigned expectedCOpacity = 76;   // floor(0.3 * 255)
+  unsigned expectedDOpacity = 102;  // floor(0.4 * 255)
+  MockCanvas canvas(kCanvasWidth, kCanvasHeight);
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(canvas, willSaveLayer(expectedAOpacity, _));
+    EXPECT_CALL(canvas, willSaveLayer(expectedBOpacity, _));
+    EXPECT_CALL(canvas,
+                onDrawRect(SkRect::MakeWH(300, 200),
+                           Property(&SkPaint::getColor, SK_ColorRED), _));
+    EXPECT_CALL(canvas, willSaveLayer(expectedCOpacity, _));
+    EXPECT_CALL(canvas, willSaveLayer(expectedDOpacity, _));
+    EXPECT_CALL(canvas,
+                onDrawRect(SkRect::MakeWH(300, 200),
+                           Property(&SkPaint::getColor, SK_ColorBLUE), _));
+  }
 
-    // Build an opacity effect tree with the following structure:
-    //       _root_
-    //      |      |
-    // 0.1  a      c  0.3
-    //      |      |
-    // 0.2  b      d  0.4
-    RefPtr<EffectPaintPropertyNode> opacityEffectA = EffectPaintPropertyNode::create(nullptr, 0.1);
-    RefPtr<EffectPaintPropertyNode> opacityEffectB = EffectPaintPropertyNode::create(opacityEffectA, 0.2);
-    RefPtr<EffectPaintPropertyNode> opacityEffectC = EffectPaintPropertyNode::create(nullptr, 0.3);
-    RefPtr<EffectPaintPropertyNode> opacityEffectD = EffectPaintPropertyNode::create(opacityEffectC, 0.4);
+  // Build an opacity effect tree with the following structure:
+  //       _root_
+  //      |      |
+  // 0.1  a      c  0.3
+  //      |      |
+  // 0.2  b      d  0.4
+  RefPtr<EffectPaintPropertyNode> opacityEffectA =
+      EffectPaintPropertyNode::create(nullptr, 0.1);
+  RefPtr<EffectPaintPropertyNode> opacityEffectB =
+      EffectPaintPropertyNode::create(opacityEffectA, 0.2);
+  RefPtr<EffectPaintPropertyNode> opacityEffectC =
+      EffectPaintPropertyNode::create(nullptr, 0.3);
+  RefPtr<EffectPaintPropertyNode> opacityEffectD =
+      EffectPaintPropertyNode::create(opacityEffectC, 0.4);
 
-    // Build a two-chunk artifact directly.
-    // chunk1 references opacity node b, chunk2 references opacity node d.
-    TestPaintArtifact artifact;
-    artifact.chunk(nullptr, nullptr, opacityEffectB.get())
-        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
-    artifact.chunk(nullptr, nullptr, opacityEffectD.get())
-        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
-    paintArtifactToSkCanvas(artifact.build(), &canvas);
+  // Build a two-chunk artifact directly.
+  // chunk1 references opacity node b, chunk2 references opacity node d.
+  TestPaintArtifact artifact;
+  artifact.chunk(nullptr, nullptr, opacityEffectB.get())
+      .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+  artifact.chunk(nullptr, nullptr, opacityEffectD.get())
+      .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorBLUE);
+  paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-static SkRegion getCanvasClipAsRegion(SkCanvas* canvas)
-{
-    SkIRect clipRect;
-    canvas->getClipDeviceBounds(&clipRect);
+static SkRegion getCanvasClipAsRegion(SkCanvas* canvas) {
+  SkIRect clipRect;
+  canvas->getClipDeviceBounds(&clipRect);
 
-    SkRegion clipRegion;
-    clipRegion.setRect(clipRect);
-    return clipRegion;
+  SkRegion clipRegion;
+  clipRegion.setRect(clipRect);
+  return clipRegion;
 }
 
-TEST_F(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping)
-{
-    // The setup is to simulate scenario similar to this html:
-    // <div style="position:absolute; left:0; top:0; clip:rect(200px,200px,300px,100px);">
-    //     <div style="position:fixed; left:150px; top:150px; width:100px; height:100px; overflow:hidden;">
-    //         client1
-    //     </div>
-    // </div>
-    // <script>scrollTo(0, 100)</script>
-    // The content itself will not be scrolled due to fixed positioning,
-    // but will be affected by some scrolled clip.
+TEST_F(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping) {
+  // The setup is to simulate scenario similar to this html:
+  // <div style="position:absolute; left:0; top:0; clip:rect(200px,200px,300px,100px);">
+  //     <div style="position:fixed; left:150px; top:150px; width:100px; height:100px; overflow:hidden;">
+  //         client1
+  //     </div>
+  // </div>
+  // <script>scrollTo(0, 100)</script>
+  // The content itself will not be scrolled due to fixed positioning,
+  // but will be affected by some scrolled clip.
 
-    // Setup transform tree.
-    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(
-        nullptr, TransformationMatrix().translate(0, -100), FloatPoint3D());
+  // Setup transform tree.
+  RefPtr<TransformPaintPropertyNode> transform1 =
+      TransformPaintPropertyNode::create(
+          nullptr, TransformationMatrix().translate(0, -100), FloatPoint3D());
 
-    // Setup clip tree.
-    RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
-        nullptr, transform1.get(), FloatRoundedRect(100, 200, 100, 100));
-    RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
-        clip1, nullptr, FloatRoundedRect(150, 150, 100, 100));
+  // Setup clip tree.
+  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::create(
+      nullptr, transform1.get(), FloatRoundedRect(100, 200, 100, 100));
+  RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
+      clip1, nullptr, FloatRoundedRect(150, 150, 100, 100));
 
-    MockCanvas canvas(kCanvasWidth, kCanvasHeight);
+  MockCanvas canvas(kCanvasWidth, kCanvasHeight);
 
-    SkRegion totalClip;
-    totalClip.setRect(SkIRect::MakeXYWH(100, 100, 100, 100));
-    totalClip.op(SkIRect::MakeXYWH(150, 150, 100, 100), SkRegion::kIntersect_Op);
-    EXPECT_CALL(canvas, onDrawRect(SkRect::MakeWH(300, 200), Property(&SkPaint::getColor, SK_ColorRED),
-        ResultOf(&getCanvasClipAsRegion, Eq(totalClip))));
+  SkRegion totalClip;
+  totalClip.setRect(SkIRect::MakeXYWH(100, 100, 100, 100));
+  totalClip.op(SkIRect::MakeXYWH(150, 150, 100, 100), SkRegion::kIntersect_Op);
+  EXPECT_CALL(canvas,
+              onDrawRect(SkRect::MakeWH(300, 200),
+                         Property(&SkPaint::getColor, SK_ColorRED),
+                         ResultOf(&getCanvasClipAsRegion, Eq(totalClip))));
 
-    TestPaintArtifact artifact;
-    artifact.chunk(nullptr, clip2.get(), nullptr)
-        .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
-    paintArtifactToSkCanvas(artifact.build(), &canvas);
+  TestPaintArtifact artifact;
+  artifact.chunk(nullptr, clip2.get(), nullptr)
+      .rectDrawing(FloatRect(0, 0, 300, 200), SK_ColorRED);
+  paintArtifactToSkCanvas(artifact.build(), &canvas);
 }
 
-} // namespace
-} // namespace blink
+}  // namespace
+}  // namespace blink

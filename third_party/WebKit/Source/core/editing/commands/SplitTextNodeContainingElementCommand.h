@@ -30,24 +30,24 @@
 
 namespace blink {
 
-class SplitTextNodeContainingElementCommand final : public CompositeEditCommand {
-public:
-    static SplitTextNodeContainingElementCommand* create(Text* node, int offset)
-    {
-        return new SplitTextNodeContainingElementCommand(node, offset);
-    }
+class SplitTextNodeContainingElementCommand final
+    : public CompositeEditCommand {
+ public:
+  static SplitTextNodeContainingElementCommand* create(Text* node, int offset) {
+    return new SplitTextNodeContainingElementCommand(node, offset);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    SplitTextNodeContainingElementCommand(Text*, int offset);
+ private:
+  SplitTextNodeContainingElementCommand(Text*, int offset);
 
-    void doApply(EditingState*) override;
+  void doApply(EditingState*) override;
 
-    Member<Text> m_text;
-    int m_offset;
+  Member<Text> m_text;
+  int m_offset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SplitTextNodeContainingElementCommand_h
+#endif  // SplitTextNodeContainingElementCommand_h

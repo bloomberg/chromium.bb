@@ -40,49 +40,50 @@ namespace blink {
 // or <flex>. This class avoids spreading the knowledge of <flex> throughout the layout directory by adding
 // an new unit to Length.h.
 class GridLength {
-    DISALLOW_NEW();
-public:
-    GridLength(const Length& length)
-        : m_length(length)
-        , m_flex(0)
-        , m_type(LengthType)
-    {
-    }
+  DISALLOW_NEW();
 
-    explicit GridLength(double flex)
-        : m_flex(flex)
-        , m_type(FlexType)
-    {
-    }
+ public:
+  GridLength(const Length& length)
+      : m_length(length), m_flex(0), m_type(LengthType) {}
 
-    bool isLength() const { return m_type == LengthType; }
-    bool isFlex() const { return m_type == FlexType; }
+  explicit GridLength(double flex) : m_flex(flex), m_type(FlexType) {}
 
-    const Length& length() const { ASSERT(isLength()); return m_length; }
+  bool isLength() const { return m_type == LengthType; }
+  bool isFlex() const { return m_type == FlexType; }
 
-    double flex() const { ASSERT(isFlex()); return m_flex; }
+  const Length& length() const {
+    ASSERT(isLength());
+    return m_length;
+  }
 
-    bool hasPercentage() const { return m_type == LengthType && m_length.isPercentOrCalc(); }
+  double flex() const {
+    ASSERT(isFlex());
+    return m_flex;
+  }
 
-    bool operator==(const GridLength& o) const
-    {
-        return m_length == o.m_length && m_flex == o.m_flex && m_type == o.m_type;
-    }
+  bool hasPercentage() const {
+    return m_type == LengthType && m_length.isPercentOrCalc();
+  }
 
-    bool isContentSized() const { return m_type == LengthType && (m_length.isAuto() || m_length.isMinContent() || m_length.isMaxContent()); }
+  bool operator==(const GridLength& o) const {
+    return m_length == o.m_length && m_flex == o.m_flex && m_type == o.m_type;
+  }
 
-private:
-    // Ideally we would put the 2 following fields in a union, but Length has a constructor,
-    // a destructor and a copy assignment which isn't allowed.
-    Length m_length;
-    double m_flex;
-    enum GridLengthType {
-        LengthType,
-        FlexType
-    };
-    GridLengthType m_type;
+  bool isContentSized() const {
+    return m_type == LengthType &&
+           (m_length.isAuto() || m_length.isMinContent() ||
+            m_length.isMaxContent());
+  }
+
+ private:
+  // Ideally we would put the 2 following fields in a union, but Length has a constructor,
+  // a destructor and a copy assignment which isn't allowed.
+  Length m_length;
+  double m_flex;
+  enum GridLengthType { LengthType, FlexType };
+  GridLengthType m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GridLength_h
+#endif  // GridLength_h

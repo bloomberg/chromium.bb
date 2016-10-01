@@ -8,4 +8,4 @@
 #include "core/events/Event.h"
 #include "modules/EventModulesNames.h"
 
-#endif // EventModules_h
+#endif  // EventModules_h

@@ -16,18 +16,23 @@ namespace blink {
 
 // Blink interface for base::HistogramTester.
 class HistogramTester {
-public:
-    HistogramTester();
-    ~HistogramTester();
+ public:
+  HistogramTester();
+  ~HistogramTester();
 
-    void expectUniqueSample(const std::string& name, base::HistogramBase::Sample, base::HistogramBase::Count) const;
-    void expectBucketCount(const std::string& name, base::HistogramBase::Sample, base::HistogramBase::Count) const;
-    void expectTotalCount(const std::string& name, base::HistogramBase::Count) const;
+  void expectUniqueSample(const std::string& name,
+                          base::HistogramBase::Sample,
+                          base::HistogramBase::Count) const;
+  void expectBucketCount(const std::string& name,
+                         base::HistogramBase::Sample,
+                         base::HistogramBase::Count) const;
+  void expectTotalCount(const std::string& name,
+                        base::HistogramBase::Count) const;
 
-private:
-    std::unique_ptr<base::HistogramTester> m_histogramTester;
+ private:
+  std::unique_ptr<base::HistogramTester> m_histogramTester;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HistogramTester_h
+#endif  // HistogramTester_h

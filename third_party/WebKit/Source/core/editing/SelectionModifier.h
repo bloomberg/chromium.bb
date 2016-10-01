@@ -34,57 +34,64 @@
 namespace blink {
 
 class SelectionModifier {
-    STACK_ALLOCATED();
-public:
-    using EAlteration = FrameSelection::EAlteration;
-    using VerticalDirection = FrameSelection::VerticalDirection;
+  STACK_ALLOCATED();
 
-    // |frame| is used for providing settings.
-    SelectionModifier(const LocalFrame& /* frame */, const VisibleSelection&, LayoutUnit);
-    SelectionModifier(const LocalFrame&, const VisibleSelection&);
+ public:
+  using EAlteration = FrameSelection::EAlteration;
+  using VerticalDirection = FrameSelection::VerticalDirection;
 
-    LayoutUnit xPosForVerticalArrowNavigation() const { return m_xPosForVerticalArrowNavigation; }
-    const VisibleSelection& selection() const { return m_selection; }
+  // |frame| is used for providing settings.
+  SelectionModifier(const LocalFrame& /* frame */,
+                    const VisibleSelection&,
+                    LayoutUnit);
+  SelectionModifier(const LocalFrame&, const VisibleSelection&);
 
-    bool modify(EAlteration, SelectionDirection, TextGranularity);
-    bool modifyWithPageGranularity(EAlteration, unsigned verticalDistance, VerticalDirection);
+  LayoutUnit xPosForVerticalArrowNavigation() const {
+    return m_xPosForVerticalArrowNavigation;
+  }
+  const VisibleSelection& selection() const { return m_selection; }
 
-    DECLARE_VIRTUAL_TRACE();
+  bool modify(EAlteration, SelectionDirection, TextGranularity);
+  bool modifyWithPageGranularity(EAlteration,
+                                 unsigned verticalDistance,
+                                 VerticalDirection);
 
-private:
-    // TODO(yosin): We should move |EPositionType| to "SelectionModifier.cpp",
-    // it is only used for implementing |modify()|.
-    // TODO(yosin) We should use capitalized name for |EPositionType|.
-    enum EPositionType { START, END, BASE, EXTENT }; // NOLINT
+  DECLARE_VIRTUAL_TRACE();
 
-    LocalFrame* frame() const { return m_frame; }
+ private:
+  // TODO(yosin): We should move |EPositionType| to "SelectionModifier.cpp",
+  // it is only used for implementing |modify()|.
+  // TODO(yosin) We should use capitalized name for |EPositionType|.
+  enum EPositionType { START, END, BASE, EXTENT };  // NOLINT
 
-    TextDirection directionOfEnclosingBlock() const;
-    TextDirection directionOfSelection() const;
-    VisiblePosition positionForPlatform(bool isGetStart) const;
-    VisiblePosition startForPlatform() const;
-    VisiblePosition endForPlatform() const;
-    LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
-    VisiblePosition modifyExtendingRight(TextGranularity);
-    VisiblePosition modifyExtendingForward(TextGranularity);
-    VisiblePosition modifyMovingRight(TextGranularity);
-    VisiblePosition modifyMovingForward(TextGranularity);
-    VisiblePosition modifyExtendingLeft(TextGranularity);
-    VisiblePosition modifyExtendingBackward(TextGranularity);
-    VisiblePosition modifyMovingLeft(TextGranularity);
-    VisiblePosition modifyMovingBackward(TextGranularity);
-    VisiblePosition nextWordPositionForPlatform(const VisiblePosition&);
-    void willBeModified(EAlteration, SelectionDirection);
+  LocalFrame* frame() const { return m_frame; }
 
-    Member<LocalFrame> m_frame;
-    VisibleSelection m_selection;
-    LayoutUnit m_xPosForVerticalArrowNavigation;
+  TextDirection directionOfEnclosingBlock() const;
+  TextDirection directionOfSelection() const;
+  VisiblePosition positionForPlatform(bool isGetStart) const;
+  VisiblePosition startForPlatform() const;
+  VisiblePosition endForPlatform() const;
+  LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
+  VisiblePosition modifyExtendingRight(TextGranularity);
+  VisiblePosition modifyExtendingForward(TextGranularity);
+  VisiblePosition modifyMovingRight(TextGranularity);
+  VisiblePosition modifyMovingForward(TextGranularity);
+  VisiblePosition modifyExtendingLeft(TextGranularity);
+  VisiblePosition modifyExtendingBackward(TextGranularity);
+  VisiblePosition modifyMovingLeft(TextGranularity);
+  VisiblePosition modifyMovingBackward(TextGranularity);
+  VisiblePosition nextWordPositionForPlatform(const VisiblePosition&);
+  void willBeModified(EAlteration, SelectionDirection);
 
-    DISALLOW_COPY_AND_ASSIGN(SelectionModifier);
+  Member<LocalFrame> m_frame;
+  VisibleSelection m_selection;
+  LayoutUnit m_xPosForVerticalArrowNavigation;
+
+  DISALLOW_COPY_AND_ASSIGN(SelectionModifier);
 };
 
 LayoutUnit NoXPosForVerticalArrowNavigation();
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SelectionModifier_h
+#endif  // SelectionModifier_h

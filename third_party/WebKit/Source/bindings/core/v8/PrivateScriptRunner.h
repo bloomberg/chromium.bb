@@ -16,14 +16,31 @@ class Document;
 class ScriptState;
 
 class CORE_EXPORT PrivateScriptRunner {
-    STATIC_ONLY(PrivateScriptRunner);
-public:
-    static v8::Local<v8::Value> installClassIfNeeded(Document*, String className);
-    static v8::Local<v8::Value> runDOMAttributeGetter(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Local<v8::Value> holder);
-    static bool runDOMAttributeSetter(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Local<v8::Value> holder, v8::Local<v8::Value> v8Value);
-    static v8::Local<v8::Value> runDOMMethod(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* methodName, v8::Local<v8::Value> holder, int argc, v8::Local<v8::Value> argv[]);
+  STATIC_ONLY(PrivateScriptRunner);
+
+ public:
+  static v8::Local<v8::Value> installClassIfNeeded(Document*, String className);
+  static v8::Local<v8::Value> runDOMAttributeGetter(
+      ScriptState*,
+      ScriptState* scriptStateInUserScript,
+      const char* className,
+      const char* attributeName,
+      v8::Local<v8::Value> holder);
+  static bool runDOMAttributeSetter(ScriptState*,
+                                    ScriptState* scriptStateInUserScript,
+                                    const char* className,
+                                    const char* attributeName,
+                                    v8::Local<v8::Value> holder,
+                                    v8::Local<v8::Value> v8Value);
+  static v8::Local<v8::Value> runDOMMethod(ScriptState*,
+                                           ScriptState* scriptStateInUserScript,
+                                           const char* className,
+                                           const char* methodName,
+                                           v8::Local<v8::Value> holder,
+                                           int argc,
+                                           v8::Local<v8::Value> argv[]);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8PrivateScriptRunner_h
+#endif  // V8PrivateScriptRunner_h

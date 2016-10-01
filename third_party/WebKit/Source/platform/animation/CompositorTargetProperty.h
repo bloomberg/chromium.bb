@@ -11,6 +11,6 @@ namespace blink {
 
 namespace CompositorTargetProperty = cc::TargetProperty;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorTargetProperty_h
+#endif  // CompositorTargetProperty_h

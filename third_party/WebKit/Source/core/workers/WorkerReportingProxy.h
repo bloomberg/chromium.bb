@@ -45,46 +45,53 @@ class WorkerOrWorkletGlobalScope;
 
 // APIs used by workers to report console and worker activity.
 class CORE_EXPORT WorkerReportingProxy {
-public:
-    virtual ~WorkerReportingProxy() { }
+ public:
+  virtual ~WorkerReportingProxy() {}
 
-    virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) = 0;
-    virtual void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) = 0;
-    virtual void postMessageToPageInspector(const String&) = 0;
+  virtual void reportException(const String& errorMessage,
+                               std::unique_ptr<SourceLocation>,
+                               int exceptionId) = 0;
+  virtual void reportConsoleMessage(MessageSource,
+                                    MessageLevel,
+                                    const String& message,
+                                    SourceLocation*) = 0;
+  virtual void postMessageToPageInspector(const String&) = 0;
 
-    // Invoked when the new WorkerGlobalScope is created. This is called after
-    // didLoadWorkerScript().
-    virtual void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) { }
+  // Invoked when the new WorkerGlobalScope is created. This is called after
+  // didLoadWorkerScript().
+  virtual void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) {}
 
-    // Invoked when the WorkerGlobalScope is initialized. This is called after
-    // didCreateWorkerGlobalScope().
-    virtual void didInitializeWorkerContext() { }
+  // Invoked when the WorkerGlobalScope is initialized. This is called after
+  // didCreateWorkerGlobalScope().
+  virtual void didInitializeWorkerContext() {}
 
-    // Invoked when the worker script is about to be evaluated. This is called
-    // after didInitializeWorkerContext().
-    virtual void willEvaluateWorkerScript(size_t scriptSize, size_t cachedMetadataSize) { }
+  // Invoked when the worker script is about to be evaluated. This is called
+  // after didInitializeWorkerContext().
+  virtual void willEvaluateWorkerScript(size_t scriptSize,
+                                        size_t cachedMetadataSize) {}
 
-    // Invoked when an imported script is about to be evaluated. This is called
-    // after willEvaluateWorkerScript().
-    virtual void willEvaluateImportedScript(size_t scriptSize, size_t cachedMetadataSize) { }
+  // Invoked when an imported script is about to be evaluated. This is called
+  // after willEvaluateWorkerScript().
+  virtual void willEvaluateImportedScript(size_t scriptSize,
+                                          size_t cachedMetadataSize) {}
 
-    // Invoked when the worker script is evaluated. |success| is true if the
-    // evaluation completed with no uncaught exception.
-    virtual void didEvaluateWorkerScript(bool success) = 0;
+  // Invoked when the worker script is evaluated. |success| is true if the
+  // evaluation completed with no uncaught exception.
+  virtual void didEvaluateWorkerScript(bool success) = 0;
 
-    // Invoked when close() is invoked on the worker context.
-    virtual void didCloseWorkerGlobalScope() = 0;
+  // Invoked when close() is invoked on the worker context.
+  virtual void didCloseWorkerGlobalScope() = 0;
 
-    // Invoked when the thread is about to be stopped and WorkerGlobalScope
-    // is to be destructed. When this is called, it is guaranteed that
-    // WorkerGlobalScope is still alive.
-    virtual void willDestroyWorkerGlobalScope() = 0;
+  // Invoked when the thread is about to be stopped and WorkerGlobalScope
+  // is to be destructed. When this is called, it is guaranteed that
+  // WorkerGlobalScope is still alive.
+  virtual void willDestroyWorkerGlobalScope() = 0;
 
-    // Invoked when the thread is stopped and WorkerGlobalScope is being
-    // destructed. This is the last method that is called on this interface.
-    virtual void didTerminateWorkerThread() = 0;
+  // Invoked when the thread is stopped and WorkerGlobalScope is being
+  // destructed. This is the last method that is called on this interface.
+  virtual void didTerminateWorkerThread() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerReportingProxy_h
+#endif  // WorkerReportingProxy_h

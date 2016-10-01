@@ -37,47 +37,43 @@
 
 namespace blink {
 
-class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>, public CanvasPathMethods, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(Path2D);
-public:
-    static Path2D* create() { return new Path2D; }
-    static Path2D* create(const String& pathData) { return new Path2D(pathData); }
-    static Path2D* create(Path2D* path) { return new Path2D(path); }
-    static Path2D* create(const Path& path) { return new Path2D(path); }
+class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>,
+                                    public CanvasPathMethods,
+                                    public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+  WTF_MAKE_NONCOPYABLE(Path2D);
 
-    const Path& path() const { return m_path; }
+ public:
+  static Path2D* create() { return new Path2D; }
+  static Path2D* create(const String& pathData) { return new Path2D(pathData); }
+  static Path2D* create(Path2D* path) { return new Path2D(path); }
+  static Path2D* create(const Path& path) { return new Path2D(path); }
 
-    void addPath(Path2D* path)
-    {
-        addPath(path, 0);
-    }
+  const Path& path() const { return m_path; }
 
-    void addPath(Path2D* path, SVGMatrixTearOff* transform)
-    {
-        Path src = path->path();
-        m_path.addPath(src, transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0));
-    }
+  void addPath(Path2D* path) { addPath(path, 0); }
 
-    ~Path2D() override { }
-    DEFINE_INLINE_TRACE() { }
+  void addPath(Path2D* path, SVGMatrixTearOff* transform) {
+    Path src = path->path();
+    m_path.addPath(src, transform ? transform->value()
+                                  : AffineTransform(1, 0, 0, 1, 0, 0));
+  }
 
-private:
-    Path2D() : CanvasPathMethods() { }
+  ~Path2D() override {}
+  DEFINE_INLINE_TRACE() {}
 
-    Path2D(const Path& path)
-        : CanvasPathMethods(path) { }
+ private:
+  Path2D() : CanvasPathMethods() {}
 
-    Path2D(Path2D* path)
-        : CanvasPathMethods(path->path()) { }
+  Path2D(const Path& path) : CanvasPathMethods(path) {}
 
-    Path2D(const String& pathData)
-        : CanvasPathMethods()
-    {
-        buildPathFromString(pathData, m_path);
-    }
+  Path2D(Path2D* path) : CanvasPathMethods(path->path()) {}
+
+  Path2D(const String& pathData) : CanvasPathMethods() {
+    buildPathFromString(pathData, m_path);
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Path2D_h
+#endif  // Path2D_h

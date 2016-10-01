@@ -11,6 +11,6 @@ namespace blink {
 // webkit_unit_tests. It should be called in LLVMFuzzerInitialize.
 void InitializeBlinkFuzzTest(int* argc, char*** argv);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BlinkFuzzerTestSupport_h
+#endif  // BlinkFuzzerTestSupport_h

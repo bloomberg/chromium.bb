@@ -11,65 +11,64 @@
 
 namespace blink {
 
-DOMTimerCoordinator::DOMTimerCoordinator(std::unique_ptr<WebTaskRunner> timerTaskRunner)
-    : m_circularSequentialID(0)
-    , m_timerNestingLevel(0)
-    , m_timerTaskRunner(std::move(timerTaskRunner))
-{
+DOMTimerCoordinator::DOMTimerCoordinator(
+    std::unique_ptr<WebTaskRunner> timerTaskRunner)
+    : m_circularSequentialID(0),
+      m_timerNestingLevel(0),
+      m_timerTaskRunner(std::move(timerTaskRunner)) {}
+
+int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context,
+                                           ScheduledAction* action,
+                                           int timeout,
+                                           bool singleShot) {
+  // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
+  ASSERT(context->timers() == this);
+  int timeoutID = nextID();
+  TimeoutMap::AddResult result = m_timers.add(
+      timeoutID,
+      DOMTimer::create(context, action, timeout, singleShot, timeoutID));
+  ASSERT(result.isNewEntry);
+  DOMTimer* timer = result.storedValue->value.get();
+
+  timer->suspendIfNeeded();
+
+  return timeoutID;
 }
 
-int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context, ScheduledAction* action, int timeout, bool singleShot)
-{
-    // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
-    ASSERT(context->timers() == this);
-    int timeoutID = nextID();
-    TimeoutMap::AddResult result = m_timers.add(timeoutID, DOMTimer::create(context, action, timeout, singleShot, timeoutID));
-    ASSERT(result.isNewEntry);
-    DOMTimer* timer = result.storedValue->value.get();
+DOMTimer* DOMTimerCoordinator::removeTimeoutByID(int timeoutID) {
+  if (timeoutID <= 0)
+    return nullptr;
 
-    timer->suspendIfNeeded();
+  DOMTimer* removedTimer = m_timers.take(timeoutID);
+  if (removedTimer)
+    removedTimer->disposeTimer();
 
-    return timeoutID;
+  return removedTimer;
 }
 
-DOMTimer* DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
-{
-    if (timeoutID <= 0)
-        return nullptr;
-
-    DOMTimer* removedTimer = m_timers.take(timeoutID);
-    if (removedTimer)
-        removedTimer->disposeTimer();
-
-    return removedTimer;
+bool DOMTimerCoordinator::hasInstalledTimeout() const {
+  return !m_timers.isEmpty();
 }
 
-bool DOMTimerCoordinator::hasInstalledTimeout() const
-{
-    return !m_timers.isEmpty();
+DEFINE_TRACE(DOMTimerCoordinator) {
+  visitor->trace(m_timers);
 }
 
-DEFINE_TRACE(DOMTimerCoordinator)
-{
-    visitor->trace(m_timers);
+int DOMTimerCoordinator::nextID() {
+  while (true) {
+    ++m_circularSequentialID;
+
+    if (m_circularSequentialID <= 0)
+      m_circularSequentialID = 1;
+
+    if (!m_timers.contains(m_circularSequentialID))
+      return m_circularSequentialID;
+  }
 }
 
-int DOMTimerCoordinator::nextID()
-{
-    while (true) {
-        ++m_circularSequentialID;
-
-        if (m_circularSequentialID <= 0)
-            m_circularSequentialID = 1;
-
-        if (!m_timers.contains(m_circularSequentialID))
-            return m_circularSequentialID;
-    }
+void DOMTimerCoordinator::setTimerTaskRunner(
+    std::unique_ptr<WebTaskRunner> timerTaskRunner) {
+  m_timerTaskRunner = std::move(timerTaskRunner);
 }
 
-void DOMTimerCoordinator::setTimerTaskRunner(std::unique_ptr<WebTaskRunner> timerTaskRunner)
-{
-    m_timerTaskRunner = std::move(timerTaskRunner);
-}
-
-} // namespace blink
+}  // namespace blink

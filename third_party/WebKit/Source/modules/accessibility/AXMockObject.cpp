@@ -30,17 +30,13 @@
 namespace blink {
 
 AXMockObject::AXMockObject(AXObjectCacheImpl& axObjectCache)
-    : AXObject(axObjectCache)
-{
+    : AXObject(axObjectCache) {}
+
+AXMockObject::~AXMockObject() {}
+
+bool AXMockObject::computeAccessibilityIsIgnored(
+    IgnoredReasons* ignoredReasons) const {
+  return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
-AXMockObject::~AXMockObject()
-{
-}
-
-bool AXMockObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
-{
-    return accessibilityIsIgnoredByDefault(ignoredReasons);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -13,25 +13,32 @@ namespace blink {
 
 template <typename KeyType, typename ValueType>
 class Maplike : public PairIterable<KeyType, ValueType> {
-public:
-    bool hasForBinding(ScriptState* scriptState, const KeyType& key, ExceptionState& exceptionState)
-    {
-        ValueType value;
-        return getMapEntry(scriptState, key, value, exceptionState);
-    }
+ public:
+  bool hasForBinding(ScriptState* scriptState,
+                     const KeyType& key,
+                     ExceptionState& exceptionState) {
+    ValueType value;
+    return getMapEntry(scriptState, key, value, exceptionState);
+  }
 
-    ScriptValue getForBinding(ScriptState* scriptState, const KeyType& key, ExceptionState& exceptionState)
-    {
-        ValueType value;
-        if (getMapEntry(scriptState, key, value, exceptionState))
-            return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
-        return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
-    }
+  ScriptValue getForBinding(ScriptState* scriptState,
+                            const KeyType& key,
+                            ExceptionState& exceptionState) {
+    ValueType value;
+    if (getMapEntry(scriptState, key, value, exceptionState))
+      return ScriptValue(scriptState,
+                         toV8(value, scriptState->context()->Global(),
+                              scriptState->isolate()));
+    return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
+  }
 
-private:
-    virtual bool getMapEntry(ScriptState*, const KeyType&, ValueType&, ExceptionState&) = 0;
+ private:
+  virtual bool getMapEntry(ScriptState*,
+                           const KeyType&,
+                           ValueType&,
+                           ExceptionState&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Maplike_h
+#endif  // Maplike_h

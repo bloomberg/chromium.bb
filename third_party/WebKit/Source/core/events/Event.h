@@ -39,249 +39,275 @@ class DOMWrapperWorld;
 class EventTarget;
 class ExecutionContext;
 
-class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,  public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum PhaseType {
-        kNone               = 0,
-        kCapturingPhase     = 1,
-        kAtTarget           = 2,
-        kBubblingPhase      = 3
-    };
+class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    enum EventType {
-        kMousedown           = 1,
-        kMouseup             = 2,
-        kMouseover           = 4,
-        kMouseout            = 8,
-        kMousemove           = 16,
-        kMousedrag           = 32,
-        kClick               = 64,
-        kDblclick            = 128,
-        kKeydown             = 256,
-        kKeyup               = 512,
-        kKeypress            = 1024,
-        kDragdrop            = 2048,
-        kFocus               = 4096,
-        kBlur                = 8192,
-        kSelect              = 16384,
-        kChange              = 32768
-    };
+ public:
+  enum PhaseType {
+    kNone = 0,
+    kCapturingPhase = 1,
+    kAtTarget = 2,
+    kBubblingPhase = 3
+  };
 
-    enum RailsMode {
-        RailsModeFree       = 0,
-        RailsModeHorizontal = 1,
-        RailsModeVertical   = 2
-    };
+  enum EventType {
+    kMousedown = 1,
+    kMouseup = 2,
+    kMouseover = 4,
+    kMouseout = 8,
+    kMousemove = 16,
+    kMousedrag = 32,
+    kClick = 64,
+    kDblclick = 128,
+    kKeydown = 256,
+    kKeyup = 512,
+    kKeypress = 1024,
+    kDragdrop = 2048,
+    kFocus = 4096,
+    kBlur = 8192,
+    kSelect = 16384,
+    kChange = 32768
+  };
 
-    enum class ComposedMode {
-        Composed,
-        Scoped,
-    };
+  enum RailsMode {
+    RailsModeFree = 0,
+    RailsModeHorizontal = 1,
+    RailsModeVertical = 2
+  };
 
-    enum class PassiveMode {
-        NotPassive,
-        Passive,
-        PassiveForcedDocumentLevel,
-    };
+  enum class ComposedMode {
+    Composed,
+    Scoped,
+  };
 
-    static Event* create()
-    {
-        return new Event;
-    }
+  enum class PassiveMode {
+    NotPassive,
+    Passive,
+    PassiveForcedDocumentLevel,
+  };
 
-    // A factory for a simple event. The event doesn't bubble, and isn't
-    // cancelable.
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#fire-a-simple-event
-    static Event* create(const AtomicString& type)
-    {
-        return new Event(type, false, false);
-    }
-    static Event* createCancelable(const AtomicString& type)
-    {
-        return new Event(type, false, true);
-    }
-    static Event* createBubble(const AtomicString& type)
-    {
-        return new Event(type, true, false);
-    }
-    static Event* createCancelableBubble(const AtomicString& type)
-    {
-        return new Event(type, true, true);
-    }
+  static Event* create() { return new Event; }
 
-    static Event* create(const AtomicString& type, const EventInit& initializer)
-    {
-        return new Event(type, initializer);
-    }
+  // A factory for a simple event. The event doesn't bubble, and isn't
+  // cancelable.
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#fire-a-simple-event
+  static Event* create(const AtomicString& type) {
+    return new Event(type, false, false);
+  }
+  static Event* createCancelable(const AtomicString& type) {
+    return new Event(type, false, true);
+  }
+  static Event* createBubble(const AtomicString& type) {
+    return new Event(type, true, false);
+  }
+  static Event* createCancelableBubble(const AtomicString& type) {
+    return new Event(type, true, true);
+  }
 
-    virtual ~Event();
+  static Event* create(const AtomicString& type, const EventInit& initializer) {
+    return new Event(type, initializer);
+  }
 
-    void initEvent(const AtomicString& type, bool canBubble, bool cancelable);
-    void initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget);
+  virtual ~Event();
 
-    const AtomicString& type() const { return m_type; }
-    void setType(const AtomicString& type) { m_type = type; }
+  void initEvent(const AtomicString& type, bool canBubble, bool cancelable);
+  void initEvent(const AtomicString& eventTypeArg,
+                 bool canBubbleArg,
+                 bool cancelableArg,
+                 EventTarget* relatedTarget);
 
-    EventTarget* target() const { return m_target.get(); }
-    void setTarget(EventTarget*);
+  const AtomicString& type() const { return m_type; }
+  void setType(const AtomicString& type) { m_type = type; }
 
-    EventTarget* currentTarget() const { return m_currentTarget; }
-    void setCurrentTarget(EventTarget* currentTarget) { m_currentTarget = currentTarget; }
+  EventTarget* target() const { return m_target.get(); }
+  void setTarget(EventTarget*);
 
-    // This callback is invoked when an event listener has been dispatched
-    // at the current target. It should only be used to influence UMA metrics
-    // and not change functionality since observing the presence of listeners
-    // is dangerous.
-    virtual void doneDispatchingEventAtCurrentTarget() {}
+  EventTarget* currentTarget() const { return m_currentTarget; }
+  void setCurrentTarget(EventTarget* currentTarget) {
+    m_currentTarget = currentTarget;
+  }
 
-    unsigned short eventPhase() const { return m_eventPhase; }
-    void setEventPhase(unsigned short eventPhase) { m_eventPhase = eventPhase; }
+  // This callback is invoked when an event listener has been dispatched
+  // at the current target. It should only be used to influence UMA metrics
+  // and not change functionality since observing the presence of listeners
+  // is dangerous.
+  virtual void doneDispatchingEventAtCurrentTarget() {}
 
-    bool bubbles() const { return m_canBubble; }
-    bool cancelable() const { return m_cancelable; }
-    bool composed() const { return m_composed; }
-    bool isScopedInV0() const;
+  unsigned short eventPhase() const { return m_eventPhase; }
+  void setEventPhase(unsigned short eventPhase) { m_eventPhase = eventPhase; }
 
-    // Event creation timestamp in milliseconds. It returns a DOMHighResTimeStamp
-    // using the platform timestamp (see |m_platformTimeStamp|).
-    // For more info see http://crbug.com/160524
-    double timeStamp(ScriptState*) const;
-    double platformTimeStamp() const { return m_platformTimeStamp; }
+  bool bubbles() const { return m_canBubble; }
+  bool cancelable() const { return m_cancelable; }
+  bool composed() const { return m_composed; }
+  bool isScopedInV0() const;
 
-    void stopPropagation() { m_propagationStopped = true; }
-    void stopImmediatePropagation() { m_immediatePropagationStopped = true; }
+  // Event creation timestamp in milliseconds. It returns a DOMHighResTimeStamp
+  // using the platform timestamp (see |m_platformTimeStamp|).
+  // For more info see http://crbug.com/160524
+  double timeStamp(ScriptState*) const;
+  double platformTimeStamp() const { return m_platformTimeStamp; }
 
-    // IE Extensions
-    EventTarget* srcElement() const { return target(); } // MSIE extension - "the object that fired the event"
+  void stopPropagation() { m_propagationStopped = true; }
+  void stopImmediatePropagation() { m_immediatePropagationStopped = true; }
 
-    bool legacyReturnValue(ExecutionContext*) const;
-    void setLegacyReturnValue(ExecutionContext*, bool returnValue);
+  // IE Extensions
+  EventTarget* srcElement() const {
+    return target();
+  }  // MSIE extension - "the object that fired the event"
 
-    virtual const AtomicString& interfaceName() const;
-    bool hasInterface(const AtomicString&) const;
+  bool legacyReturnValue(ExecutionContext*) const;
+  void setLegacyReturnValue(ExecutionContext*, bool returnValue);
 
-    // These events are general classes of events.
-    virtual bool isUIEvent() const;
-    virtual bool isMouseEvent() const;
-    virtual bool isFocusEvent() const;
-    virtual bool isKeyboardEvent() const;
-    virtual bool isTouchEvent() const;
-    virtual bool isGestureEvent() const;
-    virtual bool isWheelEvent() const;
-    virtual bool isRelatedEvent() const;
-    virtual bool isPointerEvent() const;
-    virtual bool isInputEvent() const;
+  virtual const AtomicString& interfaceName() const;
+  bool hasInterface(const AtomicString&) const;
 
-    // Drag events are a subset of mouse events.
-    virtual bool isDragEvent() const;
+  // These events are general classes of events.
+  virtual bool isUIEvent() const;
+  virtual bool isMouseEvent() const;
+  virtual bool isFocusEvent() const;
+  virtual bool isKeyboardEvent() const;
+  virtual bool isTouchEvent() const;
+  virtual bool isGestureEvent() const;
+  virtual bool isWheelEvent() const;
+  virtual bool isRelatedEvent() const;
+  virtual bool isPointerEvent() const;
+  virtual bool isInputEvent() const;
 
-    // These events lack a DOM interface.
-    virtual bool isClipboardEvent() const;
-    virtual bool isBeforeTextInsertedEvent() const;
+  // Drag events are a subset of mouse events.
+  virtual bool isDragEvent() const;
 
-    virtual bool isBeforeUnloadEvent() const;
+  // These events lack a DOM interface.
+  virtual bool isClipboardEvent() const;
+  virtual bool isBeforeTextInsertedEvent() const;
 
-    bool propagationStopped() const { return m_propagationStopped || m_immediatePropagationStopped; }
-    bool immediatePropagationStopped() const { return m_immediatePropagationStopped; }
-    bool wasInitialized() { return m_wasInitialized; }
+  virtual bool isBeforeUnloadEvent() const;
 
-    bool defaultPrevented() const { return m_defaultPrevented; }
-    virtual void preventDefault();
-    void setDefaultPrevented(bool defaultPrevented) { m_defaultPrevented = defaultPrevented; }
+  bool propagationStopped() const {
+    return m_propagationStopped || m_immediatePropagationStopped;
+  }
+  bool immediatePropagationStopped() const {
+    return m_immediatePropagationStopped;
+  }
+  bool wasInitialized() { return m_wasInitialized; }
 
-    bool defaultHandled() const { return m_defaultHandled; }
-    void setDefaultHandled() { m_defaultHandled = true; }
+  bool defaultPrevented() const { return m_defaultPrevented; }
+  virtual void preventDefault();
+  void setDefaultPrevented(bool defaultPrevented) {
+    m_defaultPrevented = defaultPrevented;
+  }
 
-    bool cancelBubble(ExecutionContext* = nullptr) const { return m_cancelBubble; }
-    void setCancelBubble(ExecutionContext*, bool);
+  bool defaultHandled() const { return m_defaultHandled; }
+  void setDefaultHandled() { m_defaultHandled = true; }
 
-    Event* underlyingEvent() const { return m_underlyingEvent.get(); }
-    void setUnderlyingEvent(Event*);
+  bool cancelBubble(ExecutionContext* = nullptr) const {
+    return m_cancelBubble;
+  }
+  void setCancelBubble(ExecutionContext*, bool);
 
-    bool hasEventPath() { return m_eventPath; }
-    EventPath& eventPath() { DCHECK(m_eventPath); return *m_eventPath; }
-    void initEventPath(Node&);
+  Event* underlyingEvent() const { return m_underlyingEvent.get(); }
+  void setUnderlyingEvent(Event*);
 
-    HeapVector<Member<EventTarget>> path(ScriptState*) const;
-    HeapVector<Member<EventTarget>> composedPath(ScriptState*) const;
+  bool hasEventPath() { return m_eventPath; }
+  EventPath& eventPath() {
+    DCHECK(m_eventPath);
+    return *m_eventPath;
+  }
+  void initEventPath(Node&);
 
-    bool isBeingDispatched() const { return eventPhase(); }
+  HeapVector<Member<EventTarget>> path(ScriptState*) const;
+  HeapVector<Member<EventTarget>> composedPath(ScriptState*) const;
 
-    // Events that must not leak across isolated world, similar to how
-    // ErrorEvent behaves, can override this method.
-    virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const { return true; }
+  bool isBeingDispatched() const { return eventPhase(); }
 
-    virtual EventDispatchMediator* createMediator();
+  // Events that must not leak across isolated world, similar to how
+  // ErrorEvent behaves, can override this method.
+  virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const {
+    return true;
+  }
 
-    bool isTrusted() const { return m_isTrusted; }
-    void setTrusted(bool value) { m_isTrusted = value; }
+  virtual EventDispatchMediator* createMediator();
 
-    void setHandlingPassive(PassiveMode);
+  bool isTrusted() const { return m_isTrusted; }
+  void setTrusted(bool value) { m_isTrusted = value; }
 
-    bool preventDefaultCalledDuringPassive() const { return m_preventDefaultCalledDuringPassive; }
+  void setHandlingPassive(PassiveMode);
 
-    bool preventDefaultCalledOnUncancelableEvent() const { return m_preventDefaultCalledOnUncancelableEvent; }
+  bool preventDefaultCalledDuringPassive() const {
+    return m_preventDefaultCalledDuringPassive;
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  bool preventDefaultCalledOnUncancelableEvent() const {
+    return m_preventDefaultCalledOnUncancelableEvent;
+  }
 
-protected:
-    Event();
-    Event(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode, double platformTimeStamp);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, ComposedMode = ComposedMode::Scoped);
-    Event(const AtomicString& type, const EventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    virtual void receivedTarget();
+ protected:
+  Event();
+  Event(const AtomicString& type,
+        bool canBubble,
+        bool cancelable,
+        ComposedMode,
+        double platformTimeStamp);
+  Event(const AtomicString& type,
+        bool canBubble,
+        bool cancelable,
+        double platformTimeStamp);
+  Event(const AtomicString& type,
+        bool canBubble,
+        bool cancelable,
+        ComposedMode = ComposedMode::Scoped);
+  Event(const AtomicString& type, const EventInit&);
 
-    void setCanBubble(bool bubble) { m_canBubble = bubble; }
+  virtual void receivedTarget();
 
-    PassiveMode handlingPassive() const { return m_handlingPassive; }
+  void setCanBubble(bool bubble) { m_canBubble = bubble; }
 
-private:
+  PassiveMode handlingPassive() const { return m_handlingPassive; }
 
-    enum EventPathMode {
-        EmptyAfterDispatch,
-        NonEmptyAfterDispatch
-    };
+ private:
+  enum EventPathMode { EmptyAfterDispatch, NonEmptyAfterDispatch };
 
-    HeapVector<Member<EventTarget>> pathInternal(ScriptState*, EventPathMode) const;
+  HeapVector<Member<EventTarget>> pathInternal(ScriptState*,
+                                               EventPathMode) const;
 
-    AtomicString m_type;
-    unsigned m_canBubble:1;
-    unsigned m_cancelable:1;
-    unsigned m_composed:1;
-    unsigned m_isEventTypeScopedInV0:1;
+  AtomicString m_type;
+  unsigned m_canBubble : 1;
+  unsigned m_cancelable : 1;
+  unsigned m_composed : 1;
+  unsigned m_isEventTypeScopedInV0 : 1;
 
-    unsigned m_propagationStopped:1;
-    unsigned m_immediatePropagationStopped:1;
-    unsigned m_defaultPrevented:1;
-    unsigned m_defaultHandled:1;
-    unsigned m_cancelBubble:1;
-    unsigned m_wasInitialized:1;
-    unsigned m_isTrusted : 1;
+  unsigned m_propagationStopped : 1;
+  unsigned m_immediatePropagationStopped : 1;
+  unsigned m_defaultPrevented : 1;
+  unsigned m_defaultHandled : 1;
+  unsigned m_cancelBubble : 1;
+  unsigned m_wasInitialized : 1;
+  unsigned m_isTrusted : 1;
 
-    // Whether preventDefault was called when |m_handlingPassive| is
-    // true. This field is reset on each call to setHandlingPassive.
-    unsigned m_preventDefaultCalledDuringPassive : 1;
-    // Whether preventDefault was called on uncancelable event.
-    unsigned m_preventDefaultCalledOnUncancelableEvent : 1;
+  // Whether preventDefault was called when |m_handlingPassive| is
+  // true. This field is reset on each call to setHandlingPassive.
+  unsigned m_preventDefaultCalledDuringPassive : 1;
+  // Whether preventDefault was called on uncancelable event.
+  unsigned m_preventDefaultCalledOnUncancelableEvent : 1;
 
-    PassiveMode m_handlingPassive;
-    unsigned short m_eventPhase;
-    Member<EventTarget> m_currentTarget;
-    Member<EventTarget> m_target;
-    Member<Event> m_underlyingEvent;
-    Member<EventPath> m_eventPath;
-    // The monotonic platform time in seconds, for input events it is the
-    // event timestamp provided by the host OS and reported in the original
-    // WebInputEvent instance.
-    double m_platformTimeStamp;
+  PassiveMode m_handlingPassive;
+  unsigned short m_eventPhase;
+  Member<EventTarget> m_currentTarget;
+  Member<EventTarget> m_target;
+  Member<Event> m_underlyingEvent;
+  Member<EventPath> m_eventPath;
+  // The monotonic platform time in seconds, for input events it is the
+  // event timestamp provided by the host OS and reported in the original
+  // WebInputEvent instance.
+  double m_platformTimeStamp;
 };
 
-#define DEFINE_EVENT_TYPE_CASTS(typeName) \
-    DEFINE_TYPE_CASTS(typeName, Event, event, event->is##typeName(), event.is##typeName())
+#define DEFINE_EVENT_TYPE_CASTS(typeName)                          \
+  DEFINE_TYPE_CASTS(typeName, Event, event, event->is##typeName(), \
+                    event.is##typeName())
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Event_h
+#endif  // Event_h

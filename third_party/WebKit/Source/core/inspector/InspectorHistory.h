@@ -41,47 +41,48 @@ namespace blink {
 class ExceptionState;
 
 class InspectorHistory final : public GarbageCollected<InspectorHistory> {
-    WTF_MAKE_NONCOPYABLE(InspectorHistory);
-public:
-    class Action : public GarbageCollectedFinalized<Action> {
-    public:
-        explicit Action(const String& name);
-        virtual ~Action();
-        DECLARE_VIRTUAL_TRACE();
-        virtual String toString();
+  WTF_MAKE_NONCOPYABLE(InspectorHistory);
 
-        virtual String mergeId();
-        virtual void merge(Action*);
+ public:
+  class Action : public GarbageCollectedFinalized<Action> {
+   public:
+    explicit Action(const String& name);
+    virtual ~Action();
+    DECLARE_VIRTUAL_TRACE();
+    virtual String toString();
 
-        virtual bool perform(ExceptionState&) = 0;
+    virtual String mergeId();
+    virtual void merge(Action*);
 
-        virtual bool undo(ExceptionState&) = 0;
-        virtual bool redo(ExceptionState&) = 0;
+    virtual bool perform(ExceptionState&) = 0;
 
-        virtual bool isNoop() { return false; }
+    virtual bool undo(ExceptionState&) = 0;
+    virtual bool redo(ExceptionState&) = 0;
 
-        virtual bool isUndoableStateMark();
-    private:
-        String m_name;
-    };
+    virtual bool isNoop() { return false; }
 
-    InspectorHistory();
-    DECLARE_TRACE();
+    virtual bool isUndoableStateMark();
 
-    bool perform(Action*, ExceptionState&);
-    void appendPerformedAction(Action*);
-    void markUndoableState();
+   private:
+    String m_name;
+  };
 
-    bool undo(ExceptionState&);
-    bool redo(ExceptionState&);
-    void reset();
+  InspectorHistory();
+  DECLARE_TRACE();
 
-private:
-    HeapVector<Member<Action>> m_history;
-    size_t m_afterLastActionIndex;
+  bool perform(Action*, ExceptionState&);
+  void appendPerformedAction(Action*);
+  void markUndoableState();
+
+  bool undo(ExceptionState&);
+  bool redo(ExceptionState&);
+  void reset();
+
+ private:
+  HeapVector<Member<Action>> m_history;
+  size_t m_afterLastActionIndex;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // !defined(InspectorHistory_h)
+#endif  // !defined(InspectorHistory_h)

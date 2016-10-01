@@ -19,18 +19,22 @@ class Document;
 class KURL;
 
 class InspectorWebSocketCreateEvent {
-    STATIC_ONLY(InspectorWebSocketCreateEvent);
-public:
-    static std::unique_ptr<TracedValue> data(Document*, unsigned long identifier, const KURL&, const String& protocol);
+  STATIC_ONLY(InspectorWebSocketCreateEvent);
+
+ public:
+  static std::unique_ptr<TracedValue> data(Document*,
+                                           unsigned long identifier,
+                                           const KURL&,
+                                           const String& protocol);
 };
 
 class InspectorWebSocketEvent {
-    STATIC_ONLY(InspectorWebSocketEvent);
-public:
-    static std::unique_ptr<TracedValue> data(Document*, unsigned long identifier);
+  STATIC_ONLY(InspectorWebSocketEvent);
+
+ public:
+  static std::unique_ptr<TracedValue> data(Document*, unsigned long identifier);
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // !defined(InspectorWebSocketEvents_h)
+#endif  // !defined(InspectorWebSocketEvents_h)

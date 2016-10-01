@@ -39,62 +39,67 @@ class Document;
 class TextTrackLoader;
 
 class TextTrackLoaderClient : public GarbageCollectedMixin {
-public:
-    virtual ~TextTrackLoaderClient() {}
+ public:
+  virtual ~TextTrackLoaderClient() {}
 
-    virtual void newCuesAvailable(TextTrackLoader*) = 0;
-    virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) = 0;
-    virtual void newRegionsAvailable(TextTrackLoader*) = 0;
+  virtual void newCuesAvailable(TextTrackLoader*) = 0;
+  virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) = 0;
+  virtual void newRegionsAvailable(TextTrackLoader*) = 0;
 };
 
-class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>, public ResourceOwner<RawResource>, private VTTParserClient {
-    USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
-public:
-    static TextTrackLoader* create(TextTrackLoaderClient& client, Document& document)
-    {
-        return new TextTrackLoader(client, document);
-    }
-    ~TextTrackLoader() override;
+class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
+                              public ResourceOwner<RawResource>,
+                              private VTTParserClient {
+  USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
 
-    bool load(const KURL&, CrossOriginAttributeValue);
-    void cancelLoad();
+ public:
+  static TextTrackLoader* create(TextTrackLoaderClient& client,
+                                 Document& document) {
+    return new TextTrackLoader(client, document);
+  }
+  ~TextTrackLoader() override;
 
-    enum State { Idle, Loading, Finished, Failed };
-    State loadState() { return m_state; }
+  bool load(const KURL&, CrossOriginAttributeValue);
+  void cancelLoad();
 
-    void getNewCues(HeapVector<Member<TextTrackCue>>& outputCues);
-    void getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions);
+  enum State { Idle, Loading, Finished, Failed };
+  State loadState() { return m_state; }
 
-    DECLARE_TRACE();
+  void getNewCues(HeapVector<Member<TextTrackCue>>& outputCues);
+  void getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions);
 
-private:
-    // RawResourceClient
-    void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
-    void dataReceived(Resource*, const char* data, size_t length) override;
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "TextTrackLoader"; }
+  DECLARE_TRACE();
 
-    // VTTParserClient
-    void newCuesParsed() override;
-    void newRegionsParsed() override;
-    void fileFailedToParse() override;
+ private:
+  // RawResourceClient
+  void redirectReceived(Resource*,
+                        ResourceRequest&,
+                        const ResourceResponse&) override;
+  void dataReceived(Resource*, const char* data, size_t length) override;
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "TextTrackLoader"; }
 
-    TextTrackLoader(TextTrackLoaderClient&, Document&);
+  // VTTParserClient
+  void newCuesParsed() override;
+  void newRegionsParsed() override;
+  void fileFailedToParse() override;
 
-    void cueLoadTimerFired(TimerBase*);
-    void corsPolicyPreventedLoad(SecurityOrigin*, const KURL&);
+  TextTrackLoader(TextTrackLoaderClient&, Document&);
 
-    Document& document() const { return *m_document; }
+  void cueLoadTimerFired(TimerBase*);
+  void corsPolicyPreventedLoad(SecurityOrigin*, const KURL&);
 
-    Member<TextTrackLoaderClient> m_client;
-    Member<VTTParser> m_cueParser;
-    // FIXME: Remove this pointer and get the Document from m_client.
-    Member<Document> m_document;
-    Timer<TextTrackLoader> m_cueLoadTimer;
-    State m_state;
-    bool m_newCuesAvailable;
+  Document& document() const { return *m_document; }
+
+  Member<TextTrackLoaderClient> m_client;
+  Member<VTTParser> m_cueParser;
+  // FIXME: Remove this pointer and get the Document from m_client.
+  Member<Document> m_document;
+  Timer<TextTrackLoader> m_cueLoadTimer;
+  State m_state;
+  bool m_newCuesAvailable;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

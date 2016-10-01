@@ -6,17 +6,14 @@
 
 namespace blink {
 
-DOMPointReadOnly* DOMPointReadOnly::create(double x, double y, double z, double w)
-{
-    return new DOMPointReadOnly(x, y, z, w);
+DOMPointReadOnly* DOMPointReadOnly::create(double x,
+                                           double y,
+                                           double z,
+                                           double w) {
+  return new DOMPointReadOnly(x, y, z, w);
 }
 
 DOMPointReadOnly::DOMPointReadOnly(double x, double y, double z, double w)
-    : m_x(x)
-    , m_y(y)
-    , m_z(z)
-    , m_w(w)
-{
-}
+    : m_x(x), m_y(y), m_z(z), m_w(w) {}
 
-} // namespace blink
+}  // namespace blink

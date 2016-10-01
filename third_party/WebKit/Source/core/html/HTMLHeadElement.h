@@ -30,14 +30,15 @@
 namespace blink {
 
 class CORE_EXPORT HTMLHeadElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLHeadElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit HTMLHeadElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLHeadElement);
+
+ private:
+  explicit HTMLHeadElement(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLHeadElement_h
+#endif  // HTMLHeadElement_h

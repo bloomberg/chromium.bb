@@ -38,22 +38,23 @@
 namespace blink {
 
 class VTTTokenizer {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(VTTTokenizer);
-public:
-    explicit VTTTokenizer(const String& input);
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(VTTTokenizer);
 
-    bool nextToken(VTTToken&);
+ public:
+  explicit VTTTokenizer(const String& input);
 
-    inline bool shouldSkipNullCharacters() const { return true; }
+  bool nextToken(VTTToken&);
 
-private:
-    SegmentedString m_input;
+  inline bool shouldSkipNullCharacters() const { return true; }
 
-    // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
-    InputStreamPreprocessor<VTTTokenizer> m_inputStreamPreprocessor;
+ private:
+  SegmentedString m_input;
+
+  // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
+  InputStreamPreprocessor<VTTTokenizer> m_inputStreamPreprocessor;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

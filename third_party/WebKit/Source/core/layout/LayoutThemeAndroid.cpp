@@ -6,19 +6,15 @@
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeAndroid::create()
-{
-    return adoptRef(new LayoutThemeAndroid());
+PassRefPtr<LayoutTheme> LayoutThemeAndroid::create() {
+  return adoptRef(new LayoutThemeAndroid());
 }
 
-LayoutTheme& LayoutTheme::nativeTheme()
-{
-    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeAndroid::create()));
-    return *layoutTheme;
+LayoutTheme& LayoutTheme::nativeTheme() {
+  DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeAndroid::create()));
+  return *layoutTheme;
 }
 
-LayoutThemeAndroid::~LayoutThemeAndroid()
-{
-}
+LayoutThemeAndroid::~LayoutThemeAndroid() {}
 
-} // namespace blink
+}  // namespace blink

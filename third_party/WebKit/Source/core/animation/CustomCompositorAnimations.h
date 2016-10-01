@@ -15,22 +15,19 @@ class Element;
 class CompositorMutation;
 
 class CustomCompositorAnimations final {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(CustomCompositorAnimations);
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(CustomCompositorAnimations);
 
-public:
-    CustomCompositorAnimations() {}
-    void applyUpdate(Element&, const CompositorMutation&);
+ public:
+  CustomCompositorAnimations() {}
+  void applyUpdate(Element&, const CompositorMutation&);
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_animation);
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_animation); }
 
-private:
-    Member<Animation> m_animation;
+ private:
+  Member<Animation> m_animation;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

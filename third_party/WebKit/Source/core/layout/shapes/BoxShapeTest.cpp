@@ -36,32 +36,34 @@
 namespace blink {
 
 class BoxShapeTest : public ::testing::Test {
-protected:
-    BoxShapeTest() { }
+ protected:
+  BoxShapeTest() {}
 
-    std::unique_ptr<Shape> createBoxShape(const FloatRoundedRect& bounds, float shapeMargin)
-    {
-        return Shape::createLayoutBoxShape(bounds, TopToBottomWritingMode, shapeMargin);
-    }
+  std::unique_ptr<Shape> createBoxShape(const FloatRoundedRect& bounds,
+                                        float shapeMargin) {
+    return Shape::createLayoutBoxShape(bounds, TopToBottomWritingMode,
+                                       shapeMargin);
+  }
 };
 
 namespace {
 
-#define TEST_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight, expectedLeft, expectedRight) \
-{                                                                                          \
-    LineSegment segment = shapePtr->getExcludedInterval(lineTop, lineHeight);                           \
-    EXPECT_TRUE(segment.isValid); \
-    if (segment.isValid) {                                                             \
-        EXPECT_FLOAT_EQ(expectedLeft, segment.logicalLeft);                              \
-        EXPECT_FLOAT_EQ(expectedRight, segment.logicalRight);                            \
-    }                                                                                      \
-}
-
-#define TEST_NO_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight) \
-{                                                                \
+#define TEST_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight, expectedLeft,   \
+                               expectedRight)                                 \
+  {                                                                           \
     LineSegment segment = shapePtr->getExcludedInterval(lineTop, lineHeight); \
-    EXPECT_FALSE(segment.isValid); \
-}
+    EXPECT_TRUE(segment.isValid);                                             \
+    if (segment.isValid) {                                                    \
+      EXPECT_FLOAT_EQ(expectedLeft, segment.logicalLeft);                     \
+      EXPECT_FLOAT_EQ(expectedRight, segment.logicalRight);                   \
+    }                                                                         \
+  }
+
+#define TEST_NO_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight)              \
+  {                                                                           \
+    LineSegment segment = shapePtr->getExcludedInterval(lineTop, lineHeight); \
+    EXPECT_FALSE(segment.isValid);                                            \
+  }
 
 /* The BoxShape is based on a 100x50 rectangle at 0,0. The shape-margin value is 10,
  * so the shapeMarginBoundingBox rectangle is 120x70 at -10,-10:
@@ -72,36 +74,45 @@ namespace {
  *       +--------+
  *   -10,60     60,60
  */
-TEST_F(BoxShapeTest, zeroRadii)
-{
-    std::unique_ptr<Shape> shape = createBoxShape(FloatRoundedRect(0, 0, 100, 50), 10);
-    EXPECT_FALSE(shape->isEmpty());
+TEST_F(BoxShapeTest, zeroRadii) {
+  std::unique_ptr<Shape> shape =
+      createBoxShape(FloatRoundedRect(0, 0, 100, 50), 10);
+  EXPECT_FALSE(shape->isEmpty());
 
-    EXPECT_EQ(LayoutRect(-10, -10, 120, 70), shape->shapeMarginLogicalBoundingBox());
+  EXPECT_EQ(LayoutRect(-10, -10, 120, 70),
+            shape->shapeMarginLogicalBoundingBox());
 
-    // A BoxShape's bounds include the top edge but not the bottom edge.
-    // Similarly a "line", specified as top,height to the overlap methods,
-    // is defined as top <= y < top + height.
+  // A BoxShape's bounds include the top edge but not the bottom edge.
+  // Similarly a "line", specified as top,height to the overlap methods,
+  // is defined as top <= y < top + height.
 
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-9), LayoutUnit(1)));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit()));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(200)));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(5), LayoutUnit(10)));
-    EXPECT_TRUE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(59), LayoutUnit(1)));
+  EXPECT_TRUE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-9), LayoutUnit(1)));
+  EXPECT_TRUE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit()));
+  EXPECT_TRUE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-10), LayoutUnit(200)));
+  EXPECT_TRUE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(5), LayoutUnit(10)));
+  EXPECT_TRUE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(59), LayoutUnit(1)));
 
-    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(-12), LayoutUnit(2)));
-    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(60), LayoutUnit(1)));
-    EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(100), LayoutUnit(200)));
+  EXPECT_FALSE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(-12), LayoutUnit(2)));
+  EXPECT_FALSE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(60), LayoutUnit(1)));
+  EXPECT_FALSE(
+      shape->lineOverlapsShapeMarginBounds(LayoutUnit(100), LayoutUnit(200)));
 
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-9), LayoutUnit(1), -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(), -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(200), -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(10), -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(59), LayoutUnit(1), -10, 110);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-9), LayoutUnit(1), -10, 110);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(), -10, 110);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(200), -10, 110);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(10), -10, 110);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(59), LayoutUnit(1), -10, 110);
 
-    TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(-12), LayoutUnit(2));
-    TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(60), LayoutUnit(1));
-    TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(100), LayoutUnit(200));
+  TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(-12), LayoutUnit(2));
+  TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(60), LayoutUnit(1));
+  TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(100), LayoutUnit(200));
 }
 
 /* BoxShape geometry for this test. Corner radii are in parens, x and y intercepts
@@ -116,22 +127,24 @@ TEST_F(BoxShapeTest, zeroRadii)
  *                (--+---------+--)
  *       (25, 15)  x=25      x=80  (20, 30)
  */
-TEST_F(BoxShapeTest, getIntervals)
-{
-    const FloatRoundedRect::Radii cornerRadii(FloatSize(10, 15), FloatSize(10, 20), FloatSize(25, 15), FloatSize(20, 30));
-    std::unique_ptr<Shape> shape = createBoxShape(FloatRoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0);
-    EXPECT_FALSE(shape->isEmpty());
+TEST_F(BoxShapeTest, getIntervals) {
+  const FloatRoundedRect::Radii cornerRadii(
+      FloatSize(10, 15), FloatSize(10, 20), FloatSize(25, 15),
+      FloatSize(20, 30));
+  std::unique_ptr<Shape> shape =
+      createBoxShape(FloatRoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0);
+  EXPECT_FALSE(shape->isEmpty());
 
-    EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->shapeMarginLogicalBoundingBox());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->shapeMarginLogicalBoundingBox());
 
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(10), LayoutUnit(95), 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(25), 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(15), LayoutUnit(6), 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(20), LayoutUnit(50), 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(69), LayoutUnit(5), 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(85), LayoutUnit(10), 0, 97.320511f);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(10), LayoutUnit(95), 0, 100);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(25), 0, 100);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(15), LayoutUnit(6), 0, 100);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(20), LayoutUnit(50), 0, 100);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(69), LayoutUnit(5), 0, 100);
+  TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(85), LayoutUnit(10), 0, 97.320511f);
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
-} // namespace blink
+}  // namespace blink

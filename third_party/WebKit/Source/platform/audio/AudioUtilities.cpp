@@ -30,53 +30,47 @@ namespace blink {
 
 namespace AudioUtilities {
 
-float decibelsToLinear(float decibels)
-{
-    return powf(10, 0.05f * decibels);
+float decibelsToLinear(float decibels) {
+  return powf(10, 0.05f * decibels);
 }
 
-float linearToDecibels(float linear)
-{
-    ASSERT(linear >= 0);
+float linearToDecibels(float linear) {
+  ASSERT(linear >= 0);
 
-    return 20 * log10f(linear);
+  return 20 * log10f(linear);
 }
 
-double discreteTimeConstantForSampleRate(double timeConstant, double sampleRate)
-{
-    return 1 - exp(-1 / (sampleRate * timeConstant));
+double discreteTimeConstantForSampleRate(double timeConstant,
+                                         double sampleRate) {
+  return 1 - exp(-1 / (sampleRate * timeConstant));
 }
 
-size_t timeToSampleFrame(double time, double sampleRate)
-{
-    ASSERT(time >= 0);
-    double frame = round(time * sampleRate);
+size_t timeToSampleFrame(double time, double sampleRate) {
+  ASSERT(time >= 0);
+  double frame = round(time * sampleRate);
 
-    // Just return the largest possible size_t value if necessary.
-    if (frame >= std::numeric_limits<size_t>::max()) {
-        return std::numeric_limits<size_t>::max();
-    }
+  // Just return the largest possible size_t value if necessary.
+  if (frame >= std::numeric_limits<size_t>::max()) {
+    return std::numeric_limits<size_t>::max();
+  }
 
-    return static_cast<size_t>(frame);
+  return static_cast<size_t>(frame);
 }
 
-bool isValidAudioBufferSampleRate(float sampleRate)
-{
-    return sampleRate >= minAudioBufferSampleRate() && sampleRate <= maxAudioBufferSampleRate();
+bool isValidAudioBufferSampleRate(float sampleRate) {
+  return sampleRate >= minAudioBufferSampleRate() &&
+         sampleRate <= maxAudioBufferSampleRate();
 }
 
-float minAudioBufferSampleRate()
-{
-    // crbug.com/344375
-    return 3000;
+float minAudioBufferSampleRate() {
+  // crbug.com/344375
+  return 3000;
 }
 
-float maxAudioBufferSampleRate()
-{
-    // Windows can support audio sampling rates this high, so allow AudioBuffer rates this high as well.
-    return 192000;
+float maxAudioBufferSampleRate() {
+  // Windows can support audio sampling rates this high, so allow AudioBuffer rates this high as well.
+  return 192000;
 }
-} // namespace AudioUtilities
+}  // namespace AudioUtilities
 
-} // namespace blink
-
+}  // namespace blink

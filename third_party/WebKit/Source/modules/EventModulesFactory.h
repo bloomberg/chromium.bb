@@ -17,15 +17,14 @@ namespace blink {
 class Event;
 
 class EventModulesFactory final : public EventFactoryBase {
-public:
-    static std::unique_ptr<EventModulesFactory> create()
-    {
-        return wrapUnique(new EventModulesFactory());
-    }
+ public:
+  static std::unique_ptr<EventModulesFactory> create() {
+    return wrapUnique(new EventModulesFactory());
+  }
 
-    Event* create(ExecutionContext*, const String& eventType) override;
+  Event* create(ExecutionContext*, const String& eventType) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

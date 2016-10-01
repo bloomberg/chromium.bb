@@ -42,58 +42,60 @@ class SVGElement;
 class SVGAnimationElement;
 
 class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
-    WTF_MAKE_NONCOPYABLE(SVGPropertyBase);
+  WTF_MAKE_NONCOPYABLE(SVGPropertyBase);
 
-public:
-    // Properties do not have a primitive type by default
-    typedef void PrimitiveType;
+ public:
+  // Properties do not have a primitive type by default
+  typedef void PrimitiveType;
 
-    virtual ~SVGPropertyBase()
-    {
-    }
+  virtual ~SVGPropertyBase() {}
 
-    // FIXME: remove this in WebAnimations transition.
-    // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string implementation.
-    virtual SVGPropertyBase* cloneForAnimation(const String&) const = 0;
+  // FIXME: remove this in WebAnimations transition.
+  // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string implementation.
+  virtual SVGPropertyBase* cloneForAnimation(const String&) const = 0;
 
-    virtual String valueAsString() const = 0;
+  virtual String valueAsString() const = 0;
 
-    // FIXME: remove below and just have this inherit AnimatableValue in WebAnimations transition.
-    virtual void add(SVGPropertyBase*, SVGElement*) = 0;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) = 0;
-    virtual float calculateDistance(SVGPropertyBase* to, SVGElement*) = 0;
+  // FIXME: remove below and just have this inherit AnimatableValue in WebAnimations transition.
+  virtual void add(SVGPropertyBase*, SVGElement*) = 0;
+  virtual void calculateAnimatedValue(SVGAnimationElement*,
+                                      float percentage,
+                                      unsigned repeatCount,
+                                      SVGPropertyBase* from,
+                                      SVGPropertyBase* to,
+                                      SVGPropertyBase* toAtEndOfDurationValue,
+                                      SVGElement*) = 0;
+  virtual float calculateDistance(SVGPropertyBase* to, SVGElement*) = 0;
 
-    virtual AnimatedPropertyType type() const = 0;
+  virtual AnimatedPropertyType type() const = 0;
 
-    SVGPropertyBase* ownerList() const
-    {
-        return m_ownerList;
-    }
+  SVGPropertyBase* ownerList() const { return m_ownerList; }
 
-    void setOwnerList(SVGPropertyBase* ownerList)
-    {
-        // Previous owner list must be cleared before setting new owner list.
-        ASSERT((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
+  void setOwnerList(SVGPropertyBase* ownerList) {
+    // Previous owner list must be cleared before setting new owner list.
+    ASSERT((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
 
-        m_ownerList = ownerList;
-    }
+    m_ownerList = ownerList;
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    SVGPropertyBase() : m_ownerList(nullptr) {}
+ protected:
+  SVGPropertyBase() : m_ownerList(nullptr) {}
 
-private:
-    // Oilpan: the back reference to the owner should be a Member, but this can create
-    // cycles when SVG properties meet the off-heap InterpolationValue hierarchy.
-    // Not tracing it is safe, albeit an undesirable state of affairs.
-    // See http://crbug.com/528275 for the detail.
-    UntracedMember<SVGPropertyBase> m_ownerList;
+ private:
+  // Oilpan: the back reference to the owner should be a Member, but this can create
+  // cycles when SVG properties meet the off-heap InterpolationValue hierarchy.
+  // Not tracing it is safe, albeit an undesirable state of affairs.
+  // See http://crbug.com/528275 for the detail.
+  UntracedMember<SVGPropertyBase> m_ownerList;
 };
 
-#define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)\
-    DEFINE_TYPE_CASTS(thisType, SVGPropertyBase, value, value->type() == thisType::classType(), value.type() == thisType::classType());
+#define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)            \
+  DEFINE_TYPE_CASTS(thisType, SVGPropertyBase, value,       \
+                    value->type() == thisType::classType(), \
+                    value.type() == thisType::classType());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGProperty_h
+#endif  // SVGProperty_h

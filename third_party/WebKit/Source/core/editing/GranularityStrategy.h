@@ -12,30 +12,31 @@
 namespace blink {
 
 class GranularityStrategy {
-    USING_FAST_MALLOC(GranularityStrategy);
-public:
-    virtual ~GranularityStrategy();
-    virtual SelectionStrategy GetType() const = 0;
-    virtual void Clear() = 0;
+  USING_FAST_MALLOC(GranularityStrategy);
 
-    // Calculates and returns the new selection based on the updated extent
-    // location in absolute coordinates.
-    virtual VisibleSelection updateExtent(const IntPoint&, LocalFrame*) = 0;
+ public:
+  virtual ~GranularityStrategy();
+  virtual SelectionStrategy GetType() const = 0;
+  virtual void Clear() = 0;
 
-protected:
-    GranularityStrategy();
+  // Calculates and returns the new selection based on the updated extent
+  // location in absolute coordinates.
+  virtual VisibleSelection updateExtent(const IntPoint&, LocalFrame*) = 0;
+
+ protected:
+  GranularityStrategy();
 };
 
 // Always uses character granularity.
 class CharacterGranularityStrategy final : public GranularityStrategy {
-public:
-    CharacterGranularityStrategy();
-    ~CharacterGranularityStrategy() final;
+ public:
+  CharacterGranularityStrategy();
+  ~CharacterGranularityStrategy() final;
 
-    // GranularityStrategy:
-    SelectionStrategy GetType() const final;
-    void Clear() final;
-    VisibleSelection updateExtent(const IntPoint&, LocalFrame*) final;
+  // GranularityStrategy:
+  SelectionStrategy GetType() const final;
+  void Clear() final;
+  VisibleSelection updateExtent(const IntPoint&, LocalFrame*) final;
 };
 
 // "Expand by word, shrink by character" selection strategy.
@@ -76,46 +77,46 @@ public:
 // Move forward one character. End moves with extent in character granularity.
 // Lorem ip^sum dolor|> sit amet, consectetur
 class DirectionGranularityStrategy final : public GranularityStrategy {
-public:
-    DirectionGranularityStrategy();
-    ~DirectionGranularityStrategy() final;
+ public:
+  DirectionGranularityStrategy();
+  ~DirectionGranularityStrategy() final;
 
-    // GranularityStrategy:
-    SelectionStrategy GetType() const final;
-    void Clear() final;
-    VisibleSelection updateExtent(const IntPoint&, LocalFrame*) final;
+  // GranularityStrategy:
+  SelectionStrategy GetType() const final;
+  void Clear() final;
+  VisibleSelection updateExtent(const IntPoint&, LocalFrame*) final;
 
-private:
-    enum class StrategyState {
-        // Starting state.
-        // Selection was cleared and there were no extent updates since then.
-        // One an update is performed, the strategy goes into the Expanding
-        // state unless the update shrinks the selection without changing
-        // relative base/extent order, in which case the strategy goes into the
-        // Shrinking state.
-        Cleared,
-        // Last time the selection was changed by updateExtent - it was expanded
-        // or the relative base/extent order was changed.
-        Expanding,
-        // Last time the selection was changed by updateExtent - it was shrunk
-        // (without changing relative base/extent order).
-        Shrinking
-    };
+ private:
+  enum class StrategyState {
+    // Starting state.
+    // Selection was cleared and there were no extent updates since then.
+    // One an update is performed, the strategy goes into the Expanding
+    // state unless the update shrinks the selection without changing
+    // relative base/extent order, in which case the strategy goes into the
+    // Shrinking state.
+    Cleared,
+    // Last time the selection was changed by updateExtent - it was expanded
+    // or the relative base/extent order was changed.
+    Expanding,
+    // Last time the selection was changed by updateExtent - it was shrunk
+    // (without changing relative base/extent order).
+    Shrinking
+  };
 
-    StrategyState m_state;
+  StrategyState m_state;
 
-    // Current selection granularity being used.
-    TextGranularity m_granularity;
+  // Current selection granularity being used.
+  TextGranularity m_granularity;
 
-    // Horizontal offset in pixels in absolute coordinates applied to the extent point.
-    int m_offset;
+  // Horizontal offset in pixels in absolute coordinates applied to the extent point.
+  int m_offset;
 
-    // This defines location of the offset-adjusted extent point (from the
-    // latest updateExtent call) relative to the location of extent's
-    // VisiblePosition. It is used to detect sub-position extent movement.
-    IntSize m_diffExtentPointFromExtentPosition;
+  // This defines location of the offset-adjusted extent point (from the
+  // latest updateExtent call) relative to the location of extent's
+  // VisiblePosition. It is used to detect sub-position extent movement.
+  IntSize m_diffExtentPointFromExtentPosition;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GranularityStrategy_h
+#endif  // GranularityStrategy_h

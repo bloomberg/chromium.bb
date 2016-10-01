@@ -29,7 +29,11 @@
 
 namespace blink {
 
-template bool DictionaryHelper::get(const Dictionary&, const StringView& key, Member<Headers>& value);
-template bool DictionaryHelper::get(const Dictionary&, const StringView& key, Member<PasswordCredential>& value);
+template bool DictionaryHelper::get(const Dictionary&,
+                                    const StringView& key,
+                                    Member<Headers>& value);
+template bool DictionaryHelper::get(const Dictionary&,
+                                    const StringView& key,
+                                    Member<PasswordCredential>& value);
 
-} // namespace blink
+}  // namespace blink

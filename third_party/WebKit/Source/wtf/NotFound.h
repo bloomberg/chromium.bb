@@ -32,4 +32,4 @@ const size_t kNotFound = static_cast<size_t>(-1);
 
 using WTF::kNotFound;
 
-#endif // NotFound_h
+#endif  // NotFound_h

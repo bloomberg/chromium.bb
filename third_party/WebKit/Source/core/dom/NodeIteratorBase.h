@@ -34,25 +34,25 @@ class Node;
 class NodeFilter;
 
 class NodeIteratorBase : public GarbageCollectedMixin {
-public:
-    Node* root() const { return m_root.get(); }
-    unsigned whatToShow() const { return m_whatToShow; }
-    NodeFilter* filter() const { return m_filter.get(); }
+ public:
+  Node* root() const { return m_root.get(); }
+  unsigned whatToShow() const { return m_whatToShow; }
+  NodeFilter* filter() const { return m_filter.get(); }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-protected:
-    NodeIteratorBase(Node*, unsigned whatToShow, NodeFilter*);
-    unsigned acceptNode(Node*, ExceptionState&) const;
+ protected:
+  NodeIteratorBase(Node*, unsigned whatToShow, NodeFilter*);
+  unsigned acceptNode(Node*, ExceptionState&) const;
 
-private:
-    Member<Node> m_root;
-    unsigned m_whatToShow;
-    Member<NodeFilter> m_filter;
+ private:
+  Member<Node> m_root;
+  unsigned m_whatToShow;
+  Member<NodeFilter> m_filter;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NodeIteratorBase_h
+#endif  // NodeIteratorBase_h

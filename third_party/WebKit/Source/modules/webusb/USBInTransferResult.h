@@ -15,36 +15,37 @@
 namespace blink {
 
 class USBInTransferResult final
-    : public GarbageCollectedFinalized<USBInTransferResult>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static USBInTransferResult* create(const String& status, const Optional<Vector<uint8_t>>& data)
-    {
-        return new USBInTransferResult(status, data);
-    }
+    : public GarbageCollectedFinalized<USBInTransferResult>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    USBInTransferResult(const String& status, const Optional<Vector<uint8_t>>& data)
-        : m_status(status)
-        , m_data(data ? DOMDataView::create(DOMArrayBuffer::create(data->data(), data->size()), 0, data->size()) : nullptr)
-    {
-    }
+ public:
+  static USBInTransferResult* create(const String& status,
+                                     const Optional<Vector<uint8_t>>& data) {
+    return new USBInTransferResult(status, data);
+  }
 
-    virtual ~USBInTransferResult() { }
+  USBInTransferResult(const String& status,
+                      const Optional<Vector<uint8_t>>& data)
+      : m_status(status),
+        m_data(data ? DOMDataView::create(
+                          DOMArrayBuffer::create(data->data(), data->size()),
+                          0,
+                          data->size())
+                    : nullptr) {}
 
-    String status() const { return m_status; }
-    DOMDataView* data() const { return m_data; }
+  virtual ~USBInTransferResult() {}
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_data);
-    }
+  String status() const { return m_status; }
+  DOMDataView* data() const { return m_data; }
 
-private:
-    const String m_status;
-    const Member<DOMDataView> m_data;
+  DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
+
+ private:
+  const String m_status;
+  const Member<DOMDataView> m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // USBInTransferResult_h
+#endif  // USBInTransferResult_h

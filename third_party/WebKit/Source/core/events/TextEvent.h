@@ -35,54 +35,78 @@ namespace blink {
 class DocumentFragment;
 
 class TextEvent final : public UIEvent {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static TextEvent* create();
-    static TextEvent* create(AbstractView*, const String& data, TextEventInputType = TextEventInputKeyboard);
-    static TextEvent* createForPlainTextPaste(AbstractView*, const String& data, bool shouldSmartReplace);
-    static TextEvent* createForFragmentPaste(AbstractView*, DocumentFragment* data, bool shouldSmartReplace, bool shouldMatchStyle);
-    static TextEvent* createForDrop(AbstractView*, const String& data);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~TextEvent() override;
+ public:
+  static TextEvent* create();
+  static TextEvent* create(AbstractView*,
+                           const String& data,
+                           TextEventInputType = TextEventInputKeyboard);
+  static TextEvent* createForPlainTextPaste(AbstractView*,
+                                            const String& data,
+                                            bool shouldSmartReplace);
+  static TextEvent* createForFragmentPaste(AbstractView*,
+                                           DocumentFragment* data,
+                                           bool shouldSmartReplace,
+                                           bool shouldMatchStyle);
+  static TextEvent* createForDrop(AbstractView*, const String& data);
 
-    void initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*, const String& data);
+  ~TextEvent() override;
 
-    String data() const { return m_data; }
+  void initTextEvent(const AtomicString& type,
+                     bool canBubble,
+                     bool cancelable,
+                     AbstractView*,
+                     const String& data);
 
-    const AtomicString& interfaceName() const override;
+  String data() const { return m_data; }
 
-    bool isLineBreak() const { return m_inputType == TextEventInputLineBreak; }
-    bool isComposition() const { return m_inputType == TextEventInputComposition; }
-    bool isPaste() const { return m_inputType == TextEventInputPaste; }
-    bool isDrop() const { return m_inputType == TextEventInputDrop; }
+  const AtomicString& interfaceName() const override;
 
-    bool shouldSmartReplace() const { return m_shouldSmartReplace; }
-    bool shouldMatchStyle() const { return m_shouldMatchStyle; }
-    DocumentFragment* pastingFragment() const { return m_pastingFragment.get(); }
+  bool isLineBreak() const { return m_inputType == TextEventInputLineBreak; }
+  bool isComposition() const {
+    return m_inputType == TextEventInputComposition;
+  }
+  bool isPaste() const { return m_inputType == TextEventInputPaste; }
+  bool isDrop() const { return m_inputType == TextEventInputDrop; }
 
-    DECLARE_VIRTUAL_TRACE();
+  bool shouldSmartReplace() const { return m_shouldSmartReplace; }
+  bool shouldMatchStyle() const { return m_shouldMatchStyle; }
+  DocumentFragment* pastingFragment() const { return m_pastingFragment.get(); }
 
-private:
-    TextEvent();
+  DECLARE_VIRTUAL_TRACE();
 
-    TextEvent(AbstractView*, const String& data, TextEventInputType = TextEventInputKeyboard);
-    TextEvent(AbstractView*, const String& data, DocumentFragment*, bool shouldSmartReplace, bool shouldMatchStyle);
+ private:
+  TextEvent();
 
-    TextEventInputType m_inputType;
-    String m_data;
+  TextEvent(AbstractView*,
+            const String& data,
+            TextEventInputType = TextEventInputKeyboard);
+  TextEvent(AbstractView*,
+            const String& data,
+            DocumentFragment*,
+            bool shouldSmartReplace,
+            bool shouldMatchStyle);
 
-    Member<DocumentFragment> m_pastingFragment;
-    bool m_shouldSmartReplace;
-    bool m_shouldMatchStyle;
+  TextEventInputType m_inputType;
+  String m_data;
+
+  Member<DocumentFragment> m_pastingFragment;
+  bool m_shouldSmartReplace;
+  bool m_shouldMatchStyle;
 };
 
-inline bool isTextEvent(const Event& event)
-{
-    return event.type() == EventTypeNames::textInput && event.hasInterface(EventNames::TextEvent);
+inline bool isTextEvent(const Event& event) {
+  return event.type() == EventTypeNames::textInput &&
+         event.hasInterface(EventNames::TextEvent);
 }
 
-DEFINE_TYPE_CASTS(TextEvent, Event, event, isTextEvent(*event), isTextEvent(event));
+DEFINE_TYPE_CASTS(TextEvent,
+                  Event,
+                  event,
+                  isTextEvent(*event),
+                  isTextEvent(event));
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextEvent_h
+#endif  // TextEvent_h

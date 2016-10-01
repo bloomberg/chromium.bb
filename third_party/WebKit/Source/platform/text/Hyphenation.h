@@ -17,21 +17,23 @@ namespace blink {
 class Font;
 
 class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
-public:
-    virtual ~Hyphenation() {}
+ public:
+  virtual ~Hyphenation() {}
 
-    virtual size_t lastHyphenLocation(const StringView&, size_t beforeIndex) const = 0;
-    virtual Vector<size_t, 8> hyphenLocations(const StringView&) const;
+  virtual size_t lastHyphenLocation(const StringView&,
+                                    size_t beforeIndex) const = 0;
+  virtual Vector<size_t, 8> hyphenLocations(const StringView&) const;
 
-    static const unsigned minimumPrefixLength = 2;
-    static const unsigned minimumSuffixLength = 2;
-    static int minimumPrefixWidth(const Font&);
+  static const unsigned minimumPrefixLength = 2;
+  static const unsigned minimumSuffixLength = 2;
+  static int minimumPrefixWidth(const Font&);
 
-private:
-    friend class LayoutLocale;
-    static PassRefPtr<Hyphenation> platformGetHyphenation(const AtomicString& locale);
+ private:
+  friend class LayoutLocale;
+  static PassRefPtr<Hyphenation> platformGetHyphenation(
+      const AtomicString& locale);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Hyphenation_h
+#endif  // Hyphenation_h

@@ -13,13 +13,14 @@ class WebPresentationConnectionClient;
 
 // The delegate Blink provides to WebPresentationReceiverClient in order to get updates.
 class BLINK_PLATFORM_EXPORT WebPresentationReceiver {
-public:
-    virtual ~WebPresentationReceiver() = default;
+ public:
+  virtual ~WebPresentationReceiver() = default;
 
-    // Called when receiver page gets an incoming connection.
-    virtual void onReceiverConnectionAvailable(WebPresentationConnectionClient*) = 0;
+  // Called when receiver page gets an incoming connection.
+  virtual void onReceiverConnectionAvailable(
+      WebPresentationConnectionClient*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPresentationReceiver_h
+#endif  // WebPresentationReceiver_h

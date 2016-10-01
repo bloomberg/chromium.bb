@@ -33,21 +33,22 @@ namespace blink {
 class WebGLShader;
 
 class WebGLDebugShaders final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WebGLDebugShaders* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~WebGLDebugShaders() override;
-    WebGLExtensionName name() const override;
+ public:
+  static WebGLDebugShaders* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-    String getTranslatedShaderSource(WebGLShader*);
+  ~WebGLDebugShaders() override;
+  WebGLExtensionName name() const override;
 
-private:
-    explicit WebGLDebugShaders(WebGLRenderingContextBase*);
+  String getTranslatedShaderSource(WebGLShader*);
+
+ private:
+  explicit WebGLDebugShaders(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLDebugShaders_h
+#endif  // WebGLDebugShaders_h

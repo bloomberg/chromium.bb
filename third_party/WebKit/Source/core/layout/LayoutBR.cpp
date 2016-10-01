@@ -28,45 +28,36 @@
 
 namespace blink {
 
-static PassRefPtr<StringImpl> newlineString()
-{
-    DEFINE_STATIC_LOCAL(const String, string, ("\n"));
-    return string.impl();
+static PassRefPtr<StringImpl> newlineString() {
+  DEFINE_STATIC_LOCAL(const String, string, ("\n"));
+  return string.impl();
 }
 
-LayoutBR::LayoutBR(Node* node)
-    : LayoutText(node, newlineString())
-{
+LayoutBR::LayoutBR(Node* node) : LayoutText(node, newlineString()) {}
+
+LayoutBR::~LayoutBR() {}
+
+int LayoutBR::lineHeight(bool firstLine) const {
+  const ComputedStyle& style =
+      styleRef(firstLine && document().styleEngine().usesFirstLineRules());
+  return style.computedLineHeight();
 }
 
-LayoutBR::~LayoutBR()
-{
+void LayoutBR::styleDidChange(StyleDifference diff,
+                              const ComputedStyle* oldStyle) {
+  LayoutText::styleDidChange(diff, oldStyle);
 }
 
-int LayoutBR::lineHeight(bool firstLine) const
-{
-    const ComputedStyle& style = styleRef(firstLine && document().styleEngine().usesFirstLineRules());
-    return style.computedLineHeight();
+int LayoutBR::caretMinOffset() const {
+  return 0;
 }
 
-void LayoutBR::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
-{
-    LayoutText::styleDidChange(diff, oldStyle);
+int LayoutBR::caretMaxOffset() const {
+  return 1;
 }
 
-int LayoutBR::caretMinOffset() const
-{
-    return 0;
+PositionWithAffinity LayoutBR::positionForPoint(const LayoutPoint&) {
+  return createPositionWithAffinity(0);
 }
 
-int LayoutBR::caretMaxOffset() const
-{
-    return 1;
-}
-
-PositionWithAffinity LayoutBR::positionForPoint(const LayoutPoint&)
-{
-    return createPositionWithAffinity(0);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -13,21 +13,28 @@ namespace blink {
 class LayoutBlockFlow;
 
 class BlockFlowPaintInvalidator {
-    STACK_ALLOCATED();
-public:
-    BlockFlowPaintInvalidator(const LayoutBlockFlow& blockFlow) : m_blockFlow(blockFlow) { }
+  STACK_ALLOCATED();
 
-    void invalidatePaintForOverhangingFloats() { invalidatePaintForOverhangingFloatsInternal(InvalidateDescendants); }
+ public:
+  BlockFlowPaintInvalidator(const LayoutBlockFlow& blockFlow)
+      : m_blockFlow(blockFlow) {}
 
-    void invalidateDisplayItemClients(PaintInvalidationReason);
+  void invalidatePaintForOverhangingFloats() {
+    invalidatePaintForOverhangingFloatsInternal(InvalidateDescendants);
+  }
 
-private:
-    enum InvalidateDescendantMode { DontInvalidateDescendants, InvalidateDescendants };
-    void invalidatePaintForOverhangingFloatsInternal(InvalidateDescendantMode);
+  void invalidateDisplayItemClients(PaintInvalidationReason);
 
-    const LayoutBlockFlow& m_blockFlow;
+ private:
+  enum InvalidateDescendantMode {
+    DontInvalidateDescendants,
+    InvalidateDescendants
+  };
+  void invalidatePaintForOverhangingFloatsInternal(InvalidateDescendantMode);
+
+  const LayoutBlockFlow& m_blockFlow;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

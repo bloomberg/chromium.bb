@@ -12,50 +12,45 @@
 
 namespace blink {
 
-TEST(CustomElementReactionQueueTest, invokeReactions_one)
-{
-    std::vector<char> log;
-    CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-    queue->add(new TestReaction({new Log('a', log)}));
-    queue->invokeReactions(nullptr);
-    EXPECT_EQ(log, std::vector<char>({'a'}))
-        << "the reaction should have been invoked";
+TEST(CustomElementReactionQueueTest, invokeReactions_one) {
+  std::vector<char> log;
+  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+  queue->add(new TestReaction({new Log('a', log)}));
+  queue->invokeReactions(nullptr);
+  EXPECT_EQ(log, std::vector<char>({'a'}))
+      << "the reaction should have been invoked";
 }
 
-TEST(CustomElementReactionQueueTest, invokeReactions_many)
-{
-    std::vector<char> log;
-    CustomElementReactionQueue* queue = new CustomElementReactionQueue();
-    queue->add(new TestReaction({new Log('a', log)}));
-    queue->add(new TestReaction({new Log('b', log)}));
-    queue->add(new TestReaction({new Log('c', log)}));
-    queue->invokeReactions(nullptr);
-    EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
-        << "the reaction should have been invoked";
+TEST(CustomElementReactionQueueTest, invokeReactions_many) {
+  std::vector<char> log;
+  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+  queue->add(new TestReaction({new Log('a', log)}));
+  queue->add(new TestReaction({new Log('b', log)}));
+  queue->add(new TestReaction({new Log('c', log)}));
+  queue->invokeReactions(nullptr);
+  EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
+      << "the reaction should have been invoked";
 }
 
-TEST(CustomElementReactionQueueTest, invokeReactions_recursive)
-{
-    std::vector<char> log;
-    CustomElementReactionQueue* queue = new CustomElementReactionQueue();
+TEST(CustomElementReactionQueueTest, invokeReactions_recursive) {
+  std::vector<char> log;
+  CustomElementReactionQueue* queue = new CustomElementReactionQueue();
 
-    CustomElementReaction* third = new TestReaction({
-        new Log('c', log),
-        new Recurse(queue)}); // "Empty" recursion
+  CustomElementReaction* third = new TestReaction(
+      {new Log('c', log), new Recurse(queue)});  // "Empty" recursion
 
-    CustomElementReaction* second = new TestReaction({
-        new Log('b', log),
-        new Enqueue(queue, third)}); // Unwinds one level of recursion
+  CustomElementReaction* second = new TestReaction(
+      {new Log('b', log),
+       new Enqueue(queue, third)});  // Unwinds one level of recursion
 
-    CustomElementReaction* first = new TestReaction({
-        new Log('a', log),
-        new Enqueue(queue, second),
-        new Recurse(queue)}); // Non-empty recursion
+  CustomElementReaction* first =
+      new TestReaction({new Log('a', log), new Enqueue(queue, second),
+                        new Recurse(queue)});  // Non-empty recursion
 
-    queue->add(first);
-    queue->invokeReactions(nullptr);
-    EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
-        << "the reactions should have been invoked";
+  queue->add(first);
+  queue->invokeReactions(nullptr);
+  EXPECT_EQ(log, std::vector<char>({'a', 'b', 'c'}))
+      << "the reactions should have been invoked";
 }
 
-} // namespace blink
+}  // namespace blink

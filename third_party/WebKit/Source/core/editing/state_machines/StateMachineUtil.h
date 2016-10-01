@@ -17,6 +17,6 @@ namespace blink {
 // BackwardGraphemeBoundaryStateMachine instead.
 CORE_EXPORT bool isGraphemeBreak(UChar32 prevCodePoint, UChar32 nextCodePoint);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StateMachineUtil_h
+#endif  // StateMachineUtil_h

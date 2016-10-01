@@ -21,48 +21,50 @@ class ComputedStyle;
 class Document;
 class FontCachePurgePreventer;
 
-class CORE_EXPORT CanvasFontCache final : public GarbageCollectedFinalized<CanvasFontCache>, public WebThread::TaskObserver {
-public:
-    static CanvasFontCache* create(Document& document)
-    {
-        return new CanvasFontCache(document);
-    }
+class CORE_EXPORT CanvasFontCache final
+    : public GarbageCollectedFinalized<CanvasFontCache>,
+      public WebThread::TaskObserver {
+ public:
+  static CanvasFontCache* create(Document& document) {
+    return new CanvasFontCache(document);
+  }
 
-    MutableStylePropertySet* parseFont(const String&);
-    void pruneAll();
-    unsigned size();
+  MutableStylePropertySet* parseFont(const String&);
+  void pruneAll();
+  unsigned size();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    static unsigned maxFonts();
-    unsigned hardMaxFonts();
+  static unsigned maxFonts();
+  unsigned hardMaxFonts();
 
-    void willUseCurrentFont() { schedulePruningIfNeeded(); }
-    bool getFontUsingDefaultStyle(const String&, Font&);
+  void willUseCurrentFont() { schedulePruningIfNeeded(); }
+  bool getFontUsingDefaultStyle(const String&, Font&);
 
-    // TaskObserver implementation
-    void didProcessTask() override;
-    void willProcessTask() override { }
+  // TaskObserver implementation
+  void didProcessTask() override;
+  void willProcessTask() override {}
 
-    // For testing
-    bool isInCache(const String&);
+  // For testing
+  bool isInCache(const String&);
 
-    ~CanvasFontCache();
+  ~CanvasFontCache();
 
-private:
-    explicit CanvasFontCache(Document&);
-    void schedulePruningIfNeeded();
-    typedef HeapHashMap<String, Member<MutableStylePropertySet>> MutableStylePropertyMap;
+ private:
+  explicit CanvasFontCache(Document&);
+  void schedulePruningIfNeeded();
+  typedef HeapHashMap<String, Member<MutableStylePropertySet>>
+      MutableStylePropertyMap;
 
-    HashMap<String, Font> m_fontsResolvedUsingDefaultStyle;
-    MutableStylePropertyMap m_fetchedFonts;
-    ListHashSet<String> m_fontLRUList;
-    std::unique_ptr<FontCachePurgePreventer> m_mainCachePurgePreventer;
-    Member<Document> m_document;
-    RefPtr<ComputedStyle> m_defaultFontStyle;
-    bool m_pruningScheduled;
+  HashMap<String, Font> m_fontsResolvedUsingDefaultStyle;
+  MutableStylePropertyMap m_fetchedFonts;
+  ListHashSet<String> m_fontLRUList;
+  std::unique_ptr<FontCachePurgePreventer> m_mainCachePurgePreventer;
+  Member<Document> m_document;
+  RefPtr<ComputedStyle> m_defaultFontStyle;
+  bool m_pruningScheduled;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

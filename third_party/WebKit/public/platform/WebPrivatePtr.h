@@ -41,7 +41,8 @@
 #endif
 
 namespace WTF {
-template<class T> class ThreadSafeRefCounted;
+template <class T>
+class ThreadSafeRefCounted;
 }
 
 namespace blink {
@@ -50,145 +51,181 @@ namespace blink {
 // thread that created it, but can optionally be allowed to happen on
 // another thread.
 enum WebPrivatePtrDestruction {
-    WebPrivatePtrDestructionSameThread,
-    WebPrivatePtrDestructionCrossThread,
+  WebPrivatePtrDestructionSameThread,
+  WebPrivatePtrDestructionCrossThread,
 };
 
 // The WebPrivatePtr<> holds by default a strong reference to its Blink object,
 // but Blink GC managed objects also support keeping a weak reference by
 // way of WebPrivatePtr<>.
 enum class WebPrivatePtrStrength {
-    Normal,
-    Weak,
+  Normal,
+  Weak,
 };
 
 #if INSIDE_BLINK
 enum LifetimeManagementType {
-    RefCountedLifetime,
-    GarbageCollectedLifetime,
+  RefCountedLifetime,
+  GarbageCollectedLifetime,
 };
 
-template<typename T>
+template <typename T>
 struct LifetimeOf {
-private:
-    static const bool isGarbageCollected = WTF::IsSubclassOfTemplate<T, GarbageCollected>::value || IsGarbageCollectedMixin<T>::value;
-public:
-    static const LifetimeManagementType value = !isGarbageCollected ? RefCountedLifetime : GarbageCollectedLifetime;
+ private:
+  static const bool isGarbageCollected =
+      WTF::IsSubclassOfTemplate<T, GarbageCollected>::value ||
+      IsGarbageCollectedMixin<T>::value;
+
+ public:
+  static const LifetimeManagementType value =
+      !isGarbageCollected ? RefCountedLifetime : GarbageCollectedLifetime;
 };
 
-template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak, LifetimeManagementType lifetime>
+template <typename T,
+          WebPrivatePtrDestruction crossThreadDestruction,
+          WebPrivatePtrStrength strongOrWeak,
+          LifetimeManagementType lifetime>
 class PtrStorageImpl;
 
-template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
-class PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, RefCountedLifetime> {
-public:
-    typedef PassRefPtr<T> BlinkPtrType;
+template <typename T,
+          WebPrivatePtrDestruction crossThreadDestruction,
+          WebPrivatePtrStrength strongOrWeak>
+class PtrStorageImpl<T,
+                     crossThreadDestruction,
+                     strongOrWeak,
+                     RefCountedLifetime> {
+ public:
+  typedef PassRefPtr<T> BlinkPtrType;
 
-    void assign(const BlinkPtrType& val)
-    {
-        static_assert(crossThreadDestruction == WebPrivatePtrDestructionSameThread || WTF::IsSubclassOfTemplate<T, WTF::ThreadSafeRefCounted>::value, "Cross thread destructible class must derive from ThreadSafeRefCounted<>");
-        static_assert(strongOrWeak == WebPrivatePtrStrength::Normal, "Ref-counted classes do not support weak WebPrivatePtr<> references");
-        release();
-        m_ptr = val.leakRef();
-    }
+  void assign(const BlinkPtrType& val) {
+    static_assert(
+        crossThreadDestruction == WebPrivatePtrDestructionSameThread ||
+            WTF::IsSubclassOfTemplate<T, WTF::ThreadSafeRefCounted>::value,
+        "Cross thread destructible class must derive from "
+        "ThreadSafeRefCounted<>");
+    static_assert(
+        strongOrWeak == WebPrivatePtrStrength::Normal,
+        "Ref-counted classes do not support weak WebPrivatePtr<> references");
+    release();
+    m_ptr = val.leakRef();
+  }
 
-    void assign(const PtrStorageImpl& other)
-    {
-        T* val = other.get();
-        if (m_ptr == val)
-            return;
-        release();
-        WTF::refIfNotNull(val);
-        m_ptr = val;
-    }
+  void assign(const PtrStorageImpl& other) {
+    T* val = other.get();
+    if (m_ptr == val)
+      return;
+    release();
+    WTF::refIfNotNull(val);
+    m_ptr = val;
+  }
 
-    T* get() const { return m_ptr; }
+  T* get() const { return m_ptr; }
 
-    void release()
-    {
-        WTF::derefIfNotNull(m_ptr);
-        m_ptr = 0;
-    }
+  void release() {
+    WTF::derefIfNotNull(m_ptr);
+    m_ptr = 0;
+  }
 
-private:
-    T* m_ptr;
+ private:
+  T* m_ptr;
 };
 
 template <typename T, WebPrivatePtrDestruction, WebPrivatePtrStrength>
 struct WebPrivatePtrPersistentStorageType {
-public:
-    using Type = Persistent<T>;
+ public:
+  using Type = Persistent<T>;
 };
 
 template <typename T>
-struct WebPrivatePtrPersistentStorageType<T, WebPrivatePtrDestructionSameThread, WebPrivatePtrStrength::Weak>  {
-public:
-    using Type = WeakPersistent<T>;
+struct WebPrivatePtrPersistentStorageType<T,
+                                          WebPrivatePtrDestructionSameThread,
+                                          WebPrivatePtrStrength::Weak> {
+ public:
+  using Type = WeakPersistent<T>;
 };
 
 template <typename T>
-struct WebPrivatePtrPersistentStorageType<T, WebPrivatePtrDestructionCrossThread, WebPrivatePtrStrength::Normal> {
-public:
-    using Type = CrossThreadPersistent<T>;
+struct WebPrivatePtrPersistentStorageType<T,
+                                          WebPrivatePtrDestructionCrossThread,
+                                          WebPrivatePtrStrength::Normal> {
+ public:
+  using Type = CrossThreadPersistent<T>;
 };
 
 template <typename T>
-struct WebPrivatePtrPersistentStorageType<T, WebPrivatePtrDestructionCrossThread, WebPrivatePtrStrength::Weak> {
-public:
-    using Type = CrossThreadWeakPersistent<T>;
+struct WebPrivatePtrPersistentStorageType<T,
+                                          WebPrivatePtrDestructionCrossThread,
+                                          WebPrivatePtrStrength::Weak> {
+ public:
+  using Type = CrossThreadWeakPersistent<T>;
 };
 
-template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
-class PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime> {
-public:
-    void assign(T* val)
-    {
-        if (!val) {
-            release();
-            return;
-        }
-
-        if (!m_handle)
-            m_handle = new (typename WebPrivatePtrPersistentStorageType<T, crossThreadDestruction, strongOrWeak>::Type)();
-
-        (*m_handle) = val;
+template <typename T,
+          WebPrivatePtrDestruction crossThreadDestruction,
+          WebPrivatePtrStrength strongOrWeak>
+class PtrStorageImpl<T,
+                     crossThreadDestruction,
+                     strongOrWeak,
+                     GarbageCollectedLifetime> {
+ public:
+  void assign(T* val) {
+    if (!val) {
+      release();
+      return;
     }
 
-    template<typename U> void assign(U* val) { assign(static_cast<T*>(val)); }
+    if (!m_handle)
+      m_handle = new (
+          typename WebPrivatePtrPersistentStorageType<T, crossThreadDestruction,
+                                                      strongOrWeak>::Type)();
 
-    void assign(const PtrStorageImpl& other) { assign(other.get()); }
+    (*m_handle) = val;
+  }
 
-    T* get() const { return m_handle ? m_handle->get() : 0; }
+  template <typename U>
+  void assign(U* val) {
+    assign(static_cast<T*>(val));
+  }
 
-    void release()
-    {
-        delete m_handle;
-        m_handle = 0;
-    }
+  void assign(const PtrStorageImpl& other) { assign(other.get()); }
 
-private:
-    typename WebPrivatePtrPersistentStorageType<T, crossThreadDestruction, strongOrWeak>::Type* m_handle;
+  T* get() const { return m_handle ? m_handle->get() : 0; }
+
+  void release() {
+    delete m_handle;
+    m_handle = 0;
+  }
+
+ private:
+  typename WebPrivatePtrPersistentStorageType<T,
+                                              crossThreadDestruction,
+                                              strongOrWeak>::Type* m_handle;
 };
 
-template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
-class PtrStorage : public PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, LifetimeOf<T>::value> {
-public:
-    static PtrStorage& fromSlot(void** slot)
-    {
-        static_assert(sizeof(PtrStorage) == sizeof(void*), "PtrStorage must be the size of a pointer");
-        return *reinterpret_cast<PtrStorage*>(slot);
-    }
+template <typename T,
+          WebPrivatePtrDestruction crossThreadDestruction,
+          WebPrivatePtrStrength strongOrWeak>
+class PtrStorage : public PtrStorageImpl<T,
+                                         crossThreadDestruction,
+                                         strongOrWeak,
+                                         LifetimeOf<T>::value> {
+ public:
+  static PtrStorage& fromSlot(void** slot) {
+    static_assert(sizeof(PtrStorage) == sizeof(void*),
+                  "PtrStorage must be the size of a pointer");
+    return *reinterpret_cast<PtrStorage*>(slot);
+  }
 
-    static const PtrStorage& fromSlot(void* const* slot)
-    {
-        static_assert(sizeof(PtrStorage) == sizeof(void*), "PtrStorage must be the size of a pointer");
-        return *reinterpret_cast<const PtrStorage*>(slot);
-    }
+  static const PtrStorage& fromSlot(void* const* slot) {
+    static_assert(sizeof(PtrStorage) == sizeof(void*),
+                  "PtrStorage must be the size of a pointer");
+    return *reinterpret_cast<const PtrStorage*>(slot);
+  }
 
-private:
-    // Prevent construction via normal means.
-    PtrStorage();
-    PtrStorage(const PtrStorage&);
+ private:
+  // Prevent construction via normal means.
+  PtrStorage();
+  PtrStorage(const PtrStorage&);
 };
 #endif
 
@@ -228,79 +265,81 @@ private:
 //    WebFoo::~WebFoo() { m_private.reset(); }
 //    void WebFoo::assign(const WebFoo& other) { ... }
 //
-template <typename T, WebPrivatePtrDestruction crossThreadDestruction = WebPrivatePtrDestructionSameThread, WebPrivatePtrStrength strongOrWeak = WebPrivatePtrStrength::Normal>
+template <typename T,
+          WebPrivatePtrDestruction crossThreadDestruction =
+              WebPrivatePtrDestructionSameThread,
+          WebPrivatePtrStrength strongOrWeak = WebPrivatePtrStrength::Normal>
 class WebPrivatePtr {
-public:
-    WebPrivatePtr() : m_storage(0) { }
-    ~WebPrivatePtr()
-    {
-        // We don't destruct the object pointed by m_ptr here because we don't
-        // want to expose destructors of core classes to embedders. We should
-        // call reset() manually in destructors of classes with WebPrivatePtr
-        // members.
-        DCHECK(!m_storage);
-    }
+ public:
+  WebPrivatePtr() : m_storage(0) {}
+  ~WebPrivatePtr() {
+    // We don't destruct the object pointed by m_ptr here because we don't
+    // want to expose destructors of core classes to embedders. We should
+    // call reset() manually in destructors of classes with WebPrivatePtr
+    // members.
+    DCHECK(!m_storage);
+  }
 
-    bool isNull() const { return !m_storage; }
+  bool isNull() const { return !m_storage; }
 
 #if INSIDE_BLINK
-    template<typename U>
-    WebPrivatePtr(const U& ptr)
-        : m_storage(0)
-    {
-        storage().assign(ptr);
-    }
+  template <typename U>
+  WebPrivatePtr(const U& ptr) : m_storage(0) {
+    storage().assign(ptr);
+  }
 
-    void reset() { storage().release(); }
+  void reset() { storage().release(); }
 
-    WebPrivatePtr& operator=(const WebPrivatePtr& other)
-    {
-        storage().assign(other.storage());
-        return *this;
-    }
+  WebPrivatePtr& operator=(const WebPrivatePtr& other) {
+    storage().assign(other.storage());
+    return *this;
+  }
 
-    template<typename U>
-    WebPrivatePtr& operator=(const U& ptr)
-    {
-        storage().assign(ptr);
-        return *this;
-    }
+  template <typename U>
+  WebPrivatePtr& operator=(const U& ptr) {
+    storage().assign(ptr);
+    return *this;
+  }
 
-    T* get() const { return storage().get(); }
+  T* get() const { return storage().get(); }
 
-    T& operator*() const
-    {
-        ASSERT(m_storage);
-        return *get();
-    }
+  T& operator*() const {
+    ASSERT(m_storage);
+    return *get();
+  }
 
-    T* operator->() const
-    {
-        ASSERT(m_storage);
-        return get();
-    }
+  T* operator->() const {
+    ASSERT(m_storage);
+    return get();
+  }
 #endif
 
-private:
+ private:
 #if INSIDE_BLINK
-    PtrStorage<T, crossThreadDestruction, strongOrWeak>& storage() { return PtrStorage<T, crossThreadDestruction, strongOrWeak>::fromSlot(&m_storage); }
-    const PtrStorage<T, crossThreadDestruction, strongOrWeak>& storage() const { return PtrStorage<T, crossThreadDestruction, strongOrWeak>::fromSlot(&m_storage); }
+  PtrStorage<T, crossThreadDestruction, strongOrWeak>& storage() {
+    return PtrStorage<T, crossThreadDestruction, strongOrWeak>::fromSlot(
+        &m_storage);
+  }
+  const PtrStorage<T, crossThreadDestruction, strongOrWeak>& storage() const {
+    return PtrStorage<T, crossThreadDestruction, strongOrWeak>::fromSlot(
+        &m_storage);
+  }
 #endif
 
 #if !INSIDE_BLINK
-    // Disable the assignment operator; we define it above for when
-    // INSIDE_BLINK is set, but we need to make sure that it is not
-    // used outside there; the compiler-provided version won't handle reference
-    // counting properly.
-    WebPrivatePtr& operator=(const WebPrivatePtr& other);
+  // Disable the assignment operator; we define it above for when
+  // INSIDE_BLINK is set, but we need to make sure that it is not
+  // used outside there; the compiler-provided version won't handle reference
+  // counting properly.
+  WebPrivatePtr& operator=(const WebPrivatePtr& other);
 #endif
-    // Disable the copy constructor; classes that contain a WebPrivatePtr
-    // should implement their copy constructor using assign().
-    WebPrivatePtr(const WebPrivatePtr&);
+  // Disable the copy constructor; classes that contain a WebPrivatePtr
+  // should implement their copy constructor using assign().
+  WebPrivatePtr(const WebPrivatePtr&);
 
-    void* m_storage;
+  void* m_storage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPrivatePtr_h
+#endif  // WebPrivatePtr_h

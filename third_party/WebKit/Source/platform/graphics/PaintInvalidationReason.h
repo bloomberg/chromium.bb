@@ -10,49 +10,50 @@
 namespace blink {
 
 enum PaintInvalidationReason {
-    PaintInvalidationNone,
-    PaintInvalidationIncremental,
-    PaintInvalidationRectangle,
-    // The following reasons will all cause full invalidation of the LayoutObject.
-    PaintInvalidationFull, // Any unspecified reason of full invalidation.
-    PaintInvalidationStyleChange,
-    PaintInvalidationForcedByLayout,
-    PaintInvalidationCompositingUpdate,
-    PaintInvalidationBorderBoxChange,
-    PaintInvalidationContentBoxChange,
-    PaintInvalidationLayoutOverflowBoxChange,
-    PaintInvalidationBoundsChange,
-    PaintInvalidationLocationChange,
-    PaintInvalidationBackgroundObscurationChange,
-    PaintInvalidationBecameVisible,
-    PaintInvalidationBecameInvisible,
-    PaintInvalidationScroll,
-    PaintInvalidationSelection,
-    PaintInvalidationOutline,
-    PaintInvalidationSubtree,
-    PaintInvalidationLayoutObjectInsertion,
-    PaintInvalidationLayoutObjectRemoval,
-    PaintInvalidationSVGResourceChange,
-    // PaintInvalidationDelayedFull means that PaintInvalidationFull is needed in order to fully paint
-    // the content, but that painting of the object can be delayed until a future frame.
-    // This can be the case for an object whose content is not visible to the user.
-    PaintInvalidationDelayedFull,
+  PaintInvalidationNone,
+  PaintInvalidationIncremental,
+  PaintInvalidationRectangle,
+  // The following reasons will all cause full invalidation of the LayoutObject.
+  PaintInvalidationFull,  // Any unspecified reason of full invalidation.
+  PaintInvalidationStyleChange,
+  PaintInvalidationForcedByLayout,
+  PaintInvalidationCompositingUpdate,
+  PaintInvalidationBorderBoxChange,
+  PaintInvalidationContentBoxChange,
+  PaintInvalidationLayoutOverflowBoxChange,
+  PaintInvalidationBoundsChange,
+  PaintInvalidationLocationChange,
+  PaintInvalidationBackgroundObscurationChange,
+  PaintInvalidationBecameVisible,
+  PaintInvalidationBecameInvisible,
+  PaintInvalidationScroll,
+  PaintInvalidationSelection,
+  PaintInvalidationOutline,
+  PaintInvalidationSubtree,
+  PaintInvalidationLayoutObjectInsertion,
+  PaintInvalidationLayoutObjectRemoval,
+  PaintInvalidationSVGResourceChange,
+  // PaintInvalidationDelayedFull means that PaintInvalidationFull is needed in order to fully paint
+  // the content, but that painting of the object can be delayed until a future frame.
+  // This can be the case for an object whose content is not visible to the user.
+  PaintInvalidationDelayedFull,
 
-    PaintInvalidationReasonMax = PaintInvalidationDelayedFull
+  PaintInvalidationReasonMax = PaintInvalidationDelayedFull
 };
 
-PLATFORM_EXPORT const char* paintInvalidationReasonToString(PaintInvalidationReason);
+PLATFORM_EXPORT const char* paintInvalidationReasonToString(
+    PaintInvalidationReason);
 
-inline bool isFullPaintInvalidationReason(PaintInvalidationReason reason)
-{
-    return reason >= PaintInvalidationFull;
+inline bool isFullPaintInvalidationReason(PaintInvalidationReason reason) {
+  return reason >= PaintInvalidationFull;
 }
 
-inline bool isImmediateFullPaintInvalidationReason(PaintInvalidationReason reason)
-{
-    return isFullPaintInvalidationReason(reason) && reason != PaintInvalidationDelayedFull;
+inline bool isImmediateFullPaintInvalidationReason(
+    PaintInvalidationReason reason) {
+  return isFullPaintInvalidationReason(reason) &&
+         reason != PaintInvalidationDelayedFull;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintInvalidationReason_h
+#endif  // PaintInvalidationReason_h

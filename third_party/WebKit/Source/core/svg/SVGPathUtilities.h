@@ -39,6 +39,6 @@ SVGParsingError buildByteStreamFromString(const String&, SVGPathByteStream&);
 // SVGPathByteStream -> String
 String buildStringFromByteStream(const SVGPathByteStream&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPathUtilities_h
+#endif  // SVGPathUtilities_h

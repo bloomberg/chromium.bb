@@ -15,23 +15,24 @@ namespace blink {
 
 // Keeps track of the number of proxies bound to each property.
 class CompositorProxiedPropertySet final {
-    WTF_MAKE_NONCOPYABLE(CompositorProxiedPropertySet);
-    USING_FAST_MALLOC(CompositorProxiedPropertySet);
-public:
-    static std::unique_ptr<CompositorProxiedPropertySet> create();
-    virtual ~CompositorProxiedPropertySet();
+  WTF_MAKE_NONCOPYABLE(CompositorProxiedPropertySet);
+  USING_FAST_MALLOC(CompositorProxiedPropertySet);
 
-    bool isEmpty() const;
-    void increment(uint32_t mutableProperties);
-    void decrement(uint32_t mutableProperties);
-    uint32_t proxiedProperties() const;
+ public:
+  static std::unique_ptr<CompositorProxiedPropertySet> create();
+  virtual ~CompositorProxiedPropertySet();
 
-private:
-    CompositorProxiedPropertySet();
+  bool isEmpty() const;
+  void increment(uint32_t mutableProperties);
+  void decrement(uint32_t mutableProperties);
+  uint32_t proxiedProperties() const;
 
-    unsigned short m_counts[CompositorMutableProperty::kNumProperties];
+ private:
+  CompositorProxiedPropertySet();
+
+  unsigned short m_counts[CompositorMutableProperty::kNumProperties];
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorProxiedPropertySet_h
+#endif  // CompositorProxiedPropertySet_h

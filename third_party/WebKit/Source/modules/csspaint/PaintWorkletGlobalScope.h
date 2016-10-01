@@ -17,38 +17,54 @@ class CSSPaintDefinition;
 class CSSPaintImageGeneratorImpl;
 class ExceptionState;
 
-class MODULES_EXPORT PaintWorkletGlobalScope final : public MainThreadWorkletGlobalScope {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
-public:
-    static PaintWorkletGlobalScope* create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
-    ~PaintWorkletGlobalScope() override;
-    void dispose() final;
+class MODULES_EXPORT PaintWorkletGlobalScope final
+    : public MainThreadWorkletGlobalScope {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 
-    bool isPaintWorkletGlobalScope() const final { return true; }
-    void registerPaint(const String& name, const ScriptValue& ctor, ExceptionState&);
+ public:
+  static PaintWorkletGlobalScope* create(LocalFrame*,
+                                         const KURL&,
+                                         const String& userAgent,
+                                         PassRefPtr<SecurityOrigin>,
+                                         v8::Isolate*);
+  ~PaintWorkletGlobalScope() override;
+  void dispose() final;
 
-    CSSPaintDefinition* findDefinition(const String& name);
-    void addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
+  bool isPaintWorkletGlobalScope() const final { return true; }
+  void registerPaint(const String& name,
+                     const ScriptValue& ctor,
+                     ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  CSSPaintDefinition* findDefinition(const String& name);
+  void addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
-private:
-    PaintWorkletGlobalScope(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+  DECLARE_VIRTUAL_TRACE();
 
-    typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
-    DefinitionMap m_paintDefinitions;
+ private:
+  PaintWorkletGlobalScope(LocalFrame*,
+                          const KURL&,
+                          const String& userAgent,
+                          PassRefPtr<SecurityOrigin>,
+                          v8::Isolate*);
 
-    // The map of CSSPaintImageGeneratorImpl which are waiting for a
-    // CSSPaintDefinition to be registered. The global scope is expected to
-    // outlive the generators hence are held onto with a WeakMember.
-    typedef HeapHashSet<WeakMember<CSSPaintImageGeneratorImpl>> GeneratorHashSet;
-    typedef HeapHashMap<String, Member<GeneratorHashSet>> PendingGeneratorMap;
-    PendingGeneratorMap m_pendingGenerators;
+  typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
+  DefinitionMap m_paintDefinitions;
+
+  // The map of CSSPaintImageGeneratorImpl which are waiting for a
+  // CSSPaintDefinition to be registered. The global scope is expected to
+  // outlive the generators hence are held onto with a WeakMember.
+  typedef HeapHashSet<WeakMember<CSSPaintImageGeneratorImpl>> GeneratorHashSet;
+  typedef HeapHashMap<String, Member<GeneratorHashSet>> PendingGeneratorMap;
+  PendingGeneratorMap m_pendingGenerators;
 };
 
-DEFINE_TYPE_CASTS(PaintWorkletGlobalScope, ExecutionContext, context, context->isPaintWorkletGlobalScope(), context.isPaintWorkletGlobalScope());
+DEFINE_TYPE_CASTS(PaintWorkletGlobalScope,
+                  ExecutionContext,
+                  context,
+                  context->isPaintWorkletGlobalScope(),
+                  context.isPaintWorkletGlobalScope());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintWorkletGlobalScope_h
+#endif  // PaintWorkletGlobalScope_h

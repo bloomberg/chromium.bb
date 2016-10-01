@@ -14,51 +14,68 @@ namespace blink {
 
 class ImageBitmap;
 
-class MODULES_EXPORT ImageBitmapRenderingContext final : public CanvasRenderingContext {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    class Factory : public CanvasRenderingContextFactory {
-        WTF_MAKE_NONCOPYABLE(Factory);
-    public:
-        Factory() {}
-        ~Factory() override {}
+class MODULES_EXPORT ImageBitmapRenderingContext final
+    : public CanvasRenderingContext {
+  DEFINE_WRAPPERTYPEINFO();
 
-        CanvasRenderingContext* create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
-        CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextImageBitmap; }
-    };
+ public:
+  class Factory : public CanvasRenderingContextFactory {
+    WTF_MAKE_NONCOPYABLE(Factory);
 
-    // Script API
-    void transferFromImageBitmap(ImageBitmap*);
+   public:
+    Factory() {}
+    ~Factory() override {}
 
-    // CanvasRenderingContext implementation
-    ContextType getContextType() const override { return CanvasRenderingContext::ContextImageBitmap; }
-    void setIsHidden(bool) override { }
-    bool isContextLost() const override { return false; }
-    bool paint(GraphicsContext&, const IntRect&) override;
-    void setCanvasGetContextResult(RenderingContext&) final;
-    PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final { return m_image.get(); }
+    CanvasRenderingContext* create(HTMLCanvasElement*,
+                                   const CanvasContextCreationAttributes&,
+                                   Document&) override;
+    CanvasRenderingContext::ContextType getContextType() const override {
+      return CanvasRenderingContext::ContextImageBitmap;
+    }
+  };
 
-    // TODO(junov): Implement GPU accelerated rendering using a layer bridge
-    WebLayer* platformLayer() const override { return nullptr; }
-    // TODO(junov): handle lost contexts when content is GPU-backed
-    void loseContext(LostContextMode) override { }
+  // Script API
+  void transferFromImageBitmap(ImageBitmap*);
 
-    void stop() override;
+  // CanvasRenderingContext implementation
+  ContextType getContextType() const override {
+    return CanvasRenderingContext::ContextImageBitmap;
+  }
+  void setIsHidden(bool) override {}
+  bool isContextLost() const override { return false; }
+  bool paint(GraphicsContext&, const IntRect&) override;
+  void setCanvasGetContextResult(RenderingContext&) final;
+  PassRefPtr<Image> getImage(AccelerationHint, SnapshotReason) const final {
+    return m_image.get();
+  }
 
-    bool isPaintable() const final { return m_image.get(); }
+  // TODO(junov): Implement GPU accelerated rendering using a layer bridge
+  WebLayer* platformLayer() const override { return nullptr; }
+  // TODO(junov): handle lost contexts when content is GPU-backed
+  void loseContext(LostContextMode) override {}
 
-    virtual ~ImageBitmapRenderingContext();
+  void stop() override;
 
-private:
-    ImageBitmapRenderingContext(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&);
+  bool isPaintable() const final { return m_image.get(); }
 
-    RefPtr<Image> m_image;
+  virtual ~ImageBitmapRenderingContext();
+
+ private:
+  ImageBitmapRenderingContext(HTMLCanvasElement*,
+                              const CanvasContextCreationAttributes&,
+                              Document&);
+
+  RefPtr<Image> m_image;
 };
 
-DEFINE_TYPE_CASTS(ImageBitmapRenderingContext, CanvasRenderingContext, context,
-    context->getContextType() == CanvasRenderingContext::ContextImageBitmap,
-    context.getContextType() == CanvasRenderingContext::ContextImageBitmap);
+DEFINE_TYPE_CASTS(ImageBitmapRenderingContext,
+                  CanvasRenderingContext,
+                  context,
+                  context->getContextType() ==
+                      CanvasRenderingContext::ContextImageBitmap,
+                  context.getContextType() ==
+                      CanvasRenderingContext::ContextImageBitmap);
 
-} // blink
+}  // blink
 
 #endif

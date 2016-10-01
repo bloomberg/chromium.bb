@@ -24,62 +24,72 @@ namespace blink {
 //
 // A deserializer cannot be used multiple times; it is expected that its
 // deserialize method will be invoked exactly once.
-class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT V8ScriptValueDeserializer : public v8::ValueDeserializer::Delegate {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(V8ScriptValueDeserializer);
-public:
-    V8ScriptValueDeserializer(RefPtr<ScriptState>, RefPtr<SerializedScriptValue>);
+class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
+    V8ScriptValueDeserializer : public v8::ValueDeserializer::Delegate {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(V8ScriptValueDeserializer);
 
-    void setTransferredMessagePorts(const MessagePortArray* ports) { m_transferredMessagePorts = ports; }
-    void setBlobInfoArray(const WebBlobInfoArray* blobInfoArray) { m_blobInfoArray = blobInfoArray; }
+ public:
+  V8ScriptValueDeserializer(RefPtr<ScriptState>, RefPtr<SerializedScriptValue>);
 
-    v8::Local<v8::Value> deserialize();
+  void setTransferredMessagePorts(const MessagePortArray* ports) {
+    m_transferredMessagePorts = ports;
+  }
+  void setBlobInfoArray(const WebBlobInfoArray* blobInfoArray) {
+    m_blobInfoArray = blobInfoArray;
+  }
 
-protected:
-    virtual ScriptWrappable* readDOMObject(SerializationTag);
+  v8::Local<v8::Value> deserialize();
 
-    uint32_t version() const { return m_version; }
-    bool readTag(SerializationTag* tag)
-    {
-        const void* tagBytes = nullptr;
-        if (!m_deserializer.ReadRawBytes(1, &tagBytes))
-            return false;
-        *tag = static_cast<SerializationTag>(*reinterpret_cast<const uint8_t*>(tagBytes));
-        return true;
-    }
-    bool readUint32(uint32_t* value) { return m_deserializer.ReadUint32(value); }
-    bool readUint64(uint64_t* value) { return m_deserializer.ReadUint64(value); }
-    bool readRawBytes(size_t size, const void** data) { return m_deserializer.ReadRawBytes(size, data); }
-    bool readUTF8String(String* stringOut);
+ protected:
+  virtual ScriptWrappable* readDOMObject(SerializationTag);
 
-private:
-    void transfer();
+  uint32_t version() const { return m_version; }
+  bool readTag(SerializationTag* tag) {
+    const void* tagBytes = nullptr;
+    if (!m_deserializer.ReadRawBytes(1, &tagBytes))
+      return false;
+    *tag = static_cast<SerializationTag>(
+        *reinterpret_cast<const uint8_t*>(tagBytes));
+    return true;
+  }
+  bool readUint32(uint32_t* value) { return m_deserializer.ReadUint32(value); }
+  bool readUint64(uint64_t* value) { return m_deserializer.ReadUint64(value); }
+  bool readRawBytes(size_t size, const void** data) {
+    return m_deserializer.ReadRawBytes(size, data);
+  }
+  bool readUTF8String(String* stringOut);
 
-    RefPtr<BlobDataHandle> getOrCreateBlobDataHandle(const String& uuid, const String& type, uint64_t size);
+ private:
+  void transfer();
 
-    // v8::ValueDeserializer::Delegate
-    v8::MaybeLocal<v8::Object> ReadHostObject(v8::Isolate*) override;
+  RefPtr<BlobDataHandle> getOrCreateBlobDataHandle(const String& uuid,
+                                                   const String& type,
+                                                   uint64_t size);
 
-    RefPtr<ScriptState> m_scriptState;
-    RefPtr<SerializedScriptValue> m_serializedScriptValue;
-    v8::ValueDeserializer m_deserializer;
+  // v8::ValueDeserializer::Delegate
+  v8::MaybeLocal<v8::Object> ReadHostObject(v8::Isolate*) override;
 
-    // Message ports which were transferred in.
-    const MessagePortArray* m_transferredMessagePorts = nullptr;
+  RefPtr<ScriptState> m_scriptState;
+  RefPtr<SerializedScriptValue> m_serializedScriptValue;
+  v8::ValueDeserializer m_deserializer;
 
-    // ImageBitmaps which were transferred in.
-    HeapVector<Member<ImageBitmap>> m_transferredImageBitmaps;
+  // Message ports which were transferred in.
+  const MessagePortArray* m_transferredMessagePorts = nullptr;
 
-    // Blob info for blobs stored by index.
-    const WebBlobInfoArray* m_blobInfoArray = nullptr;
+  // ImageBitmaps which were transferred in.
+  HeapVector<Member<ImageBitmap>> m_transferredImageBitmaps;
 
-    // Set during deserialize after the header is read.
-    uint32_t m_version = 0;
+  // Blob info for blobs stored by index.
+  const WebBlobInfoArray* m_blobInfoArray = nullptr;
+
+  // Set during deserialize after the header is read.
+  uint32_t m_version = 0;
 #if DCHECK_IS_ON()
-    bool m_deserializeInvoked = false;
+  bool m_deserializeInvoked = false;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ScriptValueDeserializer_h
+#endif  // V8ScriptValueDeserializer_h

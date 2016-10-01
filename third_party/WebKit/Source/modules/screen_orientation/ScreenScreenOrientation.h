@@ -14,21 +14,24 @@ class ScreenOrientation;
 class Screen;
 class ScriptState;
 
-class ScreenScreenOrientation final : public GarbageCollected<ScreenScreenOrientation>, public Supplement<Screen> {
-    USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
-public:
-    static ScreenScreenOrientation& from(Screen&);
+class ScreenScreenOrientation final
+    : public GarbageCollected<ScreenScreenOrientation>,
+      public Supplement<Screen> {
+  USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
 
-    static ScreenOrientation* orientation(ScriptState*, Screen&);
+ public:
+  static ScreenScreenOrientation& from(Screen&);
 
-    DECLARE_VIRTUAL_TRACE();
+  static ScreenOrientation* orientation(ScriptState*, Screen&);
 
-private:
-    static const char* supplementName();
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<ScreenOrientation> m_orientation;
+ private:
+  static const char* supplementName();
+
+  Member<ScreenOrientation> m_orientation;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScreenScreenOrientation_h
+#endif  // ScreenScreenOrientation_h

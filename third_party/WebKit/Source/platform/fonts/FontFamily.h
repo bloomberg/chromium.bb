@@ -36,63 +36,65 @@ namespace blink {
 class SharedFontFamily;
 
 class PLATFORM_EXPORT FontFamily {
-    DISALLOW_NEW();
-public:
-    FontFamily() { }
-    ~FontFamily();
+  DISALLOW_NEW();
 
-    void setFamily(const AtomicString& family) { m_family = family; }
-    const AtomicString& family() const { return m_family; }
-    bool familyIsEmpty() const { return m_family.isEmpty(); }
+ public:
+  FontFamily() {}
+  ~FontFamily();
 
-    const FontFamily* next() const;
+  void setFamily(const AtomicString& family) { m_family = family; }
+  const AtomicString& family() const { return m_family; }
+  bool familyIsEmpty() const { return m_family.isEmpty(); }
 
-    void appendFamily(PassRefPtr<SharedFontFamily>);
-    PassRefPtr<SharedFontFamily> releaseNext();
+  const FontFamily* next() const;
 
-private:
-    AtomicString m_family;
-    RefPtr<SharedFontFamily> m_next;
+  void appendFamily(PassRefPtr<SharedFontFamily>);
+  PassRefPtr<SharedFontFamily> releaseNext();
+
+ private:
+  AtomicString m_family;
+  RefPtr<SharedFontFamily> m_next;
 };
 
-class PLATFORM_EXPORT SharedFontFamily : public FontFamily, public RefCounted<SharedFontFamily> {
-    USING_FAST_MALLOC(SharedFontFamily);
-    WTF_MAKE_NONCOPYABLE(SharedFontFamily);
-public:
-    static PassRefPtr<SharedFontFamily> create()
-    {
-        return adoptRef(new SharedFontFamily);
-    }
+class PLATFORM_EXPORT SharedFontFamily : public FontFamily,
+                                         public RefCounted<SharedFontFamily> {
+  USING_FAST_MALLOC(SharedFontFamily);
+  WTF_MAKE_NONCOPYABLE(SharedFontFamily);
 
-private:
-    SharedFontFamily() { }
+ public:
+  static PassRefPtr<SharedFontFamily> create() {
+    return adoptRef(new SharedFontFamily);
+  }
+
+ private:
+  SharedFontFamily() {}
 };
 
 PLATFORM_EXPORT bool operator==(const FontFamily&, const FontFamily&);
-inline bool operator!=(const FontFamily& a, const FontFamily& b) { return !(a == b); }
-
-inline FontFamily::~FontFamily()
-{
-    RefPtr<SharedFontFamily> reaper = m_next.release();
-    while (reaper && reaper->hasOneRef())
-        reaper = reaper->releaseNext(); // implicitly protects reaper->next, then derefs reaper
+inline bool operator!=(const FontFamily& a, const FontFamily& b) {
+  return !(a == b);
 }
 
-inline const FontFamily* FontFamily::next() const
-{
-    return m_next.get();
+inline FontFamily::~FontFamily() {
+  RefPtr<SharedFontFamily> reaper = m_next.release();
+  while (reaper && reaper->hasOneRef())
+    reaper =
+        reaper
+            ->releaseNext();  // implicitly protects reaper->next, then derefs reaper
 }
 
-inline void FontFamily::appendFamily(PassRefPtr<SharedFontFamily> family)
-{
-    m_next = family;
+inline const FontFamily* FontFamily::next() const {
+  return m_next.get();
 }
 
-inline PassRefPtr<SharedFontFamily> FontFamily::releaseNext()
-{
-    return m_next.release();
+inline void FontFamily::appendFamily(PassRefPtr<SharedFontFamily> family) {
+  m_next = family;
 }
 
-} // namespace blink
+inline PassRefPtr<SharedFontFamily> FontFamily::releaseNext() {
+  return m_next.release();
+}
+
+}  // namespace blink
 
 #endif

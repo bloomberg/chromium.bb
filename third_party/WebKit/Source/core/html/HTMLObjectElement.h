@@ -34,107 +34,125 @@ class HTMLFormElement;
 // Inheritance of FormAssociatedElement was used for NPAPI form association, but is still
 // kept here so that legacy APIs such as form attribute can keep working according to the spec.
 // See: https://html.spec.whatwg.org/multipage/embedded-content.html#the-object-element
-class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement, public FormAssociatedElement {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
-public:
-    static HTMLObjectElement* create(Document&, HTMLFormElement*, bool createdByParser);
-    ~HTMLObjectElement() override;
-    DECLARE_VIRTUAL_TRACE();
+class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
+                                            public FormAssociatedElement {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 
-    const String& classId() const { return m_classId; }
+ public:
+  static HTMLObjectElement* create(Document&,
+                                   HTMLFormElement*,
+                                   bool createdByParser);
+  ~HTMLObjectElement() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    HTMLFormElement* formOwner() const override;
+  const String& classId() const { return m_classId; }
 
-    bool containsJavaApplet() const;
+  HTMLFormElement* formOwner() const override;
 
-    bool hasFallbackContent() const override;
-    bool useFallbackContent() const override;
-    void renderFallbackContent() override;
+  bool containsJavaApplet() const;
 
-    bool isFormControlElement() const override { return false; }
+  bool hasFallbackContent() const override;
+  bool useFallbackContent() const override;
+  void renderFallbackContent() override;
 
-    bool isEnumeratable() const override { return true; }
-    bool isInteractiveContent() const override;
+  bool isFormControlElement() const override { return false; }
 
-    // Implementations of constraint validation API.
-    // Note that the object elements are always barred from constraint validation.
-    String validationMessage() const override { return String(); }
-    bool checkValidity() { return true; }
-    bool reportValidity() { return true; }
-    void setCustomValidity(const String&) override { }
+  bool isEnumeratable() const override { return true; }
+  bool isInteractiveContent() const override;
 
-    bool canContainRangeEndPoint() const override { return useFallbackContent(); }
+  // Implementations of constraint validation API.
+  // Note that the object elements are always barred from constraint validation.
+  String validationMessage() const override { return String(); }
+  bool checkValidity() { return true; }
+  bool reportValidity() { return true; }
+  void setCustomValidity(const String&) override {}
 
-    bool isExposed() const;
+  bool canContainRangeEndPoint() const override { return useFallbackContent(); }
 
-private:
-    HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
+  bool isExposed() const;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    void didMoveToNewDocument(Document& oldDocument) override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
 
-    void childrenChanged(const ChildrenChange&) override;
+  void didMoveToNewDocument(Document& oldDocument) override;
 
-    bool isURLAttribute(const Attribute&) const override;
-    bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    const QualifiedName& subResourceAttributeName() const override;
-    const AtomicString imageSourceURL() const override;
+  void childrenChanged(const ChildrenChange&) override;
 
-    LayoutPart* existingLayoutPart() const override;
+  bool isURLAttribute(const Attribute&) const override;
+  bool hasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& subResourceAttributeName() const override;
+  const AtomicString imageSourceURL() const override;
 
-    void updateWidgetInternal() override;
-    void updateDocNamedItem();
+  LayoutPart* existingLayoutPart() const override;
 
-    void reattachFallbackContent();
+  void updateWidgetInternal() override;
+  void updateDocNamedItem();
 
-    // FIXME: This function should not deal with url or serviceType
-    // so that we can better share code between <object> and <embed>.
-    void parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues, String& url, String& serviceType);
+  void reattachFallbackContent();
 
-    bool hasValidClassId();
+  // FIXME: This function should not deal with url or serviceType
+  // so that we can better share code between <object> and <embed>.
+  void parametersForPlugin(Vector<String>& paramNames,
+                           Vector<String>& paramValues,
+                           String& url,
+                           String& serviceType);
 
-    void reloadPluginOnAttributeChange(const QualifiedName&);
+  bool hasValidClassId();
 
-    bool shouldRegisterAsNamedItem() const override { return true; }
-    bool shouldRegisterAsExtraNamedItem() const override { return true; }
+  void reloadPluginOnAttributeChange(const QualifiedName&);
 
-    String m_classId;
-    bool m_useFallbackContent : 1;
+  bool shouldRegisterAsNamedItem() const override { return true; }
+  bool shouldRegisterAsExtraNamedItem() const override { return true; }
+
+  String m_classId;
+  bool m_useFallbackContent : 1;
 };
 
 // Intentionally left unimplemented, template specialization needs to be provided for specific
 // return types.
-template<typename T> inline const T& toElement(const FormAssociatedElement&);
-template<typename T> inline const T* toElement(const FormAssociatedElement*);
+template <typename T>
+inline const T& toElement(const FormAssociatedElement&);
+template <typename T>
+inline const T* toElement(const FormAssociatedElement*);
 
 // Make toHTMLObjectElement() accept a FormAssociatedElement as input instead of a Node.
-template<> inline const HTMLObjectElement* toElement<HTMLObjectElement>(const FormAssociatedElement* element)
-{
-    SECURITY_DCHECK(!element || !element->isFormControlElement());
-    const HTMLObjectElement* objectElement = static_cast<const HTMLObjectElement*>(element);
-    // We need to assert after the cast because FormAssociatedElement doesn't
-    // have hasTagName.
-    SECURITY_DCHECK(!objectElement || objectElement->hasTagName(HTMLNames::objectTag));
-    return objectElement;
+template <>
+inline const HTMLObjectElement* toElement<HTMLObjectElement>(
+    const FormAssociatedElement* element) {
+  SECURITY_DCHECK(!element || !element->isFormControlElement());
+  const HTMLObjectElement* objectElement =
+      static_cast<const HTMLObjectElement*>(element);
+  // We need to assert after the cast because FormAssociatedElement doesn't
+  // have hasTagName.
+  SECURITY_DCHECK(!objectElement ||
+                  objectElement->hasTagName(HTMLNames::objectTag));
+  return objectElement;
 }
 
-template<> inline const HTMLObjectElement& toElement<HTMLObjectElement>(const FormAssociatedElement& element)
-{
-    SECURITY_DCHECK(!element.isFormControlElement());
-    const HTMLObjectElement& objectElement = static_cast<const HTMLObjectElement&>(element);
-    // We need to assert after the cast because FormAssociatedElement doesn't
-    // have hasTagName.
-    SECURITY_DCHECK(objectElement.hasTagName(HTMLNames::objectTag));
-    return objectElement;
+template <>
+inline const HTMLObjectElement& toElement<HTMLObjectElement>(
+    const FormAssociatedElement& element) {
+  SECURITY_DCHECK(!element.isFormControlElement());
+  const HTMLObjectElement& objectElement =
+      static_cast<const HTMLObjectElement&>(element);
+  // We need to assert after the cast because FormAssociatedElement doesn't
+  // have hasTagName.
+  SECURITY_DCHECK(objectElement.hasTagName(HTMLNames::objectTag));
+  return objectElement;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLObjectElement_h
+#endif  // HTMLObjectElement_h

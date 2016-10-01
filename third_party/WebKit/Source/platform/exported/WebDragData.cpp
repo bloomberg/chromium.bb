@@ -32,21 +32,19 @@
 
 namespace blink {
 
-void WebDragData::setItems(WebVector<Item> itemList)
-{
-    ASSERT(!isNull());
-    m_itemList.swap(itemList);
+void WebDragData::setItems(WebVector<Item> itemList) {
+  ASSERT(!isNull());
+  m_itemList.swap(itemList);
 }
 
-void WebDragData::addItem(const Item& item)
-{
-    ASSERT(!isNull());
-    WebVector<Item> itemList(m_itemList.size() + 1);
+void WebDragData::addItem(const Item& item) {
+  ASSERT(!isNull());
+  WebVector<Item> itemList(m_itemList.size() + 1);
 
-    for (unsigned i = 0; i < m_itemList.size(); ++i)
-        itemList[i] = m_itemList[i];
-    itemList[m_itemList.size()] = item;
-    m_itemList.swap(itemList);
+  for (unsigned i = 0; i < m_itemList.size(); ++i)
+    itemList[i] = m_itemList[i];
+  itemList[m_itemList.size()] = item;
+  m_itemList.swap(itemList);
 }
 
-} // namespace blink
+}  // namespace blink

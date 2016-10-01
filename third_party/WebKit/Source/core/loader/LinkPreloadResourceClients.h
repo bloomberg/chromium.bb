@@ -17,194 +17,195 @@ namespace blink {
 
 class LinkLoader;
 
-class LinkPreloadResourceClient : public GarbageCollectedFinalized<LinkPreloadResourceClient> {
-public:
-    virtual ~LinkPreloadResourceClient() { }
+class LinkPreloadResourceClient
+    : public GarbageCollectedFinalized<LinkPreloadResourceClient> {
+ public:
+  virtual ~LinkPreloadResourceClient() {}
 
-    void triggerEvents(const Resource*);
-    virtual void clear() = 0;
+  void triggerEvents(const Resource*);
+  virtual void clear() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_loader);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_loader); }
 
-protected:
-    explicit LinkPreloadResourceClient(LinkLoader* loader)
-        : m_loader(loader)
-    {
-        DCHECK(loader);
-    }
+ protected:
+  explicit LinkPreloadResourceClient(LinkLoader* loader) : m_loader(loader) {
+    DCHECK(loader);
+  }
 
-private:
-    Member<LinkLoader> m_loader;
+ private:
+  Member<LinkLoader> m_loader;
 };
 
-class LinkPreloadScriptResourceClient: public LinkPreloadResourceClient, public ResourceOwner<ScriptResource, ScriptResourceClient> {
-    USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadScriptResourceClient);
-public:
-    static LinkPreloadScriptResourceClient* create(LinkLoader* loader, ScriptResource* resource)
-    {
-        return new LinkPreloadScriptResourceClient(loader, resource);
-    }
+class LinkPreloadScriptResourceClient
+    : public LinkPreloadResourceClient,
+      public ResourceOwner<ScriptResource, ScriptResourceClient> {
+  USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadScriptResourceClient);
 
-    virtual String debugName() const { return "LinkPreloadScript"; }
-    virtual ~LinkPreloadScriptResourceClient() { }
+ public:
+  static LinkPreloadScriptResourceClient* create(LinkLoader* loader,
+                                                 ScriptResource* resource) {
+    return new LinkPreloadScriptResourceClient(loader, resource);
+  }
 
-    void clear() override { clearResource(); }
+  virtual String debugName() const { return "LinkPreloadScript"; }
+  virtual ~LinkPreloadScriptResourceClient() {}
 
-    void notifyFinished(Resource* resource) override
-    {
-        DCHECK_EQ(this->resource(), resource);
-        triggerEvents(resource);
-    }
+  void clear() override { clearResource(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        LinkPreloadResourceClient::trace(visitor);
-        ResourceOwner<ScriptResource, ScriptResourceClient>::trace(visitor);
-    }
+  void notifyFinished(Resource* resource) override {
+    DCHECK_EQ(this->resource(), resource);
+    triggerEvents(resource);
+  }
 
-private:
-    LinkPreloadScriptResourceClient(LinkLoader* loader, ScriptResource* resource)
-        : LinkPreloadResourceClient(loader)
-    {
-        setResource(resource, Resource::DontMarkAsReferenced);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    LinkPreloadResourceClient::trace(visitor);
+    ResourceOwner<ScriptResource, ScriptResourceClient>::trace(visitor);
+  }
+
+ private:
+  LinkPreloadScriptResourceClient(LinkLoader* loader, ScriptResource* resource)
+      : LinkPreloadResourceClient(loader) {
+    setResource(resource, Resource::DontMarkAsReferenced);
+  }
 };
 
-class LinkPreloadStyleResourceClient: public LinkPreloadResourceClient, public ResourceOwner<CSSStyleSheetResource, StyleSheetResourceClient> {
-    USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadStyleResourceClient);
-public:
-    static LinkPreloadStyleResourceClient* create(LinkLoader* loader, CSSStyleSheetResource* resource)
-    {
-        return new LinkPreloadStyleResourceClient(loader, resource);
-    }
+class LinkPreloadStyleResourceClient
+    : public LinkPreloadResourceClient,
+      public ResourceOwner<CSSStyleSheetResource, StyleSheetResourceClient> {
+  USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadStyleResourceClient);
 
-    virtual String debugName() const { return "LinkPreloadStyle"; }
-    virtual ~LinkPreloadStyleResourceClient() { }
+ public:
+  static LinkPreloadStyleResourceClient* create(
+      LinkLoader* loader,
+      CSSStyleSheetResource* resource) {
+    return new LinkPreloadStyleResourceClient(loader, resource);
+  }
 
-    void clear() override { clearResource(); }
+  virtual String debugName() const { return "LinkPreloadStyle"; }
+  virtual ~LinkPreloadStyleResourceClient() {}
 
-    void setCSSStyleSheet(const String&, const KURL&, const String&, const CSSStyleSheetResource* resource) override
-    {
-        DCHECK_EQ(this->resource(), resource);
-        triggerEvents(static_cast<const Resource*>(resource));
-    }
+  void clear() override { clearResource(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        LinkPreloadResourceClient::trace(visitor);
-        ResourceOwner<CSSStyleSheetResource, StyleSheetResourceClient>::trace(visitor);
-    }
+  void setCSSStyleSheet(const String&,
+                        const KURL&,
+                        const String&,
+                        const CSSStyleSheetResource* resource) override {
+    DCHECK_EQ(this->resource(), resource);
+    triggerEvents(static_cast<const Resource*>(resource));
+  }
 
-private:
-    LinkPreloadStyleResourceClient(LinkLoader* loader, CSSStyleSheetResource* resource)
-        : LinkPreloadResourceClient(loader)
-    {
-        setResource(resource, Resource::DontMarkAsReferenced);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    LinkPreloadResourceClient::trace(visitor);
+    ResourceOwner<CSSStyleSheetResource, StyleSheetResourceClient>::trace(
+        visitor);
+  }
+
+ private:
+  LinkPreloadStyleResourceClient(LinkLoader* loader,
+                                 CSSStyleSheetResource* resource)
+      : LinkPreloadResourceClient(loader) {
+    setResource(resource, Resource::DontMarkAsReferenced);
+  }
 };
 
-class LinkPreloadImageResourceClient: public LinkPreloadResourceClient, public ResourceOwner<ImageResource> {
-    USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadImageResourceClient);
-public:
-    static LinkPreloadImageResourceClient* create(LinkLoader* loader, ImageResource* resource)
-    {
-        return new LinkPreloadImageResourceClient(loader, resource);
-    }
+class LinkPreloadImageResourceClient : public LinkPreloadResourceClient,
+                                       public ResourceOwner<ImageResource> {
+  USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadImageResourceClient);
 
-    virtual String debugName() const { return "LinkPreloadImage"; }
-    virtual ~LinkPreloadImageResourceClient() { }
+ public:
+  static LinkPreloadImageResourceClient* create(LinkLoader* loader,
+                                                ImageResource* resource) {
+    return new LinkPreloadImageResourceClient(loader, resource);
+  }
 
-    void clear() override { clearResource(); }
+  virtual String debugName() const { return "LinkPreloadImage"; }
+  virtual ~LinkPreloadImageResourceClient() {}
 
-    void notifyFinished(Resource* resource) override
-    {
-        DCHECK_EQ(this->resource(), toImageResource(resource));
-        triggerEvents(resource);
-    }
+  void clear() override { clearResource(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        LinkPreloadResourceClient::trace(visitor);
-        ResourceOwner<ImageResource>::trace(visitor);
-    }
+  void notifyFinished(Resource* resource) override {
+    DCHECK_EQ(this->resource(), toImageResource(resource));
+    triggerEvents(resource);
+  }
 
-private:
-    LinkPreloadImageResourceClient(LinkLoader* loader, ImageResource* resource)
-        : LinkPreloadResourceClient(loader)
-    {
-        setResource(resource, Resource::DontMarkAsReferenced);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    LinkPreloadResourceClient::trace(visitor);
+    ResourceOwner<ImageResource>::trace(visitor);
+  }
+
+ private:
+  LinkPreloadImageResourceClient(LinkLoader* loader, ImageResource* resource)
+      : LinkPreloadResourceClient(loader) {
+    setResource(resource, Resource::DontMarkAsReferenced);
+  }
 };
 
-class LinkPreloadFontResourceClient: public LinkPreloadResourceClient, public ResourceOwner<FontResource, FontResourceClient> {
-    USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadFontResourceClient);
-public:
-    static LinkPreloadFontResourceClient* create(LinkLoader* loader, FontResource* resource)
-    {
-        return new LinkPreloadFontResourceClient(loader, resource);
-    }
+class LinkPreloadFontResourceClient
+    : public LinkPreloadResourceClient,
+      public ResourceOwner<FontResource, FontResourceClient> {
+  USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadFontResourceClient);
 
-    virtual String debugName() const { return "LinkPreloadFont"; }
-    virtual ~LinkPreloadFontResourceClient() { }
+ public:
+  static LinkPreloadFontResourceClient* create(LinkLoader* loader,
+                                               FontResource* resource) {
+    return new LinkPreloadFontResourceClient(loader, resource);
+  }
 
-    void clear() override { clearResource(); }
+  virtual String debugName() const { return "LinkPreloadFont"; }
+  virtual ~LinkPreloadFontResourceClient() {}
 
-    void notifyFinished(Resource* resource) override
-    {
-        DCHECK_EQ(this->resource(), toFontResource(resource));
-        triggerEvents(resource);
-    }
+  void clear() override { clearResource(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        LinkPreloadResourceClient::trace(visitor);
-        ResourceOwner<FontResource, FontResourceClient>::trace(visitor);
-    }
+  void notifyFinished(Resource* resource) override {
+    DCHECK_EQ(this->resource(), toFontResource(resource));
+    triggerEvents(resource);
+  }
 
-private:
-    LinkPreloadFontResourceClient(LinkLoader* loader, FontResource* resource)
-        : LinkPreloadResourceClient(loader)
-    {
-        setResource(resource, Resource::DontMarkAsReferenced);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    LinkPreloadResourceClient::trace(visitor);
+    ResourceOwner<FontResource, FontResourceClient>::trace(visitor);
+  }
+
+ private:
+  LinkPreloadFontResourceClient(LinkLoader* loader, FontResource* resource)
+      : LinkPreloadResourceClient(loader) {
+    setResource(resource, Resource::DontMarkAsReferenced);
+  }
 };
 
-class LinkPreloadRawResourceClient: public LinkPreloadResourceClient, public ResourceOwner<RawResource, RawResourceClient> {
-    USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadRawResourceClient);
-public:
-    static LinkPreloadRawResourceClient* create(LinkLoader* loader, RawResource* resource)
-    {
-        return new LinkPreloadRawResourceClient(loader, resource);
-    }
+class LinkPreloadRawResourceClient
+    : public LinkPreloadResourceClient,
+      public ResourceOwner<RawResource, RawResourceClient> {
+  USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadRawResourceClient);
 
-    virtual String debugName() const { return "LinkPreloadRaw"; }
-    virtual ~LinkPreloadRawResourceClient() { }
+ public:
+  static LinkPreloadRawResourceClient* create(LinkLoader* loader,
+                                              RawResource* resource) {
+    return new LinkPreloadRawResourceClient(loader, resource);
+  }
 
-    void clear() override { clearResource(); }
+  virtual String debugName() const { return "LinkPreloadRaw"; }
+  virtual ~LinkPreloadRawResourceClient() {}
 
-    void notifyFinished(Resource* resource) override
-    {
-        DCHECK_EQ(this->resource(), toRawResource(resource));
-        triggerEvents(resource);
-    }
+  void clear() override { clearResource(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        LinkPreloadResourceClient::trace(visitor);
-        ResourceOwner<RawResource, RawResourceClient>::trace(visitor);
-    }
+  void notifyFinished(Resource* resource) override {
+    DCHECK_EQ(this->resource(), toRawResource(resource));
+    triggerEvents(resource);
+  }
 
-private:
-    LinkPreloadRawResourceClient(LinkLoader* loader, RawResource* resource)
-        : LinkPreloadResourceClient(loader)
-    {
-        setResource(resource, Resource::DontMarkAsReferenced);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    LinkPreloadResourceClient::trace(visitor);
+    ResourceOwner<RawResource, RawResourceClient>::trace(visitor);
+  }
+
+ private:
+  LinkPreloadRawResourceClient(LinkLoader* loader, RawResource* resource)
+      : LinkPreloadResourceClient(loader) {
+    setResource(resource, Resource::DontMarkAsReferenced);
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LinkPreloadResourceClients_h
+#endif  // LinkPreloadResourceClients_h

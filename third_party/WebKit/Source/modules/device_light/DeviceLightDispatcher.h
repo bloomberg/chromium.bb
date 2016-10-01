@@ -12,29 +12,33 @@
 namespace blink {
 
 // This class listens to device light data and notifies all registered controllers.
-class DeviceLightDispatcher final : public GarbageCollectedFinalized<DeviceLightDispatcher>, public PlatformEventDispatcher, public WebDeviceLightListener {
-    USING_GARBAGE_COLLECTED_MIXIN(DeviceLightDispatcher);
-public:
-    static DeviceLightDispatcher& instance();
-    ~DeviceLightDispatcher() override;
+class DeviceLightDispatcher final
+    : public GarbageCollectedFinalized<DeviceLightDispatcher>,
+      public PlatformEventDispatcher,
+      public WebDeviceLightListener {
+  USING_GARBAGE_COLLECTED_MIXIN(DeviceLightDispatcher);
 
-    double latestDeviceLightData() const;
+ public:
+  static DeviceLightDispatcher& instance();
+  ~DeviceLightDispatcher() override;
 
-    // Inherited from WebDeviceLightListener.
-    void didChangeDeviceLight(double) override;
+  double latestDeviceLightData() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  // Inherited from WebDeviceLightListener.
+  void didChangeDeviceLight(double) override;
 
-private:
-    DeviceLightDispatcher();
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from PlatformEventDispatcher.
-    void startListening() override;
-    void stopListening() override;
+ private:
+  DeviceLightDispatcher();
 
-    double m_lastDeviceLightData;
+  // Inherited from PlatformEventDispatcher.
+  void startListening() override;
+  void stopListening() override;
+
+  double m_lastDeviceLightData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceLightDispatcher_h
+#endif  // DeviceLightDispatcher_h

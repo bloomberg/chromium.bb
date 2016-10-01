@@ -36,37 +36,37 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXTableRow : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AXTableRow);
+  WTF_MAKE_NONCOPYABLE(AXTableRow);
 
-protected:
-    AXTableRow(LayoutObject*, AXObjectCacheImpl&);
+ protected:
+  AXTableRow(LayoutObject*, AXObjectCacheImpl&);
 
-public:
-    static AXTableRow* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXTableRow() override;
+ public:
+  static AXTableRow* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXTableRow() override;
 
-    bool isTableRow() const final;
+  bool isTableRow() const final;
 
-    // retrieves the "row" header (a th tag in the rightmost column)
-    virtual AXObject* headerObject();
-    // retrieves the "row" headers (th, scope) from left to right for the each row.
-    virtual void headerObjectsForRow(AXObjectVector&);
-    AXObject* parentTable() const;
+  // retrieves the "row" header (a th tag in the rightmost column)
+  virtual AXObject* headerObject();
+  // retrieves the "row" headers (th, scope) from left to right for the each row.
+  virtual void headerObjectsForRow(AXObjectVector&);
+  AXObject* parentTable() const;
 
-    void setRowIndex(int rowIndex) { m_rowIndex = rowIndex; }
-    int rowIndex() const { return m_rowIndex; }
+  void setRowIndex(int rowIndex) { m_rowIndex = rowIndex; }
+  int rowIndex() const { return m_rowIndex; }
 
-protected:
-    AccessibilityRole determineAccessibilityRole() final;
+ protected:
+  AccessibilityRole determineAccessibilityRole() final;
 
-private:
-    int m_rowIndex;
+ private:
+  int m_rowIndex;
 
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableRow, isTableRow());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXTableRow_h
+#endif  // AXTableRow_h

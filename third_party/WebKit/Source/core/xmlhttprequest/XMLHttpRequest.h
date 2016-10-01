@@ -66,258 +66,282 @@ class XMLHttpRequestUpload;
 
 typedef int ExceptionCode;
 
-class XMLHttpRequest final : public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public DocumentParserClient, public ActiveScriptWrappable, public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
-public:
-    static XMLHttpRequest* create(ScriptState*);
-    static XMLHttpRequest* create(ExecutionContext*);
-    ~XMLHttpRequest() override;
+class XMLHttpRequest final : public XMLHttpRequestEventTarget,
+                             private ThreadableLoaderClient,
+                             public DocumentParserClient,
+                             public ActiveScriptWrappable,
+                             public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 
-    // These exact numeric values are important because JS expects them.
-    enum State {
-        kUnsent = 0,
-        kOpened = 1,
-        kHeadersReceived = 2,
-        kLoading = 3,
-        kDone = 4
-    };
+ public:
+  static XMLHttpRequest* create(ScriptState*);
+  static XMLHttpRequest* create(ExecutionContext*);
+  ~XMLHttpRequest() override;
 
-    enum ResponseTypeCode {
-        ResponseTypeDefault,
-        ResponseTypeText,
-        ResponseTypeJSON,
-        ResponseTypeDocument,
-        ResponseTypeBlob,
-        ResponseTypeArrayBuffer,
-        ResponseTypeLegacyStream,
-    };
+  // These exact numeric values are important because JS expects them.
+  enum State {
+    kUnsent = 0,
+    kOpened = 1,
+    kHeadersReceived = 2,
+    kLoading = 3,
+    kDone = 4
+  };
 
-    // ActiveDOMObject
-    void contextDestroyed() override;
-    ExecutionContext* getExecutionContext() const override;
-    void suspend() override;
-    void resume() override;
-    void stop() override;
+  enum ResponseTypeCode {
+    ResponseTypeDefault,
+    ResponseTypeText,
+    ResponseTypeJSON,
+    ResponseTypeDocument,
+    ResponseTypeBlob,
+    ResponseTypeArrayBuffer,
+    ResponseTypeLegacyStream,
+  };
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // ActiveDOMObject
+  void contextDestroyed() override;
+  ExecutionContext* getExecutionContext() const override;
+  void suspend() override;
+  void resume() override;
+  void stop() override;
 
-    // XMLHttpRequestEventTarget
-    const AtomicString& interfaceName() const override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    // JavaScript attributes and methods
-    const KURL& url() const { return m_url; }
-    String statusText() const;
-    int status() const;
-    State readyState() const;
-    bool withCredentials() const { return m_includeCredentials; }
-    void setWithCredentials(bool, ExceptionState&);
-    void open(const AtomicString& method, const String& url, ExceptionState&);
-    void open(const AtomicString& method, const String& url, bool async, const String& username, const String& password, ExceptionState&);
-    void open(const AtomicString& method, const KURL&, bool async, ExceptionState&);
-    void send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData&, ExceptionState&);
-    void abort();
-    void setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState&);
-    void overrideMimeType(const AtomicString& override, ExceptionState&);
-    String getAllResponseHeaders() const;
-    const AtomicString& getResponseHeader(const AtomicString&) const;
-    ScriptString responseText(ExceptionState&);
-    ScriptString responseJSONSource();
-    Document* responseXML(ExceptionState&);
-    Blob* responseBlob();
-    DOMArrayBuffer* responseArrayBuffer();
-    Stream* responseLegacyStream();
-    unsigned timeout() const { return m_timeoutMilliseconds; }
-    void setTimeout(unsigned timeout, ExceptionState&);
-    ResponseTypeCode getResponseTypeCode() const { return m_responseTypeCode; }
-    String responseType();
-    void setResponseType(const String&, ExceptionState&);
-    String responseURL();
+  // XMLHttpRequestEventTarget
+  const AtomicString& interfaceName() const override;
 
-    // For Inspector.
-    void sendForInspectorXHRReplay(PassRefPtr<EncodedFormData>, ExceptionState&);
+  // JavaScript attributes and methods
+  const KURL& url() const { return m_url; }
+  String statusText() const;
+  int status() const;
+  State readyState() const;
+  bool withCredentials() const { return m_includeCredentials; }
+  void setWithCredentials(bool, ExceptionState&);
+  void open(const AtomicString& method, const String& url, ExceptionState&);
+  void open(const AtomicString& method,
+            const String& url,
+            bool async,
+            const String& username,
+            const String& password,
+            ExceptionState&);
+  void open(const AtomicString& method,
+            const KURL&,
+            bool async,
+            ExceptionState&);
+  void send(
+      const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData&,
+      ExceptionState&);
+  void abort();
+  void setRequestHeader(const AtomicString& name,
+                        const AtomicString& value,
+                        ExceptionState&);
+  void overrideMimeType(const AtomicString& override, ExceptionState&);
+  String getAllResponseHeaders() const;
+  const AtomicString& getResponseHeader(const AtomicString&) const;
+  ScriptString responseText(ExceptionState&);
+  ScriptString responseJSONSource();
+  Document* responseXML(ExceptionState&);
+  Blob* responseBlob();
+  DOMArrayBuffer* responseArrayBuffer();
+  Stream* responseLegacyStream();
+  unsigned timeout() const { return m_timeoutMilliseconds; }
+  void setTimeout(unsigned timeout, ExceptionState&);
+  ResponseTypeCode getResponseTypeCode() const { return m_responseTypeCode; }
+  String responseType();
+  void setResponseType(const String&, ExceptionState&);
+  String responseURL();
 
-    XMLHttpRequestUpload* upload();
-    bool isAsync() { return m_async; }
+  // For Inspector.
+  void sendForInspectorXHRReplay(PassRefPtr<EncodedFormData>, ExceptionState&);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
+  XMLHttpRequestUpload* upload();
+  bool isAsync() { return m_async; }
 
-    // (Also) eagerly finalized so as to prevent access to the eagerly finalized
-    // progress event throttle.
-    EAGERLY_FINALIZE();
-    DECLARE_VIRTUAL_TRACE();
-    DECLARE_TRACE_WRAPPERS();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
 
-private:
-    class BlobLoader;
-    XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
+  // (Also) eagerly finalized so as to prevent access to the eagerly finalized
+  // progress event throttle.
+  EAGERLY_FINALIZE();
+  DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
-    Document* document() const;
-    SecurityOrigin* getSecurityOrigin() const;
+ private:
+  class BlobLoader;
+  XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
 
-    void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) override;
-    void didReceiveData(const char* data, unsigned dataLength) override;
-    // When responseType is set to "blob", didDownloadData() is called instead
-    // of didReceiveData().
-    void didDownloadData(int dataLength) override;
-    void didFinishLoading(unsigned long identifier, double finishTime) override;
-    void didFail(const ResourceError&) override;
-    void didFailRedirectCheck() override;
+  Document* document() const;
+  SecurityOrigin* getSecurityOrigin() const;
 
-    // BlobLoader notifications.
-    void didFinishLoadingInternal();
-    void didFinishLoadingFromBlob();
-    void didFailLoadingFromBlob();
+  void didSendData(unsigned long long bytesSent,
+                   unsigned long long totalBytesToBeSent) override;
+  void didReceiveResponse(unsigned long identifier,
+                          const ResourceResponse&,
+                          std::unique_ptr<WebDataConsumerHandle>) override;
+  void didReceiveData(const char* data, unsigned dataLength) override;
+  // When responseType is set to "blob", didDownloadData() is called instead
+  // of didReceiveData().
+  void didDownloadData(int dataLength) override;
+  void didFinishLoading(unsigned long identifier, double finishTime) override;
+  void didFail(const ResourceError&) override;
+  void didFailRedirectCheck() override;
 
-    PassRefPtr<BlobDataHandle> createBlobDataHandleFromResponse();
+  // BlobLoader notifications.
+  void didFinishLoadingInternal();
+  void didFinishLoadingFromBlob();
+  void didFailLoadingFromBlob();
 
-    // DocumentParserClient
-    void notifyParserStopped() override;
+  PassRefPtr<BlobDataHandle> createBlobDataHandleFromResponse();
 
-    void endLoading();
+  // DocumentParserClient
+  void notifyParserStopped() override;
 
-    // Returns the MIME type part of m_mimeTypeOverride if present and
-    // successfully parsed, or returns one of the "Content-Type" header value
-    // of the received response.
-    //
-    // This method is named after the term "final MIME type" defined in the
-    // spec but doesn't convert the result to ASCII lowercase as specified in
-    // the spec. Must be lowered later or compared using case insensitive
-    // comparison functions if required.
-    AtomicString finalResponseMIMEType() const;
-    // The same as finalResponseMIMEType() but fallbacks to "text/xml" if
-    // finalResponseMIMEType() returns an empty string.
-    AtomicString finalResponseMIMETypeWithFallback() const;
-    bool responseIsXML() const;
-    bool responseIsHTML() const;
+  void endLoading();
 
-    std::unique_ptr<TextResourceDecoder> createDecoder() const;
+  // Returns the MIME type part of m_mimeTypeOverride if present and
+  // successfully parsed, or returns one of the "Content-Type" header value
+  // of the received response.
+  //
+  // This method is named after the term "final MIME type" defined in the
+  // spec but doesn't convert the result to ASCII lowercase as specified in
+  // the spec. Must be lowered later or compared using case insensitive
+  // comparison functions if required.
+  AtomicString finalResponseMIMEType() const;
+  // The same as finalResponseMIMEType() but fallbacks to "text/xml" if
+  // finalResponseMIMEType() returns an empty string.
+  AtomicString finalResponseMIMETypeWithFallback() const;
+  bool responseIsXML() const;
+  bool responseIsHTML() const;
 
-    void initResponseDocument();
-    void parseDocumentChunk(const char* data, unsigned dataLength);
+  std::unique_ptr<TextResourceDecoder> createDecoder() const;
 
-    bool areMethodAndURLValidForSend();
+  void initResponseDocument();
+  void parseDocumentChunk(const char* data, unsigned dataLength);
 
-    void throwForLoadFailureIfNeeded(ExceptionState&, const String&);
+  bool areMethodAndURLValidForSend();
 
-    bool initSend(ExceptionState&);
-    void sendBytesData(const void*, size_t, ExceptionState&);
-    void send(Document*, ExceptionState&);
-    void send(const String&, ExceptionState&);
-    void send(Blob*, ExceptionState&);
-    void send(FormData*, ExceptionState&);
-    void send(DOMArrayBuffer*, ExceptionState&);
-    void send(DOMArrayBufferView*, ExceptionState&);
+  void throwForLoadFailureIfNeeded(ExceptionState&, const String&);
 
-    const AtomicString& getRequestHeader(const AtomicString& name) const;
-    void setRequestHeaderInternal(const AtomicString& name, const AtomicString& value);
+  bool initSend(ExceptionState&);
+  void sendBytesData(const void*, size_t, ExceptionState&);
+  void send(Document*, ExceptionState&);
+  void send(const String&, ExceptionState&);
+  void send(Blob*, ExceptionState&);
+  void send(FormData*, ExceptionState&);
+  void send(DOMArrayBuffer*, ExceptionState&);
+  void send(DOMArrayBufferView*, ExceptionState&);
 
-    void trackProgress(long long dataLength);
-    // Changes m_state and dispatches a readyStateChange event if new m_state
-    // value is different from last one.
-    void changeState(State newState);
-    void dispatchReadyStateChangeEvent();
+  const AtomicString& getRequestHeader(const AtomicString& name) const;
+  void setRequestHeaderInternal(const AtomicString& name,
+                                const AtomicString& value);
 
-    // Clears variables used only while the resource is being loaded.
-    void clearVariablesForLoading();
-    // Returns false iff reentry happened and a new load is started.
-    bool internalAbort();
-    // Clears variables holding response header and body data.
-    void clearResponse();
-    void clearRequest();
+  void trackProgress(long long dataLength);
+  // Changes m_state and dispatches a readyStateChange event if new m_state
+  // value is different from last one.
+  void changeState(State newState);
+  void dispatchReadyStateChangeEvent();
 
-    void createRequest(PassRefPtr<EncodedFormData>, ExceptionState&);
+  // Clears variables used only while the resource is being loaded.
+  void clearVariablesForLoading();
+  // Returns false iff reentry happened and a new load is started.
+  bool internalAbort();
+  // Clears variables holding response header and body data.
+  void clearResponse();
+  void clearRequest();
 
-    // Dispatches a response ProgressEvent.
-    void dispatchProgressEvent(const AtomicString&, long long, long long);
-    // Dispatches a response ProgressEvent using values sampled from
-    // m_receivedLength and m_response.
-    void dispatchProgressEventFromSnapshot(const AtomicString&);
+  void createRequest(PassRefPtr<EncodedFormData>, ExceptionState&);
 
-    // Handles didFail() call not caused by cancellation or timeout.
-    void handleNetworkError();
-    // Handles didFail() call for cancellations. For example, the
-    // ResourceLoader handling the load notifies m_loader of an error
-    // cancellation when the frame containing the XHR navigates away.
-    void handleDidCancel();
-    // Handles didFail() call for timeout.
-    void handleDidTimeout();
+  // Dispatches a response ProgressEvent.
+  void dispatchProgressEvent(const AtomicString&, long long, long long);
+  // Dispatches a response ProgressEvent using values sampled from
+  // m_receivedLength and m_response.
+  void dispatchProgressEventFromSnapshot(const AtomicString&);
 
-    void handleRequestError(ExceptionCode, const AtomicString&, long long, long long);
+  // Handles didFail() call not caused by cancellation or timeout.
+  void handleNetworkError();
+  // Handles didFail() call for cancellations. For example, the
+  // ResourceLoader handling the load notifies m_loader of an error
+  // cancellation when the frame containing the XHR navigates away.
+  void handleDidCancel();
+  // Handles didFail() call for timeout.
+  void handleDidTimeout();
 
-    XMLHttpRequestProgressEventThrottle& progressEventThrottle();
+  void handleRequestError(ExceptionCode,
+                          const AtomicString&,
+                          long long,
+                          long long);
 
-    Member<XMLHttpRequestUpload> m_upload;
+  XMLHttpRequestProgressEventThrottle& progressEventThrottle();
 
-    KURL m_url;
-    AtomicString m_method;
-    HTTPHeaderMap m_requestHeaders;
-    // Not converted to ASCII lowercase. Must be lowered later or compared
-    // using case insensitive comparison functions if needed.
-    AtomicString m_mimeTypeOverride;
-    unsigned long m_timeoutMilliseconds;
-    Member<Blob> m_responseBlob;
-    Member<Stream> m_responseLegacyStream;
+  Member<XMLHttpRequestUpload> m_upload;
 
-    Member<ThreadableLoader> m_loader;
-    State m_state;
+  KURL m_url;
+  AtomicString m_method;
+  HTTPHeaderMap m_requestHeaders;
+  // Not converted to ASCII lowercase. Must be lowered later or compared
+  // using case insensitive comparison functions if needed.
+  AtomicString m_mimeTypeOverride;
+  unsigned long m_timeoutMilliseconds;
+  Member<Blob> m_responseBlob;
+  Member<Stream> m_responseLegacyStream;
 
-    ResourceResponse m_response;
-    String m_finalResponseCharset;
+  Member<ThreadableLoader> m_loader;
+  State m_state;
 
-    std::unique_ptr<TextResourceDecoder> m_decoder;
+  ResourceResponse m_response;
+  String m_finalResponseCharset;
 
-    ScriptString m_responseText;
-    Member<Document> m_responseDocument;
-    Member<DocumentParser> m_responseDocumentParser;
+  std::unique_ptr<TextResourceDecoder> m_decoder;
 
-    RefPtr<SharedBuffer> m_binaryResponseBuilder;
-    long long m_lengthDownloadedToFile;
+  ScriptString m_responseText;
+  Member<Document> m_responseDocument;
+  Member<DocumentParser> m_responseDocumentParser;
 
-    Member<DOMArrayBuffer> m_responseArrayBuffer;
+  RefPtr<SharedBuffer> m_binaryResponseBuilder;
+  long long m_lengthDownloadedToFile;
 
-    // Used for onprogress tracking
-    long long m_receivedLength;
+  Member<DOMArrayBuffer> m_responseArrayBuffer;
 
-    // An exception to throw in synchronous mode. It's set when failure
-    // notification is received from m_loader and thrown at the end of send() if
-    // any.
-    ExceptionCode m_exceptionCode;
+  // Used for onprogress tracking
+  long long m_receivedLength;
 
-    Member<XMLHttpRequestProgressEventThrottle> m_progressEventThrottle;
+  // An exception to throw in synchronous mode. It's set when failure
+  // notification is received from m_loader and thrown at the end of send() if
+  // any.
+  ExceptionCode m_exceptionCode;
 
-    // An enum corresponding to the allowed string values for the responseType attribute.
-    ResponseTypeCode m_responseTypeCode;
-    RefPtr<SecurityOrigin> m_isolatedWorldSecurityOrigin;
+  Member<XMLHttpRequestProgressEventThrottle> m_progressEventThrottle;
 
-    // This blob loader will be used if |m_downloadingToFile| is true and
-    // |m_responseTypeCode| is NOT ResponseTypeBlob.
-    Member<BlobLoader> m_blobLoader;
+  // An enum corresponding to the allowed string values for the responseType attribute.
+  ResponseTypeCode m_responseTypeCode;
+  RefPtr<SecurityOrigin> m_isolatedWorldSecurityOrigin;
 
-    // Positive if we are dispatching events.
-    // This is an integer specifying the recursion level rather than a boolean
-    // because in some cases we have recursive dispatching.
-    int m_eventDispatchRecursionLevel;
+  // This blob loader will be used if |m_downloadingToFile| is true and
+  // |m_responseTypeCode| is NOT ResponseTypeBlob.
+  Member<BlobLoader> m_blobLoader;
 
-    bool m_async;
-    bool m_includeCredentials;
-    // Used to skip m_responseDocument creation if it's done previously. We need
-    // this separate flag since m_responseDocument can be 0 for some cases.
-    bool m_parsedResponse;
-    bool m_error;
-    bool m_uploadEventsAllowed;
-    bool m_uploadComplete;
-    bool m_sameOriginRequest;
-    // True iff the ongoing resource loading is using the downloadToFile
-    // option.
-    bool m_downloadingToFile;
-    bool m_responseTextOverflow;
+  // Positive if we are dispatching events.
+  // This is an integer specifying the recursion level rather than a boolean
+  // because in some cases we have recursive dispatching.
+  int m_eventDispatchRecursionLevel;
+
+  bool m_async;
+  bool m_includeCredentials;
+  // Used to skip m_responseDocument creation if it's done previously. We need
+  // this separate flag since m_responseDocument can be 0 for some cases.
+  bool m_parsedResponse;
+  bool m_error;
+  bool m_uploadEventsAllowed;
+  bool m_uploadComplete;
+  bool m_sameOriginRequest;
+  // True iff the ongoing resource loading is using the downloadToFile
+  // option.
+  bool m_downloadingToFile;
+  bool m_responseTextOverflow;
 };
 
 std::ostream& operator<<(std::ostream&, const XMLHttpRequest*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XMLHttpRequest_h
+#endif  // XMLHttpRequest_h

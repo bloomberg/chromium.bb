@@ -41,11 +41,14 @@ class CSSToLengthConversionData;
 class CSSValue;
 
 class TransformBuilder {
-    STATIC_ONLY(TransformBuilder);
-public:
-    static void createTransformOperations(const CSSValue& inValue, const CSSToLengthConversionData&, TransformOperations& outOperations);
+  STATIC_ONLY(TransformBuilder);
+
+ public:
+  static void createTransformOperations(const CSSValue& inValue,
+                                        const CSSToLengthConversionData&,
+                                        TransformOperations& outOperations);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TransformBuilder_h
+#endif  // TransformBuilder_h

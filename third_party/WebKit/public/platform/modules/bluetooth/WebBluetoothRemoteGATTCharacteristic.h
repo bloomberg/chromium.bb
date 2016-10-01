@@ -12,11 +12,12 @@ namespace blink {
 // An object through which the embedder can trigger events on a Document-bound
 // Web Bluetooth GATT Characteristic object.
 class WebBluetoothRemoteGATTCharacteristic {
-public:
-    // Used to notify blink that the characteristic's value changed.
-    virtual void dispatchCharacteristicValueChanged(const WebVector<uint8_t>&) = 0;
+ public:
+  // Used to notify blink that the characteristic's value changed.
+  virtual void dispatchCharacteristicValueChanged(
+      const WebVector<uint8_t>&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebBluetoothRemoteGATTCharacteristicDelegate_h
+#endif  // WebBluetoothRemoteGATTCharacteristicDelegate_h

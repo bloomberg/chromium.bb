@@ -41,30 +41,33 @@ class RTCSessionDescriptionInit;
 class ScriptState;
 class ScriptValue;
 
-class RTCSessionDescription final : public GarbageCollectedFinalized<RTCSessionDescription>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RTCSessionDescription* create(const RTCSessionDescriptionInit&);
-    static RTCSessionDescription* create(WebRTCSessionDescription);
+class RTCSessionDescription final
+    : public GarbageCollectedFinalized<RTCSessionDescription>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    String type();
-    void setType(const String&);
+ public:
+  static RTCSessionDescription* create(const RTCSessionDescriptionInit&);
+  static RTCSessionDescription* create(WebRTCSessionDescription);
 
-    String sdp();
-    void setSdp(const String&);
+  String type();
+  void setType(const String&);
 
-    ScriptValue toJSONForBinding(ScriptState*);
+  String sdp();
+  void setSdp(const String&);
 
-    WebRTCSessionDescription webSessionDescription();
+  ScriptValue toJSONForBinding(ScriptState*);
 
-    DEFINE_INLINE_TRACE() { }
+  WebRTCSessionDescription webSessionDescription();
 
-private:
-    explicit RTCSessionDescription(WebRTCSessionDescription);
+  DEFINE_INLINE_TRACE() {}
 
-    WebRTCSessionDescription m_webSessionDescription;
+ private:
+  explicit RTCSessionDescription(WebRTCSessionDescription);
+
+  WebRTCSessionDescription m_webSessionDescription;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCSessionDescription_h
+#endif  // RTCSessionDescription_h

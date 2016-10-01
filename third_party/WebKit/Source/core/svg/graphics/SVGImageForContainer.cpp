@@ -27,33 +27,40 @@
 
 namespace blink {
 
-bool SVGImageForContainer::isTextureBacked()
-{
-    return m_image->isTextureBacked();
+bool SVGImageForContainer::isTextureBacked() {
+  return m_image->isTextureBacked();
 }
 
-IntSize SVGImageForContainer::size() const
-{
-    FloatSize scaledContainerSize(m_containerSize);
-    scaledContainerSize.scale(m_zoom);
-    return roundedIntSize(scaledContainerSize);
+IntSize SVGImageForContainer::size() const {
+  FloatSize scaledContainerSize(m_containerSize);
+  scaledContainerSize.scale(m_zoom);
+  return roundedIntSize(scaledContainerSize);
 }
 
-void SVGImageForContainer::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect,
-    const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
-{
-    m_image->drawForContainer(canvas, paint, m_containerSize, m_zoom, dstRect, srcRect, m_url);
+void SVGImageForContainer::draw(SkCanvas* canvas,
+                                const SkPaint& paint,
+                                const FloatRect& dstRect,
+                                const FloatRect& srcRect,
+                                RespectImageOrientationEnum,
+                                ImageClampingMode) {
+  m_image->drawForContainer(canvas, paint, m_containerSize, m_zoom, dstRect,
+                            srcRect, m_url);
 }
 
-void SVGImageForContainer::drawPattern(GraphicsContext& context, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, SkXfermode::Mode op, const FloatRect& dstRect, const FloatSize& repeatSpacing)
-{
-    m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, op, dstRect, repeatSpacing, m_url);
+void SVGImageForContainer::drawPattern(GraphicsContext& context,
+                                       const FloatRect& srcRect,
+                                       const FloatSize& scale,
+                                       const FloatPoint& phase,
+                                       SkXfermode::Mode op,
+                                       const FloatRect& dstRect,
+                                       const FloatSize& repeatSpacing) {
+  m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect,
+                                   scale, phase, op, dstRect, repeatSpacing,
+                                   m_url);
 }
 
-sk_sp<SkImage> SVGImageForContainer::imageForCurrentFrame()
-{
-    return m_image->imageForCurrentFrameForContainer(m_url, size());
+sk_sp<SkImage> SVGImageForContainer::imageForCurrentFrame() {
+  return m_image->imageForCurrentFrameForContainer(m_url, size());
 }
 
-} // namespace blink
+}  // namespace blink

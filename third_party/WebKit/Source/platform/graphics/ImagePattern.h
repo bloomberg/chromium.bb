@@ -14,22 +14,22 @@ namespace blink {
 class Image;
 
 class PLATFORM_EXPORT ImagePattern final : public Pattern {
-public:
-    static PassRefPtr<ImagePattern> create(PassRefPtr<Image>, RepeatMode);
+ public:
+  static PassRefPtr<ImagePattern> create(PassRefPtr<Image>, RepeatMode);
 
-    bool isTextureBacked() const override;
+  bool isTextureBacked() const override;
 
-protected:
-    sk_sp<SkShader> createShader(const SkMatrix&) override;
-    bool isLocalMatrixChanged(const SkMatrix&) const override;
+ protected:
+  sk_sp<SkShader> createShader(const SkMatrix&) override;
+  bool isLocalMatrixChanged(const SkMatrix&) const override;
 
-private:
-    ImagePattern(PassRefPtr<Image>, RepeatMode);
-    SkMatrix m_previousLocalMatrix;
+ private:
+  ImagePattern(PassRefPtr<Image>, RepeatMode);
+  SkMatrix m_previousLocalMatrix;
 
-    sk_sp<SkImage> m_tileImage;
+  sk_sp<SkImage> m_tileImage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif  /* ImagePattern_h */
+#endif /* ImagePattern_h */

@@ -45,52 +45,56 @@ class WebLocalFrameImpl;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
 class AssociatedURLLoader final : public WebURLLoader {
-    WTF_MAKE_NONCOPYABLE(AssociatedURLLoader);
-public:
-    AssociatedURLLoader(WebLocalFrameImpl*, const WebURLLoaderOptions&);
-    ~AssociatedURLLoader();
+  WTF_MAKE_NONCOPYABLE(AssociatedURLLoader);
 
-    // WebURLLoader methods:
-    void loadSynchronously(const WebURLRequest&, WebURLResponse&, WebURLError&, WebData&, int64_t& encodedDataLength) override;
-    void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) override;
-    void cancel() override;
-    void setDefersLoading(bool) override;
-    void setLoadingTaskRunner(blink::WebTaskRunner*) override;
+ public:
+  AssociatedURLLoader(WebLocalFrameImpl*, const WebURLLoaderOptions&);
+  ~AssociatedURLLoader();
 
-    // Called by |m_observer| to handle destruction of the Document associated
-    // with the frame given to the constructor.
-    void documentDestroyed();
+  // WebURLLoader methods:
+  void loadSynchronously(const WebURLRequest&,
+                         WebURLResponse&,
+                         WebURLError&,
+                         WebData&,
+                         int64_t& encodedDataLength) override;
+  void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) override;
+  void cancel() override;
+  void setDefersLoading(bool) override;
+  void setLoadingTaskRunner(blink::WebTaskRunner*) override;
 
-    // Called by ClientAdapter to handle completion of loading.
-    void clientAdapterDone();
+  // Called by |m_observer| to handle destruction of the Document associated
+  // with the frame given to the constructor.
+  void documentDestroyed();
 
-private:
-    class ClientAdapter;
-    class Observer;
+  // Called by ClientAdapter to handle completion of loading.
+  void clientAdapterDone();
 
-    void cancelLoader();
-    void disposeObserver();
+ private:
+  class ClientAdapter;
+  class Observer;
 
-    WebURLLoaderClient* releaseClient()
-    {
-        WebURLLoaderClient* client = m_client;
-        m_client = nullptr;
-        return client;
-    }
+  void cancelLoader();
+  void disposeObserver();
 
-    WebURLLoaderClient* m_client;
-    WebURLLoaderOptions m_options;
+  WebURLLoaderClient* releaseClient() {
+    WebURLLoaderClient* client = m_client;
+    m_client = nullptr;
+    return client;
+  }
 
-    // An adapter which converts the DocumentThreadableLoaderClient method
-    // calls into the WebURLLoaderClient method calls.
-    std::unique_ptr<ClientAdapter> m_clientAdapter;
-    Persistent<DocumentThreadableLoader> m_loader;
+  WebURLLoaderClient* m_client;
+  WebURLLoaderOptions m_options;
 
-    // A ContextLifecycleObserver for cancelling |m_loader| when the Document
-    // is detached.
-    Persistent<Observer> m_observer;
+  // An adapter which converts the DocumentThreadableLoaderClient method
+  // calls into the WebURLLoaderClient method calls.
+  std::unique_ptr<ClientAdapter> m_clientAdapter;
+  Persistent<DocumentThreadableLoader> m_loader;
+
+  // A ContextLifecycleObserver for cancelling |m_loader| when the Document
+  // is detached.
+  Persistent<Observer> m_observer;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

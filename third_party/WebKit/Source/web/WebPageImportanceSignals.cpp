@@ -9,37 +9,37 @@
 
 namespace blink {
 
-void WebPageImportanceSignals::reset()
-{
-    m_hadFormInteraction = false;
-    m_issuedNonGetFetchFromScript = false;
-    if (m_observer)
-        m_observer->pageImportanceSignalsChanged();
+void WebPageImportanceSignals::reset() {
+  m_hadFormInteraction = false;
+  m_issuedNonGetFetchFromScript = false;
+  if (m_observer)
+    m_observer->pageImportanceSignalsChanged();
 }
 
-void WebPageImportanceSignals::setHadFormInteraction()
-{
-    m_hadFormInteraction = true;
-    if (m_observer)
-        m_observer->pageImportanceSignalsChanged();
+void WebPageImportanceSignals::setHadFormInteraction() {
+  m_hadFormInteraction = true;
+  if (m_observer)
+    m_observer->pageImportanceSignalsChanged();
 }
 
-void WebPageImportanceSignals::setIssuedNonGetFetchFromScript()
-{
-    m_issuedNonGetFetchFromScript = true;
-    if (m_observer)
-        m_observer->pageImportanceSignalsChanged();
+void WebPageImportanceSignals::setIssuedNonGetFetchFromScript() {
+  m_issuedNonGetFetchFromScript = true;
+  if (m_observer)
+    m_observer->pageImportanceSignalsChanged();
 }
 
-void WebPageImportanceSignals::onCommitLoad()
-{
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, hadFormInteractionHistogram, ("PageImportanceSignals.HadFormInteraction.OnCommitLoad", 2));
-    hadFormInteractionHistogram.count(m_hadFormInteraction);
+void WebPageImportanceSignals::onCommitLoad() {
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, hadFormInteractionHistogram,
+      ("PageImportanceSignals.HadFormInteraction.OnCommitLoad", 2));
+  hadFormInteractionHistogram.count(m_hadFormInteraction);
 
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, issuedNonGetHistogram, ("PageImportanceSignals.IssuedNonGetFetchFromScript.OnCommitLoad", 2));
-    issuedNonGetHistogram.count(m_issuedNonGetFetchFromScript);
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, issuedNonGetHistogram,
+      ("PageImportanceSignals.IssuedNonGetFetchFromScript.OnCommitLoad", 2));
+  issuedNonGetHistogram.count(m_issuedNonGetFetchFromScript);
 
-    reset();
+  reset();
 }
 
-} // namespace blink
+}  // namespace blink

@@ -39,20 +39,21 @@ namespace blink {
 class HTMLDataListOptionsCollection;
 
 class CORE_EXPORT HTMLDataListElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLDataListElement* create(Document&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    HTMLDataListOptionsCollection* options();
+ public:
+  static HTMLDataListElement* create(Document&);
 
-    void optionElementChildrenChanged();
+  HTMLDataListOptionsCollection* options();
 
-private:
-    HTMLDataListElement(Document&);
-    void childrenChanged(const ChildrenChange&) override;
-    void finishParsingChildren() override;
+  void optionElementChildrenChanged();
+
+ private:
+  HTMLDataListElement(Document&);
+  void childrenChanged(const ChildrenChange&) override;
+  void finishParsingChildren() override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLDataListElement_h
+#endif  // HTMLDataListElement_h

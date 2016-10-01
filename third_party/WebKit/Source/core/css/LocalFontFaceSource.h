@@ -12,27 +12,29 @@
 namespace blink {
 
 class LocalFontFaceSource final : public CSSFontFaceSource {
-public:
-    LocalFontFaceSource(const String& fontName) : m_fontName(fontName) { }
-    bool isLocal() const override { return true; }
-    bool isLocalFontAvailable(const FontDescription&) override;
+ public:
+  LocalFontFaceSource(const String& fontName) : m_fontName(fontName) {}
+  bool isLocal() const override { return true; }
+  bool isLocalFontAvailable(const FontDescription&) override;
 
-private:
-    PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
+ private:
+  PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
 
-    class LocalFontHistograms {
-        DISALLOW_NEW();
-    public:
-        LocalFontHistograms() : m_reported(false) { }
-        void record(bool loadSuccess);
-    private:
-        bool m_reported;
-    };
+  class LocalFontHistograms {
+    DISALLOW_NEW();
 
-    AtomicString m_fontName;
-    LocalFontHistograms m_histograms;
+   public:
+    LocalFontHistograms() : m_reported(false) {}
+    void record(bool loadSuccess);
+
+   private:
+    bool m_reported;
+  };
+
+  AtomicString m_fontName;
+  LocalFontHistograms m_histograms;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

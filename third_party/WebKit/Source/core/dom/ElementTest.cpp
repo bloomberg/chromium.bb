@@ -13,15 +13,14 @@
 
 namespace blink {
 
-TEST(ElementTest, SupportsFocus)
-{
-    std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
-    Document& document = pageHolder->document();
-    DCHECK(isHTMLHtmlElement(document.documentElement()));
-    document.setDesignMode("on");
-    document.view()->updateAllLifecyclePhases();
-    EXPECT_TRUE(document.documentElement()->supportsFocus())
-        << "<html> with designMode=on should be focusable.";
+TEST(ElementTest, SupportsFocus) {
+  std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
+  Document& document = pageHolder->document();
+  DCHECK(isHTMLHtmlElement(document.documentElement()));
+  document.setDesignMode("on");
+  document.view()->updateAllLifecyclePhases();
+  EXPECT_TRUE(document.documentElement()->supportsFocus())
+      << "<html> with designMode=on should be focusable.";
 }
 
-} // namespace blink
+}  // namespace blink

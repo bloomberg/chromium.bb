@@ -10,39 +10,36 @@
 
 namespace blink {
 
-TextResource::TextResource(const ResourceRequest& resourceRequest, Resource::Type type, const ResourceLoaderOptions& options, const String& mimeType, const String& charset)
-    : Resource(resourceRequest, type, options)
-    , m_decoder(TextResourceDecoder::create(mimeType, charset))
-{
+TextResource::TextResource(const ResourceRequest& resourceRequest,
+                           Resource::Type type,
+                           const ResourceLoaderOptions& options,
+                           const String& mimeType,
+                           const String& charset)
+    : Resource(resourceRequest, type, options),
+      m_decoder(TextResourceDecoder::create(mimeType, charset)) {}
+
+TextResource::~TextResource() {}
+
+void TextResource::setEncoding(const String& chs) {
+  m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
 }
 
-TextResource::~TextResource()
-{
+String TextResource::encoding() const {
+  return m_decoder->encoding().name();
 }
 
-void TextResource::setEncoding(const String& chs)
-{
-    m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
+String TextResource::decodedText() const {
+  DCHECK(data());
+
+  StringBuilder builder;
+  const char* segment;
+  size_t position = 0;
+  while (size_t length = data()->getSomeData(segment, position)) {
+    builder.append(m_decoder->decode(segment, length));
+    position += length;
+  }
+  builder.append(m_decoder->flush());
+  return builder.toString();
 }
 
-String TextResource::encoding() const
-{
-    return m_decoder->encoding().name();
-}
-
-String TextResource::decodedText() const
-{
-    DCHECK(data());
-
-    StringBuilder builder;
-    const char* segment;
-    size_t position = 0;
-    while (size_t length = data()->getSomeData(segment, position)) {
-        builder.append(m_decoder->decode(segment, length));
-        position += length;
-    }
-    builder.append(m_decoder->flush());
-    return builder.toString();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -31,46 +31,38 @@
 namespace blink {
 
 class CursorData {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    CursorData(StyleImage* image, bool hotSpotSpecified, const IntPoint& hotSpot)
-        : m_image(image)
-        , m_hotSpotSpecified(hotSpotSpecified)
-        , m_hotSpot(hotSpot)
-    {
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    bool operator==(const CursorData& o) const
-    {
-        return m_hotSpot == o.m_hotSpot && m_image == o.m_image;
-    }
+ public:
+  CursorData(StyleImage* image, bool hotSpotSpecified, const IntPoint& hotSpot)
+      : m_image(image),
+        m_hotSpotSpecified(hotSpotSpecified),
+        m_hotSpot(hotSpot) {}
 
-    bool operator!=(const CursorData& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const CursorData& o) const {
+    return m_hotSpot == o.m_hotSpot && m_image == o.m_image;
+  }
 
-    StyleImage* image() const { return m_image.get(); }
-    void setImage(StyleImage* image) { m_image = image; }
+  bool operator!=(const CursorData& o) const { return !(*this == o); }
 
-    bool hotSpotSpecified() const { return m_hotSpotSpecified; }
+  StyleImage* image() const { return m_image.get(); }
+  void setImage(StyleImage* image) { m_image = image; }
 
-    // Hot spot in the image in logical pixels.
-    const IntPoint& hotSpot() const { return m_hotSpot; }
+  bool hotSpotSpecified() const { return m_hotSpotSpecified; }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_image);
-    }
+  // Hot spot in the image in logical pixels.
+  const IntPoint& hotSpot() const { return m_hotSpot; }
 
-private:
-    Member<StyleImage> m_image;
-    bool m_hotSpotSpecified;
-    IntPoint m_hotSpot; // for CSS3 support
+  DEFINE_INLINE_TRACE() { visitor->trace(m_image); }
+
+ private:
+  Member<StyleImage> m_image;
+  bool m_hotSpotSpecified;
+  IntPoint m_hotSpot;  // for CSS3 support
 };
 
-} // namespace blink
+}  // namespace blink
 
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::CursorData);
 
-#endif // CursorData_h
+#endif  // CursorData_h

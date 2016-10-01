@@ -15,22 +15,33 @@ namespace blink {
 class CSSToLengthConversionData;
 
 class LengthInterpolationFunctions {
-    STATIC_ONLY(LengthInterpolationFunctions);
-public:
-    static std::unique_ptr<InterpolableValue> createInterpolablePixels(double pixels);
-    static InterpolationValue createInterpolablePercent(double percent);
-    static std::unique_ptr<InterpolableList> createNeutralInterpolableValue();
+  STATIC_ONLY(LengthInterpolationFunctions);
 
-    static InterpolationValue maybeConvertCSSValue(const CSSValue&);
-    static InterpolationValue maybeConvertLength(const Length&, float zoom);
-    static PairwiseInterpolationValue mergeSingles(InterpolationValue&& start, InterpolationValue&& end);
-    static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*, const NonInterpolableValue*);
-    static void composite(std::unique_ptr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
-    static Length createLength(const InterpolableValue&, const NonInterpolableValue*, const CSSToLengthConversionData&, ValueRange);
+ public:
+  static std::unique_ptr<InterpolableValue> createInterpolablePixels(
+      double pixels);
+  static InterpolationValue createInterpolablePercent(double percent);
+  static std::unique_ptr<InterpolableList> createNeutralInterpolableValue();
 
-    static void subtractFromOneHundredPercent(InterpolationValue& result);
+  static InterpolationValue maybeConvertCSSValue(const CSSValue&);
+  static InterpolationValue maybeConvertLength(const Length&, float zoom);
+  static PairwiseInterpolationValue mergeSingles(InterpolationValue&& start,
+                                                 InterpolationValue&& end);
+  static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*,
+                                                 const NonInterpolableValue*);
+  static void composite(std::unique_ptr<InterpolableValue>&,
+                        RefPtr<NonInterpolableValue>&,
+                        double underlyingFraction,
+                        const InterpolableValue&,
+                        const NonInterpolableValue*);
+  static Length createLength(const InterpolableValue&,
+                             const NonInterpolableValue*,
+                             const CSSToLengthConversionData&,
+                             ValueRange);
+
+  static void subtractFromOneHundredPercent(InterpolationValue& result);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LengthInterpolationFunctions_h
+#endif  // LengthInterpolationFunctions_h

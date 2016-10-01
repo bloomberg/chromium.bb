@@ -31,23 +31,25 @@ namespace blink {
 class HTMLFrameElement;
 
 class LayoutFrame final : public LayoutPart {
-public:
-    explicit LayoutFrame(HTMLFrameElement*);
+ public:
+  explicit LayoutFrame(HTMLFrameElement*);
 
-    FrameEdgeInfo edgeInfo() const;
+  FrameEdgeInfo edgeInfo() const;
 
-    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-    const char* name() const override { return "LayoutFrame"; }
+  const char* name() const override { return "LayoutFrame"; }
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectFrame || LayoutPart::isOfType(type); }
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectFrame || LayoutPart::isOfType(type);
+  }
 
-    void updateFromElement() override;
+  void updateFromElement() override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrame, isFrame());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutFrame_h
+#endif  // LayoutFrame_h

@@ -55,354 +55,400 @@ class SecurityOrigin;
 // A resource that is held in the cache. Classes who want to use this object should derive
 // from ResourceClient, to get the function calls in case the requested data has arrived.
 // This class also does the actual communication with the loader to obtain the resource from the network.
-class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>, public MemoryCoordinatorClient {
-    USING_GARBAGE_COLLECTED_MIXIN(Resource);
-    WTF_MAKE_NONCOPYABLE(Resource);
-public:
-    // |Type| enum values are used in UMAs, so do not change the values of
-    // existing |Type|. When adding a new |Type|, append it at the end and
-    // update |kLastResourceType|.
-    enum Type {
-        MainResource,
-        Image,
-        CSSStyleSheet,
-        Script,
-        Font,
-        Raw,
-        SVGDocument,
-        XSLStyleSheet,
-        LinkPrefetch,
-        TextTrack,
-        ImportResource,
-        Media, // Audio or video file requested by a HTML5 media element
-        Manifest
-    };
-    static const int kLastResourceType = Manifest + 1;
-
-    enum Status {
-        NotStarted,
-        Pending, // load in progress
-        Cached, // load completed successfully
-        LoadError,
-        DecodeError
-    };
-
-    // Whether a resource client for a preload should mark the preload as
-    // referenced.
-    enum PreloadReferencePolicy {
-        MarkAsReferenced,
-        DontMarkAsReferenced,
-    };
-
-    // Exposed for testing.
-    static Resource* create(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options = ResourceLoaderOptions())
-    {
-        return new Resource(request, type, options);
-    }
-    virtual ~Resource();
-
-    DECLARE_VIRTUAL_TRACE();
-
-    virtual void setEncoding(const String&) { }
-    virtual String encoding() const { return String(); }
-    virtual void appendData(const char*, size_t);
-    virtual void error(const ResourceError&);
-    virtual void setCORSFailed() { }
-
-    void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) { m_needsSynchronousCacheHit = needsSynchronousCacheHit; }
-
-    void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
-    bool isLinkPreload() const { return m_linkPreload; }
-
-    void setPreloadDiscoveryTime(double preloadDiscoveryTime) { m_preloadDiscoveryTime = preloadDiscoveryTime; }
-
-    const ResourceError& resourceError() const { return m_error; }
-
-    void setIdentifier(unsigned long identifier) { m_identifier = identifier; }
-    unsigned long identifier() const { return m_identifier; }
-
-    virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return false; }
-
-    const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
-    const ResourceRequest& lastResourceRequest() const;
-
-    virtual void setRevalidatingRequest(const ResourceRequest&);
-
-    void setFetcherSecurityOrigin(SecurityOrigin* origin) { m_fetcherSecurityOrigin = origin; }
-
-    // This url can have a fragment, but it can match resources that differ by the fragment only.
-    const KURL& url() const { return m_resourceRequest.url();}
-    Type getType() const { return static_cast<Type>(m_type); }
-    const ResourceLoaderOptions& options() const { return m_options; }
-    ResourceLoaderOptions& mutableOptions() { return m_options; }
-
-    void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
-    virtual ResourcePriority priorityFromObservers() { return ResourcePriority(); }
-
-    // The reference policy indicates that the client should not affect whether
-    // a preload is considered referenced or not. This allows for "passive"
-    // resource clients that simply observe the resource.
-    void addClient(ResourceClient*, PreloadReferencePolicy = MarkAsReferenced);
-    void removeClient(ResourceClient*);
-
-    enum PreloadResult {
-        PreloadNotReferenced,
-        PreloadReferenced,
-        PreloadReferencedWhileLoading,
-        PreloadReferencedWhileComplete
-    };
-    PreloadResult getPreloadResult() const { return static_cast<PreloadResult>(m_preloadResult); }
-
-    Status getStatus() const { return static_cast<Status>(m_status); }
-    void setStatus(Status status) { m_status = status; }
-
-    size_t size() const { return encodedSize() + decodedSize() + overheadSize(); }
-    size_t encodedSize() const { return m_encodedSize; }
-    size_t decodedSize() const { return m_decodedSize; }
-    size_t overheadSize() const { return m_overheadSize; }
+class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
+                             public MemoryCoordinatorClient {
+  USING_GARBAGE_COLLECTED_MIXIN(Resource);
+  WTF_MAKE_NONCOPYABLE(Resource);
+
+ public:
+  // |Type| enum values are used in UMAs, so do not change the values of
+  // existing |Type|. When adding a new |Type|, append it at the end and
+  // update |kLastResourceType|.
+  enum Type {
+    MainResource,
+    Image,
+    CSSStyleSheet,
+    Script,
+    Font,
+    Raw,
+    SVGDocument,
+    XSLStyleSheet,
+    LinkPrefetch,
+    TextTrack,
+    ImportResource,
+    Media,  // Audio or video file requested by a HTML5 media element
+    Manifest
+  };
+  static const int kLastResourceType = Manifest + 1;
+
+  enum Status {
+    NotStarted,
+    Pending,  // load in progress
+    Cached,   // load completed successfully
+    LoadError,
+    DecodeError
+  };
+
+  // Whether a resource client for a preload should mark the preload as
+  // referenced.
+  enum PreloadReferencePolicy {
+    MarkAsReferenced,
+    DontMarkAsReferenced,
+  };
+
+  // Exposed for testing.
+  static Resource* create(
+      const ResourceRequest& request,
+      Type type,
+      const ResourceLoaderOptions& options = ResourceLoaderOptions()) {
+    return new Resource(request, type, options);
+  }
+  virtual ~Resource();
+
+  DECLARE_VIRTUAL_TRACE();
+
+  virtual void setEncoding(const String&) {}
+  virtual String encoding() const { return String(); }
+  virtual void appendData(const char*, size_t);
+  virtual void error(const ResourceError&);
+  virtual void setCORSFailed() {}
+
+  void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) {
+    m_needsSynchronousCacheHit = needsSynchronousCacheHit;
+  }
+
+  void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
+  bool isLinkPreload() const { return m_linkPreload; }
+
+  void setPreloadDiscoveryTime(double preloadDiscoveryTime) {
+    m_preloadDiscoveryTime = preloadDiscoveryTime;
+  }
+
+  const ResourceError& resourceError() const { return m_error; }
+
+  void setIdentifier(unsigned long identifier) { m_identifier = identifier; }
+  unsigned long identifier() const { return m_identifier; }
+
+  virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return false; }
+
+  const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
+  const ResourceRequest& lastResourceRequest() const;
+
+  virtual void setRevalidatingRequest(const ResourceRequest&);
+
+  void setFetcherSecurityOrigin(SecurityOrigin* origin) {
+    m_fetcherSecurityOrigin = origin;
+  }
+
+  // This url can have a fragment, but it can match resources that differ by the fragment only.
+  const KURL& url() const { return m_resourceRequest.url(); }
+  Type getType() const { return static_cast<Type>(m_type); }
+  const ResourceLoaderOptions& options() const { return m_options; }
+  ResourceLoaderOptions& mutableOptions() { return m_options; }
+
+  void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
+  virtual ResourcePriority priorityFromObservers() {
+    return ResourcePriority();
+  }
+
+  // The reference policy indicates that the client should not affect whether
+  // a preload is considered referenced or not. This allows for "passive"
+  // resource clients that simply observe the resource.
+  void addClient(ResourceClient*, PreloadReferencePolicy = MarkAsReferenced);
+  void removeClient(ResourceClient*);
+
+  enum PreloadResult {
+    PreloadNotReferenced,
+    PreloadReferenced,
+    PreloadReferencedWhileLoading,
+    PreloadReferencedWhileComplete
+  };
+  PreloadResult getPreloadResult() const {
+    return static_cast<PreloadResult>(m_preloadResult);
+  }
+
+  Status getStatus() const { return static_cast<Status>(m_status); }
+  void setStatus(Status status) { m_status = status; }
+
+  size_t size() const { return encodedSize() + decodedSize() + overheadSize(); }
+  size_t encodedSize() const { return m_encodedSize; }
+  size_t decodedSize() const { return m_decodedSize; }
+  size_t overheadSize() const { return m_overheadSize; }
+
+  bool isLoaded() const { return m_status > Pending; }
+
+  bool isLoading() const { return m_status == Pending; }
+  bool stillNeedsLoad() const { return m_status < Pending; }
+
+  void setLoader(ResourceLoader*);
+  ResourceLoader* loader() const { return m_loader.get(); }
+
+  virtual bool isImage() const { return false; }
+  bool shouldBlockLoadEvent() const;
+  bool isLoadEventBlockingResourceType() const;
+
+  // Computes the status of an object after loading.
+  // Updates the expire date on the cache entry file
+  virtual void finish(double finishTime);
+  void finish() { finish(0.0); }
+
+  // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
+  bool passesAccessControlCheck(SecurityOrigin*) const;
+  bool passesAccessControlCheck(SecurityOrigin*,
+                                String& errorDescription) const;
+
+  bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
+
+  virtual PassRefPtr<const SharedBuffer> resourceBuffer() const {
+    return m_data;
+  }
+  void setResourceBuffer(PassRefPtr<SharedBuffer>);
+
+  virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
+
+  // Called when a redirect response was received but a decision has
+  // already been made to not follow it.
+  virtual void willNotFollowRedirect() {}
+
+  virtual void responseReceived(const ResourceResponse&,
+                                std::unique_ptr<WebDataConsumerHandle>);
+  void setResponse(const ResourceResponse&);
+  const ResourceResponse& response() const { return m_response; }
+
+  virtual void reportResourceTimingToClients(const ResourceTimingInfo&) {}
+
+  // Sets the serialized metadata retrieved from the platform's cache.
+  virtual void setSerializedCachedMetadata(const char*, size_t);
+
+  // This may return nullptr when the resource isn't cacheable.
+  CachedMetadataHandler* cacheHandler();
+
+  AtomicString httpContentType() const;
+
+  bool wasCanceled() const { return m_error.isCancellation(); }
+  bool errorOccurred() const {
+    return m_status == LoadError || m_status == DecodeError;
+  }
+  bool loadFailedOrCanceled() { return !m_error.isNull(); }
+
+  DataBufferingPolicy getDataBufferingPolicy() const {
+    return m_options.dataBufferingPolicy;
+  }
+  void setDataBufferingPolicy(DataBufferingPolicy);
+
+  // The isPreloaded() flag is using a counter in order to make sure that even when
+  // multiple ResourceFetchers are preloading the resource, it will remain marked as
+  // preloaded until *all* of them have used it.
+  bool isUnusedPreload() const {
+    return isPreloaded() && getPreloadResult() == PreloadNotReferenced;
+  }
+  bool isPreloaded() const { return m_preloadCount; }
+  void increasePreloadCount() { ++m_preloadCount; }
+  void decreasePreloadCount() {
+    DCHECK(m_preloadCount);
+    --m_preloadCount;
+  }
+
+  bool canReuseRedirectChain();
+  bool mustRevalidateDueToCacheHeaders();
+  bool canUseCacheValidator();
+  bool isCacheValidator() const { return m_isRevalidating; }
+  bool hasCacheControlNoStoreHeader() const;
+  bool hasVaryHeader() const;
+  virtual bool mustRefetchDueToIntegrityMetadata(
+      const FetchRequest& request) const {
+    return false;
+  }
+
+  double currentAge() const;
+  double freshnessLifetime();
+  double stalenessLifetime();
+
+  bool isAlive() const { return m_isAlive; }
+
+  void setCacheIdentifier(const String& cacheIdentifier) {
+    m_cacheIdentifier = cacheIdentifier;
+  }
+  String cacheIdentifier() const { return m_cacheIdentifier; }
+
+  virtual void didSendData(unsigned long long /* bytesSent */,
+                           unsigned long long /* totalBytesToBeSent */) {}
+  virtual void didDownloadData(int) {}
 
-    bool isLoaded() const { return m_status > Pending; }
+  double loadFinishTime() const { return m_loadFinishTime; }
 
-    bool isLoading() const { return m_status == Pending; }
-    bool stillNeedsLoad() const { return m_status < Pending; }
+  void addToEncodedBodyLength(int value) {
+    m_response.addToEncodedBodyLength(value);
+  }
+  void addToDecodedBodyLength(int value) {
+    m_response.addToDecodedBodyLength(value);
+  }
 
-    void setLoader(ResourceLoader*);
-    ResourceLoader* loader() const { return m_loader.get(); }
+  virtual bool canReuse(const ResourceRequest&) const { return true; }
 
-    virtual bool isImage() const { return false; }
-    bool shouldBlockLoadEvent() const;
-    bool isLoadEventBlockingResourceType() const;
+  // Used by the MemoryCache to reduce the memory consumption of the entry.
+  void prune();
 
-    // Computes the status of an object after loading.
-    // Updates the expire date on the cache entry file
-    virtual void finish(double finishTime);
-    void finish() { finish(0.0); }
+  virtual void onMemoryDump(WebMemoryDumpLevelOfDetail,
+                            WebProcessMemoryDump*) const;
 
-    // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
-    bool passesAccessControlCheck(SecurityOrigin*) const;
-    bool passesAccessControlCheck(SecurityOrigin*, String& errorDescription) const;
+  static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
 
-    bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
+ protected:
+  Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
-    virtual PassRefPtr<const SharedBuffer> resourceBuffer() const { return m_data; }
-    void setResourceBuffer(PassRefPtr<SharedBuffer>);
+  virtual void checkNotify();
 
-    virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
+  enum class MarkFinishedOption { ShouldMarkFinished, DoNotMarkFinished };
+  void notifyClientsInternal(MarkFinishedOption);
+  void markClientFinished(ResourceClient*);
 
-    // Called when a redirect response was received but a decision has
-    // already been made to not follow it.
-    virtual void willNotFollowRedirect() {}
+  virtual bool hasClientsOrObservers() const {
+    return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() ||
+           !m_finishedClients.isEmpty();
+  }
+  virtual void destroyDecodedDataForFailedRevalidation() {}
 
-    virtual void responseReceived(const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>);
-    void setResponse(const ResourceResponse&);
-    const ResourceResponse& response() const { return m_response; }
+  void setEncodedSize(size_t);
+  void setDecodedSize(size_t);
+  void didAccessDecodedData();
 
-    virtual void reportResourceTimingToClients(const ResourceTimingInfo&) { }
+  void finishPendingClients();
 
-    // Sets the serialized metadata retrieved from the platform's cache.
-    virtual void setSerializedCachedMetadata(const char*, size_t);
+  virtual void didAddClient(ResourceClient*);
+  void willAddClientOrObserver(PreloadReferencePolicy);
 
-    // This may return nullptr when the resource isn't cacheable.
-    CachedMetadataHandler* cacheHandler();
+  // |this| object may be dead after didRemoveClientOrObserver().
+  void didRemoveClientOrObserver();
+  virtual void allClientsAndObserversRemoved();
 
-    AtomicString httpContentType() const;
+  bool hasClient(ResourceClient* client) {
+    return m_clients.contains(client) ||
+           m_clientsAwaitingCallback.contains(client) ||
+           m_finishedClients.contains(client);
+  }
 
-    bool wasCanceled() const { return m_error.isCancellation(); }
-    bool errorOccurred() const { return m_status == LoadError || m_status == DecodeError; }
-    bool loadFailedOrCanceled() { return !m_error.isNull(); }
+  struct RedirectPair {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    DataBufferingPolicy getDataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
-    void setDataBufferingPolicy(DataBufferingPolicy);
+   public:
+    explicit RedirectPair(const ResourceRequest& request,
+                          const ResourceResponse& redirectResponse)
+        : m_request(request), m_redirectResponse(redirectResponse) {}
 
-    // The isPreloaded() flag is using a counter in order to make sure that even when
-    // multiple ResourceFetchers are preloading the resource, it will remain marked as
-    // preloaded until *all* of them have used it.
-    bool isUnusedPreload() const { return isPreloaded() && getPreloadResult() == PreloadNotReferenced; }
-    bool isPreloaded() const { return m_preloadCount; }
-    void increasePreloadCount() { ++m_preloadCount; }
-    void decreasePreloadCount()
-    {
-        DCHECK(m_preloadCount);
-        --m_preloadCount;
-    }
+    ResourceRequest m_request;
+    ResourceResponse m_redirectResponse;
+  };
+  const Vector<RedirectPair>& redirectChain() const { return m_redirectChain; }
 
-    bool canReuseRedirectChain();
-    bool mustRevalidateDueToCacheHeaders();
-    bool canUseCacheValidator();
-    bool isCacheValidator() const { return m_isRevalidating; }
-    bool hasCacheControlNoStoreHeader() const;
-    bool hasVaryHeader() const;
-    virtual bool mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const { return false; }
+  virtual void destroyDecodedDataIfPossible() {}
 
-    double currentAge() const;
-    double freshnessLifetime();
-    double stalenessLifetime();
+  // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
+  String getMemoryDumpName() const;
 
-    bool isAlive() const { return m_isAlive; }
+  const HeapHashCountedSet<WeakMember<ResourceClient>>& clients() const {
+    return m_clients;
+  }
+  DataBufferingPolicy dataBufferingPolicy() const {
+    return m_options.dataBufferingPolicy;
+  }
 
-    void setCacheIdentifier(const String& cacheIdentifier) { m_cacheIdentifier = cacheIdentifier; }
-    String cacheIdentifier() const { return m_cacheIdentifier; }
+  void setCachePolicyBypassingCache();
+  void setLoFiStateOff();
 
-    virtual void didSendData(unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
-    virtual void didDownloadData(int) { }
+  SharedBuffer* data() const { return m_data.get(); }
+  void clearData() { m_data.clear(); }
 
-    double loadFinishTime() const { return m_loadFinishTime; }
+ private:
+  class ResourceCallback;
+  class CachedMetadataHandlerImpl;
+  class ServiceWorkerResponseCachedMetadataHandler;
 
-    void addToEncodedBodyLength(int value) { m_response.addToEncodedBodyLength(value); }
-    void addToDecodedBodyLength(int value) { m_response.addToDecodedBodyLength(value); }
+  void cancelTimerFired(TimerBase*);
 
-    virtual bool canReuse(const ResourceRequest&) const { return true; }
+  void revalidationSucceeded(const ResourceResponse&);
+  void revalidationFailed();
 
-    // Used by the MemoryCache to reduce the memory consumption of the entry.
-    void prune();
+  size_t calculateOverheadSize() const;
 
-    virtual void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const;
+  String reasonNotDeletable() const;
 
-    static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
+  // MemoryCoordinatorClient overrides:
+  void prepareToSuspend() override;
 
-protected:
-    Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
+  Member<CachedMetadataHandlerImpl> m_cacheHandler;
+  RefPtr<SecurityOrigin> m_fetcherSecurityOrigin;
 
-    virtual void checkNotify();
+  ResourceError m_error;
 
-    enum class MarkFinishedOption {
-        ShouldMarkFinished,
-        DoNotMarkFinished
-    };
-    void notifyClientsInternal(MarkFinishedOption);
-    void markClientFinished(ResourceClient*);
+  double m_loadFinishTime;
 
-    virtual bool hasClientsOrObservers() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClients.isEmpty(); }
-    virtual void destroyDecodedDataForFailedRevalidation() { }
+  unsigned long m_identifier;
 
-    void setEncodedSize(size_t);
-    void setDecodedSize(size_t);
-    void didAccessDecodedData();
+  size_t m_encodedSize;
+  size_t m_decodedSize;
 
-    void finishPendingClients();
+  // Resource::calculateOverheadSize() is affected by changes in
+  // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
+  // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
+  // and thus potential bugs. crbug.com/594644
+  const size_t m_overheadSize;
 
-    virtual void didAddClient(ResourceClient*);
-    void willAddClientOrObserver(PreloadReferencePolicy);
+  unsigned m_preloadCount;
 
-    // |this| object may be dead after didRemoveClientOrObserver().
-    void didRemoveClientOrObserver();
-    virtual void allClientsAndObserversRemoved();
+  double m_preloadDiscoveryTime;
 
-    bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client) || m_finishedClients.contains(client); }
+  String m_cacheIdentifier;
 
-    struct RedirectPair {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        explicit RedirectPair(const ResourceRequest& request, const ResourceResponse& redirectResponse)
-            : m_request(request)
-            , m_redirectResponse(redirectResponse)
-        {
-        }
+  unsigned m_preloadResult : 2;  // PreloadResult
+  unsigned m_type : 4;           // Type
+  unsigned m_status : 3;         // Status
 
-        ResourceRequest m_request;
-        ResourceResponse m_redirectResponse;
-    };
-    const Vector<RedirectPair>& redirectChain() const { return m_redirectChain; }
+  unsigned m_needsSynchronousCacheHit : 1;
+  unsigned m_linkPreload : 1;
+  bool m_isRevalidating : 1;
+  bool m_isAlive : 1;
 
-    virtual void destroyDecodedDataIfPossible() { }
+  // Ordered list of all redirects followed while fetching this resource.
+  Vector<RedirectPair> m_redirectChain;
 
-    // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
-    String getMemoryDumpName() const;
+  HeapHashCountedSet<WeakMember<ResourceClient>> m_clients;
+  HeapHashCountedSet<WeakMember<ResourceClient>> m_clientsAwaitingCallback;
+  HeapHashCountedSet<WeakMember<ResourceClient>> m_finishedClients;
 
-    const HeapHashCountedSet<WeakMember<ResourceClient>>& clients() const { return m_clients; }
-    DataBufferingPolicy dataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
+  ResourceLoaderOptions m_options;
 
-    void setCachePolicyBypassingCache();
-    void setLoFiStateOff();
+  double m_responseTimestamp;
 
-    SharedBuffer* data() const { return m_data.get(); }
-    void clearData() { m_data.clear(); }
+  Timer<Resource> m_cancelTimer;
 
-private:
-    class ResourceCallback;
-    class CachedMetadataHandlerImpl;
-    class ServiceWorkerResponseCachedMetadataHandler;
+  ResourceRequest m_resourceRequest;
+  Member<ResourceLoader> m_loader;
+  ResourceResponse m_response;
 
-    void cancelTimerFired(TimerBase*);
-
-    void revalidationSucceeded(const ResourceResponse&);
-    void revalidationFailed();
-
-    size_t calculateOverheadSize() const;
-
-    String reasonNotDeletable() const;
-
-    // MemoryCoordinatorClient overrides:
-    void prepareToSuspend() override;
-
-    Member<CachedMetadataHandlerImpl> m_cacheHandler;
-    RefPtr<SecurityOrigin> m_fetcherSecurityOrigin;
-
-    ResourceError m_error;
-
-    double m_loadFinishTime;
-
-    unsigned long m_identifier;
-
-    size_t m_encodedSize;
-    size_t m_decodedSize;
-
-    // Resource::calculateOverheadSize() is affected by changes in
-    // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
-    // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
-    // and thus potential bugs. crbug.com/594644
-    const size_t m_overheadSize;
-
-    unsigned m_preloadCount;
-
-    double m_preloadDiscoveryTime;
-
-    String m_cacheIdentifier;
-
-    unsigned m_preloadResult : 2; // PreloadResult
-    unsigned m_type : 4; // Type
-    unsigned m_status : 3; // Status
-
-    unsigned m_needsSynchronousCacheHit : 1;
-    unsigned m_linkPreload : 1;
-    bool m_isRevalidating : 1;
-    bool m_isAlive : 1;
-
-    // Ordered list of all redirects followed while fetching this resource.
-    Vector<RedirectPair> m_redirectChain;
-
-    HeapHashCountedSet<WeakMember<ResourceClient>> m_clients;
-    HeapHashCountedSet<WeakMember<ResourceClient>> m_clientsAwaitingCallback;
-    HeapHashCountedSet<WeakMember<ResourceClient>> m_finishedClients;
-
-    ResourceLoaderOptions m_options;
-
-    double m_responseTimestamp;
-
-    Timer<Resource> m_cancelTimer;
-
-    ResourceRequest m_resourceRequest;
-    Member<ResourceLoader> m_loader;
-    ResourceResponse m_response;
-
-    RefPtr<SharedBuffer> m_data;
+  RefPtr<SharedBuffer> m_data;
 };
 
 class ResourceFactory {
-    STACK_ALLOCATED();
-public:
-    virtual Resource* create(const ResourceRequest&, const ResourceLoaderOptions&, const String&) const = 0;
-    Resource::Type type() const { return m_type; }
+  STACK_ALLOCATED();
 
-protected:
-    explicit ResourceFactory(Resource::Type type) : m_type(type) { }
+ public:
+  virtual Resource* create(const ResourceRequest&,
+                           const ResourceLoaderOptions&,
+                           const String&) const = 0;
+  Resource::Type type() const { return m_type; }
 
-    Resource::Type m_type;
+ protected:
+  explicit ResourceFactory(Resource::Type type) : m_type(type) {}
+
+  Resource::Type m_type;
 };
 
-#define DEFINE_RESOURCE_TYPE_CASTS(typeName) \
-    DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource, resource->getType() == Resource::typeName, resource.getType() == Resource::typeName);
+#define DEFINE_RESOURCE_TYPE_CASTS(typeName)                   \
+  DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource,    \
+                    resource->getType() == Resource::typeName, \
+                    resource.getType() == Resource::typeName);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

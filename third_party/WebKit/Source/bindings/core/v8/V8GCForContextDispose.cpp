@@ -39,44 +39,42 @@
 namespace blink {
 
 V8GCForContextDispose::V8GCForContextDispose()
-    : m_pseudoIdleTimer(this, &V8GCForContextDispose::pseudoIdleTimerFired)
-{
-    reset();
+    : m_pseudoIdleTimer(this, &V8GCForContextDispose::pseudoIdleTimerFired) {
+  reset();
 }
 
-void V8GCForContextDispose::notifyContextDisposed(bool isMainFrame)
-{
-    m_didDisposeContextForMainFrame = isMainFrame;
-    m_lastContextDisposalTime = WTF::currentTime();
-    V8PerIsolateData::mainThreadIsolate()->ContextDisposedNotification(!isMainFrame);
-    if (m_pseudoIdleTimer.isActive())
-        m_pseudoIdleTimer.stop();
+void V8GCForContextDispose::notifyContextDisposed(bool isMainFrame) {
+  m_didDisposeContextForMainFrame = isMainFrame;
+  m_lastContextDisposalTime = WTF::currentTime();
+  V8PerIsolateData::mainThreadIsolate()->ContextDisposedNotification(
+      !isMainFrame);
+  if (m_pseudoIdleTimer.isActive())
+    m_pseudoIdleTimer.stop();
 }
 
-void V8GCForContextDispose::notifyIdle()
-{
-    double maxTimeSinceLastContextDisposal = .2;
-    if (!m_didDisposeContextForMainFrame && !m_pseudoIdleTimer.isActive() && m_lastContextDisposalTime + maxTimeSinceLastContextDisposal >= WTF::currentTime()) {
-        m_pseudoIdleTimer.startOneShot(0, BLINK_FROM_HERE);
-    }
+void V8GCForContextDispose::notifyIdle() {
+  double maxTimeSinceLastContextDisposal = .2;
+  if (!m_didDisposeContextForMainFrame && !m_pseudoIdleTimer.isActive() &&
+      m_lastContextDisposalTime + maxTimeSinceLastContextDisposal >=
+          WTF::currentTime()) {
+    m_pseudoIdleTimer.startOneShot(0, BLINK_FROM_HERE);
+  }
 }
 
-V8GCForContextDispose& V8GCForContextDispose::instance()
-{
-    DEFINE_STATIC_LOCAL(V8GCForContextDispose, staticInstance, ());
-    return staticInstance;
+V8GCForContextDispose& V8GCForContextDispose::instance() {
+  DEFINE_STATIC_LOCAL(V8GCForContextDispose, staticInstance, ());
+  return staticInstance;
 }
 
-void V8GCForContextDispose::pseudoIdleTimerFired(TimerBase*)
-{
-    V8PerIsolateData::mainThreadIsolate()->IdleNotificationDeadline(monotonicallyIncreasingTime());
-    reset();
+void V8GCForContextDispose::pseudoIdleTimerFired(TimerBase*) {
+  V8PerIsolateData::mainThreadIsolate()->IdleNotificationDeadline(
+      monotonicallyIncreasingTime());
+  reset();
 }
 
-void V8GCForContextDispose::reset()
-{
-    m_didDisposeContextForMainFrame = false;
-    m_lastContextDisposalTime = -1;
+void V8GCForContextDispose::reset() {
+  m_didDisposeContextForMainFrame = false;
+  m_lastContextDisposalTime = -1;
 }
 
-} // namespace blink
+}  // namespace blink

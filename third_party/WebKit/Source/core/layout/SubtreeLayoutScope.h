@@ -49,25 +49,27 @@ namespace blink {
 class LayoutObject;
 
 class SubtreeLayoutScope {
-    STACK_ALLOCATED();
-public:
-    SubtreeLayoutScope(LayoutObject& root);
-    ~SubtreeLayoutScope();
+  STACK_ALLOCATED();
 
-    void setNeedsLayout(LayoutObject* descendant, LayoutInvalidationReasonForTracing);
-    void setChildNeedsLayout(LayoutObject* descendant);
+ public:
+  SubtreeLayoutScope(LayoutObject& root);
+  ~SubtreeLayoutScope();
 
-    LayoutObject& root() { return m_root; }
-    void recordObjectMarkedForLayout(LayoutObject*);
+  void setNeedsLayout(LayoutObject* descendant,
+                      LayoutInvalidationReasonForTracing);
+  void setChildNeedsLayout(LayoutObject* descendant);
 
-private:
-    LayoutObject& m_root;
+  LayoutObject& root() { return m_root; }
+  void recordObjectMarkedForLayout(LayoutObject*);
+
+ private:
+  LayoutObject& m_root;
 
 #if ENABLE(ASSERT)
-    HashSet<LayoutObject*> m_layoutObjectsToLayout;
+  HashSet<LayoutObject*> m_layoutObjectsToLayout;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

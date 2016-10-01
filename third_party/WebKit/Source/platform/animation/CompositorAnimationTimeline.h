@@ -19,30 +19,30 @@ class CompositorAnimationPlayerClient;
 
 // A compositor representation for cc::AnimationTimeline.
 class PLATFORM_EXPORT CompositorAnimationTimeline {
-    WTF_MAKE_NONCOPYABLE(CompositorAnimationTimeline);
-public:
-    static std::unique_ptr<CompositorAnimationTimeline> create()
-    {
-        return wrapUnique(new CompositorAnimationTimeline());
-    }
+  WTF_MAKE_NONCOPYABLE(CompositorAnimationTimeline);
 
-    ~CompositorAnimationTimeline();
+ public:
+  static std::unique_ptr<CompositorAnimationTimeline> create() {
+    return wrapUnique(new CompositorAnimationTimeline());
+  }
 
-    cc::AnimationTimeline* animationTimeline() const;
-    // TODO(ymalik): Currently we just wrap cc::AnimationHost in
-    // CompositorAnimationHost. Correctly introduce CompositorAnimationHost
-    // to blink. See crbug.com/610763.
-    CompositorAnimationHost compositorAnimationHost();
+  ~CompositorAnimationTimeline();
 
-    void playerAttached(const CompositorAnimationPlayerClient&);
-    void playerDestroyed(const CompositorAnimationPlayerClient&);
+  cc::AnimationTimeline* animationTimeline() const;
+  // TODO(ymalik): Currently we just wrap cc::AnimationHost in
+  // CompositorAnimationHost. Correctly introduce CompositorAnimationHost
+  // to blink. See crbug.com/610763.
+  CompositorAnimationHost compositorAnimationHost();
 
-private:
-    CompositorAnimationTimeline();
+  void playerAttached(const CompositorAnimationPlayerClient&);
+  void playerDestroyed(const CompositorAnimationPlayerClient&);
 
-    scoped_refptr<cc::AnimationTimeline> m_animationTimeline;
+ private:
+  CompositorAnimationTimeline();
+
+  scoped_refptr<cc::AnimationTimeline> m_animationTimeline;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorAnimationTimeline_h
+#endif  // CompositorAnimationTimeline_h

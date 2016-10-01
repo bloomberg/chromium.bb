@@ -38,45 +38,48 @@ namespace WTF {
 
 template <typename CharType>
 class StringBuffer {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(StringBuffer);
-public:
-    StringBuffer() { }
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(StringBuffer);
 
-    explicit StringBuffer(unsigned length)
-    {
-        CharType* characters;
-        m_data = StringImpl::createUninitialized(length, characters);
-    }
+ public:
+  StringBuffer() {}
 
-    ~StringBuffer()
-    {
-    }
+  explicit StringBuffer(unsigned length) {
+    CharType* characters;
+    m_data = StringImpl::createUninitialized(length, characters);
+  }
 
-    void shrink(unsigned newLength);
+  ~StringBuffer() {}
 
-    unsigned length() const { return m_data ? m_data->length() : 0; }
-    CharType* characters() { return length() ? const_cast<CharType*>(m_data->getCharacters<CharType>()) : 0; }
+  void shrink(unsigned newLength);
 
-    CharType& operator[](unsigned i) { ASSERT_WITH_SECURITY_IMPLICATION(i < length()); return characters()[i]; }
+  unsigned length() const { return m_data ? m_data->length() : 0; }
+  CharType* characters() {
+    return length() ? const_cast<CharType*>(m_data->getCharacters<CharType>())
+                    : 0;
+  }
 
-    PassRefPtr<StringImpl> release() { return m_data.release(); }
+  CharType& operator[](unsigned i) {
+    ASSERT_WITH_SECURITY_IMPLICATION(i < length());
+    return characters()[i];
+  }
 
-private:
-    RefPtr<StringImpl> m_data;
+  PassRefPtr<StringImpl> release() { return m_data.release(); }
+
+ private:
+  RefPtr<StringImpl> m_data;
 };
 
 template <typename CharType>
-void StringBuffer<CharType>::shrink(unsigned newLength)
-{
-    ASSERT(m_data);
-    if (m_data->length() == newLength)
-        return;
-    m_data = m_data->substring(0, newLength);
+void StringBuffer<CharType>::shrink(unsigned newLength) {
+  ASSERT(m_data);
+  if (m_data->length() == newLength)
+    return;
+  m_data = m_data->substring(0, newLength);
 }
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::StringBuffer;
 
-#endif // StringBuffer_h
+#endif  // StringBuffer_h

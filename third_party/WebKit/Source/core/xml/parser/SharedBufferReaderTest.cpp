@@ -37,80 +37,81 @@
 
 namespace blink {
 
-TEST(SharedBufferReaderTest, readDataWithNullSharedBuffer)
-{
-    SharedBufferReader reader(nullptr);
-    char buffer[32];
+TEST(SharedBufferReaderTest, readDataWithNullSharedBuffer) {
+  SharedBufferReader reader(nullptr);
+  char buffer[32];
 
-    EXPECT_EQ(0, reader.readData(buffer, sizeof(buffer)));
+  EXPECT_EQ(0, reader.readData(buffer, sizeof(buffer)));
 }
 
-TEST(SharedBufferReaderTest, readDataWith0BytesRequest)
-{
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create();
-    SharedBufferReader reader(sharedBuffer);
+TEST(SharedBufferReaderTest, readDataWith0BytesRequest) {
+  RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create();
+  SharedBufferReader reader(sharedBuffer);
 
-    EXPECT_EQ(0, reader.readData(0, 0));
+  EXPECT_EQ(0, reader.readData(0, 0));
 }
 
-TEST(SharedBufferReaderTest, readDataWithSizeBiggerThanSharedBufferSize)
-{
-    static const char testData[] = "hello";
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData, sizeof(testData));
+TEST(SharedBufferReaderTest, readDataWithSizeBiggerThanSharedBufferSize) {
+  static const char testData[] = "hello";
+  RefPtr<SharedBuffer> sharedBuffer =
+      SharedBuffer::create(testData, sizeof(testData));
 
-    SharedBufferReader reader(sharedBuffer);
+  SharedBufferReader reader(sharedBuffer);
 
-    const int extraBytes = 3;
-    char outputBuffer[sizeof(testData) + extraBytes];
+  const int extraBytes = 3;
+  char outputBuffer[sizeof(testData) + extraBytes];
 
-    const char initializationByte = 'a';
-    memset(outputBuffer, initializationByte, sizeof(outputBuffer));
-    EXPECT_EQ(sizeof(testData),
-        static_cast<size_t>(reader.readData(outputBuffer, sizeof(outputBuffer))));
+  const char initializationByte = 'a';
+  memset(outputBuffer, initializationByte, sizeof(outputBuffer));
+  EXPECT_EQ(sizeof(testData), static_cast<size_t>(reader.readData(
+                                  outputBuffer, sizeof(outputBuffer))));
 
-    EXPECT_TRUE(std::equal(testData, testData + sizeof(testData), outputBuffer));
-    // Check that the bytes past index sizeof(testData) were not touched.
-    EXPECT_EQ(extraBytes,
-        std::count(outputBuffer, outputBuffer + sizeof(outputBuffer), initializationByte));
+  EXPECT_TRUE(std::equal(testData, testData + sizeof(testData), outputBuffer));
+  // Check that the bytes past index sizeof(testData) were not touched.
+  EXPECT_EQ(extraBytes,
+            std::count(outputBuffer, outputBuffer + sizeof(outputBuffer),
+                       initializationByte));
 }
 
-TEST(SharedBufferReaderTest, readDataInMultiples)
-{
-    const int iterationsCount = 8;
-    const int bytesPerIteration = 64;
+TEST(SharedBufferReaderTest, readDataInMultiples) {
+  const int iterationsCount = 8;
+  const int bytesPerIteration = 64;
 
-    Vector<char> testData(iterationsCount * bytesPerIteration);
-    std::generate(testData.begin(), testData.end(), &std::rand);
+  Vector<char> testData(iterationsCount * bytesPerIteration);
+  std::generate(testData.begin(), testData.end(), &std::rand);
 
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(&testData[0], testData.size());
-    SharedBufferReader reader(sharedBuffer);
+  RefPtr<SharedBuffer> sharedBuffer =
+      SharedBuffer::create(&testData[0], testData.size());
+  SharedBufferReader reader(sharedBuffer);
 
-    Vector<char> destinationVector(testData.size());
+  Vector<char> destinationVector(testData.size());
 
-    for (int i = 0; i < iterationsCount; ++i) {
-        const int offset = i * bytesPerIteration;
-        const int bytesRead = reader.readData(&destinationVector[0] + offset, bytesPerIteration);
-        EXPECT_EQ(bytesPerIteration, bytesRead);
-    }
+  for (int i = 0; i < iterationsCount; ++i) {
+    const int offset = i * bytesPerIteration;
+    const int bytesRead =
+        reader.readData(&destinationVector[0] + offset, bytesPerIteration);
+    EXPECT_EQ(bytesPerIteration, bytesRead);
+  }
 
-    EXPECT_TRUE(std::equal(testData.begin(), testData.end(), destinationVector.begin()));
+  EXPECT_TRUE(
+      std::equal(testData.begin(), testData.end(), destinationVector.begin()));
 }
 
-TEST(SharedBufferReaderTest, clearSharedBufferBetweenCallsToReadData)
-{
-    Vector<char> testData(128);
-    std::generate(testData.begin(), testData.end(), &std::rand);
+TEST(SharedBufferReaderTest, clearSharedBufferBetweenCallsToReadData) {
+  Vector<char> testData(128);
+  std::generate(testData.begin(), testData.end(), &std::rand);
 
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(&testData[0], testData.size());
-    SharedBufferReader reader(sharedBuffer);
+  RefPtr<SharedBuffer> sharedBuffer =
+      SharedBuffer::create(&testData[0], testData.size());
+  SharedBufferReader reader(sharedBuffer);
 
-    Vector<char> destinationVector(testData.size());
-    const int bytesToRead = testData.size() / 2;
-    EXPECT_EQ(bytesToRead, reader.readData(&destinationVector[0], bytesToRead));
+  Vector<char> destinationVector(testData.size());
+  const int bytesToRead = testData.size() / 2;
+  EXPECT_EQ(bytesToRead, reader.readData(&destinationVector[0], bytesToRead));
 
-    sharedBuffer->clear();
+  sharedBuffer->clear();
 
-    EXPECT_EQ(0, reader.readData(&destinationVector[0], bytesToRead));
+  EXPECT_EQ(0, reader.readData(&destinationVector[0], bytesToRead));
 }
 
-} // namespace blink
+}  // namespace blink

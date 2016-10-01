@@ -35,32 +35,31 @@ namespace blink {
 class HTMLTrackElement;
 
 class LoadableTextTrack final : public TextTrack {
-public:
-    static LoadableTextTrack* create(HTMLTrackElement* track)
-    {
-        return new LoadableTextTrack(track);
-    }
-    ~LoadableTextTrack() override;
+ public:
+  static LoadableTextTrack* create(HTMLTrackElement* track) {
+    return new LoadableTextTrack(track);
+  }
+  ~LoadableTextTrack() override;
 
-    // TextTrack method.
-    void setMode(const AtomicString&) override;
+  // TextTrack method.
+  void setMode(const AtomicString&) override;
 
-    void addRegions(const HeapVector<Member<VTTRegion>>&);
-    using TextTrack::addListOfCues;
+  void addRegions(const HeapVector<Member<VTTRegion>>&);
+  using TextTrack::addListOfCues;
 
-    size_t trackElementIndex() const;
-    HTMLTrackElement* trackElement() { return m_trackElement; }
+  size_t trackElementIndex() const;
+  HTMLTrackElement* trackElement() { return m_trackElement; }
 
-    bool isDefault() const override;
+  bool isDefault() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit LoadableTextTrack(HTMLTrackElement*);
+ private:
+  explicit LoadableTextTrack(HTMLTrackElement*);
 
-    Member<HTMLTrackElement> m_trackElement;
+  Member<HTMLTrackElement> m_trackElement;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LoadableTextTrack_h
+#endif  // LoadableTextTrack_h

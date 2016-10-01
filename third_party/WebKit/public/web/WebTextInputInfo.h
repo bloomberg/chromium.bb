@@ -32,53 +32,49 @@
 namespace blink {
 
 struct WebTextInputInfo {
-    WebTextInputType type;
-    int flags;
+  WebTextInputType type;
+  int flags;
 
-    // The value of the currently focused input field.
-    WebString value;
+  // The value of the currently focused input field.
+  WebString value;
 
-    // The cursor position of the current selection start, or the caret position
-    // if nothing is selected.
-    int selectionStart;
+  // The cursor position of the current selection start, or the caret position
+  // if nothing is selected.
+  int selectionStart;
 
-    // The cursor position of the current selection end, or the caret position
-    // if nothing is selected.
-    int selectionEnd;
+  // The cursor position of the current selection end, or the caret position
+  // if nothing is selected.
+  int selectionEnd;
 
-    // The start position of the current composition, or -1 if there is none.
-    int compositionStart;
+  // The start position of the current composition, or -1 if there is none.
+  int compositionStart;
 
-    // The end position of the current composition, or -1 if there is none.
-    int compositionEnd;
+  // The end position of the current composition, or -1 if there is none.
+  int compositionEnd;
 
-    // The inputmode attribute value of the currently focused input field.
-    // This string is lower-case.
-    WebString inputMode;
+  // The inputmode attribute value of the currently focused input field.
+  // This string is lower-case.
+  WebString inputMode;
 
-    BLINK_EXPORT bool equals(const WebTextInputInfo&) const;
+  BLINK_EXPORT bool equals(const WebTextInputInfo&) const;
 
-    WebTextInputInfo()
-        : type(WebTextInputTypeNone)
-        , flags(WebTextInputFlagNone)
-        , selectionStart(0)
-        , selectionEnd(0)
-        , compositionStart(-1)
-        , compositionEnd(-1)
-    {
-    }
+  WebTextInputInfo()
+      : type(WebTextInputTypeNone),
+        flags(WebTextInputFlagNone),
+        selectionStart(0),
+        selectionEnd(0),
+        compositionStart(-1),
+        compositionEnd(-1) {}
 };
 
-inline bool operator==(const WebTextInputInfo& a, const WebTextInputInfo& b)
-{
-    return a.equals(b);
+inline bool operator==(const WebTextInputInfo& a, const WebTextInputInfo& b) {
+  return a.equals(b);
 }
 
-inline bool operator!=(const WebTextInputInfo& a, const WebTextInputInfo& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebTextInputInfo& a, const WebTextInputInfo& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

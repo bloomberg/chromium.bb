@@ -32,79 +32,84 @@ class LayoutListItem;
 // Used to layout the list item's marker.
 // The LayoutListMarker always has to be a child of a LayoutListItem.
 class LayoutListMarker final : public LayoutBox {
-public:
-    static LayoutListMarker* createAnonymous(LayoutListItem*);
-    ~LayoutListMarker() override;
+ public:
+  static LayoutListMarker* createAnonymous(LayoutListItem*);
+  ~LayoutListMarker() override;
 
-    const String& text() const { return m_text; }
+  const String& text() const { return m_text; }
 
-    // A reduced set of list style categories allowing for more concise expression
-    // of list style specific logic.
-    enum class ListStyleCategory {
-        None,
-        Symbol,
-        Language
-    };
+  // A reduced set of list style categories allowing for more concise expression
+  // of list style specific logic.
+  enum class ListStyleCategory { None, Symbol, Language };
 
-    // Returns the list's style as one of a reduced high level categorical set of styles.
-    ListStyleCategory getListStyleCategory() const;
+  // Returns the list's style as one of a reduced high level categorical set of styles.
+  ListStyleCategory getListStyleCategory() const;
 
-    bool isInside() const;
+  bool isInside() const;
 
-    void updateMarginsAndContent();
+  void updateMarginsAndContent();
 
-    IntRect getRelativeMarkerRect() const;
-    LayoutRect localSelectionRect() const final;
-    bool isImage() const override;
-    const StyleImage* image() const { return m_image.get(); }
-    const LayoutListItem* listItem() const { return m_listItem; }
-    LayoutSize imageBulletSize() const;
+  IntRect getRelativeMarkerRect() const;
+  LayoutRect localSelectionRect() const final;
+  bool isImage() const override;
+  const StyleImage* image() const { return m_image.get(); }
+  const LayoutListItem* listItem() const { return m_listItem; }
+  LayoutSize imageBulletSize() const;
 
-    void listItemStyleDidChange();
+  void listItemStyleDidChange();
 
-    const char* name() const override { return "LayoutListMarker"; }
+  const char* name() const override { return "LayoutListMarker"; }
 
-protected:
-    void willBeDestroyed() override;
+ protected:
+  void willBeDestroyed() override;
 
-private:
-    LayoutListMarker(LayoutListItem*);
+ private:
+  LayoutListMarker(LayoutListItem*);
 
-    void computePreferredLogicalWidths() override;
+  void computePreferredLogicalWidths() override;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectListMarker || LayoutBox::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectListMarker || LayoutBox::isOfType(type);
+  }
 
-    void paint(const PaintInfo&, const LayoutPoint&) const override;
+  void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    void layout() override;
+  void layout() override;
 
-    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-    InlineBox* createInlineBox() override;
+  InlineBox* createInlineBox() override;
 
-    LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
-    int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
+  LayoutUnit lineHeight(
+      bool firstLine,
+      LineDirectionMode,
+      LinePositionMode = PositionOnContainingLine) const override;
+  int baselinePosition(
+      FontBaseline,
+      bool firstLine,
+      LineDirectionMode,
+      LinePositionMode = PositionOnContainingLine) const override;
 
-    bool isText() const { return !isImage(); }
+  bool isText() const { return !isImage(); }
 
-    void setSelectionState(SelectionState) override;
-    bool canBeSelectionLeaf() const override { return true; }
+  void setSelectionState(SelectionState) override;
+  bool canBeSelectionLeaf() const override { return true; }
 
-    LayoutUnit getWidthOfTextWithSuffix() const;
-    void updateMargins();
-    void updateContent();
+  LayoutUnit getWidthOfTextWithSuffix() const;
+  void updateMargins();
+  void updateContent();
 
-    void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    bool anonymousHasStylePropagationOverride() override { return true; }
+  void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  bool anonymousHasStylePropagationOverride() override { return true; }
 
-    String m_text;
-    Persistent<StyleImage> m_image;
-    LayoutListItem* m_listItem;
+  String m_text;
+  Persistent<StyleImage> m_image;
+  LayoutListItem* m_listItem;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListMarker, isListMarker());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutListMarker_h
+#endif  // LayoutListMarker_h

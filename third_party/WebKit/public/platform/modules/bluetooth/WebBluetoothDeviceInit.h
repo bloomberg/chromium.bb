@@ -13,21 +13,17 @@ namespace blink {
 // Information provided by the platform to initialize BluetoothDevice objects
 // with attributes as specified in BluetoothDevice.idl.
 struct WebBluetoothDeviceInit {
-    WebBluetoothDeviceInit(const WebString& id,
-        const WebString& name,
-        const WebVector<WebString>& uuids)
-        : id(id)
-        , name(name)
-        , uuids(uuids)
-    {
-    }
+  WebBluetoothDeviceInit(const WebString& id,
+                         const WebString& name,
+                         const WebVector<WebString>& uuids)
+      : id(id), name(name), uuids(uuids) {}
 
-    // Members corresponding to BluetoothDevice attributes as specified in IDL.
-    const WebString id;
-    const WebString name;
-    const WebVector<WebString> uuids;
+  // Members corresponding to BluetoothDevice attributes as specified in IDL.
+  const WebString id;
+  const WebString name;
+  const WebVector<WebString> uuids;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebBluetoothDeviceInit_h
+#endif  // WebBluetoothDeviceInit_h

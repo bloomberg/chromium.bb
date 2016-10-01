@@ -34,41 +34,44 @@ class Document;
 class LocalFrame;
 
 class DocumentTiming final {
-    DISALLOW_NEW();
-public:
-    explicit DocumentTiming(Document&);
+  DISALLOW_NEW();
 
-    void markDomLoading();
-    void markDomInteractive();
-    void markDomContentLoadedEventStart();
-    void markDomContentLoadedEventEnd();
-    void markDomComplete();
-    void markFirstLayout();
+ public:
+  explicit DocumentTiming(Document&);
 
-    // These return monotonically-increasing seconds.
-    double domLoading() const { return m_domLoading; }
-    double domInteractive() const { return m_domInteractive; }
-    double domContentLoadedEventStart() const { return m_domContentLoadedEventStart; }
-    double domContentLoadedEventEnd() const { return m_domContentLoadedEventEnd; }
-    double domComplete() const { return m_domComplete; }
-    double firstLayout() const { return m_firstLayout; }
+  void markDomLoading();
+  void markDomInteractive();
+  void markDomContentLoadedEventStart();
+  void markDomContentLoadedEventEnd();
+  void markDomComplete();
+  void markFirstLayout();
 
-    DECLARE_TRACE();
+  // These return monotonically-increasing seconds.
+  double domLoading() const { return m_domLoading; }
+  double domInteractive() const { return m_domInteractive; }
+  double domContentLoadedEventStart() const {
+    return m_domContentLoadedEventStart;
+  }
+  double domContentLoadedEventEnd() const { return m_domContentLoadedEventEnd; }
+  double domComplete() const { return m_domComplete; }
+  double firstLayout() const { return m_firstLayout; }
 
-private:
-    LocalFrame* frame() const;
-    void notifyDocumentTimingChanged();
+  DECLARE_TRACE();
 
-    double m_domLoading = 0.0;
-    double m_domInteractive = 0.0;
-    double m_domContentLoadedEventStart = 0.0;
-    double m_domContentLoadedEventEnd = 0.0;
-    double m_domComplete = 0.0;
-    double m_firstLayout = 0.0;
+ private:
+  LocalFrame* frame() const;
+  void notifyDocumentTimingChanged();
 
-    Member<Document> m_document;
+  double m_domLoading = 0.0;
+  double m_domInteractive = 0.0;
+  double m_domContentLoadedEventStart = 0.0;
+  double m_domContentLoadedEventEnd = 0.0;
+  double m_domComplete = 0.0;
+  double m_firstLayout = 0.0;
+
+  Member<Document> m_document;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

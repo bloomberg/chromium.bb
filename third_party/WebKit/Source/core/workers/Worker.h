@@ -14,19 +14,21 @@ class ExecutionContext;
 class InProcessWorkerMessagingProxy;
 
 class CORE_EXPORT Worker final : public InProcessWorkerBase {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(Worker);
-public:
-    static Worker* create(ExecutionContext*, const String& url, ExceptionState&);
-    ~Worker() override;
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(Worker);
 
-protected:
-    explicit Worker(ExecutionContext*);
+ public:
+  static Worker* create(ExecutionContext*, const String& url, ExceptionState&);
+  ~Worker() override;
 
-    InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(ExecutionContext*) override;
-    const AtomicString& interfaceName() const override;
+ protected:
+  explicit Worker(ExecutionContext*);
+
+  InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(
+      ExecutionContext*) override;
+  const AtomicString& interfaceName() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Worker_h
+#endif  // Worker_h

@@ -42,63 +42,65 @@ namespace blink {
 
 class ExecutionContext;
 
-class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>, public ScriptWrappable, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(Stream);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Stream* create(ExecutionContext* context, const String& mediaType)
-    {
-        Stream* stream = new Stream(context, mediaType);
-        stream->suspendIfNeeded();
-        return stream;
-    }
+class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>,
+                                 public ScriptWrappable,
+                                 public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(Stream);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~Stream() override;
+ public:
+  static Stream* create(ExecutionContext* context, const String& mediaType) {
+    Stream* stream = new Stream(context, mediaType);
+    stream->suspendIfNeeded();
+    return stream;
+  }
 
-    // Returns the internal URL referring to this stream.
-    const KURL& url() const { return m_internalURL; }
-    // Returns the media type of this stream.
-    const String& type() const { return m_mediaType; }
+  ~Stream() override;
 
-    // Appends data to this stream.
-    void addData(const char* data, size_t len);
-    // Flushes contents buffered in the stream.
-    void flush();
-    // Mark this stream finalized so that a reader of this stream is notified
-    // of EOF.
-    void finalize();
-    // Mark this stream finalized due to an error so that a reader of this
-    // stream is notified of EOF due to the error.
-    void abort();
+  // Returns the internal URL referring to this stream.
+  const KURL& url() const { return m_internalURL; }
+  // Returns the media type of this stream.
+  const String& type() const { return m_mediaType; }
 
-    // Allow an external reader class to mark this object neutered so that they
-    // won't load the corresponding stream again. All stream objects are
-    // read-once for now.
-    void neuter() { m_isNeutered = true; }
-    bool isNeutered() const { return m_isNeutered; }
+  // Appends data to this stream.
+  void addData(const char* data, size_t len);
+  // Flushes contents buffered in the stream.
+  void flush();
+  // Mark this stream finalized so that a reader of this stream is notified
+  // of EOF.
+  void finalize();
+  // Mark this stream finalized due to an error so that a reader of this
+  // stream is notified of EOF due to the error.
+  void abort();
 
-    // Implementation of ActiveDOMObject.
-    //
-    // FIXME: Implement suspend() and resume() when necessary.
-    void suspend() override;
-    void resume() override;
-    void stop() override;
+  // Allow an external reader class to mark this object neutered so that they
+  // won't load the corresponding stream again. All stream objects are
+  // read-once for now.
+  void neuter() { m_isNeutered = true; }
+  bool isNeutered() const { return m_isNeutered; }
 
-    DECLARE_VIRTUAL_TRACE();
+  // Implementation of ActiveDOMObject.
+  //
+  // FIXME: Implement suspend() and resume() when necessary.
+  void suspend() override;
+  void resume() override;
+  void stop() override;
 
-protected:
-    Stream(ExecutionContext*, const String& mediaType);
+  DECLARE_VIRTUAL_TRACE();
 
-    // This is an internal URL referring to the blob data associated with this object. It serves
-    // as an identifier for this blob. The internal URL is never used to source the blob's content
-    // into an HTML or for FileRead'ing, public blob URLs must be used for those purposes.
-    KURL m_internalURL;
+ protected:
+  Stream(ExecutionContext*, const String& mediaType);
 
-    String m_mediaType;
+  // This is an internal URL referring to the blob data associated with this object. It serves
+  // as an identifier for this blob. The internal URL is never used to source the blob's content
+  // into an HTML or for FileRead'ing, public blob URLs must be used for those purposes.
+  KURL m_internalURL;
 
-    bool m_isNeutered;
+  String m_mediaType;
+
+  bool m_isNeutered;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Stream_h
+#endif  // Stream_h

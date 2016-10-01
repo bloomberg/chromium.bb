@@ -42,45 +42,48 @@ class Node;
 class NodeEventContext;
 class WindowEventContext;
 
-class EventDispatchHandlingState : public GarbageCollected<EventDispatchHandlingState> {
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+class EventDispatchHandlingState
+    : public GarbageCollected<EventDispatchHandlingState> {
+ public:
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-enum EventDispatchContinuation {
-    ContinueDispatching,
-    DoneDispatching
-};
+enum EventDispatchContinuation { ContinueDispatching, DoneDispatching };
 
 class EventDispatcher {
-    STACK_ALLOCATED();
-public:
-    static DispatchEventResult dispatchEvent(Node&, EventDispatchMediator*);
-    static void dispatchScopedEvent(Node&, EventDispatchMediator*);
+  STACK_ALLOCATED();
 
-    static void dispatchSimulatedClick(Node&, Event* underlyingEvent, SimulatedClickMouseEventOptions, SimulatedClickCreationScope);
+ public:
+  static DispatchEventResult dispatchEvent(Node&, EventDispatchMediator*);
+  static void dispatchScopedEvent(Node&, EventDispatchMediator*);
 
-    DispatchEventResult dispatch();
-    Node& node() const { return *m_node; }
-    Event& event() const { return *m_event; }
+  static void dispatchSimulatedClick(Node&,
+                                     Event* underlyingEvent,
+                                     SimulatedClickMouseEventOptions,
+                                     SimulatedClickCreationScope);
 
-private:
-    EventDispatcher(Node&, Event*);
+  DispatchEventResult dispatch();
+  Node& node() const { return *m_node; }
+  Event& event() const { return *m_event; }
 
-    EventDispatchContinuation dispatchEventPreProcess(EventDispatchHandlingState*&);
-    EventDispatchContinuation dispatchEventAtCapturing();
-    EventDispatchContinuation dispatchEventAtTarget();
-    void dispatchEventAtBubbling();
-    void dispatchEventPostProcess(EventDispatchHandlingState*);
+ private:
+  EventDispatcher(Node&, Event*);
 
-    Member<Node> m_node;
-    Member<Event> m_event;
-    Member<FrameView> m_view;
+  EventDispatchContinuation dispatchEventPreProcess(
+      EventDispatchHandlingState*&);
+  EventDispatchContinuation dispatchEventAtCapturing();
+  EventDispatchContinuation dispatchEventAtTarget();
+  void dispatchEventAtBubbling();
+  void dispatchEventPostProcess(EventDispatchHandlingState*);
+
+  Member<Node> m_node;
+  Member<Event> m_event;
+  Member<FrameView> m_view;
 #if DCHECK_IS_ON()
-    bool m_eventDispatched = false;
+  bool m_eventDispatched = false;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

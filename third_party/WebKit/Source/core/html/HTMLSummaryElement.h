@@ -28,24 +28,24 @@ namespace blink {
 class HTMLDetailsElement;
 
 class HTMLSummaryElement final : public HTMLElement {
-public:
-    static HTMLSummaryElement* create(Document&);
-    bool isMainSummary() const;
-    bool willRespondToMouseClickEvents() override;
+ public:
+  static HTMLSummaryElement* create(Document&);
+  bool isMainSummary() const;
+  bool willRespondToMouseClickEvents() override;
 
-    Element* markerControl();
+  Element* markerControl();
 
-private:
-    explicit HTMLSummaryElement(Document&);
+ private:
+  explicit HTMLSummaryElement(Document&);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    void defaultEventHandler(Event*) override;
-    void didAddUserAgentShadowRoot(ShadowRoot&) override;
-    HTMLDetailsElement* detailsElement() const;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void defaultEventHandler(Event*) override;
+  void didAddUserAgentShadowRoot(ShadowRoot&) override;
+  HTMLDetailsElement* detailsElement() const;
 
-    bool supportsFocus() const override;
+  bool supportsFocus() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLSummaryElement_h
+#endif  // HTMLSummaryElement_h

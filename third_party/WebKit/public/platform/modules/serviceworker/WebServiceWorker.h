@@ -46,36 +46,40 @@ class WebServiceWorkerProxy;
 typedef WebVector<class WebMessagePortChannel*> WebMessagePortChannelArray;
 
 class WebServiceWorker {
-public:
-    // The handle interface that retains a reference to the implementation of
-    // WebServiceWorker in the embedder and is owned by ServiceWorker object in
-    // Blink. The embedder must keep the service worker representation while
-    // Blink is owning this handle.
-    class Handle {
-    public:
-        virtual ~Handle() {}
-        virtual WebServiceWorker* serviceWorker() { return nullptr; }
-    };
+ public:
+  // The handle interface that retains a reference to the implementation of
+  // WebServiceWorker in the embedder and is owned by ServiceWorker object in
+  // Blink. The embedder must keep the service worker representation while
+  // Blink is owning this handle.
+  class Handle {
+   public:
+    virtual ~Handle() {}
+    virtual WebServiceWorker* serviceWorker() { return nullptr; }
+  };
 
-    virtual ~WebServiceWorker() { }
+  virtual ~WebServiceWorker() {}
 
-    // Sets ServiceWorkerProxy, with which callee can start making upcalls
-    // to the ServiceWorker object via the client. This doesn't pass the
-    // ownership to the callee, and the proxy's lifetime is same as that of
-    // WebServiceWorker.
-    virtual void setProxy(WebServiceWorkerProxy*) { }
-    virtual WebServiceWorkerProxy* proxy() { return nullptr; }
+  // Sets ServiceWorkerProxy, with which callee can start making upcalls
+  // to the ServiceWorker object via the client. This doesn't pass the
+  // ownership to the callee, and the proxy's lifetime is same as that of
+  // WebServiceWorker.
+  virtual void setProxy(WebServiceWorkerProxy*) {}
+  virtual WebServiceWorkerProxy* proxy() { return nullptr; }
 
-    virtual WebURL url() const { return WebURL(); }
-    virtual WebServiceWorkerState state() const { return WebServiceWorkerStateUnknown; }
+  virtual WebURL url() const { return WebURL(); }
+  virtual WebServiceWorkerState state() const {
+    return WebServiceWorkerStateUnknown;
+  }
 
-    // Callee receives ownership of the passed vector.
-    // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
-    virtual void postMessage(WebServiceWorkerProvider*, const WebString&, const WebSecurityOrigin&, WebMessagePortChannelArray*) = 0;
+  // Callee receives ownership of the passed vector.
+  // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
+  virtual void postMessage(WebServiceWorkerProvider*,
+                           const WebString&,
+                           const WebSecurityOrigin&,
+                           WebMessagePortChannelArray*) = 0;
 
-    virtual void terminate() { }
+  virtual void terminate() {}
 };
-
 }
 
-#endif // WebServiceWorker_h
+#endif  // WebServiceWorker_h

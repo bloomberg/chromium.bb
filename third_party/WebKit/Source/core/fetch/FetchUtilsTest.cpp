@@ -11,31 +11,30 @@ namespace blink {
 
 namespace {
 
-TEST(FetchUtilsTest, NormalizeHeaderValue)
-{
-    EXPECT_EQ("t", FetchUtils::normalizeHeaderValue(" t"));
-    EXPECT_EQ("t", FetchUtils::normalizeHeaderValue("t "));
-    EXPECT_EQ("t", FetchUtils::normalizeHeaderValue(" t "));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\r"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\n"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\r\n"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\t"));
-    EXPECT_EQ("t t", FetchUtils::normalizeHeaderValue("t t"));
-    EXPECT_EQ("t\tt", FetchUtils::normalizeHeaderValue("t\tt"));
-    EXPECT_EQ("t\rt", FetchUtils::normalizeHeaderValue("t\rt"));
-    EXPECT_EQ("t\nt", FetchUtils::normalizeHeaderValue("t\nt"));
-    EXPECT_EQ("t\r\nt", FetchUtils::normalizeHeaderValue("t\r\nt"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\rtest"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\ntest"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\r\ntest"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\ttest"));
-    EXPECT_EQ("", FetchUtils::normalizeHeaderValue(""));
-    EXPECT_EQ("", FetchUtils::normalizeHeaderValue(" "));
-    EXPECT_EQ("", FetchUtils::normalizeHeaderValue("\r\n\r\n\r\n"));
-    EXPECT_EQ("\xd0\xa1", FetchUtils::normalizeHeaderValue("\xd0\xa1"));
-    EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test"));
+TEST(FetchUtilsTest, NormalizeHeaderValue) {
+  EXPECT_EQ("t", FetchUtils::normalizeHeaderValue(" t"));
+  EXPECT_EQ("t", FetchUtils::normalizeHeaderValue("t "));
+  EXPECT_EQ("t", FetchUtils::normalizeHeaderValue(" t "));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\r"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\n"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\r\n"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test\t"));
+  EXPECT_EQ("t t", FetchUtils::normalizeHeaderValue("t t"));
+  EXPECT_EQ("t\tt", FetchUtils::normalizeHeaderValue("t\tt"));
+  EXPECT_EQ("t\rt", FetchUtils::normalizeHeaderValue("t\rt"));
+  EXPECT_EQ("t\nt", FetchUtils::normalizeHeaderValue("t\nt"));
+  EXPECT_EQ("t\r\nt", FetchUtils::normalizeHeaderValue("t\r\nt"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\rtest"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\ntest"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\r\ntest"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("\ttest"));
+  EXPECT_EQ("", FetchUtils::normalizeHeaderValue(""));
+  EXPECT_EQ("", FetchUtils::normalizeHeaderValue(" "));
+  EXPECT_EQ("", FetchUtils::normalizeHeaderValue("\r\n\r\n\r\n"));
+  EXPECT_EQ("\xd0\xa1", FetchUtils::normalizeHeaderValue("\xd0\xa1"));
+  EXPECT_EQ("test", FetchUtils::normalizeHeaderValue("test"));
 }
 
-} // namespace
+}  // namespace
 
-} // namespace blink
+}  // namespace blink

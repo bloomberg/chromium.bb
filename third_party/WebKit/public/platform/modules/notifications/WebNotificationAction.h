@@ -12,19 +12,16 @@ namespace blink {
 
 // Structure representing the data associated with a Web Notification action.
 struct WebNotificationAction {
-    // Corresponds to NotificationActionType.
-    enum Type {
-        Button = 0,
-        Text
-    };
+  // Corresponds to NotificationActionType.
+  enum Type { Button = 0, Text };
 
-    Type type;
-    WebString action;
-    WebString title;
-    WebURL icon;
-    WebString placeholder;
+  Type type;
+  WebString action;
+  WebString title;
+  WebURL icon;
+  WebString placeholder;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebNotificationAction_h
+#endif  // WebNotificationAction_h

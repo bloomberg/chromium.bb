@@ -30,29 +30,34 @@
 namespace blink {
 
 ElementResolveContext::ElementResolveContext(const Document& document)
-    : m_element(nullptr)
-    , m_parentNode(nullptr)
-    , m_rootElementStyle(document.documentElement() ? document.documentElement()->computedStyle() : document.computedStyle())
-    , m_elementLinkState(NotInsideLink)
-    , m_distributedToInsertionPoint(false)
-{
-}
+    : m_element(nullptr),
+      m_parentNode(nullptr),
+      m_rootElementStyle(document.documentElement()
+                             ? document.documentElement()->computedStyle()
+                             : document.computedStyle()),
+      m_elementLinkState(NotInsideLink),
+      m_distributedToInsertionPoint(false) {}
 
 ElementResolveContext::ElementResolveContext(Element& element)
-    : m_element(&element)
-    , m_elementLinkState(element.document().visitedLinkState().determineLinkState(element))
-    , m_distributedToInsertionPoint(false)
-{
-    LayoutTreeBuilderTraversal::ParentDetails parentDetails;
-    m_parentNode = element.isSlotOrActiveInsertionPoint() ? nullptr : LayoutTreeBuilderTraversal::parent(element, &parentDetails);
-    m_distributedToInsertionPoint = parentDetails.insertionPoint();
+    : m_element(&element),
+      m_elementLinkState(
+          element.document().visitedLinkState().determineLinkState(element)),
+      m_distributedToInsertionPoint(false) {
+  LayoutTreeBuilderTraversal::ParentDetails parentDetails;
+  m_parentNode =
+      element.isSlotOrActiveInsertionPoint()
+          ? nullptr
+          : LayoutTreeBuilderTraversal::parent(element, &parentDetails);
+  m_distributedToInsertionPoint = parentDetails.insertionPoint();
 
-    const Document& document = element.document();
-    Node* documentElement = document.documentElement();
-    const ComputedStyle* documentStyle = document.computedStyle();
-    m_rootElementStyle = documentElement && element != documentElement ? documentElement->computedStyle() : documentStyle;
-    if (!m_rootElementStyle)
-        m_rootElementStyle = documentStyle;
+  const Document& document = element.document();
+  Node* documentElement = document.documentElement();
+  const ComputedStyle* documentStyle = document.computedStyle();
+  m_rootElementStyle = documentElement && element != documentElement
+                           ? documentElement->computedStyle()
+                           : documentStyle;
+  if (!m_rootElementStyle)
+    m_rootElementStyle = documentStyle;
 }
 
-} // namespace blink
+}  // namespace blink

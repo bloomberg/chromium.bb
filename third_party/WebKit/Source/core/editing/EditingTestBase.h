@@ -16,26 +16,31 @@ namespace blink {
 class DummyPageHolder;
 
 class EditingTestBase : public ::testing::Test {
-    USING_FAST_MALLOC(EditingTestBase);
-protected:
-    EditingTestBase();
-    ~EditingTestBase() override;
+  USING_FAST_MALLOC(EditingTestBase);
 
-    void SetUp() override;
+ protected:
+  EditingTestBase();
+  ~EditingTestBase() override;
 
-    Document& document() const;
-    DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
+  void SetUp() override;
 
-    static ShadowRoot* createShadowRootForElementWithIDAndSetInnerHTML(TreeScope&, const char* hostElementID, const char* shadowRootContent);
+  Document& document() const;
+  DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
 
-    void setBodyContent(const std::string&);
-    ShadowRoot* setShadowContent(const char* shadowContent, const char* shadowHostId);
-    void updateAllLifecyclePhases();
+  static ShadowRoot* createShadowRootForElementWithIDAndSetInnerHTML(
+      TreeScope&,
+      const char* hostElementID,
+      const char* shadowRootContent);
 
-private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  void setBodyContent(const std::string&);
+  ShadowRoot* setShadowContent(const char* shadowContent,
+                               const char* shadowHostId);
+  void updateAllLifecyclePhases();
+
+ private:
+  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EditingTestBase_h
+#endif  // EditingTestBase_h

@@ -34,26 +34,27 @@ namespace blink {
 class StylePropertySet;
 
 struct CORE_EXPORT MatchedProperties {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    MatchedProperties();
-    ~MatchedProperties();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    DECLARE_TRACE();
+ public:
+  MatchedProperties();
+  ~MatchedProperties();
 
-    Member<StylePropertySet> properties;
+  DECLARE_TRACE();
 
-    union {
-        struct {
-            unsigned linkMatchType : 2;
-            unsigned whitelistType : 2;
-        } m_types;
-        // Used to make sure all memory is zero-initialized since we compute the hash over the bytes of this object.
-        void* possiblyPaddedMember;
-    };
+  Member<StylePropertySet> properties;
+
+  union {
+    struct {
+      unsigned linkMatchType : 2;
+      unsigned whitelistType : 2;
+    } m_types;
+    // Used to make sure all memory is zero-initialized since we compute the hash over the bytes of this object.
+    void* possiblyPaddedMember;
+  };
 };
 
-} // namespace blink
+}  // namespace blink
 
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MatchedProperties);
 
@@ -67,104 +68,128 @@ using MatchedPropertiesVector = HeapVector<MatchedProperties, 64>;
 // !important rules, yet in the same order as for normal rules within the same origin.
 
 class MatchedPropertiesRange {
-public:
-    MatchedPropertiesRange(MatchedPropertiesVector::const_iterator begin, MatchedPropertiesVector::const_iterator end)
-        : m_begin(begin)
-        , m_end(end)
-    {
-    }
+ public:
+  MatchedPropertiesRange(MatchedPropertiesVector::const_iterator begin,
+                         MatchedPropertiesVector::const_iterator end)
+      : m_begin(begin), m_end(end) {}
 
-    MatchedPropertiesVector::const_iterator begin() const { return m_begin; }
-    MatchedPropertiesVector::const_iterator end() const { return m_end; }
+  MatchedPropertiesVector::const_iterator begin() const { return m_begin; }
+  MatchedPropertiesVector::const_iterator end() const { return m_end; }
 
-    bool isEmpty() const { return begin() == end(); }
+  bool isEmpty() const { return begin() == end(); }
 
-private:
-    MatchedPropertiesVector::const_iterator m_begin;
-    MatchedPropertiesVector::const_iterator m_end;
+ private:
+  MatchedPropertiesVector::const_iterator m_begin;
+  MatchedPropertiesVector::const_iterator m_end;
 };
 
 class CORE_EXPORT MatchResult {
-    WTF_MAKE_NONCOPYABLE(MatchResult);
-    STACK_ALLOCATED();
-public:
-    MatchResult() {}
+  WTF_MAKE_NONCOPYABLE(MatchResult);
+  STACK_ALLOCATED();
 
-    void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = CSSSelector::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
-    bool hasMatchedProperties() const { return m_matchedProperties.size(); }
+ public:
+  MatchResult() {}
 
-    void finishAddingUARules();
-    void finishAddingAuthorRulesForTreeScope();
+  void addMatchedProperties(const StylePropertySet* properties,
+                            unsigned linkMatchType = CSSSelector::MatchAll,
+                            PropertyWhitelistType = PropertyWhitelistNone);
+  bool hasMatchedProperties() const { return m_matchedProperties.size(); }
 
-    void setIsCacheable(bool cacheable) { m_isCacheable = cacheable; }
-    bool isCacheable() const { return m_isCacheable; }
+  void finishAddingUARules();
+  void finishAddingAuthorRulesForTreeScope();
 
-    MatchedPropertiesRange allRules() const { return MatchedPropertiesRange(m_matchedProperties.begin(), m_matchedProperties.end()); }
-    MatchedPropertiesRange uaRules() const { return MatchedPropertiesRange(m_matchedProperties.begin(), m_matchedProperties.begin() + m_uaRangeEnd); }
-    MatchedPropertiesRange authorRules() const { return MatchedPropertiesRange(m_matchedProperties.begin() + m_uaRangeEnd, m_matchedProperties.end()); }
+  void setIsCacheable(bool cacheable) { m_isCacheable = cacheable; }
+  bool isCacheable() const { return m_isCacheable; }
 
-    const MatchedPropertiesVector& matchedProperties() const { return m_matchedProperties; }
+  MatchedPropertiesRange allRules() const {
+    return MatchedPropertiesRange(m_matchedProperties.begin(),
+                                  m_matchedProperties.end());
+  }
+  MatchedPropertiesRange uaRules() const {
+    return MatchedPropertiesRange(m_matchedProperties.begin(),
+                                  m_matchedProperties.begin() + m_uaRangeEnd);
+  }
+  MatchedPropertiesRange authorRules() const {
+    return MatchedPropertiesRange(m_matchedProperties.begin() + m_uaRangeEnd,
+                                  m_matchedProperties.end());
+  }
 
-private:
-    friend class ImportantAuthorRanges;
-    friend class ImportantAuthorRangeIterator;
+  const MatchedPropertiesVector& matchedProperties() const {
+    return m_matchedProperties;
+  }
 
-    MatchedPropertiesVector m_matchedProperties;
-    Vector<unsigned, 16> m_authorRangeEnds;
-    unsigned m_uaRangeEnd = 0;
-    bool m_isCacheable = true;
+ private:
+  friend class ImportantAuthorRanges;
+  friend class ImportantAuthorRangeIterator;
+
+  MatchedPropertiesVector m_matchedProperties;
+  Vector<unsigned, 16> m_authorRangeEnds;
+  unsigned m_uaRangeEnd = 0;
+  bool m_isCacheable = true;
 };
 
 class ImportantAuthorRangeIterator {
-    STACK_ALLOCATED();
-public:
-    ImportantAuthorRangeIterator(const MatchResult& result, int endIndex)
-        : m_result(result)
-        , m_endIndex(endIndex) { }
+  STACK_ALLOCATED();
 
-    MatchedPropertiesRange operator*() const
-    {
-        unsigned rangeEnd = m_result.m_authorRangeEnds[m_endIndex];
-        unsigned rangeBegin = m_endIndex ? m_result.m_authorRangeEnds[m_endIndex - 1] : m_result.m_uaRangeEnd;
-        return MatchedPropertiesRange(m_result.matchedProperties().begin() + rangeBegin, m_result.matchedProperties().begin() + rangeEnd);
-    }
+ public:
+  ImportantAuthorRangeIterator(const MatchResult& result, int endIndex)
+      : m_result(result), m_endIndex(endIndex) {}
 
-    ImportantAuthorRangeIterator& operator++()
-    {
-        --m_endIndex;
-        return *this;
-    }
+  MatchedPropertiesRange operator*() const {
+    unsigned rangeEnd = m_result.m_authorRangeEnds[m_endIndex];
+    unsigned rangeBegin = m_endIndex
+                              ? m_result.m_authorRangeEnds[m_endIndex - 1]
+                              : m_result.m_uaRangeEnd;
+    return MatchedPropertiesRange(
+        m_result.matchedProperties().begin() + rangeBegin,
+        m_result.matchedProperties().begin() + rangeEnd);
+  }
 
-    bool operator==(const ImportantAuthorRangeIterator& other) const { return m_endIndex == other.m_endIndex && &m_result == &other.m_result; }
-    bool operator!=(const ImportantAuthorRangeIterator& other) const { return !(*this == other); }
+  ImportantAuthorRangeIterator& operator++() {
+    --m_endIndex;
+    return *this;
+  }
 
-private:
-    const MatchResult& m_result;
-    unsigned m_endIndex;
+  bool operator==(const ImportantAuthorRangeIterator& other) const {
+    return m_endIndex == other.m_endIndex && &m_result == &other.m_result;
+  }
+  bool operator!=(const ImportantAuthorRangeIterator& other) const {
+    return !(*this == other);
+  }
+
+ private:
+  const MatchResult& m_result;
+  unsigned m_endIndex;
 };
 
 class ImportantAuthorRanges {
-    STACK_ALLOCATED();
-public:
-    explicit ImportantAuthorRanges(const MatchResult& result) : m_result(result) { }
+  STACK_ALLOCATED();
 
-    ImportantAuthorRangeIterator begin() const { return ImportantAuthorRangeIterator(m_result, m_result.m_authorRangeEnds.size() - 1); }
-    ImportantAuthorRangeIterator end() const { return ImportantAuthorRangeIterator(m_result, -1); }
+ public:
+  explicit ImportantAuthorRanges(const MatchResult& result)
+      : m_result(result) {}
 
-private:
-    const MatchResult& m_result;
+  ImportantAuthorRangeIterator begin() const {
+    return ImportantAuthorRangeIterator(m_result,
+                                        m_result.m_authorRangeEnds.size() - 1);
+  }
+  ImportantAuthorRangeIterator end() const {
+    return ImportantAuthorRangeIterator(m_result, -1);
+  }
+
+ private:
+  const MatchResult& m_result;
 };
 
-inline bool operator==(const MatchedProperties& a, const MatchedProperties& b)
-{
-    return a.properties == b.properties && a.m_types.linkMatchType == b.m_types.linkMatchType;
+inline bool operator==(const MatchedProperties& a, const MatchedProperties& b) {
+  return a.properties == b.properties &&
+         a.m_types.linkMatchType == b.m_types.linkMatchType;
 }
 
-inline bool operator!=(const MatchedProperties& a, const MatchedProperties& b)
-{
-    return !(a == b);
+inline bool operator!=(const MatchedProperties& a, const MatchedProperties& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MatchResult_h
+#endif  // MatchResult_h

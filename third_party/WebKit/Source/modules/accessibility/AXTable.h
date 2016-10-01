@@ -39,57 +39,57 @@ class AXObjectCacheImpl;
 class AXTableCell;
 
 class MODULES_EXPORT AXTable : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AXTable);
+  WTF_MAKE_NONCOPYABLE(AXTable);
 
-protected:
-    AXTable(LayoutObject*, AXObjectCacheImpl&);
+ protected:
+  AXTable(LayoutObject*, AXObjectCacheImpl&);
 
-public:
-    static AXTable* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXTable() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static AXTable* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXTable() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void init() final;
+  void init() final;
 
-    bool isAXTable() const final;
-    bool isDataTable() const final;
+  bool isAXTable() const final;
+  bool isDataTable() const final;
 
-    AccessibilityRole roleValue() const final;
+  AccessibilityRole roleValue() const final;
 
-    void addChildren() override;
-    void clearChildren() final;
+  void addChildren() override;
+  void clearChildren() final;
 
-    // To be overridden by AXARIAGrid.
-    virtual bool isAriaTable() const { return false; }
-    virtual bool supportsSelectedRows() { return false; }
+  // To be overridden by AXARIAGrid.
+  virtual bool isAriaTable() const { return false; }
+  virtual bool supportsSelectedRows() { return false; }
 
-    const AXObjectVector& columns();
-    const AXObjectVector& rows();
+  const AXObjectVector& columns();
+  const AXObjectVector& rows();
 
-    unsigned columnCount();
-    unsigned rowCount();
-    AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);
+  unsigned columnCount();
+  unsigned rowCount();
+  AXTableCell* cellForColumnAndRow(unsigned column, unsigned row);
 
-    void columnHeaders(AXObjectVector&);
-    void rowHeaders(AXObjectVector&);
+  void columnHeaders(AXObjectVector&);
+  void rowHeaders(AXObjectVector&);
 
-    // an object that contains, as children, all the objects that act as headers
-    AXObject* headerContainer();
+  // an object that contains, as children, all the objects that act as headers
+  AXObject* headerContainer();
 
-protected:
-    AXObjectVector m_rows;
-    AXObjectVector m_columns;
+ protected:
+  AXObjectVector m_rows;
+  AXObjectVector m_columns;
 
-    Member<AXObject> m_headerContainer;
-    bool m_isAXTable;
+  Member<AXObject> m_headerContainer;
+  bool m_isAXTable;
 
-    bool hasARIARole() const;
-    virtual bool isTableExposableThroughAccessibility() const;
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
+  bool hasARIARole() const;
+  virtual bool isTableExposableThroughAccessibility() const;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const final;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, isAXTable());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXTable_h
+#endif  // AXTable_h

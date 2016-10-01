@@ -43,18 +43,20 @@ class LocalFrame;
 class MediaDevices;
 
 class UserMediaClient {
-    USING_FAST_MALLOC(UserMediaClient);
-public:
-    virtual void requestUserMedia(UserMediaRequest*) = 0;
-    virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
-    virtual void requestMediaDevices(MediaDevicesRequest*) = 0;
-    virtual void requestSources(MediaStreamTrackSourcesRequest*) = 0;
-    virtual void setMediaDeviceChangeObserver(MediaDevices*) = 0;
-    virtual ~UserMediaClient() { }
+  USING_FAST_MALLOC(UserMediaClient);
+
+ public:
+  virtual void requestUserMedia(UserMediaRequest*) = 0;
+  virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
+  virtual void requestMediaDevices(MediaDevicesRequest*) = 0;
+  virtual void requestSources(MediaStreamTrackSourcesRequest*) = 0;
+  virtual void setMediaDeviceChangeObserver(MediaDevices*) = 0;
+  virtual ~UserMediaClient() {}
 };
 
-MODULES_EXPORT void provideUserMediaTo(LocalFrame&, std::unique_ptr<UserMediaClient>);
+MODULES_EXPORT void provideUserMediaTo(LocalFrame&,
+                                       std::unique_ptr<UserMediaClient>);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UserMediaClient_h
+#endif  // UserMediaClient_h

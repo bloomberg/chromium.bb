@@ -40,32 +40,32 @@ using StaticElementList = StaticNodeTypeList<Element>;
 class TagCollection;
 
 enum DynamicRestyleFlags {
-    ChildrenOrSiblingsAffectedByFocus = 1 << 0,
-    ChildrenOrSiblingsAffectedByHover = 1 << 1,
-    ChildrenOrSiblingsAffectedByActive = 1 << 2,
-    ChildrenOrSiblingsAffectedByDrag = 1 << 3,
-    ChildrenAffectedByFirstChildRules = 1 << 4,
-    ChildrenAffectedByLastChildRules = 1 << 5,
-    ChildrenAffectedByDirectAdjacentRules = 1 << 6,
-    ChildrenAffectedByIndirectAdjacentRules = 1 << 7,
-    ChildrenAffectedByForwardPositionalRules = 1 << 8,
-    ChildrenAffectedByBackwardPositionalRules = 1 << 9,
-    AffectedByFirstChildRules = 1 << 10,
-    AffectedByLastChildRules = 1 << 11,
+  ChildrenOrSiblingsAffectedByFocus = 1 << 0,
+  ChildrenOrSiblingsAffectedByHover = 1 << 1,
+  ChildrenOrSiblingsAffectedByActive = 1 << 2,
+  ChildrenOrSiblingsAffectedByDrag = 1 << 3,
+  ChildrenAffectedByFirstChildRules = 1 << 4,
+  ChildrenAffectedByLastChildRules = 1 << 5,
+  ChildrenAffectedByDirectAdjacentRules = 1 << 6,
+  ChildrenAffectedByIndirectAdjacentRules = 1 << 7,
+  ChildrenAffectedByForwardPositionalRules = 1 << 8,
+  ChildrenAffectedByBackwardPositionalRules = 1 << 9,
+  AffectedByFirstChildRules = 1 << 10,
+  AffectedByLastChildRules = 1 << 11,
 
-    NumberOfDynamicRestyleFlags = 12,
+  NumberOfDynamicRestyleFlags = 12,
 
-    ChildrenAffectedByStructuralRules = ChildrenAffectedByFirstChildRules
-        | ChildrenAffectedByLastChildRules
-        | ChildrenAffectedByDirectAdjacentRules
-        | ChildrenAffectedByIndirectAdjacentRules
-        | ChildrenAffectedByForwardPositionalRules
-        | ChildrenAffectedByBackwardPositionalRules
+  ChildrenAffectedByStructuralRules = ChildrenAffectedByFirstChildRules |
+                                      ChildrenAffectedByLastChildRules |
+                                      ChildrenAffectedByDirectAdjacentRules |
+                                      ChildrenAffectedByIndirectAdjacentRules |
+                                      ChildrenAffectedByForwardPositionalRules |
+                                      ChildrenAffectedByBackwardPositionalRules
 };
 
 enum SubtreeModificationAction {
-    DispatchSubtreeModifiedEvent,
-    OmitSubtreeModifiedEvent
+  DispatchSubtreeModifiedEvent,
+  OmitSubtreeModifiedEvent
 };
 
 // This constant controls how much buffer is initially allocated
@@ -75,207 +75,310 @@ const int initialNodeVectorSize = 11;
 using NodeVector = HeapVector<Member<Node>, initialNodeVectorSize>;
 
 class CORE_EXPORT ContainerNode : public Node {
-public:
-    ~ContainerNode() override;
+ public:
+  ~ContainerNode() override;
 
-    Node* firstChild() const { return m_firstChild; }
-    Node* lastChild() const { return m_lastChild; }
-    bool hasChildren() const { return m_firstChild; }
+  Node* firstChild() const { return m_firstChild; }
+  Node* lastChild() const { return m_lastChild; }
+  bool hasChildren() const { return m_firstChild; }
 
-    bool hasOneChild() const { return m_firstChild && !m_firstChild->nextSibling(); }
-    bool hasOneTextChild() const { return hasOneChild() && m_firstChild->isTextNode(); }
-    bool hasChildCount(unsigned) const;
+  bool hasOneChild() const {
+    return m_firstChild && !m_firstChild->nextSibling();
+  }
+  bool hasOneTextChild() const {
+    return hasOneChild() && m_firstChild->isTextNode();
+  }
+  bool hasChildCount(unsigned) const;
 
-    HTMLCollection* children();
+  HTMLCollection* children();
 
-    unsigned countChildren() const;
+  unsigned countChildren() const;
 
-    Element* querySelector(const AtomicString& selectors, ExceptionState& = ASSERT_NO_EXCEPTION);
-    StaticElementList* querySelectorAll(const AtomicString& selectors, ExceptionState&);
+  Element* querySelector(const AtomicString& selectors,
+                         ExceptionState& = ASSERT_NO_EXCEPTION);
+  StaticElementList* querySelectorAll(const AtomicString& selectors,
+                                      ExceptionState&);
 
-    Node* insertBefore(Node* newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    Node* replaceChild(Node* newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    Node* removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
-    Node* appendChild(Node* newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+  Node* insertBefore(Node* newChild,
+                     Node* refChild,
+                     ExceptionState& = ASSERT_NO_EXCEPTION);
+  Node* replaceChild(Node* newChild,
+                     Node* oldChild,
+                     ExceptionState& = ASSERT_NO_EXCEPTION);
+  Node* removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
+  Node* appendChild(Node* newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
-    Element* getElementById(const AtomicString& id) const;
-    TagCollection* getElementsByTagName(const AtomicString&);
-    TagCollection* getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
-    NameNodeList* getElementsByName(const AtomicString& elementName);
-    ClassCollection* getElementsByClassName(const AtomicString& classNames);
-    RadioNodeList* radioNodeList(const AtomicString&, bool onlyMatchImgElements = false);
+  Element* getElementById(const AtomicString& id) const;
+  TagCollection* getElementsByTagName(const AtomicString&);
+  TagCollection* getElementsByTagNameNS(const AtomicString& namespaceURI,
+                                        const AtomicString& localName);
+  NameNodeList* getElementsByName(const AtomicString& elementName);
+  ClassCollection* getElementsByClassName(const AtomicString& classNames);
+  RadioNodeList* radioNodeList(const AtomicString&,
+                               bool onlyMatchImgElements = false);
 
-    // These methods are only used during parsing.
-    // They don't send DOM mutation events or accept DocumentFragments.
-    void parserAppendChild(Node*);
-    void parserRemoveChild(Node&);
-    void parserInsertBefore(Node* newChild, Node& refChild);
-    void parserTakeAllChildrenFrom(ContainerNode&);
+  // These methods are only used during parsing.
+  // They don't send DOM mutation events or accept DocumentFragments.
+  void parserAppendChild(Node*);
+  void parserRemoveChild(Node&);
+  void parserInsertBefore(Node* newChild, Node& refChild);
+  void parserTakeAllChildrenFrom(ContainerNode&);
 
-    void removeChildren(SubtreeModificationAction = DispatchSubtreeModifiedEvent);
+  void removeChildren(SubtreeModificationAction = DispatchSubtreeModifiedEvent);
 
-    void cloneChildNodes(ContainerNode* clone);
+  void cloneChildNodes(ContainerNode* clone);
 
-    void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    void detachLayoutTree(const AttachContext& = AttachContext()) override;
-    LayoutRect boundingBox() const final;
-    void setFocus(bool) override;
-    void focusStateChanged();
-    void setActive(bool = true) override;
-    void setDragged(bool) override;
-    void setHovered(bool = true) override;
+  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  void detachLayoutTree(const AttachContext& = AttachContext()) override;
+  LayoutRect boundingBox() const final;
+  void setFocus(bool) override;
+  void focusStateChanged();
+  void setActive(bool = true) override;
+  void setDragged(bool) override;
+  void setHovered(bool = true) override;
 
-    bool childrenOrSiblingsAffectedByFocus() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByFocus); }
-    void setChildrenOrSiblingsAffectedByFocus() { setRestyleFlag(ChildrenOrSiblingsAffectedByFocus); }
+  bool childrenOrSiblingsAffectedByFocus() const {
+    return hasRestyleFlag(ChildrenOrSiblingsAffectedByFocus);
+  }
+  void setChildrenOrSiblingsAffectedByFocus() {
+    setRestyleFlag(ChildrenOrSiblingsAffectedByFocus);
+  }
 
-    bool childrenOrSiblingsAffectedByHover() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByHover); }
-    void setChildrenOrSiblingsAffectedByHover() { setRestyleFlag(ChildrenOrSiblingsAffectedByHover); }
+  bool childrenOrSiblingsAffectedByHover() const {
+    return hasRestyleFlag(ChildrenOrSiblingsAffectedByHover);
+  }
+  void setChildrenOrSiblingsAffectedByHover() {
+    setRestyleFlag(ChildrenOrSiblingsAffectedByHover);
+  }
 
-    bool childrenOrSiblingsAffectedByActive() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByActive); }
-    void setChildrenOrSiblingsAffectedByActive() { setRestyleFlag(ChildrenOrSiblingsAffectedByActive); }
+  bool childrenOrSiblingsAffectedByActive() const {
+    return hasRestyleFlag(ChildrenOrSiblingsAffectedByActive);
+  }
+  void setChildrenOrSiblingsAffectedByActive() {
+    setRestyleFlag(ChildrenOrSiblingsAffectedByActive);
+  }
 
-    bool childrenOrSiblingsAffectedByDrag() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByDrag); }
-    void setChildrenOrSiblingsAffectedByDrag() { setRestyleFlag(ChildrenOrSiblingsAffectedByDrag); }
+  bool childrenOrSiblingsAffectedByDrag() const {
+    return hasRestyleFlag(ChildrenOrSiblingsAffectedByDrag);
+  }
+  void setChildrenOrSiblingsAffectedByDrag() {
+    setRestyleFlag(ChildrenOrSiblingsAffectedByDrag);
+  }
 
-    bool childrenAffectedByFirstChildRules() const { return hasRestyleFlag(ChildrenAffectedByFirstChildRules); }
-    void setChildrenAffectedByFirstChildRules() { setRestyleFlag(ChildrenAffectedByFirstChildRules); }
+  bool childrenAffectedByFirstChildRules() const {
+    return hasRestyleFlag(ChildrenAffectedByFirstChildRules);
+  }
+  void setChildrenAffectedByFirstChildRules() {
+    setRestyleFlag(ChildrenAffectedByFirstChildRules);
+  }
 
-    bool childrenAffectedByLastChildRules() const { return hasRestyleFlag(ChildrenAffectedByLastChildRules); }
-    void setChildrenAffectedByLastChildRules() { setRestyleFlag(ChildrenAffectedByLastChildRules); }
+  bool childrenAffectedByLastChildRules() const {
+    return hasRestyleFlag(ChildrenAffectedByLastChildRules);
+  }
+  void setChildrenAffectedByLastChildRules() {
+    setRestyleFlag(ChildrenAffectedByLastChildRules);
+  }
 
-    bool childrenAffectedByDirectAdjacentRules() const { return hasRestyleFlag(ChildrenAffectedByDirectAdjacentRules); }
-    void setChildrenAffectedByDirectAdjacentRules() { setRestyleFlag(ChildrenAffectedByDirectAdjacentRules); }
+  bool childrenAffectedByDirectAdjacentRules() const {
+    return hasRestyleFlag(ChildrenAffectedByDirectAdjacentRules);
+  }
+  void setChildrenAffectedByDirectAdjacentRules() {
+    setRestyleFlag(ChildrenAffectedByDirectAdjacentRules);
+  }
 
-    bool childrenAffectedByIndirectAdjacentRules() const { return hasRestyleFlag(ChildrenAffectedByIndirectAdjacentRules); }
-    void setChildrenAffectedByIndirectAdjacentRules() { setRestyleFlag(ChildrenAffectedByIndirectAdjacentRules); }
+  bool childrenAffectedByIndirectAdjacentRules() const {
+    return hasRestyleFlag(ChildrenAffectedByIndirectAdjacentRules);
+  }
+  void setChildrenAffectedByIndirectAdjacentRules() {
+    setRestyleFlag(ChildrenAffectedByIndirectAdjacentRules);
+  }
 
-    bool childrenAffectedByForwardPositionalRules() const { return hasRestyleFlag(ChildrenAffectedByForwardPositionalRules); }
-    void setChildrenAffectedByForwardPositionalRules() { setRestyleFlag(ChildrenAffectedByForwardPositionalRules); }
+  bool childrenAffectedByForwardPositionalRules() const {
+    return hasRestyleFlag(ChildrenAffectedByForwardPositionalRules);
+  }
+  void setChildrenAffectedByForwardPositionalRules() {
+    setRestyleFlag(ChildrenAffectedByForwardPositionalRules);
+  }
 
-    bool childrenAffectedByBackwardPositionalRules() const { return hasRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
-    void setChildrenAffectedByBackwardPositionalRules() { setRestyleFlag(ChildrenAffectedByBackwardPositionalRules); }
+  bool childrenAffectedByBackwardPositionalRules() const {
+    return hasRestyleFlag(ChildrenAffectedByBackwardPositionalRules);
+  }
+  void setChildrenAffectedByBackwardPositionalRules() {
+    setRestyleFlag(ChildrenAffectedByBackwardPositionalRules);
+  }
 
-    bool affectedByFirstChildRules() const { return hasRestyleFlag(AffectedByFirstChildRules); }
-    void setAffectedByFirstChildRules() { setRestyleFlag(AffectedByFirstChildRules); }
+  bool affectedByFirstChildRules() const {
+    return hasRestyleFlag(AffectedByFirstChildRules);
+  }
+  void setAffectedByFirstChildRules() {
+    setRestyleFlag(AffectedByFirstChildRules);
+  }
 
-    bool affectedByLastChildRules() const { return hasRestyleFlag(AffectedByLastChildRules); }
-    void setAffectedByLastChildRules() { setRestyleFlag(AffectedByLastChildRules); }
+  bool affectedByLastChildRules() const {
+    return hasRestyleFlag(AffectedByLastChildRules);
+  }
+  void setAffectedByLastChildRules() {
+    setRestyleFlag(AffectedByLastChildRules);
+  }
 
-    bool needsAdjacentStyleRecalc() const;
+  bool needsAdjacentStyleRecalc() const;
 
-    // FIXME: These methods should all be renamed to something better than "check",
-    // since it's not clear that they alter the style bits of siblings and children.
-    enum SiblingCheckType { FinishedParsingChildren, SiblingElementInserted, SiblingElementRemoved };
-    void checkForSiblingStyleChanges(SiblingCheckType, Element* changedElement, Node* nodeBeforeChange, Node* nodeAfterChange);
-    void recalcDescendantStyles(StyleRecalcChange);
+  // FIXME: These methods should all be renamed to something better than "check",
+  // since it's not clear that they alter the style bits of siblings and children.
+  enum SiblingCheckType {
+    FinishedParsingChildren,
+    SiblingElementInserted,
+    SiblingElementRemoved
+  };
+  void checkForSiblingStyleChanges(SiblingCheckType,
+                                   Element* changedElement,
+                                   Node* nodeBeforeChange,
+                                   Node* nodeAfterChange);
+  void recalcDescendantStyles(StyleRecalcChange);
 
-    bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
+  bool childrenSupportStyleSharing() const { return !hasRestyleFlags(); }
 
-    // -----------------------------------------------------------------------------
-    // Notification of document structure changes (see core/dom/Node.h for more notification methods)
+  // -----------------------------------------------------------------------------
+  // Notification of document structure changes (see core/dom/Node.h for more notification methods)
 
-    enum ChildrenChangeType { ElementInserted, NonElementInserted, ElementRemoved, NonElementRemoved, AllChildrenRemoved, TextChanged };
-    enum ChildrenChangeSource { ChildrenChangeSourceAPI, ChildrenChangeSourceParser };
-    struct ChildrenChange {
-        STACK_ALLOCATED();
-    public:
-        static ChildrenChange forInsertion(Node& node, ChildrenChangeSource byParser)
-        {
-            ChildrenChange change = {
-                node.isElementNode() ? ElementInserted : NonElementInserted,
-                &node,
-                node.previousSibling(),
-                node.nextSibling(),
-                byParser
-            };
-            return change;
-        }
+  enum ChildrenChangeType {
+    ElementInserted,
+    NonElementInserted,
+    ElementRemoved,
+    NonElementRemoved,
+    AllChildrenRemoved,
+    TextChanged
+  };
+  enum ChildrenChangeSource {
+    ChildrenChangeSourceAPI,
+    ChildrenChangeSourceParser
+  };
+  struct ChildrenChange {
+    STACK_ALLOCATED();
 
-        static ChildrenChange forRemoval(Node& node, Node* previousSibling, Node* nextSibling, ChildrenChangeSource byParser)
-        {
-            ChildrenChange change = {
-                node.isElementNode() ? ElementRemoved : NonElementRemoved,
-                &node,
-                previousSibling,
-                nextSibling,
-                byParser
-            };
-            return change;
-        }
+   public:
+    static ChildrenChange forInsertion(Node& node,
+                                       ChildrenChangeSource byParser) {
+      ChildrenChange change = {
+          node.isElementNode() ? ElementInserted : NonElementInserted, &node,
+          node.previousSibling(), node.nextSibling(), byParser};
+      return change;
+    }
 
-        bool isChildInsertion() const { return type == ElementInserted || type == NonElementInserted; }
-        bool isChildRemoval() const { return type == ElementRemoved || type == NonElementRemoved; }
-        bool isChildElementChange() const { return type == ElementInserted || type == ElementRemoved; }
+    static ChildrenChange forRemoval(Node& node,
+                                     Node* previousSibling,
+                                     Node* nextSibling,
+                                     ChildrenChangeSource byParser) {
+      ChildrenChange change = {
+          node.isElementNode() ? ElementRemoved : NonElementRemoved, &node,
+          previousSibling, nextSibling, byParser};
+      return change;
+    }
 
-        ChildrenChangeType type;
-        Member<Node> siblingChanged;
-        Member<Node> siblingBeforeChange;
-        Member<Node> siblingAfterChange;
-        ChildrenChangeSource byParser;
-    };
+    bool isChildInsertion() const {
+      return type == ElementInserted || type == NonElementInserted;
+    }
+    bool isChildRemoval() const {
+      return type == ElementRemoved || type == NonElementRemoved;
+    }
+    bool isChildElementChange() const {
+      return type == ElementInserted || type == ElementRemoved;
+    }
 
-    // Notifies the node that it's list of children have changed (either by adding or removing child nodes), or a child
-    // node that is of the type CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
-    virtual void childrenChanged(const ChildrenChange&);
+    ChildrenChangeType type;
+    Member<Node> siblingChanged;
+    Member<Node> siblingBeforeChange;
+    Member<Node> siblingAfterChange;
+    ChildrenChangeSource byParser;
+  };
 
-    DECLARE_VIRTUAL_TRACE();
+  // Notifies the node that it's list of children have changed (either by adding or removing child nodes), or a child
+  // node that is of the type CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
+  virtual void childrenChanged(const ChildrenChange&);
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    ContainerNode(TreeScope*, ConstructionType = CreateContainer);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    void invalidateNodeListCachesInAncestors(const QualifiedName* attrName = nullptr, Element* attributeOwnerElement = nullptr);
+ protected:
+  ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
-    void setFirstChild(Node* child) { m_firstChild = child; }
-    void setLastChild(Node* child) { m_lastChild = child; }
+  void invalidateNodeListCachesInAncestors(
+      const QualifiedName* attrName = nullptr,
+      Element* attributeOwnerElement = nullptr);
 
-    // Utility functions for NodeListsNodeData API.
-    template <typename Collection> Collection* ensureCachedCollection(CollectionType);
-    template <typename Collection> Collection* ensureCachedCollection(CollectionType, const AtomicString& name);
-    template <typename Collection> Collection* ensureCachedCollection(CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
-    template <typename Collection> Collection* cachedCollection(CollectionType);
+  void setFirstChild(Node* child) { m_firstChild = child; }
+  void setLastChild(Node* child) { m_lastChild = child; }
 
-private:
-    bool isContainerNode() const = delete; // This will catch anyone doing an unnecessary check.
-    bool isTextNode() const = delete; // This will catch anyone doing an unnecessary check.
+  // Utility functions for NodeListsNodeData API.
+  template <typename Collection>
+  Collection* ensureCachedCollection(CollectionType);
+  template <typename Collection>
+  Collection* ensureCachedCollection(CollectionType, const AtomicString& name);
+  template <typename Collection>
+  Collection* ensureCachedCollection(CollectionType,
+                                     const AtomicString& namespaceURI,
+                                     const AtomicString& localName);
+  template <typename Collection>
+  Collection* cachedCollection(CollectionType);
 
-    NodeListsNodeData& ensureNodeLists();
-    void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
-    template <typename Functor> void insertNodeVector(const NodeVector&, Node* next, const Functor&);
-    class AdoptAndInsertBefore;
-    class AdoptAndAppendChild;
-    friend class AdoptAndInsertBefore;
-    friend class AdoptAndAppendChild;
-    void insertBeforeCommon(Node& nextChild, Node& newChild);
-    void appendChildCommon(Node& child);
-    void willRemoveChildren();
-    void willRemoveChild(Node& child);
-    void removeDetachedChildrenInContainer(ContainerNode&);
-    void addChildNodesToDeletionQueue(Node*&, Node*&, ContainerNode&);
+ private:
+  bool isContainerNode() const =
+      delete;  // This will catch anyone doing an unnecessary check.
+  bool isTextNode() const =
+      delete;  // This will catch anyone doing an unnecessary check.
 
-    void notifyNodeInserted(Node&, ChildrenChangeSource = ChildrenChangeSourceAPI);
-    void notifyNodeInsertedInternal(Node&, NodeVector& postInsertionNotificationTargets);
-    void notifyNodeRemoved(Node&);
+  NodeListsNodeData& ensureNodeLists();
+  void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
+  template <typename Functor>
+  void insertNodeVector(const NodeVector&, Node* next, const Functor&);
+  class AdoptAndInsertBefore;
+  class AdoptAndAppendChild;
+  friend class AdoptAndInsertBefore;
+  friend class AdoptAndAppendChild;
+  void insertBeforeCommon(Node& nextChild, Node& newChild);
+  void appendChildCommon(Node& child);
+  void willRemoveChildren();
+  void willRemoveChild(Node& child);
+  void removeDetachedChildrenInContainer(ContainerNode&);
+  void addChildNodesToDeletionQueue(Node*&, Node*&, ContainerNode&);
 
-    bool hasRestyleFlag(DynamicRestyleFlags mask) const { return hasRareData() && hasRestyleFlagInternal(mask); }
-    bool hasRestyleFlags() const { return hasRareData() && hasRestyleFlagsInternal(); }
-    void setRestyleFlag(DynamicRestyleFlags);
-    bool hasRestyleFlagInternal(DynamicRestyleFlags) const;
-    bool hasRestyleFlagsInternal() const;
+  void notifyNodeInserted(Node&,
+                          ChildrenChangeSource = ChildrenChangeSourceAPI);
+  void notifyNodeInsertedInternal(Node&,
+                                  NodeVector& postInsertionNotificationTargets);
+  void notifyNodeRemoved(Node&);
 
-    bool collectChildrenAndRemoveFromOldParentWithCheck(const Node* next, const Node* oldChild, Node& newChild, NodeVector&, ExceptionState&) const;
-    inline bool checkAcceptChildGuaranteedNodeTypes(const Node& newChild, const Node* oldChild, ExceptionState&) const;
-    inline bool checkAcceptChild(const Node* newChild, const Node* oldChild, ExceptionState&) const;
-    inline bool checkParserAcceptChild(const Node& newChild) const;
-    inline bool containsConsideringHostElements(const Node&) const;
-    inline bool isChildTypeAllowed(const Node& child) const;
+  bool hasRestyleFlag(DynamicRestyleFlags mask) const {
+    return hasRareData() && hasRestyleFlagInternal(mask);
+  }
+  bool hasRestyleFlags() const {
+    return hasRareData() && hasRestyleFlagsInternal();
+  }
+  void setRestyleFlag(DynamicRestyleFlags);
+  bool hasRestyleFlagInternal(DynamicRestyleFlags) const;
+  bool hasRestyleFlagsInternal() const;
 
-    bool getUpperLeftCorner(FloatPoint&) const;
-    bool getLowerRightCorner(FloatPoint&) const;
+  bool collectChildrenAndRemoveFromOldParentWithCheck(const Node* next,
+                                                      const Node* oldChild,
+                                                      Node& newChild,
+                                                      NodeVector&,
+                                                      ExceptionState&) const;
+  inline bool checkAcceptChildGuaranteedNodeTypes(const Node& newChild,
+                                                  const Node* oldChild,
+                                                  ExceptionState&) const;
+  inline bool checkAcceptChild(const Node* newChild,
+                               const Node* oldChild,
+                               ExceptionState&) const;
+  inline bool checkParserAcceptChild(const Node& newChild) const;
+  inline bool containsConsideringHostElements(const Node&) const;
+  inline bool isChildTypeAllowed(const Node& child) const;
 
-    Member<Node> m_firstChild;
-    Member<Node> m_lastChild;
+  bool getUpperLeftCorner(FloatPoint&) const;
+  bool getLowerRightCorner(FloatPoint&) const;
+
+  Member<Node> m_firstChild;
+  Member<Node> m_lastChild;
 };
 
 #if DCHECK_IS_ON()
@@ -286,75 +389,67 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(ContainerNode);
 
 DEFINE_NODE_TYPE_CASTS(ContainerNode, isContainerNode());
 
-inline bool ContainerNode::hasChildCount(unsigned count) const
-{
-    Node* child = m_firstChild;
-    while (count && child) {
-        child = child->nextSibling();
-        --count;
-    }
-    return !count && !child;
+inline bool ContainerNode::hasChildCount(unsigned count) const {
+  Node* child = m_firstChild;
+  while (count && child) {
+    child = child->nextSibling();
+    --count;
+  }
+  return !count && !child;
 }
 
 inline ContainerNode::ContainerNode(TreeScope* treeScope, ConstructionType type)
-    : Node(treeScope, type)
-    , m_firstChild(nullptr)
-    , m_lastChild(nullptr)
-{
+    : Node(treeScope, type), m_firstChild(nullptr), m_lastChild(nullptr) {}
+
+inline bool ContainerNode::needsAdjacentStyleRecalc() const {
+  if (!childrenAffectedByDirectAdjacentRules() &&
+      !childrenAffectedByIndirectAdjacentRules())
+    return false;
+  return childNeedsStyleRecalc() || childNeedsStyleInvalidation();
 }
 
-inline bool ContainerNode::needsAdjacentStyleRecalc() const
-{
-    if (!childrenAffectedByDirectAdjacentRules() && !childrenAffectedByIndirectAdjacentRules())
-        return false;
-    return childNeedsStyleRecalc() || childNeedsStyleInvalidation();
+inline unsigned Node::countChildren() const {
+  if (!isContainerNode())
+    return 0;
+  return toContainerNode(this)->countChildren();
 }
 
-inline unsigned Node::countChildren() const
-{
-    if (!isContainerNode())
-        return 0;
-    return toContainerNode(this)->countChildren();
+inline Node* Node::firstChild() const {
+  if (!isContainerNode())
+    return nullptr;
+  return toContainerNode(this)->firstChild();
 }
 
-inline Node* Node::firstChild() const
-{
-    if (!isContainerNode())
-        return nullptr;
-    return toContainerNode(this)->firstChild();
+inline Node* Node::lastChild() const {
+  if (!isContainerNode())
+    return nullptr;
+  return toContainerNode(this)->lastChild();
 }
 
-inline Node* Node::lastChild() const
-{
-    if (!isContainerNode())
-        return nullptr;
-    return toContainerNode(this)->lastChild();
+inline ContainerNode* Node::parentElementOrShadowRoot() const {
+  ContainerNode* parent = parentNode();
+  return parent && (parent->isElementNode() || parent->isShadowRoot())
+             ? parent
+             : nullptr;
 }
 
-inline ContainerNode* Node::parentElementOrShadowRoot() const
-{
-    ContainerNode* parent = parentNode();
-    return parent && (parent->isElementNode() || parent->isShadowRoot()) ? parent : nullptr;
+inline ContainerNode* Node::parentElementOrDocumentFragment() const {
+  ContainerNode* parent = parentNode();
+  return parent && (parent->isElementNode() || parent->isDocumentFragment())
+             ? parent
+             : nullptr;
 }
 
-inline ContainerNode* Node::parentElementOrDocumentFragment() const
-{
-    ContainerNode* parent = parentNode();
-    return parent && (parent->isElementNode() || parent->isDocumentFragment()) ? parent : nullptr;
+inline bool Node::isTreeScope() const {
+  return &treeScope().rootNode() == this;
 }
 
-inline bool Node::isTreeScope() const
-{
-    return &treeScope().rootNode() == this;
+inline void getChildNodes(ContainerNode& node, NodeVector& nodes) {
+  DCHECK(!nodes.size());
+  for (Node* child = node.firstChild(); child; child = child->nextSibling())
+    nodes.append(child);
 }
 
-inline void getChildNodes(ContainerNode& node, NodeVector& nodes)
-{
-    DCHECK(!nodes.size());
-    for (Node* child = node.firstChild(); child; child = child->nextSibling())
-        nodes.append(child);
-}
+}  // namespace blink
 
-} // namespace blink
-
-#endif // ContainerNode_h
+#endif  // ContainerNode_h

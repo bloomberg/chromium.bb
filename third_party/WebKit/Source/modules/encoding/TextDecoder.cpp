@@ -39,86 +39,90 @@
 
 namespace blink {
 
-TextDecoder* TextDecoder::create(const String& label, const TextDecoderOptions& options, ExceptionState& exceptionState)
-{
-    WTF::TextEncoding encoding(label.stripWhiteSpace(&Encoding::isASCIIWhiteSpace));
-    // The replacement encoding is not valid, but the Encoding API also
-    // rejects aliases of the replacement encoding.
-    if (!encoding.isValid() || !strcasecmp(encoding.name(), "replacement")) {
-        exceptionState.throwRangeError("The encoding label provided ('" + label + "') is invalid.");
-        return 0;
-    }
+TextDecoder* TextDecoder::create(const String& label,
+                                 const TextDecoderOptions& options,
+                                 ExceptionState& exceptionState) {
+  WTF::TextEncoding encoding(
+      label.stripWhiteSpace(&Encoding::isASCIIWhiteSpace));
+  // The replacement encoding is not valid, but the Encoding API also
+  // rejects aliases of the replacement encoding.
+  if (!encoding.isValid() || !strcasecmp(encoding.name(), "replacement")) {
+    exceptionState.throwRangeError("The encoding label provided ('" + label +
+                                   "') is invalid.");
+    return 0;
+  }
 
-    return new TextDecoder(encoding, options.fatal(), options.ignoreBOM());
+  return new TextDecoder(encoding, options.fatal(), options.ignoreBOM());
 }
 
+TextDecoder::TextDecoder(const WTF::TextEncoding& encoding,
+                         bool fatal,
+                         bool ignoreBOM)
+    : m_encoding(encoding),
+      m_codec(newTextCodec(encoding)),
+      m_fatal(fatal),
+      m_ignoreBOM(ignoreBOM),
+      m_bomSeen(false) {}
 
-TextDecoder::TextDecoder(const WTF::TextEncoding& encoding, bool fatal, bool ignoreBOM)
-    : m_encoding(encoding)
-    , m_codec(newTextCodec(encoding))
-    , m_fatal(fatal)
-    , m_ignoreBOM(ignoreBOM)
-    , m_bomSeen(false)
-{
+TextDecoder::~TextDecoder() {}
+
+String TextDecoder::encoding() const {
+  String name = String(m_encoding.name()).lower();
+  // Where possible, encoding aliases should be handled by changes to Chromium's ICU or Blink's WTF.
+  // The same codec is used, but WTF maintains a different name/identity for these.
+  if (name == "iso-8859-1" || name == "us-ascii")
+    return "windows-1252";
+  return name;
 }
 
-TextDecoder::~TextDecoder()
-{
-}
-
-String TextDecoder::encoding() const
-{
-    String name = String(m_encoding.name()).lower();
-    // Where possible, encoding aliases should be handled by changes to Chromium's ICU or Blink's WTF.
-    // The same codec is used, but WTF maintains a different name/identity for these.
-    if (name == "iso-8859-1" || name == "us-ascii")
-        return "windows-1252";
-    return name;
-}
-
-String TextDecoder::decode(const BufferSource& input, const TextDecodeOptions& options, ExceptionState& exceptionState)
-{
-    ASSERT(!input.isNull());
-    if (input.isArrayBufferView()) {
-        const char* start = static_cast<const char*>(input.getAsArrayBufferView()->baseAddress());
-        size_t length = input.getAsArrayBufferView()->byteLength();
-        return decode(start, length, options, exceptionState);
-    }
-    ASSERT(input.isArrayBuffer());
-    const char* start = static_cast<const char*>(input.getAsArrayBuffer()->data());
-    size_t length = input.getAsArrayBuffer()->byteLength();
+String TextDecoder::decode(const BufferSource& input,
+                           const TextDecodeOptions& options,
+                           ExceptionState& exceptionState) {
+  ASSERT(!input.isNull());
+  if (input.isArrayBufferView()) {
+    const char* start =
+        static_cast<const char*>(input.getAsArrayBufferView()->baseAddress());
+    size_t length = input.getAsArrayBufferView()->byteLength();
     return decode(start, length, options, exceptionState);
+  }
+  ASSERT(input.isArrayBuffer());
+  const char* start =
+      static_cast<const char*>(input.getAsArrayBuffer()->data());
+  size_t length = input.getAsArrayBuffer()->byteLength();
+  return decode(start, length, options, exceptionState);
 }
 
-String TextDecoder::decode(const char* start, size_t length, const TextDecodeOptions& options, ExceptionState& exceptionState)
-{
-    WTF::FlushBehavior flush = options.stream() ? WTF::DoNotFlush : WTF::DataEOF;
+String TextDecoder::decode(const char* start,
+                           size_t length,
+                           const TextDecodeOptions& options,
+                           ExceptionState& exceptionState) {
+  WTF::FlushBehavior flush = options.stream() ? WTF::DoNotFlush : WTF::DataEOF;
 
-    bool sawError = false;
-    String s = m_codec->decode(start, length, flush, m_fatal, sawError);
+  bool sawError = false;
+  String s = m_codec->decode(start, length, flush, m_fatal, sawError);
 
-    if (m_fatal && sawError) {
-        exceptionState.throwTypeError("The encoded data was not valid.");
-        return String();
-    }
+  if (m_fatal && sawError) {
+    exceptionState.throwTypeError("The encoded data was not valid.");
+    return String();
+  }
 
-    if (!m_ignoreBOM && !m_bomSeen && !s.isEmpty()) {
-        m_bomSeen = true;
-        String name(m_encoding.name());
-        if ((name == "UTF-8" || name == "UTF-16LE" || name == "UTF-16BE") && s[0] == 0xFEFF)
-            s.remove(0);
-    }
+  if (!m_ignoreBOM && !m_bomSeen && !s.isEmpty()) {
+    m_bomSeen = true;
+    String name(m_encoding.name());
+    if ((name == "UTF-8" || name == "UTF-16LE" || name == "UTF-16BE") &&
+        s[0] == 0xFEFF)
+      s.remove(0);
+  }
 
-    if (flush)
-        m_bomSeen = false;
+  if (flush)
+    m_bomSeen = false;
 
-    return s;
+  return s;
 }
 
-String TextDecoder::decode(ExceptionState& exceptionState)
-{
-    TextDecodeOptions options;
-    return decode(nullptr, 0, options, exceptionState);
+String TextDecoder::decode(ExceptionState& exceptionState) {
+  TextDecodeOptions options;
+  return decode(nullptr, 0, options, exceptionState);
 }
 
-} // namespace blink
+}  // namespace blink

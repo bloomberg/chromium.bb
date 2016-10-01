@@ -37,45 +37,38 @@
 
 namespace blink {
 
-InputType* URLInputType::create(HTMLInputElement& element)
-{
-    return new URLInputType(element);
+InputType* URLInputType::create(HTMLInputElement& element) {
+  return new URLInputType(element);
 }
 
-void URLInputType::countUsage()
-{
-    countUsageIfVisible(UseCounter::InputTypeURL);
+void URLInputType::countUsage() {
+  countUsageIfVisible(UseCounter::InputTypeURL);
 }
 
-const AtomicString& URLInputType::formControlType() const
-{
-    return InputTypeNames::url;
+const AtomicString& URLInputType::formControlType() const {
+  return InputTypeNames::url;
 }
 
-bool URLInputType::typeMismatchFor(const String& value) const
-{
-    return !value.isEmpty() && !KURL(KURL(), value).isValid();
+bool URLInputType::typeMismatchFor(const String& value) const {
+  return !value.isEmpty() && !KURL(KURL(), value).isValid();
 }
 
-bool URLInputType::typeMismatch() const
-{
-    return typeMismatchFor(element().value());
+bool URLInputType::typeMismatch() const {
+  return typeMismatchFor(element().value());
 }
 
-String URLInputType::typeMismatchText() const
-{
-    return locale().queryString(WebLocalizedString::ValidationTypeMismatchForURL);
+String URLInputType::typeMismatchText() const {
+  return locale().queryString(WebLocalizedString::ValidationTypeMismatchForURL);
 }
 
-String URLInputType::sanitizeValue(const String& proposedValue) const
-{
-    return BaseTextInputType::sanitizeValue(stripLeadingAndTrailingHTMLSpaces(proposedValue));
+String URLInputType::sanitizeValue(const String& proposedValue) const {
+  return BaseTextInputType::sanitizeValue(
+      stripLeadingAndTrailingHTMLSpaces(proposedValue));
 }
 
-String URLInputType::sanitizeUserInputValue(const String& proposedValue) const
-{
-    // Do not call URLInputType::sanitizeValue.
-    return BaseTextInputType::sanitizeValue(proposedValue);
+String URLInputType::sanitizeUserInputValue(const String& proposedValue) const {
+  // Do not call URLInputType::sanitizeValue.
+  return BaseTextInputType::sanitizeValue(proposedValue);
 }
 
-} // namespace blink
+}  // namespace blink

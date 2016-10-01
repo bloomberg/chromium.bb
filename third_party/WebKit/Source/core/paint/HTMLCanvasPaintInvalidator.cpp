@@ -11,18 +11,18 @@
 
 namespace blink {
 
-PaintInvalidationReason HTMLCanvasPaintInvalidator::invalidatePaintIfNeeded()
-{
-    PaintInvalidationReason reason = BoxPaintInvalidator(m_htmlCanvas, m_context).invalidatePaintIfNeeded();
+PaintInvalidationReason HTMLCanvasPaintInvalidator::invalidatePaintIfNeeded() {
+  PaintInvalidationReason reason =
+      BoxPaintInvalidator(m_htmlCanvas, m_context).invalidatePaintIfNeeded();
 
-    HTMLCanvasElement* element = toHTMLCanvasElement(m_htmlCanvas.node());
-    if (element->isDirty()) {
-        element->doDeferredPaintInvalidation();
-        if (reason < PaintInvalidationRectangle)
-            reason = PaintInvalidationRectangle;
-    }
+  HTMLCanvasElement* element = toHTMLCanvasElement(m_htmlCanvas.node());
+  if (element->isDirty()) {
+    element->doDeferredPaintInvalidation();
+    if (reason < PaintInvalidationRectangle)
+      reason = PaintInvalidationRectangle;
+  }
 
-    return reason;
+  return reason;
 }
 
-} // namespace blink
+}  // namespace blink

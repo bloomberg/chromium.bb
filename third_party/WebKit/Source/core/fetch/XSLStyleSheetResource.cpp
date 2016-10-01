@@ -35,58 +35,66 @@
 
 namespace blink {
 
-static void applyXSLRequestProperties(ResourceRequest& request)
-{
-    request.setRequestContext(WebURLRequest::RequestContextXSLT);
-    // TODO(japhet): Accept: headers can be set manually on XHRs from script,
-    // in the browser process, and... here. The browser process can't tell the
-    // difference between an XSL stylesheet and a CSS stylesheet, so it assumes
-    // stylesheets are all CSS unless they already have an Accept: header set.
-    // Should we teach the browser process the difference?
-    DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml"));
-    request.setHTTPAccept(acceptXSLT);
+static void applyXSLRequestProperties(ResourceRequest& request) {
+  request.setRequestContext(WebURLRequest::RequestContextXSLT);
+  // TODO(japhet): Accept: headers can be set manually on XHRs from script,
+  // in the browser process, and... here. The browser process can't tell the
+  // difference between an XSL stylesheet and a CSS stylesheet, so it assumes
+  // stylesheets are all CSS unless they already have an Accept: header set.
+  // Should we teach the browser process the difference?
+  DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT,
+                      ("text/xml, application/xml, application/xhtml+xml, "
+                       "text/xsl, application/rss+xml, application/atom+xml"));
+  request.setHTTPAccept(acceptXSLT);
 }
 
-XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(FetchRequest& request, ResourceFetcher* fetcher)
-{
-    applyXSLRequestProperties(request.mutableResourceRequest());
-    request.makeSynchronous();
-    XSLStyleSheetResource* resource = toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
-    if (resource && resource->data())
-        resource->m_sheet = resource->decodedText();
-    return resource;
+XSLStyleSheetResource* XSLStyleSheetResource::fetchSynchronously(
+    FetchRequest& request,
+    ResourceFetcher* fetcher) {
+  applyXSLRequestProperties(request.mutableResourceRequest());
+  request.makeSynchronous();
+  XSLStyleSheetResource* resource = toXSLStyleSheetResource(
+      fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
+  if (resource && resource->data())
+    resource->m_sheet = resource->decodedText();
+  return resource;
 }
 
-XSLStyleSheetResource* XSLStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
-{
-    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
-    applyXSLRequestProperties(request.mutableResourceRequest());
-    return toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
+XSLStyleSheetResource* XSLStyleSheetResource::fetch(FetchRequest& request,
+                                                    ResourceFetcher* fetcher) {
+  DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+  applyXSLRequestProperties(request.mutableResourceRequest());
+  return toXSLStyleSheetResource(
+      fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
 }
 
-XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)
-    : StyleSheetResource(resourceRequest, XSLStyleSheet, options, "text/xsl", charset)
-{
+XSLStyleSheetResource::XSLStyleSheetResource(
+    const ResourceRequest& resourceRequest,
+    const ResourceLoaderOptions& options,
+    const String& charset)
+    : StyleSheetResource(resourceRequest,
+                         XSLStyleSheet,
+                         options,
+                         "text/xsl",
+                         charset) {}
+
+void XSLStyleSheetResource::didAddClient(ResourceClient* c) {
+  DCHECK(StyleSheetResourceClient::isExpectedType(c));
+  Resource::didAddClient(c);
+  if (!isLoading())
+    static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(
+        resourceRequest().url(), response().url(), m_sheet);
 }
 
-void XSLStyleSheetResource::didAddClient(ResourceClient* c)
-{
-    DCHECK(StyleSheetResourceClient::isExpectedType(c));
-    Resource::didAddClient(c);
-    if (!isLoading())
-        static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(resourceRequest().url(), response().url(), m_sheet);
+void XSLStyleSheetResource::checkNotify() {
+  if (data())
+    m_sheet = decodedText();
+
+  ResourceClientWalker<StyleSheetResourceClient> w(clients());
+  while (StyleSheetResourceClient* c = w.next()) {
+    markClientFinished(c);
+    c->setXSLStyleSheet(resourceRequest().url(), response().url(), m_sheet);
+  }
 }
 
-void XSLStyleSheetResource::checkNotify()
-{
-    if (data())
-        m_sheet = decodedText();
-
-    ResourceClientWalker<StyleSheetResourceClient> w(clients());
-    while (StyleSheetResourceClient* c = w.next()) {
-        markClientFinished(c);
-        c->setXSLStyleSheet(resourceRequest().url(), response().url(), m_sheet);
-    }
-}
-
-} // namespace blink
+}  // namespace blink

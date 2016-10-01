@@ -37,21 +37,21 @@
 namespace blink {
 
 StorageClientImpl::StorageClientImpl(WebViewImpl* webView)
-    : m_webView(webView)
-{
+    : m_webView(webView) {}
+
+std::unique_ptr<StorageNamespace>
+StorageClientImpl::createSessionStorageNamespace() {
+  if (!m_webView->client())
+    return nullptr;
+  return wrapUnique(new StorageNamespace(
+      wrapUnique(m_webView->client()->createSessionStorageNamespace())));
 }
 
-std::unique_ptr<StorageNamespace> StorageClientImpl::createSessionStorageNamespace()
-{
-    if (!m_webView->client())
-        return nullptr;
-    return wrapUnique(new StorageNamespace(wrapUnique(m_webView->client()->createSessionStorageNamespace())));
+bool StorageClientImpl::canAccessStorage(LocalFrame* frame,
+                                         StorageType type) const {
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  return !webFrame->contentSettingsClient() ||
+         webFrame->contentSettingsClient()->allowStorage(type == LocalStorage);
 }
 
-bool StorageClientImpl::canAccessStorage(LocalFrame* frame, StorageType type) const
-{
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-    return !webFrame->contentSettingsClient() || webFrame->contentSettingsClient()->allowStorage(type == LocalStorage);
-}
-
-} // namespace blink
+}  // namespace blink

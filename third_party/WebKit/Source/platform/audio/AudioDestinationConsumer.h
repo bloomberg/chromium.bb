@@ -38,14 +38,15 @@ namespace blink {
 
 class AudioBus;
 
-class PLATFORM_EXPORT AudioDestinationConsumer : public GarbageCollected<AudioDestinationConsumer> {
-public:
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
-    virtual void consumeAudio(AudioBus*, size_t numberOfFrames) = 0;
+class PLATFORM_EXPORT AudioDestinationConsumer
+    : public GarbageCollected<AudioDestinationConsumer> {
+ public:
+  virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
+  virtual void consumeAudio(AudioBus*, size_t numberOfFrames) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioDestinationConsumer_h
+#endif  // AudioDestinationConsumer_h

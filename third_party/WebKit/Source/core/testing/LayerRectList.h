@@ -42,26 +42,29 @@ class ClientRect;
 class LayerRect;
 class Node;
 
-class LayerRectList final : public GarbageCollected<LayerRectList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static LayerRectList* create()
-    {
-        return new LayerRectList;
-    }
+class LayerRectList final : public GarbageCollected<LayerRectList>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned length() const;
-    LayerRect* item(unsigned index);
-    void append(Node* layerAssociatedNode, const String& layerName, int layerOffsetX, int layerOffsetY, ClientRect* layerRelativeRect);
+ public:
+  static LayerRectList* create() { return new LayerRectList; }
 
-    DECLARE_TRACE();
+  unsigned length() const;
+  LayerRect* item(unsigned index);
+  void append(Node* layerAssociatedNode,
+              const String& layerName,
+              int layerOffsetX,
+              int layerOffsetY,
+              ClientRect* layerRelativeRect);
 
-private:
-    LayerRectList();
+  DECLARE_TRACE();
 
-    HeapVector<Member<LayerRect>> m_list;
+ private:
+  LayerRectList();
+
+  HeapVector<Member<LayerRect>> m_list;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClientRectList_h
+#endif  // ClientRectList_h

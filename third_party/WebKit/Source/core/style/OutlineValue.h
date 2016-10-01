@@ -31,41 +31,35 @@
 namespace blink {
 
 class OutlineValue final : public BorderValue {
-    DISALLOW_NEW();
-friend class ComputedStyle;
-public:
-    OutlineValue()
-        : m_offset(0)
-    {
-    }
+  DISALLOW_NEW();
+  friend class ComputedStyle;
 
-    bool operator==(const OutlineValue& o) const
-    {
-        return BorderValue::operator==(o) && m_offset == o.m_offset && m_isAuto == o.m_isAuto;
-    }
+ public:
+  OutlineValue() : m_offset(0) {}
 
-    bool operator!=(const OutlineValue& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const OutlineValue& o) const {
+    return BorderValue::operator==(o) && m_offset == o.m_offset &&
+           m_isAuto == o.m_isAuto;
+  }
 
-    bool visuallyEqual(const OutlineValue& o) const
-    {
-        if (m_style == BorderStyleNone && o.m_style == BorderStyleNone)
-            return true;
-        return *this == o;
-    }
+  bool operator!=(const OutlineValue& o) const { return !(*this == o); }
 
-    int offset() const { return m_offset; }
-    void setOffset(int offset) { m_offset = offset; }
+  bool visuallyEqual(const OutlineValue& o) const {
+    if (m_style == BorderStyleNone && o.m_style == BorderStyleNone)
+      return true;
+    return *this == o;
+  }
 
-    OutlineIsAuto isAuto() const { return static_cast<OutlineIsAuto>(m_isAuto); }
-    void setIsAuto(OutlineIsAuto isAuto) { m_isAuto = isAuto; }
+  int offset() const { return m_offset; }
+  void setOffset(int offset) { m_offset = offset; }
 
-private:
-    int m_offset;
+  OutlineIsAuto isAuto() const { return static_cast<OutlineIsAuto>(m_isAuto); }
+  void setIsAuto(OutlineIsAuto isAuto) { m_isAuto = isAuto; }
+
+ private:
+  int m_offset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OutlineValue_h
+#endif  // OutlineValue_h

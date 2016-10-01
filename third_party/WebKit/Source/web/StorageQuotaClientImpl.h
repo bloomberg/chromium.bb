@@ -36,25 +36,33 @@
 
 namespace blink {
 
-class StorageQuotaClientImpl : public GarbageCollectedFinalized<StorageQuotaClientImpl>, public StorageQuotaClient {
-    USING_GARBAGE_COLLECTED_MIXIN(StorageQuotaClientImpl);
-public:
-    static StorageQuotaClientImpl* create()
-    {
-        return new StorageQuotaClientImpl();
-    }
+class StorageQuotaClientImpl
+    : public GarbageCollectedFinalized<StorageQuotaClientImpl>,
+      public StorageQuotaClient {
+  USING_GARBAGE_COLLECTED_MIXIN(StorageQuotaClientImpl);
 
-    ~StorageQuotaClientImpl() override;
+ public:
+  static StorageQuotaClientImpl* create() {
+    return new StorageQuotaClientImpl();
+  }
 
-    void requestQuota(ExecutionContext*, WebStorageQuotaType, unsigned long long newQuotaInBytes, StorageQuotaCallback*, StorageErrorCallback*) override;
-    ScriptPromise requestPersistentQuota(ScriptState*, unsigned long long newQuotaInBytes) override;
+  ~StorageQuotaClientImpl() override;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { StorageQuotaClient::trace(visitor); }
+  void requestQuota(ExecutionContext*,
+                    WebStorageQuotaType,
+                    unsigned long long newQuotaInBytes,
+                    StorageQuotaCallback*,
+                    StorageErrorCallback*) override;
+  ScriptPromise requestPersistentQuota(
+      ScriptState*,
+      unsigned long long newQuotaInBytes) override;
 
-private:
-    StorageQuotaClientImpl();
+  DEFINE_INLINE_VIRTUAL_TRACE() { StorageQuotaClient::trace(visitor); }
+
+ private:
+  StorageQuotaClientImpl();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageQuotaClientImpl_h
+#endif  // StorageQuotaClientImpl_h

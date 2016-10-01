@@ -51,182 +51,191 @@
 
 namespace blink {
 
-static void databaseClosed(Database* database)
-{
-    if (Platform::current()->databaseObserver()) {
-        Platform::current()->databaseObserver()->databaseClosed(
-            WebSecurityOrigin(database->getSecurityOrigin()),
-            database->stringIdentifier());
-    }
+static void databaseClosed(Database* database) {
+  if (Platform::current()->databaseObserver()) {
+    Platform::current()->databaseObserver()->databaseClosed(
+        WebSecurityOrigin(database->getSecurityOrigin()),
+        database->stringIdentifier());
+  }
 }
 
-DatabaseTracker& DatabaseTracker::tracker()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(DatabaseTracker, tracker, new DatabaseTracker);
-    return tracker;
+DatabaseTracker& DatabaseTracker::tracker() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(DatabaseTracker, tracker,
+                                  new DatabaseTracker);
+  return tracker;
 }
 
-DatabaseTracker::DatabaseTracker()
-{
-    SQLiteFileSystem::registerSQLiteVFS();
+DatabaseTracker::DatabaseTracker() {
+  SQLiteFileSystem::registerSQLiteVFS();
 }
 
-bool DatabaseTracker::canEstablishDatabase(DatabaseContext* databaseContext, const String& name, const String& displayName, unsigned estimatedSize, DatabaseError& error)
-{
-    ExecutionContext* executionContext = databaseContext->getExecutionContext();
-    bool success = DatabaseClient::from(executionContext)->allowDatabase(executionContext, name, displayName, estimatedSize);
-    if (!success)
-        error = DatabaseError::GenericSecurityError;
-    return success;
+bool DatabaseTracker::canEstablishDatabase(DatabaseContext* databaseContext,
+                                           const String& name,
+                                           const String& displayName,
+                                           unsigned estimatedSize,
+                                           DatabaseError& error) {
+  ExecutionContext* executionContext = databaseContext->getExecutionContext();
+  bool success =
+      DatabaseClient::from(executionContext)
+          ->allowDatabase(executionContext, name, displayName, estimatedSize);
+  if (!success)
+    error = DatabaseError::GenericSecurityError;
+  return success;
 }
 
-String DatabaseTracker::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool)
-{
-    return String(Platform::current()->databaseCreateOriginIdentifier(WebSecurityOrigin(origin))) + "/" + name + "#";
+String DatabaseTracker::fullPathForDatabase(SecurityOrigin* origin,
+                                            const String& name,
+                                            bool) {
+  return String(Platform::current()->databaseCreateOriginIdentifier(
+             WebSecurityOrigin(origin))) +
+         "/" + name + "#";
 }
 
-void DatabaseTracker::addOpenDatabase(Database* database)
-{
+void DatabaseTracker::addOpenDatabase(Database* database) {
+  MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
+  if (!m_openDatabaseMap)
+    m_openDatabaseMap = wrapUnique(new DatabaseOriginMap);
+
+  String originString = database->getSecurityOrigin()->toRawString();
+  DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
+  if (!nameMap) {
+    nameMap = new DatabaseNameMap();
+    m_openDatabaseMap->set(originString, nameMap);
+  }
+
+  String name(database->stringIdentifier());
+  DatabaseSet* databaseSet = nameMap->get(name);
+  if (!databaseSet) {
+    databaseSet = new DatabaseSet();
+    nameMap->set(name, databaseSet);
+  }
+
+  databaseSet->add(database);
+}
+
+void DatabaseTracker::removeOpenDatabase(Database* database) {
+  {
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-    if (!m_openDatabaseMap)
-        m_openDatabaseMap = wrapUnique(new DatabaseOriginMap);
-
     String originString = database->getSecurityOrigin()->toRawString();
+    ASSERT(m_openDatabaseMap);
     DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
-    if (!nameMap) {
-        nameMap = new DatabaseNameMap();
-        m_openDatabaseMap->set(originString, nameMap);
-    }
+    if (!nameMap)
+      return;
 
     String name(database->stringIdentifier());
     DatabaseSet* databaseSet = nameMap->get(name);
-    if (!databaseSet) {
-        databaseSet = new DatabaseSet();
-        nameMap->set(name, databaseSet);
+    if (!databaseSet)
+      return;
+
+    DatabaseSet::iterator found = databaseSet->find(database);
+    if (found == databaseSet->end())
+      return;
+
+    databaseSet->remove(found);
+    if (databaseSet->isEmpty()) {
+      nameMap->remove(name);
+      delete databaseSet;
+      if (nameMap->isEmpty()) {
+        m_openDatabaseMap->remove(originString);
+        delete nameMap;
+      }
     }
-
-    databaseSet->add(database);
+  }
+  databaseClosed(database);
 }
 
-void DatabaseTracker::removeOpenDatabase(Database* database)
-{
-    {
-        MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-        String originString = database->getSecurityOrigin()->toRawString();
-        ASSERT(m_openDatabaseMap);
-        DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
-        if (!nameMap)
-            return;
+void DatabaseTracker::prepareToOpenDatabase(Database* database) {
+  ASSERT(
+      database->getDatabaseContext()->getExecutionContext()->isContextThread());
+  if (Platform::current()->databaseObserver()) {
+    Platform::current()->databaseObserver()->databaseOpened(
+        WebSecurityOrigin(database->getSecurityOrigin()),
+        database->stringIdentifier(), database->displayName(),
+        database->estimatedSize());
+  }
+}
 
-        String name(database->stringIdentifier());
-        DatabaseSet* databaseSet = nameMap->get(name);
-        if (!databaseSet)
-            return;
+void DatabaseTracker::failedToOpenDatabase(Database* database) {
+  databaseClosed(database);
+}
 
-        DatabaseSet::iterator found = databaseSet->find(database);
-        if (found == databaseSet->end())
-            return;
+unsigned long long DatabaseTracker::getMaxSizeForDatabase(
+    const Database* database) {
+  unsigned long long spaceAvailable = 0;
+  unsigned long long databaseSize = 0;
+  QuotaTracker::instance().getDatabaseSizeAndSpaceAvailableToOrigin(
+      database->getSecurityOrigin(), database->stringIdentifier(),
+      &databaseSize, &spaceAvailable);
+  return databaseSize + spaceAvailable;
+}
 
-        databaseSet->remove(found);
-        if (databaseSet->isEmpty()) {
-            nameMap->remove(name);
-            delete databaseSet;
-            if (nameMap->isEmpty()) {
-                m_openDatabaseMap->remove(originString);
-                delete nameMap;
-            }
-        }
+void DatabaseTracker::closeDatabasesImmediately(SecurityOrigin* origin,
+                                                const String& name) {
+  String originString = origin->toRawString();
+  MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
+  if (!m_openDatabaseMap)
+    return;
+
+  DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
+  if (!nameMap)
+    return;
+
+  DatabaseSet* databaseSet = nameMap->get(name);
+  if (!databaseSet)
+    return;
+
+  // We have to call closeImmediately() on the context thread.
+  for (DatabaseSet::iterator it = databaseSet->begin();
+       it != databaseSet->end(); ++it)
+    (*it)->getDatabaseContext()->getExecutionContext()->postTask(
+        BLINK_FROM_HERE,
+        createCrossThreadTask(&DatabaseTracker::closeOneDatabaseImmediately,
+                              crossThreadUnretained(this), originString, name,
+                              *it));
+}
+
+void DatabaseTracker::forEachOpenDatabaseInPage(
+    Page* page,
+    std::unique_ptr<DatabaseCallback> callback) {
+  MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
+  if (!m_openDatabaseMap)
+    return;
+  for (auto& originMap : *m_openDatabaseMap) {
+    for (auto& nameDatabaseSet : *originMap.value) {
+      for (Database* database : *nameDatabaseSet.value) {
+        ExecutionContext* context = database->getExecutionContext();
+        ASSERT(context->isDocument());
+        if (toDocument(context)->frame()->page() == page)
+          (*callback)(database);
+      }
     }
-    databaseClosed(database);
+  }
 }
 
-void DatabaseTracker::prepareToOpenDatabase(Database* database)
-{
-    ASSERT(database->getDatabaseContext()->getExecutionContext()->isContextThread());
-    if (Platform::current()->databaseObserver()) {
-        Platform::current()->databaseObserver()->databaseOpened(
-            WebSecurityOrigin(database->getSecurityOrigin()),
-            database->stringIdentifier(),
-            database->displayName(),
-            database->estimatedSize());
-    }
-}
-
-void DatabaseTracker::failedToOpenDatabase(Database* database)
-{
-    databaseClosed(database);
-}
-
-unsigned long long DatabaseTracker::getMaxSizeForDatabase(const Database* database)
-{
-    unsigned long long spaceAvailable = 0;
-    unsigned long long databaseSize = 0;
-    QuotaTracker::instance().getDatabaseSizeAndSpaceAvailableToOrigin(
-        database->getSecurityOrigin(),
-        database->stringIdentifier(), &databaseSize, &spaceAvailable);
-    return databaseSize + spaceAvailable;
-}
-
-void DatabaseTracker::closeDatabasesImmediately(SecurityOrigin* origin, const String& name)
-{
-    String originString = origin->toRawString();
+void DatabaseTracker::closeOneDatabaseImmediately(const String& originString,
+                                                  const String& name,
+                                                  Database* database) {
+  // First we have to confirm the 'database' is still in our collection.
+  {
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
     if (!m_openDatabaseMap)
-        return;
+      return;
 
     DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
     if (!nameMap)
-        return;
+      return;
 
     DatabaseSet* databaseSet = nameMap->get(name);
     if (!databaseSet)
-        return;
+      return;
 
-    // We have to call closeImmediately() on the context thread.
-    for (DatabaseSet::iterator it = databaseSet->begin(); it != databaseSet->end(); ++it)
-        (*it)->getDatabaseContext()->getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&DatabaseTracker::closeOneDatabaseImmediately, crossThreadUnretained(this), originString, name, *it));
+    DatabaseSet::iterator found = databaseSet->find(database);
+    if (found == databaseSet->end())
+      return;
+  }
+
+  // And we have to call closeImmediately() without our collection lock being held.
+  database->closeImmediately();
 }
 
-void DatabaseTracker::forEachOpenDatabaseInPage(Page* page, std::unique_ptr<DatabaseCallback> callback)
-{
-    MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-    if (!m_openDatabaseMap)
-        return;
-    for (auto& originMap : *m_openDatabaseMap) {
-        for (auto& nameDatabaseSet : *originMap.value) {
-            for (Database* database : *nameDatabaseSet.value) {
-                ExecutionContext* context = database->getExecutionContext();
-                ASSERT(context->isDocument());
-                if (toDocument(context)->frame()->page() == page)
-                    (*callback)(database);
-            }
-        }
-    }
-}
-
-void DatabaseTracker::closeOneDatabaseImmediately(const String& originString, const String& name, Database* database)
-{
-    // First we have to confirm the 'database' is still in our collection.
-    {
-        MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-        if (!m_openDatabaseMap)
-            return;
-
-        DatabaseNameMap* nameMap = m_openDatabaseMap->get(originString);
-        if (!nameMap)
-            return;
-
-        DatabaseSet* databaseSet = nameMap->get(name);
-        if (!databaseSet)
-            return;
-
-        DatabaseSet::iterator found = databaseSet->find(database);
-        if (found == databaseSet->end())
-            return;
-    }
-
-    // And we have to call closeImmediately() without our collection lock being held.
-    database->closeImmediately();
-}
-
-} // namespace blink
+}  // namespace blink

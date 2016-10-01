@@ -24,77 +24,97 @@ class InterpolationEnvironment;
 // - Convert the target Element's property value to an InterpolationValue: maybeConvertUnderlyingValue()
 // - Apply an InterpolationValue to a target Element's property: apply().
 class InterpolationType {
-    USING_FAST_MALLOC(InterpolationType);
-    WTF_MAKE_NONCOPYABLE(InterpolationType);
-public:
-    virtual ~InterpolationType() { NOTREACHED(); }
+  USING_FAST_MALLOC(InterpolationType);
+  WTF_MAKE_NONCOPYABLE(InterpolationType);
 
-    PropertyHandle getProperty() const { return m_property; }
+ public:
+  virtual ~InterpolationType() { NOTREACHED(); }
 
-    // ConversionCheckers are returned from calls to maybeConvertPairwise() and maybeConvertSingle() to enable the caller to check
-    // whether the result is still valid given changes in the InterpolationEnvironment and underlying InterpolationValue.
-    class ConversionChecker {
-        USING_FAST_MALLOC(ConversionChecker);
-        WTF_MAKE_NONCOPYABLE(ConversionChecker);
-    public:
-        virtual ~ConversionChecker() { }
-        void setType(const InterpolationType& type) { m_type = &type; }
-        const InterpolationType& type() const { return *m_type; }
-        virtual bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const = 0;
-    protected:
-        ConversionChecker()
-            : m_type(nullptr)
-        { }
-        const InterpolationType* m_type;
-    };
-    using ConversionCheckers = Vector<std::unique_ptr<ConversionChecker>>;
+  PropertyHandle getProperty() const { return m_property; }
 
-    virtual PairwiseInterpolationValue maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment& environment, const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
-    {
-        InterpolationValue start = maybeConvertSingle(startKeyframe, environment, underlying, conversionCheckers);
-        if (!start)
-            return nullptr;
-        InterpolationValue end = maybeConvertSingle(endKeyframe, environment, underlying, conversionCheckers);
-        if (!end)
-            return nullptr;
-        return maybeMergeSingles(std::move(start), std::move(end));
-    }
+  // ConversionCheckers are returned from calls to maybeConvertPairwise() and maybeConvertSingle() to enable the caller to check
+  // whether the result is still valid given changes in the InterpolationEnvironment and underlying InterpolationValue.
+  class ConversionChecker {
+    USING_FAST_MALLOC(ConversionChecker);
+    WTF_MAKE_NONCOPYABLE(ConversionChecker);
 
-    virtual InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const = 0;
+   public:
+    virtual ~ConversionChecker() {}
+    void setType(const InterpolationType& type) { m_type = &type; }
+    const InterpolationType& type() const { return *m_type; }
+    virtual bool isValid(const InterpolationEnvironment&,
+                         const InterpolationValue& underlying) const = 0;
 
-    virtual InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const = 0;
+   protected:
+    ConversionChecker() : m_type(nullptr) {}
+    const InterpolationType* m_type;
+  };
+  using ConversionCheckers = Vector<std::unique_ptr<ConversionChecker>>;
 
-    virtual void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
-    {
-        DCHECK(!underlyingValueOwner.value().nonInterpolableValue);
-        DCHECK(!value.nonInterpolableValue);
-        underlyingValueOwner.mutableValue().interpolableValue->scaleAndAdd(underlyingFraction, *value.interpolableValue);
-    }
+  virtual PairwiseInterpolationValue maybeConvertPairwise(
+      const PropertySpecificKeyframe& startKeyframe,
+      const PropertySpecificKeyframe& endKeyframe,
+      const InterpolationEnvironment& environment,
+      const InterpolationValue& underlying,
+      ConversionCheckers& conversionCheckers) const {
+    InterpolationValue start = maybeConvertSingle(
+        startKeyframe, environment, underlying, conversionCheckers);
+    if (!start)
+      return nullptr;
+    InterpolationValue end = maybeConvertSingle(endKeyframe, environment,
+                                                underlying, conversionCheckers);
+    if (!end)
+      return nullptr;
+    return maybeMergeSingles(std::move(start), std::move(end));
+  }
 
-    virtual void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const = 0;
+  virtual InterpolationValue maybeConvertSingle(
+      const PropertySpecificKeyframe&,
+      const InterpolationEnvironment&,
+      const InterpolationValue& underlying,
+      ConversionCheckers&) const = 0;
 
-    // Implement reference equality checking via pointer equality checking as these are singletons.
-    bool operator==(const InterpolationType& other) const { return this == &other; }
-    bool operator!=(const InterpolationType& other) const { return this != &other; }
+  virtual InterpolationValue maybeConvertUnderlyingValue(
+      const InterpolationEnvironment&) const = 0;
 
-protected:
-    InterpolationType(PropertyHandle property)
-        : m_property(property)
-    { }
+  virtual void composite(UnderlyingValueOwner& underlyingValueOwner,
+                         double underlyingFraction,
+                         const InterpolationValue& value,
+                         double interpolationFraction) const {
+    DCHECK(!underlyingValueOwner.value().nonInterpolableValue);
+    DCHECK(!value.nonInterpolableValue);
+    underlyingValueOwner.mutableValue().interpolableValue->scaleAndAdd(
+        underlyingFraction, *value.interpolableValue);
+  }
 
-    virtual PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
-    {
-        DCHECK(!start.nonInterpolableValue);
-        DCHECK(!end.nonInterpolableValue);
-        return PairwiseInterpolationValue(
-            std::move(start.interpolableValue),
-            std::move(end.interpolableValue),
-            nullptr);
-    }
+  virtual void apply(const InterpolableValue&,
+                     const NonInterpolableValue*,
+                     InterpolationEnvironment&) const = 0;
 
-    const PropertyHandle m_property;
+  // Implement reference equality checking via pointer equality checking as these are singletons.
+  bool operator==(const InterpolationType& other) const {
+    return this == &other;
+  }
+  bool operator!=(const InterpolationType& other) const {
+    return this != &other;
+  }
+
+ protected:
+  InterpolationType(PropertyHandle property) : m_property(property) {}
+
+  virtual PairwiseInterpolationValue maybeMergeSingles(
+      InterpolationValue&& start,
+      InterpolationValue&& end) const {
+    DCHECK(!start.nonInterpolableValue);
+    DCHECK(!end.nonInterpolableValue);
+    return PairwiseInterpolationValue(std::move(start.interpolableValue),
+                                      std::move(end.interpolableValue),
+                                      nullptr);
+  }
+
+  const PropertyHandle m_property;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InterpolationType_h
+#endif  // InterpolationType_h

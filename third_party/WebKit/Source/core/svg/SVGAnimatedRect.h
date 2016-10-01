@@ -37,26 +37,28 @@
 
 namespace blink {
 
-class SVGAnimatedRect : public SVGAnimatedProperty<SVGRect>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGAnimatedRect* create(SVGElement* contextElement, const QualifiedName& attributeName)
-    {
-        return new SVGAnimatedRect(contextElement, attributeName);
-    }
+class SVGAnimatedRect : public SVGAnimatedProperty<SVGRect>,
+                        public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
-    {
-        visitor->traceWrappers(contextElement());
-    }
+ public:
+  static SVGAnimatedRect* create(SVGElement* contextElement,
+                                 const QualifiedName& attributeName) {
+    return new SVGAnimatedRect(contextElement, attributeName);
+  }
 
-protected:
-    SVGAnimatedRect(SVGElement* contextElement, const QualifiedName& attributeName)
-        : SVGAnimatedProperty<SVGRect>(contextElement, attributeName, SVGRect::createInvalid())
-    {
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(contextElement());
+  }
+
+ protected:
+  SVGAnimatedRect(SVGElement* contextElement,
+                  const QualifiedName& attributeName)
+      : SVGAnimatedProperty<SVGRect>(contextElement,
+                                     attributeName,
+                                     SVGRect::createInvalid()) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedRect_h
+#endif  // SVGAnimatedRect_h

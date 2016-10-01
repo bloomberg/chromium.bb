@@ -34,55 +34,61 @@
 
 namespace blink {
 
-MutationObserverInterestGroup* MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
-{
-    DCHECK((type == MutationObserver::Attributes && attributeName) || !attributeName);
-    HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions> observers;
-    target.getRegisteredMutationObserversOfType(observers, type, attributeName);
-    if (observers.isEmpty())
-        return nullptr;
+MutationObserverInterestGroup* MutationObserverInterestGroup::createIfNeeded(
+    Node& target,
+    MutationObserver::MutationType type,
+    MutationRecordDeliveryOptions oldValueFlag,
+    const QualifiedName* attributeName) {
+  DCHECK((type == MutationObserver::Attributes && attributeName) ||
+         !attributeName);
+  HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>
+      observers;
+  target.getRegisteredMutationObserversOfType(observers, type, attributeName);
+  if (observers.isEmpty())
+    return nullptr;
 
-    return new MutationObserverInterestGroup(observers, oldValueFlag);
+  return new MutationObserverInterestGroup(observers, oldValueFlag);
 }
 
-MutationObserverInterestGroup::MutationObserverInterestGroup(HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag)
-    : m_oldValueFlag(oldValueFlag)
-{
-    DCHECK(!observers.isEmpty());
-    m_observers.swap(observers);
+MutationObserverInterestGroup::MutationObserverInterestGroup(
+    HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&
+        observers,
+    MutationRecordDeliveryOptions oldValueFlag)
+    : m_oldValueFlag(oldValueFlag) {
+  DCHECK(!observers.isEmpty());
+  m_observers.swap(observers);
 }
 
-bool MutationObserverInterestGroup::isOldValueRequested()
-{
-    for (auto& observer : m_observers) {
-        if (hasOldValue(observer.value))
-            return true;
+bool MutationObserverInterestGroup::isOldValueRequested() {
+  for (auto& observer : m_observers) {
+    if (hasOldValue(observer.value))
+      return true;
+  }
+  return false;
+}
+
+void MutationObserverInterestGroup::enqueueMutationRecord(
+    MutationRecord* mutation) {
+  MutationRecord* mutationWithNullOldValue = nullptr;
+  for (auto& iter : m_observers) {
+    MutationObserver* observer = iter.key.get();
+    if (hasOldValue(iter.value)) {
+      observer->enqueueMutationRecord(mutation);
+      continue;
     }
-    return false;
-}
-
-void MutationObserverInterestGroup::enqueueMutationRecord(MutationRecord* mutation)
-{
-    MutationRecord* mutationWithNullOldValue = nullptr;
-    for (auto& iter : m_observers) {
-        MutationObserver* observer = iter.key.get();
-        if (hasOldValue(iter.value)) {
-            observer->enqueueMutationRecord(mutation);
-            continue;
-        }
-        if (!mutationWithNullOldValue) {
-            if (mutation->oldValue().isNull())
-                mutationWithNullOldValue = mutation;
-            else
-                mutationWithNullOldValue = MutationRecord::createWithNullOldValue(mutation);
-        }
-        observer->enqueueMutationRecord(mutationWithNullOldValue);
+    if (!mutationWithNullOldValue) {
+      if (mutation->oldValue().isNull())
+        mutationWithNullOldValue = mutation;
+      else
+        mutationWithNullOldValue =
+            MutationRecord::createWithNullOldValue(mutation);
     }
+    observer->enqueueMutationRecord(mutationWithNullOldValue);
+  }
 }
 
-DEFINE_TRACE(MutationObserverInterestGroup)
-{
-    visitor->trace(m_observers);
+DEFINE_TRACE(MutationObserverInterestGroup) {
+  visitor->trace(m_observers);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -28,52 +28,45 @@
 namespace blink {
 
 DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
+    : DOMWindowProperty(frame) {}
+
+DEFINE_TRACE(DOMMimeTypeArray) {
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(DOMMimeTypeArray)
-{
-    DOMWindowProperty::trace(visitor);
+unsigned DOMMimeTypeArray::length() const {
+  PluginData* data = getPluginData();
+  if (!data)
+    return 0;
+  return data->mimes().size();
 }
 
-unsigned DOMMimeTypeArray::length() const
-{
-    PluginData* data = getPluginData();
-    if (!data)
-        return 0;
-    return data->mimes().size();
-}
-
-DOMMimeType* DOMMimeTypeArray::item(unsigned index)
-{
-    PluginData* data = getPluginData();
-    if (!data)
-        return nullptr;
-    const Vector<MimeClassInfo>& mimes = data->mimes();
-    if (index >= mimes.size())
-        return nullptr;
-    return DOMMimeType::create(data, frame(), index);
-}
-
-DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
-{
-    PluginData* data = getPluginData();
-    if (!data)
-        return nullptr;
-    const Vector<MimeClassInfo>& mimes = data->mimes();
-    for (unsigned i = 0; i < mimes.size(); ++i) {
-        if (mimes[i].type == propertyName)
-            return DOMMimeType::create(data, frame(), i);
-    }
+DOMMimeType* DOMMimeTypeArray::item(unsigned index) {
+  PluginData* data = getPluginData();
+  if (!data)
     return nullptr;
+  const Vector<MimeClassInfo>& mimes = data->mimes();
+  if (index >= mimes.size())
+    return nullptr;
+  return DOMMimeType::create(data, frame(), index);
 }
 
-PluginData* DOMMimeTypeArray::getPluginData() const
-{
-    if (!frame())
-        return nullptr;
-    return frame()->pluginData();
+DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& propertyName) {
+  PluginData* data = getPluginData();
+  if (!data)
+    return nullptr;
+  const Vector<MimeClassInfo>& mimes = data->mimes();
+  for (unsigned i = 0; i < mimes.size(); ++i) {
+    if (mimes[i].type == propertyName)
+      return DOMMimeType::create(data, frame(), i);
+  }
+  return nullptr;
 }
 
-} // namespace blink
+PluginData* DOMMimeTypeArray::getPluginData() const {
+  if (!frame())
+    return nullptr;
+  return frame()->pluginData();
+}
+
+}  // namespace blink

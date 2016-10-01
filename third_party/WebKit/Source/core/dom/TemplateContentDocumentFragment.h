@@ -32,32 +32,28 @@
 namespace blink {
 
 class TemplateContentDocumentFragment final : public DocumentFragment {
-public:
-    static TemplateContentDocumentFragment* create(Document& document, Element* host)
-    {
-        return new TemplateContentDocumentFragment(document, host);
-    }
+ public:
+  static TemplateContentDocumentFragment* create(Document& document,
+                                                 Element* host) {
+    return new TemplateContentDocumentFragment(document, host);
+  }
 
-    Element* host() const { return m_host; }
+  Element* host() const { return m_host; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_host);
-        DocumentFragment::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_host);
+    DocumentFragment::trace(visitor);
+  }
 
-private:
-    TemplateContentDocumentFragment(Document& document, Element* host)
-        : DocumentFragment(&document, CreateDocumentFragment)
-        , m_host(host)
-    {
-    }
+ private:
+  TemplateContentDocumentFragment(Document& document, Element* host)
+      : DocumentFragment(&document, CreateDocumentFragment), m_host(host) {}
 
-    bool isTemplateContent() const override { return true; }
+  bool isTemplateContent() const override { return true; }
 
-    Member<Element> m_host;
+  Member<Element> m_host;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TemplateContentDocumentFragment_h
+#endif  // TemplateContentDocumentFragment_h

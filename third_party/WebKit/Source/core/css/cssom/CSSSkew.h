@@ -11,35 +11,34 @@
 namespace blink {
 
 class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
-    WTF_MAKE_NONCOPYABLE(CSSSkew);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSSkew* create(double ax, double ay)
-    {
-        return new CSSSkew(ax, ay);
-    }
+  WTF_MAKE_NONCOPYABLE(CSSSkew);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CSSSkew* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
+ public:
+  static CSSSkew* create(double ax, double ay) { return new CSSSkew(ax, ay); }
 
-    double ax() const { return m_ax; }
-    double ay() const { return m_ay; }
+  static CSSSkew* fromCSSValue(const CSSFunctionValue& value) {
+    return nullptr;
+  }
 
-    TransformComponentType type() const override { return SkewType; }
+  double ax() const { return m_ax; }
+  double ay() const { return m_ay; }
 
-    CSSMatrixTransformComponent* asMatrix() const override
-    {
-        return CSSMatrixTransformComponent::skew(m_ax, m_ay);
-    }
+  TransformComponentType type() const override { return SkewType; }
 
-    CSSFunctionValue* toCSSValue() const override;
+  CSSMatrixTransformComponent* asMatrix() const override {
+    return CSSMatrixTransformComponent::skew(m_ax, m_ay);
+  }
 
-private:
-    CSSSkew(double ax, double ay) : CSSTransformComponent(), m_ax(ax), m_ay(ay) { }
+  CSSFunctionValue* toCSSValue() const override;
 
-    double m_ax;
-    double m_ay;
+ private:
+  CSSSkew(double ax, double ay) : CSSTransformComponent(), m_ax(ax), m_ay(ay) {}
+
+  double m_ax;
+  double m_ay;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -50,51 +50,62 @@ class BlobCallback;
 class FileEntry;
 class FileWriterCallback;
 
-class MODULES_EXPORT DOMFileSystem final : public DOMFileSystemBase, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
-public:
-    static DOMFileSystem* create(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
+class MODULES_EXPORT DOMFileSystem final : public DOMFileSystemBase,
+                                           public ScriptWrappable,
+                                           public ActiveScriptWrappable,
+                                           public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 
-    // Creates a new isolated file system for the given filesystemId.
-    static DOMFileSystem* createIsolatedFileSystem(ExecutionContext*, const String& filesystemId);
+ public:
+  static DOMFileSystem* create(ExecutionContext*,
+                               const String& name,
+                               FileSystemType,
+                               const KURL& rootURL);
 
-    DirectoryEntry* root() const;
+  // Creates a new isolated file system for the given filesystemId.
+  static DOMFileSystem* createIsolatedFileSystem(ExecutionContext*,
+                                                 const String& filesystemId);
 
-    // DOMFileSystemBase overrides.
-    void addPendingCallbacks() override;
-    void removePendingCallbacks() override;
-    void reportError(ErrorCallbackBase*, FileError::ErrorCode) override;
+  DirectoryEntry* root() const;
 
-    static void reportError(ExecutionContext*, ErrorCallbackBase*, FileError::ErrorCode);
+  // DOMFileSystemBase overrides.
+  void addPendingCallbacks() override;
+  void removePendingCallbacks() override;
+  void reportError(ErrorCallbackBase*, FileError::ErrorCode) override;
 
-    // ScriptWrappable overrides.
-    bool hasPendingActivity() const final;
+  static void reportError(ExecutionContext*,
+                          ErrorCallbackBase*,
+                          FileError::ErrorCode);
 
-    void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
-    void createFile(const FileEntry*, BlobCallback*, ErrorCallbackBase*);
+  // ScriptWrappable overrides.
+  bool hasPendingActivity() const final;
 
-    // Schedule a callback. This should not cross threads (should be called on the same context thread).
-    static void scheduleCallback(ExecutionContext* executionContext, std::unique_ptr<ExecutionContextTask> task)
-    {
-        DCHECK(executionContext->isContextThread());
-        executionContext->postTask(BLINK_FROM_HERE, std::move(task), taskNameForInstrumentation());
-    }
+  void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
+  void createFile(const FileEntry*, BlobCallback*, ErrorCallbackBase*);
 
-    DECLARE_VIRTUAL_TRACE();
+  // Schedule a callback. This should not cross threads (should be called on the same context thread).
+  static void scheduleCallback(ExecutionContext* executionContext,
+                               std::unique_ptr<ExecutionContextTask> task) {
+    DCHECK(executionContext->isContextThread());
+    executionContext->postTask(BLINK_FROM_HERE, std::move(task),
+                               taskNameForInstrumentation());
+  }
 
-private:
-    DOMFileSystem(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
+  DECLARE_VIRTUAL_TRACE();
 
-    static String taskNameForInstrumentation()
-    {
-        return "FileSystem";
-    }
+ private:
+  DOMFileSystem(ExecutionContext*,
+                const String& name,
+                FileSystemType,
+                const KURL& rootURL);
 
-    int m_numberOfPendingCallbacks;
-    Member<DirectoryEntry> m_rootEntry;
+  static String taskNameForInstrumentation() { return "FileSystem"; }
+
+  int m_numberOfPendingCallbacks;
+  Member<DirectoryEntry> m_rootEntry;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMFileSystem_h
+#endif  // DOMFileSystem_h

@@ -22,39 +22,50 @@ namespace blink {
 class Cache;
 class WebServiceWorkerCacheStorage;
 
-class CacheStorage final : public GarbageCollectedFinalized<CacheStorage>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(CacheStorage);
-public:
-    static CacheStorage* create(GlobalFetch::ScopedFetcher*, WebServiceWorkerCacheStorage*);
-    ~CacheStorage();
-    void dispose();
+class CacheStorage final : public GarbageCollectedFinalized<CacheStorage>,
+                           public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+  WTF_MAKE_NONCOPYABLE(CacheStorage);
 
-    ScriptPromise open(ScriptState*, const String& cacheName, ExceptionState&);
-    ScriptPromise has(ScriptState*, const String& cacheName, ExceptionState&);
-    ScriptPromise deleteFunction(ScriptState*, const String& cacheName, ExceptionState&);
-    ScriptPromise keys(ScriptState*, ExceptionState&);
-    ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
+ public:
+  static CacheStorage* create(GlobalFetch::ScopedFetcher*,
+                              WebServiceWorkerCacheStorage*);
+  ~CacheStorage();
+  void dispose();
 
-    DECLARE_TRACE();
+  ScriptPromise open(ScriptState*, const String& cacheName, ExceptionState&);
+  ScriptPromise has(ScriptState*, const String& cacheName, ExceptionState&);
+  ScriptPromise deleteFunction(ScriptState*,
+                               const String& cacheName,
+                               ExceptionState&);
+  ScriptPromise keys(ScriptState*, ExceptionState&);
+  ScriptPromise match(ScriptState*,
+                      const RequestInfo&,
+                      const CacheQueryOptions&,
+                      ExceptionState&);
 
-private:
-    class Callbacks;
-    class WithCacheCallbacks;
-    class DeleteCallbacks;
-    class KeysCallbacks;
-    class MatchCallbacks;
+  DECLARE_TRACE();
 
-    friend class WithCacheCallbacks;
-    friend class DeleteCallbacks;
+ private:
+  class Callbacks;
+  class WithCacheCallbacks;
+  class DeleteCallbacks;
+  class KeysCallbacks;
+  class MatchCallbacks;
 
-    CacheStorage(GlobalFetch::ScopedFetcher*, std::unique_ptr<WebServiceWorkerCacheStorage>);
-    ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
+  friend class WithCacheCallbacks;
+  friend class DeleteCallbacks;
 
-    Member<GlobalFetch::ScopedFetcher> m_scopedFetcher;
-    std::unique_ptr<WebServiceWorkerCacheStorage> m_webCacheStorage;
+  CacheStorage(GlobalFetch::ScopedFetcher*,
+               std::unique_ptr<WebServiceWorkerCacheStorage>);
+  ScriptPromise matchImpl(ScriptState*,
+                          const Request*,
+                          const CacheQueryOptions&);
+
+  Member<GlobalFetch::ScopedFetcher> m_scopedFetcher;
+  std::unique_ptr<WebServiceWorkerCacheStorage> m_webCacheStorage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CacheStorage_h
+#endif  // CacheStorage_h

@@ -14,36 +14,33 @@ namespace blink {
 
 // FIXME: Use IDL dictionary instead of this class.
 class ResponseInit {
-    STACK_ALLOCATED();
-public:
-    ResponseInit()
-        : status(200)
-        , statusText("OK")
-    {
-    }
-    explicit ResponseInit(const Dictionary& options, ExceptionState& exceptionState)
-        : status(200)
-        , statusText("OK")
-    {
-        DictionaryHelper::get(options, "status", status);
-        // FIXME: Spec uses ByteString for statusText. http://crbug.com/347426
-        DictionaryHelper::get(options, "statusText", statusText);
-        DictionaryHelper::get(options, "headers", headers);
-        if (!headers) {
-            Vector<Vector<String>> headersVector;
-            if (DictionaryHelper::get(options, "headers", headersVector, exceptionState))
-                headers = Headers::create(headersVector, exceptionState);
-            else
-                DictionaryHelper::get(options, "headers", headersDictionary);
-        }
-    }
+  STACK_ALLOCATED();
 
-    unsigned short status;
-    String statusText;
-    Member<Headers> headers;
-    Dictionary headersDictionary;
+ public:
+  ResponseInit() : status(200), statusText("OK") {}
+  explicit ResponseInit(const Dictionary& options,
+                        ExceptionState& exceptionState)
+      : status(200), statusText("OK") {
+    DictionaryHelper::get(options, "status", status);
+    // FIXME: Spec uses ByteString for statusText. http://crbug.com/347426
+    DictionaryHelper::get(options, "statusText", statusText);
+    DictionaryHelper::get(options, "headers", headers);
+    if (!headers) {
+      Vector<Vector<String>> headersVector;
+      if (DictionaryHelper::get(options, "headers", headersVector,
+                                exceptionState))
+        headers = Headers::create(headersVector, exceptionState);
+      else
+        DictionaryHelper::get(options, "headers", headersDictionary);
+    }
+  }
+
+  unsigned short status;
+  String statusText;
+  Member<Headers> headers;
+  Dictionary headersDictionary;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ResponseInit_h
+#endif  // ResponseInit_h

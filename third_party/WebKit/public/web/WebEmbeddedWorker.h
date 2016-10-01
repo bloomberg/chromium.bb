@@ -44,33 +44,38 @@ struct WebEmbeddedWorkerStartData;
 // An interface to start and terminate an embedded worker.
 // All methods of this class must be called on the main thread.
 class WebEmbeddedWorker {
-public:
-    // Invoked on the main thread to instantiate a WebEmbeddedWorker.
-    // The given WebWorkerContextClient and WebWorkerContentSettingsClientProxy
-    // are going to be passed on to the worker thread and is held by a newly
-    // created WorkerGlobalScope.
-    BLINK_EXPORT static WebEmbeddedWorker* create(
-        WebServiceWorkerContextClient*,
-        WebWorkerContentSettingsClientProxy*);
+ public:
+  // Invoked on the main thread to instantiate a WebEmbeddedWorker.
+  // The given WebWorkerContextClient and WebWorkerContentSettingsClientProxy
+  // are going to be passed on to the worker thread and is held by a newly
+  // created WorkerGlobalScope.
+  BLINK_EXPORT static WebEmbeddedWorker* create(
+      WebServiceWorkerContextClient*,
+      WebWorkerContentSettingsClientProxy*);
 
-    virtual ~WebEmbeddedWorker() { }
+  virtual ~WebEmbeddedWorker() {}
 
-    // Starts and terminates WorkerThread and WorkerGlobalScope.
-    virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) = 0;
-    virtual void terminateWorkerContext() = 0;
+  // Starts and terminates WorkerThread and WorkerGlobalScope.
+  virtual void startWorkerContext(const WebEmbeddedWorkerStartData&) = 0;
+  virtual void terminateWorkerContext() = 0;
 
-    // Resumes starting a worker startup that was paused via
-    // WebEmbeddedWorkerStartData.pauseAfterDownloadMode.
-    virtual void resumeAfterDownload() = 0;
+  // Resumes starting a worker startup that was paused via
+  // WebEmbeddedWorkerStartData.pauseAfterDownloadMode.
+  virtual void resumeAfterDownload() = 0;
 
-    // Inspector related methods.
-    virtual void attachDevTools(const WebString& hostId, int sessionId) = 0;
-    virtual void reattachDevTools(const WebString& hostId, int sessionId, const WebString& savedState) = 0;
-    virtual void detachDevTools() = 0;
-    virtual void dispatchDevToolsMessage(int sessionId, int callId, const WebString& method, const WebString& message) = 0;
-    virtual void addMessageToConsole(const WebConsoleMessage&) = 0;
+  // Inspector related methods.
+  virtual void attachDevTools(const WebString& hostId, int sessionId) = 0;
+  virtual void reattachDevTools(const WebString& hostId,
+                                int sessionId,
+                                const WebString& savedState) = 0;
+  virtual void detachDevTools() = 0;
+  virtual void dispatchDevToolsMessage(int sessionId,
+                                       int callId,
+                                       const WebString& method,
+                                       const WebString& message) = 0;
+  virtual void addMessageToConsole(const WebConsoleMessage&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebEmbeddedWorker_h
+#endif  // WebEmbeddedWorker_h

@@ -41,45 +41,38 @@ namespace blink {
 // This class corresponds to a dimension as described in HTML5 by the
 // "rules for parsing a list of dimensions" (section 2.4.4.6).
 class HTMLDimension {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    enum HTMLDimensionType {
-        Relative, Percentage, Absolute
-    };
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    HTMLDimension()
-        : m_type(Absolute)
-        , m_value(0)
-    {
-    }
+ public:
+  enum HTMLDimensionType { Relative, Percentage, Absolute };
 
-    HTMLDimension(double value, HTMLDimensionType type)
-        : m_type(type)
-        , m_value(value)
-    {
-    }
+  HTMLDimension() : m_type(Absolute), m_value(0) {}
 
-    HTMLDimensionType type() const { return m_type; }
+  HTMLDimension(double value, HTMLDimensionType type)
+      : m_type(type), m_value(value) {}
 
-    bool isRelative() const { return m_type == Relative; }
-    bool isPercentage() const { return m_type == Percentage; }
-    bool isAbsolute() const { return m_type == Absolute; }
+  HTMLDimensionType type() const { return m_type; }
 
-    double value() const { return m_value; }
+  bool isRelative() const { return m_type == Relative; }
+  bool isPercentage() const { return m_type == Percentage; }
+  bool isAbsolute() const { return m_type == Absolute; }
 
-    bool operator==(const HTMLDimension& other) const
-    {
-        return m_type == other.m_type && m_value == other.m_value;
-    }
-    bool operator!=(const HTMLDimension& other) const { return !(*this == other); }
+  double value() const { return m_value; }
 
-private:
-    HTMLDimensionType m_type;
-    double m_value;
+  bool operator==(const HTMLDimension& other) const {
+    return m_type == other.m_type && m_value == other.m_value;
+  }
+  bool operator!=(const HTMLDimension& other) const {
+    return !(*this == other);
+  }
+
+ private:
+  HTMLDimensionType m_type;
+  double m_value;
 };
 
 CORE_EXPORT Vector<HTMLDimension> parseListOfDimensions(const String&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLDimension_h
+#endif  // HTMLDimension_h

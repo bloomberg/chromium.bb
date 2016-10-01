@@ -11,36 +11,42 @@
 namespace blink {
 
 class AnimationPlaybackEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static AnimationPlaybackEvent* create(const AtomicString& type, double currentTime, double timelineTime)
-    {
-        return new AnimationPlaybackEvent(type, currentTime, timelineTime);
-    }
-    static AnimationPlaybackEvent* create(const AtomicString& type, const AnimationPlaybackEventInit& initializer)
-    {
-        return new AnimationPlaybackEvent(type, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~AnimationPlaybackEvent() override;
+ public:
+  static AnimationPlaybackEvent* create(const AtomicString& type,
+                                        double currentTime,
+                                        double timelineTime) {
+    return new AnimationPlaybackEvent(type, currentTime, timelineTime);
+  }
+  static AnimationPlaybackEvent* create(
+      const AtomicString& type,
+      const AnimationPlaybackEventInit& initializer) {
+    return new AnimationPlaybackEvent(type, initializer);
+  }
 
-    double currentTime(bool& isNull) const;
-    double currentTime() const;
-    double timelineTime(bool& isNull) const;
-    double timelineTime() const;
+  ~AnimationPlaybackEvent() override;
 
-    const AtomicString& interfaceName() const override;
+  double currentTime(bool& isNull) const;
+  double currentTime() const;
+  double timelineTime(bool& isNull) const;
+  double timelineTime() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    AnimationPlaybackEvent(const AtomicString& type, double currentTime, double timelineTime);
-    AnimationPlaybackEvent(const AtomicString&, const AnimationPlaybackEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    double m_currentTime;
-    double m_timelineTime;
+ private:
+  AnimationPlaybackEvent(const AtomicString& type,
+                         double currentTime,
+                         double timelineTime);
+  AnimationPlaybackEvent(const AtomicString&,
+                         const AnimationPlaybackEventInit&);
+
+  double m_currentTime;
+  double m_timelineTime;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationPlaybackEvent_h
+#endif  // AnimationPlaybackEvent_h

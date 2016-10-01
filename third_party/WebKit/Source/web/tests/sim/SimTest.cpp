@@ -15,59 +15,51 @@
 
 namespace blink {
 
-SimTest::SimTest()
-    : m_webViewClient(m_compositor)
-{
-    Document::setThreadedParsingEnabledForTesting(false);
-    // Use the mock theme to get more predictable code paths, this also avoids
-    // the OS callbacks in ScrollAnimatorMac which can schedule frames
-    // unpredictably since the OS will randomly call into blink for
-    // updateScrollerStyleForNewRecommendedScrollerStyle which then does
-    // FrameView::scrollbarStyleChanged and will adjust the scrollbar existence
-    // in the middle of a test.
-    LayoutTestSupport::setMockThemeEnabledForTest(true);
-    ScrollbarTheme::setMockScrollbarsEnabled(true);
-    m_webViewHelper.initialize(true, nullptr, &m_webViewClient);
-    m_compositor.setWebViewImpl(webView());
+SimTest::SimTest() : m_webViewClient(m_compositor) {
+  Document::setThreadedParsingEnabledForTesting(false);
+  // Use the mock theme to get more predictable code paths, this also avoids
+  // the OS callbacks in ScrollAnimatorMac which can schedule frames
+  // unpredictably since the OS will randomly call into blink for
+  // updateScrollerStyleForNewRecommendedScrollerStyle which then does
+  // FrameView::scrollbarStyleChanged and will adjust the scrollbar existence
+  // in the middle of a test.
+  LayoutTestSupport::setMockThemeEnabledForTest(true);
+  ScrollbarTheme::setMockScrollbarsEnabled(true);
+  m_webViewHelper.initialize(true, nullptr, &m_webViewClient);
+  m_compositor.setWebViewImpl(webView());
 }
 
-SimTest::~SimTest()
-{
-    // Pump the message loop to process the load event.
-    testing::runPendingTasks();
+SimTest::~SimTest() {
+  // Pump the message loop to process the load event.
+  testing::runPendingTasks();
 
-    Document::setThreadedParsingEnabledForTesting(true);
-    LayoutTestSupport::setMockThemeEnabledForTest(false);
-    ScrollbarTheme::setMockScrollbarsEnabled(false);
-    WebCache::clear();
+  Document::setThreadedParsingEnabledForTesting(true);
+  LayoutTestSupport::setMockThemeEnabledForTest(false);
+  ScrollbarTheme::setMockScrollbarsEnabled(false);
+  WebCache::clear();
 }
 
-void SimTest::loadURL(const String& url)
-{
-    WebURLRequest request;
-    request.setURL(KURL(ParsedURLString, url));
-    request.setRequestorOrigin(WebSecurityOrigin::createUnique());
-    webView().mainFrameImpl()->loadRequest(request);
+void SimTest::loadURL(const String& url) {
+  WebURLRequest request;
+  request.setURL(KURL(ParsedURLString, url));
+  request.setRequestorOrigin(WebSecurityOrigin::createUnique());
+  webView().mainFrameImpl()->loadRequest(request);
 }
 
-Document& SimTest::document()
-{
-    return *webView().mainFrameImpl()->frame()->document();
+Document& SimTest::document() {
+  return *webView().mainFrameImpl()->frame()->document();
 }
 
-WebViewImpl& SimTest::webView()
-{
-    return *m_webViewHelper.webView();
+WebViewImpl& SimTest::webView() {
+  return *m_webViewHelper.webView();
 }
 
-const SimWebViewClient& SimTest::webViewClient() const
-{
-    return m_webViewClient;
+const SimWebViewClient& SimTest::webViewClient() const {
+  return m_webViewClient;
 }
 
-SimCompositor& SimTest::compositor()
-{
-    return m_compositor;
+SimCompositor& SimTest::compositor() {
+  return m_compositor;
 }
 
-} // namespace blink
+}  // namespace blink

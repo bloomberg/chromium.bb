@@ -12,70 +12,82 @@
 
 namespace blink {
 
-InterpolationValue SVGPointListInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
-{
-    size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlying);
-    conversionCheckers.append(UnderlyingLengthChecker::create(underlyingLength));
+InterpolationValue SVGPointListInterpolationType::maybeConvertNeutral(
+    const InterpolationValue& underlying,
+    ConversionCheckers& conversionCheckers) const {
+  size_t underlyingLength =
+      UnderlyingLengthChecker::getUnderlyingLength(underlying);
+  conversionCheckers.append(UnderlyingLengthChecker::create(underlyingLength));
 
-    if (underlyingLength == 0)
-        return nullptr;
+  if (underlyingLength == 0)
+    return nullptr;
 
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(underlyingLength);
-    for (size_t i = 0; i < underlyingLength; i++)
-        result->set(i, InterpolableNumber::create(0));
-    return InterpolationValue(std::move(result));
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::create(underlyingLength);
+  for (size_t i = 0; i < underlyingLength; i++)
+    result->set(i, InterpolableNumber::create(0));
+  return InterpolationValue(std::move(result));
 }
 
-InterpolationValue SVGPointListInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
-{
-    if (svgValue.type() != AnimatedPoints)
-        return nullptr;
+InterpolationValue SVGPointListInterpolationType::maybeConvertSVGValue(
+    const SVGPropertyBase& svgValue) const {
+  if (svgValue.type() != AnimatedPoints)
+    return nullptr;
 
-    const SVGPointList& pointList = toSVGPointList(svgValue);
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(pointList.length() * 2);
-    for (size_t i = 0; i < pointList.length(); i++) {
-        const SVGPoint& point = *pointList.at(i);
-        result->set(2 * i, InterpolableNumber::create(point.x()));
-        result->set(2 * i + 1, InterpolableNumber::create(point.y()));
-    }
+  const SVGPointList& pointList = toSVGPointList(svgValue);
+  std::unique_ptr<InterpolableList> result =
+      InterpolableList::create(pointList.length() * 2);
+  for (size_t i = 0; i < pointList.length(); i++) {
+    const SVGPoint& point = *pointList.at(i);
+    result->set(2 * i, InterpolableNumber::create(point.x()));
+    result->set(2 * i + 1, InterpolableNumber::create(point.y()));
+  }
 
-    return InterpolationValue(std::move(result));
+  return InterpolationValue(std::move(result));
 }
 
-PairwiseInterpolationValue SVGPointListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
-{
-    size_t startLength = toInterpolableList(*start.interpolableValue).length();
-    size_t endLength = toInterpolableList(*end.interpolableValue).length();
-    if (startLength != endLength)
-        return nullptr;
+PairwiseInterpolationValue SVGPointListInterpolationType::maybeMergeSingles(
+    InterpolationValue&& start,
+    InterpolationValue&& end) const {
+  size_t startLength = toInterpolableList(*start.interpolableValue).length();
+  size_t endLength = toInterpolableList(*end.interpolableValue).length();
+  if (startLength != endLength)
+    return nullptr;
 
-    return InterpolationType::maybeMergeSingles(std::move(start), std::move(end));
+  return InterpolationType::maybeMergeSingles(std::move(start), std::move(end));
 }
 
-void SVGPointListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const
-{
-    size_t startLength = toInterpolableList(*underlyingValueOwner.value().interpolableValue).length();
-    size_t endLength = toInterpolableList(*value.interpolableValue).length();
-    if (startLength == endLength)
-        InterpolationType::composite(underlyingValueOwner, underlyingFraction, value, interpolationFraction);
-    else
-        underlyingValueOwner.set(*this, value);
+void SVGPointListInterpolationType::composite(
+    UnderlyingValueOwner& underlyingValueOwner,
+    double underlyingFraction,
+    const InterpolationValue& value,
+    double interpolationFraction) const {
+  size_t startLength =
+      toInterpolableList(*underlyingValueOwner.value().interpolableValue)
+          .length();
+  size_t endLength = toInterpolableList(*value.interpolableValue).length();
+  if (startLength == endLength)
+    InterpolationType::composite(underlyingValueOwner, underlyingFraction,
+                                 value, interpolationFraction);
+  else
+    underlyingValueOwner.set(*this, value);
 }
 
-SVGPropertyBase* SVGPointListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
-{
-    SVGPointList* result = SVGPointList::create();
+SVGPropertyBase* SVGPointListInterpolationType::appliedSVGValue(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue*) const {
+  SVGPointList* result = SVGPointList::create();
 
-    const InterpolableList& list = toInterpolableList(interpolableValue);
-    DCHECK_EQ(list.length() % 2, 0U);
-    for (size_t i = 0; i < list.length(); i += 2) {
-        FloatPoint point = FloatPoint(
-            toInterpolableNumber(list.get(i))->value(),
-            toInterpolableNumber(list.get(i + 1))->value());
-        result->append(SVGPoint::create(point));
-    }
+  const InterpolableList& list = toInterpolableList(interpolableValue);
+  DCHECK_EQ(list.length() % 2, 0U);
+  for (size_t i = 0; i < list.length(); i += 2) {
+    FloatPoint point =
+        FloatPoint(toInterpolableNumber(list.get(i))->value(),
+                   toInterpolableNumber(list.get(i + 1))->value());
+    result->append(SVGPoint::create(point));
+  }
 
-    return result;
+  return result;
 }
 
-} // namespace blink
+}  // namespace blink

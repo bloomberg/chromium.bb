@@ -12,30 +12,30 @@ namespace blink {
 class GeoNotifier;
 
 class GeolocationWatchers {
-    DISALLOW_NEW();
+  DISALLOW_NEW();
 
-public:
-    GeolocationWatchers() { }
-    DECLARE_TRACE();
+ public:
+  GeolocationWatchers() {}
+  DECLARE_TRACE();
 
-    bool add(int id, GeoNotifier*);
-    GeoNotifier* find(int id);
-    void remove(int id);
-    void remove(GeoNotifier*);
-    bool contains(GeoNotifier*) const;
-    void clear();
-    bool isEmpty() const;
+  bool add(int id, GeoNotifier*);
+  GeoNotifier* find(int id);
+  void remove(int id);
+  void remove(GeoNotifier*);
+  bool contains(GeoNotifier*) const;
+  void clear();
+  bool isEmpty() const;
 
-    void getNotifiersVector(HeapVector<Member<GeoNotifier>>&) const;
+  void getNotifiersVector(HeapVector<Member<GeoNotifier>>&) const;
 
-private:
-    typedef HeapHashMap<int, Member<GeoNotifier>> IdToNotifierMap;
-    typedef HeapHashMap<Member<GeoNotifier>, int> NotifierToIdMap;
+ private:
+  typedef HeapHashMap<int, Member<GeoNotifier>> IdToNotifierMap;
+  typedef HeapHashMap<Member<GeoNotifier>, int> NotifierToIdMap;
 
-    IdToNotifierMap m_idToNotifierMap;
-    NotifierToIdMap m_notifierToIdMap;
+  IdToNotifierMap m_idToNotifierMap;
+  NotifierToIdMap m_notifierToIdMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GeolocationWatchers_h
+#endif  // GeolocationWatchers_h

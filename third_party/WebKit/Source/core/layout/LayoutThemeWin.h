@@ -10,10 +10,10 @@
 namespace blink {
 
 class LayoutThemeWin final : public LayoutThemeDefault {
-public:
-    static PassRefPtr<LayoutTheme> create();
+ public:
+  static PassRefPtr<LayoutTheme> create();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutThemeWin_h
+#endif  // LayoutThemeWin_h

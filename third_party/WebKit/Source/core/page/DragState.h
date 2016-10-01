@@ -36,21 +36,23 @@ class DataTransfer;
 class Node;
 
 class DragState final : public GarbageCollected<DragState> {
-    WTF_MAKE_NONCOPYABLE(DragState);
-public:
-    DragState() { }
+  WTF_MAKE_NONCOPYABLE(DragState);
 
-    Member<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
-    DragSourceAction m_dragType;
-    Member<DataTransfer> m_dragDataTransfer; // used on only the source side of dragging
+ public:
+  DragState() {}
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_dragSrc);
-        visitor->trace(m_dragDataTransfer);
-    }
+  Member<Node>
+      m_dragSrc;  // element that may be a drag source, for the current mouse gesture
+  DragSourceAction m_dragType;
+  Member<DataTransfer>
+      m_dragDataTransfer;  // used on only the source side of dragging
+
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_dragSrc);
+    visitor->trace(m_dragDataTransfer);
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DragState_h
+#endif  // DragState_h

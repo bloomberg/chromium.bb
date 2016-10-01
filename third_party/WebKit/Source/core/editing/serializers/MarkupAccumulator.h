@@ -41,42 +41,51 @@ class Element;
 class Node;
 
 class MarkupAccumulator {
-    WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
-    STACK_ALLOCATED();
-public:
-    MarkupAccumulator(EAbsoluteURLs, SerializationType = SerializationType::AsOwnerDocument);
-    virtual ~MarkupAccumulator();
+  WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
+  STACK_ALLOCATED();
 
-    void appendString(const String&);
-    virtual void appendStartTag(Node&, Namespaces* = nullptr);
-    virtual void appendEndTag(const Element&);
-    void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
-    void appendEndMarkup(StringBuilder&, const Element&);
+ public:
+  MarkupAccumulator(EAbsoluteURLs,
+                    SerializationType = SerializationType::AsOwnerDocument);
+  virtual ~MarkupAccumulator();
 
-    bool serializeAsHTMLDocument(const Node&) const;
-    String toString() { return m_markup.toString(); }
+  void appendString(const String&);
+  virtual void appendStartTag(Node&, Namespaces* = nullptr);
+  virtual void appendEndTag(const Element&);
+  void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
+  void appendEndMarkup(StringBuilder&, const Element&);
 
-    virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
+  bool serializeAsHTMLDocument(const Node&) const;
+  String toString() { return m_markup.toString(); }
 
-    virtual void appendText(StringBuilder&, Text&);
-    virtual bool shouldIgnoreAttribute(const Attribute&);
-    virtual void appendElement(StringBuilder&, Element&, Namespaces*);
-    void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
-    void appendCloseTag(StringBuilder&, const Element&);
-    virtual void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*);
+  virtual void appendCustomAttributes(StringBuilder&,
+                                      const Element&,
+                                      Namespaces*);
 
-    EntityMask entityMaskForText(const Text&) const;
+  virtual void appendText(StringBuilder&, Text&);
+  virtual bool shouldIgnoreAttribute(const Attribute&);
+  virtual void appendElement(StringBuilder&, Element&, Namespaces*);
+  void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
+  void appendCloseTag(StringBuilder&, const Element&);
+  virtual void appendAttribute(StringBuilder&,
+                               const Element&,
+                               const Attribute&,
+                               Namespaces*);
 
-private:
-    MarkupFormatter m_formatter;
-    StringBuilder m_markup;
+  EntityMask entityMaskForText(const Text&) const;
+
+ private:
+  MarkupFormatter m_formatter;
+  StringBuilder m_markup;
 };
 
-template<typename Strategy>
+template <typename Strategy>
 String serializeNodes(MarkupAccumulator&, Node&, EChildrenOnly);
 
-extern template String serializeNodes<EditingStrategy>(MarkupAccumulator&, Node&, EChildrenOnly);
+extern template String serializeNodes<EditingStrategy>(MarkupAccumulator&,
+                                                       Node&,
+                                                       EChildrenOnly);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -33,44 +33,41 @@
 namespace blink {
 namespace XPath {
 
-bool isRootDomNode(Node* node)
-{
-    return node && !node->parentNode();
+bool isRootDomNode(Node* node) {
+  return node && !node->parentNode();
 }
 
-String stringValue(Node* node)
-{
-    switch (node->getNodeType()) {
+String stringValue(Node* node) {
+  switch (node->getNodeType()) {
     case Node::kAttributeNode:
     case Node::kProcessingInstructionNode:
     case Node::kCommentNode:
     case Node::kTextNode:
     case Node::kCdataSectionNode:
-        return node->nodeValue();
+      return node->nodeValue();
     default:
-        if (isRootDomNode(node) || node->isElementNode()) {
-            StringBuilder result;
-            result.reserveCapacity(1024);
+      if (isRootDomNode(node) || node->isElementNode()) {
+        StringBuilder result;
+        result.reserveCapacity(1024);
 
-            for (Node& n : NodeTraversal::descendantsOf(*node)) {
-                if (n.isTextNode()) {
-                    const String& nodeValue = n.nodeValue();
-                    result.append(nodeValue);
-                }
-            }
-
-            return result.toString();
+        for (Node& n : NodeTraversal::descendantsOf(*node)) {
+          if (n.isTextNode()) {
+            const String& nodeValue = n.nodeValue();
+            result.append(nodeValue);
+          }
         }
-    }
 
-    return String();
+        return result.toString();
+      }
+  }
+
+  return String();
 }
 
-bool isValidContextNode(Node* node)
-{
-    if (!node)
-        return false;
-    switch (node->getNodeType()) {
+bool isValidContextNode(Node* node) {
+  if (!node)
+    return false;
+  switch (node->getNodeType()) {
     case Node::kAttributeNode:
     case Node::kTextNode:
     case Node::kCdataSectionNode:
@@ -78,14 +75,14 @@ bool isValidContextNode(Node* node)
     case Node::kDocumentNode:
     case Node::kElementNode:
     case Node::kProcessingInstructionNode:
-        return true;
+      return true;
     case Node::kDocumentFragmentNode:
     case Node::kDocumentTypeNode:
-        return false;
-    }
-    NOTREACHED();
-    return false;
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
-} // namespace XPath
-} // namespace blink
+}  // namespace XPath
+}  // namespace blink

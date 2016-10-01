@@ -37,71 +37,60 @@
 
 namespace blink {
 
-int WebCString::compare(const WebCString& other) const
-{
-    // A null string is always less than a non null one.
-    if (isNull() != other.isNull())
-        return isNull() ? -1 : 1;
+int WebCString::compare(const WebCString& other) const {
+  // A null string is always less than a non null one.
+  if (isNull() != other.isNull())
+    return isNull() ? -1 : 1;
 
-    if (isNull())
-        return 0; // Both WebStrings are null.
+  if (isNull())
+    return 0;  // Both WebStrings are null.
 
-    return strcmp(m_private->data(), other.m_private->data());
+  return strcmp(m_private->data(), other.m_private->data());
 }
 
-void WebCString::reset()
-{
-    m_private.reset();
+void WebCString::reset() {
+  m_private.reset();
 }
 
-void WebCString::assign(const WebCString& other)
-{
-    assign(other.m_private.get());
+void WebCString::assign(const WebCString& other) {
+  assign(other.m_private.get());
 }
 
-void WebCString::assign(const char* data, size_t length)
-{
-    char* newData;
-    RefPtr<WTF::CStringBuffer> buffer =
-        WTF::CString::newUninitialized(length, newData).buffer();
-    memcpy(newData, data, length);
-    assign(buffer.get());
+void WebCString::assign(const char* data, size_t length) {
+  char* newData;
+  RefPtr<WTF::CStringBuffer> buffer =
+      WTF::CString::newUninitialized(length, newData).buffer();
+  memcpy(newData, data, length);
+  assign(buffer.get());
 }
 
-size_t WebCString::length() const
-{
-    return m_private.isNull() ? 0 : m_private->length();
+size_t WebCString::length() const {
+  return m_private.isNull() ? 0 : m_private->length();
 }
 
-const char* WebCString::data() const
-{
-    return m_private.isNull() ? 0 : m_private->data();
+const char* WebCString::data() const {
+  return m_private.isNull() ? 0 : m_private->data();
 }
 
-WebString WebCString::utf16() const
-{
-    return WebString::fromUTF8(data(), length());
+WebString WebCString::utf16() const {
+  return WebString::fromUTF8(data(), length());
 }
 
-WebCString::WebCString(const WTF::CString& s)
-{
-    assign(s.buffer());
+WebCString::WebCString(const WTF::CString& s) {
+  assign(s.buffer());
 }
 
-WebCString& WebCString::operator=(const WTF::CString& s)
-{
-    assign(s.buffer());
-    return *this;
+WebCString& WebCString::operator=(const WTF::CString& s) {
+  assign(s.buffer());
+  return *this;
 }
 
-WebCString::operator WTF::CString() const
-{
-    return m_private.get();
+WebCString::operator WTF::CString() const {
+  return m_private.get();
 }
 
-void WebCString::assign(WTF::CStringBuffer* p)
-{
-    m_private = p;
+void WebCString::assign(WTF::CStringBuffer* p) {
+  m_private = p;
 }
 
-} // namespace blink
+}  // namespace blink

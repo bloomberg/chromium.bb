@@ -49,27 +49,27 @@ namespace WTF {
 
 #if OS(POSIX)
 struct PlatformMutex {
-    pthread_mutex_t m_internalMutex;
+  pthread_mutex_t m_internalMutex;
 #if ENABLE(ASSERT)
-    size_t m_recursionCount;
+  size_t m_recursionCount;
 #endif
 };
 typedef pthread_cond_t PlatformCondition;
 #elif OS(WIN)
 struct PlatformMutex {
-    CRITICAL_SECTION m_internalMutex;
-    size_t m_recursionCount;
+  CRITICAL_SECTION m_internalMutex;
+  size_t m_recursionCount;
 };
 struct PlatformCondition {
-    size_t m_waitersGone;
-    size_t m_waitersBlocked;
-    size_t m_waitersToUnblock;
-    HANDLE m_blockLock;
-    HANDLE m_blockQueue;
-    HANDLE m_unblockLock;
+  size_t m_waitersGone;
+  size_t m_waitersBlocked;
+  size_t m_waitersToUnblock;
+  HANDLE m_blockLock;
+  HANDLE m_blockQueue;
+  HANDLE m_unblockLock;
 
-    bool timedWait(PlatformMutex&, DWORD durationMilliseconds);
-    void signal(bool unblockAll);
+  bool timedWait(PlatformMutex&, DWORD durationMilliseconds);
+  void signal(bool unblockAll);
 };
 #else
 typedef void* PlatformMutex;
@@ -77,73 +77,76 @@ typedef void* PlatformCondition;
 #endif
 
 class WTF_EXPORT MutexBase {
-    WTF_MAKE_NONCOPYABLE(MutexBase); USING_FAST_MALLOC(MutexBase);
-public:
-    ~MutexBase();
+  WTF_MAKE_NONCOPYABLE(MutexBase);
+  USING_FAST_MALLOC(MutexBase);
 
-    void lock();
-    void unlock();
+ public:
+  ~MutexBase();
+
+  void lock();
+  void unlock();
 #if ENABLE(ASSERT)
-    bool locked() { return m_mutex.m_recursionCount > 0; }
+  bool locked() { return m_mutex.m_recursionCount > 0; }
 #endif
 
-public:
-    PlatformMutex& impl() { return m_mutex; }
+ public:
+  PlatformMutex& impl() { return m_mutex; }
 
-protected:
-    MutexBase(bool recursive);
+ protected:
+  MutexBase(bool recursive);
 
-    PlatformMutex m_mutex;
+  PlatformMutex m_mutex;
 };
 
 class WTF_EXPORT Mutex : public MutexBase {
-public:
-    Mutex() : MutexBase(false) { }
-    bool tryLock();
+ public:
+  Mutex() : MutexBase(false) {}
+  bool tryLock();
 };
 
 class WTF_EXPORT RecursiveMutex : public MutexBase {
-public:
-    RecursiveMutex() : MutexBase(true) { }
-    bool tryLock();
+ public:
+  RecursiveMutex() : MutexBase(true) {}
+  bool tryLock();
 };
 
 typedef Locker<MutexBase> MutexLocker;
 
 class MutexTryLocker final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(MutexTryLocker);
-public:
-    MutexTryLocker(Mutex& mutex) : m_mutex(mutex), m_locked(mutex.tryLock()) { }
-    ~MutexTryLocker()
-    {
-        if (m_locked)
-            m_mutex.unlock();
-    }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(MutexTryLocker);
 
-    bool locked() const { return m_locked; }
+ public:
+  MutexTryLocker(Mutex& mutex) : m_mutex(mutex), m_locked(mutex.tryLock()) {}
+  ~MutexTryLocker() {
+    if (m_locked)
+      m_mutex.unlock();
+  }
 
-private:
-    Mutex& m_mutex;
-    bool m_locked;
+  bool locked() const { return m_locked; }
+
+ private:
+  Mutex& m_mutex;
+  bool m_locked;
 };
 
 class WTF_EXPORT ThreadCondition final {
-    USING_FAST_MALLOC(ThreadCondition); // Only HeapTest.cpp requires.
-    WTF_MAKE_NONCOPYABLE(ThreadCondition);
-public:
-    ThreadCondition();
-    ~ThreadCondition();
+  USING_FAST_MALLOC(ThreadCondition);  // Only HeapTest.cpp requires.
+  WTF_MAKE_NONCOPYABLE(ThreadCondition);
 
-    void wait(MutexBase&);
-    // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
-    // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
-    bool timedWait(MutexBase&, double absoluteTime);
-    void signal();
-    void broadcast();
+ public:
+  ThreadCondition();
+  ~ThreadCondition();
 
-private:
-    PlatformCondition m_condition;
+  void wait(MutexBase&);
+  // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
+  // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
+  bool timedWait(MutexBase&, double absoluteTime);
+  void signal();
+  void broadcast();
+
+ private:
+  PlatformCondition m_condition;
 };
 
 #if OS(WIN)
@@ -152,7 +155,7 @@ private:
 DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime);
 #endif
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::MutexBase;
 using WTF::Mutex;
@@ -165,4 +168,4 @@ using WTF::ThreadCondition;
 using WTF::absoluteTimeToWaitTimeoutInterval;
 #endif
 
-#endif // ThreadingPrimitives_h
+#endif  // ThreadingPrimitives_h

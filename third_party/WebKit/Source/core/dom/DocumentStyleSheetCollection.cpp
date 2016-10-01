@@ -38,90 +38,97 @@
 namespace blink {
 
 DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
-    : TreeScopeStyleSheetCollection(treeScope)
-{
-    DCHECK_EQ(treeScope.rootNode(), treeScope.rootNode().document());
+    : TreeScopeStyleSheetCollection(treeScope) {
+  DCHECK_EQ(treeScope.rootNode(), treeScope.rootNode().document());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine& engine, DocumentStyleSheetCollector& collector)
-{
-    for (Node* n : m_styleSheetCandidateNodes) {
-        StyleSheetCandidate candidate(*n);
+void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(
+    StyleEngine& engine,
+    DocumentStyleSheetCollector& collector) {
+  for (Node* n : m_styleSheetCandidateNodes) {
+    StyleSheetCandidate candidate(*n);
 
-        DCHECK(!candidate.isXSL());
-        if (candidate.isImport()) {
-            Document* document = candidate.importedDocument();
-            if (!document)
-                continue;
-            if (collector.hasVisited(document))
-                continue;
-            collector.willVisit(document);
-            document->styleEngine().updateStyleSheetsInImport(collector);
-            continue;
-        }
-
-        if (candidate.isEnabledAndLoading())
-            continue;
-
-        StyleSheet* sheet = candidate.sheet();
-        if (!sheet)
-            continue;
-
-        collector.appendSheetForList(sheet);
-        if (candidate.canBeActivated(engine.preferredStylesheetSetName()))
-            collector.appendActiveStyleSheet(toCSSStyleSheet(sheet));
+    DCHECK(!candidate.isXSL());
+    if (candidate.isImport()) {
+      Document* document = candidate.importedDocument();
+      if (!document)
+        continue;
+      if (collector.hasVisited(document))
+        continue;
+      collector.willVisit(document);
+      document->styleEngine().updateStyleSheetsInImport(collector);
+      continue;
     }
+
+    if (candidate.isEnabledAndLoading())
+      continue;
+
+    StyleSheet* sheet = candidate.sheet();
+    if (!sheet)
+      continue;
+
+    collector.appendSheetForList(sheet);
+    if (candidate.canBeActivated(engine.preferredStylesheetSetName()))
+      collector.appendActiveStyleSheet(toCSSStyleSheet(sheet));
+  }
 }
 
-void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine& engine, DocumentStyleSheetCollector& collector)
-{
-    DCHECK_EQ(&document().styleEngine(), &engine);
-    collector.appendActiveStyleSheets(engine.injectedAuthorStyleSheets());
-    collectStyleSheetsFromCandidates(engine, collector);
-    if (engine.inspectorStyleSheet())
-        collector.appendActiveStyleSheet(engine.inspectorStyleSheet());
+void DocumentStyleSheetCollection::collectStyleSheets(
+    StyleEngine& engine,
+    DocumentStyleSheetCollector& collector) {
+  DCHECK_EQ(&document().styleEngine(), &engine);
+  collector.appendActiveStyleSheets(engine.injectedAuthorStyleSheets());
+  collectStyleSheetsFromCandidates(engine, collector);
+  if (engine.inspectorStyleSheet())
+    collector.appendActiveStyleSheet(engine.inspectorStyleSheet());
 }
 
-void DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine& engine, StyleResolverUpdateMode updateMode)
-{
-    // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-    StyleSheetCollection* collection = StyleSheetCollection::create();
-    ActiveDocumentStyleSheetCollector collector(*collection);
-    collectStyleSheets(engine, collector);
+void DocumentStyleSheetCollection::updateActiveStyleSheets(
+    StyleEngine& engine,
+    StyleResolverUpdateMode updateMode) {
+  // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
+  StyleSheetCollection* collection = StyleSheetCollection::create();
+  ActiveDocumentStyleSheetCollector collector(*collection);
+  collectStyleSheets(engine, collector);
 
-    StyleSheetChange change;
-    analyzeStyleSheetChange(updateMode, collection->activeAuthorStyleSheets(), change);
+  StyleSheetChange change;
+  analyzeStyleSheetChange(updateMode, collection->activeAuthorStyleSheets(),
+                          change);
 
-    if (change.styleResolverUpdateType == Reconstruct) {
-        engine.clearMasterResolver();
-        // TODO(rune@opera.com): The following depends on whether StyleRuleFontFace was modified or not.
-        // We should only remove modified/removed @font-face rules, or @font-face rules from removed
-        // stylesheets. We currently avoid clearing the font cache when we have had an analyzed update
-        // and no @font-face rules were removed, in which case requiresFullStyleRecalc will be false.
-        if (change.requiresFullStyleRecalc)
-            engine.clearFontCache();
-    } else if (StyleResolver* styleResolver = engine.resolver()) {
-        if (change.styleResolverUpdateType != Additive) {
-            DCHECK_EQ(change.styleResolverUpdateType, Reset);
-            styleResolver->resetAuthorStyle(treeScope());
-            engine.removeFontFaceRules(change.fontFaceRulesToRemove);
-            styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
-            styleResolver->lazyAppendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
-        } else {
-            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection->activeAuthorStyleSheets());
-        }
-    }
+  if (change.styleResolverUpdateType == Reconstruct) {
+    engine.clearMasterResolver();
+    // TODO(rune@opera.com): The following depends on whether StyleRuleFontFace was modified or not.
+    // We should only remove modified/removed @font-face rules, or @font-face rules from removed
+    // stylesheets. We currently avoid clearing the font cache when we have had an analyzed update
+    // and no @font-face rules were removed, in which case requiresFullStyleRecalc will be false.
     if (change.requiresFullStyleRecalc)
-        document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ActiveStylesheetsUpdate));
-
-    collection->swap(*this);
-    collection->dispose();
-}
-
-DEFINE_TRACE_WRAPPERS(DocumentStyleSheetCollection)
-{
-    for (auto sheet : m_styleSheetsForStyleSheetList) {
-        visitor->traceWrappers(sheet);
+      engine.clearFontCache();
+  } else if (StyleResolver* styleResolver = engine.resolver()) {
+    if (change.styleResolverUpdateType != Additive) {
+      DCHECK_EQ(change.styleResolverUpdateType, Reset);
+      styleResolver->resetAuthorStyle(treeScope());
+      engine.removeFontFaceRules(change.fontFaceRulesToRemove);
+      styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
+      styleResolver->lazyAppendAuthorStyleSheets(
+          0, collection->activeAuthorStyleSheets());
+    } else {
+      styleResolver->lazyAppendAuthorStyleSheets(
+          m_activeAuthorStyleSheets.size(),
+          collection->activeAuthorStyleSheets());
     }
+  }
+  if (change.requiresFullStyleRecalc)
+    document().setNeedsStyleRecalc(
+        SubtreeStyleChange, StyleChangeReasonForTracing::create(
+                                StyleChangeReason::ActiveStylesheetsUpdate));
+
+  collection->swap(*this);
+  collection->dispose();
 }
-} // namespace blink
+
+DEFINE_TRACE_WRAPPERS(DocumentStyleSheetCollection) {
+  for (auto sheet : m_styleSheetsForStyleSheetList) {
+    visitor->traceWrappers(sheet);
+  }
+}
+}  // namespace blink

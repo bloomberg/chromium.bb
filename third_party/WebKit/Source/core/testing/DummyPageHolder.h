@@ -59,30 +59,34 @@ typedef void (*FrameSettingOverrideFunction)(Settings&);
 // created by it. DummyPageHolder's destructor ensures this condition by checking remaining references to the LocalFrame.
 
 class DummyPageHolder {
-    WTF_MAKE_NONCOPYABLE(DummyPageHolder);
-    USING_FAST_MALLOC(DummyPageHolder);
-public:
-    static std::unique_ptr<DummyPageHolder> create(
-        const IntSize& initialViewSize = IntSize(),
-        Page::PageClients* = 0,
-        FrameLoaderClient* = nullptr,
-        FrameSettingOverrideFunction = nullptr);
-    ~DummyPageHolder();
+  WTF_MAKE_NONCOPYABLE(DummyPageHolder);
+  USING_FAST_MALLOC(DummyPageHolder);
 
-    Page& page() const;
-    LocalFrame& frame() const;
-    FrameView& frameView() const;
-    Document& document() const;
+ public:
+  static std::unique_ptr<DummyPageHolder> create(
+      const IntSize& initialViewSize = IntSize(),
+      Page::PageClients* = 0,
+      FrameLoaderClient* = nullptr,
+      FrameSettingOverrideFunction = nullptr);
+  ~DummyPageHolder();
 
-private:
-    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, FrameLoaderClient*, FrameSettingOverrideFunction settingOverrider);
+  Page& page() const;
+  LocalFrame& frame() const;
+  FrameView& frameView() const;
+  Document& document() const;
 
-    Persistent<Page> m_page;
-    Persistent<LocalFrame> m_frame;
+ private:
+  DummyPageHolder(const IntSize& initialViewSize,
+                  Page::PageClients*,
+                  FrameLoaderClient*,
+                  FrameSettingOverrideFunction settingOverrider);
 
-    Persistent<FrameLoaderClient> m_frameLoaderClient;
+  Persistent<Page> m_page;
+  Persistent<LocalFrame> m_frame;
+
+  Persistent<FrameLoaderClient> m_frameLoaderClient;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DummyPageHolder_h
+#endif  // DummyPageHolder_h

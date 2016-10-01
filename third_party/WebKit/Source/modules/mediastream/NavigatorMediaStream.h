@@ -36,11 +36,16 @@ class NavigatorUserMediaErrorCallback;
 class NavigatorUserMediaSuccessCallback;
 
 class NavigatorMediaStream {
-    STATIC_ONLY(NavigatorMediaStream);
-public:
-    static void getUserMedia(Navigator&, const MediaStreamConstraints&, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, ExceptionState&);
+  STATIC_ONLY(NavigatorMediaStream);
+
+ public:
+  static void getUserMedia(Navigator&,
+                           const MediaStreamConstraints&,
+                           NavigatorUserMediaSuccessCallback*,
+                           NavigatorUserMediaErrorCallback*,
+                           ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorMediaStream_h
+#endif  // NavigatorMediaStream_h

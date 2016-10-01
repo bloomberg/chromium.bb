@@ -37,46 +37,41 @@
 
 namespace blink {
 
-DatabaseClient::DatabaseClient()
-    : m_inspectorAgent(nullptr)
-{ }
+DatabaseClient::DatabaseClient() : m_inspectorAgent(nullptr) {}
 
-DEFINE_TRACE(DatabaseClient)
-{
-    visitor->trace(m_inspectorAgent);
-    Supplement<Page>::trace(visitor);
+DEFINE_TRACE(DatabaseClient) {
+  visitor->trace(m_inspectorAgent);
+  Supplement<Page>::trace(visitor);
 }
 
-DatabaseClient* DatabaseClient::fromPage(Page* page)
-{
-    return static_cast<DatabaseClient*>(Supplement<Page>::from(page, supplementName()));
+DatabaseClient* DatabaseClient::fromPage(Page* page) {
+  return static_cast<DatabaseClient*>(
+      Supplement<Page>::from(page, supplementName()));
 }
 
-DatabaseClient* DatabaseClient::from(ExecutionContext* context)
-{
-    return DatabaseClient::fromPage(toDocument(context)->page());
+DatabaseClient* DatabaseClient::from(ExecutionContext* context) {
+  return DatabaseClient::fromPage(toDocument(context)->page());
 }
 
-const char* DatabaseClient::supplementName()
-{
-    return "DatabaseClient";
+const char* DatabaseClient::supplementName() {
+  return "DatabaseClient";
 }
 
-void DatabaseClient::didOpenDatabase(blink::Database* database, const String& domain, const String& name, const String& version)
-{
-    if (m_inspectorAgent)
-        m_inspectorAgent->didOpenDatabase(database, domain, name, version);
+void DatabaseClient::didOpenDatabase(blink::Database* database,
+                                     const String& domain,
+                                     const String& name,
+                                     const String& version) {
+  if (m_inspectorAgent)
+    m_inspectorAgent->didOpenDatabase(database, domain, name, version);
 }
 
-void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent)
-{
-    // TODO(dgozman): we should not set agent twice, but it's happening in OOPIF case.
-    m_inspectorAgent = agent;
+void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent) {
+  // TODO(dgozman): we should not set agent twice, but it's happening in OOPIF case.
+  m_inspectorAgent = agent;
 }
 
-void provideDatabaseClientTo(Page& page, DatabaseClient* client)
-{
-    page.provideSupplement(DatabaseClient::supplementName(), client);
+void provideDatabaseClientTo(Page& page, DatabaseClient* client) {
+  page.provideSupplement(DatabaseClient::supplementName(), client);
 }
 
-} // namespace blink
+}  // namespace blink

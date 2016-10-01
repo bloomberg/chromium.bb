@@ -34,25 +34,28 @@ class SVGStringListTearOff;
 class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGViewElement);
-public:
-    DECLARE_NODE_FACTORY(SVGViewElement);
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGViewElement);
 
-    SVGStringListTearOff* viewTarget();
+ public:
+  DECLARE_NODE_FACTORY(SVGViewElement);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGStringListTearOff* viewTarget();
 
-private:
-    explicit SVGViewElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
+ private:
+  explicit SVGViewElement(Document&);
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
 
-    Member<SVGStaticStringList> m_viewTarget;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+
+  Member<SVGStaticStringList> m_viewTarget;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGViewElement_h
+#endif  // SVGViewElement_h

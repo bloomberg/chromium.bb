@@ -38,24 +38,26 @@
 
 namespace blink {
 
-void WebDatabase::updateDatabaseSize(const WebSecurityOrigin& origin, const WebString& name, long long size)
-{
-    QuotaTracker::instance().updateDatabaseSize(origin.get(), name, size);
+void WebDatabase::updateDatabaseSize(const WebSecurityOrigin& origin,
+                                     const WebString& name,
+                                     long long size) {
+  QuotaTracker::instance().updateDatabaseSize(origin.get(), name, size);
 }
 
-void WebDatabase::updateSpaceAvailable(const WebSecurityOrigin& origin, long long spaceAvailable)
-{
-    QuotaTracker::instance().updateSpaceAvailableToOrigin(origin.get(), spaceAvailable);
+void WebDatabase::updateSpaceAvailable(const WebSecurityOrigin& origin,
+                                       long long spaceAvailable) {
+  QuotaTracker::instance().updateSpaceAvailableToOrigin(origin.get(),
+                                                        spaceAvailable);
 }
 
-void WebDatabase::resetSpaceAvailable(const WebSecurityOrigin& origin)
-{
-    QuotaTracker::instance().resetSpaceAvailableToOrigin(origin.get());
+void WebDatabase::resetSpaceAvailable(const WebSecurityOrigin& origin) {
+  QuotaTracker::instance().resetSpaceAvailableToOrigin(origin.get());
 }
 
-void WebDatabase::closeDatabaseImmediately(const WebSecurityOrigin& origin, const WebString& databaseName)
-{
-    DatabaseTracker::tracker().closeDatabasesImmediately(origin.get(), databaseName);
+void WebDatabase::closeDatabaseImmediately(const WebSecurityOrigin& origin,
+                                           const WebString& databaseName) {
+  DatabaseTracker::tracker().closeDatabasesImmediately(origin.get(),
+                                                       databaseName);
 }
 
-} // namespace blink
+}  // namespace blink

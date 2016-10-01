@@ -46,111 +46,113 @@ class HTMLDivElement;
 class VTTCueBox;
 class VTTScanner;
 
-class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static VTTRegion* create() { return new VTTRegion; }
+class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
+                        public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    virtual ~VTTRegion();
+ public:
+  static VTTRegion* create() { return new VTTRegion; }
 
-    TextTrack* track() const { return m_track; }
-    void setTrack(TextTrack*);
+  virtual ~VTTRegion();
 
-    const String& id() const { return m_id; }
-    void setId(const String&);
+  TextTrack* track() const { return m_track; }
+  void setTrack(TextTrack*);
 
-    double width() const { return m_width; }
-    void setWidth(double, ExceptionState&);
+  const String& id() const { return m_id; }
+  void setId(const String&);
 
-    long height() const { return m_heightInLines; }
-    void setHeight(long, ExceptionState&);
+  double width() const { return m_width; }
+  void setWidth(double, ExceptionState&);
 
-    double regionAnchorX() const { return m_regionAnchor.x(); }
-    void setRegionAnchorX(double, ExceptionState&);
+  long height() const { return m_heightInLines; }
+  void setHeight(long, ExceptionState&);
 
-    double regionAnchorY() const { return m_regionAnchor.y(); }
-    void setRegionAnchorY(double, ExceptionState&);
+  double regionAnchorX() const { return m_regionAnchor.x(); }
+  void setRegionAnchorX(double, ExceptionState&);
 
-    double viewportAnchorX() const { return m_viewportAnchor.x(); }
-    void setViewportAnchorX(double, ExceptionState&);
+  double regionAnchorY() const { return m_regionAnchor.y(); }
+  void setRegionAnchorY(double, ExceptionState&);
 
-    double viewportAnchorY() const { return m_viewportAnchor.y(); }
-    void setViewportAnchorY(double, ExceptionState&);
+  double viewportAnchorX() const { return m_viewportAnchor.x(); }
+  void setViewportAnchorX(double, ExceptionState&);
 
-    const AtomicString scroll() const;
-    void setScroll(const AtomicString&, ExceptionState&);
+  double viewportAnchorY() const { return m_viewportAnchor.y(); }
+  void setViewportAnchorY(double, ExceptionState&);
 
-    void updateParametersFromRegion(VTTRegion*);
+  const AtomicString scroll() const;
+  void setScroll(const AtomicString&, ExceptionState&);
 
-    const String& regionSettings() const { return m_settings; }
-    void setRegionSettings(const String&);
+  void updateParametersFromRegion(VTTRegion*);
 
-    bool isScrollingRegion() { return m_scroll; }
+  const String& regionSettings() const { return m_settings; }
+  void setRegionSettings(const String&);
 
-    HTMLDivElement* getDisplayTree(Document&);
+  bool isScrollingRegion() { return m_scroll; }
 
-    void appendVTTCueBox(VTTCueBox*);
-    void displayLastVTTCueBox();
-    void willRemoveVTTCueBox(VTTCueBox*);
+  HTMLDivElement* getDisplayTree(Document&);
 
-    DECLARE_TRACE();
+  void appendVTTCueBox(VTTCueBox*);
+  void displayLastVTTCueBox();
+  void willRemoveVTTCueBox(VTTCueBox*);
 
-private:
-    VTTRegion();
+  DECLARE_TRACE();
 
-    void prepareRegionDisplayTree();
+ private:
+  VTTRegion();
 
-    // The timer is needed to continue processing when cue scrolling ended.
-    void startTimer();
-    void stopTimer();
-    void scrollTimerFired(TimerBase*);
+  void prepareRegionDisplayTree();
 
-    enum RegionSetting {
-        None,
-        Id,
-        Width,
-        Height,
-        RegionAnchor,
-        ViewportAnchor,
-        Scroll
-    };
-    RegionSetting scanSettingName(VTTScanner&);
-    void parseSettingValue(RegionSetting, VTTScanner&);
+  // The timer is needed to continue processing when cue scrolling ended.
+  void startTimer();
+  void stopTimer();
+  void scrollTimerFired(TimerBase*);
 
-    static const AtomicString& textTrackCueContainerShadowPseudoId();
-    static const AtomicString& textTrackCueContainerScrollingClass();
-    static const AtomicString& textTrackRegionShadowPseudoId();
+  enum RegionSetting {
+    None,
+    Id,
+    Width,
+    Height,
+    RegionAnchor,
+    ViewportAnchor,
+    Scroll
+  };
+  RegionSetting scanSettingName(VTTScanner&);
+  void parseSettingValue(RegionSetting, VTTScanner&);
 
-    String m_id;
-    String m_settings;
-    double m_width;
-    unsigned m_heightInLines;
-    FloatPoint m_regionAnchor;
-    FloatPoint m_viewportAnchor;
-    bool m_scroll;
+  static const AtomicString& textTrackCueContainerShadowPseudoId();
+  static const AtomicString& textTrackCueContainerScrollingClass();
+  static const AtomicString& textTrackRegionShadowPseudoId();
 
-    // The cue container is the container that is scrolled up to obtain the
-    // effect of scrolling cues when this is enabled for the regions.
-    Member<HTMLDivElement> m_cueContainer;
-    Member<HTMLDivElement> m_regionDisplayTree;
+  String m_id;
+  String m_settings;
+  double m_width;
+  unsigned m_heightInLines;
+  FloatPoint m_regionAnchor;
+  FloatPoint m_viewportAnchor;
+  bool m_scroll;
 
-    // The member variable track can be a raw pointer as it will never
-    // reference a destroyed TextTrack, as this member variable
-    // is cleared in the TextTrack destructor and it is generally
-    // set/reset within the addRegion and removeRegion methods.
-    Member<TextTrack> m_track;
+  // The cue container is the container that is scrolled up to obtain the
+  // effect of scrolling cues when this is enabled for the regions.
+  Member<HTMLDivElement> m_cueContainer;
+  Member<HTMLDivElement> m_regionDisplayTree;
 
-    // Keep track of the current numeric value of the css "top" property.
-    double m_currentTop;
+  // The member variable track can be a raw pointer as it will never
+  // reference a destroyed TextTrack, as this member variable
+  // is cleared in the TextTrack destructor and it is generally
+  // set/reset within the addRegion and removeRegion methods.
+  Member<TextTrack> m_track;
 
-    // The timer is used to display the next cue line after the current one has
-    // been displayed. It's main use is for scrolling regions and it triggers as
-    // soon as the animation for rolling out one line has finished, but
-    // currently it is used also for non-scrolling regions to use a single
-    // code path.
-    Timer<VTTRegion> m_scrollTimer;
+  // Keep track of the current numeric value of the css "top" property.
+  double m_currentTop;
+
+  // The timer is used to display the next cue line after the current one has
+  // been displayed. It's main use is for scrolling regions and it triggers as
+  // soon as the animation for rolling out one line has finished, but
+  // currently it is used also for non-scrolling regions to use a single
+  // code path.
+  Timer<VTTRegion> m_scrollTimer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VTTRegion_h
+#endif  // VTTRegion_h

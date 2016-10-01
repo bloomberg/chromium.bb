@@ -25,23 +25,24 @@ class PaintController;
 // none of the DisplayItemClients that contribute to the subsequence have been invalidated.
 //
 class PLATFORM_EXPORT SubsequenceRecorder final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    WTF_MAKE_NONCOPYABLE(SubsequenceRecorder);
-public:
-    static bool useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClient& client)
-    {
-        return context.getPaintController().useCachedSubsequenceIfPossible(client);
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  WTF_MAKE_NONCOPYABLE(SubsequenceRecorder);
 
-    SubsequenceRecorder(GraphicsContext&, const DisplayItemClient&);
-    ~SubsequenceRecorder();
+ public:
+  static bool useCachedSubsequenceIfPossible(GraphicsContext& context,
+                                             const DisplayItemClient& client) {
+    return context.getPaintController().useCachedSubsequenceIfPossible(client);
+  }
 
-private:
-    PaintController& m_paintController;
-    const DisplayItemClient& m_client;
-    size_t m_beginSubsequenceIndex;
+  SubsequenceRecorder(GraphicsContext&, const DisplayItemClient&);
+  ~SubsequenceRecorder();
+
+ private:
+  PaintController& m_paintController;
+  const DisplayItemClient& m_client;
+  size_t m_beginSubsequenceIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SubsequenceRecorder_h
+#endif  // SubsequenceRecorder_h

@@ -34,6 +34,6 @@ namespace blink {
 
 typedef unsigned short Glyph;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Glyph_h
+#endif  // Glyph_h

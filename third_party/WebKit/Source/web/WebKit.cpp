@@ -57,125 +57,106 @@ namespace blink {
 namespace {
 
 class EndOfTaskRunner : public WebThread::TaskObserver {
-public:
-    void willProcessTask() override
-    {
-        AnimationClock::notifyTaskStart();
-    }
-    void didProcessTask() override
-    {
-        Microtask::performCheckpoint(mainThreadIsolate());
-        V8Initializer::reportRejectedPromisesOnMainThread();
-    }
+ public:
+  void willProcessTask() override { AnimationClock::notifyTaskStart(); }
+  void didProcessTask() override {
+    Microtask::performCheckpoint(mainThreadIsolate());
+    V8Initializer::reportRejectedPromisesOnMainThread();
+  }
 };
 
-} // namespace
+}  // namespace
 
 static WebThread::TaskObserver* s_endOfTaskRunner = nullptr;
 
-static ModulesInitializer& modulesInitializer()
-{
-    DEFINE_STATIC_LOCAL(std::unique_ptr<ModulesInitializer>, initializer, (wrapUnique(new ModulesInitializer)));
-    return *initializer;
+static ModulesInitializer& modulesInitializer() {
+  DEFINE_STATIC_LOCAL(std::unique_ptr<ModulesInitializer>, initializer,
+                      (wrapUnique(new ModulesInitializer)));
+  return *initializer;
 }
 
-void initialize(Platform* platform)
-{
-    Platform::initialize(platform);
+void initialize(Platform* platform) {
+  Platform::initialize(platform);
 
-    V8Initializer::initializeMainThread();
+  V8Initializer::initializeMainThread();
 
-    modulesInitializer().initialize();
+  modulesInitializer().initialize();
 
-    // currentThread is null if we are running on a thread without a message loop.
-    if (WebThread* currentThread = platform->currentThread()) {
-        DCHECK(!s_endOfTaskRunner);
-        s_endOfTaskRunner = new EndOfTaskRunner;
-        currentThread->addTaskObserver(s_endOfTaskRunner);
-    }
+  // currentThread is null if we are running on a thread without a message loop.
+  if (WebThread* currentThread = platform->currentThread()) {
+    DCHECK(!s_endOfTaskRunner);
+    s_endOfTaskRunner = new EndOfTaskRunner;
+    currentThread->addTaskObserver(s_endOfTaskRunner);
+  }
 }
 
-void shutdown()
-{
-    ThreadState::current()->cleanupMainThread();
+void shutdown() {
+  ThreadState::current()->cleanupMainThread();
 
-    // currentThread() is null if we are running on a thread without a message loop.
-    if (WebThread* currentThread = Platform::current()->currentThread()) {
-        currentThread->removeTaskObserver(s_endOfTaskRunner);
-        s_endOfTaskRunner = nullptr;
-    }
+  // currentThread() is null if we are running on a thread without a message loop.
+  if (WebThread* currentThread = Platform::current()->currentThread()) {
+    currentThread->removeTaskObserver(s_endOfTaskRunner);
+    s_endOfTaskRunner = nullptr;
+  }
 
-    modulesInitializer().shutdown();
+  modulesInitializer().shutdown();
 
-    V8Initializer::shutdownMainThread();
+  V8Initializer::shutdownMainThread();
 
-    Platform::shutdown();
+  Platform::shutdown();
 }
 
-v8::Isolate* mainThreadIsolate()
-{
-    return V8PerIsolateData::mainThreadIsolate();
+v8::Isolate* mainThreadIsolate() {
+  return V8PerIsolateData::mainThreadIsolate();
 }
 
 // TODO(tkent): The following functions to wrap LayoutTestSupport should be
 // moved to public/platform/.
 
-void setLayoutTestMode(bool value)
-{
-    LayoutTestSupport::setIsRunningLayoutTest(value);
+void setLayoutTestMode(bool value) {
+  LayoutTestSupport::setIsRunningLayoutTest(value);
 }
 
-bool layoutTestMode()
-{
-    return LayoutTestSupport::isRunningLayoutTest();
+bool layoutTestMode() {
+  return LayoutTestSupport::isRunningLayoutTest();
 }
 
-void setMockThemeEnabledForTest(bool value)
-{
-    LayoutTestSupport::setMockThemeEnabledForTest(value);
+void setMockThemeEnabledForTest(bool value) {
+  LayoutTestSupport::setMockThemeEnabledForTest(value);
 }
 
-void setFontAntialiasingEnabledForTest(bool value)
-{
-    LayoutTestSupport::setFontAntialiasingEnabledForTest(value);
+void setFontAntialiasingEnabledForTest(bool value) {
+  LayoutTestSupport::setFontAntialiasingEnabledForTest(value);
 }
 
-bool fontAntialiasingEnabledForTest()
-{
-    return LayoutTestSupport::isFontAntialiasingEnabledForTest();
+bool fontAntialiasingEnabledForTest() {
+  return LayoutTestSupport::isFontAntialiasingEnabledForTest();
 }
 
-void setAlwaysUseComplexTextForTest(bool value)
-{
-    LayoutTestSupport::setAlwaysUseComplexTextForTest(value);
+void setAlwaysUseComplexTextForTest(bool value) {
+  LayoutTestSupport::setAlwaysUseComplexTextForTest(value);
 }
 
-bool alwaysUseComplexTextForTest()
-{
-    return LayoutTestSupport::alwaysUseComplexTextForTest();
+bool alwaysUseComplexTextForTest() {
+  return LayoutTestSupport::alwaysUseComplexTextForTest();
 }
 
-void resetPluginCache(bool reloadPages)
-{
-    DCHECK(!reloadPages);
-    Page::refreshPlugins();
+void resetPluginCache(bool reloadPages) {
+  DCHECK(!reloadPages);
+  Page::refreshPlugins();
 }
 
-void decommitFreeableMemory()
-{
-    WTF::Partitions::decommitFreeableMemory();
+void decommitFreeableMemory() {
+  WTF::Partitions::decommitFreeableMemory();
 }
 
 void MemoryPressureNotificationToWorkerThreadIsolates(
-    v8::MemoryPressureLevel level)
-{
-    WorkerBackingThread::
-        MemoryPressureNotificationToWorkerThreadIsolates(level);
+    v8::MemoryPressureLevel level) {
+  WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(level);
 }
 
-void setRAILModeOnWorkerThreadIsolates(v8::RAILMode railMode)
-{
-    WorkerBackingThread::setRAILModeOnWorkerThreadIsolates(railMode);
+void setRAILModeOnWorkerThreadIsolates(v8::RAILMode railMode) {
+  WorkerBackingThread::setRAILModeOnWorkerThreadIsolates(railMode);
 }
 
-} // namespace blink
+}  // namespace blink

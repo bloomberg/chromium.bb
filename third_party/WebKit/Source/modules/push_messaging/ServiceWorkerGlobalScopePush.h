@@ -10,10 +10,10 @@
 namespace blink {
 
 class ServiceWorkerGlobalScopePush {
-public:
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(push);
+ public:
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(push);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerGlobalScopePush_h
+#endif  // ServiceWorkerGlobalScopePush_h

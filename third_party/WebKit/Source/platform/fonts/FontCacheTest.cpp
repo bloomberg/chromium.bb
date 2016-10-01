@@ -13,26 +13,26 @@
 namespace blink {
 
 class EmptyPlatform : public TestingPlatformSupport {
-public:
-    EmptyPlatform() {}
-    ~EmptyPlatform() override {}
+ public:
+  EmptyPlatform() {}
+  ~EmptyPlatform() override {}
 };
 
-TEST(FontCache, getLastResortFallbackFont)
-{
-    FontCache* fontCache = FontCache::fontCache();
-    ASSERT_TRUE(fontCache);
+TEST(FontCache, getLastResortFallbackFont) {
+  FontCache* fontCache = FontCache::fontCache();
+  ASSERT_TRUE(fontCache);
 
-    EmptyPlatform platform;
+  EmptyPlatform platform;
 
-    FontDescription fontDescription;
-    fontDescription.setGenericFamily(FontDescription::StandardFamily);
-    RefPtr<SimpleFontData> fontData = fontCache->getLastResortFallbackFont(fontDescription, Retain);
-    EXPECT_TRUE(fontData);
+  FontDescription fontDescription;
+  fontDescription.setGenericFamily(FontDescription::StandardFamily);
+  RefPtr<SimpleFontData> fontData =
+      fontCache->getLastResortFallbackFont(fontDescription, Retain);
+  EXPECT_TRUE(fontData);
 
-    fontDescription.setGenericFamily(FontDescription::SansSerifFamily);
-    fontData = fontCache->getLastResortFallbackFont(fontDescription, Retain);
-    EXPECT_TRUE(fontData);
+  fontDescription.setGenericFamily(FontDescription::SansSerifFamily);
+  fontData = fontCache->getLastResortFallbackFont(fontDescription, Retain);
+  EXPECT_TRUE(fontData);
 }
 
-} // namespace blink
+}  // namespace blink

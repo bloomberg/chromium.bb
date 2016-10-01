@@ -14,19 +14,20 @@ class LayoutPoint;
 class LayoutPart;
 
 class PartPainter {
-    STACK_ALLOCATED();
-public:
-    PartPainter(const LayoutPart& layoutPart) : m_layoutPart(layoutPart) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&, const LayoutPoint&);
-    void paintContents(const PaintInfo&, const LayoutPoint&);
+ public:
+  PartPainter(const LayoutPart& layoutPart) : m_layoutPart(layoutPart) {}
 
-private:
-    bool isSelected() const;
+  void paint(const PaintInfo&, const LayoutPoint&);
+  void paintContents(const PaintInfo&, const LayoutPoint&);
 
-    const LayoutPart& m_layoutPart;
+ private:
+  bool isSelected() const;
+
+  const LayoutPart& m_layoutPart;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PartPainter_h
+#endif  // PartPainter_h

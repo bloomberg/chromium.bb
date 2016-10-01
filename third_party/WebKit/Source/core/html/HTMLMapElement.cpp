@@ -36,91 +36,90 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLMapElement::HTMLMapElement(Document& document)
-    : HTMLElement(mapTag, document)
-{
-    UseCounter::count(document, UseCounter::MapElement);
+    : HTMLElement(mapTag, document) {
+  UseCounter::count(document, UseCounter::MapElement);
 }
 
 DEFINE_NODE_FACTORY(HTMLMapElement)
 
-HTMLMapElement::~HTMLMapElement()
-{
+HTMLMapElement::~HTMLMapElement() {}
+
+HTMLAreaElement* HTMLMapElement::areaForPoint(
+    const LayoutPoint& location,
+    const LayoutObject* containerObject) {
+  HTMLAreaElement* defaultArea = nullptr;
+  for (HTMLAreaElement& area :
+       Traversal<HTMLAreaElement>::descendantsOf(*this)) {
+    if (area.isDefault() && !defaultArea)
+      defaultArea = &area;
+    else if (area.pointInArea(location, containerObject))
+      return &area;
+  }
+
+  return defaultArea;
 }
 
-HTMLAreaElement* HTMLMapElement::areaForPoint(const LayoutPoint& location, const LayoutObject* containerObject)
-{
-    HTMLAreaElement* defaultArea = nullptr;
-    for (HTMLAreaElement& area : Traversal<HTMLAreaElement>::descendantsOf(*this)) {
-        if (area.isDefault() && !defaultArea)
-            defaultArea = &area;
-        else if (area.pointInArea(location, containerObject))
-            return &area;
-    }
+HTMLImageElement* HTMLMapElement::imageElement() {
+  HTMLCollection* images = document().images();
+  for (unsigned i = 0; Element* curr = images->item(i); ++i) {
+    DCHECK(isHTMLImageElement(curr));
 
-    return defaultArea;
+    // The HTMLImageElement's useMap() value includes the '#' symbol at the beginning,
+    // which has to be stripped off.
+    HTMLImageElement& imageElement = toHTMLImageElement(*curr);
+    String useMapName =
+        imageElement.getAttribute(usemapAttr).getString().substring(1);
+    if (equalIgnoringCase(useMapName, m_name))
+      return &imageElement;
+  }
+
+  return nullptr;
 }
 
-HTMLImageElement* HTMLMapElement::imageElement()
-{
-    HTMLCollection* images = document().images();
-    for (unsigned i = 0; Element* curr = images->item(i); ++i) {
-        DCHECK(isHTMLImageElement(curr));
+void HTMLMapElement::parseAttribute(const QualifiedName& name,
+                                    const AtomicString& oldValue,
+                                    const AtomicString& value) {
+  // FIXME: This logic seems wrong for XML documents.
+  // Either the id or name will be used depending on the order the attributes are parsed.
 
-        // The HTMLImageElement's useMap() value includes the '#' symbol at the beginning,
-        // which has to be stripped off.
-        HTMLImageElement& imageElement = toHTMLImageElement(*curr);
-        String useMapName = imageElement.getAttribute(usemapAttr).getString().substring(1);
-        if (equalIgnoringCase(useMapName, m_name))
-            return &imageElement;
-    }
-
-    return nullptr;
-}
-
-void HTMLMapElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
-{
-    // FIXME: This logic seems wrong for XML documents.
-    // Either the id or name will be used depending on the order the attributes are parsed.
-
-    if (name == idAttr || name == nameAttr) {
-        if (name == idAttr) {
-            // Call base class so that hasID bit gets set.
-            HTMLElement::parseAttribute(name, oldValue, value);
-            if (document().isHTMLDocument())
-                return;
-        }
-        if (isConnected())
-            treeScope().removeImageMap(this);
-        String mapName = value;
-        if (mapName[0] == '#')
-            mapName = mapName.substring(1);
-        m_name = AtomicString(document().isHTMLDocument() ? mapName.lower() : mapName);
-        if (isConnected())
-            treeScope().addImageMap(this);
-
+  if (name == idAttr || name == nameAttr) {
+    if (name == idAttr) {
+      // Call base class so that hasID bit gets set.
+      HTMLElement::parseAttribute(name, oldValue, value);
+      if (document().isHTMLDocument())
         return;
     }
+    if (isConnected())
+      treeScope().removeImageMap(this);
+    String mapName = value;
+    if (mapName[0] == '#')
+      mapName = mapName.substring(1);
+    m_name =
+        AtomicString(document().isHTMLDocument() ? mapName.lower() : mapName);
+    if (isConnected())
+      treeScope().addImageMap(this);
 
-    HTMLElement::parseAttribute(name, oldValue, value);
+    return;
+  }
+
+  HTMLElement::parseAttribute(name, oldValue, value);
 }
 
-HTMLCollection* HTMLMapElement::areas()
-{
-    return ensureCachedCollection<HTMLCollection>(MapAreas);
+HTMLCollection* HTMLMapElement::areas() {
+  return ensureCachedCollection<HTMLCollection>(MapAreas);
 }
 
-Node::InsertionNotificationRequest HTMLMapElement::insertedInto(ContainerNode* insertionPoint)
-{
-    if (insertionPoint->isConnected())
-        treeScope().addImageMap(this);
-    return HTMLElement::insertedInto(insertionPoint);
+Node::InsertionNotificationRequest HTMLMapElement::insertedInto(
+    ContainerNode* insertionPoint) {
+  if (insertionPoint->isConnected())
+    treeScope().addImageMap(this);
+  return HTMLElement::insertedInto(insertionPoint);
 }
 
-void HTMLMapElement::removedFrom(ContainerNode* insertionPoint)
-{
-    if (insertionPoint->isConnected())
-        treeScope().removeImageMap(this);
-    HTMLElement::removedFrom(insertionPoint);
+void HTMLMapElement::removedFrom(ContainerNode* insertionPoint) {
+  if (insertionPoint->isConnected())
+    treeScope().removeImageMap(this);
+  HTMLElement::removedFrom(insertionPoint);
 }
 
-} // namespace blink
+}  // namespace blink

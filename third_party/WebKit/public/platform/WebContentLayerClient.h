@@ -38,44 +38,43 @@ struct WebRect;
 class WebDisplayItemList;
 
 class BLINK_PLATFORM_EXPORT WebContentLayerClient {
-public:
-    enum PaintingControlSetting {
-        // Returns the last PaintArtifact produced.
-        PaintDefaultBehavior,
-        // Paints the content to simulate the behavior of FrameView::synchronizedPaint.
-        PaintDefaultBehaviorForTest,
-        DisplayListConstructionDisabled,
-        DisplayListCachingDisabled,
-        DisplayListPaintingDisabled,
-        SubsequenceCachingDisabled
-    };
+ public:
+  enum PaintingControlSetting {
+    // Returns the last PaintArtifact produced.
+    PaintDefaultBehavior,
+    // Paints the content to simulate the behavior of FrameView::synchronizedPaint.
+    PaintDefaultBehaviorForTest,
+    DisplayListConstructionDisabled,
+    DisplayListCachingDisabled,
+    DisplayListPaintingDisabled,
+    SubsequenceCachingDisabled
+  };
 
-    // The paintable region is the rectangular region, within the bounds of the layer
-    // this client paints, that the client is capable of painting via paintContents().
-    // Calling paintContents will return a WebDisplayitemList that is guaranteed valid
-    // only within this region.
-    // In particular, this is used to represent the interest rect in Blink.
-    virtual gfx::Rect paintableRegion() = 0;
+  // The paintable region is the rectangular region, within the bounds of the layer
+  // this client paints, that the client is capable of painting via paintContents().
+  // Calling paintContents will return a WebDisplayitemList that is guaranteed valid
+  // only within this region.
+  // In particular, this is used to represent the interest rect in Blink.
+  virtual gfx::Rect paintableRegion() = 0;
 
-    // Paints the content area for the layer, typically dirty rects submitted
-    // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands
-    // to populate the WebDisplayItemList.
-    // The |PaintingControlSetting| enum controls painting to isolate different components in performance tests.
-    // Currently the DisplayListConstructionDisabled does nothing.
-    virtual void paintContents(
-        WebDisplayItemList*,
-        PaintingControlSetting = PaintDefaultBehavior) = 0;
+  // Paints the content area for the layer, typically dirty rects submitted
+  // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands
+  // to populate the WebDisplayItemList.
+  // The |PaintingControlSetting| enum controls painting to isolate different components in performance tests.
+  // Currently the DisplayListConstructionDisabled does nothing.
+  virtual void paintContents(WebDisplayItemList*,
+                             PaintingControlSetting = PaintDefaultBehavior) = 0;
 
-    // Returns an estimate of the current memory usage within this object,
-    // excluding memory shared with painting artifacts (i.e.,
-    // WebDisplayItemList). Should be invoked after paintContents, so that the
-    // result includes data cached internally during painting.
-    virtual size_t approximateUnsharedMemoryUsage() const { return 0; }
+  // Returns an estimate of the current memory usage within this object,
+  // excluding memory shared with painting artifacts (i.e.,
+  // WebDisplayItemList). Should be invoked after paintContents, so that the
+  // result includes data cached internally during painting.
+  virtual size_t approximateUnsharedMemoryUsage() const { return 0; }
 
-protected:
-    virtual ~WebContentLayerClient() { }
+ protected:
+  virtual ~WebContentLayerClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebContentLayerClient_h
+#endif  // WebContentLayerClient_h

@@ -20,35 +20,49 @@ namespace blink {
 // KeyframeEffectReadOnly object, we just want to provide a read-only interface
 // to the KeyframeEffect object, so pass straight through to the subclass
 // factory methods.
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
-{
-    return KeyframeEffect::create(executionContext, element, effectInput, duration, exceptionState);
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
+    ExecutionContext* executionContext,
+    Element* element,
+    const DictionarySequenceOrDictionary& effectInput,
+    double duration,
+    ExceptionState& exceptionState) {
+  return KeyframeEffect::create(executionContext, element, effectInput,
+                                duration, exceptionState);
 }
 
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
-{
-    return KeyframeEffect::create(executionContext, element, effectInput, timingInput, exceptionState);
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
+    ExecutionContext* executionContext,
+    Element* element,
+    const DictionarySequenceOrDictionary& effectInput,
+    const KeyframeEffectOptions& timingInput,
+    ExceptionState& exceptionState) {
+  return KeyframeEffect::create(executionContext, element, effectInput,
+                                timingInput, exceptionState);
 }
 
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(ExecutionContext* executionContext, Element* element, const DictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
-{
-    return KeyframeEffect::create(executionContext, element, effectInput, exceptionState);
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
+    ExecutionContext* executionContext,
+    Element* element,
+    const DictionarySequenceOrDictionary& effectInput,
+    ExceptionState& exceptionState) {
+  return KeyframeEffect::create(executionContext, element, effectInput,
+                                exceptionState);
 }
 
-KeyframeEffectReadOnly::KeyframeEffectReadOnly(Element* target, EffectModel* model, const Timing& timing, EventDelegate* eventDelegate)
-    : AnimationEffectReadOnly(timing, eventDelegate)
-    , m_target(target)
-    , m_model(model)
-    , m_sampledEffect(nullptr)
-{
+KeyframeEffectReadOnly::KeyframeEffectReadOnly(Element* target,
+                                               EffectModel* model,
+                                               const Timing& timing,
+                                               EventDelegate* eventDelegate)
+    : AnimationEffectReadOnly(timing, eventDelegate),
+      m_target(target),
+      m_model(model),
+      m_sampledEffect(nullptr) {}
+
+DEFINE_TRACE(KeyframeEffectReadOnly) {
+  visitor->trace(m_target);
+  visitor->trace(m_model);
+  visitor->trace(m_sampledEffect);
+  AnimationEffectReadOnly::trace(visitor);
 }
 
-DEFINE_TRACE(KeyframeEffectReadOnly)
-{
-    visitor->trace(m_target);
-    visitor->trace(m_model);
-    visitor->trace(m_sampledEffect);
-    AnimationEffectReadOnly::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

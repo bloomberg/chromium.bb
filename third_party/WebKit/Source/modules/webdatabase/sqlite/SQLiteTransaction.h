@@ -34,24 +34,27 @@ namespace blink {
 class SQLiteDatabase;
 
 class SQLiteTransaction {
-    WTF_MAKE_NONCOPYABLE(SQLiteTransaction); USING_FAST_MALLOC(SQLiteTransaction);
-public:
-    SQLiteTransaction(SQLiteDatabase& db, bool readOnly = false);
-    ~SQLiteTransaction();
+  WTF_MAKE_NONCOPYABLE(SQLiteTransaction);
+  USING_FAST_MALLOC(SQLiteTransaction);
 
-    void begin();
-    void commit();
-    void rollback();
-    void stop();
+ public:
+  SQLiteTransaction(SQLiteDatabase& db, bool readOnly = false);
+  ~SQLiteTransaction();
 
-    bool inProgress() const { return m_inProgress; }
-    bool wasRolledBackBySqlite() const;
-private:
-    SQLiteDatabase& m_db;
-    bool m_inProgress;
-    bool m_readOnly;
+  void begin();
+  void commit();
+  void rollback();
+  void stop();
+
+  bool inProgress() const { return m_inProgress; }
+  bool wasRolledBackBySqlite() const;
+
+ private:
+  SQLiteDatabase& m_db;
+  bool m_inProgress;
+  bool m_readOnly;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLiteTransation_H
+#endif  // SQLiteTransation_H

@@ -38,55 +38,53 @@
 namespace blink {
 
 class AnimatableUnknown final : public AnimatableValue {
-public:
-    ~AnimatableUnknown() override { }
+ public:
+  ~AnimatableUnknown() override {}
 
-    static PassRefPtr<AnimatableUnknown> create(CSSValue* value)
-    {
-        return adoptRef(new AnimatableUnknown(value));
-    }
-    static PassRefPtr<AnimatableUnknown> create(CSSValueID value)
-    {
-        return adoptRef(new AnimatableUnknown(CSSPrimitiveValue::createIdentifier(value)));
-    }
+  static PassRefPtr<AnimatableUnknown> create(CSSValue* value) {
+    return adoptRef(new AnimatableUnknown(value));
+  }
+  static PassRefPtr<AnimatableUnknown> create(CSSValueID value) {
+    return adoptRef(
+        new AnimatableUnknown(CSSPrimitiveValue::createIdentifier(value)));
+  }
 
-    CSSValue* toCSSValue() const { return m_value; }
-    CSSValueID toCSSValueID() const { return toCSSPrimitiveValue(m_value.get())->getValueID(); }
+  CSSValue* toCSSValue() const { return m_value; }
+  CSSValueID toCSSValueID() const {
+    return toCSSPrimitiveValue(m_value.get())->getValueID();
+  }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const override
-    {
-        return defaultInterpolateTo(this, value, fraction);
-    }
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value,
+                                            double fraction) const override {
+    return defaultInterpolateTo(this, value, fraction);
+  }
 
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    explicit AnimatableUnknown(CSSValue* value)
-        : m_value(value)
-    {
-        DCHECK(m_value);
-    }
-    AnimatableType type() const override { return TypeUnknown; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  explicit AnimatableUnknown(CSSValue* value) : m_value(value) {
+    DCHECK(m_value);
+  }
+  AnimatableType type() const override { return TypeUnknown; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    const Persistent<CSSValue> m_value;
+  const Persistent<CSSValue> m_value;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableUnknown, isUnknown());
 
-inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const
-{
-    const AnimatableUnknown* unknown = toAnimatableUnknown(value);
-    return m_value == unknown->m_value || m_value->equals(*unknown->m_value);
+inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const {
+  const AnimatableUnknown* unknown = toAnimatableUnknown(value);
+  return m_value == unknown->m_value || m_value->equals(*unknown->m_value);
 }
 
-inline bool AnimatableUnknown::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    const AnimatableUnknown& unknown = toAnimatableUnknown(*value);
-    return !m_value->equals(*unknown.m_value);
+inline bool AnimatableUnknown::usesDefaultInterpolationWith(
+    const AnimatableValue* value) const {
+  const AnimatableUnknown& unknown = toAnimatableUnknown(*value);
+  return !m_value->equals(*unknown.m_value);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableUnknown_h
+#endif  // AnimatableUnknown_h

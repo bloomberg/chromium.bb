@@ -17,45 +17,45 @@ enum class WebFrameLoadType;
 struct WebRect;
 
 class WebRemoteFrameClient {
-public:
-    // Specifies the reason for the detachment.
-    enum class DetachType { Remove, Swap };
+ public:
+  // Specifies the reason for the detachment.
+  enum class DetachType { Remove, Swap };
 
-    // Notify the embedder that it should remove this frame from the frame tree
-    // and release any resources associated with it.
-    virtual void frameDetached(DetachType) { }
+  // Notify the embedder that it should remove this frame from the frame tree
+  // and release any resources associated with it.
+  virtual void frameDetached(DetachType) {}
 
-    // Notifies the embedder that a postMessage was issued to a remote frame.
-    virtual void forwardPostMessage(
-        WebLocalFrame* sourceFrame,
-        WebRemoteFrame* targetFrame,
-        WebSecurityOrigin targetOrigin,
-        WebDOMMessageEvent) {}
+  // Notifies the embedder that a postMessage was issued to a remote frame.
+  virtual void forwardPostMessage(WebLocalFrame* sourceFrame,
+                                  WebRemoteFrame* targetFrame,
+                                  WebSecurityOrigin targetOrigin,
+                                  WebDOMMessageEvent) {}
 
-    // A remote frame was asked to start a navigation.
-    virtual void navigate(const WebURLRequest& request, bool shouldReplaceCurrentEntry) { }
-    virtual void reload(WebFrameLoadType, WebClientRedirectPolicy) {}
+  // A remote frame was asked to start a navigation.
+  virtual void navigate(const WebURLRequest& request,
+                        bool shouldReplaceCurrentEntry) {}
+  virtual void reload(WebFrameLoadType, WebClientRedirectPolicy) {}
 
-    // FIXME: Remove this method once we have input routing in the browser
-    // process. See http://crbug.com/339659.
-    virtual void forwardInputEvent(const WebInputEvent*) { }
+  // FIXME: Remove this method once we have input routing in the browser
+  // process. See http://crbug.com/339659.
+  virtual void forwardInputEvent(const WebInputEvent*) {}
 
-    virtual void frameRectsChanged(const WebRect&) { }
+  virtual void frameRectsChanged(const WebRect&) {}
 
-    virtual void visibilityChanged(bool visible) {}
+  virtual void visibilityChanged(bool visible) {}
 
-    // This frame updated its opener to another frame.
-    virtual void didChangeOpener(WebFrame* opener) { }
+  // This frame updated its opener to another frame.
+  virtual void didChangeOpener(WebFrame* opener) {}
 
-    // Continue sequential focus navigation in this frame.  This is called when
-    // the |source| frame is searching for the next focusable element (e.g., in
-    // response to <tab>) and encounters a remote frame.
-    virtual void advanceFocus(WebFocusType type, WebLocalFrame* source) { }
+  // Continue sequential focus navigation in this frame.  This is called when
+  // the |source| frame is searching for the next focusable element (e.g., in
+  // response to <tab>) and encounters a remote frame.
+  virtual void advanceFocus(WebFocusType type, WebLocalFrame* source) {}
 
-    // This frame was focused by another frame.
-    virtual void frameFocused() { }
+  // This frame was focused by another frame.
+  virtual void frameFocused() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRemoteFrameClient_h
+#endif  // WebRemoteFrameClient_h

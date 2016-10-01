@@ -44,83 +44,83 @@ namespace blink {
 // The fragments are collected by calling PaintLayer::collectFragments
 // on every box once per paint/hit-testing operation.
 struct PaintLayerFragment {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground)
-    {
-        layerBounds = bounds;
-        backgroundRect = background;
-        foregroundRect = foreground;
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    void moveBy(const LayoutPoint& offset)
-    {
-        layerBounds.moveBy(offset);
-        backgroundRect.moveBy(offset);
-        foregroundRect.moveBy(offset);
-        paginationClip.moveBy(offset);
-    }
+ public:
+  void setRects(const LayoutRect& bounds,
+                const ClipRect& background,
+                const ClipRect& foreground) {
+    layerBounds = bounds;
+    backgroundRect = background;
+    foregroundRect = foreground;
+  }
 
-    void intersect(const LayoutRect& rect)
-    {
-        backgroundRect.intersect(rect);
-        foregroundRect.intersect(rect);
-    }
+  void moveBy(const LayoutPoint& offset) {
+    layerBounds.moveBy(offset);
+    backgroundRect.moveBy(offset);
+    foregroundRect.moveBy(offset);
+    paginationClip.moveBy(offset);
+  }
 
-    // Set on all fragments.
-    //
-    // The PaintLayer's size in the associated ClipRectsContext's
-    // rootLayer coordinate system. See PaintLayer::m_size for the
-    // exact rectangle.
-    //
-    // TODO(jchaffraix): We should store the rootLayer here to ensure we don't
-    // mix coordinate systems by mistake.
-    LayoutRect layerBounds;
+  void intersect(const LayoutRect& rect) {
+    backgroundRect.intersect(rect);
+    foregroundRect.intersect(rect);
+  }
 
-    // Set on all fragments.
-    //
-    // The rectangle used to clip the background.
-    //
-    // The rectangle is the rectangle-to-paint if no clip applies to the
-    // fragment. It is the intersection between the visual overflow rect
-    // and any overflow clips or 'clip' properties. It is also intersected with
-    // |paginationClip| if it is present.
-    //
-    // See PaintLayerClipper::calculateRects.
-    ClipRect backgroundRect;
+  // Set on all fragments.
+  //
+  // The PaintLayer's size in the associated ClipRectsContext's
+  // rootLayer coordinate system. See PaintLayer::m_size for the
+  // exact rectangle.
+  //
+  // TODO(jchaffraix): We should store the rootLayer here to ensure we don't
+  // mix coordinate systems by mistake.
+  LayoutRect layerBounds;
 
-    // Set on all fragments.
-    //
-    // The rectangle used to clip the content (foreground).
-    //
-    // The rectangle is the rectangle-to-paint if no clip applies to the
-    // fragment. If there is an overflow clip, the rectangle-to-paint is
-    // intersected with the border box rect without the scrollbars (content gets
-    // clipped at their edge). Also any enclosing 'clip' properties get applied
-    // to the intersected rectangle. It is also intersected with
-    // |paginationClip| if it is present.
-    //
-    // See PaintLayerClipper::calculateRects.
-    ClipRect foregroundRect;
+  // Set on all fragments.
+  //
+  // The rectangle used to clip the background.
+  //
+  // The rectangle is the rectangle-to-paint if no clip applies to the
+  // fragment. It is the intersection between the visual overflow rect
+  // and any overflow clips or 'clip' properties. It is also intersected with
+  // |paginationClip| if it is present.
+  //
+  // See PaintLayerClipper::calculateRects.
+  ClipRect backgroundRect;
 
-    // Only set on paginated fragments.
-    //
-    // The physical translation to apply to shift the layer when
-    // painting/hit-testing.
-    LayoutPoint paginationOffset;
+  // Set on all fragments.
+  //
+  // The rectangle used to clip the content (foreground).
+  //
+  // The rectangle is the rectangle-to-paint if no clip applies to the
+  // fragment. If there is an overflow clip, the rectangle-to-paint is
+  // intersected with the border box rect without the scrollbars (content gets
+  // clipped at their edge). Also any enclosing 'clip' properties get applied
+  // to the intersected rectangle. It is also intersected with
+  // |paginationClip| if it is present.
+  //
+  // See PaintLayerClipper::calculateRects.
+  ClipRect foregroundRect;
 
-    // Only set on paginated fragments.
-    //
-    // This is the additional clip from the fragmentainer (i.e. column or
-    // page) that applies to the layer. |backgroundRect| and |foregroundRect|
-    // are intersected with it (see collectFragments).
-    //
-    // It is in layer-local (physical) coordinates.
-    LayoutRect paginationClip;
+  // Only set on paginated fragments.
+  //
+  // The physical translation to apply to shift the layer when
+  // painting/hit-testing.
+  LayoutPoint paginationOffset;
+
+  // Only set on paginated fragments.
+  //
+  // This is the additional clip from the fragmentainer (i.e. column or
+  // page) that applies to the layer. |backgroundRect| and |foregroundRect|
+  // are intersected with it (see collectFragments).
+  //
+  // It is in layer-local (physical) coordinates.
+  LayoutRect paginationClip;
 };
 
 typedef Vector<PaintLayerFragment, 1> PaintLayerFragments;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintLayerFragment_h
+#endif  // PaintLayerFragment_h

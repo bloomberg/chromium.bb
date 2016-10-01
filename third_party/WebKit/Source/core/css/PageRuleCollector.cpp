@@ -35,91 +35,98 @@
 
 namespace blink {
 
-static inline bool comparePageRules(const StyleRulePage* r1, const StyleRulePage* r2)
-{
-    return r1->selector()->specificity() < r2->selector()->specificity();
+static inline bool comparePageRules(const StyleRulePage* r1,
+                                    const StyleRulePage* r2) {
+  return r1->selector()->specificity() < r2->selector()->specificity();
 }
 
-bool PageRuleCollector::isLeftPage(const ComputedStyle* rootElementStyle, int pageIndex) const
-{
-    bool isFirstPageLeft = false;
-    ASSERT(rootElementStyle);
-    if (!rootElementStyle->isLeftToRightDirection())
-        isFirstPageLeft = true;
+bool PageRuleCollector::isLeftPage(const ComputedStyle* rootElementStyle,
+                                   int pageIndex) const {
+  bool isFirstPageLeft = false;
+  ASSERT(rootElementStyle);
+  if (!rootElementStyle->isLeftToRightDirection())
+    isFirstPageLeft = true;
 
-    return (pageIndex + (isFirstPageLeft ? 1 : 0)) % 2;
+  return (pageIndex + (isFirstPageLeft ? 1 : 0)) % 2;
 }
 
-bool PageRuleCollector::isFirstPage(int pageIndex) const
-{
-    // FIXME: In case of forced left/right page, page at index 1 (not 0) can be the first page.
-    return (!pageIndex);
+bool PageRuleCollector::isFirstPage(int pageIndex) const {
+  // FIXME: In case of forced left/right page, page at index 1 (not 0) can be the first page.
+  return (!pageIndex);
 }
 
-String PageRuleCollector::pageName(int /* pageIndex */) const
-{
-    // FIXME: Implement page index to page name mapping.
-    return "";
+String PageRuleCollector::pageName(int /* pageIndex */) const {
+  // FIXME: Implement page index to page name mapping.
+  return "";
 }
 
-PageRuleCollector::PageRuleCollector(const ComputedStyle* rootElementStyle, int pageIndex)
-    : m_isLeftPage(isLeftPage(rootElementStyle, pageIndex))
-    , m_isFirstPage(isFirstPage(pageIndex))
-    , m_pageName(pageName(pageIndex)) { }
+PageRuleCollector::PageRuleCollector(const ComputedStyle* rootElementStyle,
+                                     int pageIndex)
+    : m_isLeftPage(isLeftPage(rootElementStyle, pageIndex)),
+      m_isFirstPage(isFirstPage(pageIndex)),
+      m_pageName(pageName(pageIndex)) {}
 
-void PageRuleCollector::matchPageRules(RuleSet* rules)
-{
-    if (!rules)
-        return;
+void PageRuleCollector::matchPageRules(RuleSet* rules) {
+  if (!rules)
+    return;
 
-    rules->compactRulesIfNeeded();
-    HeapVector<Member<StyleRulePage>> matchedPageRules;
-    matchPageRulesForList(matchedPageRules, rules->pageRules(), m_isLeftPage, m_isFirstPage, m_pageName);
-    if (matchedPageRules.isEmpty())
-        return;
+  rules->compactRulesIfNeeded();
+  HeapVector<Member<StyleRulePage>> matchedPageRules;
+  matchPageRulesForList(matchedPageRules, rules->pageRules(), m_isLeftPage,
+                        m_isFirstPage, m_pageName);
+  if (matchedPageRules.isEmpty())
+    return;
 
-    std::stable_sort(matchedPageRules.begin(), matchedPageRules.end(), comparePageRules);
+  std::stable_sort(matchedPageRules.begin(), matchedPageRules.end(),
+                   comparePageRules);
 
-    for (unsigned i = 0; i < matchedPageRules.size(); i++)
-        m_result.addMatchedProperties(&matchedPageRules[i]->properties());
+  for (unsigned i = 0; i < matchedPageRules.size(); i++)
+    m_result.addMatchedProperties(&matchedPageRules[i]->properties());
 }
 
-static bool checkPageSelectorComponents(const CSSSelector* selector, bool isLeftPage, bool isFirstPage, const String& pageName)
-{
-    for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
-        if (component->match() == CSSSelector::Tag) {
-            const AtomicString& localName = component->tagQName().localName();
-            if (localName != starAtom && localName != pageName)
-                return false;
-        }
-
-        CSSSelector::PseudoType pseudoType = component->getPseudoType();
-        if ((pseudoType == CSSSelector::PseudoLeftPage && !isLeftPage)
-            || (pseudoType == CSSSelector::PseudoRightPage && isLeftPage)
-            || (pseudoType == CSSSelector::PseudoFirstPage && !isFirstPage))
-        {
-            return false;
-        }
+static bool checkPageSelectorComponents(const CSSSelector* selector,
+                                        bool isLeftPage,
+                                        bool isFirstPage,
+                                        const String& pageName) {
+  for (const CSSSelector* component = selector; component;
+       component = component->tagHistory()) {
+    if (component->match() == CSSSelector::Tag) {
+      const AtomicString& localName = component->tagQName().localName();
+      if (localName != starAtom && localName != pageName)
+        return false;
     }
-    return true;
-}
 
-void PageRuleCollector::matchPageRulesForList(HeapVector<Member<StyleRulePage>>& matchedRules, const HeapVector<Member<StyleRulePage>>& rules, bool isLeftPage, bool isFirstPage, const String& pageName)
-{
-    for (unsigned i = 0; i < rules.size(); ++i) {
-        StyleRulePage* rule = rules[i];
-
-        if (!checkPageSelectorComponents(rule->selector(), isLeftPage, isFirstPage, pageName))
-            continue;
-
-        // If the rule has no properties to apply, then ignore it.
-        const StylePropertySet& properties = rule->properties();
-        if (properties.isEmpty())
-            continue;
-
-        // Add this rule to our list of matched rules.
-        matchedRules.append(rule);
+    CSSSelector::PseudoType pseudoType = component->getPseudoType();
+    if ((pseudoType == CSSSelector::PseudoLeftPage && !isLeftPage) ||
+        (pseudoType == CSSSelector::PseudoRightPage && isLeftPage) ||
+        (pseudoType == CSSSelector::PseudoFirstPage && !isFirstPage)) {
+      return false;
     }
+  }
+  return true;
 }
 
-} // namespace blink
+void PageRuleCollector::matchPageRulesForList(
+    HeapVector<Member<StyleRulePage>>& matchedRules,
+    const HeapVector<Member<StyleRulePage>>& rules,
+    bool isLeftPage,
+    bool isFirstPage,
+    const String& pageName) {
+  for (unsigned i = 0; i < rules.size(); ++i) {
+    StyleRulePage* rule = rules[i];
+
+    if (!checkPageSelectorComponents(rule->selector(), isLeftPage, isFirstPage,
+                                     pageName))
+      continue;
+
+    // If the rule has no properties to apply, then ignore it.
+    const StylePropertySet& properties = rule->properties();
+    if (properties.isEmpty())
+      continue;
+
+    // Add this rule to our list of matched rules.
+    matchedRules.append(rule);
+  }
+}
+
+}  // namespace blink

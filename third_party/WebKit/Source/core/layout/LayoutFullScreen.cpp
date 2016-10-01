@@ -35,178 +35,182 @@
 using namespace blink;
 
 class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
-public:
-    LayoutFullScreenPlaceholder(LayoutFullScreen* owner)
-        : LayoutBlockFlow(nullptr)
-        , m_owner(owner)
-    {
-        setDocumentForAnonymous(&owner->document());
-    }
+ public:
+  LayoutFullScreenPlaceholder(LayoutFullScreen* owner)
+      : LayoutBlockFlow(nullptr), m_owner(owner) {
+    setDocumentForAnonymous(&owner->document());
+  }
 
-    // Must call setStyleWithWritingModeOfParent() instead.
-    void setStyle(PassRefPtr<ComputedStyle>) = delete;
+  // Must call setStyleWithWritingModeOfParent() instead.
+  void setStyle(PassRefPtr<ComputedStyle>) = delete;
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
-    bool anonymousHasStylePropagationOverride() override { return true; }
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectLayoutFullScreenPlaceholder ||
+           LayoutBlockFlow::isOfType(type);
+  }
+  bool anonymousHasStylePropagationOverride() override { return true; }
 
-    void willBeDestroyed() override;
-    LayoutFullScreen* m_owner;
+  void willBeDestroyed() override;
+  LayoutFullScreen* m_owner;
 };
 
-void LayoutFullScreenPlaceholder::willBeDestroyed()
-{
-    m_owner->resetPlaceholder();
-    LayoutBlockFlow::willBeDestroyed();
+void LayoutFullScreenPlaceholder::willBeDestroyed() {
+  m_owner->resetPlaceholder();
+  LayoutBlockFlow::willBeDestroyed();
 }
 
 LayoutFullScreen::LayoutFullScreen()
-    : LayoutFlexibleBox(nullptr)
-    , m_placeholder(nullptr)
-{
-    setIsAtomicInlineLevel(false);
+    : LayoutFlexibleBox(nullptr), m_placeholder(nullptr) {
+  setIsAtomicInlineLevel(false);
 }
 
-LayoutFullScreen* LayoutFullScreen::createAnonymous(Document* document)
-{
-    LayoutFullScreen* layoutObject = new LayoutFullScreen();
-    layoutObject->setDocumentForAnonymous(document);
-    return layoutObject;
+LayoutFullScreen* LayoutFullScreen::createAnonymous(Document* document) {
+  LayoutFullScreen* layoutObject = new LayoutFullScreen();
+  layoutObject->setDocumentForAnonymous(document);
+  return layoutObject;
 }
 
-void LayoutFullScreen::willBeDestroyed()
-{
-    if (m_placeholder) {
-        remove();
-        if (!m_placeholder->beingDestroyed())
-            m_placeholder->destroy();
-        DCHECK(!m_placeholder);
-    }
-
-    // LayoutObjects are unretained, so notify the document (which holds a pointer to a LayoutFullScreen)
-    // if its LayoutFullScreen is destroyed.
-    Fullscreen& fullscreen = Fullscreen::from(document());
-    if (fullscreen.fullScreenLayoutObject() == this)
-        fullscreen.fullScreenLayoutObjectDestroyed();
-
-    LayoutFlexibleBox::willBeDestroyed();
-}
-
-void LayoutFullScreen::updateStyle(LayoutObject* parent)
-{
-    RefPtr<ComputedStyle> fullscreenStyle = ComputedStyle::create();
-
-    // Create a stacking context:
-    fullscreenStyle->setZIndex(INT_MAX);
-    fullscreenStyle->setIsStackingContext(true);
-
-    fullscreenStyle->setFontDescription(FontDescription());
-    fullscreenStyle->font().update(nullptr);
-
-    fullscreenStyle->setDisplay(EDisplay::Flex);
-    fullscreenStyle->setJustifyContentPosition(ContentPositionCenter);
-    // TODO (lajava): Since the FullScrenn layout object is anonymous, its Default Alignment (align-items) value can't be used to resolve its children Self Alignment 'auto' values.
-    fullscreenStyle->setAlignItemsPosition(ItemPositionCenter);
-    fullscreenStyle->setFlexDirection(FlowColumn);
-
-    fullscreenStyle->setPosition(FixedPosition);
-    fullscreenStyle->setLeft(Length(0, blink::Fixed));
-    fullscreenStyle->setTop(Length(0, blink::Fixed));
-    IntSize viewportSize = document().page()->frameHost().visualViewport().size();
-    fullscreenStyle->setWidth(Length(viewportSize.width(), blink::Fixed));
-    fullscreenStyle->setHeight(Length(viewportSize.height(), blink::Fixed));
-
-    fullscreenStyle->setBackgroundColor(StyleColor(Color::black));
-
-    setStyleWithWritingModeOf(fullscreenStyle, parent);
-}
-
-void LayoutFullScreen::updateStyle()
-{
-    updateStyle(parent());
-}
-
-LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObject* parent, Document* document)
-{
-    // FIXME: We should not modify the structure of the layout tree during
-    // layout. crbug.com/370459
-    DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
-
-    LayoutFullScreen* fullscreenLayoutObject = LayoutFullScreen::createAnonymous(document);
-    fullscreenLayoutObject->updateStyle(parent);
-    if (parent && !parent->isChildAllowed(fullscreenLayoutObject, fullscreenLayoutObject->styleRef())) {
-        fullscreenLayoutObject->destroy();
-        return nullptr;
-    }
-    if (object) {
-        // |object->parent()| can be null if the object is not yet attached
-        // to |parent|.
-        if (LayoutObject* parent = object->parent()) {
-            LayoutBlock* containingBlock = object->containingBlock();
-            DCHECK(containingBlock);
-            // Since we are moving the |object| to a new parent |fullscreenLayoutObject|,
-            // the line box tree underneath our |containingBlock| is not longer valid.
-            if (containingBlock->isLayoutBlockFlow())
-                toLayoutBlockFlow(containingBlock)->deleteLineBoxTree();
-
-            parent->addChildWithWritingModeOfParent(fullscreenLayoutObject, object);
-            object->remove();
-
-            // Always just do a full layout to ensure that line boxes get deleted properly.
-            // Because objects moved from |parent| to |fullscreenLayoutObject|, we want to
-            // make new line boxes instead of leaving the old ones around.
-            parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
-            containingBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
-        }
-        fullscreenLayoutObject->addChild(object);
-        fullscreenLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
-    }
-
-    DCHECK(document);
-    Fullscreen::from(*document).setFullScreenLayoutObject(fullscreenLayoutObject);
-    return fullscreenLayoutObject;
-}
-
-void LayoutFullScreen::unwrapLayoutObject()
-{
-    // FIXME: We should not modify the structure of the layout tree during
-    // layout. crbug.com/370459
-    DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
-
-    if (parent()) {
-        for (LayoutObject* child = firstChild(); child; child = firstChild()) {
-            // We have to clear the override size, because as a flexbox, we
-            // may have set one on the child, and we don't want to leave that
-            // lying around on the child.
-            if (child->isBox())
-                toLayoutBox(child)->clearOverrideSize();
-            child->remove();
-            parent()->addChild(child, this);
-            parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
-        }
-    }
-    if (placeholder())
-        placeholder()->remove();
+void LayoutFullScreen::willBeDestroyed() {
+  if (m_placeholder) {
     remove();
-    destroy();
+    if (!m_placeholder->beingDestroyed())
+      m_placeholder->destroy();
+    DCHECK(!m_placeholder);
+  }
+
+  // LayoutObjects are unretained, so notify the document (which holds a pointer to a LayoutFullScreen)
+  // if its LayoutFullScreen is destroyed.
+  Fullscreen& fullscreen = Fullscreen::from(document());
+  if (fullscreen.fullScreenLayoutObject() == this)
+    fullscreen.fullScreenLayoutObjectDestroyed();
+
+  LayoutFlexibleBox::willBeDestroyed();
 }
 
-void LayoutFullScreen::createPlaceholder(PassRefPtr<ComputedStyle> style, const LayoutRect& frameRect)
-{
-    if (style->width().isAuto())
-        style->setWidth(Length(frameRect.width(), Fixed));
-    if (style->height().isAuto())
-        style->setHeight(Length(frameRect.height(), Fixed));
+void LayoutFullScreen::updateStyle(LayoutObject* parent) {
+  RefPtr<ComputedStyle> fullscreenStyle = ComputedStyle::create();
 
-    if (!m_placeholder) {
-        m_placeholder = new LayoutFullScreenPlaceholder(this);
-        m_placeholder->setStyleWithWritingModeOfParent(std::move(style));
-        if (parent()) {
-            parent()->addChildWithWritingModeOfParent(m_placeholder, this);
-            parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
-        }
-    } else {
-        m_placeholder->setStyle(std::move(style));
-        m_placeholder->setStyleWithWritingModeOfParent(std::move(style));
+  // Create a stacking context:
+  fullscreenStyle->setZIndex(INT_MAX);
+  fullscreenStyle->setIsStackingContext(true);
+
+  fullscreenStyle->setFontDescription(FontDescription());
+  fullscreenStyle->font().update(nullptr);
+
+  fullscreenStyle->setDisplay(EDisplay::Flex);
+  fullscreenStyle->setJustifyContentPosition(ContentPositionCenter);
+  // TODO (lajava): Since the FullScrenn layout object is anonymous, its Default Alignment (align-items) value can't be used to resolve its children Self Alignment 'auto' values.
+  fullscreenStyle->setAlignItemsPosition(ItemPositionCenter);
+  fullscreenStyle->setFlexDirection(FlowColumn);
+
+  fullscreenStyle->setPosition(FixedPosition);
+  fullscreenStyle->setLeft(Length(0, blink::Fixed));
+  fullscreenStyle->setTop(Length(0, blink::Fixed));
+  IntSize viewportSize = document().page()->frameHost().visualViewport().size();
+  fullscreenStyle->setWidth(Length(viewportSize.width(), blink::Fixed));
+  fullscreenStyle->setHeight(Length(viewportSize.height(), blink::Fixed));
+
+  fullscreenStyle->setBackgroundColor(StyleColor(Color::black));
+
+  setStyleWithWritingModeOf(fullscreenStyle, parent);
+}
+
+void LayoutFullScreen::updateStyle() {
+  updateStyle(parent());
+}
+
+LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object,
+                                                 LayoutObject* parent,
+                                                 Document* document) {
+  // FIXME: We should not modify the structure of the layout tree during
+  // layout. crbug.com/370459
+  DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
+
+  LayoutFullScreen* fullscreenLayoutObject =
+      LayoutFullScreen::createAnonymous(document);
+  fullscreenLayoutObject->updateStyle(parent);
+  if (parent &&
+      !parent->isChildAllowed(fullscreenLayoutObject,
+                              fullscreenLayoutObject->styleRef())) {
+    fullscreenLayoutObject->destroy();
+    return nullptr;
+  }
+  if (object) {
+    // |object->parent()| can be null if the object is not yet attached
+    // to |parent|.
+    if (LayoutObject* parent = object->parent()) {
+      LayoutBlock* containingBlock = object->containingBlock();
+      DCHECK(containingBlock);
+      // Since we are moving the |object| to a new parent |fullscreenLayoutObject|,
+      // the line box tree underneath our |containingBlock| is not longer valid.
+      if (containingBlock->isLayoutBlockFlow())
+        toLayoutBlockFlow(containingBlock)->deleteLineBoxTree();
+
+      parent->addChildWithWritingModeOfParent(fullscreenLayoutObject, object);
+      object->remove();
+
+      // Always just do a full layout to ensure that line boxes get deleted properly.
+      // Because objects moved from |parent| to |fullscreenLayoutObject|, we want to
+      // make new line boxes instead of leaving the old ones around.
+      parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+          LayoutInvalidationReason::Fullscreen);
+      containingBlock
+          ->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+              LayoutInvalidationReason::Fullscreen);
     }
+    fullscreenLayoutObject->addChild(object);
+    fullscreenLayoutObject
+        ->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+            LayoutInvalidationReason::Fullscreen);
+  }
+
+  DCHECK(document);
+  Fullscreen::from(*document).setFullScreenLayoutObject(fullscreenLayoutObject);
+  return fullscreenLayoutObject;
+}
+
+void LayoutFullScreen::unwrapLayoutObject() {
+  // FIXME: We should not modify the structure of the layout tree during
+  // layout. crbug.com/370459
+  DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
+
+  if (parent()) {
+    for (LayoutObject* child = firstChild(); child; child = firstChild()) {
+      // We have to clear the override size, because as a flexbox, we
+      // may have set one on the child, and we don't want to leave that
+      // lying around on the child.
+      if (child->isBox())
+        toLayoutBox(child)->clearOverrideSize();
+      child->remove();
+      parent()->addChild(child, this);
+      parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+          LayoutInvalidationReason::Fullscreen);
+    }
+  }
+  if (placeholder())
+    placeholder()->remove();
+  remove();
+  destroy();
+}
+
+void LayoutFullScreen::createPlaceholder(PassRefPtr<ComputedStyle> style,
+                                         const LayoutRect& frameRect) {
+  if (style->width().isAuto())
+    style->setWidth(Length(frameRect.width(), Fixed));
+  if (style->height().isAuto())
+    style->setHeight(Length(frameRect.height(), Fixed));
+
+  if (!m_placeholder) {
+    m_placeholder = new LayoutFullScreenPlaceholder(this);
+    m_placeholder->setStyleWithWritingModeOfParent(std::move(style));
+    if (parent()) {
+      parent()->addChildWithWritingModeOfParent(m_placeholder, this);
+      parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+          LayoutInvalidationReason::Fullscreen);
+    }
+  } else {
+    m_placeholder->setStyle(std::move(style));
+    m_placeholder->setStyleWithWritingModeOfParent(std::move(style));
+  }
 }

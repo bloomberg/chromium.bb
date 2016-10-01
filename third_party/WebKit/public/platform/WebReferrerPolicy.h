@@ -34,16 +34,17 @@
 namespace blink {
 
 enum WebReferrerPolicy {
-    WebReferrerPolicyAlways,
-    WebReferrerPolicyDefault,
-    WebReferrerPolicyNoReferrerWhenDowngrade,
-    WebReferrerPolicyNever,
-    WebReferrerPolicyOrigin,
-    WebReferrerPolicyOriginWhenCrossOrigin,
-    WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-    WebReferrerPolicyLast = WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin
+  WebReferrerPolicyAlways,
+  WebReferrerPolicyDefault,
+  WebReferrerPolicyNoReferrerWhenDowngrade,
+  WebReferrerPolicyNever,
+  WebReferrerPolicyOrigin,
+  WebReferrerPolicyOriginWhenCrossOrigin,
+  WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+  WebReferrerPolicyLast =
+      WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

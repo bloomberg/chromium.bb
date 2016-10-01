@@ -41,20 +41,20 @@ class MediaStreamComponent;
 class RTCStatsResponseBase;
 
 class RTCStatsRequest : public GarbageCollectedFinalized<RTCStatsRequest> {
-public:
-    virtual ~RTCStatsRequest() { }
+ public:
+  virtual ~RTCStatsRequest() {}
 
-    virtual RTCStatsResponseBase* createResponse() = 0;
-    virtual bool hasSelector() = 0;
-    virtual MediaStreamComponent* component() = 0;
-    virtual void requestSucceeded(RTCStatsResponseBase*) = 0;
+  virtual RTCStatsResponseBase* createResponse() = 0;
+  virtual bool hasSelector() = 0;
+  virtual MediaStreamComponent* component() = 0;
+  virtual void requestSucceeded(RTCStatsResponseBase*) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    RTCStatsRequest() { }
+ protected:
+  RTCStatsRequest() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCStatsRequest_h
+#endif  // RTCStatsRequest_h

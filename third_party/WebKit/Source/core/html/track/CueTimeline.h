@@ -29,79 +29,72 @@ typedef Vector<CueInterval> CueList;
 // This class manages the timeline and rendering updates of cues associated
 // with TextTracks. Owned by a HTMLMediaElement.
 class CueTimeline final : public GarbageCollectedFinalized<CueTimeline> {
-public:
-    CueTimeline(HTMLMediaElement&);
+ public:
+  CueTimeline(HTMLMediaElement&);
 
-    void addCues(TextTrack*, const TextTrackCueList*);
-    void addCue(TextTrack*, TextTrackCue*);
-    void removeCues(TextTrack*, const TextTrackCueList*);
-    void removeCue(TextTrack*, TextTrackCue*);
+  void addCues(TextTrack*, const TextTrackCueList*);
+  void addCue(TextTrack*, TextTrackCue*);
+  void removeCues(TextTrack*, const TextTrackCueList*);
+  void removeCue(TextTrack*, TextTrackCue*);
 
-    void hideCues(TextTrack*, const TextTrackCueList*);
+  void hideCues(TextTrack*, const TextTrackCueList*);
 
-    void updateActiveCues(double);
+  void updateActiveCues(double);
 
-    bool ignoreUpdateRequests() const { return m_ignoreUpdate > 0; }
-    void beginIgnoringUpdateRequests();
-    void endIgnoringUpdateRequests();
+  bool ignoreUpdateRequests() const { return m_ignoreUpdate > 0; }
+  void beginIgnoringUpdateRequests();
+  void endIgnoringUpdateRequests();
 
-    const CueList& currentlyActiveCues() const { return m_currentlyActiveCues; }
+  const CueList& currentlyActiveCues() const { return m_currentlyActiveCues; }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
+ private:
+  HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 
-    void addCueInternal(TextTrackCue*);
-    void removeCueInternal(TextTrackCue*);
+  void addCueInternal(TextTrackCue*);
+  void removeCueInternal(TextTrackCue*);
 
-    Member<HTMLMediaElement> m_mediaElement;
+  Member<HTMLMediaElement> m_mediaElement;
 
-    CueIntervalTree m_cueTree;
+  CueIntervalTree m_cueTree;
 
-    CueList m_currentlyActiveCues;
-    double m_lastUpdateTime;
+  CueList m_currentlyActiveCues;
+  double m_lastUpdateTime;
 
-    int m_ignoreUpdate;
+  int m_ignoreUpdate;
 };
 
 class TrackDisplayUpdateScope {
-    STACK_ALLOCATED();
-public:
-    TrackDisplayUpdateScope(CueTimeline& cueTimeline)
-    {
-        m_cueTimeline = &cueTimeline;
-        m_cueTimeline->beginIgnoringUpdateRequests();
-    }
-    ~TrackDisplayUpdateScope()
-    {
-        DCHECK(m_cueTimeline);
-        m_cueTimeline->endIgnoringUpdateRequests();
-    }
+  STACK_ALLOCATED();
 
-private:
-    Member<CueTimeline> m_cueTimeline;
+ public:
+  TrackDisplayUpdateScope(CueTimeline& cueTimeline) {
+    m_cueTimeline = &cueTimeline;
+    m_cueTimeline->beginIgnoringUpdateRequests();
+  }
+  ~TrackDisplayUpdateScope() {
+    DCHECK(m_cueTimeline);
+    m_cueTimeline->endIgnoringUpdateRequests();
+  }
+
+ private:
+  Member<CueTimeline> m_cueTimeline;
 };
 
 #ifndef NDEBUG
 // Template specializations required by PodIntervalTree in debug mode.
 template <>
 struct ValueToString<double> {
-    static String toString(const double value)
-    {
-        return String::number(value);
-    }
+  static String toString(const double value) { return String::number(value); }
 };
 
 template <>
 struct ValueToString<TextTrackCue*> {
-    static String toString(TextTrackCue* const& cue)
-    {
-        return cue->toString();
-    }
+  static String toString(TextTrackCue* const& cue) { return cue->toString(); }
 };
 #endif
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CueTimeline_h
+#endif  // CueTimeline_h

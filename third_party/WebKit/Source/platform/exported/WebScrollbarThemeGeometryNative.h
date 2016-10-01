@@ -38,30 +38,33 @@ namespace blink {
 class ScrollbarTheme;
 class WebScrollbar;
 
-class PLATFORM_EXPORT WebScrollbarThemeGeometryNative : public WebScrollbarThemeGeometry {
-    USING_FAST_MALLOC(WebScrollbarThemeGeometryNative);
-    WTF_MAKE_NONCOPYABLE(WebScrollbarThemeGeometryNative);
-public:
-    static std::unique_ptr<WebScrollbarThemeGeometryNative> create(ScrollbarTheme&);
+class PLATFORM_EXPORT WebScrollbarThemeGeometryNative
+    : public WebScrollbarThemeGeometry {
+  USING_FAST_MALLOC(WebScrollbarThemeGeometryNative);
+  WTF_MAKE_NONCOPYABLE(WebScrollbarThemeGeometryNative);
 
-    bool hasButtons(WebScrollbar*) override;
-    bool hasThumb(WebScrollbar*) override;
-    WebRect trackRect(WebScrollbar*) override;
-    WebRect thumbRect(WebScrollbar*) override;
-    WebRect backButtonStartRect(WebScrollbar*) override;
-    WebRect backButtonEndRect(WebScrollbar*) override;
-    WebRect forwardButtonStartRect(WebScrollbar*) override;
-    WebRect forwardButtonEndRect(WebScrollbar*) override;
+ public:
+  static std::unique_ptr<WebScrollbarThemeGeometryNative> create(
+      ScrollbarTheme&);
 
-private:
-    explicit WebScrollbarThemeGeometryNative(ScrollbarTheme&);
+  bool hasButtons(WebScrollbar*) override;
+  bool hasThumb(WebScrollbar*) override;
+  WebRect trackRect(WebScrollbar*) override;
+  WebRect thumbRect(WebScrollbar*) override;
+  WebRect backButtonStartRect(WebScrollbar*) override;
+  WebRect backButtonEndRect(WebScrollbar*) override;
+  WebRect forwardButtonStartRect(WebScrollbar*) override;
+  WebRect forwardButtonEndRect(WebScrollbar*) override;
 
-    // The theme is not owned by this class. It is assumed that the theme is a
-    // static pointer and its lifetime is essentially infinite. Only thread-safe
-    // functions on the theme can be called by this theme.
-    ScrollbarTheme& m_theme;
+ private:
+  explicit WebScrollbarThemeGeometryNative(ScrollbarTheme&);
+
+  // The theme is not owned by this class. It is assumed that the theme is a
+  // static pointer and its lifetime is essentially infinite. Only thread-safe
+  // functions on the theme can be called by this theme.
+  ScrollbarTheme& m_theme;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

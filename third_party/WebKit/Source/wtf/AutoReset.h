@@ -35,7 +35,7 @@ namespace WTF {
 template <typename T>
 using AutoReset = base::AutoReset<T>;
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::AutoReset;
 

@@ -38,12 +38,12 @@ namespace blink {
 class Metadata;
 
 class MetadataCallback : public GarbageCollectedFinalized<MetadataCallback> {
-public:
-    virtual ~MetadataCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(Metadata*) = 0;
+ public:
+  virtual ~MetadataCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(Metadata*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MetadataCallback_h
+#endif  // MetadataCallback_h

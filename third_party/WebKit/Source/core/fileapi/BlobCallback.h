@@ -38,12 +38,12 @@ namespace blink {
 class Blob;
 
 class BlobCallback : public GarbageCollectedFinalized<BlobCallback> {
-public:
-    virtual ~BlobCallback() {}
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
-    virtual void handleEvent(Blob*) = 0;
+ public:
+  virtual ~BlobCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(Blob*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BlobCallback_h
+#endif  // BlobCallback_h

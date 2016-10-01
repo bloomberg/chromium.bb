@@ -14,29 +14,31 @@ class V0CustomElementAsyncImportMicrotaskQueue;
 class V0CustomElementMicrotaskStep;
 class HTMLImportLoader;
 
-class V0CustomElementMicrotaskRunQueue : public GarbageCollected<V0CustomElementMicrotaskRunQueue> {
-public:
-    static V0CustomElementMicrotaskRunQueue* create()
-    {
-        return new V0CustomElementMicrotaskRunQueue;
-    }
+class V0CustomElementMicrotaskRunQueue
+    : public GarbageCollected<V0CustomElementMicrotaskRunQueue> {
+ public:
+  static V0CustomElementMicrotaskRunQueue* create() {
+    return new V0CustomElementMicrotaskRunQueue;
+  }
 
-    void enqueue(HTMLImportLoader* parentLoader, V0CustomElementMicrotaskStep*, bool importIsSync);
-    void requestDispatchIfNeeded();
-    bool isEmpty() const;
+  void enqueue(HTMLImportLoader* parentLoader,
+               V0CustomElementMicrotaskStep*,
+               bool importIsSync);
+  void requestDispatchIfNeeded();
+  bool isEmpty() const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    V0CustomElementMicrotaskRunQueue();
+ private:
+  V0CustomElementMicrotaskRunQueue();
 
-    void dispatch();
+  void dispatch();
 
-    Member<V0CustomElementSyncMicrotaskQueue> m_syncQueue;
-    Member<V0CustomElementAsyncImportMicrotaskQueue> m_asyncQueue;
-    bool m_dispatchIsPending;
+  Member<V0CustomElementSyncMicrotaskQueue> m_syncQueue;
+  Member<V0CustomElementAsyncImportMicrotaskQueue> m_asyncQueue;
+  bool m_dispatchIsPending;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementMicrotaskRunQueue_h
+#endif  // V0CustomElementMicrotaskRunQueue_h

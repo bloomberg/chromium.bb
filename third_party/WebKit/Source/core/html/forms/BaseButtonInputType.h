@@ -37,29 +37,31 @@
 namespace blink {
 
 // Base of button, image, reset, and submit types.
-class BaseButtonInputType : public InputType, public KeyboardClickableInputTypeView {
-    USING_GARBAGE_COLLECTED_MIXIN(BaseButtonInputType);
-public:
-    DECLARE_VIRTUAL_TRACE();
-    using InputType::element;
+class BaseButtonInputType : public InputType,
+                            public KeyboardClickableInputTypeView {
+  USING_GARBAGE_COLLECTED_MIXIN(BaseButtonInputType);
 
-protected:
-    explicit BaseButtonInputType(HTMLInputElement&);
-    void valueAttributeChanged() override;
-    void createShadowSubtree() override;
+ public:
+  DECLARE_VIRTUAL_TRACE();
+  using InputType::element;
 
-private:
-    InputTypeView* createView() override;
-    bool shouldSaveAndRestoreFormControlState() const override;
-    void appendToFormData(FormData&) const override;
-    LayoutObject* createLayoutObject(const ComputedStyle&) const override;
-    bool storesValueSeparateFromAttribute() override;
-    void setValue(const String&, bool, TextFieldEventBehavior) override;
-    bool matchesDefaultPseudoClass() override;
+ protected:
+  explicit BaseButtonInputType(HTMLInputElement&);
+  void valueAttributeChanged() override;
+  void createShadowSubtree() override;
 
-    String displayValue() const;
+ private:
+  InputTypeView* createView() override;
+  bool shouldSaveAndRestoreFormControlState() const override;
+  void appendToFormData(FormData&) const override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) const override;
+  bool storesValueSeparateFromAttribute() override;
+  void setValue(const String&, bool, TextFieldEventBehavior) override;
+  bool matchesDefaultPseudoClass() override;
+
+  String displayValue() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BaseButtonInputType_h
+#endif  // BaseButtonInputType_h

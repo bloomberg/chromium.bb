@@ -29,78 +29,79 @@
 
 namespace blink {
 
-WaveShaperProcessor::WaveShaperProcessor(float sampleRate, size_t numberOfChannels)
-    : AudioDSPKernelProcessor(sampleRate, numberOfChannels)
-    , m_oversample(OverSampleNone)
-{
+WaveShaperProcessor::WaveShaperProcessor(float sampleRate,
+                                         size_t numberOfChannels)
+    : AudioDSPKernelProcessor(sampleRate, numberOfChannels),
+      m_oversample(OverSampleNone) {}
+
+WaveShaperProcessor::~WaveShaperProcessor() {
+  if (isInitialized())
+    uninitialize();
 }
 
-WaveShaperProcessor::~WaveShaperProcessor()
-{
-    if (isInitialized())
-        uninitialize();
+std::unique_ptr<AudioDSPKernel> WaveShaperProcessor::createKernel() {
+  return wrapUnique(new WaveShaperDSPKernel(this));
 }
 
-std::unique_ptr<AudioDSPKernel> WaveShaperProcessor::createKernel()
-{
-    return wrapUnique(new WaveShaperDSPKernel(this));
+void WaveShaperProcessor::setCurve(const float* curveData,
+                                   unsigned curveLength) {
+  DCHECK(isMainThread());
+
+  // This synchronizes with process().
+  MutexLocker processLocker(m_processLock);
+
+  if (curveLength == 0 || !curveData) {
+    m_curve = nullptr;
+    return;
+  }
+
+  // Copy the curve data, if any, to our internal buffer.
+  m_curve = wrapUnique(new Vector<float>(curveLength));
+  memcpy(m_curve->data(), curveData, sizeof(float) * curveLength);
 }
 
-void WaveShaperProcessor::setCurve(const float* curveData, unsigned curveLength)
-{
-    DCHECK(isMainThread());
+void WaveShaperProcessor::setOversample(OverSampleType oversample) {
+  // This synchronizes with process().
+  MutexLocker processLocker(m_processLock);
 
-    // This synchronizes with process().
-    MutexLocker processLocker(m_processLock);
+  m_oversample = oversample;
 
-    if (curveLength == 0 || !curveData) {
-        m_curve = nullptr;
-        return;
+  if (oversample != OverSampleNone) {
+    for (unsigned i = 0; i < m_kernels.size(); ++i) {
+      WaveShaperDSPKernel* kernel =
+          static_cast<WaveShaperDSPKernel*>(m_kernels[i].get());
+      kernel->lazyInitializeOversampling();
     }
-
-    // Copy the curve data, if any, to our internal buffer.
-    m_curve = wrapUnique(new Vector<float>(curveLength));
-    memcpy(m_curve->data(), curveData, sizeof(float)*curveLength);
+  }
 }
 
-void WaveShaperProcessor::setOversample(OverSampleType oversample)
-{
-    // This synchronizes with process().
-    MutexLocker processLocker(m_processLock);
+void WaveShaperProcessor::process(const AudioBus* source,
+                                  AudioBus* destination,
+                                  size_t framesToProcess) {
+  if (!isInitialized()) {
+    destination->zero();
+    return;
+  }
 
-    m_oversample = oversample;
+  bool channelCountMatches =
+      source->numberOfChannels() == destination->numberOfChannels() &&
+      source->numberOfChannels() == m_kernels.size();
+  DCHECK(channelCountMatches);
+  if (!channelCountMatches)
+    return;
 
-    if (oversample != OverSampleNone) {
-        for (unsigned i = 0; i < m_kernels.size(); ++i) {
-            WaveShaperDSPKernel* kernel = static_cast<WaveShaperDSPKernel*>(m_kernels[i].get());
-            kernel->lazyInitializeOversampling();
-        }
-    }
+  // The audio thread can't block on this lock, so we call tryLock() instead.
+  MutexTryLocker tryLocker(m_processLock);
+  if (tryLocker.locked()) {
+    // For each channel of our input, process using the corresponding WaveShaperDSPKernel into the output channel.
+    for (unsigned i = 0; i < m_kernels.size(); ++i)
+      m_kernels[i]->process(source->channel(i)->data(),
+                            destination->channel(i)->mutableData(),
+                            framesToProcess);
+  } else {
+    // Too bad - the tryLock() failed. We must be in the middle of a setCurve() call.
+    destination->zero();
+  }
 }
 
-void WaveShaperProcessor::process(const AudioBus* source, AudioBus* destination, size_t framesToProcess)
-{
-    if (!isInitialized()) {
-        destination->zero();
-        return;
-    }
-
-    bool channelCountMatches = source->numberOfChannels() == destination->numberOfChannels() && source->numberOfChannels() == m_kernels.size();
-    DCHECK(channelCountMatches);
-    if (!channelCountMatches)
-        return;
-
-    // The audio thread can't block on this lock, so we call tryLock() instead.
-    MutexTryLocker tryLocker(m_processLock);
-    if (tryLocker.locked()) {
-        // For each channel of our input, process using the corresponding WaveShaperDSPKernel into the output channel.
-        for (unsigned i = 0; i < m_kernels.size(); ++i)
-            m_kernels[i]->process(source->channel(i)->data(), destination->channel(i)->mutableData(), framesToProcess);
-    } else {
-        // Too bad - the tryLock() failed. We must be in the middle of a setCurve() call.
-        destination->zero();
-    }
-}
-
-} // namespace blink
-
+}  // namespace blink

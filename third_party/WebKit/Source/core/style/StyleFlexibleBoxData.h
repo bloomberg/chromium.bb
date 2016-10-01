@@ -34,28 +34,29 @@
 namespace blink {
 
 class StyleFlexibleBoxData : public RefCounted<StyleFlexibleBoxData> {
-public:
-    static PassRefPtr<StyleFlexibleBoxData> create() { return adoptRef(new StyleFlexibleBoxData); }
-    PassRefPtr<StyleFlexibleBoxData> copy() const { return adoptRef(new StyleFlexibleBoxData(*this)); }
+ public:
+  static PassRefPtr<StyleFlexibleBoxData> create() {
+    return adoptRef(new StyleFlexibleBoxData);
+  }
+  PassRefPtr<StyleFlexibleBoxData> copy() const {
+    return adoptRef(new StyleFlexibleBoxData(*this));
+  }
 
-    bool operator==(const StyleFlexibleBoxData&) const;
-    bool operator!=(const StyleFlexibleBoxData& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const StyleFlexibleBoxData&) const;
+  bool operator!=(const StyleFlexibleBoxData& o) const { return !(*this == o); }
 
-    float m_flexGrow;
-    float m_flexShrink;
-    Length m_flexBasis;
+  float m_flexGrow;
+  float m_flexShrink;
+  Length m_flexBasis;
 
-    unsigned m_flexDirection : 2; // EFlexDirection
-    unsigned m_flexWrap : 2; // EFlexWrap
+  unsigned m_flexDirection : 2;  // EFlexDirection
+  unsigned m_flexWrap : 2;       // EFlexWrap
 
-private:
-    StyleFlexibleBoxData();
-    StyleFlexibleBoxData(const StyleFlexibleBoxData&);
+ private:
+  StyleFlexibleBoxData();
+  StyleFlexibleBoxData(const StyleFlexibleBoxData&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleFlexibleBoxData_h
+#endif  // StyleFlexibleBoxData_h

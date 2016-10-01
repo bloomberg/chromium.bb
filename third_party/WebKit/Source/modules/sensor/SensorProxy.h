@@ -17,94 +17,95 @@ class SensorProviderProxy;
 
 // This class wraps 'Sensor' mojo interface and used by multiple
 // JS sensor instances of the same type (within a single frame).
-class SensorProxy final
-    : public GarbageCollectedFinalized<SensorProxy>
-    , public device::mojom::blink::SensorClient {
-    USING_PRE_FINALIZER(SensorProxy, dispose);
-    WTF_MAKE_NONCOPYABLE(SensorProxy);
-public:
-    class Observer : public GarbageCollectedMixin {
-    public:
-        // Has valid 'Sensor' binding, {add, remove}Configuration()
-        // methods can be called.
-        virtual void onSensorInitialized() {}
-        // Platfrom sensort reading has changed (for 'ONCHANGE' reporting mode).
-        virtual void onSensorReadingChanged() {}
-        // An error has occurred.
-        virtual void onSensorError() {}
-    };
+class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
+                          public device::mojom::blink::SensorClient {
+  USING_PRE_FINALIZER(SensorProxy, dispose);
+  WTF_MAKE_NONCOPYABLE(SensorProxy);
 
-    ~SensorProxy();
+ public:
+  class Observer : public GarbageCollectedMixin {
+   public:
+    // Has valid 'Sensor' binding, {add, remove}Configuration()
+    // methods can be called.
+    virtual void onSensorInitialized() {}
+    // Platfrom sensort reading has changed (for 'ONCHANGE' reporting mode).
+    virtual void onSensorReadingChanged() {}
+    // An error has occurred.
+    virtual void onSensorError() {}
+  };
 
-    void dispose();
+  ~SensorProxy();
 
-    void addObserver(Observer*);
-    void removeObserver(Observer*);
+  void dispose();
 
-    void initialize();
+  void addObserver(Observer*);
+  void removeObserver(Observer*);
 
-    bool isInitializing() const { return m_state == Initializing; }
-    bool isInitialized() const { return m_state == Initialized; }
+  void initialize();
 
-    void addConfiguration(device::mojom::blink::SensorConfigurationPtr, std::unique_ptr<Function<void(bool)>>);
-    void removeConfiguration(device::mojom::blink::SensorConfigurationPtr, std::unique_ptr<Function<void(bool)>>);
+  bool isInitializing() const { return m_state == Initializing; }
+  bool isInitialized() const { return m_state == Initialized; }
 
-    void suspend();
-    void resume();
+  void addConfiguration(device::mojom::blink::SensorConfigurationPtr,
+                        std::unique_ptr<Function<void(bool)>>);
+  void removeConfiguration(device::mojom::blink::SensorConfigurationPtr,
+                           std::unique_ptr<Function<void(bool)>>);
 
-    device::mojom::blink::SensorType type() const { return m_type; }
-    device::mojom::blink::ReportingMode reportingMode() const { return m_mode; }
+  void suspend();
+  void resume();
 
-    struct Reading {
-        double timestamp;
-        double reading[3];
-    };
-    static_assert(sizeof(Reading) == device::mojom::blink::SensorInitParams::kReadBufferSize, "Check reading size");
+  device::mojom::blink::SensorType type() const { return m_type; }
+  device::mojom::blink::ReportingMode reportingMode() const { return m_mode; }
 
-    const Reading& reading() const { return m_reading; }
+  struct Reading {
+    double timestamp;
+    double reading[3];
+  };
+  static_assert(sizeof(Reading) ==
+                    device::mojom::blink::SensorInitParams::kReadBufferSize,
+                "Check reading size");
 
-    const device::mojom::blink::SensorConfiguration* defaultConfig() const;
+  const Reading& reading() const { return m_reading; }
 
-    // Updates internal reading from shared buffer.
-    void updateInternalReading();
+  const device::mojom::blink::SensorConfiguration* defaultConfig() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  // Updates internal reading from shared buffer.
+  void updateInternalReading();
 
-private:
-    friend class SensorProviderProxy;
-    SensorProxy(device::mojom::blink::SensorType, SensorProviderProxy*);
+  DECLARE_VIRTUAL_TRACE();
 
-    // device::mojom::blink::SensorClient overrides.
-    void RaiseError() override;
-    void SensorReadingChanged() override;
+ private:
+  friend class SensorProviderProxy;
+  SensorProxy(device::mojom::blink::SensorType, SensorProviderProxy*);
 
-    // Generic handler for a fatal error.
-    void handleSensorError();
+  // device::mojom::blink::SensorClient overrides.
+  void RaiseError() override;
+  void SensorReadingChanged() override;
 
-    void onSensorCreated(device::mojom::blink::SensorInitParamsPtr, device::mojom::blink::SensorClientRequest);
+  // Generic handler for a fatal error.
+  void handleSensorError();
 
-    device::mojom::blink::SensorType m_type;
-    device::mojom::blink::ReportingMode m_mode;
-    Member<SensorProviderProxy> m_provider;
-    using ObserversSet = HeapHashSet<WeakMember<Observer>>;
-    ObserversSet m_observers;
+  void onSensorCreated(device::mojom::blink::SensorInitParamsPtr,
+                       device::mojom::blink::SensorClientRequest);
 
-    device::mojom::blink::SensorPtr m_sensor;
-    device::mojom::blink::SensorConfigurationPtr m_defaultConfig;
-    mojo::Binding<device::mojom::blink::SensorClient> m_clientBinding;
+  device::mojom::blink::SensorType m_type;
+  device::mojom::blink::ReportingMode m_mode;
+  Member<SensorProviderProxy> m_provider;
+  using ObserversSet = HeapHashSet<WeakMember<Observer>>;
+  ObserversSet m_observers;
 
-    enum State {
-        Uninitialized,
-        Initializing,
-        Initialized
-    };
-    State m_state;
-    mojo::ScopedSharedBufferHandle m_sharedBufferHandle;
-    mojo::ScopedSharedBufferMapping m_sharedBuffer;
-    Reading m_reading;
-    bool m_suspended;
+  device::mojom::blink::SensorPtr m_sensor;
+  device::mojom::blink::SensorConfigurationPtr m_defaultConfig;
+  mojo::Binding<device::mojom::blink::SensorClient> m_clientBinding;
+
+  enum State { Uninitialized, Initializing, Initialized };
+  State m_state;
+  mojo::ScopedSharedBufferHandle m_sharedBufferHandle;
+  mojo::ScopedSharedBufferMapping m_sharedBuffer;
+  Reading m_reading;
+  bool m_suspended;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SensorProxy_h
+#endif  // SensorProxy_h

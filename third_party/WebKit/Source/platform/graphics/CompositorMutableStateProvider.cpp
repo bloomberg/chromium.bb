@@ -15,33 +15,34 @@
 
 namespace blink {
 
-CompositorMutableStateProvider::CompositorMutableStateProvider(cc::LayerTreeImpl* treeImpl, CompositorMutations* mutations)
-    : m_tree(treeImpl)
-    , m_mutations(mutations)
-{
-}
+CompositorMutableStateProvider::CompositorMutableStateProvider(
+    cc::LayerTreeImpl* treeImpl,
+    CompositorMutations* mutations)
+    : m_tree(treeImpl), m_mutations(mutations) {}
 
 CompositorMutableStateProvider::~CompositorMutableStateProvider() {}
 
 std::unique_ptr<CompositorMutableState>
-CompositorMutableStateProvider::getMutableStateFor(uint64_t elementId)
-{
-    cc::LayerImpl* mainLayer = m_tree->LayerByElementId(createCompositorElementId(elementId, CompositorSubElementId::Primary));
-    cc::LayerImpl* scrollLayer = m_tree->LayerByElementId(createCompositorElementId(elementId, CompositorSubElementId::Scroll));
+CompositorMutableStateProvider::getMutableStateFor(uint64_t elementId) {
+  cc::LayerImpl* mainLayer = m_tree->LayerByElementId(
+      createCompositorElementId(elementId, CompositorSubElementId::Primary));
+  cc::LayerImpl* scrollLayer = m_tree->LayerByElementId(
+      createCompositorElementId(elementId, CompositorSubElementId::Scroll));
 
-    if (!mainLayer && !scrollLayer)
-        return nullptr;
+  if (!mainLayer && !scrollLayer)
+    return nullptr;
 
-    // Ensure that we have an entry in the map for |elementId| but do as few
-    // allocations and queries as possible. This will update the map only if we
-    // have not added a value for |elementId|.
-    auto result = m_mutations->map.add(elementId, nullptr);
+  // Ensure that we have an entry in the map for |elementId| but do as few
+  // allocations and queries as possible. This will update the map only if we
+  // have not added a value for |elementId|.
+  auto result = m_mutations->map.add(elementId, nullptr);
 
-    // Only if this is a new entry do we want to allocate a new mutation.
-    if (result.isNewEntry)
-        result.storedValue->value = wrapUnique(new CompositorMutation);
+  // Only if this is a new entry do we want to allocate a new mutation.
+  if (result.isNewEntry)
+    result.storedValue->value = wrapUnique(new CompositorMutation);
 
-    return wrapUnique(new CompositorMutableState(result.storedValue->value.get(), mainLayer, scrollLayer));
+  return wrapUnique(new CompositorMutableState(result.storedValue->value.get(),
+                                               mainLayer, scrollLayer));
 }
 
-} // namespace blink
+}  // namespace blink

@@ -12,58 +12,53 @@
 
 namespace blink {
 
-InstalledAppController::~InstalledAppController()
-{
+InstalledAppController::~InstalledAppController() {}
+
+void InstalledAppController::provideTo(LocalFrame& frame,
+                                       WebInstalledAppClient* client) {
+  ASSERT(RuntimeEnabledFeatures::installedAppEnabled());
+
+  InstalledAppController* controller =
+      new InstalledAppController(frame, client);
+  Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
-void InstalledAppController::provideTo(LocalFrame& frame, WebInstalledAppClient* client)
-{
-    ASSERT(RuntimeEnabledFeatures::installedAppEnabled());
-
-    InstalledAppController* controller = new InstalledAppController(frame, client);
-    Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
+InstalledAppController* InstalledAppController::from(LocalFrame& frame) {
+  InstalledAppController* controller = static_cast<InstalledAppController*>(
+      Supplement<LocalFrame>::from(frame, supplementName()));
+  ASSERT(controller);
+  return controller;
 }
 
-InstalledAppController* InstalledAppController::from(LocalFrame& frame)
-{
-    InstalledAppController* controller = static_cast<InstalledAppController*>(Supplement<LocalFrame>::from(frame, supplementName()));
-    ASSERT(controller);
-    return controller;
+InstalledAppController::InstalledAppController(LocalFrame& frame,
+                                               WebInstalledAppClient* client)
+    : DOMWindowProperty(&frame), m_client(client) {}
+
+const char* InstalledAppController::supplementName() {
+  return "InstalledAppController";
 }
 
-InstalledAppController::InstalledAppController(LocalFrame& frame, WebInstalledAppClient* client)
-    : DOMWindowProperty(&frame)
-    , m_client(client)
-{
+void InstalledAppController::getInstalledApps(
+    const WebSecurityOrigin& url,
+    std::unique_ptr<AppInstalledCallbacks> callback) {
+  // When detached, the client is no longer valid.
+  if (!m_client) {
+    callback.release()->onError();
+    return;
+  }
+
+  // Client is expected to take ownership of the callback
+  m_client->getInstalledRelatedApps(url, std::move(callback));
 }
 
-const char* InstalledAppController::supplementName()
-{
-    return "InstalledAppController";
+void InstalledAppController::frameDestroyed() {
+  m_client = nullptr;
+  DOMWindowProperty::frameDestroyed();
 }
 
-void InstalledAppController::getInstalledApps(const WebSecurityOrigin& url, std::unique_ptr<AppInstalledCallbacks> callback)
-{
-    // When detached, the client is no longer valid.
-    if (!m_client) {
-        callback.release()->onError();
-        return;
-    }
-
-    // Client is expected to take ownership of the callback
-    m_client->getInstalledRelatedApps(url, std::move(callback));
+DEFINE_TRACE(InstalledAppController) {
+  Supplement<LocalFrame>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-void InstalledAppController::frameDestroyed()
-{
-    m_client = nullptr;
-    DOMWindowProperty::frameDestroyed();
-}
-
-DEFINE_TRACE(InstalledAppController)
-{
-    Supplement<LocalFrame>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

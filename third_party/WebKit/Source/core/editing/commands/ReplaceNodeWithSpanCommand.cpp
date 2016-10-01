@@ -42,50 +42,48 @@ namespace blink {
 using namespace HTMLNames;
 
 ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(HTMLElement* element)
-    : SimpleEditCommand(element->document())
-    , m_elementToReplace(element)
-{
-    DCHECK(m_elementToReplace);
+    : SimpleEditCommand(element->document()), m_elementToReplace(element) {
+  DCHECK(m_elementToReplace);
 }
 
-static void swapInNodePreservingAttributesAndChildren(HTMLElement* newElement, HTMLElement& elementToReplace)
-{
-    DCHECK(elementToReplace.isConnected()) << elementToReplace;
-    ContainerNode* parentNode = elementToReplace.parentNode();
-    parentNode->insertBefore(newElement, &elementToReplace);
+static void swapInNodePreservingAttributesAndChildren(
+    HTMLElement* newElement,
+    HTMLElement& elementToReplace) {
+  DCHECK(elementToReplace.isConnected()) << elementToReplace;
+  ContainerNode* parentNode = elementToReplace.parentNode();
+  parentNode->insertBefore(newElement, &elementToReplace);
 
-    NodeVector children;
-    getChildNodes(elementToReplace, children);
-    for (const auto& child : children)
-        newElement->appendChild(child);
+  NodeVector children;
+  getChildNodes(elementToReplace, children);
+  for (const auto& child : children)
+    newElement->appendChild(child);
 
-    // FIXME: Fix this to send the proper MutationRecords when MutationObservers are present.
-    newElement->cloneDataFromElement(elementToReplace);
+  // FIXME: Fix this to send the proper MutationRecords when MutationObservers are present.
+  newElement->cloneDataFromElement(elementToReplace);
 
-    parentNode->removeChild(&elementToReplace, ASSERT_NO_EXCEPTION);
+  parentNode->removeChild(&elementToReplace, ASSERT_NO_EXCEPTION);
 }
 
-void ReplaceNodeWithSpanCommand::doApply(EditingState*)
-{
-    if (!m_elementToReplace->isConnected())
-        return;
-    if (!m_spanElement)
-        m_spanElement = HTMLSpanElement::create(m_elementToReplace->document());
-    swapInNodePreservingAttributesAndChildren(m_spanElement.get(), *m_elementToReplace);
+void ReplaceNodeWithSpanCommand::doApply(EditingState*) {
+  if (!m_elementToReplace->isConnected())
+    return;
+  if (!m_spanElement)
+    m_spanElement = HTMLSpanElement::create(m_elementToReplace->document());
+  swapInNodePreservingAttributesAndChildren(m_spanElement.get(),
+                                            *m_elementToReplace);
 }
 
-void ReplaceNodeWithSpanCommand::doUnapply()
-{
-    if (!m_spanElement->isConnected())
-        return;
-    swapInNodePreservingAttributesAndChildren(m_elementToReplace.get(), *m_spanElement);
+void ReplaceNodeWithSpanCommand::doUnapply() {
+  if (!m_spanElement->isConnected())
+    return;
+  swapInNodePreservingAttributesAndChildren(m_elementToReplace.get(),
+                                            *m_spanElement);
 }
 
-DEFINE_TRACE(ReplaceNodeWithSpanCommand)
-{
-    visitor->trace(m_elementToReplace);
-    visitor->trace(m_spanElement);
-    SimpleEditCommand::trace(visitor);
+DEFINE_TRACE(ReplaceNodeWithSpanCommand) {
+  visitor->trace(m_elementToReplace);
+  visitor->trace(m_spanElement);
+  SimpleEditCommand::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

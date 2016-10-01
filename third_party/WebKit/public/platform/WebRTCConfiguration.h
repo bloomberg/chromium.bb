@@ -45,87 +45,85 @@ class WebString;
 class WebURL;
 
 class WebRTCICEServer {
-public:
-    WebRTCICEServer() { }
-    WebRTCICEServer(const WebRTCICEServer& other) { assign(other); }
-    ~WebRTCICEServer() { reset(); }
+ public:
+  WebRTCICEServer() {}
+  WebRTCICEServer(const WebRTCICEServer& other) { assign(other); }
+  ~WebRTCICEServer() { reset(); }
 
-    WebRTCICEServer& operator=(const WebRTCICEServer& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebRTCICEServer& operator=(const WebRTCICEServer& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebRTCICEServer&);
+  BLINK_PLATFORM_EXPORT void assign(const WebRTCICEServer&);
 
-    BLINK_PLATFORM_EXPORT void reset();
-    bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebURL uri() const;
-    BLINK_PLATFORM_EXPORT WebString username() const;
-    BLINK_PLATFORM_EXPORT WebString credential() const;
+  BLINK_PLATFORM_EXPORT WebURL uri() const;
+  BLINK_PLATFORM_EXPORT WebString username() const;
+  BLINK_PLATFORM_EXPORT WebString credential() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCICEServer(RTCIceServer*);
+  BLINK_PLATFORM_EXPORT WebRTCICEServer(RTCIceServer*);
 #endif
 
-private:
-    WebPrivatePtr<RTCIceServer> m_private;
+ private:
+  WebPrivatePtr<RTCIceServer> m_private;
 };
 
 enum WebRTCIceTransports {
-    WebRTCIceTransportsNone,
-    WebRTCIceTransportsRelay,
-    WebRTCIceTransportsAll
+  WebRTCIceTransportsNone,
+  WebRTCIceTransportsRelay,
+  WebRTCIceTransportsAll
 };
 
 enum WebRTCBundlePolicy {
-    WebRTCBundlePolicyBalanced,
-    WebRTCBundlePolicyMaxCompat,
-    WebRTCBundlePolicyMaxBundle
+  WebRTCBundlePolicyBalanced,
+  WebRTCBundlePolicyMaxCompat,
+  WebRTCBundlePolicyMaxBundle
 };
 
 enum WebRTCRtcpMuxPolicy {
-    WebRTCRtcpMuxPolicyNegotiate,
-    WebRTCRtcpMuxPolicyRequire
+  WebRTCRtcpMuxPolicyNegotiate,
+  WebRTCRtcpMuxPolicyRequire
 };
 
 class WebRTCConfiguration {
-public:
-    WebRTCConfiguration() { }
-    WebRTCConfiguration(const WebRTCConfiguration& other) { assign(other); }
-    ~WebRTCConfiguration() { reset(); }
+ public:
+  WebRTCConfiguration() {}
+  WebRTCConfiguration(const WebRTCConfiguration& other) { assign(other); }
+  ~WebRTCConfiguration() { reset(); }
 
-    WebRTCConfiguration& operator=(const WebRTCConfiguration& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebRTCConfiguration& operator=(const WebRTCConfiguration& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebRTCConfiguration&);
+  BLINK_PLATFORM_EXPORT void assign(const WebRTCConfiguration&);
 
-    BLINK_PLATFORM_EXPORT void reset();
-    bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
+  BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
 
-    BLINK_PLATFORM_EXPORT WebRTCBundlePolicy bundlePolicy() const;
+  BLINK_PLATFORM_EXPORT WebRTCBundlePolicy bundlePolicy() const;
 
-    BLINK_PLATFORM_EXPORT WebRTCRtcpMuxPolicy rtcpMuxPolicy() const;
-    BLINK_PLATFORM_EXPORT size_t numberOfServers() const;
-    BLINK_PLATFORM_EXPORT WebRTCICEServer server(size_t index) const;
+  BLINK_PLATFORM_EXPORT WebRTCRtcpMuxPolicy rtcpMuxPolicy() const;
+  BLINK_PLATFORM_EXPORT size_t numberOfServers() const;
+  BLINK_PLATFORM_EXPORT WebRTCICEServer server(size_t index) const;
 
-    BLINK_PLATFORM_EXPORT size_t numberOfCertificates() const;
-    BLINK_PLATFORM_EXPORT WebRTCCertificate* certificate(size_t index) const;
+  BLINK_PLATFORM_EXPORT size_t numberOfCertificates() const;
+  BLINK_PLATFORM_EXPORT WebRTCCertificate* certificate(size_t index) const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCConfiguration(RTCConfiguration*);
+  BLINK_PLATFORM_EXPORT WebRTCConfiguration(RTCConfiguration*);
 #endif
 
-private:
-    WebPrivatePtr<RTCConfiguration> m_private;
+ private:
+  WebPrivatePtr<RTCConfiguration> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRTCConfiguration_h
+#endif  // WebRTCConfiguration_h

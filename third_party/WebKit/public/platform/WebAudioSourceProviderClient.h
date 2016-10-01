@@ -28,12 +28,13 @@
 namespace blink {
 
 class WebAudioSourceProviderClient {
-public:
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
-protected:
-    virtual ~WebAudioSourceProviderClient() { }
+ public:
+  virtual void setFormat(size_t numberOfChannels, float sampleRate) = 0;
+
+ protected:
+  virtual ~WebAudioSourceProviderClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebAudioSourceProviderClient_h
+#endif  // WebAudioSourceProviderClient_h

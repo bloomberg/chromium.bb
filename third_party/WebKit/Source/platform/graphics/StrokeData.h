@@ -45,52 +45,51 @@ namespace blink {
 // Encapsulates stroke geometry information.
 // It is pulled out of GraphicsContextState to enable other methods to use it.
 class PLATFORM_EXPORT StrokeData final {
-    DISALLOW_NEW();
-public:
-    StrokeData()
-        : m_style(SolidStroke)
-        , m_thickness(0)
-        , m_lineCap(SkPaint::kDefault_Cap)
-        , m_lineJoin(SkPaint::kDefault_Join)
-        , m_miterLimit(4)
-    {
-    }
+  DISALLOW_NEW();
 
-    StrokeStyle style() const { return m_style; }
-    void setStyle(StrokeStyle style) { m_style = style; }
+ public:
+  StrokeData()
+      : m_style(SolidStroke),
+        m_thickness(0),
+        m_lineCap(SkPaint::kDefault_Cap),
+        m_lineJoin(SkPaint::kDefault_Join),
+        m_miterLimit(4) {}
 
-    float thickness() const { return m_thickness; }
-    void setThickness(float thickness) { m_thickness = thickness; }
+  StrokeStyle style() const { return m_style; }
+  void setStyle(StrokeStyle style) { m_style = style; }
 
-    void setLineCap(LineCap cap) { m_lineCap = (SkPaint::Cap)cap; }
+  float thickness() const { return m_thickness; }
+  void setThickness(float thickness) { m_thickness = thickness; }
 
-    void setLineJoin(LineJoin join) { m_lineJoin = (SkPaint::Join)join; }
+  void setLineCap(LineCap cap) { m_lineCap = (SkPaint::Cap)cap; }
 
-    float miterLimit() const { return m_miterLimit; }
-    void setMiterLimit(float miterLimit) { m_miterLimit = miterLimit; }
+  void setLineJoin(LineJoin join) { m_lineJoin = (SkPaint::Join)join; }
 
-    void setLineDash(const DashArray&, float);
+  float miterLimit() const { return m_miterLimit; }
+  void setMiterLimit(float miterLimit) { m_miterLimit = miterLimit; }
 
-    // Sets everything on the paint except the pattern, gradient and color.
-    // If a non-zero length is provided, the number of dashes/dots on a
-    // dashed/dotted line will be adjusted to start and end that length with a
-    // dash/dot.
-    void setupPaint(SkPaint*, int length = 0) const;
+  void setLineDash(const DashArray&, float);
 
-    // Setup any DashPathEffect on the paint. If a non-zero length is provided,
-    // and no line dash has been set, the number of dashes/dots on a dashed/dotted
-    // line will be adjusted to start and end that length with a dash/dot.
-    void setupPaintDashPathEffect(SkPaint*, int) const;
+  // Sets everything on the paint except the pattern, gradient and color.
+  // If a non-zero length is provided, the number of dashes/dots on a
+  // dashed/dotted line will be adjusted to start and end that length with a
+  // dash/dot.
+  void setupPaint(SkPaint*, int length = 0) const;
 
-private:
-    StrokeStyle m_style;
-    float m_thickness;
-    SkPaint::Cap m_lineCap;
-    SkPaint::Join m_lineJoin;
-    float m_miterLimit;
-    sk_sp<SkPathEffect> m_dash;
+  // Setup any DashPathEffect on the paint. If a non-zero length is provided,
+  // and no line dash has been set, the number of dashes/dots on a dashed/dotted
+  // line will be adjusted to start and end that length with a dash/dot.
+  void setupPaintDashPathEffect(SkPaint*, int) const;
+
+ private:
+  StrokeStyle m_style;
+  float m_thickness;
+  SkPaint::Cap m_lineCap;
+  SkPaint::Join m_lineJoin;
+  float m_miterLimit;
+  sk_sp<SkPathEffect> m_dash;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StrokeData_h
+#endif  // StrokeData_h

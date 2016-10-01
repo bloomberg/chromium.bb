@@ -43,14 +43,30 @@ class ScriptState;
 class ScriptValue;
 
 namespace DOMWindowTimers {
-int setTimeout(ScriptState*, EventTarget&, const ScriptValue& handler, int timeout, const Vector<ScriptValue>& arguments);
-int setTimeout(ScriptState*, EventTarget&, const String& handler, int timeout, const Vector<ScriptValue>&);
-int setInterval(ScriptState*, EventTarget&, const ScriptValue& handler, int timeout, const Vector<ScriptValue>&);
-int setInterval(ScriptState*, EventTarget&, const String& handler, int timeout, const Vector<ScriptValue>&);
+int setTimeout(ScriptState*,
+               EventTarget&,
+               const ScriptValue& handler,
+               int timeout,
+               const Vector<ScriptValue>& arguments);
+int setTimeout(ScriptState*,
+               EventTarget&,
+               const String& handler,
+               int timeout,
+               const Vector<ScriptValue>&);
+int setInterval(ScriptState*,
+                EventTarget&,
+                const ScriptValue& handler,
+                int timeout,
+                const Vector<ScriptValue>&);
+int setInterval(ScriptState*,
+                EventTarget&,
+                const String& handler,
+                int timeout,
+                const Vector<ScriptValue>&);
 void clearTimeout(EventTarget&, int timeoutId);
 void clearInterval(EventTarget&, int timeoutId);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowTimers_h
+#endif  // DOMWindowTimers_h

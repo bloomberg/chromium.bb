@@ -6,24 +6,21 @@
 
 namespace blink {
 
-String SVGAnimatedString::baseVal()
-{
-    return SVGAnimatedProperty<SVGString>::baseVal();
+String SVGAnimatedString::baseVal() {
+  return SVGAnimatedProperty<SVGString>::baseVal();
 }
 
-void SVGAnimatedString::setBaseVal(const String& value, ExceptionState& exceptionState)
-{
-    return SVGAnimatedProperty<SVGString>::setBaseVal(value, exceptionState);
+void SVGAnimatedString::setBaseVal(const String& value,
+                                   ExceptionState& exceptionState) {
+  return SVGAnimatedProperty<SVGString>::setBaseVal(value, exceptionState);
 }
 
-String SVGAnimatedString::animVal()
-{
-    return SVGAnimatedProperty<SVGString>::animVal();
+String SVGAnimatedString::animVal() {
+  return SVGAnimatedProperty<SVGString>::animVal();
 }
 
-DEFINE_TRACE_WRAPPERS(SVGAnimatedString)
-{
-    visitor->traceWrappers(contextElement());
+DEFINE_TRACE_WRAPPERS(SVGAnimatedString) {
+  visitor->traceWrappers(contextElement());
 }
 
-} // namespace blink
+}  // namespace blink

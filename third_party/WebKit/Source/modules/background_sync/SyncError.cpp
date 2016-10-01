@@ -9,22 +9,22 @@
 
 namespace blink {
 
-DOMException* SyncError::take(ScriptPromiseResolver*, const WebSyncError& webError)
-{
-    switch (webError.errorType) {
+DOMException* SyncError::take(ScriptPromiseResolver*,
+                              const WebSyncError& webError) {
+  switch (webError.errorType) {
     case WebSyncError::ErrorTypeAbort:
-        return DOMException::create(AbortError, webError.message);
+      return DOMException::create(AbortError, webError.message);
     case WebSyncError::ErrorTypeNoPermission:
-        return DOMException::create(InvalidAccessError, webError.message);
+      return DOMException::create(InvalidAccessError, webError.message);
     case WebSyncError::ErrorTypeNotFound:
-        return DOMException::create(NotFoundError, webError.message);
+      return DOMException::create(NotFoundError, webError.message);
     case WebSyncError::ErrorTypePermissionDenied:
-        return DOMException::create(PermissionDeniedError, webError.message);
+      return DOMException::create(PermissionDeniedError, webError.message);
     case WebSyncError::ErrorTypeUnknown:
-        return DOMException::create(UnknownError, webError.message);
-    }
-    ASSERT_NOT_REACHED();
-    return DOMException::create(UnknownError);
+      return DOMException::create(UnknownError, webError.message);
+  }
+  ASSERT_NOT_REACHED();
+  return DOMException::create(UnknownError);
 }
 
-} // namespace blink
+}  // namespace blink

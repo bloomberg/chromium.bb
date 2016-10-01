@@ -38,49 +38,52 @@
 
 namespace blink {
 
-class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>, public ResourceClient {
-    USING_PRE_FINALIZER(MockResourceClient, dispose);
-    USING_GARBAGE_COLLECTED_MIXIN(MockResourceClient);
-public:
-    explicit MockResourceClient(Resource*);
-    ~MockResourceClient() override;
+class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
+                           public ResourceClient {
+  USING_PRE_FINALIZER(MockResourceClient, dispose);
+  USING_GARBAGE_COLLECTED_MIXIN(MockResourceClient);
 
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "MockResourceClient"; }
-    virtual bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
+ public:
+  explicit MockResourceClient(Resource*);
+  ~MockResourceClient() override;
 
-    virtual void removeAsClient();
-    virtual void dispose();
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "MockResourceClient"; }
+  virtual bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
 
-    DECLARE_TRACE();
+  virtual void removeAsClient();
+  virtual void dispose();
 
-protected:
-    Member<Resource> m_resource;
-    bool m_notifyFinishedCalled;
+  DECLARE_TRACE();
+
+ protected:
+  Member<Resource> m_resource;
+  bool m_notifyFinishedCalled;
 };
 
-class MockImageResourceClient final : public MockResourceClient, public ImageResourceObserver {
-public:
-    explicit MockImageResourceClient(ImageResource*);
-    ~MockImageResourceClient() override;
+class MockImageResourceClient final : public MockResourceClient,
+                                      public ImageResourceObserver {
+ public:
+  explicit MockImageResourceClient(ImageResource*);
+  ~MockImageResourceClient() override;
 
-    void imageNotifyFinished(ImageResource*) override;
-    void imageChanged(ImageResource*, const IntRect*) override;
+  void imageNotifyFinished(ImageResource*) override;
+  void imageChanged(ImageResource*, const IntRect*) override;
 
-    String debugName() const override { return "MockImageResourceClient"; }
+  String debugName() const override { return "MockImageResourceClient"; }
 
-    bool notifyFinishedCalled() const override;
+  bool notifyFinishedCalled() const override;
 
-    void removeAsClient() override;
-    void dispose() override;
+  void removeAsClient() override;
+  void dispose() override;
 
-    int imageChangedCount() const { return m_imageChangedCount; }
+  int imageChangedCount() const { return m_imageChangedCount; }
 
-private:
-    int m_imageChangedCount;
-    int m_imageNotifyFinishedCount;
+ private:
+  int m_imageChangedCount;
+  int m_imageNotifyFinishedCount;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MockResourceClients_h
+#endif  // MockResourceClients_h

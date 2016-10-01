@@ -7,12 +7,8 @@
 
 namespace blink {
 
-enum ContentChangeType {
-    ImageChanged,
-    CanvasChanged,
-    CanvasContextChanged
-};
+enum ContentChangeType { ImageChanged, CanvasChanged, CanvasContextChanged };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ContentChangeType_h
+#endif  // ContentChangeType_h

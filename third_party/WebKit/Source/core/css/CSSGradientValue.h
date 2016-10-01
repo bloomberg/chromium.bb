@@ -38,12 +38,12 @@ class FloatPoint;
 class Gradient;
 
 enum CSSGradientType {
-    CSSDeprecatedLinearGradient,
-    CSSDeprecatedRadialGradient,
-    CSSPrefixedLinearGradient,
-    CSSPrefixedRadialGradient,
-    CSSLinearGradient,
-    CSSRadialGradient
+  CSSDeprecatedLinearGradient,
+  CSSDeprecatedRadialGradient,
+  CSSPrefixedLinearGradient,
+  CSSPrefixedRadialGradient,
+  CSSLinearGradient,
+  CSSRadialGradient
 };
 enum CSSGradientRepeat { NonRepeating, Repeating };
 
@@ -55,28 +55,26 @@ enum CSSGradientRepeat { NonRepeating, Repeating };
 //
 // http://www.w3.org/TR/css3-images/#color-stop-syntax
 struct CSSGradientColorStop {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    CSSGradientColorStop() : m_colorIsDerivedFromElement(false) { }
-    Member<CSSPrimitiveValue> m_position; // percentage or length
-    Member<CSSValue> m_color;
-    bool m_colorIsDerivedFromElement;
-    bool operator==(const CSSGradientColorStop& other) const
-    {
-        return compareCSSValuePtr(m_color, other.m_color)
-            && compareCSSValuePtr(m_position, other.m_position);
-    }
-    bool isHint() const
-    {
-        ASSERT(m_color || m_position);
-        return !m_color;
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    DECLARE_TRACE();
+ public:
+  CSSGradientColorStop() : m_colorIsDerivedFromElement(false) {}
+  Member<CSSPrimitiveValue> m_position;  // percentage or length
+  Member<CSSValue> m_color;
+  bool m_colorIsDerivedFromElement;
+  bool operator==(const CSSGradientColorStop& other) const {
+    return compareCSSValuePtr(m_color, other.m_color) &&
+           compareCSSValuePtr(m_position, other.m_position);
+  }
+  bool isHint() const {
+    ASSERT(m_color || m_position);
+    return !m_color;
+  }
+
+  DECLARE_TRACE();
 };
 
-} // namespace blink
-
+}  // namespace blink
 
 // We have to declare the VectorTraits specialization before CSSGradientValue
 // declares its inline capacity vector below.
@@ -85,147 +83,159 @@ WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSGradientColorStop);
 namespace blink {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
-public:
-    PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
+ public:
+  PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
 
-    void setFirstX(CSSValue* val) { m_firstX = val; }
-    void setFirstY(CSSValue* val) { m_firstY = val; }
-    void setSecondX(CSSValue* val) { m_secondX = val; }
-    void setSecondY(CSSValue* val) { m_secondY = val; }
+  void setFirstX(CSSValue* val) { m_firstX = val; }
+  void setFirstY(CSSValue* val) { m_firstY = val; }
+  void setSecondX(CSSValue* val) { m_secondX = val; }
+  void setSecondY(CSSValue* val) { m_secondY = val; }
 
-    void addStop(const CSSGradientColorStop& stop) { m_stops.append(stop); }
+  void addStop(const CSSGradientColorStop& stop) { m_stops.append(stop); }
 
-    unsigned stopCount() const { return m_stops.size(); }
+  unsigned stopCount() const { return m_stops.size(); }
 
-    void appendCSSTextForDeprecatedColorStops(StringBuilder&) const;
+  void appendCSSTextForDeprecatedColorStops(StringBuilder&) const;
 
-    bool isRepeating() const { return m_repeating; }
+  bool isRepeating() const { return m_repeating; }
 
-    CSSGradientType gradientType() const { return m_gradientType; }
+  CSSGradientType gradientType() const { return m_gradientType; }
 
-    bool isFixedSize() const { return false; }
-    IntSize fixedSize(const LayoutObject&) const { return IntSize(); }
+  bool isFixedSize() const { return false; }
+  IntSize fixedSize(const LayoutObject&) const { return IntSize(); }
 
-    bool isPending() const { return false; }
-    bool knownToBeOpaque(const LayoutObject&) const;
+  bool isPending() const { return false; }
+  bool knownToBeOpaque(const LayoutObject&) const;
 
-    void loadSubimages(const Document&) { }
+  void loadSubimages(const Document&) {}
 
-    void getStopColors(Vector<Color>& stopColors, const LayoutObject&) const;
+  void getStopColors(Vector<Color>& stopColors, const LayoutObject&) const;
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-protected:
-    CSSGradientValue(ClassType classType, CSSGradientRepeat repeat, CSSGradientType gradientType)
-        : CSSImageGeneratorValue(classType)
-        , m_stopsSorted(false)
-        , m_gradientType(gradientType)
-        , m_repeating(repeat == Repeating)
-    {
-    }
+ protected:
+  CSSGradientValue(ClassType classType,
+                   CSSGradientRepeat repeat,
+                   CSSGradientType gradientType)
+      : CSSImageGeneratorValue(classType),
+        m_stopsSorted(false),
+        m_gradientType(gradientType),
+        m_repeating(repeat == Repeating) {}
 
-    void addStops(Gradient*, const CSSToLengthConversionData&, const LayoutObject&);
-    void addDeprecatedStops(Gradient*, const LayoutObject&);
+  void addStops(Gradient*,
+                const CSSToLengthConversionData&,
+                const LayoutObject&);
+  void addDeprecatedStops(Gradient*, const LayoutObject&);
 
-    // Resolve points/radii to front end values.
-    FloatPoint computeEndPoint(CSSValue*, CSSValue*, const CSSToLengthConversionData&, const IntSize&);
+  // Resolve points/radii to front end values.
+  FloatPoint computeEndPoint(CSSValue*,
+                             CSSValue*,
+                             const CSSToLengthConversionData&,
+                             const IntSize&);
 
-    bool isCacheable() const;
+  bool isCacheable() const;
 
-    // Points. Some of these may be null.
-    Member<CSSValue> m_firstX;
-    Member<CSSValue> m_firstY;
+  // Points. Some of these may be null.
+  Member<CSSValue> m_firstX;
+  Member<CSSValue> m_firstY;
 
-    Member<CSSValue> m_secondX;
-    Member<CSSValue> m_secondY;
+  Member<CSSValue> m_secondX;
+  Member<CSSValue> m_secondY;
 
-    // Stops
-    HeapVector<CSSGradientColorStop, 2> m_stops;
-    bool m_stopsSorted;
-    CSSGradientType m_gradientType;
-    bool m_repeating;
+  // Stops
+  HeapVector<CSSGradientColorStop, 2> m_stops;
+  bool m_stopsSorted;
+  CSSGradientType m_gradientType;
+  bool m_repeating;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSGradientValue, isGradientValue());
 
 class CSSLinearGradientValue final : public CSSGradientValue {
-public:
+ public:
+  static CSSLinearGradientValue* create(
+      CSSGradientRepeat repeat,
+      CSSGradientType gradientType = CSSLinearGradient) {
+    return new CSSLinearGradientValue(repeat, gradientType);
+  }
 
-    static CSSLinearGradientValue* create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
-    {
-        return new CSSLinearGradientValue(repeat, gradientType);
-    }
+  void setAngle(CSSPrimitiveValue* val) { m_angle = val; }
 
-    void setAngle(CSSPrimitiveValue* val) { m_angle = val; }
+  String customCSSText() const;
 
-    String customCSSText() const;
+  // Create the gradient for a given size.
+  PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&,
+                                      const IntSize&,
+                                      const LayoutObject&);
 
-    // Create the gradient for a given size.
-    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&, const LayoutObject&);
+  bool equals(const CSSLinearGradientValue&) const;
 
-    bool equals(const CSSLinearGradientValue&) const;
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+ private:
+  CSSLinearGradientValue(CSSGradientRepeat repeat,
+                         CSSGradientType gradientType = CSSLinearGradient)
+      : CSSGradientValue(LinearGradientClass, repeat, gradientType) {}
 
-private:
-    CSSLinearGradientValue(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
-        : CSSGradientValue(LinearGradientClass, repeat, gradientType)
-    {
-    }
-
-    Member<CSSPrimitiveValue> m_angle; // may be null.
+  Member<CSSPrimitiveValue> m_angle;  // may be null.
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSLinearGradientValue, isLinearGradientValue());
 
 class CSSRadialGradientValue final : public CSSGradientValue {
-public:
-    static CSSRadialGradientValue* create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)
-    {
-        return new CSSRadialGradientValue(repeat, gradientType);
-    }
+ public:
+  static CSSRadialGradientValue* create(
+      CSSGradientRepeat repeat,
+      CSSGradientType gradientType = CSSRadialGradient) {
+    return new CSSRadialGradientValue(repeat, gradientType);
+  }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    void setFirstRadius(CSSPrimitiveValue* val) { m_firstRadius = val; }
-    void setSecondRadius(CSSPrimitiveValue* val) { m_secondRadius = val; }
+  void setFirstRadius(CSSPrimitiveValue* val) { m_firstRadius = val; }
+  void setSecondRadius(CSSPrimitiveValue* val) { m_secondRadius = val; }
 
-    void setShape(CSSPrimitiveValue* val) { m_shape = val; }
-    void setSizingBehavior(CSSPrimitiveValue* val) { m_sizingBehavior = val; }
+  void setShape(CSSPrimitiveValue* val) { m_shape = val; }
+  void setSizingBehavior(CSSPrimitiveValue* val) { m_sizingBehavior = val; }
 
-    void setEndHorizontalSize(CSSPrimitiveValue* val) { m_endHorizontalSize = val; }
-    void setEndVerticalSize(CSSPrimitiveValue* val) { m_endVerticalSize = val; }
+  void setEndHorizontalSize(CSSPrimitiveValue* val) {
+    m_endHorizontalSize = val;
+  }
+  void setEndVerticalSize(CSSPrimitiveValue* val) { m_endVerticalSize = val; }
 
-    // Create the gradient for a given size.
-    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&, const LayoutObject&);
+  // Create the gradient for a given size.
+  PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&,
+                                      const IntSize&,
+                                      const LayoutObject&);
 
-    bool equals(const CSSRadialGradientValue&) const;
+  bool equals(const CSSRadialGradientValue&) const;
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-private:
-    CSSRadialGradientValue(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)
-        : CSSGradientValue(RadialGradientClass, repeat, gradientType)
-    {
-    }
+ private:
+  CSSRadialGradientValue(CSSGradientRepeat repeat,
+                         CSSGradientType gradientType = CSSRadialGradient)
+      : CSSGradientValue(RadialGradientClass, repeat, gradientType) {}
 
-    // Resolve points/radii to front end values.
-    float resolveRadius(CSSPrimitiveValue*, const CSSToLengthConversionData&, float* widthOrHeight = 0);
+  // Resolve points/radii to front end values.
+  float resolveRadius(CSSPrimitiveValue*,
+                      const CSSToLengthConversionData&,
+                      float* widthOrHeight = 0);
 
-    // These may be null for non-deprecated gradients.
-    Member<CSSPrimitiveValue> m_firstRadius;
-    Member<CSSPrimitiveValue> m_secondRadius;
+  // These may be null for non-deprecated gradients.
+  Member<CSSPrimitiveValue> m_firstRadius;
+  Member<CSSPrimitiveValue> m_secondRadius;
 
-    // The below are only used for non-deprecated gradients. Any of them may be null.
-    Member<CSSPrimitiveValue> m_shape;
-    Member<CSSPrimitiveValue> m_sizingBehavior;
+  // The below are only used for non-deprecated gradients. Any of them may be null.
+  Member<CSSPrimitiveValue> m_shape;
+  Member<CSSPrimitiveValue> m_sizingBehavior;
 
-    Member<CSSPrimitiveValue> m_endHorizontalSize;
-    Member<CSSPrimitiveValue> m_endVerticalSize;
+  Member<CSSPrimitiveValue> m_endHorizontalSize;
+  Member<CSSPrimitiveValue> m_endVerticalSize;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSRadialGradientValue, isRadialGradientValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSGradientValue_h
+#endif  // CSSGradientValue_h

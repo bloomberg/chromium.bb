@@ -34,38 +34,41 @@
 
 namespace blink {
 
-FontCache::FontCache()
-    : m_purgePreventCount(0)
-{
-    if (s_staticFontManager) {
-        adopted(s_staticFontManager);
-        m_fontManager = sk_ref_sp(s_staticFontManager);
-    } else {
-        m_fontManager = nullptr;
-    }
+FontCache::FontCache() : m_purgePreventCount(0) {
+  if (s_staticFontManager) {
+    adopted(s_staticFontManager);
+    m_fontManager = sk_ref_sp(s_staticFontManager);
+  } else {
+    m_fontManager = nullptr;
+  }
 }
 
-void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
-{
-    if (Platform::current()->sandboxSupport()) {
-        WebFallbackFont webFallbackFont;
-        Platform::current()->sandboxSupport()->getFallbackFontForCharacter(c, preferredLocale, &webFallbackFont);
-        fallbackFont->name = String::fromUTF8(CString(webFallbackFont.name));
-        fallbackFont->filename = webFallbackFont.filename;
-        fallbackFont->fontconfigInterfaceId = webFallbackFont.fontconfigInterfaceId;
-        fallbackFont->ttcIndex = webFallbackFont.ttcIndex;
-        fallbackFont->isBold = webFallbackFont.isBold;
-        fallbackFont->isItalic = webFallbackFont.isItalic;
-    } else {
-        std::string locale = preferredLocale ? preferredLocale : std::string();
-        gfx::FallbackFontData fallbackData = gfx::GetFallbackFontForChar(c, locale);
-        fallbackFont->name = String::fromUTF8(fallbackData.name.data(), fallbackData.name.length());
-        fallbackFont->filename = CString(fallbackData.filename.data(), fallbackData.filename.length());
-        fallbackFont->fontconfigInterfaceId = 0;
-        fallbackFont->ttcIndex = fallbackData.ttc_index;
-        fallbackFont->isBold = fallbackData.is_bold;
-        fallbackFont->isItalic = fallbackData.is_italic;
-    }
+void FontCache::getFontForCharacter(
+    UChar32 c,
+    const char* preferredLocale,
+    FontCache::PlatformFallbackFont* fallbackFont) {
+  if (Platform::current()->sandboxSupport()) {
+    WebFallbackFont webFallbackFont;
+    Platform::current()->sandboxSupport()->getFallbackFontForCharacter(
+        c, preferredLocale, &webFallbackFont);
+    fallbackFont->name = String::fromUTF8(CString(webFallbackFont.name));
+    fallbackFont->filename = webFallbackFont.filename;
+    fallbackFont->fontconfigInterfaceId = webFallbackFont.fontconfigInterfaceId;
+    fallbackFont->ttcIndex = webFallbackFont.ttcIndex;
+    fallbackFont->isBold = webFallbackFont.isBold;
+    fallbackFont->isItalic = webFallbackFont.isItalic;
+  } else {
+    std::string locale = preferredLocale ? preferredLocale : std::string();
+    gfx::FallbackFontData fallbackData = gfx::GetFallbackFontForChar(c, locale);
+    fallbackFont->name =
+        String::fromUTF8(fallbackData.name.data(), fallbackData.name.length());
+    fallbackFont->filename =
+        CString(fallbackData.filename.data(), fallbackData.filename.length());
+    fallbackFont->fontconfigInterfaceId = 0;
+    fallbackFont->ttcIndex = fallbackData.ttc_index;
+    fallbackFont->isBold = fallbackData.is_bold;
+    fallbackFont->isItalic = fallbackData.is_italic;
+  }
 }
 
 #if !OS(ANDROID)
@@ -73,74 +76,83 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     const FontDescription& fontDescription,
     UChar32 c,
     const SimpleFontData*,
-    FontFallbackPriority fallbackPriority)
-{
-    // The m_fontManager is set only if it was provided by the embedder with WebFontRendering::setSkiaFontManager. This is
-    // used to emulate android fonts on linux so we always request the family from the font manager and if none is found, we return
-    // the LastResort fallback font and avoid using FontCache::getFontForCharacter which would use sandbox support to
-    // query the underlying system for the font family.
-    if (m_fontManager) {
-        AtomicString familyName = getFamilyNameForCharacter(m_fontManager.get(), c, fontDescription, fallbackPriority);
-        if (familyName.isEmpty())
-            return getLastResortFallbackFont(fontDescription, DoNotRetain);
-        return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, FontFaceCreationParams(familyName)), DoNotRetain);
-    }
+    FontFallbackPriority fallbackPriority) {
+  // The m_fontManager is set only if it was provided by the embedder with WebFontRendering::setSkiaFontManager. This is
+  // used to emulate android fonts on linux so we always request the family from the font manager and if none is found, we return
+  // the LastResort fallback font and avoid using FontCache::getFontForCharacter which would use sandbox support to
+  // query the underlying system for the font family.
+  if (m_fontManager) {
+    AtomicString familyName = getFamilyNameForCharacter(
+        m_fontManager.get(), c, fontDescription, fallbackPriority);
+    if (familyName.isEmpty())
+      return getLastResortFallbackFont(fontDescription, DoNotRetain);
+    return fontDataFromFontPlatformData(
+        getFontPlatformData(fontDescription,
+                            FontFaceCreationParams(familyName)),
+        DoNotRetain);
+  }
 
-    if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
-        // FIXME crbug.com/591346: We're overriding the fallback character here
-        // with the FAMILY emoji in the hope to find a suitable emoji font.
-        // This should be improved by supporting fallback for character
-        // sequences like DIGIT ONE + COMBINING keycap etc.
-        c = familyCharacter;
-    }
+  if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
+    // FIXME crbug.com/591346: We're overriding the fallback character here
+    // with the FAMILY emoji in the hope to find a suitable emoji font.
+    // This should be improved by supporting fallback for character
+    // sequences like DIGIT ONE + COMBINING keycap etc.
+    c = familyCharacter;
+  }
 
-    // First try the specified font with standard style & weight.
-    if (fallbackPriority != FontFallbackPriority::EmojiEmoji
-        && (fontDescription.style() == FontStyleItalic
-        || fontDescription.weight() >= FontWeight600)) {
-        RefPtr<SimpleFontData> fontData = fallbackOnStandardFontStyle(
-            fontDescription, c);
-        if (fontData)
-            return fontData;
-    }
+  // First try the specified font with standard style & weight.
+  if (fallbackPriority != FontFallbackPriority::EmojiEmoji &&
+      (fontDescription.style() == FontStyleItalic ||
+       fontDescription.weight() >= FontWeight600)) {
+    RefPtr<SimpleFontData> fontData =
+        fallbackOnStandardFontStyle(fontDescription, c);
+    if (fontData)
+      return fontData;
+  }
 
-    FontCache::PlatformFallbackFont fallbackFont;
-    FontCache::getFontForCharacter(c, fontDescription.localeOrDefault().ascii().data(), &fallbackFont);
-    if (fallbackFont.name.isEmpty())
-        return nullptr;
+  FontCache::PlatformFallbackFont fallbackFont;
+  FontCache::getFontForCharacter(
+      c, fontDescription.localeOrDefault().ascii().data(), &fallbackFont);
+  if (fallbackFont.name.isEmpty())
+    return nullptr;
 
-    FontFaceCreationParams creationParams;
-    creationParams = FontFaceCreationParams(fallbackFont.filename, fallbackFont.fontconfigInterfaceId, fallbackFont.ttcIndex);
+  FontFaceCreationParams creationParams;
+  creationParams = FontFaceCreationParams(fallbackFont.filename,
+                                          fallbackFont.fontconfigInterfaceId,
+                                          fallbackFont.ttcIndex);
 
-    // Changes weight and/or italic of given FontDescription depends on
-    // the result of fontconfig so that keeping the correct font mapping
-    // of the given character. See http://crbug.com/32109 for details.
-    bool shouldSetSyntheticBold = false;
-    bool shouldSetSyntheticItalic = false;
-    FontDescription description(fontDescription);
-    if (fallbackFont.isBold && description.weight() < FontWeightBold)
-        description.setWeight(FontWeightBold);
-    if (!fallbackFont.isBold && description.weight() >= FontWeightBold) {
-        shouldSetSyntheticBold = true;
-        description.setWeight(FontWeightNormal);
-    }
-    if (fallbackFont.isItalic && description.style() == FontStyleNormal)
-        description.setStyle(FontStyleItalic);
-    if (!fallbackFont.isItalic && (description.style() == FontStyleItalic || description.style() == FontStyleOblique)) {
-        shouldSetSyntheticItalic = true;
-        description.setStyle(FontStyleNormal);
-    }
+  // Changes weight and/or italic of given FontDescription depends on
+  // the result of fontconfig so that keeping the correct font mapping
+  // of the given character. See http://crbug.com/32109 for details.
+  bool shouldSetSyntheticBold = false;
+  bool shouldSetSyntheticItalic = false;
+  FontDescription description(fontDescription);
+  if (fallbackFont.isBold && description.weight() < FontWeightBold)
+    description.setWeight(FontWeightBold);
+  if (!fallbackFont.isBold && description.weight() >= FontWeightBold) {
+    shouldSetSyntheticBold = true;
+    description.setWeight(FontWeightNormal);
+  }
+  if (fallbackFont.isItalic && description.style() == FontStyleNormal)
+    description.setStyle(FontStyleItalic);
+  if (!fallbackFont.isItalic && (description.style() == FontStyleItalic ||
+                                 description.style() == FontStyleOblique)) {
+    shouldSetSyntheticItalic = true;
+    description.setStyle(FontStyleNormal);
+  }
 
-    FontPlatformData* substitutePlatformData = getFontPlatformData(description, creationParams);
-    if (!substitutePlatformData)
-        return nullptr;
+  FontPlatformData* substitutePlatformData =
+      getFontPlatformData(description, creationParams);
+  if (!substitutePlatformData)
+    return nullptr;
 
-    std::unique_ptr<FontPlatformData> platformData(new FontPlatformData(*substitutePlatformData));
-    platformData->setSyntheticBold(shouldSetSyntheticBold);
-    platformData->setSyntheticItalic(shouldSetSyntheticItalic);
-    return fontDataFromFontPlatformData(platformData.get(), DoNotRetain);
+  std::unique_ptr<FontPlatformData> platformData(
+      new FontPlatformData(*substitutePlatformData));
+  platformData->setSyntheticBold(shouldSetSyntheticBold);
+  platformData->setSyntheticItalic(shouldSetSyntheticItalic);
+  return fontDataFromFontPlatformData(platformData.get(), DoNotRetain);
 }
 
-#endif // !OS(ANDROID)
+#endif  // !OS(ANDROID)
 
-} // namespace blink
+}  // namespace blink

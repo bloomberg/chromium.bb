@@ -32,102 +32,98 @@
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableRow.h"
 
-
 namespace blink {
 
-AXARIAGrid::AXARIAGrid(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXTable(layoutObject, axObjectCache)
-{
+AXARIAGrid::AXARIAGrid(LayoutObject* layoutObject,
+                       AXObjectCacheImpl& axObjectCache)
+    : AXTable(layoutObject, axObjectCache) {}
+
+AXARIAGrid::~AXARIAGrid() {}
+
+AXARIAGrid* AXARIAGrid::create(LayoutObject* layoutObject,
+                               AXObjectCacheImpl& axObjectCache) {
+  return new AXARIAGrid(layoutObject, axObjectCache);
 }
 
-AXARIAGrid::~AXARIAGrid()
-{
+bool AXARIAGrid::addTableRowChild(AXObject* child,
+                                  HeapHashSet<Member<AXObject>>& appendedRows,
+                                  unsigned& columnCount) {
+  if (!child || !child->isTableRow() || child->roleValue() != RowRole)
+    return false;
+
+  AXTableRow* row = toAXTableRow(child);
+  if (appendedRows.contains(row))
+    return false;
+
+  // store the maximum number of columns
+  unsigned rowCellCount = row->children().size();
+  if (rowCellCount > columnCount)
+    columnCount = rowCellCount;
+
+  row->setRowIndex((int)m_rows.size());
+  m_rows.append(row);
+
+  // Try adding the row if it's not ignoring accessibility,
+  // otherwise add its children (the cells) as the grid's children.
+  if (!row->accessibilityIsIgnored())
+    m_children.append(row);
+  else
+    m_children.appendVector(row->children());
+
+  appendedRows.add(row);
+  return true;
 }
 
-AXARIAGrid* AXARIAGrid::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-{
-    return new AXARIAGrid(layoutObject, axObjectCache);
-}
+void AXARIAGrid::addChildren() {
+  ASSERT(!isDetached());
+  ASSERT(!m_haveChildren);
 
-bool AXARIAGrid::addTableRowChild(AXObject* child, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount)
-{
-    if (!child || !child->isTableRow() || child->roleValue() != RowRole)
-        return false;
+  if (!isAXTable()) {
+    AXLayoutObject::addChildren();
+    return;
+  }
 
-    AXTableRow* row = toAXTableRow(child);
-    if (appendedRows.contains(row))
-        return false;
+  m_haveChildren = true;
+  if (!m_layoutObject)
+    return;
 
-    // store the maximum number of columns
-    unsigned rowCellCount = row->children().size();
-    if (rowCellCount > columnCount)
-        columnCount = rowCellCount;
+  HeapVector<Member<AXObject>> children;
+  for (AXObject* child = rawFirstChild(); child;
+       child = child->rawNextSibling())
+    children.append(child);
+  computeAriaOwnsChildren(children);
 
-    row->setRowIndex((int)m_rows.size());
-    m_rows.append(row);
+  AXObjectCacheImpl& axCache = axObjectCache();
 
-    // Try adding the row if it's not ignoring accessibility,
-    // otherwise add its children (the cells) as the grid's children.
-    if (!row->accessibilityIsIgnored())
-        m_children.append(row);
-    else
-        m_children.appendVector(row->children());
+  // Only add children that are actually rows.
+  HeapHashSet<Member<AXObject>> appendedRows;
+  unsigned columnCount = 0;
+  for (const auto& child : children) {
+    if (!addTableRowChild(child, appendedRows, columnCount)) {
+      // in case the layout tree doesn't match the expected ARIA hierarchy, look at the children
+      if (!child->hasChildren())
+        child->addChildren();
 
-    appendedRows.add(row);
-    return true;
-}
-
-void AXARIAGrid::addChildren()
-{
-    ASSERT(!isDetached());
-    ASSERT(!m_haveChildren);
-
-    if (!isAXTable()) {
-        AXLayoutObject::addChildren();
-        return;
+      // The children of this non-row will contain all non-ignored elements (recursing to find them).
+      // This allows the table to dive arbitrarily deep to find the rows.
+      for (const auto& childObject : child->children())
+        addTableRowChild(childObject.get(), appendedRows, columnCount);
     }
+  }
 
-    m_haveChildren = true;
-    if (!m_layoutObject)
-        return;
+  // make the columns based on the number of columns in the first body
+  for (unsigned i = 0; i < columnCount; ++i) {
+    AXTableColumn* column = toAXTableColumn(axCache.getOrCreate(ColumnRole));
+    column->setColumnIndex((int)i);
+    column->setParent(this);
+    m_columns.append(column);
+    if (!column->accessibilityIsIgnored())
+      m_children.append(column);
+  }
 
-    HeapVector<Member<AXObject>> children;
-    for (AXObject* child = rawFirstChild(); child; child = child->rawNextSibling())
-        children.append(child);
-    computeAriaOwnsChildren(children);
-
-    AXObjectCacheImpl& axCache = axObjectCache();
-
-    // Only add children that are actually rows.
-    HeapHashSet<Member<AXObject>> appendedRows;
-    unsigned columnCount = 0;
-    for (const auto& child : children) {
-        if (!addTableRowChild(child, appendedRows, columnCount)) {
-
-            // in case the layout tree doesn't match the expected ARIA hierarchy, look at the children
-            if (!child->hasChildren())
-                child->addChildren();
-
-            // The children of this non-row will contain all non-ignored elements (recursing to find them).
-            // This allows the table to dive arbitrarily deep to find the rows.
-            for (const auto& childObject : child->children())
-                addTableRowChild(childObject.get(), appendedRows, columnCount);
-        }
-    }
-
-    // make the columns based on the number of columns in the first body
-    for (unsigned i = 0; i < columnCount; ++i) {
-        AXTableColumn* column = toAXTableColumn(axCache.getOrCreate(ColumnRole));
-        column->setColumnIndex((int)i);
-        column->setParent(this);
-        m_columns.append(column);
-        if (!column->accessibilityIsIgnored())
-            m_children.append(column);
-    }
-
-    AXObject* headerContainerObject = headerContainer();
-    if (headerContainerObject && !headerContainerObject->accessibilityIsIgnored())
-        m_children.append(headerContainerObject);
+  AXObject* headerContainerObject = headerContainer();
+  if (headerContainerObject && !headerContainerObject->accessibilityIsIgnored())
+    m_children.append(headerContainerObject);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -39,40 +39,47 @@
 
 namespace blink {
 
-AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
-    : ImageBufferSurface(size, opacityMode, colorSpace)
-{
-    if (!SharedGpuContext::isValid())
-        return;
-    GrContext* grContext = SharedGpuContext::gr();
-    m_contextId = SharedGpuContext::contextId();
-    CHECK(grContext);
+AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
+    const IntSize& size,
+    OpacityMode opacityMode,
+    sk_sp<SkColorSpace> colorSpace)
+    : ImageBufferSurface(size, opacityMode, colorSpace) {
+  if (!SharedGpuContext::isValid())
+    return;
+  GrContext* grContext = SharedGpuContext::gr();
+  m_contextId = SharedGpuContext::contextId();
+  CHECK(grContext);
 
-    SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
-    SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    m_surface = SkSurface::MakeRenderTarget(grContext, SkBudgeted::kYes, info, 0 /* sampleCount */,
-        Opaque == opacityMode ? nullptr : &disableLCDProps);
-    if (!m_surface.get())
-        return;
-    clear();
+  SkAlphaType alphaType =
+      (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+  SkImageInfo info =
+      SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
+  SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
+  m_surface = SkSurface::MakeRenderTarget(
+      grContext, SkBudgeted::kYes, info, 0 /* sampleCount */,
+      Opaque == opacityMode ? nullptr : &disableLCDProps);
+  if (!m_surface.get())
+    return;
+  clear();
 }
 
-bool AcceleratedImageBufferSurface::isValid() const
-{
-    return m_surface && SharedGpuContext::isValid() && m_contextId == SharedGpuContext::contextId();
+bool AcceleratedImageBufferSurface::isValid() const {
+  return m_surface && SharedGpuContext::isValid() &&
+         m_contextId == SharedGpuContext::contextId();
 }
 
-sk_sp<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
-{
-    return m_surface->makeImageSnapshot();
+sk_sp<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint,
+                                                               SnapshotReason) {
+  return m_surface->makeImageSnapshot();
 }
 
-GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite()
-{
-    if (!m_surface)
-        return 0;
-    return skia::GrBackendObjectToGrGLTextureInfo(m_surface->getTextureHandle(SkSurface::kDiscardWrite_TextureHandleAccess))->fID;
+GLuint AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite() {
+  if (!m_surface)
+    return 0;
+  return skia::GrBackendObjectToGrGLTextureInfo(
+             m_surface->getTextureHandle(
+                 SkSurface::kDiscardWrite_TextureHandleAccess))
+      ->fID;
 }
 
-} // namespace blink
+}  // namespace blink

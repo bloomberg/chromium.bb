@@ -36,11 +36,11 @@ namespace blink {
 // The following enum should be consistent with the CustomHandlersState enum
 // defined in WebCore.
 enum WebCustomHandlersState {
-    WebCustomHandlersNew,
-    WebCustomHandlersRegistered,
-    WebCustomHandlersDeclined
+  WebCustomHandlersNew,
+  WebCustomHandlersRegistered,
+  WebCustomHandlersDeclined
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

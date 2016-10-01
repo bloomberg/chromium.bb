@@ -48,61 +48,60 @@ namespace blink {
 namespace {
 
 class BlinkOTSContext final : public ots::OTSContext {
-    DISALLOW_NEW();
-public:
+  DISALLOW_NEW();
 
-    void Message(int level, const char *format, ...) override;
-    ots::TableAction GetTableAction(uint32_t tag) override;
-    const String& getErrorString() { return m_errorString; }
+ public:
+  void Message(int level, const char* format, ...) override;
+  ots::TableAction GetTableAction(uint32_t tag) override;
+  const String& getErrorString() { return m_errorString; }
 
-private:
-    String m_errorString;
+ private:
+  String m_errorString;
 };
 
-void BlinkOTSContext::Message(int level, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
+void BlinkOTSContext::Message(int level, const char* format, ...) {
+  va_list args;
+  va_start(args, format);
 
 #if COMPILER(MSVC)
-    int result = _vscprintf(format, args);
+  int result = _vscprintf(format, args);
 #else
-    char ch;
-    int result = vsnprintf(&ch, 1, format, args);
+  char ch;
+  int result = vsnprintf(&ch, 1, format, args);
 #endif
+  va_end(args);
+
+  if (result <= 0) {
+    m_errorString = String("OTS Error");
+  } else {
+    Vector<char, 256> buffer;
+    unsigned len = result;
+    buffer.grow(len + 1);
+
+    va_start(args, format);
+    vsnprintf(buffer.data(), buffer.size(), format, args);
     va_end(args);
-
-    if (result <= 0) {
-        m_errorString = String("OTS Error");
-    } else {
-        Vector<char, 256> buffer;
-        unsigned len = result;
-        buffer.grow(len + 1);
-
-        va_start(args, format);
-        vsnprintf(buffer.data(), buffer.size(), format, args);
-        va_end(args);
-        m_errorString = StringImpl::create(reinterpret_cast<const LChar*>(buffer.data()), len);
-    }
+    m_errorString =
+        StringImpl::create(reinterpret_cast<const LChar*>(buffer.data()), len);
+  }
 }
 
 #if !defined(HB_VERSION_ATLEAST)
 #define HB_VERSION_ATLEAST(major, minor, micro) 0
 #endif
 
-ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
-{
-    const uint32_t cbdtTag = OTS_TAG('C', 'B', 'D', 'T');
-    const uint32_t cblcTag = OTS_TAG('C', 'B', 'L', 'C');
-    const uint32_t colrTag = OTS_TAG('C', 'O', 'L', 'R');
-    const uint32_t cpalTag = OTS_TAG('C', 'P', 'A', 'L');
+ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag) {
+  const uint32_t cbdtTag = OTS_TAG('C', 'B', 'D', 'T');
+  const uint32_t cblcTag = OTS_TAG('C', 'B', 'L', 'C');
+  const uint32_t colrTag = OTS_TAG('C', 'O', 'L', 'R');
+  const uint32_t cpalTag = OTS_TAG('C', 'P', 'A', 'L');
 #if HB_VERSION_ATLEAST(1, 0, 0)
-    const uint32_t gdefTag = OTS_TAG('G', 'D', 'E', 'F');
-    const uint32_t gposTag = OTS_TAG('G', 'P', 'O', 'S');
-    const uint32_t gsubTag = OTS_TAG('G', 'S', 'U', 'B');
+  const uint32_t gdefTag = OTS_TAG('G', 'D', 'E', 'F');
+  const uint32_t gposTag = OTS_TAG('G', 'P', 'O', 'S');
+  const uint32_t gsubTag = OTS_TAG('G', 'S', 'U', 'B');
 #endif
 
-    switch (tag) {
+  switch (tag) {
     // Google Color Emoji Tables
     case cbdtTag:
     case cblcTag:
@@ -115,91 +114,103 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
     case gposTag:
     case gsubTag:
 #endif
-        return ots::TABLE_ACTION_PASSTHRU;
+      return ots::TABLE_ACTION_PASSTHRU;
     default:
-        return ots::TABLE_ACTION_DEFAULT;
-    }
+      return ots::TABLE_ACTION_DEFAULT;
+  }
 }
 
-void recordDecodeSpeedHistogram(const char* data, size_t length, double decodeTime, size_t decodedSize)
-{
-    if (decodeTime <= 0)
-        return;
+void recordDecodeSpeedHistogram(const char* data,
+                                size_t length,
+                                double decodeTime,
+                                size_t decodedSize) {
+  if (decodeTime <= 0)
+    return;
 
-    double kbPerSecond = decodedSize / (1000 * decodeTime);
-    if (length >= 4) {
-        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F') {
-            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woffHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF", 1000, 300000, 50));
-            woffHistogram.count(kbPerSecond);
-            return;
-        }
-
-        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2') {
-            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woff2Histogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF2", 1000, 300000, 50));
-            woff2Histogram.count(kbPerSecond);
-            return;
-        }
+  double kbPerSecond = decodedSize / (1000 * decodeTime);
+  if (length >= 4) {
+    if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F') {
+      DEFINE_THREAD_SAFE_STATIC_LOCAL(
+          CustomCountHistogram, woffHistogram,
+          new CustomCountHistogram("WebFont.DecodeSpeed.WOFF", 1000, 300000,
+                                   50));
+      woffHistogram.count(kbPerSecond);
+      return;
     }
 
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, sfntHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.SFNT", 1000, 300000, 50));
-    sfntHistogram.count(kbPerSecond);
+    if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2') {
+      DEFINE_THREAD_SAFE_STATIC_LOCAL(
+          CustomCountHistogram, woff2Histogram,
+          new CustomCountHistogram("WebFont.DecodeSpeed.WOFF2", 1000, 300000,
+                                   50));
+      woff2Histogram.count(kbPerSecond);
+      return;
+    }
+  }
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, sfntHistogram,
+      new CustomCountHistogram("WebFont.DecodeSpeed.SFNT", 1000, 300000, 50));
+  sfntHistogram.count(kbPerSecond);
 }
 
-} // namespace
+}  // namespace
 
 // static
-bool WebFontDecoder::supportsFormat(const String& format)
-{
-    return equalIgnoringCase(format, "woff") || equalIgnoringCase(format, "woff2");
+bool WebFontDecoder::supportsFormat(const String& format) {
+  return equalIgnoringCase(format, "woff") ||
+         equalIgnoringCase(format, "woff2");
 }
 
-sk_sp<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer)
-{
-    if (!buffer) {
-        setErrorString("Empty Buffer");
-        return nullptr;
-    }
+sk_sp<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer) {
+  if (!buffer) {
+    setErrorString("Empty Buffer");
+    return nullptr;
+  }
 
-    // This is the largest web font size which we'll try to transcode.
-    // TODO(bashi): 30MB seems low. Update the limit if necessary.
-    static const size_t maxWebFontSize = 30 * 1024 * 1024; // 30 MB
-    if (buffer->size() > maxWebFontSize) {
-        setErrorString("Web font size more than 30MB");
-        return nullptr;
-    }
+  // This is the largest web font size which we'll try to transcode.
+  // TODO(bashi): 30MB seems low. Update the limit if necessary.
+  static const size_t maxWebFontSize = 30 * 1024 * 1024;  // 30 MB
+  if (buffer->size() > maxWebFontSize) {
+    setErrorString("Web font size more than 30MB");
+    return nullptr;
+  }
 
-    // Most web fonts are compressed, so the result can be much larger than
-    // the original.
-    ots::ExpandingMemoryStream output(buffer->size(), maxWebFontSize);
-    double start = currentTime();
-    BlinkOTSContext otsContext;
-    const char* data = buffer->data();
+  // Most web fonts are compressed, so the result can be much larger than
+  // the original.
+  ots::ExpandingMemoryStream output(buffer->size(), maxWebFontSize);
+  double start = currentTime();
+  BlinkOTSContext otsContext;
+  const char* data = buffer->data();
 
-    TRACE_EVENT_BEGIN0("blink", "DecodeFont");
-    bool ok = otsContext.Process(&output, reinterpret_cast<const uint8_t*>(data), buffer->size());
-    TRACE_EVENT_END0("blink", "DecodeFont");
+  TRACE_EVENT_BEGIN0("blink", "DecodeFont");
+  bool ok = otsContext.Process(&output, reinterpret_cast<const uint8_t*>(data),
+                               buffer->size());
+  TRACE_EVENT_END0("blink", "DecodeFont");
 
-    if (!ok) {
-        setErrorString(otsContext.getErrorString());
-        return nullptr;
-    }
+  if (!ok) {
+    setErrorString(otsContext.getErrorString());
+    return nullptr;
+  }
 
-    const size_t decodedLength = output.Tell();
-    recordDecodeSpeedHistogram(data, buffer->size(), currentTime() - start, decodedLength);
+  const size_t decodedLength = output.Tell();
+  recordDecodeSpeedHistogram(data, buffer->size(), currentTime() - start,
+                             decodedLength);
 
-    sk_sp<SkData> skData = SkData::MakeWithCopy(output.get(), decodedLength);
-    SkMemoryStream* stream = new SkMemoryStream(skData);
+  sk_sp<SkData> skData = SkData::MakeWithCopy(output.get(), decodedLength);
+  SkMemoryStream* stream = new SkMemoryStream(skData);
 #if OS(WIN)
-    sk_sp<SkTypeface> typeface(FontCache::fontCache()->fontManager()->createFromStream(stream));
+  sk_sp<SkTypeface> typeface(
+      FontCache::fontCache()->fontManager()->createFromStream(stream));
 #else
-    sk_sp<SkTypeface> typeface = SkTypeface::MakeFromStream(stream);
+  sk_sp<SkTypeface> typeface = SkTypeface::MakeFromStream(stream);
 #endif
-    if (!typeface) {
-        setErrorString("Not a valid font data");
-        return nullptr;
-    }
+  if (!typeface) {
+    setErrorString("Not a valid font data");
+    return nullptr;
+  }
 
-    return typeface;
+  return typeface;
 }
 
-} // namespace blink
+}  // namespace blink

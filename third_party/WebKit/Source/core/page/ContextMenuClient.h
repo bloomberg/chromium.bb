@@ -31,14 +31,14 @@ namespace blink {
 class ContextMenu;
 
 class ContextMenuClient {
-public:
-    virtual ~ContextMenuClient() { }
+ public:
+  virtual ~ContextMenuClient() {}
 
-    // Returns whether a Context Menu was actually shown.
-    virtual bool showContextMenu(const ContextMenu*, bool fromTouch) = 0;
-    virtual void clearContextMenu() = 0;
+  // Returns whether a Context Menu was actually shown.
+  virtual bool showContextMenu(const ContextMenu*, bool fromTouch) = 0;
+  virtual void clearContextMenu() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

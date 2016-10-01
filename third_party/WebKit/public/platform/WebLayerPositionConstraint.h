@@ -29,27 +29,25 @@
 namespace blink {
 
 struct WebLayerPositionConstraint {
-    bool isFixedPosition     : 1;
-    bool isFixedToRightEdge  : 1;
-    bool isFixedToBottomEdge : 1;
+  bool isFixedPosition : 1;
+  bool isFixedToRightEdge : 1;
+  bool isFixedToBottomEdge : 1;
 
-    WebLayerPositionConstraint()
-        : isFixedPosition(false)
-        , isFixedToRightEdge(false)
-        , isFixedToBottomEdge(false)
-    {
-    }
+  WebLayerPositionConstraint()
+      : isFixedPosition(false),
+        isFixedToRightEdge(false),
+        isFixedToBottomEdge(false) {}
 
-    static WebLayerPositionConstraint fixedPosition(bool fixedToRightEdge, bool fixedToBottomEdge)
-    {
-        WebLayerPositionConstraint constraint;
-        constraint.isFixedPosition = true;
-        constraint.isFixedToRightEdge = fixedToRightEdge;
-        constraint.isFixedToBottomEdge = fixedToBottomEdge;
-        return constraint;
-    }
+  static WebLayerPositionConstraint fixedPosition(bool fixedToRightEdge,
+                                                  bool fixedToBottomEdge) {
+    WebLayerPositionConstraint constraint;
+    constraint.isFixedPosition = true;
+    constraint.isFixedToRightEdge = fixedToRightEdge;
+    constraint.isFixedToBottomEdge = fixedToBottomEdge;
+    return constraint;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebLayerPositionConstraint_h
+#endif  // WebLayerPositionConstraint_h

@@ -11,4 +11,4 @@
 // "base/message_loop/message_loop.h" indirectly without adding a line of
 // "+base/message_loop" in their DEPS file.
 
-#endif // MessageLoopForMojo_h
+#endif  // MessageLoopForMojo_h

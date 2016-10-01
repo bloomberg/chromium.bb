@@ -38,182 +38,186 @@
 
 namespace blink {
 
-static bool isCSS(const Element& element, const AtomicString& type)
-{
-    return type.isEmpty() || (element.isHTMLElement() ? equalIgnoringCase(type, "text/css") : (type == "text/css"));
+static bool isCSS(const Element& element, const AtomicString& type) {
+  return type.isEmpty() ||
+         (element.isHTMLElement() ? equalIgnoringCase(type, "text/css")
+                                  : (type == "text/css"));
 }
 
 StyleElement::StyleElement(Document* document, bool createdByParser)
-    : m_createdByParser(createdByParser)
-    , m_loading(false)
-    , m_registeredAsCandidate(false)
-    , m_startPosition(TextPosition::belowRangePosition())
-{
-    if (createdByParser && document && document->scriptableDocumentParser() && !document->isInDocumentWrite())
-        m_startPosition = document->scriptableDocumentParser()->textPosition();
+    : m_createdByParser(createdByParser),
+      m_loading(false),
+      m_registeredAsCandidate(false),
+      m_startPosition(TextPosition::belowRangePosition()) {
+  if (createdByParser && document && document->scriptableDocumentParser() &&
+      !document->isInDocumentWrite())
+    m_startPosition = document->scriptableDocumentParser()->textPosition();
 }
 
-StyleElement::~StyleElement()
-{
+StyleElement::~StyleElement() {}
+
+StyleElement::ProcessingResult StyleElement::processStyleSheet(
+    Document& document,
+    Element& element) {
+  TRACE_EVENT0("blink", "StyleElement::processStyleSheet");
+  DCHECK(element.isConnected());
+
+  m_registeredAsCandidate = true;
+  document.styleEngine().addStyleSheetCandidateNode(element);
+  if (m_createdByParser)
+    return ProcessingSuccessful;
+
+  return process(element);
 }
 
-StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& document, Element& element)
-{
-    TRACE_EVENT0("blink", "StyleElement::processStyleSheet");
-    DCHECK(element.isConnected());
-
-    m_registeredAsCandidate = true;
-    document.styleEngine().addStyleSheetCandidateNode(element);
-    if (m_createdByParser)
-        return ProcessingSuccessful;
-
-    return process(element);
+void StyleElement::insertedInto(const Element& element,
+                                ContainerNode* insertionPoint) {
+  if (!insertionPoint->isConnected() || !element.isInShadowTree())
+    return;
+  if (ShadowRoot* scope = element.containingShadowRoot())
+    scope->registerScopedHTMLStyleChild();
 }
 
-void StyleElement::insertedInto(const Element& element, ContainerNode* insertionPoint)
-{
-    if (!insertionPoint->isConnected() || !element.isInShadowTree())
-        return;
-    if (ShadowRoot* scope = element.containingShadowRoot())
-        scope->registerScopedHTMLStyleChild();
+void StyleElement::removedFrom(Element& element,
+                               ContainerNode* insertionPoint) {
+  if (!insertionPoint->isConnected())
+    return;
+
+  ShadowRoot* shadowRoot = element.containingShadowRoot();
+  if (!shadowRoot)
+    shadowRoot = insertionPoint->containingShadowRoot();
+
+  if (shadowRoot)
+    shadowRoot->unregisterScopedHTMLStyleChild();
+
+  Document& document = element.document();
+  if (m_registeredAsCandidate) {
+    document.styleEngine().removeStyleSheetCandidateNode(
+        element, shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document));
+    m_registeredAsCandidate = false;
+  }
+
+  StyleSheet* removedSheet = m_sheet.get();
+
+  if (m_sheet)
+    clearSheet(element);
+  if (removedSheet)
+    document.styleEngine().setNeedsActiveStyleUpdate(removedSheet,
+                                                     AnalyzedStyleUpdate);
 }
 
-void StyleElement::removedFrom(Element& element, ContainerNode* insertionPoint)
-{
-    if (!insertionPoint->isConnected())
-        return;
+StyleElement::ProcessingResult StyleElement::childrenChanged(Element& element) {
+  if (m_createdByParser)
+    return ProcessingSuccessful;
 
-    ShadowRoot* shadowRoot = element.containingShadowRoot();
-    if (!shadowRoot)
-        shadowRoot = insertionPoint->containingShadowRoot();
-
-    if (shadowRoot)
-        shadowRoot->unregisterScopedHTMLStyleChild();
-
-    Document& document = element.document();
-    if (m_registeredAsCandidate) {
-        document.styleEngine().removeStyleSheetCandidateNode(element, shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document));
-        m_registeredAsCandidate = false;
-    }
-
-    StyleSheet* removedSheet = m_sheet.get();
-
-    if (m_sheet)
-        clearSheet(element);
-    if (removedSheet)
-        document.styleEngine().setNeedsActiveStyleUpdate(removedSheet, AnalyzedStyleUpdate);
+  return process(element);
 }
 
-StyleElement::ProcessingResult StyleElement::childrenChanged(Element& element)
-{
-    if (m_createdByParser)
-        return ProcessingSuccessful;
-
-    return process(element);
+StyleElement::ProcessingResult StyleElement::finishParsingChildren(
+    Element& element) {
+  ProcessingResult result = process(element);
+  m_createdByParser = false;
+  return result;
 }
 
-StyleElement::ProcessingResult StyleElement::finishParsingChildren(Element& element)
-{
-    ProcessingResult result = process(element);
-    m_createdByParser = false;
-    return result;
+StyleElement::ProcessingResult StyleElement::process(Element& element) {
+  if (!element.isConnected())
+    return ProcessingSuccessful;
+  return createSheet(element, element.textFromChildren());
 }
 
-StyleElement::ProcessingResult StyleElement::process(Element& element)
-{
-    if (!element.isConnected())
-        return ProcessingSuccessful;
-    return createSheet(element, element.textFromChildren());
+void StyleElement::clearSheet(Element& ownerElement) {
+  DCHECK(m_sheet);
+
+  if (m_sheet->isLoading())
+    ownerElement.document().styleEngine().removePendingSheet(
+        ownerElement, m_styleEngineContext);
+
+  m_sheet.release()->clearOwnerNode();
 }
 
-void StyleElement::clearSheet(Element& ownerElement)
-{
-    DCHECK(m_sheet);
-
-    if (m_sheet->isLoading())
-        ownerElement.document().styleEngine().removePendingSheet(ownerElement, m_styleEngineContext);
-
-    m_sheet.release()->clearOwnerNode();
-}
-
-static bool shouldBypassMainWorldCSP(const Element& element)
-{
-    // Main world CSP is bypassed within an isolated world.
-    LocalFrame* frame = element.document().frame();
-    if (frame && frame->script().shouldBypassMainWorldCSP())
-        return true;
-
-    // Main world CSP is bypassed for style elements in user agent shadow DOM.
-    ShadowRoot* root = element.containingShadowRoot();
-    if (root && root->type() == ShadowRootType::UserAgent)
-        return true;
-
-    return false;
-}
-
-StyleElement::ProcessingResult StyleElement::createSheet(Element& element, const String& text)
-{
-    DCHECK(element.isConnected());
-    Document& document = element.document();
-
-    const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
-    bool passesContentSecurityPolicyChecks = shouldBypassMainWorldCSP(element)
-        || csp->allowStyleWithHash(text, ContentSecurityPolicy::InlineType::Block)
-        || csp->allowInlineStyle(document.url(), element.fastGetAttribute(HTMLNames::nonceAttr), m_startPosition.m_line, text);
-
-    // Clearing the current sheet may remove the cache entry so create the new sheet first
-    CSSStyleSheet* newSheet = nullptr;
-
-    // If type is empty or CSS, this is a CSS style sheet.
-    const AtomicString& type = this->type();
-    if (isCSS(element, type) && passesContentSecurityPolicyChecks) {
-        MediaQuerySet* mediaQueries = MediaQuerySet::create(media());
-
-        MediaQueryEvaluator screenEval("screen", true);
-        MediaQueryEvaluator printEval("print", true);
-        if (screenEval.eval(mediaQueries) || printEval.eval(mediaQueries)) {
-            m_loading = true;
-            TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
-            newSheet = document.styleEngine().createSheet(element, text, startPosition, m_styleEngineContext);
-            newSheet->setMediaQueries(mediaQueries);
-            m_loading = false;
-        }
-    }
-
-    if (m_sheet)
-        clearSheet(element);
-
-    m_sheet = newSheet;
-    if (m_sheet)
-        m_sheet->contents()->checkLoaded();
-
-    return passesContentSecurityPolicyChecks ? ProcessingSuccessful : ProcessingFatalError;
-}
-
-bool StyleElement::isLoading() const
-{
-    if (m_loading)
-        return true;
-    return m_sheet ? m_sheet->isLoading() : false;
-}
-
-bool StyleElement::sheetLoaded(Document& document)
-{
-    if (isLoading())
-        return false;
-
-    document.styleEngine().removePendingSheet(*m_sheet->ownerNode(), m_styleEngineContext);
+static bool shouldBypassMainWorldCSP(const Element& element) {
+  // Main world CSP is bypassed within an isolated world.
+  LocalFrame* frame = element.document().frame();
+  if (frame && frame->script().shouldBypassMainWorldCSP())
     return true;
+
+  // Main world CSP is bypassed for style elements in user agent shadow DOM.
+  ShadowRoot* root = element.containingShadowRoot();
+  if (root && root->type() == ShadowRootType::UserAgent)
+    return true;
+
+  return false;
 }
 
-void StyleElement::startLoadingDynamicSheet(Document& document)
-{
-    document.styleEngine().addPendingSheet(m_styleEngineContext);
+StyleElement::ProcessingResult StyleElement::createSheet(Element& element,
+                                                         const String& text) {
+  DCHECK(element.isConnected());
+  Document& document = element.document();
+
+  const ContentSecurityPolicy* csp = document.contentSecurityPolicy();
+  bool passesContentSecurityPolicyChecks =
+      shouldBypassMainWorldCSP(element) ||
+      csp->allowStyleWithHash(text, ContentSecurityPolicy::InlineType::Block) ||
+      csp->allowInlineStyle(document.url(),
+                            element.fastGetAttribute(HTMLNames::nonceAttr),
+                            m_startPosition.m_line, text);
+
+  // Clearing the current sheet may remove the cache entry so create the new sheet first
+  CSSStyleSheet* newSheet = nullptr;
+
+  // If type is empty or CSS, this is a CSS style sheet.
+  const AtomicString& type = this->type();
+  if (isCSS(element, type) && passesContentSecurityPolicyChecks) {
+    MediaQuerySet* mediaQueries = MediaQuerySet::create(media());
+
+    MediaQueryEvaluator screenEval("screen", true);
+    MediaQueryEvaluator printEval("print", true);
+    if (screenEval.eval(mediaQueries) || printEval.eval(mediaQueries)) {
+      m_loading = true;
+      TextPosition startPosition =
+          m_startPosition == TextPosition::belowRangePosition()
+              ? TextPosition::minimumPosition()
+              : m_startPosition;
+      newSheet = document.styleEngine().createSheet(
+          element, text, startPosition, m_styleEngineContext);
+      newSheet->setMediaQueries(mediaQueries);
+      m_loading = false;
+    }
+  }
+
+  if (m_sheet)
+    clearSheet(element);
+
+  m_sheet = newSheet;
+  if (m_sheet)
+    m_sheet->contents()->checkLoaded();
+
+  return passesContentSecurityPolicyChecks ? ProcessingSuccessful
+                                           : ProcessingFatalError;
 }
 
-DEFINE_TRACE(StyleElement)
-{
-    visitor->trace(m_sheet);
+bool StyleElement::isLoading() const {
+  if (m_loading)
+    return true;
+  return m_sheet ? m_sheet->isLoading() : false;
 }
 
-} // namespace blink
+bool StyleElement::sheetLoaded(Document& document) {
+  if (isLoading())
+    return false;
+
+  document.styleEngine().removePendingSheet(*m_sheet->ownerNode(),
+                                            m_styleEngineContext);
+  return true;
+}
+
+void StyleElement::startLoadingDynamicSheet(Document& document) {
+  document.styleEngine().addPendingSheet(m_styleEngineContext);
+}
+
+DEFINE_TRACE(StyleElement) {
+  visitor->trace(m_sheet);
+}
+
+}  // namespace blink

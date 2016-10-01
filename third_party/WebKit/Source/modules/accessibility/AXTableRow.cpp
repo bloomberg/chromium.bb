@@ -32,90 +32,81 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableCell.h"
 
-
 namespace blink {
 
 using namespace HTMLNames;
 
-AXTableRow::AXTableRow(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache)
-{
+AXTableRow::AXTableRow(LayoutObject* layoutObject,
+                       AXObjectCacheImpl& axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache) {}
+
+AXTableRow::~AXTableRow() {}
+
+AXTableRow* AXTableRow::create(LayoutObject* layoutObject,
+                               AXObjectCacheImpl& axObjectCache) {
+  return new AXTableRow(layoutObject, axObjectCache);
 }
 
-AXTableRow::~AXTableRow()
-{
+AccessibilityRole AXTableRow::determineAccessibilityRole() {
+  if (!isTableRow())
+    return AXLayoutObject::determineAccessibilityRole();
+
+  if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+    return m_ariaRole;
+
+  return RowRole;
 }
 
-AXTableRow* AXTableRow::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-{
-    return new AXTableRow(layoutObject, axObjectCache);
-}
-
-AccessibilityRole AXTableRow::determineAccessibilityRole()
-{
-    if (!isTableRow())
-        return AXLayoutObject::determineAccessibilityRole();
-
-    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-        return m_ariaRole;
-
-    return RowRole;
-}
-
-bool AXTableRow::isTableRow() const
-{
-    AXObject* table = parentTable();
-    if (!table || !table->isAXTable())
-        return false;
-
-    return true;
-}
-
-bool AXTableRow::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
-{
-    AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
-    if (decision == IncludeObject)
-        return false;
-    if (decision == IgnoreObject)
-        return true;
-
-    if (!isTableRow())
-        return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
-
+bool AXTableRow::isTableRow() const {
+  AXObject* table = parentTable();
+  if (!table || !table->isAXTable())
     return false;
+
+  return true;
 }
 
-AXObject* AXTableRow::parentTable() const
-{
-    AXObject* parent = parentObjectUnignored();
-    if (!parent || !parent->isAXTable())
-        return 0;
+bool AXTableRow::computeAccessibilityIsIgnored(
+    IgnoredReasons* ignoredReasons) const {
+  AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
+  if (decision == IncludeObject)
+    return false;
+  if (decision == IgnoreObject)
+    return true;
 
-    return parent;
+  if (!isTableRow())
+    return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
+
+  return false;
 }
 
-AXObject* AXTableRow::headerObject()
-{
-    AXObjectVector headers;
-    headerObjectsForRow(headers);
-    if (!headers.size())
-        return 0;
+AXObject* AXTableRow::parentTable() const {
+  AXObject* parent = parentObjectUnignored();
+  if (!parent || !parent->isAXTable())
+    return 0;
 
-    return headers[0].get();
+  return parent;
 }
 
-void AXTableRow::headerObjectsForRow(AXObjectVector& headers)
-{
-    if (!m_layoutObject || !m_layoutObject->isTableRow())
-        return;
+AXObject* AXTableRow::headerObject() {
+  AXObjectVector headers;
+  headerObjectsForRow(headers);
+  if (!headers.size())
+    return 0;
 
-    for (const auto& cell : children()) {
-        if (!cell->isTableCell())
-            continue;
-
-        if (toAXTableCell(cell.get())->scanToDecideHeaderRole() == RowHeaderRole)
-            headers.append(cell);
-    }
+  return headers[0].get();
 }
 
-} // namespace blink
+void AXTableRow::headerObjectsForRow(AXObjectVector& headers) {
+  if (!m_layoutObject || !m_layoutObject->isTableRow())
+    return;
+
+  for (const auto& cell : children()) {
+    if (!cell->isTableCell())
+      continue;
+
+    if (toAXTableCell(cell.get())->scanToDecideHeaderRole() == RowHeaderRole)
+      headers.append(cell);
+  }
+}
+
+}  // namespace blink

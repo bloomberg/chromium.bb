@@ -34,33 +34,36 @@ namespace blink {
 class LayoutObject;
 
 class LayoutObjectChildList {
-    DISALLOW_NEW();
-public:
-    LayoutObjectChildList()
-        : m_firstChild(nullptr)
-        , m_lastChild(nullptr)
-    {
-    }
+  DISALLOW_NEW();
 
-    LayoutObject* firstChild() const { return m_firstChild; }
-    LayoutObject* lastChild() const { return m_lastChild; }
+ public:
+  LayoutObjectChildList() : m_firstChild(nullptr), m_lastChild(nullptr) {}
 
-    void destroyLeftoverChildren();
+  LayoutObject* firstChild() const { return m_firstChild; }
+  LayoutObject* lastChild() const { return m_lastChild; }
 
-    LayoutObject* removeChildNode(LayoutObject* owner, LayoutObject*, bool notifyLayoutObject = true);
-    void insertChildNode(LayoutObject* owner, LayoutObject* newChild, LayoutObject* beforeChild, bool notifyLayoutObject = true);
-    void appendChildNode(LayoutObject* owner, LayoutObject* newChild, bool notifyLayoutObject = true)
-    {
-        insertChildNode(owner, newChild, 0, notifyLayoutObject);
-    }
+  void destroyLeftoverChildren();
 
-private:
-    void invalidatePaintOnRemoval(LayoutObject& oldChild);
+  LayoutObject* removeChildNode(LayoutObject* owner,
+                                LayoutObject*,
+                                bool notifyLayoutObject = true);
+  void insertChildNode(LayoutObject* owner,
+                       LayoutObject* newChild,
+                       LayoutObject* beforeChild,
+                       bool notifyLayoutObject = true);
+  void appendChildNode(LayoutObject* owner,
+                       LayoutObject* newChild,
+                       bool notifyLayoutObject = true) {
+    insertChildNode(owner, newChild, 0, notifyLayoutObject);
+  }
 
-    LayoutObject* m_firstChild;
-    LayoutObject* m_lastChild;
+ private:
+  void invalidatePaintOnRemoval(LayoutObject& oldChild);
+
+  LayoutObject* m_firstChild;
+  LayoutObject* m_lastChild;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutObjectChildList_h
+#endif  // LayoutObjectChildList_h

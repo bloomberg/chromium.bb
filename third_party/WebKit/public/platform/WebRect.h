@@ -44,86 +44,57 @@
 namespace blink {
 
 struct WebRect {
-    int x;
-    int y;
-    int width;
-    int height;
+  int x;
+  int y;
+  int width;
+  int height;
 
-    bool isEmpty() const { return width <= 0 || height <= 0; }
+  bool isEmpty() const { return width <= 0 || height <= 0; }
 
-    WebRect()
-        : x(0)
-        , y(0)
-        , width(0)
-        , height(0)
-    {
-    }
+  WebRect() : x(0), y(0), width(0), height(0) {}
 
-    WebRect(int x, int y, int width, int height)
-        : x(x)
-        , y(y)
-        , width(width)
-        , height(height)
-    {
-    }
+  WebRect(int x, int y, int width, int height)
+      : x(x), y(y), width(width), height(height) {}
 
 #if INSIDE_BLINK
-    WebRect(const IntRect& r)
-        : x(r.x())
-        , y(r.y())
-        , width(r.width())
-        , height(r.height())
-    {
-    }
+  WebRect(const IntRect& r)
+      : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
 
-    WebRect& operator=(const IntRect& r)
-    {
-        x = r.x();
-        y = r.y();
-        width = r.width();
-        height = r.height();
-        return *this;
-    }
+  WebRect& operator=(const IntRect& r) {
+    x = r.x();
+    y = r.y();
+    width = r.width();
+    height = r.height();
+    return *this;
+  }
 
-    operator IntRect() const
-    {
-        return IntRect(x, y, width, height);
-    }
+  operator IntRect() const { return IntRect(x, y, width, height); }
 #else
-    WebRect(const gfx::Rect& r)
-        : x(r.x())
-        , y(r.y())
-        , width(r.width())
-        , height(r.height())
-    {
-    }
+  WebRect(const gfx::Rect& r)
+      : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
 
-    WebRect& operator=(const gfx::Rect& r)
-    {
-        x = r.x();
-        y = r.y();
-        width = r.width();
-        height = r.height();
-        return *this;
-    }
+  WebRect& operator=(const gfx::Rect& r) {
+    x = r.x();
+    y = r.y();
+    width = r.width();
+    height = r.height();
+    return *this;
+  }
 
-    operator gfx::Rect() const
-    {
-        return gfx::Rect(x, y, std::max(0, width), std::max(0, height));
-    }
+  operator gfx::Rect() const {
+    return gfx::Rect(x, y, std::max(0, width), std::max(0, height));
+  }
 #endif
 };
 
-inline bool operator==(const WebRect& a, const WebRect& b)
-{
-    return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
+inline bool operator==(const WebRect& a, const WebRect& b) {
+  return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
 }
 
-inline bool operator!=(const WebRect& a, const WebRect& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebRect& a, const WebRect& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

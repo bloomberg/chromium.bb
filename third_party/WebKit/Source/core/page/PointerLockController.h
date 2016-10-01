@@ -37,37 +37,40 @@ class Document;
 class Page;
 class PlatformMouseEvent;
 
-class CORE_EXPORT PointerLockController final : public GarbageCollected<PointerLockController> {
-    WTF_MAKE_NONCOPYABLE(PointerLockController);
-public:
-    static PointerLockController* create(Page*);
+class CORE_EXPORT PointerLockController final
+    : public GarbageCollected<PointerLockController> {
+  WTF_MAKE_NONCOPYABLE(PointerLockController);
 
-    void requestPointerLock(Element* target);
-    void requestPointerUnlock();
-    void elementRemoved(Element*);
-    void documentDetached(Document*);
-    bool lockPending() const;
-    Element* element() const;
+ public:
+  static PointerLockController* create(Page*);
 
-    void didAcquirePointerLock();
-    void didNotAcquirePointerLock();
-    void didLosePointerLock();
-    void dispatchLockedMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType);
+  void requestPointerLock(Element* target);
+  void requestPointerUnlock();
+  void elementRemoved(Element*);
+  void documentDetached(Document*);
+  bool lockPending() const;
+  Element* element() const;
 
-    DECLARE_TRACE();
+  void didAcquirePointerLock();
+  void didNotAcquirePointerLock();
+  void didLosePointerLock();
+  void dispatchLockedMouseEvent(const PlatformMouseEvent&,
+                                const AtomicString& eventType);
 
-private:
-    explicit PointerLockController(Page*);
-    void clearElement();
-    void enqueueEvent(const AtomicString& type, Element*);
-    void enqueueEvent(const AtomicString& type, Document*);
+  DECLARE_TRACE();
 
-    Member<Page> m_page;
-    bool m_lockPending;
-    Member<Element> m_element;
-    Member<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
+ private:
+  explicit PointerLockController(Page*);
+  void clearElement();
+  void enqueueEvent(const AtomicString& type, Element*);
+  void enqueueEvent(const AtomicString& type, Document*);
+
+  Member<Page> m_page;
+  bool m_lockPending;
+  Member<Element> m_element;
+  Member<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PointerLockController_h
+#endif  // PointerLockController_h

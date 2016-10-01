@@ -24,31 +24,52 @@ struct PaintInfo;
 class ComputedStyle;
 
 class InlineFlowBoxPainter {
-    STACK_ALLOCATED();
-public:
-    InlineFlowBoxPainter(const InlineFlowBox& inlineFlowBox) : m_inlineFlowBox(inlineFlowBox) { }
-    void paint(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom);
+  STACK_ALLOCATED();
 
-    LayoutRect frameRectClampedToLineTopAndBottomIfNeeded() const;
+ public:
+  InlineFlowBoxPainter(const InlineFlowBox& inlineFlowBox)
+      : m_inlineFlowBox(inlineFlowBox) {}
+  void paint(const PaintInfo&,
+             const LayoutPoint& paintOffset,
+             const LayoutUnit lineTop,
+             const LayoutUnit lineBottom);
 
-private:
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutRect& cullRect);
-    void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
-    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode op = SkXfermode::kSrcOver_Mode);
-    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode op);
-    void paintBoxShadow(const PaintInfo&, const ComputedStyle&, ShadowStyle, const LayoutRect& paintRect);
-    LayoutRect paintRectForImageStrip(const LayoutPoint& paintOffset, const LayoutSize& frameSize, TextDirection) const;
+  LayoutRect frameRectClampedToLineTopAndBottomIfNeeded() const;
 
-    enum BorderPaintingType {
-        DontPaintBorders,
-        PaintBordersWithoutClip,
-        PaintBordersWithClip
-    };
-    BorderPaintingType getBorderPaintType(const LayoutRect& adjustedFrameRect, IntRect& adjustedClipRect) const;
+ private:
+  void paintBoxDecorationBackground(const PaintInfo&,
+                                    const LayoutPoint& paintOffset,
+                                    const LayoutRect& cullRect);
+  void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
+  void paintFillLayers(const PaintInfo&,
+                       const Color&,
+                       const FillLayer&,
+                       const LayoutRect&,
+                       SkXfermode::Mode op = SkXfermode::kSrcOver_Mode);
+  void paintFillLayer(const PaintInfo&,
+                      const Color&,
+                      const FillLayer&,
+                      const LayoutRect&,
+                      SkXfermode::Mode op);
+  void paintBoxShadow(const PaintInfo&,
+                      const ComputedStyle&,
+                      ShadowStyle,
+                      const LayoutRect& paintRect);
+  LayoutRect paintRectForImageStrip(const LayoutPoint& paintOffset,
+                                    const LayoutSize& frameSize,
+                                    TextDirection) const;
 
-    const InlineFlowBox& m_inlineFlowBox;
+  enum BorderPaintingType {
+    DontPaintBorders,
+    PaintBordersWithoutClip,
+    PaintBordersWithClip
+  };
+  BorderPaintingType getBorderPaintType(const LayoutRect& adjustedFrameRect,
+                                        IntRect& adjustedClipRect) const;
+
+  const InlineFlowBox& m_inlineFlowBox;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InlineFlowBoxPainter_h
+#endif  // InlineFlowBoxPainter_h

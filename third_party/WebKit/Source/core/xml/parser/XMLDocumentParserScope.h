@@ -35,23 +35,27 @@ namespace blink {
 class Document;
 
 class XMLDocumentParserScope {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
-public:
-    explicit XMLDocumentParserScope(Document*);
-    XMLDocumentParserScope(Document*, xmlGenericErrorFunc, xmlStructuredErrorFunc = 0, void* errorContext = 0);
-    ~XMLDocumentParserScope();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(XMLDocumentParserScope);
 
-    static Document* currentDocument;
+ public:
+  explicit XMLDocumentParserScope(Document*);
+  XMLDocumentParserScope(Document*,
+                         xmlGenericErrorFunc,
+                         xmlStructuredErrorFunc = 0,
+                         void* errorContext = 0);
+  ~XMLDocumentParserScope();
 
-private:
-    Member<Document> m_oldDocument;
+  static Document* currentDocument;
 
-    xmlGenericErrorFunc m_oldGenericErrorFunc;
-    xmlStructuredErrorFunc m_oldStructuredErrorFunc;
-    void* m_oldErrorContext;
+ private:
+  Member<Document> m_oldDocument;
+
+  xmlGenericErrorFunc m_oldGenericErrorFunc;
+  xmlStructuredErrorFunc m_oldStructuredErrorFunc;
+  void* m_oldErrorContext;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XMLDocumentParserScope_h
+#endif  // XMLDocumentParserScope_h

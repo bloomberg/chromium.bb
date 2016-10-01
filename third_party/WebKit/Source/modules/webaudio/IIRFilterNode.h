@@ -16,28 +16,35 @@ class ExceptionState;
 class IIRFilterOptions;
 
 class IIRFilterNode : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static IIRFilterNode* create(
-        BaseAudioContext&,
-        const Vector<double> feedforward,
-        const Vector<double> feedback,
-        ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static IIRFilterNode* create(BaseAudioContext*, const IIRFilterOptions&, ExceptionState&);
+ public:
+  static IIRFilterNode* create(BaseAudioContext&,
+                               const Vector<double> feedforward,
+                               const Vector<double> feedback,
+                               ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  static IIRFilterNode* create(BaseAudioContext*,
+                               const IIRFilterOptions&,
+                               ExceptionState&);
 
-    // Get the magnitude and phase response of the filter at the given
-    // set of frequencies (in Hz). The phase response is in radians.
-    void getFrequencyResponse(const DOMFloat32Array* frequencyHz, DOMFloat32Array* magResponse, DOMFloat32Array* phaseResponse, ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    IIRFilterNode(BaseAudioContext&, const Vector<double> denominator, const Vector<double> numerator);
+  // Get the magnitude and phase response of the filter at the given
+  // set of frequencies (in Hz). The phase response is in radians.
+  void getFrequencyResponse(const DOMFloat32Array* frequencyHz,
+                            DOMFloat32Array* magResponse,
+                            DOMFloat32Array* phaseResponse,
+                            ExceptionState&);
 
-    IIRProcessor* iirProcessor() const;
+ private:
+  IIRFilterNode(BaseAudioContext&,
+                const Vector<double> denominator,
+                const Vector<double> numerator);
+
+  IIRProcessor* iirProcessor() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IIRFilterNode_h
+#endif  // IIRFilterNode_h

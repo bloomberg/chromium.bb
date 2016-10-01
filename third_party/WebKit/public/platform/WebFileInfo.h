@@ -36,32 +36,23 @@
 namespace blink {
 
 struct WebFileInfo {
-    // The last modification time of the file, in milliseconds since Epoch,
-    // with a quiet NaN value representing "not known."
-    double modificationTime;
+  // The last modification time of the file, in milliseconds since Epoch,
+  // with a quiet NaN value representing "not known."
+  double modificationTime;
 
-    // The length of the file in bytes.
-    // The value -1 means that the length is not set.
-    long long length;
+  // The length of the file in bytes.
+  // The value -1 means that the length is not set.
+  long long length;
 
-    enum Type {
-        TypeUnknown = 0,
-        TypeFile,
-        TypeDirectory
-    };
+  enum Type { TypeUnknown = 0, TypeFile, TypeDirectory };
 
-    Type type;
+  Type type;
 
-    WebString platformPath;
+  WebString platformPath;
 
-    WebFileInfo()
-        : modificationTime(0.0)
-        , length(-1)
-        , type(TypeUnknown)
-    {
-    }
+  WebFileInfo() : modificationTime(0.0), length(-1), type(TypeUnknown) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFileInfo_h
+#endif  // WebFileInfo_h

@@ -30,78 +30,87 @@
 
 namespace blink {
 
-StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, const ComputedStyle* parentStyle)
-    : m_elementContext(elementContext)
-    , m_document(document)
-    , m_style(nullptr)
+StyleResolverState::StyleResolverState(
+    Document& document,
+    const ElementResolveContext& elementContext,
+    const ComputedStyle* parentStyle)
+    : m_elementContext(elementContext),
+      m_document(document),
+      m_style(nullptr)
+      // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
+      ,
+      m_parentStyle(const_cast<ComputedStyle*>(parentStyle)),
+      m_applyPropertyToRegularStyle(true),
+      m_applyPropertyToVisitedLinkStyle(false),
+      m_hasDirAutoAttribute(false),
+      m_fontBuilder(document),
+      m_elementStyleResources(document, document.devicePixelRatio()) {
+  if (!m_parentStyle) {
     // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
-    , m_parentStyle(const_cast<ComputedStyle*>(parentStyle))
-    , m_applyPropertyToRegularStyle(true)
-    , m_applyPropertyToVisitedLinkStyle(false)
-    , m_hasDirAutoAttribute(false)
-    , m_fontBuilder(document)
-    , m_elementStyleResources(document, document.devicePixelRatio())
-{
-    if (!m_parentStyle) {
-        // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
-        m_parentStyle = const_cast<ComputedStyle*>(m_elementContext.parentStyle());
-    }
+    m_parentStyle = const_cast<ComputedStyle*>(m_elementContext.parentStyle());
+  }
 
-    DCHECK(document.isActive());
+  DCHECK(document.isActive());
 }
 
-StyleResolverState::StyleResolverState(Document& document, Element* element, const ComputedStyle* parentStyle)
-    : StyleResolverState(document, element ? ElementResolveContext(*element) : ElementResolveContext(document), parentStyle)
-{
+StyleResolverState::StyleResolverState(Document& document,
+                                       Element* element,
+                                       const ComputedStyle* parentStyle)
+    : StyleResolverState(document,
+                         element ? ElementResolveContext(*element)
+                                 : ElementResolveContext(document),
+                         parentStyle) {}
+
+StyleResolverState::~StyleResolverState() {
+  // For performance reasons, explicitly clear HeapVectors and
+  // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
+  m_animationUpdate.clear();
 }
 
-StyleResolverState::~StyleResolverState()
-{
-    // For performance reasons, explicitly clear HeapVectors and
-    // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
-    m_animationUpdate.clear();
+void StyleResolverState::setStyle(PassRefPtr<ComputedStyle> style) {
+  // FIXME: Improve RAII of StyleResolverState to remove this function.
+  m_style = style;
+  m_cssToLengthConversionData = CSSToLengthConversionData(
+      m_style.get(), rootElementStyle(), document().layoutViewItem(),
+      m_style->effectiveZoom());
 }
 
-void StyleResolverState::setStyle(PassRefPtr<ComputedStyle> style)
-{
-    // FIXME: Improve RAII of StyleResolverState to remove this function.
-    m_style = style;
-    m_cssToLengthConversionData = CSSToLengthConversionData(m_style.get(), rootElementStyle(), document().layoutViewItem(), m_style->effectiveZoom());
+CSSToLengthConversionData StyleResolverState::fontSizeConversionData() const {
+  float em = parentStyle()->specifiedFontSize();
+  float rem = rootElementStyle() ? rootElementStyle()->specifiedFontSize() : 1;
+  CSSToLengthConversionData::FontSizes fontSizes(em, rem,
+                                                 &parentStyle()->font());
+  CSSToLengthConversionData::ViewportSize viewportSize(
+      document().layoutViewItem());
+
+  return CSSToLengthConversionData(style(), fontSizes, viewportSize, 1);
 }
 
-CSSToLengthConversionData StyleResolverState::fontSizeConversionData() const
-{
-    float em = parentStyle()->specifiedFontSize();
-    float rem = rootElementStyle() ? rootElementStyle()->specifiedFontSize() : 1;
-    CSSToLengthConversionData::FontSizes fontSizes(em, rem, &parentStyle()->font());
-    CSSToLengthConversionData::ViewportSize viewportSize(document().layoutViewItem());
-
-    return CSSToLengthConversionData(style(), fontSizes, viewportSize, 1);
+void StyleResolverState::loadPendingResources() {
+  m_elementStyleResources.loadPendingResources(style());
 }
 
-void StyleResolverState::loadPendingResources()
-{
-    m_elementStyleResources.loadPendingResources(style());
+void StyleResolverState::setCustomPropertySetForApplyAtRule(
+    const String& string,
+    StylePropertySet* customPropertySet) {
+  m_customPropertySetsForApplyAtRule.set(string, customPropertySet);
 }
 
-void StyleResolverState::setCustomPropertySetForApplyAtRule(const String& string, StylePropertySet* customPropertySet)
-{
-    m_customPropertySetsForApplyAtRule.set(string, customPropertySet);
+StylePropertySet* StyleResolverState::customPropertySetForApplyAtRule(
+    const String& string) {
+  return m_customPropertySetsForApplyAtRule.get(string);
 }
 
-StylePropertySet* StyleResolverState::customPropertySetForApplyAtRule(const String& string)
-{
-    return m_customPropertySetsForApplyAtRule.get(string);
+HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
+StyleResolverState::parsedPropertiesForPendingSubstitutionCache(
+    const CSSPendingSubstitutionValue& value) const {
+  HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map =
+      m_parsedPropertiesForPendingSubstitutionCache.get(&value);
+  if (!map) {
+    map = new HeapHashMap<CSSPropertyID, Member<const CSSValue>>;
+    m_parsedPropertiesForPendingSubstitutionCache.set(&value, map);
+  }
+  return *map;
 }
 
-HeapHashMap<CSSPropertyID, Member<const CSSValue>>& StyleResolverState::parsedPropertiesForPendingSubstitutionCache(const CSSPendingSubstitutionValue& value) const
-{
-    HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map = m_parsedPropertiesForPendingSubstitutionCache.get(&value);
-    if (!map) {
-        map = new HeapHashMap<CSSPropertyID, Member<const CSSValue>>;
-        m_parsedPropertiesForPendingSubstitutionCache.set(&value, map);
-    }
-    return *map;
-}
-
-} // namespace blink
+}  // namespace blink

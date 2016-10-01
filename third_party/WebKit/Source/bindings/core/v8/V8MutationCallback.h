@@ -37,27 +37,35 @@ namespace blink {
 class ExecutionContext;
 class ScriptState;
 
-class V8MutationCallback final : public MutationCallback, public ActiveDOMCallback {
-    USING_GARBAGE_COLLECTED_MIXIN(V8MutationCallback);
-public:
-    static V8MutationCallback* create(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
-    {
-        return new V8MutationCallback(callback, owner, scriptState);
-    }
-    ~V8MutationCallback() override;
+class V8MutationCallback final : public MutationCallback,
+                                 public ActiveDOMCallback {
+  USING_GARBAGE_COLLECTED_MIXIN(V8MutationCallback);
 
-    void call(const HeapVector<Member<MutationRecord>>&, MutationObserver*) override;
-    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
+ public:
+  static V8MutationCallback* create(v8::Local<v8::Function> callback,
+                                    v8::Local<v8::Object> owner,
+                                    ScriptState* scriptState) {
+    return new V8MutationCallback(callback, owner, scriptState);
+  }
+  ~V8MutationCallback() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  void call(const HeapVector<Member<MutationRecord>>&,
+            MutationObserver*) override;
+  ExecutionContext* getExecutionContext() const override {
+    return ContextLifecycleObserver::getExecutionContext();
+  }
 
-private:
-    V8MutationCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
+  DECLARE_VIRTUAL_TRACE();
 
-    ScopedPersistent<v8::Function> m_callback;
-    RefPtr<ScriptState> m_scriptState;
+ private:
+  V8MutationCallback(v8::Local<v8::Function>,
+                     v8::Local<v8::Object>,
+                     ScriptState*);
+
+  ScopedPersistent<v8::Function> m_callback;
+  RefPtr<ScriptState> m_scriptState;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8MutationCallback_h
+#endif  // V8MutationCallback_h

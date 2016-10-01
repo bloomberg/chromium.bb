@@ -43,151 +43,181 @@ namespace blink {
 class FontDescription;
 
 class CORE_EXPORT StyleResolverState {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(StyleResolverState);
-public:
-    StyleResolverState(Document&, const ElementResolveContext&, const ComputedStyle* parentStyle);
-    StyleResolverState(Document&, Element*, const ComputedStyle* parentStyle = 0);
-    ~StyleResolverState();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(StyleResolverState);
 
-    // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
-    // This is why we have to store the document separately.
-    Document& document() const { return *m_document; }
-    // These are all just pass-through methods to ElementResolveContext.
-    Element* element() const { return m_elementContext.element(); }
-    const ContainerNode* parentNode() const { return m_elementContext.parentNode(); }
-    const ComputedStyle* rootElementStyle() const { return m_elementContext.rootElementStyle(); }
-    EInsideLink elementLinkState() const { return m_elementContext.elementLinkState(); }
-    bool distributedToInsertionPoint() const { return m_elementContext.distributedToInsertionPoint(); }
+ public:
+  StyleResolverState(Document&,
+                     const ElementResolveContext&,
+                     const ComputedStyle* parentStyle);
+  StyleResolverState(Document&, Element*, const ComputedStyle* parentStyle = 0);
+  ~StyleResolverState();
 
-    const ElementResolveContext& elementContext() const { return m_elementContext; }
+  // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
+  // This is why we have to store the document separately.
+  Document& document() const { return *m_document; }
+  // These are all just pass-through methods to ElementResolveContext.
+  Element* element() const { return m_elementContext.element(); }
+  const ContainerNode* parentNode() const {
+    return m_elementContext.parentNode();
+  }
+  const ComputedStyle* rootElementStyle() const {
+    return m_elementContext.rootElementStyle();
+  }
+  EInsideLink elementLinkState() const {
+    return m_elementContext.elementLinkState();
+  }
+  bool distributedToInsertionPoint() const {
+    return m_elementContext.distributedToInsertionPoint();
+  }
 
-    void setStyle(PassRefPtr<ComputedStyle>);
-    const ComputedStyle* style() const { return m_style.get(); }
-    ComputedStyle* style() { return m_style.get(); }
-    PassRefPtr<ComputedStyle> takeStyle() { return m_style.release(); }
+  const ElementResolveContext& elementContext() const {
+    return m_elementContext;
+  }
 
-    ComputedStyle& mutableStyleRef() const { return *m_style; }
-    const ComputedStyle& styleRef() const { return mutableStyleRef(); }
+  void setStyle(PassRefPtr<ComputedStyle>);
+  const ComputedStyle* style() const { return m_style.get(); }
+  ComputedStyle* style() { return m_style.get(); }
+  PassRefPtr<ComputedStyle> takeStyle() { return m_style.release(); }
 
-    const CSSToLengthConversionData& cssToLengthConversionData() const { return m_cssToLengthConversionData; }
-    CSSToLengthConversionData fontSizeConversionData() const;
+  ComputedStyle& mutableStyleRef() const { return *m_style; }
+  const ComputedStyle& styleRef() const { return mutableStyleRef(); }
 
-    void setConversionFontSizes(const CSSToLengthConversionData::FontSizes& fontSizes) { m_cssToLengthConversionData.setFontSizes(fontSizes); }
-    void setConversionZoom(float zoom) { m_cssToLengthConversionData.setZoom(zoom); }
+  const CSSToLengthConversionData& cssToLengthConversionData() const {
+    return m_cssToLengthConversionData;
+  }
+  CSSToLengthConversionData fontSizeConversionData() const;
 
-    CSSAnimationUpdate& animationUpdate() { return m_animationUpdate; }
+  void setConversionFontSizes(
+      const CSSToLengthConversionData::FontSizes& fontSizes) {
+    m_cssToLengthConversionData.setFontSizes(fontSizes);
+  }
+  void setConversionZoom(float zoom) {
+    m_cssToLengthConversionData.setZoom(zoom);
+  }
 
-    void setParentStyle(PassRefPtr<ComputedStyle> parentStyle) { m_parentStyle = parentStyle; }
-    const ComputedStyle* parentStyle() const { return m_parentStyle.get(); }
-    ComputedStyle* parentStyle() { return m_parentStyle.get(); }
+  CSSAnimationUpdate& animationUpdate() { return m_animationUpdate; }
 
-    // FIXME: These are effectively side-channel "out parameters" for the various
-    // map functions. When we map from CSS to style objects we use this state object
-    // to track various meta-data about that mapping (e.g. if it's cache-able).
-    // We need to move this data off of StyleResolverState and closer to the
-    // objects it applies to. Possibly separating (immutable) inputs from (mutable) outputs.
-    void setApplyPropertyToRegularStyle(bool isApply) { m_applyPropertyToRegularStyle = isApply; }
-    void setApplyPropertyToVisitedLinkStyle(bool isApply) { m_applyPropertyToVisitedLinkStyle = isApply; }
-    bool applyPropertyToRegularStyle() const { return m_applyPropertyToRegularStyle; }
-    bool applyPropertyToVisitedLinkStyle() const { return m_applyPropertyToVisitedLinkStyle; }
+  void setParentStyle(PassRefPtr<ComputedStyle> parentStyle) {
+    m_parentStyle = parentStyle;
+  }
+  const ComputedStyle* parentStyle() const { return m_parentStyle.get(); }
+  ComputedStyle* parentStyle() { return m_parentStyle.get(); }
 
-    void cacheUserAgentBorderAndBackground()
-    {
-        // LayoutTheme only needs the cached style if it has an appearance,
-        // and constructing it is expensive so we avoid it if possible.
-        if (!style()->hasAppearance())
-            return;
+  // FIXME: These are effectively side-channel "out parameters" for the various
+  // map functions. When we map from CSS to style objects we use this state object
+  // to track various meta-data about that mapping (e.g. if it's cache-able).
+  // We need to move this data off of StyleResolverState and closer to the
+  // objects it applies to. Possibly separating (immutable) inputs from (mutable) outputs.
+  void setApplyPropertyToRegularStyle(bool isApply) {
+    m_applyPropertyToRegularStyle = isApply;
+  }
+  void setApplyPropertyToVisitedLinkStyle(bool isApply) {
+    m_applyPropertyToVisitedLinkStyle = isApply;
+  }
+  bool applyPropertyToRegularStyle() const {
+    return m_applyPropertyToRegularStyle;
+  }
+  bool applyPropertyToVisitedLinkStyle() const {
+    return m_applyPropertyToVisitedLinkStyle;
+  }
 
-        m_cachedUAStyle = CachedUAStyle::create(style());
-    }
+  void cacheUserAgentBorderAndBackground() {
+    // LayoutTheme only needs the cached style if it has an appearance,
+    // and constructing it is expensive so we avoid it if possible.
+    if (!style()->hasAppearance())
+      return;
 
-    const CachedUAStyle* cachedUAStyle() const
-    {
-        return m_cachedUAStyle.get();
-    }
+    m_cachedUAStyle = CachedUAStyle::create(style());
+  }
 
-    ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
+  const CachedUAStyle* cachedUAStyle() const { return m_cachedUAStyle.get(); }
 
-    void loadPendingResources();
+  ElementStyleResources& elementStyleResources() {
+    return m_elementStyleResources;
+  }
 
-    // FIXME: Once styleImage can be made to not take a StyleResolverState
-    // this convenience function should be removed. As-is, without this, call
-    // sites are extremely verbose.
-    StyleImage* styleImage(CSSPropertyID propertyId, const CSSValue& value)
-    {
-        return m_elementStyleResources.styleImage(propertyId, value);
-    }
+  void loadPendingResources();
 
-    FontBuilder& fontBuilder() { return m_fontBuilder; }
-    const FontBuilder& fontBuilder() const { return m_fontBuilder; }
-    // FIXME: These exist as a primitive way to track mutations to font-related properties
-    // on a ComputedStyle. As designed, these are very error-prone, as some callers
-    // set these directly on the ComputedStyle w/o telling us. Presumably we'll
-    // want to design a better wrapper around ComputedStyle for tracking these mutations
-    // and separate it from StyleResolverState.
-    const FontDescription& parentFontDescription() const { return m_parentStyle->getFontDescription(); }
+  // FIXME: Once styleImage can be made to not take a StyleResolverState
+  // this convenience function should be removed. As-is, without this, call
+  // sites are extremely verbose.
+  StyleImage* styleImage(CSSPropertyID propertyId, const CSSValue& value) {
+    return m_elementStyleResources.styleImage(propertyId, value);
+  }
 
-    void setZoom(float f)
-    {
-        if (m_style->setZoom(f))
-            m_fontBuilder.didChangeEffectiveZoom();
-    }
-    void setEffectiveZoom(float f)
-    {
-        if (m_style->setEffectiveZoom(f))
-            m_fontBuilder.didChangeEffectiveZoom();
-    }
-    void setWritingMode(WritingMode writingMode)
-    {
-        if (m_style->setWritingMode(writingMode))
-            m_fontBuilder.didChangeWritingMode();
-    }
-    void setTextOrientation(TextOrientation textOrientation)
-    {
-        if (m_style->setTextOrientation(textOrientation))
-            m_fontBuilder.didChangeTextOrientation();
-    }
+  FontBuilder& fontBuilder() { return m_fontBuilder; }
+  const FontBuilder& fontBuilder() const { return m_fontBuilder; }
+  // FIXME: These exist as a primitive way to track mutations to font-related properties
+  // on a ComputedStyle. As designed, these are very error-prone, as some callers
+  // set these directly on the ComputedStyle w/o telling us. Presumably we'll
+  // want to design a better wrapper around ComputedStyle for tracking these mutations
+  // and separate it from StyleResolverState.
+  const FontDescription& parentFontDescription() const {
+    return m_parentStyle->getFontDescription();
+  }
 
-    void setHasDirAutoAttribute(bool value) { m_hasDirAutoAttribute = value; }
-    bool hasDirAutoAttribute() const { return m_hasDirAutoAttribute; }
+  void setZoom(float f) {
+    if (m_style->setZoom(f))
+      m_fontBuilder.didChangeEffectiveZoom();
+  }
+  void setEffectiveZoom(float f) {
+    if (m_style->setEffectiveZoom(f))
+      m_fontBuilder.didChangeEffectiveZoom();
+  }
+  void setWritingMode(WritingMode writingMode) {
+    if (m_style->setWritingMode(writingMode))
+      m_fontBuilder.didChangeWritingMode();
+  }
+  void setTextOrientation(TextOrientation textOrientation) {
+    if (m_style->setTextOrientation(textOrientation))
+      m_fontBuilder.didChangeTextOrientation();
+  }
 
-    void setCustomPropertySetForApplyAtRule(const String&, StylePropertySet*);
-    StylePropertySet* customPropertySetForApplyAtRule(const String&);
+  void setHasDirAutoAttribute(bool value) { m_hasDirAutoAttribute = value; }
+  bool hasDirAutoAttribute() const { return m_hasDirAutoAttribute; }
 
-    HeapHashMap<CSSPropertyID, Member<const CSSValue>>& parsedPropertiesForPendingSubstitutionCache(const CSSPendingSubstitutionValue&) const;
+  void setCustomPropertySetForApplyAtRule(const String&, StylePropertySet*);
+  StylePropertySet* customPropertySetForApplyAtRule(const String&);
 
-private:
-    ElementResolveContext m_elementContext;
-    Member<Document> m_document;
+  HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
+  parsedPropertiesForPendingSubstitutionCache(
+      const CSSPendingSubstitutionValue&) const;
 
-    // m_style is the primary output for each element's style resolve.
-    RefPtr<ComputedStyle> m_style;
+ private:
+  ElementResolveContext m_elementContext;
+  Member<Document> m_document;
 
-    CSSToLengthConversionData m_cssToLengthConversionData;
+  // m_style is the primary output for each element's style resolve.
+  RefPtr<ComputedStyle> m_style;
 
-    // m_parentStyle is not always just ElementResolveContext::parentStyle,
-    // so we keep it separate.
-    RefPtr<ComputedStyle> m_parentStyle;
+  CSSToLengthConversionData m_cssToLengthConversionData;
 
-    CSSAnimationUpdate m_animationUpdate;
+  // m_parentStyle is not always just ElementResolveContext::parentStyle,
+  // so we keep it separate.
+  RefPtr<ComputedStyle> m_parentStyle;
 
-    bool m_applyPropertyToRegularStyle;
-    bool m_applyPropertyToVisitedLinkStyle;
-    bool m_hasDirAutoAttribute;
+  CSSAnimationUpdate m_animationUpdate;
 
-    FontBuilder m_fontBuilder;
+  bool m_applyPropertyToRegularStyle;
+  bool m_applyPropertyToVisitedLinkStyle;
+  bool m_hasDirAutoAttribute;
 
-    std::unique_ptr<CachedUAStyle> m_cachedUAStyle;
+  FontBuilder m_fontBuilder;
 
-    ElementStyleResources m_elementStyleResources;
+  std::unique_ptr<CachedUAStyle> m_cachedUAStyle;
 
-    HeapHashMap<String, Member<StylePropertySet>> m_customPropertySetsForApplyAtRule;
+  ElementStyleResources m_elementStyleResources;
 
-    mutable HeapHashMap<Member<const CSSPendingSubstitutionValue>, Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>> m_parsedPropertiesForPendingSubstitutionCache;
+  HeapHashMap<String, Member<StylePropertySet>>
+      m_customPropertySetsForApplyAtRule;
 
+  mutable HeapHashMap<
+      Member<const CSSPendingSubstitutionValue>,
+      Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>>
+      m_parsedPropertiesForPendingSubstitutionCache;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleResolverState_h
+#endif  // StyleResolverState_h

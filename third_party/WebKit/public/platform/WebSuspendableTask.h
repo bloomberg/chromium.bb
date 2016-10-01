@@ -8,12 +8,12 @@
 namespace blink {
 
 class WebSuspendableTask {
-public:
-    virtual void run() = 0;
-    virtual void contextDestroyed() { }
-    virtual ~WebSuspendableTask() { }
+ public:
+  virtual void run() = 0;
+  virtual void contextDestroyed() {}
+  virtual ~WebSuspendableTask() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSuspendableTask_h
+#endif  // WebSuspendableTask_h

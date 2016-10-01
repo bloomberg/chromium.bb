@@ -10,34 +10,32 @@
 
 namespace blink {
 
-bool OriginTrialsTest::normalAttribute()
-{
-    return true;
+bool OriginTrialsTest::normalAttribute() {
+  return true;
 }
 
 // static
-bool OriginTrialsTest::staticAttribute()
-{
-    return true;
+bool OriginTrialsTest::staticAttribute() {
+  return true;
 }
 
-bool OriginTrialsTest::throwingAttribute(ScriptState* scriptState, ExceptionState& exceptionState)
-{
-    String errorMessage;
-    if (!OriginTrials::originTrialsSampleAPIEnabled(scriptState->getExecutionContext())) {
-        exceptionState.throwDOMException(NotSupportedError, "The Origin Trials Sample API has not been enabled in this context");
-        return false;
-    }
-    return unconditionalAttribute();
+bool OriginTrialsTest::throwingAttribute(ScriptState* scriptState,
+                                         ExceptionState& exceptionState) {
+  String errorMessage;
+  if (!OriginTrials::originTrialsSampleAPIEnabled(
+          scriptState->getExecutionContext())) {
+    exceptionState.throwDOMException(
+        NotSupportedError,
+        "The Origin Trials Sample API has not been enabled in this context");
+    return false;
+  }
+  return unconditionalAttribute();
 }
 
-bool OriginTrialsTest::unconditionalAttribute()
-{
-    return true;
+bool OriginTrialsTest::unconditionalAttribute() {
+  return true;
 }
 
-DEFINE_TRACE(OriginTrialsTest)
-{
-}
+DEFINE_TRACE(OriginTrialsTest) {}
 
-} // namespace blink
+}  // namespace blink

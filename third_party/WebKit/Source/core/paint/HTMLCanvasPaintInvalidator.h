@@ -14,18 +14,20 @@ class LayoutHTMLCanvas;
 struct PaintInvalidatorContext;
 
 class HTMLCanvasPaintInvalidator {
-    STACK_ALLOCATED();
-public:
-    HTMLCanvasPaintInvalidator(const LayoutHTMLCanvas& htmlCanvas, const PaintInvalidatorContext& context)
-        : m_htmlCanvas(htmlCanvas), m_context(context) { }
+  STACK_ALLOCATED();
 
-    PaintInvalidationReason invalidatePaintIfNeeded();
+ public:
+  HTMLCanvasPaintInvalidator(const LayoutHTMLCanvas& htmlCanvas,
+                             const PaintInvalidatorContext& context)
+      : m_htmlCanvas(htmlCanvas), m_context(context) {}
 
-private:
-    const LayoutHTMLCanvas& m_htmlCanvas;
-    const PaintInvalidatorContext& m_context;
+  PaintInvalidationReason invalidatePaintIfNeeded();
+
+ private:
+  const LayoutHTMLCanvas& m_htmlCanvas;
+  const PaintInvalidatorContext& m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

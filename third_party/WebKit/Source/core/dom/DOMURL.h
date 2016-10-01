@@ -42,47 +42,52 @@ class ExecutionContext;
 class URLRegistrable;
 class URLSearchParams;
 
-class DOMURL final : public GarbageCollectedFinalized<DOMURL>, public ScriptWrappable, public DOMURLUtils {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMURL* create(const String& url, ExceptionState& exceptionState)
-    {
-        return new DOMURL(url, blankURL(), exceptionState);
-    }
+class DOMURL final : public GarbageCollectedFinalized<DOMURL>,
+                     public ScriptWrappable,
+                     public DOMURLUtils {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static DOMURL* create(const String& url, const String& base, ExceptionState& exceptionState)
-    {
-        return new DOMURL(url, KURL(KURL(), base), exceptionState);
-    }
-    ~DOMURL();
+ public:
+  static DOMURL* create(const String& url, ExceptionState& exceptionState) {
+    return new DOMURL(url, blankURL(), exceptionState);
+  }
 
-    CORE_EXPORT static String createPublicURL(ExecutionContext*, URLRegistrable*, const String& uuid = String());
-    static void revokeObjectUUID(ExecutionContext*, const String&);
+  static DOMURL* create(const String& url,
+                        const String& base,
+                        ExceptionState& exceptionState) {
+    return new DOMURL(url, KURL(KURL(), base), exceptionState);
+  }
+  ~DOMURL();
 
-    KURL url() const override { return m_url; }
-    void setURL(const KURL& url) override { m_url = url; }
+  CORE_EXPORT static String createPublicURL(ExecutionContext*,
+                                            URLRegistrable*,
+                                            const String& uuid = String());
+  static void revokeObjectUUID(ExecutionContext*, const String&);
 
-    String input() const override { return m_input; }
-    void setInput(const String&) override;
+  KURL url() const override { return m_url; }
+  void setURL(const KURL& url) override { m_url = url; }
 
-    void setSearch(const String&) override;
+  String input() const override { return m_input; }
+  void setInput(const String&) override;
 
-    URLSearchParams* searchParams();
+  void setSearch(const String&) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  URLSearchParams* searchParams();
 
-private:
-    friend class URLSearchParams;
-    DOMURL(const String& url, const KURL& base, ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void update();
-    void updateSearchParams(const String&);
+ private:
+  friend class URLSearchParams;
+  DOMURL(const String& url, const KURL& base, ExceptionState&);
 
-    KURL m_url;
-    String m_input;
-    WeakMember<URLSearchParams> m_searchParams;
+  void update();
+  void updateSearchParams(const String&);
+
+  KURL m_url;
+  String m_input;
+  WeakMember<URLSearchParams> m_searchParams;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMURL_h
+#endif  // DOMURL_h

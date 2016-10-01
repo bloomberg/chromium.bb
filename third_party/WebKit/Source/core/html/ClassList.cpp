@@ -31,40 +31,37 @@ namespace blink {
 
 using namespace HTMLNames;
 
-ClassList::ClassList(Element* element) : DOMTokenList(nullptr), m_element(element) { }
+ClassList::ClassList(Element* element)
+    : DOMTokenList(nullptr), m_element(element) {}
 
-unsigned ClassList::length() const
-{
-    return m_element->hasClass() ? classNames().size() : 0;
+unsigned ClassList::length() const {
+  return m_element->hasClass() ? classNames().size() : 0;
 }
 
-const AtomicString ClassList::item(unsigned index) const
-{
-    if (index >= length())
-        return AtomicString();
-    return classNames()[index];
+const AtomicString ClassList::item(unsigned index) const {
+  if (index >= length())
+    return AtomicString();
+  return classNames()[index];
 }
 
-bool ClassList::containsInternal(const AtomicString& token) const
-{
-    return m_element->hasClass() && classNames().contains(token);
+bool ClassList::containsInternal(const AtomicString& token) const {
+  return m_element->hasClass() && classNames().contains(token);
 }
 
-const SpaceSplitString& ClassList::classNames() const
-{
-    DCHECK(m_element->hasClass());
-    if (m_element->document().inQuirksMode()) {
-        if (!m_classNamesForQuirksMode)
-            m_classNamesForQuirksMode = wrapUnique(new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));
-        return *m_classNamesForQuirksMode.get();
-    }
-    return m_element->classNames();
+const SpaceSplitString& ClassList::classNames() const {
+  DCHECK(m_element->hasClass());
+  if (m_element->document().inQuirksMode()) {
+    if (!m_classNamesForQuirksMode)
+      m_classNamesForQuirksMode = wrapUnique(
+          new SpaceSplitString(value(), SpaceSplitString::ShouldNotFoldCase));
+    return *m_classNamesForQuirksMode.get();
+  }
+  return m_element->classNames();
 }
 
-DEFINE_TRACE(ClassList)
-{
-    visitor->trace(m_element);
-    DOMTokenList::trace(visitor);
+DEFINE_TRACE(ClassList) {
+  visitor->trace(m_element);
+  DOMTokenList::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

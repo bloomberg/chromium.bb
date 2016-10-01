@@ -10,25 +10,23 @@
 namespace blink {
 
 struct WebBluetoothRemoteGATTService {
-    WebBluetoothRemoteGATTService(const WebString& serviceInstanceID,
-        const WebString& uuid,
-        bool isPrimary,
-        const WebString& deviceInstanceID)
-        : serviceInstanceID(serviceInstanceID)
-        , uuid(uuid)
-        , isPrimary(isPrimary)
-        , deviceInstanceID(deviceInstanceID)
-    {
-    }
+  WebBluetoothRemoteGATTService(const WebString& serviceInstanceID,
+                                const WebString& uuid,
+                                bool isPrimary,
+                                const WebString& deviceInstanceID)
+      : serviceInstanceID(serviceInstanceID),
+        uuid(uuid),
+        isPrimary(isPrimary),
+        deviceInstanceID(deviceInstanceID) {}
 
-    // Members corresponding to BluetoothRemoteGATTService attributes as
-    // specified in the IDL.
-    const WebString serviceInstanceID;
-    const WebString uuid;
-    const bool isPrimary;
-    const WebString deviceInstanceID;
+  // Members corresponding to BluetoothRemoteGATTService attributes as
+  // specified in the IDL.
+  const WebString serviceInstanceID;
+  const WebString uuid;
+  const bool isPrimary;
+  const WebString deviceInstanceID;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebBluetoothRemoteGATTService_h
+#endif  // WebBluetoothRemoteGATTService_h

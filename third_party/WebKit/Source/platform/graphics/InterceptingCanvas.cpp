@@ -6,23 +6,26 @@
 
 namespace blink {
 
-void InterceptingCanvasBase::unrollDrawPicture(const SkPicture* picture, const SkMatrix* matrix, const SkPaint* paint, SkPicture::AbortCallback* abortCallback)
-{
-    int saveCount = this->getSaveCount();
-    if (paint) {
-        SkRect newBounds = picture->cullRect();
-        if (matrix)
-            matrix->mapRect(&newBounds);
-        this->saveLayer(&newBounds, paint);
-    } else if (matrix) {
-        this->save();
-    }
+void InterceptingCanvasBase::unrollDrawPicture(
+    const SkPicture* picture,
+    const SkMatrix* matrix,
+    const SkPaint* paint,
+    SkPicture::AbortCallback* abortCallback) {
+  int saveCount = this->getSaveCount();
+  if (paint) {
+    SkRect newBounds = picture->cullRect();
     if (matrix)
-        this->concat(*matrix);
+      matrix->mapRect(&newBounds);
+    this->saveLayer(&newBounds, paint);
+  } else if (matrix) {
+    this->save();
+  }
+  if (matrix)
+    this->concat(*matrix);
 
-    picture->playback(this, abortCallback);
+  picture->playback(this, abortCallback);
 
-    this->restoreToCount(saveCount);
+  this->restoreToCount(saveCount);
 }
 
-} // namespace blink
+}  // namespace blink

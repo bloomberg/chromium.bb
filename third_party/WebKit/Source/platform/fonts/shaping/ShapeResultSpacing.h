@@ -15,36 +15,36 @@ class ShapeResult;
 class TextRun;
 
 class PLATFORM_EXPORT ShapeResultSpacing final {
-public:
-    ShapeResultSpacing(const TextRun&, const FontDescription&);
+ public:
+  ShapeResultSpacing(const TextRun&, const FontDescription&);
 
-    float letterSpacing() const { return m_letterSpacing; }
-    bool hasSpacing() const { return m_hasSpacing; }
-    bool isVerticalOffset() const { return m_isVerticalOffset; }
+  float letterSpacing() const { return m_letterSpacing; }
+  bool hasSpacing() const { return m_hasSpacing; }
+  bool isVerticalOffset() const { return m_isVerticalOffset; }
 
-    float computeSpacing(const TextRun&, size_t, float& offset);
+  float computeSpacing(const TextRun&, size_t, float& offset);
 
-private:
-    bool hasExpansion() const { return m_expansionOpportunityCount; }
-    bool isAfterExpansion() const { return m_isAfterExpansion; }
-    bool isFirstRun(const TextRun&) const;
+ private:
+  bool hasExpansion() const { return m_expansionOpportunityCount; }
+  bool isAfterExpansion() const { return m_isAfterExpansion; }
+  bool isFirstRun(const TextRun&) const;
 
-    float nextExpansion();
+  float nextExpansion();
 
-    const TextRun& m_textRun;
-    float m_letterSpacing;
-    float m_wordSpacing;
-    float m_expansion;
-    float m_expansionPerOpportunity;
-    unsigned m_expansionOpportunityCount;
-    TextJustify m_textJustify;
-    bool m_hasSpacing;
-    bool m_normalizeSpace;
-    bool m_allowTabs;
-    bool m_isAfterExpansion;
-    bool m_isVerticalOffset;
+  const TextRun& m_textRun;
+  float m_letterSpacing;
+  float m_wordSpacing;
+  float m_expansion;
+  float m_expansionPerOpportunity;
+  unsigned m_expansionOpportunityCount;
+  TextJustify m_textJustify;
+  bool m_hasSpacing;
+  bool m_normalizeSpace;
+  bool m_allowTabs;
+  bool m_isAfterExpansion;
+  bool m_isVerticalOffset;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

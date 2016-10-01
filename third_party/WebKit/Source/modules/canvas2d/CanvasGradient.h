@@ -37,31 +37,38 @@ namespace blink {
 
 class ExceptionState;
 
-class MODULES_EXPORT CanvasGradient final : public GarbageCollectedFinalized<CanvasGradient>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CanvasGradient* create(const FloatPoint& p0, const FloatPoint& p1)
-    {
-        return new CanvasGradient(p0, p1);
-    }
-    static CanvasGradient* create(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1)
-    {
-        return new CanvasGradient(p0, r0, p1, r1);
-    }
+class MODULES_EXPORT CanvasGradient final
+    : public GarbageCollectedFinalized<CanvasGradient>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    Gradient* getGradient() const { return m_gradient.get(); }
+ public:
+  static CanvasGradient* create(const FloatPoint& p0, const FloatPoint& p1) {
+    return new CanvasGradient(p0, p1);
+  }
+  static CanvasGradient* create(const FloatPoint& p0,
+                                float r0,
+                                const FloatPoint& p1,
+                                float r1) {
+    return new CanvasGradient(p0, r0, p1, r1);
+  }
 
-    void addColorStop(float value, const String& color, ExceptionState&);
+  Gradient* getGradient() const { return m_gradient.get(); }
 
-    DEFINE_INLINE_TRACE() { }
+  void addColorStop(float value, const String& color, ExceptionState&);
 
-private:
-    CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
-    CanvasGradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1);
+  DEFINE_INLINE_TRACE() {}
 
-    RefPtr<Gradient> m_gradient;
+ private:
+  CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);
+  CanvasGradient(const FloatPoint& p0,
+                 float r0,
+                 const FloatPoint& p1,
+                 float r1);
+
+  RefPtr<Gradient> m_gradient;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CanvasGradient_h
+#endif  // CanvasGradient_h

@@ -11,7 +11,7 @@ class SkMatrix44;
 
 namespace cc {
 class LayerImpl;
-} // namespace cc
+}  // namespace cc
 
 namespace blink {
 
@@ -19,28 +19,30 @@ class CompositorMutation;
 
 // This class wraps the compositor-owned, mutable state for a single element.
 class PLATFORM_EXPORT CompositorMutableState {
-public:
-    CompositorMutableState(CompositorMutation*, cc::LayerImpl* main, cc::LayerImpl* scroll);
-    ~CompositorMutableState();
+ public:
+  CompositorMutableState(CompositorMutation*,
+                         cc::LayerImpl* main,
+                         cc::LayerImpl* scroll);
+  ~CompositorMutableState();
 
-    double opacity() const;
-    void setOpacity(double);
+  double opacity() const;
+  void setOpacity(double);
 
-    const SkMatrix44& transform() const;
-    void setTransform(const SkMatrix44&);
+  const SkMatrix44& transform() const;
+  void setTransform(const SkMatrix44&);
 
-    double scrollLeft() const;
-    void setScrollLeft(double);
+  double scrollLeft() const;
+  void setScrollLeft(double);
 
-    double scrollTop() const;
-    void setScrollTop(double);
+  double scrollTop() const;
+  void setScrollTop(double);
 
-private:
-    CompositorMutation* m_mutation;
-    cc::LayerImpl* m_mainLayer;
-    cc::LayerImpl* m_scrollLayer;
+ private:
+  CompositorMutation* m_mutation;
+  cc::LayerImpl* m_mainLayer;
+  cc::LayerImpl* m_scrollLayer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorMutableState_h
+#endif  // CompositorMutableState_h

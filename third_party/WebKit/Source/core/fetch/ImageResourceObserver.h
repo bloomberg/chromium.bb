@@ -34,35 +34,37 @@ class ImageResource;
 class IntRect;
 
 class CORE_EXPORT ImageResourceObserver {
-public:
-    virtual ~ImageResourceObserver() {}
+ public:
+  virtual ~ImageResourceObserver() {}
 
-    // Called whenever a frame of an image changes, either because we got more data from the network or
-    // because we are animating. If not null, the IntRect is the changed rect of the image.
-    virtual void imageChanged(ImageResource*, const IntRect* = 0) { }
+  // Called whenever a frame of an image changes, either because we got more data from the network or
+  // because we are animating. If not null, the IntRect is the changed rect of the image.
+  virtual void imageChanged(ImageResource*, const IntRect* = 0) {}
 
-    // Called just before ResourceClient::notifyFinished() would be called.
-    // This is to avoid an ImageResourceObserver from being
-    // also a ResourceClient just to be notified for load finish.
-    virtual void imageNotifyFinished(ImageResource*) { }
+  // Called just before ResourceClient::notifyFinished() would be called.
+  // This is to avoid an ImageResourceObserver from being
+  // also a ResourceClient just to be notified for load finish.
+  virtual void imageNotifyFinished(ImageResource*) {}
 
-    // Called to find out if this client wants to actually display the image. Used to tell when we
-    // can halt animation. Content nodes that hold image refs for example would not render the image,
-    // but LayoutImages would (assuming they have visibility: visible and their layout tree isn't hidden
-    // e.g., in the b/f cache or in a background tab).
-    virtual bool willRenderImage() { return false; }
+  // Called to find out if this client wants to actually display the image. Used to tell when we
+  // can halt animation. Content nodes that hold image refs for example would not render the image,
+  // but LayoutImages would (assuming they have visibility: visible and their layout tree isn't hidden
+  // e.g., in the b/f cache or in a background tab).
+  virtual bool willRenderImage() { return false; }
 
-    // Called to get imageAnimation policy from settings
-    virtual bool getImageAnimationPolicy(ImageAnimationPolicy&) { return false; }
+  // Called to get imageAnimation policy from settings
+  virtual bool getImageAnimationPolicy(ImageAnimationPolicy&) { return false; }
 
-    virtual ResourcePriority computeResourcePriority() const { return ResourcePriority(); }
+  virtual ResourcePriority computeResourcePriority() const {
+    return ResourcePriority();
+  }
 
-    // Name for debugging, e.g. shown in memory-infra.
-    virtual String debugName() const = 0;
+  // Name for debugging, e.g. shown in memory-infra.
+  virtual String debugName() const = 0;
 
-    static bool isExpectedType(ImageResourceObserver*) { return true; }
+  static bool isExpectedType(ImageResourceObserver*) { return true; }
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

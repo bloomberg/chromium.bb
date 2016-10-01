@@ -13,22 +13,22 @@
 namespace blink {
 
 class CSSLengthPairInterpolationType : public CSSLengthListInterpolationType {
-public:
-    CSSLengthPairInterpolationType(PropertyHandle property)
-        : CSSLengthListInterpolationType(property)
-    { }
+ public:
+  CSSLengthPairInterpolationType(PropertyHandle property)
+      : CSSLengthListInterpolationType(property) {}
 
-private:
-    InterpolationValue maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const final
-    {
-        const CSSValuePair& pair = toCSSValuePair(value);
-        return ListInterpolationFunctions::createList(2, [&pair](size_t index) {
-            const CSSValue& item = index == 0 ? pair.first() : pair.second();
-            return LengthInterpolationFunctions::maybeConvertCSSValue(item);
-        });
-    }
+ private:
+  InterpolationValue maybeConvertValue(const CSSValue& value,
+                                       const StyleResolverState&,
+                                       ConversionCheckers&) const final {
+    const CSSValuePair& pair = toCSSValuePair(value);
+    return ListInterpolationFunctions::createList(2, [&pair](size_t index) {
+      const CSSValue& item = index == 0 ? pair.first() : pair.second();
+      return LengthInterpolationFunctions::maybeConvertCSSValue(item);
+    });
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSLengthPairInterpolationType_h
+#endif  // CSSLengthPairInterpolationType_h

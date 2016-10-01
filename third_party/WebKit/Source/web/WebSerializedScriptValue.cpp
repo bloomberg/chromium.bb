@@ -37,59 +37,53 @@
 
 namespace blink {
 
-WebSerializedScriptValue WebSerializedScriptValue::fromString(const WebString& s)
-{
-    return SerializedScriptValue::create(s);
+WebSerializedScriptValue WebSerializedScriptValue::fromString(
+    const WebString& s) {
+  return SerializedScriptValue::create(s);
 }
 
-WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Local<v8::Value> value)
-{
-    TrackExceptionState exceptionState;
-    WebSerializedScriptValue serializedValue = SerializedScriptValue::serialize(v8::Isolate::GetCurrent(), value, nullptr, nullptr, exceptionState);
-    if (exceptionState.hadException())
-        return createInvalid();
-    return serializedValue;
+WebSerializedScriptValue WebSerializedScriptValue::serialize(
+    v8::Local<v8::Value> value) {
+  TrackExceptionState exceptionState;
+  WebSerializedScriptValue serializedValue = SerializedScriptValue::serialize(
+      v8::Isolate::GetCurrent(), value, nullptr, nullptr, exceptionState);
+  if (exceptionState.hadException())
+    return createInvalid();
+  return serializedValue;
 }
 
-WebSerializedScriptValue WebSerializedScriptValue::createInvalid()
-{
-    return SerializedScriptValue::create();
+WebSerializedScriptValue WebSerializedScriptValue::createInvalid() {
+  return SerializedScriptValue::create();
 }
 
-void WebSerializedScriptValue::reset()
-{
-    m_private.reset();
+void WebSerializedScriptValue::reset() {
+  m_private.reset();
 }
 
-void WebSerializedScriptValue::assign(const WebSerializedScriptValue& other)
-{
-    m_private = other.m_private;
+void WebSerializedScriptValue::assign(const WebSerializedScriptValue& other) {
+  m_private = other.m_private;
 }
 
-WebString WebSerializedScriptValue::toString() const
-{
-    return m_private->toWireString();
+WebString WebSerializedScriptValue::toString() const {
+  return m_private->toWireString();
 }
 
-v8::Local<v8::Value> WebSerializedScriptValue::deserialize()
-{
-    return m_private->deserialize();
+v8::Local<v8::Value> WebSerializedScriptValue::deserialize() {
+  return m_private->deserialize();
 }
 
-WebSerializedScriptValue::WebSerializedScriptValue(PassRefPtr<SerializedScriptValue> value)
-    : m_private(value)
-{
+WebSerializedScriptValue::WebSerializedScriptValue(
+    PassRefPtr<SerializedScriptValue> value)
+    : m_private(value) {}
+
+WebSerializedScriptValue& WebSerializedScriptValue::operator=(
+    PassRefPtr<SerializedScriptValue> value) {
+  m_private = value;
+  return *this;
 }
 
-WebSerializedScriptValue& WebSerializedScriptValue::operator=(PassRefPtr<SerializedScriptValue> value)
-{
-    m_private = value;
-    return *this;
+WebSerializedScriptValue::operator PassRefPtr<SerializedScriptValue>() const {
+  return m_private.get();
 }
 
-WebSerializedScriptValue::operator PassRefPtr<SerializedScriptValue>() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

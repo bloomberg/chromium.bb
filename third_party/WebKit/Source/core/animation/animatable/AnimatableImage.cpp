@@ -36,29 +36,31 @@
 
 namespace blink {
 
-bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    if (!m_value->isImageValue())
-        return true;
-    if (!toAnimatableImage(value)->toCSSValue()->isImageValue())
-        return true;
-    return false;
+bool AnimatableImage::usesDefaultInterpolationWith(
+    const AnimatableValue* value) const {
+  if (!m_value->isImageValue())
+    return true;
+  if (!toAnimatableImage(value)->toCSSValue()->isImageValue())
+    return true;
+  return false;
 }
 
-PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(const AnimatableValue* value, double fraction) const
-{
-    if (fraction <= 0 || fraction >= 1 || usesDefaultInterpolationWith(value))
-        return defaultInterpolateTo(this, value, fraction);
+PassRefPtr<AnimatableValue> AnimatableImage::interpolateTo(
+    const AnimatableValue* value,
+    double fraction) const {
+  if (fraction <= 0 || fraction >= 1 || usesDefaultInterpolationWith(value))
+    return defaultInterpolateTo(this, value, fraction);
 
-    CSSValue* fromValue = toCSSValue();
-    CSSValue* toValue = toAnimatableImage(value)->toCSSValue();
+  CSSValue* fromValue = toCSSValue();
+  CSSValue* toValue = toAnimatableImage(value)->toCSSValue();
 
-    return create(CSSCrossfadeValue::create(fromValue, toValue, CSSPrimitiveValue::create(fraction, CSSPrimitiveValue::UnitType::Number)));
+  return create(CSSCrossfadeValue::create(
+      fromValue, toValue, CSSPrimitiveValue::create(
+                              fraction, CSSPrimitiveValue::UnitType::Number)));
 }
 
-bool AnimatableImage::equalTo(const AnimatableValue* value) const
-{
-    return m_value->equals(*toAnimatableImage(value)->m_value.get());
+bool AnimatableImage::equalTo(const AnimatableValue* value) const {
+  return m_value->equals(*toAnimatableImage(value)->m_value.get());
 }
 
-} // namespace blink
+}  // namespace blink

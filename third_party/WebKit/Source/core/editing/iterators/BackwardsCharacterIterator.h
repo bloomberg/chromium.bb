@@ -33,31 +33,40 @@ namespace blink {
 
 template <typename Strategy>
 class BackwardsCharacterIteratorAlgorithm {
-    STACK_ALLOCATED();
-public:
-    BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+  STACK_ALLOCATED();
 
-    void advance(int);
+ public:
+  BackwardsCharacterIteratorAlgorithm(
+      const PositionTemplate<Strategy>&,
+      const PositionTemplate<Strategy>&,
+      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
-    bool atEnd() const { return m_textIterator.atEnd(); }
+  void advance(int);
 
-    PositionTemplate<Strategy> endPosition() const;
+  bool atEnd() const { return m_textIterator.atEnd(); }
 
-    bool isInTextSecurityMode() const { return m_textIterator.isInTextSecurityMode(); }
+  PositionTemplate<Strategy> endPosition() const;
 
-private:
-    int m_offset;
-    int m_runOffset;
-    bool m_atBreak;
+  bool isInTextSecurityMode() const {
+    return m_textIterator.isInTextSecurityMode();
+  }
 
-    SimplifiedBackwardsTextIteratorAlgorithm<Strategy> m_textIterator;
+ private:
+  int m_offset;
+  int m_runOffset;
+  bool m_atBreak;
+
+  SimplifiedBackwardsTextIteratorAlgorithm<Strategy> m_textIterator;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    BackwardsCharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
-using BackwardsCharacterIterator = BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
+using BackwardsCharacterIterator =
+    BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BackwardsCharacterIterator_h
+#endif  // BackwardsCharacterIterator_h

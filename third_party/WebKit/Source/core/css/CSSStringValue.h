@@ -11,31 +11,29 @@
 namespace blink {
 
 class CSSStringValue : public CSSValue {
-public:
-    static CSSStringValue* create(const String& str)
-    {
-        return new CSSStringValue(str);
-    }
+ public:
+  static CSSStringValue* create(const String& str) {
+    return new CSSStringValue(str);
+  }
 
-    String value() const { return m_string; }
+  String value() const { return m_string; }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSStringValue& other) const
-    {
-        return m_string == other.m_string;
-    }
+  bool equals(const CSSStringValue& other) const {
+    return m_string == other.m_string;
+  }
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-private:
-    CSSStringValue(const String&);
+ private:
+  CSSStringValue(const String&);
 
-    String m_string;
+  String m_string;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSStringValue, isStringValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSStringValue_h
+#endif  // CSSStringValue_h

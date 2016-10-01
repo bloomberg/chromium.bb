@@ -45,94 +45,108 @@ class HTMLMapElement;
 // The class is image type agnostic as it only manipulates decoded images.
 // See LayoutImageResource that holds this image.
 class CORE_EXPORT LayoutImage : public LayoutReplaced {
-public:
-    // These are the paddings to use when displaying either alt text or an image.
-    static const unsigned short paddingWidth = 4;
-    static const unsigned short paddingHeight = 4;
+ public:
+  // These are the paddings to use when displaying either alt text or an image.
+  static const unsigned short paddingWidth = 4;
+  static const unsigned short paddingHeight = 4;
 
-    LayoutImage(Element*);
-    ~LayoutImage() override;
+  LayoutImage(Element*);
+  ~LayoutImage() override;
 
-    static LayoutImage* createAnonymous(Document*);
+  static LayoutImage* createAnonymous(Document*);
 
-    void setImageResource(LayoutImageResource*);
+  void setImageResource(LayoutImageResource*);
 
-    LayoutImageResource* imageResource() { return m_imageResource.get(); }
-    const LayoutImageResource* imageResource() const { return m_imageResource.get(); }
-    ImageResource* cachedImage() const { return m_imageResource ? m_imageResource->cachedImage() : 0; }
+  LayoutImageResource* imageResource() { return m_imageResource.get(); }
+  const LayoutImageResource* imageResource() const {
+    return m_imageResource.get();
+  }
+  ImageResource* cachedImage() const {
+    return m_imageResource ? m_imageResource->cachedImage() : 0;
+  }
 
-    HTMLMapElement* imageMap() const;
-    void areaElementFocusChanged(HTMLAreaElement*);
+  HTMLMapElement* imageMap() const;
+  void areaElementFocusChanged(HTMLAreaElement*);
 
-    void setIsGeneratedContent(bool generated = true) { m_isGeneratedContent = generated; }
+  void setIsGeneratedContent(bool generated = true) {
+    m_isGeneratedContent = generated;
+  }
 
-    bool isGeneratedContent() const { return m_isGeneratedContent; }
+  bool isGeneratedContent() const { return m_isGeneratedContent; }
 
-    inline void setImageDevicePixelRatio(float factor) { m_imageDevicePixelRatio = factor; }
-    float imageDevicePixelRatio() const { return m_imageDevicePixelRatio; }
+  inline void setImageDevicePixelRatio(float factor) {
+    m_imageDevicePixelRatio = factor;
+  }
+  float imageDevicePixelRatio() const { return m_imageDevicePixelRatio; }
 
-    void intrinsicSizeChanged() override
-    {
-        if (m_imageResource)
-            imageChanged(m_imageResource->imagePtr());
-    }
+  void intrinsicSizeChanged() override {
+    if (m_imageResource)
+      imageChanged(m_imageResource->imagePtr());
+  }
 
-    const char* name() const override { return "LayoutImage"; }
+  const char* name() const override { return "LayoutImage"; }
 
-protected:
-    bool needsPreferredWidthsRecalculation() const final;
-    LayoutReplaced* embeddedReplacedContent() const final;
-    void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
+ protected:
+  bool needsPreferredWidthsRecalculation() const final;
+  LayoutReplaced* embeddedReplacedContent() const final;
+  void computeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 
-    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) const final;
+  void paint(const PaintInfo&, const LayoutPoint&) const final;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type);
+  }
 
-    void willBeDestroyed() override;
+  void willBeDestroyed() override;
 
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
-private:
-    bool isImage() const override { return true; }
+ private:
+  bool isImage() const override { return true; }
 
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
+  void paintReplaced(const PaintInfo&, const LayoutPoint&) const override;
 
-    bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, unsigned maxDepthToTest) const final;
-    bool computeBackgroundIsKnownToBeObscured() const final;
+  bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
+                                         unsigned maxDepthToTest) const final;
+  bool computeBackgroundIsKnownToBeObscured() const final;
 
-    bool backgroundShouldAlwaysBeClipped() const override { return true; }
+  bool backgroundShouldAlwaysBeClipped() const override { return true; }
 
-    LayoutUnit minimumReplacedHeight() const override;
+  LayoutUnit minimumReplacedHeight() const override;
 
-    void imageNotifyFinished(ImageResource*) final;
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
+  void imageNotifyFinished(ImageResource*) final;
+  bool nodeAtPoint(HitTestResult&,
+                   const HitTestLocation& locationInContainer,
+                   const LayoutPoint& accumulatedOffset,
+                   HitTestAction) final;
 
-    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, const InlineFlowBox*) const final;
+  bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance,
+                                            const InlineFlowBox*) const final;
 
-    void invalidatePaintAndMarkForLayoutIfNeeded();
-    void updateIntrinsicSizeIfNeeded(const LayoutSize&);
+  void invalidatePaintAndMarkForLayoutIfNeeded();
+  void updateIntrinsicSizeIfNeeded(const LayoutSize&);
 
-    // This member wraps the associated decoded image.
-    //
-    // This field is set using setImageResource above which can be called in
-    // several ways:
-    // * For normal images, from the network stack (ImageLoader) once we have
-    // some image data.
-    // * For generated content, the resource is loaded during style resolution
-    // and thus is stored in ComputedStyle (see ContentData::image) that gets
-    // propagated to the anonymous LayoutImage in LayoutObject::createObject.
-    Persistent<LayoutImageResource> m_imageResource;
-    bool m_didIncrementVisuallyNonEmptyPixelCount;
+  // This member wraps the associated decoded image.
+  //
+  // This field is set using setImageResource above which can be called in
+  // several ways:
+  // * For normal images, from the network stack (ImageLoader) once we have
+  // some image data.
+  // * For generated content, the resource is loaded during style resolution
+  // and thus is stored in ComputedStyle (see ContentData::image) that gets
+  // propagated to the anonymous LayoutImage in LayoutObject::createObject.
+  Persistent<LayoutImageResource> m_imageResource;
+  bool m_didIncrementVisuallyNonEmptyPixelCount;
 
-    // This field stores whether this image is generated with 'content'.
-    bool m_isGeneratedContent;
-    float m_imageDevicePixelRatio;
+  // This field stores whether this image is generated with 'content'.
+  bool m_isGeneratedContent;
+  float m_imageDevicePixelRatio;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutImage, isLayoutImage());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutImage_h
+#endif  // LayoutImage_h

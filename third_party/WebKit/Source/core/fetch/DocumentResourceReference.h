@@ -31,31 +31,32 @@
 
 namespace blink {
 
-class DocumentResourceReference final : public GarbageCollectedFinalized<DocumentResourceReference>, public DocumentResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(DocumentResourceReference);
-    USING_PRE_FINALIZER(DocumentResourceReference, removeSelf);
-public:
-    explicit DocumentResourceReference(DocumentResource* document)
-        : m_document(document)
-    {
-        ThreadState::current()->registerPreFinalizer(this);
-        m_document->addClient(this);
-    }
-    ~DocumentResourceReference() override {}
-    DocumentResource* document() { return m_document.get(); }
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_document);
-        DocumentResourceClient::trace(visitor);
-    }
+class DocumentResourceReference final
+    : public GarbageCollectedFinalized<DocumentResourceReference>,
+      public DocumentResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(DocumentResourceReference);
+  USING_PRE_FINALIZER(DocumentResourceReference, removeSelf);
 
-private:
-    void removeSelf() { m_document->removeClient(this); }
+ public:
+  explicit DocumentResourceReference(DocumentResource* document)
+      : m_document(document) {
+    ThreadState::current()->registerPreFinalizer(this);
+    m_document->addClient(this);
+  }
+  ~DocumentResourceReference() override {}
+  DocumentResource* document() { return m_document.get(); }
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_document);
+    DocumentResourceClient::trace(visitor);
+  }
 
-    String debugName() const override { return "DocumentResourceReference"; }
-    Member<DocumentResource> m_document;
+ private:
+  void removeSelf() { m_document->removeClient(this); }
+
+  String debugName() const override { return "DocumentResourceReference"; }
+  Member<DocumentResource> m_document;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

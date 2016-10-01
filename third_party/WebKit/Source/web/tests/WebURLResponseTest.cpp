@@ -39,54 +39,47 @@ namespace blink {
 namespace {
 
 class TestExtraData : public WebURLResponse::ExtraData {
-public:
-    explicit TestExtraData(bool* alive)
-        : m_alive(alive)
-    {
-        *alive = true;
-    }
+ public:
+  explicit TestExtraData(bool* alive) : m_alive(alive) { *alive = true; }
 
-    ~TestExtraData() override { *m_alive = false; }
+  ~TestExtraData() override { *m_alive = false; }
 
-private:
-    bool* m_alive;
+ private:
+  bool* m_alive;
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
-TEST(WebURLResponseTest, ExtraData)
-{
-    bool alive = false;
+TEST(WebURLResponseTest, ExtraData) {
+  bool alive = false;
+  {
+    WebURLResponse urlResponse;
+    TestExtraData* extraData = new TestExtraData(&alive);
+    EXPECT_TRUE(alive);
+
+    urlResponse.setExtraData(extraData);
+    EXPECT_EQ(extraData, urlResponse.getExtraData());
     {
-        WebURLResponse urlResponse;
-        TestExtraData* extraData = new TestExtraData(&alive);
-        EXPECT_TRUE(alive);
-
-        urlResponse.setExtraData(extraData);
-        EXPECT_EQ(extraData, urlResponse.getExtraData());
-        {
-            WebURLResponse otherUrlResponse = urlResponse;
-            EXPECT_TRUE(alive);
-            EXPECT_EQ(extraData, otherUrlResponse.getExtraData());
-            EXPECT_EQ(extraData, urlResponse.getExtraData());
-        }
-        EXPECT_TRUE(alive);
-        EXPECT_EQ(extraData, urlResponse.getExtraData());
+      WebURLResponse otherUrlResponse = urlResponse;
+      EXPECT_TRUE(alive);
+      EXPECT_EQ(extraData, otherUrlResponse.getExtraData());
+      EXPECT_EQ(extraData, urlResponse.getExtraData());
     }
-    EXPECT_FALSE(alive);
+    EXPECT_TRUE(alive);
+    EXPECT_EQ(extraData, urlResponse.getExtraData());
+  }
+  EXPECT_FALSE(alive);
 }
 
-TEST(WebURLResponseTest, NewInstanceIsNull)
-{
-    WebURLResponse instance;
-    EXPECT_TRUE(instance.isNull());
+TEST(WebURLResponseTest, NewInstanceIsNull) {
+  WebURLResponse instance;
+  EXPECT_TRUE(instance.isNull());
 }
 
-TEST(WebURLResponseTest, NotNullAfterSetURL)
-{
-    WebURLResponse instance;
-    instance.setURL(KURL(ParsedURLString, "http://localhost/"));
-    EXPECT_FALSE(instance.isNull());
+TEST(WebURLResponseTest, NotNullAfterSetURL) {
+  WebURLResponse instance;
+  instance.setURL(KURL(ParsedURLString, "http://localhost/"));
+  EXPECT_FALSE(instance.isNull());
 }
 
-} // namespace blink
+}  // namespace blink

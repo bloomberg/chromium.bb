@@ -50,179 +50,169 @@ namespace {
 static const size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
 
 // http://dev.w3.org/2006/webapi/FileAPI/#constructorBlob
-bool isValidBlobType(const String& type)
-{
-    for (unsigned i = 0; i < type.length(); ++i) {
-        UChar c = type[i];
-        if (c < 0x20 || c > 0x7E)
-            return false;
-    }
-    return true;
+bool isValidBlobType(const String& type) {
+  for (unsigned i = 0; i < type.length(); ++i) {
+    UChar c = type[i];
+    if (c < 0x20 || c > 0x7E)
+      return false;
+  }
+  return true;
 }
 
-} // namespace
+}  // namespace
 
 const long long BlobDataItem::toEndOfFile = -1;
 
-RawData::RawData()
-{
+RawData::RawData() {}
+
+void RawData::detachFromCurrentThread() {}
+
+void BlobDataItem::detachFromCurrentThread() {
+  data->detachFromCurrentThread();
+  path = path.isolatedCopy();
+  fileSystemURL = fileSystemURL.copy();
 }
 
-void RawData::detachFromCurrentThread()
-{
+std::unique_ptr<BlobData> BlobData::create() {
+  return wrapUnique(new BlobData());
 }
 
-void BlobDataItem::detachFromCurrentThread()
-{
-    data->detachFromCurrentThread();
-    path = path.isolatedCopy();
-    fileSystemURL = fileSystemURL.copy();
+void BlobData::detachFromCurrentThread() {
+  m_contentType = m_contentType.isolatedCopy();
+  for (size_t i = 0; i < m_items.size(); ++i)
+    m_items.at(i).detachFromCurrentThread();
 }
 
-std::unique_ptr<BlobData> BlobData::create()
-{
-    return wrapUnique(new BlobData());
+void BlobData::setContentType(const String& contentType) {
+  if (isValidBlobType(contentType))
+    m_contentType = contentType;
+  else
+    m_contentType = "";
 }
 
-void BlobData::detachFromCurrentThread()
-{
-    m_contentType = m_contentType.isolatedCopy();
-    for (size_t i = 0; i < m_items.size(); ++i)
-        m_items.at(i).detachFromCurrentThread();
+void BlobData::appendData(PassRefPtr<RawData> data,
+                          long long offset,
+                          long long length) {
+  m_items.append(BlobDataItem(std::move(data), offset, length));
 }
 
-void BlobData::setContentType(const String& contentType)
-{
-    if (isValidBlobType(contentType))
-        m_contentType = contentType;
-    else
-        m_contentType = "";
+void BlobData::appendFile(const String& path) {
+  m_items.append(BlobDataItem(path));
 }
 
-void BlobData::appendData(PassRefPtr<RawData> data, long long offset, long long length)
-{
-    m_items.append(BlobDataItem(std::move(data), offset, length));
+void BlobData::appendFile(const String& path,
+                          long long offset,
+                          long long length,
+                          double expectedModificationTime) {
+  m_items.append(BlobDataItem(path, offset, length, expectedModificationTime));
 }
 
-void BlobData::appendFile(const String& path)
-{
-    m_items.append(BlobDataItem(path));
+void BlobData::appendBlob(PassRefPtr<BlobDataHandle> dataHandle,
+                          long long offset,
+                          long long length) {
+  m_items.append(BlobDataItem(std::move(dataHandle), offset, length));
 }
 
-void BlobData::appendFile(const String& path, long long offset, long long length, double expectedModificationTime)
-{
-    m_items.append(BlobDataItem(path, offset, length, expectedModificationTime));
+void BlobData::appendFileSystemURL(const KURL& url,
+                                   long long offset,
+                                   long long length,
+                                   double expectedModificationTime) {
+  m_items.append(BlobDataItem(url, offset, length, expectedModificationTime));
 }
 
-void BlobData::appendBlob(PassRefPtr<BlobDataHandle> dataHandle, long long offset, long long length)
-{
-    m_items.append(BlobDataItem(std::move(dataHandle), offset, length));
-}
+void BlobData::appendText(const String& text,
+                          bool doNormalizeLineEndingsToNative) {
+  CString utf8Text = UTF8Encoding().encode(text, WTF::EntitiesForUnencodables);
+  RefPtr<RawData> data = nullptr;
+  Vector<char>* buffer;
+  if (canConsolidateData(text.length())) {
+    buffer = m_items.last().data->mutableData();
+  } else {
+    data = RawData::create();
+    buffer = data->mutableData();
+  }
 
-void BlobData::appendFileSystemURL(const KURL& url, long long offset, long long length, double expectedModificationTime)
-{
-    m_items.append(BlobDataItem(url, offset, length, expectedModificationTime));
-}
+  if (doNormalizeLineEndingsToNative) {
+    normalizeLineEndingsToNative(utf8Text, *buffer);
+  } else {
+    buffer->append(utf8Text.data(), utf8Text.length());
+  }
 
-void BlobData::appendText(const String& text, bool doNormalizeLineEndingsToNative)
-{
-    CString utf8Text = UTF8Encoding().encode(text, WTF::EntitiesForUnencodables);
-    RefPtr<RawData> data = nullptr;
-    Vector<char>* buffer;
-    if (canConsolidateData(text.length())) {
-        buffer = m_items.last().data->mutableData();
-    } else {
-        data = RawData::create();
-        buffer = data->mutableData();
-    }
-
-    if (doNormalizeLineEndingsToNative) {
-        normalizeLineEndingsToNative(utf8Text, *buffer);
-    } else {
-        buffer->append(utf8Text.data(), utf8Text.length());
-    }
-
-    if (data)
-        m_items.append(BlobDataItem(data.release()));
-}
-
-void BlobData::appendBytes(const void* bytes, size_t length)
-{
-    if (canConsolidateData(length)) {
-        m_items.last().data->mutableData()->append(
-            static_cast<const char*>(bytes),
-            length);
-        return;
-    }
-    RefPtr<RawData> data = RawData::create();
-    Vector<char>* buffer = data->mutableData();
-    buffer->append(static_cast<const char *>(bytes), length);
+  if (data)
     m_items.append(BlobDataItem(data.release()));
 }
 
-long long BlobData::length() const
-{
-    long long length = 0;
-
-    for (Vector<BlobDataItem>::const_iterator it = m_items.begin(); it != m_items.end(); ++it) {
-        const BlobDataItem& item = *it;
-        if (item.length != BlobDataItem::toEndOfFile) {
-            ASSERT(item.length >= 0);
-            length += item.length;
-            continue;
-        }
-
-        switch (item.type) {
-        case BlobDataItem::Data:
-            length += item.data->length();
-            break;
-        case BlobDataItem::File:
-        case BlobDataItem::Blob:
-        case BlobDataItem::FileSystemURL:
-            return BlobDataItem::toEndOfFile;
-        }
-    }
-    return length;
+void BlobData::appendBytes(const void* bytes, size_t length) {
+  if (canConsolidateData(length)) {
+    m_items.last().data->mutableData()->append(static_cast<const char*>(bytes),
+                                               length);
+    return;
+  }
+  RefPtr<RawData> data = RawData::create();
+  Vector<char>* buffer = data->mutableData();
+  buffer->append(static_cast<const char*>(bytes), length);
+  m_items.append(BlobDataItem(data.release()));
 }
 
-bool BlobData::canConsolidateData(size_t length)
-{
-    if (m_items.isEmpty())
-        return false;
-    BlobDataItem& lastItem = m_items.last();
-    if (lastItem.type != BlobDataItem::Data)
-        return false;
-    if (lastItem.data->length() + length > kMaxConsolidatedItemSizeInBytes)
-        return false;
-    return true;
+long long BlobData::length() const {
+  long long length = 0;
+
+  for (Vector<BlobDataItem>::const_iterator it = m_items.begin();
+       it != m_items.end(); ++it) {
+    const BlobDataItem& item = *it;
+    if (item.length != BlobDataItem::toEndOfFile) {
+      ASSERT(item.length >= 0);
+      length += item.length;
+      continue;
+    }
+
+    switch (item.type) {
+      case BlobDataItem::Data:
+        length += item.data->length();
+        break;
+      case BlobDataItem::File:
+      case BlobDataItem::Blob:
+      case BlobDataItem::FileSystemURL:
+        return BlobDataItem::toEndOfFile;
+    }
+  }
+  return length;
+}
+
+bool BlobData::canConsolidateData(size_t length) {
+  if (m_items.isEmpty())
+    return false;
+  BlobDataItem& lastItem = m_items.last();
+  if (lastItem.type != BlobDataItem::Data)
+    return false;
+  if (lastItem.data->length() + length > kMaxConsolidatedItemSizeInBytes)
+    return false;
+  return true;
 }
 
 BlobDataHandle::BlobDataHandle()
-    : m_uuid(createCanonicalUUIDString())
-    , m_size(0)
-{
-    BlobRegistry::registerBlobData(m_uuid, BlobData::create());
+    : m_uuid(createCanonicalUUIDString()), m_size(0) {
+  BlobRegistry::registerBlobData(m_uuid, BlobData::create());
 }
 
 BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
-    : m_uuid(createCanonicalUUIDString())
-    , m_type(data->contentType().isolatedCopy())
-    , m_size(size)
-{
-    BlobRegistry::registerBlobData(m_uuid, std::move(data));
+    : m_uuid(createCanonicalUUIDString()),
+      m_type(data->contentType().isolatedCopy()),
+      m_size(size) {
+  BlobRegistry::registerBlobData(m_uuid, std::move(data));
 }
 
-BlobDataHandle::BlobDataHandle(const String& uuid, const String& type, long long size)
-    : m_uuid(uuid.isolatedCopy())
-    , m_type(isValidBlobType(type) ? type.isolatedCopy() : "")
-    , m_size(size)
-{
-    BlobRegistry::addBlobDataRef(m_uuid);
+BlobDataHandle::BlobDataHandle(const String& uuid,
+                               const String& type,
+                               long long size)
+    : m_uuid(uuid.isolatedCopy()),
+      m_type(isValidBlobType(type) ? type.isolatedCopy() : ""),
+      m_size(size) {
+  BlobRegistry::addBlobDataRef(m_uuid);
 }
 
-BlobDataHandle::~BlobDataHandle()
-{
-    BlobRegistry::removeBlobDataRef(m_uuid);
+BlobDataHandle::~BlobDataHandle() {
+  BlobRegistry::removeBlobDataRef(m_uuid);
 }
 
-} // namespace blink
+}  // namespace blink

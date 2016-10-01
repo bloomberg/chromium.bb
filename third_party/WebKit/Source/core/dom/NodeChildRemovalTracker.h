@@ -33,46 +33,44 @@
 namespace blink {
 
 class NodeChildRemovalTracker {
-    STACK_ALLOCATED();
-public:
-    explicit NodeChildRemovalTracker(Node&);
-    ~NodeChildRemovalTracker();
+  STACK_ALLOCATED();
 
-    static bool isBeingRemoved(Node*);
+ public:
+  explicit NodeChildRemovalTracker(Node&);
+  ~NodeChildRemovalTracker();
 
-private:
-    Node& node() const { return *m_node; }
-    NodeChildRemovalTracker* previous() { return m_previous; }
+  static bool isBeingRemoved(Node*);
 
-    Member<Node> m_node;
-    // Using raw pointers are safe because these NodeChildRemovalTrackers are
-    // guaranteed to be on a stack.
-    NodeChildRemovalTracker* m_previous;
-    static NodeChildRemovalTracker* s_last;
+ private:
+  Node& node() const { return *m_node; }
+  NodeChildRemovalTracker* previous() { return m_previous; }
+
+  Member<Node> m_node;
+  // Using raw pointers are safe because these NodeChildRemovalTrackers are
+  // guaranteed to be on a stack.
+  NodeChildRemovalTracker* m_previous;
+  static NodeChildRemovalTracker* s_last;
 };
 
 inline NodeChildRemovalTracker::NodeChildRemovalTracker(Node& node)
-    : m_node(node)
-    , m_previous(s_last)
-{
-    s_last = this;
+    : m_node(node), m_previous(s_last) {
+  s_last = this;
 }
 
-inline NodeChildRemovalTracker::~NodeChildRemovalTracker()
-{
-    s_last = m_previous;
+inline NodeChildRemovalTracker::~NodeChildRemovalTracker() {
+  s_last = m_previous;
 }
 
-inline bool NodeChildRemovalTracker::isBeingRemoved(Node* node)
-{
-    for (NodeChildRemovalTracker* removal = s_last; removal; removal = removal->previous()) {
-        if (removal->node().isShadowIncludingInclusiveAncestorOf(node))
-            return true;
-    }
+inline bool NodeChildRemovalTracker::isBeingRemoved(Node* node) {
+  for (NodeChildRemovalTracker* removal = s_last; removal;
+       removal = removal->previous()) {
+    if (removal->node().isShadowIncludingInclusiveAncestorOf(node))
+      return true;
+  }
 
-    return false;
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

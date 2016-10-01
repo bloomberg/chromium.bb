@@ -10,34 +10,39 @@
 
 namespace blink {
 
-class CORE_EXPORT InlineStylePropertyMap final : public MutableStylePropertyMap {
-    WTF_MAKE_NONCOPYABLE(InlineStylePropertyMap);
-public:
-    explicit InlineStylePropertyMap(Element* ownerElement)
-        : m_ownerElement(ownerElement) { }
+class CORE_EXPORT InlineStylePropertyMap final
+    : public MutableStylePropertyMap {
+  WTF_MAKE_NONCOPYABLE(InlineStylePropertyMap);
 
-    Vector<String> getProperties() override;
+ public:
+  explicit InlineStylePropertyMap(Element* ownerElement)
+      : m_ownerElement(ownerElement) {}
 
-    void set(CSSPropertyID, CSSStyleValueOrCSSStyleValueSequenceOrString&, ExceptionState&) override;
-    void append(CSSPropertyID, CSSStyleValueOrCSSStyleValueSequenceOrString&, ExceptionState&) override;
-    void remove(CSSPropertyID, ExceptionState&) override;
+  Vector<String> getProperties() override;
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_ownerElement);
-        MutableStylePropertyMap::trace(visitor);
-    }
+  void set(CSSPropertyID,
+           CSSStyleValueOrCSSStyleValueSequenceOrString&,
+           ExceptionState&) override;
+  void append(CSSPropertyID,
+              CSSStyleValueOrCSSStyleValueSequenceOrString&,
+              ExceptionState&) override;
+  void remove(CSSPropertyID, ExceptionState&) override;
 
-protected:
-    CSSStyleValueVector getAllInternal(CSSPropertyID) override;
-    CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_ownerElement);
+    MutableStylePropertyMap::trace(visitor);
+  }
 
-    HeapVector<StylePropertyMapEntry> getIterationEntries() override;
+ protected:
+  CSSStyleValueVector getAllInternal(CSSPropertyID) override;
+  CSSStyleValueVector getAllInternal(AtomicString customPropertyName) override;
 
-private:
-    Member<Element> m_ownerElement;
+  HeapVector<StylePropertyMapEntry> getIterationEntries() override;
+
+ private:
+  Member<Element> m_ownerElement;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

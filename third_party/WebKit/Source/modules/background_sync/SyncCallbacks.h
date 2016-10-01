@@ -26,43 +26,47 @@ class WebString;
 // the callback. It takes a ServiceWorkerRegistration in its constructor and
 // will pass it to the SyncRegistration.
 class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
-    WTF_MAKE_NONCOPYABLE(SyncRegistrationCallbacks);
-    // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
-    // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
-    USING_FAST_MALLOC(SyncRegistrationCallbacks);
-public:
-    SyncRegistrationCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
-    ~SyncRegistrationCallbacks() override;
+  WTF_MAKE_NONCOPYABLE(SyncRegistrationCallbacks);
+  // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
+  // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
+  USING_FAST_MALLOC(SyncRegistrationCallbacks);
 
-    void onSuccess(std::unique_ptr<WebSyncRegistration>) override;
-    void onError(const WebSyncError&) override;
+ public:
+  SyncRegistrationCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
+  ~SyncRegistrationCallbacks() override;
 
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-    Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
+  void onSuccess(std::unique_ptr<WebSyncRegistration>) override;
+  void onError(const WebSyncError&) override;
+
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
 // SyncGetRegistrationsCallbacks is an implementation of WebSyncGetRegistrationsCallbacks
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a ServiceWorkerRegistration in its constructor and
 // will pass it to the SyncRegistration.
-class SyncGetRegistrationsCallbacks final : public WebSyncGetRegistrationsCallbacks {
-    WTF_MAKE_NONCOPYABLE(SyncGetRegistrationsCallbacks);
-    // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
-    // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
-    USING_FAST_MALLOC(SyncGetRegistrationsCallbacks);
-public:
-    SyncGetRegistrationsCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
-    ~SyncGetRegistrationsCallbacks() override;
+class SyncGetRegistrationsCallbacks final
+    : public WebSyncGetRegistrationsCallbacks {
+  WTF_MAKE_NONCOPYABLE(SyncGetRegistrationsCallbacks);
+  // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
+  // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
+  USING_FAST_MALLOC(SyncGetRegistrationsCallbacks);
 
-    void onSuccess(const WebVector<WebSyncRegistration*>&) override;
-    void onError(const WebSyncError&) override;
+ public:
+  SyncGetRegistrationsCallbacks(ScriptPromiseResolver*,
+                                ServiceWorkerRegistration*);
+  ~SyncGetRegistrationsCallbacks() override;
 
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-    Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
+  void onSuccess(const WebVector<WebSyncRegistration*>&) override;
+  void onError(const WebSyncError&) override;
+
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SyncCallbacks_h
+#endif  // SyncCallbacks_h

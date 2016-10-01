@@ -46,98 +46,107 @@ class SkShader;
 namespace blink {
 
 class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
-    WTF_MAKE_NONCOPYABLE(Gradient);
-public:
-    static PassRefPtr<Gradient> create(const FloatPoint& p0, const FloatPoint& p1)
-    {
-        return adoptRef(new Gradient(p0, p1));
-    }
-    static PassRefPtr<Gradient> create(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1, float aspectRatio = 1)
-    {
-        return adoptRef(new Gradient(p0, r0, p1, r1, aspectRatio));
-    }
-    ~Gradient();
+  WTF_MAKE_NONCOPYABLE(Gradient);
 
-    struct ColorStop {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-        float stop;
-        Color color;
+ public:
+  static PassRefPtr<Gradient> create(const FloatPoint& p0,
+                                     const FloatPoint& p1) {
+    return adoptRef(new Gradient(p0, p1));
+  }
+  static PassRefPtr<Gradient> create(const FloatPoint& p0,
+                                     float r0,
+                                     const FloatPoint& p1,
+                                     float r1,
+                                     float aspectRatio = 1) {
+    return adoptRef(new Gradient(p0, r0, p1, r1, aspectRatio));
+  }
+  ~Gradient();
 
-        ColorStop(float s, const Color& c) : stop(s), color(c) { }
-    };
-    void addColorStop(const ColorStop&);
-    void addColorStop(float value, const Color& color) { addColorStop(ColorStop(value, color)); }
+  struct ColorStop {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    float stop;
+    Color color;
 
-    bool isRadial() const { return m_radial; }
-    bool isZeroSize() const { return m_p0.x() == m_p1.x() && m_p0.y() == m_p1.y() && (!m_radial || m_r0 == m_r1); }
+    ColorStop(float s, const Color& c) : stop(s), color(c) {}
+  };
+  void addColorStop(const ColorStop&);
+  void addColorStop(float value, const Color& color) {
+    addColorStop(ColorStop(value, color));
+  }
 
-    const FloatPoint& p0() const { return m_p0; }
-    const FloatPoint& p1() const { return m_p1; }
+  bool isRadial() const { return m_radial; }
+  bool isZeroSize() const {
+    return m_p0.x() == m_p1.x() && m_p0.y() == m_p1.y() &&
+           (!m_radial || m_r0 == m_r1);
+  }
 
-    void setP0(const FloatPoint& p)
-    {
-        if (m_p0 == p)
-            return;
+  const FloatPoint& p0() const { return m_p0; }
+  const FloatPoint& p1() const { return m_p1; }
 
-        m_p0 = p;
-    }
+  void setP0(const FloatPoint& p) {
+    if (m_p0 == p)
+      return;
 
-    void setP1(const FloatPoint& p)
-    {
-        if (m_p1 == p)
-            return;
+    m_p0 = p;
+  }
 
-        m_p1 = p;
-    }
+  void setP1(const FloatPoint& p) {
+    if (m_p1 == p)
+      return;
 
-    float startRadius() const { return m_r0; }
-    float endRadius() const { return m_r1; }
+    m_p1 = p;
+  }
 
-    void setStartRadius(float r)
-    {
-        if (m_r0 == r)
-            return;
+  float startRadius() const { return m_r0; }
+  float endRadius() const { return m_r1; }
 
-        m_r0 = r;
-    }
+  void setStartRadius(float r) {
+    if (m_r0 == r)
+      return;
 
-    void setEndRadius(float r)
-    {
-        if (m_r1 == r)
-            return;
+    m_r0 = r;
+  }
 
-        m_r1 = r;
-    }
+  void setEndRadius(float r) {
+    if (m_r1 == r)
+      return;
 
-    void applyToPaint(SkPaint&, const SkMatrix& localMatrix);
+    m_r1 = r;
+  }
 
-    void setDrawsInPMColorSpace(bool drawInPMColorSpace);
+  void applyToPaint(SkPaint&, const SkMatrix& localMatrix);
 
-    void setSpreadMethod(GradientSpreadMethod);
-    GradientSpreadMethod spreadMethod() const { return m_spreadMethod; }
+  void setDrawsInPMColorSpace(bool drawInPMColorSpace);
 
-private:
-    Gradient(const FloatPoint& p0, const FloatPoint& p1);
-    Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1, float aspectRatio);
+  void setSpreadMethod(GradientSpreadMethod);
+  GradientSpreadMethod spreadMethod() const { return m_spreadMethod; }
 
-    sk_sp<SkShader> createShader(const SkMatrix& localMatrix);
+ private:
+  Gradient(const FloatPoint& p0, const FloatPoint& p1);
+  Gradient(const FloatPoint& p0,
+           float r0,
+           const FloatPoint& p1,
+           float r1,
+           float aspectRatio);
 
-    void sortStopsIfNecessary();
+  sk_sp<SkShader> createShader(const SkMatrix& localMatrix);
 
-    FloatPoint m_p0;
-    FloatPoint m_p1;
-    float m_r0;
-    float m_r1;
-    float m_aspectRatio; // For elliptical gradient, width / height.
-    Vector<ColorStop, 2> m_stops;
-    bool m_radial;
-    bool m_stopsSorted;
-    bool m_drawInPMColorSpace;
-    GradientSpreadMethod m_spreadMethod;
+  void sortStopsIfNecessary();
 
-    mutable sk_sp<SkShader> m_cachedShader;
+  FloatPoint m_p0;
+  FloatPoint m_p1;
+  float m_r0;
+  float m_r1;
+  float m_aspectRatio;  // For elliptical gradient, width / height.
+  Vector<ColorStop, 2> m_stops;
+  bool m_radial;
+  bool m_stopsSorted;
+  bool m_drawInPMColorSpace;
+  GradientSpreadMethod m_spreadMethod;
+
+  mutable sk_sp<SkShader> m_cachedShader;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

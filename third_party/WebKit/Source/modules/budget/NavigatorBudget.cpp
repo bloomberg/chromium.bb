@@ -9,46 +9,41 @@
 
 namespace blink {
 
-NavigatorBudget::NavigatorBudget()
-{
+NavigatorBudget::NavigatorBudget() {}
+
+// static
+const char* NavigatorBudget::supplementName() {
+  return "NavigatorBudget";
 }
 
 // static
-const char* NavigatorBudget::supplementName()
-{
-    return "NavigatorBudget";
+NavigatorBudget& NavigatorBudget::from(Navigator& navigator) {
+  // Get the unique NavigatorBudget associated with this navigator.
+  NavigatorBudget* navigatorBudget = static_cast<NavigatorBudget*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!navigatorBudget) {
+    // If there isn't one already, create it now and associate it.
+    navigatorBudget = new NavigatorBudget();
+    Supplement<Navigator>::provideTo(navigator, supplementName(),
+                                     navigatorBudget);
+  }
+  return *navigatorBudget;
+}
+
+BudgetService* NavigatorBudget::budget() {
+  if (!m_budget)
+    m_budget = BudgetService::create();
+  return m_budget.get();
 }
 
 // static
-NavigatorBudget& NavigatorBudget::from(Navigator& navigator)
-{
-    // Get the unique NavigatorBudget associated with this navigator.
-    NavigatorBudget* navigatorBudget = static_cast<NavigatorBudget*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!navigatorBudget) {
-        // If there isn't one already, create it now and associate it.
-        navigatorBudget = new NavigatorBudget();
-        Supplement<Navigator>::provideTo(navigator, supplementName(), navigatorBudget);
-    }
-    return *navigatorBudget;
+BudgetService* NavigatorBudget::budget(Navigator& navigator) {
+  return NavigatorBudget::from(navigator).budget();
 }
 
-BudgetService* NavigatorBudget::budget()
-{
-    if (!m_budget)
-        m_budget = BudgetService::create();
-    return m_budget.get();
+DEFINE_TRACE(NavigatorBudget) {
+  visitor->trace(m_budget);
+  Supplement<Navigator>::trace(visitor);
 }
 
-// static
-BudgetService* NavigatorBudget::budget(Navigator& navigator)
-{
-    return NavigatorBudget::from(navigator).budget();
-}
-
-DEFINE_TRACE(NavigatorBudget)
-{
-    visitor->trace(m_budget);
-    Supplement<Navigator>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

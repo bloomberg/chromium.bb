@@ -6,19 +6,15 @@
 
 namespace blink {
 
-PerformanceLongTaskTiming::PerformanceLongTaskTiming(
-    double startTime, double endTime, String frameContextUrl)
-    : PerformanceEntry(frameContextUrl, "longtask", startTime, endTime)
-{
+PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
+                                                     double endTime,
+                                                     String frameContextUrl)
+    : PerformanceEntry(frameContextUrl, "longtask", startTime, endTime) {}
+
+PerformanceLongTaskTiming::~PerformanceLongTaskTiming() {}
+
+DEFINE_TRACE(PerformanceLongTaskTiming) {
+  PerformanceEntry::trace(visitor);
 }
 
-PerformanceLongTaskTiming::~PerformanceLongTaskTiming()
-{
-}
-
-DEFINE_TRACE(PerformanceLongTaskTiming)
-{
-    PerformanceEntry::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

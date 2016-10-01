@@ -45,157 +45,170 @@ namespace blink {
 using namespace HTMLNames;
 
 InsertLineBreakCommand::InsertLineBreakCommand(Document& document)
-    : CompositeEditCommand(document)
-{
-}
+    : CompositeEditCommand(document) {}
 
-bool InsertLineBreakCommand::preservesTypingStyle() const
-{
-    return true;
+bool InsertLineBreakCommand::preservesTypingStyle() const {
+  return true;
 }
 
 // Whether we should insert a break element or a '\n'.
-bool InsertLineBreakCommand::shouldUseBreakElement(const Position& insertionPos)
-{
-    // An editing position like [input, 0] actually refers to the position before
-    // the input element, and in that case we need to check the input element's
-    // parent's layoutObject.
-    Position p(insertionPos.parentAnchoredEquivalent());
-    return isRichlyEditablePosition(p) && p.anchorNode()->layoutObject() && !p.anchorNode()->layoutObject()->style()->preserveNewline();
+bool InsertLineBreakCommand::shouldUseBreakElement(
+    const Position& insertionPos) {
+  // An editing position like [input, 0] actually refers to the position before
+  // the input element, and in that case we need to check the input element's
+  // parent's layoutObject.
+  Position p(insertionPos.parentAnchoredEquivalent());
+  return isRichlyEditablePosition(p) && p.anchorNode()->layoutObject() &&
+         !p.anchorNode()->layoutObject()->style()->preserveNewline();
 }
 
-void InsertLineBreakCommand::doApply(EditingState* editingState)
-{
-    deleteSelection(editingState);
+void InsertLineBreakCommand::doApply(EditingState* editingState) {
+  deleteSelection(editingState);
+  if (editingState->isAborted())
+    return;
+  VisibleSelection selection = endingSelection();
+  if (!selection.isNonOrphanedCaretOrRange())
+    return;
+
+  VisiblePosition caret(selection.visibleStartDeprecated());
+  // FIXME: If the node is hidden, we should still be able to insert text.
+  // For now, we return to avoid a crash.  https://bugs.webkit.org/show_bug.cgi?id=40342
+  if (caret.isNull())
+    return;
+
+  Position pos(caret.deepEquivalent());
+
+  pos = positionAvoidingSpecialElementBoundary(pos, editingState);
+  if (editingState->isAborted())
+    return;
+
+  pos = positionOutsideTabSpan(pos);
+
+  Node* nodeToInsert = nullptr;
+  if (shouldUseBreakElement(pos))
+    nodeToInsert = HTMLBRElement::create(document());
+  else
+    nodeToInsert = document().createTextNode("\n");
+
+  // FIXME: Need to merge text nodes when inserting just after or before text.
+
+  if (isEndOfParagraphDeprecated(caret) &&
+      !lineBreakExistsAtVisiblePosition(caret)) {
+    bool needExtraLineBreak = !isHTMLHRElement(*pos.anchorNode()) &&
+                              !isHTMLTableElement(*pos.anchorNode());
+
+    insertNodeAt(nodeToInsert, pos, editingState);
     if (editingState->isAborted())
-        return;
-    VisibleSelection selection = endingSelection();
-    if (!selection.isNonOrphanedCaretOrRange())
-        return;
+      return;
 
-    VisiblePosition caret(selection.visibleStartDeprecated());
-    // FIXME: If the node is hidden, we should still be able to insert text.
-    // For now, we return to avoid a crash.  https://bugs.webkit.org/show_bug.cgi?id=40342
-    if (caret.isNull())
+    if (needExtraLineBreak) {
+      Node* extraNode;
+      // TODO(tkent): Can we remove HTMLTextFormControlElement dependency?
+      if (HTMLTextFormControlElement* textControl =
+              enclosingTextFormControl(nodeToInsert)) {
+        extraNode = textControl->createPlaceholderBreakElement();
+        // The placeholder BR should be the last child.  There might be
+        // empty Text nodes at |pos|.
+        appendNode(extraNode, nodeToInsert->parentNode(), editingState);
+      } else {
+        extraNode = nodeToInsert->cloneNode(false);
+        insertNodeAfter(extraNode, nodeToInsert, editingState);
+      }
+      if (editingState->isAborted())
         return;
+      nodeToInsert = extraNode;
+    }
 
-    Position pos(caret.deepEquivalent());
-
-    pos = positionAvoidingSpecialElementBoundary(pos, editingState);
+    VisiblePosition endingPosition = VisiblePosition::beforeNode(nodeToInsert);
+    setEndingSelection(createVisibleSelectionDeprecated(
+        endingPosition, endingSelection().isDirectional()));
+  } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
+    insertNodeAt(nodeToInsert, pos, editingState);
     if (editingState->isAborted())
+      return;
+
+    // Insert an extra br or '\n' if the just inserted one collapsed.
+    if (!isStartOfParagraphDeprecated(
+            VisiblePosition::beforeNode(nodeToInsert))) {
+      insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert,
+                       editingState);
+      if (editingState->isAborted())
         return;
+    }
 
-    pos = positionOutsideTabSpan(pos);
-
-    Node* nodeToInsert = nullptr;
-    if (shouldUseBreakElement(pos))
-        nodeToInsert = HTMLBRElement::create(document());
-    else
-        nodeToInsert = document().createTextNode("\n");
-
-    // FIXME: Need to merge text nodes when inserting just after or before text.
-
-    if (isEndOfParagraphDeprecated(caret) && !lineBreakExistsAtVisiblePosition(caret)) {
-        bool needExtraLineBreak = !isHTMLHRElement(*pos.anchorNode()) && !isHTMLTableElement(*pos.anchorNode());
-
-        insertNodeAt(nodeToInsert, pos, editingState);
-        if (editingState->isAborted())
-            return;
-
-        if (needExtraLineBreak) {
-            Node* extraNode;
-            // TODO(tkent): Can we remove HTMLTextFormControlElement dependency?
-            if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(nodeToInsert)) {
-                extraNode = textControl->createPlaceholderBreakElement();
-                // The placeholder BR should be the last child.  There might be
-                // empty Text nodes at |pos|.
-                appendNode(extraNode, nodeToInsert->parentNode(), editingState);
-            } else {
-                extraNode = nodeToInsert->cloneNode(false);
-                insertNodeAfter(extraNode, nodeToInsert, editingState);
-            }
-            if (editingState->isAborted())
-                return;
-            nodeToInsert = extraNode;
-        }
-
-        VisiblePosition endingPosition = VisiblePosition::beforeNode(nodeToInsert);
-        setEndingSelection(createVisibleSelectionDeprecated(endingPosition, endingSelection().isDirectional()));
-    } else if (pos.computeEditingOffset() <= caretMinOffset(pos.anchorNode())) {
-        insertNodeAt(nodeToInsert, pos, editingState);
-        if (editingState->isAborted())
-            return;
-
-        // Insert an extra br or '\n' if the just inserted one collapsed.
-        if (!isStartOfParagraphDeprecated(VisiblePosition::beforeNode(nodeToInsert))) {
-            insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert, editingState);
-            if (editingState->isAborted())
-                return;
-        }
-
-        setEndingSelection(createVisibleSelectionDeprecated(Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelectionDeprecated(
+        Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream,
+        endingSelection().isDirectional()));
     // If we're inserting after all of the rendered text in a text node, or into a non-text node,
     // a simple insertion is sufficient.
-    } else if (!pos.anchorNode()->isTextNode() || pos.computeOffsetInContainerNode() >= caretMaxOffset(pos.anchorNode())) {
-        insertNodeAt(nodeToInsert, pos, editingState);
-        if (editingState->isAborted())
-            return;
-        setEndingSelection(createVisibleSelectionDeprecated(Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
-    } else if (pos.anchorNode()->isTextNode()) {
-        // Split a text node
-        Text* textNode = toText(pos.anchorNode());
-        splitTextNode(textNode, pos.computeOffsetInContainerNode());
-        insertNodeBefore(nodeToInsert, textNode, editingState);
-        if (editingState->isAborted())
-            return;
-        Position endingPosition = Position::firstPositionInNode(textNode);
+  } else if (!pos.anchorNode()->isTextNode() ||
+             pos.computeOffsetInContainerNode() >=
+                 caretMaxOffset(pos.anchorNode())) {
+    insertNodeAt(nodeToInsert, pos, editingState);
+    if (editingState->isAborted())
+      return;
+    setEndingSelection(createVisibleSelectionDeprecated(
+        Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream,
+        endingSelection().isDirectional()));
+  } else if (pos.anchorNode()->isTextNode()) {
+    // Split a text node
+    Text* textNode = toText(pos.anchorNode());
+    splitTextNode(textNode, pos.computeOffsetInContainerNode());
+    insertNodeBefore(nodeToInsert, textNode, editingState);
+    if (editingState->isAborted())
+      return;
+    Position endingPosition = Position::firstPositionInNode(textNode);
 
-        // Handle whitespace that occurs after the split
-        document().updateStyleAndLayoutIgnorePendingStylesheets();
-        // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
-        // use |VisiblePosition::characterAfter()|.
-        if (!isRenderedCharacter(endingPosition)) {
-            Position positionBeforeTextNode(Position::inParentBeforeNode(*textNode));
-            // Clear out all whitespace and insert one non-breaking space
-            deleteInsignificantTextDownstream(endingPosition);
-            DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
-            // Deleting insignificant whitespace will remove textNode if it contains nothing but insignificant whitespace.
-            if (textNode->isConnected()) {
-                insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
-            } else {
-                Text* nbspNode = document().createTextNode(nonBreakingSpaceString());
-                insertNodeAt(nbspNode, positionBeforeTextNode, editingState);
-                if (editingState->isAborted())
-                    return;
-                endingPosition = Position::firstPositionInNode(nbspNode);
-            }
-        }
-
-        setEndingSelection(createVisibleSelectionDeprecated(endingPosition, TextAffinity::Downstream, endingSelection().isDirectional()));
+    // Handle whitespace that occurs after the split
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
+    // use |VisiblePosition::characterAfter()|.
+    if (!isRenderedCharacter(endingPosition)) {
+      Position positionBeforeTextNode(Position::inParentBeforeNode(*textNode));
+      // Clear out all whitespace and insert one non-breaking space
+      deleteInsignificantTextDownstream(endingPosition);
+      DCHECK(!textNode->layoutObject() ||
+             textNode->layoutObject()->style()->collapseWhiteSpace());
+      // Deleting insignificant whitespace will remove textNode if it contains nothing but insignificant whitespace.
+      if (textNode->isConnected()) {
+        insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
+      } else {
+        Text* nbspNode = document().createTextNode(nonBreakingSpaceString());
+        insertNodeAt(nbspNode, positionBeforeTextNode, editingState);
+        if (editingState->isAborted())
+          return;
+        endingPosition = Position::firstPositionInNode(nbspNode);
+      }
     }
 
-    // Handle the case where there is a typing style.
+    setEndingSelection(createVisibleSelectionDeprecated(
+        endingPosition, TextAffinity::Downstream,
+        endingSelection().isDirectional()));
+  }
 
-    EditingStyle* typingStyle = document().frame()->selection().typingStyle();
+  // Handle the case where there is a typing style.
 
-    if (typingStyle && !typingStyle->isEmpty()) {
-        // Apply the typing style to the inserted line break, so that if the selection
-        // leaves and then comes back, new input will have the right style.
-        // FIXME: We shouldn't always apply the typing style to the line break here,
-        // see <rdar://problem/5794462>.
-        applyStyle(typingStyle, firstPositionInOrBeforeNode(nodeToInsert), lastPositionInOrAfterNode(nodeToInsert), editingState);
-        if (editingState->isAborted())
-            return;
-        // Even though this applyStyle operates on a Range, it still sets an endingSelection().
-        // It tries to set a VisibleSelection around the content it operated on. So, that VisibleSelection
-        // will either (a) select the line break we inserted, or it will (b) be a caret just
-        // before the line break (if the line break is at the end of a block it isn't selectable).
-        // So, this next call sets the endingSelection() to a caret just after the line break
-        // that we inserted, or just before it if it's at the end of a block.
-        setEndingSelection(endingSelection().visibleEndDeprecated());
-    }
+  EditingStyle* typingStyle = document().frame()->selection().typingStyle();
 
-    rebalanceWhitespace();
+  if (typingStyle && !typingStyle->isEmpty()) {
+    // Apply the typing style to the inserted line break, so that if the selection
+    // leaves and then comes back, new input will have the right style.
+    // FIXME: We shouldn't always apply the typing style to the line break here,
+    // see <rdar://problem/5794462>.
+    applyStyle(typingStyle, firstPositionInOrBeforeNode(nodeToInsert),
+               lastPositionInOrAfterNode(nodeToInsert), editingState);
+    if (editingState->isAborted())
+      return;
+    // Even though this applyStyle operates on a Range, it still sets an endingSelection().
+    // It tries to set a VisibleSelection around the content it operated on. So, that VisibleSelection
+    // will either (a) select the line break we inserted, or it will (b) be a caret just
+    // before the line break (if the line break is at the end of a block it isn't selectable).
+    // So, this next call sets the endingSelection() to a caret just after the line break
+    // that we inserted, or just before it if it's at the end of a block.
+    setEndingSelection(endingSelection().visibleEndDeprecated());
+  }
+
+  rebalanceWhitespace();
 }
 
-} // namespace blink
+}  // namespace blink

@@ -32,47 +32,46 @@
 namespace blink {
 
 FEBlend::FEBlend(Filter* filter, WebBlendMode mode)
-    : FilterEffect(filter)
-    , m_mode(mode)
-{
+    : FilterEffect(filter), m_mode(mode) {}
+
+FEBlend* FEBlend::create(Filter* filter, WebBlendMode mode) {
+  return new FEBlend(filter, mode);
 }
 
-FEBlend* FEBlend::create(Filter* filter, WebBlendMode mode)
-{
-    return new FEBlend(filter, mode);
+WebBlendMode FEBlend::blendMode() const {
+  return m_mode;
 }
 
-WebBlendMode FEBlend::blendMode() const
-{
-    return m_mode;
+bool FEBlend::setBlendMode(WebBlendMode mode) {
+  if (m_mode == mode)
+    return false;
+  m_mode = mode;
+  return true;
 }
 
-bool FEBlend::setBlendMode(WebBlendMode mode)
-{
-    if (m_mode == mode)
-        return false;
-    m_mode = mode;
-    return true;
+sk_sp<SkImageFilter> FEBlend::createImageFilter() {
+  sk_sp<SkImageFilter> foreground(
+      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
+  sk_sp<SkImageFilter> background(
+      SkiaImageFilterBuilder::build(inputEffect(1), operatingColorSpace()));
+  sk_sp<SkXfermode> mode(SkXfermode::Make(
+      WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode)));
+  SkImageFilter::CropRect cropRect = getCropRect();
+  return SkXfermodeImageFilter::Make(std::move(mode), std::move(background),
+                                     std::move(foreground), &cropRect);
 }
 
-sk_sp<SkImageFilter> FEBlend::createImageFilter()
-{
-    sk_sp<SkImageFilter> foreground(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-    sk_sp<SkImageFilter> background(SkiaImageFilterBuilder::build(inputEffect(1), operatingColorSpace()));
-    sk_sp<SkXfermode> mode(SkXfermode::Make(WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode)));
-    SkImageFilter::CropRect cropRect = getCropRect();
-    return SkXfermodeImageFilter::Make(std::move(mode), std::move(background), std::move(foreground), &cropRect);
+TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const {
+  writeIndent(ts, indent);
+  ts << "[feBlend";
+  FilterEffect::externalRepresentation(ts);
+  ts << " mode=\"" << (m_mode == WebBlendModeNormal
+                           ? "normal"
+                           : compositeOperatorName(CompositeSourceOver, m_mode))
+     << "\"]\n";
+  inputEffect(0)->externalRepresentation(ts, indent + 1);
+  inputEffect(1)->externalRepresentation(ts, indent + 1);
+  return ts;
 }
 
-TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const
-{
-    writeIndent(ts, indent);
-    ts << "[feBlend";
-    FilterEffect::externalRepresentation(ts);
-    ts << " mode=\"" << (m_mode == WebBlendModeNormal ? "normal" : compositeOperatorName(CompositeSourceOver, m_mode)) << "\"]\n";
-    inputEffect(0)->externalRepresentation(ts, indent + 1);
-    inputEffect(1)->externalRepresentation(ts, indent + 1);
-    return ts;
-}
-
-} // namespace blink
+}  // namespace blink

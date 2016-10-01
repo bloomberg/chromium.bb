@@ -30,76 +30,72 @@
 
 namespace WTF {
 
-bool ArrayBuffer::transfer(ArrayBufferContents& result)
-{
-    ASSERT(!isShared());
-    RefPtr<ArrayBuffer> keepAlive(this);
+bool ArrayBuffer::transfer(ArrayBufferContents& result) {
+  ASSERT(!isShared());
+  RefPtr<ArrayBuffer> keepAlive(this);
 
-    if (!m_contents.data()) {
-        result.neuter();
-        return false;
-    }
+  if (!m_contents.data()) {
+    result.neuter();
+    return false;
+  }
 
-    bool allViewsAreNeuterable = true;
-    for (ArrayBufferView* i = m_firstView; i; i = i->m_nextView) {
-        if (!i->isNeuterable())
-            allViewsAreNeuterable = false;
-    }
+  bool allViewsAreNeuterable = true;
+  for (ArrayBufferView* i = m_firstView; i; i = i->m_nextView) {
+    if (!i->isNeuterable())
+      allViewsAreNeuterable = false;
+  }
 
-    if (allViewsAreNeuterable) {
-        m_contents.transfer(result);
-    } else {
-        m_contents.copyTo(result);
-        if (!result.data())
-            return false;
-    }
+  if (allViewsAreNeuterable) {
+    m_contents.transfer(result);
+  } else {
+    m_contents.copyTo(result);
+    if (!result.data())
+      return false;
+  }
 
-    while (m_firstView) {
-        ArrayBufferView* current = m_firstView;
-        removeView(current);
-        if (allViewsAreNeuterable || current->isNeuterable())
-            current->neuter();
-    }
+  while (m_firstView) {
+    ArrayBufferView* current = m_firstView;
+    removeView(current);
+    if (allViewsAreNeuterable || current->isNeuterable())
+      current->neuter();
+  }
 
-    m_isNeutered = true;
+  m_isNeutered = true;
 
-    return true;
+  return true;
 }
 
-bool ArrayBuffer::shareContentsWith(ArrayBufferContents& result)
-{
-    ASSERT(isShared());
-    RefPtr<ArrayBuffer> keepAlive(this);
+bool ArrayBuffer::shareContentsWith(ArrayBufferContents& result) {
+  ASSERT(isShared());
+  RefPtr<ArrayBuffer> keepAlive(this);
 
-    if (!m_contents.data()) {
-        result.neuter();
-        return false;
-    }
+  if (!m_contents.data()) {
+    result.neuter();
+    return false;
+  }
 
-    m_contents.shareWith(result);
-    return true;
+  m_contents.shareWith(result);
+  return true;
 }
 
-void ArrayBuffer::addView(ArrayBufferView* view)
-{
-    view->m_buffer = this;
-    view->m_prevView = 0;
-    view->m_nextView = m_firstView;
-    if (m_firstView)
-        m_firstView->m_prevView = view;
-    m_firstView = view;
+void ArrayBuffer::addView(ArrayBufferView* view) {
+  view->m_buffer = this;
+  view->m_prevView = 0;
+  view->m_nextView = m_firstView;
+  if (m_firstView)
+    m_firstView->m_prevView = view;
+  m_firstView = view;
 }
 
-void ArrayBuffer::removeView(ArrayBufferView* view)
-{
-    ASSERT(this == view->m_buffer);
-    if (view->m_nextView)
-        view->m_nextView->m_prevView = view->m_prevView;
-    if (view->m_prevView)
-        view->m_prevView->m_nextView = view->m_nextView;
-    if (m_firstView == view)
-        m_firstView = view->m_nextView;
-    view->m_prevView = view->m_nextView = 0;
+void ArrayBuffer::removeView(ArrayBufferView* view) {
+  ASSERT(this == view->m_buffer);
+  if (view->m_nextView)
+    view->m_nextView->m_prevView = view->m_prevView;
+  if (view->m_prevView)
+    view->m_prevView->m_nextView = view->m_nextView;
+  if (m_firstView == view)
+    m_firstView = view->m_nextView;
+  view->m_prevView = view->m_nextView = 0;
 }
 
-} // namespace WTF
+}  // namespace WTF

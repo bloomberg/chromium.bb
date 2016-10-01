@@ -37,60 +37,59 @@ namespace blink {
 // but Mode argument varies; using type (not Mode) for consistency
 // with other macros and ease of code generation
 #define TOSTRING_VOID(type, var, value) \
-    type var(value);                    \
-    if (UNLIKELY(!var.prepare()))       \
-        return;
+  type var(value);                      \
+  if (UNLIKELY(!var.prepare()))         \
+    return;
 
 #define TOSTRING_DEFAULT(type, var, value, retVal) \
-    type var(value);                               \
-    if (UNLIKELY(!var.prepare()))                  \
-        return retVal;
+  type var(value);                                 \
+  if (UNLIKELY(!var.prepare()))                    \
+    return retVal;
 
 // Checks for a given v8::Value (value) whether it is an ArrayBufferView and
 // below a certain size limit. If below the limit, memory is allocated on the
 // stack to hold the actual payload. Keep the limit in sync with V8's
 // typed_array_max_size.
-#define allocateFlexibleArrayBufferViewStorage(value)                                       \
-    (value->IsArrayBufferView() && (value.As<v8::ArrayBufferView>()->ByteLength() <= 64) ?  \
-        alloca(value.As<v8::ArrayBufferView>()->ByteLength()) : nullptr)
+#define allocateFlexibleArrayBufferViewStorage(value)            \
+  (value->IsArrayBufferView() &&                                 \
+           (value.As<v8::ArrayBufferView>()->ByteLength() <= 64) \
+       ? alloca(value.As<v8::ArrayBufferView>()->ByteLength())   \
+       : nullptr)
 
 template <typename T>
-inline bool v8Call(v8::Maybe<T> maybe, T& outVariable)
-{
-    if (maybe.IsNothing())
-        return false;
-    outVariable = maybe.FromJust();
-    return true;
+inline bool v8Call(v8::Maybe<T> maybe, T& outVariable) {
+  if (maybe.IsNothing())
+    return false;
+  outVariable = maybe.FromJust();
+  return true;
 }
 
-inline bool v8CallBoolean(v8::Maybe<bool> maybe)
-{
-    bool result;
-    return v8Call(maybe, result) && result;
-}
-
-template <typename T>
-inline bool v8Call(v8::Maybe<T> maybe, T& outVariable, v8::TryCatch& tryCatch)
-{
-    bool success = v8Call(maybe, outVariable);
-    ASSERT(success || tryCatch.HasCaught());
-    return success;
+inline bool v8CallBoolean(v8::Maybe<bool> maybe) {
+  bool result;
+  return v8Call(maybe, result) && result;
 }
 
 template <typename T>
-inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable)
-{
-    return maybeLocal.ToLocal(&outVariable);
+inline bool v8Call(v8::Maybe<T> maybe, T& outVariable, v8::TryCatch& tryCatch) {
+  bool success = v8Call(maybe, outVariable);
+  ASSERT(success || tryCatch.HasCaught());
+  return success;
 }
 
 template <typename T>
-inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable, v8::TryCatch& tryCatch)
-{
-    bool success = maybeLocal.ToLocal(&outVariable);
-    ASSERT(success || tryCatch.HasCaught());
-    return success;
+inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable) {
+  return maybeLocal.ToLocal(&outVariable);
 }
 
-} // namespace blink
+template <typename T>
+inline bool v8Call(v8::MaybeLocal<T> maybeLocal,
+                   v8::Local<T>& outVariable,
+                   v8::TryCatch& tryCatch) {
+  bool success = maybeLocal.ToLocal(&outVariable);
+  ASSERT(success || tryCatch.HasCaught());
+  return success;
+}
 
-#endif // V8BindingMacros_h
+}  // namespace blink
+
+#endif  // V8BindingMacros_h

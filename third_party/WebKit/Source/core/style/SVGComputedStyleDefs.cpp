@@ -33,207 +33,156 @@
 namespace blink {
 
 StyleFillData::StyleFillData()
-    : opacity(SVGComputedStyle::initialFillOpacity())
-    , paintType(SVGComputedStyle::initialFillPaintType())
-    , paintColor(SVGComputedStyle::initialFillPaintColor())
-    , paintUri(SVGComputedStyle::initialFillPaintUri())
-    , visitedLinkPaintType(SVGComputedStyle::initialStrokePaintType())
-    , visitedLinkPaintColor(SVGComputedStyle::initialFillPaintColor())
-    , visitedLinkPaintUri(SVGComputedStyle::initialFillPaintUri())
-{
-}
+    : opacity(SVGComputedStyle::initialFillOpacity()),
+      paintType(SVGComputedStyle::initialFillPaintType()),
+      paintColor(SVGComputedStyle::initialFillPaintColor()),
+      paintUri(SVGComputedStyle::initialFillPaintUri()),
+      visitedLinkPaintType(SVGComputedStyle::initialStrokePaintType()),
+      visitedLinkPaintColor(SVGComputedStyle::initialFillPaintColor()),
+      visitedLinkPaintUri(SVGComputedStyle::initialFillPaintUri()) {}
 
 StyleFillData::StyleFillData(const StyleFillData& other)
-    : RefCounted<StyleFillData>()
-    , opacity(other.opacity)
-    , paintType(other.paintType)
-    , paintColor(other.paintColor)
-    , paintUri(other.paintUri)
-    , visitedLinkPaintType(other.visitedLinkPaintType)
-    , visitedLinkPaintColor(other.visitedLinkPaintColor)
-    , visitedLinkPaintUri(other.visitedLinkPaintUri)
-{
-}
+    : RefCounted<StyleFillData>(),
+      opacity(other.opacity),
+      paintType(other.paintType),
+      paintColor(other.paintColor),
+      paintUri(other.paintUri),
+      visitedLinkPaintType(other.visitedLinkPaintType),
+      visitedLinkPaintColor(other.visitedLinkPaintColor),
+      visitedLinkPaintUri(other.visitedLinkPaintUri) {}
 
-bool StyleFillData::operator==(const StyleFillData& other) const
-{
-    return opacity == other.opacity
-        && paintType == other.paintType
-        && paintColor == other.paintColor
-        && paintUri == other.paintUri
-        && visitedLinkPaintType == other.visitedLinkPaintType
-        && visitedLinkPaintColor == other.visitedLinkPaintColor
-        && visitedLinkPaintUri == other.visitedLinkPaintUri;
+bool StyleFillData::operator==(const StyleFillData& other) const {
+  return opacity == other.opacity && paintType == other.paintType &&
+         paintColor == other.paintColor && paintUri == other.paintUri &&
+         visitedLinkPaintType == other.visitedLinkPaintType &&
+         visitedLinkPaintColor == other.visitedLinkPaintColor &&
+         visitedLinkPaintUri == other.visitedLinkPaintUri;
 }
 
 StyleStrokeData::StyleStrokeData()
-    : opacity(SVGComputedStyle::initialStrokeOpacity())
-    , miterLimit(SVGComputedStyle::initialStrokeMiterLimit())
-    , width(SVGComputedStyle::initialStrokeWidth())
-    , dashOffset(SVGComputedStyle::initialStrokeDashOffset())
-    , dashArray(SVGComputedStyle::initialStrokeDashArray())
-    , paintType(SVGComputedStyle::initialStrokePaintType())
-    , paintColor(SVGComputedStyle::initialStrokePaintColor())
-    , paintUri(SVGComputedStyle::initialStrokePaintUri())
-    , visitedLinkPaintType(SVGComputedStyle::initialStrokePaintType())
-    , visitedLinkPaintColor(SVGComputedStyle::initialStrokePaintColor())
-    , visitedLinkPaintUri(SVGComputedStyle::initialStrokePaintUri())
-{
-}
+    : opacity(SVGComputedStyle::initialStrokeOpacity()),
+      miterLimit(SVGComputedStyle::initialStrokeMiterLimit()),
+      width(SVGComputedStyle::initialStrokeWidth()),
+      dashOffset(SVGComputedStyle::initialStrokeDashOffset()),
+      dashArray(SVGComputedStyle::initialStrokeDashArray()),
+      paintType(SVGComputedStyle::initialStrokePaintType()),
+      paintColor(SVGComputedStyle::initialStrokePaintColor()),
+      paintUri(SVGComputedStyle::initialStrokePaintUri()),
+      visitedLinkPaintType(SVGComputedStyle::initialStrokePaintType()),
+      visitedLinkPaintColor(SVGComputedStyle::initialStrokePaintColor()),
+      visitedLinkPaintUri(SVGComputedStyle::initialStrokePaintUri()) {}
 
 StyleStrokeData::StyleStrokeData(const StyleStrokeData& other)
-    : RefCounted<StyleStrokeData>()
-    , opacity(other.opacity)
-    , miterLimit(other.miterLimit)
-    , width(other.width)
-    , dashOffset(other.dashOffset)
-    , dashArray(other.dashArray)
-    , paintType(other.paintType)
-    , paintColor(other.paintColor)
-    , paintUri(other.paintUri)
-    , visitedLinkPaintType(other.visitedLinkPaintType)
-    , visitedLinkPaintColor(other.visitedLinkPaintColor)
-    , visitedLinkPaintUri(other.visitedLinkPaintUri)
-{
-}
+    : RefCounted<StyleStrokeData>(),
+      opacity(other.opacity),
+      miterLimit(other.miterLimit),
+      width(other.width),
+      dashOffset(other.dashOffset),
+      dashArray(other.dashArray),
+      paintType(other.paintType),
+      paintColor(other.paintColor),
+      paintUri(other.paintUri),
+      visitedLinkPaintType(other.visitedLinkPaintType),
+      visitedLinkPaintColor(other.visitedLinkPaintColor),
+      visitedLinkPaintUri(other.visitedLinkPaintUri) {}
 
-bool StyleStrokeData::operator==(const StyleStrokeData& other) const
-{
-    return width == other.width
-        && opacity == other.opacity
-        && miterLimit == other.miterLimit
-        && dashOffset == other.dashOffset
-        && *dashArray == *other.dashArray
-        && paintType == other.paintType
-        && paintColor == other.paintColor
-        && paintUri == other.paintUri
-        && visitedLinkPaintType == other.visitedLinkPaintType
-        && visitedLinkPaintColor == other.visitedLinkPaintColor
-        && visitedLinkPaintUri == other.visitedLinkPaintUri;
+bool StyleStrokeData::operator==(const StyleStrokeData& other) const {
+  return width == other.width && opacity == other.opacity &&
+         miterLimit == other.miterLimit && dashOffset == other.dashOffset &&
+         *dashArray == *other.dashArray && paintType == other.paintType &&
+         paintColor == other.paintColor && paintUri == other.paintUri &&
+         visitedLinkPaintType == other.visitedLinkPaintType &&
+         visitedLinkPaintColor == other.visitedLinkPaintColor &&
+         visitedLinkPaintUri == other.visitedLinkPaintUri;
 }
 
 StyleStopData::StyleStopData()
-    : opacity(SVGComputedStyle::initialStopOpacity())
-    , color(SVGComputedStyle::initialStopColor())
-{
-}
+    : opacity(SVGComputedStyle::initialStopOpacity()),
+      color(SVGComputedStyle::initialStopColor()) {}
 
 StyleStopData::StyleStopData(const StyleStopData& other)
-    : RefCounted<StyleStopData>()
-    , opacity(other.opacity)
-    , color(other.color)
-{
-}
+    : RefCounted<StyleStopData>(), opacity(other.opacity), color(other.color) {}
 
-bool StyleStopData::operator==(const StyleStopData& other) const
-{
-    return color == other.color
-        && opacity == other.opacity;
+bool StyleStopData::operator==(const StyleStopData& other) const {
+  return color == other.color && opacity == other.opacity;
 }
 
 StyleMiscData::StyleMiscData()
-    : floodColor(SVGComputedStyle::initialFloodColor())
-    , floodOpacity(SVGComputedStyle::initialFloodOpacity())
-    , lightingColor(SVGComputedStyle::initialLightingColor())
-    , baselineShiftValue(SVGComputedStyle::initialBaselineShiftValue())
-{
-}
+    : floodColor(SVGComputedStyle::initialFloodColor()),
+      floodOpacity(SVGComputedStyle::initialFloodOpacity()),
+      lightingColor(SVGComputedStyle::initialLightingColor()),
+      baselineShiftValue(SVGComputedStyle::initialBaselineShiftValue()) {}
 
 StyleMiscData::StyleMiscData(const StyleMiscData& other)
-    : RefCounted<StyleMiscData>()
-    , floodColor(other.floodColor)
-    , floodOpacity(other.floodOpacity)
-    , lightingColor(other.lightingColor)
-    , baselineShiftValue(other.baselineShiftValue)
-{
-}
+    : RefCounted<StyleMiscData>(),
+      floodColor(other.floodColor),
+      floodOpacity(other.floodOpacity),
+      lightingColor(other.lightingColor),
+      baselineShiftValue(other.baselineShiftValue) {}
 
-bool StyleMiscData::operator==(const StyleMiscData& other) const
-{
-    return floodOpacity == other.floodOpacity
-        && floodColor == other.floodColor
-        && lightingColor == other.lightingColor
-        && baselineShiftValue == other.baselineShiftValue;
+bool StyleMiscData::operator==(const StyleMiscData& other) const {
+  return floodOpacity == other.floodOpacity && floodColor == other.floodColor &&
+         lightingColor == other.lightingColor &&
+         baselineShiftValue == other.baselineShiftValue;
 }
 
 StyleResourceData::StyleResourceData()
-    : masker(SVGComputedStyle::initialMaskerResource())
-{
-}
+    : masker(SVGComputedStyle::initialMaskerResource()) {}
 
 StyleResourceData::StyleResourceData(const StyleResourceData& other)
-    : RefCounted<StyleResourceData>()
-    , masker(other.masker)
-{
-}
+    : RefCounted<StyleResourceData>(), masker(other.masker) {}
 
-bool StyleResourceData::operator==(const StyleResourceData& other) const
-{
-    return masker == other.masker;
+bool StyleResourceData::operator==(const StyleResourceData& other) const {
+  return masker == other.masker;
 }
 
 StyleInheritedResourceData::StyleInheritedResourceData()
-    : markerStart(SVGComputedStyle::initialMarkerStartResource())
-    , markerMid(SVGComputedStyle::initialMarkerMidResource())
-    , markerEnd(SVGComputedStyle::initialMarkerEndResource())
-{
-}
+    : markerStart(SVGComputedStyle::initialMarkerStartResource()),
+      markerMid(SVGComputedStyle::initialMarkerMidResource()),
+      markerEnd(SVGComputedStyle::initialMarkerEndResource()) {}
 
-StyleInheritedResourceData::StyleInheritedResourceData(const StyleInheritedResourceData& other)
-    : RefCounted<StyleInheritedResourceData>()
-    , markerStart(other.markerStart)
-    , markerMid(other.markerMid)
-    , markerEnd(other.markerEnd)
-{
-}
+StyleInheritedResourceData::StyleInheritedResourceData(
+    const StyleInheritedResourceData& other)
+    : RefCounted<StyleInheritedResourceData>(),
+      markerStart(other.markerStart),
+      markerMid(other.markerMid),
+      markerEnd(other.markerEnd) {}
 
-bool StyleInheritedResourceData::operator==(const StyleInheritedResourceData& other) const
-{
-    return markerStart == other.markerStart
-        && markerMid == other.markerMid
-        && markerEnd == other.markerEnd;
+bool StyleInheritedResourceData::operator==(
+    const StyleInheritedResourceData& other) const {
+  return markerStart == other.markerStart && markerMid == other.markerMid &&
+         markerEnd == other.markerEnd;
 }
 
 StyleGeometryData::StyleGeometryData()
-    : d(SVGComputedStyle::initialD())
-    , cx(SVGComputedStyle::initialCx())
-    , cy(SVGComputedStyle::initialCy())
-    , x(SVGComputedStyle::initialX())
-    , y(SVGComputedStyle::initialY())
-    , r(SVGComputedStyle::initialR())
-    , rx(SVGComputedStyle::initialRx())
-    , ry(SVGComputedStyle::initialRy())
-{
-}
+    : d(SVGComputedStyle::initialD()),
+      cx(SVGComputedStyle::initialCx()),
+      cy(SVGComputedStyle::initialCy()),
+      x(SVGComputedStyle::initialX()),
+      y(SVGComputedStyle::initialY()),
+      r(SVGComputedStyle::initialR()),
+      rx(SVGComputedStyle::initialRx()),
+      ry(SVGComputedStyle::initialRy()) {}
 
 inline StyleGeometryData::StyleGeometryData(const StyleGeometryData& other)
-    : RefCounted<StyleGeometryData>()
-    , d(other.d)
-    , cx(other.cx)
-    , cy(other.cy)
-    , x(other.x)
-    , y(other.y)
-    , r(other.r)
-    , rx(other.rx)
-    , ry(other.ry)
-{
+    : RefCounted<StyleGeometryData>(),
+      d(other.d),
+      cx(other.cx),
+      cy(other.cy),
+      x(other.x),
+      y(other.y),
+      r(other.r),
+      rx(other.rx),
+      ry(other.ry) {}
+
+PassRefPtr<StyleGeometryData> StyleGeometryData::copy() const {
+  return adoptRef(new StyleGeometryData(*this));
 }
 
-PassRefPtr<StyleGeometryData> StyleGeometryData::copy() const
-{
-    return adoptRef(new StyleGeometryData(*this));
+bool StyleGeometryData::operator==(const StyleGeometryData& other) const {
+  return x == other.x && y == other.y && r == other.r && rx == other.rx &&
+         ry == other.ry && cx == other.cx && cy == other.cy &&
+         dataEquivalent(d, other.d);
 }
 
-bool StyleGeometryData::operator==(const StyleGeometryData& other) const
-{
-    return x == other.x
-        && y == other.y
-        && r == other.r
-        && rx == other.rx
-        && ry == other.ry
-        && cx == other.cx
-        && cy == other.cy
-        && dataEquivalent(d, other.d);
-}
-
-} // namespace blink
+}  // namespace blink

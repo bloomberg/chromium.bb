@@ -33,40 +33,43 @@
 namespace blink {
 
 class PLATFORM_EXPORT PathTraversalState final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(PathTraversalState);
-public:
-    enum PathTraversalAction {
-        TraversalTotalLength,
-        TraversalPointAtLength,
-        TraversalSegmentAtLength,
-        TraversalNormalAngleAtLength
-    };
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(PathTraversalState);
 
-    PathTraversalState(PathTraversalAction);
+ public:
+  enum PathTraversalAction {
+    TraversalTotalLength,
+    TraversalPointAtLength,
+    TraversalSegmentAtLength,
+    TraversalNormalAngleAtLength
+  };
 
-    float closeSubpath();
-    float moveTo(const FloatPoint&);
-    float lineTo(const FloatPoint&);
-    float cubicBezierTo(const FloatPoint& newControl1, const FloatPoint& newControl2, const FloatPoint& newEnd);
+  PathTraversalState(PathTraversalAction);
 
-    void processSegment();
+  float closeSubpath();
+  float moveTo(const FloatPoint&);
+  float lineTo(const FloatPoint&);
+  float cubicBezierTo(const FloatPoint& newControl1,
+                      const FloatPoint& newControl2,
+                      const FloatPoint& newEnd);
 
-public:
-    PathTraversalAction m_action;
-    bool m_success;
+  void processSegment();
 
-    FloatPoint m_current;
-    FloatPoint m_start;
+ public:
+  PathTraversalAction m_action;
+  bool m_success;
 
-    float m_totalLength;
-    float m_desiredLength;
+  FloatPoint m_current;
+  FloatPoint m_start;
 
-    // For normal calculations
-    FloatPoint m_previous;
-    float m_normalAngle; // degrees
+  float m_totalLength;
+  float m_desiredLength;
+
+  // For normal calculations
+  FloatPoint m_previous;
+  float m_normalAngle;  // degrees
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

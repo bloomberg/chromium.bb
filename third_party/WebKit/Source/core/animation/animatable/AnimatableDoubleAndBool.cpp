@@ -8,25 +8,26 @@
 
 namespace blink {
 
-bool AnimatableDoubleAndBool::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
-    return flag() != other->flag();
+bool AnimatableDoubleAndBool::usesDefaultInterpolationWith(
+    const AnimatableValue* value) const {
+  const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
+  return flag() != other->flag();
 }
 
-PassRefPtr<AnimatableValue> AnimatableDoubleAndBool::interpolateTo(const AnimatableValue* value, double fraction) const
-{
-    const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
-    if (flag() == other->flag())
-        return AnimatableDoubleAndBool::create(blend(m_number, other->m_number, fraction), flag());
+PassRefPtr<AnimatableValue> AnimatableDoubleAndBool::interpolateTo(
+    const AnimatableValue* value,
+    double fraction) const {
+  const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
+  if (flag() == other->flag())
+    return AnimatableDoubleAndBool::create(
+        blend(m_number, other->m_number, fraction), flag());
 
-    return defaultInterpolateTo(this, value, fraction);
+  return defaultInterpolateTo(this, value, fraction);
 }
 
-bool AnimatableDoubleAndBool::equalTo(const AnimatableValue* value) const
-{
-    const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
-    return toDouble() == other->toDouble() && flag() == other->flag();
+bool AnimatableDoubleAndBool::equalTo(const AnimatableValue* value) const {
+  const AnimatableDoubleAndBool* other = toAnimatableDoubleAndBool(value);
+  return toDouble() == other->toDouble() && flag() == other->flag();
 }
 
-} // namespace blink
+}  // namespace blink

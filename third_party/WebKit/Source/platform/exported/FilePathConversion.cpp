@@ -11,25 +11,24 @@
 
 namespace blink {
 
-base::FilePath WebStringToFilePath(const WebString& webString)
-{
-    if (webString.isEmpty())
-        return base::FilePath();
+base::FilePath WebStringToFilePath(const WebString& webString) {
+  if (webString.isEmpty())
+    return base::FilePath();
 
-    String str = webString;
-    if (!str.is8Bit()) {
-        return base::FilePath::FromUTF16Unsafe(
-            base::StringPiece16(str.characters16(), str.length()));
-    }
+  String str = webString;
+  if (!str.is8Bit()) {
+    return base::FilePath::FromUTF16Unsafe(
+        base::StringPiece16(str.characters16(), str.length()));
+  }
 
 #if OS(POSIX)
-    StringUTF8Adaptor utf8(str);
-    return base::FilePath::FromUTF8Unsafe(utf8.asStringPiece());
+  StringUTF8Adaptor utf8(str);
+  return base::FilePath::FromUTF8Unsafe(utf8.asStringPiece());
 #else
-    const LChar* data8 = str.characters8();
-    return base::FilePath::FromUTF16Unsafe(
-        base::string16(data8, data8 + str.length()));
+  const LChar* data8 = str.characters8();
+  return base::FilePath::FromUTF16Unsafe(
+      base::string16(data8, data8 + str.length()));
 #endif
 }
 
-} // namespace blink
+}  // namespace blink

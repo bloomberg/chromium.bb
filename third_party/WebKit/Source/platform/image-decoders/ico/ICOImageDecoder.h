@@ -41,144 +41,147 @@ class PNGImageDecoder;
 
 // This class decodes the ICO and CUR image formats.
 class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
-    WTF_MAKE_NONCOPYABLE(ICOImageDecoder);
-public:
-    ICOImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
-    ~ICOImageDecoder() override;
+  WTF_MAKE_NONCOPYABLE(ICOImageDecoder);
 
-    // ImageDecoder:
-    String filenameExtension() const override { return "ico"; }
-    void onSetData(SegmentReader*) override;
-    IntSize size() const override;
-    IntSize frameSizeAtIndex(size_t) const override;
-    bool setSize(unsigned width, unsigned height) override;
-    bool frameIsCompleteAtIndex(size_t) const override;
-    // CAUTION: setFailed() deletes all readers and decoders.  Be careful to
-    // avoid accessing deleted memory, especially when calling this from
-    // inside BMPImageReader!
-    bool setFailed() override;
-    bool hotSpot(IntPoint&) const override;
+ public:
+  ICOImageDecoder(AlphaOption,
+                  GammaAndColorProfileOption,
+                  size_t maxDecodedBytes);
+  ~ICOImageDecoder() override;
 
-private:
-    enum ImageType {
-        Unknown,
-        BMP,
-        PNG,
-    };
+  // ImageDecoder:
+  String filenameExtension() const override { return "ico"; }
+  void onSetData(SegmentReader*) override;
+  IntSize size() const override;
+  IntSize frameSizeAtIndex(size_t) const override;
+  bool setSize(unsigned width, unsigned height) override;
+  bool frameIsCompleteAtIndex(size_t) const override;
+  // CAUTION: setFailed() deletes all readers and decoders.  Be careful to
+  // avoid accessing deleted memory, especially when calling this from
+  // inside BMPImageReader!
+  bool setFailed() override;
+  bool hotSpot(IntPoint&) const override;
 
-    enum FileType {
-        ICON = 1,
-        CURSOR = 2,
-    };
+ private:
+  enum ImageType {
+    Unknown,
+    BMP,
+    PNG,
+  };
 
-    struct IconDirectoryEntry {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-        IntSize m_size;
-        uint16_t m_bitCount;
-        IntPoint m_hotSpot;
-        uint32_t m_imageOffset;
-        uint32_t m_byteSize;
-    };
+  enum FileType {
+    ICON = 1,
+    CURSOR = 2,
+  };
 
-    // Returns true if |a| is a preferable icon entry to |b|.
-    // Larger sizes, or greater bitdepths at the same size, are preferable.
-    static bool compareEntries(const IconDirectoryEntry& a, const IconDirectoryEntry& b);
+  struct IconDirectoryEntry {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    IntSize m_size;
+    uint16_t m_bitCount;
+    IntPoint m_hotSpot;
+    uint32_t m_imageOffset;
+    uint32_t m_byteSize;
+  };
 
-    // ImageDecoder:
-    void decodeSize() override { decode(0, true); }
-    size_t decodeFrameCount() override;
-    void decode(size_t index) override { decode(index, false); }
+  // Returns true if |a| is a preferable icon entry to |b|.
+  // Larger sizes, or greater bitdepths at the same size, are preferable.
+  static bool compareEntries(const IconDirectoryEntry& a,
+                             const IconDirectoryEntry& b);
 
-    // TODO (scroggo): These functions are identical to functions in BMPImageReader. Share code?
-    inline uint8_t readUint8(size_t offset) const
-    {
-        return m_fastReader.getOneByte(m_decodedOffset + offset);
-    }
+  // ImageDecoder:
+  void decodeSize() override { decode(0, true); }
+  size_t decodeFrameCount() override;
+  void decode(size_t index) override { decode(index, false); }
 
-    inline uint16_t readUint16(int offset) const
-    {
-        char buffer[2];
-        const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 2, buffer);
-        return BMPImageReader::readUint16(data);
-    }
+  // TODO (scroggo): These functions are identical to functions in BMPImageReader. Share code?
+  inline uint8_t readUint8(size_t offset) const {
+    return m_fastReader.getOneByte(m_decodedOffset + offset);
+  }
 
-    inline uint32_t readUint32(int offset) const
-    {
-        char buffer[4];
-        const char* data = m_fastReader.getConsecutiveData(m_decodedOffset + offset, 4, buffer);
-        return BMPImageReader::readUint32(data);
-    }
+  inline uint16_t readUint16(int offset) const {
+    char buffer[2];
+    const char* data =
+        m_fastReader.getConsecutiveData(m_decodedOffset + offset, 2, buffer);
+    return BMPImageReader::readUint16(data);
+  }
 
-    // If the desired PNGImageDecoder exists, gives it the appropriate data.
-    void setDataForPNGDecoderAtIndex(size_t);
+  inline uint32_t readUint32(int offset) const {
+    char buffer[4];
+    const char* data =
+        m_fastReader.getConsecutiveData(m_decodedOffset + offset, 4, buffer);
+    return BMPImageReader::readUint32(data);
+  }
 
-    // Decodes the entry at |index|.  If |onlySize| is true, stops decoding
-    // after calculating the image size.  If decoding fails but there is no
-    // more data coming, sets the "decode failure" flag.
-    void decode(size_t index, bool onlySize);
+  // If the desired PNGImageDecoder exists, gives it the appropriate data.
+  void setDataForPNGDecoderAtIndex(size_t);
 
-    // Decodes the directory and directory entries at the beginning of the
-    // data, and initializes members.  Returns true if all decoding
-    // succeeded.  Once this returns true, all entries' sizes are known.
-    bool decodeDirectory();
+  // Decodes the entry at |index|.  If |onlySize| is true, stops decoding
+  // after calculating the image size.  If decoding fails but there is no
+  // more data coming, sets the "decode failure" flag.
+  void decode(size_t index, bool onlySize);
 
-    // Decodes the specified entry.
-    bool decodeAtIndex(size_t);
+  // Decodes the directory and directory entries at the beginning of the
+  // data, and initializes members.  Returns true if all decoding
+  // succeeded.  Once this returns true, all entries' sizes are known.
+  bool decodeDirectory();
 
-    // Processes the ICONDIR at the beginning of the data.  Returns true if
-    // the directory could be decoded.
-    bool processDirectory();
+  // Decodes the specified entry.
+  bool decodeAtIndex(size_t);
 
-    // Processes the ICONDIRENTRY records after the directory.  Keeps the
-    // "best" entry as the one we'll decode.  Returns true if the entries
-    // could be decoded.
-    bool processDirectoryEntries();
+  // Processes the ICONDIR at the beginning of the data.  Returns true if
+  // the directory could be decoded.
+  bool processDirectory();
 
-    // Stores the hot-spot for |index| in |hotSpot| and returns true,
-    // or returns false if there is none.
-    bool hotSpotAtIndex(size_t index, IntPoint& hotSpot) const;
+  // Processes the ICONDIRENTRY records after the directory.  Keeps the
+  // "best" entry as the one we'll decode.  Returns true if the entries
+  // could be decoded.
+  bool processDirectoryEntries();
 
-    // Reads and returns a directory entry from the current offset into
-    // |data|.
-    IconDirectoryEntry readDirectoryEntry();
+  // Stores the hot-spot for |index| in |hotSpot| and returns true,
+  // or returns false if there is none.
+  bool hotSpotAtIndex(size_t index, IntPoint& hotSpot) const;
 
-    // Determines whether the desired entry is a BMP or PNG.  Returns true
-    // if the type could be determined.
-    ImageType imageTypeAtIndex(size_t);
+  // Reads and returns a directory entry from the current offset into
+  // |data|.
+  IconDirectoryEntry readDirectoryEntry();
 
-    FastSharedBufferReader m_fastReader;
+  // Determines whether the desired entry is a BMP or PNG.  Returns true
+  // if the type could be determined.
+  ImageType imageTypeAtIndex(size_t);
 
-    // An index into |m_data| representing how much we've already decoded.
-    // Note that this only tracks data _this_ class decodes; once the
-    // BMPImageReader takes over this will not be updated further.
-    size_t m_decodedOffset;
+  FastSharedBufferReader m_fastReader;
 
-    // Which type of file (ICO/CUR) this is.
-    FileType m_fileType;
+  // An index into |m_data| representing how much we've already decoded.
+  // Note that this only tracks data _this_ class decodes; once the
+  // BMPImageReader takes over this will not be updated further.
+  size_t m_decodedOffset;
 
-    // The headers for the ICO.
-    typedef Vector<IconDirectoryEntry> IconDirectoryEntries;
-    IconDirectoryEntries m_dirEntries;
+  // Which type of file (ICO/CUR) this is.
+  FileType m_fileType;
 
-    // Count of directory entries is parsed from header before initializing
-    // m_dirEntries. m_dirEntries is populated only when full header
-    // information including directory entries is available.
-    size_t m_dirEntriesCount;
+  // The headers for the ICO.
+  typedef Vector<IconDirectoryEntry> IconDirectoryEntries;
+  IconDirectoryEntries m_dirEntries;
 
-    // The image decoders for the various frames.
-    typedef Vector<std::unique_ptr<BMPImageReader>> BMPReaders;
-    BMPReaders m_bmpReaders;
-    typedef Vector<std::unique_ptr<PNGImageDecoder>> PNGDecoders;
-    PNGDecoders m_pngDecoders;
+  // Count of directory entries is parsed from header before initializing
+  // m_dirEntries. m_dirEntries is populated only when full header
+  // information including directory entries is available.
+  size_t m_dirEntriesCount;
 
-    // Valid only while a BMPImageReader is decoding, this holds the size
-    // for the particular entry being decoded.
-    IntSize m_frameSize;
+  // The image decoders for the various frames.
+  typedef Vector<std::unique_ptr<BMPImageReader>> BMPReaders;
+  BMPReaders m_bmpReaders;
+  typedef Vector<std::unique_ptr<PNGImageDecoder>> PNGDecoders;
+  PNGDecoders m_pngDecoders;
 
-    // Used to pass on to an internally created PNG decoder.
-    const GammaAndColorProfileOption m_gammaAndColorProfileOption;
+  // Valid only while a BMPImageReader is decoding, this holds the size
+  // for the particular entry being decoded.
+  IntSize m_frameSize;
+
+  // Used to pass on to an internally created PNG decoder.
+  const GammaAndColorProfileOption m_gammaAndColorProfileOption;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

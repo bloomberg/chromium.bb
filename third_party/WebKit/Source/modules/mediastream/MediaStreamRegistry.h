@@ -37,22 +37,23 @@ class KURL;
 class MediaStreamDescriptor;
 
 class MODULES_EXPORT MediaStreamRegistry final : public URLRegistry {
-public:
-    // Returns a single instance of MediaStreamRegistry.
-    static MediaStreamRegistry& registry();
+ public:
+  // Returns a single instance of MediaStreamRegistry.
+  static MediaStreamRegistry& registry();
 
-    // Registers a blob URL referring to the specified stream data.
-    void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
-    void unregisterURL(const KURL&) override;
-    bool contains(const String&) override;
+  // Registers a blob URL referring to the specified stream data.
+  void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+  void unregisterURL(const KURL&) override;
+  bool contains(const String&) override;
 
-    MediaStreamDescriptor* lookupMediaStreamDescriptor(const String& url);
+  MediaStreamDescriptor* lookupMediaStreamDescriptor(const String& url);
 
-private:
-    MediaStreamRegistry();
-    PersistentHeapHashMap<String, Member<MediaStreamDescriptor>> m_streamDescriptors;
+ private:
+  MediaStreamRegistry();
+  PersistentHeapHashMap<String, Member<MediaStreamDescriptor>>
+      m_streamDescriptors;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamRegistry_h
+#endif  // MediaStreamRegistry_h

@@ -37,35 +37,35 @@ namespace blink {
 
 // Options used when performing a find-in-page query.
 struct WebFindOptions {
-    // Whether to search forward or backward within the page.
-    bool forward;
+  // Whether to search forward or backward within the page.
+  bool forward;
 
-    // Whether search should be case-sensitive.
-    bool matchCase;
+  // Whether search should be case-sensitive.
+  bool matchCase;
 
-    // Whether this operation is the first request or a follow-up.
-    bool findNext;
+  // Whether this operation is the first request or a follow-up.
+  bool findNext;
 
-    // Whether this operation should look for matches only at the start of words.
-    bool wordStart;
+  // Whether this operation should look for matches only at the start of words.
+  bool wordStart;
 
-    // When combined with wordStart, accepts a match in the middle of a word if the match begins with
-    // an uppercase letter followed by a lowercase or non-letter. Accepts several other intra-word matches.
-    bool medialCapitalAsWordStart;
+  // When combined with wordStart, accepts a match in the middle of a word if the match begins with
+  // an uppercase letter followed by a lowercase or non-letter. Accepts several other intra-word matches.
+  bool medialCapitalAsWordStart;
 
-    // Force a re-search of the frame: typically used when forcing a re-search
-    // after the frame navigates.
-    bool force;
+  // Force a re-search of the frame: typically used when forcing a re-search
+  // after the frame navigates.
+  bool force;
 
-    WebFindOptions()
-        : forward(true)
-        , matchCase(false)
-        , findNext(false)
-        , wordStart(false)
-        , medialCapitalAsWordStart(false)
-        , force(false) { }
+  WebFindOptions()
+      : forward(true),
+        matchCase(false),
+        findNext(false),
+        wordStart(false),
+        medialCapitalAsWordStart(false),
+        force(false) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

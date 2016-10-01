@@ -33,132 +33,155 @@ namespace blink {
 class BlobDataHandle;
 
 class PLATFORM_EXPORT FormDataElement final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    FormDataElement() : m_type(data) { }
-    explicit FormDataElement(const Vector<char>& array) : m_type(data), m_data(array) { }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    FormDataElement(const String& filename, long long fileStart, long long fileLength, double expectedFileModificationTime) : m_type(encodedFile), m_filename(filename), m_fileStart(fileStart), m_fileLength(fileLength), m_expectedFileModificationTime(expectedFileModificationTime) { }
-    explicit FormDataElement(const String& blobUUID, PassRefPtr<BlobDataHandle> optionalHandle) : m_type(encodedBlob), m_blobUUID(blobUUID), m_optionalBlobDataHandle(optionalHandle) { }
-    FormDataElement(const KURL& fileSystemURL, long long start, long long length, double expectedFileModificationTime) : m_type(encodedFileSystemURL), m_fileSystemURL(fileSystemURL), m_fileStart(start), m_fileLength(length), m_expectedFileModificationTime(expectedFileModificationTime) { }
+ public:
+  FormDataElement() : m_type(data) {}
+  explicit FormDataElement(const Vector<char>& array)
+      : m_type(data), m_data(array) {}
 
-    bool isSafeToSendToAnotherThread() const;
+  FormDataElement(const String& filename,
+                  long long fileStart,
+                  long long fileLength,
+                  double expectedFileModificationTime)
+      : m_type(encodedFile),
+        m_filename(filename),
+        m_fileStart(fileStart),
+        m_fileLength(fileLength),
+        m_expectedFileModificationTime(expectedFileModificationTime) {}
+  explicit FormDataElement(const String& blobUUID,
+                           PassRefPtr<BlobDataHandle> optionalHandle)
+      : m_type(encodedBlob),
+        m_blobUUID(blobUUID),
+        m_optionalBlobDataHandle(optionalHandle) {}
+  FormDataElement(const KURL& fileSystemURL,
+                  long long start,
+                  long long length,
+                  double expectedFileModificationTime)
+      : m_type(encodedFileSystemURL),
+        m_fileSystemURL(fileSystemURL),
+        m_fileStart(start),
+        m_fileLength(length),
+        m_expectedFileModificationTime(expectedFileModificationTime) {}
 
-    enum Type {
-        data,
-        encodedFile,
-        encodedBlob,
-        encodedFileSystemURL
-    } m_type;
-    Vector<char> m_data;
-    String m_filename;
-    String m_blobUUID;
-    RefPtr<BlobDataHandle> m_optionalBlobDataHandle;
-    KURL m_fileSystemURL;
-    long long m_fileStart;
-    long long m_fileLength;
-    double m_expectedFileModificationTime;
+  bool isSafeToSendToAnotherThread() const;
+
+  enum Type { data, encodedFile, encodedBlob, encodedFileSystemURL } m_type;
+  Vector<char> m_data;
+  String m_filename;
+  String m_blobUUID;
+  RefPtr<BlobDataHandle> m_optionalBlobDataHandle;
+  KURL m_fileSystemURL;
+  long long m_fileStart;
+  long long m_fileLength;
+  double m_expectedFileModificationTime;
 };
 
-inline bool operator==(const FormDataElement& a, const FormDataElement& b)
-{
-    if (&a == &b)
-        return true;
-
-    if (a.m_type != b.m_type)
-        return false;
-    if (a.m_type == FormDataElement::data)
-        return a.m_data == b.m_data;
-    if (a.m_type == FormDataElement::encodedFile)
-        return a.m_filename == b.m_filename && a.m_fileStart == b.m_fileStart && a.m_fileLength == b.m_fileLength && a.m_expectedFileModificationTime == b.m_expectedFileModificationTime;
-    if (a.m_type == FormDataElement::encodedBlob)
-        return a.m_blobUUID == b.m_blobUUID;
-    if (a.m_type == FormDataElement::encodedFileSystemURL)
-        return a.m_fileSystemURL == b.m_fileSystemURL;
-
+inline bool operator==(const FormDataElement& a, const FormDataElement& b) {
+  if (&a == &b)
     return true;
+
+  if (a.m_type != b.m_type)
+    return false;
+  if (a.m_type == FormDataElement::data)
+    return a.m_data == b.m_data;
+  if (a.m_type == FormDataElement::encodedFile)
+    return a.m_filename == b.m_filename && a.m_fileStart == b.m_fileStart &&
+           a.m_fileLength == b.m_fileLength &&
+           a.m_expectedFileModificationTime == b.m_expectedFileModificationTime;
+  if (a.m_type == FormDataElement::encodedBlob)
+    return a.m_blobUUID == b.m_blobUUID;
+  if (a.m_type == FormDataElement::encodedFileSystemURL)
+    return a.m_fileSystemURL == b.m_fileSystemURL;
+
+  return true;
 }
 
-inline bool operator!=(const FormDataElement& a, const FormDataElement& b)
-{
-    return !(a == b);
+inline bool operator!=(const FormDataElement& a, const FormDataElement& b) {
+  return !(a == b);
 }
 
 class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
-public:
-    enum EncodingType {
-        FormURLEncoded, // for application/x-www-form-urlencoded
-        TextPlain, // for text/plain
-        MultipartFormData // for multipart/form-data
-    };
+ public:
+  enum EncodingType {
+    FormURLEncoded,    // for application/x-www-form-urlencoded
+    TextPlain,         // for text/plain
+    MultipartFormData  // for multipart/form-data
+  };
 
-    static PassRefPtr<EncodedFormData> create();
-    static PassRefPtr<EncodedFormData> create(const void*, size_t);
-    static PassRefPtr<EncodedFormData> create(const CString&);
-    static PassRefPtr<EncodedFormData> create(const Vector<char>&);
-    PassRefPtr<EncodedFormData> copy() const;
-    PassRefPtr<EncodedFormData> deepCopy() const;
-    ~EncodedFormData();
+  static PassRefPtr<EncodedFormData> create();
+  static PassRefPtr<EncodedFormData> create(const void*, size_t);
+  static PassRefPtr<EncodedFormData> create(const CString&);
+  static PassRefPtr<EncodedFormData> create(const Vector<char>&);
+  PassRefPtr<EncodedFormData> copy() const;
+  PassRefPtr<EncodedFormData> deepCopy() const;
+  ~EncodedFormData();
 
-    void appendData(const void* data, size_t);
-    void appendFile(const String& filePath);
-    void appendFileRange(const String& filename, long long start, long long length, double expectedModificationTime);
-    void appendBlob(const String& blobUUID, PassRefPtr<BlobDataHandle> optionalHandle);
-    void appendFileSystemURL(const KURL&);
-    void appendFileSystemURLRange(const KURL&, long long start, long long length, double expectedModificationTime);
+  void appendData(const void* data, size_t);
+  void appendFile(const String& filePath);
+  void appendFileRange(const String& filename,
+                       long long start,
+                       long long length,
+                       double expectedModificationTime);
+  void appendBlob(const String& blobUUID,
+                  PassRefPtr<BlobDataHandle> optionalHandle);
+  void appendFileSystemURL(const KURL&);
+  void appendFileSystemURLRange(const KURL&,
+                                long long start,
+                                long long length,
+                                double expectedModificationTime);
 
-    void flatten(Vector<char>&) const; // omits files
-    String flattenToString() const; // omits files
+  void flatten(Vector<char>&) const;  // omits files
+  String flattenToString() const;     // omits files
 
-    bool isEmpty() const { return m_elements.isEmpty(); }
-    const Vector<FormDataElement>& elements() const { return m_elements; }
+  bool isEmpty() const { return m_elements.isEmpty(); }
+  const Vector<FormDataElement>& elements() const { return m_elements; }
 
-    const Vector<char>& boundary() const { return m_boundary; }
-    void setBoundary(Vector<char> boundary) { m_boundary = boundary; }
+  const Vector<char>& boundary() const { return m_boundary; }
+  void setBoundary(Vector<char> boundary) { m_boundary = boundary; }
 
-    // Identifies a particular form submission instance.  A value of 0 is used
-    // to indicate an unspecified identifier.
-    void setIdentifier(int64_t identifier) { m_identifier = identifier; }
-    int64_t identifier() const { return m_identifier; }
+  // Identifies a particular form submission instance.  A value of 0 is used
+  // to indicate an unspecified identifier.
+  void setIdentifier(int64_t identifier) { m_identifier = identifier; }
+  int64_t identifier() const { return m_identifier; }
 
-    bool containsPasswordData() const { return m_containsPasswordData; }
-    void setContainsPasswordData(bool containsPasswordData) { m_containsPasswordData = containsPasswordData; }
+  bool containsPasswordData() const { return m_containsPasswordData; }
+  void setContainsPasswordData(bool containsPasswordData) {
+    m_containsPasswordData = containsPasswordData;
+  }
 
-    static EncodingType parseEncodingType(const String& type)
-    {
-        if (equalIgnoringCase(type, "text/plain"))
-            return TextPlain;
-        if (equalIgnoringCase(type, "multipart/form-data"))
-            return MultipartFormData;
-        return FormURLEncoded;
-    }
+  static EncodingType parseEncodingType(const String& type) {
+    if (equalIgnoringCase(type, "text/plain"))
+      return TextPlain;
+    if (equalIgnoringCase(type, "multipart/form-data"))
+      return MultipartFormData;
+    return FormURLEncoded;
+  }
 
-    // Size of the elements making up the EncodedFormData.
-    unsigned long long sizeInBytes() const;
+  // Size of the elements making up the EncodedFormData.
+  unsigned long long sizeInBytes() const;
 
-    bool isSafeToSendToAnotherThread() const;
+  bool isSafeToSendToAnotherThread() const;
 
-private:
-    EncodedFormData();
-    EncodedFormData(const EncodedFormData&);
+ private:
+  EncodedFormData();
+  EncodedFormData(const EncodedFormData&);
 
-    Vector<FormDataElement> m_elements;
+  Vector<FormDataElement> m_elements;
 
-    int64_t m_identifier;
-    Vector<char> m_boundary;
-    bool m_containsPasswordData;
+  int64_t m_identifier;
+  Vector<char> m_boundary;
+  bool m_containsPasswordData;
 };
 
-inline bool operator==(const EncodedFormData& a, const EncodedFormData& b)
-{
-    return a.elements() == b.elements();
+inline bool operator==(const EncodedFormData& a, const EncodedFormData& b) {
+  return a.elements() == b.elements();
 }
 
-inline bool operator!=(const EncodedFormData& a, const EncodedFormData& b)
-{
-    return !(a == b);
+inline bool operator!=(const EncodedFormData& a, const EncodedFormData& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

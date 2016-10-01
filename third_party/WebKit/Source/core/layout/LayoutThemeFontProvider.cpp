@@ -45,10 +45,9 @@ float LayoutThemeFontProvider::s_defaultFontSize = 16.0;
 // FIXME: The only case where we know we don't match IE is for ANSI encodings.
 // IE uses MS Shell Dlg there, which we render incorrectly at certain pixel
 // sizes (e.g. 15px). So, for now we just use Arial.
-const AtomicString& LayoutThemeFontProvider::defaultGUIFont()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, fontFace, ("Arial"));
-    return fontFace;
+const AtomicString& LayoutThemeFontProvider::defaultGUIFont() {
+  DEFINE_STATIC_LOCAL(const AtomicString, fontFace, ("Arial"));
+  return fontFace;
 }
 
-} // namespace blink
+}  // namespace blink

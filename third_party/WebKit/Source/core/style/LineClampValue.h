@@ -31,41 +31,31 @@
 namespace blink {
 
 class LineClampValue {
-    DISALLOW_NEW();
-public:
-    LineClampValue()
-        : m_type(LineClampLineCount)
-        , m_value(-1)
-    {
-    }
+  DISALLOW_NEW();
 
-    LineClampValue(int value, ELineClampType type)
-        : m_type(type)
-        , m_value(value)
-    {
-    }
+ public:
+  LineClampValue() : m_type(LineClampLineCount), m_value(-1) {}
 
-    int value() const { return m_value; }
+  LineClampValue(int value, ELineClampType type)
+      : m_type(type), m_value(value) {}
 
-    bool isPercentage() const { return m_type == LineClampPercentage; }
+  int value() const { return m_value; }
 
-    bool isNone() const { return m_value == -1; }
+  bool isPercentage() const { return m_type == LineClampPercentage; }
 
-    bool operator==(const LineClampValue& o) const
-    {
-        return value() == o.value() && isPercentage() == o.isPercentage();
-    }
+  bool isNone() const { return m_value == -1; }
 
-    bool operator!=(const LineClampValue& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const LineClampValue& o) const {
+    return value() == o.value() && isPercentage() == o.isPercentage();
+  }
 
-private:
-    ELineClampType m_type;
-    int m_value;
+  bool operator!=(const LineClampValue& o) const { return !(*this == o); }
+
+ private:
+  ELineClampType m_type;
+  int m_value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineClampValue_h
+#endif  // LineClampValue_h

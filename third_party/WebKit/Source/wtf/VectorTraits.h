@@ -33,25 +33,30 @@ class AtomicString;
 
 template <typename T>
 struct VectorTraitsBase {
-    static const bool needsDestruction = !IsTriviallyDestructible<T>::value;
+  static const bool needsDestruction = !IsTriviallyDestructible<T>::value;
 
-    static const bool canInitializeWithMemset = IsTriviallyDefaultConstructible<T>::value;
-    // true iff memset(slot, 0, size) constructs an unused slot value that is
-    // valid for Oilpan to trace and if the value needs destruction, its
-    // destructor can be invoked over. The zero'ed value representing an unused
-    // slot in the vector's backing storage; it does not have to be equal to
-    // what its constructor(s) would create, only be valid for those two uses.
-    static const bool canClearUnusedSlotsWithMemset = IsTriviallyDefaultConstructible<T>::value;
+  static const bool canInitializeWithMemset =
+      IsTriviallyDefaultConstructible<T>::value;
+  // true iff memset(slot, 0, size) constructs an unused slot value that is
+  // valid for Oilpan to trace and if the value needs destruction, its
+  // destructor can be invoked over. The zero'ed value representing an unused
+  // slot in the vector's backing storage; it does not have to be equal to
+  // what its constructor(s) would create, only be valid for those two uses.
+  static const bool canClearUnusedSlotsWithMemset =
+      IsTriviallyDefaultConstructible<T>::value;
 
-    static const bool canMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
-    static const bool canCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
-    static const bool canFillWithMemset = IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
-    static const bool canCompareWithMemcmp = std::is_scalar<T>::value; // Types without padding.
-    template <typename U = void>
-    struct IsTraceableInCollection {
-        static const bool value = IsTraceable<T>::value;
-    };
-    static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections; // We don't support weak handling in vectors.
+  static const bool canMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
+  static const bool canCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
+  static const bool canFillWithMemset =
+      IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
+  static const bool canCompareWithMemcmp =
+      std::is_scalar<T>::value;  // Types without padding.
+  template <typename U = void>
+  struct IsTraceableInCollection {
+    static const bool value = IsTraceable<T>::value;
+  };
+  static const WeakHandlingFlag weakHandlingFlag =
+      NoWeakHandlingInCollections;  // We don't support weak handling in vectors.
 };
 
 template <typename T>
@@ -62,10 +67,10 @@ struct VectorTraits : VectorTraitsBase<T> {};
 // comparison.
 template <typename T>
 struct SimpleClassVectorTraits : VectorTraitsBase<T> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canClearUnusedSlotsWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-    static const bool canCompareWithMemcmp = true;
+  static const bool canInitializeWithMemset = true;
+  static const bool canClearUnusedSlotsWithMemset = true;
+  static const bool canMoveWithMemcpy = true;
+  static const bool canCompareWithMemcmp = true;
 };
 
 // We know std::unique_ptr and RefPtr are simple enough that initializing to 0 and moving
@@ -74,80 +79,102 @@ template <typename P>
 struct VectorTraits<RefPtr<P>> : SimpleClassVectorTraits<RefPtr<P>> {};
 
 template <typename P>
-struct VectorTraits<std::unique_ptr<P>> : SimpleClassVectorTraits<std::unique_ptr<P>> {
-    // std::unique_ptr -> std::unique_ptr has a very particular structure that tricks the
-    // normal type traits into thinking that the class is "trivially copyable".
-    static const bool canCopyWithMemcpy = false;
+struct VectorTraits<std::unique_ptr<P>>
+    : SimpleClassVectorTraits<std::unique_ptr<P>> {
+  // std::unique_ptr -> std::unique_ptr has a very particular structure that tricks the
+  // normal type traits into thinking that the class is "trivially copyable".
+  static const bool canCopyWithMemcpy = false;
 };
-static_assert(VectorTraits<RefPtr<int>>::canInitializeWithMemset, "inefficient RefPtr Vector");
-static_assert(VectorTraits<RefPtr<int>>::canMoveWithMemcpy, "inefficient RefPtr Vector");
-static_assert(VectorTraits<RefPtr<int>>::canCompareWithMemcmp, "inefficient RefPtr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canInitializeWithMemset, "inefficient std::unique_ptr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canMoveWithMemcpy, "inefficient std::unique_ptr Vector");
-static_assert(VectorTraits<std::unique_ptr<int>>::canCompareWithMemcmp, "inefficient std::unique_ptr Vector");
+static_assert(VectorTraits<RefPtr<int>>::canInitializeWithMemset,
+              "inefficient RefPtr Vector");
+static_assert(VectorTraits<RefPtr<int>>::canMoveWithMemcpy,
+              "inefficient RefPtr Vector");
+static_assert(VectorTraits<RefPtr<int>>::canCompareWithMemcmp,
+              "inefficient RefPtr Vector");
+static_assert(VectorTraits<std::unique_ptr<int>>::canInitializeWithMemset,
+              "inefficient std::unique_ptr Vector");
+static_assert(VectorTraits<std::unique_ptr<int>>::canMoveWithMemcpy,
+              "inefficient std::unique_ptr Vector");
+static_assert(VectorTraits<std::unique_ptr<int>>::canCompareWithMemcmp,
+              "inefficient std::unique_ptr Vector");
 
 template <typename First, typename Second>
 struct VectorTraits<std::pair<First, Second>> {
-    typedef VectorTraits<First> FirstTraits;
-    typedef VectorTraits<Second> SecondTraits;
+  typedef VectorTraits<First> FirstTraits;
+  typedef VectorTraits<Second> SecondTraits;
 
-    static const bool needsDestruction = FirstTraits::needsDestruction || SecondTraits::needsDestruction;
-    static const bool canInitializeWithMemset = FirstTraits::canInitializeWithMemset && SecondTraits::canInitializeWithMemset;
-    static const bool canMoveWithMemcpy = FirstTraits::canMoveWithMemcpy && SecondTraits::canMoveWithMemcpy;
-    static const bool canCopyWithMemcpy = FirstTraits::canCopyWithMemcpy && SecondTraits::canCopyWithMemcpy;
-    static const bool canFillWithMemset = false;
-    static const bool canCompareWithMemcmp = FirstTraits::canCompareWithMemcmp && SecondTraits::canCompareWithMemcmp;
-    static const bool canClearUnusedSlotsWithMemset = FirstTraits::canClearUnusedSlotsWithMemset && SecondTraits::canClearUnusedSlotsWithMemset;
-    template <typename U = void>
-    struct IsTraceableInCollection {
-        static const bool value = IsTraceableInCollectionTrait<FirstTraits>::value || IsTraceableInCollectionTrait<SecondTraits>::value;
-    };
-    static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections; // We don't support weak handling in vectors.
+  static const bool needsDestruction =
+      FirstTraits::needsDestruction || SecondTraits::needsDestruction;
+  static const bool canInitializeWithMemset =
+      FirstTraits::canInitializeWithMemset &&
+      SecondTraits::canInitializeWithMemset;
+  static const bool canMoveWithMemcpy =
+      FirstTraits::canMoveWithMemcpy && SecondTraits::canMoveWithMemcpy;
+  static const bool canCopyWithMemcpy =
+      FirstTraits::canCopyWithMemcpy && SecondTraits::canCopyWithMemcpy;
+  static const bool canFillWithMemset = false;
+  static const bool canCompareWithMemcmp =
+      FirstTraits::canCompareWithMemcmp && SecondTraits::canCompareWithMemcmp;
+  static const bool canClearUnusedSlotsWithMemset =
+      FirstTraits::canClearUnusedSlotsWithMemset &&
+      SecondTraits::canClearUnusedSlotsWithMemset;
+  template <typename U = void>
+  struct IsTraceableInCollection {
+    static const bool value =
+        IsTraceableInCollectionTrait<FirstTraits>::value ||
+        IsTraceableInCollectionTrait<SecondTraits>::value;
+  };
+  static const WeakHandlingFlag weakHandlingFlag =
+      NoWeakHandlingInCollections;  // We don't support weak handling in vectors.
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#define WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(ClassName) \
-namespace WTF { \
-static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyMoveAssignable<ClassName>::value || !std::is_scalar<ClassName>::value, "macro not needed"); \
-template <> \
-struct VectorTraits<ClassName> : SimpleClassVectorTraits<ClassName> {}; \
-}
+#define WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(ClassName)     \
+  namespace WTF {                                                         \
+  static_assert(!IsTriviallyDefaultConstructible<ClassName>::value ||     \
+                    !IsTriviallyMoveAssignable<ClassName>::value ||       \
+                    !std::is_scalar<ClassName>::value,                    \
+                "macro not needed");                                      \
+  template <>                                                             \
+  struct VectorTraits<ClassName> : SimpleClassVectorTraits<ClassName> {}; \
+  }
 
-#define WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(ClassName) \
-namespace WTF { \
-static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyMoveAssignable<ClassName>::value, "macro not needed"); \
-template <> \
-struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
-{ \
-    static const bool canInitializeWithMemset = true; \
-    static const bool canClearUnusedSlotsWithMemset = true; \
-    static const bool canMoveWithMemcpy = true; \
-}; \
-}
+#define WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(ClassName)         \
+  namespace WTF {                                                     \
+  static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || \
+                    !IsTriviallyMoveAssignable<ClassName>::value,     \
+                "macro not needed");                                  \
+  template <>                                                         \
+  struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> {      \
+    static const bool canInitializeWithMemset = true;                 \
+    static const bool canClearUnusedSlotsWithMemset = true;           \
+    static const bool canMoveWithMemcpy = true;                       \
+  };                                                                  \
+  }
 
-#define WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(ClassName) \
-namespace WTF { \
-static_assert(!IsTriviallyDefaultConstructible<ClassName>::value, "macro not needed"); \
-template <> \
-struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
-{ \
-    static const bool canInitializeWithMemset = true; \
-    static const bool canClearUnusedSlotsWithMemset = true; \
-}; \
-}
+#define WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(ClassName)                \
+  namespace WTF {                                                   \
+  static_assert(!IsTriviallyDefaultConstructible<ClassName>::value, \
+                "macro not needed");                                \
+  template <>                                                       \
+  struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> {    \
+    static const bool canInitializeWithMemset = true;               \
+    static const bool canClearUnusedSlotsWithMemset = true;         \
+  };                                                                \
+  }
 
-#define WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(ClassName) \
-namespace WTF { \
-static_assert(!IsTriviallyDefaultConstructible<ClassName>::value, "macro not needed"); \
-template <> \
-struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
-{ \
-    static const bool canClearUnusedSlotsWithMemset = true; \
-}; \
-}
+#define WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(ClassName)  \
+  namespace WTF {                                                   \
+  static_assert(!IsTriviallyDefaultConstructible<ClassName>::value, \
+                "macro not needed");                                \
+  template <>                                                       \
+  struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> {    \
+    static const bool canClearUnusedSlotsWithMemset = true;         \
+  };                                                                \
+  }
 
 using WTF::VectorTraits;
 using WTF::SimpleClassVectorTraits;
 
-#endif // WTF_VectorTraits_h
+#endif  // WTF_VectorTraits_h

@@ -36,85 +36,90 @@
 
 namespace blink {
 
-class WebRTCICECandidatePrivate final : public RefCounted<WebRTCICECandidatePrivate> {
-public:
-    static PassRefPtr<WebRTCICECandidatePrivate> create(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex)
-    {
-        return adoptRef(new WebRTCICECandidatePrivate(candidate, sdpMid, sdpMLineIndex));
-    }
+class WebRTCICECandidatePrivate final
+    : public RefCounted<WebRTCICECandidatePrivate> {
+ public:
+  static PassRefPtr<WebRTCICECandidatePrivate> create(
+      const WebString& candidate,
+      const WebString& sdpMid,
+      unsigned short sdpMLineIndex) {
+    return adoptRef(
+        new WebRTCICECandidatePrivate(candidate, sdpMid, sdpMLineIndex));
+  }
 
-    const WebString& candidate() const { return m_candidate; }
-    const WebString& sdpMid() const { return m_sdpMid; }
-    unsigned short sdpMLineIndex() const { return m_sdpMLineIndex; }
+  const WebString& candidate() const { return m_candidate; }
+  const WebString& sdpMid() const { return m_sdpMid; }
+  unsigned short sdpMLineIndex() const { return m_sdpMLineIndex; }
 
-    BLINK_PLATFORM_EXPORT void setCandidate(WebString candidate) { m_candidate = candidate; }
-    BLINK_PLATFORM_EXPORT void setSdpMid(WebString sdpMid) { m_sdpMid = sdpMid; }
-    BLINK_PLATFORM_EXPORT void setSdpMLineIndex(unsigned short sdpMLineIndex) { m_sdpMLineIndex = sdpMLineIndex; }
+  BLINK_PLATFORM_EXPORT void setCandidate(WebString candidate) {
+    m_candidate = candidate;
+  }
+  BLINK_PLATFORM_EXPORT void setSdpMid(WebString sdpMid) { m_sdpMid = sdpMid; }
+  BLINK_PLATFORM_EXPORT void setSdpMLineIndex(unsigned short sdpMLineIndex) {
+    m_sdpMLineIndex = sdpMLineIndex;
+  }
 
-private:
-    WebRTCICECandidatePrivate(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex);
+ private:
+  WebRTCICECandidatePrivate(const WebString& candidate,
+                            const WebString& sdpMid,
+                            unsigned short sdpMLineIndex);
 
-    WebString m_candidate;
-    WebString m_sdpMid;
-    unsigned short m_sdpMLineIndex;
+  WebString m_candidate;
+  WebString m_sdpMid;
+  unsigned short m_sdpMLineIndex;
 };
 
-WebRTCICECandidatePrivate::WebRTCICECandidatePrivate(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex)
-    : m_candidate(candidate)
-    , m_sdpMid(sdpMid)
-    , m_sdpMLineIndex(sdpMLineIndex)
-{
+WebRTCICECandidatePrivate::WebRTCICECandidatePrivate(
+    const WebString& candidate,
+    const WebString& sdpMid,
+    unsigned short sdpMLineIndex)
+    : m_candidate(candidate),
+      m_sdpMid(sdpMid),
+      m_sdpMLineIndex(sdpMLineIndex) {}
+
+void WebRTCICECandidate::assign(const WebRTCICECandidate& other) {
+  m_private = other.m_private;
 }
 
-void WebRTCICECandidate::assign(const WebRTCICECandidate& other)
-{
-    m_private = other.m_private;
+void WebRTCICECandidate::reset() {
+  m_private.reset();
 }
 
-void WebRTCICECandidate::reset()
-{
-    m_private.reset();
+void WebRTCICECandidate::initialize(const WebString& candidate,
+                                    const WebString& sdpMid,
+                                    unsigned short sdpMLineIndex) {
+  m_private =
+      WebRTCICECandidatePrivate::create(candidate, sdpMid, sdpMLineIndex);
 }
 
-void WebRTCICECandidate::initialize(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex)
-{
-    m_private = WebRTCICECandidatePrivate::create(candidate, sdpMid, sdpMLineIndex);
+WebString WebRTCICECandidate::candidate() const {
+  ASSERT(!m_private.isNull());
+  return m_private->candidate();
 }
 
-WebString WebRTCICECandidate::candidate() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->candidate();
+WebString WebRTCICECandidate::sdpMid() const {
+  ASSERT(!m_private.isNull());
+  return m_private->sdpMid();
 }
 
-WebString WebRTCICECandidate::sdpMid() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->sdpMid();
+unsigned short WebRTCICECandidate::sdpMLineIndex() const {
+  ASSERT(!m_private.isNull());
+  return m_private->sdpMLineIndex();
 }
 
-unsigned short WebRTCICECandidate::sdpMLineIndex() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->sdpMLineIndex();
+void WebRTCICECandidate::setCandidate(WebString candidate) {
+  ASSERT(!m_private.isNull());
+  m_private->setCandidate(candidate);
 }
 
-void WebRTCICECandidate::setCandidate(WebString candidate)
-{
-    ASSERT(!m_private.isNull());
-    m_private->setCandidate(candidate);
+void WebRTCICECandidate::setSdpMid(WebString sdpMid) {
+  ASSERT(!m_private.isNull());
+  m_private->setSdpMid(sdpMid);
 }
 
-void WebRTCICECandidate::setSdpMid(WebString sdpMid)
-{
-    ASSERT(!m_private.isNull());
-    m_private->setSdpMid(sdpMid);
+void WebRTCICECandidate::setSdpMLineIndex(unsigned short sdpMLineIndex) {
+  ASSERT(!m_private.isNull());
+  m_private->setSdpMLineIndex(sdpMLineIndex);
 }
 
-void WebRTCICECandidate::setSdpMLineIndex(unsigned short sdpMLineIndex)
-{
-    ASSERT(!m_private.isNull());
-    m_private->setSdpMLineIndex(sdpMLineIndex);
-}
-
-} // namespace blink
+}  // namespace blink

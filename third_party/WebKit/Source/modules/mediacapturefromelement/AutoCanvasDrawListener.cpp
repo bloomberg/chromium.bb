@@ -8,15 +8,14 @@
 
 namespace blink {
 
-AutoCanvasDrawListener::AutoCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler> handler)
-    : CanvasDrawListener(std::move(handler))
-{
-}
+AutoCanvasDrawListener::AutoCanvasDrawListener(
+    std::unique_ptr<WebCanvasCaptureHandler> handler)
+    : CanvasDrawListener(std::move(handler)) {}
 
 // static
-AutoCanvasDrawListener* AutoCanvasDrawListener::create(std::unique_ptr<WebCanvasCaptureHandler> handler)
-{
-    return new AutoCanvasDrawListener(std::move(handler));
+AutoCanvasDrawListener* AutoCanvasDrawListener::create(
+    std::unique_ptr<WebCanvasCaptureHandler> handler) {
+  return new AutoCanvasDrawListener(std::move(handler));
 }
 
-} // namespace blink
+}  // namespace blink

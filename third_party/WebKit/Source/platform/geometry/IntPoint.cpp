@@ -8,9 +8,8 @@
 
 namespace blink {
 
-String IntPoint::toString() const
-{
-    return String::format("%d,%d", x(), y());
+String IntPoint::toString() const {
+  return String::format("%d,%d", x(), y());
 }
 
-} // namespace blink
+}  // namespace blink

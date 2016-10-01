@@ -41,15 +41,15 @@ class ExecutionContext;
 // IndexedDBClientImpl is used by worker threads but ChromeClient works only
 // for the main thread.
 class IndexedDBClientImpl final : public IndexedDBClient {
-public:
-    static IndexedDBClient* create();
+ public:
+  static IndexedDBClient* create();
 
-    bool allowIndexedDB(ExecutionContext*, const String& name) override;
+  bool allowIndexedDB(ExecutionContext*, const String& name) override;
 
-private:
-    IndexedDBClientImpl() { }
+ private:
+  IndexedDBClientImpl() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IndexedDBClientImpl_h
+#endif  // IndexedDBClientImpl_h

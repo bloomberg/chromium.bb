@@ -41,27 +41,26 @@ class LabelsNodeList;
 // LabelableElement represents "labelable element" defined in the HTML
 // specification, and provides the implementation of the "labels" attribute.
 class CORE_EXPORT LabelableElement : public HTMLElement {
-public:
-    ~LabelableElement() override;
-    LabelsNodeList* labels();
-    virtual bool supportLabels() const { return false; }
+ public:
+  ~LabelableElement() override;
+  LabelsNodeList* labels();
+  virtual bool supportLabels() const { return false; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    LabelableElement(const QualifiedName& tagName, Document&);
+ protected:
+  LabelableElement(const QualifiedName& tagName, Document&);
 
-private:
-    bool isLabelable() const final { return true; }
+ private:
+  bool isLabelable() const final { return true; }
 };
 
-inline bool isLabelableElement(const HTMLElement& element)
-{
-    return element.isLabelable();
+inline bool isLabelableElement(const HTMLElement& element) {
+  return element.isLabelable();
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(LabelableElement);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

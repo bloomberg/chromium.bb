@@ -35,39 +35,35 @@ namespace {
 
 unsigned s_deferralCount = 0;
 
-void setDefersLoading(bool isDeferred)
-{
-    // Make a copy of the collection. Undeferring loads can cause script to run,
-    // which would mutate ordinaryPages() in the middle of iteration.
-    HeapVector<Member<Page>> pages;
-    copyToVector(Page::ordinaryPages(), pages);
-    for (const auto& page : pages)
-        page->setDefersLoading(isDeferred);
+void setDefersLoading(bool isDeferred) {
+  // Make a copy of the collection. Undeferring loads can cause script to run,
+  // which would mutate ordinaryPages() in the middle of iteration.
+  HeapVector<Member<Page>> pages;
+  copyToVector(Page::ordinaryPages(), pages);
+  for (const auto& page : pages)
+    page->setDefersLoading(isDeferred);
 }
 
-} // namespace
+}  // namespace
 
-ScopedPageLoadDeferrer::ScopedPageLoadDeferrer()
-{
-    if (++s_deferralCount > 1)
-        return;
+ScopedPageLoadDeferrer::ScopedPageLoadDeferrer() {
+  if (++s_deferralCount > 1)
+    return;
 
-    setDefersLoading(true);
-    Platform::current()->currentThread()->scheduler()->suspendTimerQueue();
+  setDefersLoading(true);
+  Platform::current()->currentThread()->scheduler()->suspendTimerQueue();
 }
 
-ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
-{
-    if (--s_deferralCount > 0)
-        return;
+ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer() {
+  if (--s_deferralCount > 0)
+    return;
 
-    setDefersLoading(false);
-    Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
+  setDefersLoading(false);
+  Platform::current()->currentThread()->scheduler()->resumeTimerQueue();
 }
 
-bool ScopedPageLoadDeferrer::isActive()
-{
-    return s_deferralCount > 0;
+bool ScopedPageLoadDeferrer::isActive() {
+  return s_deferralCount > 0;
 }
 
-} // namespace blink
+}  // namespace blink

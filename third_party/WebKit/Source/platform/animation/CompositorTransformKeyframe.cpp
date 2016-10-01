@@ -8,28 +8,29 @@
 
 namespace blink {
 
-CompositorTransformKeyframe::CompositorTransformKeyframe(double time, CompositorTransformOperations value, const TimingFunction& timingFunction)
-    : m_transformKeyframe(cc::TransformKeyframe::Create(base::TimeDelta::FromSecondsD(time), value.releaseCcTransformOperations(), timingFunction.cloneToCC()))
-{
+CompositorTransformKeyframe::CompositorTransformKeyframe(
+    double time,
+    CompositorTransformOperations value,
+    const TimingFunction& timingFunction)
+    : m_transformKeyframe(
+          cc::TransformKeyframe::Create(base::TimeDelta::FromSecondsD(time),
+                                        value.releaseCcTransformOperations(),
+                                        timingFunction.cloneToCC())) {}
+
+CompositorTransformKeyframe::~CompositorTransformKeyframe() {}
+
+double CompositorTransformKeyframe::time() const {
+  return m_transformKeyframe->Time().InSecondsF();
 }
 
-CompositorTransformKeyframe::~CompositorTransformKeyframe()
-{
+const cc::TimingFunction* CompositorTransformKeyframe::ccTimingFunction()
+    const {
+  return m_transformKeyframe->timing_function();
 }
 
-double CompositorTransformKeyframe::time() const
-{
-    return m_transformKeyframe->Time().InSecondsF();
+std::unique_ptr<cc::TransformKeyframe> CompositorTransformKeyframe::cloneToCC()
+    const {
+  return m_transformKeyframe->Clone();
 }
 
-const cc::TimingFunction* CompositorTransformKeyframe::ccTimingFunction() const
-{
-    return m_transformKeyframe->timing_function();
-}
-
-std::unique_ptr<cc::TransformKeyframe> CompositorTransformKeyframe::cloneToCC() const
-{
-    return m_transformKeyframe->Clone();
-}
-
-} // namespace blink
+}  // namespace blink

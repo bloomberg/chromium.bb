@@ -35,100 +35,93 @@ using namespace WTF::Unicode;
 namespace blink {
 
 TypeAhead::TypeAhead(TypeAheadDataSource* dataSource)
-    : m_dataSource(dataSource)
-    , m_lastTypeTime(0)
-    , m_repeatingChar(0)
-{
+    : m_dataSource(dataSource), m_lastTypeTime(0), m_repeatingChar(0) {}
+
+static const double typeAheadTimeout = 1;  // in seconds
+
+static String stripLeadingWhiteSpace(const String& string) {
+  unsigned length = string.length();
+
+  unsigned i;
+  for (i = 0; i < length; ++i) {
+    if (string[i] != noBreakSpaceCharacter && !isSpaceOrNewline(string[i]))
+      break;
+  }
+
+  return string.substring(i, length - i);
 }
 
-static const double typeAheadTimeout = 1; // in seconds
-
-static String stripLeadingWhiteSpace(const String& string)
-{
-    unsigned length = string.length();
-
-    unsigned i;
-    for (i = 0; i < length; ++i) {
-        if (string[i] != noBreakSpaceCharacter && !isSpaceOrNewline(string[i]))
-            break;
-    }
-
-    return string.substring(i, length - i);
-}
-
-int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode)
-{
-    if (event->platformTimeStamp() < m_lastTypeTime)
-        return -1;
-
-    int optionCount = m_dataSource->optionCount();
-    double delta = event->platformTimeStamp() - m_lastTypeTime;
-    m_lastTypeTime = event->platformTimeStamp();
-
-    UChar c = event->charCode();
-
-    if (delta > typeAheadTimeout)
-        m_buffer.clear();
-
-    m_buffer.append(c);
-
-    if (optionCount < 1)
-        return -1;
-
-    int searchStartOffset = 1;
-    String prefix;
-    if (matchMode & CycleFirstChar && c == m_repeatingChar) {
-        // The user is likely trying to cycle through all the items starting
-        // with this character, so just search on the character.
-        prefix = String(&c, 1);
-        m_repeatingChar = c;
-    } else if (matchMode & MatchPrefix) {
-        prefix = m_buffer.toString();
-        if (m_buffer.length() > 1) {
-            m_repeatingChar = 0;
-            searchStartOffset = 0;
-        } else {
-            m_repeatingChar = c;
-        }
-    }
-
-    if (!prefix.isEmpty()) {
-        int selected = m_dataSource->indexOfSelectedOption();
-        int index = (selected < 0 ? 0 : selected) + searchStartOffset;
-        index %= optionCount;
-
-        // Compute a case-folded copy of the prefix string before beginning the search for
-        // a matching element. This code uses foldCase to work around the fact that
-        // String::startWith does not fold non-ASCII characters. This code can be changed
-        // to use startWith once that is fixed.
-        String prefixWithCaseFolded(prefix.foldCase());
-        for (int i = 0; i < optionCount; ++i, index = (index + 1) % optionCount) {
-            // Fold the option string and check if its prefix is equal to the folded prefix.
-            String text = m_dataSource->optionAtIndex(index);
-            if (stripLeadingWhiteSpace(text).foldCase().startsWith(prefixWithCaseFolded))
-                return index;
-        }
-    }
-
-    if (matchMode & MatchIndex) {
-        bool ok = false;
-        int index = m_buffer.toString().toInt(&ok);
-        if (index > 0 && index <= optionCount)
-            return index - 1;
-    }
+int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode) {
+  if (event->platformTimeStamp() < m_lastTypeTime)
     return -1;
-}
 
-bool TypeAhead::hasActiveSession(KeyboardEvent* event)
-{
-    double delta = event->platformTimeStamp() - m_lastTypeTime;
-    return delta <= typeAheadTimeout;
-}
+  int optionCount = m_dataSource->optionCount();
+  double delta = event->platformTimeStamp() - m_lastTypeTime;
+  m_lastTypeTime = event->platformTimeStamp();
 
-void TypeAhead::resetSession()
-{
-    m_lastTypeTime = 0;
+  UChar c = event->charCode();
+
+  if (delta > typeAheadTimeout)
     m_buffer.clear();
+
+  m_buffer.append(c);
+
+  if (optionCount < 1)
+    return -1;
+
+  int searchStartOffset = 1;
+  String prefix;
+  if (matchMode & CycleFirstChar && c == m_repeatingChar) {
+    // The user is likely trying to cycle through all the items starting
+    // with this character, so just search on the character.
+    prefix = String(&c, 1);
+    m_repeatingChar = c;
+  } else if (matchMode & MatchPrefix) {
+    prefix = m_buffer.toString();
+    if (m_buffer.length() > 1) {
+      m_repeatingChar = 0;
+      searchStartOffset = 0;
+    } else {
+      m_repeatingChar = c;
+    }
+  }
+
+  if (!prefix.isEmpty()) {
+    int selected = m_dataSource->indexOfSelectedOption();
+    int index = (selected < 0 ? 0 : selected) + searchStartOffset;
+    index %= optionCount;
+
+    // Compute a case-folded copy of the prefix string before beginning the search for
+    // a matching element. This code uses foldCase to work around the fact that
+    // String::startWith does not fold non-ASCII characters. This code can be changed
+    // to use startWith once that is fixed.
+    String prefixWithCaseFolded(prefix.foldCase());
+    for (int i = 0; i < optionCount; ++i, index = (index + 1) % optionCount) {
+      // Fold the option string and check if its prefix is equal to the folded prefix.
+      String text = m_dataSource->optionAtIndex(index);
+      if (stripLeadingWhiteSpace(text).foldCase().startsWith(
+              prefixWithCaseFolded))
+        return index;
+    }
+  }
+
+  if (matchMode & MatchIndex) {
+    bool ok = false;
+    int index = m_buffer.toString().toInt(&ok);
+    if (index > 0 && index <= optionCount)
+      return index - 1;
+  }
+  return -1;
 }
 
-} // namespace blink
+bool TypeAhead::hasActiveSession(KeyboardEvent* event) {
+  double delta = event->platformTimeStamp() - m_lastTypeTime;
+  return delta <= typeAheadTimeout;
+}
+
+void TypeAhead::resetSession() {
+  m_lastTypeTime = 0;
+  m_buffer.clear();
+}
+
+}  // namespace blink

@@ -20,28 +20,31 @@ class DOMArrayBuffer;
 class ExceptionState;
 class ScriptState;
 
-class MODULES_EXPORT PushMessageData final : public GarbageCollectedFinalized<PushMessageData>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class MODULES_EXPORT PushMessageData final
+    : public GarbageCollectedFinalized<PushMessageData>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static PushMessageData* create(const String& data);
-    static PushMessageData* create(const ArrayBufferOrArrayBufferViewOrUSVString& data);
+ public:
+  static PushMessageData* create(const String& data);
+  static PushMessageData* create(
+      const ArrayBufferOrArrayBufferViewOrUSVString& data);
 
-    virtual ~PushMessageData();
+  virtual ~PushMessageData();
 
-    DOMArrayBuffer* arrayBuffer() const;
-    Blob* blob() const;
-    ScriptValue json(ScriptState*, ExceptionState&) const;
-    String text() const;
+  DOMArrayBuffer* arrayBuffer() const;
+  Blob* blob() const;
+  ScriptValue json(ScriptState*, ExceptionState&) const;
+  String text() const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    PushMessageData(const char* data, unsigned bytesSize);
+ private:
+  PushMessageData(const char* data, unsigned bytesSize);
 
-    Vector<char> m_data;
+  Vector<char> m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PushMessageData_h
+#endif  // PushMessageData_h

@@ -28,25 +28,25 @@
 
 namespace blink {
 
-TagCollection::TagCollection(ContainerNode& rootNode, CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
-    : HTMLCollection(rootNode, type, DoesNotOverrideItemAfter)
-    , m_namespaceURI(namespaceURI)
-    , m_localName(localName)
-{
-    DCHECK(m_namespaceURI.isNull() || !m_namespaceURI.isEmpty());
+TagCollection::TagCollection(ContainerNode& rootNode,
+                             CollectionType type,
+                             const AtomicString& namespaceURI,
+                             const AtomicString& localName)
+    : HTMLCollection(rootNode, type, DoesNotOverrideItemAfter),
+      m_namespaceURI(namespaceURI),
+      m_localName(localName) {
+  DCHECK(m_namespaceURI.isNull() || !m_namespaceURI.isEmpty());
 }
 
-TagCollection::~TagCollection()
-{
+TagCollection::~TagCollection() {}
+
+bool TagCollection::elementMatches(const Element& testNode) const {
+  // Implements http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagnamens
+  if (m_localName != starAtom && m_localName != testNode.localName())
+    return false;
+
+  return m_namespaceURI == starAtom ||
+         m_namespaceURI == testNode.namespaceURI();
 }
 
-bool TagCollection::elementMatches(const Element& testNode) const
-{
-    // Implements http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagnamens
-    if (m_localName != starAtom && m_localName != testNode.localName())
-        return false;
-
-    return m_namespaceURI == starAtom || m_namespaceURI == testNode.namespaceURI();
-}
-
-} // namespace blink
+}  // namespace blink

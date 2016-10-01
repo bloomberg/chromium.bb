@@ -37,29 +37,23 @@
 #include <string.h>
 
 class BlinkTestEnvironmentScope {
-public:
-    BlinkTestEnvironmentScope()
-    {
-        content::SetUpBlinkTestEnvironment();
-    }
-    ~BlinkTestEnvironmentScope()
-    {
-        content::TearDownBlinkTestEnvironment();
-    }
+ public:
+  BlinkTestEnvironmentScope() { content::SetUpBlinkTestEnvironment(); }
+  ~BlinkTestEnvironmentScope() { content::TearDownBlinkTestEnvironment(); }
 };
 
-int runHelper(base::TestSuite* testSuite)
-{
-    BlinkTestEnvironmentScope blinkTestEnvironment;
-    blink::ThreadState* currentThreadState = blink::ThreadState::current();
-    currentThreadState->registerTraceDOMWrappers(nullptr, nullptr, nullptr, nullptr);
-    int result = testSuite->Run();
-    currentThreadState->collectAllGarbage();
-    return result;
+int runHelper(base::TestSuite* testSuite) {
+  BlinkTestEnvironmentScope blinkTestEnvironment;
+  blink::ThreadState* currentThreadState = blink::ThreadState::current();
+  currentThreadState->registerTraceDOMWrappers(nullptr, nullptr, nullptr,
+                                               nullptr);
+  int result = testSuite->Run();
+  currentThreadState->collectAllGarbage();
+  return result;
 }
 
-int main(int argc, char** argv)
-{
-    base::TestSuite testSuite(argc, argv);
-    return base::LaunchUnitTests(argc, argv, base::Bind(runHelper, base::Unretained(&testSuite)));
+int main(int argc, char** argv) {
+  base::TestSuite testSuite(argc, argv);
+  return base::LaunchUnitTests(
+      argc, argv, base::Bind(runHelper, base::Unretained(&testSuite)));
 }

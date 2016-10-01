@@ -9,10 +9,11 @@ namespace blink {
 
 // A simple GraphicsLayer implementation suitable for use in unit tests.
 class FakeGraphicsLayer : public GraphicsLayer {
-public:
-    explicit FakeGraphicsLayer(GraphicsLayerClient* client) : GraphicsLayer(client) { }
+ public:
+  explicit FakeGraphicsLayer(GraphicsLayerClient* client)
+      : GraphicsLayer(client) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FakeGraphicsLayer_h
+#endif  // FakeGraphicsLayer_h

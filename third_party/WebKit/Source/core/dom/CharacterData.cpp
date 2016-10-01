@@ -35,176 +35,197 @@
 
 namespace blink {
 
-void CharacterData::atomize()
-{
-    m_data = AtomicString(m_data);
+void CharacterData::atomize() {
+  m_data = AtomicString(m_data);
 }
 
-void CharacterData::setData(const String& data)
-{
-    const String& nonNullData = !data.isNull() ? data : emptyString();
-    if (m_data == nonNullData)
-        return;
+void CharacterData::setData(const String& data) {
+  const String& nonNullData = !data.isNull() ? data : emptyString();
+  if (m_data == nonNullData)
+    return;
 
-    unsigned oldLength = length();
+  unsigned oldLength = length();
 
-    setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length(), UpdateFromNonParser);
-    document().didRemoveText(this, 0, oldLength);
+  setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length(),
+                   UpdateFromNonParser);
+  document().didRemoveText(this, 0, oldLength);
 }
 
-String CharacterData::substringData(unsigned offset, unsigned count, ExceptionState& exceptionState)
-{
-    if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ").");
-        return String();
-    }
+String CharacterData::substringData(unsigned offset,
+                                    unsigned count,
+                                    ExceptionState& exceptionState) {
+  if (offset > length()) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The offset " + String::number(offset) +
+                            " is greater than the node's length (" +
+                            String::number(length()) + ").");
+    return String();
+  }
 
-    return m_data.substring(offset, count);
+  return m_data.substring(offset, count);
 }
 
-void CharacterData::parserAppendData(const String& data)
-{
-    String newStr = m_data + data;
+void CharacterData::parserAppendData(const String& data) {
+  String newStr = m_data + data;
 
-    setDataAndUpdate(newStr, m_data.length(), 0, data.length(), UpdateFromParser);
+  setDataAndUpdate(newStr, m_data.length(), 0, data.length(), UpdateFromParser);
 }
 
-void CharacterData::appendData(const String& data)
-{
-    String newStr = m_data + data;
+void CharacterData::appendData(const String& data) {
+  String newStr = m_data + data;
 
-    setDataAndUpdate(newStr, m_data.length(), 0, data.length(), UpdateFromNonParser);
+  setDataAndUpdate(newStr, m_data.length(), 0, data.length(),
+                   UpdateFromNonParser);
 
-    // FIXME: Should we call textInserted here?
+  // FIXME: Should we call textInserted here?
 }
 
-void CharacterData::insertData(unsigned offset, const String& data, ExceptionState& exceptionState)
-{
-    if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length()) + ").");
-        return;
-    }
+void CharacterData::insertData(unsigned offset,
+                               const String& data,
+                               ExceptionState& exceptionState) {
+  if (offset > length()) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The offset " + String::number(offset) +
+                            " is greater than the node's length (" +
+                            String::number(length()) + ").");
+    return;
+  }
 
-    String newStr = m_data;
-    newStr.insert(data, offset);
+  String newStr = m_data;
+  newStr.insert(data, offset);
 
-    setDataAndUpdate(newStr, offset, 0, data.length(), UpdateFromNonParser);
+  setDataAndUpdate(newStr, offset, 0, data.length(), UpdateFromNonParser);
 
-    document().didInsertText(this, offset, data.length());
+  document().didInsertText(this, offset, data.length());
 }
 
-static bool validateOffsetCount(unsigned offset, unsigned count, unsigned length, unsigned& realCount, ExceptionState& exceptionState)
-{
-    if (offset > length) {
-        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is greater than the node's length (" + String::number(length) + ").");
-        return false;
-    }
+static bool validateOffsetCount(unsigned offset,
+                                unsigned count,
+                                unsigned length,
+                                unsigned& realCount,
+                                ExceptionState& exceptionState) {
+  if (offset > length) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The offset " + String::number(offset) +
+                            " is greater than the node's length (" +
+                            String::number(length) + ").");
+    return false;
+  }
 
-    CheckedNumeric<unsigned> offsetCount = offset;
-    offsetCount += count;
+  CheckedNumeric<unsigned> offsetCount = offset;
+  offsetCount += count;
 
-    if (!offsetCount.IsValid() || offset + count > length)
-        realCount = length - offset;
-    else
-        realCount = count;
+  if (!offsetCount.IsValid() || offset + count > length)
+    realCount = length - offset;
+  else
+    realCount = count;
 
-    return true;
+  return true;
 }
 
-void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionState& exceptionState)
-{
-    unsigned realCount = 0;
-    if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
-        return;
+void CharacterData::deleteData(unsigned offset,
+                               unsigned count,
+                               ExceptionState& exceptionState) {
+  unsigned realCount = 0;
+  if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
+    return;
 
-    String newStr = m_data;
-    newStr.remove(offset, realCount);
+  String newStr = m_data;
+  newStr.remove(offset, realCount);
 
-    setDataAndUpdate(newStr, offset, realCount, 0, UpdateFromNonParser);
+  setDataAndUpdate(newStr, offset, realCount, 0, UpdateFromNonParser);
 
-    document().didRemoveText(this, offset, realCount);
+  document().didRemoveText(this, offset, realCount);
 }
 
-void CharacterData::replaceData(unsigned offset, unsigned count, const String& data, ExceptionState& exceptionState)
-{
-    unsigned realCount = 0;
-    if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
-        return;
+void CharacterData::replaceData(unsigned offset,
+                                unsigned count,
+                                const String& data,
+                                ExceptionState& exceptionState) {
+  unsigned realCount = 0;
+  if (!validateOffsetCount(offset, count, length(), realCount, exceptionState))
+    return;
 
-    String newStr = m_data;
-    newStr.remove(offset, realCount);
-    newStr.insert(data, offset);
+  String newStr = m_data;
+  newStr.remove(offset, realCount);
+  newStr.insert(data, offset);
 
-    setDataAndUpdate(newStr, offset, realCount, data.length(), UpdateFromNonParser);
+  setDataAndUpdate(newStr, offset, realCount, data.length(),
+                   UpdateFromNonParser);
 
-    // update the markers for spell checking and grammar checking
-    document().didRemoveText(this, offset, realCount);
-    document().didInsertText(this, offset, data.length());
+  // update the markers for spell checking and grammar checking
+  document().didRemoveText(this, offset, realCount);
+  document().didInsertText(this, offset, data.length());
 }
 
-String CharacterData::nodeValue() const
-{
-    return m_data;
+String CharacterData::nodeValue() const {
+  return m_data;
 }
 
-bool CharacterData::containsOnlyWhitespace() const
-{
-    return m_data.containsOnlyWhitespace();
+bool CharacterData::containsOnlyWhitespace() const {
+  return m_data.containsOnlyWhitespace();
 }
 
-void CharacterData::setNodeValue(const String& nodeValue)
-{
-    setData(nodeValue);
+void CharacterData::setNodeValue(const String& nodeValue) {
+  setData(nodeValue);
 }
 
-void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource source)
-{
-    if (source != UpdateFromParser)
-        document().dataWillChange(*this);
+void CharacterData::setDataAndUpdate(const String& newData,
+                                     unsigned offsetOfReplacedData,
+                                     unsigned oldLength,
+                                     unsigned newLength,
+                                     UpdateSource source) {
+  if (source != UpdateFromParser)
+    document().dataWillChange(*this);
 
-    String oldData = m_data;
-    m_data = newData;
+  String oldData = m_data;
+  m_data = newData;
 
-    DCHECK(!layoutObject() || isTextNode());
-    if (isTextNode())
-        toText(this)->updateTextLayoutObject(offsetOfReplacedData, oldLength);
+  DCHECK(!layoutObject() || isTextNode());
+  if (isTextNode())
+    toText(this)->updateTextLayoutObject(offsetOfReplacedData, oldLength);
 
-    if (source != UpdateFromParser) {
-        if (getNodeType() == kProcessingInstructionNode)
-            toProcessingInstruction(this)->didAttributeChanged();
+  if (source != UpdateFromParser) {
+    if (getNodeType() == kProcessingInstructionNode)
+      toProcessingInstruction(this)->didAttributeChanged();
 
-        if (document().frame())
-            document().frame()->selection().didUpdateCharacterData(this, offsetOfReplacedData, oldLength, newLength);
-    }
+    if (document().frame())
+      document().frame()->selection().didUpdateCharacterData(
+          this, offsetOfReplacedData, oldLength, newLength);
+  }
 
-    document().incDOMTreeVersion();
-    didModifyData(oldData, source);
+  document().incDOMTreeVersion();
+  didModifyData(oldData, source);
 }
 
-void CharacterData::didModifyData(const String& oldData, UpdateSource source)
-{
-    if (MutationObserverInterestGroup* mutationRecipients = MutationObserverInterestGroup::createForCharacterDataMutation(*this))
-        mutationRecipients->enqueueMutationRecord(MutationRecord::createCharacterData(this, oldData));
+void CharacterData::didModifyData(const String& oldData, UpdateSource source) {
+  if (MutationObserverInterestGroup* mutationRecipients =
+          MutationObserverInterestGroup::createForCharacterDataMutation(*this))
+    mutationRecipients->enqueueMutationRecord(
+        MutationRecord::createCharacterData(this, oldData));
 
-    if (parentNode()) {
-        ContainerNode::ChildrenChange change = {ContainerNode::TextChanged, this, previousSibling(), nextSibling(), ContainerNode::ChildrenChangeSourceAPI};
-        parentNode()->childrenChanged(change);
-    }
+  if (parentNode()) {
+    ContainerNode::ChildrenChange change = {
+        ContainerNode::TextChanged, this, previousSibling(), nextSibling(),
+        ContainerNode::ChildrenChangeSourceAPI};
+    parentNode()->childrenChanged(change);
+  }
 
-    // Skip DOM mutation events if the modification is from parser.
-    // Note that mutation observer events will still fire.
-    // Spec: https://html.spec.whatwg.org/multipage/syntax.html#insert-a-character
-    if (source != UpdateFromParser && !isInShadowTree()) {
-        if (document().hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
-            dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMCharacterDataModified, true, nullptr, oldData, m_data));
-        dispatchSubtreeModifiedEvent();
-    }
-    InspectorInstrumentation::characterDataModified(this);
+  // Skip DOM mutation events if the modification is from parser.
+  // Note that mutation observer events will still fire.
+  // Spec: https://html.spec.whatwg.org/multipage/syntax.html#insert-a-character
+  if (source != UpdateFromParser && !isInShadowTree()) {
+    if (document().hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER))
+      dispatchScopedEvent(
+          MutationEvent::create(EventTypeNames::DOMCharacterDataModified, true,
+                                nullptr, oldData, m_data));
+    dispatchSubtreeModifiedEvent();
+  }
+  InspectorInstrumentation::characterDataModified(this);
 }
 
-int CharacterData::maxCharacterOffset() const
-{
-    return static_cast<int>(length());
+int CharacterData::maxCharacterOffset() const {
+  return static_cast<int>(length());
 }
 
-} // namespace blink
+}  // namespace blink

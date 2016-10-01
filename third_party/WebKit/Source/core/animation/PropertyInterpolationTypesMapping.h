@@ -18,9 +18,8 @@ using InterpolationTypes = Vector<std::unique_ptr<const InterpolationType>>;
 namespace PropertyInterpolationTypesMapping {
 
 const InterpolationTypes& get(const PropertyHandle&);
-
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PropertyInterpolationTypesMapping_h
+#endif  // PropertyInterpolationTypesMapping_h

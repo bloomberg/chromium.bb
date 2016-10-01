@@ -43,38 +43,41 @@ namespace blink {
 class ErrorCallback;
 
 class DirectoryReader : public DirectoryReaderBase, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DirectoryReader* create(DOMFileSystemBase* fileSystem, const String& fullPath)
-    {
-        return new DirectoryReader(fileSystem, fullPath);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~DirectoryReader() override;
+ public:
+  static DirectoryReader* create(DOMFileSystemBase* fileSystem,
+                                 const String& fullPath) {
+    return new DirectoryReader(fileSystem, fullPath);
+  }
 
-    void readEntries(EntriesCallback*, ErrorCallback* = nullptr);
+  ~DirectoryReader() override;
 
-    DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
+  void readEntries(EntriesCallback*, ErrorCallback* = nullptr);
 
-    DECLARE_VIRTUAL_TRACE();
+  DOMFileSystem* filesystem() const {
+    return static_cast<DOMFileSystem*>(m_fileSystem.get());
+  }
 
-private:
-    class EntriesCallbackHelper;
-    class ErrorCallbackHelper;
+  DECLARE_VIRTUAL_TRACE();
 
-    DirectoryReader(DOMFileSystemBase*, const String& fullPath);
+ private:
+  class EntriesCallbackHelper;
+  class ErrorCallbackHelper;
 
-    void addEntries(const EntryHeapVector& entries);
+  DirectoryReader(DOMFileSystemBase*, const String& fullPath);
 
-    void onError(FileError::ErrorCode);
+  void addEntries(const EntryHeapVector& entries);
 
-    bool m_isReading;
-    EntryHeapVector m_entries;
-    FileError::ErrorCode m_error = FileError::ErrorCode::kOK;
-    Member<EntriesCallback> m_entriesCallback;
-    Member<ErrorCallback> m_errorCallback;
+  void onError(FileError::ErrorCode);
+
+  bool m_isReading;
+  EntryHeapVector m_entries;
+  FileError::ErrorCode m_error = FileError::ErrorCode::kOK;
+  Member<EntriesCallback> m_entriesCallback;
+  Member<ErrorCallback> m_errorCallback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DirectoryReader_h
+#endif  // DirectoryReader_h

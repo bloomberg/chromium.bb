@@ -13,38 +13,42 @@
 namespace blink {
 
 class SensorReadingEvent : public Event {
-    DEFINE_WRAPPERTYPEINFO();
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static SensorReadingEvent* create(const AtomicString& eventType, SensorReading* reading)
-    {
-        return new SensorReadingEvent(eventType, reading);
-    }
+ public:
+  static SensorReadingEvent* create(const AtomicString& eventType,
+                                    SensorReading* reading) {
+    return new SensorReadingEvent(eventType, reading);
+  }
 
-    static SensorReadingEvent* create(const AtomicString& eventType, const SensorReadingEventInit& initializer)
-    {
-        return new SensorReadingEvent(eventType, initializer);
-    }
+  static SensorReadingEvent* create(const AtomicString& eventType,
+                                    const SensorReadingEventInit& initializer) {
+    return new SensorReadingEvent(eventType, initializer);
+  }
 
-    ~SensorReadingEvent() override;
+  ~SensorReadingEvent() override;
 
-    const SensorReading* reading() const { return m_reading.get(); }
-    SensorReading* reading() { return m_reading.get(); }
-    const AtomicString& interfaceName() const override;
+  const SensorReading* reading() const { return m_reading.get(); }
+  SensorReading* reading() { return m_reading.get(); }
+  const AtomicString& interfaceName() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    Member<SensorReading> m_reading;
+ protected:
+  Member<SensorReading> m_reading;
 
-private:
-    SensorReadingEvent(const AtomicString& eventType, SensorReading*);
-    SensorReadingEvent(const AtomicString& eventType, const SensorReadingEventInit& initializer);
-
+ private:
+  SensorReadingEvent(const AtomicString& eventType, SensorReading*);
+  SensorReadingEvent(const AtomicString& eventType,
+                     const SensorReadingEventInit& initializer);
 };
 
-DEFINE_TYPE_CASTS(SensorReadingEvent, Event, event, event->interfaceName() == EventNames::SensorReadingEvent, event.interfaceName() == EventNames::SensorReadingEvent);
+DEFINE_TYPE_CASTS(SensorReadingEvent,
+                  Event,
+                  event,
+                  event->interfaceName() == EventNames::SensorReadingEvent,
+                  event.interfaceName() == EventNames::SensorReadingEvent);
 
-} // namepsace blink
+}  // namepsace blink
 
-#endif // SensorReadingEvent_h
+#endif  // SensorReadingEvent_h

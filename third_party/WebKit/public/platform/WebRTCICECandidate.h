@@ -41,43 +41,45 @@ class WebString;
 class WebRTCICECandidatePrivate;
 
 class WebRTCICECandidate {
-public:
-    WebRTCICECandidate() { }
-    WebRTCICECandidate(const WebRTCICECandidate& other) { assign(other); }
-    ~WebRTCICECandidate() { reset(); }
+ public:
+  WebRTCICECandidate() {}
+  WebRTCICECandidate(const WebRTCICECandidate& other) { assign(other); }
+  ~WebRTCICECandidate() { reset(); }
 
-    WebRTCICECandidate& operator=(const WebRTCICECandidate& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebRTCICECandidate& operator=(const WebRTCICECandidate& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebRTCICECandidate&);
+  BLINK_PLATFORM_EXPORT void assign(const WebRTCICECandidate&);
 
-    BLINK_PLATFORM_EXPORT void initialize(const WebString& candidate, const WebString& sdpMid, unsigned short sdpMLineIndex);
-    BLINK_PLATFORM_EXPORT void reset();
-    bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void initialize(const WebString& candidate,
+                                        const WebString& sdpMid,
+                                        unsigned short sdpMLineIndex);
+  BLINK_PLATFORM_EXPORT void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebString candidate() const;
-    BLINK_PLATFORM_EXPORT WebString sdpMid() const;
-    BLINK_PLATFORM_EXPORT unsigned short sdpMLineIndex() const;
-    BLINK_PLATFORM_EXPORT void setCandidate(WebString);
-    BLINK_PLATFORM_EXPORT void setSdpMid(WebString);
-    BLINK_PLATFORM_EXPORT void setSdpMLineIndex(unsigned short);
+  BLINK_PLATFORM_EXPORT WebString candidate() const;
+  BLINK_PLATFORM_EXPORT WebString sdpMid() const;
+  BLINK_PLATFORM_EXPORT unsigned short sdpMLineIndex() const;
+  BLINK_PLATFORM_EXPORT void setCandidate(WebString);
+  BLINK_PLATFORM_EXPORT void setSdpMid(WebString);
+  BLINK_PLATFORM_EXPORT void setSdpMLineIndex(unsigned short);
 
 #if INSIDE_BLINK
-    // TODO(guidou): Support setting sdpMLineIndex to -1 to indicate the absence
-    // of a value for sdpMLineIndex. crbug.com/614958
-    WebRTCICECandidate(WebString candidate, WebString sdpMid, unsigned short sdpMLineIndex)
-    {
-        this->initialize(candidate, sdpMid, sdpMLineIndex);
-    }
+  // TODO(guidou): Support setting sdpMLineIndex to -1 to indicate the absence
+  // of a value for sdpMLineIndex. crbug.com/614958
+  WebRTCICECandidate(WebString candidate,
+                     WebString sdpMid,
+                     unsigned short sdpMLineIndex) {
+    this->initialize(candidate, sdpMid, sdpMLineIndex);
+  }
 #endif
 
-private:
-    WebPrivatePtr<WebRTCICECandidatePrivate> m_private;
+ private:
+  WebPrivatePtr<WebRTCICECandidatePrivate> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRTCICECandidate_h
+#endif  // WebRTCICECandidate_h

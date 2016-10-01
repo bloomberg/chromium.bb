@@ -55,51 +55,55 @@ class PaintLayer;
 class LayoutObject;
 
 enum PaintLayerFlag {
-    PaintLayerNoFlag = 0,
-    PaintLayerHaveTransparency = 1,
-    PaintLayerAppliedTransform = 1 << 1,
-    PaintLayerUncachedClipRects = 1 << 2,
-    PaintLayerPaintingOverlayScrollbars = 1 << 3,
-    PaintLayerPaintingCompositingBackgroundPhase = 1 << 4,
-    PaintLayerPaintingCompositingForegroundPhase = 1 << 5,
-    PaintLayerPaintingCompositingMaskPhase = 1 << 6,
-    PaintLayerPaintingCompositingScrollingPhase = 1 << 7,
-    PaintLayerPaintingOverflowContents = 1 << 8,
-    PaintLayerPaintingRootBackgroundOnly = 1 << 9,
-    PaintLayerPaintingSkipRootBackground = 1 << 10,
-    PaintLayerPaintingChildClippingMaskPhase = 1 << 11,
-    PaintLayerPaintingRenderingClipPathAsMask = 1 << 12,
-    PaintLayerPaintingCompositingAllPhases = (PaintLayerPaintingCompositingBackgroundPhase | PaintLayerPaintingCompositingForegroundPhase | PaintLayerPaintingCompositingMaskPhase)
+  PaintLayerNoFlag = 0,
+  PaintLayerHaveTransparency = 1,
+  PaintLayerAppliedTransform = 1 << 1,
+  PaintLayerUncachedClipRects = 1 << 2,
+  PaintLayerPaintingOverlayScrollbars = 1 << 3,
+  PaintLayerPaintingCompositingBackgroundPhase = 1 << 4,
+  PaintLayerPaintingCompositingForegroundPhase = 1 << 5,
+  PaintLayerPaintingCompositingMaskPhase = 1 << 6,
+  PaintLayerPaintingCompositingScrollingPhase = 1 << 7,
+  PaintLayerPaintingOverflowContents = 1 << 8,
+  PaintLayerPaintingRootBackgroundOnly = 1 << 9,
+  PaintLayerPaintingSkipRootBackground = 1 << 10,
+  PaintLayerPaintingChildClippingMaskPhase = 1 << 11,
+  PaintLayerPaintingRenderingClipPathAsMask = 1 << 12,
+  PaintLayerPaintingCompositingAllPhases =
+      (PaintLayerPaintingCompositingBackgroundPhase |
+       PaintLayerPaintingCompositingForegroundPhase |
+       PaintLayerPaintingCompositingMaskPhase)
 };
 
 typedef unsigned PaintLayerFlags;
 
 struct PaintLayerPaintingInfo {
-    STACK_ALLOCATED();
-    PaintLayerPaintingInfo(PaintLayer* inRootLayer, const LayoutRect& inDirtyRect,
-        GlobalPaintFlags globalPaintFlags, const LayoutSize& inSubPixelAccumulation)
-        : rootLayer(inRootLayer)
-        , paintDirtyRect(inDirtyRect)
-        , subPixelAccumulation(inSubPixelAccumulation)
-        , clipToDirtyRect(true)
-        , ancestorHasClipPathClipping(false)
-        , m_globalPaintFlags(globalPaintFlags)
-    { }
+  STACK_ALLOCATED();
+  PaintLayerPaintingInfo(PaintLayer* inRootLayer,
+                         const LayoutRect& inDirtyRect,
+                         GlobalPaintFlags globalPaintFlags,
+                         const LayoutSize& inSubPixelAccumulation)
+      : rootLayer(inRootLayer),
+        paintDirtyRect(inDirtyRect),
+        subPixelAccumulation(inSubPixelAccumulation),
+        clipToDirtyRect(true),
+        ancestorHasClipPathClipping(false),
+        m_globalPaintFlags(globalPaintFlags) {}
 
-    GlobalPaintFlags getGlobalPaintFlags() const { return m_globalPaintFlags; }
+  GlobalPaintFlags getGlobalPaintFlags() const { return m_globalPaintFlags; }
 
-    // TODO(jchaffraix): We should encapsulate all these fields.
-    PaintLayer* rootLayer;
-    LayoutRect paintDirtyRect; // relative to rootLayer;
-    LayoutSize subPixelAccumulation;
-    IntSize scrollOffsetAccumulation;
-    bool clipToDirtyRect;
-    bool ancestorHasClipPathClipping;
+  // TODO(jchaffraix): We should encapsulate all these fields.
+  PaintLayer* rootLayer;
+  LayoutRect paintDirtyRect;  // relative to rootLayer;
+  LayoutSize subPixelAccumulation;
+  IntSize scrollOffsetAccumulation;
+  bool clipToDirtyRect;
+  bool ancestorHasClipPathClipping;
 
-private:
-    const GlobalPaintFlags m_globalPaintFlags;
+ private:
+  const GlobalPaintFlags m_globalPaintFlags;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintLayerPaintingInfo_h
+#endif  // PaintLayerPaintingInfo_h

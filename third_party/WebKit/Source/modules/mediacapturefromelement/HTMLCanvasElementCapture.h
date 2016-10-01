@@ -15,15 +15,21 @@ class MediaStream;
 class ExceptionState;
 
 class HTMLCanvasElementCapture {
-    STATIC_ONLY(HTMLCanvasElementCapture);
-public:
-    static MediaStream* captureStream(HTMLCanvasElement&, ExceptionState&);
-    static MediaStream* captureStream(HTMLCanvasElement&, double frameRate, ExceptionState&);
-private:
-    static MediaStream* captureStream(HTMLCanvasElement&, bool givenFrameRate, double frameRate, ExceptionState&);
+  STATIC_ONLY(HTMLCanvasElementCapture);
 
+ public:
+  static MediaStream* captureStream(HTMLCanvasElement&, ExceptionState&);
+  static MediaStream* captureStream(HTMLCanvasElement&,
+                                    double frameRate,
+                                    ExceptionState&);
+
+ private:
+  static MediaStream* captureStream(HTMLCanvasElement&,
+                                    bool givenFrameRate,
+                                    double frameRate,
+                                    ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

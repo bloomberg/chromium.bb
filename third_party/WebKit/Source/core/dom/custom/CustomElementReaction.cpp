@@ -10,13 +10,10 @@ namespace blink {
 
 CustomElementReaction::CustomElementReaction(
     CustomElementDefinition* definition)
-    : m_definition(definition)
-{
+    : m_definition(definition) {}
+
+DEFINE_TRACE(CustomElementReaction) {
+  visitor->trace(m_definition);
 }
 
-DEFINE_TRACE(CustomElementReaction)
-{
-    visitor->trace(m_definition);
-}
-
-} // namespace blink
+}  // namespace blink

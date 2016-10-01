@@ -11,13 +11,14 @@
 
 namespace blink {
 
-TEST(BlinkGCDumpProviderTest, MemoryDump)
-{
-    base::trace_event::MemoryDumpArgs args = { base::trace_event::MemoryDumpLevelOfDetail::DETAILED };
-    std::unique_ptr<base::trace_event::ProcessMemoryDump> dump(new base::trace_event::ProcessMemoryDump(nullptr, args));
-    BlinkGCMemoryDumpProvider::instance()->OnMemoryDump(args, dump.get());
-    DCHECK(dump->GetAllocatorDump("blink_gc"));
-    DCHECK(dump->GetAllocatorDump("blink_gc/allocated_objects"));
+TEST(BlinkGCDumpProviderTest, MemoryDump) {
+  base::trace_event::MemoryDumpArgs args = {
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> dump(
+      new base::trace_event::ProcessMemoryDump(nullptr, args));
+  BlinkGCMemoryDumpProvider::instance()->OnMemoryDump(args, dump.get());
+  DCHECK(dump->GetAllocatorDump("blink_gc"));
+  DCHECK(dump->GetAllocatorDump("blink_gc/allocated_objects"));
 }
 
-} // namespace blink
+}  // namespace blink

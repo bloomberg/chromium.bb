@@ -11,40 +11,41 @@
 
 namespace blink {
 
-class CORE_EXPORT InputDeviceCapabilities final : public GarbageCollected<InputDeviceCapabilities>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    // This return a static local InputDeviceCapabilities pointer which has firesTouchEvents set to be true.
-    static InputDeviceCapabilities* firesTouchEventsSourceCapabilities();
+class CORE_EXPORT InputDeviceCapabilities final
+    : public GarbageCollected<InputDeviceCapabilities>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // This return a static local InputDeviceCapabilities pointer which has firesTouchEvents set to be false.
-    static InputDeviceCapabilities* doesntFireTouchEventsSourceCapabilities();
+ public:
+  // This return a static local InputDeviceCapabilities pointer which has firesTouchEvents set to be true.
+  static InputDeviceCapabilities* firesTouchEventsSourceCapabilities();
 
-    static InputDeviceCapabilities* create(bool firesTouchEvents)
-    {
-        return new InputDeviceCapabilities(firesTouchEvents);
-    }
+  // This return a static local InputDeviceCapabilities pointer which has firesTouchEvents set to be false.
+  static InputDeviceCapabilities* doesntFireTouchEventsSourceCapabilities();
 
-    static InputDeviceCapabilities* create(
-        const InputDeviceCapabilitiesInit& initializer)
-    {
-        return new InputDeviceCapabilities(initializer);
-    }
+  static InputDeviceCapabilities* create(bool firesTouchEvents) {
+    return new InputDeviceCapabilities(firesTouchEvents);
+  }
 
-    bool firesTouchEvents() const { return m_firesTouchEvents; }
+  static InputDeviceCapabilities* create(
+      const InputDeviceCapabilitiesInit& initializer) {
+    return new InputDeviceCapabilities(initializer);
+  }
 
-    DEFINE_INLINE_TRACE() { }
+  bool firesTouchEvents() const { return m_firesTouchEvents; }
 
-private:
-    InputDeviceCapabilities(bool firesTouchEvents);
-    InputDeviceCapabilities(const InputDeviceCapabilitiesInit&);
+  DEFINE_INLINE_TRACE() {}
 
-    // Whether this device dispatches touch events. This mainly lets developers
-    // avoid handling both touch and mouse events dispatched for a single user
-    // action.
-    bool m_firesTouchEvents;
+ private:
+  InputDeviceCapabilities(bool firesTouchEvents);
+  InputDeviceCapabilities(const InputDeviceCapabilitiesInit&);
+
+  // Whether this device dispatches touch events. This mainly lets developers
+  // avoid handling both touch and mouse events dispatched for a single user
+  // action.
+  bool m_firesTouchEvents;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InputDeviceCapabilities_h
+#endif  // InputDeviceCapabilities_h

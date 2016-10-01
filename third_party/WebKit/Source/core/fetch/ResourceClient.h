@@ -34,30 +34,32 @@ namespace blink {
 class Resource;
 
 class CORE_EXPORT ResourceClient : public GarbageCollectedMixin {
-public:
-    enum ResourceClientType {
-        BaseResourceType,
-        FontType,
-        StyleSheetType,
-        DocumentType,
-        RawResourceType,
-        ScriptType
-    };
+ public:
+  enum ResourceClientType {
+    BaseResourceType,
+    FontType,
+    StyleSheetType,
+    DocumentType,
+    RawResourceType,
+    ScriptType
+  };
 
-    virtual ~ResourceClient() { }
-    virtual void notifyFinished(Resource*) { }
+  virtual ~ResourceClient() {}
+  virtual void notifyFinished(Resource*) {}
 
-    static bool isExpectedType(ResourceClient*) { return true; }
-    virtual ResourceClientType getResourceClientType() const { return BaseResourceType; }
+  static bool isExpectedType(ResourceClient*) { return true; }
+  virtual ResourceClientType getResourceClientType() const {
+    return BaseResourceType;
+  }
 
-    // Name for debugging, e.g. shown in memory-infra.
-    virtual String debugName() const = 0;
+  // Name for debugging, e.g. shown in memory-infra.
+  virtual String debugName() const = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    ResourceClient() { }
+ protected:
+  ResourceClient() {}
 };
-} // namespace blink
+}  // namespace blink
 
 #endif

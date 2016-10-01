@@ -33,39 +33,35 @@
 namespace blink {
 
 class StyleReflection : public RefCounted<StyleReflection> {
-public:
-    static PassRefPtr<StyleReflection> create()
-    {
-        return adoptRef(new StyleReflection);
-    }
+ public:
+  static PassRefPtr<StyleReflection> create() {
+    return adoptRef(new StyleReflection);
+  }
 
-    bool operator==(const StyleReflection& o) const
-    {
-        return m_direction == o.m_direction && m_offset == o.m_offset && m_mask == o.m_mask;
-    }
-    bool operator!=(const StyleReflection& o) const { return !(*this == o); }
+  bool operator==(const StyleReflection& o) const {
+    return m_direction == o.m_direction && m_offset == o.m_offset &&
+           m_mask == o.m_mask;
+  }
+  bool operator!=(const StyleReflection& o) const { return !(*this == o); }
 
-    CSSReflectionDirection direction() const { return m_direction; }
-    Length offset() const { return m_offset; }
-    const NinePieceImage& mask() const { return m_mask; }
+  CSSReflectionDirection direction() const { return m_direction; }
+  Length offset() const { return m_offset; }
+  const NinePieceImage& mask() const { return m_mask; }
 
-    void setDirection(CSSReflectionDirection dir) { m_direction = dir; }
-    void setOffset(const Length& length) { m_offset = length; }
-    void setMask(const NinePieceImage& image) { m_mask = image; }
+  void setDirection(CSSReflectionDirection dir) { m_direction = dir; }
+  void setOffset(const Length& length) { m_offset = length; }
+  void setMask(const NinePieceImage& image) { m_mask = image; }
 
-private:
-    StyleReflection()
-        : m_direction(ReflectionBelow)
-        , m_offset(0, Fixed)
-    {
-        m_mask.setMaskDefaults();
-    }
+ private:
+  StyleReflection() : m_direction(ReflectionBelow), m_offset(0, Fixed) {
+    m_mask.setMaskDefaults();
+  }
 
-    CSSReflectionDirection m_direction;
-    Length m_offset;
-    NinePieceImage m_mask;
+  CSSReflectionDirection m_direction;
+  Length m_offset;
+  NinePieceImage m_mask;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleReflection_h
+#endif  // StyleReflection_h

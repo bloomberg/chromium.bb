@@ -31,31 +31,33 @@ struct LengthPoint;
 //   containing block chain) scroll container.
 //
 // For more information see spec: https://drafts.csswg.org/css-snappoints/
-class CORE_EXPORT SnapCoordinator final : public GarbageCollectedFinalized<SnapCoordinator> {
-    WTF_MAKE_NONCOPYABLE(SnapCoordinator);
+class CORE_EXPORT SnapCoordinator final
+    : public GarbageCollectedFinalized<SnapCoordinator> {
+  WTF_MAKE_NONCOPYABLE(SnapCoordinator);
 
-public:
-    static SnapCoordinator* create();
-    ~SnapCoordinator();
-    DEFINE_INLINE_TRACE() {}
+ public:
+  static SnapCoordinator* create();
+  ~SnapCoordinator();
+  DEFINE_INLINE_TRACE() {}
 
-    void snapContainerDidChange(LayoutBox&, ScrollSnapType);
-    void snapAreaDidChange(LayoutBox&, const Vector<LengthPoint>& snapCoordinates);
+  void snapContainerDidChange(LayoutBox&, ScrollSnapType);
+  void snapAreaDidChange(LayoutBox&,
+                         const Vector<LengthPoint>& snapCoordinates);
 
 #ifndef NDEBUG
-    void showSnapAreaMap();
-    void showSnapAreasFor(const LayoutBox*);
+  void showSnapAreaMap();
+  void showSnapAreasFor(const LayoutBox*);
 #endif
 
-private:
-    friend class SnapCoordinatorTest;
-    explicit SnapCoordinator();
+ private:
+  friend class SnapCoordinatorTest;
+  explicit SnapCoordinator();
 
-    Vector<double> snapOffsets(const ContainerNode&, ScrollbarOrientation);
+  Vector<double> snapOffsets(const ContainerNode&, ScrollbarOrientation);
 
-    HashSet<const LayoutBox*> m_snapContainers;
+  HashSet<const LayoutBox*> m_snapContainers;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SnapCoordinator_h
+#endif  // SnapCoordinator_h

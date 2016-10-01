@@ -36,39 +36,40 @@ namespace blink {
 class KeyboardEvent;
 
 class CORE_EXPORT TypeAheadDataSource {
-public:
-    virtual ~TypeAheadDataSource() { }
+ public:
+  virtual ~TypeAheadDataSource() {}
 
-    virtual int indexOfSelectedOption() const = 0;
-    virtual int optionCount() const = 0;
-    virtual String optionAtIndex(int index) const = 0;
+  virtual int indexOfSelectedOption() const = 0;
+  virtual int optionCount() const = 0;
+  virtual String optionAtIndex(int index) const = 0;
 };
 
 class TypeAhead {
-    DISALLOW_NEW();
-public:
-    TypeAhead(TypeAheadDataSource*);
+  DISALLOW_NEW();
 
-    enum ModeFlag {
-        MatchPrefix = 1 << 0,
-        CycleFirstChar = 1 << 1,
-        MatchIndex = 1 << 2,
-    };
-    using MatchModeFlags = unsigned;
+ public:
+  TypeAhead(TypeAheadDataSource*);
 
-    // Returns the index for the matching option.
-    int handleEvent(KeyboardEvent*, MatchModeFlags);
-    bool hasActiveSession(KeyboardEvent*);
-    void resetSession();
+  enum ModeFlag {
+    MatchPrefix = 1 << 0,
+    CycleFirstChar = 1 << 1,
+    MatchIndex = 1 << 2,
+  };
+  using MatchModeFlags = unsigned;
 
-private:
-    TypeAheadDataSource* m_dataSource;
-    // platform timestamp of last keyboard event in seconds
-    double m_lastTypeTime;
-    UChar m_repeatingChar;
-    StringBuilder m_buffer;
+  // Returns the index for the matching option.
+  int handleEvent(KeyboardEvent*, MatchModeFlags);
+  bool hasActiveSession(KeyboardEvent*);
+  void resetSession();
+
+ private:
+  TypeAheadDataSource* m_dataSource;
+  // platform timestamp of last keyboard event in seconds
+  double m_lastTypeTime;
+  UChar m_repeatingChar;
+  StringBuilder m_buffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TypeAhead_h
+#endif  // TypeAhead_h

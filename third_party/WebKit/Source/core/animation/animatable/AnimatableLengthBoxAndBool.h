@@ -36,34 +36,34 @@
 namespace blink {
 
 class AnimatableLengthBoxAndBool final : public AnimatableValue {
-public:
-    ~AnimatableLengthBoxAndBool() override { }
-    static PassRefPtr<AnimatableLengthBoxAndBool> create(PassRefPtr<AnimatableValue> box, bool flag)
-    {
-        return adoptRef(new AnimatableLengthBoxAndBool(std::move(box), flag));
-    }
-    const AnimatableValue* box() const { return m_box.get(); }
-    bool flag() const { return m_flag; }
+ public:
+  ~AnimatableLengthBoxAndBool() override {}
+  static PassRefPtr<AnimatableLengthBoxAndBool> create(
+      PassRefPtr<AnimatableValue> box,
+      bool flag) {
+    return adoptRef(new AnimatableLengthBoxAndBool(std::move(box), flag));
+  }
+  const AnimatableValue* box() const { return m_box.get(); }
+  bool flag() const { return m_flag; }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    AnimatableLengthBoxAndBool(PassRefPtr<AnimatableValue> box, bool flag)
-        : m_box(box)
-        , m_flag(flag)
-    {
-    }
-    AnimatableType type() const override { return TypeLengthBoxAndBool; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  AnimatableLengthBoxAndBool(PassRefPtr<AnimatableValue> box, bool flag)
+      : m_box(box), m_flag(flag) {}
+  AnimatableType type() const override { return TypeLengthBoxAndBool; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    RefPtr<AnimatableValue> m_box;
-    bool m_flag;
+  RefPtr<AnimatableValue> m_box;
+  bool m_flag;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBoxAndBool, isLengthBoxAndBool());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBoxAndBool,
+                                   isLengthBoxAndBool());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableLengthBoxAndBool_h
+#endif  // AnimatableLengthBoxAndBool_h

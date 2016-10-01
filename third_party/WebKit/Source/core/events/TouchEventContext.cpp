@@ -32,32 +32,27 @@
 
 namespace blink {
 
-TouchEventContext* TouchEventContext::create()
-{
-    return new TouchEventContext;
+TouchEventContext* TouchEventContext::create() {
+  return new TouchEventContext;
 }
 
 TouchEventContext::TouchEventContext()
-    : m_touches(TouchList::create())
-    , m_targetTouches(TouchList::create())
-    , m_changedTouches(TouchList::create())
-{
+    : m_touches(TouchList::create()),
+      m_targetTouches(TouchList::create()),
+      m_changedTouches(TouchList::create()) {}
+
+void TouchEventContext::handleLocalEvents(Event& event) const {
+  DCHECK(event.isTouchEvent());
+  TouchEvent& touchEvent = toTouchEvent(event);
+  touchEvent.setTouches(m_touches);
+  touchEvent.setTargetTouches(m_targetTouches);
+  touchEvent.setChangedTouches(m_changedTouches);
 }
 
-void TouchEventContext::handleLocalEvents(Event& event) const
-{
-    DCHECK(event.isTouchEvent());
-    TouchEvent& touchEvent = toTouchEvent(event);
-    touchEvent.setTouches(m_touches);
-    touchEvent.setTargetTouches(m_targetTouches);
-    touchEvent.setChangedTouches(m_changedTouches);
+DEFINE_TRACE(TouchEventContext) {
+  visitor->trace(m_touches);
+  visitor->trace(m_targetTouches);
+  visitor->trace(m_changedTouches);
 }
 
-DEFINE_TRACE(TouchEventContext)
-{
-    visitor->trace(m_touches);
-    visitor->trace(m_targetTouches);
-    visitor->trace(m_changedTouches);
-}
-
-} // namespace blink
+}  // namespace blink

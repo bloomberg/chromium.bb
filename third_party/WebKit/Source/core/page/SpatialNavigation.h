@@ -33,14 +33,12 @@ class LocalFrame;
 class HTMLAreaElement;
 class HTMLFrameOwnerElement;
 
-inline double maxDistance()
-{
-    return std::numeric_limits<double>::max();
+inline double maxDistance() {
+  return std::numeric_limits<double>::max();
 }
 
-inline int fudgeFactor()
-{
-    return 2;
+inline int fudgeFactor() {
+  return 2;
 }
 
 bool isSpatialNavigationEnabled(const LocalFrame*);
@@ -89,42 +87,43 @@ bool spatialNavigationIgnoresEventHandlers(const LocalFrame*);
 // "Totally Aligned" elements are preferable candidates to move
 // focus to over "Partially Aligned" ones, that on its turns are
 // more preferable than "Not Aligned".
-enum RectsAlignment {
-    None = 0,
-    Partial,
-    Full
-};
+enum RectsAlignment { None = 0, Partial, Full };
 
 struct FocusCandidate {
-    STACK_ALLOCATED();
-public:
-    FocusCandidate()
-        : visibleNode(nullptr)
-        , focusableNode(nullptr)
-        , enclosingScrollableBox(nullptr)
-        , distance(maxDistance())
-        , isOffscreen(true)
-        , isOffscreenAfterScrolling(true)
-    {
-    }
+  STACK_ALLOCATED();
 
-    FocusCandidate(Node*, WebFocusType);
-    explicit FocusCandidate(HTMLAreaElement*, WebFocusType);
-    bool isNull() const { return !visibleNode; }
-    bool inScrollableContainer() const { return visibleNode && enclosingScrollableBox; }
-    bool isFrameOwnerElement() const { return visibleNode && visibleNode->isFrameOwnerElement(); }
-    Document* document() const { return visibleNode ? &visibleNode->document() : nullptr; }
+ public:
+  FocusCandidate()
+      : visibleNode(nullptr),
+        focusableNode(nullptr),
+        enclosingScrollableBox(nullptr),
+        distance(maxDistance()),
+        isOffscreen(true),
+        isOffscreenAfterScrolling(true) {}
 
-    // We handle differently visibleNode and FocusableNode to properly handle the areas of imagemaps,
-    // where visibleNode would represent the image element and focusableNode would represent the area element.
-    // In all other cases, visibleNode and focusableNode are one and the same.
-    Member<Node> visibleNode;
-    Member<Node> focusableNode;
-    Member<Node> enclosingScrollableBox;
-    double distance;
-    LayoutRect rect;
-    bool isOffscreen;
-    bool isOffscreenAfterScrolling;
+  FocusCandidate(Node*, WebFocusType);
+  explicit FocusCandidate(HTMLAreaElement*, WebFocusType);
+  bool isNull() const { return !visibleNode; }
+  bool inScrollableContainer() const {
+    return visibleNode && enclosingScrollableBox;
+  }
+  bool isFrameOwnerElement() const {
+    return visibleNode && visibleNode->isFrameOwnerElement();
+  }
+  Document* document() const {
+    return visibleNode ? &visibleNode->document() : nullptr;
+  }
+
+  // We handle differently visibleNode and FocusableNode to properly handle the areas of imagemaps,
+  // where visibleNode would represent the image element and focusableNode would represent the area element.
+  // In all other cases, visibleNode and focusableNode are one and the same.
+  Member<Node> visibleNode;
+  Member<Node> focusableNode;
+  Member<Node> enclosingScrollableBox;
+  double distance;
+  LayoutRect rect;
+  bool isOffscreen;
+  bool isOffscreenAfterScrolling;
 };
 
 bool hasOffscreenRect(Node*, WebFocusType = WebFocusTypeNone);
@@ -133,15 +132,22 @@ bool scrollInDirection(Node* container, WebFocusType);
 bool canScrollInDirection(const Node* container, WebFocusType);
 bool canScrollInDirection(const LocalFrame*, WebFocusType);
 bool canBeScrolledIntoView(WebFocusType, const FocusCandidate&);
-bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCandidate& secondCandidate);
-void distanceDataForNode(WebFocusType, const FocusCandidate& current, FocusCandidate&);
-Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(WebFocusType, Node*);
+bool areElementsOnSameLine(const FocusCandidate& firstCandidate,
+                           const FocusCandidate& secondCandidate);
+void distanceDataForNode(WebFocusType,
+                         const FocusCandidate& current,
+                         FocusCandidate&);
+Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(WebFocusType,
+                                                            Node*);
 LayoutRect nodeRectInAbsoluteCoordinates(Node*, bool ignoreBorder = false);
 LayoutRect frameRectInAbsoluteCoordinates(LocalFrame*);
-LayoutRect virtualRectForDirection(WebFocusType, const LayoutRect& startingRect, LayoutUnit width = LayoutUnit());
-LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement&, WebFocusType);
+LayoutRect virtualRectForDirection(WebFocusType,
+                                   const LayoutRect& startingRect,
+                                   LayoutUnit width = LayoutUnit());
+LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement&,
+                                                 WebFocusType);
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpatialNavigation_h
+#endif  // SpatialNavigation_h

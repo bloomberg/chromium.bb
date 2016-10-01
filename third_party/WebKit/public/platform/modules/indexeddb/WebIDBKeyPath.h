@@ -34,53 +34,52 @@
 namespace blink {
 
 class WebIDBKeyPath {
-public:
-    // FIXME: Update callers use constructors directly, and remove these.
-    static WebIDBKeyPath create(const WebString& string) { return WebIDBKeyPath(string); }
-    static WebIDBKeyPath create(const WebVector<WebString>& array) { return WebIDBKeyPath(array); }
-    static WebIDBKeyPath createNull() { return WebIDBKeyPath(); }
+ public:
+  // FIXME: Update callers use constructors directly, and remove these.
+  static WebIDBKeyPath create(const WebString& string) {
+    return WebIDBKeyPath(string);
+  }
+  static WebIDBKeyPath create(const WebVector<WebString>& array) {
+    return WebIDBKeyPath(array);
+  }
+  static WebIDBKeyPath createNull() { return WebIDBKeyPath(); }
 
-    WebIDBKeyPath() : m_type(WebIDBKeyPathTypeNull) { }
+  WebIDBKeyPath() : m_type(WebIDBKeyPathTypeNull) {}
 
-    explicit WebIDBKeyPath(const WebString& string)
-        : m_type(WebIDBKeyPathTypeString)
-        , m_string(string)
-    {
-    }
+  explicit WebIDBKeyPath(const WebString& string)
+      : m_type(WebIDBKeyPathTypeString), m_string(string) {}
 
-    explicit WebIDBKeyPath(const WebVector<WebString>& array)
-        : m_type(WebIDBKeyPathTypeArray)
-        , m_array(array)
-    {
-    }
+  explicit WebIDBKeyPath(const WebVector<WebString>& array)
+      : m_type(WebIDBKeyPathTypeArray), m_array(array) {}
 
-    WebIDBKeyPath(const WebIDBKeyPath& keyPath)
-        : m_type(keyPath.m_type)
-        , m_array(keyPath.m_array)
-        , m_string(keyPath.m_string)
-    {
-    }
+  WebIDBKeyPath(const WebIDBKeyPath& keyPath)
+      : m_type(keyPath.m_type),
+        m_array(keyPath.m_array),
+        m_string(keyPath.m_string) {}
 
-    ~WebIDBKeyPath() { }
+  ~WebIDBKeyPath() {}
 
-    WebIDBKeyPath& operator=(const WebIDBKeyPath& keyPath)
-    {
-        m_type = keyPath.m_type;
-        m_array = keyPath.m_array;
-        m_string = keyPath.m_string;
-        return *this;
-    }
+  WebIDBKeyPath& operator=(const WebIDBKeyPath& keyPath) {
+    m_type = keyPath.m_type;
+    m_array = keyPath.m_array;
+    m_string = keyPath.m_string;
+    return *this;
+  }
 
-    WebIDBKeyPathType keyPathType() const { return m_type; }
-    const WebVector<WebString>& array() const { return m_array; } // Only valid for ArrayType.
-    const WebString& string() const { return m_string; } // Only valid for StringType.
+  WebIDBKeyPathType keyPathType() const { return m_type; }
+  const WebVector<WebString>& array() const {
+    return m_array;
+  }  // Only valid for ArrayType.
+  const WebString& string() const {
+    return m_string;
+  }  // Only valid for StringType.
 
-private:
-    WebIDBKeyPathType m_type;
-    WebVector<WebString> m_array;
-    WebString m_string;
+ private:
+  WebIDBKeyPathType m_type;
+  WebVector<WebString> m_array;
+  WebString m_string;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBKeyPath_h
+#endif  // WebIDBKeyPath_h

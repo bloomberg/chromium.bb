@@ -37,44 +37,46 @@ class AudioResampler;
 // It uses a simple linear interpolation for good performance.
 
 class PLATFORM_EXPORT AudioResamplerKernel {
-    USING_FAST_MALLOC(AudioResamplerKernel);
-    WTF_MAKE_NONCOPYABLE(AudioResamplerKernel);
-public:
-    AudioResamplerKernel(AudioResampler*);
+  USING_FAST_MALLOC(AudioResamplerKernel);
+  WTF_MAKE_NONCOPYABLE(AudioResamplerKernel);
 
-    // getSourcePointer() should be called each time before process() is called.
-    // Given a number of frames to process (for subsequent call to process()), it returns a pointer and numberOfSourceFramesNeeded
-    // where sample data should be copied. This sample data provides the input to the resampler when process() is called.
-    // framesToProcess must be less than or equal to MaxFramesToProcess.
-    float* getSourcePointer(size_t framesToProcess, size_t* numberOfSourceFramesNeeded);
+ public:
+  AudioResamplerKernel(AudioResampler*);
 
-    // process() resamples framesToProcess frames from the source into destination.
-    // Each call to process() must be preceded by a call to getSourcePointer() so that source input may be supplied.
-    // framesToProcess must be less than or equal to MaxFramesToProcess.
-    void process(float* destination, size_t framesToProcess);
+  // getSourcePointer() should be called each time before process() is called.
+  // Given a number of frames to process (for subsequent call to process()), it returns a pointer and numberOfSourceFramesNeeded
+  // where sample data should be copied. This sample data provides the input to the resampler when process() is called.
+  // framesToProcess must be less than or equal to MaxFramesToProcess.
+  float* getSourcePointer(size_t framesToProcess,
+                          size_t* numberOfSourceFramesNeeded);
 
-    // Resets the processing state.
-    void reset();
+  // process() resamples framesToProcess frames from the source into destination.
+  // Each call to process() must be preceded by a call to getSourcePointer() so that source input may be supplied.
+  // framesToProcess must be less than or equal to MaxFramesToProcess.
+  void process(float* destination, size_t framesToProcess);
 
-    static const size_t MaxFramesToProcess;
+  // Resets the processing state.
+  void reset();
 
-private:
-    double rate() const;
+  static const size_t MaxFramesToProcess;
 
-    AudioResampler* m_resampler;
-    AudioFloatArray m_sourceBuffer;
+ private:
+  double rate() const;
 
-    // This is a (floating point) read index on the input stream.
-    double m_virtualReadIndex;
+  AudioResampler* m_resampler;
+  AudioFloatArray m_sourceBuffer;
 
-    // We need to have continuity from one call of process() to the next.
-    // m_lastValues stores the last two sample values from the last call to process().
-    // m_fillIndex represents how many buffered samples we have which can be as many as 2.
-    // For the first call to process() (or after reset()) there will be no buffered samples.
-    float m_lastValues[2];
-    unsigned m_fillIndex;
+  // This is a (floating point) read index on the input stream.
+  double m_virtualReadIndex;
+
+  // We need to have continuity from one call of process() to the next.
+  // m_lastValues stores the last two sample values from the last call to process().
+  // m_fillIndex represents how many buffered samples we have which can be as many as 2.
+  // For the first call to process() (or after reset()) there will be no buffered samples.
+  float m_lastValues[2];
+  unsigned m_fillIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioResamplerKernel_h
+#endif  // AudioResamplerKernel_h

@@ -44,25 +44,27 @@ namespace blink {
 class ExecutionContext;
 class ExceptionState;
 
-class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static TextEncoder* create(ExecutionContext*, ExceptionState&);
-    ~TextEncoder();
+class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Implement the IDL
-    String encoding() const;
-    DOMUint8Array* encode(const String&);
+ public:
+  static TextEncoder* create(ExecutionContext*, ExceptionState&);
+  ~TextEncoder();
 
-    DEFINE_INLINE_TRACE() { }
+  // Implement the IDL
+  String encoding() const;
+  DOMUint8Array* encode(const String&);
 
-private:
-    TextEncoder(const WTF::TextEncoding&);
+  DEFINE_INLINE_TRACE() {}
 
-    WTF::TextEncoding m_encoding;
-    std::unique_ptr<WTF::TextCodec> m_codec;
+ private:
+  TextEncoder(const WTF::TextEncoding&);
+
+  WTF::TextEncoding m_encoding;
+  std::unique_ptr<WTF::TextCodec> m_codec;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextEncoder_h
+#endif  // TextEncoder_h

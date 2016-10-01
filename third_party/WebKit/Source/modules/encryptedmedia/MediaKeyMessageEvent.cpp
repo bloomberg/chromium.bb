@@ -29,32 +29,27 @@
 
 namespace blink {
 
-MediaKeyMessageEvent::MediaKeyMessageEvent()
-{
+MediaKeyMessageEvent::MediaKeyMessageEvent() {}
+
+MediaKeyMessageEvent::MediaKeyMessageEvent(
+    const AtomicString& type,
+    const MediaKeyMessageEventInit& initializer)
+    : Event(type, initializer) {
+  if (initializer.hasMessageType())
+    m_messageType = initializer.messageType();
+  if (initializer.hasMessage())
+    m_message = initializer.message();
 }
 
-MediaKeyMessageEvent::MediaKeyMessageEvent(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
-    : Event(type, initializer)
-{
-    if (initializer.hasMessageType())
-        m_messageType = initializer.messageType();
-    if (initializer.hasMessage())
-        m_message = initializer.message();
+MediaKeyMessageEvent::~MediaKeyMessageEvent() {}
+
+const AtomicString& MediaKeyMessageEvent::interfaceName() const {
+  return EventNames::MediaKeyMessageEvent;
 }
 
-MediaKeyMessageEvent::~MediaKeyMessageEvent()
-{
+DEFINE_TRACE(MediaKeyMessageEvent) {
+  visitor->trace(m_message);
+  Event::trace(visitor);
 }
 
-const AtomicString& MediaKeyMessageEvent::interfaceName() const
-{
-    return EventNames::MediaKeyMessageEvent;
-}
-
-DEFINE_TRACE(MediaKeyMessageEvent)
-{
-    visitor->trace(m_message);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

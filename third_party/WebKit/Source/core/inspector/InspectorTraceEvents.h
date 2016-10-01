@@ -16,7 +16,8 @@
 
 namespace v8 {
 class Function;
-template<typename T> class Local;
+template <typename T>
+class Local;
 }
 
 namespace WTF {
@@ -67,19 +68,27 @@ extern const char Class[];
 extern const char Id[];
 extern const char Pseudo[];
 
-std::unique_ptr<TracedValue> attributeChange(Element&, const InvalidationSet&, const QualifiedName&);
-std::unique_ptr<TracedValue> classChange(Element&, const InvalidationSet&, const AtomicString&);
-std::unique_ptr<TracedValue> idChange(Element&, const InvalidationSet&, const AtomicString&);
-std::unique_ptr<TracedValue> pseudoChange(Element&, const InvalidationSet&, CSSSelector::PseudoType);
-} // namespace InspectorScheduleStyleInvalidationTrackingEvent
+std::unique_ptr<TracedValue> attributeChange(Element&,
+                                             const InvalidationSet&,
+                                             const QualifiedName&);
+std::unique_ptr<TracedValue> classChange(Element&,
+                                         const InvalidationSet&,
+                                         const AtomicString&);
+std::unique_ptr<TracedValue> idChange(Element&,
+                                      const InvalidationSet&,
+                                      const AtomicString&);
+std::unique_ptr<TracedValue> pseudoChange(Element&,
+                                          const InvalidationSet&,
+                                          CSSSelector::PseudoType);
+}  // namespace InspectorScheduleStyleInvalidationTrackingEvent
 
-#define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet, changeType, ...) \
-    TRACE_EVENT_INSTANT1( \
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
-        "ScheduleStyleInvalidationTracking", \
-        TRACE_EVENT_SCOPE_THREAD, \
-        "data", \
-        InspectorScheduleStyleInvalidationTrackingEvent::changeType((element), (invalidationSet), __VA_ARGS__));
+#define TRACE_SCHEDULE_STYLE_INVALIDATION(element, invalidationSet,          \
+                                          changeType, ...)                   \
+  TRACE_EVENT_INSTANT1(                                                      \
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),   \
+      "ScheduleStyleInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data", \
+      InspectorScheduleStyleInvalidationTrackingEvent::changeType(           \
+          (element), (invalidationSet), __VA_ARGS__));
 
 namespace InspectorStyleRecalcInvalidationTrackingEvent {
 std::unique_ptr<TracedValue> data(Node*, const StyleChangeReasonForTracing&);
@@ -97,25 +106,32 @@ extern const char InvalidationSetMatchedTagName[];
 extern const char PreventStyleSharingForParent[];
 
 std::unique_ptr<TracedValue> data(Element&, const char* reason);
-std::unique_ptr<TracedValue> selectorPart(Element&, const char* reason, const InvalidationSet&, const String&);
-std::unique_ptr<TracedValue> invalidationList(ContainerNode&, const Vector<RefPtr<InvalidationSet>>&);
-} // namespace InspectorStyleInvalidatorInvalidateEvent
+std::unique_ptr<TracedValue> selectorPart(Element&,
+                                          const char* reason,
+                                          const InvalidationSet&,
+                                          const String&);
+std::unique_ptr<TracedValue> invalidationList(
+    ContainerNode&,
+    const Vector<RefPtr<InvalidationSet>>&);
+}  // namespace InspectorStyleInvalidatorInvalidateEvent
 
-#define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason) \
-    TRACE_EVENT_INSTANT1( \
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
-        "StyleInvalidatorInvalidationTracking", \
-        TRACE_EVENT_SCOPE_THREAD, \
-        "data", \
-        InspectorStyleInvalidatorInvalidateEvent::data((element), (InspectorStyleInvalidatorInvalidateEvent::reason)))
+#define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason)              \
+  TRACE_EVENT_INSTANT1(                                                    \
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
+      "StyleInvalidatorInvalidationTracking", TRACE_EVENT_SCOPE_THREAD,    \
+      "data",                                                              \
+      InspectorStyleInvalidatorInvalidateEvent::data(                      \
+          (element), (InspectorStyleInvalidatorInvalidateEvent::reason)))
 
-#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, reason, invalidationSet, singleSelectorPart) \
-    TRACE_EVENT_INSTANT1( \
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
-        "StyleInvalidatorInvalidationTracking", \
-        TRACE_EVENT_SCOPE_THREAD, \
-        "data", \
-        InspectorStyleInvalidatorInvalidateEvent::selectorPart((element), (InspectorStyleInvalidatorInvalidateEvent::reason), (invalidationSet), (singleSelectorPart)))
+#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(                 \
+    element, reason, invalidationSet, singleSelectorPart)                  \
+  TRACE_EVENT_INSTANT1(                                                    \
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
+      "StyleInvalidatorInvalidationTracking", TRACE_EVENT_SCOPE_THREAD,    \
+      "data",                                                              \
+      InspectorStyleInvalidatorInvalidateEvent::selectorPart(              \
+          (element), (InspectorStyleInvalidatorInvalidateEvent::reason),   \
+          (invalidationSet), (singleSelectorPart)))
 
 // From a web developer's perspective: what caused this layout? This is strictly
 // for tracing. Blink logic must not depend on these.
@@ -154,18 +170,20 @@ extern const char TextControlChanged[];
 // size related invalidations.
 extern const char SvgChanged[];
 extern const char ScrollbarChanged[];
-} // namespace LayoutInvalidationReason
+}  // namespace LayoutInvalidationReason
 
 // LayoutInvalidationReasonForTracing is strictly for tracing. Blink logic must
 // not depend on this value.
 typedef const char LayoutInvalidationReasonForTracing[];
 
 namespace InspectorLayoutInvalidationTrackingEvent {
-std::unique_ptr<TracedValue> CORE_EXPORT data(const LayoutObject*, LayoutInvalidationReasonForTracing);
+std::unique_ptr<TracedValue> CORE_EXPORT
+data(const LayoutObject*, LayoutInvalidationReasonForTracing);
 }
 
 namespace InspectorPaintInvalidationTrackingEvent {
-std::unique_ptr<TracedValue> data(const LayoutObject*, const LayoutObject& paintContainer);
+std::unique_ptr<TracedValue> data(const LayoutObject*,
+                                  const LayoutObject& paintContainer);
 }
 
 namespace InspectorScrollInvalidationTrackingEvent {
@@ -173,27 +191,39 @@ std::unique_ptr<TracedValue> data(const LayoutObject&);
 }
 
 namespace InspectorChangeResourcePriorityEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, const ResourceLoadPriority&);
+std::unique_ptr<TracedValue> data(unsigned long identifier,
+                                  const ResourceLoadPriority&);
 }
 
 namespace InspectorSendRequestEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
+std::unique_ptr<TracedValue> data(unsigned long identifier,
+                                  LocalFrame*,
+                                  const ResourceRequest&);
 }
 
 namespace InspectorReceiveResponseEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, LocalFrame*, const ResourceResponse&);
+std::unique_ptr<TracedValue> data(unsigned long identifier,
+                                  LocalFrame*,
+                                  const ResourceResponse&);
 }
 
 namespace InspectorReceiveDataEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, LocalFrame*, int encodedDataLength);
+std::unique_ptr<TracedValue> data(unsigned long identifier,
+                                  LocalFrame*,
+                                  int encodedDataLength);
 }
 
 namespace InspectorResourceFinishEvent {
-std::unique_ptr<TracedValue> data(unsigned long identifier, double finishTime, bool didFail);
+std::unique_ptr<TracedValue> data(unsigned long identifier,
+                                  double finishTime,
+                                  bool didFail);
 }
 
 namespace InspectorTimerInstallEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int timerId, int timeout, bool singleShot);
+std::unique_ptr<TracedValue> data(ExecutionContext*,
+                                  int timerId,
+                                  int timeout,
+                                  bool singleShot);
 }
 
 namespace InspectorTimerRemoveEvent {
@@ -213,7 +243,10 @@ std::unique_ptr<TracedValue> data(ExecutionContext*, int id);
 }
 
 namespace InspectorIdleCallbackFireEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, int id, double allottedMilliseconds, bool timedOut);
+std::unique_ptr<TracedValue> data(ExecutionContext*,
+                                  int id,
+                                  double allottedMilliseconds,
+                                  bool timedOut);
 }
 
 namespace InspectorAnimationFrameEvent {
@@ -247,16 +280,16 @@ extern const char NewCompositedLayer[];
 std::unique_ptr<TracedValue> data(const PaintLayer*, const char* reason);
 }
 
-#define TRACE_LAYER_INVALIDATION(LAYER, REASON) \
-    TRACE_EVENT_INSTANT1( \
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
-        "LayerInvalidationTracking", \
-        TRACE_EVENT_SCOPE_THREAD, \
-        "data", \
-        InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)));
+#define TRACE_LAYER_INVALIDATION(LAYER, REASON)                            \
+  TRACE_EVENT_INSTANT1(                                                    \
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
+      "LayerInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",       \
+      InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)));
 
 namespace InspectorPaintEvent {
-std::unique_ptr<TracedValue> data(LayoutObject*, const LayoutRect& clipRect, const GraphicsLayer*);
+std::unique_ptr<TracedValue> data(LayoutObject*,
+                                  const LayoutRect& clipRect,
+                                  const GraphicsLayer*);
 }
 
 namespace InspectorPaintImageEvent {
@@ -282,7 +315,9 @@ std::unique_ptr<TracedValue> data(LocalFrame*);
 }
 
 namespace InspectorEvaluateScriptEvent {
-std::unique_ptr<TracedValue> data(LocalFrame*, const String& url, const WTF::TextPosition&);
+std::unique_ptr<TracedValue> data(LocalFrame*,
+                                  const String& url,
+                                  const WTF::TextPosition&);
 }
 
 namespace InspectorParseScriptEvent {
@@ -294,7 +329,8 @@ std::unique_ptr<TracedValue> data(const String& url, const WTF::TextPosition&);
 }
 
 namespace InspectorFunctionCallEvent {
-std::unique_ptr<TracedValue> data(ExecutionContext*, const v8::Local<v8::Function>&);
+std::unique_ptr<TracedValue> data(ExecutionContext*,
+                                  const v8::Local<v8::Function>&);
 }
 
 namespace InspectorUpdateCountersEvent {
@@ -318,7 +354,9 @@ std::unique_ptr<TracedValue> data(ExecutionContext*, const String& message);
 }
 
 namespace InspectorTracingSessionIdForWorkerEvent {
-std::unique_ptr<TracedValue> data(const String& sessionId, const String& workerId, WorkerThread*);
+std::unique_ptr<TracedValue> data(const String& sessionId,
+                                  const String& workerId,
+                                  WorkerThread*);
 }
 
 namespace InspectorTracingStartedInFrame {
@@ -338,13 +376,14 @@ std::unique_ptr<TracedValue> data(const Animation&);
 }
 
 namespace InspectorHitTestEvent {
-std::unique_ptr<TracedValue> endData(const HitTestRequest&, const HitTestLocation&, const HitTestResult&);
+std::unique_ptr<TracedValue> endData(const HitTestRequest&,
+                                     const HitTestLocation&,
+                                     const HitTestResult&);
 }
 
 CORE_EXPORT String toHexString(const void* p);
 CORE_EXPORT void setCallStack(TracedValue*);
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // !defined(InspectorTraceEvents_h)
+#endif  // !defined(InspectorTraceEvents_h)

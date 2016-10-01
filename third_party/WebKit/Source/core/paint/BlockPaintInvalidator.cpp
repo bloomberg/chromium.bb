@@ -12,16 +12,15 @@
 
 namespace blink {
 
-PaintInvalidationReason BlockPaintInvalidator::invalidatePaintIfNeeded()
-{
-    PaintInvalidationReason reason = BoxPaintInvalidator(m_block, m_context).invalidatePaintIfNeeded();
+PaintInvalidationReason BlockPaintInvalidator::invalidatePaintIfNeeded() {
+  PaintInvalidationReason reason =
+      BoxPaintInvalidator(m_block, m_context).invalidatePaintIfNeeded();
 
-    if (reason != PaintInvalidationNone && m_block.hasCaret()) {
-        FrameSelection& selection = m_block.frame()->selection();
-        selection.setCaretRectNeedsUpdate();
-        selection.invalidateCaretRect(true);
-    }
-    return reason;
+  if (reason != PaintInvalidationNone && m_block.hasCaret()) {
+    FrameSelection& selection = m_block.frame()->selection();
+    selection.setCaretRectNeedsUpdate();
+    selection.invalidateCaretRect(true);
+  }
+  return reason;
 }
-
 }

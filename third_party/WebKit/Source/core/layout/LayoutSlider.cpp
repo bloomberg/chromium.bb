@@ -27,56 +27,55 @@
 #include "core/layout/LayoutSliderThumb.h"
 #include "wtf/MathExtras.h"
 
-using namespace::std;
+using namespace ::std;
 
 namespace blink {
 
 const int LayoutSlider::defaultTrackLength = 129;
 
 LayoutSlider::LayoutSlider(HTMLInputElement* element)
-    : LayoutFlexibleBox(element)
-{
-    // We assume LayoutSlider works only with <input type=range>.
-    ASSERT(element->type() == InputTypeNames::range);
+    : LayoutFlexibleBox(element) {
+  // We assume LayoutSlider works only with <input type=range>.
+  ASSERT(element->type() == InputTypeNames::range);
 }
 
-LayoutSlider::~LayoutSlider()
-{
+LayoutSlider::~LayoutSlider() {}
+
+int LayoutSlider::baselinePosition(FontBaseline,
+                                   bool /*firstLine*/,
+                                   LineDirectionMode,
+                                   LinePositionMode linePositionMode) const {
+  ASSERT(linePositionMode == PositionOnContainingLine);
+  // FIXME: Patch this function for writing-mode.
+  return (size().height() + marginTop()).toInt();
 }
 
-int LayoutSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirectionMode, LinePositionMode linePositionMode) const
-{
-    ASSERT(linePositionMode == PositionOnContainingLine);
-    // FIXME: Patch this function for writing-mode.
-    return (size().height() + marginTop()).toInt();
+void LayoutSlider::computeIntrinsicLogicalWidths(
+    LayoutUnit& minLogicalWidth,
+    LayoutUnit& maxLogicalWidth) const {
+  maxLogicalWidth = LayoutUnit(defaultTrackLength * style()->effectiveZoom());
+  if (!style()->width().isPercentOrCalc())
+    minLogicalWidth = maxLogicalWidth;
 }
 
-void LayoutSlider::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
-{
-    maxLogicalWidth = LayoutUnit(defaultTrackLength * style()->effectiveZoom());
-    if (!style()->width().isPercentOrCalc())
-        minLogicalWidth = maxLogicalWidth;
+inline SliderThumbElement* LayoutSlider::sliderThumbElement() const {
+  return toSliderThumbElement(
+      toElement(node())->userAgentShadowRoot()->getElementById(
+          ShadowElementNames::sliderThumb()));
 }
 
-inline SliderThumbElement* LayoutSlider::sliderThumbElement() const
-{
-    return toSliderThumbElement(toElement(node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb()));
+void LayoutSlider::layout() {
+  // FIXME: Find a way to cascade appearance.
+  // http://webkit.org/b/62535
+  LayoutBox* thumbBox = sliderThumbElement()->layoutBox();
+  if (thumbBox && thumbBox->isSliderThumb())
+    toLayoutSliderThumb(thumbBox)->updateAppearance(styleRef());
+
+  LayoutFlexibleBox::layout();
 }
 
-void LayoutSlider::layout()
-{
-    // FIXME: Find a way to cascade appearance.
-    // http://webkit.org/b/62535
-    LayoutBox* thumbBox = sliderThumbElement()->layoutBox();
-    if (thumbBox && thumbBox->isSliderThumb())
-        toLayoutSliderThumb(thumbBox)->updateAppearance(styleRef());
-
-    LayoutFlexibleBox::layout();
+bool LayoutSlider::inDragMode() const {
+  return sliderThumbElement()->active();
 }
 
-bool LayoutSlider::inDragMode() const
-{
-    return sliderThumbElement()->active();
-}
-
-} // namespace blink
+}  // namespace blink

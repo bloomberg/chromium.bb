@@ -17,34 +17,31 @@ namespace blink {
 namespace {
 
 class SharedGpuContextTest : public Test {
-public:
-    void SetUp() override
-    {
-        SharedGpuContext::setContextProviderFactoryForTesting([this] {
-            m_gl.setIsContextLost(false);
-            return std::unique_ptr<WebGraphicsContext3DProvider>(new FakeWebGraphicsContext3DProvider(&m_gl));
-        });
-    }
+ public:
+  void SetUp() override {
+    SharedGpuContext::setContextProviderFactoryForTesting([this] {
+      m_gl.setIsContextLost(false);
+      return std::unique_ptr<WebGraphicsContext3DProvider>(
+          new FakeWebGraphicsContext3DProvider(&m_gl));
+    });
+  }
 
-    void TearDown() override
-    {
-        SharedGpuContext::setContextProviderFactoryForTesting(nullptr);
-    }
+  void TearDown() override {
+    SharedGpuContext::setContextProviderFactoryForTesting(nullptr);
+  }
 
-    FakeGLES2Interface m_gl;
+  FakeGLES2Interface m_gl;
 };
 
-TEST_F(SharedGpuContextTest, contextLossAutoRecovery)
-{
-    EXPECT_TRUE(SharedGpuContext::isValid());
-    unsigned contextId = SharedGpuContext::contextId();
-    m_gl.setIsContextLost(true);
-    EXPECT_FALSE(SharedGpuContext::isValidWithoutRestoring());
-    EXPECT_TRUE(SharedGpuContext::isValid());
-    EXPECT_NE(contextId, SharedGpuContext::contextId());
+TEST_F(SharedGpuContextTest, contextLossAutoRecovery) {
+  EXPECT_TRUE(SharedGpuContext::isValid());
+  unsigned contextId = SharedGpuContext::contextId();
+  m_gl.setIsContextLost(true);
+  EXPECT_FALSE(SharedGpuContext::isValidWithoutRestoring());
+  EXPECT_TRUE(SharedGpuContext::isValid());
+  EXPECT_NE(contextId, SharedGpuContext::contextId());
 }
 
+}  // unnamed namespace
 
-} // unnamed namespace
-
-} // blink
+}  // blink

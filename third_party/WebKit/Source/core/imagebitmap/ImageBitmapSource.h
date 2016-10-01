@@ -20,17 +20,22 @@ class ImageBitmap;
 class ImageBitmapOptions;
 
 class CORE_EXPORT ImageBitmapSource {
-public:
-    virtual IntSize bitmapSourceSize() const { return IntSize(); }
-    virtual ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Optional<IntRect>, const ImageBitmapOptions&, ExceptionState&);
+ public:
+  virtual IntSize bitmapSourceSize() const { return IntSize(); }
+  virtual ScriptPromise createImageBitmap(ScriptState*,
+                                          EventTarget&,
+                                          Optional<IntRect>,
+                                          const ImageBitmapOptions&,
+                                          ExceptionState&);
 
-    virtual bool isBlob() const { return false; }
+  virtual bool isBlob() const { return false; }
 
-    static ScriptPromise fulfillImageBitmap(ScriptState*, ImageBitmap*);
-protected:
-    virtual ~ImageBitmapSource() {}
+  static ScriptPromise fulfillImageBitmap(ScriptState*, ImageBitmap*);
+
+ protected:
+  virtual ~ImageBitmapSource() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

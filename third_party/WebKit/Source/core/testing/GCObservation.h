@@ -39,30 +39,31 @@
 
 namespace blink {
 
-class GCObservation final : public GarbageCollectedFinalized<GCObservation>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static GCObservation* create(v8::Local<v8::Value> observedValue)
-    {
-        return new GCObservation(observedValue);
-    }
+class GCObservation final : public GarbageCollectedFinalized<GCObservation>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Caution: It is only feasible to determine whether an object was
-    // "near death"; it may have been kept alive through a weak
-    // handle. After reaching near-death, having been collected is the
-    // common case.
-    bool wasCollected() const { return m_collected; }
-    void setWasCollected();
+ public:
+  static GCObservation* create(v8::Local<v8::Value> observedValue) {
+    return new GCObservation(observedValue);
+  }
 
-    DEFINE_INLINE_TRACE() { }
+  // Caution: It is only feasible to determine whether an object was
+  // "near death"; it may have been kept alive through a weak
+  // handle. After reaching near-death, having been collected is the
+  // common case.
+  bool wasCollected() const { return m_collected; }
+  void setWasCollected();
 
-private:
-    explicit GCObservation(v8::Local<v8::Value>);
+  DEFINE_INLINE_TRACE() {}
 
-    ScopedPersistent<v8::Value> m_observed;
-    bool m_collected;
+ private:
+  explicit GCObservation(v8::Local<v8::Value>);
+
+  ScopedPersistent<v8::Value> m_observed;
+  bool m_collected;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GCObservation_h
+#endif  // GCObservation_h

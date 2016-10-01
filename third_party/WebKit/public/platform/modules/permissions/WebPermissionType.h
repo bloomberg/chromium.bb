@@ -8,18 +8,18 @@
 namespace blink {
 
 enum WebPermissionType {
-    WebPermissionTypeGeolocation,
-    WebPermissionTypeNotifications,
-    WebPermissionTypePush,
-    WebPermissionTypePushNotifications,
-    WebPermissionTypeMidi,
-    WebPermissionTypeMidiSysEx,
-    WebPermissionTypeDurableStorage,
-    WebPermissionTypeBackgroundSync,
+  WebPermissionTypeGeolocation,
+  WebPermissionTypeNotifications,
+  WebPermissionTypePush,
+  WebPermissionTypePushNotifications,
+  WebPermissionTypeMidi,
+  WebPermissionTypeMidiSysEx,
+  WebPermissionTypeDurableStorage,
+  WebPermissionTypeBackgroundSync,
 
-    WebPermissionTypeLast,
+  WebPermissionTypeLast,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPermissionType_h
+#endif  // WebPermissionType_h

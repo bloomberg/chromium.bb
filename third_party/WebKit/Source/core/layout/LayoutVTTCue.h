@@ -33,22 +33,22 @@ namespace blink {
 class IntRect;
 
 class LayoutVTTCue final : public LayoutBlockFlow {
-public:
-    LayoutVTTCue(ContainerNode*, float snapToLinesPosition);
+ public:
+  LayoutVTTCue(ContainerNode*, float snapToLinesPosition);
 
-    // The computed line position for snap-to-lines layout, and NaN for
-    // non-snap-to-lines layout where no adjustment should take place.
-    float snapToLinesPosition() { return m_snapToLinesPosition; }
+  // The computed line position for snap-to-lines layout, and NaN for
+  // non-snap-to-lines layout where no adjustment should take place.
+  float snapToLinesPosition() { return m_snapToLinesPosition; }
 
-private:
-    void layout() override;
+ private:
+  void layout() override;
 
-    IntRect computeControlsRect() const;
-    void repositionCueSnapToLinesNotSet();
+  IntRect computeControlsRect() const;
+  void repositionCueSnapToLinesNotSet();
 
-    float m_snapToLinesPosition;
+  float m_snapToLinesPosition;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutVTTCue_h
+#endif  // LayoutVTTCue_h

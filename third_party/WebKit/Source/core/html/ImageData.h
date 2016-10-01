@@ -42,41 +42,56 @@ namespace blink {
 class ExceptionState;
 class ImageBitmapOptions;
 
-class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>, public ScriptWrappable, public ImageBitmapSource {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ImageData* create(const IntSize&);
-    static ImageData* create(const IntSize&, DOMUint8ClampedArray*);
-    static ImageData* create(unsigned width, unsigned height, ExceptionState&);
-    static ImageData* create(DOMUint8ClampedArray*, unsigned width, ExceptionState&);
-    static ImageData* create(DOMUint8ClampedArray*, unsigned width, unsigned height, ExceptionState&);
+class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
+                                    public ScriptWrappable,
+                                    public ImageBitmapSource {
+  DEFINE_WRAPPERTYPEINFO();
 
-    IntSize size() const { return m_size; }
-    int width() const { return m_size.width(); }
-    int height() const { return m_size.height(); }
-    const DOMUint8ClampedArray* data() const { return m_data.get(); }
-    DOMUint8ClampedArray* data() { return m_data.get(); }
+ public:
+  static ImageData* create(const IntSize&);
+  static ImageData* create(const IntSize&, DOMUint8ClampedArray*);
+  static ImageData* create(unsigned width, unsigned height, ExceptionState&);
+  static ImageData* create(DOMUint8ClampedArray*,
+                           unsigned width,
+                           ExceptionState&);
+  static ImageData* create(DOMUint8ClampedArray*,
+                           unsigned width,
+                           unsigned height,
+                           ExceptionState&);
 
-    // ImageBitmapSource implementation
-    IntSize bitmapSourceSize() const override { return m_size; }
-    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Optional<IntRect> cropRect, const ImageBitmapOptions&, ExceptionState&) override;
+  IntSize size() const { return m_size; }
+  int width() const { return m_size.width(); }
+  int height() const { return m_size.height(); }
+  const DOMUint8ClampedArray* data() const { return m_data.get(); }
+  DOMUint8ClampedArray* data() { return m_data.get(); }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_data);
-    }
+  // ImageBitmapSource implementation
+  IntSize bitmapSourceSize() const override { return m_size; }
+  ScriptPromise createImageBitmap(ScriptState*,
+                                  EventTarget&,
+                                  Optional<IntRect> cropRect,
+                                  const ImageBitmapOptions&,
+                                  ExceptionState&) override;
 
-    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
+  DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
 
-private:
-    ImageData(const IntSize&, DOMUint8ClampedArray*);
+  v8::Local<v8::Object> associateWithWrapper(
+      v8::Isolate*,
+      const WrapperTypeInfo*,
+      v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
 
-    static bool validateConstructorArguments(DOMUint8ClampedArray*, unsigned width, unsigned&, ExceptionState&);
+ private:
+  ImageData(const IntSize&, DOMUint8ClampedArray*);
 
-    IntSize m_size;
-    Member<DOMUint8ClampedArray> m_data;
+  static bool validateConstructorArguments(DOMUint8ClampedArray*,
+                                           unsigned width,
+                                           unsigned&,
+                                           ExceptionState&);
+
+  IntSize m_size;
+  Member<DOMUint8ClampedArray> m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ImageData_h
+#endif  // ImageData_h

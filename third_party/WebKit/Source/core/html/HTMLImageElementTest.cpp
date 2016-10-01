@@ -15,32 +15,31 @@ namespace blink {
 const int viewportWidth = 500;
 const int viewportHeight = 600;
 class HTMLImageElementTest : public testing::Test {
-protected:
-    HTMLImageElementTest()
-        : m_dummyPageHolder(DummyPageHolder::create(IntSize(viewportWidth, viewportHeight)))
-    {
-    }
+ protected:
+  HTMLImageElementTest()
+      : m_dummyPageHolder(
+            DummyPageHolder::create(IntSize(viewportWidth, viewportHeight))) {}
 
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
-TEST_F(HTMLImageElementTest, width)
-{
-    HTMLImageElement* image = HTMLImageElement::create(m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
-    image->setAttribute(HTMLNames::widthAttr, "400");
-    // TODO(yoav): `width` does not impact resourceWidth until we resolve https://github.com/ResponsiveImagesCG/picture-element/issues/268
-    EXPECT_EQ(500, image->getResourceWidth().width);
-    image->setAttribute(HTMLNames::sizesAttr, "100vw");
-    EXPECT_EQ(500, image->getResourceWidth().width);
+TEST_F(HTMLImageElementTest, width) {
+  HTMLImageElement* image = HTMLImageElement::create(
+      m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
+  image->setAttribute(HTMLNames::widthAttr, "400");
+  // TODO(yoav): `width` does not impact resourceWidth until we resolve https://github.com/ResponsiveImagesCG/picture-element/issues/268
+  EXPECT_EQ(500, image->getResourceWidth().width);
+  image->setAttribute(HTMLNames::sizesAttr, "100vw");
+  EXPECT_EQ(500, image->getResourceWidth().width);
 }
 
-TEST_F(HTMLImageElementTest, sourceSize)
-{
-    HTMLImageElement* image = HTMLImageElement::create(m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
-    image->setAttribute(HTMLNames::widthAttr, "400");
-    EXPECT_EQ(viewportWidth, image->sourceSize(*image));
-    image->setAttribute(HTMLNames::sizesAttr, "50vw");
-    EXPECT_EQ(250, image->sourceSize(*image));
+TEST_F(HTMLImageElementTest, sourceSize) {
+  HTMLImageElement* image = HTMLImageElement::create(
+      m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
+  image->setAttribute(HTMLNames::widthAttr, "400");
+  EXPECT_EQ(viewportWidth, image->sourceSize(*image));
+  image->setAttribute(HTMLNames::sizesAttr, "50vw");
+  EXPECT_EQ(250, image->sourceSize(*image));
 }
 
-} // namespace blink
+}  // namespace blink

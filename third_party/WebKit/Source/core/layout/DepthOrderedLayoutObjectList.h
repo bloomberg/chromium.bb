@@ -17,52 +17,45 @@ class LayoutObject;
 struct DepthOrderedLayoutObjectListData;
 
 class DepthOrderedLayoutObjectList {
-public:
-    DepthOrderedLayoutObjectList();
-    ~DepthOrderedLayoutObjectList();
+ public:
+  DepthOrderedLayoutObjectList();
+  ~DepthOrderedLayoutObjectList();
 
-    void add(LayoutObject&);
-    void remove(LayoutObject&);
-    void clear();
+  void add(LayoutObject&);
+  void remove(LayoutObject&);
+  void clear();
 
-    int size() const;
-    bool isEmpty() const;
+  int size() const;
+  bool isEmpty() const;
 
-    struct LayoutObjectWithDepth {
-        LayoutObjectWithDepth(LayoutObject* inObject)
-            : object(inObject)
-            , depth(determineDepth(inObject))
-        {
-        }
+  struct LayoutObjectWithDepth {
+    LayoutObjectWithDepth(LayoutObject* inObject)
+        : object(inObject), depth(determineDepth(inObject)) {}
 
-        LayoutObjectWithDepth()
-            : object(nullptr)
-            , depth(0)
-        {
-        }
+    LayoutObjectWithDepth() : object(nullptr), depth(0) {}
 
-        LayoutObject* object;
-        unsigned depth;
+    LayoutObject* object;
+    unsigned depth;
 
-        LayoutObject& operator*() const { return *object; }
-        LayoutObject* operator->() const { return object; }
+    LayoutObject& operator*() const { return *object; }
+    LayoutObject* operator->() const { return object; }
 
-        bool operator<(const DepthOrderedLayoutObjectList::LayoutObjectWithDepth& other) const
-        {
-            return depth > other.depth;
-        }
+    bool operator<(const DepthOrderedLayoutObjectList::LayoutObjectWithDepth&
+                       other) const {
+      return depth > other.depth;
+    }
 
-    private:
-        static unsigned determineDepth(LayoutObject*);
-    };
+   private:
+    static unsigned determineDepth(LayoutObject*);
+  };
 
-    const HashSet<LayoutObject*>& unordered() const;
-    const Vector<LayoutObjectWithDepth>& ordered();
+  const HashSet<LayoutObject*>& unordered() const;
+  const Vector<LayoutObjectWithDepth>& ordered();
 
-private:
-    DepthOrderedLayoutObjectListData* m_data;
+ private:
+  DepthOrderedLayoutObjectListData* m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DepthOrderedLayoutObjectList_h
+#endif  // DepthOrderedLayoutObjectList_h

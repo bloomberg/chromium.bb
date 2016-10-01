@@ -30,53 +30,44 @@
 namespace blink {
 
 WebGLLoseContext::WebGLLoseContext(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
+    : WebGLExtension(context) {}
+
+WebGLLoseContext::~WebGLLoseContext() {}
+
+void WebGLLoseContext::lose(bool force) {
+  if (force)
+    WebGLExtension::lose(true);
 }
 
-WebGLLoseContext::~WebGLLoseContext()
-{
+WebGLExtensionName WebGLLoseContext::name() const {
+  return WebGLLoseContextName;
 }
 
-void WebGLLoseContext::lose(bool force)
-{
-    if (force)
-        WebGLExtension::lose(true);
+WebGLLoseContext* WebGLLoseContext::create(WebGLRenderingContextBase* context) {
+  return new WebGLLoseContext(context);
 }
 
-WebGLExtensionName WebGLLoseContext::name() const
-{
-    return WebGLLoseContextName;
+void WebGLLoseContext::loseContext() {
+  WebGLExtensionScopedContext scoped(this);
+  if (!scoped.isLost()) {
+    scoped.context()->forceLostContext(
+        WebGLRenderingContextBase::WebGLLoseContextLostContext,
+        WebGLRenderingContextBase::Manual);
+  }
 }
 
-WebGLLoseContext* WebGLLoseContext::create(WebGLRenderingContextBase* context)
-{
-    return new WebGLLoseContext(context);
+void WebGLLoseContext::restoreContext() {
+  WebGLExtensionScopedContext scoped(this);
+  if (!scoped.isLost())
+    scoped.context()->forceRestoreContext();
 }
 
-void WebGLLoseContext::loseContext()
-{
-    WebGLExtensionScopedContext scoped(this);
-    if (!scoped.isLost()) {
-        scoped.context()->forceLostContext(WebGLRenderingContextBase::WebGLLoseContextLostContext, WebGLRenderingContextBase::Manual);
-    }
+bool WebGLLoseContext::supported(WebGLRenderingContextBase*) {
+  return true;
 }
 
-void WebGLLoseContext::restoreContext()
-{
-    WebGLExtensionScopedContext scoped(this);
-    if (!scoped.isLost())
-        scoped.context()->forceRestoreContext();
+const char* WebGLLoseContext::extensionName() {
+  return "WEBGL_lose_context";
 }
 
-bool WebGLLoseContext::supported(WebGLRenderingContextBase*)
-{
-    return true;
-}
-
-const char* WebGLLoseContext::extensionName()
-{
-    return "WEBGL_lose_context";
-}
-
-} // namespace blink
+}  // namespace blink

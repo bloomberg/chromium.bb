@@ -24,27 +24,30 @@
 
 namespace WTF {
 
-String::String(NSString* str)
-{
-    if (!str)
-        return;
+String::String(NSString* str) {
+  if (!str)
+    return;
 
-    CFIndex size = CFStringGetLength(reinterpret_cast<CFStringRef>(str));
-    if (size == 0)
-        m_impl = StringImpl::empty();
-    else {
-        Vector<LChar, 1024> lcharBuffer(size);
-        CFIndex usedBufLen;
-        CFIndex convertedsize = CFStringGetBytes(reinterpret_cast<CFStringRef>(str), CFRangeMake(0, size), kCFStringEncodingISOLatin1, 0, false, lcharBuffer.data(), size, &usedBufLen);
-        if ((convertedsize == size) && (usedBufLen == size)) {
-            m_impl = StringImpl::create(lcharBuffer.data(), size);
-            return;
-        }
-
-        Vector<UChar, 1024> ucharBuffer(size);
-        CFStringGetCharacters(reinterpret_cast<CFStringRef>(str), CFRangeMake(0, size), ucharBuffer.data());
-        m_impl = StringImpl::create(ucharBuffer.data(), size);
+  CFIndex size = CFStringGetLength(reinterpret_cast<CFStringRef>(str));
+  if (size == 0)
+    m_impl = StringImpl::empty();
+  else {
+    Vector<LChar, 1024> lcharBuffer(size);
+    CFIndex usedBufLen;
+    CFIndex convertedsize =
+        CFStringGetBytes(reinterpret_cast<CFStringRef>(str),
+                         CFRangeMake(0, size), kCFStringEncodingISOLatin1, 0,
+                         false, lcharBuffer.data(), size, &usedBufLen);
+    if ((convertedsize == size) && (usedBufLen == size)) {
+      m_impl = StringImpl::create(lcharBuffer.data(), size);
+      return;
     }
+
+    Vector<UChar, 1024> ucharBuffer(size);
+    CFStringGetCharacters(reinterpret_cast<CFStringRef>(str),
+                          CFRangeMake(0, size), ucharBuffer.data());
+    m_impl = StringImpl::create(ucharBuffer.data(), size);
+  }
 }
 
-} // namespace WTF
+}  // namespace WTF

@@ -29,19 +29,22 @@
 namespace blink {
 
 class HTMLFontElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLFontElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static bool cssValueFromFontSizeNumber(const String&, CSSValueID&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLFontElement);
 
-private:
-    explicit HTMLFontElement(Document&);
+  static bool cssValueFromFontSizeNumber(const String&, CSSValueID&);
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  explicit HTMLFontElement(Document&);
+
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLFontElement_h
+#endif  // HTMLFontElement_h

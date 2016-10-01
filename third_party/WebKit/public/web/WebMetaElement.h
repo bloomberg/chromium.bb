@@ -12,28 +12,27 @@ namespace blink {
 class HTMLMetaElement;
 
 class WebMetaElement final : public WebElement {
-public:
-    WebMetaElement() : WebElement() { }
-    WebMetaElement(const WebMetaElement& element) : WebElement(element) { }
+ public:
+  WebMetaElement() : WebElement() {}
+  WebMetaElement(const WebMetaElement& element) : WebElement(element) {}
 
-    WebMetaElement& operator=(const WebMetaElement& element)
-    {
-        WebElement::assign(element);
-        return *this;
-    }
-    void assign(const WebMetaElement& element) { WebElement::assign(element); }
+  WebMetaElement& operator=(const WebMetaElement& element) {
+    WebElement::assign(element);
+    return *this;
+  }
+  void assign(const WebMetaElement& element) { WebElement::assign(element); }
 
-    BLINK_EXPORT WebString computeEncoding() const;
+  BLINK_EXPORT WebString computeEncoding() const;
 
 #if BLINK_IMPLEMENTATION
-    WebMetaElement(HTMLMetaElement*);
-    WebMetaElement& operator=(HTMLMetaElement*);
-    operator HTMLMetaElement*() const;
+  WebMetaElement(HTMLMetaElement*);
+  WebMetaElement& operator=(HTMLMetaElement*);
+  operator HTMLMetaElement*() const;
 #endif
 };
 
 DECLARE_WEB_NODE_TYPE_CASTS(WebMetaElement);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

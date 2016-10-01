@@ -34,47 +34,47 @@
 namespace blink {
 
 class CORE_EXPORT PseudoElement : public Element {
-public:
-    static PseudoElement* create(Element* parent, PseudoId);
+ public:
+  static PseudoElement* create(Element* parent, PseudoId);
 
-    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-    void attachLayoutTree(const AttachContext& = AttachContext()) override;
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+  PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
+  void attachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
 
-    bool canStartSelection() const override { return false; }
-    bool canContainRangeEndPoint() const override { return false; }
-    PseudoId getPseudoId() const override { return m_pseudoId; }
+  bool canStartSelection() const override { return false; }
+  bool canContainRangeEndPoint() const override { return false; }
+  PseudoId getPseudoId() const override { return m_pseudoId; }
 
-    static String pseudoElementNameForEvents(PseudoId);
+  static String pseudoElementNameForEvents(PseudoId);
 
-    Node* findAssociatedNode() const;
+  Node* findAssociatedNode() const;
 
-    virtual void dispose();
+  virtual void dispose();
 
-protected:
-    PseudoElement(Element*, PseudoId);
+ protected:
+  PseudoElement(Element*, PseudoId);
 
-private:
-    void didRecalcStyle(StyleRecalcChange) override;
+ private:
+  void didRecalcStyle(StyleRecalcChange) override;
 
-    PseudoId m_pseudoId;
+  PseudoId m_pseudoId;
 };
 
 const QualifiedName& pseudoElementTagName();
 
-inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style)
-{
-    if (!style)
-        return false;
-    if (style->display() == EDisplay::None)
-        return false;
-    if (style->styleType() == PseudoIdFirstLetter || style->styleType() == PseudoIdBackdrop)
-        return true;
-    return style->contentData();
+inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {
+  if (!style)
+    return false;
+  if (style->display() == EDisplay::None)
+    return false;
+  if (style->styleType() == PseudoIdFirstLetter ||
+      style->styleType() == PseudoIdBackdrop)
+    return true;
+  return style->contentData();
 }
 
 DEFINE_ELEMENT_TYPE_CASTS(PseudoElement, isPseudoElement());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

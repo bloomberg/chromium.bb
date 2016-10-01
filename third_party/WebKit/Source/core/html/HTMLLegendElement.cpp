@@ -33,55 +33,50 @@ namespace blink {
 
 using namespace HTMLNames;
 
-
 inline HTMLLegendElement::HTMLLegendElement(Document& document)
-    : HTMLElement(legendTag, document)
-{
-}
+    : HTMLElement(legendTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLLegendElement)
 
-HTMLFormControlElement* HTMLLegendElement::associatedControl()
-{
-    // Check if there's a fieldset belonging to this legend.
-    HTMLFieldSetElement* fieldset = Traversal<HTMLFieldSetElement>::firstAncestor(*this);
-    if (!fieldset)
-        return nullptr;
+HTMLFormControlElement* HTMLLegendElement::associatedControl() {
+  // Check if there's a fieldset belonging to this legend.
+  HTMLFieldSetElement* fieldset =
+      Traversal<HTMLFieldSetElement>::firstAncestor(*this);
+  if (!fieldset)
+    return nullptr;
 
-    // Find first form element inside the fieldset that is not a legend element.
-    // FIXME: Should we consider tabindex?
-    return Traversal<HTMLFormControlElement>::next(*fieldset, fieldset);
+  // Find first form element inside the fieldset that is not a legend element.
+  // FIXME: Should we consider tabindex?
+  return Traversal<HTMLFormControlElement>::next(*fieldset, fieldset);
 }
 
-void HTMLLegendElement::focus(const FocusParams& params)
-{
-    document().updateStyleAndLayoutTreeForNode(this);
-    if (isFocusable()) {
-        Element::focus(params);
-        return;
-    }
+void HTMLLegendElement::focus(const FocusParams& params) {
+  document().updateStyleAndLayoutTreeForNode(this);
+  if (isFocusable()) {
+    Element::focus(params);
+    return;
+  }
 
-    // To match other browsers' behavior, never restore previous selection.
-    if (HTMLFormControlElement* control = associatedControl())
-        control->focus(FocusParams(SelectionBehaviorOnFocus::Reset, params.type, params.sourceCapabilities));
+  // To match other browsers' behavior, never restore previous selection.
+  if (HTMLFormControlElement* control = associatedControl())
+    control->focus(FocusParams(SelectionBehaviorOnFocus::Reset, params.type,
+                               params.sourceCapabilities));
 }
 
-void HTMLLegendElement::accessKeyAction(bool sendMouseEvents)
-{
-    if (HTMLFormControlElement* control = associatedControl())
-        control->accessKeyAction(sendMouseEvents);
+void HTMLLegendElement::accessKeyAction(bool sendMouseEvents) {
+  if (HTMLFormControlElement* control = associatedControl())
+    control->accessKeyAction(sendMouseEvents);
 }
 
-HTMLFormElement* HTMLLegendElement::form() const
-{
-    // According to the specification, If the legend has a fieldset element as
-    // its parent, then the form attribute must return the same value as the
-    // form attribute on that fieldset element. Otherwise, it must return null.
-    ContainerNode* fieldset = parentNode();
-    if (!isHTMLFieldSetElement(fieldset))
-        return nullptr;
+HTMLFormElement* HTMLLegendElement::form() const {
+  // According to the specification, If the legend has a fieldset element as
+  // its parent, then the form attribute must return the same value as the
+  // form attribute on that fieldset element. Otherwise, it must return null.
+  ContainerNode* fieldset = parentNode();
+  if (!isHTMLFieldSetElement(fieldset))
+    return nullptr;
 
-    return toHTMLFieldSetElement(fieldset)->formOwner();
+  return toHTMLFieldSetElement(fieldset)->formOwner();
 }
 
-} // namespace blink
+}  // namespace blink

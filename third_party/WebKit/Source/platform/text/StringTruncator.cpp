@@ -38,163 +38,181 @@ namespace blink {
 
 #define STRING_BUFFER_SIZE 2048
 
-typedef unsigned TruncationFunction(const String&, unsigned length, unsigned keepCount, UChar* buffer);
+typedef unsigned TruncationFunction(const String&,
+                                    unsigned length,
+                                    unsigned keepCount,
+                                    UChar* buffer);
 
-static inline int textBreakAtOrPreceding(const NonSharedCharacterBreakIterator& it, int offset)
-{
-    if (it.isBreak(offset))
-        return offset;
+static inline int textBreakAtOrPreceding(
+    const NonSharedCharacterBreakIterator& it,
+    int offset) {
+  if (it.isBreak(offset))
+    return offset;
 
-    int result = it.preceding(offset);
-    return result == TextBreakDone ? 0 : result;
+  int result = it.preceding(offset);
+  return result == TextBreakDone ? 0 : result;
 }
 
-static inline int boundedTextBreakFollowing(const NonSharedCharacterBreakIterator& it, int offset, int length)
-{
-    int result = it.following(offset);
-    return result == TextBreakDone ? length : result;
+static inline int boundedTextBreakFollowing(
+    const NonSharedCharacterBreakIterator& it,
+    int offset,
+    int length) {
+  int result = it.following(offset);
+  return result == TextBreakDone ? length : result;
 }
 
-static unsigned centerTruncateToBuffer(const String& string, unsigned length, unsigned keepCount, UChar* buffer)
-{
+static unsigned centerTruncateToBuffer(const String& string,
+                                       unsigned length,
+                                       unsigned keepCount,
+                                       UChar* buffer) {
+  ASSERT(keepCount < length);
+  ASSERT(keepCount < STRING_BUFFER_SIZE);
+
+  unsigned omitStart = (keepCount + 1) / 2;
+  NonSharedCharacterBreakIterator it(string);
+  unsigned omitEnd = boundedTextBreakFollowing(
+      it, omitStart + (length - keepCount) - 1, length);
+  omitStart = textBreakAtOrPreceding(it, omitStart);
+
+  unsigned truncatedLength = omitStart + 1 + (length - omitEnd);
+  ASSERT(truncatedLength <= length);
+
+  string.copyTo(buffer, 0, omitStart);
+  buffer[omitStart] = horizontalEllipsisCharacter;
+  string.copyTo(&buffer[omitStart + 1], omitEnd, length - omitEnd);
+
+  return truncatedLength;
+}
+
+static unsigned rightTruncateToBuffer(const String& string,
+                                      unsigned length,
+                                      unsigned keepCount,
+                                      UChar* buffer) {
+  ASSERT(keepCount < length);
+  ASSERT(keepCount < STRING_BUFFER_SIZE);
+
+  NonSharedCharacterBreakIterator it(string);
+  unsigned keepLength = textBreakAtOrPreceding(it, keepCount);
+  unsigned truncatedLength = keepLength + 1;
+
+  string.copyTo(buffer, 0, keepLength);
+  buffer[keepLength] = horizontalEllipsisCharacter;
+
+  return truncatedLength;
+}
+
+static float stringWidth(const Font& renderer, const String& string) {
+  TextRun run(string);
+  return renderer.width(run);
+}
+
+static float stringWidth(const Font& renderer,
+                         const UChar* characters,
+                         unsigned length) {
+  TextRun run(characters, length);
+  return renderer.width(run);
+}
+
+static String truncateString(const String& string,
+                             float maxWidth,
+                             const Font& font,
+                             TruncationFunction truncateToBuffer) {
+  if (string.isEmpty())
+    return string;
+
+  ASSERT(maxWidth >= 0);
+
+  float currentEllipsisWidth =
+      stringWidth(font, &horizontalEllipsisCharacter, 1);
+
+  UChar stringBuffer[STRING_BUFFER_SIZE];
+  unsigned truncatedLength;
+  unsigned keepCount;
+  unsigned length = string.length();
+
+  if (length > STRING_BUFFER_SIZE) {
+    keepCount = STRING_BUFFER_SIZE - 1;  // need 1 character for the ellipsis
+    truncatedLength =
+        centerTruncateToBuffer(string, length, keepCount, stringBuffer);
+  } else {
+    keepCount = length;
+    string.copyTo(stringBuffer, 0, length);
+    truncatedLength = length;
+  }
+
+  float width = stringWidth(font, stringBuffer, truncatedLength);
+  if (width <= maxWidth)
+    return string;
+
+  unsigned keepCountForLargestKnownToFit = 0;
+  float widthForLargestKnownToFit = currentEllipsisWidth;
+
+  unsigned keepCountForSmallestKnownToNotFit = keepCount;
+  float widthForSmallestKnownToNotFit = width;
+
+  if (currentEllipsisWidth >= maxWidth) {
+    keepCountForLargestKnownToFit = 1;
+    keepCountForSmallestKnownToNotFit = 2;
+  }
+
+  while (keepCountForLargestKnownToFit + 1 <
+         keepCountForSmallestKnownToNotFit) {
+    ASSERT(widthForLargestKnownToFit <= maxWidth);
+    ASSERT(widthForSmallestKnownToNotFit > maxWidth);
+
+    float ratio =
+        (keepCountForSmallestKnownToNotFit - keepCountForLargestKnownToFit) /
+        (widthForSmallestKnownToNotFit - widthForLargestKnownToFit);
+    keepCount = static_cast<unsigned>(maxWidth * ratio);
+
+    if (keepCount <= keepCountForLargestKnownToFit) {
+      keepCount = keepCountForLargestKnownToFit + 1;
+    } else if (keepCount >= keepCountForSmallestKnownToNotFit) {
+      keepCount = keepCountForSmallestKnownToNotFit - 1;
+    }
+
     ASSERT(keepCount < length);
-    ASSERT(keepCount < STRING_BUFFER_SIZE);
+    ASSERT(keepCount > 0);
+    ASSERT(keepCount < keepCountForSmallestKnownToNotFit);
+    ASSERT(keepCount > keepCountForLargestKnownToFit);
 
-    unsigned omitStart = (keepCount + 1) / 2;
-    NonSharedCharacterBreakIterator it(string);
-    unsigned omitEnd = boundedTextBreakFollowing(it, omitStart + (length - keepCount) - 1, length);
-    omitStart = textBreakAtOrPreceding(it, omitStart);
+    truncatedLength = truncateToBuffer(string, length, keepCount, stringBuffer);
 
-    unsigned truncatedLength = omitStart + 1 + (length - omitEnd);
-    ASSERT(truncatedLength <= length);
-
-    string.copyTo(buffer, 0, omitStart);
-    buffer[omitStart] = horizontalEllipsisCharacter;
-    string.copyTo(&buffer[omitStart + 1], omitEnd, length - omitEnd);
-
-    return truncatedLength;
-}
-
-static unsigned rightTruncateToBuffer(const String& string, unsigned length, unsigned keepCount, UChar* buffer)
-{
-    ASSERT(keepCount < length);
-    ASSERT(keepCount < STRING_BUFFER_SIZE);
-
-    NonSharedCharacterBreakIterator it(string);
-    unsigned keepLength = textBreakAtOrPreceding(it, keepCount);
-    unsigned truncatedLength = keepLength + 1;
-
-    string.copyTo(buffer, 0, keepLength);
-    buffer[keepLength] = horizontalEllipsisCharacter;
-
-    return truncatedLength;
-}
-
-static float stringWidth(const Font& renderer, const String& string)
-{
-    TextRun run(string);
-    return renderer.width(run);
-}
-
-static float stringWidth(const Font& renderer, const UChar* characters, unsigned length)
-{
-    TextRun run(characters, length);
-    return renderer.width(run);
-}
-
-static String truncateString(const String& string, float maxWidth, const Font& font, TruncationFunction truncateToBuffer)
-{
-    if (string.isEmpty())
-        return string;
-
-    ASSERT(maxWidth >= 0);
-
-    float currentEllipsisWidth = stringWidth(font, &horizontalEllipsisCharacter, 1);
-
-    UChar stringBuffer[STRING_BUFFER_SIZE];
-    unsigned truncatedLength;
-    unsigned keepCount;
-    unsigned length = string.length();
-
-    if (length > STRING_BUFFER_SIZE) {
-        keepCount = STRING_BUFFER_SIZE - 1; // need 1 character for the ellipsis
-        truncatedLength = centerTruncateToBuffer(string, length, keepCount, stringBuffer);
+    width = stringWidth(font, stringBuffer, truncatedLength);
+    if (width <= maxWidth) {
+      keepCountForLargestKnownToFit = keepCount;
+      widthForLargestKnownToFit = width;
     } else {
-        keepCount = length;
-        string.copyTo(stringBuffer, 0, length);
-        truncatedLength = length;
+      keepCountForSmallestKnownToNotFit = keepCount;
+      widthForSmallestKnownToNotFit = width;
     }
+  }
 
-    float width = stringWidth(font, stringBuffer, truncatedLength);
-    if (width <= maxWidth)
-        return string;
+  if (!keepCountForLargestKnownToFit)
+    keepCountForLargestKnownToFit = 1;
 
-    unsigned keepCountForLargestKnownToFit = 0;
-    float widthForLargestKnownToFit = currentEllipsisWidth;
+  if (keepCount != keepCountForLargestKnownToFit) {
+    keepCount = keepCountForLargestKnownToFit;
+    truncatedLength = truncateToBuffer(string, length, keepCount, stringBuffer);
+  }
 
-    unsigned keepCountForSmallestKnownToNotFit = keepCount;
-    float widthForSmallestKnownToNotFit = width;
-
-    if (currentEllipsisWidth >= maxWidth) {
-        keepCountForLargestKnownToFit = 1;
-        keepCountForSmallestKnownToNotFit = 2;
-    }
-
-    while (keepCountForLargestKnownToFit + 1 < keepCountForSmallestKnownToNotFit) {
-        ASSERT(widthForLargestKnownToFit <= maxWidth);
-        ASSERT(widthForSmallestKnownToNotFit > maxWidth);
-
-        float ratio = (keepCountForSmallestKnownToNotFit - keepCountForLargestKnownToFit)
-            / (widthForSmallestKnownToNotFit - widthForLargestKnownToFit);
-        keepCount = static_cast<unsigned>(maxWidth * ratio);
-
-        if (keepCount <= keepCountForLargestKnownToFit) {
-            keepCount = keepCountForLargestKnownToFit + 1;
-        } else if (keepCount >= keepCountForSmallestKnownToNotFit) {
-            keepCount = keepCountForSmallestKnownToNotFit - 1;
-        }
-
-        ASSERT(keepCount < length);
-        ASSERT(keepCount > 0);
-        ASSERT(keepCount < keepCountForSmallestKnownToNotFit);
-        ASSERT(keepCount > keepCountForLargestKnownToFit);
-
-        truncatedLength = truncateToBuffer(string, length, keepCount, stringBuffer);
-
-        width = stringWidth(font, stringBuffer, truncatedLength);
-        if (width <= maxWidth) {
-            keepCountForLargestKnownToFit = keepCount;
-            widthForLargestKnownToFit = width;
-        } else {
-            keepCountForSmallestKnownToNotFit = keepCount;
-            widthForSmallestKnownToNotFit = width;
-        }
-    }
-
-    if (!keepCountForLargestKnownToFit)
-        keepCountForLargestKnownToFit = 1;
-
-    if (keepCount != keepCountForLargestKnownToFit) {
-        keepCount = keepCountForLargestKnownToFit;
-        truncatedLength = truncateToBuffer(string, length, keepCount, stringBuffer);
-    }
-
-    return String(stringBuffer, truncatedLength);
+  return String(stringBuffer, truncatedLength);
 }
 
-String StringTruncator::centerTruncate(const String& string, float maxWidth, const Font& font)
-{
-    return truncateString(string, maxWidth, font, centerTruncateToBuffer);
+String StringTruncator::centerTruncate(const String& string,
+                                       float maxWidth,
+                                       const Font& font) {
+  return truncateString(string, maxWidth, font, centerTruncateToBuffer);
 }
 
-String StringTruncator::rightTruncate(const String& string, float maxWidth, const Font& font)
-{
-    return truncateString(string, maxWidth, font, rightTruncateToBuffer);
+String StringTruncator::rightTruncate(const String& string,
+                                      float maxWidth,
+                                      const Font& font) {
+  return truncateString(string, maxWidth, font, rightTruncateToBuffer);
 }
 
-float StringTruncator::width(const String& string, const Font& font)
-{
-    return stringWidth(font, string);
+float StringTruncator::width(const String& string, const Font& font) {
+  return stringWidth(font, string);
 }
 
-} // namespace blink
+}  // namespace blink

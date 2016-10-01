@@ -47,81 +47,80 @@ class MutationObserverInterestGroup;
 // active ChildListMutationScopes for that Node. Once the last ChildListMutationScope
 // is destructed the accumulator enqueues a mutation record for the recorded
 // mutations and the accumulator can be garbage collected.
-class ChildListMutationAccumulator final : public GarbageCollected<ChildListMutationAccumulator> {
-public:
-    static ChildListMutationAccumulator* getOrCreate(Node&);
+class ChildListMutationAccumulator final
+    : public GarbageCollected<ChildListMutationAccumulator> {
+ public:
+  static ChildListMutationAccumulator* getOrCreate(Node&);
 
-    void childAdded(Node*);
-    void willRemoveChild(Node*);
+  void childAdded(Node*);
+  void willRemoveChild(Node*);
 
-    bool hasObservers() const { return m_observers; }
+  bool hasObservers() const { return m_observers; }
 
-    // Register and unregister mutation scopes that are using this mutation
-    // accumulator.
-    void enterMutationScope() { m_mutationScopes++; }
-    void leaveMutationScope();
+  // Register and unregister mutation scopes that are using this mutation
+  // accumulator.
+  void enterMutationScope() { m_mutationScopes++; }
+  void leaveMutationScope();
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    ChildListMutationAccumulator(Node*, MutationObserverInterestGroup*);
+ private:
+  ChildListMutationAccumulator(Node*, MutationObserverInterestGroup*);
 
-    void enqueueMutationRecord();
-    bool isEmpty();
-    bool isAddedNodeInOrder(Node*);
-    bool isRemovedNodeInOrder(Node*);
+  void enqueueMutationRecord();
+  bool isEmpty();
+  bool isAddedNodeInOrder(Node*);
+  bool isRemovedNodeInOrder(Node*);
 
-    Member<Node> m_target;
+  Member<Node> m_target;
 
-    HeapVector<Member<Node>> m_removedNodes;
-    HeapVector<Member<Node>> m_addedNodes;
-    Member<Node> m_previousSibling;
-    Member<Node> m_nextSibling;
-    Member<Node> m_lastAdded;
+  HeapVector<Member<Node>> m_removedNodes;
+  HeapVector<Member<Node>> m_addedNodes;
+  Member<Node> m_previousSibling;
+  Member<Node> m_nextSibling;
+  Member<Node> m_lastAdded;
 
-    Member<MutationObserverInterestGroup> m_observers;
+  Member<MutationObserverInterestGroup> m_observers;
 
-    unsigned m_mutationScopes;
+  unsigned m_mutationScopes;
 };
 
 class ChildListMutationScope final {
-    WTF_MAKE_NONCOPYABLE(ChildListMutationScope);
-    STACK_ALLOCATED();
-public:
-    explicit ChildListMutationScope(Node& target)
-    {
-        if (target.document().hasMutationObserversOfType(MutationObserver::ChildList)) {
-            m_accumulator = ChildListMutationAccumulator::getOrCreate(target);
-            // Register another user of the accumulator.
-            m_accumulator->enterMutationScope();
-        }
-    }
+  WTF_MAKE_NONCOPYABLE(ChildListMutationScope);
+  STACK_ALLOCATED();
 
-    ~ChildListMutationScope()
-    {
-        if (m_accumulator) {
-            // Unregister a user of the accumulator. If this is the last user
-            // the accumulator will enqueue a mutation record for the mutations.
-            m_accumulator->leaveMutationScope();
-        }
+ public:
+  explicit ChildListMutationScope(Node& target) {
+    if (target.document().hasMutationObserversOfType(
+            MutationObserver::ChildList)) {
+      m_accumulator = ChildListMutationAccumulator::getOrCreate(target);
+      // Register another user of the accumulator.
+      m_accumulator->enterMutationScope();
     }
+  }
 
-    void childAdded(Node& child)
-    {
-        if (m_accumulator && m_accumulator->hasObservers())
-            m_accumulator->childAdded(&child);
+  ~ChildListMutationScope() {
+    if (m_accumulator) {
+      // Unregister a user of the accumulator. If this is the last user
+      // the accumulator will enqueue a mutation record for the mutations.
+      m_accumulator->leaveMutationScope();
     }
+  }
 
-    void willRemoveChild(Node& child)
-    {
-        if (m_accumulator && m_accumulator->hasObservers())
-            m_accumulator->willRemoveChild(&child);
-    }
+  void childAdded(Node& child) {
+    if (m_accumulator && m_accumulator->hasObservers())
+      m_accumulator->childAdded(&child);
+  }
 
-private:
-    Member<ChildListMutationAccumulator> m_accumulator;
+  void willRemoveChild(Node& child) {
+    if (m_accumulator && m_accumulator->hasObservers())
+      m_accumulator->willRemoveChild(&child);
+  }
+
+ private:
+  Member<ChildListMutationAccumulator> m_accumulator;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ChildListMutationScope_h
+#endif  // ChildListMutationScope_h

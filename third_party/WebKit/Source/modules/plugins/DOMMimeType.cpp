@@ -26,54 +26,46 @@
 
 namespace blink {
 
-DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
-    : DOMWindowProperty(frame)
-    , m_pluginData(pluginData)
-    , m_index(index)
-{
+DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData,
+                         LocalFrame* frame,
+                         unsigned index)
+    : DOMWindowProperty(frame), m_pluginData(pluginData), m_index(index) {}
+
+DOMMimeType::~DOMMimeType() {}
+
+DEFINE_TRACE(DOMMimeType) {
+  DOMWindowProperty::trace(visitor);
 }
 
-DOMMimeType::~DOMMimeType()
-{
+const String& DOMMimeType::type() const {
+  return mimeClassInfo().type;
 }
 
-DEFINE_TRACE(DOMMimeType)
-{
-    DOMWindowProperty::trace(visitor);
+String DOMMimeType::suffixes() const {
+  const Vector<String>& extensions = mimeClassInfo().extensions;
+
+  StringBuilder builder;
+  for (size_t i = 0; i < extensions.size(); ++i) {
+    if (i)
+      builder.append(',');
+    builder.append(extensions[i]);
+  }
+  return builder.toString();
 }
 
-const String &DOMMimeType::type() const
-{
-    return mimeClassInfo().type;
+const String& DOMMimeType::description() const {
+  return mimeClassInfo().desc;
 }
 
-String DOMMimeType::suffixes() const
-{
-    const Vector<String>& extensions = mimeClassInfo().extensions;
+DOMPlugin* DOMMimeType::enabledPlugin() const {
+  // FIXME: allowPlugins is just a client call. We should not need
+  // to bounce through the loader to get there.
+  // Something like: frame()->host()->client()->allowPlugins().
+  if (!frame() || !frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
+    return nullptr;
 
-    StringBuilder builder;
-    for (size_t i = 0; i < extensions.size(); ++i) {
-        if (i)
-            builder.append(',');
-        builder.append(extensions[i]);
-    }
-    return builder.toString();
+  return DOMPlugin::create(m_pluginData.get(), frame(),
+                           m_pluginData->mimePluginIndices()[m_index]);
 }
 
-const String &DOMMimeType::description() const
-{
-    return mimeClassInfo().desc;
-}
-
-DOMPlugin* DOMMimeType::enabledPlugin() const
-{
-    // FIXME: allowPlugins is just a client call. We should not need
-    // to bounce through the loader to get there.
-    // Something like: frame()->host()->client()->allowPlugins().
-    if (!frame() || !frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
-        return nullptr;
-
-    return DOMPlugin::create(m_pluginData.get(), frame(), m_pluginData->mimePluginIndices()[m_index]);
-}
-
-} // namespace blink
+}  // namespace blink

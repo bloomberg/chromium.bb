@@ -15,16 +15,22 @@ enum class WebAppBannerPromptReply;
 class LocalFrame;
 class WebAppBannerClient;
 class WebString;
-template <typename T> class WebVector;
+template <typename T>
+class WebVector;
 
 // FIXME: unless userChoice ends up implemented, this class should not exist and
 // a regular static method could be used instead.
 class MODULES_EXPORT AppBannerController final {
-    STATIC_ONLY(AppBannerController);
-public:
-    static void willShowInstallBannerPrompt(int requestId, WebAppBannerClient*, LocalFrame*, const WebVector<WebString>& platforms, WebAppBannerPromptReply*);
+  STATIC_ONLY(AppBannerController);
+
+ public:
+  static void willShowInstallBannerPrompt(int requestId,
+                                          WebAppBannerClient*,
+                                          LocalFrame*,
+                                          const WebVector<WebString>& platforms,
+                                          WebAppBannerPromptReply*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AppBannerController_h
+#endif  // AppBannerController_h

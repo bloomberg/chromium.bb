@@ -38,32 +38,33 @@
 namespace blink {
 
 class CORE_EXPORT AnimatableClipPathOperation final : public AnimatableValue {
-public:
-    ~AnimatableClipPathOperation() override { }
-    static PassRefPtr<AnimatableClipPathOperation> create(ClipPathOperation* operation)
-    {
-        return adoptRef(new AnimatableClipPathOperation(operation));
-    }
-    ClipPathOperation* getClipPathOperation() const { return m_operation.get(); }
+ public:
+  ~AnimatableClipPathOperation() override {}
+  static PassRefPtr<AnimatableClipPathOperation> create(
+      ClipPathOperation* operation) {
+    return adoptRef(new AnimatableClipPathOperation(operation));
+  }
+  ClipPathOperation* getClipPathOperation() const { return m_operation.get(); }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    AnimatableClipPathOperation(ClipPathOperation* operation)
-        : m_operation(operation)
-    {
-        DCHECK(m_operation);
-    }
-    AnimatableType type() const override { return TypeClipPathOperation; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  AnimatableClipPathOperation(ClipPathOperation* operation)
+      : m_operation(operation) {
+    DCHECK(m_operation);
+  }
+  AnimatableType type() const override { return TypeClipPathOperation; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    RefPtr<ClipPathOperation> m_operation;
+  RefPtr<ClipPathOperation> m_operation;
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableClipPathOperation, isClipPathOperation());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableClipPathOperation,
+                                   isClipPathOperation());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableClipPathOperation_h
+#endif  // AnimatableClipPathOperation_h

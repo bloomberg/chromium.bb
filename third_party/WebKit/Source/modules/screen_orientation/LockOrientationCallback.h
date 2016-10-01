@@ -20,19 +20,20 @@ class ScriptPromiseResolver;
 // that will resolve the underlying promise depending on the result passed to
 // the callback.
 class LockOrientationCallback final : public WebLockOrientationCallback {
-    USING_FAST_MALLOC(LockOrientationCallback);
-    WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
-public:
-    explicit LockOrientationCallback(ScriptPromiseResolver*);
-    ~LockOrientationCallback() override;
+  USING_FAST_MALLOC(LockOrientationCallback);
+  WTF_MAKE_NONCOPYABLE(LockOrientationCallback);
 
-    void onSuccess() override;
-    void onError(WebLockOrientationError) override;
+ public:
+  explicit LockOrientationCallback(ScriptPromiseResolver*);
+  ~LockOrientationCallback() override;
 
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
+  void onSuccess() override;
+  void onError(WebLockOrientationError) override;
+
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LockOrientationCallback_h
+#endif  // LockOrientationCallback_h

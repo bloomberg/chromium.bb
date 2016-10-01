@@ -15,40 +15,45 @@ namespace blink {
 class Worklet;
 
 // Class that is responsible for processing {@code resource} that is associated with worklet's import promise.
-class WorkletScriptLoader final : public GarbageCollectedFinalized<WorkletScriptLoader>, public ResourceOwner<ScriptResource, ScriptResourceClient> {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkletScriptLoader);
-    WTF_MAKE_NONCOPYABLE(WorkletScriptLoader);
-public:
-    static WorkletScriptLoader* create(ScriptPromiseResolver* scriptPromiseResolver, Worklet* worklet, ScriptResource* resource)
-    {
-        return new WorkletScriptLoader(scriptPromiseResolver, worklet, resource);
-    }
+class WorkletScriptLoader final
+    : public GarbageCollectedFinalized<WorkletScriptLoader>,
+      public ResourceOwner<ScriptResource, ScriptResourceClient> {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkletScriptLoader);
+  WTF_MAKE_NONCOPYABLE(WorkletScriptLoader);
 
-    ~WorkletScriptLoader() override = default;
+ public:
+  static WorkletScriptLoader* create(
+      ScriptPromiseResolver* scriptPromiseResolver,
+      Worklet* worklet,
+      ScriptResource* resource) {
+    return new WorkletScriptLoader(scriptPromiseResolver, worklet, resource);
+  }
 
-    // Cancels loading of {@code m_resource}.
-    //
-    // Typically it gets called when WorkletScriptLoader's host is about to be disposed off.
-    void cancel();
+  ~WorkletScriptLoader() override = default;
 
-    DECLARE_TRACE();
+  // Cancels loading of {@code m_resource}.
+  //
+  // Typically it gets called when WorkletScriptLoader's host is about to be disposed off.
+  void cancel();
 
-private:
-    // Default constructor.
-    //
-    // @param resolver Promise resolver that is used to reject/resolve the promise on ScriptResourceClient::notifyFinished event.
-    // @param host Host that needs be notified when the resource is downloaded.
-    // @param resource that needs to be downloaded.
-    WorkletScriptLoader(ScriptPromiseResolver*, Worklet* host, ScriptResource*);
+  DECLARE_TRACE();
 
-    // ResourceClient
-    void notifyFinished(Resource*) final;
-    String debugName() const final { return "WorkletLoader"; }
+ private:
+  // Default constructor.
+  //
+  // @param resolver Promise resolver that is used to reject/resolve the promise on ScriptResourceClient::notifyFinished event.
+  // @param host Host that needs be notified when the resource is downloaded.
+  // @param resource that needs to be downloaded.
+  WorkletScriptLoader(ScriptPromiseResolver*, Worklet* host, ScriptResource*);
 
-    Member<ScriptPromiseResolver> m_resolver;
-    Member<Worklet> m_host;
+  // ResourceClient
+  void notifyFinished(Resource*) final;
+  String debugName() const final { return "WorkletLoader"; }
+
+  Member<ScriptPromiseResolver> m_resolver;
+  Member<Worklet> m_host;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkletScriptLoader_h
+#endif  // WorkletScriptLoader_h

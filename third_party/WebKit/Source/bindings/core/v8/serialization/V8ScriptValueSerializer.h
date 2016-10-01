@@ -27,59 +27,67 @@ class Transferables;
 //
 // A serializer cannot be used multiple times; it is expected that its serialize
 // method will be invoked exactly once.
-class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT V8ScriptValueSerializer : public v8::ValueSerializer::Delegate {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(V8ScriptValueSerializer);
-public:
-    explicit V8ScriptValueSerializer(RefPtr<ScriptState>);
+class GC_PLUGIN_IGNORE("https://crbug.com/644725")
+    CORE_EXPORT V8ScriptValueSerializer : public v8::ValueSerializer::Delegate {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(V8ScriptValueSerializer);
 
-    // If not null, blobs will have info written into this array and be
-    // serialized by index.
-    void setBlobInfoArray(WebBlobInfoArray* blobInfoArray) { m_blobInfoArray = blobInfoArray; }
+ public:
+  explicit V8ScriptValueSerializer(RefPtr<ScriptState>);
 
-    RefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>, Transferables*, ExceptionState&);
+  // If not null, blobs will have info written into this array and be
+  // serialized by index.
+  void setBlobInfoArray(WebBlobInfoArray* blobInfoArray) {
+    m_blobInfoArray = blobInfoArray;
+  }
 
-protected:
-    // Returns true if the DOM object was successfully written.
-    // If false is returned and no more specific exception is thrown, a generic
-    // DataCloneError message will be used.
-    virtual bool writeDOMObject(ScriptWrappable*, ExceptionState&);
+  RefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>,
+                                          Transferables*,
+                                          ExceptionState&);
 
-    void writeTag(SerializationTag tag)
-    {
-        uint8_t tagByte = tag;
-        m_serializer.WriteRawBytes(&tagByte, 1);
-    }
-    void writeUint32(uint32_t value) { m_serializer.WriteUint32(value); }
-    void writeUint64(uint64_t value) { m_serializer.WriteUint64(value); }
-    void writeRawBytes(const void* data, size_t size) { m_serializer.WriteRawBytes(data, size); }
-    void writeUTF8String(const String&);
+ protected:
+  // Returns true if the DOM object was successfully written.
+  // If false is returned and no more specific exception is thrown, a generic
+  // DataCloneError message will be used.
+  virtual bool writeDOMObject(ScriptWrappable*, ExceptionState&);
 
-private:
-    // Transfer is split into two phases: scanning the transferables so that we
-    // don't have to serialize the data (just an index), and finalizing (to
-    // neuter objects in the source context).
-    // This separation is required by the spec (it prevents neutering from
-    // happening if there's a failure earlier in serialization).
-    void prepareTransfer(Transferables*);
-    void finalizeTransfer(ExceptionState&);
+  void writeTag(SerializationTag tag) {
+    uint8_t tagByte = tag;
+    m_serializer.WriteRawBytes(&tagByte, 1);
+  }
+  void writeUint32(uint32_t value) { m_serializer.WriteUint32(value); }
+  void writeUint64(uint64_t value) { m_serializer.WriteUint64(value); }
+  void writeRawBytes(const void* data, size_t size) {
+    m_serializer.WriteRawBytes(data, size);
+  }
+  void writeUTF8String(const String&);
 
-    // v8::ValueSerializer::Delegate
-    void ThrowDataCloneError(v8::Local<v8::String> message) override;
-    v8::Maybe<bool> WriteHostObject(v8::Isolate*, v8::Local<v8::Object> message) override;
+ private:
+  // Transfer is split into two phases: scanning the transferables so that we
+  // don't have to serialize the data (just an index), and finalizing (to
+  // neuter objects in the source context).
+  // This separation is required by the spec (it prevents neutering from
+  // happening if there's a failure earlier in serialization).
+  void prepareTransfer(Transferables*);
+  void finalizeTransfer(ExceptionState&);
 
-    RefPtr<ScriptState> m_scriptState;
-    RefPtr<SerializedScriptValue> m_serializedScriptValue;
-    v8::ValueSerializer m_serializer;
-    const Transferables* m_transferables = nullptr;
-    const ExceptionState* m_exceptionState = nullptr;
-    WebBlobInfoArray* m_blobInfoArray = nullptr;
+  // v8::ValueSerializer::Delegate
+  void ThrowDataCloneError(v8::Local<v8::String> message) override;
+  v8::Maybe<bool> WriteHostObject(v8::Isolate*,
+                                  v8::Local<v8::Object> message) override;
+
+  RefPtr<ScriptState> m_scriptState;
+  RefPtr<SerializedScriptValue> m_serializedScriptValue;
+  v8::ValueSerializer m_serializer;
+  const Transferables* m_transferables = nullptr;
+  const ExceptionState* m_exceptionState = nullptr;
+  WebBlobInfoArray* m_blobInfoArray = nullptr;
 
 #if DCHECK_IS_ON()
-    bool m_serializeInvoked = false;
+  bool m_serializeInvoked = false;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ScriptValueSerializer_h
+#endif  // V8ScriptValueSerializer_h

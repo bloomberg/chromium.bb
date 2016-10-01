@@ -11,11 +11,10 @@ namespace blink {
 
 // Representation of MediaArtwork interface to the content layer.
 struct WebMediaArtwork {
-    WebString src;
-    WebString sizes;
-    WebString type;
+  WebString src;
+  WebString sizes;
+  WebString type;
 };
-
 }
 
-#endif // WebMediaArtwork_h
+#endif  // WebMediaArtwork_h

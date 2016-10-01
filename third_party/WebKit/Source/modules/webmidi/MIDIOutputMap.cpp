@@ -9,8 +9,6 @@
 namespace blink {
 
 MIDIOutputMap::MIDIOutputMap(HeapVector<Member<MIDIOutput>>& entries)
-    : MIDIPortMap<MIDIOutput>(entries)
-{
-}
+    : MIDIPortMap<MIDIOutput>(entries) {}
 
-} // namespace blink
+}  // namespace blink

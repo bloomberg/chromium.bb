@@ -41,40 +41,43 @@ namespace blink {
 // UpSampler up-samples the source stream by a factor of 2x.
 
 class PLATFORM_EXPORT UpSampler {
-    USING_FAST_MALLOC(UpSampler);
-    WTF_MAKE_NONCOPYABLE(UpSampler);
-public:
-    UpSampler(size_t inputBlockSize);
+  USING_FAST_MALLOC(UpSampler);
+  WTF_MAKE_NONCOPYABLE(UpSampler);
 
-    // The destination buffer |destP| is of size sourceFramesToProcess * 2.
-    void process(const float* sourceP, float* destP, size_t sourceFramesToProcess);
+ public:
+  UpSampler(size_t inputBlockSize);
 
-    void reset();
+  // The destination buffer |destP| is of size sourceFramesToProcess * 2.
+  void process(const float* sourceP,
+               float* destP,
+               size_t sourceFramesToProcess);
 
-    // Latency based on the source sample-rate.
-    size_t latencyFrames() const;
+  void reset();
 
-private:
-    enum { DefaultKernelSize = 128 };
+  // Latency based on the source sample-rate.
+  size_t latencyFrames() const;
 
-    size_t m_inputBlockSize;
+ private:
+  enum { DefaultKernelSize = 128 };
 
-    // Computes ideal band-limited filter coefficients to sample in between each source sample-frame.
-    // This filter will be used to compute the odd sample-frames of the output.
-    void initializeKernel();
-    AudioFloatArray m_kernel;
+  size_t m_inputBlockSize;
 
-    // Computes the odd sample-frames of the output.
-    DirectConvolver m_convolver;
+  // Computes ideal band-limited filter coefficients to sample in between each source sample-frame.
+  // This filter will be used to compute the odd sample-frames of the output.
+  void initializeKernel();
+  AudioFloatArray m_kernel;
 
-    AudioFloatArray m_tempBuffer;
+  // Computes the odd sample-frames of the output.
+  DirectConvolver m_convolver;
 
-    // Delay line for generating the even sample-frames of the output.
-    // The source samples are delayed exactly to match the linear phase delay of the FIR filter (convolution)
-    // used to generate the odd sample-frames of the output.
-    AudioFloatArray m_inputBuffer;
+  AudioFloatArray m_tempBuffer;
+
+  // Delay line for generating the even sample-frames of the output.
+  // The source samples are delayed exactly to match the linear phase delay of the FIR filter (convolution)
+  // used to generate the odd sample-frames of the output.
+  AudioFloatArray m_inputBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UpSampler_h
+#endif  // UpSampler_h

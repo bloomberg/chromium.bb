@@ -44,24 +44,30 @@ class ExceptionState;
 class KURL;
 class ExecutionContext;
 
-class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
-public:
-    // EventTarget APIs
-    ExecutionContext* getExecutionContext() const final { return ActiveDOMObject::getExecutionContext(); }
+class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData,
+                                   public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
+ public:
+  // EventTarget APIs
+  ExecutionContext* getExecutionContext() const final {
+    return ActiveDOMObject::getExecutionContext();
+  }
 
-    AbstractWorker(ExecutionContext*);
-    ~AbstractWorker() override;
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
 
-    DECLARE_VIRTUAL_TRACE();
+  AbstractWorker(ExecutionContext*);
+  ~AbstractWorker() override;
 
-protected:
-    // Helper function that converts a URL to an absolute URL and checks the result for validity.
-    KURL resolveURL(const String& url, ExceptionState&, WebURLRequest::RequestContext);
+  DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  // Helper function that converts a URL to an absolute URL and checks the result for validity.
+  KURL resolveURL(const String& url,
+                  ExceptionState&,
+                  WebURLRequest::RequestContext);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AbstractWorker_h
+#endif  // AbstractWorker_h

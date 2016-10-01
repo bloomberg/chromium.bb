@@ -26,34 +26,36 @@ class WebTaskRunner;
 //
 // This observes LocalFrame lifecycle only for in-process worker cases (i.e.
 // only when a non-null LocalFrame is given).
-class CORE_EXPORT ParentFrameTaskRunners final : public GarbageCollectedFinalized<ParentFrameTaskRunners>, public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(ParentFrameTaskRunners);
-    WTF_MAKE_NONCOPYABLE(ParentFrameTaskRunners);
+class CORE_EXPORT ParentFrameTaskRunners final
+    : public GarbageCollectedFinalized<ParentFrameTaskRunners>,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(ParentFrameTaskRunners);
+  WTF_MAKE_NONCOPYABLE(ParentFrameTaskRunners);
 
-public:
-    static ParentFrameTaskRunners* create(LocalFrame* frame)
-    {
-        return new ParentFrameTaskRunners(frame);
-    }
+ public:
+  static ParentFrameTaskRunners* create(LocalFrame* frame) {
+    return new ParentFrameTaskRunners(frame);
+  }
 
-    // Might return nullptr for unsupported task types.
-    WebTaskRunner* get(TaskType);
+  // Might return nullptr for unsupported task types.
+  WebTaskRunner* get(TaskType);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    using TaskRunnerHashMap = HashMap<TaskType, WebTaskRunner*, WTF::IntHash<TaskType>, TaskTypeTraits>;
+ private:
+  using TaskRunnerHashMap =
+      HashMap<TaskType, WebTaskRunner*, WTF::IntHash<TaskType>, TaskTypeTraits>;
 
-    // LocalFrame could be nullptr if the worker is not associated with a
-    // particular local frame.
-    explicit ParentFrameTaskRunners(LocalFrame*);
+  // LocalFrame could be nullptr if the worker is not associated with a
+  // particular local frame.
+  explicit ParentFrameTaskRunners(LocalFrame*);
 
-    void contextDestroyed() override;
+  void contextDestroyed() override;
 
-    Mutex m_taskRunnersMutex;
-    TaskRunnerHashMap m_taskRunners;
+  Mutex m_taskRunnersMutex;
+  TaskRunnerHashMap m_taskRunners;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ParentFrameTaskRunners_h
+#endif  // ParentFrameTaskRunners_h

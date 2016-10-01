@@ -18,85 +18,79 @@
 
 namespace blink {
 
-PushMessageData* PushMessageData::create(const String& messageString)
-{
-    // The standard supports both an empty but valid message and a null message.
-    // In case the message is explicitly null, return a null pointer which will
-    // be set in the PushEvent.
-    if (messageString.isNull())
-        return nullptr;
-    return PushMessageData::create(ArrayBufferOrArrayBufferViewOrUSVString::fromUSVString(messageString));
-}
-
-PushMessageData* PushMessageData::create(const ArrayBufferOrArrayBufferViewOrUSVString& messageData)
-{
-    if (messageData.isArrayBuffer() || messageData.isArrayBufferView()) {
-        DOMArrayBuffer* buffer = messageData.isArrayBufferView()
-            ? messageData.getAsArrayBufferView()->buffer()
-            : messageData.getAsArrayBuffer();
-
-        return new PushMessageData(static_cast<const char*>(buffer->data()), buffer->byteLength());
-    }
-
-    if (messageData.isUSVString()) {
-        CString encodedString = UTF8Encoding().encode(messageData.getAsUSVString(), WTF::EntitiesForUnencodables);
-        return new PushMessageData(encodedString.data(), encodedString.length());
-    }
-
-    DCHECK(messageData.isNull());
+PushMessageData* PushMessageData::create(const String& messageString) {
+  // The standard supports both an empty but valid message and a null message.
+  // In case the message is explicitly null, return a null pointer which will
+  // be set in the PushEvent.
+  if (messageString.isNull())
     return nullptr;
+  return PushMessageData::create(
+      ArrayBufferOrArrayBufferViewOrUSVString::fromUSVString(messageString));
 }
 
-PushMessageData::PushMessageData(const char* data, unsigned bytesSize)
-{
-    m_data.append(data, bytesSize);
+PushMessageData* PushMessageData::create(
+    const ArrayBufferOrArrayBufferViewOrUSVString& messageData) {
+  if (messageData.isArrayBuffer() || messageData.isArrayBufferView()) {
+    DOMArrayBuffer* buffer = messageData.isArrayBufferView()
+                                 ? messageData.getAsArrayBufferView()->buffer()
+                                 : messageData.getAsArrayBuffer();
+
+    return new PushMessageData(static_cast<const char*>(buffer->data()),
+                               buffer->byteLength());
+  }
+
+  if (messageData.isUSVString()) {
+    CString encodedString = UTF8Encoding().encode(messageData.getAsUSVString(),
+                                                  WTF::EntitiesForUnencodables);
+    return new PushMessageData(encodedString.data(), encodedString.length());
+  }
+
+  DCHECK(messageData.isNull());
+  return nullptr;
 }
 
-PushMessageData::~PushMessageData()
-{
+PushMessageData::PushMessageData(const char* data, unsigned bytesSize) {
+  m_data.append(data, bytesSize);
 }
 
-DOMArrayBuffer* PushMessageData::arrayBuffer() const
-{
-    return DOMArrayBuffer::create(m_data.data(), m_data.size());
+PushMessageData::~PushMessageData() {}
+
+DOMArrayBuffer* PushMessageData::arrayBuffer() const {
+  return DOMArrayBuffer::create(m_data.data(), m_data.size());
 }
 
-Blob* PushMessageData::blob() const
-{
-    std::unique_ptr<BlobData> blobData = BlobData::create();
-    blobData->appendBytes(m_data.data(), m_data.size());
+Blob* PushMessageData::blob() const {
+  std::unique_ptr<BlobData> blobData = BlobData::create();
+  blobData->appendBytes(m_data.data(), m_data.size());
 
-    // Note that the content type of the Blob object is deliberately not being
-    // provided, following the specification.
+  // Note that the content type of the Blob object is deliberately not being
+  // provided, following the specification.
 
-    const long long byteLength = blobData->length();
-    return Blob::create(BlobDataHandle::create(std::move(blobData), byteLength));
+  const long long byteLength = blobData->length();
+  return Blob::create(BlobDataHandle::create(std::move(blobData), byteLength));
 }
 
-ScriptValue PushMessageData::json(ScriptState* scriptState, ExceptionState& exceptionState) const
-{
-    v8::Isolate* isolate = scriptState->isolate();
+ScriptValue PushMessageData::json(ScriptState* scriptState,
+                                  ExceptionState& exceptionState) const {
+  v8::Isolate* isolate = scriptState->isolate();
 
-    ScriptState::Scope scope(scriptState);
-    v8::Local<v8::String> dataString = v8String(isolate, text());
+  ScriptState::Scope scope(scriptState);
+  v8::Local<v8::String> dataString = v8String(isolate, text());
 
-    v8::TryCatch block(isolate);
-    v8::Local<v8::Value> parsed;
-    if (!v8Call(v8::JSON::Parse(isolate, dataString), parsed, block)) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return ScriptValue();
-    }
+  v8::TryCatch block(isolate);
+  v8::Local<v8::Value> parsed;
+  if (!v8Call(v8::JSON::Parse(isolate, dataString), parsed, block)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return ScriptValue();
+  }
 
-    return ScriptValue(scriptState, parsed);
+  return ScriptValue(scriptState, parsed);
 }
 
-String PushMessageData::text() const
-{
-    return UTF8Encoding().decode(m_data.data(), m_data.size());
+String PushMessageData::text() const {
+  return UTF8Encoding().decode(m_data.data(), m_data.size());
 }
 
-DEFINE_TRACE(PushMessageData)
-{
-}
+DEFINE_TRACE(PushMessageData) {}
 
-} // namespace blink
+}  // namespace blink

@@ -19,45 +19,45 @@ namespace blink {
 class WebTaskRunner;
 
 class WebGLTimerQueryEXT : public WebGLContextObject {
-    DEFINE_WRAPPERTYPEINFO();
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static WebGLTimerQueryEXT* create(WebGLRenderingContextBase*);
-    ~WebGLTimerQueryEXT() override;
+ public:
+  static WebGLTimerQueryEXT* create(WebGLRenderingContextBase*);
+  ~WebGLTimerQueryEXT() override;
 
-    void setTarget(GLenum target) { m_target = target; }
+  void setTarget(GLenum target) { m_target = target; }
 
-    GLuint object() const { return m_queryId; }
-    bool hasTarget() const { return m_target != 0; }
-    GLenum target() const { return m_target; }
+  GLuint object() const { return m_queryId; }
+  bool hasTarget() const { return m_target != 0; }
+  GLenum target() const { return m_target; }
 
-    void resetCachedResult();
-    void updateCachedResult(gpu::gles2::GLES2Interface*);
+  void resetCachedResult();
+  void updateCachedResult(gpu::gles2::GLES2Interface*);
 
-    bool isQueryResultAvailable();
-    GLuint64 getQueryResult();
+  bool isQueryResultAvailable();
+  GLuint64 getQueryResult();
 
-protected:
-    WebGLTimerQueryEXT(WebGLRenderingContextBase*);
+ protected:
+  WebGLTimerQueryEXT(WebGLRenderingContextBase*);
 
-private:
-    bool hasObject() const override { return m_queryId != 0; }
-    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+ private:
+  bool hasObject() const override { return m_queryId != 0; }
+  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    void scheduleAllowAvailabilityUpdate();
-    void allowAvailabilityUpdate();
+  void scheduleAllowAvailabilityUpdate();
+  void allowAvailabilityUpdate();
 
-    GLenum m_target;
-    GLuint m_queryId;
+  GLenum m_target;
+  GLuint m_queryId;
 
-    bool m_canUpdateAvailability;
-    bool m_queryResultAvailable;
-    GLuint64 m_queryResult;
+  bool m_canUpdateAvailability;
+  bool m_queryResultAvailable;
+  GLuint64 m_queryResult;
 
-    std::unique_ptr<WebTaskRunner> m_taskRunner;
-    std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
+  std::unique_ptr<WebTaskRunner> m_taskRunner;
+  std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLTimerQueryEXT_h
+#endif  // WebGLTimerQueryEXT_h

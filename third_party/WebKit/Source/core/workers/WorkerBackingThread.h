@@ -27,47 +27,60 @@ class WebThreadSupportingGC;
 // WorkerGlobalScope, but multiple WorkerThreads (i.e., multiple
 // WorkerGlobalScopes) can share one WorkerBackingThread.
 class CORE_EXPORT WorkerBackingThread final {
-public:
-    static std::unique_ptr<WorkerBackingThread> create(const char* name, BlinkGC::ThreadHeapMode threadHeapMode) { return wrapUnique(new WorkerBackingThread(name, false, threadHeapMode)); }
-    static std::unique_ptr<WorkerBackingThread> create(WebThread* thread) { return wrapUnique(new WorkerBackingThread(thread, false)); }
+ public:
+  static std::unique_ptr<WorkerBackingThread> create(
+      const char* name,
+      BlinkGC::ThreadHeapMode threadHeapMode) {
+    return wrapUnique(new WorkerBackingThread(name, false, threadHeapMode));
+  }
+  static std::unique_ptr<WorkerBackingThread> create(WebThread* thread) {
+    return wrapUnique(new WorkerBackingThread(thread, false));
+  }
 
-    // These are needed to suppress leak reports. See
-    // https://crbug.com/590802 and https://crbug.com/v8/1428.
-    static std::unique_ptr<WorkerBackingThread> createForTest(const char* name, BlinkGC::ThreadHeapMode threadHeapMode) { return wrapUnique(new WorkerBackingThread(name, true, threadHeapMode)); }
-    static std::unique_ptr<WorkerBackingThread> createForTest(WebThread* thread) { return wrapUnique(new WorkerBackingThread(thread, true)); }
+  // These are needed to suppress leak reports. See
+  // https://crbug.com/590802 and https://crbug.com/v8/1428.
+  static std::unique_ptr<WorkerBackingThread> createForTest(
+      const char* name,
+      BlinkGC::ThreadHeapMode threadHeapMode) {
+    return wrapUnique(new WorkerBackingThread(name, true, threadHeapMode));
+  }
+  static std::unique_ptr<WorkerBackingThread> createForTest(WebThread* thread) {
+    return wrapUnique(new WorkerBackingThread(thread, true));
+  }
 
-    ~WorkerBackingThread();
+  ~WorkerBackingThread();
 
-    // initialize() and shutdown() attaches and detaches Oilpan and V8 to / from
-    // the caller worker script, respectively. A worker script must not call
-    // any function after calling shutdown().
-    // They should be called from |this| thread.
-    void initialize();
-    void shutdown();
+  // initialize() and shutdown() attaches and detaches Oilpan and V8 to / from
+  // the caller worker script, respectively. A worker script must not call
+  // any function after calling shutdown().
+  // They should be called from |this| thread.
+  void initialize();
+  void shutdown();
 
-    WebThreadSupportingGC& backingThread()
-    {
-        DCHECK(m_backingThread);
-        return *m_backingThread;
-    }
+  WebThreadSupportingGC& backingThread() {
+    DCHECK(m_backingThread);
+    return *m_backingThread;
+  }
 
-    v8::Isolate* isolate() { return m_isolate; }
+  v8::Isolate* isolate() { return m_isolate; }
 
-    static void MemoryPressureNotificationToWorkerThreadIsolates(
-        v8::MemoryPressureLevel);
+  static void MemoryPressureNotificationToWorkerThreadIsolates(
+      v8::MemoryPressureLevel);
 
-    static void setRAILModeOnWorkerThreadIsolates(v8::RAILMode);
+  static void setRAILModeOnWorkerThreadIsolates(v8::RAILMode);
 
-private:
-    WorkerBackingThread(const char* name, bool shouldCallGCOnShutdown, BlinkGC::ThreadHeapMode);
-    WorkerBackingThread(WebThread*, bool shouldCallGCOnSHutdown);
+ private:
+  WorkerBackingThread(const char* name,
+                      bool shouldCallGCOnShutdown,
+                      BlinkGC::ThreadHeapMode);
+  WorkerBackingThread(WebThread*, bool shouldCallGCOnSHutdown);
 
-    std::unique_ptr<WebThreadSupportingGC> m_backingThread;
-    v8::Isolate* m_isolate = nullptr;
-    bool m_isOwningThread;
-    bool m_shouldCallGCOnShutdown;
+  std::unique_ptr<WebThreadSupportingGC> m_backingThread;
+  v8::Isolate* m_isolate = nullptr;
+  bool m_isOwningThread;
+  bool m_shouldCallGCOnShutdown;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerBackingThread_h
+#endif  // WorkerBackingThread_h

@@ -44,51 +44,52 @@
 namespace blink {
 
 class CloseEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CloseEvent* create()
-    {
-        return new CloseEvent();
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CloseEvent* create(bool wasClean, unsigned short code, const String& reason)
-    {
-        return new CloseEvent(wasClean, code, reason);
-    }
+ public:
+  static CloseEvent* create() { return new CloseEvent(); }
 
-    static CloseEvent* create(const AtomicString& type, const CloseEventInit& initializer)
-    {
-        return new CloseEvent(type, initializer);
-    }
+  static CloseEvent* create(bool wasClean,
+                            unsigned short code,
+                            const String& reason) {
+    return new CloseEvent(wasClean, code, reason);
+  }
 
-    bool wasClean() const { return m_wasClean; }
-    unsigned short code() const { return m_code; }
-    String reason() const { return m_reason; }
+  static CloseEvent* create(const AtomicString& type,
+                            const CloseEventInit& initializer) {
+    return new CloseEvent(type, initializer);
+  }
 
-    // Event function.
-    const AtomicString& interfaceName() const override { return EventNames::CloseEvent; }
+  bool wasClean() const { return m_wasClean; }
+  unsigned short code() const { return m_code; }
+  String reason() const { return m_reason; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
+  // Event function.
+  const AtomicString& interfaceName() const override {
+    return EventNames::CloseEvent;
+  }
 
-private:
-    CloseEvent()
-        : Event(EventTypeNames::close, false, false)
-        , m_wasClean(false)
-        , m_code(0) { }
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
-    CloseEvent(bool wasClean, int code, const String& reason)
-        : Event(EventTypeNames::close, false, false)
-        , m_wasClean(wasClean)
-        , m_code(code)
-        , m_reason(reason) { }
+ private:
+  CloseEvent()
+      : Event(EventTypeNames::close, false, false),
+        m_wasClean(false),
+        m_code(0) {}
 
-    CloseEvent(const AtomicString& type, const CloseEventInit& initializer);
+  CloseEvent(bool wasClean, int code, const String& reason)
+      : Event(EventTypeNames::close, false, false),
+        m_wasClean(wasClean),
+        m_code(code),
+        m_reason(reason) {}
 
-    bool m_wasClean;
-    unsigned short m_code;
-    String m_reason;
+  CloseEvent(const AtomicString& type, const CloseEventInit& initializer);
+
+  bool m_wasClean;
+  unsigned short m_code;
+  String m_reason;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CloseEvent_h
+#endif  // CloseEvent_h

@@ -38,42 +38,46 @@
 namespace blink {
 
 struct WebPrintParams {
-    // Specifies printable content rect in points (a point is 1/72 of an inch).
-    WebRect printContentArea;
+  // Specifies printable content rect in points (a point is 1/72 of an inch).
+  WebRect printContentArea;
 
-    // Specifies the selected printer default printable area details in
-    // points.
-    WebRect printableArea;
+  // Specifies the selected printer default printable area details in
+  // points.
+  WebRect printableArea;
 
-    // Specifies the selected printer default paper size in points.
-    WebSize paperSize;
+  // Specifies the selected printer default paper size in points.
+  WebSize paperSize;
 
-    // Specifies user selected DPI for printing.
-    int printerDPI;
+  // Specifies user selected DPI for printing.
+  int printerDPI;
 
-    // Specifies whether to reduce/enlarge/retain the print contents to fit the
-    // printable area. (This is used only by plugin printing).
-    WebPrintScalingOption printScalingOption;
+  // Specifies whether to reduce/enlarge/retain the print contents to fit the
+  // printable area. (This is used only by plugin printing).
+  WebPrintScalingOption printScalingOption;
 
-    WebPrintParams()
-        : printerDPI(72)
-        , printScalingOption(WebPrintScalingOptionFitToPrintableArea) { }
+  WebPrintParams()
+      : printerDPI(72),
+        printScalingOption(WebPrintScalingOptionFitToPrintableArea) {}
 
-    WebPrintParams(const WebSize& paperSize)
-        : printContentArea(WebRect(0, 0, paperSize.width, paperSize.height))
-        , printableArea(WebRect(0, 0, paperSize.width, paperSize.height))
-        , paperSize(paperSize)
-        , printerDPI(72)
-        , printScalingOption(WebPrintScalingOptionSourceSize) { }
+  WebPrintParams(const WebSize& paperSize)
+      : printContentArea(WebRect(0, 0, paperSize.width, paperSize.height)),
+        printableArea(WebRect(0, 0, paperSize.width, paperSize.height)),
+        paperSize(paperSize),
+        printerDPI(72),
+        printScalingOption(WebPrintScalingOptionSourceSize) {}
 
-    WebPrintParams(const WebRect& printContentArea, const WebRect& printableArea, const WebSize& paperSize, int printerDPI, WebPrintScalingOption printScalingOption)
-        : printContentArea(printContentArea)
-        , printableArea(printableArea)
-        , paperSize(paperSize)
-        , printerDPI(printerDPI)
-        , printScalingOption(printScalingOption) { }
+  WebPrintParams(const WebRect& printContentArea,
+                 const WebRect& printableArea,
+                 const WebSize& paperSize,
+                 int printerDPI,
+                 WebPrintScalingOption printScalingOption)
+      : printContentArea(printContentArea),
+        printableArea(printableArea),
+        paperSize(paperSize),
+        printerDPI(printerDPI),
+        printScalingOption(printScalingOption) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

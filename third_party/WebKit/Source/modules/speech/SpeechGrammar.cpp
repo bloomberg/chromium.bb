@@ -29,31 +29,23 @@
 
 namespace blink {
 
-SpeechGrammar* SpeechGrammar::create()
-{
-    return new SpeechGrammar;
+SpeechGrammar* SpeechGrammar::create() {
+  return new SpeechGrammar;
 }
 
-SpeechGrammar* SpeechGrammar::create(const KURL& src, double weight)
-{
-    return new SpeechGrammar(src, weight);
+SpeechGrammar* SpeechGrammar::create(const KURL& src, double weight) {
+  return new SpeechGrammar(src, weight);
 }
 
-void SpeechGrammar::setSrc(ExecutionContext* executionContext, const String& src)
-{
-    Document* document = toDocument(executionContext);
-    m_src = document->completeURL(src);
+void SpeechGrammar::setSrc(ExecutionContext* executionContext,
+                           const String& src) {
+  Document* document = toDocument(executionContext);
+  m_src = document->completeURL(src);
 }
 
-SpeechGrammar::SpeechGrammar()
-    : m_weight(1.0)
-{
-}
+SpeechGrammar::SpeechGrammar() : m_weight(1.0) {}
 
 SpeechGrammar::SpeechGrammar(const KURL& src, double weight)
-    : m_src(src)
-    , m_weight(weight)
-{
-}
+    : m_src(src), m_weight(weight) {}
 
-} // namespace blink
+}  // namespace blink

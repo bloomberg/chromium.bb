@@ -31,126 +31,103 @@ namespace blink {
 #pragma pack(push, 1)
 
 class WebGamepadButton {
-public:
-    WebGamepadButton()
-        : pressed(false)
-        , touched(false)
-        , value(0.)
-    {
-    }
-    WebGamepadButton(bool pressed, bool touched, double value)
-        : pressed(pressed)
-        , touched(touched)
-        , value(value)
-    {
-    }
-    bool pressed;
-    bool touched;
-    double value;
+ public:
+  WebGamepadButton() : pressed(false), touched(false), value(0.) {}
+  WebGamepadButton(bool pressed, bool touched, double value)
+      : pressed(pressed), touched(touched), value(value) {}
+  bool pressed;
+  bool touched;
+  double value;
 };
 
 class WebGamepadVector {
-public:
-    WebGamepadVector()
-        : notNull(false)
-    {
-    }
+ public:
+  WebGamepadVector() : notNull(false) {}
 
-    bool notNull;
-    float x, y, z;
+  bool notNull;
+  float x, y, z;
 };
 
 class WebGamepadQuaternion {
-public:
-    WebGamepadQuaternion()
-        : notNull(false)
-    {
-    }
+ public:
+  WebGamepadQuaternion() : notNull(false) {}
 
-    bool notNull;
-    float x, y, z, w;
+  bool notNull;
+  float x, y, z, w;
 };
 
 class WebGamepadPose {
-public:
-    WebGamepadPose()
-        : notNull(false)
-    {
-    }
+ public:
+  WebGamepadPose() : notNull(false) {}
 
-    bool notNull;
+  bool notNull;
 
-    bool hasOrientation;
-    bool hasPosition;
+  bool hasOrientation;
+  bool hasPosition;
 
-    WebGamepadQuaternion orientation;
-    WebGamepadVector position;
-    WebGamepadVector angularVelocity;
-    WebGamepadVector linearVelocity;
-    WebGamepadVector angularAcceleration;
-    WebGamepadVector linearAcceleration;
+  WebGamepadQuaternion orientation;
+  WebGamepadVector position;
+  WebGamepadVector angularVelocity;
+  WebGamepadVector linearVelocity;
+  WebGamepadVector angularAcceleration;
+  WebGamepadVector linearAcceleration;
 };
 
 enum WebGamepadHand {
-    GamepadHandNone = 0,
-    GamepadHandLeft = 1,
-    GamepadHandRight = 2
+  GamepadHandNone = 0,
+  GamepadHandLeft = 1,
+  GamepadHandRight = 2
 };
 
 // This structure is intentionally POD and fixed size so that it can be shared
 // memory between hardware polling threads and the rest of the browser. See
 // also WebGamepads.h.
 class WebGamepad {
-public:
-    static const size_t idLengthCap = 128;
-    static const size_t mappingLengthCap = 16;
-    static const size_t axesLengthCap = 16;
-    static const size_t buttonsLengthCap = 32;
+ public:
+  static const size_t idLengthCap = 128;
+  static const size_t mappingLengthCap = 16;
+  static const size_t axesLengthCap = 16;
+  static const size_t buttonsLengthCap = 32;
 
-    WebGamepad()
-        : connected(false)
-        , timestamp(0)
-        , axesLength(0)
-        , buttonsLength(0)
-    {
-        id[0] = 0;
-        mapping[0] = 0;
-    }
+  WebGamepad()
+      : connected(false), timestamp(0), axesLength(0), buttonsLength(0) {
+    id[0] = 0;
+    mapping[0] = 0;
+  }
 
-    // Is there a gamepad connected at this index?
-    bool connected;
+  // Is there a gamepad connected at this index?
+  bool connected;
 
-    // Device identifier (based on manufacturer, model, etc.).
-    WebUChar id[idLengthCap];
+  // Device identifier (based on manufacturer, model, etc.).
+  WebUChar id[idLengthCap];
 
-    // Monotonically increasing value referring to when the data were last
-    // updated.
-    unsigned long long timestamp;
+  // Monotonically increasing value referring to when the data were last
+  // updated.
+  unsigned long long timestamp;
 
-    // Number of valid entries in the axes array.
-    unsigned axesLength;
+  // Number of valid entries in the axes array.
+  unsigned axesLength;
 
-    // Normalized values representing axes, in the range [-1..1].
-    double axes[axesLengthCap];
+  // Normalized values representing axes, in the range [-1..1].
+  double axes[axesLengthCap];
 
-    // Number of valid entries in the buttons array.
-    unsigned buttonsLength;
+  // Number of valid entries in the buttons array.
+  unsigned buttonsLength;
 
-    // Button states
-    WebGamepadButton buttons[buttonsLengthCap];
+  // Button states
+  WebGamepadButton buttons[buttonsLengthCap];
 
-    // Mapping type (for example "standard")
-    WebUChar mapping[mappingLengthCap];
+  // Mapping type (for example "standard")
+  WebUChar mapping[mappingLengthCap];
 
-    WebGamepadPose pose;
+  WebGamepadPose pose;
 
-    WebGamepadHand hand;
+  WebGamepadHand hand;
 
-    unsigned displayId;
+  unsigned displayId;
 };
 
 #pragma pack(pop)
-
 }
 
-#endif // WebGamepad_h
+#endif  // WebGamepad_h

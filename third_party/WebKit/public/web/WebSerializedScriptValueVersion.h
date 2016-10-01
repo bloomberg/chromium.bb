@@ -40,6 +40,6 @@ namespace blink {
 // before deserializing individual values.
 const unsigned kSerializedScriptValueVersion = 9;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSerializedScriptValueVersion_h
+#endif  // WebSerializedScriptValueVersion_h

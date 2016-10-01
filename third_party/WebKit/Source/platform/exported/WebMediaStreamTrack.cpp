@@ -37,103 +37,91 @@ namespace blink {
 
 namespace {
 
-    class TrackDataContainer : public MediaStreamComponent::TrackData {
-    public:
-        explicit TrackDataContainer(std::unique_ptr<WebMediaStreamTrack::TrackData> extraData)
-            : m_extraData(std::move(extraData))
-        {
-        }
+class TrackDataContainer : public MediaStreamComponent::TrackData {
+ public:
+  explicit TrackDataContainer(
+      std::unique_ptr<WebMediaStreamTrack::TrackData> extraData)
+      : m_extraData(std::move(extraData)) {}
 
-        WebMediaStreamTrack::TrackData* getTrackData() { return m_extraData.get(); }
-        void getSettings(WebMediaStreamTrack::Settings& settings)
-        {
-            m_extraData->getSettings(settings);
-        }
+  WebMediaStreamTrack::TrackData* getTrackData() { return m_extraData.get(); }
+  void getSettings(WebMediaStreamTrack::Settings& settings) {
+    m_extraData->getSettings(settings);
+  }
 
-    private:
-        std::unique_ptr<WebMediaStreamTrack::TrackData> m_extraData;
+ private:
+  std::unique_ptr<WebMediaStreamTrack::TrackData> m_extraData;
 };
 
-} // namespace
+}  // namespace
 
-WebMediaStreamTrack::WebMediaStreamTrack(MediaStreamComponent* mediaStreamComponent)
-    : m_private(mediaStreamComponent)
-{
+WebMediaStreamTrack::WebMediaStreamTrack(
+    MediaStreamComponent* mediaStreamComponent)
+    : m_private(mediaStreamComponent) {}
+
+WebMediaStreamTrack& WebMediaStreamTrack::operator=(
+    MediaStreamComponent* mediaStreamComponent) {
+  m_private = mediaStreamComponent;
+  return *this;
 }
 
-WebMediaStreamTrack& WebMediaStreamTrack::operator=(MediaStreamComponent* mediaStreamComponent)
-{
-    m_private = mediaStreamComponent;
-    return *this;
+void WebMediaStreamTrack::initialize(const WebMediaStreamSource& source) {
+  m_private = MediaStreamComponent::create(source);
 }
 
-void WebMediaStreamTrack::initialize(const WebMediaStreamSource& source)
-{
-    m_private = MediaStreamComponent::create(source);
+void WebMediaStreamTrack::initialize(const WebString& id,
+                                     const WebMediaStreamSource& source) {
+  m_private = MediaStreamComponent::create(id, source);
 }
 
-void WebMediaStreamTrack::initialize(const WebString& id, const WebMediaStreamSource& source)
-{
-    m_private = MediaStreamComponent::create(id, source);
+void WebMediaStreamTrack::reset() {
+  m_private.reset();
 }
 
-void WebMediaStreamTrack::reset()
-{
-    m_private.reset();
+WebMediaStreamTrack::operator MediaStreamComponent*() const {
+  return m_private.get();
 }
 
-WebMediaStreamTrack::operator MediaStreamComponent*() const
-{
-    return m_private.get();
+bool WebMediaStreamTrack::isEnabled() const {
+  ASSERT(!m_private.isNull());
+  return m_private->enabled();
 }
 
-bool WebMediaStreamTrack::isEnabled() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->enabled();
+bool WebMediaStreamTrack::isMuted() const {
+  ASSERT(!m_private.isNull());
+  return m_private->muted();
 }
 
-bool WebMediaStreamTrack::isMuted() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->muted();
+WebString WebMediaStreamTrack::id() const {
+  ASSERT(!m_private.isNull());
+  return m_private->id();
 }
 
-WebString WebMediaStreamTrack::id() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->id();
+WebMediaStreamSource WebMediaStreamTrack::source() const {
+  ASSERT(!m_private.isNull());
+  return WebMediaStreamSource(m_private->source());
 }
 
-WebMediaStreamSource WebMediaStreamTrack::source() const
-{
-    ASSERT(!m_private.isNull());
-    return WebMediaStreamSource(m_private->source());
+WebMediaStreamTrack::TrackData* WebMediaStreamTrack::getTrackData() const {
+  MediaStreamComponent::TrackData* data = m_private->getTrackData();
+  if (!data)
+    return 0;
+  return static_cast<TrackDataContainer*>(data)->getTrackData();
 }
 
-WebMediaStreamTrack::TrackData* WebMediaStreamTrack::getTrackData() const
-{
-    MediaStreamComponent::TrackData* data = m_private->getTrackData();
-    if (!data)
-        return 0;
-    return static_cast<TrackDataContainer*>(data)->getTrackData();
+void WebMediaStreamTrack::setTrackData(TrackData* extraData) {
+  ASSERT(!m_private.isNull());
+
+  m_private->setTrackData(
+      wrapUnique(new TrackDataContainer(wrapUnique(extraData))));
 }
 
-void WebMediaStreamTrack::setTrackData(TrackData* extraData)
-{
-    ASSERT(!m_private.isNull());
-
-    m_private->setTrackData(wrapUnique(new TrackDataContainer(wrapUnique(extraData))));
+void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider) {
+  ASSERT(!m_private.isNull());
+  m_private->setSourceProvider(provider);
 }
 
-void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider)
-{    ASSERT(!m_private.isNull());
-    m_private->setSourceProvider(provider);
+void WebMediaStreamTrack::assign(const WebMediaStreamTrack& other) {
+  m_private = other.m_private;
 }
 
-void WebMediaStreamTrack::assign(const WebMediaStreamTrack& other)
-{
-    m_private = other.m_private;
-}
-
-} // namespace blink
+}  // namespace blink

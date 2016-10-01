@@ -34,34 +34,37 @@ class FetchRequest;
 class ResourceFetcher;
 
 class XSLStyleSheetResource final : public StyleSheetResource {
-public:
-    static XSLStyleSheetResource* fetchSynchronously(FetchRequest&, ResourceFetcher*);
-    static XSLStyleSheetResource* fetch(FetchRequest&, ResourceFetcher*);
+ public:
+  static XSLStyleSheetResource* fetchSynchronously(FetchRequest&,
+                                                   ResourceFetcher*);
+  static XSLStyleSheetResource* fetch(FetchRequest&, ResourceFetcher*);
 
-    const String& sheet() const { return m_sheet; }
+  const String& sheet() const { return m_sheet; }
 
-    void didAddClient(ResourceClient*) override;
+  void didAddClient(ResourceClient*) override;
 
-private:
-    class XSLStyleSheetResourceFactory : public ResourceFactory {
-    public:
-        XSLStyleSheetResourceFactory()
-            : ResourceFactory(Resource::XSLStyleSheet) { }
+ private:
+  class XSLStyleSheetResourceFactory : public ResourceFactory {
+   public:
+    XSLStyleSheetResourceFactory() : ResourceFactory(Resource::XSLStyleSheet) {}
 
-        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
-        {
-            return new XSLStyleSheetResource(request, options, charset);
-        }
-    };
-    XSLStyleSheetResource(const ResourceRequest&, const ResourceLoaderOptions&, const String& charset);
+    Resource* create(const ResourceRequest& request,
+                     const ResourceLoaderOptions& options,
+                     const String& charset) const override {
+      return new XSLStyleSheetResource(request, options, charset);
+    }
+  };
+  XSLStyleSheetResource(const ResourceRequest&,
+                        const ResourceLoaderOptions&,
+                        const String& charset);
 
-    void checkNotify() override;
+  void checkNotify() override;
 
-    String m_sheet;
+  String m_sheet;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(XSLStyleSheet);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

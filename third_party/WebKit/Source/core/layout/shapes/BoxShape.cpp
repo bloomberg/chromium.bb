@@ -33,73 +33,84 @@
 
 namespace blink {
 
-LayoutRect BoxShape::shapeMarginLogicalBoundingBox() const
-{
-    FloatRect marginBounds(m_bounds.rect());
-    if (shapeMargin() > 0)
-        marginBounds.inflate(shapeMargin());
-    return static_cast<LayoutRect>(marginBounds);
+LayoutRect BoxShape::shapeMarginLogicalBoundingBox() const {
+  FloatRect marginBounds(m_bounds.rect());
+  if (shapeMargin() > 0)
+    marginBounds.inflate(shapeMargin());
+  return static_cast<LayoutRect>(marginBounds);
 }
 
-FloatRoundedRect BoxShape::shapeMarginBounds() const
-{
-    FloatRoundedRect marginBounds(m_bounds);
-    if (shapeMargin() > 0) {
-        marginBounds.inflate(shapeMargin());
-        marginBounds.expandRadii(shapeMargin());
-    }
-    return marginBounds;
+FloatRoundedRect BoxShape::shapeMarginBounds() const {
+  FloatRoundedRect marginBounds(m_bounds);
+  if (shapeMargin() > 0) {
+    marginBounds.inflate(shapeMargin());
+    marginBounds.expandRadii(shapeMargin());
+  }
+  return marginBounds;
 }
 
-LineSegment BoxShape::getExcludedInterval(LayoutUnit logicalTop, LayoutUnit logicalHeight) const
-{
-    const FloatRoundedRect& marginBounds = shapeMarginBounds();
-    if (marginBounds.isEmpty() || !lineOverlapsShapeMarginBounds(logicalTop, logicalHeight))
-        return LineSegment();
+LineSegment BoxShape::getExcludedInterval(LayoutUnit logicalTop,
+                                          LayoutUnit logicalHeight) const {
+  const FloatRoundedRect& marginBounds = shapeMarginBounds();
+  if (marginBounds.isEmpty() ||
+      !lineOverlapsShapeMarginBounds(logicalTop, logicalHeight))
+    return LineSegment();
 
-    float y1 = logicalTop.toFloat();
-    float y2 = (logicalTop + logicalHeight).toFloat();
-    const FloatRect& rect = marginBounds.rect();
+  float y1 = logicalTop.toFloat();
+  float y2 = (logicalTop + logicalHeight).toFloat();
+  const FloatRect& rect = marginBounds.rect();
 
-    if (!marginBounds.isRounded())
-        return LineSegment(marginBounds.rect().x(), marginBounds.rect().maxX());
+  if (!marginBounds.isRounded())
+    return LineSegment(marginBounds.rect().x(), marginBounds.rect().maxX());
 
-    float topCornerMaxY = std::max<float>(marginBounds.topLeftCorner().maxY(), marginBounds.topRightCorner().maxY());
-    float bottomCornerMinY = std::min<float>(marginBounds.bottomLeftCorner().y(), marginBounds.bottomRightCorner().y());
+  float topCornerMaxY = std::max<float>(marginBounds.topLeftCorner().maxY(),
+                                        marginBounds.topRightCorner().maxY());
+  float bottomCornerMinY =
+      std::min<float>(marginBounds.bottomLeftCorner().y(),
+                      marginBounds.bottomRightCorner().y());
 
-    if (topCornerMaxY <= bottomCornerMinY && y1 <= topCornerMaxY && y2 >= bottomCornerMinY)
-        return LineSegment(rect.x(), rect.maxX());
+  if (topCornerMaxY <= bottomCornerMinY && y1 <= topCornerMaxY &&
+      y2 >= bottomCornerMinY)
+    return LineSegment(rect.x(), rect.maxX());
 
-    float x1 = rect.maxX();
-    float x2 = rect.x();
-    float minXIntercept;
-    float maxXIntercept;
+  float x1 = rect.maxX();
+  float x2 = rect.x();
+  float minXIntercept;
+  float maxXIntercept;
 
-    if (y1 <= marginBounds.topLeftCorner().maxY() && y2 >= marginBounds.bottomLeftCorner().y())
-        x1 = rect.x();
+  if (y1 <= marginBounds.topLeftCorner().maxY() &&
+      y2 >= marginBounds.bottomLeftCorner().y())
+    x1 = rect.x();
 
-    if (y1 <= marginBounds.topRightCorner().maxY() && y2 >= marginBounds.bottomRightCorner().y())
-        x2 = rect.maxX();
+  if (y1 <= marginBounds.topRightCorner().maxY() &&
+      y2 >= marginBounds.bottomRightCorner().y())
+    x2 = rect.maxX();
 
-    if (marginBounds.xInterceptsAtY(y1, minXIntercept, maxXIntercept)) {
-        x1 = std::min<float>(x1, minXIntercept);
-        x2 = std::max<float>(x2, maxXIntercept);
-    }
+  if (marginBounds.xInterceptsAtY(y1, minXIntercept, maxXIntercept)) {
+    x1 = std::min<float>(x1, minXIntercept);
+    x2 = std::max<float>(x2, maxXIntercept);
+  }
 
-    if (marginBounds.xInterceptsAtY(y2, minXIntercept, maxXIntercept)) {
-        x1 = std::min<float>(x1, minXIntercept);
-        x2 = std::max<float>(x2, maxXIntercept);
-    }
+  if (marginBounds.xInterceptsAtY(y2, minXIntercept, maxXIntercept)) {
+    x1 = std::min<float>(x1, minXIntercept);
+    x2 = std::max<float>(x2, maxXIntercept);
+  }
 
-    ASSERT(x2 >= x1);
-    return LineSegment(x1, x2);
+  ASSERT(x2 >= x1);
+  return LineSegment(x1, x2);
 }
 
-void BoxShape::buildDisplayPaths(DisplayPaths& paths) const
-{
-    paths.shape.addRoundedRect(m_bounds.rect(), m_bounds.getRadii().topLeft(), m_bounds.getRadii().topRight(), m_bounds.getRadii().bottomLeft(), m_bounds.getRadii().bottomRight());
-    if (shapeMargin())
-        paths.marginShape.addRoundedRect(shapeMarginBounds().rect(), shapeMarginBounds().getRadii().topLeft(), shapeMarginBounds().getRadii().topRight(), shapeMarginBounds().getRadii().bottomLeft(), shapeMarginBounds().getRadii().bottomRight());
+void BoxShape::buildDisplayPaths(DisplayPaths& paths) const {
+  paths.shape.addRoundedRect(m_bounds.rect(), m_bounds.getRadii().topLeft(),
+                             m_bounds.getRadii().topRight(),
+                             m_bounds.getRadii().bottomLeft(),
+                             m_bounds.getRadii().bottomRight());
+  if (shapeMargin())
+    paths.marginShape.addRoundedRect(
+        shapeMarginBounds().rect(), shapeMarginBounds().getRadii().topLeft(),
+        shapeMarginBounds().getRadii().topRight(),
+        shapeMarginBounds().getRadii().bottomLeft(),
+        shapeMarginBounds().getRadii().bottomRight());
 }
 
-} // namespace blink
+}  // namespace blink

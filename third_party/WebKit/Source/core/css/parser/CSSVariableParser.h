@@ -17,16 +17,20 @@ class CSSCustomPropertyDeclaration;
 class CSSVariableReferenceValue;
 
 class CORE_EXPORT CSSVariableParser {
-public:
-    static bool containsValidVariableReferences(CSSParserTokenRange);
+ public:
+  static bool containsValidVariableReferences(CSSParserTokenRange);
 
-    static CSSCustomPropertyDeclaration* parseDeclarationValue(const AtomicString&, CSSParserTokenRange);
-    static CSSVariableReferenceValue* parseRegisteredPropertyValue(CSSParserTokenRange, bool requireVarReference);
+  static CSSCustomPropertyDeclaration* parseDeclarationValue(
+      const AtomicString&,
+      CSSParserTokenRange);
+  static CSSVariableReferenceValue* parseRegisteredPropertyValue(
+      CSSParserTokenRange,
+      bool requireVarReference);
 
-    static bool isValidVariableName(const CSSParserToken&);
-    static bool isValidVariableName(const String&);
+  static bool isValidVariableName(const CSSParserToken&);
+  static bool isValidVariableName(const String&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSVariableParser_h
+#endif  // CSSVariableParser_h

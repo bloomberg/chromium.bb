@@ -69,178 +69,204 @@ namespace blink {
 
 // An helper function for the two create() methods. The return value is an
 // indicate of whether the create() should return nullptr or not.
-static bool shouldCreateContext(WebGraphicsContext3DProvider* contextProvider)
-{
-    if (!contextProvider)
-        return false;
-    gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
-    std::unique_ptr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
-    if (!extensionsUtil)
-        return false;
-    if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {
-        String contextLabel(String::format("WebGLRenderingContext-%p", contextProvider));
-        gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
-    }
-    return true;
+static bool shouldCreateContext(WebGraphicsContext3DProvider* contextProvider) {
+  if (!contextProvider)
+    return false;
+  gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
+  std::unique_ptr<Extensions3DUtil> extensionsUtil =
+      Extensions3DUtil::create(gl);
+  if (!extensionsUtil)
+    return false;
+  if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {
+    String contextLabel(
+        String::format("WebGLRenderingContext-%p", contextProvider));
+    gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
+  }
+  return true;
 }
 
-CanvasRenderingContext* WebGLRenderingContext::Factory::create(ScriptState* scriptState, OffscreenCanvas* offscreenCanvas, const CanvasContextCreationAttributes& attrs)
-{
-    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(scriptState, attrs, 1));
-    if (!shouldCreateContext(contextProvider.get()))
-        return nullptr;
+CanvasRenderingContext* WebGLRenderingContext::Factory::create(
+    ScriptState* scriptState,
+    OffscreenCanvas* offscreenCanvas,
+    const CanvasContextCreationAttributes& attrs) {
+  std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(
+      createWebGraphicsContext3DProvider(scriptState, attrs, 1));
+  if (!shouldCreateContext(contextProvider.get()))
+    return nullptr;
 
-    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(offscreenCanvas, std::move(contextProvider), attrs);
-    if (!renderingContext->drawingBuffer())
-        return nullptr;
-    renderingContext->initializeNewContext();
-    renderingContext->registerContextExtensions();
+  WebGLRenderingContext* renderingContext = new WebGLRenderingContext(
+      offscreenCanvas, std::move(contextProvider), attrs);
+  if (!renderingContext->drawingBuffer())
+    return nullptr;
+  renderingContext->initializeNewContext();
+  renderingContext->registerContextExtensions();
 
-    return renderingContext;
+  return renderingContext;
 }
 
-CanvasRenderingContext* WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
-{
-    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attrs, 1));
-    if (!shouldCreateContext(contextProvider.get()))
-        return nullptr;
+CanvasRenderingContext* WebGLRenderingContext::Factory::create(
+    HTMLCanvasElement* canvas,
+    const CanvasContextCreationAttributes& attrs,
+    Document&) {
+  std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(
+      createWebGraphicsContext3DProvider(canvas, attrs, 1));
+  if (!shouldCreateContext(contextProvider.get()))
+    return nullptr;
 
-    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(canvas, std::move(contextProvider), attrs);
-    if (!renderingContext->drawingBuffer()) {
-        canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
-        return nullptr;
-    }
-    renderingContext->initializeNewContext();
-    renderingContext->registerContextExtensions();
+  WebGLRenderingContext* renderingContext =
+      new WebGLRenderingContext(canvas, std::move(contextProvider), attrs);
+  if (!renderingContext->drawingBuffer()) {
+    canvas->dispatchEvent(WebGLContextEvent::create(
+        EventTypeNames::webglcontextcreationerror, false, true,
+        "Could not create a WebGL context."));
+    return nullptr;
+  }
+  renderingContext->initializeNewContext();
+  renderingContext->registerContextExtensions();
 
-    return renderingContext;
+  return renderingContext;
 }
 
-void WebGLRenderingContext::Factory::onError(HTMLCanvasElement* canvas, const String& error)
-{
-    canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, error));
+void WebGLRenderingContext::Factory::onError(HTMLCanvasElement* canvas,
+                                             const String& error) {
+  canvas->dispatchEvent(WebGLContextEvent::create(
+      EventTypeNames::webglcontextcreationerror, false, true, error));
 }
 
-WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const CanvasContextCreationAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes, 1)
-{
+WebGLRenderingContext::WebGLRenderingContext(
+    HTMLCanvasElement* passedCanvas,
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    const CanvasContextCreationAttributes& requestedAttributes)
+    : WebGLRenderingContextBase(passedCanvas,
+                                std::move(contextProvider),
+                                requestedAttributes,
+                                1) {}
+
+WebGLRenderingContext::WebGLRenderingContext(
+    OffscreenCanvas* passedOffscreenCanvas,
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
+    const CanvasContextCreationAttributes& requestedAttributes)
+    : WebGLRenderingContextBase(passedOffscreenCanvas,
+                                std::move(contextProvider),
+                                requestedAttributes,
+                                1) {}
+
+WebGLRenderingContext::~WebGLRenderingContext() {}
+
+void WebGLRenderingContext::setCanvasGetContextResult(
+    RenderingContext& result) {
+  result.setWebGLRenderingContext(this);
 }
 
-WebGLRenderingContext::WebGLRenderingContext(OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const CanvasContextCreationAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedOffscreenCanvas, std::move(contextProvider), requestedAttributes, 1)
-{
+void WebGLRenderingContext::setOffscreenCanvasGetContextResult(
+    OffscreenRenderingContext& result) {
+  result.setWebGLRenderingContext(this);
 }
 
-WebGLRenderingContext::~WebGLRenderingContext()
-{
+ImageBitmap* WebGLRenderingContext::transferToImageBitmap(
+    ExceptionState& exceptionState) {
+  return transferToImageBitmapBase();
 }
 
-void WebGLRenderingContext::setCanvasGetContextResult(RenderingContext& result)
-{
-    result.setWebGLRenderingContext(this);
+void WebGLRenderingContext::registerContextExtensions() {
+  // Register extensions.
+  static const char* const bothPrefixes[] = {
+      "", "WEBKIT_", 0,
+  };
+
+  registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
+  registerExtension<EXTBlendMinMax>(m_extBlendMinMax);
+  registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
+  registerExtension<EXTFragDepth>(m_extFragDepth);
+  registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD);
+  registerExtension<EXTsRGB>(m_extsRGB);
+  registerExtension<EXTTextureFilterAnisotropic>(
+      m_extTextureFilterAnisotropic, ApprovedExtension, bothPrefixes);
+  registerExtension<OESElementIndexUint>(m_oesElementIndexUint);
+  registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives);
+  registerExtension<OESTextureFloat>(m_oesTextureFloat);
+  registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
+  registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat);
+  registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear);
+  registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject);
+  registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC,
+                                                DraftExtension);
+  registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC,
+                                               ApprovedExtension, bothPrefixes);
+  registerExtension<WebGLCompressedTextureES30>(m_webglCompressedTextureES30,
+                                                DraftExtension);
+  registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
+  registerExtension<WebGLCompressedTexturePVRTC>(
+      m_webglCompressedTexturePVRTC, ApprovedExtension, bothPrefixes);
+  registerExtension<WebGLCompressedTextureS3TC>(
+      m_webglCompressedTextureS3TC, ApprovedExtension, bothPrefixes);
+  registerExtension<WebGLCompressedTextureS3TCsRGB>(
+      m_webglCompressedTextureS3TCsRGB, DraftExtension, bothPrefixes);
+  registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
+  registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
+  registerExtension<WebGLDepthTexture>(m_webglDepthTexture, ApprovedExtension,
+                                       bothPrefixes);
+  registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers);
+  registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension,
+                                      bothPrefixes);
 }
 
-void WebGLRenderingContext::setOffscreenCanvasGetContextResult(OffscreenRenderingContext& result)
-{
-    result.setWebGLRenderingContext(this);
+DEFINE_TRACE(WebGLRenderingContext) {
+  visitor->trace(m_angleInstancedArrays);
+  visitor->trace(m_extBlendMinMax);
+  visitor->trace(m_extDisjointTimerQuery);
+  visitor->trace(m_extFragDepth);
+  visitor->trace(m_extShaderTextureLOD);
+  visitor->trace(m_extsRGB);
+  visitor->trace(m_extTextureFilterAnisotropic);
+  visitor->trace(m_oesTextureFloat);
+  visitor->trace(m_oesTextureFloatLinear);
+  visitor->trace(m_oesTextureHalfFloat);
+  visitor->trace(m_oesTextureHalfFloatLinear);
+  visitor->trace(m_oesStandardDerivatives);
+  visitor->trace(m_oesVertexArrayObject);
+  visitor->trace(m_oesElementIndexUint);
+  visitor->trace(m_webglLoseContext);
+  visitor->trace(m_webglDebugRendererInfo);
+  visitor->trace(m_webglDebugShaders);
+  visitor->trace(m_webglDrawBuffers);
+  visitor->trace(m_webglCompressedTextureASTC);
+  visitor->trace(m_webglCompressedTextureATC);
+  visitor->trace(m_webglCompressedTextureES30);
+  visitor->trace(m_webglCompressedTextureETC1);
+  visitor->trace(m_webglCompressedTexturePVRTC);
+  visitor->trace(m_webglCompressedTextureS3TC);
+  visitor->trace(m_webglCompressedTextureS3TCsRGB);
+  visitor->trace(m_webglDepthTexture);
+  WebGLRenderingContextBase::trace(visitor);
 }
 
-ImageBitmap* WebGLRenderingContext::transferToImageBitmap(ExceptionState& exceptionState)
-{
-    return transferToImageBitmapBase();
+DEFINE_TRACE_WRAPPERS(WebGLRenderingContext) {
+  visitor->traceWrappers(m_angleInstancedArrays);
+  visitor->traceWrappers(m_extBlendMinMax);
+  visitor->traceWrappers(m_extDisjointTimerQuery);
+  visitor->traceWrappers(m_extFragDepth);
+  visitor->traceWrappers(m_extShaderTextureLOD);
+  visitor->traceWrappers(m_extsRGB);
+  visitor->traceWrappers(m_extTextureFilterAnisotropic);
+  visitor->traceWrappers(m_oesTextureFloat);
+  visitor->traceWrappers(m_oesTextureFloatLinear);
+  visitor->traceWrappers(m_oesTextureHalfFloat);
+  visitor->traceWrappers(m_oesTextureHalfFloatLinear);
+  visitor->traceWrappers(m_oesStandardDerivatives);
+  visitor->traceWrappers(m_oesVertexArrayObject);
+  visitor->traceWrappers(m_oesElementIndexUint);
+  visitor->traceWrappers(m_webglLoseContext);
+  visitor->traceWrappers(m_webglDebugRendererInfo);
+  visitor->traceWrappers(m_webglDebugShaders);
+  visitor->traceWrappers(m_webglDrawBuffers);
+  visitor->traceWrappers(m_webglCompressedTextureASTC);
+  visitor->traceWrappers(m_webglCompressedTextureATC);
+  visitor->traceWrappers(m_webglCompressedTextureES30);
+  visitor->traceWrappers(m_webglCompressedTextureETC1);
+  visitor->traceWrappers(m_webglCompressedTexturePVRTC);
+  visitor->traceWrappers(m_webglCompressedTextureS3TC);
+  visitor->traceWrappers(m_webglCompressedTextureS3TCsRGB);
+  visitor->traceWrappers(m_webglDepthTexture);
 }
-
-void WebGLRenderingContext::registerContextExtensions()
-{
-    // Register extensions.
-    static const char* const bothPrefixes[] = { "", "WEBKIT_", 0, };
-
-    registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
-    registerExtension<EXTBlendMinMax>(m_extBlendMinMax);
-    registerExtension<EXTDisjointTimerQuery>(m_extDisjointTimerQuery);
-    registerExtension<EXTFragDepth>(m_extFragDepth);
-    registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD);
-    registerExtension<EXTsRGB>(m_extsRGB);
-    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, ApprovedExtension, bothPrefixes);
-    registerExtension<OESElementIndexUint>(m_oesElementIndexUint);
-    registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives);
-    registerExtension<OESTextureFloat>(m_oesTextureFloat);
-    registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
-    registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat);
-    registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear);
-    registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject);
-    registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC, DraftExtension);
-    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, ApprovedExtension, bothPrefixes);
-    registerExtension<WebGLCompressedTextureES30>(m_webglCompressedTextureES30, DraftExtension);
-    registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
-    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, ApprovedExtension, bothPrefixes);
-    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, ApprovedExtension, bothPrefixes);
-    registerExtension<WebGLCompressedTextureS3TCsRGB>(m_webglCompressedTextureS3TCsRGB, DraftExtension, bothPrefixes);
-    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
-    registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
-    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, ApprovedExtension, bothPrefixes);
-    registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers);
-    registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension, bothPrefixes);
-}
-
-DEFINE_TRACE(WebGLRenderingContext)
-{
-    visitor->trace(m_angleInstancedArrays);
-    visitor->trace(m_extBlendMinMax);
-    visitor->trace(m_extDisjointTimerQuery);
-    visitor->trace(m_extFragDepth);
-    visitor->trace(m_extShaderTextureLOD);
-    visitor->trace(m_extsRGB);
-    visitor->trace(m_extTextureFilterAnisotropic);
-    visitor->trace(m_oesTextureFloat);
-    visitor->trace(m_oesTextureFloatLinear);
-    visitor->trace(m_oesTextureHalfFloat);
-    visitor->trace(m_oesTextureHalfFloatLinear);
-    visitor->trace(m_oesStandardDerivatives);
-    visitor->trace(m_oesVertexArrayObject);
-    visitor->trace(m_oesElementIndexUint);
-    visitor->trace(m_webglLoseContext);
-    visitor->trace(m_webglDebugRendererInfo);
-    visitor->trace(m_webglDebugShaders);
-    visitor->trace(m_webglDrawBuffers);
-    visitor->trace(m_webglCompressedTextureASTC);
-    visitor->trace(m_webglCompressedTextureATC);
-    visitor->trace(m_webglCompressedTextureES30);
-    visitor->trace(m_webglCompressedTextureETC1);
-    visitor->trace(m_webglCompressedTexturePVRTC);
-    visitor->trace(m_webglCompressedTextureS3TC);
-    visitor->trace(m_webglCompressedTextureS3TCsRGB);
-    visitor->trace(m_webglDepthTexture);
-    WebGLRenderingContextBase::trace(visitor);
-}
-
-DEFINE_TRACE_WRAPPERS(WebGLRenderingContext)
-{
-    visitor->traceWrappers(m_angleInstancedArrays);
-    visitor->traceWrappers(m_extBlendMinMax);
-    visitor->traceWrappers(m_extDisjointTimerQuery);
-    visitor->traceWrappers(m_extFragDepth);
-    visitor->traceWrappers(m_extShaderTextureLOD);
-    visitor->traceWrappers(m_extsRGB);
-    visitor->traceWrappers(m_extTextureFilterAnisotropic);
-    visitor->traceWrappers(m_oesTextureFloat);
-    visitor->traceWrappers(m_oesTextureFloatLinear);
-    visitor->traceWrappers(m_oesTextureHalfFloat);
-    visitor->traceWrappers(m_oesTextureHalfFloatLinear);
-    visitor->traceWrappers(m_oesStandardDerivatives);
-    visitor->traceWrappers(m_oesVertexArrayObject);
-    visitor->traceWrappers(m_oesElementIndexUint);
-    visitor->traceWrappers(m_webglLoseContext);
-    visitor->traceWrappers(m_webglDebugRendererInfo);
-    visitor->traceWrappers(m_webglDebugShaders);
-    visitor->traceWrappers(m_webglDrawBuffers);
-    visitor->traceWrappers(m_webglCompressedTextureASTC);
-    visitor->traceWrappers(m_webglCompressedTextureATC);
-    visitor->traceWrappers(m_webglCompressedTextureES30);
-    visitor->traceWrappers(m_webglCompressedTextureETC1);
-    visitor->traceWrappers(m_webglCompressedTexturePVRTC);
-    visitor->traceWrappers(m_webglCompressedTextureS3TC);
-    visitor->traceWrappers(m_webglCompressedTextureS3TCsRGB);
-    visitor->traceWrappers(m_webglDepthTexture);
-}
-} // namespace blink
+}  // namespace blink

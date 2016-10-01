@@ -30,11 +30,23 @@ namespace blink {
 
 class Node;
 
-bool findBestClickableCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const HeapVector<Member<Node>>&);
-bool findBestContextMenuCandidate(Node*& targetNode, IntPoint& targetPoint, const IntPoint& touchHotspot, const IntRect& touchArea, const HeapVector<Member<Node>>&);
-bool findBestZoomableArea(Node*& targetNode, IntRect& targetArea, const IntPoint& touchHotspot, const IntRect& touchArea, const HeapVector<Member<Node>>&);
+bool findBestClickableCandidate(Node*& targetNode,
+                                IntPoint& targetPoint,
+                                const IntPoint& touchHotspot,
+                                const IntRect& touchArea,
+                                const HeapVector<Member<Node>>&);
+bool findBestContextMenuCandidate(Node*& targetNode,
+                                  IntPoint& targetPoint,
+                                  const IntPoint& touchHotspot,
+                                  const IntRect& touchArea,
+                                  const HeapVector<Member<Node>>&);
+bool findBestZoomableArea(Node*& targetNode,
+                          IntRect& targetArea,
+                          const IntPoint& touchHotspot,
+                          const IntRect& touchArea,
+                          const HeapVector<Member<Node>>&);
 // FIXME: Implement the similar functions for other gestures here as well.
 
-} // namespace blink
+}  // namespace blink
 
 #endif

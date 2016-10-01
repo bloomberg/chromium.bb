@@ -30,32 +30,34 @@
 namespace blink {
 
 class BeforeUnloadEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~BeforeUnloadEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static BeforeUnloadEvent* create()
-    {
-        return new BeforeUnloadEvent;
-    }
+ public:
+  ~BeforeUnloadEvent() override;
 
-    bool isBeforeUnloadEvent() const override;
+  static BeforeUnloadEvent* create() { return new BeforeUnloadEvent; }
 
-    void setReturnValue(const String& returnValue) { m_returnValue = returnValue; }
-    String returnValue() const { return m_returnValue; }
+  bool isBeforeUnloadEvent() const override;
 
-    const AtomicString& interfaceName() const override { return EventNames::BeforeUnloadEvent; }
+  void setReturnValue(const String& returnValue) {
+    m_returnValue = returnValue;
+  }
+  String returnValue() const { return m_returnValue; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override {
+    return EventNames::BeforeUnloadEvent;
+  }
 
-private:
-    BeforeUnloadEvent();
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_returnValue;
+ private:
+  BeforeUnloadEvent();
+
+  String m_returnValue;
 };
 
 DEFINE_EVENT_TYPE_CASTS(BeforeUnloadEvent);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BeforeUnloadEvent_h
+#endif  // BeforeUnloadEvent_h

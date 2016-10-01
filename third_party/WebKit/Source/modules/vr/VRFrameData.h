@@ -17,39 +17,46 @@ namespace blink {
 class VREyeParameters;
 class VRPose;
 
-class VRFrameData final : public GarbageCollected<VRFrameData>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static VRFrameData* create()
-    {
-        return new VRFrameData();
-    }
+class VRFrameData final : public GarbageCollected<VRFrameData>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    VRFrameData();
+ public:
+  static VRFrameData* create() { return new VRFrameData(); }
 
-    DOMHighResTimeStamp timestamp() const { return m_timestamp; }
-    DOMFloat32Array* leftProjectionMatrix() const { return m_leftProjectionMatrix; }
-    DOMFloat32Array* leftViewMatrix() const { return m_leftViewMatrix; }
-    DOMFloat32Array* rightProjectionMatrix() const { return m_rightProjectionMatrix; }
-    DOMFloat32Array* rightViewMatrix() const { return m_rightViewMatrix; }
-    VRPose* pose() const { return m_pose; }
+  VRFrameData();
 
-    // Populate a the VRFrameData with a pose and the necessary eye parameters.
-    // TODO(bajones): The full frame data should be provided by the VRService,
-    // not computed here.
-    bool update(const device::blink::VRPosePtr&, VREyeParameters* leftEye, VREyeParameters* rightEye, float depthNear, float depthFar);
+  DOMHighResTimeStamp timestamp() const { return m_timestamp; }
+  DOMFloat32Array* leftProjectionMatrix() const {
+    return m_leftProjectionMatrix;
+  }
+  DOMFloat32Array* leftViewMatrix() const { return m_leftViewMatrix; }
+  DOMFloat32Array* rightProjectionMatrix() const {
+    return m_rightProjectionMatrix;
+  }
+  DOMFloat32Array* rightViewMatrix() const { return m_rightViewMatrix; }
+  VRPose* pose() const { return m_pose; }
 
-    DECLARE_VIRTUAL_TRACE()
+  // Populate a the VRFrameData with a pose and the necessary eye parameters.
+  // TODO(bajones): The full frame data should be provided by the VRService,
+  // not computed here.
+  bool update(const device::blink::VRPosePtr&,
+              VREyeParameters* leftEye,
+              VREyeParameters* rightEye,
+              float depthNear,
+              float depthFar);
 
-private:
-    DOMHighResTimeStamp m_timestamp;
-    Member<DOMFloat32Array> m_leftProjectionMatrix;
-    Member<DOMFloat32Array> m_leftViewMatrix;
-    Member<DOMFloat32Array> m_rightProjectionMatrix;
-    Member<DOMFloat32Array> m_rightViewMatrix;
-    Member<VRPose> m_pose;
+  DECLARE_VIRTUAL_TRACE()
+
+ private:
+  DOMHighResTimeStamp m_timestamp;
+  Member<DOMFloat32Array> m_leftProjectionMatrix;
+  Member<DOMFloat32Array> m_leftViewMatrix;
+  Member<DOMFloat32Array> m_rightProjectionMatrix;
+  Member<DOMFloat32Array> m_rightViewMatrix;
+  Member<VRPose> m_pose;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VRStageParameters_h
+#endif  // VRStageParameters_h

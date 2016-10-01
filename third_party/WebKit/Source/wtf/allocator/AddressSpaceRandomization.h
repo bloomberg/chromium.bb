@@ -13,7 +13,6 @@ namespace WTF {
 // address, we balance good ASLR against not fragmenting the address
 // space too badly.
 WTF_EXPORT void* getRandomPageBase();
-
 }
 
 #endif

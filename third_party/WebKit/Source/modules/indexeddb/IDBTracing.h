@@ -32,4 +32,4 @@
 #include "platform/TraceEvent.h"
 #define IDB_TRACE(a) TRACE_EVENT0("IndexedDB", (a));
 
-#endif // IDBTracing_h
+#endif  // IDBTracing_h

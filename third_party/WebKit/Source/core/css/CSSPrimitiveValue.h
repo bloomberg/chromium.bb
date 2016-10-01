@@ -42,267 +42,288 @@ class Length;
 // Dimension calculations are imprecise, often resulting in values of e.g.
 // 44.99998. We need to go ahead and round if we're really close to the next
 // integer value.
-template<typename T> inline T roundForImpreciseConversion(double value)
-{
-    value += (value < 0) ? -0.01 : +0.01;
-    return ((value > std::numeric_limits<T>::max()) || (value < std::numeric_limits<T>::min())) ? 0 : static_cast<T>(value);
+template <typename T>
+inline T roundForImpreciseConversion(double value) {
+  value += (value < 0) ? -0.01 : +0.01;
+  return ((value > std::numeric_limits<T>::max()) ||
+          (value < std::numeric_limits<T>::min()))
+             ? 0
+             : static_cast<T>(value);
 }
 
-template<> inline float roundForImpreciseConversion(double value)
-{
-    double ceiledValue = ceil(value);
-    double proximityToNextInt = ceiledValue - value;
-    if (proximityToNextInt <= 0.01 && value > 0)
-        return static_cast<float>(ceiledValue);
-    if (proximityToNextInt >= 0.99 && value < 0)
-        return static_cast<float>(floor(value));
-    return static_cast<float>(value);
+template <>
+inline float roundForImpreciseConversion(double value) {
+  double ceiledValue = ceil(value);
+  double proximityToNextInt = ceiledValue - value;
+  if (proximityToNextInt <= 0.01 && value > 0)
+    return static_cast<float>(ceiledValue);
+  if (proximityToNextInt >= 0.99 && value < 0)
+    return static_cast<float>(floor(value));
+  return static_cast<float>(value);
 }
 
 // CSSPrimitiveValues are immutable. This class has manual ref-counting
 // of unioned types and does not have the code necessary
 // to handle any kind of mutations.
 class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
-public:
-    // These units are iterated through, so be careful when adding or changing the order.
-    enum class UnitType {
-        Unknown,
-        Number,
-        Percentage,
-        // Length units
-        Ems,
-        Exs,
-        Pixels,
-        Centimeters,
-        Millimeters,
-        Inches,
-        Points,
-        Picas,
-        ViewportWidth,
-        ViewportHeight,
-        ViewportMin,
-        ViewportMax,
-        Rems,
-        Chs,
-        UserUnits, // The SVG term for unitless lengths
-        // Angle units
-        Degrees,
-        Radians,
-        Gradians,
-        Turns,
-        // Time units
-        Milliseconds,
-        Seconds,
-        Hertz,
-        Kilohertz,
-        // Resolution
-        DotsPerPixel,
-        DotsPerInch,
-        DotsPerCentimeter,
-        // Other units
-        Fraction,
-        Integer,
-        Calc,
-        CalcPercentageWithNumber,
-        CalcPercentageWithLength,
-        CalcLengthWithNumber,
-        CalcPercentageWithLengthAndNumber,
-        ValueID,
+ public:
+  // These units are iterated through, so be careful when adding or changing the order.
+  enum class UnitType {
+    Unknown,
+    Number,
+    Percentage,
+    // Length units
+    Ems,
+    Exs,
+    Pixels,
+    Centimeters,
+    Millimeters,
+    Inches,
+    Points,
+    Picas,
+    ViewportWidth,
+    ViewportHeight,
+    ViewportMin,
+    ViewportMax,
+    Rems,
+    Chs,
+    UserUnits,  // The SVG term for unitless lengths
+    // Angle units
+    Degrees,
+    Radians,
+    Gradians,
+    Turns,
+    // Time units
+    Milliseconds,
+    Seconds,
+    Hertz,
+    Kilohertz,
+    // Resolution
+    DotsPerPixel,
+    DotsPerInch,
+    DotsPerCentimeter,
+    // Other units
+    Fraction,
+    Integer,
+    Calc,
+    CalcPercentageWithNumber,
+    CalcPercentageWithLength,
+    CalcLengthWithNumber,
+    CalcPercentageWithLengthAndNumber,
+    ValueID,
 
-        // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
-        // The basic idea is that a stylesheet can use the value __qem (for quirky em) instead of em.
-        // When the quirky value is used, if you're in quirks mode, the margin will collapse away
-        // inside a table cell. This quirk is specified in the HTML spec but our impl is different.
-        // TODO: Remove this. crbug.com/443952
-        QuirkyEms,
-    };
+    // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
+    // The basic idea is that a stylesheet can use the value __qem (for quirky em) instead of em.
+    // When the quirky value is used, if you're in quirks mode, the margin will collapse away
+    // inside a table cell. This quirk is specified in the HTML spec but our impl is different.
+    // TODO: Remove this. crbug.com/443952
+    QuirkyEms,
+  };
 
-    enum LengthUnitType {
-        UnitTypePixels = 0,
-        UnitTypePercentage,
-        UnitTypeFontSize,
-        UnitTypeFontXSize,
-        UnitTypeRootFontSize,
-        UnitTypeZeroCharacterWidth,
-        UnitTypeViewportWidth,
-        UnitTypeViewportHeight,
-        UnitTypeViewportMin,
-        UnitTypeViewportMax,
+  enum LengthUnitType {
+    UnitTypePixels = 0,
+    UnitTypePercentage,
+    UnitTypeFontSize,
+    UnitTypeFontXSize,
+    UnitTypeRootFontSize,
+    UnitTypeZeroCharacterWidth,
+    UnitTypeViewportWidth,
+    UnitTypeViewportHeight,
+    UnitTypeViewportMin,
+    UnitTypeViewportMax,
 
-        // This value must come after the last length unit type to enable iteration over the length unit types.
-        LengthUnitTypeCount,
-    };
+    // This value must come after the last length unit type to enable iteration over the length unit types.
+    LengthUnitTypeCount,
+  };
 
-    struct CSSLengthArray {
-        CSSLengthArray()
-            : values(LengthUnitTypeCount)
-        {
-            typeFlags.resize(LengthUnitTypeCount);
-        }
-
-        Vector<double, CSSPrimitiveValue::LengthUnitTypeCount> values;
-        BitVector typeFlags;
-    };
-
-    void accumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
-
-    enum UnitCategory {
-        UNumber,
-        UPercent,
-        ULength,
-        UAngle,
-        UTime,
-        UFrequency,
-        UResolution,
-        UOther
-    };
-    static UnitCategory unitTypeToUnitCategory(UnitType);
-    static float clampToCSSLengthRange(double);
-
-    static bool isAngle(UnitType unit)
-    {
-        return unit == UnitType::Degrees
-            || unit == UnitType::Radians
-            || unit == UnitType::Gradians
-            || unit == UnitType::Turns;
-    }
-    bool isAngle() const { return isAngle(type()); }
-    bool isFontRelativeLength() const
-    {
-        return type() == UnitType::QuirkyEms
-            || type() == UnitType::Ems
-            || type() == UnitType::Exs
-            || type() == UnitType::Rems
-            || type() == UnitType::Chs;
-    }
-    bool isQuirkyEms() const { return type() == UnitType::QuirkyEms; }
-    bool isViewportPercentageLength() const { return isViewportPercentageLength(type()); }
-    static bool isViewportPercentageLength(UnitType type) { return type >= UnitType::ViewportWidth && type <= UnitType::ViewportMax; }
-    static bool isLength(UnitType type)
-    {
-        return (type >= UnitType::Ems && type <= UnitType::UserUnits)
-            || type == UnitType::QuirkyEms;
-    }
-    static inline bool isRelativeUnit(UnitType type)
-    {
-        return type == UnitType::Percentage
-            || type == UnitType::Ems
-            || type == UnitType::Exs
-            || type == UnitType::Rems
-            || type == UnitType::Chs
-            || isViewportPercentageLength(type);
-    }
-    bool isLength() const { return isLength(typeWithCalcResolved()); }
-    bool isNumber() const { return typeWithCalcResolved() == UnitType::Number || typeWithCalcResolved() == UnitType::Integer; }
-    bool isPercentage() const { return typeWithCalcResolved() == UnitType::Percentage; }
-    bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
-    bool isTime() const { return type() == UnitType::Seconds || type() == UnitType::Milliseconds; }
-    bool isCalculated() const { return type() == UnitType::Calc; }
-    bool isCalculatedPercentageWithNumber() const { return typeWithCalcResolved() == UnitType::CalcPercentageWithNumber; }
-    bool isCalculatedPercentageWithLength() const { return typeWithCalcResolved() == UnitType::CalcPercentageWithLength; }
-    static bool isResolution(UnitType type) { return type >= UnitType::DotsPerPixel && type <= UnitType::DotsPerCentimeter; }
-    bool isFlex() const { return typeWithCalcResolved() == UnitType::Fraction; }
-    bool isValueID() const { return type() == UnitType::ValueID; }
-    bool colorIsDerivedFromElement() const;
-
-    static CSSPrimitiveValue* createIdentifier(CSSValueID);
-    static CSSPrimitiveValue* create(double value, UnitType);
-    static CSSPrimitiveValue* create(const Length& value, float zoom)
-    {
-        return new CSSPrimitiveValue(value, zoom);
-    }
-    template<typename T> static CSSPrimitiveValue* create(T value)
-    {
-        static_assert(!std::is_same<T, CSSValueID>::value, "Do not call create() with a CSSValueID; call createIdentifier() instead");
-        return new CSSPrimitiveValue(value);
+  struct CSSLengthArray {
+    CSSLengthArray() : values(LengthUnitTypeCount) {
+      typeFlags.resize(LengthUnitTypeCount);
     }
 
-    ~CSSPrimitiveValue();
+    Vector<double, CSSPrimitiveValue::LengthUnitTypeCount> values;
+    BitVector typeFlags;
+  };
 
-    UnitType typeWithCalcResolved() const;
+  void accumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
 
-    double computeDegrees() const;
-    double computeSeconds() const;
+  enum UnitCategory {
+    UNumber,
+    UPercent,
+    ULength,
+    UAngle,
+    UTime,
+    UFrequency,
+    UResolution,
+    UOther
+  };
+  static UnitCategory unitTypeToUnitCategory(UnitType);
+  static float clampToCSSLengthRange(double);
 
-    // Computes a length in pixels, resolving relative lengths
-    template<typename T> T computeLength(const CSSToLengthConversionData&) const;
+  static bool isAngle(UnitType unit) {
+    return unit == UnitType::Degrees || unit == UnitType::Radians ||
+           unit == UnitType::Gradians || unit == UnitType::Turns;
+  }
+  bool isAngle() const { return isAngle(type()); }
+  bool isFontRelativeLength() const {
+    return type() == UnitType::QuirkyEms || type() == UnitType::Ems ||
+           type() == UnitType::Exs || type() == UnitType::Rems ||
+           type() == UnitType::Chs;
+  }
+  bool isQuirkyEms() const { return type() == UnitType::QuirkyEms; }
+  bool isViewportPercentageLength() const {
+    return isViewportPercentageLength(type());
+  }
+  static bool isViewportPercentageLength(UnitType type) {
+    return type >= UnitType::ViewportWidth && type <= UnitType::ViewportMax;
+  }
+  static bool isLength(UnitType type) {
+    return (type >= UnitType::Ems && type <= UnitType::UserUnits) ||
+           type == UnitType::QuirkyEms;
+  }
+  static inline bool isRelativeUnit(UnitType type) {
+    return type == UnitType::Percentage || type == UnitType::Ems ||
+           type == UnitType::Exs || type == UnitType::Rems ||
+           type == UnitType::Chs || isViewportPercentageLength(type);
+  }
+  bool isLength() const { return isLength(typeWithCalcResolved()); }
+  bool isNumber() const {
+    return typeWithCalcResolved() == UnitType::Number ||
+           typeWithCalcResolved() == UnitType::Integer;
+  }
+  bool isPercentage() const {
+    return typeWithCalcResolved() == UnitType::Percentage;
+  }
+  bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
+  bool isTime() const {
+    return type() == UnitType::Seconds || type() == UnitType::Milliseconds;
+  }
+  bool isCalculated() const { return type() == UnitType::Calc; }
+  bool isCalculatedPercentageWithNumber() const {
+    return typeWithCalcResolved() == UnitType::CalcPercentageWithNumber;
+  }
+  bool isCalculatedPercentageWithLength() const {
+    return typeWithCalcResolved() == UnitType::CalcPercentageWithLength;
+  }
+  static bool isResolution(UnitType type) {
+    return type >= UnitType::DotsPerPixel &&
+           type <= UnitType::DotsPerCentimeter;
+  }
+  bool isFlex() const { return typeWithCalcResolved() == UnitType::Fraction; }
+  bool isValueID() const { return type() == UnitType::ValueID; }
+  bool colorIsDerivedFromElement() const;
 
-    // Converts to a Length (Fixed, Percent or Calculated)
-    Length convertToLength(const CSSToLengthConversionData&) const;
+  static CSSPrimitiveValue* createIdentifier(CSSValueID);
+  static CSSPrimitiveValue* create(double value, UnitType);
+  static CSSPrimitiveValue* create(const Length& value, float zoom) {
+    return new CSSPrimitiveValue(value, zoom);
+  }
+  template <typename T>
+  static CSSPrimitiveValue* create(T value) {
+    static_assert(!std::is_same<T, CSSValueID>::value,
+                  "Do not call create() with a CSSValueID; call "
+                  "createIdentifier() instead");
+    return new CSSPrimitiveValue(value);
+  }
 
-    double getDoubleValue() const;
-    float getFloatValue() const { return getValue<float>(); }
-    int getIntValue() const { return getValue<int>(); }
-    template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
+  ~CSSPrimitiveValue();
 
-    CSSCalcValue* cssCalcValue() const { ASSERT(isCalculated()); return m_value.calc; }
+  UnitType typeWithCalcResolved() const;
 
-    CSSValueID getValueID() const { return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid; }
+  double computeDegrees() const;
+  double computeSeconds() const;
 
-    template<typename T> inline T convertTo() const; // Defined in CSSPrimitiveValueMappings.h
+  // Computes a length in pixels, resolving relative lengths
+  template <typename T>
+  T computeLength(const CSSToLengthConversionData&) const;
 
-    static const char* unitTypeToString(UnitType);
-    static UnitType stringToUnitType(StringView string)
-    {
-        if (string.is8Bit())
-            return stringToUnitType(string.characters8(), string.length());
-        return stringToUnitType(string.characters16(), string.length());
-    }
+  // Converts to a Length (Fixed, Percent or Calculated)
+  Length convertToLength(const CSSToLengthConversionData&) const;
 
-    String customCSSText() const;
+  double getDoubleValue() const;
+  float getFloatValue() const { return getValue<float>(); }
+  int getIntValue() const { return getValue<int>(); }
+  template <typename T>
+  inline T getValue() const {
+    return clampTo<T>(getDoubleValue());
+  }
 
-    bool equals(const CSSPrimitiveValue&) const;
+  CSSCalcValue* cssCalcValue() const {
+    ASSERT(isCalculated());
+    return m_value.calc;
+  }
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  CSSValueID getValueID() const {
+    return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid;
+  }
 
-    static UnitType canonicalUnitTypeForCategory(UnitCategory);
-    static double conversionToCanonicalUnitsScaleFactor(UnitType);
+  template <typename T>
+  inline T convertTo() const;  // Defined in CSSPrimitiveValueMappings.h
 
-    // Returns true and populates lengthUnitType, if unitType is a length unit. Otherwise, returns false.
-    static bool unitTypeToLengthUnitType(UnitType, LengthUnitType&);
-    static UnitType lengthUnitTypeToUnitType(LengthUnitType);
+  static const char* unitTypeToString(UnitType);
+  static UnitType stringToUnitType(StringView string) {
+    if (string.is8Bit())
+      return stringToUnitType(string.characters8(), string.length());
+    return stringToUnitType(string.characters16(), string.length());
+  }
 
-private:
-    CSSPrimitiveValue(CSSValueID);
-    CSSPrimitiveValue(const Length&, float zoom);
-    CSSPrimitiveValue(double, UnitType);
+  String customCSSText() const;
 
-    template<typename T> CSSPrimitiveValue(T); // Defined in CSSPrimitiveValueMappings.h
+  bool equals(const CSSPrimitiveValue&) const;
 
-    template<typename T> CSSPrimitiveValue(T* val)
-        : CSSValue(PrimitiveClass)
-    {
-        init(val);
-    }
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-    static void create(int); // compile-time guard
-    static void create(unsigned); // compile-time guard
-    template<typename T> operator T*(); // compile-time guard
+  static UnitType canonicalUnitTypeForCategory(UnitCategory);
+  static double conversionToCanonicalUnitsScaleFactor(UnitType);
 
-    // Code generated by CSSPrimitiveValueUnitTrie.cpp.tmpl
-    static UnitType stringToUnitType(const LChar*, unsigned length);
-    static UnitType stringToUnitType(const UChar*, unsigned length);
+  // Returns true and populates lengthUnitType, if unitType is a length unit. Otherwise, returns false.
+  static bool unitTypeToLengthUnitType(UnitType, LengthUnitType&);
+  static UnitType lengthUnitTypeToUnitType(LengthUnitType);
 
-    void init(UnitType);
-    void init(const Length&);
-    void init(CSSCalcValue*);
+ private:
+  CSSPrimitiveValue(CSSValueID);
+  CSSPrimitiveValue(const Length&, float zoom);
+  CSSPrimitiveValue(double, UnitType);
 
-    double computeLengthDouble(const CSSToLengthConversionData&) const;
+  template <typename T>
+  CSSPrimitiveValue(T);  // Defined in CSSPrimitiveValueMappings.h
 
-    inline UnitType type() const { return static_cast<UnitType>(m_primitiveUnitType); }
+  template <typename T>
+  CSSPrimitiveValue(T* val) : CSSValue(PrimitiveClass) {
+    init(val);
+  }
 
-    union {
-        CSSValueID valueID;
-        double num;
-        // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
-        CSSCalcValue* calc;
-    } m_value;
+  static void create(int);       // compile-time guard
+  static void create(unsigned);  // compile-time guard
+  template <typename T>
+  operator T*();  // compile-time guard
+
+  // Code generated by CSSPrimitiveValueUnitTrie.cpp.tmpl
+  static UnitType stringToUnitType(const LChar*, unsigned length);
+  static UnitType stringToUnitType(const UChar*, unsigned length);
+
+  void init(UnitType);
+  void init(const Length&);
+  void init(CSSCalcValue*);
+
+  double computeLengthDouble(const CSSToLengthConversionData&) const;
+
+  inline UnitType type() const {
+    return static_cast<UnitType>(m_primitiveUnitType);
+  }
+
+  union {
+    CSSValueID valueID;
+    double num;
+    // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
+    CSSCalcValue* calc;
+  } m_value;
 };
 
 using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, isPrimitiveValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSPrimitiveValue_h
+#endif  // CSSPrimitiveValue_h

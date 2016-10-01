@@ -51,48 +51,50 @@ struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class WEB_EXPORT ExternalPopupMenu final : WTF_NON_EXPORTED_BASE(public PopupMenu), public WebExternalPopupMenuClient {
-public:
-    ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebViewImpl&);
-    ~ExternalPopupMenu() override;
+class WEB_EXPORT ExternalPopupMenu final
+    : WTF_NON_EXPORTED_BASE(public PopupMenu),
+      public WebExternalPopupMenuClient {
+ public:
+  ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebViewImpl&);
+  ~ExternalPopupMenu() override;
 
-    // Fills |info| with the popup menu information contained in the
-    // PopupMenuClient associated with this ExternalPopupMenu.
-    // FIXME: public only for test access. Need to revert once gtest
-    // helpers from chromium are available for blink.
-    static void getPopupMenuInfo(WebPopupMenuInfo&, HTMLSelectElement&);
-    static int toPopupMenuItemIndex(int index, HTMLSelectElement&);
-    static int toExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
+  // Fills |info| with the popup menu information contained in the
+  // PopupMenuClient associated with this ExternalPopupMenu.
+  // FIXME: public only for test access. Need to revert once gtest
+  // helpers from chromium are available for blink.
+  static void getPopupMenuInfo(WebPopupMenuInfo&, HTMLSelectElement&);
+  static int toPopupMenuItemIndex(int index, HTMLSelectElement&);
+  static int toExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    // PopupMenu methods:
-    void show() override;
-    void hide() override;
-    void updateFromElement(UpdateReason) override;
-    void disconnectClient() override;
+ private:
+  // PopupMenu methods:
+  void show() override;
+  void hide() override;
+  void updateFromElement(UpdateReason) override;
+  void disconnectClient() override;
 
-    // WebExternalPopupClient methods:
-    void didChangeSelection(int index) override;
-    void didAcceptIndex(int index) override;
-    void didAcceptIndices(const WebVector<int>& indices) override;
-    void didCancel() override;
+  // WebExternalPopupClient methods:
+  void didChangeSelection(int index) override;
+  void didAcceptIndex(int index) override;
+  void didAcceptIndices(const WebVector<int>& indices) override;
+  void didCancel() override;
 
-    bool showInternal();
-    void dispatchEvent(TimerBase*);
-    void update();
+  bool showInternal();
+  void dispatchEvent(TimerBase*);
+  void update();
 
-    Member<HTMLSelectElement> m_ownerElement;
-    Member<LocalFrame> m_localFrame;
-    WebViewImpl& m_webView;
-    std::unique_ptr<WebMouseEvent> m_syntheticEvent;
-    Timer<ExternalPopupMenu> m_dispatchEventTimer;
-    // The actual implementor of the show menu.
-    WebExternalPopupMenu* m_webExternalPopupMenu;
-    bool m_needsUpdate = false;
+  Member<HTMLSelectElement> m_ownerElement;
+  Member<LocalFrame> m_localFrame;
+  WebViewImpl& m_webView;
+  std::unique_ptr<WebMouseEvent> m_syntheticEvent;
+  Timer<ExternalPopupMenu> m_dispatchEventTimer;
+  // The actual implementor of the show menu.
+  WebExternalPopupMenu* m_webExternalPopupMenu;
+  bool m_needsUpdate = false;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ExternalPopupMenu_h
+#endif  // ExternalPopupMenu_h

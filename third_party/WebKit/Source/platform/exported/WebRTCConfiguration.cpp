@@ -37,121 +37,103 @@
 namespace blink {
 
 WebRTCICEServer::WebRTCICEServer(RTCIceServer* iceServer)
-    : m_private(iceServer)
-{
+    : m_private(iceServer) {}
+
+void WebRTCICEServer::assign(const WebRTCICEServer& other) {
+  m_private = other.m_private;
 }
 
-void WebRTCICEServer::assign(const WebRTCICEServer& other)
-{
-    m_private = other.m_private;
+void WebRTCICEServer::reset() {
+  m_private.reset();
 }
 
-void WebRTCICEServer::reset()
-{
-    m_private.reset();
+WebURL WebRTCICEServer::uri() const {
+  ASSERT(!isNull());
+  return m_private->uri();
 }
 
-WebURL WebRTCICEServer::uri() const
-{
-    ASSERT(!isNull());
-    return m_private->uri();
+WebString WebRTCICEServer::username() const {
+  ASSERT(!isNull());
+  return m_private->username();
 }
 
-WebString WebRTCICEServer::username() const
-{
-    ASSERT(!isNull());
-    return m_private->username();
-}
-
-WebString WebRTCICEServer::credential() const
-{
-    ASSERT(!isNull());
-    return m_private->credential();
+WebString WebRTCICEServer::credential() const {
+  ASSERT(!isNull());
+  return m_private->credential();
 }
 
 WebRTCConfiguration::WebRTCConfiguration(RTCConfiguration* configuration)
-    : m_private(configuration)
-{
+    : m_private(configuration) {}
+
+void WebRTCConfiguration::assign(const WebRTCConfiguration& other) {
+  m_private = other.m_private;
 }
 
-void WebRTCConfiguration::assign(const WebRTCConfiguration& other)
-{
-    m_private = other.m_private;
+void WebRTCConfiguration::reset() {
+  m_private.reset();
 }
 
-void WebRTCConfiguration::reset()
-{
-    m_private.reset();
+size_t WebRTCConfiguration::numberOfServers() const {
+  ASSERT(!isNull());
+  return m_private->numberOfServers();
 }
 
-size_t WebRTCConfiguration::numberOfServers() const
-{
-    ASSERT(!isNull());
-    return m_private->numberOfServers();
+WebRTCICEServer WebRTCConfiguration::server(size_t index) const {
+  ASSERT(!isNull());
+  return WebRTCICEServer(m_private->server(index));
 }
 
-WebRTCICEServer WebRTCConfiguration::server(size_t index) const
-{
-    ASSERT(!isNull());
-    return WebRTCICEServer(m_private->server(index));
-}
-
-WebRTCIceTransports WebRTCConfiguration::iceTransports() const
-{
-    ASSERT(!isNull());
-    switch (m_private->iceTransports()) {
+WebRTCIceTransports WebRTCConfiguration::iceTransports() const {
+  ASSERT(!isNull());
+  switch (m_private->iceTransports()) {
     case RTCIceTransportsNone:
-        return WebRTCIceTransportsNone;
+      return WebRTCIceTransportsNone;
     case RTCIceTransportsRelay:
-        return WebRTCIceTransportsRelay;
+      return WebRTCIceTransportsRelay;
     case RTCIceTransportsAll:
-        return WebRTCIceTransportsAll;
+      return WebRTCIceTransportsAll;
     default:
-        ASSERT_NOT_REACHED();
-    }
-    return WebRTCIceTransportsAll;
+      ASSERT_NOT_REACHED();
+  }
+  return WebRTCIceTransportsAll;
 }
 
-WebRTCBundlePolicy WebRTCConfiguration::bundlePolicy() const
-{
-    ASSERT(!isNull());
-    switch (m_private->bundlePolicy()) {
+WebRTCBundlePolicy WebRTCConfiguration::bundlePolicy() const {
+  ASSERT(!isNull());
+  switch (m_private->bundlePolicy()) {
     case RTCBundlePolicyBalanced:
-        return WebRTCBundlePolicyBalanced;
+      return WebRTCBundlePolicyBalanced;
     case RTCBundlePolicyMaxCompat:
-        return WebRTCBundlePolicyMaxCompat;
+      return WebRTCBundlePolicyMaxCompat;
     case RTCBundlePolicyMaxBundle:
-        return WebRTCBundlePolicyMaxBundle;
+      return WebRTCBundlePolicyMaxBundle;
     default:
-        ASSERT_NOT_REACHED();
-    }
-    return WebRTCBundlePolicyBalanced;
+      ASSERT_NOT_REACHED();
+  }
+  return WebRTCBundlePolicyBalanced;
 }
 
-WebRTCRtcpMuxPolicy WebRTCConfiguration::rtcpMuxPolicy() const
-{
-    ASSERT(!isNull());
-    switch (m_private->rtcpMuxPolicy()) {
+WebRTCRtcpMuxPolicy WebRTCConfiguration::rtcpMuxPolicy() const {
+  ASSERT(!isNull());
+  switch (m_private->rtcpMuxPolicy()) {
     case RTCRtcpMuxPolicyNegotiate:
-        return WebRTCRtcpMuxPolicyNegotiate;
+      return WebRTCRtcpMuxPolicyNegotiate;
     case RTCRtcpMuxPolicyRequire:
-        return WebRTCRtcpMuxPolicyRequire;
+      return WebRTCRtcpMuxPolicyRequire;
     default:
-        ASSERT_NOT_REACHED();
-    }
-    return WebRTCRtcpMuxPolicyNegotiate;
+      ASSERT_NOT_REACHED();
+  }
+  return WebRTCRtcpMuxPolicyNegotiate;
 }
 
-size_t WebRTCConfiguration::numberOfCertificates() const
-{
-    ASSERT(!isNull());
-    return m_private->numberOfCertificates();
+size_t WebRTCConfiguration::numberOfCertificates() const {
+  ASSERT(!isNull());
+  return m_private->numberOfCertificates();
 }
 
-WebRTCCertificate* WebRTCConfiguration::certificate(size_t index) const
-{
-    ASSERT(!isNull());
-    return m_private->certificate(index);
+WebRTCCertificate* WebRTCConfiguration::certificate(size_t index) const {
+  ASSERT(!isNull());
+  return m_private->certificate(index);
 }
 
-} // namespace blink
+}  // namespace blink

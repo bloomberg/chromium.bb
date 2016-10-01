@@ -21,475 +21,476 @@
 namespace blink {
 
 class InputMethodControllerTest : public ::testing::Test {
-protected:
-    InputMethodController& controller() { return frame().inputMethodController(); }
-    Document& document() const { return *m_document; }
-    LocalFrame& frame() const { return m_dummyPageHolder->frame(); }
-    Element* insertHTMLElement(const char* elementCode, const char* elementId);
+ protected:
+  InputMethodController& controller() {
+    return frame().inputMethodController();
+  }
+  Document& document() const { return *m_document; }
+  LocalFrame& frame() const { return m_dummyPageHolder->frame(); }
+  Element* insertHTMLElement(const char* elementCode, const char* elementId);
 
-private:
-    void SetUp() override;
+ private:
+  void SetUp() override;
 
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-    Persistent<Document> m_document;
+  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  Persistent<Document> m_document;
 };
 
-void InputMethodControllerTest::SetUp()
-{
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    m_document = &m_dummyPageHolder->document();
-    DCHECK(m_document);
+void InputMethodControllerTest::SetUp() {
+  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+  m_document = &m_dummyPageHolder->document();
+  DCHECK(m_document);
 }
 
-Element* InputMethodControllerTest::insertHTMLElement(
-    const char* elementCode, const char* elementId)
-{
-    document().write(elementCode);
-    document().updateStyleAndLayout();
-    Element* element = document().getElementById(elementId);
-    element->focus();
-    return element;
+Element* InputMethodControllerTest::insertHTMLElement(const char* elementCode,
+                                                      const char* elementId) {
+  document().write(elementCode);
+  document().updateStyleAndLayout();
+  Element* element = document().getElementById(elementId);
+  element->focus();
+  return element;
 }
 
-TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput)
-{
-    HTMLInputElement* input = toHTMLInputElement(
-        insertHTMLElement("<input id='sample'>", "sample"));
+TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput) {
+  HTMLInputElement* input =
+      toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));
 
-    input->setValue("fooX");
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("fooX", input->value().utf8().data());
-    controller().extendSelectionAndDelete(0, 0);
-    EXPECT_STREQ("fooX", input->value().utf8().data());
+  input->setValue("fooX");
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("fooX", input->value().utf8().data());
+  controller().extendSelectionAndDelete(0, 0);
+  EXPECT_STREQ("fooX", input->value().utf8().data());
 
-    input->setValue("fooX");
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("fooX", input->value().utf8().data());
-    controller().extendSelectionAndDelete(1, 0);
-    EXPECT_STREQ("foo", input->value().utf8().data());
+  input->setValue("fooX");
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("fooX", input->value().utf8().data());
+  controller().extendSelectionAndDelete(1, 0);
+  EXPECT_STREQ("foo", input->value().utf8().data());
 
-    input->setValue(String::fromUTF8("foo\xE2\x98\x85")); // U+2605 == "black star"
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("foo\xE2\x98\x85", input->value().utf8().data());
-    controller().extendSelectionAndDelete(1, 0);
-    EXPECT_STREQ("foo", input->value().utf8().data());
+  input->setValue(
+      String::fromUTF8("foo\xE2\x98\x85"));  // U+2605 == "black star"
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("foo\xE2\x98\x85", input->value().utf8().data());
+  controller().extendSelectionAndDelete(1, 0);
+  EXPECT_STREQ("foo", input->value().utf8().data());
 
-    input->setValue(String::fromUTF8("foo\xF0\x9F\x8F\x86")); // U+1F3C6 == "trophy"
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("foo\xF0\x9F\x8F\x86", input->value().utf8().data());
-    controller().extendSelectionAndDelete(1, 0);
-    EXPECT_STREQ("foo", input->value().utf8().data());
+  input->setValue(
+      String::fromUTF8("foo\xF0\x9F\x8F\x86"));  // U+1F3C6 == "trophy"
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("foo\xF0\x9F\x8F\x86", input->value().utf8().data());
+  controller().extendSelectionAndDelete(1, 0);
+  EXPECT_STREQ("foo", input->value().utf8().data());
 
-    input->setValue(String::fromUTF8("foo\xE0\xB8\x81\xE0\xB9\x89")); // composed U+0E01 "ka kai" + U+0E49 "mai tho"
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("foo\xE0\xB8\x81\xE0\xB9\x89", input->value().utf8().data());
-    controller().extendSelectionAndDelete(1, 0);
-    EXPECT_STREQ("foo", input->value().utf8().data());
+  input->setValue(String::fromUTF8(
+      "foo\xE0\xB8\x81\xE0\xB9\x89"));  // composed U+0E01 "ka kai" + U+0E49 "mai tho"
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("foo\xE0\xB8\x81\xE0\xB9\x89", input->value().utf8().data());
+  controller().extendSelectionAndDelete(1, 0);
+  EXPECT_STREQ("foo", input->value().utf8().data());
 
-    input->setValue("fooX");
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("fooX", input->value().utf8().data());
-    controller().extendSelectionAndDelete(0, 1);
-    EXPECT_STREQ("fooX", input->value().utf8().data());
+  input->setValue("fooX");
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("fooX", input->value().utf8().data());
+  controller().extendSelectionAndDelete(0, 1);
+  EXPECT_STREQ("fooX", input->value().utf8().data());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionFromExistingText)
-{
-    Element* div = insertHTMLElement(
-        "<div id='sample' contenteditable='true'>hello world</div>", "sample");
+TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'>hello world</div>", "sample");
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-    controller().setCompositionFromExistingText(underlines, 0, 5);
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 0, 5);
 
-    Range* range = controller().compositionRange();
-    EXPECT_EQ(0, range->startOffset());
-    EXPECT_EQ(5, range->endOffset());
+  Range* range = controller().compositionRange();
+  EXPECT_EQ(0, range->startOffset());
+  EXPECT_EQ(5, range->endOffset());
 
-    PlainTextRange plainTextRange(PlainTextRange::create(*div, *range));
-    EXPECT_EQ(0u, plainTextRange.start());
-    EXPECT_EQ(5u, plainTextRange.end());
+  PlainTextRange plainTextRange(PlainTextRange::create(*div, *range));
+  EXPECT_EQ(0u, plainTextRange.start());
+  EXPECT_EQ(5u, plainTextRange.end());
 }
 
-TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText)
-{
-    insertHTMLElement(
-        "<div id='sample' contenteditable='true'>hello world</div>", "sample");
+TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
+  insertHTMLElement("<div id='sample' contenteditable='true'>hello world</div>",
+                    "sample");
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-    controller().setCompositionFromExistingText(underlines, 0, 5);
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 0, 5);
 
-    controller().finishComposingText(InputMethodController::KeepSelection);
-    EXPECT_EQ(0, frame().selection().start().computeOffsetInContainerNode());
-    EXPECT_EQ(0, frame().selection().end().computeOffsetInContainerNode());
+  controller().finishComposingText(InputMethodController::KeepSelection);
+  EXPECT_EQ(0, frame().selection().start().computeOffsetInContainerNode());
+  EXPECT_EQ(0, frame().selection().end().computeOffsetInContainerNode());
 }
 
-TEST_F(InputMethodControllerTest, DeleteBySettingEmptyComposition)
-{
-    HTMLInputElement* input = toHTMLInputElement(
-        insertHTMLElement("<input id='sample'>", "sample"));
+TEST_F(InputMethodControllerTest, DeleteBySettingEmptyComposition) {
+  HTMLInputElement* input =
+      toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));
 
-    input->setValue("foo ");
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("foo ", input->value().utf8().data());
-    controller().extendSelectionAndDelete(0, 0);
-    EXPECT_STREQ("foo ", input->value().utf8().data());
+  input->setValue("foo ");
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("foo ", input->value().utf8().data());
+  controller().extendSelectionAndDelete(0, 0);
+  EXPECT_STREQ("foo ", input->value().utf8().data());
 
-    input->setValue("foo ");
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
-    EXPECT_STREQ("foo ", input->value().utf8().data());
-    controller().extendSelectionAndDelete(1, 0);
-    EXPECT_STREQ("foo", input->value().utf8().data());
+  input->setValue("foo ");
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_STREQ("foo ", input->value().utf8().data());
+  controller().extendSelectionAndDelete(1, 0);
+  EXPECT_STREQ("foo", input->value().utf8().data());
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 3, Color(255, 0, 0), false, 0));
-    controller().setCompositionFromExistingText(underlines, 0, 3);
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 3, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 0, 3);
 
-    controller().setComposition(String(""), underlines, 0, 3);
+  controller().setComposition(String(""), underlines, 0, 3);
 
-    EXPECT_STREQ("", input->value().utf8().data());
+  EXPECT_STREQ("", input->value().utf8().data());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithCollapsedWhiteSpace)
-{
-    // Creates a div with one leading new line char. The new line char is hidden
-    // from the user and IME, but is visible to InputMethodController.
-    Element* div = insertHTMLElement(
-        "<div id='sample' contenteditable='true'>\nhello world</div>", "sample");
+TEST_F(InputMethodControllerTest,
+       SetCompositionFromExistingTextWithCollapsedWhiteSpace) {
+  // Creates a div with one leading new line char. The new line char is hidden
+  // from the user and IME, but is visible to InputMethodController.
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'>\nhello world</div>", "sample");
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-    controller().setCompositionFromExistingText(underlines, 0, 5);
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 0, 5);
 
-    Range* range = controller().compositionRange();
-    EXPECT_EQ(1, range->startOffset());
-    EXPECT_EQ(6, range->endOffset());
+  Range* range = controller().compositionRange();
+  EXPECT_EQ(1, range->startOffset());
+  EXPECT_EQ(6, range->endOffset());
 
-    PlainTextRange plainTextRange(PlainTextRange::create(*div, *range));
-    EXPECT_EQ(0u, plainTextRange.start());
-    EXPECT_EQ(5u, plainTextRange.end());
+  PlainTextRange plainTextRange(PlainTextRange::create(*div, *range));
+  EXPECT_EQ(0u, plainTextRange.start());
+  EXPECT_EQ(5u, plainTextRange.end());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithInvalidOffsets)
-{
-    insertHTMLElement("<div id='sample' contenteditable='true'>test</div>", "sample");
+TEST_F(InputMethodControllerTest,
+       SetCompositionFromExistingTextWithInvalidOffsets) {
+  insertHTMLElement("<div id='sample' contenteditable='true'>test</div>",
+                    "sample");
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(7, 8, Color(255, 0, 0), false, 0));
-    controller().setCompositionFromExistingText(underlines, 7, 8);
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(7, 8, Color(255, 0, 0), false, 0));
+  controller().setCompositionFromExistingText(underlines, 7, 8);
 
-    EXPECT_FALSE(controller().compositionRange());
+  EXPECT_FALSE(controller().compositionRange());
 }
 
-TEST_F(InputMethodControllerTest, ConfirmPasswordComposition)
-{
-    HTMLInputElement* input = toHTMLInputElement(
-        insertHTMLElement("<input id='sample' type='password' size='24'>", "sample"));
+TEST_F(InputMethodControllerTest, ConfirmPasswordComposition) {
+  HTMLInputElement* input = toHTMLInputElement(insertHTMLElement(
+      "<input id='sample' type='password' size='24'>", "sample"));
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-    controller().setComposition("foo", underlines, 0, 3);
-    controller().finishComposingText(InputMethodController::KeepSelection);
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  controller().setComposition("foo", underlines, 0, 3);
+  controller().finishComposingText(InputMethodController::KeepSelection);
 
-    EXPECT_STREQ("foo", input->value().utf8().data());
+  EXPECT_STREQ("foo", input->value().utf8().data());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions)
-{
-    HTMLInputElement* input = toHTMLInputElement(
-        insertHTMLElement("<input id='sample'>", "sample"));
+TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
+  HTMLInputElement* input =
+      toHTMLInputElement(insertHTMLElement("<input id='sample'>", "sample"));
 
-    input->setValue("hello");
-    document().updateStyleAndLayout();
-    controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
-    EXPECT_STREQ("hello", input->value().utf8().data());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+  input->setValue("hello");
+  document().updateStyleAndLayout();
+  controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
+  EXPECT_STREQ("hello", input->value().utf8().data());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
-    // The caret exceeds left boundary.
-    // "*heABllo", where * stands for caret.
-    controller().setComposition("AB", underlines, -100, -100);
-    EXPECT_STREQ("heABllo", input->value().utf8().data());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().end());
+  // The caret exceeds left boundary.
+  // "*heABllo", where * stands for caret.
+  controller().setComposition("AB", underlines, -100, -100);
+  EXPECT_STREQ("heABllo", input->value().utf8().data());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The caret is on left boundary.
-    // "*heABllo".
-    controller().setComposition("AB", underlines, -2, -2);
-    EXPECT_STREQ("heABllo", input->value().utf8().data());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().end());
+  // The caret is on left boundary.
+  // "*heABllo".
+  controller().setComposition("AB", underlines, -2, -2);
+  EXPECT_STREQ("heABllo", input->value().utf8().data());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The caret is before the composing text.
-    // "he*ABllo".
-    controller().setComposition("AB", underlines, 0, 0);
-    EXPECT_STREQ("heABllo", input->value().utf8().data());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+  // The caret is before the composing text.
+  // "he*ABllo".
+  controller().setComposition("AB", underlines, 0, 0);
+  EXPECT_STREQ("heABllo", input->value().utf8().data());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
-    // The caret is after the composing text.
-    // "heAB*llo".
-    controller().setComposition("AB", underlines, 2, 2);
-    EXPECT_STREQ("heABllo", input->value().utf8().data());
-    EXPECT_EQ(4u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(4u, controller().getSelectionOffsets().end());
+  // The caret is after the composing text.
+  // "heAB*llo".
+  controller().setComposition("AB", underlines, 2, 2);
+  EXPECT_STREQ("heABllo", input->value().utf8().data());
+  EXPECT_EQ(4u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(4u, controller().getSelectionOffsets().end());
 
-    // The caret is on right boundary.
-    // "heABllo*".
-    controller().setComposition("AB", underlines, 5, 5);
-    EXPECT_STREQ("heABllo", input->value().utf8().data());
-    EXPECT_EQ(7u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(7u, controller().getSelectionOffsets().end());
+  // The caret is on right boundary.
+  // "heABllo*".
+  controller().setComposition("AB", underlines, 5, 5);
+  EXPECT_STREQ("heABllo", input->value().utf8().data());
+  EXPECT_EQ(7u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(7u, controller().getSelectionOffsets().end());
 
-    // The caret exceeds right boundary.
-    // "heABllo*".
-    controller().setComposition("AB", underlines, 100, 100);
-    EXPECT_STREQ("heABllo", input->value().utf8().data());
-    EXPECT_EQ(7u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(7u, controller().getSelectionOffsets().end());
+  // The caret exceeds right boundary.
+  // "heABllo*".
+  controller().setComposition("AB", underlines, 100, 100);
+  EXPECT_STREQ("heABllo", input->value().utf8().data());
+  EXPECT_EQ(7u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(7u, controller().getSelectionOffsets().end());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionForContentEditableWithNewCaretPositions)
-{
-    // There are 7 nodes and 5+1+5+1+3+4+3 characters: "hello", '\n', "world", "\n", "012", "3456", "789".
-    Element* div = insertHTMLElement(
-        "<div id='sample' contenteditable='true'>"
-        "hello"
-        "<div id='sample2' contenteditable='true'>world"
-        "<p>012<b>3456</b><i>789</i></p>"
-        "</div>"
-        "</div>",
-        "sample");
+TEST_F(InputMethodControllerTest,
+       SetCompositionForContentEditableWithNewCaretPositions) {
+  // There are 7 nodes and 5+1+5+1+3+4+3 characters: "hello", '\n', "world", "\n", "012", "3456", "789".
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'>"
+      "hello"
+      "<div id='sample2' contenteditable='true'>world"
+      "<p>012<b>3456</b><i>789</i></p>"
+      "</div>"
+      "</div>",
+      "sample");
 
-    controller().setEditableSelectionOffsets(PlainTextRange(17, 17));
-    EXPECT_STREQ("hello\nworld\n0123456789", div->innerText().utf8().data());
-    EXPECT_EQ(17u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(17u, controller().getSelectionOffsets().end());
+  controller().setEditableSelectionOffsets(PlainTextRange(17, 17));
+  EXPECT_STREQ("hello\nworld\n0123456789", div->innerText().utf8().data());
+  EXPECT_EQ(17u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(17u, controller().getSelectionOffsets().end());
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
-    // The caret exceeds left boundary.
-    // "*hello\nworld\n01234AB56789", where * stands for caret.
-    controller().setComposition("AB", underlines, -100, -100);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().end());
+  // The caret exceeds left boundary.
+  // "*hello\nworld\n01234AB56789", where * stands for caret.
+  controller().setComposition("AB", underlines, -100, -100);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The caret is on left boundary.
-    // "*hello\nworld\n01234AB56789".
-    controller().setComposition("AB", underlines, -17, -17);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(0u, controller().getSelectionOffsets().end());
+  // The caret is on left boundary.
+  // "*hello\nworld\n01234AB56789".
+  controller().setComposition("AB", underlines, -17, -17);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(0u, controller().getSelectionOffsets().end());
 
-    // The caret is in the 1st node.
-    // "he*llo\nworld\n01234AB56789".
-    controller().setComposition("AB", underlines, -15, -15);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+  // The caret is in the 1st node.
+  // "he*llo\nworld\n01234AB56789".
+  controller().setComposition("AB", underlines, -15, -15);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
-    // The caret is on right boundary of the 1st node.
-    // "hello*\nworld\n01234AB56789".
-    controller().setComposition("AB", underlines, -12, -12);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(5u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(5u, controller().getSelectionOffsets().end());
+  // The caret is on right boundary of the 1st node.
+  // "hello*\nworld\n01234AB56789".
+  controller().setComposition("AB", underlines, -12, -12);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(5u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(5u, controller().getSelectionOffsets().end());
 
-    // The caret is on right boundary of the 2nd node.
-    // "hello\n*world\n01234AB56789".
-    controller().setComposition("AB", underlines, -11, -11);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(6u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(6u, controller().getSelectionOffsets().end());
+  // The caret is on right boundary of the 2nd node.
+  // "hello\n*world\n01234AB56789".
+  controller().setComposition("AB", underlines, -11, -11);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(6u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(6u, controller().getSelectionOffsets().end());
 
-    // The caret is on right boundary of the 3rd node.
-    // "hello\nworld*\n01234AB56789".
-    controller().setComposition("AB", underlines, -6, -6);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(11u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(11u, controller().getSelectionOffsets().end());
+  // The caret is on right boundary of the 3rd node.
+  // "hello\nworld*\n01234AB56789".
+  controller().setComposition("AB", underlines, -6, -6);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(11u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(11u, controller().getSelectionOffsets().end());
 
-    // The caret is on right boundary of the 4th node.
-    // "hello\nworld\n*01234AB56789".
-    controller().setComposition("AB", underlines, -5, -5);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(12u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(12u, controller().getSelectionOffsets().end());
+  // The caret is on right boundary of the 4th node.
+  // "hello\nworld\n*01234AB56789".
+  controller().setComposition("AB", underlines, -5, -5);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(12u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(12u, controller().getSelectionOffsets().end());
 
-    // The caret is before the composing text.
-    // "hello\nworld\n01234*AB56789".
-    controller().setComposition("AB", underlines, 0, 0);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(17u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(17u, controller().getSelectionOffsets().end());
+  // The caret is before the composing text.
+  // "hello\nworld\n01234*AB56789".
+  controller().setComposition("AB", underlines, 0, 0);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(17u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(17u, controller().getSelectionOffsets().end());
 
-    // The caret is after the composing text.
-    // "hello\nworld\n01234AB*56789".
-    controller().setComposition("AB", underlines, 2, 2);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(19u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(19u, controller().getSelectionOffsets().end());
+  // The caret is after the composing text.
+  // "hello\nworld\n01234AB*56789".
+  controller().setComposition("AB", underlines, 2, 2);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(19u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(19u, controller().getSelectionOffsets().end());
 
-    // The caret is on right boundary.
-    // "hello\nworld\n01234AB56789*".
-    controller().setComposition("AB", underlines, 7, 7);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(24u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(24u, controller().getSelectionOffsets().end());
+  // The caret is on right boundary.
+  // "hello\nworld\n01234AB56789*".
+  controller().setComposition("AB", underlines, 7, 7);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(24u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(24u, controller().getSelectionOffsets().end());
 
-    // The caret exceeds right boundary.
-    // "hello\nworld\n01234AB56789*".
-    controller().setComposition("AB", underlines, 100, 100);
-    EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
-    EXPECT_EQ(24u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(24u, controller().getSelectionOffsets().end());
+  // The caret exceeds right boundary.
+  // "hello\nworld\n01234AB56789*".
+  controller().setComposition("AB", underlines, 100, 100);
+  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
+  EXPECT_EQ(24u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(24u, controller().getSelectionOffsets().end());
 }
 
-TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText)
-{
-    Element* div = insertHTMLElement(
-        "<div id='sample' contenteditable='true'>hello</div>",
-        "sample");
+TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'>hello</div>", "sample");
 
-    controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
-    EXPECT_STREQ("hello", div->innerText().utf8().data());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+  controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
+  EXPECT_STREQ("hello", div->innerText().utf8().data());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
-    Vector<CompositionUnderline> underlines0;
-    underlines0.append(CompositionUnderline(0, 0, Color(255, 0, 0), false, 0));
-    Vector<CompositionUnderline> underlines2;
-    underlines2.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  Vector<CompositionUnderline> underlines0;
+  underlines0.append(CompositionUnderline(0, 0, Color(255, 0, 0), false, 0));
+  Vector<CompositionUnderline> underlines2;
+  underlines2.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
-    controller().setComposition("AB", underlines2, 2, 2);
-    // With previous composition.
-    controller().setComposition("", underlines0, 2, 2);
-    EXPECT_STREQ("hello", div->innerText().utf8().data());
-    EXPECT_EQ(4u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(4u, controller().getSelectionOffsets().end());
+  controller().setComposition("AB", underlines2, 2, 2);
+  // With previous composition.
+  controller().setComposition("", underlines0, 2, 2);
+  EXPECT_STREQ("hello", div->innerText().utf8().data());
+  EXPECT_EQ(4u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(4u, controller().getSelectionOffsets().end());
 
-    // Without previous composition.
-    controller().setComposition("", underlines0, -1, -1);
-    EXPECT_STREQ("hello", div->innerText().utf8().data());
-    EXPECT_EQ(3u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+  // Without previous composition.
+  controller().setComposition("", underlines0, -1, -1);
+  EXPECT_STREQ("hello", div->innerText().utf8().data());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().end());
 }
 
-TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText)
-{
-    Element* div = insertHTMLElement(
-        "<div id='sample' contenteditable='true'></div>",
-        "sample");
+TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'></div>", "sample");
 
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-    controller().setComposition("hello", underlines, 5, 5);
-    EXPECT_STREQ("hello", div->innerText().utf8().data());
-    EXPECT_EQ(5u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(5u, controller().getSelectionOffsets().end());
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  controller().setComposition("hello", underlines, 5, 5);
+  EXPECT_STREQ("hello", div->innerText().utf8().data());
+  EXPECT_EQ(5u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(5u, controller().getSelectionOffsets().end());
 
-    frame().editor().insertLineBreak();
-    EXPECT_STREQ("\n\n", div->innerText().utf8().data());
-    EXPECT_EQ(1u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(1u, controller().getSelectionOffsets().end());
+  frame().editor().insertLineBreak();
+  EXPECT_STREQ("\n\n", div->innerText().utf8().data());
+  EXPECT_EQ(1u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(1u, controller().getSelectionOffsets().end());
 }
 
-TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText)
-{
-    Element* div = insertHTMLElement(
-        "<div id='sample' contenteditable='true'></div>",
-        "sample");
+TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable='true'></div>", "sample");
 
-    controller().commitText("hello", 0);
-    EXPECT_STREQ("hello", div->innerText().utf8().data());
+  controller().commitText("hello", 0);
+  EXPECT_STREQ("hello", div->innerText().utf8().data());
 
-    controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
-    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+  controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
+  EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
-    frame().editor().insertLineBreak();
-    EXPECT_STREQ("he\nllo", div->innerText().utf8().data());
-    EXPECT_EQ(3u, controller().getSelectionOffsets().start());
-    EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+  frame().editor().insertLineBreak();
+  EXPECT_STREQ("he\nllo", div->innerText().utf8().data());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+  EXPECT_EQ(3u, controller().getSelectionOffsets().end());
 }
 
-TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing)
-{
-    document().settings()->setScriptEnabled(true);
-    Element* editable = insertHTMLElement("<div id='sample' contentEditable='true'></div>", "sample");
-    Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
-    script->setInnerHTML(
-        "document.getElementById('sample').addEventListener('beforeinput', function(event) {"
-        "    document.title = `beforeinput.isComposing:${event.isComposing};`;"
-        "});"
-        "document.getElementById('sample').addEventListener('input', function(event) {"
-        "    document.title += `input.isComposing:${event.isComposing};`;"
-        "});",
-        ASSERT_NO_EXCEPTION);
-    document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
+TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
+  document().settings()->setScriptEnabled(true);
+  Element* editable = insertHTMLElement(
+      "<div id='sample' contentEditable='true'></div>", "sample");
+  Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
+  script->setInnerHTML(
+      "document.getElementById('sample').addEventListener('beforeinput', "
+      "function(event) {"
+      "    document.title = `beforeinput.isComposing:${event.isComposing};`;"
+      "});"
+      "document.getElementById('sample').addEventListener('input', "
+      "function(event) {"
+      "    document.title += `input.isComposing:${event.isComposing};`;"
+      "});",
+      ASSERT_NO_EXCEPTION);
+  document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
 
-    // Simulate composition in the |contentEditable|.
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-    editable->focus();
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  editable->focus();
 
-    document().setTitle(emptyString());
-    controller().setComposition("foo", underlines, 0, 3);
-    EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;", document().title().utf8().data());
+  document().setTitle(emptyString());
+  controller().setComposition("foo", underlines, 0, 3);
+  EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;",
+               document().title().utf8().data());
 
-    document().setTitle(emptyString());
-    controller().finishComposingText(InputMethodController::KeepSelection);
-    // Last pair of InputEvent should also be inside composition scope.
-    EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;", document().title().utf8().data());
+  document().setTitle(emptyString());
+  controller().finishComposingText(InputMethodController::KeepSelection);
+  // Last pair of InputEvent should also be inside composition scope.
+  EXPECT_STREQ("beforeinput.isComposing:true;input.isComposing:true;",
+               document().title().utf8().data());
 }
 
-TEST_F(InputMethodControllerTest, CompositionInputEventData)
-{
-    document().settings()->setScriptEnabled(true);
-    Element* editable = insertHTMLElement("<div id='sample' contentEditable='true'></div>", "sample");
-    Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
-    script->setInnerHTML(
-        "document.getElementById('sample').addEventListener('beforeinput', function(event) {"
-        "    document.title = `beforeinput.data:${event.data};`;"
-        "});"
-        "document.getElementById('sample').addEventListener('input', function(event) {"
-        "    document.title += `input.data:${event.data};`;"
-        "});",
-        ASSERT_NO_EXCEPTION);
-    document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
+TEST_F(InputMethodControllerTest, CompositionInputEventData) {
+  document().settings()->setScriptEnabled(true);
+  Element* editable = insertHTMLElement(
+      "<div id='sample' contentEditable='true'></div>", "sample");
+  Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
+  script->setInnerHTML(
+      "document.getElementById('sample').addEventListener('beforeinput', "
+      "function(event) {"
+      "    document.title = `beforeinput.data:${event.data};`;"
+      "});"
+      "document.getElementById('sample').addEventListener('input', "
+      "function(event) {"
+      "    document.title += `input.data:${event.data};`;"
+      "});",
+      ASSERT_NO_EXCEPTION);
+  document().body()->appendChild(script, ASSERT_NO_EXCEPTION);
+  document().view()->updateAllLifecyclePhases();
 
-    // Simulate composition in the |contentEditable|.
-    Vector<CompositionUnderline> underlines;
-    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
-    editable->focus();
+  // Simulate composition in the |contentEditable|.
+  Vector<CompositionUnderline> underlines;
+  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  editable->focus();
 
-    document().setTitle(emptyString());
-    controller().setComposition("n", underlines, 0, 1);
-    EXPECT_STREQ("beforeinput.data:n;input.data:n;", document().title().utf8().data());
+  document().setTitle(emptyString());
+  controller().setComposition("n", underlines, 0, 1);
+  EXPECT_STREQ("beforeinput.data:n;input.data:n;",
+               document().title().utf8().data());
 
-    document().setTitle(emptyString());
-    controller().setComposition("ni", underlines, 0, 1);
-    EXPECT_STREQ("beforeinput.data:ni;input.data:ni;", document().title().utf8().data());
+  document().setTitle(emptyString());
+  controller().setComposition("ni", underlines, 0, 1);
+  EXPECT_STREQ("beforeinput.data:ni;input.data:ni;",
+               document().title().utf8().data());
 
-    document().setTitle(emptyString());
-    controller().finishComposingText(InputMethodController::KeepSelection);
-    EXPECT_STREQ("beforeinput.data:ni;input.data:ni;", document().title().utf8().data());
+  document().setTitle(emptyString());
+  controller().finishComposingText(InputMethodController::KeepSelection);
+  EXPECT_STREQ("beforeinput.data:ni;input.data:ni;",
+               document().title().utf8().data());
 }
 
-} // namespace blink
+}  // namespace blink

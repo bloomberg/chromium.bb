@@ -30,95 +30,96 @@
 
 namespace blink {
 
-TEST(FloatBoxTest, SimpleCreationTest)
-{
-    FloatBox box(1, 2, 3, 4, 5, 6);
-    EXPECT_EQ(1, box.x());
-    EXPECT_EQ(2, box.y());
-    EXPECT_EQ(3, box.z());
-    EXPECT_EQ(4, box.width());
-    EXPECT_EQ(5, box.height());
-    EXPECT_EQ(6, box.depth());
-    EXPECT_EQ(5, box.right());
-    EXPECT_EQ(7, box.bottom());
-    EXPECT_EQ(9, box.front());
+TEST(FloatBoxTest, SimpleCreationTest) {
+  FloatBox box(1, 2, 3, 4, 5, 6);
+  EXPECT_EQ(1, box.x());
+  EXPECT_EQ(2, box.y());
+  EXPECT_EQ(3, box.z());
+  EXPECT_EQ(4, box.width());
+  EXPECT_EQ(5, box.height());
+  EXPECT_EQ(6, box.depth());
+  EXPECT_EQ(5, box.right());
+  EXPECT_EQ(7, box.bottom());
+  EXPECT_EQ(9, box.front());
 }
 
-TEST(FloatBoxTest, PositionTest)
-{
-    FloatBox box(0, 0, 0, 4, 4, 4);
-    box.move(FloatPoint3D(1, 2, 3));
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(1, 2, 3, 4, 4, 4), box);
-    box.setOrigin(FloatPoint3D(-1, -2, -3));
-    box.move(FloatPoint3D(-1, -2, -3));
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(-2, -4, -6, 4, 4, 4), box);
+TEST(FloatBoxTest, PositionTest) {
+  FloatBox box(0, 0, 0, 4, 4, 4);
+  box.move(FloatPoint3D(1, 2, 3));
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(1, 2, 3, 4, 4, 4), box);
+  box.setOrigin(FloatPoint3D(-1, -2, -3));
+  box.move(FloatPoint3D(-1, -2, -3));
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(-2, -4, -6, 4, 4, 4), box);
 }
 
-TEST(FloatBoxTest, CopyTest)
-{
-    FloatBox box(1, 2, 3, 4, 4, 4);
-    FloatBox box2(box);
-    EXPECT_EQ(box, box2);
-    box.setSize(FloatPoint3D(3, 3, 3));
-    EXPECT_NE(box, box2);
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(1, 2, 3, 3, 3, 3), box);
+TEST(FloatBoxTest, CopyTest) {
+  FloatBox box(1, 2, 3, 4, 4, 4);
+  FloatBox box2(box);
+  EXPECT_EQ(box, box2);
+  box.setSize(FloatPoint3D(3, 3, 3));
+  EXPECT_NE(box, box2);
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(1, 2, 3, 3, 3, 3), box);
 }
 
-TEST(FloatBoxTest, FlattenTest)
-{
-    FloatBox box(1, 2, 3, 4, 4, 4);
-    box.flatten();
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(1, 2, 0, 4, 4, 0), box);
+TEST(FloatBoxTest, FlattenTest) {
+  FloatBox box(1, 2, 3, 4, 4, 4);
+  box.flatten();
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(1, 2, 0, 4, 4, 0), box);
 }
 
-TEST(FloatBoxTest, ExpandTests)
-{
-    FloatBox box;
-    box.expandTo(FloatPoint3D(10, -3, 2));
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(0, -3, 0, 10, 3, 2), box);
+TEST(FloatBoxTest, ExpandTests) {
+  FloatBox box;
+  box.expandTo(FloatPoint3D(10, -3, 2));
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(0, -3, 0, 10, 3, 2), box);
 
-    box.expandTo(FloatPoint3D(-15, 6, 8));
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(-15, -3, 0, 25, 9, 8), box);
+  box.expandTo(FloatPoint3D(-15, 6, 8));
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(-15, -3, 0, 25, 9, 8), box);
 
-    box = FloatBox();
-    box.expandTo(FloatPoint3D(-3, 6, 9), FloatPoint3D(-2, 10, 11));
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(-3, 0, 0, 3, 10, 11), box);
+  box = FloatBox();
+  box.expandTo(FloatPoint3D(-3, 6, 9), FloatPoint3D(-2, 10, 11));
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(-3, 0, 0, 3, 10, 11), box);
 
-    box = FloatBox();
-    box.expandTo(FloatBox(-10, -10, -10, 3, 30, 40));
-    box.expandTo(FloatBox(-11, 3, 50, 10, 15, 1));
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(-11, -10, -10, 11, 30, 61), box);
+  box = FloatBox();
+  box.expandTo(FloatBox(-10, -10, -10, 3, 30, 40));
+  box.expandTo(FloatBox(-11, 3, 50, 10, 15, 1));
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(-11, -10, -10, 11, 30, 61), box);
 }
 
-TEST(FloatBoxTest, UnionTest)
-{
-    FloatBox box;
-    EXPECT_TRUE(box.isEmpty());
-    FloatBox unionedBox(3, 5, 6, 5, 3, 9);
-    box.unionBounds(unionedBox);
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, unionedBox, box);
+TEST(FloatBoxTest, UnionTest) {
+  FloatBox box;
+  EXPECT_TRUE(box.isEmpty());
+  FloatBox unionedBox(3, 5, 6, 5, 3, 9);
+  box.unionBounds(unionedBox);
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, unionedBox, box);
 
-    box.unionBounds(FloatBox());
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, unionedBox, box);
+  box.unionBounds(FloatBox());
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, unionedBox, box);
 
-    box.unionBounds(FloatBox(0, 0, 0, 1, 1, 1));
-    EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual, FloatBox(0, 0, 0, 8, 8, 15), box);
+  box.unionBounds(FloatBox(0, 0, 0, 1, 1, 1));
+  EXPECT_PRED_FORMAT2(FloatBoxTest::AssertAlmostEqual,
+                      FloatBox(0, 0, 0, 8, 8, 15), box);
 }
 
-TEST(FloatBoxTest, EmptyBoxTest)
-{
-    FloatBox box;
-    EXPECT_TRUE(box.isEmpty());
-    box.expandTo(FloatPoint3D(1, 0, 0));
-    EXPECT_TRUE(box.isEmpty());
-    box.expandTo(FloatPoint3D(0, 1, 0));
-    EXPECT_FALSE(box.isEmpty());
+TEST(FloatBoxTest, EmptyBoxTest) {
+  FloatBox box;
+  EXPECT_TRUE(box.isEmpty());
+  box.expandTo(FloatPoint3D(1, 0, 0));
+  EXPECT_TRUE(box.isEmpty());
+  box.expandTo(FloatPoint3D(0, 1, 0));
+  EXPECT_FALSE(box.isEmpty());
 }
 
-TEST(FloatBoxTest, ToString)
-{
-    FloatBox box(2, 3, 5, 7, 11, 13);
-    EXPECT_EQ("2,3,5 7x11x13", box.toString());
+TEST(FloatBoxTest, ToString) {
+  FloatBox box(2, 3, 5, 7, 11, 13);
+  EXPECT_EQ("2,3,5 7x11x13", box.toString());
 }
 
-} // namespace blink
+}  // namespace blink

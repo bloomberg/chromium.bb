@@ -35,22 +35,22 @@
 namespace blink {
 
 enum ReferrerPolicy {
-    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-unsafe-url
-    ReferrerPolicyAlways,
-    // The default policy, if no policy is explicitly set by the page.
-    ReferrerPolicyDefault,
-    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-no-referrer-when-downgrade
-    ReferrerPolicyNoReferrerWhenDowngrade,
-    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-no-referrer
-    ReferrerPolicyNever,
-    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-origin
-    ReferrerPolicyOrigin,
-    // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-origin-when-cross-origin
-    ReferrerPolicyOriginWhenCrossOrigin,
-    // Not spec conformant. set only when reduced-referrer-granularity is enabled.
-    ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+  // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-unsafe-url
+  ReferrerPolicyAlways,
+  // The default policy, if no policy is explicitly set by the page.
+  ReferrerPolicyDefault,
+  // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-no-referrer-when-downgrade
+  ReferrerPolicyNoReferrerWhenDowngrade,
+  // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-no-referrer
+  ReferrerPolicyNever,
+  // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-origin
+  ReferrerPolicyOrigin,
+  // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-origin-when-cross-origin
+  ReferrerPolicyOriginWhenCrossOrigin,
+  // Not spec conformant. set only when reduced-referrer-granularity is enabled.
+  ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ReferrerPolicy_h
+#endif  // ReferrerPolicy_h

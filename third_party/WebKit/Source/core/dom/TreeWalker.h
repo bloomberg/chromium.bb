@@ -34,38 +34,42 @@ namespace blink {
 
 class ExceptionState;
 
-class TreeWalker final : public GarbageCollected<TreeWalker>, public ScriptWrappable, public NodeIteratorBase {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
-public:
-    static TreeWalker* create(Node* rootNode, unsigned whatToShow, NodeFilter* filter)
-    {
-        return new TreeWalker(rootNode, whatToShow, filter);
-    }
+class TreeWalker final : public GarbageCollected<TreeWalker>,
+                         public ScriptWrappable,
+                         public NodeIteratorBase {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
 
-    Node* currentNode() const { return m_current.get(); }
-    void setCurrentNode(Node*);
+ public:
+  static TreeWalker* create(Node* rootNode,
+                            unsigned whatToShow,
+                            NodeFilter* filter) {
+    return new TreeWalker(rootNode, whatToShow, filter);
+  }
 
-    Node* parentNode(ExceptionState&);
-    Node* firstChild(ExceptionState&);
-    Node* lastChild(ExceptionState&);
-    Node* previousSibling(ExceptionState&);
-    Node* nextSibling(ExceptionState&);
-    Node* previousNode(ExceptionState&);
-    Node* nextNode(ExceptionState&);
+  Node* currentNode() const { return m_current.get(); }
+  void setCurrentNode(Node*);
 
-    DECLARE_TRACE();
+  Node* parentNode(ExceptionState&);
+  Node* firstChild(ExceptionState&);
+  Node* lastChild(ExceptionState&);
+  Node* previousSibling(ExceptionState&);
+  Node* nextSibling(ExceptionState&);
+  Node* previousNode(ExceptionState&);
+  Node* nextNode(ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_TRACE();
 
-private:
-    TreeWalker(Node*, unsigned whatToShow, NodeFilter*);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    Node* setCurrent(Node*);
+ private:
+  TreeWalker(Node*, unsigned whatToShow, NodeFilter*);
 
-    Member<Node> m_current;
+  Node* setCurrent(Node*);
+
+  Member<Node> m_current;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TreeWalker_h
+#endif  // TreeWalker_h

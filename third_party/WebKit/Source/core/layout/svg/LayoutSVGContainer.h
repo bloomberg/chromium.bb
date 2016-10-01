@@ -31,75 +31,94 @@ class SVGElement;
 enum class SVGTransformChange;
 
 class LayoutSVGContainer : public LayoutSVGModelObject {
-public:
-    explicit LayoutSVGContainer(SVGElement*);
-    ~LayoutSVGContainer() override;
+ public:
+  explicit LayoutSVGContainer(SVGElement*);
+  ~LayoutSVGContainer() override;
 
-    // If you have a LayoutSVGContainer, use firstChild or lastChild instead.
-    void slowFirstChild() const = delete;
-    void slowLastChild() const = delete;
+  // If you have a LayoutSVGContainer, use firstChild or lastChild instead.
+  void slowFirstChild() const = delete;
+  void slowLastChild() const = delete;
 
-    LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
-    LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
+  LayoutObject* firstChild() const {
+    ASSERT(children() == virtualChildren());
+    return children()->firstChild();
+  }
+  LayoutObject* lastChild() const {
+    ASSERT(children() == virtualChildren());
+    return children()->lastChild();
+  }
 
-    void paint(const PaintInfo&, const LayoutPoint&) const override;
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    void setNeedsBoundariesUpdate() final { m_needsBoundariesUpdate = true; }
-    bool didScreenScaleFactorChange() const { return m_didScreenScaleFactorChange; }
-    bool isObjectBoundingBoxValid() const { return m_objectBoundingBoxValid; }
+  void paint(const PaintInfo&, const LayoutPoint&) const override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void setNeedsBoundariesUpdate() final { m_needsBoundariesUpdate = true; }
+  bool didScreenScaleFactorChange() const {
+    return m_didScreenScaleFactorChange;
+  }
+  bool isObjectBoundingBoxValid() const { return m_objectBoundingBoxValid; }
 
-    bool selfWillPaint() const;
+  bool selfWillPaint() const;
 
-    bool hasNonIsolatedBlendingDescendants() const final;
+  bool hasNonIsolatedBlendingDescendants() const final;
 
-    const char* name() const override { return "LayoutSVGContainer"; }
+  const char* name() const override { return "LayoutSVGContainer"; }
 
-    FloatRect objectBoundingBox() const final { return m_objectBoundingBox; }
+  FloatRect objectBoundingBox() const final { return m_objectBoundingBox; }
 
-protected:
-    LayoutObjectChildList* virtualChildren() final { return children(); }
-    const LayoutObjectChildList* virtualChildren() const final { return children(); }
+ protected:
+  LayoutObjectChildList* virtualChildren() final { return children(); }
+  const LayoutObjectChildList* virtualChildren() const final {
+    return children();
+  }
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || LayoutSVGModelObject::isOfType(type); }
-    void layout() override;
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGContainer ||
+           LayoutSVGModelObject::isOfType(type);
+  }
+  void layout() override;
 
-    void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) final;
-    void removeChild(LayoutObject*) final;
-    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const final;
+  void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) final;
+  void removeChild(LayoutObject*) final;
+  void addOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additionalOffset,
+                       IncludeBlockVisualOverflowOrNot) const final;
 
-    FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
+  FloatRect strokeBoundingBox() const final { return m_strokeBoundingBox; }
 
-    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+  bool nodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& pointInParent,
+                        HitTestAction) override;
 
-    // Allow LayoutSVGTransformableContainer to hook in at the right time in layout().
-    virtual SVGTransformChange calculateLocalTransform();
+  // Allow LayoutSVGTransformableContainer to hook in at the right time in layout().
+  virtual SVGTransformChange calculateLocalTransform();
 
-    // Allow LayoutSVGViewportContainer to hook in at the right times in layout() and nodeAtFloatPoint().
-    virtual void calcViewport() { }
-    virtual bool pointIsInsideViewportClip(const FloatPoint& /*pointInParent*/) { return true; }
+  // Allow LayoutSVGViewportContainer to hook in at the right times in layout() and nodeAtFloatPoint().
+  virtual void calcViewport() {}
+  virtual bool pointIsInsideViewportClip(const FloatPoint& /*pointInParent*/) {
+    return true;
+  }
 
-    virtual void determineIfLayoutSizeChanged() { }
+  virtual void determineIfLayoutSizeChanged() {}
 
-    void updateCachedBoundaries();
+  void updateCachedBoundaries();
 
-    void descendantIsolationRequirementsChanged(DescendantIsolationState) final;
+  void descendantIsolationRequirementsChanged(DescendantIsolationState) final;
 
-private:
-    const LayoutObjectChildList* children() const { return &m_children; }
-    LayoutObjectChildList* children() { return &m_children; }
+ private:
+  const LayoutObjectChildList* children() const { return &m_children; }
+  LayoutObjectChildList* children() { return &m_children; }
 
-    LayoutObjectChildList m_children;
-    FloatRect m_objectBoundingBox;
-    FloatRect m_strokeBoundingBox;
-    bool m_objectBoundingBoxValid;
-    bool m_needsBoundariesUpdate : 1;
-    bool m_didScreenScaleFactorChange : 1;
-    mutable bool m_hasNonIsolatedBlendingDescendants : 1;
-    mutable bool m_hasNonIsolatedBlendingDescendantsDirty : 1;
+  LayoutObjectChildList m_children;
+  FloatRect m_objectBoundingBox;
+  FloatRect m_strokeBoundingBox;
+  bool m_objectBoundingBoxValid;
+  bool m_needsBoundariesUpdate : 1;
+  bool m_didScreenScaleFactorChange : 1;
+  mutable bool m_hasNonIsolatedBlendingDescendants : 1;
+  mutable bool m_hasNonIsolatedBlendingDescendantsDirty : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGContainer, isSVGContainer());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSVGContainer_h
+#endif  // LayoutSVGContainer_h

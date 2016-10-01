@@ -27,34 +27,29 @@
 namespace blink {
 
 class LengthSize {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    LengthSize()
-    {
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    LengthSize(const Length& width, const Length& height)
-        : m_width(width)
-        , m_height(height)
-    {
-    }
+ public:
+  LengthSize() {}
 
-    bool operator==(const LengthSize& o) const
-    {
-        return m_width == o.m_width && m_height == o.m_height;
-    }
+  LengthSize(const Length& width, const Length& height)
+      : m_width(width), m_height(height) {}
 
-    void setWidth(const Length& width) { m_width = width; }
-    const Length& width() const { return m_width; }
+  bool operator==(const LengthSize& o) const {
+    return m_width == o.m_width && m_height == o.m_height;
+  }
 
-    void setHeight(const Length& height) { m_height = height; }
-    const Length& height() const { return m_height; }
+  void setWidth(const Length& width) { m_width = width; }
+  const Length& width() const { return m_width; }
 
-private:
-    Length m_width;
-    Length m_height;
+  void setHeight(const Length& height) { m_height = height; }
+  const Length& height() const { return m_height; }
+
+ private:
+  Length m_width;
+  Length m_height;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LengthSize_h
+#endif  // LengthSize_h

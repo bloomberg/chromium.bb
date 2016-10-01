@@ -38,6 +38,6 @@ namespace blink {
 
 typedef SVGAnimatedProperty<SVGPointList> SVGAnimatedPointList;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

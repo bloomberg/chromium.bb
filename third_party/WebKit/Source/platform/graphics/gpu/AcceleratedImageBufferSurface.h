@@ -39,24 +39,30 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT AcceleratedImageBufferSurface : public ImageBufferSurface {
-    WTF_MAKE_NONCOPYABLE(AcceleratedImageBufferSurface); USING_FAST_MALLOC(AcceleratedImageBufferSurface);
-public:
-    AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque, sk_sp<SkColorSpace> = nullptr);
-    ~AcceleratedImageBufferSurface() override { }
+class PLATFORM_EXPORT AcceleratedImageBufferSurface
+    : public ImageBufferSurface {
+  WTF_MAKE_NONCOPYABLE(AcceleratedImageBufferSurface);
+  USING_FAST_MALLOC(AcceleratedImageBufferSurface);
 
-    SkCanvas* canvas() override { return m_surface ? m_surface->getCanvas() : nullptr; }
-    bool isValid() const override;
-    bool isAccelerated() const override { return true; }
-    sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
-    GLuint getBackingTextureHandleForOverwrite() override;
+ public:
+  AcceleratedImageBufferSurface(const IntSize&,
+                                OpacityMode = NonOpaque,
+                                sk_sp<SkColorSpace> = nullptr);
+  ~AcceleratedImageBufferSurface() override {}
 
-private:
-    unsigned m_contextId;
-    sk_sp<SkSurface> m_surface; // Uses m_contextProvider.
+  SkCanvas* canvas() override {
+    return m_surface ? m_surface->getCanvas() : nullptr;
+  }
+  bool isValid() const override;
+  bool isAccelerated() const override { return true; }
+  sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
+  GLuint getBackingTextureHandleForOverwrite() override;
+
+ private:
+  unsigned m_contextId;
+  sk_sp<SkSurface> m_surface;  // Uses m_contextProvider.
 };
 
-
-} // namespace blink
+}  // namespace blink
 
 #endif

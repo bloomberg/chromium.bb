@@ -18,21 +18,22 @@ struct WebPresentationError;
 // PresentationAvailabilityCallback extends WebCallbacks to resolve the
 // underlying promise depending on the result passed to the callback. It takes a
 // KURL in its constructor and will pass it to the WebAvailabilityObserver.
-class PresentationAvailabilityCallbacks final : public WebCallbacks<bool, const WebPresentationError&> {
-public:
-    PresentationAvailabilityCallbacks(ScriptPromiseResolver*, const KURL&);
-    ~PresentationAvailabilityCallbacks() override;
+class PresentationAvailabilityCallbacks final
+    : public WebCallbacks<bool, const WebPresentationError&> {
+ public:
+  PresentationAvailabilityCallbacks(ScriptPromiseResolver*, const KURL&);
+  ~PresentationAvailabilityCallbacks() override;
 
-    void onSuccess(bool value) override;
-    void onError(const WebPresentationError&) override;
+  void onSuccess(bool value) override;
+  void onError(const WebPresentationError&) override;
 
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-    const KURL m_url;
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
+  const KURL m_url;
 
-    WTF_MAKE_NONCOPYABLE(PresentationAvailabilityCallbacks);
+  WTF_MAKE_NONCOPYABLE(PresentationAvailabilityCallbacks);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PresentationAvailabilityCallbacks_h
+#endif  // PresentationAvailabilityCallbacks_h

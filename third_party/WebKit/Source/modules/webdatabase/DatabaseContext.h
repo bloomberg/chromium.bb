@@ -38,43 +38,44 @@ class DatabaseThread;
 class ExecutionContext;
 class SecurityOrigin;
 
-class DatabaseContext final
-    : public GarbageCollectedFinalized<DatabaseContext>
-    , public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(DatabaseContext);
-public:
-    friend class DatabaseManager;
+class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
+                              public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(DatabaseContext);
 
-    static DatabaseContext* create(ExecutionContext*);
+ public:
+  friend class DatabaseManager;
 
-    ~DatabaseContext() override;
-    DECLARE_VIRTUAL_TRACE();
+  static DatabaseContext* create(ExecutionContext*);
 
-    // For life-cycle management (inherited from ActiveDOMObject):
-    void contextDestroyed() override;
-    void stop() override;
+  ~DatabaseContext() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    DatabaseContext* backend();
-    DatabaseThread* databaseThread();
-    bool databaseThreadAvailable();
+  // For life-cycle management (inherited from ActiveDOMObject):
+  void contextDestroyed() override;
+  void stop() override;
 
-    void setHasOpenDatabases() { m_hasOpenDatabases = true; }
-    // Blocks the caller thread until cleanup tasks are completed.
-    void stopDatabases();
+  DatabaseContext* backend();
+  DatabaseThread* databaseThread();
+  bool databaseThreadAvailable();
 
-    bool allowDatabaseAccess() const;
+  void setHasOpenDatabases() { m_hasOpenDatabases = true; }
+  // Blocks the caller thread until cleanup tasks are completed.
+  void stopDatabases();
 
-    SecurityOrigin* getSecurityOrigin() const;
-    bool isContextThread() const;
+  bool allowDatabaseAccess() const;
 
-private:
-    explicit DatabaseContext(ExecutionContext*);
+  SecurityOrigin* getSecurityOrigin() const;
+  bool isContextThread() const;
 
-    Member<DatabaseThread> m_databaseThread;
-    bool m_hasOpenDatabases; // This never changes back to false, even after the database thread is closed.
-    bool m_hasRequestedTermination;
+ private:
+  explicit DatabaseContext(ExecutionContext*);
+
+  Member<DatabaseThread> m_databaseThread;
+  bool
+      m_hasOpenDatabases;  // This never changes back to false, even after the database thread is closed.
+  bool m_hasRequestedTermination;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseContext_h
+#endif  // DatabaseContext_h

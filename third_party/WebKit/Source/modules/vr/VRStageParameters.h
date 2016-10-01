@@ -13,26 +13,30 @@
 
 namespace blink {
 
-class VRStageParameters final : public GarbageCollected<VRStageParameters>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    VRStageParameters();
+class VRStageParameters final : public GarbageCollected<VRStageParameters>,
+                                public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DOMFloat32Array* sittingToStandingTransform() const { return m_standingTransform; }
+ public:
+  VRStageParameters();
 
-    float sizeX() const { return m_sizeX; }
-    float sizeZ() const { return m_sizeZ; }
+  DOMFloat32Array* sittingToStandingTransform() const {
+    return m_standingTransform;
+  }
 
-    void update(const device::blink::VRStageParametersPtr&);
+  float sizeX() const { return m_sizeX; }
+  float sizeZ() const { return m_sizeZ; }
 
-    DECLARE_VIRTUAL_TRACE()
+  void update(const device::blink::VRStageParametersPtr&);
 
-private:
-    Member<DOMFloat32Array> m_standingTransform;
-    float m_sizeX;
-    float m_sizeZ;
+  DECLARE_VIRTUAL_TRACE()
+
+ private:
+  Member<DOMFloat32Array> m_standingTransform;
+  float m_sizeX;
+  float m_sizeZ;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VRStageParameters_h
+#endif  // VRStageParameters_h

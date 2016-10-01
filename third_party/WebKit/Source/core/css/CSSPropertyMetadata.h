@@ -13,18 +13,21 @@
 namespace blink {
 
 class CORE_EXPORT CSSPropertyMetadata {
-    STATIC_ONLY(CSSPropertyMetadata);
-public:
-    static bool isEnabledProperty(CSSPropertyID);
-    static bool isInterpolableProperty(CSSPropertyID);
-    static bool isInheritedProperty(CSSPropertyID);
-    static bool propertySupportsPercentage(CSSPropertyID);
-    static bool propertySupportsMultiple(CSSPropertyID);
-    static bool isDescriptorOnly(CSSPropertyID);
+  STATIC_ONLY(CSSPropertyMetadata);
 
-    static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*, size_t length, Vector<CSSPropertyID>&);
+ public:
+  static bool isEnabledProperty(CSSPropertyID);
+  static bool isInterpolableProperty(CSSPropertyID);
+  static bool isInheritedProperty(CSSPropertyID);
+  static bool propertySupportsPercentage(CSSPropertyID);
+  static bool propertySupportsMultiple(CSSPropertyID);
+  static bool isDescriptorOnly(CSSPropertyID);
+
+  static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
+                                                   size_t length,
+                                                   Vector<CSSPropertyID>&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSPropertyMetadata
+#endif  // CSSPropertyMetadata

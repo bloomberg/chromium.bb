@@ -29,20 +29,17 @@ namespace blink {
 
 #ifndef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 
-IntRect::operator NSRect() const
-{
-    return NSMakeRect(x(), y(), width(), height());
+IntRect::operator NSRect() const {
+  return NSMakeRect(x(), y(), width(), height());
 }
 
-IntRect enclosingIntRect(const NSRect& rect)
-{
-    int l = static_cast<int>(floorf(rect.origin.x));
-    int t = static_cast<int>(floorf(rect.origin.y));
-    int r = static_cast<int>(ceilf(NSMaxX(rect)));
-    int b = static_cast<int>(ceilf(NSMaxY(rect)));
-    return IntRect(l, t, r - l, b - t);
+IntRect enclosingIntRect(const NSRect& rect) {
+  int l = static_cast<int>(floorf(rect.origin.x));
+  int t = static_cast<int>(floorf(rect.origin.y));
+  int r = static_cast<int>(ceilf(NSMaxX(rect)));
+  int b = static_cast<int>(ceilf(NSMaxY(rect)));
+  return IntRect(l, t, r - l, b - t);
 }
 
 #endif
-
 }

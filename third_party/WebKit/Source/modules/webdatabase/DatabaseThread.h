@@ -43,49 +43,53 @@ class SQLTransactionCoordinator;
 class WaitableEvent;
 
 class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
-public:
-    static DatabaseThread* create() { return new DatabaseThread; }
-    ~DatabaseThread();
-    DECLARE_TRACE();
+ public:
+  static DatabaseThread* create() { return new DatabaseThread; }
+  ~DatabaseThread();
+  DECLARE_TRACE();
 
-    // Callable only from the main thread.
-    void start();
-    void terminate();
+  // Callable only from the main thread.
+  void start();
+  void terminate();
 
-    // Callable from the main thread or the database thread.
-    void scheduleTask(std::unique_ptr<DatabaseTask>);
-    bool isDatabaseThread() const;
+  // Callable from the main thread or the database thread.
+  void scheduleTask(std::unique_ptr<DatabaseTask>);
+  bool isDatabaseThread() const;
 
-    // Callable only from the database thread.
-    void recordDatabaseOpen(Database*);
-    void recordDatabaseClosed(Database*);
-    bool isDatabaseOpen(Database*);
+  // Callable only from the database thread.
+  void recordDatabaseOpen(Database*);
+  void recordDatabaseClosed(Database*);
+  bool isDatabaseOpen(Database*);
 
-    SQLTransactionClient* transactionClient() { return m_transactionClient.get(); }
-    SQLTransactionCoordinator* transactionCoordinator() { return m_transactionCoordinator.get(); }
+  SQLTransactionClient* transactionClient() {
+    return m_transactionClient.get();
+  }
+  SQLTransactionCoordinator* transactionCoordinator() {
+    return m_transactionCoordinator.get();
+  }
 
-private:
-    DatabaseThread();
+ private:
+  DatabaseThread();
 
-    void setupDatabaseThread();
-    void cleanupDatabaseThread();
-    void cleanupDatabaseThreadCompleted();
+  void setupDatabaseThread();
+  void cleanupDatabaseThread();
+  void cleanupDatabaseThreadCompleted();
 
-    std::unique_ptr<WebThreadSupportingGC> m_thread;
+  std::unique_ptr<WebThreadSupportingGC> m_thread;
 
-    // This set keeps track of the open databases that have been used on this thread.
-    // This must be updated in the database thread though it is constructed and
-    // destructed in the context thread.
-    HashSet<CrossThreadPersistent<Database>> m_openDatabaseSet;
+  // This set keeps track of the open databases that have been used on this thread.
+  // This must be updated in the database thread though it is constructed and
+  // destructed in the context thread.
+  HashSet<CrossThreadPersistent<Database>> m_openDatabaseSet;
 
-    std::unique_ptr<SQLTransactionClient> m_transactionClient;
-    CrossThreadPersistent<SQLTransactionCoordinator> m_transactionCoordinator;
-    WaitableEvent* m_cleanupSync;
+  std::unique_ptr<SQLTransactionClient> m_transactionClient;
+  CrossThreadPersistent<SQLTransactionCoordinator> m_transactionCoordinator;
+  WaitableEvent* m_cleanupSync;
 
-    Mutex m_terminationRequestedMutex;
-    bool m_terminationRequested;
+  Mutex m_terminationRequestedMutex;
+  bool m_terminationRequested;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseThread_h
+#endif  // DatabaseThread_h

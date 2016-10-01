@@ -36,25 +36,25 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXSVGRoot final : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AXSVGRoot);
+  WTF_MAKE_NONCOPYABLE(AXSVGRoot);
 
-protected:
-    AXSVGRoot(LayoutObject*, AXObjectCacheImpl&);
+ protected:
+  AXSVGRoot(LayoutObject*, AXObjectCacheImpl&);
 
-public:
-    static AXSVGRoot* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXSVGRoot() override;
+ public:
+  static AXSVGRoot* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXSVGRoot() override;
 
-    void setParent(AXObject*) override;
+  void setParent(AXObject*) override;
 
-    AccessibilityRole determineAccessibilityRole() override;
-    bool computeAccessibilityIsIgnored(IgnoredReasons*) const override;
+  AccessibilityRole determineAccessibilityRole() override;
+  bool computeAccessibilityIsIgnored(IgnoredReasons*) const override;
 
-private:
-    AXObject* computeParent() const override;
-    bool isAXSVGRoot() const override { return true; }
+ private:
+  AXObject* computeParent() const override;
+  bool isAXSVGRoot() const override { return true; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXSVGRoot_h
+#endif  // AXSVGRoot_h

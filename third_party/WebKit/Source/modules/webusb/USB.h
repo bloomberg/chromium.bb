@@ -22,63 +22,64 @@ class ScriptState;
 class USBDevice;
 class USBDeviceRequestOptions;
 
-class USB final
-    : public EventTargetWithInlineData
-    , public ContextLifecycleObserver
-    , public device::usb::blink::DeviceManagerClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(USB);
-    USING_PRE_FINALIZER(USB, dispose);
-public:
-    static USB* create(LocalFrame& frame)
-    {
-        return new USB(frame);
-    }
+class USB final : public EventTargetWithInlineData,
+                  public ContextLifecycleObserver,
+                  public device::usb::blink::DeviceManagerClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(USB);
+  USING_PRE_FINALIZER(USB, dispose);
 
-    virtual ~USB();
+ public:
+  static USB* create(LocalFrame& frame) { return new USB(frame); }
 
-    void dispose();
+  virtual ~USB();
 
-    // USB.idl
-    ScriptPromise getDevices(ScriptState*);
-    ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions&);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
+  void dispose();
 
-    // EventTarget overrides.
-    ExecutionContext* getExecutionContext() const override;
-    const AtomicString& interfaceName() const override;
+  // USB.idl
+  ScriptPromise getDevices(ScriptState*);
+  ScriptPromise requestDevice(ScriptState*, const USBDeviceRequestOptions&);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
-    // ContextLifecycleObserver overrides.
-    void contextDestroyed() override;
+  // EventTarget overrides.
+  ExecutionContext* getExecutionContext() const override;
+  const AtomicString& interfaceName() const override;
 
-    USBDevice* getOrCreateDevice(device::usb::blink::DeviceInfoPtr);
+  // ContextLifecycleObserver overrides.
+  void contextDestroyed() override;
 
-    device::usb::blink::DeviceManager* deviceManager() const { return m_deviceManager.get(); }
+  USBDevice* getOrCreateDevice(device::usb::blink::DeviceInfoPtr);
 
-    void onGetDevices(ScriptPromiseResolver*, Vector<device::usb::blink::DeviceInfoPtr>);
-    void onGetPermission(ScriptPromiseResolver*, device::usb::blink::DeviceInfoPtr);
+  device::usb::blink::DeviceManager* deviceManager() const {
+    return m_deviceManager.get();
+  }
 
-    // DeviceManagerClient implementation.
-    void OnDeviceAdded(device::usb::blink::DeviceInfoPtr);
-    void OnDeviceRemoved(device::usb::blink::DeviceInfoPtr);
+  void onGetDevices(ScriptPromiseResolver*,
+                    Vector<device::usb::blink::DeviceInfoPtr>);
+  void onGetPermission(ScriptPromiseResolver*,
+                       device::usb::blink::DeviceInfoPtr);
 
-    void onDeviceManagerConnectionError();
-    void onChooserServiceConnectionError();
+  // DeviceManagerClient implementation.
+  void OnDeviceAdded(device::usb::blink::DeviceInfoPtr);
+  void OnDeviceRemoved(device::usb::blink::DeviceInfoPtr);
 
-    DECLARE_VIRTUAL_TRACE();
+  void onDeviceManagerConnectionError();
+  void onChooserServiceConnectionError();
 
-private:
-    explicit USB(LocalFrame& frame);
+  DECLARE_VIRTUAL_TRACE();
 
-    device::usb::blink::DeviceManagerPtr m_deviceManager;
-    HeapHashSet<Member<ScriptPromiseResolver>> m_deviceManagerRequests;
-    device::usb::blink::ChooserServicePtr m_chooserService;
-    HeapHashSet<Member<ScriptPromiseResolver>> m_chooserServiceRequests;
-    mojo::Binding<device::usb::blink::DeviceManagerClient> m_clientBinding;
-    HeapHashMap<String, WeakMember<USBDevice>> m_deviceCache;
+ private:
+  explicit USB(LocalFrame& frame);
+
+  device::usb::blink::DeviceManagerPtr m_deviceManager;
+  HeapHashSet<Member<ScriptPromiseResolver>> m_deviceManagerRequests;
+  device::usb::blink::ChooserServicePtr m_chooserService;
+  HeapHashSet<Member<ScriptPromiseResolver>> m_chooserServiceRequests;
+  mojo::Binding<device::usb::blink::DeviceManagerClient> m_clientBinding;
+  HeapHashMap<String, WeakMember<USBDevice>> m_deviceCache;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // USB_h
+#endif  // USB_h

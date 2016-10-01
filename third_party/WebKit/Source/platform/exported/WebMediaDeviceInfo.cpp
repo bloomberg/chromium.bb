@@ -31,75 +31,81 @@
 
 namespace blink {
 
-class WebMediaDeviceInfoPrivate final : public RefCounted<WebMediaDeviceInfoPrivate> {
-public:
-    static PassRefPtr<WebMediaDeviceInfoPrivate> create(const WebString& deviceId, WebMediaDeviceInfo::MediaDeviceKind, const WebString& label, const WebString& groupId);
+class WebMediaDeviceInfoPrivate final
+    : public RefCounted<WebMediaDeviceInfoPrivate> {
+ public:
+  static PassRefPtr<WebMediaDeviceInfoPrivate> create(
+      const WebString& deviceId,
+      WebMediaDeviceInfo::MediaDeviceKind,
+      const WebString& label,
+      const WebString& groupId);
 
-    const WebString& deviceId() const { return m_deviceId; }
-    WebMediaDeviceInfo::MediaDeviceKind kind() const { return m_kind; }
-    const WebString& label() const { return m_label; }
-    const WebString& groupId() const { return m_groupId; }
+  const WebString& deviceId() const { return m_deviceId; }
+  WebMediaDeviceInfo::MediaDeviceKind kind() const { return m_kind; }
+  const WebString& label() const { return m_label; }
+  const WebString& groupId() const { return m_groupId; }
 
-private:
-    WebMediaDeviceInfoPrivate(const WebString& deviceId, WebMediaDeviceInfo::MediaDeviceKind, const WebString& label, const WebString& groupId);
+ private:
+  WebMediaDeviceInfoPrivate(const WebString& deviceId,
+                            WebMediaDeviceInfo::MediaDeviceKind,
+                            const WebString& label,
+                            const WebString& groupId);
 
-    WebString m_deviceId;
-    WebMediaDeviceInfo::MediaDeviceKind m_kind;
-    WebString m_label;
-    WebString m_groupId;
+  WebString m_deviceId;
+  WebMediaDeviceInfo::MediaDeviceKind m_kind;
+  WebString m_label;
+  WebString m_groupId;
 };
 
-PassRefPtr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::create(const WebString& deviceId, WebMediaDeviceInfo::MediaDeviceKind kind, const WebString& label, const WebString& groupId)
-{
-    return adoptRef(new WebMediaDeviceInfoPrivate(deviceId, kind, label, groupId));
+PassRefPtr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::create(
+    const WebString& deviceId,
+    WebMediaDeviceInfo::MediaDeviceKind kind,
+    const WebString& label,
+    const WebString& groupId) {
+  return adoptRef(
+      new WebMediaDeviceInfoPrivate(deviceId, kind, label, groupId));
 }
 
-WebMediaDeviceInfoPrivate::WebMediaDeviceInfoPrivate(const WebString& deviceId, WebMediaDeviceInfo::MediaDeviceKind kind, const WebString& label, const WebString& groupId)
-    : m_deviceId(deviceId)
-    , m_kind(kind)
-    , m_label(label)
-    , m_groupId(groupId)
-{
+WebMediaDeviceInfoPrivate::WebMediaDeviceInfoPrivate(
+    const WebString& deviceId,
+    WebMediaDeviceInfo::MediaDeviceKind kind,
+    const WebString& label,
+    const WebString& groupId)
+    : m_deviceId(deviceId), m_kind(kind), m_label(label), m_groupId(groupId) {}
+
+void WebMediaDeviceInfo::assign(const WebMediaDeviceInfo& other) {
+  m_private = other.m_private;
 }
 
-void WebMediaDeviceInfo::assign(const WebMediaDeviceInfo& other)
-{
-    m_private = other.m_private;
+void WebMediaDeviceInfo::reset() {
+  m_private.reset();
 }
 
-void WebMediaDeviceInfo::reset()
-{
-    m_private.reset();
+void WebMediaDeviceInfo::initialize(const WebString& deviceId,
+                                    WebMediaDeviceInfo::MediaDeviceKind kind,
+                                    const WebString& label,
+                                    const WebString& groupId) {
+  m_private = WebMediaDeviceInfoPrivate::create(deviceId, kind, label, groupId);
 }
 
-void WebMediaDeviceInfo::initialize(const WebString& deviceId, WebMediaDeviceInfo::MediaDeviceKind kind, const WebString& label, const WebString& groupId)
-{
-    m_private = WebMediaDeviceInfoPrivate::create(deviceId, kind, label, groupId);
+WebString WebMediaDeviceInfo::deviceId() const {
+  ASSERT(!m_private.isNull());
+  return m_private->deviceId();
 }
 
-WebString WebMediaDeviceInfo::deviceId() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->deviceId();
+WebMediaDeviceInfo::MediaDeviceKind WebMediaDeviceInfo::kind() const {
+  ASSERT(!m_private.isNull());
+  return m_private->kind();
 }
 
-WebMediaDeviceInfo::MediaDeviceKind WebMediaDeviceInfo::kind() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->kind();
+WebString WebMediaDeviceInfo::label() const {
+  ASSERT(!m_private.isNull());
+  return m_private->label();
 }
 
-WebString WebMediaDeviceInfo::label() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->label();
+WebString WebMediaDeviceInfo::groupId() const {
+  ASSERT(!m_private.isNull());
+  return m_private->groupId();
 }
 
-WebString WebMediaDeviceInfo::groupId() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->groupId();
-}
-
-} // namespace blink
-
+}  // namespace blink

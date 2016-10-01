@@ -15,8 +15,8 @@ namespace Encoding {
 // WTF::isWhiteSpace() (it excludes vertical tab).
 bool isASCIIWhiteSpace(UChar);
 
-} // namespace Encoding
+}  // namespace Encoding
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Encoding_h
+#endif  // Encoding_h

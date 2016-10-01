@@ -13,10 +13,11 @@ namespace blink {
 class LayoutView;
 
 class TracedLayoutObject {
-public:
-    static std::unique_ptr<TracedValue> create(const LayoutView&, bool traceGeometry = true);
+ public:
+  static std::unique_ptr<TracedValue> create(const LayoutView&,
+                                             bool traceGeometry = true);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TracedLayoutObject_h
+#endif  // TracedLayoutObject_h

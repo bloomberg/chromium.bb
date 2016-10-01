@@ -12,18 +12,19 @@ namespace blink {
 class CompositorMutableStateProvider;
 
 class CompositorMutator : public GarbageCollectedFinalized<CompositorMutator> {
-public:
-    virtual ~CompositorMutator() {}
+ public:
+  virtual ~CompositorMutator() {}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    // Called from compositor thread to run the animation frame callbacks from all
-    // connected CompositorWorkers.
-    // Returns true if any animation callbacks requested an animation frame
-    // (i.e. should be reinvoked next frame).
-    virtual bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*) = 0;
+  // Called from compositor thread to run the animation frame callbacks from all
+  // connected CompositorWorkers.
+  // Returns true if any animation callbacks requested an animation frame
+  // (i.e. should be reinvoked next frame).
+  virtual bool mutate(double monotonicTimeNow,
+                      CompositorMutableStateProvider*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorMutator_h
+#endif  // CompositorMutator_h

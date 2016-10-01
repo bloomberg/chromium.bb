@@ -42,47 +42,52 @@ namespace blink {
 class Document;
 
 class ConstructorMode {
-    STACK_ALLOCATED();
-public:
-    enum Mode {
-        WrapExistingObject,
-        CreateNewObject
-    };
+  STACK_ALLOCATED();
 
-    ConstructorMode(v8::Isolate* isolate)
-        : m_isolate(isolate)
-    {
-        V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
-        m_previous = data->m_constructorMode;
-        data->m_constructorMode = WrapExistingObject;
-    }
+ public:
+  enum Mode { WrapExistingObject, CreateNewObject };
 
-    ~ConstructorMode()
-    {
-        V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
-        data->m_constructorMode = m_previous;
-    }
+  ConstructorMode(v8::Isolate* isolate) : m_isolate(isolate) {
+    V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
+    m_previous = data->m_constructorMode;
+    data->m_constructorMode = WrapExistingObject;
+  }
 
-    static bool current(v8::Isolate* isolate)
-    {
-        return V8PerIsolateData::from(isolate)->m_constructorMode;
-    }
+  ~ConstructorMode() {
+    V8PerIsolateData* data = V8PerIsolateData::from(m_isolate);
+    data->m_constructorMode = m_previous;
+  }
 
-private:
-    v8::Isolate* m_isolate;
-    bool m_previous;
+  static bool current(v8::Isolate* isolate) {
+    return V8PerIsolateData::from(isolate)->m_constructorMode;
+  }
+
+ private:
+  v8::Isolate* m_isolate;
+  bool m_previous;
 };
 
 class CORE_EXPORT V8ObjectConstructor {
-    STATIC_ONLY(V8ObjectConstructor);
-public:
-    static v8::MaybeLocal<v8::Object> newInstance(v8::Isolate*, v8::Local<v8::Function>);
-    static v8::MaybeLocal<v8::Object> newInstance(v8::Isolate*, v8::Local<v8::Function>, int, v8::Local<v8::Value> argv[]);
-    static v8::MaybeLocal<v8::Object> newInstanceInDocument(v8::Isolate*, v8::Local<v8::Function>, int, v8::Local<v8::Value> argv[], Document*);
+  STATIC_ONLY(V8ObjectConstructor);
 
-    static void isValidConstructorMode(const v8::FunctionCallbackInfo<v8::Value>&);
+ public:
+  static v8::MaybeLocal<v8::Object> newInstance(v8::Isolate*,
+                                                v8::Local<v8::Function>);
+  static v8::MaybeLocal<v8::Object> newInstance(v8::Isolate*,
+                                                v8::Local<v8::Function>,
+                                                int,
+                                                v8::Local<v8::Value> argv[]);
+  static v8::MaybeLocal<v8::Object> newInstanceInDocument(
+      v8::Isolate*,
+      v8::Local<v8::Function>,
+      int,
+      v8::Local<v8::Value> argv[],
+      Document*);
+
+  static void isValidConstructorMode(
+      const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ObjectConstructor_h
+#endif  // V8ObjectConstructor_h

@@ -40,14 +40,15 @@ class KURL;
 class SecurityOrigin;
 
 class URLSecurityOriginMap {
-    USING_FAST_MALLOC(URLSecurityOriginMap);
-    WTF_MAKE_NONCOPYABLE(URLSecurityOriginMap);
-public:
-    URLSecurityOriginMap() { }
-    virtual ~URLSecurityOriginMap() { }
-    virtual SecurityOrigin* getOrigin(const KURL&) = 0;
+  USING_FAST_MALLOC(URLSecurityOriginMap);
+  WTF_MAKE_NONCOPYABLE(URLSecurityOriginMap);
+
+ public:
+  URLSecurityOriginMap() {}
+  virtual ~URLSecurityOriginMap() {}
+  virtual SecurityOrigin* getOrigin(const KURL&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // URLSecurityOriginMap_h
+#endif  // URLSecurityOriginMap_h

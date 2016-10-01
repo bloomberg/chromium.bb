@@ -11,31 +11,28 @@
 namespace blink {
 
 // static
-MediaArtwork* MediaArtwork::create(ExecutionContext* context, const MediaArtworkInit& artwork)
-{
-    return new MediaArtwork(context, artwork);
+MediaArtwork* MediaArtwork::create(ExecutionContext* context,
+                                   const MediaArtworkInit& artwork) {
+  return new MediaArtwork(context, artwork);
 }
 
-MediaArtwork::MediaArtwork(ExecutionContext* context, const MediaArtworkInit& artwork)
-{
-    m_data.src = context->completeURL(artwork.src());
-    m_data.sizes = artwork.sizes();
-    m_data.type = artwork.type();
+MediaArtwork::MediaArtwork(ExecutionContext* context,
+                           const MediaArtworkInit& artwork) {
+  m_data.src = context->completeURL(artwork.src());
+  m_data.sizes = artwork.sizes();
+  m_data.type = artwork.type();
 }
 
-String MediaArtwork::src() const
-{
-    return m_data.src;
+String MediaArtwork::src() const {
+  return m_data.src;
 }
 
-String MediaArtwork::sizes() const
-{
-    return m_data.sizes;
+String MediaArtwork::sizes() const {
+  return m_data.sizes;
 }
 
-String MediaArtwork::type() const
-{
-    return m_data.type;
+String MediaArtwork::type() const {
+  return m_data.type;
 }
 
-} // namespace blink
+}  // namespace blink

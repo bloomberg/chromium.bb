@@ -11,7 +11,6 @@ namespace blink {
 
 using WebTraceLocation = tracked_objects::Location;
 #define BLINK_FROM_HERE FROM_HERE
-
 }
 
-#endif // WebTraceLocation_h
+#endif  // WebTraceLocation_h

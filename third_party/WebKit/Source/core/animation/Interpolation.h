@@ -17,40 +17,44 @@ class PropertyHandle;
 
 // Represents an animation's effect between an adjacent pair of PropertySpecificKeyframes.
 class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
-    WTF_MAKE_NONCOPYABLE(Interpolation);
-public:
-    virtual ~Interpolation();
+  WTF_MAKE_NONCOPYABLE(Interpolation);
 
-    virtual void interpolate(int iteration, double fraction);
+ public:
+  virtual ~Interpolation();
 
-    virtual bool isStyleInterpolation() const { return false; }
-    virtual bool isInvalidatableInterpolation() const { return false; }
-    virtual bool isLegacyStyleInterpolation() const { return false; }
+  virtual void interpolate(int iteration, double fraction);
 
-    virtual PropertyHandle getProperty() const = 0;
-    virtual bool dependsOnUnderlyingValue() const { return false; }
+  virtual bool isStyleInterpolation() const { return false; }
+  virtual bool isInvalidatableInterpolation() const { return false; }
+  virtual bool isLegacyStyleInterpolation() const { return false; }
 
-protected:
-    const std::unique_ptr<InterpolableValue> m_start;
-    const std::unique_ptr<InterpolableValue> m_end;
+  virtual PropertyHandle getProperty() const = 0;
+  virtual bool dependsOnUnderlyingValue() const { return false; }
 
-    mutable double m_cachedFraction;
-    mutable int m_cachedIteration;
-    mutable std::unique_ptr<InterpolableValue> m_cachedValue;
+ protected:
+  const std::unique_ptr<InterpolableValue> m_start;
+  const std::unique_ptr<InterpolableValue> m_end;
 
-    Interpolation(std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end);
+  mutable double m_cachedFraction;
+  mutable int m_cachedIteration;
+  mutable std::unique_ptr<InterpolableValue> m_cachedValue;
 
-private:
-    InterpolableValue* getCachedValueForTesting() const { return m_cachedValue.get(); }
+  Interpolation(std::unique_ptr<InterpolableValue> start,
+                std::unique_ptr<InterpolableValue> end);
 
-    friend class AnimationInterpolableValueTest;
-    friend class AnimationInterpolationEffectTest;
-    friend class AnimationDoubleStyleInterpolationTest;
-    friend class AnimationVisibilityStyleInterpolationTest;
+ private:
+  InterpolableValue* getCachedValueForTesting() const {
+    return m_cachedValue.get();
+  }
+
+  friend class AnimationInterpolableValueTest;
+  friend class AnimationInterpolationEffectTest;
+  friend class AnimationDoubleStyleInterpolationTest;
+  friend class AnimationVisibilityStyleInterpolationTest;
 };
 
 using ActiveInterpolations = Vector<RefPtr<Interpolation>, 1>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Interpolation_h
+#endif  // Interpolation_h

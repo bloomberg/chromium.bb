@@ -26,17 +26,19 @@
 namespace blink {
 
 class SVGFEFloodElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEFloodElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGFEFloodElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGFEFloodElement);
 
-    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+ private:
+  explicit SVGFEFloodElement(Document&);
+
+  bool setFilterEffectAttribute(FilterEffect*,
+                                const QualifiedName& attrName) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEFloodElement_h
+#endif  // SVGFEFloodElement_h

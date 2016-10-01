@@ -34,14 +34,14 @@
 namespace blink {
 
 enum WebNavigationType {
-    WebNavigationTypeLinkClicked,
-    WebNavigationTypeFormSubmitted,
-    WebNavigationTypeBackForward,
-    WebNavigationTypeReload,
-    WebNavigationTypeFormResubmitted,
-    WebNavigationTypeOther
+  WebNavigationTypeLinkClicked,
+  WebNavigationTypeFormSubmitted,
+  WebNavigationTypeBackForward,
+  WebNavigationTypeReload,
+  WebNavigationTypeFormResubmitted,
+  WebNavigationTypeOther
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

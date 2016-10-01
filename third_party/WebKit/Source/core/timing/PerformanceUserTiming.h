@@ -36,40 +36,43 @@ namespace blink {
 class ExceptionState;
 class PerformanceBase;
 
-typedef unsigned long long (PerformanceTiming::*NavigationTimingFunction)() const;
+typedef unsigned long long (
+    PerformanceTiming::*NavigationTimingFunction)() const;
 using PerformanceEntryMap = HeapHashMap<String, PerformanceEntryVector>;
 
 class UserTiming final : public GarbageCollected<UserTiming> {
-public:
-    static UserTiming* create(PerformanceBase& performance)
-    {
-        return new UserTiming(performance);
-    }
+ public:
+  static UserTiming* create(PerformanceBase& performance) {
+    return new UserTiming(performance);
+  }
 
-    PerformanceEntry* mark(const String& markName, ExceptionState&);
-    void clearMarks(const String& markName);
+  PerformanceEntry* mark(const String& markName, ExceptionState&);
+  void clearMarks(const String& markName);
 
-    PerformanceEntry* measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
-    void clearMeasures(const String& measureName);
+  PerformanceEntry* measure(const String& measureName,
+                            const String& startMark,
+                            const String& endMark,
+                            ExceptionState&);
+  void clearMeasures(const String& measureName);
 
-    PerformanceEntryVector getMarks() const;
-    PerformanceEntryVector getMeasures() const;
+  PerformanceEntryVector getMarks() const;
+  PerformanceEntryVector getMeasures() const;
 
-    PerformanceEntryVector getMarks(const String& name) const;
-    PerformanceEntryVector getMeasures(const String& name) const;
+  PerformanceEntryVector getMarks(const String& name) const;
+  PerformanceEntryVector getMeasures(const String& name) const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit UserTiming(PerformanceBase&);
+ private:
+  explicit UserTiming(PerformanceBase&);
 
-    double findExistingMarkStartTime(const String& markName, ExceptionState&);
+  double findExistingMarkStartTime(const String& markName, ExceptionState&);
 
-    Member<PerformanceBase> m_performance;
-    PerformanceEntryMap m_marksMap;
-    PerformanceEntryMap m_measuresMap;
+  Member<PerformanceBase> m_performance;
+  PerformanceEntryMap m_marksMap;
+  PerformanceEntryMap m_measuresMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !defined(PerformanceUserTiming_h)
+#endif  // !defined(PerformanceUserTiming_h)

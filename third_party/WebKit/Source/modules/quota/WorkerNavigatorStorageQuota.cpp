@@ -35,41 +35,38 @@
 
 namespace blink {
 
-WorkerNavigatorStorageQuota::WorkerNavigatorStorageQuota()
-{
+WorkerNavigatorStorageQuota::WorkerNavigatorStorageQuota() {}
+
+const char* WorkerNavigatorStorageQuota::supplementName() {
+  return "WorkerNavigatorStorageQuota";
 }
 
-const char* WorkerNavigatorStorageQuota::supplementName()
-{
-    return "WorkerNavigatorStorageQuota";
+WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(
+    WorkerNavigator& navigator) {
+  WorkerNavigatorStorageQuota* supplement =
+      static_cast<WorkerNavigatorStorageQuota*>(
+          Supplement<WorkerNavigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new WorkerNavigatorStorageQuota();
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(WorkerNavigator& navigator)
-{
-    WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(Supplement<WorkerNavigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new WorkerNavigatorStorageQuota();
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+StorageManager* WorkerNavigatorStorageQuota::storage(
+    WorkerNavigator& navigator) {
+  return WorkerNavigatorStorageQuota::from(navigator).storage();
 }
 
-StorageManager* WorkerNavigatorStorageQuota::storage(WorkerNavigator& navigator)
-{
-    return WorkerNavigatorStorageQuota::from(navigator).storage();
+StorageManager* WorkerNavigatorStorageQuota::storage() const {
+  if (!m_storageManager)
+    m_storageManager = new StorageManager();
+  return m_storageManager.get();
 }
 
-StorageManager* WorkerNavigatorStorageQuota::storage() const
-{
-    if (!m_storageManager)
-        m_storageManager = new StorageManager();
-    return m_storageManager.get();
+DEFINE_TRACE(WorkerNavigatorStorageQuota) {
+  visitor->trace(m_storageManager);
+  Supplement<WorkerNavigator>::trace(visitor);
 }
 
-DEFINE_TRACE(WorkerNavigatorStorageQuota)
-{
-    visitor->trace(m_storageManager);
-    Supplement<WorkerNavigator>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

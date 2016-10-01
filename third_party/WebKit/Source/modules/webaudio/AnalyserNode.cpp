@@ -33,217 +33,209 @@
 namespace blink {
 
 AnalyserHandler::AnalyserHandler(AudioNode& node, float sampleRate)
-    : AudioBasicInspectorHandler(NodeTypeAnalyser, node, sampleRate, 2)
-{
-    initialize();
+    : AudioBasicInspectorHandler(NodeTypeAnalyser, node, sampleRate, 2) {
+  initialize();
 }
 
-PassRefPtr<AnalyserHandler> AnalyserHandler::create(AudioNode& node, float sampleRate)
-{
-    return adoptRef(new AnalyserHandler(node, sampleRate));
+PassRefPtr<AnalyserHandler> AnalyserHandler::create(AudioNode& node,
+                                                    float sampleRate) {
+  return adoptRef(new AnalyserHandler(node, sampleRate));
 }
 
-AnalyserHandler::~AnalyserHandler()
-{
-    uninitialize();
+AnalyserHandler::~AnalyserHandler() {
+  uninitialize();
 }
 
-void AnalyserHandler::process(size_t framesToProcess)
-{
-    AudioBus* outputBus = output(0).bus();
+void AnalyserHandler::process(size_t framesToProcess) {
+  AudioBus* outputBus = output(0).bus();
 
-    if (!isInitialized() || !input(0).isConnected()) {
-        outputBus->zero();
-        return;
-    }
+  if (!isInitialized() || !input(0).isConnected()) {
+    outputBus->zero();
+    return;
+  }
 
-    AudioBus* inputBus = input(0).bus();
+  AudioBus* inputBus = input(0).bus();
 
-    // Give the analyser the audio which is passing through this AudioNode.
-    m_analyser.writeInput(inputBus, framesToProcess);
+  // Give the analyser the audio which is passing through this AudioNode.
+  m_analyser.writeInput(inputBus, framesToProcess);
 
-    // For in-place processing, our override of pullInputs() will just pass the audio data through unchanged if the channel count matches from input to output
-    // (resulting in inputBus == outputBus). Otherwise, do an up-mix to stereo.
-    if (inputBus != outputBus)
-        outputBus->copyFrom(*inputBus);
+  // For in-place processing, our override of pullInputs() will just pass the audio data through unchanged if the channel count matches from input to output
+  // (resulting in inputBus == outputBus). Otherwise, do an up-mix to stereo.
+  if (inputBus != outputBus)
+    outputBus->copyFrom(*inputBus);
 }
 
-void AnalyserHandler::setFftSize(unsigned size, ExceptionState& exceptionState)
-{
-    if (!m_analyser.setFftSize(size)) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            (size < RealtimeAnalyser::MinFFTSize || size > RealtimeAnalyser::MaxFFTSize) ?
-                ExceptionMessages::indexOutsideRange("FFT size", size, RealtimeAnalyser::MinFFTSize, ExceptionMessages::InclusiveBound, RealtimeAnalyser::MaxFFTSize, ExceptionMessages::InclusiveBound)
-                : ("The value provided (" + String::number(size) + ") is not a power of two."));
-    }
+void AnalyserHandler::setFftSize(unsigned size,
+                                 ExceptionState& exceptionState) {
+  if (!m_analyser.setFftSize(size)) {
+    exceptionState.throwDOMException(
+        IndexSizeError,
+        (size < RealtimeAnalyser::MinFFTSize ||
+         size > RealtimeAnalyser::MaxFFTSize)
+            ? ExceptionMessages::indexOutsideRange(
+                  "FFT size", size, RealtimeAnalyser::MinFFTSize,
+                  ExceptionMessages::InclusiveBound,
+                  RealtimeAnalyser::MaxFFTSize,
+                  ExceptionMessages::InclusiveBound)
+            : ("The value provided (" + String::number(size) +
+               ") is not a power of two."));
+  }
 }
 
-void AnalyserHandler::setMinDecibels(double k, ExceptionState& exceptionState)
-{
-    if (k < maxDecibels()) {
-        m_analyser.setMinDecibels(k);
-    } else {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            ExceptionMessages::indexExceedsMaximumBound("minDecibels", k, maxDecibels()));
-    }
+void AnalyserHandler::setMinDecibels(double k, ExceptionState& exceptionState) {
+  if (k < maxDecibels()) {
+    m_analyser.setMinDecibels(k);
+  } else {
+    exceptionState.throwDOMException(
+        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
+                            "minDecibels", k, maxDecibels()));
+  }
 }
 
-void AnalyserHandler::setMaxDecibels(double k, ExceptionState& exceptionState)
-{
-    if (k > minDecibels()) {
-        m_analyser.setMaxDecibels(k);
-    } else {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            ExceptionMessages::indexExceedsMinimumBound("maxDecibels", k, minDecibels()));
-    }
+void AnalyserHandler::setMaxDecibels(double k, ExceptionState& exceptionState) {
+  if (k > minDecibels()) {
+    m_analyser.setMaxDecibels(k);
+  } else {
+    exceptionState.throwDOMException(
+        IndexSizeError, ExceptionMessages::indexExceedsMinimumBound(
+                            "maxDecibels", k, minDecibels()));
+  }
 }
 
-void AnalyserHandler::setMinMaxDecibels(double minDecibels, double maxDecibels, ExceptionState& exceptionState)
-{
-    if (minDecibels >= maxDecibels) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            "maxDecibels (" + String::number(maxDecibels)
-            + ") must be greater than or equal to minDecibels "
-            + "( " + String::number(minDecibels) + ").");
-        return;
-    }
-    m_analyser.setMinDecibels(minDecibels);
-    m_analyser.setMaxDecibels(maxDecibels);
+void AnalyserHandler::setMinMaxDecibels(double minDecibels,
+                                        double maxDecibels,
+                                        ExceptionState& exceptionState) {
+  if (minDecibels >= maxDecibels) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "maxDecibels (" + String::number(maxDecibels) +
+                            ") must be greater than or equal to minDecibels " +
+                            "( " + String::number(minDecibels) + ").");
+    return;
+  }
+  m_analyser.setMinDecibels(minDecibels);
+  m_analyser.setMaxDecibels(maxDecibels);
 }
 
-void AnalyserHandler::setSmoothingTimeConstant(double k, ExceptionState& exceptionState)
-{
-    if (k >= 0 && k <= 1) {
-        m_analyser.setSmoothingTimeConstant(k);
-    } else {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            ExceptionMessages::indexOutsideRange("smoothing value", k, 0.0, ExceptionMessages::InclusiveBound, 1.0, ExceptionMessages::InclusiveBound));
-    }
+void AnalyserHandler::setSmoothingTimeConstant(double k,
+                                               ExceptionState& exceptionState) {
+  if (k >= 0 && k <= 1) {
+    m_analyser.setSmoothingTimeConstant(k);
+  } else {
+    exceptionState.throwDOMException(
+        IndexSizeError,
+        ExceptionMessages::indexOutsideRange(
+            "smoothing value", k, 0.0, ExceptionMessages::InclusiveBound, 1.0,
+            ExceptionMessages::InclusiveBound));
+  }
 }
 
 // ----------------------------------------------------------------
 
 AnalyserNode::AnalyserNode(BaseAudioContext& context)
-    : AudioBasicInspectorNode(context)
-{
-    setHandler(AnalyserHandler::create(*this, context.sampleRate()));
+    : AudioBasicInspectorNode(context) {
+  setHandler(AnalyserHandler::create(*this, context.sampleRate()));
 }
 
-AnalyserNode* AnalyserNode::create(BaseAudioContext& context, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+AnalyserNode* AnalyserNode::create(BaseAudioContext& context,
+                                   ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    if (context.isContextClosed()) {
-        context.throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
+  if (context.isContextClosed()) {
+    context.throwExceptionForClosedState(exceptionState);
+    return nullptr;
+  }
 
-    return new AnalyserNode(context);
+  return new AnalyserNode(context);
 }
 
-AnalyserNode* AnalyserNode::create(BaseAudioContext* context, const AnalyserOptions& options, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+AnalyserNode* AnalyserNode::create(BaseAudioContext* context,
+                                   const AnalyserOptions& options,
+                                   ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    AnalyserNode* node = create(*context, exceptionState);
+  AnalyserNode* node = create(*context, exceptionState);
 
-    if (!node)
-        return nullptr;
+  if (!node)
+    return nullptr;
 
-    node->handleChannelOptions(options, exceptionState);
+  node->handleChannelOptions(options, exceptionState);
 
-    if (options.hasFftSize())
-        node->setFftSize(options.fftSize(), exceptionState);
+  if (options.hasFftSize())
+    node->setFftSize(options.fftSize(), exceptionState);
 
-    if (options.hasSmoothingTimeConstant())
-        node->setSmoothingTimeConstant(options.smoothingTimeConstant(), exceptionState);
+  if (options.hasSmoothingTimeConstant())
+    node->setSmoothingTimeConstant(options.smoothingTimeConstant(),
+                                   exceptionState);
 
-    // minDecibels and maxDecibels have default values.  Set both of the values
-    // at once.
-    node->setMinMaxDecibels(options.minDecibels(), options.maxDecibels(), exceptionState);
+  // minDecibels and maxDecibels have default values.  Set both of the values
+  // at once.
+  node->setMinMaxDecibels(options.minDecibels(), options.maxDecibels(),
+                          exceptionState);
 
-    return node;
+  return node;
 }
 
-AnalyserHandler& AnalyserNode::analyserHandler() const
-{
-    return static_cast<AnalyserHandler&>(handler());
+AnalyserHandler& AnalyserNode::analyserHandler() const {
+  return static_cast<AnalyserHandler&>(handler());
 }
 
-unsigned AnalyserNode::fftSize() const
-{
-    return analyserHandler().fftSize();
+unsigned AnalyserNode::fftSize() const {
+  return analyserHandler().fftSize();
 }
 
-void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
-{
-    return analyserHandler().setFftSize(size, exceptionState);
+void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState) {
+  return analyserHandler().setFftSize(size, exceptionState);
 }
 
-unsigned AnalyserNode::frequencyBinCount() const
-{
-    return analyserHandler().frequencyBinCount();
+unsigned AnalyserNode::frequencyBinCount() const {
+  return analyserHandler().frequencyBinCount();
 }
 
-void AnalyserNode::setMinDecibels(double min, ExceptionState& exceptionState)
-{
-    analyserHandler().setMinDecibels(min, exceptionState);
+void AnalyserNode::setMinDecibels(double min, ExceptionState& exceptionState) {
+  analyserHandler().setMinDecibels(min, exceptionState);
 }
 
-double AnalyserNode::minDecibels() const
-{
-    return analyserHandler().minDecibels();
+double AnalyserNode::minDecibels() const {
+  return analyserHandler().minDecibels();
 }
 
-void AnalyserNode::setMaxDecibels(double max, ExceptionState& exceptionState)
-{
-    analyserHandler().setMaxDecibels(max, exceptionState);
+void AnalyserNode::setMaxDecibels(double max, ExceptionState& exceptionState) {
+  analyserHandler().setMaxDecibels(max, exceptionState);
 }
 
-void AnalyserNode::setMinMaxDecibels(double min, double max, ExceptionState& exceptionState)
-{
-    analyserHandler().setMinMaxDecibels(min, max, exceptionState);
+void AnalyserNode::setMinMaxDecibels(double min,
+                                     double max,
+                                     ExceptionState& exceptionState) {
+  analyserHandler().setMinMaxDecibels(min, max, exceptionState);
 }
 
-double AnalyserNode::maxDecibels() const
-{
-    return analyserHandler().maxDecibels();
+double AnalyserNode::maxDecibels() const {
+  return analyserHandler().maxDecibels();
 }
 
-void AnalyserNode::setSmoothingTimeConstant(double smoothingTime, ExceptionState& exceptionState)
-{
-    analyserHandler().setSmoothingTimeConstant(smoothingTime, exceptionState);
+void AnalyserNode::setSmoothingTimeConstant(double smoothingTime,
+                                            ExceptionState& exceptionState) {
+  analyserHandler().setSmoothingTimeConstant(smoothingTime, exceptionState);
 }
 
-double AnalyserNode::smoothingTimeConstant() const
-{
-    return analyserHandler().smoothingTimeConstant();
+double AnalyserNode::smoothingTimeConstant() const {
+  return analyserHandler().smoothingTimeConstant();
 }
 
-void AnalyserNode::getFloatFrequencyData(DOMFloat32Array* array)
-{
-    analyserHandler().getFloatFrequencyData(array, context()->currentTime());
+void AnalyserNode::getFloatFrequencyData(DOMFloat32Array* array) {
+  analyserHandler().getFloatFrequencyData(array, context()->currentTime());
 }
 
-void AnalyserNode::getByteFrequencyData(DOMUint8Array* array)
-{
-    analyserHandler().getByteFrequencyData(array, context()->currentTime());
+void AnalyserNode::getByteFrequencyData(DOMUint8Array* array) {
+  analyserHandler().getByteFrequencyData(array, context()->currentTime());
 }
 
-void AnalyserNode::getFloatTimeDomainData(DOMFloat32Array* array)
-{
-    analyserHandler().getFloatTimeDomainData(array);
+void AnalyserNode::getFloatTimeDomainData(DOMFloat32Array* array) {
+  analyserHandler().getFloatTimeDomainData(array);
 }
 
-void AnalyserNode::getByteTimeDomainData(DOMUint8Array* array)
-{
-    analyserHandler().getByteTimeDomainData(array);
+void AnalyserNode::getByteTimeDomainData(DOMUint8Array* array) {
+  analyserHandler().getByteTimeDomainData(array);
 }
 
-} // namespace blink
-
+}  // namespace blink

@@ -26,17 +26,18 @@
 namespace blink {
 
 class SVGFEMergeElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEMergeElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGFEMergeElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGFEMergeElement);
 
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
-    bool taintsOrigin(bool inputsTaintOrigin) const override;
+ private:
+  explicit SVGFEMergeElement(Document&);
+
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool taintsOrigin(bool inputsTaintOrigin) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEMergeElement_h
+#endif  // SVGFEMergeElement_h

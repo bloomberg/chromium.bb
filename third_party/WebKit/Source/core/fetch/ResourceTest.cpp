@@ -19,79 +19,74 @@ namespace blink {
 namespace {
 
 class MockPlatform final : public TestingPlatformSupport {
-public:
-    MockPlatform() { }
-    ~MockPlatform() override { }
+ public:
+  MockPlatform() {}
+  ~MockPlatform() override {}
 
-    // From blink::Platform:
-    void cacheMetadata(const WebURL& url, int64_t, const char*, size_t) override
-    {
-        m_cachedURLs.append(url);
-    }
+  // From blink::Platform:
+  void cacheMetadata(const WebURL& url, int64_t, const char*, size_t) override {
+    m_cachedURLs.append(url);
+  }
 
-    const Vector<WebURL>& cachedURLs() const
-    {
-        return m_cachedURLs;
-    }
+  const Vector<WebURL>& cachedURLs() const { return m_cachedURLs; }
 
-private:
-    Vector<WebURL> m_cachedURLs;
+ private:
+  Vector<WebURL> m_cachedURLs;
 };
 
-ResourceResponse createTestResourceResponse()
-{
-    ResourceResponse response;
-    response.setURL(URLTestHelpers::toKURL("https://example.com/"));
-    response.setHTTPStatusCode(200);
-    return response;
+ResourceResponse createTestResourceResponse() {
+  ResourceResponse response;
+  response.setURL(URLTestHelpers::toKURL("https://example.com/"));
+  response.setHTTPStatusCode(200);
+  return response;
 }
 
-void createTestResourceAndSetCachedMetadata(const ResourceResponse& response)
-{
-    const char testData[] = "test data";
-    Resource* resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
-    resource->setResponse(response);
-    resource->cacheHandler()->setCachedMetadata(100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
-    return;
+void createTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
+  const char testData[] = "test data";
+  Resource* resource =
+      Resource::create(ResourceRequest(response.url()), Resource::Raw);
+  resource->setResponse(response);
+  resource->cacheHandler()->setCachedMetadata(
+      100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
+  return;
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
-TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform)
-{
-    MockPlatform mock;
-    ResourceResponse response(createTestResourceResponse());
-    createTestResourceAndSetCachedMetadata(response);
-    EXPECT_EQ(1u, mock.cachedURLs().size());
+TEST(ResourceTest, SetCachedMetadata_SendsMetadataToPlatform) {
+  MockPlatform mock;
+  ResourceResponse response(createTestResourceResponse());
+  createTestResourceAndSetCachedMetadata(response);
+  EXPECT_EQ(1u, mock.cachedURLs().size());
 }
 
-TEST(ResourceTest, SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedViaServiceWorker)
-{
-    MockPlatform mock;
-    ResourceResponse response(createTestResourceResponse());
-    response.setWasFetchedViaServiceWorker(true);
-    createTestResourceAndSetCachedMetadata(response);
-    EXPECT_EQ(0u, mock.cachedURLs().size());
+TEST(
+    ResourceTest,
+    SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedViaServiceWorker) {
+  MockPlatform mock;
+  ResourceResponse response(createTestResourceResponse());
+  response.setWasFetchedViaServiceWorker(true);
+  createTestResourceAndSetCachedMetadata(response);
+  EXPECT_EQ(0u, mock.cachedURLs().size());
 }
 
-TEST(ResourceTest, RevalidateWithFragment)
-{
-    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-    ResourceResponse response;
-    response.setURL(url);
-    response.setHTTPStatusCode(200);
-    Resource* resource = Resource::create(url, Resource::Raw);
-    resource->responseReceived(response, nullptr);
-    resource->finish();
+TEST(ResourceTest, RevalidateWithFragment) {
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+  ResourceResponse response;
+  response.setURL(url);
+  response.setHTTPStatusCode(200);
+  Resource* resource = Resource::create(url, Resource::Raw);
+  resource->responseReceived(response, nullptr);
+  resource->finish();
 
-    // Revalidating with a url that differs by only the fragment
-    // shouldn't trigger a securiy check.
-    url.setFragmentIdentifier("bar");
-    resource->setRevalidatingRequest(ResourceRequest(url));
-    ResourceResponse revalidatingResponse;
-    revalidatingResponse.setURL(url);
-    revalidatingResponse.setHTTPStatusCode(304);
-    resource->responseReceived(revalidatingResponse, nullptr);
+  // Revalidating with a url that differs by only the fragment
+  // shouldn't trigger a securiy check.
+  url.setFragmentIdentifier("bar");
+  resource->setRevalidatingRequest(ResourceRequest(url));
+  ResourceResponse revalidatingResponse;
+  revalidatingResponse.setURL(url);
+  revalidatingResponse.setHTTPStatusCode(304);
+  resource->responseReceived(revalidatingResponse, nullptr);
 }
 
-} // namespace blink
+}  // namespace blink

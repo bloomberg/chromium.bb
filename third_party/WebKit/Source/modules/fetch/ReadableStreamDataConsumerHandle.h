@@ -27,25 +27,31 @@ class ScriptState;
 // alive appropriately.
 // TODO(yhirano): CURRENTLY THIS HANDLE SUPPORTS READING ONLY FROM THE THREAD ON
 // WHICH IT IS CREATED. FIX THIS.
-class MODULES_EXPORT ReadableStreamDataConsumerHandle final : public FetchDataConsumerHandle {
-    WTF_MAKE_NONCOPYABLE(ReadableStreamDataConsumerHandle);
-public:
-    static std::unique_ptr<ReadableStreamDataConsumerHandle> create(ScriptState* scriptState, ScriptValue streamReader)
-    {
-        return wrapUnique(new ReadableStreamDataConsumerHandle(scriptState, streamReader));
-    }
-    ~ReadableStreamDataConsumerHandle() override;
+class MODULES_EXPORT ReadableStreamDataConsumerHandle final
+    : public FetchDataConsumerHandle {
+  WTF_MAKE_NONCOPYABLE(ReadableStreamDataConsumerHandle);
 
-    std::unique_ptr<Reader> obtainFetchDataReader(Client*) override;
+ public:
+  static std::unique_ptr<ReadableStreamDataConsumerHandle> create(
+      ScriptState* scriptState,
+      ScriptValue streamReader) {
+    return wrapUnique(
+        new ReadableStreamDataConsumerHandle(scriptState, streamReader));
+  }
+  ~ReadableStreamDataConsumerHandle() override;
 
-private:
-    class ReadingContext;
-    ReadableStreamDataConsumerHandle(ScriptState*, ScriptValue streamReader);
-    const char* debugName() const override { return "ReadableStreamDataConsumerHandle"; }
+  std::unique_ptr<Reader> obtainFetchDataReader(Client*) override;
 
-    RefPtr<ReadingContext> m_readingContext;
+ private:
+  class ReadingContext;
+  ReadableStreamDataConsumerHandle(ScriptState*, ScriptValue streamReader);
+  const char* debugName() const override {
+    return "ReadableStreamDataConsumerHandle";
+  }
+
+  RefPtr<ReadingContext> m_readingContext;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ReadableStreamDataConsumerHandle_h
+#endif  // ReadableStreamDataConsumerHandle_h

@@ -34,60 +34,67 @@
 
 namespace blink {
 
-bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    const Vector<RefPtr<AnimatableValue>>& fromValues = m_values;
-    const Vector<RefPtr<AnimatableValue>>& toValues = toAnimatableRepeatable(value)->m_values;
-    DCHECK(!fromValues.isEmpty() && !toValues.isEmpty());
-    size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
-    DCHECK_GT(size, 0U);
-    for (size_t i = 0; i < size; ++i) {
-        const AnimatableValue* from = fromValues[i % fromValues.size()].get();
-        const AnimatableValue* to = toValues[i % toValues.size()].get();
-        // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
-        if (AnimatableValue::usesDefaultInterpolation(from, to))
-            return true;
-    }
+bool AnimatableRepeatable::usesDefaultInterpolationWith(
+    const AnimatableValue* value) const {
+  const Vector<RefPtr<AnimatableValue>>& fromValues = m_values;
+  const Vector<RefPtr<AnimatableValue>>& toValues =
+      toAnimatableRepeatable(value)->m_values;
+  DCHECK(!fromValues.isEmpty() && !toValues.isEmpty());
+  size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
+  DCHECK_GT(size, 0U);
+  for (size_t i = 0; i < size; ++i) {
+    const AnimatableValue* from = fromValues[i % fromValues.size()].get();
+    const AnimatableValue* to = toValues[i % toValues.size()].get();
+    // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
+    if (AnimatableValue::usesDefaultInterpolation(from, to))
+      return true;
+  }
+  return false;
+}
+
+bool AnimatableRepeatable::interpolateLists(
+    const Vector<RefPtr<AnimatableValue>>& fromValues,
+    const Vector<RefPtr<AnimatableValue>>& toValues,
+    double fraction,
+    Vector<RefPtr<AnimatableValue>>& interpolatedValues) {
+  // Interpolation behaviour spec: http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
+  DCHECK(interpolatedValues.isEmpty());
+  DCHECK(!fromValues.isEmpty() && !toValues.isEmpty());
+  size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
+  DCHECK_GT(size, 0U);
+  for (size_t i = 0; i < size; ++i) {
+    const AnimatableValue* from = fromValues[i % fromValues.size()].get();
+    const AnimatableValue* to = toValues[i % toValues.size()].get();
+    // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
+    if (AnimatableValue::usesDefaultInterpolation(from, to))
+      return false;
+    interpolatedValues.append(interpolate(from, to, fraction));
+  }
+  return true;
+}
+
+PassRefPtr<AnimatableValue> AnimatableRepeatable::interpolateTo(
+    const AnimatableValue* value,
+    double fraction) const {
+  Vector<RefPtr<AnimatableValue>> interpolatedValues;
+  bool success =
+      interpolateLists(m_values, toAnimatableRepeatable(value)->m_values,
+                       fraction, interpolatedValues);
+  if (success)
+    return create(interpolatedValues);
+  return defaultInterpolateTo(this, value, fraction);
+}
+
+bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const {
+  const Vector<RefPtr<AnimatableValue>>& otherValues =
+      toAnimatableRepeatable(value)->m_values;
+  if (m_values.size() != otherValues.size())
     return false;
+  for (size_t i = 0; i < m_values.size(); ++i) {
+    if (!m_values[i]->equals(otherValues[i].get()))
+      return false;
+  }
+  return true;
 }
 
-bool AnimatableRepeatable::interpolateLists(const Vector<RefPtr<AnimatableValue>>& fromValues, const Vector<RefPtr<AnimatableValue>>& toValues, double fraction, Vector<RefPtr<AnimatableValue>>& interpolatedValues)
-{
-    // Interpolation behaviour spec: http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
-    DCHECK(interpolatedValues.isEmpty());
-    DCHECK(!fromValues.isEmpty() && !toValues.isEmpty());
-    size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
-    DCHECK_GT(size, 0U);
-    for (size_t i = 0; i < size; ++i) {
-        const AnimatableValue* from = fromValues[i % fromValues.size()].get();
-        const AnimatableValue* to = toValues[i % toValues.size()].get();
-        // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
-        if (AnimatableValue::usesDefaultInterpolation(from, to))
-            return false;
-        interpolatedValues.append(interpolate(from, to, fraction));
-    }
-    return true;
-}
-
-PassRefPtr<AnimatableValue> AnimatableRepeatable::interpolateTo(const AnimatableValue* value, double fraction) const
-{
-    Vector<RefPtr<AnimatableValue>> interpolatedValues;
-    bool success = interpolateLists(m_values, toAnimatableRepeatable(value)->m_values, fraction, interpolatedValues);
-    if (success)
-        return create(interpolatedValues);
-    return defaultInterpolateTo(this, value, fraction);
-}
-
-bool AnimatableRepeatable::equalTo(const AnimatableValue* value) const
-{
-    const Vector<RefPtr<AnimatableValue>>& otherValues = toAnimatableRepeatable(value)->m_values;
-    if (m_values.size() != otherValues.size())
-        return false;
-    for (size_t i = 0; i < m_values.size(); ++i) {
-        if (!m_values[i]->equals(otherValues[i].get()))
-            return false;
-    }
-    return true;
-}
-
-} // namespace blink
+}  // namespace blink

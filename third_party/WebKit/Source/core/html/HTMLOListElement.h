@@ -28,43 +28,49 @@
 namespace blink {
 
 class HTMLOListElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLOListElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    int start() const { return m_hasExplicitStart ? m_start : (m_isReversed ? itemCount() : 1); }
-    void setStart(int);
+ public:
+  DECLARE_NODE_FACTORY(HTMLOListElement);
 
-    bool isReversed() const { return m_isReversed; }
+  int start() const {
+    return m_hasExplicitStart ? m_start : (m_isReversed ? itemCount() : 1);
+  }
+  void setStart(int);
 
-    void itemCountChanged() { m_shouldRecalculateItemCount = true; }
+  bool isReversed() const { return m_isReversed; }
 
-private:
-    explicit HTMLOListElement(Document&);
+  void itemCountChanged() { m_shouldRecalculateItemCount = true; }
 
-    void updateItemValues();
+ private:
+  explicit HTMLOListElement(Document&);
 
-    unsigned itemCount() const
-    {
-        if (m_shouldRecalculateItemCount)
-            const_cast<HTMLOListElement*>(this)->recalculateItemCount();
-        return m_itemCount;
-    }
+  void updateItemValues();
 
-    void recalculateItemCount();
+  unsigned itemCount() const {
+    if (m_shouldRecalculateItemCount)
+      const_cast<HTMLOListElement*>(this)->recalculateItemCount();
+    return m_itemCount;
+  }
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+  void recalculateItemCount();
 
-    int m_start;
-    unsigned m_itemCount;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    bool m_hasExplicitStart : 1;
-    bool m_isReversed : 1;
-    bool m_shouldRecalculateItemCount : 1;
+  int m_start;
+  unsigned m_itemCount;
+
+  bool m_hasExplicitStart : 1;
+  bool m_isReversed : 1;
+  bool m_shouldRecalculateItemCount : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLOListElement_h
+#endif  // HTMLOListElement_h

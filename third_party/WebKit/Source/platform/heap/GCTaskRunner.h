@@ -42,83 +42,77 @@
 namespace blink {
 
 class MessageLoopInterruptor final : public BlinkGCInterruptor {
-public:
-    explicit MessageLoopInterruptor(WebTaskRunner* taskRunner) : m_taskRunner(taskRunner) { }
+ public:
+  explicit MessageLoopInterruptor(WebTaskRunner* taskRunner)
+      : m_taskRunner(taskRunner) {}
 
-    void requestInterrupt() override
-    {
-        // GCTask has an empty run() method. Its only purpose is to guarantee
-        // that MessageLoop will have a task to process which will result
-        // in GCTaskRunner::didProcessTask being executed.
-        m_taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&runGCTask));
-    }
+  void requestInterrupt() override {
+    // GCTask has an empty run() method. Its only purpose is to guarantee
+    // that MessageLoop will have a task to process which will result
+    // in GCTaskRunner::didProcessTask being executed.
+    m_taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&runGCTask));
+  }
 
-private:
-    static void runGCTask()
-    {
-        // Don't do anything here because we don't know if this is
-        // a nested event loop or not. GCTaskRunner::didProcessTask
-        // will enter correct safepoint for us.
-        // We are not calling onInterrupted() because that always
-        // conservatively enters safepoint with pointers on stack.
-    }
+ private:
+  static void runGCTask() {
+    // Don't do anything here because we don't know if this is
+    // a nested event loop or not. GCTaskRunner::didProcessTask
+    // will enter correct safepoint for us.
+    // We are not calling onInterrupted() because that always
+    // conservatively enters safepoint with pointers on stack.
+  }
 
-    WebTaskRunner* m_taskRunner;
+  WebTaskRunner* m_taskRunner;
 };
 
 class GCTaskObserver final : public WebThread::TaskObserver {
-    USING_FAST_MALLOC(GCTaskObserver);
-public:
-    GCTaskObserver() : m_nesting(0) { }
+  USING_FAST_MALLOC(GCTaskObserver);
 
-    ~GCTaskObserver()
-    {
-        // m_nesting can be 1 if this was unregistered in a task and
-        // didProcessTask was not called.
-        ASSERT(!m_nesting || m_nesting == 1);
-    }
+ public:
+  GCTaskObserver() : m_nesting(0) {}
 
-    virtual void willProcessTask()
-    {
-        m_nesting++;
-    }
+  ~GCTaskObserver() {
+    // m_nesting can be 1 if this was unregistered in a task and
+    // didProcessTask was not called.
+    ASSERT(!m_nesting || m_nesting == 1);
+  }
 
-    virtual void didProcessTask()
-    {
-        // In the production code WebKit::initialize is called from inside the
-        // message loop so we can get didProcessTask() without corresponding
-        // willProcessTask once. This is benign.
-        if (m_nesting)
-            m_nesting--;
+  virtual void willProcessTask() { m_nesting++; }
 
-        ThreadState::current()->safePoint(m_nesting ? BlinkGC::HeapPointersOnStack : BlinkGC::NoHeapPointersOnStack);
-    }
+  virtual void didProcessTask() {
+    // In the production code WebKit::initialize is called from inside the
+    // message loop so we can get didProcessTask() without corresponding
+    // willProcessTask once. This is benign.
+    if (m_nesting)
+      m_nesting--;
 
-private:
-    int m_nesting;
+    ThreadState::current()->safePoint(m_nesting
+                                          ? BlinkGC::HeapPointersOnStack
+                                          : BlinkGC::NoHeapPointersOnStack);
+  }
+
+ private:
+  int m_nesting;
 };
 
 class GCTaskRunner final {
-    USING_FAST_MALLOC(GCTaskRunner);
-public:
-    explicit GCTaskRunner(WebThread* thread)
-        : m_gcTaskObserver(wrapUnique(new GCTaskObserver))
-        , m_thread(thread)
-    {
-        m_thread->addTaskObserver(m_gcTaskObserver.get());
-        ThreadState::current()->addInterruptor(wrapUnique(new MessageLoopInterruptor(thread->getWebTaskRunner())));
-    }
+  USING_FAST_MALLOC(GCTaskRunner);
 
-    ~GCTaskRunner()
-    {
-        m_thread->removeTaskObserver(m_gcTaskObserver.get());
-    }
+ public:
+  explicit GCTaskRunner(WebThread* thread)
+      : m_gcTaskObserver(wrapUnique(new GCTaskObserver)), m_thread(thread) {
+    m_thread->addTaskObserver(m_gcTaskObserver.get());
+    ThreadState::current()->addInterruptor(
+        wrapUnique(new MessageLoopInterruptor(thread->getWebTaskRunner())));
+  }
 
-private:
-    std::unique_ptr<GCTaskObserver> m_gcTaskObserver;
-    WebThread* m_thread;
+  ~GCTaskRunner() { m_thread->removeTaskObserver(m_gcTaskObserver.get()); }
+
+ private:
+  std::unique_ptr<GCTaskObserver> m_gcTaskObserver;
+  WebThread* m_thread;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

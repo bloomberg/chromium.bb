@@ -38,120 +38,127 @@ class Frame;
 class LayoutPart;
 class Widget;
 
-class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement, public FrameOwner {
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLFrameOwnerElement);
-public:
-    ~HTMLFrameOwnerElement() override;
+class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
+                                          public FrameOwner {
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLFrameOwnerElement);
 
-    Frame* contentFrame() const { return m_contentFrame; }
-    DOMWindow* contentWindow() const;
-    Document* contentDocument() const;
+ public:
+  ~HTMLFrameOwnerElement() override;
 
-    void disconnectContentFrame();
+  Frame* contentFrame() const { return m_contentFrame; }
+  DOMWindow* contentWindow() const;
+  Document* contentDocument() const;
 
-    // Most subclasses use LayoutPart (either LayoutEmbeddedObject or LayoutIFrame)
-    // except for HTMLObjectElement and HTMLEmbedElement which may return any
-    // LayoutObject when using fallback content.
-    LayoutPart* layoutPart() const;
+  void disconnectContentFrame();
 
-    Document* getSVGDocument(ExceptionState&) const;
+  // Most subclasses use LayoutPart (either LayoutEmbeddedObject or LayoutIFrame)
+  // except for HTMLObjectElement and HTMLEmbedElement which may return any
+  // LayoutObject when using fallback content.
+  LayoutPart* layoutPart() const;
 
-    virtual bool loadedNonEmptyDocument() const { return false; }
-    virtual void didLoadNonEmptyDocument() { }
+  Document* getSVGDocument(ExceptionState&) const;
 
-    void setWidget(Widget*);
-    Widget* releaseWidget();
-    Widget* ownedWidget() const;
+  virtual bool loadedNonEmptyDocument() const { return false; }
+  virtual void didLoadNonEmptyDocument() {}
 
-    class UpdateSuspendScope {
-        STACK_ALLOCATED();
-    public:
-        UpdateSuspendScope();
-        ~UpdateSuspendScope();
+  void setWidget(Widget*);
+  Widget* releaseWidget();
+  Widget* ownedWidget() const;
 
-    private:
-        void performDeferredWidgetTreeOperations();
-    };
+  class UpdateSuspendScope {
+    STACK_ALLOCATED();
 
-    // FrameOwner overrides:
-    void setContentFrame(Frame&) override;
-    void clearContentFrame() override;
-    void dispatchLoad() override;
-    SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
-    void renderFallbackContent() override { }
-    ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
-    int marginWidth() const override { return -1; }
-    int marginHeight() const override { return -1; }
-    bool allowFullscreen() const override { return false; }
-    const WebVector<WebPermissionType>& delegatedPermissions() const override;
+   public:
+    UpdateSuspendScope();
+    ~UpdateSuspendScope();
 
-    DECLARE_VIRTUAL_TRACE();
+   private:
+    void performDeferredWidgetTreeOperations();
+  };
 
-protected:
-    HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
-    void setSandboxFlags(SandboxFlags);
+  // FrameOwner overrides:
+  void setContentFrame(Frame&) override;
+  void clearContentFrame() override;
+  void dispatchLoad() override;
+  SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
+  void renderFallbackContent() override {}
+  ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
+  int marginWidth() const override { return -1; }
+  int marginHeight() const override { return -1; }
+  bool allowFullscreen() const override { return false; }
+  const WebVector<WebPermissionType>& delegatedPermissions() const override;
 
-    bool loadOrRedirectSubframe(const KURL&, const AtomicString& frameName, bool replaceCurrentItem);
-    bool isKeyboardFocusable() const override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void disposeWidgetSoon(Widget*);
+ protected:
+  HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
+  void setSandboxFlags(SandboxFlags);
 
-private:
-    // Intentionally private to prevent redundant checks when the type is
-    // already HTMLFrameOwnerElement.
-    bool isLocal() const override { return true; }
-    bool isRemote() const override { return false; }
+  bool loadOrRedirectSubframe(const KURL&,
+                              const AtomicString& frameName,
+                              bool replaceCurrentItem);
+  bool isKeyboardFocusable() const override;
 
-    bool isFrameOwnerElement() const final { return true; }
+  void disposeWidgetSoon(Widget*);
 
-    virtual ReferrerPolicy referrerPolicyAttribute() { return ReferrerPolicyDefault; }
+ private:
+  // Intentionally private to prevent redundant checks when the type is
+  // already HTMLFrameOwnerElement.
+  bool isLocal() const override { return true; }
+  bool isRemote() const override { return false; }
 
-    Member<Frame> m_contentFrame;
-    Member<Widget> m_widget;
-    SandboxFlags m_sandboxFlags;
+  bool isFrameOwnerElement() const final { return true; }
+
+  virtual ReferrerPolicy referrerPolicyAttribute() {
+    return ReferrerPolicyDefault;
+  }
+
+  Member<Frame> m_contentFrame;
+  Member<Widget> m_widget;
+  SandboxFlags m_sandboxFlags;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, isFrameOwnerElement());
 
 class SubframeLoadingDisabler {
-    STACK_ALLOCATED();
-public:
-    explicit SubframeLoadingDisabler(Node& root) : SubframeLoadingDisabler(&root)
-    {
+  STACK_ALLOCATED();
+
+ public:
+  explicit SubframeLoadingDisabler(Node& root)
+      : SubframeLoadingDisabler(&root) {}
+
+  explicit SubframeLoadingDisabler(Node* root) : m_root(root) {
+    if (m_root)
+      disabledSubtreeRoots().add(m_root);
+  }
+
+  ~SubframeLoadingDisabler() {
+    if (m_root)
+      disabledSubtreeRoots().remove(m_root);
+  }
+
+  static bool canLoadFrame(HTMLFrameOwnerElement& owner) {
+    for (Node* node = &owner; node; node = node->parentOrShadowHostNode()) {
+      if (disabledSubtreeRoots().contains(node))
+        return false;
     }
+    return true;
+  }
 
-    explicit SubframeLoadingDisabler(Node* root)
-        : m_root(root)
-    {
-        if (m_root)
-            disabledSubtreeRoots().add(m_root);
-    }
+ private:
+  using SubtreeRootSet = HeapHashCountedSet<Member<Node>>;
 
-    ~SubframeLoadingDisabler()
-    {
-        if (m_root)
-            disabledSubtreeRoots().remove(m_root);
-    }
+  CORE_EXPORT static SubtreeRootSet& disabledSubtreeRoots();
 
-    static bool canLoadFrame(HTMLFrameOwnerElement& owner)
-    {
-        for (Node* node = &owner; node; node = node->parentOrShadowHostNode()) {
-            if (disabledSubtreeRoots().contains(node))
-                return false;
-        }
-        return true;
-    }
-
-private:
-    using SubtreeRootSet = HeapHashCountedSet<Member<Node>>;
-
-    CORE_EXPORT static SubtreeRootSet& disabledSubtreeRoots();
-
-    Member<Node> m_root;
+  Member<Node> m_root;
 };
 
-DEFINE_TYPE_CASTS(HTMLFrameOwnerElement, FrameOwner, owner, owner->isLocal(), owner.isLocal());
+DEFINE_TYPE_CASTS(HTMLFrameOwnerElement,
+                  FrameOwner,
+                  owner,
+                  owner->isLocal(),
+                  owner.isLocal());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLFrameOwnerElement_h
+#endif  // HTMLFrameOwnerElement_h

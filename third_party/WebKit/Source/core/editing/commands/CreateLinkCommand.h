@@ -31,21 +31,20 @@
 namespace blink {
 
 class CreateLinkCommand final : public CompositeEditCommand {
-public:
-    static CreateLinkCommand* create(Document& document, const String& linkURL)
-    {
-        return new CreateLinkCommand(document, linkURL);
-    }
+ public:
+  static CreateLinkCommand* create(Document& document, const String& linkURL) {
+    return new CreateLinkCommand(document, linkURL);
+  }
 
-private:
-    CreateLinkCommand(Document&, const String& linkURL);
+ private:
+  CreateLinkCommand(Document&, const String& linkURL);
 
-    void doApply(EditingState*) override;
-    InputEvent::InputType inputType() const override;
+  void doApply(EditingState*) override;
+  InputEvent::InputType inputType() const override;
 
-    String m_url;
+  String m_url;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CreateLinkCommand_h
+#endif  // CreateLinkCommand_h

@@ -32,14 +32,15 @@
 namespace blink {
 
 class CORE_EXPORT HTMLSpanElement : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLSpanElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-protected:
-    explicit HTMLSpanElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLSpanElement);
+
+ protected:
+  explicit HTMLSpanElement(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLSpanElement_h
+#endif  // HTMLSpanElement_h

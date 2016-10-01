@@ -33,27 +33,26 @@ namespace blink {
 class Text;
 
 class SplitTextNodeCommand final : public SimpleEditCommand {
-public:
-    static SplitTextNodeCommand* create(Text* node, int offset)
-    {
-        return new SplitTextNodeCommand(node, offset);
-    }
+ public:
+  static SplitTextNodeCommand* create(Text* node, int offset) {
+    return new SplitTextNodeCommand(node, offset);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    SplitTextNodeCommand(Text*, int offset);
+ private:
+  SplitTextNodeCommand(Text*, int offset);
 
-    void doApply(EditingState*) override;
-    void doUnapply() override;
-    void doReapply() override;
-    void insertText1AndTrimText2();
+  void doApply(EditingState*) override;
+  void doUnapply() override;
+  void doReapply() override;
+  void insertText1AndTrimText2();
 
-    Member<Text> m_text1;
-    Member<Text> m_text2;
-    unsigned m_offset;
+  Member<Text> m_text1;
+  Member<Text> m_text2;
+  unsigned m_offset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SplitTextNodeCommand_h
+#endif  // SplitTextNodeCommand_h

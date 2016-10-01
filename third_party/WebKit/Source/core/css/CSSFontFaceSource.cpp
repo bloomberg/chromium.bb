@@ -33,39 +33,34 @@
 
 namespace blink {
 
-CSSFontFaceSource::CSSFontFaceSource()
-    : m_face(nullptr)
-{
+CSSFontFaceSource::CSSFontFaceSource() : m_face(nullptr) {}
+
+CSSFontFaceSource::~CSSFontFaceSource() {}
+
+PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(
+    const FontDescription& fontDescription) {
+  // If the font hasn't loaded or an error occurred, then we've got nothing.
+  if (!isValid())
+    return nullptr;
+
+  if (isLocal()) {
+    // We're local. Just return a SimpleFontData from the normal cache.
+    return createFontData(fontDescription);
+  }
+
+  // See if we have a mapping in our FontData cache.
+  // TODO(drott): Check whether losing traits information here is problematic. crbug.com/516677
+  FontCacheKey key = fontDescription.cacheKey(FontFaceCreationParams());
+
+  RefPtr<SimpleFontData>& fontData =
+      m_fontDataTable.add(key, nullptr).storedValue->value;
+  if (!fontData)
+    fontData = createFontData(fontDescription);
+  return fontData;  // No release, because fontData is a reference to a RefPtr that is held in the m_fontDataTable.
 }
 
-CSSFontFaceSource::~CSSFontFaceSource()
-{
+DEFINE_TRACE(CSSFontFaceSource) {
+  visitor->trace(m_face);
 }
 
-PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription)
-{
-    // If the font hasn't loaded or an error occurred, then we've got nothing.
-    if (!isValid())
-        return nullptr;
-
-    if (isLocal()) {
-        // We're local. Just return a SimpleFontData from the normal cache.
-        return createFontData(fontDescription);
-    }
-
-    // See if we have a mapping in our FontData cache.
-    // TODO(drott): Check whether losing traits information here is problematic. crbug.com/516677
-    FontCacheKey key = fontDescription.cacheKey(FontFaceCreationParams());
-
-    RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key, nullptr).storedValue->value;
-    if (!fontData)
-        fontData = createFontData(fontDescription);
-    return fontData; // No release, because fontData is a reference to a RefPtr that is held in the m_fontDataTable.
-}
-
-DEFINE_TRACE(CSSFontFaceSource)
-{
-    visitor->trace(m_face);
-}
-
-} // namespace blink
+}  // namespace blink

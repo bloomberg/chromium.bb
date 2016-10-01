@@ -39,29 +39,29 @@ typedef uint64_t LinkHash;
 
 // Use the low 32-bits of the 64-bit LinkHash as the key for HashSets.
 struct LinkHashHash {
-    STATIC_ONLY(LinkHashHash);
-    static unsigned hash(LinkHash key) { return static_cast<unsigned>(key); }
-    static bool equal(LinkHash a, LinkHash b) { return a == b; }
-    static const bool safeToCompareToEmptyOrDeleted = true;
+  STATIC_ONLY(LinkHashHash);
+  static unsigned hash(LinkHash key) { return static_cast<unsigned>(key); }
+  static bool equal(LinkHash a, LinkHash b) { return a == b; }
+  static const bool safeToCompareToEmptyOrDeleted = true;
 
-    // See AlreadyHashed::avoidDeletedValue.
-    static unsigned avoidDeletedValue(LinkHash hash64)
-    {
-        ASSERT(hash64);
-        unsigned hash = static_cast<unsigned>(hash64);
-        unsigned newHash = hash | (!(hash + 1) << 31);
-        ASSERT(newHash);
-        ASSERT(newHash != 0xFFFFFFFF);
-        return newHash;
-    }
+  // See AlreadyHashed::avoidDeletedValue.
+  static unsigned avoidDeletedValue(LinkHash hash64) {
+    ASSERT(hash64);
+    unsigned hash = static_cast<unsigned>(hash64);
+    unsigned newHash = hash | (!(hash + 1) << 31);
+    ASSERT(newHash);
+    ASSERT(newHash != 0xFFFFFFFF);
+    return newHash;
+  }
 };
 
 // Resolves the potentially relative URL "attributeURL" relative to the given
 // base URL, and returns the hash of the string that will be used for visited
 // link coloring. It will return the special value of 0 if attributeURL does not
 // look like a relative URL.
-PLATFORM_EXPORT LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL);
+PLATFORM_EXPORT LinkHash visitedLinkHash(const KURL& base,
+                                         const AtomicString& attributeURL);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LinkHash_h
+#endif  // LinkHash_h

@@ -33,29 +33,35 @@
 namespace blink {
 
 enum SandboxFlag {
-    // See http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox for a list of the sandbox flags.
-    SandboxNone = 0,
-    SandboxNavigation = 1,
-    SandboxPlugins = 1 << 1,
-    SandboxOrigin = 1 << 2,
-    SandboxForms = 1 << 3,
-    SandboxScripts = 1 << 4,
-    SandboxTopNavigation = 1 << 5,
-    SandboxPopups = 1 << 6, // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=12393
-    SandboxAutomaticFeatures = 1 << 7,
-    SandboxPointerLock = 1 << 8,
-    SandboxDocumentDomain = 1 << 9,
-    SandboxOrientationLock = 1 << 10, // See https://w3c.github.io/screen-orientation/#dfn-sandboxed-orientation-lock-browsing-context-flag.
-    SandboxPropagatesToAuxiliaryBrowsingContexts = 1 << 11,
-    SandboxModals = 1 << 12,
-    SandboxPresentation = 1 << 13, // See https://w3c.github.io/presentation-api/#sandboxing-and-the-allow-presentation-keyword
-    SandboxAll = -1 // Mask with all bits set to 1.
+  // See http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-sandbox for a list of the sandbox flags.
+  SandboxNone = 0,
+  SandboxNavigation = 1,
+  SandboxPlugins = 1 << 1,
+  SandboxOrigin = 1 << 2,
+  SandboxForms = 1 << 3,
+  SandboxScripts = 1 << 4,
+  SandboxTopNavigation = 1 << 5,
+  SandboxPopups =
+      1 << 6,  // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=12393
+  SandboxAutomaticFeatures = 1 << 7,
+  SandboxPointerLock = 1 << 8,
+  SandboxDocumentDomain = 1 << 9,
+  SandboxOrientationLock =
+      1
+      << 10,  // See https://w3c.github.io/screen-orientation/#dfn-sandboxed-orientation-lock-browsing-context-flag.
+  SandboxPropagatesToAuxiliaryBrowsingContexts = 1 << 11,
+  SandboxModals = 1 << 12,
+  SandboxPresentation =
+      1
+      << 13,       // See https://w3c.github.io/presentation-api/#sandboxing-and-the-allow-presentation-keyword
+  SandboxAll = -1  // Mask with all bits set to 1.
 };
 
 typedef int SandboxFlags;
 
-SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidTokensErrorMessage);
+SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy,
+                                String& invalidTokensErrorMessage);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

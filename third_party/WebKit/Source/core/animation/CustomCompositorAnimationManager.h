@@ -11,15 +11,16 @@
 
 namespace blink {
 
-class CORE_EXPORT CustomCompositorAnimationManager : public CompositorMutationsTarget {
-    WTF_MAKE_NONCOPYABLE(CustomCompositorAnimationManager);
+class CORE_EXPORT CustomCompositorAnimationManager
+    : public CompositorMutationsTarget {
+  WTF_MAKE_NONCOPYABLE(CustomCompositorAnimationManager);
 
-public:
-    CustomCompositorAnimationManager();
-    ~CustomCompositorAnimationManager() override;
-    void applyMutations(CompositorMutations*) override;
+ public:
+  CustomCompositorAnimationManager();
+  ~CustomCompositorAnimationManager() override;
+  void applyMutations(CompositorMutations*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomCompositorAnimationManager_h
+#endif  // CustomCompositorAnimationManager_h

@@ -11,16 +11,18 @@
 namespace blink {
 
 // Extends V8ScriptValueSerializer with support for modules/ types.
-class MODULES_EXPORT V8ScriptValueDeserializerForModules final : public V8ScriptValueDeserializer {
-public:
-    explicit V8ScriptValueDeserializerForModules(
-        RefPtr<ScriptState> scriptState, RefPtr<SerializedScriptValue> serializedScriptValue)
-        : V8ScriptValueDeserializer(scriptState, serializedScriptValue) {}
+class MODULES_EXPORT V8ScriptValueDeserializerForModules final
+    : public V8ScriptValueDeserializer {
+ public:
+  explicit V8ScriptValueDeserializerForModules(
+      RefPtr<ScriptState> scriptState,
+      RefPtr<SerializedScriptValue> serializedScriptValue)
+      : V8ScriptValueDeserializer(scriptState, serializedScriptValue) {}
 
-protected:
-    ScriptWrappable* readDOMObject(SerializationTag) override;
+ protected:
+  ScriptWrappable* readDOMObject(SerializationTag) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ScriptValueDeserializerForModules_h
+#endif  // V8ScriptValueDeserializerForModules_h

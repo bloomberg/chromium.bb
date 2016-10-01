@@ -32,38 +32,34 @@
 namespace blink {
 
 // static
-std::unique_ptr<WebIDBDatabaseCallbacksImpl> WebIDBDatabaseCallbacksImpl::create(IDBDatabaseCallbacks* callbacks)
-{
-    return wrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
+std::unique_ptr<WebIDBDatabaseCallbacksImpl>
+WebIDBDatabaseCallbacksImpl::create(IDBDatabaseCallbacks* callbacks) {
+  return wrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
 }
 
-WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks* callbacks)
-    : m_callbacks(callbacks)
-{
+WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(
+    IDBDatabaseCallbacks* callbacks)
+    : m_callbacks(callbacks) {}
+
+WebIDBDatabaseCallbacksImpl::~WebIDBDatabaseCallbacksImpl() {}
+
+void WebIDBDatabaseCallbacksImpl::onForcedClose() {
+  m_callbacks->onForcedClose();
 }
 
-WebIDBDatabaseCallbacksImpl::~WebIDBDatabaseCallbacksImpl()
-{
+void WebIDBDatabaseCallbacksImpl::onVersionChange(long long oldVersion,
+                                                  long long newVersion) {
+  m_callbacks->onVersionChange(oldVersion, newVersion);
 }
 
-void WebIDBDatabaseCallbacksImpl::onForcedClose()
-{
-    m_callbacks->onForcedClose();
+void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId,
+                                          const WebIDBDatabaseError& error) {
+  m_callbacks->onAbort(transactionId,
+                       DOMException::create(error.code(), error.message()));
 }
 
-void WebIDBDatabaseCallbacksImpl::onVersionChange(long long oldVersion, long long newVersion)
-{
-    m_callbacks->onVersionChange(oldVersion, newVersion);
+void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId) {
+  m_callbacks->onComplete(transactionId);
 }
 
-void WebIDBDatabaseCallbacksImpl::onAbort(long long transactionId, const WebIDBDatabaseError& error)
-{
-    m_callbacks->onAbort(transactionId, DOMException::create(error.code(), error.message()));
-}
-
-void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId)
-{
-    m_callbacks->onComplete(transactionId);
-}
-
-} // namespace blink
+}  // namespace blink

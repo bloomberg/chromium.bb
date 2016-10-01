@@ -103,6 +103,6 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMockFactoryImpl);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif  // WebURLLoaderMockFactoryImpl_h

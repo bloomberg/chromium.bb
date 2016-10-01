@@ -40,36 +40,34 @@ namespace blink {
 // TODO(e_hakkinen): Replace WebTouchEvent with WebPointerEvent and remove
 // WebTouchEvent and this.
 class WebTouchPoint : public WebPointerProperties {
-public:
-    WebTouchPoint()
-        : WebPointerProperties()
-        , state(StateUndefined)
-        , radiusX(0)
-        , radiusY(0)
-        , rotationAngle(0)
-    {
-    }
+ public:
+  WebTouchPoint()
+      : WebPointerProperties(),
+        state(StateUndefined),
+        radiusX(0),
+        radiusY(0),
+        rotationAngle(0) {}
 
-    enum State {
-        StateUndefined,
-        StateReleased,
-        StatePressed,
-        StateMoved,
-        StateStationary,
-        StateCancelled,
-    };
+  enum State {
+    StateUndefined,
+    StateReleased,
+    StatePressed,
+    StateMoved,
+    StateStationary,
+    StateCancelled,
+  };
 
-    State state;
+  State state;
 
-    // TODO(e_hakkinen): Move position fields to WebPointerProperties.
-    WebFloatPoint screenPosition;
-    WebFloatPoint position;
+  // TODO(e_hakkinen): Move position fields to WebPointerProperties.
+  WebFloatPoint screenPosition;
+  WebFloatPoint position;
 
-    float radiusX;
-    float radiusY;
-    float rotationAngle;
+  float radiusX;
+  float radiusY;
+  float rotationAngle;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

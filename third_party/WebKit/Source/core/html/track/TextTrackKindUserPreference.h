@@ -9,14 +9,14 @@ namespace blink {
 
 // Defines user preference for text track kind.
 enum class TextTrackKindUserPreference {
-    // Display only tracks marked as default.
-    Default,
-    // If available, display captions track in preferred language, else display subtitles.
-    Captions,
-    // If available, display subtitles track in preferred language, else display captions.
-    Subtitles
+  // Display only tracks marked as default.
+  Default,
+  // If available, display captions track in preferred language, else display subtitles.
+  Captions,
+  // If available, display subtitles track in preferred language, else display captions.
+  Subtitles
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextTrackKindUserPreference_h
+#endif  // TextTrackKindUserPreference_h

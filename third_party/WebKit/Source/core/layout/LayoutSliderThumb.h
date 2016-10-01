@@ -40,16 +40,18 @@ namespace blink {
 class SliderThumbElement;
 
 class LayoutSliderThumb final : public LayoutBlockFlow {
-public:
-    LayoutSliderThumb(SliderThumbElement*);
-    void updateAppearance(const ComputedStyle& parentStyle);
+ public:
+  LayoutSliderThumb(SliderThumbElement*);
+  void updateAppearance(const ComputedStyle& parentStyle);
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSliderThumb || LayoutBlockFlow::isOfType(type); }
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSliderThumb || LayoutBlockFlow::isOfType(type);
+  }
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSliderThumb, isSliderThumb());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSliderThumb_h
+#endif  // LayoutSliderThumb_h

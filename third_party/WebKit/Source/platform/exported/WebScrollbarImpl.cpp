@@ -30,105 +30,88 @@
 namespace blink {
 
 WebScrollbarImpl::WebScrollbarImpl(Scrollbar* scrollbar)
-    : m_scrollbar(scrollbar)
-{
+    : m_scrollbar(scrollbar) {}
+
+bool WebScrollbarImpl::isOverlay() const {
+  return m_scrollbar->isOverlayScrollbar();
 }
 
-bool WebScrollbarImpl::isOverlay() const
-{
-    return m_scrollbar->isOverlayScrollbar();
+int WebScrollbarImpl::value() const {
+  return m_scrollbar->value();
 }
 
-int WebScrollbarImpl::value() const
-{
-    return m_scrollbar->value();
+WebPoint WebScrollbarImpl::location() const {
+  return m_scrollbar->location();
 }
 
-WebPoint WebScrollbarImpl::location() const
-{
-    return m_scrollbar->location();
+WebSize WebScrollbarImpl::size() const {
+  return m_scrollbar->size();
 }
 
-WebSize WebScrollbarImpl::size() const
-{
-    return m_scrollbar->size();
+bool WebScrollbarImpl::enabled() const {
+  return m_scrollbar->enabled();
 }
 
-bool WebScrollbarImpl::enabled() const
-{
-    return m_scrollbar->enabled();
+int WebScrollbarImpl::maximum() const {
+  return m_scrollbar->maximum();
 }
 
-int WebScrollbarImpl::maximum() const
-{
-    return m_scrollbar->maximum();
+int WebScrollbarImpl::totalSize() const {
+  return m_scrollbar->totalSize();
 }
 
-int WebScrollbarImpl::totalSize() const
-{
-    return m_scrollbar->totalSize();
+bool WebScrollbarImpl::isScrollableAreaActive() const {
+  return m_scrollbar->isScrollableAreaActive();
 }
 
-bool WebScrollbarImpl::isScrollableAreaActive() const
-{
-    return m_scrollbar->isScrollableAreaActive();
+void WebScrollbarImpl::getTickmarks(WebVector<WebRect>& webTickmarks) const {
+  Vector<IntRect> tickmarks;
+  m_scrollbar->getTickmarks(tickmarks);
+
+  WebVector<WebRect> result(tickmarks.size());
+  for (size_t i = 0; i < tickmarks.size(); ++i)
+    result[i] = tickmarks[i];
+
+  webTickmarks.swap(result);
 }
 
-void WebScrollbarImpl::getTickmarks(WebVector<WebRect>& webTickmarks) const
-{
-    Vector<IntRect> tickmarks;
-    m_scrollbar->getTickmarks(tickmarks);
-
-    WebVector<WebRect> result(tickmarks.size());
-    for (size_t i = 0; i < tickmarks.size(); ++i)
-        result[i] = tickmarks[i];
-
-    webTickmarks.swap(result);
+WebScrollbar::ScrollbarControlSize WebScrollbarImpl::controlSize() const {
+  return static_cast<WebScrollbar::ScrollbarControlSize>(
+      m_scrollbar->controlSize());
 }
 
-WebScrollbar::ScrollbarControlSize WebScrollbarImpl::controlSize() const
-{
-    return static_cast<WebScrollbar::ScrollbarControlSize>(m_scrollbar->controlSize());
+WebScrollbar::ScrollbarPart WebScrollbarImpl::pressedPart() const {
+  return static_cast<WebScrollbar::ScrollbarPart>(m_scrollbar->pressedPart());
 }
 
-WebScrollbar::ScrollbarPart WebScrollbarImpl::pressedPart() const
-{
-    return static_cast<WebScrollbar::ScrollbarPart>(m_scrollbar->pressedPart());
+WebScrollbar::ScrollbarPart WebScrollbarImpl::hoveredPart() const {
+  return static_cast<WebScrollbar::ScrollbarPart>(m_scrollbar->hoveredPart());
 }
 
-WebScrollbar::ScrollbarPart WebScrollbarImpl::hoveredPart() const
-{
-    return static_cast<WebScrollbar::ScrollbarPart>(m_scrollbar->hoveredPart());
+WebScrollbar::ScrollbarOverlayStyle WebScrollbarImpl::scrollbarOverlayStyle()
+    const {
+  return static_cast<WebScrollbar::ScrollbarOverlayStyle>(
+      m_scrollbar->getScrollbarOverlayStyle());
 }
 
-WebScrollbar::ScrollbarOverlayStyle WebScrollbarImpl::scrollbarOverlayStyle() const
-{
-    return static_cast<WebScrollbar::ScrollbarOverlayStyle>(m_scrollbar->getScrollbarOverlayStyle());
+WebScrollbar::Orientation WebScrollbarImpl::orientation() const {
+  return static_cast<WebScrollbar::Orientation>(m_scrollbar->orientation());
 }
 
-WebScrollbar::Orientation WebScrollbarImpl::orientation() const
-{
-    return static_cast<WebScrollbar::Orientation>(m_scrollbar->orientation());
+bool WebScrollbarImpl::isLeftSideVerticalScrollbar() const {
+  return m_scrollbar->isLeftSideVerticalScrollbar();
 }
 
-bool WebScrollbarImpl::isLeftSideVerticalScrollbar() const
-{
-    return m_scrollbar->isLeftSideVerticalScrollbar();
+bool WebScrollbarImpl::isCustomScrollbar() const {
+  return m_scrollbar->isCustomScrollbar();
 }
 
-bool WebScrollbarImpl::isCustomScrollbar() const
-{
-    return m_scrollbar->isCustomScrollbar();
+float WebScrollbarImpl::elasticOverscroll() const {
+  return m_scrollbar->elasticOverscroll();
 }
 
-float WebScrollbarImpl::elasticOverscroll() const
-{
-    return m_scrollbar->elasticOverscroll();
+void WebScrollbarImpl::setElasticOverscroll(float elasticOverscroll) {
+  m_scrollbar->setElasticOverscroll(elasticOverscroll);
 }
 
-void WebScrollbarImpl::setElasticOverscroll(float elasticOverscroll)
-{
-    m_scrollbar->setElasticOverscroll(elasticOverscroll);
-}
-
-} // namespace blink
+}  // namespace blink

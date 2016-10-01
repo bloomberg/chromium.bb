@@ -47,157 +47,162 @@ namespace blink {
 
 using namespace HTMLNames;
 
-MarkupAccumulator::MarkupAccumulator(EAbsoluteURLs resolveUrlsMethod, SerializationType serializationType)
-    : m_formatter(resolveUrlsMethod, serializationType)
-{
+MarkupAccumulator::MarkupAccumulator(EAbsoluteURLs resolveUrlsMethod,
+                                     SerializationType serializationType)
+    : m_formatter(resolveUrlsMethod, serializationType) {}
+
+MarkupAccumulator::~MarkupAccumulator() {}
+
+void MarkupAccumulator::appendString(const String& string) {
+  m_markup.append(string);
 }
 
-MarkupAccumulator::~MarkupAccumulator()
-{
+void MarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces) {
+  appendStartMarkup(m_markup, node, namespaces);
 }
 
-void MarkupAccumulator::appendString(const String& string)
-{
-    m_markup.append(string);
+void MarkupAccumulator::appendEndTag(const Element& element) {
+  appendEndMarkup(m_markup, element);
 }
 
-void MarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
-{
-    appendStartMarkup(m_markup, node, namespaces);
-}
-
-void MarkupAccumulator::appendEndTag(const Element& element)
-{
-    appendEndMarkup(m_markup, element);
-}
-
-void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Namespaces* namespaces)
-{
-    switch (node.getNodeType()) {
+void MarkupAccumulator::appendStartMarkup(StringBuilder& result,
+                                          Node& node,
+                                          Namespaces* namespaces) {
+  switch (node.getNodeType()) {
     case Node::kTextNode:
-        appendText(result, toText(node));
-        break;
+      appendText(result, toText(node));
+      break;
     case Node::kElementNode:
-        appendElement(result, toElement(node), namespaces);
-        break;
+      appendElement(result, toElement(node), namespaces);
+      break;
     case Node::kAttributeNode:
-        // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
-        // false.
-        m_formatter.appendAttributeValue(result, toAttr(node).value(), false);
-        break;
+      // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
+      // false.
+      m_formatter.appendAttributeValue(result, toAttr(node).value(), false);
+      break;
     default:
-        m_formatter.appendStartMarkup(result, node, namespaces);
-        break;
-    }
+      m_formatter.appendStartMarkup(result, node, namespaces);
+      break;
+  }
 }
 
-static bool elementCannotHaveEndTag(const Node& node)
-{
-    if (!node.isHTMLElement())
-        return false;
-
-    // FIXME: ieForbidsInsertHTML may not be the right function to call here
-    // ieForbidsInsertHTML is used to disallow setting innerHTML/outerHTML
-    // or createContextualFragment.  It does not necessarily align with
-    // which elements should be serialized w/o end tags.
-    return toHTMLElement(node).ieForbidsInsertHTML();
-}
-
-void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
-{
-    m_formatter.appendEndMarkup(result, element);
-}
-
-void MarkupAccumulator::appendCustomAttributes(StringBuilder&, const Element&, Namespaces*)
-{
-}
-
-void MarkupAccumulator::appendText(StringBuilder& result, Text& text)
-{
-    m_formatter.appendText(result, text);
-}
-
-bool MarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute)
-{
+static bool elementCannotHaveEndTag(const Node& node) {
+  if (!node.isHTMLElement())
     return false;
+
+  // FIXME: ieForbidsInsertHTML may not be the right function to call here
+  // ieForbidsInsertHTML is used to disallow setting innerHTML/outerHTML
+  // or createContextualFragment.  It does not necessarily align with
+  // which elements should be serialized w/o end tags.
+  return toHTMLElement(node).ieForbidsInsertHTML();
 }
 
-void MarkupAccumulator::appendElement(StringBuilder& result, Element& element, Namespaces* namespaces)
-{
-    appendOpenTag(result, element, namespaces);
-
-    AttributeCollection attributes = element.attributes();
-    for (const auto& attribute : attributes) {
-        if (!shouldIgnoreAttribute(attribute))
-            appendAttribute(result, element, attribute, namespaces);
-    }
-
-    // Give an opportunity to subclasses to add their own attributes.
-    appendCustomAttributes(result, element, namespaces);
-
-    appendCloseTag(result, element);
+void MarkupAccumulator::appendEndMarkup(StringBuilder& result,
+                                        const Element& element) {
+  m_formatter.appendEndMarkup(result, element);
 }
 
-void MarkupAccumulator::appendOpenTag(StringBuilder& result, const Element& element, Namespaces* namespaces)
-{
-    m_formatter.appendOpenTag(result, element, namespaces);
+void MarkupAccumulator::appendCustomAttributes(StringBuilder&,
+                                               const Element&,
+                                               Namespaces*) {}
+
+void MarkupAccumulator::appendText(StringBuilder& result, Text& text) {
+  m_formatter.appendText(result, text);
 }
 
-void MarkupAccumulator::appendCloseTag(StringBuilder& result, const Element& element)
-{
-    m_formatter.appendCloseTag(result, element);
+bool MarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute) {
+  return false;
 }
 
-void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& element, const Attribute& attribute, Namespaces* namespaces)
-{
-    m_formatter.appendAttribute(result, element, attribute, namespaces);
+void MarkupAccumulator::appendElement(StringBuilder& result,
+                                      Element& element,
+                                      Namespaces* namespaces) {
+  appendOpenTag(result, element, namespaces);
+
+  AttributeCollection attributes = element.attributes();
+  for (const auto& attribute : attributes) {
+    if (!shouldIgnoreAttribute(attribute))
+      appendAttribute(result, element, attribute, namespaces);
+  }
+
+  // Give an opportunity to subclasses to add their own attributes.
+  appendCustomAttributes(result, element, namespaces);
+
+  appendCloseTag(result, element);
 }
 
-EntityMask MarkupAccumulator::entityMaskForText(const Text& text) const
-{
-    return m_formatter.entityMaskForText(text);
+void MarkupAccumulator::appendOpenTag(StringBuilder& result,
+                                      const Element& element,
+                                      Namespaces* namespaces) {
+  m_formatter.appendOpenTag(result, element, namespaces);
 }
 
-bool MarkupAccumulator::serializeAsHTMLDocument(const Node& node) const
-{
-    return m_formatter.serializeAsHTMLDocument(node);
+void MarkupAccumulator::appendCloseTag(StringBuilder& result,
+                                       const Element& element) {
+  m_formatter.appendCloseTag(result, element);
 }
 
-template<typename Strategy>
-static void serializeNodesWithNamespaces(MarkupAccumulator& accumulator, Node& targetNode, EChildrenOnly childrenOnly, const Namespaces* namespaces)
-{
-    Namespaces namespaceHash;
-    if (namespaces)
-        namespaceHash = *namespaces;
-
-    if (!childrenOnly)
-        accumulator.appendStartTag(targetNode, &namespaceHash);
-
-    if (!(accumulator.serializeAsHTMLDocument(targetNode) && elementCannotHaveEndTag(targetNode))) {
-        Node* current = isHTMLTemplateElement(targetNode) ? Strategy::firstChild(*toHTMLTemplateElement(targetNode).content()) : Strategy::firstChild(targetNode);
-        for ( ; current; current = Strategy::nextSibling(*current))
-            serializeNodesWithNamespaces<Strategy>(accumulator, *current, IncludeNode, &namespaceHash);
-    }
-
-    if (!childrenOnly && targetNode.isElementNode())
-        accumulator.appendEndTag(toElement(targetNode));
+void MarkupAccumulator::appendAttribute(StringBuilder& result,
+                                        const Element& element,
+                                        const Attribute& attribute,
+                                        Namespaces* namespaces) {
+  m_formatter.appendAttribute(result, element, attribute, namespaces);
 }
 
-template<typename Strategy>
-String serializeNodes(MarkupAccumulator& accumulator, Node& targetNode, EChildrenOnly childrenOnly)
-{
-    Namespaces* namespaces = nullptr;
-    Namespaces namespaceHash;
-    if (!accumulator.serializeAsHTMLDocument(targetNode)) {
-        // Add pre-bound namespaces for XML fragments.
-        namespaceHash.set(xmlAtom, XMLNames::xmlNamespaceURI);
-        namespaces = &namespaceHash;
-    }
-
-    serializeNodesWithNamespaces<Strategy>(accumulator, targetNode, childrenOnly, namespaces);
-    return accumulator.toString();
+EntityMask MarkupAccumulator::entityMaskForText(const Text& text) const {
+  return m_formatter.entityMaskForText(text);
 }
 
-template String serializeNodes<EditingStrategy>(MarkupAccumulator&, Node&, EChildrenOnly);
+bool MarkupAccumulator::serializeAsHTMLDocument(const Node& node) const {
+  return m_formatter.serializeAsHTMLDocument(node);
+}
 
-} // namespace blink
+template <typename Strategy>
+static void serializeNodesWithNamespaces(MarkupAccumulator& accumulator,
+                                         Node& targetNode,
+                                         EChildrenOnly childrenOnly,
+                                         const Namespaces* namespaces) {
+  Namespaces namespaceHash;
+  if (namespaces)
+    namespaceHash = *namespaces;
+
+  if (!childrenOnly)
+    accumulator.appendStartTag(targetNode, &namespaceHash);
+
+  if (!(accumulator.serializeAsHTMLDocument(targetNode) &&
+        elementCannotHaveEndTag(targetNode))) {
+    Node* current =
+        isHTMLTemplateElement(targetNode)
+            ? Strategy::firstChild(*toHTMLTemplateElement(targetNode).content())
+            : Strategy::firstChild(targetNode);
+    for (; current; current = Strategy::nextSibling(*current))
+      serializeNodesWithNamespaces<Strategy>(accumulator, *current, IncludeNode,
+                                             &namespaceHash);
+  }
+
+  if (!childrenOnly && targetNode.isElementNode())
+    accumulator.appendEndTag(toElement(targetNode));
+}
+
+template <typename Strategy>
+String serializeNodes(MarkupAccumulator& accumulator,
+                      Node& targetNode,
+                      EChildrenOnly childrenOnly) {
+  Namespaces* namespaces = nullptr;
+  Namespaces namespaceHash;
+  if (!accumulator.serializeAsHTMLDocument(targetNode)) {
+    // Add pre-bound namespaces for XML fragments.
+    namespaceHash.set(xmlAtom, XMLNames::xmlNamespaceURI);
+    namespaces = &namespaceHash;
+  }
+
+  serializeNodesWithNamespaces<Strategy>(accumulator, targetNode, childrenOnly,
+                                         namespaces);
+  return accumulator.toString();
+}
+
+template String serializeNodes<EditingStrategy>(MarkupAccumulator&,
+                                                Node&,
+                                                EChildrenOnly);
+
+}  // namespace blink

@@ -11,11 +11,16 @@ namespace blink {
 class ImageDecoder;
 class SharedBuffer;
 
-using DecoderCreator = std::unique_ptr<ImageDecoder>(*)();
+using DecoderCreator = std::unique_ptr<ImageDecoder> (*)();
 PassRefPtr<SharedBuffer> readFile(const char* fileName);
 PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName);
 unsigned hashBitmap(const SkBitmap&);
-void createDecodingBaseline(DecoderCreator, SharedBuffer*, Vector<unsigned>* baselineHashes);
-void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t expectedFrameCount, int expectedRepetitionCount);
+void createDecodingBaseline(DecoderCreator,
+                            SharedBuffer*,
+                            Vector<unsigned>* baselineHashes);
+void testByteByByteDecode(DecoderCreator createDecoder,
+                          const char* file,
+                          size_t expectedFrameCount,
+                          int expectedRepetitionCount);
 void testMergeBuffer(DecoderCreator createDecoder, const char* file);
-} // namespace blink
+}  // namespace blink

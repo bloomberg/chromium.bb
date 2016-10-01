@@ -31,8 +31,6 @@
 
 namespace blink {
 
-LightSource::~LightSource()
-{
-}
+LightSource::~LightSource() {}
 
-} // namespace blink
+}  // namespace blink

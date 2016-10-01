@@ -38,32 +38,28 @@
 namespace blink {
 
 class AnimatableImage final : public AnimatableValue {
-public:
-    ~AnimatableImage() override { }
-    static PassRefPtr<AnimatableImage> create(CSSValue* value)
-    {
-        return adoptRef(new AnimatableImage(value));
-    }
-    CSSValue* toCSSValue() const { return m_value.get(); }
+ public:
+  ~AnimatableImage() override {}
+  static PassRefPtr<AnimatableImage> create(CSSValue* value) {
+    return adoptRef(new AnimatableImage(value));
+  }
+  CSSValue* toCSSValue() const { return m_value.get(); }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    AnimatableImage(CSSValue* value)
-        : m_value(value)
-    {
-        DCHECK(m_value.get());
-    }
-    AnimatableType type() const override { return TypeImage; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  AnimatableImage(CSSValue* value) : m_value(value) { DCHECK(m_value.get()); }
+  AnimatableType type() const override { return TypeImage; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    const Persistent<CSSValue> m_value;
+  const Persistent<CSSValue> m_value;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, isImage());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableImage_h
+#endif  // AnimatableImage_h

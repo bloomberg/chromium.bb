@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include "core/page/PageVisibilityNotifier.h"
 
 #include "core/page/PageVisibilityObserver.h"
@@ -31,11 +30,10 @@
 
 namespace blink {
 
-void PageVisibilityNotifier::notifyPageVisibilityChanged()
-{
-    AutoReset<IterationState> scope(&m_iterationState, AllowingNone);
-    for (PageVisibilityObserver* observer : m_observers)
-        observer->pageVisibilityChanged();
+void PageVisibilityNotifier::notifyPageVisibilityChanged() {
+  AutoReset<IterationState> scope(&m_iterationState, AllowingNone);
+  for (PageVisibilityObserver* observer : m_observers)
+    observer->pageVisibilityChanged();
 }
 
-} // namespace blink
+}  // namespace blink

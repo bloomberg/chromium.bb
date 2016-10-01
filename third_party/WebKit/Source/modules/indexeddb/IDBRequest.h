@@ -56,123 +56,135 @@ class IDBCursor;
 struct IDBDatabaseMetadata;
 class IDBValue;
 
-class MODULES_EXPORT IDBRequest
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
-public:
-    static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
-    ~IDBRequest() override;
-    DECLARE_VIRTUAL_TRACE();
+class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
+                                  public ActiveScriptWrappable,
+                                  public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 
-    ScriptState* getScriptState() { return m_scriptState.get(); }
-    ScriptValue result(ExceptionState&);
-    DOMException* error(ExceptionState&) const;
-    ScriptValue source() const;
-    IDBTransaction* transaction() const { return m_transaction.get(); }
+ public:
+  static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
+  ~IDBRequest() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    bool isResultDirty() const { return m_resultDirty; }
-    IDBAny* resultAsAny() const { return m_result; }
+  ScriptState* getScriptState() { return m_scriptState.get(); }
+  ScriptValue result(ExceptionState&);
+  DOMException* error(ExceptionState&) const;
+  ScriptValue source() const;
+  IDBTransaction* transaction() const { return m_transaction.get(); }
 
-    // Requests made during index population are implementation details and so
-    // events should not be visible to script.
-    void preventPropagation() { m_preventPropagation = true; }
+  bool isResultDirty() const { return m_resultDirty; }
+  IDBAny* resultAsAny() const { return m_result; }
 
-    // Defined in the IDL
-    enum ReadyState {
-        PENDING = 1,
-        DONE = 2,
-        EarlyDeath = 3
-    };
+  // Requests made during index population are implementation details and so
+  // events should not be visible to script.
+  void preventPropagation() { m_preventPropagation = true; }
 
-    const String& readyState() const;
+  // Defined in the IDL
+  enum ReadyState { PENDING = 1, DONE = 2, EarlyDeath = 3 };
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  const String& readyState() const;
 
-    void setCursorDetails(IndexedDB::CursorType, WebIDBCursorDirection);
-    void setPendingCursor(IDBCursor*);
-    void abort();
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    virtual void onError(DOMException*);
-    virtual void onSuccess(const Vector<String>&);
-    virtual void onSuccess(std::unique_ptr<WebIDBCursor>, IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
-    virtual void onSuccess(IDBKey*);
-    virtual void onSuccess(PassRefPtr<IDBValue>);
-    virtual void onSuccess(const Vector<RefPtr<IDBValue>>&);
-    virtual void onSuccess(int64_t);
-    virtual void onSuccess();
-    virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
+  void setCursorDetails(IndexedDB::CursorType, WebIDBCursorDirection);
+  void setPendingCursor(IDBCursor*);
+  void abort();
 
-    // Only IDBOpenDBRequest instances should receive these:
-    virtual void onBlocked(int64_t oldVersion) { ASSERT_NOT_REACHED(); }
-    virtual void onUpgradeNeeded(int64_t oldVersion, std::unique_ptr<WebIDBDatabase>, const IDBDatabaseMetadata&, WebIDBDataLoss, String dataLossMessage) { ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(std::unique_ptr<WebIDBDatabase>, const IDBDatabaseMetadata&) { ASSERT_NOT_REACHED(); }
+  virtual void onError(DOMException*);
+  virtual void onSuccess(const Vector<String>&);
+  virtual void onSuccess(std::unique_ptr<WebIDBCursor>,
+                         IDBKey*,
+                         IDBKey* primaryKey,
+                         PassRefPtr<IDBValue>);
+  virtual void onSuccess(IDBKey*);
+  virtual void onSuccess(PassRefPtr<IDBValue>);
+  virtual void onSuccess(const Vector<RefPtr<IDBValue>>&);
+  virtual void onSuccess(int64_t);
+  virtual void onSuccess();
+  virtual void onSuccess(IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // Only IDBOpenDBRequest instances should receive these:
+  virtual void onBlocked(int64_t oldVersion) { ASSERT_NOT_REACHED(); }
+  virtual void onUpgradeNeeded(int64_t oldVersion,
+                               std::unique_ptr<WebIDBDatabase>,
+                               const IDBDatabaseMetadata&,
+                               WebIDBDataLoss,
+                               String dataLossMessage) {
+    ASSERT_NOT_REACHED();
+  }
+  virtual void onSuccess(std::unique_ptr<WebIDBDatabase>,
+                         const IDBDatabaseMetadata&) {
+    ASSERT_NOT_REACHED();
+  }
 
-    // ActiveDOMObject
-    void stop() final;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const final;
-    void uncaughtExceptionInEventHandler() final;
+  // ActiveDOMObject
+  void stop() final;
 
-    // Called by a version change transaction that has finished to set this
-    // request back from DONE (following "upgradeneeded") back to PENDING (for
-    // the upcoming "success" or "error").
-    void transactionDidFinishAndDispatch();
+  // EventTarget
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const final;
+  void uncaughtExceptionInEventHandler() final;
 
-    IDBCursor* getResultCursor() const;
+  // Called by a version change transaction that has finished to set this
+  // request back from DONE (following "upgradeneeded") back to PENDING (for
+  // the upcoming "success" or "error").
+  void transactionDidFinishAndDispatch();
 
-protected:
-    IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*);
-    void enqueueEvent(Event*);
-    void dequeueEvent(Event*);
-    virtual bool shouldEnqueueEvent() const;
-    void onSuccessInternal(IDBAny*);
-    void setResult(IDBAny*);
+  IDBCursor* getResultCursor() const;
 
-    // EventTarget
-    DispatchEventResult dispatchEventInternal(Event*) override;
+ protected:
+  IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*);
+  void enqueueEvent(Event*);
+  void dequeueEvent(Event*);
+  virtual bool shouldEnqueueEvent() const;
+  void onSuccessInternal(IDBAny*);
+  void setResult(IDBAny*);
 
-    bool m_contextStopped = false;
-    Member<IDBTransaction> m_transaction;
-    ReadyState m_readyState = PENDING;
-    bool m_requestAborted = false; // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
+  // EventTarget
+  DispatchEventResult dispatchEventInternal(Event*) override;
 
-private:
-    void setResultCursor(IDBCursor*, IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
-    void ackReceivedBlobs(const IDBValue*);
-    void ackReceivedBlobs(const Vector<RefPtr<IDBValue>>&);
+  bool m_contextStopped = false;
+  Member<IDBTransaction> m_transaction;
+  ReadyState m_readyState = PENDING;
+  bool m_requestAborted =
+      false;  // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
 
-    RefPtr<ScriptState> m_scriptState;
-    Member<IDBAny> m_source;
-    Member<IDBAny> m_result;
-    Member<DOMException> m_error;
+ private:
+  void setResultCursor(IDBCursor*,
+                       IDBKey*,
+                       IDBKey* primaryKey,
+                       PassRefPtr<IDBValue>);
+  void ackReceivedBlobs(const IDBValue*);
+  void ackReceivedBlobs(const Vector<RefPtr<IDBValue>>&);
 
-    bool m_hasPendingActivity = true;
-    HeapVector<Member<Event>> m_enqueuedEvents;
+  RefPtr<ScriptState> m_scriptState;
+  Member<IDBAny> m_source;
+  Member<IDBAny> m_result;
+  Member<DOMException> m_error;
 
-    // Only used if the result type will be a cursor.
-    IndexedDB::CursorType m_cursorType = IndexedDB::CursorKeyAndValue;
-    WebIDBCursorDirection m_cursorDirection = WebIDBCursorDirectionNext;
-    // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
-    Member<IDBCursor> m_pendingCursor;
-    // New state is not applied to the cursor object until the event is dispatched.
-    Member<IDBKey> m_cursorKey;
-    Member<IDBKey> m_cursorPrimaryKey;
-    RefPtr<IDBValue> m_cursorValue;
+  bool m_hasPendingActivity = true;
+  HeapVector<Member<Event>> m_enqueuedEvents;
 
-    bool m_didFireUpgradeNeededEvent = false;
-    bool m_preventPropagation = false;
-    bool m_resultDirty = true;
+  // Only used if the result type will be a cursor.
+  IndexedDB::CursorType m_cursorType = IndexedDB::CursorKeyAndValue;
+  WebIDBCursorDirection m_cursorDirection = WebIDBCursorDirectionNext;
+  // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
+  Member<IDBCursor> m_pendingCursor;
+  // New state is not applied to the cursor object until the event is dispatched.
+  Member<IDBKey> m_cursorKey;
+  Member<IDBKey> m_cursorPrimaryKey;
+  RefPtr<IDBValue> m_cursorValue;
+
+  bool m_didFireUpgradeNeededEvent = false;
+  bool m_preventPropagation = false;
+  bool m_resultDirty = true;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBRequest_h
+#endif  // IDBRequest_h

@@ -34,10 +34,8 @@ namespace blink {
 
 int InstanceCounters::s_counters[CounterTypeLength];
 
-int InstanceCounters::counterValue(CounterType type)
-{
-    return acquireLoad(&s_counters[type]);
+int InstanceCounters::counterValue(CounterType type) {
+  return acquireLoad(&s_counters[type]);
 }
 
-} // namespace blink
-
+}  // namespace blink

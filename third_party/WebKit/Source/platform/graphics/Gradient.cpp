@@ -42,105 +42,98 @@ typedef Vector<SkColor, 8> ColorStopColorVector;
 namespace blink {
 
 Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
-    : m_p0(p0)
-    , m_p1(p1)
-    , m_r0(0)
-    , m_r1(0)
-    , m_aspectRatio(1)
-    , m_radial(false)
-    , m_stopsSorted(false)
-    , m_drawInPMColorSpace(false)
-    , m_spreadMethod(SpreadMethodPad)
-{
+    : m_p0(p0),
+      m_p1(p1),
+      m_r0(0),
+      m_r1(0),
+      m_aspectRatio(1),
+      m_radial(false),
+      m_stopsSorted(false),
+      m_drawInPMColorSpace(false),
+      m_spreadMethod(SpreadMethodPad) {}
+
+Gradient::Gradient(const FloatPoint& p0,
+                   float r0,
+                   const FloatPoint& p1,
+                   float r1,
+                   float aspectRatio)
+    : m_p0(p0),
+      m_p1(p1),
+      m_r0(r0),
+      m_r1(r1),
+      m_aspectRatio(aspectRatio),
+      m_radial(true),
+      m_stopsSorted(false),
+      m_drawInPMColorSpace(false),
+      m_spreadMethod(SpreadMethodPad) {}
+
+Gradient::~Gradient() {}
+
+static inline bool compareStops(const Gradient::ColorStop& a,
+                                const Gradient::ColorStop& b) {
+  return a.stop < b.stop;
 }
 
-Gradient::Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1, float aspectRatio)
-    : m_p0(p0)
-    , m_p1(p1)
-    , m_r0(r0)
-    , m_r1(r1)
-    , m_aspectRatio(aspectRatio)
-    , m_radial(true)
-    , m_stopsSorted(false)
-    , m_drawInPMColorSpace(false)
-    , m_spreadMethod(SpreadMethodPad)
-{
-}
-
-Gradient::~Gradient()
-{
-}
-
-static inline bool compareStops(const Gradient::ColorStop& a, const Gradient::ColorStop& b)
-{
-    return a.stop < b.stop;
-}
-
-void Gradient::addColorStop(const Gradient::ColorStop& stop)
-{
-    if (m_stops.isEmpty()) {
-        m_stopsSorted = true;
-    } else {
-        m_stopsSorted = m_stopsSorted && compareStops(m_stops.last(), stop);
-    }
-
-    m_stops.append(stop);
-    m_cachedShader.reset();
-}
-
-void Gradient::sortStopsIfNecessary()
-{
-    if (m_stopsSorted)
-        return;
-
+void Gradient::addColorStop(const Gradient::ColorStop& stop) {
+  if (m_stops.isEmpty()) {
     m_stopsSorted = true;
+  } else {
+    m_stopsSorted = m_stopsSorted && compareStops(m_stops.last(), stop);
+  }
 
-    if (!m_stops.size())
-        return;
-
-    std::stable_sort(m_stops.begin(), m_stops.end(), compareStops);
+  m_stops.append(stop);
+  m_cachedShader.reset();
 }
 
-void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod)
-{
-    // FIXME: Should it become necessary, allow calls to this method after m_gradient has been set.
-    DCHECK(!m_cachedShader);
+void Gradient::sortStopsIfNecessary() {
+  if (m_stopsSorted)
+    return;
 
-    if (m_spreadMethod == spreadMethod)
-        return;
+  m_stopsSorted = true;
 
-    m_spreadMethod = spreadMethod;
+  if (!m_stops.size())
+    return;
+
+  std::stable_sort(m_stops.begin(), m_stops.end(), compareStops);
 }
 
-void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace)
-{
-    if (drawInPMColorSpace == m_drawInPMColorSpace)
-        return;
+void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod) {
+  // FIXME: Should it become necessary, allow calls to this method after m_gradient has been set.
+  DCHECK(!m_cachedShader);
 
-    m_drawInPMColorSpace = drawInPMColorSpace;
-    m_cachedShader.reset();
+  if (m_spreadMethod == spreadMethod)
+    return;
+
+  m_spreadMethod = spreadMethod;
+}
+
+void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace) {
+  if (drawInPMColorSpace == m_drawInPMColorSpace)
+    return;
+
+  m_drawInPMColorSpace = drawInPMColorSpace;
+  m_cachedShader.reset();
 }
 
 // Determine the total number of stops needed, including pseudo-stops at the
 // ends as necessary.
-static size_t totalStopsNeeded(const Gradient::ColorStop* stopData, size_t count)
-{
-    // N.B.: The tests in this function should kept in sync with the ones in
-    // fillStops(), or badness happens.
-    const Gradient::ColorStop* stop = stopData;
-    size_t countUsed = count;
-    if (count < 1 || stop->stop > 0.0)
-        countUsed++;
-    stop += count - 1;
-    if (count < 1 || stop->stop < 1.0)
-        countUsed++;
-    return countUsed;
+static size_t totalStopsNeeded(const Gradient::ColorStop* stopData,
+                               size_t count) {
+  // N.B.: The tests in this function should kept in sync with the ones in
+  // fillStops(), or badness happens.
+  const Gradient::ColorStop* stop = stopData;
+  size_t countUsed = count;
+  if (count < 1 || stop->stop > 0.0)
+    countUsed++;
+  stop += count - 1;
+  if (count < 1 || stop->stop < 1.0)
+    countUsed++;
+  return countUsed;
 }
 
 // FIXME: This would be more at home as Color::operator SkColor.
-static inline SkColor makeSkColor(const Color& c)
-{
-    return SkColorSetARGB(c.alpha(), c.red(), c.green(), c.blue());
+static inline SkColor makeSkColor(const Color& c) {
+  return SkColorSetARGB(c.alpha(), c.red(), c.green(), c.blue());
 }
 
 // Collect sorted stop position and color information into the pos and colors
@@ -148,116 +141,121 @@ static inline SkColor makeSkColor(const Color& c)
 // enough to hold information for all stops, including the new endpoints if
 // stops at 0.0 and 1.0 aren't already included.
 static void fillStops(const Gradient::ColorStop* stopData,
-    size_t count, ColorStopOffsetVector& pos, ColorStopColorVector& colors)
-{
-    const Gradient::ColorStop* stop = stopData;
-    size_t start = 0;
-    if (count < 1) {
-        // A gradient with no stops must be transparent black.
-        pos[0] = WebCoreFloatToSkScalar(0.0);
-        colors[0] = SK_ColorTRANSPARENT;
-        start = 1;
-    } else if (stop->stop > 0.0) {
-        // Copy the first stop to 0.0. The first stop position may have a slight
-        // rounding error, but we don't care in this float comparison, since
-        // 0.0 comes through cleanly and people aren't likely to want a gradient
-        // with a stop at (0 + epsilon).
-        pos[0] = WebCoreFloatToSkScalar(0.0);
-        colors[0] = makeSkColor(stop->color);
-        start = 1;
-    }
+                      size_t count,
+                      ColorStopOffsetVector& pos,
+                      ColorStopColorVector& colors) {
+  const Gradient::ColorStop* stop = stopData;
+  size_t start = 0;
+  if (count < 1) {
+    // A gradient with no stops must be transparent black.
+    pos[0] = WebCoreFloatToSkScalar(0.0);
+    colors[0] = SK_ColorTRANSPARENT;
+    start = 1;
+  } else if (stop->stop > 0.0) {
+    // Copy the first stop to 0.0. The first stop position may have a slight
+    // rounding error, but we don't care in this float comparison, since
+    // 0.0 comes through cleanly and people aren't likely to want a gradient
+    // with a stop at (0 + epsilon).
+    pos[0] = WebCoreFloatToSkScalar(0.0);
+    colors[0] = makeSkColor(stop->color);
+    start = 1;
+  }
 
-    for (size_t i = start; i < start + count; i++) {
-        pos[i] = WebCoreFloatToSkScalar(stop->stop);
-        colors[i] = makeSkColor(stop->color);
-        ++stop;
-    }
+  for (size_t i = start; i < start + count; i++) {
+    pos[i] = WebCoreFloatToSkScalar(stop->stop);
+    colors[i] = makeSkColor(stop->color);
+    ++stop;
+  }
 
-    // Copy the last stop to 1.0 if needed. See comment above about this float
-    // comparison.
-    if (count < 1 || (--stop)->stop < 1.0) {
-        pos[start + count] = WebCoreFloatToSkScalar(1.0);
-        colors[start + count] = colors[start + count - 1];
-    }
+  // Copy the last stop to 1.0 if needed. See comment above about this float
+  // comparison.
+  if (count < 1 || (--stop)->stop < 1.0) {
+    pos[start + count] = WebCoreFloatToSkScalar(1.0);
+    colors[start + count] = colors[start + count - 1];
+  }
 }
 
-sk_sp<SkShader> Gradient::createShader(const SkMatrix& localMatrix)
-{
-    sortStopsIfNecessary();
-    ASSERT(m_stopsSorted);
+sk_sp<SkShader> Gradient::createShader(const SkMatrix& localMatrix) {
+  sortStopsIfNecessary();
+  ASSERT(m_stopsSorted);
 
-    size_t countUsed = totalStopsNeeded(m_stops.data(), m_stops.size());
-    ASSERT(countUsed >= 2);
-    ASSERT(countUsed >= m_stops.size());
+  size_t countUsed = totalStopsNeeded(m_stops.data(), m_stops.size());
+  ASSERT(countUsed >= 2);
+  ASSERT(countUsed >= m_stops.size());
 
-    ColorStopOffsetVector pos(countUsed);
-    ColorStopColorVector colors(countUsed);
-    fillStops(m_stops.data(), m_stops.size(), pos, colors);
+  ColorStopOffsetVector pos(countUsed);
+  ColorStopColorVector colors(countUsed);
+  fillStops(m_stops.data(), m_stops.size(), pos, colors);
 
-    SkShader::TileMode tile = SkShader::kClamp_TileMode;
-    switch (m_spreadMethod) {
+  SkShader::TileMode tile = SkShader::kClamp_TileMode;
+  switch (m_spreadMethod) {
     case SpreadMethodReflect:
-        tile = SkShader::kMirror_TileMode;
-        break;
+      tile = SkShader::kMirror_TileMode;
+      break;
     case SpreadMethodRepeat:
-        tile = SkShader::kRepeat_TileMode;
-        break;
+      tile = SkShader::kRepeat_TileMode;
+      break;
     case SpreadMethodPad:
-        tile = SkShader::kClamp_TileMode;
-        break;
+      tile = SkShader::kClamp_TileMode;
+      break;
+  }
+
+  sk_sp<SkShader> shader;
+  uint32_t shouldDrawInPMColorSpace =
+      m_drawInPMColorSpace ? SkGradientShader::kInterpolateColorsInPremul_Flag
+                           : 0;
+  if (m_radial) {
+    SkMatrix adjustedLocalMatrix = localMatrix;
+
+    if (m_aspectRatio != 1) {
+      // CSS3 elliptical gradients: apply the elliptical scaling at the
+      // gradient center point.
+      adjustedLocalMatrix.preTranslate(m_p0.x(), m_p0.y());
+      adjustedLocalMatrix.preScale(1, 1 / m_aspectRatio);
+      adjustedLocalMatrix.preTranslate(-m_p0.x(), -m_p0.y());
+      ASSERT(m_p0 == m_p1);
     }
 
-    sk_sp<SkShader> shader;
-    uint32_t shouldDrawInPMColorSpace = m_drawInPMColorSpace ? SkGradientShader::kInterpolateColorsInPremul_Flag : 0;
-    if (m_radial) {
-        SkMatrix adjustedLocalMatrix = localMatrix;
-
-        if (m_aspectRatio != 1) {
-            // CSS3 elliptical gradients: apply the elliptical scaling at the
-            // gradient center point.
-            adjustedLocalMatrix.preTranslate(m_p0.x(), m_p0.y());
-            adjustedLocalMatrix.preScale(1, 1 / m_aspectRatio);
-            adjustedLocalMatrix.preTranslate(-m_p0.x(), -m_p0.y());
-            ASSERT(m_p0 == m_p1);
-        }
-
-        // Since the two-point radial gradient is slower than the plain radial,
-        // only use it if we have to.
-        if (m_p0 == m_p1 && m_r0 <= 0.0f) {
-            shader = SkGradientShader::MakeRadial(m_p1.data(), m_r1, colors.data(), pos.data(),
-                static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &adjustedLocalMatrix);
-        } else {
-            // The radii we give to Skia must be positive. If we're given a
-            // negative radius, ask for zero instead.
-            SkScalar radius0 = m_r0 >= 0.0f ? WebCoreFloatToSkScalar(m_r0) : 0;
-            SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
-            shader = SkGradientShader::MakeTwoPointConical(m_p0.data(), radius0, m_p1.data(),
-                radius1, colors.data(), pos.data(), static_cast<int>(countUsed), tile,
-                shouldDrawInPMColorSpace, &adjustedLocalMatrix);
-        }
+    // Since the two-point radial gradient is slower than the plain radial,
+    // only use it if we have to.
+    if (m_p0 == m_p1 && m_r0 <= 0.0f) {
+      shader = SkGradientShader::MakeRadial(
+          m_p1.data(), m_r1, colors.data(), pos.data(),
+          static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace,
+          &adjustedLocalMatrix);
     } else {
-        SkPoint pts[2] = { m_p0.data(), m_p1.data() };
-        shader = SkGradientShader::MakeLinear(pts, colors.data(), pos.data(),
-            static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
+      // The radii we give to Skia must be positive. If we're given a
+      // negative radius, ask for zero instead.
+      SkScalar radius0 = m_r0 >= 0.0f ? WebCoreFloatToSkScalar(m_r0) : 0;
+      SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
+      shader = SkGradientShader::MakeTwoPointConical(
+          m_p0.data(), radius0, m_p1.data(), radius1, colors.data(), pos.data(),
+          static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace,
+          &adjustedLocalMatrix);
     }
+  } else {
+    SkPoint pts[2] = {m_p0.data(), m_p1.data()};
+    shader = SkGradientShader::MakeLinear(
+        pts, colors.data(), pos.data(), static_cast<int>(countUsed), tile,
+        shouldDrawInPMColorSpace, &localMatrix);
+  }
 
-    if (!shader) {
-        // use last color, since our "geometry" was degenerate (e.g. radius==0)
-        shader = SkShader::MakeColorShader(colors[countUsed - 1]);
-    }
+  if (!shader) {
+    // use last color, since our "geometry" was degenerate (e.g. radius==0)
+    shader = SkShader::MakeColorShader(colors[countUsed - 1]);
+  }
 
-    return shader;
+  return shader;
 }
 
-void Gradient::applyToPaint(SkPaint& paint, const SkMatrix& localMatrix)
-{
-    if (!m_cachedShader || localMatrix != m_cachedShader->getLocalMatrix())
-        m_cachedShader = createShader(localMatrix);
+void Gradient::applyToPaint(SkPaint& paint, const SkMatrix& localMatrix) {
+  if (!m_cachedShader || localMatrix != m_cachedShader->getLocalMatrix())
+    m_cachedShader = createShader(localMatrix);
 
-    paint.setShader(m_cachedShader);
+  paint.setShader(m_cachedShader);
 
-    // Legacy behavior: gradients are always dithered.
-    paint.setDither(true);
+  // Legacy behavior: gradients are always dithered.
+  paint.setDither(true);
 }
 
-} // namespace blink
+}  // namespace blink

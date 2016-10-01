@@ -38,39 +38,42 @@
 namespace blink {
 
 class StyleColor {
-    DISALLOW_NEW();
-public:
-    StyleColor() : m_currentColor(true) { }
-    StyleColor(Color color) : m_color(color), m_currentColor(false) { }
-    static StyleColor currentColor() { return StyleColor(); }
+  DISALLOW_NEW();
 
-    bool isCurrentColor() const { return m_currentColor; }
-    Color getColor() const { ASSERT(!isCurrentColor()); return m_color; }
+ public:
+  StyleColor() : m_currentColor(true) {}
+  StyleColor(Color color) : m_color(color), m_currentColor(false) {}
+  static StyleColor currentColor() { return StyleColor(); }
 
-    Color resolve(Color currentColor) const { return m_currentColor ? currentColor : m_color; }
+  bool isCurrentColor() const { return m_currentColor; }
+  Color getColor() const {
+    ASSERT(!isCurrentColor());
+    return m_color;
+  }
 
-    static Color colorFromKeyword(CSSValueID);
-    static bool isColorKeyword(CSSValueID);
-    static bool isSystemColor(CSSValueID);
+  Color resolve(Color currentColor) const {
+    return m_currentColor ? currentColor : m_color;
+  }
 
-private:
-    Color m_color;
-    bool m_currentColor;
+  static Color colorFromKeyword(CSSValueID);
+  static bool isColorKeyword(CSSValueID);
+  static bool isSystemColor(CSSValueID);
+
+ private:
+  Color m_color;
+  bool m_currentColor;
 };
 
-inline bool operator==(const StyleColor& a, const StyleColor& b)
-{
-    if (a.isCurrentColor() || b.isCurrentColor())
-        return a.isCurrentColor() && b.isCurrentColor();
-    return a.getColor() == b.getColor();
+inline bool operator==(const StyleColor& a, const StyleColor& b) {
+  if (a.isCurrentColor() || b.isCurrentColor())
+    return a.isCurrentColor() && b.isCurrentColor();
+  return a.getColor() == b.getColor();
 }
 
-inline bool operator!=(const StyleColor& a, const StyleColor& b)
-{
-    return !(a == b);
+inline bool operator!=(const StyleColor& a, const StyleColor& b) {
+  return !(a == b);
 }
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // StyleColor_h
+#endif  // StyleColor_h

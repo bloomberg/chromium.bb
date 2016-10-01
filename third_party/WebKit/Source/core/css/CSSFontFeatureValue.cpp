@@ -30,25 +30,19 @@
 namespace blink {
 
 CSSFontFeatureValue::CSSFontFeatureValue(const AtomicString& tag, int value)
-    : CSSValue(FontFeatureClass)
-    , m_tag(tag)
-    , m_value(value)
-{
+    : CSSValue(FontFeatureClass), m_tag(tag), m_value(value) {}
+
+String CSSFontFeatureValue::customCSSText() const {
+  StringBuilder builder;
+  builder.append('\'');
+  builder.append(m_tag);
+  builder.append("' ");
+  builder.appendNumber(m_value);
+  return builder.toString();
 }
 
-String CSSFontFeatureValue::customCSSText() const
-{
-    StringBuilder builder;
-    builder.append('\'');
-    builder.append(m_tag);
-    builder.append("' ");
-    builder.appendNumber(m_value);
-    return builder.toString();
+bool CSSFontFeatureValue::equals(const CSSFontFeatureValue& other) const {
+  return m_tag == other.m_tag && m_value == other.m_value;
 }
 
-bool CSSFontFeatureValue::equals(const CSSFontFeatureValue& other) const
-{
-    return m_tag == other.m_tag && m_value == other.m_value;
-}
-
-} // namespace blink
+}  // namespace blink

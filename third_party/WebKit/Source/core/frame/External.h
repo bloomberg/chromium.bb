@@ -11,16 +11,17 @@
 namespace blink {
 
 class External : public GarbageCollected<External>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    External() = default;
+  DEFINE_WRAPPERTYPEINFO();
 
-    void AddSearchProvider() { }
-    void IsSearchProviderInstalled() { }
+ public:
+  External() = default;
 
-    DEFINE_INLINE_TRACE() { }
+  void AddSearchProvider() {}
+  void IsSearchProviderInstalled() {}
+
+  DEFINE_INLINE_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // External_h
+#endif  // External_h

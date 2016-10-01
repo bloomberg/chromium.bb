@@ -44,32 +44,36 @@ class WebURL;
 
 // This is the interface to a SharedWorker thread.
 class WebSharedWorker {
-public:
-    // Instantiate a WebSharedWorker that interacts with the shared worker.
-    // WebSharedWorkerClient given here must outlive or have the identical
-    // lifetime as this instance.
-    BLINK_EXPORT static WebSharedWorker* create(WebSharedWorkerClient*);
+ public:
+  // Instantiate a WebSharedWorker that interacts with the shared worker.
+  // WebSharedWorkerClient given here must outlive or have the identical
+  // lifetime as this instance.
+  BLINK_EXPORT static WebSharedWorker* create(WebSharedWorkerClient*);
 
-    virtual void startWorkerContext(
-        const WebURL& scriptURL,
-        const WebString& name,
-        const WebString& contentSecurityPolicy,
-        WebContentSecurityPolicyType,
-        WebAddressSpace) = 0;
+  virtual void startWorkerContext(const WebURL& scriptURL,
+                                  const WebString& name,
+                                  const WebString& contentSecurityPolicy,
+                                  WebContentSecurityPolicyType,
+                                  WebAddressSpace) = 0;
 
-    // Sends a connect event to the SharedWorker context.
-    virtual void connect(WebMessagePortChannel*) = 0;
+  // Sends a connect event to the SharedWorker context.
+  virtual void connect(WebMessagePortChannel*) = 0;
 
-    // Invoked to shutdown the worker when there are no more associated documents. This eventually deletes this instance.
-    virtual void terminateWorkerContext() = 0;
+  // Invoked to shutdown the worker when there are no more associated documents. This eventually deletes this instance.
+  virtual void terminateWorkerContext() = 0;
 
-    virtual void pauseWorkerContextOnStart() = 0;
-    virtual void attachDevTools(const WebString& hostId, int sessionId) = 0;
-    virtual void reattachDevTools(const WebString& hostId, int sessionId, const WebString& savedState) = 0;
-    virtual void detachDevTools() = 0;
-    virtual void dispatchDevToolsMessage(int sessionId, int callId, const WebString& method, const WebString& message) = 0;
+  virtual void pauseWorkerContextOnStart() = 0;
+  virtual void attachDevTools(const WebString& hostId, int sessionId) = 0;
+  virtual void reattachDevTools(const WebString& hostId,
+                                int sessionId,
+                                const WebString& savedState) = 0;
+  virtual void detachDevTools() = 0;
+  virtual void dispatchDevToolsMessage(int sessionId,
+                                       int callId,
+                                       const WebString& method,
+                                       const WebString& message) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

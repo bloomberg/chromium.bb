@@ -30,10 +30,8 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLHeadElement::HTMLHeadElement(Document& document)
-    : HTMLElement(headTag, document)
-{
-}
+    : HTMLElement(headTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHeadElement)
 
-} // namespace blink
+}  // namespace blink

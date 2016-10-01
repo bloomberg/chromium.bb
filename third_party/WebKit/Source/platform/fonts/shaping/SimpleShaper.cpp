@@ -36,192 +36,215 @@ using namespace Unicode;
 
 namespace blink {
 
-SimpleShaper::SimpleShaper(const Font* font, const TextRun& run, const GlyphData* emphasisData,
-    HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
-    : Shaper(font, run, emphasisData, fallbackFonts, bounds)
-    , m_currentCharacter(0)
-    , m_runWidthSoFar(0)
-{
-    // If the padding is non-zero, count the number of spaces in the run
-    // and divide that by the padding for per space addition.
-    m_expansion = m_textRun.expansion();
-    if (!m_expansion) {
-        m_expansionPerOpportunity = 0;
+SimpleShaper::SimpleShaper(const Font* font,
+                           const TextRun& run,
+                           const GlyphData* emphasisData,
+                           HashSet<const SimpleFontData*>* fallbackFonts,
+                           FloatRect* bounds)
+    : Shaper(font, run, emphasisData, fallbackFonts, bounds),
+      m_currentCharacter(0),
+      m_runWidthSoFar(0) {
+  // If the padding is non-zero, count the number of spaces in the run
+  // and divide that by the padding for per space addition.
+  m_expansion = m_textRun.expansion();
+  if (!m_expansion) {
+    m_expansionPerOpportunity = 0;
+  } else {
+    bool isAfterExpansion = m_isAfterExpansion;
+    unsigned expansionOpportunityCount =
+        m_textRun.is8Bit() ? Character::expansionOpportunityCount(
+                                 m_textRun.characters8(), m_textRun.length(),
+                                 m_textRun.direction(), isAfterExpansion,
+                                 m_textRun.getTextJustify())
+                           : Character::expansionOpportunityCount(
+                                 m_textRun.characters16(), m_textRun.length(),
+                                 m_textRun.direction(), isAfterExpansion,
+                                 m_textRun.getTextJustify());
+    if (isAfterExpansion && !m_textRun.allowsTrailingExpansion())
+      expansionOpportunityCount--;
+
+    if (!expansionOpportunityCount)
+      m_expansionPerOpportunity = 0;
+    else
+      m_expansionPerOpportunity = m_expansion / expansionOpportunityCount;
+  }
+}
+
+GlyphData SimpleShaper::glyphDataForCharacter(CharacterData& charData,
+                                              bool normalizeSpace) {
+  ASSERT(m_font);
+  return m_font->glyphDataForCharacter(charData.character, m_textRun.rtl(),
+                                       normalizeSpace);
+}
+
+float SimpleShaper::characterWidth(UChar32 character,
+                                   const GlyphData& glyphData) const {
+  const SimpleFontData* fontData = glyphData.fontData;
+  ASSERT(fontData);
+
+  if (UNLIKELY(character == tabulationCharacter && m_textRun.allowTabs()))
+    return m_font->tabWidth(*fontData, m_textRun.getTabSize(),
+                            m_textRun.xPos() + m_runWidthSoFar);
+
+  float width = fontData->widthForGlyph(glyphData.glyph);
+
+  // SVG uses horizontalGlyphStretch(), when textLength is used to stretch/squeeze text.
+  if (UNLIKELY(m_textRun.horizontalGlyphStretch() != 1))
+    width *= m_textRun.horizontalGlyphStretch();
+
+  return width;
+}
+
+float SimpleShaper::adjustSpacing(float width, const CharacterData& charData) {
+  // Account for letter-spacing.
+  if (width)
+    width += m_font->getFontDescription().letterSpacing();
+
+  bool isExpansionOpportunity =
+      Character::treatAsSpace(charData.character) ||
+      (m_textRun.getTextJustify() == TextJustifyDistribute);
+  if (isExpansionOpportunity ||
+      (m_textRun.getTextJustify() == TextJustifyAuto &&
+       Character::isCJKIdeographOrSymbol(charData.character))) {
+    // Distribute the run's total expansion evenly over all expansion opportunities in the run.
+    if (m_expansion) {
+      if (!isExpansionOpportunity && !m_isAfterExpansion) {
+        // Take the expansion opportunity before this ideograph.
+        m_expansion -= m_expansionPerOpportunity;
+        m_runWidthSoFar += m_expansionPerOpportunity;
+      }
+      if (m_textRun.allowsTrailingExpansion() ||
+          (m_textRun.ltr() &&
+           charData.characterOffset + charData.clusterLength <
+               m_textRun.length()) ||
+          (m_textRun.rtl() && charData.characterOffset)) {
+        m_expansion -= m_expansionPerOpportunity;
+        width += m_expansionPerOpportunity;
+        m_isAfterExpansion = true;
+      }
     } else {
-        bool isAfterExpansion = m_isAfterExpansion;
-        unsigned expansionOpportunityCount = m_textRun.is8Bit() ? Character::expansionOpportunityCount(m_textRun.characters8(), m_textRun.length(), m_textRun.direction(), isAfterExpansion, m_textRun.getTextJustify()) : Character::expansionOpportunityCount(m_textRun.characters16(), m_textRun.length(), m_textRun.direction(), isAfterExpansion, m_textRun.getTextJustify());
-        if (isAfterExpansion && !m_textRun.allowsTrailingExpansion())
-            expansionOpportunityCount--;
-
-        if (!expansionOpportunityCount)
-            m_expansionPerOpportunity = 0;
-        else
-            m_expansionPerOpportunity = m_expansion / expansionOpportunityCount;
-    }
-}
-
-GlyphData SimpleShaper::glyphDataForCharacter(CharacterData& charData, bool normalizeSpace)
-{
-    ASSERT(m_font);
-    return m_font->glyphDataForCharacter(charData.character, m_textRun.rtl(), normalizeSpace);
-}
-
-float SimpleShaper::characterWidth(UChar32 character, const GlyphData& glyphData) const
-{
-    const SimpleFontData* fontData = glyphData.fontData;
-    ASSERT(fontData);
-
-    if (UNLIKELY(character == tabulationCharacter && m_textRun.allowTabs()))
-        return m_font->tabWidth(*fontData, m_textRun.getTabSize(), m_textRun.xPos() + m_runWidthSoFar);
-
-    float width = fontData->widthForGlyph(glyphData.glyph);
-
-    // SVG uses horizontalGlyphStretch(), when textLength is used to stretch/squeeze text.
-    if (UNLIKELY(m_textRun.horizontalGlyphStretch() != 1))
-        width *= m_textRun.horizontalGlyphStretch();
-
-    return width;
-}
-
-float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
-{
-    // Account for letter-spacing.
-    if (width)
-        width += m_font->getFontDescription().letterSpacing();
-
-    bool isExpansionOpportunity = Character::treatAsSpace(charData.character) || (m_textRun.getTextJustify() == TextJustifyDistribute);
-    if (isExpansionOpportunity || (m_textRun.getTextJustify() == TextJustifyAuto && Character::isCJKIdeographOrSymbol(charData.character))) {
-        // Distribute the run's total expansion evenly over all expansion opportunities in the run.
-        if (m_expansion) {
-            if (!isExpansionOpportunity && !m_isAfterExpansion) {
-                // Take the expansion opportunity before this ideograph.
-                m_expansion -= m_expansionPerOpportunity;
-                m_runWidthSoFar += m_expansionPerOpportunity;
-            }
-            if (m_textRun.allowsTrailingExpansion()
-                || (m_textRun.ltr() && charData.characterOffset + charData.clusterLength < m_textRun.length())
-                || (m_textRun.rtl() && charData.characterOffset)) {
-                m_expansion -= m_expansionPerOpportunity;
-                width += m_expansionPerOpportunity;
-                m_isAfterExpansion = true;
-            }
-        } else {
-            m_isAfterExpansion = false;
-        }
-
-        // Account for word spacing.
-        // We apply additional space between "words" by adding width to the space character.
-        if (isExpansionOpportunity && (charData.character != tabulationCharacter || !m_textRun.allowTabs())
-            && (charData.characterOffset || charData.character == noBreakSpaceCharacter)
-            && m_font->getFontDescription().wordSpacing()) {
-            width += m_font->getFontDescription().wordSpacing();
-        }
-    } else {
-        m_isAfterExpansion = false;
+      m_isAfterExpansion = false;
     }
 
-    return width;
+    // Account for word spacing.
+    // We apply additional space between "words" by adding width to the space character.
+    if (isExpansionOpportunity &&
+        (charData.character != tabulationCharacter || !m_textRun.allowTabs()) &&
+        (charData.characterOffset ||
+         charData.character == noBreakSpaceCharacter) &&
+        m_font->getFontDescription().wordSpacing()) {
+      width += m_font->getFontDescription().wordSpacing();
+    }
+  } else {
+    m_isAfterExpansion = false;
+  }
+
+  return width;
 }
 
 template <typename TextIterator>
-unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* glyphBuffer)
-{
-    bool hasExtraSpacing = (m_font->getFontDescription().letterSpacing() || m_font->getFontDescription().wordSpacing() || m_expansion)
-        && !m_textRun.spacingDisabled();
+unsigned SimpleShaper::advanceInternal(TextIterator& textIterator,
+                                       GlyphBuffer* glyphBuffer) {
+  bool hasExtraSpacing =
+      (m_font->getFontDescription().letterSpacing() ||
+       m_font->getFontDescription().wordSpacing() || m_expansion) &&
+      !m_textRun.spacingDisabled();
 
-    const SimpleFontData* lastFontData = m_font->primaryFont();
-    bool normalizeSpace = m_textRun.normalizeSpace();
-    const float initialRunWidth = m_runWidthSoFar;
+  const SimpleFontData* lastFontData = m_font->primaryFont();
+  bool normalizeSpace = m_textRun.normalizeSpace();
+  const float initialRunWidth = m_runWidthSoFar;
 
-    CharacterData charData;
-    while (textIterator.consume(charData.character)) {
-        charData.characterOffset = textIterator.offset();
-        charData.clusterLength = textIterator.glyphLength();
-        GlyphData glyphData = glyphDataForCharacter(charData, normalizeSpace);
+  CharacterData charData;
+  while (textIterator.consume(charData.character)) {
+    charData.characterOffset = textIterator.offset();
+    charData.clusterLength = textIterator.glyphLength();
+    GlyphData glyphData = glyphDataForCharacter(charData, normalizeSpace);
 
-        // Some fonts do not have a glyph for zero-width-space,
-        // in that case use the space character and override the width.
-        float width;
-        bool spaceUsedAsZeroWidthSpace = false;
-        if (!glyphData.glyph && Character::treatAsZeroWidthSpace(charData.character)) {
-            charData.character = spaceCharacter;
-            glyphData = glyphDataForCharacter(charData);
-            width = 0;
-            spaceUsedAsZeroWidthSpace = true;
-        } else {
-            width = characterWidth(charData.character, glyphData);
-        }
-
-        Glyph glyph = glyphData.glyph;
-        const SimpleFontData* fontData = glyphData.fontData;
-        ASSERT(fontData);
-
-        if (m_fallbackFonts && lastFontData != fontData && width) {
-            lastFontData = fontData;
-            trackNonPrimaryFallbackFont(fontData);
-        }
-
-        if (hasExtraSpacing && !spaceUsedAsZeroWidthSpace)
-            width = adjustSpacing(width, charData);
-
-        if (m_glyphBoundingBox) {
-            ASSERT(glyphData.fontData);
-            FloatRect glyphBounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
-            // We are handling simple text run here, so Y-Offset will be zero.
-            // FIXME: Computing bounds relative to the initial advance seems odd. Are we adjusting
-            // these someplace else? If not, we'll end up with different bounds depending on how
-            // we segment our advance() calls.
-            glyphBounds.move(m_runWidthSoFar - initialRunWidth, 0);
-            m_glyphBoundingBox->unite(glyphBounds);
-        }
-
-        if (glyphBuffer) {
-            if (!forTextEmphasis()) {
-                glyphBuffer->add(glyph, fontData, m_runWidthSoFar);
-            } else if (Character::canReceiveTextEmphasis(charData.character)) {
-                addEmphasisMark(glyphBuffer, m_runWidthSoFar + width / 2);
-            }
-        }
-
-        // Advance past the character we just dealt with.
-        textIterator.advance();
-        m_runWidthSoFar += width;
+    // Some fonts do not have a glyph for zero-width-space,
+    // in that case use the space character and override the width.
+    float width;
+    bool spaceUsedAsZeroWidthSpace = false;
+    if (!glyphData.glyph &&
+        Character::treatAsZeroWidthSpace(charData.character)) {
+      charData.character = spaceCharacter;
+      glyphData = glyphDataForCharacter(charData);
+      width = 0;
+      spaceUsedAsZeroWidthSpace = true;
+    } else {
+      width = characterWidth(charData.character, glyphData);
     }
 
-    unsigned consumedCharacters = textIterator.offset() - m_currentCharacter;
-    m_currentCharacter = textIterator.offset();
+    Glyph glyph = glyphData.glyph;
+    const SimpleFontData* fontData = glyphData.fontData;
+    ASSERT(fontData);
 
-    return consumedCharacters;
+    if (m_fallbackFonts && lastFontData != fontData && width) {
+      lastFontData = fontData;
+      trackNonPrimaryFallbackFont(fontData);
+    }
+
+    if (hasExtraSpacing && !spaceUsedAsZeroWidthSpace)
+      width = adjustSpacing(width, charData);
+
+    if (m_glyphBoundingBox) {
+      ASSERT(glyphData.fontData);
+      FloatRect glyphBounds =
+          glyphData.fontData->boundsForGlyph(glyphData.glyph);
+      // We are handling simple text run here, so Y-Offset will be zero.
+      // FIXME: Computing bounds relative to the initial advance seems odd. Are we adjusting
+      // these someplace else? If not, we'll end up with different bounds depending on how
+      // we segment our advance() calls.
+      glyphBounds.move(m_runWidthSoFar - initialRunWidth, 0);
+      m_glyphBoundingBox->unite(glyphBounds);
+    }
+
+    if (glyphBuffer) {
+      if (!forTextEmphasis()) {
+        glyphBuffer->add(glyph, fontData, m_runWidthSoFar);
+      } else if (Character::canReceiveTextEmphasis(charData.character)) {
+        addEmphasisMark(glyphBuffer, m_runWidthSoFar + width / 2);
+      }
+    }
+
+    // Advance past the character we just dealt with.
+    textIterator.advance();
+    m_runWidthSoFar += width;
+  }
+
+  unsigned consumedCharacters = textIterator.offset() - m_currentCharacter;
+  m_currentCharacter = textIterator.offset();
+
+  return consumedCharacters;
 }
 
-unsigned SimpleShaper::advance(int offset, GlyphBuffer* glyphBuffer)
-{
-    int length = m_textRun.length();
+unsigned SimpleShaper::advance(int offset, GlyphBuffer* glyphBuffer) {
+  int length = m_textRun.length();
 
-    if (offset > length)
-        offset = length;
+  if (offset > length)
+    offset = length;
 
-    if (m_currentCharacter >= static_cast<unsigned>(offset))
-        return 0;
+  if (m_currentCharacter >= static_cast<unsigned>(offset))
+    return 0;
 
-    if (m_textRun.is8Bit()) {
-        Latin1TextIterator textIterator(m_textRun.data8(m_currentCharacter), m_currentCharacter, offset);
-        return advanceInternal(textIterator, glyphBuffer);
-    }
-
-    UTF16TextIterator textIterator(m_textRun.data16(m_currentCharacter), m_currentCharacter, offset, length);
+  if (m_textRun.is8Bit()) {
+    Latin1TextIterator textIterator(m_textRun.data8(m_currentCharacter),
+                                    m_currentCharacter, offset);
     return advanceInternal(textIterator, glyphBuffer);
+  }
+
+  UTF16TextIterator textIterator(m_textRun.data16(m_currentCharacter),
+                                 m_currentCharacter, offset, length);
+  return advanceInternal(textIterator, glyphBuffer);
 }
 
-bool SimpleShaper::advanceOneCharacter(float& width)
-{
-    float initialWidth = m_runWidthSoFar;
+bool SimpleShaper::advanceOneCharacter(float& width) {
+  float initialWidth = m_runWidthSoFar;
 
-    if (!advance(m_currentCharacter + 1))
-        return false;
+  if (!advance(m_currentCharacter + 1))
+    return false;
 
-    width = m_runWidthSoFar - initialWidth;
-    return true;
+  width = m_runWidthSoFar - initialWidth;
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

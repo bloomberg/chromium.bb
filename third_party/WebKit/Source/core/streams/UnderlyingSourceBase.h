@@ -19,46 +19,49 @@ namespace blink {
 
 class ReadableStreamController;
 
-class CORE_EXPORT UnderlyingSourceBase : public GarbageCollectedFinalized<UnderlyingSourceBase>, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
+class CORE_EXPORT UnderlyingSourceBase
+    : public GarbageCollectedFinalized<UnderlyingSourceBase>,
+      public ScriptWrappable,
+      public ActiveScriptWrappable,
+      public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
-public:
-    DECLARE_VIRTUAL_TRACE();
-    virtual ~UnderlyingSourceBase() {}
+ public:
+  DECLARE_VIRTUAL_TRACE();
+  virtual ~UnderlyingSourceBase() {}
 
-    ScriptPromise startWrapper(ScriptState*, ScriptValue stream);
-    virtual ScriptPromise start(ScriptState*);
+  ScriptPromise startWrapper(ScriptState*, ScriptValue stream);
+  virtual ScriptPromise start(ScriptState*);
 
-    virtual ScriptPromise pull(ScriptState*);
+  virtual ScriptPromise pull(ScriptState*);
 
-    ScriptPromise cancelWrapper(ScriptState*, ScriptValue reason);
-    virtual ScriptPromise cancel(ScriptState*, ScriptValue reason);
+  ScriptPromise cancelWrapper(ScriptState*, ScriptValue reason);
+  virtual ScriptPromise cancel(ScriptState*, ScriptValue reason);
 
-    void notifyLockAcquired();
-    void notifyLockReleased();
+  void notifyLockAcquired();
+  void notifyLockReleased();
 
-    // ScriptWrappable
-    bool hasPendingActivity() const;
+  // ScriptWrappable
+  bool hasPendingActivity() const;
 
-    // ActiveDOMObject
-    void stop() override;
+  // ActiveDOMObject
+  void stop() override;
 
-protected:
-    explicit UnderlyingSourceBase(ScriptState* scriptState)
-        : ActiveScriptWrappable(this)
-        , ActiveDOMObject(scriptState->getExecutionContext())
-    {
-        this->suspendIfNeeded();
-    }
+ protected:
+  explicit UnderlyingSourceBase(ScriptState* scriptState)
+      : ActiveScriptWrappable(this),
+        ActiveDOMObject(scriptState->getExecutionContext()) {
+    this->suspendIfNeeded();
+  }
 
-    ReadableStreamController* controller() const { return m_controller; }
+  ReadableStreamController* controller() const { return m_controller; }
 
-private:
-    Member<ReadableStreamController> m_controller;
-    bool m_isStreamLocked = false;
+ private:
+  Member<ReadableStreamController> m_controller;
+  bool m_isStreamLocked = false;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UnderlyingSourceBase_h
+#endif  // UnderlyingSourceBase_h

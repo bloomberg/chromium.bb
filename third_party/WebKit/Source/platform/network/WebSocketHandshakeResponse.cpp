@@ -36,43 +36,34 @@
 
 namespace blink {
 
-WebSocketHandshakeResponse::WebSocketHandshakeResponse()
-{
+WebSocketHandshakeResponse::WebSocketHandshakeResponse() {}
+
+WebSocketHandshakeResponse::~WebSocketHandshakeResponse() {}
+
+int WebSocketHandshakeResponse::statusCode() const {
+  return m_statusCode;
 }
 
-WebSocketHandshakeResponse::~WebSocketHandshakeResponse()
-{
+void WebSocketHandshakeResponse::setStatusCode(int statusCode) {
+  ASSERT(statusCode >= 100 && statusCode < 600);
+  m_statusCode = statusCode;
 }
 
-int WebSocketHandshakeResponse::statusCode() const
-{
-    return m_statusCode;
+const String& WebSocketHandshakeResponse::statusText() const {
+  return m_statusText;
 }
 
-void WebSocketHandshakeResponse::setStatusCode(int statusCode)
-{
-    ASSERT(statusCode >= 100 && statusCode < 600);
-    m_statusCode = statusCode;
+void WebSocketHandshakeResponse::setStatusText(const String& statusText) {
+  m_statusText = statusText;
 }
 
-const String& WebSocketHandshakeResponse::statusText() const
-{
-    return m_statusText;
+const HTTPHeaderMap& WebSocketHandshakeResponse::headerFields() const {
+  return m_headerFields;
 }
 
-void WebSocketHandshakeResponse::setStatusText(const String& statusText)
-{
-    m_statusText = statusText;
+void WebSocketHandshakeResponse::addHeaderField(const AtomicString& name,
+                                                const AtomicString& value) {
+  WebSocketHandshakeRequest::addAndMergeHeader(&m_headerFields, name, value);
 }
 
-const HTTPHeaderMap& WebSocketHandshakeResponse::headerFields() const
-{
-    return m_headerFields;
-}
-
-void WebSocketHandshakeResponse::addHeaderField(const AtomicString& name, const AtomicString& value)
-{
-    WebSocketHandshakeRequest::addAndMergeHeader(&m_headerFields, name, value);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -29,15 +29,16 @@ namespace blink {
 class Page;
 
 class CORE_EXPORT ScopedPageLoadDeferrer final {
-    WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
-    USING_FAST_MALLOC(ScopedPageLoadDeferrer);
-public:
-    explicit ScopedPageLoadDeferrer();
-    ~ScopedPageLoadDeferrer();
+  WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
+  USING_FAST_MALLOC(ScopedPageLoadDeferrer);
 
-    static bool isActive();
+ public:
+  explicit ScopedPageLoadDeferrer();
+  ~ScopedPageLoadDeferrer();
+
+  static bool isActive();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScopedPageLoadDeferrer_h
+#endif  // ScopedPageLoadDeferrer_h

@@ -13,13 +13,13 @@ namespace blink {
 class StorageNamespace;
 
 class StorageClient {
-public:
-    virtual ~StorageClient() { }
+ public:
+  virtual ~StorageClient() {}
 
-    virtual std::unique_ptr<StorageNamespace> createSessionStorageNamespace() = 0;
-    virtual bool canAccessStorage(LocalFrame*, StorageType) const = 0;
+  virtual std::unique_ptr<StorageNamespace> createSessionStorageNamespace() = 0;
+  virtual bool canAccessStorage(LocalFrame*, StorageType) const = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageClient_h
+#endif  // StorageClient_h

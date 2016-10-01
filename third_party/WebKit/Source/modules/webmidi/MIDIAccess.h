@@ -50,69 +50,101 @@ class MIDIInputMap;
 class MIDIOutput;
 class MIDIOutputMap;
 
-class MIDIAccess final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject, public MIDIAccessorClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
-    USING_PRE_FINALIZER(MIDIAccess, dispose);
-public:
-    static MIDIAccess* create(std::unique_ptr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
-    {
-        MIDIAccess* access = new MIDIAccess(std::move(accessor), sysexEnabled, ports, executionContext);
-        access->suspendIfNeeded();
-        return access;
-    }
-    ~MIDIAccess() override;
+class MIDIAccess final : public EventTargetWithInlineData,
+                         public ActiveScriptWrappable,
+                         public ActiveDOMObject,
+                         public MIDIAccessorClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
+  USING_PRE_FINALIZER(MIDIAccess, dispose);
 
-    MIDIInputMap* inputs() const;
-    MIDIOutputMap* outputs() const;
+ public:
+  static MIDIAccess* create(
+      std::unique_ptr<MIDIAccessor> accessor,
+      bool sysexEnabled,
+      const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
+      ExecutionContext* executionContext) {
+    MIDIAccess* access = new MIDIAccess(std::move(accessor), sysexEnabled,
+                                        ports, executionContext);
+    access->suspendIfNeeded();
+    return access;
+  }
+  ~MIDIAccess() override;
 
-    EventListener* onstatechange();
-    void setOnstatechange(EventListener*);
+  MIDIInputMap* inputs() const;
+  MIDIOutputMap* outputs() const;
 
-    bool sysexEnabled() const { return m_sysexEnabled; }
+  EventListener* onstatechange();
+  void setOnstatechange(EventListener*);
 
-    // EventTarget
-    const AtomicString& interfaceName() const override { return EventTargetNames::MIDIAccess; }
-    ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
+  bool sysexEnabled() const { return m_sysexEnabled; }
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // EventTarget
+  const AtomicString& interfaceName() const override {
+    return EventTargetNames::MIDIAccess;
+  }
+  ExecutionContext* getExecutionContext() const override {
+    return ActiveDOMObject::getExecutionContext();
+  }
 
-    // ActiveDOMObject
-    void stop() override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-    // MIDIAccessorClient
-    void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState) override;
-    void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState) override;
-    void didSetInputPortState(unsigned portIndex, MIDIAccessor::MIDIPortState) override;
-    void didSetOutputPortState(unsigned portIndex, MIDIAccessor::MIDIPortState) override;
-    void didStartSession(bool success, const String& error, const String& message) override
-    {
-        // This method is for MIDIAccess initialization: MIDIAccessInitializer
-        // has the implementation.
-        NOTREACHED();
-    }
-    void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
+  // ActiveDOMObject
+  void stop() override;
 
-    // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
+  // MIDIAccessorClient
+  void didAddInputPort(const String& id,
+                       const String& manufacturer,
+                       const String& name,
+                       const String& version,
+                       MIDIAccessor::MIDIPortState) override;
+  void didAddOutputPort(const String& id,
+                        const String& manufacturer,
+                        const String& name,
+                        const String& version,
+                        MIDIAccessor::MIDIPortState) override;
+  void didSetInputPortState(unsigned portIndex,
+                            MIDIAccessor::MIDIPortState) override;
+  void didSetOutputPortState(unsigned portIndex,
+                             MIDIAccessor::MIDIPortState) override;
+  void didStartSession(bool success,
+                       const String& error,
+                       const String& message) override {
+    // This method is for MIDIAccess initialization: MIDIAccessInitializer
+    // has the implementation.
+    NOTREACHED();
+  }
+  void didReceiveMIDIData(unsigned portIndex,
+                          const unsigned char* data,
+                          size_t length,
+                          double timeStamp) override;
 
-    // Eager finalization needed to promptly release m_accessor. Otherwise
-    // its client back reference could end up being unsafely used during
-    // the lazy sweeping phase.
-    DECLARE_VIRTUAL_TRACE();
+  // |timeStampInMilliseconds| is in the same time coordinate system as performance.now().
+  void sendMIDIData(unsigned portIndex,
+                    const unsigned char* data,
+                    size_t length,
+                    double timeStampInMilliseconds);
 
-private:
-    MIDIAccess(std::unique_ptr<MIDIAccessor>, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>&, ExecutionContext*);
-    void dispose();
+  // Eager finalization needed to promptly release m_accessor. Otherwise
+  // its client back reference could end up being unsafely used during
+  // the lazy sweeping phase.
+  DECLARE_VIRTUAL_TRACE();
 
-    std::unique_ptr<MIDIAccessor> m_accessor;
-    bool m_sysexEnabled;
-    bool m_hasPendingActivity;
-    HeapVector<Member<MIDIInput>> m_inputs;
-    HeapVector<Member<MIDIOutput>> m_outputs;
+ private:
+  MIDIAccess(std::unique_ptr<MIDIAccessor>,
+             bool sysexEnabled,
+             const Vector<MIDIAccessInitializer::PortDescriptor>&,
+             ExecutionContext*);
+  void dispose();
+
+  std::unique_ptr<MIDIAccessor> m_accessor;
+  bool m_sysexEnabled;
+  bool m_hasPendingActivity;
+  HeapVector<Member<MIDIInput>> m_inputs;
+  HeapVector<Member<MIDIOutput>> m_outputs;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MIDIAccess_h
+#endif  // MIDIAccess_h

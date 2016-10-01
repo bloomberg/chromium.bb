@@ -39,115 +39,104 @@
 namespace WTF {
 
 class WTF_EXPORT Partitions {
-public:
-    typedef void (*ReportPartitionAllocSizeFunction)(size_t);
+ public:
+  typedef void (*ReportPartitionAllocSizeFunction)(size_t);
 
-    // Name of allocator used by tracing for marking sub-allocations while take
-    // memory snapshots.
-    static const char* const kAllocatedObjectPoolName;
+  // Name of allocator used by tracing for marking sub-allocations while take
+  // memory snapshots.
+  static const char* const kAllocatedObjectPoolName;
 
-    static void initialize(ReportPartitionAllocSizeFunction);
-    static void shutdown();
-    ALWAYS_INLINE static PartitionRootGeneric* bufferPartition()
-    {
-        ASSERT(s_initialized);
-        return m_bufferAllocator.root();
-    }
+  static void initialize(ReportPartitionAllocSizeFunction);
+  static void shutdown();
+  ALWAYS_INLINE static PartitionRootGeneric* bufferPartition() {
+    ASSERT(s_initialized);
+    return m_bufferAllocator.root();
+  }
 
-    ALWAYS_INLINE static PartitionRootGeneric* fastMallocPartition()
-    {
-        ASSERT(s_initialized);
-        return m_fastMallocAllocator.root();
-    }
+  ALWAYS_INLINE static PartitionRootGeneric* fastMallocPartition() {
+    ASSERT(s_initialized);
+    return m_fastMallocAllocator.root();
+  }
 
-    ALWAYS_INLINE static PartitionRoot* nodePartition()
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-    ALWAYS_INLINE static PartitionRoot* layoutPartition()
-    {
-        ASSERT(s_initialized);
-        return m_layoutAllocator.root();
-    }
+  ALWAYS_INLINE static PartitionRoot* nodePartition() {
+    ASSERT_NOT_REACHED();
+    return nullptr;
+  }
+  ALWAYS_INLINE static PartitionRoot* layoutPartition() {
+    ASSERT(s_initialized);
+    return m_layoutAllocator.root();
+  }
 
-    static size_t currentDOMMemoryUsage()
-    {
-        ASSERT(s_initialized);
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
+  static size_t currentDOMMemoryUsage() {
+    ASSERT(s_initialized);
+    ASSERT_NOT_REACHED();
+    return 0;
+  }
 
-    static size_t totalSizeOfCommittedPages()
-    {
-        size_t totalSize = 0;
-        totalSize += m_fastMallocAllocator.root()->totalSizeOfCommittedPages;
-        totalSize += m_bufferAllocator.root()->totalSizeOfCommittedPages;
-        totalSize += m_layoutAllocator.root()->totalSizeOfCommittedPages;
-        return totalSize;
-    }
+  static size_t totalSizeOfCommittedPages() {
+    size_t totalSize = 0;
+    totalSize += m_fastMallocAllocator.root()->totalSizeOfCommittedPages;
+    totalSize += m_bufferAllocator.root()->totalSizeOfCommittedPages;
+    totalSize += m_layoutAllocator.root()->totalSizeOfCommittedPages;
+    return totalSize;
+  }
 
-    static void decommitFreeableMemory();
+  static void decommitFreeableMemory();
 
-    static void reportMemoryUsageHistogram();
+  static void reportMemoryUsageHistogram();
 
-    static void dumpMemoryStats(bool isLightDump, PartitionStatsDumper*);
+  static void dumpMemoryStats(bool isLightDump, PartitionStatsDumper*);
 
-    ALWAYS_INLINE static void* bufferMalloc(size_t n, const char* typeName)
-    {
-        return partitionAllocGeneric(bufferPartition(), n, typeName);
-    }
-    ALWAYS_INLINE static void bufferFree(void* p)
-    {
-        partitionFreeGeneric(bufferPartition(), p);
-    }
-    ALWAYS_INLINE static size_t bufferActualSize(size_t n)
-    {
-        return partitionAllocActualSize(bufferPartition(), n);
-    }
-    static void* fastMalloc(size_t n, const char* typeName)
-    {
-        return partitionAllocGeneric(Partitions::fastMallocPartition(), n, typeName);
-    }
-    static void* fastZeroedMalloc(size_t n, const char* typeName)
-    {
-        void* result = fastMalloc(n, typeName);
-        memset(result, 0, n);
-        return result;
-    }
-    static void* fastRealloc(void* p, size_t n, const char* typeName)
-    {
-        return partitionReallocGeneric(Partitions::fastMallocPartition(), p, n, typeName);
-    }
-    static void fastFree(void* p)
-    {
-        partitionFreeGeneric(Partitions::fastMallocPartition(), p);
-    }
+  ALWAYS_INLINE static void* bufferMalloc(size_t n, const char* typeName) {
+    return partitionAllocGeneric(bufferPartition(), n, typeName);
+  }
+  ALWAYS_INLINE static void bufferFree(void* p) {
+    partitionFreeGeneric(bufferPartition(), p);
+  }
+  ALWAYS_INLINE static size_t bufferActualSize(size_t n) {
+    return partitionAllocActualSize(bufferPartition(), n);
+  }
+  static void* fastMalloc(size_t n, const char* typeName) {
+    return partitionAllocGeneric(Partitions::fastMallocPartition(), n,
+                                 typeName);
+  }
+  static void* fastZeroedMalloc(size_t n, const char* typeName) {
+    void* result = fastMalloc(n, typeName);
+    memset(result, 0, n);
+    return result;
+  }
+  static void* fastRealloc(void* p, size_t n, const char* typeName) {
+    return partitionReallocGeneric(Partitions::fastMallocPartition(), p, n,
+                                   typeName);
+  }
+  static void fastFree(void* p) {
+    partitionFreeGeneric(Partitions::fastMallocPartition(), p);
+  }
 
-    static void handleOutOfMemory();
+  static void handleOutOfMemory();
 
-private:
-    static SpinLock s_initializationLock;
-    static bool s_initialized;
+ private:
+  static SpinLock s_initializationLock;
+  static bool s_initialized;
 
-    // We have the following four partitions.
-    //   - LayoutObject partition: A partition to allocate LayoutObjects.
-    //     We prepare a dedicated partition for LayoutObjects because they
-    //     are likely to be a source of use-after-frees. Another reason
-    //     is for performance: As LayoutObjects are guaranteed to only be used
-    //     by the main thread, we can bypass acquiring a lock. Also we can
-    //     improve memory locality by putting LayoutObjects together.
-    //   - Buffer partition: A partition to allocate objects that have a strong
-    //     risk where the length and/or the contents are exploited from user
-    //     scripts. Vectors, HashTables, ArrayBufferContents and Strings are
-    //     allocated in the buffer partition.
-    //   - Fast malloc partition: A partition to allocate all other objects.
-    static PartitionAllocatorGeneric m_fastMallocAllocator;
-    static PartitionAllocatorGeneric m_bufferAllocator;
-    static SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
-    static ReportPartitionAllocSizeFunction m_reportSizeFunction;
+  // We have the following four partitions.
+  //   - LayoutObject partition: A partition to allocate LayoutObjects.
+  //     We prepare a dedicated partition for LayoutObjects because they
+  //     are likely to be a source of use-after-frees. Another reason
+  //     is for performance: As LayoutObjects are guaranteed to only be used
+  //     by the main thread, we can bypass acquiring a lock. Also we can
+  //     improve memory locality by putting LayoutObjects together.
+  //   - Buffer partition: A partition to allocate objects that have a strong
+  //     risk where the length and/or the contents are exploited from user
+  //     scripts. Vectors, HashTables, ArrayBufferContents and Strings are
+  //     allocated in the buffer partition.
+  //   - Fast malloc partition: A partition to allocate all other objects.
+  static PartitionAllocatorGeneric m_fastMallocAllocator;
+  static PartitionAllocatorGeneric m_bufferAllocator;
+  static SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
+  static ReportPartitionAllocSizeFunction m_reportSizeFunction;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // Partitions_h
+#endif  // Partitions_h

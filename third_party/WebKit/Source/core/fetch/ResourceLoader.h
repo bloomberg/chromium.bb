@@ -43,55 +43,74 @@ class Resource;
 class ResourceError;
 class ResourceFetcher;
 
-class CORE_EXPORT ResourceLoader final : public GarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
-public:
-    static ResourceLoader* create(ResourceFetcher*, Resource*);
-    ~ResourceLoader() override;
-    DECLARE_TRACE();
+class CORE_EXPORT ResourceLoader final
+    : public GarbageCollectedFinalized<ResourceLoader>,
+      protected WebURLLoaderClient {
+ public:
+  static ResourceLoader* create(ResourceFetcher*, Resource*);
+  ~ResourceLoader() override;
+  DECLARE_TRACE();
 
-    void start(const ResourceRequest&, WebTaskRunner* loadingTaskRunner, bool defersLoading);
-    void restartForServiceWorkerFallback(const ResourceRequest&);
-    void cancel();
+  void start(const ResourceRequest&,
+             WebTaskRunner* loadingTaskRunner,
+             bool defersLoading);
+  void restartForServiceWorkerFallback(const ResourceRequest&);
+  void cancel();
 
-    void setDefersLoading(bool);
+  void setDefersLoading(bool);
 
-    void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
+  void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
 
-    // WebURLLoaderClient
-    //
-    // A succesful load will consist of:
-    // 0+  willFollowRedirect()
-    // 0+  didSendData()
-    // 1   didReceiveResponse()
-    // 0-1 didReceiveCachedMetadata()
-    // 0+  didReceiveData() or didDownloadData(), but never both
-    // 1   didFinishLoading()
-    // A failed load is indicated by 1 didFail(), which can occur at any time
-    // before didFinishLoading(), including synchronous inside one of the other
-    // callbacks via ResourceLoader::cancel()
-    void willFollowRedirect(WebURLLoader*, WebURLRequest&, const WebURLResponse& redirectResponse, int64_t encodedDataLength) override;
-    void didSendData(WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
-    void didReceiveResponse(WebURLLoader*, const WebURLResponse&, WebDataConsumerHandle*) override;
-    void didReceiveCachedMetadata(WebURLLoader*, const char* data, int length) override;
-    void didReceiveData(WebURLLoader*, const char*, int, int encodedDataLength, int encodedBodyLength) override;
-    void didDownloadData(WebURLLoader*, int, int) override;
-    void didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength) override;
-    void didFail(WebURLLoader*, const WebURLError&) override;
+  // WebURLLoaderClient
+  //
+  // A succesful load will consist of:
+  // 0+  willFollowRedirect()
+  // 0+  didSendData()
+  // 1   didReceiveResponse()
+  // 0-1 didReceiveCachedMetadata()
+  // 0+  didReceiveData() or didDownloadData(), but never both
+  // 1   didFinishLoading()
+  // A failed load is indicated by 1 didFail(), which can occur at any time
+  // before didFinishLoading(), including synchronous inside one of the other
+  // callbacks via ResourceLoader::cancel()
+  void willFollowRedirect(WebURLLoader*,
+                          WebURLRequest&,
+                          const WebURLResponse& redirectResponse,
+                          int64_t encodedDataLength) override;
+  void didSendData(WebURLLoader*,
+                   unsigned long long bytesSent,
+                   unsigned long long totalBytesToBeSent) override;
+  void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
+  void didReceiveResponse(WebURLLoader*,
+                          const WebURLResponse&,
+                          WebDataConsumerHandle*) override;
+  void didReceiveCachedMetadata(WebURLLoader*,
+                                const char* data,
+                                int length) override;
+  void didReceiveData(WebURLLoader*,
+                      const char*,
+                      int,
+                      int encodedDataLength,
+                      int encodedBodyLength) override;
+  void didDownloadData(WebURLLoader*, int, int) override;
+  void didFinishLoading(WebURLLoader*,
+                        double finishTime,
+                        int64_t encodedDataLength) override;
+  void didFail(WebURLLoader*, const WebURLError&) override;
 
-    void didFinishLoadingFirstPartInMultipart();
+  void didFinishLoadingFirstPartInMultipart();
 
-private:
-    // Assumes ResourceFetcher and Resource are non-null.
-    ResourceLoader(ResourceFetcher*, Resource*);
+ private:
+  // Assumes ResourceFetcher and Resource are non-null.
+  ResourceLoader(ResourceFetcher*, Resource*);
 
-    void requestSynchronously(const ResourceRequest&);
+  void requestSynchronously(const ResourceRequest&);
 
-    std::unique_ptr<WebURLLoader> m_loader;
-    Member<ResourceFetcher> m_fetcher;
-    Member<Resource> m_resource;
+  std::unique_ptr<WebURLLoader> m_loader;
+  Member<ResourceFetcher> m_fetcher;
+  Member<Resource> m_resource;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

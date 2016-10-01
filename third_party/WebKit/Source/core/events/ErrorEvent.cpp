@@ -37,67 +37,58 @@
 namespace blink {
 
 ErrorEvent::ErrorEvent()
-    : m_sanitizedMessage()
-    , m_location(SourceLocation::create(String(), 0, 0, nullptr))
-    , m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent()))
-{
+    : m_sanitizedMessage(),
+      m_location(SourceLocation::create(String(), 0, 0, nullptr)),
+      m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent())) {}
+
+ErrorEvent::ErrorEvent(const AtomicString& type,
+                       const ErrorEventInit& initializer)
+    : Event(type, initializer),
+      m_sanitizedMessage(),
+      m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent())) {
+  if (initializer.hasMessage())
+    m_sanitizedMessage = initializer.message();
+  m_location = SourceLocation::create(
+      initializer.hasFilename() ? initializer.filename() : String(),
+      initializer.hasLineno() ? initializer.lineno() : 0,
+      initializer.hasColno() ? initializer.colno() : 0, nullptr);
+  if (initializer.hasError())
+    m_error = initializer.error();
 }
 
-ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializer)
-    : Event(type, initializer)
-    , m_sanitizedMessage()
-    , m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent()))
-{
-    if (initializer.hasMessage())
-        m_sanitizedMessage = initializer.message();
-    m_location = SourceLocation::create(
-        initializer.hasFilename() ? initializer.filename() : String(),
-        initializer.hasLineno() ? initializer.lineno() : 0,
-        initializer.hasColno() ? initializer.colno() : 0,
-        nullptr);
-    if (initializer.hasError())
-        m_error = initializer.error();
+ErrorEvent::ErrorEvent(const String& message,
+                       std::unique_ptr<SourceLocation> location,
+                       DOMWrapperWorld* world)
+    : Event(EventTypeNames::error, false, true),
+      m_sanitizedMessage(message),
+      m_location(std::move(location)),
+      m_world(world) {}
+
+void ErrorEvent::setUnsanitizedMessage(const String& message) {
+  DCHECK(m_unsanitizedMessage.isEmpty());
+  m_unsanitizedMessage = message;
 }
 
-ErrorEvent::ErrorEvent(const String& message, std::unique_ptr<SourceLocation> location, DOMWrapperWorld* world)
-    : Event(EventTypeNames::error, false, true)
-    , m_sanitizedMessage(message)
-    , m_location(std::move(location))
-    , m_world(world)
-{
+ErrorEvent::~ErrorEvent() {}
+
+const AtomicString& ErrorEvent::interfaceName() const {
+  return EventNames::ErrorEvent;
 }
 
-void ErrorEvent::setUnsanitizedMessage(const String& message)
-{
-    DCHECK(m_unsanitizedMessage.isEmpty());
-    m_unsanitizedMessage = message;
+ScriptValue ErrorEvent::error(ScriptState* scriptState) const {
+  // Don't return |m_error| when we are in the different worlds to avoid
+  // leaking a V8 value.
+  // We do not clone Error objects (exceptions), for 2 reasons:
+  // 1) Errors carry a reference to the isolated world's global object, and
+  //    thus passing it around would cause leakage.
+  // 2) Errors cannot be cloned (or serialized):
+  if (world() != &scriptState->world())
+    return ScriptValue();
+  return m_error;
 }
 
-ErrorEvent::~ErrorEvent()
-{
+DEFINE_TRACE(ErrorEvent) {
+  Event::trace(visitor);
 }
 
-const AtomicString& ErrorEvent::interfaceName() const
-{
-    return EventNames::ErrorEvent;
-}
-
-ScriptValue ErrorEvent::error(ScriptState* scriptState) const
-{
-    // Don't return |m_error| when we are in the different worlds to avoid
-    // leaking a V8 value.
-    // We do not clone Error objects (exceptions), for 2 reasons:
-    // 1) Errors carry a reference to the isolated world's global object, and
-    //    thus passing it around would cause leakage.
-    // 2) Errors cannot be cloned (or serialized):
-    if (world() != &scriptState->world())
-        return ScriptValue();
-    return m_error;
-}
-
-DEFINE_TRACE(ErrorEvent)
-{
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

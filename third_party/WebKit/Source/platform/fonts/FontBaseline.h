@@ -30,6 +30,6 @@ namespace blink {
 
 enum FontBaseline { AlphabeticBaseline, IdeographicBaseline };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FontBaseline_h
+#endif  // FontBaseline_h

@@ -25,123 +25,140 @@ using mojom::blink::PermissionStatus;
 namespace {
 
 class EstimateCallbacks final : public StorageQuotaCallbacks {
-    WTF_MAKE_NONCOPYABLE(EstimateCallbacks);
-public:
-    explicit EstimateCallbacks(ScriptPromiseResolver* resolver)
-        : m_resolver(resolver) {}
+  WTF_MAKE_NONCOPYABLE(EstimateCallbacks);
 
-    ~EstimateCallbacks() override {}
+ public:
+  explicit EstimateCallbacks(ScriptPromiseResolver* resolver)
+      : m_resolver(resolver) {}
 
-    void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) override
-    {
-        StorageEstimate estimate;
-        estimate.setUsage(usageInBytes);
-        estimate.setQuota(quotaInBytes);
-        m_resolver->resolve(estimate);
-    }
+  ~EstimateCallbacks() override {}
 
-    void didFail(WebStorageQuotaError error) override
-    {
-        m_resolver->reject(DOMException::create(static_cast<ExceptionCode>(error)));
-    }
+  void didQueryStorageUsageAndQuota(unsigned long long usageInBytes,
+                                    unsigned long long quotaInBytes) override {
+    StorageEstimate estimate;
+    estimate.setUsage(usageInBytes);
+    estimate.setQuota(quotaInBytes);
+    m_resolver->resolve(estimate);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_resolver);
-        StorageQuotaCallbacks::trace(visitor);
-    }
+  void didFail(WebStorageQuotaError error) override {
+    m_resolver->reject(DOMException::create(static_cast<ExceptionCode>(error)));
+  }
 
-private:
-    Member<ScriptPromiseResolver> m_resolver;
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_resolver);
+    StorageQuotaCallbacks::trace(visitor);
+  }
+
+ private:
+  Member<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace
+}  // namespace
 
-ScriptPromise StorageManager::persist(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
-    // TODO(dgrogan): Is the isUnique() check covered by the later
-    // isSecureContext() check? If so, maybe remove it. Write a test if it
-    // stays.
-    if (securityOrigin->isUnique()) {
-        resolver->reject(DOMException::create(NotSupportedError));
-        return promise;
-    }
-    String errorMessage;
-    if (!executionContext->isSecureContext(errorMessage)) {
-        resolver->reject(DOMException::create(SecurityError, errorMessage));
-        return promise;
-    }
-    ASSERT(executionContext->isDocument());
-    PermissionService* permissionService = getPermissionService(scriptState->getExecutionContext());
-    if (!permissionService) {
-        resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
-        return promise;
-    }
-    permissionService->RequestPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin(), UserGestureIndicator::processingUserGesture(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
-
+ScriptPromise StorageManager::persist(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
+  // TODO(dgrogan): Is the isUnique() check covered by the later
+  // isSecureContext() check? If so, maybe remove it. Write a test if it
+  // stays.
+  if (securityOrigin->isUnique()) {
+    resolver->reject(DOMException::create(NotSupportedError));
     return promise;
-}
-
-ScriptPromise StorageManager::persisted(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    PermissionService* permissionService = getPermissionService(scriptState->getExecutionContext());
-    if (!permissionService) {
-        resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
-        return promise;
-    }
-    permissionService->HasPermission(PermissionName::DURABLE_STORAGE, scriptState->getExecutionContext()->getSecurityOrigin(), convertToBaseCallback(WTF::bind(&StorageManager::permissionRequestComplete, wrapPersistent(this), wrapPersistent(resolver))));
+  }
+  String errorMessage;
+  if (!executionContext->isSecureContext(errorMessage)) {
+    resolver->reject(DOMException::create(SecurityError, errorMessage));
     return promise;
-}
-
-ScriptPromise StorageManager::estimate(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
-    if (securityOrigin->isUnique()) {
-        resolver->reject(DOMException::create(NotSupportedError));
-        return promise;
-    }
-    // IDL has: [SecureContext]
-    String errorMessage;
-    if (!executionContext->isSecureContext(errorMessage)) {
-        resolver->reject(DOMException::create(SecurityError, errorMessage));
-        return promise;
-    }
-
-    KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    Platform::current()->queryStorageUsageAndQuota(storagePartition, WebStorageQuotaTypeTemporary, new EstimateCallbacks(resolver));
+  }
+  ASSERT(executionContext->isDocument());
+  PermissionService* permissionService =
+      getPermissionService(scriptState->getExecutionContext());
+  if (!permissionService) {
+    resolver->reject(DOMException::create(
+        InvalidStateError,
+        "In its current state, the global scope can't request permissions."));
     return promise;
+  }
+  permissionService->RequestPermission(
+      PermissionName::DURABLE_STORAGE,
+      scriptState->getExecutionContext()->getSecurityOrigin(),
+      UserGestureIndicator::processingUserGesture(),
+      convertToBaseCallback(
+          WTF::bind(&StorageManager::permissionRequestComplete,
+                    wrapPersistent(this), wrapPersistent(resolver))));
+
+  return promise;
 }
 
-DEFINE_TRACE(StorageManager)
-{
+ScriptPromise StorageManager::persisted(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  PermissionService* permissionService =
+      getPermissionService(scriptState->getExecutionContext());
+  if (!permissionService) {
+    resolver->reject(DOMException::create(
+        InvalidStateError,
+        "In its current state, the global scope can't query permissions."));
+    return promise;
+  }
+  permissionService->HasPermission(
+      PermissionName::DURABLE_STORAGE,
+      scriptState->getExecutionContext()->getSecurityOrigin(),
+      convertToBaseCallback(
+          WTF::bind(&StorageManager::permissionRequestComplete,
+                    wrapPersistent(this), wrapPersistent(resolver))));
+  return promise;
 }
 
-mojom::blink::PermissionService* StorageManager::getPermissionService(ExecutionContext* executionContext)
-{
-    if (!m_permissionService && Permissions::connectToService(executionContext, mojo::GetProxy(&m_permissionService)))
-        m_permissionService.set_connection_error_handler(convertToBaseCallback(WTF::bind(&StorageManager::permissionServiceConnectionError, wrapWeakPersistent(this))));
-    return m_permissionService.get();
+ScriptPromise StorageManager::estimate(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
+  if (securityOrigin->isUnique()) {
+    resolver->reject(DOMException::create(NotSupportedError));
+    return promise;
+  }
+  // IDL has: [SecureContext]
+  String errorMessage;
+  if (!executionContext->isSecureContext(errorMessage)) {
+    resolver->reject(DOMException::create(SecurityError, errorMessage));
+    return promise;
+  }
+
+  KURL storagePartition = KURL(KURL(), securityOrigin->toString());
+  Platform::current()->queryStorageUsageAndQuota(
+      storagePartition, WebStorageQuotaTypeTemporary,
+      new EstimateCallbacks(resolver));
+  return promise;
 }
 
-void StorageManager::permissionServiceConnectionError()
-{
-    m_permissionService.reset();
+DEFINE_TRACE(StorageManager) {}
+
+mojom::blink::PermissionService* StorageManager::getPermissionService(
+    ExecutionContext* executionContext) {
+  if (!m_permissionService &&
+      Permissions::connectToService(executionContext,
+                                    mojo::GetProxy(&m_permissionService)))
+    m_permissionService.set_connection_error_handler(convertToBaseCallback(
+        WTF::bind(&StorageManager::permissionServiceConnectionError,
+                  wrapWeakPersistent(this))));
+  return m_permissionService.get();
 }
 
-void StorageManager::permissionRequestComplete(ScriptPromiseResolver* resolver, PermissionStatus status)
-{
-    if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    resolver->resolve(status == PermissionStatus::GRANTED);
+void StorageManager::permissionServiceConnectionError() {
+  m_permissionService.reset();
 }
 
-} // namespace blink
+void StorageManager::permissionRequestComplete(ScriptPromiseResolver* resolver,
+                                               PermissionStatus status) {
+  if (!resolver->getExecutionContext() ||
+      resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  resolver->resolve(status == PermissionStatus::GRANTED);
+}
+
+}  // namespace blink

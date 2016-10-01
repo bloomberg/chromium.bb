@@ -16,37 +16,42 @@ namespace blink {
 class LocalFrame;
 class Screen;
 
-class MODULES_EXPORT ScreenWakeLock final : public GarbageCollectedFinalized<ScreenWakeLock>, public Supplement<LocalFrame>, public ContextLifecycleObserver, public PageVisibilityObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(ScreenWakeLock);
-    WTF_MAKE_NONCOPYABLE(ScreenWakeLock);
-public:
-    static bool keepAwake(Screen&);
-    static void setKeepAwake(Screen&, bool);
+class MODULES_EXPORT ScreenWakeLock final
+    : public GarbageCollectedFinalized<ScreenWakeLock>,
+      public Supplement<LocalFrame>,
+      public ContextLifecycleObserver,
+      public PageVisibilityObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(ScreenWakeLock);
+  WTF_MAKE_NONCOPYABLE(ScreenWakeLock);
 
-    static const char* supplementName();
-    static ScreenWakeLock* from(LocalFrame*);
+ public:
+  static bool keepAwake(Screen&);
+  static void setKeepAwake(Screen&, bool);
 
-    ~ScreenWakeLock() = default;
+  static const char* supplementName();
+  static ScreenWakeLock* from(LocalFrame*);
 
-    DECLARE_VIRTUAL_TRACE();
+  ~ScreenWakeLock() = default;
 
-private:
-    explicit ScreenWakeLock(LocalFrame&);
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from PageVisibilityObserver.
-    void pageVisibilityChanged() override;
-    void contextDestroyed() override;
+ private:
+  explicit ScreenWakeLock(LocalFrame&);
 
-    bool keepAwake() const;
-    void setKeepAwake(bool);
+  // Inherited from PageVisibilityObserver.
+  void pageVisibilityChanged() override;
+  void contextDestroyed() override;
 
-    static ScreenWakeLock* fromScreen(Screen&);
-    void notifyService();
+  bool keepAwake() const;
+  void setKeepAwake(bool);
 
-    mojom::blink::WakeLockServicePtr m_service;
-    bool m_keepAwake;
+  static ScreenWakeLock* fromScreen(Screen&);
+  void notifyService();
+
+  mojom::blink::WakeLockServicePtr m_service;
+  bool m_keepAwake;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScreenWakeLock_h
+#endif  // ScreenWakeLock_h

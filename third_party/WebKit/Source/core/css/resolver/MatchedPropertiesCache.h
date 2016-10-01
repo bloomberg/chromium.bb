@@ -35,79 +35,91 @@ namespace blink {
 class ComputedStyle;
 class StyleResolverState;
 
-class CachedMatchedProperties final : public GarbageCollectedFinalized<CachedMatchedProperties> {
-public:
-    HeapVector<MatchedProperties> matchedProperties;
-    RefPtr<ComputedStyle> computedStyle;
-    RefPtr<ComputedStyle> parentComputedStyle;
+class CachedMatchedProperties final
+    : public GarbageCollectedFinalized<CachedMatchedProperties> {
+ public:
+  HeapVector<MatchedProperties> matchedProperties;
+  RefPtr<ComputedStyle> computedStyle;
+  RefPtr<ComputedStyle> parentComputedStyle;
 
-    void set(const ComputedStyle&, const ComputedStyle& parentStyle, const MatchedPropertiesVector&);
-    void clear();
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(matchedProperties);
-    }
+  void set(const ComputedStyle&,
+           const ComputedStyle& parentStyle,
+           const MatchedPropertiesVector&);
+  void clear();
+  DEFINE_INLINE_TRACE() { visitor->trace(matchedProperties); }
 };
 
 // Specialize the HashTraits for CachedMatchedProperties to check for dead
 // entries in the MatchedPropertiesCache.
-struct CachedMatchedPropertiesHashTraits : HashTraits<Member<CachedMatchedProperties>> {
-    static const WTF::WeakHandlingFlag weakHandlingFlag = WTF::WeakHandlingInCollections;
+struct CachedMatchedPropertiesHashTraits
+    : HashTraits<Member<CachedMatchedProperties>> {
+  static const WTF::WeakHandlingFlag weakHandlingFlag =
+      WTF::WeakHandlingInCollections;
 
-    template<typename VisitorDispatcher>
-    static bool traceInCollection(VisitorDispatcher visitor, Member<CachedMatchedProperties>& cachedProperties, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
-    {
-        // Only honor the cache's weakness semantics if the collection is traced
-        // with WeakPointersActWeak. Otherwise just trace the cachedProperties
-        // strongly, ie. call trace on it.
-        if (cachedProperties && strongify == WTF::WeakPointersActWeak) {
-            // A given cache entry is only kept alive if none of the MatchedProperties
-            // in the CachedMatchedProperties value contain a dead "properties" field.
-            // If there is a dead field the entire cache entry is removed.
-            for (const auto& matchedProperties : cachedProperties->matchedProperties) {
-                if (!ThreadHeap::isHeapObjectAlive(matchedProperties.properties)) {
-                    // For now report the cache entry as dead. This might not
-                    // be the final result if in a subsequent call for this entry,
-                    // the "properties" field has been marked via another path.
-                    return true;
-                }
-            }
+  template <typename VisitorDispatcher>
+  static bool traceInCollection(
+      VisitorDispatcher visitor,
+      Member<CachedMatchedProperties>& cachedProperties,
+      WTF::ShouldWeakPointersBeMarkedStrongly strongify) {
+    // Only honor the cache's weakness semantics if the collection is traced
+    // with WeakPointersActWeak. Otherwise just trace the cachedProperties
+    // strongly, ie. call trace on it.
+    if (cachedProperties && strongify == WTF::WeakPointersActWeak) {
+      // A given cache entry is only kept alive if none of the MatchedProperties
+      // in the CachedMatchedProperties value contain a dead "properties" field.
+      // If there is a dead field the entire cache entry is removed.
+      for (const auto& matchedProperties :
+           cachedProperties->matchedProperties) {
+        if (!ThreadHeap::isHeapObjectAlive(matchedProperties.properties)) {
+          // For now report the cache entry as dead. This might not
+          // be the final result if in a subsequent call for this entry,
+          // the "properties" field has been marked via another path.
+          return true;
         }
-        // At this point none of the entries in the matchedProperties vector
-        // had a dead "properties" field so trace CachedMatchedProperties strongly.
-        // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
-        // Avoid calling trace in that case by only calling trace when cachedProperties is not yet marked.
-        if (!ThreadHeap::isHeapObjectAlive(cachedProperties))
-            visitor->trace(cachedProperties);
-        return false;
+      }
     }
+    // At this point none of the entries in the matchedProperties vector
+    // had a dead "properties" field so trace CachedMatchedProperties strongly.
+    // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
+    // Avoid calling trace in that case by only calling trace when cachedProperties is not yet marked.
+    if (!ThreadHeap::isHeapObjectAlive(cachedProperties))
+      visitor->trace(cachedProperties);
+    return false;
+  }
 };
 
 class MatchedPropertiesCache {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
-public:
-    MatchedPropertiesCache();
-    ~MatchedPropertiesCache()
-    {
-        ASSERT(m_cache.isEmpty());
-    }
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(MatchedPropertiesCache);
 
-    const CachedMatchedProperties* find(unsigned hash, const StyleResolverState&, const MatchedPropertiesVector&);
-    void add(const ComputedStyle&, const ComputedStyle& parentStyle, unsigned hash, const MatchedPropertiesVector&);
+ public:
+  MatchedPropertiesCache();
+  ~MatchedPropertiesCache() { ASSERT(m_cache.isEmpty()); }
 
-    void clear();
-    void clearViewportDependent();
+  const CachedMatchedProperties* find(unsigned hash,
+                                      const StyleResolverState&,
+                                      const MatchedPropertiesVector&);
+  void add(const ComputedStyle&,
+           const ComputedStyle& parentStyle,
+           unsigned hash,
+           const MatchedPropertiesVector&);
 
-    static bool isCacheable(const StyleResolverState&);
+  void clear();
+  void clearViewportDependent();
 
-    DECLARE_TRACE();
+  static bool isCacheable(const StyleResolverState&);
 
-private:
-    using Cache = HeapHashMap<unsigned, Member<CachedMatchedProperties>, DefaultHash<unsigned>::Hash, HashTraits<unsigned>, CachedMatchedPropertiesHashTraits>;
-    Cache m_cache;
+  DECLARE_TRACE();
+
+ private:
+  using Cache = HeapHashMap<unsigned,
+                            Member<CachedMatchedProperties>,
+                            DefaultHash<unsigned>::Hash,
+                            HashTraits<unsigned>,
+                            CachedMatchedPropertiesHashTraits>;
+  Cache m_cache;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

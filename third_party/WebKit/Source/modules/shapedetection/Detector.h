@@ -14,17 +14,16 @@ namespace blink {
 class DetectedObject;
 class HTMLImageElement;
 
-class MODULES_EXPORT Detector
-    : public GarbageCollected<Detector>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class MODULES_EXPORT Detector : public GarbageCollected<Detector>,
+                                public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static Detector* create();
-    virtual ScriptPromise detect(ScriptState*, const HTMLImageElement*) = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+ public:
+  static Detector* create();
+  virtual ScriptPromise detect(ScriptState*, const HTMLImageElement*) = 0;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Detector_h
+#endif  // Detector_h

@@ -12,61 +12,65 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginTransform3DDisplayItem final : public PairedBeginDisplayItem {
-public:
-    BeginTransform3DDisplayItem(
-        const DisplayItemClient& client,
-        Type type,
-        const TransformationMatrix& transform,
-        const FloatPoint3D& transformOrigin)
-        : PairedBeginDisplayItem(client, type, sizeof(*this))
-        , m_transform(transform)
-        , m_transformOrigin(transformOrigin)
-    {
-        ASSERT(DisplayItem::isTransform3DType(type));
-    }
+class PLATFORM_EXPORT BeginTransform3DDisplayItem final
+    : public PairedBeginDisplayItem {
+ public:
+  BeginTransform3DDisplayItem(const DisplayItemClient& client,
+                              Type type,
+                              const TransformationMatrix& transform,
+                              const FloatPoint3D& transformOrigin)
+      : PairedBeginDisplayItem(client, type, sizeof(*this)),
+        m_transform(transform),
+        m_transformOrigin(transformOrigin) {
+    ASSERT(DisplayItem::isTransform3DType(type));
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-    const TransformationMatrix& transform() const { return m_transform; }
-    const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
+  const TransformationMatrix& transform() const { return m_transform; }
+  const FloatPoint3D& transformOrigin() const { return m_transformOrigin; }
 
-private:
+ private:
 #ifndef NDEBUG
-    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
+  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
-    bool equals(const DisplayItem& other) const final
-    {
-        return DisplayItem::equals(other)
-            && m_transform == static_cast<const BeginTransform3DDisplayItem&>(other).m_transform
-            && m_transformOrigin == static_cast<const BeginTransform3DDisplayItem&>(other).m_transformOrigin;
-    }
+  bool equals(const DisplayItem& other) const final {
+    return DisplayItem::equals(other) &&
+           m_transform ==
+               static_cast<const BeginTransform3DDisplayItem&>(other)
+                   .m_transform &&
+           m_transformOrigin ==
+               static_cast<const BeginTransform3DDisplayItem&>(other)
+                   .m_transformOrigin;
+  }
 
-    const TransformationMatrix m_transform;
-    const FloatPoint3D m_transformOrigin;
+  const TransformationMatrix m_transform;
+  const FloatPoint3D m_transformOrigin;
 };
 
-class PLATFORM_EXPORT EndTransform3DDisplayItem final : public PairedEndDisplayItem {
-public:
-    EndTransform3DDisplayItem(const DisplayItemClient& client, Type type)
-        : PairedEndDisplayItem(client, type, sizeof(*this))
-    {
-        ASSERT(DisplayItem::isEndTransform3DType(type));
-    }
+class PLATFORM_EXPORT EndTransform3DDisplayItem final
+    : public PairedEndDisplayItem {
+ public:
+  EndTransform3DDisplayItem(const DisplayItemClient& client, Type type)
+      : PairedEndDisplayItem(client, type, sizeof(*this)) {
+    ASSERT(DisplayItem::isEndTransform3DType(type));
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
 
-private:
+ private:
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final
-    {
-        return DisplayItem::transform3DTypeToEndTransform3DType(otherType) == getType();
-    }
+  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
+    return DisplayItem::transform3DTypeToEndTransform3DType(otherType) ==
+           getType();
+  }
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Transform3DDisplayItem_h
+#endif  // Transform3DDisplayItem_h

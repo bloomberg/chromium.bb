@@ -10,17 +10,18 @@
 
 namespace blink {
 
-ClipRecorder::ClipRecorder(GraphicsContext& context, const DisplayItemClient& client, DisplayItem::Type type, const IntRect& clipRect)
-    : m_client(client)
-    , m_context(context)
-    , m_type(type)
-{
-    m_context.getPaintController().createAndAppend<ClipDisplayItem>(m_client, type, clipRect);
+ClipRecorder::ClipRecorder(GraphicsContext& context,
+                           const DisplayItemClient& client,
+                           DisplayItem::Type type,
+                           const IntRect& clipRect)
+    : m_client(client), m_context(context), m_type(type) {
+  m_context.getPaintController().createAndAppend<ClipDisplayItem>(
+      m_client, type, clipRect);
 }
 
-ClipRecorder::~ClipRecorder()
-{
-    m_context.getPaintController().endItem<EndClipDisplayItem>(m_client, DisplayItem::clipTypeToEndClipType(m_type));
+ClipRecorder::~ClipRecorder() {
+  m_context.getPaintController().endItem<EndClipDisplayItem>(
+      m_client, DisplayItem::clipTypeToEndClipType(m_type));
 }
 
-} // namespace blink
+}  // namespace blink

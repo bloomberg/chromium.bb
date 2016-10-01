@@ -42,47 +42,56 @@ class LocalFrame;
 class Range;
 
 enum DragApplicationFlags {
-    DragApplicationNone = 0,
-    DragApplicationIsModal = 1,
-    DragApplicationIsSource = 2,
-    DragApplicationHasAttachedSheet = 4,
-    DragApplicationIsCopyKeyDown = 8
+  DragApplicationNone = 0,
+  DragApplicationIsModal = 1,
+  DragApplicationIsSource = 2,
+  DragApplicationHasAttachedSheet = 4,
+  DragApplicationIsCopyKeyDown = 8
 };
 
 class CORE_EXPORT DragData {
-    STACK_ALLOCATED();
-public:
-    enum FilenameConversionPolicy { DoNotConvertFilenames, ConvertFilenames };
+  STACK_ALLOCATED();
 
-    // clientPosition is taken to be the position of the drag event within the target window, with (0,0) at the top left
-    DragData(DataObject*, const IntPoint& clientPosition, const IntPoint& globalPosition, DragOperation, DragApplicationFlags = DragApplicationNone);
-    const IntPoint& clientPosition() const { return m_clientPosition; }
-    const IntPoint& globalPosition() const { return m_globalPosition; }
-    DragApplicationFlags flags() const { return m_applicationFlags; }
-    DataObject* platformData() const { return m_platformDragData; }
-    DragOperation draggingSourceOperationMask() const { return m_draggingSourceOperationMask; }
-    bool containsURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames) const;
-    bool containsPlainText() const;
-    bool containsCompatibleContent() const;
-    String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = nullptr) const;
-    String asPlainText() const;
-    void asFilePaths(Vector<String>&) const;
-    unsigned numberOfFiles() const;
-    DocumentFragment* asFragment(LocalFrame*) const;
-    bool canSmartReplace() const;
-    bool containsFiles() const;
-    int modifiers() const;
+ public:
+  enum FilenameConversionPolicy { DoNotConvertFilenames, ConvertFilenames };
 
-    String droppedFileSystemId() const;
+  // clientPosition is taken to be the position of the drag event within the target window, with (0,0) at the top left
+  DragData(DataObject*,
+           const IntPoint& clientPosition,
+           const IntPoint& globalPosition,
+           DragOperation,
+           DragApplicationFlags = DragApplicationNone);
+  const IntPoint& clientPosition() const { return m_clientPosition; }
+  const IntPoint& globalPosition() const { return m_globalPosition; }
+  DragApplicationFlags flags() const { return m_applicationFlags; }
+  DataObject* platformData() const { return m_platformDragData; }
+  DragOperation draggingSourceOperationMask() const {
+    return m_draggingSourceOperationMask;
+  }
+  bool containsURL(
+      FilenameConversionPolicy filenamePolicy = ConvertFilenames) const;
+  bool containsPlainText() const;
+  bool containsCompatibleContent() const;
+  String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames,
+               String* title = nullptr) const;
+  String asPlainText() const;
+  void asFilePaths(Vector<String>&) const;
+  unsigned numberOfFiles() const;
+  DocumentFragment* asFragment(LocalFrame*) const;
+  bool canSmartReplace() const;
+  bool containsFiles() const;
+  int modifiers() const;
 
-private:
-    IntPoint m_clientPosition;
-    IntPoint m_globalPosition;
-    Member<DataObject> m_platformDragData;
-    DragOperation m_draggingSourceOperationMask;
-    DragApplicationFlags m_applicationFlags;
+  String droppedFileSystemId() const;
+
+ private:
+  IntPoint m_clientPosition;
+  IntPoint m_globalPosition;
+  Member<DataObject> m_platformDragData;
+  DragOperation m_draggingSourceOperationMask;
+  DragApplicationFlags m_applicationFlags;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !DragData_h
+#endif  // !DragData_h

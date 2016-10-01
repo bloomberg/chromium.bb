@@ -37,44 +37,48 @@
 namespace blink {
 
 // This class is an implementation detail for deferred interpolations.
-class PLATFORM_EXPORT InterpolatedTransformOperation final : public TransformOperation {
-public:
-    static PassRefPtr<InterpolatedTransformOperation> create(const TransformOperations& from, const TransformOperations& to, double progress)
-    {
-        return adoptRef(new InterpolatedTransformOperation(from, to, progress));
-    }
+class PLATFORM_EXPORT InterpolatedTransformOperation final
+    : public TransformOperation {
+ public:
+  static PassRefPtr<InterpolatedTransformOperation> create(
+      const TransformOperations& from,
+      const TransformOperations& to,
+      double progress) {
+    return adoptRef(new InterpolatedTransformOperation(from, to, progress));
+  }
 
-    virtual bool canBlendWith(const TransformOperation& other) const
-    {
-        return isSameType(other);
-    }
+  virtual bool canBlendWith(const TransformOperation& other) const {
+    return isSameType(other);
+  }
 
-private:
-    OperationType type() const override { return Interpolated; }
+ private:
+  OperationType type() const override { return Interpolated; }
 
-    bool operator==(const TransformOperation&) const override;
-    void apply(TransformationMatrix&, const FloatSize& borderBoxSize) const override;
+  bool operator==(const TransformOperation&) const override;
+  void apply(TransformationMatrix&,
+             const FloatSize& borderBoxSize) const override;
 
-    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
-    PassRefPtr<TransformOperation> zoom(double factor) final { return create(from.zoom(factor), to.zoom(factor), progress); }
+  PassRefPtr<TransformOperation> blend(const TransformOperation* from,
+                                       double progress,
+                                       bool blendToIdentity = false) override;
+  PassRefPtr<TransformOperation> zoom(double factor) final {
+    return create(from.zoom(factor), to.zoom(factor), progress);
+  }
 
-    bool dependsOnBoxSize() const override
-    {
-        return from.dependsOnBoxSize() || to.dependsOnBoxSize();
-    }
+  bool dependsOnBoxSize() const override {
+    return from.dependsOnBoxSize() || to.dependsOnBoxSize();
+  }
 
-    InterpolatedTransformOperation(const TransformOperations& from, const TransformOperations& to, double progress)
-        : from(from)
-        , to(to)
-        , progress(progress)
-    { }
+  InterpolatedTransformOperation(const TransformOperations& from,
+                                 const TransformOperations& to,
+                                 double progress)
+      : from(from), to(to), progress(progress) {}
 
-    const TransformOperations from;
-    const TransformOperations to;
-    double progress;
+  const TransformOperations from;
+  const TransformOperations to;
+  double progress;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InterpolatedTransformOperation_h
-
+#endif  // InterpolatedTransformOperation_h

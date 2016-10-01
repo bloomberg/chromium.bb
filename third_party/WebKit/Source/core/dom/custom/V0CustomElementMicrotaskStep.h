@@ -36,26 +36,25 @@
 
 namespace blink {
 
-class V0CustomElementMicrotaskStep : public GarbageCollectedFinalized<V0CustomElementMicrotaskStep> {
-    WTF_MAKE_NONCOPYABLE(V0CustomElementMicrotaskStep);
-public:
-    V0CustomElementMicrotaskStep() { }
-    virtual ~V0CustomElementMicrotaskStep() { }
+class V0CustomElementMicrotaskStep
+    : public GarbageCollectedFinalized<V0CustomElementMicrotaskStep> {
+  WTF_MAKE_NONCOPYABLE(V0CustomElementMicrotaskStep);
 
-    enum Result {
-        Processing,
-        FinishedProcessing
-    };
+ public:
+  V0CustomElementMicrotaskStep() {}
+  virtual ~V0CustomElementMicrotaskStep() {}
 
-    virtual Result process() = 0;
+  enum Result { Processing, FinishedProcessing };
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual Result process() = 0;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
 #if !defined(NDEBUG)
-    virtual void show(unsigned indent) = 0;
+  virtual void show(unsigned indent) = 0;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementMicrotaskStep_h
+#endif  // V0CustomElementMicrotaskStep_h

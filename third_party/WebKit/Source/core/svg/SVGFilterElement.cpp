@@ -30,112 +30,119 @@
 namespace blink {
 
 inline SVGFilterElement::SVGFilterElement(Document& document)
-    : SVGElement(SVGNames::filterTag, document)
-    , SVGURIReference(this)
-    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(SVGLengthMode::Width)))
-    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height)))
-    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(SVGLengthMode::Width)))
-    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(SVGLengthMode::Height)))
-    , m_filterUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::filterUnitsAttr, SVGUnitTypes::kSvgUnitTypeObjectboundingbox))
-    , m_primitiveUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::primitiveUnitsAttr, SVGUnitTypes::kSvgUnitTypeUserspaceonuse))
-{
-    // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
-    // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
-    m_x->setDefaultValueAsString("-10%");
-    m_y->setDefaultValueAsString("-10%");
-    m_width->setDefaultValueAsString("120%");
-    m_height->setDefaultValueAsString("120%");
+    : SVGElement(SVGNames::filterTag, document),
+      SVGURIReference(this),
+      m_x(SVGAnimatedLength::create(this,
+                                    SVGNames::xAttr,
+                                    SVGLength::create(SVGLengthMode::Width))),
+      m_y(SVGAnimatedLength::create(this,
+                                    SVGNames::yAttr,
+                                    SVGLength::create(SVGLengthMode::Height))),
+      m_width(
+          SVGAnimatedLength::create(this,
+                                    SVGNames::widthAttr,
+                                    SVGLength::create(SVGLengthMode::Width))),
+      m_height(
+          SVGAnimatedLength::create(this,
+                                    SVGNames::heightAttr,
+                                    SVGLength::create(SVGLengthMode::Height))),
+      m_filterUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
+          this,
+          SVGNames::filterUnitsAttr,
+          SVGUnitTypes::kSvgUnitTypeObjectboundingbox)),
+      m_primitiveUnits(
+          SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
+              this,
+              SVGNames::primitiveUnitsAttr,
+              SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
+  // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
+  // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
+  m_x->setDefaultValueAsString("-10%");
+  m_y->setDefaultValueAsString("-10%");
+  m_width->setDefaultValueAsString("120%");
+  m_height->setDefaultValueAsString("120%");
 
-    addToPropertyMap(m_x);
-    addToPropertyMap(m_y);
-    addToPropertyMap(m_width);
-    addToPropertyMap(m_height);
-    addToPropertyMap(m_filterUnits);
-    addToPropertyMap(m_primitiveUnits);
+  addToPropertyMap(m_x);
+  addToPropertyMap(m_y);
+  addToPropertyMap(m_width);
+  addToPropertyMap(m_height);
+  addToPropertyMap(m_filterUnits);
+  addToPropertyMap(m_primitiveUnits);
 }
 
-SVGFilterElement::~SVGFilterElement()
-{
-}
+SVGFilterElement::~SVGFilterElement() {}
 
 DEFINE_NODE_FACTORY(SVGFilterElement)
 
-DEFINE_TRACE(SVGFilterElement)
-{
-    visitor->trace(m_x);
-    visitor->trace(m_y);
-    visitor->trace(m_width);
-    visitor->trace(m_height);
-    visitor->trace(m_filterUnits);
-    visitor->trace(m_primitiveUnits);
-    visitor->trace(m_clientsToAdd);
-    SVGElement::trace(visitor);
-    SVGURIReference::trace(visitor);
+DEFINE_TRACE(SVGFilterElement) {
+  visitor->trace(m_x);
+  visitor->trace(m_y);
+  visitor->trace(m_width);
+  visitor->trace(m_height);
+  visitor->trace(m_filterUnits);
+  visitor->trace(m_primitiveUnits);
+  visitor->trace(m_clientsToAdd);
+  SVGElement::trace(visitor);
+  SVGURIReference::trace(visitor);
 }
 
-void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    bool isXYWH = attrName == SVGNames::xAttr
-        || attrName == SVGNames::yAttr
-        || attrName == SVGNames::widthAttr
-        || attrName == SVGNames::heightAttr;
-    if (isXYWH)
-        updateRelativeLengthsInformation();
+void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName) {
+  bool isXYWH = attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
+                attrName == SVGNames::widthAttr ||
+                attrName == SVGNames::heightAttr;
+  if (isXYWH)
+    updateRelativeLengthsInformation();
 
-    if (isXYWH
-        || attrName == SVGNames::filterUnitsAttr
-        || attrName == SVGNames::primitiveUnitsAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
-        LayoutSVGResourceContainer* layoutObject = toLayoutSVGResourceContainer(this->layoutObject());
-        if (layoutObject)
-            layoutObject->invalidateCacheAndMarkForLayout();
+  if (isXYWH || attrName == SVGNames::filterUnitsAttr ||
+      attrName == SVGNames::primitiveUnitsAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
+    LayoutSVGResourceContainer* layoutObject =
+        toLayoutSVGResourceContainer(this->layoutObject());
+    if (layoutObject)
+      layoutObject->invalidateCacheAndMarkForLayout();
 
-        return;
-    }
+    return;
+  }
 
-    SVGElement::svgAttributeChanged(attrName);
+  SVGElement::svgAttributeChanged(attrName);
 }
 
-void SVGFilterElement::childrenChanged(const ChildrenChange& change)
-{
-    SVGElement::childrenChanged(change);
+void SVGFilterElement::childrenChanged(const ChildrenChange& change) {
+  SVGElement::childrenChanged(change);
 
-    if (change.byParser)
-        return;
+  if (change.byParser)
+    return;
 
-    if (LayoutObject* object = layoutObject())
-        object->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ChildChanged);
+  if (LayoutObject* object = layoutObject())
+    object->setNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::ChildChanged);
 }
 
-LayoutObject* SVGFilterElement::createLayoutObject(const ComputedStyle&)
-{
-    LayoutSVGResourceFilter* layoutObject = new LayoutSVGResourceFilter(this);
+LayoutObject* SVGFilterElement::createLayoutObject(const ComputedStyle&) {
+  LayoutSVGResourceFilter* layoutObject = new LayoutSVGResourceFilter(this);
 
-    for (SVGResourceClient* client : m_clientsToAdd)
-        layoutObject->addResourceClient(client);
-    m_clientsToAdd.clear();
+  for (SVGResourceClient* client : m_clientsToAdd)
+    layoutObject->addResourceClient(client);
+  m_clientsToAdd.clear();
 
-    return layoutObject;
+  return layoutObject;
 }
 
-bool SVGFilterElement::selfHasRelativeLengths() const
-{
-    return m_x->currentValue()->isRelative()
-        || m_y->currentValue()->isRelative()
-        || m_width->currentValue()->isRelative()
-        || m_height->currentValue()->isRelative();
+bool SVGFilterElement::selfHasRelativeLengths() const {
+  return m_x->currentValue()->isRelative() ||
+         m_y->currentValue()->isRelative() ||
+         m_width->currentValue()->isRelative() ||
+         m_height->currentValue()->isRelative();
 }
 
-void SVGFilterElement::addClient(SVGResourceClient* client)
-{
-    ASSERT(client);
-    m_clientsToAdd.add(client);
+void SVGFilterElement::addClient(SVGResourceClient* client) {
+  ASSERT(client);
+  m_clientsToAdd.add(client);
 }
 
-void SVGFilterElement::removeClient(SVGResourceClient* client)
-{
-    ASSERT(client);
-    m_clientsToAdd.remove(client);
+void SVGFilterElement::removeClient(SVGResourceClient* client) {
+  ASSERT(client);
+  m_clientsToAdd.remove(client);
 }
 
-} // namespace blink
+}  // namespace blink

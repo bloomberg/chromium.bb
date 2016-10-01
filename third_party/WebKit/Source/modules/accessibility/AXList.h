@@ -36,23 +36,24 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXList final : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AXList);
+  WTF_MAKE_NONCOPYABLE(AXList);
 
-private:
-    AXList(LayoutObject*, AXObjectCacheImpl&);
+ private:
+  AXList(LayoutObject*, AXObjectCacheImpl&);
 
-public:
-    static AXList* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXList() override;
+ public:
+  static AXList* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXList() override;
 
-    bool isList() const override { return true; }
+  bool isList() const override { return true; }
 
-    AccessibilityRole roleValue() const final;
-private:
-    bool isDescriptionList() const;
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  AccessibilityRole roleValue() const final;
+
+ private:
+  bool isDescriptionList() const;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXList_h
+#endif  // AXList_h

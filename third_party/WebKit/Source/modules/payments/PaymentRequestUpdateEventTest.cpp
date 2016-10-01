@@ -19,108 +19,132 @@
 namespace blink {
 namespace {
 
-class MockPaymentUpdater : public GarbageCollectedFinalized<MockPaymentUpdater>, public PaymentUpdater {
-    USING_GARBAGE_COLLECTED_MIXIN(MockPaymentUpdater);
-    WTF_MAKE_NONCOPYABLE(MockPaymentUpdater);
+class MockPaymentUpdater : public GarbageCollectedFinalized<MockPaymentUpdater>,
+                           public PaymentUpdater {
+  USING_GARBAGE_COLLECTED_MIXIN(MockPaymentUpdater);
+  WTF_MAKE_NONCOPYABLE(MockPaymentUpdater);
 
-public:
-    MockPaymentUpdater() {}
-    ~MockPaymentUpdater() override {}
+ public:
+  MockPaymentUpdater() {}
+  ~MockPaymentUpdater() override {}
 
-    MOCK_METHOD1(onUpdatePaymentDetails, void(const ScriptValue& detailsScriptValue));
-    MOCK_METHOD1(onUpdatePaymentDetailsFailure, void(const String& error));
+  MOCK_METHOD1(onUpdatePaymentDetails,
+               void(const ScriptValue& detailsScriptValue));
+  MOCK_METHOD1(onUpdatePaymentDetailsFailure, void(const String& error));
 
-    DEFINE_INLINE_TRACE() {}
+  DEFINE_INLINE_TRACE() {}
 };
 
-TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled)
-{
-    V8TestingScope scope;
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
-    MockPaymentUpdater* updater = new MockPaymentUpdater;
-    event->setPaymentDetailsUpdater(updater);
-    event->setEventPhase(Event::kCapturingPhase);
-    ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(scope.getScriptState());
-    event->updateWith(scope.getScriptState(), paymentDetails->promise(), scope.getExceptionState());
-    EXPECT_FALSE(scope.getExceptionState().hadException());
+TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {
+  V8TestingScope scope;
+  PaymentRequestUpdateEvent* event =
+      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  MockPaymentUpdater* updater = new MockPaymentUpdater;
+  event->setPaymentDetailsUpdater(updater);
+  event->setEventPhase(Event::kCapturingPhase);
+  ScriptPromiseResolver* paymentDetails =
+      ScriptPromiseResolver::create(scope.getScriptState());
+  event->updateWith(scope.getScriptState(), paymentDetails->promise(),
+                    scope.getExceptionState());
+  EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_));
-    EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_)).Times(0);
+  EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_));
+  EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_)).Times(0);
 
-    paymentDetails->resolve("foo");
+  paymentDetails->resolve("foo");
 }
 
-TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled)
-{
-    V8TestingScope scope;
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
-    MockPaymentUpdater* updater = new MockPaymentUpdater;
-    event->setPaymentDetailsUpdater(updater);
-    event->setEventPhase(Event::kCapturingPhase);
-    ScriptPromiseResolver* paymentDetails = ScriptPromiseResolver::create(scope.getScriptState());
-    event->updateWith(scope.getScriptState(), paymentDetails->promise(), scope.getExceptionState());
-    EXPECT_FALSE(scope.getExceptionState().hadException());
+TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled) {
+  V8TestingScope scope;
+  PaymentRequestUpdateEvent* event =
+      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  MockPaymentUpdater* updater = new MockPaymentUpdater;
+  event->setPaymentDetailsUpdater(updater);
+  event->setEventPhase(Event::kCapturingPhase);
+  ScriptPromiseResolver* paymentDetails =
+      ScriptPromiseResolver::create(scope.getScriptState());
+  event->updateWith(scope.getScriptState(), paymentDetails->promise(),
+                    scope.getExceptionState());
+  EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_)).Times(0);
-    EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_));
+  EXPECT_CALL(*updater, onUpdatePaymentDetails(testing::_)).Times(0);
+  EXPECT_CALL(*updater, onUpdatePaymentDetailsFailure(testing::_));
 
-    paymentDetails->reject("oops");
+  paymentDetails->reject("oops");
 }
 
-TEST(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching)
-{
-    V8TestingScope scope;
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
-    event->setPaymentDetailsUpdater(new MockPaymentUpdater);
+TEST(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching) {
+  V8TestingScope scope;
+  PaymentRequestUpdateEvent* event =
+      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  event->setPaymentDetailsUpdater(new MockPaymentUpdater);
 
-    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
+  event->updateWith(
+      scope.getScriptState(),
+      ScriptPromiseResolver::create(scope.getScriptState())->promise(),
+      scope.getExceptionState());
 
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+  EXPECT_TRUE(scope.getExceptionState().hadException());
 }
 
-TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice)
-{
-    V8TestingScope scope;
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
-    MockPaymentUpdater* updater = new MockPaymentUpdater;
-    event->setPaymentDetailsUpdater(updater);
-    event->setEventPhase(Event::kCapturingPhase);
-    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
-    EXPECT_FALSE(scope.getExceptionState().hadException());
+TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice) {
+  V8TestingScope scope;
+  PaymentRequestUpdateEvent* event =
+      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  MockPaymentUpdater* updater = new MockPaymentUpdater;
+  event->setPaymentDetailsUpdater(updater);
+  event->setEventPhase(Event::kCapturingPhase);
+  event->updateWith(
+      scope.getScriptState(),
+      ScriptPromiseResolver::create(scope.getScriptState())->promise(),
+      scope.getExceptionState());
+  EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
+  event->updateWith(
+      scope.getScriptState(),
+      ScriptPromiseResolver::create(scope.getScriptState())->promise(),
+      scope.getExceptionState());
 
-    EXPECT_TRUE(scope.getExceptionState().hadException());
+  EXPECT_TRUE(scope.getExceptionState().hadException());
 }
 
-TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired)
-{
-    V8TestingScope scope;
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired) {
+  V8TestingScope scope;
+  PaymentRequestUpdateEvent* event =
+      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
 
-    event->updateWith(scope.getScriptState(), ScriptPromiseResolver::create(scope.getScriptState())->promise(), scope.getExceptionState());
+  event->updateWith(
+      scope.getScriptState(),
+      ScriptPromiseResolver::create(scope.getScriptState())->promise(),
+      scope.getExceptionState());
 
-    EXPECT_FALSE(scope.getExceptionState().hadException());
+  EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
-TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout)
-{
-    V8TestingScope scope;
-    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
-    makePaymentRequestOriginSecure(scope.document());
-    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
-    PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
-    event->setPaymentDetailsUpdater(request);
-    EXPECT_FALSE(scope.getExceptionState().hadException());
+TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout) {
+  V8TestingScope scope;
+  PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+  makePaymentRequestOriginSecure(scope.document());
+  PaymentRequest* request = PaymentRequest::create(
+      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      buildPaymentDetailsForTest(), scope.getExceptionState());
+  PaymentRequestUpdateEvent* event =
+      PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
+  event->setPaymentDetailsUpdater(request);
+  EXPECT_FALSE(scope.getExceptionState().hadException());
 
-    String errorMessage;
-    request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
+  String errorMessage;
+  request->show(scope.getScriptState())
+      .then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
 
-    event->onUpdateEventTimeoutForTesting();
+  event->onUpdateEventTimeoutForTesting();
 
-    v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
-    EXPECT_EQ("AbortError: Timed out as the page didn't resolve the promise from change event", errorMessage);
+  v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
+  EXPECT_EQ(
+      "AbortError: Timed out as the page didn't resolve the promise from "
+      "change event",
+      errorMessage);
 }
 
-} // namespace
-} // namespace blink
+}  // namespace
+}  // namespace blink

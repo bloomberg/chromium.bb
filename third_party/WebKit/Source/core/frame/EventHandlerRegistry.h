@@ -20,93 +20,109 @@ typedef HashCountedSet<UntracedMember<EventTarget>> EventTargetSet;
 // Registry for keeping track of event handlers. Note that only handlers on
 // documents that can be rendered or can receive input (i.e., are attached to a
 // FrameHost) are registered here.
-class CORE_EXPORT EventHandlerRegistry final : public GarbageCollectedFinalized<EventHandlerRegistry> {
-public:
-    explicit EventHandlerRegistry(FrameHost&);
-    virtual ~EventHandlerRegistry();
+class CORE_EXPORT EventHandlerRegistry final
+    : public GarbageCollectedFinalized<EventHandlerRegistry> {
+ public:
+  explicit EventHandlerRegistry(FrameHost&);
+  virtual ~EventHandlerRegistry();
 
-    // Supported event handler classes. Note that each one may correspond to
-    // multiple event types.
-    enum EventHandlerClass {
-        ScrollEvent,
-        WheelEventBlocking,
-        WheelEventPassive,
-        TouchStartOrMoveEventBlocking,
-        TouchStartOrMoveEventPassive,
-        TouchEndOrCancelEventBlocking,
-        TouchEndOrCancelEventPassive,
+  // Supported event handler classes. Note that each one may correspond to
+  // multiple event types.
+  enum EventHandlerClass {
+    ScrollEvent,
+    WheelEventBlocking,
+    WheelEventPassive,
+    TouchStartOrMoveEventBlocking,
+    TouchStartOrMoveEventPassive,
+    TouchEndOrCancelEventBlocking,
+    TouchEndOrCancelEventPassive,
 #if ENABLE(ASSERT)
-        // Additional event categories for verifying handler tracking logic.
-        EventsForTesting,
+    // Additional event categories for verifying handler tracking logic.
+    EventsForTesting,
 #endif
-        EventHandlerClassCount, // Must be the last entry.
-    };
+    EventHandlerClassCount,  // Must be the last entry.
+  };
 
-    // Returns true if the FrameHost has event handlers of the specified class.
-    bool hasEventHandlers(EventHandlerClass) const;
+  // Returns true if the FrameHost has event handlers of the specified class.
+  bool hasEventHandlers(EventHandlerClass) const;
 
-    // Returns a set of EventTargets which have registered handlers of the given class.
-    const EventTargetSet* eventHandlerTargets(EventHandlerClass) const;
+  // Returns a set of EventTargets which have registered handlers of the given class.
+  const EventTargetSet* eventHandlerTargets(EventHandlerClass) const;
 
-    // Registration and management of event handlers attached to EventTargets.
-    void didAddEventHandler(EventTarget&, const AtomicString& eventType, const AddEventListenerOptions&);
-    void didAddEventHandler(EventTarget&, EventHandlerClass);
-    void didRemoveEventHandler(EventTarget&, const AtomicString& eventType, const AddEventListenerOptions&);
-    void didRemoveEventHandler(EventTarget&, EventHandlerClass);
-    void didRemoveAllEventHandlers(EventTarget&);
+  // Registration and management of event handlers attached to EventTargets.
+  void didAddEventHandler(EventTarget&,
+                          const AtomicString& eventType,
+                          const AddEventListenerOptions&);
+  void didAddEventHandler(EventTarget&, EventHandlerClass);
+  void didRemoveEventHandler(EventTarget&,
+                             const AtomicString& eventType,
+                             const AddEventListenerOptions&);
+  void didRemoveEventHandler(EventTarget&, EventHandlerClass);
+  void didRemoveAllEventHandlers(EventTarget&);
 
-    void didMoveIntoFrameHost(EventTarget&);
-    void didMoveOutOfFrameHost(EventTarget&);
-    static void didMoveBetweenFrameHosts(EventTarget&, FrameHost* oldFrameHost, FrameHost* newFrameHost);
+  void didMoveIntoFrameHost(EventTarget&);
+  void didMoveOutOfFrameHost(EventTarget&);
+  static void didMoveBetweenFrameHosts(EventTarget&,
+                                       FrameHost* oldFrameHost,
+                                       FrameHost* newFrameHost);
 
-    // Either |documentDetached| or |didMove{Into,OutOf,Between}FrameHosts| must
-    // be called whenever the FrameHost that is associated with a registered event
-    // target changes. This ensures the registry does not end up with stale
-    // references to handlers that are no longer related to it.
-    void documentDetached(Document&);
+  // Either |documentDetached| or |didMove{Into,OutOf,Between}FrameHosts| must
+  // be called whenever the FrameHost that is associated with a registered event
+  // target changes. This ensures the registry does not end up with stale
+  // references to handlers that are no longer related to it.
+  void documentDetached(Document&);
 
-    DECLARE_TRACE();
-    void clearWeakMembers(Visitor*);
+  DECLARE_TRACE();
+  void clearWeakMembers(Visitor*);
 
-private:
-    enum ChangeOperation {
-        Add, // Add a new event handler.
-        Remove, // Remove an existing event handler.
-        RemoveAll // Remove any and all existing event handlers for a given target.
-    };
+ private:
+  enum ChangeOperation {
+    Add,       // Add a new event handler.
+    Remove,    // Remove an existing event handler.
+    RemoveAll  // Remove any and all existing event handlers for a given target.
+  };
 
-    // Returns true if |eventType| belongs to a class this registry tracks.
-    static bool eventTypeToClass(const AtomicString& eventType, const AddEventListenerOptions&, EventHandlerClass* result);
+  // Returns true if |eventType| belongs to a class this registry tracks.
+  static bool eventTypeToClass(const AtomicString& eventType,
+                               const AddEventListenerOptions&,
+                               EventHandlerClass* result);
 
-    // Returns true if the operation actually added a new target or completely
-    // removed an existing one.
-    bool updateEventHandlerTargets(ChangeOperation, EventHandlerClass, EventTarget*);
+  // Returns true if the operation actually added a new target or completely
+  // removed an existing one.
+  bool updateEventHandlerTargets(ChangeOperation,
+                                 EventHandlerClass,
+                                 EventTarget*);
 
-    // Called on the EventHandlerRegistry of the root Document to notify
-    // clients when we have added the first handler or removed the last one for
-    // a given event class. |hasActiveHandlers| can be used to distinguish
-    // between the two cases.
-    void notifyHasHandlersChanged(EventHandlerClass, bool hasActiveHandlers);
+  // Called on the EventHandlerRegistry of the root Document to notify
+  // clients when we have added the first handler or removed the last one for
+  // a given event class. |hasActiveHandlers| can be used to distinguish
+  // between the two cases.
+  void notifyHasHandlersChanged(EventHandlerClass, bool hasActiveHandlers);
 
-    // Called to notify clients whenever a single event handler target is
-    // registered or unregistered. If several handlers are registered for the
-    // same target, only the first registration will trigger this notification.
-    void notifyDidAddOrRemoveEventHandlerTarget(EventHandlerClass);
+  // Called to notify clients whenever a single event handler target is
+  // registered or unregistered. If several handlers are registered for the
+  // same target, only the first registration will trigger this notification.
+  void notifyDidAddOrRemoveEventHandlerTarget(EventHandlerClass);
 
-    // Record a change operation to a given event handler class and notify any
-    // parent registry and other clients accordingly.
-    void updateEventHandlerOfType(ChangeOperation, const AtomicString& eventType, const AddEventListenerOptions&, EventTarget*);
+  // Record a change operation to a given event handler class and notify any
+  // parent registry and other clients accordingly.
+  void updateEventHandlerOfType(ChangeOperation,
+                                const AtomicString& eventType,
+                                const AddEventListenerOptions&,
+                                EventTarget*);
 
-    void updateEventHandlerInternal(ChangeOperation, EventHandlerClass, EventTarget*);
+  void updateEventHandlerInternal(ChangeOperation,
+                                  EventHandlerClass,
+                                  EventTarget*);
 
-    void updateAllEventHandlers(ChangeOperation, EventTarget&);
+  void updateAllEventHandlers(ChangeOperation, EventTarget&);
 
-    void checkConsistency() const;
+  void checkConsistency() const;
 
-    Member<FrameHost> m_frameHost;
-    EventTargetSet m_targets[EventHandlerClassCount];
+  Member<FrameHost> m_frameHost;
+  EventTargetSet m_targets[EventHandlerClassCount];
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EventHandlerRegistry_h
+#endif  // EventHandlerRegistry_h

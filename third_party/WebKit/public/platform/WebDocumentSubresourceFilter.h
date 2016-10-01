@@ -12,11 +12,12 @@ namespace blink {
 class WebURL;
 
 class WebDocumentSubresourceFilter {
-public:
-    virtual ~WebDocumentSubresourceFilter() {}
-    virtual bool allowLoad(const WebURL& resourceUrl, WebURLRequest::RequestContext) = 0;
+ public:
+  virtual ~WebDocumentSubresourceFilter() {}
+  virtual bool allowLoad(const WebURL& resourceUrl,
+                         WebURLRequest::RequestContext) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebDocumentSubresourceFilter_h
+#endif  // WebDocumentSubresourceFilter_h

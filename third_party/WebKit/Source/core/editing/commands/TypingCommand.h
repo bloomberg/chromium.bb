@@ -31,113 +31,154 @@
 namespace blink {
 
 class TypingCommand final : public CompositeEditCommand {
-public:
-    enum ETypingCommand {
-        DeleteSelection,
-        DeleteKey,
-        ForwardDeleteKey,
-        InsertText,
-        InsertLineBreak,
-        InsertParagraphSeparator,
-        InsertParagraphSeparatorInQuotedContent
-    };
+ public:
+  enum ETypingCommand {
+    DeleteSelection,
+    DeleteKey,
+    ForwardDeleteKey,
+    InsertText,
+    InsertLineBreak,
+    InsertParagraphSeparator,
+    InsertParagraphSeparatorInQuotedContent
+  };
 
-    enum TextCompositionType {
-        TextCompositionNone,
-        TextCompositionUpdate,
-        TextCompositionConfirm
-    };
+  enum TextCompositionType {
+    TextCompositionNone,
+    TextCompositionUpdate,
+    TextCompositionConfirm
+  };
 
-    enum Option {
-        SelectInsertedText = 1 << 0,
-        KillRing = 1 << 1,
-        RetainAutocorrectionIndicator = 1 << 2,
-        PreventSpellChecking = 1 << 3,
-        SmartDelete = 1 << 4
-    };
-    typedef unsigned Options;
+  enum Option {
+    SelectInsertedText = 1 << 0,
+    KillRing = 1 << 1,
+    RetainAutocorrectionIndicator = 1 << 2,
+    PreventSpellChecking = 1 << 3,
+    SmartDelete = 1 << 4
+  };
+  typedef unsigned Options;
 
-    static void deleteSelection(Document&, Options = 0);
-    static void deleteKeyPressed(Document&, Options, TextGranularity = CharacterGranularity);
-    static void forwardDeleteKeyPressed(Document&, EditingState*, Options = 0, TextGranularity = CharacterGranularity);
-    static void insertText(Document&, const String&, Options, TextCompositionType = TextCompositionNone);
-    static void insertText(Document&, const String&, const VisibleSelection&, Options, TextCompositionType = TextCompositionNone);
-    static bool insertLineBreak(Document&);
-    static bool insertParagraphSeparator(Document&);
-    static bool insertParagraphSeparatorInQuotedContent(Document&);
-    static void closeTyping(LocalFrame*);
+  static void deleteSelection(Document&, Options = 0);
+  static void deleteKeyPressed(Document&,
+                               Options,
+                               TextGranularity = CharacterGranularity);
+  static void forwardDeleteKeyPressed(Document&,
+                                      EditingState*,
+                                      Options = 0,
+                                      TextGranularity = CharacterGranularity);
+  static void insertText(Document&,
+                         const String&,
+                         Options,
+                         TextCompositionType = TextCompositionNone);
+  static void insertText(Document&,
+                         const String&,
+                         const VisibleSelection&,
+                         Options,
+                         TextCompositionType = TextCompositionNone);
+  static bool insertLineBreak(Document&);
+  static bool insertParagraphSeparator(Document&);
+  static bool insertParagraphSeparatorInQuotedContent(Document&);
+  static void closeTyping(LocalFrame*);
 
-    void insertText(const String &text, bool selectInsertedText, EditingState*);
-    void insertTextRunWithoutNewlines(const String &text, bool selectInsertedText, EditingState*);
-    void insertLineBreak(EditingState*);
-    void insertParagraphSeparatorInQuotedContent(EditingState*);
-    void insertParagraphSeparator(EditingState*);
-    void deleteKeyPressed(TextGranularity, bool killRing, EditingState*);
-    void forwardDeleteKeyPressed(TextGranularity, bool killRing, EditingState*);
-    void deleteSelection(bool smartDelete, EditingState*);
-    void setCompositionType(TextCompositionType type) { m_compositionType = type; }
+  void insertText(const String& text, bool selectInsertedText, EditingState*);
+  void insertTextRunWithoutNewlines(const String& text,
+                                    bool selectInsertedText,
+                                    EditingState*);
+  void insertLineBreak(EditingState*);
+  void insertParagraphSeparatorInQuotedContent(EditingState*);
+  void insertParagraphSeparator(EditingState*);
+  void deleteKeyPressed(TextGranularity, bool killRing, EditingState*);
+  void forwardDeleteKeyPressed(TextGranularity, bool killRing, EditingState*);
+  void deleteSelection(bool smartDelete, EditingState*);
+  void setCompositionType(TextCompositionType type) {
+    m_compositionType = type;
+  }
 
-    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
-    TextCompositionType compositionType() const { return m_compositionType; }
-    // |TypingCommand| may contain multiple |InsertTextCommand|, should return |textDataForInputEvent()| of the last one.
-    String textDataForInputEvent() const final;
+  ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
+  TextCompositionType compositionType() const { return m_compositionType; }
+  // |TypingCommand| may contain multiple |InsertTextCommand|, should return |textDataForInputEvent()| of the last one.
+  String textDataForInputEvent() const final;
 
-private:
-    static TypingCommand* create(Document& document, ETypingCommand command, const String& text = "", Options options = 0, TextGranularity granularity = CharacterGranularity)
-    {
-        return new TypingCommand(document, command, text, options, granularity, TextCompositionNone);
-    }
+ private:
+  static TypingCommand* create(
+      Document& document,
+      ETypingCommand command,
+      const String& text = "",
+      Options options = 0,
+      TextGranularity granularity = CharacterGranularity) {
+    return new TypingCommand(document, command, text, options, granularity,
+                             TextCompositionNone);
+  }
 
-    static TypingCommand* create(Document& document, ETypingCommand command, const String& text, Options options, TextCompositionType compositionType)
-    {
-        return new TypingCommand(document, command, text, options, CharacterGranularity, compositionType);
-    }
+  static TypingCommand* create(Document& document,
+                               ETypingCommand command,
+                               const String& text,
+                               Options options,
+                               TextCompositionType compositionType) {
+    return new TypingCommand(document, command, text, options,
+                             CharacterGranularity, compositionType);
+  }
 
-    TypingCommand(Document&, ETypingCommand, const String& text, Options, TextGranularity, TextCompositionType);
+  TypingCommand(Document&,
+                ETypingCommand,
+                const String& text,
+                Options,
+                TextGranularity,
+                TextCompositionType);
 
-    void setSmartDelete(bool smartDelete) { m_smartDelete = smartDelete; }
-    bool isOpenForMoreTyping() const { return m_openForMoreTyping; }
-    void closeTyping() { m_openForMoreTyping = false; }
+  void setSmartDelete(bool smartDelete) { m_smartDelete = smartDelete; }
+  bool isOpenForMoreTyping() const { return m_openForMoreTyping; }
+  void closeTyping() { m_openForMoreTyping = false; }
 
-    static TypingCommand* lastTypingCommandIfStillOpenForTyping(LocalFrame*);
+  static TypingCommand* lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
-    void doApply(EditingState*) override;
-    InputEvent::InputType inputType() const override;
-    bool isTypingCommand() const override;
-    bool preservesTypingStyle() const override { return m_preservesTypingStyle; }
-    void setShouldRetainAutocorrectionIndicator(bool retain) override { m_shouldRetainAutocorrectionIndicator = retain; }
-    bool shouldStopCaretBlinking() const override { return true; }
-    void setShouldPreventSpellChecking(bool prevent) { m_shouldPreventSpellChecking = prevent; }
+  void doApply(EditingState*) override;
+  InputEvent::InputType inputType() const override;
+  bool isTypingCommand() const override;
+  bool preservesTypingStyle() const override { return m_preservesTypingStyle; }
+  void setShouldRetainAutocorrectionIndicator(bool retain) override {
+    m_shouldRetainAutocorrectionIndicator = retain;
+  }
+  bool shouldStopCaretBlinking() const override { return true; }
+  void setShouldPreventSpellChecking(bool prevent) {
+    m_shouldPreventSpellChecking = prevent;
+  }
 
-    static void updateSelectionIfDifferentFromCurrentSelection(TypingCommand*, LocalFrame*);
+  static void updateSelectionIfDifferentFromCurrentSelection(TypingCommand*,
+                                                             LocalFrame*);
 
-    void updatePreservesTypingStyle(ETypingCommand);
-    void typingAddedToOpenCommand(ETypingCommand);
-    bool makeEditableRootEmpty(EditingState*);
+  void updatePreservesTypingStyle(ETypingCommand);
+  void typingAddedToOpenCommand(ETypingCommand);
+  bool makeEditableRootEmpty(EditingState*);
 
-    void updateCommandTypeOfOpenCommand(ETypingCommand typingCommand) { m_commandType = typingCommand; }
+  void updateCommandTypeOfOpenCommand(ETypingCommand typingCommand) {
+    m_commandType = typingCommand;
+  }
 
-    ETypingCommand m_commandType;
-    String m_textToInsert;
-    bool m_openForMoreTyping;
-    bool m_selectInsertedText;
-    bool m_smartDelete;
-    TextGranularity m_granularity;
-    TextCompositionType m_compositionType;
-    bool m_killRing;
-    bool m_preservesTypingStyle;
+  ETypingCommand m_commandType;
+  String m_textToInsert;
+  bool m_openForMoreTyping;
+  bool m_selectInsertedText;
+  bool m_smartDelete;
+  TextGranularity m_granularity;
+  TextCompositionType m_compositionType;
+  bool m_killRing;
+  bool m_preservesTypingStyle;
 
-    // Undoing a series of backward deletes will restore a selection around all of the
-    // characters that were deleted, but only if the typing command being undone
-    // was opened with a backward delete.
-    bool m_openedByBackwardDelete;
+  // Undoing a series of backward deletes will restore a selection around all of the
+  // characters that were deleted, but only if the typing command being undone
+  // was opened with a backward delete.
+  bool m_openedByBackwardDelete;
 
-    bool m_shouldRetainAutocorrectionIndicator;
-    bool m_shouldPreventSpellChecking;
+  bool m_shouldRetainAutocorrectionIndicator;
+  bool m_shouldPreventSpellChecking;
 };
 
-DEFINE_TYPE_CASTS(TypingCommand, CompositeEditCommand, command, command->isTypingCommand(), command.isTypingCommand());
+DEFINE_TYPE_CASTS(TypingCommand,
+                  CompositeEditCommand,
+                  command,
+                  command->isTypingCommand(),
+                  command.isTypingCommand());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TypingCommand_h
+#endif  // TypingCommand_h

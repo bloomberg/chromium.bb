@@ -35,22 +35,23 @@ namespace blink {
 class Node;
 
 class CORE_EXPORT BitStack {
-    STACK_ALLOCATED();
-public:
-    BitStack();
-    ~BitStack();
+  STACK_ALLOCATED();
 
-    void push(bool);
-    void pop();
+ public:
+  BitStack();
+  ~BitStack();
 
-    bool top() const;
-    unsigned size() const;
+  void push(bool);
+  void pop();
 
-private:
-    unsigned m_size;
-    Vector<unsigned, 1> m_words;
+  bool top() const;
+  unsigned size() const;
+
+ private:
+  unsigned m_size;
+  Vector<unsigned, 1> m_words;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BitStack_h
+#endif  // BitStack_h

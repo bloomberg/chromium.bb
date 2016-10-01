@@ -36,73 +36,76 @@ class DateTimeFieldsState;
 
 // DateTimeFieldElement is base class of date time field element.
 class DateTimeFieldElement : public HTMLSpanElement {
-    WTF_MAKE_NONCOPYABLE(DateTimeFieldElement);
+  WTF_MAKE_NONCOPYABLE(DateTimeFieldElement);
 
-public:
-    enum EventBehavior {
-        DispatchNoEvent,
-        DispatchEvent,
-    };
+ public:
+  enum EventBehavior {
+    DispatchNoEvent,
+    DispatchEvent,
+  };
 
-    // FieldOwner implementer must call removeEventHandler when
-    // it doesn't handle event, e.g. at destruction.
-    class FieldOwner : public GarbageCollectedMixin {
-    public:
-        virtual ~FieldOwner();
-        virtual void didBlurFromField() = 0;
-        virtual void didFocusOnField() = 0;
-        virtual void fieldValueChanged() = 0;
-        virtual bool focusOnNextField(const DateTimeFieldElement&) = 0;
-        virtual bool focusOnPreviousField(const DateTimeFieldElement&) = 0;
-        virtual bool isFieldOwnerDisabled() const = 0;
-        virtual bool isFieldOwnerReadOnly() const = 0;
-        virtual AtomicString localeIdentifier() const = 0;
-        virtual void fieldDidChangeValueByKeyboard() = 0;
-    };
+  // FieldOwner implementer must call removeEventHandler when
+  // it doesn't handle event, e.g. at destruction.
+  class FieldOwner : public GarbageCollectedMixin {
+   public:
+    virtual ~FieldOwner();
+    virtual void didBlurFromField() = 0;
+    virtual void didFocusOnField() = 0;
+    virtual void fieldValueChanged() = 0;
+    virtual bool focusOnNextField(const DateTimeFieldElement&) = 0;
+    virtual bool focusOnPreviousField(const DateTimeFieldElement&) = 0;
+    virtual bool isFieldOwnerDisabled() const = 0;
+    virtual bool isFieldOwnerReadOnly() const = 0;
+    virtual AtomicString localeIdentifier() const = 0;
+    virtual void fieldDidChangeValueByKeyboard() = 0;
+  };
 
-    void defaultEventHandler(Event*) override;
-    virtual bool hasValue() const = 0;
-    bool isDisabled() const;
-    virtual float maximumWidth(const ComputedStyle&);
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) = 0;
-    void removeEventHandler() { m_fieldOwner = nullptr; }
-    void setDisabled();
-    virtual void setEmptyValue(EventBehavior = DispatchNoEvent) = 0;
-    virtual void setValueAsDate(const DateComponents&) = 0;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) = 0;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) = 0;
-    virtual void stepDown() = 0;
-    virtual void stepUp() = 0;
-    virtual String value() const = 0;
-    virtual String visibleValue() const = 0;
-    DECLARE_VIRTUAL_TRACE();
+  void defaultEventHandler(Event*) override;
+  virtual bool hasValue() const = 0;
+  bool isDisabled() const;
+  virtual float maximumWidth(const ComputedStyle&);
+  virtual void populateDateTimeFieldsState(DateTimeFieldsState&) = 0;
+  void removeEventHandler() { m_fieldOwner = nullptr; }
+  void setDisabled();
+  virtual void setEmptyValue(EventBehavior = DispatchNoEvent) = 0;
+  virtual void setValueAsDate(const DateComponents&) = 0;
+  virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) = 0;
+  virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) = 0;
+  virtual void stepDown() = 0;
+  virtual void stepUp() = 0;
+  virtual String value() const = 0;
+  virtual String visibleValue() const = 0;
+  DECLARE_VIRTUAL_TRACE();
 
-    static float computeTextWidth(const ComputedStyle&, const String&);
+  static float computeTextWidth(const ComputedStyle&, const String&);
 
-protected:
-    DateTimeFieldElement(Document&, FieldOwner&);
-    void focusOnNextField();
-    virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
-    void initialize(const AtomicString& pseudo, const String& axHelpText, int axMinimum, int axMaximum);
-    Locale& localeForOwner() const;
-    AtomicString localeIdentifier() const;
-    void updateVisibleValue(EventBehavior);
-    virtual int valueAsInteger() const = 0;
-    virtual int valueForARIAValueNow() const;
+ protected:
+  DateTimeFieldElement(Document&, FieldOwner&);
+  void focusOnNextField();
+  virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
+  void initialize(const AtomicString& pseudo,
+                  const String& axHelpText,
+                  int axMinimum,
+                  int axMaximum);
+  Locale& localeForOwner() const;
+  AtomicString localeIdentifier() const;
+  void updateVisibleValue(EventBehavior);
+  virtual int valueAsInteger() const = 0;
+  virtual int valueForARIAValueNow() const;
 
-    // Node functions.
-    void setFocus(bool) override;
+  // Node functions.
+  void setFocus(bool) override;
 
-private:
-    void defaultKeyboardEventHandler(KeyboardEvent*);
-    bool isDateTimeFieldElement() const final;
-    bool isFieldOwnerDisabled() const;
-    bool isFieldOwnerReadOnly() const;
-    bool supportsFocus() const final;
+ private:
+  void defaultKeyboardEventHandler(KeyboardEvent*);
+  bool isDateTimeFieldElement() const final;
+  bool isFieldOwnerDisabled() const;
+  bool isFieldOwnerReadOnly() const;
+  bool supportsFocus() const final;
 
-    Member<FieldOwner> m_fieldOwner;
+  Member<FieldOwner> m_fieldOwner;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

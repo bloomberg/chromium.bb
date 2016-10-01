@@ -38,55 +38,63 @@
 namespace blink {
 
 class AnimatableSVGPaint final : public AnimatableValue {
-public:
-    ~AnimatableSVGPaint() override { }
-    static PassRefPtr<AnimatableSVGPaint> create(
-        SVGPaintType type, SVGPaintType visitedLinkType,
-        const Color& color, const Color& visitedLinkColor,
-        const String& uri, const String& visitedLinkURI)
-    {
-        return create(type, visitedLinkType, AnimatableColor::create(color, visitedLinkColor), uri, visitedLinkURI);
-    }
-    static PassRefPtr<AnimatableSVGPaint> create(
-        SVGPaintType type, SVGPaintType visitedLinkType,
-        PassRefPtr<AnimatableColor> color,
-        const String& uri, const String& visitedLinkURI)
-    {
-        return adoptRef(new AnimatableSVGPaint(type, visitedLinkType, std::move(color), uri, visitedLinkURI));
-    }
-    SVGPaintType paintType() const { return m_type; }
-    SVGPaintType visitedLinkPaintType() const { return m_visitedLinkType; }
-    Color getColor() const { return m_color->getColor(); }
-    Color visitedLinkColor() const { return m_color->visitedLinkColor(); }
-    const String& uri() const { return m_uri; }
-    const String& visitedLinkURI() const { return m_visitedLinkURI; }
+ public:
+  ~AnimatableSVGPaint() override {}
+  static PassRefPtr<AnimatableSVGPaint> create(SVGPaintType type,
+                                               SVGPaintType visitedLinkType,
+                                               const Color& color,
+                                               const Color& visitedLinkColor,
+                                               const String& uri,
+                                               const String& visitedLinkURI) {
+    return create(type, visitedLinkType,
+                  AnimatableColor::create(color, visitedLinkColor), uri,
+                  visitedLinkURI);
+  }
+  static PassRefPtr<AnimatableSVGPaint> create(
+      SVGPaintType type,
+      SVGPaintType visitedLinkType,
+      PassRefPtr<AnimatableColor> color,
+      const String& uri,
+      const String& visitedLinkURI) {
+    return adoptRef(new AnimatableSVGPaint(
+        type, visitedLinkType, std::move(color), uri, visitedLinkURI));
+  }
+  SVGPaintType paintType() const { return m_type; }
+  SVGPaintType visitedLinkPaintType() const { return m_visitedLinkType; }
+  Color getColor() const { return m_color->getColor(); }
+  Color visitedLinkColor() const { return m_color->visitedLinkColor(); }
+  const String& uri() const { return m_uri; }
+  const String& visitedLinkURI() const { return m_visitedLinkURI; }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    AnimatableSVGPaint(SVGPaintType type, SVGPaintType visitedLinkType, PassRefPtr<AnimatableColor> color, const String& uri, const String& visitedLinkURI)
-        : m_type(type)
-        , m_visitedLinkType(visitedLinkType)
-        , m_color(color)
-        , m_uri(uri)
-        , m_visitedLinkURI(visitedLinkURI)
-    {
-    }
-    AnimatableType type() const override { return TypeSVGPaint; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  AnimatableSVGPaint(SVGPaintType type,
+                     SVGPaintType visitedLinkType,
+                     PassRefPtr<AnimatableColor> color,
+                     const String& uri,
+                     const String& visitedLinkURI)
+      : m_type(type),
+        m_visitedLinkType(visitedLinkType),
+        m_color(color),
+        m_uri(uri),
+        m_visitedLinkURI(visitedLinkURI) {}
+  AnimatableType type() const override { return TypeSVGPaint; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    SVGPaintType m_type;
-    SVGPaintType m_visitedLinkType;
-    // AnimatableColor includes a visited link color.
-    RefPtr<AnimatableColor> m_color;
-    String m_uri;
-    String m_visitedLinkURI;
+  SVGPaintType m_type;
+  SVGPaintType m_visitedLinkType;
+  // AnimatableColor includes a visited link color.
+  RefPtr<AnimatableColor> m_color;
+  String m_uri;
+  String m_visitedLinkURI;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGPaint, isSVGPaint());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableSVGPaint_h
+#endif  // AnimatableSVGPaint_h

@@ -64,110 +64,112 @@ enum class UserGestureStatus { Active, None };
 // functionality shared between both. In particular, any method related to
 // input, layout, or painting probably belongs on LocalFrame.
 class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
-public:
-    virtual ~Frame();
+ public:
+  virtual ~Frame();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    virtual bool isLocalFrame() const = 0;
-    virtual bool isRemoteFrame() const = 0;
+  virtual bool isLocalFrame() const = 0;
+  virtual bool isRemoteFrame() const = 0;
 
-    virtual DOMWindow* domWindow() const = 0;
-    virtual WindowProxy* windowProxy(DOMWrapperWorld&) = 0;
+  virtual DOMWindow* domWindow() const = 0;
+  virtual WindowProxy* windowProxy(DOMWrapperWorld&) = 0;
 
-    virtual void navigate(Document& originDocument, const KURL&, bool replaceCurrentItem, UserGestureStatus) = 0;
-    // This version of Frame::navigate assumes the resulting navigation is not
-    // to be started on a timer. Use the method above in such cases.
-    virtual void navigate(const FrameLoadRequest&) = 0;
-    virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
+  virtual void navigate(Document& originDocument,
+                        const KURL&,
+                        bool replaceCurrentItem,
+                        UserGestureStatus) = 0;
+  // This version of Frame::navigate assumes the resulting navigation is not
+  // to be started on a timer. Use the method above in such cases.
+  virtual void navigate(const FrameLoadRequest&) = 0;
+  virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
 
-    virtual void detach(FrameDetachType);
-    void disconnectOwnerElement();
-    virtual bool shouldClose() = 0;
+  virtual void detach(FrameDetachType);
+  void disconnectOwnerElement();
+  virtual bool shouldClose() = 0;
 
-    FrameClient* client() const;
+  FrameClient* client() const;
 
-    // NOTE: Page is moving out of Blink up into the browser process as
-    // part of the site-isolation (out of process iframes) work.
-    // FrameHost should be used instead where possible.
-    Page* page() const;
-    FrameHost* host() const; // Null when the frame is detached.
+  // NOTE: Page is moving out of Blink up into the browser process as
+  // part of the site-isolation (out of process iframes) work.
+  // FrameHost should be used instead where possible.
+  Page* page() const;
+  FrameHost* host() const;  // Null when the frame is detached.
 
-    bool isMainFrame() const;
-    bool isLocalRoot() const;
+  bool isMainFrame() const;
+  bool isLocalRoot() const;
 
-    FrameOwner* owner() const;
-    void setOwner(FrameOwner* owner) { m_owner = owner; }
-    HTMLFrameOwnerElement* deprecatedLocalOwner() const;
+  FrameOwner* owner() const;
+  void setOwner(FrameOwner* owner) { m_owner = owner; }
+  HTMLFrameOwnerElement* deprecatedLocalOwner() const;
 
-    FrameTree& tree() const;
-    ChromeClient& chromeClient() const;
+  FrameTree& tree() const;
+  ChromeClient& chromeClient() const;
 
-    virtual SecurityContext* securityContext() const = 0;
+  virtual SecurityContext* securityContext() const = 0;
 
-    Frame* findFrameForNavigation(const AtomicString& name, Frame& activeFrame);
-    Frame* findUnsafeParentScrollPropagationBoundary();
+  Frame* findFrameForNavigation(const AtomicString& name, Frame& activeFrame);
+  Frame* findUnsafeParentScrollPropagationBoundary();
 
-    // This prepares the Frame for the next commit. It will detach children,
-    // dispatch unload events, abort XHR requests and detach the document.
-    // Returns true if the frame is ready to receive the next commit, or false
-    // otherwise.
-    virtual bool prepareForCommit() = 0;
+  // This prepares the Frame for the next commit. It will detach children,
+  // dispatch unload events, abort XHR requests and detach the document.
+  // Returns true if the frame is ready to receive the next commit, or false
+  // otherwise.
+  virtual bool prepareForCommit() = 0;
 
-    bool canNavigate(const Frame&);
-    virtual void printNavigationErrorMessage(const Frame&, const char* reason) = 0;
+  bool canNavigate(const Frame&);
+  virtual void printNavigationErrorMessage(const Frame&,
+                                           const char* reason) = 0;
 
-    // TODO(pilgrim) replace all instances of ownerLayoutObject() with ownerLayoutItem()
-    // https://crbug.com/499321
-    LayoutPart* ownerLayoutObject() const; // LayoutObject for the element that contains this frame.
-    LayoutPartItem ownerLayoutItem() const;
+  // TODO(pilgrim) replace all instances of ownerLayoutObject() with ownerLayoutItem()
+  // https://crbug.com/499321
+  LayoutPart* ownerLayoutObject()
+      const;  // LayoutObject for the element that contains this frame.
+  LayoutPartItem ownerLayoutItem() const;
 
-    Settings* settings() const; // can be null
+  Settings* settings() const;  // can be null
 
-    // isLoading() is true when the embedder should think a load is in progress.
-    // In the case of LocalFrames, it means that the frame has sent a didStartLoading()
-    // callback, but not the matching didStopLoading(). Inside blink, you probably
-    // want Document::loadEventFinished() instead.
-    void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
-    bool isLoading() const { return m_isLoading; }
+  // isLoading() is true when the embedder should think a load is in progress.
+  // In the case of LocalFrames, it means that the frame has sent a didStartLoading()
+  // callback, but not the matching didStopLoading(). Inside blink, you probably
+  // want Document::loadEventFinished() instead.
+  void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
+  bool isLoading() const { return m_isLoading; }
 
-    virtual WindowProxyManager* getWindowProxyManager() const = 0;
+  virtual WindowProxyManager* getWindowProxyManager() const = 0;
 
-    virtual void didChangeVisibilityState();
+  virtual void didChangeVisibilityState();
 
-protected:
-    Frame(FrameClient*, FrameHost*, FrameOwner*);
+ protected:
+  Frame(FrameClient*, FrameHost*, FrameOwner*);
 
-    mutable FrameTree m_treeNode;
+  mutable FrameTree m_treeNode;
 
-    Member<FrameHost> m_host;
-    Member<FrameOwner> m_owner;
+  Member<FrameHost> m_host;
+  Member<FrameOwner> m_owner;
 
-private:
-    bool canNavigateWithoutFramebusting(const Frame&, String& errorReason);
+ private:
+  bool canNavigateWithoutFramebusting(const Frame&, String& errorReason);
 
-    Member<FrameClient> m_client;
-    bool m_isLoading;
+  Member<FrameClient> m_client;
+  bool m_isLoading;
 };
 
-inline FrameClient* Frame::client() const
-{
-    return m_client;
+inline FrameClient* Frame::client() const {
+  return m_client;
 }
 
-inline FrameOwner* Frame::owner() const
-{
-    return m_owner;
+inline FrameOwner* Frame::owner() const {
+  return m_owner;
 }
 
-inline FrameTree& Frame::tree() const
-{
-    return m_treeNode;
+inline FrameTree& Frame::tree() const {
+  return m_treeNode;
 }
 
 // Allow equality comparisons of Frames by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Frame)
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Frame_h
+#endif  // Frame_h

@@ -18,28 +18,29 @@ class IDBValue;
 class ScriptState;
 struct WebIDBObservation;
 
-class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static WebIDBOperationType stringToOperationType(const String&);
-    static IDBObservation* create(const WebIDBObservation&);
-    ~IDBObservation();
+ public:
+  static WebIDBOperationType stringToOperationType(const String&);
+  static IDBObservation* create(const WebIDBObservation&);
+  ~IDBObservation();
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-    // Implement the IDL
-    ScriptValue key(ScriptState*);
-    ScriptValue value(ScriptState*);
-    const String& type() const;
+  // Implement the IDL
+  ScriptValue key(ScriptState*);
+  ScriptValue value(ScriptState*);
+  const String& type() const;
 
-private:
-    IDBObservation(const WebIDBObservation&);
-    Member<IDBKeyRange> m_keyRange;
-    RefPtr<IDBValue> m_value;
-    const WebIDBOperationType m_operationType;
+ private:
+  IDBObservation(const WebIDBObservation&);
+  Member<IDBKeyRange> m_keyRange;
+  RefPtr<IDBValue> m_value;
+  const WebIDBOperationType m_operationType;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBObservation_h
+#endif  // IDBObservation_h

@@ -29,26 +29,24 @@
 
 namespace blink {
 
-String CSSReflectValue::customCSSText() const
-{
-    if (m_mask)
-        return m_direction->cssText() + ' ' + m_offset->cssText() + ' ' + m_mask->cssText();
-    return m_direction->cssText() + ' ' + m_offset->cssText();
+String CSSReflectValue::customCSSText() const {
+  if (m_mask)
+    return m_direction->cssText() + ' ' + m_offset->cssText() + ' ' +
+           m_mask->cssText();
+  return m_direction->cssText() + ' ' + m_offset->cssText();
 }
 
-bool CSSReflectValue::equals(const CSSReflectValue& other) const
-{
-    return m_direction == other.m_direction
-        && compareCSSValuePtr(m_offset, other.m_offset)
-        && compareCSSValuePtr(m_mask, other.m_mask);
+bool CSSReflectValue::equals(const CSSReflectValue& other) const {
+  return m_direction == other.m_direction &&
+         compareCSSValuePtr(m_offset, other.m_offset) &&
+         compareCSSValuePtr(m_mask, other.m_mask);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSReflectValue)
-{
-    visitor->trace(m_direction);
-    visitor->trace(m_offset);
-    visitor->trace(m_mask);
-    CSSValue::traceAfterDispatch(visitor);
+DEFINE_TRACE_AFTER_DISPATCH(CSSReflectValue) {
+  visitor->trace(m_direction);
+  visitor->trace(m_offset);
+  visitor->trace(m_mask);
+  CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

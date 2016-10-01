@@ -43,82 +43,85 @@ class PeriodicWave;
 // OscillatorNode is an audio generator of periodic waveforms.
 
 class OscillatorHandler final : public AudioScheduledSourceHandler {
-public:
-    // The waveform type.
-    // These must be defined as in the .idl file.
-    enum {
-        SINE = 0,
-        SQUARE = 1,
-        SAWTOOTH = 2,
-        TRIANGLE = 3,
-        CUSTOM = 4
-    };
+ public:
+  // The waveform type.
+  // These must be defined as in the .idl file.
+  enum { SINE = 0, SQUARE = 1, SAWTOOTH = 2, TRIANGLE = 3, CUSTOM = 4 };
 
-    static PassRefPtr<OscillatorHandler> create(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
-    ~OscillatorHandler() override;
+  static PassRefPtr<OscillatorHandler> create(AudioNode&,
+                                              float sampleRate,
+                                              AudioParamHandler& frequency,
+                                              AudioParamHandler& detune);
+  ~OscillatorHandler() override;
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
 
-    String type() const;
-    void setType(const String&, ExceptionState&);
+  String type() const;
+  void setType(const String&, ExceptionState&);
 
-    void setPeriodicWave(PeriodicWave*);
+  void setPeriodicWave(PeriodicWave*);
 
-private:
-    OscillatorHandler(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
-    bool setType(unsigned); // Returns true on success.
+ private:
+  OscillatorHandler(AudioNode&,
+                    float sampleRate,
+                    AudioParamHandler& frequency,
+                    AudioParamHandler& detune);
+  bool setType(unsigned);  // Returns true on success.
 
-    // Returns true if there are sample-accurate timeline parameter changes.
-    bool calculateSampleAccuratePhaseIncrements(size_t framesToProcess);
+  // Returns true if there are sample-accurate timeline parameter changes.
+  bool calculateSampleAccuratePhaseIncrements(size_t framesToProcess);
 
-    bool propagatesSilence() const override;
+  bool propagatesSilence() const override;
 
-    // One of the waveform types defined in the enum.
-    unsigned short m_type;
+  // One of the waveform types defined in the enum.
+  unsigned short m_type;
 
-    // Frequency value in Hertz.
-    RefPtr<AudioParamHandler> m_frequency;
+  // Frequency value in Hertz.
+  RefPtr<AudioParamHandler> m_frequency;
 
-    // Detune value (deviating from the frequency) in Cents.
-    RefPtr<AudioParamHandler> m_detune;
+  // Detune value (deviating from the frequency) in Cents.
+  RefPtr<AudioParamHandler> m_detune;
 
-    bool m_firstRender;
+  bool m_firstRender;
 
-    // m_virtualReadIndex is a sample-frame index into our buffer representing the current playback position.
-    // Since it's floating-point, it has sub-sample accuracy.
-    double m_virtualReadIndex;
+  // m_virtualReadIndex is a sample-frame index into our buffer representing the current playback position.
+  // Since it's floating-point, it has sub-sample accuracy.
+  double m_virtualReadIndex;
 
-    // Stores sample-accurate values calculated according to frequency and detune.
-    AudioFloatArray m_phaseIncrements;
-    AudioFloatArray m_detuneValues;
+  // Stores sample-accurate values calculated according to frequency and detune.
+  AudioFloatArray m_phaseIncrements;
+  AudioFloatArray m_detuneValues;
 
-    // This Persistent doesn't make a reference cycle including the owner
-    // OscillatorNode.
-    Persistent<PeriodicWave> m_periodicWave;
+  // This Persistent doesn't make a reference cycle including the owner
+  // OscillatorNode.
+  Persistent<PeriodicWave> m_periodicWave;
 };
 
 class OscillatorNode final : public AudioScheduledSourceNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static OscillatorNode* create(BaseAudioContext&, ExceptionState&);
-    static OscillatorNode* create(BaseAudioContext*, const OscillatorOptions&, ExceptionState&);
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_WRAPPERTYPEINFO();
 
-    String type() const;
-    void setType(const String&, ExceptionState&);
-    AudioParam* frequency();
-    AudioParam* detune();
-    void setPeriodicWave(PeriodicWave*);
+ public:
+  static OscillatorNode* create(BaseAudioContext&, ExceptionState&);
+  static OscillatorNode* create(BaseAudioContext*,
+                                const OscillatorOptions&,
+                                ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    OscillatorNode(BaseAudioContext&);
-    OscillatorHandler& oscillatorHandler() const;
+  String type() const;
+  void setType(const String&, ExceptionState&);
+  AudioParam* frequency();
+  AudioParam* detune();
+  void setPeriodicWave(PeriodicWave*);
 
-    Member<AudioParam> m_frequency;
-    Member<AudioParam> m_detune;
+ private:
+  OscillatorNode(BaseAudioContext&);
+  OscillatorHandler& oscillatorHandler() const;
+
+  Member<AudioParam> m_frequency;
+  Member<AudioParam> m_detune;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OscillatorNode_h
+#endif  // OscillatorNode_h

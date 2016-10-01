@@ -59,128 +59,152 @@
 
 using namespace blink;
 
-static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& range)
-{
-    NSMutableAttributedString* string = [[NSMutableAttributedString alloc] init];
-    NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
-    size_t length = range.endPosition().computeOffsetInContainerNode() - range.startPosition().computeOffsetInContainerNode();
+static NSAttributedString* attributedSubstringFromRange(
+    const EphemeralRange& range) {
+  NSMutableAttributedString* string = [[NSMutableAttributedString alloc] init];
+  NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
+  size_t length = range.endPosition().computeOffsetInContainerNode() -
+                  range.startPosition().computeOffsetInContainerNode();
 
-    unsigned position = 0;
+  unsigned position = 0;
 
-    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-    // see http://crbug.com/590369 for more details.
-    range.startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+  // see http://crbug.com/590369 for more details.
+  range.startPosition()
+      .document()
+      ->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    for (TextIterator it(range.startPosition(), range.endPosition()); !it.atEnd() && [string length] < length; it.advance()) {
-        unsigned numCharacters = it.length();
-        if (!numCharacters)
-            continue;
+  for (TextIterator it(range.startPosition(), range.endPosition());
+       !it.atEnd() && [string length] < length; it.advance()) {
+    unsigned numCharacters = it.length();
+    if (!numCharacters)
+      continue;
 
-        Node* container = it.currentContainer();
-        LayoutObject* layoutObject = container->layoutObject();
-        DCHECK(layoutObject);
-        if (!layoutObject)
-            continue;
+    Node* container = it.currentContainer();
+    LayoutObject* layoutObject = container->layoutObject();
+    DCHECK(layoutObject);
+    if (!layoutObject)
+      continue;
 
-        const ComputedStyle* style = layoutObject->style();
-        const FontPlatformData& fontPlatformData = style->font().primaryFont()->platformData();
-        NSFont* font = toNSFont(fontPlatformData.ctFont());
-        // If the platform font can't be loaded, or the size is incorrect comparing
-        // to the computed style, it's likely that the site is using a web font.
-        // For now, just use the default font instead.
-        // TODO(rsesek): Change the font activation flags to allow other processes
-        // to use the font.
-        // TODO(shuchen): Support scaling the font as necessary according to CSS transforms.
-        if (!font || floor(fontPlatformData.size()) != floor([[font fontDescriptor] pointSize]))
-            font = [NSFont systemFontOfSize:style->font().getFontDescription().computedSize()];
-        [attrs setObject:font forKey:NSFontAttributeName];
+    const ComputedStyle* style = layoutObject->style();
+    const FontPlatformData& fontPlatformData =
+        style->font().primaryFont()->platformData();
+    NSFont* font = toNSFont(fontPlatformData.ctFont());
+    // If the platform font can't be loaded, or the size is incorrect comparing
+    // to the computed style, it's likely that the site is using a web font.
+    // For now, just use the default font instead.
+    // TODO(rsesek): Change the font activation flags to allow other processes
+    // to use the font.
+    // TODO(shuchen): Support scaling the font as necessary according to CSS transforms.
+    if (!font ||
+        floor(fontPlatformData.size()) !=
+            floor([[font fontDescriptor] pointSize]))
+      font = [NSFont
+          systemFontOfSize:style->font().getFontDescription().computedSize()];
+    [attrs setObject:font forKey:NSFontAttributeName];
 
-        if (style->visitedDependentColor(CSSPropertyColor).alpha())
-            [attrs setObject:nsColor(style->visitedDependentColor(CSSPropertyColor)) forKey:NSForegroundColorAttributeName];
-        else
-            [attrs removeObjectForKey:NSForegroundColorAttributeName];
-        if (style->visitedDependentColor(CSSPropertyBackgroundColor).alpha())
-            [attrs setObject:nsColor(style->visitedDependentColor(CSSPropertyBackgroundColor)) forKey:NSBackgroundColorAttributeName];
-        else
-            [attrs removeObjectForKey:NSBackgroundColorAttributeName];
+    if (style->visitedDependentColor(CSSPropertyColor).alpha())
+      [attrs setObject:nsColor(style->visitedDependentColor(CSSPropertyColor))
+                forKey:NSForegroundColorAttributeName];
+    else
+      [attrs removeObjectForKey:NSForegroundColorAttributeName];
+    if (style->visitedDependentColor(CSSPropertyBackgroundColor).alpha())
+      [attrs setObject:nsColor(style->visitedDependentColor(
+                           CSSPropertyBackgroundColor))
+                forKey:NSBackgroundColorAttributeName];
+    else
+      [attrs removeObjectForKey:NSBackgroundColorAttributeName];
 
-        ForwardsTextBuffer characters;
-        it.copyTextTo(&characters);
-        NSString* substring =
-            [[[NSString alloc] initWithCharacters:characters.data()
-                                           length:characters.size()] autorelease];
-        [string replaceCharactersInRange:NSMakeRange(position, 0)
-                              withString:substring];
-        [string setAttributes:attrs range:NSMakeRange(position, numCharacters)];
-        position += numCharacters;
-    }
-    return [string autorelease];
+    ForwardsTextBuffer characters;
+    it.copyTextTo(&characters);
+    NSString* substring =
+        [[[NSString alloc] initWithCharacters:characters.data()
+                                       length:characters.size()] autorelease];
+    [string replaceCharactersInRange:NSMakeRange(position, 0)
+                          withString:substring];
+    [string setAttributes:attrs range:NSMakeRange(position, numCharacters)];
+    position += numCharacters;
+  }
+  return [string autorelease];
 }
 
-WebPoint getBaselinePoint(FrameView* frameView, const EphemeralRange& range, NSAttributedString* string)
-{
-    // Compute bottom left corner and convert to AppKit coordinates.
-    // TODO(yosin): We shold avoid to create |Range| object. See crbug.com/529985.
-    // TODO(shuchen): Support page-zoom for getting the baseline point.
-    IntRect stringRect = frameView->contentsToRootFrame(createRange(range)->boundingBox());
-    IntPoint stringPoint = stringRect.minXMaxYCorner();
-    stringPoint.setY(frameView->root()->height() - stringPoint.y());
+WebPoint getBaselinePoint(FrameView* frameView,
+                          const EphemeralRange& range,
+                          NSAttributedString* string) {
+  // Compute bottom left corner and convert to AppKit coordinates.
+  // TODO(yosin): We shold avoid to create |Range| object. See crbug.com/529985.
+  // TODO(shuchen): Support page-zoom for getting the baseline point.
+  IntRect stringRect =
+      frameView->contentsToRootFrame(createRange(range)->boundingBox());
+  IntPoint stringPoint = stringRect.minXMaxYCorner();
+  stringPoint.setY(frameView->root()->height() - stringPoint.y());
 
-    // Adjust for the font's descender. AppKit wants the baseline point.
-    if ([string length]) {
-        NSDictionary* attributes = [string attributesAtIndex:0 effectiveRange:NULL];
-        if (NSFont* font = [attributes objectForKey:NSFontAttributeName])
-            stringPoint.move(0, ceil(-[font descender]));
-    }
-    return stringPoint;
+  // Adjust for the font's descender. AppKit wants the baseline point.
+  if ([string length]) {
+    NSDictionary* attributes = [string attributesAtIndex:0 effectiveRange:NULL];
+    if (NSFont* font = [attributes objectForKey:NSFontAttributeName])
+      stringPoint.move(0, ceil(-[font descender]));
+  }
+  return stringPoint;
 }
 
 namespace blink {
 
-NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebFrameWidget* frameWidget, WebPoint point, WebPoint& baselinePoint)
-{
-    HitTestResult result = static_cast<WebFrameWidgetBase*>(frameWidget)->coreHitTestResultAt(point);
+NSAttributedString* WebSubstringUtil::attributedWordAtPoint(
+    WebFrameWidget* frameWidget,
+    WebPoint point,
+    WebPoint& baselinePoint) {
+  HitTestResult result =
+      static_cast<WebFrameWidgetBase*>(frameWidget)->coreHitTestResultAt(point);
 
-    if (!result.innerNode())
-        return nil;
-    LocalFrame* frame = result.innerNode()->document().frame();
-    EphemeralRange range = frame->rangeForPoint(result.roundedPointInInnerNodeFrame());
-    if (range.isNull())
-        return nil;
+  if (!result.innerNode())
+    return nil;
+  LocalFrame* frame = result.innerNode()->document().frame();
+  EphemeralRange range =
+      frame->rangeForPoint(result.roundedPointInInnerNodeFrame());
+  if (range.isNull())
+    return nil;
 
-    // Expand to word under point.
-    VisibleSelection selection = createVisibleSelection(range);
-    selection.expandUsingGranularity(WordGranularity);
-    const EphemeralRange wordRange = selection.toNormalizedEphemeralRange();
+  // Expand to word under point.
+  VisibleSelection selection = createVisibleSelection(range);
+  selection.expandUsingGranularity(WordGranularity);
+  const EphemeralRange wordRange = selection.toNormalizedEphemeralRange();
 
-    // Convert to NSAttributedString.
-    NSAttributedString* string = attributedSubstringFromRange(wordRange);
-    baselinePoint = getBaselinePoint(frame->view(), wordRange, string);
-    return string;
+  // Convert to NSAttributedString.
+  NSAttributedString* string = attributedSubstringFromRange(wordRange);
+  baselinePoint = getBaselinePoint(frame->view(), wordRange, string);
+  return string;
 }
 
-NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebLocalFrame* webFrame, size_t location, size_t length)
-{
-    return WebSubstringUtil::attributedSubstringInRange(webFrame, location, length, nil);
+NSAttributedString* WebSubstringUtil::attributedSubstringInRange(
+    WebLocalFrame* webFrame,
+    size_t location,
+    size_t length) {
+  return WebSubstringUtil::attributedSubstringInRange(webFrame, location,
+                                                      length, nil);
 }
 
-NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebLocalFrame* webFrame, size_t location, size_t length, WebPoint* baselinePoint)
-{
-    LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
-    if (frame->view()->needsLayout())
-        frame->view()->layout();
+NSAttributedString* WebSubstringUtil::attributedSubstringInRange(
+    WebLocalFrame* webFrame,
+    size_t location,
+    size_t length,
+    WebPoint* baselinePoint) {
+  LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
+  if (frame->view()->needsLayout())
+    frame->view()->layout();
 
-    Element* editable = frame->selection().rootEditableElementOrDocumentElement();
-    if (!editable)
-        return nil;
-    const EphemeralRange ephemeralRange(PlainTextRange(location, location + length).createRange(*editable));
-    if (ephemeralRange.isNull())
-        return nil;
+  Element* editable = frame->selection().rootEditableElementOrDocumentElement();
+  if (!editable)
+    return nil;
+  const EphemeralRange ephemeralRange(
+      PlainTextRange(location, location + length).createRange(*editable));
+  if (ephemeralRange.isNull())
+    return nil;
 
-    NSAttributedString* result = attributedSubstringFromRange(ephemeralRange);
-    if (baselinePoint)
-        *baselinePoint = getBaselinePoint(frame->view(), ephemeralRange, result);
-    return result;
+  NSAttributedString* result = attributedSubstringFromRange(ephemeralRange);
+  if (baselinePoint)
+    *baselinePoint = getBaselinePoint(frame->view(), ephemeralRange, result);
+  return result;
 }
 
-} // namespace blink
+}  // namespace blink

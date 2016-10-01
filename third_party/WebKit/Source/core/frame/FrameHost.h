@@ -64,88 +64,95 @@ class VisualViewport;
 // browser-level concept and Blink core/ only knows about its LocalFrame (and FrameHost).
 // Separating Page from the rest of core/ through this indirection
 // allows us to slowly refactor Page without breaking the rest of core.
-class CORE_EXPORT FrameHost final : public GarbageCollectedFinalized<FrameHost> {
-    WTF_MAKE_NONCOPYABLE(FrameHost);
-public:
-    static FrameHost* create(Page&);
-    ~FrameHost();
+class CORE_EXPORT FrameHost final
+    : public GarbageCollectedFinalized<FrameHost> {
+  WTF_MAKE_NONCOPYABLE(FrameHost);
 
-    // Careful: This function will eventually be removed.
-    Page& page();
-    const Page& page() const;
+ public:
+  static FrameHost* create(Page&);
+  ~FrameHost();
 
-    Settings& settings();
-    const Settings& settings() const;
+  // Careful: This function will eventually be removed.
+  Page& page();
+  const Page& page() const;
 
-    ChromeClient& chromeClient();
-    const ChromeClient& chromeClient() const;
+  Settings& settings();
+  const Settings& settings() const;
 
-    UseCounter& useCounter();
-    const UseCounter& useCounter() const;
+  ChromeClient& chromeClient();
+  const ChromeClient& chromeClient() const;
 
-    Deprecation& deprecation();
-    const Deprecation& deprecation() const;
+  UseCounter& useCounter();
+  const UseCounter& useCounter() const;
 
-    // Corresponds to pixel density of the device where this Page is
-    // being displayed. In multi-monitor setups this can vary between pages.
-    // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
-    // This is to be deprecated. Use this with caution.
-    // 1) If you need to scale the content per device scale factor, this is still valid.
-    //    In use-zoom-for-dsf mode, this is always 1, and will be remove when transition is complete.
-    // 2) If you want to compute the device related measure (such as device pixel height, or the scale factor for drag image),
-    //    use ChromeClient::screenInfo() instead.
-    float deviceScaleFactorDeprecated() const;
+  Deprecation& deprecation();
+  const Deprecation& deprecation() const;
 
-    TopControls& topControls();
-    const TopControls& topControls() const;
+  // Corresponds to pixel density of the device where this Page is
+  // being displayed. In multi-monitor setups this can vary between pages.
+  // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
+  // This is to be deprecated. Use this with caution.
+  // 1) If you need to scale the content per device scale factor, this is still valid.
+  //    In use-zoom-for-dsf mode, this is always 1, and will be remove when transition is complete.
+  // 2) If you want to compute the device related measure (such as device pixel height, or the scale factor for drag image),
+  //    use ChromeClient::screenInfo() instead.
+  float deviceScaleFactorDeprecated() const;
 
-    OverscrollController& overscrollController();
-    const OverscrollController& overscrollController() const;
+  TopControls& topControls();
+  const TopControls& topControls() const;
 
-    VisualViewport& visualViewport();
-    const VisualViewport& visualViewport() const;
+  OverscrollController& overscrollController();
+  const OverscrollController& overscrollController() const;
 
-    PageScaleConstraintsSet& pageScaleConstraintsSet();
-    const PageScaleConstraintsSet& pageScaleConstraintsSet() const;
+  VisualViewport& visualViewport();
+  const VisualViewport& visualViewport() const;
 
-    EventHandlerRegistry& eventHandlerRegistry();
-    const EventHandlerRegistry& eventHandlerRegistry() const;
+  PageScaleConstraintsSet& pageScaleConstraintsSet();
+  const PageScaleConstraintsSet& pageScaleConstraintsSet() const;
 
-    ConsoleMessageStorage& consoleMessageStorage();
-    const ConsoleMessageStorage& consoleMessageStorage() const;
+  EventHandlerRegistry& eventHandlerRegistry();
+  const EventHandlerRegistry& eventHandlerRegistry() const;
 
-    TopDocumentRootScrollerController& globalRootScrollerController() const;
+  ConsoleMessageStorage& consoleMessageStorage();
+  const ConsoleMessageStorage& consoleMessageStorage() const;
 
-    DECLARE_TRACE();
+  TopDocumentRootScrollerController& globalRootScrollerController() const;
 
-    // Don't allow more than a certain number of frames in a page.
-    // This seems like a reasonable upper bound, and otherwise mutually
-    // recursive frameset pages can quickly bring the program to its knees
-    // with exponential growth in the number of frames.
-    static const int maxNumberOfFrames = 1000;
-    void incrementSubframeCount() { ++m_subframeCount; }
-    void decrementSubframeCount() { ASSERT(m_subframeCount); --m_subframeCount; }
-    int subframeCount() const;
+  DECLARE_TRACE();
 
-    void setDefaultPageScaleLimits(float minScale, float maxScale);
-    void setUserAgentPageScaleConstraints(const PageScaleConstraints& newConstraints);
+  // Don't allow more than a certain number of frames in a page.
+  // This seems like a reasonable upper bound, and otherwise mutually
+  // recursive frameset pages can quickly bring the program to its knees
+  // with exponential growth in the number of frames.
+  static const int maxNumberOfFrames = 1000;
+  void incrementSubframeCount() { ++m_subframeCount; }
+  void decrementSubframeCount() {
+    ASSERT(m_subframeCount);
+    --m_subframeCount;
+  }
+  int subframeCount() const;
 
-private:
-    explicit FrameHost(Page&);
+  void setDefaultPageScaleLimits(float minScale, float maxScale);
+  void setUserAgentPageScaleConstraints(
+      const PageScaleConstraints& newConstraints);
 
-    const Member<Page> m_page;
-    const Member<TopControls> m_topControls;
-    const std::unique_ptr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
-    const Member<VisualViewport> m_visualViewport;
-    const Member<OverscrollController> m_overscrollController;
-    const Member<EventHandlerRegistry> m_eventHandlerRegistry;
-    const Member<ConsoleMessageStorage> m_consoleMessageStorage;
-    const Member<TopDocumentRootScrollerController> m_globalRootScrollerController;
+ private:
+  explicit FrameHost(Page&);
 
-    AtomicString m_overrideEncoding;
-    int m_subframeCount;
+  const Member<Page> m_page;
+  const Member<TopControls> m_topControls;
+  const std::unique_ptr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
+  const Member<VisualViewport> m_visualViewport;
+  const Member<OverscrollController> m_overscrollController;
+  const Member<EventHandlerRegistry> m_eventHandlerRegistry;
+  const Member<ConsoleMessageStorage> m_consoleMessageStorage;
+  const Member<TopDocumentRootScrollerController>
+      m_globalRootScrollerController;
+
+  AtomicString m_overrideEncoding;
+  int m_subframeCount;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FrameHost_h
+#endif  // FrameHost_h

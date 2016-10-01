@@ -34,32 +34,82 @@
 
 namespace blink {
 
-TEST(AnimationAnimatableColorTest, ToColor)
-{
-    Color transparent = AnimatableColorImpl(Color::transparent).toColor();
-    EXPECT_EQ(transparent.rgb(), Color::transparent);
-    Color red = AnimatableColorImpl(Color(0xFFFF0000)).toColor();
-    EXPECT_EQ(red.rgb(), 0xFFFF0000);
+TEST(AnimationAnimatableColorTest, ToColor) {
+  Color transparent = AnimatableColorImpl(Color::transparent).toColor();
+  EXPECT_EQ(transparent.rgb(), Color::transparent);
+  Color red = AnimatableColorImpl(Color(0xFFFF0000)).toColor();
+  EXPECT_EQ(red.rgb(), 0xFFFF0000);
 }
 
-TEST(AnimationAnimatableColorTest, Interpolate)
-{
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFF00FF00), -10).toColor().rgb(), 0xFF00FF00);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFFFF00FF), -10).toColor().rgb(), 0xFF00FF00);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFFFF00FF), 0).toColor().rgb(), 0xFF00FF00);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFFFF00FF), 1. / 255).toColor().rgb(), 0xFF01FE01);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFFFF00FF), 0.5).toColor().rgb(), 0xFF808080);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFFFF00FF), 254. / 255).toColor().rgb(), 0xFFFE01FE);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFFFF00FF), 1).toColor().rgb(), 0xFFFF00FF);
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00)).interpolateTo(Color(0xFFFF00FF), 10).toColor().rgb(), 0xFFFF00FF);
+TEST(AnimationAnimatableColorTest, Interpolate) {
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFF00FF00), -10)
+                .toColor()
+                .rgb(),
+            0xFF00FF00);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFFFF00FF), -10)
+                .toColor()
+                .rgb(),
+            0xFF00FF00);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFFFF00FF), 0)
+                .toColor()
+                .rgb(),
+            0xFF00FF00);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFFFF00FF), 1. / 255)
+                .toColor()
+                .rgb(),
+            0xFF01FE01);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFFFF00FF), 0.5)
+                .toColor()
+                .rgb(),
+            0xFF808080);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFFFF00FF), 254. / 255)
+                .toColor()
+                .rgb(),
+            0xFFFE01FE);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFFFF00FF), 1)
+                .toColor()
+                .rgb(),
+            0xFFFF00FF);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF00FF00))
+                .interpolateTo(Color(0xFFFF00FF), 10)
+                .toColor()
+                .rgb(),
+            0xFFFF00FF);
 
-    EXPECT_EQ(AnimatableColorImpl(Color(0xFF001020)).interpolateTo(Color(0xFF4080C0), 3. / 16).toColor().rgb(), 0xFF0C253E);
+  EXPECT_EQ(AnimatableColorImpl(Color(0xFF001020))
+                .interpolateTo(Color(0xFF4080C0), 3. / 16)
+                .toColor()
+                .rgb(),
+            0xFF0C253E);
 
-    EXPECT_EQ(AnimatableColorImpl(Color(0x0000FF00)).interpolateTo(Color(0xFFFF00FF), 0.5).toColor().rgb(), 0x80FF00FF);
-    EXPECT_EQ(AnimatableColorImpl(Color(0x4000FF00)).interpolateTo(Color(0x80FF00FF), 0.5).toColor().rgb(), 0x60AA55AAu);
-    EXPECT_EQ(AnimatableColorImpl(Color(0x40FF00FF)).interpolateTo(Color(0x80FFFFFF), 0.5).toColor().rgb(), 0x60FFAAFFu);
+  EXPECT_EQ(AnimatableColorImpl(Color(0x0000FF00))
+                .interpolateTo(Color(0xFFFF00FF), 0.5)
+                .toColor()
+                .rgb(),
+            0x80FF00FF);
+  EXPECT_EQ(AnimatableColorImpl(Color(0x4000FF00))
+                .interpolateTo(Color(0x80FF00FF), 0.5)
+                .toColor()
+                .rgb(),
+            0x60AA55AAu);
+  EXPECT_EQ(AnimatableColorImpl(Color(0x40FF00FF))
+                .interpolateTo(Color(0x80FFFFFF), 0.5)
+                .toColor()
+                .rgb(),
+            0x60FFAAFFu);
 
-    EXPECT_EQ(AnimatableColorImpl(Color(0x10204080)).interpolateTo(Color(0x104080C0), 0.5).toColor().rgb(), 0x103060A0u);
+  EXPECT_EQ(AnimatableColorImpl(Color(0x10204080))
+                .interpolateTo(Color(0x104080C0), 0.5)
+                .toColor()
+                .rgb(),
+            0x103060A0u);
 }
 
-} // namespace blink
+}  // namespace blink

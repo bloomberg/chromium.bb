@@ -10,26 +10,23 @@
 
 namespace blink {
 
-std::unique_ptr<IncrementLoadEventDelayCount> IncrementLoadEventDelayCount::create(Document& document)
-{
-    return wrapUnique(new IncrementLoadEventDelayCount(document));
+std::unique_ptr<IncrementLoadEventDelayCount>
+IncrementLoadEventDelayCount::create(Document& document) {
+  return wrapUnique(new IncrementLoadEventDelayCount(document));
 }
 
 IncrementLoadEventDelayCount::IncrementLoadEventDelayCount(Document& document)
-    : m_document(&document)
-{
-    document.incrementLoadEventDelayCount();
+    : m_document(&document) {
+  document.incrementLoadEventDelayCount();
 }
 
-IncrementLoadEventDelayCount::~IncrementLoadEventDelayCount()
-{
-    m_document->decrementLoadEventDelayCount();
+IncrementLoadEventDelayCount::~IncrementLoadEventDelayCount() {
+  m_document->decrementLoadEventDelayCount();
 }
 
-void IncrementLoadEventDelayCount::documentChanged(Document& newDocument)
-{
-    newDocument.incrementLoadEventDelayCount();
-    m_document->decrementLoadEventDelayCount();
-    m_document = &newDocument;
+void IncrementLoadEventDelayCount::documentChanged(Document& newDocument) {
+  newDocument.incrementLoadEventDelayCount();
+  m_document->decrementLoadEventDelayCount();
+  m_document = &newDocument;
 }
-} // namespace blink
+}  // namespace blink

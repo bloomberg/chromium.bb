@@ -26,40 +26,32 @@
 namespace blink {
 
 StyleInheritedData::StyleInheritedData()
-    : horizontal_border_spacing(ComputedStyle::initialHorizontalBorderSpacing())
-    , vertical_border_spacing(ComputedStyle::initialVerticalBorderSpacing())
-    , line_height(ComputedStyle::initialLineHeight())
-    , color(ComputedStyle::initialColor())
-    , visitedLinkColor(ComputedStyle::initialColor())
-    , textAutosizingMultiplier(1)
-{
-}
+    : horizontal_border_spacing(
+          ComputedStyle::initialHorizontalBorderSpacing()),
+      vertical_border_spacing(ComputedStyle::initialVerticalBorderSpacing()),
+      line_height(ComputedStyle::initialLineHeight()),
+      color(ComputedStyle::initialColor()),
+      visitedLinkColor(ComputedStyle::initialColor()),
+      textAutosizingMultiplier(1) {}
 
-StyleInheritedData::~StyleInheritedData()
-{
-}
+StyleInheritedData::~StyleInheritedData() {}
 
 StyleInheritedData::StyleInheritedData(const StyleInheritedData& o)
-    : RefCounted<StyleInheritedData>()
-    , horizontal_border_spacing(o.horizontal_border_spacing)
-    , vertical_border_spacing(o.vertical_border_spacing)
-    , line_height(o.line_height)
-    , font(o.font)
-    , color(o.color)
-    , visitedLinkColor(o.visitedLinkColor)
-    , textAutosizingMultiplier(o.textAutosizingMultiplier)
-{
+    : RefCounted<StyleInheritedData>(),
+      horizontal_border_spacing(o.horizontal_border_spacing),
+      vertical_border_spacing(o.vertical_border_spacing),
+      line_height(o.line_height),
+      font(o.font),
+      color(o.color),
+      visitedLinkColor(o.visitedLinkColor),
+      textAutosizingMultiplier(o.textAutosizingMultiplier) {}
+
+bool StyleInheritedData::operator==(const StyleInheritedData& o) const {
+  return line_height == o.line_height && font == o.font && color == o.color &&
+         visitedLinkColor == o.visitedLinkColor &&
+         horizontal_border_spacing == o.horizontal_border_spacing &&
+         textAutosizingMultiplier == o.textAutosizingMultiplier &&
+         vertical_border_spacing == o.vertical_border_spacing;
 }
 
-bool StyleInheritedData::operator==(const StyleInheritedData& o) const
-{
-    return line_height == o.line_height
-        && font == o.font
-        && color == o.color
-        && visitedLinkColor == o.visitedLinkColor
-        && horizontal_border_spacing == o.horizontal_border_spacing
-        && textAutosizingMultiplier == o.textAutosizingMultiplier
-        && vertical_border_spacing == o.vertical_border_spacing;
-}
-
-} // namespace blink
+}  // namespace blink

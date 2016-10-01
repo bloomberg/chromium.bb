@@ -39,15 +39,18 @@ namespace blink {
 struct ImageDataBuffer;
 
 class WEBPImageEncoder {
-    STATIC_ONLY(WEBPImageEncoder);
-public:
-    // Encode the input data with a compression quality in [0-100].
-    static bool encode(const ImageDataBuffer&, int quality, Vector<unsigned char>*);
+  STATIC_ONLY(WEBPImageEncoder);
 
-    // For callers: provide a reasonable compression quality default.
-    enum Quality { DefaultCompressionQuality = 80 };
+ public:
+  // Encode the input data with a compression quality in [0-100].
+  static bool encode(const ImageDataBuffer&,
+                     int quality,
+                     Vector<unsigned char>*);
+
+  // For callers: provide a reasonable compression quality default.
+  enum Quality { DefaultCompressionQuality = 80 };
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

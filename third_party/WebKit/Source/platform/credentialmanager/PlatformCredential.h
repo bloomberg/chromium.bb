@@ -11,34 +11,38 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT PlatformCredential : public GarbageCollectedFinalized<PlatformCredential> {
-    WTF_MAKE_NONCOPYABLE(PlatformCredential);
-public:
-    static PlatformCredential* create(const String& id, const String& name, const KURL& iconURL);
-    virtual ~PlatformCredential();
+class PLATFORM_EXPORT PlatformCredential
+    : public GarbageCollectedFinalized<PlatformCredential> {
+  WTF_MAKE_NONCOPYABLE(PlatformCredential);
 
-    const String& id() const { return m_id; }
-    const String& name() const { return m_name; }
-    const KURL& iconURL() const { return m_iconURL; }
-    const String& type() const { return m_type; }
+ public:
+  static PlatformCredential* create(const String& id,
+                                    const String& name,
+                                    const KURL& iconURL);
+  virtual ~PlatformCredential();
 
-    virtual bool isPassword() { return false; }
-    virtual bool isFederated() { return false; }
+  const String& id() const { return m_id; }
+  const String& name() const { return m_name; }
+  const KURL& iconURL() const { return m_iconURL; }
+  const String& type() const { return m_type; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual bool isPassword() { return false; }
+  virtual bool isFederated() { return false; }
 
-protected:
-    PlatformCredential(const String& id, const String& name, const KURL& iconURL);
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    void setType(const String& type) { m_type = type; }
+ protected:
+  PlatformCredential(const String& id, const String& name, const KURL& iconURL);
 
-private:
-    String m_id;
-    String m_name;
-    KURL m_iconURL;
-    String m_type;
+  void setType(const String& type) { m_type = type; }
+
+ private:
+  String m_id;
+  String m_name;
+  KURL m_iconURL;
+  String m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformCredential_h
+#endif  // PlatformCredential_h

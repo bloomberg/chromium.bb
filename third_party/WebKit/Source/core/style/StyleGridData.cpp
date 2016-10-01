@@ -30,61 +30,65 @@
 namespace blink {
 
 StyleGridData::StyleGridData()
-    : m_gridTemplateColumns(ComputedStyle::initialGridTemplateColumns())
-    , m_gridTemplateRows(ComputedStyle::initialGridTemplateRows())
-    , m_namedGridColumnLines(ComputedStyle::initialNamedGridColumnLines())
-    , m_namedGridRowLines(ComputedStyle::initialNamedGridRowLines())
-    , m_orderedNamedGridColumnLines(ComputedStyle::initialOrderedNamedGridColumnLines())
-    , m_orderedNamedGridRowLines(ComputedStyle::initialOrderedNamedGridRowLines())
-    , m_autoRepeatNamedGridColumnLines(ComputedStyle::initialNamedGridColumnLines())
-    , m_autoRepeatNamedGridRowLines(ComputedStyle::initialNamedGridRowLines())
-    , m_autoRepeatOrderedNamedGridColumnLines(ComputedStyle::initialOrderedNamedGridColumnLines())
-    , m_autoRepeatOrderedNamedGridRowLines(ComputedStyle::initialOrderedNamedGridRowLines())
-    , m_gridAutoFlow(ComputedStyle::initialGridAutoFlow())
-    , m_gridAutoRows(ComputedStyle::initialGridAutoRows())
-    , m_gridAutoColumns(ComputedStyle::initialGridAutoColumns())
-    , m_namedGridArea(ComputedStyle::initialNamedGridArea())
-    , m_namedGridAreaRowCount(ComputedStyle::initialNamedGridAreaCount())
-    , m_namedGridAreaColumnCount(ComputedStyle::initialNamedGridAreaCount())
-    , m_gridColumnGap(ComputedStyle::initialGridColumnGap())
-    , m_gridRowGap(ComputedStyle::initialGridRowGap())
-    , m_gridAutoRepeatColumns(ComputedStyle::initialGridAutoRepeatTracks())
-    , m_gridAutoRepeatRows(ComputedStyle::initialGridAutoRepeatTracks())
-    , m_autoRepeatColumnsInsertionPoint(ComputedStyle::initialGridAutoRepeatInsertionPoint())
-    , m_autoRepeatRowsInsertionPoint(ComputedStyle::initialGridAutoRepeatInsertionPoint())
-    , m_autoRepeatColumnsType(ComputedStyle::initialGridAutoRepeatType())
-    , m_autoRepeatRowsType(ComputedStyle::initialGridAutoRepeatType())
-{
-}
+    : m_gridTemplateColumns(ComputedStyle::initialGridTemplateColumns()),
+      m_gridTemplateRows(ComputedStyle::initialGridTemplateRows()),
+      m_namedGridColumnLines(ComputedStyle::initialNamedGridColumnLines()),
+      m_namedGridRowLines(ComputedStyle::initialNamedGridRowLines()),
+      m_orderedNamedGridColumnLines(
+          ComputedStyle::initialOrderedNamedGridColumnLines()),
+      m_orderedNamedGridRowLines(
+          ComputedStyle::initialOrderedNamedGridRowLines()),
+      m_autoRepeatNamedGridColumnLines(
+          ComputedStyle::initialNamedGridColumnLines()),
+      m_autoRepeatNamedGridRowLines(ComputedStyle::initialNamedGridRowLines()),
+      m_autoRepeatOrderedNamedGridColumnLines(
+          ComputedStyle::initialOrderedNamedGridColumnLines()),
+      m_autoRepeatOrderedNamedGridRowLines(
+          ComputedStyle::initialOrderedNamedGridRowLines()),
+      m_gridAutoFlow(ComputedStyle::initialGridAutoFlow()),
+      m_gridAutoRows(ComputedStyle::initialGridAutoRows()),
+      m_gridAutoColumns(ComputedStyle::initialGridAutoColumns()),
+      m_namedGridArea(ComputedStyle::initialNamedGridArea()),
+      m_namedGridAreaRowCount(ComputedStyle::initialNamedGridAreaCount()),
+      m_namedGridAreaColumnCount(ComputedStyle::initialNamedGridAreaCount()),
+      m_gridColumnGap(ComputedStyle::initialGridColumnGap()),
+      m_gridRowGap(ComputedStyle::initialGridRowGap()),
+      m_gridAutoRepeatColumns(ComputedStyle::initialGridAutoRepeatTracks()),
+      m_gridAutoRepeatRows(ComputedStyle::initialGridAutoRepeatTracks()),
+      m_autoRepeatColumnsInsertionPoint(
+          ComputedStyle::initialGridAutoRepeatInsertionPoint()),
+      m_autoRepeatRowsInsertionPoint(
+          ComputedStyle::initialGridAutoRepeatInsertionPoint()),
+      m_autoRepeatColumnsType(ComputedStyle::initialGridAutoRepeatType()),
+      m_autoRepeatRowsType(ComputedStyle::initialGridAutoRepeatType()) {}
 
 StyleGridData::StyleGridData(const StyleGridData& o)
-    : RefCounted<StyleGridData>()
-    , m_gridTemplateColumns(o.m_gridTemplateColumns)
-    , m_gridTemplateRows(o.m_gridTemplateRows)
-    , m_namedGridColumnLines(o.m_namedGridColumnLines)
-    , m_namedGridRowLines(o.m_namedGridRowLines)
-    , m_orderedNamedGridColumnLines(o.m_orderedNamedGridColumnLines)
-    , m_orderedNamedGridRowLines(o.m_orderedNamedGridRowLines)
-    , m_autoRepeatNamedGridColumnLines(o.m_autoRepeatNamedGridColumnLines)
-    , m_autoRepeatNamedGridRowLines(o.m_autoRepeatNamedGridRowLines)
-    , m_autoRepeatOrderedNamedGridColumnLines(o.m_autoRepeatOrderedNamedGridColumnLines)
-    , m_autoRepeatOrderedNamedGridRowLines(o.m_autoRepeatOrderedNamedGridRowLines)
-    , m_gridAutoFlow(o.m_gridAutoFlow)
-    , m_gridAutoRows(o.m_gridAutoRows)
-    , m_gridAutoColumns(o.m_gridAutoColumns)
-    , m_namedGridArea(o.m_namedGridArea)
-    , m_namedGridAreaRowCount(o.m_namedGridAreaRowCount)
-    , m_namedGridAreaColumnCount(o.m_namedGridAreaColumnCount)
-    , m_gridColumnGap(o.m_gridColumnGap)
-    , m_gridRowGap(o.m_gridRowGap)
-    , m_gridAutoRepeatColumns(o.m_gridAutoRepeatColumns)
-    , m_gridAutoRepeatRows(o.m_gridAutoRepeatRows)
-    , m_autoRepeatColumnsInsertionPoint(o.m_autoRepeatColumnsInsertionPoint)
-    , m_autoRepeatRowsInsertionPoint(o.m_autoRepeatRowsInsertionPoint)
-    , m_autoRepeatColumnsType(o.m_autoRepeatColumnsType)
-    , m_autoRepeatRowsType(o.m_autoRepeatRowsType)
-{
-}
+    : RefCounted<StyleGridData>(),
+      m_gridTemplateColumns(o.m_gridTemplateColumns),
+      m_gridTemplateRows(o.m_gridTemplateRows),
+      m_namedGridColumnLines(o.m_namedGridColumnLines),
+      m_namedGridRowLines(o.m_namedGridRowLines),
+      m_orderedNamedGridColumnLines(o.m_orderedNamedGridColumnLines),
+      m_orderedNamedGridRowLines(o.m_orderedNamedGridRowLines),
+      m_autoRepeatNamedGridColumnLines(o.m_autoRepeatNamedGridColumnLines),
+      m_autoRepeatNamedGridRowLines(o.m_autoRepeatNamedGridRowLines),
+      m_autoRepeatOrderedNamedGridColumnLines(
+          o.m_autoRepeatOrderedNamedGridColumnLines),
+      m_autoRepeatOrderedNamedGridRowLines(
+          o.m_autoRepeatOrderedNamedGridRowLines),
+      m_gridAutoFlow(o.m_gridAutoFlow),
+      m_gridAutoRows(o.m_gridAutoRows),
+      m_gridAutoColumns(o.m_gridAutoColumns),
+      m_namedGridArea(o.m_namedGridArea),
+      m_namedGridAreaRowCount(o.m_namedGridAreaRowCount),
+      m_namedGridAreaColumnCount(o.m_namedGridAreaColumnCount),
+      m_gridColumnGap(o.m_gridColumnGap),
+      m_gridRowGap(o.m_gridRowGap),
+      m_gridAutoRepeatColumns(o.m_gridAutoRepeatColumns),
+      m_gridAutoRepeatRows(o.m_gridAutoRepeatRows),
+      m_autoRepeatColumnsInsertionPoint(o.m_autoRepeatColumnsInsertionPoint),
+      m_autoRepeatRowsInsertionPoint(o.m_autoRepeatRowsInsertionPoint),
+      m_autoRepeatColumnsType(o.m_autoRepeatColumnsType),
+      m_autoRepeatRowsType(o.m_autoRepeatRowsType) {}
 
-} // namespace blink
-
+}  // namespace blink

@@ -32,12 +32,12 @@ namespace blink {
 class RTCStatsResponse;
 
 class RTCStatsCallback : public GarbageCollectedFinalized<RTCStatsCallback> {
-public:
-    virtual ~RTCStatsCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(RTCStatsResponse*) = 0;
+ public:
+  virtual ~RTCStatsCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(RTCStatsResponse*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCStatsCallback_h
+#endif  // RTCStatsCallback_h

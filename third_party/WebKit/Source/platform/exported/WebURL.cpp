@@ -34,29 +34,24 @@
 
 namespace blink {
 
-bool WebURL::protocolIs(const char* protocol) const
-{
-    return ::blink::protocolIs(m_string, protocol);
+bool WebURL::protocolIs(const char* protocol) const {
+  return ::blink::protocolIs(m_string, protocol);
 }
 
 WebURL::WebURL(const KURL& url)
-    : m_string(url.getString())
-    , m_parsed(url.parsed())
-    , m_isValid(url.isValid())
-{
+    : m_string(url.getString()),
+      m_parsed(url.parsed()),
+      m_isValid(url.isValid()) {}
+
+WebURL& WebURL::operator=(const KURL& url) {
+  m_string = url.getString();
+  m_parsed = url.parsed();
+  m_isValid = url.isValid();
+  return *this;
 }
 
-WebURL& WebURL::operator=(const KURL& url)
-{
-    m_string = url.getString();
-    m_parsed = url.parsed();
-    m_isValid = url.isValid();
-    return *this;
+WebURL::operator KURL() const {
+  return KURL(m_string, m_parsed, m_isValid);
 }
 
-WebURL::operator KURL() const
-{
-    return KURL(m_string, m_parsed, m_isValid);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -34,26 +34,27 @@ namespace blink {
 class ExceptionState;
 
 class CORE_EXPORT HTMLTableRowElement final : public HTMLTablePartElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLTableRowElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    int rowIndex() const;
+ public:
+  DECLARE_NODE_FACTORY(HTMLTableRowElement);
 
-    int sectionRowIndex() const;
+  int rowIndex() const;
 
-    HTMLElement* insertCell(int index, ExceptionState&);
-    void deleteCell(int index, ExceptionState&);
+  int sectionRowIndex() const;
 
-    HTMLCollection* cells();
+  HTMLElement* insertCell(int index, ExceptionState&);
+  void deleteCell(int index, ExceptionState&);
 
-private:
-    explicit HTMLTableRowElement(Document&);
+  HTMLCollection* cells();
 
-    bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    const QualifiedName& subResourceAttributeName() const override;
+ private:
+  explicit HTMLTableRowElement(Document&);
+
+  bool hasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& subResourceAttributeName() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLTableRowElement_h
+#endif  // HTMLTableRowElement_h

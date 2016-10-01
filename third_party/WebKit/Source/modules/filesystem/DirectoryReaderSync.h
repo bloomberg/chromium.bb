@@ -45,40 +45,37 @@ class ExceptionState;
 typedef HeapVector<Member<EntrySync>> EntrySyncHeapVector;
 
 class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DirectoryReaderSync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
-    {
-        return new DirectoryReaderSync(fileSystem, fullPath);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~DirectoryReaderSync() override;
+ public:
+  static DirectoryReaderSync* create(DOMFileSystemBase* fileSystem,
+                                     const String& fullPath) {
+    return new DirectoryReaderSync(fileSystem, fullPath);
+  }
 
-    EntrySyncHeapVector readEntries(ExceptionState&);
+  ~DirectoryReaderSync() override;
 
-    void addEntries(const EntrySyncHeapVector& entries)
-    {
-        m_entries.appendVector(entries);
-    }
+  EntrySyncHeapVector readEntries(ExceptionState&);
 
-    void setError(FileError::ErrorCode code)
-    {
-        m_errorCode = code;
-    }
+  void addEntries(const EntrySyncHeapVector& entries) {
+    m_entries.appendVector(entries);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  void setError(FileError::ErrorCode code) { m_errorCode = code; }
 
-private:
-    class EntriesCallbackHelper;
-    class ErrorCallbackHelper;
+  DECLARE_VIRTUAL_TRACE();
 
-    DirectoryReaderSync(DOMFileSystemBase*, const String& fullPath);
+ private:
+  class EntriesCallbackHelper;
+  class ErrorCallbackHelper;
 
-    int m_callbacksId;
-    EntrySyncHeapVector m_entries;
-    FileError::ErrorCode m_errorCode;
+  DirectoryReaderSync(DOMFileSystemBase*, const String& fullPath);
+
+  int m_callbacksId;
+  EntrySyncHeapVector m_entries;
+  FileError::ErrorCode m_errorCode;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DirectoryReaderSync_h
+#endif  // DirectoryReaderSync_h

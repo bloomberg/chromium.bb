@@ -34,21 +34,22 @@
 namespace blink {
 
 enum ProcessingUserGestureState {
-    DefinitelyProcessingNewUserGesture,
-    DefinitelyProcessingUserGesture,
-    PossiblyProcessingUserGesture,
-    DefinitelyNotProcessingUserGesture
+  DefinitelyProcessingNewUserGesture,
+  DefinitelyProcessingUserGesture,
+  PossiblyProcessingUserGesture,
+  DefinitelyNotProcessingUserGesture
 };
 
 class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
-    WTF_MAKE_NONCOPYABLE(UserGestureToken);
-public:
-    UserGestureToken() { }
-    virtual ~UserGestureToken() { }
-    virtual bool hasGestures() const = 0;
-    virtual void setOutOfProcess() = 0;
-    virtual void setJavascriptPrompt() = 0;
-    virtual void setPauseInDebugger() = 0;
+  WTF_MAKE_NONCOPYABLE(UserGestureToken);
+
+ public:
+  UserGestureToken() {}
+  virtual ~UserGestureToken() {}
+  virtual bool hasGestures() const = 0;
+  virtual void setOutOfProcess() = 0;
+  virtual void setJavascriptPrompt() = 0;
+  virtual void setPauseInDebugger() = 0;
 };
 
 // Callback to be invoked when the state of a UserGestureIndicator is
@@ -62,53 +63,56 @@ public:
 // actually be used), but should include the primary use cases.  Therefore
 // this is suitable mainly for diagnostics and measurement purposes.
 class PLATFORM_EXPORT UserGestureUtilizedCallback {
-public:
-    virtual ~UserGestureUtilizedCallback() = default;
-    virtual void userGestureUtilized() = 0;
+ public:
+  virtual ~UserGestureUtilizedCallback() = default;
+  virtual void userGestureUtilized() = 0;
 };
 
 class PLATFORM_EXPORT UserGestureIndicator final {
-    USING_FAST_MALLOC(UserGestureIndicator);
-    WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
-public:
-    // Returns whether a user gesture is currently in progress.
-    // Does not invoke the UserGestureUtilizedCallback.  Consider calling
-    // utilizeUserGesture instead if you know for sure that the return value
-    // will have an effect.
-    static bool processingUserGesture();
+  USING_FAST_MALLOC(UserGestureIndicator);
+  WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
 
-    // Indicates that a user gesture (if any) is being used, without preventing it
-    // from being used again.  Returns whether a user gesture is currently in progress.
-    // If true, invokes (and then clears) any UserGestureUtilizedCallback.
-    static bool utilizeUserGesture();
+ public:
+  // Returns whether a user gesture is currently in progress.
+  // Does not invoke the UserGestureUtilizedCallback.  Consider calling
+  // utilizeUserGesture instead if you know for sure that the return value
+  // will have an effect.
+  static bool processingUserGesture();
 
-    // Mark the current user gesture (if any) as having been used, such that
-    // it cannot be used again.  This is done only for very security-sensitive
-    // operations like creating a new process.
-    // Like utilizeUserGesture, may invoke/clear any UserGestureUtilizedCallback.
-    static bool consumeUserGesture();
+  // Indicates that a user gesture (if any) is being used, without preventing it
+  // from being used again.  Returns whether a user gesture is currently in progress.
+  // If true, invokes (and then clears) any UserGestureUtilizedCallback.
+  static bool utilizeUserGesture();
 
-    static UserGestureToken* currentToken();
+  // Mark the current user gesture (if any) as having been used, such that
+  // it cannot be used again.  This is done only for very security-sensitive
+  // operations like creating a new process.
+  // Like utilizeUserGesture, may invoke/clear any UserGestureUtilizedCallback.
+  static bool consumeUserGesture();
 
-    // Reset the notion of "since load".
-    static void clearProcessedUserGestureSinceLoad();
+  static UserGestureToken* currentToken();
 
-    // Returns whether a user gesture has occurred since page load.
-    static bool processedUserGestureSinceLoad();
+  // Reset the notion of "since load".
+  static void clearProcessedUserGestureSinceLoad();
 
-    explicit UserGestureIndicator(ProcessingUserGestureState, UserGestureUtilizedCallback* = 0);
-    explicit UserGestureIndicator(PassRefPtr<UserGestureToken>, UserGestureUtilizedCallback* = 0);
-    ~UserGestureIndicator();
+  // Returns whether a user gesture has occurred since page load.
+  static bool processedUserGestureSinceLoad();
 
-private:
-    static ProcessingUserGestureState s_state;
-    static UserGestureIndicator* s_topmostIndicator;
-    static bool s_processedUserGestureSinceLoad;
-    ProcessingUserGestureState m_previousState;
-    RefPtr<UserGestureToken> m_token;
-    UserGestureUtilizedCallback* m_usageCallback;
+  explicit UserGestureIndicator(ProcessingUserGestureState,
+                                UserGestureUtilizedCallback* = 0);
+  explicit UserGestureIndicator(PassRefPtr<UserGestureToken>,
+                                UserGestureUtilizedCallback* = 0);
+  ~UserGestureIndicator();
+
+ private:
+  static ProcessingUserGestureState s_state;
+  static UserGestureIndicator* s_topmostIndicator;
+  static bool s_processedUserGestureSinceLoad;
+  ProcessingUserGestureState m_previousState;
+  RefPtr<UserGestureToken> m_token;
+  UserGestureUtilizedCallback* m_usageCallback;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

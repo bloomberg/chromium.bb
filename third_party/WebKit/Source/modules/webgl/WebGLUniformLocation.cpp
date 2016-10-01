@@ -28,39 +28,35 @@
 
 namespace blink {
 
-WebGLUniformLocation* WebGLUniformLocation::create(WebGLProgram* program, GLint location)
-{
-    return new WebGLUniformLocation(program, location);
+WebGLUniformLocation* WebGLUniformLocation::create(WebGLProgram* program,
+                                                   GLint location) {
+  return new WebGLUniformLocation(program, location);
 }
 
-WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program, GLint location)
-    : m_program(program)
-    , m_location(location)
-{
-    ASSERT(m_program);
-    m_linkCount = m_program->linkCount();
+WebGLUniformLocation::WebGLUniformLocation(WebGLProgram* program,
+                                           GLint location)
+    : m_program(program), m_location(location) {
+  ASSERT(m_program);
+  m_linkCount = m_program->linkCount();
 }
 
-WebGLProgram* WebGLUniformLocation::program() const
-{
-    // If the program has been linked again, then this UniformLocation is no
-    // longer valid.
-    if (m_program->linkCount() != m_linkCount)
-        return 0;
-    return m_program;
+WebGLProgram* WebGLUniformLocation::program() const {
+  // If the program has been linked again, then this UniformLocation is no
+  // longer valid.
+  if (m_program->linkCount() != m_linkCount)
+    return 0;
+  return m_program;
 }
 
-GLint WebGLUniformLocation::location() const
-{
-    // If the program has been linked again, then this UniformLocation is no
-    // longer valid.
-    ASSERT(m_program->linkCount() == m_linkCount);
-    return m_location;
+GLint WebGLUniformLocation::location() const {
+  // If the program has been linked again, then this UniformLocation is no
+  // longer valid.
+  ASSERT(m_program->linkCount() == m_linkCount);
+  return m_location;
 }
 
-DEFINE_TRACE(WebGLUniformLocation)
-{
-    visitor->trace(m_program);
+DEFINE_TRACE(WebGLUniformLocation) {
+  visitor->trace(m_program);
 }
 
-} // namespace blink
+}  // namespace blink

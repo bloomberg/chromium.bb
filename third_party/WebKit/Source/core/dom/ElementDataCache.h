@@ -37,21 +37,23 @@ namespace blink {
 class Attribute;
 class ShareableElementData;
 
-class ElementDataCache final : public GarbageCollected<ElementDataCache>  {
-public:
-    static ElementDataCache* create() { return new ElementDataCache; }
+class ElementDataCache final : public GarbageCollected<ElementDataCache> {
+ public:
+  static ElementDataCache* create() { return new ElementDataCache; }
 
-    ShareableElementData* cachedShareableElementDataWithAttributes(const Vector<Attribute>&);
+  ShareableElementData* cachedShareableElementDataWithAttributes(
+      const Vector<Attribute>&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    ElementDataCache();
+ private:
+  ElementDataCache();
 
-    typedef HeapHashMap<unsigned, Member<ShareableElementData>, AlreadyHashed> ShareableElementDataCache;
-    ShareableElementDataCache m_shareableElementDataCache;
+  typedef HeapHashMap<unsigned, Member<ShareableElementData>, AlreadyHashed>
+      ShareableElementDataCache;
+  ShareableElementDataCache m_shareableElementDataCache;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

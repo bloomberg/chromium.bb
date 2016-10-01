@@ -32,17 +32,18 @@
 namespace blink {
 
 class PLATFORM_EXPORT KillRing {
-    USING_FAST_MALLOC(KillRing);
-    WTF_MAKE_NONCOPYABLE(KillRing);
-public:
-    KillRing() { }
-    void append(const String&);
-    void prepend(const String&);
-    String yank();
-    void startNewSequence();
-    void setToYankedState();
+  USING_FAST_MALLOC(KillRing);
+  WTF_MAKE_NONCOPYABLE(KillRing);
+
+ public:
+  KillRing() {}
+  void append(const String&);
+  void prepend(const String&);
+  String yank();
+  void startNewSequence();
+  void setToYankedState();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // KillRing_h
+#endif  // KillRing_h

@@ -32,15 +32,12 @@
 
 namespace blink {
 
-bool WebTextInputInfo::equals(const WebTextInputInfo& other) const
-{
-    return type == other.type
-        && value == other.value
-        && flags == other.flags
-        && selectionStart == other.selectionStart
-        && selectionEnd == other.selectionEnd
-        && compositionStart == other.compositionStart
-        && compositionEnd == other.compositionEnd;
+bool WebTextInputInfo::equals(const WebTextInputInfo& other) const {
+  return type == other.type && value == other.value && flags == other.flags &&
+         selectionStart == other.selectionStart &&
+         selectionEnd == other.selectionEnd &&
+         compositionStart == other.compositionStart &&
+         compositionEnd == other.compositionEnd;
 }
 
-} // namespace blink
+}  // namespace blink

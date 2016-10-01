@@ -51,151 +51,180 @@ class StylePropertyShorthand;
 class StyleResolver;
 
 class CSSAnimations final {
-    WTF_MAKE_NONCOPYABLE(CSSAnimations);
-    DISALLOW_NEW();
-public:
-    CSSAnimations();
+  WTF_MAKE_NONCOPYABLE(CSSAnimations);
+  DISALLOW_NEW();
 
-    bool isAnimationForInspector(const Animation&);
-    bool isTransitionAnimationForInspector(const Animation&) const;
+ public:
+  CSSAnimations();
 
-    static const StylePropertyShorthand& propertiesForTransitionAll();
-    static bool isAnimatableProperty(CSSPropertyID);
-    static bool isAffectedByKeyframesFromScope(const Element&, const TreeScope&);
-    static void calculateUpdate(const Element* animatingElement, Element&, const ComputedStyle&, ComputedStyle* parentStyle, CSSAnimationUpdate&, StyleResolver*);
-    static void snapshotCompositorKeyframes(Element&, CSSAnimationUpdate&, const ComputedStyle&, const ComputedStyle* parentStyle);
+  bool isAnimationForInspector(const Animation&);
+  bool isTransitionAnimationForInspector(const Animation&) const;
 
-    void setPendingUpdate(const CSSAnimationUpdate& update)
-    {
-        clearPendingUpdate();
-        m_pendingUpdate.copy(update);
+  static const StylePropertyShorthand& propertiesForTransitionAll();
+  static bool isAnimatableProperty(CSSPropertyID);
+  static bool isAffectedByKeyframesFromScope(const Element&, const TreeScope&);
+  static void calculateUpdate(const Element* animatingElement,
+                              Element&,
+                              const ComputedStyle&,
+                              ComputedStyle* parentStyle,
+                              CSSAnimationUpdate&,
+                              StyleResolver*);
+  static void snapshotCompositorKeyframes(Element&,
+                                          CSSAnimationUpdate&,
+                                          const ComputedStyle&,
+                                          const ComputedStyle* parentStyle);
+
+  void setPendingUpdate(const CSSAnimationUpdate& update) {
+    clearPendingUpdate();
+    m_pendingUpdate.copy(update);
+  }
+  void clearPendingUpdate() { m_pendingUpdate.clear(); }
+  void maybeApplyPendingUpdate(Element*);
+  bool isEmpty() const {
+    return m_runningAnimations.isEmpty() && m_transitions.isEmpty() &&
+           m_pendingUpdate.isEmpty();
+  }
+  void cancel();
+
+  DECLARE_TRACE();
+
+ private:
+  class RunningAnimation final
+      : public GarbageCollectedFinalized<RunningAnimation> {
+   public:
+    RunningAnimation(Animation* animation, NewCSSAnimation newAnimation)
+        : animation(animation),
+          name(newAnimation.name),
+          nameIndex(newAnimation.nameIndex),
+          specifiedTiming(newAnimation.timing),
+          styleRule(newAnimation.styleRule),
+          styleRuleVersion(newAnimation.styleRuleVersion) {}
+
+    void update(UpdatedCSSAnimation update) {
+      DCHECK_EQ(update.animation, animation);
+      styleRule = update.styleRule;
+      styleRuleVersion = update.styleRuleVersion;
+      specifiedTiming = update.specifiedTiming;
     }
-    void clearPendingUpdate()
-    {
-        m_pendingUpdate.clear();
+
+    DEFINE_INLINE_TRACE() {
+      visitor->trace(animation);
+      visitor->trace(styleRule);
     }
-    void maybeApplyPendingUpdate(Element*);
-    bool isEmpty() const { return m_runningAnimations.isEmpty() && m_transitions.isEmpty() && m_pendingUpdate.isEmpty(); }
-    void cancel();
 
-    DECLARE_TRACE();
+    Member<Animation> animation;
+    AtomicString name;
+    size_t nameIndex;
+    Timing specifiedTiming;
+    Member<StyleRuleKeyframes> styleRule;
+    unsigned styleRuleVersion;
+  };
 
-private:
-    class RunningAnimation final : public GarbageCollectedFinalized<RunningAnimation> {
-    public:
-        RunningAnimation(Animation* animation, NewCSSAnimation newAnimation)
-            : animation(animation)
-            , name(newAnimation.name)
-            , nameIndex(newAnimation.nameIndex)
-            , specifiedTiming(newAnimation.timing)
-            , styleRule(newAnimation.styleRule)
-            , styleRuleVersion(newAnimation.styleRuleVersion)
-        {
-        }
+  struct RunningTransition {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-        void update(UpdatedCSSAnimation update)
-        {
-            DCHECK_EQ(update.animation, animation);
-            styleRule = update.styleRule;
-            styleRuleVersion = update.styleRuleVersion;
-            specifiedTiming = update.specifiedTiming;
-        }
+   public:
+    DEFINE_INLINE_TRACE() { visitor->trace(animation); }
 
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(animation);
-            visitor->trace(styleRule);
-        }
+    Member<Animation> animation;
+    const AnimatableValue* from;
+    const AnimatableValue* to;
+    RefPtr<AnimatableValue> reversingAdjustedStartValue;
+    double reversingShorteningFactor;
+  };
 
-        Member<Animation> animation;
-        AtomicString name;
-        size_t nameIndex;
-        Timing specifiedTiming;
-        Member<StyleRuleKeyframes> styleRule;
-        unsigned styleRuleVersion;
-    };
+  HeapVector<Member<RunningAnimation>> m_runningAnimations;
 
-    struct RunningTransition {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(animation);
-        }
+  using TransitionMap = HeapHashMap<CSSPropertyID, RunningTransition>;
+  TransitionMap m_transitions;
 
-        Member<Animation> animation;
-        const AnimatableValue* from;
-        const AnimatableValue* to;
-        RefPtr<AnimatableValue> reversingAdjustedStartValue;
-        double reversingShorteningFactor;
-    };
+  CSSAnimationUpdate m_pendingUpdate;
 
-    HeapVector<Member<RunningAnimation>> m_runningAnimations;
+  ActiveInterpolationsMap m_previousActiveInterpolationsForAnimations;
 
-    using TransitionMap = HeapHashMap<CSSPropertyID, RunningTransition>;
-    TransitionMap m_transitions;
+  static void calculateCompositorAnimationUpdate(
+      CSSAnimationUpdate&,
+      const Element* animatingElement,
+      Element&,
+      const ComputedStyle&,
+      const ComputedStyle* parentStyle);
+  static void calculateAnimationUpdate(CSSAnimationUpdate&,
+                                       const Element* animatingElement,
+                                       Element&,
+                                       const ComputedStyle&,
+                                       ComputedStyle* parentStyle,
+                                       StyleResolver*);
+  static void calculateTransitionUpdate(CSSAnimationUpdate&,
+                                        const Element* animatingElement,
+                                        const ComputedStyle&);
+  static void calculateTransitionUpdateForProperty(
+      CSSPropertyID,
+      const CSSTransitionData&,
+      size_t transitionIndex,
+      const ComputedStyle& oldStyle,
+      const ComputedStyle&,
+      const TransitionMap* activeTransitions,
+      CSSAnimationUpdate&,
+      const Element*);
 
-    CSSAnimationUpdate m_pendingUpdate;
+  static void calculateAnimationActiveInterpolations(
+      CSSAnimationUpdate&,
+      const Element* animatingElement);
+  static void calculateTransitionActiveInterpolations(
+      CSSAnimationUpdate&,
+      const Element* animatingElement);
 
-    ActiveInterpolationsMap m_previousActiveInterpolationsForAnimations;
+  class AnimationEventDelegate final
+      : public AnimationEffectReadOnly::EventDelegate {
+   public:
+    AnimationEventDelegate(Element* animationTarget, const AtomicString& name)
+        : m_animationTarget(animationTarget),
+          m_name(name),
+          m_previousPhase(AnimationEffectReadOnly::PhaseNone),
+          m_previousIteration(nullValue()) {}
+    bool requiresIterationEvents(const AnimationEffectReadOnly&) override;
+    void onEventCondition(const AnimationEffectReadOnly&) override;
+    DECLARE_VIRTUAL_TRACE();
 
-    static void calculateCompositorAnimationUpdate(CSSAnimationUpdate&, const Element* animatingElement, Element&, const ComputedStyle&, const ComputedStyle* parentStyle);
-    static void calculateAnimationUpdate(CSSAnimationUpdate&, const Element* animatingElement, Element&, const ComputedStyle&, ComputedStyle* parentStyle, StyleResolver*);
-    static void calculateTransitionUpdate(CSSAnimationUpdate&, const Element* animatingElement, const ComputedStyle&);
-    static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSTransitionData&, size_t transitionIndex, const ComputedStyle& oldStyle, const ComputedStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate&, const Element*);
+   private:
+    const Element& animationTarget() const { return *m_animationTarget; }
+    EventTarget* eventTarget() const;
+    Document& document() const { return m_animationTarget->document(); }
 
-    static void calculateAnimationActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement);
-    static void calculateTransitionActiveInterpolations(CSSAnimationUpdate&, const Element* animatingElement);
+    void maybeDispatch(Document::ListenerType,
+                       const AtomicString& eventName,
+                       double elapsedTime);
+    Member<Element> m_animationTarget;
+    const AtomicString m_name;
+    AnimationEffectReadOnly::Phase m_previousPhase;
+    double m_previousIteration;
+  };
 
-    class AnimationEventDelegate final : public AnimationEffectReadOnly::EventDelegate {
-    public:
-        AnimationEventDelegate(Element* animationTarget, const AtomicString& name)
-            : m_animationTarget(animationTarget)
-            , m_name(name)
-            , m_previousPhase(AnimationEffectReadOnly::PhaseNone)
-            , m_previousIteration(nullValue())
-        {
-        }
-        bool requiresIterationEvents(const AnimationEffectReadOnly&) override;
-        void onEventCondition(const AnimationEffectReadOnly&) override;
-        DECLARE_VIRTUAL_TRACE();
+  class TransitionEventDelegate final
+      : public AnimationEffectReadOnly::EventDelegate {
+   public:
+    TransitionEventDelegate(Element* transitionTarget, CSSPropertyID property)
+        : m_transitionTarget(transitionTarget),
+          m_property(property),
+          m_previousPhase(AnimationEffectReadOnly::PhaseNone) {}
+    bool requiresIterationEvents(const AnimationEffectReadOnly&) override {
+      return false;
+    }
+    void onEventCondition(const AnimationEffectReadOnly&) override;
+    DECLARE_VIRTUAL_TRACE();
 
-    private:
-        const Element& animationTarget() const { return *m_animationTarget; }
-        EventTarget* eventTarget() const;
-        Document& document() const { return m_animationTarget->document(); }
+   private:
+    const Element& transitionTarget() const { return *m_transitionTarget; }
+    EventTarget* eventTarget() const;
+    PseudoId getPseudoId() const { return m_transitionTarget->getPseudoId(); }
+    Document& document() const { return m_transitionTarget->document(); }
 
-        void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
-        Member<Element> m_animationTarget;
-        const AtomicString m_name;
-        AnimationEffectReadOnly::Phase m_previousPhase;
-        double m_previousIteration;
-    };
-
-    class TransitionEventDelegate final : public AnimationEffectReadOnly::EventDelegate {
-    public:
-        TransitionEventDelegate(Element* transitionTarget, CSSPropertyID property)
-            : m_transitionTarget(transitionTarget)
-            , m_property(property)
-            , m_previousPhase(AnimationEffectReadOnly::PhaseNone)
-        {
-        }
-        bool requiresIterationEvents(const AnimationEffectReadOnly&) override { return false; }
-        void onEventCondition(const AnimationEffectReadOnly&) override;
-        DECLARE_VIRTUAL_TRACE();
-
-    private:
-        const Element& transitionTarget() const { return *m_transitionTarget; }
-        EventTarget* eventTarget() const;
-        PseudoId getPseudoId() const { return m_transitionTarget->getPseudoId(); }
-        Document& document() const { return m_transitionTarget->document(); }
-
-        Member<Element> m_transitionTarget;
-        const CSSPropertyID m_property;
-        AnimationEffectReadOnly::Phase m_previousPhase;
-    };
+    Member<Element> m_transitionTarget;
+    const CSSPropertyID m_property;
+    AnimationEffectReadOnly::Phase m_previousPhase;
+  };
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

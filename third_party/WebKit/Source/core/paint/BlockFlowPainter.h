@@ -14,16 +14,18 @@ struct PaintInfo;
 class LayoutBlockFlow;
 
 class BlockFlowPainter {
-    STACK_ALLOCATED();
-public:
-    BlockFlowPainter(const LayoutBlockFlow& layoutBlockFlow) : m_layoutBlockFlow(layoutBlockFlow) { }
-    void paintContents(const PaintInfo&, const LayoutPoint&);
-    void paintFloats(const PaintInfo&, const LayoutPoint&);
+  STACK_ALLOCATED();
 
-private:
-    const LayoutBlockFlow& m_layoutBlockFlow;
+ public:
+  BlockFlowPainter(const LayoutBlockFlow& layoutBlockFlow)
+      : m_layoutBlockFlow(layoutBlockFlow) {}
+  void paintContents(const PaintInfo&, const LayoutPoint&);
+  void paintFloats(const PaintInfo&, const LayoutPoint&);
+
+ private:
+  const LayoutBlockFlow& m_layoutBlockFlow;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BlockFlowPainter_h
+#endif  // BlockFlowPainter_h

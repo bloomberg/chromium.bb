@@ -17,49 +17,51 @@ class ExceptionState;
 class ScriptState;
 class ScriptValue;
 
-class CORE_EXPORT CSSStyleValue : public GarbageCollectedFinalized<CSSStyleValue>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(CSSStyleValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum StyleValueType {
-        Unknown,
-        AngleType,
-        CalcLengthType,
-        ImageType,
-        KeywordType,
-        NumberType,
-        PositionType,
-        ResourceType,
-        SimpleLengthType,
-        TransformType,
-        URLImageType,
-        UnparsedType,
-    };
+class CORE_EXPORT CSSStyleValue
+    : public GarbageCollectedFinalized<CSSStyleValue>,
+      public ScriptWrappable {
+  WTF_MAKE_NONCOPYABLE(CSSStyleValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    virtual ~CSSStyleValue() { }
+ public:
+  enum StyleValueType {
+    Unknown,
+    AngleType,
+    CalcLengthType,
+    ImageType,
+    KeywordType,
+    NumberType,
+    PositionType,
+    ResourceType,
+    SimpleLengthType,
+    TransformType,
+    URLImageType,
+    UnparsedType,
+  };
 
-    virtual StyleValueType type() const = 0;
+  virtual ~CSSStyleValue() {}
 
-    static ScriptValue parse(ScriptState*, const String& propertyName, const String& value, ExceptionState&);
+  virtual StyleValueType type() const = 0;
 
-    virtual const CSSValue* toCSSValue() const = 0;
-    virtual const CSSValue* toCSSValueWithProperty(CSSPropertyID) const
-    {
-        return toCSSValue();
-    }
-    virtual String cssText() const
-    {
-        return toCSSValue()->cssText();
-    }
+  static ScriptValue parse(ScriptState*,
+                           const String& propertyName,
+                           const String& value,
+                           ExceptionState&);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual const CSSValue* toCSSValue() const = 0;
+  virtual const CSSValue* toCSSValueWithProperty(CSSPropertyID) const {
+    return toCSSValue();
+  }
+  virtual String cssText() const { return toCSSValue()->cssText(); }
 
-protected:
-    CSSStyleValue() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ protected:
+  CSSStyleValue() {}
 };
 
 typedef HeapVector<Member<CSSStyleValue>> CSSStyleValueVector;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

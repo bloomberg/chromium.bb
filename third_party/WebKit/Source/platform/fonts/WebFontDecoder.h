@@ -41,23 +41,24 @@ namespace blink {
 class SharedBuffer;
 
 class WebFontDecoder final {
-    STACK_ALLOCATED();
-public:
-    WebFontDecoder()
-    {
-    }
+  STACK_ALLOCATED();
 
-    sk_sp<SkTypeface> decode(SharedBuffer*);
+ public:
+  WebFontDecoder() {}
 
-    static bool supportsFormat(const String&);
-    String getErrorString() const { return m_otsErrorString; }
+  sk_sp<SkTypeface> decode(SharedBuffer*);
 
-private:
-    void setErrorString(const String& errorString) { m_otsErrorString = errorString; }
+  static bool supportsFormat(const String&);
+  String getErrorString() const { return m_otsErrorString; }
 
-    String m_otsErrorString;
+ private:
+  void setErrorString(const String& errorString) {
+    m_otsErrorString = errorString;
+  }
+
+  String m_otsErrorString;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFontDecoder_h
+#endif  // WebFontDecoder_h

@@ -40,19 +40,32 @@ class FileSystemCallback;
 class WorkerGlobalScope;
 
 class WorkerGlobalScopeFileSystem {
-    STATIC_ONLY(WorkerGlobalScopeFileSystem);
-public:
-    enum {
-        kTemporary,
-        kPersistent,
-    };
+  STATIC_ONLY(WorkerGlobalScopeFileSystem);
 
-    static void webkitRequestFileSystem(WorkerGlobalScope&, int type, long long size, FileSystemCallback* successCallback, ErrorCallback*);
-    static DOMFileSystemSync* webkitRequestFileSystemSync(WorkerGlobalScope&, int type, long long size, ExceptionState&);
-    static void webkitResolveLocalFileSystemURL(WorkerGlobalScope&, const String& url, EntryCallback* successCallback, ErrorCallback*);
-    static EntrySync* webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope&, const String& url, ExceptionState&);
+ public:
+  enum {
+    kTemporary,
+    kPersistent,
+  };
+
+  static void webkitRequestFileSystem(WorkerGlobalScope&,
+                                      int type,
+                                      long long size,
+                                      FileSystemCallback* successCallback,
+                                      ErrorCallback*);
+  static DOMFileSystemSync* webkitRequestFileSystemSync(WorkerGlobalScope&,
+                                                        int type,
+                                                        long long size,
+                                                        ExceptionState&);
+  static void webkitResolveLocalFileSystemURL(WorkerGlobalScope&,
+                                              const String& url,
+                                              EntryCallback* successCallback,
+                                              ErrorCallback*);
+  static EntrySync* webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope&,
+                                                        const String& url,
+                                                        ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerGlobalScopeFileSystem_h
+#endif  // WorkerGlobalScopeFileSystem_h

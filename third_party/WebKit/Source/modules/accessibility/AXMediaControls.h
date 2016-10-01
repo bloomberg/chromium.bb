@@ -26,7 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef AXMediaControls_h
 #define AXMediaControls_h
 
@@ -38,75 +37,92 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AccessibilityMediaControl : public AXLayoutObject {
-    WTF_MAKE_NONCOPYABLE(AccessibilityMediaControl);
+  WTF_MAKE_NONCOPYABLE(AccessibilityMediaControl);
 
-public:
-    static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AccessibilityMediaControl() override { }
+ public:
+  static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AccessibilityMediaControl() override {}
 
-    AccessibilityRole roleValue() const override;
+  AccessibilityRole roleValue() const override;
 
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
-    String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
+  String textAlternative(bool recursive,
+                         bool inAriaLabelledByTraversal,
+                         AXObjectSet& visited,
+                         AXNameFrom&,
+                         AXRelatedObjectVector*,
+                         NameSources*) const override;
+  String description(AXNameFrom,
+                     AXDescriptionFrom&,
+                     AXObjectVector* descriptionObjects) const override;
 
-protected:
-    AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl&);
-    MediaControlElementType controlType() const;
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+ protected:
+  AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl&);
+  MediaControlElementType controlType() const;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
-
 
 class AccessibilityMediaTimeline final : public AXSlider {
-    WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeline);
+  WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeline);
 
-public:
-    static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AccessibilityMediaTimeline() override { }
+ public:
+  static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AccessibilityMediaTimeline() override {}
 
-    String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
-    String valueDescription() const override;
+  String description(AXNameFrom,
+                     AXDescriptionFrom&,
+                     AXObjectVector* descriptionObjects) const override;
+  String valueDescription() const override;
 
-private:
-    AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl&);
+ private:
+  AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl&);
 };
-
 
 class AXMediaControlsContainer final : public AccessibilityMediaControl {
-    WTF_MAKE_NONCOPYABLE(AXMediaControlsContainer);
+  WTF_MAKE_NONCOPYABLE(AXMediaControlsContainer);
 
-public:
-    static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXMediaControlsContainer() override { }
+ public:
+  static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXMediaControlsContainer() override {}
 
-    AccessibilityRole roleValue() const override { return ToolbarRole; }
+  AccessibilityRole roleValue() const override { return ToolbarRole; }
 
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
-    String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) const override;
+  String textAlternative(bool recursive,
+                         bool inAriaLabelledByTraversal,
+                         AXObjectSet& visited,
+                         AXNameFrom&,
+                         AXRelatedObjectVector*,
+                         NameSources*) const override;
+  String description(AXNameFrom,
+                     AXDescriptionFrom&,
+                     AXObjectVector* descriptionObjects) const override;
 
-private:
-    AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+ private:
+  AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
-
 
 class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
-    WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeDisplay);
+  WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeDisplay);
 
-public:
-    static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AccessibilityMediaTimeDisplay() override { }
+ public:
+  static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AccessibilityMediaTimeDisplay() override {}
 
-    AccessibilityRole roleValue() const override { return StaticTextRole; }
+  AccessibilityRole roleValue() const override { return StaticTextRole; }
 
-    String stringValue() const override;
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
+  String stringValue() const override;
+  String textAlternative(bool recursive,
+                         bool inAriaLabelledByTraversal,
+                         AXObjectSet& visited,
+                         AXNameFrom&,
+                         AXRelatedObjectVector*,
+                         NameSources*) const override;
 
-private:
-    AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl&);
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+ private:
+  AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl&);
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // AXMediaControls_h
+#endif  // AXMediaControls_h

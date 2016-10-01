@@ -30,67 +30,64 @@
 
 namespace blink {
 
-RTCStatsRequestImpl* RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCStatsCallback* callback, MediaStreamTrack* selector)
-{
-    RTCStatsRequestImpl* request = new RTCStatsRequestImpl(context, requester, callback, selector);
-    request->suspendIfNeeded();
-    return request;
+RTCStatsRequestImpl* RTCStatsRequestImpl::create(ExecutionContext* context,
+                                                 RTCPeerConnection* requester,
+                                                 RTCStatsCallback* callback,
+                                                 MediaStreamTrack* selector) {
+  RTCStatsRequestImpl* request =
+      new RTCStatsRequestImpl(context, requester, callback, selector);
+  request->suspendIfNeeded();
+  return request;
 }
 
-RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCStatsCallback* callback, MediaStreamTrack* selector)
-    : ActiveDOMObject(context)
-    , m_successCallback(callback)
-    , m_component(selector ? selector->component() : 0)
-    , m_requester(requester)
-{
-    DCHECK(m_requester);
+RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context,
+                                         RTCPeerConnection* requester,
+                                         RTCStatsCallback* callback,
+                                         MediaStreamTrack* selector)
+    : ActiveDOMObject(context),
+      m_successCallback(callback),
+      m_component(selector ? selector->component() : 0),
+      m_requester(requester) {
+  DCHECK(m_requester);
 }
 
-RTCStatsRequestImpl::~RTCStatsRequestImpl()
-{
+RTCStatsRequestImpl::~RTCStatsRequestImpl() {}
+
+RTCStatsResponseBase* RTCStatsRequestImpl::createResponse() {
+  return RTCStatsResponse::create();
 }
 
-RTCStatsResponseBase* RTCStatsRequestImpl::createResponse()
-{
-    return RTCStatsResponse::create();
+bool RTCStatsRequestImpl::hasSelector() {
+  return m_component;
 }
 
-bool RTCStatsRequestImpl::hasSelector()
-{
-    return m_component;
+MediaStreamComponent* RTCStatsRequestImpl::component() {
+  return m_component;
 }
 
-MediaStreamComponent* RTCStatsRequestImpl::component()
-{
-    return m_component;
+void RTCStatsRequestImpl::requestSucceeded(RTCStatsResponseBase* response) {
+  bool shouldFireCallback =
+      m_requester ? m_requester->shouldFireGetStatsCallback() : false;
+  if (shouldFireCallback && m_successCallback)
+    m_successCallback->handleEvent(static_cast<RTCStatsResponse*>(response));
+  clear();
 }
 
-void RTCStatsRequestImpl::requestSucceeded(RTCStatsResponseBase* response)
-{
-    bool shouldFireCallback = m_requester ? m_requester->shouldFireGetStatsCallback() : false;
-    if (shouldFireCallback && m_successCallback)
-        m_successCallback->handleEvent(static_cast<RTCStatsResponse*>(response));
-    clear();
+void RTCStatsRequestImpl::stop() {
+  clear();
 }
 
-void RTCStatsRequestImpl::stop()
-{
-    clear();
+void RTCStatsRequestImpl::clear() {
+  m_successCallback.clear();
+  m_requester.clear();
 }
 
-void RTCStatsRequestImpl::clear()
-{
-    m_successCallback.clear();
-    m_requester.clear();
+DEFINE_TRACE(RTCStatsRequestImpl) {
+  visitor->trace(m_successCallback);
+  visitor->trace(m_component);
+  visitor->trace(m_requester);
+  RTCStatsRequest::trace(visitor);
+  ActiveDOMObject::trace(visitor);
 }
 
-DEFINE_TRACE(RTCStatsRequestImpl)
-{
-    visitor->trace(m_successCallback);
-    visitor->trace(m_component);
-    visitor->trace(m_requester);
-    RTCStatsRequest::trace(visitor);
-    ActiveDOMObject::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

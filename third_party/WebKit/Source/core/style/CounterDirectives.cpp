@@ -26,19 +26,18 @@
 
 namespace blink {
 
-bool operator==(const CounterDirectives& a, const CounterDirectives& b)
-{
-    return a.isIncrement() == b.isIncrement()
-        && a.incrementValue() == b.incrementValue()
-        && a.isReset() == b.isReset()
-        && a.resetValue() == b.resetValue();
+bool operator==(const CounterDirectives& a, const CounterDirectives& b) {
+  return a.isIncrement() == b.isIncrement() &&
+         a.incrementValue() == b.incrementValue() &&
+         a.isReset() == b.isReset() && a.resetValue() == b.resetValue();
 }
 
-std::unique_ptr<CounterDirectiveMap> clone(const CounterDirectiveMap& counterDirectives)
-{
-    std::unique_ptr<CounterDirectiveMap> result = wrapUnique(new CounterDirectiveMap);
-    *result = counterDirectives;
-    return result;
+std::unique_ptr<CounterDirectiveMap> clone(
+    const CounterDirectiveMap& counterDirectives) {
+  std::unique_ptr<CounterDirectiveMap> result =
+      wrapUnique(new CounterDirectiveMap);
+  *result = counterDirectives;
+  return result;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -48,50 +48,62 @@ class WorkerClients;
 // TODO(nhiroki): "MessagingProxy" is not well-defined term among worker
 // components. Probably we should rename this to something more suitable.
 // (http://crbug.com/603785)
-class CORE_EXPORT InProcessWorkerMessagingProxy : public ThreadedMessagingProxyBase {
-    WTF_MAKE_NONCOPYABLE(InProcessWorkerMessagingProxy);
-public:
-    // These methods should only be used on the parent context thread.
-    void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode);
-    void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, std::unique_ptr<MessagePortChannelArray>);
+class CORE_EXPORT InProcessWorkerMessagingProxy
+    : public ThreadedMessagingProxyBase {
+  WTF_MAKE_NONCOPYABLE(InProcessWorkerMessagingProxy);
 
-    void workerThreadCreated() override;
-    void parentObjectDestroyed() override;
+ public:
+  // These methods should only be used on the parent context thread.
+  void startWorkerGlobalScope(const KURL& scriptURL,
+                              const String& userAgent,
+                              const String& sourceCode);
+  void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
+                                      std::unique_ptr<MessagePortChannelArray>);
 
-    bool hasPendingActivity() const;
+  void workerThreadCreated() override;
+  void parentObjectDestroyed() override;
 
-    // These methods come from worker context thread via
-    // InProcessWorkerObjectProxy and are called on the parent context thread.
-    void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, std::unique_ptr<MessagePortChannelArray>);
-    void dispatchErrorEvent(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId);
+  bool hasPendingActivity() const;
 
-    // 'virtual' for testing.
-    virtual void confirmMessageFromWorkerObject();
-    virtual void pendingActivityFinished();
+  // These methods come from worker context thread via
+  // InProcessWorkerObjectProxy and are called on the parent context thread.
+  void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
+                                 std::unique_ptr<MessagePortChannelArray>);
+  void dispatchErrorEvent(const String& errorMessage,
+                          std::unique_ptr<SourceLocation>,
+                          int exceptionId);
 
-protected:
-    InProcessWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
-    ~InProcessWorkerMessagingProxy() override;
+  // 'virtual' for testing.
+  virtual void confirmMessageFromWorkerObject();
+  virtual void pendingActivityFinished();
 
-    InProcessWorkerObjectProxy& workerObjectProxy() { return *m_workerObjectProxy.get(); }
+ protected:
+  InProcessWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
+  ~InProcessWorkerMessagingProxy() override;
 
-private:
-    friend class InProcessWorkerMessagingProxyForTest;
-    InProcessWorkerMessagingProxy(ExecutionContext*, InProcessWorkerBase*, WorkerClients*);
+  InProcessWorkerObjectProxy& workerObjectProxy() {
+    return *m_workerObjectProxy.get();
+  }
 
-    std::unique_ptr<InProcessWorkerObjectProxy> m_workerObjectProxy;
-    WeakPersistent<InProcessWorkerBase> m_workerObject;
-    Persistent<WorkerClients> m_workerClients;
+ private:
+  friend class InProcessWorkerMessagingProxyForTest;
+  InProcessWorkerMessagingProxy(ExecutionContext*,
+                                InProcessWorkerBase*,
+                                WorkerClients*);
 
-    // Tasks are queued here until there's a thread object created.
-    Vector<std::unique_ptr<ExecutionContextTask>> m_queuedEarlyTasks;
+  std::unique_ptr<InProcessWorkerObjectProxy> m_workerObjectProxy;
+  WeakPersistent<InProcessWorkerBase> m_workerObject;
+  Persistent<WorkerClients> m_workerClients;
 
-    // Unconfirmed messages from the parent context thread to the worker thread.
-    unsigned m_unconfirmedMessageCount;
+  // Tasks are queued here until there's a thread object created.
+  Vector<std::unique_ptr<ExecutionContextTask>> m_queuedEarlyTasks;
 
-    bool m_workerGlobalScopeMayHavePendingActivity;
+  // Unconfirmed messages from the parent context thread to the worker thread.
+  unsigned m_unconfirmedMessageCount;
+
+  bool m_workerGlobalScopeMayHavePendingActivity;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InProcessWorkerMessagingProxy_h
+#endif  // InProcessWorkerMessagingProxy_h

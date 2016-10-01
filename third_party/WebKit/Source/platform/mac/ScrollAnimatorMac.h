@@ -48,90 +48,89 @@ namespace blink {
 class Scrollbar;
 
 class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
-    USING_PRE_FINALIZER(ScrollAnimatorMac, dispose);
-public:
-    ScrollAnimatorMac(ScrollableArea*);
-    ~ScrollAnimatorMac() override;
+  USING_PRE_FINALIZER(ScrollAnimatorMac, dispose);
 
-    void dispose() override;
+ public:
+  ScrollAnimatorMac(ScrollableArea*);
+  ~ScrollAnimatorMac() override;
 
-    void immediateScrollToPointForScrollAnimation(const FloatPoint& newPosition);
-    bool haveScrolledSincePageLoad() const { return m_haveScrolledSincePageLoad; }
+  void dispose() override;
 
-    void updateScrollerStyle();
+  void immediateScrollToPointForScrollAnimation(const FloatPoint& newPosition);
+  bool haveScrolledSincePageLoad() const { return m_haveScrolledSincePageLoad; }
 
-    bool scrollbarPaintTimerIsActive() const;
-    void startScrollbarPaintTimer();
-    void stopScrollbarPaintTimer();
+  void updateScrollerStyle();
 
-    void sendContentAreaScrolledSoon(const FloatSize& scrollDelta);
+  bool scrollbarPaintTimerIsActive() const;
+  void startScrollbarPaintTimer();
+  void stopScrollbarPaintTimer();
 
-    void setVisibleScrollerThumbRect(const IntRect&);
+  void sendContentAreaScrolledSoon(const FloatSize& scrollDelta);
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        ScrollAnimatorBase::trace(visitor);
-    }
+  void setVisibleScrollerThumbRect(const IntRect&);
 
-private:
-    RetainPtr<id> m_scrollAnimationHelper;
-    RetainPtr<BlinkScrollAnimationHelperDelegate> m_scrollAnimationHelperDelegate;
+  DEFINE_INLINE_VIRTUAL_TRACE() { ScrollAnimatorBase::trace(visitor); }
 
-    RetainPtr<ScrollbarPainterController> m_scrollbarPainterController;
-    RetainPtr<BlinkScrollbarPainterControllerDelegate> m_scrollbarPainterControllerDelegate;
-    RetainPtr<BlinkScrollbarPainterDelegate> m_horizontalScrollbarPainterDelegate;
-    RetainPtr<BlinkScrollbarPainterDelegate> m_verticalScrollbarPainterDelegate;
+ private:
+  RetainPtr<id> m_scrollAnimationHelper;
+  RetainPtr<BlinkScrollAnimationHelperDelegate> m_scrollAnimationHelperDelegate;
 
-    void initialScrollbarPaintTask();
-    std::unique_ptr<CancellableTaskFactory> m_initialScrollbarPaintTaskFactory;
+  RetainPtr<ScrollbarPainterController> m_scrollbarPainterController;
+  RetainPtr<BlinkScrollbarPainterControllerDelegate>
+      m_scrollbarPainterControllerDelegate;
+  RetainPtr<BlinkScrollbarPainterDelegate> m_horizontalScrollbarPainterDelegate;
+  RetainPtr<BlinkScrollbarPainterDelegate> m_verticalScrollbarPainterDelegate;
 
-    void sendContentAreaScrolledTask();
-    std::unique_ptr<CancellableTaskFactory> m_sendContentAreaScrolledTaskFactory;
-    std::unique_ptr<WebTaskRunner> m_taskRunner;
-    FloatSize m_contentAreaScrolledTimerScrollDelta;
+  void initialScrollbarPaintTask();
+  std::unique_ptr<CancellableTaskFactory> m_initialScrollbarPaintTaskFactory;
 
-    ScrollResult userScroll(ScrollGranularity, const FloatSize& delta) override;
-    void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
+  void sendContentAreaScrolledTask();
+  std::unique_ptr<CancellableTaskFactory> m_sendContentAreaScrolledTaskFactory;
+  std::unique_ptr<WebTaskRunner> m_taskRunner;
+  FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    void handleWheelEventPhase(PlatformWheelEventPhase) override;
+  ScrollResult userScroll(ScrollGranularity, const FloatSize& delta) override;
+  void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
-    void cancelAnimation() override;
+  void handleWheelEventPhase(PlatformWheelEventPhase) override;
 
-    void contentAreaWillPaint() const override;
-    void mouseEnteredContentArea() const override;
-    void mouseExitedContentArea() const override;
-    void mouseMovedInContentArea() const override;
-    void mouseEnteredScrollbar(Scrollbar&) const override;
-    void mouseExitedScrollbar(Scrollbar&) const override;
-    void contentsResized() const override;
-    void contentAreaDidShow() const override;
-    void contentAreaDidHide() const override;
-    void didBeginScrollGesture() const;
-    void didEndScrollGesture() const;
-    void mayBeginScrollGesture() const;
+  void cancelAnimation() override;
 
-    void finishCurrentScrollAnimations() override;
+  void contentAreaWillPaint() const override;
+  void mouseEnteredContentArea() const override;
+  void mouseExitedContentArea() const override;
+  void mouseMovedInContentArea() const override;
+  void mouseEnteredScrollbar(Scrollbar&) const override;
+  void mouseExitedScrollbar(Scrollbar&) const override;
+  void contentsResized() const override;
+  void contentAreaDidShow() const override;
+  void contentAreaDidHide() const override;
+  void didBeginScrollGesture() const;
+  void didEndScrollGesture() const;
+  void mayBeginScrollGesture() const;
 
-    void didAddVerticalScrollbar(Scrollbar&) override;
-    void willRemoveVerticalScrollbar(Scrollbar&) override;
-    void didAddHorizontalScrollbar(Scrollbar&) override;
-    void willRemoveHorizontalScrollbar(Scrollbar&) override;
+  void finishCurrentScrollAnimations() override;
 
-    bool shouldScrollbarParticipateInHitTesting(Scrollbar&) override;
+  void didAddVerticalScrollbar(Scrollbar&) override;
+  void willRemoveVerticalScrollbar(Scrollbar&) override;
+  void didAddHorizontalScrollbar(Scrollbar&) override;
+  void willRemoveHorizontalScrollbar(Scrollbar&) override;
 
-    void notifyContentAreaScrolled(const FloatSize& delta) override;
+  bool shouldScrollbarParticipateInHitTesting(Scrollbar&) override;
 
-    bool setScrollbarsVisibleForTesting(bool) override;
+  void notifyContentAreaScrolled(const FloatSize& delta) override;
 
-    FloatPoint adjustScrollPositionIfNecessary(const FloatPoint&) const;
+  bool setScrollbarsVisibleForTesting(bool) override;
 
-    void immediateScrollTo(const FloatPoint&);
+  FloatPoint adjustScrollPositionIfNecessary(const FloatPoint&) const;
 
-    bool m_haveScrolledSincePageLoad;
-    bool m_needsScrollerStyleUpdate;
-    IntRect m_visibleScrollerThumbRect;
+  void immediateScrollTo(const FloatPoint&);
+
+  bool m_haveScrolledSincePageLoad;
+  bool m_needsScrollerStyleUpdate;
+  IntRect m_visibleScrollerThumbRect;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScrollAnimatorMac_h
+#endif  // ScrollAnimatorMac_h

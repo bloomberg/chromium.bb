@@ -45,68 +45,75 @@ namespace blink {
 // We should use this class only for LocalizedNumberICU.cpp, LocalizedDateICU.cpp,
 // and LocalizedNumberICUTest.cpp.
 class PLATFORM_EXPORT LocaleICU : public Locale {
-public:
-    static std::unique_ptr<LocaleICU> create(const char* localeString);
-    ~LocaleICU() override;
+ public:
+  static std::unique_ptr<LocaleICU> create(const char* localeString);
+  ~LocaleICU() override;
 
-    const Vector<String>& weekDayShortLabels() override;
-    unsigned firstDayOfWeek() override;
-    bool isRTL() override;
-    String dateFormat() override;
-    String monthFormat() override;
-    String shortMonthFormat() override;
-    String timeFormat() override;
-    String shortTimeFormat() override;
-    String dateTimeFormatWithSeconds() override;
-    String dateTimeFormatWithoutSeconds() override;
-    const Vector<String>& monthLabels() override;
-    const Vector<String>& shortMonthLabels() override;
-    const Vector<String>& standAloneMonthLabels() override;
-    const Vector<String>& shortStandAloneMonthLabels() override;
-    const Vector<String>& timeAMPMLabels() override;
+  const Vector<String>& weekDayShortLabels() override;
+  unsigned firstDayOfWeek() override;
+  bool isRTL() override;
+  String dateFormat() override;
+  String monthFormat() override;
+  String shortMonthFormat() override;
+  String timeFormat() override;
+  String shortTimeFormat() override;
+  String dateTimeFormatWithSeconds() override;
+  String dateTimeFormatWithoutSeconds() override;
+  const Vector<String>& monthLabels() override;
+  const Vector<String>& shortMonthLabels() override;
+  const Vector<String>& standAloneMonthLabels() override;
+  const Vector<String>& shortStandAloneMonthLabels() override;
+  const Vector<String>& timeAMPMLabels() override;
 
-private:
-    explicit LocaleICU(const char*);
-    String decimalSymbol(UNumberFormatSymbol);
-    String decimalTextAttribute(UNumberFormatTextAttribute);
-    void initializeLocaleData() override;
+ private:
+  explicit LocaleICU(const char*);
+  String decimalSymbol(UNumberFormatSymbol);
+  String decimalTextAttribute(UNumberFormatTextAttribute);
+  void initializeLocaleData() override;
 
-    bool detectSignAndGetDigitRange(const String& input, bool& isNegative, unsigned& startIndex, unsigned& endIndex);
-    unsigned matchedDecimalSymbolIndex(const String& input, unsigned& position);
+  bool detectSignAndGetDigitRange(const String& input,
+                                  bool& isNegative,
+                                  unsigned& startIndex,
+                                  unsigned& endIndex);
+  unsigned matchedDecimalSymbolIndex(const String& input, unsigned& position);
 
-    bool initializeShortDateFormat();
-    UDateFormat* openDateFormat(UDateFormatStyle timeStyle, UDateFormatStyle dateStyle) const;
-    UDateFormat* openDateFormatForStandAloneMonthLabels(bool isShort) const;
+  bool initializeShortDateFormat();
+  UDateFormat* openDateFormat(UDateFormatStyle timeStyle,
+                              UDateFormatStyle dateStyle) const;
+  UDateFormat* openDateFormatForStandAloneMonthLabels(bool isShort) const;
 
-    void initializeCalendar();
+  void initializeCalendar();
 
-    std::unique_ptr<Vector<String>> createLabelVector(const UDateFormat*, UDateFormatSymbolType, int32_t startIndex, int32_t size);
-    void initializeDateTimeFormat();
+  std::unique_ptr<Vector<String>> createLabelVector(const UDateFormat*,
+                                                    UDateFormatSymbolType,
+                                                    int32_t startIndex,
+                                                    int32_t size);
+  void initializeDateTimeFormat();
 
-    CString m_locale;
-    UNumberFormat* m_numberFormat;
-    UDateFormat* m_shortDateFormat;
-    bool m_didCreateDecimalFormat;
-    bool m_didCreateShortDateFormat;
+  CString m_locale;
+  UNumberFormat* m_numberFormat;
+  UDateFormat* m_shortDateFormat;
+  bool m_didCreateDecimalFormat;
+  bool m_didCreateShortDateFormat;
 
-    std::unique_ptr<Vector<String>> m_weekDayShortLabels;
-    unsigned m_firstDayOfWeek;
-    std::unique_ptr<Vector<String>> m_monthLabels;
-    String m_dateFormat;
-    String m_monthFormat;
-    String m_shortMonthFormat;
-    String m_timeFormatWithSeconds;
-    String m_timeFormatWithoutSeconds;
-    String m_dateTimeFormatWithSeconds;
-    String m_dateTimeFormatWithoutSeconds;
-    UDateFormat* m_mediumTimeFormat;
-    UDateFormat* m_shortTimeFormat;
-    Vector<String> m_shortMonthLabels;
-    Vector<String> m_standAloneMonthLabels;
-    Vector<String> m_shortStandAloneMonthLabels;
-    Vector<String> m_timeAMPMLabels;
-    bool m_didCreateTimeFormat;
+  std::unique_ptr<Vector<String>> m_weekDayShortLabels;
+  unsigned m_firstDayOfWeek;
+  std::unique_ptr<Vector<String>> m_monthLabels;
+  String m_dateFormat;
+  String m_monthFormat;
+  String m_shortMonthFormat;
+  String m_timeFormatWithSeconds;
+  String m_timeFormatWithoutSeconds;
+  String m_dateTimeFormatWithSeconds;
+  String m_dateTimeFormatWithoutSeconds;
+  UDateFormat* m_mediumTimeFormat;
+  UDateFormat* m_shortTimeFormat;
+  Vector<String> m_shortMonthLabels;
+  Vector<String> m_standAloneMonthLabels;
+  Vector<String> m_shortStandAloneMonthLabels;
+  Vector<String> m_timeAMPMLabels;
+  bool m_didCreateTimeFormat;
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

@@ -45,62 +45,59 @@ class InlineTextBox;
 
 // High-level abstraction of InlineTextBox to allow the accessibility module to
 // get information about InlineTextBoxes without tight coupling.
-class CORE_EXPORT AbstractInlineTextBox : public RefCounted<AbstractInlineTextBox> {
-private:
-    AbstractInlineTextBox(LineLayoutText lineLayoutItem, InlineTextBox* inlineTextBox)
-        : m_lineLayoutItem(lineLayoutItem)
-        , m_inlineTextBox(inlineTextBox)
-    {
-    }
+class CORE_EXPORT AbstractInlineTextBox
+    : public RefCounted<AbstractInlineTextBox> {
+ private:
+  AbstractInlineTextBox(LineLayoutText lineLayoutItem,
+                        InlineTextBox* inlineTextBox)
+      : m_lineLayoutItem(lineLayoutItem), m_inlineTextBox(inlineTextBox) {}
 
-    static PassRefPtr<AbstractInlineTextBox> getOrCreate(LineLayoutText, InlineTextBox*);
-    static void willDestroy(InlineTextBox*);
+  static PassRefPtr<AbstractInlineTextBox> getOrCreate(LineLayoutText,
+                                                       InlineTextBox*);
+  static void willDestroy(InlineTextBox*);
 
-    friend class LayoutText;
-    friend class InlineTextBox;
+  friend class LayoutText;
+  friend class InlineTextBox;
 
-public:
-    struct WordBoundaries {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-        WordBoundaries(int startIndex, int endIndex) : startIndex(startIndex), endIndex(endIndex) { }
-        int startIndex;
-        int endIndex;
-    };
+ public:
+  struct WordBoundaries {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    WordBoundaries(int startIndex, int endIndex)
+        : startIndex(startIndex), endIndex(endIndex) {}
+    int startIndex;
+    int endIndex;
+  };
 
-    enum Direction {
-        LeftToRight,
-        RightToLeft,
-        TopToBottom,
-        BottomToTop
-    };
+  enum Direction { LeftToRight, RightToLeft, TopToBottom, BottomToTop };
 
-    ~AbstractInlineTextBox();
+  ~AbstractInlineTextBox();
 
-    LineLayoutText getLineLayoutItem() const { return m_lineLayoutItem; }
+  LineLayoutText getLineLayoutItem() const { return m_lineLayoutItem; }
 
-    PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
-    LayoutRect localBounds() const;
-    unsigned len() const;
-    Direction getDirection() const;
-    void characterWidths(Vector<float>&) const;
-    void wordBoundaries(Vector<WordBoundaries>&) const;
-    String text() const;
-    bool isFirst() const;
-    bool isLast() const;
-    PassRefPtr<AbstractInlineTextBox> nextOnLine() const;
-    PassRefPtr<AbstractInlineTextBox> previousOnLine() const;
+  PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
+  LayoutRect localBounds() const;
+  unsigned len() const;
+  Direction getDirection() const;
+  void characterWidths(Vector<float>&) const;
+  void wordBoundaries(Vector<WordBoundaries>&) const;
+  String text() const;
+  bool isFirst() const;
+  bool isLast() const;
+  PassRefPtr<AbstractInlineTextBox> nextOnLine() const;
+  PassRefPtr<AbstractInlineTextBox> previousOnLine() const;
 
-private:
-    void detach();
+ private:
+  void detach();
 
-    // Weak ptrs; these are nulled when InlineTextBox::destroy() calls AbstractInlineTextBox::willDestroy.
-    LineLayoutText m_lineLayoutItem;
-    InlineTextBox* m_inlineTextBox;
+  // Weak ptrs; these are nulled when InlineTextBox::destroy() calls AbstractInlineTextBox::willDestroy.
+  LineLayoutText m_lineLayoutItem;
+  InlineTextBox* m_inlineTextBox;
 
-    typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox>> InlineToAbstractInlineTextBoxHashMap;
-    static InlineToAbstractInlineTextBoxHashMap* gAbstractInlineTextBoxMap;
+  typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox>>
+      InlineToAbstractInlineTextBoxHashMap;
+  static InlineToAbstractInlineTextBoxHashMap* gAbstractInlineTextBoxMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AbstractInlineTextBox_h
+#endif  // AbstractInlineTextBox_h

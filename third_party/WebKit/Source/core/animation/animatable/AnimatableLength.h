@@ -38,46 +38,51 @@
 namespace blink {
 
 class CORE_EXPORT AnimatableLength final : public AnimatableValue {
-public:
-    static PassRefPtr<AnimatableLength> create(const Length& length, float zoom)
-    {
-        return adoptRef(new AnimatableLength(length, zoom));
-    }
-    Length getLength(float zoom, ValueRange) const;
+ public:
+  static PassRefPtr<AnimatableLength> create(const Length& length, float zoom) {
+    return adoptRef(new AnimatableLength(length, zoom));
+  }
+  Length getLength(float zoom, ValueRange) const;
 
-    bool hasSameUnits(const AnimatableLength* other) const
-    {
-        return m_hasPixels == other->m_hasPixels && m_hasPercent == other->m_hasPercent;
-    }
+  bool hasSameUnits(const AnimatableLength* other) const {
+    return m_hasPixels == other->m_hasPixels &&
+           m_hasPercent == other->m_hasPercent;
+  }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
 
-private:
-    static PassRefPtr<AnimatableLength> create(double pixels, double percent, bool hasPixels, bool hasPercent)
-    {
-        return adoptRef(new AnimatableLength(pixels, percent, hasPixels, hasPercent));
-    }
-    AnimatableLength(const Length&, float zoom);
-    AnimatableLength(double pixels, double percent, bool hasPixels, bool hasPercent)
-        : m_pixels(pixels)
-        , m_percent(percent)
-        , m_hasPixels(hasPixels)
-        , m_hasPercent(hasPercent)
-    {
-        DCHECK(m_hasPixels || m_hasPercent);
-    }
-    AnimatableType type() const override { return TypeLength; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  static PassRefPtr<AnimatableLength> create(double pixels,
+                                             double percent,
+                                             bool hasPixels,
+                                             bool hasPercent) {
+    return adoptRef(
+        new AnimatableLength(pixels, percent, hasPixels, hasPercent));
+  }
+  AnimatableLength(const Length&, float zoom);
+  AnimatableLength(double pixels,
+                   double percent,
+                   bool hasPixels,
+                   bool hasPercent)
+      : m_pixels(pixels),
+        m_percent(percent),
+        m_hasPixels(hasPixels),
+        m_hasPercent(hasPercent) {
+    DCHECK(m_hasPixels || m_hasPercent);
+  }
+  AnimatableType type() const override { return TypeLength; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    double m_pixels;
-    double m_percent;
-    bool m_hasPixels;
-    bool m_hasPercent;
+  double m_pixels;
+  double m_percent;
+  bool m_hasPixels;
+  bool m_hasPercent;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLength, isLength());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableLength_h
+#endif  // AnimatableLength_h

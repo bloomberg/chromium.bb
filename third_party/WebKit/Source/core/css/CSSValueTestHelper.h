@@ -49,28 +49,28 @@ namespace internal {
 // (See https://code.google.com/p/googletest/issues/detail?id=442)
 //
 // Work around is to define this custom IsNullLiteralHelper.
-char(&IsNullLiteralHelper(const blink::CSSValue&))[2];
-
+char (&IsNullLiteralHelper(const blink::CSSValue&))[2];
 }
-} // namespace testing
+}  // namespace testing
 
 namespace blink {
 
-inline bool operator==(const CSSValue& a, const CSSValue& b)
-{
-    return a.equals(b);
+inline bool operator==(const CSSValue& a, const CSSValue& b) {
+  return a.equals(b);
 }
 
-inline void PrintTo(const CSSValue& cssValue, ::std::ostream* os, const char* typeName = "CSSValue")
-{
-    *os << typeName << "(" << cssValue.cssText().utf8().data() << ")";
+inline void PrintTo(const CSSValue& cssValue,
+                    ::std::ostream* os,
+                    const char* typeName = "CSSValue") {
+  *os << typeName << "(" << cssValue.cssText().utf8().data() << ")";
 }
 
-inline void PrintTo(const CSSPrimitiveValue& cssValue, ::std::ostream* os, const char* typeName = "CSSPrimitiveValue")
-{
-    PrintTo(static_cast<const CSSValue&>(cssValue), os, typeName);
+inline void PrintTo(const CSSPrimitiveValue& cssValue,
+                    ::std::ostream* os,
+                    const char* typeName = "CSSPrimitiveValue") {
+  PrintTo(static_cast<const CSSValue&>(cssValue), os, typeName);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

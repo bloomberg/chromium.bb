@@ -27,78 +27,91 @@ class WebServiceWorkerProvider;
 // registration representation is in the embedder and this class accesses it
 // via WebServiceWorkerRegistration::Handle object.
 class ServiceWorkerRegistration final
-    : public EventTargetWithInlineData
-    , public ActiveScriptWrappable
-    , public ActiveDOMObject
-    , public WebServiceWorkerRegistrationProxy
-    , public Supplementable<ServiceWorkerRegistration> {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
-    USING_PRE_FINALIZER(ServiceWorkerRegistration, dispose);
-public:
-    // ScriptWrappable overrides.
-    bool hasPendingActivity() const final;
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable,
+      public ActiveDOMObject,
+      public WebServiceWorkerRegistrationProxy,
+      public Supplementable<ServiceWorkerRegistration> {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
+  USING_PRE_FINALIZER(ServiceWorkerRegistration, dispose);
 
-    // EventTarget overrides.
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
+ public:
+  // ScriptWrappable overrides.
+  bool hasPendingActivity() const final;
 
-    // WebServiceWorkerRegistrationProxy overrides.
-    void dispatchUpdateFoundEvent() override;
-    void setInstalling(std::unique_ptr<WebServiceWorker::Handle>) override;
-    void setWaiting(std::unique_ptr<WebServiceWorker::Handle>) override;
-    void setActive(std::unique_ptr<WebServiceWorker::Handle>) override;
+  // EventTarget overrides.
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override {
+    return ActiveDOMObject::getExecutionContext();
+  }
 
-    // Returns an existing registration object for the handle if it exists.
-    // Otherwise, returns a new registration object.
-    static ServiceWorkerRegistration* getOrCreate(ExecutionContext*, std::unique_ptr<WebServiceWorkerRegistration::Handle>);
+  // WebServiceWorkerRegistrationProxy overrides.
+  void dispatchUpdateFoundEvent() override;
+  void setInstalling(std::unique_ptr<WebServiceWorker::Handle>) override;
+  void setWaiting(std::unique_ptr<WebServiceWorker::Handle>) override;
+  void setActive(std::unique_ptr<WebServiceWorker::Handle>) override;
 
-    ServiceWorker* installing() { return m_installing; }
-    ServiceWorker* waiting() { return m_waiting; }
-    ServiceWorker* active() { return m_active; }
+  // Returns an existing registration object for the handle if it exists.
+  // Otherwise, returns a new registration object.
+  static ServiceWorkerRegistration* getOrCreate(
+      ExecutionContext*,
+      std::unique_ptr<WebServiceWorkerRegistration::Handle>);
 
-    String scope() const;
+  ServiceWorker* installing() { return m_installing; }
+  ServiceWorker* waiting() { return m_waiting; }
+  ServiceWorker* active() { return m_active; }
 
-    WebServiceWorkerRegistration* webRegistration() { return m_handle->registration(); }
+  String scope() const;
 
-    ScriptPromise update(ScriptState*);
-    ScriptPromise unregister(ScriptState*);
+  WebServiceWorkerRegistration* webRegistration() {
+    return m_handle->registration();
+  }
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound);
+  ScriptPromise update(ScriptState*);
+  ScriptPromise unregister(ScriptState*);
 
-    ~ServiceWorkerRegistration() override;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound);
 
-    DECLARE_VIRTUAL_TRACE();
+  ~ServiceWorkerRegistration() override;
 
-private:
-    ServiceWorkerRegistration(ExecutionContext*, std::unique_ptr<WebServiceWorkerRegistration::Handle>);
-    void dispose();
+  DECLARE_VIRTUAL_TRACE();
 
-    // ActiveDOMObject overrides.
-    void stop() override;
+ private:
+  ServiceWorkerRegistration(
+      ExecutionContext*,
+      std::unique_ptr<WebServiceWorkerRegistration::Handle>);
+  void dispose();
 
-    // A handle to the registration representation in the embedder.
-    std::unique_ptr<WebServiceWorkerRegistration::Handle> m_handle;
+  // ActiveDOMObject overrides.
+  void stop() override;
 
-    Member<ServiceWorker> m_installing;
-    Member<ServiceWorker> m_waiting;
-    Member<ServiceWorker> m_active;
+  // A handle to the registration representation in the embedder.
+  std::unique_ptr<WebServiceWorkerRegistration::Handle> m_handle;
 
-    bool m_stopped;
+  Member<ServiceWorker> m_installing;
+  Member<ServiceWorker> m_waiting;
+  Member<ServiceWorker> m_active;
+
+  bool m_stopped;
 };
 
 class ServiceWorkerRegistrationArray {
-    STATIC_ONLY(ServiceWorkerRegistrationArray);
-public:
-    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, Vector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>* webServiceWorkerRegistrations)
-    {
-        HeapVector<Member<ServiceWorkerRegistration>> registrations;
-        for (auto& registration : *webServiceWorkerRegistrations)
-            registrations.append(ServiceWorkerRegistration::getOrCreate(resolver->getExecutionContext(), std::move(registration)));
-        return registrations;
-    }
+  STATIC_ONLY(ServiceWorkerRegistrationArray);
+
+ public:
+  static HeapVector<Member<ServiceWorkerRegistration>> take(
+      ScriptPromiseResolver* resolver,
+      Vector<std::unique_ptr<WebServiceWorkerRegistration::Handle>>*
+          webServiceWorkerRegistrations) {
+    HeapVector<Member<ServiceWorkerRegistration>> registrations;
+    for (auto& registration : *webServiceWorkerRegistrations)
+      registrations.append(ServiceWorkerRegistration::getOrCreate(
+          resolver->getExecutionContext(), std::move(registration)));
+    return registrations;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerRegistration_h
+#endif  // ServiceWorkerRegistration_h

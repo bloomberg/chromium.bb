@@ -30,65 +30,65 @@ namespace blink {
 class SVGRectTearOff;
 
 class SVGRect final : public SVGPropertyHelper<SVGRect> {
-public:
-    typedef SVGRectTearOff TearOffType;
+ public:
+  typedef SVGRectTearOff TearOffType;
 
-    static SVGRect* create()
-    {
-        return new SVGRect();
-    }
+  static SVGRect* create() { return new SVGRect(); }
 
-    static SVGRect* createInvalid()
-    {
-        SVGRect* rect = new SVGRect();
-        rect->setInvalid();
-        return rect;
-    }
+  static SVGRect* createInvalid() {
+    SVGRect* rect = new SVGRect();
+    rect->setInvalid();
+    return rect;
+  }
 
-    static SVGRect* create(const FloatRect& rect)
-    {
-        return new SVGRect(rect);
-    }
+  static SVGRect* create(const FloatRect& rect) { return new SVGRect(rect); }
 
-    SVGRect* clone() const;
+  SVGRect* clone() const;
 
-    const FloatRect& value() const { return m_value; }
-    void setValue(const FloatRect& v) { m_value = v; }
+  const FloatRect& value() const { return m_value; }
+  void setValue(const FloatRect& v) { m_value = v; }
 
-    float x() const { return m_value.x(); }
-    float y() const { return m_value.y(); }
-    float width() const { return m_value.width(); }
-    float height() const { return m_value.height(); }
-    void setX(float f) { m_value.setX(f); }
-    void setY(float f) { m_value.setY(f); }
-    void setWidth(float f) { m_value.setWidth(f); }
-    void setHeight(float f) { m_value.setHeight(f); }
+  float x() const { return m_value.x(); }
+  float y() const { return m_value.y(); }
+  float width() const { return m_value.width(); }
+  float height() const { return m_value.height(); }
+  void setX(float f) { m_value.setX(f); }
+  void setY(float f) { m_value.setY(f); }
+  void setWidth(float f) { m_value.setWidth(f); }
+  void setHeight(float f) { m_value.setHeight(f); }
 
-    String valueAsString() const override;
-    SVGParsingError setValueAsString(const String&);
+  String valueAsString() const override;
+  SVGParsingError setValueAsString(const String&);
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement* contextElement) override;
+  float calculateDistance(SVGPropertyBase* to,
+                          SVGElement* contextElement) override;
 
-    bool isValid() const { return m_isValid; }
-    void setInvalid();
+  bool isValid() const { return m_isValid; }
+  void setInvalid();
 
-    static AnimatedPropertyType classType() { return AnimatedRect; }
+  static AnimatedPropertyType classType() { return AnimatedRect; }
 
-private:
-    SVGRect();
-    SVGRect(const FloatRect&);
+ private:
+  SVGRect();
+  SVGRect(const FloatRect&);
 
-    template<typename CharType>
-    SVGParsingError parse(const CharType*& ptr, const CharType* end);
+  template <typename CharType>
+  SVGParsingError parse(const CharType*& ptr, const CharType* end);
 
-    bool m_isValid;
-    FloatRect m_value;
+  bool m_isValid;
+  FloatRect m_value;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGRect);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGRect_h
+#endif  // SVGRect_h

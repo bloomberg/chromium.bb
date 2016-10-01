@@ -27,41 +27,36 @@
 
 namespace blink {
 
-DeviceRotationRate::DeviceRotationRate(DeviceMotionData::RotationRate* rotationRate)
-    : m_rotationRate(rotationRate)
-{
+DeviceRotationRate::DeviceRotationRate(
+    DeviceMotionData::RotationRate* rotationRate)
+    : m_rotationRate(rotationRate) {}
+
+DEFINE_TRACE(DeviceRotationRate) {
+  visitor->trace(m_rotationRate);
 }
 
-DEFINE_TRACE(DeviceRotationRate)
-{
-    visitor->trace(m_rotationRate);
+double DeviceRotationRate::alpha(bool& isNull) const {
+  if (m_rotationRate->canProvideAlpha())
+    return m_rotationRate->alpha();
+
+  isNull = true;
+  return 0;
 }
 
-double DeviceRotationRate::alpha(bool& isNull) const
-{
-    if (m_rotationRate->canProvideAlpha())
-        return m_rotationRate->alpha();
+double DeviceRotationRate::beta(bool& isNull) const {
+  if (m_rotationRate->canProvideBeta())
+    return m_rotationRate->beta();
 
-    isNull = true;
-    return 0;
+  isNull = true;
+  return 0;
 }
 
-double DeviceRotationRate::beta(bool& isNull) const
-{
-    if (m_rotationRate->canProvideBeta())
-        return m_rotationRate->beta();
+double DeviceRotationRate::gamma(bool& isNull) const {
+  if (m_rotationRate->canProvideGamma())
+    return m_rotationRate->gamma();
 
-    isNull = true;
-    return 0;
+  isNull = true;
+  return 0;
 }
 
-double DeviceRotationRate::gamma(bool& isNull) const
-{
-    if (m_rotationRate->canProvideGamma())
-        return m_rotationRate->gamma();
-
-    isNull = true;
-    return 0;
-}
-
-} // namespace blink
+}  // namespace blink

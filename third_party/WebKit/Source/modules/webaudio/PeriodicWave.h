@@ -42,84 +42,92 @@ class BaseAudioContext;
 class ExceptionState;
 class PeriodicWaveOptions;
 
-class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PeriodicWave* createSine(float sampleRate);
-    static PeriodicWave* createSquare(float sampleRate);
-    static PeriodicWave* createSawtooth(float sampleRate);
-    static PeriodicWave* createTriangle(float sampleRate);
+class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>,
+                           public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Creates an arbitrary periodic wave given the frequency components (Fourier coefficients).
-    static PeriodicWave* create(
-        BaseAudioContext&,
-        size_t realLength,
-        const float* real,
-        size_t imagLength,
-        const float* imag,
-        bool normalize,
-        ExceptionState&);
+ public:
+  static PeriodicWave* createSine(float sampleRate);
+  static PeriodicWave* createSquare(float sampleRate);
+  static PeriodicWave* createSawtooth(float sampleRate);
+  static PeriodicWave* createTriangle(float sampleRate);
 
-    static PeriodicWave* create(
-        BaseAudioContext&,
-        DOMFloat32Array* real,
-        DOMFloat32Array* imag,
-        bool normalize,
-        ExceptionState&);
+  // Creates an arbitrary periodic wave given the frequency components (Fourier coefficients).
+  static PeriodicWave* create(BaseAudioContext&,
+                              size_t realLength,
+                              const float* real,
+                              size_t imagLength,
+                              const float* imag,
+                              bool normalize,
+                              ExceptionState&);
 
-    static PeriodicWave* create(BaseAudioContext*, const PeriodicWaveOptions&, ExceptionState&);
+  static PeriodicWave* create(BaseAudioContext&,
+                              DOMFloat32Array* real,
+                              DOMFloat32Array* imag,
+                              bool normalize,
+                              ExceptionState&);
 
-    virtual ~PeriodicWave();
+  static PeriodicWave* create(BaseAudioContext*,
+                              const PeriodicWaveOptions&,
+                              ExceptionState&);
 
-    // Returns pointers to the lower and higher wave data for the pitch range containing
-    // the given fundamental frequency. These two tables are in adjacent "pitch" ranges
-    // where the higher table will have the maximum number of partials which won't alias when played back
-    // at this fundamental frequency. The lower wave is the next range containing fewer partials than the higher wave.
-    // Interpolation between these two tables can be made according to tableInterpolationFactor.
-    // Where values from 0 -> 1 interpolate between lower -> higher.
-    void waveDataForFundamentalFrequency(float, float*& lowerWaveData, float*& higherWaveData, float& tableInterpolationFactor);
+  virtual ~PeriodicWave();
 
-    // Returns the scalar multiplier to the oscillator frequency to calculate wave buffer phase increment.
-    float rateScale() const { return m_rateScale; }
+  // Returns pointers to the lower and higher wave data for the pitch range containing
+  // the given fundamental frequency. These two tables are in adjacent "pitch" ranges
+  // where the higher table will have the maximum number of partials which won't alias when played back
+  // at this fundamental frequency. The lower wave is the next range containing fewer partials than the higher wave.
+  // Interpolation between these two tables can be made according to tableInterpolationFactor.
+  // Where values from 0 -> 1 interpolate between lower -> higher.
+  void waveDataForFundamentalFrequency(float,
+                                       float*& lowerWaveData,
+                                       float*& higherWaveData,
+                                       float& tableInterpolationFactor);
 
-    // The size of the FFT to use based on the sampling rate.
-    unsigned periodicWaveSize() const;
+  // Returns the scalar multiplier to the oscillator frequency to calculate wave buffer phase increment.
+  float rateScale() const { return m_rateScale; }
 
-    // The number of ranges needed for the given sampling rate and FFT size.
-    unsigned numberOfRanges() const { return m_numberOfRanges; }
+  // The size of the FFT to use based on the sampling rate.
+  unsigned periodicWaveSize() const;
 
-    DEFINE_INLINE_TRACE() { }
+  // The number of ranges needed for the given sampling rate and FFT size.
+  unsigned numberOfRanges() const { return m_numberOfRanges; }
 
-private:
-    explicit PeriodicWave(float sampleRate);
+  DEFINE_INLINE_TRACE() {}
 
-    void generateBasicWaveform(int);
+ private:
+  explicit PeriodicWave(float sampleRate);
 
-    size_t m_v8ExternalMemory;
+  void generateBasicWaveform(int);
 
-    float m_sampleRate;
-    unsigned m_numberOfRanges;
-    float m_centsPerRange;
+  size_t m_v8ExternalMemory;
 
-    // The lowest frequency (in Hertz) where playback will include all of the partials.
-    // Playing back lower than this frequency will gradually lose more high-frequency information.
-    // This frequency is quite low (~10Hz @ 44.1KHz)
-    float m_lowestFundamentalFrequency;
+  float m_sampleRate;
+  unsigned m_numberOfRanges;
+  float m_centsPerRange;
 
-    float m_rateScale;
+  // The lowest frequency (in Hertz) where playback will include all of the partials.
+  // Playing back lower than this frequency will gradually lose more high-frequency information.
+  // This frequency is quite low (~10Hz @ 44.1KHz)
+  float m_lowestFundamentalFrequency;
 
-    // Maximum possible number of partials (before culling).
-    unsigned maxNumberOfPartials() const;
+  float m_rateScale;
 
-    unsigned numberOfPartialsForRange(unsigned rangeIndex) const;
+  // Maximum possible number of partials (before culling).
+  unsigned maxNumberOfPartials() const;
 
-    void adjustV8ExternalMemory(int delta);
+  unsigned numberOfPartialsForRange(unsigned rangeIndex) const;
 
-    // Creates tables based on numberOfComponents Fourier coefficients.
-    void createBandLimitedTables(const float* real, const float* imag, unsigned numberOfComponents, bool disableNormalization);
-    Vector<std::unique_ptr<AudioFloatArray>> m_bandLimitedTables;
+  void adjustV8ExternalMemory(int delta);
+
+  // Creates tables based on numberOfComponents Fourier coefficients.
+  void createBandLimitedTables(const float* real,
+                               const float* imag,
+                               unsigned numberOfComponents,
+                               bool disableNormalization);
+  Vector<std::unique_ptr<AudioFloatArray>> m_bandLimitedTables;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PeriodicWave_h
+#endif  // PeriodicWave_h

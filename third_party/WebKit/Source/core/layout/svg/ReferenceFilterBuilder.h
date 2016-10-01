@@ -42,14 +42,19 @@ class ReferenceFilterOperation;
 class SVGFilterElement;
 
 class ReferenceFilterBuilder {
-    STATIC_ONLY(ReferenceFilterBuilder);
-public:
-    static DocumentResourceReference* documentResourceReference(const FilterOperation*);
-    static void setDocumentResourceReference(const FilterOperation*, DocumentResourceReference*);
+  STATIC_ONLY(ReferenceFilterBuilder);
 
-    static SVGFilterElement* resolveFilterReference(const ReferenceFilterOperation&, Element&);
+ public:
+  static DocumentResourceReference* documentResourceReference(
+      const FilterOperation*);
+  static void setDocumentResourceReference(const FilterOperation*,
+                                           DocumentResourceReference*);
+
+  static SVGFilterElement* resolveFilterReference(
+      const ReferenceFilterOperation&,
+      Element&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ReferenceFilterBuilder_h
+#endif  // ReferenceFilterBuilder_h

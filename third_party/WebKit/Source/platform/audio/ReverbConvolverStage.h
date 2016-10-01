@@ -45,45 +45,55 @@ class DirectConvolver;
 // A ReverbConvolverStage represents the convolution associated with a sub-section of a large impulse response.
 // It incorporates a delay line to account for the offset of the sub-section within the larger impulse response.
 class PLATFORM_EXPORT ReverbConvolverStage {
-    USING_FAST_MALLOC(ReverbConvolverStage);
-    WTF_MAKE_NONCOPYABLE(ReverbConvolverStage);
-public:
-    // renderPhase is useful to know so that we can manipulate the pre versus post delay so that stages will perform
-    // their heavy work (FFT processing) on different slices to balance the load in a real-time thread.
-    ReverbConvolverStage(const float* impulseResponse, size_t responseLength, size_t reverbTotalLatency, size_t stageOffset, size_t stageLength, size_t fftSize, size_t renderPhase, size_t renderSliceSize, ReverbAccumulationBuffer*, bool directMode = false);
+  USING_FAST_MALLOC(ReverbConvolverStage);
+  WTF_MAKE_NONCOPYABLE(ReverbConvolverStage);
 
-    // WARNING: framesToProcess must be such that it evenly divides the delay buffer size (stage_offset).
-    void process(const float* source, size_t framesToProcess);
+ public:
+  // renderPhase is useful to know so that we can manipulate the pre versus post delay so that stages will perform
+  // their heavy work (FFT processing) on different slices to balance the load in a real-time thread.
+  ReverbConvolverStage(const float* impulseResponse,
+                       size_t responseLength,
+                       size_t reverbTotalLatency,
+                       size_t stageOffset,
+                       size_t stageLength,
+                       size_t fftSize,
+                       size_t renderPhase,
+                       size_t renderSliceSize,
+                       ReverbAccumulationBuffer*,
+                       bool directMode = false);
 
-    void processInBackground(ReverbConvolver* convolver, size_t framesToProcess);
+  // WARNING: framesToProcess must be such that it evenly divides the delay buffer size (stage_offset).
+  void process(const float* source, size_t framesToProcess);
 
-    void reset();
+  void processInBackground(ReverbConvolver* convolver, size_t framesToProcess);
 
-    // Useful for background processing
-    int inputReadIndex() const { return m_inputReadIndex; }
+  void reset();
 
-private:
-    std::unique_ptr<FFTFrame> m_fftKernel;
-    std::unique_ptr<FFTConvolver> m_fftConvolver;
+  // Useful for background processing
+  int inputReadIndex() const { return m_inputReadIndex; }
 
-    AudioFloatArray m_preDelayBuffer;
+ private:
+  std::unique_ptr<FFTFrame> m_fftKernel;
+  std::unique_ptr<FFTConvolver> m_fftConvolver;
 
-    ReverbAccumulationBuffer* m_accumulationBuffer;
-    int m_accumulationReadIndex;
-    int m_inputReadIndex;
+  AudioFloatArray m_preDelayBuffer;
 
-    size_t m_preDelayLength;
-    size_t m_postDelayLength;
-    size_t m_preReadWriteIndex;
-    size_t m_framesProcessed;
+  ReverbAccumulationBuffer* m_accumulationBuffer;
+  int m_accumulationReadIndex;
+  int m_inputReadIndex;
 
-    AudioFloatArray m_temporaryBuffer;
+  size_t m_preDelayLength;
+  size_t m_postDelayLength;
+  size_t m_preReadWriteIndex;
+  size_t m_framesProcessed;
 
-    bool m_directMode;
-    std::unique_ptr<AudioFloatArray> m_directKernel;
-    std::unique_ptr<DirectConvolver> m_directConvolver;
+  AudioFloatArray m_temporaryBuffer;
+
+  bool m_directMode;
+  std::unique_ptr<AudioFloatArray> m_directKernel;
+  std::unique_ptr<DirectConvolver> m_directConvolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ReverbConvolverStage_h
+#endif  // ReverbConvolverStage_h

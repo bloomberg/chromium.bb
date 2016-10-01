@@ -32,54 +32,47 @@
 
 namespace blink {
 
-AXSVGRoot::AXSVGRoot(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache)
-{
+AXSVGRoot::AXSVGRoot(LayoutObject* layoutObject,
+                     AXObjectCacheImpl& axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache) {}
+
+AXSVGRoot::~AXSVGRoot() {}
+
+AXSVGRoot* AXSVGRoot::create(LayoutObject* layoutObject,
+                             AXObjectCacheImpl& axObjectCache) {
+  return new AXSVGRoot(layoutObject, axObjectCache);
 }
 
-AXSVGRoot::~AXSVGRoot()
-{
+void AXSVGRoot::setParent(AXObject* parent) {
+  // Only update the parent to another objcet if it wasn't already set to
+  // something. Multiple elements in an HTML document can reference
+  // the same remote SVG document, and in that case the parent should just
+  // stay with the first one.
+  if (!m_parent || !parent)
+    m_parent = parent;
 }
 
-AXSVGRoot* AXSVGRoot::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-{
-    return new AXSVGRoot(layoutObject, axObjectCache);
-}
+AXObject* AXSVGRoot::computeParent() const {
+  ASSERT(!isDetached());
+  // If a parent was set because this is a remote SVG resource, use that
+  // but otherwise, we should rely on the standard layout tree for the parent.
+  if (m_parent)
+    return m_parent;
 
-void AXSVGRoot::setParent(AXObject* parent)
-{
-    // Only update the parent to another objcet if it wasn't already set to
-    // something. Multiple elements in an HTML document can reference
-    // the same remote SVG document, and in that case the parent should just
-    // stay with the first one.
-    if (!m_parent || !parent)
-        m_parent = parent;
-}
-
-AXObject* AXSVGRoot::computeParent() const
-{
-    ASSERT(!isDetached());
-    // If a parent was set because this is a remote SVG resource, use that
-    // but otherwise, we should rely on the standard layout tree for the parent.
-    if (m_parent)
-        return m_parent;
-
-    return AXLayoutObject::computeParent();
+  return AXLayoutObject::computeParent();
 }
 
 // SVG AAM 1.0 S8.2: the default role for an SVG root is "group".
-AccessibilityRole AXSVGRoot::determineAccessibilityRole()
-{
-    AccessibilityRole role = AXLayoutObject::determineAccessibilityRole();
-    if (role == UnknownRole)
-        role = GroupRole;
-    return role;
+AccessibilityRole AXSVGRoot::determineAccessibilityRole() {
+  AccessibilityRole role = AXLayoutObject::determineAccessibilityRole();
+  if (role == UnknownRole)
+    role = GroupRole;
+  return role;
 }
 
 // SVG elements are only ignored when a generic element would also be ignored.
-bool AXSVGRoot::computeAccessibilityIsIgnored(IgnoredReasons* reasons) const
-{
-    return accessibilityIsIgnoredByDefault(reasons);
+bool AXSVGRoot::computeAccessibilityIsIgnored(IgnoredReasons* reasons) const {
+  return accessibilityIsIgnoredByDefault(reasons);
 }
 
-} // namespace blink
+}  // namespace blink

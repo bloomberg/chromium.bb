@@ -13,26 +13,25 @@ namespace blink {
 class NFC;
 class Navigator;
 
-class NavigatorNFC final
-    : public GarbageCollected<NavigatorNFC>
-    , public Supplement<Navigator> {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorNFC);
+class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
+                           public Supplement<Navigator> {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorNFC);
 
-public:
-    // Gets, or creates, NavigatorNFC supplement on Navigator.
-    static NavigatorNFC& from(Navigator&);
+ public:
+  // Gets, or creates, NavigatorNFC supplement on Navigator.
+  static NavigatorNFC& from(Navigator&);
 
-    static NFC* nfc(Navigator&);
+  static NFC* nfc(Navigator&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    NavigatorNFC();
-    static const char* supplementName();
+ private:
+  NavigatorNFC();
+  static const char* supplementName();
 
-    Member<NFC> m_nfc;
+  Member<NFC> m_nfc;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorNFC_h
+#endif  // NavigatorNFC_h

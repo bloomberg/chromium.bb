@@ -26,75 +26,75 @@
 namespace blink {
 
 struct GradientAttributes {
-    DISALLOW_NEW();
-    GradientAttributes()
-        : m_spreadMethod(SVGSpreadMethodPad)
-        , m_gradientUnits(SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
-        , m_spreadMethodSet(false)
-        , m_gradientUnitsSet(false)
-        , m_gradientTransformSet(false)
-        , m_stopsSet(false)
-    {
-    }
+  DISALLOW_NEW();
+  GradientAttributes()
+      : m_spreadMethod(SVGSpreadMethodPad),
+        m_gradientUnits(SVGUnitTypes::kSvgUnitTypeObjectboundingbox),
+        m_spreadMethodSet(false),
+        m_gradientUnitsSet(false),
+        m_gradientTransformSet(false),
+        m_stopsSet(false) {}
 
-    SVGSpreadMethodType spreadMethod() const { return static_cast<SVGSpreadMethodType>(m_spreadMethod); }
-    SVGUnitTypes::SVGUnitType gradientUnits() const { return static_cast<SVGUnitTypes::SVGUnitType>(m_gradientUnits); }
-    AffineTransform gradientTransform() const { return m_gradientTransform; }
-    const Vector<Gradient::ColorStop>& stops() const { return m_stops; }
+  SVGSpreadMethodType spreadMethod() const {
+    return static_cast<SVGSpreadMethodType>(m_spreadMethod);
+  }
+  SVGUnitTypes::SVGUnitType gradientUnits() const {
+    return static_cast<SVGUnitTypes::SVGUnitType>(m_gradientUnits);
+  }
+  AffineTransform gradientTransform() const { return m_gradientTransform; }
+  const Vector<Gradient::ColorStop>& stops() const { return m_stops; }
 
-    void setSpreadMethod(SVGSpreadMethodType value)
-    {
-        m_spreadMethod = value;
-        m_spreadMethodSet = true;
-    }
+  void setSpreadMethod(SVGSpreadMethodType value) {
+    m_spreadMethod = value;
+    m_spreadMethodSet = true;
+  }
 
-    void setGradientUnits(SVGUnitTypes::SVGUnitType unitType)
-    {
-        m_gradientUnits = unitType;
-        m_gradientUnitsSet = true;
-    }
+  void setGradientUnits(SVGUnitTypes::SVGUnitType unitType) {
+    m_gradientUnits = unitType;
+    m_gradientUnitsSet = true;
+  }
 
-    void setGradientTransform(const AffineTransform& value)
-    {
-        m_gradientTransform = value;
-        m_gradientTransformSet = true;
-    }
+  void setGradientTransform(const AffineTransform& value) {
+    m_gradientTransform = value;
+    m_gradientTransformSet = true;
+  }
 
-    void setStops(const Vector<Gradient::ColorStop>& value)
-    {
-        m_stops = value;
-        m_stopsSet = true;
-    }
+  void setStops(const Vector<Gradient::ColorStop>& value) {
+    m_stops = value;
+    m_stopsSet = true;
+  }
 
-    bool hasSpreadMethod() const { return m_spreadMethodSet; }
-    bool hasGradientUnits() const { return m_gradientUnitsSet; }
-    bool hasGradientTransform() const { return m_gradientTransformSet; }
-    bool hasStops() const { return m_stopsSet; }
+  bool hasSpreadMethod() const { return m_spreadMethodSet; }
+  bool hasGradientUnits() const { return m_gradientUnitsSet; }
+  bool hasGradientTransform() const { return m_gradientTransformSet; }
+  bool hasStops() const { return m_stopsSet; }
 
-private:
-    // Properties
-    AffineTransform m_gradientTransform;
-    Vector<Gradient::ColorStop> m_stops;
+ private:
+  // Properties
+  AffineTransform m_gradientTransform;
+  Vector<Gradient::ColorStop> m_stops;
 
-    unsigned m_spreadMethod : 2;
-    unsigned m_gradientUnits : 2;
+  unsigned m_spreadMethod : 2;
+  unsigned m_gradientUnits : 2;
 
-    // Property states
-    unsigned m_spreadMethodSet : 1;
-    unsigned m_gradientUnitsSet : 1;
-    unsigned m_gradientTransformSet : 1;
-    unsigned m_stopsSet : 1;
+  // Property states
+  unsigned m_spreadMethodSet : 1;
+  unsigned m_gradientUnitsSet : 1;
+  unsigned m_gradientTransformSet : 1;
+  unsigned m_stopsSet : 1;
 };
 
 struct SameSizeAsGradientAttributes {
-    DISALLOW_NEW();
-    AffineTransform a;
-    Vector<Gradient::ColorStop> b;
-    unsigned c : 8;
+  DISALLOW_NEW();
+  AffineTransform a;
+  Vector<Gradient::ColorStop> b;
+  unsigned c : 8;
 };
 
-static_assert(sizeof(GradientAttributes) == sizeof(SameSizeAsGradientAttributes), "GradientAttributes should stay small");
+static_assert(sizeof(GradientAttributes) ==
+                  sizeof(SameSizeAsGradientAttributes),
+              "GradientAttributes should stay small");
 
-} // namespace blink
+}  // namespace blink
 
 #endif

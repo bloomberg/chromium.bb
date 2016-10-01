@@ -24,52 +24,52 @@
 
 namespace blink {
 
-MutationEvent::MutationEvent()
-    : m_attrChange(0)
-{
+MutationEvent::MutationEvent() : m_attrChange(0) {}
+
+MutationEvent::MutationEvent(const AtomicString& type,
+                             bool canBubble,
+                             bool cancelable,
+                             Node* relatedNode,
+                             const String& prevValue,
+                             const String& newValue,
+                             const String& attrName,
+                             unsigned short attrChange)
+    : Event(type, canBubble, cancelable),
+      m_relatedNode(relatedNode),
+      m_prevValue(prevValue),
+      m_newValue(newValue),
+      m_attrName(attrName),
+      m_attrChange(attrChange) {}
+
+MutationEvent::~MutationEvent() {}
+
+void MutationEvent::initMutationEvent(const AtomicString& type,
+                                      bool canBubble,
+                                      bool cancelable,
+                                      Node* relatedNode,
+                                      const String& prevValue,
+                                      const String& newValue,
+                                      const String& attrName,
+                                      unsigned short attrChange) {
+  if (isBeingDispatched())
+    return;
+
+  initEvent(type, canBubble, cancelable);
+
+  m_relatedNode = relatedNode;
+  m_prevValue = prevValue;
+  m_newValue = newValue;
+  m_attrName = attrName;
+  m_attrChange = attrChange;
 }
 
-MutationEvent::MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, Node* relatedNode,
-                             const String& prevValue, const String& newValue,
-                             const String& attrName, unsigned short attrChange)
-    : Event(type, canBubble, cancelable)
-    , m_relatedNode(relatedNode)
-    , m_prevValue(prevValue)
-    , m_newValue(newValue)
-    , m_attrName(attrName)
-    , m_attrChange(attrChange)
-{
+const AtomicString& MutationEvent::interfaceName() const {
+  return EventNames::MutationEvent;
 }
 
-MutationEvent::~MutationEvent()
-{
+DEFINE_TRACE(MutationEvent) {
+  visitor->trace(m_relatedNode);
+  Event::trace(visitor);
 }
 
-void MutationEvent::initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, Node* relatedNode,
-                                      const String& prevValue, const String& newValue,
-                                      const String& attrName, unsigned short attrChange)
-{
-    if (isBeingDispatched())
-        return;
-
-    initEvent(type, canBubble, cancelable);
-
-    m_relatedNode = relatedNode;
-    m_prevValue = prevValue;
-    m_newValue = newValue;
-    m_attrName = attrName;
-    m_attrChange = attrChange;
-}
-
-const AtomicString& MutationEvent::interfaceName() const
-{
-    return EventNames::MutationEvent;
-}
-
-DEFINE_TRACE(MutationEvent)
-{
-    visitor->trace(m_relatedNode);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

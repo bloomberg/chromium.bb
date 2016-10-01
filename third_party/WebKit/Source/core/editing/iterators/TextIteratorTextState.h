@@ -36,56 +36,67 @@ namespace blink {
 class LayoutText;
 
 class CORE_EXPORT TextIteratorTextState {
-    STACK_ALLOCATED();
-public:
-    explicit TextIteratorTextState(bool emitsOriginalText);
-    ~TextIteratorTextState() { }
+  STACK_ALLOCATED();
 
-    const String& string() const { return m_text; }
+ public:
+  explicit TextIteratorTextState(bool emitsOriginalText);
+  ~TextIteratorTextState() {}
 
-    int length() const { return m_textLength; }
-    UChar characterAt(unsigned index) const;
-    String substring(unsigned position, unsigned length) const;
-    void appendTextToStringBuilder(StringBuilder&, unsigned position = 0, unsigned maxLength = UINT_MAX) const;
+  const String& string() const { return m_text; }
 
-    void spliceBuffer(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
-    void emitText(Node* textNode, LayoutText* layoutObject, int textStartOffset, int textEndOffset);
-    void emitAltText(Node*);
-    void updateForReplacedElement(Node* baseNode);
-    void flushPositionOffsets() const;
-    int positionStartOffset() const { return m_positionStartOffset; }
-    int positionEndOffset() const { return m_positionEndOffset; }
-    Node* positionNode() const { return m_positionNode; }
-    bool hasEmitted() const { return m_hasEmitted; }
-    UChar lastCharacter() const { return m_lastCharacter; }
-    void resetRunInformation()
-    {
-        m_positionNode = nullptr;
-        m_textLength = 0;
-    }
+  int length() const { return m_textLength; }
+  UChar characterAt(unsigned index) const;
+  String substring(unsigned position, unsigned length) const;
+  void appendTextToStringBuilder(StringBuilder&,
+                                 unsigned position = 0,
+                                 unsigned maxLength = UINT_MAX) const;
 
-    void appendTextTo(ForwardsTextBuffer* output, unsigned position, unsigned lengthToAppend) const;
+  void spliceBuffer(UChar,
+                    Node* textNode,
+                    Node* offsetBaseNode,
+                    int textStartOffset,
+                    int textEndOffset);
+  void emitText(Node* textNode,
+                LayoutText* layoutObject,
+                int textStartOffset,
+                int textEndOffset);
+  void emitAltText(Node*);
+  void updateForReplacedElement(Node* baseNode);
+  void flushPositionOffsets() const;
+  int positionStartOffset() const { return m_positionStartOffset; }
+  int positionEndOffset() const { return m_positionEndOffset; }
+  Node* positionNode() const { return m_positionNode; }
+  bool hasEmitted() const { return m_hasEmitted; }
+  UChar lastCharacter() const { return m_lastCharacter; }
+  void resetRunInformation() {
+    m_positionNode = nullptr;
+    m_textLength = 0;
+  }
 
-private:
-    int m_textLength;
-    String m_text;
+  void appendTextTo(ForwardsTextBuffer* output,
+                    unsigned position,
+                    unsigned lengthToAppend) const;
 
-    // Used for whitespace characters that aren't in the DOM, so we can point at them.
-    // If non-zero, overrides m_text.
-    UChar m_singleCharacterBuffer;
+ private:
+  int m_textLength;
+  String m_text;
 
-    // The current text and its position, in the form to be returned from the iterator.
-    Member<Node> m_positionNode;
-    mutable Member<Node> m_positionOffsetBaseNode;
-    mutable int m_positionStartOffset;
-    mutable int m_positionEndOffset;
+  // Used for whitespace characters that aren't in the DOM, so we can point at them.
+  // If non-zero, overrides m_text.
+  UChar m_singleCharacterBuffer;
 
-    // Used when deciding whether to emit a "positioning" (e.g. newline) before any other content
-    bool m_hasEmitted;
-    UChar m_lastCharacter;
-    bool m_emitsOriginalText;
+  // The current text and its position, in the form to be returned from the iterator.
+  Member<Node> m_positionNode;
+  mutable Member<Node> m_positionOffsetBaseNode;
+  mutable int m_positionStartOffset;
+  mutable int m_positionEndOffset;
+
+  // Used when deciding whether to emit a "positioning" (e.g. newline) before any other content
+  bool m_hasEmitted;
+  UChar m_lastCharacter;
+  bool m_emitsOriginalText;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextIteratorTextState_h
+#endif  // TextIteratorTextState_h

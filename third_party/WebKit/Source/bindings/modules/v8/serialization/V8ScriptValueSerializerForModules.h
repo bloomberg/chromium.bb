@@ -11,15 +11,16 @@
 namespace blink {
 
 // Extends V8ScriptValueSerializer with support for modules/ types.
-class MODULES_EXPORT V8ScriptValueSerializerForModules final : public V8ScriptValueSerializer {
-public:
-    explicit V8ScriptValueSerializerForModules(RefPtr<ScriptState> scriptState)
-        : V8ScriptValueSerializer(scriptState) {}
+class MODULES_EXPORT V8ScriptValueSerializerForModules final
+    : public V8ScriptValueSerializer {
+ public:
+  explicit V8ScriptValueSerializerForModules(RefPtr<ScriptState> scriptState)
+      : V8ScriptValueSerializer(scriptState) {}
 
-protected:
-    bool writeDOMObject(ScriptWrappable*, ExceptionState&) override;
+ protected:
+  bool writeDOMObject(ScriptWrappable*, ExceptionState&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ScriptValueSerializerForModules_h
+#endif  // V8ScriptValueSerializerForModules_h

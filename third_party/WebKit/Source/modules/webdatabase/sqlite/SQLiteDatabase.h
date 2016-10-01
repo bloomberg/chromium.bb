@@ -34,7 +34,7 @@
 #include "wtf/text/WTFString.h"
 
 #if COMPILER(MSVC)
-#pragma warning(disable: 4800)
+#pragma warning(disable : 4800)
 #endif
 
 struct sqlite3;
@@ -52,94 +52,104 @@ extern const int SQLResultInterrupt;
 extern const int SQLResultConstraint;
 
 class SQLiteDatabase {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(SQLiteDatabase);
-    friend class SQLiteTransaction;
-public:
-    SQLiteDatabase();
-    ~SQLiteDatabase();
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(SQLiteDatabase);
+  friend class SQLiteTransaction;
 
-    bool open(const String& filename);
-    bool isOpen() const { return m_db; }
-    void close();
+ public:
+  SQLiteDatabase();
+  ~SQLiteDatabase();
 
-    void updateLastChangesCount();
+  bool open(const String& filename);
+  bool isOpen() const { return m_db; }
+  void close();
 
-    bool executeCommand(const String&);
+  void updateLastChangesCount();
 
-    bool tableExists(const String&);
-    int runVacuumCommand();
-    int runIncrementalVacuumCommand();
+  bool executeCommand(const String&);
 
-    bool transactionInProgress() const { return m_transactionInProgress; }
+  bool tableExists(const String&);
+  int runVacuumCommand();
+  int runIncrementalVacuumCommand();
 
-    int64_t lastInsertRowID();
-    int lastChanges();
+  bool transactionInProgress() const { return m_transactionInProgress; }
 
-    void setBusyTimeout(int ms);
+  int64_t lastInsertRowID();
+  int lastChanges();
 
-    // Sets the maximum size in bytes
-    // Depending on per-database attributes, the size will only be settable in units that are the page size of the database, which is established at creation
-    // These chunks will never be anything other than 512, 1024, 2048, 4096, 8192, 16384, or 32768 bytes in size.
-    // setMaximumSize() will round the size down to the next smallest chunk if the passed size doesn't align.
-    void setMaximumSize(int64_t);
+  void setBusyTimeout(int ms);
 
-    // Gets the number of unused bytes in the database file.
-    int64_t freeSpaceSize();
-    int64_t totalSize();
+  // Sets the maximum size in bytes
+  // Depending on per-database attributes, the size will only be settable in units that are the page size of the database, which is established at creation
+  // These chunks will never be anything other than 512, 1024, 2048, 4096, 8192, 16384, or 32768 bytes in size.
+  // setMaximumSize() will round the size down to the next smallest chunk if the passed size doesn't align.
+  void setMaximumSize(int64_t);
 
-    int lastError();
-    const char* lastErrorMsg();
+  // Gets the number of unused bytes in the database file.
+  int64_t freeSpaceSize();
+  int64_t totalSize();
 
-    sqlite3* sqlite3Handle() const {
-        ASSERT(m_sharable || currentThread() == m_openingThread || !m_db);
-        return m_db;
-    }
+  int lastError();
+  const char* lastErrorMsg();
 
-    void setAuthorizer(DatabaseAuthorizer*);
+  sqlite3* sqlite3Handle() const {
+    ASSERT(m_sharable || currentThread() == m_openingThread || !m_db);
+    return m_db;
+  }
 
-    bool isAutoCommitOn() const;
+  void setAuthorizer(DatabaseAuthorizer*);
 
-    // The SQLite AUTO_VACUUM pragma can be either NONE, FULL, or INCREMENTAL.
-    // NONE - SQLite does not do any vacuuming
-    // FULL - SQLite moves all empty pages to the end of the DB file and truncates
-    //        the file to remove those pages after every transaction. This option
-    //        requires SQLite to store additional information about each page in
-    //        the database file.
-    // INCREMENTAL - SQLite stores extra information for each page in the database
-    //               file, but removes the empty pages only when PRAGMA INCREMANTAL_VACUUM
-    //               is called.
-    enum AutoVacuumPragma { AutoVacuumNone = 0, AutoVacuumFull = 1, AutoVacuumIncremental = 2 };
-    bool turnOnIncrementalAutoVacuum();
+  bool isAutoCommitOn() const;
 
-    DEFINE_INLINE_TRACE() { }
+  // The SQLite AUTO_VACUUM pragma can be either NONE, FULL, or INCREMENTAL.
+  // NONE - SQLite does not do any vacuuming
+  // FULL - SQLite moves all empty pages to the end of the DB file and truncates
+  //        the file to remove those pages after every transaction. This option
+  //        requires SQLite to store additional information about each page in
+  //        the database file.
+  // INCREMENTAL - SQLite stores extra information for each page in the database
+  //               file, but removes the empty pages only when PRAGMA INCREMANTAL_VACUUM
+  //               is called.
+  enum AutoVacuumPragma {
+    AutoVacuumNone = 0,
+    AutoVacuumFull = 1,
+    AutoVacuumIncremental = 2
+  };
+  bool turnOnIncrementalAutoVacuum();
 
-private:
-    static int authorizerFunction(void*, int, const char*, const char*, const char*, const char*);
+  DEFINE_INLINE_TRACE() {}
 
-    void enableAuthorizer(bool enable);
+ private:
+  static int authorizerFunction(void*,
+                                int,
+                                const char*,
+                                const char*,
+                                const char*,
+                                const char*);
 
-    int pageSize();
+  void enableAuthorizer(bool enable);
 
-    sqlite3* m_db;
-    int m_pageSize;
+  int pageSize();
 
-    bool m_transactionInProgress;
-    bool m_sharable;
+  sqlite3* m_db;
+  int m_pageSize;
 
-    Mutex m_authorizerLock;
-    CrossThreadPersistent<DatabaseAuthorizer> m_authorizer;
+  bool m_transactionInProgress;
+  bool m_sharable;
 
-    ThreadIdentifier m_openingThread;
+  Mutex m_authorizerLock;
+  CrossThreadPersistent<DatabaseAuthorizer> m_authorizer;
 
-    Mutex m_databaseClosingMutex;
+  ThreadIdentifier m_openingThread;
 
-    int m_openError;
-    CString m_openErrorMessage;
+  Mutex m_databaseClosingMutex;
 
-    int m_lastChangesCount;
+  int m_openError;
+  CString m_openErrorMessage;
+
+  int m_lastChangesCount;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

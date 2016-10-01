@@ -31,13 +31,14 @@ namespace blink {
 
 class MediaStream;
 
-class NavigatorUserMediaSuccessCallback : public GarbageCollectedFinalized<NavigatorUserMediaSuccessCallback> {
-public:
-    virtual ~NavigatorUserMediaSuccessCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(MediaStream*) = 0;
+class NavigatorUserMediaSuccessCallback
+    : public GarbageCollectedFinalized<NavigatorUserMediaSuccessCallback> {
+ public:
+  virtual ~NavigatorUserMediaSuccessCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(MediaStream*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorUserMediaSuccessCallback_h
+#endif  // NavigatorUserMediaSuccessCallback_h

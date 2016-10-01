@@ -28,14 +28,15 @@
 namespace blink {
 
 class HTMLMenuElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLMenuElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit HTMLMenuElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(HTMLMenuElement);
+
+ private:
+  explicit HTMLMenuElement(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLMenuElement_h
+#endif  // HTMLMenuElement_h

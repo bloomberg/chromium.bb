@@ -11,32 +11,37 @@
 
 namespace blink {
 
-class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMRectReadOnly* create(double x, double y, double width, double height);
+class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
+                                    public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    double x() const { return m_x; }
-    double y() const { return m_y; }
-    double width() const { return m_width; }
-    double height() const { return m_height; }
+ public:
+  static DOMRectReadOnly* create(double x,
+                                 double y,
+                                 double width,
+                                 double height);
 
-    double top() const { return std::min(m_y, m_y + m_height); }
-    double right() const { return std::max(m_x, m_x + m_width); }
-    double bottom() const { return std::max(m_y, m_y + m_height); }
-    double left() const { return std::min(m_x, m_x + m_width); }
+  double x() const { return m_x; }
+  double y() const { return m_y; }
+  double width() const { return m_width; }
+  double height() const { return m_height; }
 
-    DEFINE_INLINE_TRACE() { }
+  double top() const { return std::min(m_y, m_y + m_height); }
+  double right() const { return std::max(m_x, m_x + m_width); }
+  double bottom() const { return std::max(m_y, m_y + m_height); }
+  double left() const { return std::min(m_x, m_x + m_width); }
 
-protected:
-    DOMRectReadOnly(double x, double y, double width, double height);
+  DEFINE_INLINE_TRACE() {}
 
-    double m_x;
-    double m_y;
-    double m_width;
-    double m_height;
+ protected:
+  DOMRectReadOnly(double x, double y, double width, double height);
+
+  double m_x;
+  double m_y;
+  double m_width;
+  double m_height;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

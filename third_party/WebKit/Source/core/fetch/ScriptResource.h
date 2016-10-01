@@ -33,78 +33,85 @@
 
 namespace blink {
 
-enum class ScriptIntegrityDisposition {
-    NotChecked = 0,
-    Failed,
-    Passed
-};
+enum class ScriptIntegrityDisposition { NotChecked = 0, Failed, Passed };
 
 class FetchRequest;
 class ResourceFetcher;
 class ScriptResource;
 
 class CORE_EXPORT ScriptResourceClient : public ResourceClient {
-public:
-    ~ScriptResourceClient() override {}
-    static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == ScriptType; }
-    ResourceClientType getResourceClientType() const final { return ScriptType; }
+ public:
+  ~ScriptResourceClient() override {}
+  static bool isExpectedType(ResourceClient* client) {
+    return client->getResourceClientType() == ScriptType;
+  }
+  ResourceClientType getResourceClientType() const final { return ScriptType; }
 
-    virtual void notifyAppendData(ScriptResource* resource) { }
+  virtual void notifyAppendData(ScriptResource* resource) {}
 };
 
 class CORE_EXPORT ScriptResource final : public TextResource {
-public:
-    using ClientType = ScriptResourceClient;
-    static ScriptResource* fetch(FetchRequest&, ResourceFetcher*);
+ public:
+  using ClientType = ScriptResourceClient;
+  static ScriptResource* fetch(FetchRequest&, ResourceFetcher*);
 
-    // Public for testing
-    static ScriptResource* create(const ResourceRequest& request, const String& charset)
-    {
-        return new ScriptResource(request, ResourceLoaderOptions(), charset);
+  // Public for testing
+  static ScriptResource* create(const ResourceRequest& request,
+                                const String& charset) {
+    return new ScriptResource(request, ResourceLoaderOptions(), charset);
+  }
+
+  ~ScriptResource() override;
+
+  void didAddClient(ResourceClient*) override;
+  void appendData(const char*, size_t) override;
+
+  void onMemoryDump(WebMemoryDumpLevelOfDetail,
+                    WebProcessMemoryDump*) const override;
+
+  void destroyDecodedDataForFailedRevalidation() override;
+
+  const String& script();
+
+  bool mimeTypeAllowedByNosniff() const;
+
+  void setIntegrityMetadata(const IntegrityMetadataSet& metadata) {
+    m_integrityMetadata = metadata;
+  }
+  const IntegrityMetadataSet& integrityMetadata() const {
+    return m_integrityMetadata;
+  }
+  // The argument must never be |NotChecked|.
+  void setIntegrityDisposition(ScriptIntegrityDisposition);
+  ScriptIntegrityDisposition integrityDisposition() {
+    return m_integrityDisposition;
+  }
+  bool mustRefetchDueToIntegrityMetadata(const FetchRequest&) const override;
+
+ private:
+  class ScriptResourceFactory : public ResourceFactory {
+   public:
+    ScriptResourceFactory() : ResourceFactory(Resource::Script) {}
+
+    Resource* create(const ResourceRequest& request,
+                     const ResourceLoaderOptions& options,
+                     const String& charset) const override {
+      return new ScriptResource(request, options, charset);
     }
+  };
 
-    ~ScriptResource() override;
+  ScriptResource(const ResourceRequest&,
+                 const ResourceLoaderOptions&,
+                 const String& charset);
 
-    void didAddClient(ResourceClient*) override;
-    void appendData(const char*, size_t) override;
+  ScriptIntegrityDisposition m_integrityDisposition;
+  IntegrityMetadataSet m_integrityMetadata;
 
-    void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const override;
-
-    void destroyDecodedDataForFailedRevalidation() override;
-
-    const String& script();
-
-    bool mimeTypeAllowedByNosniff() const;
-
-    void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_integrityMetadata = metadata; }
-    const IntegrityMetadataSet& integrityMetadata() const { return m_integrityMetadata; }
-    // The argument must never be |NotChecked|.
-    void setIntegrityDisposition(ScriptIntegrityDisposition);
-    ScriptIntegrityDisposition integrityDisposition() { return m_integrityDisposition; }
-    bool mustRefetchDueToIntegrityMetadata(const FetchRequest&) const override;
-
-private:
-    class ScriptResourceFactory : public ResourceFactory {
-    public:
-        ScriptResourceFactory()
-            : ResourceFactory(Resource::Script) { }
-
-        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
-        {
-            return new ScriptResource(request, options, charset);
-        }
-    };
-
-    ScriptResource(const ResourceRequest&, const ResourceLoaderOptions&, const String& charset);
-
-    ScriptIntegrityDisposition m_integrityDisposition;
-    IntegrityMetadataSet m_integrityMetadata;
-
-    AtomicString m_script;
+  AtomicString m_script;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

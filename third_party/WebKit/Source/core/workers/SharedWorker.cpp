@@ -47,64 +47,67 @@
 namespace blink {
 
 inline SharedWorker::SharedWorker(ExecutionContext* context)
-    : AbstractWorker(context)
-    , ActiveScriptWrappable(this)
-    , m_isBeingConnected(false)
-{
+    : AbstractWorker(context),
+      ActiveScriptWrappable(this),
+      m_isBeingConnected(false) {}
+
+SharedWorker* SharedWorker::create(ExecutionContext* context,
+                                   const String& url,
+                                   const String& name,
+                                   ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+  SECURITY_DCHECK(context->isDocument());
+
+  UseCounter::count(context, UseCounter::SharedWorkerStart);
+
+  SharedWorker* worker = new SharedWorker(context);
+
+  MessageChannel* channel = MessageChannel::create(context);
+  worker->m_port = channel->port1();
+  WebMessagePortChannelUniquePtr remotePort = channel->port2()->disentangle();
+  DCHECK(remotePort);
+
+  worker->suspendIfNeeded();
+
+  // We don't currently support nested workers, so workers can only be created from documents.
+  Document* document = toDocument(context);
+  if (!document->getSecurityOrigin()->canAccessSharedWorkers()) {
+    exceptionState.throwSecurityError(
+        "Access to shared workers is denied to origin '" +
+        document->getSecurityOrigin()->toString() + "'.");
+    return nullptr;
+  }
+
+  KURL scriptURL = worker->resolveURL(
+      url, exceptionState, WebURLRequest::RequestContextSharedWorker);
+  if (scriptURL.isEmpty())
+    return nullptr;
+
+  if (document->frame()->loader().client()->sharedWorkerRepositoryClient())
+    document->frame()
+        ->loader()
+        .client()
+        ->sharedWorkerRepositoryClient()
+        ->connect(worker, std::move(remotePort), scriptURL, name,
+                  exceptionState);
+
+  return worker;
 }
 
-SharedWorker* SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-    SECURITY_DCHECK(context->isDocument());
+SharedWorker::~SharedWorker() {}
 
-    UseCounter::count(context, UseCounter::SharedWorkerStart);
-
-    SharedWorker* worker = new SharedWorker(context);
-
-    MessageChannel* channel = MessageChannel::create(context);
-    worker->m_port = channel->port1();
-    WebMessagePortChannelUniquePtr remotePort = channel->port2()->disentangle();
-    DCHECK(remotePort);
-
-    worker->suspendIfNeeded();
-
-    // We don't currently support nested workers, so workers can only be created from documents.
-    Document* document = toDocument(context);
-    if (!document->getSecurityOrigin()->canAccessSharedWorkers()) {
-        exceptionState.throwSecurityError("Access to shared workers is denied to origin '" + document->getSecurityOrigin()->toString() + "'.");
-        return nullptr;
-    }
-
-    KURL scriptURL = worker->resolveURL(url, exceptionState, WebURLRequest::RequestContextSharedWorker);
-    if (scriptURL.isEmpty())
-        return nullptr;
-
-    if (document->frame()->loader().client()->sharedWorkerRepositoryClient())
-        document->frame()->loader().client()->sharedWorkerRepositoryClient()->connect(worker, std::move(remotePort), scriptURL, name, exceptionState);
-
-    return worker;
+const AtomicString& SharedWorker::interfaceName() const {
+  return EventTargetNames::SharedWorker;
 }
 
-SharedWorker::~SharedWorker()
-{
+bool SharedWorker::hasPendingActivity() const {
+  return m_isBeingConnected;
 }
 
-const AtomicString& SharedWorker::interfaceName() const
-{
-    return EventTargetNames::SharedWorker;
+DEFINE_TRACE(SharedWorker) {
+  visitor->trace(m_port);
+  AbstractWorker::trace(visitor);
+  Supplementable<SharedWorker>::trace(visitor);
 }
 
-bool SharedWorker::hasPendingActivity() const
-{
-    return m_isBeingConnected;
-}
-
-DEFINE_TRACE(SharedWorker)
-{
-    visitor->trace(m_port);
-    AbstractWorker::trace(visitor);
-    Supplementable<SharedWorker>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

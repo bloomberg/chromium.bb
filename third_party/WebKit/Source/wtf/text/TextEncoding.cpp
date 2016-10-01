@@ -36,88 +36,87 @@
 
 namespace WTF {
 
-static const TextEncoding& UTF7Encoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF7Encoding, new TextEncoding("UTF-7"));
-    return globalUTF7Encoding;
+static const TextEncoding& UTF7Encoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF7Encoding,
+                                  new TextEncoding("UTF-7"));
+  return globalUTF7Encoding;
 }
 
 TextEncoding::TextEncoding(const char* name)
-    : m_name(atomicCanonicalTextEncodingName(name))
-{
-    // Aliases are valid, but not "replacement" itself.
-    if (m_name && isReplacementEncoding(name))
-        m_name = 0;
+    : m_name(atomicCanonicalTextEncodingName(name)) {
+  // Aliases are valid, but not "replacement" itself.
+  if (m_name && isReplacementEncoding(name))
+    m_name = 0;
 }
 
 TextEncoding::TextEncoding(const String& name)
-    : m_name(atomicCanonicalTextEncodingName(name))
-{
-    // Aliases are valid, but not "replacement" itself.
-    if (m_name && isReplacementEncoding(name))
-        m_name = 0;
+    : m_name(atomicCanonicalTextEncodingName(name)) {
+  // Aliases are valid, but not "replacement" itself.
+  if (m_name && isReplacementEncoding(name))
+    m_name = 0;
 }
 
-String TextEncoding::decode(const char* data, size_t length, bool stopOnError, bool& sawError) const
-{
-    if (!m_name)
-        return String();
+String TextEncoding::decode(const char* data,
+                            size_t length,
+                            bool stopOnError,
+                            bool& sawError) const {
+  if (!m_name)
+    return String();
 
-    return newTextCodec(*this)->decode(data, length, DataEOF, stopOnError, sawError);
+  return newTextCodec(*this)->decode(data, length, DataEOF, stopOnError,
+                                     sawError);
 }
 
-CString TextEncoding::encode(const String& string, UnencodableHandling handling) const
-{
-    if (!m_name)
-        return CString();
+CString TextEncoding::encode(const String& string,
+                             UnencodableHandling handling) const {
+  if (!m_name)
+    return CString();
 
-    if (string.isEmpty())
-        return "";
+  if (string.isEmpty())
+    return "";
 
-    std::unique_ptr<TextCodec> textCodec = newTextCodec(*this);
-    CString encodedString;
-    if (string.is8Bit())
-        encodedString = textCodec->encode(string.characters8(), string.length(), handling);
-    else
-        encodedString = textCodec->encode(string.characters16(), string.length(), handling);
-    return encodedString;
+  std::unique_ptr<TextCodec> textCodec = newTextCodec(*this);
+  CString encodedString;
+  if (string.is8Bit())
+    encodedString =
+        textCodec->encode(string.characters8(), string.length(), handling);
+  else
+    encodedString =
+        textCodec->encode(string.characters16(), string.length(), handling);
+  return encodedString;
 }
 
-bool TextEncoding::usesVisualOrdering() const
-{
-    if (noExtendedTextEncodingNameUsed())
-        return false;
+bool TextEncoding::usesVisualOrdering() const {
+  if (noExtendedTextEncodingNameUsed())
+    return false;
 
-    static const char* const a = atomicCanonicalTextEncodingName("ISO-8859-8");
-    return m_name == a;
+  static const char* const a = atomicCanonicalTextEncodingName("ISO-8859-8");
+  return m_name == a;
 }
 
-bool TextEncoding::isNonByteBasedEncoding() const
-{
-    if (noExtendedTextEncodingNameUsed()) {
-        return *this == UTF16LittleEndianEncoding()
-            || *this == UTF16BigEndianEncoding();
-    }
+bool TextEncoding::isNonByteBasedEncoding() const {
+  if (noExtendedTextEncodingNameUsed()) {
+    return *this == UTF16LittleEndianEncoding() ||
+           *this == UTF16BigEndianEncoding();
+  }
 
-    return *this == UTF16LittleEndianEncoding()
-        || *this == UTF16BigEndianEncoding()
-        || *this == UTF32BigEndianEncoding()
-        || *this == UTF32LittleEndianEncoding();
+  return *this == UTF16LittleEndianEncoding() ||
+         *this == UTF16BigEndianEncoding() ||
+         *this == UTF32BigEndianEncoding() ||
+         *this == UTF32LittleEndianEncoding();
 }
 
-bool TextEncoding::isUTF7Encoding() const
-{
-    if (noExtendedTextEncodingNameUsed())
-        return false;
+bool TextEncoding::isUTF7Encoding() const {
+  if (noExtendedTextEncodingNameUsed())
+    return false;
 
-    return *this == UTF7Encoding();
+  return *this == UTF7Encoding();
 }
 
-const TextEncoding& TextEncoding::closestByteBasedEquivalent() const
-{
-    if (isNonByteBasedEncoding())
-        return UTF8Encoding();
-    return *this;
+const TextEncoding& TextEncoding::closestByteBasedEquivalent() const {
+  if (isNonByteBasedEncoding())
+    return UTF8Encoding();
+  return *this;
 }
 
 // HTML5 specifies that UTF-8 be used in form submission when a form is
@@ -125,60 +124,64 @@ const TextEncoding& TextEncoding::closestByteBasedEquivalent() const
 // byte-based encoding and can contain 0x00. By extension, the same
 // should be done for UTF-32. In case of UTF-7, it is a byte-based encoding,
 // but it's fraught with problems and we'd rather steer clear of it.
-const TextEncoding& TextEncoding::encodingForFormSubmission() const
-{
-    if (isNonByteBasedEncoding() || isUTF7Encoding())
-        return UTF8Encoding();
-    return *this;
+const TextEncoding& TextEncoding::encodingForFormSubmission() const {
+  if (isNonByteBasedEncoding() || isUTF7Encoding())
+    return UTF8Encoding();
+  return *this;
 }
 
-const TextEncoding& ASCIIEncoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalASCIIEncoding, new TextEncoding("ASCII"));
-    return globalASCIIEncoding;
+const TextEncoding& ASCIIEncoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalASCIIEncoding,
+                                  new TextEncoding("ASCII"));
+  return globalASCIIEncoding;
 }
 
-const TextEncoding& Latin1Encoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalLatin1Encoding, new TextEncoding("latin1"));
-    return globalLatin1Encoding;
+const TextEncoding& Latin1Encoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalLatin1Encoding,
+                                  new TextEncoding("latin1"));
+  return globalLatin1Encoding;
 }
 
-const TextEncoding& UTF16BigEndianEncoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF16BigEndianEncoding, new TextEncoding("UTF-16BE"));
-    return globalUTF16BigEndianEncoding;
+const TextEncoding& UTF16BigEndianEncoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
+                                  globalUTF16BigEndianEncoding,
+                                  new TextEncoding("UTF-16BE"));
+  return globalUTF16BigEndianEncoding;
 }
 
-const TextEncoding& UTF16LittleEndianEncoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF16LittleEndianEncoding, new TextEncoding("UTF-16LE"));
-    return globalUTF16LittleEndianEncoding;
+const TextEncoding& UTF16LittleEndianEncoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
+                                  globalUTF16LittleEndianEncoding,
+                                  new TextEncoding("UTF-16LE"));
+  return globalUTF16LittleEndianEncoding;
 }
 
-const TextEncoding& UTF32BigEndianEncoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF32BigEndianEncoding, new TextEncoding("UTF-32BE"));
-    return globalUTF32BigEndianEncoding;
+const TextEncoding& UTF32BigEndianEncoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
+                                  globalUTF32BigEndianEncoding,
+                                  new TextEncoding("UTF-32BE"));
+  return globalUTF32BigEndianEncoding;
 }
 
-const TextEncoding& UTF32LittleEndianEncoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF32LittleEndianEncoding, new TextEncoding("UTF-32LE"));
-    return globalUTF32LittleEndianEncoding;
+const TextEncoding& UTF32LittleEndianEncoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
+                                  globalUTF32LittleEndianEncoding,
+                                  new TextEncoding("UTF-32LE"));
+  return globalUTF32LittleEndianEncoding;
 }
 
-const TextEncoding& UTF8Encoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF8Encoding, new TextEncoding("UTF-8"));
-    ASSERT(globalUTF8Encoding.isValid());
-    return globalUTF8Encoding;
+const TextEncoding& UTF8Encoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF8Encoding,
+                                  new TextEncoding("UTF-8"));
+  ASSERT(globalUTF8Encoding.isValid());
+  return globalUTF8Encoding;
 }
 
-const TextEncoding& WindowsLatin1Encoding()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalWindowsLatin1Encoding, new TextEncoding("WinLatin1"));
-    return globalWindowsLatin1Encoding;
+const TextEncoding& WindowsLatin1Encoding() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding,
+                                  globalWindowsLatin1Encoding,
+                                  new TextEncoding("WinLatin1"));
+  return globalWindowsLatin1Encoding;
 }
 
-} // namespace WTF
+}  // namespace WTF

@@ -8,14 +8,14 @@
 
 namespace blink {
 
-WebGLVertexArrayObject* WebGLVertexArrayObject::create(WebGLRenderingContextBase* ctx, VaoType type)
-{
-    return new WebGLVertexArrayObject(ctx, type);
+WebGLVertexArrayObject* WebGLVertexArrayObject::create(
+    WebGLRenderingContextBase* ctx,
+    VaoType type) {
+  return new WebGLVertexArrayObject(ctx, type);
 }
 
-WebGLVertexArrayObject::WebGLVertexArrayObject(WebGLRenderingContextBase* ctx, VaoType type)
-    : WebGLVertexArrayObjectBase(ctx, type)
-{
-}
+WebGLVertexArrayObject::WebGLVertexArrayObject(WebGLRenderingContextBase* ctx,
+                                               VaoType type)
+    : WebGLVertexArrayObjectBase(ctx, type) {}
 
-} // namespace blink
+}  // namespace blink

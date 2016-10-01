@@ -14,41 +14,37 @@ namespace blink {
 class CSSLengthValue;
 
 class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
-    WTF_MAKE_NONCOPYABLE(CSSPositionValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSPositionValue* create(const CSSLengthValue* x, const CSSLengthValue* y)
-    {
-        return new CSSPositionValue(x, y);
-    }
+  WTF_MAKE_NONCOPYABLE(CSSPositionValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Bindings require a non const return value.
-    CSSLengthValue* x() const { return const_cast<CSSLengthValue*>(m_x.get()); }
-    CSSLengthValue* y() const { return const_cast<CSSLengthValue*>(m_y.get()); }
+ public:
+  static CSSPositionValue* create(const CSSLengthValue* x,
+                                  const CSSLengthValue* y) {
+    return new CSSPositionValue(x, y);
+  }
 
-    StyleValueType type() const override { return PositionType; }
+  // Bindings require a non const return value.
+  CSSLengthValue* x() const { return const_cast<CSSLengthValue*>(m_x.get()); }
+  CSSLengthValue* y() const { return const_cast<CSSLengthValue*>(m_y.get()); }
 
-    CSSValue* toCSSValue() const override;
+  StyleValueType type() const override { return PositionType; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_x);
-        visitor->trace(m_y);
-        CSSStyleValue::trace(visitor);
-    }
+  CSSValue* toCSSValue() const override;
 
-protected:
-    CSSPositionValue(const CSSLengthValue* x, const CSSLengthValue* y)
-        : m_x(x)
-        , m_y(y)
-    {
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    CSSStyleValue::trace(visitor);
+  }
 
-    Member<const CSSLengthValue> m_x;
-    Member<const CSSLengthValue> m_y;
+ protected:
+  CSSPositionValue(const CSSLengthValue* x, const CSSLengthValue* y)
+      : m_x(x), m_y(y) {}
 
+  Member<const CSSLengthValue> m_x;
+  Member<const CSSLengthValue> m_y;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -38,10 +38,10 @@
 namespace blink {
 
 struct WebDraggableRegion {
-    bool draggable;
-    WebRect bounds;
+  bool draggable;
+  WebRect bounds;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

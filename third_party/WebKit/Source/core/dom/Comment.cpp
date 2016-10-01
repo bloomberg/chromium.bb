@@ -26,28 +26,22 @@
 namespace blink {
 
 inline Comment::Comment(Document& document, const String& text)
-    : CharacterData(document, text, CreateOther)
-{
+    : CharacterData(document, text, CreateOther) {}
+
+Comment* Comment::create(Document& document, const String& text) {
+  return new Comment(document, text);
 }
 
-Comment* Comment::create(Document& document, const String& text)
-{
-    return new Comment(document, text);
+String Comment::nodeName() const {
+  return "#comment";
 }
 
-String Comment::nodeName() const
-{
-    return "#comment";
+Node::NodeType Comment::getNodeType() const {
+  return kCommentNode;
 }
 
-Node::NodeType Comment::getNodeType() const
-{
-    return kCommentNode;
+Node* Comment::cloneNode(bool /*deep*/) {
+  return create(document(), data());
 }
 
-Node* Comment::cloneNode(bool /*deep*/)
-{
-    return create(document(), data());
-}
-
-} // namespace blink
+}  // namespace blink

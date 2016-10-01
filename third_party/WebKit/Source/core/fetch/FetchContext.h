@@ -51,79 +51,121 @@ class ResourceTimingInfo;
 class WebTaskRunner;
 enum class WebCachePolicy;
 
-enum FetchResourceType {
-    FetchMainResource,
-    FetchSubresource
+enum FetchResourceType { FetchMainResource, FetchSubresource };
+
+class CORE_EXPORT FetchContext
+    : public GarbageCollectedFinalized<FetchContext> {
+  WTF_MAKE_NONCOPYABLE(FetchContext);
+
+ public:
+  enum LogMessageType { LogErrorMessage, LogWarningMessage };
+
+  static FetchContext& nullInstance();
+
+  virtual ~FetchContext() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+  virtual bool isLiveContext() { return false; }
+  virtual void countClientHintsDPR() {}
+  virtual void countClientHintsResourceWidth() {}
+  virtual void countClientHintsViewportWidth() {}
+
+  virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
+  virtual CachePolicy getCachePolicy() const;
+  virtual WebCachePolicy resourceRequestCachePolicy(
+      const ResourceRequest&,
+      Resource::Type,
+      FetchRequest::DeferOption) const;
+
+  virtual void dispatchDidChangeResourcePriority(unsigned long identifier,
+                                                 ResourceLoadPriority,
+                                                 int intraPriorityValue);
+  // The last callback before a request is actually sent to the browser process.
+  virtual void dispatchWillSendRequest(
+      unsigned long identifier,
+      ResourceRequest&,
+      const ResourceResponse& redirectResponse,
+      const FetchInitiatorInfo& = FetchInitiatorInfo());
+  virtual void dispatchDidLoadResourceFromMemoryCache(
+      unsigned long identifier,
+      Resource*,
+      WebURLRequest::FrameType,
+      WebURLRequest::RequestContext);
+  virtual void dispatchDidReceiveResponse(unsigned long identifier,
+                                          const ResourceResponse&,
+                                          WebURLRequest::FrameType,
+                                          WebURLRequest::RequestContext,
+                                          Resource*);
+  virtual void dispatchDidReceiveData(unsigned long identifier,
+                                      const char* data,
+                                      int dataLength,
+                                      int encodedDataLength);
+  virtual void dispatchDidDownloadData(unsigned long identifier,
+                                       int dataLength,
+                                       int encodedDataLength);
+  virtual void dispatchDidFinishLoading(unsigned long identifier,
+                                        double finishTime,
+                                        int64_t encodedDataLength);
+  virtual void dispatchDidFail(unsigned long identifier,
+                               const ResourceError&,
+                               bool isInternalRequest);
+
+  virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
+  // Called when a resource load is first requested, which may not be when the load actually begins.
+  virtual void willStartLoadingResource(unsigned long identifier,
+                                        ResourceRequest&,
+                                        Resource::Type);
+  virtual void didLoadResource(Resource*);
+
+  virtual void addResourceTiming(const ResourceTimingInfo&);
+  virtual bool allowImage(bool, const KURL&) const { return false; }
+  virtual bool canRequest(Resource::Type,
+                          const ResourceRequest&,
+                          const KURL&,
+                          const ResourceLoaderOptions&,
+                          bool forPreload,
+                          FetchRequest::OriginRestriction) const {
+    return false;
+  }
+  virtual bool allowResponse(Resource::Type,
+                             const ResourceRequest&,
+                             const KURL&,
+                             const ResourceLoaderOptions&) const {
+    return false;
+  }
+
+  virtual bool isControlledByServiceWorker() const { return false; }
+  virtual int64_t serviceWorkerID() const { return -1; }
+
+  virtual bool isMainFrame() const { return true; }
+  virtual bool defersLoading() const { return false; }
+  virtual bool isLoadComplete() const { return false; }
+  virtual bool pageDismissalEventBeingDispatched() const { return false; }
+  virtual bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) {
+    return false;
+  }
+  virtual void sendImagePing(const KURL&);
+  virtual void addConsoleMessage(const String&,
+                                 LogMessageType = LogErrorMessage) const;
+  virtual SecurityOrigin* getSecurityOrigin() const { return nullptr; }
+  virtual void upgradeInsecureRequest(ResourceRequest&);
+  virtual void addClientHintsIfNecessary(FetchRequest&);
+  virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
+  virtual void populateRequestData(ResourceRequest&);
+
+  virtual MHTMLArchive* archive() const { return nullptr; }
+
+  virtual ResourceLoadPriority modifyPriorityForExperiments(
+      ResourceLoadPriority priority) {
+    return priority;
+  }
+
+  virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
+
+ protected:
+  FetchContext() {}
 };
 
-class CORE_EXPORT FetchContext : public GarbageCollectedFinalized<FetchContext> {
-    WTF_MAKE_NONCOPYABLE(FetchContext);
-public:
-    enum LogMessageType {
-        LogErrorMessage,
-        LogWarningMessage
-    };
-
-    static FetchContext& nullInstance();
-
-    virtual ~FetchContext() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-
-    virtual bool isLiveContext() { return false; }
-    virtual void countClientHintsDPR() { }
-    virtual void countClientHintsResourceWidth() { }
-    virtual void countClientHintsViewportWidth() { }
-
-    virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
-    virtual CachePolicy getCachePolicy() const;
-    virtual WebCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type, FetchRequest::DeferOption) const;
-
-    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
-    // The last callback before a request is actually sent to the browser process.
-    virtual void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
-    virtual void dispatchDidLoadResourceFromMemoryCache(unsigned long identifier, Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext);
-    virtual void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, Resource*);
-    virtual void dispatchDidReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
-    virtual void dispatchDidDownloadData(unsigned long identifier, int dataLength, int encodedDataLength);
-    virtual void dispatchDidFinishLoading(unsigned long identifier, double finishTime, int64_t encodedDataLength);
-    virtual void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest);
-
-    virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
-    // Called when a resource load is first requested, which may not be when the load actually begins.
-    virtual void willStartLoadingResource(unsigned long identifier, ResourceRequest&, Resource::Type);
-    virtual void didLoadResource(Resource*);
-
-    virtual void addResourceTiming(const ResourceTimingInfo&);
-    virtual bool allowImage(bool, const KURL&) const { return false; }
-    virtual bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const { return false; }
-    virtual bool allowResponse(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&) const { return false; }
-
-    virtual bool isControlledByServiceWorker() const { return false; }
-    virtual int64_t serviceWorkerID() const { return -1; }
-
-    virtual bool isMainFrame() const { return true; }
-    virtual bool defersLoading() const { return false; }
-    virtual bool isLoadComplete() const { return false; }
-    virtual bool pageDismissalEventBeingDispatched() const { return false; }
-    virtual bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) { return false; }
-    virtual void sendImagePing(const KURL&);
-    virtual void addConsoleMessage(const String&, LogMessageType = LogErrorMessage) const;
-    virtual SecurityOrigin* getSecurityOrigin() const { return nullptr; }
-    virtual void upgradeInsecureRequest(ResourceRequest&);
-    virtual void addClientHintsIfNecessary(FetchRequest&);
-    virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
-    virtual void populateRequestData(ResourceRequest&);
-
-    virtual MHTMLArchive* archive() const { return nullptr; }
-
-    virtual ResourceLoadPriority modifyPriorityForExperiments(ResourceLoadPriority priority) { return priority; }
-
-    virtual WebTaskRunner* loadingTaskRunner() const { return nullptr; }
-
-protected:
-    FetchContext() { }
-};
-
-} // namespace blink
+}  // namespace blink
 
 #endif

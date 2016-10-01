@@ -36,15 +36,15 @@
 namespace blink {
 
 struct WebTimeRange {
-    WebTimeRange() : start(0), end(0) { }
-    WebTimeRange(double s, double e) : start(s), end(e) { }
+  WebTimeRange() : start(0), end(0) {}
+  WebTimeRange(double s, double e) : start(s), end(e) {}
 
-    double start;
-    double end;
+  double start;
+  double end;
 };
 
 typedef WebVector<WebTimeRange> WebTimeRanges;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -10,11 +10,11 @@
 #if DCHECK_IS_ON()
 // We can see logs with |--v=N| or |--vmodule=NetworkLog=N| where N is a
 // verbose level.
-#define NETWORK_DVLOG(verbose_level) \
-    LAZY_STREAM(VLOG_STREAM(verbose_level), \
-        ((verbose_level) <= ::logging::GetVlogLevel("NetworkLog.h")))
+#define NETWORK_DVLOG(verbose_level)      \
+  LAZY_STREAM(VLOG_STREAM(verbose_level), \
+              ((verbose_level) <= ::logging::GetVlogLevel("NetworkLog.h")))
 #else
 #define NETWORK_DVLOG(verbose_level) EAT_STREAM_PARAMETERS
 #endif
 
-#endif // NetworkLog_h
+#endif  // NetworkLog_h

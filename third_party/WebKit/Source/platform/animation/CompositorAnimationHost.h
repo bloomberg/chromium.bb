@@ -25,20 +25,21 @@ namespace blink {
 // TODO(ymalik): Correctly introduce CompositorAnimationHost to blink. See
 // crbug.com/610763.
 class PLATFORM_EXPORT CompositorAnimationHost {
-public:
-    explicit CompositorAnimationHost(cc::AnimationHost*);
+ public:
+  explicit CompositorAnimationHost(cc::AnimationHost*);
 
-    // TODO(ymalik): Remove when CompositorAnimationHost* optional nullable ptr
-    // is returned. See crbug.com/610763.
-    bool isNull() const;
+  // TODO(ymalik): Remove when CompositorAnimationHost* optional nullable ptr
+  // is returned. See crbug.com/610763.
+  bool isNull() const;
 
-    void adjustImplOnlyScrollOffsetAnimation(cc::ElementId, const gfx::Vector2dF& adjustment);
-    void takeOverImplOnlyScrollOffsetAnimation(cc::ElementId);
+  void adjustImplOnlyScrollOffsetAnimation(cc::ElementId,
+                                           const gfx::Vector2dF& adjustment);
+  void takeOverImplOnlyScrollOffsetAnimation(cc::ElementId);
 
-private:
-    cc::AnimationHost* m_animationHost;
+ private:
+  cc::AnimationHost* m_animationHost;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorAnimationTimeline_h
+#endif  // CompositorAnimationTimeline_h

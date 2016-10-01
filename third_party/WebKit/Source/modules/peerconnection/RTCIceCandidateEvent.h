@@ -32,24 +32,27 @@ namespace blink {
 class RTCIceCandidate;
 
 class RTCIceCandidateEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~RTCIceCandidateEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static RTCIceCandidateEvent* create(bool canBubble, bool cancelable, RTCIceCandidate*);
+ public:
+  ~RTCIceCandidateEvent() override;
 
-    RTCIceCandidate* candidate() const;
+  static RTCIceCandidateEvent* create(bool canBubble,
+                                      bool cancelable,
+                                      RTCIceCandidate*);
 
-    const AtomicString& interfaceName() const override;
+  RTCIceCandidate* candidate() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<RTCIceCandidate> m_candidate;
+ private:
+  RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate*);
+
+  Member<RTCIceCandidate> m_candidate;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCIceCandidateEvent_h
+#endif  // RTCIceCandidateEvent_h

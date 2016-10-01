@@ -15,95 +15,86 @@ namespace blink {
 
 namespace {
 
-void computeChunkBoundsAndOpaqueness(const DisplayItemList& displayItems, Vector<PaintChunk>& paintChunks)
-{
-    for (PaintChunk& chunk : paintChunks) {
-        FloatRect bounds;
-        SkRegion knownToBeOpaqueRegion;
-        for (const DisplayItem& item : displayItems.itemsInPaintChunk(chunk)) {
-            bounds.unite(FloatRect(item.client().visualRect()));
-            if (!item.isDrawing())
-                continue;
-            const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
-            if (const SkPicture* picture = drawing.picture()) {
-                if (drawing.knownToBeOpaque()) {
-                    // TODO(pdr): It may be too conservative to round in to the enclosedIntRect.
-                    SkIRect conservativelyRoundedPictureRect;
-                    const SkRect& pictureRect = picture->cullRect();
-                    pictureRect.roundIn(&conservativelyRoundedPictureRect);
-                    knownToBeOpaqueRegion.op(conservativelyRoundedPictureRect, SkRegion::kUnion_Op);
-                }
-            }
+void computeChunkBoundsAndOpaqueness(const DisplayItemList& displayItems,
+                                     Vector<PaintChunk>& paintChunks) {
+  for (PaintChunk& chunk : paintChunks) {
+    FloatRect bounds;
+    SkRegion knownToBeOpaqueRegion;
+    for (const DisplayItem& item : displayItems.itemsInPaintChunk(chunk)) {
+      bounds.unite(FloatRect(item.client().visualRect()));
+      if (!item.isDrawing())
+        continue;
+      const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
+      if (const SkPicture* picture = drawing.picture()) {
+        if (drawing.knownToBeOpaque()) {
+          // TODO(pdr): It may be too conservative to round in to the enclosedIntRect.
+          SkIRect conservativelyRoundedPictureRect;
+          const SkRect& pictureRect = picture->cullRect();
+          pictureRect.roundIn(&conservativelyRoundedPictureRect);
+          knownToBeOpaqueRegion.op(conservativelyRoundedPictureRect,
+                                   SkRegion::kUnion_Op);
         }
-        chunk.bounds = bounds;
-        if (knownToBeOpaqueRegion.contains(enclosingIntRect(bounds)))
-            chunk.knownToBeOpaque = true;
+      }
     }
+    chunk.bounds = bounds;
+    if (knownToBeOpaqueRegion.contains(enclosingIntRect(bounds)))
+      chunk.knownToBeOpaque = true;
+  }
 }
 
-} // namespace
+}  // namespace
 
 PaintArtifact::PaintArtifact()
-    : m_displayItemList(0)
-    , m_isSuitableForGpuRasterization(true)
-{
-}
+    : m_displayItemList(0), m_isSuitableForGpuRasterization(true) {}
 
-PaintArtifact::PaintArtifact(DisplayItemList displayItems, Vector<PaintChunk> paintChunks, bool isSuitableForGpuRasterizationArg)
-    : m_displayItemList(std::move(displayItems))
-    , m_paintChunks(std::move(paintChunks))
-    , m_isSuitableForGpuRasterization(isSuitableForGpuRasterizationArg)
-{
-    computeChunkBoundsAndOpaqueness(m_displayItemList, m_paintChunks);
+PaintArtifact::PaintArtifact(DisplayItemList displayItems,
+                             Vector<PaintChunk> paintChunks,
+                             bool isSuitableForGpuRasterizationArg)
+    : m_displayItemList(std::move(displayItems)),
+      m_paintChunks(std::move(paintChunks)),
+      m_isSuitableForGpuRasterization(isSuitableForGpuRasterizationArg) {
+  computeChunkBoundsAndOpaqueness(m_displayItemList, m_paintChunks);
 }
 
 PaintArtifact::PaintArtifact(PaintArtifact&& source)
-    : m_displayItemList(std::move(source.m_displayItemList))
-    , m_paintChunks(std::move(source.m_paintChunks))
-    , m_isSuitableForGpuRasterization(source.m_isSuitableForGpuRasterization)
-{
+    : m_displayItemList(std::move(source.m_displayItemList)),
+      m_paintChunks(std::move(source.m_paintChunks)),
+      m_isSuitableForGpuRasterization(source.m_isSuitableForGpuRasterization) {}
+
+PaintArtifact::~PaintArtifact() {}
+
+PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source) {
+  m_displayItemList = std::move(source.m_displayItemList);
+  m_paintChunks = std::move(source.m_paintChunks);
+  m_isSuitableForGpuRasterization = source.m_isSuitableForGpuRasterization;
+  return *this;
 }
 
-PaintArtifact::~PaintArtifact()
-{
+void PaintArtifact::reset() {
+  m_displayItemList.clear();
+  m_paintChunks.clear();
 }
 
-PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source)
-{
-    m_displayItemList = std::move(source.m_displayItemList);
-    m_paintChunks = std::move(source.m_paintChunks);
-    m_isSuitableForGpuRasterization = source.m_isSuitableForGpuRasterization;
-    return *this;
+size_t PaintArtifact::approximateUnsharedMemoryUsage() const {
+  return sizeof(*this) + m_displayItemList.memoryUsageInBytes() +
+         m_paintChunks.capacity() * sizeof(m_paintChunks[0]);
 }
 
-void PaintArtifact::reset()
-{
-    m_displayItemList.clear();
-    m_paintChunks.clear();
+void PaintArtifact::replay(GraphicsContext& graphicsContext) const {
+  TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
+  for (const DisplayItem& displayItem : m_displayItemList)
+    displayItem.replay(graphicsContext);
 }
 
-size_t PaintArtifact::approximateUnsharedMemoryUsage() const
-{
-    return sizeof(*this) + m_displayItemList.memoryUsageInBytes()
-        + m_paintChunks.capacity() * sizeof(m_paintChunks[0]);
+void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const {
+  TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
+  size_t visualRectIndex = 0;
+  for (const DisplayItem& displayItem : m_displayItemList) {
+    displayItem.appendToWebDisplayItemList(
+        m_displayItemList.visualRect(visualRectIndex), list);
+    visualRectIndex++;
+  }
+  list->setIsSuitableForGpuRasterization(isSuitableForGpuRasterization());
 }
 
-void PaintArtifact::replay(GraphicsContext& graphicsContext) const
-{
-    TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-    for (const DisplayItem& displayItem : m_displayItemList)
-        displayItem.replay(graphicsContext);
-}
-
-void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
-{
-    TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
-    size_t visualRectIndex = 0;
-    for (const DisplayItem& displayItem : m_displayItemList) {
-        displayItem.appendToWebDisplayItemList(m_displayItemList.visualRect(visualRectIndex), list);
-        visualRectIndex++;
-    }
-    list->setIsSuitableForGpuRasterization(isSuitableForGpuRasterization());
-}
-
-} // namespace blink
+}  // namespace blink

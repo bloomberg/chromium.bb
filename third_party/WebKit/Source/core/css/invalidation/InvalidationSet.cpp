@@ -43,289 +43,282 @@ namespace blink {
 
 static const unsigned char* s_tracingEnabled = nullptr;
 
-#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, reason, invalidationSet, singleSelectorPart) \
-    if (UNLIKELY(*s_tracingEnabled)) \
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(element, reason, invalidationSet, singleSelectorPart);
+#define TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED( \
+    element, reason, invalidationSet, singleSelectorPart)             \
+  if (UNLIKELY(*s_tracingEnabled))                                    \
+    TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART(                \
+        element, reason, invalidationSet, singleSelectorPart);
 
-void InvalidationSet::cacheTracingFlag()
-{
-    s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
+void InvalidationSet::cacheTracingFlag() {
+  s_tracingEnabled = TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"));
 }
 
 InvalidationSet::InvalidationSet(InvalidationType type)
-    : m_refCount(1)
-    , m_type(type)
-    , m_allDescendantsMightBeInvalid(false)
-    , m_invalidatesSelf(false)
-    , m_customPseudoInvalid(false)
-    , m_treeBoundaryCrossing(false)
-    , m_insertionPointCrossing(false)
-    , m_invalidatesSlotted(false)
-    , m_isAlive(true)
-{
-}
+    : m_refCount(1),
+      m_type(type),
+      m_allDescendantsMightBeInvalid(false),
+      m_invalidatesSelf(false),
+      m_customPseudoInvalid(false),
+      m_treeBoundaryCrossing(false),
+      m_insertionPointCrossing(false),
+      m_invalidatesSlotted(false),
+      m_isAlive(true) {}
 
-bool InvalidationSet::invalidatesElement(Element& element) const
-{
-    if (m_allDescendantsMightBeInvalid)
+bool InvalidationSet::invalidatesElement(Element& element) const {
+  if (m_allDescendantsMightBeInvalid)
+    return true;
+
+  if (m_tagNames && m_tagNames->contains(element.tagQName().localName())) {
+    TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
+        element, InvalidationSetMatchedTagName, *this,
+        element.tagQName().localName());
+    return true;
+  }
+
+  if (element.hasID() && m_ids &&
+      m_ids->contains(element.idForStyleResolution())) {
+    TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
+        element, InvalidationSetMatchedId, *this,
+        element.idForStyleResolution());
+    return true;
+  }
+
+  if (element.hasClass() && m_classes) {
+    const SpaceSplitString& classNames = element.classNames();
+    for (const auto& className : *m_classes) {
+      if (classNames.contains(className)) {
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
+            element, InvalidationSetMatchedClass, *this, className);
         return true;
+      }
+    }
+  }
 
-    if (m_tagNames && m_tagNames->contains(element.tagQName().localName())) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedTagName, *this, element.tagQName().localName());
+  if (element.hasAttributes() && m_attributes) {
+    for (const auto& attribute : *m_attributes) {
+      if (element.hasAttribute(attribute)) {
+        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
+            element, InvalidationSetMatchedAttribute, *this, attribute);
         return true;
+      }
     }
+  }
 
-    if (element.hasID() && m_ids && m_ids->contains(element.idForStyleResolution())) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedId, *this, element.idForStyleResolution());
-        return true;
-    }
-
-    if (element.hasClass() && m_classes) {
-        const SpaceSplitString& classNames = element.classNames();
-        for (const auto& className : *m_classes) {
-            if (classNames.contains(className)) {
-                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedClass, *this, className);
-                return true;
-            }
-        }
-    }
-
-    if (element.hasAttributes() && m_attributes) {
-        for (const auto& attribute : *m_attributes) {
-            if (element.hasAttribute(attribute)) {
-                TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(element, InvalidationSetMatchedAttribute, *this, attribute);
-                return true;
-            }
-        }
-    }
-
-    return false;
+  return false;
 }
 
-void InvalidationSet::combine(const InvalidationSet& other)
-{
-    RELEASE_ASSERT(m_isAlive);
-    RELEASE_ASSERT(other.m_isAlive);
-    RELEASE_ASSERT(&other != this);
-    RELEASE_ASSERT(type() == other.type());
-    if (type() == InvalidateSiblings) {
-        SiblingInvalidationSet& siblings = toSiblingInvalidationSet(*this);
-        const SiblingInvalidationSet& otherSiblings = toSiblingInvalidationSet(other);
+void InvalidationSet::combine(const InvalidationSet& other) {
+  RELEASE_ASSERT(m_isAlive);
+  RELEASE_ASSERT(other.m_isAlive);
+  RELEASE_ASSERT(&other != this);
+  RELEASE_ASSERT(type() == other.type());
+  if (type() == InvalidateSiblings) {
+    SiblingInvalidationSet& siblings = toSiblingInvalidationSet(*this);
+    const SiblingInvalidationSet& otherSiblings =
+        toSiblingInvalidationSet(other);
 
-        siblings.updateMaxDirectAdjacentSelectors(otherSiblings.maxDirectAdjacentSelectors());
-        if (otherSiblings.siblingDescendants())
-            siblings.ensureSiblingDescendants().combine(*otherSiblings.siblingDescendants());
-        if (otherSiblings.descendants())
-            siblings.ensureDescendants().combine(*otherSiblings.descendants());
-    }
+    siblings.updateMaxDirectAdjacentSelectors(
+        otherSiblings.maxDirectAdjacentSelectors());
+    if (otherSiblings.siblingDescendants())
+      siblings.ensureSiblingDescendants().combine(
+          *otherSiblings.siblingDescendants());
+    if (otherSiblings.descendants())
+      siblings.ensureDescendants().combine(*otherSiblings.descendants());
+  }
 
-    if (other.invalidatesSelf())
-        setInvalidatesSelf();
+  if (other.invalidatesSelf())
+    setInvalidatesSelf();
 
-    // No longer bother combining data structures, since the whole subtree is deemed invalid.
-    if (wholeSubtreeInvalid())
-        return;
+  // No longer bother combining data structures, since the whole subtree is deemed invalid.
+  if (wholeSubtreeInvalid())
+    return;
 
-    if (other.wholeSubtreeInvalid()) {
-        setWholeSubtreeInvalid();
-        return;
-    }
+  if (other.wholeSubtreeInvalid()) {
+    setWholeSubtreeInvalid();
+    return;
+  }
 
-    if (other.customPseudoInvalid())
-        setCustomPseudoInvalid();
+  if (other.customPseudoInvalid())
+    setCustomPseudoInvalid();
 
-    if (other.treeBoundaryCrossing())
-        setTreeBoundaryCrossing();
+  if (other.treeBoundaryCrossing())
+    setTreeBoundaryCrossing();
 
-    if (other.insertionPointCrossing())
-        setInsertionPointCrossing();
+  if (other.insertionPointCrossing())
+    setInsertionPointCrossing();
 
-    if (other.invalidatesSlotted())
-        setInvalidatesSlotted();
+  if (other.invalidatesSlotted())
+    setInvalidatesSlotted();
 
-    if (other.m_classes) {
-        for (const auto& className : *other.m_classes)
-            addClass(className);
-    }
+  if (other.m_classes) {
+    for (const auto& className : *other.m_classes)
+      addClass(className);
+  }
 
-    if (other.m_ids) {
-        for (const auto& id : *other.m_ids)
-            addId(id);
-    }
+  if (other.m_ids) {
+    for (const auto& id : *other.m_ids)
+      addId(id);
+  }
 
-    if (other.m_tagNames) {
-        for (const auto& tagName : *other.m_tagNames)
-            addTagName(tagName);
-    }
+  if (other.m_tagNames) {
+    for (const auto& tagName : *other.m_tagNames)
+      addTagName(tagName);
+  }
 
-    if (other.m_attributes) {
-        for (const auto& attribute : *other.m_attributes)
-            addAttribute(attribute);
-    }
+  if (other.m_attributes) {
+    for (const auto& attribute : *other.m_attributes)
+      addAttribute(attribute);
+  }
 }
 
-void InvalidationSet::destroy()
-{
-    if (isDescendantInvalidationSet())
-        delete toDescendantInvalidationSet(this);
-    else
-        delete toSiblingInvalidationSet(this);
+void InvalidationSet::destroy() {
+  if (isDescendantInvalidationSet())
+    delete toDescendantInvalidationSet(this);
+  else
+    delete toSiblingInvalidationSet(this);
 }
 
-HashSet<AtomicString>& InvalidationSet::ensureClassSet()
-{
-    if (!m_classes)
-        m_classes = wrapUnique(new HashSet<AtomicString>);
-    return *m_classes;
+HashSet<AtomicString>& InvalidationSet::ensureClassSet() {
+  if (!m_classes)
+    m_classes = wrapUnique(new HashSet<AtomicString>);
+  return *m_classes;
 }
 
-HashSet<AtomicString>& InvalidationSet::ensureIdSet()
-{
-    if (!m_ids)
-        m_ids = wrapUnique(new HashSet<AtomicString>);
-    return *m_ids;
+HashSet<AtomicString>& InvalidationSet::ensureIdSet() {
+  if (!m_ids)
+    m_ids = wrapUnique(new HashSet<AtomicString>);
+  return *m_ids;
 }
 
-HashSet<AtomicString>& InvalidationSet::ensureTagNameSet()
-{
-    if (!m_tagNames)
-        m_tagNames = wrapUnique(new HashSet<AtomicString>);
-    return *m_tagNames;
+HashSet<AtomicString>& InvalidationSet::ensureTagNameSet() {
+  if (!m_tagNames)
+    m_tagNames = wrapUnique(new HashSet<AtomicString>);
+  return *m_tagNames;
 }
 
-HashSet<AtomicString>& InvalidationSet::ensureAttributeSet()
-{
-    if (!m_attributes)
-        m_attributes = wrapUnique(new HashSet<AtomicString>);
-    return *m_attributes;
+HashSet<AtomicString>& InvalidationSet::ensureAttributeSet() {
+  if (!m_attributes)
+    m_attributes = wrapUnique(new HashSet<AtomicString>);
+  return *m_attributes;
 }
 
-void InvalidationSet::addClass(const AtomicString& className)
-{
-    if (wholeSubtreeInvalid())
-        return;
-    RELEASE_ASSERT(!className.isEmpty());
-    ensureClassSet().add(className);
+void InvalidationSet::addClass(const AtomicString& className) {
+  if (wholeSubtreeInvalid())
+    return;
+  RELEASE_ASSERT(!className.isEmpty());
+  ensureClassSet().add(className);
 }
 
-void InvalidationSet::addId(const AtomicString& id)
-{
-    if (wholeSubtreeInvalid())
-        return;
-    RELEASE_ASSERT(!id.isEmpty());
-    ensureIdSet().add(id);
+void InvalidationSet::addId(const AtomicString& id) {
+  if (wholeSubtreeInvalid())
+    return;
+  RELEASE_ASSERT(!id.isEmpty());
+  ensureIdSet().add(id);
 }
 
-void InvalidationSet::addTagName(const AtomicString& tagName)
-{
-    if (wholeSubtreeInvalid())
-        return;
-    RELEASE_ASSERT(!tagName.isEmpty());
-    ensureTagNameSet().add(tagName);
+void InvalidationSet::addTagName(const AtomicString& tagName) {
+  if (wholeSubtreeInvalid())
+    return;
+  RELEASE_ASSERT(!tagName.isEmpty());
+  ensureTagNameSet().add(tagName);
 }
 
-void InvalidationSet::addAttribute(const AtomicString& attribute)
-{
-    if (wholeSubtreeInvalid())
-        return;
-    RELEASE_ASSERT(!attribute.isEmpty());
-    ensureAttributeSet().add(attribute);
+void InvalidationSet::addAttribute(const AtomicString& attribute) {
+  if (wholeSubtreeInvalid())
+    return;
+  RELEASE_ASSERT(!attribute.isEmpty());
+  ensureAttributeSet().add(attribute);
 }
 
-void InvalidationSet::setWholeSubtreeInvalid()
-{
-    if (m_allDescendantsMightBeInvalid)
-        return;
+void InvalidationSet::setWholeSubtreeInvalid() {
+  if (m_allDescendantsMightBeInvalid)
+    return;
 
-    m_allDescendantsMightBeInvalid = true;
-    m_customPseudoInvalid = false;
-    m_treeBoundaryCrossing = false;
-    m_insertionPointCrossing = false;
-    m_invalidatesSlotted = false;
-    m_classes = nullptr;
-    m_ids = nullptr;
-    m_tagNames = nullptr;
-    m_attributes = nullptr;
+  m_allDescendantsMightBeInvalid = true;
+  m_customPseudoInvalid = false;
+  m_treeBoundaryCrossing = false;
+  m_insertionPointCrossing = false;
+  m_invalidatesSlotted = false;
+  m_classes = nullptr;
+  m_ids = nullptr;
+  m_tagNames = nullptr;
+  m_attributes = nullptr;
 }
 
-void InvalidationSet::toTracedValue(TracedValue* value) const
-{
-    value->beginDictionary();
+void InvalidationSet::toTracedValue(TracedValue* value) const {
+  value->beginDictionary();
 
-    value->setString("id", descendantInvalidationSetToIdString(*this));
+  value->setString("id", descendantInvalidationSetToIdString(*this));
 
-    if (m_allDescendantsMightBeInvalid)
-        value->setBoolean("allDescendantsMightBeInvalid", true);
-    if (m_customPseudoInvalid)
-        value->setBoolean("customPseudoInvalid", true);
-    if (m_treeBoundaryCrossing)
-        value->setBoolean("treeBoundaryCrossing", true);
-    if (m_insertionPointCrossing)
-        value->setBoolean("insertionPointCrossing", true);
-    if (m_invalidatesSlotted)
-        value->setBoolean("invalidatesSlotted", true);
+  if (m_allDescendantsMightBeInvalid)
+    value->setBoolean("allDescendantsMightBeInvalid", true);
+  if (m_customPseudoInvalid)
+    value->setBoolean("customPseudoInvalid", true);
+  if (m_treeBoundaryCrossing)
+    value->setBoolean("treeBoundaryCrossing", true);
+  if (m_insertionPointCrossing)
+    value->setBoolean("insertionPointCrossing", true);
+  if (m_invalidatesSlotted)
+    value->setBoolean("invalidatesSlotted", true);
 
-    if (m_ids) {
-        value->beginArray("ids");
-        for (const auto& id : *m_ids)
-            value->pushString(id);
-        value->endArray();
-    }
+  if (m_ids) {
+    value->beginArray("ids");
+    for (const auto& id : *m_ids)
+      value->pushString(id);
+    value->endArray();
+  }
 
-    if (m_classes) {
-        value->beginArray("classes");
-        for (const auto& className : *m_classes)
-            value->pushString(className);
-        value->endArray();
-    }
+  if (m_classes) {
+    value->beginArray("classes");
+    for (const auto& className : *m_classes)
+      value->pushString(className);
+    value->endArray();
+  }
 
-    if (m_tagNames) {
-        value->beginArray("tagNames");
-        for (const auto& tagName : *m_tagNames)
-            value->pushString(tagName);
-        value->endArray();
-    }
+  if (m_tagNames) {
+    value->beginArray("tagNames");
+    for (const auto& tagName : *m_tagNames)
+      value->pushString(tagName);
+    value->endArray();
+  }
 
-    if (m_attributes) {
-        value->beginArray("attributes");
-        for (const auto& attribute : *m_attributes)
-            value->pushString(attribute);
-        value->endArray();
-    }
+  if (m_attributes) {
+    value->beginArray("attributes");
+    for (const auto& attribute : *m_attributes)
+      value->pushString(attribute);
+    value->endArray();
+  }
 
-    value->endDictionary();
+  value->endDictionary();
 }
 
 #ifndef NDEBUG
-void InvalidationSet::show() const
-{
-    std::unique_ptr<TracedValue> value = TracedValue::create();
-    value->beginArray("InvalidationSet");
-    toTracedValue(value.get());
-    value->endArray();
-    fprintf(stderr, "%s\n", value->toString().ascii().data());
+void InvalidationSet::show() const {
+  std::unique_ptr<TracedValue> value = TracedValue::create();
+  value->beginArray("InvalidationSet");
+  toTracedValue(value.get());
+  value->endArray();
+  fprintf(stderr, "%s\n", value->toString().ascii().data());
 }
-#endif // NDEBUG
+#endif  // NDEBUG
 
-SiblingInvalidationSet::SiblingInvalidationSet(PassRefPtr<DescendantInvalidationSet> descendants)
-    : InvalidationSet(InvalidateSiblings)
-    , m_maxDirectAdjacentSelectors(1)
-    , m_descendantInvalidationSet(descendants)
-{
-}
+SiblingInvalidationSet::SiblingInvalidationSet(
+    PassRefPtr<DescendantInvalidationSet> descendants)
+    : InvalidationSet(InvalidateSiblings),
+      m_maxDirectAdjacentSelectors(1),
+      m_descendantInvalidationSet(descendants) {}
 
-DescendantInvalidationSet& SiblingInvalidationSet::ensureSiblingDescendants()
-{
-    if (!m_siblingDescendantInvalidationSet)
-        m_siblingDescendantInvalidationSet = DescendantInvalidationSet::create();
-    return *m_siblingDescendantInvalidationSet;
+DescendantInvalidationSet& SiblingInvalidationSet::ensureSiblingDescendants() {
+  if (!m_siblingDescendantInvalidationSet)
+    m_siblingDescendantInvalidationSet = DescendantInvalidationSet::create();
+  return *m_siblingDescendantInvalidationSet;
 }
 
-DescendantInvalidationSet& SiblingInvalidationSet::ensureDescendants()
-{
-    if (!m_descendantInvalidationSet)
-        m_descendantInvalidationSet = DescendantInvalidationSet::create();
-    return *m_descendantInvalidationSet;
+DescendantInvalidationSet& SiblingInvalidationSet::ensureDescendants() {
+  if (!m_descendantInvalidationSet)
+    m_descendantInvalidationSet = DescendantInvalidationSet::create();
+  return *m_descendantInvalidationSet;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -15,11 +15,13 @@
 namespace blink {
 
 #if OS(WIN)
-static_assert(sizeof(blink::PlatformThreadId) >= sizeof(DWORD), "size of platform thread id is too small");
+static_assert(sizeof(blink::PlatformThreadId) >= sizeof(DWORD),
+              "size of platform thread id is too small");
 #elif OS(POSIX)
-static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t), "size of platform thread id is too small");
+static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t),
+              "size of platform thread id is too small");
 #else
 #error Unexpected platform
 #endif
 
-} // namespace blink
+}  // namespace blink

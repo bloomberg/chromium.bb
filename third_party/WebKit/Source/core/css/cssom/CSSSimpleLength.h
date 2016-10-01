@@ -13,47 +13,52 @@ class CSSPrimitiveValue;
 class ExceptionState;
 
 class CORE_EXPORT CSSSimpleLength final : public CSSLengthValue {
-    WTF_MAKE_NONCOPYABLE(CSSSimpleLength);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSSimpleLength* create(double, const String& type, ExceptionState&);
-    static CSSSimpleLength* create(double value, CSSPrimitiveValue::UnitType type)
-    {
-        return new CSSSimpleLength(value, type);
-    }
-    static CSSSimpleLength* fromCSSValue(const CSSPrimitiveValue&);
+  WTF_MAKE_NONCOPYABLE(CSSSimpleLength);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool containsPercent() const override;
+ public:
+  static CSSSimpleLength* create(double, const String& type, ExceptionState&);
+  static CSSSimpleLength* create(double value,
+                                 CSSPrimitiveValue::UnitType type) {
+    return new CSSSimpleLength(value, type);
+  }
+  static CSSSimpleLength* fromCSSValue(const CSSPrimitiveValue&);
 
-    double value() const { return m_value; }
-    String unit() const;
-    CSSPrimitiveValue::UnitType lengthUnit() const { return m_unit; }
+  bool containsPercent() const override;
 
-    StyleValueType type() const override { return StyleValueType::SimpleLengthType; }
+  double value() const { return m_value; }
+  String unit() const;
+  CSSPrimitiveValue::UnitType lengthUnit() const { return m_unit; }
 
-    CSSValue* toCSSValue() const override;
+  StyleValueType type() const override {
+    return StyleValueType::SimpleLengthType;
+  }
 
-protected:
-    virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
-    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
-    virtual CSSLengthValue* multiplyInternal(double);
-    virtual CSSLengthValue* divideInternal(double);
+  CSSValue* toCSSValue() const override;
 
-private:
-    CSSSimpleLength(double value, CSSPrimitiveValue::UnitType unit) : CSSLengthValue(), m_unit(unit), m_value(value) {}
+ protected:
+  virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
+  virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
+  virtual CSSLengthValue* multiplyInternal(double);
+  virtual CSSLengthValue* divideInternal(double);
 
-    CSSPrimitiveValue::UnitType m_unit;
-    double m_value;
+ private:
+  CSSSimpleLength(double value, CSSPrimitiveValue::UnitType unit)
+      : CSSLengthValue(), m_unit(unit), m_value(value) {}
+
+  CSSPrimitiveValue::UnitType m_unit;
+  double m_value;
 };
 
-#define DEFINE_SIMPLE_LENGTH_TYPE_CASTS(argumentType) \
-    DEFINE_TYPE_CASTS(CSSSimpleLength, argumentType, value, \
-        value->type() == CSSLengthValue::StyleValueType::SimpleLengthType, \
-        value.type() == CSSLengthValue::StyleValueType::SimpleLengthType)
+#define DEFINE_SIMPLE_LENGTH_TYPE_CASTS(argumentType)                    \
+  DEFINE_TYPE_CASTS(                                                     \
+      CSSSimpleLength, argumentType, value,                              \
+      value->type() == CSSLengthValue::StyleValueType::SimpleLengthType, \
+      value.type() == CSSLengthValue::StyleValueType::SimpleLengthType)
 
 DEFINE_SIMPLE_LENGTH_TYPE_CASTS(CSSLengthValue);
 DEFINE_SIMPLE_LENGTH_TYPE_CASTS(CSSStyleValue);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

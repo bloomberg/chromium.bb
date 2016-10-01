@@ -6,14 +6,10 @@
 
 namespace blink {
 
-GarbageCollectedScriptWrappable::GarbageCollectedScriptWrappable(const String& string)
-    : m_string(string)
-{
-}
+GarbageCollectedScriptWrappable::GarbageCollectedScriptWrappable(
+    const String& string)
+    : m_string(string) {}
 
-GarbageCollectedScriptWrappable::~GarbageCollectedScriptWrappable()
-{
-}
+GarbageCollectedScriptWrappable::~GarbageCollectedScriptWrappable() {}
 
-} // namespace blink
-
+}  // namespace blink

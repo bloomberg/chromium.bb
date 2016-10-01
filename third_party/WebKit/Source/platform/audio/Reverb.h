@@ -42,31 +42,43 @@ class AudioBus;
 // Multi-channel convolution reverb with channel matrixing - one or more ReverbConvolver objects are used internally.
 
 class PLATFORM_EXPORT Reverb {
-    USING_FAST_MALLOC(Reverb);
-    WTF_MAKE_NONCOPYABLE(Reverb);
-public:
-    enum { MaxFrameSize = 256 };
+  USING_FAST_MALLOC(Reverb);
+  WTF_MAKE_NONCOPYABLE(Reverb);
 
-    // renderSliceSize is a rendering hint, so the FFTs can be optimized to not all occur at the same time (very bad when rendering on a real-time thread).
-    Reverb(AudioBus* impulseResponseBuffer, size_t renderSliceSize, size_t maxFFTSize, size_t numberOfChannels, bool useBackgroundThreads, bool normalize);
+ public:
+  enum { MaxFrameSize = 256 };
 
-    void process(const AudioBus* sourceBus, AudioBus* destinationBus, size_t framesToProcess);
-    void reset();
+  // renderSliceSize is a rendering hint, so the FFTs can be optimized to not all occur at the same time (very bad when rendering on a real-time thread).
+  Reverb(AudioBus* impulseResponseBuffer,
+         size_t renderSliceSize,
+         size_t maxFFTSize,
+         size_t numberOfChannels,
+         bool useBackgroundThreads,
+         bool normalize);
 
-    size_t impulseResponseLength() const { return m_impulseResponseLength; }
-    size_t latencyFrames() const;
+  void process(const AudioBus* sourceBus,
+               AudioBus* destinationBus,
+               size_t framesToProcess);
+  void reset();
 
-private:
-    void initialize(AudioBus* impulseResponseBuffer, size_t renderSliceSize, size_t maxFFTSize, size_t numberOfChannels, bool useBackgroundThreads);
+  size_t impulseResponseLength() const { return m_impulseResponseLength; }
+  size_t latencyFrames() const;
 
-    size_t m_impulseResponseLength;
+ private:
+  void initialize(AudioBus* impulseResponseBuffer,
+                  size_t renderSliceSize,
+                  size_t maxFFTSize,
+                  size_t numberOfChannels,
+                  bool useBackgroundThreads);
 
-    Vector<std::unique_ptr<ReverbConvolver>> m_convolvers;
+  size_t m_impulseResponseLength;
 
-    // For "True" stereo processing
-    RefPtr<AudioBus> m_tempBuffer;
+  Vector<std::unique_ptr<ReverbConvolver>> m_convolvers;
+
+  // For "True" stereo processing
+  RefPtr<AudioBus> m_tempBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Reverb_h
+#endif  // Reverb_h

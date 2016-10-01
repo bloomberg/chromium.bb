@@ -16,11 +16,11 @@ class AnimationCurve;
 namespace blink {
 
 class PLATFORM_EXPORT CompositorAnimationCurve {
-public:
-    virtual ~CompositorAnimationCurve() {}
-    virtual std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const = 0;
+ public:
+  virtual ~CompositorAnimationCurve() {}
+  virtual std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorAnimationCurve_h
+#endif  // CompositorAnimationCurve_h

@@ -43,55 +43,53 @@ class WebPepperSocketClient;
 class WebURL;
 
 class WebPepperSocket {
-public:
-    enum CloseEventCode {
-        CloseEventCodeNotSpecified = -1,
-        CloseEventCodeNormalClosure = 1000,
-        CloseEventCodeGoingAway = 1001,
-        CloseEventCodeProtocolError = 1002,
-        CloseEventCodeUnsupportedData = 1003,
-        CloseEventCodeFrameTooLarge = 1004,
-        CloseEventCodeNoStatusRcvd = 1005,
-        CloseEventCodeAbnormalClosure = 1006,
-        CloseEventCodeInvalidFramePayloadData = 1007,
-        CloseEventCodePolicyViolation = 1008,
-        CloseEventCodeMessageTooBig = 1009,
-        CloseEventCodeMandatoryExt = 1010,
-        CloseEventCodeInternalError = 1011,
-        CloseEventCodeTLSHandshake = 1015,
-        CloseEventCodeMinimumUserDefined = 3000,
-        CloseEventCodeMaximumUserDefined = 4999
-    };
+ public:
+  enum CloseEventCode {
+    CloseEventCodeNotSpecified = -1,
+    CloseEventCodeNormalClosure = 1000,
+    CloseEventCodeGoingAway = 1001,
+    CloseEventCodeProtocolError = 1002,
+    CloseEventCodeUnsupportedData = 1003,
+    CloseEventCodeFrameTooLarge = 1004,
+    CloseEventCodeNoStatusRcvd = 1005,
+    CloseEventCodeAbnormalClosure = 1006,
+    CloseEventCodeInvalidFramePayloadData = 1007,
+    CloseEventCodePolicyViolation = 1008,
+    CloseEventCodeMessageTooBig = 1009,
+    CloseEventCodeMandatoryExt = 1010,
+    CloseEventCodeInternalError = 1011,
+    CloseEventCodeTLSHandshake = 1015,
+    CloseEventCodeMinimumUserDefined = 3000,
+    CloseEventCodeMaximumUserDefined = 4999
+  };
 
-    enum BinaryType {
-        BinaryTypeBlob = 0,
-        BinaryTypeArrayBuffer = 1
-    };
+  enum BinaryType { BinaryTypeBlob = 0, BinaryTypeArrayBuffer = 1 };
 
-    BLINK_EXPORT static WebPepperSocket* create(const WebDocument&, WebPepperSocketClient*);
-    virtual ~WebPepperSocket() { }
+  BLINK_EXPORT static WebPepperSocket* create(const WebDocument&,
+                                              WebPepperSocketClient*);
+  virtual ~WebPepperSocket() {}
 
-    // These functions come from binaryType attribute of the WebSocket API
-    // specification. It specifies binary object type for receiving binary
-    // frames representation. Receiving text frames are always mapped to
-    // WebString type regardless of this attribute.
-    // Default type is BinaryTypeBlob. But currently it is not supported.
-    // Set BinaryTypeArrayBuffer here ahead of using binary communication.
-    // See also, The WebSocket API - http://www.w3.org/TR/websockets/ .
-    virtual BinaryType binaryType() const = 0;
-    virtual bool setBinaryType(BinaryType) = 0;
+  // These functions come from binaryType attribute of the WebSocket API
+  // specification. It specifies binary object type for receiving binary
+  // frames representation. Receiving text frames are always mapped to
+  // WebString type regardless of this attribute.
+  // Default type is BinaryTypeBlob. But currently it is not supported.
+  // Set BinaryTypeArrayBuffer here ahead of using binary communication.
+  // See also, The WebSocket API - http://www.w3.org/TR/websockets/ .
+  virtual BinaryType binaryType() const = 0;
+  virtual bool setBinaryType(BinaryType) = 0;
 
-    virtual void connect(const WebURL&, const WebString& protocol) = 0;
-    virtual WebString subprotocol() { return WebString(); }
-    virtual WebString extensions() { return WebString(); }
-    virtual bool sendText(const WebString&) = 0;
-    virtual bool sendArrayBuffer(const WebArrayBuffer&) = 0;
-    virtual unsigned long bufferedAmount() const { return 0; }
-    virtual void close(int code, const WebString& reason) = 0;
-    virtual void fail(const WebString& reason) = 0;
-    virtual void disconnect() = 0;
+  virtual void connect(const WebURL&, const WebString& protocol) = 0;
+  virtual WebString subprotocol() { return WebString(); }
+  virtual WebString extensions() { return WebString(); }
+  virtual bool sendText(const WebString&) = 0;
+  virtual bool sendArrayBuffer(const WebArrayBuffer&) = 0;
+  virtual unsigned long bufferedAmount() const { return 0; }
+  virtual void close(int code, const WebString& reason) = 0;
+  virtual void fail(const WebString& reason) = 0;
+  virtual void disconnect() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPepperSocket_h
+#endif  // WebPepperSocket_h

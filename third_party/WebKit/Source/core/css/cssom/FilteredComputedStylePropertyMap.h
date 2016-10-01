@@ -11,27 +11,36 @@
 
 namespace blink {
 
-class CORE_EXPORT FilteredComputedStylePropertyMap : public ComputedStylePropertyMap {
-    WTF_MAKE_NONCOPYABLE(FilteredComputedStylePropertyMap);
-public:
-    static FilteredComputedStylePropertyMap* create(CSSComputedStyleDeclaration* computedStyleDeclaration, const Vector<CSSPropertyID>& nativeProperties, const Vector<AtomicString>& customProperties)
-    {
-        return new FilteredComputedStylePropertyMap(computedStyleDeclaration, nativeProperties, customProperties);
-    }
+class CORE_EXPORT FilteredComputedStylePropertyMap
+    : public ComputedStylePropertyMap {
+  WTF_MAKE_NONCOPYABLE(FilteredComputedStylePropertyMap);
 
-    CSSStyleValue* get(const String& propertyName, ExceptionState&) override;
-    CSSStyleValueVector getAll(const String& propertyName, ExceptionState&) override;
-    bool has(const String& propertyName, ExceptionState&) override;
+ public:
+  static FilteredComputedStylePropertyMap* create(
+      CSSComputedStyleDeclaration* computedStyleDeclaration,
+      const Vector<CSSPropertyID>& nativeProperties,
+      const Vector<AtomicString>& customProperties) {
+    return new FilteredComputedStylePropertyMap(
+        computedStyleDeclaration, nativeProperties, customProperties);
+  }
 
-    Vector<String> getProperties() override;
+  CSSStyleValue* get(const String& propertyName, ExceptionState&) override;
+  CSSStyleValueVector getAll(const String& propertyName,
+                             ExceptionState&) override;
+  bool has(const String& propertyName, ExceptionState&) override;
 
-private:
-    FilteredComputedStylePropertyMap(CSSComputedStyleDeclaration*, const Vector<CSSPropertyID>& nativeProperties, const Vector<AtomicString>& customProperties);
+  Vector<String> getProperties() override;
 
-    HashSet<CSSPropertyID> m_nativeProperties;
-    HashSet<AtomicString> m_customProperties;
+ private:
+  FilteredComputedStylePropertyMap(
+      CSSComputedStyleDeclaration*,
+      const Vector<CSSPropertyID>& nativeProperties,
+      const Vector<AtomicString>& customProperties);
+
+  HashSet<CSSPropertyID> m_nativeProperties;
+  HashSet<AtomicString> m_customProperties;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FilteredComputedStylePropertyMap_h
+#endif  // FilteredComputedStylePropertyMap_h

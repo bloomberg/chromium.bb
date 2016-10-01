@@ -29,40 +29,36 @@
 
 namespace blink {
 
-String CSSCubicBezierTimingFunctionValue::customCSSText() const
-{
-    return "cubic-bezier("
-        + String::number(m_x1) + ", "
-        + String::number(m_y1) + ", "
-        + String::number(m_x2) + ", "
-        + String::number(m_y2) + ")";
+String CSSCubicBezierTimingFunctionValue::customCSSText() const {
+  return "cubic-bezier(" + String::number(m_x1) + ", " + String::number(m_y1) +
+         ", " + String::number(m_x2) + ", " + String::number(m_y2) + ")";
 }
 
-bool CSSCubicBezierTimingFunctionValue::equals(const CSSCubicBezierTimingFunctionValue& other) const
-{
-    return m_x1 == other.m_x1 && m_x2 == other.m_x2 && m_y1 == other.m_y1 && m_y2 == other.m_y2;
+bool CSSCubicBezierTimingFunctionValue::equals(
+    const CSSCubicBezierTimingFunctionValue& other) const {
+  return m_x1 == other.m_x1 && m_x2 == other.m_x2 && m_y1 == other.m_y1 &&
+         m_y2 == other.m_y2;
 }
 
-String CSSStepsTimingFunctionValue::customCSSText() const
-{
-    String stepPositionString;
-    switch (m_stepPosition) {
+String CSSStepsTimingFunctionValue::customCSSText() const {
+  String stepPositionString;
+  switch (m_stepPosition) {
     case StepsTimingFunction::StepPosition::START:
-        stepPositionString = "start";
-        break;
+      stepPositionString = "start";
+      break;
     case StepsTimingFunction::StepPosition::MIDDLE:
-        stepPositionString = "middle";
-        break;
+      stepPositionString = "middle";
+      break;
     case StepsTimingFunction::StepPosition::END:
-        stepPositionString = "end";
-        break;
-    }
-    return "steps(" + String::number(m_steps) + ", " + stepPositionString + ')';
+      stepPositionString = "end";
+      break;
+  }
+  return "steps(" + String::number(m_steps) + ", " + stepPositionString + ')';
 }
 
-bool CSSStepsTimingFunctionValue::equals(const CSSStepsTimingFunctionValue& other) const
-{
-    return m_steps == other.m_steps && m_stepPosition == other.m_stepPosition;
+bool CSSStepsTimingFunctionValue::equals(
+    const CSSStepsTimingFunctionValue& other) const {
+  return m_steps == other.m_steps && m_stepPosition == other.m_stepPosition;
 }
 
-} // namespace blink
+}  // namespace blink

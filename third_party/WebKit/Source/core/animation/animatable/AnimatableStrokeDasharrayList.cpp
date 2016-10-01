@@ -34,59 +34,66 @@
 
 namespace blink {
 
-AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray> passLengths, float zoom)
-{
-    RefPtr<SVGDashArray> lengths = passLengths;
-    for (const Length& dashLength : lengths->vector())
-        m_values.append(AnimatableLength::create(dashLength, zoom));
+AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(
+    PassRefPtr<SVGDashArray> passLengths,
+    float zoom) {
+  RefPtr<SVGDashArray> lengths = passLengths;
+  for (const Length& dashLength : lengths->vector())
+    m_values.append(AnimatableLength::create(dashLength, zoom));
 }
 
-PassRefPtr<SVGDashArray> AnimatableStrokeDasharrayList::toSVGDashArray(float zoom) const
-{
-    RefPtr<SVGDashArray> lengths = SVGDashArray::create();
-    for (const auto& dashLength : m_values)
-        lengths->append(toAnimatableLength(dashLength.get())->getLength(zoom, ValueRangeNonNegative));
-    return lengths.release();
+PassRefPtr<SVGDashArray> AnimatableStrokeDasharrayList::toSVGDashArray(
+    float zoom) const {
+  RefPtr<SVGDashArray> lengths = SVGDashArray::create();
+  for (const auto& dashLength : m_values)
+    lengths->append(toAnimatableLength(dashLength.get())
+                        ->getLength(zoom, ValueRangeNonNegative));
+  return lengths.release();
 }
 
-bool AnimatableStrokeDasharrayList::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    Vector<RefPtr<AnimatableValue>> from = m_values;
-    Vector<RefPtr<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
-    return !from.isEmpty() && !to.isEmpty() && AnimatableRepeatable::usesDefaultInterpolationWith(value);
+bool AnimatableStrokeDasharrayList::usesDefaultInterpolationWith(
+    const AnimatableValue* value) const {
+  Vector<RefPtr<AnimatableValue>> from = m_values;
+  Vector<RefPtr<AnimatableValue>> to =
+      toAnimatableStrokeDasharrayList(value)->m_values;
+  return !from.isEmpty() && !to.isEmpty() &&
+         AnimatableRepeatable::usesDefaultInterpolationWith(value);
 }
 
-PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const AnimatableValue* value, double fraction) const
-{
-    if (usesDefaultInterpolationWith(value))
-        return defaultInterpolateTo(this, value, fraction);
+PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(
+    const AnimatableValue* value,
+    double fraction) const {
+  if (usesDefaultInterpolationWith(value))
+    return defaultInterpolateTo(this, value, fraction);
 
-    Vector<RefPtr<AnimatableValue>> from = m_values;
-    Vector<RefPtr<AnimatableValue>> to = toAnimatableStrokeDasharrayList(value)->m_values;
+  Vector<RefPtr<AnimatableValue>> from = m_values;
+  Vector<RefPtr<AnimatableValue>> to =
+      toAnimatableStrokeDasharrayList(value)->m_values;
 
-    // The spec states that if the sum of all values is zero, this should be
-    // treated like a value of 'none', which means that a solid line is drawn.
-    // Since we animate to and from values of zero, treat a value of 'none' the
-    // same. If both the two and from values are 'none', we return 'none'
-    // rather than '0 0'.
-    if (from.isEmpty() && to.isEmpty())
-        return takeConstRef(this);
-    if (from.isEmpty() || to.isEmpty()) {
-        DEFINE_STATIC_REF(AnimatableLength, zeroPixels, (AnimatableLength::create(Length(Fixed), 1)));
-        if (from.isEmpty()) {
-            from.append(zeroPixels);
-            from.append(zeroPixels);
-        }
-        if (to.isEmpty()) {
-            to.append(zeroPixels);
-            to.append(zeroPixels);
-        }
+  // The spec states that if the sum of all values is zero, this should be
+  // treated like a value of 'none', which means that a solid line is drawn.
+  // Since we animate to and from values of zero, treat a value of 'none' the
+  // same. If both the two and from values are 'none', we return 'none'
+  // rather than '0 0'.
+  if (from.isEmpty() && to.isEmpty())
+    return takeConstRef(this);
+  if (from.isEmpty() || to.isEmpty()) {
+    DEFINE_STATIC_REF(AnimatableLength, zeroPixels,
+                      (AnimatableLength::create(Length(Fixed), 1)));
+    if (from.isEmpty()) {
+      from.append(zeroPixels);
+      from.append(zeroPixels);
     }
+    if (to.isEmpty()) {
+      to.append(zeroPixels);
+      to.append(zeroPixels);
+    }
+  }
 
-    Vector<RefPtr<AnimatableValue>> interpolatedValues;
-    bool success = interpolateLists(from, to, fraction, interpolatedValues);
-    ALLOW_UNUSED_LOCAL(success);
-    return adoptRef(new AnimatableStrokeDasharrayList(interpolatedValues));
+  Vector<RefPtr<AnimatableValue>> interpolatedValues;
+  bool success = interpolateLists(from, to, fraction, interpolatedValues);
+  ALLOW_UNUSED_LOCAL(success);
+  return adoptRef(new AnimatableStrokeDasharrayList(interpolatedValues));
 }
 
-} // namespace blink
+}  // namespace blink

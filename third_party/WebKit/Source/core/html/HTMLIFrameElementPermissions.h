@@ -15,30 +15,34 @@ namespace blink {
 
 class HTMLIFrameElement;
 
-class CORE_EXPORT HTMLIFrameElementPermissions final : public DOMTokenList, public DOMTokenListObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementPermissions);
-public:
-    static HTMLIFrameElementPermissions* create(HTMLIFrameElement* element)
-    {
-        return new HTMLIFrameElementPermissions(element);
-    }
+class CORE_EXPORT HTMLIFrameElementPermissions final
+    : public DOMTokenList,
+      public DOMTokenListObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementPermissions);
 
-    ~HTMLIFrameElementPermissions() override;
+ public:
+  static HTMLIFrameElementPermissions* create(HTMLIFrameElement* element) {
+    return new HTMLIFrameElementPermissions(element);
+  }
 
-    Vector<WebPermissionType> parseDelegatedPermissions(String& invalidTokensErrorMessage) const;
+  ~HTMLIFrameElementPermissions() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  Vector<WebPermissionType> parseDelegatedPermissions(
+      String& invalidTokensErrorMessage) const;
 
-private:
-    explicit HTMLIFrameElementPermissions(HTMLIFrameElement*);
-    bool validateTokenValue(const AtomicString& tokenValue, ExceptionState&) const override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // DOMTokenListObserver.
-    void valueWasSet() override;
+ private:
+  explicit HTMLIFrameElementPermissions(HTMLIFrameElement*);
+  bool validateTokenValue(const AtomicString& tokenValue,
+                          ExceptionState&) const override;
 
-    Member<HTMLIFrameElement> m_element;
+  // DOMTokenListObserver.
+  void valueWasSet() override;
+
+  Member<HTMLIFrameElement> m_element;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

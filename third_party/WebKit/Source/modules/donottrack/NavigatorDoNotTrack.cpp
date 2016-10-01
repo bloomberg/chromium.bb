@@ -37,41 +37,35 @@
 namespace blink {
 
 NavigatorDoNotTrack::NavigatorDoNotTrack(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
+    : DOMWindowProperty(frame) {}
+
+DEFINE_TRACE(NavigatorDoNotTrack) {
+  Supplement<Navigator>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(NavigatorDoNotTrack)
-{
-    Supplement<Navigator>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+const char* NavigatorDoNotTrack::supplementName() {
+  return "NavigatorDoNotTrack";
 }
 
-const char* NavigatorDoNotTrack::supplementName()
-{
-    return "NavigatorDoNotTrack";
+NavigatorDoNotTrack& NavigatorDoNotTrack::from(Navigator& navigator) {
+  NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new NavigatorDoNotTrack(navigator.frame());
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-NavigatorDoNotTrack& NavigatorDoNotTrack::from(Navigator& navigator)
-{
-    NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new NavigatorDoNotTrack(navigator.frame());
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+String NavigatorDoNotTrack::doNotTrack(Navigator& navigator) {
+  return NavigatorDoNotTrack::from(navigator).doNotTrack();
 }
 
-String NavigatorDoNotTrack::doNotTrack(Navigator& navigator)
-{
-    return NavigatorDoNotTrack::from(navigator).doNotTrack();
+String NavigatorDoNotTrack::doNotTrack() {
+  if (!frame() || !frame()->loader().client())
+    return String();
+  return frame()->loader().client()->doNotTrackValue();
 }
 
-String NavigatorDoNotTrack::doNotTrack()
-{
-    if (!frame() || !frame()->loader().client())
-        return String();
-    return frame()->loader().client()->doNotTrackValue();
-}
-
-} // namespace blink
+}  // namespace blink

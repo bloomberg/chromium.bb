@@ -13,28 +13,28 @@ namespace blink {
 class PlatformEventController;
 
 class CORE_EXPORT PlatformEventDispatcher : public GarbageCollectedMixin {
-public:
-    void addController(PlatformEventController*);
-    void removeController(PlatformEventController*);
+ public:
+  void addController(PlatformEventController*);
+  void removeController(PlatformEventController*);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    PlatformEventDispatcher();
+ protected:
+  PlatformEventDispatcher();
 
-    void notifyControllers();
+  void notifyControllers();
 
-    virtual void startListening() = 0;
-    virtual void stopListening() = 0;
+  virtual void startListening() = 0;
+  virtual void stopListening() = 0;
 
-private:
-    void purgeControllers();
+ private:
+  void purgeControllers();
 
-    HeapHashSet<WeakMember<PlatformEventController>> m_controllers;
-    bool m_isDispatching;
-    bool m_isListening;
+  HeapHashSet<WeakMember<PlatformEventController>> m_controllers;
+  bool m_isDispatching;
+  bool m_isListening;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformEventDispatcher_h
+#endif  // PlatformEventDispatcher_h

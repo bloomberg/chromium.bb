@@ -41,24 +41,27 @@ namespace blink {
 
 class StorageManager;
 
-class WorkerNavigatorStorageQuota final : public GarbageCollected<WorkerNavigatorStorageQuota>, public Supplement<WorkerNavigator> {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
-public:
-    static WorkerNavigatorStorageQuota& from(WorkerNavigator&);
+class WorkerNavigatorStorageQuota final
+    : public GarbageCollected<WorkerNavigatorStorageQuota>,
+      public Supplement<WorkerNavigator> {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 
-    static StorageManager* storage(WorkerNavigator&);
+ public:
+  static WorkerNavigatorStorageQuota& from(WorkerNavigator&);
 
-    StorageManager* storage() const;
+  static StorageManager* storage(WorkerNavigator&);
 
-    DECLARE_VIRTUAL_TRACE();
+  StorageManager* storage() const;
 
-private:
-    explicit WorkerNavigatorStorageQuota();
-    static const char* supplementName();
+  DECLARE_VIRTUAL_TRACE();
 
-    mutable Member<StorageManager> m_storageManager;
+ private:
+  explicit WorkerNavigatorStorageQuota();
+  static const char* supplementName();
+
+  mutable Member<StorageManager> m_storageManager;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerNavigatorStorageQuota_h
+#endif  // WorkerNavigatorStorageQuota_h

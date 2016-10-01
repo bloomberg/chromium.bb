@@ -12,15 +12,18 @@
 namespace blink {
 
 class EncryptedMediaUtils {
-    STATIC_ONLY(EncryptedMediaUtils);
-public:
-    static WebEncryptedMediaInitDataType convertToInitDataType(const String& initDataType);
-    static String convertFromInitDataType(WebEncryptedMediaInitDataType);
+  STATIC_ONLY(EncryptedMediaUtils);
 
-    static WebEncryptedMediaSessionType convertToSessionType(const String& sessionType);
-    static String convertFromSessionType(WebEncryptedMediaSessionType);
+ public:
+  static WebEncryptedMediaInitDataType convertToInitDataType(
+      const String& initDataType);
+  static String convertFromInitDataType(WebEncryptedMediaInitDataType);
+
+  static WebEncryptedMediaSessionType convertToSessionType(
+      const String& sessionType);
+  static String convertFromSessionType(WebEncryptedMediaSessionType);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EncryptedMediaUtils_h
+#endif  // EncryptedMediaUtils_h

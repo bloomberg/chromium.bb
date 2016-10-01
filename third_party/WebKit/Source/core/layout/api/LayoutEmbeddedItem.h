@@ -11,44 +11,37 @@
 namespace blink {
 
 class LayoutEmbeddedItem : public LayoutPartItem {
-public:
-    explicit LayoutEmbeddedItem(LayoutEmbeddedObject* layoutEmbeddedObject)
-        : LayoutPartItem(layoutEmbeddedObject)
-    {
-    }
+ public:
+  explicit LayoutEmbeddedItem(LayoutEmbeddedObject* layoutEmbeddedObject)
+      : LayoutPartItem(layoutEmbeddedObject) {}
 
-    explicit LayoutEmbeddedItem(const LayoutItem& item)
-        : LayoutPartItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isEmbeddedObject());
-    }
+  explicit LayoutEmbeddedItem(const LayoutItem& item) : LayoutPartItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isEmbeddedObject());
+  }
 
-    explicit LayoutEmbeddedItem(std::nullptr_t) : LayoutPartItem(nullptr) { }
+  explicit LayoutEmbeddedItem(std::nullptr_t) : LayoutPartItem(nullptr) {}
 
-    LayoutEmbeddedItem() { }
+  LayoutEmbeddedItem() {}
 
-    void setPluginAvailability(LayoutEmbeddedObject::PluginAvailability availability)
-    {
-        toEmbeddedObject()->setPluginAvailability(availability);
-    }
+  void setPluginAvailability(
+      LayoutEmbeddedObject::PluginAvailability availability) {
+    toEmbeddedObject()->setPluginAvailability(availability);
+  }
 
-    bool showsUnavailablePluginIndicator() const
-    {
-        return toEmbeddedObject()->showsUnavailablePluginIndicator();
-    }
+  bool showsUnavailablePluginIndicator() const {
+    return toEmbeddedObject()->showsUnavailablePluginIndicator();
+  }
 
-private:
-    LayoutEmbeddedObject* toEmbeddedObject()
-    {
-        return toLayoutEmbeddedObject(layoutObject());
-    }
+ private:
+  LayoutEmbeddedObject* toEmbeddedObject() {
+    return toLayoutEmbeddedObject(layoutObject());
+  }
 
-    const LayoutEmbeddedObject* toEmbeddedObject() const
-    {
-        return toLayoutEmbeddedObject(layoutObject());
-    }
+  const LayoutEmbeddedObject* toEmbeddedObject() const {
+    return toLayoutEmbeddedObject(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutEmbeddedItem_h
+#endif  // LayoutEmbeddedItem_h

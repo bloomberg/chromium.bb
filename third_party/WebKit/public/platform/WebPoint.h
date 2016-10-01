@@ -42,70 +42,44 @@
 namespace blink {
 
 struct WebPoint {
-    int x;
-    int y;
+  int x;
+  int y;
 
-    WebPoint()
-        : x(0)
-        , y(0)
-    {
-    }
+  WebPoint() : x(0), y(0) {}
 
-    WebPoint(int x, int y)
-        : x(x)
-        , y(y)
-    {
-    }
+  WebPoint(int x, int y) : x(x), y(y) {}
 
 #if INSIDE_BLINK
-    WebPoint(const IntPoint& p)
-        : x(p.x())
-        , y(p.y())
-    {
-    }
+  WebPoint(const IntPoint& p) : x(p.x()), y(p.y()) {}
 
-    WebPoint& operator=(const IntPoint& p)
-    {
-        x = p.x();
-        y = p.y();
-        return *this;
-    }
+  WebPoint& operator=(const IntPoint& p) {
+    x = p.x();
+    y = p.y();
+    return *this;
+  }
 
-    operator IntPoint() const
-    {
-        return IntPoint(x, y);
-    }
+  operator IntPoint() const { return IntPoint(x, y); }
 #else
-    WebPoint(const gfx::Point& p)
-        : x(p.x())
-        , y(p.y())
-    {
-    }
+  WebPoint(const gfx::Point& p) : x(p.x()), y(p.y()) {}
 
-    WebPoint& operator=(const gfx::Point& p)
-    {
-        x = p.x();
-        y = p.y();
-        return *this;
-    }
+  WebPoint& operator=(const gfx::Point& p) {
+    x = p.x();
+    y = p.y();
+    return *this;
+  }
 
-    operator gfx::Point() const
-    {
-        return gfx::Point(x, y);
-    }
+  operator gfx::Point() const { return gfx::Point(x, y); }
 #endif
 };
 
-inline bool operator==(const WebPoint& a, const WebPoint& b)
-{
-    return a.x == b.x && a.y == b.y;
+inline bool operator==(const WebPoint& a, const WebPoint& b) {
+  return a.x == b.x && a.y == b.y;
 }
 
-inline bool operator!=(const WebPoint& a, const WebPoint& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebPoint& a, const WebPoint& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

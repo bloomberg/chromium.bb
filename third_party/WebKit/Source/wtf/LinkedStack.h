@@ -39,81 +39,74 @@ namespace WTF {
 
 template <typename T>
 class LinkedStack {
-    USING_FAST_MALLOC(LinkedStack);
-public:
-    LinkedStack() : m_size(0) { }
+  USING_FAST_MALLOC(LinkedStack);
 
-    // Iterative cleanup to prevent stack overflow problems.
-    ~LinkedStack()
-    {
-        std::unique_ptr<Node> ptr = m_head.release();
-        while (ptr)
-            ptr = ptr->m_next.release();
-    }
+ public:
+  LinkedStack() : m_size(0) {}
 
-    bool isEmpty();
+  // Iterative cleanup to prevent stack overflow problems.
+  ~LinkedStack() {
+    std::unique_ptr<Node> ptr = m_head.release();
+    while (ptr)
+      ptr = ptr->m_next.release();
+  }
 
-    void push(const T&);
-    const T& peek();
-    void pop();
+  bool isEmpty();
 
-    size_t size();
+  void push(const T&);
+  const T& peek();
+  void pop();
 
-private:
-    class Node {
-        USING_FAST_MALLOC(LinkedStack::Node);
-    public:
-        Node(const T&, std::unique_ptr<Node> next);
+  size_t size();
 
-        T m_data;
-        std::unique_ptr<Node> m_next;
-    };
+ private:
+  class Node {
+    USING_FAST_MALLOC(LinkedStack::Node);
 
-    std::unique_ptr<Node> m_head;
-    size_t m_size;
+   public:
+    Node(const T&, std::unique_ptr<Node> next);
+
+    T m_data;
+    std::unique_ptr<Node> m_next;
+  };
+
+  std::unique_ptr<Node> m_head;
+  size_t m_size;
 };
 
 template <typename T>
 LinkedStack<T>::Node::Node(const T& data, std::unique_ptr<Node> next)
-    : m_data(data)
-    , m_next(next)
-{
+    : m_data(data), m_next(next) {}
+
+template <typename T>
+inline bool LinkedStack<T>::isEmpty() {
+  return !m_head;
 }
 
 template <typename T>
-inline bool LinkedStack<T>::isEmpty()
-{
-    return !m_head;
+inline void LinkedStack<T>::push(const T& data) {
+  m_head = wrapUnique(new Node(data, m_head.release()));
+  ++m_size;
 }
 
 template <typename T>
-inline void LinkedStack<T>::push(const T& data)
-{
-    m_head = wrapUnique(new Node(data, m_head.release()));
-    ++m_size;
+inline const T& LinkedStack<T>::peek() {
+  return m_head->m_data;
 }
 
 template <typename T>
-inline const T& LinkedStack<T>::peek()
-{
-    return m_head->m_data;
+inline void LinkedStack<T>::pop() {
+  ASSERT(m_head && m_size);
+  m_head = m_head->m_next.release();
+  --m_size;
 }
 
 template <typename T>
-inline void LinkedStack<T>::pop()
-{
-    ASSERT(m_head && m_size);
-    m_head = m_head->m_next.release();
-    --m_size;
+inline size_t LinkedStack<T>::size() {
+  return m_size;
 }
 
-template <typename T>
-inline size_t LinkedStack<T>::size()
-{
-    return m_size;
-}
-
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::LinkedStack;
 

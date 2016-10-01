@@ -32,46 +32,45 @@
 namespace blink {
 
 class WebGLRenderbuffer final : public WebGLSharedPlatform3DObject {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~WebGLRenderbuffer() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebGLRenderbuffer* create(WebGLRenderingContextBase*);
+ public:
+  ~WebGLRenderbuffer() override;
 
-    void setInternalFormat(GLenum internalformat)
-    {
-        m_internalFormat = internalformat;
-    }
-    GLenum internalFormat() const { return m_internalFormat; }
+  static WebGLRenderbuffer* create(WebGLRenderingContextBase*);
 
-    void setSize(GLsizei width, GLsizei height)
-    {
-        m_width = width;
-        m_height = height;
-    }
-    GLsizei width() const { return m_width; }
-    GLsizei height() const { return m_height; }
+  void setInternalFormat(GLenum internalformat) {
+    m_internalFormat = internalformat;
+  }
+  GLenum internalFormat() const { return m_internalFormat; }
 
-    bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
+  void setSize(GLsizei width, GLsizei height) {
+    m_width = width;
+    m_height = height;
+  }
+  GLsizei width() const { return m_width; }
+  GLsizei height() const { return m_height; }
 
-    void setHasEverBeenBound() { m_hasEverBeenBound = true; }
+  bool hasEverBeenBound() const { return object() && m_hasEverBeenBound; }
 
-    DECLARE_VIRTUAL_TRACE();
+  void setHasEverBeenBound() { m_hasEverBeenBound = true; }
 
-protected:
-    explicit WebGLRenderbuffer(WebGLRenderingContextBase*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+ protected:
+  explicit WebGLRenderbuffer(WebGLRenderingContextBase*);
 
-private:
-    bool isRenderbuffer() const override { return true; }
+  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    GLenum m_internalFormat;
-    GLsizei m_width, m_height;
+ private:
+  bool isRenderbuffer() const override { return true; }
 
-    bool m_hasEverBeenBound;
+  GLenum m_internalFormat;
+  GLsizei m_width, m_height;
+
+  bool m_hasEverBeenBound;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLRenderbuffer_h
+#endif  // WebGLRenderbuffer_h

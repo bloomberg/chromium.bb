@@ -29,32 +29,35 @@
 
 namespace blink {
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrixType>();
+template <>
+const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrixType>();
 
-class SVGFEColorMatrixElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEColorMatrixElement);
+class SVGFEColorMatrixElement final
+    : public SVGFilterPrimitiveStandardAttributes {
+  DEFINE_WRAPPERTYPEINFO();
 
-    SVGAnimatedNumberList* values() { return m_values.get(); }
-    SVGAnimatedString* in1() { return m_in1.get(); }
-    SVGAnimatedEnumeration<ColorMatrixType>* type() { return m_type.get(); }
+ public:
+  DECLARE_NODE_FACTORY(SVGFEColorMatrixElement);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedNumberList* values() { return m_values.get(); }
+  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedEnumeration<ColorMatrixType>* type() { return m_type.get(); }
 
-private:
-    explicit SVGFEColorMatrixElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-    void svgAttributeChanged(const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
-    bool taintsOrigin(bool inputsTaintOrigin) const override;
+ private:
+  explicit SVGFEColorMatrixElement(Document&);
 
-    Member<SVGAnimatedNumberList> m_values;
-    Member<SVGAnimatedString> m_in1;
-    Member<SVGAnimatedEnumeration<ColorMatrixType>> m_type;
+  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+  bool taintsOrigin(bool inputsTaintOrigin) const override;
+
+  Member<SVGAnimatedNumberList> m_values;
+  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedEnumeration<ColorMatrixType>> m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEColorMatrixElement_h
+#endif  // SVGFEColorMatrixElement_h

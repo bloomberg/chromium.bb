@@ -38,30 +38,30 @@ namespace blink {
 class WebPrerender;
 
 class WebPrerenderingSupport {
-public:
-    BLINK_PLATFORM_EXPORT static void initialize(WebPrerenderingSupport*);
-    BLINK_PLATFORM_EXPORT static void shutdown();
-    BLINK_PLATFORM_EXPORT static WebPrerenderingSupport* current();
+ public:
+  BLINK_PLATFORM_EXPORT static void initialize(WebPrerenderingSupport*);
+  BLINK_PLATFORM_EXPORT static void shutdown();
+  BLINK_PLATFORM_EXPORT static WebPrerenderingSupport* current();
 
-    // A prerender link element is added when it is inserted into a document.
-    virtual void add(const WebPrerender&) = 0;
+  // A prerender link element is added when it is inserted into a document.
+  virtual void add(const WebPrerender&) = 0;
 
-    // A prerender is canceled when it is removed from a document.
-    virtual void cancel(const WebPrerender&) = 0;
+  // A prerender is canceled when it is removed from a document.
+  virtual void cancel(const WebPrerender&) = 0;
 
-    // A prerender is abandoned when it's navigated away from or suspended in the page cache. This
-    // is a weaker signal than cancel(), since the launcher hasn't indicated that the prerender isn't
-    // wanted, and we may end up using it after, for instance, a short redirect chain.
-    virtual void abandon(const WebPrerender&) = 0;
+  // A prerender is abandoned when it's navigated away from or suspended in the page cache. This
+  // is a weaker signal than cancel(), since the launcher hasn't indicated that the prerender isn't
+  // wanted, and we may end up using it after, for instance, a short redirect chain.
+  virtual void abandon(const WebPrerender&) = 0;
 
-protected:
-    WebPrerenderingSupport() { }
-    virtual ~WebPrerenderingSupport() { }
+ protected:
+  WebPrerenderingSupport() {}
+  virtual ~WebPrerenderingSupport() {}
 
-private:
-    static WebPrerenderingSupport* s_platform;
+ private:
+  static WebPrerenderingSupport* s_platform;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPrerenderingSupport_h
+#endif  // WebPrerenderingSupport_h

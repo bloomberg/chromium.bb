@@ -31,56 +31,62 @@
 
 namespace blink {
 
-inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feComponentTransferTag, document)
-    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
-{
-    addToPropertyMap(m_in1);
+inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(
+    Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feComponentTransferTag,
+                                           document),
+      m_in1(SVGAnimatedString::create(this,
+                                      SVGNames::inAttr,
+                                      SVGString::create())) {
+  addToPropertyMap(m_in1);
 }
 
-DEFINE_TRACE(SVGFEComponentTransferElement)
-{
-    visitor->trace(m_in1);
-    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+DEFINE_TRACE(SVGFEComponentTransferElement) {
+  visitor->trace(m_in1);
+  SVGFilterPrimitiveStandardAttributes::trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFEComponentTransferElement)
 
-void SVGFEComponentTransferElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (attrName == SVGNames::inAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
-        invalidate();
-        return;
-    }
+void SVGFEComponentTransferElement::svgAttributeChanged(
+    const QualifiedName& attrName) {
+  if (attrName == SVGNames::inAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
+    invalidate();
+    return;
+  }
 
-    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
+  SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-FilterEffect* SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
-{
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
-    ASSERT(input1);
+FilterEffect* SVGFEComponentTransferElement::build(
+    SVGFilterBuilder* filterBuilder,
+    Filter* filter) {
+  FilterEffect* input1 = filterBuilder->getEffectById(
+      AtomicString(m_in1->currentValue()->value()));
+  ASSERT(input1);
 
-    ComponentTransferFunction red;
-    ComponentTransferFunction green;
-    ComponentTransferFunction blue;
-    ComponentTransferFunction alpha;
+  ComponentTransferFunction red;
+  ComponentTransferFunction green;
+  ComponentTransferFunction blue;
+  ComponentTransferFunction alpha;
 
-    for (SVGElement* element = Traversal<SVGElement>::firstChild(*this); element; element = Traversal<SVGElement>::nextSibling(*element)) {
-        if (isSVGFEFuncRElement(*element))
-            red = toSVGFEFuncRElement(*element).transferFunction();
-        else if (isSVGFEFuncGElement(*element))
-            green = toSVGFEFuncGElement(*element).transferFunction();
-        else if (isSVGFEFuncBElement(*element))
-            blue = toSVGFEFuncBElement(*element).transferFunction();
-        else if (isSVGFEFuncAElement(*element))
-            alpha = toSVGFEFuncAElement(*element).transferFunction();
-    }
+  for (SVGElement* element = Traversal<SVGElement>::firstChild(*this); element;
+       element = Traversal<SVGElement>::nextSibling(*element)) {
+    if (isSVGFEFuncRElement(*element))
+      red = toSVGFEFuncRElement(*element).transferFunction();
+    else if (isSVGFEFuncGElement(*element))
+      green = toSVGFEFuncGElement(*element).transferFunction();
+    else if (isSVGFEFuncBElement(*element))
+      blue = toSVGFEFuncBElement(*element).transferFunction();
+    else if (isSVGFEFuncAElement(*element))
+      alpha = toSVGFEFuncAElement(*element).transferFunction();
+  }
 
-    FilterEffect* effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
-    effect->inputEffects().append(input1);
-    return effect;
+  FilterEffect* effect =
+      FEComponentTransfer::create(filter, red, green, blue, alpha);
+  effect->inputEffects().append(input1);
+  return effect;
 }
 
-} // namespace blink
+}  // namespace blink

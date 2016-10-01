@@ -34,14 +34,13 @@
 
 namespace blink {
 
-void WebNetworkStateNotifier::setOnLine(bool onLine)
-{
-    networkStateNotifier().setOnLine(onLine);
+void WebNetworkStateNotifier::setOnLine(bool onLine) {
+  networkStateNotifier().setOnLine(onLine);
 }
 
-void WebNetworkStateNotifier::setWebConnection(WebConnectionType type, double maxBandwidthMbps)
-{
-    networkStateNotifier().setWebConnection(type, maxBandwidthMbps);
+void WebNetworkStateNotifier::setWebConnection(WebConnectionType type,
+                                               double maxBandwidthMbps) {
+  networkStateNotifier().setWebConnection(type, maxBandwidthMbps);
 }
 
-} // namespace blink
+}  // namespace blink

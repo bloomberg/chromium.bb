@@ -26,26 +26,26 @@
 namespace blink {
 
 class SVGInlineFlowBox final : public InlineFlowBox {
-public:
-    SVGInlineFlowBox(LineLayoutItem item)
-        : InlineFlowBox(item)
-    {
-    }
+ public:
+  SVGInlineFlowBox(LineLayoutItem item) : InlineFlowBox(item) {}
 
-    bool isSVGInlineFlowBox() const override { return true; }
-    LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
-    void setLogicalHeight(LayoutUnit h) { m_logicalHeight = h; }
+  bool isSVGInlineFlowBox() const override { return true; }
+  LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+  void setLogicalHeight(LayoutUnit h) { m_logicalHeight = h; }
 
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const override;
+  void paint(const PaintInfo&,
+             const LayoutPoint&,
+             LayoutUnit lineTop,
+             LayoutUnit lineBottom) const override;
 
-    LayoutRect calculateBoundaries() const override;
+  LayoutRect calculateBoundaries() const override;
 
-private:
-    LayoutUnit m_logicalHeight;
+ private:
+  LayoutUnit m_logicalHeight;
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineFlowBox);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGInlineFlowBox_h
+#endif  // SVGInlineFlowBox_h

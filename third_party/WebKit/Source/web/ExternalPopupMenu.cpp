@@ -54,256 +54,253 @@
 
 namespace blink {
 
-ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame, HTMLSelectElement& ownerElement, WebViewImpl& webView)
-    : m_ownerElement(ownerElement)
-    , m_localFrame(frame)
-    , m_webView(webView)
-    , m_dispatchEventTimer(this, &ExternalPopupMenu::dispatchEvent)
-    , m_webExternalPopupMenu(0)
-{
+ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
+                                     HTMLSelectElement& ownerElement,
+                                     WebViewImpl& webView)
+    : m_ownerElement(ownerElement),
+      m_localFrame(frame),
+      m_webView(webView),
+      m_dispatchEventTimer(this, &ExternalPopupMenu::dispatchEvent),
+      m_webExternalPopupMenu(0) {}
+
+ExternalPopupMenu::~ExternalPopupMenu() {}
+
+DEFINE_TRACE(ExternalPopupMenu) {
+  visitor->trace(m_ownerElement);
+  visitor->trace(m_localFrame);
+  PopupMenu::trace(visitor);
 }
 
-ExternalPopupMenu::~ExternalPopupMenu()
-{
+bool ExternalPopupMenu::showInternal() {
+  // Blink core reuses the PopupMenu of an element.  For simplicity, we do
+  // recreate the actual external popup everytime.
+  if (m_webExternalPopupMenu) {
+    m_webExternalPopupMenu->close();
+    m_webExternalPopupMenu = 0;
+  }
+
+  WebPopupMenuInfo info;
+  getPopupMenuInfo(info, *m_ownerElement);
+  if (info.items.isEmpty())
+    return false;
+  WebLocalFrameImpl* webframe =
+      WebLocalFrameImpl::fromFrame(m_localFrame.get());
+  m_webExternalPopupMenu =
+      webframe->client()->createExternalPopupMenu(info, this);
+  if (m_webExternalPopupMenu) {
+    LayoutObject* layoutObject = m_ownerElement->layoutObject();
+    if (!layoutObject || !layoutObject->isBox())
+      return false;
+    FloatQuad quad(toLayoutBox(layoutObject)
+                       ->localToAbsoluteQuad(FloatQuad(
+                           toLayoutBox(layoutObject)->borderBoundingBox())));
+    IntRect rect(quad.enclosingBoundingBox());
+    IntRect rectInViewport =
+        m_localFrame->view()->soonToBeRemovedContentsToUnscaledViewport(rect);
+    m_webExternalPopupMenu->show(rectInViewport);
+    return true;
+  } else {
+    // The client might refuse to create a popup (when there is already one pending to be shown for example).
+    didCancel();
+    return false;
+  }
 }
 
-DEFINE_TRACE(ExternalPopupMenu)
-{
-    visitor->trace(m_ownerElement);
-    visitor->trace(m_localFrame);
-    PopupMenu::trace(visitor);
-}
-
-bool ExternalPopupMenu::showInternal()
-{
-    // Blink core reuses the PopupMenu of an element.  For simplicity, we do
-    // recreate the actual external popup everytime.
-    if (m_webExternalPopupMenu) {
-        m_webExternalPopupMenu->close();
-        m_webExternalPopupMenu = 0;
-    }
-
-    WebPopupMenuInfo info;
-    getPopupMenuInfo(info, *m_ownerElement);
-    if (info.items.isEmpty())
-        return false;
-    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(m_localFrame.get());
-    m_webExternalPopupMenu = webframe->client()->createExternalPopupMenu(info, this);
-    if (m_webExternalPopupMenu) {
-        LayoutObject* layoutObject = m_ownerElement->layoutObject();
-        if (!layoutObject || !layoutObject->isBox())
-            return false;
-        FloatQuad quad(toLayoutBox(layoutObject)->localToAbsoluteQuad(FloatQuad(toLayoutBox(layoutObject)->borderBoundingBox())));
-        IntRect rect(quad.enclosingBoundingBox());
-        IntRect rectInViewport = m_localFrame->view()->soonToBeRemovedContentsToUnscaledViewport(rect);
-        m_webExternalPopupMenu->show(rectInViewport);
-        return true;
-    } else {
-        // The client might refuse to create a popup (when there is already one pending to be shown for example).
-        didCancel();
-        return false;
-    }
-}
-
-void ExternalPopupMenu::show()
-{
-    if (!showInternal())
-        return;
+void ExternalPopupMenu::show() {
+  if (!showInternal())
+    return;
 #if OS(MACOSX)
-    const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
-    if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {
-        m_syntheticEvent = wrapUnique(new WebMouseEvent);
-        *m_syntheticEvent = *static_cast<const WebMouseEvent*>(currentEvent);
-        m_syntheticEvent->type = WebInputEvent::MouseUp;
-        m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);
-        // FIXME: show() is asynchronous. If preparing a popup is slow and a
-        // user released the mouse button before showing the popup, mouseup and
-        // click events are correctly dispatched. Dispatching the synthetic
-        // mouseup event is redundant in this case.
-    }
+  const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
+  if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {
+    m_syntheticEvent = wrapUnique(new WebMouseEvent);
+    *m_syntheticEvent = *static_cast<const WebMouseEvent*>(currentEvent);
+    m_syntheticEvent->type = WebInputEvent::MouseUp;
+    m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);
+    // FIXME: show() is asynchronous. If preparing a popup is slow and a
+    // user released the mouse button before showing the popup, mouseup and
+    // click events are correctly dispatched. Dispatching the synthetic
+    // mouseup event is redundant in this case.
+  }
 #endif
 }
 
-void ExternalPopupMenu::dispatchEvent(TimerBase*)
-{
-    m_webView.handleInputEvent(*m_syntheticEvent);
-    m_syntheticEvent.reset();
+void ExternalPopupMenu::dispatchEvent(TimerBase*) {
+  m_webView.handleInputEvent(*m_syntheticEvent);
+  m_syntheticEvent.reset();
 }
 
-void ExternalPopupMenu::hide()
-{
-    if (m_ownerElement)
-        m_ownerElement->popupDidHide();
-    if (!m_webExternalPopupMenu)
-        return;
-    m_webExternalPopupMenu->close();
-    m_webExternalPopupMenu = 0;
+void ExternalPopupMenu::hide() {
+  if (m_ownerElement)
+    m_ownerElement->popupDidHide();
+  if (!m_webExternalPopupMenu)
+    return;
+  m_webExternalPopupMenu->close();
+  m_webExternalPopupMenu = 0;
 }
 
-void ExternalPopupMenu::updateFromElement(UpdateReason reason)
-{
-    switch (reason) {
+void ExternalPopupMenu::updateFromElement(UpdateReason reason) {
+  switch (reason) {
     case BySelectionChange:
     case ByDOMChange:
-        if (m_needsUpdate)
-            return;
-        m_needsUpdate = true;
-        m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, wrapPersistent(this)));
-        break;
+      if (m_needsUpdate)
+        return;
+      m_needsUpdate = true;
+      m_ownerElement->document().postTask(
+          BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update,
+                                                wrapPersistent(this)));
+      break;
 
     case ByStyleChange:
-        // TOOD(tkent): We should update the popup location/content in some
-        // cases.  e.g. Updating ComputedStyle of the SELECT element affects
-        // popup position and OPTION style.
-        break;
-    }
+      // TOOD(tkent): We should update the popup location/content in some
+      // cases.  e.g. Updating ComputedStyle of the SELECT element affects
+      // popup position and OPTION style.
+      break;
+  }
 }
 
-void ExternalPopupMenu::update()
-{
-    if (!m_webExternalPopupMenu || !m_ownerElement)
-        return;
-    m_ownerElement->document().updateStyleAndLayoutTree();
-    // disconnectClient() might have been called.
-    if (!m_ownerElement)
-        return;
-    m_needsUpdate = false;
+void ExternalPopupMenu::update() {
+  if (!m_webExternalPopupMenu || !m_ownerElement)
+    return;
+  m_ownerElement->document().updateStyleAndLayoutTree();
+  // disconnectClient() might have been called.
+  if (!m_ownerElement)
+    return;
+  m_needsUpdate = false;
 
-    if (showInternal())
-        return;
-    // We failed to show a popup.  Notify it to the owner.
-    hide();
+  if (showInternal())
+    return;
+  // We failed to show a popup.  Notify it to the owner.
+  hide();
 }
 
-void ExternalPopupMenu::disconnectClient()
-{
-    hide();
-    m_ownerElement = nullptr;
+void ExternalPopupMenu::disconnectClient() {
+  hide();
+  m_ownerElement = nullptr;
 }
 
-void ExternalPopupMenu::didChangeSelection(int index)
-{
-}
+void ExternalPopupMenu::didChangeSelection(int index) {}
 
-void ExternalPopupMenu::didAcceptIndex(int index)
-{
-    // Calling methods on the HTMLSelectElement might lead to this object being
-    // derefed. This ensures it does not get deleted while we are running this
-    // method.
-    int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_ownerElement);
+void ExternalPopupMenu::didAcceptIndex(int index) {
+  // Calling methods on the HTMLSelectElement might lead to this object being
+  // derefed. This ensures it does not get deleted while we are running this
+  // method.
+  int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_ownerElement);
 
-    if (m_ownerElement) {
-        m_ownerElement->popupDidHide();
-        m_ownerElement->selectOptionByPopup(popupMenuItemIndex);
-    }
-    m_webExternalPopupMenu = 0;
+  if (m_ownerElement) {
+    m_ownerElement->popupDidHide();
+    m_ownerElement->selectOptionByPopup(popupMenuItemIndex);
+  }
+  m_webExternalPopupMenu = 0;
 }
 
 // Android uses this function even for single SELECT.
-void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
-{
-    if (!m_ownerElement) {
-        m_webExternalPopupMenu = 0;
-        return;
-    }
+void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices) {
+  if (!m_ownerElement) {
+    m_webExternalPopupMenu = 0;
+    return;
+  }
 
-    HTMLSelectElement* ownerElement = m_ownerElement;
-    ownerElement->popupDidHide();
+  HTMLSelectElement* ownerElement = m_ownerElement;
+  ownerElement->popupDidHide();
 
-    if (indices.size() == 0) {
-        ownerElement->selectOptionByPopup(-1);
-    } else if (!ownerElement->multiple()) {
-        ownerElement->selectOptionByPopup(toPopupMenuItemIndex(indices[indices.size() - 1], *ownerElement));
+  if (indices.size() == 0) {
+    ownerElement->selectOptionByPopup(-1);
+  } else if (!ownerElement->multiple()) {
+    ownerElement->selectOptionByPopup(
+        toPopupMenuItemIndex(indices[indices.size() - 1], *ownerElement));
+  } else {
+    Vector<int> listIndices;
+    listIndices.reserveCapacity(indices.size());
+    for (size_t i = 0; i < indices.size(); ++i)
+      listIndices.append(toPopupMenuItemIndex(indices[i], *ownerElement));
+    ownerElement->selectMultipleOptionsByPopup(listIndices);
+  }
+
+  m_webExternalPopupMenu = 0;
+}
+
+void ExternalPopupMenu::didCancel() {
+  if (m_ownerElement)
+    m_ownerElement->popupDidHide();
+  m_webExternalPopupMenu = 0;
+}
+
+void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info,
+                                         HTMLSelectElement& ownerElement) {
+  const HeapVector<Member<HTMLElement>>& listItems = ownerElement.listItems();
+  size_t itemCount = listItems.size();
+  size_t count = 0;
+  Vector<WebMenuItemInfo> items(itemCount);
+  for (size_t i = 0; i < itemCount; ++i) {
+    if (ownerElement.itemIsDisplayNone(*listItems[i]))
+      continue;
+
+    Element& itemElement = *listItems[i];
+    WebMenuItemInfo& popupItem = items[count++];
+    popupItem.label = ownerElement.itemText(itemElement);
+    popupItem.toolTip = itemElement.title();
+    popupItem.checked = false;
+    if (isHTMLHRElement(itemElement)) {
+      popupItem.type = WebMenuItemInfo::Separator;
+    } else if (isHTMLOptGroupElement(itemElement)) {
+      popupItem.type = WebMenuItemInfo::Group;
     } else {
-        Vector<int> listIndices;
-        listIndices.reserveCapacity(indices.size());
-        for (size_t i = 0; i < indices.size(); ++i)
-            listIndices.append(toPopupMenuItemIndex(indices[i], *ownerElement));
-        ownerElement->selectMultipleOptionsByPopup(listIndices);
+      popupItem.type = WebMenuItemInfo::Option;
+      popupItem.checked = toHTMLOptionElement(itemElement).selected();
     }
+    popupItem.enabled = !itemElement.isDisabledFormControl();
+    const ComputedStyle& style = *ownerElement.itemComputedStyle(itemElement);
+    popupItem.textDirection = toWebTextDirection(style.direction());
+    popupItem.hasTextDirectionOverride = isOverride(style.unicodeBidi());
+  }
 
-    m_webExternalPopupMenu = 0;
+  const ComputedStyle& menuStyle = ownerElement.computedStyle()
+                                       ? *ownerElement.computedStyle()
+                                       : *ownerElement.ensureComputedStyle();
+  info.itemHeight = menuStyle.font().getFontMetrics().height();
+  info.itemFontSize =
+      static_cast<int>(menuStyle.font().getFontDescription().computedSize());
+  info.selectedIndex = toExternalPopupMenuItemIndex(
+      ownerElement.selectedListIndex(), ownerElement);
+  info.rightAligned = menuStyle.direction() == RTL;
+  info.allowMultipleSelection = ownerElement.multiple();
+  if (count < itemCount)
+    items.shrink(count);
+  info.items = items;
 }
 
-void ExternalPopupMenu::didCancel()
-{
-    if (m_ownerElement)
-        m_ownerElement->popupDidHide();
-    m_webExternalPopupMenu = 0;
+int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex,
+                                            HTMLSelectElement& ownerElement) {
+  if (externalPopupMenuItemIndex < 0)
+    return externalPopupMenuItemIndex;
+
+  int indexTracker = 0;
+  const HeapVector<Member<HTMLElement>>& items = ownerElement.listItems();
+  for (int i = 0; i < static_cast<int>(items.size()); ++i) {
+    if (ownerElement.itemIsDisplayNone(*items[i]))
+      continue;
+    if (indexTracker++ == externalPopupMenuItemIndex)
+      return i;
+  }
+  return -1;
 }
 
-void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, HTMLSelectElement& ownerElement)
-{
-    const HeapVector<Member<HTMLElement>>& listItems = ownerElement.listItems();
-    size_t itemCount = listItems.size();
-    size_t count = 0;
-    Vector<WebMenuItemInfo> items(itemCount);
-    for (size_t i = 0; i < itemCount; ++i) {
-        if (ownerElement.itemIsDisplayNone(*listItems[i]))
-            continue;
+int ExternalPopupMenu::toExternalPopupMenuItemIndex(
+    int popupMenuItemIndex,
+    HTMLSelectElement& ownerElement) {
+  if (popupMenuItemIndex < 0)
+    return popupMenuItemIndex;
 
-        Element& itemElement = *listItems[i];
-        WebMenuItemInfo& popupItem = items[count++];
-        popupItem.label = ownerElement.itemText(itemElement);
-        popupItem.toolTip = itemElement.title();
-        popupItem.checked = false;
-        if (isHTMLHRElement(itemElement)) {
-            popupItem.type = WebMenuItemInfo::Separator;
-        } else if (isHTMLOptGroupElement(itemElement)) {
-            popupItem.type = WebMenuItemInfo::Group;
-        } else {
-            popupItem.type = WebMenuItemInfo::Option;
-            popupItem.checked = toHTMLOptionElement(itemElement).selected();
-        }
-        popupItem.enabled = !itemElement.isDisabledFormControl();
-        const ComputedStyle& style = *ownerElement.itemComputedStyle(itemElement);
-        popupItem.textDirection = toWebTextDirection(style.direction());
-        popupItem.hasTextDirectionOverride = isOverride(style.unicodeBidi());
-    }
-
-    const ComputedStyle& menuStyle = ownerElement.computedStyle() ? *ownerElement.computedStyle() : *ownerElement.ensureComputedStyle();
-    info.itemHeight = menuStyle.font().getFontMetrics().height();
-    info.itemFontSize = static_cast<int>(menuStyle.font().getFontDescription().computedSize());
-    info.selectedIndex = toExternalPopupMenuItemIndex(ownerElement.selectedListIndex(), ownerElement);
-    info.rightAligned = menuStyle.direction() == RTL;
-    info.allowMultipleSelection = ownerElement.multiple();
-    if (count < itemCount)
-        items.shrink(count);
-    info.items = items;
-
+  size_t indexTracker = 0;
+  const HeapVector<Member<HTMLElement>>& items = ownerElement.listItems();
+  for (int i = 0; i < static_cast<int>(items.size()); ++i) {
+    if (ownerElement.itemIsDisplayNone(*items[i]))
+      continue;
+    if (popupMenuItemIndex == i)
+      return indexTracker;
+    ++indexTracker;
+  }
+  return -1;
 }
 
-int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, HTMLSelectElement& ownerElement)
-{
-    if (externalPopupMenuItemIndex < 0)
-        return externalPopupMenuItemIndex;
-
-    int indexTracker = 0;
-    const HeapVector<Member<HTMLElement>>& items = ownerElement.listItems();
-    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
-        if (ownerElement.itemIsDisplayNone(*items[i]))
-            continue;
-        if (indexTracker++ == externalPopupMenuItemIndex)
-            return i;
-    }
-    return -1;
-}
-
-int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex, HTMLSelectElement& ownerElement)
-{
-    if (popupMenuItemIndex < 0)
-        return popupMenuItemIndex;
-
-    size_t indexTracker = 0;
-    const HeapVector<Member<HTMLElement>>& items = ownerElement.listItems();
-    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
-        if (ownerElement.itemIsDisplayNone(*items[i]))
-            continue;
-        if (popupMenuItemIndex == i)
-            return indexTracker;
-        ++indexTracker;
-    }
-    return -1;
-}
-
-} // namespace blink
+}  // namespace blink

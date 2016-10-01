@@ -10,22 +10,29 @@
 namespace blink {
 
 class CSSNumberInterpolationType : public CSSInterpolationType {
-public:
-    CSSNumberInterpolationType(PropertyHandle property)
-        : CSSInterpolationType(property)
-    { }
+ public:
+  CSSNumberInterpolationType(PropertyHandle property)
+      : CSSInterpolationType(property) {}
 
-    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertUnderlyingValue(
+      const InterpolationEnvironment&) const final;
+  void apply(const InterpolableValue&,
+             const NonInterpolableValue*,
+             InterpolationEnvironment&) const final;
 
-private:
-    InterpolationValue createNumberValue(double number) const;
-    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+ private:
+  InterpolationValue createNumberValue(double number) const;
+  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertValue(const CSSValue&,
+                                       const StyleResolverState&,
+                                       ConversionCheckers&) const final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSNumberInterpolationType_h
+#endif  // CSSNumberInterpolationType_h

@@ -39,43 +39,53 @@
 namespace blink {
 
 class IgnorableExceptionState final : public ExceptionState {
-    WTF_MAKE_NONCOPYABLE(IgnorableExceptionState);
-public:
-    IgnorableExceptionState()
-        : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr) { }
+  WTF_MAKE_NONCOPYABLE(IgnorableExceptionState);
 
-    ExceptionState& returnThis() { return *this; }
+ public:
+  IgnorableExceptionState()
+      : ExceptionState(nullptr,
+                       ExceptionState::UnknownContext,
+                       nullptr,
+                       nullptr) {}
 
-    void throwDOMException(const ExceptionCode&, const String& message) override { }
-    void throwRangeError(const String& message) override { };
-    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage) override { }
-    void throwTypeError(const String& message) override { }
-    void rethrowV8Exception(v8::Local<v8::Value>) override { };
+  ExceptionState& returnThis() { return *this; }
+
+  void throwDOMException(const ExceptionCode&, const String& message) override {
+  }
+  void throwRangeError(const String& message) override{};
+  void throwSecurityError(const String& sanitizedMessage,
+                          const String& unsanitizedMessage) override {}
+  void throwTypeError(const String& message) override {}
+  void rethrowV8Exception(v8::Local<v8::Value>) override{};
 };
 
 #define IGNORE_EXCEPTION (::blink::IgnorableExceptionState().returnThis())
 
 #if ENABLE(ASSERT)
 
-class CORE_EXPORT NoExceptionStateAssertionChecker final : public ExceptionState {
-    WTF_MAKE_NONCOPYABLE(NoExceptionStateAssertionChecker);
-public:
-    NoExceptionStateAssertionChecker(const char* file, int line);
+class CORE_EXPORT NoExceptionStateAssertionChecker final
+    : public ExceptionState {
+  WTF_MAKE_NONCOPYABLE(NoExceptionStateAssertionChecker);
 
-    ExceptionState& returnThis() { return *this; }
+ public:
+  NoExceptionStateAssertionChecker(const char* file, int line);
 
-    void throwDOMException(const ExceptionCode&, const String& message) override;
-    void throwRangeError(const String& message) override;
-    void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage) override;
-    void throwTypeError(const String& message) override;
-    void rethrowV8Exception(v8::Local<v8::Value>) override;
+  ExceptionState& returnThis() { return *this; }
 
-private:
-    const char* m_file;
-    const int m_line;
+  void throwDOMException(const ExceptionCode&, const String& message) override;
+  void throwRangeError(const String& message) override;
+  void throwSecurityError(const String& sanitizedMessage,
+                          const String& unsanitizedMessage) override;
+  void throwTypeError(const String& message) override;
+  void rethrowV8Exception(v8::Local<v8::Value>) override;
+
+ private:
+  const char* m_file;
+  const int m_line;
 };
 
-#define ASSERT_NO_EXCEPTION (::blink::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
+#define ASSERT_NO_EXCEPTION \
+  (::blink::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
 
 #else
 
@@ -83,6 +93,6 @@ private:
 
 #endif
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ExceptionStatePlaceholder_h
+#endif  // ExceptionStatePlaceholder_h

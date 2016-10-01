@@ -31,40 +31,43 @@ namespace blink {
 class HTMLSelectElement;
 
 class HTMLKeygenElement final : public HTMLFormControlElementWithState {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLKeygenElement* create(Document&, HTMLFormElement*);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool willValidate() const override { return false; }
+ public:
+  static HTMLKeygenElement* create(Document&, HTMLFormElement*);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool willValidate() const override { return false; }
 
-private:
-    HTMLKeygenElement(Document&, HTMLFormElement*);
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    bool areAuthorShadowsAllowed() const override { return false; }
+ private:
+  HTMLKeygenElement(Document&, HTMLFormElement*);
 
-    bool canStartSelection() const override { return false; }
+  bool areAuthorShadowsAllowed() const override { return false; }
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
+  bool canStartSelection() const override { return false; }
 
-    void appendToFormData(FormData&) override;
-    const AtomicString& formControlType() const override;
-    bool isOptionalFormControl() const override { return false; }
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
 
-    bool isEnumeratable() const override { return true; }
-    bool isInteractiveContent() const override;
-    bool supportsAutofocus() const override;
-    bool supportLabels() const override { return true; }
+  void appendToFormData(FormData&) override;
+  const AtomicString& formControlType() const override;
+  bool isOptionalFormControl() const override { return false; }
 
-    void resetImpl() override;
-    bool shouldSaveAndRestoreFormControlState() const override { return false; }
+  bool isEnumeratable() const override { return true; }
+  bool isInteractiveContent() const override;
+  bool supportsAutofocus() const override;
+  bool supportLabels() const override { return true; }
 
-    void didAddUserAgentShadowRoot(ShadowRoot&) override;
+  void resetImpl() override;
+  bool shouldSaveAndRestoreFormControlState() const override { return false; }
 
-    HTMLSelectElement* shadowSelect() const;
+  void didAddUserAgentShadowRoot(ShadowRoot&) override;
+
+  HTMLSelectElement* shadowSelect() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLKeygenElement_h
+#endif  // HTMLKeygenElement_h

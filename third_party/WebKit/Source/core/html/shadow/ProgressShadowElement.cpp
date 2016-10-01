@@ -39,21 +39,19 @@ namespace blink {
 using namespace HTMLNames;
 
 ProgressShadowElement::ProgressShadowElement(Document& document)
-    : HTMLDivElement(document)
-{
-}
+    : HTMLDivElement(document) {}
 
 DEFINE_NODE_FACTORY(ProgressShadowElement)
 
-HTMLProgressElement* ProgressShadowElement::progressElement() const
-{
-    return toHTMLProgressElement(ownerShadowHost());
+HTMLProgressElement* ProgressShadowElement::progressElement() const {
+  return toHTMLProgressElement(ownerShadowHost());
 }
 
-bool ProgressShadowElement::layoutObjectIsNeeded(const ComputedStyle& style)
-{
-    LayoutObject* progressLayoutObject = progressElement()->layoutObject();
-    return progressLayoutObject && !progressLayoutObject->style()->hasAppearance() && HTMLDivElement::layoutObjectIsNeeded(style);
+bool ProgressShadowElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+  LayoutObject* progressLayoutObject = progressElement()->layoutObject();
+  return progressLayoutObject &&
+         !progressLayoutObject->style()->hasAppearance() &&
+         HTMLDivElement::layoutObjectIsNeeded(style);
 }
 
-} // namespace blink
+}  // namespace blink

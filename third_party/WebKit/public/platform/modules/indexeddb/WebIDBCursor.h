@@ -35,17 +35,19 @@
 namespace blink {
 
 class WebIDBCursor {
-public:
-    virtual ~WebIDBCursor() { }
+ public:
+  virtual ~WebIDBCursor() {}
 
-    virtual void advance(unsigned long, WebIDBCallbacks*) = 0;
-    virtual void continueFunction(const WebIDBKey&, const WebIDBKey& primaryKey, WebIDBCallbacks*) = 0;
-    virtual void postSuccessHandlerCallback() { } // Only used in frontend.
+  virtual void advance(unsigned long, WebIDBCallbacks*) = 0;
+  virtual void continueFunction(const WebIDBKey&,
+                                const WebIDBKey& primaryKey,
+                                WebIDBCallbacks*) = 0;
+  virtual void postSuccessHandlerCallback() {}  // Only used in frontend.
 
-protected:
-    WebIDBCursor() { }
+ protected:
+  WebIDBCursor() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBCursor_h
+#endif  // WebIDBCursor_h

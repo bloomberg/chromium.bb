@@ -12,25 +12,22 @@
 
 namespace blink {
 
-CustomCompositorAnimationManager::CustomCompositorAnimationManager()
-{
+CustomCompositorAnimationManager::CustomCompositorAnimationManager() {}
+
+CustomCompositorAnimationManager::~CustomCompositorAnimationManager() {}
+
+void CustomCompositorAnimationManager::applyMutations(
+    CompositorMutations* mutations) {
+  TRACE_EVENT0("compositor-worker",
+               "CustomCompositorAnimationManager::applyMutations");
+  for (const auto& entry : mutations->map) {
+    int elementId = entry.key;
+    const CompositorMutation& mutation = *entry.value;
+    Node* node = DOMNodeIds::nodeForId(elementId);
+    if (!node || !node->isElementNode())
+      continue;
+    toElement(node)->updateFromCompositorMutation(mutation);
+  }
 }
 
-CustomCompositorAnimationManager::~CustomCompositorAnimationManager()
-{
-}
-
-void CustomCompositorAnimationManager::applyMutations(CompositorMutations* mutations)
-{
-    TRACE_EVENT0("compositor-worker", "CustomCompositorAnimationManager::applyMutations");
-    for (const auto& entry : mutations->map) {
-        int elementId = entry.key;
-        const CompositorMutation& mutation = *entry.value;
-        Node* node = DOMNodeIds::nodeForId(elementId);
-        if (!node || !node->isElementNode())
-            continue;
-        toElement(node)->updateFromCompositorMutation(mutation);
-    }
-}
-
-} // namespace blink
+}  // namespace blink

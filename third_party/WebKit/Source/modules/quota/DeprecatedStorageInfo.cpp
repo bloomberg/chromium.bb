@@ -40,53 +40,64 @@
 
 namespace blink {
 
-DeprecatedStorageInfo::DeprecatedStorageInfo()
-{
+DeprecatedStorageInfo::DeprecatedStorageInfo() {}
+
+void DeprecatedStorageInfo::queryUsageAndQuota(
+    ExecutionContext* executionContext,
+    int storageType,
+    StorageUsageCallback* successCallback,
+    StorageErrorCallback* errorCallback) {
+  // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
+  DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
+  if (!storageQuota) {
+    // Unknown storage type is requested.
+    executionContext->postTask(BLINK_FROM_HERE,
+                               StorageErrorCallback::createSameThreadTask(
+                                   errorCallback, NotSupportedError));
+    return;
+  }
+  storageQuota->queryUsageAndQuota(executionContext, successCallback,
+                                   errorCallback);
 }
 
-void DeprecatedStorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, StorageUsageCallback* successCallback, StorageErrorCallback* errorCallback)
-{
-    // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
-    DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
-    if (!storageQuota) {
-        // Unknown storage type is requested.
-        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
-        return;
-    }
-    storageQuota->queryUsageAndQuota(executionContext, successCallback, errorCallback);
+void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext,
+                                         int storageType,
+                                         unsigned long long newQuotaInBytes,
+                                         StorageQuotaCallback* successCallback,
+                                         StorageErrorCallback* errorCallback) {
+  // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
+  DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
+  if (!storageQuota) {
+    // Unknown storage type is requested.
+    executionContext->postTask(BLINK_FROM_HERE,
+                               StorageErrorCallback::createSameThreadTask(
+                                   errorCallback, NotSupportedError));
+    return;
+  }
+  storageQuota->requestQuota(executionContext, newQuotaInBytes, successCallback,
+                             errorCallback);
 }
 
-void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext, int storageType, unsigned long long newQuotaInBytes, StorageQuotaCallback* successCallback, StorageErrorCallback* errorCallback)
-{
-    // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
-    DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
-    if (!storageQuota) {
-        // Unknown storage type is requested.
-        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
-        return;
-    }
-    storageQuota->requestQuota(executionContext, newQuotaInBytes, successCallback, errorCallback);
-}
-
-DeprecatedStorageQuota* DeprecatedStorageInfo::getStorageQuota(int storageType)
-{
-    switch (storageType) {
+DeprecatedStorageQuota* DeprecatedStorageInfo::getStorageQuota(
+    int storageType) {
+  switch (storageType) {
     case kTemporary:
-        if (!m_temporaryStorage)
-            m_temporaryStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Temporary);
-        return m_temporaryStorage.get();
+      if (!m_temporaryStorage)
+        m_temporaryStorage =
+            DeprecatedStorageQuota::create(DeprecatedStorageQuota::Temporary);
+      return m_temporaryStorage.get();
     case kPersistent:
-        if (!m_persistentStorage)
-            m_persistentStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Persistent);
-        return m_persistentStorage.get();
-    }
-    return 0;
+      if (!m_persistentStorage)
+        m_persistentStorage =
+            DeprecatedStorageQuota::create(DeprecatedStorageQuota::Persistent);
+      return m_persistentStorage.get();
+  }
+  return 0;
 }
 
-DEFINE_TRACE(DeprecatedStorageInfo)
-{
-    visitor->trace(m_temporaryStorage);
-    visitor->trace(m_persistentStorage);
+DEFINE_TRACE(DeprecatedStorageInfo) {
+  visitor->trace(m_temporaryStorage);
+  visitor->trace(m_persistentStorage);
 }
 
-} // namespace blink
+}  // namespace blink

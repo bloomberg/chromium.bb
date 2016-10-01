@@ -36,6 +36,6 @@ class KURL;
 PLATFORM_EXPORT String mimeTypeFromDataURL(const String& url);
 PLATFORM_EXPORT String mimeTypeFromURL(const KURL&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MIMETypeFromURL_h
+#endif  // MIMETypeFromURL_h

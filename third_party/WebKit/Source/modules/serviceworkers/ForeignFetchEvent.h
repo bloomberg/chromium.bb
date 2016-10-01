@@ -24,29 +24,40 @@ class Request;
 // context. ForeignFetchRespondWithObserver can be used to notify the client
 // about the service worker's response.
 class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&);
-    static ForeignFetchEvent* create(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*, WaitUntilObserver*);
+  DEFINE_WRAPPERTYPEINFO();
 
-    Request* request() const;
-    String origin() const;
+ public:
+  static ForeignFetchEvent* create(ScriptState*,
+                                   const AtomicString& type,
+                                   const ForeignFetchEventInit&);
+  static ForeignFetchEvent* create(ScriptState*,
+                                   const AtomicString& type,
+                                   const ForeignFetchEventInit&,
+                                   ForeignFetchRespondWithObserver*,
+                                   WaitUntilObserver*);
 
-    void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
+  Request* request() const;
+  String origin() const;
 
-    const AtomicString& interfaceName() const override;
+  void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-protected:
-    ForeignFetchEvent(ScriptState*, const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*, WaitUntilObserver*);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    Member<ForeignFetchRespondWithObserver> m_observer;
-    Member<Request> m_request;
-    String m_origin;
+ protected:
+  ForeignFetchEvent(ScriptState*,
+                    const AtomicString& type,
+                    const ForeignFetchEventInit&,
+                    ForeignFetchRespondWithObserver*,
+                    WaitUntilObserver*);
+
+ private:
+  Member<ForeignFetchRespondWithObserver> m_observer;
+  Member<Request> m_request;
+  String m_origin;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ForeignFetchEvent_h
+#endif  // ForeignFetchEvent_h

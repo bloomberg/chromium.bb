@@ -12,19 +12,18 @@
 
 namespace blink {
 
-void InitializeBlinkFuzzTest(int* argc, char ***argv)
-{
-    // Note: we don't tear anything down here after an iteration of the fuzzer
-    // is complete, this is for efficiency. We rerun the fuzzer with the same
-    // environment as the previous iteration.
-    base::AtExitManager atExit;
+void InitializeBlinkFuzzTest(int* argc, char*** argv) {
+  // Note: we don't tear anything down here after an iteration of the fuzzer
+  // is complete, this is for efficiency. We rerun the fuzzer with the same
+  // environment as the previous iteration.
+  base::AtExitManager atExit;
 
-    mojo::edk::Init();
-    base::CommandLine::Init(*argc, *argv);
+  mojo::edk::Init();
+  base::CommandLine::Init(*argc, *argv);
 
-    content::SetUpBlinkTestEnvironment();
+  content::SetUpBlinkTestEnvironment();
 
-    blink::SchemeRegistry::initialize();
+  blink::SchemeRegistry::initialize();
 }
 
-} // namespace blink
+}  // namespace blink

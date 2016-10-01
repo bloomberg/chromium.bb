@@ -26,16 +26,17 @@
 namespace blink {
 
 class SVGDescElement final : public SVGElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGDescElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit SVGDescElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGDescElement);
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+ private:
+  explicit SVGDescElement(Document&);
+
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGDescElement_h
+#endif  // SVGDescElement_h

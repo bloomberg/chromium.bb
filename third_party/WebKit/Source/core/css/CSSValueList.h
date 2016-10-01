@@ -28,55 +28,53 @@
 namespace blink {
 
 class CORE_EXPORT CSSValueList : public CSSValue {
-    WTF_MAKE_NONCOPYABLE(CSSValueList);
-public:
-    using iterator = HeapVector<Member<const CSSValue>, 4>::iterator;
-    using const_iterator = HeapVector<Member<const CSSValue>, 4>::const_iterator;
+  WTF_MAKE_NONCOPYABLE(CSSValueList);
 
-    static CSSValueList* createCommaSeparated()
-    {
-        return new CSSValueList(CommaSeparator);
-    }
-    static CSSValueList* createSpaceSeparated()
-    {
-        return new CSSValueList(SpaceSeparator);
-    }
-    static CSSValueList* createSlashSeparated()
-    {
-        return new CSSValueList(SlashSeparator);
-    }
+ public:
+  using iterator = HeapVector<Member<const CSSValue>, 4>::iterator;
+  using const_iterator = HeapVector<Member<const CSSValue>, 4>::const_iterator;
 
-    iterator begin() { return m_values.begin(); }
-    iterator end() { return m_values.end(); }
-    const_iterator begin() const { return m_values.begin(); }
-    const_iterator end() const { return m_values.end(); }
+  static CSSValueList* createCommaSeparated() {
+    return new CSSValueList(CommaSeparator);
+  }
+  static CSSValueList* createSpaceSeparated() {
+    return new CSSValueList(SpaceSeparator);
+  }
+  static CSSValueList* createSlashSeparated() {
+    return new CSSValueList(SlashSeparator);
+  }
 
-    size_t length() const { return m_values.size(); }
-    const CSSValue& item(size_t index) const { return *m_values[index]; }
+  iterator begin() { return m_values.begin(); }
+  iterator end() { return m_values.end(); }
+  const_iterator begin() const { return m_values.begin(); }
+  const_iterator end() const { return m_values.end(); }
 
-    void append(const CSSValue& value) { m_values.append(value); }
-    bool removeAll(const CSSValue&);
-    bool hasValue(const CSSValue&) const;
-    CSSValueList* copy() const;
+  size_t length() const { return m_values.size(); }
+  const CSSValue& item(size_t index) const { return *m_values[index]; }
 
-    String customCSSText() const;
-    bool equals(const CSSValueList&) const;
+  void append(const CSSValue& value) { m_values.append(value); }
+  bool removeAll(const CSSValue&);
+  bool hasValue(const CSSValue&) const;
+  CSSValueList* copy() const;
 
-    bool hasFailedOrCanceledSubresources() const;
+  String customCSSText() const;
+  bool equals(const CSSValueList&) const;
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  bool hasFailedOrCanceledSubresources() const;
 
-protected:
-    CSSValueList(ClassType, ValueListSeparator);
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-private:
-    explicit CSSValueList(ValueListSeparator);
+ protected:
+  CSSValueList(ClassType, ValueListSeparator);
 
-    HeapVector<Member<const CSSValue>, 4> m_values;
+ private:
+  explicit CSSValueList(ValueListSeparator);
+
+  HeapVector<Member<const CSSValue>, 4> m_values;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, isValueList());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSValueList_h
+#endif  // CSSValueList_h

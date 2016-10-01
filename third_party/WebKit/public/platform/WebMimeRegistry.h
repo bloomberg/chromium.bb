@@ -36,26 +36,31 @@ namespace blink {
 class WebString;
 
 class WebMimeRegistry {
-public:
-    enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
+ public:
+  enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
 
-    virtual SupportsType supportsMIMEType(const WebString& mimeType) = 0;
-    virtual SupportsType supportsImageMIMEType(const WebString& mimeType) = 0;
-    virtual SupportsType supportsImagePrefixedMIMEType(const WebString& mimeType) = 0;
-    virtual SupportsType supportsJavaScriptMIMEType(const WebString& mimeType) = 0;
-    virtual SupportsType supportsMediaMIMEType(const WebString& mimeType, const WebString& codecs) = 0;
+  virtual SupportsType supportsMIMEType(const WebString& mimeType) = 0;
+  virtual SupportsType supportsImageMIMEType(const WebString& mimeType) = 0;
+  virtual SupportsType supportsImagePrefixedMIMEType(
+      const WebString& mimeType) = 0;
+  virtual SupportsType supportsJavaScriptMIMEType(
+      const WebString& mimeType) = 0;
+  virtual SupportsType supportsMediaMIMEType(const WebString& mimeType,
+                                             const WebString& codecs) = 0;
 
-    virtual bool supportsMediaSourceMIMEType(const WebString& mimeType, const WebString& codecs) = 0;
+  virtual bool supportsMediaSourceMIMEType(const WebString& mimeType,
+                                           const WebString& codecs) = 0;
 
-    virtual SupportsType supportsNonImageMIMEType(const WebString& mimeType) = 0;
+  virtual SupportsType supportsNonImageMIMEType(const WebString& mimeType) = 0;
 
-    virtual WebString mimeTypeForExtension(const WebString& fileExtension) = 0;
-    virtual WebString wellKnownMimeTypeForExtension(const WebString& fileExtension) = 0;
+  virtual WebString mimeTypeForExtension(const WebString& fileExtension) = 0;
+  virtual WebString wellKnownMimeTypeForExtension(
+      const WebString& fileExtension) = 0;
 
-protected:
-    ~WebMimeRegistry() { }
+ protected:
+  ~WebMimeRegistry() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

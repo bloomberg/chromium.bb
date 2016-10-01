@@ -42,26 +42,31 @@ class File;
 class FileWriterSync;
 
 class FileEntrySync final : public EntrySync {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static FileEntrySync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
-    {
-        return new FileEntrySync(fileSystem, fullPath);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool isFile() const override { return true; }
+ public:
+  static FileEntrySync* create(DOMFileSystemBase* fileSystem,
+                               const String& fullPath) {
+    return new FileEntrySync(fileSystem, fullPath);
+  }
 
-    File* file(ExceptionState&);
-    FileWriterSync* createWriter(ExceptionState&);
+  bool isFile() const override { return true; }
 
-    DECLARE_VIRTUAL_TRACE();
+  File* file(ExceptionState&);
+  FileWriterSync* createWriter(ExceptionState&);
 
-private:
-    FileEntrySync(DOMFileSystemBase*, const String& fullPath);
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  FileEntrySync(DOMFileSystemBase*, const String& fullPath);
 };
 
-DEFINE_TYPE_CASTS(FileEntrySync, EntrySync, entry, entry->isFile(), entry.isFile());
+DEFINE_TYPE_CASTS(FileEntrySync,
+                  EntrySync,
+                  entry,
+                  entry->isFile(),
+                  entry.isFile());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileEntrySync_h
+#endif  // FileEntrySync_h

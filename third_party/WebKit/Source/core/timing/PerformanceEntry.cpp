@@ -35,69 +35,62 @@
 
 namespace blink {
 
-PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime)
-    : m_name(name)
-    , m_entryType(entryType)
-    , m_startTime(startTime)
-    , m_duration(finishTime - startTime)
-    , m_entryTypeEnum(toEntryTypeEnum(entryType))
-{
+PerformanceEntry::PerformanceEntry(const String& name,
+                                   const String& entryType,
+                                   double startTime,
+                                   double finishTime)
+    : m_name(name),
+      m_entryType(entryType),
+      m_startTime(startTime),
+      m_duration(finishTime - startTime),
+      m_entryTypeEnum(toEntryTypeEnum(entryType)) {}
+
+PerformanceEntry::~PerformanceEntry() {}
+
+String PerformanceEntry::name() const {
+  return m_name;
 }
 
-PerformanceEntry::~PerformanceEntry()
-{
+String PerformanceEntry::entryType() const {
+  return m_entryType;
 }
 
-String PerformanceEntry::name() const
-{
-    return m_name;
+double PerformanceEntry::startTime() const {
+  return m_startTime;
 }
 
-String PerformanceEntry::entryType() const
-{
-    return m_entryType;
+double PerformanceEntry::duration() const {
+  return m_duration;
 }
 
-double PerformanceEntry::startTime() const
-{
-    return m_startTime;
+PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(
+    const String& entryType) {
+  if (equalIgnoringCase(entryType, "composite"))
+    return Composite;
+  if (equalIgnoringCase(entryType, "longtask"))
+    return LongTask;
+  if (equalIgnoringCase(entryType, "mark"))
+    return Mark;
+  if (equalIgnoringCase(entryType, "measure"))
+    return Measure;
+  if (equalIgnoringCase(entryType, "render"))
+    return Render;
+  if (equalIgnoringCase(entryType, "resource"))
+    return Resource;
+  return Invalid;
 }
 
-double PerformanceEntry::duration() const
-{
-    return m_duration;
+ScriptValue PerformanceEntry::toJSONForBinding(ScriptState* scriptState) const {
+  V8ObjectBuilder result(scriptState);
+  buildJSONValue(result);
+  return result.scriptValue();
 }
 
-PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(const String& entryType)
-{
-    if (equalIgnoringCase(entryType, "composite"))
-        return Composite;
-    if (equalIgnoringCase(entryType, "longtask"))
-        return LongTask;
-    if (equalIgnoringCase(entryType, "mark"))
-        return Mark;
-    if (equalIgnoringCase(entryType, "measure"))
-        return Measure;
-    if (equalIgnoringCase(entryType, "render"))
-        return Render;
-    if (equalIgnoringCase(entryType, "resource"))
-        return Resource;
-    return Invalid;
+void PerformanceEntry::buildJSONValue(V8ObjectBuilder& builder) const {
+  builder.addString("name", name());
+  builder.addString("entryType", entryType());
+  builder.addNumber("startTime", startTime());
+  builder.addNumber("duration", duration());
 }
 
-ScriptValue PerformanceEntry::toJSONForBinding(ScriptState* scriptState) const
-{
-    V8ObjectBuilder result(scriptState);
-    buildJSONValue(result);
-    return result.scriptValue();
-}
-
-void PerformanceEntry::buildJSONValue(V8ObjectBuilder& builder) const
-{
-    builder.addString("name", name());
-    builder.addString("entryType", entryType());
-    builder.addNumber("startTime", startTime());
-    builder.addNumber("duration", duration());
-}
-
-} // namespace blink
+}  // namespace blink

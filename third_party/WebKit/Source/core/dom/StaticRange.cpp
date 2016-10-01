@@ -14,49 +14,45 @@
 namespace blink {
 
 StaticRange::StaticRange(Document& document)
-    : m_ownerDocument(document)
-    , m_startContainer(nullptr)
-    , m_startOffset(0)
-    , m_endContainer(nullptr)
-    , m_endOffset(0)
-{
+    : m_ownerDocument(document),
+      m_startContainer(nullptr),
+      m_startOffset(0),
+      m_endContainer(nullptr),
+      m_endOffset(0) {}
+
+StaticRange::StaticRange(Document& document,
+                         Node* startContainer,
+                         int startOffset,
+                         Node* endContainer,
+                         int endOffset)
+    : m_ownerDocument(document),
+      m_startContainer(startContainer),
+      m_startOffset(startOffset),
+      m_endContainer(endContainer),
+      m_endOffset(endOffset) {}
+
+void StaticRange::setStart(Node* container, int offset) {
+  m_startContainer = container;
+  m_startOffset = offset;
 }
 
-StaticRange::StaticRange(Document& document, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
-    : m_ownerDocument(document)
-    , m_startContainer(startContainer)
-    , m_startOffset(startOffset)
-    , m_endContainer(endContainer)
-    , m_endOffset(endOffset)
-{
+void StaticRange::setEnd(Node* container, int offset) {
+  m_endContainer = container;
+  m_endOffset = offset;
 }
 
-void StaticRange::setStart(Node* container, int offset)
-{
-    m_startContainer = container;
-    m_startOffset = offset;
+Range* StaticRange::toRange(ExceptionState& exceptionState) const {
+  Range* range = Range::create(*m_ownerDocument.get());
+  // Do the offset checking.
+  range->setStart(m_startContainer, m_startOffset, exceptionState);
+  range->setEnd(m_endContainer, m_endOffset, exceptionState);
+  return range;
 }
 
-void StaticRange::setEnd(Node* container, int offset)
-{
-    m_endContainer = container;
-    m_endOffset = offset;
+DEFINE_TRACE(StaticRange) {
+  visitor->trace(m_ownerDocument);
+  visitor->trace(m_startContainer);
+  visitor->trace(m_endContainer);
 }
 
-Range* StaticRange::toRange(ExceptionState& exceptionState) const
-{
-    Range* range = Range::create(*m_ownerDocument.get());
-    // Do the offset checking.
-    range->setStart(m_startContainer, m_startOffset, exceptionState);
-    range->setEnd(m_endContainer, m_endOffset, exceptionState);
-    return range;
-}
-
-DEFINE_TRACE(StaticRange)
-{
-    visitor->trace(m_ownerDocument);
-    visitor->trace(m_startContainer);
-    visitor->trace(m_endContainer);
-}
-
-} // namespace blink
+}  // namespace blink

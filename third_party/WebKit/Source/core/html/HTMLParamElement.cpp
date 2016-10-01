@@ -31,34 +31,29 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLParamElement::HTMLParamElement(Document& document)
-    : HTMLElement(paramTag, document)
-{
-}
+    : HTMLElement(paramTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLParamElement)
 
-const AtomicString& HTMLParamElement::name() const
-{
-    if (hasName())
-        return getNameAttribute();
-    return document().isHTMLDocument() ? emptyAtom : getIdAttribute();
+const AtomicString& HTMLParamElement::name() const {
+  if (hasName())
+    return getNameAttribute();
+  return document().isHTMLDocument() ? emptyAtom : getIdAttribute();
 }
 
-const AtomicString& HTMLParamElement::value() const
-{
-    return fastGetAttribute(valueAttr);
+const AtomicString& HTMLParamElement::value() const {
+  return fastGetAttribute(valueAttr);
 }
 
-bool HTMLParamElement::isURLParameter(const String& name)
-{
-    return equalIgnoringCase(name, "data") || equalIgnoringCase(name, "movie") || equalIgnoringCase(name, "src");
+bool HTMLParamElement::isURLParameter(const String& name) {
+  return equalIgnoringCase(name, "data") || equalIgnoringCase(name, "movie") ||
+         equalIgnoringCase(name, "src");
 }
 
-bool HTMLParamElement::isURLAttribute(const Attribute& attribute) const
-{
-    if (attribute.name() == valueAttr && isURLParameter(name()))
-        return true;
-    return HTMLElement::isURLAttribute(attribute);
+bool HTMLParamElement::isURLAttribute(const Attribute& attribute) const {
+  if (attribute.name() == valueAttr && isURLParameter(name()))
+    return true;
+  return HTMLElement::isURLAttribute(attribute);
 }
 
-} // namespace blink
+}  // namespace blink

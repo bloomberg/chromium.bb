@@ -8,24 +8,21 @@
 
 namespace blink {
 
-void CancellableTaskFactory::cancel()
-{
-    m_weakPtrFactory.revokeAll();
+void CancellableTaskFactory::cancel() {
+  m_weakPtrFactory.revokeAll();
 }
 
-WebTaskRunner::Task* CancellableTaskFactory::cancelAndCreate()
-{
-    cancel();
-    return new CancellableTask(m_weakPtrFactory.createWeakPtr());
+WebTaskRunner::Task* CancellableTaskFactory::cancelAndCreate() {
+  cancel();
+  return new CancellableTask(m_weakPtrFactory.createWeakPtr());
 }
 
-void CancellableTaskFactory::CancellableTask::run()
-{
-    if (CancellableTaskFactory* taskFactory = m_weakPtr.get()) {
-        WTF::Closure* closure = taskFactory->m_closure.get();
-        taskFactory->m_weakPtrFactory.revokeAll();
-        (*closure)();
-    }
+void CancellableTaskFactory::CancellableTask::run() {
+  if (CancellableTaskFactory* taskFactory = m_weakPtr.get()) {
+    WTF::Closure* closure = taskFactory->m_closure.get();
+    taskFactory->m_weakPtrFactory.revokeAll();
+    (*closure)();
+  }
 }
 
-} // namespace blink
+}  // namespace blink

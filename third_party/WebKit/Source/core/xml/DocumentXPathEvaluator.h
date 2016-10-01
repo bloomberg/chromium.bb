@@ -36,28 +36,38 @@ class ExceptionState;
 class XPathExpression;
 class XPathResult;
 
-class DocumentXPathEvaluator final : public GarbageCollected<DocumentXPathEvaluator>, public Supplement<Document> {
-    USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
-public:
-    static DocumentXPathEvaluator& from(Supplementable<Document>&);
+class DocumentXPathEvaluator final
+    : public GarbageCollected<DocumentXPathEvaluator>,
+      public Supplement<Document> {
+  USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
 
-    static XPathExpression* createExpression(Supplementable<Document>&,
-        const String& expression, XPathNSResolver*, ExceptionState&);
-    static XPathNSResolver* createNSResolver(Supplementable<Document>&, Node* nodeResolver);
-    static XPathResult* evaluate(Supplementable<Document>&,
-        const String& expression, Node* contextNode, XPathNSResolver*,
-        unsigned short type, const ScriptValue&, ExceptionState&);
+ public:
+  static DocumentXPathEvaluator& from(Supplementable<Document>&);
 
-    DECLARE_VIRTUAL_TRACE();
+  static XPathExpression* createExpression(Supplementable<Document>&,
+                                           const String& expression,
+                                           XPathNSResolver*,
+                                           ExceptionState&);
+  static XPathNSResolver* createNSResolver(Supplementable<Document>&,
+                                           Node* nodeResolver);
+  static XPathResult* evaluate(Supplementable<Document>&,
+                               const String& expression,
+                               Node* contextNode,
+                               XPathNSResolver*,
+                               unsigned short type,
+                               const ScriptValue&,
+                               ExceptionState&);
 
-private:
-    DocumentXPathEvaluator();
+  DECLARE_VIRTUAL_TRACE();
 
-    static const char* supplementName() { return "DocumentXPathEvaluator"; }
+ private:
+  DocumentXPathEvaluator();
 
-    Member<XPathEvaluator> m_xpathEvaluator;
+  static const char* supplementName() { return "DocumentXPathEvaluator"; }
+
+  Member<XPathEvaluator> m_xpathEvaluator;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentXPathEvaluator_h
+#endif  // DocumentXPathEvaluator_h

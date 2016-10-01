@@ -11,31 +11,33 @@
 namespace blink {
 
 ActiveScriptWrappable::ActiveScriptWrappable(ScriptWrappable* self)
-    : m_scriptWrappable(self)
-{
-    ASSERT(ThreadState::current());
-    v8::Isolate* isolate = ThreadState::current()->isolate();
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-    isolateData->addActiveScriptWrappable(this);
+    : m_scriptWrappable(self) {
+  ASSERT(ThreadState::current());
+  v8::Isolate* isolate = ThreadState::current()->isolate();
+  V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
+  isolateData->addActiveScriptWrappable(this);
 }
 
-void ActiveScriptWrappable::traceActiveScriptWrappables(v8::Isolate* isolate, ScriptWrappableVisitor* visitor)
-{
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-    auto activeScriptWrappables = isolateData->activeScriptWrappables();
-    if (!activeScriptWrappables) {
-        return;
+void ActiveScriptWrappable::traceActiveScriptWrappables(
+    v8::Isolate* isolate,
+    ScriptWrappableVisitor* visitor) {
+  V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
+  auto activeScriptWrappables = isolateData->activeScriptWrappables();
+  if (!activeScriptWrappables) {
+    return;
+  }
+
+  for (auto activeWrappable : *activeScriptWrappables) {
+    auto scriptWrappable = activeWrappable->toScriptWrappable();
+    if (!scriptWrappable->hasPendingActivity()) {
+      continue;
     }
 
-    for (auto activeWrappable : *activeScriptWrappables) {
-        auto scriptWrappable = activeWrappable->toScriptWrappable();
-        if (!scriptWrappable->hasPendingActivity()) {
-            continue;
-        }
-
-        auto wrapperTypeInfo = const_cast<WrapperTypeInfo*>(scriptWrappable->wrapperTypeInfo());
-        visitor->RegisterV8Reference(std::make_pair(wrapperTypeInfo, scriptWrappable));
-    }
+    auto wrapperTypeInfo =
+        const_cast<WrapperTypeInfo*>(scriptWrappable->wrapperTypeInfo());
+    visitor->RegisterV8Reference(
+        std::make_pair(wrapperTypeInfo, scriptWrappable));
+  }
 }
 
-} // namespace blink
+}  // namespace blink

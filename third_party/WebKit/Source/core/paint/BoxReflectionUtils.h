@@ -13,8 +13,9 @@ class PaintLayer;
 
 // Utilities for manipulating box reflections in terms of core concepts, like
 // PaintLayer.
-BoxReflection boxReflectionForPaintLayer(const PaintLayer&, const ComputedStyle&);
+BoxReflection boxReflectionForPaintLayer(const PaintLayer&,
+                                         const ComputedStyle&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BoxReflectionUtils_h
+#endif  // BoxReflectionUtils_h

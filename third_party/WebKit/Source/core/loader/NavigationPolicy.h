@@ -36,18 +36,23 @@
 namespace blink {
 
 enum NavigationPolicy {
-    NavigationPolicyIgnore,
-    NavigationPolicyDownload,
-    NavigationPolicyCurrentTab,
-    NavigationPolicyNewBackgroundTab,
-    NavigationPolicyNewForegroundTab,
-    NavigationPolicyNewWindow,
-    NavigationPolicyNewPopup,
-    NavigationPolicyHandledByClient,
+  NavigationPolicyIgnore,
+  NavigationPolicyDownload,
+  NavigationPolicyCurrentTab,
+  NavigationPolicyNewBackgroundTab,
+  NavigationPolicyNewForegroundTab,
+  NavigationPolicyNewWindow,
+  NavigationPolicyNewPopup,
+  NavigationPolicyHandledByClient,
 };
 
-CORE_EXPORT bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift, bool alt, bool meta, NavigationPolicy*);
+CORE_EXPORT bool navigationPolicyFromMouseEvent(unsigned short button,
+                                                bool ctrl,
+                                                bool shift,
+                                                bool alt,
+                                                bool meta,
+                                                NavigationPolicy*);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

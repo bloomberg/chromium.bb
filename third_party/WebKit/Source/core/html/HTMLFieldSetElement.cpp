@@ -38,124 +38,112 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document, HTMLFormElement* form)
-    : HTMLFormControlElement(fieldsetTag, document, form)
-    , m_documentVersion(0)
-{
+inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document,
+                                                HTMLFormElement* form)
+    : HTMLFormControlElement(fieldsetTag, document, form),
+      m_documentVersion(0) {}
+
+HTMLFieldSetElement* HTMLFieldSetElement::create(Document& document,
+                                                 HTMLFormElement* form) {
+  return new HTMLFieldSetElement(document, form);
 }
 
-HTMLFieldSetElement* HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
-{
-    return new HTMLFieldSetElement(document, form);
+DEFINE_TRACE(HTMLFieldSetElement) {
+  visitor->trace(m_associatedElements);
+  HTMLFormControlElement::trace(visitor);
 }
 
-DEFINE_TRACE(HTMLFieldSetElement)
-{
-    visitor->trace(m_associatedElements);
-    HTMLFormControlElement::trace(visitor);
+bool HTMLFieldSetElement::matchesValidityPseudoClasses() const {
+  return true;
 }
 
-bool HTMLFieldSetElement::matchesValidityPseudoClasses() const
-{
-    return true;
-}
-
-bool HTMLFieldSetElement::isValidElement()
-{
-    const FormAssociatedElement::List& elements = associatedElements();
-    for (unsigned i = 0; i < elements.size(); ++i) {
-        if (elements[i]->isFormControlElement()) {
-            HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
-            if (!control->checkValidity(0, CheckValidityDispatchNoEvent))
-                return false;
-        }
+bool HTMLFieldSetElement::isValidElement() {
+  const FormAssociatedElement::List& elements = associatedElements();
+  for (unsigned i = 0; i < elements.size(); ++i) {
+    if (elements[i]->isFormControlElement()) {
+      HTMLFormControlElement* control =
+          toHTMLFormControlElement(elements[i].get());
+      if (!control->checkValidity(0, CheckValidityDispatchNoEvent))
+        return false;
     }
-    return true;
+  }
+  return true;
 }
 
-bool HTMLFieldSetElement::isSubmittableElement()
-{
-    return false;
+bool HTMLFieldSetElement::isSubmittableElement() {
+  return false;
 }
 
-void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)
-{
-    for (HTMLFormControlElement& element : Traversal<HTMLFormControlElement>::descendantsOf(base))
-        element.ancestorDisabledStateWasChanged();
+void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base) {
+  for (HTMLFormControlElement& element :
+       Traversal<HTMLFormControlElement>::descendantsOf(base))
+    element.ancestorDisabledStateWasChanged();
 }
 
-void HTMLFieldSetElement::disabledAttributeChanged()
-{
-    // This element must be updated before the style of nodes in its subtree gets recalculated.
-    HTMLFormControlElement::disabledAttributeChanged();
-    invalidateDisabledStateUnder(*this);
+void HTMLFieldSetElement::disabledAttributeChanged() {
+  // This element must be updated before the style of nodes in its subtree gets recalculated.
+  HTMLFormControlElement::disabledAttributeChanged();
+  invalidateDisabledStateUnder(*this);
 }
 
-void HTMLFieldSetElement::childrenChanged(const ChildrenChange& change)
-{
-    HTMLFormControlElement::childrenChanged(change);
-    for (HTMLLegendElement& legend : Traversal<HTMLLegendElement>::childrenOf(*this))
-        invalidateDisabledStateUnder(legend);
+void HTMLFieldSetElement::childrenChanged(const ChildrenChange& change) {
+  HTMLFormControlElement::childrenChanged(change);
+  for (HTMLLegendElement& legend :
+       Traversal<HTMLLegendElement>::childrenOf(*this))
+    invalidateDisabledStateUnder(legend);
 }
 
-bool HTMLFieldSetElement::supportsFocus() const
-{
-    return HTMLElement::supportsFocus() && !isDisabledFormControl();
+bool HTMLFieldSetElement::supportsFocus() const {
+  return HTMLElement::supportsFocus() && !isDisabledFormControl();
 }
 
-const AtomicString& HTMLFieldSetElement::formControlType() const
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, fieldset, ("fieldset"));
-    return fieldset;
+const AtomicString& HTMLFieldSetElement::formControlType() const {
+  DEFINE_STATIC_LOCAL(const AtomicString, fieldset, ("fieldset"));
+  return fieldset;
 }
 
-LayoutObject* HTMLFieldSetElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutFieldset(this);
+LayoutObject* HTMLFieldSetElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutFieldset(this);
 }
 
-HTMLLegendElement* HTMLFieldSetElement::legend() const
-{
-    return Traversal<HTMLLegendElement>::firstChild(*this);
+HTMLLegendElement* HTMLFieldSetElement::legend() const {
+  return Traversal<HTMLLegendElement>::firstChild(*this);
 }
 
-HTMLFormControlsCollection* HTMLFieldSetElement::elements()
-{
-    return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
+HTMLFormControlsCollection* HTMLFieldSetElement::elements() {
+  return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
 }
 
-void HTMLFieldSetElement::refreshElementsIfNeeded() const
-{
-    uint64_t docVersion = document().domTreeVersion();
-    if (m_documentVersion == docVersion)
-        return;
+void HTMLFieldSetElement::refreshElementsIfNeeded() const {
+  uint64_t docVersion = document().domTreeVersion();
+  if (m_documentVersion == docVersion)
+    return;
 
-    m_documentVersion = docVersion;
+  m_documentVersion = docVersion;
 
-    m_associatedElements.clear();
+  m_associatedElements.clear();
 
-    for (HTMLElement& element : Traversal<HTMLElement>::descendantsOf(*this)) {
-        if (isHTMLObjectElement(element)) {
-            m_associatedElements.append(toHTMLObjectElement(&element));
-            continue;
-        }
-
-        if (!element.isFormControlElement())
-            continue;
-
-        m_associatedElements.append(toHTMLFormControlElement(&element));
+  for (HTMLElement& element : Traversal<HTMLElement>::descendantsOf(*this)) {
+    if (isHTMLObjectElement(element)) {
+      m_associatedElements.append(toHTMLObjectElement(&element));
+      continue;
     }
+
+    if (!element.isFormControlElement())
+      continue;
+
+    m_associatedElements.append(toHTMLFormControlElement(&element));
+  }
 }
 
-const FormAssociatedElement::List& HTMLFieldSetElement::associatedElements() const
-{
-    refreshElementsIfNeeded();
-    return m_associatedElements;
+const FormAssociatedElement::List& HTMLFieldSetElement::associatedElements()
+    const {
+  refreshElementsIfNeeded();
+  return m_associatedElements;
 }
 
-short HTMLFieldSetElement::tabIndex() const
-{
-    return HTMLElement::tabIndex();
+short HTMLFieldSetElement::tabIndex() const {
+  return HTMLElement::tabIndex();
 }
 
-} // namespace blink
+}  // namespace blink

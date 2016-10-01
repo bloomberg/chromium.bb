@@ -5,20 +5,19 @@
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 
 #include "wtf/Assertions.h"
-#include <ostream> // NOLINT
+#include <ostream>  // NOLINT
 
 namespace blink {
 
-std::ostream& operator<<(std::ostream& os, TextSegmentationMachineState state)
-{
-    static const char* const texts[] = {
-        "Invalid", "NeedMoreCodeUnit", "NeedFollowingCodeUnit", "Finished",
-    };
+std::ostream& operator<<(std::ostream& os, TextSegmentationMachineState state) {
+  static const char* const texts[] = {
+      "Invalid", "NeedMoreCodeUnit", "NeedFollowingCodeUnit", "Finished",
+  };
 
-    const auto& it = std::begin(texts) + static_cast<size_t>(state);
-    DCHECK_GE(it, std::begin(texts)) << "Unknown state value";
-    DCHECK_LT(it, std::end(texts)) << "Unknown state value";
-    return os << *it;
+  const auto& it = std::begin(texts) + static_cast<size_t>(state);
+  DCHECK_GE(it, std::begin(texts)) << "Unknown state value";
+  DCHECK_LT(it, std::end(texts)) << "Unknown state value";
+  return os << *it;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -34,54 +34,39 @@
 namespace blink {
 
 // Normal constructor: allocates for a given fftSize.
-FFTFrame::FFTFrame(unsigned /*fftSize*/)
-    : m_FFTSize(0)
-    , m_log2FFTSize(0)
-{
-    ASSERT_NOT_REACHED();
+FFTFrame::FFTFrame(unsigned /*fftSize*/) : m_FFTSize(0), m_log2FFTSize(0) {
+  ASSERT_NOT_REACHED();
 }
 
 // Creates a blank/empty frame (interpolate() must later be called).
-FFTFrame::FFTFrame()
-    : m_FFTSize(0)
-    , m_log2FFTSize(0)
-{
-    ASSERT_NOT_REACHED();
+FFTFrame::FFTFrame() : m_FFTSize(0), m_log2FFTSize(0) {
+  ASSERT_NOT_REACHED();
 }
 
 // Copy constructor.
 FFTFrame::FFTFrame(const FFTFrame& frame)
-    : m_FFTSize(frame.m_FFTSize)
-    , m_log2FFTSize(frame.m_log2FFTSize)
-{
-    ASSERT_NOT_REACHED();
+    : m_FFTSize(frame.m_FFTSize), m_log2FFTSize(frame.m_log2FFTSize) {
+  ASSERT_NOT_REACHED();
 }
 
-FFTFrame::~FFTFrame()
-{
-    ASSERT_NOT_REACHED();
+FFTFrame::~FFTFrame() {
+  ASSERT_NOT_REACHED();
 }
 
-void FFTFrame::doFFT(const float* data)
-{
-    ASSERT_NOT_REACHED();
+void FFTFrame::doFFT(const float* data) {
+  ASSERT_NOT_REACHED();
 }
 
-void FFTFrame::doInverseFFT(float* data)
-{
-    ASSERT_NOT_REACHED();
+void FFTFrame::doInverseFFT(float* data) {
+  ASSERT_NOT_REACHED();
 }
 
-void FFTFrame::initialize()
-{
+void FFTFrame::initialize() {}
+
+void FFTFrame::cleanup() {
+  ASSERT_NOT_REACHED();
 }
 
-void FFTFrame::cleanup()
-{
-    ASSERT_NOT_REACHED();
-}
+}  // namespace blink
 
-} // namespace blink
-
-#endif // !OS(MACOSX) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
-
+#endif  // !OS(MACOSX) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_OPENMAX_DL_FFT)

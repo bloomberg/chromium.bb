@@ -20,7 +20,8 @@ namespace blink {
 
 // Note that passed string must outlive the resulting StringView. This implies it must not be a temporary object.
 CORE_EXPORT v8_inspector::StringView toV8InspectorStringView(const StringView&);
-CORE_EXPORT std::unique_ptr<v8_inspector::StringBuffer> toV8InspectorStringBuffer(const StringView&);
+CORE_EXPORT std::unique_ptr<v8_inspector::StringBuffer>
+toV8InspectorStringBuffer(const StringView&);
 CORE_EXPORT String toCoreString(const v8_inspector::StringView&);
 CORE_EXPORT String toCoreString(std::unique_ptr<v8_inspector::StringBuffer>);
 
@@ -32,29 +33,36 @@ using String = WTF::String;
 using StringBuilder = WTF::StringBuilder;
 
 class CORE_EXPORT StringUtil {
-    STATIC_ONLY(StringUtil);
-public:
-    static String substring(const String& s, unsigned pos, unsigned len) { return s.substring(pos, len); }
-    static String fromInteger(int number) { return String::number(number); }
-    static String fromDouble(double number) { return Decimal::fromDouble(number).toString(); }
-    static const size_t kNotFound = WTF::kNotFound;
-    static void builderReserve(StringBuilder& builder, unsigned capacity) { builder.reserveCapacity(capacity); }
+  STATIC_ONLY(StringUtil);
+
+ public:
+  static String substring(const String& s, unsigned pos, unsigned len) {
+    return s.substring(pos, len);
+  }
+  static String fromInteger(int number) { return String::number(number); }
+  static String fromDouble(double number) {
+    return Decimal::fromDouble(number).toString();
+  }
+  static const size_t kNotFound = WTF::kNotFound;
+  static void builderReserve(StringBuilder& builder, unsigned capacity) {
+    builder.reserveCapacity(capacity);
+  }
 };
 
 CORE_EXPORT std::unique_ptr<protocol::Value> parseJSON(const String&);
 
-} // namespace protocol
+}  // namespace protocol
 
-} // namespace blink
+}  // namespace blink
 
 // TODO(dgozman): migrate core/inspector/protocol to wtf::HashMap.
 namespace std {
-template<> struct hash<WTF::String> {
-    std::size_t operator()(const WTF::String& string) const
-    {
-        return StringHash::hash(string);
-    }
+template <>
+struct hash<WTF::String> {
+  std::size_t operator()(const WTF::String& string) const {
+    return StringHash::hash(string);
+  }
 };
-} // namespace std
+}  // namespace std
 
-#endif // V8InspectorString_h
+#endif  // V8InspectorString_h

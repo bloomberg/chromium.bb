@@ -13,9 +13,8 @@ MockWebIDBDatabase::MockWebIDBDatabase() {}
 
 MockWebIDBDatabase::~MockWebIDBDatabase() {}
 
-std::unique_ptr<MockWebIDBDatabase> MockWebIDBDatabase::create()
-{
-    return wrapUnique(new MockWebIDBDatabase());
+std::unique_ptr<MockWebIDBDatabase> MockWebIDBDatabase::create() {
+  return wrapUnique(new MockWebIDBDatabase());
 }
 
-} // namespace blink
+}  // namespace blink

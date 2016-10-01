@@ -39,36 +39,33 @@
 namespace blink {
 
 class AnimationDocumentTimelineTest : public ::testing::Test {
-protected:
-    virtual void SetUp()
-    {
-        pageHolder = DummyPageHolder::create();
-        document = &pageHolder->document();
-    }
+ protected:
+  virtual void SetUp() {
+    pageHolder = DummyPageHolder::create();
+    document = &pageHolder->document();
+  }
 
-    virtual void TearDown()
-    {
-        document.release();
-        ThreadState::current()-> collectAllGarbage();
-    }
+  virtual void TearDown() {
+    document.release();
+    ThreadState::current()->collectAllGarbage();
+  }
 
-    std::unique_ptr<DummyPageHolder> pageHolder;
-    Persistent<Document> document;
-    Persistent<DocumentTimeline> timeline;
-    Timing timing;
+  std::unique_ptr<DummyPageHolder> pageHolder;
+  Persistent<Document> document;
+  Persistent<DocumentTimeline> timeline;
+  Timing timing;
 };
 
-TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
-{
-    timing.iterationDuration = 2;
-    timing.startDelay = 5;
+TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
+  timing.iterationDuration = 2;
+  timing.startDelay = 5;
 
-    timeline = &document->timeline();
-    document = nullptr;
+  timeline = &document->timeline();
+  document = nullptr;
 
-    KeyframeEffect* keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
-    // Test passes if this does not crash.
-    timeline->play(keyframeEffect);
+  KeyframeEffect* keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
+  // Test passes if this does not crash.
+  timeline->play(keyframeEffect);
 }
 
-} // namespace blink
+}  // namespace blink

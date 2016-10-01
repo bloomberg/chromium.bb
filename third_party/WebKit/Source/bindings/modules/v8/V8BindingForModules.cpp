@@ -55,67 +55,79 @@
 
 namespace blink {
 
-static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate*, const IDBValue*);
-static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate*, v8::Local<v8::Object> creationContext, const IDBValue*);
-static v8::Local<v8::Value> deserializeIDBValueArray(v8::Isolate*, v8::Local<v8::Object> creationContext, const Vector<RefPtr<IDBValue>>*);
+static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate*,
+                                                    const IDBValue*);
+static v8::Local<v8::Value> deserializeIDBValue(
+    v8::Isolate*,
+    v8::Local<v8::Object> creationContext,
+    const IDBValue*);
+static v8::Local<v8::Value> deserializeIDBValueArray(
+    v8::Isolate*,
+    v8::Local<v8::Object> creationContext,
+    const Vector<RefPtr<IDBValue>>*);
 
-v8::Local<v8::Value> toV8(const IDBKeyPath& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    switch (value.getType()) {
+v8::Local<v8::Value> toV8(const IDBKeyPath& value,
+                          v8::Local<v8::Object> creationContext,
+                          v8::Isolate* isolate) {
+  switch (value.getType()) {
     case IDBKeyPath::NullType:
-        return v8::Null(isolate);
+      return v8::Null(isolate);
     case IDBKeyPath::StringType:
-        return v8String(isolate, value.string());
+      return v8String(isolate, value.string());
     case IDBKeyPath::ArrayType:
-        return toV8(value.array(), creationContext, isolate);
-    }
-    ASSERT_NOT_REACHED();
-    return v8::Undefined(isolate);
+      return toV8(value.array(), creationContext, isolate);
+  }
+  ASSERT_NOT_REACHED();
+  return v8::Undefined(isolate);
 }
 
-v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!key) {
-        // The IndexedDB spec requires that absent keys appear as attribute
-        // values as undefined, rather than the more typical (for DOM) null.
-        // This appears on the |upper| and |lower| attributes of IDBKeyRange.
-        // Spec: http://www.w3.org/TR/IndexedDB/#idl-def-IDBKeyRange
-        return v8Undefined();
-    }
+v8::Local<v8::Value> toV8(const IDBKey* key,
+                          v8::Local<v8::Object> creationContext,
+                          v8::Isolate* isolate) {
+  if (!key) {
+    // The IndexedDB spec requires that absent keys appear as attribute
+    // values as undefined, rather than the more typical (for DOM) null.
+    // This appears on the |upper| and |lower| attributes of IDBKeyRange.
+    // Spec: http://www.w3.org/TR/IndexedDB/#idl-def-IDBKeyRange
+    return v8Undefined();
+  }
 
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-    switch (key->getType()) {
+  switch (key->getType()) {
     case IDBKey::InvalidType:
     case IDBKey::MinType:
-        ASSERT_NOT_REACHED();
-        return v8Undefined();
+      ASSERT_NOT_REACHED();
+      return v8Undefined();
     case IDBKey::NumberType:
-        return v8::Number::New(isolate, key->number());
+      return v8::Number::New(isolate, key->number());
     case IDBKey::StringType:
-        return v8String(isolate, key->string());
+      return v8String(isolate, key->string());
     case IDBKey::BinaryType:
-        // Experimental feature: binary keys
-        // https://w3c.github.io/IndexedDB/#steps-to-convert-a-key-to-a-value
-        return toV8(DOMArrayBuffer::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
+      // Experimental feature: binary keys
+      // https://w3c.github.io/IndexedDB/#steps-to-convert-a-key-to-a-value
+      return toV8(DOMArrayBuffer::create(reinterpret_cast<const unsigned char*>(
+                                             key->binary()->data()),
+                                         key->binary()->size()),
+                  creationContext, isolate);
     case IDBKey::DateType:
-        return v8::Date::New(context, key->date()).ToLocalChecked();
-    case IDBKey::ArrayType:
-        {
-            v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());
-            for (size_t i = 0; i < key->array().size(); ++i) {
-                v8::Local<v8::Value> value = toV8(key->array()[i].get(), creationContext, isolate);
-                if (value.IsEmpty())
-                    value = v8::Undefined(isolate);
-                if (!v8CallBoolean(array->CreateDataProperty(context, i, value)))
-                    return v8Undefined();
-            }
-            return array;
-        }
+      return v8::Date::New(context, key->date()).ToLocalChecked();
+    case IDBKey::ArrayType: {
+      v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());
+      for (size_t i = 0; i < key->array().size(); ++i) {
+        v8::Local<v8::Value> value =
+            toV8(key->array()[i].get(), creationContext, isolate);
+        if (value.IsEmpty())
+          value = v8::Undefined(isolate);
+        if (!v8CallBoolean(array->CreateDataProperty(context, i, value)))
+          return v8Undefined();
+      }
+      return array;
     }
+  }
 
-    ASSERT_NOT_REACHED();
-    return v8Undefined();
+  ASSERT_NOT_REACHED();
+  return v8Undefined();
 }
 
 // IDBAny is a variant type used to hold the values produced by the |result|
@@ -123,417 +135,462 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
 // IDBRequest and IDBCursor.
 // TODO(jsbell): Replace the use of IDBAny for |source| attributes (which are
 // ScriptWrappable types) using unions per IDL.
-v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (!impl)
-        return v8::Null(isolate);
+v8::Local<v8::Value> toV8(const IDBAny* impl,
+                          v8::Local<v8::Object> creationContext,
+                          v8::Isolate* isolate) {
+  if (!impl)
+    return v8::Null(isolate);
 
-    switch (impl->getType()) {
+  switch (impl->getType()) {
     case IDBAny::UndefinedType:
-        return v8::Undefined(isolate);
+      return v8::Undefined(isolate);
     case IDBAny::NullType:
-        return v8::Null(isolate);
+      return v8::Null(isolate);
     case IDBAny::DOMStringListType:
-        return toV8(impl->domStringList(), creationContext, isolate);
+      return toV8(impl->domStringList(), creationContext, isolate);
     case IDBAny::IDBCursorType:
-        return toV8(impl->idbCursor(), creationContext, isolate);
+      return toV8(impl->idbCursor(), creationContext, isolate);
     case IDBAny::IDBCursorWithValueType:
-        return toV8(impl->idbCursorWithValue(), creationContext, isolate);
+      return toV8(impl->idbCursorWithValue(), creationContext, isolate);
     case IDBAny::IDBDatabaseType:
-        return toV8(impl->idbDatabase(), creationContext, isolate);
+      return toV8(impl->idbDatabase(), creationContext, isolate);
     case IDBAny::IDBIndexType:
-        return toV8(impl->idbIndex(), creationContext, isolate);
+      return toV8(impl->idbIndex(), creationContext, isolate);
     case IDBAny::IDBObjectStoreType:
-        return toV8(impl->idbObjectStore(), creationContext, isolate);
+      return toV8(impl->idbObjectStore(), creationContext, isolate);
     case IDBAny::IDBValueType:
-        return deserializeIDBValue(isolate, creationContext, impl->value());
+      return deserializeIDBValue(isolate, creationContext, impl->value());
     case IDBAny::IDBValueArrayType:
-        return deserializeIDBValueArray(isolate, creationContext, impl->values());
+      return deserializeIDBValueArray(isolate, creationContext, impl->values());
     case IDBAny::IntegerType:
-        return v8::Number::New(isolate, impl->integer());
+      return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:
-        return toV8(impl->key(), creationContext, isolate);
-    }
+      return toV8(impl->key(), creationContext, isolate);
+  }
 
-    ASSERT_NOT_REACHED();
-    return v8::Undefined(isolate);
+  ASSERT_NOT_REACHED();
+  return v8::Undefined(isolate);
 }
 
 static const size_t maximumDepth = 2000;
 
-static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, Vector<v8::Local<v8::Array>>& stack, ExceptionState& exceptionState, bool allowExperimentalTypes = false)
-{
-    if (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))
-        return IDBKey::createNumber(value.As<v8::Number>()->Value());
-    if (value->IsString())
-        return IDBKey::createString(toCoreString(value.As<v8::String>()));
-    if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
-        return IDBKey::createDate(value.As<v8::Date>()->ValueOf());
-    if (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled()) {
-        // Experimental feature: binary keys
-        // https://w3c.github.io/IndexedDB/#dfn-convert-a-value-to-a-key
-        if (value->IsArrayBuffer()) {
-            DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
-            if (buffer->isNeutered()) {
-                exceptionState.throwTypeError("The ArrayBuffer is neutered.");
-                return nullptr;
-            }
-            const char* start = static_cast<const char*>(buffer->data());
-            size_t length = buffer->byteLength();
-            return IDBKey::createBinary(SharedBuffer::create(start, length));
-        }
-        if (value->IsArrayBufferView()) {
-            DOMArrayBufferView* view = V8ArrayBufferView::toImpl(value.As<v8::Object>());
-            if (view->buffer()->isNeutered()) {
-                exceptionState.throwTypeError("The viewed ArrayBuffer is neutered.");
-                return nullptr;
-            }
-            const char* start = static_cast<const char*>(view->baseAddress());
-            size_t length = view->byteLength();
-            return IDBKey::createBinary(SharedBuffer::create(start, length));
-        }
+static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     Vector<v8::Local<v8::Array>>& stack,
+                                     ExceptionState& exceptionState,
+                                     bool allowExperimentalTypes = false) {
+  if (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))
+    return IDBKey::createNumber(value.As<v8::Number>()->Value());
+  if (value->IsString())
+    return IDBKey::createString(toCoreString(value.As<v8::String>()));
+  if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
+    return IDBKey::createDate(value.As<v8::Date>()->ValueOf());
+  if (allowExperimentalTypes ||
+      RuntimeEnabledFeatures::indexedDBExperimentalEnabled()) {
+    // Experimental feature: binary keys
+    // https://w3c.github.io/IndexedDB/#dfn-convert-a-value-to-a-key
+    if (value->IsArrayBuffer()) {
+      DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+      if (buffer->isNeutered()) {
+        exceptionState.throwTypeError("The ArrayBuffer is neutered.");
+        return nullptr;
+      }
+      const char* start = static_cast<const char*>(buffer->data());
+      size_t length = buffer->byteLength();
+      return IDBKey::createBinary(SharedBuffer::create(start, length));
     }
-    if (value->IsArray()) {
-        v8::Local<v8::Array> array = value.As<v8::Array>();
-
-        if (stack.contains(array))
-            return nullptr;
-        if (stack.size() >= maximumDepth)
-            return nullptr;
-        stack.append(array);
-
-        IDBKey::KeyArray subkeys;
-        uint32_t length = array->Length();
-        v8::TryCatch block(isolate);
-        v8::Local<v8::Context> context = isolate->GetCurrentContext();
-        for (uint32_t i = 0; i < length; ++i) {
-            if (!v8CallBoolean(array->HasOwnProperty(context, i)))
-                return nullptr;
-            v8::Local<v8::Value> item;
-            if (!v8Call(array->Get(context, i), item, block)) {
-                exceptionState.rethrowV8Exception(block.Exception());
-                return nullptr;
-            }
-            IDBKey* subkey = createIDBKeyFromValue(isolate, item, stack, exceptionState, allowExperimentalTypes);
-            if (!subkey)
-                subkeys.append(IDBKey::createInvalid());
-            else
-                subkeys.append(subkey);
-        }
-
-        stack.removeLast();
-        return IDBKey::createArray(subkeys);
+    if (value->IsArrayBufferView()) {
+      DOMArrayBufferView* view =
+          V8ArrayBufferView::toImpl(value.As<v8::Object>());
+      if (view->buffer()->isNeutered()) {
+        exceptionState.throwTypeError("The viewed ArrayBuffer is neutered.");
+        return nullptr;
+      }
+      const char* start = static_cast<const char*>(view->baseAddress());
+      size_t length = view->byteLength();
+      return IDBKey::createBinary(SharedBuffer::create(start, length));
     }
-    return nullptr;
+  }
+  if (value->IsArray()) {
+    v8::Local<v8::Array> array = value.As<v8::Array>();
+
+    if (stack.contains(array))
+      return nullptr;
+    if (stack.size() >= maximumDepth)
+      return nullptr;
+    stack.append(array);
+
+    IDBKey::KeyArray subkeys;
+    uint32_t length = array->Length();
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    for (uint32_t i = 0; i < length; ++i) {
+      if (!v8CallBoolean(array->HasOwnProperty(context, i)))
+        return nullptr;
+      v8::Local<v8::Value> item;
+      if (!v8Call(array->Get(context, i), item, block)) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return nullptr;
+      }
+      IDBKey* subkey = createIDBKeyFromValue(
+          isolate, item, stack, exceptionState, allowExperimentalTypes);
+      if (!subkey)
+        subkeys.append(IDBKey::createInvalid());
+      else
+        subkeys.append(subkey);
+    }
+
+    stack.removeLast();
+    return IDBKey::createArray(subkeys);
+  }
+  return nullptr;
 }
 
-static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, bool allowExperimentalTypes = false)
-{
-    Vector<v8::Local<v8::Array>> stack;
-    if (IDBKey* key = createIDBKeyFromValue(isolate, value, stack, exceptionState, allowExperimentalTypes))
-        return key;
-    return IDBKey::createInvalid();
+static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> value,
+                                     ExceptionState& exceptionState,
+                                     bool allowExperimentalTypes = false) {
+  Vector<v8::Local<v8::Array>> stack;
+  if (IDBKey* key = createIDBKeyFromValue(isolate, value, stack, exceptionState,
+                                          allowExperimentalTypes))
+    return key;
+  return IDBKey::createInvalid();
 }
 
 // Indexed DB key paths should apply to explicitly copied properties (that
 // will be "own" properties when deserialized) as well as the following.
 // http://www.w3.org/TR/IndexedDB/#key-path-construct
-static bool isImplicitProperty(v8::Isolate* isolate, v8::Local<v8::Value> value, const String& name)
-{
-    if (value->IsString() && name == "length")
-        return true;
-    if (value->IsArray() && name == "length")
-        return true;
-    if (V8Blob::hasInstance(value, isolate))
-        return name == "size" || name == "type";
-    if (V8File::hasInstance(value, isolate))
-        return name == "name" || name == "lastModified" || name =="lastModifiedDate";
-    return false;
+static bool isImplicitProperty(v8::Isolate* isolate,
+                               v8::Local<v8::Value> value,
+                               const String& name) {
+  if (value->IsString() && name == "length")
+    return true;
+  if (value->IsArray() && name == "length")
+    return true;
+  if (V8Blob::hasInstance(value, isolate))
+    return name == "size" || name == "type";
+  if (V8File::hasInstance(value, isolate))
+    return name == "name" || name == "lastModified" ||
+           name == "lastModifiedDate";
+  return false;
 }
 
 // Assumes a valid key path.
-static Vector<String> parseKeyPath(const String& keyPath)
-{
-    Vector<String> elements;
-    IDBKeyPathParseError error;
-    IDBParseKeyPath(keyPath, elements, error);
-    ASSERT(error == IDBKeyPathParseErrorNone);
-    return elements;
+static Vector<String> parseKeyPath(const String& keyPath) {
+  Vector<String> elements;
+  IDBKeyPathParseError error;
+  IDBParseKeyPath(keyPath, elements, error);
+  ASSERT(error == IDBKeyPathParseErrorNone);
+  return elements;
 }
 
-static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, const String& keyPath, ExceptionState& exceptionState, bool allowExperimentalTypes)
-{
-    Vector<String> keyPathElements = parseKeyPath(keyPath);
-    ASSERT(isolate->InContext());
+static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate,
+                                               v8::Local<v8::Value> v8Value,
+                                               const String& keyPath,
+                                               ExceptionState& exceptionState,
+                                               bool allowExperimentalTypes) {
+  Vector<String> keyPathElements = parseKeyPath(keyPath);
+  ASSERT(isolate->InContext());
 
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    v8::TryCatch block(isolate);
-    for (size_t i = 0; i < keyPathElements.size(); ++i) {
-        const String& element = keyPathElements[i];
+  v8::HandleScope handleScope(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::TryCatch block(isolate);
+  for (size_t i = 0; i < keyPathElements.size(); ++i) {
+    const String& element = keyPathElements[i];
 
-        // Special cases from https://w3c.github.io/IndexedDB/#key-path-construct
-        // These access special or non-own properties directly, to avoid side
-        // effects.
+    // Special cases from https://w3c.github.io/IndexedDB/#key-path-construct
+    // These access special or non-own properties directly, to avoid side
+    // effects.
 
-        if (v8Value->IsString() && element == "length") {
-            int32_t length = v8Value.As<v8::String>()->Length();
-            v8Value = v8::Number::New(isolate, length);
-            continue;
-        }
-
-        if (v8Value->IsArray() && element == "length") {
-            int32_t length = v8Value.As<v8::Array>()->Length();
-            v8Value = v8::Number::New(isolate, length);
-            continue;
-        }
-
-        if (!v8Value->IsObject())
-            return nullptr;
-        v8::Local<v8::Object> object = v8Value.As<v8::Object>();
-
-        if (V8Blob::hasInstance(object, isolate)) {
-            if (element == "size") {
-                v8Value = v8::Number::New(isolate, V8Blob::toImpl(object)->size());
-                continue;
-            }
-            if (element == "type") {
-                v8Value = v8String(isolate, V8Blob::toImpl(object)->type());
-                continue;
-            }
-            // Fall through.
-        }
-
-        if (V8File::hasInstance(object, isolate)) {
-            if (element == "name") {
-                v8Value = v8String(isolate, V8File::toImpl(object)->name());
-                continue;
-            }
-            if (element == "lastModified") {
-                v8Value = v8::Number::New(isolate, V8File::toImpl(object)->lastModified());
-                continue;
-            }
-            if (element == "lastModifiedDate") {
-                v8Value = v8::Date::New(isolate, V8File::toImpl(object)->lastModifiedDate());
-                continue;
-            }
-            // Fall through.
-        }
-
-        v8::Local<v8::String> key = v8String(isolate, element);
-        if (!v8CallBoolean(object->HasOwnProperty(context, key)))
-            return nullptr;
-        if (!v8Call(object->Get(context, key), v8Value, block)) {
-            exceptionState.rethrowV8Exception(block.Exception());
-            return nullptr;
-        }
+    if (v8Value->IsString() && element == "length") {
+      int32_t length = v8Value.As<v8::String>()->Length();
+      v8Value = v8::Number::New(isolate, length);
+      continue;
     }
-    return createIDBKeyFromValue(isolate, v8Value, exceptionState, allowExperimentalTypes);
+
+    if (v8Value->IsArray() && element == "length") {
+      int32_t length = v8Value.As<v8::Array>()->Length();
+      v8Value = v8::Number::New(isolate, length);
+      continue;
+    }
+
+    if (!v8Value->IsObject())
+      return nullptr;
+    v8::Local<v8::Object> object = v8Value.As<v8::Object>();
+
+    if (V8Blob::hasInstance(object, isolate)) {
+      if (element == "size") {
+        v8Value = v8::Number::New(isolate, V8Blob::toImpl(object)->size());
+        continue;
+      }
+      if (element == "type") {
+        v8Value = v8String(isolate, V8Blob::toImpl(object)->type());
+        continue;
+      }
+      // Fall through.
+    }
+
+    if (V8File::hasInstance(object, isolate)) {
+      if (element == "name") {
+        v8Value = v8String(isolate, V8File::toImpl(object)->name());
+        continue;
+      }
+      if (element == "lastModified") {
+        v8Value =
+            v8::Number::New(isolate, V8File::toImpl(object)->lastModified());
+        continue;
+      }
+      if (element == "lastModifiedDate") {
+        v8Value =
+            v8::Date::New(isolate, V8File::toImpl(object)->lastModifiedDate());
+        continue;
+      }
+      // Fall through.
+    }
+
+    v8::Local<v8::String> key = v8String(isolate, element);
+    if (!v8CallBoolean(object->HasOwnProperty(context, key)))
+      return nullptr;
+    if (!v8Call(object->Get(context, key), v8Value, block)) {
+      exceptionState.rethrowV8Exception(block.Exception());
+      return nullptr;
+    }
+  }
+  return createIDBKeyFromValue(isolate, v8Value, exceptionState,
+                               allowExperimentalTypes);
 }
 
-static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> value, const IDBKeyPath& keyPath, ExceptionState& exceptionState, bool allowExperimentalTypes = false)
-{
-    ASSERT(!keyPath.isNull());
-    v8::HandleScope handleScope(isolate);
-    if (keyPath.getType() == IDBKeyPath::ArrayType) {
-        IDBKey::KeyArray result;
-        const Vector<String>& array = keyPath.array();
-        for (size_t i = 0; i < array.size(); ++i) {
-            IDBKey* key = createIDBKeyFromValueAndKeyPath(isolate, value, array[i], exceptionState, allowExperimentalTypes);
-            if (!key)
-                return nullptr;
-            result.append(key);
-        }
-        return IDBKey::createArray(result);
+static IDBKey* createIDBKeyFromValueAndKeyPath(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    const IDBKeyPath& keyPath,
+    ExceptionState& exceptionState,
+    bool allowExperimentalTypes = false) {
+  ASSERT(!keyPath.isNull());
+  v8::HandleScope handleScope(isolate);
+  if (keyPath.getType() == IDBKeyPath::ArrayType) {
+    IDBKey::KeyArray result;
+    const Vector<String>& array = keyPath.array();
+    for (size_t i = 0; i < array.size(); ++i) {
+      IDBKey* key = createIDBKeyFromValueAndKeyPath(
+          isolate, value, array[i], exceptionState, allowExperimentalTypes);
+      if (!key)
+        return nullptr;
+      result.append(key);
     }
+    return IDBKey::createArray(result);
+  }
 
-    ASSERT(keyPath.getType() == IDBKeyPath::StringType);
-    return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath.string(), exceptionState, allowExperimentalTypes);
+  ASSERT(keyPath.getType() == IDBKeyPath::StringType);
+  return createIDBKeyFromValueAndKeyPath(
+      isolate, value, keyPath.string(), exceptionState, allowExperimentalTypes);
 }
 
 // Deserialize just the value data & blobInfo from the given IDBValue.
 // Does not deserialize the key & keypath.
-static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate, const IDBValue* value)
-{
-    ASSERT(isolate->InContext());
-    if (!value || value->isNull())
-        return v8::Null(isolate);
+static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate,
+                                                    const IDBValue* value) {
+  ASSERT(isolate->InContext());
+  if (!value || value->isNull())
+    return v8::Null(isolate);
 
-    const SharedBuffer* valueData = value->data();
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(valueData->data(), valueData->size());
-    return serializedValue->deserialize(isolate, nullptr, value->blobInfo());
+  const SharedBuffer* valueData = value->data();
+  RefPtr<SerializedScriptValue> serializedValue =
+      SerializedScriptValue::create(valueData->data(), valueData->size());
+  return serializedValue->deserialize(isolate, nullptr, value->blobInfo());
 }
 
 // Deserialize the entire IDBValue (injecting key & keypath if present).
-static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const IDBValue* value)
-{
-    ASSERT(isolate->InContext());
-    if (!value || value->isNull())
-        return v8::Null(isolate);
+static v8::Local<v8::Value> deserializeIDBValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creationContext,
+    const IDBValue* value) {
+  ASSERT(isolate->InContext());
+  if (!value || value->isNull())
+    return v8::Null(isolate);
 
-    v8::Local<v8::Value> v8Value = deserializeIDBValueData(isolate, value);
-    if (value->primaryKey()) {
-        v8::Local<v8::Value> key = toV8(value->primaryKey(), creationContext, isolate);
-        if (key.IsEmpty())
-            return v8::Local<v8::Value>();
-        bool injected = injectV8KeyIntoV8Value(isolate, key, v8Value, value->keyPath());
-        ASSERT_UNUSED(injected, injected);
-    }
+  v8::Local<v8::Value> v8Value = deserializeIDBValueData(isolate, value);
+  if (value->primaryKey()) {
+    v8::Local<v8::Value> key =
+        toV8(value->primaryKey(), creationContext, isolate);
+    if (key.IsEmpty())
+      return v8::Local<v8::Value>();
+    bool injected =
+        injectV8KeyIntoV8Value(isolate, key, v8Value, value->keyPath());
+    ASSERT_UNUSED(injected, injected);
+  }
 
-    return v8Value;
+  return v8Value;
 }
 
-static v8::Local<v8::Value> deserializeIDBValueArray(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const Vector<RefPtr<IDBValue>>* values)
-{
-    ASSERT(isolate->InContext());
+static v8::Local<v8::Value> deserializeIDBValueArray(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creationContext,
+    const Vector<RefPtr<IDBValue>>* values) {
+  ASSERT(isolate->InContext());
 
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    v8::Local<v8::Array> array = v8::Array::New(isolate, values->size());
-    for (size_t i = 0; i < values->size(); ++i) {
-        v8::Local<v8::Value> v8Value = deserializeIDBValue(isolate, creationContext, values->at(i).get());
-        if (v8Value.IsEmpty())
-            v8Value = v8::Undefined(isolate);
-        if (!v8CallBoolean(array->CreateDataProperty(context, i, v8Value)))
-            return v8Undefined();
-    }
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Array> array = v8::Array::New(isolate, values->size());
+  for (size_t i = 0; i < values->size(); ++i) {
+    v8::Local<v8::Value> v8Value =
+        deserializeIDBValue(isolate, creationContext, values->at(i).get());
+    if (v8Value.IsEmpty())
+      v8Value = v8::Undefined(isolate);
+    if (!v8CallBoolean(array->CreateDataProperty(context, i, v8Value)))
+      return v8Undefined();
+  }
 
-    return array;
+  return array;
 }
 
 // This is only applied to deserialized values which were validated before
 // serialization, so various assumptions/assertions can be made.
-bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::Local<v8::Value> value, const IDBKeyPath& keyPath)
-{
-    IDB_TRACE("injectIDBV8KeyIntoV8Value");
-    ASSERT(isolate->InContext());
+bool injectV8KeyIntoV8Value(v8::Isolate* isolate,
+                            v8::Local<v8::Value> key,
+                            v8::Local<v8::Value> value,
+                            const IDBKeyPath& keyPath) {
+  IDB_TRACE("injectIDBV8KeyIntoV8Value");
+  ASSERT(isolate->InContext());
 
-    ASSERT(keyPath.getType() == IDBKeyPath::StringType);
-    Vector<String> keyPathElements = parseKeyPath(keyPath.string());
+  ASSERT(keyPath.getType() == IDBKeyPath::StringType);
+  Vector<String> keyPathElements = parseKeyPath(keyPath.string());
 
-    // The conbination of a key generator and an empty key path is forbidden by spec.
-    if (!keyPathElements.size()) {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
+  // The conbination of a key generator and an empty key path is forbidden by spec.
+  if (!keyPathElements.size()) {
+    ASSERT_NOT_REACHED();
+    return false;
+  }
 
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::HandleScope handleScope(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-    // For an object o = {} which should have keypath 'a.b.c' and key k, this
-    // populates o to be {a:{b:{}}}. This is only applied to deserialized
-    // values which were validated before serialization, so various
-    // assumptions can be made, e.g. there are no getters/setters on the
-    // object itself (though there might be on the prototype chain).
-    for (size_t i = 0; i < keyPathElements.size() - 1; ++i) {
-        const String& keyPathElement = keyPathElements[i];
-        ASSERT(value->IsObject());
-        ASSERT(!isImplicitProperty(isolate, value, keyPathElement));
-        v8::Local<v8::Object> object = value.As<v8::Object>();
-        v8::Local<v8::String> property = v8String(isolate, keyPathElement);
-        bool hasOwnProperty;
-        if (!v8Call(object->HasOwnProperty(context, property), hasOwnProperty))
-            return false;
-        if (hasOwnProperty) {
-            if (!object->Get(context, property).ToLocal(&value))
-                return false;
-        } else {
-            value = v8::Object::New(isolate);
-            if (!v8CallBoolean(object->CreateDataProperty(context, property, value)))
-                return false;
-        }
-    }
-
-    // Implicit properties don't need to be set. The caller is not required to
-    // be aware of this, so this is an expected no-op. The caller can verify
-    // that the value is correct via assertPrimaryKeyValidOrInjectable.
-    if (isImplicitProperty(isolate, value, keyPathElements.last()))
-        return true;
-
-    // If it's not an implicit property of value, value must be an object.
+  // For an object o = {} which should have keypath 'a.b.c' and key k, this
+  // populates o to be {a:{b:{}}}. This is only applied to deserialized
+  // values which were validated before serialization, so various
+  // assumptions can be made, e.g. there are no getters/setters on the
+  // object itself (though there might be on the prototype chain).
+  for (size_t i = 0; i < keyPathElements.size() - 1; ++i) {
+    const String& keyPathElement = keyPathElements[i];
+    ASSERT(value->IsObject());
+    ASSERT(!isImplicitProperty(isolate, value, keyPathElement));
     v8::Local<v8::Object> object = value.As<v8::Object>();
-    v8::Local<v8::String> property = v8String(isolate, keyPathElements.last());
-    if (!v8CallBoolean(object->CreateDataProperty(context, property, key)))
+    v8::Local<v8::String> property = v8String(isolate, keyPathElement);
+    bool hasOwnProperty;
+    if (!v8Call(object->HasOwnProperty(context, property), hasOwnProperty))
+      return false;
+    if (hasOwnProperty) {
+      if (!object->Get(context, property).ToLocal(&value))
         return false;
+    } else {
+      value = v8::Object::New(isolate);
+      if (!v8CallBoolean(object->CreateDataProperty(context, property, value)))
+        return false;
+    }
+  }
 
+  // Implicit properties don't need to be set. The caller is not required to
+  // be aware of this, so this is an expected no-op. The caller can verify
+  // that the value is correct via assertPrimaryKeyValidOrInjectable.
+  if (isImplicitProperty(isolate, value, keyPathElements.last()))
     return true;
+
+  // If it's not an implicit property of value, value must be an object.
+  v8::Local<v8::Object> object = value.As<v8::Object>();
+  v8::Local<v8::String> property = v8String(isolate, keyPathElements.last());
+  if (!v8CallBoolean(object->CreateDataProperty(context, property, key)))
+    return false;
+
+  return true;
 }
 
 // Verify that an value can have an generated key inserted at the location
 // specified by the key path (by injectV8KeyIntoV8Value) when the object is
 // later deserialized.
-bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate, const ScriptValue& scriptValue, const IDBKeyPath& keyPath)
-{
-    IDB_TRACE("canInjectIDBKeyIntoScriptValue");
-    ASSERT(keyPath.getType() == IDBKeyPath::StringType);
-    Vector<String> keyPathElements = parseKeyPath(keyPath.string());
+bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate,
+                                    const ScriptValue& scriptValue,
+                                    const IDBKeyPath& keyPath) {
+  IDB_TRACE("canInjectIDBKeyIntoScriptValue");
+  ASSERT(keyPath.getType() == IDBKeyPath::StringType);
+  Vector<String> keyPathElements = parseKeyPath(keyPath.string());
 
-    if (!keyPathElements.size())
-        return false;
+  if (!keyPathElements.size())
+    return false;
 
-    v8::Local<v8::Value> current(scriptValue.v8Value());
+  v8::Local<v8::Value> current(scriptValue.v8Value());
+  if (!current->IsObject())
+    return false;
+
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  for (size_t i = 0; i < keyPathElements.size(); ++i) {
+    const String& keyPathElement = keyPathElements[i];
+    // Can't overwrite properties like array or string length.
+    if (isImplicitProperty(isolate, current, keyPathElement))
+      return false;
+    // Can't set properties on non-objects.
     if (!current->IsObject())
-        return false;
-
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    for (size_t i = 0; i < keyPathElements.size(); ++i) {
-        const String& keyPathElement = keyPathElements[i];
-        // Can't overwrite properties like array or string length.
-        if (isImplicitProperty(isolate, current, keyPathElement))
-            return false;
-        // Can't set properties on non-objects.
-        if (!current->IsObject())
-            return false;
-        v8::Local<v8::Object> object = current.As<v8::Object>();
-        v8::Local<v8::String> property = v8String(isolate, keyPathElement);
-        // If the value lacks an "own" property, it can be added - either as
-        // an intermediate object or as the final value.
-        bool hasOwnProperty;
-        if (!v8Call(object->HasOwnProperty(context, property), hasOwnProperty))
-            return false;
-        if (!hasOwnProperty)
-            return true;
-        // Otherwise, get it and keep traversing.
-        if (!object->Get(context, property).ToLocal(&current))
-            return false;
-    }
-    return true;
+      return false;
+    v8::Local<v8::Object> object = current.As<v8::Object>();
+    v8::Local<v8::String> property = v8String(isolate, keyPathElement);
+    // If the value lacks an "own" property, it can be added - either as
+    // an intermediate object or as the final value.
+    bool hasOwnProperty;
+    if (!v8Call(object->HasOwnProperty(context, property), hasOwnProperty))
+      return false;
+    if (!hasOwnProperty)
+      return true;
+    // Otherwise, get it and keep traversing.
+    if (!object->Get(context, property).ToLocal(&current))
+      return false;
+  }
+  return true;
 }
 
-ScriptValue deserializeScriptValue(ScriptState* scriptState, SerializedScriptValue* serializedValue, const Vector<WebBlobInfo>* blobInfo)
-{
-    v8::Isolate* isolate = scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-    if (serializedValue)
-        return ScriptValue(scriptState, serializedValue->deserialize(isolate, nullptr, blobInfo));
-    return ScriptValue(scriptState, v8::Null(isolate));
+ScriptValue deserializeScriptValue(ScriptState* scriptState,
+                                   SerializedScriptValue* serializedValue,
+                                   const Vector<WebBlobInfo>* blobInfo) {
+  v8::Isolate* isolate = scriptState->isolate();
+  v8::HandleScope handleScope(isolate);
+  if (serializedValue)
+    return ScriptValue(
+        scriptState, serializedValue->deserialize(isolate, nullptr, blobInfo));
+  return ScriptValue(scriptState, v8::Null(isolate));
 }
 
-SQLValue NativeValueTraits<SQLValue>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    if (value.IsEmpty() || value->IsNull())
-        return SQLValue();
-    if (value->IsNumber())
-        return SQLValue(value.As<v8::Number>()->Value());
-    V8StringResource<> stringValue(value);
-    if (!stringValue.prepare(exceptionState))
-        return SQLValue();
-    return SQLValue(stringValue);
+SQLValue NativeValueTraits<SQLValue>::nativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exceptionState) {
+  if (value.IsEmpty() || value->IsNull())
+    return SQLValue();
+  if (value->IsNumber())
+    return SQLValue(value.As<v8::Number>()->Value());
+  V8StringResource<> stringValue(value);
+  if (!stringValue.prepare(exceptionState))
+    return SQLValue();
+  return SQLValue(stringValue);
 }
 
-IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    return createIDBKeyFromValue(isolate, value, exceptionState);
+IDBKey* NativeValueTraits<IDBKey*>::nativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exceptionState) {
+  return createIDBKeyFromValue(isolate, value, exceptionState);
 }
 
-IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, const IDBKeyPath& keyPath)
-{
-    IDB_TRACE("createIDBKeyFromValueAndKeyPath");
-    return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath, exceptionState);
+IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Isolate* isolate,
+                                                v8::Local<v8::Value> value,
+                                                ExceptionState& exceptionState,
+                                                const IDBKeyPath& keyPath) {
+  IDB_TRACE("createIDBKeyFromValueAndKeyPath");
+  return createIDBKeyFromValueAndKeyPath(isolate, value, keyPath,
+                                         exceptionState);
 }
 
-IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    return V8IDBKeyRange::toImplWithTypeCheck(isolate, value);
+IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    ExceptionState& exceptionState) {
+  return V8IDBKeyRange::toImplWithTypeCheck(isolate, value);
 }
 
 #if ENABLE(ASSERT)
@@ -541,24 +598,27 @@ IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(v8::Isolate* isolate, 
 // with implicit keys (i.e. a key path). It verifies that either the value
 // contains an implicit key matching the primary key (so it was correctly
 // extracted when stored) or that the key can be inserted as an own property.
-void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, const IDBValue* value)
-{
-    ScriptState::Scope scope(scriptState);
-    v8::Isolate* isolate = scriptState->isolate();
-    ScriptValue keyValue = ScriptValue::from(scriptState, value->primaryKey());
-    ScriptValue scriptValue(scriptState, deserializeIDBValueData(isolate, value));
+void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState,
+                                       const IDBValue* value) {
+  ScriptState::Scope scope(scriptState);
+  v8::Isolate* isolate = scriptState->isolate();
+  ScriptValue keyValue = ScriptValue::from(scriptState, value->primaryKey());
+  ScriptValue scriptValue(scriptState, deserializeIDBValueData(isolate, value));
 
-    // This assertion is about already persisted data, so allow experimental types.
-    const bool allowExperimentalTypes = true;
-    TrackExceptionState exceptionState;
-    IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(isolate, scriptValue.v8Value(), value->keyPath(), exceptionState, allowExperimentalTypes);
-    ASSERT(!exceptionState.hadException());
-    if (expectedKey && expectedKey->isEqual(value->primaryKey()))
-        return;
+  // This assertion is about already persisted data, so allow experimental types.
+  const bool allowExperimentalTypes = true;
+  TrackExceptionState exceptionState;
+  IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(
+      isolate, scriptValue.v8Value(), value->keyPath(), exceptionState,
+      allowExperimentalTypes);
+  ASSERT(!exceptionState.hadException());
+  if (expectedKey && expectedKey->isEqual(value->primaryKey()))
+    return;
 
-    bool injected = injectV8KeyIntoV8Value(isolate, keyValue.v8Value(), scriptValue.v8Value(), value->keyPath());
-    ASSERT_UNUSED(injected, injected);
+  bool injected = injectV8KeyIntoV8Value(
+      isolate, keyValue.v8Value(), scriptValue.v8Value(), value->keyPath());
+  ASSERT_UNUSED(injected, injected);
 }
 #endif
 
-} // namespace blink
+}  // namespace blink

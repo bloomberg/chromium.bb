@@ -38,33 +38,41 @@ class MediaStreamTrack;
 class RTCPeerConnection;
 class RTCStatsCallback;
 
-class RTCStatsRequestImpl final : public RTCStatsRequest, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
-public:
-    static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
-    ~RTCStatsRequestImpl() override;
+class RTCStatsRequestImpl final : public RTCStatsRequest,
+                                  public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
 
-    RTCStatsResponseBase* createResponse() override;
-    bool hasSelector() override;
-    MediaStreamComponent* component() override;
+ public:
+  static RTCStatsRequestImpl* create(ExecutionContext*,
+                                     RTCPeerConnection*,
+                                     RTCStatsCallback*,
+                                     MediaStreamTrack*);
+  ~RTCStatsRequestImpl() override;
 
-    void requestSucceeded(RTCStatsResponseBase*) override;
+  RTCStatsResponseBase* createResponse() override;
+  bool hasSelector() override;
+  MediaStreamComponent* component() override;
 
-    // ActiveDOMObject
-    void stop() override;
+  void requestSucceeded(RTCStatsResponseBase*) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  // ActiveDOMObject
+  void stop() override;
 
-private:
-    RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void clear();
+ private:
+  RTCStatsRequestImpl(ExecutionContext*,
+                      RTCPeerConnection*,
+                      RTCStatsCallback*,
+                      MediaStreamTrack*);
 
-    Member<RTCStatsCallback> m_successCallback;
-    Member<MediaStreamComponent> m_component;
-    Member<RTCPeerConnection> m_requester;
+  void clear();
+
+  Member<RTCStatsCallback> m_successCallback;
+  Member<MediaStreamComponent> m_component;
+  Member<RTCPeerConnection> m_requester;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCStatsRequestImpl_h
+#endif  // RTCStatsRequestImpl_h

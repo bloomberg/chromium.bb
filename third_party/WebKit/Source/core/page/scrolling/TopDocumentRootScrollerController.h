@@ -26,69 +26,68 @@ class ViewportScrollCallback;
 // TODO(bokan): This class is currently OOPIF unaware. crbug.com/642378.
 class CORE_EXPORT TopDocumentRootScrollerController
     : public GarbageCollected<TopDocumentRootScrollerController> {
-public:
-    static TopDocumentRootScrollerController* create(FrameHost&);
+ public:
+  static TopDocumentRootScrollerController* create(FrameHost&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-    // This class needs to be informed of changes to compositing so that it can
-    // update the compositor when the effective root scroller changes.
-    void didUpdateCompositing();
+  // This class needs to be informed of changes to compositing so that it can
+  // update the compositor when the effective root scroller changes.
+  void didUpdateCompositing();
 
-    // This method needs to be called to create a ViewportScrollCallback that
-    // will be used to apply viewport scrolling actions like top controls
-    // movement and overscroll glow.
-    void initializeViewportScrollCallback(RootFrameViewport&);
+  // This method needs to be called to create a ViewportScrollCallback that
+  // will be used to apply viewport scrolling actions like top controls
+  // movement and overscroll glow.
+  void initializeViewportScrollCallback(RootFrameViewport&);
 
-    // Returns true if the given ScrollStateCallback is the
-    // ViewportScrollCallback managed by this class.
-    // TODO(bokan): Temporarily needed to allow ScrollCustomization to
-    // differentiate between real custom callback and the built-in viewport
-    // apply scroll. crbug.com/623079.
-    bool isViewportScrollCallback(
-        const ScrollStateCallback*) const;
+  // Returns true if the given ScrollStateCallback is the
+  // ViewportScrollCallback managed by this class.
+  // TODO(bokan): Temporarily needed to allow ScrollCustomization to
+  // differentiate between real custom callback and the built-in viewport
+  // apply scroll. crbug.com/623079.
+  bool isViewportScrollCallback(const ScrollStateCallback*) const;
 
-    // Returns the GraphicsLayer for the global root scroller.
-    GraphicsLayer* rootScrollerLayer() const;
+  // Returns the GraphicsLayer for the global root scroller.
+  GraphicsLayer* rootScrollerLayer() const;
 
-    // Returns the Element that's the global root scroller.
-    Element* globalRootScroller() const;
+  // Returns the Element that's the global root scroller.
+  Element* globalRootScroller() const;
 
-    // Called when the root scroller in any frames on the page has changed.
-    void didChangeRootScroller();
+  // Called when the root scroller in any frames on the page has changed.
+  void didChangeRootScroller();
 
-private:
-    TopDocumentRootScrollerController(FrameHost&);
+ private:
+  TopDocumentRootScrollerController(FrameHost&);
 
-    // Calculates the Element that should be the globalRootScroller. On a
-    // simple page, this will simply the root frame's effectiveRootScroller but
-    // if the root scroller is set to an iframe, this will then descend into
-    // the iframe to find its effective root scroller.
-    Element* findGlobalRootScrollerElement();
+  // Calculates the Element that should be the globalRootScroller. On a
+  // simple page, this will simply the root frame's effectiveRootScroller but
+  // if the root scroller is set to an iframe, this will then descend into
+  // the iframe to find its effective root scroller.
+  Element* findGlobalRootScrollerElement();
 
-    // Should be called to ensure the correct element is currently set as the
-    // global root scroller and that all appropriate state changes are made if
-    // it changes.
-    void recomputeGlobalRootScroller();
+  // Should be called to ensure the correct element is currently set as the
+  // global root scroller and that all appropriate state changes are made if
+  // it changes.
+  void recomputeGlobalRootScroller();
 
-    Document* topDocument() const;
+  Document* topDocument() const;
 
-    void setNeedsCompositingInputsUpdateOnGlobalRootScroller();
+  void setNeedsCompositingInputsUpdateOnGlobalRootScroller();
 
-    // The apply-scroll callback that moves top controls and produces
-    // overscroll effects. This class makes sure this callback is set on the
-    // appropriate root scroller element.
-    Member<ViewportScrollCallback> m_viewportApplyScroll;
+  // The apply-scroll callback that moves top controls and produces
+  // overscroll effects. This class makes sure this callback is set on the
+  // appropriate root scroller element.
+  Member<ViewportScrollCallback> m_viewportApplyScroll;
 
-    // The page level root scroller. i.e. The actual element for which
-    // scrolling should move top controls and produce overscroll glow. Once an
-    // m_viewportApplyScroll has been created, it will always be set on this
-    // Element.
-    WeakMember<Element> m_globalRootScroller;
+  // The page level root scroller. i.e. The actual element for which
+  // scrolling should move top controls and produce overscroll glow. Once an
+  // m_viewportApplyScroll has been created, it will always be set on this
+  // Element.
+  WeakMember<Element> m_globalRootScroller;
 
-    WeakMember<FrameHost> m_frameHost;
+  WeakMember<FrameHost> m_frameHost;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RootScrollerController_h
+#endif  // RootScrollerController_h

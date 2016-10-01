@@ -39,37 +39,41 @@ class WaveShaperProcessor;
 // WaveShaperDSPKernel is an AudioDSPKernel and is responsible for non-linear distortion on one channel.
 
 class WaveShaperDSPKernel final : public AudioDSPKernel {
-public:
-    explicit WaveShaperDSPKernel(WaveShaperProcessor*);
+ public:
+  explicit WaveShaperDSPKernel(WaveShaperProcessor*);
 
-    // AudioDSPKernel
-    void process(const float* source, float* dest, size_t framesToProcess) override;
-    void reset() override;
-    double tailTime() const override { return 0; }
-    double latencyTime() const override;
+  // AudioDSPKernel
+  void process(const float* source,
+               float* dest,
+               size_t framesToProcess) override;
+  void reset() override;
+  double tailTime() const override { return 0; }
+  double latencyTime() const override;
 
-    // Oversampling requires more resources, so let's only allocate them if needed.
-    void lazyInitializeOversampling();
+  // Oversampling requires more resources, so let's only allocate them if needed.
+  void lazyInitializeOversampling();
 
-protected:
-    // Apply the shaping curve.
-    void processCurve(const float* source, float* dest, size_t framesToProcess);
+ protected:
+  // Apply the shaping curve.
+  void processCurve(const float* source, float* dest, size_t framesToProcess);
 
-    // Use up-sampling, process at the higher sample-rate, then down-sample.
-    void processCurve2x(const float* source, float* dest, size_t framesToProcess);
-    void processCurve4x(const float* source, float* dest, size_t framesToProcess);
+  // Use up-sampling, process at the higher sample-rate, then down-sample.
+  void processCurve2x(const float* source, float* dest, size_t framesToProcess);
+  void processCurve4x(const float* source, float* dest, size_t framesToProcess);
 
-    WaveShaperProcessor* getWaveShaperProcessor() { return static_cast<WaveShaperProcessor*>(processor()); }
+  WaveShaperProcessor* getWaveShaperProcessor() {
+    return static_cast<WaveShaperProcessor*>(processor());
+  }
 
-    // Oversampling.
-    std::unique_ptr<AudioFloatArray> m_tempBuffer;
-    std::unique_ptr<AudioFloatArray> m_tempBuffer2;
-    std::unique_ptr<UpSampler> m_upSampler;
-    std::unique_ptr<DownSampler> m_downSampler;
-    std::unique_ptr<UpSampler> m_upSampler2;
-    std::unique_ptr<DownSampler> m_downSampler2;
+  // Oversampling.
+  std::unique_ptr<AudioFloatArray> m_tempBuffer;
+  std::unique_ptr<AudioFloatArray> m_tempBuffer2;
+  std::unique_ptr<UpSampler> m_upSampler;
+  std::unique_ptr<DownSampler> m_downSampler;
+  std::unique_ptr<UpSampler> m_upSampler2;
+  std::unique_ptr<DownSampler> m_downSampler2;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WaveShaperDSPKernel_h
+#endif  // WaveShaperDSPKernel_h

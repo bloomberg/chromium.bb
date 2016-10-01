@@ -37,23 +37,25 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXTableHeaderContainer final : public AXMockObject {
-    WTF_MAKE_NONCOPYABLE(AXTableHeaderContainer);
+  WTF_MAKE_NONCOPYABLE(AXTableHeaderContainer);
 
-private:
-    explicit AXTableHeaderContainer(AXObjectCacheImpl&);
+ private:
+  explicit AXTableHeaderContainer(AXObjectCacheImpl&);
 
-public:
-    static AXTableHeaderContainer* create(AXObjectCacheImpl&);
-    ~AXTableHeaderContainer() override;
+ public:
+  static AXTableHeaderContainer* create(AXObjectCacheImpl&);
+  ~AXTableHeaderContainer() override;
 
-    AccessibilityRole roleValue() const override { return TableHeaderContainerRole; }
+  AccessibilityRole roleValue() const override {
+    return TableHeaderContainerRole;
+  }
 
-    void addChildren() override;
+  void addChildren() override;
 
-private:
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+ private:
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXTableHeaderContainer_h
+#endif  // AXTableHeaderContainer_h

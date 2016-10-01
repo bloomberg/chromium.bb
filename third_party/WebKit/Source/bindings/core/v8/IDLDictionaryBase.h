@@ -16,16 +16,18 @@ namespace blink {
 // by auto-generated IDL dictionary impl classes. toV8Impl() is used
 // in ToV8.h to provide a consistent API of toV8().
 class CORE_EXPORT IDLDictionaryBase {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    IDLDictionaryBase() { }
-    virtual ~IDLDictionaryBase() { }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    virtual v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object> creationContext, v8::Isolate*) const;
+ public:
+  IDLDictionaryBase() {}
+  virtual ~IDLDictionaryBase() {}
 
-    DECLARE_VIRTUAL_TRACE();
+  virtual v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object> creationContext,
+                                        v8::Isolate*) const;
+
+  DECLARE_VIRTUAL_TRACE();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDLDictionaryBase_h
+#endif  // IDLDictionaryBase_h

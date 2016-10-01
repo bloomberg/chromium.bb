@@ -34,77 +34,62 @@
 namespace blink {
 
 DocumentParser::DocumentParser(Document* document)
-    : m_state(ParsingState)
-    , m_documentWasLoadedAsPartOfNavigation(false)
-    , m_document(document)
-{
-    DCHECK(document);
+    : m_state(ParsingState),
+      m_documentWasLoadedAsPartOfNavigation(false),
+      m_document(document) {
+  DCHECK(document);
 }
 
-DocumentParser::~DocumentParser()
-{
+DocumentParser::~DocumentParser() {}
+
+DEFINE_TRACE(DocumentParser) {
+  visitor->trace(m_document);
+  visitor->trace(m_clients);
 }
 
-DEFINE_TRACE(DocumentParser)
-{
-    visitor->trace(m_document);
-    visitor->trace(m_clients);
+void DocumentParser::setDecoder(std::unique_ptr<TextResourceDecoder>) {
+  ASSERT_NOT_REACHED();
 }
 
-void DocumentParser::setDecoder(std::unique_ptr<TextResourceDecoder>)
-{
-    ASSERT_NOT_REACHED();
+TextResourceDecoder* DocumentParser::decoder() {
+  return nullptr;
 }
 
-TextResourceDecoder* DocumentParser::decoder()
-{
-    return nullptr;
+void DocumentParser::prepareToStopParsing() {
+  DCHECK_EQ(m_state, ParsingState);
+  m_state = StoppingState;
 }
 
-void DocumentParser::prepareToStopParsing()
-{
-    DCHECK_EQ(m_state, ParsingState);
-    m_state = StoppingState;
+void DocumentParser::stopParsing() {
+  m_state = StoppedState;
+
+  // Clients may be removed while in the loop. Make a snapshot for iteration.
+  HeapVector<Member<DocumentParserClient>> clientsSnapshot;
+  copyToVector(m_clients, clientsSnapshot);
+
+  for (DocumentParserClient* client : clientsSnapshot) {
+    if (!m_clients.contains(client))
+      continue;
+
+    client->notifyParserStopped();
+  }
 }
 
-void DocumentParser::stopParsing()
-{
-    m_state = StoppedState;
-
-    // Clients may be removed while in the loop. Make a snapshot for iteration.
-    HeapVector<Member<DocumentParserClient>> clientsSnapshot;
-    copyToVector(m_clients, clientsSnapshot);
-
-    for (DocumentParserClient* client : clientsSnapshot) {
-        if (!m_clients.contains(client))
-            continue;
-
-        client->notifyParserStopped();
-    }
+void DocumentParser::detach() {
+  m_state = DetachedState;
+  m_document = nullptr;
 }
 
-void DocumentParser::detach()
-{
-    m_state = DetachedState;
-    m_document = nullptr;
+void DocumentParser::suspendScheduledTasks() {}
+
+void DocumentParser::resumeScheduledTasks() {}
+
+void DocumentParser::addClient(DocumentParserClient* client) {
+  m_clients.add(client);
 }
 
-void DocumentParser::suspendScheduledTasks()
-{
+void DocumentParser::removeClient(DocumentParserClient* client) {
+  m_clients.remove(client);
 }
 
-void DocumentParser::resumeScheduledTasks()
-{
-}
-
-void DocumentParser::addClient(DocumentParserClient* client)
-{
-    m_clients.add(client);
-}
-
-void DocumentParser::removeClient(DocumentParserClient* client)
-{
-    m_clients.remove(client);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -21,38 +21,41 @@ class LocalFrame;
 class Page;
 
 class ScriptStateForTesting : public ScriptState {
-public:
-    static PassRefPtr<ScriptStateForTesting> create(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-    ExecutionContext* getExecutionContext() const override;
-    void setExecutionContext(ExecutionContext*) override;
-private:
-    ScriptStateForTesting(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-    Persistent<ExecutionContext> m_executionContext;
+ public:
+  static PassRefPtr<ScriptStateForTesting> create(v8::Local<v8::Context>,
+                                                  PassRefPtr<DOMWrapperWorld>);
+  ExecutionContext* getExecutionContext() const override;
+  void setExecutionContext(ExecutionContext*) override;
+
+ private:
+  ScriptStateForTesting(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+  Persistent<ExecutionContext> m_executionContext;
 };
 
 class V8TestingScope {
-    STACK_ALLOCATED();
-public:
-    V8TestingScope();
-    ScriptState* getScriptState() const;
-    ExecutionContext* getExecutionContext() const;
-    v8::Isolate* isolate() const;
-    v8::Local<v8::Context> context() const;
-    ExceptionState& getExceptionState();
-    Page& page();
-    LocalFrame& frame();
-    Document& document();
-    ~V8TestingScope();
+  STACK_ALLOCATED();
 
-private:
-    std::unique_ptr<DummyPageHolder> m_holder;
-    v8::HandleScope m_handleScope;
-    v8::Local<v8::Context> m_context;
-    v8::Context::Scope m_contextScope;
-    v8::TryCatch m_tryCatch;
-    TrackExceptionState m_exceptionState;
+ public:
+  V8TestingScope();
+  ScriptState* getScriptState() const;
+  ExecutionContext* getExecutionContext() const;
+  v8::Isolate* isolate() const;
+  v8::Local<v8::Context> context() const;
+  ExceptionState& getExceptionState();
+  Page& page();
+  LocalFrame& frame();
+  Document& document();
+  ~V8TestingScope();
+
+ private:
+  std::unique_ptr<DummyPageHolder> m_holder;
+  v8::HandleScope m_handleScope;
+  v8::Local<v8::Context> m_context;
+  v8::Context::Scope m_contextScope;
+  v8::TryCatch m_tryCatch;
+  TrackExceptionState m_exceptionState;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8BindingForTesting_h
+#endif  // V8BindingForTesting_h

@@ -35,24 +35,20 @@
 
 namespace blink {
 
-bool WebUserGestureIndicator::isProcessingUserGesture()
-{
-    return UserGestureIndicator::processingUserGesture();
+bool WebUserGestureIndicator::isProcessingUserGesture() {
+  return UserGestureIndicator::processingUserGesture();
 }
 
-bool WebUserGestureIndicator::consumeUserGesture()
-{
-    return UserGestureIndicator::consumeUserGesture();
+bool WebUserGestureIndicator::consumeUserGesture() {
+  return UserGestureIndicator::consumeUserGesture();
 }
 
-bool WebUserGestureIndicator::processedUserGestureSinceLoad()
-{
-    return UserGestureIndicator::processedUserGestureSinceLoad();
+bool WebUserGestureIndicator::processedUserGestureSinceLoad() {
+  return UserGestureIndicator::processedUserGestureSinceLoad();
 }
 
-WebUserGestureToken WebUserGestureIndicator::currentUserGestureToken()
-{
-    return WebUserGestureToken(UserGestureIndicator::currentToken());
+WebUserGestureToken WebUserGestureIndicator::currentUserGestureToken() {
+  return WebUserGestureToken(UserGestureIndicator::currentToken());
 }
 
-} // namespace blink
+}  // namespace blink

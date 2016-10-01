@@ -32,72 +32,65 @@
 
 namespace blink {
 
-class WebAudioBusPrivate : public AudioBus {
-};
+class WebAudioBusPrivate : public AudioBus {};
 
-void WebAudioBus::initialize(unsigned numberOfChannels, size_t length, double sampleRate)
-{
-    RefPtr<AudioBus> audioBus = AudioBus::create(numberOfChannels, length);
-    audioBus->setSampleRate(sampleRate);
+void WebAudioBus::initialize(unsigned numberOfChannels,
+                             size_t length,
+                             double sampleRate) {
+  RefPtr<AudioBus> audioBus = AudioBus::create(numberOfChannels, length);
+  audioBus->setSampleRate(sampleRate);
 
-    if (m_private)
-        (static_cast<AudioBus*>(m_private))->deref();
+  if (m_private)
+    (static_cast<AudioBus*>(m_private))->deref();
 
-    audioBus->ref();
-    m_private = static_cast<WebAudioBusPrivate*>(audioBus.get());
+  audioBus->ref();
+  m_private = static_cast<WebAudioBusPrivate*>(audioBus.get());
 }
 
-void WebAudioBus::resizeSmaller(size_t newLength)
-{
-    ASSERT(m_private);
-    if (m_private) {
-        ASSERT(newLength <= length());
-        m_private->resizeSmaller(newLength);
-    }
+void WebAudioBus::resizeSmaller(size_t newLength) {
+  ASSERT(m_private);
+  if (m_private) {
+    ASSERT(newLength <= length());
+    m_private->resizeSmaller(newLength);
+  }
 }
 
-void WebAudioBus::reset()
-{
-    if (m_private) {
-        (static_cast<AudioBus*>(m_private))->deref();
-        m_private = 0;
-    }
-}
-
-unsigned WebAudioBus::numberOfChannels() const
-{
-    if (!m_private)
-        return 0;
-    return m_private->numberOfChannels();
-}
-
-size_t WebAudioBus::length() const
-{
-    if (!m_private)
-        return 0;
-    return m_private->length();
-}
-
-double WebAudioBus::sampleRate() const
-{
-    if (!m_private)
-        return 0;
-    return m_private->sampleRate();
-}
-
-float* WebAudioBus::channelData(unsigned channelIndex)
-{
-    if (!m_private)
-        return 0;
-    ASSERT(channelIndex < numberOfChannels());
-    return m_private->channel(channelIndex)->mutableData();
-}
-
-PassRefPtr<AudioBus> WebAudioBus::release()
-{
-    RefPtr<AudioBus> audioBus(adoptRef(static_cast<AudioBus*>(m_private)));
+void WebAudioBus::reset() {
+  if (m_private) {
+    (static_cast<AudioBus*>(m_private))->deref();
     m_private = 0;
-    return audioBus;
+  }
 }
 
-} // namespace blink
+unsigned WebAudioBus::numberOfChannels() const {
+  if (!m_private)
+    return 0;
+  return m_private->numberOfChannels();
+}
+
+size_t WebAudioBus::length() const {
+  if (!m_private)
+    return 0;
+  return m_private->length();
+}
+
+double WebAudioBus::sampleRate() const {
+  if (!m_private)
+    return 0;
+  return m_private->sampleRate();
+}
+
+float* WebAudioBus::channelData(unsigned channelIndex) {
+  if (!m_private)
+    return 0;
+  ASSERT(channelIndex < numberOfChannels());
+  return m_private->channel(channelIndex)->mutableData();
+}
+
+PassRefPtr<AudioBus> WebAudioBus::release() {
+  RefPtr<AudioBus> audioBus(adoptRef(static_cast<AudioBus*>(m_private)));
+  m_private = 0;
+  return audioBus;
+}
+
+}  // namespace blink

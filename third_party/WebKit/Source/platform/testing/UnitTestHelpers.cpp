@@ -44,54 +44,49 @@
 namespace blink {
 namespace testing {
 
-void runPendingTasks()
-{
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&exitRunLoop));
+void runPendingTasks() {
+  Platform::current()->currentThread()->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&exitRunLoop));
 
-    // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
-    // to run GC with NoHeapPointerOnStack.
-    ThreadState::current()->enterGCForbiddenScope();
-    enterRunLoop();
-    ThreadState::current()->leaveGCForbiddenScope();
+  // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
+  // to run GC with NoHeapPointerOnStack.
+  ThreadState::current()->enterGCForbiddenScope();
+  enterRunLoop();
+  ThreadState::current()->leaveGCForbiddenScope();
 }
 
-void runDelayedTasks(double delayMs)
-{
-    Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE, WTF::bind(&exitRunLoop), delayMs);
-    enterRunLoop();
+void runDelayedTasks(double delayMs) {
+  Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
+      BLINK_FROM_HERE, WTF::bind(&exitRunLoop), delayMs);
+  enterRunLoop();
 }
 
-String blinkRootDir()
-{
-    base::FilePath path;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
-    path = base::MakeAbsoluteFilePath(path);
-    return String::fromUTF8(path.MaybeAsASCII().c_str());
+String blinkRootDir() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+  path = base::MakeAbsoluteFilePath(path);
+  return String::fromUTF8(path.MaybeAsASCII().c_str());
 }
 
-PassRefPtr<SharedBuffer> readFromFile(const String& path)
-{
-    base::FilePath filePath = blink::WebStringToFilePath(path);
-    std::string buffer;
-    base::ReadFileToString(filePath, &buffer);
-    return SharedBuffer::create(buffer.data(), buffer.size());
+PassRefPtr<SharedBuffer> readFromFile(const String& path) {
+  base::FilePath filePath = blink::WebStringToFilePath(path);
+  std::string buffer;
+  base::ReadFileToString(filePath, &buffer);
+  return SharedBuffer::create(buffer.data(), buffer.size());
 }
 
-void enterRunLoop()
-{
-    base::RunLoop().Run();
+void enterRunLoop() {
+  base::RunLoop().Run();
 }
 
-void exitRunLoop()
-{
-    base::MessageLoop::current()->QuitWhenIdle();
+void exitRunLoop() {
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void yieldCurrentThread()
-{
-    base::PlatformThread::YieldCurrentThread();
+void yieldCurrentThread() {
+  base::PlatformThread::YieldCurrentThread();
 }
 
-} // namespace testing
-} // namespace blink
+}  // namespace testing
+}  // namespace blink

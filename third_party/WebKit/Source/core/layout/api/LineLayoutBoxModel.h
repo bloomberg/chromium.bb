@@ -14,188 +14,131 @@ namespace blink {
 class LayoutBoxModelObject;
 
 class LineLayoutBoxModel : public LineLayoutItem {
-public:
-    explicit LineLayoutBoxModel(LayoutBoxModelObject* layoutBox)
-        : LineLayoutItem(layoutBox)
-    {
-    }
+ public:
+  explicit LineLayoutBoxModel(LayoutBoxModelObject* layoutBox)
+      : LineLayoutItem(layoutBox) {}
 
-    explicit LineLayoutBoxModel(const LineLayoutItem& item)
-        : LineLayoutItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isBoxModelObject());
-    }
+  explicit LineLayoutBoxModel(const LineLayoutItem& item)
+      : LineLayoutItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isBoxModelObject());
+  }
 
-    explicit LineLayoutBoxModel(std::nullptr_t) : LineLayoutItem(nullptr) { }
+  explicit LineLayoutBoxModel(std::nullptr_t) : LineLayoutItem(nullptr) {}
 
-    LineLayoutBoxModel() { }
+  LineLayoutBoxModel() {}
 
-    // TODO(dgrogan) Remove. Implement API methods that proxy to the PaintLayer.
-    PaintLayer* layer() const
-    {
-        return toBoxModel()->layer();
-    }
+  // TODO(dgrogan) Remove. Implement API methods that proxy to the PaintLayer.
+  PaintLayer* layer() const { return toBoxModel()->layer(); }
 
-    LayoutUnit lineHeight(bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode = PositionOnContainingLine) const
-    {
-        return toBoxModel()->lineHeight(firstLine, lineDirectionMode, linePositionMode);
-    }
+  LayoutUnit lineHeight(
+      bool firstLine,
+      LineDirectionMode lineDirectionMode,
+      LinePositionMode linePositionMode = PositionOnContainingLine) const {
+    return toBoxModel()->lineHeight(firstLine, lineDirectionMode,
+                                    linePositionMode);
+  }
 
-    int baselinePosition(FontBaseline fontBaseline, bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode = PositionOnContainingLine) const
-    {
-        return toBoxModel()->baselinePosition(fontBaseline, firstLine, lineDirectionMode, linePositionMode);
-    }
+  int baselinePosition(
+      FontBaseline fontBaseline,
+      bool firstLine,
+      LineDirectionMode lineDirectionMode,
+      LinePositionMode linePositionMode = PositionOnContainingLine) const {
+    return toBoxModel()->baselinePosition(fontBaseline, firstLine,
+                                          lineDirectionMode, linePositionMode);
+  }
 
-    bool hasSelfPaintingLayer() const
-    {
-        return toBoxModel()->hasSelfPaintingLayer();
-    }
+  bool hasSelfPaintingLayer() const {
+    return toBoxModel()->hasSelfPaintingLayer();
+  }
 
-    LayoutUnit marginTop() const
-    {
-        return toBoxModel()->marginTop();
-    }
+  LayoutUnit marginTop() const { return toBoxModel()->marginTop(); }
 
-    LayoutUnit marginBottom() const
-    {
-        return toBoxModel()->marginBottom();
-    }
+  LayoutUnit marginBottom() const { return toBoxModel()->marginBottom(); }
 
-    LayoutUnit marginLeft() const
-    {
-        return toBoxModel()->marginLeft();
-    }
+  LayoutUnit marginLeft() const { return toBoxModel()->marginLeft(); }
 
-    LayoutUnit marginRight() const
-    {
-        return toBoxModel()->marginRight();
-    }
+  LayoutUnit marginRight() const { return toBoxModel()->marginRight(); }
 
-    LayoutUnit marginBefore(const ComputedStyle* otherStyle = nullptr) const
-    {
-        return toBoxModel()->marginBefore(otherStyle);
-    }
+  LayoutUnit marginBefore(const ComputedStyle* otherStyle = nullptr) const {
+    return toBoxModel()->marginBefore(otherStyle);
+  }
 
-    LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const
-    {
-        return toBoxModel()->marginAfter(otherStyle);
-    }
+  LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const {
+    return toBoxModel()->marginAfter(otherStyle);
+  }
 
-    LayoutUnit marginOver() const
-    {
-        return toBoxModel()->marginOver();
-    }
+  LayoutUnit marginOver() const { return toBoxModel()->marginOver(); }
 
-    LayoutUnit marginUnder() const
-    {
-        return toBoxModel()->marginUnder();
-    }
+  LayoutUnit marginUnder() const { return toBoxModel()->marginUnder(); }
 
-    LayoutUnit paddingTop() const
-    {
-        return toBoxModel()->paddingTop();
-    }
+  LayoutUnit paddingTop() const { return toBoxModel()->paddingTop(); }
 
-    LayoutUnit paddingBottom() const
-    {
-        return toBoxModel()->paddingBottom();
-    }
+  LayoutUnit paddingBottom() const { return toBoxModel()->paddingBottom(); }
 
-    LayoutUnit paddingLeft() const
-    {
-        return toBoxModel()->paddingLeft();
-    }
+  LayoutUnit paddingLeft() const { return toBoxModel()->paddingLeft(); }
 
-    LayoutUnit paddingRight() const
-    {
-        return toBoxModel()->paddingRight();
-    }
+  LayoutUnit paddingRight() const { return toBoxModel()->paddingRight(); }
 
-    LayoutUnit paddingBefore() const
-    {
-        return toBoxModel()->paddingBefore();
-    }
+  LayoutUnit paddingBefore() const { return toBoxModel()->paddingBefore(); }
 
-    LayoutUnit paddingAfter() const
-    {
-        return toBoxModel()->paddingAfter();
-    }
+  LayoutUnit paddingAfter() const { return toBoxModel()->paddingAfter(); }
 
-    int borderTop() const
-    {
-        return toBoxModel()->borderTop();
-    }
+  int borderTop() const { return toBoxModel()->borderTop(); }
 
-    int borderBottom() const
-    {
-        return toBoxModel()->borderBottom();
-    }
+  int borderBottom() const { return toBoxModel()->borderBottom(); }
 
-    int borderLeft() const
-    {
-        return toBoxModel()->borderLeft();
-    }
+  int borderLeft() const { return toBoxModel()->borderLeft(); }
 
-    int borderRight() const
-    {
-        return toBoxModel()->borderRight();
-    }
+  int borderRight() const { return toBoxModel()->borderRight(); }
 
-    int borderBefore() const
-    {
-        return toBoxModel()->borderBefore();
-    }
+  int borderBefore() const { return toBoxModel()->borderBefore(); }
 
-    int borderAfter() const
-    {
-        return toBoxModel()->borderAfter();
-    }
+  int borderAfter() const { return toBoxModel()->borderAfter(); }
 
-    LayoutSize relativePositionLogicalOffset() const
-    {
-        return toBoxModel()->relativePositionLogicalOffset();
-    }
+  LayoutSize relativePositionLogicalOffset() const {
+    return toBoxModel()->relativePositionLogicalOffset();
+  }
 
-    bool hasInlineDirectionBordersOrPadding() const
-    {
-        return toBoxModel()->hasInlineDirectionBordersOrPadding();
-    }
+  bool hasInlineDirectionBordersOrPadding() const {
+    return toBoxModel()->hasInlineDirectionBordersOrPadding();
+  }
 
-    LayoutUnit borderAndPaddingOver() const
-    {
-        return toBoxModel()->borderAndPaddingOver();
-    }
+  LayoutUnit borderAndPaddingOver() const {
+    return toBoxModel()->borderAndPaddingOver();
+  }
 
-    LayoutUnit borderAndPaddingUnder() const
-    {
-        return toBoxModel()->borderAndPaddingUnder();
-    }
+  LayoutUnit borderAndPaddingUnder() const {
+    return toBoxModel()->borderAndPaddingUnder();
+  }
 
-    LayoutUnit borderAndPaddingLogicalHeight() const
-    {
-        return toBoxModel()->borderAndPaddingLogicalHeight();
-    }
+  LayoutUnit borderAndPaddingLogicalHeight() const {
+    return toBoxModel()->borderAndPaddingLogicalHeight();
+  }
 
-    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, const InlineFlowBox* inlineFlowBox = nullptr) const
-    {
-        return toBoxModel()->boxShadowShouldBeAppliedToBackground(bleedAvoidance, inlineFlowBox);
-    }
+  bool boxShadowShouldBeAppliedToBackground(
+      BackgroundBleedAvoidance bleedAvoidance,
+      const InlineFlowBox* inlineFlowBox = nullptr) const {
+    return toBoxModel()->boxShadowShouldBeAppliedToBackground(bleedAvoidance,
+                                                              inlineFlowBox);
+  }
 
-    LayoutSize offsetForInFlowPosition() const
-    {
-        return toBoxModel()->offsetForInFlowPosition();
-    }
+  LayoutSize offsetForInFlowPosition() const {
+    return toBoxModel()->offsetForInFlowPosition();
+  }
 
-private:
-    LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
-    const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }
+ private:
+  LayoutBoxModelObject* toBoxModel() {
+    return toLayoutBoxModelObject(layoutObject());
+  }
+  const LayoutBoxModelObject* toBoxModel() const {
+    return toLayoutBoxModelObject(layoutObject());
+  }
 };
 
-inline LineLayoutBoxModel LineLayoutItem::enclosingBoxModelObject() const
-{
-    return LineLayoutBoxModel(layoutObject()->enclosingBoxModelObject());
+inline LineLayoutBoxModel LineLayoutItem::enclosingBoxModelObject() const {
+  return LineLayoutBoxModel(layoutObject()->enclosingBoxModelObject());
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutBoxModel_h
+#endif  // LineLayoutBoxModel_h

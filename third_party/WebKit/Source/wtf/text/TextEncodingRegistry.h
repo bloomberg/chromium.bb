@@ -53,7 +53,7 @@ bool isReplacementEncoding(const String& alias);
 void dumpTextEncodingNameMap();
 #endif
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::newTextCodec;
 using WTF::atomicCanonicalTextEncodingName;
@@ -62,4 +62,4 @@ using WTF::noExtendedTextEncodingNameUsed;
 using WTF::dumpTextEncodingNameMap;
 #endif
 
-#endif // TextEncodingRegistry_h
+#endif  // TextEncodingRegistry_h

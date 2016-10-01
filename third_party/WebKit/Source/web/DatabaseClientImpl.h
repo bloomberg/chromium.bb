@@ -36,20 +36,26 @@
 
 namespace blink {
 
-class DatabaseClientImpl final : public GarbageCollectedFinalized<DatabaseClientImpl>, public DatabaseClient {
-    USING_GARBAGE_COLLECTED_MIXIN(DatabaseClientImpl);
-public:
-    static DatabaseClientImpl* create();
+class DatabaseClientImpl final
+    : public GarbageCollectedFinalized<DatabaseClientImpl>,
+      public DatabaseClient {
+  USING_GARBAGE_COLLECTED_MIXIN(DatabaseClientImpl);
 
-    ~DatabaseClientImpl() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static DatabaseClientImpl* create();
 
-    bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned estimatedSize) override;
+  ~DatabaseClientImpl() override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    DatabaseClientImpl();
+  bool allowDatabase(ExecutionContext*,
+                     const String& name,
+                     const String& displayName,
+                     unsigned estimatedSize) override;
+
+ private:
+  DatabaseClientImpl();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseClientImpl_h
+#endif  // DatabaseClientImpl_h

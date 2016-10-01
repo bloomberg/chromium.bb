@@ -21,37 +21,41 @@ class Document;
 class Navigator;
 class VRController;
 
-class MODULES_EXPORT NavigatorVR final : public GarbageCollectedFinalized<NavigatorVR>, public Supplement<Navigator>, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);
-    WTF_MAKE_NONCOPYABLE(NavigatorVR);
-public:
-    static NavigatorVR* from(Document&);
-    static NavigatorVR& from(Navigator&);
-    virtual ~NavigatorVR();
+class MODULES_EXPORT NavigatorVR final
+    : public GarbageCollectedFinalized<NavigatorVR>,
+      public Supplement<Navigator>,
+      public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);
+  WTF_MAKE_NONCOPYABLE(NavigatorVR);
 
-    static ScriptPromise getVRDisplays(ScriptState*, Navigator&);
-    ScriptPromise getVRDisplays(ScriptState*);
+ public:
+  static NavigatorVR* from(Document&);
+  static NavigatorVR& from(Navigator&);
+  virtual ~NavigatorVR();
 
-    VRController* controller();
-    Document* document();
+  static ScriptPromise getVRDisplays(ScriptState*, Navigator&);
+  ScriptPromise getVRDisplays(ScriptState*);
 
-    void fireVREvent(VRDisplayEvent*);
+  VRController* controller();
+  Document* document();
 
-    DECLARE_VIRTUAL_TRACE();
+  void fireVREvent(VRDisplayEvent*);
 
-private:
-    friend class VRDisplay;
-    friend class VRGetDevicesCallback;
+  DECLARE_VIRTUAL_TRACE();
 
-    explicit NavigatorVR(LocalFrame*);
+ private:
+  friend class VRDisplay;
+  friend class VRGetDevicesCallback;
 
-    static const char* supplementName();
+  explicit NavigatorVR(LocalFrame*);
 
-    void fireVRDisplayPresentChange(VRDisplay*);
+  static const char* supplementName();
 
-    Member<VRController> m_controller;
+  void fireVRDisplayPresentChange(VRDisplay*);
+
+  Member<VRController> m_controller;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorVR_h
+#endif  // NavigatorVR_h

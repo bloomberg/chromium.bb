@@ -10,21 +10,22 @@
 namespace blink {
 
 class HTMLPictureElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLPictureElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    void sourceOrMediaChanged();
-    void removeListenerFromSourceChildren();
-    void addListenerToSourceChildren();
+ public:
+  DECLARE_NODE_FACTORY(HTMLPictureElement);
 
-protected:
-    explicit HTMLPictureElement(Document&);
+  void sourceOrMediaChanged();
+  void removeListenerFromSourceChildren();
+  void addListenerToSourceChildren();
 
-private:
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+ protected:
+  explicit HTMLPictureElement(Document&);
+
+ private:
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLPictureElement_h
+#endif  // HTMLPictureElement_h

@@ -31,39 +31,44 @@
 namespace blink {
 
 class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
-public:
-    AudioDelayDSPKernel(double maxDelayTime, float sampleRate);
+ public:
+  AudioDelayDSPKernel(double maxDelayTime, float sampleRate);
 
-    void process(const float* source, float* destination, size_t framesToProcess) override;
-    void reset() override;
+  void process(const float* source,
+               float* destination,
+               size_t framesToProcess) override;
+  void reset() override;
 
-    double maxDelayTime() const { return m_maxDelayTime; }
+  double maxDelayTime() const { return m_maxDelayTime; }
 
-    void setDelayFrames(double numberOfFrames) { m_desiredDelayFrames = numberOfFrames; }
+  void setDelayFrames(double numberOfFrames) {
+    m_desiredDelayFrames = numberOfFrames;
+  }
 
-    double tailTime() const override;
-    double latencyTime() const override;
+  double tailTime() const override;
+  double latencyTime() const override;
 
-protected:
-    AudioDelayDSPKernel(AudioDSPKernelProcessor*, size_t processingSizeInFrames);
+ protected:
+  AudioDelayDSPKernel(AudioDSPKernelProcessor*, size_t processingSizeInFrames);
 
-    virtual bool hasSampleAccurateValues();
-    virtual void calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess);
-    virtual double delayTime(float sampleRate);
+  virtual bool hasSampleAccurateValues();
+  virtual void calculateSampleAccurateValues(float* delayTimes,
+                                             size_t framesToProcess);
+  virtual double delayTime(float sampleRate);
 
-    AudioFloatArray m_buffer;
-    double m_maxDelayTime;
-    int m_writeIndex;
-    double m_currentDelayTime;
-    double m_smoothingRate;
-    bool m_firstTime;
-    double m_desiredDelayFrames;
+  AudioFloatArray m_buffer;
+  double m_maxDelayTime;
+  int m_writeIndex;
+  double m_currentDelayTime;
+  double m_smoothingRate;
+  bool m_firstTime;
+  double m_desiredDelayFrames;
 
-    AudioFloatArray m_delayTimes;
+  AudioFloatArray m_delayTimes;
 
-    size_t bufferLengthForDelay(double delayTime, double sampleRate) const;
+  size_t bufferLengthForDelay(double delayTime, double sampleRate) const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioDelayDSPKernel_h
+#endif  // AudioDelayDSPKernel_h

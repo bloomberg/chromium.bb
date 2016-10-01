@@ -31,12 +31,12 @@
 namespace blink {
 
 class CORE_EXPORT PopupOpeningObserver {
-public:
-    virtual void willOpenPopup() = 0;
+ public:
+  virtual void willOpenPopup() = 0;
 
-protected:
-    virtual ~PopupOpeningObserver() { }
+ protected:
+  virtual ~PopupOpeningObserver() {}
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

@@ -14,17 +14,17 @@ class LayoutPoint;
 class LayoutVideo;
 
 class VideoPainter {
-    STACK_ALLOCATED();
-public:
-    VideoPainter(const LayoutVideo& layoutVideo) : m_layoutVideo(layoutVideo) { }
+  STACK_ALLOCATED();
 
-    void paintReplaced(const PaintInfo&, const LayoutPoint&);
+ public:
+  VideoPainter(const LayoutVideo& layoutVideo) : m_layoutVideo(layoutVideo) {}
 
-private:
+  void paintReplaced(const PaintInfo&, const LayoutPoint&);
 
-    const LayoutVideo& m_layoutVideo;
+ private:
+  const LayoutVideo& m_layoutVideo;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VideoPainter_h
+#endif  // VideoPainter_h

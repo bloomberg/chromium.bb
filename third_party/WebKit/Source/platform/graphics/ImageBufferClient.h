@@ -38,16 +38,15 @@ class SkCanvas;
 namespace blink {
 
 class PLATFORM_EXPORT ImageBufferClient {
-public:
-    virtual ~ImageBufferClient() { }
-    virtual void notifySurfaceInvalid() = 0;
-    virtual bool isDirty() = 0;
-    virtual void didDisableAcceleration() = 0;
-    virtual void didFinalizeFrame() = 0;
-    virtual void restoreCanvasMatrixClipStack(SkCanvas*) const = 0;
+ public:
+  virtual ~ImageBufferClient() {}
+  virtual void notifySurfaceInvalid() = 0;
+  virtual bool isDirty() = 0;
+  virtual void didDisableAcceleration() = 0;
+  virtual void didFinalizeFrame() = 0;
+  virtual void restoreCanvasMatrixClipStack(SkCanvas*) const = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

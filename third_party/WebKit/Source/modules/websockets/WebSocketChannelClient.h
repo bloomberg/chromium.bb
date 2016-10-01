@@ -41,25 +41,28 @@
 namespace blink {
 
 class MODULES_EXPORT WebSocketChannelClient : public GarbageCollectedMixin {
-public:
-    virtual ~WebSocketChannelClient() { }
-    virtual void didConnect(const String& subprotocol, const String& extensions) { }
-    virtual void didReceiveTextMessage(const String&) { }
-    virtual void didReceiveBinaryMessage(std::unique_ptr<Vector<char>>) { }
-    virtual void didError() { }
-    virtual void didConsumeBufferedAmount(uint64_t consumed) { }
-    virtual void didStartClosingHandshake() { }
-    enum ClosingHandshakeCompletionStatus {
-        ClosingHandshakeIncomplete,
-        ClosingHandshakeComplete
-    };
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short /* code */, const String& /* reason */) { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+ public:
+  virtual ~WebSocketChannelClient() {}
+  virtual void didConnect(const String& subprotocol, const String& extensions) {
+  }
+  virtual void didReceiveTextMessage(const String&) {}
+  virtual void didReceiveBinaryMessage(std::unique_ptr<Vector<char>>) {}
+  virtual void didError() {}
+  virtual void didConsumeBufferedAmount(uint64_t consumed) {}
+  virtual void didStartClosingHandshake() {}
+  enum ClosingHandshakeCompletionStatus {
+    ClosingHandshakeIncomplete,
+    ClosingHandshakeComplete
+  };
+  virtual void didClose(ClosingHandshakeCompletionStatus,
+                        unsigned short /* code */,
+                        const String& /* reason */) {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    WebSocketChannelClient() { }
+ protected:
+  WebSocketChannelClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSocketChannelClient_h
+#endif  // WebSocketChannelClient_h

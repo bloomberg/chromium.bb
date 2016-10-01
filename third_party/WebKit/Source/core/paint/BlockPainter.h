@@ -19,31 +19,39 @@ class LayoutPoint;
 class LayoutRect;
 
 class BlockPainter {
-    STACK_ALLOCATED();
-public:
-    BlockPainter(const LayoutBlock& block) : m_layoutBlock(block) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
-    void paintObject(const PaintInfo&, const LayoutPoint&);
-    void paintContents(const PaintInfo&, const LayoutPoint&);
-    void paintChildren(const PaintInfo&, const LayoutPoint&);
-    void paintChild(const LayoutBox&, const PaintInfo&, const LayoutPoint&);
-    void paintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
+ public:
+  BlockPainter(const LayoutBlock& block) : m_layoutBlock(block) {}
 
-    // See ObjectPainter::paintAllPhasesAtomically().
-    void paintAllChildPhasesAtomically(const LayoutBox&, const PaintInfo&, const LayoutPoint&);
-    static void paintChildrenOfFlexibleBox(const LayoutFlexibleBox&, const PaintInfo&, const LayoutPoint& paintOffset);
-    static void paintInlineBox(const InlineBox&, const PaintInfo&, const LayoutPoint& paintOffset);
+  void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+  void paintObject(const PaintInfo&, const LayoutPoint&);
+  void paintContents(const PaintInfo&, const LayoutPoint&);
+  void paintChildren(const PaintInfo&, const LayoutPoint&);
+  void paintChild(const LayoutBox&, const PaintInfo&, const LayoutPoint&);
+  void paintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
 
-    // The adjustedPaintOffset should include the location (offset) of the object itself.
-    bool intersectsPaintRect(const PaintInfo&, const LayoutPoint& adjustedPaintOffset) const;
+  // See ObjectPainter::paintAllPhasesAtomically().
+  void paintAllChildPhasesAtomically(const LayoutBox&,
+                                     const PaintInfo&,
+                                     const LayoutPoint&);
+  static void paintChildrenOfFlexibleBox(const LayoutFlexibleBox&,
+                                         const PaintInfo&,
+                                         const LayoutPoint& paintOffset);
+  static void paintInlineBox(const InlineBox&,
+                             const PaintInfo&,
+                             const LayoutPoint& paintOffset);
 
-private:
-    void paintCarets(const PaintInfo&, const LayoutPoint&);
+  // The adjustedPaintOffset should include the location (offset) of the object itself.
+  bool intersectsPaintRect(const PaintInfo&,
+                           const LayoutPoint& adjustedPaintOffset) const;
 
-    const LayoutBlock& m_layoutBlock;
+ private:
+  void paintCarets(const PaintInfo&, const LayoutPoint&);
+
+  const LayoutBlock& m_layoutBlock;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BlockPainter_h
+#endif  // BlockPainter_h

@@ -43,31 +43,35 @@ class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 
-class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RTCIceCandidate* create(ExecutionContext*, const RTCIceCandidateInit&, ExceptionState&);
-    static RTCIceCandidate* create(WebRTCICECandidate);
+class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>,
+                              public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    String candidate() const;
-    void setCandidate(String);
-    String sdpMid() const;
-    void setSdpMid(String);
-    unsigned short sdpMLineIndex() const;
-    void setSdpMLineIndex(unsigned short);
+ public:
+  static RTCIceCandidate* create(ExecutionContext*,
+                                 const RTCIceCandidateInit&,
+                                 ExceptionState&);
+  static RTCIceCandidate* create(WebRTCICECandidate);
 
-    ScriptValue toJSONForBinding(ScriptState*);
+  String candidate() const;
+  void setCandidate(String);
+  String sdpMid() const;
+  void setSdpMid(String);
+  unsigned short sdpMLineIndex() const;
+  void setSdpMLineIndex(unsigned short);
 
-    WebRTCICECandidate webCandidate() const;
+  ScriptValue toJSONForBinding(ScriptState*);
 
-    DEFINE_INLINE_TRACE() { }
+  WebRTCICECandidate webCandidate() const;
 
-private:
-    explicit RTCIceCandidate(WebRTCICECandidate);
+  DEFINE_INLINE_TRACE() {}
 
-    WebRTCICECandidate m_webCandidate;
+ private:
+  explicit RTCIceCandidate(WebRTCICECandidate);
+
+  WebRTCICECandidate m_webCandidate;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCIceCandidate_h
+#endif  // RTCIceCandidate_h

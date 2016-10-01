@@ -40,84 +40,81 @@
 namespace blink {
 
 class WebCryptoKeyPrivate : public ThreadSafeRefCounted<WebCryptoKeyPrivate> {
-public:
-    WebCryptoKeyPrivate(std::unique_ptr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
-        : handle(std::move(handle))
-        , type(type)
-        , extractable(extractable)
-        , algorithm(algorithm)
-        , usages(usages)
-    {
-        ASSERT(!algorithm.isNull());
-    }
+ public:
+  WebCryptoKeyPrivate(std::unique_ptr<WebCryptoKeyHandle> handle,
+                      WebCryptoKeyType type,
+                      bool extractable,
+                      const WebCryptoKeyAlgorithm& algorithm,
+                      WebCryptoKeyUsageMask usages)
+      : handle(std::move(handle)),
+        type(type),
+        extractable(extractable),
+        algorithm(algorithm),
+        usages(usages) {
+    ASSERT(!algorithm.isNull());
+  }
 
-    const std::unique_ptr<WebCryptoKeyHandle> handle;
-    const WebCryptoKeyType type;
-    const bool extractable;
-    const WebCryptoKeyAlgorithm algorithm;
-    const WebCryptoKeyUsageMask usages;
+  const std::unique_ptr<WebCryptoKeyHandle> handle;
+  const WebCryptoKeyType type;
+  const bool extractable;
+  const WebCryptoKeyAlgorithm algorithm;
+  const WebCryptoKeyUsageMask usages;
 };
 
-WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
-{
-    WebCryptoKey key;
-    key.m_private = adoptRef(new WebCryptoKeyPrivate(wrapUnique(handle), type, extractable, algorithm, usages));
-    return key;
+WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle,
+                                  WebCryptoKeyType type,
+                                  bool extractable,
+                                  const WebCryptoKeyAlgorithm& algorithm,
+                                  WebCryptoKeyUsageMask usages) {
+  WebCryptoKey key;
+  key.m_private = adoptRef(new WebCryptoKeyPrivate(
+      wrapUnique(handle), type, extractable, algorithm, usages));
+  return key;
 }
 
-WebCryptoKey WebCryptoKey::createNull()
-{
-    return WebCryptoKey();
+WebCryptoKey WebCryptoKey::createNull() {
+  return WebCryptoKey();
 }
 
-WebCryptoKeyHandle* WebCryptoKey::handle() const
-{
-    ASSERT(!isNull());
-    return m_private->handle.get();
+WebCryptoKeyHandle* WebCryptoKey::handle() const {
+  ASSERT(!isNull());
+  return m_private->handle.get();
 }
 
-WebCryptoKeyType WebCryptoKey::type() const
-{
-    ASSERT(!isNull());
-    return m_private->type;
+WebCryptoKeyType WebCryptoKey::type() const {
+  ASSERT(!isNull());
+  return m_private->type;
 }
 
-bool WebCryptoKey::extractable() const
-{
-    ASSERT(!isNull());
-    return m_private->extractable;
+bool WebCryptoKey::extractable() const {
+  ASSERT(!isNull());
+  return m_private->extractable;
 }
 
-const WebCryptoKeyAlgorithm& WebCryptoKey::algorithm() const
-{
-    ASSERT(!isNull());
-    return m_private->algorithm;
+const WebCryptoKeyAlgorithm& WebCryptoKey::algorithm() const {
+  ASSERT(!isNull());
+  return m_private->algorithm;
 }
 
-WebCryptoKeyUsageMask WebCryptoKey::usages() const
-{
-    ASSERT(!isNull());
-    return m_private->usages;
+WebCryptoKeyUsageMask WebCryptoKey::usages() const {
+  ASSERT(!isNull());
+  return m_private->usages;
 }
 
-bool WebCryptoKey::isNull() const
-{
-    return m_private.isNull();
+bool WebCryptoKey::isNull() const {
+  return m_private.isNull();
 }
 
-bool WebCryptoKey::keyUsageAllows(const blink::WebCryptoKeyUsage usage) const
-{
-    return ((m_private->usages & usage) != 0);
+bool WebCryptoKey::keyUsageAllows(const blink::WebCryptoKeyUsage usage) const {
+  return ((m_private->usages & usage) != 0);
 }
 
-void WebCryptoKey::assign(const WebCryptoKey& other)
-{
-    m_private = other.m_private;
+void WebCryptoKey::assign(const WebCryptoKey& other) {
+  m_private = other.m_private;
 }
 
-void WebCryptoKey::reset()
-{
-    m_private.reset();
+void WebCryptoKey::reset() {
+  m_private.reset();
 }
 
-} // namespace blink
+}  // namespace blink

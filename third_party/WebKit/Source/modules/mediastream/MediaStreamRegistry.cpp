@@ -30,42 +30,40 @@
 
 namespace blink {
 
-MediaStreamRegistry& MediaStreamRegistry::registry()
-{
-    // Since WebWorkers cannot obtain MediaStream objects, we should be on the main thread.
-    DCHECK(isMainThread());
-    DEFINE_STATIC_LOCAL(MediaStreamRegistry, instance, ());
-    return instance;
+MediaStreamRegistry& MediaStreamRegistry::registry() {
+  // Since WebWorkers cannot obtain MediaStream objects, we should be on the main thread.
+  DCHECK(isMainThread());
+  DEFINE_STATIC_LOCAL(MediaStreamRegistry, instance, ());
+  return instance;
 }
 
-void MediaStreamRegistry::registerURL(SecurityOrigin*, const KURL& url, URLRegistrable* stream)
-{
-    DCHECK(&stream->registry() == this);
-    DCHECK(isMainThread());
-    m_streamDescriptors.set(url.getString(), static_cast<MediaStream*>(stream)->descriptor());
+void MediaStreamRegistry::registerURL(SecurityOrigin*,
+                                      const KURL& url,
+                                      URLRegistrable* stream) {
+  DCHECK(&stream->registry() == this);
+  DCHECK(isMainThread());
+  m_streamDescriptors.set(url.getString(),
+                          static_cast<MediaStream*>(stream)->descriptor());
 }
 
-void MediaStreamRegistry::unregisterURL(const KURL& url)
-{
-    DCHECK(isMainThread());
-    m_streamDescriptors.remove(url.getString());
+void MediaStreamRegistry::unregisterURL(const KURL& url) {
+  DCHECK(isMainThread());
+  m_streamDescriptors.remove(url.getString());
 }
 
-bool MediaStreamRegistry::contains(const String& url)
-{
-    DCHECK(isMainThread());
-    return m_streamDescriptors.contains(url);
+bool MediaStreamRegistry::contains(const String& url) {
+  DCHECK(isMainThread());
+  return m_streamDescriptors.contains(url);
 }
 
-MediaStreamDescriptor* MediaStreamRegistry::lookupMediaStreamDescriptor(const String& url)
-{
-    DCHECK(isMainThread());
-    return m_streamDescriptors.get(url);
+MediaStreamDescriptor* MediaStreamRegistry::lookupMediaStreamDescriptor(
+    const String& url) {
+  DCHECK(isMainThread());
+  return m_streamDescriptors.get(url);
 }
 
-MediaStreamRegistry::MediaStreamRegistry()
-{
-    HTMLMediaElement::setMediaStreamRegistry(this);
+MediaStreamRegistry::MediaStreamRegistry() {
+  HTMLMediaElement::setMediaStreamRegistry(this);
 }
 
-} // namespace blink
+}  // namespace blink

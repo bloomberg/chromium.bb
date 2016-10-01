@@ -27,30 +27,29 @@
 
 namespace blink {
 
-RTCLegacyStatsReport* RTCLegacyStatsReport::create(const String& id, const String& type, double timestamp)
-{
-    return new RTCLegacyStatsReport(id, type, timestamp);
+RTCLegacyStatsReport* RTCLegacyStatsReport::create(const String& id,
+                                                   const String& type,
+                                                   double timestamp) {
+  return new RTCLegacyStatsReport(id, type, timestamp);
 }
 
-RTCLegacyStatsReport::RTCLegacyStatsReport(const String& id, const String& type, double timestamp)
-    : m_id(id)
-    , m_type(type)
-    , m_timestamp(timestamp)
-{
+RTCLegacyStatsReport::RTCLegacyStatsReport(const String& id,
+                                           const String& type,
+                                           double timestamp)
+    : m_id(id), m_type(type), m_timestamp(timestamp) {}
+
+Vector<String> RTCLegacyStatsReport::names() const {
+  Vector<String> result;
+  for (HashMap<String, String>::const_iterator it = m_stats.begin();
+       it != m_stats.end(); ++it) {
+    result.append(it->key);
+  }
+  return result;
 }
 
-Vector<String> RTCLegacyStatsReport::names() const
-{
-    Vector<String> result;
-    for (HashMap<String, String>::const_iterator it = m_stats.begin(); it != m_stats.end(); ++it) {
-        result.append(it->key);
-    }
-    return result;
+void RTCLegacyStatsReport::addStatistic(const String& name,
+                                        const String& value) {
+  m_stats.add(name, value);
 }
 
-void RTCLegacyStatsReport::addStatistic(const String& name, const String& value)
-{
-    m_stats.add(name, value);
-}
-
-} // namespace blink
+}  // namespace blink

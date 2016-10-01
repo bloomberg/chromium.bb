@@ -31,12 +31,8 @@
 
 namespace blink {
 
-ColorChooser::ColorChooser()
-{
-}
+ColorChooser::ColorChooser() {}
 
-ColorChooser::~ColorChooser()
-{
-}
+ColorChooser::~ColorChooser() {}
 
-} // namespace blink
+}  // namespace blink

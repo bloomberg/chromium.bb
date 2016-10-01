@@ -12,16 +12,16 @@ namespace blink {
 class LayoutView;
 
 class ViewFragmentationContext final : public FragmentationContext {
-public:
-    ViewFragmentationContext(LayoutView& view) : m_view(view) { }
-    bool isFragmentainerLogicalHeightKnown() final;
-    LayoutUnit fragmentainerLogicalHeightAt(LayoutUnit blockOffset) final;
-    LayoutUnit remainingLogicalHeightAt(LayoutUnit blockOffset) final;
+ public:
+  ViewFragmentationContext(LayoutView& view) : m_view(view) {}
+  bool isFragmentainerLogicalHeightKnown() final;
+  LayoutUnit fragmentainerLogicalHeightAt(LayoutUnit blockOffset) final;
+  LayoutUnit remainingLogicalHeightAt(LayoutUnit blockOffset) final;
 
-private:
-    LayoutView& m_view;
+ private:
+  LayoutView& m_view;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ViewFragmentationContext_h
+#endif  // ViewFragmentationContext_h

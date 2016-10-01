@@ -34,22 +34,22 @@ namespace blink {
 class IdTargetObserverRegistry;
 
 class IdTargetObserver : public GarbageCollectedFinalized<IdTargetObserver> {
-public:
-    virtual ~IdTargetObserver();
-    DECLARE_VIRTUAL_TRACE();
-    virtual void idTargetChanged() = 0;
-    virtual void unregister();
+ public:
+  virtual ~IdTargetObserver();
+  DECLARE_VIRTUAL_TRACE();
+  virtual void idTargetChanged() = 0;
+  virtual void unregister();
 
-protected:
-    IdTargetObserver(IdTargetObserverRegistry&, const AtomicString& id);
+ protected:
+  IdTargetObserver(IdTargetObserverRegistry&, const AtomicString& id);
 
-private:
-    IdTargetObserverRegistry& registry() { return *m_registry; }
+ private:
+  IdTargetObserverRegistry& registry() { return *m_registry; }
 
-    Member<IdTargetObserverRegistry> m_registry;
-    AtomicString m_id;
+  Member<IdTargetObserverRegistry> m_registry;
+  AtomicString m_id;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IdTargetObserver_h
+#endif  // IdTargetObserver_h

@@ -11,54 +11,52 @@
 
 namespace blink {
 
-PresentationConnectionList::PresentationConnectionList(ExecutionContext* context)
-    : ContextLifecycleObserver(context)
-{
+PresentationConnectionList::PresentationConnectionList(
+    ExecutionContext* context)
+    : ContextLifecycleObserver(context) {}
+
+const AtomicString& PresentationConnectionList::interfaceName() const {
+  return EventTargetNames::PresentationConnectionList;
 }
 
-const AtomicString& PresentationConnectionList::interfaceName() const
-{
-    return EventTargetNames::PresentationConnectionList;
+ExecutionContext* PresentationConnectionList::getExecutionContext() const {
+  return ContextLifecycleObserver::getExecutionContext();
 }
 
-ExecutionContext* PresentationConnectionList::getExecutionContext() const
-{
-    return ContextLifecycleObserver::getExecutionContext();
+const HeapVector<Member<PresentationConnection>>&
+PresentationConnectionList::connections() const {
+  return m_connections;
 }
 
-const HeapVector<Member<PresentationConnection>>& PresentationConnectionList::connections() const
-{
-    return m_connections;
+void PresentationConnectionList::addedEventListener(
+    const AtomicString& eventType,
+    RegisteredEventListener& registeredListener) {
+  EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
+  if (eventType == EventTypeNames::connectionavailable)
+    UseCounter::count(
+        getExecutionContext(),
+        UseCounter::PresentationRequestConnectionAvailableEventListener);
 }
 
-void PresentationConnectionList::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
-{
-    EventTargetWithInlineData::addedEventListener(eventType, registeredListener);
-    if (eventType == EventTypeNames::connectionavailable)
-        UseCounter::count(getExecutionContext(), UseCounter::PresentationRequestConnectionAvailableEventListener);
+void PresentationConnectionList::addConnection(
+    PresentationConnection* connection) {
+  m_connections.append(connection);
 }
 
-void PresentationConnectionList::addConnection(PresentationConnection* connection)
-{
-    m_connections.append(connection);
+void PresentationConnectionList::dispatchConnectionAvailableEvent(
+    PresentationConnection* connection) {
+  dispatchEvent(PresentationConnectionAvailableEvent::create(
+      EventTypeNames::connectionavailable, connection));
 }
 
-void PresentationConnectionList::dispatchConnectionAvailableEvent(PresentationConnection* connection)
-{
-    dispatchEvent(PresentationConnectionAvailableEvent::create(
-        EventTypeNames::connectionavailable, connection));
+bool PresentationConnectionList::isEmpty() {
+  return m_connections.isEmpty();
 }
 
-bool PresentationConnectionList::isEmpty()
-{
-    return m_connections.isEmpty();
+DEFINE_TRACE(PresentationConnectionList) {
+  visitor->trace(m_connections);
+  ContextLifecycleObserver::trace(visitor);
+  EventTargetWithInlineData::trace(visitor);
 }
 
-DEFINE_TRACE(PresentationConnectionList)
-{
-    visitor->trace(m_connections);
-    ContextLifecycleObserver::trace(visitor);
-    EventTargetWithInlineData::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

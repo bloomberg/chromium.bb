@@ -32,115 +32,106 @@
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableRow.h"
 
-
 namespace blink {
 
-AXARIAGridCell::AXARIAGridCell(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXTableCell(layoutObject, axObjectCache)
-{
+AXARIAGridCell::AXARIAGridCell(LayoutObject* layoutObject,
+                               AXObjectCacheImpl& axObjectCache)
+    : AXTableCell(layoutObject, axObjectCache) {}
+
+AXARIAGridCell::~AXARIAGridCell() {}
+
+AXARIAGridCell* AXARIAGridCell::create(LayoutObject* layoutObject,
+                                       AXObjectCacheImpl& axObjectCache) {
+  return new AXARIAGridCell(layoutObject, axObjectCache);
 }
 
-AXARIAGridCell::~AXARIAGridCell()
-{
+bool AXARIAGridCell::isAriaColumnHeader() const {
+  const AtomicString& role = getAttribute(HTMLNames::roleAttr);
+  return equalIgnoringCase(role, "columnheader");
 }
 
-AXARIAGridCell* AXARIAGridCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-{
-    return new AXARIAGridCell(layoutObject, axObjectCache);
+bool AXARIAGridCell::isAriaRowHeader() const {
+  const AtomicString& role = getAttribute(HTMLNames::roleAttr);
+  return equalIgnoringCase(role, "rowheader");
 }
 
-bool AXARIAGridCell::isAriaColumnHeader() const
-{
-    const AtomicString& role = getAttribute(HTMLNames::roleAttr);
-    return equalIgnoringCase(role, "columnheader");
-}
+AXObject* AXARIAGridCell::parentTable() const {
+  AXObject* parent = parentObjectUnignored();
+  if (!parent)
+    return 0;
 
-bool AXARIAGridCell::isAriaRowHeader() const
-{
-    const AtomicString& role = getAttribute(HTMLNames::roleAttr);
-    return equalIgnoringCase(role, "rowheader");
-}
-
-AXObject* AXARIAGridCell::parentTable() const
-{
-    AXObject* parent = parentObjectUnignored();
-    if (!parent)
-        return 0;
-
-    if (parent->isAXTable())
-        return parent;
-
-    // It could happen that we hadn't reached the parent table yet (in
-    // case objects for rows were not ignoring accessibility) so for
-    // that reason we need to run parentObjectUnignored once again.
-    parent = parent->parentObjectUnignored();
-    if (!parent || !parent->isAXTable())
-        return 0;
-
+  if (parent->isAXTable())
     return parent;
+
+  // It could happen that we hadn't reached the parent table yet (in
+  // case objects for rows were not ignoring accessibility) so for
+  // that reason we need to run parentObjectUnignored once again.
+  parent = parent->parentObjectUnignored();
+  if (!parent || !parent->isAXTable())
+    return 0;
+
+  return parent;
 }
 
-void AXARIAGridCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange)
-{
-    AXObject* parent = parentObjectUnignored();
-    if (!parent)
-        return;
+void AXARIAGridCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange) {
+  AXObject* parent = parentObjectUnignored();
+  if (!parent)
+    return;
 
-    if (parent->isTableRow()) {
-        // We already got a table row, use its API.
-        rowRange.first = toAXTableRow(parent)->rowIndex();
-    } else if (parent->isAXTable()) {
-        // We reached the parent table, so we need to inspect its
-        // children to determine the row index for the cell in it.
-        unsigned columnCount = toAXTable(parent)->columnCount();
-        if (!columnCount)
-            return;
-
-        const auto& siblings = parent->children();
-        unsigned childrenSize = siblings.size();
-        for (unsigned k = 0; k < childrenSize; ++k) {
-            if (siblings[k].get() == this) {
-                rowRange.first = k / columnCount;
-                break;
-            }
-        }
-    }
-
-    // as far as I can tell, grid cells cannot span rows
-    rowRange.second = 1;
-}
-
-void AXARIAGridCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange)
-{
-    AXObject* parent = parentObjectUnignored();
-    if (!parent)
-        return;
-
-    if (!parent->isTableRow() && !parent->isAXTable())
-        return;
+  if (parent->isTableRow()) {
+    // We already got a table row, use its API.
+    rowRange.first = toAXTableRow(parent)->rowIndex();
+  } else if (parent->isAXTable()) {
+    // We reached the parent table, so we need to inspect its
+    // children to determine the row index for the cell in it.
+    unsigned columnCount = toAXTable(parent)->columnCount();
+    if (!columnCount)
+      return;
 
     const auto& siblings = parent->children();
     unsigned childrenSize = siblings.size();
     for (unsigned k = 0; k < childrenSize; ++k) {
-        if (siblings[k].get() == this) {
-            columnRange.first = k;
-            break;
-        }
+      if (siblings[k].get() == this) {
+        rowRange.first = k / columnCount;
+        break;
+      }
     }
+  }
 
-    // as far as I can tell, grid cells cannot span columns
-    columnRange.second = 1;
+  // as far as I can tell, grid cells cannot span rows
+  rowRange.second = 1;
 }
 
-AccessibilityRole AXARIAGridCell::scanToDecideHeaderRole()
-{
-    if (isAriaRowHeader())
-        return RowHeaderRole;
+void AXARIAGridCell::columnIndexRange(
+    std::pair<unsigned, unsigned>& columnRange) {
+  AXObject* parent = parentObjectUnignored();
+  if (!parent)
+    return;
 
-    if (isAriaColumnHeader())
-        return ColumnHeaderRole;
+  if (!parent->isTableRow() && !parent->isAXTable())
+    return;
 
-    return CellRole;
+  const auto& siblings = parent->children();
+  unsigned childrenSize = siblings.size();
+  for (unsigned k = 0; k < childrenSize; ++k) {
+    if (siblings[k].get() == this) {
+      columnRange.first = k;
+      break;
+    }
+  }
+
+  // as far as I can tell, grid cells cannot span columns
+  columnRange.second = 1;
 }
 
-} // namespace blink
+AccessibilityRole AXARIAGridCell::scanToDecideHeaderRole() {
+  if (isAriaRowHeader())
+    return RowHeaderRole;
+
+  if (isAriaColumnHeader())
+    return ColumnHeaderRole;
+
+  return CellRole;
+}
+
+}  // namespace blink

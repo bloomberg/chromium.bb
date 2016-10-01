@@ -32,52 +32,49 @@
 namespace blink {
 
 LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
-    : TextTrack(subtitlesKeyword(), emptyAtom, emptyAtom, emptyAtom, TrackElement)
-    , m_trackElement(track)
-{
-    DCHECK(m_trackElement);
+    : TextTrack(subtitlesKeyword(),
+                emptyAtom,
+                emptyAtom,
+                emptyAtom,
+                TrackElement),
+      m_trackElement(track) {
+  DCHECK(m_trackElement);
 }
 
-LoadableTextTrack::~LoadableTextTrack()
-{
+LoadableTextTrack::~LoadableTextTrack() {}
+
+bool LoadableTextTrack::isDefault() const {
+  return m_trackElement->fastHasAttribute(HTMLNames::defaultAttr);
 }
 
-bool LoadableTextTrack::isDefault() const
-{
-    return m_trackElement->fastHasAttribute(HTMLNames::defaultAttr);
+void LoadableTextTrack::setMode(const AtomicString& mode) {
+  TextTrack::setMode(mode);
+  if (m_trackElement->getReadyState() == HTMLTrackElement::kNone)
+    m_trackElement->scheduleLoad();
 }
 
-void LoadableTextTrack::setMode(const AtomicString& mode)
-{
-    TextTrack::setMode(mode);
-    if (m_trackElement->getReadyState() == HTMLTrackElement::kNone)
-        m_trackElement->scheduleLoad();
+void LoadableTextTrack::addRegions(
+    const HeapVector<Member<VTTRegion>>& newRegions) {
+  for (size_t i = 0; i < newRegions.size(); ++i) {
+    newRegions[i]->setTrack(this);
+    regions()->add(newRegions[i]);
+  }
 }
 
-void LoadableTextTrack::addRegions(const HeapVector<Member<VTTRegion>>& newRegions)
-{
-    for (size_t i = 0; i < newRegions.size(); ++i) {
-        newRegions[i]->setTrack(this);
-        regions()->add(newRegions[i]);
-    }
+size_t LoadableTextTrack::trackElementIndex() const {
+  // Count the number of preceding <track> elements (== the index.)
+  size_t index = 0;
+  for (const HTMLTrackElement* track =
+           Traversal<HTMLTrackElement>::previousSibling(*m_trackElement);
+       track; track = Traversal<HTMLTrackElement>::previousSibling(*track))
+    ++index;
+
+  return index;
 }
 
-size_t LoadableTextTrack::trackElementIndex() const
-{
-    // Count the number of preceding <track> elements (== the index.)
-    size_t index = 0;
-    for (const HTMLTrackElement* track = Traversal<HTMLTrackElement>::previousSibling(*m_trackElement);
-        track;
-        track = Traversal<HTMLTrackElement>::previousSibling(*track))
-        ++index;
-
-    return index;
+DEFINE_TRACE(LoadableTextTrack) {
+  visitor->trace(m_trackElement);
+  TextTrack::trace(visitor);
 }
 
-DEFINE_TRACE(LoadableTextTrack)
-{
-    visitor->trace(m_trackElement);
-    TextTrack::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

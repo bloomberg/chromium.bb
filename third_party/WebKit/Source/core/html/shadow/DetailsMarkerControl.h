@@ -39,24 +39,23 @@ namespace blink {
 class HTMLSummaryElement;
 
 class DetailsMarkerControl final : public HTMLDivElement {
-public:
-    explicit DetailsMarkerControl(Document&);
-    static DetailsMarkerControl* create(Document&);
+ public:
+  explicit DetailsMarkerControl(Document&);
+  static DetailsMarkerControl* create(Document&);
 
-private:
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+ private:
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override;
 
-    HTMLSummaryElement* summaryElement();
+  HTMLSummaryElement* summaryElement();
 };
 
-inline DetailsMarkerControl* DetailsMarkerControl::create(Document& document)
-{
-    DetailsMarkerControl* element = new DetailsMarkerControl(document);
-    element->setShadowPseudoId(AtomicString("-webkit-details-marker"));
-    return element;
+inline DetailsMarkerControl* DetailsMarkerControl::create(Document& document) {
+  DetailsMarkerControl* element = new DetailsMarkerControl(document);
+  element->setShadowPseudoId(AtomicString("-webkit-details-marker"));
+  return element;
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

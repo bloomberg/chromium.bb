@@ -37,43 +37,48 @@
 
 namespace blink {
 
-DOMFileSystem* DraggedIsolatedFileSystemImpl::getDOMFileSystem(DataObject* host, ExecutionContext* executionContext)
-{
-    DraggedIsolatedFileSystemImpl* draggedIsolatedFileSystem = from(host);
-    if (!draggedIsolatedFileSystem)
-        return 0;
-    if (!draggedIsolatedFileSystem->m_filesystem)
-        draggedIsolatedFileSystem->m_filesystem = DOMFileSystem::createIsolatedFileSystem(executionContext, host->filesystemId());
-    return draggedIsolatedFileSystem->m_filesystem.get();
+DOMFileSystem* DraggedIsolatedFileSystemImpl::getDOMFileSystem(
+    DataObject* host,
+    ExecutionContext* executionContext) {
+  DraggedIsolatedFileSystemImpl* draggedIsolatedFileSystem = from(host);
+  if (!draggedIsolatedFileSystem)
+    return 0;
+  if (!draggedIsolatedFileSystem->m_filesystem)
+    draggedIsolatedFileSystem->m_filesystem =
+        DOMFileSystem::createIsolatedFileSystem(executionContext,
+                                                host->filesystemId());
+  return draggedIsolatedFileSystem->m_filesystem.get();
 }
 
 // static
-const char* DraggedIsolatedFileSystemImpl::supplementName()
-{
-    ASSERT(isMainThread());
-    return "DraggedIsolatedFileSystemImpl";
+const char* DraggedIsolatedFileSystemImpl::supplementName() {
+  ASSERT(isMainThread());
+  return "DraggedIsolatedFileSystemImpl";
 }
 
-DraggedIsolatedFileSystemImpl* DraggedIsolatedFileSystemImpl::from(DataObject* dataObject)
-{
-    return static_cast<DraggedIsolatedFileSystemImpl*>(Supplement<DataObject>::from(dataObject, supplementName()));
+DraggedIsolatedFileSystemImpl* DraggedIsolatedFileSystemImpl::from(
+    DataObject* dataObject) {
+  return static_cast<DraggedIsolatedFileSystemImpl*>(
+      Supplement<DataObject>::from(dataObject, supplementName()));
 }
 
-DraggedIsolatedFileSystemImpl::DraggedIsolatedFileSystemImpl(DataObject& host, const String& filesystemId)
-{
-    host.setFilesystemId(filesystemId);
+DraggedIsolatedFileSystemImpl::DraggedIsolatedFileSystemImpl(
+    DataObject& host,
+    const String& filesystemId) {
+  host.setFilesystemId(filesystemId);
 }
 
-DEFINE_TRACE(DraggedIsolatedFileSystemImpl)
-{
-    visitor->trace(m_filesystem);
-    Supplement<DataObject>::trace(visitor);
+DEFINE_TRACE(DraggedIsolatedFileSystemImpl) {
+  visitor->trace(m_filesystem);
+  Supplement<DataObject>::trace(visitor);
 }
 
-void DraggedIsolatedFileSystemImpl::prepareForDataObject(DataObject* dataObject, const String& filesystemId)
-{
-    DraggedIsolatedFileSystemImpl* fileSystem = create(*dataObject, filesystemId);
-    DraggedIsolatedFileSystemImpl::provideTo(*dataObject, DraggedIsolatedFileSystemImpl::supplementName(), fileSystem);
+void DraggedIsolatedFileSystemImpl::prepareForDataObject(
+    DataObject* dataObject,
+    const String& filesystemId) {
+  DraggedIsolatedFileSystemImpl* fileSystem = create(*dataObject, filesystemId);
+  DraggedIsolatedFileSystemImpl::provideTo(
+      *dataObject, DraggedIsolatedFileSystemImpl::supplementName(), fileSystem);
 }
 
-} // namespace blink
+}  // namespace blink

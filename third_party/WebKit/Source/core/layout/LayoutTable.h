@@ -132,397 +132,430 @@ enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 // index into an index into effectiveColumns() and effectiveColumnPositions().
 
 class CORE_EXPORT LayoutTable final : public LayoutBlock {
-public:
-    explicit LayoutTable(Element*);
-    ~LayoutTable() override;
+ public:
+  explicit LayoutTable(Element*);
+  ~LayoutTable() override;
 
-    // Per CSS 3 writing-mode: "The first and second values of the 'border-spacing' property represent spacing between columns
-    // and rows respectively, not necessarily the horizontal and vertical spacing respectively".
-    int hBorderSpacing() const { return m_hSpacing; }
-    int vBorderSpacing() const { return m_vSpacing; }
+  // Per CSS 3 writing-mode: "The first and second values of the 'border-spacing' property represent spacing between columns
+  // and rows respectively, not necessarily the horizontal and vertical spacing respectively".
+  int hBorderSpacing() const { return m_hSpacing; }
+  int vBorderSpacing() const { return m_vSpacing; }
 
-    bool collapseBorders() const { return style()->borderCollapse(); }
+  bool collapseBorders() const { return style()->borderCollapse(); }
 
-    int borderStart() const override { return m_borderStart; }
-    int borderEnd() const override { return m_borderEnd; }
-    int borderBefore() const override;
-    int borderAfter() const override;
+  int borderStart() const override { return m_borderStart; }
+  int borderEnd() const override { return m_borderEnd; }
+  int borderBefore() const override;
+  int borderAfter() const override;
 
-    int borderLeft() const override
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
-        return style()->isFlippedBlocksWritingMode() ? borderAfter() : borderBefore();
-    }
+  int borderLeft() const override {
+    if (style()->isHorizontalWritingMode())
+      return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
+    return style()->isFlippedBlocksWritingMode() ? borderAfter()
+                                                 : borderBefore();
+  }
 
-    int borderRight() const override
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
-        return style()->isFlippedBlocksWritingMode() ? borderBefore() : borderAfter();
-    }
+  int borderRight() const override {
+    if (style()->isHorizontalWritingMode())
+      return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
+    return style()->isFlippedBlocksWritingMode() ? borderBefore()
+                                                 : borderAfter();
+  }
 
-    int borderTop() const override
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isFlippedBlocksWritingMode() ? borderAfter() : borderBefore();
-        return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
-    }
+  int borderTop() const override {
+    if (style()->isHorizontalWritingMode())
+      return style()->isFlippedBlocksWritingMode() ? borderAfter()
+                                                   : borderBefore();
+    return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
+  }
 
-    int borderBottom() const override
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isFlippedBlocksWritingMode() ? borderBefore() : borderAfter();
-        return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
-    }
+  int borderBottom() const override {
+    if (style()->isHorizontalWritingMode())
+      return style()->isFlippedBlocksWritingMode() ? borderBefore()
+                                                   : borderAfter();
+    return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
+  }
 
-    int outerBorderBefore() const;
-    int outerBorderAfter() const;
-    int outerBorderStart() const;
-    int outerBorderEnd() const;
+  int outerBorderBefore() const;
+  int outerBorderAfter() const;
+  int outerBorderStart() const;
+  int outerBorderEnd() const;
 
-    int outerBorderLeft() const
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isLeftToRightDirection() ? outerBorderStart() : outerBorderEnd();
-        return style()->isFlippedBlocksWritingMode() ? outerBorderAfter() : outerBorderBefore();
-    }
+  int outerBorderLeft() const {
+    if (style()->isHorizontalWritingMode())
+      return style()->isLeftToRightDirection() ? outerBorderStart()
+                                               : outerBorderEnd();
+    return style()->isFlippedBlocksWritingMode() ? outerBorderAfter()
+                                                 : outerBorderBefore();
+  }
 
-    int outerBorderRight() const
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isLeftToRightDirection() ? outerBorderEnd() : outerBorderStart();
-        return style()->isFlippedBlocksWritingMode() ? outerBorderBefore() : outerBorderAfter();
-    }
+  int outerBorderRight() const {
+    if (style()->isHorizontalWritingMode())
+      return style()->isLeftToRightDirection() ? outerBorderEnd()
+                                               : outerBorderStart();
+    return style()->isFlippedBlocksWritingMode() ? outerBorderBefore()
+                                                 : outerBorderAfter();
+  }
 
-    int outerBorderTop() const
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isFlippedBlocksWritingMode() ? outerBorderAfter() : outerBorderBefore();
-        return style()->isLeftToRightDirection() ? outerBorderStart() : outerBorderEnd();
-    }
+  int outerBorderTop() const {
+    if (style()->isHorizontalWritingMode())
+      return style()->isFlippedBlocksWritingMode() ? outerBorderAfter()
+                                                   : outerBorderBefore();
+    return style()->isLeftToRightDirection() ? outerBorderStart()
+                                             : outerBorderEnd();
+  }
 
-    int outerBorderBottom() const
-    {
-        if (style()->isHorizontalWritingMode())
-            return style()->isFlippedBlocksWritingMode() ? outerBorderBefore() : outerBorderAfter();
-        return style()->isLeftToRightDirection() ? outerBorderEnd() : outerBorderStart();
-    }
+  int outerBorderBottom() const {
+    if (style()->isHorizontalWritingMode())
+      return style()->isFlippedBlocksWritingMode() ? outerBorderBefore()
+                                                   : outerBorderAfter();
+    return style()->isLeftToRightDirection() ? outerBorderEnd()
+                                             : outerBorderStart();
+  }
 
-    int calcBorderStart() const;
-    int calcBorderEnd() const;
-    void recalcBordersInRowDirection();
+  int calcBorderStart() const;
+  int calcBorderEnd() const;
+  void recalcBordersInRowDirection();
 
-    void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
+  void addChild(LayoutObject* child,
+                LayoutObject* beforeChild = nullptr) override;
 
-    struct ColumnStruct {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-        explicit ColumnStruct(unsigned initialSpan = 1)
-            : span(initialSpan)
-        {
-        }
+  struct ColumnStruct {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    explicit ColumnStruct(unsigned initialSpan = 1) : span(initialSpan) {}
 
-        unsigned span;
-    };
+    unsigned span;
+  };
 
-    void forceSectionsRecalc()
-    {
-        setNeedsSectionRecalc();
-        recalcSections();
-    }
+  void forceSectionsRecalc() {
+    setNeedsSectionRecalc();
+    recalcSections();
+  }
 
-    const Vector<ColumnStruct>& effectiveColumns() const { return m_effectiveColumns; }
-    const Vector<int>& effectiveColumnPositions() const { return m_effectiveColumnPositions; }
-    void setEffectiveColumnPosition(unsigned index, int position)
-    {
-        // Note that if our horizontal border-spacing changed, our position will change but not
-        // our column's width. In practice, horizontal border-spacing won't change often.
-        m_columnLogicalWidthChanged |= m_effectiveColumnPositions[index] != position;
-        m_effectiveColumnPositions[index] = position;
-    }
+  const Vector<ColumnStruct>& effectiveColumns() const {
+    return m_effectiveColumns;
+  }
+  const Vector<int>& effectiveColumnPositions() const {
+    return m_effectiveColumnPositions;
+  }
+  void setEffectiveColumnPosition(unsigned index, int position) {
+    // Note that if our horizontal border-spacing changed, our position will change but not
+    // our column's width. In practice, horizontal border-spacing won't change often.
+    m_columnLogicalWidthChanged |=
+        m_effectiveColumnPositions[index] != position;
+    m_effectiveColumnPositions[index] = position;
+  }
 
-    LayoutTableSection* header() const { return m_head; }
-    LayoutTableSection* footer() const { return m_foot; }
-    LayoutTableSection* firstBody() const { return m_firstBody; }
+  LayoutTableSection* header() const { return m_head; }
+  LayoutTableSection* footer() const { return m_foot; }
+  LayoutTableSection* firstBody() const { return m_firstBody; }
 
-    // This function returns 0 if the table has no section.
-    LayoutTableSection* topSection() const;
-    LayoutTableSection* bottomSection() const;
+  // This function returns 0 if the table has no section.
+  LayoutTableSection* topSection() const;
+  LayoutTableSection* bottomSection() const;
 
-    // This function returns 0 if the table has no non-empty sections.
-    LayoutTableSection* topNonEmptySection() const;
+  // This function returns 0 if the table has no non-empty sections.
+  LayoutTableSection* topNonEmptySection() const;
 
-    unsigned lastEffectiveColumnIndex() const { return numEffectiveColumns() - 1; }
+  unsigned lastEffectiveColumnIndex() const {
+    return numEffectiveColumns() - 1;
+  }
 
-    void splitEffectiveColumn(unsigned index, unsigned firstSpan);
-    void appendEffectiveColumn(unsigned span);
-    unsigned numEffectiveColumns() const { return m_effectiveColumns.size(); }
-    unsigned spanOfEffectiveColumn(unsigned effectiveColumnIndex) const { return m_effectiveColumns[effectiveColumnIndex].span; }
+  void splitEffectiveColumn(unsigned index, unsigned firstSpan);
+  void appendEffectiveColumn(unsigned span);
+  unsigned numEffectiveColumns() const { return m_effectiveColumns.size(); }
+  unsigned spanOfEffectiveColumn(unsigned effectiveColumnIndex) const {
+    return m_effectiveColumns[effectiveColumnIndex].span;
+  }
 
-    unsigned absoluteColumnToEffectiveColumn(unsigned absoluteColumnIndex) const
-    {
-        if (absoluteColumnIndex < m_noCellColspanAtLeast)
-            return absoluteColumnIndex;
+  unsigned absoluteColumnToEffectiveColumn(unsigned absoluteColumnIndex) const {
+    if (absoluteColumnIndex < m_noCellColspanAtLeast)
+      return absoluteColumnIndex;
 
-        unsigned effectiveColumn = m_noCellColspanAtLeast;
-        unsigned numColumns = numEffectiveColumns();
-        for (unsigned c = m_noCellColspanAtLeast; effectiveColumn < numColumns && c + m_effectiveColumns[effectiveColumn].span - 1 < absoluteColumnIndex; ++effectiveColumn)
-            c += m_effectiveColumns[effectiveColumn].span;
-        return effectiveColumn;
-    }
+    unsigned effectiveColumn = m_noCellColspanAtLeast;
+    unsigned numColumns = numEffectiveColumns();
+    for (unsigned c = m_noCellColspanAtLeast;
+         effectiveColumn < numColumns &&
+         c + m_effectiveColumns[effectiveColumn].span - 1 < absoluteColumnIndex;
+         ++effectiveColumn)
+      c += m_effectiveColumns[effectiveColumn].span;
+    return effectiveColumn;
+  }
 
-    unsigned effectiveColumnToAbsoluteColumn(unsigned effectiveColumnIndex) const
-    {
-        if (effectiveColumnIndex < m_noCellColspanAtLeast)
-            return effectiveColumnIndex;
+  unsigned effectiveColumnToAbsoluteColumn(
+      unsigned effectiveColumnIndex) const {
+    if (effectiveColumnIndex < m_noCellColspanAtLeast)
+      return effectiveColumnIndex;
 
-        unsigned c = m_noCellColspanAtLeast;
-        for (unsigned i = m_noCellColspanAtLeast; i < effectiveColumnIndex; i++)
-            c += m_effectiveColumns[i].span;
+    unsigned c = m_noCellColspanAtLeast;
+    for (unsigned i = m_noCellColspanAtLeast; i < effectiveColumnIndex; i++)
+      c += m_effectiveColumns[i].span;
+    return c;
+  }
+
+  LayoutUnit borderSpacingInRowDirection() const {
+    if (unsigned effectiveColumnCount = numEffectiveColumns())
+      return static_cast<LayoutUnit>(effectiveColumnCount + 1) *
+             hBorderSpacing();
+
+    return LayoutUnit();
+  }
+
+  // The collapsing border model dissallows paddings on table, which is why we
+  // override those functions.
+  // See http://www.w3.org/TR/CSS2/tables.html#collapsing-borders.
+  LayoutUnit paddingTop() const override;
+  LayoutUnit paddingBottom() const override;
+  LayoutUnit paddingLeft() const override;
+  LayoutUnit paddingRight() const override;
+
+  // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
+  LayoutUnit paddingEnd() const override {
+    return LayoutUnit(LayoutBlock::paddingEnd().toInt());
+  }
+  LayoutUnit paddingStart() const override {
+    return LayoutUnit(LayoutBlock::paddingStart().toInt());
+  }
+
+  LayoutUnit bordersPaddingAndSpacingInRowDirection() const {
+    // 'border-spacing' only applies to separate borders (see 17.6.1 The separated borders model).
+    return borderStart() + borderEnd() +
+           (collapseBorders() ? LayoutUnit() : (paddingStart() + paddingEnd() +
+                                                borderSpacingInRowDirection()));
+  }
+
+  // Return the first column or column-group.
+  LayoutTableCol* firstColumn() const;
+
+  struct ColAndColGroup {
+    ColAndColGroup()
+        : col(nullptr),
+          colgroup(nullptr),
+          adjoinsStartBorderOfColGroup(false),
+          adjoinsEndBorderOfColGroup(false) {}
+    LayoutTableCol* col;
+    LayoutTableCol* colgroup;
+    bool adjoinsStartBorderOfColGroup;
+    bool adjoinsEndBorderOfColGroup;
+    LayoutTableCol* innermostColOrColGroup() { return col ? col : colgroup; }
+  };
+  ColAndColGroup colElementAtAbsoluteColumn(
+      unsigned absoluteColumnIndex) const {
+    // The common case is to not have col/colgroup elements, make that case fast.
+    if (!m_hasColElements)
+      return ColAndColGroup();
+    return slowColElementAtAbsoluteColumn(absoluteColumnIndex);
+  }
+
+  bool needsSectionRecalc() const { return m_needsSectionRecalc; }
+  void setNeedsSectionRecalc() {
+    if (documentBeingDestroyed())
+      return;
+    m_needsSectionRecalc = true;
+    setNeedsLayoutAndFullPaintInvalidation(
+        LayoutInvalidationReason::TableChanged);
+  }
+
+  LayoutTableSection* sectionAbove(
+      const LayoutTableSection*,
+      SkipEmptySectionsValue = DoNotSkipEmptySections) const;
+  LayoutTableSection* sectionBelow(
+      const LayoutTableSection*,
+      SkipEmptySectionsValue = DoNotSkipEmptySections) const;
+
+  LayoutTableCell* cellAbove(const LayoutTableCell*) const;
+  LayoutTableCell* cellBelow(const LayoutTableCell*) const;
+  LayoutTableCell* cellBefore(const LayoutTableCell*) const;
+  LayoutTableCell* cellAfter(const LayoutTableCell*) const;
+
+  typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
+  void invalidateCollapsedBorders();
+
+  bool hasSections() const { return m_head || m_foot || m_firstBody; }
+
+  void recalcSectionsIfNeeded() const {
+    if (m_needsSectionRecalc)
+      recalcSections();
+  }
+
+  static LayoutTable* createAnonymousWithParent(const LayoutObject*);
+  LayoutBox* createAnonymousBoxWithSameTypeAs(
+      const LayoutObject* parent) const override {
+    return createAnonymousWithParent(parent);
+  }
+
+  const BorderValue& tableStartBorderAdjoiningCell(
+      const LayoutTableCell*) const;
+  const BorderValue& tableEndBorderAdjoiningCell(const LayoutTableCell*) const;
+
+  void addCaption(const LayoutTableCaption*);
+  void removeCaption(const LayoutTableCaption*);
+  void addColumn(const LayoutTableCol*);
+  void removeColumn(const LayoutTableCol*);
+
+  void paintBoxDecorationBackground(const PaintInfo&,
+                                    const LayoutPoint&) const final;
+
+  void paintMask(const PaintInfo&, const LayoutPoint&) const final;
+
+  const CollapsedBorderValues& collapsedBorders() const {
+    ASSERT(m_collapsedBordersValid);
+    return m_collapsedBorders;
+  }
+
+  void subtractCaptionRect(LayoutRect&) const;
+
+  bool isLogicalWidthAuto() const;
+
+  const char* name() const override { return "LayoutTable"; }
+
+  // Whether a table has opaque foreground depends on many factors, e.g. border spacing, missing cells, etc.
+  // For simplicity, just conservatively assume foreground of all tables are not opaque.
+  bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&,
+                                         unsigned) const override {
+    return false;
+  }
+
+  enum WhatToMarkAllCells { MarkDirtyOnly, MarkDirtyAndNeedsLayout };
+  void markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells);
+
+ protected:
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void simplifiedNormalFlowLayout() override;
+  bool recalcChildOverflowAfterStyleChange() override;
+  void ensureIsReadyForPaintInvalidation() override;
+  PaintInvalidationReason invalidatePaintIfNeeded(
+      const PaintInvalidationState&) override;
+  PaintInvalidationReason invalidatePaintIfNeeded(
+      const PaintInvalidatorContext&) const override;
+
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectTable || LayoutBlock::isOfType(type);
+  }
+
+  void paintObject(const PaintInfo&, const LayoutPoint&) const override;
+  void layout() override;
+  void computeIntrinsicLogicalWidths(LayoutUnit& minWidth,
+                                     LayoutUnit& maxWidth) const override;
+  void computePreferredLogicalWidths() override;
+  bool nodeAtPoint(HitTestResult&,
+                   const HitTestLocation& locationInContainer,
+                   const LayoutPoint& accumulatedOffset,
+                   HitTestAction) override;
+
+  int baselinePosition(
+      FontBaseline,
+      bool firstLine,
+      LineDirectionMode,
+      LinePositionMode = PositionOnContainingLine) const override;
+  int firstLineBoxBaseline() const override;
+  int inlineBlockBaseline(LineDirectionMode) const override;
+
+  ColAndColGroup slowColElementAtAbsoluteColumn(unsigned col) const;
+
+  void updateColumnCache() const;
+  void invalidateCachedColumns();
+
+  void updateLogicalWidth() override;
+
+  LayoutUnit convertStyleLogicalWidthToComputedWidth(
+      const Length& styleLogicalWidth,
+      LayoutUnit availableWidth);
+  LayoutUnit convertStyleLogicalHeightToComputedHeight(
+      const Length& styleLogicalHeight);
+
+  LayoutRect overflowClipRect(
+      const LayoutPoint& location,
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
+
+  void addOverflowFromChildren() override;
+
+  void recalcSections() const;
+  void layoutCaption(LayoutTableCaption&);
+
+  void distributeExtraLogicalHeight(int extraLogicalHeight);
+
+  void recalcCollapsedBordersIfNeeded();
+
+  // TODO(layout-dev): All mutables in this class are lazily updated by recalcSections()
+  // which is called by various getter methods (e.g. borderBefore(), borderAfter()).
+  // They allow dirty layout even after DocumentLifecycle::LayoutClean which seems not proper. crbug.com/538236.
+
+  // Holds spans (number of absolute columns) of effective columns.
+  // See "absolute column index vs effective column index" in comments of LayoutTable.
+  mutable Vector<ColumnStruct> m_effectiveColumns;
+
+  // Holds the logical layout positions of effective columns, and the last item (whose index
+  // is numEffectiveColumns()) holds the position of the imaginary column after the last column.
+  // Because of the last item, m_effectiveColumnPositions.size() is always numEffectiveColumns() + 1.
+  mutable Vector<int> m_effectiveColumnPositions;
+
+  // The captions associated with this object.
+  mutable Vector<LayoutTableCaption*> m_captions;
+
+  // Holds pointers to LayoutTableCol objects for <col>s and <colgroup>s under this table.
+  // There is no direct relationship between the size of and index into this vector and
+  // those of m_effectiveColumns because they hold different things.
+  mutable Vector<LayoutTableCol*> m_columnLayoutObjects;
+
+  mutable LayoutTableSection* m_head;
+  mutable LayoutTableSection* m_foot;
+  mutable LayoutTableSection* m_firstBody;
+
+  // The layout algorithm used by this table.
+  //
+  // CSS 2.1 defines 2 types of table layouts toggled with 'table-layout':
+  // fixed (TableLayoutAlgorithmFixed) and auto (TableLayoutAlgorithmAuto).
+  // See http://www.w3.org/TR/CSS21/tables.html#width-layout.
+  //
+  // The layout algorithm is delegated to TableLayoutAlgorithm. This enables
+  // changing 'table-layout' without having to reattach the <table>.
+  //
+  // As the algorithm is dependent on the style, this field is nullptr before
+  // the first style is applied in styleDidChange().
+  std::unique_ptr<TableLayoutAlgorithm> m_tableLayout;
+
+  // A sorted list of all unique border values that we want to paint.
+  //
+  // Collapsed borders are SUPER EXPENSIVE to compute. The reason is that we
+  // need to compare a cells border against all the adjoining cells, rows,
+  // row groups, column, column groups and table. Thus we cache them in this
+  // field.
+  CollapsedBorderValues m_collapsedBorders;
+  bool m_collapsedBordersValid : 1;
+
+  mutable bool m_hasColElements : 1;
+  mutable bool m_needsSectionRecalc : 1;
+
+  bool m_columnLogicalWidthChanged : 1;
+  mutable bool m_columnLayoutObjectsValid : 1;
+  mutable unsigned m_noCellColspanAtLeast;
+  unsigned calcNoCellColspanAtLeast() const {
+    for (unsigned c = 0; c < numEffectiveColumns(); c++) {
+      if (m_effectiveColumns[c].span > 1)
         return c;
     }
+    return numEffectiveColumns();
+  }
 
-    LayoutUnit borderSpacingInRowDirection() const
-    {
-        if (unsigned effectiveColumnCount = numEffectiveColumns())
-            return static_cast<LayoutUnit>(effectiveColumnCount + 1) * hBorderSpacing();
-
-        return LayoutUnit();
-    }
-
-    // The collapsing border model dissallows paddings on table, which is why we
-    // override those functions.
-    // See http://www.w3.org/TR/CSS2/tables.html#collapsing-borders.
-    LayoutUnit paddingTop() const override;
-    LayoutUnit paddingBottom() const override;
-    LayoutUnit paddingLeft() const override;
-    LayoutUnit paddingRight() const override;
-
-    // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
-    LayoutUnit paddingEnd() const override { return LayoutUnit(LayoutBlock::paddingEnd().toInt()); }
-    LayoutUnit paddingStart() const override { return LayoutUnit(LayoutBlock::paddingStart().toInt()); }
-
-    LayoutUnit bordersPaddingAndSpacingInRowDirection() const
-    {
-        // 'border-spacing' only applies to separate borders (see 17.6.1 The separated borders model).
-        return borderStart() + borderEnd() + (collapseBorders() ? LayoutUnit() : (paddingStart() + paddingEnd() + borderSpacingInRowDirection()));
-    }
-
-    // Return the first column or column-group.
-    LayoutTableCol* firstColumn() const;
-
-    struct ColAndColGroup {
-        ColAndColGroup()
-            : col(nullptr)
-            , colgroup(nullptr)
-            , adjoinsStartBorderOfColGroup(false)
-            , adjoinsEndBorderOfColGroup(false)
-        {
-        }
-        LayoutTableCol* col;
-        LayoutTableCol* colgroup;
-        bool adjoinsStartBorderOfColGroup;
-        bool adjoinsEndBorderOfColGroup;
-        LayoutTableCol* innermostColOrColGroup()
-        {
-            return col ? col : colgroup;
-        }
-    };
-    ColAndColGroup colElementAtAbsoluteColumn(unsigned absoluteColumnIndex) const
-    {
-        // The common case is to not have col/colgroup elements, make that case fast.
-        if (!m_hasColElements)
-            return ColAndColGroup();
-        return slowColElementAtAbsoluteColumn(absoluteColumnIndex);
-    }
-
-    bool needsSectionRecalc() const { return m_needsSectionRecalc; }
-    void setNeedsSectionRecalc()
-    {
-        if (documentBeingDestroyed())
-            return;
-        m_needsSectionRecalc = true;
-        setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TableChanged);
-    }
-
-    LayoutTableSection* sectionAbove(const LayoutTableSection*, SkipEmptySectionsValue = DoNotSkipEmptySections) const;
-    LayoutTableSection* sectionBelow(const LayoutTableSection*, SkipEmptySectionsValue = DoNotSkipEmptySections) const;
-
-    LayoutTableCell* cellAbove(const LayoutTableCell*) const;
-    LayoutTableCell* cellBelow(const LayoutTableCell*) const;
-    LayoutTableCell* cellBefore(const LayoutTableCell*) const;
-    LayoutTableCell* cellAfter(const LayoutTableCell*) const;
-
-    typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
-    void invalidateCollapsedBorders();
-
-    bool hasSections() const { return m_head || m_foot || m_firstBody; }
-
-    void recalcSectionsIfNeeded() const
-    {
-        if (m_needsSectionRecalc)
-            recalcSections();
-    }
-
-    static LayoutTable* createAnonymousWithParent(const LayoutObject*);
-    LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override
-    {
-        return createAnonymousWithParent(parent);
-    }
-
-    const BorderValue& tableStartBorderAdjoiningCell(const LayoutTableCell*) const;
-    const BorderValue& tableEndBorderAdjoiningCell(const LayoutTableCell*) const;
-
-    void addCaption(const LayoutTableCaption*);
-    void removeCaption(const LayoutTableCaption*);
-    void addColumn(const LayoutTableCol*);
-    void removeColumn(const LayoutTableCol*);
-
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&) const final;
-
-    void paintMask(const PaintInfo&, const LayoutPoint&) const final;
-
-    const CollapsedBorderValues& collapsedBorders() const
-    {
-        ASSERT(m_collapsedBordersValid);
-        return m_collapsedBorders;
-    }
-
-    void subtractCaptionRect(LayoutRect&) const;
-
-    bool isLogicalWidthAuto() const;
-
-    const char* name() const override { return "LayoutTable"; }
-
-    // Whether a table has opaque foreground depends on many factors, e.g. border spacing, missing cells, etc.
-    // For simplicity, just conservatively assume foreground of all tables are not opaque.
-    bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&, unsigned) const override { return false; }
-
-    enum WhatToMarkAllCells { MarkDirtyOnly, MarkDirtyAndNeedsLayout };
-    void markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells);
-
-protected:
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    void simplifiedNormalFlowLayout() override;
-    bool recalcChildOverflowAfterStyleChange() override;
-    void ensureIsReadyForPaintInvalidation() override;
-    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
-    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
-
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }
-
-    void paintObject(const PaintInfo&, const LayoutPoint&) const override;
-    void layout() override;
-    void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
-    void computePreferredLogicalWidths() override;
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
-
-    int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
-    int firstLineBoxBaseline() const override;
-    int inlineBlockBaseline(LineDirectionMode) const override;
-
-    ColAndColGroup slowColElementAtAbsoluteColumn(unsigned col) const;
-
-    void updateColumnCache() const;
-    void invalidateCachedColumns();
-
-    void updateLogicalWidth() override;
-
-    LayoutUnit convertStyleLogicalWidthToComputedWidth(const Length& styleLogicalWidth, LayoutUnit availableWidth);
-    LayoutUnit convertStyleLogicalHeightToComputedHeight(const Length& styleLogicalHeight);
-
-    LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
-
-    void addOverflowFromChildren() override;
-
-    void recalcSections() const;
-    void layoutCaption(LayoutTableCaption&);
-
-    void distributeExtraLogicalHeight(int extraLogicalHeight);
-
-    void recalcCollapsedBordersIfNeeded();
-
-    // TODO(layout-dev): All mutables in this class are lazily updated by recalcSections()
-    // which is called by various getter methods (e.g. borderBefore(), borderAfter()).
-    // They allow dirty layout even after DocumentLifecycle::LayoutClean which seems not proper. crbug.com/538236.
-
-    // Holds spans (number of absolute columns) of effective columns.
-    // See "absolute column index vs effective column index" in comments of LayoutTable.
-    mutable Vector<ColumnStruct> m_effectiveColumns;
-
-    // Holds the logical layout positions of effective columns, and the last item (whose index
-    // is numEffectiveColumns()) holds the position of the imaginary column after the last column.
-    // Because of the last item, m_effectiveColumnPositions.size() is always numEffectiveColumns() + 1.
-    mutable Vector<int> m_effectiveColumnPositions;
-
-    // The captions associated with this object.
-    mutable Vector<LayoutTableCaption*> m_captions;
-
-    // Holds pointers to LayoutTableCol objects for <col>s and <colgroup>s under this table.
-    // There is no direct relationship between the size of and index into this vector and
-    // those of m_effectiveColumns because they hold different things.
-    mutable Vector<LayoutTableCol*> m_columnLayoutObjects;
-
-    mutable LayoutTableSection* m_head;
-    mutable LayoutTableSection* m_foot;
-    mutable LayoutTableSection* m_firstBody;
-
-    // The layout algorithm used by this table.
-    //
-    // CSS 2.1 defines 2 types of table layouts toggled with 'table-layout':
-    // fixed (TableLayoutAlgorithmFixed) and auto (TableLayoutAlgorithmAuto).
-    // See http://www.w3.org/TR/CSS21/tables.html#width-layout.
-    //
-    // The layout algorithm is delegated to TableLayoutAlgorithm. This enables
-    // changing 'table-layout' without having to reattach the <table>.
-    //
-    // As the algorithm is dependent on the style, this field is nullptr before
-    // the first style is applied in styleDidChange().
-    std::unique_ptr<TableLayoutAlgorithm> m_tableLayout;
-
-    // A sorted list of all unique border values that we want to paint.
-    //
-    // Collapsed borders are SUPER EXPENSIVE to compute. The reason is that we
-    // need to compare a cells border against all the adjoining cells, rows,
-    // row groups, column, column groups and table. Thus we cache them in this
-    // field.
-    CollapsedBorderValues m_collapsedBorders;
-    bool m_collapsedBordersValid : 1;
-
-    mutable bool m_hasColElements : 1;
-    mutable bool m_needsSectionRecalc : 1;
-
-    bool m_columnLogicalWidthChanged : 1;
-    mutable bool m_columnLayoutObjectsValid: 1;
-    mutable unsigned m_noCellColspanAtLeast;
-    unsigned calcNoCellColspanAtLeast() const
-    {
-        for (unsigned c = 0; c < numEffectiveColumns(); c++) {
-            if (m_effectiveColumns[c].span > 1)
-                return c;
-        }
-        return numEffectiveColumns();
-    }
-
-    short m_hSpacing;
-    short m_vSpacing;
-    int m_borderStart;
-    int m_borderEnd;
+  short m_hSpacing;
+  short m_vSpacing;
+  int m_borderStart;
+  int m_borderEnd;
 };
 
-inline LayoutTableSection* LayoutTable::topSection() const
-{
-    ASSERT(!needsSectionRecalc());
-    if (m_head)
-        return m_head;
-    if (m_firstBody)
-        return m_firstBody;
-    return m_foot;
+inline LayoutTableSection* LayoutTable::topSection() const {
+  ASSERT(!needsSectionRecalc());
+  if (m_head)
+    return m_head;
+  if (m_firstBody)
+    return m_firstBody;
+  return m_foot;
 }
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTable, isTable());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutTable_h
+#endif  // LayoutTable_h

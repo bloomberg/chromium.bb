@@ -10,19 +10,20 @@
 namespace blink {
 
 class EXTBlendMinMax final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static EXTBlendMinMax* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~EXTBlendMinMax() override;
-    WebGLExtensionName name() const override;
+ public:
+  static EXTBlendMinMax* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-private:
-    explicit EXTBlendMinMax(WebGLRenderingContextBase*);
+  ~EXTBlendMinMax() override;
+  WebGLExtensionName name() const override;
+
+ private:
+  explicit EXTBlendMinMax(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EXTBlendMinMax_h
+#endif  // EXTBlendMinMax_h

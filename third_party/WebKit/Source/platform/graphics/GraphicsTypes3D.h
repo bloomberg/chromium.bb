@@ -58,6 +58,6 @@ namespace blink {
 
 enum SourceDrawingBuffer { FrontBuffer, BackBuffer };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GraphicsTypes3D_h
+#endif  // GraphicsTypes3D_h

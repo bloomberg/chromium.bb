@@ -27,22 +27,21 @@ namespace blink {
 
 class Node;
 
-class XMLSerializer final : public GarbageCollected<XMLSerializer>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static XMLSerializer* create()
-    {
-        return new XMLSerializer;
-    }
+class XMLSerializer final : public GarbageCollected<XMLSerializer>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    String serializeToString(Node*);
+ public:
+  static XMLSerializer* create() { return new XMLSerializer; }
 
-    DEFINE_INLINE_TRACE() { }
+  String serializeToString(Node*);
 
-private:
-    XMLSerializer() { }
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  XMLSerializer() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XMLSerializer_h
+#endif  // XMLSerializer_h

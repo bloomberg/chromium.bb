@@ -40,124 +40,142 @@ using namespace HTMLNames;
 const int defaultWidthNumChars = 34;
 
 LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
-    : LayoutBlockFlow(input)
-    , m_canReceiveDroppedFiles(input->canReceiveDroppedFiles())
-{
-}
+    : LayoutBlockFlow(input),
+      m_canReceiveDroppedFiles(input->canReceiveDroppedFiles()) {}
 
-LayoutFileUploadControl::~LayoutFileUploadControl()
-{
-}
+LayoutFileUploadControl::~LayoutFileUploadControl() {}
 
-void LayoutFileUploadControl::updateFromElement()
-{
-    HTMLInputElement* input = toHTMLInputElement(node());
-    ASSERT(input->type() == InputTypeNames::file);
+void LayoutFileUploadControl::updateFromElement() {
+  HTMLInputElement* input = toHTMLInputElement(node());
+  ASSERT(input->type() == InputTypeNames::file);
 
-    if (HTMLInputElement* button = uploadButton()) {
-        bool newCanReceiveDroppedFilesState = input->canReceiveDroppedFiles();
-        if (m_canReceiveDroppedFiles != newCanReceiveDroppedFilesState) {
-            m_canReceiveDroppedFiles = newCanReceiveDroppedFilesState;
-            button->setActive(newCanReceiveDroppedFilesState);
-        }
+  if (HTMLInputElement* button = uploadButton()) {
+    bool newCanReceiveDroppedFilesState = input->canReceiveDroppedFiles();
+    if (m_canReceiveDroppedFiles != newCanReceiveDroppedFilesState) {
+      m_canReceiveDroppedFiles = newCanReceiveDroppedFilesState;
+      button->setActive(newCanReceiveDroppedFilesState);
     }
+  }
 
-    // This only supports clearing out the files, but that's OK because for
-    // security reasons that's the only change the DOM is allowed to make.
-    FileList* files = input->files();
-    ASSERT(files);
-    if (files && files->isEmpty())
-        setShouldDoFullPaintInvalidation();
+  // This only supports clearing out the files, but that's OK because for
+  // security reasons that's the only change the DOM is allowed to make.
+  FileList* files = input->files();
+  ASSERT(files);
+  if (files && files->isEmpty())
+    setShouldDoFullPaintInvalidation();
 }
 
-int LayoutFileUploadControl::maxFilenameWidth() const
-{
-    int uploadButtonWidth = (uploadButton() && uploadButton()->layoutBox()) ? uploadButton()->layoutBox()->pixelSnappedWidth() : 0;
-    return std::max(0, contentBoxRect().pixelSnappedWidth() - uploadButtonWidth - afterButtonSpacing);
+int LayoutFileUploadControl::maxFilenameWidth() const {
+  int uploadButtonWidth = (uploadButton() && uploadButton()->layoutBox())
+                              ? uploadButton()->layoutBox()->pixelSnappedWidth()
+                              : 0;
+  return std::max(0, contentBoxRect().pixelSnappedWidth() - uploadButtonWidth -
+                         afterButtonSpacing);
 }
 
-void LayoutFileUploadControl::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
-{
-    FileUploadControlPainter(*this).paintObject(paintInfo, paintOffset);
+void LayoutFileUploadControl::paintObject(
+    const PaintInfo& paintInfo,
+    const LayoutPoint& paintOffset) const {
+  FileUploadControlPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-void LayoutFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
-{
-    // Figure out how big the filename space needs to be for a given number of characters
-    // (using "0" as the nominal character).
-    const UChar character = '0';
-    const String characterAsString = String(&character, 1);
-    const Font& font = style()->font();
-    float minDefaultLabelWidth = defaultWidthNumChars * font.width(constructTextRun(font, characterAsString, styleRef(), TextRun::AllowTrailingExpansion));
+void LayoutFileUploadControl::computeIntrinsicLogicalWidths(
+    LayoutUnit& minLogicalWidth,
+    LayoutUnit& maxLogicalWidth) const {
+  // Figure out how big the filename space needs to be for a given number of characters
+  // (using "0" as the nominal character).
+  const UChar character = '0';
+  const String characterAsString = String(&character, 1);
+  const Font& font = style()->font();
+  float minDefaultLabelWidth =
+      defaultWidthNumChars *
+      font.width(constructTextRun(font, characterAsString, styleRef(),
+                                  TextRun::AllowTrailingExpansion));
 
-    const String label = toHTMLInputElement(node())->locale().queryString(WebLocalizedString::FileButtonNoFileSelectedLabel);
-    float defaultLabelWidth = font.width(constructTextRun(font, label, styleRef(), TextRun::AllowTrailingExpansion));
-    if (HTMLInputElement* button = uploadButton()) {
-        if (LayoutObject* buttonLayoutObject = button->layoutObject())
-            defaultLabelWidth += buttonLayoutObject->maxPreferredLogicalWidth() + afterButtonSpacing;
-    }
-    maxLogicalWidth = LayoutUnit(ceilf(std::max(minDefaultLabelWidth, defaultLabelWidth)));
+  const String label = toHTMLInputElement(node())->locale().queryString(
+      WebLocalizedString::FileButtonNoFileSelectedLabel);
+  float defaultLabelWidth = font.width(constructTextRun(
+      font, label, styleRef(), TextRun::AllowTrailingExpansion));
+  if (HTMLInputElement* button = uploadButton()) {
+    if (LayoutObject* buttonLayoutObject = button->layoutObject())
+      defaultLabelWidth +=
+          buttonLayoutObject->maxPreferredLogicalWidth() + afterButtonSpacing;
+  }
+  maxLogicalWidth =
+      LayoutUnit(ceilf(std::max(minDefaultLabelWidth, defaultLabelWidth)));
 
-    if (!style()->width().isPercentOrCalc())
-        minLogicalWidth = maxLogicalWidth;
+  if (!style()->width().isPercentOrCalc())
+    minLogicalWidth = maxLogicalWidth;
 }
 
-void LayoutFileUploadControl::computePreferredLogicalWidths()
-{
-    ASSERT(preferredLogicalWidthsDirty());
+void LayoutFileUploadControl::computePreferredLogicalWidths() {
+  ASSERT(preferredLogicalWidthsDirty());
 
-    m_minPreferredLogicalWidth = LayoutUnit();
-    m_maxPreferredLogicalWidth = LayoutUnit();
-    const ComputedStyle& styleToUse = styleRef();
+  m_minPreferredLogicalWidth = LayoutUnit();
+  m_maxPreferredLogicalWidth = LayoutUnit();
+  const ComputedStyle& styleToUse = styleRef();
 
-    if (styleToUse.width().isFixed() && styleToUse.width().value() > 0)
-        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit(styleToUse.width().value()));
-    else
-        computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
+  if (styleToUse.width().isFixed() && styleToUse.width().value() > 0)
+    m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth =
+        adjustContentBoxLogicalWidthForBoxSizing(
+            LayoutUnit(styleToUse.width().value()));
+  else
+    computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth,
+                                  m_maxPreferredLogicalWidth);
 
-    if (styleToUse.minWidth().isFixed() && styleToUse.minWidth().value() > 0) {
-        m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit(styleToUse.minWidth().value())));
-        m_minPreferredLogicalWidth = std::max(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit(styleToUse.minWidth().value())));
-    }
+  if (styleToUse.minWidth().isFixed() && styleToUse.minWidth().value() > 0) {
+    m_maxPreferredLogicalWidth =
+        std::max(m_maxPreferredLogicalWidth,
+                 adjustContentBoxLogicalWidthForBoxSizing(
+                     LayoutUnit(styleToUse.minWidth().value())));
+    m_minPreferredLogicalWidth =
+        std::max(m_minPreferredLogicalWidth,
+                 adjustContentBoxLogicalWidthForBoxSizing(
+                     LayoutUnit(styleToUse.minWidth().value())));
+  }
 
-    if (styleToUse.maxWidth().isFixed()) {
-        m_maxPreferredLogicalWidth = std::min(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit(styleToUse.maxWidth().value())));
-        m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit(styleToUse.maxWidth().value())));
-    }
+  if (styleToUse.maxWidth().isFixed()) {
+    m_maxPreferredLogicalWidth =
+        std::min(m_maxPreferredLogicalWidth,
+                 adjustContentBoxLogicalWidthForBoxSizing(
+                     LayoutUnit(styleToUse.maxWidth().value())));
+    m_minPreferredLogicalWidth =
+        std::min(m_minPreferredLogicalWidth,
+                 adjustContentBoxLogicalWidthForBoxSizing(
+                     LayoutUnit(styleToUse.maxWidth().value())));
+  }
 
-    int toAdd = borderAndPaddingWidth().toInt();
-    m_minPreferredLogicalWidth += toAdd;
-    m_maxPreferredLogicalWidth += toAdd;
+  int toAdd = borderAndPaddingWidth().toInt();
+  m_minPreferredLogicalWidth += toAdd;
+  m_maxPreferredLogicalWidth += toAdd;
 
-    clearPreferredLogicalWidthsDirty();
+  clearPreferredLogicalWidthsDirty();
 }
 
-PositionWithAffinity LayoutFileUploadControl::positionForPoint(const LayoutPoint&)
-{
-    return PositionWithAffinity();
+PositionWithAffinity LayoutFileUploadControl::positionForPoint(
+    const LayoutPoint&) {
+  return PositionWithAffinity();
 }
 
-HTMLInputElement* LayoutFileUploadControl::uploadButton() const
-{
-    // FIXME: This should be on HTMLInputElement as an API like innerButtonElement().
-    HTMLInputElement* input = toHTMLInputElement(node());
-    Node* buttonNode = input->userAgentShadowRoot()->firstChild();
-    return isHTMLInputElement(buttonNode) ? toHTMLInputElement(buttonNode) : 0;
+HTMLInputElement* LayoutFileUploadControl::uploadButton() const {
+  // FIXME: This should be on HTMLInputElement as an API like innerButtonElement().
+  HTMLInputElement* input = toHTMLInputElement(node());
+  Node* buttonNode = input->userAgentShadowRoot()->firstChild();
+  return isHTMLInputElement(buttonNode) ? toHTMLInputElement(buttonNode) : 0;
 }
 
-String LayoutFileUploadControl::buttonValue()
-{
-    if (HTMLInputElement* button = uploadButton())
-        return button->value();
+String LayoutFileUploadControl::buttonValue() {
+  if (HTMLInputElement* button = uploadButton())
+    return button->value();
 
-    return String();
+  return String();
 }
 
-String LayoutFileUploadControl::fileTextValue() const
-{
-    HTMLInputElement* input = toHTMLInputElement(node());
-    ASSERT(input->files());
-    return LayoutTheme::theme().fileListNameForWidth(input->locale(), input->files(), style()->font(), maxFilenameWidth());
+String LayoutFileUploadControl::fileTextValue() const {
+  HTMLInputElement* input = toHTMLInputElement(node());
+  ASSERT(input->files());
+  return LayoutTheme::theme().fileListNameForWidth(
+      input->locale(), input->files(), style()->font(), maxFilenameWidth());
 }
 
-} // namespace blink
+}  // namespace blink

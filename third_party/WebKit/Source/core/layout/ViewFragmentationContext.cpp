@@ -8,22 +8,20 @@
 
 namespace blink {
 
-bool ViewFragmentationContext::isFragmentainerLogicalHeightKnown()
-{
-    ASSERT(m_view.pageLogicalHeight());
-    return true;
+bool ViewFragmentationContext::isFragmentainerLogicalHeightKnown() {
+  ASSERT(m_view.pageLogicalHeight());
+  return true;
 }
 
-LayoutUnit ViewFragmentationContext::fragmentainerLogicalHeightAt(LayoutUnit)
-{
-    ASSERT(m_view.pageLogicalHeight());
-    return m_view.pageLogicalHeight();
+LayoutUnit ViewFragmentationContext::fragmentainerLogicalHeightAt(LayoutUnit) {
+  ASSERT(m_view.pageLogicalHeight());
+  return m_view.pageLogicalHeight();
 }
 
-LayoutUnit ViewFragmentationContext::remainingLogicalHeightAt(LayoutUnit blockOffset)
-{
-    LayoutUnit pageLogicalHeight = m_view.pageLogicalHeight();
-    return pageLogicalHeight - intMod(blockOffset, pageLogicalHeight);
+LayoutUnit ViewFragmentationContext::remainingLogicalHeightAt(
+    LayoutUnit blockOffset) {
+  LayoutUnit pageLogicalHeight = m_view.pageLogicalHeight();
+  return pageLogicalHeight - intMod(blockOffset, pageLogicalHeight);
 }
 
-} // namespace blink
+}  // namespace blink

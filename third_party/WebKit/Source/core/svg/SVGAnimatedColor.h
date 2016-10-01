@@ -41,30 +41,35 @@ class SVGAnimationElement;
 // StyleColor adaptor to SVGPropertyBase. This is only used for SMIL animations.
 // FIXME: WebAnimations: Replacable with AnimatableColor once SMIL animations are implemented in WebAnimations.
 class SVGColorProperty final : public SVGPropertyBase {
-public:
-    static SVGColorProperty* create(const String& colorString)
-    {
-        return new SVGColorProperty(colorString);
-    }
+ public:
+  static SVGColorProperty* create(const String& colorString) {
+    return new SVGColorProperty(colorString);
+  }
 
-    SVGPropertyBase* cloneForAnimation(const String&) const override;
-    String valueAsString() const override;
+  SVGPropertyBase* cloneForAnimation(const String&) const override;
+  String valueAsString() const override;
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement*) override;
+  float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
-    static AnimatedPropertyType classType() { return AnimatedColor; }
-    AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType classType() { return AnimatedColor; }
+  AnimatedPropertyType type() const override { return classType(); }
 
-private:
-    explicit SVGColorProperty(const String&);
+ private:
+  explicit SVGColorProperty(const String&);
 
-    StyleColor m_styleColor;
+  StyleColor m_styleColor;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGColorProperty);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedColor_h
+#endif  // SVGAnimatedColor_h

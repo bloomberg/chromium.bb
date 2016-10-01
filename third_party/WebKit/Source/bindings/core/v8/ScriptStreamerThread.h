@@ -18,43 +18,41 @@ class ScriptStreamer;
 
 // A singleton thread for running background tasks for script streaming.
 class CORE_EXPORT ScriptStreamerThread {
-    USING_FAST_MALLOC(ScriptStreamerThread);
-    WTF_MAKE_NONCOPYABLE(ScriptStreamerThread);
-public:
-    static void init();
-    static void shutdown();
-    static ScriptStreamerThread* shared();
+  USING_FAST_MALLOC(ScriptStreamerThread);
+  WTF_MAKE_NONCOPYABLE(ScriptStreamerThread);
 
-    void postTask(std::unique_ptr<CrossThreadClosure>);
+ public:
+  static void init();
+  static void shutdown();
+  static ScriptStreamerThread* shared();
 
-    bool isRunningTask() const
-    {
-        MutexLocker locker(m_mutex);
-        return m_runningTask;
-    }
+  void postTask(std::unique_ptr<CrossThreadClosure>);
 
-    void taskDone();
+  bool isRunningTask() const {
+    MutexLocker locker(m_mutex);
+    return m_runningTask;
+  }
 
-    static void runScriptStreamingTask(std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>, ScriptStreamer*);
+  void taskDone();
 
-private:
-    ScriptStreamerThread()
-        : m_runningTask(false) { }
+  static void runScriptStreamingTask(
+      std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>,
+      ScriptStreamer*);
 
-    bool isRunning() const
-    {
-        return !!m_thread;
-    }
+ private:
+  ScriptStreamerThread() : m_runningTask(false) {}
 
-    WebThread& platformThread();
+  bool isRunning() const { return !!m_thread; }
 
-    // At the moment, we only use one thread, so we can only stream one script
-    // at a time. FIXME: Use a thread pool and stream multiple scripts.
-    std::unique_ptr<WebThread> m_thread;
-    bool m_runningTask;
-    mutable Mutex m_mutex; // Guards m_runningTask.
+  WebThread& platformThread();
+
+  // At the moment, we only use one thread, so we can only stream one script
+  // at a time. FIXME: Use a thread pool and stream multiple scripts.
+  std::unique_ptr<WebThread> m_thread;
+  bool m_runningTask;
+  mutable Mutex m_mutex;  // Guards m_runningTask.
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptStreamerThread_h
+#endif  // ScriptStreamerThread_h

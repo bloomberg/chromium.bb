@@ -42,78 +42,61 @@ namespace WTF {
 // A utility class to build an ArrayBuffer instance. Validity must be checked
 // by isValid() before using an instance.
 class WTF_EXPORT ArrayBufferBuilder final {
-    // Disallow copying since it's expensive and we don't want code to do it by
-    // accident.
-    WTF_MAKE_NONCOPYABLE(ArrayBufferBuilder);
-    USING_FAST_MALLOC(ArrayBufferBuilder);
+  // Disallow copying since it's expensive and we don't want code to do it by
+  // accident.
+  WTF_MAKE_NONCOPYABLE(ArrayBufferBuilder);
+  USING_FAST_MALLOC(ArrayBufferBuilder);
 
-public:
-    // Creates an ArrayBufferBuilder using the default capacity.
-    ArrayBufferBuilder();
+ public:
+  // Creates an ArrayBufferBuilder using the default capacity.
+  ArrayBufferBuilder();
 
-    ArrayBufferBuilder(unsigned capacity)
-        : m_bytesUsed(0)
-        , m_variableCapacity(true)
-    {
-        m_buffer = ArrayBuffer::create(capacity, 1);
-    }
+  ArrayBufferBuilder(unsigned capacity)
+      : m_bytesUsed(0), m_variableCapacity(true) {
+    m_buffer = ArrayBuffer::create(capacity, 1);
+  }
 
-    bool isValid() const
-    {
-        return m_buffer.get();
-    }
+  bool isValid() const { return m_buffer.get(); }
 
-    // Appending empty data is not allowed.
-    unsigned append(const char* data, unsigned length);
+  // Appending empty data is not allowed.
+  unsigned append(const char* data, unsigned length);
 
-    // Returns the accumulated data as an ArrayBuffer instance. If needed,
-    // creates a new ArrayBuffer instance and copies contents from the internal
-    // buffer to it. Otherwise, returns a PassRefPtr pointing to the internal
-    // buffer.
-    PassRefPtr<ArrayBuffer> toArrayBuffer();
+  // Returns the accumulated data as an ArrayBuffer instance. If needed,
+  // creates a new ArrayBuffer instance and copies contents from the internal
+  // buffer to it. Otherwise, returns a PassRefPtr pointing to the internal
+  // buffer.
+  PassRefPtr<ArrayBuffer> toArrayBuffer();
 
-    // Converts the accumulated data into a String using the default encoding.
-    String toString();
+  // Converts the accumulated data into a String using the default encoding.
+  String toString();
 
-    // Number of bytes currently accumulated.
-    unsigned byteLength() const
-    {
-        return m_bytesUsed;
-    }
+  // Number of bytes currently accumulated.
+  unsigned byteLength() const { return m_bytesUsed; }
 
-    // Number of bytes allocated.
-    unsigned capacity() const
-    {
-        return m_buffer->byteLength();
-    }
+  // Number of bytes allocated.
+  unsigned capacity() const { return m_buffer->byteLength(); }
 
-    void shrinkToFit();
+  void shrinkToFit();
 
-    const void* data() const
-    {
-        return m_buffer->data();
-    }
+  const void* data() const { return m_buffer->data(); }
 
-    // If set to false, the capacity won't be expanded and when appended data
-    // overflows, the overflowed part will be dropped.
-    void setVariableCapacity(bool value)
-    {
-        m_variableCapacity = value;
-    }
+  // If set to false, the capacity won't be expanded and when appended data
+  // overflows, the overflowed part will be dropped.
+  void setVariableCapacity(bool value) { m_variableCapacity = value; }
 
-private:
-    // Expands the size of m_buffer to size + m_bytesUsed bytes. Returns true
-    // iff successful. If reallocation is needed, copies only data in
-    // [0, m_bytesUsed) range.
-    bool expandCapacity(unsigned size);
+ private:
+  // Expands the size of m_buffer to size + m_bytesUsed bytes. Returns true
+  // iff successful. If reallocation is needed, copies only data in
+  // [0, m_bytesUsed) range.
+  bool expandCapacity(unsigned size);
 
-    unsigned m_bytesUsed;
-    bool m_variableCapacity;
-    RefPtr<ArrayBuffer> m_buffer;
+  unsigned m_bytesUsed;
+  bool m_variableCapacity;
+  RefPtr<ArrayBuffer> m_buffer;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::ArrayBufferBuilder;
 
-#endif // ArrayBufferBuilder_h
+#endif  // ArrayBufferBuilder_h

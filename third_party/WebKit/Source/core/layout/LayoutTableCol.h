@@ -58,54 +58,61 @@ class LayoutTableCell;
 // previous paragraph), they are never laid out and layout() should not be
 // called on them.
 class LayoutTableCol final : public LayoutTableBoxComponent {
-public:
-    explicit LayoutTableCol(Element*);
+ public:
+  explicit LayoutTableCol(Element*);
 
-    void clearPreferredLogicalWidthsDirtyBits();
+  void clearPreferredLogicalWidthsDirtyBits();
 
-    // The 'span' attribute in HTML.
-    // For CSS table columns or colgroups, this is always 1.
-    unsigned span() const { return m_span; }
+  // The 'span' attribute in HTML.
+  // For CSS table columns or colgroups, this is always 1.
+  unsigned span() const { return m_span; }
 
-    bool isTableColumnGroupWithColumnChildren() { return firstChild(); }
-    bool isTableColumn() const { return style()->display() == EDisplay::TableColumn; }
-    bool isTableColumnGroup() const { return style()->display() == EDisplay::TableColumnGroup; }
+  bool isTableColumnGroupWithColumnChildren() { return firstChild(); }
+  bool isTableColumn() const {
+    return style()->display() == EDisplay::TableColumn;
+  }
+  bool isTableColumnGroup() const {
+    return style()->display() == EDisplay::TableColumnGroup;
+  }
 
-    LayoutTableCol* enclosingColumnGroup() const;
+  LayoutTableCol* enclosingColumnGroup() const;
 
-    // Returns the next column or column-group.
-    LayoutTableCol* nextColumn() const;
+  // Returns the next column or column-group.
+  LayoutTableCol* nextColumn() const;
 
-    const BorderValue& borderAdjoiningCellStartBorder(const LayoutTableCell*) const;
-    const BorderValue& borderAdjoiningCellEndBorder(const LayoutTableCell*) const;
-    const BorderValue& borderAdjoiningCellBefore(const LayoutTableCell*) const;
-    const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell*) const;
+  const BorderValue& borderAdjoiningCellStartBorder(
+      const LayoutTableCell*) const;
+  const BorderValue& borderAdjoiningCellEndBorder(const LayoutTableCell*) const;
+  const BorderValue& borderAdjoiningCellBefore(const LayoutTableCell*) const;
+  const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell*) const;
 
-    const char* name() const override { return "LayoutTableCol"; }
+  const char* name() const override { return "LayoutTableCol"; }
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutTableCol || LayoutBox::isOfType(type); }
-    void updateFromElement() override;
-    void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectLayoutTableCol || LayoutBox::isOfType(type);
+  }
+  void updateFromElement() override;
+  void computePreferredLogicalWidths() override { ASSERT_NOT_REACHED(); }
 
-    void insertedIntoTree() override;
-    void willBeRemovedFromTree() override;
+  void insertedIntoTree() override;
+  void willBeRemovedFromTree() override;
 
-    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
-    bool canHaveChildren() const override;
-    PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
+  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool canHaveChildren() const override;
+  PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
 
-    LayoutRect localOverflowRectForPaintInvalidation() const override;
+  LayoutRect localOverflowRectForPaintInvalidation() const override;
 
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
-    LayoutTable* table() const;
+  LayoutTable* table() const;
 
-    unsigned m_span;
+  unsigned m_span;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCol, isLayoutTableCol());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

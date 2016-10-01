@@ -14,48 +14,50 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSTransformValue final : public CSSStyleValue, public ValueIterable<CSSTransformComponent*> {
-    WTF_MAKE_NONCOPYABLE(CSSTransformValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSTransformValue* create()
-    {
-        return new CSSTransformValue();
-    }
+class CORE_EXPORT CSSTransformValue final
+    : public CSSStyleValue,
+      public ValueIterable<CSSTransformComponent *> {
+  WTF_MAKE_NONCOPYABLE(CSSTransformValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CSSTransformValue* create(const HeapVector<Member<CSSTransformComponent>>& transformComponents)
-    {
-        return new CSSTransformValue(transformComponents);
-    }
+ public:
+  static CSSTransformValue* create() { return new CSSTransformValue(); }
 
-    static CSSTransformValue* fromCSSValue(const CSSValue&);
+  static CSSTransformValue* create(
+      const HeapVector<Member<CSSTransformComponent>>& transformComponents) {
+    return new CSSTransformValue(transformComponents);
+  }
 
-    bool is2D() const;
+  static CSSTransformValue* fromCSSValue(const CSSValue&);
 
-    const CSSValue* toCSSValue() const override;
+  bool is2D() const;
 
-    StyleValueType type() const override { return TransformType; }
+  const CSSValue* toCSSValue() const override;
 
-    CSSTransformComponent* componentAtIndex(int index) { return m_transformComponents.at(index); }
+  StyleValueType type() const override { return TransformType; }
 
-    size_t size() { return m_transformComponents.size(); }
+  CSSTransformComponent* componentAtIndex(int index) {
+    return m_transformComponents.at(index);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_transformComponents);
-        CSSStyleValue::trace(visitor);
-    }
+  size_t size() { return m_transformComponents.size(); }
 
-private:
-    CSSTransformValue() {}
-    CSSTransformValue(const HeapVector<Member<CSSTransformComponent>>& transformComponents) : CSSStyleValue(),
-        m_transformComponents(transformComponents) {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_transformComponents);
+    CSSStyleValue::trace(visitor);
+  }
 
-    HeapVector<Member<CSSTransformComponent>> m_transformComponents;
+ private:
+  CSSTransformValue() {}
+  CSSTransformValue(
+      const HeapVector<Member<CSSTransformComponent>>& transformComponents)
+      : CSSStyleValue(), m_transformComponents(transformComponents) {}
 
-    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+  HeapVector<Member<CSSTransformComponent>> m_transformComponents;
+
+  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSTransformValue_h
+#endif  // CSSTransformValue_h

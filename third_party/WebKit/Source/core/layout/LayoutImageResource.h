@@ -33,43 +33,46 @@ namespace blink {
 
 class LayoutObject;
 
-class LayoutImageResource : public GarbageCollectedFinalized<LayoutImageResource> {
-    WTF_MAKE_NONCOPYABLE(LayoutImageResource);
-public:
-    virtual ~LayoutImageResource();
+class LayoutImageResource
+    : public GarbageCollectedFinalized<LayoutImageResource> {
+  WTF_MAKE_NONCOPYABLE(LayoutImageResource);
 
-    static LayoutImageResource* create()
-    {
-        return new LayoutImageResource;
-    }
+ public:
+  virtual ~LayoutImageResource();
 
-    virtual void initialize(LayoutObject*);
-    virtual void shutdown();
+  static LayoutImageResource* create() { return new LayoutImageResource; }
 
-    void setImageResource(ImageResource*);
-    ImageResource* cachedImage() const { return m_cachedImage.get(); }
-    virtual bool hasImage() const { return m_cachedImage; }
+  virtual void initialize(LayoutObject*);
+  virtual void shutdown();
 
-    void resetAnimation();
-    bool maybeAnimated() const;
+  void setImageResource(ImageResource*);
+  ImageResource* cachedImage() const { return m_cachedImage.get(); }
+  virtual bool hasImage() const { return m_cachedImage; }
 
-    virtual PassRefPtr<Image> image(const IntSize&, float) const;
-    virtual bool errorOccurred() const { return m_cachedImage && m_cachedImage->errorOccurred(); }
+  void resetAnimation();
+  bool maybeAnimated() const;
 
-    virtual bool imageHasRelativeSize() const { return m_cachedImage ? m_cachedImage->imageHasRelativeSize() : false; }
+  virtual PassRefPtr<Image> image(const IntSize&, float) const;
+  virtual bool errorOccurred() const {
+    return m_cachedImage && m_cachedImage->errorOccurred();
+  }
 
-    virtual LayoutSize imageSize(float multiplier) const;
+  virtual bool imageHasRelativeSize() const {
+    return m_cachedImage ? m_cachedImage->imageHasRelativeSize() : false;
+  }
 
-    virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
+  virtual LayoutSize imageSize(float multiplier) const;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_cachedImage); }
+  virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
 
-protected:
-    LayoutImageResource();
-    LayoutObject* m_layoutObject;
-    Member<ImageResource> m_cachedImage;
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_cachedImage); }
+
+ protected:
+  LayoutImageResource();
+  LayoutObject* m_layoutObject;
+  Member<ImageResource> m_cachedImage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutImage_h
+#endif  // LayoutImage_h

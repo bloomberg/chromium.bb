@@ -12,22 +12,27 @@ namespace blink {
 class AmbientLightSensorReading;
 
 class AmbientLightSensor final : public Sensor {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static AmbientLightSensor* create(ScriptState*, const SensorOptions&, ExceptionState&);
-    static AmbientLightSensor* create(ScriptState*, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    AmbientLightSensorReading* reading() const;
+ public:
+  static AmbientLightSensor* create(ScriptState*,
+                                    const SensorOptions&,
+                                    ExceptionState&);
+  static AmbientLightSensor* create(ScriptState*, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  AmbientLightSensorReading* reading() const;
 
-private:
-    AmbientLightSensor(ScriptState*, const SensorOptions&, ExceptionState&);
-    // Sensor overrides.
-    SensorReading* createSensorReading(SensorProxy*) override;
-    SensorConfigurationPtr createSensorConfig(const SensorOptions&, const SensorConfiguration& defaultConfig) override;
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  AmbientLightSensor(ScriptState*, const SensorOptions&, ExceptionState&);
+  // Sensor overrides.
+  SensorReading* createSensorReading(SensorProxy*) override;
+  SensorConfigurationPtr createSensorConfig(
+      const SensorOptions&,
+      const SensorConfiguration& defaultConfig) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AmbientLightSensor_h
+#endif  // AmbientLightSensor_h

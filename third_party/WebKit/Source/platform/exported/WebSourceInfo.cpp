@@ -32,74 +32,78 @@
 namespace blink {
 
 class WebSourceInfoPrivate final : public RefCounted<WebSourceInfoPrivate> {
-public:
-    static PassRefPtr<WebSourceInfoPrivate> create(const WebString& id, WebSourceInfo::SourceKind, const WebString& label, WebSourceInfo::VideoFacingMode);
+ public:
+  static PassRefPtr<WebSourceInfoPrivate> create(
+      const WebString& id,
+      WebSourceInfo::SourceKind,
+      const WebString& label,
+      WebSourceInfo::VideoFacingMode);
 
-    const WebString& id() const { return m_id; }
-    WebSourceInfo::SourceKind kind() const { return m_kind; }
-    const WebString& label() const { return m_label; }
-    WebSourceInfo::VideoFacingMode facing() const { return m_facing; }
+  const WebString& id() const { return m_id; }
+  WebSourceInfo::SourceKind kind() const { return m_kind; }
+  const WebString& label() const { return m_label; }
+  WebSourceInfo::VideoFacingMode facing() const { return m_facing; }
 
-private:
-    WebSourceInfoPrivate(const WebString& id, WebSourceInfo::SourceKind, const WebString& label, WebSourceInfo::VideoFacingMode);
+ private:
+  WebSourceInfoPrivate(const WebString& id,
+                       WebSourceInfo::SourceKind,
+                       const WebString& label,
+                       WebSourceInfo::VideoFacingMode);
 
-    WebString m_id;
-    WebSourceInfo::SourceKind m_kind;
-    WebString m_label;
-    WebSourceInfo::VideoFacingMode m_facing;
+  WebString m_id;
+  WebSourceInfo::SourceKind m_kind;
+  WebString m_label;
+  WebSourceInfo::VideoFacingMode m_facing;
 };
 
-PassRefPtr<WebSourceInfoPrivate> WebSourceInfoPrivate::create(const WebString& id, WebSourceInfo::SourceKind kind, const WebString& label, WebSourceInfo::VideoFacingMode facing)
-{
-    return adoptRef(new WebSourceInfoPrivate(id, kind, label, facing));
+PassRefPtr<WebSourceInfoPrivate> WebSourceInfoPrivate::create(
+    const WebString& id,
+    WebSourceInfo::SourceKind kind,
+    const WebString& label,
+    WebSourceInfo::VideoFacingMode facing) {
+  return adoptRef(new WebSourceInfoPrivate(id, kind, label, facing));
 }
 
-WebSourceInfoPrivate::WebSourceInfoPrivate(const WebString& id, WebSourceInfo::SourceKind kind, const WebString& label, WebSourceInfo::VideoFacingMode facing)
-    : m_id(id)
-    , m_kind(kind)
-    , m_label(label)
-    , m_facing(facing)
-{
+WebSourceInfoPrivate::WebSourceInfoPrivate(
+    const WebString& id,
+    WebSourceInfo::SourceKind kind,
+    const WebString& label,
+    WebSourceInfo::VideoFacingMode facing)
+    : m_id(id), m_kind(kind), m_label(label), m_facing(facing) {}
+
+void WebSourceInfo::assign(const WebSourceInfo& other) {
+  m_private = other.m_private;
 }
 
-void WebSourceInfo::assign(const WebSourceInfo& other)
-{
-    m_private = other.m_private;
+void WebSourceInfo::reset() {
+  m_private.reset();
 }
 
-void WebSourceInfo::reset()
-{
-    m_private.reset();
+void WebSourceInfo::initialize(const WebString& id,
+                               WebSourceInfo::SourceKind kind,
+                               const WebString& label,
+                               WebSourceInfo::VideoFacingMode facing) {
+  m_private = WebSourceInfoPrivate::create(id, kind, label, facing);
 }
 
-void WebSourceInfo::initialize(const WebString& id, WebSourceInfo::SourceKind kind, const WebString& label, WebSourceInfo::VideoFacingMode facing)
-{
-    m_private = WebSourceInfoPrivate::create(id, kind, label, facing);
+WebString WebSourceInfo::id() const {
+  ASSERT(!m_private.isNull());
+  return m_private->id();
 }
 
-WebString WebSourceInfo::id() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->id();
+WebSourceInfo::SourceKind WebSourceInfo::kind() const {
+  ASSERT(!m_private.isNull());
+  return m_private->kind();
 }
 
-WebSourceInfo::SourceKind WebSourceInfo::kind() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->kind();
+WebString WebSourceInfo::label() const {
+  ASSERT(!m_private.isNull());
+  return m_private->label();
 }
 
-WebString WebSourceInfo::label() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->label();
+WebSourceInfo::VideoFacingMode WebSourceInfo::facing() const {
+  ASSERT(!m_private.isNull());
+  return m_private->facing();
 }
 
-WebSourceInfo::VideoFacingMode WebSourceInfo::facing() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->facing();
-}
-
-} // namespace blink
-
+}  // namespace blink

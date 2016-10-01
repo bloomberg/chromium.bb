@@ -35,12 +35,11 @@
 namespace blink {
 
 CompositionUnderlineVectorBuilder::CompositionUnderlineVectorBuilder(
-    const WebVector<WebCompositionUnderline>& underlines)
-{
-    size_t size = underlines.size();
-    reserveCapacity(size);
-    for (size_t i = 0; i < size; ++i)
-        append(CompositionUnderlineBuilder(underlines[i]));
+    const WebVector<WebCompositionUnderline>& underlines) {
+  size_t size = underlines.size();
+  reserveCapacity(size);
+  for (size_t i = 0; i < size; ++i)
+    append(CompositionUnderlineBuilder(underlines[i]));
 }
 
-} // namespace blink
+}  // namespace blink

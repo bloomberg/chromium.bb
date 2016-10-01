@@ -13,10 +13,10 @@ namespace blink {
 class WebString;
 
 class WebCSSParser {
-public:
-    BLINK_EXPORT static bool parseColor(WebColor*, const WebString&);
+ public:
+  BLINK_EXPORT static bool parseColor(WebColor*, const WebString&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

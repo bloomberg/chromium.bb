@@ -44,66 +44,77 @@ class TransformState;
 
 // Can be used while walking the layout tree to cache data about offsets and transforms.
 class CORE_EXPORT LayoutGeometryMap {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
-public:
-    LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);
-    ~LayoutGeometryMap();
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
 
-    MapCoordinatesFlags getMapCoordinatesFlags() const { return m_mapCoordinatesFlags; }
+ public:
+  LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);
+  ~LayoutGeometryMap();
 
-    FloatRect absoluteRect(const FloatRect& rect) const
-    {
-        return mapToAncestor(rect, 0).boundingBox();
-    }
+  MapCoordinatesFlags getMapCoordinatesFlags() const {
+    return m_mapCoordinatesFlags;
+  }
 
-    // Map to an ancestor. Will assert that the ancestor has been pushed onto this map.
-    // A null ancestor maps through the LayoutView (including its scale transform, if any).
-    // If the ancestor is the LayoutView, the scroll offset is applied, but not the scale.
-    FloatQuad mapToAncestor(const FloatRect&, const LayoutBoxModelObject*) const;
+  FloatRect absoluteRect(const FloatRect& rect) const {
+    return mapToAncestor(rect, 0).boundingBox();
+  }
 
-    // Called by code walking the layout or layer trees.
-    void pushMappingsToAncestor(const PaintLayer*, const PaintLayer* ancestorLayer);
-    void popMappingsToAncestor(const PaintLayer*);
-    void pushMappingsToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestorLayoutObject);
+  // Map to an ancestor. Will assert that the ancestor has been pushed onto this map.
+  // A null ancestor maps through the LayoutView (including its scale transform, if any).
+  // If the ancestor is the LayoutView, the scroll offset is applied, but not the scale.
+  FloatQuad mapToAncestor(const FloatRect&, const LayoutBoxModelObject*) const;
 
-    // The following methods should only be called by layoutObjects inside a call to pushMappingsToAncestor().
+  // Called by code walking the layout or layer trees.
+  void pushMappingsToAncestor(const PaintLayer*,
+                              const PaintLayer* ancestorLayer);
+  void popMappingsToAncestor(const PaintLayer*);
+  void pushMappingsToAncestor(const LayoutObject*,
+                              const LayoutBoxModelObject* ancestorLayoutObject);
 
-    // Push geometry info between this layoutObject and some ancestor. The ancestor must be its container() or some
-    // stacking context between the layoutObject and its container.
-    void push(const LayoutObject*, const LayoutSize&, GeometryInfoFlags = 0, LayoutSize offsetForFixedPosition = LayoutSize());
-    void push(const LayoutObject*, const TransformationMatrix&, GeometryInfoFlags = 0, LayoutSize offsetForFixedPosition = LayoutSize());
+  // The following methods should only be called by layoutObjects inside a call to pushMappingsToAncestor().
 
-private:
-    void popMappingsToAncestor(const LayoutBoxModelObject*);
-    void mapToAncestor(TransformState&, const LayoutBoxModelObject* ancestor = nullptr) const;
+  // Push geometry info between this layoutObject and some ancestor. The ancestor must be its container() or some
+  // stacking context between the layoutObject and its container.
+  void push(const LayoutObject*,
+            const LayoutSize&,
+            GeometryInfoFlags = 0,
+            LayoutSize offsetForFixedPosition = LayoutSize());
+  void push(const LayoutObject*,
+            const TransformationMatrix&,
+            GeometryInfoFlags = 0,
+            LayoutSize offsetForFixedPosition = LayoutSize());
 
-    void stepInserted(const LayoutGeometryMapStep&);
-    void stepRemoved(const LayoutGeometryMapStep&);
+ private:
+  void popMappingsToAncestor(const LayoutBoxModelObject*);
+  void mapToAncestor(TransformState&,
+                     const LayoutBoxModelObject* ancestor = nullptr) const;
 
-    bool hasNonUniformStep() const { return m_nonUniformStepsCount; }
-    bool hasTransformStep() const { return m_transformedStepsCount; }
-    bool hasFixedPositionStep() const { return m_fixedStepsCount; }
+  void stepInserted(const LayoutGeometryMapStep&);
+  void stepRemoved(const LayoutGeometryMapStep&);
+
+  bool hasNonUniformStep() const { return m_nonUniformStepsCount; }
+  bool hasTransformStep() const { return m_transformedStepsCount; }
+  bool hasFixedPositionStep() const { return m_fixedStepsCount; }
 
 #ifndef NDEBUG
-    void dumpSteps() const;
+  void dumpSteps() const;
 #endif
 
 #if ENABLE(ASSERT)
-    bool isTopmostLayoutView(const LayoutObject*) const;
+  bool isTopmostLayoutView(const LayoutObject*) const;
 #endif
 
-    typedef Vector<LayoutGeometryMapStep, 32> LayoutGeometryMapSteps;
+  typedef Vector<LayoutGeometryMapStep, 32> LayoutGeometryMapSteps;
 
-    size_t m_insertionPosition;
-    int m_nonUniformStepsCount;
-    int m_transformedStepsCount;
-    int m_fixedStepsCount;
-    LayoutGeometryMapSteps m_mapping;
-    LayoutSize m_accumulatedOffset;
-    MapCoordinatesFlags m_mapCoordinatesFlags;
+  size_t m_insertionPosition;
+  int m_nonUniformStepsCount;
+  int m_transformedStepsCount;
+  int m_fixedStepsCount;
+  LayoutGeometryMapSteps m_mapping;
+  LayoutSize m_accumulatedOffset;
+  MapCoordinatesFlags m_mapCoordinatesFlags;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutGeometryMap_h
+#endif  // LayoutGeometryMap_h

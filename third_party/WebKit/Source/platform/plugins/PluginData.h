@@ -32,50 +32,54 @@ namespace blink {
 struct PluginInfo;
 
 struct MimeClassInfo {
-    String type;
-    String desc;
-    Vector<String> extensions;
+  String type;
+  String desc;
+  Vector<String> extensions;
 };
 
-inline bool operator==(const MimeClassInfo& a, const MimeClassInfo& b)
-{
-    return a.type == b.type && a.desc == b.desc && a.extensions == b.extensions;
+inline bool operator==(const MimeClassInfo& a, const MimeClassInfo& b) {
+  return a.type == b.type && a.desc == b.desc && a.extensions == b.extensions;
 }
 
 struct PluginInfo {
-    String name;
-    String file;
-    String desc;
-    Vector<MimeClassInfo> mimes;
+  String name;
+  String file;
+  String desc;
+  Vector<MimeClassInfo> mimes;
 };
 
 class PLATFORM_EXPORT PluginData : public RefCounted<PluginData> {
-    WTF_MAKE_NONCOPYABLE(PluginData);
-public:
-    static PassRefPtr<PluginData> create(SecurityOrigin* mainFrameOrigin) { return adoptRef(new PluginData(mainFrameOrigin)); }
+  WTF_MAKE_NONCOPYABLE(PluginData);
 
-    const Vector<PluginInfo>& plugins() const { return m_plugins; }
-    const Vector<MimeClassInfo>& mimes() const { return m_mimes; }
-    const Vector<size_t>& mimePluginIndices() const { return m_mimePluginIndices; }
-    const SecurityOrigin* origin() const { return m_mainFrameOrigin.get(); }
+ public:
+  static PassRefPtr<PluginData> create(SecurityOrigin* mainFrameOrigin) {
+    return adoptRef(new PluginData(mainFrameOrigin));
+  }
 
-    bool supportsMimeType(const String& mimeType) const;
-    String pluginNameForMimeType(const String& mimeType) const;
+  const Vector<PluginInfo>& plugins() const { return m_plugins; }
+  const Vector<MimeClassInfo>& mimes() const { return m_mimes; }
+  const Vector<size_t>& mimePluginIndices() const {
+    return m_mimePluginIndices;
+  }
+  const SecurityOrigin* origin() const { return m_mainFrameOrigin.get(); }
 
-    // refreshBrowserSidePluginCache doesn't update existent instances of
-    // PluginData.
-    static void refreshBrowserSidePluginCache();
+  bool supportsMimeType(const String& mimeType) const;
+  String pluginNameForMimeType(const String& mimeType) const;
 
-private:
-    explicit PluginData(SecurityOrigin* mainFrameOrigin);
-    const PluginInfo* pluginInfoForMimeType(const String& mimeType) const;
+  // refreshBrowserSidePluginCache doesn't update existent instances of
+  // PluginData.
+  static void refreshBrowserSidePluginCache();
 
-    Vector<PluginInfo> m_plugins;
-    Vector<MimeClassInfo> m_mimes;
-    Vector<size_t> m_mimePluginIndices;
-    RefPtr<SecurityOrigin> m_mainFrameOrigin;
+ private:
+  explicit PluginData(SecurityOrigin* mainFrameOrigin);
+  const PluginInfo* pluginInfoForMimeType(const String& mimeType) const;
+
+  Vector<PluginInfo> m_plugins;
+  Vector<MimeClassInfo> m_mimes;
+  Vector<size_t> m_mimePluginIndices;
+  RefPtr<SecurityOrigin> m_mainFrameOrigin;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -33,60 +33,53 @@
 
 namespace blink {
 
-MediaDevicesRequest* MediaDevicesRequest::create(ScriptState* state, UserMediaController* controller)
-{
-    MediaDevicesRequest* request = new MediaDevicesRequest(state, controller);
-    request->suspendIfNeeded();
-    return request;
+MediaDevicesRequest* MediaDevicesRequest::create(
+    ScriptState* state,
+    UserMediaController* controller) {
+  MediaDevicesRequest* request = new MediaDevicesRequest(state, controller);
+  request->suspendIfNeeded();
+  return request;
 }
 
-MediaDevicesRequest::MediaDevicesRequest(ScriptState* state, UserMediaController* controller)
-    : ActiveDOMObject(state->getExecutionContext())
-    , m_controller(controller)
-    , m_resolver(ScriptPromiseResolver::create(state))
-{
+MediaDevicesRequest::MediaDevicesRequest(ScriptState* state,
+                                         UserMediaController* controller)
+    : ActiveDOMObject(state->getExecutionContext()),
+      m_controller(controller),
+      m_resolver(ScriptPromiseResolver::create(state)) {}
+
+MediaDevicesRequest::~MediaDevicesRequest() {}
+
+Document* MediaDevicesRequest::ownerDocument() {
+  if (ExecutionContext* context = getExecutionContext()) {
+    return toDocument(context);
+  }
+
+  return 0;
 }
 
-MediaDevicesRequest::~MediaDevicesRequest()
-{
+ScriptPromise MediaDevicesRequest::start() {
+  DCHECK(m_controller);
+  m_resolver->keepAliveWhilePending();
+  m_controller->requestMediaDevices(this);
+  return m_resolver->promise();
 }
 
-Document* MediaDevicesRequest::ownerDocument()
-{
-    if (ExecutionContext* context = getExecutionContext()) {
-        return toDocument(context);
-    }
+void MediaDevicesRequest::succeed(const MediaDeviceInfoVector& mediaDevices) {
+  if (!getExecutionContext() || !m_resolver)
+    return;
 
-    return 0;
+  m_resolver->resolve(mediaDevices);
 }
 
-ScriptPromise MediaDevicesRequest::start()
-{
-    DCHECK(m_controller);
-    m_resolver->keepAliveWhilePending();
-    m_controller->requestMediaDevices(this);
-    return m_resolver->promise();
+void MediaDevicesRequest::stop() {
+  m_controller.clear();
+  m_resolver.clear();
 }
 
-void MediaDevicesRequest::succeed(const MediaDeviceInfoVector& mediaDevices)
-{
-    if (!getExecutionContext() || !m_resolver)
-        return;
-
-    m_resolver->resolve(mediaDevices);
+DEFINE_TRACE(MediaDevicesRequest) {
+  visitor->trace(m_controller);
+  visitor->trace(m_resolver);
+  ActiveDOMObject::trace(visitor);
 }
 
-void MediaDevicesRequest::stop()
-{
-    m_controller.clear();
-    m_resolver.clear();
-}
-
-DEFINE_TRACE(MediaDevicesRequest)
-{
-    visitor->trace(m_controller);
-    visitor->trace(m_resolver);
-    ActiveDOMObject::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

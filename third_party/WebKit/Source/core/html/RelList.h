@@ -13,34 +13,35 @@
 namespace blink {
 
 class RelList final : public DOMTokenList {
-public:
-    static RelList* create(Element* element)
-    {
-        return new RelList(element);
-    }
+ public:
+  static RelList* create(Element* element) { return new RelList(element); }
 
-    unsigned length() const override;
-    const AtomicString item(unsigned index) const override;
+  unsigned length() const override;
+  const AtomicString item(unsigned index) const override;
 
-    Element* element() override { return m_element; }
-    void setRelValues(const AtomicString&);
+  Element* element() override { return m_element; }
+  void setRelValues(const AtomicString&);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit RelList(Element*);
+ private:
+  explicit RelList(Element*);
 
-    bool containsInternal(const AtomicString&) const override;
+  bool containsInternal(const AtomicString&) const override;
 
-    const AtomicString& value() const override { return m_element->getAttribute(HTMLNames::relAttr); }
-    void setValue(const AtomicString& value) override { m_element->setAttribute(HTMLNames::relAttr, value); }
+  const AtomicString& value() const override {
+    return m_element->getAttribute(HTMLNames::relAttr);
+  }
+  void setValue(const AtomicString& value) override {
+    m_element->setAttribute(HTMLNames::relAttr, value);
+  }
 
-    bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
+  bool validateTokenValue(const AtomicString&, ExceptionState&) const override;
 
-    Member<Element> m_element;
-    SpaceSplitString m_relValues;
+  Member<Element> m_element;
+  SpaceSplitString m_relValues;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RelList_h
+#endif  // RelList_h

@@ -29,58 +29,71 @@
 namespace blink {
 
 enum CompositeOperationType {
-    FECOMPOSITE_OPERATOR_UNKNOWN    = 0,
-    FECOMPOSITE_OPERATOR_OVER       = 1,
-    FECOMPOSITE_OPERATOR_IN         = 2,
-    FECOMPOSITE_OPERATOR_OUT        = 3,
-    FECOMPOSITE_OPERATOR_ATOP       = 4,
-    FECOMPOSITE_OPERATOR_XOR        = 5,
-    FECOMPOSITE_OPERATOR_ARITHMETIC = 6,
-    FECOMPOSITE_OPERATOR_LIGHTER    = 7
+  FECOMPOSITE_OPERATOR_UNKNOWN = 0,
+  FECOMPOSITE_OPERATOR_OVER = 1,
+  FECOMPOSITE_OPERATOR_IN = 2,
+  FECOMPOSITE_OPERATOR_OUT = 3,
+  FECOMPOSITE_OPERATOR_ATOP = 4,
+  FECOMPOSITE_OPERATOR_XOR = 5,
+  FECOMPOSITE_OPERATOR_ARITHMETIC = 6,
+  FECOMPOSITE_OPERATOR_LIGHTER = 7
 };
 
 class PLATFORM_EXPORT FEComposite final : public FilterEffect {
-public:
-    static FEComposite* create(Filter*, const CompositeOperationType&, float, float, float, float);
+ public:
+  static FEComposite* create(Filter*,
+                             const CompositeOperationType&,
+                             float,
+                             float,
+                             float,
+                             float);
 
-    CompositeOperationType operation() const;
-    bool setOperation(CompositeOperationType);
+  CompositeOperationType operation() const;
+  bool setOperation(CompositeOperationType);
 
-    float k1() const;
-    bool setK1(float);
+  float k1() const;
+  bool setK1(float);
 
-    float k2() const;
-    bool setK2(float);
+  float k2() const;
+  bool setK2(float);
 
-    float k3() const;
-    bool setK3(float);
+  float k3() const;
+  bool setK3(float);
 
-    float k4() const;
-    bool setK4(float);
+  float k4() const;
+  bool setK4(float);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-protected:
-    bool mayProduceInvalidPreMultipliedPixels() override { return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC; }
+ protected:
+  bool mayProduceInvalidPreMultipliedPixels() override {
+    return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC;
+  }
 
-private:
-    FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);
+ private:
+  FEComposite(Filter*,
+              const CompositeOperationType&,
+              float,
+              float,
+              float,
+              float);
 
-    FloatRect mapInputs(const FloatRect&) const override;
+  FloatRect mapInputs(const FloatRect&) const override;
 
-    bool affectsTransparentPixels() const override;
+  bool affectsTransparentPixels() const override;
 
-    sk_sp<SkImageFilter> createImageFilter() override;
-    sk_sp<SkImageFilter> createImageFilterWithoutValidation() override;
-    sk_sp<SkImageFilter> createImageFilterInternal(bool requiresPMColorValidation);
+  sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilterWithoutValidation() override;
+  sk_sp<SkImageFilter> createImageFilterInternal(
+      bool requiresPMColorValidation);
 
-    CompositeOperationType m_type;
-    float m_k1;
-    float m_k2;
-    float m_k3;
-    float m_k4;
+  CompositeOperationType m_type;
+  float m_k1;
+  float m_k2;
+  float m_k3;
+  float m_k4;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FEComposite_h
+#endif  // FEComposite_h

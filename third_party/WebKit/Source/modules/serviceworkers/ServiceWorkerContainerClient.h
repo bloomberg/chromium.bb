@@ -19,34 +19,38 @@ class WebServiceWorkerProvider;
 // This mainly exists to provide access to WebServiceWorkerProvider.
 // Owned by Document (or WorkerClients).
 class MODULES_EXPORT ServiceWorkerContainerClient final
-    : public GarbageCollectedFinalized<ServiceWorkerContainerClient>
-    , public Supplement<Document>
-    , public Supplement<WorkerClients> {
-    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
-    WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
-public:
-    static ServiceWorkerContainerClient* create(std::unique_ptr<WebServiceWorkerProvider>);
-    virtual ~ServiceWorkerContainerClient();
+    : public GarbageCollectedFinalized<ServiceWorkerContainerClient>,
+      public Supplement<Document>,
+      public Supplement<WorkerClients> {
+  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
+  WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 
-    WebServiceWorkerProvider* provider() { return m_provider.get(); }
+ public:
+  static ServiceWorkerContainerClient* create(
+      std::unique_ptr<WebServiceWorkerProvider>);
+  virtual ~ServiceWorkerContainerClient();
 
-    static const char* supplementName();
-    static ServiceWorkerContainerClient* from(ExecutionContext*);
+  WebServiceWorkerProvider* provider() { return m_provider.get(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        Supplement<Document>::trace(visitor);
-        Supplement<WorkerClients>::trace(visitor);
-    }
+  static const char* supplementName();
+  static ServiceWorkerContainerClient* from(ExecutionContext*);
 
-protected:
-    explicit ServiceWorkerContainerClient(std::unique_ptr<WebServiceWorkerProvider>);
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    Supplement<Document>::trace(visitor);
+    Supplement<WorkerClients>::trace(visitor);
+  }
 
-    std::unique_ptr<WebServiceWorkerProvider> m_provider;
+ protected:
+  explicit ServiceWorkerContainerClient(
+      std::unique_ptr<WebServiceWorkerProvider>);
+
+  std::unique_ptr<WebServiceWorkerProvider> m_provider;
 };
 
-MODULES_EXPORT void provideServiceWorkerContainerClientToWorker(WorkerClients*, std::unique_ptr<WebServiceWorkerProvider>);
+MODULES_EXPORT void provideServiceWorkerContainerClientToWorker(
+    WorkerClients*,
+    std::unique_ptr<WebServiceWorkerProvider>);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerContainerClient_h
+#endif  // ServiceWorkerContainerClient_h

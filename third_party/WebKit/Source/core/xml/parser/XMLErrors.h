@@ -38,28 +38,34 @@ namespace blink {
 class Document;
 
 class XMLErrors {
-    DISALLOW_NEW();
-public:
-    explicit XMLErrors(Document*);
-    DECLARE_TRACE();
+  DISALLOW_NEW();
 
-    // Exposed for callbacks:
-    enum ErrorType { ErrorTypeWarning, ErrorTypeNonFatal, ErrorTypeFatal };
-    void handleError(ErrorType, const char* message, int lineNumber, int columnNumber);
-    void handleError(ErrorType, const char* message, TextPosition);
+ public:
+  explicit XMLErrors(Document*);
+  DECLARE_TRACE();
 
-    void insertErrorMessageBlock();
+  // Exposed for callbacks:
+  enum ErrorType { ErrorTypeWarning, ErrorTypeNonFatal, ErrorTypeFatal };
+  void handleError(ErrorType,
+                   const char* message,
+                   int lineNumber,
+                   int columnNumber);
+  void handleError(ErrorType, const char* message, TextPosition);
 
-private:
-    void appendErrorMessage(const String& typeString, TextPosition, const char* message);
+  void insertErrorMessageBlock();
 
-    Member<Document> m_document;
+ private:
+  void appendErrorMessage(const String& typeString,
+                          TextPosition,
+                          const char* message);
 
-    int m_errorCount;
-    TextPosition m_lastErrorPosition;
-    StringBuilder m_errorMessages;
+  Member<Document> m_document;
+
+  int m_errorCount;
+  TextPosition m_lastErrorPosition;
+  StringBuilder m_errorMessages;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XMLErrors_h
+#endif  // XMLErrors_h

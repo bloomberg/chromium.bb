@@ -52,88 +52,81 @@ class WebBlobInfo;
 // and avoids the need for many dedicated union types.
 
 class MODULES_EXPORT IDBAny : public GarbageCollectedFinalized<IDBAny> {
-public:
-    static IDBAny* createUndefined();
-    static IDBAny* createNull();
-    template<typename T>
-    static IDBAny* create(T* idbObject)
-    {
-        return new IDBAny(idbObject);
-    }
-    static IDBAny* create(DOMStringList* domStringList)
-    {
-        return new IDBAny(domStringList);
-    }
-    static IDBAny* create(int64_t value)
-    {
-        return new IDBAny(value);
-    }
-    static IDBAny* create(PassRefPtr<IDBValue> value)
-    {
-        return new IDBAny(std::move(value));
-    }
-    static IDBAny* create(const Vector<RefPtr<IDBValue>>& values)
-    {
-        return new IDBAny(values);
-    }
-    ~IDBAny();
-    DECLARE_TRACE();
-    void contextWillBeDestroyed();
+ public:
+  static IDBAny* createUndefined();
+  static IDBAny* createNull();
+  template <typename T>
+  static IDBAny* create(T* idbObject) {
+    return new IDBAny(idbObject);
+  }
+  static IDBAny* create(DOMStringList* domStringList) {
+    return new IDBAny(domStringList);
+  }
+  static IDBAny* create(int64_t value) { return new IDBAny(value); }
+  static IDBAny* create(PassRefPtr<IDBValue> value) {
+    return new IDBAny(std::move(value));
+  }
+  static IDBAny* create(const Vector<RefPtr<IDBValue>>& values) {
+    return new IDBAny(values);
+  }
+  ~IDBAny();
+  DECLARE_TRACE();
+  void contextWillBeDestroyed();
 
-    enum Type {
-        UndefinedType = 0,
-        NullType,
-        DOMStringListType,
-        IDBCursorType,
-        IDBCursorWithValueType,
-        IDBDatabaseType,
-        IDBIndexType,
-        IDBObjectStoreType,
-        IntegerType,
-        KeyType,
-        IDBValueType,
-        IDBValueArrayType
-    };
+  enum Type {
+    UndefinedType = 0,
+    NullType,
+    DOMStringListType,
+    IDBCursorType,
+    IDBCursorWithValueType,
+    IDBDatabaseType,
+    IDBIndexType,
+    IDBObjectStoreType,
+    IntegerType,
+    KeyType,
+    IDBValueType,
+    IDBValueArrayType
+  };
 
-    Type getType() const { return m_type; }
-    // Use type() to figure out which one of these you're allowed to call.
-    DOMStringList* domStringList() const;
-    IDBCursor* idbCursor() const;
-    IDBCursorWithValue* idbCursorWithValue() const;
-    IDBDatabase* idbDatabase() const;
-    IDBIndex* idbIndex() const;
-    IDBObjectStore* idbObjectStore() const;
-    IDBValue* value() const;
-    const Vector<RefPtr<IDBValue>>* values() const;
-    int64_t integer() const;
-    const IDBKey* key() const;
+  Type getType() const { return m_type; }
+  // Use type() to figure out which one of these you're allowed to call.
+  DOMStringList* domStringList() const;
+  IDBCursor* idbCursor() const;
+  IDBCursorWithValue* idbCursorWithValue() const;
+  IDBDatabase* idbDatabase() const;
+  IDBIndex* idbIndex() const;
+  IDBObjectStore* idbObjectStore() const;
+  IDBValue* value() const;
+  const Vector<RefPtr<IDBValue>>* values() const;
+  int64_t integer() const;
+  const IDBKey* key() const;
 
-private:
-    explicit IDBAny(Type);
-    explicit IDBAny(DOMStringList*);
-    explicit IDBAny(IDBCursor*);
-    explicit IDBAny(IDBDatabase*);
-    explicit IDBAny(IDBIndex*);
-    explicit IDBAny(IDBObjectStore*);
-    explicit IDBAny(IDBKey*);
-    explicit IDBAny(const Vector<RefPtr<IDBValue>>&);
-    explicit IDBAny(PassRefPtr<IDBValue>);
-    explicit IDBAny(int64_t);
+ private:
+  explicit IDBAny(Type);
+  explicit IDBAny(DOMStringList*);
+  explicit IDBAny(IDBCursor*);
+  explicit IDBAny(IDBDatabase*);
+  explicit IDBAny(IDBIndex*);
+  explicit IDBAny(IDBObjectStore*);
+  explicit IDBAny(IDBKey*);
+  explicit IDBAny(const Vector<RefPtr<IDBValue>>&);
+  explicit IDBAny(PassRefPtr<IDBValue>);
+  explicit IDBAny(int64_t);
 
-    const Type m_type;
+  const Type m_type;
 
-    // Only one of the following should ever be in use at any given time.
-    const Member<DOMStringList> m_domStringList;
-    const Member<IDBCursor> m_idbCursor;
-    const Member<IDBDatabase> m_idbDatabase;
-    const Member<IDBIndex> m_idbIndex;
-    const Member<IDBObjectStore> m_idbObjectStore;
-    const Member<IDBKey> m_idbKey;
-    const RefPtr<IDBValue> m_idbValue;
-    const Vector<RefPtr<IDBValue>> m_idbValues;
-    const int64_t m_integer = 0;
+  // Only one of the following should ever be in use at any given time.
+  const Member<DOMStringList> m_domStringList;
+  const Member<IDBCursor> m_idbCursor;
+  const Member<IDBDatabase> m_idbDatabase;
+  const Member<IDBIndex> m_idbIndex;
+  const Member<IDBObjectStore> m_idbObjectStore;
+  const Member<IDBKey> m_idbKey;
+  const RefPtr<IDBValue> m_idbValue;
+  const Vector<RefPtr<IDBValue>> m_idbValues;
+  const int64_t m_integer = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBAny_h
+#endif  // IDBAny_h

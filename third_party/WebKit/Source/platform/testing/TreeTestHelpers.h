@@ -44,7 +44,7 @@ void initRandom(const int32_t seed);
 // produce undefined results.
 int32_t nextRandom(const int32_t maximumValue);
 
-} // namespace TreeTestHelpers
-} // namespace blink
+}  // namespace TreeTestHelpers
+}  // namespace blink
 
-#endif // TreeTestHelpers_h
+#endif  // TreeTestHelpers_h

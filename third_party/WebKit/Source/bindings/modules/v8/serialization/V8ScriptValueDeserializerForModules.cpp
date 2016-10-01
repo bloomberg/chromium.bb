@@ -10,29 +10,30 @@
 
 namespace blink {
 
-ScriptWrappable* V8ScriptValueDeserializerForModules::readDOMObject(SerializationTag tag)
-{
-    // Give the core/ implementation a chance to try first.
-    // If it didn't recognize the kind of wrapper, try the modules types.
-    if (ScriptWrappable* wrappable = V8ScriptValueDeserializer::readDOMObject(tag))
-        return wrappable;
+ScriptWrappable* V8ScriptValueDeserializerForModules::readDOMObject(
+    SerializationTag tag) {
+  // Give the core/ implementation a chance to try first.
+  // If it didn't recognize the kind of wrapper, try the modules types.
+  if (ScriptWrappable* wrappable =
+          V8ScriptValueDeserializer::readDOMObject(tag))
+    return wrappable;
 
-    switch (tag) {
+  switch (tag) {
     case RTCCertificateTag: {
-        String pemPrivateKey;
-        String pemCertificate;
-        if (!readUTF8String(&pemPrivateKey) || !readUTF8String(&pemCertificate))
-            return nullptr;
-        std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator(
-            Platform::current()->createRTCCertificateGenerator());
-        std::unique_ptr<WebRTCCertificate> certificate =
-            certificateGenerator->fromPEM(pemPrivateKey, pemCertificate);
-        return new RTCCertificate(std::move(certificate));
+      String pemPrivateKey;
+      String pemCertificate;
+      if (!readUTF8String(&pemPrivateKey) || !readUTF8String(&pemCertificate))
+        return nullptr;
+      std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator(
+          Platform::current()->createRTCCertificateGenerator());
+      std::unique_ptr<WebRTCCertificate> certificate =
+          certificateGenerator->fromPEM(pemPrivateKey, pemCertificate);
+      return new RTCCertificate(std::move(certificate));
     }
     default:
-        break;
-    }
-    return nullptr;
+      break;
+  }
+  return nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

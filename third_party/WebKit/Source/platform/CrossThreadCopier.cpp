@@ -39,73 +39,69 @@
 
 namespace blink {
 
-CrossThreadCopier<KURL>::Type CrossThreadCopier<KURL>::copy(const KURL& url)
-{
-    return url.copy();
+CrossThreadCopier<KURL>::Type CrossThreadCopier<KURL>::copy(const KURL& url) {
+  return url.copy();
 }
 
-CrossThreadCopier<String>::Type CrossThreadCopier<String>::copy(const String& str)
-{
-    return str.isolatedCopy();
+CrossThreadCopier<String>::Type CrossThreadCopier<String>::copy(
+    const String& str) {
+  return str.isolatedCopy();
 }
 
-CrossThreadCopier<ResourceError>::Type CrossThreadCopier<ResourceError>::copy(const ResourceError& error)
-{
-    return error.copy();
+CrossThreadCopier<ResourceError>::Type CrossThreadCopier<ResourceError>::copy(
+    const ResourceError& error) {
+  return error.copy();
 }
 
-CrossThreadCopier<ResourceRequest>::Type CrossThreadCopier<ResourceRequest>::copy(const ResourceRequest& request)
-{
-    return passed(request.copyData());
+CrossThreadCopier<ResourceRequest>::Type
+CrossThreadCopier<ResourceRequest>::copy(const ResourceRequest& request) {
+  return passed(request.copyData());
 }
 
-CrossThreadCopier<ResourceResponse>::Type CrossThreadCopier<ResourceResponse>::copy(const ResourceResponse& response)
-{
-    return passed(response.copyData());
+CrossThreadCopier<ResourceResponse>::Type
+CrossThreadCopier<ResourceResponse>::copy(const ResourceResponse& response) {
+  return passed(response.copyData());
 }
 
 // Test CrossThreadCopier using static_assert.
 
 // Verify that ThreadSafeRefCounted objects get handled correctly.
-class CopierThreadSafeRefCountedTest : public ThreadSafeRefCounted<CopierThreadSafeRefCountedTest> {
-};
+class CopierThreadSafeRefCountedTest
+    : public ThreadSafeRefCounted<CopierThreadSafeRefCountedTest> {};
 
 // Add a generic specialization which will let's us verify that no other template matches.
-template<typename T> struct CrossThreadCopierBase<T, false> {
-    typedef int Type;
+template <typename T>
+struct CrossThreadCopierBase<T, false> {
+  typedef int Type;
 };
 
-static_assert((std::is_same<
-    PassRefPtr<CopierThreadSafeRefCountedTest>,
-    CrossThreadCopier<PassRefPtr<CopierThreadSafeRefCountedTest>>::Type
-    >::value),
+static_assert(
+    (std::is_same<PassRefPtr<CopierThreadSafeRefCountedTest>,
+                  CrossThreadCopier<PassRefPtr<
+                      CopierThreadSafeRefCountedTest>>::Type>::value),
     "PassRefPtr + ThreadSafeRefCounted should pass CrossThreadCopier");
-static_assert((std::is_same<
-    RefPtr<CopierThreadSafeRefCountedTest>,
-    CrossThreadCopier<RefPtr<CopierThreadSafeRefCountedTest>>::Type
-    >::value),
+static_assert(
+    (std::is_same<RefPtr<CopierThreadSafeRefCountedTest>,
+                  CrossThreadCopier<
+                      RefPtr<CopierThreadSafeRefCountedTest>>::Type>::value),
     "RefPtr + ThreadSafeRefCounted should pass CrossThreadCopier");
-static_assert((std::is_same<
-    int,
-    CrossThreadCopier<CopierThreadSafeRefCountedTest*>::Type
-    >::value),
+static_assert(
+    (std::is_same<
+        int,
+        CrossThreadCopier<CopierThreadSafeRefCountedTest*>::Type>::value),
     "Raw pointer + ThreadSafeRefCounted should NOT pass CrossThreadCopier");
 
 // Verify that RefCounted objects only match our generic template which exposes Type as int.
-class CopierRefCountedTest : public RefCounted<CopierRefCountedTest> {
-};
+class CopierRefCountedTest : public RefCounted<CopierRefCountedTest> {};
 
-static_assert((std::is_same<
-    int,
-    CrossThreadCopier<CopierRefCountedTest*>::Type
-    >::value),
+static_assert(
+    (std::is_same<int, CrossThreadCopier<CopierRefCountedTest*>::Type>::value),
     "Raw pointer + RefCounted should NOT pass CrossThreadCopier");
 
 // Verify that std::unique_ptr gets passed through.
-static_assert((std::is_same<
-    std::unique_ptr<float>,
-    CrossThreadCopier<std::unique_ptr<float>>::Type
-    >::value),
+static_assert(
+    (std::is_same<std::unique_ptr<float>,
+                  CrossThreadCopier<std::unique_ptr<float>>::Type>::value),
     "std::unique_ptr test");
 
-} // namespace blink
+}  // namespace blink

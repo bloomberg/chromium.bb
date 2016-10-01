@@ -47,38 +47,37 @@ class RawData;
 // A container for raw bytes. It is inexpensive to copy a WebThreadSafeData object.
 // It is safe to pass a WebThreadSafeData across threads!!!
 class WebThreadSafeData {
-public:
-    WebThreadSafeData() { }
-    BLINK_PLATFORM_EXPORT WebThreadSafeData(const char* data, size_t length);
+ public:
+  WebThreadSafeData() {}
+  BLINK_PLATFORM_EXPORT WebThreadSafeData(const char* data, size_t length);
 
-    ~WebThreadSafeData() { reset(); }
+  ~WebThreadSafeData() { reset(); }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebThreadSafeData&);
-    BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebThreadSafeData&);
+  BLINK_PLATFORM_EXPORT void reset();
 
-    BLINK_PLATFORM_EXPORT size_t size() const;
-    BLINK_PLATFORM_EXPORT const char* data() const;
+  BLINK_PLATFORM_EXPORT size_t size() const;
+  BLINK_PLATFORM_EXPORT const char* data() const;
 
-    bool isEmpty() const { return !size(); }
+  bool isEmpty() const { return !size(); }
 
-    BLINK_PLATFORM_EXPORT WebThreadSafeData(const WebThreadSafeData&);
-    BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(const WebThreadSafeData&);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData(const WebThreadSafeData&);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(const WebThreadSafeData&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebThreadSafeData(WTF::PassRefPtr<RawData>);
-    BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(WTF::PassRefPtr<RawData>);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData(WTF::PassRefPtr<RawData>);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(WTF::PassRefPtr<RawData>);
 #else
-    operator std::string() const
-    {
-        size_t len = size();
-        return len ? std::string(data(), len) : std::string();
-    }
+  operator std::string() const {
+    size_t len = size();
+    return len ? std::string(data(), len) : std::string();
+  }
 #endif
 
-private:
-    WebPrivatePtr<RawData> m_private;
+ private:
+  WebPrivatePtr<RawData> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

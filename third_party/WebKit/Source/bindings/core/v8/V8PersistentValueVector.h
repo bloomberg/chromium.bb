@@ -39,42 +39,37 @@
 namespace blink {
 
 class WTFVectorPersistentValueVectorTraits {
-    STATIC_ONLY(WTFVectorPersistentValueVectorTraits);
-public:
-    typedef Vector<v8::PersistentContainerValue> Impl;
-    static void Append(Impl* impl, v8::PersistentContainerValue value)
-    {
-        impl->append(value);
-    }
-    static bool IsEmpty(const Impl* impl)
-    {
-        return impl->isEmpty();
-    }
-    static size_t Size(const Impl* impl)
-    {
-        return impl->size();
-    }
-    static v8::PersistentContainerValue Get(const Impl* impl, size_t i)
-    {
-        return (i < impl->size()) ? impl->at(i) : v8::kPersistentContainerNotFound;
-    }
-    static void ReserveCapacity(Impl* impl, size_t capacity)
-    {
-        impl->reserveCapacity(capacity);
-    }
-    static void Clear(Impl* impl)
-    {
-        impl->clear();
-    }
+  STATIC_ONLY(WTFVectorPersistentValueVectorTraits);
+
+ public:
+  typedef Vector<v8::PersistentContainerValue> Impl;
+  static void Append(Impl* impl, v8::PersistentContainerValue value) {
+    impl->append(value);
+  }
+  static bool IsEmpty(const Impl* impl) { return impl->isEmpty(); }
+  static size_t Size(const Impl* impl) { return impl->size(); }
+  static v8::PersistentContainerValue Get(const Impl* impl, size_t i) {
+    return (i < impl->size()) ? impl->at(i) : v8::kPersistentContainerNotFound;
+  }
+  static void ReserveCapacity(Impl* impl, size_t capacity) {
+    impl->reserveCapacity(capacity);
+  }
+  static void Clear(Impl* impl) { impl->clear(); }
 };
 
-template<class ValueType>
-class V8PersistentValueVector : public v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits> {
-    DISALLOW_NEW();
-public:
-    explicit V8PersistentValueVector(v8::Isolate* isolate) : v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits>(isolate) { }
+template <class ValueType>
+class V8PersistentValueVector
+    : public v8::PersistentValueVector<ValueType,
+                                       WTFVectorPersistentValueVectorTraits> {
+  DISALLOW_NEW();
+
+ public:
+  explicit V8PersistentValueVector(v8::Isolate* isolate)
+      : v8::PersistentValueVector<ValueType,
+                                  WTFVectorPersistentValueVectorTraits>(
+            isolate) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8PersistentValueVector_h
+#endif  // V8PersistentValueVector_h

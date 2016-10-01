@@ -9,13 +9,12 @@
 
 namespace blink {
 
-TEST(IntRectTest, ToString)
-{
-    IntRect emptyRect = IntRect();
-    EXPECT_EQ("0,0 0x0", emptyRect.toString());
+TEST(IntRectTest, ToString) {
+  IntRect emptyRect = IntRect();
+  EXPECT_EQ("0,0 0x0", emptyRect.toString());
 
-    IntRect rect(1, 2, 3, 4);
-    EXPECT_EQ("1,2 3x4", rect.toString());
+  IntRect rect(1, 2, 3, 4);
+  EXPECT_EQ("1,2 3x4", rect.toString());
 }
 
-} // namespace blink
+}  // namespace blink

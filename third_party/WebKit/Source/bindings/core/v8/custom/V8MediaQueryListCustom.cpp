@@ -32,16 +32,20 @@
 
 namespace blink {
 
-void V8MediaQueryList::addListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, MediaQueryList* impl)
-{
-    if (info.Length() >= 1 && info[0]->IsObject() && !impl->toNode())
-        addHiddenValueToArray(info.GetIsolate(), info.Holder(), info[0], V8EventTarget::eventListenerCacheIndex);
+void V8MediaQueryList::addListenerMethodEpilogueCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    MediaQueryList* impl) {
+  if (info.Length() >= 1 && info[0]->IsObject() && !impl->toNode())
+    addHiddenValueToArray(info.GetIsolate(), info.Holder(), info[0],
+                          V8EventTarget::eventListenerCacheIndex);
 }
 
-void V8MediaQueryList::removeListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, MediaQueryList* impl)
-{
-    if (info.Length() >= 1 && info[0]->IsObject() && !impl->toNode())
-        removeHiddenValueFromArray(info.GetIsolate(), info.Holder(), info[0], V8EventTarget::eventListenerCacheIndex);
+void V8MediaQueryList::removeListenerMethodEpilogueCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info,
+    MediaQueryList* impl) {
+  if (info.Length() >= 1 && info[0]->IsObject() && !impl->toNode())
+    removeHiddenValueFromArray(info.GetIsolate(), info.Holder(), info[0],
+                               V8EventTarget::eventListenerCacheIndex);
 }
 
-} // namespace blink
+}  // namespace blink

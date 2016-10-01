@@ -17,55 +17,67 @@ class IntRect;
 class LayoutRect;
 
 class PLATFORM_EXPORT DoubleRect {
-    STACK_ALLOCATED();
-public:
-    DoubleRect() { }
-    DoubleRect(const DoublePoint& location, const DoubleSize& size)
-        : m_location(location), m_size(size) { }
-    DoubleRect(double x, double y, double width, double height)
-        : m_location(DoublePoint(x, y)), m_size(DoubleSize(width, height)) { }
-    DoubleRect(const IntRect&);
-    DoubleRect(const FloatRect&);
-    DoubleRect(const LayoutRect&);
+  STACK_ALLOCATED();
 
-    DoublePoint location() const { return m_location; }
-    DoubleSize size() const { return m_size; }
+ public:
+  DoubleRect() {}
+  DoubleRect(const DoublePoint& location, const DoubleSize& size)
+      : m_location(location), m_size(size) {}
+  DoubleRect(double x, double y, double width, double height)
+      : m_location(DoublePoint(x, y)), m_size(DoubleSize(width, height)) {}
+  DoubleRect(const IntRect&);
+  DoubleRect(const FloatRect&);
+  DoubleRect(const LayoutRect&);
 
-    void setLocation(const DoublePoint& location) { m_location = location; }
-    void setSize(const DoubleSize& size) { m_size = size; }
+  DoublePoint location() const { return m_location; }
+  DoubleSize size() const { return m_size; }
 
-    double x() const { return m_location.x(); }
-    double y() const { return m_location.y(); }
-    double maxX() const { return x() + width(); }
-    double maxY() const { return y() + height(); }
-    double width() const { return m_size.width(); }
-    double height() const { return m_size.height(); }
+  void setLocation(const DoublePoint& location) { m_location = location; }
+  void setSize(const DoubleSize& size) { m_size = size; }
 
-    void setX(double x) { m_location.setX(x); }
-    void setY(double y) { m_location.setY(y); }
-    void setWidth(double width) { m_size.setWidth(width); }
-    void setHeight(double height) { m_size.setHeight(height); }
+  double x() const { return m_location.x(); }
+  double y() const { return m_location.y(); }
+  double maxX() const { return x() + width(); }
+  double maxY() const { return y() + height(); }
+  double width() const { return m_size.width(); }
+  double height() const { return m_size.height(); }
 
-    bool isEmpty() const { return m_size.isEmpty(); }
-    bool isZero() const { return m_size.isZero(); }
+  void setX(double x) { m_location.setX(x); }
+  void setY(double y) { m_location.setY(y); }
+  void setWidth(double width) { m_size.setWidth(width); }
+  void setHeight(double height) { m_size.setHeight(height); }
 
-    void move(const DoubleSize& delta) { m_location += delta; }
-    void move(double dx, double dy) { m_location.move(dx, dy); }
-    void moveBy(const DoublePoint& delta) { m_location.move(delta.x(), delta.y()); }
+  bool isEmpty() const { return m_size.isEmpty(); }
+  bool isZero() const { return m_size.isZero(); }
 
-    DoublePoint minXMinYCorner() const { return m_location; } // typically topLeft
-    DoublePoint maxXMinYCorner() const { return DoublePoint(m_location.x() + m_size.width(), m_location.y()); } // typically topRight
-    DoublePoint minXMaxYCorner() const { return DoublePoint(m_location.x(), m_location.y() + m_size.height()); } // typically bottomLeft
-    DoublePoint maxXMaxYCorner() const { return DoublePoint(m_location.x() + m_size.width(), m_location.y() + m_size.height()); } // typically bottomRight
+  void move(const DoubleSize& delta) { m_location += delta; }
+  void move(double dx, double dy) { m_location.move(dx, dy); }
+  void moveBy(const DoublePoint& delta) {
+    m_location.move(delta.x(), delta.y());
+  }
 
-    void scale(float s) { scale(s, s); }
-    void scale(float sx, float sy);
+  DoublePoint minXMinYCorner() const {
+    return m_location;
+  }  // typically topLeft
+  DoublePoint maxXMinYCorner() const {
+    return DoublePoint(m_location.x() + m_size.width(), m_location.y());
+  }  // typically topRight
+  DoublePoint minXMaxYCorner() const {
+    return DoublePoint(m_location.x(), m_location.y() + m_size.height());
+  }  // typically bottomLeft
+  DoublePoint maxXMaxYCorner() const {
+    return DoublePoint(m_location.x() + m_size.width(),
+                       m_location.y() + m_size.height());
+  }  // typically bottomRight
 
-    String toString() const;
+  void scale(float s) { scale(s, s); }
+  void scale(float sx, float sy);
 
-private:
-    DoublePoint m_location;
-    DoubleSize m_size;
+  String toString() const;
+
+ private:
+  DoublePoint m_location;
+  DoubleSize m_size;
 };
 
 PLATFORM_EXPORT IntRect enclosingIntRect(const DoubleRect&);
@@ -79,6 +91,6 @@ PLATFORM_EXPORT IntRect roundedIntRect(const DoubleRect&);
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const DoubleRect&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

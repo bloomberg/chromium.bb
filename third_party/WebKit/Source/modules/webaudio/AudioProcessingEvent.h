@@ -35,30 +35,35 @@ namespace blink {
 class AudioBuffer;
 
 class AudioProcessingEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static AudioProcessingEvent* create();
-    static AudioProcessingEvent* create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~AudioProcessingEvent() override;
+ public:
+  static AudioProcessingEvent* create();
+  static AudioProcessingEvent* create(AudioBuffer* inputBuffer,
+                                      AudioBuffer* outputBuffer,
+                                      double playbackTime);
 
-    AudioBuffer* inputBuffer() { return m_inputBuffer.get(); }
-    AudioBuffer* outputBuffer() { return m_outputBuffer.get(); }
-    double playbackTime() const { return m_playbackTime; }
+  ~AudioProcessingEvent() override;
 
-    const AtomicString& interfaceName() const override;
+  AudioBuffer* inputBuffer() { return m_inputBuffer.get(); }
+  AudioBuffer* outputBuffer() { return m_outputBuffer.get(); }
+  double playbackTime() const { return m_playbackTime; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    AudioProcessingEvent();
-    AudioProcessingEvent(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<AudioBuffer> m_inputBuffer;
-    Member<AudioBuffer> m_outputBuffer;
-    double m_playbackTime;
+ private:
+  AudioProcessingEvent();
+  AudioProcessingEvent(AudioBuffer* inputBuffer,
+                       AudioBuffer* outputBuffer,
+                       double playbackTime);
+
+  Member<AudioBuffer> m_inputBuffer;
+  Member<AudioBuffer> m_outputBuffer;
+  double m_playbackTime;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioProcessingEvent_h
+#endif  // AudioProcessingEvent_h

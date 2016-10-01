@@ -8,21 +8,22 @@
 
 namespace blink {
 
-CustomElementAttributeChangedCallbackReaction::CustomElementAttributeChangedCallbackReaction(
-    CustomElementDefinition* definition,
-    const QualifiedName& name,
-    const AtomicString& oldValue, const AtomicString& newValue)
-    : CustomElementReaction(definition)
-    , m_name(name)
-    , m_oldValue(oldValue)
-    , m_newValue(newValue)
-{
-    DCHECK(definition->hasAttributeChangedCallback(name));
+CustomElementAttributeChangedCallbackReaction::
+    CustomElementAttributeChangedCallbackReaction(
+        CustomElementDefinition* definition,
+        const QualifiedName& name,
+        const AtomicString& oldValue,
+        const AtomicString& newValue)
+    : CustomElementReaction(definition),
+      m_name(name),
+      m_oldValue(oldValue),
+      m_newValue(newValue) {
+  DCHECK(definition->hasAttributeChangedCallback(name));
 }
 
-void CustomElementAttributeChangedCallbackReaction::invoke(Element* element)
-{
-    m_definition->runAttributeChangedCallback(element, m_name, m_oldValue, m_newValue);
+void CustomElementAttributeChangedCallbackReaction::invoke(Element* element) {
+  m_definition->runAttributeChangedCallback(element, m_name, m_oldValue,
+                                            m_newValue);
 }
 
-} // namespace blink
+}  // namespace blink

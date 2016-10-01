@@ -12,39 +12,35 @@
 namespace blink {
 
 struct WebFrameOwnerProperties {
-    enum class ScrollingMode {
-        Auto,
-        AlwaysOff,
-        AlwaysOn,
-        Last = AlwaysOn
-    };
+  enum class ScrollingMode { Auto, AlwaysOff, AlwaysOn, Last = AlwaysOn };
 
-    ScrollingMode scrollingMode;
-    int marginWidth;
-    int marginHeight;
-    bool allowFullscreen;
-    WebVector<WebPermissionType> delegatedPermissions;
+  ScrollingMode scrollingMode;
+  int marginWidth;
+  int marginHeight;
+  bool allowFullscreen;
+  WebVector<WebPermissionType> delegatedPermissions;
 
-    WebFrameOwnerProperties()
-        : scrollingMode(ScrollingMode::Auto)
-        , marginWidth(-1)
-        , marginHeight(-1)
-        , allowFullscreen(false)
-    {
-    }
+  WebFrameOwnerProperties()
+      : scrollingMode(ScrollingMode::Auto),
+        marginWidth(-1),
+        marginHeight(-1),
+        allowFullscreen(false) {}
 
 #if INSIDE_BLINK
-    WebFrameOwnerProperties(ScrollbarMode scrollingMode, int marginWidth, int marginHeight, bool allowFullscreen, const WebVector<WebPermissionType>& delegatedPermissions)
-        : scrollingMode(static_cast<ScrollingMode>(scrollingMode))
-        , marginWidth(marginWidth)
-        , marginHeight(marginHeight)
-        , allowFullscreen(allowFullscreen)
-        , delegatedPermissions(delegatedPermissions)
-    {
-    }
+  WebFrameOwnerProperties(
+      ScrollbarMode scrollingMode,
+      int marginWidth,
+      int marginHeight,
+      bool allowFullscreen,
+      const WebVector<WebPermissionType>& delegatedPermissions)
+      : scrollingMode(static_cast<ScrollingMode>(scrollingMode)),
+        marginWidth(marginWidth),
+        marginHeight(marginHeight),
+        allowFullscreen(allowFullscreen),
+        delegatedPermissions(delegatedPermissions) {}
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

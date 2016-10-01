@@ -12,66 +12,58 @@
 namespace blink {
 
 CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
-    : CSSImageGeneratorValue(PaintClass)
-    , m_name(name)
-    , m_paintImageGeneratorObserver(new Observer(this))
-{
+    : CSSImageGeneratorValue(PaintClass),
+      m_name(name),
+      m_paintImageGeneratorObserver(new Observer(this)) {}
+
+CSSPaintValue::~CSSPaintValue() {}
+
+String CSSPaintValue::customCSSText() const {
+  StringBuilder result;
+  result.append("paint(");
+  result.append(m_name->customCSSText());
+  result.append(')');
+  return result.toString();
 }
 
-CSSPaintValue::~CSSPaintValue()
-{
+String CSSPaintValue::name() const {
+  return m_name->value();
 }
 
-String CSSPaintValue::customCSSText() const
-{
-    StringBuilder result;
-    result.append("paint(");
-    result.append(m_name->customCSSText());
-    result.append(')');
-    return result.toString();
+PassRefPtr<Image> CSSPaintValue::image(const LayoutObject& layoutObject,
+                                       const IntSize& size,
+                                       float zoom) {
+  if (!m_generator)
+    m_generator = CSSPaintImageGenerator::create(
+        name(), layoutObject.document(), m_paintImageGeneratorObserver);
+
+  return m_generator->paint(layoutObject, size, zoom);
 }
 
-String CSSPaintValue::name() const
-{
-    return m_name->value();
+void CSSPaintValue::Observer::paintImageGeneratorReady() {
+  m_ownerValue->paintImageGeneratorReady();
 }
 
-PassRefPtr<Image> CSSPaintValue::image(const LayoutObject& layoutObject, const IntSize& size, float zoom)
-{
-    if (!m_generator)
-        m_generator = CSSPaintImageGenerator::create(name(), layoutObject.document(), m_paintImageGeneratorObserver);
-
-    return m_generator->paint(layoutObject, size, zoom);
+void CSSPaintValue::paintImageGeneratorReady() {
+  for (const LayoutObject* client : clients().keys()) {
+    const_cast<LayoutObject*>(client)->imageChanged(
+        static_cast<WrappedImagePtr>(this));
+  }
 }
 
-void CSSPaintValue::Observer::paintImageGeneratorReady()
-{
-    m_ownerValue->paintImageGeneratorReady();
+bool CSSPaintValue::knownToBeOpaque(const LayoutObject& layoutObject) const {
+  return m_generator && !m_generator->hasAlpha();
 }
 
-void CSSPaintValue::paintImageGeneratorReady()
-{
-    for (const LayoutObject* client : clients().keys()) {
-        const_cast<LayoutObject*>(client)->imageChanged(static_cast<WrappedImagePtr>(this));
-    }
+bool CSSPaintValue::equals(const CSSPaintValue& other) const {
+  return name() == other.name();
 }
 
-bool CSSPaintValue::knownToBeOpaque(const LayoutObject& layoutObject) const
-{
-    return m_generator && !m_generator->hasAlpha();
+DEFINE_TRACE_AFTER_DISPATCH(CSSPaintValue) {
+  visitor->trace(m_name);
+  visitor->trace(m_generator);
+  visitor->trace(m_paintImageGeneratorObserver);
+  CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 
-bool CSSPaintValue::equals(const CSSPaintValue& other) const
-{
-    return name() == other.name();
-}
-
-DEFINE_TRACE_AFTER_DISPATCH(CSSPaintValue)
-{
-    visitor->trace(m_name);
-    visitor->trace(m_generator);
-    visitor->trace(m_paintImageGeneratorObserver);
-    CSSImageGeneratorValue::traceAfterDispatch(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

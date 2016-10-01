@@ -31,57 +31,57 @@
 
 namespace blink {
 
-String DOMStringList::anonymousIndexedGetter(unsigned index) const
-{
-    if (index >= m_strings.size())
-        return String();
-    return m_strings[index];
+String DOMStringList::anonymousIndexedGetter(unsigned index) const {
+  if (index >= m_strings.size())
+    return String();
+  return m_strings[index];
 }
 
-
-String DOMStringList::item(ExecutionContext* context, unsigned index) const
-{
-    switch (m_source) {
+String DOMStringList::item(ExecutionContext* context, unsigned index) const {
+  switch (m_source) {
     case DOMStringList::IndexedDB:
-        UseCounter::count(context, UseCounter::DOMStringList_Item_AttributeGetter_IndexedDB);
-        break;
+      UseCounter::count(
+          context, UseCounter::DOMStringList_Item_AttributeGetter_IndexedDB);
+      break;
     case DOMStringList::Location:
-        UseCounter::count(context, UseCounter::DOMStringList_Item_AttributeGetter_Location);
-        break;
+      UseCounter::count(
+          context, UseCounter::DOMStringList_Item_AttributeGetter_Location);
+      break;
     default:
-        ASSERT_NOT_REACHED();
-    }
+      ASSERT_NOT_REACHED();
+  }
 
-    return anonymousIndexedGetter(index);
+  return anonymousIndexedGetter(index);
 }
 
-bool DOMStringList::contains(ExecutionContext* context, const String& string) const
-{
-    switch (m_source) {
+bool DOMStringList::contains(ExecutionContext* context,
+                             const String& string) const {
+  switch (m_source) {
     case DOMStringList::IndexedDB:
-        UseCounter::count(context, UseCounter::DOMStringList_Contains_Method_IndexedDB);
-        break;
+      UseCounter::count(context,
+                        UseCounter::DOMStringList_Contains_Method_IndexedDB);
+      break;
     case DOMStringList::Location:
-        UseCounter::count(context, UseCounter::DOMStringList_Contains_Method_Location);
-        break;
+      UseCounter::count(context,
+                        UseCounter::DOMStringList_Contains_Method_Location);
+      break;
     default:
-        ASSERT_NOT_REACHED();
-    }
+      ASSERT_NOT_REACHED();
+  }
 
-    // FIXME: Currently, all consumers of DOMStringList store fairly small lists and thus an O(n)
-    //        algorithm is OK.  But this may need to be optimized if larger amounts of data are
-    //        stored in m_strings.
-    size_t count = m_strings.size();
-    for (size_t i = 0; i < count; ++i) {
-        if (m_strings[i] == string)
-            return true;
-    }
-    return false;
+  // FIXME: Currently, all consumers of DOMStringList store fairly small lists and thus an O(n)
+  //        algorithm is OK.  But this may need to be optimized if larger amounts of data are
+  //        stored in m_strings.
+  size_t count = m_strings.size();
+  for (size_t i = 0; i < count; ++i) {
+    if (m_strings[i] == string)
+      return true;
+  }
+  return false;
 }
 
-void DOMStringList::sort()
-{
-    std::sort(m_strings.begin(), m_strings.end(), WTF::codePointCompareLessThan);
+void DOMStringList::sort() {
+  std::sort(m_strings.begin(), m_strings.end(), WTF::codePointCompareLessThan);
 }
 
-} // namespace blink
+}  // namespace blink

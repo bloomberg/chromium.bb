@@ -11,10 +11,11 @@
 // We can see logs with |--v=N| or |--vmodule=ResourceLoadingLog=N| where N is a
 // verbose level.
 #define RESOURCE_LOADING_DVLOG(verbose_level) \
-    LAZY_STREAM(VLOG_STREAM(verbose_level), \
-        ((verbose_level) <= ::logging::GetVlogLevel("ResourceLoadingLog.h")))
+  LAZY_STREAM(                                \
+      VLOG_STREAM(verbose_level),             \
+      ((verbose_level) <= ::logging::GetVlogLevel("ResourceLoadingLog.h")))
 #else
 #define RESOURCE_LOADING_DVLOG(verbose_level) EAT_STREAM_PARAMETERS
 #endif
 
-#endif // ResourceLoadingLog_h
+#endif  // ResourceLoadingLog_h

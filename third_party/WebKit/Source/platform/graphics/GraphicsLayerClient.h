@@ -37,53 +37,63 @@ class GraphicsLayer;
 class IntRect;
 
 enum GraphicsLayerPaintingPhaseFlags {
-    GraphicsLayerPaintBackground = (1 << 0),
-    GraphicsLayerPaintForeground = (1 << 1),
-    GraphicsLayerPaintMask = (1 << 2),
-    GraphicsLayerPaintOverflowContents = (1 << 3),
-    GraphicsLayerPaintCompositedScroll = (1 << 4),
-    GraphicsLayerPaintChildClippingMask = (1 << 5),
-    GraphicsLayerPaintAllWithOverflowClip = (GraphicsLayerPaintBackground | GraphicsLayerPaintForeground | GraphicsLayerPaintMask)
+  GraphicsLayerPaintBackground = (1 << 0),
+  GraphicsLayerPaintForeground = (1 << 1),
+  GraphicsLayerPaintMask = (1 << 2),
+  GraphicsLayerPaintOverflowContents = (1 << 3),
+  GraphicsLayerPaintCompositedScroll = (1 << 4),
+  GraphicsLayerPaintChildClippingMask = (1 << 5),
+  GraphicsLayerPaintAllWithOverflowClip =
+      (GraphicsLayerPaintBackground | GraphicsLayerPaintForeground |
+       GraphicsLayerPaintMask)
 };
 typedef unsigned GraphicsLayerPaintingPhase;
 
 enum {
-    LayerTreeNormal = 0,
-    LayerTreeIncludesDebugInfo = 1 << 0, // Dump extra debugging info like layer addresses.
-    LayerTreeIncludesPaintInvalidations = 1 << 1,
-    LayerTreeIncludesPaintingPhases = 1 << 2,
-    LayerTreeIncludesRootLayer = 1 << 3,
-    LayerTreeIncludesClipAndScrollParents = 1 << 4,
-    LayerTreeIncludesCompositingReasons = 1 << 5,
+  LayerTreeNormal = 0,
+  LayerTreeIncludesDebugInfo =
+      1 << 0,  // Dump extra debugging info like layer addresses.
+  LayerTreeIncludesPaintInvalidations = 1 << 1,
+  LayerTreeIncludesPaintingPhases = 1 << 2,
+  LayerTreeIncludesRootLayer = 1 << 3,
+  LayerTreeIncludesClipAndScrollParents = 1 << 4,
+  LayerTreeIncludesCompositingReasons = 1 << 5,
 };
 typedef unsigned LayerTreeFlags;
 
 class PLATFORM_EXPORT GraphicsLayerClient {
-public:
-    virtual ~GraphicsLayerClient() {}
+ public:
+  virtual ~GraphicsLayerClient() {}
 
-    virtual void notifyPaint(bool isFirstPaint, bool textPainted, bool imagePainted) { }
+  virtual void notifyPaint(bool isFirstPaint,
+                           bool textPainted,
+                           bool imagePainted) {}
 
-    virtual IntRect computeInterestRect(const GraphicsLayer*, const IntRect& previousInterestRect) const = 0;
-    virtual LayoutSize subpixelAccumulation() const { return LayoutSize(); }
-    // Returns whether the client needs to be repainted with respect to the given graphics layer.
-    virtual bool needsRepaint(const GraphicsLayer&) const = 0;
-    virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const = 0;
+  virtual IntRect computeInterestRect(
+      const GraphicsLayer*,
+      const IntRect& previousInterestRect) const = 0;
+  virtual LayoutSize subpixelAccumulation() const { return LayoutSize(); }
+  // Returns whether the client needs to be repainted with respect to the given graphics layer.
+  virtual bool needsRepaint(const GraphicsLayer&) const = 0;
+  virtual void paintContents(const GraphicsLayer*,
+                             GraphicsContext&,
+                             GraphicsLayerPaintingPhase,
+                             const IntRect& interestRect) const = 0;
 
-    virtual bool isTrackingPaintInvalidations() const { return false; }
+  virtual bool isTrackingPaintInvalidations() const { return false; }
 
-    virtual String debugName(const GraphicsLayer*) const = 0;
+  virtual String debugName(const GraphicsLayer*) const = 0;
 
 #if ENABLE(ASSERT)
-    // CompositedLayerMapping overrides this to verify that it is not
-    // currently painting contents. An ASSERT fails, if it is.
-    // This is executed in GraphicsLayer construction and destruction
-    // to verify that we don't create or destroy GraphicsLayers
-    // while painting.
-    virtual void verifyNotPainting() { }
+  // CompositedLayerMapping overrides this to verify that it is not
+  // currently painting contents. An ASSERT fails, if it is.
+  // This is executed in GraphicsLayer construction and destruction
+  // to verify that we don't create or destroy GraphicsLayers
+  // while painting.
+  virtual void verifyNotPainting() {}
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GraphicsLayerClient_h
+#endif  // GraphicsLayerClient_h

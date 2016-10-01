@@ -37,37 +37,41 @@
 namespace blink {
 
 class ClassCollection final : public HTMLCollection {
-public:
-    // classNames argument is an AtomicString because it is common for Elements to share the same class names.
-    // It is also used to construct a SpaceSplitString (m_classNames) and its constructor requires an AtomicString.
-    static ClassCollection* create(ContainerNode& rootNode, CollectionType type, const AtomicString& classNames)
-    {
-        ASSERT_UNUSED(type, type == ClassCollectionType);
-        return new ClassCollection(rootNode, classNames);
-    }
+ public:
+  // classNames argument is an AtomicString because it is common for Elements to share the same class names.
+  // It is also used to construct a SpaceSplitString (m_classNames) and its constructor requires an AtomicString.
+  static ClassCollection* create(ContainerNode& rootNode,
+                                 CollectionType type,
+                                 const AtomicString& classNames) {
+    ASSERT_UNUSED(type, type == ClassCollectionType);
+    return new ClassCollection(rootNode, classNames);
+  }
 
-    ~ClassCollection() override;
+  ~ClassCollection() override;
 
-    bool elementMatches(const Element&) const;
+  bool elementMatches(const Element&) const;
 
-private:
-    ClassCollection(ContainerNode& rootNode, const AtomicString& classNames);
+ private:
+  ClassCollection(ContainerNode& rootNode, const AtomicString& classNames);
 
-    SpaceSplitString m_classNames;
-    AtomicString m_originalClassNames;
+  SpaceSplitString m_classNames;
+  AtomicString m_originalClassNames;
 };
 
-DEFINE_TYPE_CASTS(ClassCollection, LiveNodeListBase, collection, collection->type() == ClassCollectionType, collection.type() == ClassCollectionType);
+DEFINE_TYPE_CASTS(ClassCollection,
+                  LiveNodeListBase,
+                  collection,
+                  collection->type() == ClassCollectionType,
+                  collection.type() == ClassCollectionType);
 
-inline bool ClassCollection::elementMatches(const Element& testElement) const
-{
-    if (!testElement.hasClass())
-        return false;
-    if (!m_classNames.size())
-        return false;
-    return testElement.classNames().containsAll(m_classNames);
+inline bool ClassCollection::elementMatches(const Element& testElement) const {
+  if (!testElement.hasClass())
+    return false;
+  if (!m_classNames.size())
+    return false;
+  return testElement.classNames().containsAll(m_classNames);
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClassCollection_h
+#endif  // ClassCollection_h

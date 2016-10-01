@@ -33,26 +33,29 @@
 namespace blink {
 
 class RTCDTMFToneChangeEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~RTCDTMFToneChangeEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static RTCDTMFToneChangeEvent* create(const String& tone);
-    static RTCDTMFToneChangeEvent* create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer);
+ public:
+  ~RTCDTMFToneChangeEvent() override;
 
-    const String& tone() const;
+  static RTCDTMFToneChangeEvent* create(const String& tone);
+  static RTCDTMFToneChangeEvent* create(
+      const AtomicString& type,
+      const RTCDTMFToneChangeEventInit& initializer);
 
-    const AtomicString& interfaceName() const override;
+  const String& tone() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    explicit RTCDTMFToneChangeEvent(const String& tone);
-    explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_tone;
+ private:
+  explicit RTCDTMFToneChangeEvent(const String& tone);
+  explicit RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit&);
+
+  String m_tone;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCDTMFToneChangeEvent_h
+#endif  // RTCDTMFToneChangeEvent_h

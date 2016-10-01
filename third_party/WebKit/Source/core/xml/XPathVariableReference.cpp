@@ -31,21 +31,17 @@
 namespace blink {
 namespace XPath {
 
-VariableReference::VariableReference(const String& name)
-    : m_name(name)
-{
+VariableReference::VariableReference(const String& name) : m_name(name) {}
+
+Value VariableReference::evaluate(EvaluationContext& context) const {
+  HashMap<String, String>& bindings = context.variableBindings;
+  if (!bindings.contains(m_name)) {
+    // FIXME: Is this the right thing to do if an unknown variable is
+    // referenced?
+    return "";
+  }
+  return bindings.get(m_name);
 }
 
-Value VariableReference::evaluate(EvaluationContext& context) const
-{
-    HashMap<String, String>& bindings = context.variableBindings;
-    if (!bindings.contains(m_name)) {
-        // FIXME: Is this the right thing to do if an unknown variable is
-        // referenced?
-        return "";
-    }
-    return bindings.get(m_name);
-}
-
-} // namespace XPath
-} // namespace blink
+}  // namespace XPath
+}  // namespace blink

@@ -41,34 +41,34 @@ struct TextCheckingResult;
 
 // A checked entry of text checking.
 struct WebTextCheckingResult {
-    WebTextCheckingResult()
-        : decoration(WebTextDecorationTypeSpelling)
-        , location(0)
-        , length(0)
-        , hash(0)
-    {
-    }
+  WebTextCheckingResult()
+      : decoration(WebTextDecorationTypeSpelling),
+        location(0),
+        length(0),
+        hash(0) {}
 
-    WebTextCheckingResult(WebTextDecorationType decoration, int location, int length, const WebString& replacement = WebString(), uint32_t hash = 0)
-        : decoration(decoration)
-        , location(location)
-        , length(length)
-        , replacement(replacement)
-        , hash(hash)
-    {
-    }
+  WebTextCheckingResult(WebTextDecorationType decoration,
+                        int location,
+                        int length,
+                        const WebString& replacement = WebString(),
+                        uint32_t hash = 0)
+      : decoration(decoration),
+        location(location),
+        length(length),
+        replacement(replacement),
+        hash(hash) {}
 
 #if BLINK_IMPLEMENTATION
-    operator TextCheckingResult() const;
+  operator TextCheckingResult() const;
 #endif
 
-    WebTextDecorationType decoration;
-    int location;
-    int length;
-    WebString replacement;
-    uint32_t hash;
+  WebTextDecorationType decoration;
+  int location;
+  int length;
+  WebString replacement;
+  uint32_t hash;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

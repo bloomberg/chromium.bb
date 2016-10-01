@@ -11,21 +11,31 @@
 namespace blink {
 
 class SVGTransformListInterpolationType : public SVGInterpolationType {
-public:
-    SVGTransformListInterpolationType(const QualifiedName& attribute)
-        : SVGInterpolationType(attribute)
-    { }
+ public:
+  SVGTransformListInterpolationType(const QualifiedName& attribute)
+      : SVGInterpolationType(attribute) {}
 
-private:
-    InterpolationValue maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
-    InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const final;
-    SVGPropertyBase* appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
+ private:
+  InterpolationValue maybeConvertNeutral(const InterpolationValue&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertSVGValue(
+      const SVGPropertyBase& svgValue) const final;
+  InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&,
+                                        const InterpolationEnvironment&,
+                                        const InterpolationValue& underlying,
+                                        ConversionCheckers&) const final;
+  SVGPropertyBase* appliedSVGValue(const InterpolableValue&,
+                                   const NonInterpolableValue*) const final;
 
-    PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const final;
-    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
+  PairwiseInterpolationValue maybeMergeSingles(
+      InterpolationValue&& start,
+      InterpolationValue&& end) const final;
+  void composite(UnderlyingValueOwner&,
+                 double underlyingFraction,
+                 const InterpolationValue&,
+                 double interpolationFraction) const final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGTransformListInterpolationType_h
+#endif  // SVGTransformListInterpolationType_h

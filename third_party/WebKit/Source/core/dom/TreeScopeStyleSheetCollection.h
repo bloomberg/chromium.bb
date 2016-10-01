@@ -45,56 +45,62 @@ class StyleSheetContents;
 class StyleRuleFontFace;
 
 class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
-public:
-    void addStyleSheetCandidateNode(Node&);
-    void removeStyleSheetCandidateNode(Node& node) { m_styleSheetCandidateNodes.remove(&node); }
-    bool hasStyleSheetCandidateNodes() const { return !m_styleSheetCandidateNodes.isEmpty(); }
+ public:
+  void addStyleSheetCandidateNode(Node&);
+  void removeStyleSheetCandidateNode(Node& node) {
+    m_styleSheetCandidateNodes.remove(&node);
+  }
+  bool hasStyleSheetCandidateNodes() const {
+    return !m_styleSheetCandidateNodes.isEmpty();
+  }
 
-    void clearMediaQueryRuleSetStyleSheets();
+  void clearMediaQueryRuleSetStyleSheets();
 
-    virtual bool isShadowTreeStyleSheetCollection() const { return false; }
+  virtual bool isShadowTreeStyleSheetCollection() const { return false; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    explicit TreeScopeStyleSheetCollection(TreeScope&);
+ protected:
+  explicit TreeScopeStyleSheetCollection(TreeScope&);
 
-    Document& document() const { return treeScope().document(); }
-    TreeScope& treeScope() const { return *m_treeScope; }
+  Document& document() const { return treeScope().document(); }
+  TreeScope& treeScope() const { return *m_treeScope; }
 
-    enum StyleResolverUpdateType {
-        Reconstruct,
-        Reset,
-        Additive
-    };
+  enum StyleResolverUpdateType { Reconstruct, Reset, Additive };
 
-    class StyleSheetChange {
-        STACK_ALLOCATED();
-    public:
-        StyleResolverUpdateType styleResolverUpdateType;
-        bool requiresFullStyleRecalc;
-        HeapVector<Member<const StyleRuleFontFace>> fontFaceRulesToRemove;
+  class StyleSheetChange {
+    STACK_ALLOCATED();
 
-        StyleSheetChange()
-            : styleResolverUpdateType(Reconstruct)
-            , requiresFullStyleRecalc(true) { }
-    };
+   public:
+    StyleResolverUpdateType styleResolverUpdateType;
+    bool requiresFullStyleRecalc;
+    HeapVector<Member<const StyleRuleFontFace>> fontFaceRulesToRemove;
 
-    void analyzeStyleSheetChange(StyleResolverUpdateMode, const HeapVector<Member<CSSStyleSheet>>&, StyleSheetChange&);
+    StyleSheetChange()
+        : styleResolverUpdateType(Reconstruct), requiresFullStyleRecalc(true) {}
+  };
 
-private:
-    static StyleResolverUpdateType compareStyleSheets(const HeapVector<Member<CSSStyleSheet>>& oldStyleSheets, const HeapVector<Member<CSSStyleSheet>>& newStylesheets, HeapVector<Member<StyleSheetContents>>& addedSheets);
-    bool activeLoadingStyleSheetLoaded(const HeapVector<Member<CSSStyleSheet>>& newStyleSheets);
+  void analyzeStyleSheetChange(StyleResolverUpdateMode,
+                               const HeapVector<Member<CSSStyleSheet>>&,
+                               StyleSheetChange&);
 
-    friend class TreeScopeStyleSheetCollectionTest;
+ private:
+  static StyleResolverUpdateType compareStyleSheets(
+      const HeapVector<Member<CSSStyleSheet>>& oldStyleSheets,
+      const HeapVector<Member<CSSStyleSheet>>& newStylesheets,
+      HeapVector<Member<StyleSheetContents>>& addedSheets);
+  bool activeLoadingStyleSheetLoaded(
+      const HeapVector<Member<CSSStyleSheet>>& newStyleSheets);
 
-protected:
-    Member<TreeScope> m_treeScope;
-    bool m_hadActiveLoadingStylesheet;
+  friend class TreeScopeStyleSheetCollectionTest;
 
-    DocumentOrderedList m_styleSheetCandidateNodes;
+ protected:
+  Member<TreeScope> m_treeScope;
+  bool m_hadActiveLoadingStylesheet;
+
+  DocumentOrderedList m_styleSheetCandidateNodes;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

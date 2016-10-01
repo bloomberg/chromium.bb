@@ -47,61 +47,67 @@ class ExecutionContext;
 class KURL;
 class WebSocketChannelClient;
 
-class MODULES_EXPORT WebSocketChannel : public GarbageCollectedFinalized<WebSocketChannel> {
-    WTF_MAKE_NONCOPYABLE(WebSocketChannel);
-public:
-    WebSocketChannel() { }
-    static WebSocketChannel* create(ExecutionContext*, WebSocketChannelClient*);
+class MODULES_EXPORT WebSocketChannel
+    : public GarbageCollectedFinalized<WebSocketChannel> {
+  WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 
-    enum CloseEventCode {
-        CloseEventCodeNotSpecified = -1,
-        CloseEventCodeNormalClosure = 1000,
-        CloseEventCodeGoingAway = 1001,
-        CloseEventCodeProtocolError = 1002,
-        CloseEventCodeUnsupportedData = 1003,
-        CloseEventCodeFrameTooLarge = 1004,
-        CloseEventCodeNoStatusRcvd = 1005,
-        CloseEventCodeAbnormalClosure = 1006,
-        CloseEventCodeInvalidFramePayloadData = 1007,
-        CloseEventCodePolicyViolation = 1008,
-        CloseEventCodeMessageTooBig = 1009,
-        CloseEventCodeMandatoryExt = 1010,
-        CloseEventCodeInternalError = 1011,
-        CloseEventCodeTLSHandshake = 1015,
-        CloseEventCodeMinimumUserDefined = 3000,
-        CloseEventCodeMaximumUserDefined = 4999
-    };
+ public:
+  WebSocketChannel() {}
+  static WebSocketChannel* create(ExecutionContext*, WebSocketChannelClient*);
 
-    virtual bool connect(const KURL&, const String& protocol) = 0;
-    virtual void send(const CString&) = 0;
-    virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) = 0;
-    virtual void send(PassRefPtr<BlobDataHandle>) = 0;
+  enum CloseEventCode {
+    CloseEventCodeNotSpecified = -1,
+    CloseEventCodeNormalClosure = 1000,
+    CloseEventCodeGoingAway = 1001,
+    CloseEventCodeProtocolError = 1002,
+    CloseEventCodeUnsupportedData = 1003,
+    CloseEventCodeFrameTooLarge = 1004,
+    CloseEventCodeNoStatusRcvd = 1005,
+    CloseEventCodeAbnormalClosure = 1006,
+    CloseEventCodeInvalidFramePayloadData = 1007,
+    CloseEventCodePolicyViolation = 1008,
+    CloseEventCodeMessageTooBig = 1009,
+    CloseEventCodeMandatoryExt = 1010,
+    CloseEventCodeInternalError = 1011,
+    CloseEventCodeTLSHandshake = 1015,
+    CloseEventCodeMinimumUserDefined = 3000,
+    CloseEventCodeMaximumUserDefined = 4999
+  };
 
-    // For WorkerWebSocketChannel.
-    virtual void sendTextAsCharVector(std::unique_ptr<Vector<char>>) = 0;
-    virtual void sendBinaryAsCharVector(std::unique_ptr<Vector<char>>) = 0;
+  virtual bool connect(const KURL&, const String& protocol) = 0;
+  virtual void send(const CString&) = 0;
+  virtual void send(const DOMArrayBuffer&,
+                    unsigned byteOffset,
+                    unsigned byteLength) = 0;
+  virtual void send(PassRefPtr<BlobDataHandle>) = 0;
 
-    // Do not call |send| after calling this method.
-    virtual void close(int code, const String& reason) = 0;
+  // For WorkerWebSocketChannel.
+  virtual void sendTextAsCharVector(std::unique_ptr<Vector<char>>) = 0;
+  virtual void sendBinaryAsCharVector(std::unique_ptr<Vector<char>>) = 0;
 
-    // Log the reason text and close the connection. Will call didClose().
-    // The MessageLevel parameter will be used for the level of the message
-    // shown at the devtools console.
-    // SourceLocation parameter may be shown with the reason text
-    // at the devtools console. Even if location is specified, it may be ignored
-    // and the "current" location in the sense of JavaScript execution
-    // may be shown if this method is called in a JS execution context.
-    // Location should not be null.
-    virtual void fail(const String& reason, MessageLevel, std::unique_ptr<SourceLocation>) = 0;
+  // Do not call |send| after calling this method.
+  virtual void close(int code, const String& reason) = 0;
 
-    // Do not call any methods after calling this method.
-    virtual void disconnect() = 0; // Will suppress didClose().
+  // Log the reason text and close the connection. Will call didClose().
+  // The MessageLevel parameter will be used for the level of the message
+  // shown at the devtools console.
+  // SourceLocation parameter may be shown with the reason text
+  // at the devtools console. Even if location is specified, it may be ignored
+  // and the "current" location in the sense of JavaScript execution
+  // may be shown if this method is called in a JS execution context.
+  // Location should not be null.
+  virtual void fail(const String& reason,
+                    MessageLevel,
+                    std::unique_ptr<SourceLocation>) = 0;
 
-    virtual ~WebSocketChannel() { }
+  // Do not call any methods after calling this method.
+  virtual void disconnect() = 0;  // Will suppress didClose().
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual ~WebSocketChannel() {}
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSocketChannel_h
+#endif  // WebSocketChannel_h

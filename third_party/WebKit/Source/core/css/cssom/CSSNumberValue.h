@@ -14,29 +14,29 @@
 namespace blink {
 
 class CORE_EXPORT CSSNumberValue final : public CSSStyleValue {
-    WTF_MAKE_NONCOPYABLE(CSSNumberValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSNumberValue* create(double value)
-    {
-        return new CSSNumberValue(value);
-    }
+  WTF_MAKE_NONCOPYABLE(CSSNumberValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    double value() const { return m_value; }
+ public:
+  static CSSNumberValue* create(double value) {
+    return new CSSNumberValue(value);
+  }
 
-    CSSValue* toCSSValue() const override
-    {
-        return CSSPrimitiveValue::create(m_value, CSSPrimitiveValue::UnitType::
-Number);
-    }
+  double value() const { return m_value; }
 
-    StyleValueType type() const override { return StyleValueType::NumberType; }
-private:
-    CSSNumberValue(double value) : m_value(value) {}
+  CSSValue* toCSSValue() const override {
+    return CSSPrimitiveValue::create(m_value,
+                                     CSSPrimitiveValue::UnitType::Number);
+  }
 
-    double m_value;
+  StyleValueType type() const override { return StyleValueType::NumberType; }
+
+ private:
+  CSSNumberValue(double value) : m_value(value) {}
+
+  double m_value;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

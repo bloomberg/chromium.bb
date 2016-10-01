@@ -11,18 +11,17 @@
 namespace blink {
 
 class NonElementParentNode {
-public:
-    static Element* getElementById(Document& document, const AtomicString& id)
-    {
-        return document.getElementById(id);
-    }
+ public:
+  static Element* getElementById(Document& document, const AtomicString& id) {
+    return document.getElementById(id);
+  }
 
-    static Element* getElementById(DocumentFragment& fragment, const AtomicString& id)
-    {
-        return fragment.getElementById(id);
-    }
+  static Element* getElementById(DocumentFragment& fragment,
+                                 const AtomicString& id) {
+    return fragment.getElementById(id);
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NonElementParentNode_h
+#endif  // NonElementParentNode_h

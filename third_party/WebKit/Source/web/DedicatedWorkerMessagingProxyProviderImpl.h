@@ -37,25 +37,28 @@
 namespace blink {
 
 class DedicatedWorkerMessagingProxyProviderImpl final
-    : public GarbageCollectedFinalized<DedicatedWorkerMessagingProxyProviderImpl>
-    , public DedicatedWorkerMessagingProxyProvider {
-    USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorkerMessagingProxyProviderImpl);
-    WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProviderImpl);
-public:
-    static DedicatedWorkerMessagingProxyProviderImpl* create()
-    {
-        return new DedicatedWorkerMessagingProxyProviderImpl();
-    }
+    : public GarbageCollectedFinalized<
+          DedicatedWorkerMessagingProxyProviderImpl>,
+      public DedicatedWorkerMessagingProxyProvider {
+  USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorkerMessagingProxyProviderImpl);
+  WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProviderImpl);
 
-    ~DedicatedWorkerMessagingProxyProviderImpl() override { }
-    InProcessWorkerMessagingProxy* createWorkerMessagingProxy(Worker*) override;
+ public:
+  static DedicatedWorkerMessagingProxyProviderImpl* create() {
+    return new DedicatedWorkerMessagingProxyProviderImpl();
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { DedicatedWorkerMessagingProxyProvider::trace(visitor); }
+  ~DedicatedWorkerMessagingProxyProviderImpl() override {}
+  InProcessWorkerMessagingProxy* createWorkerMessagingProxy(Worker*) override;
 
-private:
-    DedicatedWorkerMessagingProxyProviderImpl() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    DedicatedWorkerMessagingProxyProvider::trace(visitor);
+  }
+
+ private:
+  DedicatedWorkerMessagingProxyProviderImpl() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DedicatedWorkerMessagingProxyProviderImpl_h
+#endif  // DedicatedWorkerMessagingProxyProviderImpl_h

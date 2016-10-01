@@ -41,29 +41,33 @@ namespace blink {
 
 class DOMFileSystem;
 
-class DraggedIsolatedFileSystemImpl final : public GarbageCollectedFinalized<DraggedIsolatedFileSystemImpl>, public DraggedIsolatedFileSystem, public Supplement<DataObject> {
-    USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
-public:
-    static DraggedIsolatedFileSystemImpl* create(DataObject& host, const String& filesystemId)
-    {
-        return new DraggedIsolatedFileSystemImpl(host, filesystemId);
-    }
+class DraggedIsolatedFileSystemImpl final
+    : public GarbageCollectedFinalized<DraggedIsolatedFileSystemImpl>,
+      public DraggedIsolatedFileSystem,
+      public Supplement<DataObject> {
+  USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
 
-    static DOMFileSystem* getDOMFileSystem(DataObject* host, ExecutionContext*);
+ public:
+  static DraggedIsolatedFileSystemImpl* create(DataObject& host,
+                                               const String& filesystemId) {
+    return new DraggedIsolatedFileSystemImpl(host, filesystemId);
+  }
 
-    static const char* supplementName();
-    static DraggedIsolatedFileSystemImpl* from(DataObject*);
+  static DOMFileSystem* getDOMFileSystem(DataObject* host, ExecutionContext*);
 
-    DECLARE_TRACE();
+  static const char* supplementName();
+  static DraggedIsolatedFileSystemImpl* from(DataObject*);
 
-    static void prepareForDataObject(DataObject*, const String& filesystemId);
+  DECLARE_TRACE();
 
-private:
-    DraggedIsolatedFileSystemImpl(DataObject& host, const String& filesystemId);
+  static void prepareForDataObject(DataObject*, const String& filesystemId);
 
-    Member<DOMFileSystem> m_filesystem;
+ private:
+  DraggedIsolatedFileSystemImpl(DataObject& host, const String& filesystemId);
+
+  Member<DOMFileSystem> m_filesystem;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DraggedIsolatedFileSystemImpl_h
+#endif  // DraggedIsolatedFileSystemImpl_h

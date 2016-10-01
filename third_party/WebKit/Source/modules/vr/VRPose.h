@@ -14,35 +14,33 @@
 namespace blink {
 
 class VRPose final : public GarbageCollected<VRPose>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static VRPose* create()
-    {
-        return new VRPose();
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    DOMFloat32Array* orientation() const { return m_orientation; }
-    DOMFloat32Array* position() const { return m_position; }
-    DOMFloat32Array* angularVelocity() const { return m_angularVelocity; }
-    DOMFloat32Array* linearVelocity() const { return m_linearVelocity; }
-    DOMFloat32Array* angularAcceleration() const { return m_angularAcceleration; }
-    DOMFloat32Array* linearAcceleration() const { return m_linearAcceleration; }
+ public:
+  static VRPose* create() { return new VRPose(); }
 
-    void setPose(const device::blink::VRPosePtr&);
+  DOMFloat32Array* orientation() const { return m_orientation; }
+  DOMFloat32Array* position() const { return m_position; }
+  DOMFloat32Array* angularVelocity() const { return m_angularVelocity; }
+  DOMFloat32Array* linearVelocity() const { return m_linearVelocity; }
+  DOMFloat32Array* angularAcceleration() const { return m_angularAcceleration; }
+  DOMFloat32Array* linearAcceleration() const { return m_linearAcceleration; }
 
-    DECLARE_VIRTUAL_TRACE();
+  void setPose(const device::blink::VRPosePtr&);
 
-private:
-    VRPose();
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<DOMFloat32Array> m_orientation;
-    Member<DOMFloat32Array> m_position;
-    Member<DOMFloat32Array> m_angularVelocity;
-    Member<DOMFloat32Array> m_linearVelocity;
-    Member<DOMFloat32Array> m_angularAcceleration;
-    Member<DOMFloat32Array> m_linearAcceleration;
+ private:
+  VRPose();
+
+  Member<DOMFloat32Array> m_orientation;
+  Member<DOMFloat32Array> m_position;
+  Member<DOMFloat32Array> m_angularVelocity;
+  Member<DOMFloat32Array> m_linearVelocity;
+  Member<DOMFloat32Array> m_angularAcceleration;
+  Member<DOMFloat32Array> m_linearAcceleration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VRPose_h
+#endif  // VRPose_h

@@ -8,21 +8,18 @@
 
 namespace blink {
 
-PassRefPtr<LayoutTheme> LayoutThemeLinux::create()
-{
-    return adoptRef(new LayoutThemeLinux());
+PassRefPtr<LayoutTheme> LayoutThemeLinux::create() {
+  return adoptRef(new LayoutThemeLinux());
 }
 
-LayoutTheme& LayoutTheme::nativeTheme()
-{
-    DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeLinux::create()));
-    return *layoutTheme;
+LayoutTheme& LayoutTheme::nativeTheme() {
+  DEFINE_STATIC_REF(LayoutTheme, layoutTheme, (LayoutThemeLinux::create()));
+  return *layoutTheme;
 }
 
-String LayoutThemeLinux::extraDefaultStyleSheet()
-{
-    return LayoutThemeDefault::extraDefaultStyleSheet() +
-        loadResourceAsASCIIString("themeChromiumLinux.css");
+String LayoutThemeLinux::extraDefaultStyleSheet() {
+  return LayoutThemeDefault::extraDefaultStyleSheet() +
+         loadResourceAsASCIIString("themeChromiumLinux.css");
 }
 
-} // namespace blink
+}  // namespace blink

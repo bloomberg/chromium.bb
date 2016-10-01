@@ -85,6 +85,6 @@ BLINK_EXPORT void MemoryPressureNotificationToWorkerThreadIsolates(
 // Set the RAIL performance mode on all worker thread isolates.
 BLINK_EXPORT void setRAILModeOnWorkerThreadIsolates(v8::RAILMode);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -11,34 +11,40 @@
 namespace blink {
 
 class HTMLDataListOptionsCollection : public HTMLCollection {
-public:
-    static HTMLDataListOptionsCollection* create(ContainerNode& ownerNode, CollectionType type)
-    {
-        DCHECK_EQ(type, DataListOptions);
-        return new HTMLDataListOptionsCollection(ownerNode);
-    }
+ public:
+  static HTMLDataListOptionsCollection* create(ContainerNode& ownerNode,
+                                               CollectionType type) {
+    DCHECK_EQ(type, DataListOptions);
+    return new HTMLDataListOptionsCollection(ownerNode);
+  }
 
-    HTMLOptionElement* item(unsigned offset) const { return toHTMLOptionElement(HTMLCollection::item(offset)); }
+  HTMLOptionElement* item(unsigned offset) const {
+    return toHTMLOptionElement(HTMLCollection::item(offset));
+  }
 
-    bool elementMatches(const HTMLElement&) const;
-private:
-    explicit HTMLDataListOptionsCollection(ContainerNode& ownerNode)
-        : HTMLCollection(ownerNode, DataListOptions, DoesNotOverrideItemAfter)
-    { }
+  bool elementMatches(const HTMLElement&) const;
+
+ private:
+  explicit HTMLDataListOptionsCollection(ContainerNode& ownerNode)
+      : HTMLCollection(ownerNode, DataListOptions, DoesNotOverrideItemAfter) {}
 };
 
-DEFINE_TYPE_CASTS(HTMLDataListOptionsCollection, LiveNodeListBase, collection, collection->type() == DataListOptions, collection.type() == DataListOptions);
+DEFINE_TYPE_CASTS(HTMLDataListOptionsCollection,
+                  LiveNodeListBase,
+                  collection,
+                  collection->type() == DataListOptions,
+                  collection.type() == DataListOptions);
 
-inline bool HTMLDataListOptionsCollection::elementMatches(const HTMLElement& element) const
-{
-    if (isHTMLOptionElement(element)) {
-        const HTMLOptionElement& option = toHTMLOptionElement(element);
-        if (!option.isDisabledFormControl() && !option.value().isEmpty())
-            return true;
-    }
-    return false;
+inline bool HTMLDataListOptionsCollection::elementMatches(
+    const HTMLElement& element) const {
+  if (isHTMLOptionElement(element)) {
+    const HTMLOptionElement& option = toHTMLOptionElement(element);
+    if (!option.isDisabledFormControl() && !option.value().isEmpty())
+      return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLDataListOptionsCollection_h
+#endif  // HTMLDataListOptionsCollection_h

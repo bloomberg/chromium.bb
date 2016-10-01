@@ -37,31 +37,31 @@ class DocumentStyleSheetCollector;
 class StyleEngine;
 class TreeScope;
 
-class DocumentStyleSheetCollection final : public TreeScopeStyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection);
-public:
-    static DocumentStyleSheetCollection* create(TreeScope& treeScope)
-    {
-        return new DocumentStyleSheetCollection(treeScope);
-    }
+class DocumentStyleSheetCollection final
+    : public TreeScopeStyleSheetCollection {
+  WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection);
 
-    void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
-    void collectStyleSheets(StyleEngine&, DocumentStyleSheetCollector&);
+ public:
+  static DocumentStyleSheetCollection* create(TreeScope& treeScope) {
+    return new DocumentStyleSheetCollection(treeScope);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        TreeScopeStyleSheetCollection::trace(visitor);
-    }
+  void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
+  void collectStyleSheets(StyleEngine&, DocumentStyleSheetCollector&);
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    TreeScopeStyleSheetCollection::trace(visitor);
+  }
 
-private:
-    explicit DocumentStyleSheetCollection(TreeScope&);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    void collectStyleSheetsFromCandidates(StyleEngine&, DocumentStyleSheetCollector&);
+ private:
+  explicit DocumentStyleSheetCollection(TreeScope&);
+
+  void collectStyleSheetsFromCandidates(StyleEngine&,
+                                        DocumentStyleSheetCollector&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

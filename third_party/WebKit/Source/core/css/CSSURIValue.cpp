@@ -14,41 +14,33 @@
 namespace blink {
 
 CSSURIValue::CSSURIValue(const String& urlString)
-    : CSSValue(URIClass)
-    , m_url(urlString)
-    , m_loadRequested(false)
-{
+    : CSSValue(URIClass), m_url(urlString), m_loadRequested(false) {}
+
+CSSURIValue::~CSSURIValue() {}
+
+DocumentResource* CSSURIValue::load(Document& document) const {
+  if (!m_loadRequested) {
+    m_loadRequested = true;
+
+    FetchRequest request(ResourceRequest(document.completeURL(m_url)),
+                         FetchInitiatorTypeNames::css);
+    m_document =
+        DocumentResource::fetchSVGDocument(request, document.fetcher());
+  }
+  return m_document;
 }
 
-CSSURIValue::~CSSURIValue()
-{
+String CSSURIValue::customCSSText() const {
+  return serializeURI(m_url);
 }
 
-DocumentResource* CSSURIValue::load(Document& document) const
-{
-    if (!m_loadRequested) {
-        m_loadRequested = true;
-
-        FetchRequest request(ResourceRequest(document.completeURL(m_url)), FetchInitiatorTypeNames::css);
-        m_document = DocumentResource::fetchSVGDocument(request, document.fetcher());
-    }
-    return m_document;
+bool CSSURIValue::equals(const CSSURIValue& other) const {
+  return m_url == other.m_url;
 }
 
-String CSSURIValue::customCSSText() const
-{
-    return serializeURI(m_url);
+DEFINE_TRACE_AFTER_DISPATCH(CSSURIValue) {
+  visitor->trace(m_document);
+  CSSValue::traceAfterDispatch(visitor);
 }
 
-bool CSSURIValue::equals(const CSSURIValue& other) const
-{
-    return m_url == other.m_url;
-}
-
-DEFINE_TRACE_AFTER_DISPATCH(CSSURIValue)
-{
-    visitor->trace(m_document);
-    CSSValue::traceAfterDispatch(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

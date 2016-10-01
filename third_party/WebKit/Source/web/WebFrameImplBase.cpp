@@ -8,12 +8,8 @@
 
 namespace blink {
 
-WebFrameImplBase::~WebFrameImplBase()
-{
-}
+WebFrameImplBase::~WebFrameImplBase() {}
 
-DEFINE_TRACE(WebFrameImplBase)
-{
-}
+DEFINE_TRACE(WebFrameImplBase) {}
 
-} // namespace blink
+}  // namespace blink

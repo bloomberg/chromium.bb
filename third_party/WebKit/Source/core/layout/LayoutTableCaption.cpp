@@ -24,37 +24,29 @@
 namespace blink {
 
 LayoutTableCaption::LayoutTableCaption(Element* element)
-    : LayoutBlockFlow(element)
-{
+    : LayoutBlockFlow(element) {}
+
+LayoutTableCaption::~LayoutTableCaption() {}
+
+LayoutUnit LayoutTableCaption::containingBlockLogicalWidthForContent() const {
+  LayoutBlock* cb = containingBlock();
+  return cb->logicalWidth();
 }
 
-LayoutTableCaption::~LayoutTableCaption()
-{
+void LayoutTableCaption::insertedIntoTree() {
+  LayoutBlockFlow::insertedIntoTree();
+
+  table()->addCaption(this);
 }
 
-LayoutUnit LayoutTableCaption::containingBlockLogicalWidthForContent() const
-{
-    LayoutBlock* cb = containingBlock();
-    return cb->logicalWidth();
+void LayoutTableCaption::willBeRemovedFromTree() {
+  LayoutBlockFlow::willBeRemovedFromTree();
+
+  table()->removeCaption(this);
 }
 
-void LayoutTableCaption::insertedIntoTree()
-{
-    LayoutBlockFlow::insertedIntoTree();
-
-    table()->addCaption(this);
+LayoutTable* LayoutTableCaption::table() const {
+  return toLayoutTable(parent());
 }
 
-void LayoutTableCaption::willBeRemovedFromTree()
-{
-    LayoutBlockFlow::willBeRemovedFromTree();
-
-    table()->removeCaption(this);
-}
-
-LayoutTable* LayoutTableCaption::table() const
-{
-    return toLayoutTable(parent());
-}
-
-} // namespace blink
+}  // namespace blink

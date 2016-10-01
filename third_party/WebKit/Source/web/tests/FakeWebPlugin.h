@@ -44,36 +44,49 @@ class WebURLResponse;
 struct WebPluginParams;
 
 class FakeWebPlugin : public WebPlugin {
-public:
-    FakeWebPlugin(WebFrame*, const WebPluginParams&);
+ public:
+  FakeWebPlugin(WebFrame*, const WebPluginParams&);
 
-    // WebPlugin methods:
-    bool initialize(WebPluginContainer*) override;
-    void destroy() override;
-    bool canProcessDrag() const override { return false; }
-    void updateAllLifecyclePhases() override { }
-    void paint(WebCanvas*, const WebRect&) override { }
-    void updateGeometry(const WebRect& clientRect, const WebRect& clipRect, const WebRect& windowClipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
-    void updateFocus(bool, WebFocusType) override { }
-    void updateVisibility(bool) override { }
-    WebInputEventResult handleInputEvent(const WebInputEvent&, WebCursorInfo&) override { return WebInputEventResult::NotHandled; }
-    bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) override { return false; }
-    void didReceiveResponse(const WebURLResponse&) override { }
-    void didReceiveData(const char* data, int dataLength) override { }
-    void didFinishLoading() override { }
-    void didFailLoading(const WebURLError&) override { }
-    bool isPlaceholder() override { return false; }
+  // WebPlugin methods:
+  bool initialize(WebPluginContainer*) override;
+  void destroy() override;
+  bool canProcessDrag() const override { return false; }
+  void updateAllLifecyclePhases() override {}
+  void paint(WebCanvas*, const WebRect&) override {}
+  void updateGeometry(const WebRect& clientRect,
+                      const WebRect& clipRect,
+                      const WebRect& windowClipRect,
+                      const WebVector<WebRect>& cutOutsRects,
+                      bool isVisible) override {}
+  void updateFocus(bool, WebFocusType) override {}
+  void updateVisibility(bool) override {}
+  WebInputEventResult handleInputEvent(const WebInputEvent&,
+                                       WebCursorInfo&) override {
+    return WebInputEventResult::NotHandled;
+  }
+  bool handleDragStatusUpdate(WebDragStatus,
+                              const WebDragData&,
+                              WebDragOperationsMask,
+                              const WebPoint& position,
+                              const WebPoint& screenPosition) override {
+    return false;
+  }
+  void didReceiveResponse(const WebURLResponse&) override {}
+  void didReceiveData(const char* data, int dataLength) override {}
+  void didFinishLoading() override {}
+  void didFailLoading(const WebURLError&) override {}
+  bool isPlaceholder() override { return false; }
 
-protected:
-    virtual ~FakeWebPlugin();
+ protected:
+  virtual ~FakeWebPlugin();
 
-    WebPluginContainer* container() const { return m_container; }
+  WebPluginContainer* container() const { return m_container; }
 
-private:
-    WebFrame* m_frame;
-    WebPluginContainer* m_container;
+ private:
+  WebFrame* m_frame;
+  WebPluginContainer* m_container;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FakeWebPlugin_h
+#endif  // FakeWebPlugin_h

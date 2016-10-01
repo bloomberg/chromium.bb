@@ -26,481 +26,673 @@
 
 namespace WTF {
 
-template <typename KeyTraits, typename MappedTraits> struct HashMapValueTraits;
+template <typename KeyTraits, typename MappedTraits>
+struct HashMapValueTraits;
 
 struct KeyValuePairKeyExtractor {
-    STATIC_ONLY(KeyValuePairKeyExtractor);
-    template <typename T>
-    static const typename T::KeyType& extract(const T& p) { return p.key; }
+  STATIC_ONLY(KeyValuePairKeyExtractor);
+  template <typename T>
+  static const typename T::KeyType& extract(const T& p) {
+    return p.key;
+  }
 };
 
 // Note: empty or deleted key values are not allowed, using them may lead to
 // undefined behavior.  For pointer keys this means that null pointers are not
 // allowed unless you supply custom key traits.
-template <
-    typename KeyArg,
-    typename MappedArg,
-    typename HashArg = typename DefaultHash<KeyArg>::Hash,
-    typename KeyTraitsArg = HashTraits<KeyArg>,
-    typename MappedTraitsArg = HashTraits<MappedArg>,
-    typename Allocator = PartitionAllocator>
+template <typename KeyArg,
+          typename MappedArg,
+          typename HashArg = typename DefaultHash<KeyArg>::Hash,
+          typename KeyTraitsArg = HashTraits<KeyArg>,
+          typename MappedTraitsArg = HashTraits<MappedArg>,
+          typename Allocator = PartitionAllocator>
 class HashMap {
-    WTF_USE_ALLOCATOR(HashMap, Allocator);
-private:
-    typedef KeyTraitsArg KeyTraits;
-    typedef MappedTraitsArg MappedTraits;
-    typedef HashMapValueTraits<KeyTraits, MappedTraits> ValueTraits;
+  WTF_USE_ALLOCATOR(HashMap, Allocator);
 
-public:
-    typedef typename KeyTraits::TraitType KeyType;
-    typedef const typename KeyTraits::PeekInType& KeyPeekInType;
-    typedef typename MappedTraits::TraitType MappedType;
-    typedef typename ValueTraits::TraitType ValueType;
+ private:
+  typedef KeyTraitsArg KeyTraits;
+  typedef MappedTraitsArg MappedTraits;
+  typedef HashMapValueTraits<KeyTraits, MappedTraits> ValueTraits;
 
-private:
-    typedef typename MappedTraits::PeekOutType MappedPeekType;
+ public:
+  typedef typename KeyTraits::TraitType KeyType;
+  typedef const typename KeyTraits::PeekInType& KeyPeekInType;
+  typedef typename MappedTraits::TraitType MappedType;
+  typedef typename ValueTraits::TraitType ValueType;
 
-    typedef HashArg HashFunctions;
+ private:
+  typedef typename MappedTraits::PeekOutType MappedPeekType;
 
-    typedef HashTable<KeyType, ValueType, KeyValuePairKeyExtractor,
-        HashFunctions, ValueTraits, KeyTraits, Allocator> HashTableType;
+  typedef HashArg HashFunctions;
 
-    class HashMapKeysProxy;
-    class HashMapValuesProxy;
+  typedef HashTable<KeyType,
+                    ValueType,
+                    KeyValuePairKeyExtractor,
+                    HashFunctions,
+                    ValueTraits,
+                    KeyTraits,
+                    Allocator>
+      HashTableType;
 
-public:
-    typedef HashTableIteratorAdapter<HashTableType, ValueType> iterator;
-    typedef HashTableConstIteratorAdapter<HashTableType, ValueType> const_iterator;
-    typedef typename HashTableType::AddResult AddResult;
+  class HashMapKeysProxy;
+  class HashMapValuesProxy;
 
-public:
-    void swap(HashMap& ref)
-    {
-        m_impl.swap(ref.m_impl);
-    }
+ public:
+  typedef HashTableIteratorAdapter<HashTableType, ValueType> iterator;
+  typedef HashTableConstIteratorAdapter<HashTableType, ValueType>
+      const_iterator;
+  typedef typename HashTableType::AddResult AddResult;
 
-    unsigned size() const;
-    unsigned capacity() const;
-    void reserveCapacityForSize(unsigned size)
-    {
-        m_impl.reserveCapacityForSize(size);
-    }
+ public:
+  void swap(HashMap& ref) { m_impl.swap(ref.m_impl); }
 
-    bool isEmpty() const;
+  unsigned size() const;
+  unsigned capacity() const;
+  void reserveCapacityForSize(unsigned size) {
+    m_impl.reserveCapacityForSize(size);
+  }
 
-    // iterators iterate over pairs of keys and values
-    iterator begin();
-    iterator end();
-    const_iterator begin() const;
-    const_iterator end() const;
+  bool isEmpty() const;
 
-    HashMapKeysProxy& keys() { return static_cast<HashMapKeysProxy&>(*this); }
-    const HashMapKeysProxy& keys() const { return static_cast<const HashMapKeysProxy&>(*this); }
+  // iterators iterate over pairs of keys and values
+  iterator begin();
+  iterator end();
+  const_iterator begin() const;
+  const_iterator end() const;
 
-    HashMapValuesProxy& values() { return static_cast<HashMapValuesProxy&>(*this); }
-    const HashMapValuesProxy& values() const { return static_cast<const HashMapValuesProxy&>(*this); }
+  HashMapKeysProxy& keys() { return static_cast<HashMapKeysProxy&>(*this); }
+  const HashMapKeysProxy& keys() const {
+    return static_cast<const HashMapKeysProxy&>(*this);
+  }
 
-    iterator find(KeyPeekInType);
-    const_iterator find(KeyPeekInType) const;
-    bool contains(KeyPeekInType) const;
-    MappedPeekType get(KeyPeekInType) const;
+  HashMapValuesProxy& values() {
+    return static_cast<HashMapValuesProxy&>(*this);
+  }
+  const HashMapValuesProxy& values() const {
+    return static_cast<const HashMapValuesProxy&>(*this);
+  }
 
-    // replaces value but not key if key is already present return value is a
-    // pair of the iterator to the key location, and a boolean that's true if a
-    // new value was actually added
-    template <typename IncomingKeyType, typename IncomingMappedType>
-    AddResult set(IncomingKeyType&&, IncomingMappedType&&);
+  iterator find(KeyPeekInType);
+  const_iterator find(KeyPeekInType) const;
+  bool contains(KeyPeekInType) const;
+  MappedPeekType get(KeyPeekInType) const;
 
-    // does nothing if key is already present return value is a pair of the
-    // iterator to the key location, and a boolean that's true if a new value
-    // was actually added
-    template <typename IncomingKeyType, typename IncomingMappedType>
-    AddResult add(IncomingKeyType&&, IncomingMappedType&&);
+  // replaces value but not key if key is already present return value is a
+  // pair of the iterator to the key location, and a boolean that's true if a
+  // new value was actually added
+  template <typename IncomingKeyType, typename IncomingMappedType>
+  AddResult set(IncomingKeyType&&, IncomingMappedType&&);
 
-    void remove(KeyPeekInType);
-    void remove(iterator);
-    void clear();
-    template <typename Collection>
-    void removeAll(const Collection& toBeRemoved) { WTF::removeAll(*this, toBeRemoved); }
+  // does nothing if key is already present return value is a pair of the
+  // iterator to the key location, and a boolean that's true if a new value
+  // was actually added
+  template <typename IncomingKeyType, typename IncomingMappedType>
+  AddResult add(IncomingKeyType&&, IncomingMappedType&&);
 
-    MappedType take(KeyPeekInType); // efficient combination of get with remove
+  void remove(KeyPeekInType);
+  void remove(iterator);
+  void clear();
+  template <typename Collection>
+  void removeAll(const Collection& toBeRemoved) {
+    WTF::removeAll(*this, toBeRemoved);
+  }
 
-    // An alternate version of find() that finds the object by hashing and
-    // comparing with some other type, to avoid the cost of type
-    // conversion. HashTranslator must have the following function members:
-    //   static unsigned hash(const T&);
-    //   static bool equal(const ValueType&, const T&);
-    template <typename HashTranslator, typename T> iterator find(const T&);
-    template <typename HashTranslator, typename T> const_iterator find(const T&) const;
-    template <typename HashTranslator, typename T> bool contains(const T&) const;
+  MappedType take(KeyPeekInType);  // efficient combination of get with remove
 
-    // An alternate version of add() that finds the object by hashing and
-    // comparing with some other type, to avoid the cost of type conversion if
-    // the object is already in the table. HashTranslator must have the
-    // following function members:
-    //   static unsigned hash(const T&);
-    //   static bool equal(const ValueType&, const T&);
-    //   static translate(ValueType&, const T&, unsigned hashCode);
-    template <typename HashTranslator, typename IncomingKeyType, typename IncomingMappedType>
-    AddResult add(IncomingKeyType&&, IncomingMappedType&&);
+  // An alternate version of find() that finds the object by hashing and
+  // comparing with some other type, to avoid the cost of type
+  // conversion. HashTranslator must have the following function members:
+  //   static unsigned hash(const T&);
+  //   static bool equal(const ValueType&, const T&);
+  template <typename HashTranslator, typename T>
+  iterator find(const T&);
+  template <typename HashTranslator, typename T>
+  const_iterator find(const T&) const;
+  template <typename HashTranslator, typename T>
+  bool contains(const T&) const;
 
-    static bool isValidKey(KeyPeekInType);
+  // An alternate version of add() that finds the object by hashing and
+  // comparing with some other type, to avoid the cost of type conversion if
+  // the object is already in the table. HashTranslator must have the
+  // following function members:
+  //   static unsigned hash(const T&);
+  //   static bool equal(const ValueType&, const T&);
+  //   static translate(ValueType&, const T&, unsigned hashCode);
+  template <typename HashTranslator,
+            typename IncomingKeyType,
+            typename IncomingMappedType>
+  AddResult add(IncomingKeyType&&, IncomingMappedType&&);
 
-    template <typename VisitorDispatcher>
-    void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
+  static bool isValidKey(KeyPeekInType);
 
-private:
-    template <typename IncomingKeyType, typename IncomingMappedType>
-    AddResult inlineAdd(IncomingKeyType&&, IncomingMappedType&&);
+  template <typename VisitorDispatcher>
+  void trace(VisitorDispatcher visitor) {
+    m_impl.trace(visitor);
+  }
 
-    HashTableType m_impl;
+ private:
+  template <typename IncomingKeyType, typename IncomingMappedType>
+  AddResult inlineAdd(IncomingKeyType&&, IncomingMappedType&&);
+
+  HashTableType m_impl;
 };
 
-template <typename KeyArg, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg, typename Allocator>
-class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator>::HashMapKeysProxy :
-    private HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> {
-    DISALLOW_NEW();
-public:
-    typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> HashMapType;
-    typedef typename HashMapType::iterator::KeysIterator iterator;
-    typedef typename HashMapType::const_iterator::KeysIterator const_iterator;
+template <typename KeyArg,
+          typename MappedArg,
+          typename HashArg,
+          typename KeyTraitsArg,
+          typename MappedTraitsArg,
+          typename Allocator>
+class HashMap<KeyArg,
+              MappedArg,
+              HashArg,
+              KeyTraitsArg,
+              MappedTraitsArg,
+              Allocator>::HashMapKeysProxy : private HashMap<KeyArg,
+                                                             MappedArg,
+                                                             HashArg,
+                                                             KeyTraitsArg,
+                                                             MappedTraitsArg,
+                                                             Allocator> {
+  DISALLOW_NEW();
 
-    iterator begin()
-    {
-        return HashMapType::begin().keys();
-    }
+ public:
+  typedef HashMap<KeyArg,
+                  MappedArg,
+                  HashArg,
+                  KeyTraitsArg,
+                  MappedTraitsArg,
+                  Allocator>
+      HashMapType;
+  typedef typename HashMapType::iterator::KeysIterator iterator;
+  typedef typename HashMapType::const_iterator::KeysIterator const_iterator;
 
-    iterator end()
-    {
-        return HashMapType::end().keys();
-    }
+  iterator begin() { return HashMapType::begin().keys(); }
 
-    const_iterator begin() const
-    {
-        return HashMapType::begin().keys();
-    }
+  iterator end() { return HashMapType::end().keys(); }
 
-    const_iterator end() const
-    {
-        return HashMapType::end().keys();
-    }
+  const_iterator begin() const { return HashMapType::begin().keys(); }
 
-private:
-    friend class HashMap;
+  const_iterator end() const { return HashMapType::end().keys(); }
 
-    // These are intentionally not implemented.
-    HashMapKeysProxy();
-    HashMapKeysProxy(const HashMapKeysProxy&);
-    HashMapKeysProxy& operator=(const HashMapKeysProxy&);
-    ~HashMapKeysProxy();
+ private:
+  friend class HashMap;
+
+  // These are intentionally not implemented.
+  HashMapKeysProxy();
+  HashMapKeysProxy(const HashMapKeysProxy&);
+  HashMapKeysProxy& operator=(const HashMapKeysProxy&);
+  ~HashMapKeysProxy();
 };
 
-template <typename KeyArg, typename MappedArg, typename HashArg,  typename KeyTraitsArg, typename MappedTraitsArg, typename Allocator>
-class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator>::HashMapValuesProxy :
-    private HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> {
-    DISALLOW_NEW();
-public:
-    typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> HashMapType;
-    typedef typename HashMapType::iterator::ValuesIterator iterator;
-    typedef typename HashMapType::const_iterator::ValuesIterator const_iterator;
+template <typename KeyArg,
+          typename MappedArg,
+          typename HashArg,
+          typename KeyTraitsArg,
+          typename MappedTraitsArg,
+          typename Allocator>
+class HashMap<KeyArg,
+              MappedArg,
+              HashArg,
+              KeyTraitsArg,
+              MappedTraitsArg,
+              Allocator>::HashMapValuesProxy : private HashMap<KeyArg,
+                                                               MappedArg,
+                                                               HashArg,
+                                                               KeyTraitsArg,
+                                                               MappedTraitsArg,
+                                                               Allocator> {
+  DISALLOW_NEW();
 
-    iterator begin()
-    {
-        return HashMapType::begin().values();
-    }
+ public:
+  typedef HashMap<KeyArg,
+                  MappedArg,
+                  HashArg,
+                  KeyTraitsArg,
+                  MappedTraitsArg,
+                  Allocator>
+      HashMapType;
+  typedef typename HashMapType::iterator::ValuesIterator iterator;
+  typedef typename HashMapType::const_iterator::ValuesIterator const_iterator;
 
-    iterator end()
-    {
-        return HashMapType::end().values();
-    }
+  iterator begin() { return HashMapType::begin().values(); }
 
-    const_iterator begin() const
-    {
-        return HashMapType::begin().values();
-    }
+  iterator end() { return HashMapType::end().values(); }
 
-    const_iterator end() const
-    {
-        return HashMapType::end().values();
-    }
+  const_iterator begin() const { return HashMapType::begin().values(); }
 
-private:
-    friend class HashMap;
+  const_iterator end() const { return HashMapType::end().values(); }
 
-    // These are intentionally not implemented.
-    HashMapValuesProxy();
-    HashMapValuesProxy(const HashMapValuesProxy&);
-    HashMapValuesProxy& operator=(const HashMapValuesProxy&);
-    ~HashMapValuesProxy();
+ private:
+  friend class HashMap;
+
+  // These are intentionally not implemented.
+  HashMapValuesProxy();
+  HashMapValuesProxy(const HashMapValuesProxy&);
+  HashMapValuesProxy& operator=(const HashMapValuesProxy&);
+  ~HashMapValuesProxy();
 };
 
 template <typename KeyTraits, typename MappedTraits>
 struct HashMapValueTraits : KeyValuePairHashTraits<KeyTraits, MappedTraits> {
-    STATIC_ONLY(HashMapValueTraits);
-    static const bool hasIsEmptyValueFunction = true;
-    static bool isEmptyValue(const typename KeyValuePairHashTraits<KeyTraits, MappedTraits>::TraitType& value)
-    {
-        return isHashTraitsEmptyValue<KeyTraits>(value.key);
-    }
+  STATIC_ONLY(HashMapValueTraits);
+  static const bool hasIsEmptyValueFunction = true;
+  static bool isEmptyValue(
+      const typename KeyValuePairHashTraits<KeyTraits, MappedTraits>::TraitType&
+          value) {
+    return isHashTraitsEmptyValue<KeyTraits>(value.key);
+  }
 };
 
 template <typename ValueTraits, typename HashFunctions>
 struct HashMapTranslator {
-    STATIC_ONLY(HashMapTranslator);
-    template <typename T> static unsigned hash(const T& key) { return HashFunctions::hash(key); }
-    template <typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a, b); }
-    template <typename T, typename U, typename V> static void translate(T& location, U&& key, V&& mapped)
-    {
-        location.key = std::forward<U>(key);
-        ValueTraits::ValueTraits::store(std::forward<V>(mapped), location.value);
-    }
+  STATIC_ONLY(HashMapTranslator);
+  template <typename T>
+  static unsigned hash(const T& key) {
+    return HashFunctions::hash(key);
+  }
+  template <typename T, typename U>
+  static bool equal(const T& a, const U& b) {
+    return HashFunctions::equal(a, b);
+  }
+  template <typename T, typename U, typename V>
+  static void translate(T& location, U&& key, V&& mapped) {
+    location.key = std::forward<U>(key);
+    ValueTraits::ValueTraits::store(std::forward<V>(mapped), location.value);
+  }
 };
 
 template <typename ValueTraits, typename Translator>
 struct HashMapTranslatorAdapter {
-    STATIC_ONLY(HashMapTranslatorAdapter);
-    template <typename T> static unsigned hash(const T& key) { return Translator::hash(key); }
-    template <typename T, typename U> static bool equal(const T& a, const U& b) { return Translator::equal(a, b); }
-    template <typename T, typename U, typename V> static void translate(T& location, U&& key, V&& mapped, unsigned hashCode)
-    {
-        Translator::translate(location.key, std::forward<U>(key), hashCode);
-        ValueTraits::ValueTraits::store(std::forward<V>(mapped), location.value);
-    }
+  STATIC_ONLY(HashMapTranslatorAdapter);
+  template <typename T>
+  static unsigned hash(const T& key) {
+    return Translator::hash(key);
+  }
+  template <typename T, typename U>
+  static bool equal(const T& a, const U& b) {
+    return Translator::equal(a, b);
+  }
+  template <typename T, typename U, typename V>
+  static void translate(T& location, U&& key, V&& mapped, unsigned hashCode) {
+    Translator::translate(location.key, std::forward<U>(key), hashCode);
+    ValueTraits::ValueTraits::store(std::forward<V>(mapped), location.value);
+  }
 };
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline unsigned HashMap<T, U, V, W, X, Y>::size() const
-{
-    return m_impl.size();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline unsigned HashMap<T, U, V, W, X, Y>::size() const {
+  return m_impl.size();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline unsigned HashMap<T, U, V, W, X, Y>::capacity() const
-{
-    return m_impl.capacity();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline unsigned HashMap<T, U, V, W, X, Y>::capacity() const {
+  return m_impl.capacity();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline bool HashMap<T, U, V, W, X, Y>::isEmpty() const
-{
-    return m_impl.isEmpty();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline bool HashMap<T, U, V, W, X, Y>::isEmpty() const {
+  return m_impl.isEmpty();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline typename HashMap<T, U, V, W, X, Y>::iterator HashMap<T, U, V, W, X, Y>::begin()
-{
-    return m_impl.begin();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline typename HashMap<T, U, V, W, X, Y>::iterator
+HashMap<T, U, V, W, X, Y>::begin() {
+  return m_impl.begin();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline typename HashMap<T, U, V, W, X, Y>::iterator HashMap<T, U, V, W, X, Y>::end()
-{
-    return m_impl.end();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline typename HashMap<T, U, V, W, X, Y>::iterator
+HashMap<T, U, V, W, X, Y>::end() {
+  return m_impl.end();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline typename HashMap<T, U, V, W, X, Y>::const_iterator HashMap<T, U, V, W, X, Y>::begin() const
-{
-    return m_impl.begin();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline typename HashMap<T, U, V, W, X, Y>::const_iterator
+HashMap<T, U, V, W, X, Y>::begin() const {
+  return m_impl.begin();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline typename HashMap<T, U, V, W, X, Y>::const_iterator HashMap<T, U, V, W, X, Y>::end() const
-{
-    return m_impl.end();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline typename HashMap<T, U, V, W, X, Y>::const_iterator
+HashMap<T, U, V, W, X, Y>::end() const {
+  return m_impl.end();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline typename HashMap<T, U, V, W, X, Y>::iterator HashMap<T, U, V, W, X, Y>::find(KeyPeekInType key)
-{
-    return m_impl.find(key);
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline typename HashMap<T, U, V, W, X, Y>::iterator
+HashMap<T, U, V, W, X, Y>::find(KeyPeekInType key) {
+  return m_impl.find(key);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline typename HashMap<T, U, V, W, X, Y>::const_iterator HashMap<T, U, V, W, X, Y>::find(KeyPeekInType key) const
-{
-    return m_impl.find(key);
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline typename HashMap<T, U, V, W, X, Y>::const_iterator
+HashMap<T, U, V, W, X, Y>::find(KeyPeekInType key) const {
+  return m_impl.find(key);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline bool HashMap<T, U, V, W, X, Y>::contains(KeyPeekInType key) const
-{
-    return m_impl.contains(key);
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline bool HashMap<T, U, V, W, X, Y>::contains(KeyPeekInType key) const {
+  return m_impl.contains(key);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 template <typename HashTranslator, typename TYPE>
 inline typename HashMap<T, U, V, W, X, Y>::iterator
-HashMap<T, U, V, W, X, Y>::find(const TYPE& value)
-{
-    return m_impl.template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(value);
+HashMap<T, U, V, W, X, Y>::find(const TYPE& value) {
+  return m_impl
+      .template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
+          value);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 template <typename HashTranslator, typename TYPE>
 inline typename HashMap<T, U, V, W, X, Y>::const_iterator
-HashMap<T, U, V, W, X, Y>::find(const TYPE& value) const
-{
-    return m_impl.template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(value);
+HashMap<T, U, V, W, X, Y>::find(const TYPE& value) const {
+  return m_impl
+      .template find<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
+          value);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 template <typename HashTranslator, typename TYPE>
-inline bool
-HashMap<T, U, V, W, X, Y>::contains(const TYPE& value) const
-{
-    return m_impl.template contains<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(value);
+inline bool HashMap<T, U, V, W, X, Y>::contains(const TYPE& value) const {
+  return m_impl
+      .template contains<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
+          value);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 template <typename IncomingKeyType, typename IncomingMappedType>
 typename HashMap<T, U, V, W, X, Y>::AddResult
-HashMap<T, U, V, W, X, Y>::inlineAdd(IncomingKeyType&& key, IncomingMappedType&& mapped)
-{
-    return m_impl.template add<HashMapTranslator<ValueTraits, HashFunctions>>(std::forward<IncomingKeyType>(key), std::forward<IncomingMappedType>(mapped));
+HashMap<T, U, V, W, X, Y>::inlineAdd(IncomingKeyType&& key,
+                                     IncomingMappedType&& mapped) {
+  return m_impl.template add<HashMapTranslator<ValueTraits, HashFunctions>>(
+      std::forward<IncomingKeyType>(key),
+      std::forward<IncomingMappedType>(mapped));
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 template <typename IncomingKeyType, typename IncomingMappedType>
-typename HashMap<T, U, V, W, X, Y>::AddResult
-HashMap<T, U, V, W, X, Y>::set(IncomingKeyType&& key, IncomingMappedType&& mapped)
-{
-    AddResult result = inlineAdd(std::forward<IncomingKeyType>(key), std::forward<IncomingMappedType>(mapped));
-    if (!result.isNewEntry) {
-        // The inlineAdd call above found an existing hash table entry; we need
-        // to set the mapped value.
-        //
-        // It's safe to call std::forward again, because |mapped| isn't moved if there's an existing entry.
-        MappedTraits::store(std::forward<IncomingMappedType>(mapped), result.storedValue->value);
-    }
-    return result;
+typename HashMap<T, U, V, W, X, Y>::AddResult HashMap<T, U, V, W, X, Y>::set(
+    IncomingKeyType&& key,
+    IncomingMappedType&& mapped) {
+  AddResult result = inlineAdd(std::forward<IncomingKeyType>(key),
+                               std::forward<IncomingMappedType>(mapped));
+  if (!result.isNewEntry) {
+    // The inlineAdd call above found an existing hash table entry; we need
+    // to set the mapped value.
+    //
+    // It's safe to call std::forward again, because |mapped| isn't moved if there's an existing entry.
+    MappedTraits::store(std::forward<IncomingMappedType>(mapped),
+                        result.storedValue->value);
+  }
+  return result;
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-template <typename HashTranslator, typename IncomingKeyType, typename IncomingMappedType>
-auto HashMap<T, U, V, W, X, Y>::add(IncomingKeyType&& key, IncomingMappedType&& mapped) -> AddResult
-{
-    return m_impl.template addPassingHashCode<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
-        std::forward<IncomingKeyType>(key), std::forward<IncomingMappedType>(mapped));
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+template <typename HashTranslator,
+          typename IncomingKeyType,
+          typename IncomingMappedType>
+auto HashMap<T, U, V, W, X, Y>::add(IncomingKeyType&& key,
+                                    IncomingMappedType&& mapped) -> AddResult {
+  return m_impl.template addPassingHashCode<
+      HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
+      std::forward<IncomingKeyType>(key),
+      std::forward<IncomingMappedType>(mapped));
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 template <typename IncomingKeyType, typename IncomingMappedType>
-typename HashMap<T, U, V, W, X, Y>::AddResult
-HashMap<T, U, V, W, X, Y>::add(IncomingKeyType&& key, IncomingMappedType&& mapped)
-{
-    return inlineAdd(std::forward<IncomingKeyType>(key), std::forward<IncomingMappedType>(mapped));
+typename HashMap<T, U, V, W, X, Y>::AddResult HashMap<T, U, V, W, X, Y>::add(
+    IncomingKeyType&& key,
+    IncomingMappedType&& mapped) {
+  return inlineAdd(std::forward<IncomingKeyType>(key),
+                   std::forward<IncomingMappedType>(mapped));
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
 typename HashMap<T, U, V, W, X, Y>::MappedPeekType
-HashMap<T, U, V, W, X, Y>::get(KeyPeekInType key) const
-{
-    ValueType* entry = const_cast<HashTableType&>(m_impl).lookup(key);
-    if (!entry)
-        return MappedTraits::peek(MappedTraits::emptyValue());
-    return MappedTraits::peek(entry->value);
+HashMap<T, U, V, W, X, Y>::get(KeyPeekInType key) const {
+  ValueType* entry = const_cast<HashTableType&>(m_impl).lookup(key);
+  if (!entry)
+    return MappedTraits::peek(MappedTraits::emptyValue());
+  return MappedTraits::peek(entry->value);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline void HashMap<T, U, V, W, X, Y>::remove(iterator it)
-{
-    m_impl.remove(it.m_impl);
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline void HashMap<T, U, V, W, X, Y>::remove(iterator it) {
+  m_impl.remove(it.m_impl);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline void HashMap<T, U, V, W, X, Y>::remove(KeyPeekInType key)
-{
-    remove(find(key));
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline void HashMap<T, U, V, W, X, Y>::remove(KeyPeekInType key) {
+  remove(find(key));
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline void HashMap<T, U, V, W, X, Y>::clear()
-{
-    m_impl.clear();
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline void HashMap<T, U, V, W, X, Y>::clear() {
+  m_impl.clear();
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-auto HashMap<T, U, V, W, X, Y>::take(KeyPeekInType key) -> MappedType
-{
-    iterator it = find(key);
-    if (it == end())
-        return MappedTraits::emptyValue();
-    MappedType result = std::move(it->value);
-    remove(it);
-    return result;
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+auto HashMap<T, U, V, W, X, Y>::take(KeyPeekInType key) -> MappedType {
+  iterator it = find(key);
+  if (it == end())
+    return MappedTraits::emptyValue();
+  MappedType result = std::move(it->value);
+  remove(it);
+  return result;
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline bool HashMap<T, U, V, W, X, Y>::isValidKey(KeyPeekInType key)
-{
-    if (KeyTraits::isDeletedValue(key))
-        return false;
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline bool HashMap<T, U, V, W, X, Y>::isValidKey(KeyPeekInType key) {
+  if (KeyTraits::isDeletedValue(key))
+    return false;
 
-    if (HashFunctions::safeToCompareToEmptyOrDeleted) {
-        if (key == KeyTraits::emptyValue())
-            return false;
-    } else {
-        if (isHashTraitsEmptyValue<KeyTraits>(key))
-            return false;
-    }
+  if (HashFunctions::safeToCompareToEmptyOrDeleted) {
+    if (key == KeyTraits::emptyValue())
+      return false;
+  } else {
+    if (isHashTraitsEmptyValue<KeyTraits>(key))
+      return false;
+  }
 
-    return true;
+  return true;
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-bool operator==(const HashMap<T, U, V, W, X, Y>& a, const HashMap<T, U, V, W, X, Y>& b)
-{
-    if (a.size() != b.size())
-        return false;
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+bool operator==(const HashMap<T, U, V, W, X, Y>& a,
+                const HashMap<T, U, V, W, X, Y>& b) {
+  if (a.size() != b.size())
+    return false;
 
-    typedef typename HashMap<T, U, V, W, X, Y>::const_iterator const_iterator;
+  typedef typename HashMap<T, U, V, W, X, Y>::const_iterator const_iterator;
 
-    const_iterator aEnd = a.end();
-    const_iterator bEnd = b.end();
-    for (const_iterator it = a.begin(); it != aEnd; ++it) {
-        const_iterator bPos = b.find(it->key);
-        if (bPos == bEnd || it->value != bPos->value)
-            return false;
-    }
+  const_iterator aEnd = a.end();
+  const_iterator bEnd = b.end();
+  for (const_iterator it = a.begin(); it != aEnd; ++it) {
+    const_iterator bPos = b.find(it->key);
+    if (bPos == bEnd || it->value != bPos->value)
+      return false;
+  }
 
-    return true;
+  return true;
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y>
-inline bool operator!=(const HashMap<T, U, V, W, X, Y>& a, const HashMap<T, U, V, W, X, Y>& b)
-{
-    return !(a == b);
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y>
+inline bool operator!=(const HashMap<T, U, V, W, X, Y>& a,
+                       const HashMap<T, U, V, W, X, Y>& b) {
+  return !(a == b);
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
-inline void copyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& vector)
-{
-    typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::KeysIterator iterator;
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y,
+          typename Z>
+inline void copyKeysToVector(const HashMap<T, U, V, W, X, Y>& collection,
+                             Z& vector) {
+  typedef
+      typename HashMap<T, U, V, W, X, Y>::const_iterator::KeysIterator iterator;
 
-    vector.resize(collection.size());
+  vector.resize(collection.size());
 
-    iterator it = collection.begin().keys();
-    iterator end = collection.end().keys();
-    for (unsigned i = 0; it != end; ++it, ++i)
-        vector[i] = *it;
+  iterator it = collection.begin().keys();
+  iterator end = collection.end().keys();
+  for (unsigned i = 0; it != end; ++it, ++i)
+    vector[i] = *it;
 }
 
-template <typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
-inline void copyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& vector)
-{
-    typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::ValuesIterator iterator;
+template <typename T,
+          typename U,
+          typename V,
+          typename W,
+          typename X,
+          typename Y,
+          typename Z>
+inline void copyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection,
+                               Z& vector) {
+  typedef typename HashMap<T, U, V, W, X, Y>::const_iterator::ValuesIterator
+      iterator;
 
-    vector.resize(collection.size());
+  vector.resize(collection.size());
 
-    iterator it = collection.begin().values();
-    iterator end = collection.end().values();
-    for (unsigned i = 0; it != end; ++it, ++i)
-        vector[i] = *it;
+  iterator it = collection.begin().values();
+  iterator end = collection.end().values();
+  for (unsigned i = 0; it != end; ++it, ++i)
+    vector[i] = *it;
 }
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::HashMap;
 
-#endif // WTF_HashMap_h
+#endif  // WTF_HashMap_h

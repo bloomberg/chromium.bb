@@ -18,57 +18,59 @@
 #include "public/platform/modules/background_sync/WebSyncRegistration.h"
 #include "wtf/RefPtr.h"
 
-
 namespace blink {
 namespace {
 
-WebSyncProvider* backgroundSyncProvider()
-{
-    WebSyncProvider* webSyncProvider = Platform::current()->backgroundSyncProvider();
-    ASSERT(webSyncProvider);
-    return webSyncProvider;
+WebSyncProvider* backgroundSyncProvider() {
+  WebSyncProvider* webSyncProvider =
+      Platform::current()->backgroundSyncProvider();
+  ASSERT(webSyncProvider);
+  return webSyncProvider;
 }
-
 }
 
 SyncManager::SyncManager(ServiceWorkerRegistration* registration)
-    : m_registration(registration)
-{
-    ASSERT(registration);
+    : m_registration(registration) {
+  ASSERT(registration);
 }
 
-ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionContext* context, const String& tag)
-{
-    // TODO(jkarlin): Wait for the registration to become active instead of rejecting. See crbug.com/542437.
-    if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
+ScriptPromise SyncManager::registerFunction(ScriptState* scriptState,
+                                            ExecutionContext* context,
+                                            const String& tag) {
+  // TODO(jkarlin): Wait for the registration to become active instead of rejecting. See crbug.com/542437.
+  if (!m_registration->active())
+    return ScriptPromise::rejectWithDOMException(
+        scriptState,
+        DOMException::create(AbortError,
+                             "Registration failed - no active Service Worker"));
 
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
 
-    WebSyncRegistration* webSyncRegistration = new WebSyncRegistration(
-        WebSyncRegistration::UNREGISTERED_SYNC_ID /* id */,
-        tag,
-        WebSyncRegistration::NetworkStateOnline /* networkState */
-    );
-    backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
+  WebSyncRegistration* webSyncRegistration = new WebSyncRegistration(
+      WebSyncRegistration::UNREGISTERED_SYNC_ID /* id */, tag,
+      WebSyncRegistration::NetworkStateOnline /* networkState */
+      );
+  backgroundSyncProvider()->registerBackgroundSync(
+      webSyncRegistration, m_registration->webRegistration(),
+      new SyncRegistrationCallbacks(resolver, m_registration));
 
-    return promise;
+  return promise;
 }
 
-ScriptPromise SyncManager::getTags(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+ScriptPromise SyncManager::getTags(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
 
-    backgroundSyncProvider()->getRegistrations(m_registration->webRegistration(), new SyncGetRegistrationsCallbacks(resolver, m_registration));
+  backgroundSyncProvider()->getRegistrations(
+      m_registration->webRegistration(),
+      new SyncGetRegistrationsCallbacks(resolver, m_registration));
 
-    return promise;
+  return promise;
 }
 
-DEFINE_TRACE(SyncManager)
-{
-    visitor->trace(m_registration);
+DEFINE_TRACE(SyncManager) {
+  visitor->trace(m_registration);
 }
 
-} // namespace blink
+}  // namespace blink

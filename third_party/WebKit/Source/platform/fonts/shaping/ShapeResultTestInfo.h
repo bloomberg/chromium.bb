@@ -12,14 +12,16 @@
 namespace blink {
 
 class PLATFORM_EXPORT ShapeResultTestInfo : public ShapeResult {
-public:
-    unsigned numberOfRunsForTesting() const;
-    bool runInfoForTesting(unsigned runIndex, unsigned& startIndex,
-        unsigned& numGlyphs, hb_script_t&) const;
-    uint16_t glyphForTesting(unsigned runIndex, size_t glyphIndex) const;
-    float advanceForTesting(unsigned runIndex, size_t glyphIndex) const;
+ public:
+  unsigned numberOfRunsForTesting() const;
+  bool runInfoForTesting(unsigned runIndex,
+                         unsigned& startIndex,
+                         unsigned& numGlyphs,
+                         hb_script_t&) const;
+  uint16_t glyphForTesting(unsigned runIndex, size_t glyphIndex) const;
+  float advanceForTesting(unsigned runIndex, size_t glyphIndex) const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ShapeResultTestInfo_h
+#endif  // ShapeResultTestInfo_h

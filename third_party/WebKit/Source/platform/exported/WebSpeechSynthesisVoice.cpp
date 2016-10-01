@@ -31,48 +31,38 @@
 namespace blink {
 
 WebSpeechSynthesisVoice::WebSpeechSynthesisVoice()
-    : m_private(PlatformSpeechSynthesisVoice::create())
-{
+    : m_private(PlatformSpeechSynthesisVoice::create()) {}
+
+void WebSpeechSynthesisVoice::assign(const WebSpeechSynthesisVoice& other) {
+  m_private = other.m_private;
 }
 
-void WebSpeechSynthesisVoice::assign(const WebSpeechSynthesisVoice& other)
-{
-    m_private = other.m_private;
+void WebSpeechSynthesisVoice::reset() {
+  m_private.reset();
 }
 
-void WebSpeechSynthesisVoice::reset()
-{
-    m_private.reset();
+void WebSpeechSynthesisVoice::setVoiceURI(const WebString& voiceURI) {
+  m_private->setVoiceURI(voiceURI);
 }
 
-void WebSpeechSynthesisVoice::setVoiceURI(const WebString& voiceURI)
-{
-    m_private->setVoiceURI(voiceURI);
+void WebSpeechSynthesisVoice::setName(const WebString& name) {
+  m_private->setName(name);
 }
 
-void WebSpeechSynthesisVoice::setName(const WebString& name)
-{
-    m_private->setName(name);
+void WebSpeechSynthesisVoice::setLanguage(const WebString& language) {
+  m_private->setLang(language);
 }
 
-void WebSpeechSynthesisVoice::setLanguage(const WebString& language)
-{
-    m_private->setLang(language);
+void WebSpeechSynthesisVoice::setIsLocalService(bool isLocalService) {
+  m_private->setLocalService(isLocalService);
 }
 
-void WebSpeechSynthesisVoice::setIsLocalService(bool isLocalService)
-{
-    m_private->setLocalService(isLocalService);
+void WebSpeechSynthesisVoice::setIsDefault(bool isDefault) {
+  m_private->setIsDefault(isDefault);
 }
 
-void WebSpeechSynthesisVoice::setIsDefault(bool isDefault)
-{
-    m_private->setIsDefault(isDefault);
+WebSpeechSynthesisVoice::operator PlatformSpeechSynthesisVoice*() const {
+  return m_private.get();
 }
 
-WebSpeechSynthesisVoice::operator PlatformSpeechSynthesisVoice*() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

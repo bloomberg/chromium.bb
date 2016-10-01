@@ -17,53 +17,54 @@ class HistogramBase;
 namespace blink {
 
 class PLATFORM_EXPORT CustomCountHistogram {
-public:
-    CustomCountHistogram(const char* name, base::HistogramBase::Sample min, base::HistogramBase::Sample max, int32_t bucketCount);
-    void count(base::HistogramBase::Sample);
+ public:
+  CustomCountHistogram(const char* name,
+                       base::HistogramBase::Sample min,
+                       base::HistogramBase::Sample max,
+                       int32_t bucketCount);
+  void count(base::HistogramBase::Sample);
 
-protected:
-    explicit CustomCountHistogram(base::HistogramBase*);
+ protected:
+  explicit CustomCountHistogram(base::HistogramBase*);
 
-    base::HistogramBase* m_histogram;
+  base::HistogramBase* m_histogram;
 };
 
 class PLATFORM_EXPORT BooleanHistogram : public CustomCountHistogram {
-public:
-    BooleanHistogram(const char* name);
+ public:
+  BooleanHistogram(const char* name);
 };
 
 class PLATFORM_EXPORT EnumerationHistogram : public CustomCountHistogram {
-public:
-    EnumerationHistogram(const char* name, base::HistogramBase::Sample boundaryValue);
+ public:
+  EnumerationHistogram(const char* name,
+                       base::HistogramBase::Sample boundaryValue);
 };
 
 class PLATFORM_EXPORT SparseHistogram {
-public:
-    explicit SparseHistogram(const char* name);
+ public:
+  explicit SparseHistogram(const char* name);
 
-    void sample(base::HistogramBase::Sample);
+  void sample(base::HistogramBase::Sample);
 
-private:
-    base::HistogramBase* m_histogram;
+ private:
+  base::HistogramBase* m_histogram;
 };
 
-
-
 class PLATFORM_EXPORT ScopedUsHistogramTimer {
-public:
-    ScopedUsHistogramTimer(CustomCountHistogram& counter)
-        : m_startTime(WTF::monotonicallyIncreasingTime()),
-        m_counter(counter) {}
+ public:
+  ScopedUsHistogramTimer(CustomCountHistogram& counter)
+      : m_startTime(WTF::monotonicallyIncreasingTime()), m_counter(counter) {}
 
-    ~ScopedUsHistogramTimer()
-    {
-        m_counter.count((WTF::monotonicallyIncreasingTime()  - m_startTime) * base::Time::kMicrosecondsPerSecond);
-    }
+  ~ScopedUsHistogramTimer() {
+    m_counter.count((WTF::monotonicallyIncreasingTime() - m_startTime) *
+                    base::Time::kMicrosecondsPerSecond);
+  }
 
-private:
-    // In seconds.
-    double m_startTime;
-    CustomCountHistogram& m_counter;
+ private:
+  // In seconds.
+  double m_startTime;
+  CustomCountHistogram& m_counter;
 };
 
 // Use code like this to record time, in microseconds, to execute a block of code:
@@ -74,10 +75,11 @@ private:
 // }
 // This macro records all times between 0us and 10 seconds.
 // Do not change this macro without renaming all metrics that use it!
-#define SCOPED_BLINK_UMA_HISTOGRAM_TIMER(name) \
-DEFINE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounter, (name, 0, 10000000, 50)); \
-ScopedUsHistogramTimer timer(scopedUsCounter);
+#define SCOPED_BLINK_UMA_HISTOGRAM_TIMER(name)               \
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounter, \
+                      (name, 0, 10000000, 50));              \
+  ScopedUsHistogramTimer timer(scopedUsCounter);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Histogram_h
+#endif  // Histogram_h

@@ -16,25 +16,23 @@ class RequestDeviceOptions;
 class ScriptPromise;
 class ScriptState;
 
-class Bluetooth
-    : public GarbageCollected<Bluetooth>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Bluetooth* create()
-    {
-        return new Bluetooth();
-    }
+class Bluetooth : public GarbageCollected<Bluetooth>, public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // BluetoothDiscovery interface
-    ScriptPromise requestDevice(ScriptState*, const RequestDeviceOptions&, ExceptionState&);
+ public:
+  static Bluetooth* create() { return new Bluetooth(); }
 
-    DEFINE_INLINE_TRACE() { }
+  // BluetoothDiscovery interface
+  ScriptPromise requestDevice(ScriptState*,
+                              const RequestDeviceOptions&,
+                              ExceptionState&);
 
-private:
-    bool promotedOriginTrial = false;
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  bool promotedOriginTrial = false;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Bluetooth_h
+#endif  // Bluetooth_h

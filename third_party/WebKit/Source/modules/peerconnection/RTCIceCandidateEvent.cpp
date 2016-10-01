@@ -28,35 +28,31 @@
 
 namespace blink {
 
-RTCIceCandidateEvent* RTCIceCandidateEvent::create(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
-{
-    return new RTCIceCandidateEvent(canBubble, cancelable, candidate);
+RTCIceCandidateEvent* RTCIceCandidateEvent::create(bool canBubble,
+                                                   bool cancelable,
+                                                   RTCIceCandidate* candidate) {
+  return new RTCIceCandidateEvent(canBubble, cancelable, candidate);
 }
 
-RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate* candidate)
-    : Event(EventTypeNames::icecandidate, canBubble, cancelable)
-    , m_candidate(candidate)
-{
+RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble,
+                                           bool cancelable,
+                                           RTCIceCandidate* candidate)
+    : Event(EventTypeNames::icecandidate, canBubble, cancelable),
+      m_candidate(candidate) {}
+
+RTCIceCandidateEvent::~RTCIceCandidateEvent() {}
+
+RTCIceCandidate* RTCIceCandidateEvent::candidate() const {
+  return m_candidate.get();
 }
 
-RTCIceCandidateEvent::~RTCIceCandidateEvent()
-{
+const AtomicString& RTCIceCandidateEvent::interfaceName() const {
+  return EventNames::RTCIceCandidateEvent;
 }
 
-RTCIceCandidate* RTCIceCandidateEvent::candidate() const
-{
-    return m_candidate.get();
+DEFINE_TRACE(RTCIceCandidateEvent) {
+  visitor->trace(m_candidate);
+  Event::trace(visitor);
 }
 
-const AtomicString& RTCIceCandidateEvent::interfaceName() const
-{
-    return EventNames::RTCIceCandidateEvent;
-}
-
-DEFINE_TRACE(RTCIceCandidateEvent)
-{
-    visitor->trace(m_candidate);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

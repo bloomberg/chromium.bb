@@ -38,60 +38,68 @@ namespace blink {
 
 // This class decodes the GIF image format.
 class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
-    WTF_MAKE_NONCOPYABLE(GIFImageDecoder);
-public:
-    GIFImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes);
-    ~GIFImageDecoder() override;
+  WTF_MAKE_NONCOPYABLE(GIFImageDecoder);
 
-    enum GIFParseQuery { GIFSizeQuery, GIFFrameCountQuery };
+ public:
+  GIFImageDecoder(AlphaOption,
+                  GammaAndColorProfileOption,
+                  size_t maxDecodedBytes);
+  ~GIFImageDecoder() override;
 
-    // ImageDecoder:
-    String filenameExtension() const override { return "gif"; }
-    void onSetData(SegmentReader* data) override;
-    int repetitionCount() const override;
-    bool frameIsCompleteAtIndex(size_t) const override;
-    float frameDurationAtIndex(size_t) const override;
-    size_t clearCacheExceptFrame(size_t) override;
-    // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
-    // accessing deleted memory, especially when calling this from inside
-    // GIFImageReader!
-    bool setFailed() override;
+  enum GIFParseQuery { GIFSizeQuery, GIFFrameCountQuery };
 
-    // Callbacks from the GIF reader.
-    bool haveDecodedRow(size_t frameIndex, GIFRow::const_iterator rowBegin, size_t width, size_t rowNumber, unsigned repeatCount, bool writeTransparentPixels);
-    bool frameComplete(size_t frameIndex);
+  // ImageDecoder:
+  String filenameExtension() const override { return "gif"; }
+  void onSetData(SegmentReader* data) override;
+  int repetitionCount() const override;
+  bool frameIsCompleteAtIndex(size_t) const override;
+  float frameDurationAtIndex(size_t) const override;
+  size_t clearCacheExceptFrame(size_t) override;
+  // CAUTION: setFailed() deletes |m_reader|.  Be careful to avoid
+  // accessing deleted memory, especially when calling this from inside
+  // GIFImageReader!
+  bool setFailed() override;
 
-    // For testing.
-    bool parseCompleted() const;
+  // Callbacks from the GIF reader.
+  bool haveDecodedRow(size_t frameIndex,
+                      GIFRow::const_iterator rowBegin,
+                      size_t width,
+                      size_t rowNumber,
+                      unsigned repeatCount,
+                      bool writeTransparentPixels);
+  bool frameComplete(size_t frameIndex);
 
-private:
-    // ImageDecoder:
-    void clearFrameBuffer(size_t frameIndex) override;
-    virtual void decodeSize() { parse(GIFSizeQuery); }
-    size_t decodeFrameCount() override;
-    void initializeNewFrame(size_t) override;
-    void decode(size_t) override;
+  // For testing.
+  bool parseCompleted() const;
 
-    // Parses as much as is needed to answer the query, ignoring bitmap
-    // data. If parsing fails, sets the "decode failure" flag.
-    void parse(GIFParseQuery);
+ private:
+  // ImageDecoder:
+  void clearFrameBuffer(size_t frameIndex) override;
+  virtual void decodeSize() { parse(GIFSizeQuery); }
+  size_t decodeFrameCount() override;
+  void initializeNewFrame(size_t) override;
+  void decode(size_t) override;
 
-    // Called to initialize the frame buffer with the given index, based on
-    // the previous frame's disposal method. Returns true on success. On
-    // failure, this will mark the image as failed.
-    bool initFrameBuffer(size_t frameIndex);
+  // Parses as much as is needed to answer the query, ignoring bitmap
+  // data. If parsing fails, sets the "decode failure" flag.
+  void parse(GIFParseQuery);
 
-    // Like clearCacheExceptFrame(), but preserves two frames instead of one.
-    size_t clearCacheExceptTwoFrames(size_t, size_t);
+  // Called to initialize the frame buffer with the given index, based on
+  // the previous frame's disposal method. Returns true on success. On
+  // failure, this will mark the image as failed.
+  bool initFrameBuffer(size_t frameIndex);
 
-    void updateAggressivePurging(size_t index);
+  // Like clearCacheExceptFrame(), but preserves two frames instead of one.
+  size_t clearCacheExceptTwoFrames(size_t, size_t);
 
-    bool m_currentBufferSawAlpha;
-    bool m_purgeAggressively;
-    mutable int m_repetitionCount;
-    std::unique_ptr<GIFImageReader> m_reader;
+  void updateAggressivePurging(size_t index);
+
+  bool m_currentBufferSawAlpha;
+  bool m_purgeAggressively;
+  mutable int m_repetitionCount;
+  std::unique_ptr<GIFImageReader> m_reader;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

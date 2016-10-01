@@ -52,77 +52,76 @@ namespace {
 
 // Gets the encoding for the form.
 // TODO(tkent): Use FormDataEncoder::encodingFromAcceptCharset().
-void getFormEncoding(const HTMLFormElement& form, WTF::TextEncoding* encoding)
-{
-    String str(form.fastGetAttribute(HTMLNames::accept_charsetAttr));
-    str.replace(',', ' ');
-    Vector<String> charsets;
-    str.split(' ', charsets);
-    for (const String& charset : charsets) {
-        *encoding = WTF::TextEncoding(charset);
-        if (encoding->isValid())
-            return;
-    }
-    if (form.document().loader())
-        *encoding = WTF::TextEncoding(form.document().encoding());
+void getFormEncoding(const HTMLFormElement& form, WTF::TextEncoding* encoding) {
+  String str(form.fastGetAttribute(HTMLNames::accept_charsetAttr));
+  str.replace(',', ' ');
+  Vector<String> charsets;
+  str.split(' ', charsets);
+  for (const String& charset : charsets) {
+    *encoding = WTF::TextEncoding(charset);
+    if (encoding->isValid())
+      return;
+  }
+  if (form.document().loader())
+    *encoding = WTF::TextEncoding(form.document().encoding());
 }
 
 // Returns true if the submit request results in an HTTP URL.
-bool isHTTPFormSubmit(const HTMLFormElement& form)
-{
-    // FIXME: This function is insane. This is an overly complicated way to get
-    // this information.
-    String action(form.action());
-    // The isNull() check is trying to avoid completeURL returning KURL() when
-    // passed a null string.
-    return form.document().completeURL(action.isNull() ? "" : action).protocolIs("http");
+bool isHTTPFormSubmit(const HTMLFormElement& form) {
+  // FIXME: This function is insane. This is an overly complicated way to get
+  // this information.
+  String action(form.action());
+  // The isNull() check is trying to avoid completeURL returning KURL() when
+  // passed a null string.
+  return form.document()
+      .completeURL(action.isNull() ? "" : action)
+      .protocolIs("http");
 }
 
 // If the form does not have an activated submit button, the first submit
 // button is returned.
-HTMLFormControlElement* buttonToActivate(const HTMLFormElement& form)
-{
-    HTMLFormControlElement* firstSubmitButton = nullptr;
-    for (auto& element : form.associatedElements()) {
-        if (!element->isFormControlElement())
-            continue;
-        HTMLFormControlElement* control = toHTMLFormControlElement(element);
-        if (control->isActivatedSubmit()) {
-            // There's a button that is already activated for submit, return
-            // nullptr.
-            return nullptr;
-        }
-        if (!firstSubmitButton && control->isSuccessfulSubmitButton())
-            firstSubmitButton = control;
+HTMLFormControlElement* buttonToActivate(const HTMLFormElement& form) {
+  HTMLFormControlElement* firstSubmitButton = nullptr;
+  for (auto& element : form.associatedElements()) {
+    if (!element->isFormControlElement())
+      continue;
+    HTMLFormControlElement* control = toHTMLFormControlElement(element);
+    if (control->isActivatedSubmit()) {
+      // There's a button that is already activated for submit, return
+      // nullptr.
+      return nullptr;
     }
-    return firstSubmitButton;
+    if (!firstSubmitButton && control->isSuccessfulSubmitButton())
+      firstSubmitButton = control;
+  }
+  return firstSubmitButton;
 }
 
 // Returns true if the selected state of all the options matches the default
 // selected state.
-bool isSelectInDefaultState(const HTMLSelectElement& select)
-{
-    if (select.multiple() || select.size() > 1) {
-        for (const auto& optionElement : select.optionList()) {
-            if (optionElement->selected() != optionElement->fastHasAttribute(selectedAttr))
-                return false;
-        }
-        return true;
-    }
-
-    // The select is rendered as a combobox (called menulist in WebKit). At
-    // least one item is selected, determine which one.
-    HTMLOptionElement* initialSelected = nullptr;
+bool isSelectInDefaultState(const HTMLSelectElement& select) {
+  if (select.multiple() || select.size() > 1) {
     for (const auto& optionElement : select.optionList()) {
-        if (optionElement->fastHasAttribute(selectedAttr)) {
-            // The page specified the option to select.
-            initialSelected = optionElement;
-            break;
-        }
-        if (!initialSelected)
-            initialSelected = optionElement;
+      if (optionElement->selected() !=
+          optionElement->fastHasAttribute(selectedAttr))
+        return false;
     }
-    return !initialSelected || initialSelected->selected();
+    return true;
+  }
+
+  // The select is rendered as a combobox (called menulist in WebKit). At
+  // least one item is selected, determine which one.
+  HTMLOptionElement* initialSelected = nullptr;
+  for (const auto& optionElement : select.optionList()) {
+    if (optionElement->fastHasAttribute(selectedAttr)) {
+      // The page specified the option to select.
+      initialSelected = optionElement;
+      break;
+    }
+    if (!initialSelected)
+      initialSelected = optionElement;
+  }
+  return !initialSelected || initialSelected->selected();
 }
 
 // Returns true if the form element is in its default state, false otherwise.
@@ -130,16 +129,17 @@ bool isSelectInDefaultState(const HTMLSelectElement& select)
 // page, and varies depending upon the form element. For example, a checkbox is
 // in its default state if the checked state matches the state of the checked
 // attribute.
-bool isInDefaultState(const HTMLFormControlElement& formElement)
-{
-    if (isHTMLInputElement(formElement)) {
-        const HTMLInputElement& inputElement = toHTMLInputElement(formElement);
-        if (inputElement.type() == InputTypeNames::checkbox || inputElement.type() == InputTypeNames::radio)
-            return inputElement.checked() == inputElement.fastHasAttribute(checkedAttr);
-    } else if (isHTMLSelectElement(formElement)) {
-        return isSelectInDefaultState(toHTMLSelectElement(formElement));
-    }
-    return true;
+bool isInDefaultState(const HTMLFormControlElement& formElement) {
+  if (isHTMLInputElement(formElement)) {
+    const HTMLInputElement& inputElement = toHTMLInputElement(formElement);
+    if (inputElement.type() == InputTypeNames::checkbox ||
+        inputElement.type() == InputTypeNames::radio)
+      return inputElement.checked() ==
+             inputElement.fastHasAttribute(checkedAttr);
+  } else if (isHTMLSelectElement(formElement)) {
+    return isSelectInDefaultState(toHTMLSelectElement(formElement));
+  }
+  return true;
 }
 
 // Look for a suitable search text field in a given HTMLFormElement
@@ -148,41 +148,41 @@ bool isInDefaultState(const HTMLFormControlElement& formElement)
 //  - A file upload field
 //  - A Password field
 //  - More than one text field
-HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement& form)
-{
-    HTMLInputElement* textElement = nullptr;
-    for (const auto& item : form.associatedElements()) {
-        if (!item->isFormControlElement())
-            continue;
+HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement& form) {
+  HTMLInputElement* textElement = nullptr;
+  for (const auto& item : form.associatedElements()) {
+    if (!item->isFormControlElement())
+      continue;
 
-        HTMLFormControlElement& control = toHTMLFormControlElement(*item);
+    HTMLFormControlElement& control = toHTMLFormControlElement(*item);
 
-        if (control.isDisabledFormControl() || control.name().isNull())
-            continue;
+    if (control.isDisabledFormControl() || control.name().isNull())
+      continue;
 
-        if (!isInDefaultState(control) || isHTMLTextAreaElement(control))
-            return nullptr;
+    if (!isInDefaultState(control) || isHTMLTextAreaElement(control))
+      return nullptr;
 
-        if (isHTMLInputElement(control) && control.willValidate()) {
-            const HTMLInputElement& input = toHTMLInputElement(control);
+    if (isHTMLInputElement(control) && control.willValidate()) {
+      const HTMLInputElement& input = toHTMLInputElement(control);
 
-            // Return nothing if a file upload field or a password field are
-            // found.
-            if (input.type() == InputTypeNames::file || input.type() == InputTypeNames::password)
-                return nullptr;
+      // Return nothing if a file upload field or a password field are
+      // found.
+      if (input.type() == InputTypeNames::file ||
+          input.type() == InputTypeNames::password)
+        return nullptr;
 
-            if (input.isTextField()) {
-                if (textElement) {
-                    // The auto-complete bar only knows how to fill in one
-                    // value.  This form has multiple fields; don't treat it as
-                    // searchable.
-                    return nullptr;
-                }
-                textElement = toHTMLInputElement(&control);
-            }
+      if (input.isTextField()) {
+        if (textElement) {
+          // The auto-complete bar only knows how to fill in one
+          // value.  This form has multiple fields; don't treat it as
+          // searchable.
+          return nullptr;
         }
+        textElement = toHTMLInputElement(&control);
+      }
     }
-    return textElement;
+  }
+  return textElement;
 }
 
 // Build a search string based on a given HTMLFormElement and HTMLInputElement
@@ -191,92 +191,99 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement& form)
 // "hl=en&source=hp&biw=1085&bih=854&q={searchTerms}&btnG=Google+Search&aq=f&aqi=&aql=&oq="
 //
 // Return false if the provided HTMLInputElement is not found in the form
-bool buildSearchString(const HTMLFormElement& form, Vector<char>* encodedString, const WTF::TextEncoding& encoding, const HTMLInputElement* textElement)
-{
-    bool isElementFound = false;
-    for (const auto& item : form.associatedElements()) {
-        if (!item->isFormControlElement())
-            continue;
+bool buildSearchString(const HTMLFormElement& form,
+                       Vector<char>* encodedString,
+                       const WTF::TextEncoding& encoding,
+                       const HTMLInputElement* textElement) {
+  bool isElementFound = false;
+  for (const auto& item : form.associatedElements()) {
+    if (!item->isFormControlElement())
+      continue;
 
-        HTMLFormControlElement& control = toHTMLFormControlElement(*item);
-        if (control.isDisabledFormControl() || control.name().isNull())
-            continue;
+    HTMLFormControlElement& control = toHTMLFormControlElement(*item);
+    if (control.isDisabledFormControl() || control.name().isNull())
+      continue;
 
-        FormData* formData = FormData::create(encoding);
-        control.appendToFormData(*formData);
+    FormData* formData = FormData::create(encoding);
+    control.appendToFormData(*formData);
 
-        for (const auto& entry : formData->entries()) {
-            if (!encodedString->isEmpty())
-                encodedString->append('&');
-            FormDataEncoder::encodeStringAsFormData(*encodedString, entry->name(), FormDataEncoder::NormalizeCRLF);
-            encodedString->append('=');
-            if (&control == textElement) {
-                encodedString->append("{searchTerms}", 13);
-                isElementFound = true;
-            } else {
-                FormDataEncoder::encodeStringAsFormData(*encodedString, entry->value(), FormDataEncoder::NormalizeCRLF);
-            }
-        }
+    for (const auto& entry : formData->entries()) {
+      if (!encodedString->isEmpty())
+        encodedString->append('&');
+      FormDataEncoder::encodeStringAsFormData(*encodedString, entry->name(),
+                                              FormDataEncoder::NormalizeCRLF);
+      encodedString->append('=');
+      if (&control == textElement) {
+        encodedString->append("{searchTerms}", 13);
+        isElementFound = true;
+      } else {
+        FormDataEncoder::encodeStringAsFormData(*encodedString, entry->value(),
+                                                FormDataEncoder::NormalizeCRLF);
+      }
     }
-    return isElementFound;
+  }
+  return isElementFound;
 }
 
-} // namespace
+}  // namespace
 
-WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const WebInputElement& selectedInputElement)
-{
-    HTMLFormElement* formElement = static_cast<HTMLFormElement*>(form);
-    HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(selectedInputElement);
+WebSearchableFormData::WebSearchableFormData(
+    const WebFormElement& form,
+    const WebInputElement& selectedInputElement) {
+  HTMLFormElement* formElement = static_cast<HTMLFormElement*>(form);
+  HTMLInputElement* inputElement =
+      static_cast<HTMLInputElement*>(selectedInputElement);
 
-    // Only consider forms that GET data.
-    // Allow HTTPS only when an input element is provided.
-    if (equalIgnoringASCIICase(formElement->getAttribute(methodAttr), "post")
-        || (!isHTTPFormSubmit(*formElement) && !inputElement))
-        return;
+  // Only consider forms that GET data.
+  // Allow HTTPS only when an input element is provided.
+  if (equalIgnoringASCIICase(formElement->getAttribute(methodAttr), "post") ||
+      (!isHTTPFormSubmit(*formElement) && !inputElement))
+    return;
 
-    WTF::TextEncoding encoding;
-    getFormEncoding(*formElement, &encoding);
-    if (!encoding.isValid()) {
-        // Need a valid encoding to encode the form elements.
-        // If the encoding isn't found webkit ends up replacing the params with
-        // empty strings. So, we don't try to do anything here.
-        return;
-    }
+  WTF::TextEncoding encoding;
+  getFormEncoding(*formElement, &encoding);
+  if (!encoding.isValid()) {
+    // Need a valid encoding to encode the form elements.
+    // If the encoding isn't found webkit ends up replacing the params with
+    // empty strings. So, we don't try to do anything here.
+    return;
+  }
 
-    // Look for a suitable search text field in the form when a
-    // selectedInputElement is not provided.
-    if (!inputElement) {
-        inputElement = findSuitableSearchInputElement(*formElement);
+  // Look for a suitable search text field in the form when a
+  // selectedInputElement is not provided.
+  if (!inputElement) {
+    inputElement = findSuitableSearchInputElement(*formElement);
 
-        // Return if no suitable text element has been found.
-        if (!inputElement)
-            return;
-    }
+    // Return if no suitable text element has been found.
+    if (!inputElement)
+      return;
+  }
 
-    HTMLFormControlElement* firstSubmitButton = buttonToActivate(*formElement);
-    if (firstSubmitButton) {
-        // The form does not have an active submit button, make the first button
-        // active. We need to do this, otherwise the URL will not contain the
-        // name of the submit button.
-        firstSubmitButton->setActivatedSubmit(true);
-    }
+  HTMLFormControlElement* firstSubmitButton = buttonToActivate(*formElement);
+  if (firstSubmitButton) {
+    // The form does not have an active submit button, make the first button
+    // active. We need to do this, otherwise the URL will not contain the
+    // name of the submit button.
+    firstSubmitButton->setActivatedSubmit(true);
+  }
 
-    Vector<char> encodedString;
-    bool isValidSearchString = buildSearchString(*formElement, &encodedString, encoding, inputElement);
+  Vector<char> encodedString;
+  bool isValidSearchString =
+      buildSearchString(*formElement, &encodedString, encoding, inputElement);
 
-    if (firstSubmitButton)
-        firstSubmitButton->setActivatedSubmit(false);
+  if (firstSubmitButton)
+    firstSubmitButton->setActivatedSubmit(false);
 
-    // Return if the search string is not valid.
-    if (!isValidSearchString)
-        return;
+  // Return if the search string is not valid.
+  if (!isValidSearchString)
+    return;
 
-    String action(formElement->action());
-    KURL url(formElement->document().completeURL(action.isNull() ? "" : action));
-    RefPtr<EncodedFormData> formData = EncodedFormData::create(encodedString);
-    url.setQuery(formData->flattenToString());
-    m_url = url;
-    m_encoding = String(encoding.name());
+  String action(formElement->action());
+  KURL url(formElement->document().completeURL(action.isNull() ? "" : action));
+  RefPtr<EncodedFormData> formData = EncodedFormData::create(encodedString);
+  url.setQuery(formData->flattenToString());
+  m_url = url;
+  m_encoding = String(encoding.name());
 }
 
-} // namespace blink
+}  // namespace blink

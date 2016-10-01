@@ -20,34 +20,43 @@
 namespace blink {
 
 // static
-MediaStream* HTMLMediaElementCapture::captureStream(HTMLMediaElement& element, ExceptionState& exceptionState)
-{
-    if (element.currentSrc().isNull()) {
-        exceptionState.throwDOMException(NotSupportedError, "The media element must have a source.");
-        return nullptr;
-    }
+MediaStream* HTMLMediaElementCapture::captureStream(
+    HTMLMediaElement& element,
+    ExceptionState& exceptionState) {
+  if (element.currentSrc().isNull()) {
+    exceptionState.throwDOMException(NotSupportedError,
+                                     "The media element must have a source.");
+    return nullptr;
+  }
 
-    // Avoid capturing from EME-protected Media Elements.
-    if (HTMLMediaElementEncryptedMedia::mediaKeys(element)) {
-        // This exception is not defined in the spec, see https://github.com/w3c/mediacapture-fromelement/issues/20.
-        exceptionState.throwDOMException(NotSupportedError, "Stream capture not supported with EME");
-        return nullptr;
-    }
+  // Avoid capturing from EME-protected Media Elements.
+  if (HTMLMediaElementEncryptedMedia::mediaKeys(element)) {
+    // This exception is not defined in the spec, see https://github.com/w3c/mediacapture-fromelement/issues/20.
+    exceptionState.throwDOMException(NotSupportedError,
+                                     "Stream capture not supported with EME");
+    return nullptr;
+  }
 
-    // If |element| is actually playing a MediaStream, just clone it.
-    if (HTMLMediaElement::isMediaStreamURL(element.currentSrc().getString())) {
-        return MediaStream::create(element.getExecutionContext(), MediaStreamRegistry::registry().lookupMediaStreamDescriptor(element.currentSrc().getString()));
-    }
+  // If |element| is actually playing a MediaStream, just clone it.
+  if (HTMLMediaElement::isMediaStreamURL(element.currentSrc().getString())) {
+    return MediaStream::create(
+        element.getExecutionContext(),
+        MediaStreamRegistry::registry().lookupMediaStreamDescriptor(
+            element.currentSrc().getString()));
+  }
 
-    WebMediaStream webStream;
-    webStream.initialize(WebVector<WebMediaStreamTrack>(), WebVector<WebMediaStreamTrack>());
-    MediaStreamCenter::instance().didCreateMediaStream(webStream);
+  WebMediaStream webStream;
+  webStream.initialize(WebVector<WebMediaStreamTrack>(),
+                       WebVector<WebMediaStreamTrack>());
+  MediaStreamCenter::instance().didCreateMediaStream(webStream);
 
-    if (element.hasVideo())
-        Platform::current()->createHTMLVideoElementCapturer(&webStream, element.webMediaPlayer());
-    if (element.hasAudio())
-        Platform::current()->createHTMLAudioElementCapturer(&webStream, element.webMediaPlayer());
-    return MediaStream::create(element.getExecutionContext(), webStream);
+  if (element.hasVideo())
+    Platform::current()->createHTMLVideoElementCapturer(
+        &webStream, element.webMediaPlayer());
+  if (element.hasAudio())
+    Platform::current()->createHTMLAudioElementCapturer(
+        &webStream, element.webMediaPlayer());
+  return MediaStream::create(element.getExecutionContext(), webStream);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -39,22 +39,28 @@
 
 namespace blink {
 
-void V8MessageChannel::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+void V8MessageChannel::constructorCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExecutionContext* context = currentExecutionContext(info.GetIsolate());
 
-    MessageChannel* channel = MessageChannel::create(context);
+  MessageChannel* channel = MessageChannel::create(context);
 
-    v8::Local<v8::Object> wrapper = info.Holder();
+  v8::Local<v8::Object> wrapper = info.Holder();
 
-    // Create references from the MessageChannel wrapper to the two
-    // MessagePort wrappers to make sure that the MessagePort wrappers
-    // stay alive as long as the MessageChannel wrapper is around.
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    V8HiddenValue::setHiddenValue(scriptState, wrapper, V8HiddenValue::port1(info.GetIsolate()), toV8(channel->port1(), info.Holder(), info.GetIsolate()));
-    V8HiddenValue::setHiddenValue(scriptState, wrapper, V8HiddenValue::port2(info.GetIsolate()), toV8(channel->port2(), info.Holder(), info.GetIsolate()));
+  // Create references from the MessageChannel wrapper to the two
+  // MessagePort wrappers to make sure that the MessagePort wrappers
+  // stay alive as long as the MessageChannel wrapper is around.
+  ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+  V8HiddenValue::setHiddenValue(
+      scriptState, wrapper, V8HiddenValue::port1(info.GetIsolate()),
+      toV8(channel->port1(), info.Holder(), info.GetIsolate()));
+  V8HiddenValue::setHiddenValue(
+      scriptState, wrapper, V8HiddenValue::port2(info.GetIsolate()),
+      toV8(channel->port2(), info.Holder(), info.GetIsolate()));
 
-    v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), channel, &wrapperTypeInfo, wrapper));
+  v8SetReturnValue(info,
+                   V8DOMWrapper::associateObjectWithWrapper(
+                       info.GetIsolate(), channel, &wrapperTypeInfo, wrapper));
 }
 
-} // namespace blink
+}  // namespace blink

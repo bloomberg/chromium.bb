@@ -39,35 +39,34 @@
 namespace blink {
 
 class V8IdleTaskAdapter : public WebThread::IdleTask {
-    USING_FAST_MALLOC(V8IdleTaskAdapter);
-    WTF_MAKE_NONCOPYABLE(V8IdleTaskAdapter);
-public:
-    V8IdleTaskAdapter(v8::IdleTask* task) : m_task(wrapUnique(task)) { }
-    ~V8IdleTaskAdapter() override { }
-    void run(double delaySeconds) override
-    {
-        m_task->Run(delaySeconds);
-    }
-private:
-    std::unique_ptr<v8::IdleTask> m_task;
+  USING_FAST_MALLOC(V8IdleTaskAdapter);
+  WTF_MAKE_NONCOPYABLE(V8IdleTaskAdapter);
+
+ public:
+  V8IdleTaskAdapter(v8::IdleTask* task) : m_task(wrapUnique(task)) {}
+  ~V8IdleTaskAdapter() override {}
+  void run(double delaySeconds) override { m_task->Run(delaySeconds); }
+
+ private:
+  std::unique_ptr<v8::IdleTask> m_task;
 };
 
 class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
-    USING_FAST_MALLOC(V8IdleTaskRunner);
-    WTF_MAKE_NONCOPYABLE(V8IdleTaskRunner);
-public:
-    V8IdleTaskRunner(WebScheduler* scheduler) : m_scheduler(scheduler) { }
-    ~V8IdleTaskRunner() override { }
-    void PostIdleTask(v8::IdleTask* task) override
-    {
-        ASSERT(RuntimeEnabledFeatures::v8IdleTasksEnabled());
-        m_scheduler->postIdleTask(BLINK_FROM_HERE, new V8IdleTaskAdapter(task));
-    }
-private:
-    WebScheduler* m_scheduler;
+  USING_FAST_MALLOC(V8IdleTaskRunner);
+  WTF_MAKE_NONCOPYABLE(V8IdleTaskRunner);
+
+ public:
+  V8IdleTaskRunner(WebScheduler* scheduler) : m_scheduler(scheduler) {}
+  ~V8IdleTaskRunner() override {}
+  void PostIdleTask(v8::IdleTask* task) override {
+    ASSERT(RuntimeEnabledFeatures::v8IdleTasksEnabled());
+    m_scheduler->postIdleTask(BLINK_FROM_HERE, new V8IdleTaskAdapter(task));
+  }
+
+ private:
+  WebScheduler* m_scheduler;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // V8Initializer_h
+#endif  // V8Initializer_h

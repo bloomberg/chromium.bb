@@ -36,89 +36,100 @@
 
 namespace blink {
 
-SVGAngleTearOff::SVGAngleTearOff(SVGAngle* targetProperty, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
-    : SVGPropertyTearOff<SVGAngle>(targetProperty, contextElement, propertyIsAnimVal, attributeName)
-{
+SVGAngleTearOff::SVGAngleTearOff(SVGAngle* targetProperty,
+                                 SVGElement* contextElement,
+                                 PropertyIsAnimValType propertyIsAnimVal,
+                                 const QualifiedName& attributeName)
+    : SVGPropertyTearOff<SVGAngle>(targetProperty,
+                                   contextElement,
+                                   propertyIsAnimVal,
+                                   attributeName) {}
+
+SVGAngleTearOff::~SVGAngleTearOff() {}
+
+void SVGAngleTearOff::setValue(float value, ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  target()->setValue(value);
+  commitChange();
 }
 
-SVGAngleTearOff::~SVGAngleTearOff()
-{
+void SVGAngleTearOff::setValueInSpecifiedUnits(float value,
+                                               ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  target()->setValueInSpecifiedUnits(value);
+  commitChange();
 }
 
-void SVGAngleTearOff::setValue(float value, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    target()->setValue(value);
-    commitChange();
+void SVGAngleTearOff::newValueSpecifiedUnits(unsigned short unitType,
+                                             float valueInSpecifiedUnits,
+                                             ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  if (unitType == SVGAngle::kSvgAngletypeUnknown ||
+      unitType > SVGAngle::kSvgAngletypeGrad) {
+    exceptionState.throwDOMException(
+        NotSupportedError, "Cannot set value with unknown or invalid units (" +
+                               String::number(unitType) + ").");
+    return;
+  }
+  target()->newValueSpecifiedUnits(
+      static_cast<SVGAngle::SVGAngleType>(unitType), valueInSpecifiedUnits);
+  commitChange();
 }
 
-void SVGAngleTearOff::setValueInSpecifiedUnits(float value, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    target()->setValueInSpecifiedUnits(value);
-    commitChange();
+void SVGAngleTearOff::convertToSpecifiedUnits(unsigned short unitType,
+                                              ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  if (unitType == SVGAngle::kSvgAngletypeUnknown ||
+      unitType > SVGAngle::kSvgAngletypeGrad) {
+    exceptionState.throwDOMException(
+        NotSupportedError, "Cannot convert to unknown or invalid units (" +
+                               String::number(unitType) + ").");
+    return;
+  }
+  if (target()->unitType() == SVGAngle::kSvgAngletypeUnknown) {
+    exceptionState.throwDOMException(
+        NotSupportedError, "Cannot convert from unknown or invalid units.");
+    return;
+  }
+  target()->convertToSpecifiedUnits(
+      static_cast<SVGAngle::SVGAngleType>(unitType));
+  commitChange();
 }
 
-void SVGAngleTearOff::newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    if (unitType == SVGAngle::kSvgAngletypeUnknown || unitType > SVGAngle::kSvgAngletypeGrad) {
-        exceptionState.throwDOMException(NotSupportedError, "Cannot set value with unknown or invalid units (" + String::number(unitType) + ").");
-        return;
-    }
-    target()->newValueSpecifiedUnits(static_cast<SVGAngle::SVGAngleType>(unitType), valueInSpecifiedUnits);
-    commitChange();
+void SVGAngleTearOff::setValueAsString(const String& value,
+                                       ExceptionState& exceptionState) {
+  if (isImmutable()) {
+    throwReadOnly(exceptionState);
+    return;
+  }
+  String oldValue = target()->valueAsString();
+  SVGParsingError status = target()->setValueAsString(value);
+  if (status == SVGParseStatus::NoError && !hasExposedAngleUnit()) {
+    target()->setValueAsString(oldValue);  // rollback to old value
+    status = SVGParseStatus::ParsingFailed;
+  }
+  if (status != SVGParseStatus::NoError) {
+    exceptionState.throwDOMException(
+        SyntaxError, "The value provided ('" + value + "') is invalid.");
+    return;
+  }
+  commitChange();
 }
 
-void SVGAngleTearOff::convertToSpecifiedUnits(unsigned short unitType, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    if (unitType == SVGAngle::kSvgAngletypeUnknown || unitType > SVGAngle::kSvgAngletypeGrad) {
-        exceptionState.throwDOMException(NotSupportedError, "Cannot convert to unknown or invalid units (" + String::number(unitType) + ").");
-        return;
-    }
-    if (target()->unitType() == SVGAngle::kSvgAngletypeUnknown) {
-        exceptionState.throwDOMException(NotSupportedError, "Cannot convert from unknown or invalid units.");
-        return;
-    }
-    target()->convertToSpecifiedUnits(static_cast<SVGAngle::SVGAngleType>(unitType));
-    commitChange();
+DEFINE_TRACE_WRAPPERS(SVGAngleTearOff) {
+  visitor->traceWrappers(contextElement());
 }
 
-void SVGAngleTearOff::setValueAsString(const String& value, ExceptionState& exceptionState)
-{
-    if (isImmutable()) {
-        throwReadOnly(exceptionState);
-        return;
-    }
-    String oldValue = target()->valueAsString();
-    SVGParsingError status = target()->setValueAsString(value);
-    if (status == SVGParseStatus::NoError && !hasExposedAngleUnit()) {
-        target()->setValueAsString(oldValue); // rollback to old value
-        status = SVGParseStatus::ParsingFailed;
-    }
-    if (status != SVGParseStatus::NoError) {
-        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid.");
-        return;
-    }
-    commitChange();
-}
-
-DEFINE_TRACE_WRAPPERS(SVGAngleTearOff)
-{
-    visitor->traceWrappers(contextElement());
-}
-
-} // namespace blink
+}  // namespace blink

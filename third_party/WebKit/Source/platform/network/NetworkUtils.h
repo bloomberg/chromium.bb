@@ -13,18 +13,19 @@ namespace blink {
 namespace NetworkUtils {
 
 enum PrivateRegistryFilter {
-    IncludePrivateRegistries,
-    ExcludePrivateRegistries,
+  IncludePrivateRegistries,
+  ExcludePrivateRegistries,
 };
 
 PLATFORM_EXPORT bool isReservedIPAddress(const String& host);
 
 PLATFORM_EXPORT bool isLocalHostname(const String& host, bool* isLocal6);
 
-PLATFORM_EXPORT String getDomainAndRegistry(const String& host, PrivateRegistryFilter);
+PLATFORM_EXPORT String getDomainAndRegistry(const String& host,
+                                            PrivateRegistryFilter);
 
-} // NetworkUtils
+}  // NetworkUtils
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NetworkUtils_h
+#endif  // NetworkUtils_h

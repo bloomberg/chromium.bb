@@ -12,11 +12,12 @@ namespace blink {
 class Internals;
 
 class InternalsAccessibility {
-    STATIC_ONLY(InternalsAccessibility);
-public:
-    static unsigned numberOfLiveAXObjects(Internals&);
+  STATIC_ONLY(InternalsAccessibility);
+
+ public:
+  static unsigned numberOfLiveAXObjects(Internals&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InternalsAccessibility_h
+#endif  // InternalsAccessibility_h

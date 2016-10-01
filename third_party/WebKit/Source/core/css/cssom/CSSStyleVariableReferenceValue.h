@@ -11,37 +11,38 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSStyleVariableReferenceValue final : public GarbageCollectedFinalized<CSSStyleVariableReferenceValue>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(CSSStyleVariableReferenceValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    virtual ~CSSStyleVariableReferenceValue() { }
+class CORE_EXPORT CSSStyleVariableReferenceValue final
+    : public GarbageCollectedFinalized<CSSStyleVariableReferenceValue>,
+      public ScriptWrappable {
+  WTF_MAKE_NONCOPYABLE(CSSStyleVariableReferenceValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CSSStyleVariableReferenceValue* create(const String& variable, const CSSUnparsedValue* fallback)
-    {
-        return new CSSStyleVariableReferenceValue(variable, fallback);
-    }
+ public:
+  virtual ~CSSStyleVariableReferenceValue() {}
 
-    const String& variable() const { return m_variable; }
+  static CSSStyleVariableReferenceValue* create(
+      const String& variable,
+      const CSSUnparsedValue* fallback) {
+    return new CSSStyleVariableReferenceValue(variable, fallback);
+  }
 
-    CSSUnparsedValue* fallback() { return const_cast<CSSUnparsedValue*>(m_fallback.get()); }
+  const String& variable() const { return m_variable; }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_fallback);
-    }
+  CSSUnparsedValue* fallback() {
+    return const_cast<CSSUnparsedValue*>(m_fallback.get());
+  }
 
-protected:
-    CSSStyleVariableReferenceValue(const String& variable, const CSSUnparsedValue* fallback)
-        : m_variable(variable)
-        , m_fallback(fallback)
-    {
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_fallback); }
 
-    String m_variable;
-    Member<const CSSUnparsedValue> m_fallback;
+ protected:
+  CSSStyleVariableReferenceValue(const String& variable,
+                                 const CSSUnparsedValue* fallback)
+      : m_variable(variable), m_fallback(fallback) {}
+
+  String m_variable;
+  Member<const CSSUnparsedValue> m_fallback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSStyleVariableReference_h
+#endif  // CSSStyleVariableReference_h

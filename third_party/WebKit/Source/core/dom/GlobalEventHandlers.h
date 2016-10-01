@@ -109,6 +109,6 @@ DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(volumechange);
 DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waiting);
 }
 
-} // namespace
+}  // namespace
 
 #endif

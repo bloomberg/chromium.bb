@@ -32,41 +32,36 @@
 namespace blink {
 
 struct GlyphOverflow {
-    GlyphOverflow()
-        : left(0)
-        , right(0)
-        , top(0)
-        , bottom(0)
-    {
-    }
+  GlyphOverflow() : left(0), right(0), top(0), bottom(0) {}
 
-    bool isApproximatelyZero() const
-    {
-        // Overflow can be expensive so we try to avoid it. Small amounts of
-        // overflow is imperceptible and is typically masked by pixel snapping.
-        static const float kApproximatelyNoOverflow = 0.0625f;
-        return std::fabs(left) < kApproximatelyNoOverflow
-            && std::fabs(right) < kApproximatelyNoOverflow
-            && std::fabs(top) < kApproximatelyNoOverflow
-            && std::fabs(bottom) < kApproximatelyNoOverflow;
-    }
+  bool isApproximatelyZero() const {
+    // Overflow can be expensive so we try to avoid it. Small amounts of
+    // overflow is imperceptible and is typically masked by pixel snapping.
+    static const float kApproximatelyNoOverflow = 0.0625f;
+    return std::fabs(left) < kApproximatelyNoOverflow &&
+           std::fabs(right) < kApproximatelyNoOverflow &&
+           std::fabs(top) < kApproximatelyNoOverflow &&
+           std::fabs(bottom) < kApproximatelyNoOverflow;
+  }
 
-    void setFromBounds(const FloatRect& bounds, float ascent, float descent, float textWidth)
-    {
-        top = std::max(0.0f, -bounds.y() - ascent);
-        bottom = std::max(0.0f, bounds.maxY() - descent);
-        left = std::max(0.0f, -bounds.x());
-        right = std::max(0.0f, bounds.maxX() - textWidth);
-    }
+  void setFromBounds(const FloatRect& bounds,
+                     float ascent,
+                     float descent,
+                     float textWidth) {
+    top = std::max(0.0f, -bounds.y() - ascent);
+    bottom = std::max(0.0f, bounds.maxY() - descent);
+    left = std::max(0.0f, -bounds.x());
+    right = std::max(0.0f, bounds.maxX() - textWidth);
+  }
 
-    // Top and bottom are the amounts of glyph overflows exceeding the font metrics' ascent and descent, respectively.
-    // Left and right are the amounts of glyph overflows exceeding the left and right edge of normal layout boundary, respectively.
-    float left;
-    float right;
-    float top;
-    float bottom;
+  // Top and bottom are the amounts of glyph overflows exceeding the font metrics' ascent and descent, respectively.
+  // Left and right are the amounts of glyph overflows exceeding the left and right edge of normal layout boundary, respectively.
+  float left;
+  float right;
+  float top;
+  float bottom;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GlyphOverflow_h
+#endif  // GlyphOverflow_h

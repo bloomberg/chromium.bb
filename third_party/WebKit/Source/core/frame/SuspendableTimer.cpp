@@ -36,53 +36,49 @@ const double kNextFireIntervalInvalid = -1.0;
 }
 
 SuspendableTimer::SuspendableTimer(ExecutionContext* context)
-    : TimerBase(TaskRunnerHelper::get(TaskType::Timer, context))
-    , ActiveDOMObject(context)
-    , m_nextFireInterval(kNextFireIntervalInvalid)
-    , m_repeatInterval(0)
+    : TimerBase(TaskRunnerHelper::get(TaskType::Timer, context)),
+      ActiveDOMObject(context),
+      m_nextFireInterval(kNextFireIntervalInvalid),
+      m_repeatInterval(0)
 #if ENABLE(ASSERT)
-    , m_suspended(false)
+      ,
+      m_suspended(false)
 #endif
 {
-    DCHECK(context);
+  DCHECK(context);
 }
 
-SuspendableTimer::~SuspendableTimer()
-{
+SuspendableTimer::~SuspendableTimer() {}
+
+void SuspendableTimer::stop() {
+  m_nextFireInterval = kNextFireIntervalInvalid;
+  TimerBase::stop();
 }
 
-void SuspendableTimer::stop()
-{
-    m_nextFireInterval = kNextFireIntervalInvalid;
+void SuspendableTimer::suspend() {
+#if ENABLE(ASSERT)
+  ASSERT(!m_suspended);
+  m_suspended = true;
+#endif
+  if (isActive()) {
+    m_nextFireInterval = nextFireInterval();
+    ASSERT(m_nextFireInterval >= 0.0);
+    m_repeatInterval = repeatInterval();
     TimerBase::stop();
+  }
 }
 
-void SuspendableTimer::suspend()
-{
+void SuspendableTimer::resume() {
 #if ENABLE(ASSERT)
-    ASSERT(!m_suspended);
-    m_suspended = true;
+  ASSERT(m_suspended);
+  m_suspended = false;
 #endif
-    if (isActive()) {
-        m_nextFireInterval = nextFireInterval();
-        ASSERT(m_nextFireInterval >= 0.0);
-        m_repeatInterval = repeatInterval();
-        TimerBase::stop();
-    }
+  if (m_nextFireInterval >= 0.0) {
+    // start() was called before, therefore location() is already set.
+    // m_nextFireInterval is only set in suspend() if the Timer was active.
+    start(m_nextFireInterval, m_repeatInterval, location());
+    m_nextFireInterval = kNextFireIntervalInvalid;
+  }
 }
 
-void SuspendableTimer::resume()
-{
-#if ENABLE(ASSERT)
-    ASSERT(m_suspended);
-    m_suspended = false;
-#endif
-    if (m_nextFireInterval >= 0.0) {
-        // start() was called before, therefore location() is already set.
-        // m_nextFireInterval is only set in suspend() if the Timer was active.
-        start(m_nextFireInterval, m_repeatInterval, location());
-        m_nextFireInterval = kNextFireIntervalInvalid;
-    }
-}
-
-} // namespace blink
+}  // namespace blink

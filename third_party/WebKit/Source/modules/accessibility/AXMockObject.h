@@ -34,26 +34,26 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class MODULES_EXPORT AXMockObject : public AXObject {
-    WTF_MAKE_NONCOPYABLE(AXMockObject);
+  WTF_MAKE_NONCOPYABLE(AXMockObject);
 
-protected:
-    explicit AXMockObject(AXObjectCacheImpl&);
+ protected:
+  explicit AXMockObject(AXObjectCacheImpl&);
 
-public:
-    ~AXMockObject() override;
+ public:
+  ~AXMockObject() override;
 
-    // AXObject overrides.
-    AXObject* computeParent() const override { return m_parent; }
-    bool isEnabled() const override { return true; }
+  // AXObject overrides.
+  AXObject* computeParent() const override { return m_parent; }
+  bool isEnabled() const override { return true; }
 
-private:
-    bool isMockObject() const final { return true; }
+ private:
+  bool isMockObject() const final { return true; }
 
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, isMockObject());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXMockObject_h
+#endif  // AXMockObject_h

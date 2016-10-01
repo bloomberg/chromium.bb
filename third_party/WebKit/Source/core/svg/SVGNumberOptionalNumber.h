@@ -38,43 +38,52 @@
 namespace blink {
 
 class SVGNumberOptionalNumber final : public SVGPropertyBase {
-public:
-    // Tearoff of SVGNumberOptionalNumber is never created.
-    typedef void TearOffType;
-    typedef void PrimitiveType;
+ public:
+  // Tearoff of SVGNumberOptionalNumber is never created.
+  typedef void TearOffType;
+  typedef void PrimitiveType;
 
-    static SVGNumberOptionalNumber* create(SVGNumber* firstNumber, SVGNumber* secondNumber)
-    {
-        return new SVGNumberOptionalNumber(firstNumber, secondNumber);
-    }
+  static SVGNumberOptionalNumber* create(SVGNumber* firstNumber,
+                                         SVGNumber* secondNumber) {
+    return new SVGNumberOptionalNumber(firstNumber, secondNumber);
+  }
 
-    SVGNumberOptionalNumber* clone() const;
-    SVGPropertyBase* cloneForAnimation(const String&) const override;
+  SVGNumberOptionalNumber* clone() const;
+  SVGPropertyBase* cloneForAnimation(const String&) const override;
 
-    String valueAsString() const override;
-    SVGParsingError setValueAsString(const String&);
+  String valueAsString() const override;
+  SVGParsingError setValueAsString(const String&);
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement* contextElement) override;
+  float calculateDistance(SVGPropertyBase* to,
+                          SVGElement* contextElement) override;
 
-    static AnimatedPropertyType classType() { return AnimatedNumberOptionalNumber; }
-    AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType classType() {
+    return AnimatedNumberOptionalNumber;
+  }
+  AnimatedPropertyType type() const override { return classType(); }
 
-    SVGNumber* firstNumber() const { return m_firstNumber; }
-    SVGNumber* secondNumber() const { return m_secondNumber; }
+  SVGNumber* firstNumber() const { return m_firstNumber; }
+  SVGNumber* secondNumber() const { return m_secondNumber; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    SVGNumberOptionalNumber(SVGNumber* firstNumber, SVGNumber* secondNumber);
+ protected:
+  SVGNumberOptionalNumber(SVGNumber* firstNumber, SVGNumber* secondNumber);
 
-    Member<SVGNumber> m_firstNumber;
-    Member<SVGNumber> m_secondNumber;
+  Member<SVGNumber> m_firstNumber;
+  Member<SVGNumber> m_secondNumber;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumberOptionalNumber);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGNumberOptionalNumber_h
+#endif  // SVGNumberOptionalNumber_h

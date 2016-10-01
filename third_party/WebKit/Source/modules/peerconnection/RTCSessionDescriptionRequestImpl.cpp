@@ -41,62 +41,67 @@
 
 namespace blink {
 
-RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
-{
-    RTCSessionDescriptionRequestImpl* request = new RTCSessionDescriptionRequestImpl(context, requester, successCallback, errorCallback);
-    request->suspendIfNeeded();
-    return request;
+RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(
+    ExecutionContext* context,
+    RTCPeerConnection* requester,
+    RTCSessionDescriptionCallback* successCallback,
+    RTCPeerConnectionErrorCallback* errorCallback) {
+  RTCSessionDescriptionRequestImpl* request =
+      new RTCSessionDescriptionRequestImpl(context, requester, successCallback,
+                                           errorCallback);
+  request->suspendIfNeeded();
+  return request;
 }
 
-RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
-    : ActiveDOMObject(context)
-    , m_successCallback(successCallback)
-    , m_errorCallback(errorCallback)
-    , m_requester(requester)
-{
-    DCHECK(m_requester);
+RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(
+    ExecutionContext* context,
+    RTCPeerConnection* requester,
+    RTCSessionDescriptionCallback* successCallback,
+    RTCPeerConnectionErrorCallback* errorCallback)
+    : ActiveDOMObject(context),
+      m_successCallback(successCallback),
+      m_errorCallback(errorCallback),
+      m_requester(requester) {
+  DCHECK(m_requester);
 }
 
-RTCSessionDescriptionRequestImpl::~RTCSessionDescriptionRequestImpl()
-{
+RTCSessionDescriptionRequestImpl::~RTCSessionDescriptionRequestImpl() {}
+
+void RTCSessionDescriptionRequestImpl::requestSucceeded(
+    const WebRTCSessionDescription& webSessionDescription) {
+  bool shouldFireCallback =
+      m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
+  if (shouldFireCallback && m_successCallback)
+    m_successCallback->handleEvent(
+        RTCSessionDescription::create(webSessionDescription));
+  clear();
 }
 
-void RTCSessionDescriptionRequestImpl::requestSucceeded(const WebRTCSessionDescription& webSessionDescription)
-{
-    bool shouldFireCallback = m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
-    if (shouldFireCallback && m_successCallback)
-        m_successCallback->handleEvent(RTCSessionDescription::create(webSessionDescription));
-    clear();
+void RTCSessionDescriptionRequestImpl::requestFailed(const String& error) {
+  bool shouldFireCallback =
+      m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
+  if (shouldFireCallback && m_errorCallback)
+    m_errorCallback->handleEvent(DOMException::create(OperationError, error));
+
+  clear();
 }
 
-void RTCSessionDescriptionRequestImpl::requestFailed(const String& error)
-{
-    bool shouldFireCallback = m_requester ? m_requester->shouldFireDefaultCallbacks() : false;
-    if (shouldFireCallback && m_errorCallback)
-        m_errorCallback->handleEvent(DOMException::create(OperationError, error));
-
-    clear();
+void RTCSessionDescriptionRequestImpl::stop() {
+  clear();
 }
 
-void RTCSessionDescriptionRequestImpl::stop()
-{
-    clear();
+void RTCSessionDescriptionRequestImpl::clear() {
+  m_successCallback.clear();
+  m_errorCallback.clear();
+  m_requester.clear();
 }
 
-void RTCSessionDescriptionRequestImpl::clear()
-{
-    m_successCallback.clear();
-    m_errorCallback.clear();
-    m_requester.clear();
+DEFINE_TRACE(RTCSessionDescriptionRequestImpl) {
+  visitor->trace(m_successCallback);
+  visitor->trace(m_errorCallback);
+  visitor->trace(m_requester);
+  RTCSessionDescriptionRequest::trace(visitor);
+  ActiveDOMObject::trace(visitor);
 }
 
-DEFINE_TRACE(RTCSessionDescriptionRequestImpl)
-{
-    visitor->trace(m_successCallback);
-    visitor->trace(m_errorCallback);
-    visitor->trace(m_requester);
-    RTCSessionDescriptionRequest::trace(visitor);
-    ActiveDOMObject::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

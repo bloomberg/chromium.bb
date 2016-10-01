@@ -38,16 +38,17 @@ namespace blink {
 class ContextMenu;
 class ContextMenuItem;
 
-class ContextMenuProvider : public GarbageCollectedFinalized<ContextMenuProvider> {
-public:
-    virtual ~ContextMenuProvider() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+class ContextMenuProvider
+    : public GarbageCollectedFinalized<ContextMenuProvider> {
+ public:
+  virtual ~ContextMenuProvider() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    virtual void populateContextMenu(ContextMenu*) = 0;
-    virtual void contextMenuItemSelected(const ContextMenuItem*) = 0;
-    virtual void contextMenuCleared() = 0;
+  virtual void populateContextMenu(ContextMenu*) = 0;
+  virtual void contextMenuItemSelected(const ContextMenuItem*) = 0;
+  virtual void contextMenuCleared() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ContextMenuProvider_h
+#endif  // ContextMenuProvider_h

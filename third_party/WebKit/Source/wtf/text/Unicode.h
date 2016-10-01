@@ -32,4 +32,4 @@ typedef unsigned char LChar;
 
 static_assert(sizeof(UChar) == 2, "UChar should be two bytes");
 
-#endif // WTF_Unicode_h
+#endif  // WTF_Unicode_h

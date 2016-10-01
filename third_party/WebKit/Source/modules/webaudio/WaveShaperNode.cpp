@@ -33,130 +33,128 @@
 
 namespace blink {
 
-WaveShaperNode::WaveShaperNode(BaseAudioContext& context)
-    : AudioNode(context)
-{
-    setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeWaveShaper, *this, context.sampleRate(), wrapUnique(new WaveShaperProcessor(context.sampleRate(), 1))));
+WaveShaperNode::WaveShaperNode(BaseAudioContext& context) : AudioNode(context) {
+  setHandler(AudioBasicProcessorHandler::create(
+      AudioHandler::NodeTypeWaveShaper, *this, context.sampleRate(),
+      wrapUnique(new WaveShaperProcessor(context.sampleRate(), 1))));
 
-    handler().initialize();
+  handler().initialize();
 }
 
-WaveShaperNode* WaveShaperNode::create(BaseAudioContext& context, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+WaveShaperNode* WaveShaperNode::create(BaseAudioContext& context,
+                                       ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    if (context.isContextClosed()) {
-        context.throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
+  if (context.isContextClosed()) {
+    context.throwExceptionForClosedState(exceptionState);
+    return nullptr;
+  }
 
-    return new WaveShaperNode(context);
+  return new WaveShaperNode(context);
 }
 
-WaveShaperNode* WaveShaperNode::create(BaseAudioContext* context, const WaveShaperOptions& options, ExceptionState& exceptionState)
-{
-    WaveShaperNode* node = create(*context, exceptionState);
+WaveShaperNode* WaveShaperNode::create(BaseAudioContext* context,
+                                       const WaveShaperOptions& options,
+                                       ExceptionState& exceptionState) {
+  WaveShaperNode* node = create(*context, exceptionState);
 
-    if (!node)
-        return nullptr;
+  if (!node)
+    return nullptr;
 
-    node->handleChannelOptions(options, exceptionState);
+  node->handleChannelOptions(options, exceptionState);
 
-    if (options.hasCurve())
-        node->setCurve(options.curve(), exceptionState);
-    if (options.hasOversample())
-        node->setOversample(options.oversample());
+  if (options.hasCurve())
+    node->setCurve(options.curve(), exceptionState);
+  if (options.hasOversample())
+    node->setOversample(options.oversample());
 
-    return node;
+  return node;
 }
-WaveShaperProcessor* WaveShaperNode::getWaveShaperProcessor() const
-{
-    return static_cast<WaveShaperProcessor*>(static_cast<AudioBasicProcessorHandler&>(handler()).processor());
-}
-
-void WaveShaperNode::setCurveImpl(
-    const float* curveData, unsigned curveLength, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
-
-    if (curveData && curveLength < 2) {
-        exceptionState.throwDOMException(
-            InvalidAccessError,
-            ExceptionMessages::indexExceedsMinimumBound<unsigned>(
-                "curve length",
-                curveLength,
-                2));
-        return;
-    }
-
-    getWaveShaperProcessor()->setCurve(curveData, curveLength);
+WaveShaperProcessor* WaveShaperNode::getWaveShaperProcessor() const {
+  return static_cast<WaveShaperProcessor*>(
+      static_cast<AudioBasicProcessorHandler&>(handler()).processor());
 }
 
-void WaveShaperNode::setCurve(DOMFloat32Array* curve, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+void WaveShaperNode::setCurveImpl(const float* curveData,
+                                  unsigned curveLength,
+                                  ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    if (curve)
-        setCurveImpl(curve->data(), curve->length(), exceptionState);
-    else
-        setCurveImpl(nullptr, 0, exceptionState);
+  if (curveData && curveLength < 2) {
+    exceptionState.throwDOMException(
+        InvalidAccessError,
+        ExceptionMessages::indexExceedsMinimumBound<unsigned>("curve length",
+                                                              curveLength, 2));
+    return;
+  }
+
+  getWaveShaperProcessor()->setCurve(curveData, curveLength);
 }
 
-void WaveShaperNode::setCurve(const Vector<float>& curve, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+void WaveShaperNode::setCurve(DOMFloat32Array* curve,
+                              ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    setCurveImpl(curve.data(), curve.size(), exceptionState);
+  if (curve)
+    setCurveImpl(curve->data(), curve->length(), exceptionState);
+  else
+    setCurveImpl(nullptr, 0, exceptionState);
 }
 
-DOMFloat32Array* WaveShaperNode::curve()
-{
-    Vector<float>* curve = getWaveShaperProcessor()->curve();
-    if (!curve)
-        return nullptr;
+void WaveShaperNode::setCurve(const Vector<float>& curve,
+                              ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    unsigned size = curve->size();
-    RefPtr<WTF::Float32Array> newCurve = WTF::Float32Array::create(size);
-
-    memcpy(newCurve->data(), curve->data(), sizeof(float) * size);
-
-    return DOMFloat32Array::create(newCurve.release());
+  setCurveImpl(curve.data(), curve.size(), exceptionState);
 }
 
-void WaveShaperNode::setOversample(const String& type)
-{
-    DCHECK(isMainThread());
+DOMFloat32Array* WaveShaperNode::curve() {
+  Vector<float>* curve = getWaveShaperProcessor()->curve();
+  if (!curve)
+    return nullptr;
 
-    // This is to synchronize with the changes made in
-    // AudioBasicProcessorNode::checkNumberOfChannelsForInput() where we can
-    // initialize() and uninitialize().
-    BaseAudioContext::AutoLocker contextLocker(context());
+  unsigned size = curve->size();
+  RefPtr<WTF::Float32Array> newCurve = WTF::Float32Array::create(size);
 
-    if (type == "none") {
-        getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSampleNone);
-    } else if (type == "2x") {
-        getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample2x);
-    } else if (type == "4x") {
-        getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
-    } else {
-        ASSERT_NOT_REACHED();
-    }
+  memcpy(newCurve->data(), curve->data(), sizeof(float) * size);
+
+  return DOMFloat32Array::create(newCurve.release());
 }
 
-String WaveShaperNode::oversample() const
-{
-    switch (const_cast<WaveShaperNode*>(this)->getWaveShaperProcessor()->oversample()) {
+void WaveShaperNode::setOversample(const String& type) {
+  DCHECK(isMainThread());
+
+  // This is to synchronize with the changes made in
+  // AudioBasicProcessorNode::checkNumberOfChannelsForInput() where we can
+  // initialize() and uninitialize().
+  BaseAudioContext::AutoLocker contextLocker(context());
+
+  if (type == "none") {
+    getWaveShaperProcessor()->setOversample(
+        WaveShaperProcessor::OverSampleNone);
+  } else if (type == "2x") {
+    getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample2x);
+  } else if (type == "4x") {
+    getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
+  } else {
+    ASSERT_NOT_REACHED();
+  }
+}
+
+String WaveShaperNode::oversample() const {
+  switch (const_cast<WaveShaperNode*>(this)
+              ->getWaveShaperProcessor()
+              ->oversample()) {
     case WaveShaperProcessor::OverSampleNone:
-        return "none";
+      return "none";
     case WaveShaperProcessor::OverSample2x:
-        return "2x";
+      return "2x";
     case WaveShaperProcessor::OverSample4x:
-        return "4x";
+      return "4x";
     default:
-        ASSERT_NOT_REACHED();
-        return "none";
-    }
+      ASSERT_NOT_REACHED();
+      return "none";
+  }
 }
 
-} // namespace blink
-
+}  // namespace blink

@@ -36,40 +36,58 @@ class Storage;
 class StorageEventInit;
 
 class StorageEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static StorageEvent* create();
-    static StorageEvent* create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
-    static StorageEvent* create(const AtomicString&, const StorageEventInit&);
-    ~StorageEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    const String& key() const { return m_key; }
-    const String& oldValue() const { return m_oldValue; }
-    const String& newValue() const { return m_newValue; }
-    const String& url() const { return m_url; }
-    Storage* storageArea() const { return m_storageArea.get(); }
+ public:
+  static StorageEvent* create();
+  static StorageEvent* create(const AtomicString& type,
+                              const String& key,
+                              const String& oldValue,
+                              const String& newValue,
+                              const String& url,
+                              Storage* storageArea);
+  static StorageEvent* create(const AtomicString&, const StorageEventInit&);
+  ~StorageEvent() override;
 
-    void initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
+  const String& key() const { return m_key; }
+  const String& oldValue() const { return m_oldValue; }
+  const String& newValue() const { return m_newValue; }
+  const String& url() const { return m_url; }
+  Storage* storageArea() const { return m_storageArea.get(); }
 
-    // Needed once we support init<blank>EventNS
-    // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, Storage storageAreaArg);
+  void initStorageEvent(const AtomicString& type,
+                        bool canBubble,
+                        bool cancelable,
+                        const String& key,
+                        const String& oldValue,
+                        const String& newValue,
+                        const String& url,
+                        Storage* storageArea);
 
-    const AtomicString& interfaceName() const override;
+  // Needed once we support init<blank>EventNS
+  // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, Storage storageAreaArg);
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    StorageEvent();
-    StorageEvent(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
-    StorageEvent(const AtomicString&, const StorageEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_key;
-    String m_oldValue;
-    String m_newValue;
-    String m_url;
-    Member<Storage> m_storageArea;
+ private:
+  StorageEvent();
+  StorageEvent(const AtomicString& type,
+               const String& key,
+               const String& oldValue,
+               const String& newValue,
+               const String& url,
+               Storage* storageArea);
+  StorageEvent(const AtomicString&, const StorageEventInit&);
+
+  String m_key;
+  String m_oldValue;
+  String m_newValue;
+  String m_url;
+  Member<Storage> m_storageArea;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageEvent_h
+#endif  // StorageEvent_h

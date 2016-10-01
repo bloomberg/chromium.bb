@@ -13,27 +13,24 @@ class CSSParserImpl;
 class CSSParserTokenRange;
 
 class CSSSupportsParser {
-    STACK_ALLOCATED();
-public:
-    enum SupportsResult {
-        Unsupported = false,
-        Supported = true,
-        Invalid
-    };
+  STACK_ALLOCATED();
 
-    static SupportsResult supportsCondition(CSSParserTokenRange, CSSParserImpl&);
+ public:
+  enum SupportsResult { Unsupported = false, Supported = true, Invalid };
 
-private:
-    CSSSupportsParser(CSSParserImpl& parser) : m_parser(parser) { }
+  static SupportsResult supportsCondition(CSSParserTokenRange, CSSParserImpl&);
 
-    SupportsResult consumeCondition(CSSParserTokenRange);
-    SupportsResult consumeNegation(CSSParserTokenRange);
+ private:
+  CSSSupportsParser(CSSParserImpl& parser) : m_parser(parser) {}
 
-    SupportsResult consumeConditionInParenthesis(CSSParserTokenRange&);
+  SupportsResult consumeCondition(CSSParserTokenRange);
+  SupportsResult consumeNegation(CSSParserTokenRange);
 
-    CSSParserImpl& m_parser;
+  SupportsResult consumeConditionInParenthesis(CSSParserTokenRange&);
+
+  CSSParserImpl& m_parser;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSSupportsParser_h
+#endif  // CSSSupportsParser_h

@@ -18,28 +18,30 @@ class HitTestResult;
 struct WebPoint;
 
 class WebFrameWidgetBase : public WebFrameWidget {
-public:
-    virtual bool forSubframe() const = 0;
-    virtual void scheduleAnimation() = 0;
-    virtual CompositorProxyClient* createCompositorProxyClient() = 0;
-    virtual WebWidgetClient* client() const = 0;
+ public:
+  virtual bool forSubframe() const = 0;
+  virtual void scheduleAnimation() = 0;
+  virtual CompositorProxyClient* createCompositorProxyClient() = 0;
+  virtual WebWidgetClient* client() const = 0;
 
-    // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
-    // the root layer.
-    virtual void setRootGraphicsLayer(GraphicsLayer*) = 0;
+  // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
+  // the root layer.
+  virtual void setRootGraphicsLayer(GraphicsLayer*) = 0;
 
-    // Sets the root layer. |WebLayer| can be null when detaching the root layer.
-    virtual void setRootLayer(WebLayer*) = 0;
+  // Sets the root layer. |WebLayer| can be null when detaching the root layer.
+  virtual void setRootLayer(WebLayer*) = 0;
 
-    // Attaches/detaches a CompositorAnimationTimeline to the layer tree.
-    virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) = 0;
-    virtual void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) = 0;
+  // Attaches/detaches a CompositorAnimationTimeline to the layer tree.
+  virtual void attachCompositorAnimationTimeline(
+      CompositorAnimationTimeline*) = 0;
+  virtual void detachCompositorAnimationTimeline(
+      CompositorAnimationTimeline*) = 0;
 
-    virtual HitTestResult coreHitTestResultAt(const WebPoint&) = 0;
+  virtual HitTestResult coreHitTestResultAt(const WebPoint&) = 0;
 };
 
 DEFINE_TYPE_CASTS(WebFrameWidgetBase, WebFrameWidget, widget, true, true);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -11,16 +11,25 @@
 
 namespace blink {
 
-void RootInlineBoxPainter::paintEllipsisBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
-{
-    if (m_rootInlineBox.hasEllipsisBox() && m_rootInlineBox.getLineLayoutItem().style()->visibility() == EVisibility::Visible && paintInfo.phase == PaintPhaseForeground)
-        m_rootInlineBox.ellipsisBox()->paint(paintInfo, paintOffset, lineTop, lineBottom);
+void RootInlineBoxPainter::paintEllipsisBox(const PaintInfo& paintInfo,
+                                            const LayoutPoint& paintOffset,
+                                            LayoutUnit lineTop,
+                                            LayoutUnit lineBottom) const {
+  if (m_rootInlineBox.hasEllipsisBox() &&
+      m_rootInlineBox.getLineLayoutItem().style()->visibility() ==
+          EVisibility::Visible &&
+      paintInfo.phase == PaintPhaseForeground)
+    m_rootInlineBox.ellipsisBox()->paint(paintInfo, paintOffset, lineTop,
+                                         lineBottom);
 }
 
-void RootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
-{
-    m_rootInlineBox.InlineFlowBox::paint(paintInfo, paintOffset, lineTop, lineBottom);
-    paintEllipsisBox(paintInfo, paintOffset, lineTop, lineBottom);
+void RootInlineBoxPainter::paint(const PaintInfo& paintInfo,
+                                 const LayoutPoint& paintOffset,
+                                 LayoutUnit lineTop,
+                                 LayoutUnit lineBottom) {
+  m_rootInlineBox.InlineFlowBox::paint(paintInfo, paintOffset, lineTop,
+                                       lineBottom);
+  paintEllipsisBox(paintInfo, paintOffset, lineTop, lineBottom);
 }
 
-} // namespace blink
+}  // namespace blink

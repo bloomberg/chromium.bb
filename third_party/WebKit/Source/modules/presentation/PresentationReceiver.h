@@ -25,35 +25,37 @@ class WebPresentationConnectionClient;
 // Implements the PresentationReceiver interface from the Presentation API from
 // which websites can implement the receiving side of a presentation session.
 class MODULES_EXPORT PresentationReceiver final
-    : public GarbageCollectedFinalized<PresentationReceiver>
-    , public ScriptWrappable
-    , public DOMWindowProperty
-    , public WebPresentationReceiver {
-    USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
-    DEFINE_WRAPPERTYPEINFO();
-    using ConnectionListProperty = ScriptPromiseProperty<Member<PresentationReceiver>, Member<PresentationConnectionList>,
-        Member<DOMException>>;
+    : public GarbageCollectedFinalized<PresentationReceiver>,
+      public ScriptWrappable,
+      public DOMWindowProperty,
+      public WebPresentationReceiver {
+  USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
+  DEFINE_WRAPPERTYPEINFO();
+  using ConnectionListProperty =
+      ScriptPromiseProperty<Member<PresentationReceiver>,
+                            Member<PresentationConnectionList>,
+                            Member<DOMException>>;
 
-public:
-    explicit PresentationReceiver(LocalFrame*, WebPresentationClient*);
-    ~PresentationReceiver() = default;
+ public:
+  explicit PresentationReceiver(LocalFrame*, WebPresentationClient*);
+  ~PresentationReceiver() = default;
 
-    // PresentationReceiver.idl implementation
-    ScriptPromise connectionList(ScriptState*);
+  // PresentationReceiver.idl implementation
+  ScriptPromise connectionList(ScriptState*);
 
-    // Implementation of WebPresentationController.
-    void onReceiverConnectionAvailable(WebPresentationConnectionClient*) override;
-    void registerConnection(PresentationConnection*);
+  // Implementation of WebPresentationController.
+  void onReceiverConnectionAvailable(WebPresentationConnectionClient*) override;
+  void registerConnection(PresentationConnection*);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    friend class PresentationReceiverTest;
+ private:
+  friend class PresentationReceiverTest;
 
-    Member<ConnectionListProperty> m_connectionListProperty;
-    Member<PresentationConnectionList> m_connectionList;
+  Member<ConnectionListProperty> m_connectionListProperty;
+  Member<PresentationConnectionList> m_connectionList;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PresentationReceiver_h
+#endif  // PresentationReceiver_h

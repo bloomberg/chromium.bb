@@ -8,10 +8,10 @@
 namespace blink {
 
 class WebLayoutAndPaintAsyncCallback {
-public:
-    virtual void didLayoutAndPaint() = 0;
+ public:
+  virtual void didLayoutAndPaint() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebLayoutAndPaintAsyncCallback_h
+#endif  // WebLayoutAndPaintAsyncCallback_h

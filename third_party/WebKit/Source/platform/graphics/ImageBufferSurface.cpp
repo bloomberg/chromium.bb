@@ -40,54 +40,56 @@ class SkPicture;
 
 namespace blink {
 
-ImageBufferSurface::ImageBufferSurface(const IntSize& size, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
-    : m_opacityMode(opacityMode)
-    , m_size(size)
-    , m_colorSpace(colorSpace)
-{
-    setIsHidden(false);
+ImageBufferSurface::ImageBufferSurface(const IntSize& size,
+                                       OpacityMode opacityMode,
+                                       sk_sp<SkColorSpace> colorSpace)
+    : m_opacityMode(opacityMode), m_size(size), m_colorSpace(colorSpace) {
+  setIsHidden(false);
 }
 
-ImageBufferSurface::~ImageBufferSurface() { }
+ImageBufferSurface::~ImageBufferSurface() {}
 
-sk_sp<SkPicture> ImageBufferSurface::getPicture()
-{
-    return nullptr;
+sk_sp<SkPicture> ImageBufferSurface::getPicture() {
+  return nullptr;
 }
 
-void ImageBufferSurface::clear()
-{
-    // Clear the background transparent or opaque, as required. It would be nice if this wasn't
-    // required, but the canvas is currently filled with the magic transparency
-    // color. Can we have another way to manage this?
-    if (isValid()) {
-        if (m_opacityMode == Opaque) {
-            canvas()->clear(SK_ColorBLACK);
-        } else {
-            canvas()->clear(SK_ColorTRANSPARENT);
-        }
-        didDraw(FloatRect(FloatPoint(0, 0), FloatSize(size())));
+void ImageBufferSurface::clear() {
+  // Clear the background transparent or opaque, as required. It would be nice if this wasn't
+  // required, but the canvas is currently filled with the magic transparency
+  // color. Can we have another way to manage this?
+  if (isValid()) {
+    if (m_opacityMode == Opaque) {
+      canvas()->clear(SK_ColorBLACK);
+    } else {
+      canvas()->clear(SK_ColorTRANSPARENT);
     }
+    didDraw(FloatRect(FloatPoint(0, 0), FloatSize(size())));
+  }
 }
 
-void ImageBufferSurface::draw(GraphicsContext& context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
-{
-    sk_sp<SkImage> snapshot = newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
-    if (!snapshot)
-        return;
+void ImageBufferSurface::draw(GraphicsContext& context,
+                              const FloatRect& destRect,
+                              const FloatRect& srcRect,
+                              SkXfermode::Mode op) {
+  sk_sp<SkImage> snapshot =
+      newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
+  if (!snapshot)
+    return;
 
-    RefPtr<Image> image = StaticBitmapImage::create(std::move(snapshot));
-    context.drawImage(image.get(), destRect, &srcRect, op);
+  RefPtr<Image> image = StaticBitmapImage::create(std::move(snapshot));
+  context.drawImage(image.get(), destRect, &srcRect, op);
 }
 
-void ImageBufferSurface::flush(FlushReason)
-{
-    canvas()->flush();
+void ImageBufferSurface::flush(FlushReason) {
+  canvas()->flush();
 }
 
-bool ImageBufferSurface::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
-{
-    return canvas()->writePixels(origInfo, pixels, rowBytes, x, y);
+bool ImageBufferSurface::writePixels(const SkImageInfo& origInfo,
+                                     const void* pixels,
+                                     size_t rowBytes,
+                                     int x,
+                                     int y) {
+  return canvas()->writePixels(origInfo, pixels, rowBytes, x, y);
 }
 
-} // namespace blink
+}  // namespace blink

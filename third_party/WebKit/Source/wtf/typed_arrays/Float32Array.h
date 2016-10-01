@@ -33,60 +33,61 @@
 namespace WTF {
 
 class Float32Array final : public TypedArrayBase<float> {
-public:
-    static inline PassRefPtr<Float32Array> create(unsigned length);
-    static inline PassRefPtr<Float32Array> create(const float* array, unsigned length);
-    static inline PassRefPtr<Float32Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+ public:
+  static inline PassRefPtr<Float32Array> create(unsigned length);
+  static inline PassRefPtr<Float32Array> create(const float* array,
+                                                unsigned length);
+  static inline PassRefPtr<Float32Array> create(PassRefPtr<ArrayBuffer>,
+                                                unsigned byteOffset,
+                                                unsigned length);
 
-    static inline PassRefPtr<Float32Array> createOrNull(unsigned length);
+  static inline PassRefPtr<Float32Array> createOrNull(unsigned length);
 
-    using TypedArrayBase<float>::set;
+  using TypedArrayBase<float>::set;
 
-    void set(unsigned index, double value)
-    {
-        if (index >= TypedArrayBase<float>::m_length)
-            return;
-        TypedArrayBase<float>::data()[index] = static_cast<float>(value);
-    }
+  void set(unsigned index, double value) {
+    if (index >= TypedArrayBase<float>::m_length)
+      return;
+    TypedArrayBase<float>::data()[index] = static_cast<float>(value);
+  }
 
-    ViewType type() const override
-    {
-        return TypeFloat32;
-    }
+  ViewType type() const override { return TypeFloat32; }
 
-private:
-    inline Float32Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
-    // Make constructor visible to superclass.
-    friend class TypedArrayBase<float>;
+ private:
+  inline Float32Array(PassRefPtr<ArrayBuffer>,
+                      unsigned byteOffset,
+                      unsigned length);
+  // Make constructor visible to superclass.
+  friend class TypedArrayBase<float>;
 };
 
-PassRefPtr<Float32Array> Float32Array::create(unsigned length)
-{
-    return TypedArrayBase<float>::create<Float32Array>(length);
+PassRefPtr<Float32Array> Float32Array::create(unsigned length) {
+  return TypedArrayBase<float>::create<Float32Array>(length);
 }
 
-PassRefPtr<Float32Array> Float32Array::create(const float* array, unsigned length)
-{
-    return TypedArrayBase<float>::create<Float32Array>(array, length);
+PassRefPtr<Float32Array> Float32Array::create(const float* array,
+                                              unsigned length) {
+  return TypedArrayBase<float>::create<Float32Array>(array, length);
 }
 
-PassRefPtr<Float32Array> Float32Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-{
-    return TypedArrayBase<float>::create<Float32Array>(std::move(buffer), byteOffset, length);
+PassRefPtr<Float32Array> Float32Array::create(PassRefPtr<ArrayBuffer> buffer,
+                                              unsigned byteOffset,
+                                              unsigned length) {
+  return TypedArrayBase<float>::create<Float32Array>(std::move(buffer),
+                                                     byteOffset, length);
 }
 
-PassRefPtr<Float32Array> Float32Array::createOrNull(unsigned length)
-{
-    return TypedArrayBase<float>::createOrNull<Float32Array>(length);
+PassRefPtr<Float32Array> Float32Array::createOrNull(unsigned length) {
+  return TypedArrayBase<float>::createOrNull<Float32Array>(length);
 }
 
-Float32Array::Float32Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : TypedArrayBase<float>(std::move(buffer), byteOffset, length)
-{
-}
+Float32Array::Float32Array(PassRefPtr<ArrayBuffer> buffer,
+                           unsigned byteOffset,
+                           unsigned length)
+    : TypedArrayBase<float>(std::move(buffer), byteOffset, length) {}
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::Float32Array;
 
-#endif // Float32Array_h
+#endif  // Float32Array_h

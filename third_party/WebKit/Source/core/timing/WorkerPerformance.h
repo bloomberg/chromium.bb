@@ -43,25 +43,26 @@ class ExecutionContext;
 class MemoryInfo;
 class WorkerGlobalScope;
 
-class WorkerPerformance final : public PerformanceBase, public ContextLifecycleObserver {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerPerformance);
-public:
-    static WorkerPerformance* create(WorkerGlobalScope* context)
-    {
-        return new WorkerPerformance(context);
-    }
+class WorkerPerformance final : public PerformanceBase,
+                                public ContextLifecycleObserver {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerPerformance);
 
-    ExecutionContext* getExecutionContext() const override;
+ public:
+  static WorkerPerformance* create(WorkerGlobalScope* context) {
+    return new WorkerPerformance(context);
+  }
 
-    MemoryInfo* memory();
+  ExecutionContext* getExecutionContext() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  MemoryInfo* memory();
 
-private:
-    explicit WorkerPerformance(WorkerGlobalScope*);
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  explicit WorkerPerformance(WorkerGlobalScope*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerPerformance_h
+#endif  // WorkerPerformance_h

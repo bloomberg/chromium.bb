@@ -37,45 +37,53 @@ class FetchRequest;
 class ResourceFetcher;
 
 class CORE_EXPORT DocumentResource final : public TextResource {
-public:
-    using ClientType = ResourceClient;
+ public:
+  using ClientType = ResourceClient;
 
-    static DocumentResource* fetchSVGDocument(FetchRequest&, ResourceFetcher*);
-    ~DocumentResource() override;
-    DECLARE_VIRTUAL_TRACE();
+  static DocumentResource* fetchSVGDocument(FetchRequest&, ResourceFetcher*);
+  ~DocumentResource() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    Document* document() const { return m_document.get(); }
+  Document* document() const { return m_document.get(); }
 
-    void checkNotify() override;
+  void checkNotify() override;
 
-private:
-    class SVGDocumentResourceFactory : public ResourceFactory {
-    public:
-        SVGDocumentResourceFactory()
-            : ResourceFactory(Resource::SVGDocument) { }
+ private:
+  class SVGDocumentResourceFactory : public ResourceFactory {
+   public:
+    SVGDocumentResourceFactory() : ResourceFactory(Resource::SVGDocument) {}
 
-        Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
-        {
-            return new DocumentResource(request, Resource::SVGDocument, options);
-        }
-    };
-    DocumentResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
+    Resource* create(const ResourceRequest& request,
+                     const ResourceLoaderOptions& options,
+                     const String& charset) const override {
+      return new DocumentResource(request, Resource::SVGDocument, options);
+    }
+  };
+  DocumentResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
-    bool mimeTypeAllowed() const;
-    Document* createDocument(const KURL&);
+  bool mimeTypeAllowed() const;
+  Document* createDocument(const KURL&);
 
-    Member<Document> m_document;
+  Member<Document> m_document;
 };
 
-DEFINE_TYPE_CASTS(DocumentResource, Resource, resource, resource->getType() == Resource::SVGDocument, resource.getType() == Resource::SVGDocument);
+DEFINE_TYPE_CASTS(DocumentResource,
+                  Resource,
+                  resource,
+                  resource->getType() == Resource::SVGDocument,
+                  resource.getType() == Resource::SVGDocument);
 
 class CORE_EXPORT DocumentResourceClient : public ResourceClient {
-public:
-    ~DocumentResourceClient() override {}
-    static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == DocumentType; }
-    ResourceClientType getResourceClientType() const final { return DocumentType; }
+ public:
+  ~DocumentResourceClient() override {}
+  static bool isExpectedType(ResourceClient* client) {
+    return client->getResourceClientType() == DocumentType;
+  }
+  ResourceClientType getResourceClientType() const final {
+    return DocumentType;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentResource_h
+#endif  // DocumentResource_h

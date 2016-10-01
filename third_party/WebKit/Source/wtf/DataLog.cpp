@@ -46,58 +46,56 @@ static pthread_once_t initializeLogFileOnceKey = PTHREAD_ONCE_INIT;
 
 static FilePrintStream* file;
 
-static void initializeLogFileOnce()
-{
+static void initializeLogFileOnce() {
 #if DATA_LOG_TO_FILE
 #ifdef DATA_LOG_FILENAME
-    const char* filename = DATA_LOG_FILENAME;
+  const char* filename = DATA_LOG_FILENAME;
 #else
-    const char* filename = getenv("WTF_DATA_LOG_FILENAME");
+  const char* filename = getenv("WTF_DATA_LOG_FILENAME");
 #endif
-    char actualFilename[1024];
+  char actualFilename[1024];
 
-    snprintf(actualFilename, sizeof(actualFilename), "%s.%d.txt", filename, getpid());
+  snprintf(actualFilename, sizeof(actualFilename), "%s.%d.txt", filename,
+           getpid());
 
-    if (filename) {
-        file = FilePrintStream::open(actualFilename, "w").release();
-        if (!file)
-            fprintf(stderr, "Warning: Could not open log file %s for writing.\n", actualFilename);
-    }
-#endif // DATA_LOG_TO_FILE
+  if (filename) {
+    file = FilePrintStream::open(actualFilename, "w").release();
     if (!file)
-        file = new FilePrintStream(stderr, FilePrintStream::Borrow);
+      fprintf(stderr, "Warning: Could not open log file %s for writing.\n",
+              actualFilename);
+  }
+#endif  // DATA_LOG_TO_FILE
+  if (!file)
+    file = new FilePrintStream(stderr, FilePrintStream::Borrow);
 
-    setvbuf(file->file(), 0, _IONBF, 0); // Prefer unbuffered output, so that we get a full log upon crash or deadlock.
+  setvbuf(
+      file->file(), 0, _IONBF,
+      0);  // Prefer unbuffered output, so that we get a full log upon crash or deadlock.
 }
 
-static void initializeLogFile()
-{
+static void initializeLogFile() {
 #if OS(POSIX)
-    pthread_once(&initializeLogFileOnceKey, initializeLogFileOnce);
+  pthread_once(&initializeLogFileOnceKey, initializeLogFileOnce);
 #else
-    if (!file)
-        initializeLogFileOnce();
+  if (!file)
+    initializeLogFileOnce();
 #endif
 }
 
-FilePrintStream& dataFile()
-{
-    initializeLogFile();
-    return *file;
+FilePrintStream& dataFile() {
+  initializeLogFile();
+  return *file;
 }
 
-void dataLogFV(const char* format, va_list argList)
-{
-    dataFile().vprintf(format, argList);
+void dataLogFV(const char* format, va_list argList) {
+  dataFile().vprintf(format, argList);
 }
 
-void dataLogF(const char* format, ...)
-{
-    va_list argList;
-    va_start(argList, format);
-    dataLogFV(format, argList);
-    va_end(argList);
+void dataLogF(const char* format, ...) {
+  va_list argList;
+  va_start(argList, format);
+  dataLogFV(format, argList);
+  va_end(argList);
 }
 
-} // namespace WTF
-
+}  // namespace WTF

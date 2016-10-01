@@ -34,157 +34,170 @@ OBJC_CLASS BlinkLayoutThemeNotificationObserver;
 namespace blink {
 
 class LayoutThemeMac final : public LayoutTheme {
-public:
-    static PassRefPtr<LayoutTheme> create();
+ public:
+  static PassRefPtr<LayoutTheme> create();
 
-    void addVisualOverflow(const LayoutObject&, IntRect& borderBox) override;
+  void addVisualOverflow(const LayoutObject&, IntRect& borderBox) override;
 
-    bool isControlStyled(const ComputedStyle&) const override;
+  bool isControlStyled(const ComputedStyle&) const override;
 
-    Color platformActiveSelectionBackgroundColor() const override;
-    Color platformInactiveSelectionBackgroundColor() const override;
-    Color platformActiveSelectionForegroundColor() const override;
-    Color platformActiveListBoxSelectionBackgroundColor() const override;
-    Color platformActiveListBoxSelectionForegroundColor() const override;
-    Color platformInactiveListBoxSelectionBackgroundColor() const override;
-    Color platformInactiveListBoxSelectionForegroundColor() const override;
-    Color platformFocusRingColor() const override;
+  Color platformActiveSelectionBackgroundColor() const override;
+  Color platformInactiveSelectionBackgroundColor() const override;
+  Color platformActiveSelectionForegroundColor() const override;
+  Color platformActiveListBoxSelectionBackgroundColor() const override;
+  Color platformActiveListBoxSelectionForegroundColor() const override;
+  Color platformInactiveListBoxSelectionBackgroundColor() const override;
+  Color platformInactiveListBoxSelectionForegroundColor() const override;
+  Color platformFocusRingColor() const override;
 
-    ScrollbarControlSize scrollbarControlSizeForPart(ControlPart part) override { return part == ListboxPart ? SmallScrollbar : RegularScrollbar; }
+  ScrollbarControlSize scrollbarControlSizeForPart(ControlPart part) override {
+    return part == ListboxPart ? SmallScrollbar : RegularScrollbar;
+  }
 
-    void platformColorsDidChange() override;
+  void platformColorsDidChange() override;
 
-    // System fonts.
-    void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const override;
+  // System fonts.
+  void systemFont(CSSValueID systemFontID,
+                  FontStyle&,
+                  FontWeight&,
+                  float& fontSize,
+                  AtomicString& fontFamily) const override;
 
-    bool needsHackForTextControlWithFontFamily(const AtomicString& family) const override;
+  bool needsHackForTextControlWithFontFamily(
+      const AtomicString& family) const override;
 
-    int minimumMenuListSize(const ComputedStyle&) const override;
+  int minimumMenuListSize(const ComputedStyle&) const override;
 
-    void adjustSliderThumbSize(ComputedStyle&) const override;
+  void adjustSliderThumbSize(ComputedStyle&) const override;
 
-    IntSize sliderTickSize() const override;
-    int sliderTickOffsetFromTrackCenter() const override;
+  IntSize sliderTickSize() const override;
+  int sliderTickOffsetFromTrackCenter() const override;
 
-    int popupInternalPaddingStart(const ComputedStyle&) const override;
-    int popupInternalPaddingEnd(const ComputedStyle&) const override;
-    int popupInternalPaddingTop(const ComputedStyle&) const override;
-    int popupInternalPaddingBottom(const ComputedStyle&) const override;
+  int popupInternalPaddingStart(const ComputedStyle&) const override;
+  int popupInternalPaddingEnd(const ComputedStyle&) const override;
+  int popupInternalPaddingTop(const ComputedStyle&) const override;
+  int popupInternalPaddingBottom(const ComputedStyle&) const override;
 
-    bool popsMenuByArrowKeys() const override { return true; }
-    bool popsMenuBySpaceKey() const final { return true; }
+  bool popsMenuByArrowKeys() const override { return true; }
+  bool popsMenuBySpaceKey() const final { return true; }
 
-    // Returns the repeat interval of the animation for the progress bar.
-    double animationRepeatIntervalForProgressBar() const override;
-    // Returns the duration of the animation for the progress bar.
-    double animationDurationForProgressBar() const override;
+  // Returns the repeat interval of the animation for the progress bar.
+  double animationRepeatIntervalForProgressBar() const override;
+  // Returns the duration of the animation for the progress bar.
+  double animationDurationForProgressBar() const override;
 
-    Color systemColor(CSSValueID) const override;
+  Color systemColor(CSSValueID) const override;
 
-    bool supportsSelectionForegroundColors() const override { return false; }
+  bool supportsSelectionForegroundColors() const override { return false; }
 
-    virtual bool isModalColorChooser() const { return false; }
+  virtual bool isModalColorChooser() const { return false; }
 
-protected:
-    LayoutThemeMac();
-    ~LayoutThemeMac() override;
+ protected:
+  LayoutThemeMac();
+  ~LayoutThemeMac() override;
 
-    void adjustMenuListStyle(ComputedStyle&, Element*) const override;
-    void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
-    void adjustSearchFieldStyle(ComputedStyle&) const override;
-    void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
+  void adjustMenuListStyle(ComputedStyle&, Element*) const override;
+  void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
+  void adjustSearchFieldStyle(ComputedStyle&) const override;
+  void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
 
-public:
-    // Constants and methods shared with ThemePainterMac
+ public:
+  // Constants and methods shared with ThemePainterMac
 
-    // Get the control size based off the font. Used by some of the controls (like buttons).
-    NSControlSize controlSizeForFont(const ComputedStyle&) const;
-    NSControlSize controlSizeForSystemFont(const ComputedStyle&) const;
-    void setControlSize(NSCell*, const IntSize* sizes, const IntSize& minSize, float zoomLevel = 1.0f);
-    void setSizeFromFont(ComputedStyle&, const IntSize* sizes) const;
-    IntSize sizeForFont(const ComputedStyle&, const IntSize* sizes) const;
-    IntSize sizeForSystemFont(const ComputedStyle&, const IntSize* sizes) const;
-    void setFontFromControlSize(ComputedStyle&, NSControlSize) const;
+  // Get the control size based off the font. Used by some of the controls (like buttons).
+  NSControlSize controlSizeForFont(const ComputedStyle&) const;
+  NSControlSize controlSizeForSystemFont(const ComputedStyle&) const;
+  void setControlSize(NSCell*,
+                      const IntSize* sizes,
+                      const IntSize& minSize,
+                      float zoomLevel = 1.0f);
+  void setSizeFromFont(ComputedStyle&, const IntSize* sizes) const;
+  IntSize sizeForFont(const ComputedStyle&, const IntSize* sizes) const;
+  IntSize sizeForSystemFont(const ComputedStyle&, const IntSize* sizes) const;
+  void setFontFromControlSize(ComputedStyle&, NSControlSize) const;
 
-    void updateCheckedState(NSCell*, const LayoutObject&);
-    void updateEnabledState(NSCell*, const LayoutObject&);
-    void updateFocusedState(NSCell*, const LayoutObject&);
-    void updatePressedState(NSCell*, const LayoutObject&);
+  void updateCheckedState(NSCell*, const LayoutObject&);
+  void updateEnabledState(NSCell*, const LayoutObject&);
+  void updateFocusedState(NSCell*, const LayoutObject&);
+  void updatePressedState(NSCell*, const LayoutObject&);
 
-    // Helpers for adjusting appearance and for painting
+  // Helpers for adjusting appearance and for painting
 
-    void setPopupButtonCellState(const LayoutObject&, const IntRect&);
-    const IntSize* popupButtonSizes() const;
-    const int* popupButtonMargins() const;
-    const int* popupButtonPadding(NSControlSize) const;
-    const IntSize* menuListSizes() const;
+  void setPopupButtonCellState(const LayoutObject&, const IntRect&);
+  const IntSize* popupButtonSizes() const;
+  const int* popupButtonMargins() const;
+  const int* popupButtonPadding(NSControlSize) const;
+  const IntSize* menuListSizes() const;
 
-    const IntSize* searchFieldSizes() const;
-    const IntSize* cancelButtonSizes() const;
-    void setSearchCellState(const LayoutObject&, const IntRect&);
-    void setSearchFieldSize(ComputedStyle&) const;
+  const IntSize* searchFieldSizes() const;
+  const IntSize* cancelButtonSizes() const;
+  void setSearchCellState(const LayoutObject&, const IntRect&);
+  void setSearchFieldSize(ComputedStyle&) const;
 
-    NSPopUpButtonCell* popupButton() const;
-    NSSearchFieldCell* search() const;
-    NSTextFieldCell* textField() const;
+  NSPopUpButtonCell* popupButton() const;
+  NSSearchFieldCell* search() const;
+  NSTextFieldCell* textField() const;
 
-    // A view associated to the contained document. Subclasses may not have such a view and return a fake.
-    NSView* documentViewFor(const LayoutObject&) const;
+  // A view associated to the contained document. Subclasses may not have such a view and return a fake.
+  NSView* documentViewFor(const LayoutObject&) const;
 
-    void updateActiveState(NSCell*, const LayoutObject&);
+  void updateActiveState(NSCell*, const LayoutObject&);
 
-    // We estimate the animation rate of a Mac OS X progress bar is 33 fps.
-    // Hard code the value here because we haven't found API for it.
-    static constexpr double progressAnimationFrameRate = 0.033;
-    // Mac OS X progress bar animation seems to have 256 frames.
-    static constexpr double progressAnimationNumFrames = 256;
+  // We estimate the animation rate of a Mac OS X progress bar is 33 fps.
+  // Hard code the value here because we haven't found API for it.
+  static constexpr double progressAnimationFrameRate = 0.033;
+  // Mac OS X progress bar animation seems to have 256 frames.
+  static constexpr double progressAnimationNumFrames = 256;
 
-    static constexpr float baseFontSize = 11.0f;
-    static constexpr float menuListBaseArrowHeight = 4.0f;
-    static constexpr float menuListBaseArrowWidth = 5.0f;
-    static constexpr float menuListBaseSpaceBetweenArrows = 2.0f;
-    static const int menuListArrowPaddingStart = 4;
-    static const int menuListArrowPaddingEnd = 4;
-    static const int sliderThumbWidth = 15;
-    static const int sliderThumbHeight = 15;
-    static const int sliderThumbShadowBlur = 1;
-    static const int sliderThumbBorderWidth = 1;
-    static const int sliderTrackWidth = 5;
-    static const int sliderTrackBorderWidth = 1;
+  static constexpr float baseFontSize = 11.0f;
+  static constexpr float menuListBaseArrowHeight = 4.0f;
+  static constexpr float menuListBaseArrowWidth = 5.0f;
+  static constexpr float menuListBaseSpaceBetweenArrows = 2.0f;
+  static const int menuListArrowPaddingStart = 4;
+  static const int menuListArrowPaddingEnd = 4;
+  static const int sliderThumbWidth = 15;
+  static const int sliderThumbHeight = 15;
+  static const int sliderThumbShadowBlur = 1;
+  static const int sliderThumbBorderWidth = 1;
+  static const int sliderTrackWidth = 5;
+  static const int sliderTrackBorderWidth = 1;
 
-protected:
-    void adjustMediaSliderThumbSize(ComputedStyle&) const;
-    String extraFullscreenStyleSheet() override;
+ protected:
+  void adjustMediaSliderThumbSize(ComputedStyle&) const;
+  String extraFullscreenStyleSheet() override;
 
-    // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
-    bool usesTestModeFocusRingColor() const;
+  // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
+  bool usesTestModeFocusRingColor() const;
 
-    bool shouldUseFallbackTheme(const ComputedStyle&) const override;
+  bool shouldUseFallbackTheme(const ComputedStyle&) const override;
 
-    void adjustProgressBarBounds(ComputedStyle&) const override;
+  void adjustProgressBarBounds(ComputedStyle&) const override;
 
-private:
-    const int* progressBarHeights() const;
-    const int* progressBarMargins(NSControlSize) const;
-    String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
-    String extraDefaultStyleSheet() override;
-    bool themeDrawsFocusRing(const ComputedStyle&) const override;
+ private:
+  const int* progressBarHeights() const;
+  const int* progressBarMargins(NSControlSize) const;
+  String fileListNameForWidth(Locale&,
+                              const FileList*,
+                              const Font&,
+                              int width) const override;
+  String extraDefaultStyleSheet() override;
+  bool themeDrawsFocusRing(const ComputedStyle&) const override;
 
-    ThemePainter& painter() override { return m_painter; }
+  ThemePainter& painter() override { return m_painter; }
 
-    mutable RetainPtr<NSPopUpButtonCell> m_popupButton;
-    mutable RetainPtr<NSSearchFieldCell> m_search;
-    mutable RetainPtr<NSMenu> m_searchMenuTemplate;
-    mutable RetainPtr<NSLevelIndicatorCell> m_levelIndicator;
-    mutable RetainPtr<NSTextFieldCell> m_textField;
+  mutable RetainPtr<NSPopUpButtonCell> m_popupButton;
+  mutable RetainPtr<NSSearchFieldCell> m_search;
+  mutable RetainPtr<NSMenu> m_searchMenuTemplate;
+  mutable RetainPtr<NSLevelIndicatorCell> m_levelIndicator;
+  mutable RetainPtr<NSTextFieldCell> m_textField;
 
-    mutable HashMap<int, RGBA32> m_systemColorCache;
+  mutable HashMap<int, RGBA32> m_systemColorCache;
 
-    RetainPtr<BlinkLayoutThemeNotificationObserver> m_notificationObserver;
+  RetainPtr<BlinkLayoutThemeNotificationObserver> m_notificationObserver;
 
-    ThemePainterMac m_painter;
+  ThemePainterMac m_painter;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutThemeMac_h
+#endif  // LayoutThemeMac_h

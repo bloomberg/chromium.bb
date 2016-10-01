@@ -10,10 +10,10 @@
 namespace blink {
 
 class DOMWindowDeviceLight {
-public:
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(devicelight);
+ public:
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(devicelight);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowDeviceLight_h
+#endif  // DOMWindowDeviceLight_h

@@ -18,30 +18,30 @@ class Path;
 class SVGPathByteStream;
 
 class StylePath : public RefCounted<StylePath> {
-public:
-    static PassRefPtr<StylePath> create(std::unique_ptr<SVGPathByteStream>);
-    ~StylePath();
+ public:
+  static PassRefPtr<StylePath> create(std::unique_ptr<SVGPathByteStream>);
+  ~StylePath();
 
-    static StylePath* emptyPath();
+  static StylePath* emptyPath();
 
-    const Path& path() const;
-    float length() const;
-    bool isClosed() const;
+  const Path& path() const;
+  float length() const;
+  bool isClosed() const;
 
-    const SVGPathByteStream& byteStream() const { return *m_byteStream; }
+  const SVGPathByteStream& byteStream() const { return *m_byteStream; }
 
-    CSSValue* computedCSSValue() const;
+  CSSValue* computedCSSValue() const;
 
-    bool operator==(const StylePath&) const;
+  bool operator==(const StylePath&) const;
 
-private:
-    explicit StylePath(std::unique_ptr<SVGPathByteStream>);
+ private:
+  explicit StylePath(std::unique_ptr<SVGPathByteStream>);
 
-    std::unique_ptr<SVGPathByteStream> m_byteStream;
-    mutable std::unique_ptr<Path> m_path;
-    mutable float m_pathLength;
+  std::unique_ptr<SVGPathByteStream> m_byteStream;
+  mutable std::unique_ptr<Path> m_path;
+  mutable float m_pathLength;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StylePath_h
+#endif  // StylePath_h

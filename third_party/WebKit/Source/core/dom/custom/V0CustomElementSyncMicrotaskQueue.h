@@ -9,17 +9,20 @@
 
 namespace blink {
 
-class V0CustomElementSyncMicrotaskQueue : public V0CustomElementMicrotaskQueueBase {
-public:
-    static V0CustomElementSyncMicrotaskQueue* create() { return new V0CustomElementSyncMicrotaskQueue(); }
+class V0CustomElementSyncMicrotaskQueue
+    : public V0CustomElementMicrotaskQueueBase {
+ public:
+  static V0CustomElementSyncMicrotaskQueue* create() {
+    return new V0CustomElementSyncMicrotaskQueue();
+  }
 
-    void enqueue(V0CustomElementMicrotaskStep*);
+  void enqueue(V0CustomElementMicrotaskStep*);
 
-private:
-    V0CustomElementSyncMicrotaskQueue() { }
-    virtual void doDispatch();
+ private:
+  V0CustomElementSyncMicrotaskQueue() {}
+  virtual void doDispatch();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementSyncMicrotaskQueue_h
+#endif  // V0CustomElementSyncMicrotaskQueue_h

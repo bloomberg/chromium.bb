@@ -38,53 +38,55 @@
 
 namespace blink {
 
-QuotaTracker& QuotaTracker::instance()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(QuotaTracker, tracker, new QuotaTracker);
-    return tracker;
+QuotaTracker& QuotaTracker::instance() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(QuotaTracker, tracker, new QuotaTracker);
+  return tracker;
 }
 
 void QuotaTracker::getDatabaseSizeAndSpaceAvailableToOrigin(
-    SecurityOrigin* origin, const String& databaseName,
-    unsigned long long* databaseSize, unsigned long long* spaceAvailable)
-{
-    // Extra scope to unlock prior to potentially calling Platform.
-    {
-        MutexLocker lockData(m_dataGuard);
-        ASSERT(m_databaseSizes.contains(origin->toRawString()));
-        HashMap<String, SizeMap>::const_iterator it = m_databaseSizes.find(origin->toRawString());
-        ASSERT(it->value.contains(databaseName));
-        *databaseSize = it->value.get(databaseName);
+    SecurityOrigin* origin,
+    const String& databaseName,
+    unsigned long long* databaseSize,
+    unsigned long long* spaceAvailable) {
+  // Extra scope to unlock prior to potentially calling Platform.
+  {
+    MutexLocker lockData(m_dataGuard);
+    ASSERT(m_databaseSizes.contains(origin->toRawString()));
+    HashMap<String, SizeMap>::const_iterator it =
+        m_databaseSizes.find(origin->toRawString());
+    ASSERT(it->value.contains(databaseName));
+    *databaseSize = it->value.get(databaseName);
 
-        if (m_spaceAvailableToOrigins.contains(origin->toRawString())) {
-            *spaceAvailable = m_spaceAvailableToOrigins.get(origin->toRawString());
-            return;
-        }
+    if (m_spaceAvailableToOrigins.contains(origin->toRawString())) {
+      *spaceAvailable = m_spaceAvailableToOrigins.get(origin->toRawString());
+      return;
     }
+  }
 
-    // The embedder hasn't pushed this value to us, so we pull it as needed.
-    *spaceAvailable = Platform::current()->databaseGetSpaceAvailableForOrigin(WebSecurityOrigin(origin));
+  // The embedder hasn't pushed this value to us, so we pull it as needed.
+  *spaceAvailable = Platform::current()->databaseGetSpaceAvailableForOrigin(
+      WebSecurityOrigin(origin));
 }
 
-void QuotaTracker::updateDatabaseSize(
-    SecurityOrigin* origin, const String& databaseName,
-    unsigned long long databaseSize)
-{
-    MutexLocker lockData(m_dataGuard);
-    HashMap<String, SizeMap>::ValueType* it = m_databaseSizes.add(origin->toRawString(), SizeMap()).storedValue;
-    it->value.set(databaseName, databaseSize);
+void QuotaTracker::updateDatabaseSize(SecurityOrigin* origin,
+                                      const String& databaseName,
+                                      unsigned long long databaseSize) {
+  MutexLocker lockData(m_dataGuard);
+  HashMap<String, SizeMap>::ValueType* it =
+      m_databaseSizes.add(origin->toRawString(), SizeMap()).storedValue;
+  it->value.set(databaseName, databaseSize);
 }
 
-void QuotaTracker::updateSpaceAvailableToOrigin(SecurityOrigin* origin, unsigned long long spaceAvailable)
-{
-    MutexLocker lockData(m_dataGuard);
-    m_spaceAvailableToOrigins.set(origin->toRawString(), spaceAvailable);
+void QuotaTracker::updateSpaceAvailableToOrigin(
+    SecurityOrigin* origin,
+    unsigned long long spaceAvailable) {
+  MutexLocker lockData(m_dataGuard);
+  m_spaceAvailableToOrigins.set(origin->toRawString(), spaceAvailable);
 }
 
-void QuotaTracker::resetSpaceAvailableToOrigin(SecurityOrigin* origin)
-{
-    MutexLocker lockData(m_dataGuard);
-    m_spaceAvailableToOrigins.remove(origin->toRawString());
+void QuotaTracker::resetSpaceAvailableToOrigin(SecurityOrigin* origin) {
+  MutexLocker lockData(m_dataGuard);
+  m_spaceAvailableToOrigins.remove(origin->toRawString());
 }
 
-} // namespace blink
+}  // namespace blink

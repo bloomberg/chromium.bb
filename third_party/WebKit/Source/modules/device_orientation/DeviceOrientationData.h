@@ -33,33 +33,40 @@ namespace blink {
 
 class WebDeviceOrientationData;
 
-class DeviceOrientationData final : public GarbageCollected<DeviceOrientationData> {
-public:
-    static DeviceOrientationData* create();
-    static DeviceOrientationData* create(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute);
-    static DeviceOrientationData* create(const WebDeviceOrientationData&);
-    DEFINE_INLINE_TRACE() { }
+class DeviceOrientationData final
+    : public GarbageCollected<DeviceOrientationData> {
+ public:
+  static DeviceOrientationData* create();
+  static DeviceOrientationData* create(const Nullable<double>& alpha,
+                                       const Nullable<double>& beta,
+                                       const Nullable<double>& gamma,
+                                       bool absolute);
+  static DeviceOrientationData* create(const WebDeviceOrientationData&);
+  DEFINE_INLINE_TRACE() {}
 
-    double alpha() const;
-    double beta() const;
-    double gamma() const;
-    bool absolute() const;
-    bool canProvideAlpha() const;
-    bool canProvideBeta() const;
-    bool canProvideGamma() const;
+  double alpha() const;
+  double beta() const;
+  double gamma() const;
+  bool absolute() const;
+  bool canProvideAlpha() const;
+  bool canProvideBeta() const;
+  bool canProvideGamma() const;
 
-    bool canProvideEventData() const;
+  bool canProvideEventData() const;
 
-private:
-    DeviceOrientationData();
-    DeviceOrientationData(const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute);
+ private:
+  DeviceOrientationData();
+  DeviceOrientationData(const Nullable<double>& alpha,
+                        const Nullable<double>& beta,
+                        const Nullable<double>& gamma,
+                        bool absolute);
 
-    Nullable<double> m_alpha;
-    Nullable<double> m_beta;
-    Nullable<double> m_gamma;
-    bool m_absolute;
+  Nullable<double> m_alpha;
+  Nullable<double> m_beta;
+  Nullable<double> m_gamma;
+  bool m_absolute;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceOrientationData_h
+#endif  // DeviceOrientationData_h

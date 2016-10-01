@@ -12,44 +12,38 @@
 namespace blink {
 
 class LineLayoutSVGTextPath : public LineLayoutSVGInline {
-public:
-    explicit LineLayoutSVGTextPath(LayoutSVGTextPath* layoutSVGTextPath)
-        : LineLayoutSVGInline(layoutSVGTextPath)
-    {
-    }
+ public:
+  explicit LineLayoutSVGTextPath(LayoutSVGTextPath* layoutSVGTextPath)
+      : LineLayoutSVGInline(layoutSVGTextPath) {}
 
-    explicit LineLayoutSVGTextPath(const LineLayoutItem& item)
-        : LineLayoutSVGInline(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGTextPath());
-    }
+  explicit LineLayoutSVGTextPath(const LineLayoutItem& item)
+      : LineLayoutSVGInline(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGTextPath());
+  }
 
-    explicit LineLayoutSVGTextPath(std::nullptr_t) : LineLayoutSVGInline(nullptr) { }
+  explicit LineLayoutSVGTextPath(std::nullptr_t)
+      : LineLayoutSVGInline(nullptr) {}
 
-    LineLayoutSVGTextPath() { }
+  LineLayoutSVGTextPath() {}
 
-    std::unique_ptr<PathPositionMapper> layoutPath() const
-    {
-        return toSVGTextPath()->layoutPath();
-    }
+  std::unique_ptr<PathPositionMapper> layoutPath() const {
+    return toSVGTextPath()->layoutPath();
+  }
 
-    float calculateStartOffset(float pathLength) const
-    {
-        return toSVGTextPath()->calculateStartOffset(pathLength);
-    }
+  float calculateStartOffset(float pathLength) const {
+    return toSVGTextPath()->calculateStartOffset(pathLength);
+  }
 
-private:
-    LayoutSVGTextPath* toSVGTextPath()
-    {
-        return toLayoutSVGTextPath(layoutObject());
-    }
+ private:
+  LayoutSVGTextPath* toSVGTextPath() {
+    return toLayoutSVGTextPath(layoutObject());
+  }
 
-    const LayoutSVGTextPath* toSVGTextPath() const
-    {
-        return toLayoutSVGTextPath(layoutObject());
-    }
+  const LayoutSVGTextPath* toSVGTextPath() const {
+    return toLayoutSVGTextPath(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutSVGTextPath_h
+#endif  // LineLayoutSVGTextPath_h

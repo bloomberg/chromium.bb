@@ -34,61 +34,75 @@ namespace blink {
 
 // CSS Transforms (may become part of CSS3)
 
-class PLATFORM_EXPORT TransformOperation : public RefCounted<TransformOperation> {
-    WTF_MAKE_NONCOPYABLE(TransformOperation);
-public:
-    enum OperationType {
-        ScaleX, ScaleY, Scale,
-        TranslateX, TranslateY, Translate,
-        Rotate,
-        RotateZ = Rotate,
-        SkewX, SkewY, Skew,
-        Matrix,
-        ScaleZ, Scale3D,
-        TranslateZ, Translate3D,
-        RotateX, RotateY, Rotate3D,
-        Matrix3D,
-        Perspective,
-        Interpolated,
-        Identity, None
-    };
+class PLATFORM_EXPORT TransformOperation
+    : public RefCounted<TransformOperation> {
+  WTF_MAKE_NONCOPYABLE(TransformOperation);
 
-    TransformOperation() { }
-    virtual ~TransformOperation() { }
+ public:
+  enum OperationType {
+    ScaleX,
+    ScaleY,
+    Scale,
+    TranslateX,
+    TranslateY,
+    Translate,
+    Rotate,
+    RotateZ = Rotate,
+    SkewX,
+    SkewY,
+    Skew,
+    Matrix,
+    ScaleZ,
+    Scale3D,
+    TranslateZ,
+    Translate3D,
+    RotateX,
+    RotateY,
+    Rotate3D,
+    Matrix3D,
+    Perspective,
+    Interpolated,
+    Identity,
+    None
+  };
 
-    virtual bool operator==(const TransformOperation&) const = 0;
-    bool operator!=(const TransformOperation& o) const { return !(*this == o); }
+  TransformOperation() {}
+  virtual ~TransformOperation() {}
 
-    virtual void apply(TransformationMatrix&, const FloatSize& borderBoxSize) const = 0;
+  virtual bool operator==(const TransformOperation&) const = 0;
+  bool operator!=(const TransformOperation& o) const { return !(*this == o); }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) = 0;
-    virtual PassRefPtr<TransformOperation> zoom(double factor) = 0;
+  virtual void apply(TransformationMatrix&,
+                     const FloatSize& borderBoxSize) const = 0;
 
-    virtual OperationType type() const = 0;
-    bool isSameType(const TransformOperation& other) const { return other.type() == type(); }
-    virtual bool canBlendWith(const TransformOperation& other) const = 0;
+  virtual PassRefPtr<TransformOperation> blend(
+      const TransformOperation* from,
+      double progress,
+      bool blendToIdentity = false) = 0;
+  virtual PassRefPtr<TransformOperation> zoom(double factor) = 0;
 
-    bool is3DOperation() const
-    {
-        OperationType opType = type();
-        return opType == ScaleZ
-            || opType == Scale3D
-            || opType == TranslateZ
-            || opType == Translate3D
-            || opType == RotateX
-            || opType == RotateY
-            || opType == Rotate3D
-            || opType == Matrix3D
-            || opType == Perspective
-            || opType == Interpolated;
-    }
+  virtual OperationType type() const = 0;
+  bool isSameType(const TransformOperation& other) const {
+    return other.type() == type();
+  }
+  virtual bool canBlendWith(const TransformOperation& other) const = 0;
 
-    virtual bool dependsOnBoxSize() const { return false; }
+  bool is3DOperation() const {
+    OperationType opType = type();
+    return opType == ScaleZ || opType == Scale3D || opType == TranslateZ ||
+           opType == Translate3D || opType == RotateX || opType == RotateY ||
+           opType == Rotate3D || opType == Matrix3D || opType == Perspective ||
+           opType == Interpolated;
+  }
+
+  virtual bool dependsOnBoxSize() const { return false; }
 };
 
-#define DEFINE_TRANSFORM_TYPE_CASTS(thisType) \
-    DEFINE_TYPE_CASTS(thisType, TransformOperation, transform, thisType::isMatchingOperationType(transform->type()), thisType::isMatchingOperationType(transform.type()))
+#define DEFINE_TRANSFORM_TYPE_CASTS(thisType)                             \
+  DEFINE_TYPE_CASTS(thisType, TransformOperation, transform,              \
+                    thisType::isMatchingOperationType(transform->type()), \
+                    thisType::isMatchingOperationType(transform.type()))
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TransformOperation_h
+#endif  // TransformOperation_h

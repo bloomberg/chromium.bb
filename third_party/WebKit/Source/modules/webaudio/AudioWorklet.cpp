@@ -11,31 +11,24 @@
 namespace blink {
 
 // static
-AudioWorklet* AudioWorklet::create(LocalFrame* frame)
-{
-    AudioWorklet* worklet = new AudioWorklet(frame);
-    worklet->suspendIfNeeded();
-    return worklet;
+AudioWorklet* AudioWorklet::create(LocalFrame* frame) {
+  AudioWorklet* worklet = new AudioWorklet(frame);
+  worklet->suspendIfNeeded();
+  return worklet;
 }
 
 AudioWorklet::AudioWorklet(LocalFrame* frame)
-    : Worklet(frame)
-    , m_workletGlobalScopeProxy(new ThreadedWorkletGlobalScopeProxy())
-{
+    : Worklet(frame),
+      m_workletGlobalScopeProxy(new ThreadedWorkletGlobalScopeProxy()) {}
+
+AudioWorklet::~AudioWorklet() {}
+
+WorkletGlobalScopeProxy* AudioWorklet::workletGlobalScopeProxy() const {
+  return m_workletGlobalScopeProxy.get();
 }
 
-AudioWorklet::~AudioWorklet()
-{
+DEFINE_TRACE(AudioWorklet) {
+  Worklet::trace(visitor);
 }
 
-WorkletGlobalScopeProxy* AudioWorklet::workletGlobalScopeProxy() const
-{
-    return m_workletGlobalScopeProxy.get();
-}
-
-DEFINE_TRACE(AudioWorklet)
-{
-    Worklet::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

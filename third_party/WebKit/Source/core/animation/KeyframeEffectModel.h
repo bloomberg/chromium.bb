@@ -52,169 +52,207 @@ class Element;
 class KeyframeEffectModelTest;
 
 class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
-public:
-    // FIXME: Implement accumulation.
+ public:
+  // FIXME: Implement accumulation.
 
-    using PropertySpecificKeyframeVector = Vector<RefPtr<Keyframe::PropertySpecificKeyframe>>;
-    class PropertySpecificKeyframeGroup {
-    public:
-        void appendKeyframe(PassRefPtr<Keyframe::PropertySpecificKeyframe>);
-        const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
-
-    private:
-        void removeRedundantKeyframes();
-        bool addSyntheticKeyframeIfRequired(PassRefPtr<TimingFunction> zeroOffsetEasing);
-
-        PropertySpecificKeyframeVector m_keyframes;
-
-        friend class KeyframeEffectModelBase;
-    };
-
-    bool isReplaceOnly();
-
-    PropertyHandleSet properties() const;
-
-    using KeyframeVector = Vector<RefPtr<Keyframe>>;
-    const KeyframeVector& getFrames() const { return m_keyframes; }
-    void setFrames(KeyframeVector& keyframes);
-
-    const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(PropertyHandle property) const
-    {
-        ensureKeyframeGroups();
-        return m_keyframeGroups->get(property)->keyframes();
+  using PropertySpecificKeyframeVector =
+      Vector<RefPtr<Keyframe::PropertySpecificKeyframe>>;
+  class PropertySpecificKeyframeGroup {
+   public:
+    void appendKeyframe(PassRefPtr<Keyframe::PropertySpecificKeyframe>);
+    const PropertySpecificKeyframeVector& keyframes() const {
+      return m_keyframes;
     }
 
-    using KeyframeGroupMap = HashMap<PropertyHandle, std::unique_ptr<PropertySpecificKeyframeGroup>>;
-    const KeyframeGroupMap& getPropertySpecificKeyframeGroups() const
-    {
-        ensureKeyframeGroups();
-        return *m_keyframeGroups;
-    }
+   private:
+    void removeRedundantKeyframes();
+    bool addSyntheticKeyframeIfRequired(
+        PassRefPtr<TimingFunction> zeroOffsetEasing);
 
-    // EffectModel implementation.
-    bool sample(int iteration, double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>&) const override;
+    PropertySpecificKeyframeVector m_keyframes;
 
-    bool isKeyframeEffectModel() const override { return true; }
+    friend class KeyframeEffectModelBase;
+  };
 
-    virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
-    virtual bool isStringKeyframeEffectModel() const { return false; }
+  bool isReplaceOnly();
 
-    bool hasSyntheticKeyframes() const
-    {
-        ensureKeyframeGroups();
-        return m_hasSyntheticKeyframes;
-    }
+  PropertyHandleSet properties() const;
 
-    bool needsCompositorKeyframesSnapshot() const { return m_needsCompositorKeyframesSnapshot; }
-    bool snapshotNeutralCompositorKeyframes(Element&, const ComputedStyle& oldStyle, const ComputedStyle& newStyle, const ComputedStyle* parentStyle) const;
-    bool snapshotAllCompositorKeyframes(Element&, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const;
+  using KeyframeVector = Vector<RefPtr<Keyframe>>;
+  const KeyframeVector& getFrames() const { return m_keyframes; }
+  void setFrames(KeyframeVector& keyframes);
 
-    static KeyframeVector normalizedKeyframesForInspector(const KeyframeVector& keyframes) { return normalizedKeyframes(keyframes); }
+  const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(
+      PropertyHandle property) const {
+    ensureKeyframeGroups();
+    return m_keyframeGroups->get(property)->keyframes();
+  }
 
-    bool affects(PropertyHandle property) const override
-    {
-        ensureKeyframeGroups();
-        return m_keyframeGroups->contains(property);
-    }
+  using KeyframeGroupMap =
+      HashMap<PropertyHandle, std::unique_ptr<PropertySpecificKeyframeGroup>>;
+  const KeyframeGroupMap& getPropertySpecificKeyframeGroups() const {
+    ensureKeyframeGroups();
+    return *m_keyframeGroups;
+  }
 
-    bool isTransformRelatedEffect() const override;
+  // EffectModel implementation.
+  bool sample(int iteration,
+              double fraction,
+              double iterationDuration,
+              Vector<RefPtr<Interpolation>>&) const override;
 
-protected:
-    KeyframeEffectModelBase(PassRefPtr<TimingFunction> defaultKeyframeEasing)
-        : m_lastIteration(0)
-        , m_lastFraction(std::numeric_limits<double>::quiet_NaN())
-        , m_lastIterationDuration(0)
-        , m_defaultKeyframeEasing(defaultKeyframeEasing)
-        , m_hasSyntheticKeyframes(false)
-        , m_needsCompositorKeyframesSnapshot(true)
-    {
-    }
+  bool isKeyframeEffectModel() const override { return true; }
 
-    static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes);
+  virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
+  virtual bool isStringKeyframeEffectModel() const { return false; }
 
-    // Lazily computes the groups of property-specific keyframes.
-    void ensureKeyframeGroups() const;
-    void ensureInterpolationEffectPopulated() const;
+  bool hasSyntheticKeyframes() const {
+    ensureKeyframeGroups();
+    return m_hasSyntheticKeyframes;
+  }
 
-    KeyframeVector m_keyframes;
-    // The spec describes filtering the normalized keyframes at sampling time
-    // to get the 'property-specific keyframes'. For efficiency, we cache the
-    // property-specific lists.
-    mutable std::unique_ptr<KeyframeGroupMap> m_keyframeGroups;
-    mutable InterpolationEffect m_interpolationEffect;
-    mutable int m_lastIteration;
-    mutable double m_lastFraction;
-    mutable double m_lastIterationDuration;
-    RefPtr<TimingFunction> m_defaultKeyframeEasing;
+  bool needsCompositorKeyframesSnapshot() const {
+    return m_needsCompositorKeyframesSnapshot;
+  }
+  bool snapshotNeutralCompositorKeyframes(
+      Element&,
+      const ComputedStyle& oldStyle,
+      const ComputedStyle& newStyle,
+      const ComputedStyle* parentStyle) const;
+  bool snapshotAllCompositorKeyframes(Element&,
+                                      const ComputedStyle& baseStyle,
+                                      const ComputedStyle* parentStyle) const;
 
-    mutable bool m_hasSyntheticKeyframes;
-    mutable bool m_needsCompositorKeyframesSnapshot;
+  static KeyframeVector normalizedKeyframesForInspector(
+      const KeyframeVector& keyframes) {
+    return normalizedKeyframes(keyframes);
+  }
 
-    friend class KeyframeEffectModelTest;
+  bool affects(PropertyHandle property) const override {
+    ensureKeyframeGroups();
+    return m_keyframeGroups->contains(property);
+  }
+
+  bool isTransformRelatedEffect() const override;
+
+ protected:
+  KeyframeEffectModelBase(PassRefPtr<TimingFunction> defaultKeyframeEasing)
+      : m_lastIteration(0),
+        m_lastFraction(std::numeric_limits<double>::quiet_NaN()),
+        m_lastIterationDuration(0),
+        m_defaultKeyframeEasing(defaultKeyframeEasing),
+        m_hasSyntheticKeyframes(false),
+        m_needsCompositorKeyframesSnapshot(true) {}
+
+  static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes);
+
+  // Lazily computes the groups of property-specific keyframes.
+  void ensureKeyframeGroups() const;
+  void ensureInterpolationEffectPopulated() const;
+
+  KeyframeVector m_keyframes;
+  // The spec describes filtering the normalized keyframes at sampling time
+  // to get the 'property-specific keyframes'. For efficiency, we cache the
+  // property-specific lists.
+  mutable std::unique_ptr<KeyframeGroupMap> m_keyframeGroups;
+  mutable InterpolationEffect m_interpolationEffect;
+  mutable int m_lastIteration;
+  mutable double m_lastFraction;
+  mutable double m_lastIterationDuration;
+  RefPtr<TimingFunction> m_defaultKeyframeEasing;
+
+  mutable bool m_hasSyntheticKeyframes;
+  mutable bool m_needsCompositorKeyframesSnapshot;
+
+  friend class KeyframeEffectModelTest;
 };
 
 // Time independent representation of an Animation's keyframes.
 template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
-public:
-    using KeyframeVector = Vector<RefPtr<Keyframe>>;
-    static KeyframeEffectModel<Keyframe>* create(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> defaultKeyframeEasing = nullptr)
-    {
-        return new KeyframeEffectModel(keyframes, std::move(defaultKeyframeEasing));
-    }
+ public:
+  using KeyframeVector = Vector<RefPtr<Keyframe>>;
+  static KeyframeEffectModel<Keyframe>* create(
+      const KeyframeVector& keyframes,
+      PassRefPtr<TimingFunction> defaultKeyframeEasing = nullptr) {
+    return new KeyframeEffectModel(keyframes, std::move(defaultKeyframeEasing));
+  }
 
-private:
-    KeyframeEffectModel(const KeyframeVector& keyframes, PassRefPtr<TimingFunction> defaultKeyframeEasing)
-        : KeyframeEffectModelBase(std::move(defaultKeyframeEasing))
-    {
-        m_keyframes.appendVector(keyframes);
-    }
+ private:
+  KeyframeEffectModel(const KeyframeVector& keyframes,
+                      PassRefPtr<TimingFunction> defaultKeyframeEasing)
+      : KeyframeEffectModelBase(std::move(defaultKeyframeEasing)) {
+    m_keyframes.appendVector(keyframes);
+  }
 
-    virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
-    virtual bool isStringKeyframeEffectModel() const { return false; }
+  virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
+  virtual bool isStringKeyframeEffectModel() const { return false; }
 };
 
 using KeyframeVector = KeyframeEffectModelBase::KeyframeVector;
-using PropertySpecificKeyframeVector = KeyframeEffectModelBase::PropertySpecificKeyframeVector;
+using PropertySpecificKeyframeVector =
+    KeyframeEffectModelBase::PropertySpecificKeyframeVector;
 
-using AnimatableValueKeyframeEffectModel = KeyframeEffectModel<AnimatableValueKeyframe>;
-using AnimatableValueKeyframeVector = AnimatableValueKeyframeEffectModel::KeyframeVector;
-using AnimatableValuePropertySpecificKeyframeVector = AnimatableValueKeyframeEffectModel::PropertySpecificKeyframeVector;
+using AnimatableValueKeyframeEffectModel =
+    KeyframeEffectModel<AnimatableValueKeyframe>;
+using AnimatableValueKeyframeVector =
+    AnimatableValueKeyframeEffectModel::KeyframeVector;
+using AnimatableValuePropertySpecificKeyframeVector =
+    AnimatableValueKeyframeEffectModel::PropertySpecificKeyframeVector;
 
 using StringKeyframeEffectModel = KeyframeEffectModel<StringKeyframe>;
 using StringKeyframeVector = StringKeyframeEffectModel::KeyframeVector;
-using StringPropertySpecificKeyframeVector = StringKeyframeEffectModel::PropertySpecificKeyframeVector;
+using StringPropertySpecificKeyframeVector =
+    StringKeyframeEffectModel::PropertySpecificKeyframeVector;
 
-DEFINE_TYPE_CASTS(KeyframeEffectModelBase, EffectModel, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
-DEFINE_TYPE_CASTS(AnimatableValueKeyframeEffectModel, KeyframeEffectModelBase, value, value->isAnimatableValueKeyframeEffectModel(), value.isAnimatableValueKeyframeEffectModel());
-DEFINE_TYPE_CASTS(StringKeyframeEffectModel, KeyframeEffectModelBase, value, value->isStringKeyframeEffectModel(), value.isStringKeyframeEffectModel());
+DEFINE_TYPE_CASTS(KeyframeEffectModelBase,
+                  EffectModel,
+                  value,
+                  value->isKeyframeEffectModel(),
+                  value.isKeyframeEffectModel());
+DEFINE_TYPE_CASTS(AnimatableValueKeyframeEffectModel,
+                  KeyframeEffectModelBase,
+                  value,
+                  value->isAnimatableValueKeyframeEffectModel(),
+                  value.isAnimatableValueKeyframeEffectModel());
+DEFINE_TYPE_CASTS(StringKeyframeEffectModel,
+                  KeyframeEffectModelBase,
+                  value,
+                  value->isStringKeyframeEffectModel(),
+                  value.isStringKeyframeEffectModel());
 
-inline const AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(const EffectModel* base)
-{
-    return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
+inline const AnimatableValueKeyframeEffectModel*
+toAnimatableValueKeyframeEffectModel(const EffectModel* base) {
+  return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
-inline AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(EffectModel* base)
-{
-    return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
+inline AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(
+    EffectModel* base) {
+  return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
-inline const StringKeyframeEffectModel* toStringKeyframeEffectModel(const EffectModel* base)
-{
-    return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
+inline const StringKeyframeEffectModel* toStringKeyframeEffectModel(
+    const EffectModel* base) {
+  return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
-inline StringKeyframeEffectModel* toStringKeyframeEffectModel(EffectModel* base)
-{
-    return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
+inline StringKeyframeEffectModel* toStringKeyframeEffectModel(
+    EffectModel* base) {
+  return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
 template <>
-inline bool KeyframeEffectModel<AnimatableValueKeyframe>::isAnimatableValueKeyframeEffectModel() const { return true; }
+inline bool KeyframeEffectModel<
+    AnimatableValueKeyframe>::isAnimatableValueKeyframeEffectModel() const {
+  return true;
+}
 
 template <>
-inline bool KeyframeEffectModel<StringKeyframe>::isStringKeyframeEffectModel() const { return true; }
+inline bool KeyframeEffectModel<StringKeyframe>::isStringKeyframeEffectModel()
+    const {
+  return true;
+}
 
-} // namespace blink
+}  // namespace blink
 
-#endif // KeyframeEffectModel_h
+#endif  // KeyframeEffectModel_h

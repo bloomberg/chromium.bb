@@ -47,8 +47,12 @@ String serializeForNumberType(double);
 // Convert the specified string to a decimal/double. If the conversion fails, the return value is fallback value or NaN if not specified.
 // Leading or trailing illegal characters cause failure, as does passing an empty string.
 // The double* parameter may be 0 to check if the string can be parsed without getting the result.
-Decimal parseToDecimalForNumberType(const String&, const Decimal& fallbackValue = Decimal::nan());
-double parseToDoubleForNumberType(const String&, double fallbackValue = std::numeric_limits<double>::quiet_NaN());
+Decimal parseToDecimalForNumberType(
+    const String&,
+    const Decimal& fallbackValue = Decimal::nan());
+double parseToDoubleForNumberType(
+    const String&,
+    double fallbackValue = std::numeric_limits<double>::quiet_NaN());
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-integers
 bool parseHTMLInteger(const String&, int&);
@@ -64,70 +68,64 @@ typedef Vector<std::pair<String, String>> HTMLAttributeList;
 WTF::TextEncoding encodingFromMetaAttributes(const HTMLAttributeList&);
 
 // Space characters as defined by the HTML specification.
-template<typename CharType>
-inline bool isHTMLSpace(CharType character)
-{
-    // Histogram from Apple's page load test combined with some ad hoc browsing some other test suites.
-    //
-    //     82%: 216330 non-space characters, all > U+0020
-    //     11%:  30017 plain space characters, U+0020
-    //      5%:  12099 newline characters, U+000A
-    //      2%:   5346 tab characters, U+0009
-    //
-    // No other characters seen. No U+000C or U+000D, and no other control characters.
-    // Accordingly, we check for non-spaces first, then space, then newline, then tab, then the other characters.
+template <typename CharType>
+inline bool isHTMLSpace(CharType character) {
+  // Histogram from Apple's page load test combined with some ad hoc browsing some other test suites.
+  //
+  //     82%: 216330 non-space characters, all > U+0020
+  //     11%:  30017 plain space characters, U+0020
+  //      5%:  12099 newline characters, U+000A
+  //      2%:   5346 tab characters, U+0009
+  //
+  // No other characters seen. No U+000C or U+000D, and no other control characters.
+  // Accordingly, we check for non-spaces first, then space, then newline, then tab, then the other characters.
 
-    return character <= ' ' && (character == ' ' || character == '\n' || character == '\t' || character == '\r' || character == '\f');
+  return character <= ' ' &&
+         (character == ' ' || character == '\n' || character == '\t' ||
+          character == '\r' || character == '\f');
 }
 
-template<typename CharType>
-inline bool isComma(CharType character)
-{
-    return character == ',';
+template <typename CharType>
+inline bool isComma(CharType character) {
+  return character == ',';
 }
 
-template<typename CharType>
-inline bool isHTMLSpaceOrComma(CharType character)
-{
-    return isComma(character) || isHTMLSpace(character);
+template <typename CharType>
+inline bool isHTMLSpaceOrComma(CharType character) {
+  return isComma(character) || isHTMLSpace(character);
 }
 
-inline bool isHTMLLineBreak(UChar character)
-{
-    return character <= '\r' && (character == '\n' || character == '\r');
+inline bool isHTMLLineBreak(UChar character) {
+  return character <= '\r' && (character == '\n' || character == '\r');
 }
 
-template<typename CharType>
-inline bool isNotHTMLSpace(CharType character)
-{
-    return !isHTMLSpace<CharType>(character);
+template <typename CharType>
+inline bool isNotHTMLSpace(CharType character) {
+  return !isHTMLSpace<CharType>(character);
 }
 
 bool threadSafeMatch(const QualifiedName&, const QualifiedName&);
 bool threadSafeMatch(const String&, const QualifiedName&);
 
-enum CharacterWidth {
-    Likely8Bit,
-    Force8Bit,
-    Force16Bit
-};
+enum CharacterWidth { Likely8Bit, Force8Bit, Force16Bit };
 
 String attemptStaticStringCreation(const LChar*, size_t);
 
 String attemptStaticStringCreation(const UChar*, size_t, CharacterWidth);
 
-template<size_t inlineCapacity>
-inline static String attemptStaticStringCreation(const Vector<UChar, inlineCapacity>& vector, CharacterWidth width)
-{
-    return attemptStaticStringCreation(vector.data(), vector.size(), width);
+template <size_t inlineCapacity>
+inline static String attemptStaticStringCreation(
+    const Vector<UChar, inlineCapacity>& vector,
+    CharacterWidth width) {
+  return attemptStaticStringCreation(vector.data(), vector.size(), width);
 }
 
-inline static String attemptStaticStringCreation(const String str)
-{
-    if (!str.is8Bit())
-        return attemptStaticStringCreation(str.characters16(), str.length(), Force16Bit);
-    return attemptStaticStringCreation(str.characters8(), str.length());
+inline static String attemptStaticStringCreation(const String str) {
+  if (!str.is8Bit())
+    return attemptStaticStringCreation(str.characters16(), str.length(),
+                                       Force16Bit);
+  return attemptStaticStringCreation(str.characters8(), str.length());
 }
 
-} // namespace blink
+}  // namespace blink
 #endif

@@ -37,34 +37,37 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimatableStrokeDasharrayList final : public AnimatableRepeatable {
-public:
-    ~AnimatableStrokeDasharrayList() override { }
+class CORE_EXPORT AnimatableStrokeDasharrayList final
+    : public AnimatableRepeatable {
+ public:
+  ~AnimatableStrokeDasharrayList() override {}
 
-    static PassRefPtr<AnimatableStrokeDasharrayList> create(PassRefPtr<SVGDashArray> lengths, float zoom)
-    {
-        return adoptRef(new AnimatableStrokeDasharrayList(std::move(lengths), zoom));
-    }
+  static PassRefPtr<AnimatableStrokeDasharrayList> create(
+      PassRefPtr<SVGDashArray> lengths,
+      float zoom) {
+    return adoptRef(
+        new AnimatableStrokeDasharrayList(std::move(lengths), zoom));
+  }
 
-    PassRefPtr<SVGDashArray> toSVGDashArray(float zoom) const;
+  PassRefPtr<SVGDashArray> toSVGDashArray(float zoom) const;
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray>, float zoom);
-    // This will consume the vector passed into it.
-    AnimatableStrokeDasharrayList(Vector<RefPtr<AnimatableValue>>& values)
-        : AnimatableRepeatable(values)
-    {
-    }
+ private:
+  AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray>, float zoom);
+  // This will consume the vector passed into it.
+  AnimatableStrokeDasharrayList(Vector<RefPtr<AnimatableValue>>& values)
+      : AnimatableRepeatable(values) {}
 
-    AnimatableType type() const override { return TypeStrokeDasharrayList; }
+  AnimatableType type() const override { return TypeStrokeDasharrayList; }
 };
 
-DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList, isStrokeDasharrayList());
+DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList,
+                                   isStrokeDasharrayList());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableStrokeDasharrayList_h
+#endif  // AnimatableStrokeDasharrayList_h

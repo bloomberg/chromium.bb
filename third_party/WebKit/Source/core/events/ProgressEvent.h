@@ -33,40 +33,43 @@
 namespace blink {
 
 class CORE_EXPORT ProgressEvent : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ProgressEvent* create()
-    {
-        return new ProgressEvent;
-    }
-    static ProgressEvent* create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
-    {
-        return new ProgressEvent(type, lengthComputable, loaded, total);
-    }
-    static ProgressEvent* create(const AtomicString& type, const ProgressEventInit& initializer)
-    {
-        return new ProgressEvent(type, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool lengthComputable() const { return m_lengthComputable; }
-    unsigned long long loaded() const { return m_loaded; }
-    unsigned long long total() const { return m_total; }
+ public:
+  static ProgressEvent* create() { return new ProgressEvent; }
+  static ProgressEvent* create(const AtomicString& type,
+                               bool lengthComputable,
+                               unsigned long long loaded,
+                               unsigned long long total) {
+    return new ProgressEvent(type, lengthComputable, loaded, total);
+  }
+  static ProgressEvent* create(const AtomicString& type,
+                               const ProgressEventInit& initializer) {
+    return new ProgressEvent(type, initializer);
+  }
 
-    const AtomicString& interfaceName() const override;
+  bool lengthComputable() const { return m_lengthComputable; }
+  unsigned long long loaded() const { return m_loaded; }
+  unsigned long long total() const { return m_total; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-protected:
-    ProgressEvent();
-    ProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total);
-    ProgressEvent(const AtomicString&, const ProgressEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    bool m_lengthComputable;
-    unsigned long long m_loaded;
-    unsigned long long m_total;
+ protected:
+  ProgressEvent();
+  ProgressEvent(const AtomicString& type,
+                bool lengthComputable,
+                unsigned long long loaded,
+                unsigned long long total);
+  ProgressEvent(const AtomicString&, const ProgressEventInit&);
+
+ private:
+  bool m_lengthComputable;
+  unsigned long long m_loaded;
+  unsigned long long m_total;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ProgressEvent_h
+#endif  // ProgressEvent_h

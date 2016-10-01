@@ -11,22 +11,22 @@
 namespace blink {
 
 class CORE_EXPORT WorkerSettings {
-public:
-    explicit WorkerSettings(Settings*);
+ public:
+  explicit WorkerSettings(Settings*);
 
-    bool disableReadingFromCanvas() const { return m_disableReadingFromCanvas; }
+  bool disableReadingFromCanvas() const { return m_disableReadingFromCanvas; }
 
-private:
-    void copyFlagValuesFromSettings(Settings*);
-    void setDefaultValues();
+ private:
+  void copyFlagValuesFromSettings(Settings*);
+  void setDefaultValues();
 
-    // The settings that are to be copied from main thread to worker thread
-    // These setting's flag values must remain unchanged throughout the document
-    // lifecycle.
-    // We hard-code the flags as there're very few flags at this moment.
-    bool m_disableReadingFromCanvas;
+  // The settings that are to be copied from main thread to worker thread
+  // These setting's flag values must remain unchanged throughout the document
+  // lifecycle.
+  // We hard-code the flags as there're very few flags at this moment.
+  bool m_disableReadingFromCanvas;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerSettings_h
+#endif  // WorkerSettings_h

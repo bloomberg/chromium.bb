@@ -37,10 +37,10 @@ namespace blink {
 // Chromium and CC versions namely: |content::TopControlsState|, and
 // |cc::TopControlsState|
 enum WebTopControlsState {
-    WebTopControlsShown = 1,
-    WebTopControlsHidden = 2,
-    WebTopControlsBoth = 3
+  WebTopControlsShown = 1,
+  WebTopControlsHidden = 2,
+  WebTopControlsBoth = 3
 };
 
-} // namespace blink
+}  // namespace blink
 #endif

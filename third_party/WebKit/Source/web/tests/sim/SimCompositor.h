@@ -22,35 +22,35 @@ class WebViewImpl;
 //
 // Note: This also does not support compositor driven animations.
 class SimCompositor final : public WebLayerTreeView {
-public:
-    explicit SimCompositor();
-    ~SimCompositor();
+ public:
+  explicit SimCompositor();
+  ~SimCompositor();
 
-    void setWebViewImpl(WebViewImpl&);
+  void setWebViewImpl(WebViewImpl&);
 
-    // Execute the BeginMainFrame processing steps, an approximation of what
-    // cc::ThreadProxy::BeginMainFrame would do.
-    SimDisplayItemList beginFrame();
+  // Execute the BeginMainFrame processing steps, an approximation of what
+  // cc::ThreadProxy::BeginMainFrame would do.
+  SimDisplayItemList beginFrame();
 
-    bool needsBeginFrame() const { return m_needsBeginFrame; }
-    bool deferCommits() const { return m_deferCommits; }
+  bool needsBeginFrame() const { return m_needsBeginFrame; }
+  bool deferCommits() const { return m_deferCommits; }
 
-    bool hasSelection() const { return m_hasSelection; }
+  bool hasSelection() const { return m_hasSelection; }
 
-private:
-    void setNeedsBeginFrame() override;
-    void setNeedsCompositorUpdate() override;
-    void setDeferCommits(bool) override;
-    void registerSelection(const WebSelection&) override;
-    void clearSelection() override;
+ private:
+  void setNeedsBeginFrame() override;
+  void setNeedsCompositorUpdate() override;
+  void setDeferCommits(bool) override;
+  void registerSelection(const WebSelection&) override;
+  void clearSelection() override;
 
-    bool m_needsBeginFrame;
-    bool m_deferCommits;
-    bool m_hasSelection;
-    WebViewImpl* m_webViewImpl;
-    double m_lastFrameTimeMonotonic;
+  bool m_needsBeginFrame;
+  bool m_deferCommits;
+  bool m_hasSelection;
+  WebViewImpl* m_webViewImpl;
+  double m_lastFrameTimeMonotonic;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

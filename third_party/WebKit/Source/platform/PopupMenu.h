@@ -27,20 +27,20 @@
 namespace blink {
 
 class PopupMenu : public GarbageCollectedFinalized<PopupMenu> {
-public:
-    virtual ~PopupMenu() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void show() = 0;
-    virtual void hide() = 0;
-    enum UpdateReason {
-        BySelectionChange,
-        ByStyleChange,
-        ByDOMChange,
-    };
-    virtual void updateFromElement(UpdateReason) = 0;
-    virtual void disconnectClient() = 0;
+ public:
+  virtual ~PopupMenu() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void show() = 0;
+  virtual void hide() = 0;
+  enum UpdateReason {
+    BySelectionChange,
+    ByStyleChange,
+    ByDOMChange,
+  };
+  virtual void updateFromElement(UpdateReason) = 0;
+  virtual void disconnectClient() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PopupMenu_h
+#endif  // PopupMenu_h

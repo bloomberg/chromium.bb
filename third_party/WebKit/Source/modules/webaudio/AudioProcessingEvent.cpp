@@ -26,43 +26,36 @@
 
 namespace blink {
 
-AudioProcessingEvent* AudioProcessingEvent::create()
-{
-    return new AudioProcessingEvent;
+AudioProcessingEvent* AudioProcessingEvent::create() {
+  return new AudioProcessingEvent;
 }
 
-AudioProcessingEvent* AudioProcessingEvent::create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime)
-{
-    return new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime);
+AudioProcessingEvent* AudioProcessingEvent::create(AudioBuffer* inputBuffer,
+                                                   AudioBuffer* outputBuffer,
+                                                   double playbackTime) {
+  return new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime);
 }
 
-AudioProcessingEvent::AudioProcessingEvent()
-{
+AudioProcessingEvent::AudioProcessingEvent() {}
+
+AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* inputBuffer,
+                                           AudioBuffer* outputBuffer,
+                                           double playbackTime)
+    : Event(EventTypeNames::audioprocess, true, false),
+      m_inputBuffer(inputBuffer),
+      m_outputBuffer(outputBuffer),
+      m_playbackTime(playbackTime) {}
+
+AudioProcessingEvent::~AudioProcessingEvent() {}
+
+const AtomicString& AudioProcessingEvent::interfaceName() const {
+  return EventNames::AudioProcessingEvent;
 }
 
-AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime)
-    : Event(EventTypeNames::audioprocess, true, false)
-    , m_inputBuffer(inputBuffer)
-    , m_outputBuffer(outputBuffer)
-    , m_playbackTime(playbackTime)
-{
+DEFINE_TRACE(AudioProcessingEvent) {
+  visitor->trace(m_inputBuffer);
+  visitor->trace(m_outputBuffer);
+  Event::trace(visitor);
 }
 
-AudioProcessingEvent::~AudioProcessingEvent()
-{
-}
-
-const AtomicString& AudioProcessingEvent::interfaceName() const
-{
-    return EventNames::AudioProcessingEvent;
-}
-
-DEFINE_TRACE(AudioProcessingEvent)
-{
-    visitor->trace(m_inputBuffer);
-    visitor->trace(m_outputBuffer);
-    Event::trace(visitor);
-}
-
-} // namespace blink
-
+}  // namespace blink

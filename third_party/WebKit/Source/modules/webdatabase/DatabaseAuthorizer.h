@@ -37,85 +37,85 @@ namespace blink {
 extern const int SQLAuthAllow;
 extern const int SQLAuthDeny;
 
-class DatabaseAuthorizer : public GarbageCollectedFinalized<DatabaseAuthorizer> {
-public:
+class DatabaseAuthorizer
+    : public GarbageCollectedFinalized<DatabaseAuthorizer> {
+ public:
+  enum Permissions {
+    ReadWriteMask = 0,
+    ReadOnlyMask = 1 << 1,
+    NoAccessMask = 1 << 2
+  };
 
-    enum Permissions {
-        ReadWriteMask = 0,
-        ReadOnlyMask = 1 << 1,
-        NoAccessMask = 1 << 2
-    };
+  static DatabaseAuthorizer* create(const String& databaseInfoTableName);
+  DEFINE_INLINE_TRACE() {}
 
-    static DatabaseAuthorizer* create(const String& databaseInfoTableName);
-    DEFINE_INLINE_TRACE() { }
+  int createTable(const String& tableName);
+  int createTempTable(const String& tableName);
+  int dropTable(const String& tableName);
+  int dropTempTable(const String& tableName);
+  int allowAlterTable(const String& databaseName, const String& tableName);
 
-    int createTable(const String& tableName);
-    int createTempTable(const String& tableName);
-    int dropTable(const String& tableName);
-    int dropTempTable(const String& tableName);
-    int allowAlterTable(const String& databaseName, const String& tableName);
+  int createIndex(const String& indexName, const String& tableName);
+  int createTempIndex(const String& indexName, const String& tableName);
+  int dropIndex(const String& indexName, const String& tableName);
+  int dropTempIndex(const String& indexName, const String& tableName);
 
-    int createIndex(const String& indexName, const String& tableName);
-    int createTempIndex(const String& indexName, const String& tableName);
-    int dropIndex(const String& indexName, const String& tableName);
-    int dropTempIndex(const String& indexName, const String& tableName);
+  int createTrigger(const String& triggerName, const String& tableName);
+  int createTempTrigger(const String& triggerName, const String& tableName);
+  int dropTrigger(const String& triggerName, const String& tableName);
+  int dropTempTrigger(const String& triggerName, const String& tableName);
 
-    int createTrigger(const String& triggerName, const String& tableName);
-    int createTempTrigger(const String& triggerName, const String& tableName);
-    int dropTrigger(const String& triggerName, const String& tableName);
-    int dropTempTrigger(const String& triggerName, const String& tableName);
+  int createView(const String& viewName);
+  int createTempView(const String& viewName);
+  int dropView(const String& viewName);
+  int dropTempView(const String& viewName);
 
-    int createView(const String& viewName);
-    int createTempView(const String& viewName);
-    int dropView(const String& viewName);
-    int dropTempView(const String& viewName);
+  int createVTable(const String& tableName, const String& moduleName);
+  int dropVTable(const String& tableName, const String& moduleName);
 
-    int createVTable(const String& tableName, const String& moduleName);
-    int dropVTable(const String& tableName, const String& moduleName);
+  int allowDelete(const String& tableName);
+  int allowInsert(const String& tableName);
+  int allowUpdate(const String& tableName, const String& columnName);
+  int allowTransaction();
 
-    int allowDelete(const String& tableName);
-    int allowInsert(const String& tableName);
-    int allowUpdate(const String& tableName, const String& columnName);
-    int allowTransaction();
+  int allowSelect() { return SQLAuthAllow; }
+  int allowRead(const String& tableName, const String& columnName);
 
-    int allowSelect() { return SQLAuthAllow; }
-    int allowRead(const String& tableName, const String& columnName);
+  int allowReindex(const String& indexName);
+  int allowAnalyze(const String& tableName);
+  int allowFunction(const String& functionName);
+  int allowPragma(const String& pragmaName, const String& firstArgument);
 
-    int allowReindex(const String& indexName);
-    int allowAnalyze(const String& tableName);
-    int allowFunction(const String& functionName);
-    int allowPragma(const String& pragmaName, const String& firstArgument);
+  int allowAttach(const String& filename);
+  int allowDetach(const String& databaseName);
 
-    int allowAttach(const String& filename);
-    int allowDetach(const String& databaseName);
+  void disable();
+  void enable();
+  void setPermissions(int permissions);
 
-    void disable();
-    void enable();
-    void setPermissions(int permissions);
+  void reset();
+  void resetDeletes();
 
-    void reset();
-    void resetDeletes();
+  bool lastActionWasInsert() const { return m_lastActionWasInsert; }
+  bool lastActionChangedDatabase() const { return m_lastActionChangedDatabase; }
+  bool hadDeletes() const { return m_hadDeletes; }
 
-    bool lastActionWasInsert() const { return m_lastActionWasInsert; }
-    bool lastActionChangedDatabase() const { return m_lastActionChangedDatabase; }
-    bool hadDeletes() const { return m_hadDeletes; }
+ private:
+  explicit DatabaseAuthorizer(const String& databaseInfoTableName);
+  void addWhitelistedFunctions();
+  int denyBasedOnTableName(const String&) const;
+  int updateDeletesBasedOnTableName(const String&);
+  bool allowWrite();
 
-private:
-    explicit DatabaseAuthorizer(const String& databaseInfoTableName);
-    void addWhitelistedFunctions();
-    int denyBasedOnTableName(const String&) const;
-    int updateDeletesBasedOnTableName(const String&);
-    bool allowWrite();
+  int m_permissions;
+  bool m_securityEnabled : 1;
+  bool m_lastActionWasInsert : 1;
+  bool m_lastActionChangedDatabase : 1;
+  bool m_hadDeletes : 1;
 
-    int m_permissions;
-    bool m_securityEnabled : 1;
-    bool m_lastActionWasInsert : 1;
-    bool m_lastActionChangedDatabase : 1;
-    bool m_hadDeletes : 1;
-
-    const String m_databaseInfoTableName;
+  const String m_databaseInfoTableName;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseAuthorizer_h
+#endif  // DatabaseAuthorizer_h

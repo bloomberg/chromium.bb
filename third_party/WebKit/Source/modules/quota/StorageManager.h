@@ -16,25 +16,26 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class StorageManager final
-    : public GarbageCollectedFinalized<StorageManager>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ScriptPromise persisted(ScriptState*);
-    ScriptPromise persist(ScriptState*);
+class StorageManager final : public GarbageCollectedFinalized<StorageManager>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    ScriptPromise estimate(ScriptState*);
-    DECLARE_TRACE();
+ public:
+  ScriptPromise persisted(ScriptState*);
+  ScriptPromise persist(ScriptState*);
 
-private:
-    mojom::blink::PermissionService* getPermissionService(ExecutionContext*);
-    void permissionServiceConnectionError();
-    void permissionRequestComplete(ScriptPromiseResolver*, mojom::blink::PermissionStatus);
+  ScriptPromise estimate(ScriptState*);
+  DECLARE_TRACE();
 
-    mojom::blink::PermissionServicePtr m_permissionService;
+ private:
+  mojom::blink::PermissionService* getPermissionService(ExecutionContext*);
+  void permissionServiceConnectionError();
+  void permissionRequestComplete(ScriptPromiseResolver*,
+                                 mojom::blink::PermissionStatus);
+
+  mojom::blink::PermissionServicePtr m_permissionService;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageManager_h
+#endif  // StorageManager_h

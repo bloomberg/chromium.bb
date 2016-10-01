@@ -41,14 +41,16 @@ class SliderContainerElement;
 // FIXME: Find a way to cascade appearance and adjust heights, and get rid of this class.
 // http://webkit.org/b/62535
 class LayoutSliderContainer : public LayoutFlexibleBox {
-public:
-    LayoutSliderContainer(SliderContainerElement*);
-    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+ public:
+  LayoutSliderContainer(SliderContainerElement*);
+  void computeLogicalHeight(LayoutUnit logicalHeight,
+                            LayoutUnit logicalTop,
+                            LogicalExtentComputedValues&) const override;
 
-private:
-    void layout() override;
+ private:
+  void layout() override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSliderContainer_h
+#endif  // LayoutSliderContainer_h

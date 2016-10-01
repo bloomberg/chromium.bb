@@ -6,14 +6,12 @@
 
 namespace blink {
 
-v8::Local<v8::Value> IDLDictionaryBase::toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const
-{
-    NOTREACHED();
-    return v8::Local<v8::Value>();
+v8::Local<v8::Value> IDLDictionaryBase::toV8Impl(v8::Local<v8::Object>,
+                                                 v8::Isolate*) const {
+  NOTREACHED();
+  return v8::Local<v8::Value>();
 }
 
-DEFINE_TRACE(IDLDictionaryBase)
-{
-}
+DEFINE_TRACE(IDLDictionaryBase) {}
 
-} // namespace blink
+}  // namespace blink

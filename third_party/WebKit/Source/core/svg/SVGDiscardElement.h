@@ -36,25 +36,29 @@
 namespace blink {
 
 class SVGDiscardElement final : public SVGSMILElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGDiscardElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool isSVGDiscardElement() const override { return true; }
-private:
-    explicit SVGDiscardElement(Document&);
+ public:
+  DECLARE_NODE_FACTORY(SVGDiscardElement);
 
-    void resetAnimatedType() override { }
-    void clearAnimatedType() override { }
-    void applyResultsToTarget() override { }
-    bool hasValidAttributeType() override;
-    bool hasValidAttributeName() override;
-    void animationAttributeChanged() override { }
+  bool isSVGDiscardElement() const override { return true; }
 
-    void startedActiveInterval() override { }
-    void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) override { }
+ private:
+  explicit SVGDiscardElement(Document&);
+
+  void resetAnimatedType() override {}
+  void clearAnimatedType() override {}
+  void applyResultsToTarget() override {}
+  bool hasValidAttributeType() override;
+  bool hasValidAttributeName() override;
+  void animationAttributeChanged() override {}
+
+  void startedActiveInterval() override {}
+  void updateAnimation(float percent,
+                       unsigned repeat,
+                       SVGSMILElement* resultElement) override {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGDiscardElement_h
+#endif  // SVGDiscardElement_h

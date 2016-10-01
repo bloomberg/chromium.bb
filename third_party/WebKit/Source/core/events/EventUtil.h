@@ -13,8 +13,8 @@ namespace EventUtil {
 
 bool isPointerEventType(const AtomicString& eventType);
 
-} // namespace eventUtil
+}  // namespace eventUtil
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EventUtil_h
+#endif  // EventUtil_h

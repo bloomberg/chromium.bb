@@ -31,175 +31,165 @@ namespace {
 // for example, a frame with no parent will return null for WebFrame::parent().
 // TODO(dcheng): Remove duplication between FrameLoaderClientImpl and
 // RemoteFrameClientImpl somehow...
-Frame* toCoreFrame(WebFrame* frame)
-{
-    return frame ? frame->toImplBase()->frame() : nullptr;
+Frame* toCoreFrame(WebFrame* frame) {
+  return frame ? frame->toImplBase()->frame() : nullptr;
 }
 
-} // namespace
+}  // namespace
 
 RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
-    : m_webFrame(webFrame)
-{
+    : m_webFrame(webFrame) {}
+
+RemoteFrameClientImpl* RemoteFrameClientImpl::create(
+    WebRemoteFrameImpl* webFrame) {
+  return new RemoteFrameClientImpl(webFrame);
 }
 
-RemoteFrameClientImpl* RemoteFrameClientImpl::create(WebRemoteFrameImpl* webFrame)
-{
-    return new RemoteFrameClientImpl(webFrame);
+DEFINE_TRACE(RemoteFrameClientImpl) {
+  visitor->trace(m_webFrame);
+  RemoteFrameClient::trace(visitor);
 }
 
-DEFINE_TRACE(RemoteFrameClientImpl)
-{
-    visitor->trace(m_webFrame);
-    RemoteFrameClient::trace(visitor);
+bool RemoteFrameClientImpl::inShadowTree() const {
+  return m_webFrame->inShadowTree();
 }
 
-bool RemoteFrameClientImpl::inShadowTree() const
-{
-    return m_webFrame->inShadowTree();
+void RemoteFrameClientImpl::willBeDetached() {}
+
+void RemoteFrameClientImpl::detached(FrameDetachType type) {
+  // Alert the client that the frame is being detached.
+  WebRemoteFrameClient* client = m_webFrame->client();
+  if (!client)
+    return;
+
+  client->frameDetached(static_cast<WebRemoteFrameClient::DetachType>(type));
+  // Clear our reference to RemoteFrame at the very end, in case the client
+  // refers to it.
+  m_webFrame->setCoreFrame(nullptr);
 }
 
-void RemoteFrameClientImpl::willBeDetached()
-{
+Frame* RemoteFrameClientImpl::opener() const {
+  return toCoreFrame(m_webFrame->opener());
 }
 
-void RemoteFrameClientImpl::detached(FrameDetachType type)
-{
-    // Alert the client that the frame is being detached.
-    WebRemoteFrameClient* client = m_webFrame->client();
-    if (!client)
-        return;
-
-    client->frameDetached(static_cast<WebRemoteFrameClient::DetachType>(type));
-    // Clear our reference to RemoteFrame at the very end, in case the client
-    // refers to it.
-    m_webFrame->setCoreFrame(nullptr);
+void RemoteFrameClientImpl::setOpener(Frame* opener) {
+  WebFrame* openerFrame = WebFrame::fromFrame(opener);
+  if (m_webFrame->client() && m_webFrame->opener() != openerFrame)
+    m_webFrame->client()->didChangeOpener(openerFrame);
+  m_webFrame->setOpener(openerFrame);
 }
 
-Frame* RemoteFrameClientImpl::opener() const
-{
-    return toCoreFrame(m_webFrame->opener());
+Frame* RemoteFrameClientImpl::parent() const {
+  return toCoreFrame(m_webFrame->parent());
 }
 
-void RemoteFrameClientImpl::setOpener(Frame* opener)
-{
-    WebFrame* openerFrame = WebFrame::fromFrame(opener);
-    if (m_webFrame->client() && m_webFrame->opener() != openerFrame)
-        m_webFrame->client()->didChangeOpener(openerFrame);
-    m_webFrame->setOpener(openerFrame);
+Frame* RemoteFrameClientImpl::top() const {
+  return toCoreFrame(m_webFrame->top());
 }
 
-Frame* RemoteFrameClientImpl::parent() const
-{
-    return toCoreFrame(m_webFrame->parent());
+Frame* RemoteFrameClientImpl::previousSibling() const {
+  return toCoreFrame(m_webFrame->previousSibling());
 }
 
-Frame* RemoteFrameClientImpl::top() const
-{
-    return toCoreFrame(m_webFrame->top());
+Frame* RemoteFrameClientImpl::nextSibling() const {
+  return toCoreFrame(m_webFrame->nextSibling());
 }
 
-Frame* RemoteFrameClientImpl::previousSibling() const
-{
-    return toCoreFrame(m_webFrame->previousSibling());
+Frame* RemoteFrameClientImpl::firstChild() const {
+  return toCoreFrame(m_webFrame->firstChild());
 }
 
-Frame* RemoteFrameClientImpl::nextSibling() const
-{
-    return toCoreFrame(m_webFrame->nextSibling());
+Frame* RemoteFrameClientImpl::lastChild() const {
+  return toCoreFrame(m_webFrame->lastChild());
 }
 
-Frame* RemoteFrameClientImpl::firstChild() const
-{
-    return toCoreFrame(m_webFrame->firstChild());
+void RemoteFrameClientImpl::frameFocused() const {
+  if (m_webFrame->client())
+    m_webFrame->client()->frameFocused();
 }
 
-Frame* RemoteFrameClientImpl::lastChild() const
-{
-    return toCoreFrame(m_webFrame->lastChild());
+void RemoteFrameClientImpl::navigate(const ResourceRequest& request,
+                                     bool shouldReplaceCurrentEntry) {
+  if (m_webFrame->client())
+    m_webFrame->client()->navigate(WrappedResourceRequest(request),
+                                   shouldReplaceCurrentEntry);
 }
 
-void RemoteFrameClientImpl::frameFocused() const
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->frameFocused();
+void RemoteFrameClientImpl::reload(FrameLoadType loadType,
+                                   ClientRedirectPolicy clientRedirectPolicy) {
+  DCHECK(isReloadLoadType(loadType));
+  if (m_webFrame->client())
+    m_webFrame->client()->reload(
+        static_cast<WebFrameLoadType>(loadType),
+        static_cast<WebClientRedirectPolicy>(clientRedirectPolicy));
 }
 
-void RemoteFrameClientImpl::navigate(const ResourceRequest& request, bool shouldReplaceCurrentEntry)
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->navigate(WrappedResourceRequest(request), shouldReplaceCurrentEntry);
-}
-
-void RemoteFrameClientImpl::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedirectPolicy)
-{
-    DCHECK(isReloadLoadType(loadType));
-    if (m_webFrame->client())
-        m_webFrame->client()->reload(static_cast<WebFrameLoadType>(loadType), static_cast<WebClientRedirectPolicy>(clientRedirectPolicy));
-}
-
-unsigned RemoteFrameClientImpl::backForwardLength()
-{
-    // TODO(creis,japhet): This method should return the real value for the
-    // session history length. For now, return static value for the initial
-    // navigation and the subsequent one moving the frame out-of-process.
-    // See https://crbug.com/501116.
-    return 2;
+unsigned RemoteFrameClientImpl::backForwardLength() {
+  // TODO(creis,japhet): This method should return the real value for the
+  // session history length. For now, return static value for the initial
+  // navigation and the subsequent one moving the frame out-of-process.
+  // See https://crbug.com/501116.
+  return 2;
 }
 
 void RemoteFrameClientImpl::forwardPostMessage(
-    MessageEvent* event, PassRefPtr<SecurityOrigin> target, LocalFrame* sourceFrame) const
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->forwardPostMessage(WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
+    MessageEvent* event,
+    PassRefPtr<SecurityOrigin> target,
+    LocalFrame* sourceFrame) const {
+  if (m_webFrame->client())
+    m_webFrame->client()->forwardPostMessage(
+        WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame,
+        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
 }
 
 // FIXME: Remove this code once we have input routing in the browser
 // process. See http://crbug.com/339659.
-void RemoteFrameClientImpl::forwardInputEvent(Event* event)
-{
-    // It is possible for a platform event to cause the remote iframe element
-    // to be hidden, which destroys the layout object (for instance, a mouse
-    // event that moves between elements will trigger a mouseout on the old
-    // element, which might hide the new element). In that case we do not
-    // forward. This is divergent behavior from local frames, where the
-    // content of the frame can receive events even after the frame is hidden.
-    // We might need to revisit this after browser hit testing is fully
-    // implemented, since this code path will need to be removed or refactored
-    // anyway.
-    // See https://crbug.com/520705.
-    if (!m_webFrame->toImplBase()->frame()->ownerLayoutObject())
-        return;
+void RemoteFrameClientImpl::forwardInputEvent(Event* event) {
+  // It is possible for a platform event to cause the remote iframe element
+  // to be hidden, which destroys the layout object (for instance, a mouse
+  // event that moves between elements will trigger a mouseout on the old
+  // element, which might hide the new element). In that case we do not
+  // forward. This is divergent behavior from local frames, where the
+  // content of the frame can receive events even after the frame is hidden.
+  // We might need to revisit this after browser hit testing is fully
+  // implemented, since this code path will need to be removed or refactored
+  // anyway.
+  // See https://crbug.com/520705.
+  if (!m_webFrame->toImplBase()->frame()->ownerLayoutObject())
+    return;
 
-    // This is only called when we have out-of-process iframes, which
-    // need to forward input events across processes.
-    // FIXME: Add a check for out-of-process iframes enabled.
-    std::unique_ptr<WebInputEvent> webEvent;
-    if (event->isKeyboardEvent())
-        webEvent = wrapUnique(new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
-    else if (event->isMouseEvent())
-        webEvent = wrapUnique(new WebMouseEventBuilder(m_webFrame->frame()->view(), LayoutItem(m_webFrame->toImplBase()->frame()->ownerLayoutObject()), *static_cast<MouseEvent*>(event)));
+  // This is only called when we have out-of-process iframes, which
+  // need to forward input events across processes.
+  // FIXME: Add a check for out-of-process iframes enabled.
+  std::unique_ptr<WebInputEvent> webEvent;
+  if (event->isKeyboardEvent())
+    webEvent = wrapUnique(
+        new WebKeyboardEventBuilder(*static_cast<KeyboardEvent*>(event)));
+  else if (event->isMouseEvent())
+    webEvent = wrapUnique(new WebMouseEventBuilder(
+        m_webFrame->frame()->view(),
+        LayoutItem(m_webFrame->toImplBase()->frame()->ownerLayoutObject()),
+        *static_cast<MouseEvent*>(event)));
 
-    // Other or internal Blink events should not be forwarded.
-    if (!webEvent || webEvent->type == WebInputEvent::Undefined)
-        return;
+  // Other or internal Blink events should not be forwarded.
+  if (!webEvent || webEvent->type == WebInputEvent::Undefined)
+    return;
 
-    m_webFrame->client()->forwardInputEvent(webEvent.get());
+  m_webFrame->client()->forwardInputEvent(webEvent.get());
 }
 
-void RemoteFrameClientImpl::frameRectsChanged(const IntRect& frameRect)
-{
-    m_webFrame->client()->frameRectsChanged(frameRect);
+void RemoteFrameClientImpl::frameRectsChanged(const IntRect& frameRect) {
+  m_webFrame->client()->frameRectsChanged(frameRect);
 }
 
-void RemoteFrameClientImpl::advanceFocus(WebFocusType type, LocalFrame* source)
-{
-    m_webFrame->client()->advanceFocus(type, WebLocalFrameImpl::fromFrame(source));
+void RemoteFrameClientImpl::advanceFocus(WebFocusType type,
+                                         LocalFrame* source) {
+  m_webFrame->client()->advanceFocus(type,
+                                     WebLocalFrameImpl::fromFrame(source));
 }
 
-void RemoteFrameClientImpl::visibilityChanged(bool visible)
-{
-    m_webFrame->client()->visibilityChanged(visible);
+void RemoteFrameClientImpl::visibilityChanged(bool visible) {
+  m_webFrame->client()->visibilityChanged(visible);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -40,49 +40,59 @@ class HTTPHeaderMap;
 class ResourceResponse;
 
 class CrossOriginPreflightResultCacheItem {
-    WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCacheItem);
-    USING_FAST_MALLOC(CrossOriginPreflightResultCacheItem);
-public:
-    explicit CrossOriginPreflightResultCacheItem(StoredCredentials credentials)
-        : m_absoluteExpiryTime(0)
-        , m_credentials(credentials)
-    {
-    }
+  WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCacheItem);
+  USING_FAST_MALLOC(CrossOriginPreflightResultCacheItem);
 
-    bool parse(const ResourceResponse&, String& errorDescription);
-    bool allowsCrossOriginMethod(const String&, String& errorDescription) const;
-    bool allowsCrossOriginHeaders(const HTTPHeaderMap&, String& errorDescription) const;
-    bool allowsRequest(StoredCredentials, const String& method, const HTTPHeaderMap& requestHeaders) const;
+ public:
+  explicit CrossOriginPreflightResultCacheItem(StoredCredentials credentials)
+      : m_absoluteExpiryTime(0), m_credentials(credentials) {}
 
-private:
-    typedef HashSet<String, CaseFoldingHash> HeadersSet;
+  bool parse(const ResourceResponse&, String& errorDescription);
+  bool allowsCrossOriginMethod(const String&, String& errorDescription) const;
+  bool allowsCrossOriginHeaders(const HTTPHeaderMap&,
+                                String& errorDescription) const;
+  bool allowsRequest(StoredCredentials,
+                     const String& method,
+                     const HTTPHeaderMap& requestHeaders) const;
 
-    // FIXME: A better solution to holding onto the absolute expiration time might be
-    // to start a timer for the expiration delta that removes this from the cache when
-    // it fires.
-    double m_absoluteExpiryTime;
-    StoredCredentials m_credentials;
-    HashSet<String> m_methods;
-    HeadersSet m_headers;
+ private:
+  typedef HashSet<String, CaseFoldingHash> HeadersSet;
+
+  // FIXME: A better solution to holding onto the absolute expiration time might be
+  // to start a timer for the expiration delta that removes this from the cache when
+  // it fires.
+  double m_absoluteExpiryTime;
+  StoredCredentials m_credentials;
+  HashSet<String> m_methods;
+  HeadersSet m_headers;
 };
 
 class CrossOriginPreflightResultCache {
-    WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCache);
-    USING_FAST_MALLOC(CrossOriginPreflightResultCache);
-public:
-    static CrossOriginPreflightResultCache& shared();
+  WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCache);
+  USING_FAST_MALLOC(CrossOriginPreflightResultCache);
 
-    void appendEntry(const String& origin, const KURL&, std::unique_ptr<CrossOriginPreflightResultCacheItem>);
-    bool canSkipPreflight(const String& origin, const KURL&, StoredCredentials, const String& method, const HTTPHeaderMap& requestHeaders);
+ public:
+  static CrossOriginPreflightResultCache& shared();
 
-private:
-    CrossOriginPreflightResultCache() { }
+  void appendEntry(const String& origin,
+                   const KURL&,
+                   std::unique_ptr<CrossOriginPreflightResultCacheItem>);
+  bool canSkipPreflight(const String& origin,
+                        const KURL&,
+                        StoredCredentials,
+                        const String& method,
+                        const HTTPHeaderMap& requestHeaders);
 
-    typedef HashMap<std::pair<String, KURL>, std::unique_ptr<CrossOriginPreflightResultCacheItem>> CrossOriginPreflightResultHashMap;
+ private:
+  CrossOriginPreflightResultCache() {}
 
-    CrossOriginPreflightResultHashMap m_preflightHashMap;
+  typedef HashMap<std::pair<String, KURL>,
+                  std::unique_ptr<CrossOriginPreflightResultCacheItem>>
+      CrossOriginPreflightResultHashMap;
+
+  CrossOriginPreflightResultHashMap m_preflightHashMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

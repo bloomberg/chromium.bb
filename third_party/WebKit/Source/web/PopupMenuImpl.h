@@ -19,46 +19,46 @@ class HTMLOptionElement;
 class HTMLSelectElement;
 
 class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
-public:
-    static PopupMenuImpl* create(ChromeClientImpl*, HTMLSelectElement&);
-    ~PopupMenuImpl() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static PopupMenuImpl* create(ChromeClientImpl*, HTMLSelectElement&);
+  ~PopupMenuImpl() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void update();
+  void update();
 
-    void dispose();
+  void dispose();
 
-private:
-    PopupMenuImpl(ChromeClientImpl*, HTMLSelectElement&);
+ private:
+  PopupMenuImpl(ChromeClientImpl*, HTMLSelectElement&);
 
-    class ItemIterationContext;
-    void addOption(ItemIterationContext&, HTMLOptionElement&);
-    void addOptGroup(ItemIterationContext&, HTMLOptGroupElement&);
-    void addSeparator(ItemIterationContext&, HTMLHRElement&);
-    void addElementStyle(ItemIterationContext&, HTMLElement&);
+  class ItemIterationContext;
+  void addOption(ItemIterationContext&, HTMLOptionElement&);
+  void addOptGroup(ItemIterationContext&, HTMLOptGroupElement&);
+  void addSeparator(ItemIterationContext&, HTMLHRElement&);
+  void addElementStyle(ItemIterationContext&, HTMLElement&);
 
-    // PopupMenu functions:
-    void show() override;
-    void hide() override;
-    void disconnectClient() override;
-    void updateFromElement(UpdateReason) override;
+  // PopupMenu functions:
+  void show() override;
+  void hide() override;
+  void disconnectClient() override;
+  void updateFromElement(UpdateReason) override;
 
-    // PagePopupClient functions:
-    void writeDocument(SharedBuffer*) override;
-    void selectFontsFromOwnerDocument(Document&) override;
-    void setValueAndClosePopup(int, const String&) override;
-    void setValue(const String&) override;
-    void closePopup() override;
-    Element& ownerElement() override;
-    Locale& locale() override;
-    void didClosePopup() override;
+  // PagePopupClient functions:
+  void writeDocument(SharedBuffer*) override;
+  void selectFontsFromOwnerDocument(Document&) override;
+  void setValueAndClosePopup(int, const String&) override;
+  void setValue(const String&) override;
+  void closePopup() override;
+  Element& ownerElement() override;
+  Locale& locale() override;
+  void didClosePopup() override;
 
-    Member<ChromeClientImpl> m_chromeClient;
-    Member<HTMLSelectElement> m_ownerElement;
-    PagePopup* m_popup;
-    bool m_needsUpdate;
+  Member<ChromeClientImpl> m_chromeClient;
+  Member<HTMLSelectElement> m_ownerElement;
+  PagePopup* m_popup;
+  bool m_needsUpdate;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PopupMenuImpl_h
+#endif  // PopupMenuImpl_h

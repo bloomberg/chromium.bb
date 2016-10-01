@@ -11,37 +11,43 @@
 
 namespace blink {
 
-void BeginCompositingDisplayItem::replay(GraphicsContext& context) const
-{
-    context.beginLayer(m_opacity, m_xferMode, m_hasBounds ? &m_bounds : nullptr, m_colorFilter);
+void BeginCompositingDisplayItem::replay(GraphicsContext& context) const {
+  context.beginLayer(m_opacity, m_xferMode, m_hasBounds ? &m_bounds : nullptr,
+                     m_colorFilter);
 }
 
-void BeginCompositingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
-{
-    SkRect bounds = m_bounds;
-    list->appendCompositingItem(m_opacity, m_xferMode,
-        m_hasBounds ? &bounds : nullptr,
-        GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter).get());
+void BeginCompositingDisplayItem::appendToWebDisplayItemList(
+    const IntRect& visualRect,
+    WebDisplayItemList* list) const {
+  SkRect bounds = m_bounds;
+  list->appendCompositingItem(
+      m_opacity, m_xferMode, m_hasBounds ? &bounds : nullptr,
+      GraphicsContext::WebCoreColorFilterToSkiaColorFilter(m_colorFilter)
+          .get());
 }
 
 #ifndef NDEBUG
-void BeginCompositingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
-{
-    DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", xferMode: %d, opacity: %f", m_xferMode, m_opacity));
-    if (m_hasBounds)
-        stringBuilder.append(WTF::String::format(", bounds: [%f, %f, %f, %f]", m_bounds.location().x(), m_bounds.location().y(), m_bounds.size().width(), m_bounds.size().height()));
+void BeginCompositingDisplayItem::dumpPropertiesAsDebugString(
+    WTF::StringBuilder& stringBuilder) const {
+  DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+  stringBuilder.append(WTF::String::format(", xferMode: %d, opacity: %f",
+                                           m_xferMode, m_opacity));
+  if (m_hasBounds)
+    stringBuilder.append(
+        WTF::String::format(", bounds: [%f, %f, %f, %f]",
+                            m_bounds.location().x(), m_bounds.location().y(),
+                            m_bounds.size().width(), m_bounds.size().height()));
 }
 #endif
 
-void EndCompositingDisplayItem::replay(GraphicsContext& context) const
-{
-    context.endLayer();
+void EndCompositingDisplayItem::replay(GraphicsContext& context) const {
+  context.endLayer();
 }
 
-void EndCompositingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
-{
-    list->appendEndCompositingItem();
+void EndCompositingDisplayItem::appendToWebDisplayItemList(
+    const IntRect& visualRect,
+    WebDisplayItemList* list) const {
+  list->appendEndCompositingItem();
 }
 
-} // namespace blink
+}  // namespace blink

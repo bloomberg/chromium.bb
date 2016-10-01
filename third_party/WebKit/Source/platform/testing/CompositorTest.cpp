@@ -7,13 +7,8 @@
 namespace blink {
 
 CompositorTest::CompositorTest()
-    : m_runner(new base::TestMockTimeTaskRunner)
-    , m_runnerHandle(m_runner)
-{
-}
+    : m_runner(new base::TestMockTimeTaskRunner), m_runnerHandle(m_runner) {}
 
-CompositorTest::~CompositorTest()
-{
-}
+CompositorTest::~CompositorTest() {}
 
-} // namespace blink
+}  // namespace blink

@@ -46,165 +46,174 @@ struct KURLHash;
 enum ParsedURLStringTag { ParsedURLString };
 
 class PLATFORM_EXPORT KURL {
-    USING_FAST_MALLOC(KURL);
-public:
-    // This must be called during initialization (before we create
-    // other threads).
-    static void initialize();
+  USING_FAST_MALLOC(KURL);
 
-    KURL();
-    KURL(const KURL&);
-    KURL& operator=(const KURL&);
+ public:
+  // This must be called during initialization (before we create
+  // other threads).
+  static void initialize();
 
-    // The argument is an absolute URL string. The string is assumed to be
-    // output of KURL::string() called on a valid KURL object, or indiscernible
-    // from such. It is usually best to avoid repeatedly parsing a string,
-    // unless memory saving outweigh the possible slow-downs.
-    KURL(ParsedURLStringTag, const String&);
-    explicit KURL(WTF::HashTableDeletedValueType);
+  KURL();
+  KURL(const KURL&);
+  KURL& operator=(const KURL&);
 
-    // Creates an isolated URL object suitable for sending to another thread.
-    static KURL createIsolated(ParsedURLStringTag, const String&);
+  // The argument is an absolute URL string. The string is assumed to be
+  // output of KURL::string() called on a valid KURL object, or indiscernible
+  // from such. It is usually best to avoid repeatedly parsing a string,
+  // unless memory saving outweigh the possible slow-downs.
+  KURL(ParsedURLStringTag, const String&);
+  explicit KURL(WTF::HashTableDeletedValueType);
 
-    bool isHashTableDeletedValue() const { return getString().isHashTableDeletedValue(); }
+  // Creates an isolated URL object suitable for sending to another thread.
+  static KURL createIsolated(ParsedURLStringTag, const String&);
 
-    // Resolves the relative URL with the given base URL. If provided, the
-    // TextEncoding is used to encode non-ASCII characers. The base URL can be
-    // null or empty, in which case the relative URL will be interpreted as
-    // absolute.
-    // FIXME: If the base URL is invalid, this always creates an invalid
-    // URL. Instead I think it would be better to treat all invalid base URLs
-    // the same way we treate null and empty base URLs.
-    KURL(const KURL& base, const String& relative);
-    KURL(const KURL& base, const String& relative, const WTF::TextEncoding&);
+  bool isHashTableDeletedValue() const {
+    return getString().isHashTableDeletedValue();
+  }
 
-    // For conversions from other structures that have already parsed and
-    // canonicalized the URL. The input must be exactly what KURL would have
-    // done with the same input.
-    KURL(const AtomicString& canonicalString, const url::Parsed&, bool isValid);
+  // Resolves the relative URL with the given base URL. If provided, the
+  // TextEncoding is used to encode non-ASCII characers. The base URL can be
+  // null or empty, in which case the relative URL will be interpreted as
+  // absolute.
+  // FIXME: If the base URL is invalid, this always creates an invalid
+  // URL. Instead I think it would be better to treat all invalid base URLs
+  // the same way we treate null and empty base URLs.
+  KURL(const KURL& base, const String& relative);
+  KURL(const KURL& base, const String& relative, const WTF::TextEncoding&);
 
-    ~KURL();
+  // For conversions from other structures that have already parsed and
+  // canonicalized the URL. The input must be exactly what KURL would have
+  // done with the same input.
+  KURL(const AtomicString& canonicalString, const url::Parsed&, bool isValid);
 
-    String strippedForUseAsReferrer() const;
-    String strippedForUseAsHref() const;
+  ~KURL();
 
-    // FIXME: The above functions should be harmonized so that passing a
-    // base of null or the empty string gives the same result as the
-    // standard String constructor.
+  String strippedForUseAsReferrer() const;
+  String strippedForUseAsHref() const;
 
-    // Makes a deep copy. Helpful only if you need to use a KURL on another
-    // thread. Since the underlying StringImpl objects are immutable, there's
-    // no other reason to ever prefer copy() over plain old assignment.
-    KURL copy() const;
+  // FIXME: The above functions should be harmonized so that passing a
+  // base of null or the empty string gives the same result as the
+  // standard String constructor.
 
-    bool isNull() const;
-    bool isEmpty() const;
-    bool isValid() const;
+  // Makes a deep copy. Helpful only if you need to use a KURL on another
+  // thread. Since the underlying StringImpl objects are immutable, there's
+  // no other reason to ever prefer copy() over plain old assignment.
+  KURL copy() const;
 
-    // Returns true if this URL has a path. Note that "http://foo.com/" has a
-    // path of "/", so this function will return true. Only invalid or
-    // non-hierarchical (like "javascript:") URLs will have no path.
-    bool hasPath() const;
+  bool isNull() const;
+  bool isEmpty() const;
+  bool isValid() const;
 
-    // Returns true if you can set the host and port for the URL.
-    // Non-hierarchical URLs don't have a host and port.
-    bool canSetHostOrPort() const { return isHierarchical(); }
+  // Returns true if this URL has a path. Note that "http://foo.com/" has a
+  // path of "/", so this function will return true. Only invalid or
+  // non-hierarchical (like "javascript:") URLs will have no path.
+  bool hasPath() const;
 
-    bool canSetPathname() const { return isHierarchical(); }
-    bool isHierarchical() const;
+  // Returns true if you can set the host and port for the URL.
+  // Non-hierarchical URLs don't have a host and port.
+  bool canSetHostOrPort() const { return isHierarchical(); }
 
-    const String& getString() const { return m_string; }
+  bool canSetPathname() const { return isHierarchical(); }
+  bool isHierarchical() const;
 
-    String elidedString() const;
+  const String& getString() const { return m_string; }
 
-    String protocol() const;
-    String host() const;
-    unsigned short port() const;
-    bool hasPort() const;
-    String user() const;
-    String pass() const;
-    String path() const;
-    // This method handles "parameters" separated by a semicolon.
-    String lastPathComponent() const;
-    String query() const;
-    String fragmentIdentifier() const;
-    bool hasFragmentIdentifier() const;
+  String elidedString() const;
 
-    String baseAsString() const;
+  String protocol() const;
+  String host() const;
+  unsigned short port() const;
+  bool hasPort() const;
+  String user() const;
+  String pass() const;
+  String path() const;
+  // This method handles "parameters" separated by a semicolon.
+  String lastPathComponent() const;
+  String query() const;
+  String fragmentIdentifier() const;
+  bool hasFragmentIdentifier() const;
 
-    // Returns true if the current URL's protocol is the same as the null-
-    // terminated ASCII argument. The argument must be lower-case.
-    bool protocolIs(const char*) const;
-    bool protocolIsData() const { return protocolIs("data"); }
-    // This includes at least about:blank and about:srcdoc.
-    bool protocolIsAbout() const { return protocolIs("about"); }
-    bool protocolIsInHTTPFamily() const;
-    bool isLocalFile() const;
-    bool isAboutBlankURL() const; // Is exactly about:blank.
-    bool isAboutSrcdocURL() const; // Is exactly about:srcdoc.
+  String baseAsString() const;
 
-    bool setProtocol(const String&);
-    void setHost(const String&);
+  // Returns true if the current URL's protocol is the same as the null-
+  // terminated ASCII argument. The argument must be lower-case.
+  bool protocolIs(const char*) const;
+  bool protocolIsData() const { return protocolIs("data"); }
+  // This includes at least about:blank and about:srcdoc.
+  bool protocolIsAbout() const { return protocolIs("about"); }
+  bool protocolIsInHTTPFamily() const;
+  bool isLocalFile() const;
+  bool isAboutBlankURL() const;   // Is exactly about:blank.
+  bool isAboutSrcdocURL() const;  // Is exactly about:srcdoc.
 
-    void removePort();
-    void setPort(unsigned short);
-    void setPort(const String&);
+  bool setProtocol(const String&);
+  void setHost(const String&);
 
-    // Input is like "foo.com" or "foo.com:8000".
-    void setHostAndPort(const String&);
+  void removePort();
+  void setPort(unsigned short);
+  void setPort(const String&);
 
-    void setUser(const String&);
-    void setPass(const String&);
+  // Input is like "foo.com" or "foo.com:8000".
+  void setHostAndPort(const String&);
 
-    // If you pass an empty path for HTTP or HTTPS URLs, the resulting path
-    // will be "/".
-    void setPath(const String&);
+  void setUser(const String&);
+  void setPass(const String&);
 
-    // The query may begin with a question mark, or, if not, one will be added
-    // for you. Setting the query to the empty string will leave a "?" in the
-    // URL (with nothing after it). To clear the query, pass a null string.
-    void setQuery(const String&);
+  // If you pass an empty path for HTTP or HTTPS URLs, the resulting path
+  // will be "/".
+  void setPath(const String&);
 
-    void setFragmentIdentifier(const String&);
-    void removeFragmentIdentifier();
+  // The query may begin with a question mark, or, if not, one will be added
+  // for you. Setting the query to the empty string will leave a "?" in the
+  // URL (with nothing after it). To clear the query, pass a null string.
+  void setQuery(const String&);
 
-    PLATFORM_EXPORT friend bool equalIgnoringFragmentIdentifier(const KURL&, const KURL&);
+  void setFragmentIdentifier(const String&);
+  void removeFragmentIdentifier();
 
-    unsigned hostStart() const;
-    unsigned hostEnd() const;
+  PLATFORM_EXPORT friend bool equalIgnoringFragmentIdentifier(const KURL&,
+                                                              const KURL&);
 
-    unsigned pathStart() const;
-    unsigned pathEnd() const;
-    unsigned pathAfterLastSlash() const;
+  unsigned hostStart() const;
+  unsigned hostEnd() const;
 
-    operator const String&() const { return getString(); }
-    operator StringView() const { return StringView(getString()); }
+  unsigned pathStart() const;
+  unsigned pathEnd() const;
+  unsigned pathAfterLastSlash() const;
 
-    const url::Parsed& parsed() const { return m_parsed; }
+  operator const String&() const { return getString(); }
+  operator StringView() const { return StringView(getString()); }
 
-    const KURL* innerURL() const { return m_innerURL.get(); }
+  const url::Parsed& parsed() const { return m_parsed; }
 
-    bool isSafeToSendToAnotherThread() const;
+  const KURL* innerURL() const { return m_innerURL.get(); }
 
-private:
-    void init(const KURL& base, const String& relative, const WTF::TextEncoding* queryEncoding);
+  bool isSafeToSendToAnotherThread() const;
 
-    String componentString(const url::Component&) const;
-    String stringForInvalidComponent() const;
+ private:
+  void init(const KURL& base,
+            const String& relative,
+            const WTF::TextEncoding* queryEncoding);
 
-    template<typename CHAR>
-    void replaceComponents(const url::Replacements<CHAR>&);
+  String componentString(const url::Component&) const;
+  String stringForInvalidComponent() const;
 
-    template <typename CHAR>
-    void init(const KURL& base, const CHAR* relative, int relativeLength, const WTF::TextEncoding* queryEncoding);
-    void initInnerURL();
-    void initProtocolIsInHTTPFamily();
+  template <typename CHAR>
+  void replaceComponents(const url::Replacements<CHAR>&);
 
-    bool m_isValid;
-    bool m_protocolIsInHTTPFamily;
-    url::Parsed m_parsed;
-    String m_string;
-    std::unique_ptr<KURL> m_innerURL;
+  template <typename CHAR>
+  void init(const KURL& base,
+            const CHAR* relative,
+            int relativeLength,
+            const WTF::TextEncoding* queryEncoding);
+  void initInnerURL();
+  void initProtocolIsInHTTPFamily();
+
+  bool m_isValid;
+  bool m_protocolIsInHTTPFamily;
+  url::Parsed m_parsed;
+  String m_string;
+  std::unique_ptr<KURL> m_innerURL;
 };
 
 PLATFORM_EXPORT bool operator==(const KURL&, const KURL&);
@@ -238,51 +247,47 @@ PLATFORM_EXPORT bool isValidProtocol(const String&);
 // This function is also used to decode javascript: URLs and as a general
 // purpose unescaping function.
 PLATFORM_EXPORT String decodeURLEscapeSequences(const String&);
-PLATFORM_EXPORT String decodeURLEscapeSequences(const String&, const WTF::TextEncoding&);
+PLATFORM_EXPORT String decodeURLEscapeSequences(const String&,
+                                                const WTF::TextEncoding&);
 
 PLATFORM_EXPORT String encodeWithURLEscapeSequences(const String&);
 
 // Inlines.
 
-inline bool operator==(const KURL& a, const KURL& b)
-{
-    return a.getString() == b.getString();
+inline bool operator==(const KURL& a, const KURL& b) {
+  return a.getString() == b.getString();
 }
 
-inline bool operator==(const KURL& a, const String& b)
-{
-    return a.getString() == b;
+inline bool operator==(const KURL& a, const String& b) {
+  return a.getString() == b;
 }
 
-inline bool operator==(const String& a, const KURL& b)
-{
-    return a == b.getString();
+inline bool operator==(const String& a, const KURL& b) {
+  return a == b.getString();
 }
 
-inline bool operator!=(const KURL& a, const KURL& b)
-{
-    return a.getString() != b.getString();
+inline bool operator!=(const KURL& a, const KURL& b) {
+  return a.getString() != b.getString();
 }
 
-inline bool operator!=(const KURL& a, const String& b)
-{
-    return a.getString() != b;
+inline bool operator!=(const KURL& a, const String& b) {
+  return a.getString() != b;
 }
 
-inline bool operator!=(const String& a, const KURL& b)
-{
-    return a != b.getString();
+inline bool operator!=(const String& a, const KURL& b) {
+  return a != b.getString();
 }
 
-} // namespace blink
+}  // namespace blink
 
 namespace WTF {
 
 // KURLHash is the default hash for String
-template<> struct DefaultHash<blink::KURL> {
-    typedef blink::KURLHash Hash;
+template <>
+struct DefaultHash<blink::KURL> {
+  typedef blink::KURLHash Hash;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // KURL_h
+#endif  // KURL_h

@@ -40,16 +40,16 @@
 namespace blink {
 
 class WebFileChooserCompletionImpl final : public WebFileChooserCompletion {
-public:
-    explicit WebFileChooserCompletionImpl(PassRefPtr<FileChooser>);
-    ~WebFileChooserCompletionImpl() override;
-    void didChooseFile(const WebVector<WebString>& fileNames) override;
-    void didChooseFile(const WebVector<SelectedFileInfo>& files) override;
+ public:
+  explicit WebFileChooserCompletionImpl(PassRefPtr<FileChooser>);
+  ~WebFileChooserCompletionImpl() override;
+  void didChooseFile(const WebVector<WebString>& fileNames) override;
+  void didChooseFile(const WebVector<SelectedFileInfo>& files) override;
 
-private:
-    RefPtr<FileChooser> m_fileChooser;
+ private:
+  RefPtr<FileChooser> m_fileChooser;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

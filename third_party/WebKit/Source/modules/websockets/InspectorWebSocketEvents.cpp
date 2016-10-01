@@ -10,25 +10,29 @@
 
 namespace blink {
 
-std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, unsigned long identifier, const KURL& url, const String& protocol)
-{
-    std::unique_ptr<TracedValue> value = TracedValue::create();
-    value->setInteger("identifier", identifier);
-    value->setString("url", url.getString());
-    value->setString("frame", toHexString(document->frame()));
-    if (!protocol.isNull())
-        value->setString("webSocketProtocol", protocol);
-    setCallStack(value.get());
-    return value;
+std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::data(
+    Document* document,
+    unsigned long identifier,
+    const KURL& url,
+    const String& protocol) {
+  std::unique_ptr<TracedValue> value = TracedValue::create();
+  value->setInteger("identifier", identifier);
+  value->setString("url", url.getString());
+  value->setString("frame", toHexString(document->frame()));
+  if (!protocol.isNull())
+    value->setString("webSocketProtocol", protocol);
+  setCallStack(value.get());
+  return value;
 }
 
-std::unique_ptr<TracedValue> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
-{
-    std::unique_ptr<TracedValue> value = TracedValue::create();
-    value->setInteger("identifier", identifier);
-    value->setString("frame", toHexString(document->frame()));
-    setCallStack(value.get());
-    return value;
+std::unique_ptr<TracedValue> InspectorWebSocketEvent::data(
+    Document* document,
+    unsigned long identifier) {
+  std::unique_ptr<TracedValue> value = TracedValue::create();
+  value->setInteger("identifier", identifier);
+  value->setString("frame", toHexString(document->frame()));
+  setCallStack(value.get());
+  return value;
 }
 
-} // namespace blink
+}  // namespace blink

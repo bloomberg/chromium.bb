@@ -18,28 +18,34 @@ class ExceptionState;
 class Navigator;
 class ServiceWorkerContainer;
 
-class MODULES_EXPORT NavigatorServiceWorker final : public GarbageCollected<NavigatorServiceWorker>, public Supplement<Navigator>, public ContextLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
-public:
-    static NavigatorServiceWorker* from(Document&);
-    static NavigatorServiceWorker& from(Navigator&);
-    static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
-    static ServiceWorkerContainer* serviceWorker(ExecutionContext*, Navigator&, ExceptionState&);
+class MODULES_EXPORT NavigatorServiceWorker final
+    : public GarbageCollected<NavigatorServiceWorker>,
+      public Supplement<Navigator>,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static NavigatorServiceWorker* from(Document&);
+  static NavigatorServiceWorker& from(Navigator&);
+  static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
+  static ServiceWorkerContainer* serviceWorker(ExecutionContext*,
+                                               Navigator&,
+                                               ExceptionState&);
 
-private:
-    explicit NavigatorServiceWorker(Navigator&);
-    ServiceWorkerContainer* serviceWorker(LocalFrame*, ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-    static const char* supplementName();
+ private:
+  explicit NavigatorServiceWorker(Navigator&);
+  ServiceWorkerContainer* serviceWorker(LocalFrame*, ExceptionState&);
 
-    // ContextLifecycleObserver override.
-    void contextDestroyed() override;
+  static const char* supplementName();
 
-    Member<ServiceWorkerContainer> m_serviceWorker;
+  // ContextLifecycleObserver override.
+  void contextDestroyed() override;
+
+  Member<ServiceWorkerContainer> m_serviceWorker;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorServiceWorker_h
+#endif  // NavigatorServiceWorker_h

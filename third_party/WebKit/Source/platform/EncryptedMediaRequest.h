@@ -13,23 +13,26 @@ class SecurityOrigin;
 class WebContentDecryptionModuleAccess;
 struct WebMediaKeySystemConfiguration;
 class WebString;
-template <typename T> class WebVector;
+template <typename T>
+class WebVector;
 
-class EncryptedMediaRequest : public GarbageCollectedFinalized<EncryptedMediaRequest> {
-public:
-    virtual ~EncryptedMediaRequest() { }
+class EncryptedMediaRequest
+    : public GarbageCollectedFinalized<EncryptedMediaRequest> {
+ public:
+  virtual ~EncryptedMediaRequest() {}
 
-    virtual WebString keySystem() const = 0;
-    virtual const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const = 0;
+  virtual WebString keySystem() const = 0;
+  virtual const WebVector<WebMediaKeySystemConfiguration>&
+  supportedConfigurations() const = 0;
 
-    virtual SecurityOrigin* getSecurityOrigin() const = 0;
+  virtual SecurityOrigin* getSecurityOrigin() const = 0;
 
-    virtual void requestSucceeded(WebContentDecryptionModuleAccess*) = 0;
-    virtual void requestNotSupported(const WebString& errorMessage) = 0;
+  virtual void requestSucceeded(WebContentDecryptionModuleAccess*) = 0;
+  virtual void requestNotSupported(const WebString& errorMessage) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EncryptedMediaRequest_h
+#endif  // EncryptedMediaRequest_h

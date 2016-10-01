@@ -19,12 +19,13 @@ using WebImageCaptureGrabFrameCallbacks = WebCallbacks<sk_sp<SkImage>, void>;
 
 // Platform interface of an ImageCapture class for grabFrame() calls.
 class WebImageCaptureFrameGrabber {
-public:
-    virtual ~WebImageCaptureFrameGrabber() { }
+ public:
+  virtual ~WebImageCaptureFrameGrabber() {}
 
-    virtual void grabFrame(WebMediaStreamTrack*, WebImageCaptureGrabFrameCallbacks*) = 0;
+  virtual void grabFrame(WebMediaStreamTrack*,
+                         WebImageCaptureGrabFrameCallbacks*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebImageCaptureFrameGrabber_h
+#endif  // WebImageCaptureFrameGrabber_h

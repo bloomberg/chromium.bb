@@ -67,85 +67,105 @@ namespace blink {
 // otherwise it will be converted to DOWNSTREAM.
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
-    DISALLOW_NEW();
-public:
-    VisiblePositionTemplate();
+  DISALLOW_NEW();
 
-    // Node: Other than |createVisiblePosition()| and
-    // |createVisiblePositionDeprecated()|, we should not use |create()|.
-    static VisiblePositionTemplate create(const PositionWithAffinityTemplate<Strategy>&);
+ public:
+  VisiblePositionTemplate();
 
-    // Intentionally delete |operator==()| and |operator!=()| for reducing
-    // compilation error message.
-    // TODO(yosin) We'll have |equals()| when we have use cases of checking
-    // equality of both position and affinity.
-    bool operator==(const VisiblePositionTemplate&) const = delete;
-    bool operator!=(const VisiblePositionTemplate&) const = delete;
+  // Node: Other than |createVisiblePosition()| and
+  // |createVisiblePositionDeprecated()|, we should not use |create()|.
+  static VisiblePositionTemplate create(
+      const PositionWithAffinityTemplate<Strategy>&);
 
-    bool isValid() const;
+  // Intentionally delete |operator==()| and |operator!=()| for reducing
+  // compilation error message.
+  // TODO(yosin) We'll have |equals()| when we have use cases of checking
+  // equality of both position and affinity.
+  bool operator==(const VisiblePositionTemplate&) const = delete;
+  bool operator!=(const VisiblePositionTemplate&) const = delete;
 
-    // TODO(xiaochengh): We should have |DCHECK(isValid())| in the following
-    // functions. However, there are some clients storing a VisiblePosition and
-    // inspecting its properties after mutation. This should be fixed.
-    bool isNull() const { return m_positionWithAffinity.isNull(); }
-    bool isNotNull() const { return m_positionWithAffinity.isNotNull(); }
-    bool isOrphan() const { return deepEquivalent().isOrphan(); }
+  bool isValid() const;
 
-    PositionTemplate<Strategy> deepEquivalent() const { return m_positionWithAffinity.position(); }
-    PositionTemplate<Strategy> toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
-    PositionWithAffinityTemplate<Strategy> toPositionWithAffinity() const { return m_positionWithAffinity; }
-    TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
+  // TODO(xiaochengh): We should have |DCHECK(isValid())| in the following
+  // functions. However, there are some clients storing a VisiblePosition and
+  // inspecting its properties after mutation. This should be fixed.
+  bool isNull() const { return m_positionWithAffinity.isNull(); }
+  bool isNotNull() const { return m_positionWithAffinity.isNotNull(); }
+  bool isOrphan() const { return deepEquivalent().isOrphan(); }
 
-    static VisiblePositionTemplate<Strategy> afterNode(Node*);
-    static VisiblePositionTemplate<Strategy> beforeNode(Node*);
-    static VisiblePositionTemplate<Strategy> firstPositionInNode(Node*);
-    static VisiblePositionTemplate<Strategy> inParentAfterNode(const Node&);
-    static VisiblePositionTemplate<Strategy> inParentBeforeNode(const Node&);
-    static VisiblePositionTemplate<Strategy> lastPositionInNode(Node*);
+  PositionTemplate<Strategy> deepEquivalent() const {
+    return m_positionWithAffinity.position();
+  }
+  PositionTemplate<Strategy> toParentAnchoredPosition() const {
+    return deepEquivalent().parentAnchoredEquivalent();
+  }
+  PositionWithAffinityTemplate<Strategy> toPositionWithAffinity() const {
+    return m_positionWithAffinity;
+  }
+  TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_positionWithAffinity);
-    }
+  static VisiblePositionTemplate<Strategy> afterNode(Node*);
+  static VisiblePositionTemplate<Strategy> beforeNode(Node*);
+  static VisiblePositionTemplate<Strategy> firstPositionInNode(Node*);
+  static VisiblePositionTemplate<Strategy> inParentAfterNode(const Node&);
+  static VisiblePositionTemplate<Strategy> inParentBeforeNode(const Node&);
+  static VisiblePositionTemplate<Strategy> lastPositionInNode(Node*);
+
+  DEFINE_INLINE_TRACE() { visitor->trace(m_positionWithAffinity); }
 
 #ifndef NDEBUG
-    void showTreeForThis() const;
+  void showTreeForThis() const;
 #endif
 
-private:
-    explicit VisiblePositionTemplate(const PositionWithAffinityTemplate<Strategy>&);
+ private:
+  explicit VisiblePositionTemplate(
+      const PositionWithAffinityTemplate<Strategy>&);
 
-    PositionWithAffinityTemplate<Strategy> m_positionWithAffinity;
+  PositionWithAffinityTemplate<Strategy> m_positionWithAffinity;
 
 #if DCHECK_IS_ON()
-    uint64_t m_domTreeVersion;
-    uint64_t m_styleVersion;
+  uint64_t m_domTreeVersion;
+  uint64_t m_styleVersion;
 #endif
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInFlatTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    VisiblePositionTemplate<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
 using VisiblePosition = VisiblePositionTemplate<EditingStrategy>;
-using VisiblePositionInFlatTree = VisiblePositionTemplate<EditingInFlatTreeStrategy>;
+using VisiblePositionInFlatTree =
+    VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
 // |createVisiblePositionDeprecated| updates layout before creating the
 // VisiblePosition, which messes up the rendering pipeline. The callers should
 // ensure clean layout by themselves and call |createVisiblePosition| instead.
-CORE_EXPORT VisiblePosition createVisiblePositionDeprecated(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePosition createVisiblePositionDeprecated(const PositionWithAffinity&);
-CORE_EXPORT VisiblePositionInFlatTree createVisiblePositionDeprecated(const PositionInFlatTree&, TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePositionInFlatTree createVisiblePositionDeprecated(const PositionInFlatTreeWithAffinity&);
+CORE_EXPORT VisiblePosition
+createVisiblePositionDeprecated(const Position&,
+                                TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePosition
+createVisiblePositionDeprecated(const PositionWithAffinity&);
+CORE_EXPORT VisiblePositionInFlatTree
+createVisiblePositionDeprecated(const PositionInFlatTree&,
+                                TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePositionInFlatTree
+createVisiblePositionDeprecated(const PositionInFlatTreeWithAffinity&);
 
-CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePosition
+createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
-CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTree&, TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffinity&);
+CORE_EXPORT VisiblePositionInFlatTree
+createVisiblePosition(const PositionInFlatTree&,
+                      TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePositionInFlatTree
+createVisiblePosition(const PositionInFlatTreeWithAffinity&);
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisiblePosition&);
-CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisiblePositionInFlatTree&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&,
+                                     const VisiblePositionInFlatTree&);
 
-} // namespace blink
+}  // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
@@ -153,4 +173,4 @@ void showTree(const blink::VisiblePosition*);
 void showTree(const blink::VisiblePosition&);
 #endif
 
-#endif // VisiblePosition_h
+#endif  // VisiblePosition_h

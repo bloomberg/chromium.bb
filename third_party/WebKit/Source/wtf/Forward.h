@@ -26,11 +26,16 @@
 
 namespace WTF {
 
-template <typename T> class PassRefPtr;
-template <typename T> class RefPtr;
-template <size_t size> class SizeSpecificPartitionAllocator;
-template <typename T> class StringBuffer;
-template <typename T, size_t inlineCapacity, typename Allocator> class Vector;
+template <typename T>
+class PassRefPtr;
+template <typename T>
+class RefPtr;
+template <size_t size>
+class SizeSpecificPartitionAllocator;
+template <typename T>
+class StringBuffer;
+template <typename T, size_t inlineCapacity, typename Allocator>
+class Vector;
 
 class ArrayBuffer;
 class ArrayBufferView;
@@ -51,7 +56,7 @@ class Uint8ClampedArray;
 class Uint16Array;
 class Uint32Array;
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::PassRefPtr;
 using WTF::RefPtr;
@@ -77,4 +82,4 @@ using WTF::Uint8ClampedArray;
 using WTF::Uint16Array;
 using WTF::Uint32Array;
 
-#endif // WTF_Forward_h
+#endif  // WTF_Forward_h

@@ -43,130 +43,138 @@ class LayoutMenuList;
 class LineLayoutItem;
 class Page;
 
-class CORE_EXPORT AXObjectCache : public GarbageCollectedFinalized<AXObjectCache> {
-    WTF_MAKE_NONCOPYABLE(AXObjectCache);
-public:
-    static AXObjectCache* create(Document&);
+class CORE_EXPORT AXObjectCache
+    : public GarbageCollectedFinalized<AXObjectCache> {
+  WTF_MAKE_NONCOPYABLE(AXObjectCache);
 
-    static AXObject* focusedObject();
+ public:
+  static AXObjectCache* create(Document&);
 
-    virtual ~AXObjectCache();
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  static AXObject* focusedObject();
 
-    enum AXNotification {
-        AXActiveDescendantChanged,
-        AXAlert,
-        AXAriaAttributeChanged,
-        AXAutocorrectionOccured,
-        AXBlur,
-        AXCheckedStateChanged,
-        AXChildrenChanged,
-        AXClicked,
-        AXDocumentSelectionChanged,
-        AXExpandedChanged,
-        AXFocusedUIElementChanged,
-        AXHide,
-        AXHover,
-        AXInvalidStatusChanged,
-        AXLayoutComplete,
-        AXLiveRegionChanged,
-        AXLoadComplete,
-        AXLocationChanged,
-        AXMenuListItemSelected,
-        AXMenuListItemUnselected,
-        AXMenuListValueChanged,
-        AXRowCollapsed,
-        AXRowCountChanged,
-        AXRowExpanded,
-        AXScrollPositionChanged,
-        AXScrolledToAnchor,
-        AXSelectedChildrenChanged,
-        AXSelectedTextChanged,
-        AXShow,
-        AXTextChanged,
-        AXTextInserted,
-        AXTextRemoved,
-        AXValueChanged
-    };
+  virtual ~AXObjectCache();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    virtual void dispose() = 0;
+  enum AXNotification {
+    AXActiveDescendantChanged,
+    AXAlert,
+    AXAriaAttributeChanged,
+    AXAutocorrectionOccured,
+    AXBlur,
+    AXCheckedStateChanged,
+    AXChildrenChanged,
+    AXClicked,
+    AXDocumentSelectionChanged,
+    AXExpandedChanged,
+    AXFocusedUIElementChanged,
+    AXHide,
+    AXHover,
+    AXInvalidStatusChanged,
+    AXLayoutComplete,
+    AXLiveRegionChanged,
+    AXLoadComplete,
+    AXLocationChanged,
+    AXMenuListItemSelected,
+    AXMenuListItemUnselected,
+    AXMenuListValueChanged,
+    AXRowCollapsed,
+    AXRowCountChanged,
+    AXRowExpanded,
+    AXScrollPositionChanged,
+    AXScrolledToAnchor,
+    AXSelectedChildrenChanged,
+    AXSelectedTextChanged,
+    AXShow,
+    AXTextChanged,
+    AXTextInserted,
+    AXTextRemoved,
+    AXValueChanged
+  };
 
-    virtual void selectionChanged(Node*) = 0;
-    virtual void childrenChanged(Node*) = 0;
-    virtual void childrenChanged(LayoutObject*) = 0;
-    virtual void checkedStateChanged(Node*) = 0;
-    virtual void listboxOptionStateChanged(HTMLOptionElement*) = 0;
-    virtual void listboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
-    virtual void listboxActiveIndexChanged(HTMLSelectElement*) = 0;
-    virtual void radiobuttonRemovedFromGroup(HTMLInputElement*) = 0;
+  virtual void dispose() = 0;
 
-    virtual void remove(LayoutObject*) = 0;
-    virtual void remove(Node*) = 0;
-    virtual void remove(AbstractInlineTextBox*) = 0;
+  virtual void selectionChanged(Node*) = 0;
+  virtual void childrenChanged(Node*) = 0;
+  virtual void childrenChanged(LayoutObject*) = 0;
+  virtual void checkedStateChanged(Node*) = 0;
+  virtual void listboxOptionStateChanged(HTMLOptionElement*) = 0;
+  virtual void listboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
+  virtual void listboxActiveIndexChanged(HTMLSelectElement*) = 0;
+  virtual void radiobuttonRemovedFromGroup(HTMLInputElement*) = 0;
 
-    virtual const Element* rootAXEditableElement(const Node*) = 0;
+  virtual void remove(LayoutObject*) = 0;
+  virtual void remove(Node*) = 0;
+  virtual void remove(AbstractInlineTextBox*) = 0;
 
-    // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
-    virtual void textChanged(LayoutObject*) = 0;
-    // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
-    virtual void updateCacheAfterNodeIsAttached(Node*) = 0;
+  virtual const Element* rootAXEditableElement(const Node*) = 0;
 
-    virtual void handleAttributeChanged(const QualifiedName& attrName, Element*) = 0;
-    virtual void handleFocusedUIElementChanged(Node* oldFocusedNode, Node* newFocusedNode) = 0;
-    virtual void handleInitialFocus() = 0;
-    virtual void handleEditableTextContentChanged(Node*) = 0;
-    virtual void handleTextFormControlChanged(Node*) = 0;
-    virtual void handleValueChanged(Node*) = 0;
-    virtual void handleUpdateActiveMenuOption(LayoutMenuList*, int optionIndex) = 0;
-    virtual void didShowMenuListPopup(LayoutMenuList*) = 0;
-    virtual void didHideMenuListPopup(LayoutMenuList*) = 0;
-    virtual void handleLoadComplete(Document*) = 0;
-    virtual void handleLayoutComplete(Document*) = 0;
-    virtual void handleClicked(Node*) = 0;
+  // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
+  virtual void textChanged(LayoutObject*) = 0;
+  // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
+  virtual void updateCacheAfterNodeIsAttached(Node*) = 0;
 
-    virtual void setCanvasObjectBounds(HTMLCanvasElement*, Element*, const LayoutRect&) = 0;
+  virtual void handleAttributeChanged(const QualifiedName& attrName,
+                                      Element*) = 0;
+  virtual void handleFocusedUIElementChanged(Node* oldFocusedNode,
+                                             Node* newFocusedNode) = 0;
+  virtual void handleInitialFocus() = 0;
+  virtual void handleEditableTextContentChanged(Node*) = 0;
+  virtual void handleTextFormControlChanged(Node*) = 0;
+  virtual void handleValueChanged(Node*) = 0;
+  virtual void handleUpdateActiveMenuOption(LayoutMenuList*,
+                                            int optionIndex) = 0;
+  virtual void didShowMenuListPopup(LayoutMenuList*) = 0;
+  virtual void didHideMenuListPopup(LayoutMenuList*) = 0;
+  virtual void handleLoadComplete(Document*) = 0;
+  virtual void handleLayoutComplete(Document*) = 0;
+  virtual void handleClicked(Node*) = 0;
 
-    virtual void inlineTextBoxesUpdated(LineLayoutItem) = 0;
+  virtual void setCanvasObjectBounds(HTMLCanvasElement*,
+                                     Element*,
+                                     const LayoutRect&) = 0;
 
-    // Called when the scroll offset changes.
-    virtual void handleScrollPositionChanged(FrameView*) = 0;
-    virtual void handleScrollPositionChanged(LayoutObject*) = 0;
+  virtual void inlineTextBoxesUpdated(LineLayoutItem) = 0;
 
-    // Called when scroll bars are added / removed (as the view resizes).
-    virtual void handleLayoutComplete(LayoutObject*) = 0;
-    virtual void handleScrolledToAnchor(const Node* anchorNode) = 0;
+  // Called when the scroll offset changes.
+  virtual void handleScrollPositionChanged(FrameView*) = 0;
+  virtual void handleScrollPositionChanged(LayoutObject*) = 0;
 
-    virtual const AtomicString& computedRoleForNode(Node*) = 0;
-    virtual String computedNameForNode(Node*) = 0;
+  // Called when scroll bars are added / removed (as the view resizes).
+  virtual void handleLayoutComplete(LayoutObject*) = 0;
+  virtual void handleScrolledToAnchor(const Node* anchorNode) = 0;
 
-    virtual void onTouchAccessibilityHover(const IntPoint&) = 0;
+  virtual const AtomicString& computedRoleForNode(Node*) = 0;
+  virtual String computedNameForNode(Node*) = 0;
 
-    typedef AXObjectCache* (*AXObjectCacheCreateFunction)(Document&);
-    static void init(AXObjectCacheCreateFunction);
+  virtual void onTouchAccessibilityHover(const IntPoint&) = 0;
 
-protected:
-    AXObjectCache();
+  typedef AXObjectCache* (*AXObjectCacheCreateFunction)(Document&);
+  static void init(AXObjectCacheCreateFunction);
 
-private:
-    static AXObjectCacheCreateFunction m_createFunction;
+ protected:
+  AXObjectCache();
+
+ private:
+  static AXObjectCacheCreateFunction m_createFunction;
 };
 
 class CORE_EXPORT ScopedAXObjectCache {
-    USING_FAST_MALLOC(ScopedAXObjectCache);
-    WTF_MAKE_NONCOPYABLE(ScopedAXObjectCache);
-public:
-    static std::unique_ptr<ScopedAXObjectCache> create(Document&);
-    ~ScopedAXObjectCache();
+  USING_FAST_MALLOC(ScopedAXObjectCache);
+  WTF_MAKE_NONCOPYABLE(ScopedAXObjectCache);
 
-    AXObjectCache* get();
+ public:
+  static std::unique_ptr<ScopedAXObjectCache> create(Document&);
+  ~ScopedAXObjectCache();
 
-private:
-    explicit ScopedAXObjectCache(Document&);
+  AXObjectCache* get();
 
-    Persistent<Document> m_document;
-    Persistent<AXObjectCache> m_cache;
+ private:
+  explicit ScopedAXObjectCache(Document&);
+
+  Persistent<Document> m_document;
+  Persistent<AXObjectCache> m_cache;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

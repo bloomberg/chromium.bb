@@ -30,6 +30,6 @@ namespace blink {
 
 typedef int DatabaseGuid;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DatabaseBasicTypes_h
+#endif  // DatabaseBasicTypes_h

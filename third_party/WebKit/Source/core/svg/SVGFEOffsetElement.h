@@ -28,27 +28,28 @@
 namespace blink {
 
 class SVGFEOffsetElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEOffsetElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    SVGAnimatedNumber* dx() { return m_dx.get(); }
-    SVGAnimatedNumber* dy() { return m_dy.get(); }
-    SVGAnimatedString* in1() { return m_in1.get(); }
+ public:
+  DECLARE_NODE_FACTORY(SVGFEOffsetElement);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedNumber* dx() { return m_dx.get(); }
+  SVGAnimatedNumber* dy() { return m_dy.get(); }
+  SVGAnimatedString* in1() { return m_in1.get(); }
 
-private:
-    explicit SVGFEOffsetElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+ private:
+  explicit SVGFEOffsetElement(Document&);
 
-    Member<SVGAnimatedNumber> m_dx;
-    Member<SVGAnimatedNumber> m_dy;
-    Member<SVGAnimatedString> m_in1;
+  void svgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+
+  Member<SVGAnimatedNumber> m_dx;
+  Member<SVGAnimatedNumber> m_dy;
+  Member<SVGAnimatedString> m_in1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEOffsetElement_h
+#endif  // SVGFEOffsetElement_h

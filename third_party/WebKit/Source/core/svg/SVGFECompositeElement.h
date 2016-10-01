@@ -29,39 +29,45 @@
 
 namespace blink {
 
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOperationType>();
+template <>
+const SVGEnumerationStringEntries&
+getStaticStringEntries<CompositeOperationType>();
 
-class SVGFECompositeElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFECompositeElement);
+class SVGFECompositeElement final
+    : public SVGFilterPrimitiveStandardAttributes {
+  DEFINE_WRAPPERTYPEINFO();
 
-    SVGAnimatedNumber* k1() { return m_k1.get(); }
-    SVGAnimatedNumber* k2() { return m_k2.get(); }
-    SVGAnimatedNumber* k3() { return m_k3.get(); }
-    SVGAnimatedNumber* k4() { return m_k4.get(); }
-    SVGAnimatedString* in1() { return m_in1.get(); }
-    SVGAnimatedString* in2() { return m_in2.get(); }
-    SVGAnimatedEnumeration<CompositeOperationType>* svgOperator() { return m_svgOperator.get(); }
+ public:
+  DECLARE_NODE_FACTORY(SVGFECompositeElement);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedNumber* k1() { return m_k1.get(); }
+  SVGAnimatedNumber* k2() { return m_k2.get(); }
+  SVGAnimatedNumber* k3() { return m_k3.get(); }
+  SVGAnimatedNumber* k4() { return m_k4.get(); }
+  SVGAnimatedString* in1() { return m_in1.get(); }
+  SVGAnimatedString* in2() { return m_in2.get(); }
+  SVGAnimatedEnumeration<CompositeOperationType>* svgOperator() {
+    return m_svgOperator.get();
+  }
 
-private:
-    explicit SVGFECompositeElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-    void svgAttributeChanged(const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+ private:
+  explicit SVGFECompositeElement(Document&);
 
-    Member<SVGAnimatedNumber> m_k1;
-    Member<SVGAnimatedNumber> m_k2;
-    Member<SVGAnimatedNumber> m_k3;
-    Member<SVGAnimatedNumber> m_k4;
-    Member<SVGAnimatedString> m_in1;
-    Member<SVGAnimatedString> m_in2;
-    Member<SVGAnimatedEnumeration<CompositeOperationType>> m_svgOperator;
+  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  void svgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+
+  Member<SVGAnimatedNumber> m_k1;
+  Member<SVGAnimatedNumber> m_k2;
+  Member<SVGAnimatedNumber> m_k3;
+  Member<SVGAnimatedNumber> m_k4;
+  Member<SVGAnimatedString> m_in1;
+  Member<SVGAnimatedString> m_in2;
+  Member<SVGAnimatedEnumeration<CompositeOperationType>> m_svgOperator;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFECompositeElement_h
+#endif  // SVGFECompositeElement_h

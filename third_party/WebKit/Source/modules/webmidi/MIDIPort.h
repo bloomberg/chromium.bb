@@ -43,76 +43,84 @@ namespace blink {
 
 class MIDIAccess;
 
-class MIDIPort : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
-public:
-    enum ConnectionState {
-        ConnectionStateOpen,
-        ConnectionStateClosed,
-        ConnectionStatePending
-    };
+class MIDIPort : public EventTargetWithInlineData,
+                 public ActiveScriptWrappable,
+                 public ActiveDOMObject {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 
-    enum TypeCode {
-        TypeInput,
-        TypeOutput
-    };
+ public:
+  enum ConnectionState {
+    ConnectionStateOpen,
+    ConnectionStateClosed,
+    ConnectionStatePending
+  };
 
-    ~MIDIPort() override { }
+  enum TypeCode { TypeInput, TypeOutput };
 
-    String connection() const;
-    String id() const { return m_id; }
-    String manufacturer() const { return m_manufacturer; }
-    String name() const { return m_name; }
-    String state() const;
-    String type() const;
-    String version() const { return m_version; }
+  ~MIDIPort() override {}
 
-    ScriptPromise open(ScriptState*);
-    ScriptPromise close(ScriptState*);
+  String connection() const;
+  String id() const { return m_id; }
+  String manufacturer() const { return m_manufacturer; }
+  String name() const { return m_name; }
+  String state() const;
+  String type() const;
+  String version() const { return m_version; }
 
-    MIDIAccess* midiAccess() const { return m_access; }
-    MIDIAccessor::MIDIPortState getState() const { return m_state; }
-    void setState(MIDIAccessor::MIDIPortState);
-    ConnectionState getConnection() const { return m_connection; }
+  ScriptPromise open(ScriptState*);
+  ScriptPromise close(ScriptState*);
 
-    DECLARE_VIRTUAL_TRACE();
+  MIDIAccess* midiAccess() const { return m_access; }
+  MIDIAccessor::MIDIPortState getState() const { return m_state; }
+  void setState(MIDIAccessor::MIDIPortState);
+  ConnectionState getConnection() const { return m_connection; }
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE();
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-    // EventTarget
-    const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }
-    ExecutionContext* getExecutionContext() const final;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
-    // ScriptWrappable
-    bool hasPendingActivity() const final;
+  // EventTarget
+  const AtomicString& interfaceName() const override {
+    return EventTargetNames::MIDIPort;
+  }
+  ExecutionContext* getExecutionContext() const final;
 
-    // ActiveDOMObject
-    void stop() override;
+  // ScriptWrappable
+  bool hasPendingActivity() const final;
 
-protected:
-    MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, TypeCode, const String& version, MIDIAccessor::MIDIPortState);
+  // ActiveDOMObject
+  void stop() override;
 
-    void open();
+ protected:
+  MIDIPort(MIDIAccess*,
+           const String& id,
+           const String& manufacturer,
+           const String& name,
+           TypeCode,
+           const String& version,
+           MIDIAccessor::MIDIPortState);
 
-private:
-    ScriptPromise accept(ScriptState*);
-    ScriptPromise reject(ScriptState*, ExceptionCode, const String& message);
+  void open();
 
-    void setStates(MIDIAccessor::MIDIPortState, ConnectionState);
+ private:
+  ScriptPromise accept(ScriptState*);
+  ScriptPromise reject(ScriptState*, ExceptionCode, const String& message);
 
-    String m_id;
-    String m_manufacturer;
-    String m_name;
-    TypeCode m_type;
-    String m_version;
-    Member<MIDIAccess> m_access;
-    MIDIAccessor::MIDIPortState m_state;
-    ConnectionState m_connection;
+  void setStates(MIDIAccessor::MIDIPortState, ConnectionState);
+
+  String m_id;
+  String m_manufacturer;
+  String m_name;
+  TypeCode m_type;
+  String m_version;
+  Member<MIDIAccess> m_access;
+  MIDIAccessor::MIDIPortState m_state;
+  ConnectionState m_connection;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MIDIPort_h
+#endif  // MIDIPort_h

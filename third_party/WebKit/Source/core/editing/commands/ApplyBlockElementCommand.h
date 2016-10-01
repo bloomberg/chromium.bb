@@ -37,27 +37,39 @@
 namespace blink {
 
 class ApplyBlockElementCommand : public CompositeEditCommand {
-protected:
-    ApplyBlockElementCommand(Document&, const QualifiedName& tagName, const AtomicString& inlineStyle);
-    ApplyBlockElementCommand(Document&, const QualifiedName& tagName);
+ protected:
+  ApplyBlockElementCommand(Document&,
+                           const QualifiedName& tagName,
+                           const AtomicString& inlineStyle);
+  ApplyBlockElementCommand(Document&, const QualifiedName& tagName);
 
-    virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState*);
-    HTMLElement* createBlockElement() const;
-    const QualifiedName& tagName() const { return m_tagName; }
+  virtual void formatSelection(const VisiblePosition& startOfSelection,
+                               const VisiblePosition& endOfSelection,
+                               EditingState*);
+  HTMLElement* createBlockElement() const;
+  const QualifiedName& tagName() const { return m_tagName; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    void doApply(EditingState*) final;
-    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, HTMLElement*&, EditingState*) = 0;
-    void rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition&, Position&, Position&);
-    VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition&, Position&, Position&);
+ private:
+  void doApply(EditingState*) final;
+  virtual void formatRange(const Position& start,
+                           const Position& end,
+                           const Position& endOfSelection,
+                           HTMLElement*&,
+                           EditingState*) = 0;
+  void rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition&,
+                                                   Position&,
+                                                   Position&);
+  VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition&,
+                                                              Position&,
+                                                              Position&);
 
-    QualifiedName m_tagName;
-    AtomicString m_inlineStyle;
-    Position m_endOfLastParagraph;
+  QualifiedName m_tagName;
+  AtomicString m_inlineStyle;
+  Position m_endOfLastParagraph;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

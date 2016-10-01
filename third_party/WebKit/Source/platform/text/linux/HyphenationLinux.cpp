@@ -6,9 +6,9 @@
 
 namespace blink {
 
-PassRefPtr<Hyphenation> Hyphenation::platformGetHyphenation(const AtomicString&)
-{
-    return nullptr;
+PassRefPtr<Hyphenation> Hyphenation::platformGetHyphenation(
+    const AtomicString&) {
+  return nullptr;
 }
 
-} // namespace blink
+}  // namespace blink

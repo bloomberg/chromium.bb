@@ -21,38 +21,43 @@ class IDBObserverInit;
 class IDBTransaction;
 struct WebIDBObservation;
 
-class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
+                                         public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static IDBObserver* create(IDBObserverCallback&, const IDBObserverInit&);
+ public:
+  static IDBObserver* create(IDBObserverCallback&, const IDBObserverInit&);
 
-    void removeObserver(int32_t id);
-    void onChange(int32_t id, const WebVector<WebIDBObservation>&, const WebVector<int32_t>& observationIndex);
+  void removeObserver(int32_t id);
+  void onChange(int32_t id,
+                const WebVector<WebIDBObservation>&,
+                const WebVector<int32_t>& observationIndex);
 
-    bool transaction() const { return m_transaction; }
-    bool noRecords() const { return m_noRecords; }
-    bool values() const { return m_values; }
-    const std::bitset<WebIDBOperationTypeCount>& operationTypes() const { return m_operationTypes; }
+  bool transaction() const { return m_transaction; }
+  bool noRecords() const { return m_noRecords; }
+  bool values() const { return m_values; }
+  const std::bitset<WebIDBOperationTypeCount>& operationTypes() const {
+    return m_operationTypes;
+  }
 
-    // Implement the IDBObserver IDL.
-    void observe(IDBDatabase*, IDBTransaction*, ExceptionState&);
-    void unobserve(IDBDatabase*, ExceptionState&);
+  // Implement the IDBObserver IDL.
+  void observe(IDBDatabase*, IDBTransaction*, ExceptionState&);
+  void unobserve(IDBDatabase*, ExceptionState&);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    IDBObserver(IDBObserverCallback&, const IDBObserverInit&);
+ private:
+  IDBObserver(IDBObserverCallback&, const IDBObserverInit&);
 
-    Member<IDBObserverCallback> m_callback;
-    bool m_transaction;
-    bool m_values;
-    bool m_noRecords;
-    // Operation type bits are set corresponding to WebIDBOperationType.
-    std::bitset<WebIDBOperationTypeCount> m_operationTypes;
-    HeapHashMap<int32_t, WeakMember<IDBDatabase>> m_observerIds;
+  Member<IDBObserverCallback> m_callback;
+  bool m_transaction;
+  bool m_values;
+  bool m_noRecords;
+  // Operation type bits are set corresponding to WebIDBOperationType.
+  std::bitset<WebIDBOperationTypeCount> m_operationTypes;
+  HeapHashMap<int32_t, WeakMember<IDBDatabase>> m_observerIds;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBObserver_h
+#endif  // IDBObserver_h

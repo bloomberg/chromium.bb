@@ -30,25 +30,26 @@
 namespace blink {
 
 class HTMLQuoteElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLQuoteElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    HTMLQuoteElement(const QualifiedName&, Document&);
+ public:
+  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLQuoteElement);
 
-    bool isURLAttribute(const Attribute&) const override;
-    bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    const QualifiedName& subResourceAttributeName() const override;
+ private:
+  HTMLQuoteElement(const QualifiedName&, Document&);
+
+  bool isURLAttribute(const Attribute&) const override;
+  bool hasLegalLinkAttribute(const QualifiedName&) const override;
+  const QualifiedName& subResourceAttributeName() const override;
 };
 
-inline bool isHTMLQuoteElement(const HTMLElement& element)
-{
-    return element.hasTagName(HTMLNames::qTag) || element.hasTagName(HTMLNames::blockquoteTag);
+inline bool isHTMLQuoteElement(const HTMLElement& element) {
+  return element.hasTagName(HTMLNames::qTag) ||
+         element.hasTagName(HTMLNames::blockquoteTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLQuoteElement);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLQuoteElement_h
+#endif  // HTMLQuoteElement_h

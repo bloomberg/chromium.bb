@@ -49,212 +49,211 @@ class PannerOptions;
 // All of these effects follow the OpenAL specification very closely.
 
 class PannerHandler final : public AudioHandler {
-public:
-    // These enums are used to distinguish what cached values of panner are dirty.
-    enum {
-        AzimuthElevationDirty = 0x1,
-        DistanceConeGainDirty = 0x2,
-    };
+ public:
+  // These enums are used to distinguish what cached values of panner are dirty.
+  enum {
+    AzimuthElevationDirty = 0x1,
+    DistanceConeGainDirty = 0x2,
+  };
 
-    static PassRefPtr<PannerHandler> create(
-        AudioNode&,
-        float sampleRate,
-        AudioParamHandler& positionX,
-        AudioParamHandler& positionY,
-        AudioParamHandler& positionZ,
-        AudioParamHandler& orientationX,
-        AudioParamHandler& orientationY,
-        AudioParamHandler& orientationZ);
+  static PassRefPtr<PannerHandler> create(AudioNode&,
+                                          float sampleRate,
+                                          AudioParamHandler& positionX,
+                                          AudioParamHandler& positionY,
+                                          AudioParamHandler& positionZ,
+                                          AudioParamHandler& orientationX,
+                                          AudioParamHandler& orientationY,
+                                          AudioParamHandler& orientationZ);
 
-    ~PannerHandler() override;
+  ~PannerHandler() override;
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
-    void processSampleAccurateValues(AudioBus* destination, const AudioBus* source, size_t framesToProcess);
-    void initialize() override;
-    void uninitialize() override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
+  void processSampleAccurateValues(AudioBus* destination,
+                                   const AudioBus* source,
+                                   size_t framesToProcess);
+  void initialize() override;
+  void uninitialize() override;
 
-    // Panning model
-    String panningModel() const;
-    void setPanningModel(const String&);
+  // Panning model
+  String panningModel() const;
+  void setPanningModel(const String&);
 
-    // Position and orientation
-    void setPosition(float x, float y, float z);
-    void setOrientation(float x, float y, float z);
+  // Position and orientation
+  void setPosition(float x, float y, float z);
+  void setOrientation(float x, float y, float z);
 
-    // Distance parameters
-    String distanceModel() const;
-    void setDistanceModel(const String&);
+  // Distance parameters
+  String distanceModel() const;
+  void setDistanceModel(const String&);
 
-    double refDistance() { return m_distanceEffect.refDistance(); }
-    void setRefDistance(double);
+  double refDistance() { return m_distanceEffect.refDistance(); }
+  void setRefDistance(double);
 
-    double maxDistance() { return m_distanceEffect.maxDistance(); }
-    void setMaxDistance(double);
+  double maxDistance() { return m_distanceEffect.maxDistance(); }
+  void setMaxDistance(double);
 
-    double rolloffFactor() { return m_distanceEffect.rolloffFactor(); }
-    void setRolloffFactor(double);
+  double rolloffFactor() { return m_distanceEffect.rolloffFactor(); }
+  void setRolloffFactor(double);
 
-    // Sound cones - angles in degrees
-    double coneInnerAngle() const { return m_coneEffect.innerAngle(); }
-    void setConeInnerAngle(double);
+  // Sound cones - angles in degrees
+  double coneInnerAngle() const { return m_coneEffect.innerAngle(); }
+  void setConeInnerAngle(double);
 
-    double coneOuterAngle() const { return m_coneEffect.outerAngle(); }
-    void setConeOuterAngle(double);
+  double coneOuterAngle() const { return m_coneEffect.outerAngle(); }
+  void setConeOuterAngle(double);
 
-    double coneOuterGain() const { return m_coneEffect.outerGain(); }
-    void setConeOuterGain(double);
+  double coneOuterGain() const { return m_coneEffect.outerGain(); }
+  void setConeOuterGain(double);
 
-    void markPannerAsDirty(unsigned);
+  void markPannerAsDirty(unsigned);
 
-    double tailTime() const override { return m_panner ? m_panner->tailTime() : 0; }
-    double latencyTime() const override { return m_panner ? m_panner->latencyTime() : 0; }
+  double tailTime() const override {
+    return m_panner ? m_panner->tailTime() : 0;
+  }
+  double latencyTime() const override {
+    return m_panner ? m_panner->latencyTime() : 0;
+  }
 
-    void setChannelCount(unsigned long, ExceptionState&) final;
-    void setChannelCountMode(const String&, ExceptionState&) final;
+  void setChannelCount(unsigned long, ExceptionState&) final;
+  void setChannelCountMode(const String&, ExceptionState&) final;
 
-private:
-    PannerHandler(
-        AudioNode&,
-        float sampleRate,
-        AudioParamHandler& positionX,
-        AudioParamHandler& positionY,
-        AudioParamHandler& positionZ,
-        AudioParamHandler& orientationX,
-        AudioParamHandler& orientationY,
-        AudioParamHandler& orientationZ);
+ private:
+  PannerHandler(AudioNode&,
+                float sampleRate,
+                AudioParamHandler& positionX,
+                AudioParamHandler& positionY,
+                AudioParamHandler& positionZ,
+                AudioParamHandler& orientationX,
+                AudioParamHandler& orientationY,
+                AudioParamHandler& orientationZ);
 
-    // BaseAudioContext's listener
-    AudioListener* listener();
+  // BaseAudioContext's listener
+  AudioListener* listener();
 
-    bool setPanningModel(unsigned); // Returns true on success.
-    bool setDistanceModel(unsigned); // Returns true on success.
+  bool setPanningModel(unsigned);   // Returns true on success.
+  bool setDistanceModel(unsigned);  // Returns true on success.
 
-    void calculateAzimuthElevation(
-        double* outAzimuth,
-        double* outElevation,
-        const FloatPoint3D& position,
-        const FloatPoint3D& listenerPosition,
-        const FloatPoint3D& listenerForward,
-        const FloatPoint3D& listenerUp);
+  void calculateAzimuthElevation(double* outAzimuth,
+                                 double* outElevation,
+                                 const FloatPoint3D& position,
+                                 const FloatPoint3D& listenerPosition,
+                                 const FloatPoint3D& listenerForward,
+                                 const FloatPoint3D& listenerUp);
 
-    // Returns the combined distance and cone gain attenuation.
-    float calculateDistanceConeGain(
-        const FloatPoint3D& position,
-        const FloatPoint3D& orientation,
-        const FloatPoint3D& listenerPosition);
+  // Returns the combined distance and cone gain attenuation.
+  float calculateDistanceConeGain(const FloatPoint3D& position,
+                                  const FloatPoint3D& orientation,
+                                  const FloatPoint3D& listenerPosition);
 
-    void azimuthElevation(double* outAzimuth, double* outElevation);
-    float distanceConeGain();
+  void azimuthElevation(double* outAzimuth, double* outElevation);
+  float distanceConeGain();
 
-    bool isAzimuthElevationDirty() const { return m_isAzimuthElevationDirty; }
-    bool isDistanceConeGainDirty() const { return m_isDistanceConeGainDirty; }
-    void updateDirtyState();
+  bool isAzimuthElevationDirty() const { return m_isAzimuthElevationDirty; }
+  bool isDistanceConeGainDirty() const { return m_isDistanceConeGainDirty; }
+  void updateDirtyState();
 
-    // This Persistent doesn't make a reference cycle including the owner
-    // PannerNode.
-    Persistent<AudioListener> m_listener;
-    std::unique_ptr<Panner> m_panner;
-    unsigned m_panningModel;
-    unsigned m_distanceModel;
+  // This Persistent doesn't make a reference cycle including the owner
+  // PannerNode.
+  Persistent<AudioListener> m_listener;
+  std::unique_ptr<Panner> m_panner;
+  unsigned m_panningModel;
+  unsigned m_distanceModel;
 
-    bool m_isAzimuthElevationDirty;
-    bool m_isDistanceConeGainDirty;
+  bool m_isAzimuthElevationDirty;
+  bool m_isDistanceConeGainDirty;
 
-    // Gain
-    DistanceEffect m_distanceEffect;
-    ConeEffect m_coneEffect;
-    float m_lastGain;
+  // Gain
+  DistanceEffect m_distanceEffect;
+  ConeEffect m_coneEffect;
+  float m_lastGain;
 
-    // Cached values
-    double m_cachedAzimuth;
-    double m_cachedElevation;
-    float m_cachedDistanceConeGain;
+  // Cached values
+  double m_cachedAzimuth;
+  double m_cachedElevation;
+  float m_cachedDistanceConeGain;
 
-    const FloatPoint3D position() const
-    {
-        return FloatPoint3D(
-            m_positionX->value(),
-            m_positionY->value(),
-            m_positionZ->value());
-    }
+  const FloatPoint3D position() const {
+    return FloatPoint3D(m_positionX->value(), m_positionY->value(),
+                        m_positionZ->value());
+  }
 
-    const FloatPoint3D orientation() const
-    {
-        return FloatPoint3D(
-            m_orientationX->value(),
-            m_orientationY->value(),
-            m_orientationZ->value());
-    }
+  const FloatPoint3D orientation() const {
+    return FloatPoint3D(m_orientationX->value(), m_orientationY->value(),
+                        m_orientationZ->value());
+  }
 
-    // True if any of this panner's AudioParams have automations.
-    bool hasSampleAccurateValues() const;
+  // True if any of this panner's AudioParams have automations.
+  bool hasSampleAccurateValues() const;
 
-    RefPtr<AudioParamHandler> m_positionX;
-    RefPtr<AudioParamHandler> m_positionY;
-    RefPtr<AudioParamHandler> m_positionZ;
+  RefPtr<AudioParamHandler> m_positionX;
+  RefPtr<AudioParamHandler> m_positionY;
+  RefPtr<AudioParamHandler> m_positionZ;
 
-    RefPtr<AudioParamHandler> m_orientationX;
-    RefPtr<AudioParamHandler> m_orientationY;
-    RefPtr<AudioParamHandler> m_orientationZ;
+  RefPtr<AudioParamHandler> m_orientationX;
+  RefPtr<AudioParamHandler> m_orientationY;
+  RefPtr<AudioParamHandler> m_orientationZ;
 
-    FloatPoint3D m_lastPosition;
-    FloatPoint3D m_lastOrientation;
+  FloatPoint3D m_lastPosition;
+  FloatPoint3D m_lastOrientation;
 
-    // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
-    mutable Mutex m_processLock;
+  // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
+  mutable Mutex m_processLock;
 };
 
 class PannerNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PannerNode* create(BaseAudioContext&, ExceptionState&);
-    static PannerNode* create(BaseAudioContext*, const PannerOptions&, ExceptionState&);
-    PannerHandler& pannerHandler() const;
+  DEFINE_WRAPPERTYPEINFO();
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static PannerNode* create(BaseAudioContext&, ExceptionState&);
+  static PannerNode* create(BaseAudioContext*,
+                            const PannerOptions&,
+                            ExceptionState&);
+  PannerHandler& pannerHandler() const;
 
-    // Uses a 3D cartesian coordinate system
-    AudioParam* positionX() const { return m_positionX; };
-    AudioParam* positionY() const { return m_positionY; };
-    AudioParam* positionZ() const { return m_positionZ; };
+  DECLARE_VIRTUAL_TRACE();
 
-    AudioParam* orientationX() const { return m_orientationX; };
-    AudioParam* orientationY() const { return m_orientationY; };
-    AudioParam* orientationZ() const { return m_orientationZ; };
+  // Uses a 3D cartesian coordinate system
+  AudioParam* positionX() const { return m_positionX; };
+  AudioParam* positionY() const { return m_positionY; };
+  AudioParam* positionZ() const { return m_positionZ; };
 
-    String panningModel() const;
-    void setPanningModel(const String&);
-    void setPosition(float x, float y, float z);
-    void setOrientation(float x, float y, float z);
-    void setVelocity(float x, float y, float z);
-    String distanceModel() const;
-    void setDistanceModel(const String&);
-    double refDistance() const;
-    void setRefDistance(double);
-    double maxDistance() const;
-    void setMaxDistance(double);
-    double rolloffFactor() const;
-    void setRolloffFactor(double);
-    double coneInnerAngle() const;
-    void setConeInnerAngle(double);
-    double coneOuterAngle() const;
-    void setConeOuterAngle(double);
-    double coneOuterGain() const;
-    void setConeOuterGain(double);
+  AudioParam* orientationX() const { return m_orientationX; };
+  AudioParam* orientationY() const { return m_orientationY; };
+  AudioParam* orientationZ() const { return m_orientationZ; };
 
-private:
-    PannerNode(BaseAudioContext&);
+  String panningModel() const;
+  void setPanningModel(const String&);
+  void setPosition(float x, float y, float z);
+  void setOrientation(float x, float y, float z);
+  void setVelocity(float x, float y, float z);
+  String distanceModel() const;
+  void setDistanceModel(const String&);
+  double refDistance() const;
+  void setRefDistance(double);
+  double maxDistance() const;
+  void setMaxDistance(double);
+  double rolloffFactor() const;
+  void setRolloffFactor(double);
+  double coneInnerAngle() const;
+  void setConeInnerAngle(double);
+  double coneOuterAngle() const;
+  void setConeOuterAngle(double);
+  double coneOuterGain() const;
+  void setConeOuterGain(double);
 
-    Member<AudioParam> m_positionX;
-    Member<AudioParam> m_positionY;
-    Member<AudioParam> m_positionZ;
+ private:
+  PannerNode(BaseAudioContext&);
 
-    Member<AudioParam> m_orientationX;
-    Member<AudioParam> m_orientationY;
-    Member<AudioParam> m_orientationZ;
+  Member<AudioParam> m_positionX;
+  Member<AudioParam> m_positionY;
+  Member<AudioParam> m_positionZ;
+
+  Member<AudioParam> m_orientationX;
+  Member<AudioParam> m_orientationY;
+  Member<AudioParam> m_orientationZ;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PannerNode_h
+#endif  // PannerNode_h

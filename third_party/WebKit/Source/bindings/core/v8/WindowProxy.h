@@ -51,78 +51,79 @@ class SecurityOrigin;
 // WindowProxy represents all the per-global object state for a Frame that
 // persist between navigations.
 class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
-public:
-    static WindowProxy* create(v8::Isolate*, Frame*, DOMWrapperWorld&);
+ public:
+  static WindowProxy* create(v8::Isolate*, Frame*, DOMWrapperWorld&);
 
-    ~WindowProxy();
-    DECLARE_TRACE();
+  ~WindowProxy();
+  DECLARE_TRACE();
 
-    v8::Local<v8::Context> contextIfInitialized() const { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
-    ScriptState* getScriptState() const { return m_scriptState.get(); }
+  v8::Local<v8::Context> contextIfInitialized() const {
+    return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>();
+  }
+  ScriptState* getScriptState() const { return m_scriptState.get(); }
 
-    // Update document object of the frame.
-    void updateDocument();
+  // Update document object of the frame.
+  void updateDocument();
 
-    void namedItemAdded(HTMLDocument*, const AtomicString&);
-    void namedItemRemoved(HTMLDocument*, const AtomicString&);
+  void namedItemAdded(HTMLDocument*, const AtomicString&);
+  void namedItemRemoved(HTMLDocument*, const AtomicString&);
 
-    // Update the security origin of a document
-    // (e.g., after setting docoument.domain).
-    void updateSecurityOrigin(SecurityOrigin*);
+  // Update the security origin of a document
+  // (e.g., after setting docoument.domain).
+  void updateSecurityOrigin(SecurityOrigin*);
 
-    bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
-    bool isGlobalInitialized() { return !m_global.isEmpty(); }
+  bool isContextInitialized() {
+    return m_scriptState && !!m_scriptState->perContextData();
+  }
+  bool isGlobalInitialized() { return !m_global.isEmpty(); }
 
-    bool initializeIfNeeded();
-    void updateDocumentWrapper(v8::Local<v8::Object> wrapper);
+  bool initializeIfNeeded();
+  void updateDocumentWrapper(v8::Local<v8::Object> wrapper);
 
-    void clearForNavigation();
-    void clearForClose();
+  void clearForNavigation();
+  void clearForClose();
 
-    v8::Local<v8::Object> globalIfNotDetached();
-    v8::Local<v8::Object> releaseGlobal();
-    void setGlobal(v8::Local<v8::Object>);
+  v8::Local<v8::Object> globalIfNotDetached();
+  v8::Local<v8::Object> releaseGlobal();
+  void setGlobal(v8::Local<v8::Object>);
 
-    DOMWrapperWorld& world() { return *m_world; }
+  DOMWrapperWorld& world() { return *m_world; }
 
-private:
-    WindowProxy(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
-    bool initialize();
+ private:
+  WindowProxy(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+  bool initialize();
 
-    enum GlobalDetachmentBehavior {
-        DoNotDetachGlobal,
-        DetachGlobal
-    };
-    void disposeContext(GlobalDetachmentBehavior);
+  enum GlobalDetachmentBehavior { DoNotDetachGlobal, DetachGlobal };
+  void disposeContext(GlobalDetachmentBehavior);
 
-    void setSecurityToken(SecurityOrigin*);
+  void setSecurityToken(SecurityOrigin*);
 
-    // The JavaScript wrapper for the document object is cached on the global
-    // object for fast access. UpdateDocumentProperty sets the wrapper
-    // for the current document on the global object.
-    void updateDocumentProperty();
+  // The JavaScript wrapper for the document object is cached on the global
+  // object for fast access. UpdateDocumentProperty sets the wrapper
+  // for the current document on the global object.
+  void updateDocumentProperty();
 
-    // Updates Activity Logger for the current context.
-    void updateActivityLogger();
+  // Updates Activity Logger for the current context.
+  void updateActivityLogger();
 
-    // Creates a new v8::Context with the window wrapper object as the global
-    // object (aka the inner global).  Note that the window wrapper and its
-    // prototype chain do not get fully initialized yet, e.g. the window
-    // wrapper is not yet associated with the native DOMWindow object.
-    void createContext();
+  // Creates a new v8::Context with the window wrapper object as the global
+  // object (aka the inner global).  Note that the window wrapper and its
+  // prototype chain do not get fully initialized yet, e.g. the window
+  // wrapper is not yet associated with the native DOMWindow object.
+  void createContext();
 
-    // Associates the window wrapper and its prototype chain with the native
-    // DOMWindow object.  Also does some more Window-specific initialization.
-    bool setupWindowPrototypeChain();
+  // Associates the window wrapper and its prototype chain with the native
+  // DOMWindow object.  Also does some more Window-specific initialization.
+  bool setupWindowPrototypeChain();
 
-    Member<Frame> m_frame;
-    v8::Isolate* m_isolate;
-    RefPtr<ScriptState> m_scriptState;
-    RefPtr<DOMWrapperWorld> m_world;
-    ScopedPersistent<v8::Object> m_global;
-    ScopedPersistent<v8::Object> m_document;
+  Member<Frame> m_frame;
+  v8::Isolate* m_isolate;
+  RefPtr<ScriptState> m_scriptState;
+  RefPtr<DOMWrapperWorld> m_world;
+  ScopedPersistent<v8::Object> m_global;
+  ScopedPersistent<v8::Object> m_document;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WindowProxy_h
+#endif  // WindowProxy_h

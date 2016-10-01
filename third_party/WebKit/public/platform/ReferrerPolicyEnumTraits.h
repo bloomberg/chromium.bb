@@ -14,60 +14,64 @@ namespace mojo {
 
 template <>
 struct EnumTraits<::blink::mojom::ReferrerPolicy, ::blink::WebReferrerPolicy> {
-    static ::blink::mojom::ReferrerPolicy ToMojom(::blink::WebReferrerPolicy policy)
-    {
-        switch (policy) {
-        case ::blink::WebReferrerPolicyAlways:
-            return ::blink::mojom::ReferrerPolicy::ALWAYS;
-        case ::blink::WebReferrerPolicyDefault:
-            return ::blink::mojom::ReferrerPolicy::DEFAULT;
-        case ::blink::WebReferrerPolicyNoReferrerWhenDowngrade:
-            return ::blink::mojom::ReferrerPolicy::NO_REFERRER_WHEN_DOWNGRADE;
-        case ::blink::WebReferrerPolicyNever:
-            return ::blink::mojom::ReferrerPolicy::NEVER;
-        case ::blink::WebReferrerPolicyOrigin:
-            return ::blink::mojom::ReferrerPolicy::ORIGIN;
-        case ::blink::WebReferrerPolicyOriginWhenCrossOrigin:
-            return ::blink::mojom::ReferrerPolicy::ORIGIN_WHEN_CROSS_ORIGIN;
-        case ::blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-            return ::blink::mojom::ReferrerPolicy::NO_REFERRER_WHEN_DOWNGRADE_ORIGIN_WHEN_CROSS_ORIGIN;
-        default:
-            NOTREACHED();
-            return ::blink::mojom::ReferrerPolicy::DEFAULT;
-        }
+  static ::blink::mojom::ReferrerPolicy ToMojom(
+      ::blink::WebReferrerPolicy policy) {
+    switch (policy) {
+      case ::blink::WebReferrerPolicyAlways:
+        return ::blink::mojom::ReferrerPolicy::ALWAYS;
+      case ::blink::WebReferrerPolicyDefault:
+        return ::blink::mojom::ReferrerPolicy::DEFAULT;
+      case ::blink::WebReferrerPolicyNoReferrerWhenDowngrade:
+        return ::blink::mojom::ReferrerPolicy::NO_REFERRER_WHEN_DOWNGRADE;
+      case ::blink::WebReferrerPolicyNever:
+        return ::blink::mojom::ReferrerPolicy::NEVER;
+      case ::blink::WebReferrerPolicyOrigin:
+        return ::blink::mojom::ReferrerPolicy::ORIGIN;
+      case ::blink::WebReferrerPolicyOriginWhenCrossOrigin:
+        return ::blink::mojom::ReferrerPolicy::ORIGIN_WHEN_CROSS_ORIGIN;
+      case ::blink::
+          WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+        return ::blink::mojom::ReferrerPolicy::
+            NO_REFERRER_WHEN_DOWNGRADE_ORIGIN_WHEN_CROSS_ORIGIN;
+      default:
+        NOTREACHED();
+        return ::blink::mojom::ReferrerPolicy::DEFAULT;
     }
+  }
 
-    static bool FromMojom(::blink::mojom::ReferrerPolicy policy, ::blink::WebReferrerPolicy* out)
-    {
-        switch (policy) {
-        case ::blink::mojom::ReferrerPolicy::ALWAYS:
-            *out = ::blink::WebReferrerPolicyAlways;
-            return true;
-        case ::blink::mojom::ReferrerPolicy::DEFAULT:
-            *out = ::blink::WebReferrerPolicyDefault;
-            return true;
-        case ::blink::mojom::ReferrerPolicy::NO_REFERRER_WHEN_DOWNGRADE:
-            *out = ::blink::WebReferrerPolicyNoReferrerWhenDowngrade;
-            return true;
-        case ::blink::mojom::ReferrerPolicy::NEVER:
-            *out = ::blink::WebReferrerPolicyNever;
-            return true;
-        case ::blink::mojom::ReferrerPolicy::ORIGIN:
-            *out = ::blink::WebReferrerPolicyOrigin;
-            return true;
-        case ::blink::mojom::ReferrerPolicy::ORIGIN_WHEN_CROSS_ORIGIN:
-            *out = ::blink::WebReferrerPolicyOriginWhenCrossOrigin;
-            return true;
-        case ::blink::mojom::ReferrerPolicy::NO_REFERRER_WHEN_DOWNGRADE_ORIGIN_WHEN_CROSS_ORIGIN:
-            *out = ::blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
-            return true;
-        default:
-            NOTREACHED();
-            return false;
-        }
+  static bool FromMojom(::blink::mojom::ReferrerPolicy policy,
+                        ::blink::WebReferrerPolicy* out) {
+    switch (policy) {
+      case ::blink::mojom::ReferrerPolicy::ALWAYS:
+        *out = ::blink::WebReferrerPolicyAlways;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::DEFAULT:
+        *out = ::blink::WebReferrerPolicyDefault;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::NO_REFERRER_WHEN_DOWNGRADE:
+        *out = ::blink::WebReferrerPolicyNoReferrerWhenDowngrade;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::NEVER:
+        *out = ::blink::WebReferrerPolicyNever;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::ORIGIN:
+        *out = ::blink::WebReferrerPolicyOrigin;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::ORIGIN_WHEN_CROSS_ORIGIN:
+        *out = ::blink::WebReferrerPolicyOriginWhenCrossOrigin;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::
+          NO_REFERRER_WHEN_DOWNGRADE_ORIGIN_WHEN_CROSS_ORIGIN:
+        *out = ::blink::
+            WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+        return true;
+      default:
+        NOTREACHED();
+        return false;
     }
+  }
 };
 
-} // namespace mojo
+}  // namespace mojo
 
 #endif

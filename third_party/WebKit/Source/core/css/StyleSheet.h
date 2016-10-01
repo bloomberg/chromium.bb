@@ -33,30 +33,32 @@ class MediaList;
 class Node;
 class StyleSheet;
 
-class CORE_EXPORT StyleSheet : public GarbageCollectedFinalized<StyleSheet>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    StyleSheet() { }
-    virtual ~StyleSheet();
+class CORE_EXPORT StyleSheet : public GarbageCollectedFinalized<StyleSheet>,
+                               public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    virtual bool disabled() const = 0;
-    virtual void setDisabled(bool) = 0;
-    virtual Node* ownerNode() const = 0;
-    virtual StyleSheet* parentStyleSheet() const { return 0; }
-    virtual String href() const = 0;
-    virtual String title() const = 0;
-    virtual MediaList* media() const { return 0; }
-    virtual String type() const = 0;
+ public:
+  StyleSheet() {}
+  virtual ~StyleSheet();
 
-    virtual CSSRule* ownerRule() const { return 0; }
-    virtual void clearOwnerNode() = 0;
-    virtual KURL baseURL() const = 0;
-    virtual bool isLoading() const = 0;
-    virtual bool isCSSStyleSheet() const { return false; }
+  virtual bool disabled() const = 0;
+  virtual void setDisabled(bool) = 0;
+  virtual Node* ownerNode() const = 0;
+  virtual StyleSheet* parentStyleSheet() const { return 0; }
+  virtual String href() const = 0;
+  virtual String title() const = 0;
+  virtual MediaList* media() const { return 0; }
+  virtual String type() const = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual CSSRule* ownerRule() const { return 0; }
+  virtual void clearOwnerNode() = 0;
+  virtual KURL baseURL() const = 0;
+  virtual bool isLoading() const = 0;
+  virtual bool isCSSStyleSheet() const { return false; }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

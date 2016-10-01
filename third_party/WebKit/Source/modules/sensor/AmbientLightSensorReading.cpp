@@ -8,40 +8,34 @@
 
 namespace blink {
 
-AmbientLightSensorReading::AmbientLightSensorReading(const AmbientLightSensorReadingInit& init)
-    : SensorReading(nullptr)
-    , mAmbientLightSensorReadingInit(init)
-{
-}
+AmbientLightSensorReading::AmbientLightSensorReading(
+    const AmbientLightSensorReadingInit& init)
+    : SensorReading(nullptr), mAmbientLightSensorReadingInit(init) {}
 
 AmbientLightSensorReading::AmbientLightSensorReading(SensorProxy* proxy)
-    : SensorReading(proxy)
-    , mAmbientLightSensorReadingInit(AmbientLightSensorReadingInit())
-{
-}
+    : SensorReading(proxy),
+      mAmbientLightSensorReadingInit(AmbientLightSensorReadingInit()) {}
 
 AmbientLightSensorReading::~AmbientLightSensorReading() = default;
 
-double AmbientLightSensorReading::illuminance() const
-{
-    if (mAmbientLightSensorReadingInit.hasIlluminance())
-        return mAmbientLightSensorReadingInit.illuminance();
+double AmbientLightSensorReading::illuminance() const {
+  if (mAmbientLightSensorReadingInit.hasIlluminance())
+    return mAmbientLightSensorReadingInit.illuminance();
 
-    if (!m_sensorProxy)
-        return 0.0;
-    return m_sensorProxy->reading().reading[0];
+  if (!m_sensorProxy)
+    return 0.0;
+  return m_sensorProxy->reading().reading[0];
 }
 
-bool AmbientLightSensorReading::isReadingUpdated(const SensorProxy::Reading& previous) const
-{
-    if (!m_sensorProxy)
-        return false;
-    return previous.reading[0] != illuminance();
+bool AmbientLightSensorReading::isReadingUpdated(
+    const SensorProxy::Reading& previous) const {
+  if (!m_sensorProxy)
+    return false;
+  return previous.reading[0] != illuminance();
 }
 
-DEFINE_TRACE(AmbientLightSensorReading)
-{
-    SensorReading::trace(visitor);
+DEFINE_TRACE(AmbientLightSensorReading) {
+  SensorReading::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

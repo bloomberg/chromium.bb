@@ -28,23 +28,18 @@
 namespace blink {
 
 BeforeTextInsertedEvent::BeforeTextInsertedEvent(const String& text)
-    : Event(EventTypeNames::webkitBeforeTextInserted, false, true), m_text(text)
-{
+    : Event(EventTypeNames::webkitBeforeTextInserted, false, true),
+      m_text(text) {}
+
+BeforeTextInsertedEvent::~BeforeTextInsertedEvent() {}
+
+const AtomicString& BeforeTextInsertedEvent::interfaceName() const {
+  // Notice that there is no BeforeTextInsertedEvent.idl.
+  return EventNames::Event;
 }
 
-BeforeTextInsertedEvent::~BeforeTextInsertedEvent()
-{
+DEFINE_TRACE(BeforeTextInsertedEvent) {
+  Event::trace(visitor);
 }
 
-const AtomicString& BeforeTextInsertedEvent::interfaceName() const
-{
-    // Notice that there is no BeforeTextInsertedEvent.idl.
-    return EventNames::Event;
-}
-
-DEFINE_TRACE(BeforeTextInsertedEvent)
-{
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

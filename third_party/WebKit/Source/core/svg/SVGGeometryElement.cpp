@@ -39,53 +39,55 @@
 
 namespace blink {
 
-SVGGeometryElement::SVGGeometryElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
-    : SVGGraphicsElement(tagName, document, constructionType)
-{
+SVGGeometryElement::SVGGeometryElement(const QualifiedName& tagName,
+                                       Document& document,
+                                       ConstructionType constructionType)
+    : SVGGraphicsElement(tagName, document, constructionType) {}
+
+bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  // FIXME: Eventually we should support isPointInFill for display:none elements.
+  if (!layoutObject() || !layoutObject()->isSVGShape())
+    return false;
+
+  HitTestRequest request(HitTestRequest::ReadOnly);
+  PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
+                                 request,
+                                 layoutObject()->style()->pointerEvents());
+  hitRules.canHitStroke = false;
+  return toLayoutSVGShape(layoutObject())
+      ->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
-bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const
-{
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
+bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const {
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    // FIXME: Eventually we should support isPointInFill for display:none elements.
-    if (!layoutObject() || !layoutObject()->isSVGShape())
-        return false;
+  // FIXME: Eventually we should support isPointInStroke for display:none elements.
+  if (!layoutObject() || !layoutObject()->isSVGShape())
+    return false;
 
-    HitTestRequest request(HitTestRequest::ReadOnly);
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, layoutObject()->style()->pointerEvents());
-    hitRules.canHitStroke = false;
-    return toLayoutSVGShape(layoutObject())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
+  HitTestRequest request(HitTestRequest::ReadOnly);
+  PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
+                                 request,
+                                 layoutObject()->style()->pointerEvents());
+  hitRules.canHitFill = false;
+  return toLayoutSVGShape(layoutObject())
+      ->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
-bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const
-{
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
+void SVGGeometryElement::toClipPath(Path& path) const {
+  path = asPath();
+  path.transform(calculateAnimatedLocalTransform());
 
-    // FIXME: Eventually we should support isPointInStroke for display:none elements.
-    if (!layoutObject() || !layoutObject()->isSVGShape())
-        return false;
-
-    HitTestRequest request(HitTestRequest::ReadOnly);
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, layoutObject()->style()->pointerEvents());
-    hitRules.canHitFill = false;
-    return toLayoutSVGShape(layoutObject())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
+  ASSERT(layoutObject());
+  ASSERT(layoutObject()->style());
+  path.setWindRule(layoutObject()->style()->svgStyle().clipRule());
 }
 
-void SVGGeometryElement::toClipPath(Path& path) const
-{
-    path = asPath();
-    path.transform(calculateAnimatedLocalTransform());
-
-    ASSERT(layoutObject());
-    ASSERT(layoutObject()->style());
-    path.setWindRule(layoutObject()->style()->svgStyle().clipRule());
+LayoutObject* SVGGeometryElement::createLayoutObject(const ComputedStyle&) {
+  // By default, any subclass is expected to do path-based drawing.
+  return new LayoutSVGPath(this);
 }
 
-LayoutObject* SVGGeometryElement::createLayoutObject(const ComputedStyle&)
-{
-    // By default, any subclass is expected to do path-based drawing.
-    return new LayoutSVGPath(this);
-}
-
-} // namespace blink
+}  // namespace blink

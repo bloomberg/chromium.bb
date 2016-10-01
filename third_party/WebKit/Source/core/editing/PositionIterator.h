@@ -40,56 +40,62 @@ namespace blink {
 // PositionIteratorAlgorithm must be used without DOM tree change.
 template <typename Strategy>
 class PositionIteratorAlgorithm {
-    STACK_ALLOCATED();
-public:
-    explicit PositionIteratorAlgorithm(const PositionTemplate<Strategy>&);
-    PositionIteratorAlgorithm();
+  STACK_ALLOCATED();
 
-    // Since |deprecatedComputePosition()| is slow, new code should use
-    // |computePosition()| instead.
-    PositionTemplate<Strategy> deprecatedComputePosition() const;
-    PositionTemplate<Strategy> computePosition() const;
+ public:
+  explicit PositionIteratorAlgorithm(const PositionTemplate<Strategy>&);
+  PositionIteratorAlgorithm();
 
-    // increment() takes O(1) other than incrementing to a element that has
-    // new parent.
-    // In the later case, it takes time of O(<number of childlen>) but the case
-    // happens at most depth-of-the-tree times over whole tree traversal.
-    void increment();
-    // decrement() takes O(1) other than decrement into new node that has
-    // childlen.
-    // In the later case, it takes time of O(<number of childlen>).
-    void decrement();
+  // Since |deprecatedComputePosition()| is slow, new code should use
+  // |computePosition()| instead.
+  PositionTemplate<Strategy> deprecatedComputePosition() const;
+  PositionTemplate<Strategy> computePosition() const;
 
-    Node* node() const { return m_anchorNode; }
-    int offsetInLeafNode() const { return m_offsetInAnchor; }
+  // increment() takes O(1) other than incrementing to a element that has
+  // new parent.
+  // In the later case, it takes time of O(<number of childlen>) but the case
+  // happens at most depth-of-the-tree times over whole tree traversal.
+  void increment();
+  // decrement() takes O(1) other than decrement into new node that has
+  // childlen.
+  // In the later case, it takes time of O(<number of childlen>).
+  void decrement();
 
-    bool atStart() const;
-    bool atEnd() const;
-    bool atStartOfNode() const;
-    bool atEndOfNode() const;
+  Node* node() const { return m_anchorNode; }
+  int offsetInLeafNode() const { return m_offsetInAnchor; }
 
-private:
-    PositionIteratorAlgorithm(Node* anchorNode, int offsetInAnchorNode);
+  bool atStart() const;
+  bool atEnd() const;
+  bool atStartOfNode() const;
+  bool atEndOfNode() const;
 
-    bool isValid() const { return !m_anchorNode || m_domTreeVersion == m_anchorNode->document().domTreeVersion(); }
+ private:
+  PositionIteratorAlgorithm(Node* anchorNode, int offsetInAnchorNode);
 
-    Member<Node> m_anchorNode;
-    Member<Node> m_nodeAfterPositionInAnchor; // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode;
-    int m_offsetInAnchor;
-    size_t m_depthToAnchorNode;
-    // If |m_nodeAfterPositionInAnchor| is not null,
-    // m_offsetsInAnchorNode[m_depthToAnchorNode] ==
-    //    Strategy::index(m_nodeAfterPositionInAnchor).
-    Vector<int> m_offsetsInAnchorNode;
-    uint64_t m_domTreeVersion;
+  bool isValid() const {
+    return !m_anchorNode ||
+           m_domTreeVersion == m_anchorNode->document().domTreeVersion();
+  }
+
+  Member<Node> m_anchorNode;
+  Member<Node>
+      m_nodeAfterPositionInAnchor;  // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode;
+  int m_offsetInAnchor;
+  size_t m_depthToAnchorNode;
+  // If |m_nodeAfterPositionInAnchor| is not null,
+  // m_offsetsInAnchorNode[m_depthToAnchorNode] ==
+  //    Strategy::index(m_nodeAfterPositionInAnchor).
+  Vector<int> m_offsetsInAnchorNode;
+  uint64_t m_domTreeVersion;
 };
 
 extern template class PositionIteratorAlgorithm<EditingStrategy>;
 extern template class PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 using PositionIterator = PositionIteratorAlgorithm<EditingStrategy>;
-using PositionIteratorInFlatTree = PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
+using PositionIteratorInFlatTree =
+    PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PositionIterator_h
+#endif  // PositionIterator_h

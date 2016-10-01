@@ -40,14 +40,14 @@ class CSSFontSelector;
 class Visitor;
 
 class CORE_EXPORT CSSFontSelectorClient : public GarbageCollectedMixin {
-public:
-    virtual ~CSSFontSelectorClient() { }
+ public:
+  virtual ~CSSFontSelectorClient() {}
 
-    virtual void fontsNeedUpdate(CSSFontSelector*) = 0;
+  virtual void fontsNeedUpdate(CSSFontSelector*) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSFontSelectorClient_h
+#endif  // CSSFontSelectorClient_h

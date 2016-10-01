@@ -33,17 +33,16 @@ namespace blink {
 
 // This represents a color chooser.
 class WebColorChooser {
-public:
-    virtual ~WebColorChooser() { }
+ public:
+  virtual ~WebColorChooser() {}
 
-    // Set selected color in the color chooser.
-    virtual void setSelectedColor(const WebColor color) { }
+  // Set selected color in the color chooser.
+  virtual void setSelectedColor(const WebColor color) {}
 
-    // Calling this ends the color chooser and the client won't be recieving
-    // didChooseColor callbacks anymore.
-    virtual void endChooser() { }
+  // Calling this ends the color chooser and the client won't be recieving
+  // didChooseColor callbacks anymore.
+  virtual void endChooser() {}
 };
-
 }
 
-#endif // WebColorChooser_h
+#endif  // WebColorChooser_h

@@ -38,65 +38,67 @@
 
 namespace blink {
 
-RTCVoidRequestImpl* RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
-{
-    RTCVoidRequestImpl* request = new RTCVoidRequestImpl(context, requester, successCallback, errorCallback);
-    request->suspendIfNeeded();
-    return request;
+RTCVoidRequestImpl* RTCVoidRequestImpl::create(
+    ExecutionContext* context,
+    RTCPeerConnection* requester,
+    VoidCallback* successCallback,
+    RTCPeerConnectionErrorCallback* errorCallback) {
+  RTCVoidRequestImpl* request = new RTCVoidRequestImpl(
+      context, requester, successCallback, errorCallback);
+  request->suspendIfNeeded();
+  return request;
 }
 
-RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
-    : ActiveDOMObject(context)
-    , m_successCallback(successCallback)
-    , m_errorCallback(errorCallback)
-    , m_requester(requester)
-{
-    DCHECK(m_requester);
+RTCVoidRequestImpl::RTCVoidRequestImpl(
+    ExecutionContext* context,
+    RTCPeerConnection* requester,
+    VoidCallback* successCallback,
+    RTCPeerConnectionErrorCallback* errorCallback)
+    : ActiveDOMObject(context),
+      m_successCallback(successCallback),
+      m_errorCallback(errorCallback),
+      m_requester(requester) {
+  DCHECK(m_requester);
 }
 
-RTCVoidRequestImpl::~RTCVoidRequestImpl()
-{
+RTCVoidRequestImpl::~RTCVoidRequestImpl() {}
+
+void RTCVoidRequestImpl::requestSucceeded() {
+  bool shouldFireCallback =
+      m_requester && m_requester->shouldFireDefaultCallbacks();
+  if (shouldFireCallback && m_successCallback)
+    m_successCallback->handleEvent();
+
+  clear();
 }
 
-void RTCVoidRequestImpl::requestSucceeded()
-{
-    bool shouldFireCallback = m_requester && m_requester->shouldFireDefaultCallbacks();
-    if (shouldFireCallback && m_successCallback)
-        m_successCallback->handleEvent();
+void RTCVoidRequestImpl::requestFailed(const String& error) {
+  bool shouldFireCallback =
+      m_requester && m_requester->shouldFireDefaultCallbacks();
+  if (shouldFireCallback && m_errorCallback.get()) {
+    // TODO(guidou): The error code should come from the content layer. See crbug.com/589455
+    m_errorCallback->handleEvent(DOMException::create(OperationError, error));
+  }
 
-    clear();
+  clear();
 }
 
-void RTCVoidRequestImpl::requestFailed(const String& error)
-{
-    bool shouldFireCallback = m_requester && m_requester->shouldFireDefaultCallbacks();
-    if (shouldFireCallback && m_errorCallback.get()) {
-        // TODO(guidou): The error code should come from the content layer. See crbug.com/589455
-        m_errorCallback->handleEvent(DOMException::create(OperationError, error));
-    }
-
-    clear();
+void RTCVoidRequestImpl::stop() {
+  clear();
 }
 
-void RTCVoidRequestImpl::stop()
-{
-    clear();
+void RTCVoidRequestImpl::clear() {
+  m_successCallback.clear();
+  m_errorCallback.clear();
+  m_requester.clear();
 }
 
-void RTCVoidRequestImpl::clear()
-{
-    m_successCallback.clear();
-    m_errorCallback.clear();
-    m_requester.clear();
+DEFINE_TRACE(RTCVoidRequestImpl) {
+  visitor->trace(m_successCallback);
+  visitor->trace(m_errorCallback);
+  visitor->trace(m_requester);
+  RTCVoidRequest::trace(visitor);
+  ActiveDOMObject::trace(visitor);
 }
 
-DEFINE_TRACE(RTCVoidRequestImpl)
-{
-    visitor->trace(m_successCallback);
-    visitor->trace(m_errorCallback);
-    visitor->trace(m_requester);
-    RTCVoidRequest::trace(visitor);
-    ActiveDOMObject::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -39,64 +39,65 @@ class FormControlState;
 // Each field can contain invalid value for date, e.g. day of month field can
 // be 30 even if month field is February.
 class DateTimeFieldsState {
-    STACK_ALLOCATED();
-public:
-    enum AMPMValue {
-        AMPMValueEmpty = -1,
-        AMPMValueAM,
-        AMPMValuePM,
-    };
+  STACK_ALLOCATED();
 
-    static const unsigned emptyValue;
+ public:
+  enum AMPMValue {
+    AMPMValueEmpty = -1,
+    AMPMValueAM,
+    AMPMValuePM,
+  };
 
-    DateTimeFieldsState();
+  static const unsigned emptyValue;
 
-    static DateTimeFieldsState restoreFormControlState(const FormControlState&);
-    FormControlState saveFormControlState() const;
+  DateTimeFieldsState();
 
-    AMPMValue ampm() const { return m_ampm; }
-    unsigned dayOfMonth() const { return m_dayOfMonth; }
-    unsigned hour() const { return m_hour; }
-    unsigned hour23() const;
-    unsigned millisecond() const { return m_millisecond; }
-    unsigned minute() const { return m_minute; }
-    unsigned month() const { return m_month; }
-    unsigned second() const { return m_second; }
-    unsigned weekOfYear() const { return m_weekOfYear; }
-    unsigned year() const { return m_year; }
+  static DateTimeFieldsState restoreFormControlState(const FormControlState&);
+  FormControlState saveFormControlState() const;
 
-    bool hasAMPM() const { return m_ampm != AMPMValueEmpty; }
-    bool hasDayOfMonth() const { return m_dayOfMonth != emptyValue; }
-    bool hasHour() const { return m_hour != emptyValue; }
-    bool hasMillisecond() const { return m_millisecond != emptyValue; }
-    bool hasMinute() const { return m_minute != emptyValue; }
-    bool hasMonth() const { return m_month != emptyValue; }
-    bool hasSecond() const { return m_second != emptyValue; }
-    bool hasWeekOfYear() const { return m_weekOfYear != emptyValue; }
-    bool hasYear() const { return m_year != emptyValue; }
+  AMPMValue ampm() const { return m_ampm; }
+  unsigned dayOfMonth() const { return m_dayOfMonth; }
+  unsigned hour() const { return m_hour; }
+  unsigned hour23() const;
+  unsigned millisecond() const { return m_millisecond; }
+  unsigned minute() const { return m_minute; }
+  unsigned month() const { return m_month; }
+  unsigned second() const { return m_second; }
+  unsigned weekOfYear() const { return m_weekOfYear; }
+  unsigned year() const { return m_year; }
 
-    void setAMPM(AMPMValue ampm) { m_ampm = ampm; }
-    void setDayOfMonth(unsigned dayOfMonth) { m_dayOfMonth = dayOfMonth; }
-    void setHour(unsigned hour12) { m_hour = hour12; }
-    void setMillisecond(unsigned millisecond) { m_millisecond = millisecond; }
-    void setMinute(unsigned minute) { m_minute = minute; }
-    void setMonth(unsigned month) { m_month = month; }
-    void setSecond(unsigned second) { m_second = second; }
-    void setWeekOfYear(unsigned weekOfYear) { m_weekOfYear = weekOfYear; }
-    void setYear(unsigned year) { m_year = year; }
+  bool hasAMPM() const { return m_ampm != AMPMValueEmpty; }
+  bool hasDayOfMonth() const { return m_dayOfMonth != emptyValue; }
+  bool hasHour() const { return m_hour != emptyValue; }
+  bool hasMillisecond() const { return m_millisecond != emptyValue; }
+  bool hasMinute() const { return m_minute != emptyValue; }
+  bool hasMonth() const { return m_month != emptyValue; }
+  bool hasSecond() const { return m_second != emptyValue; }
+  bool hasWeekOfYear() const { return m_weekOfYear != emptyValue; }
+  bool hasYear() const { return m_year != emptyValue; }
 
-private:
-    unsigned m_year;
-    unsigned m_month; // 1 to 12.
-    unsigned m_dayOfMonth;
-    unsigned m_hour; // 1 to 12.
-    unsigned m_minute;
-    unsigned m_second;
-    unsigned m_millisecond;
-    unsigned m_weekOfYear;
-    AMPMValue m_ampm;
+  void setAMPM(AMPMValue ampm) { m_ampm = ampm; }
+  void setDayOfMonth(unsigned dayOfMonth) { m_dayOfMonth = dayOfMonth; }
+  void setHour(unsigned hour12) { m_hour = hour12; }
+  void setMillisecond(unsigned millisecond) { m_millisecond = millisecond; }
+  void setMinute(unsigned minute) { m_minute = minute; }
+  void setMonth(unsigned month) { m_month = month; }
+  void setSecond(unsigned second) { m_second = second; }
+  void setWeekOfYear(unsigned weekOfYear) { m_weekOfYear = weekOfYear; }
+  void setYear(unsigned year) { m_year = year; }
+
+ private:
+  unsigned m_year;
+  unsigned m_month;  // 1 to 12.
+  unsigned m_dayOfMonth;
+  unsigned m_hour;  // 1 to 12.
+  unsigned m_minute;
+  unsigned m_second;
+  unsigned m_millisecond;
+  unsigned m_weekOfYear;
+  AMPMValue m_ampm;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

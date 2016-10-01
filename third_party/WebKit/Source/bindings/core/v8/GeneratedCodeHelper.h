@@ -22,9 +22,13 @@ namespace blink {
 class ScriptState;
 class SerializedScriptValue;
 
-CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
+CORE_EXPORT void v8ConstructorAttributeGetter(
+    v8::Local<v8::Name> propertyName,
+    const v8::PropertyCallbackInfo<v8::Value>&);
 
-CORE_EXPORT v8::Local<v8::Value> v8Deserialize(v8::Isolate*, PassRefPtr<SerializedScriptValue>);
+CORE_EXPORT v8::Local<v8::Value> v8Deserialize(
+    v8::Isolate*,
+    PassRefPtr<SerializedScriptValue>);
 
 // ExceptionToRejectPromiseScope converts a possible exception to a reject
 // promise and returns the promise instead of throwing the exception.
@@ -33,26 +37,28 @@ CORE_EXPORT v8::Local<v8::Value> v8Deserialize(v8::Isolate*, PassRefPtr<Serializ
 // and to never throw an exception.
 // See also http://heycam.github.io/webidl/#es-operations
 class CORE_EXPORT ExceptionToRejectPromiseScope {
-    STACK_ALLOCATED();
-public:
-    ExceptionToRejectPromiseScope(const v8::FunctionCallbackInfo<v8::Value>& info, ScriptState* scriptState, ExceptionState& exceptionState)
-        : m_info(info)
-        , m_scriptState(scriptState)
-        , m_exceptionState(exceptionState) { }
-    ~ExceptionToRejectPromiseScope()
-    {
-        if (!m_exceptionState.hadException())
-            return;
+  STACK_ALLOCATED();
 
-        v8SetReturnValue(m_info, m_exceptionState.reject(m_scriptState).v8Value());
-    }
+ public:
+  ExceptionToRejectPromiseScope(const v8::FunctionCallbackInfo<v8::Value>& info,
+                                ScriptState* scriptState,
+                                ExceptionState& exceptionState)
+      : m_info(info),
+        m_scriptState(scriptState),
+        m_exceptionState(exceptionState) {}
+  ~ExceptionToRejectPromiseScope() {
+    if (!m_exceptionState.hadException())
+      return;
 
-private:
-    const v8::FunctionCallbackInfo<v8::Value>& m_info;
-    ScriptState* m_scriptState;
-    ExceptionState& m_exceptionState;
+    v8SetReturnValue(m_info, m_exceptionState.reject(m_scriptState).v8Value());
+  }
+
+ private:
+  const v8::FunctionCallbackInfo<v8::Value>& m_info;
+  ScriptState* m_scriptState;
+  ExceptionState& m_exceptionState;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GeneratedCodeHelper_h
+#endif  // GeneratedCodeHelper_h

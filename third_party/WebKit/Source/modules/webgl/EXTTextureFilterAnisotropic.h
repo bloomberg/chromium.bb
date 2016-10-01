@@ -31,19 +31,20 @@
 namespace blink {
 
 class EXTTextureFilterAnisotropic final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static EXTTextureFilterAnisotropic* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~EXTTextureFilterAnisotropic() override;
-    WebGLExtensionName name() const override;
+ public:
+  static EXTTextureFilterAnisotropic* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-private:
-    explicit EXTTextureFilterAnisotropic(WebGLRenderingContextBase*);
+  ~EXTTextureFilterAnisotropic() override;
+  WebGLExtensionName name() const override;
+
+ private:
+  explicit EXTTextureFilterAnisotropic(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EXTTextureFilterAnisotropic_h
+#endif  // EXTTextureFilterAnisotropic_h

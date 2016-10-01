@@ -32,32 +32,38 @@ namespace blink {
 class DOMPlugin;
 class LocalFrame;
 
-class DOMMimeType final : public GarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMMimeType* create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
-    {
-        return new DOMMimeType(std::move(pluginData), frame, index);
-    }
-    virtual ~DOMMimeType();
+class DOMMimeType final : public GarbageCollectedFinalized<DOMMimeType>,
+                          public ScriptWrappable,
+                          public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
+  DEFINE_WRAPPERTYPEINFO();
 
-    const String& type() const;
-    String suffixes() const;
-    const String& description() const;
-    DOMPlugin* enabledPlugin() const;
+ public:
+  static DOMMimeType* create(PassRefPtr<PluginData> pluginData,
+                             LocalFrame* frame,
+                             unsigned index) {
+    return new DOMMimeType(std::move(pluginData), frame, index);
+  }
+  virtual ~DOMMimeType();
 
-    DECLARE_VIRTUAL_TRACE();
+  const String& type() const;
+  String suffixes() const;
+  const String& description() const;
+  DOMPlugin* enabledPlugin() const;
 
-private:
-    DOMMimeType(PassRefPtr<PluginData>, LocalFrame*, unsigned index);
+  DECLARE_VIRTUAL_TRACE();
 
-    const MimeClassInfo& mimeClassInfo() const { return m_pluginData->mimes()[m_index]; }
+ private:
+  DOMMimeType(PassRefPtr<PluginData>, LocalFrame*, unsigned index);
 
-    RefPtr<PluginData> m_pluginData;
-    unsigned m_index;
+  const MimeClassInfo& mimeClassInfo() const {
+    return m_pluginData->mimes()[m_index];
+  }
+
+  RefPtr<PluginData> m_pluginData;
+  unsigned m_index;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMMimeType_h
+#endif  // DOMMimeType_h

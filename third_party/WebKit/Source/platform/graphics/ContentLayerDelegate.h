@@ -43,22 +43,25 @@ class IntRect;
 class GraphicsLayer;
 
 class PLATFORM_EXPORT ContentLayerDelegate : public WebContentLayerClient {
-    WTF_MAKE_NONCOPYABLE(ContentLayerDelegate);
-    USING_FAST_MALLOC(ContentLayerDelegate);
-public:
-    explicit ContentLayerDelegate(GraphicsLayer*);
-    ~ContentLayerDelegate() override;
+  WTF_MAKE_NONCOPYABLE(ContentLayerDelegate);
+  USING_FAST_MALLOC(ContentLayerDelegate);
 
-    gfx::Rect paintableRegion() override;
+ public:
+  explicit ContentLayerDelegate(GraphicsLayer*);
+  ~ContentLayerDelegate() override;
 
-    // WebContentLayerClient implementation.
-    void paintContents(WebDisplayItemList*, WebContentLayerClient::PaintingControlSetting = PaintDefaultBehavior) override;
-    size_t approximateUnsharedMemoryUsage() const override;
+  gfx::Rect paintableRegion() override;
 
-private:
-    GraphicsLayer* m_graphicsLayer;
+  // WebContentLayerClient implementation.
+  void paintContents(WebDisplayItemList*,
+                     WebContentLayerClient::PaintingControlSetting =
+                         PaintDefaultBehavior) override;
+  size_t approximateUnsharedMemoryUsage() const override;
+
+ private:
+  GraphicsLayer* m_graphicsLayer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ContentLayerDelegate_h
+#endif  // ContentLayerDelegate_h

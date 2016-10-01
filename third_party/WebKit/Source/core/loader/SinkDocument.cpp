@@ -31,35 +31,30 @@
 namespace blink {
 
 class SinkDocumentParser : public RawDataDocumentParser {
-public:
-    static SinkDocumentParser* create(SinkDocument* document)
-    {
-        return new SinkDocumentParser(document);
-    }
+ public:
+  static SinkDocumentParser* create(SinkDocument* document) {
+    return new SinkDocumentParser(document);
+  }
 
-private:
-    explicit SinkDocumentParser(SinkDocument* document)
-        : RawDataDocumentParser(document)
-    {
-    }
+ private:
+  explicit SinkDocumentParser(SinkDocument* document)
+      : RawDataDocumentParser(document) {}
 
-    // Ignore all data.
-    void appendBytes(const char*, size_t) override { }
+  // Ignore all data.
+  void appendBytes(const char*, size_t) override {}
 };
 
 SinkDocument::SinkDocument(const DocumentInit& initializer)
-    : HTMLDocument(initializer)
-{
-    setCompatibilityMode(QuirksMode);
-    lockCompatibilityMode();
-    UseCounter::count(*this, UseCounter::SinkDocument);
-    if (!isInMainFrame())
-        UseCounter::count(*this, UseCounter::SinkDocumentInFrame);
+    : HTMLDocument(initializer) {
+  setCompatibilityMode(QuirksMode);
+  lockCompatibilityMode();
+  UseCounter::count(*this, UseCounter::SinkDocument);
+  if (!isInMainFrame())
+    UseCounter::count(*this, UseCounter::SinkDocumentInFrame);
 }
 
-DocumentParser* SinkDocument::createParser()
-{
-    return SinkDocumentParser::create(this);
+DocumentParser* SinkDocument::createParser() {
+  return SinkDocumentParser::create(this);
 }
 
-} // namespace blink
+}  // namespace blink

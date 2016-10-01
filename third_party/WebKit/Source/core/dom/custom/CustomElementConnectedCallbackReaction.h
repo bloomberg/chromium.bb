@@ -14,14 +14,15 @@ namespace blink {
 
 class CORE_EXPORT CustomElementConnectedCallbackReaction final
     : public CustomElementReaction {
-    WTF_MAKE_NONCOPYABLE(CustomElementConnectedCallbackReaction);
-public:
-    CustomElementConnectedCallbackReaction(CustomElementDefinition*);
+  WTF_MAKE_NONCOPYABLE(CustomElementConnectedCallbackReaction);
 
-private:
-    void invoke(Element*) override;
+ public:
+  CustomElementConnectedCallbackReaction(CustomElementDefinition*);
+
+ private:
+  void invoke(Element*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementConnectedCallbackReaction_h
+#endif  // CustomElementConnectedCallbackReaction_h

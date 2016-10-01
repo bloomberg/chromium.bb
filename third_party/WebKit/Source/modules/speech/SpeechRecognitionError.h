@@ -34,43 +34,43 @@
 namespace blink {
 
 class MODULES_EXPORT SpeechRecognitionError final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum ErrorCode {
-        // FIXME: This is an unspecified error and Chromium should stop using it.
-        ErrorCodeOther = 0,
+  DEFINE_WRAPPERTYPEINFO();
 
-        ErrorCodeNoSpeech = 1,
-        ErrorCodeAborted = 2,
-        ErrorCodeAudioCapture = 3,
-        ErrorCodeNetwork = 4,
-        ErrorCodeNotAllowed = 5,
-        ErrorCodeServiceNotAllowed = 6,
-        ErrorCodeBadGrammar = 7,
-        ErrorCodeLanguageNotSupported = 8
-    };
+ public:
+  enum ErrorCode {
+    // FIXME: This is an unspecified error and Chromium should stop using it.
+    ErrorCodeOther = 0,
 
-    static SpeechRecognitionError* create(ErrorCode, const String&);
-    static SpeechRecognitionError* create(const AtomicString&, const SpeechRecognitionErrorInit&);
+    ErrorCodeNoSpeech = 1,
+    ErrorCodeAborted = 2,
+    ErrorCodeAudioCapture = 3,
+    ErrorCodeNetwork = 4,
+    ErrorCodeNotAllowed = 5,
+    ErrorCodeServiceNotAllowed = 6,
+    ErrorCodeBadGrammar = 7,
+    ErrorCodeLanguageNotSupported = 8
+  };
 
-    const String& error() { return m_error; }
-    const String& message() { return m_message; }
+  static SpeechRecognitionError* create(ErrorCode, const String&);
+  static SpeechRecognitionError* create(const AtomicString&,
+                                        const SpeechRecognitionErrorInit&);
 
-    const AtomicString& interfaceName() const override;
+  const String& error() { return m_error; }
+  const String& message() { return m_message; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        Event::trace(visitor);
-    }
+  const AtomicString& interfaceName() const override;
 
-private:
-    SpeechRecognitionError(const String&, const String&);
-    SpeechRecognitionError(const AtomicString&, const SpeechRecognitionErrorInit&);
+  DEFINE_INLINE_VIRTUAL_TRACE() { Event::trace(visitor); }
 
-    String m_error;
-    String m_message;
+ private:
+  SpeechRecognitionError(const String&, const String&);
+  SpeechRecognitionError(const AtomicString&,
+                         const SpeechRecognitionErrorInit&);
+
+  String m_error;
+  String m_message;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpeechRecognitionError_h
+#endif  // SpeechRecognitionError_h

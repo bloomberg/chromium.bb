@@ -13,12 +13,20 @@ struct WebPoint;
 struct WebRect;
 
 class WebScrollbarBehavior {
-public:
-    virtual ~WebScrollbarBehavior() { }
-    virtual bool shouldCenterOnThumb(WebPointerProperties::Button, bool shiftKeyPressed, bool altKeyPressed) { return false; }
-    virtual bool shouldSnapBackToDragOrigin(const WebPoint& eventPoint, const WebRect& scrollbarRect, bool isHorizontal) { return false; }
+ public:
+  virtual ~WebScrollbarBehavior() {}
+  virtual bool shouldCenterOnThumb(WebPointerProperties::Button,
+                                   bool shiftKeyPressed,
+                                   bool altKeyPressed) {
+    return false;
+  }
+  virtual bool shouldSnapBackToDragOrigin(const WebPoint& eventPoint,
+                                          const WebRect& scrollbarRect,
+                                          bool isHorizontal) {
+    return false;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

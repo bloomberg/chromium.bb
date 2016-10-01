@@ -9,35 +9,34 @@
 
 namespace blink {
 
-CSSContentDistributionValue::CSSContentDistributionValue(CSSValueID distribution, CSSValueID position, CSSValueID overflow)
-    : CSSValue(CSSContentDistributionClass)
-    , m_distribution(distribution)
-    , m_position(position)
-    , m_overflow(overflow)
-{
+CSSContentDistributionValue::CSSContentDistributionValue(
+    CSSValueID distribution,
+    CSSValueID position,
+    CSSValueID overflow)
+    : CSSValue(CSSContentDistributionClass),
+      m_distribution(distribution),
+      m_position(position),
+      m_overflow(overflow) {}
+
+CSSContentDistributionValue::~CSSContentDistributionValue() {}
+
+String CSSContentDistributionValue::customCSSText() const {
+  CSSValueList* list = CSSValueList::createSpaceSeparated();
+
+  if (m_distribution != CSSValueInvalid)
+    list->append(*distribution());
+  if (m_position != CSSValueInvalid)
+    list->append(*position());
+  if (m_overflow != CSSValueInvalid)
+    list->append(*overflow());
+
+  return list->customCSSText();
 }
 
-CSSContentDistributionValue::~CSSContentDistributionValue()
-{
+bool CSSContentDistributionValue::equals(
+    const CSSContentDistributionValue& other) const {
+  return m_distribution == other.m_distribution &&
+         m_position == other.m_position && m_overflow == other.m_overflow;
 }
 
-String CSSContentDistributionValue::customCSSText() const
-{
-    CSSValueList* list = CSSValueList::createSpaceSeparated();
-
-    if (m_distribution != CSSValueInvalid)
-        list->append(*distribution());
-    if (m_position != CSSValueInvalid)
-        list->append(*position());
-    if (m_overflow != CSSValueInvalid)
-        list->append(*overflow());
-
-    return list->customCSSText();
-}
-
-bool CSSContentDistributionValue::equals(const CSSContentDistributionValue& other) const
-{
-    return m_distribution == other.m_distribution && m_position == other.m_position && m_overflow == other.m_overflow;
-}
-
-} // namespace blink
+}  // namespace blink

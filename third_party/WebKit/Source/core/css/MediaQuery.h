@@ -42,40 +42,40 @@ class MediaQueryExp;
 using ExpressionHeapVector = HeapVector<Member<MediaQueryExp>>;
 
 class CORE_EXPORT MediaQuery : public GarbageCollectedFinalized<MediaQuery> {
-public:
-    enum RestrictorType {
-        Only, Not, None
-    };
+ public:
+  enum RestrictorType { Only, Not, None };
 
-    static MediaQuery* create(RestrictorType, String mediaType, ExpressionHeapVector);
-    static MediaQuery* createNotAll();
+  static MediaQuery* create(RestrictorType,
+                            String mediaType,
+                            ExpressionHeapVector);
+  static MediaQuery* createNotAll();
 
-    ~MediaQuery();
+  ~MediaQuery();
 
-    RestrictorType restrictor() const { return m_restrictor; }
-    const ExpressionHeapVector& expressions() const { return m_expressions; }
-    const String& mediaType() const { return m_mediaType; }
-    bool operator==(const MediaQuery& other) const;
-    String cssText() const;
+  RestrictorType restrictor() const { return m_restrictor; }
+  const ExpressionHeapVector& expressions() const { return m_expressions; }
+  const String& mediaType() const { return m_mediaType; }
+  bool operator==(const MediaQuery& other) const;
+  String cssText() const;
 
-    MediaQuery* copy() const { return new MediaQuery(*this); }
+  MediaQuery* copy() const { return new MediaQuery(*this); }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    MediaQuery(RestrictorType, String mediaType, ExpressionHeapVector);
-    MediaQuery(const MediaQuery&);
+ private:
+  MediaQuery(RestrictorType, String mediaType, ExpressionHeapVector);
+  MediaQuery(const MediaQuery&);
 
-    MediaQuery& operator=(const MediaQuery&) = delete;
+  MediaQuery& operator=(const MediaQuery&) = delete;
 
-    RestrictorType m_restrictor;
-    String m_mediaType;
-    ExpressionHeapVector m_expressions;
-    String m_serializationCache;
+  RestrictorType m_restrictor;
+  String m_mediaType;
+  ExpressionHeapVector m_expressions;
+  String m_serializationCache;
 
-    String serialize() const;
+  String serialize() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

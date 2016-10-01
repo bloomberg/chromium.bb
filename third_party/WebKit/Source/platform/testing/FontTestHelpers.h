@@ -14,9 +14,11 @@ class Font;
 namespace testing {
 
 // Reads a font from a specified path, for use in unit tests only.
-Font createTestFont(const AtomicString& familyName, const String& fontPath, float size);
+Font createTestFont(const AtomicString& familyName,
+                    const String& fontPath,
+                    float size);
 
-} // namespace testing
-} // namespace blink
+}  // namespace testing
+}  // namespace blink
 
-#endif // FontTestHelpers_h
+#endif  // FontTestHelpers_h

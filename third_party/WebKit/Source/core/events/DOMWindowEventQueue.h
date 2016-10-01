@@ -38,29 +38,29 @@ class DOMWindowEventQueueTimer;
 class ExecutionContext;
 
 class DOMWindowEventQueue final : public EventQueue {
-public:
-    static DOMWindowEventQueue* create(ExecutionContext*);
-    ~DOMWindowEventQueue() override;
+ public:
+  static DOMWindowEventQueue* create(ExecutionContext*);
+  ~DOMWindowEventQueue() override;
 
-    // EventQueue
-    DECLARE_VIRTUAL_TRACE();
-    bool enqueueEvent(Event*) override;
-    bool cancelEvent(Event*) override;
-    void close() override;
+  // EventQueue
+  DECLARE_VIRTUAL_TRACE();
+  bool enqueueEvent(Event*) override;
+  bool cancelEvent(Event*) override;
+  void close() override;
 
-private:
-    explicit DOMWindowEventQueue(ExecutionContext*);
+ private:
+  explicit DOMWindowEventQueue(ExecutionContext*);
 
-    void pendingEventTimerFired();
-    void dispatchEvent(Event*);
+  void pendingEventTimerFired();
+  void dispatchEvent(Event*);
 
-    Member<DOMWindowEventQueueTimer> m_pendingEventTimer;
-    HeapListHashSet<Member<Event>, 16> m_queuedEvents;
-    bool m_isClosed;
+  Member<DOMWindowEventQueueTimer> m_pendingEventTimer;
+  HeapListHashSet<Member<Event>, 16> m_queuedEvents;
+  bool m_isClosed;
 
-    friend class DOMWindowEventQueueTimer;
+  friend class DOMWindowEventQueueTimer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowEventQueue_h
+#endif  // DOMWindowEventQueue_h

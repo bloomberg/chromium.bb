@@ -43,20 +43,20 @@ class KURL;
 class MediaSource;
 
 class MediaSourceRegistry final : public URLRegistry {
-public:
-    // Returns a single instance of MediaSourceRegistry.
-    static MediaSourceRegistry& registry();
+ public:
+  // Returns a single instance of MediaSourceRegistry.
+  static MediaSourceRegistry& registry();
 
-    // Registers a blob URL referring to the specified media source.
-    void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
-    void unregisterURL(const KURL&) override;
-    URLRegistrable* lookup(const String&) override;
+  // Registers a blob URL referring to the specified media source.
+  void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
+  void unregisterURL(const KURL&) override;
+  URLRegistrable* lookup(const String&) override;
 
-private:
-    MediaSourceRegistry();
-    PersistentHeapHashMap<String, Member<MediaSource>> m_mediaSources;
+ private:
+  MediaSourceRegistry();
+  PersistentHeapHashMap<String, Member<MediaSource>> m_mediaSources;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

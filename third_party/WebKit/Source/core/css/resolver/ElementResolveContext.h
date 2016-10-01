@@ -34,27 +34,32 @@ class ComputedStyle;
 
 // ElementResolveContext is immutable and serves as an input to the style resolve process.
 class CORE_EXPORT ElementResolveContext {
-    STACK_ALLOCATED();
-public:
-    explicit ElementResolveContext(const Document&);
+  STACK_ALLOCATED();
 
-    explicit ElementResolveContext(Element&);
+ public:
+  explicit ElementResolveContext(const Document&);
 
-    Element* element() const { return m_element; }
-    const ContainerNode* parentNode() const { return m_parentNode; }
-    const ComputedStyle* rootElementStyle() const { return m_rootElementStyle; }
-    const ComputedStyle* parentStyle() const { return parentNode() ? parentNode()->computedStyle() : nullptr; }
-    EInsideLink elementLinkState() const { return m_elementLinkState; }
-    bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
+  explicit ElementResolveContext(Element&);
 
-private:
-    Member<Element> m_element;
-    Member<ContainerNode> m_parentNode;
-    const ComputedStyle* m_rootElementStyle;
-    EInsideLink m_elementLinkState;
-    bool m_distributedToInsertionPoint;
+  Element* element() const { return m_element; }
+  const ContainerNode* parentNode() const { return m_parentNode; }
+  const ComputedStyle* rootElementStyle() const { return m_rootElementStyle; }
+  const ComputedStyle* parentStyle() const {
+    return parentNode() ? parentNode()->computedStyle() : nullptr;
+  }
+  EInsideLink elementLinkState() const { return m_elementLinkState; }
+  bool distributedToInsertionPoint() const {
+    return m_distributedToInsertionPoint;
+  }
+
+ private:
+  Member<Element> m_element;
+  Member<ContainerNode> m_parentNode;
+  const ComputedStyle* m_rootElementStyle;
+  EInsideLink m_elementLinkState;
+  bool m_distributedToInsertionPoint;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ElementResolveContext_h
+#endif  // ElementResolveContext_h

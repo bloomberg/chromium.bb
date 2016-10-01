@@ -28,25 +28,25 @@
 namespace blink {
 
 class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
-public:
-    static FEGaussianBlur* create(Filter*, float, float);
+ public:
+  static FEGaussianBlur* create(Filter*, float, float);
 
-    static IntSize calculateKernelSize(const Filter*, const FloatPoint& std);
-    static IntSize calculateUnscaledKernelSize(const FloatPoint& std);
+  static IntSize calculateKernelSize(const Filter*, const FloatPoint& std);
+  static IntSize calculateUnscaledKernelSize(const FloatPoint& std);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    FEGaussianBlur(Filter*, float, float);
+ private:
+  FEGaussianBlur(Filter*, float, float);
 
-    FloatRect mapEffect(const FloatRect&) const override;
+  FloatRect mapEffect(const FloatRect&) const override;
 
-    sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilter() override;
 
-    float m_stdX;
-    float m_stdY;
+  float m_stdX;
+  float m_stdY;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FEGaussianBlur_h
+#endif  // FEGaussianBlur_h

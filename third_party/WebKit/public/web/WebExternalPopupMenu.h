@@ -36,13 +36,13 @@ namespace blink {
 struct WebRect;
 
 class WebExternalPopupMenu {
-public:
-    virtual void show(const WebRect& bounds) = 0;
-    // Close the popup menu widget. This function should not call
-    // WebExternalPopupMenuClient functions.
-    virtual void close() = 0;
+ public:
+  virtual void show(const WebRect& bounds) = 0;
+  // Close the popup menu widget. This function should not call
+  // WebExternalPopupMenuClient functions.
+  virtual void close() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebExternalPopupMenu_h
+#endif  // WebExternalPopupMenu_h

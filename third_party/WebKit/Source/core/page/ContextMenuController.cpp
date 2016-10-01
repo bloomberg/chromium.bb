@@ -47,153 +47,155 @@ namespace blink {
 using namespace HTMLNames;
 
 ContextMenuController::ContextMenuController(Page*, ContextMenuClient* client)
-    : m_client(client)
-{
-    DCHECK(client);
+    : m_client(client) {
+  DCHECK(client);
 }
 
-ContextMenuController::~ContextMenuController()
-{
+ContextMenuController::~ContextMenuController() {}
+
+ContextMenuController* ContextMenuController::create(
+    Page* page,
+    ContextMenuClient* client) {
+  return new ContextMenuController(page, client);
 }
 
-ContextMenuController* ContextMenuController::create(Page* page, ContextMenuClient* client)
-{
-    return new ContextMenuController(page, client);
+DEFINE_TRACE(ContextMenuController) {
+  visitor->trace(m_menuProvider);
+  visitor->trace(m_hitTestResult);
 }
 
-DEFINE_TRACE(ContextMenuController)
-{
-    visitor->trace(m_menuProvider);
-    visitor->trace(m_hitTestResult);
+void ContextMenuController::clearContextMenu() {
+  m_contextMenu.reset();
+  if (m_menuProvider)
+    m_menuProvider->contextMenuCleared();
+  m_menuProvider = nullptr;
+  m_client->clearContextMenu();
+  m_hitTestResult = HitTestResult();
 }
 
-void ContextMenuController::clearContextMenu()
-{
-    m_contextMenu.reset();
-    if (m_menuProvider)
-        m_menuProvider->contextMenuCleared();
-    m_menuProvider = nullptr;
-    m_client->clearContextMenu();
-    m_hitTestResult = HitTestResult();
+void ContextMenuController::documentDetached(Document* document) {
+  if (Node* innerNode = m_hitTestResult.innerNode()) {
+    // Invalidate the context menu info if its target document is detached.
+    if (innerNode->document() == document)
+      clearContextMenu();
+  }
 }
 
-void ContextMenuController::documentDetached(Document* document)
-{
-    if (Node* innerNode = m_hitTestResult.innerNode()) {
-        // Invalidate the context menu info if its target document is detached.
-        if (innerNode->document() == document)
-            clearContextMenu();
-    }
+void ContextMenuController::populateCustomContextMenu(const Event& event) {
+  if (!RuntimeEnabledFeatures::contextMenuEnabled())
+    return;
+
+  Node* node = event.target()->toNode();
+  if (!node || !node->isHTMLElement())
+    return;
+
+  HTMLElement& element = toHTMLElement(*node);
+  HTMLMenuElement* menuElement = element.assignedContextMenu();
+  if (!menuElement ||
+      !equalIgnoringCase(menuElement->fastGetAttribute(typeAttr), "context"))
+    return;
+  RelatedEvent* relatedEvent =
+      RelatedEvent::create(EventTypeNames::show, true, true, node);
+  if (menuElement->dispatchEvent(relatedEvent) !=
+      DispatchEventResult::NotCanceled)
+    return;
+  if (menuElement != element.assignedContextMenu())
+    return;
+  m_menuProvider = CustomContextMenuProvider::create(*menuElement, element);
+  m_menuProvider->populateContextMenu(m_contextMenu.get());
 }
 
-void ContextMenuController::populateCustomContextMenu(const Event& event)
-{
-    if (!RuntimeEnabledFeatures::contextMenuEnabled())
-        return;
-
-    Node* node = event.target()->toNode();
-    if (!node || !node->isHTMLElement())
-        return;
-
-    HTMLElement& element = toHTMLElement(*node);
-    HTMLMenuElement* menuElement = element.assignedContextMenu();
-    if (!menuElement || !equalIgnoringCase(menuElement->fastGetAttribute(typeAttr), "context"))
-        return;
-    RelatedEvent* relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
-    if (menuElement->dispatchEvent(relatedEvent) != DispatchEventResult::NotCanceled)
-        return;
-    if (menuElement != element.assignedContextMenu())
-        return;
-    m_menuProvider = CustomContextMenuProvider::create(*menuElement, element);
-    m_menuProvider->populateContextMenu(m_contextMenu.get());
+void ContextMenuController::handleContextMenuEvent(Event* event) {
+  m_contextMenu = createContextMenu(event);
+  if (!m_contextMenu)
+    return;
+  populateCustomContextMenu(*event);
+  showContextMenu(event);
 }
 
-void ContextMenuController::handleContextMenuEvent(Event* event)
-{
-    m_contextMenu = createContextMenu(event);
-    if (!m_contextMenu)
-        return;
-    populateCustomContextMenu(*event);
-    showContextMenu(event);
+void ContextMenuController::showContextMenu(Event* event,
+                                            ContextMenuProvider* menuProvider) {
+  m_menuProvider = menuProvider;
+
+  m_contextMenu = createContextMenu(event);
+  if (!m_contextMenu) {
+    clearContextMenu();
+    return;
+  }
+
+  m_menuProvider->populateContextMenu(m_contextMenu.get());
+  showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenu(Event* event, ContextMenuProvider* menuProvider)
-{
-    m_menuProvider = menuProvider;
+void ContextMenuController::showContextMenuAtPoint(
+    LocalFrame* frame,
+    float x,
+    float y,
+    ContextMenuProvider* menuProvider) {
+  m_menuProvider = menuProvider;
 
-    m_contextMenu = createContextMenu(event);
-    if (!m_contextMenu) {
-        clearContextMenu();
-        return;
-    }
+  LayoutPoint location(x, y);
+  m_contextMenu = createContextMenu(frame, location);
+  if (!m_contextMenu) {
+    clearContextMenu();
+    return;
+  }
 
-    m_menuProvider->populateContextMenu(m_contextMenu.get());
-    showContextMenu(event);
+  m_menuProvider->populateContextMenu(m_contextMenu.get());
+  showContextMenu(nullptr);
 }
 
-void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, ContextMenuProvider* menuProvider)
-{
-    m_menuProvider = menuProvider;
+std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(
+    Event* event) {
+  ASSERT(event);
 
-    LayoutPoint location(x, y);
-    m_contextMenu = createContextMenu(frame, location);
-    if (!m_contextMenu) {
-        clearContextMenu();
-        return;
-    }
+  if (!event->isMouseEvent())
+    return nullptr;
 
-    m_menuProvider->populateContextMenu(m_contextMenu.get());
-    showContextMenu(nullptr);
+  MouseEvent* mouseEvent = toMouseEvent(event);
+  return createContextMenu(event->target()->toNode()->document().frame(),
+                           mouseEvent->absoluteLocation());
 }
 
-std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(Event* event)
-{
-    ASSERT(event);
+std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(
+    LocalFrame* frame,
+    const LayoutPoint& location) {
+  HitTestRequest::HitTestRequestType type =
+      HitTestRequest::ReadOnly | HitTestRequest::Active;
+  HitTestResult result(type, location);
 
-    if (!event->isMouseEvent())
-        return nullptr;
+  if (frame)
+    result = frame->eventHandler().hitTestResultAtPoint(location, type);
 
-    MouseEvent* mouseEvent = toMouseEvent(event);
-    return createContextMenu(event->target()->toNode()->document().frame(), mouseEvent->absoluteLocation());
+  if (!result.innerNodeOrImageMapImage())
+    return nullptr;
+
+  m_hitTestResult = result;
+
+  return wrapUnique(new ContextMenu);
 }
 
-std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame* frame, const LayoutPoint& location)
-{
-    HitTestRequest::HitTestRequestType type = HitTestRequest::ReadOnly | HitTestRequest::Active;
-    HitTestResult result(type, location);
+void ContextMenuController::showContextMenu(Event* event) {
+  bool fromTouch = false;
+  if (event && event->isMouseEvent()) {
+    MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
+    fromTouch = mouseEvent->fromTouch();
+  }
 
-    if (frame)
-        result = frame->eventHandler().hitTestResultAtPoint(location, type);
-
-    if (!result.innerNodeOrImageMapImage())
-        return nullptr;
-
-    m_hitTestResult = result;
-
-    return wrapUnique(new ContextMenu);
+  if (m_client->showContextMenu(m_contextMenu.get(), fromTouch) && event)
+    event->setDefaultHandled();
 }
 
-void ContextMenuController::showContextMenu(Event* event)
-{
-    bool fromTouch = false;
-    if (event && event->isMouseEvent()) {
-        MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
-        fromTouch = mouseEvent->fromTouch();
-    }
+void ContextMenuController::contextMenuItemSelected(
+    const ContextMenuItem* item) {
+  ASSERT(item->type() == ActionType || item->type() == CheckableActionType);
 
-    if (m_client->showContextMenu(m_contextMenu.get(), fromTouch) && event)
-        event->setDefaultHandled();
+  if (item->action() < ContextMenuItemBaseCustomTag ||
+      item->action() > ContextMenuItemLastCustomTag)
+    return;
+
+  ASSERT(m_menuProvider);
+  m_menuProvider->contextMenuItemSelected(item);
 }
 
-void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
-{
-    ASSERT(item->type() == ActionType || item->type() == CheckableActionType);
-
-    if (item->action() < ContextMenuItemBaseCustomTag || item->action() > ContextMenuItemLastCustomTag)
-        return;
-
-    ASSERT(m_menuProvider);
-    m_menuProvider->contextMenuItemSelected(item);
-}
-
-} // namespace blink
+}  // namespace blink

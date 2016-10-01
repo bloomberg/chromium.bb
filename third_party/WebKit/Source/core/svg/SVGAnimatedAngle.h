@@ -38,36 +38,39 @@
 
 namespace blink {
 
-class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGAnimatedAngle* create(SVGElement* contextElement)
-    {
-        return new SVGAnimatedAngle(contextElement);
-    }
+class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle>,
+                               public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~SVGAnimatedAngle() override;
+ public:
+  static SVGAnimatedAngle* create(SVGElement* contextElement) {
+    return new SVGAnimatedAngle(contextElement);
+  }
 
-    SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
+  ~SVGAnimatedAngle() override;
 
-    // SVGAnimatedPropertyBase:
-    bool needsSynchronizeAttribute() override;
-    void synchronizeAttribute() override;
+  SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() {
+    return m_orientType.get();
+  }
 
-    void setAnimatedValue(SVGPropertyBase*) override;
-    void animationEnded() override;
+  // SVGAnimatedPropertyBase:
+  bool needsSynchronizeAttribute() override;
+  void synchronizeAttribute() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  void setAnimatedValue(SVGPropertyBase*) override;
+  void animationEnded() override;
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    explicit SVGAnimatedAngle(SVGElement* contextElement);
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-private:
-    Member<SVGAnimatedEnumeration<SVGMarkerOrientType>> m_orientType;
+ protected:
+  explicit SVGAnimatedAngle(SVGElement* contextElement);
+
+ private:
+  Member<SVGAnimatedEnumeration<SVGMarkerOrientType>> m_orientType;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedAngle_h
+#endif  // SVGAnimatedAngle_h

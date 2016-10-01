@@ -12,26 +12,23 @@
 namespace blink {
 
 class BeginSubsequenceDisplayItem final : public PairedBeginDisplayItem {
-public:
-    BeginSubsequenceDisplayItem(const DisplayItemClient& client)
-        : PairedBeginDisplayItem(client, kSubsequence, sizeof(*this))
-    { }
+ public:
+  BeginSubsequenceDisplayItem(const DisplayItemClient& client)
+      : PairedBeginDisplayItem(client, kSubsequence, sizeof(*this)) {}
 };
 
 class EndSubsequenceDisplayItem final : public PairedEndDisplayItem {
-public:
-    EndSubsequenceDisplayItem(const DisplayItemClient& client)
-        : PairedEndDisplayItem(client, kEndSubsequence, sizeof(*this))
-    { }
+ public:
+  EndSubsequenceDisplayItem(const DisplayItemClient& client)
+      : PairedEndDisplayItem(client, kEndSubsequence, sizeof(*this)) {}
 
 #if ENABLE(ASSERT)
-    bool isEndAndPairedWith(DisplayItem::Type otherType) const final
-    {
-        return getType() == kEndSubsequence && otherType == kSubsequence;
-    }
+  bool isEndAndPairedWith(DisplayItem::Type otherType) const final {
+    return getType() == kEndSubsequence && otherType == kSubsequence;
+  }
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SubsequenceDisplayItem_h
+#endif  // SubsequenceDisplayItem_h

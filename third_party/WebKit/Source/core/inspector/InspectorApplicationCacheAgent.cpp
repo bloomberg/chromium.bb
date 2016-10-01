@@ -36,169 +36,197 @@
 namespace blink {
 
 namespace ApplicationCacheAgentState {
-static const char applicationCacheAgentEnabled[] = "applicationCacheAgentEnabled";
+static const char applicationCacheAgentEnabled[] =
+    "applicationCacheAgentEnabled";
 }
 
-InspectorApplicationCacheAgent::InspectorApplicationCacheAgent(InspectedFrames* inspectedFrames)
-    : m_inspectedFrames(inspectedFrames)
-{
+InspectorApplicationCacheAgent::InspectorApplicationCacheAgent(
+    InspectedFrames* inspectedFrames)
+    : m_inspectedFrames(inspectedFrames) {}
+
+void InspectorApplicationCacheAgent::restore() {
+  if (m_state->booleanProperty(
+          ApplicationCacheAgentState::applicationCacheAgentEnabled, false)) {
+    ErrorString error;
+    enable(&error);
+  }
 }
 
-void InspectorApplicationCacheAgent::restore()
-{
-    if (m_state->booleanProperty(ApplicationCacheAgentState::applicationCacheAgentEnabled, false)) {
-        ErrorString error;
-        enable(&error);
-    }
+void InspectorApplicationCacheAgent::enable(ErrorString*) {
+  m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled,
+                      true);
+  m_instrumentingAgents->addInspectorApplicationCacheAgent(this);
+  frontend()->networkStateUpdated(networkStateNotifier().onLine());
 }
 
-void InspectorApplicationCacheAgent::enable(ErrorString*)
-{
-    m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled, true);
-    m_instrumentingAgents->addInspectorApplicationCacheAgent(this);
-    frontend()->networkStateUpdated(networkStateNotifier().onLine());
+void InspectorApplicationCacheAgent::disable(ErrorString*) {
+  m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled,
+                      false);
+  m_instrumentingAgents->removeInspectorApplicationCacheAgent(this);
 }
 
-void InspectorApplicationCacheAgent::disable(ErrorString*)
-{
-    m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled, false);
-    m_instrumentingAgents->removeInspectorApplicationCacheAgent(this);
+void InspectorApplicationCacheAgent::updateApplicationCacheStatus(
+    LocalFrame* frame) {
+  DocumentLoader* documentLoader = frame->loader().documentLoader();
+  if (!documentLoader)
+    return;
+
+  ApplicationCacheHost* host = documentLoader->applicationCacheHost();
+  ApplicationCacheHost::Status status = host->getStatus();
+  ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
+
+  String manifestURL = info.m_manifest.getString();
+  String frameId = IdentifiersFactory::frameId(frame);
+  frontend()->applicationCacheStatusUpdated(frameId, manifestURL,
+                                            static_cast<int>(status));
 }
 
-void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* frame)
-{
+void InspectorApplicationCacheAgent::networkStateChanged(LocalFrame* frame,
+                                                         bool online) {
+  if (frame == m_inspectedFrames->root())
+    frontend()->networkStateUpdated(online);
+}
+
+void InspectorApplicationCacheAgent::getFramesWithManifests(
+    ErrorString*,
+    std::unique_ptr<
+        protocol::Array<protocol::ApplicationCache::FrameWithManifest>>*
+        result) {
+  *result =
+      protocol::Array<protocol::ApplicationCache::FrameWithManifest>::create();
+
+  for (LocalFrame* frame : *m_inspectedFrames) {
     DocumentLoader* documentLoader = frame->loader().documentLoader();
     if (!documentLoader)
-        return;
+      return;
 
     ApplicationCacheHost* host = documentLoader->applicationCacheHost();
-    ApplicationCacheHost::Status status = host->getStatus();
     ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
-
     String manifestURL = info.m_manifest.getString();
-    String frameId = IdentifiersFactory::frameId(frame);
-    frontend()->applicationCacheStatusUpdated(frameId, manifestURL, static_cast<int>(status));
-}
-
-void InspectorApplicationCacheAgent::networkStateChanged(LocalFrame* frame, bool online)
-{
-    if (frame == m_inspectedFrames->root())
-        frontend()->networkStateUpdated(online);
-}
-
-void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, std::unique_ptr<protocol::Array<protocol::ApplicationCache::FrameWithManifest>>* result)
-{
-    *result = protocol::Array<protocol::ApplicationCache::FrameWithManifest>::create();
-
-    for (LocalFrame* frame : *m_inspectedFrames) {
-        DocumentLoader* documentLoader = frame->loader().documentLoader();
-        if (!documentLoader)
-            return;
-
-        ApplicationCacheHost* host = documentLoader->applicationCacheHost();
-        ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
-        String manifestURL = info.m_manifest.getString();
-        if (!manifestURL.isEmpty()) {
-            std::unique_ptr<protocol::ApplicationCache::FrameWithManifest> value = protocol::ApplicationCache::FrameWithManifest::create()
-                .setFrameId(IdentifiersFactory::frameId(frame))
-                .setManifestURL(manifestURL)
-                .setStatus(static_cast<int>(host->getStatus())).build();
-            (*result)->addItem(std::move(value));
-        }
+    if (!manifestURL.isEmpty()) {
+      std::unique_ptr<protocol::ApplicationCache::FrameWithManifest> value =
+          protocol::ApplicationCache::FrameWithManifest::create()
+              .setFrameId(IdentifiersFactory::frameId(frame))
+              .setManifestURL(manifestURL)
+              .setStatus(static_cast<int>(host->getStatus()))
+              .build();
+      (*result)->addItem(std::move(value));
     }
+  }
 }
 
-DocumentLoader* InspectorApplicationCacheAgent::assertFrameWithDocumentLoader(ErrorString* errorString, String frameId)
-{
-    LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
-    if (!frame) {
-        *errorString = "No frame for given id found";
-        return nullptr;
-    }
+DocumentLoader* InspectorApplicationCacheAgent::assertFrameWithDocumentLoader(
+    ErrorString* errorString,
+    String frameId) {
+  LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
+  if (!frame) {
+    *errorString = "No frame for given id found";
+    return nullptr;
+  }
 
-    DocumentLoader* documentLoader = frame->loader().documentLoader();
-    if (!documentLoader)
-        *errorString = "No documentLoader for given frame found";
-    return documentLoader;
+  DocumentLoader* documentLoader = frame->loader().documentLoader();
+  if (!documentLoader)
+    *errorString = "No documentLoader for given frame found";
+  return documentLoader;
 }
 
-void InspectorApplicationCacheAgent::getManifestForFrame(ErrorString* errorString, const String& frameId, String* manifestURL)
-{
-    DocumentLoader* documentLoader = assertFrameWithDocumentLoader(errorString, frameId);
-    if (!documentLoader)
-        return;
+void InspectorApplicationCacheAgent::getManifestForFrame(
+    ErrorString* errorString,
+    const String& frameId,
+    String* manifestURL) {
+  DocumentLoader* documentLoader =
+      assertFrameWithDocumentLoader(errorString, frameId);
+  if (!documentLoader)
+    return;
 
-    ApplicationCacheHost::CacheInfo info = documentLoader->applicationCacheHost()->applicationCacheInfo();
-    *manifestURL = info.m_manifest.getString();
+  ApplicationCacheHost::CacheInfo info =
+      documentLoader->applicationCacheHost()->applicationCacheInfo();
+  *manifestURL = info.m_manifest.getString();
 }
 
-void InspectorApplicationCacheAgent::getApplicationCacheForFrame(ErrorString* errorString, const String& frameId, std::unique_ptr<protocol::ApplicationCache::ApplicationCache>* applicationCache)
-{
-    DocumentLoader* documentLoader = assertFrameWithDocumentLoader(errorString, frameId);
-    if (!documentLoader)
-        return;
+void InspectorApplicationCacheAgent::getApplicationCacheForFrame(
+    ErrorString* errorString,
+    const String& frameId,
+    std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*
+        applicationCache) {
+  DocumentLoader* documentLoader =
+      assertFrameWithDocumentLoader(errorString, frameId);
+  if (!documentLoader)
+    return;
 
-    ApplicationCacheHost* host = documentLoader->applicationCacheHost();
-    ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
+  ApplicationCacheHost* host = documentLoader->applicationCacheHost();
+  ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
 
-    ApplicationCacheHost::ResourceInfoList resources;
-    host->fillResourceList(&resources);
+  ApplicationCacheHost::ResourceInfoList resources;
+  host->fillResourceList(&resources);
 
-    *applicationCache = buildObjectForApplicationCache(resources, info);
+  *applicationCache = buildObjectForApplicationCache(resources, info);
 }
 
-std::unique_ptr<protocol::ApplicationCache::ApplicationCache> InspectorApplicationCacheAgent::buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList& applicationCacheResources, const ApplicationCacheHost::CacheInfo& applicationCacheInfo)
-{
-    return protocol::ApplicationCache::ApplicationCache::create()
-        .setManifestURL(applicationCacheInfo.m_manifest.getString())
-        .setSize(applicationCacheInfo.m_size)
-        .setCreationTime(applicationCacheInfo.m_creationTime)
-        .setUpdateTime(applicationCacheInfo.m_updateTime)
-        .setResources(buildArrayForApplicationCacheResources(applicationCacheResources))
-        .build();
+std::unique_ptr<protocol::ApplicationCache::ApplicationCache>
+InspectorApplicationCacheAgent::buildObjectForApplicationCache(
+    const ApplicationCacheHost::ResourceInfoList& applicationCacheResources,
+    const ApplicationCacheHost::CacheInfo& applicationCacheInfo) {
+  return protocol::ApplicationCache::ApplicationCache::create()
+      .setManifestURL(applicationCacheInfo.m_manifest.getString())
+      .setSize(applicationCacheInfo.m_size)
+      .setCreationTime(applicationCacheInfo.m_creationTime)
+      .setUpdateTime(applicationCacheInfo.m_updateTime)
+      .setResources(
+          buildArrayForApplicationCacheResources(applicationCacheResources))
+      .build();
 }
 
-std::unique_ptr<protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>> InspectorApplicationCacheAgent::buildArrayForApplicationCacheResources(const ApplicationCacheHost::ResourceInfoList& applicationCacheResources)
-{
-    std::unique_ptr<protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>> resources = protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>::create();
+std::unique_ptr<
+    protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
+InspectorApplicationCacheAgent::buildArrayForApplicationCacheResources(
+    const ApplicationCacheHost::ResourceInfoList& applicationCacheResources) {
+  std::unique_ptr<
+      protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
+      resources = protocol::Array<
+          protocol::ApplicationCache::ApplicationCacheResource>::create();
 
-    ApplicationCacheHost::ResourceInfoList::const_iterator end = applicationCacheResources.end();
-    ApplicationCacheHost::ResourceInfoList::const_iterator it = applicationCacheResources.begin();
-    for (int i = 0; it != end; ++it, i++)
-        resources->addItem(buildObjectForApplicationCacheResource(*it));
+  ApplicationCacheHost::ResourceInfoList::const_iterator end =
+      applicationCacheResources.end();
+  ApplicationCacheHost::ResourceInfoList::const_iterator it =
+      applicationCacheResources.begin();
+  for (int i = 0; it != end; ++it, i++)
+    resources->addItem(buildObjectForApplicationCacheResource(*it));
 
-    return resources;
+  return resources;
 }
 
-std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> InspectorApplicationCacheAgent::buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo& resourceInfo)
-{
-    StringBuilder builder;
-    if (resourceInfo.m_isMaster)
-        builder.append("Master ");
+std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource>
+InspectorApplicationCacheAgent::buildObjectForApplicationCacheResource(
+    const ApplicationCacheHost::ResourceInfo& resourceInfo) {
+  StringBuilder builder;
+  if (resourceInfo.m_isMaster)
+    builder.append("Master ");
 
-    if (resourceInfo.m_isManifest)
-        builder.append("Manifest ");
+  if (resourceInfo.m_isManifest)
+    builder.append("Manifest ");
 
-    if (resourceInfo.m_isFallback)
-        builder.append("Fallback ");
+  if (resourceInfo.m_isFallback)
+    builder.append("Fallback ");
 
-    if (resourceInfo.m_isForeign)
-        builder.append("Foreign ");
+  if (resourceInfo.m_isForeign)
+    builder.append("Foreign ");
 
-    if (resourceInfo.m_isExplicit)
-        builder.append("Explicit ");
+  if (resourceInfo.m_isExplicit)
+    builder.append("Explicit ");
 
-    std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> value = protocol::ApplicationCache::ApplicationCacheResource::create()
-        .setUrl(resourceInfo.m_resource.getString())
-        .setSize(static_cast<int>(resourceInfo.m_size))
-        .setType(builder.toString()).build();
-    return value;
+  std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> value =
+      protocol::ApplicationCache::ApplicationCacheResource::create()
+          .setUrl(resourceInfo.m_resource.getString())
+          .setSize(static_cast<int>(resourceInfo.m_size))
+          .setType(builder.toString())
+          .build();
+  return value;
 }
 
-DEFINE_TRACE(InspectorApplicationCacheAgent)
-{
-    visitor->trace(m_inspectedFrames);
-    InspectorBaseAgent::trace(visitor);
+DEFINE_TRACE(InspectorApplicationCacheAgent) {
+  visitor->trace(m_inspectedFrames);
+  InspectorBaseAgent::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

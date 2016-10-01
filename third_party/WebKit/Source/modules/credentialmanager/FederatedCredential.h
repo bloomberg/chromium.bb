@@ -18,22 +18,27 @@ class FederatedCredentialData;
 class WebFederatedCredential;
 
 class MODULES_EXPORT FederatedCredential final : public SiteBoundCredential {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static FederatedCredential* create(const FederatedCredentialData&, ExceptionState&);
-    static FederatedCredential* create(WebFederatedCredential*);
+  DEFINE_WRAPPERTYPEINFO();
 
-    // FederatedCredential.idl
-    const String provider() const;
+ public:
+  static FederatedCredential* create(const FederatedCredentialData&,
+                                     ExceptionState&);
+  static FederatedCredential* create(WebFederatedCredential*);
 
-    // TODO(mkwst): This is a stub, as we don't yet have any support on the Chromium-side.
-    const String& protocol() const { return emptyString(); }
+  // FederatedCredential.idl
+  const String provider() const;
 
-private:
-    FederatedCredential(WebFederatedCredential*);
-    FederatedCredential(const String& id, const KURL& provider, const String& name, const KURL& icon);
+  // TODO(mkwst): This is a stub, as we don't yet have any support on the Chromium-side.
+  const String& protocol() const { return emptyString(); }
+
+ private:
+  FederatedCredential(WebFederatedCredential*);
+  FederatedCredential(const String& id,
+                      const KURL& provider,
+                      const String& name,
+                      const KURL& icon);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FederatedCredential_h
+#endif  // FederatedCredential_h

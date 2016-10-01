@@ -9,23 +9,26 @@
 
 namespace blink {
 
-CSSTranslation* CSSTranslation::create(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z, ExceptionState& exceptionState)
-{
-    if (z->containsPercent()) {
-        exceptionState.throwTypeError("CSSTranslation does not support z CSSLengthValue with percent units");
-        return nullptr;
-    }
-    return new CSSTranslation(x, y, z);
+CSSTranslation* CSSTranslation::create(CSSLengthValue* x,
+                                       CSSLengthValue* y,
+                                       CSSLengthValue* z,
+                                       ExceptionState& exceptionState) {
+  if (z->containsPercent()) {
+    exceptionState.throwTypeError(
+        "CSSTranslation does not support z CSSLengthValue with percent units");
+    return nullptr;
+  }
+  return new CSSTranslation(x, y, z);
 }
 
-CSSFunctionValue* CSSTranslation::toCSSValue() const
-{
-    CSSFunctionValue* result = CSSFunctionValue::create(is2D() ? CSSValueTranslate : CSSValueTranslate3d);
-    result->append(*m_x->toCSSValue());
-    result->append(*m_y->toCSSValue());
-    if (!is2D())
-        result->append(*m_z->toCSSValue());
-    return result;
+CSSFunctionValue* CSSTranslation::toCSSValue() const {
+  CSSFunctionValue* result = CSSFunctionValue::create(
+      is2D() ? CSSValueTranslate : CSSValueTranslate3d);
+  result->append(*m_x->toCSSValue());
+  result->append(*m_y->toCSSValue());
+  if (!is2D())
+    result->append(*m_z->toCSSValue());
+  return result;
 }
 
-} // namespace blink
+}  // namespace blink

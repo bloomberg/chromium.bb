@@ -15,13 +15,15 @@ class ScriptPromiseResolver;
 enum class WebMediaSessionError;
 
 class MediaSessionError {
-    STATIC_ONLY(MediaSessionError);
-public:
-    // For CallbackPromiseAdapter
-    using WebType = const WebMediaSessionError&;
-    static DOMException* take(ScriptPromiseResolver*, const WebMediaSessionError& webError);
+  STATIC_ONLY(MediaSessionError);
+
+ public:
+  // For CallbackPromiseAdapter
+  using WebType = const WebMediaSessionError&;
+  static DOMException* take(ScriptPromiseResolver*,
+                            const WebMediaSessionError& webError);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaSessionError_h
+#endif  // MediaSessionError_h

@@ -42,84 +42,97 @@
 
 namespace blink {
 
-V0CustomElementDefinition* V0CustomElementRegistry::registerElement(Document* document, V0CustomElementConstructorBuilder* constructorBuilder, const AtomicString& userSuppliedName, V0CustomElement::NameSet validNames, ExceptionState& exceptionState)
-{
-    AtomicString type = userSuppliedName.lower();
+V0CustomElementDefinition* V0CustomElementRegistry::registerElement(
+    Document* document,
+    V0CustomElementConstructorBuilder* constructorBuilder,
+    const AtomicString& userSuppliedName,
+    V0CustomElement::NameSet validNames,
+    ExceptionState& exceptionState) {
+  AtomicString type = userSuppliedName.lower();
 
-    if (!constructorBuilder->isFeatureAllowed()) {
-        V0CustomElementException::throwException(V0CustomElementException::CannotRegisterFromExtension, type, exceptionState);
-        return 0;
-    }
+  if (!constructorBuilder->isFeatureAllowed()) {
+    V0CustomElementException::throwException(
+        V0CustomElementException::CannotRegisterFromExtension, type,
+        exceptionState);
+    return 0;
+  }
 
-    if (!V0CustomElement::isValidName(type, validNames)) {
-        V0CustomElementException::throwException(V0CustomElementException::InvalidName, type, exceptionState);
-        return 0;
-    }
+  if (!V0CustomElement::isValidName(type, validNames)) {
+    V0CustomElementException::throwException(
+        V0CustomElementException::InvalidName, type, exceptionState);
+    return 0;
+  }
 
-    if (m_registeredTypeNames.contains(type) || v1NameIsDefined(type)) {
-        V0CustomElementException::throwException(V0CustomElementException::TypeAlreadyRegistered, type, exceptionState);
-        return 0;
-    }
+  if (m_registeredTypeNames.contains(type) || v1NameIsDefined(type)) {
+    V0CustomElementException::throwException(
+        V0CustomElementException::TypeAlreadyRegistered, type, exceptionState);
+    return 0;
+  }
 
-    QualifiedName tagName = QualifiedName::null();
-    if (!constructorBuilder->validateOptions(type, tagName, exceptionState))
-        return 0;
+  QualifiedName tagName = QualifiedName::null();
+  if (!constructorBuilder->validateOptions(type, tagName, exceptionState))
+    return 0;
 
-    DCHECK(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
+  DCHECK(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI ||
+         tagName.namespaceURI() == SVGNames::svgNamespaceURI);
 
-    DCHECK(!m_documentWasDetached);
+  DCHECK(!m_documentWasDetached);
 
-    V0CustomElementLifecycleCallbacks* lifecycleCallbacks = constructorBuilder->createCallbacks();
+  V0CustomElementLifecycleCallbacks* lifecycleCallbacks =
+      constructorBuilder->createCallbacks();
 
-    // Consulting the constructor builder could execute script and
-    // kill the document.
-    if (m_documentWasDetached) {
-        V0CustomElementException::throwException(V0CustomElementException::ContextDestroyedCreatingCallbacks, type, exceptionState);
-        return 0;
-    }
+  // Consulting the constructor builder could execute script and
+  // kill the document.
+  if (m_documentWasDetached) {
+    V0CustomElementException::throwException(
+        V0CustomElementException::ContextDestroyedCreatingCallbacks, type,
+        exceptionState);
+    return 0;
+  }
 
-    const V0CustomElementDescriptor descriptor(type, tagName.namespaceURI(), tagName.localName());
-    V0CustomElementDefinition* definition = V0CustomElementDefinition::create(descriptor, lifecycleCallbacks);
+  const V0CustomElementDescriptor descriptor(type, tagName.namespaceURI(),
+                                             tagName.localName());
+  V0CustomElementDefinition* definition =
+      V0CustomElementDefinition::create(descriptor, lifecycleCallbacks);
 
-    if (!constructorBuilder->createConstructor(document, definition, exceptionState))
-        return 0;
+  if (!constructorBuilder->createConstructor(document, definition,
+                                             exceptionState))
+    return 0;
 
-    m_definitions.add(descriptor, definition);
-    m_registeredTypeNames.add(descriptor.type());
+  m_definitions.add(descriptor, definition);
+  m_registeredTypeNames.add(descriptor.type());
 
-    if (!constructorBuilder->didRegisterDefinition()) {
-        V0CustomElementException::throwException(V0CustomElementException::ContextDestroyedRegisteringDefinition, type, exceptionState);
-        return 0;
-    }
+  if (!constructorBuilder->didRegisterDefinition()) {
+    V0CustomElementException::throwException(
+        V0CustomElementException::ContextDestroyedRegisteringDefinition, type,
+        exceptionState);
+    return 0;
+  }
 
-    return definition;
+  return definition;
 }
 
-V0CustomElementDefinition* V0CustomElementRegistry::find(const V0CustomElementDescriptor& descriptor) const
-{
-    return m_definitions.get(descriptor);
+V0CustomElementDefinition* V0CustomElementRegistry::find(
+    const V0CustomElementDescriptor& descriptor) const {
+  return m_definitions.get(descriptor);
 }
 
-bool V0CustomElementRegistry::nameIsDefined(const AtomicString& name) const
-{
-    return m_registeredTypeNames.contains(name);
+bool V0CustomElementRegistry::nameIsDefined(const AtomicString& name) const {
+  return m_registeredTypeNames.contains(name);
 }
 
-void V0CustomElementRegistry::setV1(const CustomElementRegistry* v1)
-{
-    DCHECK(!m_v1.get());
-    m_v1 = v1;
+void V0CustomElementRegistry::setV1(const CustomElementRegistry* v1) {
+  DCHECK(!m_v1.get());
+  m_v1 = v1;
 }
 
-bool V0CustomElementRegistry::v1NameIsDefined(const AtomicString& name) const
-{
-    return m_v1.get() && m_v1->nameIsDefined(name);
+bool V0CustomElementRegistry::v1NameIsDefined(const AtomicString& name) const {
+  return m_v1.get() && m_v1->nameIsDefined(name);
 }
 
-DEFINE_TRACE(V0CustomElementRegistry)
-{
-    visitor->trace(m_definitions);
-    visitor->trace(m_v1);
+DEFINE_TRACE(V0CustomElementRegistry) {
+  visitor->trace(m_definitions);
+  visitor->trace(m_v1);
 }
 
-} // namespace blink
+}  // namespace blink

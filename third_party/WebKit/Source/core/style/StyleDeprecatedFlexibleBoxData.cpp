@@ -26,31 +26,30 @@
 namespace blink {
 
 StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData()
-    : flex(ComputedStyle::initialBoxFlex())
-    , flexGroup(ComputedStyle::initialBoxFlexGroup())
-    , ordinalGroup(ComputedStyle::initialBoxOrdinalGroup())
-    , align(ComputedStyle::initialBoxAlign())
-    , pack(ComputedStyle::initialBoxPack())
-    , orient(ComputedStyle::initialBoxOrient())
-    , lines(ComputedStyle::initialBoxLines())
-{
+    : flex(ComputedStyle::initialBoxFlex()),
+      flexGroup(ComputedStyle::initialBoxFlexGroup()),
+      ordinalGroup(ComputedStyle::initialBoxOrdinalGroup()),
+      align(ComputedStyle::initialBoxAlign()),
+      pack(ComputedStyle::initialBoxPack()),
+      orient(ComputedStyle::initialBoxOrient()),
+      lines(ComputedStyle::initialBoxLines()) {}
+
+StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData(
+    const StyleDeprecatedFlexibleBoxData& o)
+    : RefCounted<StyleDeprecatedFlexibleBoxData>(),
+      flex(o.flex),
+      flexGroup(o.flexGroup),
+      ordinalGroup(o.ordinalGroup),
+      align(o.align),
+      pack(o.pack),
+      orient(o.orient),
+      lines(o.lines) {}
+
+bool StyleDeprecatedFlexibleBoxData::operator==(
+    const StyleDeprecatedFlexibleBoxData& o) const {
+  return flex == o.flex && flexGroup == o.flexGroup &&
+         ordinalGroup == o.ordinalGroup && align == o.align && pack == o.pack &&
+         orient == o.orient && lines == o.lines;
 }
 
-StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData(const StyleDeprecatedFlexibleBoxData& o)
-    : RefCounted<StyleDeprecatedFlexibleBoxData>()
-    , flex(o.flex)
-    , flexGroup(o.flexGroup)
-    , ordinalGroup(o.ordinalGroup)
-    , align(o.align)
-    , pack(o.pack)
-    , orient(o.orient)
-    , lines(o.lines)
-{
-}
-
-bool StyleDeprecatedFlexibleBoxData::operator==(const StyleDeprecatedFlexibleBoxData& o) const
-{
-    return flex == o.flex && flexGroup == o.flexGroup && ordinalGroup == o.ordinalGroup && align == o.align && pack == o.pack && orient == o.orient && lines == o.lines;
-}
-
-} // namespace blink
+}  // namespace blink

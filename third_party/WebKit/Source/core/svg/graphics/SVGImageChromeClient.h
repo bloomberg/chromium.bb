@@ -40,41 +40,45 @@ namespace blink {
 class SVGImage;
 
 class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
-public:
-    static SVGImageChromeClient* create(SVGImage*);
+ public:
+  static SVGImageChromeClient* create(SVGImage*);
 
-    bool isSVGImageChromeClient() const override;
+  bool isSVGImageChromeClient() const override;
 
-    SVGImage* image() const { return m_image; }
+  SVGImage* image() const { return m_image; }
 
-    void suspendAnimation();
-    void resumeAnimation();
-    bool isSuspended() const { return m_timelineState >= Suspended; }
+  void suspendAnimation();
+  void resumeAnimation();
+  bool isSuspended() const { return m_timelineState >= Suspended; }
 
-private:
-    explicit SVGImageChromeClient(SVGImage*);
+ private:
+  explicit SVGImageChromeClient(SVGImage*);
 
-    void chromeDestroyed() override;
-    void invalidateRect(const IntRect&) override;
-    void scheduleAnimation(Widget*) override;
+  void chromeDestroyed() override;
+  void invalidateRect(const IntRect&) override;
+  void scheduleAnimation(Widget*) override;
 
-    void setTimer(std::unique_ptr<TimerBase>);
-    void animationTimerFired(TimerBase*);
+  void setTimer(std::unique_ptr<TimerBase>);
+  void animationTimerFired(TimerBase*);
 
-    SVGImage* m_image;
-    std::unique_ptr<TimerBase> m_animationTimer;
-    enum {
-        Running,
-        Suspended,
-        SuspendedWithAnimationPending,
-    } m_timelineState;
+  SVGImage* m_image;
+  std::unique_ptr<TimerBase> m_animationTimer;
+  enum {
+    Running,
+    Suspended,
+    SuspendedWithAnimationPending,
+  } m_timelineState;
 
-    FRIEND_TEST_ALL_PREFIXES(SVGImageTest, TimelineSuspendAndResume);
-    FRIEND_TEST_ALL_PREFIXES(SVGImageTest, ResetAnimation);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, TimelineSuspendAndResume);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, ResetAnimation);
 };
 
-DEFINE_TYPE_CASTS(SVGImageChromeClient, ChromeClient, client, client->isSVGImageChromeClient(), client.isSVGImageChromeClient());
+DEFINE_TYPE_CASTS(SVGImageChromeClient,
+                  ChromeClient,
+                  client,
+                  client->isSVGImageChromeClient(),
+                  client.isSVGImageChromeClient());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGImageChromeClient_h
+#endif  // SVGImageChromeClient_h

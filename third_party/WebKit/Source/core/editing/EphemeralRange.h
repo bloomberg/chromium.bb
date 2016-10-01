@@ -15,37 +15,42 @@ class Range;
 // We should restrict access to the unwanted version of |TraversalRange::end()| function.
 template <class Iterator>
 class TraversalRangeNodes : private TraversalRange<Iterator> {
-    STACK_ALLOCATED();
-public:
-    using StartNodeType = typename TraversalRange<Iterator>::StartNodeType;
-    TraversalRangeNodes(const StartNodeType* start, const StartNodeType* pastEndNode)
-        : TraversalRange<Iterator>(start), m_pastEndNode(pastEndNode) { }
+  STACK_ALLOCATED();
 
-    using TraversalRange<Iterator>::begin;
+ public:
+  using StartNodeType = typename TraversalRange<Iterator>::StartNodeType;
+  TraversalRangeNodes(const StartNodeType* start,
+                      const StartNodeType* pastEndNode)
+      : TraversalRange<Iterator>(start), m_pastEndNode(pastEndNode) {}
 
-    Iterator end() { return Iterator(m_pastEndNode); }
+  using TraversalRange<Iterator>::begin;
 
-private:
-    const Member<const StartNodeType> m_pastEndNode;
+  Iterator end() { return Iterator(m_pastEndNode); }
+
+ private:
+  const Member<const StartNodeType> m_pastEndNode;
 };
 
 // This class acts like |TraversalNextIterator| but in addition
 // it allows to set current position and checks |m_current| pointer before
 // dereferencing.
 template <class TraversalNext>
-class CheckedTraversalNextIterator : public TraversalIteratorBase<TraversalNext> {
-    STACK_ALLOCATED();
+class CheckedTraversalNextIterator
+    : public TraversalIteratorBase<TraversalNext> {
+  STACK_ALLOCATED();
 
-    using TraversalIteratorBase<TraversalNext>::m_current;
-public:
-    using StartNodeType = typename TraversalNext::TraversalNodeType;
-    explicit CheckedTraversalNextIterator(const StartNodeType* start) : TraversalIteratorBase<TraversalNext>(const_cast<StartNodeType*>(start)) { }
+  using TraversalIteratorBase<TraversalNext>::m_current;
 
-    void operator++()
-    {
-        DCHECK(m_current);
-        m_current = TraversalNext::next(*m_current);
-    }
+ public:
+  using StartNodeType = typename TraversalNext::TraversalNodeType;
+  explicit CheckedTraversalNextIterator(const StartNodeType* start)
+      : TraversalIteratorBase<TraversalNext>(
+            const_cast<StartNodeType*>(start)) {}
+
+  void operator++() {
+    DCHECK(m_current);
+    m_current = TraversalNext::next(*m_current);
+  }
 };
 
 // Unlike |Range| objects, |EphemeralRangeTemplate| objects aren't relocated.
@@ -72,69 +77,76 @@ public:
 //
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
-    STACK_ALLOCATED();
-public:
-    using RangeTraversal = TraversalRangeNodes<CheckedTraversalNextIterator<Strategy>>;
+  STACK_ALLOCATED();
 
-    EphemeralRangeTemplate(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end);
-    EphemeralRangeTemplate(const EphemeralRangeTemplate& other);
-    // |position| should be |Position::isNull()| or in-document.
-    explicit EphemeralRangeTemplate(const PositionTemplate<Strategy>& /* position */);
-    // When |range| is nullptr, |EphemeralRangeTemplate| is |isNull()|.
-    explicit EphemeralRangeTemplate(const Range* /* range */);
-    EphemeralRangeTemplate();
-    ~EphemeralRangeTemplate();
+ public:
+  using RangeTraversal =
+      TraversalRangeNodes<CheckedTraversalNextIterator<Strategy>>;
 
-    EphemeralRangeTemplate<Strategy>& operator=(const EphemeralRangeTemplate<Strategy>& other);
+  EphemeralRangeTemplate(const PositionTemplate<Strategy>& start,
+                         const PositionTemplate<Strategy>& end);
+  EphemeralRangeTemplate(const EphemeralRangeTemplate& other);
+  // |position| should be |Position::isNull()| or in-document.
+  explicit EphemeralRangeTemplate(
+      const PositionTemplate<Strategy>& /* position */);
+  // When |range| is nullptr, |EphemeralRangeTemplate| is |isNull()|.
+  explicit EphemeralRangeTemplate(const Range* /* range */);
+  EphemeralRangeTemplate();
+  ~EphemeralRangeTemplate();
 
-    bool operator==(const EphemeralRangeTemplate<Strategy>& other) const;
-    bool operator!=(const EphemeralRangeTemplate<Strategy>& other) const;
+  EphemeralRangeTemplate<Strategy>& operator=(
+      const EphemeralRangeTemplate<Strategy>& other);
 
-    Document& document() const;
-    PositionTemplate<Strategy> startPosition() const;
-    PositionTemplate<Strategy> endPosition() const;
+  bool operator==(const EphemeralRangeTemplate<Strategy>& other) const;
+  bool operator!=(const EphemeralRangeTemplate<Strategy>& other) const;
 
-    // Returns true if |m_startPositoin| == |m_endPosition| or |isNull()|.
-    bool isCollapsed() const;
-    bool isNull() const
-    {
-        DCHECK(isValid());
-        return m_startPosition.isNull();
-    }
-    bool isNotNull() const { return !isNull(); }
+  Document& document() const;
+  PositionTemplate<Strategy> startPosition() const;
+  PositionTemplate<Strategy> endPosition() const;
 
-    RangeTraversal nodes() const;
+  // Returns true if |m_startPositoin| == |m_endPosition| or |isNull()|.
+  bool isCollapsed() const;
+  bool isNull() const {
+    DCHECK(isValid());
+    return m_startPosition.isNull();
+  }
+  bool isNotNull() const { return !isNull(); }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_startPosition);
-        visitor->trace(m_endPosition);
-    }
+  RangeTraversal nodes() const;
 
-    // |node| should be in-document and valid for anchor node of
-    // |PositionTemplate<Strategy>|.
-    static EphemeralRangeTemplate<Strategy> rangeOfContents(const Node& /* node */);
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_startPosition);
+    visitor->trace(m_endPosition);
+  }
 
-private:
-    bool isValid() const;
+  // |node| should be in-document and valid for anchor node of
+  // |PositionTemplate<Strategy>|.
+  static EphemeralRangeTemplate<Strategy> rangeOfContents(
+      const Node& /* node */);
 
-    PositionTemplate<Strategy> m_startPosition;
-    PositionTemplate<Strategy> m_endPosition;
+ private:
+  bool isValid() const;
+
+  PositionTemplate<Strategy> m_startPosition;
+  PositionTemplate<Strategy> m_endPosition;
 #if DCHECK_IS_ON()
-    uint64_t m_domTreeVersion;
+  uint64_t m_domTreeVersion;
 #endif
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    EphemeralRangeTemplate<EditingStrategy>;
 using EphemeralRange = EphemeralRangeTemplate<EditingStrategy>;
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
-using EphemeralRangeInFlatTree = EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
+using EphemeralRangeInFlatTree =
+    EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
 
 // Returns a newly created |Range| object from |range| or |nullptr| if
 // |range.isNull()| returns true.
 CORE_EXPORT Range* createRange(const EphemeralRange& /* range */);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

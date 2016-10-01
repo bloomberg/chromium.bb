@@ -28,20 +28,21 @@
 namespace blink {
 
 class Comment final : public CharacterData {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Comment* create(Document&, const String&);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    Comment(Document&, const String&);
+ public:
+  static Comment* create(Document&, const String&);
 
-    String nodeName() const override;
-    NodeType getNodeType() const override;
-    Node* cloneNode(bool deep) override;
+ private:
+  Comment(Document&, const String&);
+
+  String nodeName() const override;
+  NodeType getNodeType() const override;
+  Node* cloneNode(bool deep) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::kCommentNode);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Comment_h
+#endif  // Comment_h

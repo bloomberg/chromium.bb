@@ -27,35 +27,51 @@ namespace blink {
 class SVGElement;
 
 class LayoutSVGBlock : public LayoutBlockFlow {
-public:
-    explicit LayoutSVGBlock(SVGElement*);
+ public:
+  explicit LayoutSVGBlock(SVGElement*);
 
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
-    void mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
-    const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const final;
+  void mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                          TransformState&,
+                          MapCoordinatesFlags = ApplyContainerFlip) const final;
+  void mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
+                          TransformState&,
+                          MapCoordinatesFlags = ApplyContainerFlip) const final;
+  const LayoutObject* pushMappingToContainer(
+      const LayoutBoxModelObject* ancestorToStopAt,
+      LayoutGeometryMap&) const final;
 
-    AffineTransform localSVGTransform() const final { return m_localTransform; }
+  AffineTransform localSVGTransform() const final { return m_localTransform; }
 
-    PaintLayerType layerTypeRequired() const final { return NoPaintLayer; }
+  PaintLayerType layerTypeRequired() const final { return NoPaintLayer; }
 
-protected:
-    void willBeDestroyed() override;
-    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const final;
+ protected:
+  void willBeDestroyed() override;
+  bool mapToVisualRectInAncestorSpace(
+      const LayoutBoxModelObject* ancestor,
+      LayoutRect&,
+      VisualRectFlags = DefaultVisualRectFlags) const final;
 
-    AffineTransform m_localTransform;
+  AffineTransform m_localTransform;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || LayoutBlockFlow::isOfType(type); }
-private:
-    LayoutRect absoluteClippedOverflowRect() const final;
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVG || LayoutBlockFlow::isOfType(type);
+  }
 
-    bool allowsOverflowClip() const final;
+ private:
+  LayoutRect absoluteClippedOverflowRect() const final;
 
-    void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
+  bool allowsOverflowClip() const final;
 
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
+  void absoluteRects(Vector<IntRect>&,
+                     const LayoutPoint& accumulatedOffset) const final;
 
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
+
+  bool nodeAtPoint(HitTestResult&,
+                   const HitTestLocation& locationInContainer,
+                   const LayoutPoint& accumulatedOffset,
+                   HitTestAction) override;
 };
 
-} // namespace blink
-#endif // LayoutSVGBlock_h
+}  // namespace blink
+#endif  // LayoutSVGBlock_h

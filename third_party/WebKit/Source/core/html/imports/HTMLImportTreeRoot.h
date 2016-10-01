@@ -14,40 +14,44 @@ class HTMLImportChild;
 class KURL;
 
 class HTMLImportTreeRoot : public HTMLImport {
-public:
-    static HTMLImportTreeRoot* create(Document*);
+ public:
+  static HTMLImportTreeRoot* create(Document*);
 
-    ~HTMLImportTreeRoot() override;
-    void dispose();
+  ~HTMLImportTreeRoot() override;
+  void dispose();
 
-    // HTMLImport
-    Document* document() const override;
-    bool hasFinishedLoading() const override;
-    void stateWillChange() override;
-    void stateDidChange() override;
+  // HTMLImport
+  Document* document() const override;
+  bool hasFinishedLoading() const override;
+  void stateWillChange() override;
+  void stateDidChange() override;
 
-    void scheduleRecalcState();
+  void scheduleRecalcState();
 
-    HTMLImportChild* add(HTMLImportChild*);
-    HTMLImportChild* find(const KURL&) const;
+  HTMLImportChild* add(HTMLImportChild*);
+  HTMLImportChild* find(const KURL&) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit HTMLImportTreeRoot(Document*);
+ private:
+  explicit HTMLImportTreeRoot(Document*);
 
-    void recalcTimerFired(TimerBase*);
+  void recalcTimerFired(TimerBase*);
 
-    Member<Document> m_document;
-    Timer<HTMLImportTreeRoot> m_recalcTimer;
+  Member<Document> m_document;
+  Timer<HTMLImportTreeRoot> m_recalcTimer;
 
-    // List of import which has been loaded or being loaded.
-    typedef HeapVector<Member<HTMLImportChild>> ImportList;
-    ImportList m_imports;
+  // List of import which has been loaded or being loaded.
+  typedef HeapVector<Member<HTMLImportChild>> ImportList;
+  ImportList m_imports;
 };
 
-DEFINE_TYPE_CASTS(HTMLImportTreeRoot, HTMLImport, import, import->isRoot(), import.isRoot());
+DEFINE_TYPE_CASTS(HTMLImportTreeRoot,
+                  HTMLImport,
+                  import,
+                  import->isRoot(),
+                  import.isRoot());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

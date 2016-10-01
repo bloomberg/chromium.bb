@@ -28,8 +28,13 @@
 
 namespace blink {
 
-enum FontSmoothingMode { AutoSmoothing, NoSmoothing, Antialiased, SubpixelAntialiased };
+enum FontSmoothingMode {
+  AutoSmoothing,
+  NoSmoothing,
+  Antialiased,
+  SubpixelAntialiased
+};
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FontSmoothingMode_h
+#endif  // FontSmoothingMode_h

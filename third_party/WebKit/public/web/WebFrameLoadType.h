@@ -5,7 +5,6 @@
 #ifndef WebFrameLoadType_h
 #define WebFrameLoadType_h
 
-
 namespace blink {
 
 // The type of load for a navigation.
@@ -37,17 +36,16 @@ namespace blink {
 //   proxy servers, to fetch fresh contents directly from the end server.
 //   Used in Shift-Reload.
 enum class WebFrameLoadType {
-    Standard,
-    BackForward,
-    Reload,
-    ReloadMainResource,
-    ReplaceCurrentItem,
-    InitialInChildFrame,
-    InitialHistoryLoad,
-    ReloadBypassingCache,
+  Standard,
+  BackForward,
+  Reload,
+  ReloadMainResource,
+  ReplaceCurrentItem,
+  InitialInChildFrame,
+  InitialHistoryLoad,
+  ReloadBypassingCache,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFrameLoadType_h
-
+#endif  // WebFrameLoadType_h

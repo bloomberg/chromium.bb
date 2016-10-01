@@ -42,55 +42,50 @@
 
 namespace blink {
 
-bool WebFormElement::autoComplete() const
-{
-    return constUnwrap<HTMLFormElement>()->shouldAutocomplete();
+bool WebFormElement::autoComplete() const {
+  return constUnwrap<HTMLFormElement>()->shouldAutocomplete();
 }
 
-WebString WebFormElement::action() const
-{
-    return constUnwrap<HTMLFormElement>()->action();
+WebString WebFormElement::action() const {
+  return constUnwrap<HTMLFormElement>()->action();
 }
 
-WebString WebFormElement::name() const
-{
-    return constUnwrap<HTMLFormElement>()->name();
+WebString WebFormElement::name() const {
+  return constUnwrap<HTMLFormElement>()->name();
 }
 
-WebString WebFormElement::method() const
-{
-    return constUnwrap<HTMLFormElement>()->method();
+WebString WebFormElement::method() const {
+  return constUnwrap<HTMLFormElement>()->method();
 }
 
-void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& result) const
-{
-    const HTMLFormElement* form = constUnwrap<HTMLFormElement>();
-    Vector<WebFormControlElement> formControlElements;
+void WebFormElement::getFormControlElements(
+    WebVector<WebFormControlElement>& result) const {
+  const HTMLFormElement* form = constUnwrap<HTMLFormElement>();
+  Vector<WebFormControlElement> formControlElements;
 
-    const FormAssociatedElement::List& associatedElements = form->associatedElements();
-    for (FormAssociatedElement::List::const_iterator it = associatedElements.begin(); it != associatedElements.end(); ++it) {
-        if ((*it)->isFormControlElement())
-            formControlElements.append(toHTMLFormControlElement(*it));
-    }
-    result.assign(formControlElements);
+  const FormAssociatedElement::List& associatedElements =
+      form->associatedElements();
+  for (FormAssociatedElement::List::const_iterator it =
+           associatedElements.begin();
+       it != associatedElements.end(); ++it) {
+    if ((*it)->isFormControlElement())
+      formControlElements.append(toHTMLFormControlElement(*it));
+  }
+  result.assign(formControlElements);
 }
 
-WebFormElement::WebFormElement(HTMLFormElement* e)
-    : WebElement(e)
-{
+WebFormElement::WebFormElement(HTMLFormElement* e) : WebElement(e) {}
+
+DEFINE_WEB_NODE_TYPE_CASTS(WebFormElement,
+                           isHTMLFormElement(constUnwrap<Node>()));
+
+WebFormElement& WebFormElement::operator=(HTMLFormElement* e) {
+  m_private = e;
+  return *this;
 }
 
-DEFINE_WEB_NODE_TYPE_CASTS(WebFormElement, isHTMLFormElement(constUnwrap<Node>()));
-
-WebFormElement& WebFormElement::operator=(HTMLFormElement* e)
-{
-    m_private = e;
-    return *this;
+WebFormElement::operator HTMLFormElement*() const {
+  return toHTMLFormElement(m_private.get());
 }
 
-WebFormElement::operator HTMLFormElement*() const
-{
-    return toHTMLFormElement(m_private.get());
-}
-
-} // namespace blink
+}  // namespace blink

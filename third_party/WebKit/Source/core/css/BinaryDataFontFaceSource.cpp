@@ -11,26 +11,25 @@
 
 namespace blink {
 
-BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data, String& otsParseMessage)
-    : m_customPlatformData(FontCustomPlatformData::create(data, otsParseMessage))
-{
+BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data,
+                                                   String& otsParseMessage)
+    : m_customPlatformData(
+          FontCustomPlatformData::create(data, otsParseMessage)) {}
+
+BinaryDataFontFaceSource::~BinaryDataFontFaceSource() {}
+
+bool BinaryDataFontFaceSource::isValid() const {
+  return m_customPlatformData.get();
 }
 
-BinaryDataFontFaceSource::~BinaryDataFontFaceSource()
-{
+PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::createFontData(
+    const FontDescription& fontDescription) {
+  return SimpleFontData::create(
+      m_customPlatformData->fontPlatformData(
+          fontDescription.effectiveFontSize(),
+          fontDescription.isSyntheticBold(),
+          fontDescription.isSyntheticItalic(), fontDescription.orientation()),
+      CustomFontData::create());
 }
 
-bool BinaryDataFontFaceSource::isValid() const
-{
-    return m_customPlatformData.get();
-}
-
-PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::createFontData(const FontDescription& fontDescription)
-{
-    return SimpleFontData::create(
-        m_customPlatformData->fontPlatformData(fontDescription.effectiveFontSize(),
-            fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic(),
-            fontDescription.orientation()), CustomFontData::create());
-}
-
-} // namespace blink
+}  // namespace blink

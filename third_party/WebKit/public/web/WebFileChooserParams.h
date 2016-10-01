@@ -39,58 +39,56 @@
 namespace blink {
 
 struct WebFileChooserParams {
-    // If |multiSelect| is true, the dialog allows the user to select multiple files.
-    bool multiSelect;
-    // If |directory| is true, the dialog allows the user to select a directory.
-    bool directory;
-    // If |saveAs| is true, the dialog allows the user to select a possibly
-    // non-existent file. This can be used for a "Save As" dialog.
-    bool saveAs;
-    // |title| is the title for a file chooser dialog. It can be an empty string.
-    WebString title;
-    // |initialValue| is a filename which the dialog should select by default.
-    // It can be an empty string.
-    WebString initialValue;
-    // This contains MIME type strings such as "audio/*" "text/plain" or file
-    // extensions beginning with a period (.) such as ".mp3" ".txt".
-    // The dialog may restrict selectable files to files with the specified MIME
-    // types or file extensions.
-    // This list comes from an 'accept' attribute value of an INPUT element, and
-    // it contains only lower-cased MIME type strings and file extensions.
-    WebVector<WebString> acceptTypes;
-    // |selectedFiles| has filenames which a file upload control already selected.
-    // A WebViewClient implementation may ask a user to select
-    //  - removing a file from the selected files,
-    //  - appending other files, or
-    //  - replacing with other files
-    // before opening a file chooser dialog.
-    WebVector<WebString> selectedFiles;
-    // See http://www.w3.org/TR/html-media-capture/ for the semantics of the
-    // capture attribute. If |useMediaCapture| is true, the media types
-    // indicated in |acceptTypes| should be obtained from the device's
-    // environment using a media capture mechanism. |capture| is deprecated and
-    // provided for compatibility reasons.
-    WebString capture;
-    bool useMediaCapture;
-    // Whether WebFileChooserCompletion needs local paths or not. If the result
-    // of file chooser is handled by the implementation of
-    // WebFileChooserCompletion that can handle files without local paths,
-    // 'false' should be specified to the flag.
-    bool needLocalPath;
-    // If non-empty, represents the URL of the requestor if the request was
-    // initiated by a document.
-    WebURL requestor;
+  // If |multiSelect| is true, the dialog allows the user to select multiple files.
+  bool multiSelect;
+  // If |directory| is true, the dialog allows the user to select a directory.
+  bool directory;
+  // If |saveAs| is true, the dialog allows the user to select a possibly
+  // non-existent file. This can be used for a "Save As" dialog.
+  bool saveAs;
+  // |title| is the title for a file chooser dialog. It can be an empty string.
+  WebString title;
+  // |initialValue| is a filename which the dialog should select by default.
+  // It can be an empty string.
+  WebString initialValue;
+  // This contains MIME type strings such as "audio/*" "text/plain" or file
+  // extensions beginning with a period (.) such as ".mp3" ".txt".
+  // The dialog may restrict selectable files to files with the specified MIME
+  // types or file extensions.
+  // This list comes from an 'accept' attribute value of an INPUT element, and
+  // it contains only lower-cased MIME type strings and file extensions.
+  WebVector<WebString> acceptTypes;
+  // |selectedFiles| has filenames which a file upload control already selected.
+  // A WebViewClient implementation may ask a user to select
+  //  - removing a file from the selected files,
+  //  - appending other files, or
+  //  - replacing with other files
+  // before opening a file chooser dialog.
+  WebVector<WebString> selectedFiles;
+  // See http://www.w3.org/TR/html-media-capture/ for the semantics of the
+  // capture attribute. If |useMediaCapture| is true, the media types
+  // indicated in |acceptTypes| should be obtained from the device's
+  // environment using a media capture mechanism. |capture| is deprecated and
+  // provided for compatibility reasons.
+  WebString capture;
+  bool useMediaCapture;
+  // Whether WebFileChooserCompletion needs local paths or not. If the result
+  // of file chooser is handled by the implementation of
+  // WebFileChooserCompletion that can handle files without local paths,
+  // 'false' should be specified to the flag.
+  bool needLocalPath;
+  // If non-empty, represents the URL of the requestor if the request was
+  // initiated by a document.
+  WebURL requestor;
 
-    WebFileChooserParams()
-        : multiSelect(false)
-        , directory(false)
-        , saveAs(false)
-        , useMediaCapture(false)
-        , needLocalPath(true)
-    {
-    }
+  WebFileChooserParams()
+      : multiSelect(false),
+        directory(false),
+        saveAs(false),
+        useMediaCapture(false),
+        needLocalPath(true) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

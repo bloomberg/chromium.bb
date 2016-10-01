@@ -35,30 +35,41 @@ namespace blink {
 class KURL;
 
 class MediaFragmentURIParser final {
-    STACK_ALLOCATED();
-public:
+  STACK_ALLOCATED();
 
-    MediaFragmentURIParser(const KURL&);
+ public:
+  MediaFragmentURIParser(const KURL&);
 
-    double startTime();
-    double endTime();
+  double startTime();
+  double endTime();
 
-private:
+ private:
+  void parseFragments();
 
-    void parseFragments();
+  enum TimeFormat {
+    None,
+    Invalid,
+    NormalPlayTime,
+    SMPTETimeCode,
+    WallClockTimeCode
+  };
+  void parseTimeFragment();
+  bool parseNPTFragment(const LChar*,
+                        unsigned length,
+                        double& startTime,
+                        double& endTime);
+  bool parseNPTTime(const LChar*,
+                    unsigned length,
+                    unsigned& offset,
+                    double& time);
 
-    enum TimeFormat { None, Invalid, NormalPlayTime, SMPTETimeCode, WallClockTimeCode };
-    void parseTimeFragment();
-    bool parseNPTFragment(const LChar*, unsigned length, double& startTime, double& endTime);
-    bool parseNPTTime(const LChar*, unsigned length, unsigned& offset, double& time);
-
-    KURL m_url;
-    TimeFormat m_timeFormat;
-    double m_startTime;
-    double m_endTime;
-    Vector<std::pair<String, String>> m_fragments;
+  KURL m_url;
+  TimeFormat m_timeFormat;
+  double m_startTime;
+  double m_endTime;
+  Vector<std::pair<String, String>> m_fragments;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

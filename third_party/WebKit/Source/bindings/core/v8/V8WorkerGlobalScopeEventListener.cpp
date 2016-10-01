@@ -43,60 +43,74 @@
 
 namespace blink {
 
-V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(bool isInline, ScriptState* scriptState)
-    : V8EventListener(isInline, scriptState)
-{
+V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(
+    bool isInline,
+    ScriptState* scriptState)
+    : V8EventListener(isInline, scriptState) {}
+
+void V8WorkerGlobalScopeEventListener::handleEvent(ScriptState* scriptState,
+                                                   Event* event) {
+  WorkerOrWorkletScriptController* script =
+      toWorkerGlobalScope(scriptState->getExecutionContext())
+          ->scriptController();
+  if (!script)
+    return;
+
+  ScriptState::Scope scope(scriptState);
+
+  // Get the V8 wrapper for the event object.
+  v8::Local<v8::Value> jsEvent =
+      toV8(event, scriptState->context()->Global(), isolate());
+  if (jsEvent.IsEmpty())
+    return;
+
+  invokeEventHandler(scriptState, event,
+                     v8::Local<v8::Value>::New(isolate(), jsEvent));
 }
 
-void V8WorkerGlobalScopeEventListener::handleEvent(ScriptState* scriptState, Event* event)
-{
-    WorkerOrWorkletScriptController* script = toWorkerGlobalScope(scriptState->getExecutionContext())->scriptController();
-    if (!script)
-        return;
+v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(
+    ScriptState* scriptState,
+    v8::Local<v8::Value> jsEvent,
+    Event* event) {
+  ASSERT(!jsEvent.IsEmpty());
+  v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
+  v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
+  if (handlerFunction.IsEmpty() || receiver.IsEmpty())
+    return v8::Local<v8::Value>();
 
-    ScriptState::Scope scope(scriptState);
+  v8::Local<v8::Value> parameters[1] = {jsEvent};
+  v8::MaybeLocal<v8::Value> maybeResult = V8ScriptRunner::callFunction(
+      handlerFunction, scriptState->getExecutionContext(), receiver,
+      WTF_ARRAY_LENGTH(parameters), parameters, isolate());
 
-    // Get the V8 wrapper for the event object.
-    v8::Local<v8::Value> jsEvent = toV8(event, scriptState->context()->Global(), isolate());
-    if (jsEvent.IsEmpty())
-        return;
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
+                       InspectorUpdateCountersEvent::data());
 
-    invokeEventHandler(scriptState, event, v8::Local<v8::Value>::New(isolate(), jsEvent));
-}
-
-v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
-{
-    ASSERT(!jsEvent.IsEmpty());
-    v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
-    v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
-    if (handlerFunction.IsEmpty() || receiver.IsEmpty())
-        return v8::Local<v8::Value>();
-
-    v8::Local<v8::Value> parameters[1] = { jsEvent };
-    v8::MaybeLocal<v8::Value> maybeResult = V8ScriptRunner::callFunction(handlerFunction, scriptState->getExecutionContext(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
-
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
-
-    v8::Local<v8::Value> result;
-    if (!maybeResult.ToLocal(&result))
-        return v8::Local<v8::Value>();
-    return result;
+  v8::Local<v8::Value> result;
+  if (!maybeResult.ToLocal(&result))
+    return v8::Local<v8::Value>();
+  return result;
 }
 
 // FIXME: Remove getReceiverObject().
 // This is almost identical to V8AbstractEventListener::getReceiverObject().
-v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(ScriptState* scriptState, Event* event)
-{
-    v8::Local<v8::Object> listener = getListenerObject(scriptState->getExecutionContext());
+v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(
+    ScriptState* scriptState,
+    Event* event) {
+  v8::Local<v8::Object> listener =
+      getListenerObject(scriptState->getExecutionContext());
 
-    if (!listener.IsEmpty() && !listener->IsFunction())
-        return listener;
+  if (!listener.IsEmpty() && !listener->IsFunction())
+    return listener;
 
-    EventTarget* target = event->currentTarget();
-    v8::Local<v8::Value> value = toV8(target, scriptState->context()->Global(), isolate());
-    if (value.IsEmpty())
-        return v8::Local<v8::Object>();
-    return v8::Local<v8::Object>::New(isolate(), v8::Local<v8::Object>::Cast(value));
+  EventTarget* target = event->currentTarget();
+  v8::Local<v8::Value> value =
+      toV8(target, scriptState->context()->Global(), isolate());
+  if (value.IsEmpty())
+    return v8::Local<v8::Object>();
+  return v8::Local<v8::Object>::New(isolate(),
+                                    v8::Local<v8::Object>::Cast(value));
 }
 
-} // namespace blink
+}  // namespace blink

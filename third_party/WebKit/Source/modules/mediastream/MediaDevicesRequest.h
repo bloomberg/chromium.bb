@@ -40,30 +40,33 @@ class UserMediaController;
 class ScriptState;
 class ScriptPromiseResolver;
 
-class MODULES_EXPORT MediaDevicesRequest final : public GarbageCollectedFinalized<MediaDevicesRequest>, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(MediaDevicesRequest);
-public:
-    static MediaDevicesRequest* create(ScriptState*, UserMediaController*);
-    ~MediaDevicesRequest() override;
+class MODULES_EXPORT MediaDevicesRequest final
+    : public GarbageCollectedFinalized<MediaDevicesRequest>,
+      public ActiveDOMObject {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaDevicesRequest);
 
-    Document* ownerDocument();
+ public:
+  static MediaDevicesRequest* create(ScriptState*, UserMediaController*);
+  ~MediaDevicesRequest() override;
 
-    ScriptPromise start();
+  Document* ownerDocument();
 
-    void succeed(const MediaDeviceInfoVector&);
+  ScriptPromise start();
 
-    // ActiveDOMObject
-    void stop() override;
+  void succeed(const MediaDeviceInfoVector&);
 
-    DECLARE_VIRTUAL_TRACE();
+  // ActiveDOMObject
+  void stop() override;
 
-private:
-    MediaDevicesRequest(ScriptState*, UserMediaController*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<UserMediaController> m_controller;
-    Member<ScriptPromiseResolver> m_resolver;
+ private:
+  MediaDevicesRequest(ScriptState*, UserMediaController*);
+
+  Member<UserMediaController> m_controller;
+  Member<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaDevicesRequest_h
+#endif  // MediaDevicesRequest_h

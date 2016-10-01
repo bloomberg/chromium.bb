@@ -37,7 +37,6 @@ WTF_EXPORT void setAlwaysZeroRandomSourceForTesting();
 // These functions are threadsafe.
 WTF_EXPORT uint32_t cryptographicallyRandomNumber();
 WTF_EXPORT void cryptographicallyRandomValues(void* buffer, size_t length);
-
 }
 
 using WTF::cryptographicallyRandomNumber;

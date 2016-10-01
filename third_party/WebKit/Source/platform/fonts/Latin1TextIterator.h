@@ -28,46 +28,41 @@
 namespace blink {
 
 class Latin1TextIterator {
-    STACK_ALLOCATED();
-public:
-    // The passed in LChar pointer starts at 'offset'.
-    // The iterator operates on the range [offset, endOffset].
-    // 'endCharacter' denotes the maximum length of the UChar array,
-    // which might exceed 'endOffset'.
-    Latin1TextIterator(const LChar* characters, int offset, int endOffset)
-        : m_characters(characters)
-        , m_offset(offset)
-        , m_endOffset(endOffset)
-    {
-    }
+  STACK_ALLOCATED();
 
-    bool consume(UChar32& character)
-    {
-        if (m_offset >= m_endOffset)
-            return false;
+ public:
+  // The passed in LChar pointer starts at 'offset'.
+  // The iterator operates on the range [offset, endOffset].
+  // 'endCharacter' denotes the maximum length of the UChar array,
+  // which might exceed 'endOffset'.
+  Latin1TextIterator(const LChar* characters, int offset, int endOffset)
+      : m_characters(characters), m_offset(offset), m_endOffset(endOffset) {}
 
-        character = *m_characters;
-        return true;
-    }
+  bool consume(UChar32& character) {
+    if (m_offset >= m_endOffset)
+      return false;
 
-    void advance()
-    {
-        m_characters++;
-        m_offset++;
-    }
+    character = *m_characters;
+    return true;
+  }
 
-    int offset() const { return m_offset; }
-    const LChar* characters() const { return m_characters; }
-    // FIXME: Only used by SimpleShaper, should be removed once the SimpleShaper
-    // is removed.
-    unsigned glyphLength() const { return 1; }
+  void advance() {
+    m_characters++;
+    m_offset++;
+  }
 
-private:
-    const LChar* m_characters;
-    int m_offset;
-    int m_endOffset;
+  int offset() const { return m_offset; }
+  const LChar* characters() const { return m_characters; }
+  // FIXME: Only used by SimpleShaper, should be removed once the SimpleShaper
+  // is removed.
+  unsigned glyphLength() const { return 1; }
+
+ private:
+  const LChar* m_characters;
+  int m_offset;
+  int m_endOffset;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

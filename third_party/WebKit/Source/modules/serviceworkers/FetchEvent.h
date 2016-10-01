@@ -25,31 +25,42 @@ class RespondWithObserver;
 // context. RespondWithObserver can be used to notify the client about the
 // service worker's response.
 class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&);
-    static FetchEvent* create(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*, WaitUntilObserver*);
+  DEFINE_WRAPPERTYPEINFO();
 
-    Request* request() const;
-    String clientId() const;
-    bool isReload() const;
+ public:
+  static FetchEvent* create(ScriptState*,
+                            const AtomicString& type,
+                            const FetchEventInit&);
+  static FetchEvent* create(ScriptState*,
+                            const AtomicString& type,
+                            const FetchEventInit&,
+                            RespondWithObserver*,
+                            WaitUntilObserver*);
 
-    void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
+  Request* request() const;
+  String clientId() const;
+  bool isReload() const;
 
-    const AtomicString& interfaceName() const override;
+  void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-protected:
-    FetchEvent(ScriptState*, const AtomicString& type, const FetchEventInit&, RespondWithObserver*, WaitUntilObserver*);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    Member<RespondWithObserver> m_observer;
-    Member<Request> m_request;
-    String m_clientId;
-    bool m_isReload;
+ protected:
+  FetchEvent(ScriptState*,
+             const AtomicString& type,
+             const FetchEventInit&,
+             RespondWithObserver*,
+             WaitUntilObserver*);
+
+ private:
+  Member<RespondWithObserver> m_observer;
+  Member<Request> m_request;
+  String m_clientId;
+  bool m_isReload;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FetchEvent_h
+#endif  // FetchEvent_h

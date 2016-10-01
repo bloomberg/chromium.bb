@@ -34,24 +34,26 @@
 
 namespace WTF {
 
-PassRefPtr<StringImpl> AtomicString::add(CFStringRef string)
-{
-    if (!string)
-        return nullptr;
+PassRefPtr<StringImpl> AtomicString::add(CFStringRef string) {
+  if (!string)
+    return nullptr;
 
-    CFIndex length = CFStringGetLength(string);
+  CFIndex length = CFStringGetLength(string);
 
-    if (const LChar* ptr = reinterpret_cast<const LChar*>(CFStringGetCStringPtr(string, kCFStringEncodingISOLatin1)))
-        return AtomicStringTable::instance().add(ptr, length);
+  if (const LChar* ptr = reinterpret_cast<const LChar*>(
+          CFStringGetCStringPtr(string, kCFStringEncodingISOLatin1)))
+    return AtomicStringTable::instance().add(ptr, length);
 
-    if (const UniChar* ptr = CFStringGetCharactersPtr(string))
-        return AtomicStringTable::instance().add(reinterpret_cast<const UChar*>(ptr), length);
+  if (const UniChar* ptr = CFStringGetCharactersPtr(string))
+    return AtomicStringTable::instance().add(
+        reinterpret_cast<const UChar*>(ptr), length);
 
-    Vector<UniChar, 1024> ucharBuffer(length);
-    CFStringGetCharacters(string, CFRangeMake(0, length), ucharBuffer.data());
-    return AtomicStringTable::instance().add(reinterpret_cast<const UChar*>(ucharBuffer.data()), length);
+  Vector<UniChar, 1024> ucharBuffer(length);
+  CFStringGetCharacters(string, CFRangeMake(0, length), ucharBuffer.data());
+  return AtomicStringTable::instance().add(
+      reinterpret_cast<const UChar*>(ucharBuffer.data()), length);
 }
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // OS(MACOSX)
+#endif  // OS(MACOSX)

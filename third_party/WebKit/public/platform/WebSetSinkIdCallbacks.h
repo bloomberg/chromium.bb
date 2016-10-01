@@ -11,15 +11,15 @@
 namespace blink {
 
 enum class WebSetSinkIdError {
-    NotFound = 1,
-    NotAuthorized,
-    Aborted,
-    NotSupported,
-    Last = NotSupported
+  NotFound = 1,
+  NotAuthorized,
+  Aborted,
+  NotSupported,
+  Last = NotSupported
 };
 
 using WebSetSinkIdCallbacks = WebCallbacks<void, WebSetSinkIdError>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSetSinkIdCallbacks_h
+#endif  // WebSetSinkIdCallbacks_h

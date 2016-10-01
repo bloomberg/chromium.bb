@@ -9,15 +9,14 @@
 
 namespace blink {
 
-void WebFrameClient::frameDetached(WebLocalFrame* frame, DetachType type)
-{
-    if (type == DetachType::Remove && frame->parent())
-        frame->parent()->removeChild(frame);
+void WebFrameClient::frameDetached(WebLocalFrame* frame, DetachType type) {
+  if (type == DetachType::Remove && frame->parent())
+    frame->parent()->removeChild(frame);
 
-    if (frame->frameWidget())
-        frame->frameWidget()->close();
+  if (frame->frameWidget())
+    frame->frameWidget()->close();
 
-    frame->close();
+  frame->close();
 }
 
-} // namespace blink
+}  // namespace blink

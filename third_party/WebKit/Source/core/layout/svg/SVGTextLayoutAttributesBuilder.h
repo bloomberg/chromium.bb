@@ -39,44 +39,45 @@ class SVGTextPositioningElement;
 // to create the InlineBox tree based on text chunk boundaries & BiDi information.
 // The second layout phase is carried out by SVGTextLayoutEngine.
 class SVGTextLayoutAttributesBuilder {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributesBuilder);
-public:
-    explicit SVGTextLayoutAttributesBuilder(LayoutSVGText&);
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributesBuilder);
 
-    void buildLayoutAttributes();
+ public:
+  explicit SVGTextLayoutAttributesBuilder(LayoutSVGText&);
 
-    struct TextPosition {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        TextPosition(SVGTextPositioningElement* newElement = nullptr, unsigned newStart = 0, unsigned newLength = 0)
-            : element(newElement)
-            , start(newStart)
-            , length(newLength)
-        {
-        }
+  void buildLayoutAttributes();
 
-        DECLARE_TRACE();
+  struct TextPosition {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-        Member<SVGTextPositioningElement> element;
-        unsigned start;
-        unsigned length;
-    };
+   public:
+    TextPosition(SVGTextPositioningElement* newElement = nullptr,
+                 unsigned newStart = 0,
+                 unsigned newLength = 0)
+        : element(newElement), start(newStart), length(newLength) {}
 
-private:
-    void buildCharacterDataMap(LayoutSVGText&);
-    void buildLayoutAttributes(LayoutSVGText&) const;
-    void collectTextPositioningElements(LayoutBoxModelObject&);
-    void fillCharacterDataMap(const TextPosition&);
+    DECLARE_TRACE();
 
-    LayoutSVGText& m_textRoot;
-    unsigned m_characterCount;
-    HeapVector<TextPosition> m_textPositions;
-    SVGCharacterDataMap m_characterDataMap;
+    Member<SVGTextPositioningElement> element;
+    unsigned start;
+    unsigned length;
+  };
+
+ private:
+  void buildCharacterDataMap(LayoutSVGText&);
+  void buildLayoutAttributes(LayoutSVGText&) const;
+  void collectTextPositioningElements(LayoutBoxModelObject&);
+  void fillCharacterDataMap(const TextPosition&);
+
+  LayoutSVGText& m_textRoot;
+  unsigned m_characterCount;
+  HeapVector<TextPosition> m_textPositions;
+  SVGCharacterDataMap m_characterDataMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::SVGTextLayoutAttributesBuilder::TextPosition);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(
+    blink::SVGTextLayoutAttributesBuilder::TextPosition);
 
 #endif

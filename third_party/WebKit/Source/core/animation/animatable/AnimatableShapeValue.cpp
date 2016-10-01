@@ -32,36 +32,37 @@
 
 namespace blink {
 
-bool AnimatableShapeValue::usesDefaultInterpolationWith(const AnimatableValue* value) const
-{
-    const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
+bool AnimatableShapeValue::usesDefaultInterpolationWith(
+    const AnimatableValue* value) const {
+  const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
 
-    if (m_shape->type() != ShapeValue::Shape
-        || shapeValue->m_shape->type() != ShapeValue::Shape
-        || m_shape->cssBox() != shapeValue->m_shape->cssBox())
-        return true;
+  if (m_shape->type() != ShapeValue::Shape ||
+      shapeValue->m_shape->type() != ShapeValue::Shape ||
+      m_shape->cssBox() != shapeValue->m_shape->cssBox())
+    return true;
 
-    const BasicShape* fromShape = this->m_shape->shape();
-    const BasicShape* toShape = shapeValue->m_shape->shape();
+  const BasicShape* fromShape = this->m_shape->shape();
+  const BasicShape* toShape = shapeValue->m_shape->shape();
 
-    return !fromShape->canBlend(toShape);
+  return !fromShape->canBlend(toShape);
 }
 
-PassRefPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(const AnimatableValue* value, double fraction) const
-{
-    if (usesDefaultInterpolationWith(value))
-        return defaultInterpolateTo(this, value, fraction);
+PassRefPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(
+    const AnimatableValue* value,
+    double fraction) const {
+  if (usesDefaultInterpolationWith(value))
+    return defaultInterpolateTo(this, value, fraction);
 
-    const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
-    const BasicShape* fromShape = this->m_shape->shape();
-    const BasicShape* toShape = shapeValue->m_shape->shape();
-    return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction), shapeValue->m_shape->cssBox()));
+  const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
+  const BasicShape* fromShape = this->m_shape->shape();
+  const BasicShape* toShape = shapeValue->m_shape->shape();
+  return AnimatableShapeValue::create(ShapeValue::createShapeValue(
+      toShape->blend(fromShape, fraction), shapeValue->m_shape->cssBox()));
 }
 
-bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const
-{
-    const ShapeValue* shape = toAnimatableShapeValue(value)->m_shape.get();
-    return m_shape == shape || (m_shape && shape && *m_shape == *shape);
+bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const {
+  const ShapeValue* shape = toAnimatableShapeValue(value)->m_shape.get();
+  return m_shape == shape || (m_shape && shape && *m_shape == *shape);
 }
 
-} // namespace blink
+}  // namespace blink

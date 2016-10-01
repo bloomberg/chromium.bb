@@ -39,18 +39,18 @@
 namespace blink {
 
 struct Referrer {
-    DISALLOW_NEW();
-    Referrer(const String& referrer, ReferrerPolicy referrerPolicy) : referrer(referrer), referrerPolicy(referrerPolicy)
-    {
-        ASSERT(referrer == noReferrer() || KURL(KURL(), referrer).isValid());
-    }
-    Referrer() : referrerPolicy(ReferrerPolicyDefault) { }
-    static String noReferrer() { return String(); }
+  DISALLOW_NEW();
+  Referrer(const String& referrer, ReferrerPolicy referrerPolicy)
+      : referrer(referrer), referrerPolicy(referrerPolicy) {
+    ASSERT(referrer == noReferrer() || KURL(KURL(), referrer).isValid());
+  }
+  Referrer() : referrerPolicy(ReferrerPolicyDefault) {}
+  static String noReferrer() { return String(); }
 
-    AtomicString referrer;
-    ReferrerPolicy referrerPolicy;
+  AtomicString referrer;
+  ReferrerPolicy referrerPolicy;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Referrer_h
+#endif  // Referrer_h

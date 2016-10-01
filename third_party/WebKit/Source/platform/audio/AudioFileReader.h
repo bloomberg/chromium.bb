@@ -41,13 +41,20 @@ class AudioBus;
 // sampleRate will be made (if it doesn't already match the file's sample-rate).
 // The created buffer will have its sample-rate set correctly to the result.
 
-PLATFORM_EXPORT PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dataSize, bool mixToMono, float sampleRate);
+PLATFORM_EXPORT PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(
+    const void* data,
+    size_t dataSize,
+    bool mixToMono,
+    float sampleRate);
 
-PLATFORM_EXPORT PassRefPtr<AudioBus> createBusFromAudioFile(const char* filePath, bool mixToMono, float sampleRate);
+PLATFORM_EXPORT PassRefPtr<AudioBus>
+createBusFromAudioFile(const char* filePath, bool mixToMono, float sampleRate);
 
 // May pass in 0.0 for sampleRate in which case it will use the AudioBus's sampleRate
-PLATFORM_EXPORT void writeBusToAudioFile(AudioBus* bus, const char* filePath, double fileSampleRate);
+PLATFORM_EXPORT void writeBusToAudioFile(AudioBus* bus,
+                                         const char* filePath,
+                                         double fileSampleRate);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioFileReader_h
+#endif  // AudioFileReader_h

@@ -39,102 +39,89 @@
 
 namespace blink {
 
-LinkImport* LinkImport::create(HTMLLinkElement* owner)
-{
-    return new LinkImport(owner);
+LinkImport* LinkImport::create(HTMLLinkElement* owner) {
+  return new LinkImport(owner);
 }
 
 LinkImport::LinkImport(HTMLLinkElement* owner)
-    : LinkResource(owner)
-    , m_child(nullptr)
-{
+    : LinkResource(owner), m_child(nullptr) {}
+
+LinkImport::~LinkImport() {}
+
+Document* LinkImport::importedDocument() const {
+  if (!m_child || !m_owner || !m_owner->isConnected())
+    return nullptr;
+  if (m_child->loader()->hasError())
+    return nullptr;
+  return m_child->document();
 }
 
-LinkImport::~LinkImport()
-{
+void LinkImport::process() {
+  if (m_child)
+    return;
+  if (!m_owner)
+    return;
+  if (!shouldLoadResource())
+    return;
+
+  if (!m_owner->document().importsController()) {
+    // The document should be the master.
+    Document& master = m_owner->document();
+    DCHECK(master.frame());
+    master.setImportsController(HTMLImportsController::create(master));
+  }
+
+  LinkRequestBuilder builder(m_owner);
+  if (!builder.isValid()) {
+    didFinish();
+    return;
+  }
+
+  HTMLImportsController* controller = m_owner->document().importsController();
+  HTMLImportLoader* loader = m_owner->document().importLoader();
+  HTMLImport* parent = loader ? static_cast<HTMLImport*>(loader->firstImport())
+                              : static_cast<HTMLImport*>(controller->root());
+  m_child = controller->load(parent, this, builder.build(false));
+  if (!m_child) {
+    didFinish();
+    return;
+  }
 }
 
-Document* LinkImport::importedDocument() const
-{
-    if (!m_child || !m_owner || !m_owner->isConnected())
-        return nullptr;
-    if (m_child->loader()->hasError())
-        return nullptr;
-    return m_child->document();
+void LinkImport::didFinish() {
+  if (!m_owner || !m_owner->isConnected())
+    return;
+  m_owner->scheduleEvent();
 }
 
-void LinkImport::process()
-{
-    if (m_child)
-        return;
-    if (!m_owner)
-        return;
-    if (!shouldLoadResource())
-        return;
-
-    if (!m_owner->document().importsController()) {
-        // The document should be the master.
-        Document& master = m_owner->document();
-        DCHECK(master.frame());
-        master.setImportsController(HTMLImportsController::create(master));
-    }
-
-    LinkRequestBuilder builder(m_owner);
-    if (!builder.isValid()) {
-        didFinish();
-        return;
-    }
-
-    HTMLImportsController* controller = m_owner->document().importsController();
-    HTMLImportLoader* loader = m_owner->document().importLoader();
-    HTMLImport* parent = loader ? static_cast<HTMLImport*>(loader->firstImport()) : static_cast<HTMLImport*>(controller->root());
-    m_child = controller->load(parent, this, builder.build(false));
-    if (!m_child) {
-        didFinish();
-        return;
-    }
+void LinkImport::importChildWasDisposed(HTMLImportChild* child) {
+  DCHECK_EQ(m_child, child);
+  m_child = nullptr;
+  m_owner = nullptr;
 }
 
-void LinkImport::didFinish()
-{
-    if (!m_owner || !m_owner->isConnected())
-        return;
-    m_owner->scheduleEvent();
+bool LinkImport::isSync() const {
+  return m_owner && !m_owner->async();
 }
 
-void LinkImport::importChildWasDisposed(HTMLImportChild* child)
-{
-    DCHECK_EQ(m_child, child);
-    m_child = nullptr;
-    m_owner = nullptr;
+HTMLLinkElement* LinkImport::link() {
+  return m_owner;
 }
 
-bool LinkImport::isSync() const
-{
-    return m_owner && !m_owner->async();
+bool LinkImport::hasLoaded() const {
+  return m_owner && m_child && m_child->hasFinishedLoading() &&
+         !m_child->loader()->hasError();
 }
 
-HTMLLinkElement* LinkImport::link()
-{
-    return m_owner;
+void LinkImport::ownerInserted() {
+  if (m_child)
+    m_child->ownerInserted();
 }
 
-bool LinkImport::hasLoaded() const
-{
-    return m_owner && m_child && m_child->hasFinishedLoading() && !m_child->loader()->hasError();
+DEFINE_TRACE(LinkImport) {
+  visitor->trace(m_child);
+  HTMLImportChildClient::trace(visitor);
+  LinkResource::trace(visitor);
 }
 
-void LinkImport::ownerInserted()
-{
-    if (m_child)
-        m_child->ownerInserted();
-}
-
-DEFINE_TRACE(LinkImport)
-{
-    visitor->trace(m_child);
-    HTMLImportChildClient::trace(visitor);
-    LinkResource::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

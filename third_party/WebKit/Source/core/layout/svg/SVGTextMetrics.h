@@ -27,32 +27,31 @@ namespace blink {
 enum class FontOrientation;
 
 class SVGTextMetrics {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    enum MetricsType {
-        SkippedSpaceMetrics
-    };
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    SVGTextMetrics();
-    SVGTextMetrics(MetricsType);
-    SVGTextMetrics(unsigned length, float width, float height);
+ public:
+  enum MetricsType { SkippedSpaceMetrics };
 
-    bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
+  SVGTextMetrics();
+  SVGTextMetrics(MetricsType);
+  SVGTextMetrics(unsigned length, float width, float height);
 
-    float width() const { return m_width; }
-    float height() const { return m_height; }
+  bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
 
-    // TODO(kojii): We should store logical width (advance) and height instead
-    // of storing physical and calculate logical. crbug.com/544767
-    float advance(FontOrientation) const;
-    unsigned length() const { return m_length; }
+  float width() const { return m_width; }
+  float height() const { return m_height; }
 
-private:
-    float m_width;
-    float m_height;
-    unsigned m_length;
+  // TODO(kojii): We should store logical width (advance) and height instead
+  // of storing physical and calculate logical. crbug.com/544767
+  float advance(FontOrientation) const;
+  unsigned length() const { return m_length; }
+
+ private:
+  float m_width;
+  float m_height;
+  unsigned m_length;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

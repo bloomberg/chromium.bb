@@ -27,15 +27,15 @@
 
 namespace blink {
 
-SpeechRecognitionAlternative* SpeechRecognitionAlternative::create(const String& transcript, double confidence)
-{
-    return new SpeechRecognitionAlternative(transcript, confidence);
+SpeechRecognitionAlternative* SpeechRecognitionAlternative::create(
+    const String& transcript,
+    double confidence) {
+  return new SpeechRecognitionAlternative(transcript, confidence);
 }
 
-SpeechRecognitionAlternative::SpeechRecognitionAlternative(const String& transcript, double confidence)
-    : m_transcript(transcript)
-    , m_confidence(confidence)
-{
-}
+SpeechRecognitionAlternative::SpeechRecognitionAlternative(
+    const String& transcript,
+    double confidence)
+    : m_transcript(transcript), m_confidence(confidence) {}
 
-} // namespace blink
+}  // namespace blink

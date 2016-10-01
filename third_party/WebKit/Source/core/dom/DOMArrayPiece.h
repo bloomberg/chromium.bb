@@ -23,35 +23,35 @@ class ArrayBufferOrArrayBufferView;
 // IMPORTANT: The data contained by ArrayPiece is NOT OWNED, so caution must be
 //            taken to ensure it is kept alive.
 class CORE_EXPORT DOMArrayPiece : public WTF::ArrayPiece {
-    DISALLOW_NEW();
-public:
-    enum InitWithUnionOption {
-        // Initialize this object as "null" when initialized with an union which
-        // holds null.
-        TreatNullAsNull,
-        // Initialize this object so this points to null pointer with zero size
-        // when initialized with an union which holds null.
-        AllowNullPointToNullWithZeroSize,
-    };
+  DISALLOW_NEW();
 
-    DOMArrayPiece() { }
-    DOMArrayPiece(DOMArrayBuffer* buffer)
-        : ArrayPiece(buffer->buffer()) { }
-    DOMArrayPiece(DOMArrayBufferView* view)
-        : ArrayPiece(view->view()) { }
-    DOMArrayPiece(const ArrayBufferOrArrayBufferView&, InitWithUnionOption = TreatNullAsNull);
+ public:
+  enum InitWithUnionOption {
+    // Initialize this object as "null" when initialized with an union which
+    // holds null.
+    TreatNullAsNull,
+    // Initialize this object so this points to null pointer with zero size
+    // when initialized with an union which holds null.
+    AllowNullPointToNullWithZeroSize,
+  };
 
-    bool operator==(const DOMArrayBuffer& other) const
-    {
-        return byteLength() == other.byteLength() && memcmp(data(), other.data(), byteLength()) == 0;
-    }
+  DOMArrayPiece() {}
+  DOMArrayPiece(DOMArrayBuffer* buffer) : ArrayPiece(buffer->buffer()) {}
+  DOMArrayPiece(DOMArrayBufferView* view) : ArrayPiece(view->view()) {}
+  DOMArrayPiece(const ArrayBufferOrArrayBufferView&,
+                InitWithUnionOption = TreatNullAsNull);
 
-    bool operator==(const DOMArrayBufferView& other) const
-    {
-        return byteLength() == other.byteLength() && memcmp(data(), other.baseAddress(), byteLength()) == 0;
-    }
+  bool operator==(const DOMArrayBuffer& other) const {
+    return byteLength() == other.byteLength() &&
+           memcmp(data(), other.data(), byteLength()) == 0;
+  }
+
+  bool operator==(const DOMArrayBufferView& other) const {
+    return byteLength() == other.byteLength() &&
+           memcmp(data(), other.baseAddress(), byteLength()) == 0;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMArrayPiece_h
+#endif  // DOMArrayPiece_h

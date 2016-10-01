@@ -37,50 +37,51 @@
 
 namespace base {
 class WaitableEvent;
-}; // namespace base
+};  // namespace base
 
 namespace blink {
 
 // Provides a thread synchronization that can be used to allow one thread to
 // wait until another thread to finish some work.
 class PLATFORM_EXPORT WaitableEvent {
-public:
-    // If ResetPolicy::Manual is specified on creation, to set the event state
-    // to non-signaled, a consumer must call reset().  Otherwise, the system
-    // automatically resets the event state to non-signaled after a single
-    // waiting thread has been released.
-    enum class ResetPolicy { Auto, Manual };
+ public:
+  // If ResetPolicy::Manual is specified on creation, to set the event state
+  // to non-signaled, a consumer must call reset().  Otherwise, the system
+  // automatically resets the event state to non-signaled after a single
+  // waiting thread has been released.
+  enum class ResetPolicy { Auto, Manual };
 
-    // Specify the initial state on creation.
-    enum class InitialState { NonSignaled, Signaled };
+  // Specify the initial state on creation.
+  enum class InitialState { NonSignaled, Signaled };
 
-    explicit WaitableEvent(ResetPolicy = ResetPolicy::Auto, InitialState = InitialState::NonSignaled);
+  explicit WaitableEvent(ResetPolicy = ResetPolicy::Auto,
+                         InitialState = InitialState::NonSignaled);
 
-    ~WaitableEvent();
+  ~WaitableEvent();
 
-    // Puts the event in the un-signaled state.
-    void reset();
+  // Puts the event in the un-signaled state.
+  void reset();
 
-    // Waits indefinitely for the event to be signaled.
-    void wait();
+  // Waits indefinitely for the event to be signaled.
+  void wait();
 
-    // Puts the event in the signaled state. Causing any thread blocked on Wait
-    // to be woken up. The event state is reset to non-signaled after
-    // a waiting thread has been released.
-    void signal();
+  // Puts the event in the signaled state. Causing any thread blocked on Wait
+  // to be woken up. The event state is reset to non-signaled after
+  // a waiting thread has been released.
+  void signal();
 
-    // Waits on multiple events and returns the index of the object that
-    // has been signaled. Any event objects given to this method must
-    // not deleted while this wait is happening.
-    static size_t waitMultiple(const WTF::Vector<WaitableEvent*>& events);
+  // Waits on multiple events and returns the index of the object that
+  // has been signaled. Any event objects given to this method must
+  // not deleted while this wait is happening.
+  static size_t waitMultiple(const WTF::Vector<WaitableEvent*>& events);
 
-private:
-    WaitableEvent(const WaitableEvent&) = delete;
-    void operator=(const WaitableEvent&) = delete;
+ private:
+  WaitableEvent(const WaitableEvent&) = delete;
+  void operator=(const WaitableEvent&) = delete;
 
-    std::unique_ptr<base::WaitableEvent> m_impl;
+  std::unique_ptr<base::WaitableEvent> m_impl;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WaitableEvent_h
+#endif  // WaitableEvent_h

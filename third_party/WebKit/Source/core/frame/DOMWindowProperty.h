@@ -35,19 +35,19 @@ class LocalDOMWindow;
 class LocalFrame;
 
 class CORE_EXPORT DOMWindowProperty : public GarbageCollectedMixin {
-public:
-    explicit DOMWindowProperty(LocalFrame*);
+ public:
+  explicit DOMWindowProperty(LocalFrame*);
 
-    virtual void frameDestroyed();
+  virtual void frameDestroyed();
 
-    LocalFrame* frame() const { return m_frame; }
+  LocalFrame* frame() const { return m_frame; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    Member<LocalFrame> m_frame;
+ private:
+  Member<LocalFrame> m_frame;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowProperty_h
+#endif  // DOMWindowProperty_h

@@ -27,36 +27,35 @@
 
 namespace blink {
 
-inline SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document)
-    : SVGAnimateElement(SVGNames::animateTransformTag, document)
-    , m_type(kSvgTransformUnknown)
-{
-}
+inline SVGAnimateTransformElement::SVGAnimateTransformElement(
+    Document& document)
+    : SVGAnimateElement(SVGNames::animateTransformTag, document),
+      m_type(kSvgTransformUnknown) {}
 
 DEFINE_NODE_FACTORY(SVGAnimateTransformElement)
 
-bool SVGAnimateTransformElement::hasValidAttributeType()
-{
-    SVGElement* targetElement = this->targetElement();
-    if (!targetElement)
-        return false;
+bool SVGAnimateTransformElement::hasValidAttributeType() {
+  SVGElement* targetElement = this->targetElement();
+  if (!targetElement)
+    return false;
 
-    if (getAttributeType() == AttributeTypeCSS)
-        return false;
+  if (getAttributeType() == AttributeTypeCSS)
+    return false;
 
-    return animatedPropertyType() == AnimatedTransformList;
+  return animatedPropertyType() == AnimatedTransformList;
 }
 
-void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
-{
-    if (name == SVGNames::typeAttr) {
-        m_type = parseTransformType(value);
-        if (m_type == kSvgTransformMatrix)
-            m_type = kSvgTransformUnknown;
-        return;
-    }
+void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name,
+                                                const AtomicString& oldValue,
+                                                const AtomicString& value) {
+  if (name == SVGNames::typeAttr) {
+    m_type = parseTransformType(value);
+    if (m_type == kSvgTransformMatrix)
+      m_type = kSvgTransformUnknown;
+    return;
+  }
 
-    SVGAnimateElement::parseAttribute(name, oldValue, value);
+  SVGAnimateElement::parseAttribute(name, oldValue, value);
 }
 
-} // namespace blink
+}  // namespace blink

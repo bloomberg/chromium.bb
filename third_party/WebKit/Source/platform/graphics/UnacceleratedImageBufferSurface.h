@@ -38,20 +38,28 @@ class SkSurface;
 
 namespace blink {
 
-class PLATFORM_EXPORT UnacceleratedImageBufferSurface : public ImageBufferSurface {
-    WTF_MAKE_NONCOPYABLE(UnacceleratedImageBufferSurface); USING_FAST_MALLOC(UnacceleratedImageBufferSurface);
-public:
-    UnacceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels, sk_sp<SkColorSpace> = nullptr);
-    ~UnacceleratedImageBufferSurface() override;
+class PLATFORM_EXPORT UnacceleratedImageBufferSurface
+    : public ImageBufferSurface {
+  WTF_MAKE_NONCOPYABLE(UnacceleratedImageBufferSurface);
+  USING_FAST_MALLOC(UnacceleratedImageBufferSurface);
 
-    SkCanvas* canvas() override;
-    bool isValid() const override;
+ public:
+  UnacceleratedImageBufferSurface(
+      const IntSize&,
+      OpacityMode = NonOpaque,
+      ImageInitializationMode = InitializeImagePixels,
+      sk_sp<SkColorSpace> = nullptr);
+  ~UnacceleratedImageBufferSurface() override;
 
-    sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
-private:
-    sk_sp<SkSurface> m_surface;
+  SkCanvas* canvas() override;
+  bool isValid() const override;
+
+  sk_sp<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) override;
+
+ private:
+  sk_sp<SkSurface> m_surface;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

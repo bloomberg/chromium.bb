@@ -35,42 +35,53 @@ struct SVGTextFragment;
 // Phase three performs all modifications that have to be applied to each individual text chunk (text-anchor & textLength).
 
 class SVGTextChunkBuilder {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SVGTextChunkBuilder);
-public:
-    SVGTextChunkBuilder();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SVGTextChunkBuilder);
 
-    void processTextChunks(const Vector<SVGInlineTextBox*>&);
+ public:
+  SVGTextChunkBuilder();
 
-protected:
-    typedef Vector<SVGInlineTextBox*>::const_iterator BoxListConstIterator;
+  void processTextChunks(const Vector<SVGInlineTextBox*>&);
 
-    virtual void handleTextChunk(BoxListConstIterator boxStart, BoxListConstIterator boxEnd);
+ protected:
+  typedef Vector<SVGInlineTextBox*>::const_iterator BoxListConstIterator;
 
-private:
-    void processTextLengthSpacingCorrection(bool isVerticalText, float textLengthShift, Vector<SVGTextFragment>&, unsigned& atCharacter);
-    void applyTextLengthScaleAdjustment(float textLengthScale, float textLengthBias, Vector<SVGTextFragment>&);
-    void processTextAnchorCorrection(bool isVerticalText, float textAnchorShift, Vector<SVGTextFragment>&);
+  virtual void handleTextChunk(BoxListConstIterator boxStart,
+                               BoxListConstIterator boxEnd);
+
+ private:
+  void processTextLengthSpacingCorrection(bool isVerticalText,
+                                          float textLengthShift,
+                                          Vector<SVGTextFragment>&,
+                                          unsigned& atCharacter);
+  void applyTextLengthScaleAdjustment(float textLengthScale,
+                                      float textLengthBias,
+                                      Vector<SVGTextFragment>&);
+  void processTextAnchorCorrection(bool isVerticalText,
+                                   float textAnchorShift,
+                                   Vector<SVGTextFragment>&);
 };
 
 class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SVGTextPathChunkBuilder);
-public:
-    SVGTextPathChunkBuilder();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SVGTextPathChunkBuilder);
 
-    float totalLength() const { return m_totalLength; }
-    unsigned totalCharacters() const { return m_totalCharacters; }
-    float totalTextAnchorShift() const { return m_totalTextAnchorShift; }
+ public:
+  SVGTextPathChunkBuilder();
 
-private:
-    void handleTextChunk(BoxListConstIterator boxStart, BoxListConstIterator boxEnd) override;
+  float totalLength() const { return m_totalLength; }
+  unsigned totalCharacters() const { return m_totalCharacters; }
+  float totalTextAnchorShift() const { return m_totalTextAnchorShift; }
 
-    float m_totalLength;
-    unsigned m_totalCharacters;
-    float m_totalTextAnchorShift;
+ private:
+  void handleTextChunk(BoxListConstIterator boxStart,
+                       BoxListConstIterator boxEnd) override;
+
+  float m_totalLength;
+  unsigned m_totalCharacters;
+  float m_totalTextAnchorShift;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

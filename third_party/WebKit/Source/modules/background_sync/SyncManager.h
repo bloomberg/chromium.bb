@@ -16,25 +16,28 @@ class ScriptPromise;
 class ScriptState;
 class ServiceWorkerRegistration;
 
-class SyncManager final : public GarbageCollected<SyncManager> , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SyncManager* create(ServiceWorkerRegistration* registration)
-    {
-        return new SyncManager(registration);
-    }
+class SyncManager final : public GarbageCollected<SyncManager>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    ScriptPromise registerFunction(ScriptState*, ExecutionContext*, const String&);
-    ScriptPromise getTags(ScriptState*);
+ public:
+  static SyncManager* create(ServiceWorkerRegistration* registration) {
+    return new SyncManager(registration);
+  }
 
-    DECLARE_TRACE();
+  ScriptPromise registerFunction(ScriptState*,
+                                 ExecutionContext*,
+                                 const String&);
+  ScriptPromise getTags(ScriptState*);
 
-private:
-    explicit SyncManager(ServiceWorkerRegistration*);
+  DECLARE_TRACE();
 
-    Member<ServiceWorkerRegistration> m_registration;
+ private:
+  explicit SyncManager(ServiceWorkerRegistration*);
+
+  Member<ServiceWorkerRegistration> m_registration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SyncManager_h
+#endif  // SyncManager_h

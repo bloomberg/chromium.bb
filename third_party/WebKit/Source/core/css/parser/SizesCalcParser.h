@@ -14,49 +14,40 @@
 namespace blink {
 
 struct SizesCalcValue {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    double value;
-    bool isLength;
-    UChar operation;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  double value;
+  bool isLength;
+  UChar operation;
 
-    SizesCalcValue()
-        : value(0)
-        , isLength(false)
-        , operation(0)
-    {
-    }
+  SizesCalcValue() : value(0), isLength(false), operation(0) {}
 
-    SizesCalcValue(double numericValue, bool length)
-        : value(numericValue)
-        , isLength(length)
-        , operation(0)
-    {
-    }
+  SizesCalcValue(double numericValue, bool length)
+      : value(numericValue), isLength(length), operation(0) {}
 };
 
 class CORE_EXPORT SizesCalcParser {
-    STACK_ALLOCATED();
-public:
-    SizesCalcParser(CSSParserTokenRange, MediaValues*);
+  STACK_ALLOCATED();
 
-    float result() const;
-    bool isValid() const { return m_isValid; }
+ public:
+  SizesCalcParser(CSSParserTokenRange, MediaValues*);
 
-private:
-    bool calcToReversePolishNotation(CSSParserTokenRange);
-    bool calculate();
-    void appendNumber(const CSSParserToken&);
-    bool appendLength(const CSSParserToken&);
-    bool handleOperator(Vector<CSSParserToken>& stack, const CSSParserToken&);
-    void appendOperator(const CSSParserToken&);
+  float result() const;
+  bool isValid() const { return m_isValid; }
 
-    Vector<SizesCalcValue> m_valueList;
-    Member<MediaValues> m_mediaValues;
-    bool m_isValid;
-    float m_result;
+ private:
+  bool calcToReversePolishNotation(CSSParserTokenRange);
+  bool calculate();
+  void appendNumber(const CSSParserToken&);
+  bool appendLength(const CSSParserToken&);
+  bool handleOperator(Vector<CSSParserToken>& stack, const CSSParserToken&);
+  void appendOperator(const CSSParserToken&);
+
+  Vector<SizesCalcValue> m_valueList;
+  Member<MediaValues> m_mediaValues;
+  bool m_isValid;
+  float m_result;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SizesCalcParser_h
-
+#endif  // SizesCalcParser_h

@@ -34,39 +34,32 @@
 
 namespace blink {
 
-bool WebUserGestureToken::hasGestures() const
-{
-    return !m_token.isNull() && m_token->hasGestures();
+bool WebUserGestureToken::hasGestures() const {
+  return !m_token.isNull() && m_token->hasGestures();
 }
 
-void WebUserGestureToken::setOutOfProcess()
-{
-    m_token->setOutOfProcess();
+void WebUserGestureToken::setOutOfProcess() {
+  m_token->setOutOfProcess();
 }
 
-void WebUserGestureToken::setJavascriptPrompt()
-{
-    m_token->setJavascriptPrompt();
+void WebUserGestureToken::setJavascriptPrompt() {
+  m_token->setJavascriptPrompt();
 }
 
-WebUserGestureToken::WebUserGestureToken(PassRefPtr<UserGestureToken> token)
-{
-    m_token = token;
+WebUserGestureToken::WebUserGestureToken(PassRefPtr<UserGestureToken> token) {
+  m_token = token;
 }
 
-WebUserGestureToken::operator PassRefPtr<UserGestureToken>() const
-{
-    return m_token.get();
+WebUserGestureToken::operator PassRefPtr<UserGestureToken>() const {
+  return m_token.get();
 }
 
-void WebUserGestureToken::assign(const WebUserGestureToken& other)
-{
-    m_token = other.m_token;
+void WebUserGestureToken::assign(const WebUserGestureToken& other) {
+  m_token = other.m_token;
 }
 
-void WebUserGestureToken::reset()
-{
-    m_token.reset();
+void WebUserGestureToken::reset() {
+  m_token.reset();
 }
 
-} // namespace blink
+}  // namespace blink

@@ -24,31 +24,30 @@ namespace blink {
 // If enqueue is done against empty queue, BackgroundHTMLParser
 // thread kicks a consumer task on Blink main thread.
 class TokenizedChunkQueue : public ThreadSafeRefCounted<TokenizedChunkQueue> {
-public:
-    static PassRefPtr<TokenizedChunkQueue> create()
-    {
-        return adoptRef(new TokenizedChunkQueue);
-    }
+ public:
+  static PassRefPtr<TokenizedChunkQueue> create() {
+    return adoptRef(new TokenizedChunkQueue);
+  }
 
-    ~TokenizedChunkQueue();
+  ~TokenizedChunkQueue();
 
-    bool enqueue(std::unique_ptr<HTMLDocumentParser::TokenizedChunk>);
-    void clear();
+  bool enqueue(std::unique_ptr<HTMLDocumentParser::TokenizedChunk>);
+  void clear();
 
-    void takeAll(Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>&);
-    size_t peakPendingChunkCount();
-    size_t peakPendingTokenCount();
+  void takeAll(Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>>&);
+  size_t peakPendingChunkCount();
+  size_t peakPendingTokenCount();
 
-private:
-    TokenizedChunkQueue();
+ private:
+  TokenizedChunkQueue();
 
-    std::unique_ptr<Mutex> m_mutex;
-    Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>> m_pendingChunks;
-    size_t m_peakPendingChunkCount = 0;
-    size_t m_peakPendingTokenCount = 0;
-    size_t m_pendingTokenCount = 0;
+  std::unique_ptr<Mutex> m_mutex;
+  Vector<std::unique_ptr<HTMLDocumentParser::TokenizedChunk>> m_pendingChunks;
+  size_t m_peakPendingChunkCount = 0;
+  size_t m_peakPendingTokenCount = 0;
+  size_t m_pendingTokenCount = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

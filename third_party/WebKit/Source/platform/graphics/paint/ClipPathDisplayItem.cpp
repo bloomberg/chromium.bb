@@ -12,42 +12,44 @@
 
 namespace blink {
 
-void BeginClipPathDisplayItem::replay(GraphicsContext& context) const
-{
-    context.save();
-    context.clipPath(m_clipPath, AntiAliased);
+void BeginClipPathDisplayItem::replay(GraphicsContext& context) const {
+  context.save();
+  context.clipPath(m_clipPath, AntiAliased);
 }
 
-void BeginClipPathDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
-{
-    list->appendClipPathItem(m_clipPath, SkRegion::kIntersect_Op, true);
+void BeginClipPathDisplayItem::appendToWebDisplayItemList(
+    const IntRect& visualRect,
+    WebDisplayItemList* list) const {
+  list->appendClipPathItem(m_clipPath, SkRegion::kIntersect_Op, true);
 }
 
-void BeginClipPathDisplayItem::analyzeForGpuRasterization(SkPictureGpuAnalyzer& analyzer) const
-{
-    // Temporarily disabled (pref regressions due to GPU veto stickiness: http://crbug.com/603969).
-    // analyzer.analyzeClipPath(m_clipPath, SkRegion::kIntersect_Op, true);
+void BeginClipPathDisplayItem::analyzeForGpuRasterization(
+    SkPictureGpuAnalyzer& analyzer) const {
+  // Temporarily disabled (pref regressions due to GPU veto stickiness: http://crbug.com/603969).
+  // analyzer.analyzeClipPath(m_clipPath, SkRegion::kIntersect_Op, true);
 }
 
-void EndClipPathDisplayItem::replay(GraphicsContext& context) const
-{
-    context.restore();
+void EndClipPathDisplayItem::replay(GraphicsContext& context) const {
+  context.restore();
 }
 
-void EndClipPathDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
-{
-    list->appendEndClipPathItem();
+void EndClipPathDisplayItem::appendToWebDisplayItemList(
+    const IntRect& visualRect,
+    WebDisplayItemList* list) const {
+  list->appendEndClipPathItem();
 }
 
 #ifndef NDEBUG
-void BeginClipPathDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
-{
-    DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", pathVerbs: %d, pathPoints: %d, windRule: \"%s\"",
-        m_clipPath.countVerbs(), m_clipPath.countPoints(),
-        m_clipPath.getFillType() == SkPath::kWinding_FillType ? "nonzero" : "evenodd"));
+void BeginClipPathDisplayItem::dumpPropertiesAsDebugString(
+    WTF::StringBuilder& stringBuilder) const {
+  DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
+  stringBuilder.append(WTF::String::format(
+      ", pathVerbs: %d, pathPoints: %d, windRule: \"%s\"",
+      m_clipPath.countVerbs(), m_clipPath.countPoints(),
+      m_clipPath.getFillType() == SkPath::kWinding_FillType ? "nonzero"
+                                                            : "evenodd"));
 }
 
 #endif
 
-} // namespace blink
+}  // namespace blink

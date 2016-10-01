@@ -34,72 +34,79 @@
 
 namespace blink {
 
-class CORE_EXPORT SpinButtonElement final : public HTMLDivElement, public PopupOpeningObserver {
-public:
-    enum UpDownState {
-        Indeterminate, // Hovered, but the event is not handled.
-        Down,
-        Up,
-    };
-    enum EventDispatch {
-        EventDispatchAllowed,
-        EventDispatchDisallowed,
-    };
-    class SpinButtonOwner : public GarbageCollectedMixin {
-    public:
-        virtual ~SpinButtonOwner() { }
-        virtual void focusAndSelectSpinButtonOwner() = 0;
-        virtual bool shouldSpinButtonRespondToMouseEvents() = 0;
-        virtual bool shouldSpinButtonRespondToWheelEvents() = 0;
-        virtual void spinButtonDidReleaseMouseCapture(EventDispatch) = 0;
-        virtual void spinButtonStepDown() = 0;
-        virtual void spinButtonStepUp() = 0;
-    };
+class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
+                                            public PopupOpeningObserver {
+ public:
+  enum UpDownState {
+    Indeterminate,  // Hovered, but the event is not handled.
+    Down,
+    Up,
+  };
+  enum EventDispatch {
+    EventDispatchAllowed,
+    EventDispatchDisallowed,
+  };
+  class SpinButtonOwner : public GarbageCollectedMixin {
+   public:
+    virtual ~SpinButtonOwner() {}
+    virtual void focusAndSelectSpinButtonOwner() = 0;
+    virtual bool shouldSpinButtonRespondToMouseEvents() = 0;
+    virtual bool shouldSpinButtonRespondToWheelEvents() = 0;
+    virtual void spinButtonDidReleaseMouseCapture(EventDispatch) = 0;
+    virtual void spinButtonStepDown() = 0;
+    virtual void spinButtonStepUp() = 0;
+  };
 
-    // The owner of SpinButtonElement must call removeSpinButtonOwner
-    // because SpinButtonElement can be outlive SpinButtonOwner
-    // implementation, e.g. during event handling.
-    static SpinButtonElement* create(Document&, SpinButtonOwner&);
-    UpDownState getUpDownState() const { return m_upDownState; }
-    void releaseCapture(EventDispatch = EventDispatchAllowed);
-    void removeSpinButtonOwner() { m_spinButtonOwner = nullptr; }
+  // The owner of SpinButtonElement must call removeSpinButtonOwner
+  // because SpinButtonElement can be outlive SpinButtonOwner
+  // implementation, e.g. during event handling.
+  static SpinButtonElement* create(Document&, SpinButtonOwner&);
+  UpDownState getUpDownState() const { return m_upDownState; }
+  void releaseCapture(EventDispatch = EventDispatchAllowed);
+  void removeSpinButtonOwner() { m_spinButtonOwner = nullptr; }
 
-    void step(int amount);
+  void step(int amount);
 
-    bool willRespondToMouseMoveEvents() override;
-    bool willRespondToMouseClickEvents() override;
+  bool willRespondToMouseMoveEvents() override;
+  bool willRespondToMouseClickEvents() override;
 
-    void forwardEvent(Event*);
+  void forwardEvent(Event*);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    SpinButtonElement(Document&, SpinButtonOwner&);
+ private:
+  SpinButtonElement(Document&, SpinButtonOwner&);
 
-    void detachLayoutTree(const AttachContext&) override;
-    bool isSpinButtonElement() const override { return true; }
-    bool isDisabledFormControl() const override { return ownerShadowHost() && ownerShadowHost()->isDisabledFormControl(); }
-    bool matchesReadOnlyPseudoClass() const override;
-    bool matchesReadWritePseudoClass() const override;
-    void defaultEventHandler(Event*) override;
-    void willOpenPopup() override;
-    void doStepAction(int);
-    void startRepeatingTimer();
-    void stopRepeatingTimer();
-    void repeatingTimerFired(TimerBase*);
-    void setHovered(bool = true) override;
-    bool shouldRespondToMouseEvents();
-    bool isMouseFocusable() const override { return false; }
+  void detachLayoutTree(const AttachContext&) override;
+  bool isSpinButtonElement() const override { return true; }
+  bool isDisabledFormControl() const override {
+    return ownerShadowHost() && ownerShadowHost()->isDisabledFormControl();
+  }
+  bool matchesReadOnlyPseudoClass() const override;
+  bool matchesReadWritePseudoClass() const override;
+  void defaultEventHandler(Event*) override;
+  void willOpenPopup() override;
+  void doStepAction(int);
+  void startRepeatingTimer();
+  void stopRepeatingTimer();
+  void repeatingTimerFired(TimerBase*);
+  void setHovered(bool = true) override;
+  bool shouldRespondToMouseEvents();
+  bool isMouseFocusable() const override { return false; }
 
-    Member<SpinButtonOwner> m_spinButtonOwner;
-    bool m_capturing;
-    UpDownState m_upDownState;
-    UpDownState m_pressStartingState;
-    Timer<SpinButtonElement> m_repeatingTimer;
+  Member<SpinButtonOwner> m_spinButtonOwner;
+  bool m_capturing;
+  UpDownState m_upDownState;
+  UpDownState m_pressStartingState;
+  Timer<SpinButtonElement> m_repeatingTimer;
 };
 
-DEFINE_TYPE_CASTS(SpinButtonElement, Node, node, toElement(node)->isSpinButtonElement(), toElement(node).isSpinButtonElement());
+DEFINE_TYPE_CASTS(SpinButtonElement,
+                  Node,
+                  node,
+                  toElement(node)->isSpinButtonElement(),
+                  toElement(node).isSpinButtonElement());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

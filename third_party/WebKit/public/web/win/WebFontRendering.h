@@ -13,18 +13,21 @@ class SkTypeface;
 namespace blink {
 
 class WebFontRendering {
-public:
-    BLINK_EXPORT static void setSkiaFontManager(SkFontMgr*);
-    BLINK_EXPORT static void setDeviceScaleFactor(float);
-    BLINK_EXPORT static void addSideloadedFontForTesting(SkTypeface*);
-    BLINK_EXPORT static void setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight);
-    BLINK_EXPORT static void setSmallCaptionFontMetrics(const wchar_t* familyName, int32_t fontHeight);
-    BLINK_EXPORT static void setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight);
-    BLINK_EXPORT static void setAntialiasedTextEnabled(bool);
-    BLINK_EXPORT static void setLCDTextEnabled(bool);
-    BLINK_EXPORT static void setUseSkiaFontFallback(bool);
+ public:
+  BLINK_EXPORT static void setSkiaFontManager(SkFontMgr*);
+  BLINK_EXPORT static void setDeviceScaleFactor(float);
+  BLINK_EXPORT static void addSideloadedFontForTesting(SkTypeface*);
+  BLINK_EXPORT static void setMenuFontMetrics(const wchar_t* familyName,
+                                              int32_t fontHeight);
+  BLINK_EXPORT static void setSmallCaptionFontMetrics(const wchar_t* familyName,
+                                                      int32_t fontHeight);
+  BLINK_EXPORT static void setStatusFontMetrics(const wchar_t* familyName,
+                                                int32_t fontHeight);
+  BLINK_EXPORT static void setAntialiasedTextEnabled(bool);
+  BLINK_EXPORT static void setLCDTextEnabled(bool);
+  BLINK_EXPORT static void setUseSkiaFontFallback(bool);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

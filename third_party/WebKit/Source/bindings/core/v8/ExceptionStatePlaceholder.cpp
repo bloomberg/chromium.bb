@@ -34,36 +34,36 @@ namespace blink {
 
 #if ENABLE(ASSERT)
 
-NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(const char* file, int line)
-    : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr)
-    , m_file(file)
-    , m_line(line) { }
+NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(
+    const char* file,
+    int line)
+    : ExceptionState(nullptr, ExceptionState::UnknownContext, nullptr, nullptr),
+      m_file(file),
+      m_line(line) {}
 
-void NoExceptionStateAssertionChecker::throwDOMException(const ExceptionCode&, const String&)
-{
-    DCHECK_AT(false, m_file, m_line) << "DOMExeption should not be thrown.";
+void NoExceptionStateAssertionChecker::throwDOMException(const ExceptionCode&,
+                                                         const String&) {
+  DCHECK_AT(false, m_file, m_line) << "DOMExeption should not be thrown.";
 }
 
-void NoExceptionStateAssertionChecker::throwRangeError(const String& message)
-{
-    DCHECK_AT(false, m_file, m_line) << "RangeError should not be thrown.";
+void NoExceptionStateAssertionChecker::throwRangeError(const String& message) {
+  DCHECK_AT(false, m_file, m_line) << "RangeError should not be thrown.";
 }
 
-void NoExceptionStateAssertionChecker::throwSecurityError(const String&, const String&)
-{
-    DCHECK_AT(false, m_file, m_line) << "SecurityError should not be thrown.";
+void NoExceptionStateAssertionChecker::throwSecurityError(const String&,
+                                                          const String&) {
+  DCHECK_AT(false, m_file, m_line) << "SecurityError should not be thrown.";
 }
 
-void NoExceptionStateAssertionChecker::throwTypeError(const String&)
-{
-    DCHECK_AT(false, m_file, m_line) << "TypeError should not be thrown.";
+void NoExceptionStateAssertionChecker::throwTypeError(const String&) {
+  DCHECK_AT(false, m_file, m_line) << "TypeError should not be thrown.";
 }
 
-void NoExceptionStateAssertionChecker::rethrowV8Exception(v8::Local<v8::Value>)
-{
-    DCHECK_AT(false, m_file, m_line) << "An exception should not be rethrown.";
+void NoExceptionStateAssertionChecker::rethrowV8Exception(
+    v8::Local<v8::Value>) {
+  DCHECK_AT(false, m_file, m_line) << "An exception should not be rethrown.";
 }
 
 #endif
 
-} // namespace blink
+}  // namespace blink

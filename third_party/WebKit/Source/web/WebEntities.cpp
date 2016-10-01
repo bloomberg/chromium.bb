@@ -36,49 +36,46 @@
 
 namespace blink {
 
-WebEntities::WebEntities(bool xmlEntities)
-{
-    DCHECK(m_entitiesMap.isEmpty());
-    m_entitiesMap.set(0x003c, "lt");
-    m_entitiesMap.set(0x003e, "gt");
-    m_entitiesMap.set(0x0026, "amp");
-    m_entitiesMap.set(0x0027, "apos");
-    m_entitiesMap.set(0x0022, "quot");
-    // We add #39 for test-compatibility reason.
-    if (!xmlEntities)
-        m_entitiesMap.set(0x0027, String("#39"));
+WebEntities::WebEntities(bool xmlEntities) {
+  DCHECK(m_entitiesMap.isEmpty());
+  m_entitiesMap.set(0x003c, "lt");
+  m_entitiesMap.set(0x003e, "gt");
+  m_entitiesMap.set(0x0026, "amp");
+  m_entitiesMap.set(0x0027, "apos");
+  m_entitiesMap.set(0x0022, "quot");
+  // We add #39 for test-compatibility reason.
+  if (!xmlEntities)
+    m_entitiesMap.set(0x0027, String("#39"));
 }
 
-String WebEntities::entityNameByCode(int code) const
-{
+String WebEntities::entityNameByCode(int code) const {
+  // FIXME: We should use find so we only do one hash lookup.
+  if (m_entitiesMap.contains(code))
+    return m_entitiesMap.get(code);
+  return "";
+}
+
+String WebEntities::convertEntitiesInString(const String& value) const {
+  StringBuilder result;
+  bool didConvertEntity = false;
+  unsigned length = value.length();
+  for (unsigned i = 0; i < length; ++i) {
+    UChar c = value[i];
     // FIXME: We should use find so we only do one hash lookup.
-    if (m_entitiesMap.contains(code))
-        return m_entitiesMap.get(code);
-    return "";
-}
-
-String WebEntities::convertEntitiesInString(const String& value) const
-{
-    StringBuilder result;
-    bool didConvertEntity = false;
-    unsigned length = value.length();
-    for (unsigned i = 0; i < length; ++i) {
-        UChar c = value[i];
-        // FIXME: We should use find so we only do one hash lookup.
-        if (m_entitiesMap.contains(c)) {
-            didConvertEntity = true;
-            result.append('&');
-            result.append(m_entitiesMap.get(c));
-            result.append(';');
-        } else {
-            result.append(c);
-        }
+    if (m_entitiesMap.contains(c)) {
+      didConvertEntity = true;
+      result.append('&');
+      result.append(m_entitiesMap.get(c));
+      result.append(';');
+    } else {
+      result.append(c);
     }
+  }
 
-    if (!didConvertEntity)
-        return value;
+  if (!didConvertEntity)
+    return value;
 
-    return result.toString();
+  return result.toString();
 }
 
-} // namespace blink
+}  // namespace blink

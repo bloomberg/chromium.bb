@@ -37,28 +37,30 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXARIAGrid final : public AXTable {
-    WTF_MAKE_NONCOPYABLE(AXARIAGrid);
+  WTF_MAKE_NONCOPYABLE(AXARIAGrid);
 
-private:
-    AXARIAGrid(LayoutObject*, AXObjectCacheImpl&);
+ private:
+  AXARIAGrid(LayoutObject*, AXObjectCacheImpl&);
 
-public:
-    static AXARIAGrid* create(LayoutObject*, AXObjectCacheImpl&);
-    ~AXARIAGrid() override;
+ public:
+  static AXARIAGrid* create(LayoutObject*, AXObjectCacheImpl&);
+  ~AXARIAGrid() override;
 
-    bool isAriaTable() const override { return true; }
+  bool isAriaTable() const override { return true; }
 
-    void addChildren() override;
+  void addChildren() override;
 
-private:
-    // ARIA treegrids and grids support selected rows.
-    bool supportsSelectedRows() override { return true; }
-    bool isMultiSelectable() const override { return true; }
-    bool isTableExposableThroughAccessibility() const override { return true; }
+ private:
+  // ARIA treegrids and grids support selected rows.
+  bool supportsSelectedRows() override { return true; }
+  bool isMultiSelectable() const override { return true; }
+  bool isTableExposableThroughAccessibility() const override { return true; }
 
-    bool addTableRowChild(AXObject*, HeapHashSet<Member<AXObject>>& appendedRows, unsigned& columnCount);
+  bool addTableRowChild(AXObject*,
+                        HeapHashSet<Member<AXObject>>& appendedRows,
+                        unsigned& columnCount);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXARIAGrid_h
+#endif  // AXARIAGrid_h

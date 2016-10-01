@@ -49,126 +49,106 @@ namespace blink {
 
 // A helper template for FileSystemSync implementation.
 template <typename SuccessCallback, typename CallbackArg, typename ResultType>
-class SyncCallbackHelper final : public GarbageCollected<SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType>> {
-public:
-    typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> HelperType;
+class SyncCallbackHelper final
+    : public GarbageCollected<
+          SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType>> {
+ public:
+  typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType>
+      HelperType;
 
-    static HelperType* create()
-    {
-        return new SyncCallbackHelper();
+  static HelperType* create() { return new SyncCallbackHelper(); }
+
+  ResultType* getResult(ExceptionState& exceptionState) {
+    if (m_errorCode)
+      FileError::throwDOMException(exceptionState, m_errorCode);
+
+    return m_result;
+  }
+
+  SuccessCallback* getSuccessCallback() {
+    return SuccessCallbackImpl::create(this);
+  }
+  ErrorCallbackBase* getErrorCallback() {
+    return ErrorCallbackImpl::create(this);
+  }
+
+  DEFINE_INLINE_TRACE() { visitor->trace(m_result); }
+
+ private:
+  SyncCallbackHelper() : m_errorCode(FileError::kOK), m_completed(false) {}
+
+  class SuccessCallbackImpl final : public SuccessCallback {
+   public:
+    static SuccessCallbackImpl* create(HelperType* helper) {
+      return new SuccessCallbackImpl(helper);
     }
 
-    ResultType* getResult(ExceptionState& exceptionState)
-    {
-        if (m_errorCode)
-            FileError::throwDOMException(exceptionState, m_errorCode);
+    virtual void handleEvent() { m_helper->setError(FileError::kOK); }
 
-        return m_result;
+    virtual void handleEvent(CallbackArg arg) { m_helper->setResult(arg); }
+
+    DEFINE_INLINE_TRACE() {
+      visitor->trace(m_helper);
+      SuccessCallback::trace(visitor);
     }
 
-    SuccessCallback* getSuccessCallback() { return SuccessCallbackImpl::create(this); }
-    ErrorCallbackBase* getErrorCallback() { return ErrorCallbackImpl::create(this); }
+   private:
+    explicit SuccessCallbackImpl(HelperType* helper) : m_helper(helper) {}
+    Member<HelperType> m_helper;
+  };
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_result);
+  class ErrorCallbackImpl final : public ErrorCallbackBase {
+   public:
+    static ErrorCallbackImpl* create(HelperType* helper) {
+      return new ErrorCallbackImpl(helper);
     }
 
-private:
-    SyncCallbackHelper()
-        : m_errorCode(FileError::kOK)
-        , m_completed(false)
-    {
+    void invoke(FileError::ErrorCode error) override {
+      m_helper->setError(error);
     }
 
-    class SuccessCallbackImpl final : public SuccessCallback {
-    public:
-        static SuccessCallbackImpl* create(HelperType* helper)
-        {
-            return new SuccessCallbackImpl(helper);
-        }
-
-        virtual void handleEvent()
-        {
-            m_helper->setError(FileError::kOK);
-        }
-
-        virtual void handleEvent(CallbackArg arg)
-        {
-            m_helper->setResult(arg);
-        }
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_helper);
-            SuccessCallback::trace(visitor);
-        }
-
-    private:
-        explicit SuccessCallbackImpl(HelperType* helper)
-            : m_helper(helper)
-        {
-        }
-        Member<HelperType> m_helper;
-    };
-
-    class ErrorCallbackImpl final : public ErrorCallbackBase {
-    public:
-        static ErrorCallbackImpl* create(HelperType* helper)
-        {
-            return new ErrorCallbackImpl(helper);
-        }
-
-        void invoke(FileError::ErrorCode error) override
-        {
-            m_helper->setError(error);
-        }
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_helper);
-            ErrorCallbackBase::trace(visitor);
-        }
-
-    private:
-        explicit ErrorCallbackImpl(HelperType* helper)
-            : m_helper(helper)
-        {
-        }
-        Member<HelperType> m_helper;
-    };
-
-    void setError(FileError::ErrorCode error)
-    {
-        m_errorCode = error;
-        m_completed = true;
+    DEFINE_INLINE_TRACE() {
+      visitor->trace(m_helper);
+      ErrorCallbackBase::trace(visitor);
     }
 
-    void setResult(CallbackArg result)
-    {
-        m_result = ResultType::create(result);
-        m_completed = true;
-    }
+   private:
+    explicit ErrorCallbackImpl(HelperType* helper) : m_helper(helper) {}
+    Member<HelperType> m_helper;
+  };
 
-    Member<ResultType> m_result;
-    FileError::ErrorCode m_errorCode;
-    bool m_completed;
+  void setError(FileError::ErrorCode error) {
+    m_errorCode = error;
+    m_completed = true;
+  }
+
+  void setResult(CallbackArg result) {
+    m_result = ResultType::create(result);
+    m_completed = true;
+  }
+
+  Member<ResultType> m_result;
+  FileError::ErrorCode m_errorCode;
+  bool m_completed;
 };
 
 struct EmptyType : public GarbageCollected<EmptyType> {
-    static EmptyType* create(EmptyType*)
-    {
-        return 0;
-    }
+  static EmptyType* create(EmptyType*) { return 0; }
 
-    DEFINE_INLINE_TRACE() { }
+  DEFINE_INLINE_TRACE() {}
 };
 
-typedef SyncCallbackHelper<EntryCallback, Entry*, EntrySync> EntrySyncCallbackHelper;
-typedef SyncCallbackHelper<MetadataCallback, Metadata*, Metadata> MetadataSyncCallbackHelper;
-typedef SyncCallbackHelper<VoidCallback, EmptyType*, EmptyType> VoidSyncCallbackHelper;
-typedef SyncCallbackHelper<FileSystemCallback, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;
+typedef SyncCallbackHelper<EntryCallback, Entry*, EntrySync>
+    EntrySyncCallbackHelper;
+typedef SyncCallbackHelper<MetadataCallback, Metadata*, Metadata>
+    MetadataSyncCallbackHelper;
+typedef SyncCallbackHelper<VoidCallback, EmptyType*, EmptyType>
+    VoidSyncCallbackHelper;
+typedef SyncCallbackHelper<FileSystemCallback,
+                           DOMFileSystem*,
+                           DOMFileSystemSync>
+    FileSystemSyncCallbackHelper;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SyncCallbackHelper_h
+#endif  // SyncCallbackHelper_h

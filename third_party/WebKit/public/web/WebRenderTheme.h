@@ -41,6 +41,6 @@ BLINK_EXPORT void setCaretBlinkInterval(double);
 
 BLINK_EXPORT void setFocusRingColor(WebColor);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

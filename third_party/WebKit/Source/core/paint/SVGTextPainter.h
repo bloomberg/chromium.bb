@@ -13,15 +13,17 @@ struct PaintInfo;
 class LayoutSVGText;
 
 class SVGTextPainter {
-    STACK_ALLOCATED();
-public:
-    SVGTextPainter(const LayoutSVGText& layoutSVGText) : m_layoutSVGText(layoutSVGText) { }
-    void paint(const PaintInfo&);
+  STACK_ALLOCATED();
 
-private:
-    const LayoutSVGText& m_layoutSVGText;
+ public:
+  SVGTextPainter(const LayoutSVGText& layoutSVGText)
+      : m_layoutSVGText(layoutSVGText) {}
+  void paint(const PaintInfo&);
+
+ private:
+  const LayoutSVGText& m_layoutSVGText;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGTextPainter_h
+#endif  // SVGTextPainter_h

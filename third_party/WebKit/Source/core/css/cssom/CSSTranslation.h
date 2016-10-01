@@ -13,51 +13,55 @@ namespace blink {
 class ExceptionState;
 
 class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
-    WTF_MAKE_NONCOPYABLE(CSSTranslation);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSTranslation* create(CSSLengthValue* x, CSSLengthValue* y, ExceptionState&)
-    {
-        return new CSSTranslation(x, y, nullptr);
-    }
-    static CSSTranslation* create(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z, ExceptionState&);
+  WTF_MAKE_NONCOPYABLE(CSSTranslation);
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CSSTranslation* fromCSSValue(const CSSFunctionValue& value) { return nullptr; }
+ public:
+  static CSSTranslation* create(CSSLengthValue* x,
+                                CSSLengthValue* y,
+                                ExceptionState&) {
+    return new CSSTranslation(x, y, nullptr);
+  }
+  static CSSTranslation* create(CSSLengthValue* x,
+                                CSSLengthValue* y,
+                                CSSLengthValue* z,
+                                ExceptionState&);
 
-    CSSLengthValue* x() const { return m_x; }
-    CSSLengthValue* y() const { return m_y; }
-    CSSLengthValue* z() const { return m_z; }
+  static CSSTranslation* fromCSSValue(const CSSFunctionValue& value) {
+    return nullptr;
+  }
 
-    TransformComponentType type() const override { return is2D() ? TranslationType : Translation3DType; }
+  CSSLengthValue* x() const { return m_x; }
+  CSSLengthValue* y() const { return m_y; }
+  CSSLengthValue* z() const { return m_z; }
 
-    // TODO: Implement asMatrix for CSSTranslation.
-    CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
+  TransformComponentType type() const override {
+    return is2D() ? TranslationType : Translation3DType;
+  }
 
-    CSSFunctionValue* toCSSValue() const override;
+  // TODO: Implement asMatrix for CSSTranslation.
+  CSSMatrixTransformComponent* asMatrix() const override { return nullptr; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_x);
-        visitor->trace(m_y);
-        visitor->trace(m_z);
-        CSSTransformComponent::trace(visitor);
-    }
+  CSSFunctionValue* toCSSValue() const override;
 
-private:
-    CSSTranslation(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z)
-        : CSSTransformComponent()
-        , m_x(x)
-        , m_y(y)
-        , m_z(z)
-    { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_z);
+    CSSTransformComponent::trace(visitor);
+  }
 
-    bool is2D() const { return !m_z; }
+ private:
+  CSSTranslation(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z)
+      : CSSTransformComponent(), m_x(x), m_y(y), m_z(z) {}
 
-    Member<CSSLengthValue> m_x;
-    Member<CSSLengthValue> m_y;
-    Member<CSSLengthValue> m_z;
+  bool is2D() const { return !m_z; }
+
+  Member<CSSLengthValue> m_x;
+  Member<CSSLengthValue> m_y;
+  Member<CSSLengthValue> m_z;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

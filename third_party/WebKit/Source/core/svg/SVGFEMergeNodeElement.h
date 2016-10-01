@@ -29,23 +29,24 @@
 namespace blink {
 
 class SVGFEMergeNodeElement final : public SVGElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
-    SVGAnimatedString* in1() { return m_in1.get(); }
+  DEFINE_WRAPPERTYPEINFO();
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
+  SVGAnimatedString* in1() { return m_in1.get(); }
 
-private:
-    explicit SVGFEMergeNodeElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void svgAttributeChanged(const QualifiedName&) override;
+ private:
+  explicit SVGFEMergeNodeElement(Document&);
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    Member<SVGAnimatedString> m_in1;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+
+  Member<SVGAnimatedString> m_in1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEMergeNodeElement_h
+#endif  // SVGFEMergeNodeElement_h

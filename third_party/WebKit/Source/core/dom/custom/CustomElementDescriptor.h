@@ -30,53 +30,43 @@ namespace blink {
 // example, a definition for "my-element", "my-element" must not be
 // applied to an element <button is="my-element">.
 class CORE_EXPORT CustomElementDescriptor final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    CustomElementDescriptor()
-    {
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    CustomElementDescriptor(
-        const AtomicString& name,
-        const AtomicString& localName)
-        : m_name(name)
-        , m_localName(localName)
-    {
-    }
+ public:
+  CustomElementDescriptor() {}
 
-    explicit CustomElementDescriptor(WTF::HashTableDeletedValueType value)
-        : m_name(value)
-    {
-    }
+  CustomElementDescriptor(const AtomicString& name,
+                          const AtomicString& localName)
+      : m_name(name), m_localName(localName) {}
 
-    bool isHashTableDeletedValue() const
-    {
-        return m_name.isHashTableDeletedValue();
-    }
+  explicit CustomElementDescriptor(WTF::HashTableDeletedValueType value)
+      : m_name(value) {}
 
-    bool operator==(const CustomElementDescriptor& other) const
-    {
-        return m_name == other.m_name && m_localName == other.m_localName;
-    }
+  bool isHashTableDeletedValue() const {
+    return m_name.isHashTableDeletedValue();
+  }
 
-    const AtomicString& name() const { return m_name; }
-    const AtomicString& localName() const { return m_localName; }
+  bool operator==(const CustomElementDescriptor& other) const {
+    return m_name == other.m_name && m_localName == other.m_localName;
+  }
 
-    bool matches(const Element& element) const
-    {
-        return localName() == element.localName()
-            && (isAutonomous()
-                || name() == element.getAttribute(HTMLNames::isAttr))
-            && element.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
-    }
+  const AtomicString& name() const { return m_name; }
+  const AtomicString& localName() const { return m_localName; }
 
-    bool isAutonomous() const { return m_name == m_localName; }
+  bool matches(const Element& element) const {
+    return localName() == element.localName() &&
+           (isAutonomous() ||
+            name() == element.getAttribute(HTMLNames::isAttr)) &&
+           element.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
+  }
 
-private:
-    AtomicString m_name;
-    AtomicString m_localName;
+  bool isAutonomous() const { return m_name == m_localName; }
+
+ private:
+  AtomicString m_name;
+  AtomicString m_localName;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementDescriptor_h
+#endif  // CustomElementDescriptor_h

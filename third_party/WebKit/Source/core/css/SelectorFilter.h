@@ -39,57 +39,64 @@ namespace blink {
 class CSSSelector;
 
 class SelectorFilter {
-    WTF_MAKE_NONCOPYABLE(SelectorFilter);
-    DISALLOW_NEW();
-public:
-    class ParentStackFrame {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        ParentStackFrame() : element(nullptr) { }
-        explicit ParentStackFrame(Element& element) : element(&element) { }
+  WTF_MAKE_NONCOPYABLE(SelectorFilter);
+  DISALLOW_NEW();
 
-        DECLARE_TRACE();
+ public:
+  class ParentStackFrame {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-        Member<Element> element;
-        Vector<unsigned, 4> identifierHashes;
-    };
-
-    SelectorFilter() {}
-
-    void pushParent(Element& parent);
-    void popParent(Element& parent);
-
-    bool parentStackIsConsistent(const ContainerNode* parentNode) const { return !m_parentStack.isEmpty() && m_parentStack.last().element == parentNode; }
-
-    template <unsigned maximumIdentifierCount>
-    inline bool fastRejectSelector(const unsigned* identifierHashes) const;
-    static void collectIdentifierHashes(const CSSSelector&, unsigned* identifierHashes, unsigned maximumIdentifierCount);
+   public:
+    ParentStackFrame() : element(nullptr) {}
+    explicit ParentStackFrame(Element& element) : element(&element) {}
 
     DECLARE_TRACE();
 
-private:
-    void pushParentStackFrame(Element& parent);
-    void popParentStackFrame();
+    Member<Element> element;
+    Vector<unsigned, 4> identifierHashes;
+  };
 
-    HeapVector<ParentStackFrame> m_parentStack;
+  SelectorFilter() {}
 
-    // With 100 unique strings in the filter, 2^12 slot table has false positive rate of ~0.2%.
-    using IdentifierFilter = BloomFilter<12>;
-    std::unique_ptr<IdentifierFilter> m_ancestorIdentifierFilter;
+  void pushParent(Element& parent);
+  void popParent(Element& parent);
+
+  bool parentStackIsConsistent(const ContainerNode* parentNode) const {
+    return !m_parentStack.isEmpty() &&
+           m_parentStack.last().element == parentNode;
+  }
+
+  template <unsigned maximumIdentifierCount>
+  inline bool fastRejectSelector(const unsigned* identifierHashes) const;
+  static void collectIdentifierHashes(const CSSSelector&,
+                                      unsigned* identifierHashes,
+                                      unsigned maximumIdentifierCount);
+
+  DECLARE_TRACE();
+
+ private:
+  void pushParentStackFrame(Element& parent);
+  void popParentStackFrame();
+
+  HeapVector<ParentStackFrame> m_parentStack;
+
+  // With 100 unique strings in the filter, 2^12 slot table has false positive rate of ~0.2%.
+  using IdentifierFilter = BloomFilter<12>;
+  std::unique_ptr<IdentifierFilter> m_ancestorIdentifierFilter;
 };
 
 template <unsigned maximumIdentifierCount>
-inline bool SelectorFilter::fastRejectSelector(const unsigned* identifierHashes) const
-{
-    ASSERT(m_ancestorIdentifierFilter);
-    for (unsigned n = 0; n < maximumIdentifierCount && identifierHashes[n]; ++n) {
-        if (!m_ancestorIdentifierFilter->mayContain(identifierHashes[n]))
-            return true;
-    }
-    return false;
+inline bool SelectorFilter::fastRejectSelector(
+    const unsigned* identifierHashes) const {
+  ASSERT(m_ancestorIdentifierFilter);
+  for (unsigned n = 0; n < maximumIdentifierCount && identifierHashes[n]; ++n) {
+    if (!m_ancestorIdentifierFilter->mayContain(identifierHashes[n]))
+      return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::SelectorFilter::ParentStackFrame);
 

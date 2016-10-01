@@ -12,42 +12,39 @@
 namespace blink {
 
 // static
-PaintWorklet* PaintWorklet::create(LocalFrame* frame)
-{
-    PaintWorklet* worklet = new PaintWorklet(frame);
-    worklet->suspendIfNeeded();
-    return worklet;
+PaintWorklet* PaintWorklet::create(LocalFrame* frame) {
+  PaintWorklet* worklet = new PaintWorklet(frame);
+  worklet->suspendIfNeeded();
+  return worklet;
 }
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)
-    : Worklet(frame)
-    , m_paintWorkletGlobalScope(PaintWorkletGlobalScope::create(frame, frame->document()->url(), frame->document()->userAgent(), frame->document()->getSecurityOrigin(), toIsolate(frame->document())))
-{
+    : Worklet(frame),
+      m_paintWorkletGlobalScope(PaintWorkletGlobalScope::create(
+          frame,
+          frame->document()->url(),
+          frame->document()->userAgent(),
+          frame->document()->getSecurityOrigin(),
+          toIsolate(frame->document()))) {}
+
+PaintWorklet::~PaintWorklet() {}
+
+PaintWorkletGlobalScope* PaintWorklet::workletGlobalScopeProxy() const {
+  return m_paintWorkletGlobalScope.get();
 }
 
-PaintWorklet::~PaintWorklet()
-{
+CSSPaintDefinition* PaintWorklet::findDefinition(const String& name) {
+  return m_paintWorkletGlobalScope->findDefinition(name);
 }
 
-PaintWorkletGlobalScope* PaintWorklet::workletGlobalScopeProxy() const
-{
-    return m_paintWorkletGlobalScope.get();
+void PaintWorklet::addPendingGenerator(const String& name,
+                                       CSSPaintImageGeneratorImpl* generator) {
+  return m_paintWorkletGlobalScope->addPendingGenerator(name, generator);
 }
 
-CSSPaintDefinition* PaintWorklet::findDefinition(const String& name)
-{
-    return m_paintWorkletGlobalScope->findDefinition(name);
+DEFINE_TRACE(PaintWorklet) {
+  visitor->trace(m_paintWorkletGlobalScope);
+  Worklet::trace(visitor);
 }
 
-void PaintWorklet::addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl* generator)
-{
-    return m_paintWorkletGlobalScope->addPendingGenerator(name, generator);
-}
-
-DEFINE_TRACE(PaintWorklet)
-{
-    visitor->trace(m_paintWorkletGlobalScope);
-    Worklet::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

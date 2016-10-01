@@ -38,35 +38,42 @@ class RadioNodeListOrElement;
 // The famous <table><tr><form><td> problem.
 
 class HTMLFormControlsCollection final : public HTMLCollection {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLFormControlsCollection* create(ContainerNode&, CollectionType);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~HTMLFormControlsCollection() override;
+ public:
+  static HTMLFormControlsCollection* create(ContainerNode&, CollectionType);
 
-    HTMLElement* item(unsigned offset) const { return toHTMLElement(HTMLCollection::item(offset)); }
+  ~HTMLFormControlsCollection() override;
 
-    HTMLElement* namedItem(const AtomicString& name) const override;
-    void namedGetter(const AtomicString& name, RadioNodeListOrElement&);
+  HTMLElement* item(unsigned offset) const {
+    return toHTMLElement(HTMLCollection::item(offset));
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  HTMLElement* namedItem(const AtomicString& name) const override;
+  void namedGetter(const AtomicString& name, RadioNodeListOrElement&);
 
-private:
-    explicit HTMLFormControlsCollection(ContainerNode&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void updateIdNameCache() const override;
-    void supportedPropertyNames(Vector<String>& names) override;
+ private:
+  explicit HTMLFormControlsCollection(ContainerNode&);
 
-    const FormAssociatedElement::List& formControlElements() const;
-    const HeapVector<Member<HTMLImageElement>>& formImageElements() const;
-    HTMLElement* virtualItemAfter(Element*) const override;
-    void invalidateCache(Document* oldDocument = 0) const override;
+  void updateIdNameCache() const override;
+  void supportedPropertyNames(Vector<String>& names) override;
 
-    mutable Member<HTMLElement> m_cachedElement;
-    mutable unsigned m_cachedElementOffsetInArray;
+  const FormAssociatedElement::List& formControlElements() const;
+  const HeapVector<Member<HTMLImageElement>>& formImageElements() const;
+  HTMLElement* virtualItemAfter(Element*) const override;
+  void invalidateCache(Document* oldDocument = 0) const override;
+
+  mutable Member<HTMLElement> m_cachedElement;
+  mutable unsigned m_cachedElementOffsetInArray;
 };
-DEFINE_TYPE_CASTS(HTMLFormControlsCollection, LiveNodeListBase, collection, collection->type() == FormControls, collection.type() == FormControls);
+DEFINE_TYPE_CASTS(HTMLFormControlsCollection,
+                  LiveNodeListBase,
+                  collection,
+                  collection->type() == FormControls,
+                  collection.type() == FormControls);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLFormControlsCollection_h
+#endif  // HTMLFormControlsCollection_h

@@ -29,38 +29,41 @@
 namespace blink {
 
 class SVGEllipseElement final : public SVGGeometryElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGEllipseElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    Path asPath() const override;
+ public:
+  DECLARE_NODE_FACTORY(SVGEllipseElement);
 
-    SVGAnimatedLength* cx() const { return m_cx.get(); }
-    SVGAnimatedLength* cy() const { return m_cy.get(); }
-    SVGAnimatedLength* rx() const { return m_rx.get(); }
-    SVGAnimatedLength* ry() const { return m_ry.get(); }
+  Path asPath() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedLength* cx() const { return m_cx.get(); }
+  SVGAnimatedLength* cy() const { return m_cy.get(); }
+  SVGAnimatedLength* rx() const { return m_rx.get(); }
+  SVGAnimatedLength* ry() const { return m_ry.get(); }
 
-private:
-    explicit SVGEllipseElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  explicit SVGEllipseElement(Document&);
 
-    void svgAttributeChanged(const QualifiedName&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 
-    bool selfHasRelativeLengths() const override;
+  void svgAttributeChanged(const QualifiedName&) override;
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool selfHasRelativeLengths() const override;
 
-    Member<SVGAnimatedLength> m_cx;
-    Member<SVGAnimatedLength> m_cy;
-    Member<SVGAnimatedLength> m_rx;
-    Member<SVGAnimatedLength> m_ry;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+
+  Member<SVGAnimatedLength> m_cx;
+  Member<SVGAnimatedLength> m_cy;
+  Member<SVGAnimatedLength> m_rx;
+  Member<SVGAnimatedLength> m_ry;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGEllipseElement_h
+#endif  // SVGEllipseElement_h

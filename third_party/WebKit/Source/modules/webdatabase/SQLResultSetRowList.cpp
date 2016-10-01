@@ -35,31 +35,33 @@
 
 namespace blink {
 
-unsigned SQLResultSetRowList::length() const
-{
-    if (m_result.size() == 0)
-        return 0;
+unsigned SQLResultSetRowList::length() const {
+  if (m_result.size() == 0)
+    return 0;
 
-    ASSERT(m_result.size() % m_columns.size() == 0);
+  ASSERT(m_result.size() % m_columns.size() == 0);
 
-    return m_result.size() / m_columns.size();
+  return m_result.size() / m_columns.size();
 }
 
-ScriptValue SQLResultSetRowList::item(ScriptState* scriptState, unsigned index, ExceptionState& exceptionState)
-{
-    if (index >= length()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound<unsigned>("index", index, length()));
-        return ScriptValue();
-    }
+ScriptValue SQLResultSetRowList::item(ScriptState* scriptState,
+                                      unsigned index,
+                                      ExceptionState& exceptionState) {
+  if (index >= length()) {
+    exceptionState.throwDOMException(
+        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound<unsigned>(
+                            "index", index, length()));
+    return ScriptValue();
+  }
 
-    unsigned numColumns = m_columns.size();
-    unsigned valuesIndex = index * numColumns;
+  unsigned numColumns = m_columns.size();
+  unsigned valuesIndex = index * numColumns;
 
-    Vector<std::pair<String, SQLValue>> dataArray;
-    for (unsigned i = 0; i < numColumns; ++i)
-        dataArray.append(std::make_pair(m_columns[i], m_result[valuesIndex + i]));
+  Vector<std::pair<String, SQLValue>> dataArray;
+  for (unsigned i = 0; i < numColumns; ++i)
+    dataArray.append(std::make_pair(m_columns[i], m_result[valuesIndex + i]));
 
-    return ScriptValue::from(scriptState, dataArray);
+  return ScriptValue::from(scriptState, dataArray);
 }
 
-} // namespace blink
+}  // namespace blink

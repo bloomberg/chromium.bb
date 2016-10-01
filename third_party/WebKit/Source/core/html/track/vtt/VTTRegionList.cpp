@@ -27,54 +27,46 @@
 
 namespace blink {
 
-VTTRegionList::VTTRegionList()
-{
+VTTRegionList::VTTRegionList() {}
+
+unsigned long VTTRegionList::length() const {
+  return m_list.size();
 }
 
-unsigned long VTTRegionList::length() const
-{
-    return m_list.size();
+VTTRegion* VTTRegionList::item(unsigned index) const {
+  if (index < m_list.size())
+    return m_list[index].get();
+
+  return nullptr;
 }
 
-VTTRegion* VTTRegionList::item(unsigned index) const
-{
-    if (index < m_list.size())
-        return m_list[index].get();
-
+VTTRegion* VTTRegionList::getRegionById(const String& id) const {
+  if (id.isEmpty())
     return nullptr;
+
+  for (size_t i = 0; i < m_list.size(); ++i) {
+    if (m_list[i]->id() == id)
+      return m_list[i].get();
+  }
+
+  return nullptr;
 }
 
-VTTRegion* VTTRegionList::getRegionById(const String& id) const
-{
-    if (id.isEmpty())
-        return nullptr;
-
-    for (size_t i = 0; i < m_list.size(); ++i) {
-        if (m_list[i]->id() == id)
-            return m_list[i].get();
-    }
-
-    return nullptr;
+void VTTRegionList::add(VTTRegion* region) {
+  m_list.append(region);
 }
 
-void VTTRegionList::add(VTTRegion* region)
-{
-    m_list.append(region);
+bool VTTRegionList::remove(VTTRegion* region) {
+  size_t index = m_list.find(region);
+  if (index == kNotFound)
+    return false;
+
+  m_list.remove(index);
+  return true;
 }
 
-bool VTTRegionList::remove(VTTRegion* region)
-{
-    size_t index = m_list.find(region);
-    if (index == kNotFound)
-        return false;
-
-    m_list.remove(index);
-    return true;
+DEFINE_TRACE(VTTRegionList) {
+  visitor->trace(m_list);
 }
 
-DEFINE_TRACE(VTTRegionList)
-{
-    visitor->trace(m_list);
-}
-
-} // namespace blink
+}  // namespace blink

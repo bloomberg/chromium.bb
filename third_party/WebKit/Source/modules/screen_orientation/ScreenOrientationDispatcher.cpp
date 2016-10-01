@@ -8,29 +8,24 @@
 
 namespace blink {
 
-ScreenOrientationDispatcher& ScreenOrientationDispatcher::instance()
-{
-    DEFINE_STATIC_LOCAL(ScreenOrientationDispatcher, screenOrientationDispatcher, (new ScreenOrientationDispatcher));
-    return screenOrientationDispatcher;
+ScreenOrientationDispatcher& ScreenOrientationDispatcher::instance() {
+  DEFINE_STATIC_LOCAL(ScreenOrientationDispatcher, screenOrientationDispatcher,
+                      (new ScreenOrientationDispatcher));
+  return screenOrientationDispatcher;
 }
 
-ScreenOrientationDispatcher::ScreenOrientationDispatcher()
-{
+ScreenOrientationDispatcher::ScreenOrientationDispatcher() {}
+
+DEFINE_TRACE(ScreenOrientationDispatcher) {
+  PlatformEventDispatcher::trace(visitor);
 }
 
-DEFINE_TRACE(ScreenOrientationDispatcher)
-{
-    PlatformEventDispatcher::trace(visitor);
+void ScreenOrientationDispatcher::startListening() {
+  Platform::current()->startListening(WebPlatformEventTypeScreenOrientation, 0);
 }
 
-void ScreenOrientationDispatcher::startListening()
-{
-    Platform::current()->startListening(WebPlatformEventTypeScreenOrientation, 0);
+void ScreenOrientationDispatcher::stopListening() {
+  Platform::current()->stopListening(WebPlatformEventTypeScreenOrientation);
 }
 
-void ScreenOrientationDispatcher::stopListening()
-{
-    Platform::current()->stopListening(WebPlatformEventTypeScreenOrientation);
-}
-
-} // namespace blink
+}  // namespace blink

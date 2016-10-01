@@ -40,65 +40,73 @@
 namespace blink {
 
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return it, for convenience.
-static v8::Local<v8::Value> cacheState(ScriptState* scriptState, v8::Local<v8::Object> popStateEvent, v8::Local<v8::Value> state)
-{
-    V8HiddenValue::setHiddenValue(scriptState, popStateEvent, V8HiddenValue::state(scriptState->isolate()), state);
-    return state;
+static v8::Local<v8::Value> cacheState(ScriptState* scriptState,
+                                       v8::Local<v8::Object> popStateEvent,
+                                       v8::Local<v8::Value> state) {
+  V8HiddenValue::setHiddenValue(scriptState, popStateEvent,
+                                V8HiddenValue::state(scriptState->isolate()),
+                                state);
+  return state;
 }
 
-void V8PopStateEvent::stateAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::state(info.GetIsolate()));
+void V8PopStateEvent::stateAttributeGetterCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+  v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(
+      scriptState, info.Holder(), V8HiddenValue::state(info.GetIsolate()));
 
-    if (!result.IsEmpty()) {
-        v8SetReturnValue(info, result);
-        return;
-    }
+  if (!result.IsEmpty()) {
+    v8SetReturnValue(info, result);
+    return;
+  }
 
-    PopStateEvent* event = V8PopStateEvent::toImpl(info.Holder());
-    History* history = event->history();
-    if (!history || !event->serializedState()) {
-        // If the event doesn't have serializedState(), it means that the
-        // event was initialized with PopStateEventInit. In such case, we need
-        // to get a v8 value for the current world from state().
-        if (event->serializedState())
-            result = event->serializedState()->deserialize();
-        else
-            result = event->state().v8ValueFor(scriptState);
-        if (result.IsEmpty())
-            result = v8::Null(info.GetIsolate());
+  PopStateEvent* event = V8PopStateEvent::toImpl(info.Holder());
+  History* history = event->history();
+  if (!history || !event->serializedState()) {
+    // If the event doesn't have serializedState(), it means that the
+    // event was initialized with PopStateEventInit. In such case, we need
+    // to get a v8 value for the current world from state().
+    if (event->serializedState())
+      result = event->serializedState()->deserialize();
+    else
+      result = event->state().v8ValueFor(scriptState);
+    if (result.IsEmpty())
+      result = v8::Null(info.GetIsolate());
+    v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
+    return;
+  }
+
+  // There's no cached value from a previous invocation, nor a state value was provided by the
+  // event, but there is a history object, so first we need to see if the state object has been
+  // deserialized through the history object already.
+  // The current history state object might've changed in the meantime, so we need to take care
+  // of using the correct one, and always share the same deserialization with history.state.
+
+  bool isSameState = history->isSameAsCurrentState(event->serializedState());
+
+  if (isSameState) {
+    v8::Local<v8::Value> v8HistoryValue =
+        toV8(history, info.Holder(), info.GetIsolate());
+    if (v8HistoryValue.IsEmpty())
+      return;
+    v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();
+    if (!history->stateChanged()) {
+      result = V8HiddenValue::getHiddenValue(
+          scriptState, v8History, V8HiddenValue::state(info.GetIsolate()));
+      if (!result.IsEmpty()) {
         v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
         return;
+      }
     }
+    result = event->serializedState()->deserialize(info.GetIsolate());
+    V8HiddenValue::setHiddenValue(scriptState, v8History,
+                                  V8HiddenValue::state(info.GetIsolate()),
+                                  result);
+  } else {
+    result = event->serializedState()->deserialize(info.GetIsolate());
+  }
 
-    // There's no cached value from a previous invocation, nor a state value was provided by the
-    // event, but there is a history object, so first we need to see if the state object has been
-    // deserialized through the history object already.
-    // The current history state object might've changed in the meantime, so we need to take care
-    // of using the correct one, and always share the same deserialization with history.state.
-
-    bool isSameState = history->isSameAsCurrentState(event->serializedState());
-
-    if (isSameState) {
-        v8::Local<v8::Value> v8HistoryValue = toV8(history, info.Holder(), info.GetIsolate());
-        if (v8HistoryValue.IsEmpty())
-            return;
-        v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();
-        if (!history->stateChanged()) {
-            result = V8HiddenValue::getHiddenValue(scriptState, v8History, V8HiddenValue::state(info.GetIsolate()));
-            if (!result.IsEmpty()) {
-                v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
-                return;
-            }
-        }
-        result = event->serializedState()->deserialize(info.GetIsolate());
-        V8HiddenValue::setHiddenValue(scriptState, v8History, V8HiddenValue::state(info.GetIsolate()), result);
-    } else {
-        result = event->serializedState()->deserialize(info.GetIsolate());
-    }
-
-    v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
+  v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
 }
 
-} // namespace blink
+}  // namespace blink

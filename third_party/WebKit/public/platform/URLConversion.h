@@ -15,6 +15,6 @@ class WebString;
 
 BLINK_COMMON_EXPORT GURL WebStringToGURL(const WebString&);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

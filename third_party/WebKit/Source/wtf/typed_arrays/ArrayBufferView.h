@@ -36,99 +36,91 @@
 namespace WTF {
 
 class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
-public:
-    enum ViewType {
-        TypeInt8,
-        TypeUint8,
-        TypeUint8Clamped,
-        TypeInt16,
-        TypeUint16,
-        TypeInt32,
-        TypeUint32,
-        TypeFloat32,
-        TypeFloat64,
-        TypeDataView
-    };
-    virtual ViewType type() const = 0;
-    const char* typeName();
+ public:
+  enum ViewType {
+    TypeInt8,
+    TypeUint8,
+    TypeUint8Clamped,
+    TypeInt16,
+    TypeUint16,
+    TypeInt32,
+    TypeUint32,
+    TypeFloat32,
+    TypeFloat64,
+    TypeDataView
+  };
+  virtual ViewType type() const = 0;
+  const char* typeName();
 
-    ArrayBuffer* buffer() const
-    {
-        return m_buffer.get();
-    }
+  ArrayBuffer* buffer() const { return m_buffer.get(); }
 
-    void* baseAddress() const
-    {
-        return m_baseAddress;
-    }
+  void* baseAddress() const { return m_baseAddress; }
 
-    unsigned byteOffset() const
-    {
-        return m_byteOffset;
-    }
+  unsigned byteOffset() const { return m_byteOffset; }
 
-    virtual unsigned byteLength() const = 0;
-    virtual unsigned typeSize() const = 0;
+  virtual unsigned byteLength() const = 0;
+  virtual unsigned typeSize() const = 0;
 
-    void setNeuterable(bool flag) { m_isNeuterable = flag; }
-    bool isNeuterable() const { return m_isNeuterable; }
-    bool isShared() const { return m_buffer ? m_buffer->isShared() : false; }
+  void setNeuterable(bool flag) { m_isNeuterable = flag; }
+  bool isNeuterable() const { return m_isNeuterable; }
+  bool isShared() const { return m_buffer ? m_buffer->isShared() : false; }
 
-    virtual ~ArrayBufferView();
+  virtual ~ArrayBufferView();
 
-protected:
-    ArrayBufferView(PassRefPtr<ArrayBuffer>, unsigned byteOffset);
+ protected:
+  ArrayBufferView(PassRefPtr<ArrayBuffer>, unsigned byteOffset);
 
-    inline bool setImpl(ArrayBufferView*, unsigned byteOffset);
+  inline bool setImpl(ArrayBufferView*, unsigned byteOffset);
 
-    // Helper to verify that a given sub-range of an ArrayBuffer is
-    // within range.
-    template <typename T>
-    static bool verifySubRange(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned numElements)
-    {
-        if (!buffer)
-            return false;
-        if (sizeof(T) > 1 && byteOffset % sizeof(T))
-            return false;
-        if (byteOffset > buffer->byteLength())
-            return false;
-        unsigned remainingElements = (buffer->byteLength() - byteOffset) / sizeof(T);
-        if (numElements > remainingElements)
-            return false;
-        return true;
-    }
+  // Helper to verify that a given sub-range of an ArrayBuffer is
+  // within range.
+  template <typename T>
+  static bool verifySubRange(PassRefPtr<ArrayBuffer> buffer,
+                             unsigned byteOffset,
+                             unsigned numElements) {
+    if (!buffer)
+      return false;
+    if (sizeof(T) > 1 && byteOffset % sizeof(T))
+      return false;
+    if (byteOffset > buffer->byteLength())
+      return false;
+    unsigned remainingElements =
+        (buffer->byteLength() - byteOffset) / sizeof(T);
+    if (numElements > remainingElements)
+      return false;
+    return true;
+  }
 
-    virtual void neuter();
+  virtual void neuter();
 
-    // This is the address of the ArrayBuffer's storage, plus the byte offset.
-    void* m_baseAddress;
+  // This is the address of the ArrayBuffer's storage, plus the byte offset.
+  void* m_baseAddress;
 
-    unsigned m_byteOffset : 31;
-    unsigned m_isNeuterable : 1;
+  unsigned m_byteOffset : 31;
+  unsigned m_isNeuterable : 1;
 
-private:
-    friend class ArrayBuffer;
-    RefPtr<ArrayBuffer> m_buffer;
-    ArrayBufferView* m_prevView;
-    ArrayBufferView* m_nextView;
+ private:
+  friend class ArrayBuffer;
+  RefPtr<ArrayBuffer> m_buffer;
+  ArrayBufferView* m_prevView;
+  ArrayBufferView* m_nextView;
 };
 
-bool ArrayBufferView::setImpl(ArrayBufferView* array, unsigned byteOffset)
-{
-    if (byteOffset > byteLength()
-        || byteOffset + array->byteLength() > byteLength()
-        || byteOffset + array->byteLength() < byteOffset) {
-        // Out of range offset or overflow
-        return false;
-    }
+bool ArrayBufferView::setImpl(ArrayBufferView* array, unsigned byteOffset) {
+  if (byteOffset > byteLength() ||
+      byteOffset + array->byteLength() > byteLength() ||
+      byteOffset + array->byteLength() < byteOffset) {
+    // Out of range offset or overflow
+    return false;
+  }
 
-    char* base = static_cast<char*>(baseAddress());
-    memmove(base + byteOffset, array->baseAddress(), array->byteLength());
-    return true;
+  char* base = static_cast<char*>(baseAddress());
+  memmove(base + byteOffset, array->baseAddress(), array->byteLength());
+  return true;
 }
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::ArrayBufferView;
 
-#endif // ArrayBufferView_h
+#endif  // ArrayBufferView_h

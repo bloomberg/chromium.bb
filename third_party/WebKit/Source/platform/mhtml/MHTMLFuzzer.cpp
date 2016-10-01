@@ -16,29 +16,28 @@
 namespace blink {
 
 // Fuzzer for blink::MHTMLParser.
-int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
-{
-    MHTMLParser mhtmlParser(SharedBuffer::create(data, size));
-    HeapVector<Member<ArchiveResource>> mhtmlArchives = mhtmlParser.parseArchive();
-    mhtmlArchives.clear();
-    ThreadState::current()-> collectAllGarbage();
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  MHTMLParser mhtmlParser(SharedBuffer::create(data, size));
+  HeapVector<Member<ArchiveResource>> mhtmlArchives =
+      mhtmlParser.parseArchive();
+  mhtmlArchives.clear();
+  ThreadState::current()->collectAllGarbage();
 
-    return 0;
+  return 0;
 }
 
-} // namespace blink
+}  // namespace blink
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
-{
-    return blink::LLVMFuzzerTestOneInput(data, size);
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  return blink::LLVMFuzzerTestOneInput(data, size);
 }
 
-extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
-{
-    // Intentional leak - no need to do cleanup as explained in
-    // "Initialization/Cleanup" section of testing/libfuzzer/efficient_fuzzer.md
-    DEFINE_STATIC_LOCAL(blink::ScopedUnittestsEnvironmentSetup, testSetup, (*argc, *argv));
-    ALLOW_UNUSED_LOCAL(testSetup);
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  // Intentional leak - no need to do cleanup as explained in
+  // "Initialization/Cleanup" section of testing/libfuzzer/efficient_fuzzer.md
+  DEFINE_STATIC_LOCAL(blink::ScopedUnittestsEnvironmentSetup, testSetup,
+                      (*argc, *argv));
+  ALLOW_UNUSED_LOCAL(testSetup);
 
-    return 0;
+  return 0;
 }

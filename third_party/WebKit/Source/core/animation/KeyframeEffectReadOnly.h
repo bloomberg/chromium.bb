@@ -21,24 +21,39 @@ class SampledEffect;
 // Represents the effect of an Animation on an Element's properties.
 // http://w3c.github.io/web-animations/#the-keyframeeffect-interfaces
 class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static KeyframeEffectReadOnly* create(ExecutionContext*, Element*, const DictionarySequenceOrDictionary& effectInput, double duration, ExceptionState&);
-    static KeyframeEffectReadOnly* create(ExecutionContext*, Element*, const DictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState&);
-    static KeyframeEffectReadOnly* create(ExecutionContext*, Element*, const DictionarySequenceOrDictionary& effectInput, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~KeyframeEffectReadOnly() override {}
+ public:
+  static KeyframeEffectReadOnly* create(
+      ExecutionContext*,
+      Element*,
+      const DictionarySequenceOrDictionary& effectInput,
+      double duration,
+      ExceptionState&);
+  static KeyframeEffectReadOnly* create(
+      ExecutionContext*,
+      Element*,
+      const DictionarySequenceOrDictionary& effectInput,
+      const KeyframeEffectOptions& timingInput,
+      ExceptionState&);
+  static KeyframeEffectReadOnly* create(
+      ExecutionContext*,
+      Element*,
+      const DictionarySequenceOrDictionary& effectInput,
+      ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  ~KeyframeEffectReadOnly() override {}
 
-protected:
-    KeyframeEffectReadOnly(Element*, EffectModel*, const Timing&, EventDelegate*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<Element> m_target;
-    Member<EffectModel> m_model;
-    Member<SampledEffect> m_sampledEffect;
+ protected:
+  KeyframeEffectReadOnly(Element*, EffectModel*, const Timing&, EventDelegate*);
+
+  Member<Element> m_target;
+  Member<EffectModel> m_model;
+  Member<SampledEffect> m_sampledEffect;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // KeyframeEffectReadOnly_h
+#endif  // KeyframeEffectReadOnly_h

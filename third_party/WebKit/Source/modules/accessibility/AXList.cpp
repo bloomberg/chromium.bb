@@ -37,38 +37,32 @@ namespace blink {
 using namespace HTMLNames;
 
 AXList::AXList(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache)
-{
+    : AXLayoutObject(layoutObject, axObjectCache) {}
+
+AXList::~AXList() {}
+
+AXList* AXList::create(LayoutObject* layoutObject,
+                       AXObjectCacheImpl& axObjectCache) {
+  return new AXList(layoutObject, axObjectCache);
 }
 
-AXList::~AXList()
-{
+bool AXList::computeAccessibilityIsIgnored(
+    IgnoredReasons* ignoredReasons) const {
+  return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
-AXList* AXList::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-{
-    return new AXList(layoutObject, axObjectCache);
+bool AXList::isDescriptionList() const {
+  if (!m_layoutObject)
+    return false;
+
+  Node* node = m_layoutObject->node();
+  return node && node->hasTagName(dlTag);
 }
 
-bool AXList::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
-{
-    return accessibilityIsIgnoredByDefault(ignoredReasons);
+AccessibilityRole AXList::roleValue() const {
+  if (isDescriptionList())
+    return DescriptionListRole;
+
+  return ListRole;
 }
-
-bool AXList::isDescriptionList() const
-{
-    if (!m_layoutObject)
-        return false;
-
-    Node* node = m_layoutObject->node();
-    return node && node->hasTagName(dlTag);
-}
-
-AccessibilityRole AXList::roleValue() const
-{
-    if (isDescriptionList())
-        return DescriptionListRole;
-
-    return ListRole;
-}
-} // namespace blink
+}  // namespace blink

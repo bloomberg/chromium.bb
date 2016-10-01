@@ -11,38 +11,32 @@
 namespace blink {
 
 struct WebSyncRegistration {
-    enum NetworkState {
-        NetworkStateAny = 0,
-        NetworkStateAvoidCellular,
-        NetworkStateOnline,
-        NetworkStateLast = NetworkStateOnline
-    };
+  enum NetworkState {
+    NetworkStateAny = 0,
+    NetworkStateAvoidCellular,
+    NetworkStateOnline,
+    NetworkStateLast = NetworkStateOnline
+  };
 
-    enum { UNREGISTERED_SYNC_ID = -1};
+  enum { UNREGISTERED_SYNC_ID = -1 };
 
-    WebSyncRegistration()
-        : id(UNREGISTERED_SYNC_ID)
-        , tag("")
-        , networkState(NetworkState::NetworkStateOnline)
-    {
-    }
+  WebSyncRegistration()
+      : id(UNREGISTERED_SYNC_ID),
+        tag(""),
+        networkState(NetworkState::NetworkStateOnline) {}
 
-    WebSyncRegistration(int64_t id,
-        const WebString& registrationTag,
-        NetworkState networkState)
-        : id(id)
-        , tag(registrationTag)
-        , networkState(networkState)
-    {
-    }
+  WebSyncRegistration(int64_t id,
+                      const WebString& registrationTag,
+                      NetworkState networkState)
+      : id(id), tag(registrationTag), networkState(networkState) {}
 
-    /* Internal identity; not exposed to JS API. */
-    int64_t id;
+  /* Internal identity; not exposed to JS API. */
+  int64_t id;
 
-    WebString tag;
-    NetworkState networkState;
+  WebString tag;
+  NetworkState networkState;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSyncRegistration_h
+#endif  // WebSyncRegistration_h

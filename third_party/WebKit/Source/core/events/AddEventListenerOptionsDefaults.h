@@ -14,11 +14,11 @@ namespace blink {
 // specifying a different default value is useful in demonstrating the
 // power of passive event listeners.
 enum class PassiveListenerDefault {
-    False, // Default of false.
-    True, // Default of true.
-    ForceAllTrue // Force all values to be true even when specified.
+  False,        // Default of false.
+  True,         // Default of true.
+  ForceAllTrue  // Force all values to be true even when specified.
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AddEventListenerOptionsDefaults_h
+#endif  // AddEventListenerOptionsDefaults_h

@@ -21,101 +21,89 @@
 
 namespace blink {
 
-NavigatorVR* NavigatorVR::from(Document& document)
-{
-    if (!document.frame() || !document.frame()->domWindow())
-        return 0;
-    Navigator& navigator = *document.frame()->domWindow()->navigator();
-    return &from(navigator);
+NavigatorVR* NavigatorVR::from(Document& document) {
+  if (!document.frame() || !document.frame()->domWindow())
+    return 0;
+  Navigator& navigator = *document.frame()->domWindow()->navigator();
+  return &from(navigator);
 }
 
-NavigatorVR& NavigatorVR::from(Navigator& navigator)
-{
-    NavigatorVR* supplement = static_cast<NavigatorVR*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new NavigatorVR(navigator.frame());
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+NavigatorVR& NavigatorVR::from(Navigator& navigator) {
+  NavigatorVR* supplement = static_cast<NavigatorVR*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new NavigatorVR(navigator.frame());
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState, Navigator& navigator)
-{
-    return NavigatorVR::from(navigator).getVRDisplays(scriptState);
+ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState,
+                                         Navigator& navigator) {
+  return NavigatorVR::from(navigator).getVRDisplays(scriptState);
 }
 
-ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState)
-{
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
+ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
 
-    Document* document = frame() ? frame()->document() : 0;
+  Document* document = frame() ? frame()->document() : 0;
 
-    if (!document || !controller()) {
-        DOMException* exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");
-        resolver->reject(exception);
-        return promise;
-    }
-
-    UseCounter::count(*document, UseCounter::VRGetDisplays);
-
-    controller()->getDisplays(resolver);
-
+  if (!document || !controller()) {
+    DOMException* exception = DOMException::create(
+        InvalidStateError, "The object is no longer associated to a document.");
+    resolver->reject(exception);
     return promise;
+  }
+
+  UseCounter::count(*document, UseCounter::VRGetDisplays);
+
+  controller()->getDisplays(resolver);
+
+  return promise;
 }
 
-VRController* NavigatorVR::controller()
-{
-    if (!frame())
-        return 0;
+VRController* NavigatorVR::controller() {
+  if (!frame())
+    return 0;
 
-    if (!m_controller) {
-        m_controller = new VRController(this);
-    }
+  if (!m_controller) {
+    m_controller = new VRController(this);
+  }
 
-    return m_controller;
+  return m_controller;
 }
 
-Document* NavigatorVR::document()
-{
-    return frame() ? frame()->document() : 0;
+Document* NavigatorVR::document() {
+  return frame() ? frame()->document() : 0;
 }
 
-DEFINE_TRACE(NavigatorVR)
-{
-    visitor->trace(m_controller);
+DEFINE_TRACE(NavigatorVR) {
+  visitor->trace(m_controller);
 
-    Supplement<Navigator>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+  Supplement<Navigator>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-NavigatorVR::NavigatorVR(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
+NavigatorVR::NavigatorVR(LocalFrame* frame) : DOMWindowProperty(frame) {}
+
+NavigatorVR::~NavigatorVR() {}
+
+const char* NavigatorVR::supplementName() {
+  return "NavigatorVR";
 }
 
-NavigatorVR::~NavigatorVR()
-{
+void NavigatorVR::fireVRDisplayPresentChange(VRDisplay* display) {
+  if (frame() && frame()->localDOMWindow()) {
+    frame()->localDOMWindow()->enqueueWindowEvent(VRDisplayEvent::create(
+        EventTypeNames::vrdisplaypresentchange, true, false, display, ""));
+  }
 }
 
-const char* NavigatorVR::supplementName()
-{
-    return "NavigatorVR";
+void NavigatorVR::fireVREvent(VRDisplayEvent* event) {
+  if (frame() && frame()->localDOMWindow()) {
+    frame()->localDOMWindow()->enqueueWindowEvent(event);
+  }
 }
 
-void NavigatorVR::fireVRDisplayPresentChange(VRDisplay* display)
-{
-    if (frame() && frame()->localDOMWindow()) {
-        frame()->localDOMWindow()->enqueueWindowEvent(
-            VRDisplayEvent::create(EventTypeNames::vrdisplaypresentchange, true, false, display, ""));
-    }
-}
-
-void NavigatorVR::fireVREvent(VRDisplayEvent* event)
-{
-    if (frame() && frame()->localDOMWindow()) {
-        frame()->localDOMWindow()->enqueueWindowEvent(event);
-    }
-}
-
-} // namespace blink
+}  // namespace blink

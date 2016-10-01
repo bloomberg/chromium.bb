@@ -34,97 +34,95 @@
 namespace blink {
 
 class UnicodeCodebook {
-    STATIC_ONLY(UnicodeCodebook);
-public:
-    static int codeWord(UChar c) { return c; }
-    enum { codeSize = 1 << 8 * sizeof(UChar) };
+  STATIC_ONLY(UnicodeCodebook);
+
+ public:
+  static int codeWord(UChar c) { return c; }
+  enum { codeSize = 1 << 8 * sizeof(UChar) };
 };
 
 class ASCIICodebook {
-    STATIC_ONLY(ASCIICodebook);
-public:
-    static int codeWord(UChar c) { return c & (codeSize - 1); }
-    enum { codeSize = 1 << (8 * sizeof(char) - 1) };
+  STATIC_ONLY(ASCIICodebook);
+
+ public:
+  static int codeWord(UChar c) { return c & (codeSize - 1); }
+  enum { codeSize = 1 << (8 * sizeof(char) - 1) };
 };
 
-template<typename Codebook>
+template <typename Codebook>
 class SuffixTree {
-    USING_FAST_MALLOC(SuffixTree);
-    WTF_MAKE_NONCOPYABLE(SuffixTree);
-public:
-    SuffixTree(const String& text, unsigned depth)
-        : m_depth(depth)
-        , m_leaf(true)
-    {
-        build(text);
+  USING_FAST_MALLOC(SuffixTree);
+  WTF_MAKE_NONCOPYABLE(SuffixTree);
+
+ public:
+  SuffixTree(const String& text, unsigned depth)
+      : m_depth(depth), m_leaf(true) {
+    build(text);
+  }
+
+  bool mightContain(const String& query) {
+    Node* current = &m_root;
+    int limit = std::min(m_depth, query.length());
+    for (int i = 0; i < limit; ++i) {
+      current = current->at(Codebook::codeWord(query[i]));
+      if (!current)
+        return false;
+    }
+    return true;
+  }
+
+ private:
+  class Node {
+    USING_FAST_MALLOC(Node);
+    WTF_MAKE_NONCOPYABLE(Node);
+
+   public:
+    Node(bool isLeaf = false) {
+      m_children.resize(Codebook::codeSize);
+      m_children.fill(0);
+      m_isLeaf = isLeaf;
     }
 
-    bool mightContain(const String& query)
-    {
-        Node* current = &m_root;
-        int limit = std::min(m_depth, query.length());
-        for (int i = 0; i < limit; ++i) {
-            current = current->at(Codebook::codeWord(query[i]));
-            if (!current)
-                return false;
-        }
-        return true;
+    ~Node() {
+      for (unsigned i = 0; i < m_children.size(); ++i) {
+        Node* child = m_children.at(i);
+        if (child && !child->m_isLeaf)
+          delete child;
+      }
     }
 
-private:
-    class Node {
-        USING_FAST_MALLOC(Node);
-        WTF_MAKE_NONCOPYABLE(Node);
-    public:
-        Node(bool isLeaf = false)
-        {
-            m_children.resize(Codebook::codeSize);
-            m_children.fill(0);
-            m_isLeaf = isLeaf;
-        }
+    Node*& at(int codeWord) { return m_children.at(codeWord); }
 
-        ~Node()
-        {
-            for (unsigned i = 0; i < m_children.size(); ++i) {
-                Node* child = m_children.at(i);
-                if (child && !child->m_isLeaf)
-                    delete child;
-            }
-        }
+   private:
+    typedef Vector<Node*, Codebook::codeSize> ChildrenVector;
 
-        Node*& at(int codeWord) { return m_children.at(codeWord); }
+    ChildrenVector m_children;
+    bool m_isLeaf;
+  };
 
-    private:
-        typedef Vector<Node*, Codebook::codeSize> ChildrenVector;
-
-        ChildrenVector m_children;
-        bool m_isLeaf;
-    };
-
-    void build(const String& text)
-    {
-        for (unsigned base = 0; base < text.length(); ++base) {
-            Node* current = &m_root;
-            unsigned limit = std::min(base + m_depth, text.length());
-            for (unsigned offset = 0; base + offset < limit; ++offset) {
-                ASSERT(current != &m_leaf);
-                Node*& child = current->at(Codebook::codeWord(text[base + offset]));
-                if (!child)
-                    child = base + offset + 1 == limit ? &m_leaf : new Node();
-                current = child;
-            }
-        }
+  void build(const String& text) {
+    for (unsigned base = 0; base < text.length(); ++base) {
+      Node* current = &m_root;
+      unsigned limit = std::min(base + m_depth, text.length());
+      for (unsigned offset = 0; base + offset < limit; ++offset) {
+        ASSERT(current != &m_leaf);
+        Node*& child = current->at(Codebook::codeWord(text[base + offset]));
+        if (!child)
+          child = base + offset + 1 == limit ? &m_leaf : new Node();
+        current = child;
+      }
     }
+  }
 
-    Node m_root;
-    unsigned m_depth;
+  Node m_root;
+  unsigned m_depth;
 
-    // Instead of allocating a fresh empty leaf node for ever leaf in the tree
-    // (there can be a lot of these), we alias all the leaves to this "static"
-    // leaf node.
-    Node m_leaf;
+  // Instead of allocating a fresh empty leaf node for ever leaf in the tree
+  // (there can be a lot of these), we alias all the leaves to this "static"
+  // leaf node.
+  Node m_leaf;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SuffixTree_h
+#endif  // SuffixTree_h

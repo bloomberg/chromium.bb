@@ -29,34 +29,40 @@
 namespace blink {
 
 class DocumentType final : public Node {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DocumentType* create(Document* document, const String& name, const String& publicId, const String& systemId)
-    {
-        return new DocumentType(document, name, publicId, systemId);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    const String& name() const { return m_name; }
-    const String& publicId() const { return m_publicId; }
-    const String& systemId() const { return m_systemId; }
+ public:
+  static DocumentType* create(Document* document,
+                              const String& name,
+                              const String& publicId,
+                              const String& systemId) {
+    return new DocumentType(document, name, publicId, systemId);
+  }
 
-private:
-    DocumentType(Document*, const String& name, const String& publicId, const String& systemId);
+  const String& name() const { return m_name; }
+  const String& publicId() const { return m_publicId; }
+  const String& systemId() const { return m_systemId; }
 
-    String nodeName() const override;
-    NodeType getNodeType() const override;
-    Node* cloneNode(bool deep) override;
+ private:
+  DocumentType(Document*,
+               const String& name,
+               const String& publicId,
+               const String& systemId);
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+  String nodeName() const override;
+  NodeType getNodeType() const override;
+  Node* cloneNode(bool deep) override;
 
-    String m_name;
-    String m_publicId;
-    String m_systemId;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
+
+  String m_name;
+  String m_publicId;
+  String m_systemId;
 };
 
 DEFINE_NODE_TYPE_CASTS(DocumentType, isDocumentTypeNode());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentType_h
+#endif  // DocumentType_h

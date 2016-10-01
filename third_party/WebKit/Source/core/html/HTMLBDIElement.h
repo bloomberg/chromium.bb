@@ -26,18 +26,16 @@
 namespace blink {
 
 class HTMLBDIElement final : public HTMLElement {
-public:
-    DECLARE_NODE_FACTORY(HTMLBDIElement);
+ public:
+  DECLARE_NODE_FACTORY(HTMLBDIElement);
 
-private:
-    inline explicit HTMLBDIElement(Document& document)
-        : HTMLElement(HTMLNames::bdiTag, document)
-    {
-    }
+ private:
+  inline explicit HTMLBDIElement(Document& document)
+      : HTMLElement(HTMLNames::bdiTag, document) {}
 };
 
 DEFINE_NODE_FACTORY(HTMLBDIElement)
 
-} // namespace blink
+}  // namespace blink
 
 #endif

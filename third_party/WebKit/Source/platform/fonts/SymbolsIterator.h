@@ -16,25 +16,26 @@
 namespace blink {
 
 class PLATFORM_EXPORT SymbolsIterator {
-    USING_FAST_MALLOC(SymbolsIterator);
-    WTF_MAKE_NONCOPYABLE(SymbolsIterator);
-public:
-    SymbolsIterator(const UChar* buffer, unsigned bufferSize);
+  USING_FAST_MALLOC(SymbolsIterator);
+  WTF_MAKE_NONCOPYABLE(SymbolsIterator);
 
-    bool consume(unsigned* symbolsLimit, FontFallbackPriority*);
+ public:
+  SymbolsIterator(const UChar* buffer, unsigned bufferSize);
 
-private:
-    FontFallbackPriority fontFallbackPriorityForCharacter(UChar32);
+  bool consume(unsigned* symbolsLimit, FontFallbackPriority*);
 
-    std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
-    unsigned m_bufferSize;
-    UChar32 m_nextChar;
-    bool m_atEnd;
+ private:
+  FontFallbackPriority fontFallbackPriorityForCharacter(UChar32);
 
-    FontFallbackPriority m_currentFontFallbackPriority;
-    FontFallbackPriority m_previousFontFallbackPriority;
+  std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
+  unsigned m_bufferSize;
+  UChar32 m_nextChar;
+  bool m_atEnd;
+
+  FontFallbackPriority m_currentFontFallbackPriority;
+  FontFallbackPriority m_previousFontFallbackPriority;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

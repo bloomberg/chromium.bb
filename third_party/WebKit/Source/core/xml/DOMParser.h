@@ -27,24 +27,25 @@ namespace blink {
 
 class Document;
 
-class DOMParser final : public GarbageCollected<DOMParser>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMParser* create(Document& document)
-    {
-        return new DOMParser(document);
-    }
+class DOMParser final : public GarbageCollected<DOMParser>,
+                        public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    Document* parseFromString(const String&, const String& type);
+ public:
+  static DOMParser* create(Document& document) {
+    return new DOMParser(document);
+  }
 
-    DECLARE_TRACE();
+  Document* parseFromString(const String&, const String& type);
 
-private:
-    explicit DOMParser(Document&);
+  DECLARE_TRACE();
 
-    WeakMember<Document> m_contextDocument;
+ private:
+  explicit DOMParser(Document&);
+
+  WeakMember<Document> m_contextDocument;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMParser_h
+#endif  // DOMParser_h

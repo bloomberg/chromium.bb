@@ -29,55 +29,48 @@
 
 namespace blink {
 
-SourceInfo* SourceInfo::create(const WebSourceInfo& webSourceInfo)
-{
-    DCHECK(!webSourceInfo.isNull());
-    return new SourceInfo(webSourceInfo);
+SourceInfo* SourceInfo::create(const WebSourceInfo& webSourceInfo) {
+  DCHECK(!webSourceInfo.isNull());
+  return new SourceInfo(webSourceInfo);
 }
 
 SourceInfo::SourceInfo(const WebSourceInfo& webSourceInfo)
-    : m_webSourceInfo(webSourceInfo)
-{
+    : m_webSourceInfo(webSourceInfo) {}
+
+String SourceInfo::id() const {
+  return m_webSourceInfo.id();
 }
 
-String SourceInfo::id() const
-{
-    return m_webSourceInfo.id();
-}
-
-String SourceInfo::kind() const
-{
-    switch (m_webSourceInfo.kind()) {
+String SourceInfo::kind() const {
+  switch (m_webSourceInfo.kind()) {
     case WebSourceInfo::SourceKindAudio:
-        return "audio";
+      return "audio";
     case WebSourceInfo::SourceKindVideo:
-        return "video";
+      return "video";
     case WebSourceInfo::SourceKindNone:
-        return "none";
-    }
+      return "none";
+  }
 
-    NOTREACHED();
-    return String();
+  NOTREACHED();
+  return String();
 }
 
-String SourceInfo::label() const
-{
-    return m_webSourceInfo.label();
+String SourceInfo::label() const {
+  return m_webSourceInfo.label();
 }
 
-String SourceInfo::facing() const
-{
-    switch (m_webSourceInfo.facing()) {
+String SourceInfo::facing() const {
+  switch (m_webSourceInfo.facing()) {
     case WebSourceInfo::VideoFacingModeNone:
-        return String();
+      return String();
     case WebSourceInfo::VideoFacingModeUser:
-        return "user";
+      return "user";
     case WebSourceInfo::VideoFacingModeEnvironment:
-        return "environment";
-    }
+      return "environment";
+  }
 
-    NOTREACHED();
-    return String();
+  NOTREACHED();
+  return String();
 }
 
-} // namespace blink
+}  // namespace blink

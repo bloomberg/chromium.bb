@@ -45,17 +45,12 @@ namespace WTF {
 
 #if USE(LEAK_SANITIZER)
 class LeakSanitizerDisabler {
-    WTF_MAKE_NONCOPYABLE(LeakSanitizerDisabler);
-public:
-    LeakSanitizerDisabler()
-    {
-        __lsan_disable();
-    }
+  WTF_MAKE_NONCOPYABLE(LeakSanitizerDisabler);
 
-    ~LeakSanitizerDisabler()
-    {
-        __lsan_enable();
-    }
+ public:
+  LeakSanitizerDisabler() { __lsan_disable(); }
+
+  ~LeakSanitizerDisabler() { __lsan_enable(); }
 };
 
 // WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE: all allocations made in the
@@ -65,8 +60,9 @@ public:
 //
 // TODO(sof): once layering rules allow wtf/ to make use of the Oilpan
 // infrastructure, remove this macro.
-#define WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE \
-        WTF::LeakSanitizerDisabler leakSanitizerDisabler; static_cast<void>(0)
+#define WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE  \
+  WTF::LeakSanitizerDisabler leakSanitizerDisabler; \
+  static_cast<void>(0)
 
 // LEAK_SANITIZER_IGNORE_OBJECT(X): the heap object referenced by pointer X
 // will be ignored by LSan.
@@ -95,46 +91,50 @@ public:
 // (inherited or otherwise.)
 //
 // An empty, trivial registerStatic() method is provided for all other class types T.
-template<typename T>
+template <typename T>
 class CanRegisterStaticLocalReference {
-    typedef char YesType;
-    typedef struct NoType {
-        char padding[8];
-    } NoType;
+  typedef char YesType;
+  typedef struct NoType { char padding[8]; } NoType;
 
-    // Check if class T has public method "T* registerAsStaticReference()".
-    template<typename V> static YesType checkHasRegisterAsStaticReferenceMethod(V* p, typename std::enable_if<IsSubclass<V, typename std::remove_pointer<decltype(p->registerAsStaticReference())>::type>::value>::type* = 0);
-    template<typename V> static NoType checkHasRegisterAsStaticReferenceMethod(...);
+  // Check if class T has public method "T* registerAsStaticReference()".
+  template <typename V>
+  static YesType checkHasRegisterAsStaticReferenceMethod(
+      V* p,
+      typename std::enable_if<IsSubclass<
+          V,
+          typename std::remove_pointer<decltype(
+              p->registerAsStaticReference())>::type>::value>::type* = 0);
+  template <typename V>
+  static NoType checkHasRegisterAsStaticReferenceMethod(...);
 
-public:
-    static const bool value = sizeof(YesType) + sizeof(T) == sizeof(checkHasRegisterAsStaticReferenceMethod<T>(nullptr)) + sizeof(T);
+ public:
+  static const bool value =
+      sizeof(YesType) + sizeof(T) ==
+      sizeof(checkHasRegisterAsStaticReferenceMethod<T>(nullptr)) + sizeof(T);
 };
 
-template<typename T, bool = CanRegisterStaticLocalReference<T>::value>
+template <typename T, bool = CanRegisterStaticLocalReference<T>::value>
 class RegisterStaticLocalReference {
-public:
-    static T* registerStatic(T* ptr)
-    {
-        return ptr;
-    }
+ public:
+  static T* registerStatic(T* ptr) { return ptr; }
 };
 
-template<typename T>
+template <typename T>
 class RegisterStaticLocalReference<T, true> {
-public:
-    static T* registerStatic(T* ptr)
-    {
-        return static_cast<T*>(ptr->registerAsStaticReference());
-    }
+ public:
+  static T* registerStatic(T* ptr) {
+    return static_cast<T*>(ptr->registerAsStaticReference());
+  }
 };
 
-#define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) WTF::RegisterStaticLocalReference<Type>::registerStatic(Object)
+#define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) \
+  WTF::RegisterStaticLocalReference<Type>::registerStatic(Object)
 #else
 #define WTF_INTERNAL_LEAK_SANITIZER_DISABLED_SCOPE
 #define LEAK_SANITIZER_IGNORE_OBJECT(X) ((void)0)
 #define LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, Object) Object
-#endif // USE(LEAK_SANITIZER)
+#endif  // USE(LEAK_SANITIZER)
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // WTF_LeakAnnotations_h
+#endif  // WTF_LeakAnnotations_h

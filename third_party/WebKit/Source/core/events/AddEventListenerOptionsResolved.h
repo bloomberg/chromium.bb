@@ -13,23 +13,28 @@ namespace blink {
 // options. An application requests AddEventListenerOptions and the user
 // agent may change ('resolve') these settings (based on settings or policies)
 // and the result and the reasons why changes occurred are stored in this class.
-class CORE_EXPORT AddEventListenerOptionsResolved : public AddEventListenerOptions {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+class CORE_EXPORT AddEventListenerOptionsResolved
+    : public AddEventListenerOptions {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-public:
-    AddEventListenerOptionsResolved();
-    AddEventListenerOptionsResolved(const AddEventListenerOptions&);
-    virtual ~AddEventListenerOptionsResolved();
+ public:
+  AddEventListenerOptionsResolved();
+  AddEventListenerOptionsResolved(const AddEventListenerOptions&);
+  virtual ~AddEventListenerOptionsResolved();
 
-    void setPassiveForcedForDocumentTarget(bool forced) { m_passiveForcedForDocumentTarget = forced; }
-    bool passiveForcedForDocumentTarget() const { return m_passiveForcedForDocumentTarget; }
+  void setPassiveForcedForDocumentTarget(bool forced) {
+    m_passiveForcedForDocumentTarget = forced;
+  }
+  bool passiveForcedForDocumentTarget() const {
+    return m_passiveForcedForDocumentTarget;
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    bool m_passiveForcedForDocumentTarget;
+ private:
+  bool m_passiveForcedForDocumentTarget;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AddEventListenerOptionsResolved_h
+#endif  // AddEventListenerOptionsResolved_h

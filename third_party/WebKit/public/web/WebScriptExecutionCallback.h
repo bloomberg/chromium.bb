@@ -7,22 +7,24 @@
 
 namespace v8 {
 class Value;
-template <class T> class Local;
+template <class T>
+class Local;
 }
 
 namespace blink {
 
-template <typename T> class WebVector;
+template <typename T>
+class WebVector;
 
 class WebScriptExecutionCallback {
-public:
-    virtual ~WebScriptExecutionCallback() { }
+ public:
+  virtual ~WebScriptExecutionCallback() {}
 
-    // Method to be invoked when the asynchronous script execution is complete.
-    // After function call all objects in vector will be collected
-    virtual void completed(const WebVector<v8::Local<v8::Value> >&) { }
+  // Method to be invoked when the asynchronous script execution is complete.
+  // After function call all objects in vector will be collected
+  virtual void completed(const WebVector<v8::Local<v8::Value>>&) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebScriptExecutionCallback_h
+#endif  // WebScriptExecutionCallback_h

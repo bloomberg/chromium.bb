@@ -29,36 +29,32 @@
 
 namespace blink {
 
-SourceAlpha* SourceAlpha::create(FilterEffect* sourceEffect)
-{
-    return new SourceAlpha(sourceEffect);
+SourceAlpha* SourceAlpha::create(FilterEffect* sourceEffect) {
+  return new SourceAlpha(sourceEffect);
 }
 
 SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
-    : FilterEffect(sourceEffect->getFilter())
-{
-    setOperatingColorSpace(sourceEffect->operatingColorSpace());
-    inputEffects().append(sourceEffect);
+    : FilterEffect(sourceEffect->getFilter()) {
+  setOperatingColorSpace(sourceEffect->operatingColorSpace());
+  inputEffects().append(sourceEffect);
 }
 
-sk_sp<SkImageFilter> SourceAlpha::createImageFilter()
-{
-    sk_sp<SkImageFilter> sourceGraphic(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-    SkScalar matrix[20] = {
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, SK_Scalar1, 0
-    };
-    sk_sp<SkColorFilter> colorFilter = SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
-    return SkColorFilterImageFilter::Make(std::move(colorFilter), std::move(sourceGraphic));
+sk_sp<SkImageFilter> SourceAlpha::createImageFilter() {
+  sk_sp<SkImageFilter> sourceGraphic(
+      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
+  SkScalar matrix[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0,          0,
+                         0, 0, 0, 0, 0, 0, 0, 0, SK_Scalar1, 0};
+  sk_sp<SkColorFilter> colorFilter =
+      SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
+  return SkColorFilterImageFilter::Make(std::move(colorFilter),
+                                        std::move(sourceGraphic));
 }
 
-TextStream& SourceAlpha::externalRepresentation(TextStream& ts, int indent) const
-{
-    writeIndent(ts, indent);
-    ts << "[SourceAlpha]\n";
-    return ts;
+TextStream& SourceAlpha::externalRepresentation(TextStream& ts,
+                                                int indent) const {
+  writeIndent(ts, indent);
+  ts << "[SourceAlpha]\n";
+  return ts;
 }
 
-} // namespace blink
+}  // namespace blink

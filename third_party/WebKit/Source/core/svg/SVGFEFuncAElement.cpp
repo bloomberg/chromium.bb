@@ -23,10 +23,7 @@
 namespace blink {
 
 inline SVGFEFuncAElement::SVGFEFuncAElement(Document& document)
-    : SVGComponentTransferFunctionElement(SVGNames::feFuncATag, document)
-{
-}
+    : SVGComponentTransferFunctionElement(SVGNames::feFuncATag, document) {}
 
 DEFINE_NODE_FACTORY(SVGFEFuncAElement)
-
 }

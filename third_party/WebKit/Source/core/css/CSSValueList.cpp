@@ -28,112 +28,105 @@
 namespace blink {
 
 struct SameSizeAsCSSValueList : CSSValue {
-    Vector<Member<CSSValue>, 4> list_values;
+  Vector<Member<CSSValue>, 4> list_values;
 };
 ASSERT_SIZE(CSSValueList, SameSizeAsCSSValueList);
 
-CSSValueList::CSSValueList(ClassType classType, ValueListSeparator listSeparator)
-    : CSSValue(classType)
-{
-    m_valueListSeparator = listSeparator;
+CSSValueList::CSSValueList(ClassType classType,
+                           ValueListSeparator listSeparator)
+    : CSSValue(classType) {
+  m_valueListSeparator = listSeparator;
 }
 
 CSSValueList::CSSValueList(ValueListSeparator listSeparator)
-    : CSSValue(ValueListClass)
-{
-    m_valueListSeparator = listSeparator;
+    : CSSValue(ValueListClass) {
+  m_valueListSeparator = listSeparator;
 }
 
-bool CSSValueList::removeAll(const CSSValue& val)
-{
-    bool found = false;
-    for (int index = m_values.size() - 1; index >= 0; --index) {
-        Member<const CSSValue>& value = m_values.at(index);
-        if (value && value->equals(val)) {
-            m_values.remove(index);
-            found = true;
-        }
+bool CSSValueList::removeAll(const CSSValue& val) {
+  bool found = false;
+  for (int index = m_values.size() - 1; index >= 0; --index) {
+    Member<const CSSValue>& value = m_values.at(index);
+    if (value && value->equals(val)) {
+      m_values.remove(index);
+      found = true;
     }
+  }
 
-    return found;
+  return found;
 }
 
-bool CSSValueList::hasValue(const CSSValue& val) const
-{
-    for (size_t index = 0; index < m_values.size(); index++) {
-        const Member<const CSSValue>& value = m_values.at(index);
-        if (value && value->equals(val))
-            return true;
-    }
-    return false;
+bool CSSValueList::hasValue(const CSSValue& val) const {
+  for (size_t index = 0; index < m_values.size(); index++) {
+    const Member<const CSSValue>& value = m_values.at(index);
+    if (value && value->equals(val))
+      return true;
+  }
+  return false;
 }
 
-CSSValueList* CSSValueList::copy() const
-{
-    CSSValueList* newList = nullptr;
-    switch (m_valueListSeparator) {
+CSSValueList* CSSValueList::copy() const {
+  CSSValueList* newList = nullptr;
+  switch (m_valueListSeparator) {
     case SpaceSeparator:
-        newList = createSpaceSeparated();
-        break;
+      newList = createSpaceSeparated();
+      break;
     case CommaSeparator:
-        newList = createCommaSeparated();
-        break;
+      newList = createCommaSeparated();
+      break;
     case SlashSeparator:
-        newList = createSlashSeparated();
-        break;
+      newList = createSlashSeparated();
+      break;
     default:
-        ASSERT_NOT_REACHED();
-    }
-    newList->m_values = m_values;
-    return newList;
+      ASSERT_NOT_REACHED();
+  }
+  newList->m_values = m_values;
+  return newList;
 }
 
-String CSSValueList::customCSSText() const
-{
-    StringBuilder result;
-    String separator;
-    switch (m_valueListSeparator) {
+String CSSValueList::customCSSText() const {
+  StringBuilder result;
+  String separator;
+  switch (m_valueListSeparator) {
     case SpaceSeparator:
-        separator = " ";
-        break;
+      separator = " ";
+      break;
     case CommaSeparator:
-        separator = ", ";
-        break;
+      separator = ", ";
+      break;
     case SlashSeparator:
-        separator = " / ";
-        break;
+      separator = " / ";
+      break;
     default:
-        ASSERT_NOT_REACHED();
-    }
+      ASSERT_NOT_REACHED();
+  }
 
-    unsigned size = m_values.size();
-    for (unsigned i = 0; i < size; i++) {
-        if (!result.isEmpty())
-            result.append(separator);
-        result.append(m_values[i]->cssText());
-    }
+  unsigned size = m_values.size();
+  for (unsigned i = 0; i < size; i++) {
+    if (!result.isEmpty())
+      result.append(separator);
+    result.append(m_values[i]->cssText());
+  }
 
-    return result.toString();
+  return result.toString();
 }
 
-bool CSSValueList::equals(const CSSValueList& other) const
-{
-    return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector(m_values, other.m_values);
+bool CSSValueList::equals(const CSSValueList& other) const {
+  return m_valueListSeparator == other.m_valueListSeparator &&
+         compareCSSValueVector(m_values, other.m_values);
 }
 
-bool CSSValueList::hasFailedOrCanceledSubresources() const
-{
-    for (unsigned i = 0; i < m_values.size(); ++i) {
-        if (m_values[i]->hasFailedOrCanceledSubresources())
-            return true;
-    }
-    return false;
+bool CSSValueList::hasFailedOrCanceledSubresources() const {
+  for (unsigned i = 0; i < m_values.size(); ++i) {
+    if (m_values[i]->hasFailedOrCanceledSubresources())
+      return true;
+  }
+  return false;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSValueList)
-{
-    visitor->trace(m_values);
-    CSSValue::traceAfterDispatch(visitor);
+DEFINE_TRACE_AFTER_DISPATCH(CSSValueList) {
+  visitor->trace(m_values);
+  CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

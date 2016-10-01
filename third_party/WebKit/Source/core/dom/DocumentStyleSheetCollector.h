@@ -39,41 +39,50 @@ class StyleSheet;
 class StyleSheetCollection;
 
 class DocumentStyleSheetCollector {
-    // This class contains references to two on-heap collections, therefore
-    // it's unhealthy to have it anywhere but on the stack, where stack
-    // scanning will keep them alive.
-    STACK_ALLOCATED();
-public:
-    friend class ImportedDocumentStyleSheetCollector;
+  // This class contains references to two on-heap collections, therefore
+  // it's unhealthy to have it anywhere but on the stack, where stack
+  // scanning will keep them alive.
+  STACK_ALLOCATED();
 
-    DocumentStyleSheetCollector(HeapVector<Member<StyleSheet>>& sheetsForList, HeapVector<Member<CSSStyleSheet>>& activeList, HeapHashSet<Member<Document>>&);
-    ~DocumentStyleSheetCollector();
+ public:
+  friend class ImportedDocumentStyleSheetCollector;
 
-    void appendActiveStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
-    void appendActiveStyleSheet(CSSStyleSheet*);
-    void appendSheetForList(StyleSheet*);
+  DocumentStyleSheetCollector(HeapVector<Member<StyleSheet>>& sheetsForList,
+                              HeapVector<Member<CSSStyleSheet>>& activeList,
+                              HeapHashSet<Member<Document>>&);
+  ~DocumentStyleSheetCollector();
 
-    bool hasVisited(Document* document) const { return m_visitedDocuments.contains(document); }
-    void willVisit(Document* document) { m_visitedDocuments.add(document); }
+  void appendActiveStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
+  void appendActiveStyleSheet(CSSStyleSheet*);
+  void appendSheetForList(StyleSheet*);
 
-private:
-    HeapVector<Member<StyleSheet>>& m_styleSheetsForStyleSheetList;
-    HeapVector<Member<CSSStyleSheet>>& m_activeAuthorStyleSheets;
-    HeapHashSet<Member<Document>>& m_visitedDocuments;
+  bool hasVisited(Document* document) const {
+    return m_visitedDocuments.contains(document);
+  }
+  void willVisit(Document* document) { m_visitedDocuments.add(document); }
+
+ private:
+  HeapVector<Member<StyleSheet>>& m_styleSheetsForStyleSheetList;
+  HeapVector<Member<CSSStyleSheet>>& m_activeAuthorStyleSheets;
+  HeapHashSet<Member<Document>>& m_visitedDocuments;
 };
 
-class ActiveDocumentStyleSheetCollector final : public DocumentStyleSheetCollector {
-public:
-    ActiveDocumentStyleSheetCollector(StyleSheetCollection&);
-private:
-    HeapHashSet<Member<Document>> m_visitedDocuments;
+class ActiveDocumentStyleSheetCollector final
+    : public DocumentStyleSheetCollector {
+ public:
+  ActiveDocumentStyleSheetCollector(StyleSheetCollection&);
+
+ private:
+  HeapHashSet<Member<Document>> m_visitedDocuments;
 };
 
-class ImportedDocumentStyleSheetCollector final : public DocumentStyleSheetCollector {
-public:
-    ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector&, HeapVector<Member<StyleSheet>>&);
+class ImportedDocumentStyleSheetCollector final
+    : public DocumentStyleSheetCollector {
+ public:
+  ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector&,
+                                      HeapVector<Member<StyleSheet>>&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentStyleSheetCollector_h
+#endif  // DocumentStyleSheetCollector_h

@@ -37,61 +37,47 @@
 namespace blink {
 
 Stream::Stream(ExecutionContext* context, const String& mediaType)
-    : ActiveDOMObject(context)
-    , m_mediaType(mediaType)
-    , m_isNeutered(false)
-{
-    // Create a new internal URL for a stream and register it with the provided
-    // media type.
-    m_internalURL = BlobURL::createInternalStreamURL();
-    BlobRegistry::registerStreamURL(m_internalURL, m_mediaType);
+    : ActiveDOMObject(context), m_mediaType(mediaType), m_isNeutered(false) {
+  // Create a new internal URL for a stream and register it with the provided
+  // media type.
+  m_internalURL = BlobURL::createInternalStreamURL();
+  BlobRegistry::registerStreamURL(m_internalURL, m_mediaType);
 }
 
-void Stream::addData(const char* data, size_t len)
-{
-    RefPtr<RawData> buffer(RawData::create());
-    buffer->mutableData()->resize(len);
-    memcpy(buffer->mutableData()->data(), data, len);
-    BlobRegistry::addDataToStream(m_internalURL, buffer);
+void Stream::addData(const char* data, size_t len) {
+  RefPtr<RawData> buffer(RawData::create());
+  buffer->mutableData()->resize(len);
+  memcpy(buffer->mutableData()->data(), data, len);
+  BlobRegistry::addDataToStream(m_internalURL, buffer);
 }
 
-void Stream::flush()
-{
-    BlobRegistry::flushStream(m_internalURL);
+void Stream::flush() {
+  BlobRegistry::flushStream(m_internalURL);
 }
 
-void Stream::finalize()
-{
-    BlobRegistry::finalizeStream(m_internalURL);
+void Stream::finalize() {
+  BlobRegistry::finalizeStream(m_internalURL);
 }
 
-void Stream::abort()
-{
-    BlobRegistry::abortStream(m_internalURL);
+void Stream::abort() {
+  BlobRegistry::abortStream(m_internalURL);
 }
 
-Stream::~Stream()
-{
-    BlobRegistry::unregisterStreamURL(m_internalURL);
+Stream::~Stream() {
+  BlobRegistry::unregisterStreamURL(m_internalURL);
 }
 
-void Stream::suspend()
-{
+void Stream::suspend() {}
+
+void Stream::resume() {}
+
+void Stream::stop() {
+  neuter();
+  abort();
 }
 
-void Stream::resume()
-{
+DEFINE_TRACE(Stream) {
+  ActiveDOMObject::trace(visitor);
 }
 
-void Stream::stop()
-{
-    neuter();
-    abort();
-}
-
-DEFINE_TRACE(Stream)
-{
-    ActiveDOMObject::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

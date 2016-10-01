@@ -12,28 +12,22 @@
 namespace blink {
 
 class PaintLayerScrollableAreaTest : public RenderingTest {
-public:
-    PaintLayerScrollableAreaTest()
-        : RenderingTest(SingleChildFrameLoaderClient::create())
-    { }
+ public:
+  PaintLayerScrollableAreaTest()
+      : RenderingTest(SingleChildFrameLoaderClient::create()) {}
 
-    bool canPaintBackgroundOntoScrollingContentsLayer(const char* elementId)
-    {
-        PaintLayer* paintLayer = toLayoutBlock(getLayoutObjectByElementId(elementId))->layer();
-        return paintLayer->canPaintBackgroundOntoScrollingContentsLayer();
-    }
+  bool canPaintBackgroundOntoScrollingContentsLayer(const char* elementId) {
+    PaintLayer* paintLayer =
+        toLayoutBlock(getLayoutObjectByElementId(elementId))->layer();
+    return paintLayer->canPaintBackgroundOntoScrollingContentsLayer();
+  }
 
-private:
-    void SetUp() override
-    {
-        RenderingTest::SetUp();
-        enableCompositing();
-    }
+ private:
+  void SetUp() override {
+    RenderingTest::SetUp();
+    enableCompositing();
+  }
 
-    void TearDown() override
-    {
-        RenderingTest::TearDown();
-    }
+  void TearDown() override { RenderingTest::TearDown(); }
 };
-
 }

@@ -25,19 +25,16 @@
 
 namespace blink {
 
-CSSInitialValue* CSSInitialValue::create()
-{
-    return cssValuePool().explicitInitialValue();
+CSSInitialValue* CSSInitialValue::create() {
+  return cssValuePool().explicitInitialValue();
 }
 
-CSSInitialValue* CSSInitialValue::createLegacyImplicit()
-{
-    return cssValuePool().implicitInitialValue();
+CSSInitialValue* CSSInitialValue::createLegacyImplicit() {
+  return cssValuePool().implicitInitialValue();
 }
 
-String CSSInitialValue::customCSSText() const
-{
-    return "initial";
+String CSSInitialValue::customCSSText() const {
+  return "initial";
 }
 
-} // namespace blink
+}  // namespace blink

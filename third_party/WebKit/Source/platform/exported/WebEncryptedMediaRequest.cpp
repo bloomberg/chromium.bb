@@ -13,54 +13,48 @@
 
 namespace blink {
 
-WebEncryptedMediaRequest::WebEncryptedMediaRequest(const WebEncryptedMediaRequest& request)
-{
-    assign(request);
+WebEncryptedMediaRequest::WebEncryptedMediaRequest(
+    const WebEncryptedMediaRequest& request) {
+  assign(request);
 }
 
-WebEncryptedMediaRequest::WebEncryptedMediaRequest(EncryptedMediaRequest* request)
-    : m_private(request)
-{
+WebEncryptedMediaRequest::WebEncryptedMediaRequest(
+    EncryptedMediaRequest* request)
+    : m_private(request) {}
+
+WebEncryptedMediaRequest::~WebEncryptedMediaRequest() {
+  reset();
 }
 
-WebEncryptedMediaRequest::~WebEncryptedMediaRequest()
-{
-    reset();
+WebString WebEncryptedMediaRequest::keySystem() const {
+  return m_private->keySystem();
 }
 
-WebString WebEncryptedMediaRequest::keySystem() const
-{
-    return m_private->keySystem();
+const WebVector<WebMediaKeySystemConfiguration>&
+WebEncryptedMediaRequest::supportedConfigurations() const {
+  return m_private->supportedConfigurations();
 }
 
-const WebVector<WebMediaKeySystemConfiguration>& WebEncryptedMediaRequest::supportedConfigurations() const
-{
-    return m_private->supportedConfigurations();
+WebSecurityOrigin WebEncryptedMediaRequest::getSecurityOrigin() const {
+  return WebSecurityOrigin(m_private->getSecurityOrigin());
 }
 
-WebSecurityOrigin WebEncryptedMediaRequest::getSecurityOrigin() const
-{
-    return WebSecurityOrigin(m_private->getSecurityOrigin());
+void WebEncryptedMediaRequest::requestSucceeded(
+    WebContentDecryptionModuleAccess* access) {
+  m_private->requestSucceeded(access);
 }
 
-void WebEncryptedMediaRequest::requestSucceeded(WebContentDecryptionModuleAccess* access)
-{
-    m_private->requestSucceeded(access);
+void WebEncryptedMediaRequest::requestNotSupported(
+    const WebString& errorMessage) {
+  m_private->requestNotSupported(errorMessage);
 }
 
-void WebEncryptedMediaRequest::requestNotSupported(const WebString& errorMessage)
-{
-    m_private->requestNotSupported(errorMessage);
+void WebEncryptedMediaRequest::assign(const WebEncryptedMediaRequest& other) {
+  m_private = other.m_private;
 }
 
-void WebEncryptedMediaRequest::assign(const WebEncryptedMediaRequest& other)
-{
-    m_private = other.m_private;
+void WebEncryptedMediaRequest::reset() {
+  m_private.reset();
 }
 
-void WebEncryptedMediaRequest::reset()
-{
-    m_private.reset();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -11,68 +11,68 @@ namespace {
 const char kTemporary[] = "temporary";
 const char kPersistentLicense[] = "persistent-license";
 
-} // namespace
+}  // namespace
 
-WebEncryptedMediaInitDataType EncryptedMediaUtils::convertToInitDataType(const String& initDataType)
-{
-    if (initDataType == "cenc")
-        return WebEncryptedMediaInitDataType::Cenc;
-    if (initDataType == "keyids")
-        return WebEncryptedMediaInitDataType::Keyids;
-    if (initDataType == "webm")
-        return WebEncryptedMediaInitDataType::Webm;
+WebEncryptedMediaInitDataType EncryptedMediaUtils::convertToInitDataType(
+    const String& initDataType) {
+  if (initDataType == "cenc")
+    return WebEncryptedMediaInitDataType::Cenc;
+  if (initDataType == "keyids")
+    return WebEncryptedMediaInitDataType::Keyids;
+  if (initDataType == "webm")
+    return WebEncryptedMediaInitDataType::Webm;
 
-    // |initDataType| is not restricted in the idl, so anything is possible.
-    return WebEncryptedMediaInitDataType::Unknown;
+  // |initDataType| is not restricted in the idl, so anything is possible.
+  return WebEncryptedMediaInitDataType::Unknown;
 }
 
-String EncryptedMediaUtils::convertFromInitDataType(WebEncryptedMediaInitDataType initDataType)
-{
-    switch (initDataType) {
+String EncryptedMediaUtils::convertFromInitDataType(
+    WebEncryptedMediaInitDataType initDataType) {
+  switch (initDataType) {
     case WebEncryptedMediaInitDataType::Cenc:
-        return "cenc";
+      return "cenc";
     case WebEncryptedMediaInitDataType::Keyids:
-        return "keyids";
+      return "keyids";
     case WebEncryptedMediaInitDataType::Webm:
-        return "webm";
+      return "webm";
     case WebEncryptedMediaInitDataType::Unknown:
-        // Chromium should not use Unknown, but we use it in Blink when the
-        // actual value has been blocked for non-same-origin or mixed content.
-        return String();
-    }
+      // Chromium should not use Unknown, but we use it in Blink when the
+      // actual value has been blocked for non-same-origin or mixed content.
+      return String();
+  }
 
-    NOTREACHED();
-    return String();
+  NOTREACHED();
+  return String();
 }
 
-WebEncryptedMediaSessionType EncryptedMediaUtils::convertToSessionType(const String& sessionType)
-{
-    if (sessionType == kTemporary)
-        return WebEncryptedMediaSessionType::Temporary;
-    if (sessionType == kPersistentLicense)
-        return WebEncryptedMediaSessionType::PersistentLicense;
+WebEncryptedMediaSessionType EncryptedMediaUtils::convertToSessionType(
+    const String& sessionType) {
+  if (sessionType == kTemporary)
+    return WebEncryptedMediaSessionType::Temporary;
+  if (sessionType == kPersistentLicense)
+    return WebEncryptedMediaSessionType::PersistentLicense;
 
-    // |sessionType| is not restricted in the idl, so anything is possible.
-    return WebEncryptedMediaSessionType::Unknown;
+  // |sessionType| is not restricted in the idl, so anything is possible.
+  return WebEncryptedMediaSessionType::Unknown;
 }
 
-String EncryptedMediaUtils::convertFromSessionType(WebEncryptedMediaSessionType sessionType)
-{
-    switch (sessionType) {
+String EncryptedMediaUtils::convertFromSessionType(
+    WebEncryptedMediaSessionType sessionType) {
+  switch (sessionType) {
     case WebEncryptedMediaSessionType::Temporary:
-        return kTemporary;
+      return kTemporary;
     case WebEncryptedMediaSessionType::PersistentLicense:
-        return kPersistentLicense;
+      return kPersistentLicense;
     // FIXME: Remove once removed from Chromium (crbug.com/448888).
     case WebEncryptedMediaSessionType::PersistentReleaseMessage:
     case WebEncryptedMediaSessionType::Unknown:
-        // Chromium should not use Unknown.
-        NOTREACHED();
-        return String();
-    }
+      // Chromium should not use Unknown.
+      NOTREACHED();
+      return String();
+  }
 
-    NOTREACHED();
-    return String();
+  NOTREACHED();
+  return String();
 }
 
-} // namespace blink
+}  // namespace blink

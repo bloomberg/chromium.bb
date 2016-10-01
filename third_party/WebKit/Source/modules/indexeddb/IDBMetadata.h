@@ -39,79 +39,80 @@
 namespace blink {
 
 struct IDBIndexMetadata {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    IDBIndexMetadata() { }
-    IDBIndexMetadata(const String& name, int64_t id, const IDBKeyPath& keyPath, bool unique, bool multiEntry)
-        : name(name)
-        , id(id)
-        , keyPath(keyPath)
-        , unique(unique)
-        , multiEntry(multiEntry) { }
-    String name;
-    int64_t id;
-    IDBKeyPath keyPath;
-    bool unique;
-    bool multiEntry;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  IDBIndexMetadata() {}
+  IDBIndexMetadata(const String& name,
+                   int64_t id,
+                   const IDBKeyPath& keyPath,
+                   bool unique,
+                   bool multiEntry)
+      : name(name),
+        id(id),
+        keyPath(keyPath),
+        unique(unique),
+        multiEntry(multiEntry) {}
+  String name;
+  int64_t id;
+  IDBKeyPath keyPath;
+  bool unique;
+  bool multiEntry;
 
-    static constexpr int64_t InvalidId = -1;
+  static constexpr int64_t InvalidId = -1;
 };
 
 struct IDBObjectStoreMetadata {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    IDBObjectStoreMetadata() { }
-    IDBObjectStoreMetadata(const String& name, int64_t id, const IDBKeyPath& keyPath, bool autoIncrement, int64_t maxIndexId)
-        : name(name)
-        , id(id)
-        , keyPath(keyPath)
-        , autoIncrement(autoIncrement)
-        , maxIndexId(maxIndexId)
-    {
-    }
-    String name;
-    int64_t id;
-    IDBKeyPath keyPath;
-    bool autoIncrement;
-    int64_t maxIndexId;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  IDBObjectStoreMetadata() {}
+  IDBObjectStoreMetadata(const String& name,
+                         int64_t id,
+                         const IDBKeyPath& keyPath,
+                         bool autoIncrement,
+                         int64_t maxIndexId)
+      : name(name),
+        id(id),
+        keyPath(keyPath),
+        autoIncrement(autoIncrement),
+        maxIndexId(maxIndexId) {}
+  String name;
+  int64_t id;
+  IDBKeyPath keyPath;
+  bool autoIncrement;
+  int64_t maxIndexId;
 
-    static constexpr int64_t InvalidId = -1;
+  static constexpr int64_t InvalidId = -1;
 
-    typedef HashMap<int64_t, IDBIndexMetadata> IndexMap;
-    IndexMap indexes;
+  typedef HashMap<int64_t, IDBIndexMetadata> IndexMap;
+  IndexMap indexes;
 };
 
 struct IDBDatabaseMetadata {
-    DISALLOW_NEW();
-    // FIXME: These can probably be collapsed into 0.
-    enum {
-        NoVersion = -1,
-        DefaultVersion = 0
-    };
+  DISALLOW_NEW();
+  // FIXME: These can probably be collapsed into 0.
+  enum { NoVersion = -1, DefaultVersion = 0 };
 
-    typedef HashMap<int64_t, IDBObjectStoreMetadata> ObjectStoreMap;
+  typedef HashMap<int64_t, IDBObjectStoreMetadata> ObjectStoreMap;
 
-    IDBDatabaseMetadata()
-        : version(NoVersion)
-    {
-    }
+  IDBDatabaseMetadata() : version(NoVersion) {}
 
-    IDBDatabaseMetadata(const String& name, int64_t id, int64_t version, int64_t maxObjectStoreId)
-        : name(name)
-        , id(id)
-        , version(version)
-        , maxObjectStoreId(maxObjectStoreId)
-    {
-    }
+  IDBDatabaseMetadata(const String& name,
+                      int64_t id,
+                      int64_t version,
+                      int64_t maxObjectStoreId)
+      : name(name),
+        id(id),
+        version(version),
+        maxObjectStoreId(maxObjectStoreId) {}
 
-    explicit IDBDatabaseMetadata(const WebIDBMetadata&);
+  explicit IDBDatabaseMetadata(const WebIDBMetadata&);
 
-    String name;
-    int64_t id;
-    int64_t version;
-    int64_t maxObjectStoreId;
+  String name;
+  int64_t id;
+  int64_t version;
+  int64_t maxObjectStoreId;
 
-    ObjectStoreMap objectStores;
+  ObjectStoreMap objectStores;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBMetadata_h
+#endif  // IDBMetadata_h

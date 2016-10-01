@@ -8,12 +8,12 @@
 namespace blink {
 
 enum class WebNavigationHintType {
-    LinkMouseDown,
-    LinkTapUnconfirmed,
-    LinkTapDown,
-    Last = LinkTapDown
+  LinkMouseDown,
+  LinkTapUnconfirmed,
+  LinkTapDown,
+  Last = LinkTapDown
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebNavigationHintType_h
+#endif  // WebNavigationHintType_h

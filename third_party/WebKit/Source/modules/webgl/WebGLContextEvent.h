@@ -32,37 +32,39 @@
 namespace blink {
 
 class WebGLContextEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    static WebGLContextEvent* create()
-    {
-        return new WebGLContextEvent;
-    }
-    static WebGLContextEvent* create(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage)
-    {
-        return new WebGLContextEvent(type, canBubble, cancelable, statusMessage);
-    }
-    static WebGLContextEvent* create(const AtomicString& type, const WebGLContextEventInit& initializer)
-    {
-        return new WebGLContextEvent(type, initializer);
-    }
-    ~WebGLContextEvent() override;
+ public:
+  static WebGLContextEvent* create() { return new WebGLContextEvent; }
+  static WebGLContextEvent* create(const AtomicString& type,
+                                   bool canBubble,
+                                   bool cancelable,
+                                   const String& statusMessage) {
+    return new WebGLContextEvent(type, canBubble, cancelable, statusMessage);
+  }
+  static WebGLContextEvent* create(const AtomicString& type,
+                                   const WebGLContextEventInit& initializer) {
+    return new WebGLContextEvent(type, initializer);
+  }
+  ~WebGLContextEvent() override;
 
-    const String& statusMessage() const { return m_statusMessage; }
+  const String& statusMessage() const { return m_statusMessage; }
 
-    const AtomicString& interfaceName() const override;
+  const AtomicString& interfaceName() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    WebGLContextEvent();
-    WebGLContextEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage);
-    WebGLContextEvent(const AtomicString&, const WebGLContextEventInit&);
+ private:
+  WebGLContextEvent();
+  WebGLContextEvent(const AtomicString& type,
+                    bool canBubble,
+                    bool cancelable,
+                    const String& statusMessage);
+  WebGLContextEvent(const AtomicString&, const WebGLContextEventInit&);
 
-    String m_statusMessage;
+  String m_statusMessage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLContextEvent_h
+#endif  // WebGLContextEvent_h

@@ -26,40 +26,31 @@
 
 namespace blink {
 
-OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create()
-{
-    return new OfflineAudioCompletionEvent;
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create() {
+  return new OfflineAudioCompletionEvent;
 }
 
-OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create(AudioBuffer* renderedBuffer)
-{
-    return new OfflineAudioCompletionEvent(renderedBuffer);
+OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::create(
+    AudioBuffer* renderedBuffer) {
+  return new OfflineAudioCompletionEvent(renderedBuffer);
 }
 
-OfflineAudioCompletionEvent::OfflineAudioCompletionEvent()
-{
+OfflineAudioCompletionEvent::OfflineAudioCompletionEvent() {}
+
+OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(
+    AudioBuffer* renderedBuffer)
+    : Event(EventTypeNames::complete, true, false),
+      m_renderedBuffer(renderedBuffer) {}
+
+OfflineAudioCompletionEvent::~OfflineAudioCompletionEvent() {}
+
+const AtomicString& OfflineAudioCompletionEvent::interfaceName() const {
+  return EventNames::OfflineAudioCompletionEvent;
 }
 
-OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(AudioBuffer* renderedBuffer)
-    : Event(EventTypeNames::complete, true, false)
-    , m_renderedBuffer(renderedBuffer)
-{
+DEFINE_TRACE(OfflineAudioCompletionEvent) {
+  visitor->trace(m_renderedBuffer);
+  Event::trace(visitor);
 }
 
-OfflineAudioCompletionEvent::~OfflineAudioCompletionEvent()
-{
-}
-
-const AtomicString& OfflineAudioCompletionEvent::interfaceName() const
-{
-    return EventNames::OfflineAudioCompletionEvent;
-}
-
-DEFINE_TRACE(OfflineAudioCompletionEvent)
-{
-    visitor->trace(m_renderedBuffer);
-    Event::trace(visitor);
-}
-
-} // namespace blink
-
+}  // namespace blink

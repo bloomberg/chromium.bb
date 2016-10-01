@@ -27,34 +27,33 @@
 namespace blink {
 
 inline SVGViewElement::SVGViewElement(Document& document)
-    : SVGElement(SVGNames::viewTag, document)
-    , SVGFitToViewBox(this)
-    , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
-{
-    addToPropertyMap(m_viewTarget);
-    UseCounter::count(document, UseCounter::SVGViewElement);
+    : SVGElement(SVGNames::viewTag, document),
+      SVGFitToViewBox(this),
+      m_viewTarget(
+          SVGStaticStringList::create(this, SVGNames::viewTargetAttr)) {
+  addToPropertyMap(m_viewTarget);
+  UseCounter::count(document, UseCounter::SVGViewElement);
 }
 
 DEFINE_NODE_FACTORY(SVGViewElement)
 
-DEFINE_TRACE(SVGViewElement)
-{
-    visitor->trace(m_viewTarget);
-    SVGElement::trace(visitor);
-    SVGFitToViewBox::trace(visitor);
+DEFINE_TRACE(SVGViewElement) {
+  visitor->trace(m_viewTarget);
+  SVGElement::trace(visitor);
+  SVGFitToViewBox::trace(visitor);
 }
 
-SVGStringListTearOff* SVGViewElement::viewTarget()
-{
-    return m_viewTarget->tearOff();
+SVGStringListTearOff* SVGViewElement::viewTarget() {
+  return m_viewTarget->tearOff();
 }
 
-void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
-{
-    if (SVGZoomAndPan::parseAttribute(name, value))
-        return;
+void SVGViewElement::parseAttribute(const QualifiedName& name,
+                                    const AtomicString& oldValue,
+                                    const AtomicString& value) {
+  if (SVGZoomAndPan::parseAttribute(name, value))
+    return;
 
-    SVGElement::parseAttribute(name, oldValue, value);
+  SVGElement::parseAttribute(name, oldValue, value);
 }
 
-} // namespace blink
+}  // namespace blink

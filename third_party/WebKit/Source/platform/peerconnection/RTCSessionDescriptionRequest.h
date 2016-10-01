@@ -37,19 +37,20 @@
 namespace blink {
 class WebRTCSessionDescription;
 
-class RTCSessionDescriptionRequest : public GarbageCollectedFinalized<RTCSessionDescriptionRequest> {
-public:
-    virtual ~RTCSessionDescriptionRequest() { }
+class RTCSessionDescriptionRequest
+    : public GarbageCollectedFinalized<RTCSessionDescriptionRequest> {
+ public:
+  virtual ~RTCSessionDescriptionRequest() {}
 
-    virtual void requestSucceeded(const WebRTCSessionDescription&) = 0;
-    virtual void requestFailed(const String& error) = 0;
+  virtual void requestSucceeded(const WebRTCSessionDescription&) = 0;
+  virtual void requestFailed(const String& error) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    RTCSessionDescriptionRequest() { }
+ protected:
+  RTCSessionDescriptionRequest() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCSessionDescriptionRequest_h
+#endif  // RTCSessionDescriptionRequest_h

@@ -13,15 +13,17 @@ struct PaintInfo;
 class LayoutSVGForeignObject;
 
 class SVGForeignObjectPainter {
-    STACK_ALLOCATED();
-public:
-    SVGForeignObjectPainter(const LayoutSVGForeignObject& layoutSVGForeignObject) : m_layoutSVGForeignObject(layoutSVGForeignObject) { }
-    void paint(const PaintInfo&);
+  STACK_ALLOCATED();
 
-private:
-    const LayoutSVGForeignObject& m_layoutSVGForeignObject;
+ public:
+  SVGForeignObjectPainter(const LayoutSVGForeignObject& layoutSVGForeignObject)
+      : m_layoutSVGForeignObject(layoutSVGForeignObject) {}
+  void paint(const PaintInfo&);
+
+ private:
+  const LayoutSVGForeignObject& m_layoutSVGForeignObject;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGForeignObjectPainter_h
+#endif  // SVGForeignObjectPainter_h

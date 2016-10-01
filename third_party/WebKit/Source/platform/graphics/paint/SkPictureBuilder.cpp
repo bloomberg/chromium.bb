@@ -11,32 +11,33 @@
 
 namespace blink {
 
-SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds, SkMetaData* metaData, GraphicsContext* containingContext)
-    : m_bounds(bounds)
-{
-    GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
-    if (containingContext && containingContext->contextDisabled())
-        disabledMode = GraphicsContext::FullyDisabled;
+SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
+                                   SkMetaData* metaData,
+                                   GraphicsContext* containingContext)
+    : m_bounds(bounds) {
+  GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
+  if (containingContext && containingContext->contextDisabled())
+    disabledMode = GraphicsContext::FullyDisabled;
 
-    m_paintController = PaintController::create();
-    m_paintController->beginSkippingCache();
-    m_context = wrapUnique(new GraphicsContext(*m_paintController, disabledMode, metaData));
+  m_paintController = PaintController::create();
+  m_paintController->beginSkippingCache();
+  m_context = wrapUnique(
+      new GraphicsContext(*m_paintController, disabledMode, metaData));
 
-    if (containingContext) {
-        m_context->setDeviceScaleFactor(containingContext->deviceScaleFactor());
-        m_context->setPrinting(containingContext->printing());
-    }
+  if (containingContext) {
+    m_context->setDeviceScaleFactor(containingContext->deviceScaleFactor());
+    m_context->setPrinting(containingContext->printing());
+  }
 }
 
 SkPictureBuilder::~SkPictureBuilder() {}
 
-sk_sp<SkPicture> SkPictureBuilder::endRecording()
-{
-    m_context->beginRecording(m_bounds);
-    m_paintController->endSkippingCache();
-    m_paintController->commitNewDisplayItems();
-    m_paintController->paintArtifact().replay(*m_context);
-    return m_context->endRecording();
+sk_sp<SkPicture> SkPictureBuilder::endRecording() {
+  m_context->beginRecording(m_bounds);
+  m_paintController->endSkippingCache();
+  m_paintController->commitNewDisplayItems();
+  m_paintController->paintArtifact().replay(*m_context);
+  return m_context->endRecording();
 }
 
-} // namespace blink
+}  // namespace blink

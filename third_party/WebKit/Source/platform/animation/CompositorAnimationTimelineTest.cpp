@@ -14,29 +14,32 @@
 
 namespace blink {
 
-class CompositorAnimationTimelineTest : public CompositorTest {
-};
+class CompositorAnimationTimelineTest : public CompositorTest {};
 
-TEST_F(CompositorAnimationTimelineTest, CompositorTimelineDeletionDetachesFromAnimationHost)
-{
-    std::unique_ptr<CompositorAnimationTimeline> timeline = CompositorAnimationTimeline::create();
+TEST_F(CompositorAnimationTimelineTest,
+       CompositorTimelineDeletionDetachesFromAnimationHost) {
+  std::unique_ptr<CompositorAnimationTimeline> timeline =
+      CompositorAnimationTimeline::create();
 
-    scoped_refptr<cc::AnimationTimeline> ccTimeline = timeline->animationTimeline();
-    EXPECT_FALSE(ccTimeline->animation_host());
+  scoped_refptr<cc::AnimationTimeline> ccTimeline =
+      timeline->animationTimeline();
+  EXPECT_FALSE(ccTimeline->animation_host());
 
-    std::unique_ptr<WebLayerTreeView> layerTreeHost = wrapUnique(new WebLayerTreeViewImplForTesting);
-    DCHECK(layerTreeHost);
+  std::unique_ptr<WebLayerTreeView> layerTreeHost =
+      wrapUnique(new WebLayerTreeViewImplForTesting);
+  DCHECK(layerTreeHost);
 
-    layerTreeHost->attachCompositorAnimationTimeline(timeline->animationTimeline());
-    cc::AnimationHost* animationHost = ccTimeline->animation_host();
-    EXPECT_TRUE(animationHost);
-    EXPECT_TRUE(animationHost->GetTimelineById(ccTimeline->id()));
+  layerTreeHost->attachCompositorAnimationTimeline(
+      timeline->animationTimeline());
+  cc::AnimationHost* animationHost = ccTimeline->animation_host();
+  EXPECT_TRUE(animationHost);
+  EXPECT_TRUE(animationHost->GetTimelineById(ccTimeline->id()));
 
-    // Delete CompositorAnimationTimeline while attached to host.
-    timeline = nullptr;
+  // Delete CompositorAnimationTimeline while attached to host.
+  timeline = nullptr;
 
-    EXPECT_FALSE(ccTimeline->animation_host());
-    EXPECT_FALSE(animationHost->GetTimelineById(ccTimeline->id()));
+  EXPECT_FALSE(ccTimeline->animation_host());
+  EXPECT_FALSE(animationHost->GetTimelineById(ccTimeline->id()));
 }
 
-} // namespace blink
+}  // namespace blink

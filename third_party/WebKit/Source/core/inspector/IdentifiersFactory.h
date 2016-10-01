@@ -37,24 +37,24 @@ class LocalFrame;
 class InspectedFrames;
 
 class CORE_EXPORT IdentifiersFactory {
-    STATIC_ONLY(IdentifiersFactory);
-public:
-    static String createIdentifier();
+  STATIC_ONLY(IdentifiersFactory);
 
-    static String requestId(unsigned long identifier);
+ public:
+  static String createIdentifier();
 
-    static String frameId(LocalFrame*);
-    static LocalFrame* frameById(InspectedFrames*, const String&);
+  static String requestId(unsigned long identifier);
 
-    static String loaderId(DocumentLoader*);
-    static DocumentLoader* loaderById(InspectedFrames*, const String&);
+  static String frameId(LocalFrame*);
+  static LocalFrame* frameById(InspectedFrames*, const String&);
 
-private:
-    static String addProcessIdPrefixTo(int id);
-    static int removeProcessIdPrefixFrom(const String&, bool* ok);
+  static String loaderId(DocumentLoader*);
+  static DocumentLoader* loaderById(InspectedFrames*, const String&);
+
+ private:
+  static String addProcessIdPrefixTo(int id);
+  static int removeProcessIdPrefixFrom(const String&, bool* ok);
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // IdentifiersFactory_h
+#endif  // IdentifiersFactory_h

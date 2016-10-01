@@ -41,10 +41,9 @@ class WebURLResponse;
 
 namespace URLTestHelpers {
 
-inline blink::KURL toKURL(const std::string& url)
-{
-    WTF::String wtfString(url.c_str());
-    return blink::KURL(blink::ParsedURLString, wtfString);
+inline blink::KURL toKURL(const std::string& url) {
+  WTF::String wtfString(url.c_str());
+  return blink::KURL(blink::ParsedURLString, wtfString);
 }
 
 // Helper functions for mock URLs. These functions set up the desired URL and mimeType, with a 200 OK return status.
@@ -52,13 +51,26 @@ inline blink::KURL toKURL(const std::string& url)
 // For the actual file path:  <WebKit root directory> + relativeBaseDirectory + fileName,
 // or, if the relative base directory is not specified:  <WebKit root directory> + fileName.
 //
-void registerMockedURLFromBaseURL(const WebString& baseURL, const WebString& fileName, const WebString& mimeType = WebString::fromUTF8("text/html"));
-void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, const WebString& mimeType = WebString::fromUTF8("text/html"));
-void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, const WebString& mimeType);
-void registerMockedURLLoadWithCustomResponse(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, WebURLResponse);
+void registerMockedURLFromBaseURL(
+    const WebString& baseURL,
+    const WebString& fileName,
+    const WebString& mimeType = WebString::fromUTF8("text/html"));
+void registerMockedURLLoad(
+    const WebURL& fullURL,
+    const WebString& fileName,
+    const WebString& mimeType = WebString::fromUTF8("text/html"));
+void registerMockedURLLoad(const WebURL& fullURL,
+                           const WebString& fileName,
+                           const WebString& relativeBaseDirectory,
+                           const WebString& mimeType);
+void registerMockedURLLoadWithCustomResponse(
+    const WebURL& fullURL,
+    const WebString& fileName,
+    const WebString& relativeBaseDirectory,
+    WebURLResponse);
 void registerMockedErrorURLLoad(const WebURL& fullURL);
 
-} // namespace URLTestHelpers
-} // namespace blink
+}  // namespace URLTestHelpers
+}  // namespace blink
 
 #endif

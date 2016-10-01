@@ -12,21 +12,22 @@ namespace blink {
 class WebGL2RenderingContextBase;
 
 class WebGLSampler : public WebGLSharedPlatform3DObject {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~WebGLSampler() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static WebGLSampler* create(WebGL2RenderingContextBase*);
+ public:
+  ~WebGLSampler() override;
 
-protected:
-    explicit WebGLSampler(WebGL2RenderingContextBase*);
+  static WebGLSampler* create(WebGL2RenderingContextBase*);
 
-    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+ protected:
+  explicit WebGLSampler(WebGL2RenderingContextBase*);
 
-private:
-    bool isSampler() const override { return true; }
+  void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
+
+ private:
+  bool isSampler() const override { return true; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLSampler_h
+#endif  // WebGLSampler_h

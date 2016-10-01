@@ -40,40 +40,53 @@ class SVGForeignObjectElement;
 // See http://www.w3.org/TR/html5/syntax.html#elements-0 with the rules for
 // 'foreign elements'. TODO(jchaffraix): Find a better place for this paragraph.
 class LayoutSVGForeignObject final : public LayoutSVGBlock {
-public:
-    explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
-    ~LayoutSVGForeignObject() override;
+ public:
+  explicit LayoutSVGForeignObject(SVGForeignObjectElement*);
+  ~LayoutSVGForeignObject() override;
 
-    const char* name() const override { return "LayoutSVGForeignObject"; }
+  const char* name() const override { return "LayoutSVGForeignObject"; }
 
-    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    void paint(const PaintInfo&, const LayoutPoint&) const override;
+  void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    void layout() override;
+  void layout() override;
 
-    FloatRect objectBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
-    FloatRect strokeBoundingBox() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
-    FloatRect paintInvalidationRectInLocalSVGCoordinates() const override { return FloatRect(FloatPoint(), m_viewport.size()); }
+  FloatRect objectBoundingBox() const override {
+    return FloatRect(FloatPoint(), m_viewport.size());
+  }
+  FloatRect strokeBoundingBox() const override {
+    return FloatRect(FloatPoint(), m_viewport.size());
+  }
+  FloatRect paintInvalidationRectInLocalSVGCoordinates() const override {
+    return FloatRect(FloatPoint(), m_viewport.size());
+  }
 
-    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGForeignObject || LayoutSVGBlock::isOfType(type); }
+  bool nodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& pointInParent,
+                        HitTestAction) override;
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGForeignObject ||
+           LayoutSVGBlock::isOfType(type);
+  }
 
-    void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+  void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-    FloatRect viewportRect() const { return m_viewport; }
+  FloatRect viewportRect() const { return m_viewport; }
 
-private:
-    void updateLogicalWidth() override;
-    void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+ private:
+  void updateLogicalWidth() override;
+  void computeLogicalHeight(LayoutUnit logicalHeight,
+                            LayoutUnit logicalTop,
+                            LogicalExtentComputedValues&) const override;
 
-    const AffineTransform& localToSVGParentTransform() const override;
+  const AffineTransform& localToSVGParentTransform() const override;
 
-    bool m_needsTransformUpdate : 1;
-    FloatRect m_viewport;
-    mutable AffineTransform m_localToParentTransform;
+  bool m_needsTransformUpdate : 1;
+  FloatRect m_viewport;
+  mutable AffineTransform m_localToParentTransform;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

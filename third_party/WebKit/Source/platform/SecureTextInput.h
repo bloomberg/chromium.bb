@@ -42,10 +42,10 @@ namespace blink {
 PLATFORM_EXPORT void enableSecureTextInput();
 PLATFORM_EXPORT void disableSecureTextInput();
 #else
-inline void enableSecureTextInput() { }
-inline void disableSecureTextInput() { }
+inline void enableSecureTextInput() {}
+inline void disableSecureTextInput() {}
 #endif
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SecureTextInput_h
+#endif  // SecureTextInput_h

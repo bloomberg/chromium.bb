@@ -33,52 +33,49 @@
 
 namespace blink {
 
-LayoutImageResourceStyleImage::LayoutImageResourceStyleImage(StyleImage* styleImage)
-    : m_styleImage(styleImage)
-{
-    ASSERT(m_styleImage);
+LayoutImageResourceStyleImage::LayoutImageResourceStyleImage(
+    StyleImage* styleImage)
+    : m_styleImage(styleImage) {
+  ASSERT(m_styleImage);
 }
 
-LayoutImageResourceStyleImage::~LayoutImageResourceStyleImage()
-{
-    ASSERT(!m_cachedImage);
+LayoutImageResourceStyleImage::~LayoutImageResourceStyleImage() {
+  ASSERT(!m_cachedImage);
 }
 
-void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject)
-{
-    LayoutImageResource::initialize(layoutObject);
+void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject) {
+  LayoutImageResource::initialize(layoutObject);
 
-    if (m_styleImage->isImageResource())
-        m_cachedImage = toStyleFetchedImage(m_styleImage)->cachedImage();
+  if (m_styleImage->isImageResource())
+    m_cachedImage = toStyleFetchedImage(m_styleImage)->cachedImage();
 
-    m_styleImage->addClient(m_layoutObject);
+  m_styleImage->addClient(m_layoutObject);
 }
 
-void LayoutImageResourceStyleImage::shutdown()
-{
-    ASSERT(m_layoutObject);
-    m_styleImage->removeClient(m_layoutObject);
-    m_cachedImage = nullptr;
+void LayoutImageResourceStyleImage::shutdown() {
+  ASSERT(m_layoutObject);
+  m_styleImage->removeClient(m_layoutObject);
+  m_cachedImage = nullptr;
 }
 
-PassRefPtr<Image> LayoutImageResourceStyleImage::image(const IntSize& size, float zoom) const
-{
-    // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
-    if (m_styleImage->isPendingImage())
-        return nullptr;
-    return m_styleImage->image(*m_layoutObject, size, zoom);
+PassRefPtr<Image> LayoutImageResourceStyleImage::image(const IntSize& size,
+                                                       float zoom) const {
+  // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
+  if (m_styleImage->isPendingImage())
+    return nullptr;
+  return m_styleImage->image(*m_layoutObject, size, zoom);
 }
 
-LayoutSize LayoutImageResourceStyleImage::imageSize(float multiplier) const
-{
-    // TODO(davve): Find out the correct default object size in this context.
-    return m_styleImage->imageSize(*m_layoutObject, multiplier, LayoutSize(LayoutReplaced::defaultWidth, LayoutReplaced::defaultHeight));
+LayoutSize LayoutImageResourceStyleImage::imageSize(float multiplier) const {
+  // TODO(davve): Find out the correct default object size in this context.
+  return m_styleImage->imageSize(
+      *m_layoutObject, multiplier,
+      LayoutSize(LayoutReplaced::defaultWidth, LayoutReplaced::defaultHeight));
 }
 
-DEFINE_TRACE(LayoutImageResourceStyleImage)
-{
-    visitor->trace(m_styleImage);
-    LayoutImageResource::trace(visitor);
+DEFINE_TRACE(LayoutImageResourceStyleImage) {
+  visitor->trace(m_styleImage);
+  LayoutImageResource::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

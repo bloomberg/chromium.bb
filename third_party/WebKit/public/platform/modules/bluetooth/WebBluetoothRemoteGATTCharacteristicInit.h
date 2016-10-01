@@ -13,24 +13,23 @@ namespace blink {
 // Contains members corresponding to BluetoothRemoteGATTCharacteristic attributes as
 // specified in the IDL.
 struct WebBluetoothRemoteGATTCharacteristicInit {
-    WebBluetoothRemoteGATTCharacteristicInit(const WebString& serviceInstanceID,
-        const WebString& characteristicInstanceID,
-        const WebString& uuid,
-        uint32_t characteristicProperties)
-        : characteristicInstanceID(characteristicInstanceID)
-        , serviceInstanceID(serviceInstanceID)
-        , uuid(uuid)
-        , characteristicProperties(characteristicProperties)
-    {
-    }
+  WebBluetoothRemoteGATTCharacteristicInit(
+      const WebString& serviceInstanceID,
+      const WebString& characteristicInstanceID,
+      const WebString& uuid,
+      uint32_t characteristicProperties)
+      : characteristicInstanceID(characteristicInstanceID),
+        serviceInstanceID(serviceInstanceID),
+        uuid(uuid),
+        characteristicProperties(characteristicProperties) {}
 
-    const WebString characteristicInstanceID;
-    const WebString serviceInstanceID;
-    const WebString uuid;
-    const uint32_t characteristicProperties;
-    const WebVector<uint8_t> value;
+  const WebString characteristicInstanceID;
+  const WebString serviceInstanceID;
+  const WebString uuid;
+  const uint32_t characteristicProperties;
+  const WebVector<uint8_t> value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebBluetoothRemoteGATTCharacteristicInit_h
+#endif  // WebBluetoothRemoteGATTCharacteristicInit_h

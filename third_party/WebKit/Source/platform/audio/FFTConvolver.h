@@ -37,39 +37,43 @@
 namespace blink {
 
 class PLATFORM_EXPORT FFTConvolver {
-    USING_FAST_MALLOC(FFTConvolver);
-    WTF_MAKE_NONCOPYABLE(FFTConvolver);
-public:
-    // fftSize must be a power of two
-    FFTConvolver(size_t fftSize);
+  USING_FAST_MALLOC(FFTConvolver);
+  WTF_MAKE_NONCOPYABLE(FFTConvolver);
 
-    // For now, with multiple calls to Process(), framesToProcess MUST add up EXACTLY to fftSize / 2
-    //
-    // FIXME: Later, we can do more sophisticated buffering to relax this requirement...
-    //
-    // The input to output latency is equal to fftSize / 2
-    //
-    // Processing in-place is allowed...
-    void process(FFTFrame* fftKernel, const float* sourceP, float* destP, size_t framesToProcess);
+ public:
+  // fftSize must be a power of two
+  FFTConvolver(size_t fftSize);
 
-    void reset();
+  // For now, with multiple calls to Process(), framesToProcess MUST add up EXACTLY to fftSize / 2
+  //
+  // FIXME: Later, we can do more sophisticated buffering to relax this requirement...
+  //
+  // The input to output latency is equal to fftSize / 2
+  //
+  // Processing in-place is allowed...
+  void process(FFTFrame* fftKernel,
+               const float* sourceP,
+               float* destP,
+               size_t framesToProcess);
 
-    size_t fftSize() const { return m_frame.fftSize(); }
+  void reset();
 
-private:
-    FFTFrame m_frame;
+  size_t fftSize() const { return m_frame.fftSize(); }
 
-    // Buffer input until we get fftSize / 2 samples then do an FFT
-    size_t m_readWriteIndex;
-    AudioFloatArray m_inputBuffer;
+ private:
+  FFTFrame m_frame;
 
-    // Stores output which we read a little at a time
-    AudioFloatArray m_outputBuffer;
+  // Buffer input until we get fftSize / 2 samples then do an FFT
+  size_t m_readWriteIndex;
+  AudioFloatArray m_inputBuffer;
 
-    // Saves the 2nd half of the FFT buffer, so we can do an overlap-add with the 1st half of the next one
-    AudioFloatArray m_lastOverlapBuffer;
+  // Stores output which we read a little at a time
+  AudioFloatArray m_outputBuffer;
+
+  // Saves the 2nd half of the FFT buffer, so we can do an overlap-add with the 1st half of the next one
+  AudioFloatArray m_lastOverlapBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FFTConvolver_h
+#endif  // FFTConvolver_h

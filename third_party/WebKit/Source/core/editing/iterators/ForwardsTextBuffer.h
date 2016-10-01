@@ -10,16 +10,17 @@
 namespace blink {
 
 class CORE_EXPORT ForwardsTextBuffer final : public TextBufferBase {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ForwardsTextBuffer);
-public:
-    ForwardsTextBuffer() {}
-    const UChar* data() const override;
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(ForwardsTextBuffer);
 
-private:
-    UChar* calcDestination(size_t length) override;
+ public:
+  ForwardsTextBuffer() {}
+  const UChar* data() const override;
+
+ private:
+  UChar* calcDestination(size_t length) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextBuffer_h
+#endif  // TextBuffer_h

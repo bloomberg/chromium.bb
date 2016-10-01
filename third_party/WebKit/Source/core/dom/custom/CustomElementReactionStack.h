@@ -18,33 +18,34 @@ class Element;
 // https://html.spec.whatwg.org/multipage/scripting.html#custom-element-reactions
 class CORE_EXPORT CustomElementReactionStack final
     : public GarbageCollected<CustomElementReactionStack> {
-    WTF_MAKE_NONCOPYABLE(CustomElementReactionStack);
-public:
-    CustomElementReactionStack();
+  WTF_MAKE_NONCOPYABLE(CustomElementReactionStack);
 
-    DECLARE_TRACE();
+ public:
+  CustomElementReactionStack();
 
-    void push();
-    void popInvokingReactions();
-    void enqueueToCurrentQueue(Element*, CustomElementReaction*);
-    void enqueueToBackupQueue(Element*, CustomElementReaction*);
+  DECLARE_TRACE();
 
-    static CustomElementReactionStack& current();
+  void push();
+  void popInvokingReactions();
+  void enqueueToCurrentQueue(Element*, CustomElementReaction*);
+  void enqueueToBackupQueue(Element*, CustomElementReaction*);
 
-private:
-    using ElementReactionQueueMap =
-        HeapHashMap<Member<Element>, Member<CustomElementReactionQueue>>;
-    ElementReactionQueueMap m_map;
+  static CustomElementReactionStack& current();
 
-    using ElementQueue = HeapVector<Member<Element>, 1>;
-    HeapVector<Member<ElementQueue>> m_stack;
-    Member<ElementQueue> m_backupQueue;
+ private:
+  using ElementReactionQueueMap =
+      HeapHashMap<Member<Element>, Member<CustomElementReactionQueue>>;
+  ElementReactionQueueMap m_map;
 
-    void invokeBackupQueue();
-    void invokeReactions(ElementQueue&);
-    void enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
+  using ElementQueue = HeapVector<Member<Element>, 1>;
+  HeapVector<Member<ElementQueue>> m_stack;
+  Member<ElementQueue> m_backupQueue;
+
+  void invokeBackupQueue();
+  void invokeReactions(ElementQueue&);
+  void enqueue(Member<ElementQueue>&, Element*, CustomElementReaction*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementReactionStack_h
+#endif  // CustomElementReactionStack_h

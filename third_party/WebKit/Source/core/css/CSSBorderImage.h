@@ -27,9 +27,12 @@
 namespace blink {
 
 // TODO(sashab): Make this take const CSSValue&s.
-CSSValueList* createBorderImageValue(CSSValue* image, CSSValue* imageSlice, CSSValue* borderSlice,
-    CSSValue* outset, CSSValue* repeat);
+CSSValueList* createBorderImageValue(CSSValue* image,
+                                     CSSValue* imageSlice,
+                                     CSSValue* borderSlice,
+                                     CSSValue* outset,
+                                     CSSValue* repeat);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSBorderImage_h
+#endif  // CSSBorderImage_h

@@ -32,95 +32,90 @@
 
 namespace blink {
 
-AudioDestinationHandler::AudioDestinationHandler(AudioNode& node, float sampleRate)
-    : AudioHandler(NodeTypeDestination, node, sampleRate)
-    , m_currentSampleFrame(0)
-{
-    addInput();
+AudioDestinationHandler::AudioDestinationHandler(AudioNode& node,
+                                                 float sampleRate)
+    : AudioHandler(NodeTypeDestination, node, sampleRate),
+      m_currentSampleFrame(0) {
+  addInput();
 }
 
-AudioDestinationHandler::~AudioDestinationHandler()
-{
-    DCHECK(!isInitialized());
+AudioDestinationHandler::~AudioDestinationHandler() {
+  DCHECK(!isInitialized());
 }
 
-void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames)
-{
-    // We don't want denormals slowing down any of the audio processing
-    // since they can very seriously hurt performance.
-    // This will take care of all AudioNodes because they all process within this scope.
-    DenormalDisabler denormalDisabler;
+void AudioDestinationHandler::render(AudioBus* sourceBus,
+                                     AudioBus* destinationBus,
+                                     size_t numberOfFrames) {
+  // We don't want denormals slowing down any of the audio processing
+  // since they can very seriously hurt performance.
+  // This will take care of all AudioNodes because they all process within this scope.
+  DenormalDisabler denormalDisabler;
 
-    // Need to check if the context actually alive. Otherwise the subsequent
-    // steps will fail. If the context is not alive somehow, return immediately
-    // and do nothing.
-    //
-    // TODO(hongchan): because the context can go away while rendering, so this
-    // check cannot guarantee the safe execution of the following steps.
-    DCHECK(context());
-    if (!context())
-        return;
+  // Need to check if the context actually alive. Otherwise the subsequent
+  // steps will fail. If the context is not alive somehow, return immediately
+  // and do nothing.
+  //
+  // TODO(hongchan): because the context can go away while rendering, so this
+  // check cannot guarantee the safe execution of the following steps.
+  DCHECK(context());
+  if (!context())
+    return;
 
-    context()->deferredTaskHandler().setAudioThreadToCurrentThread();
+  context()->deferredTaskHandler().setAudioThreadToCurrentThread();
 
-    // If the destination node is not initialized, pass the silence to the final
-    // audio destination (one step before the FIFO). This check is for the case
-    // where the destination is in the middle of tearing down process.
-    if (!isInitialized()) {
-        destinationBus->zero();
-        return;
-    }
+  // If the destination node is not initialized, pass the silence to the final
+  // audio destination (one step before the FIFO). This check is for the case
+  // where the destination is in the middle of tearing down process.
+  if (!isInitialized()) {
+    destinationBus->zero();
+    return;
+  }
 
-    // Let the context take care of any business at the start of each render quantum.
-    context()->handlePreRenderTasks();
+  // Let the context take care of any business at the start of each render quantum.
+  context()->handlePreRenderTasks();
 
-    // Prepare the local audio input provider for this render quantum.
-    if (sourceBus)
-        m_localAudioInputProvider.set(sourceBus);
+  // Prepare the local audio input provider for this render quantum.
+  if (sourceBus)
+    m_localAudioInputProvider.set(sourceBus);
 
-    DCHECK_GE(numberOfInputs(), 1u);
-    if (numberOfInputs() < 1) {
-        destinationBus->zero();
-        return;
-    }
-    // This will cause the node(s) connected to us to process, which in turn will pull on their input(s),
-    // all the way backwards through the rendering graph.
-    AudioBus* renderedBus = input(0).pull(destinationBus, numberOfFrames);
+  DCHECK_GE(numberOfInputs(), 1u);
+  if (numberOfInputs() < 1) {
+    destinationBus->zero();
+    return;
+  }
+  // This will cause the node(s) connected to us to process, which in turn will pull on their input(s),
+  // all the way backwards through the rendering graph.
+  AudioBus* renderedBus = input(0).pull(destinationBus, numberOfFrames);
 
-    if (!renderedBus) {
-        destinationBus->zero();
-    } else if (renderedBus != destinationBus) {
-        // in-place processing was not possible - so copy
-        destinationBus->copyFrom(*renderedBus);
-    }
+  if (!renderedBus) {
+    destinationBus->zero();
+  } else if (renderedBus != destinationBus) {
+    // in-place processing was not possible - so copy
+    destinationBus->copyFrom(*renderedBus);
+  }
 
-    // Process nodes which need a little extra help because they are not connected to anything, but still need to process.
-    context()->deferredTaskHandler().processAutomaticPullNodes(numberOfFrames);
+  // Process nodes which need a little extra help because they are not connected to anything, but still need to process.
+  context()->deferredTaskHandler().processAutomaticPullNodes(numberOfFrames);
 
-    // Let the context take care of any business at the end of each render quantum.
-    context()->handlePostRenderTasks();
+  // Let the context take care of any business at the end of each render quantum.
+  context()->handlePostRenderTasks();
 
-    // Advance current sample-frame.
-    size_t newSampleFrame = m_currentSampleFrame + numberOfFrames;
-    releaseStore(&m_currentSampleFrame, newSampleFrame);
+  // Advance current sample-frame.
+  size_t newSampleFrame = m_currentSampleFrame + numberOfFrames;
+  releaseStore(&m_currentSampleFrame, newSampleFrame);
 }
 
 // ----------------------------------------------------------------
 
 AudioDestinationNode::AudioDestinationNode(BaseAudioContext& context)
-    : AudioNode(context)
-{
+    : AudioNode(context) {}
+
+AudioDestinationHandler& AudioDestinationNode::audioDestinationHandler() const {
+  return static_cast<AudioDestinationHandler&>(handler());
 }
 
-AudioDestinationHandler& AudioDestinationNode::audioDestinationHandler() const
-{
-    return static_cast<AudioDestinationHandler&>(handler());
+unsigned long AudioDestinationNode::maxChannelCount() const {
+  return audioDestinationHandler().maxChannelCount();
 }
 
-unsigned long AudioDestinationNode::maxChannelCount() const
-{
-    return audioDestinationHandler().maxChannelCount();
-}
-
-} // namespace blink
-
+}  // namespace blink

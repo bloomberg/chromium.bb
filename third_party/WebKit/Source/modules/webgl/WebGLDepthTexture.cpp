@@ -28,39 +28,34 @@
 namespace blink {
 
 WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->extensionsUtil()->ensureExtensionEnabled("GL_CHROMIUM_depth_texture");
+    : WebGLExtension(context) {
+  context->extensionsUtil()->ensureExtensionEnabled(
+      "GL_CHROMIUM_depth_texture");
 }
 
-WebGLDepthTexture::~WebGLDepthTexture()
-{
+WebGLDepthTexture::~WebGLDepthTexture() {}
+
+WebGLExtensionName WebGLDepthTexture::name() const {
+  return WebGLDepthTextureName;
 }
 
-WebGLExtensionName WebGLDepthTexture::name() const
-{
-    return WebGLDepthTextureName;
+WebGLDepthTexture* WebGLDepthTexture::create(
+    WebGLRenderingContextBase* context) {
+  return new WebGLDepthTexture(context);
 }
 
-WebGLDepthTexture* WebGLDepthTexture::create(WebGLRenderingContextBase* context)
-{
-    return new WebGLDepthTexture(context);
+bool WebGLDepthTexture::supported(WebGLRenderingContextBase* context) {
+  Extensions3DUtil* extensionsUtil = context->extensionsUtil();
+  // Emulating the UNSIGNED_INT_24_8_WEBGL texture internal format in terms
+  // of two separate texture objects is too difficult, so disable depth
+  // textures unless a packed depth/stencil format is available.
+  if (!extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"))
+    return false;
+  return extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture");
 }
 
-bool WebGLDepthTexture::supported(WebGLRenderingContextBase* context)
-{
-    Extensions3DUtil* extensionsUtil = context->extensionsUtil();
-    // Emulating the UNSIGNED_INT_24_8_WEBGL texture internal format in terms
-    // of two separate texture objects is too difficult, so disable depth
-    // textures unless a packed depth/stencil format is available.
-    if (!extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"))
-        return false;
-    return extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture");
+const char* WebGLDepthTexture::extensionName() {
+  return "WEBGL_depth_texture";
 }
 
-const char* WebGLDepthTexture::extensionName()
-{
-    return "WEBGL_depth_texture";
-}
-
-} // namespace blink
+}  // namespace blink

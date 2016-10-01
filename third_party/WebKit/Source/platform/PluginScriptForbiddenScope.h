@@ -39,15 +39,16 @@ namespace blink {
 // those usages, with the eventual goal that Frame detach will never have to run
 // a nested message loop.
 class PLATFORM_EXPORT PluginScriptForbiddenScope final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(PluginScriptForbiddenScope);
-public:
-    PluginScriptForbiddenScope();
-    ~PluginScriptForbiddenScope();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(PluginScriptForbiddenScope);
 
-    static bool isForbidden();
+ public:
+  PluginScriptForbiddenScope();
+  ~PluginScriptForbiddenScope();
+
+  static bool isForbidden();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PluginScriptForbiddenScope_h
+#endif  // PluginScriptForbiddenScope_h

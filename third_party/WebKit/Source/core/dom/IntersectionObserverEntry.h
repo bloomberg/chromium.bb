@@ -15,29 +15,37 @@ namespace blink {
 
 class Element;
 
-class IntersectionObserverEntry final : public GarbageCollected<IntersectionObserverEntry>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    IntersectionObserverEntry(DOMHighResTimeStamp timestamp, double intersectionRatio, const IntRect& boundingClientRect, const IntRect* rootBounds, const IntRect& intersectionRect, Element*);
+class IntersectionObserverEntry final
+    : public GarbageCollected<IntersectionObserverEntry>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    double time() const { return m_time; }
-    double intersectionRatio() const { return m_intersectionRatio; }
-    ClientRect* boundingClientRect() const { return m_boundingClientRect; }
-    ClientRect* rootBounds() const { return m_rootBounds; }
-    ClientRect* intersectionRect() const { return m_intersectionRect; }
-    Element* target() const { return m_target.get(); }
+ public:
+  IntersectionObserverEntry(DOMHighResTimeStamp timestamp,
+                            double intersectionRatio,
+                            const IntRect& boundingClientRect,
+                            const IntRect* rootBounds,
+                            const IntRect& intersectionRect,
+                            Element*);
 
-    DECLARE_VIRTUAL_TRACE();
+  double time() const { return m_time; }
+  double intersectionRatio() const { return m_intersectionRatio; }
+  ClientRect* boundingClientRect() const { return m_boundingClientRect; }
+  ClientRect* rootBounds() const { return m_rootBounds; }
+  ClientRect* intersectionRect() const { return m_intersectionRect; }
+  Element* target() const { return m_target.get(); }
 
-private:
-    DOMHighResTimeStamp m_time;
-    double m_intersectionRatio;
-    Member<ClientRect> m_boundingClientRect;
-    Member<ClientRect> m_rootBounds;
-    Member<ClientRect> m_intersectionRect;
-    Member<Element> m_target;
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  DOMHighResTimeStamp m_time;
+  double m_intersectionRatio;
+  Member<ClientRect> m_boundingClientRect;
+  Member<ClientRect> m_rootBounds;
+  Member<ClientRect> m_intersectionRect;
+  Member<Element> m_target;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IntersectionObserverEntry_h
+#endif  // IntersectionObserverEntry_h

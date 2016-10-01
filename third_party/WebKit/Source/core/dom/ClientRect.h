@@ -36,39 +36,36 @@ namespace blink {
 
 class IntRect;
 
-class CORE_EXPORT ClientRect final : public GarbageCollected<ClientRect>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ClientRect* create()
-    {
-        return new ClientRect;
-    }
-    static ClientRect* create(const IntRect& rect)
-    {
-        return new ClientRect(rect);
-    }
-    static ClientRect* create(const FloatRect& rect)
-    {
-        return new ClientRect(rect);
-    }
+class CORE_EXPORT ClientRect final : public GarbageCollected<ClientRect>,
+                                     public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    float top() const { return m_rect.y(); }
-    float right() const { return m_rect.maxX(); }
-    float bottom() const { return m_rect.maxY(); }
-    float left() const { return m_rect.x(); }
-    float width() const { return m_rect.width(); }
-    float height() const { return m_rect.height(); }
+ public:
+  static ClientRect* create() { return new ClientRect; }
+  static ClientRect* create(const IntRect& rect) {
+    return new ClientRect(rect);
+  }
+  static ClientRect* create(const FloatRect& rect) {
+    return new ClientRect(rect);
+  }
 
-    DEFINE_INLINE_TRACE() { }
+  float top() const { return m_rect.y(); }
+  float right() const { return m_rect.maxX(); }
+  float bottom() const { return m_rect.maxY(); }
+  float left() const { return m_rect.x(); }
+  float width() const { return m_rect.width(); }
+  float height() const { return m_rect.height(); }
 
-private:
-    ClientRect();
-    explicit ClientRect(const IntRect&);
-    explicit ClientRect(const FloatRect&);
+  DEFINE_INLINE_TRACE() {}
 
-    FloatRect m_rect;
+ private:
+  ClientRect();
+  explicit ClientRect(const IntRect&);
+  explicit ClientRect(const FloatRect&);
+
+  FloatRect m_rect;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClientRect_h
+#endif  // ClientRect_h

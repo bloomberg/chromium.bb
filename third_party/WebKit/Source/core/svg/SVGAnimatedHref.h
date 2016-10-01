@@ -18,33 +18,35 @@ namespace blink {
 // using this interface (which essentially just selects either itself
 // or the wrapped object and forwards the operation to it.)
 class SVGAnimatedHref final : public SVGAnimatedString {
-public:
-    static SVGAnimatedHref* create(SVGElement* contextElement);
+ public:
+  static SVGAnimatedHref* create(SVGElement* contextElement);
 
-    SVGString* currentValue();
-    const SVGString* currentValue() const;
+  SVGString* currentValue();
+  const SVGString* currentValue() const;
 
-    String baseVal() override;
-    void setBaseVal(const String&, ExceptionState&) override;
-    String animVal() override;
+  String baseVal() override;
+  void setBaseVal(const String&, ExceptionState&) override;
+  String animVal() override;
 
-    bool isSpecified() const { return SVGAnimatedString::isSpecified() || m_xlinkHref->isSpecified(); }
+  bool isSpecified() const {
+    return SVGAnimatedString::isSpecified() || m_xlinkHref->isSpecified();
+  }
 
-    static bool isKnownAttribute(const QualifiedName&);
-    void addToPropertyMap(SVGElement*);
+  static bool isKnownAttribute(const QualifiedName&);
+  void addToPropertyMap(SVGElement*);
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit SVGAnimatedHref(SVGElement* contextElement);
+ private:
+  explicit SVGAnimatedHref(SVGElement* contextElement);
 
-    SVGAnimatedString* backingString();
-    const SVGAnimatedString* backingString() const;
-    bool useXLink() const;
+  SVGAnimatedString* backingString();
+  const SVGAnimatedString* backingString() const;
+  bool useXLink() const;
 
-    Member<SVGAnimatedString> m_xlinkHref;
+  Member<SVGAnimatedString> m_xlinkHref;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedHref_h
+#endif  // SVGAnimatedHref_h

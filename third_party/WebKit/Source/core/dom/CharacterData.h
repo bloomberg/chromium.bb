@@ -32,59 +32,67 @@ namespace blink {
 class ExceptionState;
 
 class CORE_EXPORT CharacterData : public Node {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    void atomize();
-    const String& data() const { return m_data; }
-    void setData(const String&);
-    unsigned length() const { return m_data.length(); }
-    String substringData(unsigned offset, unsigned count, ExceptionState&);
-    void appendData(const String&);
-    void replaceData(unsigned offset, unsigned count, const String&, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    void insertData(unsigned offset, const String&, ExceptionState&);
-    void deleteData(unsigned offset, unsigned count, ExceptionState&);
+ public:
+  void atomize();
+  const String& data() const { return m_data; }
+  void setData(const String&);
+  unsigned length() const { return m_data.length(); }
+  String substringData(unsigned offset, unsigned count, ExceptionState&);
+  void appendData(const String&);
+  void replaceData(unsigned offset,
+                   unsigned count,
+                   const String&,
+                   ExceptionState&);
 
-    bool containsOnlyWhitespace() const;
+  void insertData(unsigned offset, const String&, ExceptionState&);
+  void deleteData(unsigned offset, unsigned count, ExceptionState&);
 
-    StringImpl* dataImpl() { return m_data.impl(); }
+  bool containsOnlyWhitespace() const;
 
-    void parserAppendData(const String&);
+  StringImpl* dataImpl() { return m_data.impl(); }
 
-protected:
-    CharacterData(TreeScope& treeScope, const String& text, ConstructionType type)
-        : Node(&treeScope, type)
-        , m_data(!text.isNull() ? text : emptyString())
-    {
-        DCHECK(type == CreateOther || type == CreateText || type == CreateEditingText);
-    }
+  void parserAppendData(const String&);
 
-    void setDataWithoutUpdate(const String& data)
-    {
-        DCHECK(!data.isNull());
-        m_data = data;
-    }
-    enum UpdateSource {
-        UpdateFromParser,
-        UpdateFromNonParser,
-    };
-    void didModifyData(const String& oldValue, UpdateSource);
+ protected:
+  CharacterData(TreeScope& treeScope, const String& text, ConstructionType type)
+      : Node(&treeScope, type), m_data(!text.isNull() ? text : emptyString()) {
+    DCHECK(type == CreateOther || type == CreateText ||
+           type == CreateEditingText);
+  }
 
-    String m_data;
+  void setDataWithoutUpdate(const String& data) {
+    DCHECK(!data.isNull());
+    m_data = data;
+  }
+  enum UpdateSource {
+    UpdateFromParser,
+    UpdateFromNonParser,
+  };
+  void didModifyData(const String& oldValue, UpdateSource);
 
-private:
-    String nodeValue() const final;
-    void setNodeValue(const String&) final;
-    bool isCharacterDataNode() const final { return true; }
-    int maxCharacterOffset() const final;
-    void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource = UpdateFromNonParser);
+  String m_data;
 
-    bool isContainerNode() const = delete; // This will catch anyone doing an unnecessary check.
-    bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
+ private:
+  String nodeValue() const final;
+  void setNodeValue(const String&) final;
+  bool isCharacterDataNode() const final { return true; }
+  int maxCharacterOffset() const final;
+  void setDataAndUpdate(const String&,
+                        unsigned offsetOfReplacedData,
+                        unsigned oldLength,
+                        unsigned newLength,
+                        UpdateSource = UpdateFromNonParser);
+
+  bool isContainerNode() const =
+      delete;  // This will catch anyone doing an unnecessary check.
+  bool isElementNode() const =
+      delete;  // This will catch anyone doing an unnecessary check.
 };
 
 DEFINE_NODE_TYPE_CASTS(CharacterData, isCharacterDataNode());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CharacterData_h
+#endif  // CharacterData_h

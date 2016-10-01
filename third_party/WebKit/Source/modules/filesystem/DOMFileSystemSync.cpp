@@ -50,185 +50,169 @@ namespace blink {
 
 class FileWriterBase;
 
-DOMFileSystemSync* DOMFileSystemSync::create(DOMFileSystemBase* fileSystem)
-{
-    return new DOMFileSystemSync(fileSystem->m_context, fileSystem->name(), fileSystem->type(), fileSystem->rootURL());
+DOMFileSystemSync* DOMFileSystemSync::create(DOMFileSystemBase* fileSystem) {
+  return new DOMFileSystemSync(fileSystem->m_context, fileSystem->name(),
+                               fileSystem->type(), fileSystem->rootURL());
 }
 
-DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
-    : DOMFileSystemBase(context, name, type, rootURL)
-    , m_rootEntry(DirectoryEntrySync::create(this, DOMFilePath::root))
-{
+DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context,
+                                     const String& name,
+                                     FileSystemType type,
+                                     const KURL& rootURL)
+    : DOMFileSystemBase(context, name, type, rootURL),
+      m_rootEntry(DirectoryEntrySync::create(this, DOMFilePath::root)) {}
+
+DOMFileSystemSync::~DOMFileSystemSync() {}
+
+void DOMFileSystemSync::reportError(ErrorCallbackBase* errorCallback,
+                                    FileError::ErrorCode fileError) {
+  errorCallback->invoke(fileError);
 }
 
-DOMFileSystemSync::~DOMFileSystemSync()
-{
-}
-
-void DOMFileSystemSync::reportError(ErrorCallbackBase* errorCallback, FileError::ErrorCode fileError)
-{
-    errorCallback->invoke(fileError);
-}
-
-DirectoryEntrySync* DOMFileSystemSync::root()
-{
-    return m_rootEntry.get();
+DirectoryEntrySync* DOMFileSystemSync::root() {
+  return m_rootEntry.get();
 }
 
 namespace {
 
 class CreateFileHelper final : public AsyncFileSystemCallbacks {
-public:
-    class CreateFileResult : public GarbageCollected<CreateFileResult> {
-      public:
-        static CreateFileResult* create()
-        {
-            return new CreateFileResult();
-        }
+ public:
+  class CreateFileResult : public GarbageCollected<CreateFileResult> {
+   public:
+    static CreateFileResult* create() { return new CreateFileResult(); }
 
-        bool m_failed;
-        int m_code;
-        Member<File> m_file;
+    bool m_failed;
+    int m_code;
+    Member<File> m_file;
 
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_file);
-        }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_file); }
 
-      private:
-        CreateFileResult()
-            : m_failed(false)
-            , m_code(0)
-        {
-        }
-    };
+   private:
+    CreateFileResult() : m_failed(false), m_code(0) {}
+  };
 
-    static std::unique_ptr<AsyncFileSystemCallbacks> create(CreateFileResult* result, const String& name, const KURL& url, FileSystemType type)
-    {
-        return wrapUnique(static_cast<AsyncFileSystemCallbacks*>(new CreateFileHelper(result, name, url, type)));
-    }
+  static std::unique_ptr<AsyncFileSystemCallbacks> create(
+      CreateFileResult* result,
+      const String& name,
+      const KURL& url,
+      FileSystemType type) {
+    return wrapUnique(static_cast<AsyncFileSystemCallbacks*>(
+        new CreateFileHelper(result, name, url, type)));
+  }
 
-    void didFail(int code) override
-    {
-        m_result->m_failed = true;
-        m_result->m_code = code;
-    }
+  void didFail(int code) override {
+    m_result->m_failed = true;
+    m_result->m_code = code;
+  }
 
-    ~CreateFileHelper() override
-    {
-    }
+  ~CreateFileHelper() override {}
 
-    void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot) override
-    {
-        // We can't directly use the snapshot blob data handle because the content type on it hasn't been set.
-        // The |snapshot| param is here to provide a a chain of custody thru thread bridging that is held onto until
-        // *after* we've coined a File with a new handle that has the correct type set on it. This allows the
-        // blob storage system to track when a temp file can and can't be safely deleted.
+  void didCreateSnapshotFile(const FileMetadata& metadata,
+                             PassRefPtr<BlobDataHandle> snapshot) override {
+    // We can't directly use the snapshot blob data handle because the content type on it hasn't been set.
+    // The |snapshot| param is here to provide a a chain of custody thru thread bridging that is held onto until
+    // *after* we've coined a File with a new handle that has the correct type set on it. This allows the
+    // blob storage system to track when a temp file can and can't be safely deleted.
 
-        m_result->m_file = DOMFileSystemBase::createFile(metadata, m_url, m_type, m_name);
-    }
+    m_result->m_file =
+        DOMFileSystemBase::createFile(metadata, m_url, m_type, m_name);
+  }
 
-    bool shouldBlockUntilCompletion() const override
-    {
-        return true;
-    }
+  bool shouldBlockUntilCompletion() const override { return true; }
 
-private:
-    CreateFileHelper(CreateFileResult* result, const String& name, const KURL& url, FileSystemType type)
-        : m_result(result)
-        , m_name(name)
-        , m_url(url)
-        , m_type(type)
-    {
-    }
+ private:
+  CreateFileHelper(CreateFileResult* result,
+                   const String& name,
+                   const KURL& url,
+                   FileSystemType type)
+      : m_result(result), m_name(name), m_url(url), m_type(type) {}
 
-    Persistent<CreateFileResult> m_result;
-    String m_name;
-    KURL m_url;
-    FileSystemType m_type;
+  Persistent<CreateFileResult> m_result;
+  String m_name;
+  KURL m_url;
+  FileSystemType m_type;
 };
 
-} // namespace
+}  // namespace
 
-File* DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
-{
-    KURL fileSystemURL = createFileSystemURL(fileEntry);
-    CreateFileHelper::CreateFileResult* result(CreateFileHelper::CreateFileResult::create());
-    fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, CreateFileHelper::create(result, fileEntry->name(), fileSystemURL, type()));
-    if (result->m_failed) {
-        exceptionState.throwDOMException(result->m_code, "Could not create '" + fileEntry->name() + "'.");
-        return nullptr;
-    }
-    return result->m_file.get();
+File* DOMFileSystemSync::createFile(const FileEntrySync* fileEntry,
+                                    ExceptionState& exceptionState) {
+  KURL fileSystemURL = createFileSystemURL(fileEntry);
+  CreateFileHelper::CreateFileResult* result(
+      CreateFileHelper::CreateFileResult::create());
+  fileSystem()->createSnapshotFileAndReadMetadata(
+      fileSystemURL, CreateFileHelper::create(result, fileEntry->name(),
+                                              fileSystemURL, type()));
+  if (result->m_failed) {
+    exceptionState.throwDOMException(
+        result->m_code, "Could not create '" + fileEntry->name() + "'.");
+    return nullptr;
+  }
+  return result->m_file.get();
 }
 
 namespace {
 
 class ReceiveFileWriterCallback final : public FileWriterBaseCallback {
-public:
-    static ReceiveFileWriterCallback* create()
-    {
-        return new ReceiveFileWriterCallback();
-    }
+ public:
+  static ReceiveFileWriterCallback* create() {
+    return new ReceiveFileWriterCallback();
+  }
 
-    void handleEvent(FileWriterBase*) override
-    {
-    }
+  void handleEvent(FileWriterBase*) override {}
 
-private:
-    ReceiveFileWriterCallback()
-    {
-    }
+ private:
+  ReceiveFileWriterCallback() {}
 };
 
 class LocalErrorCallback final : public ErrorCallbackBase {
-public:
-    static LocalErrorCallback* create(FileError::ErrorCode& errorCode)
-    {
-        return new LocalErrorCallback(errorCode);
-    }
+ public:
+  static LocalErrorCallback* create(FileError::ErrorCode& errorCode) {
+    return new LocalErrorCallback(errorCode);
+  }
 
-    void invoke(FileError::ErrorCode error) override
-    {
-        DCHECK_NE(error, FileError::kOK);
-        m_errorCode = error;
-    }
+  void invoke(FileError::ErrorCode error) override {
+    DCHECK_NE(error, FileError::kOK);
+    m_errorCode = error;
+  }
 
-private:
-    explicit LocalErrorCallback(FileError::ErrorCode& errorCode)
-        : m_errorCode(errorCode)
-    {
-    }
+ private:
+  explicit LocalErrorCallback(FileError::ErrorCode& errorCode)
+      : m_errorCode(errorCode) {}
 
-    FileError::ErrorCode& m_errorCode;
+  FileError::ErrorCode& m_errorCode;
 };
 
-} // namespace
+}  // namespace
 
-FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
-{
-    ASSERT(fileEntry);
+FileWriterSync* DOMFileSystemSync::createWriter(
+    const FileEntrySync* fileEntry,
+    ExceptionState& exceptionState) {
+  ASSERT(fileEntry);
 
-    FileWriterSync* fileWriter = FileWriterSync::create();
-    ReceiveFileWriterCallback* successCallback = ReceiveFileWriterCallback::create();
-    FileError::ErrorCode errorCode = FileError::kOK;
-    LocalErrorCallback* errorCallback = LocalErrorCallback::create(errorCode);
+  FileWriterSync* fileWriter = FileWriterSync::create();
+  ReceiveFileWriterCallback* successCallback =
+      ReceiveFileWriterCallback::create();
+  FileError::ErrorCode errorCode = FileError::kOK;
+  LocalErrorCallback* errorCallback = LocalErrorCallback::create(errorCode);
 
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback, errorCallback, m_context);
-    callbacks->setShouldBlockUntilCompletion(true);
+  std::unique_ptr<AsyncFileSystemCallbacks> callbacks =
+      FileWriterBaseCallbacks::create(fileWriter, successCallback,
+                                      errorCallback, m_context);
+  callbacks->setShouldBlockUntilCompletion(true);
 
-    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, std::move(callbacks));
-    if (errorCode != FileError::kOK) {
-        FileError::throwDOMException(exceptionState, errorCode);
-        return 0;
-    }
-    return fileWriter;
+  fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter,
+                                 std::move(callbacks));
+  if (errorCode != FileError::kOK) {
+    FileError::throwDOMException(exceptionState, errorCode);
+    return 0;
+  }
+  return fileWriter;
 }
 
-DEFINE_TRACE(DOMFileSystemSync)
-{
-    DOMFileSystemBase::trace(visitor);
-    visitor->trace(m_rootEntry);
+DEFINE_TRACE(DOMFileSystemSync) {
+  DOMFileSystemBase::trace(visitor);
+  visitor->trace(m_rootEntry);
 }
 
-} // namespace blink
+}  // namespace blink

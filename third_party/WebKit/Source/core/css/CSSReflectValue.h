@@ -35,39 +35,39 @@ namespace blink {
 class CSSPrimitiveValue;
 
 class CSSReflectValue : public CSSValue {
-public:
-    static CSSReflectValue* create(CSSPrimitiveValue* direction,
-        CSSPrimitiveValue* offset, CSSValue* mask)
-    {
-        return new CSSReflectValue(direction, offset, mask);
-    }
+ public:
+  static CSSReflectValue* create(CSSPrimitiveValue* direction,
+                                 CSSPrimitiveValue* offset,
+                                 CSSValue* mask) {
+    return new CSSReflectValue(direction, offset, mask);
+  }
 
-    CSSPrimitiveValue* direction() const { return m_direction.get(); }
-    CSSPrimitiveValue* offset() const { return m_offset.get(); }
-    CSSValue* mask() const { return m_mask.get(); }
+  CSSPrimitiveValue* direction() const { return m_direction.get(); }
+  CSSPrimitiveValue* offset() const { return m_offset.get(); }
+  CSSValue* mask() const { return m_mask.get(); }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSReflectValue&) const;
+  bool equals(const CSSReflectValue&) const;
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-private:
-    CSSReflectValue(CSSPrimitiveValue* direction, CSSPrimitiveValue* offset, CSSValue* mask)
-        : CSSValue(ReflectClass)
-        , m_direction(direction)
-        , m_offset(offset)
-        , m_mask(mask)
-    {
-    }
+ private:
+  CSSReflectValue(CSSPrimitiveValue* direction,
+                  CSSPrimitiveValue* offset,
+                  CSSValue* mask)
+      : CSSValue(ReflectClass),
+        m_direction(direction),
+        m_offset(offset),
+        m_mask(mask) {}
 
-    Member<CSSPrimitiveValue> m_direction;
-    Member<CSSPrimitiveValue> m_offset;
-    Member<CSSValue> m_mask;
+  Member<CSSPrimitiveValue> m_direction;
+  Member<CSSPrimitiveValue> m_offset;
+  Member<CSSValue> m_mask;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSReflectValue, isReflectValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSReflectValue_h
+#endif  // CSSReflectValue_h

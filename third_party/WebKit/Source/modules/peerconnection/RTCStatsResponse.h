@@ -35,25 +35,29 @@
 
 namespace blink {
 
-class RTCStatsResponse final : public RTCStatsResponseBase, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static RTCStatsResponse* create();
+class RTCStatsResponse final : public RTCStatsResponseBase,
+                               public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    const HeapVector<Member<RTCLegacyStatsReport>>& result() const { return m_result; }
-    RTCLegacyStatsReport* namedItem(const AtomicString& name);
+ public:
+  static RTCStatsResponse* create();
 
-    void addStats(const WebRTCLegacyStats&) override;
+  const HeapVector<Member<RTCLegacyStatsReport>>& result() const {
+    return m_result;
+  }
+  RTCLegacyStatsReport* namedItem(const AtomicString& name);
 
-    DECLARE_VIRTUAL_TRACE();
+  void addStats(const WebRTCLegacyStats&) override;
 
-private:
-    RTCStatsResponse();
+  DECLARE_VIRTUAL_TRACE();
 
-    HeapVector<Member<RTCLegacyStatsReport>> m_result;
-    HashMap<String, int> m_idmap;
+ private:
+  RTCStatsResponse();
+
+  HeapVector<Member<RTCLegacyStatsReport>> m_result;
+  HashMap<String, int> m_idmap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCStatsResponse_h
+#endif  // RTCStatsResponse_h

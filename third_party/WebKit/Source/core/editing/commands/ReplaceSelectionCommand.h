@@ -36,98 +36,128 @@ class DocumentFragment;
 class ReplacementFragment;
 
 class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
-public:
-    enum CommandOption {
-        SelectReplacement = 1 << 0,
-        SmartReplace = 1 << 1,
-        MatchStyle = 1 << 2,
-        PreventNesting = 1 << 3,
-        MovingParagraph = 1 << 4,
-        SanitizeFragment = 1 << 5
-    };
+ public:
+  enum CommandOption {
+    SelectReplacement = 1 << 0,
+    SmartReplace = 1 << 1,
+    MatchStyle = 1 << 2,
+    PreventNesting = 1 << 3,
+    MovingParagraph = 1 << 4,
+    SanitizeFragment = 1 << 5
+  };
 
-    typedef unsigned CommandOptions;
+  typedef unsigned CommandOptions;
 
-    static ReplaceSelectionCommand* create(Document& document, DocumentFragment* fragment, CommandOptions options, InputEvent::InputType inputType = InputEvent::InputType::None)
-    {
-        return new ReplaceSelectionCommand(document, fragment, options, inputType);
+  static ReplaceSelectionCommand* create(
+      Document& document,
+      DocumentFragment* fragment,
+      CommandOptions options,
+      InputEvent::InputType inputType = InputEvent::InputType::None) {
+    return new ReplaceSelectionCommand(document, fragment, options, inputType);
+  }
+
+  EphemeralRange insertedRange() const;
+
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  ReplaceSelectionCommand(Document&,
+                          DocumentFragment*,
+                          CommandOptions,
+                          InputEvent::InputType);
+
+  void doApply(EditingState*) override;
+  InputEvent::InputType inputType() const override;
+  bool isReplaceSelectionCommand() const override;
+
+  class InsertedNodes {
+    STACK_ALLOCATED();
+
+   public:
+    void respondToNodeInsertion(Node&);
+    void willRemoveNodePreservingChildren(Node&);
+    void willRemoveNode(Node&);
+    void didReplaceNode(Node&, Node& newNode);
+
+    Node* firstNodeInserted() const { return m_firstNodeInserted.get(); }
+    Node* lastLeafInserted() const {
+      return m_lastNodeInserted
+                 ? &NodeTraversal::lastWithinOrSelf(*m_lastNodeInserted)
+                 : 0;
+    }
+    Node* pastLastLeaf() const {
+      return m_lastNodeInserted
+                 ? NodeTraversal::next(
+                       NodeTraversal::lastWithinOrSelf(*m_lastNodeInserted))
+                 : 0;
     }
 
-    EphemeralRange insertedRange() const;
+   private:
+    Member<Node> m_firstNodeInserted;
+    Member<Node> m_lastNodeInserted;
+  };
 
-    DECLARE_VIRTUAL_TRACE();
+  Node* insertAsListItems(HTMLElement* listElement,
+                          Element* insertionBlock,
+                          const Position&,
+                          InsertedNodes&,
+                          EditingState*);
 
-private:
-    ReplaceSelectionCommand(Document&, DocumentFragment*, CommandOptions, InputEvent::InputType);
+  void updateNodesInserted(Node*);
+  bool shouldRemoveEndBR(HTMLBRElement*, const VisiblePosition&);
 
-    void doApply(EditingState*) override;
-    InputEvent::InputType inputType() const override;
-    bool isReplaceSelectionCommand() const override;
+  bool shouldMergeStart(bool, bool, bool);
+  bool shouldMergeEnd(bool selectionEndWasEndOfParagraph);
+  bool shouldMerge(const VisiblePosition&, const VisiblePosition&);
 
-    class InsertedNodes {
-        STACK_ALLOCATED();
-    public:
-        void respondToNodeInsertion(Node&);
-        void willRemoveNodePreservingChildren(Node&);
-        void willRemoveNode(Node&);
-        void didReplaceNode(Node&, Node& newNode);
+  void mergeEndIfNeeded(EditingState*);
 
-        Node* firstNodeInserted() const { return m_firstNodeInserted.get(); }
-        Node* lastLeafInserted() const { return m_lastNodeInserted ? &NodeTraversal::lastWithinOrSelf(*m_lastNodeInserted) : 0; }
-        Node* pastLastLeaf() const { return m_lastNodeInserted ? NodeTraversal::next(NodeTraversal::lastWithinOrSelf(*m_lastNodeInserted)) : 0; }
+  void removeUnrenderedTextNodesAtEnds(InsertedNodes&);
 
-    private:
-        Member<Node> m_firstNodeInserted;
-        Member<Node> m_lastNodeInserted;
-    };
+  void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&,
+                                                   EditingState*);
+  void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(
+      const InsertedNodes&,
+      EditingState*);
+  void moveElementOutOfAncestor(Element*, Element* ancestor, EditingState*);
+  void handleStyleSpans(InsertedNodes&, EditingState*);
 
-    Node* insertAsListItems(HTMLElement* listElement, Element* insertionBlock, const Position&, InsertedNodes&, EditingState*);
+  VisiblePosition positionAtStartOfInsertedContent() const;
+  VisiblePosition positionAtEndOfInsertedContent() const;
 
-    void updateNodesInserted(Node*);
-    bool shouldRemoveEndBR(HTMLBRElement*, const VisiblePosition&);
+  bool shouldPerformSmartReplace() const;
+  void addSpacesForSmartReplace(EditingState*);
+  void completeHTMLReplacement(const Position& lastPositionToSelect,
+                               EditingState*);
+  void mergeTextNodesAroundPosition(Position&,
+                                    Position& positionOnlyToBeUpdated,
+                                    EditingState*);
 
-    bool shouldMergeStart(bool, bool, bool);
-    bool shouldMergeEnd(bool selectionEndWasEndOfParagraph);
-    bool shouldMerge(const VisiblePosition&, const VisiblePosition&);
+  bool performTrivialReplace(const ReplacementFragment&, EditingState*);
 
-    void mergeEndIfNeeded(EditingState*);
+  Position m_startOfInsertedContent;
+  Position m_endOfInsertedContent;
+  Member<EditingStyle> m_insertionStyle;
+  bool m_selectReplacement;
+  bool m_smartReplace;
+  bool m_matchStyle;
+  Member<DocumentFragment> m_documentFragment;
+  bool m_preventNesting;
+  bool m_movingParagraph;
+  InputEvent::InputType m_inputType;
+  bool m_sanitizeFragment;
+  bool m_shouldMergeEnd;
 
-    void removeUnrenderedTextNodesAtEnds(InsertedNodes&);
-
-    void removeRedundantStylesAndKeepStyleSpanInline(InsertedNodes&, EditingState*);
-    void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(const InsertedNodes&, EditingState*);
-    void moveElementOutOfAncestor(Element*, Element* ancestor, EditingState*);
-    void handleStyleSpans(InsertedNodes&, EditingState*);
-
-    VisiblePosition positionAtStartOfInsertedContent() const;
-    VisiblePosition positionAtEndOfInsertedContent() const;
-
-    bool shouldPerformSmartReplace() const;
-    void addSpacesForSmartReplace(EditingState*);
-    void completeHTMLReplacement(const Position& lastPositionToSelect, EditingState*);
-    void mergeTextNodesAroundPosition(Position&, Position& positionOnlyToBeUpdated, EditingState*);
-
-    bool performTrivialReplace(const ReplacementFragment&, EditingState*);
-
-    Position m_startOfInsertedContent;
-    Position m_endOfInsertedContent;
-    Member<EditingStyle> m_insertionStyle;
-    bool m_selectReplacement;
-    bool m_smartReplace;
-    bool m_matchStyle;
-    Member<DocumentFragment> m_documentFragment;
-    bool m_preventNesting;
-    bool m_movingParagraph;
-    InputEvent::InputType m_inputType;
-    bool m_sanitizeFragment;
-    bool m_shouldMergeEnd;
-
-    Position m_startOfInsertedRange;
-    Position m_endOfInsertedRange;
+  Position m_startOfInsertedRange;
+  Position m_endOfInsertedRange;
 };
 
-DEFINE_TYPE_CASTS(ReplaceSelectionCommand, CompositeEditCommand, command, command->isReplaceSelectionCommand(), command.isReplaceSelectionCommand());
+DEFINE_TYPE_CASTS(ReplaceSelectionCommand,
+                  CompositeEditCommand,
+                  command,
+                  command->isReplaceSelectionCommand(),
+                  command.isReplaceSelectionCommand());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ReplaceSelectionCommand_h
+#endif  // ReplaceSelectionCommand_h

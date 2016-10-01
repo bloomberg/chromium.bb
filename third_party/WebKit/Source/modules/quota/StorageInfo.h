@@ -36,26 +36,28 @@
 
 namespace blink {
 
-class StorageInfo final : public GarbageCollected<StorageInfo>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static StorageInfo* create(unsigned long long usage, unsigned long long quota)
-    {
-        return new StorageInfo(usage, quota);
-    }
+class StorageInfo final : public GarbageCollected<StorageInfo>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    unsigned long long usage() const { return m_usage; }
-    unsigned long long quota() const { return m_quota; }
+ public:
+  static StorageInfo* create(unsigned long long usage,
+                             unsigned long long quota) {
+    return new StorageInfo(usage, quota);
+  }
 
-    DEFINE_INLINE_TRACE() { }
+  unsigned long long usage() const { return m_usage; }
+  unsigned long long quota() const { return m_quota; }
 
-private:
-    StorageInfo(unsigned long long usage, unsigned long long quota);
+  DEFINE_INLINE_TRACE() {}
 
-    unsigned long long m_usage;
-    unsigned long long m_quota;
+ private:
+  StorageInfo(unsigned long long usage, unsigned long long quota);
+
+  unsigned long long m_usage;
+  unsigned long long m_quota;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StorageInfo_h
+#endif  // StorageInfo_h

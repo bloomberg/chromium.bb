@@ -36,28 +36,28 @@
 namespace blink {
 
 class WebExternalPopupMenuClient {
-public:
-    // Should be called when the currently selected item in the popup menu
-    // changed. Can be -1 if there is no selection.
-    virtual void didChangeSelection(int index) = 0;
+ public:
+  // Should be called when the currently selected item in the popup menu
+  // changed. Can be -1 if there is no selection.
+  virtual void didChangeSelection(int index) = 0;
 
-    // Should be called when an index has been accepted.
-    // Note that it is not safe to access this WebExternalPopupClientMenu after
-    // this has been called as it might not be valid anymore.
-    virtual void didAcceptIndex(int index) = 0;
+  // Should be called when an index has been accepted.
+  // Note that it is not safe to access this WebExternalPopupClientMenu after
+  // this has been called as it might not be valid anymore.
+  virtual void didAcceptIndex(int index) = 0;
 
-    // Should be called when a set of indices have been selected.
-    // Note that it is not safe to access this WebExternalPopupClientMenu after
-    // this has been called as it might not be valid anymore.
-    virtual void didAcceptIndices(const WebVector<int>& indices) = 0;
+  // Should be called when a set of indices have been selected.
+  // Note that it is not safe to access this WebExternalPopupClientMenu after
+  // this has been called as it might not be valid anymore.
+  virtual void didAcceptIndices(const WebVector<int>& indices) = 0;
 
-    // Should be called when the popup menu was discarded (closed without a
-    // selection.
-    // Note that it is not safe to access this WebExternalPopupClientMenu after
-    // this has been called as it might not be valid anymore.
-    virtual void didCancel() = 0;
+  // Should be called when the popup menu was discarded (closed without a
+  // selection.
+  // Note that it is not safe to access this WebExternalPopupClientMenu after
+  // this has been called as it might not be valid anymore.
+  virtual void didCancel() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebExternalPopupMenuClient_h
+#endif  // WebExternalPopupMenuClient_h

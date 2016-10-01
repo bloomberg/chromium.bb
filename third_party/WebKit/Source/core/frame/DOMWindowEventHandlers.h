@@ -50,6 +50,6 @@ DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unhandledrejection);
 DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(unload);
 }
 
-} // namespace
+}  // namespace
 
 #endif

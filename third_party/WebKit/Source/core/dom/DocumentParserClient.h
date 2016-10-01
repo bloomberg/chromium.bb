@@ -10,16 +10,16 @@
 namespace blink {
 
 class DocumentParserClient : public GarbageCollectedMixin {
-public:
-    // This callback is called when all data pushed to parser has been consumed.
-    virtual void notifyParserStopped() = 0;
+ public:
+  // This callback is called when all data pushed to parser has been consumed.
+  virtual void notifyParserStopped() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    DocumentParserClient() { }
+ protected:
+  DocumentParserClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentParserClient_h
+#endif  // DocumentParserClient_h

@@ -41,58 +41,62 @@ namespace blink {
 class SimpleFontData;
 
 struct FontDataCacheKeyHash {
-    STATIC_ONLY(FontDataCacheKeyHash);
-    static unsigned hash(const FontPlatformData* platformData)
-    {
-        return platformData->hash();
-    }
+  STATIC_ONLY(FontDataCacheKeyHash);
+  static unsigned hash(const FontPlatformData* platformData) {
+    return platformData->hash();
+  }
 
-    static bool equal(const FontPlatformData* a, const FontPlatformData* b)
-    {
-        const FontPlatformData* emptyValue = reinterpret_cast<FontPlatformData*>(-1);
+  static bool equal(const FontPlatformData* a, const FontPlatformData* b) {
+    const FontPlatformData* emptyValue =
+        reinterpret_cast<FontPlatformData*>(-1);
 
-        if (a == emptyValue)
-            return b == emptyValue;
-        if (b == emptyValue)
-            return a == emptyValue;
+    if (a == emptyValue)
+      return b == emptyValue;
+    if (b == emptyValue)
+      return a == emptyValue;
 
-        if (!a || !b)
-            return a == b;
+    if (!a || !b)
+      return a == b;
 
-        CHECK(a && b);
+    CHECK(a && b);
 
-        return *a == *b;
-    }
+    return *a == *b;
+  }
 
-    static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
 class FontDataCache {
-    USING_FAST_MALLOC(FontDataCache);
-    WTF_MAKE_NONCOPYABLE(FontDataCache);
-public:
-    FontDataCache() { }
+  USING_FAST_MALLOC(FontDataCache);
+  WTF_MAKE_NONCOPYABLE(FontDataCache);
 
-    PassRefPtr<SimpleFontData> get(const FontPlatformData*, ShouldRetain = Retain);
-    bool contains(const FontPlatformData*) const;
-    void release(const SimpleFontData*);
+ public:
+  FontDataCache() {}
 
-    // This is used by FontVerticalDataCache to mark all items with vertical data
-    // that are currently in cache as "in cache", which is later used to sweep the FontVerticalDataCache.
-    void markAllVerticalData();
+  PassRefPtr<SimpleFontData> get(const FontPlatformData*,
+                                 ShouldRetain = Retain);
+  bool contains(const FontPlatformData*) const;
+  void release(const SimpleFontData*);
 
-    // Purges items in FontDataCache according to provided severity.
-    // Returns true if any removal of cache items actually occurred.
-    bool purge(PurgeSeverity);
+  // This is used by FontVerticalDataCache to mark all items with vertical data
+  // that are currently in cache as "in cache", which is later used to sweep the FontVerticalDataCache.
+  void markAllVerticalData();
 
-private:
-    bool purgeLeastRecentlyUsed(int count);
+  // Purges items in FontDataCache according to provided severity.
+  // Returns true if any removal of cache items actually occurred.
+  bool purge(PurgeSeverity);
 
-    typedef HashMap<const FontPlatformData*, std::pair<RefPtr<SimpleFontData>, unsigned>, FontDataCacheKeyHash> Cache;
-    Cache m_cache;
-    ListHashSet<RefPtr<SimpleFontData>> m_inactiveFontData;
+ private:
+  bool purgeLeastRecentlyUsed(int count);
+
+  typedef HashMap<const FontPlatformData*,
+                  std::pair<RefPtr<SimpleFontData>, unsigned>,
+                  FontDataCacheKeyHash>
+      Cache;
+  Cache m_cache;
+  ListHashSet<RefPtr<SimpleFontData>> m_inactiveFontData;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

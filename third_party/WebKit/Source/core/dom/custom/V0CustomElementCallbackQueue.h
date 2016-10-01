@@ -40,39 +40,42 @@ namespace blink {
 
 // FIXME: Rename this because it contains resolution and upgrade as
 // well as callbacks.
-class V0CustomElementCallbackQueue : public GarbageCollected<V0CustomElementCallbackQueue> {
-    WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackQueue);
-public:
-    static V0CustomElementCallbackQueue* create(Element*);
+class V0CustomElementCallbackQueue
+    : public GarbageCollected<V0CustomElementCallbackQueue> {
+  WTF_MAKE_NONCOPYABLE(V0CustomElementCallbackQueue);
 
-    typedef int ElementQueueId;
-    ElementQueueId owner() const { return m_owner; }
+ public:
+  static V0CustomElementCallbackQueue* create(Element*);
 
-    void setOwner(ElementQueueId newOwner)
-    {
-        // ElementCallbackQueues only migrate towards the top of the
-        // processing stack.
-        DCHECK_GE(newOwner, m_owner);
-        m_owner = newOwner;
-    }
+  typedef int ElementQueueId;
+  ElementQueueId owner() const { return m_owner; }
 
-    bool processInElementQueue(ElementQueueId);
+  void setOwner(ElementQueueId newOwner) {
+    // ElementCallbackQueues only migrate towards the top of the
+    // processing stack.
+    DCHECK_GE(newOwner, m_owner);
+    m_owner = newOwner;
+  }
 
-    void append(V0CustomElementProcessingStep* invocation) { m_queue.append(invocation); }
-    bool inCreatedCallback() const { return m_inCreatedCallback; }
+  bool processInElementQueue(ElementQueueId);
 
-    DECLARE_TRACE();
+  void append(V0CustomElementProcessingStep* invocation) {
+    m_queue.append(invocation);
+  }
+  bool inCreatedCallback() const { return m_inCreatedCallback; }
 
-private:
-    explicit V0CustomElementCallbackQueue(Element*);
+  DECLARE_TRACE();
 
-    Member<Element> m_element;
-    HeapVector<Member<V0CustomElementProcessingStep>> m_queue;
-    ElementQueueId m_owner;
-    size_t m_index;
-    bool m_inCreatedCallback;
+ private:
+  explicit V0CustomElementCallbackQueue(Element*);
+
+  Member<Element> m_element;
+  HeapVector<Member<V0CustomElementProcessingStep>> m_queue;
+  ElementQueueId m_owner;
+  size_t m_index;
+  bool m_inCreatedCallback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementCallbackQueue_h
+#endif  // V0CustomElementCallbackQueue_h

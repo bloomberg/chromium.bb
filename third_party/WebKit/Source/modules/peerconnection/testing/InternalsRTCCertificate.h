@@ -13,11 +13,14 @@ namespace blink {
 class Internals;
 
 class InternalsRTCCertificate {
-    STATIC_ONLY(InternalsRTCCertificate);
-public:
-    static bool rtcCertificateEquals(Internals&, RTCCertificate*, RTCCertificate*);
+  STATIC_ONLY(InternalsRTCCertificate);
+
+ public:
+  static bool rtcCertificateEquals(Internals&,
+                                   RTCCertificate*,
+                                   RTCCertificate*);
 };
 
-} // blink
+}  // blink
 
-#endif // InternalsRTCCertificate_h
+#endif  // InternalsRTCCertificate_h

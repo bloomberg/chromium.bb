@@ -31,40 +31,38 @@
 
 namespace blink {
 
-void DocumentOrderedList::add(Node* node)
-{
-    if (m_nodes.isEmpty()) {
-        m_nodes.add(node);
-        return;
+void DocumentOrderedList::add(Node* node) {
+  if (m_nodes.isEmpty()) {
+    m_nodes.add(node);
+    return;
+  }
+
+  // Determine an appropriate insertion point.
+  iterator begin = m_nodes.begin();
+  iterator end = m_nodes.end();
+  iterator it = end;
+  Node* followingNode = 0;
+  do {
+    --it;
+    Node* n = *it;
+    unsigned short position =
+        n->compareDocumentPosition(node, Node::TreatShadowTreesAsComposed);
+    if (position & Node::kDocumentPositionFollowing) {
+      m_nodes.insertBefore(followingNode, node);
+      return;
     }
+    followingNode = n;
+  } while (it != begin);
 
-    // Determine an appropriate insertion point.
-    iterator begin = m_nodes.begin();
-    iterator end = m_nodes.end();
-    iterator it = end;
-    Node* followingNode = 0;
-    do {
-        --it;
-        Node* n = *it;
-        unsigned short position = n->compareDocumentPosition(node, Node::TreatShadowTreesAsComposed);
-        if (position & Node::kDocumentPositionFollowing) {
-            m_nodes.insertBefore(followingNode, node);
-            return;
-        }
-        followingNode = n;
-    } while (it != begin);
-
-    m_nodes.insertBefore(followingNode, node);
+  m_nodes.insertBefore(followingNode, node);
 }
 
-void DocumentOrderedList::remove(const Node* node)
-{
-    m_nodes.remove(const_cast<Node*>(node));
+void DocumentOrderedList::remove(const Node* node) {
+  m_nodes.remove(const_cast<Node*>(node));
 }
 
-DEFINE_TRACE(DocumentOrderedList)
-{
-    visitor->trace(m_nodes);
+DEFINE_TRACE(DocumentOrderedList) {
+  visitor->trace(m_nodes);
 }
 
-} // namespace blink
+}  // namespace blink

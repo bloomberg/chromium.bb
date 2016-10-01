@@ -30,129 +30,115 @@
 
 namespace blink {
 
-TextTrackCueList::TextTrackCueList()
-    : m_firstInvalidIndex(0)
-{
+TextTrackCueList::TextTrackCueList() : m_firstInvalidIndex(0) {}
+
+unsigned long TextTrackCueList::length() const {
+  return m_list.size();
 }
 
-unsigned long TextTrackCueList::length() const
-{
-    return m_list.size();
+TextTrackCue* TextTrackCueList::anonymousIndexedGetter(unsigned index) const {
+  if (index < m_list.size())
+    return m_list[index].get();
+  return nullptr;
 }
 
-TextTrackCue* TextTrackCueList::anonymousIndexedGetter(unsigned index) const
-{
-    if (index < m_list.size())
-        return m_list[index].get();
-    return nullptr;
+TextTrackCue* TextTrackCueList::getCueById(const AtomicString& id) const {
+  for (size_t i = 0; i < m_list.size(); ++i) {
+    if (m_list[i]->id() == id)
+      return m_list[i].get();
+  }
+  return nullptr;
 }
 
-TextTrackCue* TextTrackCueList::getCueById(const AtomicString& id) const
-{
-    for (size_t i = 0; i < m_list.size(); ++i) {
-        if (m_list[i]->id() == id)
-            return m_list[i].get();
-    }
-    return nullptr;
+void TextTrackCueList::collectActiveCues(TextTrackCueList& activeCues) const {
+  activeCues.clear();
+  for (auto& cue : m_list) {
+    if (cue->isActive())
+      activeCues.add(cue);
+  }
 }
 
-void TextTrackCueList::collectActiveCues(TextTrackCueList& activeCues) const
-{
-    activeCues.clear();
-    for (auto& cue : m_list) {
-        if (cue->isActive())
-            activeCues.add(cue);
-    }
+bool TextTrackCueList::add(TextTrackCue* cue) {
+  DCHECK_GE(cue->startTime(), 0);
+  DCHECK_GE(cue->endTime(), 0);
+
+  // Maintain text track cue order:
+  // https://html.spec.whatwg.org/#text-track-cue-order
+  size_t index = findInsertionIndex(cue);
+
+  // FIXME: The cue should not exist in the list in the first place.
+  if (!m_list.isEmpty() && (index > 0) && (m_list[index - 1].get() == cue))
+    return false;
+
+  m_list.insert(index, cue);
+  invalidateCueIndex(index);
+  return true;
 }
 
-bool TextTrackCueList::add(TextTrackCue* cue)
-{
-    DCHECK_GE(cue->startTime(), 0);
-    DCHECK_GE(cue->endTime(), 0);
-
-    // Maintain text track cue order:
-    // https://html.spec.whatwg.org/#text-track-cue-order
-    size_t index = findInsertionIndex(cue);
-
-    // FIXME: The cue should not exist in the list in the first place.
-    if (!m_list.isEmpty() && (index > 0) && (m_list[index - 1].get() == cue))
-        return false;
-
-    m_list.insert(index, cue);
-    invalidateCueIndex(index);
+static bool cueIsBefore(const TextTrackCue* cue, TextTrackCue* otherCue) {
+  if (cue->startTime() < otherCue->startTime())
     return true;
+
+  return cue->startTime() == otherCue->startTime() &&
+         cue->endTime() > otherCue->endTime();
 }
 
-static bool cueIsBefore(const TextTrackCue* cue, TextTrackCue* otherCue)
-{
-    if (cue->startTime() < otherCue->startTime())
-        return true;
-
-    return cue->startTime() == otherCue->startTime() && cue->endTime() > otherCue->endTime();
+size_t TextTrackCueList::findInsertionIndex(
+    const TextTrackCue* cueToInsert) const {
+  auto it =
+      std::upper_bound(m_list.begin(), m_list.end(), cueToInsert, cueIsBefore);
+  size_t index = safeCast<size_t>(it - m_list.begin());
+  SECURITY_DCHECK(index <= m_list.size());
+  return index;
 }
 
-size_t TextTrackCueList::findInsertionIndex(const TextTrackCue* cueToInsert) const
-{
-    auto it = std::upper_bound(m_list.begin(), m_list.end(), cueToInsert, cueIsBefore);
-    size_t index = safeCast<size_t>(it - m_list.begin());
-    SECURITY_DCHECK(index <= m_list.size());
-    return index;
+bool TextTrackCueList::remove(TextTrackCue* cue) {
+  size_t index = m_list.find(cue);
+  if (index == kNotFound)
+    return false;
+
+  m_list.remove(index);
+  invalidateCueIndex(index);
+  cue->invalidateCueIndex();
+  return true;
 }
 
-bool TextTrackCueList::remove(TextTrackCue* cue)
-{
-    size_t index = m_list.find(cue);
-    if (index == kNotFound)
-        return false;
-
-    m_list.remove(index);
-    invalidateCueIndex(index);
-    cue->invalidateCueIndex();
-    return true;
+void TextTrackCueList::updateCueIndex(TextTrackCue* cue) {
+  if (!remove(cue))
+    return;
+  add(cue);
 }
 
-void TextTrackCueList::updateCueIndex(TextTrackCue* cue)
-{
-    if (!remove(cue))
-        return;
-    add(cue);
+void TextTrackCueList::clear() {
+  m_list.clear();
 }
 
-void TextTrackCueList::clear()
-{
-    m_list.clear();
+void TextTrackCueList::invalidateCueIndex(size_t index) {
+  // Store the smallest (first) index that we know has a cue that does not
+  // meet the criteria:
+  //   cueIndex(list[index-1]) + 1 == cueIndex(list[index]) [index > 0]
+  // This is a stronger requirement than we need, but it's easier to maintain.
+  // We can then check if a cue's index is valid by comparing it with
+  // |m_firstInvalidIndex| - if it's strictly less it is valid.
+  m_firstInvalidIndex = std::min(m_firstInvalidIndex, index);
 }
 
-void TextTrackCueList::invalidateCueIndex(size_t index)
-{
-    // Store the smallest (first) index that we know has a cue that does not
-    // meet the criteria:
-    //   cueIndex(list[index-1]) + 1 == cueIndex(list[index]) [index > 0]
-    // This is a stronger requirement than we need, but it's easier to maintain.
-    // We can then check if a cue's index is valid by comparing it with
-    // |m_firstInvalidIndex| - if it's strictly less it is valid.
-    m_firstInvalidIndex = std::min(m_firstInvalidIndex, index);
+void TextTrackCueList::validateCueIndexes() {
+  // Compute new index values for the cues starting at
+  // |m_firstInvalidIndex|. If said index is beyond the end of the list, no
+  // cues will need to be updated.
+  for (size_t i = m_firstInvalidIndex; i < m_list.size(); ++i)
+    m_list[i]->updateCueIndex(safeCast<unsigned>(i));
+  m_firstInvalidIndex = m_list.size();
 }
 
-void TextTrackCueList::validateCueIndexes()
-{
-    // Compute new index values for the cues starting at
-    // |m_firstInvalidIndex|. If said index is beyond the end of the list, no
-    // cues will need to be updated.
-    for (size_t i = m_firstInvalidIndex; i < m_list.size(); ++i)
-        m_list[i]->updateCueIndex(safeCast<unsigned>(i));
-    m_firstInvalidIndex = m_list.size();
+DEFINE_TRACE(TextTrackCueList) {
+  visitor->trace(m_list);
 }
 
-DEFINE_TRACE(TextTrackCueList)
-{
-    visitor->trace(m_list);
+DEFINE_TRACE_WRAPPERS(TextTrackCueList) {
+  for (auto cue : m_list) {
+    visitor->traceWrappers(cue);
+  }
 }
-
-DEFINE_TRACE_WRAPPERS(TextTrackCueList)
-{
-    for (auto cue : m_list) {
-        visitor->traceWrappers(cue);
-    }
-}
-} // namespace blink
+}  // namespace blink

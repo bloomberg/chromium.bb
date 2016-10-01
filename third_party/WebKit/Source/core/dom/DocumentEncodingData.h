@@ -39,33 +39,34 @@ namespace blink {
 class TextResourceDecoder;
 
 class DocumentEncodingData {
-    DISALLOW_NEW();
-public:
-    DocumentEncodingData();
-    explicit DocumentEncodingData(const TextResourceDecoder&);
+  DISALLOW_NEW();
 
-    const WTF::TextEncoding& encoding() const { return m_encoding; }
-    void setEncoding(const WTF::TextEncoding&);
-    bool wasDetectedHeuristically() const { return m_wasDetectedHeuristically; }
-    bool sawDecodingError() const { return m_sawDecodingError; }
+ public:
+  DocumentEncodingData();
+  explicit DocumentEncodingData(const TextResourceDecoder&);
 
-private:
-    WTF::TextEncoding m_encoding;
-    bool m_wasDetectedHeuristically;
-    bool m_sawDecodingError;
+  const WTF::TextEncoding& encoding() const { return m_encoding; }
+  void setEncoding(const WTF::TextEncoding&);
+  bool wasDetectedHeuristically() const { return m_wasDetectedHeuristically; }
+  bool sawDecodingError() const { return m_sawDecodingError; }
+
+ private:
+  WTF::TextEncoding m_encoding;
+  bool m_wasDetectedHeuristically;
+  bool m_sawDecodingError;
 };
 
 template <>
-struct CrossThreadCopier<DocumentEncodingData> : public CrossThreadCopierPassThrough<DocumentEncodingData> {
-};
+struct CrossThreadCopier<DocumentEncodingData>
+    : public CrossThreadCopierPassThrough<DocumentEncodingData> {};
 
-inline bool operator!=(const DocumentEncodingData& a, const DocumentEncodingData& b)
-{
-    return a.encoding() != b.encoding()
-        || a.wasDetectedHeuristically() != b.wasDetectedHeuristically()
-        || a.sawDecodingError() != b.sawDecodingError();
+inline bool operator!=(const DocumentEncodingData& a,
+                       const DocumentEncodingData& b) {
+  return a.encoding() != b.encoding() ||
+         a.wasDetectedHeuristically() != b.wasDetectedHeuristically() ||
+         a.sawDecodingError() != b.sawDecodingError();
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentEncodingData_h
+#endif  // DocumentEncodingData_h

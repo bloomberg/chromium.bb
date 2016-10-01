@@ -23,57 +23,52 @@
 
 namespace blink {
 
-const StylePropertyShorthand& animationShorthandForParsing()
-{
-    // When we parse the animation shorthand we need to look for animation-name
-    // last because otherwise it might match against the keywords for fill mode,
-    // timing functions and infinite iteration. This means that animation names
-    // that are the same as keywords (e.g. 'forwards') won't always match in the
-    // shorthand. In that case the authors should be using longhands (or
-    // reconsidering their approach). This is covered by the animations spec
-    // bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=14790
-    // And in the spec (editor's draft) at:
-    // http://dev.w3.org/csswg/css3-animations/#animation-shorthand-property
-    static const CSSPropertyID animationPropertiesForParsing[] = {
-        CSSPropertyAnimationDuration,
-        CSSPropertyAnimationTimingFunction,
-        CSSPropertyAnimationDelay,
-        CSSPropertyAnimationIterationCount,
-        CSSPropertyAnimationDirection,
-        CSSPropertyAnimationFillMode,
-        CSSPropertyAnimationPlayState,
-        CSSPropertyAnimationName
-    };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitAnimationLonghandsForParsing, (CSSPropertyAnimation, animationPropertiesForParsing, WTF_ARRAY_LENGTH(animationPropertiesForParsing)));
-    return webkitAnimationLonghandsForParsing;
+const StylePropertyShorthand& animationShorthandForParsing() {
+  // When we parse the animation shorthand we need to look for animation-name
+  // last because otherwise it might match against the keywords for fill mode,
+  // timing functions and infinite iteration. This means that animation names
+  // that are the same as keywords (e.g. 'forwards') won't always match in the
+  // shorthand. In that case the authors should be using longhands (or
+  // reconsidering their approach). This is covered by the animations spec
+  // bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=14790
+  // And in the spec (editor's draft) at:
+  // http://dev.w3.org/csswg/css3-animations/#animation-shorthand-property
+  static const CSSPropertyID animationPropertiesForParsing[] = {
+      CSSPropertyAnimationDuration,  CSSPropertyAnimationTimingFunction,
+      CSSPropertyAnimationDelay,     CSSPropertyAnimationIterationCount,
+      CSSPropertyAnimationDirection, CSSPropertyAnimationFillMode,
+      CSSPropertyAnimationPlayState, CSSPropertyAnimationName};
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand,
+                      webkitAnimationLonghandsForParsing,
+                      (CSSPropertyAnimation, animationPropertiesForParsing,
+                       WTF_ARRAY_LENGTH(animationPropertiesForParsing)));
+  return webkitAnimationLonghandsForParsing;
 }
 
 // Similar to animations, we have property after timing-function and delay after duration
-const StylePropertyShorthand& transitionShorthandForParsing()
-{
-    static const CSSPropertyID transitionProperties[] = {
-        CSSPropertyTransitionDuration,
-        CSSPropertyTransitionTimingFunction,
-        CSSPropertyTransitionDelay,
-        CSSPropertyTransitionProperty
-    };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, transitionLonghands, (CSSPropertyTransition, transitionProperties, WTF_ARRAY_LENGTH(transitionProperties)));
-    return transitionLonghands;
+const StylePropertyShorthand& transitionShorthandForParsing() {
+  static const CSSPropertyID transitionProperties[] = {
+      CSSPropertyTransitionDuration, CSSPropertyTransitionTimingFunction,
+      CSSPropertyTransitionDelay, CSSPropertyTransitionProperty};
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, transitionLonghands,
+                      (CSSPropertyTransition, transitionProperties,
+                       WTF_ARRAY_LENGTH(transitionProperties)));
+  return transitionLonghands;
 }
 
-bool isShorthandProperty(CSSPropertyID id)
-{
-    return shorthandForProperty(id).length();
+bool isShorthandProperty(CSSPropertyID id) {
+  return shorthandForProperty(id).length();
 }
 
-unsigned indexOfShorthandForLonghand(CSSPropertyID shorthandID, const Vector<StylePropertyShorthand, 4>& shorthands)
-{
-    for (unsigned i = 0; i < shorthands.size(); ++i) {
-        if (shorthands.at(i).id() == shorthandID)
-            return i;
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
+unsigned indexOfShorthandForLonghand(
+    CSSPropertyID shorthandID,
+    const Vector<StylePropertyShorthand, 4>& shorthands) {
+  for (unsigned i = 0; i < shorthands.size(); ++i) {
+    if (shorthands.at(i).id() == shorthandID)
+      return i;
+  }
+  ASSERT_NOT_REACHED();
+  return 0;
 }
 
-} // namespace blink
+}  // namespace blink

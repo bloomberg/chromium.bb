@@ -19,102 +19,94 @@
 
 namespace blink {
 
-WebFont* WebFont::create(const WebFontDescription& description)
-{
-    return new WebFont(description);
+WebFont* WebFont::create(const WebFontDescription& description) {
+  return new WebFont(description);
 }
 
 class WebFont::Impl final {
-public:
-    explicit Impl(const WebFontDescription& description)
-        : m_font(description)
-    {
-        m_font.update(nullptr);
-    }
+ public:
+  explicit Impl(const WebFontDescription& description) : m_font(description) {
+    m_font.update(nullptr);
+  }
 
-    const Font& getFont() const { return m_font; }
+  const Font& getFont() const { return m_font; }
 
-private:
-    Font m_font;
+ private:
+  Font m_font;
 };
 
 WebFont::WebFont(const WebFontDescription& description)
-    : m_private(new Impl(description))
-{
+    : m_private(new Impl(description)) {}
+
+WebFont::~WebFont() {}
+
+WebFontDescription WebFont::getFontDescription() const {
+  return WebFontDescription(m_private->getFont().getFontDescription());
 }
 
-WebFont::~WebFont()
-{
+int WebFont::ascent() const {
+  return m_private->getFont().getFontMetrics().ascent();
 }
 
-WebFontDescription WebFont::getFontDescription() const
-{
-    return WebFontDescription(m_private->getFont().getFontDescription());
+int WebFont::descent() const {
+  return m_private->getFont().getFontMetrics().descent();
 }
 
-int WebFont::ascent() const
-{
-    return m_private->getFont().getFontMetrics().ascent();
+int WebFont::height() const {
+  return m_private->getFont().getFontMetrics().height();
 }
 
-int WebFont::descent() const
-{
-    return m_private->getFont().getFontMetrics().descent();
+int WebFont::lineSpacing() const {
+  return m_private->getFont().getFontMetrics().lineSpacing();
 }
 
-int WebFont::height() const
-{
-    return m_private->getFont().getFontMetrics().height();
+float WebFont::xHeight() const {
+  return m_private->getFont().getFontMetrics().xHeight();
 }
 
-int WebFont::lineSpacing() const
-{
-    return m_private->getFont().getFontMetrics().lineSpacing();
+void WebFont::drawText(WebCanvas* canvas,
+                       const WebTextRun& run,
+                       const WebFloatPoint& leftBaseline,
+                       WebColor color,
+                       const WebRect& clip) const {
+  FontCachePurgePreventer fontCachePurgePreventer;
+  FloatRect textClipRect(clip);
+  TextRun textRun(run);
+  TextRunPaintInfo runInfo(textRun);
+  runInfo.bounds = textClipRect;
+
+  IntRect intRect(clip);
+  SkPictureBuilder pictureBuilder(intRect);
+  GraphicsContext& context = pictureBuilder.context();
+
+  {
+    DrawingRecorder drawingRecorder(context, pictureBuilder,
+                                    DisplayItem::kWebFont, intRect);
+    context.save();
+    context.setFillColor(color);
+    context.clip(textClipRect);
+    context.drawText(m_private->getFont(), runInfo, leftBaseline);
+    context.restore();
+  }
+
+  pictureBuilder.endRecording()->playback(canvas);
 }
 
-float WebFont::xHeight() const
-{
-    return m_private->getFont().getFontMetrics().xHeight();
+int WebFont::calculateWidth(const WebTextRun& run) const {
+  return m_private->getFont().width(run, 0);
 }
 
-void WebFont::drawText(WebCanvas* canvas, const WebTextRun& run,
-    const WebFloatPoint& leftBaseline, WebColor color, const WebRect& clip) const
-{
-    FontCachePurgePreventer fontCachePurgePreventer;
-    FloatRect textClipRect(clip);
-    TextRun textRun(run);
-    TextRunPaintInfo runInfo(textRun);
-    runInfo.bounds = textClipRect;
-
-    IntRect intRect(clip);
-    SkPictureBuilder pictureBuilder(intRect);
-    GraphicsContext& context = pictureBuilder.context();
-
-    {
-        DrawingRecorder drawingRecorder(context, pictureBuilder, DisplayItem::kWebFont, intRect);
-        context.save();
-        context.setFillColor(color);
-        context.clip(textClipRect);
-        context.drawText(m_private->getFont(), runInfo, leftBaseline);
-        context.restore();
-    }
-
-    pictureBuilder.endRecording()->playback(canvas);
+int WebFont::offsetForPosition(const WebTextRun& run, float position) const {
+  return m_private->getFont().offsetForPosition(run, position, true);
 }
 
-int WebFont::calculateWidth(const WebTextRun& run) const
-{
-    return m_private->getFont().width(run, 0);
+WebFloatRect WebFont::selectionRectForText(const WebTextRun& run,
+                                           const WebFloatPoint& leftBaseline,
+                                           int height,
+                                           int from,
+                                           int to) const {
+  return m_private->getFont().selectionRectForText(run, leftBaseline, height,
+                                                   from, to);
 }
 
-int WebFont::offsetForPosition(const WebTextRun& run, float position) const
-{
-    return m_private->getFont().offsetForPosition(run, position, true);
-}
-
-WebFloatRect WebFont::selectionRectForText(const WebTextRun& run, const WebFloatPoint& leftBaseline, int height, int from, int to) const
-{
-    return m_private->getFont().selectionRectForText(run, leftBaseline, height, from, to);
-}
-
-} // namespace blink
+}  // namespace blink

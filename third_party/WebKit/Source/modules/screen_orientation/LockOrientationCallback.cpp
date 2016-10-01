@@ -11,41 +11,40 @@
 
 namespace blink {
 
-LockOrientationCallback::LockOrientationCallback(ScriptPromiseResolver* resolver)
-    : m_resolver(resolver)
-{
+LockOrientationCallback::LockOrientationCallback(
+    ScriptPromiseResolver* resolver)
+    : m_resolver(resolver) {}
+
+LockOrientationCallback::~LockOrientationCallback() {}
+
+void LockOrientationCallback::onSuccess() {
+  m_resolver->resolve();
 }
 
-LockOrientationCallback::~LockOrientationCallback()
-{
-}
+void LockOrientationCallback::onError(WebLockOrientationError error) {
+  ExceptionCode code = 0;
+  String msg = "";
 
-void LockOrientationCallback::onSuccess()
-{
-    m_resolver->resolve();
-}
-
-void LockOrientationCallback::onError(WebLockOrientationError error)
-{
-    ExceptionCode code = 0;
-    String msg = "";
-
-    switch (error) {
+  switch (error) {
     case WebLockOrientationErrorNotAvailable:
-        code = NotSupportedError;
-        msg = "screen.orientation.lock() is not available on this device.";
-        break;
+      code = NotSupportedError;
+      msg = "screen.orientation.lock() is not available on this device.";
+      break;
     case WebLockOrientationErrorFullscreenRequired:
-        code = SecurityError;
-        msg = "The page needs to be fullscreen in order to call screen.orientation.lock().";
-        break;
+      code = SecurityError;
+      msg =
+          "The page needs to be fullscreen in order to call "
+          "screen.orientation.lock().";
+      break;
     case WebLockOrientationErrorCanceled:
-        code = AbortError;
-        msg = "A call to screen.orientation.lock() or screen.orientation.unlock() canceled this call.";
-        break;
-    }
+      code = AbortError;
+      msg =
+          "A call to screen.orientation.lock() or screen.orientation.unlock() "
+          "canceled this call.";
+      break;
+  }
 
-    m_resolver->reject(DOMException::create(code, msg));
+  m_resolver->reject(DOMException::create(code, msg));
 }
 
-} // namespace blink
+}  // namespace blink

@@ -38,135 +38,116 @@
 
 namespace blink {
 
-class WebSecurityOriginPrivate : public SecurityOrigin {
-};
+class WebSecurityOriginPrivate : public SecurityOrigin {};
 
-WebSecurityOrigin WebSecurityOrigin::createFromString(const WebString& origin)
-{
-    return WebSecurityOrigin(SecurityOrigin::createFromString(origin));
+WebSecurityOrigin WebSecurityOrigin::createFromString(const WebString& origin) {
+  return WebSecurityOrigin(SecurityOrigin::createFromString(origin));
 }
 
-WebSecurityOrigin WebSecurityOrigin::create(const WebURL& url)
-{
-    return WebSecurityOrigin(SecurityOrigin::create(url));
+WebSecurityOrigin WebSecurityOrigin::create(const WebURL& url) {
+  return WebSecurityOrigin(SecurityOrigin::create(url));
 }
 
-WebSecurityOrigin WebSecurityOrigin::createFromTuple(const WebString& protocol, const WebString& host, int port)
-{
-    return WebSecurityOrigin(SecurityOrigin::create(protocol, host, port));
+WebSecurityOrigin WebSecurityOrigin::createFromTuple(const WebString& protocol,
+                                                     const WebString& host,
+                                                     int port) {
+  return WebSecurityOrigin(SecurityOrigin::create(protocol, host, port));
 }
 
-WebSecurityOrigin WebSecurityOrigin::createUnique()
-{
-    return WebSecurityOrigin(SecurityOrigin::createUnique());
+WebSecurityOrigin WebSecurityOrigin::createUnique() {
+  return WebSecurityOrigin(SecurityOrigin::createUnique());
 }
 
-void WebSecurityOrigin::reset()
-{
-    assign(0);
+void WebSecurityOrigin::reset() {
+  assign(0);
 }
 
-void WebSecurityOrigin::assign(const WebSecurityOrigin& other)
-{
-    WebSecurityOriginPrivate* p = const_cast<WebSecurityOriginPrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
+void WebSecurityOrigin::assign(const WebSecurityOrigin& other) {
+  WebSecurityOriginPrivate* p =
+      const_cast<WebSecurityOriginPrivate*>(other.m_private);
+  if (p)
+    p->ref();
+  assign(p);
 }
 
-WebString WebSecurityOrigin::protocol() const
-{
-    ASSERT(m_private);
-    return m_private->protocol();
+WebString WebSecurityOrigin::protocol() const {
+  ASSERT(m_private);
+  return m_private->protocol();
 }
 
-WebString WebSecurityOrigin::host() const
-{
-    ASSERT(m_private);
-    return m_private->host();
+WebString WebSecurityOrigin::host() const {
+  ASSERT(m_private);
+  return m_private->host();
 }
 
-unsigned short WebSecurityOrigin::port() const
-{
-    ASSERT(m_private);
-    return m_private->port();
+unsigned short WebSecurityOrigin::port() const {
+  ASSERT(m_private);
+  return m_private->port();
 }
 
-unsigned short WebSecurityOrigin::effectivePort() const
-{
-    ASSERT(m_private);
-    return m_private->effectivePort();
+unsigned short WebSecurityOrigin::effectivePort() const {
+  ASSERT(m_private);
+  return m_private->effectivePort();
 }
 
-bool WebSecurityOrigin::isUnique() const
-{
-    ASSERT(m_private);
-    return m_private->isUnique();
+bool WebSecurityOrigin::isUnique() const {
+  ASSERT(m_private);
+  return m_private->isUnique();
 }
 
-bool WebSecurityOrigin::canAccess(const WebSecurityOrigin& other) const
-{
-    ASSERT(m_private);
-    ASSERT(other.m_private);
-    return m_private->canAccess(other.m_private);
+bool WebSecurityOrigin::canAccess(const WebSecurityOrigin& other) const {
+  ASSERT(m_private);
+  ASSERT(other.m_private);
+  return m_private->canAccess(other.m_private);
 }
 
-bool WebSecurityOrigin::canRequest(const WebURL& url) const
-{
-    ASSERT(m_private);
-    return m_private->canRequest(url);
+bool WebSecurityOrigin::canRequest(const WebURL& url) const {
+  ASSERT(m_private);
+  return m_private->canRequest(url);
 }
 
-bool WebSecurityOrigin::isPotentiallyTrustworthy() const
-{
-    ASSERT(m_private);
-    return m_private->isPotentiallyTrustworthy();
+bool WebSecurityOrigin::isPotentiallyTrustworthy() const {
+  ASSERT(m_private);
+  return m_private->isPotentiallyTrustworthy();
 }
 
-WebString WebSecurityOrigin::toString() const
-{
-    ASSERT(m_private);
-    return m_private->toString();
+WebString WebSecurityOrigin::toString() const {
+  ASSERT(m_private);
+  return m_private->toString();
 }
 
-bool WebSecurityOrigin::canAccessPasswordManager() const
-{
-    ASSERT(m_private);
-    return m_private->canAccessPasswordManager();
+bool WebSecurityOrigin::canAccessPasswordManager() const {
+  ASSERT(m_private);
+  return m_private->canAccessPasswordManager();
 }
 
 WebSecurityOrigin::WebSecurityOrigin(WTF::PassRefPtr<SecurityOrigin> origin)
-    : m_private(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()))
-{
+    : m_private(static_cast<WebSecurityOriginPrivate*>(origin.leakRef())) {}
+
+WebSecurityOrigin& WebSecurityOrigin::operator=(
+    WTF::PassRefPtr<SecurityOrigin> origin) {
+  assign(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()));
+  return *this;
 }
 
-WebSecurityOrigin& WebSecurityOrigin::operator=(WTF::PassRefPtr<SecurityOrigin> origin)
-{
-    assign(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()));
-    return *this;
+WebSecurityOrigin::operator WTF::PassRefPtr<SecurityOrigin>() const {
+  return PassRefPtr<SecurityOrigin>(
+      const_cast<WebSecurityOriginPrivate*>(m_private));
 }
 
-WebSecurityOrigin::operator WTF::PassRefPtr<SecurityOrigin>() const
-{
-    return PassRefPtr<SecurityOrigin>(const_cast<WebSecurityOriginPrivate*>(m_private));
+SecurityOrigin* WebSecurityOrigin::get() const {
+  return m_private;
 }
 
-SecurityOrigin* WebSecurityOrigin::get() const
-{
-    return m_private;
+void WebSecurityOrigin::assign(WebSecurityOriginPrivate* p) {
+  // p is already ref'd for us by the caller
+  if (m_private)
+    m_private->deref();
+  m_private = p;
 }
 
-void WebSecurityOrigin::assign(WebSecurityOriginPrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+void WebSecurityOrigin::grantLoadLocalResources() const {
+  get()->grantLoadLocalResources();
 }
 
-void WebSecurityOrigin::grantLoadLocalResources() const
-{
-    get()->grantLoadLocalResources();
-}
-
-} // namespace blink
+}  // namespace blink

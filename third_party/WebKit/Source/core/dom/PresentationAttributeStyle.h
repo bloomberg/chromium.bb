@@ -40,6 +40,6 @@ class StylePropertySet;
 
 StylePropertySet* computePresentationAttributeStyle(Element&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PresentationAttributeStyle_h
+#endif  // PresentationAttributeStyle_h

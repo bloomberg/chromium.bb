@@ -51,90 +51,111 @@ class WebBlobInfo;
 typedef HashMap<String, RefPtr<BlobDataHandle>> BlobDataHandleMap;
 typedef Vector<WebBlobInfo> WebBlobInfoArray;
 
-class CORE_EXPORT SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
-public:
-    using ArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
-    using ImageBitmapContentsArray = Vector<RefPtr<StaticBitmapImage>, 1>;
+class CORE_EXPORT SerializedScriptValue
+    : public ThreadSafeRefCounted<SerializedScriptValue> {
+ public:
+  using ArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
+  using ImageBitmapContentsArray = Vector<RefPtr<StaticBitmapImage>, 1>;
 
-    // Increment this for each incompatible change to the wire format.
-    // Version 2: Added StringUCharTag for UChar v8 strings.
-    // Version 3: Switched to using uuids as blob data identifiers.
-    // Version 4: Extended File serialization to be complete.
-    // Version 5: Added CryptoKeyTag for Key objects.
-    // Version 6: Added indexed serialization for File, Blob, and FileList.
-    // Version 7: Extended File serialization with user visibility.
-    // Version 8: File.lastModified in milliseconds (seconds-based in earlier versions.)
-    // Version 9: Added Map and Set support.
-    static const uint32_t wireFormatVersion = 9;
+  // Increment this for each incompatible change to the wire format.
+  // Version 2: Added StringUCharTag for UChar v8 strings.
+  // Version 3: Switched to using uuids as blob data identifiers.
+  // Version 4: Extended File serialization to be complete.
+  // Version 5: Added CryptoKeyTag for Key objects.
+  // Version 6: Added indexed serialization for File, Blob, and FileList.
+  // Version 7: Extended File serialization with user visibility.
+  // Version 8: File.lastModified in milliseconds (seconds-based in earlier versions.)
+  // Version 9: Added Map and Set support.
+  static const uint32_t wireFormatVersion = 9;
 
-    // VarInt encoding constants.
-    static const int varIntShift = 7;
-    static const int varIntMask = (1 << varIntShift) - 1;
+  // VarInt encoding constants.
+  static const int varIntShift = 7;
+  static const int varIntMask = (1 << varIntShift) - 1;
 
-    static PassRefPtr<SerializedScriptValue> serialize(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
-    static PassRefPtr<SerializedScriptValue> serialize(const String&);
-    static PassRefPtr<SerializedScriptValue> serializeAndSwallowExceptions(v8::Isolate*, v8::Local<v8::Value>);
+  static PassRefPtr<SerializedScriptValue> serialize(v8::Isolate*,
+                                                     v8::Local<v8::Value>,
+                                                     Transferables*,
+                                                     WebBlobInfoArray*,
+                                                     ExceptionState&);
+  static PassRefPtr<SerializedScriptValue> serialize(const String&);
+  static PassRefPtr<SerializedScriptValue> serializeAndSwallowExceptions(
+      v8::Isolate*,
+      v8::Local<v8::Value>);
 
-    static PassRefPtr<SerializedScriptValue> create();
-    static PassRefPtr<SerializedScriptValue> create(const String&);
-    static PassRefPtr<SerializedScriptValue> create(const char* data, size_t length);
+  static PassRefPtr<SerializedScriptValue> create();
+  static PassRefPtr<SerializedScriptValue> create(const String&);
+  static PassRefPtr<SerializedScriptValue> create(const char* data,
+                                                  size_t length);
 
-    virtual ~SerializedScriptValue();
+  virtual ~SerializedScriptValue();
 
-    static PassRefPtr<SerializedScriptValue> nullValue();
+  static PassRefPtr<SerializedScriptValue> nullValue();
 
-    String toWireString() const { return m_data; }
-    void toWireBytes(Vector<char>&) const;
+  String toWireString() const { return m_data; }
+  void toWireBytes(Vector<char>&) const;
 
-    // Deserializes the value (in the current context). Returns a null value in
-    // case of failure.
-    v8::Local<v8::Value> deserialize(MessagePortArray* = 0);
-    v8::Local<v8::Value> deserialize(v8::Isolate*, MessagePortArray* = 0, const WebBlobInfoArray* = 0);
+  // Deserializes the value (in the current context). Returns a null value in
+  // case of failure.
+  v8::Local<v8::Value> deserialize(MessagePortArray* = 0);
+  v8::Local<v8::Value> deserialize(v8::Isolate*,
+                                   MessagePortArray* = 0,
+                                   const WebBlobInfoArray* = 0);
 
-    // Helper function which pulls the values out of a JS sequence and into a MessagePortArray.
-    // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
-    // of the HTML5 spec and generates exceptions as appropriate.
-    // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
-    static bool extractTransferables(v8::Isolate*, v8::Local<v8::Value>, int, Transferables&, ExceptionState&);
+  // Helper function which pulls the values out of a JS sequence and into a MessagePortArray.
+  // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
+  // of the HTML5 spec and generates exceptions as appropriate.
+  // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
+  static bool extractTransferables(v8::Isolate*,
+                                   v8::Local<v8::Value>,
+                                   int,
+                                   Transferables&,
+                                   ExceptionState&);
 
-    // Informs the V8 about external memory allocated and owned by this object. Large values should contribute
-    // to GC counters to eventually trigger a GC, otherwise flood of postMessage() can cause OOM.
-    // Ok to invoke multiple times (only adds memory once).
-    // The memory registration is revoked automatically in destructor.
-    void registerMemoryAllocatedWithCurrentScriptContext();
+  // Informs the V8 about external memory allocated and owned by this object. Large values should contribute
+  // to GC counters to eventually trigger a GC, otherwise flood of postMessage() can cause OOM.
+  // Ok to invoke multiple times (only adds memory once).
+  // The memory registration is revoked automatically in destructor.
+  void registerMemoryAllocatedWithCurrentScriptContext();
 
-    // Returns true if the value contains a transferable ArrayBuffer.
-    bool containsTransferableArrayBuffer() const;
+  // Returns true if the value contains a transferable ArrayBuffer.
+  bool containsTransferableArrayBuffer() const;
 
-    String& data() { return m_data; }
-    BlobDataHandleMap& blobDataHandles() { return m_blobDataHandles; }
-    ArrayBufferContentsArray* getArrayBufferContentsArray() { return m_arrayBufferContentsArray.get(); }
-    ImageBitmapContentsArray* getImageBitmapContentsArray() { return m_imageBitmapContentsArray.get(); }
+  String& data() { return m_data; }
+  BlobDataHandleMap& blobDataHandles() { return m_blobDataHandles; }
+  ArrayBufferContentsArray* getArrayBufferContentsArray() {
+    return m_arrayBufferContentsArray.get();
+  }
+  ImageBitmapContentsArray* getImageBitmapContentsArray() {
+    return m_imageBitmapContentsArray.get();
+  }
 
-private:
-    friend class ScriptValueSerializer;
-    friend class V8ScriptValueSerializer;
+ private:
+  friend class ScriptValueSerializer;
+  friend class V8ScriptValueSerializer;
 
-    enum StringDataMode {
-        StringValue,
-        WireData
-    };
+  enum StringDataMode { StringValue, WireData };
 
-    SerializedScriptValue();
-    explicit SerializedScriptValue(const String& wireData);
+  SerializedScriptValue();
+  explicit SerializedScriptValue(const String& wireData);
 
-    void setData(const String& data) { m_data = data; }
-    void transferArrayBuffers(v8::Isolate*, const ArrayBufferArray&, ExceptionState&);
-    void transferImageBitmaps(v8::Isolate*, const ImageBitmapArray&, ExceptionState&);
-    void transferOffscreenCanvas(v8::Isolate*, const OffscreenCanvasArray&, ExceptionState&);
+  void setData(const String& data) { m_data = data; }
+  void transferArrayBuffers(v8::Isolate*,
+                            const ArrayBufferArray&,
+                            ExceptionState&);
+  void transferImageBitmaps(v8::Isolate*,
+                            const ImageBitmapArray&,
+                            ExceptionState&);
+  void transferOffscreenCanvas(v8::Isolate*,
+                               const OffscreenCanvasArray&,
+                               ExceptionState&);
 
-    String m_data;
-    std::unique_ptr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
-    std::unique_ptr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
-    BlobDataHandleMap m_blobDataHandles;
-    intptr_t m_externallyAllocatedMemory;
+  String m_data;
+  std::unique_ptr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
+  std::unique_ptr<ImageBitmapContentsArray> m_imageBitmapContentsArray;
+  BlobDataHandleMap m_blobDataHandles;
+  intptr_t m_externallyAllocatedMemory;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SerializedScriptValue_h
+#endif  // SerializedScriptValue_h

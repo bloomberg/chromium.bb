@@ -40,20 +40,21 @@ class AudioSourceProviderClient;
 
 // Abstract base-class for a pull-model client.
 class PLATFORM_EXPORT AudioSourceProvider {
-    USING_FAST_MALLOC(AudioSourceProvider);
-    WTF_MAKE_NONCOPYABLE(AudioSourceProvider);
-public:
-    AudioSourceProvider() { }
+  USING_FAST_MALLOC(AudioSourceProvider);
+  WTF_MAKE_NONCOPYABLE(AudioSourceProvider);
 
-    // provideInput() gets called repeatedly to render time-slices of a continuous audio stream.
-    virtual void provideInput(AudioBus* bus, size_t framesToProcess) = 0;
+ public:
+  AudioSourceProvider() {}
 
-    // If a client is set, we call it back when the audio format is available or changes.
-    virtual void setClient(AudioSourceProviderClient*) { };
+  // provideInput() gets called repeatedly to render time-slices of a continuous audio stream.
+  virtual void provideInput(AudioBus* bus, size_t framesToProcess) = 0;
 
-    virtual ~AudioSourceProvider() { }
+  // If a client is set, we call it back when the audio format is available or changes.
+  virtual void setClient(AudioSourceProviderClient*){};
+
+  virtual ~AudioSourceProvider() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioSourceProvider_h
+#endif  // AudioSourceProvider_h

@@ -108,387 +108,382 @@ WebFrameSerializerImpl::SerializeDomParam::SerializeDomParam(
     const KURL& url,
     const WTF::TextEncoding& textEncoding,
     Document* document)
-    : url(url)
-    , textEncoding(textEncoding)
-    , document(document)
-    , isHTMLDocument(document->isHTMLDocument())
-    , haveSeenDocType(false)
-    , haveAddedCharsetDeclaration(false)
-    , skipMetaElement(nullptr)
-    , haveAddedXMLProcessingDirective(false)
-    , haveAddedContentsBeforeEnd(false)
-{
-}
+    : url(url),
+      textEncoding(textEncoding),
+      document(document),
+      isHTMLDocument(document->isHTMLDocument()),
+      haveSeenDocType(false),
+      haveAddedCharsetDeclaration(false),
+      skipMetaElement(nullptr),
+      haveAddedXMLProcessingDirective(false),
+      haveAddedContentsBeforeEnd(false) {}
 
 String WebFrameSerializerImpl::preActionBeforeSerializeOpenTag(
-    const Element* element, SerializeDomParam* param, bool* needSkip)
-{
-    StringBuilder result;
+    const Element* element,
+    SerializeDomParam* param,
+    bool* needSkip) {
+  StringBuilder result;
 
-    *needSkip = false;
-    if (param->isHTMLDocument) {
-        // Skip the open tag of original META tag which declare charset since we
-        // have overrided the META which have correct charset declaration after
-        // serializing open tag of HEAD element.
-        DCHECK(element);
-        if (isHTMLMetaElement(element) && toHTMLMetaElement(element)->computeEncoding().isValid()) {
-            // Found META tag declared charset, we need to skip it when
-            // serializing DOM.
-            param->skipMetaElement = element;
-            *needSkip = true;
-        } else if (isHTMLHtmlElement(*element)) {
-            // Check something before processing the open tag of HEAD element.
-            // First we add doc type declaration if original document has it.
-            if (!param->haveSeenDocType) {
-                param->haveSeenDocType = true;
-                result.append(createMarkup(param->document->doctype()));
-            }
+  *needSkip = false;
+  if (param->isHTMLDocument) {
+    // Skip the open tag of original META tag which declare charset since we
+    // have overrided the META which have correct charset declaration after
+    // serializing open tag of HEAD element.
+    DCHECK(element);
+    if (isHTMLMetaElement(element) &&
+        toHTMLMetaElement(element)->computeEncoding().isValid()) {
+      // Found META tag declared charset, we need to skip it when
+      // serializing DOM.
+      param->skipMetaElement = element;
+      *needSkip = true;
+    } else if (isHTMLHtmlElement(*element)) {
+      // Check something before processing the open tag of HEAD element.
+      // First we add doc type declaration if original document has it.
+      if (!param->haveSeenDocType) {
+        param->haveSeenDocType = true;
+        result.append(createMarkup(param->document->doctype()));
+      }
 
-            // Add MOTW declaration before html tag.
-            // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
-            result.append(WebFrameSerializer::generateMarkOfTheWebDeclaration(param->url));
-        } else if (isHTMLBaseElement(*element)) {
-            // Comment the BASE tag when serializing dom.
-            result.append("<!--");
-        }
-    } else {
-        // Write XML declaration.
-        if (!param->haveAddedXMLProcessingDirective) {
-            param->haveAddedXMLProcessingDirective = true;
-            // Get encoding info.
-            String xmlEncoding = param->document->xmlEncoding();
-            if (xmlEncoding.isEmpty())
-                xmlEncoding = param->document->encodingName();
-            if (xmlEncoding.isEmpty())
-                xmlEncoding = UTF8Encoding().name();
-            result.append("<?xml version=\"");
-            result.append(param->document->xmlVersion());
-            result.append("\" encoding=\"");
-            result.append(xmlEncoding);
-            if (param->document->xmlStandalone())
-                result.append("\" standalone=\"yes");
-            result.append("\"?>\n");
-        }
-        // Add doc type declaration if original document has it.
-        if (!param->haveSeenDocType) {
-            param->haveSeenDocType = true;
-            result.append(createMarkup(param->document->doctype()));
-        }
+      // Add MOTW declaration before html tag.
+      // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
+      result.append(
+          WebFrameSerializer::generateMarkOfTheWebDeclaration(param->url));
+    } else if (isHTMLBaseElement(*element)) {
+      // Comment the BASE tag when serializing dom.
+      result.append("<!--");
     }
-    return result.toString();
+  } else {
+    // Write XML declaration.
+    if (!param->haveAddedXMLProcessingDirective) {
+      param->haveAddedXMLProcessingDirective = true;
+      // Get encoding info.
+      String xmlEncoding = param->document->xmlEncoding();
+      if (xmlEncoding.isEmpty())
+        xmlEncoding = param->document->encodingName();
+      if (xmlEncoding.isEmpty())
+        xmlEncoding = UTF8Encoding().name();
+      result.append("<?xml version=\"");
+      result.append(param->document->xmlVersion());
+      result.append("\" encoding=\"");
+      result.append(xmlEncoding);
+      if (param->document->xmlStandalone())
+        result.append("\" standalone=\"yes");
+      result.append("\"?>\n");
+    }
+    // Add doc type declaration if original document has it.
+    if (!param->haveSeenDocType) {
+      param->haveSeenDocType = true;
+      result.append(createMarkup(param->document->doctype()));
+    }
+  }
+  return result.toString();
 }
 
 String WebFrameSerializerImpl::postActionAfterSerializeOpenTag(
-    const Element* element, SerializeDomParam* param)
-{
-    StringBuilder result;
+    const Element* element,
+    SerializeDomParam* param) {
+  StringBuilder result;
 
-    param->haveAddedContentsBeforeEnd = false;
-    if (!param->isHTMLDocument)
-        return result.toString();
-    // Check after processing the open tag of HEAD element
-    if (!param->haveAddedCharsetDeclaration
-        && isHTMLHeadElement(*element)) {
-        param->haveAddedCharsetDeclaration = true;
-        // Check meta element. WebKit only pre-parse the first 512 bytes of the
-        // document. If the whole <HEAD> is larger and meta is the end of head
-        // part, then this kind of html documents aren't decoded correctly
-        // because of this issue. So when we serialize the DOM, we need to make
-        // sure the meta will in first child of head tag.
-        // See http://bugs.webkit.org/show_bug.cgi?id=16621.
-        // First we generate new content for writing correct META element.
-        result.append(WebFrameSerializer::generateMetaCharsetDeclaration(
-            String(param->textEncoding.name())));
-
-        param->haveAddedContentsBeforeEnd = true;
-        // Will search each META which has charset declaration, and skip them all
-        // in PreActionBeforeSerializeOpenTag.
-    }
-
+  param->haveAddedContentsBeforeEnd = false;
+  if (!param->isHTMLDocument)
     return result.toString();
+  // Check after processing the open tag of HEAD element
+  if (!param->haveAddedCharsetDeclaration && isHTMLHeadElement(*element)) {
+    param->haveAddedCharsetDeclaration = true;
+    // Check meta element. WebKit only pre-parse the first 512 bytes of the
+    // document. If the whole <HEAD> is larger and meta is the end of head
+    // part, then this kind of html documents aren't decoded correctly
+    // because of this issue. So when we serialize the DOM, we need to make
+    // sure the meta will in first child of head tag.
+    // See http://bugs.webkit.org/show_bug.cgi?id=16621.
+    // First we generate new content for writing correct META element.
+    result.append(WebFrameSerializer::generateMetaCharsetDeclaration(
+        String(param->textEncoding.name())));
+
+    param->haveAddedContentsBeforeEnd = true;
+    // Will search each META which has charset declaration, and skip them all
+    // in PreActionBeforeSerializeOpenTag.
+  }
+
+  return result.toString();
 }
 
 String WebFrameSerializerImpl::preActionBeforeSerializeEndTag(
-    const Element* element, SerializeDomParam* param, bool* needSkip)
-{
-    String result;
+    const Element* element,
+    SerializeDomParam* param,
+    bool* needSkip) {
+  String result;
 
-    *needSkip = false;
-    if (!param->isHTMLDocument)
-        return result;
-    // Skip the end tag of original META tag which declare charset.
-    // Need not to check whether it's META tag since we guarantee
-    // skipMetaElement is definitely META tag if it's not 0.
-    if (param->skipMetaElement == element) {
-        *needSkip = true;
-    }
-
+  *needSkip = false;
+  if (!param->isHTMLDocument)
     return result;
+  // Skip the end tag of original META tag which declare charset.
+  // Need not to check whether it's META tag since we guarantee
+  // skipMetaElement is definitely META tag if it's not 0.
+  if (param->skipMetaElement == element) {
+    *needSkip = true;
+  }
+
+  return result;
 }
 
 // After we finish serializing end tag of a element, we give the target
 // element a chance to do some post work to add some additional data.
 String WebFrameSerializerImpl::postActionAfterSerializeEndTag(
-    const Element* element, SerializeDomParam* param)
-{
-    StringBuilder result;
+    const Element* element,
+    SerializeDomParam* param) {
+  StringBuilder result;
 
-    if (!param->isHTMLDocument)
-        return result.toString();
-    // Comment the BASE tag when serializing DOM.
-    if (isHTMLBaseElement(*element)) {
-        result.append("-->");
-        // Append a new base tag declaration.
-        result.append(WebFrameSerializer::generateBaseTagDeclaration(
-            param->document->baseTarget()));
-    }
-
+  if (!param->isHTMLDocument)
     return result.toString();
+  // Comment the BASE tag when serializing DOM.
+  if (isHTMLBaseElement(*element)) {
+    result.append("-->");
+    // Append a new base tag declaration.
+    result.append(WebFrameSerializer::generateBaseTagDeclaration(
+        param->document->baseTarget()));
+  }
+
+  return result.toString();
 }
 
-void WebFrameSerializerImpl::saveHTMLContentToBuffer(
-    const String& result, SerializeDomParam* param)
-{
-    m_dataBuffer.append(result);
-    encodeAndFlushBuffer(
-        WebFrameSerializerClient::CurrentFrameIsNotFinished,
-        param,
-        DoNotForceFlush);
+void WebFrameSerializerImpl::saveHTMLContentToBuffer(const String& result,
+                                                     SerializeDomParam* param) {
+  m_dataBuffer.append(result);
+  encodeAndFlushBuffer(WebFrameSerializerClient::CurrentFrameIsNotFinished,
+                       param, DoNotForceFlush);
 }
 
 void WebFrameSerializerImpl::encodeAndFlushBuffer(
     WebFrameSerializerClient::FrameSerializationStatus status,
     SerializeDomParam* param,
-    FlushOption flushOption)
-{
-    // Data buffer is not full nor do we want to force flush.
-    if (flushOption != ForceFlush && m_dataBuffer.length() <= dataBufferCapacity)
-        return;
+    FlushOption flushOption) {
+  // Data buffer is not full nor do we want to force flush.
+  if (flushOption != ForceFlush && m_dataBuffer.length() <= dataBufferCapacity)
+    return;
 
-    String content = m_dataBuffer.toString();
-    m_dataBuffer.clear();
+  String content = m_dataBuffer.toString();
+  m_dataBuffer.clear();
 
-    CString encodedContent = param->textEncoding.encode(content, WTF::EntitiesForUnencodables);
+  CString encodedContent =
+      param->textEncoding.encode(content, WTF::EntitiesForUnencodables);
 
-    // Send result to the client.
-    m_client->didSerializeDataForFrame(WebCString(encodedContent), status);
+  // Send result to the client.
+  m_client->didSerializeDataForFrame(WebCString(encodedContent), status);
 }
 
 // TODO(yosin): We should utilize |MarkupFormatter| here to share code,
 // especially escaping attribute values, done by |WebEntities| |m_htmlEntities|
 // and |m_xmlEntities|.
-void WebFrameSerializerImpl::appendAttribute(
-    StringBuilder& result,
-    bool isHTMLDocument,
-    const String& attrName,
-    const String& attrValue) {
-    result.append(' ');
-    result.append(attrName);
-    result.append("=\"");
-    if (isHTMLDocument)
-        result.append(m_htmlEntities.convertEntitiesInString(attrValue));
-    else
-        result.append(m_xmlEntities.convertEntitiesInString(attrValue));
-    result.append('\"');
+void WebFrameSerializerImpl::appendAttribute(StringBuilder& result,
+                                             bool isHTMLDocument,
+                                             const String& attrName,
+                                             const String& attrValue) {
+  result.append(' ');
+  result.append(attrName);
+  result.append("=\"");
+  if (isHTMLDocument)
+    result.append(m_htmlEntities.convertEntitiesInString(attrValue));
+  else
+    result.append(m_xmlEntities.convertEntitiesInString(attrValue));
+  result.append('\"');
 }
 
-void WebFrameSerializerImpl::openTagToString(
-    Element* element,
-    SerializeDomParam* param)
-{
-    bool needSkip;
-    StringBuilder result;
-    // Do pre action for open tag.
-    result.append(preActionBeforeSerializeOpenTag(element, param, &needSkip));
-    if (needSkip)
-        return;
-    // Add open tag
-    result.append('<');
-    result.append(element->nodeName().lower());
+void WebFrameSerializerImpl::openTagToString(Element* element,
+                                             SerializeDomParam* param) {
+  bool needSkip;
+  StringBuilder result;
+  // Do pre action for open tag.
+  result.append(preActionBeforeSerializeOpenTag(element, param, &needSkip));
+  if (needSkip)
+    return;
+  // Add open tag
+  result.append('<');
+  result.append(element->nodeName().lower());
 
-    // Find out if we need to do frame-specific link rewriting.
-    WebFrame* frame = nullptr;
-    if (element->isFrameOwnerElement()) {
-        frame = WebFrame::fromFrame(
-            toHTMLFrameOwnerElement(element)->contentFrame());
-    }
-    WebString rewrittenFrameLink;
-    bool shouldRewriteFrameSrc =
-        frame && m_delegate->rewriteFrameSource(frame, &rewrittenFrameLink);
-    bool didRewriteFrameSrc = false;
+  // Find out if we need to do frame-specific link rewriting.
+  WebFrame* frame = nullptr;
+  if (element->isFrameOwnerElement()) {
+    frame =
+        WebFrame::fromFrame(toHTMLFrameOwnerElement(element)->contentFrame());
+  }
+  WebString rewrittenFrameLink;
+  bool shouldRewriteFrameSrc =
+      frame && m_delegate->rewriteFrameSource(frame, &rewrittenFrameLink);
+  bool didRewriteFrameSrc = false;
 
-    // Go through all attributes and serialize them.
-    for (const auto& it : element->attributes()) {
-        const QualifiedName& attrName = it.name();
-        String attrValue = it.value();
+  // Go through all attributes and serialize them.
+  for (const auto& it : element->attributes()) {
+    const QualifiedName& attrName = it.name();
+    String attrValue = it.value();
 
-        // Skip srcdoc attribute if we will emit src attribute (for frames).
-        if (shouldRewriteFrameSrc && attrName == HTMLNames::srcdocAttr)
-            continue;
+    // Skip srcdoc attribute if we will emit src attribute (for frames).
+    if (shouldRewriteFrameSrc && attrName == HTMLNames::srcdocAttr)
+      continue;
 
-        // Rewrite the attribute value if requested.
-        if (element->hasLegalLinkAttribute(attrName)) {
-            // For links start with "javascript:", we do not change it.
-            if (!attrValue.startsWith("javascript:", TextCaseInsensitive)) {
-                // Get the absolute link.
-                KURL completeURL = param->document->completeURL(attrValue);
+    // Rewrite the attribute value if requested.
+    if (element->hasLegalLinkAttribute(attrName)) {
+      // For links start with "javascript:", we do not change it.
+      if (!attrValue.startsWith("javascript:", TextCaseInsensitive)) {
+        // Get the absolute link.
+        KURL completeURL = param->document->completeURL(attrValue);
 
-                // Check whether we have a local file to link to.
-                WebString rewrittenURL;
-                if (shouldRewriteFrameSrc) {
-                    attrValue = rewrittenFrameLink;
-                    didRewriteFrameSrc = true;
-                } else if (m_delegate->rewriteLink(completeURL, &rewrittenURL)) {
-                    attrValue = rewrittenURL;
-                } else {
-                    attrValue = completeURL;
-                }
-            }
+        // Check whether we have a local file to link to.
+        WebString rewrittenURL;
+        if (shouldRewriteFrameSrc) {
+          attrValue = rewrittenFrameLink;
+          didRewriteFrameSrc = true;
+        } else if (m_delegate->rewriteLink(completeURL, &rewrittenURL)) {
+          attrValue = rewrittenURL;
+        } else {
+          attrValue = completeURL;
         }
-
-        appendAttribute(result, param->isHTMLDocument, attrName.toString(), attrValue);
+      }
     }
 
-    // For frames where link rewriting was requested, ensure that src attribute
-    // is written even if the original document didn't have that attribute
-    // (mainly needed for iframes with srcdoc, but with no src attribute).
-    if (shouldRewriteFrameSrc && !didRewriteFrameSrc && isHTMLIFrameElement(element)) {
-        appendAttribute(
-            result, param->isHTMLDocument, HTMLNames::srcAttr.toString(), rewrittenFrameLink);
-    }
+    appendAttribute(result, param->isHTMLDocument, attrName.toString(),
+                    attrValue);
+  }
 
-    // Do post action for open tag.
-    String addedContents = postActionAfterSerializeOpenTag(element, param);
-    // Complete the open tag for element when it has child/children.
-    if (element->hasChildren() || param->haveAddedContentsBeforeEnd)
-        result.append('>');
-    // Append the added contents generate in  post action of open tag.
-    result.append(addedContents);
-    // Save the result to data buffer.
-    saveHTMLContentToBuffer(result.toString(), param);
+  // For frames where link rewriting was requested, ensure that src attribute
+  // is written even if the original document didn't have that attribute
+  // (mainly needed for iframes with srcdoc, but with no src attribute).
+  if (shouldRewriteFrameSrc && !didRewriteFrameSrc &&
+      isHTMLIFrameElement(element)) {
+    appendAttribute(result, param->isHTMLDocument,
+                    HTMLNames::srcAttr.toString(), rewrittenFrameLink);
+  }
+
+  // Do post action for open tag.
+  String addedContents = postActionAfterSerializeOpenTag(element, param);
+  // Complete the open tag for element when it has child/children.
+  if (element->hasChildren() || param->haveAddedContentsBeforeEnd)
+    result.append('>');
+  // Append the added contents generate in  post action of open tag.
+  result.append(addedContents);
+  // Save the result to data buffer.
+  saveHTMLContentToBuffer(result.toString(), param);
 }
 
 // Serialize end tag of an specified element.
-void WebFrameSerializerImpl::endTagToString(
-    Element* element,
-    SerializeDomParam* param)
-{
-    bool needSkip;
-    StringBuilder result;
-    // Do pre action for end tag.
-    result.append(preActionBeforeSerializeEndTag(element, param, &needSkip));
-    if (needSkip)
-        return;
-    // Write end tag when element has child/children.
-    if (element->hasChildren() || param->haveAddedContentsBeforeEnd) {
+void WebFrameSerializerImpl::endTagToString(Element* element,
+                                            SerializeDomParam* param) {
+  bool needSkip;
+  StringBuilder result;
+  // Do pre action for end tag.
+  result.append(preActionBeforeSerializeEndTag(element, param, &needSkip));
+  if (needSkip)
+    return;
+  // Write end tag when element has child/children.
+  if (element->hasChildren() || param->haveAddedContentsBeforeEnd) {
+    result.append("</");
+    result.append(element->nodeName().lower());
+    result.append('>');
+  } else {
+    // Check whether we have to write end tag for empty element.
+    if (param->isHTMLDocument) {
+      result.append('>');
+      // FIXME: This code is horribly wrong.  WebFrameSerializerImpl must die.
+      if (!element->isHTMLElement() ||
+          !toHTMLElement(element)->ieForbidsInsertHTML()) {
+        // We need to write end tag when it is required.
         result.append("</");
         result.append(element->nodeName().lower());
         result.append('>');
+      }
     } else {
-        // Check whether we have to write end tag for empty element.
-        if (param->isHTMLDocument) {
-            result.append('>');
-            // FIXME: This code is horribly wrong.  WebFrameSerializerImpl must die.
-            if (!element->isHTMLElement() || !toHTMLElement(element)->ieForbidsInsertHTML()) {
-                // We need to write end tag when it is required.
-                result.append("</");
-                result.append(element->nodeName().lower());
-                result.append('>');
-            }
-        } else {
-            // For xml base document.
-            result.append(" />");
-        }
+      // For xml base document.
+      result.append(" />");
     }
-    // Do post action for end tag.
-    result.append(postActionAfterSerializeEndTag(element, param));
-    // Save the result to data buffer.
-    saveHTMLContentToBuffer(result.toString(), param);
+  }
+  // Do post action for end tag.
+  result.append(postActionAfterSerializeEndTag(element, param));
+  // Save the result to data buffer.
+  saveHTMLContentToBuffer(result.toString(), param);
 }
 
-void WebFrameSerializerImpl::buildContentForNode(
-    Node* node,
-    SerializeDomParam* param)
-{
-    switch (node->getNodeType()) {
+void WebFrameSerializerImpl::buildContentForNode(Node* node,
+                                                 SerializeDomParam* param) {
+  switch (node->getNodeType()) {
     case Node::kElementNode:
-        // Process open tag of element.
-        openTagToString(toElement(node), param);
-        // Walk through the children nodes and process it.
-        for (Node *child = node->firstChild(); child; child = child->nextSibling())
-            buildContentForNode(child, param);
-        // Process end tag of element.
-        endTagToString(toElement(node), param);
-        break;
+      // Process open tag of element.
+      openTagToString(toElement(node), param);
+      // Walk through the children nodes and process it.
+      for (Node* child = node->firstChild(); child;
+           child = child->nextSibling())
+        buildContentForNode(child, param);
+      // Process end tag of element.
+      endTagToString(toElement(node), param);
+      break;
     case Node::kTextNode:
-        saveHTMLContentToBuffer(createMarkup(node), param);
-        break;
+      saveHTMLContentToBuffer(createMarkup(node), param);
+      break;
     case Node::kAttributeNode:
     case Node::kDocumentNode:
     case Node::kDocumentFragmentNode:
-        // Should not exist.
-        NOTREACHED();
-        break;
+      // Should not exist.
+      NOTREACHED();
+      break;
     // Document type node can be in DOM?
     case Node::kDocumentTypeNode:
-        param->haveSeenDocType = true;
+      param->haveSeenDocType = true;
     default:
-        // For other type node, call default action.
-        saveHTMLContentToBuffer(createMarkup(node), param);
-        break;
-    }
+      // For other type node, call default action.
+      saveHTMLContentToBuffer(createMarkup(node), param);
+      break;
+  }
 }
 
 WebFrameSerializerImpl::WebFrameSerializerImpl(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
     WebFrameSerializer::LinkRewritingDelegate* delegate)
-    : m_client(client)
-    , m_delegate(delegate)
-    , m_htmlEntities(false)
-    , m_xmlEntities(true)
-{
-    // Must specify available webframe.
-    DCHECK(frame);
-    m_specifiedWebLocalFrameImpl = toWebLocalFrameImpl(frame);
-    // Make sure we have non null client and delegate.
-    DCHECK(client);
-    DCHECK(delegate);
+    : m_client(client),
+      m_delegate(delegate),
+      m_htmlEntities(false),
+      m_xmlEntities(true) {
+  // Must specify available webframe.
+  DCHECK(frame);
+  m_specifiedWebLocalFrameImpl = toWebLocalFrameImpl(frame);
+  // Make sure we have non null client and delegate.
+  DCHECK(client);
+  DCHECK(delegate);
 
-    DCHECK(m_dataBuffer.isEmpty());
+  DCHECK(m_dataBuffer.isEmpty());
 }
 
-bool WebFrameSerializerImpl::serialize()
-{
-    bool didSerialization = false;
+bool WebFrameSerializerImpl::serialize() {
+  bool didSerialization = false;
 
-    Document* document = m_specifiedWebLocalFrameImpl->frame()->document();
-    const KURL& url = document->url();
+  Document* document = m_specifiedWebLocalFrameImpl->frame()->document();
+  const KURL& url = document->url();
 
-    if (url.isValid()) {
-        didSerialization = true;
+  if (url.isValid()) {
+    didSerialization = true;
 
-        const WTF::TextEncoding& textEncoding = document->encoding().isValid() ? document->encoding() : UTF8Encoding();
-        if (textEncoding.isNonByteBasedEncoding()) {
-            const UChar byteOrderMark = 0xFEFF;
-            m_dataBuffer.append(byteOrderMark);
-        }
-
-        SerializeDomParam param(url, textEncoding, document);
-
-        Element* documentElement = document->documentElement();
-        if (documentElement)
-            buildContentForNode(documentElement, &param);
-
-        encodeAndFlushBuffer(WebFrameSerializerClient::CurrentFrameIsFinished, &param, ForceFlush);
-    } else {
-        // Report empty contents for invalid URLs.
-        m_client->didSerializeDataForFrame(
-            WebCString(), WebFrameSerializerClient::CurrentFrameIsFinished);
+    const WTF::TextEncoding& textEncoding =
+        document->encoding().isValid() ? document->encoding() : UTF8Encoding();
+    if (textEncoding.isNonByteBasedEncoding()) {
+      const UChar byteOrderMark = 0xFEFF;
+      m_dataBuffer.append(byteOrderMark);
     }
 
-    DCHECK(m_dataBuffer.isEmpty());
-    return didSerialization;
+    SerializeDomParam param(url, textEncoding, document);
+
+    Element* documentElement = document->documentElement();
+    if (documentElement)
+      buildContentForNode(documentElement, &param);
+
+    encodeAndFlushBuffer(WebFrameSerializerClient::CurrentFrameIsFinished,
+                         &param, ForceFlush);
+  } else {
+    // Report empty contents for invalid URLs.
+    m_client->didSerializeDataForFrame(
+        WebCString(), WebFrameSerializerClient::CurrentFrameIsFinished);
+  }
+
+  DCHECK(m_dataBuffer.isEmpty());
+  return didSerialization;
 }
 
-} // namespace blink
+}  // namespace blink

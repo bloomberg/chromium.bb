@@ -8,10 +8,10 @@
 namespace blink {
 
 class NavigatorCPU {
-public:
-    unsigned hardwareConcurrency() const;
+ public:
+  unsigned hardwareConcurrency() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorCPU_h
+#endif  // NavigatorCPU_h

@@ -12,32 +12,28 @@
 namespace blink {
 
 class LayoutMenuListItem : public LayoutBlockItem {
-public:
-    explicit LayoutMenuListItem(LayoutBlock* layoutBlock)
-        : LayoutBlockItem(layoutBlock)
-    {
-    }
+ public:
+  explicit LayoutMenuListItem(LayoutBlock* layoutBlock)
+      : LayoutBlockItem(layoutBlock) {}
 
-    explicit LayoutMenuListItem(const LayoutBlockItem& item)
-        : LayoutBlockItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMenuList());
-    }
+  explicit LayoutMenuListItem(const LayoutBlockItem& item)
+      : LayoutBlockItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMenuList());
+  }
 
-    explicit LayoutMenuListItem(std::nullptr_t) : LayoutBlockItem(nullptr) { }
+  explicit LayoutMenuListItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
 
-    LayoutMenuListItem() { }
+  LayoutMenuListItem() {}
 
-    String text() const
-    {
-        return toMenuList()->text();
-    }
+  String text() const { return toMenuList()->text(); }
 
-private:
-    LayoutMenuList* toMenuList() { return toLayoutMenuList(layoutObject()); }
-    const LayoutMenuList* toMenuList() const { return toLayoutMenuList(layoutObject()); }
+ private:
+  LayoutMenuList* toMenuList() { return toLayoutMenuList(layoutObject()); }
+  const LayoutMenuList* toMenuList() const {
+    return toLayoutMenuList(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutMenuListItem_h
+#endif  // LayoutMenuListItem_h

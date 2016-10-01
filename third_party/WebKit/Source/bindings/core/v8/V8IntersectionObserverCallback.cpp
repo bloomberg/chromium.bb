@@ -13,50 +13,56 @@
 
 namespace blink {
 
-V8IntersectionObserverCallback::V8IntersectionObserverCallback(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
-    : ActiveDOMCallback(scriptState->getExecutionContext())
-    , m_callback(scriptState->isolate(), callback)
-    , m_scriptState(scriptState)
-{
-    V8PrivateProperty::getIntersectionObserverCallback(scriptState->isolate()).set(scriptState->context(), owner, callback);
-    m_callback.setPhantom();
+V8IntersectionObserverCallback::V8IntersectionObserverCallback(
+    v8::Local<v8::Function> callback,
+    v8::Local<v8::Object> owner,
+    ScriptState* scriptState)
+    : ActiveDOMCallback(scriptState->getExecutionContext()),
+      m_callback(scriptState->isolate(), callback),
+      m_scriptState(scriptState) {
+  V8PrivateProperty::getIntersectionObserverCallback(scriptState->isolate())
+      .set(scriptState->context(), owner, callback);
+  m_callback.setPhantom();
 }
 
-V8IntersectionObserverCallback::~V8IntersectionObserverCallback()
-{
+V8IntersectionObserverCallback::~V8IntersectionObserverCallback() {}
+
+void V8IntersectionObserverCallback::handleEvent(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries,
+    IntersectionObserver& observer) {
+  if (!canInvokeCallback())
+    return;
+
+  if (!m_scriptState->contextIsValid())
+    return;
+  ScriptState::Scope scope(m_scriptState.get());
+
+  if (m_callback.isEmpty())
+    return;
+  v8::Local<v8::Value> observerHandle = toV8(
+      &observer, m_scriptState->context()->Global(), m_scriptState->isolate());
+  if (!observerHandle->IsObject())
+    return;
+
+  v8::Local<v8::Object> thisObject =
+      v8::Local<v8::Object>::Cast(observerHandle);
+  v8::Local<v8::Value> entriesHandle = toV8(
+      entries, m_scriptState->context()->Global(), m_scriptState->isolate());
+  if (entriesHandle.IsEmpty()) {
+    return;
+  }
+  v8::Local<v8::Value> argv[] = {entriesHandle, observerHandle};
+
+  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
+  exceptionCatcher.SetVerbose(true);
+  V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()),
+                               m_scriptState->getExecutionContext(), thisObject,
+                               2, argv, m_scriptState->isolate());
 }
 
-void V8IntersectionObserverCallback::handleEvent(const HeapVector<Member<IntersectionObserverEntry>>& entries, IntersectionObserver& observer)
-{
-    if (!canInvokeCallback())
-        return;
-
-    if (!m_scriptState->contextIsValid())
-        return;
-    ScriptState::Scope scope(m_scriptState.get());
-
-    if (m_callback.isEmpty())
-        return;
-    v8::Local<v8::Value> observerHandle = toV8(&observer, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (!observerHandle->IsObject())
-        return;
-
-    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(observerHandle);
-    v8::Local<v8::Value> entriesHandle = toV8(entries, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (entriesHandle.IsEmpty()) {
-        return;
-    }
-    v8::Local<v8::Value> argv[] = { entriesHandle, observerHandle };
-
-    v8::TryCatch exceptionCatcher(m_scriptState->isolate());
-    exceptionCatcher.SetVerbose(true);
-    V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisObject, 2, argv, m_scriptState->isolate());
+DEFINE_TRACE(V8IntersectionObserverCallback) {
+  IntersectionObserverCallback::trace(visitor);
+  ActiveDOMCallback::trace(visitor);
 }
 
-DEFINE_TRACE(V8IntersectionObserverCallback)
-{
-    IntersectionObserverCallback::trace(visitor);
-    ActiveDOMCallback::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

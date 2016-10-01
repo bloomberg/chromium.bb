@@ -30,68 +30,65 @@
 namespace blink {
 
 UnicodeRangeSet::UnicodeRangeSet(const Vector<UnicodeRange>& ranges)
-    : m_ranges(ranges)
-{
-    if (m_ranges.isEmpty())
-        return;
+    : m_ranges(ranges) {
+  if (m_ranges.isEmpty())
+    return;
 
-    std::sort(m_ranges.begin(), m_ranges.end());
+  std::sort(m_ranges.begin(), m_ranges.end());
 
-    // Unify overlapping ranges.
-    UChar32 from = m_ranges[0].from();
-    UChar32 to = m_ranges[0].to();
-    size_t targetIndex = 0;
-    for (size_t i = 1; i < m_ranges.size(); i++) {
-        if (to + 1 >= m_ranges[i].from()) {
-            to = std::max(to, m_ranges[i].to());
-        } else {
-            m_ranges[targetIndex++] = UnicodeRange(from, to);
-            from = m_ranges[i].from();
-            to = m_ranges[i].to();
-        }
+  // Unify overlapping ranges.
+  UChar32 from = m_ranges[0].from();
+  UChar32 to = m_ranges[0].to();
+  size_t targetIndex = 0;
+  for (size_t i = 1; i < m_ranges.size(); i++) {
+    if (to + 1 >= m_ranges[i].from()) {
+      to = std::max(to, m_ranges[i].to());
+    } else {
+      m_ranges[targetIndex++] = UnicodeRange(from, to);
+      from = m_ranges[i].from();
+      to = m_ranges[i].to();
     }
-    m_ranges[targetIndex++] = UnicodeRange(from, to);
-    m_ranges.shrink(targetIndex);
+  }
+  m_ranges[targetIndex++] = UnicodeRange(from, to);
+  m_ranges.shrink(targetIndex);
 }
 
-bool UnicodeRangeSet::contains(UChar32 c) const
-{
-    if (isEntireRange())
-        return true;
-    Vector<UnicodeRange>::const_iterator it = std::lower_bound(m_ranges.begin(), m_ranges.end(), c);
-    return it != m_ranges.end() && it->contains(c);
+bool UnicodeRangeSet::contains(UChar32 c) const {
+  if (isEntireRange())
+    return true;
+  Vector<UnicodeRange>::const_iterator it =
+      std::lower_bound(m_ranges.begin(), m_ranges.end(), c);
+  return it != m_ranges.end() && it->contains(c);
 }
 
-bool UnicodeRangeSet::intersectsWith(const String& text) const
-{
-    if (text.isEmpty())
-        return false;
-    if (isEntireRange())
-        return true;
-    if (text.is8Bit() && m_ranges[0].from() >= 0x100)
-        return false;
-
-    unsigned index = 0;
-    while (index < text.length()) {
-        UChar32 c = text.characterStartingAt(index);
-        index += U16_LENGTH(c);
-        if (contains(c))
-            return true;
-    }
+bool UnicodeRangeSet::intersectsWith(const String& text) const {
+  if (text.isEmpty())
     return false;
+  if (isEntireRange())
+    return true;
+  if (text.is8Bit() && m_ranges[0].from() >= 0x100)
+    return false;
+
+  unsigned index = 0;
+  while (index < text.length()) {
+    UChar32 c = text.characterStartingAt(index);
+    index += U16_LENGTH(c);
+    if (contains(c))
+      return true;
+  }
+  return false;
 }
 
-bool UnicodeRangeSet::operator==(const UnicodeRangeSet& other) const
-{
-    if (m_ranges.size() == 0 && other.size() == 0)
-        return true;
-    if (m_ranges.size() != other.size()) {
-        return false;
-    }
-    bool equal = true;
-    for (size_t i = 0; i < m_ranges.size(); ++i) {
-        equal = equal && m_ranges[i] == other.m_ranges[i];
-    }
-    return equal;
+bool UnicodeRangeSet::operator==(const UnicodeRangeSet& other) const {
+  if (m_ranges.size() == 0 && other.size() == 0)
+    return true;
+  if (m_ranges.size() != other.size()) {
+    return false;
+  }
+  bool equal = true;
+  for (size_t i = 0; i < m_ranges.size(); ++i) {
+    equal = equal && m_ranges[i] == other.m_ranges[i];
+  }
+  return equal;
 }
 }

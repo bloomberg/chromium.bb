@@ -38,11 +38,7 @@ namespace blink {
 // generate on dump requests.
 // TODO(hajimehoshi): Remove this and use base::trace_event::
 // MemoryDumpLevelOfDetail instead.
-enum class WebMemoryDumpLevelOfDetail {
-    Background,
-    Light,
-    Detailed
-};
+enum class WebMemoryDumpLevelOfDetail { Background, Light, Detailed };
 
 // A container which holds all the dumps for the various allocators for a given
 // process. Embedders of WebMemoryDumpProvider are expected to populate a
@@ -116,8 +112,7 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
   // object owning them. |dumpNamePrefix| is prefix appended to each dump
   // created by the SkTraceMemoryDump implementation, if the dump should be
   // placed under different namespace and not "skia".
-  SkTraceMemoryDump* createDumpAdapterForSkia(
-      const String& dump_name_prefix);
+  SkTraceMemoryDump* createDumpAdapterForSkia(const String& dump_name_prefix);
 
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {
     return process_memory_dump_;
@@ -129,11 +124,11 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
 
   // Dumps heap memory usage. |allocatorName| is used as an absolute name for
   // base::trace_event::ProcessMemoryDump::DumpHeapUsage().
-  void dumpHeapUsage(
-      const base::hash_map<base::trace_event::AllocationContext, base::trace_event::AllocationMetrics>&
-          metrics_by_context,
-      base::trace_event::TraceEventMemoryOverhead& overhead,
-      const char* allocator_name);
+  void dumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext,
+                                          base::trace_event::AllocationMetrics>&
+                         metrics_by_context,
+                     base::trace_event::TraceEventMemoryOverhead& overhead,
+                     const char* allocator_name);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebProcessMemoryDumpTest, IntegrationTest);
@@ -142,7 +137,8 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
       base::trace_event::MemoryAllocatorDump* memory_allocator_dump);
 
   // Only for the case of ProcessMemoryDump being owned (i.e. the default ctor).
-  std::unique_ptr<base::trace_event::ProcessMemoryDump> owned_process_memory_dump_;
+  std::unique_ptr<base::trace_event::ProcessMemoryDump>
+      owned_process_memory_dump_;
 
   // The underlying ProcessMemoryDump instance to which the
   // createMemoryAllocatorDump() calls will be proxied to.
@@ -157,10 +153,12 @@ class PLATFORM_EXPORT WebProcessMemoryDump final {
   // Those pointers are valid only within the scope of the call and can be
   // safely torn down once the WebProcessMemoryDump itself is destroyed.
   HashMap<base::trace_event::MemoryAllocatorDump*,
-          std::unique_ptr<WebMemoryAllocatorDump>> memory_allocator_dumps_;
+          std::unique_ptr<WebMemoryAllocatorDump>>
+      memory_allocator_dumps_;
 
   // Stores SkTraceMemoryDump for the current ProcessMemoryDump.
-  std::vector<std::unique_ptr<skia::SkiaTraceMemoryDumpImpl>> sk_trace_dump_list_;
+  std::vector<std::unique_ptr<skia::SkiaTraceMemoryDumpImpl>>
+      sk_trace_dump_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WebProcessMemoryDump);
 };

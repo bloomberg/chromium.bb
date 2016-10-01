@@ -13,14 +13,15 @@ class ExecutionContext;
 class WebEncryptedMediaClient;
 
 class MediaKeysClient {
-    USING_FAST_MALLOC(MediaKeysClient);
-public:
-    virtual WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) = 0;
+  USING_FAST_MALLOC(MediaKeysClient);
 
-protected:
-    virtual ~MediaKeysClient() { }
+ public:
+  virtual WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) = 0;
+
+ protected:
+  virtual ~MediaKeysClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaKeysClient_h
+#endif  // MediaKeysClient_h

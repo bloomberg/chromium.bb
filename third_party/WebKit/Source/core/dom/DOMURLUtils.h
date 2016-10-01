@@ -36,31 +36,31 @@ namespace blink {
 class KURL;
 
 class CORE_EXPORT DOMURLUtils : public DOMURLUtilsReadOnly {
-public:
-    virtual void setURL(const KURL&) = 0;
-    virtual void setInput(const String&) = 0;
-    ~DOMURLUtils() override;
+ public:
+  virtual void setURL(const KURL&) = 0;
+  virtual void setInput(const String&) = 0;
+  ~DOMURLUtils() override;
 
-    void setHref(const String&);
+  void setHref(const String&);
 
-    void setProtocol(const String&);
-    void setUsername(const String&);
-    void setPassword(const String&);
-    void setHost(const String&);
-    void setHostname(const String&);
-    void setPort(const String&);
-    void setPathname(const String&);
-    void setHash(const String&);
-    virtual void setSearch(const String&);
+  void setProtocol(const String&);
+  void setUsername(const String&);
+  void setPassword(const String&);
+  void setHost(const String&);
+  void setHostname(const String&);
+  void setPort(const String&);
+  void setPathname(const String&);
+  void setHash(const String&);
+  virtual void setSearch(const String&);
 
-protected:
-    void setSearchInternal(const String&);
+ protected:
+  void setSearchInternal(const String&);
 
-    bool isInUpdate() const { return m_isInUpdate; }
+  bool isInUpdate() const { return m_isInUpdate; }
 
-    bool m_isInUpdate = false;
+  bool m_isInUpdate = false;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMURLUtils_h
+#endif  // DOMURLUtils_h

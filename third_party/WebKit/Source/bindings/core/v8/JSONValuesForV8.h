@@ -15,10 +15,15 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 
-CORE_EXPORT std::unique_ptr<JSONValue> toJSONValue(v8::Local<v8::Context>, v8::Local<v8::Value>, int maxDepth = JSONValue::maxDepth);
+CORE_EXPORT std::unique_ptr<JSONValue> toJSONValue(
+    v8::Local<v8::Context>,
+    v8::Local<v8::Value>,
+    int maxDepth = JSONValue::maxDepth);
 
-CORE_EXPORT v8::Local<v8::Value> fromJSONString(ScriptState*, const String& stringifiedJSON, ExceptionState&);
+CORE_EXPORT v8::Local<v8::Value> fromJSONString(ScriptState*,
+                                                const String& stringifiedJSON,
+                                                ExceptionState&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // JSONValuesForV8_h
+#endif  // JSONValuesForV8_h

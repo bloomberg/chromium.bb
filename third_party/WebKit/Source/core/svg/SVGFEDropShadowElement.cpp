@@ -29,88 +29,98 @@
 namespace blink {
 
 inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDropShadowTag, document)
-    , m_dx(SVGAnimatedNumber::create(this, SVGNames::dxAttr, SVGNumber::create(2)))
-    , m_dy(SVGAnimatedNumber::create(this, SVGNames::dyAttr, SVGNumber::create(2)))
-    , m_stdDeviation(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::stdDeviationAttr, 2, 2))
-    , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
-{
-    addToPropertyMap(m_dx);
-    addToPropertyMap(m_dy);
-    addToPropertyMap(m_stdDeviation);
-    addToPropertyMap(m_in1);
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDropShadowTag, document),
+      m_dx(SVGAnimatedNumber::create(this,
+                                     SVGNames::dxAttr,
+                                     SVGNumber::create(2))),
+      m_dy(SVGAnimatedNumber::create(this,
+                                     SVGNames::dyAttr,
+                                     SVGNumber::create(2))),
+      m_stdDeviation(
+          SVGAnimatedNumberOptionalNumber::create(this,
+                                                  SVGNames::stdDeviationAttr,
+                                                  2,
+                                                  2)),
+      m_in1(SVGAnimatedString::create(this,
+                                      SVGNames::inAttr,
+                                      SVGString::create())) {
+  addToPropertyMap(m_dx);
+  addToPropertyMap(m_dy);
+  addToPropertyMap(m_stdDeviation);
+  addToPropertyMap(m_in1);
 }
 
-DEFINE_TRACE(SVGFEDropShadowElement)
-{
-    visitor->trace(m_dx);
-    visitor->trace(m_dy);
-    visitor->trace(m_stdDeviation);
-    visitor->trace(m_in1);
-    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+DEFINE_TRACE(SVGFEDropShadowElement) {
+  visitor->trace(m_dx);
+  visitor->trace(m_dy);
+  visitor->trace(m_stdDeviation);
+  visitor->trace(m_in1);
+  SVGFilterPrimitiveStandardAttributes::trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFEDropShadowElement)
 
-void SVGFEDropShadowElement::setStdDeviation(float x, float y)
-{
-    stdDeviationX()->baseValue()->setValue(x);
-    stdDeviationY()->baseValue()->setValue(y);
+void SVGFEDropShadowElement::setStdDeviation(float x, float y) {
+  stdDeviationX()->baseValue()->setValue(x);
+  stdDeviationY()->baseValue()->setValue(y);
+  invalidate();
+}
+
+bool SVGFEDropShadowElement::setFilterEffectAttribute(
+    FilterEffect* effect,
+    const QualifiedName& attrName) {
+  DCHECK(layoutObject());
+  FEDropShadow* dropShadow = static_cast<FEDropShadow*>(effect);
+
+  const SVGComputedStyle& svgStyle = layoutObject()->styleRef().svgStyle();
+  if (attrName == SVGNames::flood_colorAttr) {
+    dropShadow->setShadowColor(svgStyle.floodColor());
+    return true;
+  }
+  if (attrName == SVGNames::flood_opacityAttr) {
+    dropShadow->setShadowOpacity(svgStyle.floodOpacity());
+    return true;
+  }
+  return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(
+      effect, attrName);
+}
+
+void SVGFEDropShadowElement::svgAttributeChanged(
+    const QualifiedName& attrName) {
+  if (attrName == SVGNames::inAttr || attrName == SVGNames::stdDeviationAttr ||
+      attrName == SVGNames::dxAttr || attrName == SVGNames::dyAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
     invalidate();
+    return;
+  }
+
+  SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-bool SVGFEDropShadowElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
-{
-    DCHECK(layoutObject());
-    FEDropShadow* dropShadow = static_cast<FEDropShadow*>(effect);
+FilterEffect* SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder,
+                                            Filter* filter) {
+  LayoutObject* layoutObject = this->layoutObject();
+  if (!layoutObject)
+    return nullptr;
 
-    const SVGComputedStyle& svgStyle = layoutObject()->styleRef().svgStyle();
-    if (attrName == SVGNames::flood_colorAttr) {
-        dropShadow->setShadowColor(svgStyle.floodColor());
-        return true;
-    }
-    if (attrName == SVGNames::flood_opacityAttr) {
-        dropShadow->setShadowOpacity(svgStyle.floodOpacity());
-        return true;
-    }
-    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
+  ASSERT(layoutObject->style());
+  const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
+
+  Color color = svgStyle.floodColor();
+  float opacity = svgStyle.floodOpacity();
+
+  FilterEffect* input1 = filterBuilder->getEffectById(
+      AtomicString(m_in1->currentValue()->value()));
+  ASSERT(input1);
+
+  // Clamp std.dev. to non-negative. (See SVGFEGaussianBlurElement::build)
+  float stdDevX = std::max(0.0f, stdDeviationX()->currentValue()->value());
+  float stdDevY = std::max(0.0f, stdDeviationY()->currentValue()->value());
+  FilterEffect* effect = FEDropShadow::create(
+      filter, stdDevX, stdDevY, m_dx->currentValue()->value(),
+      m_dy->currentValue()->value(), color, opacity);
+  effect->inputEffects().append(input1);
+  return effect;
 }
 
-void SVGFEDropShadowElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (attrName == SVGNames::inAttr
-        || attrName == SVGNames::stdDeviationAttr
-        || attrName == SVGNames::dxAttr
-        || attrName == SVGNames::dyAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
-        invalidate();
-        return;
-    }
-
-    SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
-}
-
-FilterEffect* SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
-{
-    LayoutObject* layoutObject = this->layoutObject();
-    if (!layoutObject)
-        return nullptr;
-
-    ASSERT(layoutObject->style());
-    const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
-
-    Color color = svgStyle.floodColor();
-    float opacity = svgStyle.floodOpacity();
-
-    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
-    ASSERT(input1);
-
-    // Clamp std.dev. to non-negative. (See SVGFEGaussianBlurElement::build)
-    float stdDevX = std::max(0.0f, stdDeviationX()->currentValue()->value());
-    float stdDevY = std::max(0.0f, stdDeviationY()->currentValue()->value());
-    FilterEffect* effect = FEDropShadow::create(filter, stdDevX, stdDevY, m_dx->currentValue()->value(), m_dy->currentValue()->value(), color, opacity);
-    effect->inputEffects().append(input1);
-    return effect;
-}
-
-} // namespace blink
+}  // namespace blink

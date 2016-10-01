@@ -34,36 +34,41 @@ class LayoutSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCache {
-    WTF_MAKE_NONCOPYABLE(SVGResourcesCache); USING_FAST_MALLOC(SVGResourcesCache);
-public:
-    SVGResourcesCache();
-    ~SVGResourcesCache();
+  WTF_MAKE_NONCOPYABLE(SVGResourcesCache);
+  USING_FAST_MALLOC(SVGResourcesCache);
 
-    static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
+ public:
+  SVGResourcesCache();
+  ~SVGResourcesCache();
 
-    // Called from all SVG layoutObjects addChild() methods.
-    static void clientWasAddedToTree(LayoutObject*, const ComputedStyle& newStyle);
+  static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
 
-    // Called from all SVG layoutObjects removeChild() methods.
-    static void clientWillBeRemovedFromTree(LayoutObject*);
+  // Called from all SVG layoutObjects addChild() methods.
+  static void clientWasAddedToTree(LayoutObject*,
+                                   const ComputedStyle& newStyle);
 
-    // Called from all SVG layoutObjects destroy() methods - except for LayoutSVGResourceContainer.
-    static void clientDestroyed(LayoutObject*);
+  // Called from all SVG layoutObjects removeChild() methods.
+  static void clientWillBeRemovedFromTree(LayoutObject*);
 
-    // Called from all SVG layoutObjects layout() methods.
-    static void clientLayoutChanged(LayoutObject*);
+  // Called from all SVG layoutObjects destroy() methods - except for LayoutSVGResourceContainer.
+  static void clientDestroyed(LayoutObject*);
 
-    // Called from all SVG layoutObjects styleDidChange() methods.
-    static void clientStyleChanged(LayoutObject*, StyleDifference, const ComputedStyle& newStyle);
+  // Called from all SVG layoutObjects layout() methods.
+  static void clientLayoutChanged(LayoutObject*);
 
-private:
-    void addResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
-    void removeResourcesFromLayoutObject(LayoutObject*);
+  // Called from all SVG layoutObjects styleDidChange() methods.
+  static void clientStyleChanged(LayoutObject*,
+                                 StyleDifference,
+                                 const ComputedStyle& newStyle);
 
-    typedef HashMap<const LayoutObject*, std::unique_ptr<SVGResources>> CacheMap;
-    CacheMap m_cache;
+ private:
+  void addResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
+  void removeResourcesFromLayoutObject(LayoutObject*);
+
+  typedef HashMap<const LayoutObject*, std::unique_ptr<SVGResources>> CacheMap;
+  CacheMap m_cache;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

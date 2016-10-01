@@ -31,19 +31,18 @@
 namespace blink {
 
 class UnlinkCommand final : public CompositeEditCommand {
-public:
-    static UnlinkCommand* create(Document& document)
-    {
-        return new UnlinkCommand(document);
-    }
+ public:
+  static UnlinkCommand* create(Document& document) {
+    return new UnlinkCommand(document);
+  }
 
-private:
-    explicit UnlinkCommand(Document&);
+ private:
+  explicit UnlinkCommand(Document&);
 
-    void doApply(EditingState*) override;
-    InputEvent::InputType inputType() const override;
+  void doApply(EditingState*) override;
+  InputEvent::InputType inputType() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UnlinkCommand_h
+#endif  // UnlinkCommand_h

@@ -15,26 +15,39 @@ class ComputedStyle;
 class CSSToLengthConversionData;
 
 class CSSLengthInterpolationType : public CSSInterpolationType {
-public:
-    CSSLengthInterpolationType(PropertyHandle);
+ public:
+  CSSLengthInterpolationType(PropertyHandle);
 
-    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertUnderlyingValue(
+      const InterpolationEnvironment&) const final;
+  void composite(UnderlyingValueOwner&,
+                 double underlyingFraction,
+                 const InterpolationValue&,
+                 double interpolationFraction) const final;
+  void apply(const InterpolableValue&,
+             const NonInterpolableValue*,
+             InterpolationEnvironment&) const final;
 
-private:
-    float effectiveZoom(const ComputedStyle&) const;
+ private:
+  float effectiveZoom(const ComputedStyle&) const;
 
-    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertValue(const CSSValue&,
+                                       const StyleResolverState&,
+                                       ConversionCheckers&) const final;
 
-    PairwiseInterpolationValue maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const final;
+  PairwiseInterpolationValue maybeMergeSingles(
+      InterpolationValue&& start,
+      InterpolationValue&& end) const final;
 
-    const ValueRange m_valueRange;
+  const ValueRange m_valueRange;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSLengthInterpolationType_h
+#endif  // CSSLengthInterpolationType_h

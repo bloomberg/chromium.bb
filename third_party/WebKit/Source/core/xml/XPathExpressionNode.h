@@ -38,66 +38,77 @@ namespace blink {
 namespace XPath {
 
 struct EvaluationContext {
-    STACK_ALLOCATED();
-public:
-    explicit EvaluationContext(Node&);
+  STACK_ALLOCATED();
 
-    Member<Node> node;
-    unsigned long size;
-    unsigned long position;
-    HashMap<String, String> variableBindings;
+ public:
+  explicit EvaluationContext(Node&);
 
-    bool hadTypeConversionError;
+  Member<Node> node;
+  unsigned long size;
+  unsigned long position;
+  HashMap<String, String> variableBindings;
+
+  bool hadTypeConversionError;
 };
 
 class ParseNode : public GarbageCollectedFinalized<ParseNode> {
-public:
-    virtual ~ParseNode() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+ public:
+  virtual ~ParseNode() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 class Expression : public ParseNode {
-    WTF_MAKE_NONCOPYABLE(Expression);
-public:
-    Expression();
-    ~Expression() override;
-    DECLARE_VIRTUAL_TRACE();
+  WTF_MAKE_NONCOPYABLE(Expression);
 
-    virtual Value evaluate(EvaluationContext&) const = 0;
+ public:
+  Expression();
+  ~Expression() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void addSubExpression(Expression* expr)
-    {
-        m_isContextNodeSensitive |= expr->m_isContextNodeSensitive;
-        m_isContextPositionSensitive |= expr->m_isContextPositionSensitive;
-        m_isContextSizeSensitive |= expr->m_isContextSizeSensitive;
-        m_subExpressions.append(expr);
-    }
+  virtual Value evaluate(EvaluationContext&) const = 0;
 
-    bool isContextNodeSensitive() const { return m_isContextNodeSensitive; }
-    bool isContextPositionSensitive() const { return m_isContextPositionSensitive; }
-    bool isContextSizeSensitive() const { return m_isContextSizeSensitive; }
-    void setIsContextNodeSensitive(bool value) { m_isContextNodeSensitive = value; }
-    void setIsContextPositionSensitive(bool value) { m_isContextPositionSensitive = value; }
-    void setIsContextSizeSensitive(bool value) { m_isContextSizeSensitive = value; }
+  void addSubExpression(Expression* expr) {
+    m_isContextNodeSensitive |= expr->m_isContextNodeSensitive;
+    m_isContextPositionSensitive |= expr->m_isContextPositionSensitive;
+    m_isContextSizeSensitive |= expr->m_isContextSizeSensitive;
+    m_subExpressions.append(expr);
+  }
 
-    virtual Value::Type resultType() const = 0;
+  bool isContextNodeSensitive() const { return m_isContextNodeSensitive; }
+  bool isContextPositionSensitive() const {
+    return m_isContextPositionSensitive;
+  }
+  bool isContextSizeSensitive() const { return m_isContextSizeSensitive; }
+  void setIsContextNodeSensitive(bool value) {
+    m_isContextNodeSensitive = value;
+  }
+  void setIsContextPositionSensitive(bool value) {
+    m_isContextPositionSensitive = value;
+  }
+  void setIsContextSizeSensitive(bool value) {
+    m_isContextSizeSensitive = value;
+  }
 
-protected:
-    unsigned subExprCount() const { return m_subExpressions.size(); }
-    Expression* subExpr(unsigned i) { return m_subExpressions[i].get(); }
-    const Expression* subExpr(unsigned i) const { return m_subExpressions[i].get(); }
+  virtual Value::Type resultType() const = 0;
 
-private:
-    HeapVector<Member<Expression>> m_subExpressions;
+ protected:
+  unsigned subExprCount() const { return m_subExpressions.size(); }
+  Expression* subExpr(unsigned i) { return m_subExpressions[i].get(); }
+  const Expression* subExpr(unsigned i) const {
+    return m_subExpressions[i].get();
+  }
 
-    // Evaluation details that can be used for optimization.
-    bool m_isContextNodeSensitive;
-    bool m_isContextPositionSensitive;
-    bool m_isContextSizeSensitive;
+ private:
+  HeapVector<Member<Expression>> m_subExpressions;
+
+  // Evaluation details that can be used for optimization.
+  bool m_isContextNodeSensitive;
+  bool m_isContextPositionSensitive;
+  bool m_isContextSizeSensitive;
 };
 
-} // namespace XPath
+}  // namespace XPath
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XPathExpressionNode_h
+#endif  // XPathExpressionNode_h

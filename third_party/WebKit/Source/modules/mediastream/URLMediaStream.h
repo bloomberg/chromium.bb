@@ -40,11 +40,12 @@ class MediaStream;
 class ExecutionContext;
 
 class URLMediaStream {
-    STATIC_ONLY(URLMediaStream);
-public:
-    static String createObjectURL(ExecutionContext*, MediaStream*);
+  STATIC_ONLY(URLMediaStream);
+
+ public:
+  static String createObjectURL(ExecutionContext*, MediaStream*);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

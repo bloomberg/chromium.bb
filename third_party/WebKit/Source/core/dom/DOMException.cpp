@@ -33,132 +33,192 @@
 namespace blink {
 
 static const struct CoreException {
-    const char* const name;
-    const char* const message;
-    const int code;
+  const char* const name;
+  const char* const message;
+  const int code;
 } coreExceptions[] = {
     // This list must be kept in sync with the one in ExceptionCode.h
-    { "IndexSizeError", "Index or size was negative, or greater than the allowed value.", 1 },
-    { "HierarchyRequestError", "A Node was inserted somewhere it doesn't belong.", 3 },
-    { "WrongDocumentError", "A Node was used in a different document than the one that created it (that doesn't support it).", 4 },
-    { "InvalidCharacterError", "The string contains invalid characters.", 5 },
-    { "NoModificationAllowedError", "An attempt was made to modify an object where modifications are not allowed.", 7 },
-    { "NotFoundError", "An attempt was made to reference a Node in a context where it does not exist.", 8 },
-    { "NotSupportedError", "The implementation did not support the requested type of object or operation.", 9 },
-    { "InUseAttributeError", "An attempt was made to add an attribute that is already in use elsewhere.", 10 },
-    { "InvalidStateError", "An attempt was made to use an object that is not, or is no longer, usable.", 11 },
-    { "SyntaxError", "An invalid or illegal string was specified.", 12 },
-    { "InvalidModificationError", "The object can not be modified in this way.", 13 },
-    { "NamespaceError", "An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.", 14 },
-    { "InvalidAccessError", "A parameter or an operation was not supported by the underlying object.", 15 },
-    { "TypeMismatchError", "The type of an object was incompatible with the expected type of the parameter associated to the object.", 17 },
-    { "SecurityError", "An attempt was made to break through the security policy of the user agent.", 18 },
-    { "NetworkError", "A network error occurred.", 19 },
-    { "AbortError", "The user aborted a request.", 20 },
-    { "URLMismatchError", "A worker global scope represented an absolute URL that is not equal to the resulting absolute URL.", 21 },
-    { "QuotaExceededError", "An attempt was made to add something to storage that exceeded the quota.", 22 },
-    { "TimeoutError", "A timeout occurred.", 23 },
-    { "InvalidNodeTypeError", "The supplied node is invalid or has an invalid ancestor for this operation.", 24 },
-    { "DataCloneError", "An object could not be cloned.", 25 },
+    {"IndexSizeError",
+     "Index or size was negative, or greater than the allowed value.", 1},
+    {"HierarchyRequestError",
+     "A Node was inserted somewhere it doesn't belong.", 3},
+    {"WrongDocumentError",
+     "A Node was used in a different document than the one that created it "
+     "(that doesn't support it).",
+     4},
+    {"InvalidCharacterError", "The string contains invalid characters.", 5},
+    {"NoModificationAllowedError",
+     "An attempt was made to modify an object where modifications are not "
+     "allowed.",
+     7},
+    {"NotFoundError",
+     "An attempt was made to reference a Node in a context where it does not "
+     "exist.",
+     8},
+    {"NotSupportedError",
+     "The implementation did not support the requested type of object or "
+     "operation.",
+     9},
+    {"InUseAttributeError",
+     "An attempt was made to add an attribute that is already in use "
+     "elsewhere.",
+     10},
+    {"InvalidStateError",
+     "An attempt was made to use an object that is not, or is no longer, "
+     "usable.",
+     11},
+    {"SyntaxError", "An invalid or illegal string was specified.", 12},
+    {"InvalidModificationError", "The object can not be modified in this way.",
+     13},
+    {"NamespaceError",
+     "An attempt was made to create or change an object in a way which is "
+     "incorrect with regard to namespaces.",
+     14},
+    {"InvalidAccessError",
+     "A parameter or an operation was not supported by the underlying object.",
+     15},
+    {"TypeMismatchError",
+     "The type of an object was incompatible with the expected type of the "
+     "parameter associated to the object.",
+     17},
+    {"SecurityError",
+     "An attempt was made to break through the security policy of the user "
+     "agent.",
+     18},
+    {"NetworkError", "A network error occurred.", 19},
+    {"AbortError", "The user aborted a request.", 20},
+    {"URLMismatchError",
+     "A worker global scope represented an absolute URL that is not equal to "
+     "the resulting absolute URL.",
+     21},
+    {"QuotaExceededError",
+     "An attempt was made to add something to storage that exceeded the quota.",
+     22},
+    {"TimeoutError", "A timeout occurred.", 23},
+    {"InvalidNodeTypeError",
+     "The supplied node is invalid or has an invalid ancestor for this "
+     "operation.",
+     24},
+    {"DataCloneError", "An object could not be cloned.", 25},
 
     // Indexed DB
-    { "UnknownError", "An unknown error occurred within Indexed Database.", 0 },
-    { "ConstraintError", "A mutation operation in the transaction failed because a constraint was not satisfied.", 0 },
-    { "DataError", "The data provided does not meet requirements.", 0 },
-    { "TransactionInactiveError", "A request was placed against a transaction which is either currently not active, or which is finished.", 0 },
-    { "ReadOnlyError", "A write operation was attempted in a read-only transaction.", 0 },
-    { "VersionError", "An attempt was made to open a database using a lower version than the existing version.", 0 },
+    {"UnknownError", "An unknown error occurred within Indexed Database.", 0},
+    {"ConstraintError",
+     "A mutation operation in the transaction failed because a constraint was "
+     "not satisfied.",
+     0},
+    {"DataError", "The data provided does not meet requirements.", 0},
+    {"TransactionInactiveError",
+     "A request was placed against a transaction which is either currently not "
+     "active, or which is finished.",
+     0},
+    {"ReadOnlyError",
+     "A write operation was attempted in a read-only transaction.", 0},
+    {"VersionError",
+     "An attempt was made to open a database using a lower version than the "
+     "existing version.",
+     0},
 
     // File system
-    { "NotReadableError", "The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.", 0 },
-    { "EncodingError", "A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.", 0 },
-    { "PathExistsError", "An attempt was made to create a file or directory where an element already exists.", 0 },
+    {"NotReadableError",
+     "The requested file could not be read, typically due to permission "
+     "problems that have occurred after a reference to a file was acquired.",
+     0},
+    {"EncodingError",
+     "A URI supplied to the API was malformed, or the resulting Data URL has "
+     "exceeded the URL length limitations for Data URLs.",
+     0},
+    {"PathExistsError",
+     "An attempt was made to create a file or directory where an element "
+     "already exists.",
+     0},
 
     // SQL
-    { "DatabaseError", "The operation failed for some reason related to the database.", 0 },
+    {"DatabaseError",
+     "The operation failed for some reason related to the database.", 0},
 
     // Web Crypto
-    { "OperationError", "The operation failed for an operation-specific reason", 0 },
+    {"OperationError", "The operation failed for an operation-specific reason",
+     0},
 
     // Push API
-    { "PermissionDeniedError", "User or security policy denied the request.", 0 },
+    {"PermissionDeniedError", "User or security policy denied the request.", 0},
 
     // Used by HTML and Media Session API.
-    { "NotAllowedError", "The request is not allowed by the user agent or the platform in the current context.", 0 },
+    {"NotAllowedError",
+     "The request is not allowed by the user agent or the platform in the "
+     "current context.",
+     0},
 
     // Pointer Event
-    { "InvalidPointerId", "PointerId was invalid.", 0 },
+    {"InvalidPointerId", "PointerId was invalid.", 0},
 };
 
-static const CoreException* getErrorEntry(ExceptionCode ec)
-{
-    size_t tableSize = WTF_ARRAY_LENGTH(coreExceptions);
-    size_t tableIndex = ec - IndexSizeError;
+static const CoreException* getErrorEntry(ExceptionCode ec) {
+  size_t tableSize = WTF_ARRAY_LENGTH(coreExceptions);
+  size_t tableIndex = ec - IndexSizeError;
 
-    return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
+  return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
 }
 
-static int getErrorCode(const String& name)
-{
-    for (const CoreException& entry : coreExceptions) {
-        if (entry.name == name)
-            return entry.code;
-    }
-    return 0;
+static int getErrorCode(const String& name) {
+  for (const CoreException& entry : coreExceptions) {
+    if (entry.name == name)
+      return entry.code;
+  }
+  return 0;
 }
 
-DOMException::DOMException(unsigned short code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage)
-{
-    DCHECK(name);
-    m_code = code;
-    m_name = name;
-    m_sanitizedMessage = sanitizedMessage;
-    m_unsanitizedMessage = unsanitizedMessage;
+DOMException::DOMException(unsigned short code,
+                           const String& name,
+                           const String& sanitizedMessage,
+                           const String& unsanitizedMessage) {
+  DCHECK(name);
+  m_code = code;
+  m_name = name;
+  m_sanitizedMessage = sanitizedMessage;
+  m_unsanitizedMessage = unsanitizedMessage;
 }
 
-DOMException* DOMException::create(ExceptionCode ec, const String& sanitizedMessage, const String& unsanitizedMessage)
-{
-    const CoreException* entry = getErrorEntry(ec);
-    DCHECK(entry);
-    return new DOMException(entry->code,
-        entry->name ? entry->name : "Error",
-        sanitizedMessage.isNull() ? String(entry->message) : sanitizedMessage,
-        unsanitizedMessage);
+DOMException* DOMException::create(ExceptionCode ec,
+                                   const String& sanitizedMessage,
+                                   const String& unsanitizedMessage) {
+  const CoreException* entry = getErrorEntry(ec);
+  DCHECK(entry);
+  return new DOMException(
+      entry->code, entry->name ? entry->name : "Error",
+      sanitizedMessage.isNull() ? String(entry->message) : sanitizedMessage,
+      unsanitizedMessage);
 }
 
-DOMException* DOMException::create(const String& message, const String& name)
-{
-    return new DOMException(getErrorCode(name), name, message, message);
+DOMException* DOMException::create(const String& message, const String& name) {
+  return new DOMException(getErrorCode(name), name, message, message);
 }
 
-String DOMException::toString() const
-{
-    return name() + ": " + message();
+String DOMException::toString() const {
+  return name() + ": " + message();
 }
 
-String DOMException::toStringForConsole() const
-{
-    return name() + ": " + messageForConsole();
+String DOMException::toStringForConsole() const {
+  return name() + ": " + messageForConsole();
 }
 
-String DOMException::getErrorName(ExceptionCode ec)
-{
-    const CoreException* entry = getErrorEntry(ec);
-    DCHECK(entry);
-    if (!entry)
-        return "UnknownError";
+String DOMException::getErrorName(ExceptionCode ec) {
+  const CoreException* entry = getErrorEntry(ec);
+  DCHECK(entry);
+  if (!entry)
+    return "UnknownError";
 
-    return entry->name;
+  return entry->name;
 }
 
-String DOMException::getErrorMessage(ExceptionCode ec)
-{
-    const CoreException* entry = getErrorEntry(ec);
-    DCHECK(entry);
-    if (!entry)
-        return "Unknown error.";
+String DOMException::getErrorMessage(ExceptionCode ec) {
+  const CoreException* entry = getErrorEntry(ec);
+  DCHECK(entry);
+  if (!entry)
+    return "Unknown error.";
 
-    return entry->message;
+  return entry->message;
 }
 
-} // namespace blink
+}  // namespace blink

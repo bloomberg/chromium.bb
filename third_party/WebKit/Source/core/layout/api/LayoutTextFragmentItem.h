@@ -13,37 +13,38 @@ namespace blink {
 class FirstLetterPseudoElement;
 
 class LayoutTextFragmentItem : public LayoutTextItem {
-public:
-    explicit LayoutTextFragmentItem(LayoutTextFragment* layoutTextFragment)
-        : LayoutTextItem(layoutTextFragment)
-    {
-    }
+ public:
+  explicit LayoutTextFragmentItem(LayoutTextFragment* layoutTextFragment)
+      : LayoutTextItem(layoutTextFragment) {}
 
-    explicit LayoutTextFragmentItem(const LayoutTextItem& item)
-        : LayoutTextItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isTextFragment());
-    }
+  explicit LayoutTextFragmentItem(const LayoutTextItem& item)
+      : LayoutTextItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isTextFragment());
+  }
 
-    explicit LayoutTextFragmentItem(std::nullptr_t) : LayoutTextItem(nullptr) { }
+  explicit LayoutTextFragmentItem(std::nullptr_t) : LayoutTextItem(nullptr) {}
 
-    LayoutTextFragmentItem() { }
+  LayoutTextFragmentItem() {}
 
-    void setTextFragment(PassRefPtr<StringImpl> text, unsigned start, unsigned length)
-    {
-        toTextFragment()->setTextFragment(std::move(text), start, length);
-    }
+  void setTextFragment(PassRefPtr<StringImpl> text,
+                       unsigned start,
+                       unsigned length) {
+    toTextFragment()->setTextFragment(std::move(text), start, length);
+  }
 
-    FirstLetterPseudoElement* firstLetterPseudoElement() const
-    {
-        return toTextFragment()->firstLetterPseudoElement();
-    }
+  FirstLetterPseudoElement* firstLetterPseudoElement() const {
+    return toTextFragment()->firstLetterPseudoElement();
+  }
 
-private:
-    LayoutTextFragment* toTextFragment() { return toLayoutTextFragment(layoutObject()); }
-    const LayoutTextFragment* toTextFragment() const { return toLayoutTextFragment(layoutObject()); }
+ private:
+  LayoutTextFragment* toTextFragment() {
+    return toLayoutTextFragment(layoutObject());
+  }
+  const LayoutTextFragment* toTextFragment() const {
+    return toLayoutTextFragment(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutTextFragmentItem_h
+#endif  // LayoutTextFragmentItem_h

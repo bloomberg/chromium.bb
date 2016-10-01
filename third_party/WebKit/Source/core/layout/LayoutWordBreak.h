@@ -34,13 +34,13 @@ namespace blink {
 class HTMLElement;
 
 class LayoutWordBreak final : public LayoutText {
-public:
-    explicit LayoutWordBreak(HTMLElement*);
+ public:
+  explicit LayoutWordBreak(HTMLElement*);
 
-    const char* name() const override { return "LayoutWordBreak"; }
-    bool isWordBreak() const override;
+  const char* name() const override { return "LayoutWordBreak"; }
+  bool isWordBreak() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

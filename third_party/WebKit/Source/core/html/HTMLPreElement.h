@@ -28,17 +28,20 @@
 namespace blink {
 
 class HTMLPreElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLPreElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    HTMLPreElement(const QualifiedName&, Document&);
+ public:
+  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLPreElement);
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  HTMLPreElement(const QualifiedName&, Document&);
+
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLPreElement_h
+#endif  // HTMLPreElement_h

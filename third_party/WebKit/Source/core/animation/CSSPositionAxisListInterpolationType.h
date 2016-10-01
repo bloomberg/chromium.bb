@@ -9,18 +9,20 @@
 
 namespace blink {
 
-class CSSPositionAxisListInterpolationType : public CSSLengthListInterpolationType {
-public:
-    CSSPositionAxisListInterpolationType(PropertyHandle property)
-        : CSSLengthListInterpolationType(property)
-    { }
+class CSSPositionAxisListInterpolationType
+    : public CSSLengthListInterpolationType {
+ public:
+  CSSPositionAxisListInterpolationType(PropertyHandle property)
+      : CSSLengthListInterpolationType(property) {}
 
-    static InterpolationValue convertPositionAxisCSSValue(const CSSValue&);
+  static InterpolationValue convertPositionAxisCSSValue(const CSSValue&);
 
-private:
-    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+ private:
+  InterpolationValue maybeConvertValue(const CSSValue&,
+                                       const StyleResolverState&,
+                                       ConversionCheckers&) const final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSPositionAxisListInterpolationType_h
+#endif  // CSSPositionAxisListInterpolationType_h

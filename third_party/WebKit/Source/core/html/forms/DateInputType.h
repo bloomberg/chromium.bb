@@ -36,25 +36,34 @@
 namespace blink {
 
 class DateInputType final : public BaseTemporalInputType {
-public:
-    static InputType* create(HTMLInputElement&);
+ public:
+  static InputType* create(HTMLInputElement&);
 
-private:
-    explicit DateInputType(HTMLInputElement&);
+ private:
+  explicit DateInputType(HTMLInputElement&);
 
-    void countUsage() override;
-    const AtomicString& formControlType() const override;
-    StepRange createStepRange(AnyStepHandling) const override;
-    bool parseToDateComponentsInternal(const String&, DateComponents*) const override;
-    bool setMillisecondToDateComponents(double, DateComponents*) const override;
-    void warnIfValueIsInvalid(const String&) const override;
+  void countUsage() override;
+  const AtomicString& formControlType() const override;
+  StepRange createStepRange(AnyStepHandling) const override;
+  bool parseToDateComponentsInternal(const String&,
+                                     DateComponents*) const override;
+  bool setMillisecondToDateComponents(double, DateComponents*) const override;
+  void warnIfValueIsInvalid(const String&) const override;
 
-    // BaseTemporalInputType functions
-    String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;
-    void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override;
-    bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;
+  // BaseTemporalInputType functions
+  String formatDateTimeFieldsState(const DateTimeFieldsState&) const override;
+  void setupLayoutParameters(DateTimeEditElement::LayoutParameters&,
+                             const DateComponents&) const override;
+  bool isValidFormat(bool hasYear,
+                     bool hasMonth,
+                     bool hasWeek,
+                     bool hasDay,
+                     bool hasAMPM,
+                     bool hasHour,
+                     bool hasMinute,
+                     bool hasSecond) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DateInputType_h
+#endif  // DateInputType_h

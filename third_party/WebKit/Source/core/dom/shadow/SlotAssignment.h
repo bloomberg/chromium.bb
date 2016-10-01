@@ -20,52 +20,52 @@ class ShadowRoot;
 
 // TODO(hayato): Support SlotAssignment for non-shadow trees, e.g. a document tree.
 class SlotAssignment final : public GarbageCollected<SlotAssignment> {
-public:
-    static SlotAssignment* create(ShadowRoot& owner)
-    {
-        return new SlotAssignment(owner);
-    }
+ public:
+  static SlotAssignment* create(ShadowRoot& owner) {
+    return new SlotAssignment(owner);
+  }
 
-    // Relevant DOM Standard: https://dom.spec.whatwg.org/#find-a-slot
-    HTMLSlotElement* findSlot(const Node&);
-    HTMLSlotElement* findSlotByName(const AtomicString& slotName);
+  // Relevant DOM Standard: https://dom.spec.whatwg.org/#find-a-slot
+  HTMLSlotElement* findSlot(const Node&);
+  HTMLSlotElement* findSlotByName(const AtomicString& slotName);
 
-    // DOM Standaard defines these two procedures:
-    // 1. https://dom.spec.whatwg.org/#assign-a-slot
-    //    void assignSlot(const Node& slottable);
-    // 2. https://dom.spec.whatwg.org/#assign-slotables
-    //    void assignSlotables(HTMLSlotElement&);
-    // As an optimization, Blink does not implement these literally.
-    // Instead, provide alternative, HTMLSlotElement::hasAssignedNodesSlow()
-    // so that slotchange can be detected.
+  // DOM Standaard defines these two procedures:
+  // 1. https://dom.spec.whatwg.org/#assign-a-slot
+  //    void assignSlot(const Node& slottable);
+  // 2. https://dom.spec.whatwg.org/#assign-slotables
+  //    void assignSlotables(HTMLSlotElement&);
+  // As an optimization, Blink does not implement these literally.
+  // Instead, provide alternative, HTMLSlotElement::hasAssignedNodesSlow()
+  // so that slotchange can be detected.
 
-    void resolveDistribution();
-    const HeapVector<Member<HTMLSlotElement>>& slots();
+  void resolveDistribution();
+  const HeapVector<Member<HTMLSlotElement>>& slots();
 
-    void slotAdded(HTMLSlotElement&);
-    void slotRemoved(HTMLSlotElement&);
-    void slotRenamed(const AtomicString& oldName, HTMLSlotElement&);
-    void hostChildSlotNameChanged(const AtomicString& oldValue, const AtomicString& newValue);
+  void slotAdded(HTMLSlotElement&);
+  void slotRemoved(HTMLSlotElement&);
+  void slotRenamed(const AtomicString& oldName, HTMLSlotElement&);
+  void hostChildSlotNameChanged(const AtomicString& oldValue,
+                                const AtomicString& newValue);
 
-    bool findHostChildBySlotName(const AtomicString& slotName) const;
+  bool findHostChildBySlotName(const AtomicString& slotName) const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit SlotAssignment(ShadowRoot& owner);
+ private:
+  explicit SlotAssignment(ShadowRoot& owner);
 
-    void collectSlots();
+  void collectSlots();
 
-    void resolveAssignment();
-    void distributeTo(Node&, HTMLSlotElement&);
+  void resolveAssignment();
+  void distributeTo(Node&, HTMLSlotElement&);
 
-    HeapVector<Member<HTMLSlotElement>> m_slots;
-    Member<DocumentOrderedMap> m_slotMap;
-    WeakMember<ShadowRoot> m_owner;
-    unsigned m_needsCollectSlots : 1;
-    unsigned m_slotCount : 31;
+  HeapVector<Member<HTMLSlotElement>> m_slots;
+  Member<DocumentOrderedMap> m_slotMap;
+  WeakMember<ShadowRoot> m_owner;
+  unsigned m_needsCollectSlots : 1;
+  unsigned m_slotCount : 31;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLSlotAssignment_h
+#endif  // HTMLSlotAssignment_h

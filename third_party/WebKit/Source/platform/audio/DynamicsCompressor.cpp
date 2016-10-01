@@ -36,172 +36,154 @@ namespace blink {
 
 using namespace AudioUtilities;
 
-DynamicsCompressor::DynamicsCompressor(float sampleRate, unsigned numberOfChannels)
-    : m_numberOfChannels(numberOfChannels)
-    , m_sampleRate(sampleRate)
-    , m_compressor(sampleRate, numberOfChannels)
-{
-    // Uninitialized state - for parameter recalculation.
-    m_lastFilterStageRatio = -1;
-    m_lastAnchor = -1;
-    m_lastFilterStageGain = -1;
+DynamicsCompressor::DynamicsCompressor(float sampleRate,
+                                       unsigned numberOfChannels)
+    : m_numberOfChannels(numberOfChannels),
+      m_sampleRate(sampleRate),
+      m_compressor(sampleRate, numberOfChannels) {
+  // Uninitialized state - for parameter recalculation.
+  m_lastFilterStageRatio = -1;
+  m_lastAnchor = -1;
+  m_lastFilterStageGain = -1;
 
-    setNumberOfChannels(numberOfChannels);
-    initializeParameters();
+  setNumberOfChannels(numberOfChannels);
+  initializeParameters();
 }
 
-void DynamicsCompressor::setParameterValue(unsigned parameterID, float value)
-{
-    ASSERT(parameterID < ParamLast);
-    if (parameterID < ParamLast)
-        m_parameters[parameterID] = value;
+void DynamicsCompressor::setParameterValue(unsigned parameterID, float value) {
+  ASSERT(parameterID < ParamLast);
+  if (parameterID < ParamLast)
+    m_parameters[parameterID] = value;
 }
 
-void DynamicsCompressor::initializeParameters()
-{
-    // Initializes compressor to default values.
+void DynamicsCompressor::initializeParameters() {
+  // Initializes compressor to default values.
 
-    m_parameters[ParamThreshold] = -24; // dB
-    m_parameters[ParamKnee] = 30; // dB
-    m_parameters[ParamRatio] = 12; // unit-less
-    m_parameters[ParamAttack] = 0.003f; // seconds
-    m_parameters[ParamRelease] = 0.250f; // seconds
-    m_parameters[ParamPreDelay] = 0.006f; // seconds
+  m_parameters[ParamThreshold] = -24;    // dB
+  m_parameters[ParamKnee] = 30;          // dB
+  m_parameters[ParamRatio] = 12;         // unit-less
+  m_parameters[ParamAttack] = 0.003f;    // seconds
+  m_parameters[ParamRelease] = 0.250f;   // seconds
+  m_parameters[ParamPreDelay] = 0.006f;  // seconds
 
-    // Release zone values 0 -> 1.
-    m_parameters[ParamReleaseZone1] = 0.09f;
-    m_parameters[ParamReleaseZone2] = 0.16f;
-    m_parameters[ParamReleaseZone3] = 0.42f;
-    m_parameters[ParamReleaseZone4] = 0.98f;
+  // Release zone values 0 -> 1.
+  m_parameters[ParamReleaseZone1] = 0.09f;
+  m_parameters[ParamReleaseZone2] = 0.16f;
+  m_parameters[ParamReleaseZone3] = 0.42f;
+  m_parameters[ParamReleaseZone4] = 0.98f;
 
-    m_parameters[ParamFilterStageGain] = 4.4f; // dB
-    m_parameters[ParamFilterStageRatio] = 2;
-    m_parameters[ParamFilterAnchor] = 15000 / nyquist();
+  m_parameters[ParamFilterStageGain] = 4.4f;  // dB
+  m_parameters[ParamFilterStageRatio] = 2;
+  m_parameters[ParamFilterAnchor] = 15000 / nyquist();
 
-    m_parameters[ParamPostGain] = 0; // dB
-    m_parameters[ParamReduction] = 0; // dB
+  m_parameters[ParamPostGain] = 0;   // dB
+  m_parameters[ParamReduction] = 0;  // dB
 
-    // Linear crossfade (0 -> 1).
-    m_parameters[ParamEffectBlend] = 1;
+  // Linear crossfade (0 -> 1).
+  m_parameters[ParamEffectBlend] = 1;
 }
 
-float DynamicsCompressor::parameterValue(unsigned parameterID)
-{
-    ASSERT(parameterID < ParamLast);
-    return m_parameters[parameterID];
+float DynamicsCompressor::parameterValue(unsigned parameterID) {
+  ASSERT(parameterID < ParamLast);
+  return m_parameters[parameterID];
 }
 
-void DynamicsCompressor::process(const AudioBus* sourceBus, AudioBus* destinationBus, unsigned framesToProcess)
-{
-    // Though numberOfChannels is retrived from destinationBus, we still name it numberOfChannels instead of numberOfDestinationChannels.
-    // It's because we internally match sourceChannels's size to destinationBus by channel up/down mix. Thus we need numberOfChannels
-    // to do the loop work for both m_sourceChannels and m_destinationChannels.
+void DynamicsCompressor::process(const AudioBus* sourceBus,
+                                 AudioBus* destinationBus,
+                                 unsigned framesToProcess) {
+  // Though numberOfChannels is retrived from destinationBus, we still name it numberOfChannels instead of numberOfDestinationChannels.
+  // It's because we internally match sourceChannels's size to destinationBus by channel up/down mix. Thus we need numberOfChannels
+  // to do the loop work for both m_sourceChannels and m_destinationChannels.
 
-    unsigned numberOfChannels = destinationBus->numberOfChannels();
-    unsigned numberOfSourceChannels = sourceBus->numberOfChannels();
+  unsigned numberOfChannels = destinationBus->numberOfChannels();
+  unsigned numberOfSourceChannels = sourceBus->numberOfChannels();
 
-    ASSERT(numberOfChannels == m_numberOfChannels && numberOfSourceChannels);
+  ASSERT(numberOfChannels == m_numberOfChannels && numberOfSourceChannels);
 
-    if (numberOfChannels != m_numberOfChannels || !numberOfSourceChannels) {
-        destinationBus->zero();
-        return;
-    }
+  if (numberOfChannels != m_numberOfChannels || !numberOfSourceChannels) {
+    destinationBus->zero();
+    return;
+  }
 
-    switch (numberOfChannels) {
-    case 2: // stereo
-        m_sourceChannels[0] = sourceBus->channel(0)->data();
+  switch (numberOfChannels) {
+    case 2:  // stereo
+      m_sourceChannels[0] = sourceBus->channel(0)->data();
 
-        if (numberOfSourceChannels > 1)
-            m_sourceChannels[1] = sourceBus->channel(1)->data();
-        else
-            // Simply duplicate mono channel input data to right channel for stereo processing.
-            m_sourceChannels[1] = m_sourceChannels[0];
+      if (numberOfSourceChannels > 1)
+        m_sourceChannels[1] = sourceBus->channel(1)->data();
+      else
+        // Simply duplicate mono channel input data to right channel for stereo processing.
+        m_sourceChannels[1] = m_sourceChannels[0];
 
-        break;
+      break;
     default:
-        // FIXME : support other number of channels.
-        ASSERT_NOT_REACHED();
-        destinationBus->zero();
-        return;
-    }
+      // FIXME : support other number of channels.
+      ASSERT_NOT_REACHED();
+      destinationBus->zero();
+      return;
+  }
 
-    for (unsigned i = 0; i < numberOfChannels; ++i)
-        m_destinationChannels[i] = destinationBus->channel(i)->mutableData();
+  for (unsigned i = 0; i < numberOfChannels; ++i)
+    m_destinationChannels[i] = destinationBus->channel(i)->mutableData();
 
-    float filterStageGain = parameterValue(ParamFilterStageGain);
-    float filterStageRatio = parameterValue(ParamFilterStageRatio);
-    float anchor = parameterValue(ParamFilterAnchor);
+  float filterStageGain = parameterValue(ParamFilterStageGain);
+  float filterStageRatio = parameterValue(ParamFilterStageRatio);
+  float anchor = parameterValue(ParamFilterAnchor);
 
-    if (filterStageGain != m_lastFilterStageGain || filterStageRatio != m_lastFilterStageRatio || anchor != m_lastAnchor) {
-        m_lastFilterStageGain = filterStageGain;
-        m_lastFilterStageRatio = filterStageRatio;
-        m_lastAnchor = anchor;
+  if (filterStageGain != m_lastFilterStageGain ||
+      filterStageRatio != m_lastFilterStageRatio || anchor != m_lastAnchor) {
+    m_lastFilterStageGain = filterStageGain;
+    m_lastFilterStageRatio = filterStageRatio;
+    m_lastAnchor = anchor;
+  }
 
-    }
+  float dbThreshold = parameterValue(ParamThreshold);
+  float dbKnee = parameterValue(ParamKnee);
+  float ratio = parameterValue(ParamRatio);
+  float attackTime = parameterValue(ParamAttack);
+  float releaseTime = parameterValue(ParamRelease);
+  float preDelayTime = parameterValue(ParamPreDelay);
 
-    float dbThreshold = parameterValue(ParamThreshold);
-    float dbKnee = parameterValue(ParamKnee);
-    float ratio = parameterValue(ParamRatio);
-    float attackTime = parameterValue(ParamAttack);
-    float releaseTime = parameterValue(ParamRelease);
-    float preDelayTime = parameterValue(ParamPreDelay);
+  // This is effectively a master volume on the compressed signal (pre-blending).
+  float dbPostGain = parameterValue(ParamPostGain);
 
-    // This is effectively a master volume on the compressed signal (pre-blending).
-    float dbPostGain = parameterValue(ParamPostGain);
+  // Linear blending value from dry to completely processed (0 -> 1)
+  // 0 means the signal is completely unprocessed.
+  // 1 mixes in only the compressed signal.
+  float effectBlend = parameterValue(ParamEffectBlend);
 
-    // Linear blending value from dry to completely processed (0 -> 1)
-    // 0 means the signal is completely unprocessed.
-    // 1 mixes in only the compressed signal.
-    float effectBlend = parameterValue(ParamEffectBlend);
+  float releaseZone1 = parameterValue(ParamReleaseZone1);
+  float releaseZone2 = parameterValue(ParamReleaseZone2);
+  float releaseZone3 = parameterValue(ParamReleaseZone3);
+  float releaseZone4 = parameterValue(ParamReleaseZone4);
 
-    float releaseZone1 = parameterValue(ParamReleaseZone1);
-    float releaseZone2 = parameterValue(ParamReleaseZone2);
-    float releaseZone3 = parameterValue(ParamReleaseZone3);
-    float releaseZone4 = parameterValue(ParamReleaseZone4);
+  // Apply compression to the source signal.
+  m_compressor.process(m_sourceChannels.get(), m_destinationChannels.get(),
+                       numberOfChannels, framesToProcess,
 
-    // Apply compression to the source signal.
-    m_compressor.process(m_sourceChannels.get(),
-                         m_destinationChannels.get(),
-                         numberOfChannels,
-                         framesToProcess,
+                       dbThreshold, dbKnee, ratio, attackTime, releaseTime,
+                       preDelayTime, dbPostGain, effectBlend,
 
-                         dbThreshold,
-                         dbKnee,
-                         ratio,
-                         attackTime,
-                         releaseTime,
-                         preDelayTime,
-                         dbPostGain,
-                         effectBlend,
+                       releaseZone1, releaseZone2, releaseZone3, releaseZone4);
 
-                         releaseZone1,
-                         releaseZone2,
-                         releaseZone3,
-                         releaseZone4
-                         );
-
-    // Update the compression amount.
-    setParameterValue(ParamReduction, m_compressor.meteringGain());
-
+  // Update the compression amount.
+  setParameterValue(ParamReduction, m_compressor.meteringGain());
 }
 
-void DynamicsCompressor::reset()
-{
-    m_lastFilterStageRatio = -1; // for recalc
-    m_lastAnchor = -1;
-    m_lastFilterStageGain = -1;
+void DynamicsCompressor::reset() {
+  m_lastFilterStageRatio = -1;  // for recalc
+  m_lastAnchor = -1;
+  m_lastFilterStageGain = -1;
 
-    m_compressor.reset();
+  m_compressor.reset();
 }
 
-void DynamicsCompressor::setNumberOfChannels(unsigned numberOfChannels)
-{
-    m_sourceChannels = wrapArrayUnique(new const float* [numberOfChannels]);
-    m_destinationChannels = wrapArrayUnique(new float* [numberOfChannels]);
+void DynamicsCompressor::setNumberOfChannels(unsigned numberOfChannels) {
+  m_sourceChannels = wrapArrayUnique(new const float*[numberOfChannels]);
+  m_destinationChannels = wrapArrayUnique(new float*[numberOfChannels]);
 
-    m_compressor.setNumberOfChannels(numberOfChannels);
-    m_numberOfChannels = numberOfChannels;
+  m_compressor.setNumberOfChannels(numberOfChannels);
+  m_numberOfChannels = numberOfChannels;
 }
 
-} // namespace blink
-
+}  // namespace blink

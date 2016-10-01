@@ -45,164 +45,154 @@ using namespace HTMLNames;
 
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
-public:
-    static PluginDocumentParser* create(PluginDocument* document)
-    {
-        return new PluginDocumentParser(document);
-    }
+ public:
+  static PluginDocumentParser* create(PluginDocument* document) {
+    return new PluginDocumentParser(document);
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_embedElement);
-        RawDataDocumentParser::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_embedElement);
+    RawDataDocumentParser::trace(visitor);
+  }
 
-private:
-    PluginDocumentParser(Document* document)
-        : RawDataDocumentParser(document)
-        , m_embedElement(nullptr)
-    {
-    }
+ private:
+  PluginDocumentParser(Document* document)
+      : RawDataDocumentParser(document), m_embedElement(nullptr) {}
 
-    void appendBytes(const char*, size_t) override;
+  void appendBytes(const char*, size_t) override;
 
-    void finish() override;
+  void finish() override;
 
-    void createDocumentStructure();
+  void createDocumentStructure();
 
-    PluginView* pluginView() const;
+  PluginView* pluginView() const;
 
-    Member<HTMLEmbedElement> m_embedElement;
+  Member<HTMLEmbedElement> m_embedElement;
 };
 
-void PluginDocumentParser::createDocumentStructure()
-{
-    // FIXME: Assert we have a loader to figure out why the original null checks
-    // and assert were added for the security bug in http://trac.webkit.org/changeset/87566
-    DCHECK(document());
-    RELEASE_ASSERT(document()->loader());
+void PluginDocumentParser::createDocumentStructure() {
+  // FIXME: Assert we have a loader to figure out why the original null checks
+  // and assert were added for the security bug in http://trac.webkit.org/changeset/87566
+  DCHECK(document());
+  RELEASE_ASSERT(document()->loader());
 
-    LocalFrame* frame = document()->frame();
-    if (!frame)
-        return;
+  LocalFrame* frame = document()->frame();
+  if (!frame)
+    return;
 
-    // FIXME: Why does this check settings?
-    if (!frame->settings() || !frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
-        return;
+  // FIXME: Why does this check settings?
+  if (!frame->settings() ||
+      !frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
+    return;
 
-    HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
-    document()->appendChild(rootElement);
-    rootElement->insertedByParser();
+  HTMLHtmlElement* rootElement = HTMLHtmlElement::create(*document());
+  document()->appendChild(rootElement);
+  rootElement->insertedByParser();
+  if (isStopped())
+    return;  // runScriptsAtDocumentElementAvailable can detach the frame.
+
+  HTMLBodyElement* body = HTMLBodyElement::create(*document());
+  body->setAttribute(styleAttr,
+                     "background-color: rgb(38,38,38); height: 100%; width: "
+                     "100%; overflow: hidden; margin: 0");
+  rootElement->appendChild(body);
+  if (isStopped())
+    return;  // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
+
+  m_embedElement = HTMLEmbedElement::create(*document());
+  m_embedElement->setAttribute(widthAttr, "100%");
+  m_embedElement->setAttribute(heightAttr, "100%");
+  m_embedElement->setAttribute(nameAttr, "plugin");
+  m_embedElement->setAttribute(idAttr, "plugin");
+  m_embedElement->setAttribute(srcAttr,
+                               AtomicString(document()->url().getString()));
+  m_embedElement->setAttribute(typeAttr, document()->loader()->mimeType());
+  body->appendChild(m_embedElement);
+  if (isStopped())
+    return;  // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
+
+  toPluginDocument(document())->setPluginNode(m_embedElement.get());
+
+  document()->updateStyleAndLayout();
+
+  // We need the plugin to load synchronously so we can get the PluginView
+  // below so flush the layout tasks now instead of waiting on the timer.
+  frame->view()->flushAnyPendingPostLayoutTasks();
+  // Focus the plugin here, as the line above is where the plugin is created.
+  if (frame->isMainFrame()) {
+    m_embedElement->focus();
     if (isStopped())
-        return; // runScriptsAtDocumentElementAvailable can detach the frame.
+      return;  // Possibly detached by a focus event listener installed in runScriptsAtDocumentElementAvailable.
+  }
 
-    HTMLBodyElement* body = HTMLBodyElement::create(*document());
-    body->setAttribute(styleAttr, "background-color: rgb(38,38,38); height: 100%; width: 100%; overflow: hidden; margin: 0");
-    rootElement->appendChild(body);
-    if (isStopped())
-        return; // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
-
-    m_embedElement = HTMLEmbedElement::create(*document());
-    m_embedElement->setAttribute(widthAttr, "100%");
-    m_embedElement->setAttribute(heightAttr, "100%");
-    m_embedElement->setAttribute(nameAttr, "plugin");
-    m_embedElement->setAttribute(idAttr, "plugin");
-    m_embedElement->setAttribute(srcAttr, AtomicString(document()->url().getString()));
-    m_embedElement->setAttribute(typeAttr, document()->loader()->mimeType());
-    body->appendChild(m_embedElement);
-    if (isStopped())
-        return; // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
-
-    toPluginDocument(document())->setPluginNode(m_embedElement.get());
-
-    document()->updateStyleAndLayout();
-
-    // We need the plugin to load synchronously so we can get the PluginView
-    // below so flush the layout tasks now instead of waiting on the timer.
-    frame->view()->flushAnyPendingPostLayoutTasks();
-    // Focus the plugin here, as the line above is where the plugin is created.
-    if (frame->isMainFrame()) {
-        m_embedElement->focus();
-        if (isStopped())
-            return; // Possibly detached by a focus event listener installed in runScriptsAtDocumentElementAvailable.
-    }
-
-    if (PluginView* view = pluginView())
-        view->didReceiveResponse(document()->loader()->response());
+  if (PluginView* view = pluginView())
+    view->didReceiveResponse(document()->loader()->response());
 }
 
-void PluginDocumentParser::appendBytes(const char* data, size_t length)
-{
-    if (!m_embedElement) {
-        createDocumentStructure();
-        if (isStopped())
-            return;
-    }
+void PluginDocumentParser::appendBytes(const char* data, size_t length) {
+  if (!m_embedElement) {
+    createDocumentStructure();
+    if (isStopped())
+      return;
+  }
 
-    if (!length)
-        return;
-    if (PluginView* view = pluginView())
-        view->didReceiveData(data, length);
+  if (!length)
+    return;
+  if (PluginView* view = pluginView())
+    view->didReceiveData(data, length);
 }
 
-void PluginDocumentParser::finish()
-{
-    m_embedElement = nullptr;
-    RawDataDocumentParser::finish();
+void PluginDocumentParser::finish() {
+  m_embedElement = nullptr;
+  RawDataDocumentParser::finish();
 }
 
-PluginView* PluginDocumentParser::pluginView() const
-{
-    if (Widget* widget = toPluginDocument(document())->pluginWidget()) {
-        SECURITY_DCHECK(widget->isPluginContainer());
-        return toPluginView(widget);
-    }
-    return 0;
+PluginView* PluginDocumentParser::pluginView() const {
+  if (Widget* widget = toPluginDocument(document())->pluginWidget()) {
+    SECURITY_DCHECK(widget->isPluginContainer());
+    return toPluginView(widget);
+  }
+  return 0;
 }
 
 PluginDocument::PluginDocument(const DocumentInit& initializer)
-    : HTMLDocument(initializer, PluginDocumentClass)
-{
-    setCompatibilityMode(QuirksMode);
-    lockCompatibilityMode();
-    UseCounter::count(*this, UseCounter::PluginDocument);
-    if (!isInMainFrame())
-        UseCounter::count(*this, UseCounter::PluginDocumentInFrame);
+    : HTMLDocument(initializer, PluginDocumentClass) {
+  setCompatibilityMode(QuirksMode);
+  lockCompatibilityMode();
+  UseCounter::count(*this, UseCounter::PluginDocument);
+  if (!isInMainFrame())
+    UseCounter::count(*this, UseCounter::PluginDocumentInFrame);
 }
 
-DocumentParser* PluginDocument::createParser()
-{
-    return PluginDocumentParser::create(this);
+DocumentParser* PluginDocument::createParser() {
+  return PluginDocumentParser::create(this);
 }
 
-Widget* PluginDocument::pluginWidget()
-{
-    if (m_pluginNode && m_pluginNode->layoutObject()) {
-        CHECK(m_pluginNode->layoutObject()->isEmbeddedObject());
-        Widget* widget = toLayoutEmbeddedObject(m_pluginNode->layoutObject())->widget();
-        if (!widget || !widget->isPluginContainer())
-            return nullptr;
-        return widget;
-    }
-    return 0;
+Widget* PluginDocument::pluginWidget() {
+  if (m_pluginNode && m_pluginNode->layoutObject()) {
+    CHECK(m_pluginNode->layoutObject()->isEmbeddedObject());
+    Widget* widget =
+        toLayoutEmbeddedObject(m_pluginNode->layoutObject())->widget();
+    if (!widget || !widget->isPluginContainer())
+      return nullptr;
+    return widget;
+  }
+  return 0;
 }
 
-Node* PluginDocument::pluginNode()
-{
-    return m_pluginNode.get();
+Node* PluginDocument::pluginNode() {
+  return m_pluginNode.get();
 }
 
-void PluginDocument::shutdown()
-{
-    // Release the plugin node so that we don't have a circular reference.
-    m_pluginNode = nullptr;
-    HTMLDocument::shutdown();
+void PluginDocument::shutdown() {
+  // Release the plugin node so that we don't have a circular reference.
+  m_pluginNode = nullptr;
+  HTMLDocument::shutdown();
 }
 
-DEFINE_TRACE(PluginDocument)
-{
-    visitor->trace(m_pluginNode);
-    HTMLDocument::trace(visitor);
+DEFINE_TRACE(PluginDocument) {
+  visitor->trace(m_pluginNode);
+  HTMLDocument::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

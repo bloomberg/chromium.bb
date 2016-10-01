@@ -29,59 +29,53 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXProgressIndicator::AXProgressIndicator(LayoutProgress* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache)
-{
+AXProgressIndicator::AXProgressIndicator(LayoutProgress* layoutObject,
+                                         AXObjectCacheImpl& axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache) {}
+
+AXProgressIndicator* AXProgressIndicator::create(
+    LayoutProgress* layoutObject,
+    AXObjectCacheImpl& axObjectCache) {
+  return new AXProgressIndicator(layoutObject, axObjectCache);
 }
 
-AXProgressIndicator* AXProgressIndicator::create(LayoutProgress* layoutObject, AXObjectCacheImpl& axObjectCache)
-{
-    return new AXProgressIndicator(layoutObject, axObjectCache);
+AccessibilityRole AXProgressIndicator::determineAccessibilityRole() {
+  if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+    return m_ariaRole;
+  return ProgressIndicatorRole;
 }
 
-AccessibilityRole AXProgressIndicator::determineAccessibilityRole()
-{
-    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-        return m_ariaRole;
-    return ProgressIndicatorRole;
+bool AXProgressIndicator::computeAccessibilityIsIgnored(
+    IgnoredReasons* ignoredReasons) const {
+  return accessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
-bool AXProgressIndicator::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
-{
-    return accessibilityIsIgnoredByDefault(ignoredReasons);
+float AXProgressIndicator::valueForRange() const {
+  if (hasAttribute(aria_valuenowAttr))
+    return getAttribute(aria_valuenowAttr).toFloat();
+
+  if (element()->position() >= 0)
+    return clampTo<float>(element()->value());
+  // Indeterminate progress bar should return 0.
+  return 0.0f;
 }
 
-float AXProgressIndicator::valueForRange() const
-{
-    if (hasAttribute(aria_valuenowAttr))
-        return getAttribute(aria_valuenowAttr).toFloat();
+float AXProgressIndicator::maxValueForRange() const {
+  if (hasAttribute(aria_valuemaxAttr))
+    return getAttribute(aria_valuemaxAttr).toFloat();
 
-    if (element()->position() >= 0)
-        return clampTo<float>(element()->value());
-    // Indeterminate progress bar should return 0.
-    return 0.0f;
+  return clampTo<float>(element()->max());
 }
 
-float AXProgressIndicator::maxValueForRange() const
-{
-    if (hasAttribute(aria_valuemaxAttr))
-        return getAttribute(aria_valuemaxAttr).toFloat();
+float AXProgressIndicator::minValueForRange() const {
+  if (hasAttribute(aria_valueminAttr))
+    return getAttribute(aria_valueminAttr).toFloat();
 
-    return clampTo<float>(element()->max());
+  return 0.0f;
 }
 
-float AXProgressIndicator::minValueForRange() const
-{
-    if (hasAttribute(aria_valueminAttr))
-        return getAttribute(aria_valueminAttr).toFloat();
-
-    return 0.0f;
+HTMLProgressElement* AXProgressIndicator::element() const {
+  return toLayoutProgress(m_layoutObject)->progressElement();
 }
 
-HTMLProgressElement* AXProgressIndicator::element() const
-{
-    return toLayoutProgress(m_layoutObject)->progressElement();
-}
-
-
-} // namespace blink
+}  // namespace blink

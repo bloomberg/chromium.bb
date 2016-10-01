@@ -35,23 +35,20 @@
 namespace blink {
 
 inline SVGDiscardElement::SVGDiscardElement(Document& document)
-    : SVGSMILElement(SVGNames::discardTag, document)
-{
-    ASSERT(RuntimeEnabledFeatures::smilEnabled());
+    : SVGSMILElement(SVGNames::discardTag, document) {
+  ASSERT(RuntimeEnabledFeatures::smilEnabled());
 }
 
 DEFINE_NODE_FACTORY(SVGDiscardElement)
 
-bool SVGDiscardElement::hasValidAttributeType()
-{
-    // Even if there is no targetElement, discard is still a valid animation as it has to delete itself.
-    return true;
+bool SVGDiscardElement::hasValidAttributeType() {
+  // Even if there is no targetElement, discard is still a valid animation as it has to delete itself.
+  return true;
 }
 
-bool SVGDiscardElement::hasValidAttributeName()
-{
-    // discard does not use attributeName so it is always valid.
-    return true;
+bool SVGDiscardElement::hasValidAttributeName() {
+  // discard does not use attributeName so it is always valid.
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

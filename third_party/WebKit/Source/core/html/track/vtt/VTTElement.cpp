@@ -30,100 +30,106 @@
 
 namespace blink {
 
-static const QualifiedName& nodeTypeToTagName(VTTNodeType nodeType)
-{
-    DEFINE_STATIC_LOCAL(QualifiedName, cTag, (nullAtom, "c", nullAtom));
-    DEFINE_STATIC_LOCAL(QualifiedName, vTag, (nullAtom, "v", nullAtom));
-    DEFINE_STATIC_LOCAL(QualifiedName, langTag, (nullAtom, "lang", nullAtom));
-    DEFINE_STATIC_LOCAL(QualifiedName, bTag, (nullAtom, "b", nullAtom));
-    DEFINE_STATIC_LOCAL(QualifiedName, uTag, (nullAtom, "u", nullAtom));
-    DEFINE_STATIC_LOCAL(QualifiedName, iTag, (nullAtom, "i", nullAtom));
-    DEFINE_STATIC_LOCAL(QualifiedName, rubyTag, (nullAtom, "ruby", nullAtom));
-    DEFINE_STATIC_LOCAL(QualifiedName, rtTag, (nullAtom, "rt", nullAtom));
-    switch (nodeType) {
+static const QualifiedName& nodeTypeToTagName(VTTNodeType nodeType) {
+  DEFINE_STATIC_LOCAL(QualifiedName, cTag, (nullAtom, "c", nullAtom));
+  DEFINE_STATIC_LOCAL(QualifiedName, vTag, (nullAtom, "v", nullAtom));
+  DEFINE_STATIC_LOCAL(QualifiedName, langTag, (nullAtom, "lang", nullAtom));
+  DEFINE_STATIC_LOCAL(QualifiedName, bTag, (nullAtom, "b", nullAtom));
+  DEFINE_STATIC_LOCAL(QualifiedName, uTag, (nullAtom, "u", nullAtom));
+  DEFINE_STATIC_LOCAL(QualifiedName, iTag, (nullAtom, "i", nullAtom));
+  DEFINE_STATIC_LOCAL(QualifiedName, rubyTag, (nullAtom, "ruby", nullAtom));
+  DEFINE_STATIC_LOCAL(QualifiedName, rtTag, (nullAtom, "rt", nullAtom));
+  switch (nodeType) {
     case VTTNodeTypeClass:
-        return cTag;
+      return cTag;
     case VTTNodeTypeItalic:
-        return iTag;
+      return iTag;
     case VTTNodeTypeLanguage:
-        return langTag;
+      return langTag;
     case VTTNodeTypeBold:
-        return bTag;
+      return bTag;
     case VTTNodeTypeUnderline:
-        return uTag;
+      return uTag;
     case VTTNodeTypeRuby:
-        return rubyTag;
+      return rubyTag;
     case VTTNodeTypeRubyText:
-        return rtTag;
+      return rtTag;
     case VTTNodeTypeVoice:
-        return vTag;
+      return vTag;
     case VTTNodeTypeNone:
     default:
-        NOTREACHED();
-        return cTag; // Make the compiler happy.
-    }
+      NOTREACHED();
+      return cTag;  // Make the compiler happy.
+  }
 }
 
 VTTElement::VTTElement(VTTNodeType nodeType, Document* document)
-    : Element(nodeTypeToTagName(nodeType), document, CreateElement)
-    , m_isPastNode(0)
-    , m_webVTTNodeType(nodeType)
-{
+    : Element(nodeTypeToTagName(nodeType), document, CreateElement),
+      m_isPastNode(0),
+      m_webVTTNodeType(nodeType) {}
+
+VTTElement* VTTElement::create(VTTNodeType nodeType, Document* document) {
+  return new VTTElement(nodeType, document);
 }
 
-VTTElement* VTTElement::create(VTTNodeType nodeType, Document* document)
-{
-    return new VTTElement(nodeType, document);
+Element* VTTElement::cloneElementWithoutAttributesAndChildren() {
+  VTTElement* clone =
+      create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
+  clone->setLanguage(m_language);
+  return clone;
 }
 
-Element* VTTElement::cloneElementWithoutAttributesAndChildren()
-{
-    VTTElement* clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
-    clone->setLanguage(m_language);
-    return clone;
-}
-
-HTMLElement* VTTElement::createEquivalentHTMLElement(Document& document)
-{
-    HTMLElement* htmlElement = nullptr;
-    switch (m_webVTTNodeType) {
+HTMLElement* VTTElement::createEquivalentHTMLElement(Document& document) {
+  HTMLElement* htmlElement = nullptr;
+  switch (m_webVTTNodeType) {
     case VTTNodeTypeClass:
     case VTTNodeTypeLanguage:
     case VTTNodeTypeVoice:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::spanTag.localName(), document);
-        htmlElement->setAttribute(HTMLNames::titleAttr, getAttribute(voiceAttributeName()));
-        htmlElement->setAttribute(HTMLNames::langAttr, getAttribute(langAttributeName()));
-        break;
+      htmlElement = HTMLElementFactory::createHTMLElement(
+          HTMLNames::spanTag.localName(), document);
+      htmlElement->setAttribute(HTMLNames::titleAttr,
+                                getAttribute(voiceAttributeName()));
+      htmlElement->setAttribute(HTMLNames::langAttr,
+                                getAttribute(langAttributeName()));
+      break;
     case VTTNodeTypeItalic:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::iTag.localName(), document);
-        break;
+      htmlElement = HTMLElementFactory::createHTMLElement(
+          HTMLNames::iTag.localName(), document);
+      break;
     case VTTNodeTypeBold:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::bTag.localName(), document);
-        break;
+      htmlElement = HTMLElementFactory::createHTMLElement(
+          HTMLNames::bTag.localName(), document);
+      break;
     case VTTNodeTypeUnderline:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::uTag.localName(), document);
-        break;
+      htmlElement = HTMLElementFactory::createHTMLElement(
+          HTMLNames::uTag.localName(), document);
+      break;
     case VTTNodeTypeRuby:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rubyTag.localName(), document);
-        break;
+      htmlElement = HTMLElementFactory::createHTMLElement(
+          HTMLNames::rubyTag.localName(), document);
+      break;
     case VTTNodeTypeRubyText:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rtTag.localName(), document);
-        break;
+      htmlElement = HTMLElementFactory::createHTMLElement(
+          HTMLNames::rtTag.localName(), document);
+      break;
     default:
-        NOTREACHED();
-    }
+      NOTREACHED();
+  }
 
-    htmlElement->setAttribute(HTMLNames::classAttr, getAttribute(HTMLNames::classAttr));
-    return htmlElement;
+  htmlElement->setAttribute(HTMLNames::classAttr,
+                            getAttribute(HTMLNames::classAttr));
+  return htmlElement;
 }
 
-void VTTElement::setIsPastNode(bool isPastNode)
-{
-    if (!!m_isPastNode == isPastNode)
-        return;
+void VTTElement::setIsPastNode(bool isPastNode) {
+  if (!!m_isPastNode == isPastNode)
+    return;
 
-    m_isPastNode = isPastNode;
-    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Past));
+  m_isPastNode = isPastNode;
+  setNeedsStyleRecalc(
+      LocalStyleChange,
+      StyleChangeReasonForTracing::createWithExtraData(
+          StyleChangeReason::PseudoClass, StyleChangeExtraData::Past));
 }
 
-} // namespace blink
+}  // namespace blink

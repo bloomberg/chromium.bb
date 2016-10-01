@@ -41,36 +41,41 @@ class ChromeClientImpl;
 class DateTimeChooserClient;
 class PagePopup;
 
-class DateTimeChooserImpl final : public DateTimeChooser, public PagePopupClient {
-public:
-    static DateTimeChooserImpl* create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
-    ~DateTimeChooserImpl() override;
+class DateTimeChooserImpl final : public DateTimeChooser,
+                                  public PagePopupClient {
+ public:
+  static DateTimeChooserImpl* create(ChromeClientImpl*,
+                                     DateTimeChooserClient*,
+                                     const DateTimeChooserParameters&);
+  ~DateTimeChooserImpl() override;
 
-    // DateTimeChooser functions:
-    void endChooser() override;
-    AXObject* rootAXObject() override;
+  // DateTimeChooser functions:
+  void endChooser() override;
+  AXObject* rootAXObject() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    DateTimeChooserImpl(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
-    // PagePopupClient functions:
-    void writeDocument(SharedBuffer*) override;
-    void selectFontsFromOwnerDocument(Document&) override { }
-    Locale& locale() override;
-    void setValueAndClosePopup(int, const String&) override;
-    void setValue(const String&) override;
-    void closePopup() override;
-    Element& ownerElement() override;
-    void didClosePopup() override;
+ private:
+  DateTimeChooserImpl(ChromeClientImpl*,
+                      DateTimeChooserClient*,
+                      const DateTimeChooserParameters&);
+  // PagePopupClient functions:
+  void writeDocument(SharedBuffer*) override;
+  void selectFontsFromOwnerDocument(Document&) override {}
+  Locale& locale() override;
+  void setValueAndClosePopup(int, const String&) override;
+  void setValue(const String&) override;
+  void closePopup() override;
+  Element& ownerElement() override;
+  void didClosePopup() override;
 
-    Member<ChromeClientImpl> m_chromeClient;
-    Member<DateTimeChooserClient> m_client;
-    PagePopup* m_popup;
-    DateTimeChooserParameters m_parameters;
-    std::unique_ptr<Locale> m_locale;
+  Member<ChromeClientImpl> m_chromeClient;
+  Member<DateTimeChooserClient> m_client;
+  PagePopup* m_popup;
+  DateTimeChooserParameters m_parameters;
+  std::unique_ptr<Locale> m_locale;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DateTimeChooserImpl_h
+#endif  // DateTimeChooserImpl_h

@@ -41,25 +41,26 @@
 namespace blink {
 
 class CORE_EXPORT HTMLParserThread {
-    USING_FAST_MALLOC(HTMLParserThread);
-public:
-    static void init();
-    static void shutdown();
+  USING_FAST_MALLOC(HTMLParserThread);
 
-    // It is an error to call shared() before init() or after shutdown();
-    static HTMLParserThread* shared();
+ public:
+  static void init();
+  static void shutdown();
 
-    void postTask(std::unique_ptr<CrossThreadClosure>);
+  // It is an error to call shared() before init() or after shutdown();
+  static HTMLParserThread* shared();
 
-private:
-    HTMLParserThread();
-    ~HTMLParserThread();
-    void setupHTMLParserThread();
-    void cleanupHTMLParserThread(WaitableEvent*);
+  void postTask(std::unique_ptr<CrossThreadClosure>);
 
-    std::unique_ptr<WebThreadSupportingGC> m_thread;
+ private:
+  HTMLParserThread();
+  ~HTMLParserThread();
+  void setupHTMLParserThread();
+  void cleanupHTMLParserThread(WaitableEvent*);
+
+  std::unique_ptr<WebThreadSupportingGC> m_thread;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLParserThread_h
+#endif  // HTMLParserThread_h

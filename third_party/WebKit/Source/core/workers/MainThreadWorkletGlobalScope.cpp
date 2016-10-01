@@ -12,34 +12,33 @@
 
 namespace blink {
 
-MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
-    : WorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate)
-    , DOMWindowProperty(frame)
-{
+MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
+    LocalFrame* frame,
+    const KURL& url,
+    const String& userAgent,
+    PassRefPtr<SecurityOrigin> securityOrigin,
+    v8::Isolate* isolate)
+    : WorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate),
+      DOMWindowProperty(frame) {}
+
+MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
+
+void MainThreadWorkletGlobalScope::evaluateScript(
+    const ScriptSourceCode& scriptSourceCode) {
+  scriptController()->evaluate(scriptSourceCode);
 }
 
-MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope()
-{
+void MainThreadWorkletGlobalScope::terminateWorkletGlobalScope() {
+  dispose();
 }
 
-void MainThreadWorkletGlobalScope::evaluateScript(const ScriptSourceCode& scriptSourceCode)
-{
-    scriptController()->evaluate(scriptSourceCode);
+void MainThreadWorkletGlobalScope::addConsoleMessage(
+    ConsoleMessage* consoleMessage) {
+  frame()->console().addMessage(consoleMessage);
 }
 
-void MainThreadWorkletGlobalScope::terminateWorkletGlobalScope()
-{
-    dispose();
+void MainThreadWorkletGlobalScope::exceptionThrown(ErrorEvent* event) {
+  MainThreadDebugger::instance()->exceptionThrown(this, event);
 }
 
-void MainThreadWorkletGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
-{
-    frame()->console().addMessage(consoleMessage);
-}
-
-void MainThreadWorkletGlobalScope::exceptionThrown(ErrorEvent* event)
-{
-    MainThreadDebugger::instance()->exceptionThrown(this, event);
-}
-
-} // namespace blink
+}  // namespace blink

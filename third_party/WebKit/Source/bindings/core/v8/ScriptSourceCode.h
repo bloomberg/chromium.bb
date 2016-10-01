@@ -42,45 +42,49 @@
 namespace blink {
 
 class CORE_EXPORT ScriptSourceCode final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    ScriptSourceCode();
-    // We lose the encoding information from ScriptResource.
-    // Not sure if that matters.
-    explicit ScriptSourceCode(ScriptResource*);
-    ScriptSourceCode(const String&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
-    ScriptSourceCode(ScriptStreamer*, ScriptResource*);
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    ~ScriptSourceCode();
-    DECLARE_TRACE();
+ public:
+  ScriptSourceCode();
+  // We lose the encoding information from ScriptResource.
+  // Not sure if that matters.
+  explicit ScriptSourceCode(ScriptResource*);
+  ScriptSourceCode(
+      const String&,
+      const KURL& = KURL(),
+      const TextPosition& startPosition = TextPosition::minimumPosition());
+  ScriptSourceCode(ScriptStreamer*, ScriptResource*);
 
-    bool isEmpty() const { return m_source.isEmpty(); }
+  ~ScriptSourceCode();
+  DECLARE_TRACE();
 
-    // The null value represents a missing script, created by the nullary
-    // constructor, and differs from the empty script.
-    bool isNull() const { return m_source.isNull(); }
+  bool isEmpty() const { return m_source.isEmpty(); }
 
-    const String& source() const { return m_source; }
-    ScriptResource* resource() const { return m_resource.get(); }
-    const KURL& url() const;
-    int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
-    const TextPosition& startPosition() const { return m_startPosition; }
-    String sourceMapUrl() const;
+  // The null value represents a missing script, created by the nullary
+  // constructor, and differs from the empty script.
+  bool isNull() const { return m_source.isNull(); }
 
-    ScriptStreamer* streamer() const { return m_streamer.get(); }
+  const String& source() const { return m_source; }
+  ScriptResource* resource() const { return m_resource.get(); }
+  const KURL& url() const;
+  int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
+  const TextPosition& startPosition() const { return m_startPosition; }
+  String sourceMapUrl() const;
 
-private:
-    void treatNullSourceAsEmpty();
+  ScriptStreamer* streamer() const { return m_streamer.get(); }
 
-    String m_source;
-    Member<ScriptResource> m_resource;
-    Member<ScriptStreamer> m_streamer;
-    mutable KURL m_url;
-    TextPosition m_startPosition;
+ private:
+  void treatNullSourceAsEmpty();
+
+  String m_source;
+  Member<ScriptResource> m_resource;
+  Member<ScriptStreamer> m_streamer;
+  mutable KURL m_url;
+  TextPosition m_startPosition;
 };
 
-} // namespace blink
+}  // namespace blink
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::ScriptSourceCode);
 
-#endif // ScriptSourceCode_h
+#endif  // ScriptSourceCode_h

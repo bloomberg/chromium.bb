@@ -14,31 +14,33 @@
 
 namespace blink {
 
-PushSubscriptionCallbacks::PushSubscriptionCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
-    : m_resolver(resolver)
-    , m_serviceWorkerRegistration(serviceWorkerRegistration)
-{
-    DCHECK(m_resolver);
-    DCHECK(m_serviceWorkerRegistration);
+PushSubscriptionCallbacks::PushSubscriptionCallbacks(
+    ScriptPromiseResolver* resolver,
+    ServiceWorkerRegistration* serviceWorkerRegistration)
+    : m_resolver(resolver),
+      m_serviceWorkerRegistration(serviceWorkerRegistration) {
+  DCHECK(m_resolver);
+  DCHECK(m_serviceWorkerRegistration);
 }
 
-PushSubscriptionCallbacks::~PushSubscriptionCallbacks()
-{
+PushSubscriptionCallbacks::~PushSubscriptionCallbacks() {}
+
+void PushSubscriptionCallbacks::onSuccess(
+    std::unique_ptr<WebPushSubscription> webPushSubscription) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+
+  m_resolver->resolve(PushSubscription::take(
+      m_resolver.get(), wrapUnique(webPushSubscription.release()),
+      m_serviceWorkerRegistration));
 }
 
-void PushSubscriptionCallbacks::onSuccess(std::unique_ptr<WebPushSubscription> webPushSubscription)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-
-    m_resolver->resolve(PushSubscription::take(m_resolver.get(), wrapUnique(webPushSubscription.release()), m_serviceWorkerRegistration));
+void PushSubscriptionCallbacks::onError(const WebPushError& error) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->reject(PushError::take(m_resolver.get(), error));
 }
 
-void PushSubscriptionCallbacks::onError(const WebPushError& error)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    m_resolver->reject(PushError::take(m_resolver.get(), error));
-}
-
-} // namespace blink
+}  // namespace blink

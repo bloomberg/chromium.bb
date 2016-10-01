@@ -19,73 +19,67 @@ namespace blink {
 
 IDBObservation::~IDBObservation() {}
 
-ScriptValue IDBObservation::key(ScriptState* scriptState)
-{
-    if (!m_keyRange)
-        return ScriptValue::from(scriptState, v8::Undefined(scriptState->isolate()));
+ScriptValue IDBObservation::key(ScriptState* scriptState) {
+  if (!m_keyRange)
+    return ScriptValue::from(scriptState,
+                             v8::Undefined(scriptState->isolate()));
 
-    return ScriptValue::from(scriptState, m_keyRange);
+  return ScriptValue::from(scriptState, m_keyRange);
 }
 
-ScriptValue IDBObservation::value(ScriptState* scriptState)
-{
-    if (!m_value)
-        return ScriptValue::from(scriptState, v8::Undefined(scriptState->isolate()));
+ScriptValue IDBObservation::value(ScriptState* scriptState) {
+  if (!m_value)
+    return ScriptValue::from(scriptState,
+                             v8::Undefined(scriptState->isolate()));
 
-    return ScriptValue::from(scriptState, IDBAny::create(m_value));
+  return ScriptValue::from(scriptState, IDBAny::create(m_value));
 }
 
-WebIDBOperationType IDBObservation::stringToOperationType(const String& type)
-{
-    if (type == IndexedDBNames::add)
-        return WebIDBAdd;
-    if (type == IndexedDBNames::put)
-        return WebIDBPut;
-    if (type == IndexedDBNames::kDelete)
-        return WebIDBDelete;
-    if (type == IndexedDBNames::clear)
-        return WebIDBClear;
-
-    NOTREACHED();
+WebIDBOperationType IDBObservation::stringToOperationType(const String& type) {
+  if (type == IndexedDBNames::add)
     return WebIDBAdd;
+  if (type == IndexedDBNames::put)
+    return WebIDBPut;
+  if (type == IndexedDBNames::kDelete)
+    return WebIDBDelete;
+  if (type == IndexedDBNames::clear)
+    return WebIDBClear;
+
+  NOTREACHED();
+  return WebIDBAdd;
 }
 
-const String& IDBObservation::type() const
-{
-    switch (m_operationType) {
+const String& IDBObservation::type() const {
+  switch (m_operationType) {
     case WebIDBAdd:
-        return IndexedDBNames::add;
+      return IndexedDBNames::add;
 
     case WebIDBPut:
-        return IndexedDBNames::put;
+      return IndexedDBNames::put;
 
     case WebIDBDelete:
-        return IndexedDBNames::kDelete;
+      return IndexedDBNames::kDelete;
 
     case WebIDBClear:
-        return IndexedDBNames::clear;
+      return IndexedDBNames::clear;
 
     default:
-        NOTREACHED();
-        return IndexedDBNames::add;
-    }
+      NOTREACHED();
+      return IndexedDBNames::add;
+  }
 }
 
-IDBObservation* IDBObservation::create(const WebIDBObservation& observation)
-{
-    return new IDBObservation(observation);
+IDBObservation* IDBObservation::create(const WebIDBObservation& observation) {
+  return new IDBObservation(observation);
 }
 
 IDBObservation::IDBObservation(const WebIDBObservation& observation)
-    : m_keyRange(observation.keyRange)
-    , m_value(IDBValue::create(observation.value))
-    , m_operationType(observation.type)
-{
+    : m_keyRange(observation.keyRange),
+      m_value(IDBValue::create(observation.value)),
+      m_operationType(observation.type) {}
+
+DEFINE_TRACE(IDBObservation) {
+  visitor->trace(m_keyRange);
 }
 
-DEFINE_TRACE(IDBObservation)
-{
-    visitor->trace(m_keyRange);
-}
-
-} // namespace blink
+}  // namespace blink

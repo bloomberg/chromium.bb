@@ -13,35 +13,30 @@
 
 namespace blink {
 
-enum class CaseMapIntend {
-    KeepSameCase,
-    UpperCase,
-    LowerCase
-};
+enum class CaseMapIntend { KeepSameCase, UpperCase, LowerCase };
 
 class CaseMappingHarfBuzzBufferFiller {
-    STACK_ALLOCATED()
+  STACK_ALLOCATED()
 
-public:
-    CaseMappingHarfBuzzBufferFiller(
-        CaseMapIntend,
-        AtomicString locale,
-        hb_buffer_t* harfBuzzBuffer,
-        const UChar* buffer,
-        unsigned bufferLength,
-        unsigned startIndex,
-        unsigned numCharacters);
+ public:
+  CaseMappingHarfBuzzBufferFiller(CaseMapIntend,
+                                  AtomicString locale,
+                                  hb_buffer_t* harfBuzzBuffer,
+                                  const UChar* buffer,
+                                  unsigned bufferLength,
+                                  unsigned startIndex,
+                                  unsigned numCharacters);
 
-private:
-    void fillSlowCase(CaseMapIntend,
-        AtomicString locale,
-        const UChar* buffer,
-        unsigned bufferLength,
-        unsigned startIndex,
-        unsigned numCharacters);
-    hb_buffer_t* m_harfBuzzBuffer;
+ private:
+  void fillSlowCase(CaseMapIntend,
+                    AtomicString locale,
+                    const UChar* buffer,
+                    unsigned bufferLength,
+                    unsigned startIndex,
+                    unsigned numCharacters);
+  hb_buffer_t* m_harfBuzzBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

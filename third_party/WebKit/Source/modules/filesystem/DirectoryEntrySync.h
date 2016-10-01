@@ -42,27 +42,36 @@ class FileEntrySync;
 class FileSystemFlags;
 
 class DirectoryEntrySync final : public EntrySync {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DirectoryEntrySync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
-    {
-        return new DirectoryEntrySync(fileSystem, fullPath);
-    }
-    bool isDirectory() const override { return true; }
+  DEFINE_WRAPPERTYPEINFO();
 
-    DirectoryReaderSync* createReader();
-    FileEntrySync* getFile(const String& path, const FileSystemFlags&, ExceptionState&);
-    DirectoryEntrySync* getDirectory(const String& path, const FileSystemFlags&, ExceptionState&);
-    void removeRecursively(ExceptionState&);
+ public:
+  static DirectoryEntrySync* create(DOMFileSystemBase* fileSystem,
+                                    const String& fullPath) {
+    return new DirectoryEntrySync(fileSystem, fullPath);
+  }
+  bool isDirectory() const override { return true; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DirectoryReaderSync* createReader();
+  FileEntrySync* getFile(const String& path,
+                         const FileSystemFlags&,
+                         ExceptionState&);
+  DirectoryEntrySync* getDirectory(const String& path,
+                                   const FileSystemFlags&,
+                                   ExceptionState&);
+  void removeRecursively(ExceptionState&);
 
-private:
-    DirectoryEntrySync(DOMFileSystemBase*, const String& fullPath);
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  DirectoryEntrySync(DOMFileSystemBase*, const String& fullPath);
 };
 
-DEFINE_TYPE_CASTS(DirectoryEntrySync, EntrySync, entry, entry->isDirectory(), entry.isDirectory());
+DEFINE_TYPE_CASTS(DirectoryEntrySync,
+                  EntrySync,
+                  entry,
+                  entry->isDirectory(),
+                  entry.isDirectory());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DirectoryEntrySync_h
+#endif  // DirectoryEntrySync_h

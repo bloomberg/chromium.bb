@@ -12,39 +12,44 @@
 namespace blink {
 
 class VRDisplayEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static VRDisplayEvent* create()
-    {
-        return new VRDisplayEvent;
-    }
-    static VRDisplayEvent* create(const AtomicString& type, bool canBubble, bool cancelable, VRDisplay* display, String reason)
-    {
-        return new VRDisplayEvent(type, canBubble, cancelable, display, reason);
-    }
-    static VRDisplayEvent* create(const AtomicString& type, const VRDisplayEventInit& initializer)
-    {
-        return new VRDisplayEvent(type, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~VRDisplayEvent() override;
+ public:
+  static VRDisplayEvent* create() { return new VRDisplayEvent; }
+  static VRDisplayEvent* create(const AtomicString& type,
+                                bool canBubble,
+                                bool cancelable,
+                                VRDisplay* display,
+                                String reason) {
+    return new VRDisplayEvent(type, canBubble, cancelable, display, reason);
+  }
+  static VRDisplayEvent* create(const AtomicString& type,
+                                const VRDisplayEventInit& initializer) {
+    return new VRDisplayEvent(type, initializer);
+  }
 
-    VRDisplay* display() const { return m_display.get(); }
-    const String& reason() const { return m_reason; }
+  ~VRDisplayEvent() override;
 
-    const AtomicString& interfaceName() const override;
+  VRDisplay* display() const { return m_display.get(); }
+  const String& reason() const { return m_reason; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    VRDisplayEvent();
-    VRDisplayEvent(const AtomicString& type, bool canBubble, bool cancelable, VRDisplay*, String);
-    VRDisplayEvent(const AtomicString&, const VRDisplayEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<VRDisplay> m_display;
-    String m_reason;
+ private:
+  VRDisplayEvent();
+  VRDisplayEvent(const AtomicString& type,
+                 bool canBubble,
+                 bool cancelable,
+                 VRDisplay*,
+                 String);
+  VRDisplayEvent(const AtomicString&, const VRDisplayEventInit&);
+
+  Member<VRDisplay> m_display;
+  String m_reason;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VRDisplayEvent_h
+#endif  // VRDisplayEvent_h

@@ -12,21 +12,27 @@
 
 namespace blink {
 
-class V8IDBObserverCallback final : public IDBObserverCallback, public ActiveDOMCallback {
-    USING_GARBAGE_COLLECTED_MIXIN(V8IDBObserverCallback);
+class V8IDBObserverCallback final : public IDBObserverCallback,
+                                    public ActiveDOMCallback {
+  USING_GARBAGE_COLLECTED_MIXIN(V8IDBObserverCallback);
 
-public:
-    V8IDBObserverCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
-    ~V8IDBObserverCallback() override;
+ public:
+  V8IDBObserverCallback(v8::Local<v8::Function>,
+                        v8::Local<v8::Object>,
+                        ScriptState*);
+  ~V8IDBObserverCallback() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    void handleChanges(IDBObserverChanges&, IDBObserver&) override;
-    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
-private:
-    ScopedPersistent<v8::Function> m_callback;
-    RefPtr<ScriptState> m_scriptState;
+  void handleChanges(IDBObserverChanges&, IDBObserver&) override;
+  ExecutionContext* getExecutionContext() const override {
+    return ContextLifecycleObserver::getExecutionContext();
+  }
+
+ private:
+  ScopedPersistent<v8::Function> m_callback;
+  RefPtr<ScriptState> m_scriptState;
 };
 
-} // namespace blink
-#endif // V8IDBObserverCallback_h
+}  // namespace blink
+#endif  // V8IDBObserverCallback_h

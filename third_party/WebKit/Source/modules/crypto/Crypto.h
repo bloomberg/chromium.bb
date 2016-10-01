@@ -39,25 +39,23 @@ class DOMArrayBufferView;
 class ExceptionState;
 
 class Crypto final : public GarbageCollected<Crypto>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Crypto* create()
-    {
-        return new Crypto();
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    DOMArrayBufferView* getRandomValues(DOMArrayBufferView*, ExceptionState&);
+ public:
+  static Crypto* create() { return new Crypto(); }
 
-    SubtleCrypto* subtle();
+  DOMArrayBufferView* getRandomValues(DOMArrayBufferView*, ExceptionState&);
 
-    DECLARE_TRACE();
+  SubtleCrypto* subtle();
 
-private:
-    Crypto() { }
+  DECLARE_TRACE();
 
-    Member<SubtleCrypto> m_subtleCrypto;
+ private:
+  Crypto() {}
+
+  Member<SubtleCrypto> m_subtleCrypto;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Crypto_h
+#endif  // Crypto_h

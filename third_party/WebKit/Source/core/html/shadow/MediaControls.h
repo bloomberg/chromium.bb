@@ -36,137 +36,138 @@ class Event;
 class TextTrackContainer;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {
-public:
-    static MediaControls* create(HTMLMediaElement&);
+ public:
+  static MediaControls* create(HTMLMediaElement&);
 
-    HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
+  HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 
-    void reset();
+  void reset();
 
-    void show();
-    void hide();
+  void show();
+  void hide();
 
-    void playbackStarted();
-    void playbackProgressed();
-    void playbackStopped();
+  void playbackStarted();
+  void playbackProgressed();
+  void playbackStopped();
 
-    void beginScrubbing();
-    void endScrubbing();
+  void beginScrubbing();
+  void endScrubbing();
 
-    void updateCurrentTimeDisplay();
+  void updateCurrentTimeDisplay();
 
-    void updateVolume();
+  void updateVolume();
 
-    void changedClosedCaptionsVisibility();
-    void refreshClosedCaptionsButtonVisibility();
-    void toggleTextTrackList();
+  void changedClosedCaptionsVisibility();
+  void refreshClosedCaptionsButtonVisibility();
+  void toggleTextTrackList();
 
-    void enteredFullscreen();
-    void exitedFullscreen();
+  void enteredFullscreen();
+  void exitedFullscreen();
 
-    void startedCasting();
-    void stoppedCasting();
-    void refreshCastButtonVisibility();
-    void showOverlayCastButtonIfNeeded();
-    // Update cast button visibility, but don't try to update our panel
-    // button visibility for space.
-    void refreshCastButtonVisibilityWithoutUpdate();
+  void startedCasting();
+  void stoppedCasting();
+  void refreshCastButtonVisibility();
+  void showOverlayCastButtonIfNeeded();
+  // Update cast button visibility, but don't try to update our panel
+  // button visibility for space.
+  void refreshCastButtonVisibilityWithoutUpdate();
 
-    void setAllowHiddenVolumeControls(bool);
+  void setAllowHiddenVolumeControls(bool);
 
-    void mediaElementFocused();
+  void mediaElementFocused();
 
-    // Returns the layout object for the part of the controls that should be
-    // used for overlap checking during text track layout. May be null.
-    LayoutObject* layoutObjectForTextTrackLayout();
+  // Returns the layout object for the part of the controls that should be
+  // used for overlap checking during text track layout. May be null.
+  LayoutObject* layoutObjectForTextTrackLayout();
 
-    // Notify us that our controls enclosure has changed width.
-    void notifyPanelWidthChanged(const LayoutUnit& newWidth);
+  // Notify us that our controls enclosure has changed width.
+  void notifyPanelWidthChanged(const LayoutUnit& newWidth);
 
-    // Notify us that the media element's network state has changed.
-    void networkStateChanged();
+  // Notify us that the media element's network state has changed.
+  void networkStateChanged();
 
-    void toggleOverflowMenu();
+  void toggleOverflowMenu();
 
-    bool overflowMenuVisible();
+  bool overflowMenuVisible();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    void invalidate(Element*);
+ private:
+  void invalidate(Element*);
 
-    class BatchedControlUpdate;
+  class BatchedControlUpdate;
 
-    explicit MediaControls(HTMLMediaElement&);
+  explicit MediaControls(HTMLMediaElement&);
 
-    void initializeControls();
+  void initializeControls();
 
-    void makeOpaque();
-    void makeTransparent();
+  void makeOpaque();
+  void makeTransparent();
 
-    void updatePlayState();
+  void updatePlayState();
 
-    enum HideBehaviorFlags {
-        IgnoreNone = 0,
-        IgnoreVideoHover = 1 << 0,
-        IgnoreFocus = 1 << 1,
-        IgnoreControlsHover = 1 << 2
-    };
+  enum HideBehaviorFlags {
+    IgnoreNone = 0,
+    IgnoreVideoHover = 1 << 0,
+    IgnoreFocus = 1 << 1,
+    IgnoreControlsHover = 1 << 2
+  };
 
-    bool shouldHideMediaControls(unsigned behaviorFlags = 0) const;
-    void hideMediaControlsTimerFired(TimerBase*);
-    void startHideMediaControlsTimer();
-    void stopHideMediaControlsTimer();
-    void resetHideMediaControlsTimer();
+  bool shouldHideMediaControls(unsigned behaviorFlags = 0) const;
+  void hideMediaControlsTimerFired(TimerBase*);
+  void startHideMediaControlsTimer();
+  void stopHideMediaControlsTimer();
+  void resetHideMediaControlsTimer();
 
-    void panelWidthChangedTimerFired(TimerBase*);
+  void panelWidthChangedTimerFired(TimerBase*);
 
-    // Hide elements that don't fit, and show those things that we want which
-    // do fit.  This requires that m_panelWidth is current.
-    void computeWhichControlsFit();
+  // Hide elements that don't fit, and show those things that we want which
+  // do fit.  This requires that m_panelWidth is current.
+  void computeWhichControlsFit();
 
-    // Node
-    bool isMediaControls() const override { return true; }
-    bool willRespondToMouseMoveEvents() override { return true; }
-    void defaultEventHandler(Event*) override;
-    bool containsRelatedTarget(Event*);
+  // Node
+  bool isMediaControls() const override { return true; }
+  bool willRespondToMouseMoveEvents() override { return true; }
+  void defaultEventHandler(Event*) override;
+  bool containsRelatedTarget(Event*);
 
-    Member<HTMLMediaElement> m_mediaElement;
+  Member<HTMLMediaElement> m_mediaElement;
 
-    // Media control elements.
-    Member<MediaControlOverlayEnclosureElement> m_overlayEnclosure;
-    Member<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;
-    Member<MediaControlCastButtonElement> m_overlayCastButton;
-    Member<MediaControlPanelEnclosureElement> m_enclosure;
-    Member<MediaControlPanelElement> m_panel;
-    Member<MediaControlPlayButtonElement> m_playButton;
-    Member<MediaControlTimelineElement> m_timeline;
-    Member<MediaControlCurrentTimeDisplayElement> m_currentTimeDisplay;
-    Member<MediaControlTimeRemainingDisplayElement> m_durationDisplay;
-    Member<MediaControlMuteButtonElement> m_muteButton;
-    Member<MediaControlVolumeSliderElement> m_volumeSlider;
-    Member<MediaControlToggleClosedCaptionsButtonElement> m_toggleClosedCaptionsButton;
-    Member<MediaControlTextTrackListElement> m_textTrackList;
-    Member<MediaControlOverflowMenuButtonElement> m_overflowMenu;
-    Member<MediaControlOverflowMenuListElement> m_overflowList;
+  // Media control elements.
+  Member<MediaControlOverlayEnclosureElement> m_overlayEnclosure;
+  Member<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;
+  Member<MediaControlCastButtonElement> m_overlayCastButton;
+  Member<MediaControlPanelEnclosureElement> m_enclosure;
+  Member<MediaControlPanelElement> m_panel;
+  Member<MediaControlPlayButtonElement> m_playButton;
+  Member<MediaControlTimelineElement> m_timeline;
+  Member<MediaControlCurrentTimeDisplayElement> m_currentTimeDisplay;
+  Member<MediaControlTimeRemainingDisplayElement> m_durationDisplay;
+  Member<MediaControlMuteButtonElement> m_muteButton;
+  Member<MediaControlVolumeSliderElement> m_volumeSlider;
+  Member<MediaControlToggleClosedCaptionsButtonElement>
+      m_toggleClosedCaptionsButton;
+  Member<MediaControlTextTrackListElement> m_textTrackList;
+  Member<MediaControlOverflowMenuButtonElement> m_overflowMenu;
+  Member<MediaControlOverflowMenuListElement> m_overflowList;
 
-    Member<MediaControlCastButtonElement> m_castButton;
-    Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
-    Member<MediaControlDownloadButtonElement> m_downloadButton;
+  Member<MediaControlCastButtonElement> m_castButton;
+  Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
+  Member<MediaControlDownloadButtonElement> m_downloadButton;
 
-    Timer<MediaControls> m_hideMediaControlsTimer;
-    unsigned m_hideTimerBehaviorFlags;
-    bool m_isMouseOverControls : 1;
-    bool m_isPausedForScrubbing : 1;
+  Timer<MediaControls> m_hideMediaControlsTimer;
+  unsigned m_hideTimerBehaviorFlags;
+  bool m_isMouseOverControls : 1;
+  bool m_isPausedForScrubbing : 1;
 
-    Timer<MediaControls> m_panelWidthChangedTimer;
-    int m_panelWidth;
+  Timer<MediaControls> m_panelWidthChangedTimer;
+  int m_panelWidth;
 
-    bool m_allowHiddenVolumeControls : 1;
+  bool m_allowHiddenVolumeControls : 1;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControls, isMediaControls());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -19,55 +19,62 @@ class InspectorWorkerAgent;
 
 class CORE_EXPORT InspectorTracingAgent final
     : public InspectorBaseAgent<protocol::Tracing::Metainfo> {
-    WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
-public:
-    class Client {
-    public:
-        virtual ~Client() { }
+  WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
 
-        virtual void enableTracing(const String& categoryFilter) = 0;
-        virtual void disableTracing() = 0;
-        virtual void showReloadingBlanket() = 0;
-        virtual void hideReloadingBlanket() = 0;
-    };
+ public:
+  class Client {
+   public:
+    virtual ~Client() {}
 
-    static InspectorTracingAgent* create(Client* client, InspectorWorkerAgent* workerAgent, InspectedFrames* inspectedFrames)
-    {
-        return new InspectorTracingAgent(client, workerAgent, inspectedFrames);
-    }
+    virtual void enableTracing(const String& categoryFilter) = 0;
+    virtual void disableTracing() = 0;
+    virtual void showReloadingBlanket() = 0;
+    virtual void hideReloadingBlanket() = 0;
+  };
 
-    DECLARE_VIRTUAL_TRACE();
+  static InspectorTracingAgent* create(Client* client,
+                                       InspectorWorkerAgent* workerAgent,
+                                       InspectedFrames* inspectedFrames) {
+    return new InspectorTracingAgent(client, workerAgent, inspectedFrames);
+  }
 
-    // Base agent methods.
-    void restore() override;
-    void disable(ErrorString*) override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // InspectorInstrumentation methods
-    void frameStartedLoading(LocalFrame*);
-    void frameStoppedLoading(LocalFrame*);
+  // Base agent methods.
+  void restore() override;
+  void disable(ErrorString*) override;
 
-    // Protocol method implementations.
-    void start(const Maybe<String>& categories, const Maybe<String>& options, const Maybe<double>& bufferUsageReportingInterval, const Maybe<String>& transferMode, const Maybe<protocol::Tracing::TraceConfig>&, std::unique_ptr<StartCallback>) override;
-    void end(std::unique_ptr<EndCallback>) override;
+  // InspectorInstrumentation methods
+  void frameStartedLoading(LocalFrame*);
+  void frameStoppedLoading(LocalFrame*);
 
-    // Methods for other agents to use.
-    void setLayerTreeId(int);
-    void rootLayerCleared();
+  // Protocol method implementations.
+  void start(const Maybe<String>& categories,
+             const Maybe<String>& options,
+             const Maybe<double>& bufferUsageReportingInterval,
+             const Maybe<String>& transferMode,
+             const Maybe<protocol::Tracing::TraceConfig>&,
+             std::unique_ptr<StartCallback>) override;
+  void end(std::unique_ptr<EndCallback>) override;
 
-private:
-    InspectorTracingAgent(Client*, InspectorWorkerAgent*, InspectedFrames*);
+  // Methods for other agents to use.
+  void setLayerTreeId(int);
+  void rootLayerCleared();
 
-    void emitMetadataEvents();
-    void innerDisable();
-    String sessionId() const;
-    bool isStarted() const;
+ private:
+  InspectorTracingAgent(Client*, InspectorWorkerAgent*, InspectedFrames*);
 
-    int m_layerTreeId;
-    Client* m_client;
-    Member<InspectorWorkerAgent> m_workerAgent;
-    Member<InspectedFrames> m_inspectedFrames;
+  void emitMetadataEvents();
+  void innerDisable();
+  String sessionId() const;
+  bool isStarted() const;
+
+  int m_layerTreeId;
+  Client* m_client;
+  Member<InspectorWorkerAgent> m_workerAgent;
+  Member<InspectedFrames> m_inspectedFrames;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InspectorTracingAgent_h
+#endif  // InspectorTracingAgent_h

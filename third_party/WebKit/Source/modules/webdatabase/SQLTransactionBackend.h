@@ -47,87 +47,99 @@ class SQLTransaction;
 class SQLTransactionBackend;
 class SQLValue;
 
-class SQLTransactionWrapper : public GarbageCollectedFinalized<SQLTransactionWrapper> {
-public:
-    virtual ~SQLTransactionWrapper() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual bool performPreflight(SQLTransactionBackend*) = 0;
-    virtual bool performPostflight(SQLTransactionBackend*) = 0;
-    virtual SQLErrorData* sqlError() const = 0;
-    virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) = 0;
+class SQLTransactionWrapper
+    : public GarbageCollectedFinalized<SQLTransactionWrapper> {
+ public:
+  virtual ~SQLTransactionWrapper() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual bool performPreflight(SQLTransactionBackend*) = 0;
+  virtual bool performPostflight(SQLTransactionBackend*) = 0;
+  virtual SQLErrorData* sqlError() const = 0;
+  virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) = 0;
 };
 
-class SQLTransactionBackend final : public GarbageCollectedFinalized<SQLTransactionBackend>, public SQLTransactionStateMachine<SQLTransactionBackend> {
-public:
-    static SQLTransactionBackend* create(Database*, SQLTransaction*, SQLTransactionWrapper*, bool readOnly);
+class SQLTransactionBackend final
+    : public GarbageCollectedFinalized<SQLTransactionBackend>,
+      public SQLTransactionStateMachine<SQLTransactionBackend> {
+ public:
+  static SQLTransactionBackend* create(Database*,
+                                       SQLTransaction*,
+                                       SQLTransactionWrapper*,
+                                       bool readOnly);
 
-    ~SQLTransactionBackend() override;
-    DECLARE_TRACE();
+  ~SQLTransactionBackend() override;
+  DECLARE_TRACE();
 
-    void lockAcquired();
-    void performNextStep();
+  void lockAcquired();
+  void performNextStep();
 
-    Database* database() { return m_database.get(); }
-    bool isReadOnly() { return m_readOnly; }
-    void notifyDatabaseThreadIsShuttingDown();
+  Database* database() { return m_database.get(); }
+  bool isReadOnly() { return m_readOnly; }
+  void notifyDatabaseThreadIsShuttingDown();
 
-    // APIs called from the frontend published:
-    void requestTransitToState(SQLTransactionState);
-    SQLErrorData* transactionError();
-    SQLStatement* currentStatement();
-    void setShouldRetryCurrentStatement(bool);
-    void executeSQL(SQLStatement*, const String& statement, const Vector<SQLValue>& arguments, int permissions);
+  // APIs called from the frontend published:
+  void requestTransitToState(SQLTransactionState);
+  SQLErrorData* transactionError();
+  SQLStatement* currentStatement();
+  void setShouldRetryCurrentStatement(bool);
+  void executeSQL(SQLStatement*,
+                  const String& statement,
+                  const Vector<SQLValue>& arguments,
+                  int permissions);
 
-private:
-    SQLTransactionBackend(Database*, SQLTransaction*, SQLTransactionWrapper*, bool readOnly);
+ private:
+  SQLTransactionBackend(Database*,
+                        SQLTransaction*,
+                        SQLTransactionWrapper*,
+                        bool readOnly);
 
-    void doCleanup();
+  void doCleanup();
 
-    void enqueueStatementBackend(SQLStatementBackend*);
+  void enqueueStatementBackend(SQLStatementBackend*);
 
-    // State Machine functions:
-    StateFunction stateFunctionFor(SQLTransactionState) override;
-    void computeNextStateAndCleanupIfNeeded();
+  // State Machine functions:
+  StateFunction stateFunctionFor(SQLTransactionState) override;
+  void computeNextStateAndCleanupIfNeeded();
 
-    // State functions:
-    SQLTransactionState acquireLock();
-    SQLTransactionState openTransactionAndPreflight();
-    SQLTransactionState runStatements();
-    SQLTransactionState postflightAndCommit();
-    SQLTransactionState cleanupAndTerminate();
-    SQLTransactionState cleanupAfterTransactionErrorCallback();
+  // State functions:
+  SQLTransactionState acquireLock();
+  SQLTransactionState openTransactionAndPreflight();
+  SQLTransactionState runStatements();
+  SQLTransactionState postflightAndCommit();
+  SQLTransactionState cleanupAndTerminate();
+  SQLTransactionState cleanupAfterTransactionErrorCallback();
 
-    SQLTransactionState unreachableState();
-    SQLTransactionState sendToFrontendState();
+  SQLTransactionState unreachableState();
+  SQLTransactionState sendToFrontendState();
 
-    SQLTransactionState nextStateForCurrentStatementError();
-    SQLTransactionState nextStateForTransactionError();
-    SQLTransactionState runCurrentStatementAndGetNextState();
+  SQLTransactionState nextStateForCurrentStatementError();
+  SQLTransactionState nextStateForTransactionError();
+  SQLTransactionState runCurrentStatementAndGetNextState();
 
-    void getNextStatement();
+  void getNextStatement();
 
-    CrossThreadPersistent<SQLTransaction> m_frontend;
-    CrossThreadPersistent<SQLStatementBackend> m_currentStatementBackend;
+  CrossThreadPersistent<SQLTransaction> m_frontend;
+  CrossThreadPersistent<SQLStatementBackend> m_currentStatementBackend;
 
-    Member<Database> m_database;
-    Member<SQLTransactionWrapper> m_wrapper;
-    std::unique_ptr<SQLErrorData> m_transactionError;
+  Member<Database> m_database;
+  Member<SQLTransactionWrapper> m_wrapper;
+  std::unique_ptr<SQLErrorData> m_transactionError;
 
-    bool m_hasCallback;
-    bool m_hasSuccessCallback;
-    bool m_hasErrorCallback;
-    bool m_shouldRetryCurrentStatement;
-    bool m_modifiedDatabase;
-    bool m_lockAcquired;
-    bool m_readOnly;
-    bool m_hasVersionMismatch;
+  bool m_hasCallback;
+  bool m_hasSuccessCallback;
+  bool m_hasErrorCallback;
+  bool m_shouldRetryCurrentStatement;
+  bool m_modifiedDatabase;
+  bool m_lockAcquired;
+  bool m_readOnly;
+  bool m_hasVersionMismatch;
 
-    Mutex m_statementMutex;
-    Deque<CrossThreadPersistent<SQLStatementBackend>> m_statementQueue;
+  Mutex m_statementMutex;
+  Deque<CrossThreadPersistent<SQLStatementBackend>> m_statementQueue;
 
-    std::unique_ptr<SQLiteTransaction> m_sqliteTransaction;
+  std::unique_ptr<SQLiteTransaction> m_sqliteTransaction;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLTransactionBackend_h
+#endif  // SQLTransactionBackend_h

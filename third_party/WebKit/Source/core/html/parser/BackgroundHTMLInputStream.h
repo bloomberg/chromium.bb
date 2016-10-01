@@ -36,50 +36,63 @@ namespace blink {
 typedef size_t HTMLInputCheckpoint;
 
 class BackgroundHTMLInputStream {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(BackgroundHTMLInputStream);
-public:
-    BackgroundHTMLInputStream();
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(BackgroundHTMLInputStream);
 
-    void append(const String&);
-    void close();
+ public:
+  BackgroundHTMLInputStream();
 
-    SegmentedString& current() { return m_current; }
+  void append(const String&);
+  void close();
 
-    // An HTMLInputCheckpoint is valid until the next call to rewindTo, at which
-    // point all outstanding checkpoints are invalidated.
-    HTMLInputCheckpoint createCheckpoint(size_t tokensExtractedSincePreviousCheckpoint);
-    void rewindTo(HTMLInputCheckpoint, const String& unparsedInput);
-    void invalidateCheckpointsBefore(HTMLInputCheckpoint);
+  SegmentedString& current() { return m_current; }
 
-    size_t totalCheckpointTokenCount() const { return m_totalCheckpointTokenCount; }
+  // An HTMLInputCheckpoint is valid until the next call to rewindTo, at which
+  // point all outstanding checkpoints are invalidated.
+  HTMLInputCheckpoint createCheckpoint(
+      size_t tokensExtractedSincePreviousCheckpoint);
+  void rewindTo(HTMLInputCheckpoint, const String& unparsedInput);
+  void invalidateCheckpointsBefore(HTMLInputCheckpoint);
 
-private:
-    struct Checkpoint {
-        Checkpoint(const SegmentedString& i, size_t n, size_t t) : input(i), numberOfSegmentsAlreadyAppended(n), tokensExtractedSincePreviousCheckpoint(t) { }
+  size_t totalCheckpointTokenCount() const {
+    return m_totalCheckpointTokenCount;
+  }
 
-        SegmentedString input;
-        size_t numberOfSegmentsAlreadyAppended;
-        size_t tokensExtractedSincePreviousCheckpoint;
+ private:
+  struct Checkpoint {
+    Checkpoint(const SegmentedString& i, size_t n, size_t t)
+        : input(i),
+          numberOfSegmentsAlreadyAppended(n),
+          tokensExtractedSincePreviousCheckpoint(t) {}
+
+    SegmentedString input;
+    size_t numberOfSegmentsAlreadyAppended;
+    size_t tokensExtractedSincePreviousCheckpoint;
 
 #if ENABLE(ASSERT)
-        bool isNull() const { return input.isEmpty() && !numberOfSegmentsAlreadyAppended; }
+    bool isNull() const {
+      return input.isEmpty() && !numberOfSegmentsAlreadyAppended;
+    }
 #endif
-        void clear() { input.clear(); numberOfSegmentsAlreadyAppended = 0; tokensExtractedSincePreviousCheckpoint = 0;}
-    };
+    void clear() {
+      input.clear();
+      numberOfSegmentsAlreadyAppended = 0;
+      tokensExtractedSincePreviousCheckpoint = 0;
+    }
+  };
 
-    SegmentedString m_current;
-    Vector<String> m_segments;
-    Vector<Checkpoint> m_checkpoints;
+  SegmentedString m_current;
+  Vector<String> m_segments;
+  Vector<Checkpoint> m_checkpoints;
 
-    // Note: These indicies may === vector.size(), in which case there are no valid checkpoints/segments at this time.
-    size_t m_firstValidCheckpointIndex;
-    size_t m_firstValidSegmentIndex;
-    size_t m_totalCheckpointTokenCount;
+  // Note: These indicies may === vector.size(), in which case there are no valid checkpoints/segments at this time.
+  size_t m_firstValidCheckpointIndex;
+  size_t m_firstValidSegmentIndex;
+  size_t m_totalCheckpointTokenCount;
 
-    void updateTotalCheckpointTokenCount();
+  void updateTotalCheckpointTokenCount();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -13,43 +13,43 @@
 
 namespace blink {
 
-CSSTransformComponent* CSSTransformComponent::fromCSSValue(const CSSValue& value)
-{
-    if (!value.isFunctionValue())
-        return nullptr;
+CSSTransformComponent* CSSTransformComponent::fromCSSValue(
+    const CSSValue& value) {
+  if (!value.isFunctionValue())
+    return nullptr;
 
-    const CSSFunctionValue& functionValue = toCSSFunctionValue(value);
-    switch (functionValue.functionType()) {
+  const CSSFunctionValue& functionValue = toCSSFunctionValue(value);
+  switch (functionValue.functionType()) {
     case CSSValueMatrix:
     case CSSValueMatrix3d:
-        return CSSMatrixTransformComponent::fromCSSValue(functionValue);
+      return CSSMatrixTransformComponent::fromCSSValue(functionValue);
     case CSSValuePerspective:
-        return CSSPerspective::fromCSSValue(functionValue);
+      return CSSPerspective::fromCSSValue(functionValue);
     case CSSValueRotate:
     case CSSValueRotateX:
     case CSSValueRotateY:
     case CSSValueRotateZ:
     case CSSValueRotate3d:
-        return CSSRotation::fromCSSValue(functionValue);
+      return CSSRotation::fromCSSValue(functionValue);
     case CSSValueScale:
     case CSSValueScaleX:
     case CSSValueScaleY:
     case CSSValueScaleZ:
     case CSSValueScale3d:
-        return CSSScale::fromCSSValue(functionValue);
+      return CSSScale::fromCSSValue(functionValue);
     case CSSValueSkew:
     case CSSValueSkewX:
     case CSSValueSkewY:
-        return CSSSkew::fromCSSValue(functionValue);
+      return CSSSkew::fromCSSValue(functionValue);
     case CSSValueTranslate:
     case CSSValueTranslateX:
     case CSSValueTranslateY:
     case CSSValueTranslateZ:
     case CSSValueTranslate3d:
-        return CSSTranslation::fromCSSValue(functionValue);
+      return CSSTranslation::fromCSSValue(functionValue);
     default:
-        return nullptr;
-    }
+      return nullptr;
+  }
 }
 
-} // namespace blink
+}  // namespace blink

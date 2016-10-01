@@ -36,15 +36,16 @@
 
 namespace blink {
 
-WebPepperSocket* WebPepperSocket::create(const WebDocument& document, WebPepperSocketClient* client)
-{
-    if (!client)
-        return 0;
+WebPepperSocket* WebPepperSocket::create(const WebDocument& document,
+                                         WebPepperSocketClient* client) {
+  if (!client)
+    return 0;
 
-    std::unique_ptr<WebPepperSocketImpl> websocket = wrapUnique(new WebPepperSocketImpl(document, client));
-    if (websocket && websocket->isNull())
-        return 0;
-    return websocket.release();
+  std::unique_ptr<WebPepperSocketImpl> websocket =
+      wrapUnique(new WebPepperSocketImpl(document, client));
+  if (websocket && websocket->isNull())
+    return 0;
+  return websocket.release();
 }
 
-} // namespace blink
+}  // namespace blink

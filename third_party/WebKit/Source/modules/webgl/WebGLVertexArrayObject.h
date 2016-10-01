@@ -10,14 +10,15 @@
 namespace blink {
 
 class WebGLVertexArrayObject final : public WebGLVertexArrayObjectBase {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WebGLVertexArrayObject* create(WebGLRenderingContextBase*, VaoType);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    explicit WebGLVertexArrayObject(WebGLRenderingContextBase*, VaoType);
+ public:
+  static WebGLVertexArrayObject* create(WebGLRenderingContextBase*, VaoType);
+
+ private:
+  explicit WebGLVertexArrayObject(WebGLRenderingContextBase*, VaoType);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLVertexArrayObject_h
+#endif  // WebGLVertexArrayObject_h

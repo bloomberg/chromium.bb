@@ -32,36 +32,38 @@
 
 namespace blink {
 
-class PositionError final : public GarbageCollectedFinalized<PositionError>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum ErrorCode {
-        kPermissionDenied = 1,
-        kPositionUnavailable = 2,
-        kTimeout = 3
-    };
+class PositionError final : public GarbageCollectedFinalized<PositionError>,
+                            public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static PositionError* create(ErrorCode code, const String& message) { return new PositionError(code, message); }
-    DEFINE_INLINE_TRACE() { }
+ public:
+  enum ErrorCode {
+    kPermissionDenied = 1,
+    kPositionUnavailable = 2,
+    kTimeout = 3
+  };
 
-    ErrorCode code() const { return m_code; }
-    const String& message() const { return m_message; }
-    void setIsFatal(bool isFatal) { m_isFatal = isFatal; }
-    bool isFatal() const { return m_isFatal; }
+  static PositionError* create(ErrorCode code, const String& message) {
+    return new PositionError(code, message);
+  }
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    PositionError(ErrorCode code, const String& message)
-        : m_code(code)
-        , m_message(message)
-        , m_isFatal(false) { }
+  ErrorCode code() const { return m_code; }
+  const String& message() const { return m_message; }
+  void setIsFatal(bool isFatal) { m_isFatal = isFatal; }
+  bool isFatal() const { return m_isFatal; }
 
-    ErrorCode m_code;
-    String m_message;
-    // Whether the error is fatal, such that no request can ever obtain a good
-    // position fix in the future.
-    bool m_isFatal;
+ private:
+  PositionError(ErrorCode code, const String& message)
+      : m_code(code), m_message(message), m_isFatal(false) {}
+
+  ErrorCode m_code;
+  String m_message;
+  // Whether the error is fatal, such that no request can ever obtain a good
+  // position fix in the future.
+  bool m_isFatal;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PositionError_h
+#endif  // PositionError_h

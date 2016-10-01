@@ -40,36 +40,41 @@ class WebString;
 struct WebPoint;
 
 class WebDevToolsAgent {
-public:
-    virtual ~WebDevToolsAgent() {}
+ public:
+  virtual ~WebDevToolsAgent() {}
 
-    virtual void attach(const WebString& hostId, int sessionId) = 0;
-    virtual void reattach(const WebString& hostId, int sessionId, const WebString& savedState) = 0;
-    virtual void detach() = 0;
+  virtual void attach(const WebString& hostId, int sessionId) = 0;
+  virtual void reattach(const WebString& hostId,
+                        int sessionId,
+                        const WebString& savedState) = 0;
+  virtual void detach() = 0;
 
-    virtual void continueProgram() = 0;
+  virtual void continueProgram() = 0;
 
-    virtual void dispatchOnInspectorBackend(int sessionId, int callId, const WebString& method, const WebString& message) = 0;
+  virtual void dispatchOnInspectorBackend(int sessionId,
+                                          int callId,
+                                          const WebString& method,
+                                          const WebString& message) = 0;
 
-    virtual void inspectElementAt(int sessionId, const WebPoint&) = 0;
-    virtual void failedToRequestDevTools() = 0;
+  virtual void inspectElementAt(int sessionId, const WebPoint&) = 0;
+  virtual void failedToRequestDevTools() = 0;
 
-    // Exposed for TestRunner.
-    virtual WebString evaluateInWebInspectorOverlay(const WebString& script) = 0;
+  // Exposed for TestRunner.
+  virtual WebString evaluateInWebInspectorOverlay(const WebString& script) = 0;
 
-    class MessageDescriptor {
-    public:
-        virtual ~MessageDescriptor() { }
-        virtual WebDevToolsAgent* agent() = 0;
-        virtual WebString message() = 0;
-        virtual WebString method() = 0;
-    };
-    // Asynchronously request debugger to pause immediately and run the command.
-    BLINK_EXPORT static void interruptAndDispatch(int sessionId, MessageDescriptor*);
-    BLINK_EXPORT static bool shouldInterruptForMethod(const WebString&);
-
+  class MessageDescriptor {
+   public:
+    virtual ~MessageDescriptor() {}
+    virtual WebDevToolsAgent* agent() = 0;
+    virtual WebString message() = 0;
+    virtual WebString method() = 0;
+  };
+  // Asynchronously request debugger to pause immediately and run the command.
+  BLINK_EXPORT static void interruptAndDispatch(int sessionId,
+                                                MessageDescriptor*);
+  BLINK_EXPORT static bool shouldInterruptForMethod(const WebString&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

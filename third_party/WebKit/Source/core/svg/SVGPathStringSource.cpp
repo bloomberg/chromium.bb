@@ -26,233 +26,229 @@
 namespace blink {
 
 SVGPathStringSource::SVGPathStringSource(const String& string)
-    : m_is8BitSource(string.is8Bit())
-    , m_previousCommand(PathSegUnknown)
-    , m_string(string)
-{
-    ASSERT(!string.isNull());
+    : m_is8BitSource(string.is8Bit()),
+      m_previousCommand(PathSegUnknown),
+      m_string(string) {
+  ASSERT(!string.isNull());
 
-    if (m_is8BitSource) {
-        m_current.m_character8 = string.characters8();
-        m_end.m_character8 = m_current.m_character8 + string.length();
-    } else {
-        m_current.m_character16 = string.characters16();
-        m_end.m_character16 = m_current.m_character16 + string.length();
-    }
-    eatWhitespace();
+  if (m_is8BitSource) {
+    m_current.m_character8 = string.characters8();
+    m_end.m_character8 = m_current.m_character8 + string.length();
+  } else {
+    m_current.m_character16 = string.characters16();
+    m_end.m_character16 = m_current.m_character16 + string.length();
+  }
+  eatWhitespace();
 }
 
-void SVGPathStringSource::eatWhitespace()
-{
-    if (m_is8BitSource)
-        skipOptionalSVGSpaces(m_current.m_character8, m_end.m_character8);
-    else
-        skipOptionalSVGSpaces(m_current.m_character16, m_end.m_character16);
+void SVGPathStringSource::eatWhitespace() {
+  if (m_is8BitSource)
+    skipOptionalSVGSpaces(m_current.m_character8, m_end.m_character8);
+  else
+    skipOptionalSVGSpaces(m_current.m_character16, m_end.m_character16);
 }
 
-static SVGPathSegType mapLetterToSegmentType(unsigned lookahead)
-{
-    switch (lookahead) {
+static SVGPathSegType mapLetterToSegmentType(unsigned lookahead) {
+  switch (lookahead) {
     case 'Z':
     case 'z':
-        return PathSegClosePath;
+      return PathSegClosePath;
     case 'M':
-        return PathSegMoveToAbs;
+      return PathSegMoveToAbs;
     case 'm':
-        return PathSegMoveToRel;
+      return PathSegMoveToRel;
     case 'L':
-        return PathSegLineToAbs;
+      return PathSegLineToAbs;
     case 'l':
-        return PathSegLineToRel;
+      return PathSegLineToRel;
     case 'C':
-        return PathSegCurveToCubicAbs;
+      return PathSegCurveToCubicAbs;
     case 'c':
-        return PathSegCurveToCubicRel;
+      return PathSegCurveToCubicRel;
     case 'Q':
-        return PathSegCurveToQuadraticAbs;
+      return PathSegCurveToQuadraticAbs;
     case 'q':
-        return PathSegCurveToQuadraticRel;
+      return PathSegCurveToQuadraticRel;
     case 'A':
-        return PathSegArcAbs;
+      return PathSegArcAbs;
     case 'a':
-        return PathSegArcRel;
+      return PathSegArcRel;
     case 'H':
-        return PathSegLineToHorizontalAbs;
+      return PathSegLineToHorizontalAbs;
     case 'h':
-        return PathSegLineToHorizontalRel;
+      return PathSegLineToHorizontalRel;
     case 'V':
-        return PathSegLineToVerticalAbs;
+      return PathSegLineToVerticalAbs;
     case 'v':
-        return PathSegLineToVerticalRel;
+      return PathSegLineToVerticalRel;
     case 'S':
-        return PathSegCurveToCubicSmoothAbs;
+      return PathSegCurveToCubicSmoothAbs;
     case 's':
-        return PathSegCurveToCubicSmoothRel;
+      return PathSegCurveToCubicSmoothRel;
     case 'T':
-        return PathSegCurveToQuadraticSmoothAbs;
+      return PathSegCurveToQuadraticSmoothAbs;
     case 't':
-        return PathSegCurveToQuadraticSmoothRel;
+      return PathSegCurveToQuadraticSmoothRel;
     default:
-        return PathSegUnknown;
-    }
+      return PathSegUnknown;
+  }
 }
 
-static bool isNumberStart(unsigned lookahead)
-{
-    return (lookahead >= '0' && lookahead <= '9')
-        || lookahead == '+'
-        || lookahead == '-'
-        || lookahead == '.';
+static bool isNumberStart(unsigned lookahead) {
+  return (lookahead >= '0' && lookahead <= '9') || lookahead == '+' ||
+         lookahead == '-' || lookahead == '.';
 }
 
-static bool maybeImplicitCommand(unsigned lookahead, SVGPathSegType previousCommand, SVGPathSegType& nextCommand)
-{
-    // Check if the current lookahead may start a number - in which case it
-    // could be the start of an implicit command. The 'close' command does not
-    // have any parameters though and hence can't have an implicit
-    // 'continuation'.
-    if (!isNumberStart(lookahead) || previousCommand == PathSegClosePath)
-        return false;
-    // Implicit continuations of moveto command translate to linetos.
-    if (previousCommand == PathSegMoveToAbs) {
-        nextCommand = PathSegLineToAbs;
-        return true;
-    }
-    if (previousCommand == PathSegMoveToRel) {
-        nextCommand = PathSegLineToRel;
-        return true;
-    }
-    nextCommand = previousCommand;
+static bool maybeImplicitCommand(unsigned lookahead,
+                                 SVGPathSegType previousCommand,
+                                 SVGPathSegType& nextCommand) {
+  // Check if the current lookahead may start a number - in which case it
+  // could be the start of an implicit command. The 'close' command does not
+  // have any parameters though and hence can't have an implicit
+  // 'continuation'.
+  if (!isNumberStart(lookahead) || previousCommand == PathSegClosePath)
+    return false;
+  // Implicit continuations of moveto command translate to linetos.
+  if (previousCommand == PathSegMoveToAbs) {
+    nextCommand = PathSegLineToAbs;
     return true;
+  }
+  if (previousCommand == PathSegMoveToRel) {
+    nextCommand = PathSegLineToRel;
+    return true;
+  }
+  nextCommand = previousCommand;
+  return true;
 }
 
-void SVGPathStringSource::setErrorMark(SVGParseStatus status)
-{
-    if (m_error.status() != SVGParseStatus::NoError)
-        return;
-    size_t locus = m_is8BitSource
-        ? m_current.m_character8 - m_string.characters8()
-        : m_current.m_character16 - m_string.characters16();
-    m_error = SVGParsingError(status, locus);
+void SVGPathStringSource::setErrorMark(SVGParseStatus status) {
+  if (m_error.status() != SVGParseStatus::NoError)
+    return;
+  size_t locus = m_is8BitSource
+                     ? m_current.m_character8 - m_string.characters8()
+                     : m_current.m_character16 - m_string.characters16();
+  m_error = SVGParsingError(status, locus);
 }
 
-float SVGPathStringSource::parseNumberWithError()
-{
-    float numberValue = 0;
-    bool error;
-    if (m_is8BitSource)
-        error = !parseNumber(m_current.m_character8, m_end.m_character8, numberValue);
-    else
-        error = !parseNumber(m_current.m_character16, m_end.m_character16, numberValue);
-    if (UNLIKELY(error))
-        setErrorMark(SVGParseStatus::ExpectedNumber);
-    return numberValue;
+float SVGPathStringSource::parseNumberWithError() {
+  float numberValue = 0;
+  bool error;
+  if (m_is8BitSource)
+    error =
+        !parseNumber(m_current.m_character8, m_end.m_character8, numberValue);
+  else
+    error =
+        !parseNumber(m_current.m_character16, m_end.m_character16, numberValue);
+  if (UNLIKELY(error))
+    setErrorMark(SVGParseStatus::ExpectedNumber);
+  return numberValue;
 }
 
-bool SVGPathStringSource::parseArcFlagWithError()
-{
-    bool flagValue = false;
-    bool error;
-    if (m_is8BitSource)
-        error = !parseArcFlag(m_current.m_character8, m_end.m_character8, flagValue);
-    else
-        error = !parseArcFlag(m_current.m_character16, m_end.m_character16, flagValue);
-    if (UNLIKELY(error))
-        setErrorMark(SVGParseStatus::ExpectedArcFlag);
-    return flagValue;
+bool SVGPathStringSource::parseArcFlagWithError() {
+  bool flagValue = false;
+  bool error;
+  if (m_is8BitSource)
+    error =
+        !parseArcFlag(m_current.m_character8, m_end.m_character8, flagValue);
+  else
+    error =
+        !parseArcFlag(m_current.m_character16, m_end.m_character16, flagValue);
+  if (UNLIKELY(error))
+    setErrorMark(SVGParseStatus::ExpectedArcFlag);
+  return flagValue;
 }
 
-PathSegmentData SVGPathStringSource::parseSegment()
-{
-    ASSERT(hasMoreData());
-    PathSegmentData segment;
-    unsigned lookahead = m_is8BitSource ? *m_current.m_character8 : *m_current.m_character16;
-    SVGPathSegType command = mapLetterToSegmentType(lookahead);
-    if (UNLIKELY(m_previousCommand == PathSegUnknown)) {
-        // First command has to be a moveto.
-        if (command != PathSegMoveToRel && command != PathSegMoveToAbs) {
-            setErrorMark(SVGParseStatus::ExpectedMoveToCommand);
-            return segment;
-        }
-        // Consume command letter.
-        if (m_is8BitSource)
-            m_current.m_character8++;
-        else
-            m_current.m_character16++;
-    } else if (command == PathSegUnknown) {
-        // Possibly an implicit command.
-        ASSERT(m_previousCommand != PathSegUnknown);
-        if (!maybeImplicitCommand(lookahead, m_previousCommand, command)) {
-            setErrorMark(SVGParseStatus::ExpectedPathCommand);
-            return segment;
-        }
-    } else {
-        // Valid explicit command.
-        if (m_is8BitSource)
-            m_current.m_character8++;
-        else
-            m_current.m_character16++;
+PathSegmentData SVGPathStringSource::parseSegment() {
+  ASSERT(hasMoreData());
+  PathSegmentData segment;
+  unsigned lookahead =
+      m_is8BitSource ? *m_current.m_character8 : *m_current.m_character16;
+  SVGPathSegType command = mapLetterToSegmentType(lookahead);
+  if (UNLIKELY(m_previousCommand == PathSegUnknown)) {
+    // First command has to be a moveto.
+    if (command != PathSegMoveToRel && command != PathSegMoveToAbs) {
+      setErrorMark(SVGParseStatus::ExpectedMoveToCommand);
+      return segment;
     }
+    // Consume command letter.
+    if (m_is8BitSource)
+      m_current.m_character8++;
+    else
+      m_current.m_character16++;
+  } else if (command == PathSegUnknown) {
+    // Possibly an implicit command.
+    ASSERT(m_previousCommand != PathSegUnknown);
+    if (!maybeImplicitCommand(lookahead, m_previousCommand, command)) {
+      setErrorMark(SVGParseStatus::ExpectedPathCommand);
+      return segment;
+    }
+  } else {
+    // Valid explicit command.
+    if (m_is8BitSource)
+      m_current.m_character8++;
+    else
+      m_current.m_character16++;
+  }
 
-    segment.command = m_previousCommand = command;
+  segment.command = m_previousCommand = command;
 
-    ASSERT(m_error.status() == SVGParseStatus::NoError);
+  ASSERT(m_error.status() == SVGParseStatus::NoError);
 
-    switch (segment.command) {
+  switch (segment.command) {
     case PathSegCurveToCubicRel:
     case PathSegCurveToCubicAbs:
-        segment.point1.setX(parseNumberWithError());
-        segment.point1.setY(parseNumberWithError());
-        /* fall through */
+      segment.point1.setX(parseNumberWithError());
+      segment.point1.setY(parseNumberWithError());
+    /* fall through */
     case PathSegCurveToCubicSmoothRel:
     case PathSegCurveToCubicSmoothAbs:
-        segment.point2.setX(parseNumberWithError());
-        segment.point2.setY(parseNumberWithError());
-        /* fall through */
+      segment.point2.setX(parseNumberWithError());
+      segment.point2.setY(parseNumberWithError());
+    /* fall through */
     case PathSegMoveToRel:
     case PathSegMoveToAbs:
     case PathSegLineToRel:
     case PathSegLineToAbs:
     case PathSegCurveToQuadraticSmoothRel:
     case PathSegCurveToQuadraticSmoothAbs:
-        segment.targetPoint.setX(parseNumberWithError());
-        segment.targetPoint.setY(parseNumberWithError());
-        break;
+      segment.targetPoint.setX(parseNumberWithError());
+      segment.targetPoint.setY(parseNumberWithError());
+      break;
     case PathSegLineToHorizontalRel:
     case PathSegLineToHorizontalAbs:
-        segment.targetPoint.setX(parseNumberWithError());
-        break;
+      segment.targetPoint.setX(parseNumberWithError());
+      break;
     case PathSegLineToVerticalRel:
     case PathSegLineToVerticalAbs:
-        segment.targetPoint.setY(parseNumberWithError());
-        break;
+      segment.targetPoint.setY(parseNumberWithError());
+      break;
     case PathSegClosePath:
-        eatWhitespace();
-        break;
+      eatWhitespace();
+      break;
     case PathSegCurveToQuadraticRel:
     case PathSegCurveToQuadraticAbs:
-        segment.point1.setX(parseNumberWithError());
-        segment.point1.setY(parseNumberWithError());
-        segment.targetPoint.setX(parseNumberWithError());
-        segment.targetPoint.setY(parseNumberWithError());
-        break;
+      segment.point1.setX(parseNumberWithError());
+      segment.point1.setY(parseNumberWithError());
+      segment.targetPoint.setX(parseNumberWithError());
+      segment.targetPoint.setY(parseNumberWithError());
+      break;
     case PathSegArcRel:
     case PathSegArcAbs:
-        segment.arcRadii().setX(parseNumberWithError());
-        segment.arcRadii().setY(parseNumberWithError());
-        segment.setArcAngle(parseNumberWithError());
-        segment.arcLarge = parseArcFlagWithError();
-        segment.arcSweep = parseArcFlagWithError();
-        segment.targetPoint.setX(parseNumberWithError());
-        segment.targetPoint.setY(parseNumberWithError());
-        break;
+      segment.arcRadii().setX(parseNumberWithError());
+      segment.arcRadii().setY(parseNumberWithError());
+      segment.setArcAngle(parseNumberWithError());
+      segment.arcLarge = parseArcFlagWithError();
+      segment.arcSweep = parseArcFlagWithError();
+      segment.targetPoint.setX(parseNumberWithError());
+      segment.targetPoint.setY(parseNumberWithError());
+      break;
     case PathSegUnknown:
-        ASSERT_NOT_REACHED();
-    }
+      ASSERT_NOT_REACHED();
+  }
 
-    if (UNLIKELY(m_error.status() != SVGParseStatus::NoError))
-        segment.command = PathSegUnknown;
-    return segment;
+  if (UNLIKELY(m_error.status() != SVGParseStatus::NoError))
+    segment.command = PathSegUnknown;
+  return segment;
 }
 
-} // namespace blink
+}  // namespace blink

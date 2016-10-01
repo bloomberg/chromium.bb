@@ -39,52 +39,67 @@ namespace blink {
 // character at a time, or faster, as needed. Useful for searching.
 template <typename Strategy>
 class CORE_EXPORT CharacterIteratorAlgorithm {
-    STACK_ALLOCATED();
-public:
-    CharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-    explicit CharacterIteratorAlgorithm(const EphemeralRangeTemplate<Strategy>&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+  STACK_ALLOCATED();
 
-    void advance(int numCharacters);
+ public:
+  CharacterIteratorAlgorithm(
+      const PositionTemplate<Strategy>& start,
+      const PositionTemplate<Strategy>& end,
+      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+  explicit CharacterIteratorAlgorithm(
+      const EphemeralRangeTemplate<Strategy>&,
+      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
-    bool atBreak() const { return m_atBreak; }
-    bool atEnd() const { return m_textIterator.atEnd(); }
+  void advance(int numCharacters);
 
-    int length() const { return m_textIterator.length() - m_runOffset; }
-    UChar characterAt(unsigned index) const { return m_textIterator.characterAt(m_runOffset + index); }
+  bool atBreak() const { return m_atBreak; }
+  bool atEnd() const { return m_textIterator.atEnd(); }
 
-    void copyTextTo(ForwardsTextBuffer* output);
+  int length() const { return m_textIterator.length() - m_runOffset; }
+  UChar characterAt(unsigned index) const {
+    return m_textIterator.characterAt(m_runOffset + index);
+  }
 
-    int characterOffset() const { return m_offset; }
-    EphemeralRangeTemplate<Strategy> range() const;
+  void copyTextTo(ForwardsTextBuffer* output);
 
-    bool isInTextSecurityMode() const { return m_textIterator.isInTextSecurityMode(); }
+  int characterOffset() const { return m_offset; }
+  EphemeralRangeTemplate<Strategy> range() const;
 
-    Document* ownerDocument() const;
-    Node* currentContainer() const;
-    int startOffset() const;
-    int endOffset() const;
-    PositionTemplate<Strategy> startPosition() const;
-    PositionTemplate<Strategy> endPosition() const;
+  bool isInTextSecurityMode() const {
+    return m_textIterator.isInTextSecurityMode();
+  }
 
-    EphemeralRangeTemplate<Strategy> calculateCharacterSubrange(int offset, int length);
+  Document* ownerDocument() const;
+  Node* currentContainer() const;
+  int startOffset() const;
+  int endOffset() const;
+  PositionTemplate<Strategy> startPosition() const;
+  PositionTemplate<Strategy> endPosition() const;
 
-private:
-    void initialize();
+  EphemeralRangeTemplate<Strategy> calculateCharacterSubrange(int offset,
+                                                              int length);
 
-    int m_offset;
-    int m_runOffset;
-    bool m_atBreak;
+ private:
+  void initialize();
 
-    TextIteratorAlgorithm<Strategy> m_textIterator;
+  int m_offset;
+  int m_runOffset;
+  bool m_atBreak;
+
+  TextIteratorAlgorithm<Strategy> m_textIterator;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    CharacterIteratorAlgorithm<EditingStrategy>;
 using CharacterIterator = CharacterIteratorAlgorithm<EditingStrategy>;
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    CharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
-CORE_EXPORT EphemeralRange calculateCharacterSubrange(const EphemeralRange&, int characterOffset, int characterCount);
+CORE_EXPORT EphemeralRange calculateCharacterSubrange(const EphemeralRange&,
+                                                      int characterOffset,
+                                                      int characterCount);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CharacterIterator_h
+#endif  // CharacterIterator_h

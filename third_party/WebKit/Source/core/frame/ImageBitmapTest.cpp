@@ -30,7 +30,7 @@
 
 #include "core/frame/ImageBitmap.h"
 
-#include "SkPixelRef.h" // FIXME: qualify this skia header file.
+#include "SkPixelRef.h"  // FIXME: qualify this skia header file.
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
@@ -49,98 +49,112 @@
 namespace blink {
 
 class ImageBitmapTest : public ::testing::Test {
-protected:
-    virtual void SetUp()
-    {
-        sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
-        surface->getCanvas()->clear(0xFFFFFFFF);
-        m_image = surface->makeImageSnapshot();
+ protected:
+  virtual void SetUp() {
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
+    surface->getCanvas()->clear(0xFFFFFFFF);
+    m_image = surface->makeImageSnapshot();
 
-        sk_sp<SkSurface> surface2 = SkSurface::MakeRasterN32Premul(5, 5);
-        surface2->getCanvas()->clear(0xAAAAAAAA);
-        m_image2 = surface2->makeImageSnapshot();
+    sk_sp<SkSurface> surface2 = SkSurface::MakeRasterN32Premul(5, 5);
+    surface2->getCanvas()->clear(0xAAAAAAAA);
+    m_image2 = surface2->makeImageSnapshot();
 
-        // Save the global memory cache to restore it upon teardown.
-        m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
-    }
-    virtual void TearDown()
-    {
-        // Garbage collection is required prior to switching out the
-        // test's memory cache; image resources are released, evicting
-        // them from the cache.
-        ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    // Save the global memory cache to restore it upon teardown.
+    m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
+  }
+  virtual void TearDown() {
+    // Garbage collection is required prior to switching out the
+    // test's memory cache; image resources are released, evicting
+    // them from the cache.
+    ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack,
+                                           BlinkGC::GCWithSweep,
+                                           BlinkGC::ForcedGC);
 
-        replaceMemoryCacheForTesting(m_globalMemoryCache.release());
-    }
+    replaceMemoryCacheForTesting(m_globalMemoryCache.release());
+  }
 
-    sk_sp<SkImage> m_image, m_image2;
-    Persistent<MemoryCache> m_globalMemoryCache;
+  sk_sp<SkImage> m_image, m_image2;
+  Persistent<MemoryCache> m_globalMemoryCache;
 };
 
-TEST_F(ImageBitmapTest, ImageResourceConsistency)
-{
-    const ImageBitmapOptions defaultOptions;
-    HTMLImageElement* imageElement = HTMLImageElement::create(*Document::create());
-    ImageResource* image = ImageResource::create(StaticBitmapImage::create(m_image).get());
-    imageElement->setImageResource(image);
+TEST_F(ImageBitmapTest, ImageResourceConsistency) {
+  const ImageBitmapOptions defaultOptions;
+  HTMLImageElement* imageElement =
+      HTMLImageElement::create(*Document::create());
+  ImageResource* image =
+      ImageResource::create(StaticBitmapImage::create(m_image).get());
+  imageElement->setImageResource(image);
 
-    Optional<IntRect> cropRect = IntRect(0, 0, m_image->width(), m_image->height());
-    ImageBitmap* imageBitmapNoCrop = ImageBitmap::create(imageElement,
-        cropRect, &(imageElement->document()), defaultOptions);
-    cropRect = IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width() / 2, m_image->height() / 2);
-    ImageBitmap* imageBitmapInteriorCrop = ImageBitmap::create(imageElement,
-        cropRect, &(imageElement->document()), defaultOptions);
-    cropRect = IntRect(-m_image->width() / 2, -m_image->height() / 2, m_image->width(), m_image->height());
-    ImageBitmap* imageBitmapExteriorCrop = ImageBitmap::create(imageElement,
-        cropRect, &(imageElement->document()), defaultOptions);
-    cropRect = IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height());
-    ImageBitmap* imageBitmapOutsideCrop = ImageBitmap::create(imageElement,
-        cropRect, &(imageElement->document()), defaultOptions);
+  Optional<IntRect> cropRect =
+      IntRect(0, 0, m_image->width(), m_image->height());
+  ImageBitmap* imageBitmapNoCrop = ImageBitmap::create(
+      imageElement, cropRect, &(imageElement->document()), defaultOptions);
+  cropRect = IntRect(m_image->width() / 2, m_image->height() / 2,
+                     m_image->width() / 2, m_image->height() / 2);
+  ImageBitmap* imageBitmapInteriorCrop = ImageBitmap::create(
+      imageElement, cropRect, &(imageElement->document()), defaultOptions);
+  cropRect = IntRect(-m_image->width() / 2, -m_image->height() / 2,
+                     m_image->width(), m_image->height());
+  ImageBitmap* imageBitmapExteriorCrop = ImageBitmap::create(
+      imageElement, cropRect, &(imageElement->document()), defaultOptions);
+  cropRect = IntRect(-m_image->width(), -m_image->height(), m_image->width(),
+                     m_image->height());
+  ImageBitmap* imageBitmapOutsideCrop = ImageBitmap::create(
+      imageElement, cropRect, &(imageElement->document()), defaultOptions);
 
-    ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
-    ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
-    ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 
-    StaticBitmapImage* emptyImage = imageBitmapOutsideCrop->bitmapImage();
-    ASSERT_NE(emptyImage->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+  StaticBitmapImage* emptyImage = imageBitmapOutsideCrop->bitmapImage();
+  ASSERT_NE(emptyImage->imageForCurrentFrame(),
+            imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.
-TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
-{
-    HTMLImageElement* image = HTMLImageElement::create(*Document::create());
-    ImageResource* originalImageResource = ImageResource::create(
-        StaticBitmapImage::create(m_image).get());
-    image->setImageResource(originalImageResource);
+TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
+  HTMLImageElement* image = HTMLImageElement::create(*Document::create());
+  ImageResource* originalImageResource =
+      ImageResource::create(StaticBitmapImage::create(m_image).get());
+  image->setImageResource(originalImageResource);
 
-    const ImageBitmapOptions defaultOptions;
-    Optional<IntRect> cropRect = IntRect(0, 0, m_image->width(), m_image->height());
-    ImageBitmap* imageBitmap = ImageBitmap::create(image,
-        cropRect, &(image->document()), defaultOptions);
-    ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->getImage()->imageForCurrentFrame());
+  const ImageBitmapOptions defaultOptions;
+  Optional<IntRect> cropRect =
+      IntRect(0, 0, m_image->width(), m_image->height());
+  ImageBitmap* imageBitmap = ImageBitmap::create(
+      image, cropRect, &(image->document()), defaultOptions);
+  ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(),
+            originalImageResource->getImage()->imageForCurrentFrame());
 
-    ImageResource* newImageResource = ImageResource::create(
-        StaticBitmapImage::create(m_image2).get());
-    image->setImageResource(newImageResource);
+  ImageResource* newImageResource =
+      ImageResource::create(StaticBitmapImage::create(m_image2).get());
+  image->setImageResource(newImageResource);
 
-    // The ImageBitmap should contain the same data as the original cached image
-    {
-        ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->getImage()->imageForCurrentFrame());
-        SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
-        ASSERT_NE(image1, nullptr);
-        SkImage* image2 = originalImageResource->getImage()->imageForCurrentFrame().get();
-        ASSERT_NE(image2, nullptr);
-        ASSERT_EQ(image1, image2);
-    }
+  // The ImageBitmap should contain the same data as the original cached image
+  {
+    ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(),
+              originalImageResource->getImage()->imageForCurrentFrame());
+    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    ASSERT_NE(image1, nullptr);
+    SkImage* image2 =
+        originalImageResource->getImage()->imageForCurrentFrame().get();
+    ASSERT_NE(image2, nullptr);
+    ASSERT_EQ(image1, image2);
+  }
 
-    {
-        ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(), newImageResource->getImage()->imageForCurrentFrame());
-        SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
-        ASSERT_NE(image1, nullptr);
-        SkImage* image2 = newImageResource->getImage()->imageForCurrentFrame().get();
-        ASSERT_NE(image2, nullptr);
-        ASSERT_NE(image1, image2);
-    }
+  {
+    ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(),
+              newImageResource->getImage()->imageForCurrentFrame());
+    SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
+    ASSERT_NE(image1, nullptr);
+    SkImage* image2 =
+        newImageResource->getImage()->imageForCurrentFrame().get();
+    ASSERT_NE(image2, nullptr);
+    ASSERT_NE(image1, image2);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

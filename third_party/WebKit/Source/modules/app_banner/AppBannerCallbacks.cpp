@@ -7,13 +7,11 @@
 namespace blink {
 
 AppBannerCallbacks::AppBannerCallbacks(UserChoiceProperty* userChoice)
-    : m_userChoice(userChoice)
-{
+    : m_userChoice(userChoice) {}
+
+void AppBannerCallbacks::onSuccess(const WebAppBannerPromptResult& result) {
+  m_userChoice->resolve(
+      AppBannerPromptResult::create(result.platform, result.outcome));
 }
 
-void AppBannerCallbacks::onSuccess(const WebAppBannerPromptResult& result)
-{
-    m_userChoice->resolve(AppBannerPromptResult::create(result.platform, result.outcome));
-}
-
-} // namespace blink
+}  // namespace blink

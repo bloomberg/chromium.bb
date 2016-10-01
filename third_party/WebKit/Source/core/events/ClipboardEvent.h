@@ -30,28 +30,34 @@
 namespace blink {
 
 class ClipboardEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~ClipboardEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static ClipboardEvent* create(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* dataTransfer)
-    {
-        return new ClipboardEvent(type, canBubble, cancelable, dataTransfer);
-    }
+ public:
+  ~ClipboardEvent() override;
 
-    DataTransfer* clipboardData() const { return m_clipboardData.get(); }
+  static ClipboardEvent* create(const AtomicString& type,
+                                bool canBubble,
+                                bool cancelable,
+                                DataTransfer* dataTransfer) {
+    return new ClipboardEvent(type, canBubble, cancelable, dataTransfer);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DataTransfer* clipboardData() const { return m_clipboardData.get(); }
 
-private:
-    ClipboardEvent(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* clipboardData);
+  DECLARE_VIRTUAL_TRACE();
 
-    const AtomicString& interfaceName() const override;
-    bool isClipboardEvent() const override;
+ private:
+  ClipboardEvent(const AtomicString& type,
+                 bool canBubble,
+                 bool cancelable,
+                 DataTransfer* clipboardData);
 
-    Member<DataTransfer> m_clipboardData;
+  const AtomicString& interfaceName() const override;
+  bool isClipboardEvent() const override;
+
+  Member<DataTransfer> m_clipboardData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClipboardEvent_h
+#endif  // ClipboardEvent_h

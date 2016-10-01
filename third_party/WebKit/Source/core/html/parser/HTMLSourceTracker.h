@@ -35,28 +35,29 @@ namespace blink {
 class HTMLTokenizer;
 
 class HTMLSourceTracker {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(HTMLSourceTracker);
-public:
-    HTMLSourceTracker();
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(HTMLSourceTracker);
 
-    // FIXME: Once we move "end" into HTMLTokenizer, rename "start" to
-    // something that makes it obvious that this method can be called multiple
-    // times.
-    void start(SegmentedString&, HTMLTokenizer*, HTMLToken&);
-    void end(SegmentedString&, HTMLTokenizer*, HTMLToken&);
+ public:
+  HTMLSourceTracker();
 
-    String sourceForToken(const HTMLToken&);
+  // FIXME: Once we move "end" into HTMLTokenizer, rename "start" to
+  // something that makes it obvious that this method can be called multiple
+  // times.
+  void start(SegmentedString&, HTMLTokenizer*, HTMLToken&);
+  void end(SegmentedString&, HTMLTokenizer*, HTMLToken&);
 
-private:
-    SegmentedString m_previousSource;
-    SegmentedString m_currentSource;
+  String sourceForToken(const HTMLToken&);
 
-    String m_cachedSourceForToken;
+ private:
+  SegmentedString m_previousSource;
+  SegmentedString m_currentSource;
 
-    bool m_isStarted;
+  String m_cachedSourceForToken;
+
+  bool m_isStarted;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

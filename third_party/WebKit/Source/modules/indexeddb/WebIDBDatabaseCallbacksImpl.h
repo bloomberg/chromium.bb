@@ -37,23 +37,25 @@
 namespace blink {
 
 class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
-    USING_FAST_MALLOC(WebIDBDatabaseCallbacksImpl);
-public:
-    static std::unique_ptr<WebIDBDatabaseCallbacksImpl> create(IDBDatabaseCallbacks*);
+  USING_FAST_MALLOC(WebIDBDatabaseCallbacksImpl);
 
-    ~WebIDBDatabaseCallbacksImpl() override;
+ public:
+  static std::unique_ptr<WebIDBDatabaseCallbacksImpl> create(
+      IDBDatabaseCallbacks*);
 
-    void onForcedClose() override;
-    void onVersionChange(long long oldVersion, long long newVersion) override;
-    void onAbort(long long transactionId, const WebIDBDatabaseError&) override;
-    void onComplete(long long transactionId) override;
+  ~WebIDBDatabaseCallbacksImpl() override;
 
-private:
-    explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
+  void onForcedClose() override;
+  void onVersionChange(long long oldVersion, long long newVersion) override;
+  void onAbort(long long transactionId, const WebIDBDatabaseError&) override;
+  void onComplete(long long transactionId) override;
 
-    Persistent<IDBDatabaseCallbacks> m_callbacks;
+ private:
+  explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
+
+  Persistent<IDBDatabaseCallbacks> m_callbacks;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBDatabaseCallbacksImpl_h
+#endif  // WebIDBDatabaseCallbacksImpl_h

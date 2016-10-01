@@ -28,37 +28,40 @@
 namespace blink {
 
 enum MorphologyOperatorType {
-    FEMORPHOLOGY_OPERATOR_UNKNOWN = 0,
-    FEMORPHOLOGY_OPERATOR_ERODE = 1,
-    FEMORPHOLOGY_OPERATOR_DILATE = 2
+  FEMORPHOLOGY_OPERATOR_UNKNOWN = 0,
+  FEMORPHOLOGY_OPERATOR_ERODE = 1,
+  FEMORPHOLOGY_OPERATOR_DILATE = 2
 };
 
 class PLATFORM_EXPORT FEMorphology final : public FilterEffect {
-public:
-    static FEMorphology* create(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
-    MorphologyOperatorType morphologyOperator() const;
-    bool setMorphologyOperator(MorphologyOperatorType);
+ public:
+  static FEMorphology* create(Filter*,
+                              MorphologyOperatorType,
+                              float radiusX,
+                              float radiusY);
+  MorphologyOperatorType morphologyOperator() const;
+  bool setMorphologyOperator(MorphologyOperatorType);
 
-    float radiusX() const;
-    bool setRadiusX(float);
+  float radiusX() const;
+  bool setRadiusX(float);
 
-    float radiusY() const;
-    bool setRadiusY(float);
+  float radiusY() const;
+  bool setRadiusY(float);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
+ private:
+  FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
 
-    FloatRect mapEffect(const FloatRect&) const override;
+  FloatRect mapEffect(const FloatRect&) const override;
 
-    sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilter() override;
 
-    MorphologyOperatorType m_type;
-    float m_radiusX;
-    float m_radiusY;
+  MorphologyOperatorType m_type;
+  float m_radiusX;
+  float m_radiusY;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FEMorphology_h
+#endif  // FEMorphology_h

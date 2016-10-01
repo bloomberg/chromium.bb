@@ -13,37 +13,43 @@
 namespace blink {
 
 class NthIndexCacheTest : public ::testing::Test {
-protected:
-    void SetUp() override;
+ protected:
+  void SetUp() override;
 
-    Document& document() const { return m_dummyPageHolder->document(); }
-    void setHtmlInnerHTML(const char* htmlContent);
+  Document& document() const { return m_dummyPageHolder->document(); }
+  void setHtmlInnerHTML(const char* htmlContent);
 
-private:
-    std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+ private:
+  std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
-void NthIndexCacheTest::SetUp()
-{
-    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+void NthIndexCacheTest::SetUp() {
+  m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
 }
 
-TEST_F(NthIndexCacheTest, NthIndex)
-{
-    document().documentElement()->setInnerHTML("<body>"
-        "<span id=first></span><span></span><span></span><span></span><span></span>"
-        "<span></span><span></span><span></span><span></span><span></span>"
-        "Text does not count"
-        "<span id=nth-last-child></span>"
-        "<span id=nth-child></span>"
-        "<span></span><span></span><span></span><span></span><span></span>"
-        "<span></span><span></span><span></span><span></span><span id=last></span>"
-        "</body>", ASSERT_NO_EXCEPTION);
+TEST_F(NthIndexCacheTest, NthIndex) {
+  document().documentElement()->setInnerHTML(
+      "<body>"
+      "<span "
+      "id=first></span><span></span><span></span><span></span><span></span>"
+      "<span></span><span></span><span></span><span></span><span></span>"
+      "Text does not count"
+      "<span id=nth-last-child></span>"
+      "<span id=nth-child></span>"
+      "<span></span><span></span><span></span><span></span><span></span>"
+      "<span></span><span></span><span></span><span></span><span "
+      "id=last></span>"
+      "</body>",
+      ASSERT_NO_EXCEPTION);
 
-    NthIndexCache nthIndexCache(document());
+  NthIndexCache nthIndexCache(document());
 
-    EXPECT_EQ(nthIndexCache.nthChildIndex(*document().getElementById("nth-child")), 12U);
-    EXPECT_EQ(nthIndexCache.nthLastChildIndex(*document().getElementById("nth-last-child")), 12U);
+  EXPECT_EQ(
+      nthIndexCache.nthChildIndex(*document().getElementById("nth-child")),
+      12U);
+  EXPECT_EQ(nthIndexCache.nthLastChildIndex(
+                *document().getElementById("nth-last-child")),
+            12U);
 }
 
-} // namespace blink
+}  // namespace blink

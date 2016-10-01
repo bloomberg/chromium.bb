@@ -6,9 +6,8 @@
 
 namespace blink {
 
-DetectedFace* DetectedFace::create()
-{
-    return new DetectedFace();
+DetectedFace* DetectedFace::create() {
+  return new DetectedFace();
 }
 
-} // namespace blink
+}  // namespace blink

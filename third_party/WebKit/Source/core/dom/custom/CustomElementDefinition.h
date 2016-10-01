@@ -24,85 +24,94 @@ class QualifiedName;
 
 class CORE_EXPORT CustomElementDefinition
     : public GarbageCollectedFinalized<CustomElementDefinition> {
-    WTF_MAKE_NONCOPYABLE(CustomElementDefinition);
-public:
-    CustomElementDefinition(const CustomElementDescriptor&);
-    CustomElementDefinition(const CustomElementDescriptor&,
-        const HashSet<AtomicString>&);
-    virtual ~CustomElementDefinition();
+  WTF_MAKE_NONCOPYABLE(CustomElementDefinition);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  CustomElementDefinition(const CustomElementDescriptor&);
+  CustomElementDefinition(const CustomElementDescriptor&,
+                          const HashSet<AtomicString>&);
+  virtual ~CustomElementDefinition();
 
-    const CustomElementDescriptor& descriptor() { return m_descriptor; }
+  DECLARE_VIRTUAL_TRACE();
 
-    // TODO(yosin): To support Web Modules, introduce an abstract
-    // class |CustomElementConstructor| to allow us to have JavaScript
-    // and C++ constructors and ask the binding layer to convert
-    // |CustomElementConstructor| to |ScriptValue|. Replace
-    // |getConstructorForScript()| by |getConstructor() ->
-    // CustomElementConstructor|.
-    virtual ScriptValue getConstructorForScript() = 0;
+  const CustomElementDescriptor& descriptor() { return m_descriptor; }
 
-    using ConstructionStack = HeapVector<Member<Element>, 1>;
-    ConstructionStack& constructionStack()
-    {
-        return m_constructionStack;
-    }
+  // TODO(yosin): To support Web Modules, introduce an abstract
+  // class |CustomElementConstructor| to allow us to have JavaScript
+  // and C++ constructors and ask the binding layer to convert
+  // |CustomElementConstructor| to |ScriptValue|. Replace
+  // |getConstructorForScript()| by |getConstructor() ->
+  // CustomElementConstructor|.
+  virtual ScriptValue getConstructorForScript() = 0;
 
-    HTMLElement* createElementForConstructor(Document&);
-    virtual HTMLElement* createElementSync(Document&, const QualifiedName&) = 0;
-    virtual HTMLElement* createElementSync(Document&, const QualifiedName&, ExceptionState&) = 0;
-    HTMLElement* createElementAsync(Document&, const QualifiedName&);
+  using ConstructionStack = HeapVector<Member<Element>, 1>;
+  ConstructionStack& constructionStack() { return m_constructionStack; }
 
-    void upgrade(Element*);
+  HTMLElement* createElementForConstructor(Document&);
+  virtual HTMLElement* createElementSync(Document&, const QualifiedName&) = 0;
+  virtual HTMLElement* createElementSync(Document&,
+                                         const QualifiedName&,
+                                         ExceptionState&) = 0;
+  HTMLElement* createElementAsync(Document&, const QualifiedName&);
 
-    virtual bool hasConnectedCallback() const = 0;
-    virtual bool hasDisconnectedCallback() const = 0;
-    virtual bool hasAdoptedCallback() const = 0;
-    bool hasAttributeChangedCallback(const QualifiedName&) const;
-    bool hasStyleAttributeChangedCallback() const;
+  void upgrade(Element*);
 
-    virtual void runConnectedCallback(Element*) = 0;
-    virtual void runDisconnectedCallback(Element*) = 0;
-    virtual void runAdoptedCallback(
-        Element*, Document* oldOwner, Document* newOwner) = 0;
-    virtual void runAttributeChangedCallback(Element*, const QualifiedName&,
-        const AtomicString& oldValue, const AtomicString& newValue) = 0;
+  virtual bool hasConnectedCallback() const = 0;
+  virtual bool hasDisconnectedCallback() const = 0;
+  virtual bool hasAdoptedCallback() const = 0;
+  bool hasAttributeChangedCallback(const QualifiedName&) const;
+  bool hasStyleAttributeChangedCallback() const;
 
-    void enqueueUpgradeReaction(Element*);
-    void enqueueConnectedCallback(Element*);
-    void enqueueDisconnectedCallback(Element*);
-    void enqueueAdoptedCallback(
-        Element*, Document* oldOwner, Document* newOwner);
-    void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
-        const AtomicString& oldValue, const AtomicString& newValue);
+  virtual void runConnectedCallback(Element*) = 0;
+  virtual void runDisconnectedCallback(Element*) = 0;
+  virtual void runAdoptedCallback(Element*,
+                                  Document* oldOwner,
+                                  Document* newOwner) = 0;
+  virtual void runAttributeChangedCallback(Element*,
+                                           const QualifiedName&,
+                                           const AtomicString& oldValue,
+                                           const AtomicString& newValue) = 0;
 
-    class CORE_EXPORT ConstructionStackScope final {
-        STACK_ALLOCATED();
-        DISALLOW_COPY_AND_ASSIGN(ConstructionStackScope);
-    public:
-        ConstructionStackScope(CustomElementDefinition*, Element*);
-        ~ConstructionStackScope();
+  void enqueueUpgradeReaction(Element*);
+  void enqueueConnectedCallback(Element*);
+  void enqueueDisconnectedCallback(Element*);
+  void enqueueAdoptedCallback(Element*, Document* oldOwner, Document* newOwner);
+  void enqueueAttributeChangedCallback(Element*,
+                                       const QualifiedName&,
+                                       const AtomicString& oldValue,
+                                       const AtomicString& newValue);
 
-    private:
-        ConstructionStack& m_constructionStack;
-        Member<Element> m_element;
-        size_t m_depth;
-    };
-protected:
-    virtual bool runConstructor(Element*) = 0;
+  class CORE_EXPORT ConstructionStackScope final {
+    STACK_ALLOCATED();
+    DISALLOW_COPY_AND_ASSIGN(ConstructionStackScope);
 
-    static void checkConstructorResult(Element*, Document&, const QualifiedName&, ExceptionState&);
+   public:
+    ConstructionStackScope(CustomElementDefinition*, Element*);
+    ~ConstructionStackScope();
 
-private:
-    const CustomElementDescriptor m_descriptor;
-    ConstructionStack m_constructionStack;
-    HashSet<AtomicString> m_observedAttributes;
-    bool m_hasStyleAttributeChangedCallback;
+   private:
+    ConstructionStack& m_constructionStack;
+    Member<Element> m_element;
+    size_t m_depth;
+  };
 
-    void enqueueAttributeChangedCallbackForAllAttributes(Element*);
+ protected:
+  virtual bool runConstructor(Element*) = 0;
+
+  static void checkConstructorResult(Element*,
+                                     Document&,
+                                     const QualifiedName&,
+                                     ExceptionState&);
+
+ private:
+  const CustomElementDescriptor m_descriptor;
+  ConstructionStack m_constructionStack;
+  HashSet<AtomicString> m_observedAttributes;
+  bool m_hasStyleAttributeChangedCallback;
+
+  void enqueueAttributeChangedCallbackForAllAttributes(Element*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementDefinition_h
+#endif  // CustomElementDefinition_h

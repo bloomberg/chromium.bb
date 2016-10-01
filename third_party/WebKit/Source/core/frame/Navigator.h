@@ -36,40 +36,37 @@ class LocalFrame;
 
 typedef int ExceptionCode;
 
-class Navigator final
-    : public GarbageCollected<Navigator>
-    , public NavigatorCPU
-    , public NavigatorID
-    , public NavigatorLanguage
-    , public NavigatorOnLine
-    , public ScriptWrappable
-    , public DOMWindowProperty
-    , public Supplementable<Navigator> {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(Navigator);
-public:
-    static Navigator* create(LocalFrame* frame)
-    {
-        return new Navigator(frame);
-    }
+class Navigator final : public GarbageCollected<Navigator>,
+                        public NavigatorCPU,
+                        public NavigatorID,
+                        public NavigatorLanguage,
+                        public NavigatorOnLine,
+                        public ScriptWrappable,
+                        public DOMWindowProperty,
+                        public Supplementable<Navigator> {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(Navigator);
 
-    bool cookieEnabled() const;
+ public:
+  static Navigator* create(LocalFrame* frame) { return new Navigator(frame); }
 
-    String productSub() const;
-    String vendor() const;
-    String vendorSub() const;
+  bool cookieEnabled() const;
 
-    String userAgent() const override;
+  String productSub() const;
+  String vendor() const;
+  String vendorSub() const;
 
-    // NavigatorLanguage
-    Vector<String> languages() override;
+  String userAgent() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  // NavigatorLanguage
+  Vector<String> languages() override;
 
-private:
-    explicit Navigator(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  explicit Navigator(LocalFrame*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Navigator_h
+#endif  // Navigator_h

@@ -40,15 +40,16 @@ class MutationRecord;
 class MutationObserver;
 
 class MutationCallback : public GarbageCollectedFinalized<MutationCallback> {
-public:
-    virtual ~MutationCallback() { }
+ public:
+  virtual ~MutationCallback() {}
 
-    virtual void call(const HeapVector<Member<MutationRecord>>&, MutationObserver*) = 0;
-    virtual ExecutionContext* getExecutionContext() const = 0;
+  virtual void call(const HeapVector<Member<MutationRecord>>&,
+                    MutationObserver*) = 0;
+  virtual ExecutionContext* getExecutionContext() const = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MutationCallback_h
+#endif  // MutationCallback_h

@@ -35,17 +35,18 @@
 
 namespace blink {
 
-class FrameRequestCallback : public GarbageCollectedFinalized<FrameRequestCallback> {
-public:
-    virtual ~FrameRequestCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(double highResTimeMs) = 0;
+class FrameRequestCallback
+    : public GarbageCollectedFinalized<FrameRequestCallback> {
+ public:
+  virtual ~FrameRequestCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(double highResTimeMs) = 0;
 
-    int m_id;
-    bool m_cancelled;
-    bool m_useLegacyTimeBase;
+  int m_id;
+  bool m_cancelled;
+  bool m_useLegacyTimeBase;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FrameRequestCallback_h
+#endif  // FrameRequestCallback_h

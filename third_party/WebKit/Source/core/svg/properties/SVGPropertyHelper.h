@@ -9,19 +9,18 @@
 
 namespace blink {
 
-template<typename Derived>
+template <typename Derived>
 class SVGPropertyHelper : public SVGPropertyBase {
-public:
-    virtual SVGPropertyBase* cloneForAnimation(const String& value) const
-    {
-        Derived* property = Derived::create();
-        property->setValueAsString(value);
-        return property;
-    }
+ public:
+  virtual SVGPropertyBase* cloneForAnimation(const String& value) const {
+    Derived* property = Derived::create();
+    property->setValueAsString(value);
+    return property;
+  }
 
-    AnimatedPropertyType type() const override { return Derived::classType(); }
+  AnimatedPropertyType type() const override { return Derived::classType(); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGPropertyHelper_h
+#endif  // SVGPropertyHelper_h

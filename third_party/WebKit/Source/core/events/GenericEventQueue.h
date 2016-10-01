@@ -36,30 +36,30 @@
 namespace blink {
 
 class CORE_EXPORT GenericEventQueue final : public EventQueue {
-public:
-    static GenericEventQueue* create(EventTarget*);
-    ~GenericEventQueue() override;
+ public:
+  static GenericEventQueue* create(EventTarget*);
+  ~GenericEventQueue() override;
 
-    // EventQueue
-    DECLARE_VIRTUAL_TRACE();
-    bool enqueueEvent(Event*) override;
-    bool cancelEvent(Event*) override;
-    void close() override;
+  // EventQueue
+  DECLARE_VIRTUAL_TRACE();
+  bool enqueueEvent(Event*) override;
+  bool cancelEvent(Event*) override;
+  void close() override;
 
-    void cancelAllEvents();
-    bool hasPendingEvents() const;
+  void cancelAllEvents();
+  bool hasPendingEvents() const;
 
-private:
-    explicit GenericEventQueue(EventTarget*);
-    void timerFired(TimerBase*);
+ private:
+  explicit GenericEventQueue(EventTarget*);
+  void timerFired(TimerBase*);
 
-    Member<EventTarget> m_owner;
-    HeapVector<Member<Event>> m_pendingEvents;
-    Timer<GenericEventQueue> m_timer;
+  Member<EventTarget> m_owner;
+  HeapVector<Member<Event>> m_pendingEvents;
+  Timer<GenericEventQueue> m_timer;
 
-    bool m_isClosed;
+  bool m_isClosed;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

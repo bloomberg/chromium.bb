@@ -46,6 +46,6 @@ const int cAnimationLoopOnce = 0;
 const int cAnimationLoopInfinite = -1;
 const int cAnimationNone = -2;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

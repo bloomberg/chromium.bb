@@ -37,27 +37,32 @@ namespace blink {
 class PlatformSpeechSynthesizer;
 class PlatformSpeechSynthesizerClient;
 
-class WebSpeechSynthesizerClientImpl final : public GarbageCollectedFinalized<WebSpeechSynthesizerClientImpl>, public WebSpeechSynthesizerClient {
-public:
-    WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*, PlatformSpeechSynthesizerClient*);
-    virtual ~WebSpeechSynthesizerClientImpl();
+class WebSpeechSynthesizerClientImpl final
+    : public GarbageCollectedFinalized<WebSpeechSynthesizerClientImpl>,
+      public WebSpeechSynthesizerClient {
+ public:
+  WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer*,
+                                 PlatformSpeechSynthesizerClient*);
+  virtual ~WebSpeechSynthesizerClientImpl();
 
-    virtual void setVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices);
-    virtual void didStartSpeaking(const WebSpeechSynthesisUtterance&);
-    virtual void didFinishSpeaking(const WebSpeechSynthesisUtterance&);
-    virtual void didPauseSpeaking(const WebSpeechSynthesisUtterance&);
-    virtual void didResumeSpeaking(const WebSpeechSynthesisUtterance&);
-    virtual void speakingErrorOccurred(const WebSpeechSynthesisUtterance&);
-    virtual void wordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&, unsigned charIndex);
-    virtual void sentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&, unsigned charIndex);
+  virtual void setVoiceList(const WebVector<WebSpeechSynthesisVoice>& voices);
+  virtual void didStartSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void didFinishSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void didPauseSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void didResumeSpeaking(const WebSpeechSynthesisUtterance&);
+  virtual void speakingErrorOccurred(const WebSpeechSynthesisUtterance&);
+  virtual void wordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                         unsigned charIndex);
+  virtual void sentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
+                                             unsigned charIndex);
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    Member<PlatformSpeechSynthesizer> m_synthesizer;
-    Member<PlatformSpeechSynthesizerClient> m_client;
+ private:
+  Member<PlatformSpeechSynthesizer> m_synthesizer;
+  Member<PlatformSpeechSynthesizerClient> m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSpeechSynthesizerClientImpl_h
+#endif  // WebSpeechSynthesizerClientImpl_h

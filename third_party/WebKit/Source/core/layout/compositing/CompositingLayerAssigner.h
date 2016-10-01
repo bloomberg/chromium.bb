@@ -39,60 +39,75 @@ class CompositedLayerMapping;
 class PaintLayer;
 
 class CompositingLayerAssigner {
-    STACK_ALLOCATED();
-public:
-    explicit CompositingLayerAssigner(PaintLayerCompositor*);
-    ~CompositingLayerAssigner();
+  STACK_ALLOCATED();
 
-    void assign(PaintLayer* updateRoot, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+ public:
+  explicit CompositingLayerAssigner(PaintLayerCompositor*);
+  ~CompositingLayerAssigner();
 
-    bool layersChanged() const { return m_layersChanged; }
+  void assign(PaintLayer* updateRoot,
+              Vector<PaintLayer*>& layersNeedingPaintInvalidation);
 
-    // FIXME: This function should be private. We should remove the one caller
-    // once we've fixed the compositing chicken/egg issues.
-    CompositingStateTransitionType computeCompositedLayerUpdate(PaintLayer*);
+  bool layersChanged() const { return m_layersChanged; }
 
-private:
-    struct SquashingState {
-        SquashingState()
-            : mostRecentMapping(nullptr)
-            , hasMostRecentMapping(false)
-            , haveAssignedBackingsToEntireSquashingLayerSubtree(false)
-            , nextSquashedLayerIndex(0)
-            , totalAreaOfSquashedRects(0) { }
+  // FIXME: This function should be private. We should remove the one caller
+  // once we've fixed the compositing chicken/egg issues.
+  CompositingStateTransitionType computeCompositedLayerUpdate(PaintLayer*);
 
-        void updateSquashingStateForNewMapping(CompositedLayerMapping*, bool hasNewCompositedPaintLayerMapping, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+ private:
+  struct SquashingState {
+    SquashingState()
+        : mostRecentMapping(nullptr),
+          hasMostRecentMapping(false),
+          haveAssignedBackingsToEntireSquashingLayerSubtree(false),
+          nextSquashedLayerIndex(0),
+          totalAreaOfSquashedRects(0) {}
 
-        // The most recent composited backing that the layer should squash onto if needed.
-        CompositedLayerMapping* mostRecentMapping;
-        bool hasMostRecentMapping;
+    void updateSquashingStateForNewMapping(
+        CompositedLayerMapping*,
+        bool hasNewCompositedPaintLayerMapping,
+        Vector<PaintLayer*>& layersNeedingPaintInvalidation);
 
-        // Whether all Layers in the stacking subtree rooted at the most recent mapping's
-        // owning layer have had CompositedLayerMappings assigned. Layers cannot squash into a
-        // CompositedLayerMapping owned by a stacking ancestor, since this changes paint order.
-        bool haveAssignedBackingsToEntireSquashingLayerSubtree;
+    // The most recent composited backing that the layer should squash onto if needed.
+    CompositedLayerMapping* mostRecentMapping;
+    bool hasMostRecentMapping;
 
-        // Counter that tracks what index the next Layer would be if it gets squashed to the current squashing layer.
-        size_t nextSquashedLayerIndex;
+    // Whether all Layers in the stacking subtree rooted at the most recent mapping's
+    // owning layer have had CompositedLayerMappings assigned. Layers cannot squash into a
+    // CompositedLayerMapping owned by a stacking ancestor, since this changes paint order.
+    bool haveAssignedBackingsToEntireSquashingLayerSubtree;
 
-        // The absolute bounding rect of all the squashed layers.
-        IntRect boundingRect;
+    // Counter that tracks what index the next Layer would be if it gets squashed to the current squashing layer.
+    size_t nextSquashedLayerIndex;
 
-        // This is simply the sum of the areas of the squashed rects. This can be very skewed if the rects overlap,
-        // but should be close enough to drive a heuristic.
-        uint64_t totalAreaOfSquashedRects;
-    };
+    // The absolute bounding rect of all the squashed layers.
+    IntRect boundingRect;
 
-    void assignLayersToBackingsInternal(PaintLayer*, SquashingState&, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
-    SquashingDisallowedReasons getReasonsPreventingSquashing(const PaintLayer*, const SquashingState&);
-    bool squashingWouldExceedSparsityTolerance(const PaintLayer* candidate, const SquashingState&);
-    void updateSquashingAssignment(PaintLayer*, SquashingState&, CompositingStateTransitionType, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
-    bool needsOwnBacking(const PaintLayer*) const;
+    // This is simply the sum of the areas of the squashed rects. This can be very skewed if the rects overlap,
+    // but should be close enough to drive a heuristic.
+    uint64_t totalAreaOfSquashedRects;
+  };
 
-    PaintLayerCompositor* m_compositor;
-    bool m_layersChanged;
+  void assignLayersToBackingsInternal(
+      PaintLayer*,
+      SquashingState&,
+      Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+  SquashingDisallowedReasons getReasonsPreventingSquashing(
+      const PaintLayer*,
+      const SquashingState&);
+  bool squashingWouldExceedSparsityTolerance(const PaintLayer* candidate,
+                                             const SquashingState&);
+  void updateSquashingAssignment(
+      PaintLayer*,
+      SquashingState&,
+      CompositingStateTransitionType,
+      Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+  bool needsOwnBacking(const PaintLayer*) const;
+
+  PaintLayerCompositor* m_compositor;
+  bool m_layersChanged;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositingLayerAssigner_h
+#endif  // CompositingLayerAssigner_h

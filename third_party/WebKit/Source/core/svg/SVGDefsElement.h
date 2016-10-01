@@ -26,18 +26,19 @@
 namespace blink {
 
 class SVGDefsElement final : public SVGGraphicsElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGDefsElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool supportsFocus() const override { return false; }
+ public:
+  DECLARE_NODE_FACTORY(SVGDefsElement);
 
-private:
-    explicit SVGDefsElement(Document&);
+  bool supportsFocus() const override { return false; }
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+ private:
+  explicit SVGDefsElement(Document&);
+
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGDefsElement_h
+#endif  // SVGDefsElement_h

@@ -13,24 +13,30 @@ class ExecutionContext;
 class NetworkInformation;
 class WorkerNavigator;
 
-class WorkerNavigatorNetworkInformation final : public GarbageCollected<WorkerNavigatorNetworkInformation>, public Supplement<WorkerNavigator> {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorNetworkInformation);
-public:
-    static WorkerNavigatorNetworkInformation& from(WorkerNavigator&, ExecutionContext*);
-    static WorkerNavigatorNetworkInformation* toWorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
-    static const char* supplementName();
+class WorkerNavigatorNetworkInformation final
+    : public GarbageCollected<WorkerNavigatorNetworkInformation>,
+      public Supplement<WorkerNavigator> {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorNetworkInformation);
 
-    static NetworkInformation* connection(ExecutionContext*, WorkerNavigator&);
+ public:
+  static WorkerNavigatorNetworkInformation& from(WorkerNavigator&,
+                                                 ExecutionContext*);
+  static WorkerNavigatorNetworkInformation* toWorkerNavigatorNetworkInformation(
+      WorkerNavigator&,
+      ExecutionContext*);
+  static const char* supplementName();
 
-    DECLARE_VIRTUAL_TRACE();
+  static NetworkInformation* connection(ExecutionContext*, WorkerNavigator&);
 
-private:
-    WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
-    NetworkInformation* connection(ExecutionContext*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<NetworkInformation> m_connection;
+ private:
+  WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
+  NetworkInformation* connection(ExecutionContext*);
+
+  Member<NetworkInformation> m_connection;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerNavigatorNetworkInformation_h
+#endif  // WorkerNavigatorNetworkInformation_h

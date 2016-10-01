@@ -13,12 +13,12 @@ namespace blink {
 
 // Platform interface of a CanvasCaptureHandler.
 class BLINK_PLATFORM_EXPORT WebCanvasCaptureHandler {
-public:
-    virtual ~WebCanvasCaptureHandler() = default;
-    virtual void sendNewFrame(const SkImage*) {}
-    virtual bool needsNewFrame() const { return false; }
+ public:
+  virtual ~WebCanvasCaptureHandler() = default;
+  virtual void sendNewFrame(const SkImage*) {}
+  virtual bool needsNewFrame() const { return false; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaRecorderHandler_h
+#endif  // WebMediaRecorderHandler_h

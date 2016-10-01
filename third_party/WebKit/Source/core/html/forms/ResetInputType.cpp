@@ -39,37 +39,31 @@
 
 namespace blink {
 
-InputType* ResetInputType::create(HTMLInputElement& element)
-{
-    return new ResetInputType(element);
+InputType* ResetInputType::create(HTMLInputElement& element) {
+  return new ResetInputType(element);
 }
 
-const AtomicString& ResetInputType::formControlType() const
-{
-    return InputTypeNames::reset;
+const AtomicString& ResetInputType::formControlType() const {
+  return InputTypeNames::reset;
 }
 
-bool ResetInputType::supportsValidation() const
-{
-    return false;
+bool ResetInputType::supportsValidation() const {
+  return false;
 }
 
-void ResetInputType::handleDOMActivateEvent(Event* event)
-{
-    if (element().isDisabledFormControl() || !element().form())
-        return;
-    element().form()->reset();
-    event->setDefaultHandled();
+void ResetInputType::handleDOMActivateEvent(Event* event) {
+  if (element().isDisabledFormControl() || !element().form())
+    return;
+  element().form()->reset();
+  event->setDefaultHandled();
 }
 
-String ResetInputType::defaultValue() const
-{
-    return locale().queryString(WebLocalizedString::ResetButtonDefaultLabel);
+String ResetInputType::defaultValue() const {
+  return locale().queryString(WebLocalizedString::ResetButtonDefaultLabel);
 }
 
-bool ResetInputType::isTextButton() const
-{
-    return true;
+bool ResetInputType::isTextButton() const {
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

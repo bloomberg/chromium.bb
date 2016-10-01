@@ -26,27 +26,26 @@
 // AppKit version is loosely correlated to OSX version. It's still useful as a
 // sanity check in unit tests, though we don't want to rely on it in production
 // code.
-TEST(VersionUtilMac, AppKitVersions)
-{
-    if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_9) {
-        EXPECT_TRUE(blink::IsOS10_9());
-        EXPECT_FALSE(blink::IsOS10_10());
-        EXPECT_FALSE(blink::IsOS10_11());
-        return;
-    }
+TEST(VersionUtilMac, AppKitVersions) {
+  if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_9) {
+    EXPECT_TRUE(blink::IsOS10_9());
+    EXPECT_FALSE(blink::IsOS10_10());
+    EXPECT_FALSE(blink::IsOS10_11());
+    return;
+  }
 
-    if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_10Max &&
-        floor(NSAppKitVersionNumber) >=  NSAppKitVersionNumber10_10) {
-        EXPECT_FALSE(blink::IsOS10_9());
-        EXPECT_TRUE(blink::IsOS10_10());
-        EXPECT_FALSE(blink::IsOS10_11());
-        return;
-    }
+  if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_10Max &&
+      floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_10) {
+    EXPECT_FALSE(blink::IsOS10_9());
+    EXPECT_TRUE(blink::IsOS10_10());
+    EXPECT_FALSE(blink::IsOS10_11());
+    return;
+  }
 
-    if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_11Max) {
-        EXPECT_FALSE(blink::IsOS10_9());
-        EXPECT_FALSE(blink::IsOS10_10());
-        EXPECT_TRUE(blink::IsOS10_11());
-        return;
-    }
+  if (floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_11Max) {
+    EXPECT_FALSE(blink::IsOS10_9());
+    EXPECT_FALSE(blink::IsOS10_10());
+    EXPECT_TRUE(blink::IsOS10_11());
+    return;
+  }
 }

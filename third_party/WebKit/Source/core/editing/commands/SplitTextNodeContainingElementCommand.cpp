@@ -33,40 +33,40 @@
 
 namespace blink {
 
-SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(Text* text, int offset)
-    : CompositeEditCommand(text->document()), m_text(text), m_offset(offset)
-{
-    DCHECK(m_text);
-    DCHECK_GT(m_text->length(), 0u);
+SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(
+    Text* text,
+    int offset)
+    : CompositeEditCommand(text->document()), m_text(text), m_offset(offset) {
+  DCHECK(m_text);
+  DCHECK_GT(m_text->length(), 0u);
 }
 
-void SplitTextNodeContainingElementCommand::doApply(EditingState*)
-{
-    DCHECK(m_text);
-    DCHECK_GT(m_offset, 0);
+void SplitTextNodeContainingElementCommand::doApply(EditingState*) {
+  DCHECK(m_text);
+  DCHECK_GT(m_offset, 0);
 
-    splitTextNode(m_text.get(), m_offset);
+  splitTextNode(m_text.get(), m_offset);
 
-    Element* parent = m_text->parentElement();
-    if (!parent || !parent->parentElement() || !hasEditableStyle(*parent->parentElement()))
-        return;
+  Element* parent = m_text->parentElement();
+  if (!parent || !parent->parentElement() ||
+      !hasEditableStyle(*parent->parentElement()))
+    return;
 
-    LayoutObject* parentLayoutObject = parent->layoutObject();
-    if (!parentLayoutObject || !parentLayoutObject->isInline()) {
-        wrapContentsInDummySpan(parent);
-        Node* firstChild = parent->firstChild();
-        if (!firstChild || !firstChild->isElementNode())
-            return;
-        parent = toElement(firstChild);
-    }
+  LayoutObject* parentLayoutObject = parent->layoutObject();
+  if (!parentLayoutObject || !parentLayoutObject->isInline()) {
+    wrapContentsInDummySpan(parent);
+    Node* firstChild = parent->firstChild();
+    if (!firstChild || !firstChild->isElementNode())
+      return;
+    parent = toElement(firstChild);
+  }
 
-    splitElement(parent, m_text.get());
+  splitElement(parent, m_text.get());
 }
 
-DEFINE_TRACE(SplitTextNodeContainingElementCommand)
-{
-    visitor->trace(m_text);
-    CompositeEditCommand::trace(visitor);
+DEFINE_TRACE(SplitTextNodeContainingElementCommand) {
+  visitor->trace(m_text);
+  CompositeEditCommand::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

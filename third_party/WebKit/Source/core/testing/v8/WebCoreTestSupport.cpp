@@ -42,71 +42,83 @@ using namespace blink;
 namespace WebCoreTestSupport {
 
 namespace {
-blink::InstallConditionalFeaturesFunction s_originalInstallConditionalFeaturesFunction = nullptr;
+blink::InstallConditionalFeaturesFunction
+    s_originalInstallConditionalFeaturesFunction = nullptr;
 }
 
-v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context)
-{
-    ScriptState* scriptState = ScriptState::from(context);
-    v8::Local<v8::Object> global = scriptState->context()->Global();
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    if (executionContext->isDocument())
-        return toV8(Internals::create(scriptState), global, scriptState->isolate());
-    if (executionContext->isWorkerGlobalScope())
-        return toV8(WorkerInternals::create(scriptState), global, scriptState->isolate());
-    return v8::Local<v8::Value>();
+v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context) {
+  ScriptState* scriptState = ScriptState::from(context);
+  v8::Local<v8::Object> global = scriptState->context()->Global();
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  if (executionContext->isDocument())
+    return toV8(Internals::create(scriptState), global, scriptState->isolate());
+  if (executionContext->isWorkerGlobalScope())
+    return toV8(WorkerInternals::create(scriptState), global,
+                scriptState->isolate());
+  return v8::Local<v8::Value>();
 }
 
-void injectInternalsObject(v8::Local<v8::Context> context)
-{
-    // Set conditional features installation function to |installConditionalFeaturesForTests|
-    if (!s_originalInstallConditionalFeaturesFunction) {
-        s_originalInstallConditionalFeaturesFunction = setInstallConditionalFeaturesFunction(installConditionalFeaturesForTests);
+void injectInternalsObject(v8::Local<v8::Context> context) {
+  // Set conditional features installation function to |installConditionalFeaturesForTests|
+  if (!s_originalInstallConditionalFeaturesFunction) {
+    s_originalInstallConditionalFeaturesFunction =
+        setInstallConditionalFeaturesFunction(
+            installConditionalFeaturesForTests);
+  }
+
+  ScriptState* scriptState = ScriptState::from(context);
+  ScriptState::Scope scope(scriptState);
+  v8::Local<v8::Object> global = scriptState->context()->Global();
+  v8::Local<v8::Value> internals = createInternalsObject(context);
+  if (internals.IsEmpty())
+    return;
+
+  global
+      ->Set(scriptState->context(),
+            v8AtomicString(scriptState->isolate(), Internals::internalsId),
+            internals)
+      .ToChecked();
+}
+
+void installConditionalFeaturesForTests(
+    const WrapperTypeInfo* type,
+    const blink::ScriptState* scriptState,
+    v8::Local<v8::Object> prototypeObject,
+    v8::Local<v8::Function> interfaceObject) {
+  (*s_originalInstallConditionalFeaturesFunction)(
+      type, scriptState, prototypeObject, interfaceObject);
+
+  ExecutionContext* executionContext = scriptState->getExecutionContext();
+  OriginTrialContext* originTrialContext = OriginTrialContext::from(
+      executionContext, OriginTrialContext::DontCreateIfNotExists);
+
+  if (type == &V8OriginTrialsTest::wrapperTypeInfo) {
+    if (originTrialContext &&
+        originTrialContext->isFeatureEnabled("Frobulate")) {
+      V8OriginTrialsTest::installOriginTrialsSampleAPI(
+          scriptState->isolate(), scriptState->world(), v8::Local<v8::Object>(),
+          prototypeObject, interfaceObject);
     }
-
-    ScriptState* scriptState = ScriptState::from(context);
-    ScriptState::Scope scope(scriptState);
-    v8::Local<v8::Object> global = scriptState->context()->Global();
-    v8::Local<v8::Value> internals = createInternalsObject(context);
-    if (internals.IsEmpty())
-        return;
-
-    global->Set(scriptState->context(), v8AtomicString(scriptState->isolate(), Internals::internalsId), internals).ToChecked();
-
+  }
 }
 
-void installConditionalFeaturesForTests(const WrapperTypeInfo* type, const blink::ScriptState* scriptState, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject)
-{
-    (*s_originalInstallConditionalFeaturesFunction)(type, scriptState, prototypeObject, interfaceObject);
+void resetInternalsObject(v8::Local<v8::Context> context) {
+  // This can happen if JavaScript is disabled in the main frame.
+  if (context.IsEmpty())
+    return;
 
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
-
-    if (type == &V8OriginTrialsTest::wrapperTypeInfo) {
-        if (originTrialContext && originTrialContext->isFeatureEnabled("Frobulate")) {
-            V8OriginTrialsTest::installOriginTrialsSampleAPI(scriptState->isolate(), scriptState->world(), v8::Local<v8::Object>(), prototypeObject, interfaceObject);
-        }
-    }
+  ScriptState* scriptState = ScriptState::from(context);
+  ScriptState::Scope scope(scriptState);
+  Document* document = toDocument(scriptState->getExecutionContext());
+  ASSERT(document);
+  LocalFrame* frame = document->frame();
+  // Should the document have been detached, the page is assumed being destroyed (=> no reset required.)
+  if (!frame)
+    return;
+  Page* page = frame->page();
+  ASSERT(page);
+  Internals::resetToConsistentState(page);
+  InternalSettings::from(*page)->resetToConsistentState();
 }
 
-void resetInternalsObject(v8::Local<v8::Context> context)
-{
-    // This can happen if JavaScript is disabled in the main frame.
-    if (context.IsEmpty())
-        return;
-
-    ScriptState* scriptState = ScriptState::from(context);
-    ScriptState::Scope scope(scriptState);
-    Document* document = toDocument(scriptState->getExecutionContext());
-    ASSERT(document);
-    LocalFrame* frame = document->frame();
-    // Should the document have been detached, the page is assumed being destroyed (=> no reset required.)
-    if (!frame)
-        return;
-    Page* page = frame->page();
-    ASSERT(page);
-    Internals::resetToConsistentState(page);
-    InternalSettings::from(*page)->resetToConsistentState();
-}
-
-} // namespace WebCoreTestSupport
+}  // namespace WebCoreTestSupport

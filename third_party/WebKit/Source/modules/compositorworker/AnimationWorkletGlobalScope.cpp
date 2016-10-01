@@ -8,18 +8,28 @@
 
 namespace blink {
 
-AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::create(const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate, WorkerThread* thread)
-{
-    return new AnimationWorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate, thread);
+AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::create(
+    const KURL& url,
+    const String& userAgent,
+    PassRefPtr<SecurityOrigin> securityOrigin,
+    v8::Isolate* isolate,
+    WorkerThread* thread) {
+  return new AnimationWorkletGlobalScope(
+      url, userAgent, std::move(securityOrigin), isolate, thread);
 }
 
-AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate, WorkerThread* thread)
-    : ThreadedWorkletGlobalScope(url, userAgent, std::move(securityOrigin), isolate, thread)
-{
-}
+AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
+    const KURL& url,
+    const String& userAgent,
+    PassRefPtr<SecurityOrigin> securityOrigin,
+    v8::Isolate* isolate,
+    WorkerThread* thread)
+    : ThreadedWorkletGlobalScope(url,
+                                 userAgent,
+                                 std::move(securityOrigin),
+                                 isolate,
+                                 thread) {}
 
-AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope()
-{
-}
+AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() {}
 
-} // namespace blink
+}  // namespace blink

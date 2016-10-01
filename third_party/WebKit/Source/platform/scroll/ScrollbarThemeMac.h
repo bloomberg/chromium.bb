@@ -38,61 +38,79 @@ namespace blink {
 class Pattern;
 
 class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
-public:
-    ~ScrollbarThemeMac() override;
+ public:
+  ~ScrollbarThemeMac() override;
 
-    void registerScrollbar(ScrollbarThemeClient&) override;
-    void unregisterScrollbar(ScrollbarThemeClient&) override;
-    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw, WebScrollbarButtonsPlacement);
+  void registerScrollbar(ScrollbarThemeClient&) override;
+  void unregisterScrollbar(ScrollbarThemeClient&) override;
+  void preferencesChanged(float initialButtonDelay,
+                          float autoscrollButtonDelay,
+                          NSScrollerStyle preferredScrollerStyle,
+                          bool redraw,
+                          WebScrollbarButtonsPlacement);
 
-    bool supportsControlTints() const override { return true; }
+  bool supportsControlTints() const override { return true; }
 
-    double initialAutoscrollTimerDelay() override;
-    double autoscrollTimerDelay() override;
+  double initialAutoscrollTimerDelay() override;
+  double autoscrollTimerDelay() override;
 
-    void paintTickmarks(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  void paintTickmarks(GraphicsContext&,
+                      const Scrollbar&,
+                      const IntRect&) override;
 
-    bool shouldRepaintAllPartsOnInvalidation() const override { return false; }
-    ScrollbarPart invalidateOnThumbPositionChange(
-        const ScrollbarThemeClient&, float oldPosition, float newPosition) const override;
-    void updateEnabledState(const ScrollbarThemeClient&) override;
-    int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
-    bool usesOverlayScrollbars() const override;
-    void updateScrollbarOverlayStyle(const ScrollbarThemeClient&) override;
-    WebScrollbarButtonsPlacement buttonsPlacement() const override;
+  bool shouldRepaintAllPartsOnInvalidation() const override { return false; }
+  ScrollbarPart invalidateOnThumbPositionChange(
+      const ScrollbarThemeClient&,
+      float oldPosition,
+      float newPosition) const override;
+  void updateEnabledState(const ScrollbarThemeClient&) override;
+  int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
+  bool usesOverlayScrollbars() const override;
+  void updateScrollbarOverlayStyle(const ScrollbarThemeClient&) override;
+  WebScrollbarButtonsPlacement buttonsPlacement() const override;
 
-    void setNewPainterForScrollbar(ScrollbarThemeClient&, ScrollbarPainter);
-    ScrollbarPainter painterForScrollbar(const ScrollbarThemeClient&) const;
+  void setNewPainterForScrollbar(ScrollbarThemeClient&, ScrollbarPainter);
+  ScrollbarPainter painterForScrollbar(const ScrollbarThemeClient&) const;
 
-    void paintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&) override;
-    void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  void paintTrackBackground(GraphicsContext&,
+                            const Scrollbar&,
+                            const IntRect&) override;
+  void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
-    float thumbOpacity(const ScrollbarThemeClient&) const override;
+  float thumbOpacity(const ScrollbarThemeClient&) const override;
 
-    static NSScrollerStyle recommendedScrollerStyle();
+  static NSScrollerStyle recommendedScrollerStyle();
 
-protected:
-    int maxOverlapBetweenPages() override { return 40; }
+ protected:
+  int maxOverlapBetweenPages() override { return 40; }
 
-    bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&, const PlatformMouseEvent&) override;
-    int scrollbarPartToHIPressedState(ScrollbarPart);
+  bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&,
+                                        const PlatformMouseEvent&) override;
+  int scrollbarPartToHIPressedState(ScrollbarPart);
 
-    virtual void updateButtonPlacement(WebScrollbarButtonsPlacement) {}
+  virtual void updateButtonPlacement(WebScrollbarButtonsPlacement) {}
 
-    void paintGivenTickmarks(SkCanvas*, const Scrollbar&, const IntRect&, const Vector<IntRect>&);
+  void paintGivenTickmarks(SkCanvas*,
+                           const Scrollbar&,
+                           const IntRect&,
+                           const Vector<IntRect>&);
 
-    IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
-    IntRect backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
-    IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+  IntRect trackRect(const ScrollbarThemeClient&,
+                    bool painting = false) override;
+  IntRect backButtonRect(const ScrollbarThemeClient&,
+                         ScrollbarPart,
+                         bool painting = false) override;
+  IntRect forwardButtonRect(const ScrollbarThemeClient&,
+                            ScrollbarPart,
+                            bool painting = false) override;
 
-    bool hasButtons(const ScrollbarThemeClient&) override { return false; }
-    bool hasThumb(const ScrollbarThemeClient&) override;
+  bool hasButtons(const ScrollbarThemeClient&) override { return false; }
+  bool hasThumb(const ScrollbarThemeClient&) override;
 
-    int minimumThumbLength(const ScrollbarThemeClient&) override;
+  int minimumThumbLength(const ScrollbarThemeClient&) override;
 
-    RefPtr<Pattern> m_overhangPattern;
+  RefPtr<Pattern> m_overhangPattern;
 };
-
 }
 
-#endif // ScrollbarThemeMac_h
+#endif  // ScrollbarThemeMac_h

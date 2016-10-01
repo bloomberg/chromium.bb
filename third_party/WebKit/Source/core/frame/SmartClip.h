@@ -39,27 +39,21 @@
 namespace blink {
 
 class CORE_EXPORT SmartClipData {
-    STACK_ALLOCATED();
-public:
-    SmartClipData()
-        : m_isEmpty(true)
-    {
-    }
+  STACK_ALLOCATED();
 
-    SmartClipData(Node* node, IntRect rect, String string)
-        : m_isEmpty(!node)
-        , m_rectInViewport(rect)
-        , m_string(string)
-    {
-    }
+ public:
+  SmartClipData() : m_isEmpty(true) {}
 
-    IntRect rectInViewport() const;
-    const String& clipData() const;
+  SmartClipData(Node* node, IntRect rect, String string)
+      : m_isEmpty(!node), m_rectInViewport(rect), m_string(string) {}
 
-private:
-    bool m_isEmpty;
-    IntRect m_rectInViewport;
-    String m_string;
+  IntRect rectInViewport() const;
+  const String& clipData() const;
+
+ private:
+  bool m_isEmpty;
+  IntRect m_rectInViewport;
+  String m_string;
 };
 
 // SmartClip implements support for the copy operation
@@ -68,24 +62,28 @@ private:
 // trying to do a poor-mans implementation of columnar
 // selection followed by a copy operation.
 class CORE_EXPORT SmartClip {
-    STACK_ALLOCATED();
-public:
-    explicit SmartClip(LocalFrame*);
+  STACK_ALLOCATED();
 
-    SmartClipData dataForRect(const IntRect&);
+ public:
+  explicit SmartClip(LocalFrame*);
 
-private:
-    float pageScaleFactor();
+  SmartClipData dataForRect(const IntRect&);
 
-    Node* minNodeContainsNodes(Node* minNode, Node* newNode);
-    Node* findBestOverlappingNode(Node*, const IntRect& cropRectInViewport);
-    bool shouldSkipBackgroundImage(Node*);
-    void collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRectInViewport, HeapVector<Member<Node>>& overlappingNodeInfoTable);
-    String extractTextFromNode(Node*);
+ private:
+  float pageScaleFactor();
 
-    Member<LocalFrame> m_frame;
+  Node* minNodeContainsNodes(Node* minNode, Node* newNode);
+  Node* findBestOverlappingNode(Node*, const IntRect& cropRectInViewport);
+  bool shouldSkipBackgroundImage(Node*);
+  void collectOverlappingChildNodes(
+      Node* parentNode,
+      const IntRect& cropRectInViewport,
+      HeapVector<Member<Node>>& overlappingNodeInfoTable);
+  String extractTextFromNode(Node*);
+
+  Member<LocalFrame> m_frame;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SmartClip_h
+#endif  // SmartClip_h

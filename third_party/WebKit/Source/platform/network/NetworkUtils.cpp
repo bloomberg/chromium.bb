@@ -12,49 +12,47 @@
 
 namespace {
 
-net::registry_controlled_domains::PrivateRegistryFilter getNetPrivateRegistryFilter(blink::NetworkUtils::PrivateRegistryFilter filter)
-{
-    switch (filter) {
+net::registry_controlled_domains::PrivateRegistryFilter
+getNetPrivateRegistryFilter(blink::NetworkUtils::PrivateRegistryFilter filter) {
+  switch (filter) {
     case blink::NetworkUtils::IncludePrivateRegistries:
-        return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
+      return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
     case blink::NetworkUtils::ExcludePrivateRegistries:
-        return net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
-    }
-    // There are only two NetworkUtils::PrivateRegistryFilter enum entries, so
-    // we should never reach this point. However, we must have a default return
-    // value to avoid a compiler error.
-    NOTREACHED();
-    return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
+      return net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
+  }
+  // There are only two NetworkUtils::PrivateRegistryFilter enum entries, so
+  // we should never reach this point. However, we must have a default return
+  // value to avoid a compiler error.
+  NOTREACHED();
+  return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
 }
 
-} // namespace
+}  // namespace
 
 namespace blink {
 
 namespace NetworkUtils {
 
-bool isReservedIPAddress(const String& host)
-{
-    net::IPAddress address;
-    StringUTF8Adaptor utf8(host);
-    if (!net::ParseURLHostnameToAddress(utf8.asStringPiece(), &address))
-        return false;
-    return address.IsReserved();
+bool isReservedIPAddress(const String& host) {
+  net::IPAddress address;
+  StringUTF8Adaptor utf8(host);
+  if (!net::ParseURLHostnameToAddress(utf8.asStringPiece(), &address))
+    return false;
+  return address.IsReserved();
 }
 
-bool isLocalHostname(const String& host, bool* isLocal6)
-{
-    StringUTF8Adaptor utf8(host);
-    return net::IsLocalHostname(utf8.asStringPiece(), isLocal6);
+bool isLocalHostname(const String& host, bool* isLocal6) {
+  StringUTF8Adaptor utf8(host);
+  return net::IsLocalHostname(utf8.asStringPiece(), isLocal6);
 }
 
-String getDomainAndRegistry(const String& host, PrivateRegistryFilter filter)
-{
-    StringUTF8Adaptor hostUtf8(host);
-    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(hostUtf8.asStringPiece(), getNetPrivateRegistryFilter(filter));
-    return String(domain.data(), domain.length());
+String getDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
+  StringUTF8Adaptor hostUtf8(host);
+  std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+      hostUtf8.asStringPiece(), getNetPrivateRegistryFilter(filter));
+  return String(domain.data(), domain.length());
 }
 
-} // NetworkUtils
+}  // NetworkUtils
 
-} // namespace blink
+}  // namespace blink

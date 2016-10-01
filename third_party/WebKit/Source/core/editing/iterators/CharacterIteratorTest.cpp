@@ -35,23 +35,22 @@
 
 namespace blink {
 
-class CharacterIteratorTest : public EditingTestBase {
-};
+class CharacterIteratorTest : public EditingTestBase {};
 
-TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements)
-{
-    static const char* bodyContent =
-        "<div id='div' contenteditable='true'>1<img src='foo.png'>345</div>";
-    setBodyContent(bodyContent);
-    document().view()->updateAllLifecyclePhases();
+TEST_F(CharacterIteratorTest, SubrangeWithReplacedElements) {
+  static const char* bodyContent =
+      "<div id='div' contenteditable='true'>1<img src='foo.png'>345</div>";
+  setBodyContent(bodyContent);
+  document().view()->updateAllLifecyclePhases();
 
-    Node* divNode = document().getElementById("div");
-    Range* entireRange = Range::create(document(), divNode, 0, divNode, 3);
+  Node* divNode = document().getElementById("div");
+  Range* entireRange = Range::create(document(), divNode, 0, divNode, 3);
 
-    EphemeralRange result = calculateCharacterSubrange(EphemeralRange(entireRange), 2, 3);
-    Node* textNode = divNode->lastChild();
-    EXPECT_EQ(Position(textNode, 0), result.startPosition());
-    EXPECT_EQ(Position(textNode, 3), result.endPosition());
+  EphemeralRange result =
+      calculateCharacterSubrange(EphemeralRange(entireRange), 2, 3);
+  Node* textNode = divNode->lastChild();
+  EXPECT_EQ(Position(textNode, 0), result.startPosition());
+  EXPECT_EQ(Position(textNode, 3), result.endPosition());
 }
 
-} // namespace blink
+}  // namespace blink

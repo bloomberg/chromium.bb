@@ -37,25 +37,26 @@
 namespace blink {
 
 class CORE_EXPORT CoreInitializer {
-    USING_FAST_MALLOC(CoreInitializer);
-    WTF_MAKE_NONCOPYABLE(CoreInitializer);
-public:
-    CoreInitializer() : m_isInitialized(false) { }
-    virtual ~CoreInitializer() { }
+  USING_FAST_MALLOC(CoreInitializer);
+  WTF_MAKE_NONCOPYABLE(CoreInitializer);
 
-    // Should be called by clients before trying to create Frames.
-    virtual void initialize();
-    virtual void shutdown();
+ public:
+  CoreInitializer() : m_isInitialized(false) {}
+  virtual ~CoreInitializer() {}
 
-protected:
-    bool isInitialized() const { return m_isInitialized; }
+  // Should be called by clients before trying to create Frames.
+  virtual void initialize();
+  virtual void shutdown();
 
-private:
-    void registerEventFactory();
+ protected:
+  bool isInitialized() const { return m_isInitialized; }
 
-    bool m_isInitialized;
+ private:
+  void registerEventFactory();
+
+  bool m_isInitialized;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CoreInitializer_h
+#endif  // CoreInitializer_h

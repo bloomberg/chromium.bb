@@ -33,82 +33,73 @@
 namespace blink {
 
 class CORE_EXPORT FilterOperations {
-    DISALLOW_NEW();
-public:
-    FilterOperations();
-    FilterOperations(const FilterOperations& other) { *this = other; }
+  DISALLOW_NEW();
 
-    FilterOperations& operator=(const FilterOperations&);
+ public:
+  FilterOperations();
+  FilterOperations(const FilterOperations& other) { *this = other; }
 
-    bool operator==(const FilterOperations&) const;
-    bool operator!=(const FilterOperations& o) const
-    {
-        return !(*this == o);
-    }
+  FilterOperations& operator=(const FilterOperations&);
 
-    void clear()
-    {
-        m_operations.clear();
-    }
+  bool operator==(const FilterOperations&) const;
+  bool operator!=(const FilterOperations& o) const { return !(*this == o); }
 
-    typedef HeapVector<Member<FilterOperation>> FilterOperationVector;
+  void clear() { m_operations.clear(); }
 
-    FilterOperationVector& operations() { return m_operations; }
-    const FilterOperationVector& operations() const { return m_operations; }
+  typedef HeapVector<Member<FilterOperation>> FilterOperationVector;
 
-    bool isEmpty() const { return !m_operations.size(); }
-    size_t size() const { return m_operations.size(); }
-    const FilterOperation* at(size_t index) const { return index < m_operations.size() ? m_operations.at(index).get() : 0; }
+  FilterOperationVector& operations() { return m_operations; }
+  const FilterOperationVector& operations() const { return m_operations; }
 
-    bool canInterpolateWith(const FilterOperations&) const;
+  bool isEmpty() const { return !m_operations.size(); }
+  size_t size() const { return m_operations.size(); }
+  const FilterOperation* at(size_t index) const {
+    return index < m_operations.size() ? m_operations.at(index).get() : 0;
+  }
 
-    // Maps "forward" to determine which pixels in a destination rect are
-    // affected by pixels in the source rect.
-    // See also FilterEffect::mapRect.
-    FloatRect mapRect(const FloatRect&) const;
+  bool canInterpolateWith(const FilterOperations&) const;
 
-    bool hasFilterThatAffectsOpacity() const;
-    bool hasFilterThatMovesPixels() const;
+  // Maps "forward" to determine which pixels in a destination rect are
+  // affected by pixels in the source rect.
+  // See also FilterEffect::mapRect.
+  FloatRect mapRect(const FloatRect&) const;
 
-    bool hasReferenceFilter() const;
+  bool hasFilterThatAffectsOpacity() const;
+  bool hasFilterThatMovesPixels() const;
 
-    DECLARE_TRACE();
+  bool hasReferenceFilter() const;
 
-private:
-    FilterOperationVector m_operations;
+  DECLARE_TRACE();
+
+ private:
+  FilterOperationVector m_operations;
 };
 
 // Wrapper object for the FilterOperations part object.
-class FilterOperationsWrapper : public GarbageCollected<FilterOperationsWrapper> {
-public:
-    static FilterOperationsWrapper* create()
-    {
-        return new FilterOperationsWrapper();
-    }
+class FilterOperationsWrapper
+    : public GarbageCollected<FilterOperationsWrapper> {
+ public:
+  static FilterOperationsWrapper* create() {
+    return new FilterOperationsWrapper();
+  }
 
-    static FilterOperationsWrapper* create(const FilterOperations& operations)
-    {
-        return new FilterOperationsWrapper(operations);
-    }
+  static FilterOperationsWrapper* create(const FilterOperations& operations) {
+    return new FilterOperationsWrapper(operations);
+  }
 
-    const FilterOperations& operations() const { return m_operations; }
+  const FilterOperations& operations() const { return m_operations; }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_operations); }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_operations); }
 
-private:
-    FilterOperationsWrapper()
-    {
-    }
+ private:
+  FilterOperationsWrapper() {}
 
-    explicit FilterOperationsWrapper(const FilterOperations& operations)
-        : m_operations(operations)
-    {
-    }
+  explicit FilterOperationsWrapper(const FilterOperations& operations)
+      : m_operations(operations) {}
 
-    FilterOperations m_operations;
+  FilterOperations m_operations;
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // FilterOperations_h
+#endif  // FilterOperations_h

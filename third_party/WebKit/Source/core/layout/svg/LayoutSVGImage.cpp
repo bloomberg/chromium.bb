@@ -42,157 +42,166 @@
 namespace blink {
 
 LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
-    : LayoutSVGModelObject(impl)
-    , m_needsBoundariesUpdate(true)
-    , m_needsTransformUpdate(true)
-    , m_imageResource(LayoutImageResource::create())
-{
-    m_imageResource->initialize(this);
+    : LayoutSVGModelObject(impl),
+      m_needsBoundariesUpdate(true),
+      m_needsTransformUpdate(true),
+      m_imageResource(LayoutImageResource::create()) {
+  m_imageResource->initialize(this);
 }
 
-LayoutSVGImage::~LayoutSVGImage()
-{
+LayoutSVGImage::~LayoutSVGImage() {}
+
+void LayoutSVGImage::willBeDestroyed() {
+  ImageQualityController::remove(*this);
+  m_imageResource->shutdown();
+  LayoutSVGModelObject::willBeDestroyed();
 }
 
-void LayoutSVGImage::willBeDestroyed()
-{
-    ImageQualityController::remove(*this);
-    m_imageResource->shutdown();
-    LayoutSVGModelObject::willBeDestroyed();
+static float resolveWidthForRatio(float height,
+                                  const FloatSize& intrinsicRatio) {
+  return height * intrinsicRatio.width() / intrinsicRatio.height();
 }
 
-static float resolveWidthForRatio(float height, const FloatSize& intrinsicRatio)
-{
-    return height * intrinsicRatio.width() / intrinsicRatio.height();
+static float resolveHeightForRatio(float width,
+                                   const FloatSize& intrinsicRatio) {
+  return width * intrinsicRatio.height() / intrinsicRatio.width();
 }
 
-static float resolveHeightForRatio(float width, const FloatSize& intrinsicRatio)
-{
-    return width * intrinsicRatio.height() / intrinsicRatio.width();
+FloatSize LayoutSVGImage::calculateObjectSize() const {
+  ImageResource* cachedImage = m_imageResource->cachedImage();
+  if (!cachedImage || cachedImage->errorOccurred())
+    return m_objectBoundingBox.size();
+
+  FloatSize intrinsicSize = FloatSize(cachedImage->getImage()->size());
+  if (styleRef().width().isAuto() && styleRef().height().isAuto())
+    return intrinsicSize;
+
+  if (styleRef().height().isAuto())
+    return FloatSize(
+        m_objectBoundingBox.width(),
+        resolveHeightForRatio(m_objectBoundingBox.width(), intrinsicSize));
+
+  DCHECK(styleRef().width().isAuto());
+  return FloatSize(
+      resolveWidthForRatio(m_objectBoundingBox.height(), intrinsicSize),
+      m_objectBoundingBox.height());
 }
 
-FloatSize LayoutSVGImage::calculateObjectSize() const
-{
-    ImageResource* cachedImage = m_imageResource->cachedImage();
-    if (!cachedImage || cachedImage->errorOccurred())
-        return m_objectBoundingBox.size();
+bool LayoutSVGImage::updateBoundingBox() {
+  FloatRect oldBoundaries = m_objectBoundingBox;
 
-    FloatSize intrinsicSize = FloatSize(cachedImage->getImage()->size());
-    if (styleRef().width().isAuto() && styleRef().height().isAuto())
-        return intrinsicSize;
+  SVGLengthContext lengthContext(element());
+  m_objectBoundingBox =
+      FloatRect(lengthContext.valueForLength(styleRef().svgStyle().x(),
+                                             styleRef(), SVGLengthMode::Width),
+                lengthContext.valueForLength(styleRef().svgStyle().y(),
+                                             styleRef(), SVGLengthMode::Height),
+                lengthContext.valueForLength(styleRef().width(), styleRef(),
+                                             SVGLengthMode::Width),
+                lengthContext.valueForLength(styleRef().height(), styleRef(),
+                                             SVGLengthMode::Height));
 
-    if (styleRef().height().isAuto())
-        return FloatSize(m_objectBoundingBox.width(), resolveHeightForRatio(m_objectBoundingBox.width(), intrinsicSize));
+  if (styleRef().width().isAuto() || styleRef().height().isAuto())
+    m_objectBoundingBox.setSize(calculateObjectSize());
 
-    DCHECK(styleRef().width().isAuto());
-    return FloatSize(resolveWidthForRatio(m_objectBoundingBox.height(), intrinsicSize), m_objectBoundingBox.height());
+  m_needsBoundariesUpdate |= oldBoundaries != m_objectBoundingBox;
+  if (element())
+    element()->setNeedsResizeObserverUpdate();
+
+  return oldBoundaries.size() != m_objectBoundingBox.size();
 }
 
-bool LayoutSVGImage::updateBoundingBox()
-{
-    FloatRect oldBoundaries = m_objectBoundingBox;
+void LayoutSVGImage::layout() {
+  ASSERT(needsLayout());
+  LayoutAnalyzer::Scope analyzer(*this);
 
-    SVGLengthContext lengthContext(element());
-    m_objectBoundingBox = FloatRect(
-        lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(), SVGLengthMode::Width),
-        lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(), SVGLengthMode::Height),
-        lengthContext.valueForLength(styleRef().width(), styleRef(), SVGLengthMode::Width),
-        lengthContext.valueForLength(styleRef().height(), styleRef(), SVGLengthMode::Height));
+  // Invalidate all resources of this client if our layout changed.
+  if (everHadLayout() && selfNeedsLayout())
+    SVGResourcesCache::clientLayoutChanged(this);
 
-    if (styleRef().width().isAuto() || styleRef().height().isAuto())
-        m_objectBoundingBox.setSize(calculateObjectSize());
+  updateBoundingBox();
 
-    m_needsBoundariesUpdate |= oldBoundaries != m_objectBoundingBox;
-    if (element())
-        element()->setNeedsResizeObserverUpdate();
+  bool updateParentBoundaries = false;
+  if (m_needsTransformUpdate) {
+    m_localTransform =
+        toSVGImageElement(element())->calculateAnimatedLocalTransform();
+    m_needsTransformUpdate = false;
+    updateParentBoundaries = true;
+  }
 
-    return oldBoundaries.size() != m_objectBoundingBox.size();
+  if (m_needsBoundariesUpdate) {
+    m_paintInvalidationBoundingBox = m_objectBoundingBox;
+    SVGLayoutSupport::intersectPaintInvalidationRectWithResources(
+        this, m_paintInvalidationBoundingBox);
+    m_needsBoundariesUpdate = false;
+    updateParentBoundaries = true;
+  }
+
+  // If our bounds changed, notify the parents.
+  if (updateParentBoundaries)
+    LayoutSVGModelObject::setNeedsBoundariesUpdate();
+
+  ASSERT(!m_needsBoundariesUpdate);
+  ASSERT(!m_needsTransformUpdate);
+  clearNeedsLayout();
 }
 
-void LayoutSVGImage::layout()
-{
-    ASSERT(needsLayout());
-    LayoutAnalyzer::Scope analyzer(*this);
-
-    // Invalidate all resources of this client if our layout changed.
-    if (everHadLayout() && selfNeedsLayout())
-        SVGResourcesCache::clientLayoutChanged(this);
-
-    updateBoundingBox();
-
-    bool updateParentBoundaries = false;
-    if (m_needsTransformUpdate) {
-        m_localTransform = toSVGImageElement(element())->calculateAnimatedLocalTransform();
-        m_needsTransformUpdate = false;
-        updateParentBoundaries = true;
-    }
-
-    if (m_needsBoundariesUpdate) {
-        m_paintInvalidationBoundingBox = m_objectBoundingBox;
-        SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
-        m_needsBoundariesUpdate = false;
-        updateParentBoundaries = true;
-    }
-
-    // If our bounds changed, notify the parents.
-    if (updateParentBoundaries)
-        LayoutSVGModelObject::setNeedsBoundariesUpdate();
-
-    ASSERT(!m_needsBoundariesUpdate);
-    ASSERT(!m_needsTransformUpdate);
-    clearNeedsLayout();
+void LayoutSVGImage::paint(const PaintInfo& paintInfo,
+                           const LayoutPoint&) const {
+  SVGImagePainter(*this).paint(paintInfo);
 }
 
-void LayoutSVGImage::paint(const PaintInfo& paintInfo, const LayoutPoint&) const
-{
-    SVGImagePainter(*this).paint(paintInfo);
-}
-
-bool LayoutSVGImage::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& pointInParent, HitTestAction hitTestAction)
-{
-    // We only draw in the forground phase, so we only hit-test then.
-    if (hitTestAction != HitTestForeground)
-        return false;
-
-    PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_IMAGE_HITTESTING, result.hitTestRequest(), style()->pointerEvents());
-    bool isVisible = (style()->visibility() == EVisibility::Visible);
-    if (isVisible || !hitRules.requireVisible) {
-        FloatPoint localPoint;
-        if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(*this, localToSVGParentTransform(), pointInParent, localPoint))
-            return false;
-
-        if (hitRules.canHitFill || hitRules.canHitBoundingBox) {
-            if (m_objectBoundingBox.contains(localPoint)) {
-                const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
-                updateHitTestResult(result, localLayoutPoint);
-                if (result.addNodeToListBasedTestResult(element(), localLayoutPoint) == StopHitTesting)
-                    return true;
-            }
-        }
-    }
-
+bool LayoutSVGImage::nodeAtFloatPoint(HitTestResult& result,
+                                      const FloatPoint& pointInParent,
+                                      HitTestAction hitTestAction) {
+  // We only draw in the forground phase, so we only hit-test then.
+  if (hitTestAction != HitTestForeground)
     return false;
-}
 
-void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
-{
-    // Notify parent resources that we've changed. This also invalidates
-    // references from resources (filters) that may have a cached
-    // representation of this image/layout object.
-    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(this, false);
+  PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_IMAGE_HITTESTING,
+                                 result.hitTestRequest(),
+                                 style()->pointerEvents());
+  bool isVisible = (style()->visibility() == EVisibility::Visible);
+  if (isVisible || !hitRules.requireVisible) {
+    FloatPoint localPoint;
+    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(
+            *this, localToSVGParentTransform(), pointInParent, localPoint))
+      return false;
 
-    if (styleRef().width().isAuto() || styleRef().height().isAuto()) {
-        if (updateBoundingBox())
-            setNeedsLayout(LayoutInvalidationReason::SizeChanged);
+    if (hitRules.canHitFill || hitRules.canHitBoundingBox) {
+      if (m_objectBoundingBox.contains(localPoint)) {
+        const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+        updateHitTestResult(result, localLayoutPoint);
+        if (result.addNodeToListBasedTestResult(element(), localLayoutPoint) ==
+            StopHitTesting)
+          return true;
+      }
     }
+  }
 
-    setShouldDoFullPaintInvalidation();
+  return false;
 }
 
-void LayoutSVGImage::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoint&, IncludeBlockVisualOverflowOrNot) const
-{
-    // this is called from paint() after the localTransform has already been applied
-    rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
+void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*) {
+  // Notify parent resources that we've changed. This also invalidates
+  // references from resources (filters) that may have a cached
+  // representation of this image/layout object.
+  LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(this,
+                                                                         false);
+
+  if (styleRef().width().isAuto() || styleRef().height().isAuto()) {
+    if (updateBoundingBox())
+      setNeedsLayout(LayoutInvalidationReason::SizeChanged);
+  }
+
+  setShouldDoFullPaintInvalidation();
 }
 
-} // namespace blink
+void LayoutSVGImage::addOutlineRects(Vector<LayoutRect>& rects,
+                                     const LayoutPoint&,
+                                     IncludeBlockVisualOverflowOrNot) const {
+  // this is called from paint() after the localTransform has already been applied
+  rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
+}
+
+}  // namespace blink

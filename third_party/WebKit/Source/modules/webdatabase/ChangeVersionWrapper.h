@@ -38,22 +38,25 @@ namespace blink {
 class SQLErrorData;
 
 class ChangeVersionWrapper final : public SQLTransactionWrapper {
-public:
-    static ChangeVersionWrapper* create(const String& oldVersion, const String& newVersion) { return new ChangeVersionWrapper(oldVersion, newVersion); }
+ public:
+  static ChangeVersionWrapper* create(const String& oldVersion,
+                                      const String& newVersion) {
+    return new ChangeVersionWrapper(oldVersion, newVersion);
+  }
 
-    bool performPreflight(SQLTransactionBackend*) override;
-    bool performPostflight(SQLTransactionBackend*) override;
-    SQLErrorData* sqlError() const override { return m_sqlError.get(); }
-    void handleCommitFailedAfterPostflight(SQLTransactionBackend*) override;
+  bool performPreflight(SQLTransactionBackend*) override;
+  bool performPostflight(SQLTransactionBackend*) override;
+  SQLErrorData* sqlError() const override { return m_sqlError.get(); }
+  void handleCommitFailedAfterPostflight(SQLTransactionBackend*) override;
 
-private:
-    ChangeVersionWrapper(const String& oldVersion, const String& newVersion);
+ private:
+  ChangeVersionWrapper(const String& oldVersion, const String& newVersion);
 
-    String m_oldVersion;
-    String m_newVersion;
-    std::unique_ptr<SQLErrorData> m_sqlError;
+  String m_oldVersion;
+  String m_newVersion;
+  std::unique_ptr<SQLErrorData> m_sqlError;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ChangeVersionWrapper_h
+#endif  // ChangeVersionWrapper_h

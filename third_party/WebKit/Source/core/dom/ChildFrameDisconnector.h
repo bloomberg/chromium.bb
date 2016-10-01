@@ -14,30 +14,25 @@ class HTMLFrameOwnerElement;
 class Node;
 
 class ChildFrameDisconnector {
-    STACK_ALLOCATED();
-public:
-    enum DisconnectPolicy {
-        RootAndDescendants,
-        DescendantsOnly
-    };
+  STACK_ALLOCATED();
 
-    explicit ChildFrameDisconnector(Node& root)
-        : m_root(root)
-    {
-    }
+ public:
+  enum DisconnectPolicy { RootAndDescendants, DescendantsOnly };
 
-    void disconnect(DisconnectPolicy = RootAndDescendants);
+  explicit ChildFrameDisconnector(Node& root) : m_root(root) {}
 
-private:
-    void collectFrameOwners(Node&);
-    void collectFrameOwners(ElementShadow&);
-    void disconnectCollectedFrameOwners();
-    Node& root() const { return *m_root; }
+  void disconnect(DisconnectPolicy = RootAndDescendants);
 
-    HeapVector<Member<HTMLFrameOwnerElement>, 10> m_frameOwners;
-    Member<Node> m_root;
+ private:
+  void collectFrameOwners(Node&);
+  void collectFrameOwners(ElementShadow&);
+  void disconnectCollectedFrameOwners();
+  Node& root() const { return *m_root; }
+
+  HeapVector<Member<HTMLFrameOwnerElement>, 10> m_frameOwners;
+  Member<Node> m_root;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ChildFrameDisconnector_h
+#endif  // ChildFrameDisconnector_h

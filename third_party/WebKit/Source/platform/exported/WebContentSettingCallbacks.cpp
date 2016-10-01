@@ -10,47 +10,48 @@
 
 namespace blink {
 
-class WebContentSettingCallbacksPrivate : public RefCounted<WebContentSettingCallbacksPrivate> {
-public:
-    static PassRefPtr<WebContentSettingCallbacksPrivate> create(std::unique_ptr<ContentSettingCallbacks> callbacks)
-    {
-        return adoptRef(new WebContentSettingCallbacksPrivate(std::move(callbacks)));
-    }
+class WebContentSettingCallbacksPrivate
+    : public RefCounted<WebContentSettingCallbacksPrivate> {
+ public:
+  static PassRefPtr<WebContentSettingCallbacksPrivate> create(
+      std::unique_ptr<ContentSettingCallbacks> callbacks) {
+    return adoptRef(
+        new WebContentSettingCallbacksPrivate(std::move(callbacks)));
+  }
 
-    ContentSettingCallbacks* callbacks() { return m_callbacks.get(); }
+  ContentSettingCallbacks* callbacks() { return m_callbacks.get(); }
 
-private:
-    WebContentSettingCallbacksPrivate(std::unique_ptr<ContentSettingCallbacks> callbacks) : m_callbacks(std::move(callbacks)) { }
-    std::unique_ptr<ContentSettingCallbacks> m_callbacks;
+ private:
+  WebContentSettingCallbacksPrivate(
+      std::unique_ptr<ContentSettingCallbacks> callbacks)
+      : m_callbacks(std::move(callbacks)) {}
+  std::unique_ptr<ContentSettingCallbacks> m_callbacks;
 };
 
-WebContentSettingCallbacks::WebContentSettingCallbacks(std::unique_ptr<ContentSettingCallbacks>&& callbacks)
-{
-    m_private = WebContentSettingCallbacksPrivate::create(std::move(callbacks));
+WebContentSettingCallbacks::WebContentSettingCallbacks(
+    std::unique_ptr<ContentSettingCallbacks>&& callbacks) {
+  m_private = WebContentSettingCallbacksPrivate::create(std::move(callbacks));
 }
 
-void WebContentSettingCallbacks::reset()
-{
-    m_private.reset();
+void WebContentSettingCallbacks::reset() {
+  m_private.reset();
 }
 
-void WebContentSettingCallbacks::assign(const WebContentSettingCallbacks& other)
-{
-    m_private = other.m_private;
+void WebContentSettingCallbacks::assign(
+    const WebContentSettingCallbacks& other) {
+  m_private = other.m_private;
 }
 
-void WebContentSettingCallbacks::doAllow()
-{
-    ASSERT(!m_private.isNull());
-    m_private->callbacks()->onAllowed();
-    m_private.reset();
+void WebContentSettingCallbacks::doAllow() {
+  ASSERT(!m_private.isNull());
+  m_private->callbacks()->onAllowed();
+  m_private.reset();
 }
 
-void WebContentSettingCallbacks::doDeny()
-{
-    ASSERT(!m_private.isNull());
-    m_private->callbacks()->onDenied();
-    m_private.reset();
+void WebContentSettingCallbacks::doDeny() {
+  ASSERT(!m_private.isNull());
+  m_private->callbacks()->onDenied();
+  m_private.reset();
 }
 
-} // namespace blink
+}  // namespace blink

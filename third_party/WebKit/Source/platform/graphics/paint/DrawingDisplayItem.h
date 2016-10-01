@@ -15,37 +15,44 @@
 namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
-public:
-    DrawingDisplayItem(const DisplayItemClient& client, Type type, sk_sp<const SkPicture> picture, bool knownToBeOpaque = false)
-        : DisplayItem(client, type, sizeof(*this))
-        , m_picture(picture && picture->approximateOpCount() ? std::move(picture) : nullptr)
-        , m_knownToBeOpaque(knownToBeOpaque)
-    {
-        DCHECK(isDrawingType(type));
-    }
+ public:
+  DrawingDisplayItem(const DisplayItemClient& client,
+                     Type type,
+                     sk_sp<const SkPicture> picture,
+                     bool knownToBeOpaque = false)
+      : DisplayItem(client, type, sizeof(*this)),
+        m_picture(picture && picture->approximateOpCount() ? std::move(picture)
+                                                           : nullptr),
+        m_knownToBeOpaque(knownToBeOpaque) {
+    DCHECK(isDrawingType(type));
+  }
 
-    void replay(GraphicsContext&) const override;
-    void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
-    bool drawsContent() const override;
+  void replay(GraphicsContext&) const override;
+  void appendToWebDisplayItemList(const IntRect&,
+                                  WebDisplayItemList*) const override;
+  bool drawsContent() const override;
 
-    const SkPicture* picture() const { return m_picture.get(); }
+  const SkPicture* picture() const { return m_picture.get(); }
 
-    bool knownToBeOpaque() const { DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); return m_knownToBeOpaque; }
+  bool knownToBeOpaque() const {
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    return m_knownToBeOpaque;
+  }
 
-    void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
+  void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
 
-private:
+ private:
 #ifndef NDEBUG
-    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+  void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    bool equals(const DisplayItem& other) const final;
+  bool equals(const DisplayItem& other) const final;
 
-    sk_sp<const SkPicture> m_picture;
+  sk_sp<const SkPicture> m_picture;
 
-    // True if there are no transparent areas. Only used for SlimmingPaintV2.
-    const bool m_knownToBeOpaque;
+  // True if there are no transparent areas. Only used for SlimmingPaintV2.
+  const bool m_knownToBeOpaque;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DrawingDisplayItem_h
+#endif  // DrawingDisplayItem_h

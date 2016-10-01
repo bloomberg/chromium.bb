@@ -12,8 +12,6 @@ namespace blink {
 
 CrossOriginAttributeValue crossOriginAttributeValue(const String& value);
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-
-

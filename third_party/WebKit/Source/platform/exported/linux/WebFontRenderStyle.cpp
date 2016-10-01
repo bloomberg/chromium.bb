@@ -34,26 +34,24 @@
 
 namespace blink {
 
-void WebFontRenderStyle::toFontRenderStyle(FontRenderStyle* out)
-{
-    out->useBitmaps = useBitmaps;
-    out->useAutoHint = useAutoHint;
-    out->useHinting = useHinting;
-    out->hintStyle = hintStyle;
-    out->useAntiAlias = useAntiAlias;
-    out->useSubpixelRendering = useSubpixelRendering;
-    out->useSubpixelPositioning = useSubpixelPositioning;
+void WebFontRenderStyle::toFontRenderStyle(FontRenderStyle* out) {
+  out->useBitmaps = useBitmaps;
+  out->useAutoHint = useAutoHint;
+  out->useHinting = useHinting;
+  out->hintStyle = hintStyle;
+  out->useAntiAlias = useAntiAlias;
+  out->useSubpixelRendering = useSubpixelRendering;
+  out->useSubpixelPositioning = useSubpixelPositioning;
 }
 
-void WebFontRenderStyle::setDefaults()
-{
-    useBitmaps = FontRenderStyle::NoPreference;
-    useAutoHint = FontRenderStyle::NoPreference;
-    useHinting = FontRenderStyle::NoPreference;
-    hintStyle = 0;
-    useAntiAlias = FontRenderStyle::NoPreference;
-    useSubpixelRendering = FontRenderStyle::NoPreference;
-    useSubpixelPositioning = FontRenderStyle::NoPreference;
+void WebFontRenderStyle::setDefaults() {
+  useBitmaps = FontRenderStyle::NoPreference;
+  useAutoHint = FontRenderStyle::NoPreference;
+  useHinting = FontRenderStyle::NoPreference;
+  hintStyle = 0;
+  useAntiAlias = FontRenderStyle::NoPreference;
+  useSubpixelRendering = FontRenderStyle::NoPreference;
+  useSubpixelPositioning = FontRenderStyle::NoPreference;
 }
 
-} // namespace blink
+}  // namespace blink

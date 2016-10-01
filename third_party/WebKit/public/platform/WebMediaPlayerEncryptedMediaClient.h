@@ -40,15 +40,17 @@ class WebString;
 class WebURL;
 
 class BLINK_PLATFORM_EXPORT WebMediaPlayerEncryptedMediaClient {
-public:
-    virtual void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) = 0;
-    virtual void didBlockPlaybackWaitingForKey() = 0;
-    virtual void didResumePlaybackBlockedForKey() = 0;
+ public:
+  virtual void encrypted(WebEncryptedMediaInitDataType,
+                         const unsigned char* initData,
+                         unsigned initDataLength) = 0;
+  virtual void didBlockPlaybackWaitingForKey() = 0;
+  virtual void didResumePlaybackBlockedForKey() = 0;
 
-protected:
-    ~WebMediaPlayerEncryptedMediaClient() { }
+ protected:
+  ~WebMediaPlayerEncryptedMediaClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

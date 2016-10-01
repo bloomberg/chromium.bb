@@ -32,32 +32,36 @@
 namespace blink {
 
 class ClearButtonElement final : public HTMLDivElement {
-public:
-    class ClearButtonOwner : public GarbageCollectedMixin {
-    public:
-        virtual ~ClearButtonOwner() { }
-        virtual void focusAndSelectClearButtonOwner() = 0;
-        virtual bool shouldClearButtonRespondToMouseEvents() = 0;
-        virtual void clearValue() = 0;
-    };
+ public:
+  class ClearButtonOwner : public GarbageCollectedMixin {
+   public:
+    virtual ~ClearButtonOwner() {}
+    virtual void focusAndSelectClearButtonOwner() = 0;
+    virtual bool shouldClearButtonRespondToMouseEvents() = 0;
+    virtual void clearValue() = 0;
+  };
 
-    static ClearButtonElement* create(Document&, ClearButtonOwner&);
-    void removeClearButtonOwner() { m_clearButtonOwner = nullptr; }
+  static ClearButtonElement* create(Document&, ClearButtonOwner&);
+  void removeClearButtonOwner() { m_clearButtonOwner = nullptr; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    ClearButtonElement(Document&, ClearButtonOwner&);
-    void detachLayoutTree(const AttachContext& = AttachContext()) override;
-    bool isMouseFocusable() const override { return false; }
-    void defaultEventHandler(Event*) override;
-    bool isClearButtonElement() const override;
+ private:
+  ClearButtonElement(Document&, ClearButtonOwner&);
+  void detachLayoutTree(const AttachContext& = AttachContext()) override;
+  bool isMouseFocusable() const override { return false; }
+  void defaultEventHandler(Event*) override;
+  bool isClearButtonElement() const override;
 
-    Member<ClearButtonOwner> m_clearButtonOwner;
+  Member<ClearButtonOwner> m_clearButtonOwner;
 };
 
-DEFINE_TYPE_CASTS(ClearButtonElement, Element, element, element->isClearButtonElement(), element.isClearButtonElement());
+DEFINE_TYPE_CASTS(ClearButtonElement,
+                  Element,
+                  element,
+                  element->isClearButtonElement(),
+                  element.isClearButtonElement());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ClearButtonElement_h
+#endif  // ClearButtonElement_h

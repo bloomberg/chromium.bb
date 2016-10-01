@@ -35,29 +35,32 @@ namespace blink {
 class IntSize;
 
 class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
-public:
-    static PassRefPtr<GradientGeneratedImage> create(PassRefPtr<Gradient> generator, const IntSize& size)
-    {
-        return adoptRef(new GradientGeneratedImage(std::move(generator), size));
-    }
+ public:
+  static PassRefPtr<GradientGeneratedImage> create(
+      PassRefPtr<Gradient> generator,
+      const IntSize& size) {
+    return adoptRef(new GradientGeneratedImage(std::move(generator), size));
+  }
 
-    ~GradientGeneratedImage() override {}
+  ~GradientGeneratedImage() override {}
 
-    bool applyShader(SkPaint&, const SkMatrix&) override;
+  bool applyShader(SkPaint&, const SkMatrix&) override;
 
-protected:
-    void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
-    void drawTile(GraphicsContext&, const FloatRect&) override;
+ protected:
+  void draw(SkCanvas*,
+            const SkPaint&,
+            const FloatRect&,
+            const FloatRect&,
+            RespectImageOrientationEnum,
+            ImageClampingMode) override;
+  void drawTile(GraphicsContext&, const FloatRect&) override;
 
-    GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
-        : GeneratedImage(size)
-        , m_gradient(generator)
-    {
-    }
+  GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
+      : GeneratedImage(size), m_gradient(generator) {}
 
-    RefPtr<Gradient> m_gradient;
+  RefPtr<Gradient> m_gradient;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

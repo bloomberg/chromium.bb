@@ -32,181 +32,203 @@
 namespace blink {
 
 EqualPowerPanner::EqualPowerPanner(float sampleRate)
-    : Panner(PanningModelEqualPower)
-{
+    : Panner(PanningModelEqualPower) {}
+
+void EqualPowerPanner::pan(double azimuth,
+                           double /*elevation*/,
+                           const AudioBus* inputBus,
+                           AudioBus* outputBus,
+                           size_t framesToProcess,
+                           AudioBus::ChannelInterpretation) {
+  bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 ||
+                                  inputBus->numberOfChannels() == 2) &&
+                     framesToProcess <= inputBus->length();
+  ASSERT(isInputSafe);
+  if (!isInputSafe)
+    return;
+
+  unsigned numberOfInputChannels = inputBus->numberOfChannels();
+
+  bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 &&
+                      framesToProcess <= outputBus->length();
+  ASSERT(isOutputSafe);
+  if (!isOutputSafe)
+    return;
+
+  const float* sourceL = inputBus->channel(0)->data();
+  const float* sourceR =
+      numberOfInputChannels > 1 ? inputBus->channel(1)->data() : sourceL;
+  float* destinationL =
+      outputBus->channelByType(AudioBus::ChannelLeft)->mutableData();
+  float* destinationR =
+      outputBus->channelByType(AudioBus::ChannelRight)->mutableData();
+
+  if (!sourceL || !sourceR || !destinationL || !destinationR)
+    return;
+
+  // Clamp azimuth to allowed range of -180 -> +180.
+  azimuth = clampTo(azimuth, -180.0, 180.0);
+
+  // Alias the azimuth ranges behind us to in front of us:
+  // -90 -> -180 to -90 -> 0 and 90 -> 180 to 90 -> 0
+  if (azimuth < -90)
+    azimuth = -180 - azimuth;
+  else if (azimuth > 90)
+    azimuth = 180 - azimuth;
+
+  double desiredPanPosition;
+  double desiredGainL;
+  double desiredGainR;
+
+  if (numberOfInputChannels == 1) {  // For mono source case.
+    // Pan smoothly from left to right with azimuth going from -90 -> +90 degrees.
+    desiredPanPosition = (azimuth + 90) / 180;
+  } else {               // For stereo source case.
+    if (azimuth <= 0) {  // from -90 -> 0
+      // sourceL -> destL and "equal-power pan" sourceR as in mono case
+      // by transforming the "azimuth" value from -90 -> 0 degrees into the range -90 -> +90.
+      desiredPanPosition = (azimuth + 90) / 90;
+    } else {  // from 0 -> +90
+      // sourceR -> destR and "equal-power pan" sourceL as in mono case
+      // by transforming the "azimuth" value from 0 -> +90 degrees into the range -90 -> +90.
+      desiredPanPosition = azimuth / 90;
+    }
+  }
+
+  desiredGainL = std::cos(piOverTwoDouble * desiredPanPosition);
+  desiredGainR = std::sin(piOverTwoDouble * desiredPanPosition);
+
+  int n = framesToProcess;
+
+  if (numberOfInputChannels == 1) {  // For mono source case.
+    while (n--) {
+      float inputL = *sourceL++;
+
+      *destinationL++ = static_cast<float>(inputL * desiredGainL);
+      *destinationR++ = static_cast<float>(inputL * desiredGainR);
+    }
+  } else {               // For stereo source case.
+    if (azimuth <= 0) {  // from -90 -> 0
+      while (n--) {
+        float inputL = *sourceL++;
+        float inputR = *sourceR++;
+
+        *destinationL++ = static_cast<float>(inputL + inputR * desiredGainL);
+        *destinationR++ = static_cast<float>(inputR * desiredGainR);
+      }
+    } else {  // from 0 -> +90
+      while (n--) {
+        float inputL = *sourceL++;
+        float inputR = *sourceR++;
+
+        *destinationL++ = static_cast<float>(inputL * desiredGainL);
+        *destinationR++ = static_cast<float>(inputR + inputL * desiredGainR);
+      }
+    }
+  }
 }
 
-void EqualPowerPanner::pan(double azimuth, double /*elevation*/, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation)
-{
-    bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 || inputBus->numberOfChannels() == 2) && framesToProcess <= inputBus->length();
-    ASSERT(isInputSafe);
-    if (!isInputSafe)
-        return;
+void EqualPowerPanner::calculateDesiredGain(double& desiredGainL,
+                                            double& desiredGainR,
+                                            double azimuth,
+                                            int numberOfInputChannels) {
+  // Clamp azimuth to allowed range of -180 -> +180.
+  azimuth = clampTo(azimuth, -180.0, 180.0);
 
-    unsigned numberOfInputChannels = inputBus->numberOfChannels();
+  // Alias the azimuth ranges behind us to in front of us:
+  // -90 -> -180 to -90 -> 0 and 90 -> 180 to 90 -> 0
+  if (azimuth < -90)
+    azimuth = -180 - azimuth;
+  else if (azimuth > 90)
+    azimuth = 180 - azimuth;
 
-    bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 && framesToProcess <= outputBus->length();
-    ASSERT(isOutputSafe);
-    if (!isOutputSafe)
-        return;
+  double desiredPanPosition;
 
-    const float* sourceL = inputBus->channel(0)->data();
-    const float* sourceR = numberOfInputChannels > 1 ? inputBus->channel(1)->data() : sourceL;
-    float* destinationL = outputBus->channelByType(AudioBus::ChannelLeft)->mutableData();
-    float* destinationR = outputBus->channelByType(AudioBus::ChannelRight)->mutableData();
-
-    if (!sourceL || !sourceR || !destinationL || !destinationR)
-        return;
-
-    // Clamp azimuth to allowed range of -180 -> +180.
-    azimuth = clampTo(azimuth, -180.0, 180.0);
-
-    // Alias the azimuth ranges behind us to in front of us:
-    // -90 -> -180 to -90 -> 0 and 90 -> 180 to 90 -> 0
-    if (azimuth < -90)
-        azimuth = -180 - azimuth;
-    else if (azimuth > 90)
-        azimuth = 180 - azimuth;
-
-    double desiredPanPosition;
-    double desiredGainL;
-    double desiredGainR;
-
-    if (numberOfInputChannels == 1) { // For mono source case.
-        // Pan smoothly from left to right with azimuth going from -90 -> +90 degrees.
-        desiredPanPosition = (azimuth + 90) / 180;
-    } else { // For stereo source case.
-        if (azimuth <= 0) { // from -90 -> 0
-            // sourceL -> destL and "equal-power pan" sourceR as in mono case
-            // by transforming the "azimuth" value from -90 -> 0 degrees into the range -90 -> +90.
-            desiredPanPosition = (azimuth + 90) / 90;
-        } else { // from 0 -> +90
-            // sourceR -> destR and "equal-power pan" sourceL as in mono case
-            // by transforming the "azimuth" value from 0 -> +90 degrees into the range -90 -> +90.
-            desiredPanPosition = azimuth / 90;
-        }
+  if (numberOfInputChannels == 1) {  // For mono source case.
+    // Pan smoothly from left to right with azimuth going from -90 -> +90 degrees.
+    desiredPanPosition = (azimuth + 90) / 180;
+  } else {               // For stereo source case.
+    if (azimuth <= 0) {  // from -90 -> 0
+      // sourceL -> destL and "equal-power pan" sourceR as in mono case
+      // by transforming the "azimuth" value from -90 -> 0 degrees into the range -90 -> +90.
+      desiredPanPosition = (azimuth + 90) / 90;
+    } else {  // from 0 -> +90
+      // sourceR -> destR and "equal-power pan" sourceL as in mono case
+      // by transforming the "azimuth" value from 0 -> +90 degrees into the range -90 -> +90.
+      desiredPanPosition = azimuth / 90;
     }
+  }
 
-    desiredGainL = std::cos(piOverTwoDouble * desiredPanPosition);
-    desiredGainR = std::sin(piOverTwoDouble * desiredPanPosition);
-
-    int n = framesToProcess;
-
-    if (numberOfInputChannels == 1) { // For mono source case.
-        while (n--) {
-            float inputL = *sourceL++;
-
-            *destinationL++ = static_cast<float>(inputL * desiredGainL);
-            *destinationR++ = static_cast<float>(inputL * desiredGainR);
-        }
-    } else { // For stereo source case.
-        if (azimuth <= 0) { // from -90 -> 0
-            while (n--) {
-                float inputL = *sourceL++;
-                float inputR = *sourceR++;
-
-                *destinationL++ = static_cast<float>(inputL + inputR * desiredGainL);
-                *destinationR++ = static_cast<float>(inputR * desiredGainR);
-            }
-        } else { // from 0 -> +90
-            while (n--) {
-                float inputL = *sourceL++;
-                float inputR = *sourceR++;
-
-                *destinationL++ = static_cast<float>(inputL * desiredGainL);
-                *destinationR++ = static_cast<float>(inputR + inputL * desiredGainR);
-            }
-        }
-    }
+  desiredGainL = std::cos(piOverTwoDouble * desiredPanPosition);
+  desiredGainR = std::sin(piOverTwoDouble * desiredPanPosition);
 }
 
-void EqualPowerPanner::calculateDesiredGain(double& desiredGainL, double& desiredGainR, double azimuth, int numberOfInputChannels)
-{
-    // Clamp azimuth to allowed range of -180 -> +180.
-    azimuth = clampTo(azimuth, -180.0, 180.0);
+void EqualPowerPanner::panWithSampleAccurateValues(
+    double* azimuth,
+    double* /*elevation*/,
+    const AudioBus* inputBus,
+    AudioBus* outputBus,
+    size_t framesToProcess,
+    AudioBus::ChannelInterpretation) {
+  bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 ||
+                                  inputBus->numberOfChannels() == 2) &&
+                     framesToProcess <= inputBus->length();
+  DCHECK(isInputSafe);
+  if (!isInputSafe)
+    return;
 
-    // Alias the azimuth ranges behind us to in front of us:
-    // -90 -> -180 to -90 -> 0 and 90 -> 180 to 90 -> 0
-    if (azimuth < -90)
-        azimuth = -180 - azimuth;
-    else if (azimuth > 90)
-        azimuth = 180 - azimuth;
+  unsigned numberOfInputChannels = inputBus->numberOfChannels();
 
-    double desiredPanPosition;
+  bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 &&
+                      framesToProcess <= outputBus->length();
+  DCHECK(isOutputSafe);
+  if (!isOutputSafe)
+    return;
 
-    if (numberOfInputChannels == 1) { // For mono source case.
-        // Pan smoothly from left to right with azimuth going from -90 -> +90 degrees.
-        desiredPanPosition = (azimuth + 90) / 180;
-    } else { // For stereo source case.
-        if (azimuth <= 0) { // from -90 -> 0
-            // sourceL -> destL and "equal-power pan" sourceR as in mono case
-            // by transforming the "azimuth" value from -90 -> 0 degrees into the range -90 -> +90.
-            desiredPanPosition = (azimuth + 90) / 90;
-        } else { // from 0 -> +90
-            // sourceR -> destR and "equal-power pan" sourceL as in mono case
-            // by transforming the "azimuth" value from 0 -> +90 degrees into the range -90 -> +90.
-            desiredPanPosition = azimuth / 90;
-        }
+  const float* sourceL = inputBus->channel(0)->data();
+  const float* sourceR =
+      numberOfInputChannels > 1 ? inputBus->channel(1)->data() : sourceL;
+  float* destinationL =
+      outputBus->channelByType(AudioBus::ChannelLeft)->mutableData();
+  float* destinationR =
+      outputBus->channelByType(AudioBus::ChannelRight)->mutableData();
+
+  if (!sourceL || !sourceR || !destinationL || !destinationR)
+    return;
+
+  int n = framesToProcess;
+
+  if (numberOfInputChannels == 1) {  // For mono source case.
+    for (int k = 0; k < n; ++k) {
+      double desiredGainL;
+      double desiredGainR;
+      float inputL = *sourceL++;
+
+      calculateDesiredGain(desiredGainL, desiredGainR, azimuth[k],
+                           numberOfInputChannels);
+      *destinationL++ = static_cast<float>(inputL * desiredGainL);
+      *destinationR++ = static_cast<float>(inputL * desiredGainR);
     }
+  } else {  // For stereo source case.
+    for (int k = 0; k < n; ++k) {
+      double desiredGainL;
+      double desiredGainR;
 
-    desiredGainL = std::cos(piOverTwoDouble * desiredPanPosition);
-    desiredGainR = std::sin(piOverTwoDouble * desiredPanPosition);
+      calculateDesiredGain(desiredGainL, desiredGainR, azimuth[k],
+                           numberOfInputChannels);
+      if (azimuth[k] <= 0) {  // from -90 -> 0
+        float inputL = *sourceL++;
+        float inputR = *sourceR++;
+        *destinationL++ = static_cast<float>(inputL + inputR * desiredGainL);
+        *destinationR++ = static_cast<float>(inputR * desiredGainR);
+      } else {  // from 0 -> +90
+        float inputL = *sourceL++;
+        float inputR = *sourceR++;
+        *destinationL++ = static_cast<float>(inputL * desiredGainL);
+        *destinationR++ = static_cast<float>(inputR + inputL * desiredGainR);
+      }
+    }
+  }
 }
 
-void EqualPowerPanner::panWithSampleAccurateValues(double* azimuth, double* /*elevation*/, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess, AudioBus::ChannelInterpretation)
-{
-    bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 || inputBus->numberOfChannels() == 2) && framesToProcess <= inputBus->length();
-    DCHECK(isInputSafe);
-    if (!isInputSafe)
-        return;
-
-    unsigned numberOfInputChannels = inputBus->numberOfChannels();
-
-    bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 && framesToProcess <= outputBus->length();
-    DCHECK(isOutputSafe);
-    if (!isOutputSafe)
-        return;
-
-    const float* sourceL = inputBus->channel(0)->data();
-    const float* sourceR = numberOfInputChannels > 1 ? inputBus->channel(1)->data() : sourceL;
-    float* destinationL = outputBus->channelByType(AudioBus::ChannelLeft)->mutableData();
-    float* destinationR = outputBus->channelByType(AudioBus::ChannelRight)->mutableData();
-
-    if (!sourceL || !sourceR || !destinationL || !destinationR)
-        return;
-
-    int n = framesToProcess;
-
-    if (numberOfInputChannels == 1) { // For mono source case.
-        for (int k = 0; k < n; ++k) {
-            double desiredGainL;
-            double desiredGainR;
-            float inputL = *sourceL++;
-
-            calculateDesiredGain(desiredGainL, desiredGainR, azimuth[k], numberOfInputChannels);
-            *destinationL++ = static_cast<float>(inputL * desiredGainL);
-            *destinationR++ = static_cast<float>(inputL * desiredGainR);
-        }
-    } else { // For stereo source case.
-        for (int k = 0; k < n; ++k) {
-            double desiredGainL;
-            double desiredGainR;
-
-            calculateDesiredGain(desiredGainL, desiredGainR, azimuth[k], numberOfInputChannels);
-            if (azimuth[k] <= 0) { // from -90 -> 0
-                float inputL = *sourceL++;
-                float inputR = *sourceR++;
-                *destinationL++ = static_cast<float>(inputL + inputR * desiredGainL);
-                *destinationR++ = static_cast<float>(inputR * desiredGainR);
-            } else { // from 0 -> +90
-                float inputL = *sourceL++;
-                float inputR = *sourceR++;
-                *destinationL++ = static_cast<float>(inputL * desiredGainL);
-                *destinationR++ = static_cast<float>(inputR + inputL * desiredGainR);
-            }
-        }
-    }
-}
-
-} // namespace blink
-
+}  // namespace blink

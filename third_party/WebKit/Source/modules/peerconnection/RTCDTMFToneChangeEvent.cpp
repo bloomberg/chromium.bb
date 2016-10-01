@@ -27,47 +27,39 @@
 
 namespace blink {
 
-RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const String& tone)
-{
-    return new RTCDTMFToneChangeEvent(tone);
+RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const String& tone) {
+  return new RTCDTMFToneChangeEvent(tone);
 }
 
-RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
-{
-    DCHECK(type == EventTypeNames::tonechange);
-    return new RTCDTMFToneChangeEvent(initializer);
+RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::create(
+    const AtomicString& type,
+    const RTCDTMFToneChangeEventInit& initializer) {
+  DCHECK(type == EventTypeNames::tonechange);
+  return new RTCDTMFToneChangeEvent(initializer);
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
-    : Event(EventTypeNames::tonechange, false, false)
-    , m_tone(tone)
-{
+    : Event(EventTypeNames::tonechange, false, false), m_tone(tone) {}
+
+RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(
+    const RTCDTMFToneChangeEventInit& initializer)
+    : Event(EventTypeNames::tonechange, initializer) {
+  if (initializer.hasTone())
+    m_tone = initializer.tone();
 }
 
-RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const RTCDTMFToneChangeEventInit& initializer)
-    : Event(EventTypeNames::tonechange, initializer)
-{
-    if (initializer.hasTone())
-        m_tone = initializer.tone();
+RTCDTMFToneChangeEvent::~RTCDTMFToneChangeEvent() {}
+
+const String& RTCDTMFToneChangeEvent::tone() const {
+  return m_tone;
 }
 
-RTCDTMFToneChangeEvent::~RTCDTMFToneChangeEvent()
-{
+const AtomicString& RTCDTMFToneChangeEvent::interfaceName() const {
+  return EventNames::RTCDTMFToneChangeEvent;
 }
 
-const String& RTCDTMFToneChangeEvent::tone() const
-{
-    return m_tone;
+DEFINE_TRACE(RTCDTMFToneChangeEvent) {
+  Event::trace(visitor);
 }
 
-const AtomicString& RTCDTMFToneChangeEvent::interfaceName() const
-{
-    return EventNames::RTCDTMFToneChangeEvent;
-}
-
-DEFINE_TRACE(RTCDTMFToneChangeEvent)
-{
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

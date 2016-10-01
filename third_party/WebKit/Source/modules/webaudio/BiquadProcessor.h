@@ -38,58 +38,68 @@ namespace blink {
 // BiquadProcessor is an AudioDSPKernelProcessor which uses Biquad objects to implement several common filters.
 
 class BiquadProcessor final : public AudioDSPKernelProcessor {
-public:
-    // This values are used in histograms and should not be renumbered or deleted.
-    enum FilterType {
-        LowPass = 0,
-        HighPass = 1,
-        BandPass = 2,
-        LowShelf = 3,
-        HighShelf = 4,
-        Peaking = 5,
-        Notch = 6,
-        Allpass = 7
-    };
+ public:
+  // This values are used in histograms and should not be renumbered or deleted.
+  enum FilterType {
+    LowPass = 0,
+    HighPass = 1,
+    BandPass = 2,
+    LowShelf = 3,
+    HighShelf = 4,
+    Peaking = 5,
+    Notch = 6,
+    Allpass = 7
+  };
 
-    BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune);
-    ~BiquadProcessor() override;
+  BiquadProcessor(float sampleRate,
+                  size_t numberOfChannels,
+                  AudioParamHandler& frequency,
+                  AudioParamHandler& q,
+                  AudioParamHandler& gain,
+                  AudioParamHandler& detune);
+  ~BiquadProcessor() override;
 
-    std::unique_ptr<AudioDSPKernel> createKernel() override;
+  std::unique_ptr<AudioDSPKernel> createKernel() override;
 
-    void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) override;
+  void process(const AudioBus* source,
+               AudioBus* destination,
+               size_t framesToProcess) override;
 
-    // Get the magnitude and phase response of the filter at the given
-    // set of frequencies (in Hz). The phase response is in radians.
-    void getFrequencyResponse(int nFrequencies, const float* frequencyHz, float* magResponse, float* phaseResponse);
+  // Get the magnitude and phase response of the filter at the given
+  // set of frequencies (in Hz). The phase response is in radians.
+  void getFrequencyResponse(int nFrequencies,
+                            const float* frequencyHz,
+                            float* magResponse,
+                            float* phaseResponse);
 
-    void checkForDirtyCoefficients();
+  void checkForDirtyCoefficients();
 
-    bool filterCoefficientsDirty() const { return m_filterCoefficientsDirty; }
-    bool hasSampleAccurateValues() const { return m_hasSampleAccurateValues; }
+  bool filterCoefficientsDirty() const { return m_filterCoefficientsDirty; }
+  bool hasSampleAccurateValues() const { return m_hasSampleAccurateValues; }
 
-    AudioParamHandler& parameter1() { return *m_parameter1; }
-    AudioParamHandler& parameter2() { return *m_parameter2; }
-    AudioParamHandler& parameter3() { return *m_parameter3; }
-    AudioParamHandler& parameter4() { return *m_parameter4; }
+  AudioParamHandler& parameter1() { return *m_parameter1; }
+  AudioParamHandler& parameter2() { return *m_parameter2; }
+  AudioParamHandler& parameter3() { return *m_parameter3; }
+  AudioParamHandler& parameter4() { return *m_parameter4; }
 
-    FilterType type() const { return m_type; }
-    void setType(FilterType);
+  FilterType type() const { return m_type; }
+  void setType(FilterType);
 
-private:
-    FilterType m_type;
+ private:
+  FilterType m_type;
 
-    RefPtr<AudioParamHandler> m_parameter1;
-    RefPtr<AudioParamHandler> m_parameter2;
-    RefPtr<AudioParamHandler> m_parameter3;
-    RefPtr<AudioParamHandler> m_parameter4;
+  RefPtr<AudioParamHandler> m_parameter1;
+  RefPtr<AudioParamHandler> m_parameter2;
+  RefPtr<AudioParamHandler> m_parameter3;
+  RefPtr<AudioParamHandler> m_parameter4;
 
-    // so DSP kernels know when to re-compute coefficients
-    bool m_filterCoefficientsDirty;
+  // so DSP kernels know when to re-compute coefficients
+  bool m_filterCoefficientsDirty;
 
-    // Set to true if any of the filter parameters are sample-accurate.
-    bool m_hasSampleAccurateValues;
+  // Set to true if any of the filter parameters are sample-accurate.
+  bool m_hasSampleAccurateValues;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BiquadProcessor_h
+#endif  // BiquadProcessor_h

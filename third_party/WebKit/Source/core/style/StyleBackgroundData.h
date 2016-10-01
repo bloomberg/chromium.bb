@@ -37,34 +37,35 @@ namespace blink {
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class StyleBackgroundData : public RefCounted<StyleBackgroundData> {
-public:
-    static PassRefPtr<StyleBackgroundData> create() { return adoptRef(new StyleBackgroundData); }
-    PassRefPtr<StyleBackgroundData> copy() const { return adoptRef(new StyleBackgroundData(*this)); }
-    ~StyleBackgroundData() { }
+ public:
+  static PassRefPtr<StyleBackgroundData> create() {
+    return adoptRef(new StyleBackgroundData);
+  }
+  PassRefPtr<StyleBackgroundData> copy() const {
+    return adoptRef(new StyleBackgroundData(*this));
+  }
+  ~StyleBackgroundData() {}
 
-    bool operator==(const StyleBackgroundData&) const;
-    bool operator!=(const StyleBackgroundData& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const StyleBackgroundData&) const;
+  bool operator!=(const StyleBackgroundData& o) const { return !(*this == o); }
 
-    bool visuallyEqual(const StyleBackgroundData&) const;
+  bool visuallyEqual(const StyleBackgroundData&) const;
 
-    const FillLayer& background() const { return m_background; }
-    const StyleColor& color() const { return m_color; }
-    const OutlineValue& outline() const { return m_outline; }
+  const FillLayer& background() const { return m_background; }
+  const StyleColor& color() const { return m_color; }
+  const OutlineValue& outline() const { return m_outline; }
 
-private:
-    friend class ComputedStyle;
+ private:
+  friend class ComputedStyle;
 
-    StyleBackgroundData();
-    StyleBackgroundData(const StyleBackgroundData&);
+  StyleBackgroundData();
+  StyleBackgroundData(const StyleBackgroundData&);
 
-    FillLayer m_background;
-    StyleColor m_color;
-    OutlineValue m_outline;
+  FillLayer m_background;
+  StyleColor m_color;
+  OutlineValue m_outline;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleBackgroundData_h
+#endif  // StyleBackgroundData_h

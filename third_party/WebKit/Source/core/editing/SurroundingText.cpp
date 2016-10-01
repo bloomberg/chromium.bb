@@ -40,71 +40,81 @@
 namespace blink {
 
 SurroundingText::SurroundingText(const Range& range, unsigned maxLength)
-    : m_startOffsetInContent(0)
-    , m_endOffsetInContent(0)
-{
-    initialize(range.startPosition(), range.endPosition(), maxLength);
+    : m_startOffsetInContent(0), m_endOffsetInContent(0) {
+  initialize(range.startPosition(), range.endPosition(), maxLength);
 }
 
 SurroundingText::SurroundingText(const Position& position, unsigned maxLength)
-    : m_startOffsetInContent(0)
-    , m_endOffsetInContent(0)
-{
-    initialize(position, position, maxLength);
+    : m_startOffsetInContent(0), m_endOffsetInContent(0) {
+  initialize(position, position, maxLength);
 }
 
-void SurroundingText::initialize(const Position& startPosition, const Position& endPosition, unsigned maxLength)
-{
-    DCHECK_EQ(startPosition.document(), endPosition.document());
+void SurroundingText::initialize(const Position& startPosition,
+                                 const Position& endPosition,
+                                 unsigned maxLength) {
+  DCHECK_EQ(startPosition.document(), endPosition.document());
 
-    const unsigned halfMaxLength = maxLength / 2;
+  const unsigned halfMaxLength = maxLength / 2;
 
-    Document* document = startPosition.document();
-    // The position will have no document if it is null (as in no position).
-    if (!document || !document->documentElement())
-        return;
-    DCHECK(!document->needsLayoutTreeUpdate());
+  Document* document = startPosition.document();
+  // The position will have no document if it is null (as in no position).
+  if (!document || !document->documentElement())
+    return;
+  DCHECK(!document->needsLayoutTreeUpdate());
 
-    // The forward range starts at the selection end and ends at the document's
-    // end. It will then be updated to only contain the text in the text in the
-    // right range around the selection.
-    CharacterIterator forwardIterator(endPosition, Position::lastPositionInNode(document->documentElement()).parentAnchoredEquivalent(), TextIteratorStopsOnFormControls);
-    // FIXME: why do we stop going trough the text if we were not able to select something on the right?
-    if (!forwardIterator.atEnd())
-        forwardIterator.advance(maxLength - halfMaxLength);
+  // The forward range starts at the selection end and ends at the document's
+  // end. It will then be updated to only contain the text in the text in the
+  // right range around the selection.
+  CharacterIterator forwardIterator(
+      endPosition, Position::lastPositionInNode(document->documentElement())
+                       .parentAnchoredEquivalent(),
+      TextIteratorStopsOnFormControls);
+  // FIXME: why do we stop going trough the text if we were not able to select something on the right?
+  if (!forwardIterator.atEnd())
+    forwardIterator.advance(maxLength - halfMaxLength);
 
-    EphemeralRange forwardRange = forwardIterator.range();
-    if (forwardRange.isNull() || !Range::create(*document, endPosition, forwardRange.startPosition())->text().length())
-        return;
+  EphemeralRange forwardRange = forwardIterator.range();
+  if (forwardRange.isNull() ||
+      !Range::create(*document, endPosition, forwardRange.startPosition())
+           ->text()
+           .length())
+    return;
 
-    // Same as with the forward range but with the backward range. The range
-    // starts at the document's start and ends at the selection start and will
-    // be updated.
-    BackwardsCharacterIterator backwardsIterator(Position::firstPositionInNode(document->documentElement()).parentAnchoredEquivalent(), startPosition, TextIteratorStopsOnFormControls);
-    if (!backwardsIterator.atEnd())
-        backwardsIterator.advance(halfMaxLength);
+  // Same as with the forward range but with the backward range. The range
+  // starts at the document's start and ends at the selection start and will
+  // be updated.
+  BackwardsCharacterIterator backwardsIterator(
+      Position::firstPositionInNode(document->documentElement())
+          .parentAnchoredEquivalent(),
+      startPosition, TextIteratorStopsOnFormControls);
+  if (!backwardsIterator.atEnd())
+    backwardsIterator.advance(halfMaxLength);
 
-    m_startOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), startPosition)->text().length();
-    m_endOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), endPosition)->text().length();
-    m_contentRange = Range::create(*document, backwardsIterator.endPosition(), forwardRange.startPosition());
-    DCHECK(m_contentRange);
+  m_startOffsetInContent =
+      Range::create(*document, backwardsIterator.endPosition(), startPosition)
+          ->text()
+          .length();
+  m_endOffsetInContent =
+      Range::create(*document, backwardsIterator.endPosition(), endPosition)
+          ->text()
+          .length();
+  m_contentRange = Range::create(*document, backwardsIterator.endPosition(),
+                                 forwardRange.startPosition());
+  DCHECK(m_contentRange);
 }
 
-String SurroundingText::content() const
-{
-    if (m_contentRange)
-        return m_contentRange->text();
-    return String();
+String SurroundingText::content() const {
+  if (m_contentRange)
+    return m_contentRange->text();
+  return String();
 }
 
-unsigned SurroundingText::startOffsetInContent() const
-{
-    return m_startOffsetInContent;
+unsigned SurroundingText::startOffsetInContent() const {
+  return m_startOffsetInContent;
 }
 
-unsigned SurroundingText::endOffsetInContent() const
-{
-    return m_endOffsetInContent;
+unsigned SurroundingText::endOffsetInContent() const {
+  return m_endOffsetInContent;
 }
 
-} // namespace blink
+}  // namespace blink

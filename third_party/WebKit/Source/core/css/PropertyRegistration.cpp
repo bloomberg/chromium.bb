@@ -17,105 +17,133 @@
 
 namespace blink {
 
-static bool computationallyIndependent(const CSSValue& value)
-{
-    DCHECK(!value.isCSSWideKeyword());
+static bool computationallyIndependent(const CSSValue& value) {
+  DCHECK(!value.isCSSWideKeyword());
 
-    if (value.isVariableReferenceValue())
-        return !toCSSVariableReferenceValue(value).variableDataValue()->needsVariableResolution();
+  if (value.isVariableReferenceValue())
+    return !toCSSVariableReferenceValue(value)
+                .variableDataValue()
+                ->needsVariableResolution();
 
-    if (value.isValueList()) {
-        for (const CSSValue* innerValue : toCSSValueList(value)) {
-            if (!computationallyIndependent(*innerValue))
-                return false;
-        }
-        return true;
+  if (value.isValueList()) {
+    for (const CSSValue* innerValue : toCSSValueList(value)) {
+      if (!computationallyIndependent(*innerValue))
+        return false;
     }
-
-    if (value.isPrimitiveValue()) {
-        const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-        if (!primitiveValue.isLength() && !primitiveValue.isCalculatedPercentageWithLength())
-            return true;
-
-        CSSPrimitiveValue::CSSLengthArray lengthArray;
-        primitiveValue.accumulateLengthArray(lengthArray);
-        for (size_t i = 0; i < lengthArray.values.size(); i++) {
-            if (lengthArray.typeFlags.get(i)
-                && i != CSSPrimitiveValue::UnitTypePixels
-                && i != CSSPrimitiveValue::UnitTypePercentage)
-                return false;
-        }
-        return true;
-    }
-
-    // TODO(timloh): Images and transform-function values can also contain lengths.
-
     return true;
+  }
+
+  if (value.isPrimitiveValue()) {
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (!primitiveValue.isLength() &&
+        !primitiveValue.isCalculatedPercentageWithLength())
+      return true;
+
+    CSSPrimitiveValue::CSSLengthArray lengthArray;
+    primitiveValue.accumulateLengthArray(lengthArray);
+    for (size_t i = 0; i < lengthArray.values.size(); i++) {
+      if (lengthArray.typeFlags.get(i) &&
+          i != CSSPrimitiveValue::UnitTypePixels &&
+          i != CSSPrimitiveValue::UnitTypePercentage)
+        return false;
+    }
+    return true;
+  }
+
+  // TODO(timloh): Images and transform-function values can also contain lengths.
+
+  return true;
 }
 
-void PropertyRegistration::registerProperty(ExecutionContext* executionContext, const PropertyDescriptor& descriptor, ExceptionState& exceptionState)
-{
-    // Bindings code ensures these are set.
-    DCHECK(descriptor.hasName());
-    DCHECK(descriptor.hasInherits());
-    DCHECK(descriptor.hasSyntax());
+void PropertyRegistration::registerProperty(
+    ExecutionContext* executionContext,
+    const PropertyDescriptor& descriptor,
+    ExceptionState& exceptionState) {
+  // Bindings code ensures these are set.
+  DCHECK(descriptor.hasName());
+  DCHECK(descriptor.hasInherits());
+  DCHECK(descriptor.hasSyntax());
 
-    String name = descriptor.name();
-    if (!CSSVariableParser::isValidVariableName(name)) {
-        exceptionState.throwDOMException(SyntaxError, "The name provided is not a valid custom property name.");
-        return;
-    }
-    AtomicString atomicName(name);
-    Document* document = toDocument(executionContext);
-    PropertyRegistry& registry = *document->propertyRegistry();
-    if (registry.registration(atomicName)) {
-        exceptionState.throwDOMException(InvalidModificationError, "The name provided has already been registered.");
-        return;
-    }
+  String name = descriptor.name();
+  if (!CSSVariableParser::isValidVariableName(name)) {
+    exceptionState.throwDOMException(
+        SyntaxError, "The name provided is not a valid custom property name.");
+    return;
+  }
+  AtomicString atomicName(name);
+  Document* document = toDocument(executionContext);
+  PropertyRegistry& registry = *document->propertyRegistry();
+  if (registry.registration(atomicName)) {
+    exceptionState.throwDOMException(
+        InvalidModificationError,
+        "The name provided has already been registered.");
+    return;
+  }
 
-    CSSSyntaxDescriptor syntaxDescriptor(descriptor.syntax());
-    if (!syntaxDescriptor.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The syntax provided is not a valid custom property syntax.");
-        return;
-    }
+  CSSSyntaxDescriptor syntaxDescriptor(descriptor.syntax());
+  if (!syntaxDescriptor.isValid()) {
+    exceptionState.throwDOMException(
+        SyntaxError,
+        "The syntax provided is not a valid custom property syntax.");
+    return;
+  }
 
-    if (descriptor.hasInitialValue()) {
-        CSSTokenizer::Scope scope(descriptor.initialValue());
-        const CSSValue* initial = syntaxDescriptor.parse(scope.tokenRange());
-        if (!initial) {
-            exceptionState.throwDOMException(SyntaxError, "The initial value provided does not parse for the given syntax.");
-            return;
-        }
-        if (!computationallyIndependent(*initial)) {
-            exceptionState.throwDOMException(SyntaxError, "The initial value provided is not computationally independent.");
-            return;
-        }
-        RefPtr<CSSVariableData> initialVariableData = CSSVariableData::create(scope.tokenRange(), false);
-        registry.registerProperty(atomicName, syntaxDescriptor, descriptor.inherits(), initial, initialVariableData.release());
-    } else {
-        if (!syntaxDescriptor.isTokenStream()) {
-            exceptionState.throwDOMException(SyntaxError, "An initial value must be provided if the syntax is not '*'");
-            return;
-        }
-        registry.registerProperty(atomicName, syntaxDescriptor, descriptor.inherits(), nullptr, nullptr);
+  if (descriptor.hasInitialValue()) {
+    CSSTokenizer::Scope scope(descriptor.initialValue());
+    const CSSValue* initial = syntaxDescriptor.parse(scope.tokenRange());
+    if (!initial) {
+      exceptionState.throwDOMException(
+          SyntaxError,
+          "The initial value provided does not parse for the given syntax.");
+      return;
     }
+    if (!computationallyIndependent(*initial)) {
+      exceptionState.throwDOMException(
+          SyntaxError,
+          "The initial value provided is not computationally independent.");
+      return;
+    }
+    RefPtr<CSSVariableData> initialVariableData =
+        CSSVariableData::create(scope.tokenRange(), false);
+    registry.registerProperty(atomicName, syntaxDescriptor,
+                              descriptor.inherits(), initial,
+                              initialVariableData.release());
+  } else {
+    if (!syntaxDescriptor.isTokenStream()) {
+      exceptionState.throwDOMException(
+          SyntaxError,
+          "An initial value must be provided if the syntax is not '*'");
+      return;
+    }
+    registry.registerProperty(atomicName, syntaxDescriptor,
+                              descriptor.inherits(), nullptr, nullptr);
+  }
 
-    // TODO(timloh): Invalidate only elements with this custom property set
-    document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PropertyRegistration));
+  // TODO(timloh): Invalidate only elements with this custom property set
+  document->setNeedsStyleRecalc(SubtreeStyleChange,
+                                StyleChangeReasonForTracing::create(
+                                    StyleChangeReason::PropertyRegistration));
 }
 
-void PropertyRegistration::unregisterProperty(ExecutionContext* executionContext, const String& property, ExceptionState& exceptionState)
-{
-    Document* document = toDocument(executionContext);
-    PropertyRegistry& registry = *document->propertyRegistry();
-    AtomicString atomicProperty(property);
-    if (!registry.registration(atomicProperty)) {
-        exceptionState.throwDOMException(NotFoundError, "CSS.unregisterProperty() called with non-registered property " + property);
-        return;
-    }
-    registry.unregisterProperty(atomicProperty);
+void PropertyRegistration::unregisterProperty(
+    ExecutionContext* executionContext,
+    const String& property,
+    ExceptionState& exceptionState) {
+  Document* document = toDocument(executionContext);
+  PropertyRegistry& registry = *document->propertyRegistry();
+  AtomicString atomicProperty(property);
+  if (!registry.registration(atomicProperty)) {
+    exceptionState.throwDOMException(
+        NotFoundError,
+        "CSS.unregisterProperty() called with non-registered property " +
+            property);
+    return;
+  }
+  registry.unregisterProperty(atomicProperty);
 
-    document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PropertyUnregistration));
+  document->setNeedsStyleRecalc(SubtreeStyleChange,
+                                StyleChangeReasonForTracing::create(
+                                    StyleChangeReason::PropertyUnregistration));
 }
 
-} // namespace blink
+}  // namespace blink

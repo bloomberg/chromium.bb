@@ -9,10 +9,10 @@
 
 namespace blink {
 
-WebScriptSource::operator ScriptSourceCode() const
-{
-    TextPosition position(OrdinalNumber::fromOneBasedInt(startLine), OrdinalNumber::first());
-    return ScriptSourceCode(code, url, position);
+WebScriptSource::operator ScriptSourceCode() const {
+  TextPosition position(OrdinalNumber::fromOneBasedInt(startLine),
+                        OrdinalNumber::first());
+  return ScriptSourceCode(code, url, position);
 }
 
-} // namespace blink
+}  // namespace blink

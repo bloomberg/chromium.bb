@@ -37,26 +37,35 @@ namespace blink {
 
 class LocalFrame;
 
-class BarProp final : public GarbageCollected<BarProp>, public ScriptWrappable, public DOMWindowProperty {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(BarProp);
-public:
-    enum Type { Locationbar, Menubar, Personalbar, Scrollbars, Statusbar, Toolbar };
+class BarProp final : public GarbageCollected<BarProp>,
+                      public ScriptWrappable,
+                      public DOMWindowProperty {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(BarProp);
 
-    static BarProp* create(LocalFrame* frame, Type type)
-    {
-        return new BarProp(frame, type);
-    }
+ public:
+  enum Type {
+    Locationbar,
+    Menubar,
+    Personalbar,
+    Scrollbars,
+    Statusbar,
+    Toolbar
+  };
 
-    bool visible() const;
+  static BarProp* create(LocalFrame* frame, Type type) {
+    return new BarProp(frame, type);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  bool visible() const;
 
-private:
-    BarProp(LocalFrame*, Type);
-    Type m_type;
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  BarProp(LocalFrame*, Type);
+  Type m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BarProp_h
+#endif  // BarProp_h

@@ -23,37 +23,25 @@
 
 namespace blink {
 
-SVGTextMetrics::SVGTextMetrics()
-    : m_width(0)
-    , m_height(0)
-    , m_length(0)
-{
-}
+SVGTextMetrics::SVGTextMetrics() : m_width(0), m_height(0), m_length(0) {}
 
 SVGTextMetrics::SVGTextMetrics(unsigned length, float width, float height)
-    : m_width(width)
-    , m_height(height)
-    , m_length(length)
-{
-}
+    : m_width(width), m_height(height), m_length(length) {}
 
 SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
-    : SVGTextMetrics(1, 0, 0)
-{
-}
+    : SVGTextMetrics(1, 0, 0) {}
 
-float SVGTextMetrics::advance(FontOrientation orientation) const
-{
-    switch (orientation) {
+float SVGTextMetrics::advance(FontOrientation orientation) const {
+  switch (orientation) {
     case FontOrientation::Horizontal:
     case FontOrientation::VerticalRotated:
-        return width();
+      return width();
     case FontOrientation::VerticalUpright:
-        return height();
+      return height();
     default:
-        ASSERT_NOT_REACHED();
-        return width();
-    }
+      ASSERT_NOT_REACHED();
+      return width();
+  }
 }
 
-} // namespace blink
+}  // namespace blink

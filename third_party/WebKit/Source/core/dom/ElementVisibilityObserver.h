@@ -22,29 +22,32 @@ class Element;
 // The ElementVisibilityObserver is implemented on top of IntersectionObserver.
 // It is a layer meant to simplify the usage for C++ Blink code checking for the
 // visibility of an element.
-class ElementVisibilityObserver final : public GarbageCollectedFinalized<ElementVisibilityObserver> {
-    WTF_MAKE_NONCOPYABLE(ElementVisibilityObserver);
-public:
-    using VisibilityCallback = Function<void(bool), WTF::SameThreadAffinity>;
+class ElementVisibilityObserver final
+    : public GarbageCollectedFinalized<ElementVisibilityObserver> {
+  WTF_MAKE_NONCOPYABLE(ElementVisibilityObserver);
 
-    ElementVisibilityObserver(Element*, std::unique_ptr<VisibilityCallback>);
-    virtual ~ElementVisibilityObserver();
+ public:
+  using VisibilityCallback = Function<void(bool), WTF::SameThreadAffinity>;
 
-    void start();
-    void stop();
+  ElementVisibilityObserver(Element*, std::unique_ptr<VisibilityCallback>);
+  virtual ~ElementVisibilityObserver();
 
-    DECLARE_VIRTUAL_TRACE();
+  void start();
+  void stop();
 
-private:
-    class ElementVisibilityCallback;
+  DECLARE_VIRTUAL_TRACE();
 
-    void onVisibilityChanged(const HeapVector<Member<IntersectionObserverEntry>>&);
+ private:
+  class ElementVisibilityCallback;
 
-    Member<Element> m_element;
-    Member<IntersectionObserver> m_intersectionObserver;
-    std::unique_ptr<VisibilityCallback> m_callback;
+  void onVisibilityChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>&);
+
+  Member<Element> m_element;
+  Member<IntersectionObserver> m_intersectionObserver;
+  std::unique_ptr<VisibilityCallback> m_callback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ElementVisibilityObserver_h
+#endif  // ElementVisibilityObserver_h

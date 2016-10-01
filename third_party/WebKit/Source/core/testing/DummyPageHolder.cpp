@@ -48,68 +48,65 @@ std::unique_ptr<DummyPageHolder> DummyPageHolder::create(
     Page::PageClients* pageClients,
     FrameLoaderClient* frameLoaderClient,
     FrameSettingOverrideFunction settingOverrider) {
-    return wrapUnique(new DummyPageHolder(initialViewSize, pageClients, frameLoaderClient, settingOverrider));
+  return wrapUnique(new DummyPageHolder(initialViewSize, pageClients,
+                                        frameLoaderClient, settingOverrider));
 }
 
 DummyPageHolder::DummyPageHolder(
     const IntSize& initialViewSize,
     Page::PageClients* pageClientsArgument,
     FrameLoaderClient* frameLoaderClient,
-    FrameSettingOverrideFunction settingOverrider)
-{
-    Page::PageClients pageClients;
-    if (!pageClientsArgument) {
-        fillWithEmptyClients(pageClients);
-    } else {
-        pageClients.chromeClient = pageClientsArgument->chromeClient;
-        pageClients.contextMenuClient = pageClientsArgument->contextMenuClient;
-        pageClients.editorClient = pageClientsArgument->editorClient;
-        pageClients.spellCheckerClient = pageClientsArgument->spellCheckerClient;
-    }
-    m_page = Page::create(pageClients);
-    Settings& settings = m_page->settings();
-    // FIXME: http://crbug.com/363843. This needs to find a better way to
-    // not create graphics layers.
-    settings.setAcceleratedCompositingEnabled(false);
-    if (settingOverrider)
-        (*settingOverrider)(settings);
+    FrameSettingOverrideFunction settingOverrider) {
+  Page::PageClients pageClients;
+  if (!pageClientsArgument) {
+    fillWithEmptyClients(pageClients);
+  } else {
+    pageClients.chromeClient = pageClientsArgument->chromeClient;
+    pageClients.contextMenuClient = pageClientsArgument->contextMenuClient;
+    pageClients.editorClient = pageClientsArgument->editorClient;
+    pageClients.spellCheckerClient = pageClientsArgument->spellCheckerClient;
+  }
+  m_page = Page::create(pageClients);
+  Settings& settings = m_page->settings();
+  // FIXME: http://crbug.com/363843. This needs to find a better way to
+  // not create graphics layers.
+  settings.setAcceleratedCompositingEnabled(false);
+  if (settingOverrider)
+    (*settingOverrider)(settings);
 
-    m_frameLoaderClient = frameLoaderClient;
-    if (!m_frameLoaderClient)
-        m_frameLoaderClient = EmptyFrameLoaderClient::create();
+  m_frameLoaderClient = frameLoaderClient;
+  if (!m_frameLoaderClient)
+    m_frameLoaderClient = EmptyFrameLoaderClient::create();
 
-    m_frame = LocalFrame::create(m_frameLoaderClient.get(), &m_page->frameHost(), nullptr);
-    m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
-    m_frame->view()->page()->frameHost().visualViewport().setSize(initialViewSize);
-    m_frame->init();
+  m_frame = LocalFrame::create(m_frameLoaderClient.get(), &m_page->frameHost(),
+                               nullptr);
+  m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
+  m_frame->view()->page()->frameHost().visualViewport().setSize(
+      initialViewSize);
+  m_frame->init();
 }
 
-DummyPageHolder::~DummyPageHolder()
-{
-    m_page->willBeDestroyed();
-    m_page.clear();
-    m_frame.clear();
+DummyPageHolder::~DummyPageHolder() {
+  m_page->willBeDestroyed();
+  m_page.clear();
+  m_frame.clear();
 }
 
-Page& DummyPageHolder::page() const
-{
-    return *m_page;
+Page& DummyPageHolder::page() const {
+  return *m_page;
 }
 
-LocalFrame& DummyPageHolder::frame() const
-{
-    ASSERT(m_frame);
-    return *m_frame;
+LocalFrame& DummyPageHolder::frame() const {
+  ASSERT(m_frame);
+  return *m_frame;
 }
 
-FrameView& DummyPageHolder::frameView() const
-{
-    return *m_frame->view();
+FrameView& DummyPageHolder::frameView() const {
+  return *m_frame->view();
 }
 
-Document& DummyPageHolder::document() const
-{
-    return *m_frame->domWindow()->document();
+Document& DummyPageHolder::document() const {
+  return *m_frame->domWindow()->document();
 }
 
-} // namespace blink
+}  // namespace blink

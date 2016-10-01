@@ -10,37 +10,34 @@
 
 namespace blink {
 
-WorkletScriptLoader::WorkletScriptLoader(ScriptPromiseResolver* resolver, Worklet* worklet, ScriptResource* resource)
-    : m_resolver(resolver)
-    , m_host(worklet)
-{
-    setResource(resource);
+WorkletScriptLoader::WorkletScriptLoader(ScriptPromiseResolver* resolver,
+                                         Worklet* worklet,
+                                         ScriptResource* resource)
+    : m_resolver(resolver), m_host(worklet) {
+  setResource(resource);
 }
 
-void WorkletScriptLoader::cancel()
-{
-    clearResource();
+void WorkletScriptLoader::cancel() {
+  clearResource();
 }
 
-void WorkletScriptLoader::notifyFinished(Resource* resource)
-{
-    DCHECK(this->resource() == resource);
+void WorkletScriptLoader::notifyFinished(Resource* resource) {
+  DCHECK(this->resource() == resource);
 
-    m_host->notifyFinished(this);
-    if (resource->errorOccurred()) {
-        m_resolver->reject(DOMException::create(NetworkError));
-    } else {
-        DCHECK(resource->isLoaded());
-        m_resolver->resolve();
-    }
-    clearResource();
+  m_host->notifyFinished(this);
+  if (resource->errorOccurred()) {
+    m_resolver->reject(DOMException::create(NetworkError));
+  } else {
+    DCHECK(resource->isLoaded());
+    m_resolver->resolve();
+  }
+  clearResource();
 }
 
-DEFINE_TRACE(WorkletScriptLoader)
-{
-    visitor->trace(m_resolver);
-    visitor->trace(m_host);
-    ResourceOwner<ScriptResource, ScriptResourceClient>::trace(visitor);
+DEFINE_TRACE(WorkletScriptLoader) {
+  visitor->trace(m_resolver);
+  visitor->trace(m_host);
+  ResourceOwner<ScriptResource, ScriptResourceClient>::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

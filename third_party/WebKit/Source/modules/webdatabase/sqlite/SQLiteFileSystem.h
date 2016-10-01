@@ -42,23 +42,24 @@ namespace blink {
 // A class that abstracts the file system related operations required
 // by the WebKit database code.
 class SQLiteFileSystem {
-    DISALLOW_NEW();
-public:
-    // Registers a user-defined SQLite VFS.
-    static void registerSQLiteVFS();
+  DISALLOW_NEW();
 
-    // Opens a database file.
-    //
-    // filemame - The name of the database file.
-    // database - The SQLite structure that represents the database stored
-    //            in the given file.
-    static int openDatabase(const String& filename, sqlite3** database);
+ public:
+  // Registers a user-defined SQLite VFS.
+  static void registerSQLiteVFS();
 
-private:
-    // do not instantiate this class
-    SQLiteFileSystem();
-}; // class SQLiteFileSystem
+  // Opens a database file.
+  //
+  // filemame - The name of the database file.
+  // database - The SQLite structure that represents the database stored
+  //            in the given file.
+  static int openDatabase(const String& filename, sqlite3** database);
 
-} // namespace blink
+ private:
+  // do not instantiate this class
+  SQLiteFileSystem();
+};  // class SQLiteFileSystem
+
+}  // namespace blink
 
 #endif

@@ -17,26 +17,34 @@ class WorkerGlobalScope;
 class CachedMetadata;
 
 class ServiceWorkerScriptCachedMetadataHandler : public CachedMetadataHandler {
-public:
-    static ServiceWorkerScriptCachedMetadataHandler* create(WorkerGlobalScope* workerGlobalScope, const KURL& scriptURL, const Vector<char>* metaData)
-    {
-        return new ServiceWorkerScriptCachedMetadataHandler(workerGlobalScope, scriptURL, metaData);
-    }
-    ~ServiceWorkerScriptCachedMetadataHandler() override;
-    DECLARE_VIRTUAL_TRACE();
-    void setCachedMetadata(uint32_t dataTypeID, const char*, size_t, CacheType) override;
-    void clearCachedMetadata(CacheType) override;
-    PassRefPtr<CachedMetadata> cachedMetadata(uint32_t dataTypeID) const override;
-    String encoding() const override;
+ public:
+  static ServiceWorkerScriptCachedMetadataHandler* create(
+      WorkerGlobalScope* workerGlobalScope,
+      const KURL& scriptURL,
+      const Vector<char>* metaData) {
+    return new ServiceWorkerScriptCachedMetadataHandler(workerGlobalScope,
+                                                        scriptURL, metaData);
+  }
+  ~ServiceWorkerScriptCachedMetadataHandler() override;
+  DECLARE_VIRTUAL_TRACE();
+  void setCachedMetadata(uint32_t dataTypeID,
+                         const char*,
+                         size_t,
+                         CacheType) override;
+  void clearCachedMetadata(CacheType) override;
+  PassRefPtr<CachedMetadata> cachedMetadata(uint32_t dataTypeID) const override;
+  String encoding() const override;
 
-private:
-    ServiceWorkerScriptCachedMetadataHandler(WorkerGlobalScope*, const KURL& scriptURL, const Vector<char>* metaData);
+ private:
+  ServiceWorkerScriptCachedMetadataHandler(WorkerGlobalScope*,
+                                           const KURL& scriptURL,
+                                           const Vector<char>* metaData);
 
-    Member<WorkerGlobalScope> m_workerGlobalScope;
-    KURL m_scriptURL;
-    RefPtr<CachedMetadata> m_cachedMetadata;
+  Member<WorkerGlobalScope> m_workerGlobalScope;
+  KURL m_scriptURL;
+  RefPtr<CachedMetadata> m_cachedMetadata;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerScriptCachedMetadataHandler_h
+#endif  // ServiceWorkerScriptCachedMetadataHandler_h

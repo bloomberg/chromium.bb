@@ -40,41 +40,45 @@ class MIDIMessageEventInit;
 class ExecutionContext;
 
 class MIDIMessageEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MIDIMessageEvent* create(double receivedTime, DOMUint8Array* data)
-    {
-        return new MIDIMessageEvent(receivedTime, data);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    static MIDIMessageEvent* create(ExecutionContext* context, const AtomicString& type, const MIDIMessageEventInit& initializer)
-    {
-        return new MIDIMessageEvent(context, type, initializer);
-    }
+ public:
+  static MIDIMessageEvent* create(double receivedTime, DOMUint8Array* data) {
+    return new MIDIMessageEvent(receivedTime, data);
+  }
 
-    double receivedTime() { return m_receivedTime; }
-    DOMUint8Array* data() { return m_data; }
+  static MIDIMessageEvent* create(ExecutionContext* context,
+                                  const AtomicString& type,
+                                  const MIDIMessageEventInit& initializer) {
+    return new MIDIMessageEvent(context, type, initializer);
+  }
 
-    const AtomicString& interfaceName() const override { return EventNames::MIDIMessageEvent; }
+  double receivedTime() { return m_receivedTime; }
+  DOMUint8Array* data() { return m_data; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_data);
-        Event::trace(visitor);
-    }
+  const AtomicString& interfaceName() const override {
+    return EventNames::MIDIMessageEvent;
+  }
 
-private:
-    MIDIMessageEvent(double receivedTime, DOMUint8Array* data)
-        : Event(EventTypeNames::midimessage, true, false)
-        , m_receivedTime(receivedTime)
-        , m_data(data) { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_data);
+    Event::trace(visitor);
+  }
 
-    MIDIMessageEvent(ExecutionContext*, const AtomicString& type, const MIDIMessageEventInit& initializer);
+ private:
+  MIDIMessageEvent(double receivedTime, DOMUint8Array* data)
+      : Event(EventTypeNames::midimessage, true, false),
+        m_receivedTime(receivedTime),
+        m_data(data) {}
 
-    double m_receivedTime;
-    Member<DOMUint8Array> m_data;
+  MIDIMessageEvent(ExecutionContext*,
+                   const AtomicString& type,
+                   const MIDIMessageEventInit& initializer);
+
+  double m_receivedTime;
+  Member<DOMUint8Array> m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MIDIMessageEvent_h
+#endif  // MIDIMessageEvent_h

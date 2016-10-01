@@ -15,39 +15,42 @@
 namespace blink {
 
 class PLATFORM_EXPORT MemoryCacheDumpClient : public GarbageCollectedMixin {
-public:
-    virtual ~MemoryCacheDumpClient() { }
-    virtual bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) = 0;
+ public:
+  virtual ~MemoryCacheDumpClient() {}
+  virtual bool onMemoryDump(WebMemoryDumpLevelOfDetail,
+                            WebProcessMemoryDump*) = 0;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 };
 
 // This class is wrapper around MemoryCache to take memory snapshots. It dumps
 // the stats of cache only after the cache is created.
-class PLATFORM_EXPORT MemoryCacheDumpProvider final : public base::trace_event::MemoryDumpProvider {
-    USING_FAST_MALLOC(MemoryCacheDumpProvider);
-public:
-    // This class is singleton since there is a global MemoryCache object.
-    static MemoryCacheDumpProvider* instance();
-    ~MemoryCacheDumpProvider() override;
+class PLATFORM_EXPORT MemoryCacheDumpProvider final
+    : public base::trace_event::MemoryDumpProvider {
+  USING_FAST_MALLOC(MemoryCacheDumpProvider);
 
-    // base::trace_event::MemoryDumpProvider implementation.
-    bool OnMemoryDump(const base::trace_event::MemoryDumpArgs&, base::trace_event::ProcessMemoryDump*) override;
+ public:
+  // This class is singleton since there is a global MemoryCache object.
+  static MemoryCacheDumpProvider* instance();
+  ~MemoryCacheDumpProvider() override;
 
-    void setMemoryCache(MemoryCacheDumpClient* client)
-    {
-        DCHECK(isMainThread());
-        m_client = client;
-    }
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs&,
+                    base::trace_event::ProcessMemoryDump*) override;
 
-private:
-    MemoryCacheDumpProvider();
+  void setMemoryCache(MemoryCacheDumpClient* client) {
+    DCHECK(isMainThread());
+    m_client = client;
+  }
 
-    WeakPersistent<MemoryCacheDumpClient> m_client;
+ private:
+  MemoryCacheDumpProvider();
 
-    WTF_MAKE_NONCOPYABLE(MemoryCacheDumpProvider);
+  WeakPersistent<MemoryCacheDumpClient> m_client;
+
+  WTF_MAKE_NONCOPYABLE(MemoryCacheDumpProvider);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MemoryCacheDumpProvider_h
+#endif  // MemoryCacheDumpProvider_h

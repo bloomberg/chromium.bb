@@ -40,38 +40,41 @@ class TextRun;
 struct GlyphData;
 
 struct PLATFORM_EXPORT SimpleShaper : public Shaper {
-public:
-    SimpleShaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
-        HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);
+ public:
+  SimpleShaper(const Font*,
+               const TextRun&,
+               const GlyphData* emphasisData = nullptr,
+               HashSet<const SimpleFontData*>* fallbackFonts = nullptr,
+               FloatRect* = nullptr);
 
-    // TODO(sk.kumar): This function should be updated to take an unsigned value, and callers
-    // should be updated to not pass negative values. See: crbug.com/540047.
-    unsigned advance(int to, GlyphBuffer* = 0);
-    bool advanceOneCharacter(float& width);
+  // TODO(sk.kumar): This function should be updated to take an unsigned value, and callers
+  // should be updated to not pass negative values. See: crbug.com/540047.
+  unsigned advance(int to, GlyphBuffer* = 0);
+  bool advanceOneCharacter(float& width);
 
-    const TextRun& run() const { return m_textRun; }
-    float runWidthSoFar() const { return m_runWidthSoFar; }
-    unsigned currentOffset() { return m_currentCharacter; }
+  const TextRun& run() const { return m_textRun; }
+  float runWidthSoFar() const { return m_runWidthSoFar; }
+  unsigned currentOffset() { return m_currentCharacter; }
 
-private:
-    unsigned m_currentCharacter;
-    float m_runWidthSoFar;
+ private:
+  unsigned m_currentCharacter;
+  float m_runWidthSoFar;
 
-    struct CharacterData {
-        STACK_ALLOCATED();
-        UChar32 character;
-        unsigned clusterLength;
-        int characterOffset;
-    };
+  struct CharacterData {
+    STACK_ALLOCATED();
+    UChar32 character;
+    unsigned clusterLength;
+    int characterOffset;
+  };
 
-    GlyphData glyphDataForCharacter(CharacterData&, bool normalizeSpace = false);
-    float characterWidth(UChar32, const GlyphData&) const;
-    float adjustSpacing(float, const CharacterData&);
+  GlyphData glyphDataForCharacter(CharacterData&, bool normalizeSpace = false);
+  float characterWidth(UChar32, const GlyphData&) const;
+  float adjustSpacing(float, const CharacterData&);
 
-    template <typename TextIterator>
-    unsigned advanceInternal(TextIterator&, GlyphBuffer*);
+  template <typename TextIterator>
+  unsigned advanceInternal(TextIterator&, GlyphBuffer*);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

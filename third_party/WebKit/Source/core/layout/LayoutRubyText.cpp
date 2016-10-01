@@ -33,55 +33,52 @@
 
 namespace blink {
 
-LayoutRubyText::LayoutRubyText(Element* element)
-    : LayoutBlockFlow(element)
-{
+LayoutRubyText::LayoutRubyText(Element* element) : LayoutBlockFlow(element) {}
+
+LayoutRubyText::~LayoutRubyText() {}
+
+bool LayoutRubyText::isChildAllowed(LayoutObject* child,
+                                    const ComputedStyle&) const {
+  return child->isInline();
 }
 
-LayoutRubyText::~LayoutRubyText()
-{
+ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const {
+  ETextAlign textAlign = style()->textAlign();
+  // FIXME: This check is bogus since user can set the initial value.
+  if (textAlign != ComputedStyle::initialTextAlign())
+    return LayoutBlockFlow::textAlignmentForLine(endsWithSoftBreak);
+
+  // The default behavior is to allow ruby text to expand if it is shorter than the ruby base.
+  return JUSTIFY;
 }
 
-bool LayoutRubyText::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
-{
-    return child->isInline();
+void LayoutRubyText::adjustInlineDirectionLineBounds(
+    unsigned expansionOpportunityCount,
+    LayoutUnit& logicalLeft,
+    LayoutUnit& logicalWidth) const {
+  ETextAlign textAlign = style()->textAlign();
+  // FIXME: This check is bogus since user can set the initial value.
+  if (textAlign != ComputedStyle::initialTextAlign())
+    return LayoutBlockFlow::adjustInlineDirectionLineBounds(
+        expansionOpportunityCount, logicalLeft, logicalWidth);
+
+  int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth().toInt();
+  if (maxPreferredLogicalWidth >= logicalWidth)
+    return;
+
+  // Inset the ruby text by half the inter-ideograph expansion amount, but no more than a full-width
+  // ruby character on each side.
+  LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) /
+                     (expansionOpportunityCount + 1);
+  if (expansionOpportunityCount)
+    inset = std::min(LayoutUnit(2 * style()->fontSize()), inset);
+
+  logicalLeft += inset / 2;
+  logicalWidth -= inset;
 }
 
-ETextAlign LayoutRubyText::textAlignmentForLine(bool endsWithSoftBreak) const
-{
-    ETextAlign textAlign = style()->textAlign();
-    // FIXME: This check is bogus since user can set the initial value.
-    if (textAlign != ComputedStyle::initialTextAlign())
-        return LayoutBlockFlow::textAlignmentForLine(endsWithSoftBreak);
-
-    // The default behavior is to allow ruby text to expand if it is shorter than the ruby base.
-    return JUSTIFY;
+bool LayoutRubyText::avoidsFloats() const {
+  return true;
 }
 
-void LayoutRubyText::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const
-{
-    ETextAlign textAlign = style()->textAlign();
-    // FIXME: This check is bogus since user can set the initial value.
-    if (textAlign != ComputedStyle::initialTextAlign())
-        return LayoutBlockFlow::adjustInlineDirectionLineBounds(expansionOpportunityCount, logicalLeft, logicalWidth);
-
-    int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth().toInt();
-    if (maxPreferredLogicalWidth >= logicalWidth)
-        return;
-
-    // Inset the ruby text by half the inter-ideograph expansion amount, but no more than a full-width
-    // ruby character on each side.
-    LayoutUnit inset = (logicalWidth - maxPreferredLogicalWidth) / (expansionOpportunityCount + 1);
-    if (expansionOpportunityCount)
-        inset = std::min(LayoutUnit(2 * style()->fontSize()), inset);
-
-    logicalLeft += inset / 2;
-    logicalWidth -= inset;
-}
-
-bool LayoutRubyText::avoidsFloats() const
-{
-    return true;
-}
-
-} // namespace blink
+}  // namespace blink

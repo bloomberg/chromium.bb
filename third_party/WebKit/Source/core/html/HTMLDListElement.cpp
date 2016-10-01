@@ -29,10 +29,8 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLDListElement::HTMLDListElement(Document& document)
-    : HTMLElement(dlTag, document)
-{
-}
+    : HTMLElement(dlTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLDListElement)
 
-} // namespace blink
+}  // namespace blink

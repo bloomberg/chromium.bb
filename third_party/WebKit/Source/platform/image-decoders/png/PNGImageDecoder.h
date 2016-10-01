@@ -34,33 +34,37 @@ namespace blink {
 class PNGImageReader;
 
 class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
-    WTF_MAKE_NONCOPYABLE(PNGImageDecoder);
-public:
-    PNGImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes, size_t offset = 0);
-    ~PNGImageDecoder() override;
+  WTF_MAKE_NONCOPYABLE(PNGImageDecoder);
 
-    // ImageDecoder:
-    String filenameExtension() const override { return "png"; }
+ public:
+  PNGImageDecoder(AlphaOption,
+                  GammaAndColorProfileOption,
+                  size_t maxDecodedBytes,
+                  size_t offset = 0);
+  ~PNGImageDecoder() override;
 
-    // Callbacks from libpng
-    void headerAvailable();
-    void rowAvailable(unsigned char* row, unsigned rowIndex, int);
-    void complete();
+  // ImageDecoder:
+  String filenameExtension() const override { return "png"; }
 
-private:
-    // ImageDecoder:
-    void decodeSize() override { decode(true); }
-    void decode(size_t) override { decode(false); }
+  // Callbacks from libpng
+  void headerAvailable();
+  void rowAvailable(unsigned char* row, unsigned rowIndex, int);
+  void complete();
 
-    // Decodes the image.  If |onlySize| is true, stops decoding after
-    // calculating the image size.  If decoding fails but there is no more
-    // data coming, sets the "decode failure" flag.
-    void decode(bool onlySize);
+ private:
+  // ImageDecoder:
+  void decodeSize() override { decode(true); }
+  void decode(size_t) override { decode(false); }
 
-    std::unique_ptr<PNGImageReader> m_reader;
-    const unsigned m_offset;
+  // Decodes the image.  If |onlySize| is true, stops decoding after
+  // calculating the image size.  If decoding fails but there is no more
+  // data coming, sets the "decode failure" flag.
+  void decode(bool onlySize);
+
+  std::unique_ptr<PNGImageReader> m_reader;
+  const unsigned m_offset;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

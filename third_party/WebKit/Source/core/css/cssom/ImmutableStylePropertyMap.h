@@ -10,27 +10,29 @@
 namespace blink {
 
 class CORE_EXPORT ImmutableStylePropertyMap : public StylePropertyMap {
-    WTF_MAKE_NONCOPYABLE(ImmutableStylePropertyMap);
-public:
-    void set(CSSPropertyID, CSSStyleValueOrCSSStyleValueSequenceOrString&, ExceptionState& exceptionState) override
-    {
-        exceptionState.throwTypeError("This StylePropertyMap is immutable.");
-    }
+  WTF_MAKE_NONCOPYABLE(ImmutableStylePropertyMap);
 
-    void append(CSSPropertyID, CSSStyleValueOrCSSStyleValueSequenceOrString&, ExceptionState& exceptionState) override
-    {
-        exceptionState.throwTypeError("This StylePropertyMap is immutable.");
-    }
+ public:
+  void set(CSSPropertyID,
+           CSSStyleValueOrCSSStyleValueSequenceOrString&,
+           ExceptionState& exceptionState) override {
+    exceptionState.throwTypeError("This StylePropertyMap is immutable.");
+  }
 
-    void remove(CSSPropertyID, ExceptionState& exceptionState) override
-    {
-        exceptionState.throwTypeError("This StylePropertyMap is immutable.");
-    }
+  void append(CSSPropertyID,
+              CSSStyleValueOrCSSStyleValueSequenceOrString&,
+              ExceptionState& exceptionState) override {
+    exceptionState.throwTypeError("This StylePropertyMap is immutable.");
+  }
 
-protected:
-    ImmutableStylePropertyMap() = default;
+  void remove(CSSPropertyID, ExceptionState& exceptionState) override {
+    exceptionState.throwTypeError("This StylePropertyMap is immutable.");
+  }
+
+ protected:
+  ImmutableStylePropertyMap() = default;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

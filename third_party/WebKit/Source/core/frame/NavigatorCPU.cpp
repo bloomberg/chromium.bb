@@ -8,9 +8,8 @@
 
 namespace blink {
 
-unsigned NavigatorCPU::hardwareConcurrency() const
-{
-    return Platform::current()->numberOfProcessors();
+unsigned NavigatorCPU::hardwareConcurrency() const {
+  return Platform::current()->numberOfProcessors();
 }
 
-} // namespace blink
+}  // namespace blink

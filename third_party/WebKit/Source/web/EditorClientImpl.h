@@ -40,20 +40,20 @@ class LocalFrame;
 class WebViewImpl;
 
 class EditorClientImpl final : public EditorClient {
-public:
-    explicit EditorClientImpl(WebViewImpl*);
-    ~EditorClientImpl() override;
+ public:
+  explicit EditorClientImpl(WebViewImpl*);
+  ~EditorClientImpl() override;
 
-    void respondToChangedContents() override;
-    void respondToChangedSelection(LocalFrame*, SelectionType) override;
-    bool canCopyCut(LocalFrame*, bool defaultValue) const override;
-    bool canPaste(LocalFrame*, bool defaultValue) const override;
-    bool handleKeyboardEvent(LocalFrame*) override;
+  void respondToChangedContents() override;
+  void respondToChangedSelection(LocalFrame*, SelectionType) override;
+  bool canCopyCut(LocalFrame*, bool defaultValue) const override;
+  bool canPaste(LocalFrame*, bool defaultValue) const override;
+  bool handleKeyboardEvent(LocalFrame*) override;
 
-private:
-    WebViewImpl* m_webView;
+ private:
+  WebViewImpl* m_webView;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

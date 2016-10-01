@@ -44,30 +44,42 @@ namespace blink {
 struct ImageDataBuffer;
 
 class PLATFORM_EXPORT PNGImageEncoderState final {
-    USING_FAST_MALLOC(PNGImageEncoderState);
-    WTF_MAKE_NONCOPYABLE(PNGImageEncoderState);
-public:
-    static std::unique_ptr<PNGImageEncoderState> create(const IntSize& imageSize, Vector<unsigned char>* output);
-    ~PNGImageEncoderState();
-    png_struct* png() { ASSERT(m_png); return m_png; }
-    png_info* info() { ASSERT(m_info); return m_info; }
-private:
-    PNGImageEncoderState(png_struct* png, png_info* info) : m_png(png), m_info(info) { }
-    png_struct* m_png;
-    png_info* m_info;
+  USING_FAST_MALLOC(PNGImageEncoderState);
+  WTF_MAKE_NONCOPYABLE(PNGImageEncoderState);
+
+ public:
+  static std::unique_ptr<PNGImageEncoderState> create(
+      const IntSize& imageSize,
+      Vector<unsigned char>* output);
+  ~PNGImageEncoderState();
+  png_struct* png() {
+    ASSERT(m_png);
+    return m_png;
+  }
+  png_info* info() {
+    ASSERT(m_info);
+    return m_info;
+  }
+
+ private:
+  PNGImageEncoderState(png_struct* png, png_info* info)
+      : m_png(png), m_info(info) {}
+  png_struct* m_png;
+  png_info* m_info;
 };
 
 class PLATFORM_EXPORT PNGImageEncoder {
-    STATIC_ONLY(PNGImageEncoder);
-public:
-    // Encode the input data with default compression quality. See also https://crbug.com/179289
-    static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
+  STATIC_ONLY(PNGImageEncoder);
 
-    // Functions for progressive image encoding
-    static void writeOneRowToPng(unsigned char* pixels, PNGImageEncoderState*);
-    static void finalizePng(PNGImageEncoderState*);
+ public:
+  // Encode the input data with default compression quality. See also https://crbug.com/179289
+  static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
+
+  // Functions for progressive image encoding
+  static void writeOneRowToPng(unsigned char* pixels, PNGImageEncoderState*);
+  static void finalizePng(PNGImageEncoderState*);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

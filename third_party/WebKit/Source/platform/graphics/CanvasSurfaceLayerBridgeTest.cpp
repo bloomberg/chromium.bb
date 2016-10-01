@@ -18,66 +18,62 @@ namespace blink {
 
 //-----------------------------------------------------------------------------
 
-class MockOffscreenCanvasSurface final : public mojom::blink::OffscreenCanvasSurface {
-public:
-    MockOffscreenCanvasSurface();
-    ~MockOffscreenCanvasSurface() override;
+class MockOffscreenCanvasSurface final
+    : public mojom::blink::OffscreenCanvasSurface {
+ public:
+  MockOffscreenCanvasSurface();
+  ~MockOffscreenCanvasSurface() override;
 
-    mojom::blink::OffscreenCanvasSurfacePtr GetProxy();
+  mojom::blink::OffscreenCanvasSurfacePtr GetProxy();
 
-    void GetSurfaceId(const GetSurfaceIdCallback&) override;
-    void Require(const cc::SurfaceId&, const cc::SurfaceSequence&) override {}
-    void Satisfy(const cc::SurfaceSequence&) override {}
+  void GetSurfaceId(const GetSurfaceIdCallback&) override;
+  void Require(const cc::SurfaceId&, const cc::SurfaceSequence&) override {}
+  void Satisfy(const cc::SurfaceSequence&) override {}
 
-private:
-    mojo::Binding<mojom::blink::OffscreenCanvasSurface> m_binding;
-    cc::SurfaceId m_surfaceId;
+ private:
+  mojo::Binding<mojom::blink::OffscreenCanvasSurface> m_binding;
+  cc::SurfaceId m_surfaceId;
 };
 
 //-----------------------------------------------------------------------------
 
 class CanvasSurfaceLayerBridgeTest : public testing::Test {
-public:
-    CanvasSurfaceLayerBridge* surfaceLayerBridge() const { return m_surfaceLayerBridge.get(); }
+ public:
+  CanvasSurfaceLayerBridge* surfaceLayerBridge() const {
+    return m_surfaceLayerBridge.get();
+  }
 
-protected:
-    void SetUp() override;
+ protected:
+  void SetUp() override;
 
-private:
-    MockOffscreenCanvasSurface m_service;
-    std::unique_ptr<CanvasSurfaceLayerBridge> m_surfaceLayerBridge;
+ private:
+  MockOffscreenCanvasSurface m_service;
+  std::unique_ptr<CanvasSurfaceLayerBridge> m_surfaceLayerBridge;
 };
 
 //-----------------------------------------------------------------------------
 
-MockOffscreenCanvasSurface::MockOffscreenCanvasSurface()
-    : m_binding(this)
-{
+MockOffscreenCanvasSurface::MockOffscreenCanvasSurface() : m_binding(this) {}
+
+MockOffscreenCanvasSurface::~MockOffscreenCanvasSurface() {}
+
+mojom::blink::OffscreenCanvasSurfacePtr MockOffscreenCanvasSurface::GetProxy() {
+  return m_binding.CreateInterfacePtrAndBind();
 }
 
-MockOffscreenCanvasSurface::~MockOffscreenCanvasSurface()
-{
+void MockOffscreenCanvasSurface::GetSurfaceId(
+    const GetSurfaceIdCallback& callback) {
+  callback.Run(cc::SurfaceId(10, 15, 0));
 }
 
-mojom::blink::OffscreenCanvasSurfacePtr MockOffscreenCanvasSurface::GetProxy()
-{
-    return m_binding.CreateInterfacePtrAndBind();
+void CanvasSurfaceLayerBridgeTest::SetUp() {
+  m_surfaceLayerBridge =
+      wrapUnique(new CanvasSurfaceLayerBridge(m_service.GetProxy()));
 }
 
-void MockOffscreenCanvasSurface::GetSurfaceId(const GetSurfaceIdCallback& callback)
-{
-    callback.Run(cc::SurfaceId(10, 15, 0));
+TEST_F(CanvasSurfaceLayerBridgeTest, SurfaceLayerCreation) {
+  bool success = this->surfaceLayerBridge()->createSurfaceLayer(50, 50);
+  EXPECT_TRUE(success);
 }
 
-void CanvasSurfaceLayerBridgeTest::SetUp()
-{
-    m_surfaceLayerBridge = wrapUnique(new CanvasSurfaceLayerBridge(m_service.GetProxy()));
-}
-
-TEST_F(CanvasSurfaceLayerBridgeTest, SurfaceLayerCreation)
-{
-    bool success = this->surfaceLayerBridge()->createSurfaceLayer(50, 50);
-    EXPECT_TRUE(success);
-}
-
-} // namespace blink
+}  // namespace blink

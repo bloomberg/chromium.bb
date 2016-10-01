@@ -60,97 +60,116 @@ class Widget;
 typedef WTF::Vector<v8::Extension*> V8Extensions;
 
 enum ReasonForCallingCanExecuteScripts {
-    AboutToExecuteScript,
-    NotAboutToExecuteScript
+  AboutToExecuteScript,
+  NotAboutToExecuteScript
 };
 
-class CORE_EXPORT ScriptController final : public GarbageCollected<ScriptController> {
-    WTF_MAKE_NONCOPYABLE(ScriptController);
-public:
-    enum ExecuteScriptPolicy {
-        ExecuteScriptWhenScriptsDisabled,
-        DoNotExecuteScriptWhenScriptsDisabled
-    };
+class CORE_EXPORT ScriptController final
+    : public GarbageCollected<ScriptController> {
+  WTF_MAKE_NONCOPYABLE(ScriptController);
 
-    static ScriptController* create(LocalFrame* frame)
-    {
-        return new ScriptController(frame);
-    }
+ public:
+  enum ExecuteScriptPolicy {
+    ExecuteScriptWhenScriptsDisabled,
+    DoNotExecuteScriptWhenScriptsDisabled
+  };
 
-    DECLARE_TRACE();
+  static ScriptController* create(LocalFrame* frame) {
+    return new ScriptController(frame);
+  }
 
-    bool initializeMainWorld();
-    WindowProxy* windowProxy(DOMWrapperWorld&);
-    WindowProxy* existingWindowProxy(DOMWrapperWorld&);
+  DECLARE_TRACE();
 
-    // Evaluate JavaScript in the main world.
-    void executeScriptInMainWorld(const String&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
-    void executeScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
-    v8::Local<v8::Value> executeScriptInMainWorldAndReturnValue(const ScriptSourceCode&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
-    v8::Local<v8::Value> executeScriptAndReturnValue(v8::Local<v8::Context>, const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
+  bool initializeMainWorld();
+  WindowProxy* windowProxy(DOMWrapperWorld&);
+  WindowProxy* existingWindowProxy(DOMWrapperWorld&);
 
-    // Executes JavaScript in an isolated world. The script gets its own global scope,
-    // its own prototypes for intrinsic JavaScript objects (String, Array, and so-on),
-    // and its own wrappers for all DOM nodes and DOM constructors.
-    //
-    // If an isolated world with the specified ID already exists, it is reused.
-    // Otherwise, a new world is created.
-    //
-    // FIXME: Get rid of extensionGroup here.
-    // FIXME: We don't want to support multiple scripts.
-    void executeScriptInIsolatedWorld(int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value>>* results);
+  // Evaluate JavaScript in the main world.
+  void executeScriptInMainWorld(
+      const String&,
+      ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
+  void executeScriptInMainWorld(const ScriptSourceCode&,
+                                AccessControlStatus = NotSharableCrossOrigin);
+  v8::Local<v8::Value> executeScriptInMainWorldAndReturnValue(
+      const ScriptSourceCode&,
+      ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
+  v8::Local<v8::Value> executeScriptAndReturnValue(
+      v8::Local<v8::Context>,
+      const ScriptSourceCode&,
+      AccessControlStatus = NotSharableCrossOrigin);
 
-    // Returns true if argument is a JavaScript URL.
-    bool executeScriptIfJavaScriptURL(const KURL&);
+  // Executes JavaScript in an isolated world. The script gets its own global scope,
+  // its own prototypes for intrinsic JavaScript objects (String, Array, and so-on),
+  // and its own wrappers for all DOM nodes and DOM constructors.
+  //
+  // If an isolated world with the specified ID already exists, it is reused.
+  // Otherwise, a new world is created.
+  //
+  // FIXME: Get rid of extensionGroup here.
+  // FIXME: We don't want to support multiple scripts.
+  void executeScriptInIsolatedWorld(int worldID,
+                                    const HeapVector<ScriptSourceCode>& sources,
+                                    int extensionGroup,
+                                    Vector<v8::Local<v8::Value>>* results);
 
-    // Returns true if the current world is isolated, and has its own Content
-    // Security Policy. In this case, the policy of the main world should be
-    // ignored when evaluating resources injected into the DOM.
-    bool shouldBypassMainWorldCSP();
+  // Returns true if argument is a JavaScript URL.
+  bool executeScriptIfJavaScriptURL(const KURL&);
 
-    PassRefPtr<SharedPersistent<v8::Object>> createPluginWrapper(Widget*);
+  // Returns true if the current world is isolated, and has its own Content
+  // Security Policy. In this case, the policy of the main world should be
+  // ignored when evaluating resources injected into the DOM.
+  bool shouldBypassMainWorldCSP();
 
-    void enableEval();
-    void disableEval(const String& errorMessage);
+  PassRefPtr<SharedPersistent<v8::Object>> createPluginWrapper(Widget*);
 
-    static bool canAccessFromCurrentOrigin(v8::Isolate*, Frame*);
+  void enableEval();
+  void disableEval(const String& errorMessage);
 
-    void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
+  static bool canAccessFromCurrentOrigin(v8::Isolate*, Frame*);
 
-    bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
+  void collectIsolatedContexts(
+      Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 
-    TextPosition eventHandlerPosition() const;
+  bool canExecuteScripts(ReasonForCallingCanExecuteScripts);
 
-    void clearWindowProxy();
-    void updateDocument();
+  TextPosition eventHandlerPosition() const;
 
-    void namedItemAdded(HTMLDocument*, const AtomicString&);
-    void namedItemRemoved(HTMLDocument*, const AtomicString&);
+  void clearWindowProxy();
+  void updateDocument();
 
-    void updateSecurityOrigin(SecurityOrigin*);
+  void namedItemAdded(HTMLDocument*, const AtomicString&);
+  void namedItemRemoved(HTMLDocument*, const AtomicString&);
 
-    void clearForClose();
+  void updateSecurityOrigin(SecurityOrigin*);
 
-    // Registers a v8 extension to be available on webpages. Will only
-    // affect v8 contexts initialized after this call. Takes ownership of
-    // the v8::Extension object passed.
-    static void registerExtensionIfNeeded(v8::Extension*);
-    static V8Extensions& registeredExtensions();
+  void clearForClose();
 
-    v8::Isolate* isolate() const { return m_windowProxyManager->isolate(); }
+  // Registers a v8 extension to be available on webpages. Will only
+  // affect v8 contexts initialized after this call. Takes ownership of
+  // the v8::Extension object passed.
+  static void registerExtensionIfNeeded(v8::Extension*);
+  static V8Extensions& registeredExtensions();
 
-    WindowProxyManager* getWindowProxyManager() const { return m_windowProxyManager.get(); }
+  v8::Isolate* isolate() const { return m_windowProxyManager->isolate(); }
 
-private:
-    explicit ScriptController(LocalFrame*);
+  WindowProxyManager* getWindowProxyManager() const {
+    return m_windowProxyManager.get();
+  }
 
-    LocalFrame* frame() const { return toLocalFrame(m_windowProxyManager->frame()); }
+ private:
+  explicit ScriptController(LocalFrame*);
 
-    v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy);
+  LocalFrame* frame() const {
+    return toLocalFrame(m_windowProxyManager->frame());
+  }
 
-    Member<WindowProxyManager> m_windowProxyManager;
+  v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&,
+                                                 AccessControlStatus,
+                                                 ExecuteScriptPolicy);
+
+  Member<WindowProxyManager> m_windowProxyManager;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptController_h
+#endif  // ScriptController_h

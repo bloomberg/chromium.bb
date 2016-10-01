@@ -47,156 +47,156 @@ static const unsigned maxRowSpan = 65534;
 
 using namespace HTMLNames;
 
-inline HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tagName, Document& document)
-    : HTMLTablePartElement(tagName, document)
-{
-}
+inline HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tagName,
+                                                  Document& document)
+    : HTMLTablePartElement(tagName, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement)
 
-unsigned HTMLTableCellElement::colSpan() const
-{
-    const AtomicString& colSpanValue = fastGetAttribute(colspanAttr);
-    unsigned value = 0;
-    if (colSpanValue.isEmpty() || !parseHTMLNonNegativeInteger(colSpanValue, value))
-        return 1;
-    return max(1u, min(value, maxColSpan));
+unsigned HTMLTableCellElement::colSpan() const {
+  const AtomicString& colSpanValue = fastGetAttribute(colspanAttr);
+  unsigned value = 0;
+  if (colSpanValue.isEmpty() ||
+      !parseHTMLNonNegativeInteger(colSpanValue, value))
+    return 1;
+  return max(1u, min(value, maxColSpan));
 }
 
-unsigned HTMLTableCellElement::rowSpan() const
-{
-    const AtomicString& rowSpanValue = fastGetAttribute(rowspanAttr);
-    unsigned value = 0;
-    if (rowSpanValue.isEmpty() || !parseHTMLNonNegativeInteger(rowSpanValue, value))
-        return 1;
-    return max(1u, min(value, maxRowSpan));
+unsigned HTMLTableCellElement::rowSpan() const {
+  const AtomicString& rowSpanValue = fastGetAttribute(rowspanAttr);
+  unsigned value = 0;
+  if (rowSpanValue.isEmpty() ||
+      !parseHTMLNonNegativeInteger(rowSpanValue, value))
+    return 1;
+  return max(1u, min(value, maxRowSpan));
 }
 
-int HTMLTableCellElement::cellIndex() const
-{
-    if (!isHTMLTableRowElement(parentElement()))
-        return -1;
+int HTMLTableCellElement::cellIndex() const {
+  if (!isHTMLTableRowElement(parentElement()))
+    return -1;
 
-    int index = 0;
-    for (const HTMLTableCellElement* element = Traversal<HTMLTableCellElement>::previousSibling(*this); element; element = Traversal<HTMLTableCellElement>::previousSibling(*element))
-        ++index;
+  int index = 0;
+  for (const HTMLTableCellElement* element =
+           Traversal<HTMLTableCellElement>::previousSibling(*this);
+       element;
+       element = Traversal<HTMLTableCellElement>::previousSibling(*element))
+    ++index;
 
-    return index;
+  return index;
 }
 
-bool HTMLTableCellElement::isPresentationAttribute(const QualifiedName& name) const
-{
-    if (name == nowrapAttr || name == widthAttr || name == heightAttr)
-        return true;
-    return HTMLTablePartElement::isPresentationAttribute(name);
+bool HTMLTableCellElement::isPresentationAttribute(
+    const QualifiedName& name) const {
+  if (name == nowrapAttr || name == widthAttr || name == heightAttr)
+    return true;
+  return HTMLTablePartElement::isPresentationAttribute(name);
 }
 
-void HTMLTableCellElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    if (name == nowrapAttr) {
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace, CSSValueWebkitNowrap);
-    } else if (name == widthAttr) {
-        if (!value.isEmpty()) {
-            int widthInt = value.toInt();
-            if (widthInt > 0) // width="0" is ignored for compatibility with WinIE.
-                addHTMLLengthToStyle(style, CSSPropertyWidth, value);
-        }
-    } else if (name == heightAttr) {
-        if (!value.isEmpty()) {
-            int heightInt = value.toInt();
-            if (heightInt > 0) // height="0" is ignored for compatibility with WinIE.
-                addHTMLLengthToStyle(style, CSSPropertyHeight, value);
-        }
-    } else {
-        HTMLTablePartElement::collectStyleForPresentationAttribute(name, value, style);
+void HTMLTableCellElement::collectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
+  if (name == nowrapAttr) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+                                            CSSValueWebkitNowrap);
+  } else if (name == widthAttr) {
+    if (!value.isEmpty()) {
+      int widthInt = value.toInt();
+      if (widthInt > 0)  // width="0" is ignored for compatibility with WinIE.
+        addHTMLLengthToStyle(style, CSSPropertyWidth, value);
     }
-}
-
-void HTMLTableCellElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
-{
-    if (name == rowspanAttr) {
-        if (layoutObject() && layoutObject()->isTableCell())
-            toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
-    } else if (name == colspanAttr) {
-        if (layoutObject() && layoutObject()->isTableCell())
-            toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
-    } else {
-        HTMLTablePartElement::parseAttribute(name, oldValue, value);
+  } else if (name == heightAttr) {
+    if (!value.isEmpty()) {
+      int heightInt = value.toInt();
+      if (heightInt > 0)  // height="0" is ignored for compatibility with WinIE.
+        addHTMLLengthToStyle(style, CSSPropertyHeight, value);
     }
+  } else {
+    HTMLTablePartElement::collectStyleForPresentationAttribute(name, value,
+                                                               style);
+  }
 }
 
-const StylePropertySet* HTMLTableCellElement::additionalPresentationAttributeStyle()
-{
-    if (HTMLTableElement* table = findParentTable())
-        return table->additionalCellStyle();
-    return nullptr;
+void HTMLTableCellElement::parseAttribute(const QualifiedName& name,
+                                          const AtomicString& oldValue,
+                                          const AtomicString& value) {
+  if (name == rowspanAttr) {
+    if (layoutObject() && layoutObject()->isTableCell())
+      toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
+  } else if (name == colspanAttr) {
+    if (layoutObject() && layoutObject()->isTableCell())
+      toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
+  } else {
+    HTMLTablePartElement::parseAttribute(name, oldValue, value);
+  }
 }
 
-bool HTMLTableCellElement::isURLAttribute(const Attribute& attribute) const
-{
-    return attribute.name() == backgroundAttr || HTMLTablePartElement::isURLAttribute(attribute);
+const StylePropertySet*
+HTMLTableCellElement::additionalPresentationAttributeStyle() {
+  if (HTMLTableElement* table = findParentTable())
+    return table->additionalCellStyle();
+  return nullptr;
 }
 
-bool HTMLTableCellElement::hasLegalLinkAttribute(const QualifiedName& name) const
-{
-    return (hasTagName(tdTag) && name == backgroundAttr) || HTMLTablePartElement::hasLegalLinkAttribute(name);
+bool HTMLTableCellElement::isURLAttribute(const Attribute& attribute) const {
+  return attribute.name() == backgroundAttr ||
+         HTMLTablePartElement::isURLAttribute(attribute);
 }
 
-const QualifiedName& HTMLTableCellElement::subResourceAttributeName() const
-{
-    return hasTagName(tdTag) ? backgroundAttr : HTMLTablePartElement::subResourceAttributeName();
+bool HTMLTableCellElement::hasLegalLinkAttribute(
+    const QualifiedName& name) const {
+  return (hasTagName(tdTag) && name == backgroundAttr) ||
+         HTMLTablePartElement::hasLegalLinkAttribute(name);
 }
 
-const AtomicString& HTMLTableCellElement::abbr() const
-{
-    return fastGetAttribute(abbrAttr);
+const QualifiedName& HTMLTableCellElement::subResourceAttributeName() const {
+  return hasTagName(tdTag) ? backgroundAttr
+                           : HTMLTablePartElement::subResourceAttributeName();
 }
 
-const AtomicString& HTMLTableCellElement::axis() const
-{
-    return fastGetAttribute(axisAttr);
+const AtomicString& HTMLTableCellElement::abbr() const {
+  return fastGetAttribute(abbrAttr);
 }
 
-void HTMLTableCellElement::setColSpan(unsigned n)
-{
-    setUnsignedIntegralAttribute(colspanAttr, n);
+const AtomicString& HTMLTableCellElement::axis() const {
+  return fastGetAttribute(axisAttr);
 }
 
-const AtomicString& HTMLTableCellElement::headers() const
-{
-    return fastGetAttribute(headersAttr);
+void HTMLTableCellElement::setColSpan(unsigned n) {
+  setUnsignedIntegralAttribute(colspanAttr, n);
 }
 
-void HTMLTableCellElement::setRowSpan(unsigned n)
-{
-    setUnsignedIntegralAttribute(rowspanAttr, n);
+const AtomicString& HTMLTableCellElement::headers() const {
+  return fastGetAttribute(headersAttr);
 }
 
-const AtomicString& HTMLTableCellElement::scope() const
-{
-    const AtomicString& scopeValue = fastGetAttribute(scopeAttr);
-    if (equalIgnoringASCIICase(scopeValue, "row")) {
-        DEFINE_STATIC_LOCAL(const AtomicString, row, ("row"));
-        return row;
-    }
-    if (equalIgnoringASCIICase(scopeValue, "col")) {
-        DEFINE_STATIC_LOCAL(const AtomicString, col, ("col"));
-        return col;
-    }
-    if (equalIgnoringASCIICase(scopeValue, "rowgroup")) {
-        DEFINE_STATIC_LOCAL(const AtomicString, rowgroup, ("rowgroup"));
-        return rowgroup;
-    }
-    if (equalIgnoringASCIICase(scopeValue, "colgroup")) {
-        DEFINE_STATIC_LOCAL(const AtomicString, colgroup, ("colgroup"));
-        return colgroup;
-    }
-    return emptyAtom;
+void HTMLTableCellElement::setRowSpan(unsigned n) {
+  setUnsignedIntegralAttribute(rowspanAttr, n);
 }
 
-void HTMLTableCellElement::setScope(const AtomicString& value)
-{
-    setAttribute(scopeAttr, value);
+const AtomicString& HTMLTableCellElement::scope() const {
+  const AtomicString& scopeValue = fastGetAttribute(scopeAttr);
+  if (equalIgnoringASCIICase(scopeValue, "row")) {
+    DEFINE_STATIC_LOCAL(const AtomicString, row, ("row"));
+    return row;
+  }
+  if (equalIgnoringASCIICase(scopeValue, "col")) {
+    DEFINE_STATIC_LOCAL(const AtomicString, col, ("col"));
+    return col;
+  }
+  if (equalIgnoringASCIICase(scopeValue, "rowgroup")) {
+    DEFINE_STATIC_LOCAL(const AtomicString, rowgroup, ("rowgroup"));
+    return rowgroup;
+  }
+  if (equalIgnoringASCIICase(scopeValue, "colgroup")) {
+    DEFINE_STATIC_LOCAL(const AtomicString, colgroup, ("colgroup"));
+    return colgroup;
+  }
+  return emptyAtom;
 }
 
-} // namespace blink
+void HTMLTableCellElement::setScope(const AtomicString& value) {
+  setAttribute(scopeAttr, value);
+}
+
+}  // namespace blink

@@ -28,32 +28,41 @@
 namespace blink {
 
 class PLATFORM_EXPORT FESpecularLighting final : public FELighting {
-public:
-    static FESpecularLighting* create(Filter*, const Color&, float, float,
-        float, PassRefPtr<LightSource>);
-    ~FESpecularLighting() override;
+ public:
+  static FESpecularLighting* create(Filter*,
+                                    const Color&,
+                                    float,
+                                    float,
+                                    float,
+                                    PassRefPtr<LightSource>);
+  ~FESpecularLighting() override;
 
-    Color lightingColor() const;
-    bool setLightingColor(const Color&);
+  Color lightingColor() const;
+  bool setLightingColor(const Color&);
 
-    float surfaceScale() const;
-    bool setSurfaceScale(float);
+  float surfaceScale() const;
+  bool setSurfaceScale(float);
 
-    float specularConstant() const;
-    bool setSpecularConstant(float);
+  float specularConstant() const;
+  bool setSpecularConstant(float);
 
-    float specularExponent() const;
-    bool setSpecularExponent(float);
+  float specularExponent() const;
+  bool setSpecularExponent(float);
 
-    const LightSource* lightSource() const;
-    void setLightSource(PassRefPtr<LightSource>);
+  const LightSource* lightSource() const;
+  void setLightSource(PassRefPtr<LightSource>);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    FESpecularLighting(Filter*, const Color&, float, float, float, PassRefPtr<LightSource>);
+ private:
+  FESpecularLighting(Filter*,
+                     const Color&,
+                     float,
+                     float,
+                     float,
+                     PassRefPtr<LightSource>);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FESpecularLighting_h
+#endif  // FESpecularLighting_h

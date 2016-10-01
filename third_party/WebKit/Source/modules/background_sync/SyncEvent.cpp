@@ -6,42 +6,36 @@
 
 namespace blink {
 
-SyncEvent::SyncEvent(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
-    : ExtendableEvent(type, ExtendableEventInit(), observer)
-    , m_tag(tag)
-    , m_lastChance(lastChance)
-{
-}
+SyncEvent::SyncEvent(const AtomicString& type,
+                     const String& tag,
+                     bool lastChance,
+                     WaitUntilObserver* observer)
+    : ExtendableEvent(type, ExtendableEventInit(), observer),
+      m_tag(tag),
+      m_lastChance(lastChance) {}
 
 SyncEvent::SyncEvent(const AtomicString& type, const SyncEventInit& init)
-    : ExtendableEvent(type, init)
-{
-    m_tag = init.tag();
-    m_lastChance = init.lastChance();
+    : ExtendableEvent(type, init) {
+  m_tag = init.tag();
+  m_lastChance = init.lastChance();
 }
 
-SyncEvent::~SyncEvent()
-{
+SyncEvent::~SyncEvent() {}
+
+const AtomicString& SyncEvent::interfaceName() const {
+  return EventNames::SyncEvent;
 }
 
-const AtomicString& SyncEvent::interfaceName() const
-{
-    return EventNames::SyncEvent;
+String SyncEvent::tag() {
+  return m_tag;
 }
 
-String SyncEvent::tag()
-{
-    return m_tag;
+bool SyncEvent::lastChance() {
+  return m_lastChance;
 }
 
-bool SyncEvent::lastChance()
-{
-    return m_lastChance;
+DEFINE_TRACE(SyncEvent) {
+  ExtendableEvent::trace(visitor);
 }
 
-DEFINE_TRACE(SyncEvent)
-{
-    ExtendableEvent::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

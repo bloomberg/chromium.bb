@@ -11,39 +11,31 @@
 namespace blink {
 
 class LineLayoutListMarker : public LineLayoutBox {
-public:
-    explicit LineLayoutListMarker(LayoutListMarker* layoutListMarker)
-        : LineLayoutBox(layoutListMarker)
-    {
-    }
+ public:
+  explicit LineLayoutListMarker(LayoutListMarker* layoutListMarker)
+      : LineLayoutBox(layoutListMarker) {}
 
-    explicit LineLayoutListMarker(const LineLayoutItem& item)
-        : LineLayoutBox(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isListMarker());
-    }
+  explicit LineLayoutListMarker(const LineLayoutItem& item)
+      : LineLayoutBox(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isListMarker());
+  }
 
-    explicit LineLayoutListMarker(std::nullptr_t) : LineLayoutBox(nullptr) { }
+  explicit LineLayoutListMarker(std::nullptr_t) : LineLayoutBox(nullptr) {}
 
-    LineLayoutListMarker() { }
+  LineLayoutListMarker() {}
 
-    bool isInside() const
-    {
-        return toListMarker()->isInside();
-    }
+  bool isInside() const { return toListMarker()->isInside(); }
 
-private:
-    LayoutListMarker* toListMarker()
-    {
-        return toLayoutListMarker(layoutObject());
-    }
+ private:
+  LayoutListMarker* toListMarker() {
+    return toLayoutListMarker(layoutObject());
+  }
 
-    const LayoutListMarker* toListMarker() const
-    {
-        return toLayoutListMarker(layoutObject());
-    }
+  const LayoutListMarker* toListMarker() const {
+    return toLayoutListMarker(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutListMarker_h
+#endif  // LineLayoutListMarker_h

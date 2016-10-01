@@ -19,30 +19,31 @@ class MediaMetadataInit;
 
 // Implementation of MediaMetadata interface from the Media Session API.
 class MODULES_EXPORT MediaMetadata final
-    : public GarbageCollectedFinalized<MediaMetadata>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MediaMetadata* create(ExecutionContext*, const MediaMetadataInit&);
+    : public GarbageCollectedFinalized<MediaMetadata>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    String title() const;
-    String artist() const;
-    String album() const;
-    const HeapVector<Member<MediaArtwork>>& artwork() const;
+ public:
+  static MediaMetadata* create(ExecutionContext*, const MediaMetadataInit&);
 
-    explicit operator WebMediaMetadata() const;
+  String title() const;
+  String artist() const;
+  String album() const;
+  const HeapVector<Member<MediaArtwork>>& artwork() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  explicit operator WebMediaMetadata() const;
 
-private:
-    MediaMetadata(ExecutionContext*, const MediaMetadataInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    String m_title;
-    String m_artist;
-    String m_album;
-    HeapVector<Member<MediaArtwork>> m_artwork;
+ private:
+  MediaMetadata(ExecutionContext*, const MediaMetadataInit&);
+
+  String m_title;
+  String m_artist;
+  String m_album;
+  HeapVector<Member<MediaArtwork>> m_artwork;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaMetadata_h
+#endif  // MediaMetadata_h

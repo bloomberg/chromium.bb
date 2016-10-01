@@ -10,4 +10,4 @@ namespace blink {
 
 unsigned ScriptForbiddenScope::s_scriptForbiddenCount = 0;
 
-} // namespace blink
+}  // namespace blink

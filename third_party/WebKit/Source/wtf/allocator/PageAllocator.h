@@ -40,13 +40,16 @@
 namespace WTF {
 
 #if OS(WIN)
-static const size_t kPageAllocationGranularityShift = 16; // 64KB
+static const size_t kPageAllocationGranularityShift = 16;  // 64KB
 #else
-static const size_t kPageAllocationGranularityShift = 12; // 4KB
+static const size_t kPageAllocationGranularityShift = 12;  // 4KB
 #endif
-static const size_t kPageAllocationGranularity = 1 << kPageAllocationGranularityShift;
-static const size_t kPageAllocationGranularityOffsetMask = kPageAllocationGranularity - 1;
-static const size_t kPageAllocationGranularityBaseMask = ~kPageAllocationGranularityOffsetMask;
+static const size_t kPageAllocationGranularity =
+    1 << kPageAllocationGranularityShift;
+static const size_t kPageAllocationGranularityOffsetMask =
+    kPageAllocationGranularity - 1;
+static const size_t kPageAllocationGranularityBaseMask =
+    ~kPageAllocationGranularityOffsetMask;
 
 // All Blink-supported systems have 4096 sized system pages and can handle
 // permissions and commit / decommit at this granularity.
@@ -55,8 +58,8 @@ static const size_t kSystemPageOffsetMask = kSystemPageSize - 1;
 static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
 enum PageAccessibilityConfiguration {
-    PageAccessible,
-    PageInaccessible,
+  PageAccessible,
+  PageInaccessible,
 };
 
 // Allocate one or more pages.
@@ -70,7 +73,10 @@ enum PageAccessibilityConfiguration {
 // PageAccessibilityConfiguration controls the permission of the
 // allocated pages.
 // This call will return null if the allocation cannot be satisfied.
-WTF_EXPORT void* allocPages(void* addr, size_t len, size_t align, PageAccessibilityConfiguration);
+WTF_EXPORT void* allocPages(void* addr,
+                            size_t len,
+                            size_t align,
+                            PageAccessibilityConfiguration);
 
 // Free one or more pages.
 // addr and len must match a previous call to allocPages().
@@ -89,7 +95,8 @@ WTF_EXPORT void setSystemPagesInaccessible(void* addr, size_t len);
 // change succeeded or not. You must check the result
 // (in most cases you need to RELEASE_ASSERT that it is
 // true).
-WTF_EXPORT WARN_UNUSED_RETURN bool setSystemPagesAccessible(void* addr, size_t len);
+WTF_EXPORT WARN_UNUSED_RETURN bool setSystemPagesAccessible(void* addr,
+                                                            size_t len);
 
 // Decommit one or more system pages. Decommitted means that the physical memory
 // is released to the system, but the virtual address space remains reserved.
@@ -126,14 +133,12 @@ WTF_EXPORT void recommitSystemPages(void* addr, size_t len);
 // len must be a multiple of kSystemPageSize bytes.
 WTF_EXPORT void discardSystemPages(void* addr, size_t len);
 
-WTF_EXPORT ALWAYS_INLINE uintptr_t roundUpToSystemPage(uintptr_t address)
-{
-    return (address + kSystemPageOffsetMask) & kSystemPageBaseMask;
+WTF_EXPORT ALWAYS_INLINE uintptr_t roundUpToSystemPage(uintptr_t address) {
+  return (address + kSystemPageOffsetMask) & kSystemPageBaseMask;
 }
 
-WTF_EXPORT ALWAYS_INLINE uintptr_t roundDownToSystemPage(uintptr_t address)
-{
-    return address & kSystemPageBaseMask;
+WTF_EXPORT ALWAYS_INLINE uintptr_t roundDownToSystemPage(uintptr_t address) {
+  return address & kSystemPageBaseMask;
 }
 
 // Only allowed inside WTF for investigating WTF::initializeWithoutV8 crashes.
@@ -142,6 +147,6 @@ WTF_EXPORT ALWAYS_INLINE uintptr_t roundDownToSystemPage(uintptr_t address)
 // (or VirtualAlloc) fails.
 uint32_t getAllocPageErrorCode();
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // WTF_PageAllocator_h
+#endif  // WTF_PageAllocator_h

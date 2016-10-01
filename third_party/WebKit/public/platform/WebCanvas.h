@@ -39,6 +39,6 @@ namespace blink {
 
 typedef SkCanvas WebCanvas;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

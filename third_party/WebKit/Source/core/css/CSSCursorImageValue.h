@@ -32,47 +32,50 @@ class Element;
 class SVGElement;
 
 class CSSCursorImageValue : public CSSValue {
-public:
-    static const CSSCursorImageValue* create(CSSValue* imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
-    {
-        return new CSSCursorImageValue(imageValue, hotSpotSpecified, hotSpot);
-    }
+ public:
+  static const CSSCursorImageValue* create(CSSValue* imageValue,
+                                           bool hotSpotSpecified,
+                                           const IntPoint& hotSpot) {
+    return new CSSCursorImageValue(imageValue, hotSpotSpecified, hotSpot);
+  }
 
-    ~CSSCursorImageValue();
+  ~CSSCursorImageValue();
 
-    bool hotSpotSpecified() const { return m_hotSpotSpecified; }
+  bool hotSpotSpecified() const { return m_hotSpotSpecified; }
 
-    IntPoint hotSpot() const { return m_hotSpot; }
+  IntPoint hotSpot() const { return m_hotSpot; }
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    SVGCursorElement* getSVGCursorElement(Element*) const;
+  SVGCursorElement* getSVGCursorElement(Element*) const;
 
-    void clearImageResource() const;
-    bool isCachePending(float deviceScaleFactor) const;
-    String cachedImageURL() const;
-    StyleImage* cachedImage(float deviceScaleFactor) const;
-    StyleImage* cacheImage(const Document&, float deviceScaleFactor);
+  void clearImageResource() const;
+  bool isCachePending(float deviceScaleFactor) const;
+  String cachedImageURL() const;
+  StyleImage* cachedImage(float deviceScaleFactor) const;
+  StyleImage* cacheImage(const Document&, float deviceScaleFactor);
 
-    bool equals(const CSSCursorImageValue&) const;
+  bool equals(const CSSCursorImageValue&) const;
 
-    DECLARE_TRACE_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
 
-private:
-    CSSCursorImageValue(CSSValue* imageValue, bool hotSpotSpecified, const IntPoint& hotSpot);
+ private:
+  CSSCursorImageValue(CSSValue* imageValue,
+                      bool hotSpotSpecified,
+                      const IntPoint& hotSpot);
 
-    bool hasFragmentInURL() const;
+  bool hasFragmentInURL() const;
 
-    Member<CSSValue> m_imageValue;
+  Member<CSSValue> m_imageValue;
 
-    bool m_hotSpotSpecified;
-    IntPoint m_hotSpot;
-    mutable bool m_isCachePending;
-    mutable Member<StyleImage> m_cachedImage;
+  bool m_hotSpotSpecified;
+  IntPoint m_hotSpot;
+  mutable bool m_isCachePending;
+  mutable Member<StyleImage> m_cachedImage;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, isCursorImageValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSCursorImageValue_h
+#endif  // CSSCursorImageValue_h

@@ -8,48 +8,45 @@
 
 namespace blink {
 
-const char* BluetoothSupplement::supplementName()
-{
-    return "BluetoothSupplement";
+const char* BluetoothSupplement::supplementName() {
+  return "BluetoothSupplement";
 }
 
 BluetoothSupplement::BluetoothSupplement(WebBluetooth* bluetooth)
-    : m_bluetooth(bluetooth)
-{
-}
+    : m_bluetooth(bluetooth) {}
 
-void BluetoothSupplement::provideTo(LocalFrame& frame, WebBluetooth* bluetooth)
-{
-    BluetoothSupplement* bluetoothSupplement = new BluetoothSupplement(bluetooth);
-    Supplement<LocalFrame>::provideTo(frame, supplementName(), bluetoothSupplement);
+void BluetoothSupplement::provideTo(LocalFrame& frame,
+                                    WebBluetooth* bluetooth) {
+  BluetoothSupplement* bluetoothSupplement = new BluetoothSupplement(bluetooth);
+  Supplement<LocalFrame>::provideTo(frame, supplementName(),
+                                    bluetoothSupplement);
 };
 
-WebBluetooth* BluetoothSupplement::from(LocalFrame* frame)
-{
-    BluetoothSupplement* supplement = static_cast<BluetoothSupplement*>(Supplement<LocalFrame>::from(frame, supplementName()));
+WebBluetooth* BluetoothSupplement::from(LocalFrame* frame) {
+  BluetoothSupplement* supplement = static_cast<BluetoothSupplement*>(
+      Supplement<LocalFrame>::from(frame, supplementName()));
 
-    ASSERT(supplement);
-    ASSERT(supplement->m_bluetooth);
+  ASSERT(supplement);
+  ASSERT(supplement->m_bluetooth);
 
-    return supplement->m_bluetooth;
+  return supplement->m_bluetooth;
 }
 
-WebBluetooth* BluetoothSupplement::fromScriptState(ScriptState* scriptState)
-{
-    return fromExecutionContext(scriptState->getExecutionContext());
+WebBluetooth* BluetoothSupplement::fromScriptState(ScriptState* scriptState) {
+  return fromExecutionContext(scriptState->getExecutionContext());
 }
 
-WebBluetooth* BluetoothSupplement::fromExecutionContext(ExecutionContext* executionContext)
-{
-    if (!executionContext->isDocument()) {
-        return nullptr;
-    }
-    return BluetoothSupplement::from(static_cast<Document*>(executionContext)->frame());
+WebBluetooth* BluetoothSupplement::fromExecutionContext(
+    ExecutionContext* executionContext) {
+  if (!executionContext->isDocument()) {
+    return nullptr;
+  }
+  return BluetoothSupplement::from(
+      static_cast<Document*>(executionContext)->frame());
 }
 
-DEFINE_TRACE(BluetoothSupplement)
-{
-    Supplement<LocalFrame>::trace(visitor);
+DEFINE_TRACE(BluetoothSupplement) {
+  Supplement<LocalFrame>::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

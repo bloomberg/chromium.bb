@@ -41,26 +41,32 @@ namespace blink {
 class InspectedFrames;
 class PlatformMouseEvent;
 
-class CORE_EXPORT InspectorInputAgent final : public InspectorBaseAgent<protocol::Input::Metainfo> {
-    WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
-public:
-    static InspectorInputAgent* create(InspectedFrames* inspectedFrames)
-    {
-        return new InspectorInputAgent(inspectedFrames);
-    }
+class CORE_EXPORT InspectorInputAgent final
+    : public InspectorBaseAgent<protocol::Input::Metainfo> {
+  WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 
-    ~InspectorInputAgent() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static InspectorInputAgent* create(InspectedFrames* inspectedFrames) {
+    return new InspectorInputAgent(inspectedFrames);
+  }
 
-    // Methods called from the frontend for simulating input.
-    void dispatchTouchEvent(ErrorString*, const String& type, std::unique_ptr<protocol::Array<protocol::Input::TouchPoint>> touchPoints, const Maybe<int>& modifiers, const Maybe<double>& timestamp) override;
-private:
-    explicit InspectorInputAgent(InspectedFrames*);
+  ~InspectorInputAgent() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<InspectedFrames> m_inspectedFrames;
+  // Methods called from the frontend for simulating input.
+  void dispatchTouchEvent(
+      ErrorString*,
+      const String& type,
+      std::unique_ptr<protocol::Array<protocol::Input::TouchPoint>> touchPoints,
+      const Maybe<int>& modifiers,
+      const Maybe<double>& timestamp) override;
+
+ private:
+  explicit InspectorInputAgent(InspectedFrames*);
+
+  Member<InspectedFrames> m_inspectedFrames;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // !defined(InspectorInputAgent_h)
+#endif  // !defined(InspectorInputAgent_h)

@@ -42,101 +42,113 @@ class LayoutTextFragment;
 // chunks so as to optimize for performance of the iteration.
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
-    STACK_ALLOCATED();
-public:
-    SimplifiedBackwardsTextIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+  STACK_ALLOCATED();
 
-    bool atEnd() const { return !m_positionNode || m_shouldStop; }
-    void advance();
+ public:
+  SimplifiedBackwardsTextIteratorAlgorithm(
+      const PositionTemplate<Strategy>& start,
+      const PositionTemplate<Strategy>& end,
+      TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
-    int length() const { return m_textLength; }
+  bool atEnd() const { return !m_positionNode || m_shouldStop; }
+  void advance();
 
-    // Note: |characterAt()| returns characters in the reversed order, since
-    // the iterator is backwards. For example, if the current text is "abc",
-    // then |characterAt(0)| returns 'c'.
-    UChar characterAt(unsigned index) const;
+  int length() const { return m_textLength; }
 
-    Node* node() const { return m_node; }
+  // Note: |characterAt()| returns characters in the reversed order, since
+  // the iterator is backwards. For example, if the current text is "abc",
+  // then |characterAt(0)| returns 'c'.
+  UChar characterAt(unsigned index) const;
 
-    // Calculate the minimum |actualLength >= minLength| such that code units
-    // with offset range [position, position + actualLength) are whole code
-    // points. Prepend these code points to |output| and return |actualLength|.
-    // TODO(xiaochengh): Use (start, end) instead of (start, length).
-    int copyTextTo(BackwardsTextBuffer* output, int position, int minLength) const;
-    // TODO(xiaochengh): Avoid default parameters.
-    int copyTextTo(BackwardsTextBuffer* output, int position = 0) const;
+  Node* node() const { return m_node; }
 
-    Node* startContainer() const;
-    int endOffset() const;
-    PositionTemplate<Strategy> startPosition() const;
-    PositionTemplate<Strategy> endPosition() const;
+  // Calculate the minimum |actualLength >= minLength| such that code units
+  // with offset range [position, position + actualLength) are whole code
+  // points. Prepend these code points to |output| and return |actualLength|.
+  // TODO(xiaochengh): Use (start, end) instead of (start, length).
+  int copyTextTo(BackwardsTextBuffer* output,
+                 int position,
+                 int minLength) const;
+  // TODO(xiaochengh): Avoid default parameters.
+  int copyTextTo(BackwardsTextBuffer* output, int position = 0) const;
 
-    bool isInTextSecurityMode() const;
+  Node* startContainer() const;
+  int endOffset() const;
+  PositionTemplate<Strategy> startPosition() const;
+  PositionTemplate<Strategy> endPosition() const;
 
-private:
-    void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
-    void exitNode();
-    bool handleTextNode();
-    LayoutText* handleFirstLetter(int& startOffset, int& offsetInNode);
-    bool handleReplacedElement();
-    bool handleNonTextNode();
-    void emitCharacter(UChar, Node*, int startOffset, int endOffset);
-    bool advanceRespectingRange(Node*);
+  bool isInTextSecurityMode() const;
 
-    bool isBetweenSurrogatePair(int position) const;
+ private:
+  void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
+  void exitNode();
+  bool handleTextNode();
+  LayoutText* handleFirstLetter(int& startOffset, int& offsetInNode);
+  bool handleReplacedElement();
+  bool handleNonTextNode();
+  void emitCharacter(UChar, Node*, int startOffset, int endOffset);
+  bool advanceRespectingRange(Node*);
 
-    // Prepend code units with offset range [position, position + copyLength)
-    // to the output buffer.
-    void copyCodeUnitsTo(BackwardsTextBuffer* output, int position, int copyLength) const;
+  bool isBetweenSurrogatePair(int position) const;
 
-    // Current position, not necessarily of the text being returned, but position
-    // as we walk through the DOM tree.
-    Member<Node> m_node;
-    int m_offset;
-    bool m_handledNode;
-    bool m_handledChildren;
-    FullyClippedStateStackAlgorithm<Strategy> m_fullyClippedStack;
+  // Prepend code units with offset range [position, position + copyLength)
+  // to the output buffer.
+  void copyCodeUnitsTo(BackwardsTextBuffer* output,
+                       int position,
+                       int copyLength) const;
 
-    // End of the range.
-    Member<Node> m_startNode;
-    int m_startOffset;
-    // Start of the range.
-    Member<Node> m_endNode;
-    int m_endOffset;
+  // Current position, not necessarily of the text being returned, but position
+  // as we walk through the DOM tree.
+  Member<Node> m_node;
+  int m_offset;
+  bool m_handledNode;
+  bool m_handledChildren;
+  FullyClippedStateStackAlgorithm<Strategy> m_fullyClippedStack;
 
-    // The current text and its position, in the form to be returned from the iterator.
-    Member<Node> m_positionNode;
-    int m_positionStartOffset;
-    int m_positionEndOffset;
+  // End of the range.
+  Member<Node> m_startNode;
+  int m_startOffset;
+  // Start of the range.
+  Member<Node> m_endNode;
+  int m_endOffset;
 
-    String m_textContainer; // We're interested in the range [m_textOffset, m_textOffset + m_textLength) of m_textContainer.
-    int m_textOffset;
-    int m_textLength;
+  // The current text and its position, in the form to be returned from the iterator.
+  Member<Node> m_positionNode;
+  int m_positionStartOffset;
+  int m_positionEndOffset;
 
-    // Used for whitespace characters that aren't in the DOM, so we can point at them.
-    UChar m_singleCharacterBuffer;
+  String
+      m_textContainer;  // We're interested in the range [m_textOffset, m_textOffset + m_textLength) of m_textContainer.
+  int m_textOffset;
+  int m_textLength;
 
-    // Whether m_node has advanced beyond the iteration range (i.e. m_startNode).
-    bool m_havePassedStartNode;
+  // Used for whitespace characters that aren't in the DOM, so we can point at them.
+  UChar m_singleCharacterBuffer;
 
-    // Should handle first-letter layoutObject in the next call to handleTextNode.
-    bool m_shouldHandleFirstLetter;
+  // Whether m_node has advanced beyond the iteration range (i.e. m_startNode).
+  bool m_havePassedStartNode;
 
-    // Used when the iteration should stop if form controls are reached.
-    bool m_stopsOnFormControls;
+  // Should handle first-letter layoutObject in the next call to handleTextNode.
+  bool m_shouldHandleFirstLetter;
 
-    // Used when m_stopsOnFormControls is set to determine if the iterator should keep advancing.
-    bool m_shouldStop;
+  // Used when the iteration should stop if form controls are reached.
+  bool m_stopsOnFormControls;
 
-    // Used in pasting inside password field.
-    bool m_emitsOriginalText;
+  // Used when m_stopsOnFormControls is set to determine if the iterator should keep advancing.
+  bool m_shouldStop;
+
+  // Used in pasting inside password field.
+  bool m_emitsOriginalText;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
-using SimplifiedBackwardsTextIterator = SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
+using SimplifiedBackwardsTextIterator =
+    SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SimplifiedBackwardsTextIterator_h
+#endif  // SimplifiedBackwardsTextIterator_h

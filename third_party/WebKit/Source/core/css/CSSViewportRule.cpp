@@ -37,52 +37,46 @@
 
 namespace blink {
 
-CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
-    : CSSRule(sheet)
-    , m_viewportRule(viewportRule)
-{
+CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewportRule,
+                                 CSSStyleSheet* sheet)
+    : CSSRule(sheet), m_viewportRule(viewportRule) {}
+
+CSSViewportRule::~CSSViewportRule() {}
+
+CSSStyleDeclaration* CSSViewportRule::style() const {
+  if (!m_propertiesCSSOMWrapper)
+    m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(
+        m_viewportRule->mutableProperties(),
+        const_cast<CSSViewportRule*>(this));
+
+  return m_propertiesCSSOMWrapper.get();
 }
 
-CSSViewportRule::~CSSViewportRule()
-{
+String CSSViewportRule::cssText() const {
+  StringBuilder result;
+  result.append("@viewport { ");
+
+  String decls = m_viewportRule->properties().asText();
+  result.append(decls);
+  if (!decls.isEmpty())
+    result.append(' ');
+
+  result.append('}');
+
+  return result.toString();
 }
 
-CSSStyleDeclaration* CSSViewportRule::style() const
-{
-    if (!m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper = StyleRuleCSSStyleDeclaration::create(m_viewportRule->mutableProperties(), const_cast<CSSViewportRule*>(this));
-
-    return m_propertiesCSSOMWrapper.get();
+void CSSViewportRule::reattach(StyleRuleBase* rule) {
+  ASSERT(rule);
+  m_viewportRule = toStyleRuleViewport(rule);
+  if (m_propertiesCSSOMWrapper)
+    m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());
 }
 
-String CSSViewportRule::cssText() const
-{
-    StringBuilder result;
-    result.append("@viewport { ");
-
-    String decls = m_viewportRule->properties().asText();
-    result.append(decls);
-    if (!decls.isEmpty())
-        result.append(' ');
-
-    result.append('}');
-
-    return result.toString();
+DEFINE_TRACE(CSSViewportRule) {
+  visitor->trace(m_viewportRule);
+  visitor->trace(m_propertiesCSSOMWrapper);
+  CSSRule::trace(visitor);
 }
 
-void CSSViewportRule::reattach(StyleRuleBase* rule)
-{
-    ASSERT(rule);
-    m_viewportRule = toStyleRuleViewport(rule);
-    if (m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());
-}
-
-DEFINE_TRACE(CSSViewportRule)
-{
-    visitor->trace(m_viewportRule);
-    visitor->trace(m_propertiesCSSOMWrapper);
-    CSSRule::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -27,78 +27,77 @@ namespace blink {
 // an exception of any type can be expressed with a single integer.
 typedef int ExceptionCode;
 
-
 // This list must be in sync with the |domExceptions| in PrivateScriptRunner.js and |coreExceptions| in DOMExceptions.cpp.
 // Some of these are considered historical since they have been
 // changed or removed from the specifications.
 enum {
-    IndexSizeError = 1,
-    HierarchyRequestError,
-    WrongDocumentError,
-    InvalidCharacterError,
-    NoModificationAllowedError,
-    NotFoundError,
-    NotSupportedError,
-    InUseAttributeError, // Historical. Only used in setAttributeNode etc which have been removed from the DOM specs.
+  IndexSizeError = 1,
+  HierarchyRequestError,
+  WrongDocumentError,
+  InvalidCharacterError,
+  NoModificationAllowedError,
+  NotFoundError,
+  NotSupportedError,
+  InUseAttributeError,  // Historical. Only used in setAttributeNode etc which have been removed from the DOM specs.
 
-    // Introduced in DOM Level 2:
-    InvalidStateError,
-    SyntaxError,
-    InvalidModificationError,
-    NamespaceError,
-    InvalidAccessError,
+  // Introduced in DOM Level 2:
+  InvalidStateError,
+  SyntaxError,
+  InvalidModificationError,
+  NamespaceError,
+  InvalidAccessError,
 
-    // Introduced in DOM Level 3:
-    TypeMismatchError, // Historical; use TypeError instead
+  // Introduced in DOM Level 3:
+  TypeMismatchError,  // Historical; use TypeError instead
 
-    // XMLHttpRequest extension:
-    SecurityError,
+  // XMLHttpRequest extension:
+  SecurityError,
 
-    // Others introduced in HTML5:
-    NetworkError,
-    AbortError,
-    URLMismatchError,
-    QuotaExceededError,
-    TimeoutError,
-    InvalidNodeTypeError,
-    DataCloneError,
+  // Others introduced in HTML5:
+  NetworkError,
+  AbortError,
+  URLMismatchError,
+  QuotaExceededError,
+  TimeoutError,
+  InvalidNodeTypeError,
+  DataCloneError,
 
-    // These are IDB-specific.
-    UnknownError,
-    ConstraintError,
-    DataError,
-    TransactionInactiveError,
-    ReadOnlyError,
-    VersionError,
+  // These are IDB-specific.
+  UnknownError,
+  ConstraintError,
+  DataError,
+  TransactionInactiveError,
+  ReadOnlyError,
+  VersionError,
 
-    // File system
-    NotReadableError,
-    EncodingError,
-    PathExistsError,
+  // File system
+  NotReadableError,
+  EncodingError,
+  PathExistsError,
 
-    // SQL
-    SQLDatabaseError, // Naming conflict with DatabaseError class.
+  // SQL
+  SQLDatabaseError,  // Naming conflict with DatabaseError class.
 
-    // Web Crypto
-    OperationError,
+  // Web Crypto
+  OperationError,
 
-    // Push API
-    PermissionDeniedError,
+  // Push API
+  PermissionDeniedError,
 
-    NotAllowedError,
+  NotAllowedError,
 
-    // Pointer Events
-    InvalidPointerId,
+  // Pointer Events
+  InvalidPointerId,
 };
 
 enum V8ErrorType {
-    V8Error = 1000,
-    V8TypeError,
-    V8RangeError,
-    V8SyntaxError,
-    V8ReferenceError,
+  V8Error = 1000,
+  V8TypeError,
+  V8RangeError,
+  V8SyntaxError,
+  V8ReferenceError,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ExceptionCode_h
+#endif  // ExceptionCode_h

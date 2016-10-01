@@ -13,16 +13,18 @@ struct PaintInfo;
 class LayoutSVGContainer;
 
 class SVGContainerPainter {
-    STACK_ALLOCATED();
-public:
-    SVGContainerPainter(const LayoutSVGContainer& layoutSVGContainer) : m_layoutSVGContainer(layoutSVGContainer) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&);
+ public:
+  SVGContainerPainter(const LayoutSVGContainer& layoutSVGContainer)
+      : m_layoutSVGContainer(layoutSVGContainer) {}
 
-private:
-    const LayoutSVGContainer& m_layoutSVGContainer;
+  void paint(const PaintInfo&);
+
+ private:
+  const LayoutSVGContainer& m_layoutSVGContainer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGContainerPainter_h
+#endif  // SVGContainerPainter_h

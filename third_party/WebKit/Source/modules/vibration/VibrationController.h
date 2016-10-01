@@ -37,64 +37,66 @@ class ExecutionContext;
 class UnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT VibrationController final
-    : public GarbageCollectedFinalized<VibrationController>
-    , public ContextLifecycleObserver
-    , public PageVisibilityObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(VibrationController);
-    WTF_MAKE_NONCOPYABLE(VibrationController);
-public:
-    using VibrationPattern = Vector<unsigned>;
+    : public GarbageCollectedFinalized<VibrationController>,
+      public ContextLifecycleObserver,
+      public PageVisibilityObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(VibrationController);
+  WTF_MAKE_NONCOPYABLE(VibrationController);
 
-    explicit VibrationController(Document&);
-    virtual ~VibrationController();
+ public:
+  using VibrationPattern = Vector<unsigned>;
 
-    static VibrationPattern sanitizeVibrationPattern(const UnsignedLongOrUnsignedLongSequence&);
+  explicit VibrationController(Document&);
+  virtual ~VibrationController();
 
-    bool vibrate(const VibrationPattern&);
-    void doVibrate(TimerBase*);
-    void didVibrate();
+  static VibrationPattern sanitizeVibrationPattern(
+      const UnsignedLongOrUnsignedLongSequence&);
 
-    // Cancels the ongoing vibration if there is one.
-    void cancel();
-    void didCancel();
+  bool vibrate(const VibrationPattern&);
+  void doVibrate(TimerBase*);
+  void didVibrate();
 
-    // Whether a pattern is being processed. If this is true, the vibration
-    // hardware may currently be active, but during a pause it may be inactive.
-    bool isRunning() const { return m_isRunning; }
+  // Cancels the ongoing vibration if there is one.
+  void cancel();
+  void didCancel();
 
-    VibrationPattern pattern() const { return m_pattern; }
+  // Whether a pattern is being processed. If this is true, the vibration
+  // hardware may currently be active, but during a pause it may be inactive.
+  bool isRunning() const { return m_isRunning; }
 
-    DECLARE_VIRTUAL_TRACE();
+  VibrationPattern pattern() const { return m_pattern; }
 
-private:
-    // Inherited from ContextLifecycleObserver AND PageVisibilityObserver.
-    void contextDestroyed() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from PageVisibilityObserver.
-    void pageVisibilityChanged() override;
+ private:
+  // Inherited from ContextLifecycleObserver AND PageVisibilityObserver.
+  void contextDestroyed() override;
 
-    // The VibrationManager mojo service. This is reset in |contextDestroyed|
-    // and must not be called or recreated after it is reset.
-    device::blink::VibrationManagerPtr m_service;
+  // Inherited from PageVisibilityObserver.
+  void pageVisibilityChanged() override;
 
-    // Timer for calling |doVibrate| after a delay. It is safe to call
-    // |startOneshot| when the timer is already running: it may affect the time
-    // at which it fires, but |doVibrate| will still be called only once.
-    Timer<VibrationController> m_timerDoVibrate;
+  // The VibrationManager mojo service. This is reset in |contextDestroyed|
+  // and must not be called or recreated after it is reset.
+  device::blink::VibrationManagerPtr m_service;
 
-    // Whether a pattern is being processed. The vibration hardware may
-    // currently be active, or during a pause it may be inactive.
-    bool m_isRunning;
+  // Timer for calling |doVibrate| after a delay. It is safe to call
+  // |startOneshot| when the timer is already running: it may affect the time
+  // at which it fires, but |doVibrate| will still be called only once.
+  Timer<VibrationController> m_timerDoVibrate;
 
-    // Whether an async mojo call to cancel is pending.
-    bool m_isCallingCancel;
+  // Whether a pattern is being processed. The vibration hardware may
+  // currently be active, or during a pause it may be inactive.
+  bool m_isRunning;
 
-    // Whether an async mojo call to vibrate is pending.
-    bool m_isCallingVibrate;
+  // Whether an async mojo call to cancel is pending.
+  bool m_isCallingCancel;
 
-    VibrationPattern m_pattern;
+  // Whether an async mojo call to vibrate is pending.
+  bool m_isCallingVibrate;
+
+  VibrationPattern m_pattern;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VibrationController_h
+#endif  // VibrationController_h

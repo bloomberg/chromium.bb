@@ -13,16 +13,17 @@ namespace blink {
 class Element;
 
 class ElementFullscreen {
-    STATIC_ONLY(ElementFullscreen);
-public:
-    static void requestFullscreen(Element&);
+  STATIC_ONLY(ElementFullscreen);
 
-    static void webkitRequestFullscreen(Element&);
+ public:
+  static void requestFullscreen(Element&);
 
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
+  static void webkitRequestFullscreen(Element&);
+
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ElementFullscreen_h
+#endif  // ElementFullscreen_h

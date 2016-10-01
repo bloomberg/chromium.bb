@@ -25,45 +25,54 @@ class CompositorAnimationDelegate;
 
 // A compositor representation for AnimationPlayer.
 class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
-    WTF_MAKE_NONCOPYABLE(CompositorAnimationPlayer);
-public:
-    static std::unique_ptr<CompositorAnimationPlayer> create()
-    {
-        return wrapUnique(new CompositorAnimationPlayer());
-    }
+  WTF_MAKE_NONCOPYABLE(CompositorAnimationPlayer);
 
-    ~CompositorAnimationPlayer();
+ public:
+  static std::unique_ptr<CompositorAnimationPlayer> create() {
+    return wrapUnique(new CompositorAnimationPlayer());
+  }
 
-    cc::AnimationPlayer* ccAnimationPlayer() const;
+  ~CompositorAnimationPlayer();
 
-    // An animation delegate is notified when animations are started and
-    // stopped. The CompositorAnimationPlayer does not take ownership of the delegate, and it is
-    // the responsibility of the client to reset the layer's delegate before
-    // deleting the delegate.
-    void setAnimationDelegate(CompositorAnimationDelegate*);
+  cc::AnimationPlayer* ccAnimationPlayer() const;
 
-    void attachElement(const CompositorElementId&);
-    void detachElement();
-    bool isElementAttached() const;
+  // An animation delegate is notified when animations are started and
+  // stopped. The CompositorAnimationPlayer does not take ownership of the delegate, and it is
+  // the responsibility of the client to reset the layer's delegate before
+  // deleting the delegate.
+  void setAnimationDelegate(CompositorAnimationDelegate*);
 
-    void addAnimation(std::unique_ptr<CompositorAnimation>);
-    void removeAnimation(int animationId);
-    void pauseAnimation(int animationId, double timeOffset);
-    void abortAnimation(int animationId);
+  void attachElement(const CompositorElementId&);
+  void detachElement();
+  bool isElementAttached() const;
 
-private:
-    CompositorAnimationPlayer();
+  void addAnimation(std::unique_ptr<CompositorAnimation>);
+  void removeAnimation(int animationId);
+  void pauseAnimation(int animationId, double timeOffset);
+  void abortAnimation(int animationId);
 
-    // cc::AnimationDelegate implementation.
-    void NotifyAnimationStarted(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
-    void NotifyAnimationFinished(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
-    void NotifyAnimationAborted(base::TimeTicks monotonicTime, cc::TargetProperty::Type, int group) override;
-    void NotifyAnimationTakeover(base::TimeTicks monotonicTime, cc::TargetProperty::Type, double animationStartTime, std::unique_ptr<cc::AnimationCurve>) override;
+ private:
+  CompositorAnimationPlayer();
 
-    scoped_refptr<cc::AnimationPlayer> m_animationPlayer;
-    CompositorAnimationDelegate* m_delegate;
+  // cc::AnimationDelegate implementation.
+  void NotifyAnimationStarted(base::TimeTicks monotonicTime,
+                              cc::TargetProperty::Type,
+                              int group) override;
+  void NotifyAnimationFinished(base::TimeTicks monotonicTime,
+                               cc::TargetProperty::Type,
+                               int group) override;
+  void NotifyAnimationAborted(base::TimeTicks monotonicTime,
+                              cc::TargetProperty::Type,
+                              int group) override;
+  void NotifyAnimationTakeover(base::TimeTicks monotonicTime,
+                               cc::TargetProperty::Type,
+                               double animationStartTime,
+                               std::unique_ptr<cc::AnimationCurve>) override;
+
+  scoped_refptr<cc::AnimationPlayer> m_animationPlayer;
+  CompositorAnimationDelegate* m_delegate;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorAnimationPlayer_h
+#endif  // CompositorAnimationPlayer_h

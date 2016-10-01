@@ -12,11 +12,11 @@ namespace blink {
 class WebEncryptedMediaRequest;
 
 class BLINK_PLATFORM_EXPORT WebEncryptedMediaClient {
-public:
-    virtual ~WebEncryptedMediaClient();
-    virtual void requestMediaKeySystemAccess(WebEncryptedMediaRequest) = 0;
+ public:
+  virtual ~WebEncryptedMediaClient();
+  virtual void requestMediaKeySystemAccess(WebEncryptedMediaRequest) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebEncryptedMediaClient_h
+#endif  // WebEncryptedMediaClient_h

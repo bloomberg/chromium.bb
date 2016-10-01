@@ -48,56 +48,67 @@ class ContentSecurityPolicy;
 class KURL;
 
 class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
-    WTF_MAKE_NONCOPYABLE(SecurityContext);
-public:
-    DECLARE_VIRTUAL_TRACE();
+  WTF_MAKE_NONCOPYABLE(SecurityContext);
 
-    using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
+ public:
+  DECLARE_VIRTUAL_TRACE();
 
-    SecurityOrigin* getSecurityOrigin() const { return m_securityOrigin.get(); }
-    ContentSecurityPolicy* contentSecurityPolicy() const { return m_contentSecurityPolicy.get(); }
+  using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
 
-    // Explicitly override the security origin for this security context.
-    // Note: It is dangerous to change the security origin of a script context
-    //       that already contains content.
-    void setSecurityOrigin(PassRefPtr<SecurityOrigin>);
-    virtual void didUpdateSecurityOrigin() = 0;
+  SecurityOrigin* getSecurityOrigin() const { return m_securityOrigin.get(); }
+  ContentSecurityPolicy* contentSecurityPolicy() const {
+    return m_contentSecurityPolicy.get();
+  }
 
-    SandboxFlags getSandboxFlags() const { return m_sandboxFlags; }
-    bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
-    virtual void enforceSandboxFlags(SandboxFlags mask);
+  // Explicitly override the security origin for this security context.
+  // Note: It is dangerous to change the security origin of a script context
+  //       that already contains content.
+  void setSecurityOrigin(PassRefPtr<SecurityOrigin>);
+  virtual void didUpdateSecurityOrigin() = 0;
 
-    void setAddressSpace(WebAddressSpace space) { m_addressSpace = space; }
-    WebAddressSpace addressSpace() const { return m_addressSpace; }
-    String addressSpaceForBindings() const;
+  SandboxFlags getSandboxFlags() const { return m_sandboxFlags; }
+  bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
+  virtual void enforceSandboxFlags(SandboxFlags mask);
 
-    void addInsecureNavigationUpgrade(unsigned hashedHost) { m_insecureNavigationsToUpgrade.add(hashedHost); }
-    InsecureNavigationsSet* insecureNavigationsToUpgrade() { return &m_insecureNavigationsToUpgrade; }
+  void setAddressSpace(WebAddressSpace space) { m_addressSpace = space; }
+  WebAddressSpace addressSpace() const { return m_addressSpace; }
+  String addressSpaceForBindings() const;
 
-    virtual void setInsecureRequestPolicy(WebInsecureRequestPolicy policy) { m_insecureRequestPolicy = policy; }
-    WebInsecureRequestPolicy getInsecureRequestPolicy() const { return m_insecureRequestPolicy; }
+  void addInsecureNavigationUpgrade(unsigned hashedHost) {
+    m_insecureNavigationsToUpgrade.add(hashedHost);
+  }
+  InsecureNavigationsSet* insecureNavigationsToUpgrade() {
+    return &m_insecureNavigationsToUpgrade;
+  }
 
-    void enforceSuborigin(const Suborigin&);
+  virtual void setInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
+    m_insecureRequestPolicy = policy;
+  }
+  WebInsecureRequestPolicy getInsecureRequestPolicy() const {
+    return m_insecureRequestPolicy;
+  }
 
-protected:
-    SecurityContext();
-    virtual ~SecurityContext();
+  void enforceSuborigin(const Suborigin&);
 
-    void setContentSecurityPolicy(ContentSecurityPolicy*);
+ protected:
+  SecurityContext();
+  virtual ~SecurityContext();
 
-    void applySandboxFlags(SandboxFlags mask);
+  void setContentSecurityPolicy(ContentSecurityPolicy*);
 
-private:
-    RefPtr<SecurityOrigin> m_securityOrigin;
-    Member<ContentSecurityPolicy> m_contentSecurityPolicy;
+  void applySandboxFlags(SandboxFlags mask);
 
-    SandboxFlags m_sandboxFlags;
+ private:
+  RefPtr<SecurityOrigin> m_securityOrigin;
+  Member<ContentSecurityPolicy> m_contentSecurityPolicy;
 
-    WebAddressSpace m_addressSpace;
-    WebInsecureRequestPolicy m_insecureRequestPolicy;
-    InsecureNavigationsSet m_insecureNavigationsToUpgrade;
+  SandboxFlags m_sandboxFlags;
+
+  WebAddressSpace m_addressSpace;
+  WebInsecureRequestPolicy m_insecureRequestPolicy;
+  InsecureNavigationsSet m_insecureNavigationsToUpgrade;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SecurityContext_h
+#endif  // SecurityContext_h

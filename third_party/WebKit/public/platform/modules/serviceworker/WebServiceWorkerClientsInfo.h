@@ -19,31 +19,33 @@ namespace blink {
 struct WebServiceWorkerError;
 
 struct WebServiceWorkerClientInfo {
-    WebServiceWorkerClientInfo()
-        : pageVisibilityState(WebPageVisibilityStateLast)
-        , isFocused(false)
-        , frameType(WebURLRequest::FrameTypeNone)
-        , clientType(WebServiceWorkerClientTypeWindow)
-    {
-    }
+  WebServiceWorkerClientInfo()
+      : pageVisibilityState(WebPageVisibilityStateLast),
+        isFocused(false),
+        frameType(WebURLRequest::FrameTypeNone),
+        clientType(WebServiceWorkerClientTypeWindow) {}
 
-    WebString uuid;
+  WebString uuid;
 
-    WebPageVisibilityState pageVisibilityState;
-    bool isFocused;
-    WebURL url;
-    WebURLRequest::FrameType frameType;
-    WebServiceWorkerClientType clientType;
+  WebPageVisibilityState pageVisibilityState;
+  bool isFocused;
+  WebURL url;
+  WebURLRequest::FrameType frameType;
+  WebServiceWorkerClientType clientType;
 };
 
 struct WebServiceWorkerClientsInfo {
-    WebVector<WebServiceWorkerClientInfo> clients;
+  WebVector<WebServiceWorkerClientInfo> clients;
 };
 
 // Two WebCallbacks, one for one client, one for a WebVector of clients.
-using WebServiceWorkerClientCallbacks = WebCallbacks<std::unique_ptr<WebServiceWorkerClientInfo>, const WebServiceWorkerError&>;
-using WebServiceWorkerClientsCallbacks = WebCallbacks<const WebServiceWorkerClientsInfo&, const WebServiceWorkerError&>;
+using WebServiceWorkerClientCallbacks =
+    WebCallbacks<std::unique_ptr<WebServiceWorkerClientInfo>,
+                 const WebServiceWorkerError&>;
+using WebServiceWorkerClientsCallbacks =
+    WebCallbacks<const WebServiceWorkerClientsInfo&,
+                 const WebServiceWorkerError&>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebServiceWorkerClientsInfo_h
+#endif  // WebServiceWorkerClientsInfo_h

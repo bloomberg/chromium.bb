@@ -58,68 +58,67 @@ namespace blink {
 // First character of the prefix within the property name may be upper or lowercase.
 // Other characters in the prefix within the property name must be lowercase.
 // The prefix within the property name must be followed by a capital letter.
-static bool hasCSSPropertyNamePrefix(const String& propertyName, const char* prefix)
-{
+static bool hasCSSPropertyNamePrefix(const String& propertyName,
+                                     const char* prefix) {
 #if ENABLE(ASSERT)
-    ASSERT(*prefix);
-    for (const char* p = prefix; *p; ++p)
-        ASSERT(isASCIILower(*p));
-    ASSERT(propertyName.length());
+  ASSERT(*prefix);
+  for (const char* p = prefix; *p; ++p)
+    ASSERT(isASCIILower(*p));
+  ASSERT(propertyName.length());
 #endif
 
-    if (toASCIILower(propertyName[0]) != prefix[0])
-        return false;
-
-    unsigned length = propertyName.length();
-    for (unsigned i = 1; i < length; ++i) {
-        if (!prefix[i])
-            return isASCIIUpper(propertyName[i]);
-        if (propertyName[i] != prefix[i])
-            return false;
-    }
+  if (toASCIILower(propertyName[0]) != prefix[0])
     return false;
+
+  unsigned length = propertyName.length();
+  for (unsigned i = 1; i < length; ++i) {
+    if (!prefix[i])
+      return isASCIIUpper(propertyName[i]);
+    if (propertyName[i] != prefix[i])
+      return false;
+  }
+  return false;
 }
 
-static CSSPropertyID parseCSSPropertyID(const String& propertyName)
-{
-    unsigned length = propertyName.length();
-    if (!length)
-        return CSSPropertyInvalid;
+static CSSPropertyID parseCSSPropertyID(const String& propertyName) {
+  unsigned length = propertyName.length();
+  if (!length)
+    return CSSPropertyInvalid;
 
-    StringBuilder builder;
-    builder.reserveCapacity(length);
+  StringBuilder builder;
+  builder.reserveCapacity(length);
 
-    unsigned i = 0;
-    bool hasSeenDash = false;
+  unsigned i = 0;
+  bool hasSeenDash = false;
 
-    if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
-        builder.append('-');
-    else if (isASCIIUpper(propertyName[0]))
-        return CSSPropertyInvalid;
+  if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
+    builder.append('-');
+  else if (isASCIIUpper(propertyName[0]))
+    return CSSPropertyInvalid;
 
-    bool hasSeenUpper = isASCIIUpper(propertyName[i]);
+  bool hasSeenUpper = isASCIIUpper(propertyName[i]);
 
-    builder.append(toASCIILower(propertyName[i++]));
+  builder.append(toASCIILower(propertyName[i++]));
 
-    for (; i < length; ++i) {
-        UChar c = propertyName[i];
-        if (!isASCIIUpper(c)) {
-            if (c == '-')
-                hasSeenDash = true;
-            builder.append(c);
-        } else {
-            hasSeenUpper = true;
-            builder.append('-');
-            builder.append(toASCIILower(c));
-        }
+  for (; i < length; ++i) {
+    UChar c = propertyName[i];
+    if (!isASCIIUpper(c)) {
+      if (c == '-')
+        hasSeenDash = true;
+      builder.append(c);
+    } else {
+      hasSeenUpper = true;
+      builder.append('-');
+      builder.append(toASCIILower(c));
     }
+  }
 
-    // Reject names containing both dashes and upper-case characters, such as "border-rightColor".
-    if (hasSeenDash && hasSeenUpper)
-        return CSSPropertyInvalid;
+  // Reject names containing both dashes and upper-case characters, such as "border-rightColor".
+  if (hasSeenDash && hasSeenUpper)
+    return CSSPropertyInvalid;
 
-    String propName = builder.toString();
-    return unresolvedCSSPropertyID(propName);
+  String propName = builder.toString();
+  return unresolvedCSSPropertyID(propName);
 }
 
 // When getting properties on CSSStyleDeclarations, the name used from
@@ -131,95 +130,107 @@ static CSSPropertyID parseCSSPropertyID(const String& propertyName)
 // Example: 'backgroundPositionY' -> 'background-position-y'
 //
 // Also, certain prefixes such as 'css-' are stripped.
-static CSSPropertyID cssPropertyInfo(const AtomicString& name)
-{
-    typedef HashMap<String, CSSPropertyID> CSSPropertyIDMap;
-    DEFINE_STATIC_LOCAL(CSSPropertyIDMap, map, ());
-    CSSPropertyIDMap::iterator iter = map.find(name);
-    if (iter != map.end())
-        return iter->value;
+static CSSPropertyID cssPropertyInfo(const AtomicString& name) {
+  typedef HashMap<String, CSSPropertyID> CSSPropertyIDMap;
+  DEFINE_STATIC_LOCAL(CSSPropertyIDMap, map, ());
+  CSSPropertyIDMap::iterator iter = map.find(name);
+  if (iter != map.end())
+    return iter->value;
 
-    CSSPropertyID unresolvedProperty = parseCSSPropertyID(name);
-    if (unresolvedProperty == CSSPropertyVariable)
-        unresolvedProperty = CSSPropertyInvalid;
-    map.add(name, unresolvedProperty);
-    ASSERT(!unresolvedProperty || CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
-    return unresolvedProperty;
+  CSSPropertyID unresolvedProperty = parseCSSPropertyID(name);
+  if (unresolvedProperty == CSSPropertyVariable)
+    unresolvedProperty = CSSPropertyInvalid;
+  map.add(name, unresolvedProperty);
+  ASSERT(!unresolvedProperty ||
+         CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
+  return unresolvedProperty;
 }
 
-void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    typedef Vector<String, numCSSProperties - 1> PreAllocatedPropertyVector;
-    DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, propertyNames, ());
-    static unsigned propertyNamesLength = 0;
+void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(
+    const v8::PropertyCallbackInfo<v8::Array>& info) {
+  typedef Vector<String, numCSSProperties - 1> PreAllocatedPropertyVector;
+  DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, propertyNames, ());
+  static unsigned propertyNamesLength = 0;
 
-    if (propertyNames.isEmpty()) {
-        for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
-            CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
-            if (CSSPropertyMetadata::isEnabledProperty(propertyId))
-                propertyNames.append(getJSPropertyName(propertyId));
-        }
-        std::sort(propertyNames.begin(), propertyNames.end(), codePointCompareLessThan);
-        propertyNamesLength = propertyNames.size();
+  if (propertyNames.isEmpty()) {
+    for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+      CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
+      if (CSSPropertyMetadata::isEnabledProperty(propertyId))
+        propertyNames.append(getJSPropertyName(propertyId));
     }
+    std::sort(propertyNames.begin(), propertyNames.end(),
+              codePointCompareLessThan);
+    propertyNamesLength = propertyNames.size();
+  }
 
-    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
-    v8::Local<v8::Array> properties = v8::Array::New(info.GetIsolate(), propertyNamesLength);
-    for (unsigned i = 0; i < propertyNamesLength; ++i) {
-        String key = propertyNames.at(i);
-        ASSERT(!key.isNull());
-        if (!v8CallBoolean(properties->CreateDataProperty(context, i, v8String(info.GetIsolate(), key))))
-            return;
-    }
+  v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+  v8::Local<v8::Array> properties =
+      v8::Array::New(info.GetIsolate(), propertyNamesLength);
+  for (unsigned i = 0; i < propertyNamesLength; ++i) {
+    String key = propertyNames.at(i);
+    ASSERT(!key.isNull());
+    if (!v8CallBoolean(properties->CreateDataProperty(
+            context, i, v8String(info.GetIsolate(), key))))
+      return;
+  }
 
-    v8SetReturnValue(info, properties);
+  v8SetReturnValue(info, properties);
 }
 
-void V8CSSStyleDeclaration::namedPropertyQueryCustom(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    // NOTE: cssPropertyInfo lookups incur several mallocs.
-    // Successful lookups have the same cost the first time, but are cached.
-    if (cssPropertyInfo(name)) {
-        v8SetReturnValueInt(info, 0);
-        return;
-    }
+void V8CSSStyleDeclaration::namedPropertyQueryCustom(
+    const AtomicString& name,
+    const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  // NOTE: cssPropertyInfo lookups incur several mallocs.
+  // Successful lookups have the same cost the first time, but are cached.
+  if (cssPropertyInfo(name)) {
+    v8SetReturnValueInt(info, 0);
+    return;
+  }
 }
 
-void V8CSSStyleDeclaration::namedPropertyGetterCustom(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    // Search the style declaration.
-    CSSPropertyID unresolvedProperty = cssPropertyInfo(name);
+void V8CSSStyleDeclaration::namedPropertyGetterCustom(
+    const AtomicString& name,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  // Search the style declaration.
+  CSSPropertyID unresolvedProperty = cssPropertyInfo(name);
 
-    // Do not handle non-property names.
-    if (!unresolvedProperty)
-        return;
-    CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
+  // Do not handle non-property names.
+  if (!unresolvedProperty)
+    return;
+  CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
 
-    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
-    const CSSValue* cssValue = impl->getPropertyCSSValueInternal(resolvedProperty);
-    if (cssValue) {
-        v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
-        return;
-    }
+  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
+  const CSSValue* cssValue =
+      impl->getPropertyCSSValueInternal(resolvedProperty);
+  if (cssValue) {
+    v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
+    return;
+  }
 
-    String result = impl->getPropertyValueInternal(resolvedProperty);
-    v8SetReturnValueString(info, result, info.GetIsolate());
+  String result = impl->getPropertyValueInternal(resolvedProperty);
+  v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
-void V8CSSStyleDeclaration::namedPropertySetterCustom(const AtomicString& name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
-    CSSPropertyID unresolvedProperty = cssPropertyInfo(name);
-    if (!unresolvedProperty)
-        return;
+void V8CSSStyleDeclaration::namedPropertySetterCustom(
+    const AtomicString& name,
+    v8::Local<v8::Value> value,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
+  CSSPropertyID unresolvedProperty = cssPropertyInfo(name);
+  if (!unresolvedProperty)
+    return;
 
-    CEReactionsScope ceReactionsScope;
+  CEReactionsScope ceReactionsScope;
 
-    TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, propertyValue, value);
-    ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(resolveCSSPropertyID(unresolvedProperty)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
-    impl->setPropertyInternal(unresolvedProperty, String(), propertyValue, false, exceptionState);
+  TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, propertyValue, value);
+  ExceptionState exceptionState(
+      ExceptionState::SetterContext,
+      getPropertyName(resolveCSSPropertyID(unresolvedProperty)),
+      "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
+  impl->setPropertyInternal(unresolvedProperty, String(), propertyValue, false,
+                            exceptionState);
 
-    v8SetReturnValue(info, value);
+  v8SetReturnValue(info, value);
 }
 
-} // namespace blink
+}  // namespace blink

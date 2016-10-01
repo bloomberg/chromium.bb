@@ -23,22 +23,19 @@
 
 namespace blink {
 
-Document* DOMParser::parseFromString(const String& str, const String& type)
-{
-    Document* doc = DOMImplementation::createDocument(type, DocumentInit(KURL(), nullptr, m_contextDocument), false);
-    doc->setContent(str);
-    doc->setSecurityOrigin(m_contextDocument->getSecurityOrigin());
-    return doc;
+Document* DOMParser::parseFromString(const String& str, const String& type) {
+  Document* doc = DOMImplementation::createDocument(
+      type, DocumentInit(KURL(), nullptr, m_contextDocument), false);
+  doc->setContent(str);
+  doc->setSecurityOrigin(m_contextDocument->getSecurityOrigin());
+  return doc;
 }
 
 DOMParser::DOMParser(Document& document)
-    : m_contextDocument(document.contextDocument())
-{
+    : m_contextDocument(document.contextDocument()) {}
+
+DEFINE_TRACE(DOMParser) {
+  visitor->trace(m_contextDocument);
 }
 
-DEFINE_TRACE(DOMParser)
-{
-    visitor->trace(m_contextDocument);
-}
-
-} // namespace blink
+}  // namespace blink

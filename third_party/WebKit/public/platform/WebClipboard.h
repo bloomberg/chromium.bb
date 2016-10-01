@@ -45,55 +45,58 @@ class WebImage;
 class WebURL;
 
 class WebClipboard {
-public:
-    enum Format {
-        FormatPlainText,
-        FormatHTML,
-        FormatBookmark,
-        FormatSmartPaste
-    };
+ public:
+  enum Format { FormatPlainText, FormatHTML, FormatBookmark, FormatSmartPaste };
 
-    enum Buffer {
-        BufferStandard,
-        // Used on platforms like the X Window System that treat selection
-        // as a type of clipboard.
-        BufferSelection,
-    };
+  enum Buffer {
+    BufferStandard,
+    // Used on platforms like the X Window System that treat selection
+    // as a type of clipboard.
+    BufferSelection,
+  };
 
-    // Returns an identifier which can be used to determine whether the data
-    // contained within the clipboard has changed.
-    virtual uint64_t sequenceNumber(Buffer) { return 0; }
+  // Returns an identifier which can be used to determine whether the data
+  // contained within the clipboard has changed.
+  virtual uint64_t sequenceNumber(Buffer) { return 0; }
 
-    virtual bool isFormatAvailable(Format, Buffer) { return false; }
+  virtual bool isFormatAvailable(Format, Buffer) { return false; }
 
-    virtual WebVector<WebString> readAvailableTypes(
-        Buffer, bool* containsFilenames) { return WebVector<WebString>(); }
-    virtual WebString readPlainText(Buffer) { return WebString(); }
-    // fragmentStart and fragmentEnd are indexes into the returned markup that
-    // indicate the start and end of the fragment if the returned markup
-    // contains additional context. If there is no additional context,
-    // fragmentStart will be zero and fragmentEnd will be the same as the length
-    // of the returned markup.
-    virtual WebString readHTML(
-        Buffer buffer, WebURL* pageURL, unsigned* fragmentStart,
-        unsigned* fragmentEnd) { return WebString(); }
-    virtual WebString readRTF(Buffer) { return WebString(); }
-    virtual WebBlobInfo readImage(Buffer) { return WebBlobInfo(); }
-    virtual WebString readCustomData(
-        Buffer, const WebString& type) { return WebString(); }
+  virtual WebVector<WebString> readAvailableTypes(Buffer,
+                                                  bool* containsFilenames) {
+    return WebVector<WebString>();
+  }
+  virtual WebString readPlainText(Buffer) { return WebString(); }
+  // fragmentStart and fragmentEnd are indexes into the returned markup that
+  // indicate the start and end of the fragment if the returned markup
+  // contains additional context. If there is no additional context,
+  // fragmentStart will be zero and fragmentEnd will be the same as the length
+  // of the returned markup.
+  virtual WebString readHTML(Buffer buffer,
+                             WebURL* pageURL,
+                             unsigned* fragmentStart,
+                             unsigned* fragmentEnd) {
+    return WebString();
+  }
+  virtual WebString readRTF(Buffer) { return WebString(); }
+  virtual WebBlobInfo readImage(Buffer) { return WebBlobInfo(); }
+  virtual WebString readCustomData(Buffer, const WebString& type) {
+    return WebString();
+  }
 
-    virtual void writePlainText(const WebString&) { }
-    virtual void writeHTML(
-        const WebString& htmlText, const WebURL&,
-        const WebString& plainText, bool writeSmartPaste) { }
-    virtual void writeImage(
-        const WebImage&, const WebURL&, const WebString& title) { }
-    virtual void writeDataObject(const WebDragData&) { }
+  virtual void writePlainText(const WebString&) {}
+  virtual void writeHTML(const WebString& htmlText,
+                         const WebURL&,
+                         const WebString& plainText,
+                         bool writeSmartPaste) {}
+  virtual void writeImage(const WebImage&,
+                          const WebURL&,
+                          const WebString& title) {}
+  virtual void writeDataObject(const WebDragData&) {}
 
-protected:
-    ~WebClipboard() { }
+ protected:
+  ~WebClipboard() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

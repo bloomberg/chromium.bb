@@ -39,14 +39,21 @@ class WebSecurityOrigin;
 class WebString;
 
 class WebIDBFactory {
-public:
-    virtual ~WebIDBFactory() { }
+ public:
+  virtual ~WebIDBFactory() {}
 
-    virtual void getDatabaseNames(WebIDBCallbacks*, const WebSecurityOrigin&) = 0;
-    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks*, WebIDBDatabaseCallbacks*, const WebSecurityOrigin&) = 0;
-    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks*, const WebSecurityOrigin&) = 0;
+  virtual void getDatabaseNames(WebIDBCallbacks*, const WebSecurityOrigin&) = 0;
+  virtual void open(const WebString& name,
+                    long long version,
+                    long long transactionId,
+                    WebIDBCallbacks*,
+                    WebIDBDatabaseCallbacks*,
+                    const WebSecurityOrigin&) = 0;
+  virtual void deleteDatabase(const WebString& name,
+                              WebIDBCallbacks*,
+                              const WebSecurityOrigin&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBFactory_h
+#endif  // WebIDBFactory_h

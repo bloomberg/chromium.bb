@@ -16,14 +16,15 @@ class Element;
 
 class CORE_EXPORT CustomElementUpgradeReaction final
     : public CustomElementReaction {
-    WTF_MAKE_NONCOPYABLE(CustomElementUpgradeReaction);
-public:
-    CustomElementUpgradeReaction(CustomElementDefinition*);
+  WTF_MAKE_NONCOPYABLE(CustomElementUpgradeReaction);
 
-private:
-    void invoke(Element*) override;
+ public:
+  CustomElementUpgradeReaction(CustomElementDefinition*);
+
+ private:
+  void invoke(Element*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementUpgradeReaction_h
+#endif  // CustomElementUpgradeReaction_h

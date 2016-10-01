@@ -54,463 +54,475 @@ static const size_t defaultFrameTimingBufferSize = 150;
 static const size_t defaultLongTaskTimingBufferSize = 150;
 
 PerformanceBase::PerformanceBase(double timeOrigin)
-    : m_frameTimingBufferSize(defaultFrameTimingBufferSize)
-    , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
-    , m_longTaskTimingBufferSize(defaultLongTaskTimingBufferSize)
-    , m_userTiming(nullptr)
-    , m_timeOrigin(timeOrigin)
-    , m_observerFilterOptions(PerformanceEntry::Invalid)
-    , m_deliverObservationsTimer(this, &PerformanceBase::deliverObservationsTimerFired)
-{
+    : m_frameTimingBufferSize(defaultFrameTimingBufferSize),
+      m_resourceTimingBufferSize(defaultResourceTimingBufferSize),
+      m_longTaskTimingBufferSize(defaultLongTaskTimingBufferSize),
+      m_userTiming(nullptr),
+      m_timeOrigin(timeOrigin),
+      m_observerFilterOptions(PerformanceEntry::Invalid),
+      m_deliverObservationsTimer(
+          this,
+          &PerformanceBase::deliverObservationsTimerFired) {}
+
+PerformanceBase::~PerformanceBase() {}
+
+const AtomicString& PerformanceBase::interfaceName() const {
+  return EventTargetNames::Performance;
 }
 
-PerformanceBase::~PerformanceBase()
-{
+PerformanceTiming* PerformanceBase::timing() const {
+  return nullptr;
 }
 
-const AtomicString& PerformanceBase::interfaceName() const
-{
-    return EventTargetNames::Performance;
+PerformanceEntryVector PerformanceBase::getEntries() const {
+  PerformanceEntryVector entries;
+
+  entries.appendVector(m_resourceTimingBuffer);
+  entries.appendVector(m_frameTimingBuffer);
+  entries.appendVector(m_longTaskTimingBuffer);
+
+  if (m_userTiming) {
+    entries.appendVector(m_userTiming->getMarks());
+    entries.appendVector(m_userTiming->getMeasures());
+  }
+
+  std::sort(entries.begin(), entries.end(),
+            PerformanceEntry::startTimeCompareLessThan);
+  return entries;
 }
 
-PerformanceTiming* PerformanceBase::timing() const
-{
-    return nullptr;
-}
+PerformanceEntryVector PerformanceBase::getEntriesByType(
+    const String& entryType) {
+  PerformanceEntryVector entries;
+  PerformanceEntry::EntryType type =
+      PerformanceEntry::toEntryTypeEnum(entryType);
 
-PerformanceEntryVector PerformanceBase::getEntries() const
-{
-    PerformanceEntryVector entries;
-
-    entries.appendVector(m_resourceTimingBuffer);
-    entries.appendVector(m_frameTimingBuffer);
-    entries.appendVector(m_longTaskTimingBuffer);
-
-    if (m_userTiming) {
-        entries.appendVector(m_userTiming->getMarks());
-        entries.appendVector(m_userTiming->getMeasures());
-    }
-
-    std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
-    return entries;
-}
-
-PerformanceEntryVector PerformanceBase::getEntriesByType(const String& entryType)
-{
-    PerformanceEntryVector entries;
-    PerformanceEntry::EntryType type = PerformanceEntry::toEntryTypeEnum(entryType);
-
-    switch (type) {
+  switch (type) {
     case PerformanceEntry::Invalid:
-        return entries;
+      return entries;
     case PerformanceEntry::Resource:
-        for (const auto& resource : m_resourceTimingBuffer)
-            entries.append(resource);
-        break;
+      for (const auto& resource : m_resourceTimingBuffer)
+        entries.append(resource);
+      break;
     case PerformanceEntry::Composite:
     case PerformanceEntry::Render:
-        for (const auto& frame : m_frameTimingBuffer) {
-            if (type == frame->entryTypeEnum()) {
-                entries.append(frame);
-            }
+      for (const auto& frame : m_frameTimingBuffer) {
+        if (type == frame->entryTypeEnum()) {
+          entries.append(frame);
         }
-        break;
+      }
+      break;
     case PerformanceEntry::Mark:
-        if (m_userTiming)
-            entries.appendVector(m_userTiming->getMarks());
-        break;
+      if (m_userTiming)
+        entries.appendVector(m_userTiming->getMarks());
+      break;
     case PerformanceEntry::Measure:
-        if (m_userTiming)
-            entries.appendVector(m_userTiming->getMeasures());
-        break;
+      if (m_userTiming)
+        entries.appendVector(m_userTiming->getMeasures());
+      break;
     case PerformanceEntry::LongTask:
-        for (const auto& longTask : m_longTaskTimingBuffer)
-            entries.append(longTask);
-        break;
-    }
+      for (const auto& longTask : m_longTaskTimingBuffer)
+        entries.append(longTask);
+      break;
+  }
 
-    std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
+  std::sort(entries.begin(), entries.end(),
+            PerformanceEntry::startTimeCompareLessThan);
+  return entries;
+}
+
+PerformanceEntryVector PerformanceBase::getEntriesByName(
+    const String& name,
+    const String& entryType) {
+  PerformanceEntryVector entries;
+  PerformanceEntry::EntryType type =
+      PerformanceEntry::toEntryTypeEnum(entryType);
+
+  if (!entryType.isNull() && type == PerformanceEntry::Invalid)
     return entries;
-}
 
-PerformanceEntryVector PerformanceBase::getEntriesByName(const String& name, const String& entryType)
-{
-    PerformanceEntryVector entries;
-    PerformanceEntry::EntryType type = PerformanceEntry::toEntryTypeEnum(entryType);
-
-    if (!entryType.isNull() && type == PerformanceEntry::Invalid)
-        return entries;
-
-    if (entryType.isNull() || type == PerformanceEntry::Resource) {
-        for (const auto& resource : m_resourceTimingBuffer) {
-            if (resource->name() == name)
-                entries.append(resource);
-        }
+  if (entryType.isNull() || type == PerformanceEntry::Resource) {
+    for (const auto& resource : m_resourceTimingBuffer) {
+      if (resource->name() == name)
+        entries.append(resource);
     }
+  }
 
-    if (entryType.isNull() || type == PerformanceEntry::Composite || type == PerformanceEntry::Render) {
-        for (const auto& frame : m_frameTimingBuffer) {
-            if (frame->name() == name && (entryType.isNull() || entryType == frame->entryType()))
-                entries.append(frame);
-        }
+  if (entryType.isNull() || type == PerformanceEntry::Composite ||
+      type == PerformanceEntry::Render) {
+    for (const auto& frame : m_frameTimingBuffer) {
+      if (frame->name() == name &&
+          (entryType.isNull() || entryType == frame->entryType()))
+        entries.append(frame);
     }
+  }
 
-    if (m_userTiming) {
-        if (entryType.isNull() || type == PerformanceEntry::Mark)
-            entries.appendVector(m_userTiming->getMarks(name));
-        if (entryType.isNull() || type == PerformanceEntry::Measure)
-            entries.appendVector(m_userTiming->getMeasures(name));
-    }
+  if (m_userTiming) {
+    if (entryType.isNull() || type == PerformanceEntry::Mark)
+      entries.appendVector(m_userTiming->getMarks(name));
+    if (entryType.isNull() || type == PerformanceEntry::Measure)
+      entries.appendVector(m_userTiming->getMeasures(name));
+  }
 
-    std::sort(entries.begin(), entries.end(), PerformanceEntry::startTimeCompareLessThan);
-    return entries;
+  std::sort(entries.begin(), entries.end(),
+            PerformanceEntry::startTimeCompareLessThan);
+  return entries;
 }
 
-void PerformanceBase::clearResourceTimings()
-{
-    m_resourceTimingBuffer.clear();
+void PerformanceBase::clearResourceTimings() {
+  m_resourceTimingBuffer.clear();
 }
 
-void PerformanceBase::setResourceTimingBufferSize(unsigned size)
-{
-    m_resourceTimingBufferSize = size;
-    if (isResourceTimingBufferFull()) {
-        dispatchEvent(Event::create(EventTypeNames::resourcetimingbufferfull));
-        dispatchEvent(Event::create(EventTypeNames::webkitresourcetimingbufferfull));
-    }
+void PerformanceBase::setResourceTimingBufferSize(unsigned size) {
+  m_resourceTimingBufferSize = size;
+  if (isResourceTimingBufferFull()) {
+    dispatchEvent(Event::create(EventTypeNames::resourcetimingbufferfull));
+    dispatchEvent(
+        Event::create(EventTypeNames::webkitresourcetimingbufferfull));
+  }
 }
 
-void PerformanceBase::clearFrameTimings()
-{
-    m_frameTimingBuffer.clear();
+void PerformanceBase::clearFrameTimings() {
+  m_frameTimingBuffer.clear();
 }
 
-void PerformanceBase::setFrameTimingBufferSize(unsigned size)
-{
-    m_frameTimingBufferSize = size;
-    if (isFrameTimingBufferFull())
-        dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
+void PerformanceBase::setFrameTimingBufferSize(unsigned size) {
+  m_frameTimingBufferSize = size;
+  if (isFrameTimingBufferFull())
+    dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
 }
 
-void PerformanceBase::clearLongTaskTimings()
-{
-    m_longTaskTimingBuffer.clear();
+void PerformanceBase::clearLongTaskTimings() {
+  m_longTaskTimingBuffer.clear();
 }
 
-void PerformanceBase::setLongTaskTimingBufferSize(unsigned size)
-{
-    m_longTaskTimingBufferSize = size;
-    if (isLongTaskTimingBufferFull())
-        dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
+void PerformanceBase::setLongTaskTimingBufferSize(unsigned size) {
+  m_longTaskTimingBufferSize = size;
+  if (isLongTaskTimingBufferFull())
+    dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
 }
 
-static bool passesTimingAllowCheck(const ResourceResponse& response, const SecurityOrigin& initiatorSecurityOrigin, const AtomicString& originalTimingAllowOrigin, ExecutionContext* context)
-{
-    RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(response.url());
-    if (resourceOrigin->isSameSchemeHostPort(&initiatorSecurityOrigin))
-        return true;
-
-    const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField(HTTPNames::Timing_Allow_Origin) : originalTimingAllowOrigin;
-    if (timingAllowOriginString.isEmpty() || equalIgnoringASCIICase(timingAllowOriginString, "null"))
-        return false;
-
-    if (timingAllowOriginString == "*") {
-        UseCounter::count(context, UseCounter::StarInTimingAllowOrigin);
-        return true;
-    }
-
-    const String& securityOrigin = initiatorSecurityOrigin.toString();
-    Vector<String> timingAllowOrigins;
-    timingAllowOriginString.getString().split(' ', timingAllowOrigins);
-    if (timingAllowOrigins.size() > 1)
-        UseCounter::count(context, UseCounter::MultipleOriginsInTimingAllowOrigin);
-    else if (timingAllowOrigins.size() == 1)
-        UseCounter::count(context, UseCounter::SingleOriginInTimingAllowOrigin);
-    for (const String& allowOrigin : timingAllowOrigins) {
-        if (allowOrigin == securityOrigin)
-            return true;
-    }
-
-    return false;
-}
-
-static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, const SecurityOrigin& initiatorSecurityOrigin, ExecutionContext* context)
-{
-    if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin, AtomicString(), context))
-        return false;
-
-    for (const ResourceResponse& response : redirectChain) {
-        if (!passesTimingAllowCheck(response, initiatorSecurityOrigin, AtomicString(), context))
-            return false;
-    }
-
+static bool passesTimingAllowCheck(
+    const ResourceResponse& response,
+    const SecurityOrigin& initiatorSecurityOrigin,
+    const AtomicString& originalTimingAllowOrigin,
+    ExecutionContext* context) {
+  RefPtr<SecurityOrigin> resourceOrigin =
+      SecurityOrigin::create(response.url());
+  if (resourceOrigin->isSameSchemeHostPort(&initiatorSecurityOrigin))
     return true;
+
+  const AtomicString& timingAllowOriginString =
+      originalTimingAllowOrigin.isEmpty()
+          ? response.httpHeaderField(HTTPNames::Timing_Allow_Origin)
+          : originalTimingAllowOrigin;
+  if (timingAllowOriginString.isEmpty() ||
+      equalIgnoringASCIICase(timingAllowOriginString, "null"))
+    return false;
+
+  if (timingAllowOriginString == "*") {
+    UseCounter::count(context, UseCounter::StarInTimingAllowOrigin);
+    return true;
+  }
+
+  const String& securityOrigin = initiatorSecurityOrigin.toString();
+  Vector<String> timingAllowOrigins;
+  timingAllowOriginString.getString().split(' ', timingAllowOrigins);
+  if (timingAllowOrigins.size() > 1)
+    UseCounter::count(context, UseCounter::MultipleOriginsInTimingAllowOrigin);
+  else if (timingAllowOrigins.size() == 1)
+    UseCounter::count(context, UseCounter::SingleOriginInTimingAllowOrigin);
+  for (const String& allowOrigin : timingAllowOrigins) {
+    if (allowOrigin == securityOrigin)
+      return true;
+  }
+
+  return false;
 }
 
-void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info)
-{
-    if (isResourceTimingBufferFull() && !hasObserverFor(PerformanceEntry::Resource))
-        return;
-    SecurityOrigin* securityOrigin = nullptr;
-    ExecutionContext* context = getExecutionContext();
-    if (context)
-        securityOrigin = context->getSecurityOrigin();
-    if (!securityOrigin)
-        return;
+static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain,
+                                 const ResourceResponse& finalResponse,
+                                 const SecurityOrigin& initiatorSecurityOrigin,
+                                 ExecutionContext* context) {
+  if (!passesTimingAllowCheck(finalResponse, initiatorSecurityOrigin,
+                              AtomicString(), context))
+    return false;
 
-    const ResourceResponse& finalResponse = info.finalResponse();
-    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, *securityOrigin, info.originalTimingAllowOrigin(), context);
-    double startTime = info.initialTime();
+  for (const ResourceResponse& response : redirectChain) {
+    if (!passesTimingAllowCheck(response, initiatorSecurityOrigin,
+                                AtomicString(), context))
+      return false;
+  }
 
-    if (info.redirectChain().isEmpty()) {
-        PerformanceEntry* entry = PerformanceResourceTiming::create(info, timeOrigin(), startTime, allowTimingDetails);
-        notifyObserversOfEntry(*entry);
-        if (!isResourceTimingBufferFull())
-            addResourceTimingBuffer(*entry);
-        return;
-    }
+  return true;
+}
 
-    const Vector<ResourceResponse>& redirectChain = info.redirectChain();
-    bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse, *securityOrigin, context);
+void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info) {
+  if (isResourceTimingBufferFull() &&
+      !hasObserverFor(PerformanceEntry::Resource))
+    return;
+  SecurityOrigin* securityOrigin = nullptr;
+  ExecutionContext* context = getExecutionContext();
+  if (context)
+    securityOrigin = context->getSecurityOrigin();
+  if (!securityOrigin)
+    return;
 
-    if (!allowRedirectDetails) {
-        ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();
-        ASSERT(finalTiming);
-        if (finalTiming)
-            startTime = finalTiming->requestTime();
-    }
+  const ResourceResponse& finalResponse = info.finalResponse();
+  bool allowTimingDetails =
+      passesTimingAllowCheck(finalResponse, *securityOrigin,
+                             info.originalTimingAllowOrigin(), context);
+  double startTime = info.initialTime();
 
-    ResourceLoadTiming* lastRedirectTiming = redirectChain.last().resourceLoadTiming();
-    ASSERT(lastRedirectTiming);
-    double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd();
-
-    PerformanceEntry* entry = PerformanceResourceTiming::create(info, timeOrigin(), startTime, lastRedirectEndTime, allowTimingDetails, allowRedirectDetails);
+  if (info.redirectChain().isEmpty()) {
+    PerformanceEntry* entry = PerformanceResourceTiming::create(
+        info, timeOrigin(), startTime, allowTimingDetails);
     notifyObserversOfEntry(*entry);
     if (!isResourceTimingBufferFull())
-        addResourceTimingBuffer(*entry);
+      addResourceTimingBuffer(*entry);
+    return;
+  }
+
+  const Vector<ResourceResponse>& redirectChain = info.redirectChain();
+  bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse,
+                                                   *securityOrigin, context);
+
+  if (!allowRedirectDetails) {
+    ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();
+    ASSERT(finalTiming);
+    if (finalTiming)
+      startTime = finalTiming->requestTime();
+  }
+
+  ResourceLoadTiming* lastRedirectTiming =
+      redirectChain.last().resourceLoadTiming();
+  ASSERT(lastRedirectTiming);
+  double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd();
+
+  PerformanceEntry* entry = PerformanceResourceTiming::create(
+      info, timeOrigin(), startTime, lastRedirectEndTime, allowTimingDetails,
+      allowRedirectDetails);
+  notifyObserversOfEntry(*entry);
+  if (!isResourceTimingBufferFull())
+    addResourceTimingBuffer(*entry);
 }
 
-void PerformanceBase::addResourceTimingBuffer(PerformanceEntry& entry)
-{
-    m_resourceTimingBuffer.append(&entry);
+void PerformanceBase::addResourceTimingBuffer(PerformanceEntry& entry) {
+  m_resourceTimingBuffer.append(&entry);
 
-    if (isResourceTimingBufferFull()) {
-        dispatchEvent(Event::create(EventTypeNames::resourcetimingbufferfull));
-        dispatchEvent(Event::create(EventTypeNames::webkitresourcetimingbufferfull));
-    }
+  if (isResourceTimingBufferFull()) {
+    dispatchEvent(Event::create(EventTypeNames::resourcetimingbufferfull));
+    dispatchEvent(
+        Event::create(EventTypeNames::webkitresourcetimingbufferfull));
+  }
 }
 
-bool PerformanceBase::isResourceTimingBufferFull()
-{
-    return m_resourceTimingBuffer.size() >= m_resourceTimingBufferSize;
+bool PerformanceBase::isResourceTimingBufferFull() {
+  return m_resourceTimingBuffer.size() >= m_resourceTimingBufferSize;
 }
 
-void PerformanceBase::addRenderTiming(Document* initiatorDocument, unsigned sourceFrame, double startTime, double finishTime)
-{
-    if (isFrameTimingBufferFull() && !hasObserverFor(PerformanceEntry::Render))
-        return;
+void PerformanceBase::addRenderTiming(Document* initiatorDocument,
+                                      unsigned sourceFrame,
+                                      double startTime,
+                                      double finishTime) {
+  if (isFrameTimingBufferFull() && !hasObserverFor(PerformanceEntry::Render))
+    return;
 
-    PerformanceEntry* entry = PerformanceRenderTiming::create(initiatorDocument, sourceFrame, startTime, finishTime);
+  PerformanceEntry* entry = PerformanceRenderTiming::create(
+      initiatorDocument, sourceFrame, startTime, finishTime);
+  notifyObserversOfEntry(*entry);
+  if (!isFrameTimingBufferFull())
+    addFrameTimingBuffer(*entry);
+}
+
+void PerformanceBase::addCompositeTiming(Document* initiatorDocument,
+                                         unsigned sourceFrame,
+                                         double startTime) {
+  if (isFrameTimingBufferFull() && !hasObserverFor(PerformanceEntry::Composite))
+    return;
+
+  PerformanceEntry* entry = PerformanceCompositeTiming::create(
+      initiatorDocument, sourceFrame, startTime);
+  notifyObserversOfEntry(*entry);
+  if (!isFrameTimingBufferFull())
+    addFrameTimingBuffer(*entry);
+}
+
+void PerformanceBase::addFrameTimingBuffer(PerformanceEntry& entry) {
+  m_frameTimingBuffer.append(&entry);
+
+  if (isFrameTimingBufferFull())
+    dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
+}
+
+bool PerformanceBase::isFrameTimingBufferFull() {
+  return m_frameTimingBuffer.size() >= m_frameTimingBufferSize;
+}
+
+void PerformanceBase::addLongTaskTiming(double startTime,
+                                        double endTime,
+                                        const String& frameContextUrl) {
+  if (isLongTaskTimingBufferFull() ||
+      !hasObserverFor(PerformanceEntry::LongTask))
+    return;
+  PerformanceEntry* entry = PerformanceLongTaskTiming::create(
+      monotonicTimeToDOMHighResTimeStampInMillis(startTime),
+      monotonicTimeToDOMHighResTimeStampInMillis(endTime), frameContextUrl);
+  notifyObserversOfEntry(*entry);
+  addLongTaskTimingBuffer(*entry);
+}
+
+void PerformanceBase::addLongTaskTimingBuffer(PerformanceEntry& entry) {
+  m_longTaskTimingBuffer.append(&entry);
+  if (isLongTaskTimingBufferFull())
+    dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
+}
+
+bool PerformanceBase::isLongTaskTimingBufferFull() {
+  return m_longTaskTimingBuffer.size() >= m_longTaskTimingBufferSize;
+}
+
+void PerformanceBase::mark(const String& markName,
+                           ExceptionState& exceptionState) {
+  if (!m_userTiming)
+    m_userTiming = UserTiming::create(*this);
+  if (PerformanceEntry* entry = m_userTiming->mark(markName, exceptionState))
     notifyObserversOfEntry(*entry);
-    if (!isFrameTimingBufferFull())
-        addFrameTimingBuffer(*entry);
 }
 
-void PerformanceBase::addCompositeTiming(Document* initiatorDocument, unsigned sourceFrame, double startTime)
-{
-    if (isFrameTimingBufferFull() && !hasObserverFor(PerformanceEntry::Composite))
-        return;
+void PerformanceBase::clearMarks(const String& markName) {
+  if (!m_userTiming)
+    m_userTiming = UserTiming::create(*this);
+  m_userTiming->clearMarks(markName);
+}
 
-    PerformanceEntry* entry = PerformanceCompositeTiming::create(initiatorDocument, sourceFrame, startTime);
+void PerformanceBase::measure(const String& measureName,
+                              const String& startMark,
+                              const String& endMark,
+                              ExceptionState& exceptionState) {
+  if (!m_userTiming)
+    m_userTiming = UserTiming::create(*this);
+  if (PerformanceEntry* entry = m_userTiming->measure(measureName, startMark,
+                                                      endMark, exceptionState))
     notifyObserversOfEntry(*entry);
-    if (!isFrameTimingBufferFull())
-        addFrameTimingBuffer(*entry);
 }
 
-void PerformanceBase::addFrameTimingBuffer(PerformanceEntry& entry)
-{
-    m_frameTimingBuffer.append(&entry);
-
-    if (isFrameTimingBufferFull())
-        dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
+void PerformanceBase::clearMeasures(const String& measureName) {
+  if (!m_userTiming)
+    m_userTiming = UserTiming::create(*this);
+  m_userTiming->clearMeasures(measureName);
 }
 
-bool PerformanceBase::isFrameTimingBufferFull()
-{
-    return m_frameTimingBuffer.size() >= m_frameTimingBufferSize;
+void PerformanceBase::registerPerformanceObserver(
+    PerformanceObserver& observer) {
+  m_observerFilterOptions |= observer.filterOptions();
+  m_observers.add(&observer);
+  updateLongTaskInstrumentation();
 }
 
-void PerformanceBase::addLongTaskTiming(double startTime, double endTime, const String& frameContextUrl)
-{
-    if (isLongTaskTimingBufferFull() || !hasObserverFor(PerformanceEntry::LongTask))
-        return;
-    PerformanceEntry* entry = PerformanceLongTaskTiming::create(
-        monotonicTimeToDOMHighResTimeStampInMillis(startTime),
-        monotonicTimeToDOMHighResTimeStampInMillis(endTime),
-        frameContextUrl);
-    notifyObserversOfEntry(*entry);
-    addLongTaskTimingBuffer(*entry);
+void PerformanceBase::unregisterPerformanceObserver(
+    PerformanceObserver& oldObserver) {
+  ASSERT(isMainThread());
+  // Deliver any pending observations on this observer before unregistering.
+  if (m_activeObservers.contains(&oldObserver) &&
+      !oldObserver.shouldBeSuspended()) {
+    oldObserver.deliver();
+    m_activeObservers.remove(&oldObserver);
+  }
+  m_observers.remove(&oldObserver);
+  updatePerformanceObserverFilterOptions();
+  updateLongTaskInstrumentation();
 }
 
-void PerformanceBase::addLongTaskTimingBuffer(PerformanceEntry& entry)
-{
-    m_longTaskTimingBuffer.append(&entry);
-    if (isLongTaskTimingBufferFull())
-        dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
+void PerformanceBase::updatePerformanceObserverFilterOptions() {
+  m_observerFilterOptions = PerformanceEntry::Invalid;
+  for (const auto& observer : m_observers) {
+    m_observerFilterOptions |= observer->filterOptions();
+  }
+  updateLongTaskInstrumentation();
 }
 
-bool PerformanceBase::isLongTaskTimingBufferFull()
-{
-    return m_longTaskTimingBuffer.size() >= m_longTaskTimingBufferSize;
+void PerformanceBase::notifyObserversOfEntry(PerformanceEntry& entry) {
+  for (auto& observer : m_observers) {
+    if (observer->filterOptions() & entry.entryTypeEnum())
+      observer->enqueuePerformanceEntry(entry);
+  }
 }
 
-void PerformanceBase::mark(const String& markName, ExceptionState& exceptionState)
-{
-    if (!m_userTiming)
-        m_userTiming = UserTiming::create(*this);
-    if (PerformanceEntry* entry = m_userTiming->mark(markName, exceptionState))
-        notifyObserversOfEntry(*entry);
+bool PerformanceBase::hasObserverFor(
+    PerformanceEntry::EntryType filterType) const {
+  return m_observerFilterOptions & filterType;
 }
 
-void PerformanceBase::clearMarks(const String& markName)
-{
-    if (!m_userTiming)
-        m_userTiming = UserTiming::create(*this);
-    m_userTiming->clearMarks(markName);
+void PerformanceBase::activateObserver(PerformanceObserver& observer) {
+  if (m_activeObservers.isEmpty())
+    m_deliverObservationsTimer.startOneShot(0, BLINK_FROM_HERE);
+
+  m_activeObservers.add(&observer);
 }
 
-void PerformanceBase::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState& exceptionState)
-{
-    if (!m_userTiming)
-        m_userTiming = UserTiming::create(*this);
-    if (PerformanceEntry* entry = m_userTiming->measure(measureName, startMark, endMark, exceptionState))
-        notifyObserversOfEntry(*entry);
-}
+void PerformanceBase::resumeSuspendedObservers() {
+  ASSERT(isMainThread());
+  if (m_suspendedObservers.isEmpty())
+    return;
 
-void PerformanceBase::clearMeasures(const String& measureName)
-{
-    if (!m_userTiming)
-        m_userTiming = UserTiming::create(*this);
-    m_userTiming->clearMeasures(measureName);
-}
-
-void PerformanceBase::registerPerformanceObserver(PerformanceObserver& observer)
-{
-    m_observerFilterOptions |= observer.filterOptions();
-    m_observers.add(&observer);
-    updateLongTaskInstrumentation();
-}
-
-void PerformanceBase::unregisterPerformanceObserver(PerformanceObserver& oldObserver)
-{
-    ASSERT(isMainThread());
-    // Deliver any pending observations on this observer before unregistering.
-    if (m_activeObservers.contains(&oldObserver) && !oldObserver.shouldBeSuspended()) {
-        oldObserver.deliver();
-        m_activeObservers.remove(&oldObserver);
+  PerformanceObserverVector suspended;
+  copyToVector(m_suspendedObservers, suspended);
+  for (size_t i = 0; i < suspended.size(); ++i) {
+    if (!suspended[i]->shouldBeSuspended()) {
+      m_suspendedObservers.remove(suspended[i]);
+      activateObserver(*suspended[i]);
     }
-    m_observers.remove(&oldObserver);
-    updatePerformanceObserverFilterOptions();
-    updateLongTaskInstrumentation();
+  }
 }
 
-void PerformanceBase::updatePerformanceObserverFilterOptions()
-{
-    m_observerFilterOptions = PerformanceEntry::Invalid;
-    for (const auto& observer : m_observers) {
-        m_observerFilterOptions |= observer->filterOptions();
-    }
-    updateLongTaskInstrumentation();
-}
-
-void PerformanceBase::notifyObserversOfEntry(PerformanceEntry& entry)
-{
-    for (auto& observer : m_observers) {
-        if (observer->filterOptions() & entry.entryTypeEnum())
-            observer->enqueuePerformanceEntry(entry);
-    }
-}
-
-bool PerformanceBase::hasObserverFor(PerformanceEntry::EntryType filterType) const
-{
-    return m_observerFilterOptions & filterType;
-}
-
-void PerformanceBase::activateObserver(PerformanceObserver& observer)
-{
-    if (m_activeObservers.isEmpty())
-        m_deliverObservationsTimer.startOneShot(0, BLINK_FROM_HERE);
-
-    m_activeObservers.add(&observer);
-}
-
-void PerformanceBase::resumeSuspendedObservers()
-{
-    ASSERT(isMainThread());
-    if (m_suspendedObservers.isEmpty())
-        return;
-
-    PerformanceObserverVector suspended;
-    copyToVector(m_suspendedObservers, suspended);
-    for (size_t i = 0; i < suspended.size(); ++i) {
-        if (!suspended[i]->shouldBeSuspended()) {
-            m_suspendedObservers.remove(suspended[i]);
-            activateObserver(*suspended[i]);
-        }
-    }
-}
-
-void PerformanceBase::deliverObservationsTimerFired(TimerBase*)
-{
-    ASSERT(isMainThread());
-    PerformanceObservers observers;
-    m_activeObservers.swap(observers);
-    for (const auto& observer : observers) {
-        if (observer->shouldBeSuspended())
-            m_suspendedObservers.add(observer);
-        else
-            observer->deliver();
-    }
+void PerformanceBase::deliverObservationsTimerFired(TimerBase*) {
+  ASSERT(isMainThread());
+  PerformanceObservers observers;
+  m_activeObservers.swap(observers);
+  for (const auto& observer : observers) {
+    if (observer->shouldBeSuspended())
+      m_suspendedObservers.add(observer);
+    else
+      observer->deliver();
+  }
 }
 
 // static
-double PerformanceBase::clampTimeResolution(double timeSeconds)
-{
-    const double resolutionSeconds = 0.000005;
-    return floor(timeSeconds / resolutionSeconds) * resolutionSeconds;
+double PerformanceBase::clampTimeResolution(double timeSeconds) {
+  const double resolutionSeconds = 0.000005;
+  return floor(timeSeconds / resolutionSeconds) * resolutionSeconds;
 }
 
-DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(double monotonicTime) const
-{
-    // Avoid exposing raw platform timestamps.
-    if (m_timeOrigin == 0.0)
-        return 0.0;
+DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
+    double monotonicTime) const {
+  // Avoid exposing raw platform timestamps.
+  if (m_timeOrigin == 0.0)
+    return 0.0;
 
-    double timeInSeconds = monotonicTime - m_timeOrigin;
-    return convertSecondsToDOMHighResTimeStamp(clampTimeResolution(timeInSeconds));
+  double timeInSeconds = monotonicTime - m_timeOrigin;
+  return convertSecondsToDOMHighResTimeStamp(
+      clampTimeResolution(timeInSeconds));
 }
 
 double PerformanceBase::monotonicTimeToDOMHighResTimeStampInMillis(
-    DOMHighResTimeStamp monotonicTime) const
-{
-    return monotonicTimeToDOMHighResTimeStamp(monotonicTime) * 1000;
+    DOMHighResTimeStamp monotonicTime) const {
+  return monotonicTimeToDOMHighResTimeStamp(monotonicTime) * 1000;
 }
 
-DOMHighResTimeStamp PerformanceBase::now() const
-{
-    return monotonicTimeToDOMHighResTimeStamp(monotonicallyIncreasingTime());
+DOMHighResTimeStamp PerformanceBase::now() const {
+  return monotonicTimeToDOMHighResTimeStamp(monotonicallyIncreasingTime());
 }
 
-DEFINE_TRACE(PerformanceBase)
-{
-    visitor->trace(m_frameTimingBuffer);
-    visitor->trace(m_resourceTimingBuffer);
-    visitor->trace(m_longTaskTimingBuffer);
-    visitor->trace(m_userTiming);
-    visitor->trace(m_observers);
-    visitor->trace(m_activeObservers);
-    visitor->trace(m_suspendedObservers);
-    EventTargetWithInlineData::trace(visitor);
+DEFINE_TRACE(PerformanceBase) {
+  visitor->trace(m_frameTimingBuffer);
+  visitor->trace(m_resourceTimingBuffer);
+  visitor->trace(m_longTaskTimingBuffer);
+  visitor->trace(m_userTiming);
+  visitor->trace(m_observers);
+  visitor->trace(m_activeObservers);
+  visitor->trace(m_suspendedObservers);
+  EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

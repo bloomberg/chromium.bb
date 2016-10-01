@@ -39,30 +39,29 @@ class HTMLOptionElement;
 class WebString;
 
 class WebOptionElement final : public WebElement {
-public:
-    WebOptionElement() : WebElement() { }
-    WebOptionElement(const WebOptionElement& element) : WebElement(element) { }
+ public:
+  WebOptionElement() : WebElement() {}
+  WebOptionElement(const WebOptionElement& element) : WebElement(element) {}
 
-    WebOptionElement& operator=(const WebOptionElement& element)
-    {
-        WebElement::assign(element);
-        return *this;
-    }
-    void assign(const WebOptionElement& element) { WebElement::assign(element); }
+  WebOptionElement& operator=(const WebOptionElement& element) {
+    WebElement::assign(element);
+    return *this;
+  }
+  void assign(const WebOptionElement& element) { WebElement::assign(element); }
 
-    BLINK_EXPORT WebString value() const;
-    BLINK_EXPORT WebString text() const;
-    BLINK_EXPORT WebString label() const;
+  BLINK_EXPORT WebString value() const;
+  BLINK_EXPORT WebString text() const;
+  BLINK_EXPORT WebString label() const;
 
 #if BLINK_IMPLEMENTATION
-    WebOptionElement(HTMLOptionElement*);
-    WebOptionElement& operator=(HTMLOptionElement*);
-    operator HTMLOptionElement*() const;
+  WebOptionElement(HTMLOptionElement*);
+  WebOptionElement& operator=(HTMLOptionElement*);
+  operator HTMLOptionElement*() const;
 #endif
 };
 
 DECLARE_WEB_NODE_TYPE_CASTS(WebOptionElement);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

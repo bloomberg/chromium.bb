@@ -36,30 +36,30 @@
 namespace blink {
 
 struct WebServiceWorkerError {
-    enum ErrorType {
-        ErrorTypeAbort = 0,
-        ErrorTypeActivate,
-        ErrorTypeDisabled,
-        ErrorTypeInstall,
-        ErrorTypeNavigation,
-        ErrorTypeNetwork,
-        ErrorTypeNotFound,
-        ErrorTypeScriptEvaluateFailed,
-        ErrorTypeSecurity,
-        ErrorTypeState,
-        ErrorTypeTimeout,
-        ErrorTypeUnknown,
-        ErrorTypeType,
-        ErrorTypeLast = ErrorTypeUnknown
-    };
+  enum ErrorType {
+    ErrorTypeAbort = 0,
+    ErrorTypeActivate,
+    ErrorTypeDisabled,
+    ErrorTypeInstall,
+    ErrorTypeNavigation,
+    ErrorTypeNetwork,
+    ErrorTypeNotFound,
+    ErrorTypeScriptEvaluateFailed,
+    ErrorTypeSecurity,
+    ErrorTypeState,
+    ErrorTypeTimeout,
+    ErrorTypeUnknown,
+    ErrorTypeType,
+    ErrorTypeLast = ErrorTypeUnknown
+  };
 
-    WebServiceWorkerError(ErrorType errorType, const WebString& message)
-        : errorType(errorType), message(message) { }
+  WebServiceWorkerError(ErrorType errorType, const WebString& message)
+      : errorType(errorType), message(message) {}
 
-    ErrorType errorType;
-    WebString message;
+  ErrorType errorType;
+  WebString message;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

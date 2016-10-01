@@ -39,149 +39,154 @@
 
 namespace blink {
 
-ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTest, Color color)
-    : ScrollbarTheme()
-    , m_thumbThickness(thumbThickness)
-    , m_scrollbarMargin(scrollbarMargin)
-    , m_allowHitTest(allowHitTest)
-    , m_color(color)
-    , m_useSolidColor(true)
-{
+ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness,
+                                             int scrollbarMargin,
+                                             HitTestBehavior allowHitTest,
+                                             Color color)
+    : ScrollbarTheme(),
+      m_thumbThickness(thumbThickness),
+      m_scrollbarMargin(scrollbarMargin),
+      m_allowHitTest(allowHitTest),
+      m_color(color),
+      m_useSolidColor(true) {}
+
+ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness,
+                                             int scrollbarMargin,
+                                             HitTestBehavior allowHitTest)
+    : ScrollbarTheme(),
+      m_thumbThickness(thumbThickness),
+      m_scrollbarMargin(scrollbarMargin),
+      m_allowHitTest(allowHitTest),
+      m_useSolidColor(false) {}
+
+int ScrollbarThemeOverlay::scrollbarThickness(
+    ScrollbarControlSize controlSize) {
+  return m_thumbThickness + m_scrollbarMargin;
 }
 
-ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTest)
-    : ScrollbarTheme()
-    , m_thumbThickness(thumbThickness)
-    , m_scrollbarMargin(scrollbarMargin)
-    , m_allowHitTest(allowHitTest)
-    , m_useSolidColor(false)
-{
+int ScrollbarThemeOverlay::scrollbarMargin() const {
+  return m_scrollbarMargin;
 }
 
-int ScrollbarThemeOverlay::scrollbarThickness(ScrollbarControlSize controlSize)
-{
-    return m_thumbThickness + m_scrollbarMargin;
+bool ScrollbarThemeOverlay::usesOverlayScrollbars() const {
+  return true;
 }
 
-int ScrollbarThemeOverlay::scrollbarMargin() const
-{
-    return m_scrollbarMargin;
+int ScrollbarThemeOverlay::thumbPosition(const ScrollbarThemeClient& scrollbar,
+                                         float scrollPosition) {
+  if (!scrollbar.totalSize())
+    return 0;
+
+  int trackLen = trackLength(scrollbar);
+  float proportion = static_cast<float>(scrollPosition) / scrollbar.totalSize();
+  return round(proportion * trackLen);
 }
 
-bool ScrollbarThemeOverlay::usesOverlayScrollbars() const
-{
-    return true;
+int ScrollbarThemeOverlay::thumbLength(const ScrollbarThemeClient& scrollbar) {
+  int trackLen = trackLength(scrollbar);
+
+  if (!scrollbar.totalSize())
+    return trackLen;
+
+  float proportion =
+      static_cast<float>(scrollbar.visibleSize()) / scrollbar.totalSize();
+  int length = round(proportion * trackLen);
+  int minLen = std::min(minimumThumbLength(scrollbar), trackLen);
+  length = clampTo(length, minLen, trackLen);
+  return length;
 }
 
-int ScrollbarThemeOverlay::thumbPosition(const ScrollbarThemeClient& scrollbar, float scrollPosition)
-{
-    if (!scrollbar.totalSize())
-        return 0;
-
-    int trackLen = trackLength(scrollbar);
-    float proportion = static_cast<float>(scrollPosition) / scrollbar.totalSize();
-    return round(proportion * trackLen);
+bool ScrollbarThemeOverlay::hasThumb(const ScrollbarThemeClient& scrollbar) {
+  return true;
 }
 
-int ScrollbarThemeOverlay::thumbLength(const ScrollbarThemeClient& scrollbar)
-{
-    int trackLen = trackLength(scrollbar);
-
-    if (!scrollbar.totalSize())
-        return trackLen;
-
-    float proportion = static_cast<float>(scrollbar.visibleSize()) / scrollbar.totalSize();
-    int length = round(proportion * trackLen);
-    int minLen = std::min(minimumThumbLength(scrollbar), trackLen);
-    length = clampTo(length, minLen, trackLen);
-    return length;
+IntRect ScrollbarThemeOverlay::backButtonRect(const ScrollbarThemeClient&,
+                                              ScrollbarPart,
+                                              bool) {
+  return IntRect();
 }
 
-bool ScrollbarThemeOverlay::hasThumb(const ScrollbarThemeClient& scrollbar)
-{
-    return true;
+IntRect ScrollbarThemeOverlay::forwardButtonRect(const ScrollbarThemeClient&,
+                                                 ScrollbarPart,
+                                                 bool) {
+  return IntRect();
 }
 
-IntRect ScrollbarThemeOverlay::backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool)
-{
-    return IntRect();
+IntRect ScrollbarThemeOverlay::trackRect(const ScrollbarThemeClient& scrollbar,
+                                         bool) {
+  IntRect rect = scrollbar.frameRect();
+  if (scrollbar.orientation() == HorizontalScrollbar)
+    rect.inflateX(-m_scrollbarMargin);
+  else
+    rect.inflateY(-m_scrollbarMargin);
+  return rect;
 }
 
-IntRect ScrollbarThemeOverlay::forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool)
-{
-    return IntRect();
+int ScrollbarThemeOverlay::thumbThickness(const ScrollbarThemeClient&) {
+  return m_thumbThickness;
 }
 
-IntRect ScrollbarThemeOverlay::trackRect(const ScrollbarThemeClient& scrollbar, bool)
-{
-    IntRect rect = scrollbar.frameRect();
-    if (scrollbar.orientation() == HorizontalScrollbar)
-        rect.inflateX(-m_scrollbarMargin);
-    else
-        rect.inflateY(-m_scrollbarMargin);
-    return rect;
+void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context,
+                                       const Scrollbar& scrollbar,
+                                       const IntRect& rect) {
+  if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar,
+                                                  DisplayItem::kScrollbarThumb))
+    return;
+
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
+                           rect);
+
+  IntRect thumbRect = rect;
+  if (scrollbar.orientation() == HorizontalScrollbar) {
+    thumbRect.setHeight(thumbRect.height() - m_scrollbarMargin);
+  } else {
+    thumbRect.setWidth(thumbRect.width() - m_scrollbarMargin);
+    if (scrollbar.isLeftSideVerticalScrollbar())
+      thumbRect.setX(thumbRect.x() + m_scrollbarMargin);
+  }
+
+  if (m_useSolidColor) {
+    context.fillRect(thumbRect, m_color);
+    return;
+  }
+
+  WebThemeEngine::State state = WebThemeEngine::StateNormal;
+  if (scrollbar.pressedPart() == ThumbPart)
+    state = WebThemeEngine::StatePressed;
+  else if (scrollbar.hoveredPart() == ThumbPart)
+    state = WebThemeEngine::StateHover;
+
+  WebCanvas* canvas = context.canvas();
+
+  WebThemeEngine::Part part = WebThemeEngine::PartScrollbarHorizontalThumb;
+  if (scrollbar.orientation() == VerticalScrollbar)
+    part = WebThemeEngine::PartScrollbarVerticalThumb;
+
+  Platform::current()->themeEngine()->paint(canvas, part, state, WebRect(rect),
+                                            0);
 }
 
-int ScrollbarThemeOverlay::thumbThickness(const ScrollbarThemeClient&)
-{
-    return m_thumbThickness;
+ScrollbarPart ScrollbarThemeOverlay::hitTest(
+    const ScrollbarThemeClient& scrollbar,
+    const IntPoint& position) {
+  if (m_allowHitTest == DisallowHitTest)
+    return NoPart;
+
+  return ScrollbarTheme::hitTest(scrollbar, position);
 }
 
-void ScrollbarThemeOverlay::paintThumb(GraphicsContext& context, const Scrollbar& scrollbar, const IntRect& rect)
-{
-    if (DrawingRecorder::useCachedDrawingIfPossible(context, scrollbar, DisplayItem::kScrollbarThumb))
-        return;
-
-    DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb, rect);
-
-    IntRect thumbRect = rect;
-    if (scrollbar.orientation() == HorizontalScrollbar) {
-        thumbRect.setHeight(thumbRect.height() - m_scrollbarMargin);
-    } else {
-        thumbRect.setWidth(thumbRect.width() - m_scrollbarMargin);
-        if (scrollbar.isLeftSideVerticalScrollbar())
-            thumbRect.setX(thumbRect.x() + m_scrollbarMargin);
+ScrollbarThemeOverlay& ScrollbarThemeOverlay::mobileTheme() {
+  static ScrollbarThemeOverlay* theme;
+  if (!theme) {
+    WebThemeEngine::ScrollbarStyle style = {3, 3, 0x80808080};  // default style
+    if (Platform::current()->themeEngine()) {
+      Platform::current()->themeEngine()->getOverlayScrollbarStyle(&style);
     }
-
-    if (m_useSolidColor) {
-        context.fillRect(thumbRect, m_color);
-        return;
-    }
-
-    WebThemeEngine::State state = WebThemeEngine::StateNormal;
-    if (scrollbar.pressedPart() == ThumbPart)
-        state = WebThemeEngine::StatePressed;
-    else if (scrollbar.hoveredPart() == ThumbPart)
-        state = WebThemeEngine::StateHover;
-
-    WebCanvas* canvas = context.canvas();
-
-    WebThemeEngine::Part part = WebThemeEngine::PartScrollbarHorizontalThumb;
-    if (scrollbar.orientation() == VerticalScrollbar)
-        part = WebThemeEngine::PartScrollbarVerticalThumb;
-
-    Platform::current()->themeEngine()->paint(canvas, part, state, WebRect(rect), 0);
+    theme = new ScrollbarThemeOverlay(
+        style.thumbThickness, style.scrollbarMargin,
+        ScrollbarThemeOverlay::DisallowHitTest, Color(style.color));
+  }
+  return *theme;
 }
 
-ScrollbarPart ScrollbarThemeOverlay::hitTest(const ScrollbarThemeClient& scrollbar, const IntPoint& position)
-{
-    if (m_allowHitTest == DisallowHitTest)
-        return NoPart;
-
-    return ScrollbarTheme::hitTest(scrollbar, position);
-}
-
-ScrollbarThemeOverlay& ScrollbarThemeOverlay::mobileTheme()
-{
-    static ScrollbarThemeOverlay* theme;
-    if (!theme) {
-        WebThemeEngine::ScrollbarStyle style = { 3, 3, 0x80808080 }; // default style
-        if (Platform::current()->themeEngine()) {
-            Platform::current()->themeEngine()->getOverlayScrollbarStyle(&style);
-        }
-        theme = new ScrollbarThemeOverlay(style.thumbThickness, style.scrollbarMargin, ScrollbarThemeOverlay::DisallowHitTest, Color(style.color));
-    }
-    return *theme;
-}
-
-} // namespace blink
+}  // namespace blink

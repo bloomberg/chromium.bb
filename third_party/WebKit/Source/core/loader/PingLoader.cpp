@@ -73,435 +73,486 @@ namespace blink {
 namespace {
 
 class Beacon {
-    STACK_ALLOCATED();
-public:
-    virtual void serialize(ResourceRequest&) const = 0;
-    virtual unsigned long long size() const = 0;
-    virtual const AtomicString getContentType() const = 0;
+  STACK_ALLOCATED();
+
+ public:
+  virtual void serialize(ResourceRequest&) const = 0;
+  virtual unsigned long long size() const = 0;
+  virtual const AtomicString getContentType() const = 0;
 };
 
 class BeaconString final : public Beacon {
-public:
-    explicit BeaconString(const String& data)
-        : m_data(data)
-    {
-    }
+ public:
+  explicit BeaconString(const String& data) : m_data(data) {}
 
-    unsigned long long size() const override
-    {
-        return m_data.charactersSizeInBytes();
-    }
+  unsigned long long size() const override {
+    return m_data.charactersSizeInBytes();
+  }
 
-    void serialize(ResourceRequest& request) const override
-    {
-        RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data.utf8());
-        request.setHTTPBody(entityBody);
-        request.setHTTPContentType(getContentType());
-    }
+  void serialize(ResourceRequest& request) const override {
+    RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data.utf8());
+    request.setHTTPBody(entityBody);
+    request.setHTTPContentType(getContentType());
+  }
 
-    const AtomicString getContentType() const { return AtomicString("text/plain;charset=UTF-8"); }
+  const AtomicString getContentType() const {
+    return AtomicString("text/plain;charset=UTF-8");
+  }
 
-private:
-    const String m_data;
+ private:
+  const String m_data;
 };
 
 class BeaconBlob final : public Beacon {
-public:
-    explicit BeaconBlob(Blob* data)
-        : m_data(data)
-    {
-        const String& blobType = m_data->type();
-        if (!blobType.isEmpty() && isValidContentType(blobType))
-            m_contentType = AtomicString(blobType);
-    }
+ public:
+  explicit BeaconBlob(Blob* data) : m_data(data) {
+    const String& blobType = m_data->type();
+    if (!blobType.isEmpty() && isValidContentType(blobType))
+      m_contentType = AtomicString(blobType);
+  }
 
-    unsigned long long size() const override
-    {
-        return m_data->size();
-    }
+  unsigned long long size() const override { return m_data->size(); }
 
-    void serialize(ResourceRequest& request) const override
-    {
-        DCHECK(m_data);
+  void serialize(ResourceRequest& request) const override {
+    DCHECK(m_data);
 
-        RefPtr<EncodedFormData> entityBody = EncodedFormData::create();
-        if (m_data->hasBackingFile())
-            entityBody->appendFile(toFile(m_data)->path());
-        else
-            entityBody->appendBlob(m_data->uuid(), m_data->blobDataHandle());
+    RefPtr<EncodedFormData> entityBody = EncodedFormData::create();
+    if (m_data->hasBackingFile())
+      entityBody->appendFile(toFile(m_data)->path());
+    else
+      entityBody->appendBlob(m_data->uuid(), m_data->blobDataHandle());
 
-        request.setHTTPBody(entityBody.release());
+    request.setHTTPBody(entityBody.release());
 
-        if (!m_contentType.isEmpty())
-            request.setHTTPContentType(m_contentType);
-    }
+    if (!m_contentType.isEmpty())
+      request.setHTTPContentType(m_contentType);
+  }
 
-    const AtomicString getContentType() const { return m_contentType; }
+  const AtomicString getContentType() const { return m_contentType; }
 
-private:
-    const Member<Blob> m_data;
-    AtomicString m_contentType;
+ private:
+  const Member<Blob> m_data;
+  AtomicString m_contentType;
 };
 
 class BeaconDOMArrayBufferView final : public Beacon {
-public:
-    explicit BeaconDOMArrayBufferView(DOMArrayBufferView* data)
-        : m_data(data)
-    {
-    }
+ public:
+  explicit BeaconDOMArrayBufferView(DOMArrayBufferView* data) : m_data(data) {}
 
-    unsigned long long size() const override
-    {
-        return m_data->byteLength();
-    }
+  unsigned long long size() const override { return m_data->byteLength(); }
 
-    void serialize(ResourceRequest& request) const override
-    {
-        DCHECK(m_data);
+  void serialize(ResourceRequest& request) const override {
+    DCHECK(m_data);
 
-        RefPtr<EncodedFormData> entityBody = EncodedFormData::create(m_data->baseAddress(), m_data->byteLength());
-        request.setHTTPBody(entityBody.release());
+    RefPtr<EncodedFormData> entityBody =
+        EncodedFormData::create(m_data->baseAddress(), m_data->byteLength());
+    request.setHTTPBody(entityBody.release());
 
-        // FIXME: a reasonable choice, but not in the spec; should it give a default?
-        request.setHTTPContentType(AtomicString("application/octet-stream"));
-    }
+    // FIXME: a reasonable choice, but not in the spec; should it give a default?
+    request.setHTTPContentType(AtomicString("application/octet-stream"));
+  }
 
-    const AtomicString getContentType() const { return nullAtom; }
+  const AtomicString getContentType() const { return nullAtom; }
 
-private:
-    const Member<DOMArrayBufferView> m_data;
+ private:
+  const Member<DOMArrayBufferView> m_data;
 };
 
 class BeaconFormData final : public Beacon {
-public:
-    explicit BeaconFormData(FormData* data)
-        : m_data(data)
-        , m_entityBody(m_data->encodeMultiPartFormData())
-    {
-        m_contentType = AtomicString("multipart/form-data; boundary=") + m_entityBody->boundary().data();
-    }
+ public:
+  explicit BeaconFormData(FormData* data)
+      : m_data(data), m_entityBody(m_data->encodeMultiPartFormData()) {
+    m_contentType = AtomicString("multipart/form-data; boundary=") +
+                    m_entityBody->boundary().data();
+  }
 
-    unsigned long long size() const override
-    {
-        return m_entityBody->sizeInBytes();
-    }
+  unsigned long long size() const override {
+    return m_entityBody->sizeInBytes();
+  }
 
-    void serialize(ResourceRequest& request) const override
-    {
-        request.setHTTPBody(m_entityBody.get());
-        request.setHTTPContentType(m_contentType);
-    }
+  void serialize(ResourceRequest& request) const override {
+    request.setHTTPBody(m_entityBody.get());
+    request.setHTTPContentType(m_contentType);
+  }
 
-    const AtomicString getContentType() const { return m_contentType; }
+  const AtomicString getContentType() const { return m_contentType; }
 
-private:
-    const Member<FormData> m_data;
-    RefPtr<EncodedFormData> m_entityBody;
-    AtomicString m_contentType;
+ private:
+  const Member<FormData> m_data;
+  RefPtr<EncodedFormData> m_entityBody;
+  AtomicString m_contentType;
 };
 
-class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>, public DOMWindowProperty, private WebURLLoaderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(PingLoaderImpl);
-    WTF_MAKE_NONCOPYABLE(PingLoaderImpl);
-public:
-    PingLoaderImpl(LocalFrame*, ResourceRequest&, const AtomicString&, StoredCredentials, bool);
-    ~PingLoaderImpl() override;
+class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
+                       public DOMWindowProperty,
+                       private WebURLLoaderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(PingLoaderImpl);
+  WTF_MAKE_NONCOPYABLE(PingLoaderImpl);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  PingLoaderImpl(LocalFrame*,
+                 ResourceRequest&,
+                 const AtomicString&,
+                 StoredCredentials,
+                 bool);
+  ~PingLoaderImpl() override;
 
-private:
-    void dispose();
+  DECLARE_VIRTUAL_TRACE();
 
-    // WebURLLoaderClient
-    void willFollowRedirect(WebURLLoader*, WebURLRequest&, const WebURLResponse&, int64_t encodedDataLength) override;
-    void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
-    void didReceiveData(WebURLLoader*, const char*, int, int, int) final;
-    void didFinishLoading(WebURLLoader*, double, int64_t) final;
-    void didFail(WebURLLoader*, const WebURLError&) final;
+ private:
+  void dispose();
 
-    void timeout(TimerBase*);
+  // WebURLLoaderClient
+  void willFollowRedirect(WebURLLoader*,
+                          WebURLRequest&,
+                          const WebURLResponse&,
+                          int64_t encodedDataLength) override;
+  void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
+  void didReceiveData(WebURLLoader*, const char*, int, int, int) final;
+  void didFinishLoading(WebURLLoader*, double, int64_t) final;
+  void didFail(WebURLLoader*, const WebURLError&) final;
 
-    void didFailLoading(LocalFrame*);
+  void timeout(TimerBase*);
 
-    std::unique_ptr<WebURLLoader> m_loader;
-    Timer<PingLoaderImpl> m_timeout;
-    String m_url;
-    unsigned long m_identifier;
-    SelfKeepAlive<PingLoaderImpl> m_keepAlive;
+  void didFailLoading(LocalFrame*);
 
-    bool m_isBeacon;
+  std::unique_ptr<WebURLLoader> m_loader;
+  Timer<PingLoaderImpl> m_timeout;
+  String m_url;
+  unsigned long m_identifier;
+  SelfKeepAlive<PingLoaderImpl> m_keepAlive;
 
-    RefPtr<SecurityOrigin> m_origin;
-    CORSEnabled m_corsMode;
+  bool m_isBeacon;
+
+  RefPtr<SecurityOrigin> m_origin;
+  CORSEnabled m_corsMode;
 };
 
-PingLoaderImpl::PingLoaderImpl(LocalFrame* frame, ResourceRequest& request, const AtomicString& initiator, StoredCredentials credentialsAllowed, bool isBeacon)
-    : DOMWindowProperty(frame)
-    , m_timeout(this, &PingLoaderImpl::timeout)
-    , m_url(request.url())
-    , m_identifier(createUniqueIdentifier())
-    , m_keepAlive(this)
-    , m_isBeacon(isBeacon)
-    , m_origin(frame->document()->getSecurityOrigin())
-    , m_corsMode(IsCORSEnabled)
-{
-    const AtomicString contentType = request.httpContentType();
-    if (!contentType.isNull() && FetchUtils::isSimpleHeader(AtomicString("content-type"), contentType))
-        m_corsMode = NotCORSEnabled;
+PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
+                               ResourceRequest& request,
+                               const AtomicString& initiator,
+                               StoredCredentials credentialsAllowed,
+                               bool isBeacon)
+    : DOMWindowProperty(frame),
+      m_timeout(this, &PingLoaderImpl::timeout),
+      m_url(request.url()),
+      m_identifier(createUniqueIdentifier()),
+      m_keepAlive(this),
+      m_isBeacon(isBeacon),
+      m_origin(frame->document()->getSecurityOrigin()),
+      m_corsMode(IsCORSEnabled) {
+  const AtomicString contentType = request.httpContentType();
+  if (!contentType.isNull() &&
+      FetchUtils::isSimpleHeader(AtomicString("content-type"), contentType))
+    m_corsMode = NotCORSEnabled;
 
-    frame->loader().client()->didDispatchPingLoader(request.url());
+  frame->loader().client()->didDispatchPingLoader(request.url());
 
-    FetchContext& fetchContext = frame->document()->fetcher()->context();
+  FetchContext& fetchContext = frame->document()->fetcher()->context();
 
-    fetchContext.willStartLoadingResource(m_identifier, request, Resource::Image);
+  fetchContext.willStartLoadingResource(m_identifier, request, Resource::Image);
 
-    FetchInitiatorInfo initiatorInfo;
-    initiatorInfo.name = initiator;
-    fetchContext.dispatchWillSendRequest(m_identifier, request, ResourceResponse(), initiatorInfo);
+  FetchInitiatorInfo initiatorInfo;
+  initiatorInfo.name = initiator;
+  fetchContext.dispatchWillSendRequest(m_identifier, request,
+                                       ResourceResponse(), initiatorInfo);
 
-    // Make sure the scheduler doesn't wait for the ping.
-    if (frame->frameScheduler())
-        frame->frameScheduler()->didStopLoading(m_identifier);
+  // Make sure the scheduler doesn't wait for the ping.
+  if (frame->frameScheduler())
+    frame->frameScheduler()->didStopLoading(m_identifier);
 
-    m_loader = wrapUnique(Platform::current()->createURLLoader());
-    DCHECK(m_loader);
-    WrappedResourceRequest wrappedRequest(request);
-    wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);
-    m_loader->loadAsynchronously(wrappedRequest, this);
+  m_loader = wrapUnique(Platform::current()->createURLLoader());
+  DCHECK(m_loader);
+  WrappedResourceRequest wrappedRequest(request);
+  wrappedRequest.setAllowStoredCredentials(credentialsAllowed ==
+                                           AllowStoredCredentials);
+  m_loader->loadAsynchronously(wrappedRequest, this);
 
-    // If the server never responds, FrameLoader won't be able to cancel this load and
-    // we'll sit here waiting forever. Set a very generous timeout, just in case.
-    m_timeout.startOneShot(60000, BLINK_FROM_HERE);
+  // If the server never responds, FrameLoader won't be able to cancel this load and
+  // we'll sit here waiting forever. Set a very generous timeout, just in case.
+  m_timeout.startOneShot(60000, BLINK_FROM_HERE);
 }
 
-PingLoaderImpl::~PingLoaderImpl()
-{
-    if (m_loader)
-        m_loader->cancel();
+PingLoaderImpl::~PingLoaderImpl() {
+  if (m_loader)
+    m_loader->cancel();
 }
 
-void PingLoaderImpl::dispose()
-{
-    if (m_loader) {
-        m_loader->cancel();
-        m_loader = nullptr;
+void PingLoaderImpl::dispose() {
+  if (m_loader) {
+    m_loader->cancel();
+    m_loader = nullptr;
+  }
+  m_timeout.stop();
+  m_keepAlive.clear();
+}
+
+void PingLoaderImpl::willFollowRedirect(
+    WebURLLoader*,
+    WebURLRequest& passedNewRequest,
+    const WebURLResponse& passedRedirectResponse,
+    int64_t encodedDataLength) {
+  if (!m_isBeacon)
+    return;
+
+  // TODO(tyoshino): Check if setAllowStoredCredentials() should be called
+  // also for non beacon cases.
+  passedNewRequest.setAllowStoredCredentials(true);
+  if (m_corsMode == NotCORSEnabled)
+    return;
+
+  ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
+  const ResourceResponse& redirectResponse(
+      passedRedirectResponse.toResourceResponse());
+
+  DCHECK(!newRequest.isNull());
+  DCHECK(!redirectResponse.isNull());
+
+  String errorDescription;
+  ResourceLoaderOptions options;
+  // TODO(tyoshino): Save updated data in options.securityOrigin and pass it
+  // on the next time.
+  if (!CrossOriginAccessControl::handleRedirect(
+          m_origin, newRequest, redirectResponse, AllowStoredCredentials,
+          options, errorDescription)) {
+    if (LocalFrame* localFrame = frame()) {
+      if (localFrame->document())
+        localFrame->document()->addConsoleMessage(ConsoleMessage::create(
+            JSMessageSource, ErrorMessageLevel, errorDescription));
     }
-    m_timeout.stop();
-    m_keepAlive.clear();
-}
-
-void PingLoaderImpl::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse, int64_t encodedDataLength)
-{
-    if (!m_isBeacon)
-        return;
-
-    // TODO(tyoshino): Check if setAllowStoredCredentials() should be called
-    // also for non beacon cases.
-    passedNewRequest.setAllowStoredCredentials(true);
-    if (m_corsMode == NotCORSEnabled)
-        return;
-
-    ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
-    const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
-
-    DCHECK(!newRequest.isNull());
-    DCHECK(!redirectResponse.isNull());
-
-    String errorDescription;
-    ResourceLoaderOptions options;
-    // TODO(tyoshino): Save updated data in options.securityOrigin and pass it
-    // on the next time.
-    if (!CrossOriginAccessControl::handleRedirect(m_origin, newRequest, redirectResponse, AllowStoredCredentials, options, errorDescription)) {
-        if (LocalFrame* localFrame = frame()) {
-            if (localFrame->document())
-                localFrame->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorDescription));
-        }
-        // Cancel the load and self destruct.
-        dispose();
-        // Signal WebURLLoader that the redirect musn't be followed.
-        passedNewRequest = WebURLRequest();
-        return;
-    }
-    // FIXME: http://crbug.com/427429 is needed to correctly propagate
-    // updates of Origin: following this successful redirect.
-}
-
-
-void PingLoaderImpl::didReceiveResponse(WebURLLoader*, const WebURLResponse& response)
-{
-    if (LocalFrame* frame = this->frame()) {
-        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        const ResourceResponse& resourceResponse = response.toResourceResponse();
-        InspectorInstrumentation::didReceiveResourceResponse(frame, m_identifier, 0, resourceResponse, 0);
-        didFailLoading(frame);
-    }
+    // Cancel the load and self destruct.
     dispose();
+    // Signal WebURLLoader that the redirect musn't be followed.
+    passedNewRequest = WebURLRequest();
+    return;
+  }
+  // FIXME: http://crbug.com/427429 is needed to correctly propagate
+  // updates of Origin: following this successful redirect.
 }
 
-void PingLoaderImpl::didReceiveData(WebURLLoader*, const char*, int, int, int)
-{
-    if (LocalFrame* frame = this->frame()) {
-        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(frame);
-    }
-    dispose();
+void PingLoaderImpl::didReceiveResponse(WebURLLoader*,
+                                        const WebURLResponse& response) {
+  if (LocalFrame* frame = this->frame()) {
+    TRACE_EVENT_INSTANT1(
+        "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
+        InspectorResourceFinishEvent::data(m_identifier, 0, true));
+    const ResourceResponse& resourceResponse = response.toResourceResponse();
+    InspectorInstrumentation::didReceiveResourceResponse(frame, m_identifier, 0,
+                                                         resourceResponse, 0);
+    didFailLoading(frame);
+  }
+  dispose();
 }
 
-void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t)
-{
-    if (LocalFrame* frame = this->frame()) {
-        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(frame);
-    }
-    dispose();
+void PingLoaderImpl::didReceiveData(WebURLLoader*, const char*, int, int, int) {
+  if (LocalFrame* frame = this->frame()) {
+    TRACE_EVENT_INSTANT1(
+        "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
+        InspectorResourceFinishEvent::data(m_identifier, 0, true));
+    didFailLoading(frame);
+  }
+  dispose();
 }
 
-void PingLoaderImpl::didFail(WebURLLoader*, const WebURLError& resourceError)
-{
-    if (LocalFrame* frame = this->frame()) {
-        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(frame);
-    }
-    dispose();
+void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t) {
+  if (LocalFrame* frame = this->frame()) {
+    TRACE_EVENT_INSTANT1(
+        "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
+        InspectorResourceFinishEvent::data(m_identifier, 0, true));
+    didFailLoading(frame);
+  }
+  dispose();
 }
 
-void PingLoaderImpl::timeout(TimerBase*)
-{
-    if (LocalFrame* frame = this->frame()) {
-        TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(frame);
-    }
-    dispose();
+void PingLoaderImpl::didFail(WebURLLoader*, const WebURLError& resourceError) {
+  if (LocalFrame* frame = this->frame()) {
+    TRACE_EVENT_INSTANT1(
+        "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
+        InspectorResourceFinishEvent::data(m_identifier, 0, true));
+    didFailLoading(frame);
+  }
+  dispose();
 }
 
-void PingLoaderImpl::didFailLoading(LocalFrame* frame)
-{
-    InspectorInstrumentation::didFailLoading(frame, m_identifier, ResourceError::cancelledError(m_url));
-    frame->console().didFailLoading(m_identifier, ResourceError::cancelledError(m_url));
+void PingLoaderImpl::timeout(TimerBase*) {
+  if (LocalFrame* frame = this->frame()) {
+    TRACE_EVENT_INSTANT1(
+        "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
+        InspectorResourceFinishEvent::data(m_identifier, 0, true));
+    didFailLoading(frame);
+  }
+  dispose();
 }
 
-DEFINE_TRACE(PingLoaderImpl)
-{
-    DOMWindowProperty::trace(visitor);
+void PingLoaderImpl::didFailLoading(LocalFrame* frame) {
+  InspectorInstrumentation::didFailLoading(
+      frame, m_identifier, ResourceError::cancelledError(m_url));
+  frame->console().didFailLoading(m_identifier,
+                                  ResourceError::cancelledError(m_url));
 }
 
-void finishPingRequestInitialization(ResourceRequest& request, LocalFrame* frame, WebURLRequest::RequestContext requestContext)
-{
-    request.setRequestContext(requestContext);
-    FetchContext& fetchContext = frame->document()->fetcher()->context();
-    fetchContext.addAdditionalRequestHeaders(request, FetchSubresource);
-    fetchContext.populateRequestData(request);
+DEFINE_TRACE(PingLoaderImpl) {
+  DOMWindowProperty::trace(visitor);
 }
 
-bool sendPingCommon(LocalFrame* frame, ResourceRequest& request, const AtomicString& initiator, StoredCredentials credentialsAllowed, bool isBeacon)
-{
-    if (MixedContentChecker::shouldBlockFetch(frame, request, request.url()))
-        return false;
-
-    // The loader keeps itself alive until it receives a response and disposes itself.
-    PingLoaderImpl* loader = new PingLoaderImpl(frame, request, initiator, AllowStoredCredentials, true);
-    DCHECK(loader);
-
-    return true;
+void finishPingRequestInitialization(
+    ResourceRequest& request,
+    LocalFrame* frame,
+    WebURLRequest::RequestContext requestContext) {
+  request.setRequestContext(requestContext);
+  FetchContext& fetchContext = frame->document()->fetcher()->context();
+  fetchContext.addAdditionalRequestHeaders(request, FetchSubresource);
+  fetchContext.populateRequestData(request);
 }
 
-bool sendBeaconCommon(LocalFrame* frame, int allowance, const KURL& url, const Beacon& beacon, int& payloadLength)
-{
-    if (!frame->document())
-        return false;
+bool sendPingCommon(LocalFrame* frame,
+                    ResourceRequest& request,
+                    const AtomicString& initiator,
+                    StoredCredentials credentialsAllowed,
+                    bool isBeacon) {
+  if (MixedContentChecker::shouldBlockFetch(frame, request, request.url()))
+    return false;
 
-    unsigned long long entitySize = beacon.size();
-    if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
-        return false;
+  // The loader keeps itself alive until it receives a response and disposes itself.
+  PingLoaderImpl* loader = new PingLoaderImpl(frame, request, initiator,
+                                              AllowStoredCredentials, true);
+  DCHECK(loader);
 
-    payloadLength = entitySize;
-
-    ResourceRequest request(url);
-    request.setHTTPMethod(HTTPNames::POST);
-    request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
-    finishPingRequestInitialization(request, frame, WebURLRequest::RequestContextBeacon);
-
-    beacon.serialize(request);
-
-    return sendPingCommon(frame, request, FetchInitiatorTypeNames::beacon, AllowStoredCredentials, true);
+  return true;
 }
 
-} // namespace
+bool sendBeaconCommon(LocalFrame* frame,
+                      int allowance,
+                      const KURL& url,
+                      const Beacon& beacon,
+                      int& payloadLength) {
+  if (!frame->document())
+    return false;
 
-void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
-{
-    if (!frame->document()->getSecurityOrigin()->canDisplay(url)) {
-        FrameLoader::reportLocalLoadFailed(frame, url.getString());
-        return;
-    }
+  unsigned long long entitySize = beacon.size();
+  if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
+    return false;
 
-    ResourceRequest request(url);
-    request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
-    finishPingRequestInitialization(request, frame, WebURLRequest::RequestContextPing);
+  payloadLength = entitySize;
 
-    sendPingCommon(frame, request, FetchInitiatorTypeNames::ping, AllowStoredCredentials, false);
+  ResourceRequest request(url);
+  request.setHTTPMethod(HTTPNames::POST);
+  request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
+  finishPingRequestInitialization(request, frame,
+                                  WebURLRequest::RequestContextBeacon);
+
+  beacon.serialize(request);
+
+  return sendPingCommon(frame, request, FetchInitiatorTypeNames::beacon,
+                        AllowStoredCredentials, true);
+}
+
+}  // namespace
+
+void PingLoader::loadImage(LocalFrame* frame, const KURL& url) {
+  if (!frame->document()->getSecurityOrigin()->canDisplay(url)) {
+    FrameLoader::reportLocalLoadFailed(frame, url.getString());
+    return;
+  }
+
+  ResourceRequest request(url);
+  request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
+  finishPingRequestInitialization(request, frame,
+                                  WebURLRequest::RequestContextPing);
+
+  sendPingCommon(frame, request, FetchInitiatorTypeNames::ping,
+                 AllowStoredCredentials, false);
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing
-void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
-{
-    if (!pingURL.protocolIsInHTTPFamily())
-        return;
+void PingLoader::sendLinkAuditPing(LocalFrame* frame,
+                                   const KURL& pingURL,
+                                   const KURL& destinationURL) {
+  if (!pingURL.protocolIsInHTTPFamily())
+    return;
 
-    ResourceRequest request(pingURL);
-    request.setHTTPMethod(HTTPNames::POST);
-    request.setHTTPContentType("text/ping");
-    request.setHTTPBody(EncodedFormData::create("PING"));
-    request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
-    finishPingRequestInitialization(request, frame, WebURLRequest::RequestContextPing);
+  ResourceRequest request(pingURL);
+  request.setHTTPMethod(HTTPNames::POST);
+  request.setHTTPContentType("text/ping");
+  request.setHTTPBody(EncodedFormData::create("PING"));
+  request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
+  finishPingRequestInitialization(request, frame,
+                                  WebURLRequest::RequestContextPing);
 
-    // addAdditionalRequestHeaders() will have added a referrer for same origin requests,
-    // but the spec omits the referrer.
-    request.clearHTTPReferrer();
+  // addAdditionalRequestHeaders() will have added a referrer for same origin requests,
+  // but the spec omits the referrer.
+  request.clearHTTPReferrer();
 
-    request.setHTTPHeaderField(HTTPNames::Ping_To, AtomicString(destinationURL.getString()));
+  request.setHTTPHeaderField(HTTPNames::Ping_To,
+                             AtomicString(destinationURL.getString()));
 
-    RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
-    if (protocolIs(frame->document()->url().getString(), "http") || frame->document()->getSecurityOrigin()->canAccess(pingOrigin.get()))
-        request.setHTTPHeaderField(HTTPNames::Ping_From, AtomicString(frame->document()->url().getString()));
+  RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
+  if (protocolIs(frame->document()->url().getString(), "http") ||
+      frame->document()->getSecurityOrigin()->canAccess(pingOrigin.get()))
+    request.setHTTPHeaderField(
+        HTTPNames::Ping_From,
+        AtomicString(frame->document()->url().getString()));
 
-    sendPingCommon(frame, request, FetchInitiatorTypeNames::ping, AllowStoredCredentials, false);
+  sendPingCommon(frame, request, FetchInitiatorTypeNames::ping,
+                 AllowStoredCredentials, false);
 }
 
-void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, PassRefPtr<EncodedFormData> report, ViolationReportType type)
-{
-    ResourceRequest request(reportURL);
-    request.setHTTPMethod(HTTPNames::POST);
-    request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
-    request.setHTTPBody(std::move(report));
-    finishPingRequestInitialization(request, frame, WebURLRequest::RequestContextPing);
+void PingLoader::sendViolationReport(LocalFrame* frame,
+                                     const KURL& reportURL,
+                                     PassRefPtr<EncodedFormData> report,
+                                     ViolationReportType type) {
+  ResourceRequest request(reportURL);
+  request.setHTTPMethod(HTTPNames::POST);
+  request.setHTTPContentType(type == ContentSecurityPolicyViolationReport
+                                 ? "application/csp-report"
+                                 : "application/json");
+  request.setHTTPBody(std::move(report));
+  finishPingRequestInitialization(request, frame,
+                                  WebURLRequest::RequestContextPing);
 
-    StoredCredentials credentialsAllowed = SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->getSecurityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-    sendPingCommon(frame, request, FetchInitiatorTypeNames::violationreport, credentialsAllowed, false);
+  StoredCredentials credentialsAllowed =
+      SecurityOrigin::create(reportURL)->isSameSchemeHostPort(
+          frame->document()->getSecurityOrigin())
+          ? AllowStoredCredentials
+          : DoNotAllowStoredCredentials;
+  sendPingCommon(frame, request, FetchInitiatorTypeNames::violationreport,
+                 credentialsAllowed, false);
 }
 
-bool PingLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, const String& data, int& payloadLength)
-{
-    BeaconString beacon(data);
-    return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+bool PingLoader::sendBeacon(LocalFrame* frame,
+                            int allowance,
+                            const KURL& beaconURL,
+                            const String& data,
+                            int& payloadLength) {
+  BeaconString beacon(data);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
-bool PingLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, DOMArrayBufferView* data, int& payloadLength)
-{
-    BeaconDOMArrayBufferView beacon(data);
-    return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+bool PingLoader::sendBeacon(LocalFrame* frame,
+                            int allowance,
+                            const KURL& beaconURL,
+                            DOMArrayBufferView* data,
+                            int& payloadLength) {
+  BeaconDOMArrayBufferView beacon(data);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
-bool PingLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, FormData* data, int& payloadLength)
-{
-    BeaconFormData beacon(data);
-    return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+bool PingLoader::sendBeacon(LocalFrame* frame,
+                            int allowance,
+                            const KURL& beaconURL,
+                            FormData* data,
+                            int& payloadLength) {
+  BeaconFormData beacon(data);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
-bool PingLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, Blob* data, int& payloadLength)
-{
-    BeaconBlob beacon(data);
-    return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
+bool PingLoader::sendBeacon(LocalFrame* frame,
+                            int allowance,
+                            const KURL& beaconURL,
+                            Blob* data,
+                            int& payloadLength) {
+  BeaconBlob beacon(data);
+  return sendBeaconCommon(frame, allowance, beaconURL, beacon, payloadLength);
 }
 
-} // namespace blink
+}  // namespace blink

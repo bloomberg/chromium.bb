@@ -9,12 +9,13 @@
 
 namespace blink {
 
-CSSFunctionValue* CSSSkew::toCSSValue() const
-{
-    CSSFunctionValue* result = CSSFunctionValue::create(CSSValueSkew);
-    result->append(*CSSPrimitiveValue::create(m_ax, CSSPrimitiveValue::UnitType::Number));
-    result->append(*CSSPrimitiveValue::create(m_ay, CSSPrimitiveValue::UnitType::Number));
-    return result;
+CSSFunctionValue* CSSSkew::toCSSValue() const {
+  CSSFunctionValue* result = CSSFunctionValue::create(CSSValueSkew);
+  result->append(
+      *CSSPrimitiveValue::create(m_ax, CSSPrimitiveValue::UnitType::Number));
+  result->append(
+      *CSSPrimitiveValue::create(m_ay, CSSPrimitiveValue::UnitType::Number));
+  return result;
 }
 
-} // namespace blink
+}  // namespace blink

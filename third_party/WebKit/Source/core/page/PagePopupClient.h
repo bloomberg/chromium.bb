@@ -44,56 +44,58 @@ class Element;
 class Locale;
 
 class CORE_EXPORT PagePopupClient {
-public:
-    // Provide an HTML source to the specified buffer. The HTML
-    // source is rendered in a PagePopup.
-    // The content HTML supports:
-    //  - No <select> popups
-    //  - window.setValueAndClosePopup(number, string).
-    virtual void writeDocument(SharedBuffer*) = 0;
+ public:
+  // Provide an HTML source to the specified buffer. The HTML
+  // source is rendered in a PagePopup.
+  // The content HTML supports:
+  //  - No <select> popups
+  //  - window.setValueAndClosePopup(number, string).
+  virtual void writeDocument(SharedBuffer*) = 0;
 
-    // This is called after the document is ready to do additionary setup.
-    virtual void selectFontsFromOwnerDocument(Document&) = 0;
+  // This is called after the document is ready to do additionary setup.
+  virtual void selectFontsFromOwnerDocument(Document&) = 0;
 
-    virtual Element& ownerElement() = 0;
-    // Returns effective zoom factor of ownerElement, or the page zoom factor if
-    // the effective zoom factor is not available.
-    float zoomFactor();
-    // Returns a Locale object associated to the client.
-    virtual Locale& locale() = 0;
+  virtual Element& ownerElement() = 0;
+  // Returns effective zoom factor of ownerElement, or the page zoom factor if
+  // the effective zoom factor is not available.
+  float zoomFactor();
+  // Returns a Locale object associated to the client.
+  virtual Locale& locale() = 0;
 
-    // This is called by the content HTML of a PagePopup.
-    // An implementation of this function should call ChromeClient::closePagePopup().
-    virtual void setValueAndClosePopup(int numValue, const String& stringValue) = 0;
+  // This is called by the content HTML of a PagePopup.
+  // An implementation of this function should call ChromeClient::closePagePopup().
+  virtual void setValueAndClosePopup(int numValue,
+                                     const String& stringValue) = 0;
 
-    // This is called by the content HTML of a PagePopup.
-    virtual void setValue(const String&) = 0;
+  // This is called by the content HTML of a PagePopup.
+  virtual void setValue(const String&) = 0;
 
-    // This is called by the content HTML of a PagePopup.
-    virtual void closePopup() = 0;
+  // This is called by the content HTML of a PagePopup.
+  virtual void closePopup() = 0;
 
-    // This is called whenever a PagePopup was closed.
-    virtual void didClosePopup() = 0;
+  // This is called whenever a PagePopup was closed.
+  virtual void didClosePopup() = 0;
 
-    virtual ~PagePopupClient() { }
+  virtual ~PagePopupClient() {}
 
-    // Helper functions to be used in PagePopupClient::writeDocument().
-    static void addString(const String&, SharedBuffer*);
-    static void addJavaScriptString(const String&, SharedBuffer*);
-    static void addProperty(const char* name, const String& value, SharedBuffer*);
-    static void addProperty(const char* name, int value, SharedBuffer*);
-    static void addProperty(const char* name, unsigned value, SharedBuffer*);
-    static void addProperty(const char* name, bool value, SharedBuffer*);
-    static void addProperty(const char* name, double, SharedBuffer*);
-    static void addProperty(const char* name, const Vector<String>& values, SharedBuffer*);
-    static void addProperty(const char* name, const IntRect&, SharedBuffer*);
+  // Helper functions to be used in PagePopupClient::writeDocument().
+  static void addString(const String&, SharedBuffer*);
+  static void addJavaScriptString(const String&, SharedBuffer*);
+  static void addProperty(const char* name, const String& value, SharedBuffer*);
+  static void addProperty(const char* name, int value, SharedBuffer*);
+  static void addProperty(const char* name, unsigned value, SharedBuffer*);
+  static void addProperty(const char* name, bool value, SharedBuffer*);
+  static void addProperty(const char* name, double, SharedBuffer*);
+  static void addProperty(const char* name,
+                          const Vector<String>& values,
+                          SharedBuffer*);
+  static void addProperty(const char* name, const IntRect&, SharedBuffer*);
 };
 
-inline void PagePopupClient::addString(const String& str, SharedBuffer* data)
-{
-    CString str8 = str.utf8();
-    data->append(str8.data(), str8.length());
+inline void PagePopupClient::addString(const String& str, SharedBuffer* data) {
+  CString str8 = str.utf8();
+  data->append(str8.data(), str8.length());
 }
 
-} // namespace blink
+}  // namespace blink
 #endif

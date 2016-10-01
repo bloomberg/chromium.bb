@@ -11,44 +11,38 @@
 namespace blink {
 
 WindowAnimationWorklet::WindowAnimationWorklet(LocalDOMWindow& window)
-    : DOMWindowProperty(window.frame())
-{
-}
+    : DOMWindowProperty(window.frame()) {}
 
-const char* WindowAnimationWorklet::supplementName()
-{
-    return "WindowAnimationWorklet";
+const char* WindowAnimationWorklet::supplementName() {
+  return "WindowAnimationWorklet";
 }
 
 // static
-WindowAnimationWorklet& WindowAnimationWorklet::from(LocalDOMWindow& window)
-{
-    WindowAnimationWorklet* supplement = static_cast<WindowAnimationWorklet*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new WindowAnimationWorklet(window);
-        provideTo(window, supplementName(), supplement);
-    }
-    return *supplement;
+WindowAnimationWorklet& WindowAnimationWorklet::from(LocalDOMWindow& window) {
+  WindowAnimationWorklet* supplement = static_cast<WindowAnimationWorklet*>(
+      Supplement<LocalDOMWindow>::from(window, supplementName()));
+  if (!supplement) {
+    supplement = new WindowAnimationWorklet(window);
+    provideTo(window, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
 // static
-Worklet* WindowAnimationWorklet::animationWorklet(DOMWindow& window)
-{
-    return from(toLocalDOMWindow(window)).animationWorklet();
+Worklet* WindowAnimationWorklet::animationWorklet(DOMWindow& window) {
+  return from(toLocalDOMWindow(window)).animationWorklet();
 }
 
-AnimationWorklet* WindowAnimationWorklet::animationWorklet()
-{
-    if (!m_animationWorklet && frame())
-        m_animationWorklet = AnimationWorklet::create(frame());
-    return m_animationWorklet.get();
+AnimationWorklet* WindowAnimationWorklet::animationWorklet() {
+  if (!m_animationWorklet && frame())
+    m_animationWorklet = AnimationWorklet::create(frame());
+  return m_animationWorklet.get();
 }
 
-DEFINE_TRACE(WindowAnimationWorklet)
-{
-    visitor->trace(m_animationWorklet);
-    Supplement<LocalDOMWindow>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+DEFINE_TRACE(WindowAnimationWorklet) {
+  visitor->trace(m_animationWorklet);
+  Supplement<LocalDOMWindow>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

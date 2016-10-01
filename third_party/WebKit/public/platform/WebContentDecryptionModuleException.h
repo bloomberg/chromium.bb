@@ -8,15 +8,15 @@
 namespace blink {
 
 enum WebContentDecryptionModuleException {
-    WebContentDecryptionModuleExceptionNotSupportedError,
-    WebContentDecryptionModuleExceptionInvalidStateError,
-    WebContentDecryptionModuleExceptionInvalidAccessError,
-    WebContentDecryptionModuleExceptionQuotaExceededError,
-    WebContentDecryptionModuleExceptionUnknownError,
-    WebContentDecryptionModuleExceptionClientError,
-    WebContentDecryptionModuleExceptionOutputError,
+  WebContentDecryptionModuleExceptionNotSupportedError,
+  WebContentDecryptionModuleExceptionInvalidStateError,
+  WebContentDecryptionModuleExceptionInvalidAccessError,
+  WebContentDecryptionModuleExceptionQuotaExceededError,
+  WebContentDecryptionModuleExceptionUnknownError,
+  WebContentDecryptionModuleExceptionClientError,
+  WebContentDecryptionModuleExceptionOutputError,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebContentDecryptionModuleException_h
+#endif  // WebContentDecryptionModuleException_h

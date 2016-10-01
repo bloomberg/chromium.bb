@@ -38,59 +38,57 @@
 
 namespace blink {
 
-static PassRefPtr<SharedBuffer> readFile(const char* fileName)
-{
-    String filePath = testing::blinkRootDir();
-    filePath.append("/Source/web/tests/data/");
-    filePath.append(fileName);
+static PassRefPtr<SharedBuffer> readFile(const char* fileName) {
+  String filePath = testing::blinkRootDir();
+  filePath.append("/Source/web/tests/data/");
+  filePath.append(fileName);
 
-    return testing::readFromFile(filePath);
+  return testing::readFromFile(filePath);
 }
 
-TEST(WebImageTest, PNGImage)
-{
-    RefPtr<SharedBuffer> data = readFile("white-1x1.png");
-    ASSERT_TRUE(data.get());
+TEST(WebImageTest, PNGImage) {
+  RefPtr<SharedBuffer> data = readFile("white-1x1.png");
+  ASSERT_TRUE(data.get());
 
-    WebImage image = WebImage::fromData(WebData(data), WebSize());
-    EXPECT_TRUE(image.size() == WebSize(1, 1));
-    SkAutoLockPixels autoLock(image.getSkBitmap());
-    EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), image.getSkBitmap().getColor(0, 0));
+  WebImage image = WebImage::fromData(WebData(data), WebSize());
+  EXPECT_TRUE(image.size() == WebSize(1, 1));
+  SkAutoLockPixels autoLock(image.getSkBitmap());
+  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
+            image.getSkBitmap().getColor(0, 0));
 }
 
-TEST(WebImageTest, ICOImage)
-{
-    RefPtr<SharedBuffer> data = readFile("black-and-white.ico");
-    ASSERT_TRUE(data.get());
+TEST(WebImageTest, ICOImage) {
+  RefPtr<SharedBuffer> data = readFile("black-and-white.ico");
+  ASSERT_TRUE(data.get());
 
-    WebVector<WebImage> images = WebImage::framesFromData(WebData(data));
-    ASSERT_EQ(2u, images.size());
-    EXPECT_TRUE(images[0].size() == WebSize(2, 2));
-    EXPECT_TRUE(images[1].size() == WebSize(1, 1));
-    SkAutoLockPixels autoLock1(images[0].getSkBitmap());
-    EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), images[0].getSkBitmap().getColor(0, 0));
-    SkAutoLockPixels autoLock2(images[1].getSkBitmap());
-    EXPECT_EQ(SkColorSetARGB(255, 0, 0, 0), images[1].getSkBitmap().getColor(0, 0));
+  WebVector<WebImage> images = WebImage::framesFromData(WebData(data));
+  ASSERT_EQ(2u, images.size());
+  EXPECT_TRUE(images[0].size() == WebSize(2, 2));
+  EXPECT_TRUE(images[1].size() == WebSize(1, 1));
+  SkAutoLockPixels autoLock1(images[0].getSkBitmap());
+  EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
+            images[0].getSkBitmap().getColor(0, 0));
+  SkAutoLockPixels autoLock2(images[1].getSkBitmap());
+  EXPECT_EQ(SkColorSetARGB(255, 0, 0, 0),
+            images[1].getSkBitmap().getColor(0, 0));
 }
 
-TEST(WebImageTest, ICOValidHeaderMissingBitmap)
-{
-    RefPtr<SharedBuffer> data = readFile("valid_header_missing_bitmap.ico");
-    ASSERT_TRUE(data.get());
+TEST(WebImageTest, ICOValidHeaderMissingBitmap) {
+  RefPtr<SharedBuffer> data = readFile("valid_header_missing_bitmap.ico");
+  ASSERT_TRUE(data.get());
 
-    WebVector<WebImage> images = WebImage::framesFromData(WebData(data));
-    ASSERT_TRUE(images.isEmpty());
+  WebVector<WebImage> images = WebImage::framesFromData(WebData(data));
+  ASSERT_TRUE(images.isEmpty());
 }
 
-TEST(WebImageTest, BadImage)
-{
-    const char badImage[] = "hello world";
-    WebVector<WebImage> images = WebImage::framesFromData(WebData(badImage));
-    ASSERT_EQ(0u, images.size());
+TEST(WebImageTest, BadImage) {
+  const char badImage[] = "hello world";
+  WebVector<WebImage> images = WebImage::framesFromData(WebData(badImage));
+  ASSERT_EQ(0u, images.size());
 
-    WebImage image = WebImage::fromData(WebData(badImage), WebSize());
-    EXPECT_TRUE(image.getSkBitmap().empty());
-    EXPECT_TRUE(image.getSkBitmap().isNull());
+  WebImage image = WebImage::fromData(WebData(badImage), WebSize());
+  EXPECT_TRUE(image.getSkBitmap().empty());
+  EXPECT_TRUE(image.getSkBitmap().isNull());
 }
 
-} // namespace blink
+}  // namespace blink

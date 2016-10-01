@@ -27,25 +27,36 @@
 
 namespace WTF {
 
-template<> struct IntHash<blink::IntSize> {
-    STATIC_ONLY(IntHash);
-    static unsigned hash(const blink::IntSize& key) { return hashInts(key.width(), key.height()); }
-    static bool equal(const blink::IntSize& a, const blink::IntSize& b) { return a == b; }
-    static const bool safeToCompareToEmptyOrDeleted = true;
+template <>
+struct IntHash<blink::IntSize> {
+  STATIC_ONLY(IntHash);
+  static unsigned hash(const blink::IntSize& key) {
+    return hashInts(key.width(), key.height());
+  }
+  static bool equal(const blink::IntSize& a, const blink::IntSize& b) {
+    return a == b;
+  }
+  static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
-template<> struct DefaultHash<blink::IntSize> {
-    STATIC_ONLY(DefaultHash);
-    typedef IntHash<blink::IntSize> Hash;
+template <>
+struct DefaultHash<blink::IntSize> {
+  STATIC_ONLY(DefaultHash);
+  typedef IntHash<blink::IntSize> Hash;
 };
 
-template<> struct HashTraits<blink::IntSize> : GenericHashTraits<blink::IntSize> {
-    STATIC_ONLY(HashTraits);
-    static const bool emptyValueIsZero = true;
-    static void constructDeletedValue(blink::IntSize& slot, bool) { new (NotNull, &slot) blink::IntSize(-1, -1); }
-    static bool isDeletedValue(const blink::IntSize& value) { return value.width() == -1 && value.height() == -1; }
+template <>
+struct HashTraits<blink::IntSize> : GenericHashTraits<blink::IntSize> {
+  STATIC_ONLY(HashTraits);
+  static const bool emptyValueIsZero = true;
+  static void constructDeletedValue(blink::IntSize& slot, bool) {
+    new (NotNull, &slot) blink::IntSize(-1, -1);
+  }
+  static bool isDeletedValue(const blink::IntSize& value) {
+    return value.width() == -1 && value.height() == -1;
+  }
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 #endif

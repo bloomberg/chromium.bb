@@ -14,135 +14,91 @@ namespace blink {
 class PaintLayerCompositor;
 
 class LayoutViewItem : public LayoutBlockItem {
-public:
-    explicit LayoutViewItem(LayoutView* layoutView)
-        : LayoutBlockItem(layoutView)
-    {
-    }
+ public:
+  explicit LayoutViewItem(LayoutView* layoutView)
+      : LayoutBlockItem(layoutView) {}
 
-    explicit LayoutViewItem(const LayoutBlockItem& item)
-        : LayoutBlockItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutView());
-    }
+  explicit LayoutViewItem(const LayoutBlockItem& item) : LayoutBlockItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutView());
+  }
 
-    explicit LayoutViewItem(std::nullptr_t) : LayoutBlockItem(nullptr) { }
+  explicit LayoutViewItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
 
-    LayoutViewItem() { }
+  LayoutViewItem() {}
 
-    bool usesCompositing() const
-    {
-        return toView()->usesCompositing();
-    }
+  bool usesCompositing() const { return toView()->usesCompositing(); }
 
-    PaintLayerCompositor* compositor()
-    {
-        return toView()->compositor();
-    }
+  PaintLayerCompositor* compositor() { return toView()->compositor(); }
 
-    bool hasPendingSelection() const
-    {
-        return toView()->hasPendingSelection();
-    }
+  bool hasPendingSelection() const { return toView()->hasPendingSelection(); }
 
-    IntRect documentRect() const
-    {
-        return toView()->documentRect();
-    }
+  IntRect documentRect() const { return toView()->documentRect(); }
 
-    LayoutRect viewRect() const
-    {
-        return toView()->viewRect();
-    }
+  LayoutRect viewRect() const { return toView()->viewRect(); }
 
-    IntSize layoutSize(IncludeScrollbarsInRect scrollbars = ExcludeScrollbars) const
-    {
-        return toView()->layoutSize(scrollbars);
-    }
+  IntSize layoutSize(
+      IncludeScrollbarsInRect scrollbars = ExcludeScrollbars) const {
+    return toView()->layoutSize(scrollbars);
+  }
 
-    LayoutRect overflowClipRect(const LayoutPoint& location) const
-    {
-        return toView()->overflowClipRect(location);
-    }
+  LayoutRect overflowClipRect(const LayoutPoint& location) const {
+    return toView()->overflowClipRect(location);
+  }
 
-    void clearSelection()
-    {
-        return toView()->clearSelection();
-    }
+  void clearSelection() { return toView()->clearSelection(); }
 
-    bool hitTest(HitTestResult& result)
-    {
-        return toView()->hitTest(result);
-    }
+  bool hitTest(HitTestResult& result) { return toView()->hitTest(result); }
 
-    bool hitTestNoLifecycleUpdate(HitTestResult& result)
-    {
-        return toView()->hitTestNoLifecycleUpdate(result);
-    }
+  bool hitTestNoLifecycleUpdate(HitTestResult& result) {
+    return toView()->hitTestNoLifecycleUpdate(result);
+  }
 
-    IntRect selectionBounds()
-    {
-        return toView()->selectionBounds();
-    }
+  IntRect selectionBounds() { return toView()->selectionBounds(); }
 
-    void invalidatePaintForSelection()
-    {
-        return toView()->invalidatePaintForSelection();
-    }
+  void invalidatePaintForSelection() {
+    return toView()->invalidatePaintForSelection();
+  }
 
-//    bool hitTest(HitTestResult&);
-//    bool hitTestNoLifecycleUpdate(HitTestResult&);
+  //    bool hitTest(HitTestResult&);
+  //    bool hitTestNoLifecycleUpdate(HitTestResult&);
 
-    unsigned hitTestCount() const
-    {
-        return toView()->hitTestCount();
-    }
+  unsigned hitTestCount() const { return toView()->hitTestCount(); }
 
-    unsigned hitTestCacheHits() const
-    {
-        return toView()->hitTestCacheHits();
-    }
+  unsigned hitTestCacheHits() const { return toView()->hitTestCacheHits(); }
 
-    void clearHitTestCache()
-    {
-        toView()->clearHitTestCache();
-    }
+  void clearHitTestCache() { toView()->clearHitTestCache(); }
 
-    void invalidatePaintForViewAndCompositedLayers()
-    {
-        toView()->invalidatePaintForViewAndCompositedLayers();
-    }
+  void invalidatePaintForViewAndCompositedLayers() {
+    toView()->invalidatePaintForViewAndCompositedLayers();
+  }
 
-    void sendMediaPositionChangeNotifications(const IntRect& visibleRect)
-    {
-        toView()->sendMediaPositionChangeNotifications(visibleRect);
-    }
+  void sendMediaPositionChangeNotifications(const IntRect& visibleRect) {
+    toView()->sendMediaPositionChangeNotifications(visibleRect);
+  }
 
-    int viewHeight(IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const
-    {
-        return toView()->viewHeight(scrollbarInclusion);
-    }
+  int viewHeight(
+      IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const {
+    return toView()->viewHeight(scrollbarInclusion);
+  }
 
-    int viewWidth(IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const
-    {
-        return toView()->viewWidth(scrollbarInclusion);
-    }
+  int viewWidth(
+      IncludeScrollbarsInRect scrollbarInclusion = ExcludeScrollbars) const {
+    return toView()->viewWidth(scrollbarInclusion);
+  }
 
-    FloatSize viewportSizeForViewportUnits() const
-    {
-        return toView()->viewportSizeForViewportUnits();
-    }
+  FloatSize viewportSizeForViewportUnits() const {
+    return toView()->viewportSizeForViewportUnits();
+  }
 
-private:
-    LayoutView* toView() { return toLayoutView(layoutObject()); }
-    const LayoutView* toView() const { return toLayoutView(layoutObject()); }
+ private:
+  LayoutView* toView() { return toLayoutView(layoutObject()); }
+  const LayoutView* toView() const { return toLayoutView(layoutObject()); }
 };
 
-inline LayoutViewItem LayoutItem::view() const
-{
-    return LayoutViewItem(m_layoutObject->view());
+inline LayoutViewItem LayoutItem::view() const {
+  return LayoutViewItem(m_layoutObject->view());
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutViewItem_h
+#endif  // LayoutViewItem_h

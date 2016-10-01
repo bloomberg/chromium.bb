@@ -35,47 +35,45 @@
 
 namespace blink {
 
-MediaStreamTrackSourcesRequestImpl* MediaStreamTrackSourcesRequestImpl::create(ExecutionContext& context, MediaStreamTrackSourcesCallback* callback)
-{
-    return new MediaStreamTrackSourcesRequestImpl(context, callback);
+MediaStreamTrackSourcesRequestImpl* MediaStreamTrackSourcesRequestImpl::create(
+    ExecutionContext& context,
+    MediaStreamTrackSourcesCallback* callback) {
+  return new MediaStreamTrackSourcesRequestImpl(context, callback);
 }
 
-MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(ExecutionContext& context, MediaStreamTrackSourcesCallback* callback)
-    : m_callback(callback)
-    , m_executionContext(&context)
-{
+MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(
+    ExecutionContext& context,
+    MediaStreamTrackSourcesCallback* callback)
+    : m_callback(callback), m_executionContext(&context) {}
+
+MediaStreamTrackSourcesRequestImpl::~MediaStreamTrackSourcesRequestImpl() {}
+
+PassRefPtr<SecurityOrigin> MediaStreamTrackSourcesRequestImpl::origin() {
+  return m_executionContext->getSecurityOrigin()->isolatedCopy();
 }
 
-MediaStreamTrackSourcesRequestImpl::~MediaStreamTrackSourcesRequestImpl()
-{
+void MediaStreamTrackSourcesRequestImpl::requestSucceeded(
+    const WebVector<WebSourceInfo>& webSourceInfos) {
+  DCHECK(m_callback);
+
+  for (size_t i = 0; i < webSourceInfos.size(); ++i)
+    m_sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
+  m_executionContext->postTask(
+      BLINK_FROM_HERE, createCrossThreadTask(
+                           &MediaStreamTrackSourcesRequestImpl::performCallback,
+                           wrapCrossThreadPersistent(this)));
 }
 
-PassRefPtr<SecurityOrigin> MediaStreamTrackSourcesRequestImpl::origin()
-{
-    return m_executionContext->getSecurityOrigin()->isolatedCopy();
+void MediaStreamTrackSourcesRequestImpl::performCallback() {
+  m_callback->handleEvent(m_sourceInfos);
+  m_callback.clear();
 }
 
-void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const WebVector<WebSourceInfo>& webSourceInfos)
-{
-    DCHECK(m_callback);
-
-    for (size_t i = 0; i < webSourceInfos.size(); ++i)
-        m_sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
-    m_executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MediaStreamTrackSourcesRequestImpl::performCallback, wrapCrossThreadPersistent(this)));
+DEFINE_TRACE(MediaStreamTrackSourcesRequestImpl) {
+  visitor->trace(m_callback);
+  visitor->trace(m_executionContext);
+  visitor->trace(m_sourceInfos);
+  MediaStreamTrackSourcesRequest::trace(visitor);
 }
 
-void MediaStreamTrackSourcesRequestImpl::performCallback()
-{
-    m_callback->handleEvent(m_sourceInfos);
-    m_callback.clear();
-}
-
-DEFINE_TRACE(MediaStreamTrackSourcesRequestImpl)
-{
-    visitor->trace(m_callback);
-    visitor->trace(m_executionContext);
-    visitor->trace(m_sourceInfos);
-    MediaStreamTrackSourcesRequest::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

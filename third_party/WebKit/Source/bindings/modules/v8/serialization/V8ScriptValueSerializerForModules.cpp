@@ -9,25 +9,26 @@
 
 namespace blink {
 
-bool V8ScriptValueSerializerForModules::writeDOMObject(ScriptWrappable* wrappable, ExceptionState& exceptionState)
-{
-    // Give the core/ implementation a chance to try first.
-    // If it didn't recognize the kind of wrapper, try the modules types.
-    if (V8ScriptValueSerializer::writeDOMObject(wrappable, exceptionState))
-        return true;
-    if (exceptionState.hadException())
-        return false;
-
-    const WrapperTypeInfo* wrapperTypeInfo = wrappable->wrapperTypeInfo();
-    if (wrapperTypeInfo == &V8RTCCertificate::wrapperTypeInfo) {
-        RTCCertificate* certificate = wrappable->toImpl<RTCCertificate>();
-        WebRTCCertificatePEM pem = certificate->certificate().toPEM();
-        writeTag(RTCCertificateTag);
-        writeUTF8String(pem.privateKey());
-        writeUTF8String(pem.certificate());
-        return true;
-    }
+bool V8ScriptValueSerializerForModules::writeDOMObject(
+    ScriptWrappable* wrappable,
+    ExceptionState& exceptionState) {
+  // Give the core/ implementation a chance to try first.
+  // If it didn't recognize the kind of wrapper, try the modules types.
+  if (V8ScriptValueSerializer::writeDOMObject(wrappable, exceptionState))
+    return true;
+  if (exceptionState.hadException())
     return false;
+
+  const WrapperTypeInfo* wrapperTypeInfo = wrappable->wrapperTypeInfo();
+  if (wrapperTypeInfo == &V8RTCCertificate::wrapperTypeInfo) {
+    RTCCertificate* certificate = wrappable->toImpl<RTCCertificate>();
+    WebRTCCertificatePEM pem = certificate->certificate().toPEM();
+    writeTag(RTCCertificateTag);
+    writeUTF8String(pem.privateKey());
+    writeUTF8String(pem.certificate());
+    return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -29,42 +29,41 @@
 
 namespace blink {
 
-const float SmoothingTimeConstant = 0.020f; // 20ms
+const float SmoothingTimeConstant = 0.020f;  // 20ms
 
 DelayDSPKernel::DelayDSPKernel(DelayProcessor* processor)
-    : AudioDelayDSPKernel(processor, AudioHandler::ProcessingSizeInFrames)
-{
-    DCHECK(processor);
-    DCHECK_GT(processor->sampleRate(), 0);
-    if (!(processor && processor->sampleRate() > 0))
-        return;
+    : AudioDelayDSPKernel(processor, AudioHandler::ProcessingSizeInFrames) {
+  DCHECK(processor);
+  DCHECK_GT(processor->sampleRate(), 0);
+  if (!(processor && processor->sampleRate() > 0))
+    return;
 
-    m_maxDelayTime = processor->maxDelayTime();
-    DCHECK_GE(m_maxDelayTime, 0);
-    DCHECK(!std::isnan(m_maxDelayTime));
-    if (m_maxDelayTime < 0 || std::isnan(m_maxDelayTime))
-        return;
+  m_maxDelayTime = processor->maxDelayTime();
+  DCHECK_GE(m_maxDelayTime, 0);
+  DCHECK(!std::isnan(m_maxDelayTime));
+  if (m_maxDelayTime < 0 || std::isnan(m_maxDelayTime))
+    return;
 
-    m_buffer.allocate(bufferLengthForDelay(m_maxDelayTime, processor->sampleRate()));
-    m_buffer.zero();
+  m_buffer.allocate(
+      bufferLengthForDelay(m_maxDelayTime, processor->sampleRate()));
+  m_buffer.zero();
 
-    m_smoothingRate = AudioUtilities::discreteTimeConstantForSampleRate(SmoothingTimeConstant, processor->sampleRate());
+  m_smoothingRate = AudioUtilities::discreteTimeConstantForSampleRate(
+      SmoothingTimeConstant, processor->sampleRate());
 }
 
-bool DelayDSPKernel::hasSampleAccurateValues()
-{
-    return getDelayProcessor()->delayTime().hasSampleAccurateValues();
+bool DelayDSPKernel::hasSampleAccurateValues() {
+  return getDelayProcessor()->delayTime().hasSampleAccurateValues();
 }
 
-void DelayDSPKernel::calculateSampleAccurateValues(float* delayTimes, size_t framesToProcess)
-{
-    getDelayProcessor()->delayTime().calculateSampleAccurateValues(delayTimes, framesToProcess);
+void DelayDSPKernel::calculateSampleAccurateValues(float* delayTimes,
+                                                   size_t framesToProcess) {
+  getDelayProcessor()->delayTime().calculateSampleAccurateValues(
+      delayTimes, framesToProcess);
 }
 
-double DelayDSPKernel::delayTime(float)
-{
-    return getDelayProcessor()->delayTime().finalValue();
+double DelayDSPKernel::delayTime(float) {
+  return getDelayProcessor()->delayTime().finalValue();
 }
 
-} // namespace blink
-
+}  // namespace blink

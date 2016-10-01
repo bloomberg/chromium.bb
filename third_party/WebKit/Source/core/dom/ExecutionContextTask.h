@@ -41,71 +41,72 @@ namespace blink {
 class ExecutionContext;
 
 class CORE_EXPORT ExecutionContextTask {
-    WTF_MAKE_NONCOPYABLE(ExecutionContextTask);
-    USING_FAST_MALLOC(ExecutionContextTask);
-public:
-    ExecutionContextTask() { }
-    virtual ~ExecutionContextTask() { }
-    virtual void performTask(ExecutionContext*) = 0;
+  WTF_MAKE_NONCOPYABLE(ExecutionContextTask);
+  USING_FAST_MALLOC(ExecutionContextTask);
+
+ public:
+  ExecutionContextTask() {}
+  virtual ~ExecutionContextTask() {}
+  virtual void performTask(ExecutionContext*) = 0;
 };
 
 namespace internal {
 
-template<WTF::FunctionThreadAffinity threadAffinity>
-void runCallClosureTask(std::unique_ptr<Function<void(), threadAffinity>> closure, ExecutionContext*)
-{
-    (*closure)();
+template <WTF::FunctionThreadAffinity threadAffinity>
+void runCallClosureTask(
+    std::unique_ptr<Function<void(), threadAffinity>> closure,
+    ExecutionContext*) {
+  (*closure)();
 }
 
-template<WTF::FunctionThreadAffinity threadAffinity>
-void runCallClosureTask(std::unique_ptr<Function<void(ExecutionContext*), threadAffinity>> closure, ExecutionContext* executionContext)
-{
-    (*closure)(executionContext);
+template <WTF::FunctionThreadAffinity threadAffinity>
+void runCallClosureTask(
+    std::unique_ptr<Function<void(ExecutionContext*), threadAffinity>> closure,
+    ExecutionContext* executionContext) {
+  (*closure)(executionContext);
 }
 
-template<typename T, WTF::FunctionThreadAffinity threadAffinity>
+template <typename T, WTF::FunctionThreadAffinity threadAffinity>
 class CallClosureTask final : public ExecutionContextTask {
-public:
-    static std::unique_ptr<CallClosureTask> create(std::unique_ptr<Function<T, threadAffinity>> closure)
-    {
-        return wrapUnique(new CallClosureTask(std::move(closure)));
-    }
+ public:
+  static std::unique_ptr<CallClosureTask> create(
+      std::unique_ptr<Function<T, threadAffinity>> closure) {
+    return wrapUnique(new CallClosureTask(std::move(closure)));
+  }
 
-private:
-    explicit CallClosureTask(std::unique_ptr<Function<T, threadAffinity>> closure)
-        : m_closure(std::move(closure))
-    {
-    }
+ private:
+  explicit CallClosureTask(std::unique_ptr<Function<T, threadAffinity>> closure)
+      : m_closure(std::move(closure)) {}
 
-    void performTask(ExecutionContext* executionContext) override
-    {
-        runCallClosureTask(std::move(m_closure), executionContext);
-    }
+  void performTask(ExecutionContext* executionContext) override {
+    runCallClosureTask(std::move(m_closure), executionContext);
+  }
 
-    std::unique_ptr<Function<T, threadAffinity>> m_closure;
+  std::unique_ptr<Function<T, threadAffinity>> m_closure;
 };
 
 // Do not use |create| other than in createCrossThreadTask and
 // createSameThreadTask.
 // See http://crbug.com/390851
-template<typename T, WTF::FunctionThreadAffinity threadAffinity>
-std::unique_ptr<CallClosureTask<T, threadAffinity>> createCallClosureTask(std::unique_ptr<Function<T, threadAffinity>> closure)
-{
-    return CallClosureTask<T, threadAffinity>::create(std::move(closure));
+template <typename T, WTF::FunctionThreadAffinity threadAffinity>
+std::unique_ptr<CallClosureTask<T, threadAffinity>> createCallClosureTask(
+    std::unique_ptr<Function<T, threadAffinity>> closure) {
+  return CallClosureTask<T, threadAffinity>::create(std::move(closure));
 }
 
-} // namespace internal
+}  // namespace internal
 
 // Create tasks passed within a single thread.
 // When posting tasks within a thread, use |createSameThreadTask| instead
 // of using |bind| directly to state explicitly that there is no need to care
 // about thread safety when posting the task.
 // When posting tasks across threads, use |createCrossThreadTask|.
-template<typename FunctionType, typename... P>
+template <typename FunctionType, typename... P>
 std::unique_ptr<ExecutionContextTask> createSameThreadTask(
-    FunctionType function, P&&... parameters)
-{
-    return internal::createCallClosureTask(WTF::bind(function, std::forward<P>(parameters)...));
+    FunctionType function,
+    P&&... parameters) {
+  return internal::createCallClosureTask(
+      WTF::bind(function, std::forward<P>(parameters)...));
 }
 
 // createCrossThreadTask(...) is ExecutionContextTask version of
@@ -152,12 +153,14 @@ std::unique_ptr<ExecutionContextTask> createSameThreadTask(
 //     To pass things that cannot be copied by CrossThreadCopier
 //     (e.g. pointers), use crossThreadUnretained() explicitly.
 
-template<typename FunctionType, typename... P>
-std::unique_ptr<ExecutionContextTask> createCrossThreadTask(FunctionType function, P&&... parameters)
-{
-    return internal::createCallClosureTask(crossThreadBind(function, std::forward<P>(parameters)...));
+template <typename FunctionType, typename... P>
+std::unique_ptr<ExecutionContextTask> createCrossThreadTask(
+    FunctionType function,
+    P&&... parameters) {
+  return internal::createCallClosureTask(
+      crossThreadBind(function, std::forward<P>(parameters)...));
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

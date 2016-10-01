@@ -41,69 +41,74 @@ namespace blink {
 //  - second
 //  - year
 class DateTimeNumericFieldElement : public DateTimeFieldElement {
-    WTF_MAKE_NONCOPYABLE(DateTimeNumericFieldElement);
+  WTF_MAKE_NONCOPYABLE(DateTimeNumericFieldElement);
 
-public:
-    struct Step {
-        DISALLOW_NEW();
-        Step(int step = 1, int stepBase = 0) : step(step), stepBase(stepBase) { }
-        int step;
-        int stepBase;
-    };
+ public:
+  struct Step {
+    DISALLOW_NEW();
+    Step(int step = 1, int stepBase = 0) : step(step), stepBase(stepBase) {}
+    int step;
+    int stepBase;
+  };
 
-    struct Range {
-        DISALLOW_NEW();
-        Range(int minimum, int maximum) : minimum(minimum), maximum(maximum) { }
-        int clampValue(int) const;
-        bool isInRange(int) const;
-        bool isSingleton() const { return minimum == maximum; }
+  struct Range {
+    DISALLOW_NEW();
+    Range(int minimum, int maximum) : minimum(minimum), maximum(maximum) {}
+    int clampValue(int) const;
+    bool isInRange(int) const;
+    bool isSingleton() const { return minimum == maximum; }
 
-        int minimum;
-        int maximum;
-    };
+    int minimum;
+    int maximum;
+  };
 
-protected:
-    DateTimeNumericFieldElement(Document&, FieldOwner&, const Range&, const Range& hardLimits, const String& placeholder, const Step& = Step());
+ protected:
+  DateTimeNumericFieldElement(Document&,
+                              FieldOwner&,
+                              const Range&,
+                              const Range& hardLimits,
+                              const String& placeholder,
+                              const Step& = Step());
 
-    int clampValue(int value) const { return m_range.clampValue(value); }
-    virtual int defaultValueForStepDown() const;
-    virtual int defaultValueForStepUp() const;
-    const Range& range() const { return m_range; }
+  int clampValue(int value) const { return m_range.clampValue(value); }
+  virtual int defaultValueForStepDown() const;
+  virtual int defaultValueForStepUp() const;
+  const Range& range() const { return m_range; }
 
-    // DateTimeFieldElement functions.
-    bool hasValue() const final;
-    void initialize(const AtomicString& pseudo, const String& axHelpText);
-    int maximum() const;
-    void setEmptyValue(EventBehavior = DispatchNoEvent) final;
-    void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
-    int valueAsInteger() const final;
-    String visibleValue() const final;
+  // DateTimeFieldElement functions.
+  bool hasValue() const final;
+  void initialize(const AtomicString& pseudo, const String& axHelpText);
+  int maximum() const;
+  void setEmptyValue(EventBehavior = DispatchNoEvent) final;
+  void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override;
+  int valueAsInteger() const final;
+  String visibleValue() const final;
 
-private:
-    // DateTimeFieldElement functions.
-    void handleKeyboardEvent(KeyboardEvent*) final;
-    float maximumWidth(const ComputedStyle&) override;
-    void stepDown() final;
-    void stepUp() final;
-    String value() const final;
+ private:
+  // DateTimeFieldElement functions.
+  void handleKeyboardEvent(KeyboardEvent*) final;
+  float maximumWidth(const ComputedStyle&) override;
+  void stepDown() final;
+  void stepUp() final;
+  String value() const final;
 
-    // Node functions.
-    void setFocus(bool) final;
+  // Node functions.
+  void setFocus(bool) final;
 
-    String formatValue(int) const;
-    int roundUp(int) const;
-    int roundDown(int) const;
-    int typeAheadValue() const;
+  String formatValue(int) const;
+  int roundUp(int) const;
+  int roundDown(int) const;
+  int typeAheadValue() const;
 
-    const String m_placeholder;
-    const Range m_range;
-    const Range m_hardLimits;
-    const Step m_step;
-    int m_value;
-    bool m_hasValue;
-    mutable StringBuilder m_typeAheadBuffer;
+  const String m_placeholder;
+  const Range m_range;
+  const Range m_hardLimits;
+  const Step m_step;
+  int m_value;
+  bool m_hasValue;
+  mutable StringBuilder m_typeAheadBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

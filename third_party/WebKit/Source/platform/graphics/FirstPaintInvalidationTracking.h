@@ -10,8 +10,9 @@
 namespace blink {
 
 PLATFORM_EXPORT bool firstPaintInvalidationTrackingEnabled();
-PLATFORM_EXPORT void setFirstPaintInvalidationTrackingEnabledForShowPaintRects(bool);
+PLATFORM_EXPORT void setFirstPaintInvalidationTrackingEnabledForShowPaintRects(
+    bool);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FirstPaintInvalidationTracking_h
+#endif  // FirstPaintInvalidationTracking_h

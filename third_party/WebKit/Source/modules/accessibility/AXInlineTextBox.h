@@ -37,33 +37,37 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXInlineTextBox final : public AXObject {
-    WTF_MAKE_NONCOPYABLE(AXInlineTextBox);
+  WTF_MAKE_NONCOPYABLE(AXInlineTextBox);
 
-private:
-    AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
+ private:
+  AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
-public:
-    static AXInlineTextBox* create(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
+ public:
+  static AXInlineTextBox* create(PassRefPtr<AbstractInlineTextBox>,
+                                 AXObjectCacheImpl&);
 
-    void init() override;
-    void detach() override;
+  void init() override;
+  void detach() override;
 
-    AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
-    String name(AXNameFrom&, AXObject::AXObjectVector* nameObjects) const override;
-    void textCharacterOffsets(Vector<int>&) const override;
-    void wordBoundaries(Vector<AXRange>&) const override;
-    void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const override;
-    AXObject* computeParent() const override;
-    AccessibilityTextDirection textDirection() const override;
-    AXObject* nextOnLine() const override;
-    AXObject* previousOnLine() const override;
+  AccessibilityRole roleValue() const override { return InlineTextBoxRole; }
+  String name(AXNameFrom&,
+              AXObject::AXObjectVector* nameObjects) const override;
+  void textCharacterOffsets(Vector<int>&) const override;
+  void wordBoundaries(Vector<AXRange>&) const override;
+  void getRelativeBounds(AXObject** outContainer,
+                         FloatRect& outBoundsInContainer,
+                         SkMatrix44& outContainerTransform) const override;
+  AXObject* computeParent() const override;
+  AccessibilityTextDirection textDirection() const override;
+  AXObject* nextOnLine() const override;
+  AXObject* previousOnLine() const override;
 
-private:
-    RefPtr<AbstractInlineTextBox> m_inlineTextBox;
+ private:
+  RefPtr<AbstractInlineTextBox> m_inlineTextBox;
 
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXInlineTextBox_h
+#endif  // AXInlineTextBox_h

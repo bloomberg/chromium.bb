@@ -12,20 +12,18 @@ namespace blink {
 
 CEReactionsScope* CEReactionsScope::s_topOfStack = nullptr;
 
-void CEReactionsScope::enqueueToCurrentQueue(
-    Element* element,
-    CustomElementReaction* reaction)
-{
-    if (!m_workToDo) {
-        m_workToDo = true;
-        CustomElementReactionStack::current().push();
-    }
-    CustomElementReactionStack::current().enqueueToCurrentQueue(element, reaction);
+void CEReactionsScope::enqueueToCurrentQueue(Element* element,
+                                             CustomElementReaction* reaction) {
+  if (!m_workToDo) {
+    m_workToDo = true;
+    CustomElementReactionStack::current().push();
+  }
+  CustomElementReactionStack::current().enqueueToCurrentQueue(element,
+                                                              reaction);
 }
 
-void CEReactionsScope::invokeReactions()
-{
-    CustomElementReactionStack::current().popInvokingReactions();
+void CEReactionsScope::invokeReactions() {
+  CustomElementReactionStack::current().popInvokingReactions();
 }
 
-} // namespace blink
+}  // namespace blink

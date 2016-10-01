@@ -37,14 +37,15 @@
 namespace blink {
 
 enum ChildrenIteration {
-    NegativeZOrderChildren = 1,
-    // Normal flow children are not mandated by CSS 2.1 but are an artifact of
-    // our implementation: we allocate PaintLayers for elements that
-    // are not treated as stacking contexts and thus we need to walk them
-    // during painting and hit-testing.
-    NormalFlowChildren = 1 << 1,
-    PositiveZOrderChildren = 1 << 2,
-    AllChildren = NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
+  NegativeZOrderChildren = 1,
+  // Normal flow children are not mandated by CSS 2.1 but are an artifact of
+  // our implementation: we allocate PaintLayers for elements that
+  // are not treated as stacking contexts and thus we need to walk them
+  // during painting and hit-testing.
+  NormalFlowChildren = 1 << 1,
+  PositiveZOrderChildren = 1 << 2,
+  AllChildren =
+      NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
 };
 
 class PaintLayerStackingNode;
@@ -53,44 +54,46 @@ class PaintLayer;
 // This iterator walks the PaintLayerStackingNode lists in the following order:
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
 class PaintLayerStackingNodeIterator {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeIterator);
-public:
-    PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root, unsigned whichChildren);
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeIterator);
 
-    PaintLayerStackingNode* next();
+ public:
+  PaintLayerStackingNodeIterator(const PaintLayerStackingNode& root,
+                                 unsigned whichChildren);
 
-private:
-    const PaintLayerStackingNode& m_root;
-    unsigned m_remainingChildren;
-    unsigned m_index;
-    PaintLayer* m_currentNormalFlowChild;
+  PaintLayerStackingNode* next();
+
+ private:
+  const PaintLayerStackingNode& m_root;
+  unsigned m_remainingChildren;
+  unsigned m_index;
+  PaintLayer* m_currentNormalFlowChild;
 };
 
 // This iterator is similar to PaintLayerStackingNodeIterator but it walks the lists in reverse order
 // (from the last item to the first one).
 class PaintLayerStackingNodeReverseIterator {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeReverseIterator);
-public:
-    PaintLayerStackingNodeReverseIterator(const PaintLayerStackingNode& root, unsigned whichChildren)
-        : m_root(root)
-        , m_remainingChildren(whichChildren)
-    {
-        setIndexToLastItem();
-    }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeReverseIterator);
 
-    PaintLayerStackingNode* next();
+ public:
+  PaintLayerStackingNodeReverseIterator(const PaintLayerStackingNode& root,
+                                        unsigned whichChildren)
+      : m_root(root), m_remainingChildren(whichChildren) {
+    setIndexToLastItem();
+  }
 
-private:
-    void setIndexToLastItem();
+  PaintLayerStackingNode* next();
 
-    const PaintLayerStackingNode& m_root;
-    unsigned m_remainingChildren;
-    int m_index;
-    PaintLayer* m_currentNormalFlowChild;
+ private:
+  void setIndexToLastItem();
+
+  const PaintLayerStackingNode& m_root;
+  unsigned m_remainingChildren;
+  int m_index;
+  PaintLayer* m_currentNormalFlowChild;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintLayerStackingNodeIterator_h
+#endif  // PaintLayerStackingNodeIterator_h

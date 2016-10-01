@@ -15,24 +15,28 @@
 namespace blink {
 
 class PLATFORM_EXPORT OrientationIterator {
-    USING_FAST_MALLOC(OrientationIterator);
-    WTF_MAKE_NONCOPYABLE(OrientationIterator);
-public:
-    enum RenderOrientation {
-        OrientationKeep,
-        OrientationRotateSideways,
-        OrientationInvalid
-    };
+  USING_FAST_MALLOC(OrientationIterator);
+  WTF_MAKE_NONCOPYABLE(OrientationIterator);
 
-    OrientationIterator(const UChar* buffer, unsigned bufferSize, FontOrientation runOrientation);
+ public:
+  enum RenderOrientation {
+    OrientationKeep,
+    OrientationRotateSideways,
+    OrientationInvalid
+  };
 
-    bool consume(unsigned* orientationLimit, RenderOrientation*);
-private:
-    std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
-    unsigned m_bufferSize;
-    bool m_atEnd;
+  OrientationIterator(const UChar* buffer,
+                      unsigned bufferSize,
+                      FontOrientation runOrientation);
+
+  bool consume(unsigned* orientationLimit, RenderOrientation*);
+
+ private:
+  std::unique_ptr<UTF16TextIterator> m_utf16Iterator;
+  unsigned m_bufferSize;
+  bool m_atEnd;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

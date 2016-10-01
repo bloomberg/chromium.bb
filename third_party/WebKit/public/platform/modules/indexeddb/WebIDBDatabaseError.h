@@ -35,38 +35,31 @@
 namespace blink {
 
 class WebIDBDatabaseError {
-public:
-    explicit WebIDBDatabaseError(unsigned short code)
-        : m_code(code)
-    { }
+ public:
+  explicit WebIDBDatabaseError(unsigned short code) : m_code(code) {}
 
-    WebIDBDatabaseError(unsigned short code, const WebString& message)
-        : m_code(code)
-        , m_message(message)
-    { }
+  WebIDBDatabaseError(unsigned short code, const WebString& message)
+      : m_code(code), m_message(message) {}
 
-    WebIDBDatabaseError(const WebIDBDatabaseError& error)
-        : m_code(error.m_code)
-        , m_message(error.m_message)
-    { }
+  WebIDBDatabaseError(const WebIDBDatabaseError& error)
+      : m_code(error.m_code), m_message(error.m_message) {}
 
-    ~WebIDBDatabaseError() { }
+  ~WebIDBDatabaseError() {}
 
-    WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error)
-    {
-        m_code = error.m_code;
-        m_message = error.m_message;
-        return *this;
-    }
+  WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error) {
+    m_code = error.m_code;
+    m_message = error.m_message;
+    return *this;
+  }
 
-    unsigned short code() const { return m_code; }
-    const WebString& message() const { return m_message; }
+  unsigned short code() const { return m_code; }
+  const WebString& message() const { return m_message; }
 
-private:
-    unsigned short m_code;
-    WebString m_message;
+ private:
+  unsigned short m_code;
+  WebString m_message;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBDatabaseError_h
+#endif  // WebIDBDatabaseError_h

@@ -28,12 +28,8 @@
 
 namespace blink {
 
-WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession()
-{
-}
+WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession() {}
 
-WebContentDecryptionModuleSession::Client::~Client()
-{
-}
+WebContentDecryptionModuleSession::Client::~Client() {}
 
-} // namespace blink
+}  // namespace blink

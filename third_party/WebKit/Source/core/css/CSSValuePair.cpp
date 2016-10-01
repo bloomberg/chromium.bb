@@ -6,11 +6,9 @@
 
 namespace blink {
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSValuePair)
-{
-    visitor->trace(m_first);
-    visitor->trace(m_second);
-    CSSValue::traceAfterDispatch(visitor);
+DEFINE_TRACE_AFTER_DISPATCH(CSSValuePair) {
+  visitor->trace(m_first);
+  visitor->trace(m_second);
+  CSSValue::traceAfterDispatch(visitor);
 }
-
 }

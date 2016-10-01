@@ -36,49 +36,54 @@ class AudioParam;
 class BiquadFilterOptions;
 
 class BiquadFilterNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    // These must be defined as in the .idl file and must match those in the BiquadProcessor class.
-    enum {
-        LOWPASS = 0,
-        HIGHPASS = 1,
-        BANDPASS = 2,
-        LOWSHELF = 3,
-        HIGHSHELF = 4,
-        PEAKING = 5,
-        NOTCH = 6,
-        ALLPASS = 7
-    };
+  DEFINE_WRAPPERTYPEINFO();
 
-    static BiquadFilterNode* create(BaseAudioContext&, ExceptionState&);
-    static BiquadFilterNode* create(BaseAudioContext*, const BiquadFilterOptions&, ExceptionState&);
+ public:
+  // These must be defined as in the .idl file and must match those in the BiquadProcessor class.
+  enum {
+    LOWPASS = 0,
+    HIGHPASS = 1,
+    BANDPASS = 2,
+    LOWSHELF = 3,
+    HIGHSHELF = 4,
+    PEAKING = 5,
+    NOTCH = 6,
+    ALLPASS = 7
+  };
 
-    DECLARE_VIRTUAL_TRACE();
+  static BiquadFilterNode* create(BaseAudioContext&, ExceptionState&);
+  static BiquadFilterNode* create(BaseAudioContext*,
+                                  const BiquadFilterOptions&,
+                                  ExceptionState&);
 
-    String type() const;
-    void setType(const String&);
+  DECLARE_VIRTUAL_TRACE();
 
-    AudioParam* frequency() { return m_frequency; }
-    AudioParam* q() { return m_q; }
-    AudioParam* gain() { return m_gain; }
-    AudioParam* detune() { return m_detune; }
+  String type() const;
+  void setType(const String&);
 
-    // Get the magnitude and phase response of the filter at the given
-    // set of frequencies (in Hz). The phase response is in radians.
-    void getFrequencyResponse(const DOMFloat32Array* frequencyHz, DOMFloat32Array* magResponse, DOMFloat32Array* phaseResponse);
+  AudioParam* frequency() { return m_frequency; }
+  AudioParam* q() { return m_q; }
+  AudioParam* gain() { return m_gain; }
+  AudioParam* detune() { return m_detune; }
 
-private:
-    BiquadFilterNode(BaseAudioContext&);
+  // Get the magnitude and phase response of the filter at the given
+  // set of frequencies (in Hz). The phase response is in radians.
+  void getFrequencyResponse(const DOMFloat32Array* frequencyHz,
+                            DOMFloat32Array* magResponse,
+                            DOMFloat32Array* phaseResponse);
 
-    BiquadProcessor* getBiquadProcessor() const;
-    bool setType(unsigned); // Returns true on success.
+ private:
+  BiquadFilterNode(BaseAudioContext&);
 
-    Member<AudioParam> m_frequency;
-    Member<AudioParam> m_q;
-    Member<AudioParam> m_gain;
-    Member<AudioParam> m_detune;
+  BiquadProcessor* getBiquadProcessor() const;
+  bool setType(unsigned);  // Returns true on success.
+
+  Member<AudioParam> m_frequency;
+  Member<AudioParam> m_q;
+  Member<AudioParam> m_gain;
+  Member<AudioParam> m_detune;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BiquadFilterNode_h
+#endif  // BiquadFilterNode_h

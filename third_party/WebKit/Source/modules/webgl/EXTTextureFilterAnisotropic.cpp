@@ -27,34 +27,32 @@
 
 namespace blink {
 
-EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_texture_filter_anisotropic");
+EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(
+    WebGLRenderingContextBase* context)
+    : WebGLExtension(context) {
+  context->extensionsUtil()->ensureExtensionEnabled(
+      "GL_EXT_texture_filter_anisotropic");
 }
 
-EXTTextureFilterAnisotropic::~EXTTextureFilterAnisotropic()
-{
+EXTTextureFilterAnisotropic::~EXTTextureFilterAnisotropic() {}
+
+WebGLExtensionName EXTTextureFilterAnisotropic::name() const {
+  return EXTTextureFilterAnisotropicName;
 }
 
-WebGLExtensionName EXTTextureFilterAnisotropic::name() const
-{
-    return EXTTextureFilterAnisotropicName;
+EXTTextureFilterAnisotropic* EXTTextureFilterAnisotropic::create(
+    WebGLRenderingContextBase* context) {
+  return new EXTTextureFilterAnisotropic(context);
 }
 
-EXTTextureFilterAnisotropic* EXTTextureFilterAnisotropic::create(WebGLRenderingContextBase* context)
-{
-    return new EXTTextureFilterAnisotropic(context);
+bool EXTTextureFilterAnisotropic::supported(
+    WebGLRenderingContextBase* context) {
+  return context->extensionsUtil()->supportsExtension(
+      "GL_EXT_texture_filter_anisotropic");
 }
 
-bool EXTTextureFilterAnisotropic::supported(WebGLRenderingContextBase* context)
-{
-    return context->extensionsUtil()->supportsExtension("GL_EXT_texture_filter_anisotropic");
+const char* EXTTextureFilterAnisotropic::extensionName() {
+  return "EXT_texture_filter_anisotropic";
 }
 
-const char* EXTTextureFilterAnisotropic::extensionName()
-{
-    return "EXT_texture_filter_anisotropic";
-}
-
-} // namespace blink
+}  // namespace blink

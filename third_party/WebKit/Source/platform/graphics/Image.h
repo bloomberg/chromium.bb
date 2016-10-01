@@ -59,137 +59,169 @@ class Length;
 class Image;
 
 class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
-    friend class GeneratedImage;
-    friend class CrossfadeGeneratedImage;
-    friend class GradientGeneratedImage;
-    friend class GraphicsContext;
-    WTF_MAKE_NONCOPYABLE(Image);
+  friend class GeneratedImage;
+  friend class CrossfadeGeneratedImage;
+  friend class GradientGeneratedImage;
+  friend class GraphicsContext;
+  WTF_MAKE_NONCOPYABLE(Image);
 
-public:
-    virtual ~Image();
+ public:
+  virtual ~Image();
 
-    static PassRefPtr<Image> loadPlatformResource(const char* name);
-    static bool supportsType(const String&);
+  static PassRefPtr<Image> loadPlatformResource(const char* name);
+  static bool supportsType(const String&);
 
-    virtual bool isSVGImage() const { return false; }
-    virtual bool isBitmapImage() const { return false; }
+  virtual bool isSVGImage() const { return false; }
+  virtual bool isBitmapImage() const { return false; }
 
-    // To increase accuracy of currentFrameKnownToBeOpaque() it may,
-    // for applicable image types, be told to pre-cache metadata for
-    // the current frame. Since this may initiate a deferred image
-    // decoding, PreCacheMetadata requires a InspectorPaintImageEvent
-    // during call.
-    enum MetadataMode { UseCurrentMetadata, PreCacheMetadata };
-    virtual bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) = 0;
+  // To increase accuracy of currentFrameKnownToBeOpaque() it may,
+  // for applicable image types, be told to pre-cache metadata for
+  // the current frame. Since this may initiate a deferred image
+  // decoding, PreCacheMetadata requires a InspectorPaintImageEvent
+  // during call.
+  enum MetadataMode { UseCurrentMetadata, PreCacheMetadata };
+  virtual bool currentFrameKnownToBeOpaque(
+      MetadataMode = UseCurrentMetadata) = 0;
 
-    virtual bool currentFrameIsComplete() { return false; }
-    virtual bool currentFrameIsLazyDecoded() { return false; }
-    virtual bool isTextureBacked();
+  virtual bool currentFrameIsComplete() { return false; }
+  virtual bool currentFrameIsLazyDecoded() { return false; }
+  virtual bool isTextureBacked();
 
-    // Derived classes should override this if they can assure that the current
-    // image frame contains only resources from its own security origin.
-    virtual bool currentFrameHasSingleSecurityOrigin() const { return false; }
+  // Derived classes should override this if they can assure that the current
+  // image frame contains only resources from its own security origin.
+  virtual bool currentFrameHasSingleSecurityOrigin() const { return false; }
 
-    static Image* nullImage();
-    bool isNull() const { return size().isEmpty(); }
+  static Image* nullImage();
+  bool isNull() const { return size().isEmpty(); }
 
-    virtual bool usesContainerSize() const { return false; }
-    virtual bool hasRelativeSize() const { return false; }
+  virtual bool usesContainerSize() const { return false; }
+  virtual bool hasRelativeSize() const { return false; }
 
-    virtual IntSize size() const = 0;
-    IntRect rect() const { return IntRect(IntPoint(), size()); }
-    int width() const { return size().width(); }
-    int height() const { return size().height(); }
-    virtual bool getHotSpot(IntPoint&) const { return false; }
+  virtual IntSize size() const = 0;
+  IntRect rect() const { return IntRect(IntPoint(), size()); }
+  int width() const { return size().width(); }
+  int height() const { return size().height(); }
+  virtual bool getHotSpot(IntPoint&) const { return false; }
 
-    enum SizeAvailability {
-        SizeAvailable,
-        SizeUnavailable
-    };
-    virtual SizeAvailability setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
-    virtual SizeAvailability dataChanged(bool /*allDataReceived*/) { return SizeUnavailable; }
+  enum SizeAvailability { SizeAvailable, SizeUnavailable };
+  virtual SizeAvailability setData(PassRefPtr<SharedBuffer> data,
+                                   bool allDataReceived);
+  virtual SizeAvailability dataChanged(bool /*allDataReceived*/) {
+    return SizeUnavailable;
+  }
 
-    virtual String filenameExtension() const { return String(); } // null string if unknown
+  virtual String filenameExtension() const {
+    return String();
+  }  // null string if unknown
 
-    virtual void destroyDecodedData() = 0;
+  virtual void destroyDecodedData() = 0;
 
-    virtual PassRefPtr<SharedBuffer> data() { return m_encodedImageData; }
+  virtual PassRefPtr<SharedBuffer> data() { return m_encodedImageData; }
 
-    // Animation begins whenever someone draws the image, so startAnimation() is not normally called.
-    // It will automatically pause once all observers no longer want to render the image anywhere.
-    enum CatchUpAnimation { DoNotCatchUp, CatchUp };
-    virtual void startAnimation(CatchUpAnimation = CatchUp) { }
-    virtual void resetAnimation() {}
+  // Animation begins whenever someone draws the image, so startAnimation() is not normally called.
+  // It will automatically pause once all observers no longer want to render the image anywhere.
+  enum CatchUpAnimation { DoNotCatchUp, CatchUp };
+  virtual void startAnimation(CatchUpAnimation = CatchUp) {}
+  virtual void resetAnimation() {}
 
-    // True if this image can potentially animate.
-    virtual bool maybeAnimated() { return false; }
+  // True if this image can potentially animate.
+  virtual bool maybeAnimated() { return false; }
 
-    // Set animationPolicy
-    virtual void setAnimationPolicy(ImageAnimationPolicy) { }
-    virtual ImageAnimationPolicy animationPolicy() { return ImageAnimationPolicyAllowed; }
-    virtual void advanceTime(double deltaTimeInSeconds) { }
+  // Set animationPolicy
+  virtual void setAnimationPolicy(ImageAnimationPolicy) {}
+  virtual ImageAnimationPolicy animationPolicy() {
+    return ImageAnimationPolicyAllowed;
+  }
+  virtual void advanceTime(double deltaTimeInSeconds) {}
 
-    // Advances an animated image. For BitmapImage (e.g., animated gifs) this
-    // will advance to the next frame. For SVGImage, this will trigger an
-    // animation update for CSS and advance the SMIL timeline by one frame.
-    virtual void advanceAnimationForTesting() { }
+  // Advances an animated image. For BitmapImage (e.g., animated gifs) this
+  // will advance to the next frame. For SVGImage, this will trigger an
+  // animation update for CSS and advance the SMIL timeline by one frame.
+  virtual void advanceAnimationForTesting() {}
 
-    // Typically the ImageResource that owns us.
-    ImageObserver* getImageObserver() const { return m_imageObserverDisabled ? nullptr : m_imageObserver; }
-    void clearImageObserver() { m_imageObserver = nullptr; }
-    // Do not call setImageObserverDisabled() other than from ImageObserverDisabler to avoid interleaved accesses to |m_imageObserverDisabled|.
-    void setImageObserverDisabled(bool disabled) { m_imageObserverDisabled = disabled; }
+  // Typically the ImageResource that owns us.
+  ImageObserver* getImageObserver() const {
+    return m_imageObserverDisabled ? nullptr : m_imageObserver;
+  }
+  void clearImageObserver() { m_imageObserver = nullptr; }
+  // Do not call setImageObserverDisabled() other than from ImageObserverDisabler to avoid interleaved accesses to |m_imageObserverDisabled|.
+  void setImageObserverDisabled(bool disabled) {
+    m_imageObserverDisabled = disabled;
+  }
 
-    enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
+  enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
-    virtual sk_sp<SkImage> imageForCurrentFrame() = 0;
-    virtual PassRefPtr<Image> imageForDefaultFrame();
+  virtual sk_sp<SkImage> imageForCurrentFrame() = 0;
+  virtual PassRefPtr<Image> imageForDefaultFrame();
 
-    virtual void drawPattern(GraphicsContext&, const FloatRect&,
-        const FloatSize&, const FloatPoint& phase, SkXfermode::Mode,
-        const FloatRect&, const FloatSize& repeatSpacing = FloatSize());
+  virtual void drawPattern(GraphicsContext&,
+                           const FloatRect&,
+                           const FloatSize&,
+                           const FloatPoint& phase,
+                           SkXfermode::Mode,
+                           const FloatRect&,
+                           const FloatSize& repeatSpacing = FloatSize());
 
-    enum ImageClampingMode {
-        ClampImageToSourceRect,
-        DoNotClampImageToSourceRect
-    };
+  enum ImageClampingMode {
+    ClampImageToSourceRect,
+    DoNotClampImageToSourceRect
+  };
 
-    virtual void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) = 0;
+  virtual void draw(SkCanvas*,
+                    const SkPaint&,
+                    const FloatRect& dstRect,
+                    const FloatRect& srcRect,
+                    RespectImageOrientationEnum,
+                    ImageClampingMode) = 0;
 
-    virtual bool applyShader(SkPaint&, const SkMatrix& localMatrix);
+  virtual bool applyShader(SkPaint&, const SkMatrix& localMatrix);
 
-    // Compute the tile which contains a given point (assuming a repeating tile grid).
-    // The point and returned value are in destination grid space.
-    static FloatRect computeTileContaining(const FloatPoint&, const FloatSize& tileSize,
-        const FloatPoint& tilePhase, const FloatSize& tileSpacing);
+  // Compute the tile which contains a given point (assuming a repeating tile grid).
+  // The point and returned value are in destination grid space.
+  static FloatRect computeTileContaining(const FloatPoint&,
+                                         const FloatSize& tileSize,
+                                         const FloatPoint& tilePhase,
+                                         const FloatSize& tileSpacing);
 
-    // Compute the image subset which gets mapped onto dest, when the whole image is drawn into
-    // tile.  Assumes the tile contains dest.  The tile rect is in destination grid space while
-    // the return value is in image coordinate space.
-    static FloatRect computeSubsetForTile(const FloatRect& tile, const FloatRect& dest,
-        const FloatSize& imageSize);
+  // Compute the image subset which gets mapped onto dest, when the whole image is drawn into
+  // tile.  Assumes the tile contains dest.  The tile rect is in destination grid space while
+  // the return value is in image coordinate space.
+  static FloatRect computeSubsetForTile(const FloatRect& tile,
+                                        const FloatRect& dest,
+                                        const FloatSize& imageSize);
 
-protected:
-    Image(ImageObserver* = 0);
+ protected:
+  Image(ImageObserver* = 0);
 
-    void drawTiled(GraphicsContext&, const FloatRect& dstRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
-        SkXfermode::Mode, const FloatSize& repeatSpacing);
-    void drawTiled(GraphicsContext&, const FloatRect& dstRect, const FloatRect& srcRect, const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, SkXfermode::Mode);
+  void drawTiled(GraphicsContext&,
+                 const FloatRect& dstRect,
+                 const FloatPoint& srcPoint,
+                 const FloatSize& tileSize,
+                 SkXfermode::Mode,
+                 const FloatSize& repeatSpacing);
+  void drawTiled(GraphicsContext&,
+                 const FloatRect& dstRect,
+                 const FloatRect& srcRect,
+                 const FloatSize& tileScaleFactor,
+                 TileRule hRule,
+                 TileRule vRule,
+                 SkXfermode::Mode);
 
-private:
-    RefPtr<SharedBuffer> m_encodedImageData;
-    // TODO(Oilpan): consider having Image on the Oilpan heap and
-    // turn this into a Member<>.
-    //
-    // The observer (an ImageResource) is an untraced member, with the ImageResource
-    // being responsible of clearing itself out.
-    UntracedMember<ImageObserver> m_imageObserver;
-    bool m_imageObserverDisabled;
+ private:
+  RefPtr<SharedBuffer> m_encodedImageData;
+  // TODO(Oilpan): consider having Image on the Oilpan heap and
+  // turn this into a Member<>.
+  //
+  // The observer (an ImageResource) is an untraced member, with the ImageResource
+  // being responsible of clearing itself out.
+  UntracedMember<ImageObserver> m_imageObserver;
+  bool m_imageObserverDisabled;
 };
 
-#define DEFINE_IMAGE_TYPE_CASTS(typeName) \
-    DEFINE_TYPE_CASTS(typeName, Image, image, image->is##typeName(), image.is##typeName())
+#define DEFINE_IMAGE_TYPE_CASTS(typeName)                          \
+  DEFINE_TYPE_CASTS(typeName, Image, image, image->is##typeName(), \
+                    image.is##typeName())
 
-} // namespace blink
+}  // namespace blink
 
 #endif

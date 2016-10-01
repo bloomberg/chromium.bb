@@ -27,52 +27,47 @@ class BytesConsumer;
 // - Client's methods can be called synchronously in start().
 // - If FetchDataLoader::cancel() is called, Client's methods will not be
 //   called anymore.
-class MODULES_EXPORT FetchDataLoader : public GarbageCollectedFinalized<FetchDataLoader> {
-public:
-    class MODULES_EXPORT Client : public GarbageCollectedMixin {
-    public:
-        virtual ~Client() { }
+class MODULES_EXPORT FetchDataLoader
+    : public GarbageCollectedFinalized<FetchDataLoader> {
+ public:
+  class MODULES_EXPORT Client : public GarbageCollectedMixin {
+   public:
+    virtual ~Client() {}
 
-        // The method corresponding to createLoaderAs... is called on success.
-        virtual void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle>)
-        {
-            ASSERT_NOT_REACHED();
-        }
-        virtual void didFetchDataLoadedArrayBuffer(DOMArrayBuffer*)
-        {
-            ASSERT_NOT_REACHED();
-        }
-        virtual void didFetchDataLoadedString(const String&)
-        {
-            ASSERT_NOT_REACHED();
-        }
-        // This is called after all data are read from |handle| and written
-        // to |outStream|, and |outStream| is closed or aborted.
-        virtual void didFetchDataLoadedStream()
-        {
-            ASSERT_NOT_REACHED();
-        }
+    // The method corresponding to createLoaderAs... is called on success.
+    virtual void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle>) {
+      ASSERT_NOT_REACHED();
+    }
+    virtual void didFetchDataLoadedArrayBuffer(DOMArrayBuffer*) {
+      ASSERT_NOT_REACHED();
+    }
+    virtual void didFetchDataLoadedString(const String&) {
+      ASSERT_NOT_REACHED();
+    }
+    // This is called after all data are read from |handle| and written
+    // to |outStream|, and |outStream| is closed or aborted.
+    virtual void didFetchDataLoadedStream() { ASSERT_NOT_REACHED(); }
 
-        virtual void didFetchDataLoadFailed() = 0;
+    virtual void didFetchDataLoadFailed() = 0;
 
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
-    };
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+  };
 
-    static FetchDataLoader* createLoaderAsBlobHandle(const String& mimeType);
-    static FetchDataLoader* createLoaderAsArrayBuffer();
-    static FetchDataLoader* createLoaderAsString();
-    static FetchDataLoader* createLoaderAsStream(Stream* outStream);
+  static FetchDataLoader* createLoaderAsBlobHandle(const String& mimeType);
+  static FetchDataLoader* createLoaderAsArrayBuffer();
+  static FetchDataLoader* createLoaderAsString();
+  static FetchDataLoader* createLoaderAsStream(Stream* outStream);
 
-    virtual ~FetchDataLoader() { }
+  virtual ~FetchDataLoader() {}
 
-    // |consumer| must not have a client when called.
-    virtual void start(BytesConsumer* /* consumer */, Client*) = 0;
+  // |consumer| must not have a client when called.
+  virtual void start(BytesConsumer* /* consumer */, Client*) = 0;
 
-    virtual void cancel() = 0;
+  virtual void cancel() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FetchDataLoader_h
+#endif  // FetchDataLoader_h

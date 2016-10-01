@@ -40,57 +40,60 @@ class ExceptionState;
 class Reverb;
 
 class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
-public:
-    static PassRefPtr<ConvolverHandler> create(AudioNode&, float sampleRate);
-    ~ConvolverHandler() override;
+ public:
+  static PassRefPtr<ConvolverHandler> create(AudioNode&, float sampleRate);
+  ~ConvolverHandler() override;
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
 
-    // Impulse responses
-    void setBuffer(AudioBuffer*, ExceptionState&);
-    AudioBuffer* buffer();
+  // Impulse responses
+  void setBuffer(AudioBuffer*, ExceptionState&);
+  AudioBuffer* buffer();
 
-    bool normalize() const { return m_normalize; }
-    void setNormalize(bool normalize) { m_normalize = normalize; }
+  bool normalize() const { return m_normalize; }
+  void setNormalize(bool normalize) { m_normalize = normalize; }
 
-private:
-    ConvolverHandler(AudioNode&, float sampleRate);
-    double tailTime() const override;
-    double latencyTime() const override;
+ private:
+  ConvolverHandler(AudioNode&, float sampleRate);
+  double tailTime() const override;
+  double latencyTime() const override;
 
-    std::unique_ptr<Reverb> m_reverb;
-    // This Persistent doesn't make a reference cycle including the owner
-    // ConvolverNode.
-    Persistent<AudioBuffer> m_buffer;
+  std::unique_ptr<Reverb> m_reverb;
+  // This Persistent doesn't make a reference cycle including the owner
+  // ConvolverNode.
+  Persistent<AudioBuffer> m_buffer;
 
-    // This synchronizes dynamic changes to the convolution impulse response with process().
-    mutable Mutex m_processLock;
+  // This synchronizes dynamic changes to the convolution impulse response with process().
+  mutable Mutex m_processLock;
 
-    // Normalize the impulse response or not. Must default to true.
-    bool m_normalize;
+  // Normalize the impulse response or not. Must default to true.
+  bool m_normalize;
 
-    FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
+  FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
 };
 
 class MODULES_EXPORT ConvolverNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ConvolverNode* create(BaseAudioContext&, ExceptionState&);
-    static ConvolverNode* create(BaseAudioContext*, const ConvolverOptions&, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    AudioBuffer* buffer() const;
-    void setBuffer(AudioBuffer*, ExceptionState&);
-    bool normalize() const;
-    void setNormalize(bool);
+ public:
+  static ConvolverNode* create(BaseAudioContext&, ExceptionState&);
+  static ConvolverNode* create(BaseAudioContext*,
+                               const ConvolverOptions&,
+                               ExceptionState&);
 
-private:
-    ConvolverNode(BaseAudioContext&);
-    ConvolverHandler& convolverHandler() const;
+  AudioBuffer* buffer() const;
+  void setBuffer(AudioBuffer*, ExceptionState&);
+  bool normalize() const;
+  void setNormalize(bool);
 
-    FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
+ private:
+  ConvolverNode(BaseAudioContext&);
+  ConvolverHandler& convolverHandler() const;
+
+  FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ConvolverNode_h
+#endif  // ConvolverNode_h

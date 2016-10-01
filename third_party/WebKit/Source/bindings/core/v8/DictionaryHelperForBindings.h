@@ -32,16 +32,17 @@
 namespace blink {
 
 template <template <typename> class PointerType, typename T>
-bool DictionaryHelper::get(const Dictionary& dictionary, const StringView& key, PointerType<T>& value)
-{
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return false;
+bool DictionaryHelper::get(const Dictionary& dictionary,
+                           const StringView& key,
+                           PointerType<T>& value) {
+  v8::Local<v8::Value> v8Value;
+  if (!dictionary.get(key, v8Value))
+    return false;
 
-    value = V8TypeOf<T>::Type::toImplWithTypeCheck(dictionary.isolate(), v8Value);
-    return true;
+  value = V8TypeOf<T>::Type::toImplWithTypeCheck(dictionary.isolate(), v8Value);
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DictionaryHelperForBindings_h
+#endif  // DictionaryHelperForBindings_h

@@ -48,18 +48,19 @@ class SecurityOrigin;
 // the loader conducts security checks that examine the origin of host page
 // encoded in the blob url.
 class PLATFORM_EXPORT BlobURL {
-    STATIC_ONLY(BlobURL);
-public:
-    static KURL createPublicURL(SecurityOrigin*);
-    static String getOrigin(const KURL&);
+  STATIC_ONLY(BlobURL);
 
-    static KURL createInternalStreamURL();
+ public:
+  static KURL createPublicURL(SecurityOrigin*);
+  static String getOrigin(const KURL&);
 
-private:
-    static KURL createBlobURL(const String& originString);
-    static const char kBlobProtocol[];
+  static KURL createInternalStreamURL();
+
+ private:
+  static KURL createBlobURL(const String& originString);
+  static const char kBlobProtocol[];
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BlobURL_h
+#endif  // BlobURL_h

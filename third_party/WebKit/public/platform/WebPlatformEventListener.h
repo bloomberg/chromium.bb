@@ -8,10 +8,10 @@
 namespace blink {
 
 class WebPlatformEventListener {
-public:
-    virtual ~WebPlatformEventListener() { }
+ public:
+  virtual ~WebPlatformEventListener() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPlatformEventListener_h
+#endif  // WebPlatformEventListener_h

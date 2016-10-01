@@ -38,65 +38,59 @@ namespace {
 
 // A couple of simple structs to allocate.
 struct TestClass1 {
-    TestClass1()
-        : x(0), y(0), z(0), w(1) { }
+  TestClass1() : x(0), y(0), z(0), w(1) {}
 
-    float x, y, z, w;
+  float x, y, z, w;
 };
 
 struct TestClass2 {
-    TestClass2()
-        : a(1), b(2), c(3), d(4) { }
+  TestClass2() : a(1), b(2), c(3), d(4) {}
 
-    float a, b, c, d;
+  float a, b, c, d;
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
-class PODArenaTest : public testing::Test {
-};
+class PODArenaTest : public testing::Test {};
 
 // Make sure the arena can successfully allocate from more than one
 // region.
-TEST_F(PODArenaTest, CanAllocateFromMoreThanOneRegion)
-{
-    RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
-    RefPtr<PODArena> arena = PODArena::create(allocator);
-    int numIterations = 10 * PODArena::DefaultChunkSize / sizeof(TestClass1);
-    for (int i = 0; i < numIterations; ++i)
-        arena->allocateObject<TestClass1>();
-    EXPECT_GT(allocator->numRegions(), 1);
+TEST_F(PODArenaTest, CanAllocateFromMoreThanOneRegion) {
+  RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
+  RefPtr<PODArena> arena = PODArena::create(allocator);
+  int numIterations = 10 * PODArena::DefaultChunkSize / sizeof(TestClass1);
+  for (int i = 0; i < numIterations; ++i)
+    arena->allocateObject<TestClass1>();
+  EXPECT_GT(allocator->numRegions(), 1);
 }
 
 // Make sure the arena frees all allocated regions during destruction.
-TEST_F(PODArenaTest, FreesAllAllocatedRegions)
-{
-    RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
-    {
-        RefPtr<PODArena> arena = PODArena::create(allocator);
-        for (int i = 0; i < 3; i++)
-            arena->allocateObject<TestClass1>();
-        EXPECT_GT(allocator->numRegions(), 0);
-    }
-    EXPECT_TRUE(allocator->isEmpty());
+TEST_F(PODArenaTest, FreesAllAllocatedRegions) {
+  RefPtr<TrackedAllocator> allocator = TrackedAllocator::create();
+  {
+    RefPtr<PODArena> arena = PODArena::create(allocator);
+    for (int i = 0; i < 3; i++)
+      arena->allocateObject<TestClass1>();
+    EXPECT_GT(allocator->numRegions(), 0);
+  }
+  EXPECT_TRUE(allocator->isEmpty());
 }
 
 // Make sure the arena runs constructors of the objects allocated within.
-TEST_F(PODArenaTest, RunsConstructors)
-{
-    RefPtr<PODArena> arena = PODArena::create();
-    for (int i = 0; i < 10000; i++) {
-        TestClass1* tc1 = arena->allocateObject<TestClass1>();
-        EXPECT_EQ(0, tc1->x);
-        EXPECT_EQ(0, tc1->y);
-        EXPECT_EQ(0, tc1->z);
-        EXPECT_EQ(1, tc1->w);
-        TestClass2* tc2 = arena->allocateObject<TestClass2>();
-        EXPECT_EQ(1, tc2->a);
-        EXPECT_EQ(2, tc2->b);
-        EXPECT_EQ(3, tc2->c);
-        EXPECT_EQ(4, tc2->d);
-    }
+TEST_F(PODArenaTest, RunsConstructors) {
+  RefPtr<PODArena> arena = PODArena::create();
+  for (int i = 0; i < 10000; i++) {
+    TestClass1* tc1 = arena->allocateObject<TestClass1>();
+    EXPECT_EQ(0, tc1->x);
+    EXPECT_EQ(0, tc1->y);
+    EXPECT_EQ(0, tc1->z);
+    EXPECT_EQ(1, tc1->w);
+    TestClass2* tc2 = arena->allocateObject<TestClass2>();
+    EXPECT_EQ(1, tc2->a);
+    EXPECT_EQ(2, tc2->b);
+    EXPECT_EQ(3, tc2->c);
+    EXPECT_EQ(4, tc2->d);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

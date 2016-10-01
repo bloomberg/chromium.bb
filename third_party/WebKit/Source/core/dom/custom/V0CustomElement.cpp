@@ -41,116 +41,120 @@
 
 namespace blink {
 
-V0CustomElementMicrotaskImportStep* V0CustomElement::didCreateImport(HTMLImportChild* import)
-{
-    return V0CustomElementScheduler::scheduleImport(import);
+V0CustomElementMicrotaskImportStep* V0CustomElement::didCreateImport(
+    HTMLImportChild* import) {
+  return V0CustomElementScheduler::scheduleImport(import);
 }
 
-void V0CustomElement::didFinishLoadingImport(Document& master)
-{
-    master.customElementMicrotaskRunQueue()->requestDispatchIfNeeded();
+void V0CustomElement::didFinishLoadingImport(Document& master) {
+  master.customElementMicrotaskRunQueue()->requestDispatchIfNeeded();
 }
 
-Vector<AtomicString>& V0CustomElement::embedderCustomElementNames()
-{
-    DEFINE_STATIC_LOCAL(Vector<AtomicString>, names, ());
-    return names;
+Vector<AtomicString>& V0CustomElement::embedderCustomElementNames() {
+  DEFINE_STATIC_LOCAL(Vector<AtomicString>, names, ());
+  return names;
 }
 
-void V0CustomElement::addEmbedderCustomElementName(const AtomicString& name)
-{
-    AtomicString lower = name.lower();
-    if (isValidName(lower, EmbedderNames))
-        return;
-    embedderCustomElementNames().append(lower);
+void V0CustomElement::addEmbedderCustomElementName(const AtomicString& name) {
+  AtomicString lower = name.lower();
+  if (isValidName(lower, EmbedderNames))
+    return;
+  embedderCustomElementNames().append(lower);
 }
 
-static inline bool isValidNCName(const AtomicString& name)
-{
-    if (kNotFound != name.find(':'))
-        return false;
-
-    if (!name.getString().is8Bit()) {
-        const UChar32 c = name.characters16()[0];
-        // These characters comes under CombiningChar in NCName and according to
-        // NCName only BaseChar and Ideodgraphic can come as first chars.
-        // Also these characters come under Letter_Other in UnicodeData, thats
-        // why they pass as valid document name.
-        if (c == 0x0B83 || c == 0x0F88 || c == 0x0F89 || c == 0x0F8A || c == 0x0F8B)
-            return false;
-    }
-
-    return Document::isValidName(name.getString());
-}
-
-bool V0CustomElement::isValidName(const AtomicString& name, NameSet validNames)
-{
-    if ((validNames & EmbedderNames) && kNotFound != embedderCustomElementNames().find(name))
-        return Document::isValidName(name);
-
-    if ((validNames & StandardNames) && kNotFound != name.find('-')) {
-        DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
-        if (reservedNames.isEmpty()) {
-            // FIXME(crbug.com/426605): We should be able to remove this.
-            reservedNames.append(MathMLNames::annotation_xmlTag.localName());
-        }
-
-        if (kNotFound == reservedNames.find(name))
-            return isValidNCName(name);
-    }
-
+static inline bool isValidNCName(const AtomicString& name) {
+  if (kNotFound != name.find(':'))
     return false;
+
+  if (!name.getString().is8Bit()) {
+    const UChar32 c = name.characters16()[0];
+    // These characters comes under CombiningChar in NCName and according to
+    // NCName only BaseChar and Ideodgraphic can come as first chars.
+    // Also these characters come under Letter_Other in UnicodeData, thats
+    // why they pass as valid document name.
+    if (c == 0x0B83 || c == 0x0F88 || c == 0x0F89 || c == 0x0F8A || c == 0x0F8B)
+      return false;
+  }
+
+  return Document::isValidName(name.getString());
 }
 
-void V0CustomElement::define(Element* element, V0CustomElementDefinition* definition)
-{
-    switch (element->getV0CustomElementState()) {
+bool V0CustomElement::isValidName(const AtomicString& name,
+                                  NameSet validNames) {
+  if ((validNames & EmbedderNames) &&
+      kNotFound != embedderCustomElementNames().find(name))
+    return Document::isValidName(name);
+
+  if ((validNames & StandardNames) && kNotFound != name.find('-')) {
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
+    if (reservedNames.isEmpty()) {
+      // FIXME(crbug.com/426605): We should be able to remove this.
+      reservedNames.append(MathMLNames::annotation_xmlTag.localName());
+    }
+
+    if (kNotFound == reservedNames.find(name))
+      return isValidNCName(name);
+  }
+
+  return false;
+}
+
+void V0CustomElement::define(Element* element,
+                             V0CustomElementDefinition* definition) {
+  switch (element->getV0CustomElementState()) {
     case Element::V0NotCustomElement:
     case Element::V0Upgraded:
-        ASSERT_NOT_REACHED();
-        break;
+      ASSERT_NOT_REACHED();
+      break;
 
     case Element::V0WaitingForUpgrade:
-        element->v0SetCustomElementDefinition(definition);
-        V0CustomElementScheduler::scheduleCallback(definition->callbacks(), element, V0CustomElementLifecycleCallbacks::CreatedCallback);
-        break;
-    }
+      element->v0SetCustomElementDefinition(definition);
+      V0CustomElementScheduler::scheduleCallback(
+          definition->callbacks(), element,
+          V0CustomElementLifecycleCallbacks::CreatedCallback);
+      break;
+  }
 }
 
-void V0CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
-{
-    DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
-    V0CustomElementScheduler::scheduleAttributeChangedCallback(element->v0CustomElementDefinition()->callbacks(), element, name, oldValue, newValue);
+void V0CustomElement::attributeDidChange(Element* element,
+                                         const AtomicString& name,
+                                         const AtomicString& oldValue,
+                                         const AtomicString& newValue) {
+  DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
+  V0CustomElementScheduler::scheduleAttributeChangedCallback(
+      element->v0CustomElementDefinition()->callbacks(), element, name,
+      oldValue, newValue);
 }
 
-void V0CustomElement::didAttach(Element* element, const Document& document)
-{
-    DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
-    if (!document.domWindow())
-        return;
-    V0CustomElementScheduler::scheduleCallback(element->v0CustomElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::AttachedCallback);
+void V0CustomElement::didAttach(Element* element, const Document& document) {
+  DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
+  if (!document.domWindow())
+    return;
+  V0CustomElementScheduler::scheduleCallback(
+      element->v0CustomElementDefinition()->callbacks(), element,
+      V0CustomElementLifecycleCallbacks::AttachedCallback);
 }
 
-void V0CustomElement::didDetach(Element* element, const Document& document)
-{
-    DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
-    if (!document.domWindow())
-        return;
-    V0CustomElementScheduler::scheduleCallback(element->v0CustomElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::DetachedCallback);
+void V0CustomElement::didDetach(Element* element, const Document& document) {
+  DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
+  if (!document.domWindow())
+    return;
+  V0CustomElementScheduler::scheduleCallback(
+      element->v0CustomElementDefinition()->callbacks(), element,
+      V0CustomElementLifecycleCallbacks::DetachedCallback);
 }
 
-void V0CustomElement::wasDestroyed(Element* element)
-{
-    switch (element->getV0CustomElementState()) {
+void V0CustomElement::wasDestroyed(Element* element) {
+  switch (element->getV0CustomElementState()) {
     case Element::V0NotCustomElement:
-        ASSERT_NOT_REACHED();
-        break;
+      ASSERT_NOT_REACHED();
+      break;
 
     case Element::V0WaitingForUpgrade:
     case Element::V0Upgraded:
-        V0CustomElementObserver::notifyElementWasDestroyed(element);
-        break;
-    }
+      V0CustomElementObserver::notifyElementWasDestroyed(element);
+      break;
+  }
 }
 
-} // namespace blink
+}  // namespace blink

@@ -48,126 +48,146 @@ static const int dateTimeLocalDefaultStep = 60;
 static const int dateTimeLocalDefaultStepBase = 0;
 static const int dateTimeLocalStepScaleFactor = 1000;
 
-InputType* DateTimeLocalInputType::create(HTMLInputElement& element)
-{
-    return new DateTimeLocalInputType(element);
+InputType* DateTimeLocalInputType::create(HTMLInputElement& element) {
+  return new DateTimeLocalInputType(element);
 }
 
-void DateTimeLocalInputType::countUsage()
-{
-    countUsageIfVisible(UseCounter::InputTypeDateTimeLocal);
+void DateTimeLocalInputType::countUsage() {
+  countUsageIfVisible(UseCounter::InputTypeDateTimeLocal);
 }
 
-const AtomicString& DateTimeLocalInputType::formControlType() const
-{
-    return InputTypeNames::datetime_local;
+const AtomicString& DateTimeLocalInputType::formControlType() const {
+  return InputTypeNames::datetime_local;
 }
 
-double DateTimeLocalInputType::valueAsDate() const
-{
-    // valueAsDate doesn't work for the datetime-local type according to the standard.
-    return DateComponents::invalidMilliseconds();
+double DateTimeLocalInputType::valueAsDate() const {
+  // valueAsDate doesn't work for the datetime-local type according to the standard.
+  return DateComponents::invalidMilliseconds();
 }
 
-void DateTimeLocalInputType::setValueAsDate(double value, ExceptionState& exceptionState) const
-{
-    // valueAsDate doesn't work for the datetime-local type according to the standard.
-    InputType::setValueAsDate(value, exceptionState);
+void DateTimeLocalInputType::setValueAsDate(
+    double value,
+    ExceptionState& exceptionState) const {
+  // valueAsDate doesn't work for the datetime-local type according to the standard.
+  InputType::setValueAsDate(value, exceptionState);
 }
 
-StepRange DateTimeLocalInputType::createStepRange(AnyStepHandling anyStepHandling) const
-{
-    DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription, (dateTimeLocalDefaultStep, dateTimeLocalDefaultStepBase, dateTimeLocalStepScaleFactor, StepRange::ScaledStepValueShouldBeInteger));
+StepRange DateTimeLocalInputType::createStepRange(
+    AnyStepHandling anyStepHandling) const {
+  DEFINE_STATIC_LOCAL(const StepRange::StepDescription, stepDescription,
+                      (dateTimeLocalDefaultStep, dateTimeLocalDefaultStepBase,
+                       dateTimeLocalStepScaleFactor,
+                       StepRange::ScaledStepValueShouldBeInteger));
 
-    return InputType::createStepRange(anyStepHandling, dateTimeLocalDefaultStepBase, Decimal::fromDouble(DateComponents::minimumDateTime()), Decimal::fromDouble(DateComponents::maximumDateTime()), stepDescription);
+  return InputType::createStepRange(
+      anyStepHandling, dateTimeLocalDefaultStepBase,
+      Decimal::fromDouble(DateComponents::minimumDateTime()),
+      Decimal::fromDouble(DateComponents::maximumDateTime()), stepDescription);
 }
 
-bool DateTimeLocalInputType::parseToDateComponentsInternal(const String& string, DateComponents* out) const
-{
-    DCHECK(out);
-    unsigned end;
-    return out->parseDateTimeLocal(string, 0, end) && end == string.length();
+bool DateTimeLocalInputType::parseToDateComponentsInternal(
+    const String& string,
+    DateComponents* out) const {
+  DCHECK(out);
+  unsigned end;
+  return out->parseDateTimeLocal(string, 0, end) && end == string.length();
 }
 
-bool DateTimeLocalInputType::setMillisecondToDateComponents(double value, DateComponents* date) const
-{
-    DCHECK(date);
-    return date->setMillisecondsSinceEpochForDateTimeLocal(value);
+bool DateTimeLocalInputType::setMillisecondToDateComponents(
+    double value,
+    DateComponents* date) const {
+  DCHECK(date);
+  return date->setMillisecondsSinceEpochForDateTimeLocal(value);
 }
 
-String DateTimeLocalInputType::localizeValue(const String& proposedValue) const
-{
-    DateComponents date;
-    if (!parseToDateComponents(proposedValue, &date))
-        return proposedValue;
+String DateTimeLocalInputType::localizeValue(
+    const String& proposedValue) const {
+  DateComponents date;
+  if (!parseToDateComponents(proposedValue, &date))
+    return proposedValue;
 
-    Locale::FormatType formatType = shouldHaveSecondField(date) ? Locale::FormatTypeMedium : Locale::FormatTypeShort;
-    String localized = element().locale().formatDateTime(date, formatType);
-    return localized.isEmpty() ? proposedValue : localized;
+  Locale::FormatType formatType = shouldHaveSecondField(date)
+                                      ? Locale::FormatTypeMedium
+                                      : Locale::FormatTypeShort;
+  String localized = element().locale().formatDateTime(date, formatType);
+  return localized.isEmpty() ? proposedValue : localized;
 }
 
-void DateTimeLocalInputType::warnIfValueIsInvalid(const String& value) const
-{
-    if (value != element().sanitizeValue(value))
-        addWarningToConsole("The specified value %s does not conform to the required format.  The format is \"yyyy-MM-ddThh:mm\" followed by optional \":ss\" or \":ss.SSS\".", value);
+void DateTimeLocalInputType::warnIfValueIsInvalid(const String& value) const {
+  if (value != element().sanitizeValue(value))
+    addWarningToConsole(
+        "The specified value %s does not conform to the required format.  The "
+        "format is \"yyyy-MM-ddThh:mm\" followed by optional \":ss\" or "
+        "\":ss.SSS\".",
+        value);
 }
 
-String DateTimeLocalInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const
-{
-    if (!dateTimeFieldsState.hasDayOfMonth() || !dateTimeFieldsState.hasMonth() || !dateTimeFieldsState.hasYear()
-        || !dateTimeFieldsState.hasHour() || !dateTimeFieldsState.hasMinute() || !dateTimeFieldsState.hasAMPM())
-        return emptyString();
+String DateTimeLocalInputType::formatDateTimeFieldsState(
+    const DateTimeFieldsState& dateTimeFieldsState) const {
+  if (!dateTimeFieldsState.hasDayOfMonth() || !dateTimeFieldsState.hasMonth() ||
+      !dateTimeFieldsState.hasYear() || !dateTimeFieldsState.hasHour() ||
+      !dateTimeFieldsState.hasMinute() || !dateTimeFieldsState.hasAMPM())
+    return emptyString();
 
-    if (dateTimeFieldsState.hasMillisecond() && dateTimeFieldsState.millisecond()) {
-        return String::format("%04u-%02u-%02uT%02u:%02u:%02u.%03u",
-            dateTimeFieldsState.year(),
-            dateTimeFieldsState.month(),
-            dateTimeFieldsState.dayOfMonth(),
-            dateTimeFieldsState.hour23(),
-            dateTimeFieldsState.minute(),
-            dateTimeFieldsState.hasSecond() ? dateTimeFieldsState.second() : 0,
-            dateTimeFieldsState.millisecond());
-    }
+  if (dateTimeFieldsState.hasMillisecond() &&
+      dateTimeFieldsState.millisecond()) {
+    return String::format(
+        "%04u-%02u-%02uT%02u:%02u:%02u.%03u", dateTimeFieldsState.year(),
+        dateTimeFieldsState.month(), dateTimeFieldsState.dayOfMonth(),
+        dateTimeFieldsState.hour23(), dateTimeFieldsState.minute(),
+        dateTimeFieldsState.hasSecond() ? dateTimeFieldsState.second() : 0,
+        dateTimeFieldsState.millisecond());
+  }
 
-    if (dateTimeFieldsState.hasSecond() && dateTimeFieldsState.second()) {
-        return String::format("%04u-%02u-%02uT%02u:%02u:%02u",
-            dateTimeFieldsState.year(),
-            dateTimeFieldsState.month(),
-            dateTimeFieldsState.dayOfMonth(),
-            dateTimeFieldsState.hour23(),
-            dateTimeFieldsState.minute(),
-            dateTimeFieldsState.second());
-    }
+  if (dateTimeFieldsState.hasSecond() && dateTimeFieldsState.second()) {
+    return String::format(
+        "%04u-%02u-%02uT%02u:%02u:%02u", dateTimeFieldsState.year(),
+        dateTimeFieldsState.month(), dateTimeFieldsState.dayOfMonth(),
+        dateTimeFieldsState.hour23(), dateTimeFieldsState.minute(),
+        dateTimeFieldsState.second());
+  }
 
-    return String::format("%04u-%02u-%02uT%02u:%02u",
-        dateTimeFieldsState.year(),
-        dateTimeFieldsState.month(),
-        dateTimeFieldsState.dayOfMonth(),
-        dateTimeFieldsState.hour23(),
-        dateTimeFieldsState.minute());
+  return String::format(
+      "%04u-%02u-%02uT%02u:%02u", dateTimeFieldsState.year(),
+      dateTimeFieldsState.month(), dateTimeFieldsState.dayOfMonth(),
+      dateTimeFieldsState.hour23(), dateTimeFieldsState.minute());
 }
 
-void DateTimeLocalInputType::setupLayoutParameters(DateTimeEditElement::LayoutParameters& layoutParameters, const DateComponents& date) const
-{
-    if (shouldHaveSecondField(date)) {
-        layoutParameters.dateTimeFormat = layoutParameters.locale.dateTimeFormatWithSeconds();
-        layoutParameters.fallbackDateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss";
-    } else {
-        layoutParameters.dateTimeFormat = layoutParameters.locale.dateTimeFormatWithoutSeconds();
-        layoutParameters.fallbackDateTimeFormat = "yyyy-MM-dd'T'HH:mm";
-    }
-    if (!parseToDateComponents(element().fastGetAttribute(minAttr), &layoutParameters.minimum))
-        layoutParameters.minimum = DateComponents();
-    if (!parseToDateComponents(element().fastGetAttribute(maxAttr), &layoutParameters.maximum))
-        layoutParameters.maximum = DateComponents();
-    layoutParameters.placeholderForDay = locale().queryString(WebLocalizedString::PlaceholderForDayOfMonthField);
-    layoutParameters.placeholderForMonth = locale().queryString(WebLocalizedString::PlaceholderForMonthField);
-    layoutParameters.placeholderForYear = locale().queryString(WebLocalizedString::PlaceholderForYearField);
+void DateTimeLocalInputType::setupLayoutParameters(
+    DateTimeEditElement::LayoutParameters& layoutParameters,
+    const DateComponents& date) const {
+  if (shouldHaveSecondField(date)) {
+    layoutParameters.dateTimeFormat =
+        layoutParameters.locale.dateTimeFormatWithSeconds();
+    layoutParameters.fallbackDateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss";
+  } else {
+    layoutParameters.dateTimeFormat =
+        layoutParameters.locale.dateTimeFormatWithoutSeconds();
+    layoutParameters.fallbackDateTimeFormat = "yyyy-MM-dd'T'HH:mm";
+  }
+  if (!parseToDateComponents(element().fastGetAttribute(minAttr),
+                             &layoutParameters.minimum))
+    layoutParameters.minimum = DateComponents();
+  if (!parseToDateComponents(element().fastGetAttribute(maxAttr),
+                             &layoutParameters.maximum))
+    layoutParameters.maximum = DateComponents();
+  layoutParameters.placeholderForDay =
+      locale().queryString(WebLocalizedString::PlaceholderForDayOfMonthField);
+  layoutParameters.placeholderForMonth =
+      locale().queryString(WebLocalizedString::PlaceholderForMonthField);
+  layoutParameters.placeholderForYear =
+      locale().queryString(WebLocalizedString::PlaceholderForYearField);
 }
 
-bool DateTimeLocalInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const
-{
-    return hasYear && hasMonth && hasDay && hasAMPM && hasHour && hasMinute;
+bool DateTimeLocalInputType::isValidFormat(bool hasYear,
+                                           bool hasMonth,
+                                           bool hasWeek,
+                                           bool hasDay,
+                                           bool hasAMPM,
+                                           bool hasHour,
+                                           bool hasMinute,
+                                           bool hasSecond) const {
+  return hasYear && hasMonth && hasDay && hasAMPM && hasHour && hasMinute;
 }
 
-} // namespace blink
+}  // namespace blink

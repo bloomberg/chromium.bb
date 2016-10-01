@@ -11,32 +11,30 @@
 
 namespace blink {
 
-CSSKeywordValue* CSSKeywordValue::create(const AtomicString& keyword, ExceptionState& exceptionState)
-{
-    if (keyword.isEmpty()) {
-        exceptionState.throwTypeError("CSSKeywordValue does not support empty strings");
-        return nullptr;
-    }
-    return new CSSKeywordValue(keyword);
+CSSKeywordValue* CSSKeywordValue::create(const AtomicString& keyword,
+                                         ExceptionState& exceptionState) {
+  if (keyword.isEmpty()) {
+    exceptionState.throwTypeError(
+        "CSSKeywordValue does not support empty strings");
+    return nullptr;
+  }
+  return new CSSKeywordValue(keyword);
 }
 
-const AtomicString& CSSKeywordValue::keywordValue() const
-{
-    return m_keywordValue;
+const AtomicString& CSSKeywordValue::keywordValue() const {
+  return m_keywordValue;
 }
 
-CSSValueID CSSKeywordValue::keywordValueID() const
-{
-    return cssValueKeywordID(m_keywordValue);
+CSSValueID CSSKeywordValue::keywordValueID() const {
+  return cssValueKeywordID(m_keywordValue);
 }
 
-CSSValue* CSSKeywordValue::toCSSValue() const
-{
-    CSSValueID keywordID = keywordValueID();
-    if (keywordID == CSSValueID::CSSValueInvalid) {
-        return CSSCustomIdentValue::create(m_keywordValue);
-    }
-    return CSSPrimitiveValue::createIdentifier(keywordID);
+CSSValue* CSSKeywordValue::toCSSValue() const {
+  CSSValueID keywordID = keywordValueID();
+  if (keywordID == CSSValueID::CSSValueInvalid) {
+    return CSSCustomIdentValue::create(m_keywordValue);
+  }
+  return CSSPrimitiveValue::createIdentifier(keywordID);
 }
 
-} // namespace blink
+}  // namespace blink

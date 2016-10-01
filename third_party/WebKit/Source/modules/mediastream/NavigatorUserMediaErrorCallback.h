@@ -30,13 +30,14 @@
 
 namespace blink {
 
-class NavigatorUserMediaErrorCallback : public GarbageCollectedFinalized<NavigatorUserMediaErrorCallback> {
-public:
-    virtual ~NavigatorUserMediaErrorCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(NavigatorUserMediaError*) = 0;
+class NavigatorUserMediaErrorCallback
+    : public GarbageCollectedFinalized<NavigatorUserMediaErrorCallback> {
+ public:
+  virtual ~NavigatorUserMediaErrorCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(NavigatorUserMediaError*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorUserMediaErrorCallback_h
+#endif  // NavigatorUserMediaErrorCallback_h

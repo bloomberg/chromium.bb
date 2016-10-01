@@ -31,77 +31,83 @@
 
 namespace blink {
 
-StorageEvent* StorageEvent::create()
-{
-    return new StorageEvent;
+StorageEvent* StorageEvent::create() {
+  return new StorageEvent;
 }
 
-StorageEvent::StorageEvent()
-{
+StorageEvent::StorageEvent() {}
+
+StorageEvent::~StorageEvent() {}
+
+StorageEvent* StorageEvent::create(const AtomicString& type,
+                                   const String& key,
+                                   const String& oldValue,
+                                   const String& newValue,
+                                   const String& url,
+                                   Storage* storageArea) {
+  return new StorageEvent(type, key, oldValue, newValue, url, storageArea);
 }
 
-StorageEvent::~StorageEvent()
-{
+StorageEvent* StorageEvent::create(const AtomicString& type,
+                                   const StorageEventInit& initializer) {
+  return new StorageEvent(type, initializer);
 }
 
-StorageEvent* StorageEvent::create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
-{
-    return new StorageEvent(type, key, oldValue, newValue, url, storageArea);
+StorageEvent::StorageEvent(const AtomicString& type,
+                           const String& key,
+                           const String& oldValue,
+                           const String& newValue,
+                           const String& url,
+                           Storage* storageArea)
+    : Event(type, false, false),
+      m_key(key),
+      m_oldValue(oldValue),
+      m_newValue(newValue),
+      m_url(url),
+      m_storageArea(storageArea) {}
+
+StorageEvent::StorageEvent(const AtomicString& type,
+                           const StorageEventInit& initializer)
+    : Event(type, initializer) {
+  if (initializer.hasKey())
+    m_key = initializer.key();
+  if (initializer.hasOldValue())
+    m_oldValue = initializer.oldValue();
+  if (initializer.hasNewValue())
+    m_newValue = initializer.newValue();
+  if (initializer.hasURL())
+    m_url = initializer.url();
+  if (initializer.hasStorageArea())
+    m_storageArea = initializer.storageArea();
 }
 
-StorageEvent* StorageEvent::create(const AtomicString& type, const StorageEventInit& initializer)
-{
-    return new StorageEvent(type, initializer);
+void StorageEvent::initStorageEvent(const AtomicString& type,
+                                    bool canBubble,
+                                    bool cancelable,
+                                    const String& key,
+                                    const String& oldValue,
+                                    const String& newValue,
+                                    const String& url,
+                                    Storage* storageArea) {
+  if (isBeingDispatched())
+    return;
+
+  initEvent(type, canBubble, cancelable);
+
+  m_key = key;
+  m_oldValue = oldValue;
+  m_newValue = newValue;
+  m_url = url;
+  m_storageArea = storageArea;
 }
 
-StorageEvent::StorageEvent(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
-    : Event(type, false, false)
-    , m_key(key)
-    , m_oldValue(oldValue)
-    , m_newValue(newValue)
-    , m_url(url)
-    , m_storageArea(storageArea)
-{
+const AtomicString& StorageEvent::interfaceName() const {
+  return EventNames::StorageEvent;
 }
 
-StorageEvent::StorageEvent(const AtomicString& type, const StorageEventInit& initializer)
-    : Event(type, initializer)
-{
-    if (initializer.hasKey())
-        m_key = initializer.key();
-    if (initializer.hasOldValue())
-        m_oldValue = initializer.oldValue();
-    if (initializer.hasNewValue())
-        m_newValue = initializer.newValue();
-    if (initializer.hasURL())
-        m_url = initializer.url();
-    if (initializer.hasStorageArea())
-        m_storageArea = initializer.storageArea();
+DEFINE_TRACE(StorageEvent) {
+  visitor->trace(m_storageArea);
+  Event::trace(visitor);
 }
 
-void StorageEvent::initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
-{
-    if (isBeingDispatched())
-        return;
-
-    initEvent(type, canBubble, cancelable);
-
-    m_key = key;
-    m_oldValue = oldValue;
-    m_newValue = newValue;
-    m_url = url;
-    m_storageArea = storageArea;
-}
-
-const AtomicString& StorageEvent::interfaceName() const
-{
-    return EventNames::StorageEvent;
-}
-
-DEFINE_TRACE(StorageEvent)
-{
-    visitor->trace(m_storageArea);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

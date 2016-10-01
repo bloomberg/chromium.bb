@@ -35,50 +35,41 @@
 namespace blink {
 
 class TextRunIterator {
-    DISALLOW_NEW();
-public:
-    TextRunIterator()
-        : m_textRun(0)
-        , m_offset(0)
-        , m_length(0)
-    {
-    }
+  DISALLOW_NEW();
 
-    TextRunIterator(const TextRun* textRun, unsigned offset)
-        : m_textRun(textRun)
-        , m_offset(offset)
-        , m_length(m_textRun->length())
-    {
-    }
+ public:
+  TextRunIterator() : m_textRun(0), m_offset(0), m_length(0) {}
 
-    TextRunIterator(const TextRunIterator& other)
-        : m_textRun(other.m_textRun)
-        , m_offset(other.m_offset)
-        , m_length(m_textRun->length())
-    {
-    }
+  TextRunIterator(const TextRun* textRun, unsigned offset)
+      : m_textRun(textRun), m_offset(offset), m_length(m_textRun->length()) {}
 
-    unsigned offset() const { return m_offset; }
-    void increment() { m_offset++; }
-    bool atEnd() const { return m_offset >= m_length; }
-    UChar current() const { return (*m_textRun)[m_offset]; }
-    WTF::Unicode::CharDirection direction() const { return atEnd() ? WTF::Unicode::OtherNeutral : WTF::Unicode::direction(current()); }
-    bool atParagraphSeparator() const { return current() == '\n'; }
+  TextRunIterator(const TextRunIterator& other)
+      : m_textRun(other.m_textRun),
+        m_offset(other.m_offset),
+        m_length(m_textRun->length()) {}
 
-    bool operator==(const TextRunIterator& other)
-    {
-        return m_offset == other.m_offset && m_textRun == other.m_textRun;
-    }
+  unsigned offset() const { return m_offset; }
+  void increment() { m_offset++; }
+  bool atEnd() const { return m_offset >= m_length; }
+  UChar current() const { return (*m_textRun)[m_offset]; }
+  WTF::Unicode::CharDirection direction() const {
+    return atEnd() ? WTF::Unicode::OtherNeutral
+                   : WTF::Unicode::direction(current());
+  }
+  bool atParagraphSeparator() const { return current() == '\n'; }
 
-    bool operator!=(const TextRunIterator& other) { return !operator==(other); }
+  bool operator==(const TextRunIterator& other) {
+    return m_offset == other.m_offset && m_textRun == other.m_textRun;
+  }
 
-private:
-    const TextRun* m_textRun;
-    unsigned m_offset;
-    unsigned m_length;
+  bool operator!=(const TextRunIterator& other) { return !operator==(other); }
+
+ private:
+  const TextRun* m_textRun;
+  unsigned m_offset;
+  unsigned m_length;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // TextRunIterator_h
+#endif  // TextRunIterator_h

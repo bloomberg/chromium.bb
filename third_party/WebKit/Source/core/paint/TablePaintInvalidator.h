@@ -14,18 +14,20 @@ class LayoutTable;
 struct PaintInvalidatorContext;
 
 class TablePaintInvalidator {
-    STACK_ALLOCATED();
-public:
-    TablePaintInvalidator(const LayoutTable& table, const PaintInvalidatorContext& context)
-        : m_table(table), m_context(context) { }
+  STACK_ALLOCATED();
 
-    PaintInvalidationReason invalidatePaintIfNeeded();
+ public:
+  TablePaintInvalidator(const LayoutTable& table,
+                        const PaintInvalidatorContext& context)
+      : m_table(table), m_context(context) {}
 
-private:
-    const LayoutTable& m_table;
-    const PaintInvalidatorContext& m_context;
+  PaintInvalidationReason invalidatePaintIfNeeded();
+
+ private:
+  const LayoutTable& m_table;
+  const PaintInvalidatorContext& m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

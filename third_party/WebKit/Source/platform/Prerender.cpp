@@ -37,69 +37,59 @@
 
 namespace blink {
 
-Prerender::Prerender(PrerenderClient* client, const KURL& url, const unsigned relTypes, const Referrer& referrer)
-    : m_client(client)
-    , m_url(url)
-    , m_relTypes(relTypes)
-    , m_referrer(referrer)
-{
+Prerender::Prerender(PrerenderClient* client,
+                     const KURL& url,
+                     const unsigned relTypes,
+                     const Referrer& referrer)
+    : m_client(client),
+      m_url(url),
+      m_relTypes(relTypes),
+      m_referrer(referrer) {}
+
+Prerender::~Prerender() {}
+
+DEFINE_TRACE(Prerender) {
+  visitor->trace(m_client);
 }
 
-Prerender::~Prerender()
-{
+void Prerender::dispose() {
+  m_client = nullptr;
+  m_extraData.clear();
 }
 
-DEFINE_TRACE(Prerender)
-{
-    visitor->trace(m_client);
+void Prerender::add() {
+  if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
+    platform->add(WebPrerender(this));
 }
 
-void Prerender::dispose()
-{
-    m_client = nullptr;
-    m_extraData.clear();
+void Prerender::cancel() {
+  if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
+    platform->cancel(WebPrerender(this));
 }
 
-void Prerender::add()
-{
-    if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
-        platform->add(WebPrerender(this));
+void Prerender::abandon() {
+  if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
+    platform->abandon(WebPrerender(this));
 }
 
-void Prerender::cancel()
-{
-    if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
-        platform->cancel(WebPrerender(this));
+void Prerender::didStartPrerender() {
+  if (m_client)
+    m_client->didStartPrerender();
 }
 
-void Prerender::abandon()
-{
-    if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
-        platform->abandon(WebPrerender(this));
+void Prerender::didStopPrerender() {
+  if (m_client)
+    m_client->didStopPrerender();
 }
 
-void Prerender::didStartPrerender()
-{
-    if (m_client)
-        m_client->didStartPrerender();
+void Prerender::didSendLoadForPrerender() {
+  if (m_client)
+    m_client->didSendLoadForPrerender();
 }
 
-void Prerender::didStopPrerender()
-{
-    if (m_client)
-        m_client->didStopPrerender();
+void Prerender::didSendDOMContentLoadedForPrerender() {
+  if (m_client)
+    m_client->didSendDOMContentLoadedForPrerender();
 }
 
-void Prerender::didSendLoadForPrerender()
-{
-    if (m_client)
-        m_client->didSendLoadForPrerender();
-}
-
-void Prerender::didSendDOMContentLoadedForPrerender()
-{
-    if (m_client)
-        m_client->didSendDOMContentLoadedForPrerender();
-}
-
-} // namespace blink
+}  // namespace blink

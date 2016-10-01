@@ -29,44 +29,37 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT IdentityTransformOperation final : public TransformOperation {
-public:
-    static PassRefPtr<IdentityTransformOperation> create()
-    {
-        return adoptRef(new IdentityTransformOperation());
-    }
+class PLATFORM_EXPORT IdentityTransformOperation final
+    : public TransformOperation {
+ public:
+  static PassRefPtr<IdentityTransformOperation> create() {
+    return adoptRef(new IdentityTransformOperation());
+  }
 
-    virtual bool canBlendWith(const TransformOperation& other) const
-    {
-        return isSameType(other);
-    }
+  virtual bool canBlendWith(const TransformOperation& other) const {
+    return isSameType(other);
+  }
 
-private:
-    OperationType type() const override { return Identity; }
+ private:
+  OperationType type() const override { return Identity; }
 
-    bool operator==(const TransformOperation& o) const override
-    {
-        return isSameType(o);
-    }
+  bool operator==(const TransformOperation& o) const override {
+    return isSameType(o);
+  }
 
-    void apply(TransformationMatrix&, const FloatSize&) const override { }
+  void apply(TransformationMatrix&, const FloatSize&) const override {}
 
-    PassRefPtr<TransformOperation> blend(const TransformOperation*, double, bool = false) override
-    {
-        return this;
-    }
+  PassRefPtr<TransformOperation> blend(const TransformOperation*,
+                                       double,
+                                       bool = false) override {
+    return this;
+  }
 
-    PassRefPtr<TransformOperation> zoom(double factor) final
-    {
-        return this;
-    }
+  PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
 
-    IdentityTransformOperation()
-    {
-    }
-
+  IdentityTransformOperation() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IdentityTransformOperation_h
+#endif  // IdentityTransformOperation_h

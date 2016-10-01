@@ -44,68 +44,70 @@ class WebGLContextGroup;
 class WebGLRenderingContextBase;
 
 template <typename T>
-GLuint objectOrZero(const T* object)
-{
-    return object ? object->object() : 0;
+GLuint objectOrZero(const T* object) {
+  return object ? object->object() : 0;
 }
 
 template <typename T>
-GLuint objectNonZero(const T* object)
-{
-    GLuint result = object->object();
-    DCHECK(result);
-    return result;
+GLuint objectNonZero(const T* object) {
+  GLuint result = object->object();
+  DCHECK(result);
+  return result;
 }
 
-class WebGLObject : public GarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(WebGLObject);
-public:
-    virtual ~WebGLObject();
+class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
+                    public ScriptWrappable {
+  WTF_MAKE_NONCOPYABLE(WebGLObject);
 
-    // deleteObject may not always delete the OpenGL resource.  For programs and
-    // shaders, deletion is delayed until they are no longer attached.
-    // FIXME: revisit this when resource sharing between contexts are implemented.
-    void deleteObject(gpu::gles2::GLES2Interface*);
+ public:
+  virtual ~WebGLObject();
 
-    void onAttached() { ++m_attachmentCount; }
-    void onDetached(gpu::gles2::GLES2Interface*);
+  // deleteObject may not always delete the OpenGL resource.  For programs and
+  // shaders, deletion is delayed until they are no longer attached.
+  // FIXME: revisit this when resource sharing between contexts are implemented.
+  void deleteObject(gpu::gles2::GLES2Interface*);
 
-    // This indicates whether the client side issue a delete call already, not
-    // whether the OpenGL resource is deleted.
-    // object()==0 indicates the OpenGL resource is deleted.
-    bool isDeleted() { return m_deleted; }
+  void onAttached() { ++m_attachmentCount; }
+  void onDetached(gpu::gles2::GLES2Interface*);
 
-    // True if this object belongs to the group or context.
-    virtual bool validate(const WebGLContextGroup*, const WebGLRenderingContextBase*) const = 0;
-    virtual bool hasObject() const = 0;
+  // This indicates whether the client side issue a delete call already, not
+  // whether the OpenGL resource is deleted.
+  // object()==0 indicates the OpenGL resource is deleted.
+  bool isDeleted() { return m_deleted; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  // True if this object belongs to the group or context.
+  virtual bool validate(const WebGLContextGroup*,
+                        const WebGLRenderingContextBase*) const = 0;
+  virtual bool hasObject() const = 0;
 
-protected:
-    // To allow WebGL[2]RenderingContextBase to call visitChildDOMWrappers.
-    friend class WebGLRenderingContextBase;
-    friend class WebGL2RenderingContextBase;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    explicit WebGLObject(WebGLRenderingContextBase*);
+ protected:
+  // To allow WebGL[2]RenderingContextBase to call visitChildDOMWrappers.
+  friend class WebGLRenderingContextBase;
+  friend class WebGL2RenderingContextBase;
 
-    // deleteObjectImpl should be only called once to delete the OpenGL resource.
-    // After calling deleteObjectImpl, hasObject() should return false.
-    virtual void deleteObjectImpl(gpu::gles2::GLES2Interface*) = 0;
+  explicit WebGLObject(WebGLRenderingContextBase*);
 
-    virtual bool hasGroupOrContext() const = 0;
+  // deleteObjectImpl should be only called once to delete the OpenGL resource.
+  // After calling deleteObjectImpl, hasObject() should return false.
+  virtual void deleteObjectImpl(gpu::gles2::GLES2Interface*) = 0;
 
-    void detach();
-    void detachAndDeleteObject();
+  virtual bool hasGroupOrContext() const = 0;
 
-    virtual gpu::gles2::GLES2Interface* getAGLInterface() const = 0;
+  void detach();
+  void detachAndDeleteObject();
 
-    virtual void visitChildDOMWrappers(v8::Isolate*, const v8::Persistent<v8::Object>&) { }
+  virtual gpu::gles2::GLES2Interface* getAGLInterface() const = 0;
 
-private:
-    unsigned m_attachmentCount;
-    bool m_deleted;
+  virtual void visitChildDOMWrappers(v8::Isolate*,
+                                     const v8::Persistent<v8::Object>&) {}
+
+ private:
+  unsigned m_attachmentCount;
+  bool m_deleted;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLObject_h
+#endif  // WebGLObject_h

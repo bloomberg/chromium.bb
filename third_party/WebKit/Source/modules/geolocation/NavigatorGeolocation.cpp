@@ -30,42 +30,36 @@
 namespace blink {
 
 NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
-    : DOMWindowProperty(frame)
-{
+    : DOMWindowProperty(frame) {}
+
+const char* NavigatorGeolocation::supplementName() {
+  return "NavigatorGeolocation";
 }
 
-const char* NavigatorGeolocation::supplementName()
-{
-    return "NavigatorGeolocation";
+NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator) {
+  NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new NavigatorGeolocation(navigator.frame());
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator)
-{
-    NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new NavigatorGeolocation(navigator.frame());
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator) {
+  return NavigatorGeolocation::from(navigator).geolocation();
 }
 
-Geolocation* NavigatorGeolocation::geolocation(Navigator& navigator)
-{
-    return NavigatorGeolocation::from(navigator).geolocation();
+Geolocation* NavigatorGeolocation::geolocation() {
+  if (!m_geolocation && frame())
+    m_geolocation = Geolocation::create(frame()->document());
+  return m_geolocation;
 }
 
-Geolocation* NavigatorGeolocation::geolocation()
-{
-    if (!m_geolocation && frame())
-        m_geolocation = Geolocation::create(frame()->document());
-    return m_geolocation;
+DEFINE_TRACE(NavigatorGeolocation) {
+  visitor->trace(m_geolocation);
+  Supplement<Navigator>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(NavigatorGeolocation)
-{
-    visitor->trace(m_geolocation);
-    Supplement<Navigator>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

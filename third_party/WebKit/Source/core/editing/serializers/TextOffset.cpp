@@ -8,31 +8,20 @@
 
 namespace blink {
 
-TextOffset::TextOffset()
-    : m_offset(0)
-{
-}
+TextOffset::TextOffset() : m_offset(0) {}
 
 TextOffset::TextOffset(Text* text, int offset)
-    : m_text(text)
-    , m_offset(offset)
-{
-}
+    : m_text(text), m_offset(offset) {}
 
 TextOffset::TextOffset(const TextOffset& other)
-    : m_text(other.m_text)
-    , m_offset(other.m_offset)
-{
+    : m_text(other.m_text), m_offset(other.m_offset) {}
+
+bool TextOffset::isNull() const {
+  return !m_text;
 }
 
-bool TextOffset::isNull() const
-{
-    return !m_text;
+bool TextOffset::isNotNull() const {
+  return m_text;
 }
 
-bool TextOffset::isNotNull() const
-{
-    return m_text;
-}
-
-} // namespace blink
+}  // namespace blink

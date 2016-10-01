@@ -44,106 +44,113 @@ class Document;
 enum { UninitializedDescriptor = -1 };
 
 class DescriptorParsingResult {
-    STACK_ALLOCATED();
-public:
-    DescriptorParsingResult()
-        : m_density(UninitializedDescriptor)
-        , m_resourceWidth(UninitializedDescriptor)
-        , m_resourceHeight(UninitializedDescriptor)
-    {
-    }
+  STACK_ALLOCATED();
 
-    bool hasDensity() const { return m_density >= 0; }
-    bool hasWidth() const { return m_resourceWidth >= 0; }
-    bool hasHeight() const { return m_resourceHeight >= 0; }
+ public:
+  DescriptorParsingResult()
+      : m_density(UninitializedDescriptor),
+        m_resourceWidth(UninitializedDescriptor),
+        m_resourceHeight(UninitializedDescriptor) {}
 
-    float density() const { ASSERT(hasDensity()); return m_density; }
-    unsigned getResourceWidth() const { ASSERT(hasWidth()); return m_resourceWidth; }
-    unsigned resourceHeight() const { ASSERT(hasHeight()); return m_resourceHeight; }
+  bool hasDensity() const { return m_density >= 0; }
+  bool hasWidth() const { return m_resourceWidth >= 0; }
+  bool hasHeight() const { return m_resourceHeight >= 0; }
 
-    void setResourceWidth(int width) { ASSERT(width >= 0); m_resourceWidth = (unsigned)width; }
-    void setResourceHeight(int height) { ASSERT(height >= 0); m_resourceHeight = (unsigned)height; }
-    void setDensity(float densityToSet) { ASSERT(densityToSet >= 0); m_density = densityToSet; }
+  float density() const {
+    ASSERT(hasDensity());
+    return m_density;
+  }
+  unsigned getResourceWidth() const {
+    ASSERT(hasWidth());
+    return m_resourceWidth;
+  }
+  unsigned resourceHeight() const {
+    ASSERT(hasHeight());
+    return m_resourceHeight;
+  }
 
-private:
-    float m_density;
-    int m_resourceWidth;
-    int m_resourceHeight;
+  void setResourceWidth(int width) {
+    ASSERT(width >= 0);
+    m_resourceWidth = (unsigned)width;
+  }
+  void setResourceHeight(int height) {
+    ASSERT(height >= 0);
+    m_resourceHeight = (unsigned)height;
+  }
+  void setDensity(float densityToSet) {
+    ASSERT(densityToSet >= 0);
+    m_density = densityToSet;
+  }
+
+ private:
+  float m_density;
+  int m_resourceWidth;
+  int m_resourceHeight;
 };
 
 class ImageCandidate {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    enum OriginAttribute {
-        SrcsetOrigin,
-        SrcOrigin
-    };
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    ImageCandidate()
-        : m_density(1.0)
-        , m_resourceWidth(UninitializedDescriptor)
-        , m_originAttribute(SrcsetOrigin)
-    {
-    }
+ public:
+  enum OriginAttribute { SrcsetOrigin, SrcOrigin };
 
-    ImageCandidate(const String& source, unsigned start, unsigned length, const DescriptorParsingResult& result, OriginAttribute originAttribute)
-        : m_source(source)
-        , m_string(source, start, length)
-        , m_density(result.hasDensity() ? result.density() : UninitializedDescriptor)
-        , m_resourceWidth(result.hasWidth() ? result.getResourceWidth() : UninitializedDescriptor)
-        , m_originAttribute(originAttribute)
-    {
-    }
+  ImageCandidate()
+      : m_density(1.0),
+        m_resourceWidth(UninitializedDescriptor),
+        m_originAttribute(SrcsetOrigin) {}
 
-    String toString() const
-    {
-        return m_string.toString();
-    }
+  ImageCandidate(const String& source,
+                 unsigned start,
+                 unsigned length,
+                 const DescriptorParsingResult& result,
+                 OriginAttribute originAttribute)
+      : m_source(source),
+        m_string(source, start, length),
+        m_density(result.hasDensity() ? result.density()
+                                      : UninitializedDescriptor),
+        m_resourceWidth(result.hasWidth() ? result.getResourceWidth()
+                                          : UninitializedDescriptor),
+        m_originAttribute(originAttribute) {}
 
-    AtomicString url() const
-    {
-        return AtomicString(toString());
-    }
+  String toString() const { return m_string.toString(); }
 
-    void setDensity(float factor)
-    {
-        m_density = factor;
-    }
+  AtomicString url() const { return AtomicString(toString()); }
 
-    float density() const
-    {
-        return m_density;
-    }
+  void setDensity(float factor) { m_density = factor; }
 
-    int getResourceWidth() const
-    {
-        return m_resourceWidth;
-    }
+  float density() const { return m_density; }
 
-    bool srcOrigin() const
-    {
-        return (m_originAttribute == SrcOrigin);
-    }
+  int getResourceWidth() const { return m_resourceWidth; }
 
-    inline bool isEmpty() const
-    {
-        return m_string.isEmpty();
-    }
+  bool srcOrigin() const { return (m_originAttribute == SrcOrigin); }
 
-private:
-    String m_source; // Keep the StringView buffer alive.
-    StringView m_string;
-    float m_density;
-    int m_resourceWidth;
-    OriginAttribute m_originAttribute;
+  inline bool isEmpty() const { return m_string.isEmpty(); }
+
+ private:
+  String m_source;  // Keep the StringView buffer alive.
+  StringView m_string;
+  float m_density;
+  int m_resourceWidth;
+  OriginAttribute m_originAttribute;
 };
 
-ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor, float sourceSize, const String& srcsetAttribute, Document* = nullptr);
+ImageCandidate bestFitSourceForSrcsetAttribute(float deviceScaleFactor,
+                                               float sourceSize,
+                                               const String& srcsetAttribute,
+                                               Document* = nullptr);
 
-CORE_EXPORT ImageCandidate bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, const String& srcsetAttribute, Document* = nullptr);
+CORE_EXPORT ImageCandidate
+bestFitSourceForImageAttributes(float deviceScaleFactor,
+                                float sourceSize,
+                                const String& srcAttribute,
+                                const String& srcsetAttribute,
+                                Document* = nullptr);
 
-String bestFitSourceForImageAttributes(float deviceScaleFactor, float sourceSize, const String& srcAttribute, ImageCandidate& srcsetImageCandidate);
+String bestFitSourceForImageAttributes(float deviceScaleFactor,
+                                       float sourceSize,
+                                       const String& srcAttribute,
+                                       ImageCandidate& srcsetImageCandidate);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

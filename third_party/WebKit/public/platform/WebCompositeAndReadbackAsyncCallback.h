@@ -31,10 +31,10 @@ class SkBitmap;
 namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback {
-public:
-    virtual void didCompositeAndReadback(const SkBitmap&) = 0;
+ public:
+  virtual void didCompositeAndReadback(const SkBitmap&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebCompositeAndReadbackAsyncCallback_h
+#endif  // WebCompositeAndReadbackAsyncCallback_h

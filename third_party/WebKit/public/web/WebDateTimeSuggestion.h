@@ -33,18 +33,18 @@ namespace blink {
 struct DateTimeSuggestion;
 
 struct WebDateTimeSuggestion {
-    double value;
-    WebString localizedValue;
-    WebString label;
+  double value;
+  WebString localizedValue;
+  WebString label;
 
-    WebDateTimeSuggestion() { }
+  WebDateTimeSuggestion() {}
 
 #if BLINK_IMPLEMENTATION
-    WebDateTimeSuggestion(const DateTimeSuggestion&);
-    WebDateTimeSuggestion& operator=(const DateTimeSuggestion&);
+  WebDateTimeSuggestion(const DateTimeSuggestion&);
+  WebDateTimeSuggestion& operator=(const DateTimeSuggestion&);
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

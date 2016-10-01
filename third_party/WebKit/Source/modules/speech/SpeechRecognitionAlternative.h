@@ -33,24 +33,26 @@
 
 namespace blink {
 
+class MODULES_EXPORT SpeechRecognitionAlternative final
+    : public GarbageCollectedFinalized<SpeechRecognitionAlternative>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-class MODULES_EXPORT SpeechRecognitionAlternative final : public GarbageCollectedFinalized<SpeechRecognitionAlternative>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SpeechRecognitionAlternative* create(const String&, double);
+ public:
+  static SpeechRecognitionAlternative* create(const String&, double);
 
-    const String& transcript() const { return m_transcript; }
-    double confidence() const { return m_confidence; }
+  const String& transcript() const { return m_transcript; }
+  double confidence() const { return m_confidence; }
 
-    DEFINE_INLINE_TRACE() { }
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    SpeechRecognitionAlternative(const String&, double);
+ private:
+  SpeechRecognitionAlternative(const String&, double);
 
-    String m_transcript;
-    double m_confidence;
+  String m_transcript;
+  double m_confidence;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpeechRecognitionAlternative_h
+#endif  // SpeechRecognitionAlternative_h

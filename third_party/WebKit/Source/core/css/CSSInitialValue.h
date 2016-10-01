@@ -27,32 +27,31 @@
 namespace blink {
 
 class CSSInitialValue : public CSSValue {
-public:
-    static CSSInitialValue* create();
-    static CSSInitialValue* createLegacyImplicit(); // crbug.com/471917
+ public:
+  static CSSInitialValue* create();
+  static CSSInitialValue* createLegacyImplicit();  // crbug.com/471917
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool isImplicit() const { return m_isImplicit; }
+  bool isImplicit() const { return m_isImplicit; }
 
-    bool equals(const CSSInitialValue&) const { return true; }
+  bool equals(const CSSInitialValue&) const { return true; }
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValue::traceAfterDispatch(visitor);
+  }
 
-private:
-    friend class CSSValuePool;
+ private:
+  friend class CSSValuePool;
 
-    explicit CSSInitialValue(bool implicit)
-        : CSSValue(InitialClass)
-        , m_isImplicit(implicit)
-    {
-    }
+  explicit CSSInitialValue(bool implicit)
+      : CSSValue(InitialClass), m_isImplicit(implicit) {}
 
-    bool m_isImplicit;
+  bool m_isImplicit;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSInitialValue, isInitialValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSInitialValue_h
+#endif  // CSSInitialValue_h

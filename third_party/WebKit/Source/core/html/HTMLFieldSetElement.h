@@ -32,43 +32,44 @@ namespace blink {
 class HTMLFormControlsCollection;
 
 class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLFieldSetElement* create(Document&, HTMLFormElement*);
-    DECLARE_VIRTUAL_TRACE();
-    HTMLLegendElement* legend() const;
+  DEFINE_WRAPPERTYPEINFO();
 
-    HTMLFormControlsCollection* elements();
+ public:
+  static HTMLFieldSetElement* create(Document&, HTMLFormElement*);
+  DECLARE_VIRTUAL_TRACE();
+  HTMLLegendElement* legend() const;
 
-    const FormAssociatedElement::List& associatedElements() const;
+  HTMLFormControlsCollection* elements();
 
-protected:
-    void disabledAttributeChanged() override;
+  const FormAssociatedElement::List& associatedElements() const;
 
-private:
-    HTMLFieldSetElement(Document&, HTMLFormElement*);
+ protected:
+  void disabledAttributeChanged() override;
 
-    bool isEnumeratable() const override { return true; }
-    bool supportsFocus() const override;
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    const AtomicString& formControlType() const override;
-    bool recalcWillValidate() const override { return false; }
-    short tabIndex() const final;
-    bool matchesValidityPseudoClasses() const final;
-    bool isValidElement() final;
-    void childrenChanged(const ChildrenChange&) override;
-    bool areAuthorShadowsAllowed() const override { return false; }
-    bool isSubmittableElement() override;
-    bool alwaysCreateUserAgentShadowRoot() const override { return false; }
+ private:
+  HTMLFieldSetElement(Document&, HTMLFormElement*);
 
-    static void invalidateDisabledStateUnder(Element&);
-    void refreshElementsIfNeeded() const;
+  bool isEnumeratable() const override { return true; }
+  bool supportsFocus() const override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  const AtomicString& formControlType() const override;
+  bool recalcWillValidate() const override { return false; }
+  short tabIndex() const final;
+  bool matchesValidityPseudoClasses() const final;
+  bool isValidElement() final;
+  void childrenChanged(const ChildrenChange&) override;
+  bool areAuthorShadowsAllowed() const override { return false; }
+  bool isSubmittableElement() override;
+  bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
-    mutable FormAssociatedElement::List m_associatedElements;
-    // When dom tree is modified, we have to refresh the m_associatedElements array.
-    mutable uint64_t m_documentVersion;
+  static void invalidateDisabledStateUnder(Element&);
+  void refreshElementsIfNeeded() const;
+
+  mutable FormAssociatedElement::List m_associatedElements;
+  // When dom tree is modified, we have to refresh the m_associatedElements array.
+  mutable uint64_t m_documentVersion;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLFieldSetElement_h
+#endif  // HTMLFieldSetElement_h

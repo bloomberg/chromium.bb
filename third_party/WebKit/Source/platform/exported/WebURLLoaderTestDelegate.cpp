@@ -11,32 +11,39 @@
 
 namespace blink {
 
-WebURLLoaderTestDelegate::WebURLLoaderTestDelegate()
-{
+WebURLLoaderTestDelegate::WebURLLoaderTestDelegate() {}
+
+WebURLLoaderTestDelegate::~WebURLLoaderTestDelegate() {}
+
+void WebURLLoaderTestDelegate::didReceiveResponse(
+    WebURLLoaderClient* originalClient,
+    WebURLLoader* loader,
+    const WebURLResponse& response) {
+  originalClient->didReceiveResponse(loader, response);
 }
 
-WebURLLoaderTestDelegate::~WebURLLoaderTestDelegate()
-{
+void WebURLLoaderTestDelegate::didReceiveData(
+    WebURLLoaderClient* originalClient,
+    WebURLLoader* loader,
+    const char* data,
+    int dataLength,
+    int encodedDataLength) {
+  originalClient->didReceiveData(loader, data, dataLength, encodedDataLength,
+                                 dataLength);
 }
 
-void WebURLLoaderTestDelegate::didReceiveResponse(WebURLLoaderClient* originalClient, WebURLLoader* loader, const WebURLResponse& response)
-{
-    originalClient->didReceiveResponse(loader, response);
+void WebURLLoaderTestDelegate::didFail(WebURLLoaderClient* originalClient,
+                                       WebURLLoader* loader,
+                                       const WebURLError& error) {
+  originalClient->didFail(loader, error);
 }
 
-void WebURLLoaderTestDelegate::didReceiveData(WebURLLoaderClient* originalClient, WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength)
-{
-    originalClient->didReceiveData(loader, data, dataLength, encodedDataLength, dataLength);
+void WebURLLoaderTestDelegate::didFinishLoading(
+    WebURLLoaderClient* originalClient,
+    WebURLLoader* loader,
+    double finishTime,
+    int64_t totalEncodedDataLength) {
+  originalClient->didFinishLoading(loader, finishTime, totalEncodedDataLength);
 }
 
-void WebURLLoaderTestDelegate::didFail(WebURLLoaderClient* originalClient, WebURLLoader* loader, const WebURLError& error)
-{
-    originalClient->didFail(loader, error);
-}
-
-void WebURLLoaderTestDelegate::didFinishLoading(WebURLLoaderClient* originalClient, WebURLLoader* loader, double finishTime, int64_t totalEncodedDataLength)
-{
-    originalClient->didFinishLoading(loader, finishTime, totalEncodedDataLength);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -32,24 +32,35 @@ namespace blink {
 
 // Scrollbar theme used in image snapshots, to eliminate appearance differences between platforms.
 class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
-public:
-    int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
-    bool usesOverlayScrollbars() const override;
+ public:
+  int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
+  bool usesOverlayScrollbars() const override;
 
-protected:
-    bool hasButtons(const ScrollbarThemeClient&) override { return false; }
-    bool hasThumb(const ScrollbarThemeClient&) override { return true; }
+ protected:
+  bool hasButtons(const ScrollbarThemeClient&) override { return false; }
+  bool hasThumb(const ScrollbarThemeClient&) override { return true; }
 
-    IntRect backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
-    IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
-    IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
+  IntRect backButtonRect(const ScrollbarThemeClient&,
+                         ScrollbarPart,
+                         bool /*painting*/ = false) override {
+    return IntRect();
+  }
+  IntRect forwardButtonRect(const ScrollbarThemeClient&,
+                            ScrollbarPart,
+                            bool /*painting*/ = false) override {
+    return IntRect();
+  }
+  IntRect trackRect(const ScrollbarThemeClient&,
+                    bool painting = false) override;
 
-    void paintTrackBackground(GraphicsContext&, const Scrollbar&, const IntRect&) override;
-    void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
+  void paintTrackBackground(GraphicsContext&,
+                            const Scrollbar&,
+                            const IntRect&) override;
+  void paintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
 
-private:
-    bool isMockTheme() const final { return true; }
+ private:
+  bool isMockTheme() const final { return true; }
 };
 
-} // namespace blink
-#endif // ScrollbarThemeMock_h
+}  // namespace blink
+#endif  // ScrollbarThemeMock_h

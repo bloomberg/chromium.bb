@@ -39,45 +39,37 @@ static bool s_isMockThemeEnabled = false;
 static bool s_isFontAntialiasingEnabled = false;
 static bool s_alwaysUseComplexTextForTest = false;
 
-bool LayoutTestSupport::isRunningLayoutTest()
-{
-    return s_isRunningLayoutTest;
+bool LayoutTestSupport::isRunningLayoutTest() {
+  return s_isRunningLayoutTest;
 }
 
-void LayoutTestSupport::setIsRunningLayoutTest(bool value)
-{
-    s_isRunningLayoutTest = value;
+void LayoutTestSupport::setIsRunningLayoutTest(bool value) {
+  s_isRunningLayoutTest = value;
 }
 
-bool LayoutTestSupport::isMockThemeEnabledForTest()
-{
-    return s_isMockThemeEnabled;
+bool LayoutTestSupport::isMockThemeEnabledForTest() {
+  return s_isMockThemeEnabled;
 }
 
-void LayoutTestSupport::setMockThemeEnabledForTest(bool value)
-{
-    ASSERT(s_isRunningLayoutTest);
-    s_isMockThemeEnabled = value;
+void LayoutTestSupport::setMockThemeEnabledForTest(bool value) {
+  ASSERT(s_isRunningLayoutTest);
+  s_isMockThemeEnabled = value;
 }
 
-bool LayoutTestSupport::isFontAntialiasingEnabledForTest()
-{
-    return s_isFontAntialiasingEnabled;
+bool LayoutTestSupport::isFontAntialiasingEnabledForTest() {
+  return s_isFontAntialiasingEnabled;
 }
 
-void LayoutTestSupport::setFontAntialiasingEnabledForTest(bool value)
-{
-    s_isFontAntialiasingEnabled = value;
+void LayoutTestSupport::setFontAntialiasingEnabledForTest(bool value) {
+  s_isFontAntialiasingEnabled = value;
 }
 
-bool LayoutTestSupport::alwaysUseComplexTextForTest()
-{
-    return s_alwaysUseComplexTextForTest;
+bool LayoutTestSupport::alwaysUseComplexTextForTest() {
+  return s_alwaysUseComplexTextForTest;
 }
 
-void LayoutTestSupport::setAlwaysUseComplexTextForTest(bool value)
-{
-    s_alwaysUseComplexTextForTest = value;
+void LayoutTestSupport::setAlwaysUseComplexTextForTest(bool value) {
+  s_alwaysUseComplexTextForTest = value;
 }
 
-} // namespace blink
+}  // namespace blink

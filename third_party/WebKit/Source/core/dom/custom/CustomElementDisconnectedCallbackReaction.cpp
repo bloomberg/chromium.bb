@@ -8,16 +8,15 @@
 
 namespace blink {
 
-CustomElementDisconnectedCallbackReaction::CustomElementDisconnectedCallbackReaction(
-    CustomElementDefinition* definition)
-    : CustomElementReaction(definition)
-{
-    DCHECK(definition->hasDisconnectedCallback());
+CustomElementDisconnectedCallbackReaction::
+    CustomElementDisconnectedCallbackReaction(
+        CustomElementDefinition* definition)
+    : CustomElementReaction(definition) {
+  DCHECK(definition->hasDisconnectedCallback());
 }
 
-void CustomElementDisconnectedCallbackReaction::invoke(Element* element)
-{
-    m_definition->runDisconnectedCallback(element);
+void CustomElementDisconnectedCallbackReaction::invoke(Element* element) {
+  m_definition->runDisconnectedCallback(element);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -46,55 +46,65 @@ class CSSAnimations;
 using AnimationCountedSet = HeapHashCountedSet<WeakMember<Animation>>;
 
 class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
-    WTF_MAKE_NONCOPYABLE(ElementAnimations);
-public:
-    ElementAnimations();
-    ~ElementAnimations();
+  WTF_MAKE_NONCOPYABLE(ElementAnimations);
 
-    // Animations that are currently active for this element, their effects will be applied
-    // during a style recalc. CSS Transitions are included in this stack.
-    AnimationStack& animationStack() { return m_animationStack; }
-    const AnimationStack& animationStack() const { return m_animationStack; }
-    // Tracks long running animations that are responsible for applying mutations
-    // from compositor worker.
-    CustomCompositorAnimations& customCompositorAnimations() { return m_customCompositorAnimations; }
-    const CustomCompositorAnimations& customCompositorAnimations() const { return m_customCompositorAnimations; }
-    // Tracks the state of active CSS Animations and Transitions. The individual animations
-    // will also be part of the animation stack, but the mapping betwen animation name and
-    // animation is kept here.
-    CSSAnimations& cssAnimations() { return m_cssAnimations; }
-    const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
+ public:
+  ElementAnimations();
+  ~ElementAnimations();
 
-    // Animations which have effects targeting this element.
-    AnimationCountedSet& animations() { return m_animations; }
+  // Animations that are currently active for this element, their effects will be applied
+  // during a style recalc. CSS Transitions are included in this stack.
+  AnimationStack& animationStack() { return m_animationStack; }
+  const AnimationStack& animationStack() const { return m_animationStack; }
+  // Tracks long running animations that are responsible for applying mutations
+  // from compositor worker.
+  CustomCompositorAnimations& customCompositorAnimations() {
+    return m_customCompositorAnimations;
+  }
+  const CustomCompositorAnimations& customCompositorAnimations() const {
+    return m_customCompositorAnimations;
+  }
+  // Tracks the state of active CSS Animations and Transitions. The individual animations
+  // will also be part of the animation stack, but the mapping betwen animation name and
+  // animation is kept here.
+  CSSAnimations& cssAnimations() { return m_cssAnimations; }
+  const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
 
-    bool isEmpty() const { return m_animationStack.isEmpty() && m_cssAnimations.isEmpty() && m_animations.isEmpty(); }
+  // Animations which have effects targeting this element.
+  AnimationCountedSet& animations() { return m_animations; }
 
-    void restartAnimationOnCompositor();
+  bool isEmpty() const {
+    return m_animationStack.isEmpty() && m_cssAnimations.isEmpty() &&
+           m_animations.isEmpty();
+  }
 
-    void updateAnimationFlags(ComputedStyle&);
-    void setAnimationStyleChange(bool animationStyleChange) { m_animationStyleChange = animationStyleChange; }
+  void restartAnimationOnCompositor();
 
-    const ComputedStyle* baseComputedStyle() const;
-    void updateBaseComputedStyle(const ComputedStyle*);
-    void clearBaseComputedStyle();
+  void updateAnimationFlags(ComputedStyle&);
+  void setAnimationStyleChange(bool animationStyleChange) {
+    m_animationStyleChange = animationStyleChange;
+  }
 
-    DECLARE_TRACE();
+  const ComputedStyle* baseComputedStyle() const;
+  void updateBaseComputedStyle(const ComputedStyle*);
+  void clearBaseComputedStyle();
 
-private:
-    bool isAnimationStyleChange() const;
+  DECLARE_TRACE();
 
-    AnimationStack m_animationStack;
-    CustomCompositorAnimations m_customCompositorAnimations;
-    CSSAnimations m_cssAnimations;
-    AnimationCountedSet m_animations;
-    bool m_animationStyleChange;
-    RefPtr<ComputedStyle> m_baseComputedStyle;
+ private:
+  bool isAnimationStyleChange() const;
 
-    // CSSAnimations checks if a style change is due to animation.
-    friend class CSSAnimations;
+  AnimationStack m_animationStack;
+  CustomCompositorAnimations m_customCompositorAnimations;
+  CSSAnimations m_cssAnimations;
+  AnimationCountedSet m_animations;
+  bool m_animationStyleChange;
+  RefPtr<ComputedStyle> m_baseComputedStyle;
+
+  // CSSAnimations checks if a style change is due to animation.
+  friend class CSSAnimations;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ElementAnimations_h
+#endif  // ElementAnimations_h

@@ -16,28 +16,33 @@
 
 namespace blink {
 
-PresentationConnectionCallbacks::PresentationConnectionCallbacks(ScriptPromiseResolver* resolver, PresentationRequest* request)
-    : m_resolver(resolver)
-    , m_request(request)
-{
-    ASSERT(m_resolver);
-    ASSERT(m_request);
+PresentationConnectionCallbacks::PresentationConnectionCallbacks(
+    ScriptPromiseResolver* resolver,
+    PresentationRequest* request)
+    : m_resolver(resolver), m_request(request) {
+  ASSERT(m_resolver);
+  ASSERT(m_request);
 }
 
-void PresentationConnectionCallbacks::onSuccess(std::unique_ptr<WebPresentationConnectionClient> PresentationConnectionClient)
-{
-    std::unique_ptr<WebPresentationConnectionClient> result(wrapUnique(PresentationConnectionClient.release()));
+void PresentationConnectionCallbacks::onSuccess(
+    std::unique_ptr<WebPresentationConnectionClient>
+        PresentationConnectionClient) {
+  std::unique_ptr<WebPresentationConnectionClient> result(
+      wrapUnique(PresentationConnectionClient.release()));
 
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    m_resolver->resolve(PresentationConnection::take(m_resolver.get(), std::move(result), m_request));
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->resolve(PresentationConnection::take(
+      m_resolver.get(), std::move(result), m_request));
 }
 
-void PresentationConnectionCallbacks::onError(const WebPresentationError& error)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    m_resolver->reject(PresentationError::take(m_resolver.get(), error));
+void PresentationConnectionCallbacks::onError(
+    const WebPresentationError& error) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->reject(PresentationError::take(m_resolver.get(), error));
 }
 
-} // namespace blink
+}  // namespace blink

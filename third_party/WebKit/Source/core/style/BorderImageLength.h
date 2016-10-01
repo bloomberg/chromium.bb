@@ -41,54 +41,52 @@ namespace blink {
 // http://www.w3.org/TR/css3-background/#border-image-width
 // http://www.w3.org/TR/css3-background/#border-image-outset
 class BorderImageLength {
-    DISALLOW_NEW();
-public:
-    BorderImageLength(double number)
-        : m_number(number)
-        , m_type(NumberType)
-    {
-    }
+  DISALLOW_NEW();
 
-    BorderImageLength(const Length& length)
-        : m_length(length)
-        , m_number(0)
-        , m_type(LengthType)
-    {
-    }
+ public:
+  BorderImageLength(double number) : m_number(number), m_type(NumberType) {}
 
-    bool isNumber() const { return m_type == NumberType; }
-    bool isLength() const { return m_type == LengthType; }
+  BorderImageLength(const Length& length)
+      : m_length(length), m_number(0), m_type(LengthType) {}
 
-    const Length& length() const { ASSERT(isLength()); return m_length; }
-    Length& length() { ASSERT(isLength()); return m_length; }
+  bool isNumber() const { return m_type == NumberType; }
+  bool isLength() const { return m_type == LengthType; }
 
-    double number() const { ASSERT(isNumber()); return m_number; }
+  const Length& length() const {
+    ASSERT(isLength());
+    return m_length;
+  }
+  Length& length() {
+    ASSERT(isLength());
+    return m_length;
+  }
 
-    bool operator==(const BorderImageLength& other) const
-    {
-        return m_type == other.m_type && m_length == other.m_length && m_number == other.m_number;
-    }
+  double number() const {
+    ASSERT(isNumber());
+    return m_number;
+  }
 
-    bool isZero() const
-    {
-        if (isLength())
-            return m_length.isZero();
+  bool operator==(const BorderImageLength& other) const {
+    return m_type == other.m_type && m_length == other.m_length &&
+           m_number == other.m_number;
+  }
 
-        ASSERT(isNumber());
-        return !m_number;
-    }
+  bool isZero() const {
+    if (isLength())
+      return m_length.isZero();
 
-private:
-    // Ideally we would put the 2 following fields in a union, but Length has a constructor,
-    // a destructor and a copy assignment which isn't allowed.
-    Length m_length;
-    double m_number;
-    enum {
-        LengthType,
-        NumberType
-    } m_type;
+    ASSERT(isNumber());
+    return !m_number;
+  }
+
+ private:
+  // Ideally we would put the 2 following fields in a union, but Length has a constructor,
+  // a destructor and a copy assignment which isn't allowed.
+  Length m_length;
+  double m_number;
+  enum { LengthType, NumberType } m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BorderImageLength_h
+#endif  // BorderImageLength_h

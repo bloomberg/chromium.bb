@@ -39,10 +39,10 @@ class SkImageGenerator;
 namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebImageGenerator {
-public:
-    static SkImageGenerator* create(SkData*);
+ public:
+  static SkImageGenerator* create(SkData*);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

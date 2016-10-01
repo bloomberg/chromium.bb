@@ -40,116 +40,120 @@ namespace blink {
 struct WebRect;
 
 class WebFallbackThemeEngine {
-public:
-    // The UI part which is being accessed.
-    enum Part {
-        // ScrollbarTheme parts
-        PartScrollbarDownArrow,
-        PartScrollbarLeftArrow,
-        PartScrollbarRightArrow,
-        PartScrollbarUpArrow,
-        PartScrollbarHorizontalThumb,
-        PartScrollbarVerticalThumb,
-        PartScrollbarHorizontalTrack,
-        PartScrollbarVerticalTrack,
-        PartScrollbarCorner,
+ public:
+  // The UI part which is being accessed.
+  enum Part {
+    // ScrollbarTheme parts
+    PartScrollbarDownArrow,
+    PartScrollbarLeftArrow,
+    PartScrollbarRightArrow,
+    PartScrollbarUpArrow,
+    PartScrollbarHorizontalThumb,
+    PartScrollbarVerticalThumb,
+    PartScrollbarHorizontalTrack,
+    PartScrollbarVerticalTrack,
+    PartScrollbarCorner,
 
-        // LayoutTheme parts
-        PartCheckbox,
-        PartRadio,
-        PartButton,
-        PartTextField,
-        PartMenuList,
-        PartSliderTrack,
-        PartSliderThumb,
-        PartInnerSpinButton,
-        PartProgressBar
-    };
+    // LayoutTheme parts
+    PartCheckbox,
+    PartRadio,
+    PartButton,
+    PartTextField,
+    PartMenuList,
+    PartSliderTrack,
+    PartSliderThumb,
+    PartInnerSpinButton,
+    PartProgressBar
+  };
 
-    // The current state of the associated Part.
-    enum State {
-        StateDisabled,
-        StateHover,
-        StateNormal,
-        StatePressed,
-    };
+  // The current state of the associated Part.
+  enum State {
+    StateDisabled,
+    StateHover,
+    StateNormal,
+    StatePressed,
+  };
 
-    // Extra parameters for drawing the PartScrollbarHorizontalTrack and
-    // PartScrollbarVerticalTrack.
-    struct ScrollbarTrackExtraParams {
-        // The bounds of the entire track, as opposed to the part being painted.
-        int trackX;
-        int trackY;
-        int trackWidth;
-        int trackHeight;
-    };
+  // Extra parameters for drawing the PartScrollbarHorizontalTrack and
+  // PartScrollbarVerticalTrack.
+  struct ScrollbarTrackExtraParams {
+    // The bounds of the entire track, as opposed to the part being painted.
+    int trackX;
+    int trackY;
+    int trackWidth;
+    int trackHeight;
+  };
 
-    // Extra parameters for PartCheckbox, PartPushButton and PartRadio.
-    struct ButtonExtraParams {
-        bool checked;
-        bool indeterminate; // Whether the button state is indeterminate.
-        bool isDefault; // Whether the button is default button.
-        bool hasBorder;
-        WebColor backgroundColor;
-    };
+  // Extra parameters for PartCheckbox, PartPushButton and PartRadio.
+  struct ButtonExtraParams {
+    bool checked;
+    bool indeterminate;  // Whether the button state is indeterminate.
+    bool isDefault;      // Whether the button is default button.
+    bool hasBorder;
+    WebColor backgroundColor;
+  };
 
-    // Extra parameters for PartTextField
-    struct TextFieldExtraParams {
-        bool isTextArea;
-        bool isListbox;
-        WebColor backgroundColor;
-    };
+  // Extra parameters for PartTextField
+  struct TextFieldExtraParams {
+    bool isTextArea;
+    bool isListbox;
+    WebColor backgroundColor;
+  };
 
-    // Extra parameters for PartMenuList
-    struct MenuListExtraParams {
-        bool hasBorder;
-        bool hasBorderRadius;
-        int arrowX;
-        int arrowY;
-        int arrowSize;
-        WebColor arrowColor;
-        WebColor backgroundColor;
-    };
+  // Extra parameters for PartMenuList
+  struct MenuListExtraParams {
+    bool hasBorder;
+    bool hasBorderRadius;
+    int arrowX;
+    int arrowY;
+    int arrowSize;
+    WebColor arrowColor;
+    WebColor backgroundColor;
+  };
 
-    // Extra parameters for PartSliderTrack and PartSliderThumb
-    struct SliderExtraParams {
-        bool vertical;
-        bool inDrag;
-    };
+  // Extra parameters for PartSliderTrack and PartSliderThumb
+  struct SliderExtraParams {
+    bool vertical;
+    bool inDrag;
+  };
 
-    // Extra parameters for PartInnerSpinButton
-    struct InnerSpinButtonExtraParams {
-        bool spinUp;
-        bool readOnly;
-    };
+  // Extra parameters for PartInnerSpinButton
+  struct InnerSpinButtonExtraParams {
+    bool spinUp;
+    bool readOnly;
+  };
 
-    // Extra parameters for PartProgressBar
-    struct ProgressBarExtraParams {
-        bool determinate;
-        int valueRectX;
-        int valueRectY;
-        int valueRectWidth;
-        int valueRectHeight;
-    };
+  // Extra parameters for PartProgressBar
+  struct ProgressBarExtraParams {
+    bool determinate;
+    int valueRectX;
+    int valueRectY;
+    int valueRectWidth;
+    int valueRectHeight;
+  };
 
-    union ExtraParams {
-        ScrollbarTrackExtraParams scrollbarTrack;
-        ButtonExtraParams button;
-        TextFieldExtraParams textField;
-        MenuListExtraParams menuList;
-        SliderExtraParams slider;
-        InnerSpinButtonExtraParams innerSpin;
-        ProgressBarExtraParams progressBar;
-    };
+  union ExtraParams {
+    ScrollbarTrackExtraParams scrollbarTrack;
+    ButtonExtraParams button;
+    TextFieldExtraParams textField;
+    MenuListExtraParams menuList;
+    SliderExtraParams slider;
+    InnerSpinButtonExtraParams innerSpin;
+    ProgressBarExtraParams progressBar;
+  };
 
-    // Gets the size of the given theme part. For variable sized items
-    // like vertical scrollbar thumbs, the width will be the required width of
-    // the track while the height will be the minimum height.
-    virtual WebSize getSize(Part) { return WebSize(); }
-    // Paint the given the given theme part.
-    virtual void paint(WebCanvas*, Part, State, const WebRect&, const ExtraParams*) { }
+  // Gets the size of the given theme part. For variable sized items
+  // like vertical scrollbar thumbs, the width will be the required width of
+  // the track while the height will be the minimum height.
+  virtual WebSize getSize(Part) { return WebSize(); }
+  // Paint the given the given theme part.
+  virtual void paint(WebCanvas*,
+                     Part,
+                     State,
+                     const WebRect&,
+                     const ExtraParams*) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

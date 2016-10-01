@@ -11,35 +11,27 @@
 namespace blink {
 
 class LineLayoutRubyText : public LineLayoutBlockFlow {
-public:
-    explicit LineLayoutRubyText(LayoutRubyText* layoutRubyText)
-        : LineLayoutBlockFlow(layoutRubyText)
-    {
-    }
+ public:
+  explicit LineLayoutRubyText(LayoutRubyText* layoutRubyText)
+      : LineLayoutBlockFlow(layoutRubyText) {}
 
-    explicit LineLayoutRubyText(const LineLayoutItem& item)
-        : LineLayoutBlockFlow(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isRubyText());
-    }
+  explicit LineLayoutRubyText(const LineLayoutItem& item)
+      : LineLayoutBlockFlow(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isRubyText());
+  }
 
-    explicit LineLayoutRubyText(std::nullptr_t) : LineLayoutBlockFlow(nullptr) { }
+  explicit LineLayoutRubyText(std::nullptr_t) : LineLayoutBlockFlow(nullptr) {}
 
-    LineLayoutRubyText() { }
+  LineLayoutRubyText() {}
 
+ private:
+  LayoutRubyText* toRubyText() { return toLayoutRubyText(layoutObject()); }
 
-private:
-    LayoutRubyText* toRubyText()
-    {
-        return toLayoutRubyText(layoutObject());
-    }
-
-    const LayoutRubyText* toRubyText() const
-    {
-        return toLayoutRubyText(layoutObject());
-    }
+  const LayoutRubyText* toRubyText() const {
+    return toLayoutRubyText(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LineLayoutRubyText_h
+#endif  // LineLayoutRubyText_h

@@ -6,24 +6,25 @@
 #define TextSegmentationMachineState_h
 
 #include "core/CoreExport.h"
-#include <ostream> // NOLINT
+#include <ostream>  // NOLINT
 
 namespace blink {
 
 enum class TextSegmentationMachineState {
-    // Indicates the state machine is in invalid state.
-    Invalid,
-    // Indicates the state machine needs more code units to transit the state.
-    NeedMoreCodeUnit,
-    // Indicates the state machine needs following code units to transit the
-    // state.
-    NeedFollowingCodeUnit,
-    // Indicates the state machine found a boundary.
-    Finished,
+  // Indicates the state machine is in invalid state.
+  Invalid,
+  // Indicates the state machine needs more code units to transit the state.
+  NeedMoreCodeUnit,
+  // Indicates the state machine needs following code units to transit the
+  // state.
+  NeedFollowingCodeUnit,
+  // Indicates the state machine found a boundary.
+  Finished,
 };
 
-CORE_EXPORT std::ostream& operator<<(std::ostream&, TextSegmentationMachineState);
+CORE_EXPORT std::ostream& operator<<(std::ostream&,
+                                     TextSegmentationMachineState);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextSegmentationMachineState_h
+#endif  // TextSegmentationMachineState_h

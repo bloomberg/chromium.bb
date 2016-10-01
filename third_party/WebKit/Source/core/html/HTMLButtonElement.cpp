@@ -37,193 +37,187 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLButtonElement::HTMLButtonElement(Document& document, HTMLFormElement* form)
-    : HTMLFormControlElement(buttonTag, document, form)
-    , m_type(SUBMIT)
-    , m_isActivatedSubmit(false)
-{
+inline HTMLButtonElement::HTMLButtonElement(Document& document,
+                                            HTMLFormElement* form)
+    : HTMLFormControlElement(buttonTag, document, form),
+      m_type(SUBMIT),
+      m_isActivatedSubmit(false) {}
+
+HTMLButtonElement* HTMLButtonElement::create(Document& document,
+                                             HTMLFormElement* form) {
+  return new HTMLButtonElement(document, form);
 }
 
-HTMLButtonElement* HTMLButtonElement::create(Document& document, HTMLFormElement* form)
-{
-    return new HTMLButtonElement(document, form);
+void HTMLButtonElement::setType(const AtomicString& type) {
+  setAttribute(typeAttr, type);
 }
 
-void HTMLButtonElement::setType(const AtomicString& type)
-{
-    setAttribute(typeAttr, type);
+LayoutObject* HTMLButtonElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutButton(this);
 }
 
-LayoutObject* HTMLButtonElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutButton(this);
-}
-
-const AtomicString& HTMLButtonElement::formControlType() const
-{
-    switch (m_type) {
+const AtomicString& HTMLButtonElement::formControlType() const {
+  switch (m_type) {
     case SUBMIT: {
-        DEFINE_STATIC_LOCAL(const AtomicString, submit, ("submit"));
-        return submit;
+      DEFINE_STATIC_LOCAL(const AtomicString, submit, ("submit"));
+      return submit;
     }
     case BUTTON: {
-        DEFINE_STATIC_LOCAL(const AtomicString, button, ("button"));
-        return button;
+      DEFINE_STATIC_LOCAL(const AtomicString, button, ("button"));
+      return button;
     }
     case RESET: {
-        DEFINE_STATIC_LOCAL(const AtomicString, reset, ("reset"));
-        return reset;
+      DEFINE_STATIC_LOCAL(const AtomicString, reset, ("reset"));
+      return reset;
     }
+  }
+
+  NOTREACHED();
+  return emptyAtom;
+}
+
+bool HTMLButtonElement::isPresentationAttribute(
+    const QualifiedName& name) const {
+  if (name == alignAttr) {
+    // Don't map 'align' attribute.  This matches what Firefox and IE do, but not Opera.
+    // See http://bugs.webkit.org/show_bug.cgi?id=12071
+    return false;
+  }
+
+  return HTMLFormControlElement::isPresentationAttribute(name);
+}
+
+void HTMLButtonElement::parseAttribute(const QualifiedName& name,
+                                       const AtomicString& oldValue,
+                                       const AtomicString& value) {
+  if (name == typeAttr) {
+    if (equalIgnoringCase(value, "reset"))
+      m_type = RESET;
+    else if (equalIgnoringCase(value, "button"))
+      m_type = BUTTON;
+    else
+      m_type = SUBMIT;
+    setNeedsWillValidateCheck();
+    if (formOwner() && isConnected())
+      formOwner()->invalidateDefaultButtonStyle();
+  } else {
+    if (name == formactionAttr)
+      logUpdateAttributeIfIsolatedWorldAndInDocument("button", formactionAttr,
+                                                     oldValue, value);
+    HTMLFormControlElement::parseAttribute(name, oldValue, value);
+  }
+}
+
+void HTMLButtonElement::defaultEventHandler(Event* event) {
+  if (event->type() == EventTypeNames::DOMActivate &&
+      !isDisabledFormControl()) {
+    if (form() && m_type == SUBMIT) {
+      form()->prepareForSubmission(event, this);
+      event->setDefaultHandled();
     }
-
-    NOTREACHED();
-    return emptyAtom;
-}
-
-bool HTMLButtonElement::isPresentationAttribute(const QualifiedName& name) const
-{
-    if (name == alignAttr) {
-        // Don't map 'align' attribute.  This matches what Firefox and IE do, but not Opera.
-        // See http://bugs.webkit.org/show_bug.cgi?id=12071
-        return false;
+    if (form() && m_type == RESET) {
+      form()->reset();
+      event->setDefaultHandled();
     }
+  }
 
-    return HTMLFormControlElement::isPresentationAttribute(name);
-}
-
-void HTMLButtonElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
-{
-    if (name == typeAttr) {
-        if (equalIgnoringCase(value, "reset"))
-            m_type = RESET;
-        else if (equalIgnoringCase(value, "button"))
-            m_type = BUTTON;
-        else
-            m_type = SUBMIT;
-        setNeedsWillValidateCheck();
-        if (formOwner() && isConnected())
-            formOwner()->invalidateDefaultButtonStyle();
-    } else {
-        if (name == formactionAttr)
-            logUpdateAttributeIfIsolatedWorldAndInDocument("button", formactionAttr, oldValue, value);
-        HTMLFormControlElement::parseAttribute(name, oldValue, value);
+  if (event->isKeyboardEvent()) {
+    if (event->type() == EventTypeNames::keydown &&
+        toKeyboardEvent(event)->key() == " ") {
+      setActive(true);
+      // No setDefaultHandled() - IE dispatches a keypress in this case.
+      return;
     }
-}
-
-void HTMLButtonElement::defaultEventHandler(Event* event)
-{
-    if (event->type() == EventTypeNames::DOMActivate && !isDisabledFormControl()) {
-        if (form() && m_type == SUBMIT) {
-            form()->prepareForSubmission(event, this);
-            event->setDefaultHandled();
-        }
-        if (form() && m_type == RESET) {
-            form()->reset();
-            event->setDefaultHandled();
-        }
+    if (event->type() == EventTypeNames::keypress) {
+      switch (toKeyboardEvent(event)->charCode()) {
+        case '\r':
+          dispatchSimulatedClick(event);
+          event->setDefaultHandled();
+          return;
+        case ' ':
+          // Prevent scrolling down the page.
+          event->setDefaultHandled();
+          return;
+      }
     }
-
-    if (event->isKeyboardEvent()) {
-        if (event->type() == EventTypeNames::keydown && toKeyboardEvent(event)->key() == " ") {
-            setActive(true);
-            // No setDefaultHandled() - IE dispatches a keypress in this case.
-            return;
-        }
-        if (event->type() == EventTypeNames::keypress) {
-            switch (toKeyboardEvent(event)->charCode()) {
-            case '\r':
-                dispatchSimulatedClick(event);
-                event->setDefaultHandled();
-                return;
-            case ' ':
-                // Prevent scrolling down the page.
-                event->setDefaultHandled();
-                return;
-            }
-        }
-        if (event->type() == EventTypeNames::keyup && toKeyboardEvent(event)->key() == " ") {
-            if (active())
-                dispatchSimulatedClick(event);
-            event->setDefaultHandled();
-            return;
-        }
+    if (event->type() == EventTypeNames::keyup &&
+        toKeyboardEvent(event)->key() == " ") {
+      if (active())
+        dispatchSimulatedClick(event);
+      event->setDefaultHandled();
+      return;
     }
+  }
 
-    HTMLFormControlElement::defaultEventHandler(event);
+  HTMLFormControlElement::defaultEventHandler(event);
 }
 
-bool HTMLButtonElement::willRespondToMouseClickEvents()
-{
-    if (!isDisabledFormControl() && form() && (m_type == SUBMIT || m_type == RESET))
-        return true;
-    return HTMLFormControlElement::willRespondToMouseClickEvents();
-}
-
-bool HTMLButtonElement::canBeSuccessfulSubmitButton() const
-{
-    return m_type == SUBMIT;
-}
-
-bool HTMLButtonElement::isActivatedSubmit() const
-{
-    return m_isActivatedSubmit;
-}
-
-void HTMLButtonElement::setActivatedSubmit(bool flag)
-{
-    m_isActivatedSubmit = flag;
-}
-
-void HTMLButtonElement::appendToFormData(FormData& formData)
-{
-    if (m_type == SUBMIT && !name().isEmpty() && m_isActivatedSubmit)
-        formData.append(name(), value());
-}
-
-void HTMLButtonElement::accessKeyAction(bool sendMouseEvents)
-{
-    focus();
-
-    dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
-}
-
-bool HTMLButtonElement::isURLAttribute(const Attribute& attribute) const
-{
-    return attribute.name() == formactionAttr || HTMLFormControlElement::isURLAttribute(attribute);
-}
-
-const AtomicString& HTMLButtonElement::value() const
-{
-    return getAttribute(valueAttr);
-}
-
-bool HTMLButtonElement::recalcWillValidate() const
-{
-    return m_type == SUBMIT && HTMLFormControlElement::recalcWillValidate();
-}
-
-bool HTMLButtonElement::isInteractiveContent() const
-{
+bool HTMLButtonElement::willRespondToMouseClickEvents() {
+  if (!isDisabledFormControl() && form() &&
+      (m_type == SUBMIT || m_type == RESET))
     return true;
+  return HTMLFormControlElement::willRespondToMouseClickEvents();
 }
 
-bool HTMLButtonElement::supportsAutofocus() const
-{
-    return true;
+bool HTMLButtonElement::canBeSuccessfulSubmitButton() const {
+  return m_type == SUBMIT;
 }
 
-bool HTMLButtonElement::matchesDefaultPseudoClass() const
-{
-    // HTMLFormElement::findDefaultButton() traverses the tree. So we check
-    // canBeSuccessfulSubmitButton() first for early return.
-    return canBeSuccessfulSubmitButton() && form() && form()->findDefaultButton() == this;
+bool HTMLButtonElement::isActivatedSubmit() const {
+  return m_isActivatedSubmit;
 }
 
-Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode* insertionPoint)
-{
-    InsertionNotificationRequest request = HTMLFormControlElement::insertedInto(insertionPoint);
-    logAddElementIfIsolatedWorldAndInDocument("button", typeAttr, formmethodAttr, formactionAttr);
-    return request;
+void HTMLButtonElement::setActivatedSubmit(bool flag) {
+  m_isActivatedSubmit = flag;
 }
 
-} // namespace blink
+void HTMLButtonElement::appendToFormData(FormData& formData) {
+  if (m_type == SUBMIT && !name().isEmpty() && m_isActivatedSubmit)
+    formData.append(name(), value());
+}
+
+void HTMLButtonElement::accessKeyAction(bool sendMouseEvents) {
+  focus();
+
+  dispatchSimulatedClick(
+      0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
+}
+
+bool HTMLButtonElement::isURLAttribute(const Attribute& attribute) const {
+  return attribute.name() == formactionAttr ||
+         HTMLFormControlElement::isURLAttribute(attribute);
+}
+
+const AtomicString& HTMLButtonElement::value() const {
+  return getAttribute(valueAttr);
+}
+
+bool HTMLButtonElement::recalcWillValidate() const {
+  return m_type == SUBMIT && HTMLFormControlElement::recalcWillValidate();
+}
+
+bool HTMLButtonElement::isInteractiveContent() const {
+  return true;
+}
+
+bool HTMLButtonElement::supportsAutofocus() const {
+  return true;
+}
+
+bool HTMLButtonElement::matchesDefaultPseudoClass() const {
+  // HTMLFormElement::findDefaultButton() traverses the tree. So we check
+  // canBeSuccessfulSubmitButton() first for early return.
+  return canBeSuccessfulSubmitButton() && form() &&
+         form()->findDefaultButton() == this;
+}
+
+Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(
+    ContainerNode* insertionPoint) {
+  InsertionNotificationRequest request =
+      HTMLFormControlElement::insertedInto(insertionPoint);
+  logAddElementIfIsolatedWorldAndInDocument("button", typeAttr, formmethodAttr,
+                                            formactionAttr);
+  return request;
+}
+
+}  // namespace blink

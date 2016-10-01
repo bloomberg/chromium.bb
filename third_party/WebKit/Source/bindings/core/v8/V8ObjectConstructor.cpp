@@ -32,33 +32,43 @@
 
 namespace blink {
 
-v8::MaybeLocal<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Local<v8::Function> function)
-{
-    ASSERT(!function.IsEmpty());
-    ConstructorMode constructorMode(isolate);
-    return V8ScriptRunner::instantiateObject(isolate, function);
+v8::MaybeLocal<v8::Object> V8ObjectConstructor::newInstance(
+    v8::Isolate* isolate,
+    v8::Local<v8::Function> function) {
+  ASSERT(!function.IsEmpty());
+  ConstructorMode constructorMode(isolate);
+  return V8ScriptRunner::instantiateObject(isolate, function);
 }
 
-v8::MaybeLocal<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Local<v8::Function> function, int argc, v8::Local<v8::Value> argv[])
-{
-    ASSERT(!function.IsEmpty());
-    ConstructorMode constructorMode(isolate);
-    return V8ScriptRunner::instantiateObject(isolate, function, argc, argv);
+v8::MaybeLocal<v8::Object> V8ObjectConstructor::newInstance(
+    v8::Isolate* isolate,
+    v8::Local<v8::Function> function,
+    int argc,
+    v8::Local<v8::Value> argv[]) {
+  ASSERT(!function.IsEmpty());
+  ConstructorMode constructorMode(isolate);
+  return V8ScriptRunner::instantiateObject(isolate, function, argc, argv);
 }
 
-v8::MaybeLocal<v8::Object> V8ObjectConstructor::newInstanceInDocument(v8::Isolate* isolate, v8::Local<v8::Function> function, int argc, v8::Local<v8::Value> argv[], Document* document)
-{
-    ASSERT(!function.IsEmpty());
-    return V8ScriptRunner::instantiateObjectInDocument(isolate, function, document, argc, argv);
+v8::MaybeLocal<v8::Object> V8ObjectConstructor::newInstanceInDocument(
+    v8::Isolate* isolate,
+    v8::Local<v8::Function> function,
+    int argc,
+    v8::Local<v8::Value> argv[],
+    Document* document) {
+  ASSERT(!function.IsEmpty());
+  return V8ScriptRunner::instantiateObjectInDocument(isolate, function,
+                                                     document, argc, argv);
 }
 
-void V8ObjectConstructor::isValidConstructorMode(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (ConstructorMode::current(info.GetIsolate()) == ConstructorMode::CreateNewObject) {
-        V8ThrowException::throwTypeError(info.GetIsolate(), "Illegal constructor");
-        return;
-    }
-    v8SetReturnValue(info, info.Holder());
+void V8ObjectConstructor::isValidConstructorMode(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  if (ConstructorMode::current(info.GetIsolate()) ==
+      ConstructorMode::CreateNewObject) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), "Illegal constructor");
+    return;
+  }
+  v8SetReturnValue(info, info.Holder());
 }
 
-} // namespace blink
+}  // namespace blink

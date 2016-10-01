@@ -8,18 +8,17 @@
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 
 class FakeGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
-public:
-    // GLES2Interface implementation.
-    GLenum GetGraphicsResetStatusKHR() override
-    {
-        return m_contextLost ? GL_INVALID_OPERATION : GL_NO_ERROR;
-    }
+ public:
+  // GLES2Interface implementation.
+  GLenum GetGraphicsResetStatusKHR() override {
+    return m_contextLost ? GL_INVALID_OPERATION : GL_NO_ERROR;
+  }
 
-    // Methods for tests.
-    void setIsContextLost(bool lost) { m_contextLost = lost; }
+  // Methods for tests.
+  void setIsContextLost(bool lost) { m_contextLost = lost; }
 
-private:
-    bool m_contextLost = false;
+ private:
+  bool m_contextLost = false;
 };
 
-#endif // FakeGLES2Interface_h
+#endif  // FakeGLES2Interface_h

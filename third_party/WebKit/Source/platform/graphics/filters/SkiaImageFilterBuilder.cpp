@@ -42,88 +42,107 @@
 namespace blink {
 namespace SkiaImageFilterBuilder {
 
-void populateSourceGraphicImageFilters(FilterEffect* sourceGraphic, sk_sp<SkImageFilter> input, ColorSpace inputColorSpace)
-{
-    // Prepopulate SourceGraphic with two image filters: one with a null image
-    // filter, and the other with a colorspace conversion filter.
-    // We don't know what color space the interior nodes will request, so we
-    // have to initialize SourceGraphic with both options.
-    // Since we know SourceGraphic is always PM-valid, we also use these for
-    // the PM-validated options.
-    sk_sp<SkImageFilter> deviceFilter = transformColorSpace(input, inputColorSpace, ColorSpaceDeviceRGB);
-    sk_sp<SkImageFilter> linearFilter = transformColorSpace(input, inputColorSpace, ColorSpaceLinearRGB);
-    sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, false, deviceFilter);
-    sourceGraphic->setImageFilter(ColorSpaceLinearRGB, false, linearFilter);
-    sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, true, deviceFilter);
-    sourceGraphic->setImageFilter(ColorSpaceLinearRGB, true, linearFilter);
+void populateSourceGraphicImageFilters(FilterEffect* sourceGraphic,
+                                       sk_sp<SkImageFilter> input,
+                                       ColorSpace inputColorSpace) {
+  // Prepopulate SourceGraphic with two image filters: one with a null image
+  // filter, and the other with a colorspace conversion filter.
+  // We don't know what color space the interior nodes will request, so we
+  // have to initialize SourceGraphic with both options.
+  // Since we know SourceGraphic is always PM-valid, we also use these for
+  // the PM-validated options.
+  sk_sp<SkImageFilter> deviceFilter =
+      transformColorSpace(input, inputColorSpace, ColorSpaceDeviceRGB);
+  sk_sp<SkImageFilter> linearFilter =
+      transformColorSpace(input, inputColorSpace, ColorSpaceLinearRGB);
+  sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, false, deviceFilter);
+  sourceGraphic->setImageFilter(ColorSpaceLinearRGB, false, linearFilter);
+  sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, true, deviceFilter);
+  sourceGraphic->setImageFilter(ColorSpaceLinearRGB, true, linearFilter);
 }
 
-sk_sp<SkImageFilter> build(FilterEffect* effect, ColorSpace colorSpace, bool destinationRequiresValidPreMultipliedPixels)
-{
-    if (!effect)
-        return nullptr;
+sk_sp<SkImageFilter> build(FilterEffect* effect,
+                           ColorSpace colorSpace,
+                           bool destinationRequiresValidPreMultipliedPixels) {
+  if (!effect)
+    return nullptr;
 
-    bool requiresPMColorValidation = effect->mayProduceInvalidPreMultipliedPixels() && destinationRequiresValidPreMultipliedPixels;
+  bool requiresPMColorValidation =
+      effect->mayProduceInvalidPreMultipliedPixels() &&
+      destinationRequiresValidPreMultipliedPixels;
 
-    if (SkImageFilter* filter = effect->getImageFilter(colorSpace, requiresPMColorValidation))
-        return sk_ref_sp(filter);
+  if (SkImageFilter* filter =
+          effect->getImageFilter(colorSpace, requiresPMColorValidation))
+    return sk_ref_sp(filter);
 
-    // Note that we may still need the color transform even if the filter is null
-    sk_sp<SkImageFilter> origFilter = requiresPMColorValidation ? effect->createImageFilter() : effect->createImageFilterWithoutValidation();
-    sk_sp<SkImageFilter> filter = transformColorSpace(origFilter, effect->operatingColorSpace(), colorSpace);
-    effect->setImageFilter(colorSpace, requiresPMColorValidation, filter);
-    if (filter.get() != origFilter.get())
-        effect->setImageFilter(effect->operatingColorSpace(), requiresPMColorValidation, std::move(origFilter));
-    return filter;
+  // Note that we may still need the color transform even if the filter is null
+  sk_sp<SkImageFilter> origFilter =
+      requiresPMColorValidation ? effect->createImageFilter()
+                                : effect->createImageFilterWithoutValidation();
+  sk_sp<SkImageFilter> filter = transformColorSpace(
+      origFilter, effect->operatingColorSpace(), colorSpace);
+  effect->setImageFilter(colorSpace, requiresPMColorValidation, filter);
+  if (filter.get() != origFilter.get())
+    effect->setImageFilter(effect->operatingColorSpace(),
+                           requiresPMColorValidation, std::move(origFilter));
+  return filter;
 }
 
-sk_sp<SkImageFilter> transformColorSpace(sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace)
-{
-    sk_sp<SkColorFilter> colorFilter = ColorSpaceUtilities::createColorSpaceFilter(srcColorSpace, dstColorSpace);
-    if (!colorFilter)
-        return input;
+sk_sp<SkImageFilter> transformColorSpace(sk_sp<SkImageFilter> input,
+                                         ColorSpace srcColorSpace,
+                                         ColorSpace dstColorSpace) {
+  sk_sp<SkColorFilter> colorFilter =
+      ColorSpaceUtilities::createColorSpaceFilter(srcColorSpace, dstColorSpace);
+  if (!colorFilter)
+    return input;
 
-    return SkColorFilterImageFilter::Make(std::move(colorFilter), std::move(input));
+  return SkColorFilterImageFilter::Make(std::move(colorFilter),
+                                        std::move(input));
 }
 
-void buildSourceGraphic(FilterEffect* sourceGraphic, sk_sp<SkPicture> picture)
-{
-    ASSERT(picture);
-    SkRect cullRect = picture->cullRect();
-    sk_sp<SkImageFilter> filter = SkPictureImageFilter::Make(std::move(picture), cullRect);
-    populateSourceGraphicImageFilters(sourceGraphic, std::move(filter), sourceGraphic->operatingColorSpace());
+void buildSourceGraphic(FilterEffect* sourceGraphic, sk_sp<SkPicture> picture) {
+  ASSERT(picture);
+  SkRect cullRect = picture->cullRect();
+  sk_sp<SkImageFilter> filter =
+      SkPictureImageFilter::Make(std::move(picture), cullRect);
+  populateSourceGraphicImageFilters(sourceGraphic, std::move(filter),
+                                    sourceGraphic->operatingColorSpace());
 }
 
-sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection, sk_sp<SkImageFilter> input)
-{
-    sk_sp<SkImageFilter> maskedInput;
-    if (SkPicture* maskPicture = reflection.mask()) {
-        // Since SkPictures can't be serialized to the browser process, first raster the mask to a bitmap, then
-        // encode it in an SkImageSource, which can be serialized.
-        SkBitmap bitmap;
-        const SkRect cullRect = maskPicture->cullRect();
-        bitmap.allocPixels(SkImageInfo::MakeN32Premul(cullRect.width(), cullRect.height()));
-        SkCanvas canvas(bitmap);
-        canvas.clear(SK_ColorTRANSPARENT);
-        canvas.translate(-cullRect.x(), -cullRect.y());
-        canvas.drawPicture(maskPicture);
-        sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
+                                           sk_sp<SkImageFilter> input) {
+  sk_sp<SkImageFilter> maskedInput;
+  if (SkPicture* maskPicture = reflection.mask()) {
+    // Since SkPictures can't be serialized to the browser process, first raster the mask to a bitmap, then
+    // encode it in an SkImageSource, which can be serialized.
+    SkBitmap bitmap;
+    const SkRect cullRect = maskPicture->cullRect();
+    bitmap.allocPixels(
+        SkImageInfo::MakeN32Premul(cullRect.width(), cullRect.height()));
+    SkCanvas canvas(bitmap);
+    canvas.clear(SK_ColorTRANSPARENT);
+    canvas.translate(-cullRect.x(), -cullRect.y());
+    canvas.drawPicture(maskPicture);
+    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
 
-        // SkXfermodeImageFilter can choose an excessively large size if the
-        // mask is smaller than the filtered contents (due to overflow).
-        // http://skbug.com/5210
-        SkImageFilter::CropRect cropRect(maskPicture->cullRect());
-        maskedInput = SkXfermodeImageFilter::Make(
-            SkXfermode::Make(SkXfermode::kSrcIn_Mode),
-            SkOffsetImageFilter::Make(cullRect.x(), cullRect.y(), SkImageSource::Make(image)),
-            input, &cropRect);
-    } else {
-        maskedInput = input;
-    }
-    sk_sp<SkImageFilter> flipImageFilter = SkImageFilter::MakeMatrixFilter(
-        reflection.reflectionMatrix(), kLow_SkFilterQuality, std::move(maskedInput));
-    return SkXfermodeImageFilter::Make(nullptr, std::move(flipImageFilter), std::move(input), nullptr);
+    // SkXfermodeImageFilter can choose an excessively large size if the
+    // mask is smaller than the filtered contents (due to overflow).
+    // http://skbug.com/5210
+    SkImageFilter::CropRect cropRect(maskPicture->cullRect());
+    maskedInput = SkXfermodeImageFilter::Make(
+        SkXfermode::Make(SkXfermode::kSrcIn_Mode),
+        SkOffsetImageFilter::Make(cullRect.x(), cullRect.y(),
+                                  SkImageSource::Make(image)),
+        input, &cropRect);
+  } else {
+    maskedInput = input;
+  }
+  sk_sp<SkImageFilter> flipImageFilter = SkImageFilter::MakeMatrixFilter(
+      reflection.reflectionMatrix(), kLow_SkFilterQuality,
+      std::move(maskedInput));
+  return SkXfermodeImageFilter::Make(nullptr, std::move(flipImageFilter),
+                                     std::move(input), nullptr);
 }
 
-} // namespace SkiaImageFilterBuilder
-} // namespace blink
+}  // namespace SkiaImageFilterBuilder
+}  // namespace blink

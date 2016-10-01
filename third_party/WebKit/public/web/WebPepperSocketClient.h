@@ -39,27 +39,33 @@ class WebArrayBuffer;
 class WebString;
 
 class WebPepperSocketClient {
-public:
-    enum ClosingHandshakeCompletionStatus {
-        ClosingHandshakeIncomplete,
-        ClosingHandshakeComplete
-    };
+ public:
+  enum ClosingHandshakeCompletionStatus {
+    ClosingHandshakeIncomplete,
+    ClosingHandshakeComplete
+  };
 
-    virtual ~WebPepperSocketClient() { }
-    virtual void didConnect(const WebString& subprotocol, const WebString& extensions) { }
-    virtual void didReceiveMessage(const WebString& message) { }
-    virtual void didReceiveArrayBuffer(const WebArrayBuffer& arrayBuffer) { }
-    virtual void didReceiveMessageError() { }
-    virtual void didConsumeBufferedAmount(unsigned long consumed) { }
-    virtual void didStartClosingHandshake() { }
-    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
+  virtual ~WebPepperSocketClient() {}
+  virtual void didConnect(const WebString& subprotocol,
+                          const WebString& extensions) {}
+  virtual void didReceiveMessage(const WebString& message) {}
+  virtual void didReceiveArrayBuffer(const WebArrayBuffer& arrayBuffer) {}
+  virtual void didReceiveMessageError() {}
+  virtual void didConsumeBufferedAmount(unsigned long consumed) {}
+  virtual void didStartClosingHandshake() {}
+  virtual void didClose(ClosingHandshakeCompletionStatus,
+                        unsigned short code,
+                        const WebString& reason) {}
 
-    // FIXME: Deperecate these methods.
-    virtual void didConnect() { }
-    virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) { }
-    virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
+  // FIXME: Deperecate these methods.
+  virtual void didConnect() {}
+  virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) {}
+  virtual void didClose(unsigned long unhandledBufferedAmount,
+                        ClosingHandshakeCompletionStatus,
+                        unsigned short code,
+                        const WebString& reason) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPepperSocketClient_h
+#endif  // WebPepperSocketClient_h

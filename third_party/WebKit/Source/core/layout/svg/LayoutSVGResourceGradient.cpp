@@ -28,106 +28,114 @@
 namespace blink {
 
 LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
-    : LayoutSVGResourcePaintServer(node)
-    , m_shouldCollectGradientAttributes(true)
-{
+    : LayoutSVGResourcePaintServer(node),
+      m_shouldCollectGradientAttributes(true) {}
+
+void LayoutSVGResourceGradient::removeAllClientsFromCache(
+    bool markForInvalidation) {
+  m_gradientMap.clear();
+  m_shouldCollectGradientAttributes = true;
+  markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation
+                                                    : ParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceGradient::removeAllClientsFromCache(bool markForInvalidation)
-{
-    m_gradientMap.clear();
-    m_shouldCollectGradientAttributes = true;
-    markAllClientsForInvalidation(markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
+void LayoutSVGResourceGradient::removeClientFromCache(
+    LayoutObject* client,
+    bool markForInvalidation) {
+  ASSERT(client);
+  m_gradientMap.remove(client);
+  markClientForInvalidation(
+      client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-void LayoutSVGResourceGradient::removeClientFromCache(LayoutObject* client, bool markForInvalidation)
-{
-    ASSERT(client);
-    m_gradientMap.remove(client);
-    markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
-}
+SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(
+    const LayoutObject& object) {
+  clearInvalidationMask();
 
-SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject& object)
-{
-    clearInvalidationMask();
+  // Be sure to synchronize all SVG properties on the gradientElement _before_ processing any further.
+  // Otherwhise the call to collectGradientAttributes() in createTileImage(), may cause the SVG DOM property
+  // synchronization to kick in, which causes removeAllClientsFromCache() to be called, which in turn deletes our
+  // GradientData object! Leaving out the line below will cause svg/dynamic-updates/SVG*GradientElement-svgdom* to crash.
+  SVGGradientElement* gradientElement = toSVGGradientElement(element());
+  if (!gradientElement)
+    return SVGPaintServer::invalid();
 
-    // Be sure to synchronize all SVG properties on the gradientElement _before_ processing any further.
-    // Otherwhise the call to collectGradientAttributes() in createTileImage(), may cause the SVG DOM property
-    // synchronization to kick in, which causes removeAllClientsFromCache() to be called, which in turn deletes our
-    // GradientData object! Leaving out the line below will cause svg/dynamic-updates/SVG*GradientElement-svgdom* to crash.
-    SVGGradientElement* gradientElement = toSVGGradientElement(element());
-    if (!gradientElement)
-        return SVGPaintServer::invalid();
+  if (m_shouldCollectGradientAttributes) {
+    gradientElement->synchronizeAnimatedSVGAttribute(anyQName());
+    if (!collectGradientAttributes(gradientElement))
+      return SVGPaintServer::invalid();
 
-    if (m_shouldCollectGradientAttributes) {
-        gradientElement->synchronizeAnimatedSVGAttribute(anyQName());
-        if (!collectGradientAttributes(gradientElement))
-            return SVGPaintServer::invalid();
+    m_shouldCollectGradientAttributes = false;
+  }
 
-        m_shouldCollectGradientAttributes = false;
+  // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
+  // then the given effect (e.g. a gradient or a filter) will be ignored.
+  FloatRect objectBoundingBox = object.objectBoundingBox();
+  if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
+      objectBoundingBox.isEmpty())
+    return SVGPaintServer::invalid();
+
+  std::unique_ptr<GradientData>& gradientData =
+      m_gradientMap.add(&object, nullptr).storedValue->value;
+  if (!gradientData)
+    gradientData = wrapUnique(new GradientData);
+
+  // Create gradient object
+  if (!gradientData->gradient) {
+    gradientData->gradient = buildGradient();
+
+    // We want the text bounding box applied to the gradient space transform now, so the gradient shader can use it.
+    if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
+        !objectBoundingBox.isEmpty()) {
+      gradientData->userspaceTransform.translate(objectBoundingBox.x(),
+                                                 objectBoundingBox.y());
+      gradientData->userspaceTransform.scaleNonUniform(
+          objectBoundingBox.width(), objectBoundingBox.height());
     }
 
-    // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
-    // then the given effect (e.g. a gradient or a filter) will be ignored.
-    FloatRect objectBoundingBox = object.objectBoundingBox();
-    if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox && objectBoundingBox.isEmpty())
-        return SVGPaintServer::invalid();
+    AffineTransform gradientTransform = calculateGradientTransform();
+    gradientData->userspaceTransform *= gradientTransform;
+  }
 
-    std::unique_ptr<GradientData>& gradientData = m_gradientMap.add(&object, nullptr).storedValue->value;
-    if (!gradientData)
-        gradientData = wrapUnique(new GradientData);
+  if (!gradientData->gradient)
+    return SVGPaintServer::invalid();
 
-    // Create gradient object
-    if (!gradientData->gradient) {
-        gradientData->gradient = buildGradient();
-
-        // We want the text bounding box applied to the gradient space transform now, so the gradient shader can use it.
-        if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox && !objectBoundingBox.isEmpty()) {
-            gradientData->userspaceTransform.translate(objectBoundingBox.x(), objectBoundingBox.y());
-            gradientData->userspaceTransform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
-        }
-
-        AffineTransform gradientTransform = calculateGradientTransform();
-        gradientData->userspaceTransform *= gradientTransform;
-    }
-
-    if (!gradientData->gradient)
-        return SVGPaintServer::invalid();
-
-    return SVGPaintServer(gradientData->gradient, gradientData->userspaceTransform);
+  return SVGPaintServer(gradientData->gradient,
+                        gradientData->userspaceTransform);
 }
 
-bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
-{
-    if (child->isSVGGradientStop())
-        return true;
+bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child,
+                                               const ComputedStyle&) const {
+  if (child->isSVGGradientStop())
+    return true;
 
-    if (!child->isSVGResourceContainer())
-        return false;
+  if (!child->isSVGResourceContainer())
+    return false;
 
-    return toLayoutSVGResourceContainer(child)->isSVGPaintServer();
+  return toLayoutSVGResourceContainer(child)->isSVGPaintServer();
 }
 
-void LayoutSVGResourceGradient::addStops(Gradient& gradient, const Vector<Gradient::ColorStop>& stops) const
-{
-    for (const auto& stop : stops)
-        gradient.addColorStop(stop);
+void LayoutSVGResourceGradient::addStops(
+    Gradient& gradient,
+    const Vector<Gradient::ColorStop>& stops) const {
+  for (const auto& stop : stops)
+    gradient.addColorStop(stop);
 }
 
-GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(SVGSpreadMethodType method)
-{
-    switch (method) {
+GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(
+    SVGSpreadMethodType method) {
+  switch (method) {
     case SVGSpreadMethodUnknown:
     case SVGSpreadMethodPad:
-        return SpreadMethodPad;
+      return SpreadMethodPad;
     case SVGSpreadMethodReflect:
-        return SpreadMethodReflect;
+      return SpreadMethodReflect;
     case SVGSpreadMethodRepeat:
-        return SpreadMethodRepeat;
-    }
+      return SpreadMethodRepeat;
+  }
 
-    ASSERT_NOT_REACHED();
-    return SpreadMethodPad;
+  ASSERT_NOT_REACHED();
+  return SpreadMethodPad;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -18,34 +18,32 @@
 
 namespace blink {
 
-SkMatrix BoxReflection::reflectionMatrix() const
-{
-    SkMatrix flipMatrix;
-    switch (m_direction) {
+SkMatrix BoxReflection::reflectionMatrix() const {
+  SkMatrix flipMatrix;
+  switch (m_direction) {
     case VerticalReflection:
-        flipMatrix.setScale(1, -1);
-        flipMatrix.postTranslate(0, m_offset);
-        break;
+      flipMatrix.setScale(1, -1);
+      flipMatrix.postTranslate(0, m_offset);
+      break;
     case HorizontalReflection:
-        flipMatrix.setScale(-1, 1);
-        flipMatrix.postTranslate(m_offset, 0);
-        break;
+      flipMatrix.setScale(-1, 1);
+      flipMatrix.postTranslate(m_offset, 0);
+      break;
     default:
-        // MSVC requires that SkMatrix be initialized in this unreachable case.
-        NOTREACHED();
-        flipMatrix.reset();
-        break;
-    }
-    return flipMatrix;
+      // MSVC requires that SkMatrix be initialized in this unreachable case.
+      NOTREACHED();
+      flipMatrix.reset();
+      break;
+  }
+  return flipMatrix;
 }
 
-FloatRect BoxReflection::mapRect(const FloatRect& rect) const
-{
-    SkRect reflection(rect);
-    reflectionMatrix().mapRect(&reflection);
-    FloatRect result = rect;
-    result.unite(reflection);
-    return result;
+FloatRect BoxReflection::mapRect(const FloatRect& rect) const {
+  SkRect reflection(rect);
+  reflectionMatrix().mapRect(&reflection);
+  FloatRect result = rect;
+  result.unite(reflection);
+  return result;
 }
 
-} // namespace blink
+}  // namespace blink

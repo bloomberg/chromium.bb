@@ -37,112 +37,95 @@
 
 namespace blink {
 
-v8::RetainedObjectInfo* RetainedDOMInfo::createRetainedDOMInfo(uint16_t classId, v8::Local<v8::Value> wrapper)
-{
-    ASSERT(classId == WrapperTypeInfo::NodeClassId);
-    if (!wrapper->IsObject())
-        return 0;
-    Node* node = V8Node::toImpl(wrapper.As<v8::Object>());
-    return node ? new RetainedDOMInfo(node) : nullptr;
+v8::RetainedObjectInfo* RetainedDOMInfo::createRetainedDOMInfo(
+    uint16_t classId,
+    v8::Local<v8::Value> wrapper) {
+  ASSERT(classId == WrapperTypeInfo::NodeClassId);
+  if (!wrapper->IsObject())
+    return 0;
+  Node* node = V8Node::toImpl(wrapper.As<v8::Object>());
+  return node ? new RetainedDOMInfo(node) : nullptr;
 }
 
-RetainedDOMInfo::RetainedDOMInfo(Node* root)
-    : m_root(root)
-{
-    ASSERT(m_root);
+RetainedDOMInfo::RetainedDOMInfo(Node* root) : m_root(root) {
+  ASSERT(m_root);
 }
 
-RetainedDOMInfo::~RetainedDOMInfo()
-{
+RetainedDOMInfo::~RetainedDOMInfo() {}
+
+void RetainedDOMInfo::Dispose() {
+  delete this;
 }
 
-void RetainedDOMInfo::Dispose()
-{
-    delete this;
+bool RetainedDOMInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
+  ASSERT(other);
+  if (other == this)
+    return true;
+  if (strcmp(GetLabel(), other->GetLabel()))
+    return false;
+  return static_cast<blink::RetainedObjectInfo*>(other)
+             ->GetEquivalenceClass() == this->GetEquivalenceClass();
 }
 
-bool RetainedDOMInfo::IsEquivalent(v8::RetainedObjectInfo* other)
-{
-    ASSERT(other);
-    if (other == this)
-        return true;
-    if (strcmp(GetLabel(), other->GetLabel()))
-        return false;
-    return static_cast<blink::RetainedObjectInfo*>(other)->GetEquivalenceClass() == this->GetEquivalenceClass();
+intptr_t RetainedDOMInfo::GetHash() {
+  return PtrHash<void>::hash(m_root);
 }
 
-intptr_t RetainedDOMInfo::GetHash()
-{
-    return PtrHash<void>::hash(m_root);
+const char* RetainedDOMInfo::GetGroupLabel() {
+  return m_root->isConnected() ? "(Document DOM trees)"
+                               : "(Detached DOM trees)";
 }
 
-const char* RetainedDOMInfo::GetGroupLabel()
-{
-    return m_root->isConnected() ? "(Document DOM trees)" : "(Detached DOM trees)";
+const char* RetainedDOMInfo::GetLabel() {
+  return m_root->isConnected() ? "Document DOM tree" : "Detached DOM tree";
 }
 
-const char* RetainedDOMInfo::GetLabel()
-{
-    return m_root->isConnected() ? "Document DOM tree" : "Detached DOM tree";
+intptr_t RetainedDOMInfo::GetElementCount() {
+  intptr_t count = 1;
+  for (Node& current : NodeTraversal::descendantsOf(*m_root)) {
+    ALLOW_UNUSED_LOCAL(current);
+    ++count;
+  }
+  return count;
 }
 
-intptr_t RetainedDOMInfo::GetElementCount()
-{
-    intptr_t count = 1;
-    for (Node& current : NodeTraversal::descendantsOf(*m_root)) {
-        ALLOW_UNUSED_LOCAL(current);
-        ++count;
-    }
-    return count;
+intptr_t RetainedDOMInfo::GetEquivalenceClass() {
+  return reinterpret_cast<intptr_t>(m_root.get());
 }
 
-intptr_t RetainedDOMInfo::GetEquivalenceClass()
-{
-    return reinterpret_cast<intptr_t>(m_root.get());
+ActiveDOMObjectsInfo::ActiveDOMObjectsInfo(
+    int numberOfObjectsWithPendingActivity)
+    : m_numberOfObjectsWithPendingActivity(numberOfObjectsWithPendingActivity) {
 }
 
-ActiveDOMObjectsInfo::ActiveDOMObjectsInfo(int numberOfObjectsWithPendingActivity)
-    : m_numberOfObjectsWithPendingActivity(numberOfObjectsWithPendingActivity)
-{
+ActiveDOMObjectsInfo::~ActiveDOMObjectsInfo() {}
+
+void ActiveDOMObjectsInfo::Dispose() {
+  delete this;
 }
 
-ActiveDOMObjectsInfo::~ActiveDOMObjectsInfo()
-{
+bool ActiveDOMObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
+  return this == other;
 }
 
-void ActiveDOMObjectsInfo::Dispose()
-{
-    delete this;
+intptr_t ActiveDOMObjectsInfo::GetHash() {
+  return PtrHash<void>::hash(this);
 }
 
-bool ActiveDOMObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other)
-{
-    return this == other;
+const char* ActiveDOMObjectsInfo::GetGroupLabel() {
+  return "(Pending activities group)";
 }
 
-intptr_t ActiveDOMObjectsInfo::GetHash()
-{
-    return PtrHash<void>::hash(this);
+const char* ActiveDOMObjectsInfo::GetLabel() {
+  return "Pending activities";
 }
 
-const char* ActiveDOMObjectsInfo::GetGroupLabel()
-{
-    return "(Pending activities group)";
+intptr_t ActiveDOMObjectsInfo::GetElementCount() {
+  return m_numberOfObjectsWithPendingActivity;
 }
 
-const char* ActiveDOMObjectsInfo::GetLabel()
-{
-    return "Pending activities";
+intptr_t ActiveDOMObjectsInfo::GetEquivalenceClass() {
+  return reinterpret_cast<intptr_t>(this);
 }
 
-intptr_t ActiveDOMObjectsInfo::GetElementCount()
-{
-    return m_numberOfObjectsWithPendingActivity;
-}
-
-intptr_t ActiveDOMObjectsInfo::GetEquivalenceClass()
-{
-    return reinterpret_cast<intptr_t>(this);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -29,66 +29,65 @@
 
 namespace WTF {
 
-ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset)
-    : m_byteOffset(byteOffset)
-    , m_isNeuterable(true)
-    , m_buffer(buffer)
-    , m_prevView(nullptr)
-    , m_nextView(nullptr)
-{
-    m_baseAddress = m_buffer ? (static_cast<char*>(m_buffer->data()) + m_byteOffset) : nullptr;
-    if (m_buffer)
-        m_buffer->addView(this);
+ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer,
+                                 unsigned byteOffset)
+    : m_byteOffset(byteOffset),
+      m_isNeuterable(true),
+      m_buffer(buffer),
+      m_prevView(nullptr),
+      m_nextView(nullptr) {
+  m_baseAddress = m_buffer
+                      ? (static_cast<char*>(m_buffer->data()) + m_byteOffset)
+                      : nullptr;
+  if (m_buffer)
+    m_buffer->addView(this);
 }
 
-ArrayBufferView::~ArrayBufferView()
-{
-    if (m_buffer)
-        m_buffer->removeView(this);
+ArrayBufferView::~ArrayBufferView() {
+  if (m_buffer)
+    m_buffer->removeView(this);
 }
 
-void ArrayBufferView::neuter()
-{
-    m_buffer = nullptr;
-    m_byteOffset = 0;
+void ArrayBufferView::neuter() {
+  m_buffer = nullptr;
+  m_byteOffset = 0;
 }
 
-const char* ArrayBufferView::typeName()
-{
-    switch (type()) {
+const char* ArrayBufferView::typeName() {
+  switch (type()) {
     case TypeInt8:
-        return "Int8";
-        break;
+      return "Int8";
+      break;
     case TypeUint8:
-        return "UInt8";
-        break;
+      return "UInt8";
+      break;
     case TypeUint8Clamped:
-        return "UInt8Clamped";
-        break;
+      return "UInt8Clamped";
+      break;
     case TypeInt16:
-        return "Int16";
-        break;
+      return "Int16";
+      break;
     case TypeUint16:
-        return "UInt16";
-        break;
+      return "UInt16";
+      break;
     case TypeInt32:
-        return "Int32";
-        break;
+      return "Int32";
+      break;
     case TypeUint32:
-        return "Uint32";
-        break;
+      return "Uint32";
+      break;
     case TypeFloat32:
-        return "Float32";
-        break;
+      return "Float32";
+      break;
     case TypeFloat64:
-        return "Float64";
-        break;
+      return "Float64";
+      break;
     case TypeDataView:
-        return "DataView";
-        break;
-    }
-    ASSERT_NOT_REACHED();
-    return "Unknown";
+      return "DataView";
+      break;
+  }
+  ASSERT_NOT_REACHED();
+  return "Unknown";
 }
 
-} // namespace WTF
+}  // namespace WTF

@@ -40,11 +40,14 @@ class AnimatableValue;
 class StyleResolverState;
 
 class AnimatedStyleBuilder {
-    STATIC_ONLY(AnimatedStyleBuilder);
-public:
-    static void applyProperty(CSSPropertyID, StyleResolverState&, const AnimatableValue*);
+  STATIC_ONLY(AnimatedStyleBuilder);
+
+ public:
+  static void applyProperty(CSSPropertyID,
+                            StyleResolverState&,
+                            const AnimatableValue*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatedStyleBuilder_h
+#endif  // AnimatedStyleBuilder_h

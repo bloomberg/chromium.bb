@@ -11,39 +11,28 @@
 namespace blink {
 
 class LayoutMediaItem : public LayoutImageItem {
-public:
-    explicit LayoutMediaItem(LayoutMedia* layoutMedia)
-        : LayoutImageItem(layoutMedia)
-    {
-    }
+ public:
+  explicit LayoutMediaItem(LayoutMedia* layoutMedia)
+      : LayoutImageItem(layoutMedia) {}
 
-    explicit LayoutMediaItem(const LayoutItem& item)
-        : LayoutImageItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMedia());
-    }
+  explicit LayoutMediaItem(const LayoutItem& item) : LayoutImageItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMedia());
+  }
 
-    explicit LayoutMediaItem(std::nullptr_t) : LayoutImageItem(nullptr) { }
+  explicit LayoutMediaItem(std::nullptr_t) : LayoutImageItem(nullptr) {}
 
-    LayoutMediaItem() { }
+  LayoutMediaItem() {}
 
-    void setRequestPositionUpdates(bool want)
-    {
-        return toMedia()->setRequestPositionUpdates(want);
-    }
+  void setRequestPositionUpdates(bool want) {
+    return toMedia()->setRequestPositionUpdates(want);
+  }
 
-private:
-    LayoutMedia* toMedia()
-    {
-        return toLayoutMedia(layoutObject());
-    }
+ private:
+  LayoutMedia* toMedia() { return toLayoutMedia(layoutObject()); }
 
-    const LayoutMedia* toMedia() const
-    {
-        return toLayoutMedia(layoutObject());
-    }
+  const LayoutMedia* toMedia() const { return toLayoutMedia(layoutObject()); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutMediaItem_h
+#endif  // LayoutMediaItem_h

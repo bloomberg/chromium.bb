@@ -35,92 +35,92 @@ class LayoutScrollbar;
 class ScrollableArea;
 
 class LayoutScrollbarPart final : public LayoutBlock {
-public:
-    static LayoutScrollbarPart* createAnonymous(Document*, ScrollableArea*,
-        LayoutScrollbar* = nullptr, ScrollbarPart = NoPart);
-    ~LayoutScrollbarPart() override;
+ public:
+  static LayoutScrollbarPart* createAnonymous(Document*,
+                                              ScrollableArea*,
+                                              LayoutScrollbar* = nullptr,
+                                              ScrollbarPart = NoPart);
+  ~LayoutScrollbarPart() override;
 
-    const char* name() const override { return "LayoutScrollbarPart"; }
+  const char* name() const override { return "LayoutScrollbarPart"; }
 
-    PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
+  PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
 
-    void layout() override;
+  void layout() override;
 
-    // Scrollbar parts needs to be rendered at device pixel boundaries.
-    LayoutRectOutsets marginBoxOutsets() const override
-    {
-        ASSERT(isIntegerValue(LayoutBlock::marginBoxOutsets().top()));
-        return LayoutBlock::marginBoxOutsets();
-    }
-    LayoutUnit marginTop() const override
-    {
-        ASSERT(isIntegerValue(LayoutBlock::marginTop()));
-        return LayoutBlock::marginTop();
-    }
-    LayoutUnit marginBottom() const override
-    {
-        ASSERT(isIntegerValue(LayoutBlock::marginBottom()));
-        return LayoutBlock::marginBottom();
-    }
-    LayoutUnit marginLeft() const override
-    {
-        ASSERT(isIntegerValue(LayoutBlock::marginLeft()));
-        return LayoutBlock::marginLeft();
-    }
-    LayoutUnit marginRight() const override
-    {
-        ASSERT(isIntegerValue(LayoutBlock::marginRight()));
-        return LayoutBlock::marginRight();
-    }
+  // Scrollbar parts needs to be rendered at device pixel boundaries.
+  LayoutRectOutsets marginBoxOutsets() const override {
+    ASSERT(isIntegerValue(LayoutBlock::marginBoxOutsets().top()));
+    return LayoutBlock::marginBoxOutsets();
+  }
+  LayoutUnit marginTop() const override {
+    ASSERT(isIntegerValue(LayoutBlock::marginTop()));
+    return LayoutBlock::marginTop();
+  }
+  LayoutUnit marginBottom() const override {
+    ASSERT(isIntegerValue(LayoutBlock::marginBottom()));
+    return LayoutBlock::marginBottom();
+  }
+  LayoutUnit marginLeft() const override {
+    ASSERT(isIntegerValue(LayoutBlock::marginLeft()));
+    return LayoutBlock::marginLeft();
+  }
+  LayoutUnit marginRight() const override {
+    ASSERT(isIntegerValue(LayoutBlock::marginRight()));
+    return LayoutBlock::marginRight();
+  }
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutScrollbarPart || LayoutBlock::isOfType(type); }
-    LayoutObject* layoutObjectOwningScrollbar() const;
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectLayoutScrollbarPart ||
+           LayoutBlock::isOfType(type);
+  }
+  LayoutObject* layoutObjectOwningScrollbar() const;
 
-    // Must call setStyleWithWritingModeOfParent() instead.
-    void setStyle(PassRefPtr<ComputedStyle>) = delete;
+  // Must call setStyleWithWritingModeOfParent() instead.
+  void setStyle(PassRefPtr<ComputedStyle>) = delete;
 
-    LayoutRect visualRect() const override;
+  LayoutRect visualRect() const override;
 
-protected:
-    void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+ protected:
+  void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-private:
-    LayoutScrollbarPart(ScrollableArea*, LayoutScrollbar*, ScrollbarPart);
+ private:
+  LayoutScrollbarPart(ScrollableArea*, LayoutScrollbar*, ScrollbarPart);
 
-    void computePreferredLogicalWidths() override;
+  void computePreferredLogicalWidths() override;
 
-    // Have all padding getters return 0. The important point here is to avoid resolving percents
-    // against the containing block, since scroll bar corners don't always have one (so it would
-    // crash). Scroll bar corners are not actually laid out, and they don't have child content, so
-    // what we return here doesn't really matter.
-    LayoutUnit paddingTop() const override { return LayoutUnit(); }
-    LayoutUnit paddingBottom() const override { return LayoutUnit(); }
-    LayoutUnit paddingLeft() const override { return LayoutUnit(); }
-    LayoutUnit paddingRight() const override { return LayoutUnit(); }
-    LayoutUnit paddingBefore() const override { return LayoutUnit(); }
-    LayoutUnit paddingAfter() const override { return LayoutUnit(); }
-    LayoutUnit paddingStart() const override { return LayoutUnit(); }
-    LayoutUnit paddingEnd() const override { return LayoutUnit(); }
+  // Have all padding getters return 0. The important point here is to avoid resolving percents
+  // against the containing block, since scroll bar corners don't always have one (so it would
+  // crash). Scroll bar corners are not actually laid out, and they don't have child content, so
+  // what we return here doesn't really matter.
+  LayoutUnit paddingTop() const override { return LayoutUnit(); }
+  LayoutUnit paddingBottom() const override { return LayoutUnit(); }
+  LayoutUnit paddingLeft() const override { return LayoutUnit(); }
+  LayoutUnit paddingRight() const override { return LayoutUnit(); }
+  LayoutUnit paddingBefore() const override { return LayoutUnit(); }
+  LayoutUnit paddingAfter() const override { return LayoutUnit(); }
+  LayoutUnit paddingStart() const override { return LayoutUnit(); }
+  LayoutUnit paddingEnd() const override { return LayoutUnit(); }
 
-    void layoutHorizontalPart();
-    void layoutVerticalPart();
+  void layoutHorizontalPart();
+  void layoutVerticalPart();
 
-    void computeScrollbarWidth();
-    void computeScrollbarHeight();
+  void computeScrollbarWidth();
+  void computeScrollbarHeight();
 
-    void setNeedsPaintInvalidation();
+  void setNeedsPaintInvalidation();
 
-    bool allowsOverflowClip() const override { return false; }
+  bool allowsOverflowClip() const override { return false; }
 
-    UntracedMember<ScrollableArea> m_scrollableArea;
-    UntracedMember<LayoutScrollbar> m_scrollbar;
-    ScrollbarPart m_part;
+  UntracedMember<ScrollableArea> m_scrollableArea;
+  UntracedMember<LayoutScrollbar> m_scrollbar;
+  ScrollbarPart m_part;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutScrollbarPart, isLayoutScrollbarPart());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutScrollbarPart_h
+#endif  // LayoutScrollbarPart_h

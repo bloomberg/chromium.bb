@@ -37,34 +37,32 @@
 
 namespace blink {
 
-class DirectoryReaderBase : public GarbageCollectedFinalized<DirectoryReaderBase> {
-public:
-    DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
-    void setHasMoreEntries(bool hasMoreEntries) { m_hasMoreEntries = hasMoreEntries; }
+class DirectoryReaderBase
+    : public GarbageCollectedFinalized<DirectoryReaderBase> {
+ public:
+  DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
+  void setHasMoreEntries(bool hasMoreEntries) {
+    m_hasMoreEntries = hasMoreEntries;
+  }
 
-    virtual ~DirectoryReaderBase() { }
+  virtual ~DirectoryReaderBase() {}
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_fileSystem);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_fileSystem); }
 
-protected:
-    DirectoryReaderBase(DOMFileSystemBase* fileSystem, const String& fullPath)
-        : m_fileSystem(fileSystem)
-        , m_fullPath(fullPath)
-        , m_hasMoreEntries(true)
-    {
-    }
+ protected:
+  DirectoryReaderBase(DOMFileSystemBase* fileSystem, const String& fullPath)
+      : m_fileSystem(fileSystem),
+        m_fullPath(fullPath),
+        m_hasMoreEntries(true) {}
 
-    Member<DOMFileSystemBase> m_fileSystem;
+  Member<DOMFileSystemBase> m_fileSystem;
 
-    // This is a virtual path.
-    String m_fullPath;
+  // This is a virtual path.
+  String m_fullPath;
 
-    bool m_hasMoreEntries;
+  bool m_hasMoreEntries;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DirectoryReaderBase_h
+#endif  // DirectoryReaderBase_h

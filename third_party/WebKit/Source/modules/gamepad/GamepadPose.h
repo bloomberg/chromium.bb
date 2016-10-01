@@ -13,42 +13,41 @@
 
 namespace blink {
 
-class GamepadPose final : public GarbageCollected<GamepadPose>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static GamepadPose* create()
-    {
-        return new GamepadPose();
-    }
+class GamepadPose final : public GarbageCollected<GamepadPose>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool hasOrientation() const { return m_hasOrientation; }
-    bool hasPosition() const { return m_hasPosition; }
+ public:
+  static GamepadPose* create() { return new GamepadPose(); }
 
-    DOMFloat32Array* orientation() const { return m_orientation; }
-    DOMFloat32Array* position() const { return m_position; }
-    DOMFloat32Array* angularVelocity() const { return m_angularVelocity; }
-    DOMFloat32Array* linearVelocity() const { return m_linearVelocity; }
-    DOMFloat32Array* angularAcceleration() const { return m_angularAcceleration; }
-    DOMFloat32Array* linearAcceleration() const { return m_linearAcceleration; }
+  bool hasOrientation() const { return m_hasOrientation; }
+  bool hasPosition() const { return m_hasPosition; }
 
-    void setPose(const WebGamepadPose &state);
+  DOMFloat32Array* orientation() const { return m_orientation; }
+  DOMFloat32Array* position() const { return m_position; }
+  DOMFloat32Array* angularVelocity() const { return m_angularVelocity; }
+  DOMFloat32Array* linearVelocity() const { return m_linearVelocity; }
+  DOMFloat32Array* angularAcceleration() const { return m_angularAcceleration; }
+  DOMFloat32Array* linearAcceleration() const { return m_linearAcceleration; }
 
-    DECLARE_VIRTUAL_TRACE();
+  void setPose(const WebGamepadPose& state);
 
-private:
-    GamepadPose();
+  DECLARE_VIRTUAL_TRACE();
 
-    bool m_hasOrientation;
-    bool m_hasPosition;
+ private:
+  GamepadPose();
 
-    Member<DOMFloat32Array> m_orientation;
-    Member<DOMFloat32Array> m_position;
-    Member<DOMFloat32Array> m_angularVelocity;
-    Member<DOMFloat32Array> m_linearVelocity;
-    Member<DOMFloat32Array> m_angularAcceleration;
-    Member<DOMFloat32Array> m_linearAcceleration;
+  bool m_hasOrientation;
+  bool m_hasPosition;
+
+  Member<DOMFloat32Array> m_orientation;
+  Member<DOMFloat32Array> m_position;
+  Member<DOMFloat32Array> m_angularVelocity;
+  Member<DOMFloat32Array> m_linearVelocity;
+  Member<DOMFloat32Array> m_angularAcceleration;
+  Member<DOMFloat32Array> m_linearAcceleration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VRPose_h
+#endif  // VRPose_h

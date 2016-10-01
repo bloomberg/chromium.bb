@@ -17,36 +17,38 @@ class ScriptState;
 class ScriptValue;
 
 class CORE_EXPORT V8ObjectBuilder final {
-    STACK_ALLOCATED();
-public:
-    explicit V8ObjectBuilder(ScriptState*);
+  STACK_ALLOCATED();
 
-    ScriptState* getScriptState() const { return m_scriptState.get(); }
+ public:
+  explicit V8ObjectBuilder(ScriptState*);
 
-    V8ObjectBuilder& add(const String& name, const V8ObjectBuilder&);
+  ScriptState* getScriptState() const { return m_scriptState.get(); }
 
-    V8ObjectBuilder& addNull(const String& name);
-    V8ObjectBuilder& addBoolean(const String& name, bool value);
-    V8ObjectBuilder& addNumber(const String& name, double value);
-    V8ObjectBuilder& addString(const String& name, const String& value);
+  V8ObjectBuilder& add(const String& name, const V8ObjectBuilder&);
 
-    template <typename T>
-    V8ObjectBuilder& add(const String& name, const T& value)
-    {
-        addInternal(name, v8::Local<v8::Value>(toV8(value, m_scriptState->context()->Global(), m_scriptState->isolate())));
-        return *this;
-    }
+  V8ObjectBuilder& addNull(const String& name);
+  V8ObjectBuilder& addBoolean(const String& name, bool value);
+  V8ObjectBuilder& addNumber(const String& name, double value);
+  V8ObjectBuilder& addString(const String& name, const String& value);
 
-    ScriptValue scriptValue() const;
-    v8::Local<v8::Object> v8Value() const { return m_object; }
+  template <typename T>
+  V8ObjectBuilder& add(const String& name, const T& value) {
+    addInternal(name, v8::Local<v8::Value>(
+                          toV8(value, m_scriptState->context()->Global(),
+                               m_scriptState->isolate())));
+    return *this;
+  }
 
-private:
-    void addInternal(const String& name, v8::Local<v8::Value>);
+  ScriptValue scriptValue() const;
+  v8::Local<v8::Object> v8Value() const { return m_object; }
 
-    RefPtr<ScriptState> m_scriptState;
-    v8::Local<v8::Object> m_object;
+ private:
+  void addInternal(const String& name, v8::Local<v8::Value>);
+
+  RefPtr<ScriptState> m_scriptState;
+  v8::Local<v8::Object> m_object;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8ObjectBuilder_h
+#endif  // V8ObjectBuilder_h

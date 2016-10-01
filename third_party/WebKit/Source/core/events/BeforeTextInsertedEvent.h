@@ -31,28 +31,27 @@
 namespace blink {
 
 class BeforeTextInsertedEvent final : public Event {
-public:
-    ~BeforeTextInsertedEvent() override;
+ public:
+  ~BeforeTextInsertedEvent() override;
 
-    static BeforeTextInsertedEvent* create(const String& text)
-    {
-        return new BeforeTextInsertedEvent(text);
-    }
+  static BeforeTextInsertedEvent* create(const String& text) {
+    return new BeforeTextInsertedEvent(text);
+  }
 
-    const AtomicString& interfaceName() const override;
-    bool isBeforeTextInsertedEvent() const override { return true; }
+  const AtomicString& interfaceName() const override;
+  bool isBeforeTextInsertedEvent() const override { return true; }
 
-    const String& text() const { return m_text; }
-    void setText(const String& s) { m_text = s; }
+  const String& text() const { return m_text; }
+  void setText(const String& s) { m_text = s; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit BeforeTextInsertedEvent(const String&);
+ private:
+  explicit BeforeTextInsertedEvent(const String&);
 
-    String m_text;
+  String m_text;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

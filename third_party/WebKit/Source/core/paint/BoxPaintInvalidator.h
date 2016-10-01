@@ -16,29 +16,31 @@ class LayoutSize;
 struct PaintInvalidatorContext;
 
 class BoxPaintInvalidator {
-    STACK_ALLOCATED();
-public:
-    BoxPaintInvalidator(const LayoutBox& box, const PaintInvalidatorContext& context)
-        : m_box(box), m_context(context) { }
+  STACK_ALLOCATED();
 
-    static void boxWillBeDestroyed(const LayoutBox&);
+ public:
+  BoxPaintInvalidator(const LayoutBox& box,
+                      const PaintInvalidatorContext& context)
+      : m_box(box), m_context(context) {}
 
-    PaintInvalidationReason invalidatePaintIfNeeded();
+  static void boxWillBeDestroyed(const LayoutBox&);
 
-private:
-    PaintInvalidationReason computePaintInvalidationReason();
+  PaintInvalidationReason invalidatePaintIfNeeded();
 
-    bool incrementallyInvalidatePaint();
-    void invalidatePaintRectClippedByOldAndNewBounds(const LayoutRect&);
+ private:
+  PaintInvalidationReason computePaintInvalidationReason();
 
-    bool needsToSavePreviousBoxSizes();
-    void savePreviousBoxSizesIfNeeded();
-    LayoutSize computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize);
+  bool incrementallyInvalidatePaint();
+  void invalidatePaintRectClippedByOldAndNewBounds(const LayoutRect&);
 
-    const LayoutBox& m_box;
-    const PaintInvalidatorContext& m_context;
+  bool needsToSavePreviousBoxSizes();
+  void savePreviousBoxSizesIfNeeded();
+  LayoutSize computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize);
+
+  const LayoutBox& m_box;
+  const PaintInvalidatorContext& m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -13,12 +13,12 @@ namespace blink {
 class CSSKeywordValue;
 
 class CSSOMKeywords {
-    STATIC_ONLY(CSSOMKeywords);
+  STATIC_ONLY(CSSOMKeywords);
 
-public:
-    static bool validKeywordForProperty(CSSPropertyID, const CSSKeywordValue&);
+ public:
+  static bool validKeywordForProperty(CSSPropertyID, const CSSKeywordValue&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

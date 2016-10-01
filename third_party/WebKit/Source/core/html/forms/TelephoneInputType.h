@@ -36,15 +36,15 @@
 namespace blink {
 
 class TelephoneInputType final : public BaseTextInputType {
-public:
-    static InputType* create(HTMLInputElement&);
+ public:
+  static InputType* create(HTMLInputElement&);
 
-private:
-    TelephoneInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    void countUsage() override;
-    const AtomicString& formControlType() const override;
+ private:
+  TelephoneInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
+  void countUsage() override;
+  const AtomicString& formControlType() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TelephoneInputType_h
+#endif  // TelephoneInputType_h

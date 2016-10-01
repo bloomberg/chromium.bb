@@ -37,99 +37,94 @@
 
 namespace blink {
 
-String MIMETypeRegistry::getMIMETypeForExtension(const String &ext)
-{
-    return Platform::current()->mimeRegistry()->mimeTypeForExtension(ext);
+String MIMETypeRegistry::getMIMETypeForExtension(const String& ext) {
+  return Platform::current()->mimeRegistry()->mimeTypeForExtension(ext);
 }
 
-String MIMETypeRegistry::getWellKnownMIMETypeForExtension(const String &ext)
-{
-    // This method must be thread safe and should not consult the OS/registry.
-    return Platform::current()->mimeRegistry()->wellKnownMimeTypeForExtension(ext);
+String MIMETypeRegistry::getWellKnownMIMETypeForExtension(const String& ext) {
+  // This method must be thread safe and should not consult the OS/registry.
+  return Platform::current()->mimeRegistry()->wellKnownMimeTypeForExtension(
+      ext);
 }
 
-String MIMETypeRegistry::getMIMETypeForPath(const String& path)
-{
-    int pos = path.reverseFind('.');
-    if (pos < 0)
-        return "application/octet-stream";
-    String extension = path.substring(pos + 1);
-    String mimeType = getMIMETypeForExtension(extension);
-    return mimeType.isEmpty() ? "application/octet-stream" : mimeType;
+String MIMETypeRegistry::getMIMETypeForPath(const String& path) {
+  int pos = path.reverseFind('.');
+  if (pos < 0)
+    return "application/octet-stream";
+  String extension = path.substring(pos + 1);
+  String mimeType = getMIMETypeForExtension(extension);
+  return mimeType.isEmpty() ? "application/octet-stream" : mimeType;
 }
 
-bool MIMETypeRegistry::isSupportedImageMIMEType(const String& mimeType)
-{
-    return Platform::current()->mimeRegistry()->supportsImageMIMEType(mimeType.lower())
-        != WebMimeRegistry::IsNotSupported;
+bool MIMETypeRegistry::isSupportedImageMIMEType(const String& mimeType) {
+  return Platform::current()->mimeRegistry()->supportsImageMIMEType(
+             mimeType.lower()) != WebMimeRegistry::IsNotSupported;
 }
 
-bool MIMETypeRegistry::isSupportedImageResourceMIMEType(const String& mimeType)
-{
-    return isSupportedImageMIMEType(mimeType);
+bool MIMETypeRegistry::isSupportedImageResourceMIMEType(
+    const String& mimeType) {
+  return isSupportedImageMIMEType(mimeType);
 }
 
-bool MIMETypeRegistry::isSupportedImagePrefixedMIMEType(const String& mimeType)
-{
-    return Platform::current()->mimeRegistry()->supportsImagePrefixedMIMEType(mimeType.lower())
-        != WebMimeRegistry::IsNotSupported;
+bool MIMETypeRegistry::isSupportedImagePrefixedMIMEType(
+    const String& mimeType) {
+  return Platform::current()->mimeRegistry()->supportsImagePrefixedMIMEType(
+             mimeType.lower()) != WebMimeRegistry::IsNotSupported;
 }
 
-bool MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(const String& mimeType)
-{
-    if (equalIgnoringCase(mimeType, "image/jpeg") || equalIgnoringCase(mimeType, "image/png"))
-        return true;
-    if (equalIgnoringCase(mimeType, "image/webp"))
-        return true;
+bool MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(
+    const String& mimeType) {
+  if (equalIgnoringCase(mimeType, "image/jpeg") ||
+      equalIgnoringCase(mimeType, "image/png"))
+    return true;
+  if (equalIgnoringCase(mimeType, "image/webp"))
+    return true;
+  return false;
+}
+
+bool MIMETypeRegistry::isSupportedJavaScriptMIMEType(const String& mimeType) {
+  return Platform::current()->mimeRegistry()->supportsJavaScriptMIMEType(
+             mimeType.lower()) != WebMimeRegistry::IsNotSupported;
+}
+
+bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType) {
+  return Platform::current()->mimeRegistry()->supportsNonImageMIMEType(
+             mimeType.lower()) != WebMimeRegistry::IsNotSupported;
+}
+
+bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType,
+                                                      const String& codecs) {
+  return !mimeType.isEmpty() &&
+         Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(
+             mimeType.lower(), codecs);
+}
+
+bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType) {
+  // Since this set is very limited and is likely to remain so we won't bother with the overhead
+  // of using a hash set.
+  // Any of the MIME types below may be followed by any number of specific versions of the JVM,
+  // which is why we use startsWith()
+  return mimeType.startsWith("application/x-java-applet",
+                             TextCaseInsensitive) ||
+         mimeType.startsWith("application/x-java-bean", TextCaseInsensitive) ||
+         mimeType.startsWith("application/x-java-vm", TextCaseInsensitive);
+}
+
+bool MIMETypeRegistry::isSupportedStyleSheetMIMEType(const String& mimeType) {
+  return equalIgnoringCase(mimeType, "text/css");
+}
+
+bool MIMETypeRegistry::isSupportedFontMIMEType(const String& mimeType) {
+  static const unsigned fontLen = 5;
+  if (!mimeType.startsWith("font/", TextCaseInsensitive))
     return false;
+  String subType = mimeType.substring(fontLen).lower();
+  return subType == "woff" || subType == "woff2" || subType == "otf" ||
+         subType == "ttf" || subType == "sfnt";
 }
 
-bool MIMETypeRegistry::isSupportedJavaScriptMIMEType(const String& mimeType)
-{
-    return Platform::current()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType.lower())
-        != WebMimeRegistry::IsNotSupported;
+bool MIMETypeRegistry::isSupportedTextTrackMIMEType(const String& mimeType) {
+  return equalIgnoringCase(mimeType, "text/vtt");
 }
 
-bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType)
-{
-    return Platform::current()->mimeRegistry()->supportsNonImageMIMEType(mimeType.lower())
-        != WebMimeRegistry::IsNotSupported;
-}
-
-bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs)
-{
-    return !mimeType.isEmpty()
-        && Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType.lower(), codecs);
-}
-
-bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)
-{
-    // Since this set is very limited and is likely to remain so we won't bother with the overhead
-    // of using a hash set.
-    // Any of the MIME types below may be followed by any number of specific versions of the JVM,
-    // which is why we use startsWith()
-    return mimeType.startsWith("application/x-java-applet", TextCaseInsensitive)
-        || mimeType.startsWith("application/x-java-bean", TextCaseInsensitive)
-        || mimeType.startsWith("application/x-java-vm", TextCaseInsensitive);
-}
-
-bool MIMETypeRegistry::isSupportedStyleSheetMIMEType(const String& mimeType)
-{
-    return equalIgnoringCase(mimeType, "text/css");
-}
-
-bool MIMETypeRegistry::isSupportedFontMIMEType(const String& mimeType)
-{
-    static const unsigned fontLen = 5;
-    if (!mimeType.startsWith("font/", TextCaseInsensitive))
-        return false;
-    String subType = mimeType.substring(fontLen).lower();
-    return subType == "woff" || subType == "woff2" || subType == "otf" || subType == "ttf" || subType == "sfnt";
-}
-
-bool MIMETypeRegistry::isSupportedTextTrackMIMEType(const String& mimeType)
-{
-    return equalIgnoringCase(mimeType, "text/vtt");
-}
-
-} // namespace blink
+}  // namespace blink

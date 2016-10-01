@@ -15,17 +15,20 @@ namespace blink {
 class ContentSecurityPolicy;
 
 class MediaListDirective final : public CSPDirective {
-    WTF_MAKE_NONCOPYABLE(MediaListDirective);
-public:
-    MediaListDirective(const String& name, const String& value, ContentSecurityPolicy*);
-    bool allows(const String& type);
+  WTF_MAKE_NONCOPYABLE(MediaListDirective);
 
-private:
-    void parse(const UChar* begin, const UChar* end);
+ public:
+  MediaListDirective(const String& name,
+                     const String& value,
+                     ContentSecurityPolicy*);
+  bool allows(const String& type);
 
-    HashSet<String> m_pluginTypes;
+ private:
+  void parse(const UChar* begin, const UChar* end);
+
+  HashSet<String> m_pluginTypes;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

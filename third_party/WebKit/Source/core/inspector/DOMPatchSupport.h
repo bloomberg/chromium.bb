@@ -45,50 +45,58 @@ class ExceptionState;
 class Node;
 
 class DOMPatchSupport final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
-public:
-    static void patchDocument(Document&, const String& markup);
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(DOMPatchSupport);
 
-    DOMPatchSupport(DOMEditor*, Document&);
+ public:
+  static void patchDocument(Document&, const String& markup);
 
-    void patchDocument(const String& markup);
-    Node* patchNode(Node*, const String& markup, ExceptionState&);
+  DOMPatchSupport(DOMEditor*, Document&);
 
-private:
-    class Digest : public GarbageCollectedFinalized<Digest> {
-    public:
-        explicit Digest(Node* node) : m_node(node) { }
-        DECLARE_TRACE();
+  void patchDocument(const String& markup);
+  Node* patchNode(Node*, const String& markup, ExceptionState&);
 
-        String m_sha1;
-        String m_attrsSHA1;
-        Member<Node> m_node;
-        HeapVector<Member<Digest>> m_children;
-    };
+ private:
+  class Digest : public GarbageCollectedFinalized<Digest> {
+   public:
+    explicit Digest(Node* node) : m_node(node) {}
+    DECLARE_TRACE();
 
-    typedef HeapVector<std::pair<Member<Digest>, size_t>> ResultMap;
-    typedef HeapHashMap<String, Member<Digest>> UnusedNodesMap;
+    String m_sha1;
+    String m_attrsSHA1;
+    Member<Node> m_node;
+    HeapVector<Member<Digest>> m_children;
+  };
 
-    bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionState&);
-    std::pair<ResultMap, ResultMap> diff(const HeapVector<Member<Digest>>& oldChildren, const HeapVector<Member<Digest>>& newChildren);
-    bool innerPatchChildren(ContainerNode*, const HeapVector<Member<Digest>>& oldChildren, const HeapVector<Member<Digest>>& newChildren, ExceptionState&);
-    Digest* createDigest(Node*, UnusedNodesMap*);
-    bool insertBeforeAndMarkAsUsed(ContainerNode*, Digest*, Node* anchor, ExceptionState&);
-    bool removeChildAndMoveToNew(Digest*, ExceptionState&);
-    void markNodeAsUsed(Digest*);
+  typedef HeapVector<std::pair<Member<Digest>, size_t>> ResultMap;
+  typedef HeapHashMap<String, Member<Digest>> UnusedNodesMap;
+
+  bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionState&);
+  std::pair<ResultMap, ResultMap> diff(
+      const HeapVector<Member<Digest>>& oldChildren,
+      const HeapVector<Member<Digest>>& newChildren);
+  bool innerPatchChildren(ContainerNode*,
+                          const HeapVector<Member<Digest>>& oldChildren,
+                          const HeapVector<Member<Digest>>& newChildren,
+                          ExceptionState&);
+  Digest* createDigest(Node*, UnusedNodesMap*);
+  bool insertBeforeAndMarkAsUsed(ContainerNode*,
+                                 Digest*,
+                                 Node* anchor,
+                                 ExceptionState&);
+  bool removeChildAndMoveToNew(Digest*, ExceptionState&);
+  void markNodeAsUsed(Digest*);
 #ifdef DEBUG_DOM_PATCH_SUPPORT
-    void dumpMap(const ResultMap&, const String& name);
+  void dumpMap(const ResultMap&, const String& name);
 #endif
-    Document& document() const { return *m_document; }
+  Document& document() const { return *m_document; }
 
-    Member<DOMEditor> m_domEditor;
-    Member<Document> m_document;
+  Member<DOMEditor> m_domEditor;
+  Member<Document> m_document;
 
-    UnusedNodesMap m_unusedNodesMap;
+  UnusedNodesMap m_unusedNodesMap;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // !defined(DOMPatchSupport_h)
+#endif  // !defined(DOMPatchSupport_h)

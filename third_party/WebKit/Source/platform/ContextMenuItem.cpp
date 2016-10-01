@@ -29,91 +29,88 @@
 
 namespace blink {
 
-ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, const String& icon, ContextMenu* subMenu)
-    : m_type(type)
-    , m_action(action)
-    , m_title(title)
-    , m_icon(icon)
-    , m_enabled(true)
-    , m_checked(false)
-{
-    if (subMenu)
-        setSubMenu(subMenu);
+ContextMenuItem::ContextMenuItem(ContextMenuItemType type,
+                                 ContextMenuAction action,
+                                 const String& title,
+                                 const String& icon,
+                                 ContextMenu* subMenu)
+    : m_type(type),
+      m_action(action),
+      m_title(title),
+      m_icon(icon),
+      m_enabled(true),
+      m_checked(false) {
+  if (subMenu)
+    setSubMenu(subMenu);
 }
 
-ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, const String& icon, bool enabled, bool checked)
-    : m_type(type)
-    , m_action(action)
-    , m_title(title)
-    , m_icon(icon)
-    , m_enabled(enabled)
-    , m_checked(checked)
-{
+ContextMenuItem::ContextMenuItem(ContextMenuItemType type,
+                                 ContextMenuAction action,
+                                 const String& title,
+                                 const String& icon,
+                                 bool enabled,
+                                 bool checked)
+    : m_type(type),
+      m_action(action),
+      m_title(title),
+      m_icon(icon),
+      m_enabled(enabled),
+      m_checked(checked) {}
+
+ContextMenuItem::ContextMenuItem(ContextMenuAction action,
+                                 const String& title,
+                                 bool enabled,
+                                 bool checked,
+                                 const Vector<ContextMenuItem>& subMenuItems)
+    : m_type(SubmenuType),
+      m_action(action),
+      m_title(title),
+      m_enabled(enabled),
+      m_checked(checked),
+      m_subMenuItems(subMenuItems) {}
+
+ContextMenuItem::~ContextMenuItem() {}
+
+void ContextMenuItem::setSubMenu(ContextMenu* subMenu) {
+  if (subMenu) {
+    m_type = SubmenuType;
+    m_subMenuItems = subMenu->items();
+  } else {
+    m_type = ActionType;
+    m_subMenuItems.clear();
+  }
 }
 
-ContextMenuItem::ContextMenuItem(ContextMenuAction action, const String& title, bool enabled, bool checked, const Vector<ContextMenuItem>& subMenuItems)
-    : m_type(SubmenuType)
-    , m_action(action)
-    , m_title(title)
-    , m_enabled(enabled)
-    , m_checked(checked)
-    , m_subMenuItems(subMenuItems)
-{
+void ContextMenuItem::setType(ContextMenuItemType type) {
+  m_type = type;
 }
 
-ContextMenuItem::~ContextMenuItem()
-{
+ContextMenuItemType ContextMenuItem::type() const {
+  return m_type;
 }
 
-void ContextMenuItem::setSubMenu(ContextMenu* subMenu)
-{
-    if (subMenu) {
-        m_type = SubmenuType;
-        m_subMenuItems = subMenu->items();
-    } else {
-        m_type = ActionType;
-        m_subMenuItems.clear();
-    }
+void ContextMenuItem::setAction(ContextMenuAction action) {
+  m_action = action;
 }
 
-void ContextMenuItem::setType(ContextMenuItemType type)
-{
-    m_type = type;
+ContextMenuAction ContextMenuItem::action() const {
+  return m_action;
 }
 
-ContextMenuItemType ContextMenuItem::type() const
-{
-    return m_type;
+void ContextMenuItem::setChecked(bool checked) {
+  m_checked = checked;
 }
 
-void ContextMenuItem::setAction(ContextMenuAction action)
-{
-    m_action = action;
+bool ContextMenuItem::checked() const {
+  return m_checked;
 }
 
-ContextMenuAction ContextMenuItem::action() const
-{
-    return m_action;
+void ContextMenuItem::setEnabled(bool enabled) {
+  m_enabled = enabled;
 }
 
-void ContextMenuItem::setChecked(bool checked)
-{
-    m_checked = checked;
+bool ContextMenuItem::enabled() const {
+  return m_enabled;
 }
 
-bool ContextMenuItem::checked() const
-{
-    return m_checked;
-}
-
-void ContextMenuItem::setEnabled(bool enabled)
-{
-    m_enabled = enabled;
-}
-
-bool ContextMenuItem::enabled() const
-{
-    return m_enabled;
-}
-
-} // namespace blink
+}  // namespace blink

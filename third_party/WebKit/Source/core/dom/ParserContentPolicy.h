@@ -29,21 +29,22 @@
 namespace blink {
 
 enum ParserContentPolicy {
-    DisallowScriptingAndPluginContent,
-    AllowScriptingContent,
-    AllowScriptingContentAndDoNotMarkAlreadyStarted,
+  DisallowScriptingAndPluginContent,
+  AllowScriptingContent,
+  AllowScriptingContentAndDoNotMarkAlreadyStarted,
 };
 
-static inline bool scriptingContentIsAllowed(ParserContentPolicy parserContentPolicy)
-{
-    return parserContentPolicy == AllowScriptingContent || parserContentPolicy == AllowScriptingContentAndDoNotMarkAlreadyStarted;
+static inline bool scriptingContentIsAllowed(
+    ParserContentPolicy parserContentPolicy) {
+  return parserContentPolicy == AllowScriptingContent ||
+         parserContentPolicy == AllowScriptingContentAndDoNotMarkAlreadyStarted;
 }
 
-static inline bool pluginContentIsAllowed(ParserContentPolicy parserContentPolicy)
-{
-    return parserContentPolicy != DisallowScriptingAndPluginContent;
+static inline bool pluginContentIsAllowed(
+    ParserContentPolicy parserContentPolicy) {
+  return parserContentPolicy != DisallowScriptingAndPluginContent;
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ParserContentPolicy_h
+#endif  // ParserContentPolicy_h

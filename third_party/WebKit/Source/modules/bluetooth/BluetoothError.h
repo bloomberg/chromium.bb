@@ -16,13 +16,18 @@ class ScriptPromiseResolver;
 // BluetoothError is used with CallbackPromiseAdapter to receive
 // WebBluetoothError responses. See CallbackPromiseAdapter class comments.
 class BluetoothError {
-    STATIC_ONLY(BluetoothError);
-public:
-    // Interface required by CallbackPromiseAdapter:
-    using WebType = int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */;
-    static DOMException* take(ScriptPromiseResolver*, int32_t error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */);
+  STATIC_ONLY(BluetoothError);
+
+ public:
+  // Interface required by CallbackPromiseAdapter:
+  using WebType =
+      int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */;
+  static DOMException* take(
+      ScriptPromiseResolver*,
+      int32_t
+          error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BluetoothError_h
+#endif  // BluetoothError_h

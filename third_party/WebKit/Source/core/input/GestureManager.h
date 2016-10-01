@@ -20,56 +20,66 @@ class PointerEventManager;
 
 // This class takes care of gestures and delegating the action based on the
 // gesture to the responsible class.
-class CORE_EXPORT GestureManager : public GarbageCollectedFinalized<GestureManager> {
-    WTF_MAKE_NONCOPYABLE(GestureManager);
+class CORE_EXPORT GestureManager
+    : public GarbageCollectedFinalized<GestureManager> {
+  WTF_MAKE_NONCOPYABLE(GestureManager);
 
-public:
-    GestureManager(LocalFrame*, ScrollManager*, PointerEventManager*,
-        SelectionController*);
-    DECLARE_TRACE();
+ public:
+  GestureManager(LocalFrame*,
+                 ScrollManager*,
+                 PointerEventManager*,
+                 SelectionController*);
+  DECLARE_TRACE();
 
-    void clear();
+  void clear();
 
-    HitTestRequest::HitTestRequestType getHitTypeForGestureType(PlatformEvent::EventType);
-    WebInputEventResult handleGestureEventInFrame(const GestureEventWithHitTestResults&);
+  HitTestRequest::HitTestRequestType getHitTypeForGestureType(
+      PlatformEvent::EventType);
+  WebInputEventResult handleGestureEventInFrame(
+      const GestureEventWithHitTestResults&);
 
-    // TODO(nzolghadr): This can probably be hidden and the related logic
-    // be moved to this class (see crrev.com/112023010). Since that might cause
-    // regression it's better to move that logic in another change.
-    double getLastShowPressTimestamp() const;
+  // TODO(nzolghadr): This can probably be hidden and the related logic
+  // be moved to this class (see crrev.com/112023010). Since that might cause
+  // regression it's better to move that logic in another change.
+  double getLastShowPressTimestamp() const;
 
-private:
-    WebInputEventResult handleGestureShowPress();
-    WebInputEventResult handleGestureTapDown(const GestureEventWithHitTestResults&);
-    WebInputEventResult handleGestureTap(const GestureEventWithHitTestResults&);
-    WebInputEventResult handleGestureLongPress(const GestureEventWithHitTestResults&);
-    WebInputEventResult handleGestureLongTap(const GestureEventWithHitTestResults&);
-    WebInputEventResult handleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
+ private:
+  WebInputEventResult handleGestureShowPress();
+  WebInputEventResult handleGestureTapDown(
+      const GestureEventWithHitTestResults&);
+  WebInputEventResult handleGestureTap(const GestureEventWithHitTestResults&);
+  WebInputEventResult handleGestureLongPress(
+      const GestureEventWithHitTestResults&);
+  WebInputEventResult handleGestureLongTap(
+      const GestureEventWithHitTestResults&);
+  WebInputEventResult handleGestureTwoFingerTap(
+      const GestureEventWithHitTestResults&);
 
-    WebInputEventResult sendContextMenuEventForGesture(const GestureEventWithHitTestResults&);
+  WebInputEventResult sendContextMenuEventForGesture(
+      const GestureEventWithHitTestResults&);
 
-    FrameHost* frameHost() const;
+  FrameHost* frameHost() const;
 
-    // NOTE: If adding a new field to this class please ensure that it is
-    // cleared if needed in |GestureManager::clear()|.
+  // NOTE: If adding a new field to this class please ensure that it is
+  // cleared if needed in |GestureManager::clear()|.
 
-    const Member<LocalFrame> m_frame;
+  const Member<LocalFrame> m_frame;
 
-    Member<ScrollManager> m_scrollManager;
-    Member<PointerEventManager> m_pointerEventManager;
+  Member<ScrollManager> m_scrollManager;
+  Member<PointerEventManager> m_pointerEventManager;
 
-    // Set on GestureTapDown if the |pointerdown| event corresponding to the
-    // triggering |touchstart| event was canceled. This suppresses mouse event
-    // firing for the current gesture sequence (i.e. until next GestureTapDown).
-    bool m_suppressMouseEventsFromGestures;
+  // Set on GestureTapDown if the |pointerdown| event corresponding to the
+  // triggering |touchstart| event was canceled. This suppresses mouse event
+  // firing for the current gesture sequence (i.e. until next GestureTapDown).
+  bool m_suppressMouseEventsFromGestures;
 
-    bool m_longTapShouldInvokeContextMenu;
+  bool m_longTapShouldInvokeContextMenu;
 
-    const Member<SelectionController> m_selectionController;
+  const Member<SelectionController> m_selectionController;
 
-    double m_lastShowPressTimestamp;
+  double m_lastShowPressTimestamp;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GestureManager_h
+#endif  // GestureManager_h

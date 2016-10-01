@@ -32,223 +32,196 @@ const int kTextContentLengthSaturation = 1000;
 const unsigned kParagraphLengthThreshold = 140;
 
 // Saturate the scores to save time. The max is the score of 6 long paragraphs.
-const double kMozScoreSaturation = 175.954539583; // 6 * sqrt(kTextContentLengthSaturation - kParagraphLengthThreshold)
-const double kMozScoreAllSqrtSaturation = 189.73665961; // 6 * sqrt(kTextContentLengthSaturation);
+const double kMozScoreSaturation =
+    175.954539583;  // 6 * sqrt(kTextContentLengthSaturation - kParagraphLengthThreshold)
+const double kMozScoreAllSqrtSaturation =
+    189.73665961;  // 6 * sqrt(kTextContentLengthSaturation);
 const double kMozScoreAllLinearSaturation = 6 * kTextContentLengthSaturation;
 
-unsigned textContentLengthSaturated(const Element& root)
-{
-    unsigned length = 0;
-    // This skips shadow DOM intentionally, to match the JavaScript implementation.
-    // We would like to use the same statistics extracted by the JavaScript implementation
-    // on iOS, and JavaScript cannot peek deeply into shadow DOM except on modern Chrome
-    // versions.
-    // Given shadow DOM rarely appears in <P> elements in long-form articles, the overall
-    // accuracy should not be largely affected.
-    for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
-        if (!node.isTextNode()) {
-            continue;
-        }
-        length += toText(node).length();
-        if (length > kTextContentLengthSaturation) {
-            return kTextContentLengthSaturation;
-        }
+unsigned textContentLengthSaturated(const Element& root) {
+  unsigned length = 0;
+  // This skips shadow DOM intentionally, to match the JavaScript implementation.
+  // We would like to use the same statistics extracted by the JavaScript implementation
+  // on iOS, and JavaScript cannot peek deeply into shadow DOM except on modern Chrome
+  // versions.
+  // Given shadow DOM rarely appears in <P> elements in long-form articles, the overall
+  // accuracy should not be largely affected.
+  for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
+    if (!node.isTextNode()) {
+      continue;
     }
-    return length;
+    length += toText(node).length();
+    if (length > kTextContentLengthSaturation) {
+      return kTextContentLengthSaturation;
+    }
+  }
+  return length;
 }
 
-bool isVisible(const Element& element)
-{
-    const ComputedStyle* style = element.computedStyle();
-    if (!style)
-        return false;
-    return (
-        style->display() != EDisplay::None
-        && style->visibility() != EVisibility::Hidden
-        && style->opacity() != 0
-    );
-}
-
-bool matchAttributes(const Element& element, const Vector<String>& words)
-{
-    const String& classes = element.getClassAttribute();
-    const String& id = element.getIdAttribute();
-    for (const String& word : words) {
-        if (classes.findIgnoringCase(word) != WTF::kNotFound
-            || id.findIgnoringCase(word) != WTF::kNotFound) {
-            return true;
-        }
-    }
+bool isVisible(const Element& element) {
+  const ComputedStyle* style = element.computedStyle();
+  if (!style)
     return false;
+  return (style->display() != EDisplay::None &&
+          style->visibility() != EVisibility::Hidden && style->opacity() != 0);
 }
 
-bool isGoodForScoring(const WebDistillabilityFeatures& features, const Element& element)
-{
-    DEFINE_STATIC_LOCAL(Vector<String>, unlikelyCandidates, ());
-    if (unlikelyCandidates.isEmpty()) {
-        auto words = {
-            "banner",
-            "combx",
-            "comment",
-            "community",
-            "disqus",
-            "extra",
-            "foot",
-            "header",
-            "menu",
-            "related",
-            "remark",
-            "rss",
-            "share",
-            "shoutbox",
-            "sidebar",
-            "skyscraper",
-            "sponsor",
-            "ad-break",
-            "agegate",
-            "pagination",
-            "pager",
-            "popup"
-        };
-        for (auto word : words) {
-            unlikelyCandidates.append(word);
-        }
+bool matchAttributes(const Element& element, const Vector<String>& words) {
+  const String& classes = element.getClassAttribute();
+  const String& id = element.getIdAttribute();
+  for (const String& word : words) {
+    if (classes.findIgnoringCase(word) != WTF::kNotFound ||
+        id.findIgnoringCase(word) != WTF::kNotFound) {
+      return true;
     }
-    DEFINE_STATIC_LOCAL(Vector<String>, highlyLikelyCandidates, ());
-    if (highlyLikelyCandidates.isEmpty()) {
-        auto words = {
-            "and",
-            "article",
-            "body",
-            "column",
-            "main",
-            "shadow"
-        };
-        for (auto word : words) {
-            highlyLikelyCandidates.append(word);
-        }
-    }
+  }
+  return false;
+}
 
-    if (!isVisible(element))
-        return false;
-    if (features.mozScore >= kMozScoreSaturation
-        && features.mozScoreAllSqrt >= kMozScoreAllSqrtSaturation
-        && features.mozScoreAllLinear >= kMozScoreAllLinearSaturation)
-        return false;
-    if (matchAttributes(element, unlikelyCandidates)
-        && !matchAttributes(element, highlyLikelyCandidates))
-        return false;
-    return true;
+bool isGoodForScoring(const WebDistillabilityFeatures& features,
+                      const Element& element) {
+  DEFINE_STATIC_LOCAL(Vector<String>, unlikelyCandidates, ());
+  if (unlikelyCandidates.isEmpty()) {
+    auto words = {
+        "banner",  "combx",      "comment", "community",  "disqus",  "extra",
+        "foot",    "header",     "menu",    "related",    "remark",  "rss",
+        "share",   "shoutbox",   "sidebar", "skyscraper", "sponsor", "ad-break",
+        "agegate", "pagination", "pager",   "popup"};
+    for (auto word : words) {
+      unlikelyCandidates.append(word);
+    }
+  }
+  DEFINE_STATIC_LOCAL(Vector<String>, highlyLikelyCandidates, ());
+  if (highlyLikelyCandidates.isEmpty()) {
+    auto words = {"and", "article", "body", "column", "main", "shadow"};
+    for (auto word : words) {
+      highlyLikelyCandidates.append(word);
+    }
+  }
+
+  if (!isVisible(element))
+    return false;
+  if (features.mozScore >= kMozScoreSaturation &&
+      features.mozScoreAllSqrt >= kMozScoreAllSqrtSaturation &&
+      features.mozScoreAllLinear >= kMozScoreAllLinearSaturation)
+    return false;
+  if (matchAttributes(element, unlikelyCandidates) &&
+      !matchAttributes(element, highlyLikelyCandidates))
+    return false;
+  return true;
 }
 
 // underListItem denotes that at least one of the ancesters is <li> element.
-void collectFeatures(Element& root, WebDistillabilityFeatures& features, bool underListItem = false)
-{
-    for (Node& node : NodeTraversal::childrenOf(root)) {
-        bool isListItem = false;
-        if (!node.isElementNode()) {
-            continue;
-        }
-
-        features.elementCount++;
-        Element& element = toElement(node);
-        if (element.hasTagName(aTag)) {
-            features.anchorCount++;
-        } else if (element.hasTagName(formTag)) {
-            features.formCount++;
-        } else if (element.hasTagName(inputTag)) {
-            const HTMLInputElement& input = toHTMLInputElement(element);
-            if (input.type() == InputTypeNames::text) {
-                features.textInputCount++;
-            } else if (input.type() == InputTypeNames::password) {
-                features.passwordInputCount++;
-            }
-        } else if (element.hasTagName(pTag) || element.hasTagName(preTag)) {
-            if (element.hasTagName(pTag)) {
-                features.pCount++;
-            } else {
-                features.preCount++;
-            }
-            if (!underListItem && isGoodForScoring(features, element)) {
-                unsigned length = textContentLengthSaturated(element);
-                if (length >= kParagraphLengthThreshold) {
-                    features.mozScore += sqrt(length - kParagraphLengthThreshold);
-                    features.mozScore = std::min(features.mozScore, kMozScoreSaturation);
-                }
-                features.mozScoreAllSqrt += sqrt(length);
-                features.mozScoreAllSqrt = std::min(features.mozScoreAllSqrt, kMozScoreAllSqrtSaturation);
-
-                features.mozScoreAllLinear += length;
-                features.mozScoreAllLinear = std::min(features.mozScoreAllLinear, kMozScoreAllLinearSaturation);
-            }
-        } else if (element.hasTagName(liTag)) {
-            isListItem = true;
-        }
-        collectFeatures(element, features, underListItem || isListItem);
+void collectFeatures(Element& root,
+                     WebDistillabilityFeatures& features,
+                     bool underListItem = false) {
+  for (Node& node : NodeTraversal::childrenOf(root)) {
+    bool isListItem = false;
+    if (!node.isElementNode()) {
+      continue;
     }
-}
 
-bool hasOpenGraphArticle(const Element& head)
-{
-    DEFINE_STATIC_LOCAL(AtomicString, ogType, ("og:type"));
-    DEFINE_STATIC_LOCAL(AtomicString, propertyAttr, ("property"));
-    for (const Element* child = ElementTraversal::firstChild(head); child; child = ElementTraversal::nextSibling(*child)) {
-        if (!isHTMLMetaElement(*child))
-            continue;
-        const HTMLMetaElement& meta = toHTMLMetaElement(*child);
-
-        if (meta.name() == ogType || meta.getAttribute(propertyAttr) == ogType) {
-            if (equalIgnoringCase(meta.content(), "article")) {
-                return true;
-            }
+    features.elementCount++;
+    Element& element = toElement(node);
+    if (element.hasTagName(aTag)) {
+      features.anchorCount++;
+    } else if (element.hasTagName(formTag)) {
+      features.formCount++;
+    } else if (element.hasTagName(inputTag)) {
+      const HTMLInputElement& input = toHTMLInputElement(element);
+      if (input.type() == InputTypeNames::text) {
+        features.textInputCount++;
+      } else if (input.type() == InputTypeNames::password) {
+        features.passwordInputCount++;
+      }
+    } else if (element.hasTagName(pTag) || element.hasTagName(preTag)) {
+      if (element.hasTagName(pTag)) {
+        features.pCount++;
+      } else {
+        features.preCount++;
+      }
+      if (!underListItem && isGoodForScoring(features, element)) {
+        unsigned length = textContentLengthSaturated(element);
+        if (length >= kParagraphLengthThreshold) {
+          features.mozScore += sqrt(length - kParagraphLengthThreshold);
+          features.mozScore = std::min(features.mozScore, kMozScoreSaturation);
         }
+        features.mozScoreAllSqrt += sqrt(length);
+        features.mozScoreAllSqrt =
+            std::min(features.mozScoreAllSqrt, kMozScoreAllSqrtSaturation);
+
+        features.mozScoreAllLinear += length;
+        features.mozScoreAllLinear =
+            std::min(features.mozScoreAllLinear, kMozScoreAllLinearSaturation);
+      }
+    } else if (element.hasTagName(liTag)) {
+      isListItem = true;
     }
-    return false;
+    collectFeatures(element, features, underListItem || isListItem);
+  }
 }
 
-bool isMobileFriendly(Document& document)
-{
-    if (FrameHost* frameHost = document.frameHost())
-        return frameHost->visualViewport().shouldDisableDesktopWorkarounds();
-    return false;
+bool hasOpenGraphArticle(const Element& head) {
+  DEFINE_STATIC_LOCAL(AtomicString, ogType, ("og:type"));
+  DEFINE_STATIC_LOCAL(AtomicString, propertyAttr, ("property"));
+  for (const Element* child = ElementTraversal::firstChild(head); child;
+       child = ElementTraversal::nextSibling(*child)) {
+    if (!isHTMLMetaElement(*child))
+      continue;
+    const HTMLMetaElement& meta = toHTMLMetaElement(*child);
+
+    if (meta.name() == ogType || meta.getAttribute(propertyAttr) == ogType) {
+      if (equalIgnoringCase(meta.content(), "article")) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
-} // namespace
+bool isMobileFriendly(Document& document) {
+  if (FrameHost* frameHost = document.frameHost())
+    return frameHost->visualViewport().shouldDisableDesktopWorkarounds();
+  return false;
+}
 
-WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(Document& document)
-{
-    TRACE_EVENT0("blink", "DocumentStatisticsCollector::collectStatistics");
+}  // namespace
 
-    WebDistillabilityFeatures features = WebDistillabilityFeatures();
+WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(
+    Document& document) {
+  TRACE_EVENT0("blink", "DocumentStatisticsCollector::collectStatistics");
 
-    if (!document.frame() || !document.frame()->isMainFrame())
-        return features;
+  WebDistillabilityFeatures features = WebDistillabilityFeatures();
 
-    DCHECK(document.hasFinishedParsing());
-
-    HTMLElement* body = document.body();
-    HTMLElement* head = document.head();
-
-    if (!body || !head)
-        return features;
-
-    features.isMobileFriendly = isMobileFriendly(document);
-
-    double startTime = monotonicallyIncreasingTime();
-
-    // This should be cheap since collectStatistics is only called right after layout.
-    document.updateStyleAndLayoutTree();
-
-    // Traverse the DOM tree and collect statistics.
-    collectFeatures(*body, features);
-    features.openGraph = hasOpenGraphArticle(*head);
-
-    double elapsedTime = monotonicallyIncreasingTime() - startTime;
-
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, distillabilityHistogram, ("WebCore.DistillabilityUs", 1, 1000000, 50));
-    distillabilityHistogram.count(static_cast<int>(1e6 * elapsedTime));
-
+  if (!document.frame() || !document.frame()->isMainFrame())
     return features;
+
+  DCHECK(document.hasFinishedParsing());
+
+  HTMLElement* body = document.body();
+  HTMLElement* head = document.head();
+
+  if (!body || !head)
+    return features;
+
+  features.isMobileFriendly = isMobileFriendly(document);
+
+  double startTime = monotonicallyIncreasingTime();
+
+  // This should be cheap since collectStatistics is only called right after layout.
+  document.updateStyleAndLayoutTree();
+
+  // Traverse the DOM tree and collect statistics.
+  collectFeatures(*body, features);
+  features.openGraph = hasOpenGraphArticle(*head);
+
+  double elapsedTime = monotonicallyIncreasingTime() - startTime;
+
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, distillabilityHistogram,
+                      ("WebCore.DistillabilityUs", 1, 1000000, 50));
+  distillabilityHistogram.count(static_cast<int>(1e6 * elapsedTime));
+
+  return features;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -32,26 +32,28 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
-public:
-    static DOMMimeTypeArray* create(LocalFrame* frame)
-    {
-        return new DOMMimeTypeArray(frame);
-    }
+class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
+                               public ScriptWrappable,
+                               public DOMWindowProperty {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 
-    unsigned length() const;
-    DOMMimeType* item(unsigned index);
-    DOMMimeType* namedItem(const AtomicString& propertyName);
+ public:
+  static DOMMimeTypeArray* create(LocalFrame* frame) {
+    return new DOMMimeTypeArray(frame);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  unsigned length() const;
+  DOMMimeType* item(unsigned index);
+  DOMMimeType* namedItem(const AtomicString& propertyName);
 
-private:
-    explicit DOMMimeTypeArray(LocalFrame*);
-    PluginData* getPluginData() const;
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  explicit DOMMimeTypeArray(LocalFrame*);
+  PluginData* getPluginData() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMMimeTypeArray_h
+#endif  // DOMMimeTypeArray_h

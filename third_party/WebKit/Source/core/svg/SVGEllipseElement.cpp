@@ -27,121 +27,135 @@
 namespace blink {
 
 inline SVGEllipseElement::SVGEllipseElement(Document& document)
-    : SVGGeometryElement(SVGNames::ellipseTag, document)
-    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(SVGLengthMode::Width)))
-    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(SVGLengthMode::Height)))
-    , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(SVGLengthMode::Width)))
-    , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(SVGLengthMode::Height)))
-{
-    addToPropertyMap(m_cx);
-    addToPropertyMap(m_cy);
-    addToPropertyMap(m_rx);
-    addToPropertyMap(m_ry);
+    : SVGGeometryElement(SVGNames::ellipseTag, document),
+      m_cx(SVGAnimatedLength::create(this,
+                                     SVGNames::cxAttr,
+                                     SVGLength::create(SVGLengthMode::Width))),
+      m_cy(SVGAnimatedLength::create(this,
+                                     SVGNames::cyAttr,
+                                     SVGLength::create(SVGLengthMode::Height))),
+      m_rx(SVGAnimatedLength::create(this,
+                                     SVGNames::rxAttr,
+                                     SVGLength::create(SVGLengthMode::Width))),
+      m_ry(
+          SVGAnimatedLength::create(this,
+                                    SVGNames::ryAttr,
+                                    SVGLength::create(SVGLengthMode::Height))) {
+  addToPropertyMap(m_cx);
+  addToPropertyMap(m_cy);
+  addToPropertyMap(m_rx);
+  addToPropertyMap(m_ry);
 }
 
-DEFINE_TRACE(SVGEllipseElement)
-{
-    visitor->trace(m_cx);
-    visitor->trace(m_cy);
-    visitor->trace(m_rx);
-    visitor->trace(m_ry);
-    SVGGeometryElement::trace(visitor);
+DEFINE_TRACE(SVGEllipseElement) {
+  visitor->trace(m_cx);
+  visitor->trace(m_cy);
+  visitor->trace(m_rx);
+  visitor->trace(m_ry);
+  SVGGeometryElement::trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGEllipseElement)
 
-Path SVGEllipseElement::asPath() const
-{
-    Path path;
+Path SVGEllipseElement::asPath() const {
+  Path path;
 
-    SVGLengthContext lengthContext(this);
-    ASSERT(layoutObject());
-    const ComputedStyle& style = layoutObject()->styleRef();
-    const SVGComputedStyle& svgStyle = style.svgStyle();
+  SVGLengthContext lengthContext(this);
+  ASSERT(layoutObject());
+  const ComputedStyle& style = layoutObject()->styleRef();
+  const SVGComputedStyle& svgStyle = style.svgStyle();
 
-    float rx = lengthContext.valueForLength(svgStyle.rx(), style, SVGLengthMode::Width);
-    if (rx < 0)
-        return path;
-    float ry = lengthContext.valueForLength(svgStyle.ry(), style, SVGLengthMode::Height);
-    if (ry < 0)
-        return path;
-    if (!rx && !ry)
-        return path;
-
-    path.addEllipse(FloatRect(
-        lengthContext.valueForLength(svgStyle.cx(), style, SVGLengthMode::Width) - rx,
-        lengthContext.valueForLength(svgStyle.cy(), style, SVGLengthMode::Height) - ry,
-        rx * 2, ry * 2));
-
+  float rx =
+      lengthContext.valueForLength(svgStyle.rx(), style, SVGLengthMode::Width);
+  if (rx < 0)
     return path;
+  float ry =
+      lengthContext.valueForLength(svgStyle.ry(), style, SVGLengthMode::Height);
+  if (ry < 0)
+    return path;
+  if (!rx && !ry)
+    return path;
+
+  path.addEllipse(FloatRect(
+      lengthContext.valueForLength(svgStyle.cx(), style, SVGLengthMode::Width) -
+          rx,
+      lengthContext.valueForLength(svgStyle.cy(), style,
+                                   SVGLengthMode::Height) -
+          ry,
+      rx * 2, ry * 2));
+
+  return path;
 }
 
-bool SVGEllipseElement::isPresentationAttribute(const QualifiedName& attrName) const
-{
-    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
-        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
-        return true;
-    return SVGGeometryElement::isPresentationAttribute(attrName);
+bool SVGEllipseElement::isPresentationAttribute(
+    const QualifiedName& attrName) const {
+  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
+      attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
+    return true;
+  return SVGGeometryElement::isPresentationAttribute(attrName);
 }
 
-bool SVGEllipseElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
-{
-    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
-        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
-        return true;
-    return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
+bool SVGEllipseElement::isPresentationAttributeWithSVGDOM(
+    const QualifiedName& attrName) const {
+  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
+      attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
+    return true;
+  return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
-void SVGEllipseElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-    if (property == m_cx)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
-    else if (property == m_cy)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
-    else if (property == m_rx)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyRx, m_rx->currentValue()->asCSSPrimitiveValue());
-    else if (property == m_ry)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyRy, m_ry->currentValue()->asCSSPrimitiveValue());
-    else
-        SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
+void SVGEllipseElement::collectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
+  SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
+  if (property == m_cx)
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
+  else if (property == m_cy)
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
+  else if (property == m_rx)
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyRx, m_rx->currentValue()->asCSSPrimitiveValue());
+  else if (property == m_ry)
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyRy, m_ry->currentValue()->asCSSPrimitiveValue());
+  else
+    SVGGeometryElement::collectStyleForPresentationAttribute(name, value,
+                                                             style);
 }
 
+void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
+      attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
-void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr
-        || attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
+    invalidateSVGPresentationAttributeStyle();
+    setNeedsStyleRecalc(LocalStyleChange,
+                        StyleChangeReasonForTracing::fromAttribute(attrName));
+    updateRelativeLengthsInformation();
 
-        invalidateSVGPresentationAttributeStyle();
-        setNeedsStyleRecalc(LocalStyleChange,
-            StyleChangeReasonForTracing::fromAttribute(attrName));
-        updateRelativeLengthsInformation();
+    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+    if (!layoutObject)
+      return;
 
-        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
-        if (!layoutObject)
-            return;
+    layoutObject->setNeedsShapeUpdate();
+    markForLayoutAndParentResourceInvalidation(layoutObject);
+    return;
+  }
 
-        layoutObject->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(layoutObject);
-        return;
-    }
-
-    SVGGeometryElement::svgAttributeChanged(attrName);
+  SVGGeometryElement::svgAttributeChanged(attrName);
 }
 
-bool SVGEllipseElement::selfHasRelativeLengths() const
-{
-    return m_cx->currentValue()->isRelative()
-        || m_cy->currentValue()->isRelative()
-        || m_rx->currentValue()->isRelative()
-        || m_ry->currentValue()->isRelative();
+bool SVGEllipseElement::selfHasRelativeLengths() const {
+  return m_cx->currentValue()->isRelative() ||
+         m_cy->currentValue()->isRelative() ||
+         m_rx->currentValue()->isRelative() ||
+         m_ry->currentValue()->isRelative();
 }
 
-LayoutObject* SVGEllipseElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutSVGEllipse(this);
+LayoutObject* SVGEllipseElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutSVGEllipse(this);
 }
 
-} // namespace blink
+}  // namespace blink

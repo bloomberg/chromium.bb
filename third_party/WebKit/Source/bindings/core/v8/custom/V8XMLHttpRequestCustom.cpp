@@ -49,78 +49,78 @@
 
 namespace blink {
 
-void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "responseText", "XMLHttpRequest", info.Holder(), info.GetIsolate());
-    ScriptString text = xmlHttpRequest->responseText(exceptionState);
-    if (text.isEmpty()) {
-        v8SetReturnValueString(info, emptyString(), info.GetIsolate());
-        return;
-    }
-    v8SetReturnValue(info, text.v8Value());
+void V8XMLHttpRequest::responseTextAttributeGetterCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
+  ExceptionState exceptionState(ExceptionState::GetterContext, "responseText",
+                                "XMLHttpRequest", info.Holder(),
+                                info.GetIsolate());
+  ScriptString text = xmlHttpRequest->responseText(exceptionState);
+  if (text.isEmpty()) {
+    v8SetReturnValueString(info, emptyString(), info.GetIsolate());
+    return;
+  }
+  v8SetReturnValue(info, text.v8Value());
 }
 
-void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
+void V8XMLHttpRequest::responseAttributeGetterCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toImpl(info.Holder());
 
-    switch (xmlHttpRequest->getResponseTypeCode()) {
+  switch (xmlHttpRequest->getResponseTypeCode()) {
     case XMLHttpRequest::ResponseTypeDefault:
     case XMLHttpRequest::ResponseTypeText:
-        responseTextAttributeGetterCustom(info);
+      responseTextAttributeGetterCustom(info);
+      return;
+
+    case XMLHttpRequest::ResponseTypeJSON: {
+      v8::Isolate* isolate = info.GetIsolate();
+
+      ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
+      if (jsonSource.isEmpty()) {
+        v8SetReturnValue(info, v8::Null(isolate));
         return;
+      }
 
-    case XMLHttpRequest::ResponseTypeJSON:
-        {
-            v8::Isolate* isolate = info.GetIsolate();
-
-            ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
-            if (jsonSource.isEmpty()) {
-                v8SetReturnValue(info, v8::Null(isolate));
-                return;
-            }
-
-            // Catch syntax error. Swallows an exception (when thrown) as the
-            // spec says. https://xhr.spec.whatwg.org/#response-body
-            v8::TryCatch exceptionCatcher(isolate);
-            v8::Local<v8::Value> json;
-            if (v8Call(v8::JSON::Parse(isolate, jsonSource.v8Value()), json, exceptionCatcher))
-                v8SetReturnValue(info, json);
-            else
-                v8SetReturnValue(info, v8::Null(isolate));
-            return;
-        }
-
-    case XMLHttpRequest::ResponseTypeDocument:
-        {
-            ExceptionState exceptionState(ExceptionState::GetterContext, "response", "XMLHttpRequest", info.Holder(), info.GetIsolate());
-            Document* document = xmlHttpRequest->responseXML(exceptionState);
-            v8SetReturnValueFast(info, document, xmlHttpRequest);
-            return;
-        }
-
-    case XMLHttpRequest::ResponseTypeBlob:
-        {
-            Blob* blob = xmlHttpRequest->responseBlob();
-            v8SetReturnValueFast(info, blob, xmlHttpRequest);
-            return;
-        }
-
-    case XMLHttpRequest::ResponseTypeLegacyStream:
-        {
-            Stream* stream = xmlHttpRequest->responseLegacyStream();
-            v8SetReturnValueFast(info, stream, xmlHttpRequest);
-            return;
-        }
-
-    case XMLHttpRequest::ResponseTypeArrayBuffer:
-        {
-            DOMArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer();
-            v8SetReturnValueFast(info, arrayBuffer, xmlHttpRequest);
-            return;
-        }
+      // Catch syntax error. Swallows an exception (when thrown) as the
+      // spec says. https://xhr.spec.whatwg.org/#response-body
+      v8::TryCatch exceptionCatcher(isolate);
+      v8::Local<v8::Value> json;
+      if (v8Call(v8::JSON::Parse(isolate, jsonSource.v8Value()), json,
+                 exceptionCatcher))
+        v8SetReturnValue(info, json);
+      else
+        v8SetReturnValue(info, v8::Null(isolate));
+      return;
     }
+
+    case XMLHttpRequest::ResponseTypeDocument: {
+      ExceptionState exceptionState(ExceptionState::GetterContext, "response",
+                                    "XMLHttpRequest", info.Holder(),
+                                    info.GetIsolate());
+      Document* document = xmlHttpRequest->responseXML(exceptionState);
+      v8SetReturnValueFast(info, document, xmlHttpRequest);
+      return;
+    }
+
+    case XMLHttpRequest::ResponseTypeBlob: {
+      Blob* blob = xmlHttpRequest->responseBlob();
+      v8SetReturnValueFast(info, blob, xmlHttpRequest);
+      return;
+    }
+
+    case XMLHttpRequest::ResponseTypeLegacyStream: {
+      Stream* stream = xmlHttpRequest->responseLegacyStream();
+      v8SetReturnValueFast(info, stream, xmlHttpRequest);
+      return;
+    }
+
+    case XMLHttpRequest::ResponseTypeArrayBuffer: {
+      DOMArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer();
+      v8SetReturnValueFast(info, arrayBuffer, xmlHttpRequest);
+      return;
+    }
+  }
 }
 
-} // namespace blink
+}  // namespace blink

@@ -10,18 +10,15 @@
 namespace blink {
 
 struct WebAppBannerPromptResult {
-    enum class Outcome { Accepted, Dismissed };
+  enum class Outcome { Accepted, Dismissed };
 
-    WebAppBannerPromptResult(const WebString& platform, Outcome outcome)
-        : platform(platform)
-        , outcome(outcome)
-    {
-    }
+  WebAppBannerPromptResult(const WebString& platform, Outcome outcome)
+      : platform(platform), outcome(outcome) {}
 
-    WebString platform;
-    Outcome outcome;
+  WebString platform;
+  Outcome outcome;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebAppBannerPromptResult_h
+#endif  // WebAppBannerPromptResult_h

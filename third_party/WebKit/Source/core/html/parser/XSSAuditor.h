@@ -42,101 +42,106 @@ class XSSInfo;
 class XSSAuditorDelegate;
 
 struct FilterTokenRequest {
-    STACK_ALLOCATED();
-    FilterTokenRequest(HTMLToken& token, HTMLSourceTracker& sourceTracker, bool shouldAllowCDATA)
-        : token(token)
-        , sourceTracker(sourceTracker)
-        , shouldAllowCDATA(shouldAllowCDATA)
-    { }
+  STACK_ALLOCATED();
+  FilterTokenRequest(HTMLToken& token,
+                     HTMLSourceTracker& sourceTracker,
+                     bool shouldAllowCDATA)
+      : token(token),
+        sourceTracker(sourceTracker),
+        shouldAllowCDATA(shouldAllowCDATA) {}
 
-    HTMLToken& token;
-    HTMLSourceTracker& sourceTracker;
-    bool shouldAllowCDATA;
+  HTMLToken& token;
+  HTMLSourceTracker& sourceTracker;
+  bool shouldAllowCDATA;
 };
 
 class XSSAuditor {
-    USING_FAST_MALLOC(XSSAuditor);
-    WTF_MAKE_NONCOPYABLE(XSSAuditor);
-public:
-    XSSAuditor();
+  USING_FAST_MALLOC(XSSAuditor);
+  WTF_MAKE_NONCOPYABLE(XSSAuditor);
 
-    void init(Document*, XSSAuditorDelegate*);
-    void initForFragment();
+ public:
+  XSSAuditor();
 
-    std::unique_ptr<XSSInfo> filterToken(const FilterTokenRequest&);
-    bool isSafeToSendToAnotherThread() const;
+  void init(Document*, XSSAuditorDelegate*);
+  void initForFragment();
 
-    void setEncoding(const WTF::TextEncoding&);
+  std::unique_ptr<XSSInfo> filterToken(const FilterTokenRequest&);
+  bool isSafeToSendToAnotherThread() const;
 
-    bool isEnabled() const { return m_isEnabled; }
+  void setEncoding(const WTF::TextEncoding&);
 
-private:
-    static const size_t kMaximumFragmentLengthTarget = 100;
+  bool isEnabled() const { return m_isEnabled; }
 
-    enum State {
-        Uninitialized,
-        FilteringTokens,
-        PermittingAdjacentCharacterTokens,
-        SuppressingAdjacentCharacterTokens
-    };
+ private:
+  static const size_t kMaximumFragmentLengthTarget = 100;
 
-    enum TruncationKind {
-        NoTruncation,
-        NormalAttributeTruncation,
-        SrcLikeAttributeTruncation,
-        ScriptLikeAttributeTruncation
-    };
+  enum State {
+    Uninitialized,
+    FilteringTokens,
+    PermittingAdjacentCharacterTokens,
+    SuppressingAdjacentCharacterTokens
+  };
 
-    enum HrefRestriction {
-        ProhibitSameOriginHref,
-        AllowSameOriginHref
-    };
+  enum TruncationKind {
+    NoTruncation,
+    NormalAttributeTruncation,
+    SrcLikeAttributeTruncation,
+    ScriptLikeAttributeTruncation
+  };
 
-    bool filterStartToken(const FilterTokenRequest&);
-    void filterEndToken(const FilterTokenRequest&);
-    bool filterCharacterToken(const FilterTokenRequest&);
-    bool filterScriptToken(const FilterTokenRequest&);
-    bool filterObjectToken(const FilterTokenRequest&);
-    bool filterParamToken(const FilterTokenRequest&);
-    bool filterEmbedToken(const FilterTokenRequest&);
-    bool filterFrameToken(const FilterTokenRequest&);
-    bool filterMetaToken(const FilterTokenRequest&);
-    bool filterBaseToken(const FilterTokenRequest&);
-    bool filterFormToken(const FilterTokenRequest&);
-    bool filterInputToken(const FilterTokenRequest&);
-    bool filterButtonToken(const FilterTokenRequest&);
-    bool filterLinkToken(const FilterTokenRequest&);
+  enum HrefRestriction { ProhibitSameOriginHref, AllowSameOriginHref };
 
-    bool eraseDangerousAttributesIfInjected(const FilterTokenRequest&);
-    bool eraseAttributeIfInjected(const FilterTokenRequest&, const QualifiedName&, const String& replacementValue = String(), TruncationKind = NormalAttributeTruncation, HrefRestriction = ProhibitSameOriginHref);
+  bool filterStartToken(const FilterTokenRequest&);
+  void filterEndToken(const FilterTokenRequest&);
+  bool filterCharacterToken(const FilterTokenRequest&);
+  bool filterScriptToken(const FilterTokenRequest&);
+  bool filterObjectToken(const FilterTokenRequest&);
+  bool filterParamToken(const FilterTokenRequest&);
+  bool filterEmbedToken(const FilterTokenRequest&);
+  bool filterFrameToken(const FilterTokenRequest&);
+  bool filterMetaToken(const FilterTokenRequest&);
+  bool filterBaseToken(const FilterTokenRequest&);
+  bool filterFormToken(const FilterTokenRequest&);
+  bool filterInputToken(const FilterTokenRequest&);
+  bool filterButtonToken(const FilterTokenRequest&);
+  bool filterLinkToken(const FilterTokenRequest&);
 
-    String canonicalizedSnippetForTagName(const FilterTokenRequest&);
-    String canonicalizedSnippetForJavaScript(const FilterTokenRequest&);
-    String nameFromAttribute(const FilterTokenRequest&, const HTMLToken::Attribute&);
-    String snippetFromAttribute(const FilterTokenRequest&, const HTMLToken::Attribute&);
-    String canonicalize(String, TruncationKind);
+  bool eraseDangerousAttributesIfInjected(const FilterTokenRequest&);
+  bool eraseAttributeIfInjected(const FilterTokenRequest&,
+                                const QualifiedName&,
+                                const String& replacementValue = String(),
+                                TruncationKind = NormalAttributeTruncation,
+                                HrefRestriction = ProhibitSameOriginHref);
 
-    bool isContainedInRequest(const String&);
-    bool isLikelySafeResource(const String& url);
+  String canonicalizedSnippetForTagName(const FilterTokenRequest&);
+  String canonicalizedSnippetForJavaScript(const FilterTokenRequest&);
+  String nameFromAttribute(const FilterTokenRequest&,
+                           const HTMLToken::Attribute&);
+  String snippetFromAttribute(const FilterTokenRequest&,
+                              const HTMLToken::Attribute&);
+  String canonicalize(String, TruncationKind);
 
-    KURL m_documentURL;
-    bool m_isEnabled;
+  bool isContainedInRequest(const String&);
+  bool isLikelySafeResource(const String& url);
 
-    ReflectedXSSDisposition m_xssProtection;
-    bool m_didSendValidCSPHeader;
-    bool m_didSendValidXSSProtectionHeader;
+  KURL m_documentURL;
+  bool m_isEnabled;
 
-    String m_decodedURL;
-    String m_decodedHTTPBody;
-    String m_httpBodyAsString;
-    std::unique_ptr<SuffixTree<ASCIICodebook>> m_decodedHTTPBodySuffixTree;
+  ReflectedXSSDisposition m_xssProtection;
+  bool m_didSendValidCSPHeader;
+  bool m_didSendValidXSSProtectionHeader;
 
-    State m_state;
-    bool m_scriptTagFoundInRequest;
-    unsigned m_scriptTagNestingLevel;
-    WTF::TextEncoding m_encoding;
+  String m_decodedURL;
+  String m_decodedHTTPBody;
+  String m_httpBodyAsString;
+  std::unique_ptr<SuffixTree<ASCIICodebook>> m_decodedHTTPBodySuffixTree;
+
+  State m_state;
+  bool m_scriptTagFoundInRequest;
+  unsigned m_scriptTagNestingLevel;
+  WTF::TextEncoding m_encoding;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

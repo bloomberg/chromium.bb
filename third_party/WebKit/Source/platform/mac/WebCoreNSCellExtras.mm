@@ -26,20 +26,23 @@
 #import "platform/mac/WebCoreNSCellExtras.h"
 
 @interface NSCell (LionSDKDeclarations)
-- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
+- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame
+                            inView:(NSView*)controlView;
 @end
 
 @implementation NSCell (BlinkFocusRingDrawing)
 
-- (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
-{
-    CGContextRef cgContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-    CGContextSaveGState(cgContext);
-    NSSetFocusRingStyle(NSFocusRingOnly);
-    CGContextBeginTransparencyLayerWithRect(cgContext, NSRectToCGRect(cellFrame), 0);
-    [self drawFocusRingMaskWithFrame:cellFrame inView:controlView];
-    CGContextEndTransparencyLayer(cgContext);
-    CGContextRestoreGState(cgContext);
+- (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame
+                           inView:(NSView*)controlView {
+  CGContextRef cgContext =
+      (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+  CGContextSaveGState(cgContext);
+  NSSetFocusRingStyle(NSFocusRingOnly);
+  CGContextBeginTransparencyLayerWithRect(cgContext, NSRectToCGRect(cellFrame),
+                                          0);
+  [self drawFocusRingMaskWithFrame:cellFrame inView:controlView];
+  CGContextEndTransparencyLayer(cgContext);
+  CGContextRestoreGState(cgContext);
 }
 
 @end

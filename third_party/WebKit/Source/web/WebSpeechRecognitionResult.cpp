@@ -32,30 +32,31 @@
 
 namespace blink {
 
-void WebSpeechRecognitionResult::assign(const WebSpeechRecognitionResult& other)
-{
-    m_private = other.m_private;
+void WebSpeechRecognitionResult::assign(
+    const WebSpeechRecognitionResult& other) {
+  m_private = other.m_private;
 }
 
-void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts, const WebVector<float>& confidences, bool final)
-{
-    DCHECK_EQ(transcripts.size(), confidences.size());
+void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts,
+                                        const WebVector<float>& confidences,
+                                        bool final) {
+  DCHECK_EQ(transcripts.size(), confidences.size());
 
-    HeapVector<Member<SpeechRecognitionAlternative>> alternatives(transcripts.size());
-    for (size_t i = 0; i < transcripts.size(); ++i)
-        alternatives[i] = SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
+  HeapVector<Member<SpeechRecognitionAlternative>> alternatives(
+      transcripts.size());
+  for (size_t i = 0; i < transcripts.size(); ++i)
+    alternatives[i] =
+        SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
 
-    m_private = SpeechRecognitionResult::create(alternatives, final);
+  m_private = SpeechRecognitionResult::create(alternatives, final);
 }
 
-void WebSpeechRecognitionResult::reset()
-{
-    m_private.reset();
+void WebSpeechRecognitionResult::reset() {
+  m_private.reset();
 }
 
-WebSpeechRecognitionResult::operator SpeechRecognitionResult*() const
-{
-    return m_private.get();
+WebSpeechRecognitionResult::operator SpeechRecognitionResult*() const {
+  return m_private.get();
 }
 
-} // namespace blink
+}  // namespace blink

@@ -14,20 +14,22 @@ struct PaintInfo;
 class LayoutSVGImage;
 
 class SVGImagePainter {
-    STACK_ALLOCATED();
-public:
-    SVGImagePainter(const LayoutSVGImage& layoutSVGImage) : m_layoutSVGImage(layoutSVGImage) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&);
+ public:
+  SVGImagePainter(const LayoutSVGImage& layoutSVGImage)
+      : m_layoutSVGImage(layoutSVGImage) {}
 
-private:
-    // Assumes the PaintInfo context has had all local transforms applied.
-    void paintForeground(const PaintInfo&);
-    FloatSize computeImageViewportSize() const;
+  void paint(const PaintInfo&);
 
-    const LayoutSVGImage& m_layoutSVGImage;
+ private:
+  // Assumes the PaintInfo context has had all local transforms applied.
+  void paintForeground(const PaintInfo&);
+  FloatSize computeImageViewportSize() const;
+
+  const LayoutSVGImage& m_layoutSVGImage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGImagePainter_h
+#endif  // SVGImagePainter_h

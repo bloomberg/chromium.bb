@@ -43,41 +43,41 @@ namespace WTF {
 // separate buffer to hold the data if the String happens to be 8 bit and
 // contain only ASCII characters.
 class StringUTF8Adaptor final {
-    DISALLOW_NEW();
-public:
-    explicit StringUTF8Adaptor(const String& string)
-        : m_data(0)
-        , m_length(0)
-    {
-        if (string.isEmpty())
-            return;
-        // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses UTF-8
-        // when processing 8 bit strings. If |relative| is entirely ASCII, we luck out
-        // and can avoid mallocing a new buffer to hold the UTF-8 data because UTF-8
-        // and Latin-1 use the same code units for ASCII code points.
-        if (string.is8Bit() && string.containsOnlyASCII()) {
-            m_data = reinterpret_cast<const char*>(string.characters8());
-            m_length = string.length();
-        } else {
-            m_utf8Buffer = string.utf8();
-            m_data = m_utf8Buffer.data();
-            m_length = m_utf8Buffer.length();
-        }
+  DISALLOW_NEW();
+
+ public:
+  explicit StringUTF8Adaptor(const String& string) : m_data(0), m_length(0) {
+    if (string.isEmpty())
+      return;
+    // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses UTF-8
+    // when processing 8 bit strings. If |relative| is entirely ASCII, we luck out
+    // and can avoid mallocing a new buffer to hold the UTF-8 data because UTF-8
+    // and Latin-1 use the same code units for ASCII code points.
+    if (string.is8Bit() && string.containsOnlyASCII()) {
+      m_data = reinterpret_cast<const char*>(string.characters8());
+      m_length = string.length();
+    } else {
+      m_utf8Buffer = string.utf8();
+      m_data = m_utf8Buffer.data();
+      m_length = m_utf8Buffer.length();
     }
+  }
 
-    const char* data() const { return m_data; }
-    size_t length() const { return m_length; }
+  const char* data() const { return m_data; }
+  size_t length() const { return m_length; }
 
-    base::StringPiece asStringPiece() const { return base::StringPiece(m_data, m_length); }
+  base::StringPiece asStringPiece() const {
+    return base::StringPiece(m_data, m_length);
+  }
 
-private:
-    CString m_utf8Buffer;
-    const char* m_data;
-    size_t m_length;
+ private:
+  CString m_utf8Buffer;
+  const char* m_data;
+  size_t m_length;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::StringUTF8Adaptor;
 
-#endif // StringUTF8Adaptor_h
+#endif  // StringUTF8Adaptor_h

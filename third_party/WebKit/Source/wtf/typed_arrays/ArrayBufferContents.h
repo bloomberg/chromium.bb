@@ -37,91 +37,100 @@
 
 namespace WTF {
 
-typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int64_t size);
+typedef void (*AdjustAmountOfExternalAllocatedMemoryFunction)(int64_t size);
 
 class WTF_EXPORT ArrayBufferContents {
-    WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    enum InitializationPolicy {
-        ZeroInitialize,
-        DontInitialize
-    };
+  WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    enum SharingType {
-        NotShared,
-        Shared,
-    };
+ public:
+  enum InitializationPolicy { ZeroInitialize, DontInitialize };
 
-    ArrayBufferContents();
-    ArrayBufferContents(unsigned numElements, unsigned elementByteSize, SharingType isShared, ArrayBufferContents::InitializationPolicy);
+  enum SharingType {
+    NotShared,
+    Shared,
+  };
 
-    // Use with care. data must be allocated with allocateMemory.
-    // ArrayBufferContents will take ownership of the data and free it (using freeMemory)
-    // upon destruction.
-    // This constructor will not call observer->StartObserving(), so it is a responsibility
-    // of the caller to make sure JS knows about external memory.
-    ArrayBufferContents(void* data, unsigned sizeInBytes, SharingType isShared);
+  ArrayBufferContents();
+  ArrayBufferContents(unsigned numElements,
+                      unsigned elementByteSize,
+                      SharingType isShared,
+                      ArrayBufferContents::InitializationPolicy);
 
-    ~ArrayBufferContents();
+  // Use with care. data must be allocated with allocateMemory.
+  // ArrayBufferContents will take ownership of the data and free it (using freeMemory)
+  // upon destruction.
+  // This constructor will not call observer->StartObserving(), so it is a responsibility
+  // of the caller to make sure JS knows about external memory.
+  ArrayBufferContents(void* data, unsigned sizeInBytes, SharingType isShared);
 
-    void neuter();
+  ~ArrayBufferContents();
 
-    void* data() const { return m_holder ? m_holder->data() : nullptr; }
-    unsigned sizeInBytes() const { return m_holder ? m_holder->sizeInBytes() : 0; }
-    bool isShared() const { return m_holder ? m_holder->isShared() : false; }
+  void neuter();
 
-    void transfer(ArrayBufferContents& other);
-    void shareWith(ArrayBufferContents& other);
-    void copyTo(ArrayBufferContents& other);
+  void* data() const { return m_holder ? m_holder->data() : nullptr; }
+  unsigned sizeInBytes() const {
+    return m_holder ? m_holder->sizeInBytes() : 0;
+  }
+  bool isShared() const { return m_holder ? m_holder->isShared() : false; }
 
-    static void allocateMemory(size_t, InitializationPolicy, void*&);
-    static void allocateMemoryOrNull(size_t, InitializationPolicy, void*&);
-    static void freeMemory(void*, size_t);
-    static void initialize(AdjustAmountOfExternalAllocatedMemoryFunction function)
-    {
-        ASSERT(isMainThread());
-        ASSERT(!s_adjustAmountOfExternalAllocatedMemoryFunction);
-        s_adjustAmountOfExternalAllocatedMemoryFunction = function;
+  void transfer(ArrayBufferContents& other);
+  void shareWith(ArrayBufferContents& other);
+  void copyTo(ArrayBufferContents& other);
+
+  static void allocateMemory(size_t, InitializationPolicy, void*&);
+  static void allocateMemoryOrNull(size_t, InitializationPolicy, void*&);
+  static void freeMemory(void*, size_t);
+  static void initialize(
+      AdjustAmountOfExternalAllocatedMemoryFunction function) {
+    ASSERT(isMainThread());
+    ASSERT(!s_adjustAmountOfExternalAllocatedMemoryFunction);
+    s_adjustAmountOfExternalAllocatedMemoryFunction = function;
+  }
+
+ private:
+  static void allocateMemoryWithFlags(size_t,
+                                      InitializationPolicy,
+                                      int,
+                                      void*&);
+  class DataHolder : public ThreadSafeRefCounted<DataHolder> {
+    WTF_MAKE_NONCOPYABLE(DataHolder);
+
+   public:
+    DataHolder();
+    ~DataHolder();
+
+    void allocateNew(unsigned sizeInBytes,
+                     SharingType isShared,
+                     InitializationPolicy);
+    void adopt(void* data, unsigned sizeInBytes, SharingType isShared);
+    void copyMemoryFrom(const DataHolder& source);
+
+    const void* data() const { return m_data; }
+    void* data() { return m_data; }
+    unsigned sizeInBytes() const { return m_sizeInBytes; }
+    bool isShared() const { return m_isShared == Shared; }
+
+   private:
+    void adjustAmountOfExternalAllocatedMemory(int64_t diff) {
+      if (ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction)
+        ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction(
+            diff);
+    }
+    void adjustAmountOfExternalAllocatedMemory(unsigned diff) {
+      adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
     }
 
-private:
-    static void allocateMemoryWithFlags(size_t, InitializationPolicy, int, void*&);
-    class DataHolder : public ThreadSafeRefCounted<DataHolder> {
-        WTF_MAKE_NONCOPYABLE(DataHolder);
-    public:
-        DataHolder();
-        ~DataHolder();
+    void* m_data;
+    unsigned m_sizeInBytes;
+    SharingType m_isShared;
+  };
 
-        void allocateNew(unsigned sizeInBytes, SharingType isShared, InitializationPolicy);
-        void adopt(void* data, unsigned sizeInBytes, SharingType isShared);
-        void copyMemoryFrom(const DataHolder& source);
-
-        const void* data() const { return m_data; }
-        void* data() { return m_data; }
-        unsigned sizeInBytes() const { return m_sizeInBytes; }
-        bool isShared() const { return m_isShared == Shared; }
-
-    private:
-        void adjustAmountOfExternalAllocatedMemory(int64_t diff)
-        {
-            if (ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction)
-                ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction(diff);
-        }
-        void adjustAmountOfExternalAllocatedMemory(unsigned diff)
-        {
-            adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
-        }
-
-        void* m_data;
-        unsigned m_sizeInBytes;
-        SharingType m_isShared;
-    };
-
-    RefPtr<DataHolder> m_holder;
-    static AdjustAmountOfExternalAllocatedMemoryFunction s_adjustAmountOfExternalAllocatedMemoryFunction;
+  RefPtr<DataHolder> m_holder;
+  static AdjustAmountOfExternalAllocatedMemoryFunction
+      s_adjustAmountOfExternalAllocatedMemoryFunction;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // ArrayBufferContents_h
+#endif  // ArrayBufferContents_h

@@ -14,28 +14,30 @@ namespace blink {
 class ConsoleMessage;
 class ConsoleMessageStorage;
 
-class CORE_EXPORT InspectorLogAgent : public InspectorBaseAgent<protocol::Log::Metainfo> {
-    WTF_MAKE_NONCOPYABLE(InspectorLogAgent);
-public:
-    explicit InspectorLogAgent(ConsoleMessageStorage*);
-    ~InspectorLogAgent() override;
-    DECLARE_VIRTUAL_TRACE();
+class CORE_EXPORT InspectorLogAgent
+    : public InspectorBaseAgent<protocol::Log::Metainfo> {
+  WTF_MAKE_NONCOPYABLE(InspectorLogAgent);
 
-    void restore() override;
+ public:
+  explicit InspectorLogAgent(ConsoleMessageStorage*);
+  ~InspectorLogAgent() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    // Called from InspectorInstrumentation.
-    void consoleMessageAdded(ConsoleMessage*);
+  void restore() override;
 
-    // Protocol methods.
-    void enable(ErrorString*) override;
-    void disable(ErrorString*) override;
-    void clear(ErrorString*) override;
+  // Called from InspectorInstrumentation.
+  void consoleMessageAdded(ConsoleMessage*);
 
-private:
-    bool m_enabled;
-    Member<ConsoleMessageStorage> m_storage;
+  // Protocol methods.
+  void enable(ErrorString*) override;
+  void disable(ErrorString*) override;
+  void clear(ErrorString*) override;
+
+ private:
+  bool m_enabled;
+  Member<ConsoleMessageStorage> m_storage;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !defined(InspectorLogAgent_h)
+#endif  // !defined(InspectorLogAgent_h)

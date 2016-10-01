@@ -38,8 +38,10 @@
 #include <utility>
 
 namespace blink {
-template <typename T> class Member;
-template <typename T> class WeakMember;
+template <typename T>
+class Member;
+template <typename T>
+class WeakMember;
 }
 
 namespace WTF {
@@ -97,178 +99,187 @@ namespace WTF {
 // Obviously, if you create a functor this way, you shouldn't call the functor twice or more; after the second call,
 // the passed argument may be invalid.
 
-enum FunctionThreadAffinity {
-    CrossThreadAffinity,
-    SameThreadAffinity
-};
+enum FunctionThreadAffinity { CrossThreadAffinity, SameThreadAffinity };
 
 template <typename T>
 class PassedWrapper final {
-public:
-    explicit PassedWrapper(T&& scoper) : m_scoper(std::move(scoper)) { }
-    PassedWrapper(PassedWrapper&& other) : m_scoper(std::move(other.m_scoper)) { }
-    T moveOut() const { return std::move(m_scoper); }
+ public:
+  explicit PassedWrapper(T&& scoper) : m_scoper(std::move(scoper)) {}
+  PassedWrapper(PassedWrapper&& other) : m_scoper(std::move(other.m_scoper)) {}
+  T moveOut() const { return std::move(m_scoper); }
 
-private:
-    mutable T m_scoper;
+ private:
+  mutable T m_scoper;
 };
 
 template <typename T>
-PassedWrapper<T> passed(T&& value)
-{
-    static_assert(!std::is_reference<T>::value,
-        "You must pass an rvalue to passed() so it can be moved. Add std::move() if necessary.");
-    static_assert(!std::is_const<T>::value, "|value| must not be const so it can be moved.");
-    return PassedWrapper<T>(std::move(value));
+PassedWrapper<T> passed(T&& value) {
+  static_assert(!std::is_reference<T>::value,
+                "You must pass an rvalue to passed() so it can be moved. Add "
+                "std::move() if necessary.");
+  static_assert(!std::is_const<T>::value,
+                "|value| must not be const so it can be moved.");
+  return PassedWrapper<T>(std::move(value));
 }
 
 template <typename T, FunctionThreadAffinity threadAffinity>
 class UnretainedWrapper final {
-public:
-    explicit UnretainedWrapper(T* ptr) : m_ptr(ptr) { }
-    T* value() const { return m_ptr; }
+ public:
+  explicit UnretainedWrapper(T* ptr) : m_ptr(ptr) {}
+  T* value() const { return m_ptr; }
 
-private:
-    T* m_ptr;
+ private:
+  T* m_ptr;
 };
 
 template <typename T>
-UnretainedWrapper<T, SameThreadAffinity> unretained(T* value)
-{
-    static_assert(!WTF::IsGarbageCollectedType<T>::value, "unretained() + GCed type is forbidden");
-    return UnretainedWrapper<T, SameThreadAffinity>(value);
+UnretainedWrapper<T, SameThreadAffinity> unretained(T* value) {
+  static_assert(!WTF::IsGarbageCollectedType<T>::value,
+                "unretained() + GCed type is forbidden");
+  return UnretainedWrapper<T, SameThreadAffinity>(value);
 }
 
 template <typename T>
-UnretainedWrapper<T, CrossThreadAffinity> crossThreadUnretained(T* value)
-{
-    static_assert(!WTF::IsGarbageCollectedType<T>::value, "crossThreadUnretained() + GCed type is forbidden");
-    return UnretainedWrapper<T, CrossThreadAffinity>(value);
+UnretainedWrapper<T, CrossThreadAffinity> crossThreadUnretained(T* value) {
+  static_assert(!WTF::IsGarbageCollectedType<T>::value,
+                "crossThreadUnretained() + GCed type is forbidden");
+  return UnretainedWrapper<T, CrossThreadAffinity>(value);
 }
 
 template <typename T>
 struct ParamStorageTraits {
-    typedef T StorageType;
+  typedef T StorageType;
 
-    static_assert(!std::is_pointer<T>::value, "Raw pointers are not allowed to bind into WTF::Function. Wrap it with either wrapPersistent, wrapWeakPersistent, wrapCrossThreadPersistent, wrapCrossThreadWeakPersistent, RefPtr or unretained.");
-    static_assert(!IsSubclassOfTemplate<T, blink::Member>::value && !IsSubclassOfTemplate<T, blink::WeakMember>::value, "Member and WeakMember are not allowed to bind into WTF::Function. Wrap it with either wrapPersistent, wrapWeakPersistent, wrapCrossThreadPersistent or wrapCrossThreadWeakPersistent.");
+  static_assert(!std::is_pointer<T>::value,
+                "Raw pointers are not allowed to bind into WTF::Function. Wrap "
+                "it with either wrapPersistent, wrapWeakPersistent, "
+                "wrapCrossThreadPersistent, wrapCrossThreadWeakPersistent, "
+                "RefPtr or unretained.");
+  static_assert(!IsSubclassOfTemplate<T, blink::Member>::value &&
+                    !IsSubclassOfTemplate<T, blink::WeakMember>::value,
+                "Member and WeakMember are not allowed to bind into "
+                "WTF::Function. Wrap it with either wrapPersistent, "
+                "wrapWeakPersistent, wrapCrossThreadPersistent or "
+                "wrapCrossThreadWeakPersistent.");
 };
 
 template <typename T>
 struct ParamStorageTraits<PassRefPtr<T>> {
-    typedef RefPtr<T> StorageType;
+  typedef RefPtr<T> StorageType;
 };
 
 template <typename T>
 struct ParamStorageTraits<RefPtr<T>> {
-    typedef RefPtr<T> StorageType;
+  typedef RefPtr<T> StorageType;
 };
 
-template <typename> class RetainPtr;
+template <typename>
+class RetainPtr;
 
 template <typename T>
 struct ParamStorageTraits<RetainPtr<T>> {
-    typedef RetainPtr<T> StorageType;
+  typedef RetainPtr<T> StorageType;
 };
 
 template <typename T>
 struct ParamStorageTraits<PassedWrapper<T>> {
-    typedef PassedWrapper<T> StorageType;
+  typedef PassedWrapper<T> StorageType;
 };
 
 template <typename T, FunctionThreadAffinity threadAffinity>
 struct ParamStorageTraits<UnretainedWrapper<T, threadAffinity>> {
-    typedef UnretainedWrapper<T, threadAffinity> StorageType;
+  typedef UnretainedWrapper<T, threadAffinity> StorageType;
 };
 
-template<typename Signature, FunctionThreadAffinity threadAffinity = SameThreadAffinity>
+template <typename Signature,
+          FunctionThreadAffinity threadAffinity = SameThreadAffinity>
 class Function;
 
-template<typename R, typename... Args, FunctionThreadAffinity threadAffinity>
+template <typename R, typename... Args, FunctionThreadAffinity threadAffinity>
 class Function<R(Args...), threadAffinity> {
-    USING_FAST_MALLOC(Function);
-    WTF_MAKE_NONCOPYABLE(Function);
-public:
-    Function(base::Callback<R(Args...)> callback)
-        : m_callback(std::move(callback)) { }
+  USING_FAST_MALLOC(Function);
+  WTF_MAKE_NONCOPYABLE(Function);
 
-    ~Function()
-    {
-        DCHECK(m_threadChecker.CalledOnValidThread());
-    }
+ public:
+  Function(base::Callback<R(Args...)> callback)
+      : m_callback(std::move(callback)) {}
 
-    R operator()(Args... args)
-    {
-        DCHECK(m_threadChecker.CalledOnValidThread());
-        return m_callback.Run(std::forward<Args>(args)...);
-    }
+  ~Function() { DCHECK(m_threadChecker.CalledOnValidThread()); }
 
-    bool isCancelled() const
-    {
-        return m_callback.IsCancelled();
-    }
+  R operator()(Args... args) {
+    DCHECK(m_threadChecker.CalledOnValidThread());
+    return m_callback.Run(std::forward<Args>(args)...);
+  }
 
-    friend base::Callback<R(Args...)> convertToBaseCallback(std::unique_ptr<Function> function)
-    {
-        if (function)
-            return std::move(function->m_callback);
-        return base::Callback<R(Args...)>();
-    }
+  bool isCancelled() const { return m_callback.IsCancelled(); }
 
-private:
-    using MaybeThreadChecker = typename std::conditional<
-        threadAffinity == SameThreadAffinity,
-        base::ThreadChecker,
-        base::ThreadCheckerDoNothing>::type;
-    MaybeThreadChecker m_threadChecker;
-    base::Callback<R(Args...)> m_callback;
+  friend base::Callback<R(Args...)> convertToBaseCallback(
+      std::unique_ptr<Function> function) {
+    if (function)
+      return std::move(function->m_callback);
+    return base::Callback<R(Args...)>();
+  }
+
+ private:
+  using MaybeThreadChecker =
+      typename std::conditional<threadAffinity == SameThreadAffinity,
+                                base::ThreadChecker,
+                                base::ThreadCheckerDoNothing>::type;
+  MaybeThreadChecker m_threadChecker;
+  base::Callback<R(Args...)> m_callback;
 };
 
-template <FunctionThreadAffinity threadAffinity, typename FunctionType, typename... BoundParameters>
-std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>, threadAffinity>> bindInternal(FunctionType function, BoundParameters&&... boundParameters)
-{
-    using UnboundRunType = base::MakeUnboundRunType<FunctionType, BoundParameters...>;
-    return wrapUnique(new Function<UnboundRunType, threadAffinity>(base::Bind(function, typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::StorageType(std::forward<BoundParameters>(boundParameters))...)));
+template <FunctionThreadAffinity threadAffinity,
+          typename FunctionType,
+          typename... BoundParameters>
+std::unique_ptr<
+    Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>,
+             threadAffinity>>
+bindInternal(FunctionType function, BoundParameters&&... boundParameters) {
+  using UnboundRunType =
+      base::MakeUnboundRunType<FunctionType, BoundParameters...>;
+  return wrapUnique(new Function<UnboundRunType, threadAffinity>(base::Bind(
+      function,
+      typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::
+          StorageType(std::forward<BoundParameters>(boundParameters))...)));
 }
 
 template <typename FunctionType, typename... BoundParameters>
-std::unique_ptr<Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>, SameThreadAffinity>> bind(FunctionType function, BoundParameters&&... boundParameters)
-{
-    return bindInternal<SameThreadAffinity>(function, std::forward<BoundParameters>(boundParameters)...);
+std::unique_ptr<
+    Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>,
+             SameThreadAffinity>>
+bind(FunctionType function, BoundParameters&&... boundParameters) {
+  return bindInternal<SameThreadAffinity>(
+      function, std::forward<BoundParameters>(boundParameters)...);
 }
 
 typedef Function<void(), SameThreadAffinity> Closure;
 typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 
-} // namespace WTF
+}  // namespace WTF
 
 namespace base {
 
 template <typename T>
 struct BindUnwrapTraits<WTF::RefPtr<T>> {
-    static T* Unwrap(const WTF::RefPtr<T>& wrapped)
-    {
-        return wrapped.get();
-    }
+  static T* Unwrap(const WTF::RefPtr<T>& wrapped) { return wrapped.get(); }
 };
 
 template <typename T>
 struct BindUnwrapTraits<WTF::PassedWrapper<T>> {
-    static T Unwrap(const WTF::PassedWrapper<T>& wrapped)
-    {
-        return wrapped.moveOut();
-    }
+  static T Unwrap(const WTF::PassedWrapper<T>& wrapped) {
+    return wrapped.moveOut();
+  }
 };
 
 template <typename T, WTF::FunctionThreadAffinity threadAffinity>
 struct BindUnwrapTraits<WTF::UnretainedWrapper<T, threadAffinity>> {
-    static T* Unwrap(const WTF::UnretainedWrapper<T, threadAffinity>& wrapped)
-    {
-        return wrapped.value();
-    }
+  static T* Unwrap(const WTF::UnretainedWrapper<T, threadAffinity>& wrapped) {
+    return wrapped.value();
+  }
 };
 
-} // namespace base
+}  // namespace base
 
 using WTF::passed;
 using WTF::unretained;
@@ -277,4 +288,4 @@ using WTF::crossThreadUnretained;
 using WTF::Function;
 using WTF::CrossThreadClosure;
 
-#endif // WTF_Functional_h
+#endif  // WTF_Functional_h

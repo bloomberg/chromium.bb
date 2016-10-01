@@ -30,33 +30,28 @@
 
 namespace blink {
 
-ArchiveResource::ArchiveResource(
-    PassRefPtr<SharedBuffer> data,
-    const KURL& url,
-    const String& contentID,
-    const AtomicString& mimeType,
-    const AtomicString& textEncoding)
-    : m_url(url)
-    , m_contentID(contentID)
-    , m_data(data)
-    , m_mimeType(mimeType)
-    , m_textEncoding(textEncoding)
-{
-    ASSERT(m_data);
+ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data,
+                                 const KURL& url,
+                                 const String& contentID,
+                                 const AtomicString& mimeType,
+                                 const AtomicString& textEncoding)
+    : m_url(url),
+      m_contentID(contentID),
+      m_data(data),
+      m_mimeType(mimeType),
+      m_textEncoding(textEncoding) {
+  ASSERT(m_data);
 }
 
-ArchiveResource::~ArchiveResource()
-{
+ArchiveResource::~ArchiveResource() {}
+
+ArchiveResource* ArchiveResource::create(PassRefPtr<SharedBuffer> data,
+                                         const KURL& url,
+                                         const String& contentID,
+                                         const AtomicString& mimeType,
+                                         const AtomicString& textEncoding) {
+  return new ArchiveResource(std::move(data), url, contentID, mimeType,
+                             textEncoding);
 }
 
-ArchiveResource* ArchiveResource::create(
-    PassRefPtr<SharedBuffer> data,
-    const KURL& url,
-    const String& contentID,
-    const AtomicString& mimeType,
-    const AtomicString& textEncoding)
-{
-    return new ArchiveResource(std::move(data), url, contentID, mimeType, textEncoding);
-}
-
-} // namespace blink
+}  // namespace blink

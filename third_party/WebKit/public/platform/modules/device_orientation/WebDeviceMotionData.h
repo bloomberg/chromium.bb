@@ -38,43 +38,45 @@ namespace blink {
 #pragma pack(push, 1)
 
 class WebDeviceMotionData {
-public:
-    BLINK_PLATFORM_EXPORT WebDeviceMotionData();
-    ~WebDeviceMotionData() { }
+ public:
+  BLINK_PLATFORM_EXPORT WebDeviceMotionData();
+  ~WebDeviceMotionData() {}
 
-    double accelerationX;
-    double accelerationY;
-    double accelerationZ;
+  double accelerationX;
+  double accelerationY;
+  double accelerationZ;
 
-    double accelerationIncludingGravityX;
-    double accelerationIncludingGravityY;
-    double accelerationIncludingGravityZ;
+  double accelerationIncludingGravityX;
+  double accelerationIncludingGravityY;
+  double accelerationIncludingGravityZ;
 
-    double rotationRateAlpha;
-    double rotationRateBeta;
-    double rotationRateGamma;
+  double rotationRateAlpha;
+  double rotationRateBeta;
+  double rotationRateGamma;
 
-    double interval;
+  double interval;
 
-    bool hasAccelerationX : 1;
-    bool hasAccelerationY : 1;
-    bool hasAccelerationZ : 1;
+  bool hasAccelerationX : 1;
+  bool hasAccelerationY : 1;
+  bool hasAccelerationZ : 1;
 
-    bool hasAccelerationIncludingGravityX : 1;
-    bool hasAccelerationIncludingGravityY : 1;
-    bool hasAccelerationIncludingGravityZ : 1;
+  bool hasAccelerationIncludingGravityX : 1;
+  bool hasAccelerationIncludingGravityY : 1;
+  bool hasAccelerationIncludingGravityZ : 1;
 
-    bool hasRotationRateAlpha : 1;
-    bool hasRotationRateBeta : 1;
-    bool hasRotationRateGamma : 1;
+  bool hasRotationRateAlpha : 1;
+  bool hasRotationRateBeta : 1;
+  bool hasRotationRateGamma : 1;
 
-    bool allAvailableSensorsAreActive : 1;
+  bool allAvailableSensorsAreActive : 1;
 };
 
-static_assert(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), "WebDeviceMotionData has wrong size");
+static_assert(sizeof(WebDeviceMotionData) ==
+                  (10 * sizeof(double) + 2 * sizeof(char)),
+              "WebDeviceMotionData has wrong size");
 
 #pragma pack(pop)
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebDeviceMotionData_h
+#endif  // WebDeviceMotionData_h

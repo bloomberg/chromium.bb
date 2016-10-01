@@ -32,45 +32,56 @@
 namespace blink {
 
 class ChildNodeList final : public NodeList {
-public:
-    static ChildNodeList* create(ContainerNode& rootNode)
-    {
-        return new ChildNodeList(rootNode);
-    }
+ public:
+  static ChildNodeList* create(ContainerNode& rootNode) {
+    return new ChildNodeList(rootNode);
+  }
 
-    ~ChildNodeList() override;
+  ~ChildNodeList() override;
 
-    // DOM API.
-    unsigned length() const override { return m_collectionIndexCache.nodeCount(*this); }
-    Node* item(unsigned index) const override { return m_collectionIndexCache.nodeAt(*this, index); }
+  // DOM API.
+  unsigned length() const override {
+    return m_collectionIndexCache.nodeCount(*this);
+  }
+  Node* item(unsigned index) const override {
+    return m_collectionIndexCache.nodeAt(*this, index);
+  }
 
-    // Non-DOM API.
-    void invalidateCache() { m_collectionIndexCache.invalidate(); }
-    ContainerNode& ownerNode() const { return *m_parent; }
+  // Non-DOM API.
+  void invalidateCache() { m_collectionIndexCache.invalidate(); }
+  ContainerNode& ownerNode() const { return *m_parent; }
 
-    ContainerNode& rootNode() const { return ownerNode(); }
+  ContainerNode& rootNode() const { return ownerNode(); }
 
-    // CollectionIndexCache API.
-    bool canTraverseBackward() const { return true; }
-    Node* traverseToFirst() const { return rootNode().firstChild(); }
-    Node* traverseToLast() const { return rootNode().lastChild(); }
-    Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
-    Node* traverseBackwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
+  // CollectionIndexCache API.
+  bool canTraverseBackward() const { return true; }
+  Node* traverseToFirst() const { return rootNode().firstChild(); }
+  Node* traverseToLast() const { return rootNode().lastChild(); }
+  Node* traverseForwardToOffset(unsigned offset,
+                                Node& currentNode,
+                                unsigned& currentOffset) const;
+  Node* traverseBackwardToOffset(unsigned offset,
+                                 Node& currentNode,
+                                 unsigned& currentOffset) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit ChildNodeList(ContainerNode& rootNode);
+ private:
+  explicit ChildNodeList(ContainerNode& rootNode);
 
-    bool isChildNodeList() const override { return true; }
-    Node* virtualOwnerNode() const override;
+  bool isChildNodeList() const override { return true; }
+  Node* virtualOwnerNode() const override;
 
-    Member<ContainerNode> m_parent;
-    mutable CollectionIndexCache<ChildNodeList, Node> m_collectionIndexCache;
+  Member<ContainerNode> m_parent;
+  mutable CollectionIndexCache<ChildNodeList, Node> m_collectionIndexCache;
 };
 
-DEFINE_TYPE_CASTS(ChildNodeList, NodeList, nodeList, nodeList->isChildNodeList(), nodeList.isChildNodeList());
+DEFINE_TYPE_CASTS(ChildNodeList,
+                  NodeList,
+                  nodeList,
+                  nodeList->isChildNodeList(),
+                  nodeList.isChildNodeList());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ChildNodeList_h
+#endif  // ChildNodeList_h

@@ -11,16 +11,24 @@
 
 namespace blink {
 
-v8::Local<v8::Value> V8PrivateProperty::Symbol::getFromMainWorld(ScriptState* scriptState, ScriptWrappable* scriptWrappable)
-{
-    v8::Local<v8::Object> wrapper = scriptWrappable->mainWorldWrapper(scriptState->isolate());
-    return wrapper.IsEmpty() ? v8::Local<v8::Value>() : get(scriptState->context(), wrapper);
+v8::Local<v8::Value> V8PrivateProperty::Symbol::getFromMainWorld(
+    ScriptState* scriptState,
+    ScriptWrappable* scriptWrappable) {
+  v8::Local<v8::Object> wrapper =
+      scriptWrappable->mainWorldWrapper(scriptState->isolate());
+  return wrapper.IsEmpty() ? v8::Local<v8::Value>()
+                           : get(scriptState->context(), wrapper);
 }
 
-v8::Local<v8::Private> V8PrivateProperty::createV8Private(v8::Isolate* isolate, const char* symbol, size_t length)
-{
-    v8::Local<v8::String> str = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(symbol), v8::NewStringType::kNormal, static_cast<int>(length)).ToLocalChecked();
-    return v8::Private::ForApi(isolate, str);
+v8::Local<v8::Private> V8PrivateProperty::createV8Private(v8::Isolate* isolate,
+                                                          const char* symbol,
+                                                          size_t length) {
+  v8::Local<v8::String> str =
+      v8::String::NewFromOneByte(
+          isolate, reinterpret_cast<const uint8_t*>(symbol),
+          v8::NewStringType::kNormal, static_cast<int>(length))
+          .ToLocalChecked();
+  return v8::Private::ForApi(isolate, str);
 }
 
-} // namespace blink
+}  // namespace blink

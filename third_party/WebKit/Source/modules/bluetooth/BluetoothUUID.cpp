@@ -19,60 +19,56 @@ namespace {
 
 typedef WTF::HashMap<String, unsigned> NameToAssignedNumberMap;
 
-enum class GATTAttribute {
-    Service,
-    Characteristic,
-    Descriptor
-};
+enum class GATTAttribute { Service, Characteristic, Descriptor };
 
-NameToAssignedNumberMap* getAssignedNumberToServiceNameMap()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, servicesMap, []() {
-        // https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
-        NameToAssignedNumberMap* services = new NameToAssignedNumberMap();
-        services->add("alert_notification", 0x1811);
-        services->add("automation_io", 0x1815);
-        services->add("battery_service", 0x180F);
-        services->add("blood_pressure", 0x1810);
-        services->add("body_composition", 0x181B);
-        services->add("bond_management", 0x181E);
-        services->add("continuous_glucose_monitoring", 0x181F);
-        services->add("current_time", 0x1805);
-        services->add("cycling_power", 0x1818);
-        services->add("cycling_speed_and_cadence", 0x1816);
-        services->add("device_information", 0x180A);
-        services->add("environmental_sensing", 0x181A);
-        services->add("generic_access", 0x1800);
-        services->add("generic_attribute", 0x1801);
-        services->add("glucose", 0x1808);
-        services->add("health_thermometer", 0x1809);
-        services->add("heart_rate", 0x180D);
-        services->add("human_interface_device", 0x1812);
-        services->add("immediate_alert", 0x1802);
-        services->add("indoor_positioning", 0x1821);
-        services->add("internet_protocol_support", 0x1820);
-        services->add("link_loss", 0x1803);
-        services->add("location_and_navigation", 0x1819);
-        services->add("next_dst_change", 0x1807);
-        services->add("phone_alert_status", 0x180E);
-        services->add("pulse_oximeter", 0x1822);
-        services->add("reference_time_update", 0x1806);
-        services->add("running_speed_and_cadence", 0x1814);
-        services->add("scan_parameters", 0x1813);
-        services->add("tx_power", 0x1804);
-        services->add("user_data", 0x181C);
-        services->add("weight_scale", 0x181D);
-        return services;
-    }());
+NameToAssignedNumberMap* getAssignedNumberToServiceNameMap() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, servicesMap, []() {
+    // https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
+    NameToAssignedNumberMap* services = new NameToAssignedNumberMap();
+    services->add("alert_notification", 0x1811);
+    services->add("automation_io", 0x1815);
+    services->add("battery_service", 0x180F);
+    services->add("blood_pressure", 0x1810);
+    services->add("body_composition", 0x181B);
+    services->add("bond_management", 0x181E);
+    services->add("continuous_glucose_monitoring", 0x181F);
+    services->add("current_time", 0x1805);
+    services->add("cycling_power", 0x1818);
+    services->add("cycling_speed_and_cadence", 0x1816);
+    services->add("device_information", 0x180A);
+    services->add("environmental_sensing", 0x181A);
+    services->add("generic_access", 0x1800);
+    services->add("generic_attribute", 0x1801);
+    services->add("glucose", 0x1808);
+    services->add("health_thermometer", 0x1809);
+    services->add("heart_rate", 0x180D);
+    services->add("human_interface_device", 0x1812);
+    services->add("immediate_alert", 0x1802);
+    services->add("indoor_positioning", 0x1821);
+    services->add("internet_protocol_support", 0x1820);
+    services->add("link_loss", 0x1803);
+    services->add("location_and_navigation", 0x1819);
+    services->add("next_dst_change", 0x1807);
+    services->add("phone_alert_status", 0x180E);
+    services->add("pulse_oximeter", 0x1822);
+    services->add("reference_time_update", 0x1806);
+    services->add("running_speed_and_cadence", 0x1814);
+    services->add("scan_parameters", 0x1813);
+    services->add("tx_power", 0x1804);
+    services->add("user_data", 0x181C);
+    services->add("weight_scale", 0x181D);
+    return services;
+  }());
 
-    return &servicesMap;
+  return &servicesMap;
 }
 
-NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, characteristicsMap, []() {
+NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      NameToAssignedNumberMap, characteristicsMap, []() {
         // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx
-        NameToAssignedNumberMap* characteristics = new NameToAssignedNumberMap();
+        NameToAssignedNumberMap* characteristics =
+            new NameToAssignedNumberMap();
         characteristics->add("aerobic_heart_rate_lower_limit", 0x2A7E);
         characteristics->add("aerobic_heart_rate_upper_limit", 0x2A84);
         characteristics->add("aerobic_threshold", 0x2A7F);
@@ -152,7 +148,8 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("hid_information", 0x2A4A);
         characteristics->add("hip_circumference", 0x2A8F);
         characteristics->add("humidity", 0x2A6F);
-        characteristics->add("ieee_11073-20601_regulatory_certification_data_list", 0x2A2A);
+        characteristics->add(
+            "ieee_11073-20601_regulatory_certification_data_list", 0x2A2A);
         characteristics->add("indoor_positioning_configuration", 0x2AAD);
         characteristics->add("intermediate_blood_pressure", 0x2A36);
         characteristics->add("intermediate_temperature", 0x2A1E);
@@ -177,7 +174,8 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("model_number_string", 0x2A24);
         characteristics->add("navigation", 0x2A68);
         characteristics->add("new_alert", 0x2A46);
-        characteristics->add("gap.peripheral_preferred_connection_parameters", 0x2A04);
+        characteristics->add("gap.peripheral_preferred_connection_parameters",
+                             0x2A04);
         characteristics->add("gap.peripheral_privacy_flag", 0x2A02);
         characteristics->add("plx_continuous_measurement", 0x2A5F);
         characteristics->add("plx_features", 0x2A60);
@@ -205,7 +203,8 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("serial_number_string", 0x2A25);
         characteristics->add("gatt.service_changed", 0x2A05);
         characteristics->add("software_revision_string", 0x2A28);
-        characteristics->add("sport_type_for_aerobic_and_anaerobic_thresholds", 0x2A93);
+        characteristics->add("sport_type_for_aerobic_and_anaerobic_thresholds",
+                             0x2A93);
         characteristics->add("supported_new_alert_category", 0x2A47);
         characteristics->add("supported_unread_alert_category", 0x2A48);
         characteristics->add("system_id", 0x2A23);
@@ -235,14 +234,14 @@ NameToAssignedNumberMap* getAssignedNumberForCharacteristicNameMap()
         characteristics->add("weight_scale_feature", 0x2A9E);
         characteristics->add("wind_chill", 0x2A79);
         return characteristics;
-    }());
+      }());
 
-    return &characteristicsMap;
+  return &characteristicsMap;
 }
 
-NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap()
-{
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(NameToAssignedNumberMap, descriptorsMap, []() {
+NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      NameToAssignedNumberMap, descriptorsMap, []() {
         // https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx
         NameToAssignedNumberMap* descriptors = new NameToAssignedNumberMap();
         descriptors->add("gatt.characteristic_extended_properties", 0x2900);
@@ -259,111 +258,119 @@ NameToAssignedNumberMap* getAssignedNumberForDescriptorNameMap()
         descriptors->add("es_measurement", 0x290C);
         descriptors->add("es_trigger_setting", 0x290D);
         return descriptors;
-    }());
+      }());
 
-    return &descriptorsMap;
+  return &descriptorsMap;
 }
 
-String getUUIDForGATTAttribute(GATTAttribute attribute, StringOrUnsignedLong name, ExceptionState& exceptionState)
-{
-    // Implementation of BluetoothUUID.getService, BluetoothUUID.getCharacteristic
-    // and BluetoothUUID.getDescriptor algorithms:
-    // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getservice
-    // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getcharacteristic
-    // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getdescriptor
+String getUUIDForGATTAttribute(GATTAttribute attribute,
+                               StringOrUnsignedLong name,
+                               ExceptionState& exceptionState) {
+  // Implementation of BluetoothUUID.getService, BluetoothUUID.getCharacteristic
+  // and BluetoothUUID.getDescriptor algorithms:
+  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getservice
+  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getcharacteristic
+  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothuuid-getdescriptor
 
-    // If name is an unsigned long, return BluetoothUUID.cannonicalUUI(name) and
-    // abort this steps.
-    if (name.isUnsignedLong())
-        return BluetoothUUID::canonicalUUID(name.getAsUnsignedLong());
+  // If name is an unsigned long, return BluetoothUUID.cannonicalUUI(name) and
+  // abort this steps.
+  if (name.isUnsignedLong())
+    return BluetoothUUID::canonicalUUID(name.getAsUnsignedLong());
 
-    String nameStr = name.getAsString();
+  String nameStr = name.getAsString();
 
-    // If name is a valid UUID, return name and abort these steps.
-    if (isValidUUID(nameStr))
-        return nameStr;
+  // If name is a valid UUID, return name and abort these steps.
+  if (isValidUUID(nameStr))
+    return nameStr;
 
-    // If name is in the corresponding attribute map return
-    // BluetoothUUID.cannonicalUUID(alias).
-    NameToAssignedNumberMap* map = nullptr;
-    const char* attributeType = nullptr;
-    switch (attribute) {
+  // If name is in the corresponding attribute map return
+  // BluetoothUUID.cannonicalUUID(alias).
+  NameToAssignedNumberMap* map = nullptr;
+  const char* attributeType = nullptr;
+  switch (attribute) {
     case GATTAttribute::Service:
-        map = getAssignedNumberToServiceNameMap();
-        attributeType = "Service";
-        break;
+      map = getAssignedNumberToServiceNameMap();
+      attributeType = "Service";
+      break;
     case GATTAttribute::Characteristic:
-        map = getAssignedNumberForCharacteristicNameMap();
-        attributeType = "Characteristic";
-        break;
+      map = getAssignedNumberForCharacteristicNameMap();
+      attributeType = "Characteristic";
+      break;
     case GATTAttribute::Descriptor:
-        map = getAssignedNumberForDescriptorNameMap();
-        attributeType = "Descriptor";
-        break;
-    }
+      map = getAssignedNumberForDescriptorNameMap();
+      attributeType = "Descriptor";
+      break;
+  }
 
-    if (map->contains(nameStr))
-        return BluetoothUUID::canonicalUUID(map->get(nameStr));
+  if (map->contains(nameStr))
+    return BluetoothUUID::canonicalUUID(map->get(nameStr));
 
-    StringBuilder errorMessage;
-    errorMessage.append("Invalid ");
-    errorMessage.append(attributeType);
-    errorMessage.append(" name: '");
-    errorMessage.append(nameStr);
-    errorMessage.append("'. It must be a valid UUID alias (e.g. 0x1234), "
-        "UUID (lowercase hex characters e.g. '00001234-0000-1000-8000-00805f9b34fb'), "
-        "or recognized standard name from ");
-    switch (attribute) {
+  StringBuilder errorMessage;
+  errorMessage.append("Invalid ");
+  errorMessage.append(attributeType);
+  errorMessage.append(" name: '");
+  errorMessage.append(nameStr);
+  errorMessage.append(
+      "'. It must be a valid UUID alias (e.g. 0x1234), "
+      "UUID (lowercase hex characters e.g. "
+      "'00001234-0000-1000-8000-00805f9b34fb'), "
+      "or recognized standard name from ");
+  switch (attribute) {
     case GATTAttribute::Service:
-        errorMessage.append("https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx"
-            " e.g. 'alert_notification'.");
-        break;
+      errorMessage.append(
+          "https://developer.bluetooth.org/gatt/services/Pages/"
+          "ServicesHome.aspx"
+          " e.g. 'alert_notification'.");
+      break;
     case GATTAttribute::Characteristic:
-        errorMessage.append("https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx"
-            " e.g. 'aerobic_heart_rate_lower_limit'.");
-        break;
+      errorMessage.append(
+          "https://developer.bluetooth.org/gatt/characteristics/Pages/"
+          "CharacteristicsHome.aspx"
+          " e.g. 'aerobic_heart_rate_lower_limit'.");
+      break;
     case GATTAttribute::Descriptor:
-        errorMessage.append("https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx"
-            " e.g. 'gatt.characteristic_presentation_format'.");
-        break;
-    }
-    // Otherwise, throw a TypeError.
-    exceptionState.throwDOMException(V8TypeError, errorMessage.toString());
-    return String();
+      errorMessage.append(
+          "https://developer.bluetooth.org/gatt/descriptors/Pages/"
+          "DescriptorsHomePage.aspx"
+          " e.g. 'gatt.characteristic_presentation_format'.");
+      break;
+  }
+  // Otherwise, throw a TypeError.
+  exceptionState.throwDOMException(V8TypeError, errorMessage.toString());
+  return String();
 }
 
-} // namespace
+}  // namespace
 
 // static
-String BluetoothUUID::getService(StringOrUnsignedLong name, ExceptionState& exceptionState)
-{
-    return getUUIDForGATTAttribute(GATTAttribute::Service, name, exceptionState);
-}
-
-// static
-String BluetoothUUID::getCharacteristic(StringOrUnsignedLong name, ExceptionState& exceptionState)
-{
-    return getUUIDForGATTAttribute(GATTAttribute::Characteristic, name, exceptionState);
+String BluetoothUUID::getService(StringOrUnsignedLong name,
+                                 ExceptionState& exceptionState) {
+  return getUUIDForGATTAttribute(GATTAttribute::Service, name, exceptionState);
 }
 
 // static
-String BluetoothUUID::getDescriptor(StringOrUnsignedLong name, ExceptionState& exceptionState)
-{
-    return getUUIDForGATTAttribute(GATTAttribute::Descriptor, name, exceptionState);
+String BluetoothUUID::getCharacteristic(StringOrUnsignedLong name,
+                                        ExceptionState& exceptionState) {
+  return getUUIDForGATTAttribute(GATTAttribute::Characteristic, name,
+                                 exceptionState);
 }
 
 // static
-String BluetoothUUID::canonicalUUID(unsigned alias)
-{
-    StringBuilder builder;
-    builder.reserveCapacity(36 /* 36 chars or 128 bits, length of a UUID */);
-    appendUnsignedAsHexFixedSize(
-        alias,
-        builder, 8 /* 8 chars or 32 bits, prefix length */,
-        Lowercase);
-
-    builder.append("-0000-1000-8000-00805f9b34fb");
-    return builder.toString();
+String BluetoothUUID::getDescriptor(StringOrUnsignedLong name,
+                                    ExceptionState& exceptionState) {
+  return getUUIDForGATTAttribute(GATTAttribute::Descriptor, name,
+                                 exceptionState);
 }
 
-} // namespace blink
+// static
+String BluetoothUUID::canonicalUUID(unsigned alias) {
+  StringBuilder builder;
+  builder.reserveCapacity(36 /* 36 chars or 128 bits, length of a UUID */);
+  appendUnsignedAsHexFixedSize(
+      alias, builder, 8 /* 8 chars or 32 bits, prefix length */, Lowercase);
+
+  builder.append("-0000-1000-8000-00805f9b34fb");
+  return builder.toString();
+}
+
+}  // namespace blink

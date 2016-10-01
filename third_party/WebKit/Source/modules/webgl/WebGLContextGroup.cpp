@@ -29,66 +29,57 @@
 
 namespace blink {
 
-PassRefPtr<WebGLContextGroup> WebGLContextGroup::create()
-{
-    RefPtr<WebGLContextGroup> contextGroup = adoptRef(new WebGLContextGroup());
-    return contextGroup.release();
+PassRefPtr<WebGLContextGroup> WebGLContextGroup::create() {
+  RefPtr<WebGLContextGroup> contextGroup = adoptRef(new WebGLContextGroup());
+  return contextGroup.release();
 }
 
-WebGLContextGroup::WebGLContextGroup()
-{
+WebGLContextGroup::WebGLContextGroup() {}
+
+WebGLContextGroup::~WebGLContextGroup() {
+  detachAndRemoveAllObjects();
 }
 
-WebGLContextGroup::~WebGLContextGroup()
-{
-    detachAndRemoveAllObjects();
+gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface() {
+  ASSERT(!m_contexts.isEmpty());
+  return (*m_contexts.begin())->contextGL();
 }
 
-gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface()
-{
-    ASSERT(!m_contexts.isEmpty());
-    return (*m_contexts.begin())->contextGL();
+void WebGLContextGroup::addContext(WebGLRenderingContextBase* context) {
+  m_contexts.add(context);
 }
 
-void WebGLContextGroup::addContext(WebGLRenderingContextBase* context)
-{
-    m_contexts.add(context);
-}
-
-void WebGLContextGroup::removeContext(WebGLRenderingContextBase* context)
-{
-    // We must call detachAndRemoveAllObjects before removing the last context.
-    if (m_contexts.size() == 1 && m_contexts.contains(context))
-        detachAndRemoveAllObjects();
-
-    m_contexts.remove(context);
-}
-
-void WebGLContextGroup::removeObject(WebGLSharedObject* object)
-{
-    m_groupObjects.remove(object);
-}
-
-void WebGLContextGroup::addObject(WebGLSharedObject* object)
-{
-    m_groupObjects.add(object);
-}
-
-void WebGLContextGroup::detachAndRemoveAllObjects()
-{
-    while (!m_groupObjects.isEmpty()) {
-        (*m_groupObjects.begin())->detachContextGroup();
-    }
-}
-
-void WebGLContextGroup::loseContextGroup(WebGLRenderingContextBase::LostContextMode mode, WebGLRenderingContextBase::AutoRecoveryMethod autoRecoveryMethod)
-{
-    // Detach must happen before loseContextImpl, which destroys the GraphicsContext3D
-    // and prevents groupObjects from being properly deleted.
+void WebGLContextGroup::removeContext(WebGLRenderingContextBase* context) {
+  // We must call detachAndRemoveAllObjects before removing the last context.
+  if (m_contexts.size() == 1 && m_contexts.contains(context))
     detachAndRemoveAllObjects();
 
-    for (WebGLRenderingContextBase* const context : m_contexts)
-        context->loseContextImpl(mode, autoRecoveryMethod);
+  m_contexts.remove(context);
 }
 
-} // namespace blink
+void WebGLContextGroup::removeObject(WebGLSharedObject* object) {
+  m_groupObjects.remove(object);
+}
+
+void WebGLContextGroup::addObject(WebGLSharedObject* object) {
+  m_groupObjects.add(object);
+}
+
+void WebGLContextGroup::detachAndRemoveAllObjects() {
+  while (!m_groupObjects.isEmpty()) {
+    (*m_groupObjects.begin())->detachContextGroup();
+  }
+}
+
+void WebGLContextGroup::loseContextGroup(
+    WebGLRenderingContextBase::LostContextMode mode,
+    WebGLRenderingContextBase::AutoRecoveryMethod autoRecoveryMethod) {
+  // Detach must happen before loseContextImpl, which destroys the GraphicsContext3D
+  // and prevents groupObjects from being properly deleted.
+  detachAndRemoveAllObjects();
+
+  for (WebGLRenderingContextBase* const context : m_contexts)
+    context->loseContextImpl(mode, autoRecoveryMethod);
+}
+
+}  // namespace blink

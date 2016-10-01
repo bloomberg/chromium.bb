@@ -16,89 +16,91 @@
 
 namespace blink {
 
-PerformanceObserver* PerformanceObserver::create(ScriptState* scriptState, PerformanceBase* performance, V8PerformanceObserverCallback* callback)
-{
-    ASSERT(isMainThread());
-    return new PerformanceObserver(scriptState, performance, callback);
+PerformanceObserver* PerformanceObserver::create(
+    ScriptState* scriptState,
+    PerformanceBase* performance,
+    V8PerformanceObserverCallback* callback) {
+  ASSERT(isMainThread());
+  return new PerformanceObserver(scriptState, performance, callback);
 }
 
-PerformanceObserver::PerformanceObserver(ScriptState* scriptState, PerformanceBase* performance, V8PerformanceObserverCallback* callback)
-    : m_scriptState(scriptState)
-    , m_callback(callback)
-    , m_performance(performance)
-    , m_filterOptions(PerformanceEntry::Invalid)
-    , m_isRegistered(false)
-{
+PerformanceObserver::PerformanceObserver(
+    ScriptState* scriptState,
+    PerformanceBase* performance,
+    V8PerformanceObserverCallback* callback)
+    : m_scriptState(scriptState),
+      m_callback(callback),
+      m_performance(performance),
+      m_filterOptions(PerformanceEntry::Invalid),
+      m_isRegistered(false) {}
+
+void PerformanceObserver::observe(const PerformanceObserverInit& observerInit,
+                                  ExceptionState& exceptionState) {
+  if (!m_performance) {
+    exceptionState.throwTypeError(
+        "Window may be destroyed? Performance target is invalid.");
+    return;
+  }
+
+  PerformanceEntryTypeMask entryTypes = PerformanceEntry::Invalid;
+  if (observerInit.hasEntryTypes() && observerInit.entryTypes().size()) {
+    const Vector<String>& sequence = observerInit.entryTypes();
+    for (const auto& entryTypeString : sequence)
+      entryTypes |= PerformanceEntry::toEntryTypeEnum(entryTypeString);
+  }
+  if (entryTypes == PerformanceEntry::Invalid) {
+    exceptionState.throwTypeError(
+        "A Performance Observer MUST have a non-empty entryTypes attribute.");
+    return;
+  }
+  m_filterOptions = entryTypes;
+  if (m_isRegistered)
+    m_performance->updatePerformanceObserverFilterOptions();
+  else
+    m_performance->registerPerformanceObserver(*this);
+  m_isRegistered = true;
 }
 
-void PerformanceObserver::observe(const PerformanceObserverInit& observerInit, ExceptionState& exceptionState)
-{
-    if (!m_performance) {
-        exceptionState.throwTypeError("Window may be destroyed? Performance target is invalid.");
-        return;
-    }
-
-    PerformanceEntryTypeMask entryTypes = PerformanceEntry::Invalid;
-    if (observerInit.hasEntryTypes() && observerInit.entryTypes().size()) {
-        const Vector<String>& sequence = observerInit.entryTypes();
-        for (const auto& entryTypeString : sequence)
-            entryTypes |= PerformanceEntry::toEntryTypeEnum(entryTypeString);
-    }
-    if (entryTypes == PerformanceEntry::Invalid) {
-        exceptionState.throwTypeError("A Performance Observer MUST have a non-empty entryTypes attribute.");
-        return;
-    }
-    m_filterOptions = entryTypes;
-    if (m_isRegistered)
-        m_performance->updatePerformanceObserverFilterOptions();
-    else
-        m_performance->registerPerformanceObserver(*this);
-    m_isRegistered = true;
+void PerformanceObserver::disconnect() {
+  if (m_performance) {
+    m_performance->unregisterPerformanceObserver(*this);
+  }
+  m_performanceEntries.clear();
+  m_isRegistered = false;
 }
 
-void PerformanceObserver::disconnect()
-{
-    if (m_performance) {
-        m_performance->unregisterPerformanceObserver(*this);
-    }
-    m_performanceEntries.clear();
-    m_isRegistered = false;
+void PerformanceObserver::enqueuePerformanceEntry(PerformanceEntry& entry) {
+  ASSERT(isMainThread());
+  m_performanceEntries.append(&entry);
+  if (m_performance)
+    m_performance->activateObserver(*this);
 }
 
-void PerformanceObserver::enqueuePerformanceEntry(PerformanceEntry& entry)
-{
-    ASSERT(isMainThread());
-    m_performanceEntries.append(&entry);
-    if (m_performance)
-        m_performance->activateObserver(*this);
+bool PerformanceObserver::shouldBeSuspended() const {
+  return m_scriptState->getExecutionContext() &&
+         m_scriptState->getExecutionContext()->activeDOMObjectsAreSuspended();
 }
 
-bool PerformanceObserver::shouldBeSuspended() const
-{
-    return m_scriptState->getExecutionContext() && m_scriptState->getExecutionContext()->activeDOMObjectsAreSuspended();
+void PerformanceObserver::deliver() {
+  ASSERT(!shouldBeSuspended());
+
+  if (m_performanceEntries.isEmpty())
+    return;
+
+  PerformanceEntryVector performanceEntries;
+  performanceEntries.swap(m_performanceEntries);
+  PerformanceObserverEntryList* entryList =
+      new PerformanceObserverEntryList(performanceEntries);
+  // TODO(bashi): Make sure that not throwing exception is OK.
+  TrackExceptionState exceptionState;
+
+  m_callback->call(m_scriptState.get(), this, exceptionState, entryList, this);
 }
 
-void PerformanceObserver::deliver()
-{
-    ASSERT(!shouldBeSuspended());
-
-    if (m_performanceEntries.isEmpty())
-        return;
-
-    PerformanceEntryVector performanceEntries;
-    performanceEntries.swap(m_performanceEntries);
-    PerformanceObserverEntryList* entryList = new PerformanceObserverEntryList(performanceEntries);
-    // TODO(bashi): Make sure that not throwing exception is OK.
-    TrackExceptionState exceptionState;
-
-    m_callback->call(m_scriptState.get(), this, exceptionState, entryList, this);
+DEFINE_TRACE(PerformanceObserver) {
+  visitor->trace(m_callback);
+  visitor->trace(m_performance);
+  visitor->trace(m_performanceEntries);
 }
 
-DEFINE_TRACE(PerformanceObserver)
-{
-    visitor->trace(m_callback);
-    visitor->trace(m_performance);
-    visitor->trace(m_performanceEntries);
-}
-
-} // namespace blink
+}  // namespace blink

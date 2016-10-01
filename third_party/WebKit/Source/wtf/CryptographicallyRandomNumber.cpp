@@ -24,28 +24,25 @@ namespace WTF {
 
 static bool s_shouldUseAlwaysZeroRandomSourceForTesting = false;
 
-void setAlwaysZeroRandomSourceForTesting()
-{
-    s_shouldUseAlwaysZeroRandomSourceForTesting = true;
+void setAlwaysZeroRandomSourceForTesting() {
+  s_shouldUseAlwaysZeroRandomSourceForTesting = true;
 }
 
-uint32_t cryptographicallyRandomNumber()
-{
-    uint32_t result;
-    cryptographicallyRandomValues(&result, sizeof(result));
-    return result;
+uint32_t cryptographicallyRandomNumber() {
+  uint32_t result;
+  cryptographicallyRandomValues(&result, sizeof(result));
+  return result;
 }
 
-void cryptographicallyRandomValues(void* buffer, size_t length)
-{
-    if (s_shouldUseAlwaysZeroRandomSourceForTesting) {
-        memset(buffer, '\0', length);
-        return;
-    }
+void cryptographicallyRandomValues(void* buffer, size_t length) {
+  if (s_shouldUseAlwaysZeroRandomSourceForTesting) {
+    memset(buffer, '\0', length);
+    return;
+  }
 
-    // This should really be crypto::RandBytes(), but WTF can't depend on crypto. The implementation of
-    // crypto::RandBytes() is just calling base::RandBytes(), so both are actually same.
-    base::RandBytes(buffer, length);
+  // This should really be crypto::RandBytes(), but WTF can't depend on crypto. The implementation of
+  // crypto::RandBytes() is just calling base::RandBytes(), so both are actually same.
+  base::RandBytes(buffer, length);
 }
 
-} // namespace WTF
+}  // namespace WTF

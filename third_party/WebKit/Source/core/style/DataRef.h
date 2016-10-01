@@ -29,46 +29,45 @@
 
 namespace blink {
 
-template <typename T> class DataRef {
-    USING_FAST_MALLOC(DataRef);
-public:
-    const T* get() const { return m_data.get(); }
+template <typename T>
+class DataRef {
+  USING_FAST_MALLOC(DataRef);
 
-    const T& operator*() const { return *get(); }
-    const T* operator->() const { return get(); }
+ public:
+  const T* get() const { return m_data.get(); }
 
-    T* access()
-    {
-        if (!m_data->hasOneRef())
-            m_data = m_data->copy();
-        return m_data.get();
-    }
+  const T& operator*() const { return *get(); }
+  const T* operator->() const { return get(); }
 
-    void init()
-    {
-        ASSERT(!m_data);
-        m_data = T::create();
-    }
+  T* access() {
+    if (!m_data->hasOneRef())
+      m_data = m_data->copy();
+    return m_data.get();
+  }
 
-    bool operator==(const DataRef<T>& o) const
-    {
-        ASSERT(m_data);
-        ASSERT(o.m_data);
-        return m_data == o.m_data || *m_data == *o.m_data;
-    }
+  void init() {
+    ASSERT(!m_data);
+    m_data = T::create();
+  }
 
-    bool operator!=(const DataRef<T>& o) const
-    {
-        ASSERT(m_data);
-        ASSERT(o.m_data);
-        return m_data != o.m_data && *m_data != *o.m_data;
-    }
+  bool operator==(const DataRef<T>& o) const {
+    ASSERT(m_data);
+    ASSERT(o.m_data);
+    return m_data == o.m_data || *m_data == *o.m_data;
+  }
 
-    void operator=(std::nullptr_t) { m_data = nullptr; }
-private:
-    RefPtr<T> m_data;
+  bool operator!=(const DataRef<T>& o) const {
+    ASSERT(m_data);
+    ASSERT(o.m_data);
+    return m_data != o.m_data && *m_data != *o.m_data;
+  }
+
+  void operator=(std::nullptr_t) { m_data = nullptr; }
+
+ private:
+  RefPtr<T> m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DataRef_h
+#endif  // DataRef_h

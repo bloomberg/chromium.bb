@@ -36,21 +36,21 @@
 namespace blink {
 
 class PasswordInputType final : public BaseTextInputType {
-public:
-    static InputType* create(HTMLInputElement&);
+ public:
+  static InputType* create(HTMLInputElement&);
 
-private:
-    PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) { }
-    void countUsage() override;
-    const AtomicString& formControlType() const override;
-    bool shouldSaveAndRestoreFormControlState() const override;
-    FormControlState saveFormControlState() const override;
-    void restoreFormControlState(const FormControlState&) override;
-    bool shouldRespectListAttribute() override;
-    void enableSecureTextInput() override;
-    void disableSecureTextInput() override;
+ private:
+  PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) {}
+  void countUsage() override;
+  const AtomicString& formControlType() const override;
+  bool shouldSaveAndRestoreFormControlState() const override;
+  FormControlState saveFormControlState() const override;
+  void restoreFormControlState(const FormControlState&) override;
+  bool shouldRespectListAttribute() override;
+  void enableSecureTextInput() override;
+  void disableSecureTextInput() override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PasswordInputType_h
+#endif  // PasswordInputType_h

@@ -6,14 +6,12 @@
 
 namespace blink {
 
-CrossOriginAttributeValue crossOriginAttributeValue(const String& value)
-{
-    if (value.isNull())
-        return CrossOriginAttributeNotSet;
-    if (equalIgnoringCase(value, "use-credentials"))
-        return CrossOriginAttributeUseCredentials;
-    return CrossOriginAttributeAnonymous;
+CrossOriginAttributeValue crossOriginAttributeValue(const String& value) {
+  if (value.isNull())
+    return CrossOriginAttributeNotSet;
+  if (equalIgnoringCase(value, "use-credentials"))
+    return CrossOriginAttributeUseCredentials;
+  return CrossOriginAttributeAnonymous;
 }
 
-} // namespace blink
-
+}  // namespace blink

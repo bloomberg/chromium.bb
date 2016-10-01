@@ -10,18 +10,18 @@
 namespace blink {
 
 class NavigatorLanguage {
-public:
-    NavigatorLanguage();
+ public:
+  NavigatorLanguage();
 
-    AtomicString language();
-    virtual Vector<String> languages() = 0;
-    bool hasLanguagesChanged();
-    void setLanguagesChanged();
+  AtomicString language();
+  virtual Vector<String> languages() = 0;
+  bool hasLanguagesChanged();
+  void setLanguagesChanged();
 
-private:
-    bool m_languagesChanged;
+ private:
+  bool m_languagesChanged;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorLanguage_h
+#endif  // NavigatorLanguage_h

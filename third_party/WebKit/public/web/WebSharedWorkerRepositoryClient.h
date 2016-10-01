@@ -43,17 +43,27 @@ class WebString;
 class WebURL;
 
 class WebSharedWorkerRepositoryClient {
-public:
-    // Unique identifier for the parent document of a worker (unique within a given process).
-    typedef unsigned long long DocumentID;
+ public:
+  // Unique identifier for the parent document of a worker (unique within a given process).
+  typedef unsigned long long DocumentID;
 
-    // Creates a new shared worker connector. This may return null.
-    virtual WebSharedWorkerConnector* createSharedWorkerConnector(const WebURL& url, const WebString& name, DocumentID id, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, WebAddressSpace, WebSharedWorkerCreationContextType, WebWorkerCreationError* error) { return 0; }
+  // Creates a new shared worker connector. This may return null.
+  virtual WebSharedWorkerConnector* createSharedWorkerConnector(
+      const WebURL& url,
+      const WebString& name,
+      DocumentID id,
+      const WebString& contentSecurityPolicy,
+      WebContentSecurityPolicyType,
+      WebAddressSpace,
+      WebSharedWorkerCreationContextType,
+      WebWorkerCreationError* error) {
+    return 0;
+  }
 
-    // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
-    virtual void documentDetached(DocumentID) { }
+  // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
+  virtual void documentDetached(DocumentID) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSharedWorkerRepositoryClient_h
+#endif  // WebSharedWorkerRepositoryClient_h

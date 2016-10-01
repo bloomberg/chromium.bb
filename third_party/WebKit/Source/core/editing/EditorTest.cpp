@@ -14,53 +14,49 @@
 namespace blink {
 
 class EditorTest : public EditingTestBase {
-protected:
-    void makeDocumentEmpty();
+ protected:
+  void makeDocumentEmpty();
 };
 
-void EditorTest::makeDocumentEmpty()
-{
-    while (document().firstChild())
-        document().removeChild(document().firstChild());
+void EditorTest::makeDocumentEmpty() {
+  while (document().firstChild())
+    document().removeChild(document().firstChild());
 }
 
-TEST_F(EditorTest, tidyUpHTMLStructureFromBody)
-{
-    Element* body = HTMLBodyElement::create(document());
-    makeDocumentEmpty();
-    document().setDesignMode("on");
-    document().appendChild(body);
-    Editor::tidyUpHTMLStructure(document());
+TEST_F(EditorTest, tidyUpHTMLStructureFromBody) {
+  Element* body = HTMLBodyElement::create(document());
+  makeDocumentEmpty();
+  document().setDesignMode("on");
+  document().appendChild(body);
+  Editor::tidyUpHTMLStructure(document());
 
-    EXPECT_TRUE(isHTMLHtmlElement(document().documentElement()));
-    EXPECT_EQ(body, document().body());
-    EXPECT_EQ(document().documentElement(), body->parentNode());
+  EXPECT_TRUE(isHTMLHtmlElement(document().documentElement()));
+  EXPECT_EQ(body, document().body());
+  EXPECT_EQ(document().documentElement(), body->parentNode());
 }
 
-TEST_F(EditorTest, tidyUpHTMLStructureFromDiv)
-{
-    Element* div = HTMLDivElement::create(document());
-    makeDocumentEmpty();
-    document().setDesignMode("on");
-    document().appendChild(div);
-    Editor::tidyUpHTMLStructure(document());
+TEST_F(EditorTest, tidyUpHTMLStructureFromDiv) {
+  Element* div = HTMLDivElement::create(document());
+  makeDocumentEmpty();
+  document().setDesignMode("on");
+  document().appendChild(div);
+  Editor::tidyUpHTMLStructure(document());
 
-    EXPECT_TRUE(isHTMLHtmlElement(document().documentElement()));
-    EXPECT_TRUE(isHTMLBodyElement(document().body()));
-    EXPECT_EQ(document().body(), div->parentNode());
+  EXPECT_TRUE(isHTMLHtmlElement(document().documentElement()));
+  EXPECT_TRUE(isHTMLBodyElement(document().body()));
+  EXPECT_EQ(document().body(), div->parentNode());
 }
 
-TEST_F(EditorTest, tidyUpHTMLStructureFromHead)
-{
-    Element* head = HTMLHeadElement::create(document());
-    makeDocumentEmpty();
-    document().setDesignMode("on");
-    document().appendChild(head);
-    Editor::tidyUpHTMLStructure(document());
+TEST_F(EditorTest, tidyUpHTMLStructureFromHead) {
+  Element* head = HTMLHeadElement::create(document());
+  makeDocumentEmpty();
+  document().setDesignMode("on");
+  document().appendChild(head);
+  Editor::tidyUpHTMLStructure(document());
 
-    EXPECT_TRUE(isHTMLHtmlElement(document().documentElement()));
-    EXPECT_TRUE(isHTMLBodyElement(document().body()));
-    EXPECT_EQ(document().documentElement(), head->parentNode());
+  EXPECT_TRUE(isHTMLHtmlElement(document().documentElement()));
+  EXPECT_TRUE(isHTMLBodyElement(document().body()));
+  EXPECT_EQ(document().documentElement(), head->parentNode());
 }
 
-} // namespace blink
+}  // namespace blink

@@ -37,43 +37,45 @@ class MediaQuerySet;
 // whenever it is needed and to call the listeners if the corresponding query has changed.
 // The listeners must be called in the very same order in which they have been added.
 
-class CORE_EXPORT MediaQueryMatcher final : public GarbageCollectedFinalized<MediaQueryMatcher> {
-    WTF_MAKE_NONCOPYABLE(MediaQueryMatcher);
-public:
-    static MediaQueryMatcher* create(Document&);
-    ~MediaQueryMatcher();
+class CORE_EXPORT MediaQueryMatcher final
+    : public GarbageCollectedFinalized<MediaQueryMatcher> {
+  WTF_MAKE_NONCOPYABLE(MediaQueryMatcher);
 
-    void documentDetached();
+ public:
+  static MediaQueryMatcher* create(Document&);
+  ~MediaQueryMatcher();
 
-    void addMediaQueryList(MediaQueryList*);
-    void removeMediaQueryList(MediaQueryList*);
+  void documentDetached();
 
-    void addViewportListener(MediaQueryListListener*);
-    void removeViewportListener(MediaQueryListListener*);
+  void addMediaQueryList(MediaQueryList*);
+  void removeMediaQueryList(MediaQueryList*);
 
-    MediaQueryList* matchMedia(const String&);
+  void addViewportListener(MediaQueryListListener*);
+  void removeViewportListener(MediaQueryListListener*);
 
-    void mediaFeaturesChanged();
-    void viewportChanged();
-    bool evaluate(const MediaQuerySet*);
+  MediaQueryList* matchMedia(const String&);
 
-    DECLARE_TRACE();
+  void mediaFeaturesChanged();
+  void viewportChanged();
+  bool evaluate(const MediaQuerySet*);
 
-private:
-    explicit MediaQueryMatcher(Document&);
+  DECLARE_TRACE();
 
-    MediaQueryEvaluator* createEvaluator() const;
+ private:
+  explicit MediaQueryMatcher(Document&);
 
-    Member<Document> m_document;
-    Member<MediaQueryEvaluator> m_evaluator;
+  MediaQueryEvaluator* createEvaluator() const;
 
-    using MediaQueryListSet = HeapLinkedHashSet<WeakMember<MediaQueryList>>;
-    MediaQueryListSet m_mediaLists;
+  Member<Document> m_document;
+  Member<MediaQueryEvaluator> m_evaluator;
 
-    using ViewportListenerSet = HeapLinkedHashSet<Member<MediaQueryListListener>>;
-    ViewportListenerSet m_viewportListeners;
+  using MediaQueryListSet = HeapLinkedHashSet<WeakMember<MediaQueryList>>;
+  MediaQueryListSet m_mediaLists;
+
+  using ViewportListenerSet = HeapLinkedHashSet<Member<MediaQueryListListener>>;
+  ViewportListenerSet m_viewportListeners;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaQueryMatcher_h
+#endif  // MediaQueryMatcher_h

@@ -11,35 +11,35 @@
 namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebEncryptedMediaKeyInformation {
-public:
-    enum class KeyStatus {
-        Usable,
-        Expired,
-        Released,
-        OutputRestricted,
-        OutputDownscaled,
-        StatusPending,
-        InternalError
-    };
+ public:
+  enum class KeyStatus {
+    Usable,
+    Expired,
+    Released,
+    OutputRestricted,
+    OutputDownscaled,
+    StatusPending,
+    InternalError
+  };
 
-    WebEncryptedMediaKeyInformation();
-    ~WebEncryptedMediaKeyInformation();
+  WebEncryptedMediaKeyInformation();
+  ~WebEncryptedMediaKeyInformation();
 
-    WebData id() const;
-    void setId(const WebData&);
+  WebData id() const;
+  void setId(const WebData&);
 
-    KeyStatus status() const;
-    void setStatus(KeyStatus);
+  KeyStatus status() const;
+  void setStatus(KeyStatus);
 
-    uint32_t systemCode() const;
-    void setSystemCode(uint32_t);
+  uint32_t systemCode() const;
+  void setSystemCode(uint32_t);
 
-private:
-    WebData m_id;
-    KeyStatus m_status;
-    uint32_t m_systemCode;
+ private:
+  WebData m_id;
+  KeyStatus m_status;
+  uint32_t m_systemCode;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebEncryptedMediaKeyInformation_h
+#endif  // WebEncryptedMediaKeyInformation_h

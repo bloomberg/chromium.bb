@@ -13,16 +13,17 @@
 namespace blink {
 
 class MODULES_EXPORT SiteBoundCredential : public Credential {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    // SiteBoundCredential.idl
-    const String& name() const { return m_platformCredential->name(); }
-    const KURL& iconURL() const { return m_platformCredential->iconURL(); }
+  DEFINE_WRAPPERTYPEINFO();
 
-protected:
-    SiteBoundCredential(PlatformCredential*);
+ public:
+  // SiteBoundCredential.idl
+  const String& name() const { return m_platformCredential->name(); }
+  const KURL& iconURL() const { return m_platformCredential->iconURL(); }
+
+ protected:
+  SiteBoundCredential(PlatformCredential*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SiteBoundCredential_h
+#endif  // SiteBoundCredential_h

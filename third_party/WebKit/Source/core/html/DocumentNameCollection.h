@@ -11,23 +11,30 @@
 namespace blink {
 
 class DocumentNameCollection final : public HTMLNameCollection {
-public:
-    static DocumentNameCollection* create(ContainerNode& document, CollectionType type, const AtomicString& name)
-    {
-        DCHECK_EQ(type, DocumentNamedItems);
-        return new DocumentNameCollection(document, name);
-    }
+ public:
+  static DocumentNameCollection* create(ContainerNode& document,
+                                        CollectionType type,
+                                        const AtomicString& name) {
+    DCHECK_EQ(type, DocumentNamedItems);
+    return new DocumentNameCollection(document, name);
+  }
 
-    HTMLElement* item(unsigned offset) const { return toHTMLElement(HTMLNameCollection::item(offset)); }
+  HTMLElement* item(unsigned offset) const {
+    return toHTMLElement(HTMLNameCollection::item(offset));
+  }
 
-    bool elementMatches(const HTMLElement&) const;
+  bool elementMatches(const HTMLElement&) const;
 
-private:
-    DocumentNameCollection(ContainerNode& document, const AtomicString& name);
+ private:
+  DocumentNameCollection(ContainerNode& document, const AtomicString& name);
 };
 
-DEFINE_TYPE_CASTS(DocumentNameCollection, LiveNodeListBase, collection, collection->type() == DocumentNamedItems, collection.type() == DocumentNamedItems);
+DEFINE_TYPE_CASTS(DocumentNameCollection,
+                  LiveNodeListBase,
+                  collection,
+                  collection->type() == DocumentNamedItems,
+                  collection.type() == DocumentNamedItems);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentNameCollection_h
+#endif  // DocumentNameCollection_h

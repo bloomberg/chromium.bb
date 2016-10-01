@@ -16,34 +16,41 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final : public OffscreenCanvasFrameDispatcher
-    , WTF_NON_EXPORTED_BASE(public cc::mojom::blink::MojoCompositorFrameSinkClient) {
-public:
-    explicit OffscreenCanvasFrameDispatcherImpl(uint32_t clientId, uint32_t localId, uint64_t nonce, int width, int height);
+class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
+    : public OffscreenCanvasFrameDispatcher,
+      WTF_NON_EXPORTED_BASE(
+          public cc::mojom::blink::MojoCompositorFrameSinkClient) {
+ public:
+  explicit OffscreenCanvasFrameDispatcherImpl(uint32_t clientId,
+                                              uint32_t localId,
+                                              uint64_t nonce,
+                                              int width,
+                                              int height);
 
-    // OffscreenCanvasFrameDispatcher implementation.
-    ~OffscreenCanvasFrameDispatcherImpl() override {}
-    void dispatchFrame(RefPtr<StaticBitmapImage>) override;
+  // OffscreenCanvasFrameDispatcher implementation.
+  ~OffscreenCanvasFrameDispatcherImpl() override {}
+  void dispatchFrame(RefPtr<StaticBitmapImage>) override;
 
-    // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
-    void ReturnResources(Vector<cc::mojom::blink::ReturnedResourcePtr> resources) override;
+  // cc::mojom::blink::MojoCompositorFrameSinkClient implementation.
+  void ReturnResources(
+      Vector<cc::mojom::blink::ReturnedResourcePtr> resources) override;
 
-private:
-    const cc::SurfaceId m_surfaceId;
-    const int m_width;
-    const int m_height;
+ private:
+  const cc::SurfaceId m_surfaceId;
+  const int m_width;
+  const int m_height;
 
-    unsigned m_nextResourceId;
-    unsigned getNextResourceIdAndIncrement() { return m_nextResourceId++; }
-    HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
-    HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> m_sharedBitmaps;
+  unsigned m_nextResourceId;
+  unsigned getNextResourceIdAndIncrement() { return m_nextResourceId++; }
+  HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
+  HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> m_sharedBitmaps;
 
-    bool verifyImageSize(const sk_sp<SkImage>&);
+  bool verifyImageSize(const sk_sp<SkImage>&);
 
-    cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
-    mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;
+  cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
+  mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OffscreenCanvasFrameDispatcherImpl_h
+#endif  // OffscreenCanvasFrameDispatcherImpl_h

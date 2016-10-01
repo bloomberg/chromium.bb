@@ -34,48 +34,41 @@
 namespace blink {
 
 struct WebIDBMetadata {
-    enum {
-        NoVersion = -1
-    };
-    struct Index;
-    struct ObjectStore;
+  enum { NoVersion = -1 };
+  struct Index;
+  struct ObjectStore;
 
+  WebString name;
+  long long version;
+  long long id;
+  long long maxObjectStoreId;
+  WebVector<ObjectStore> objectStores;
+  WebIDBMetadata() : version(NoVersion) {}
+
+  struct ObjectStore {
     WebString name;
-    long long version;
+    WebIDBKeyPath keyPath;
+    bool autoIncrement;
     long long id;
-    long long maxObjectStoreId;
-    WebVector<ObjectStore> objectStores;
-    WebIDBMetadata()
-        : version(NoVersion)
-    {
-    }
+    long long maxIndexId;
+    WebVector<Index> indexes;
+    ObjectStore()
+        : keyPath(WebIDBKeyPath::createNull()), autoIncrement(false) {}
+  };
 
-    struct ObjectStore {
-        WebString name;
-        WebIDBKeyPath keyPath;
-        bool autoIncrement;
-        long long id;
-        long long maxIndexId;
-        WebVector<Index> indexes;
-        ObjectStore()
-            : keyPath(WebIDBKeyPath::createNull())
-            , autoIncrement(false) { }
-    };
-
-    struct Index {
-        WebString name;
-        WebIDBKeyPath keyPath;
-        bool unique;
-        bool multiEntry;
-        long long id;
-        Index()
-            : keyPath(WebIDBKeyPath::createNull())
-            , unique(false)
-            , multiEntry(false) { }
-    };
-
+  struct Index {
+    WebString name;
+    WebIDBKeyPath keyPath;
+    bool unique;
+    bool multiEntry;
+    long long id;
+    Index()
+        : keyPath(WebIDBKeyPath::createNull()),
+          unique(false),
+          multiEntry(false) {}
+  };
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebIDBMetadata_h
+#endif  // WebIDBMetadata_h

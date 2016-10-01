@@ -37,13 +37,14 @@ namespace blink {
 
 class DOMFileSystem;
 
-class FileSystemCallback : public GarbageCollectedFinalized<FileSystemCallback> {
-public:
-    virtual ~FileSystemCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleEvent(DOMFileSystem*) = 0;
+class FileSystemCallback
+    : public GarbageCollectedFinalized<FileSystemCallback> {
+ public:
+  virtual ~FileSystemCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleEvent(DOMFileSystem*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FileSystemCallback_h
+#endif  // FileSystemCallback_h

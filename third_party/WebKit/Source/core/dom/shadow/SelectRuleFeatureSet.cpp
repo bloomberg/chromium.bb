@@ -37,65 +37,68 @@
 
 namespace blink {
 
-void SelectRuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList& list)
-{
-    for (const CSSSelector* selector = list.first(); selector; selector = CSSSelectorList::next(*selector)) {
-        for (const CSSSelector* component = selector; component; component = component->tagHistory()) {
-            if (invalidationSetForSimpleSelector(*component, InvalidateDescendants))
-                continue;
+void SelectRuleFeatureSet::collectFeaturesFromSelectorList(
+    const CSSSelectorList& list) {
+  for (const CSSSelector* selector = list.first(); selector;
+       selector = CSSSelectorList::next(*selector)) {
+    for (const CSSSelector* component = selector; component;
+         component = component->tagHistory()) {
+      if (invalidationSetForSimpleSelector(*component, InvalidateDescendants))
+        continue;
 
-            if (component->selectorList())
-                collectFeaturesFromSelectorList(*component->selectorList());
-        }
+      if (component->selectorList())
+        collectFeaturesFromSelectorList(*component->selectorList());
     }
+  }
 }
 
-bool SelectRuleFeatureSet::checkSelectorsForClassChange(const SpaceSplitString& changedClasses) const
-{
-    unsigned changedSize = changedClasses.size();
-    for (unsigned i = 0; i < changedSize; ++i) {
-        if (hasSelectorForClass(changedClasses[i]))
-            return true;
-    }
-    return false;
+bool SelectRuleFeatureSet::checkSelectorsForClassChange(
+    const SpaceSplitString& changedClasses) const {
+  unsigned changedSize = changedClasses.size();
+  for (unsigned i = 0; i < changedSize; ++i) {
+    if (hasSelectorForClass(changedClasses[i]))
+      return true;
+  }
+  return false;
 }
 
-bool SelectRuleFeatureSet::checkSelectorsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses) const
-{
-    if (!oldClasses.size())
-        return checkSelectorsForClassChange(newClasses);
+bool SelectRuleFeatureSet::checkSelectorsForClassChange(
+    const SpaceSplitString& oldClasses,
+    const SpaceSplitString& newClasses) const {
+  if (!oldClasses.size())
+    return checkSelectorsForClassChange(newClasses);
 
-    // Class vectors tend to be very short. This is faster than using a hash table.
-    BitVector remainingClassBits;
-    remainingClassBits.ensureSize(oldClasses.size());
+  // Class vectors tend to be very short. This is faster than using a hash table.
+  BitVector remainingClassBits;
+  remainingClassBits.ensureSize(oldClasses.size());
 
-    for (unsigned i = 0; i < newClasses.size(); ++i) {
-        bool found = false;
-        for (unsigned j = 0; j < oldClasses.size(); ++j) {
-            if (newClasses[i] == oldClasses[j]) {
-                // Mark each class that is still in the newClasses so we can skip doing
-                // an n^2 search below when looking for removals. We can't break from
-                // this loop early since a class can appear more than once.
-                remainingClassBits.quickSet(j);
-                found = true;
-            }
-        }
-        // Class was added.
-        if (!found) {
-            if (hasSelectorForClass(newClasses[i]))
-                return true;
-        }
+  for (unsigned i = 0; i < newClasses.size(); ++i) {
+    bool found = false;
+    for (unsigned j = 0; j < oldClasses.size(); ++j) {
+      if (newClasses[i] == oldClasses[j]) {
+        // Mark each class that is still in the newClasses so we can skip doing
+        // an n^2 search below when looking for removals. We can't break from
+        // this loop early since a class can appear more than once.
+        remainingClassBits.quickSet(j);
+        found = true;
+      }
     }
-
-    for (unsigned i = 0; i < oldClasses.size(); ++i) {
-        if (remainingClassBits.quickGet(i))
-            continue;
-
-        // Class was removed.
-        if (hasSelectorForClass(oldClasses[i]))
-            return true;
+    // Class was added.
+    if (!found) {
+      if (hasSelectorForClass(newClasses[i]))
+        return true;
     }
-    return false;
+  }
+
+  for (unsigned i = 0; i < oldClasses.size(); ++i) {
+    if (remainingClassBits.quickGet(i))
+      continue;
+
+    // Class was removed.
+    if (hasSelectorForClass(oldClasses[i]))
+      return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

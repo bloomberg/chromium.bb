@@ -31,78 +31,73 @@ namespace blink {
 class LayoutTable;
 class LayoutTableCell;
 
-enum CellsToProcess {
-    AllCells,
-    NonEmptyCells,
-    EmptyCells
-};
+enum CellsToProcess { AllCells, NonEmptyCells, EmptyCells };
 
-enum DistributionMode {
-    ExtraWidth,
-    InitialWidth,
-    LeftoverWidth
-};
+enum DistributionMode { ExtraWidth, InitialWidth, LeftoverWidth };
 
-enum DistributionDirection {
-    StartToEnd,
-    EndToStart
-};
+enum DistributionDirection { StartToEnd, EndToStart };
 
 class TableLayoutAlgorithmAuto final : public TableLayoutAlgorithm {
-public:
-    TableLayoutAlgorithmAuto(LayoutTable*);
-    ~TableLayoutAlgorithmAuto() override;
+ public:
+  TableLayoutAlgorithmAuto(LayoutTable*);
+  ~TableLayoutAlgorithmAuto() override;
 
-    void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
-    LayoutUnit scaledWidthFromPercentColumns() override
-    {
-        return m_scaledWidthFromPercentColumns;
+  void computeIntrinsicLogicalWidths(LayoutUnit& minWidth,
+                                     LayoutUnit& maxWidth) override;
+  LayoutUnit scaledWidthFromPercentColumns() override {
+    return m_scaledWidthFromPercentColumns;
+  }
+  void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth,
+                                        LayoutUnit& maxWidth) const override;
+  void layout() override;
+  void willChangeTableLayout() override {}
+
+ private:
+  void fullRecalc();
+  void recalcColumn(unsigned effCol);
+
+  int calcEffectiveLogicalWidth();
+  void shrinkColumnWidth(const LengthType&, int& available);
+  template <typename Total,
+            LengthType,
+            CellsToProcess,
+            DistributionMode,
+            DistributionDirection>
+  void distributeWidthToColumns(int& available, Total);
+
+  void insertSpanCell(LayoutTableCell*);
+
+  struct Layout {
+    Layout()
+        : minLogicalWidth(0),
+          maxLogicalWidth(0),
+          effectiveMinLogicalWidth(0),
+          effectiveMaxLogicalWidth(0),
+          computedLogicalWidth(0),
+          emptyCellsOnly(true),
+          columnHasNoCells(true) {}
+
+    Length logicalWidth;
+    Length effectiveLogicalWidth;
+    int minLogicalWidth;
+    int maxLogicalWidth;
+    int effectiveMinLogicalWidth;
+    int effectiveMaxLogicalWidth;
+    int computedLogicalWidth;
+    bool emptyCellsOnly;
+    bool columnHasNoCells;
+    int clampedEffectiveMaxLogicalWidth() {
+      return std::max<int>(1, effectiveMaxLogicalWidth);
     }
-    void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
-    void layout() override;
-    void willChangeTableLayout() override { }
+  };
 
-private:
-    void fullRecalc();
-    void recalcColumn(unsigned effCol);
-
-    int calcEffectiveLogicalWidth();
-    void shrinkColumnWidth(const LengthType&, int& available);
-    template<typename Total, LengthType, CellsToProcess, DistributionMode, DistributionDirection> void distributeWidthToColumns(int& available, Total);
-
-    void insertSpanCell(LayoutTableCell*);
-
-    struct Layout {
-        Layout()
-            : minLogicalWidth(0)
-            , maxLogicalWidth(0)
-            , effectiveMinLogicalWidth(0)
-            , effectiveMaxLogicalWidth(0)
-            , computedLogicalWidth(0)
-            , emptyCellsOnly(true)
-            , columnHasNoCells(true)
-        {
-        }
-
-        Length logicalWidth;
-        Length effectiveLogicalWidth;
-        int minLogicalWidth;
-        int maxLogicalWidth;
-        int effectiveMinLogicalWidth;
-        int effectiveMaxLogicalWidth;
-        int computedLogicalWidth;
-        bool emptyCellsOnly;
-        bool columnHasNoCells;
-        int clampedEffectiveMaxLogicalWidth() { return std::max<int>(1, effectiveMaxLogicalWidth); }
-    };
-
-    Vector<Layout, 4> m_layoutStruct;
-    Vector<LayoutTableCell*, 4> m_spanCells;
-    bool m_hasPercent : 1;
-    mutable bool m_effectiveLogicalWidthDirty : 1;
-    LayoutUnit m_scaledWidthFromPercentColumns;
+  Vector<Layout, 4> m_layoutStruct;
+  Vector<LayoutTableCell*, 4> m_spanCells;
+  bool m_hasPercent : 1;
+  mutable bool m_effectiveLogicalWidthDirty : 1;
+  LayoutUnit m_scaledWidthFromPercentColumns;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TableLayoutAlgorithmAuto
+#endif  // TableLayoutAlgorithmAuto

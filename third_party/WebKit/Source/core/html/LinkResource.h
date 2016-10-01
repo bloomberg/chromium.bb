@@ -42,50 +42,48 @@ namespace blink {
 class HTMLLinkElement;
 class LocalFrame;
 
-class CORE_EXPORT LinkResource : public GarbageCollectedFinalized<LinkResource>  {
-    WTF_MAKE_NONCOPYABLE(LinkResource);
-public:
-    enum LinkResourceType {
-        Style,
-        Import,
-        Manifest,
-        Other
-    };
+class CORE_EXPORT LinkResource
+    : public GarbageCollectedFinalized<LinkResource> {
+  WTF_MAKE_NONCOPYABLE(LinkResource);
 
-    explicit LinkResource(HTMLLinkElement*);
-    virtual ~LinkResource();
+ public:
+  enum LinkResourceType { Style, Import, Manifest, Other };
 
-    bool shouldLoadResource() const;
-    LocalFrame* loadingFrame() const;
+  explicit LinkResource(HTMLLinkElement*);
+  virtual ~LinkResource();
 
-    virtual LinkResourceType type() const = 0;
-    virtual void process() = 0;
-    virtual void ownerRemoved() { }
-    virtual void ownerInserted() { }
-    virtual bool hasLoaded() const = 0;
+  bool shouldLoadResource() const;
+  LocalFrame* loadingFrame() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  virtual LinkResourceType type() const = 0;
+  virtual void process() = 0;
+  virtual void ownerRemoved() {}
+  virtual void ownerInserted() {}
+  virtual bool hasLoaded() const = 0;
 
-protected:
-    Member<HTMLLinkElement> m_owner;
+  DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  Member<HTMLLinkElement> m_owner;
 };
 
 class LinkRequestBuilder {
-    STACK_ALLOCATED();
-public:
-    explicit LinkRequestBuilder(HTMLLinkElement* owner);
+  STACK_ALLOCATED();
 
-    bool isValid() const { return !m_url.isEmpty() && m_url.isValid(); }
-    const KURL& url() const { return m_url; }
-    const AtomicString& charset() const { return m_charset; }
-    FetchRequest build(bool lowPriority) const;
+ public:
+  explicit LinkRequestBuilder(HTMLLinkElement* owner);
 
-private:
-    Member<HTMLLinkElement> m_owner;
-    KURL m_url;
-    AtomicString m_charset;
+  bool isValid() const { return !m_url.isEmpty() && m_url.isValid(); }
+  const KURL& url() const { return m_url; }
+  const AtomicString& charset() const { return m_charset; }
+  FetchRequest build(bool lowPriority) const;
+
+ private:
+  Member<HTMLLinkElement> m_owner;
+  KURL m_url;
+  AtomicString m_charset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LinkResource_h
+#endif  // LinkResource_h

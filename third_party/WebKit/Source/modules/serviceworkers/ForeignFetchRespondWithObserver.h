@@ -11,18 +11,34 @@ namespace blink {
 
 // This class observes the service worker's handling of a ForeignFetchEvent and
 // notifies the client.
-class MODULES_EXPORT ForeignFetchRespondWithObserver final : public RespondWithObserver {
-public:
-    static ForeignFetchRespondWithObserver* create(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext, PassRefPtr<SecurityOrigin>, WaitUntilObserver*);
+class MODULES_EXPORT ForeignFetchRespondWithObserver final
+    : public RespondWithObserver {
+ public:
+  static ForeignFetchRespondWithObserver* create(
+      ExecutionContext*,
+      int eventID,
+      const KURL& requestURL,
+      WebURLRequest::FetchRequestMode,
+      WebURLRequest::FrameType,
+      WebURLRequest::RequestContext,
+      PassRefPtr<SecurityOrigin>,
+      WaitUntilObserver*);
 
-    void responseWasFulfilled(const ScriptValue&) override;
+  void responseWasFulfilled(const ScriptValue&) override;
 
-private:
-    ForeignFetchRespondWithObserver(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext, PassRefPtr<SecurityOrigin>, WaitUntilObserver*);
+ private:
+  ForeignFetchRespondWithObserver(ExecutionContext*,
+                                  int eventID,
+                                  const KURL& requestURL,
+                                  WebURLRequest::FetchRequestMode,
+                                  WebURLRequest::FrameType,
+                                  WebURLRequest::RequestContext,
+                                  PassRefPtr<SecurityOrigin>,
+                                  WaitUntilObserver*);
 
-    RefPtr<SecurityOrigin> m_requestOrigin;
+  RefPtr<SecurityOrigin> m_requestOrigin;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ForeignFetchRespondWithObserver_h
+#endif  // ForeignFetchRespondWithObserver_h

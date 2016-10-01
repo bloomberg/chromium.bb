@@ -44,19 +44,23 @@ class Page;
 class Worker;
 
 class DedicatedWorkerMessagingProxyProvider : public Supplement<Page> {
-    WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProvider);
-public:
-    DedicatedWorkerMessagingProxyProvider() { }
-    virtual ~DedicatedWorkerMessagingProxyProvider() { }
+  WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxyProvider);
 
-    virtual InProcessWorkerMessagingProxy* createWorkerMessagingProxy(Worker*) = 0;
+ public:
+  DedicatedWorkerMessagingProxyProvider() {}
+  virtual ~DedicatedWorkerMessagingProxyProvider() {}
 
-    static DedicatedWorkerMessagingProxyProvider* from(Page&);
-    static const char* supplementName();
+  virtual InProcessWorkerMessagingProxy* createWorkerMessagingProxy(
+      Worker*) = 0;
+
+  static DedicatedWorkerMessagingProxyProvider* from(Page&);
+  static const char* supplementName();
 };
 
-CORE_EXPORT void provideDedicatedWorkerMessagingProxyProviderTo(Page&, DedicatedWorkerMessagingProxyProvider*);
+CORE_EXPORT void provideDedicatedWorkerMessagingProxyProviderTo(
+    Page&,
+    DedicatedWorkerMessagingProxyProvider*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DedicatedWorkerMessagingProxyProvider_h
+#endif  // DedicatedWorkerMessagingProxyProvider_h

@@ -10,20 +10,25 @@
 
 namespace blink {
 
-void PaintGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& destRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
-{
-    SkAutoCanvasRestore ar(canvas, true);
-    canvas->clipRect(destRect);
-    canvas->translate(destRect.x(), destRect.y());
-    if (destRect.size() != srcRect.size())
-        canvas->scale(destRect.width() / srcRect.width(), destRect.height() / srcRect.height());
-    canvas->translate(-srcRect.x(), -srcRect.y());
-    canvas->drawPicture(m_picture.get(), nullptr, &paint);
+void PaintGeneratedImage::draw(SkCanvas* canvas,
+                               const SkPaint& paint,
+                               const FloatRect& destRect,
+                               const FloatRect& srcRect,
+                               RespectImageOrientationEnum,
+                               ImageClampingMode) {
+  SkAutoCanvasRestore ar(canvas, true);
+  canvas->clipRect(destRect);
+  canvas->translate(destRect.x(), destRect.y());
+  if (destRect.size() != srcRect.size())
+    canvas->scale(destRect.width() / srcRect.width(),
+                  destRect.height() / srcRect.height());
+  canvas->translate(-srcRect.x(), -srcRect.y());
+  canvas->drawPicture(m_picture.get(), nullptr, &paint);
 }
 
-void PaintGeneratedImage::drawTile(GraphicsContext& context, const FloatRect& srcRect)
-{
-    context.drawPicture(m_picture.get());
+void PaintGeneratedImage::drawTile(GraphicsContext& context,
+                                   const FloatRect& srcRect) {
+  context.drawPicture(m_picture.get());
 }
 
-} // namespace blink
+}  // namespace blink

@@ -9,66 +9,62 @@
 
 namespace blink {
 
-class InlinedGlobalMarkingVisitor final : public VisitorHelper<InlinedGlobalMarkingVisitor>, public MarkingVisitorImpl<InlinedGlobalMarkingVisitor> {
-public:
-    friend class VisitorHelper<InlinedGlobalMarkingVisitor>;
-    using Helper = VisitorHelper<InlinedGlobalMarkingVisitor>;
-    friend class MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
-    using Impl = MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
+class InlinedGlobalMarkingVisitor final
+    : public VisitorHelper<InlinedGlobalMarkingVisitor>,
+      public MarkingVisitorImpl<InlinedGlobalMarkingVisitor> {
+ public:
+  friend class VisitorHelper<InlinedGlobalMarkingVisitor>;
+  using Helper = VisitorHelper<InlinedGlobalMarkingVisitor>;
+  friend class MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
+  using Impl = MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
 
-    explicit InlinedGlobalMarkingVisitor(ThreadState* state) : VisitorHelper(state) { }
+  explicit InlinedGlobalMarkingVisitor(ThreadState* state)
+      : VisitorHelper(state) {}
 
-    // Hack to unify interface to visitor->trace().
-    // Without this hack, we need to use visitor.trace() for
-    // trace(InlinedGlobalMarkingVisitor) and visitor->trace() for trace(Visitor*).
-    InlinedGlobalMarkingVisitor* operator->() { return this; }
+  // Hack to unify interface to visitor->trace().
+  // Without this hack, we need to use visitor.trace() for
+  // trace(InlinedGlobalMarkingVisitor) and visitor->trace() for trace(Visitor*).
+  InlinedGlobalMarkingVisitor* operator->() { return this; }
 
-    using Impl::mark;
-    using Impl::ensureMarked;
-    using Impl::registerDelayedMarkNoTracing;
-    using Impl::registerWeakTable;
-    using Impl::registerWeakMembers;
+  using Impl::mark;
+  using Impl::ensureMarked;
+  using Impl::registerDelayedMarkNoTracing;
+  using Impl::registerWeakTable;
+  using Impl::registerWeakMembers;
 #if ENABLE(ASSERT)
-    using Impl::weakTableRegistered;
+  using Impl::weakTableRegistered;
 #endif
 
-    template<typename T>
-    void mark(T* t)
-    {
-        Helper::mark(t);
-    }
+  template <typename T>
+  void mark(T* t) {
+    Helper::mark(t);
+  }
 
-    template<typename T, void (T::*method)(Visitor*)>
-    void registerWeakMembers(const T* obj)
-    {
-        Helper::template registerWeakMembers<T, method>(obj);
-    }
+  template <typename T, void (T::*method)(Visitor*)>
+  void registerWeakMembers(const T* obj) {
+    Helper::template registerWeakMembers<T, method>(obj);
+  }
 
-protected:
-    // Methods to be called from MarkingVisitorImpl.
+ protected:
+  // Methods to be called from MarkingVisitorImpl.
 
-    inline bool shouldMarkObject(const void*) const
-    {
-        // As this is global marking visitor, we need to mark all objects.
-        return true;
-    }
+  inline bool shouldMarkObject(const void*) const {
+    // As this is global marking visitor, we need to mark all objects.
+    return true;
+  }
 
-    inline Visitor::MarkingMode getMarkingMode() const
-    {
-        return Visitor::GlobalMarking;
-    }
+  inline Visitor::MarkingMode getMarkingMode() const {
+    return Visitor::GlobalMarking;
+  }
 
-private:
-    static InlinedGlobalMarkingVisitor fromHelper(Helper* helper)
-    {
-        return *static_cast<InlinedGlobalMarkingVisitor*>(helper);
-    }
+ private:
+  static InlinedGlobalMarkingVisitor fromHelper(Helper* helper) {
+    return *static_cast<InlinedGlobalMarkingVisitor*>(helper);
+  }
 };
 
-inline void GarbageCollectedMixin::trace(InlinedGlobalMarkingVisitor)
-{
-}
+inline void GarbageCollectedMixin::trace(InlinedGlobalMarkingVisitor) {}
 
-} // namespace blink
+}  // namespace blink
 
 #endif

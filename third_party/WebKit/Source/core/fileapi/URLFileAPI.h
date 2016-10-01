@@ -15,12 +15,13 @@ class ExecutionContext;
 class Blob;
 
 class URLFileAPI {
-    STATIC_ONLY(URLFileAPI);
-public:
-    static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
-    static void revokeObjectURL(ExecutionContext*, const String&);
+  STATIC_ONLY(URLFileAPI);
+
+ public:
+  static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
+  static void revokeObjectURL(ExecutionContext*, const String&);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

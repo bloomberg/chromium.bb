@@ -40,26 +40,32 @@ class WebMediaStream;
 class WebMediaStreamTrack;
 
 class WebMediaStreamCenter {
-public:
-    virtual ~WebMediaStreamCenter() { }
+ public:
+  virtual ~WebMediaStreamCenter() {}
 
-    // Stream functionality.
-    virtual void didCreateMediaStream(WebMediaStream&) = 0;
-    virtual bool didAddMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
-    virtual bool didRemoveMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
-    virtual void didStopLocalMediaStream(const WebMediaStream&) = 0;
+  // Stream functionality.
+  virtual void didCreateMediaStream(WebMediaStream&) = 0;
+  virtual bool didAddMediaStreamTrack(const WebMediaStream&,
+                                      const WebMediaStreamTrack&) = 0;
+  virtual bool didRemoveMediaStreamTrack(const WebMediaStream&,
+                                         const WebMediaStreamTrack&) = 0;
+  virtual void didStopLocalMediaStream(const WebMediaStream&) = 0;
 
-    // Track functionality.
-    virtual void didCreateMediaStreamTrack(const WebMediaStreamTrack&) { }
-    virtual void didEnableMediaStreamTrack(const WebMediaStreamTrack&) { }
-    virtual void didDisableMediaStreamTrack(const WebMediaStreamTrack&) { }
-    virtual bool didStopMediaStreamTrack(const WebMediaStreamTrack&) { return false; }
+  // Track functionality.
+  virtual void didCreateMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual void didEnableMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual void didDisableMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual bool didStopMediaStreamTrack(const WebMediaStreamTrack&) {
+    return false;
+  }
 
-    // Caller must take the ownership of the returned |WebAudioSourceProvider| object.
-    virtual WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(const WebMediaStreamTrack&) { return nullptr; }
+  // Caller must take the ownership of the returned |WebAudioSourceProvider| object.
+  virtual WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(
+      const WebMediaStreamTrack&) {
+    return nullptr;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaStreamCenter_h
-
+#endif  // WebMediaStreamCenter_h

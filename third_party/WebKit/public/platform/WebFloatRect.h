@@ -44,86 +44,57 @@
 namespace blink {
 
 struct WebFloatRect {
-    float x;
-    float y;
-    float width;
-    float height;
+  float x;
+  float y;
+  float width;
+  float height;
 
-    bool isEmpty() const { return width <= 0 || height <= 0; }
+  bool isEmpty() const { return width <= 0 || height <= 0; }
 
-    WebFloatRect()
-        : x(0)
-        , y(0)
-        , width(0)
-        , height(0)
-    {
-    }
+  WebFloatRect() : x(0), y(0), width(0), height(0) {}
 
-    WebFloatRect(float x, float y, float width, float height)
-        : x(x)
-        , y(y)
-        , width(width)
-        , height(height)
-    {
-    }
+  WebFloatRect(float x, float y, float width, float height)
+      : x(x), y(y), width(width), height(height) {}
 
 #if INSIDE_BLINK
-    WebFloatRect(const FloatRect& r)
-        : x(r.x())
-        , y(r.y())
-        , width(r.width())
-        , height(r.height())
-    {
-    }
+  WebFloatRect(const FloatRect& r)
+      : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
 
-    WebFloatRect& operator=(const FloatRect& r)
-    {
-        x = r.x();
-        y = r.y();
-        width = r.width();
-        height = r.height();
-        return *this;
-    }
+  WebFloatRect& operator=(const FloatRect& r) {
+    x = r.x();
+    y = r.y();
+    width = r.width();
+    height = r.height();
+    return *this;
+  }
 
-    operator FloatRect() const
-    {
-        return FloatRect(x, y, width, height);
-    }
+  operator FloatRect() const { return FloatRect(x, y, width, height); }
 #else
-    WebFloatRect(const gfx::RectF& r)
-        : x(r.x())
-        , y(r.y())
-        , width(r.width())
-        , height(r.height())
-    {
-    }
+  WebFloatRect(const gfx::RectF& r)
+      : x(r.x()), y(r.y()), width(r.width()), height(r.height()) {}
 
-    WebFloatRect& operator=(const gfx::RectF& r)
-    {
-        x = r.x();
-        y = r.y();
-        width = r.width();
-        height = r.height();
-        return *this;
-    }
+  WebFloatRect& operator=(const gfx::RectF& r) {
+    x = r.x();
+    y = r.y();
+    width = r.width();
+    height = r.height();
+    return *this;
+  }
 
-    operator gfx::RectF() const
-    {
-        return gfx::RectF(x, y, std::max(0.0f, width), std::max(0.0f, height));
-    }
+  operator gfx::RectF() const {
+    return gfx::RectF(x, y, std::max(0.0f, width), std::max(0.0f, height));
+  }
 #endif
 };
 
-inline bool operator==(const WebFloatRect& a, const WebFloatRect& b)
-{
-    return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
+inline bool operator==(const WebFloatRect& a, const WebFloatRect& b) {
+  return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
 }
 
-inline bool operator!=(const WebFloatRect& a, const WebFloatRect& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebFloatRect& a, const WebFloatRect& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

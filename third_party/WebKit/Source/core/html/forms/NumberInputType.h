@@ -38,41 +38,48 @@ namespace blink {
 class ExceptionState;
 
 class NumberInputType final : public TextFieldInputType {
-public:
-    static InputType* create(HTMLInputElement&);
+ public:
+  static InputType* create(HTMLInputElement&);
 
-private:
-    NumberInputType(HTMLInputElement& element) : TextFieldInputType(element) { }
-    void countUsage() override;
-    const AtomicString& formControlType() const override;
-    void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
-    double valueAsDouble() const override;
-    void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const override;
-    void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const override;
-    bool typeMismatchFor(const String&) const override;
-    bool typeMismatch() const override;
-    bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const override;
-    bool isSteppable() const override;
-    StepRange createStepRange(AnyStepHandling) const override;
-    void handleKeydownEvent(KeyboardEvent*) override;
-    void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;
-    Decimal parseToNumber(const String&, const Decimal&) const override;
-    String serialize(const Decimal&) const override;
-    String localizeValue(const String&) const override;
-    String visibleValue() const override;
-    String convertFromVisibleValue(const String&) const override;
-    String sanitizeValue(const String&) const override;
-    void warnIfValueIsInvalid(const String&) const override;
-    bool hasBadInput() const override;
-    String badInputText() const override;
-    String rangeOverflowText(const Decimal& maxmum) const override;
-    String rangeUnderflowText(const Decimal& minimum) const override;
-    bool supportsPlaceholder() const override;
-    void minOrMaxAttributeChanged() override;
-    void stepAttributeChanged() override;
-    bool supportsSelectionAPI() const override;
+ private:
+  NumberInputType(HTMLInputElement& element) : TextFieldInputType(element) {}
+  void countUsage() override;
+  const AtomicString& formControlType() const override;
+  void setValue(const String&,
+                bool valueChanged,
+                TextFieldEventBehavior) override;
+  double valueAsDouble() const override;
+  void setValueAsDouble(double,
+                        TextFieldEventBehavior,
+                        ExceptionState&) const override;
+  void setValueAsDecimal(const Decimal&,
+                         TextFieldEventBehavior,
+                         ExceptionState&) const override;
+  bool typeMismatchFor(const String&) const override;
+  bool typeMismatch() const override;
+  bool sizeShouldIncludeDecoration(int defaultSize,
+                                   int& preferredSize) const override;
+  bool isSteppable() const override;
+  StepRange createStepRange(AnyStepHandling) const override;
+  void handleKeydownEvent(KeyboardEvent*) override;
+  void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;
+  Decimal parseToNumber(const String&, const Decimal&) const override;
+  String serialize(const Decimal&) const override;
+  String localizeValue(const String&) const override;
+  String visibleValue() const override;
+  String convertFromVisibleValue(const String&) const override;
+  String sanitizeValue(const String&) const override;
+  void warnIfValueIsInvalid(const String&) const override;
+  bool hasBadInput() const override;
+  String badInputText() const override;
+  String rangeOverflowText(const Decimal& maxmum) const override;
+  String rangeUnderflowText(const Decimal& minimum) const override;
+  bool supportsPlaceholder() const override;
+  void minOrMaxAttributeChanged() override;
+  void stepAttributeChanged() override;
+  bool supportsSelectionAPI() const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NumberInputType_h
+#endif  // NumberInputType_h

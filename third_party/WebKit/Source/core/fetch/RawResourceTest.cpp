@@ -44,366 +44,382 @@
 
 namespace blink {
 
-TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
-{
-    ResourceRequest jpegRequest;
-    jpegRequest.setHTTPAccept("image/jpeg");
+TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
+  ResourceRequest jpegRequest;
+  jpegRequest.setHTTPAccept("image/jpeg");
 
-    RawResource* jpegResource(RawResource::create(jpegRequest, Resource::Raw));
+  RawResource* jpegResource(RawResource::create(jpegRequest, Resource::Raw));
 
-    ResourceRequest pngRequest;
-    pngRequest.setHTTPAccept("image/png");
+  ResourceRequest pngRequest;
+  pngRequest.setHTTPAccept("image/png");
 
-    EXPECT_FALSE(jpegResource->canReuse(pngRequest));
+  EXPECT_FALSE(jpegResource->canReuse(pngRequest));
 }
 
-class DummyClient final : public GarbageCollectedFinalized<DummyClient>, public RawResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(DummyClient);
-public:
-    DummyClient() : m_called(false), m_numberOfRedirectsReceived(0) {}
-    ~DummyClient() override {}
+class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
+                          public RawResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(DummyClient);
 
-    // ResourceClient implementation.
-    void notifyFinished(Resource* resource) override
-    {
-        m_called = true;
-    }
-    String debugName() const override { return "DummyClient"; }
+ public:
+  DummyClient() : m_called(false), m_numberOfRedirectsReceived(0) {}
+  ~DummyClient() override {}
 
-    void dataReceived(Resource*, const char* data, size_t length) override
-    {
-        m_data.append(data, length);
-    }
+  // ResourceClient implementation.
+  void notifyFinished(Resource* resource) override { m_called = true; }
+  String debugName() const override { return "DummyClient"; }
 
-    void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override
-    {
-        ++m_numberOfRedirectsReceived;
-    }
+  void dataReceived(Resource*, const char* data, size_t length) override {
+    m_data.append(data, length);
+  }
 
-    bool called() { return m_called; }
-    int numberOfRedirectsReceived() const { return m_numberOfRedirectsReceived; }
-    const Vector<char>& data() { return m_data; }
-    DEFINE_INLINE_TRACE()
-    {
-        RawResourceClient::trace(visitor);
-    }
+  void redirectReceived(Resource*,
+                        ResourceRequest&,
+                        const ResourceResponse&) override {
+    ++m_numberOfRedirectsReceived;
+  }
 
-private:
-    bool m_called;
-    int m_numberOfRedirectsReceived;
-    Vector<char> m_data;
+  bool called() { return m_called; }
+  int numberOfRedirectsReceived() const { return m_numberOfRedirectsReceived; }
+  const Vector<char>& data() { return m_data; }
+  DEFINE_INLINE_TRACE() { RawResourceClient::trace(visitor); }
+
+ private:
+  bool m_called;
+  int m_numberOfRedirectsReceived;
+  Vector<char> m_data;
 };
 
 // This client adds another client when notified.
-class AddingClient final : public GarbageCollectedFinalized<AddingClient>, public RawResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(AddingClient);
-public:
-    AddingClient(DummyClient* client, Resource* resource)
-        : m_dummyClient(client)
-        , m_resource(resource)
-        , m_removeClientTimer(this, &AddingClient::removeClient) {}
+class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
+                           public RawResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(AddingClient);
 
-    ~AddingClient() override {}
+ public:
+  AddingClient(DummyClient* client, Resource* resource)
+      : m_dummyClient(client),
+        m_resource(resource),
+        m_removeClientTimer(this, &AddingClient::removeClient) {}
 
-    // ResourceClient implementation.
-    void notifyFinished(Resource* resource) override
-    {
-        // First schedule an asynchronous task to remove the client.
-        // We do not expect the client to be called.
-        m_removeClientTimer.startOneShot(0, BLINK_FROM_HERE);
-        resource->addClient(m_dummyClient);
-    }
-    String debugName() const override { return "AddingClient"; }
+  ~AddingClient() override {}
 
-    void removeClient(TimerBase* timer)
-    {
-        m_resource->removeClient(m_dummyClient);
-    }
+  // ResourceClient implementation.
+  void notifyFinished(Resource* resource) override {
+    // First schedule an asynchronous task to remove the client.
+    // We do not expect the client to be called.
+    m_removeClientTimer.startOneShot(0, BLINK_FROM_HERE);
+    resource->addClient(m_dummyClient);
+  }
+  String debugName() const override { return "AddingClient"; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_dummyClient);
-        visitor->trace(m_resource);
-        RawResourceClient::trace(visitor);
-    }
+  void removeClient(TimerBase* timer) {
+    m_resource->removeClient(m_dummyClient);
+  }
 
-private:
-    Member<DummyClient> m_dummyClient;
-    Member<Resource> m_resource;
-    Timer<AddingClient> m_removeClientTimer;
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_dummyClient);
+    visitor->trace(m_resource);
+    RawResourceClient::trace(visitor);
+  }
+
+ private:
+  Member<DummyClient> m_dummyClient;
+  Member<Resource> m_resource;
+  Timer<AddingClient> m_removeClientTimer;
 };
 
-TEST(RawResourceTest, RevalidationSucceeded)
-{
-    Resource* resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
-    ResourceResponse response;
-    response.setHTTPStatusCode(200);
-    resource->responseReceived(response, nullptr);
-    const char data[5] = "abcd";
-    resource->appendData(data, 4);
-    resource->finish();
-    memoryCache()->add(resource);
+TEST(RawResourceTest, RevalidationSucceeded) {
+  Resource* resource =
+      RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+  ResourceResponse response;
+  response.setHTTPStatusCode(200);
+  resource->responseReceived(response, nullptr);
+  const char data[5] = "abcd";
+  resource->appendData(data, 4);
+  resource->finish();
+  memoryCache()->add(resource);
 
-    // Simulate a successful revalidation.
-    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+  // Simulate a successful revalidation.
+  resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
 
-    Persistent<DummyClient> client = new DummyClient;
-    resource->addClient(client);
+  Persistent<DummyClient> client = new DummyClient;
+  resource->addClient(client);
 
-    ResourceResponse revalidatingResponse;
-    revalidatingResponse.setHTTPStatusCode(304);
-    resource->responseReceived(revalidatingResponse, nullptr);
-    EXPECT_FALSE(resource->isCacheValidator());
-    EXPECT_EQ(200, resource->response().httpStatusCode());
-    EXPECT_EQ(4u, resource->resourceBuffer()->size());
-    EXPECT_EQ(resource, memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")));
-    memoryCache()->remove(resource);
+  ResourceResponse revalidatingResponse;
+  revalidatingResponse.setHTTPStatusCode(304);
+  resource->responseReceived(revalidatingResponse, nullptr);
+  EXPECT_FALSE(resource->isCacheValidator());
+  EXPECT_EQ(200, resource->response().httpStatusCode());
+  EXPECT_EQ(4u, resource->resourceBuffer()->size());
+  EXPECT_EQ(resource, memoryCache()->resourceForURL(
+                          KURL(ParsedURLString, "data:text/html,")));
+  memoryCache()->remove(resource);
 
-    resource->removeClient(client);
-    EXPECT_FALSE(resource->isAlive());
-    EXPECT_FALSE(client->called());
-    EXPECT_EQ("abcd", String(client->data().data(), client->data().size()));
+  resource->removeClient(client);
+  EXPECT_FALSE(resource->isAlive());
+  EXPECT_FALSE(client->called());
+  EXPECT_EQ("abcd", String(client->data().data(), client->data().size()));
 }
 
-TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
-{
-    Resource* resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
-    ResourceResponse response;
-    response.setHTTPStatusCode(200);
-    resource->responseReceived(response, nullptr);
-    resource->finish();
-    memoryCache()->add(resource);
+TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody) {
+  Resource* resource =
+      RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+  ResourceResponse response;
+  response.setHTTPStatusCode(200);
+  resource->responseReceived(response, nullptr);
+  resource->finish();
+  memoryCache()->add(resource);
 
-    // Simulate a successful revalidation.
-    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+  // Simulate a successful revalidation.
+  resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
 
-    Persistent<DummyClient> client = new DummyClient;
-    resource->addClient(client);
+  Persistent<DummyClient> client = new DummyClient;
+  resource->addClient(client);
 
-    ResourceResponse revalidatingResponse;
-    revalidatingResponse.setHTTPStatusCode(304);
-    resource->responseReceived(revalidatingResponse, nullptr);
-    EXPECT_FALSE(resource->isCacheValidator());
-    EXPECT_EQ(200, resource->response().httpStatusCode());
-    EXPECT_FALSE(resource->resourceBuffer());
-    EXPECT_EQ(resource, memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")));
-    memoryCache()->remove(resource);
+  ResourceResponse revalidatingResponse;
+  revalidatingResponse.setHTTPStatusCode(304);
+  resource->responseReceived(revalidatingResponse, nullptr);
+  EXPECT_FALSE(resource->isCacheValidator());
+  EXPECT_EQ(200, resource->response().httpStatusCode());
+  EXPECT_FALSE(resource->resourceBuffer());
+  EXPECT_EQ(resource, memoryCache()->resourceForURL(
+                          KURL(ParsedURLString, "data:text/html,")));
+  memoryCache()->remove(resource);
 
-    resource->removeClient(client);
-    EXPECT_FALSE(resource->isAlive());
-    EXPECT_FALSE(client->called());
-    EXPECT_EQ(0u, client->data().size());
+  resource->removeClient(client);
+  EXPECT_FALSE(resource->isAlive());
+  EXPECT_FALSE(client->called());
+  EXPECT_EQ(0u, client->data().size());
 }
 
-TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
-{
-    Resource* resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
-    ResourceResponse response;
-    response.setHTTPStatusCode(200);
-    response.addHTTPHeaderField("keep-alive", "keep-alive value");
-    response.addHTTPHeaderField("expires", "expires value");
-    response.addHTTPHeaderField("last-modified", "last-modified value");
-    response.addHTTPHeaderField("proxy-authenticate", "proxy-authenticate value");
-    response.addHTTPHeaderField("proxy-connection", "proxy-connection value");
-    response.addHTTPHeaderField("x-custom", "custom value");
-    resource->responseReceived(response, nullptr);
-    resource->finish();
-    memoryCache()->add(resource);
+TEST(RawResourceTest, RevalidationSucceededUpdateHeaders) {
+  Resource* resource =
+      RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+  ResourceResponse response;
+  response.setHTTPStatusCode(200);
+  response.addHTTPHeaderField("keep-alive", "keep-alive value");
+  response.addHTTPHeaderField("expires", "expires value");
+  response.addHTTPHeaderField("last-modified", "last-modified value");
+  response.addHTTPHeaderField("proxy-authenticate", "proxy-authenticate value");
+  response.addHTTPHeaderField("proxy-connection", "proxy-connection value");
+  response.addHTTPHeaderField("x-custom", "custom value");
+  resource->responseReceived(response, nullptr);
+  resource->finish();
+  memoryCache()->add(resource);
 
-    // Simulate a successful revalidation.
-    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+  // Simulate a successful revalidation.
+  resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
 
-    // Validate that these headers pre-update.
-    EXPECT_EQ("keep-alive value", resource->response().httpHeaderField("keep-alive"));
-    EXPECT_EQ("expires value", resource->response().httpHeaderField("expires"));
-    EXPECT_EQ("last-modified value", resource->response().httpHeaderField("last-modified"));
-    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
-    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
-    EXPECT_EQ("proxy-connection value", resource->response().httpHeaderField("proxy-connection"));
-    EXPECT_EQ("custom value", resource->response().httpHeaderField("x-custom"));
+  // Validate that these headers pre-update.
+  EXPECT_EQ("keep-alive value",
+            resource->response().httpHeaderField("keep-alive"));
+  EXPECT_EQ("expires value", resource->response().httpHeaderField("expires"));
+  EXPECT_EQ("last-modified value",
+            resource->response().httpHeaderField("last-modified"));
+  EXPECT_EQ("proxy-authenticate value",
+            resource->response().httpHeaderField("proxy-authenticate"));
+  EXPECT_EQ("proxy-authenticate value",
+            resource->response().httpHeaderField("proxy-authenticate"));
+  EXPECT_EQ("proxy-connection value",
+            resource->response().httpHeaderField("proxy-connection"));
+  EXPECT_EQ("custom value", resource->response().httpHeaderField("x-custom"));
 
-    Persistent<DummyClient> client = new DummyClient;
-    resource->addClient(client.get());
+  Persistent<DummyClient> client = new DummyClient;
+  resource->addClient(client.get());
 
-    // Perform a revalidation step.
-    ResourceResponse revalidatingResponse;
-    revalidatingResponse.setHTTPStatusCode(304);
-    // Headers that aren't copied with an 304 code.
-    revalidatingResponse.addHTTPHeaderField("keep-alive", "garbage");
-    revalidatingResponse.addHTTPHeaderField("expires", "garbage");
-    revalidatingResponse.addHTTPHeaderField("last-modified", "garbage");
-    revalidatingResponse.addHTTPHeaderField("proxy-authenticate", "garbage");
-    revalidatingResponse.addHTTPHeaderField("proxy-connection", "garbage");
-    // Header that is updated with 304 code.
-    revalidatingResponse.addHTTPHeaderField("x-custom", "updated");
-    resource->responseReceived(revalidatingResponse, nullptr);
+  // Perform a revalidation step.
+  ResourceResponse revalidatingResponse;
+  revalidatingResponse.setHTTPStatusCode(304);
+  // Headers that aren't copied with an 304 code.
+  revalidatingResponse.addHTTPHeaderField("keep-alive", "garbage");
+  revalidatingResponse.addHTTPHeaderField("expires", "garbage");
+  revalidatingResponse.addHTTPHeaderField("last-modified", "garbage");
+  revalidatingResponse.addHTTPHeaderField("proxy-authenticate", "garbage");
+  revalidatingResponse.addHTTPHeaderField("proxy-connection", "garbage");
+  // Header that is updated with 304 code.
+  revalidatingResponse.addHTTPHeaderField("x-custom", "updated");
+  resource->responseReceived(revalidatingResponse, nullptr);
 
-    // Validate the original response.
-    EXPECT_EQ(200, resource->response().httpStatusCode());
+  // Validate the original response.
+  EXPECT_EQ(200, resource->response().httpStatusCode());
 
-    // Validate that these headers are not updated.
-    EXPECT_EQ("keep-alive value", resource->response().httpHeaderField("keep-alive"));
-    EXPECT_EQ("expires value", resource->response().httpHeaderField("expires"));
-    EXPECT_EQ("last-modified value", resource->response().httpHeaderField("last-modified"));
-    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
-    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
-    EXPECT_EQ("proxy-connection value", resource->response().httpHeaderField("proxy-connection"));
-    EXPECT_EQ("updated", resource->response().httpHeaderField("x-custom"));
+  // Validate that these headers are not updated.
+  EXPECT_EQ("keep-alive value",
+            resource->response().httpHeaderField("keep-alive"));
+  EXPECT_EQ("expires value", resource->response().httpHeaderField("expires"));
+  EXPECT_EQ("last-modified value",
+            resource->response().httpHeaderField("last-modified"));
+  EXPECT_EQ("proxy-authenticate value",
+            resource->response().httpHeaderField("proxy-authenticate"));
+  EXPECT_EQ("proxy-authenticate value",
+            resource->response().httpHeaderField("proxy-authenticate"));
+  EXPECT_EQ("proxy-connection value",
+            resource->response().httpHeaderField("proxy-connection"));
+  EXPECT_EQ("updated", resource->response().httpHeaderField("x-custom"));
 
-    memoryCache()->remove(resource);
+  memoryCache()->remove(resource);
 
-    resource->removeClient(client);
-    EXPECT_FALSE(resource->isAlive());
-    EXPECT_FALSE(client->called());
-    EXPECT_EQ(0u, client->data().size());
+  resource->removeClient(client);
+  EXPECT_FALSE(resource->isAlive());
+  EXPECT_FALSE(client->called());
+  EXPECT_EQ(0u, client->data().size());
 }
 
-TEST(RawResourceTest, RedirectDuringRevalidation)
-{
-    Resource* resource = RawResource::create(ResourceRequest("https://example.com/1"), Resource::Raw);
-    ResourceResponse response;
-    response.setURL(KURL(ParsedURLString, "https://example.com/1"));
-    response.setHTTPStatusCode(200);
-    resource->responseReceived(response, nullptr);
-    const char data[5] = "abcd";
-    resource->appendData(data, 4);
-    resource->finish();
-    memoryCache()->add(resource);
+TEST(RawResourceTest, RedirectDuringRevalidation) {
+  Resource* resource = RawResource::create(
+      ResourceRequest("https://example.com/1"), Resource::Raw);
+  ResourceResponse response;
+  response.setURL(KURL(ParsedURLString, "https://example.com/1"));
+  response.setHTTPStatusCode(200);
+  resource->responseReceived(response, nullptr);
+  const char data[5] = "abcd";
+  resource->appendData(data, 4);
+  resource->finish();
+  memoryCache()->add(resource);
 
-    EXPECT_FALSE(resource->isCacheValidator());
-    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
-    EXPECT_EQ("https://example.com/1", resource->lastResourceRequest().url().getString());
+  EXPECT_FALSE(resource->isCacheValidator());
+  EXPECT_EQ("https://example.com/1",
+            resource->resourceRequest().url().getString());
+  EXPECT_EQ("https://example.com/1",
+            resource->lastResourceRequest().url().getString());
 
-    // Simulate a revalidation.
-    resource->setRevalidatingRequest(ResourceRequest("https://example.com/1"));
-    EXPECT_TRUE(resource->isCacheValidator());
-    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
-    EXPECT_EQ("https://example.com/1", resource->lastResourceRequest().url().getString());
+  // Simulate a revalidation.
+  resource->setRevalidatingRequest(ResourceRequest("https://example.com/1"));
+  EXPECT_TRUE(resource->isCacheValidator());
+  EXPECT_EQ("https://example.com/1",
+            resource->resourceRequest().url().getString());
+  EXPECT_EQ("https://example.com/1",
+            resource->lastResourceRequest().url().getString());
 
-    Persistent<DummyClient> client = new DummyClient;
-    resource->addClient(client);
+  Persistent<DummyClient> client = new DummyClient;
+  resource->addClient(client);
 
-    // The revalidating request is redirected.
-    ResourceResponse redirectResponse;
-    redirectResponse.setURL(KURL(ParsedURLString, "https://example.com/1"));
-    redirectResponse.setHTTPHeaderField("location", "https://example.com/2");
-    redirectResponse.setHTTPStatusCode(308);
-    ResourceRequest redirectedRevalidatingRequest("https://example.com/2");
-    resource->willFollowRedirect(redirectedRevalidatingRequest, redirectResponse);
-    EXPECT_FALSE(resource->isCacheValidator());
-    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
-    EXPECT_EQ("https://example.com/2", resource->lastResourceRequest().url().getString());
+  // The revalidating request is redirected.
+  ResourceResponse redirectResponse;
+  redirectResponse.setURL(KURL(ParsedURLString, "https://example.com/1"));
+  redirectResponse.setHTTPHeaderField("location", "https://example.com/2");
+  redirectResponse.setHTTPStatusCode(308);
+  ResourceRequest redirectedRevalidatingRequest("https://example.com/2");
+  resource->willFollowRedirect(redirectedRevalidatingRequest, redirectResponse);
+  EXPECT_FALSE(resource->isCacheValidator());
+  EXPECT_EQ("https://example.com/1",
+            resource->resourceRequest().url().getString());
+  EXPECT_EQ("https://example.com/2",
+            resource->lastResourceRequest().url().getString());
 
-    // The final response is received.
-    ResourceResponse revalidatingResponse;
-    revalidatingResponse.setURL(KURL(ParsedURLString, "https://example.com/2"));
-    revalidatingResponse.setHTTPStatusCode(200);
-    resource->responseReceived(revalidatingResponse, nullptr);
-    const char data2[4] = "xyz";
-    resource->appendData(data2, 3);
-    resource->finish();
-    EXPECT_FALSE(resource->isCacheValidator());
-    EXPECT_EQ("https://example.com/1", resource->resourceRequest().url().getString());
-    EXPECT_EQ("https://example.com/2", resource->lastResourceRequest().url().getString());
-    EXPECT_FALSE(resource->isCacheValidator());
-    EXPECT_EQ(200, resource->response().httpStatusCode());
-    EXPECT_EQ(3u, resource->resourceBuffer()->size());
-    EXPECT_EQ(resource, memoryCache()->resourceForURL(KURL(ParsedURLString, "https://example.com/1")));
+  // The final response is received.
+  ResourceResponse revalidatingResponse;
+  revalidatingResponse.setURL(KURL(ParsedURLString, "https://example.com/2"));
+  revalidatingResponse.setHTTPStatusCode(200);
+  resource->responseReceived(revalidatingResponse, nullptr);
+  const char data2[4] = "xyz";
+  resource->appendData(data2, 3);
+  resource->finish();
+  EXPECT_FALSE(resource->isCacheValidator());
+  EXPECT_EQ("https://example.com/1",
+            resource->resourceRequest().url().getString());
+  EXPECT_EQ("https://example.com/2",
+            resource->lastResourceRequest().url().getString());
+  EXPECT_FALSE(resource->isCacheValidator());
+  EXPECT_EQ(200, resource->response().httpStatusCode());
+  EXPECT_EQ(3u, resource->resourceBuffer()->size());
+  EXPECT_EQ(resource, memoryCache()->resourceForURL(
+                          KURL(ParsedURLString, "https://example.com/1")));
 
-    EXPECT_TRUE(client->called());
-    EXPECT_EQ(1, client->numberOfRedirectsReceived());
-    EXPECT_EQ("xyz", String(client->data().data(), client->data().size()));
+  EXPECT_TRUE(client->called());
+  EXPECT_EQ(1, client->numberOfRedirectsReceived());
+  EXPECT_EQ("xyz", String(client->data().data(), client->data().size()));
 
-    // Test the case where a client is added after revalidation is completed.
-    Persistent<DummyClient> client2 = new DummyClient;
-    resource->addClient(client2);
+  // Test the case where a client is added after revalidation is completed.
+  Persistent<DummyClient> client2 = new DummyClient;
+  resource->addClient(client2);
 
-    // Because RawResourceClient is added asynchronously,
-    // |runPendingTasks()| is called to make |client2| to be notified.
-    testing::runPendingTasks();
+  // Because RawResourceClient is added asynchronously,
+  // |runPendingTasks()| is called to make |client2| to be notified.
+  testing::runPendingTasks();
 
-    EXPECT_TRUE(client2->called());
-    EXPECT_EQ(1, client2->numberOfRedirectsReceived());
-    EXPECT_EQ("xyz", String(client2->data().data(), client2->data().size()));
+  EXPECT_TRUE(client2->called());
+  EXPECT_EQ(1, client2->numberOfRedirectsReceived());
+  EXPECT_EQ("xyz", String(client2->data().data(), client2->data().size()));
 
-    memoryCache()->remove(resource);
+  memoryCache()->remove(resource);
 
-    resource->removeClient(client);
-    resource->removeClient(client2);
-    EXPECT_FALSE(resource->isAlive());
+  resource->removeClient(client);
+  resource->removeClient(client2);
+  EXPECT_FALSE(resource->isAlive());
 }
 
-TEST(RawResourceTest, AddClientDuringCallback)
-{
-    Resource* raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+TEST(RawResourceTest, AddClientDuringCallback) {
+  Resource* raw =
+      RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
 
-    // Create a non-null response.
-    ResourceResponse response = raw->response();
-    response.setURL(KURL(ParsedURLString, "http://600.613/"));
-    raw->setResponse(response);
-    raw->finish();
-    EXPECT_FALSE(raw->response().isNull());
+  // Create a non-null response.
+  ResourceResponse response = raw->response();
+  response.setURL(KURL(ParsedURLString, "http://600.613/"));
+  raw->setResponse(response);
+  raw->finish();
+  EXPECT_FALSE(raw->response().isNull());
 
-    Persistent<DummyClient> dummyClient = new DummyClient();
-    Persistent<AddingClient> addingClient = new AddingClient(dummyClient.get(), raw);
-    raw->addClient(addingClient);
-    testing::runPendingTasks();
-    raw->removeClient(addingClient);
-    EXPECT_FALSE(dummyClient->called());
-    EXPECT_FALSE(raw->isAlive());
+  Persistent<DummyClient> dummyClient = new DummyClient();
+  Persistent<AddingClient> addingClient =
+      new AddingClient(dummyClient.get(), raw);
+  raw->addClient(addingClient);
+  testing::runPendingTasks();
+  raw->removeClient(addingClient);
+  EXPECT_FALSE(dummyClient->called());
+  EXPECT_FALSE(raw->isAlive());
 }
 
 // This client removes another client when notified.
-class RemovingClient : public GarbageCollectedFinalized<RemovingClient>, public RawResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(RemovingClient);
-public:
-    explicit RemovingClient(DummyClient* client)
-        : m_dummyClient(client) {}
+class RemovingClient : public GarbageCollectedFinalized<RemovingClient>,
+                       public RawResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(RemovingClient);
 
-    ~RemovingClient() override {}
+ public:
+  explicit RemovingClient(DummyClient* client) : m_dummyClient(client) {}
 
-    // ResourceClient implementation.
-    void notifyFinished(Resource* resource) override
-    {
-        resource->removeClient(m_dummyClient);
-        resource->removeClient(this);
-    }
-    String debugName() const override { return "RemovingClient"; }
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_dummyClient);
-        RawResourceClient::trace(visitor);
-    }
+  ~RemovingClient() override {}
 
-private:
-    Member<DummyClient> m_dummyClient;
+  // ResourceClient implementation.
+  void notifyFinished(Resource* resource) override {
+    resource->removeClient(m_dummyClient);
+    resource->removeClient(this);
+  }
+  String debugName() const override { return "RemovingClient"; }
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(m_dummyClient);
+    RawResourceClient::trace(visitor);
+  }
+
+ private:
+  Member<DummyClient> m_dummyClient;
 };
 
-TEST(RawResourceTest, RemoveClientDuringCallback)
-{
-    Resource* raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+TEST(RawResourceTest, RemoveClientDuringCallback) {
+  Resource* raw =
+      RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
 
-    // Create a non-null response.
-    ResourceResponse response = raw->response();
-    response.setURL(KURL(ParsedURLString, "http://600.613/"));
-    raw->setResponse(response);
-    raw->finish();
-    EXPECT_FALSE(raw->response().isNull());
+  // Create a non-null response.
+  ResourceResponse response = raw->response();
+  response.setURL(KURL(ParsedURLString, "http://600.613/"));
+  raw->setResponse(response);
+  raw->finish();
+  EXPECT_FALSE(raw->response().isNull());
 
-    Persistent<DummyClient> dummyClient = new DummyClient();
-    Persistent<RemovingClient> removingClient = new RemovingClient(dummyClient.get());
-    raw->addClient(dummyClient);
-    raw->addClient(removingClient);
-    testing::runPendingTasks();
-    EXPECT_FALSE(raw->isAlive());
+  Persistent<DummyClient> dummyClient = new DummyClient();
+  Persistent<RemovingClient> removingClient =
+      new RemovingClient(dummyClient.get());
+  raw->addClient(dummyClient);
+  raw->addClient(removingClient);
+  testing::runPendingTasks();
+  EXPECT_FALSE(raw->isAlive());
 }
 
-TEST(RawResourceTest, CanReuseDevToolsEmulateNetworkConditionsClientIdHeader)
-{
-    ResourceRequest request("data:text/html,");
-    request.setHTTPHeaderField(HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id, "Foo");
-    Resource* raw = RawResource::create(request, Resource::Raw);
-    EXPECT_TRUE(raw->canReuse(ResourceRequest("data:text/html,")));
+TEST(RawResourceTest, CanReuseDevToolsEmulateNetworkConditionsClientIdHeader) {
+  ResourceRequest request("data:text/html,");
+  request.setHTTPHeaderField(
+      HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id, "Foo");
+  Resource* raw = RawResource::create(request, Resource::Raw);
+  EXPECT_TRUE(raw->canReuse(ResourceRequest("data:text/html,")));
 }
 
-} // namespace blink
+}  // namespace blink

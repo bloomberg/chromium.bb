@@ -11,32 +11,37 @@
 namespace blink {
 
 struct SameSizeAsScriptWrappable {
-    virtual ~SameSizeAsScriptWrappable() { }
-    v8::Persistent<v8::Object> m_mainWorldWrapper;
+  virtual ~SameSizeAsScriptWrappable() {}
+  v8::Persistent<v8::Object> m_mainWorldWrapper;
 };
 
-static_assert(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable), "ScriptWrappable should stay small");
+static_assert(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable),
+              "ScriptWrappable should stay small");
 
-v8::Local<v8::Object> ScriptWrappable::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
-{
-    const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
+v8::Local<v8::Object> ScriptWrappable::wrap(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> creationContext) {
+  const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
 
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
+  ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
-    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo);
-    DCHECK(!wrapper.IsEmpty());
-    return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
+  v8::Local<v8::Object> wrapper =
+      V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo);
+  DCHECK(!wrapper.IsEmpty());
+  return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
-v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
-{
-    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
+v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapperTypeInfo,
+    v8::Local<v8::Object> wrapper) {
+  return V8DOMWrapper::associateObjectWithWrapper(isolate, this,
+                                                  wrapperTypeInfo, wrapper);
 }
 
-void ScriptWrappable::markWrapper(const WrapperVisitor* visitor) const
-{
-    if (containsWrapper())
-        visitor->markWrapper(&m_mainWorldWrapper);
+void ScriptWrappable::markWrapper(const WrapperVisitor* visitor) const {
+  if (containsWrapper())
+    visitor->markWrapper(&m_mainWorldWrapper);
 }
 
-} // namespace blink
+}  // namespace blink

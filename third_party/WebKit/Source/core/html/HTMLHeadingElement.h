@@ -28,14 +28,15 @@
 namespace blink {
 
 class HTMLHeadingElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLHeadingElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    HTMLHeadingElement(const QualifiedName&, Document&);
+ public:
+  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLHeadingElement);
+
+ private:
+  HTMLHeadingElement(const QualifiedName&, Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLHeadingElement_h
+#endif  // HTMLHeadingElement_h

@@ -16,23 +16,24 @@ class CSSPaintDefinition;
 class CSSPaintImageGeneratorImpl;
 
 class MODULES_EXPORT PaintWorklet final : public Worklet {
-    WTF_MAKE_NONCOPYABLE(PaintWorklet);
-public:
-    static PaintWorklet* create(LocalFrame*);
-    ~PaintWorklet() override;
+  WTF_MAKE_NONCOPYABLE(PaintWorklet);
 
-    PaintWorkletGlobalScope* workletGlobalScopeProxy() const final;
-    CSSPaintDefinition* findDefinition(const String& name);
-    void addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
+ public:
+  static PaintWorklet* create(LocalFrame*);
+  ~PaintWorklet() override;
 
-    DECLARE_VIRTUAL_TRACE();
+  PaintWorkletGlobalScope* workletGlobalScopeProxy() const final;
+  CSSPaintDefinition* findDefinition(const String& name);
+  void addPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
-private:
-    explicit PaintWorklet(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<PaintWorkletGlobalScope> m_paintWorkletGlobalScope;
+ private:
+  explicit PaintWorklet(LocalFrame*);
+
+  Member<PaintWorkletGlobalScope> m_paintWorkletGlobalScope;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintWorklet_h
+#endif  // PaintWorklet_h

@@ -42,32 +42,36 @@ namespace blink {
 
 class SQLTransactionBackend;
 
-class SQLTransactionCoordinator : public GarbageCollectedFinalized<SQLTransactionCoordinator> {
-    WTF_MAKE_NONCOPYABLE(SQLTransactionCoordinator);
-public:
-    SQLTransactionCoordinator();
-    DECLARE_TRACE();
-    void acquireLock(SQLTransactionBackend*);
-    void releaseLock(SQLTransactionBackend*);
-    void shutdown();
+class SQLTransactionCoordinator
+    : public GarbageCollectedFinalized<SQLTransactionCoordinator> {
+  WTF_MAKE_NONCOPYABLE(SQLTransactionCoordinator);
 
-private:
-    typedef Deque<CrossThreadPersistent<SQLTransactionBackend>> TransactionsQueue;
-    struct CoordinationInfo {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        TransactionsQueue pendingTransactions;
-        HashSet<CrossThreadPersistent<SQLTransactionBackend>> activeReadTransactions;
-        CrossThreadPersistent<SQLTransactionBackend> activeWriteTransaction;
-    };
-    // Maps database names to information about pending transactions
-    typedef HashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
-    CoordinationInfoHeapMap m_coordinationInfoMap;
-    bool m_isShuttingDown;
+ public:
+  SQLTransactionCoordinator();
+  DECLARE_TRACE();
+  void acquireLock(SQLTransactionBackend*);
+  void releaseLock(SQLTransactionBackend*);
+  void shutdown();
 
-    void processPendingTransactions(CoordinationInfo&);
+ private:
+  typedef Deque<CrossThreadPersistent<SQLTransactionBackend>> TransactionsQueue;
+  struct CoordinationInfo {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+   public:
+    TransactionsQueue pendingTransactions;
+    HashSet<CrossThreadPersistent<SQLTransactionBackend>>
+        activeReadTransactions;
+    CrossThreadPersistent<SQLTransactionBackend> activeWriteTransaction;
+  };
+  // Maps database names to information about pending transactions
+  typedef HashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
+  CoordinationInfoHeapMap m_coordinationInfoMap;
+  bool m_isShuttingDown;
+
+  void processPendingTransactions(CoordinationInfo&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLTransactionCoordinator_h
+#endif  // SQLTransactionCoordinator_h

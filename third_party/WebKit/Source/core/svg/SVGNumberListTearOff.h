@@ -37,25 +37,37 @@
 namespace blink {
 
 class SVGNumberListTearOff final
-    : public SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGNumberListTearOff* create(SVGNumberList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
-    {
-        return new SVGNumberListTearOff(target, contextElement, propertyIsAnimVal, attributeName);
-    }
+    : public SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
-    {
-        visitor->traceWrappers(contextElement());
-    }
+ public:
+  static SVGNumberListTearOff* create(
+      SVGNumberList* target,
+      SVGElement* contextElement,
+      PropertyIsAnimValType propertyIsAnimVal,
+      const QualifiedName& attributeName = QualifiedName::null()) {
+    return new SVGNumberListTearOff(target, contextElement, propertyIsAnimVal,
+                                    attributeName);
+  }
 
-private:
-    SVGNumberListTearOff(SVGNumberList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
-        : SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>(target, contextElement, propertyIsAnimVal, attributeName) { }
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(contextElement());
+  }
+
+ private:
+  SVGNumberListTearOff(
+      SVGNumberList* target,
+      SVGElement* contextElement,
+      PropertyIsAnimValType propertyIsAnimVal,
+      const QualifiedName& attributeName = QualifiedName::null())
+      : SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>(
+            target,
+            contextElement,
+            propertyIsAnimVal,
+            attributeName) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGNumberListTearOff_h
+#endif  // SVGNumberListTearOff_h

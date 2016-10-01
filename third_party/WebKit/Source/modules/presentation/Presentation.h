@@ -18,33 +18,33 @@ class PresentationRequest;
 
 // Implements the main entry point of the Presentation API corresponding to the Presentation.idl
 // See https://w3c.github.io/presentation-api/#navigatorpresentation for details.
-class Presentation final
-    : public GarbageCollected<Presentation>
-    , public ScriptWrappable
-    , public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(Presentation);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static Presentation* create(LocalFrame*);
+class Presentation final : public GarbageCollected<Presentation>,
+                           public ScriptWrappable,
+                           public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(Presentation);
+  DEFINE_WRAPPERTYPEINFO();
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static Presentation* create(LocalFrame*);
 
-    PresentationRequest* defaultRequest() const;
-    void setDefaultRequest(PresentationRequest*);
+  DECLARE_VIRTUAL_TRACE();
 
-    PresentationReceiver* receiver();
+  PresentationRequest* defaultRequest() const;
+  void setDefaultRequest(PresentationRequest*);
 
-private:
-    explicit Presentation(LocalFrame*);
+  PresentationReceiver* receiver();
 
-    // Default PresentationRequest used by the embedder.
-    Member<PresentationRequest> m_defaultRequest;
+ private:
+  explicit Presentation(LocalFrame*);
 
-    // PresentationReceiver instance. It will always be nullptr if the Blink
-    // instance is not running as a presentation receiver.
-    Member<PresentationReceiver> m_receiver;
+  // Default PresentationRequest used by the embedder.
+  Member<PresentationRequest> m_defaultRequest;
+
+  // PresentationReceiver instance. It will always be nullptr if the Blink
+  // instance is not running as a presentation receiver.
+  Member<PresentationReceiver> m_receiver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Presentation_h
+#endif  // Presentation_h

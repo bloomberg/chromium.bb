@@ -12,27 +12,26 @@ namespace blink {
 
 // A simple DisplayItemClient implementation suitable for use in unit tests.
 class FakeDisplayItemClient : public DisplayItemClient {
-public:
-    FakeDisplayItemClient(const String& name = "FakeDisplayItemClient", const LayoutRect& visualRect = LayoutRect())
-        : m_name(name), m_visualRect(visualRect)
-    { }
+ public:
+  FakeDisplayItemClient(const String& name = "FakeDisplayItemClient",
+                        const LayoutRect& visualRect = LayoutRect())
+      : m_name(name), m_visualRect(visualRect) {}
 
-    String debugName() const final { return m_name; }
-    LayoutRect visualRect() const override { return m_visualRect; }
+  String debugName() const final { return m_name; }
+  LayoutRect visualRect() const override { return m_visualRect; }
 
-    void setVisualRect(const LayoutRect& r) { m_visualRect = r; }
+  void setVisualRect(const LayoutRect& r) { m_visualRect = r; }
 
-    // This simulates a paint without needing a PaintController.
-    void updateCacheGeneration()
-    {
-        setDisplayItemsCached(CacheGenerationOrInvalidationReason::next());
-    }
+  // This simulates a paint without needing a PaintController.
+  void updateCacheGeneration() {
+    setDisplayItemsCached(CacheGenerationOrInvalidationReason::next());
+  }
 
-private:
-    String m_name;
-    LayoutRect m_visualRect;
+ private:
+  String m_name;
+  LayoutRect m_visualRect;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FakeDisplayItemClient_h
+#endif  // FakeDisplayItemClient_h

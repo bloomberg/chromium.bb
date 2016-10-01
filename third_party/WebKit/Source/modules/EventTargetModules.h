@@ -16,6 +16,6 @@ class MediaDevices;
 class MediaRecorder;
 class MediaStream;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EventTargetModules_h
+#endif  // EventTargetModules_h

@@ -10,11 +10,12 @@
 namespace blink {
 
 class ModuleBindingsInitializer {
-    STATIC_ONLY(ModuleBindingsInitializer);
-public:
-    static void init();
+  STATIC_ONLY(ModuleBindingsInitializer);
+
+ public:
+  static void init();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

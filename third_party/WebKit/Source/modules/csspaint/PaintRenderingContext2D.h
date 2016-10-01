@@ -18,62 +18,70 @@ namespace blink {
 class CanvasImageSource;
 class Color;
 
-class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, public GarbageCollectedFinalized<PaintRenderingContext2D>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
-    WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
-public:
-    static PaintRenderingContext2D* create(std::unique_ptr<ImageBuffer> imageBuffer, bool hasAlpha, float zoom)
-    {
-        return new PaintRenderingContext2D(std::move(imageBuffer), hasAlpha, zoom);
-    }
+class MODULES_EXPORT PaintRenderingContext2D
+    : public BaseRenderingContext2D,
+      public GarbageCollectedFinalized<PaintRenderingContext2D>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
+  WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
 
-    // BaseRenderingContext2D
+ public:
+  static PaintRenderingContext2D*
+  create(std::unique_ptr<ImageBuffer> imageBuffer, bool hasAlpha, float zoom) {
+    return new PaintRenderingContext2D(std::move(imageBuffer), hasAlpha, zoom);
+  }
 
-    // PaintRenderingContext2D doesn't have any pixel readback so the origin
-    // is always clean, and unable to taint it.
-    bool originClean() const final { return true; }
-    void setOriginTainted() final { }
-    bool wouldTaintOrigin(CanvasImageSource*, ExecutionContext*) final { return false; }
+  // BaseRenderingContext2D
 
-    int width() const final;
-    int height() const final;
+  // PaintRenderingContext2D doesn't have any pixel readback so the origin
+  // is always clean, and unable to taint it.
+  bool originClean() const final { return true; }
+  void setOriginTainted() final {}
+  bool wouldTaintOrigin(CanvasImageSource*, ExecutionContext*) final {
+    return false;
+  }
 
-    bool hasImageBuffer() const final { return m_imageBuffer.get(); }
-    ImageBuffer* imageBuffer() const final { return m_imageBuffer.get(); }
+  int width() const final;
+  int height() const final;
 
-    bool parseColorOrCurrentColor(Color&, const String& colorString) const final;
+  bool hasImageBuffer() const final { return m_imageBuffer.get(); }
+  ImageBuffer* imageBuffer() const final { return m_imageBuffer.get(); }
 
-    SkCanvas* drawingCanvas() const final;
-    SkCanvas* existingDrawingCanvas() const final;
-    void disableDeferral(DisableDeferralReason) final { }
+  bool parseColorOrCurrentColor(Color&, const String& colorString) const final;
 
-    AffineTransform baseTransform() const final;
+  SkCanvas* drawingCanvas() const final;
+  SkCanvas* existingDrawingCanvas() const final;
+  void disableDeferral(DisableDeferralReason) final {}
 
-    void didDraw(const SkIRect& dirtyRect) final;
+  AffineTransform baseTransform() const final;
 
-    // TODO(ikilpatrick): We'll need to either only accept resolved filters
-    // from a typed-om <filter> object, or use the appropriate style resolution
-    // host to determine 'em' units etc in filters. At the moment just pretend
-    // that we don't have a filter set.
-    bool stateHasFilter() final { return false; }
-    SkImageFilter* stateGetFilter() final { return nullptr; }
-    void snapshotStateForFilter() final { }
+  void didDraw(const SkIRect& dirtyRect) final;
 
-    void validateStateStack() const final;
+  // TODO(ikilpatrick): We'll need to either only accept resolved filters
+  // from a typed-om <filter> object, or use the appropriate style resolution
+  // host to determine 'em' units etc in filters. At the moment just pretend
+  // that we don't have a filter set.
+  bool stateHasFilter() final { return false; }
+  SkImageFilter* stateGetFilter() final { return nullptr; }
+  void snapshotStateForFilter() final {}
 
-    bool hasAlpha() const final { return m_hasAlpha; }
+  void validateStateStack() const final;
 
-    // PaintRenderingContext2D cannot lose it's context.
-    bool isContextLost() const final { return false; }
+  bool hasAlpha() const final { return m_hasAlpha; }
 
-private:
-    PaintRenderingContext2D(std::unique_ptr<ImageBuffer>, bool hasAlpha, float zoom);
+  // PaintRenderingContext2D cannot lose it's context.
+  bool isContextLost() const final { return false; }
 
-    std::unique_ptr<ImageBuffer> m_imageBuffer;
-    bool m_hasAlpha;
+ private:
+  PaintRenderingContext2D(std::unique_ptr<ImageBuffer>,
+                          bool hasAlpha,
+                          float zoom);
+
+  std::unique_ptr<ImageBuffer> m_imageBuffer;
+  bool m_hasAlpha;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintRenderingContext2D_h
+#endif  // PaintRenderingContext2D_h

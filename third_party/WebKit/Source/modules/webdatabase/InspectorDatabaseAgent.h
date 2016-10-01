@@ -43,40 +43,50 @@ class Database;
 class InspectorDatabaseResource;
 class Page;
 
+class MODULES_EXPORT InspectorDatabaseAgent final
+    : public InspectorBaseAgent<protocol::Database::Metainfo> {
+  WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
 
-class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<protocol::Database::Metainfo> {
-    WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
-public:
-    static InspectorDatabaseAgent* create(Page* page)
-    {
-        return new InspectorDatabaseAgent(page);
-    }
-    ~InspectorDatabaseAgent() override;
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static InspectorDatabaseAgent* create(Page* page) {
+    return new InspectorDatabaseAgent(page);
+  }
+  ~InspectorDatabaseAgent() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    void disable(ErrorString*) override;
-    void restore() override;
-    void didCommitLoadForLocalFrame(LocalFrame*) override;
+  void disable(ErrorString*) override;
+  void restore() override;
+  void didCommitLoadForLocalFrame(LocalFrame*) override;
 
-    // Called from the front-end.
-    void enable(ErrorString*) override;
-    void getDatabaseTableNames(ErrorString*, const String& databaseId, std::unique_ptr<protocol::Array<String>>* names) override;
-    void executeSQL(const String& databaseId, const String& query, std::unique_ptr<ExecuteSQLCallback>) override;
+  // Called from the front-end.
+  void enable(ErrorString*) override;
+  void getDatabaseTableNames(
+      ErrorString*,
+      const String& databaseId,
+      std::unique_ptr<protocol::Array<String>>* names) override;
+  void executeSQL(const String& databaseId,
+                  const String& query,
+                  std::unique_ptr<ExecuteSQLCallback>) override;
 
-    void didOpenDatabase(blink::Database*, const String& domain, const String& name, const String& version);
-private:
-    explicit InspectorDatabaseAgent(Page*);
-    void registerDatabaseOnCreation(blink::Database*);
+  void didOpenDatabase(blink::Database*,
+                       const String& domain,
+                       const String& name,
+                       const String& version);
 
-    blink::Database* databaseForId(const String& databaseId);
-    InspectorDatabaseResource* findByFileName(const String& fileName);
+ private:
+  explicit InspectorDatabaseAgent(Page*);
+  void registerDatabaseOnCreation(blink::Database*);
 
-    Member<Page> m_page;
-    typedef HeapHashMap<String, Member<InspectorDatabaseResource>> DatabaseResourcesHeapMap;
-    DatabaseResourcesHeapMap m_resources;
-    bool m_enabled;
+  blink::Database* databaseForId(const String& databaseId);
+  InspectorDatabaseResource* findByFileName(const String& fileName);
+
+  Member<Page> m_page;
+  typedef HeapHashMap<String, Member<InspectorDatabaseResource>>
+      DatabaseResourcesHeapMap;
+  DatabaseResourcesHeapMap m_resources;
+  bool m_enabled;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !defined(InspectorDatabaseAgent_h)
+#endif  // !defined(InspectorDatabaseAgent_h)

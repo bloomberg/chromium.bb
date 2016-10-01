@@ -28,7 +28,10 @@
 #include "WebCommon.h"
 
 #if INSIDE_BLINK
-namespace WTF { template <typename T> class PassRefPtr; }
+namespace WTF {
+template <typename T>
+class PassRefPtr;
+}
 #endif
 
 namespace blink {
@@ -40,38 +43,38 @@ class AudioBus;
 // WARNING: It is not safe to pass a WebAudioBus across threads!!!
 //
 class BLINK_PLATFORM_EXPORT WebAudioBus {
-public:
-    WebAudioBus() : m_private(0) { }
-    ~WebAudioBus() { reset(); }
+ public:
+  WebAudioBus() : m_private(0) {}
+  ~WebAudioBus() { reset(); }
 
-    // initialize() allocates memory of the given length for the given number of channels.
-    void initialize(unsigned numberOfChannels, size_t length, double sampleRate);
+  // initialize() allocates memory of the given length for the given number of channels.
+  void initialize(unsigned numberOfChannels, size_t length, double sampleRate);
 
-    // resizeSmaller() can only be called after initialize() with a new length <= the initialization length.
-    // The data stored in the bus will remain undisturbed.
-    void resizeSmaller(size_t newLength);
+  // resizeSmaller() can only be called after initialize() with a new length <= the initialization length.
+  // The data stored in the bus will remain undisturbed.
+  void resizeSmaller(size_t newLength);
 
-    // reset() releases the memory allocated from initialize().
-    void reset();
+  // reset() releases the memory allocated from initialize().
+  void reset();
 
-    unsigned numberOfChannels() const;
-    size_t length() const;
-    double sampleRate() const;
+  unsigned numberOfChannels() const;
+  size_t length() const;
+  double sampleRate() const;
 
-    float* channelData(unsigned channelIndex);
+  float* channelData(unsigned channelIndex);
 
 #if INSIDE_BLINK
-    WTF::PassRefPtr<AudioBus> release();
+  WTF::PassRefPtr<AudioBus> release();
 #endif
 
-private:
-    // Disallow copy and assign.
-    WebAudioBus(const WebAudioBus&);
-    void operator=(const WebAudioBus&);
+ private:
+  // Disallow copy and assign.
+  WebAudioBus(const WebAudioBus&);
+  void operator=(const WebAudioBus&);
 
-    AudioBus* m_private;
+  AudioBus* m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebAudioBus_h
+#endif  // WebAudioBus_h

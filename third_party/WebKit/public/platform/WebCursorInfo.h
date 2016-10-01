@@ -44,80 +44,78 @@ namespace blink {
 class Cursor;
 
 struct WebCursorInfo {
-    enum Type {
-        TypePointer,
-        TypeCross,
-        TypeHand,
-        TypeIBeam,
-        TypeWait,
-        TypeHelp,
-        TypeEastResize,
-        TypeNorthResize,
-        TypeNorthEastResize,
-        TypeNorthWestResize,
-        TypeSouthResize,
-        TypeSouthEastResize,
-        TypeSouthWestResize,
-        TypeWestResize,
-        TypeNorthSouthResize,
-        TypeEastWestResize,
-        TypeNorthEastSouthWestResize,
-        TypeNorthWestSouthEastResize,
-        TypeColumnResize,
-        TypeRowResize,
-        TypeMiddlePanning,
-        TypeEastPanning,
-        TypeNorthPanning,
-        TypeNorthEastPanning,
-        TypeNorthWestPanning,
-        TypeSouthPanning,
-        TypeSouthEastPanning,
-        TypeSouthWestPanning,
-        TypeWestPanning,
-        TypeMove,
-        TypeVerticalText,
-        TypeCell,
-        TypeContextMenu,
-        TypeAlias,
-        TypeProgress,
-        TypeNoDrop,
-        TypeCopy,
-        TypeNone,
-        TypeNotAllowed,
-        TypeZoomIn,
-        TypeZoomOut,
-        TypeGrab,
-        TypeGrabbing,
-        TypeCustom
-    };
+  enum Type {
+    TypePointer,
+    TypeCross,
+    TypeHand,
+    TypeIBeam,
+    TypeWait,
+    TypeHelp,
+    TypeEastResize,
+    TypeNorthResize,
+    TypeNorthEastResize,
+    TypeNorthWestResize,
+    TypeSouthResize,
+    TypeSouthEastResize,
+    TypeSouthWestResize,
+    TypeWestResize,
+    TypeNorthSouthResize,
+    TypeEastWestResize,
+    TypeNorthEastSouthWestResize,
+    TypeNorthWestSouthEastResize,
+    TypeColumnResize,
+    TypeRowResize,
+    TypeMiddlePanning,
+    TypeEastPanning,
+    TypeNorthPanning,
+    TypeNorthEastPanning,
+    TypeNorthWestPanning,
+    TypeSouthPanning,
+    TypeSouthEastPanning,
+    TypeSouthWestPanning,
+    TypeWestPanning,
+    TypeMove,
+    TypeVerticalText,
+    TypeCell,
+    TypeContextMenu,
+    TypeAlias,
+    TypeProgress,
+    TypeNoDrop,
+    TypeCopy,
+    TypeNone,
+    TypeNotAllowed,
+    TypeZoomIn,
+    TypeZoomOut,
+    TypeGrab,
+    TypeGrabbing,
+    TypeCustom
+  };
 
-    Type type;
-    WebPoint hotSpot;
-    float imageScaleFactor;
-    WebImage customImage;
+  Type type;
+  WebPoint hotSpot;
+  float imageScaleFactor;
+  WebImage customImage;
 
 #ifdef WIN32
-    // On Windows, TypeCustom may alternatively reference an externally
-    // defined HCURSOR. If type is TypeCustom and externalHandle is non-
-    // null, then customData should be ignored. The WebCursorInfo is not
-    // responsible for managing the lifetime of this cursor handle.
-    HCURSOR externalHandle;
+  // On Windows, TypeCustom may alternatively reference an externally
+  // defined HCURSOR. If type is TypeCustom and externalHandle is non-
+  // null, then customData should be ignored. The WebCursorInfo is not
+  // responsible for managing the lifetime of this cursor handle.
+  HCURSOR externalHandle;
 #endif
 
-    explicit WebCursorInfo(Type type = TypePointer)
-        : type(type)
-        , imageScaleFactor(1)
-    {
+  explicit WebCursorInfo(Type type = TypePointer)
+      : type(type), imageScaleFactor(1) {
 #ifdef WIN32
-        externalHandle = 0;
+    externalHandle = 0;
 #endif
-    }
+  }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebCursorInfo(const Cursor&);
+  BLINK_PLATFORM_EXPORT explicit WebCursorInfo(const Cursor&);
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -37,19 +37,18 @@
 
 namespace blink {
 
-void SVGPropertyTearOffBase::throwReadOnly(ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
+void SVGPropertyTearOffBase::throwReadOnly(ExceptionState& exceptionState) {
+  exceptionState.throwDOMException(NoModificationAllowedError,
+                                   ExceptionMessages::readOnly());
 }
 
-void SVGPropertyTearOffBase::commitChange()
-{
-    DCHECK(!isImmutable());
-    if (!contextElement() || isAnimVal())
-        return;
-    DCHECK(m_attributeName != QualifiedName::null());
-    contextElement()->invalidateSVGAttributes();
-    contextElement()->svgAttributeBaseValChanged(m_attributeName);
+void SVGPropertyTearOffBase::commitChange() {
+  DCHECK(!isImmutable());
+  if (!contextElement() || isAnimVal())
+    return;
+  DCHECK(m_attributeName != QualifiedName::null());
+  contextElement()->invalidateSVGAttributes();
+  contextElement()->svgAttributeBaseValChanged(m_attributeName);
 }
 
-} // namespace blink
+}  // namespace blink

@@ -33,26 +33,25 @@ namespace blink {
 class HTMLSpanElement;
 
 class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
-public:
-    static WrapContentsInDummySpanCommand* create(Element* element)
-    {
-        return new WrapContentsInDummySpanCommand(element);
-    }
+ public:
+  static WrapContentsInDummySpanCommand* create(Element* element) {
+    return new WrapContentsInDummySpanCommand(element);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit WrapContentsInDummySpanCommand(Element*);
+ private:
+  explicit WrapContentsInDummySpanCommand(Element*);
 
-    void doApply(EditingState*) override;
-    void doUnapply() override;
-    void doReapply() override;
-    void executeApply();
+  void doApply(EditingState*) override;
+  void doUnapply() override;
+  void doReapply() override;
+  void executeApply();
 
-    Member<Element> m_element;
-    Member<HTMLSpanElement> m_dummySpan;
+  Member<Element> m_element;
+  Member<HTMLSpanElement> m_dummySpan;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WrapContentsInDummySpanCommand_h
+#endif  // WrapContentsInDummySpanCommand_h

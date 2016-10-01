@@ -31,68 +31,74 @@
 namespace blink {
 
 enum SVGMarkerUnitsType {
-    SVGMarkerUnitsUnknown = 0,
-    SVGMarkerUnitsUserSpaceOnUse,
-    SVGMarkerUnitsStrokeWidth
+  SVGMarkerUnitsUnknown = 0,
+  SVGMarkerUnitsUserSpaceOnUse,
+  SVGMarkerUnitsStrokeWidth
 };
-template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUnitsType>();
+template <>
+const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUnitsType>();
 
-class SVGMarkerElement final : public SVGElement,
-                               public SVGFitToViewBox {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGMarkerElement);
-public:
-    // Forward declare enumerations in the W3C naming scheme, for IDL generation.
-    enum {
-        kSvgMarkerunitsUnknown = SVGMarkerUnitsUnknown,
-        kSvgMarkerunitsUserspaceonuse = SVGMarkerUnitsUserSpaceOnUse,
-        kSvgMarkerunitsStrokewidth = SVGMarkerUnitsStrokeWidth
-    };
+class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGMarkerElement);
 
-    enum {
-        kSvgMarkerOrientUnknown = SVGMarkerOrientUnknown,
-        kSvgMarkerOrientAuto = SVGMarkerOrientAuto,
-        kSvgMarkerOrientAngle = SVGMarkerOrientAngle
-    };
+ public:
+  // Forward declare enumerations in the W3C naming scheme, for IDL generation.
+  enum {
+    kSvgMarkerunitsUnknown = SVGMarkerUnitsUnknown,
+    kSvgMarkerunitsUserspaceonuse = SVGMarkerUnitsUserSpaceOnUse,
+    kSvgMarkerunitsStrokewidth = SVGMarkerUnitsStrokeWidth
+  };
 
-    DECLARE_NODE_FACTORY(SVGMarkerElement);
+  enum {
+    kSvgMarkerOrientUnknown = SVGMarkerOrientUnknown,
+    kSvgMarkerOrientAuto = SVGMarkerOrientAuto,
+    kSvgMarkerOrientAngle = SVGMarkerOrientAngle
+  };
 
-    AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
+  DECLARE_NODE_FACTORY(SVGMarkerElement);
 
-    void setOrientToAuto();
-    void setOrientToAngle(SVGAngleTearOff*);
+  AffineTransform viewBoxToViewTransform(float viewWidth,
+                                         float viewHeight) const;
 
-    SVGAnimatedLength* refX() const { return m_refX.get(); }
-    SVGAnimatedLength* refY() const { return m_refY.get(); }
-    SVGAnimatedLength* markerWidth() const { return m_markerWidth.get(); }
-    SVGAnimatedLength* markerHeight() const { return m_markerHeight.get(); }
-    SVGAnimatedEnumeration<SVGMarkerUnitsType>* markerUnits() { return m_markerUnits.get(); }
-    SVGAnimatedAngle* orientAngle() { return m_orientAngle.get(); }
-    SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientAngle->orientType(); }
+  void setOrientToAuto();
+  void setOrientToAngle(SVGAngleTearOff*);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedLength* refX() const { return m_refX.get(); }
+  SVGAnimatedLength* refY() const { return m_refY.get(); }
+  SVGAnimatedLength* markerWidth() const { return m_markerWidth.get(); }
+  SVGAnimatedLength* markerHeight() const { return m_markerHeight.get(); }
+  SVGAnimatedEnumeration<SVGMarkerUnitsType>* markerUnits() {
+    return m_markerUnits.get();
+  }
+  SVGAnimatedAngle* orientAngle() { return m_orientAngle.get(); }
+  SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() {
+    return m_orientAngle->orientType();
+  }
 
-private:
-    explicit SVGMarkerElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool needsPendingResourceHandling() const override { return false; }
+ private:
+  explicit SVGMarkerElement(Document&);
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    void childrenChanged(const ChildrenChange&) override;
+  bool needsPendingResourceHandling() const override { return false; }
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return true; }
+  void svgAttributeChanged(const QualifiedName&) override;
+  void childrenChanged(const ChildrenChange&) override;
 
-    bool selfHasRelativeLengths() const override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return true; }
 
-    Member<SVGAnimatedLength> m_refX;
-    Member<SVGAnimatedLength> m_refY;
-    Member<SVGAnimatedLength> m_markerWidth;
-    Member<SVGAnimatedLength> m_markerHeight;
-    Member<SVGAnimatedAngle> m_orientAngle;
-    Member<SVGAnimatedEnumeration<SVGMarkerUnitsType>> m_markerUnits;
+  bool selfHasRelativeLengths() const override;
+
+  Member<SVGAnimatedLength> m_refX;
+  Member<SVGAnimatedLength> m_refY;
+  Member<SVGAnimatedLength> m_markerWidth;
+  Member<SVGAnimatedLength> m_markerHeight;
+  Member<SVGAnimatedAngle> m_orientAngle;
+  Member<SVGAnimatedEnumeration<SVGMarkerUnitsType>> m_markerUnits;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGMarkerElement_h
+#endif  // SVGMarkerElement_h

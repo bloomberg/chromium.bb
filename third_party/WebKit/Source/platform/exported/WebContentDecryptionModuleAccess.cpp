@@ -6,8 +6,6 @@
 
 namespace blink {
 
-WebContentDecryptionModuleAccess::~WebContentDecryptionModuleAccess()
-{
-}
+WebContentDecryptionModuleAccess::~WebContentDecryptionModuleAccess() {}
 
-} // namespace blink
+}  // namespace blink

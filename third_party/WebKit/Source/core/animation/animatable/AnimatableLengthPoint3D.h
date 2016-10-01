@@ -36,36 +36,38 @@
 namespace blink {
 
 class AnimatableLengthPoint3D final : public AnimatableValue {
-public:
-    ~AnimatableLengthPoint3D() override { }
-    static PassRefPtr<AnimatableLengthPoint3D> create(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y, PassRefPtr<AnimatableValue> z)
-    {
-        return adoptRef(new AnimatableLengthPoint3D(std::move(x), std::move(y), std::move(z)));
-    }
-    const AnimatableValue* x() const { return m_x.get(); }
-    const AnimatableValue* y() const { return m_y.get(); }
-    const AnimatableValue* z() const { return m_z.get(); }
+ public:
+  ~AnimatableLengthPoint3D() override {}
+  static PassRefPtr<AnimatableLengthPoint3D> create(
+      PassRefPtr<AnimatableValue> x,
+      PassRefPtr<AnimatableValue> y,
+      PassRefPtr<AnimatableValue> z) {
+    return adoptRef(
+        new AnimatableLengthPoint3D(std::move(x), std::move(y), std::move(z)));
+  }
+  const AnimatableValue* x() const { return m_x.get(); }
+  const AnimatableValue* y() const { return m_y.get(); }
+  const AnimatableValue* z() const { return m_z.get(); }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
 
-private:
-    AnimatableLengthPoint3D(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y, PassRefPtr<AnimatableValue> z)
-        : m_x(x)
-        , m_y(y)
-        , m_z(z)
-    {
-    }
-    AnimatableType type() const override { return TypeLengthPoint3D; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  AnimatableLengthPoint3D(PassRefPtr<AnimatableValue> x,
+                          PassRefPtr<AnimatableValue> y,
+                          PassRefPtr<AnimatableValue> z)
+      : m_x(x), m_y(y), m_z(z) {}
+  AnimatableType type() const override { return TypeLengthPoint3D; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    RefPtr<AnimatableValue> m_x;
-    RefPtr<AnimatableValue> m_y;
-    RefPtr<AnimatableValue> m_z;
+  RefPtr<AnimatableValue> m_x;
+  RefPtr<AnimatableValue> m_y;
+  RefPtr<AnimatableValue> m_z;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthPoint3D, isLengthPoint3D());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableLengthPoint3D_h
+#endif  // AnimatableLengthPoint3D_h

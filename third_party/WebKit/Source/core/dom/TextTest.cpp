@@ -12,33 +12,32 @@
 namespace blink {
 
 // TODO(xiaochengh): Use a new testing base class.
-class TextTest : public EditingTestBase {
-};
+class TextTest : public EditingTestBase {};
 
-TEST_F(TextTest, SetDataToChangeFirstLetterTextNode)
-{
-    setBodyContent("<style>pre::first-letter {color:red;}</style><pre id=sample>a<span>b</span></pre>");
+TEST_F(TextTest, SetDataToChangeFirstLetterTextNode) {
+  setBodyContent(
+      "<style>pre::first-letter {color:red;}</style><pre "
+      "id=sample>a<span>b</span></pre>");
 
-    Node* sample = document().getElementById("sample");
-    Text* text = toText(sample->firstChild());
-    text->setData(" ");
-    updateAllLifecyclePhases();
+  Node* sample = document().getElementById("sample");
+  Text* text = toText(sample->firstChild());
+  text->setData(" ");
+  updateAllLifecyclePhases();
 
-    EXPECT_FALSE(text->layoutObject()->isTextFragment());
+  EXPECT_FALSE(text->layoutObject()->isTextFragment());
 }
 
-TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter)
-{
-    setBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
+TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter) {
+  setBodyContent("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>");
 
-    Element* pre = document().querySelector("pre");
-    Text* text = toText(pre->firstChild());
+  Element* pre = document().querySelector("pre");
+  Text* text = toText(pre->firstChild());
 
-    Range* range = Range::create(document(), text, 0, text, 2);
-    range->deleteContents(ASSERT_NO_EXCEPTION);
-    updateAllLifecyclePhases();
+  Range* range = Range::create(document(), text, 0, text, 2);
+  range->deleteContents(ASSERT_NO_EXCEPTION);
+  updateAllLifecyclePhases();
 
-    EXPECT_FALSE(text->layoutObject()->isTextFragment());
+  EXPECT_FALSE(text->layoutObject()->isTextFragment());
 }
 
-} // namespace blink
+}  // namespace blink

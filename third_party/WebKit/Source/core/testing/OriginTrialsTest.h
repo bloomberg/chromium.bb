@@ -16,30 +16,28 @@ class ScriptState;
 // OriginTrialsTest is a very simple interface used for testing
 // origin-trial-enabled features which are attached directly to interfaces at
 // run-time.
-class OriginTrialsTest : public GarbageCollectedFinalized<OriginTrialsTest>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static OriginTrialsTest* create()
-    {
-        return new OriginTrialsTest();
-    }
-    virtual ~OriginTrialsTest() = default;
+class OriginTrialsTest : public GarbageCollectedFinalized<OriginTrialsTest>,
+                         public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool normalAttribute();
-    static bool staticAttribute();
+ public:
+  static OriginTrialsTest* create() { return new OriginTrialsTest(); }
+  virtual ~OriginTrialsTest() = default;
 
-    bool throwingAttribute(ScriptState*, ExceptionState&);
-    bool unconditionalAttribute();
+  bool normalAttribute();
+  static bool staticAttribute();
 
-    static const unsigned short kConstant = 1;
+  bool throwingAttribute(ScriptState*, ExceptionState&);
+  bool unconditionalAttribute();
 
-    DECLARE_TRACE();
+  static const unsigned short kConstant = 1;
 
-private:
-    OriginTrialsTest() = default;
+  DECLARE_TRACE();
 
+ private:
+  OriginTrialsTest() = default;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OriginTrialsTest_h
+#endif  // OriginTrialsTest_h

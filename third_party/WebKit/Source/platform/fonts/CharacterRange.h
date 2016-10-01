@@ -8,17 +8,16 @@
 namespace blink {
 
 struct CharacterRange {
-    CharacterRange(float from, float to) : start(from), end(to)
-    {
-        ASSERT(start <= end);
-    }
+  CharacterRange(float from, float to) : start(from), end(to) {
+    ASSERT(start <= end);
+  }
 
-    float width() const { return end - start; }
+  float width() const { return end - start; }
 
-    float start;
-    float end;
+  float start;
+  float end;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CharacterRange_h
+#endif  // CharacterRange_h

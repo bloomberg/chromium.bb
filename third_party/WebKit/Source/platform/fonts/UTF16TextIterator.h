@@ -29,55 +29,54 @@
 namespace blink {
 
 class PLATFORM_EXPORT UTF16TextIterator {
-    USING_FAST_MALLOC(UTF16TextIterator);
-    WTF_MAKE_NONCOPYABLE(UTF16TextIterator);
-public:
-    // The passed in UChar pointer starts at 'offset'. The iterator operates on the range [offset, endOffset].
-    // 'length' denotes the maximum length of the UChar array, which might exceed 'endOffset'.
-    UTF16TextIterator(const UChar*, int length);
+  USING_FAST_MALLOC(UTF16TextIterator);
+  WTF_MAKE_NONCOPYABLE(UTF16TextIterator);
 
-    // FIXME: The offset/endOffset fields are only used by the SimpleShaper,
-    // remove once HarfBuzz is used for all text.
-    UTF16TextIterator(const UChar*, int offset, int endOffset, int length);
+ public:
+  // The passed in UChar pointer starts at 'offset'. The iterator operates on the range [offset, endOffset].
+  // 'length' denotes the maximum length of the UChar array, which might exceed 'endOffset'.
+  UTF16TextIterator(const UChar*, int length);
 
-    inline bool consume(UChar32& character)
-    {
-        if (m_offset >= m_endOffset)
-            return false;
+  // FIXME: The offset/endOffset fields are only used by the SimpleShaper,
+  // remove once HarfBuzz is used for all text.
+  UTF16TextIterator(const UChar*, int offset, int endOffset, int length);
 
-        character = *m_characters;
-        m_currentGlyphLength = 1;
-        if (!U16_IS_SURROGATE(character))
-            return true;
+  inline bool consume(UChar32& character) {
+    if (m_offset >= m_endOffset)
+      return false;
 
-        return consumeSurrogatePair(character);
-    }
+    character = *m_characters;
+    m_currentGlyphLength = 1;
+    if (!U16_IS_SURROGATE(character))
+      return true;
 
-    void advance()
-    {
-        m_characters += m_currentGlyphLength;
-        m_offset += m_currentGlyphLength;
-    }
+    return consumeSurrogatePair(character);
+  }
 
-    int offset() const { return m_offset; }
-    const UChar* characters() const { return m_characters; }
-    const UChar* glyphEnd() const { return m_characters + m_currentGlyphLength; }
-    // FIXME: Only used by SimpleShaper, should be removed once the SimpleShaper
-    // is removed.
-    unsigned glyphLength() const { return m_currentGlyphLength; }
+  void advance() {
+    m_characters += m_currentGlyphLength;
+    m_offset += m_currentGlyphLength;
+  }
 
-private:
-    bool isValidSurrogatePair(UChar32&);
-    bool consumeSurrogatePair(UChar32&);
-    void consumeMultipleUChar();
+  int offset() const { return m_offset; }
+  const UChar* characters() const { return m_characters; }
+  const UChar* glyphEnd() const { return m_characters + m_currentGlyphLength; }
+  // FIXME: Only used by SimpleShaper, should be removed once the SimpleShaper
+  // is removed.
+  unsigned glyphLength() const { return m_currentGlyphLength; }
 
-    const UChar* m_characters;
-    const UChar* m_charactersEnd;
-    int m_offset;
-    int m_endOffset;
-    unsigned m_currentGlyphLength;
+ private:
+  bool isValidSurrogatePair(UChar32&);
+  bool consumeSurrogatePair(UChar32&);
+  void consumeMultipleUChar();
+
+  const UChar* m_characters;
+  const UChar* m_charactersEnd;
+  int m_offset;
+  int m_endOffset;
+  unsigned m_currentGlyphLength;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

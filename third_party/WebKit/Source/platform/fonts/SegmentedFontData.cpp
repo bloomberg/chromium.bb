@@ -31,71 +31,63 @@
 
 namespace blink {
 
-SegmentedFontData::~SegmentedFontData()
-{
-    GlyphPageTreeNode::pruneTreeCustomFontData(this);
+SegmentedFontData::~SegmentedFontData() {
+  GlyphPageTreeNode::pruneTreeCustomFontData(this);
 }
 
-const SimpleFontData* SegmentedFontData::fontDataForCharacter(UChar32 c) const
-{
-    auto end = m_faces.end();
-    for (auto it = m_faces.begin(); it != end; ++it) {
-        if ((*it)->contains(c))
-            return (*it)->fontData();
-    }
-    return m_faces[0]->fontData();
+const SimpleFontData* SegmentedFontData::fontDataForCharacter(UChar32 c) const {
+  auto end = m_faces.end();
+  for (auto it = m_faces.begin(); it != end; ++it) {
+    if ((*it)->contains(c))
+      return (*it)->fontData();
+  }
+  return m_faces[0]->fontData();
 }
 
-bool SegmentedFontData::containsCharacter(UChar32 c) const
-{
-    auto end = m_faces.end();
-    for (auto it = m_faces.begin(); it != end; ++it) {
-        if ((*it)->contains(c))
-            return true;
-    }
-    return false;
+bool SegmentedFontData::containsCharacter(UChar32 c) const {
+  auto end = m_faces.end();
+  for (auto it = m_faces.begin(); it != end; ++it) {
+    if ((*it)->contains(c))
+      return true;
+  }
+  return false;
 }
 
-bool SegmentedFontData::isCustomFont() const
-{
-    // All segmented fonts are custom fonts.
-    return true;
+bool SegmentedFontData::isCustomFont() const {
+  // All segmented fonts are custom fonts.
+  return true;
 }
 
-bool SegmentedFontData::isLoading() const
-{
-    auto end = m_faces.end();
-    for (auto it = m_faces.begin(); it != end; ++it) {
-        if ((*it)->fontData()->isLoading())
-            return true;
-    }
-    return false;
+bool SegmentedFontData::isLoading() const {
+  auto end = m_faces.end();
+  for (auto it = m_faces.begin(); it != end; ++it) {
+    if ((*it)->fontData()->isLoading())
+      return true;
+  }
+  return false;
 }
 
 // Returns true if any of the sub fonts are loadingFallback.
-bool SegmentedFontData::isLoadingFallback() const
-{
-    auto end = m_faces.end();
-    for (auto it = m_faces.begin(); it != end; ++it) {
-        if ((*it)->fontData()->isLoadingFallback())
-            return true;
-    }
-    return false;
+bool SegmentedFontData::isLoadingFallback() const {
+  auto end = m_faces.end();
+  for (auto it = m_faces.begin(); it != end; ++it) {
+    if ((*it)->fontData()->isLoadingFallback())
+      return true;
+  }
+  return false;
 }
 
-bool SegmentedFontData::isSegmented() const
-{
-    return true;
+bool SegmentedFontData::isSegmented() const {
+  return true;
 }
 
-bool SegmentedFontData::shouldSkipDrawing() const
-{
-    auto end = m_faces.end();
-    for (auto it = m_faces.begin(); it != end; ++it) {
-        if ((*it)->fontData()->shouldSkipDrawing())
-            return true;
-    }
-    return false;
+bool SegmentedFontData::shouldSkipDrawing() const {
+  auto end = m_faces.end();
+  for (auto it = m_faces.begin(); it != end; ++it) {
+    if ((*it)->fontData()->shouldSkipDrawing())
+      return true;
+  }
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

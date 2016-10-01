@@ -47,20 +47,21 @@ class CSSStyleSheet;
 // ... examine RuleSet to find the rule and test properties on it.
 
 class CSSTestHelper {
-    STACK_ALLOCATED();
-public:
-    CSSTestHelper();
-    ~CSSTestHelper();
+  STACK_ALLOCATED();
 
-    void addCSSRules(const char* ruleText);
-    RuleSet& ruleSet();
-    CSSRuleList* cssRules();
+ public:
+  CSSTestHelper();
+  ~CSSTestHelper();
 
-private:
-    Persistent<Document> m_document;
-    Persistent<CSSStyleSheet> m_styleSheet;
+  void addCSSRules(const char* ruleText);
+  RuleSet& ruleSet();
+  CSSRuleList* cssRules();
+
+ private:
+  Persistent<Document> m_document;
+  Persistent<CSSStyleSheet> m_styleSheet;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSTestHelper_h
+#endif  // CSSTestHelper_h

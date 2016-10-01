@@ -16,6 +16,6 @@ const WebInsecureRequestPolicy kLeaveInsecureRequestsAlone = 0;
 const WebInsecureRequestPolicy kUpgradeInsecureRequests = 1 << 0;
 const WebInsecureRequestPolicy kBlockAllMixedContent = 1 << 1;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebInsecureRequestPolicy_h
+#endif  // WebInsecureRequestPolicy_h

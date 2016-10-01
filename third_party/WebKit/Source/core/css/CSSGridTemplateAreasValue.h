@@ -38,33 +38,39 @@
 namespace blink {
 
 class CSSGridTemplateAreasValue : public CSSValue {
-public:
-    static CSSGridTemplateAreasValue* create(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount)
-    {
-        return new CSSGridTemplateAreasValue(gridAreaMap, rowCount, columnCount);
-    }
-    ~CSSGridTemplateAreasValue() { }
+ public:
+  static CSSGridTemplateAreasValue* create(const NamedGridAreaMap& gridAreaMap,
+                                           size_t rowCount,
+                                           size_t columnCount) {
+    return new CSSGridTemplateAreasValue(gridAreaMap, rowCount, columnCount);
+  }
+  ~CSSGridTemplateAreasValue() {}
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    const NamedGridAreaMap& gridAreaMap() const { return m_gridAreaMap; }
-    size_t rowCount() const { return m_rowCount; }
-    size_t columnCount() const { return m_columnCount; }
+  const NamedGridAreaMap& gridAreaMap() const { return m_gridAreaMap; }
+  size_t rowCount() const { return m_rowCount; }
+  size_t columnCount() const { return m_columnCount; }
 
-    bool equals(const CSSGridTemplateAreasValue&) const;
+  bool equals(const CSSGridTemplateAreasValue&) const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValue::traceAfterDispatch(visitor);
+  }
 
-private:
-    CSSGridTemplateAreasValue(const NamedGridAreaMap&, size_t rowCount, size_t columnCount);
+ private:
+  CSSGridTemplateAreasValue(const NamedGridAreaMap&,
+                            size_t rowCount,
+                            size_t columnCount);
 
-    NamedGridAreaMap m_gridAreaMap;
-    size_t m_rowCount;
-    size_t m_columnCount;
+  NamedGridAreaMap m_gridAreaMap;
+  size_t m_rowCount;
+  size_t m_columnCount;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridTemplateAreasValue, isGridTemplateAreasValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridTemplateAreasValue,
+                            isGridTemplateAreasValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSGridTemplateAreasValue_h
+#endif  // CSSGridTemplateAreasValue_h

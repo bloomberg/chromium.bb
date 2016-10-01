@@ -37,33 +37,32 @@
 namespace blink {
 
 class AnimatableShadow final : public AnimatableValue {
-public:
-    ~AnimatableShadow() override { }
-    static PassRefPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList, const Color& currentColor)
-    {
-        return adoptRef(new AnimatableShadow(std::move(shadowList), currentColor));
-    }
-    ShadowList* getShadowList() const { return m_shadowList.get(); }
+ public:
+  ~AnimatableShadow() override {}
+  static PassRefPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList,
+                                             const Color& currentColor) {
+    return adoptRef(new AnimatableShadow(std::move(shadowList), currentColor));
+  }
+  ShadowList* getShadowList() const { return m_shadowList.get(); }
 
-protected:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+ protected:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-private:
-    explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList, const Color& currentColor)
-        : m_shadowList(shadowList),
-        m_currentColor(currentColor)
-    {
-    }
-    AnimatableType type() const override { return TypeShadow; }
-    bool equalTo(const AnimatableValue*) const override;
+ private:
+  explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList,
+                            const Color& currentColor)
+      : m_shadowList(shadowList), m_currentColor(currentColor) {}
+  AnimatableType type() const override { return TypeShadow; }
+  bool equalTo(const AnimatableValue*) const override;
 
-    const RefPtr<ShadowList> m_shadowList;
-    const Color m_currentColor;
+  const RefPtr<ShadowList> m_shadowList;
+  const Color m_currentColor;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShadow, isShadow());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableShadow_h
+#endif  // AnimatableShadow_h

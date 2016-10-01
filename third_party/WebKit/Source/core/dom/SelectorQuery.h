@@ -41,77 +41,108 @@ class ContainerNode;
 class Document;
 class Element;
 class ExceptionState;
-template <typename NodeType> class StaticNodeTypeList;
+template <typename NodeType>
+class StaticNodeTypeList;
 using StaticElementList = StaticNodeTypeList<Element>;
 
 class SelectorDataList {
-    DISALLOW_NEW();
-public:
-    void initialize(const CSSSelectorList&);
-    bool matches(Element&) const;
-    Element* closest(Element&) const;
-    StaticElementList* queryAll(ContainerNode& rootNode) const;
-    Element* queryFirst(ContainerNode& rootNode) const;
+  DISALLOW_NEW();
 
-private:
-    bool canUseFastQuery(const ContainerNode& rootNode) const;
-    bool selectorMatches(const CSSSelector&, Element&, const ContainerNode&) const;
+ public:
+  void initialize(const CSSSelectorList&);
+  bool matches(Element&) const;
+  Element* closest(Element&) const;
+  StaticElementList* queryAll(ContainerNode& rootNode) const;
+  Element* queryFirst(ContainerNode& rootNode) const;
 
-    template <typename SelectorQueryTrait>
-    void collectElementsByClassName(ContainerNode& rootNode, const AtomicString& className, typename SelectorQueryTrait::OutputType&) const;
-    template <typename SelectorQueryTrait>
-    void collectElementsByTagName(ContainerNode& rootNode, const QualifiedName& tagName, typename SelectorQueryTrait::OutputType&) const;
+ private:
+  bool canUseFastQuery(const ContainerNode& rootNode) const;
+  bool selectorMatches(const CSSSelector&,
+                       Element&,
+                       const ContainerNode&) const;
 
-    template <typename SelectorQueryTrait>
-    void findTraverseRootsAndExecute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait>
+  void collectElementsByClassName(
+      ContainerNode& rootNode,
+      const AtomicString& className,
+      typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait>
+  void collectElementsByTagName(ContainerNode& rootNode,
+                                const QualifiedName& tagName,
+                                typename SelectorQueryTrait::OutputType&) const;
 
-    enum MatchTraverseRootState { DoesNotMatchTraverseRoots, MatchesTraverseRoots };
-    template <typename SelectorQueryTrait>
-    void executeForTraverseRoot(const CSSSelector&, ContainerNode* traverseRoot, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
-    template <typename SelectorQueryTrait, typename SimpleElementListType>
-    void executeForTraverseRoots(const CSSSelector&, SimpleElementListType& traverseRoots, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait>
+  void findTraverseRootsAndExecute(
+      ContainerNode& rootNode,
+      typename SelectorQueryTrait::OutputType&) const;
 
-    template <typename SelectorQueryTrait>
-    bool selectorListMatches(ContainerNode& rootNode, Element&, typename SelectorQueryTrait::OutputType&) const;
-    template <typename SelectorQueryTrait>
-    void executeSlow(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
-    template <typename SelectorQueryTrait>
-    void executeSlowTraversingShadowTree(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
-    template <typename SelectorQueryTrait>
-    void execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+  enum MatchTraverseRootState {
+    DoesNotMatchTraverseRoots,
+    MatchesTraverseRoots
+  };
+  template <typename SelectorQueryTrait>
+  void executeForTraverseRoot(const CSSSelector&,
+                              ContainerNode* traverseRoot,
+                              MatchTraverseRootState,
+                              ContainerNode& rootNode,
+                              typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait, typename SimpleElementListType>
+  void executeForTraverseRoots(const CSSSelector&,
+                               SimpleElementListType& traverseRoots,
+                               MatchTraverseRootState,
+                               ContainerNode& rootNode,
+                               typename SelectorQueryTrait::OutputType&) const;
 
-    Vector<const CSSSelector*> m_selectors;
-    bool m_usesDeepCombinatorOrShadowPseudo : 1;
-    bool m_needsUpdatedDistribution : 1;
+  template <typename SelectorQueryTrait>
+  bool selectorListMatches(ContainerNode& rootNode,
+                           Element&,
+                           typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait>
+  void executeSlow(ContainerNode& rootNode,
+                   typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait>
+  void executeSlowTraversingShadowTree(
+      ContainerNode& rootNode,
+      typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait>
+  void execute(ContainerNode& rootNode,
+               typename SelectorQueryTrait::OutputType&) const;
+
+  Vector<const CSSSelector*> m_selectors;
+  bool m_usesDeepCombinatorOrShadowPseudo : 1;
+  bool m_needsUpdatedDistribution : 1;
 };
 
 class CORE_EXPORT SelectorQuery {
-    WTF_MAKE_NONCOPYABLE(SelectorQuery);
-    USING_FAST_MALLOC(SelectorQuery);
-public:
-    static std::unique_ptr<SelectorQuery> adopt(CSSSelectorList);
+  WTF_MAKE_NONCOPYABLE(SelectorQuery);
+  USING_FAST_MALLOC(SelectorQuery);
 
-    bool matches(Element&) const;
-    Element* closest(Element&) const;
-    StaticElementList* queryAll(ContainerNode& rootNode) const;
-    Element* queryFirst(ContainerNode& rootNode) const;
-private:
-    explicit SelectorQuery(CSSSelectorList);
+ public:
+  static std::unique_ptr<SelectorQuery> adopt(CSSSelectorList);
 
-    SelectorDataList m_selectors;
-    CSSSelectorList m_selectorList;
+  bool matches(Element&) const;
+  Element* closest(Element&) const;
+  StaticElementList* queryAll(ContainerNode& rootNode) const;
+  Element* queryFirst(ContainerNode& rootNode) const;
+
+ private:
+  explicit SelectorQuery(CSSSelectorList);
+
+  SelectorDataList m_selectors;
+  CSSSelectorList m_selectorList;
 };
 
 class SelectorQueryCache {
-    USING_FAST_MALLOC(SelectorQueryCache);
-public:
-    SelectorQuery* add(const AtomicString&, const Document&, ExceptionState&);
-    void invalidate();
+  USING_FAST_MALLOC(SelectorQueryCache);
 
-private:
-    HashMap<AtomicString, std::unique_ptr<SelectorQuery>> m_entries;
+ public:
+  SelectorQuery* add(const AtomicString&, const Document&, ExceptionState&);
+  void invalidate();
+
+ private:
+  HashMap<AtomicString, std::unique_ptr<SelectorQuery>> m_entries;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

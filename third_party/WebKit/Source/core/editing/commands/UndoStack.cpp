@@ -38,75 +38,63 @@ namespace blink {
 // into a single action.
 static const size_t maximumUndoStackDepth = 1000;
 
-UndoStack::UndoStack()
-    : m_inRedo(false)
-{
+UndoStack::UndoStack() : m_inRedo(false) {}
+
+UndoStack* UndoStack::create() {
+  return new UndoStack();
 }
 
-UndoStack* UndoStack::create()
-{
-    return new UndoStack();
-}
-
-void UndoStack::registerUndoStep(UndoStep* step)
-{
-    if (m_undoStack.size() == maximumUndoStackDepth)
-        m_undoStack.removeFirst(); // drop oldest item off the far end
-    if (!m_inRedo)
-        m_redoStack.clear();
-    m_undoStack.append(step);
-}
-
-void UndoStack::registerRedoStep(UndoStep* step)
-{
-    m_redoStack.append(step);
-}
-
-bool UndoStack::canUndo() const
-{
-    return !m_undoStack.isEmpty();
-}
-
-bool UndoStack::canRedo() const
-{
-    return !m_redoStack.isEmpty();
-}
-
-void UndoStack::undo()
-{
-    if (canUndo()) {
-        UndoStepStack::iterator back = --m_undoStack.end();
-        UndoStep* step(back->get());
-        m_undoStack.remove(back);
-        step->unapply();
-        // unapply will call us back to push this command onto the redo stack.
-    }
-}
-
-void UndoStack::redo()
-{
-    if (canRedo()) {
-        UndoStepStack::iterator back = --m_redoStack.end();
-        UndoStep* step(back->get());
-        m_redoStack.remove(back);
-
-        DCHECK(!m_inRedo);
-        AutoReset<bool> redoScope(&m_inRedo, true);
-        step->reapply();
-        // reapply will call us back to push this command onto the undo stack.
-    }
-}
-
-void UndoStack::clear()
-{
-    m_undoStack.clear();
+void UndoStack::registerUndoStep(UndoStep* step) {
+  if (m_undoStack.size() == maximumUndoStackDepth)
+    m_undoStack.removeFirst();  // drop oldest item off the far end
+  if (!m_inRedo)
     m_redoStack.clear();
+  m_undoStack.append(step);
 }
 
-DEFINE_TRACE(UndoStack)
-{
-    visitor->trace(m_undoStack);
-    visitor->trace(m_redoStack);
+void UndoStack::registerRedoStep(UndoStep* step) {
+  m_redoStack.append(step);
 }
 
-} // namespace blink
+bool UndoStack::canUndo() const {
+  return !m_undoStack.isEmpty();
+}
+
+bool UndoStack::canRedo() const {
+  return !m_redoStack.isEmpty();
+}
+
+void UndoStack::undo() {
+  if (canUndo()) {
+    UndoStepStack::iterator back = --m_undoStack.end();
+    UndoStep* step(back->get());
+    m_undoStack.remove(back);
+    step->unapply();
+    // unapply will call us back to push this command onto the redo stack.
+  }
+}
+
+void UndoStack::redo() {
+  if (canRedo()) {
+    UndoStepStack::iterator back = --m_redoStack.end();
+    UndoStep* step(back->get());
+    m_redoStack.remove(back);
+
+    DCHECK(!m_inRedo);
+    AutoReset<bool> redoScope(&m_inRedo, true);
+    step->reapply();
+    // reapply will call us back to push this command onto the undo stack.
+  }
+}
+
+void UndoStack::clear() {
+  m_undoStack.clear();
+  m_redoStack.clear();
+}
+
+DEFINE_TRACE(UndoStack) {
+  visitor->trace(m_undoStack);
+  visitor->trace(m_redoStack);
+}
+
+}  // namespace blink

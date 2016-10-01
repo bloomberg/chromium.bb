@@ -43,78 +43,79 @@
 
 namespace blink {
 
-DocumentWriter* DocumentWriter::create(Document* document, ParserSynchronizationPolicy parsingPolicy, const AtomicString& mimeType, const AtomicString& encoding)
-{
-    return new DocumentWriter(document, parsingPolicy, mimeType, encoding);
+DocumentWriter* DocumentWriter::create(
+    Document* document,
+    ParserSynchronizationPolicy parsingPolicy,
+    const AtomicString& mimeType,
+    const AtomicString& encoding) {
+  return new DocumentWriter(document, parsingPolicy, mimeType, encoding);
 }
 
-DocumentWriter::DocumentWriter(Document* document, ParserSynchronizationPolicy parserSyncPolicy, const AtomicString& mimeType, const AtomicString& encoding)
-    : m_document(document)
-    , m_decoderBuilder(mimeType, encoding)
-    // We grab a reference to the parser so that we'll always send data to the
-    // original parser, even if the document acquires a new parser (e.g., via
-    // document.open).
-    , m_parser(m_document->implicitOpen(parserSyncPolicy))
-{
-    if (m_document->frame()) {
-        if (FrameView* view = m_document->frame()->view())
-            view->setContentsSize(IntSize());
-    }
+DocumentWriter::DocumentWriter(Document* document,
+                               ParserSynchronizationPolicy parserSyncPolicy,
+                               const AtomicString& mimeType,
+                               const AtomicString& encoding)
+    : m_document(document),
+      m_decoderBuilder(mimeType, encoding)
+      // We grab a reference to the parser so that we'll always send data to the
+      // original parser, even if the document acquires a new parser (e.g., via
+      // document.open).
+      ,
+      m_parser(m_document->implicitOpen(parserSyncPolicy)) {
+  if (m_document->frame()) {
+    if (FrameView* view = m_document->frame()->view())
+      view->setContentsSize(IntSize());
+  }
 }
 
-DocumentWriter::~DocumentWriter()
-{
+DocumentWriter::~DocumentWriter() {}
+
+DEFINE_TRACE(DocumentWriter) {
+  visitor->trace(m_document);
+  visitor->trace(m_parser);
 }
 
-DEFINE_TRACE(DocumentWriter)
-{
-    visitor->trace(m_document);
-    visitor->trace(m_parser);
+void DocumentWriter::appendReplacingData(const String& source) {
+  m_document->setCompatibilityMode(Document::NoQuirksMode);
+
+  // FIXME: This should call DocumentParser::appendBytes instead of append
+  // to support RawDataDocumentParsers.
+  if (DocumentParser* parser = m_document->parser())
+    parser->append(source);
 }
 
-void DocumentWriter::appendReplacingData(const String& source)
-{
-    m_document->setCompatibilityMode(Document::NoQuirksMode);
-
-    // FIXME: This should call DocumentParser::appendBytes instead of append
-    // to support RawDataDocumentParsers.
-    if (DocumentParser* parser = m_document->parser())
-        parser->append(source);
+void DocumentWriter::addData(const char* bytes, size_t length) {
+  DCHECK(m_parser);
+  if (m_parser->needsDecoder() && 0 < length) {
+    std::unique_ptr<TextResourceDecoder> decoder =
+        m_decoderBuilder.buildFor(m_document);
+    m_parser->setDecoder(std::move(decoder));
+  }
+  // appendBytes() can result replacing DocumentLoader::m_writer.
+  m_parser->appendBytes(bytes, length);
 }
 
-void DocumentWriter::addData(const char* bytes, size_t length)
-{
-    DCHECK(m_parser);
-    if (m_parser->needsDecoder() && 0 < length) {
-        std::unique_ptr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
-        m_parser->setDecoder(std::move(decoder));
-    }
-    // appendBytes() can result replacing DocumentLoader::m_writer.
-    m_parser->appendBytes(bytes, length);
+void DocumentWriter::end() {
+  DCHECK(m_document);
+
+  if (!m_parser)
+    return;
+
+  if (m_parser->needsDecoder()) {
+    std::unique_ptr<TextResourceDecoder> decoder =
+        m_decoderBuilder.buildFor(m_document);
+    m_parser->setDecoder(std::move(decoder));
+  }
+
+  m_parser->finish();
+  m_parser = nullptr;
+  m_document = nullptr;
 }
 
-void DocumentWriter::end()
-{
-    DCHECK(m_document);
-
-    if (!m_parser)
-        return;
-
-    if (m_parser->needsDecoder()) {
-        std::unique_ptr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
-        m_parser->setDecoder(std::move(decoder));
-    }
-
-    m_parser->finish();
-    m_parser = nullptr;
-    m_document = nullptr;
+void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation() {
+  DCHECK(m_parser);
+  DCHECK(!m_parser->isStopped());
+  m_parser->setDocumentWasLoadedAsPartOfNavigation();
 }
 
-void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation()
-{
-    DCHECK(m_parser);
-    DCHECK(!m_parser->isStopped());
-    m_parser->setDocumentWasLoadedAsPartOfNavigation();
-}
-
-} // namespace blink
+}  // namespace blink

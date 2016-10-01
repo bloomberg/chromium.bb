@@ -37,57 +37,55 @@ namespace blink {
 // A helper method for coverting a MemoryCache::TypeStatistic to a
 // WebCache::ResourceTypeStat.
 static void ToResourceTypeStat(const MemoryCache::TypeStatistic& from,
-                               WebCache::ResourceTypeStat& to)
-{
-    to.count = from.count;
-    to.size = from.size;
-    to.liveSize = from.liveSize;
-    to.decodedSize = from.decodedSize;
+                               WebCache::ResourceTypeStat& to) {
+  to.count = from.count;
+  to.size = from.size;
+  to.liveSize = from.liveSize;
+  to.decodedSize = from.decodedSize;
 }
 
-void WebCache::setCapacities(
-    size_t minDeadCapacity, size_t maxDeadCapacity, size_t capacity)
-{
-    MemoryCache* cache = memoryCache();
-    if (cache)
-        cache->setCapacities(static_cast<unsigned>(minDeadCapacity), static_cast<unsigned>(maxDeadCapacity), static_cast<unsigned>(capacity));
+void WebCache::setCapacities(size_t minDeadCapacity,
+                             size_t maxDeadCapacity,
+                             size_t capacity) {
+  MemoryCache* cache = memoryCache();
+  if (cache)
+    cache->setCapacities(static_cast<unsigned>(minDeadCapacity),
+                         static_cast<unsigned>(maxDeadCapacity),
+                         static_cast<unsigned>(capacity));
 }
 
-void WebCache::clear()
-{
-    MemoryCache* cache = memoryCache();
-    if (cache)
-        cache->evictResources();
+void WebCache::clear() {
+  MemoryCache* cache = memoryCache();
+  if (cache)
+    cache->evictResources();
 }
 
-void WebCache::getUsageStats(UsageStats* result)
-{
-    DCHECK(result);
+void WebCache::getUsageStats(UsageStats* result) {
+  DCHECK(result);
 
-    MemoryCache* cache = memoryCache();
-    if (cache) {
-        result->minDeadCapacity = cache->minDeadCapacity();
-        result->maxDeadCapacity = cache->maxDeadCapacity();
-        result->capacity = cache->capacity();
-        result->liveSize = cache->liveSize();
-        result->deadSize = cache->deadSize();
-    } else
-        memset(result, 0, sizeof(UsageStats));
+  MemoryCache* cache = memoryCache();
+  if (cache) {
+    result->minDeadCapacity = cache->minDeadCapacity();
+    result->maxDeadCapacity = cache->maxDeadCapacity();
+    result->capacity = cache->capacity();
+    result->liveSize = cache->liveSize();
+    result->deadSize = cache->deadSize();
+  } else
+    memset(result, 0, sizeof(UsageStats));
 }
 
-void WebCache::getResourceTypeStats(ResourceTypeStats* result)
-{
-    MemoryCache* cache = memoryCache();
-    if (cache) {
-        MemoryCache::Statistics stats = cache->getStatistics();
-        ToResourceTypeStat(stats.images, result->images);
-        ToResourceTypeStat(stats.cssStyleSheets, result->cssStyleSheets);
-        ToResourceTypeStat(stats.scripts, result->scripts);
-        ToResourceTypeStat(stats.xslStyleSheets, result->xslStyleSheets);
-        ToResourceTypeStat(stats.fonts, result->fonts);
-        ToResourceTypeStat(stats.other, result->other);
-    } else
-        memset(result, 0, sizeof(WebCache::ResourceTypeStats));
+void WebCache::getResourceTypeStats(ResourceTypeStats* result) {
+  MemoryCache* cache = memoryCache();
+  if (cache) {
+    MemoryCache::Statistics stats = cache->getStatistics();
+    ToResourceTypeStat(stats.images, result->images);
+    ToResourceTypeStat(stats.cssStyleSheets, result->cssStyleSheets);
+    ToResourceTypeStat(stats.scripts, result->scripts);
+    ToResourceTypeStat(stats.xslStyleSheets, result->xslStyleSheets);
+    ToResourceTypeStat(stats.fonts, result->fonts);
+    ToResourceTypeStat(stats.other, result->other);
+  } else
+    memset(result, 0, sizeof(WebCache::ResourceTypeStats));
 }
 
 }  // namespace blink

@@ -25,70 +25,72 @@ namespace blink {
 // WebThreadSupportingGC usually internally creates and owns WebThread unless
 // an existing WebThread is given via createForThread.
 class PLATFORM_EXPORT WebThreadSupportingGC final {
-    USING_FAST_MALLOC(WebThreadSupportingGC);
-    WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
-public:
-    static std::unique_ptr<WebThreadSupportingGC> create(const char* name, BlinkGC::ThreadHeapMode);
-    static std::unique_ptr<WebThreadSupportingGC> createForThread(WebThread*, BlinkGC::ThreadHeapMode);
-    ~WebThreadSupportingGC();
+  USING_FAST_MALLOC(WebThreadSupportingGC);
+  WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 
-    void postTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task)
-    {
-        m_thread->getWebTaskRunner()->postTask(location, std::move(task));
-    }
+ public:
+  static std::unique_ptr<WebThreadSupportingGC> create(const char* name,
+                                                       BlinkGC::ThreadHeapMode);
+  static std::unique_ptr<WebThreadSupportingGC> createForThread(
+      WebThread*,
+      BlinkGC::ThreadHeapMode);
+  ~WebThreadSupportingGC();
 
-    void postDelayedTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task, long long delayMs)
-    {
-        m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
-    }
+  void postTask(const WebTraceLocation& location,
+                std::unique_ptr<WTF::Closure> task) {
+    m_thread->getWebTaskRunner()->postTask(location, std::move(task));
+  }
 
-    void postTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task)
-    {
-        m_thread->getWebTaskRunner()->postTask(location, std::move(task));
-    }
+  void postDelayedTask(const WebTraceLocation& location,
+                       std::unique_ptr<WTF::Closure> task,
+                       long long delayMs) {
+    m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task),
+                                                  delayMs);
+  }
 
-    void postDelayedTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task, long long delayMs)
-    {
-        m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
-    }
+  void postTask(const WebTraceLocation& location,
+                std::unique_ptr<CrossThreadClosure> task) {
+    m_thread->getWebTaskRunner()->postTask(location, std::move(task));
+  }
 
-    bool isCurrentThread() const
-    {
-        return m_thread->isCurrentThread();
-    }
+  void postDelayedTask(const WebTraceLocation& location,
+                       std::unique_ptr<CrossThreadClosure> task,
+                       long long delayMs) {
+    m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task),
+                                                  delayMs);
+  }
 
-    void addTaskObserver(WebThread::TaskObserver* observer)
-    {
-        m_thread->addTaskObserver(observer);
-    }
+  bool isCurrentThread() const { return m_thread->isCurrentThread(); }
 
-    void removeTaskObserver(WebThread::TaskObserver* observer)
-    {
-        m_thread->removeTaskObserver(observer);
-    }
+  void addTaskObserver(WebThread::TaskObserver* observer) {
+    m_thread->addTaskObserver(observer);
+  }
 
-    void initialize();
-    void shutdown();
+  void removeTaskObserver(WebThread::TaskObserver* observer) {
+    m_thread->removeTaskObserver(observer);
+  }
 
-    WebThread& platformThread() const
-    {
-        ASSERT(m_thread);
-        return *m_thread;
-    }
+  void initialize();
+  void shutdown();
 
-private:
-    WebThreadSupportingGC(const char* name, WebThread*, BlinkGC::ThreadHeapMode);
+  WebThread& platformThread() const {
+    ASSERT(m_thread);
+    return *m_thread;
+  }
 
-    std::unique_ptr<GCTaskRunner> m_gcTaskRunner;
+ private:
+  WebThreadSupportingGC(const char* name, WebThread*, BlinkGC::ThreadHeapMode);
 
-    // m_thread is guaranteed to be non-null after this instance is constructed.
-    // m_owningThread is non-null unless this instance is constructed for an
-    // existing thread via createForThread().
-    WebThread* m_thread = nullptr;
-    std::unique_ptr<WebThread> m_owningThread;
-    const BlinkGC::ThreadHeapMode m_threadHeapMode;
+  std::unique_ptr<GCTaskRunner> m_gcTaskRunner;
+
+  // m_thread is guaranteed to be non-null after this instance is constructed.
+  // m_owningThread is non-null unless this instance is constructed for an
+  // existing thread via createForThread().
+  WebThread* m_thread = nullptr;
+  std::unique_ptr<WebThread> m_owningThread;
+  const BlinkGC::ThreadHeapMode m_threadHeapMode;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

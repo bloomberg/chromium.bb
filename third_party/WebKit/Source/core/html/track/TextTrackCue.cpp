@@ -42,118 +42,102 @@ namespace blink {
 static const unsigned invalidCueIndex = UINT_MAX;
 
 TextTrackCue::TextTrackCue(double start, double end)
-    : m_startTime(start)
-    , m_endTime(end)
-    , m_track(nullptr)
-    , m_cueIndex(invalidCueIndex)
-    , m_isActive(false)
-    , m_pauseOnExit(false)
-{
+    : m_startTime(start),
+      m_endTime(end),
+      m_track(nullptr),
+      m_cueIndex(invalidCueIndex),
+      m_isActive(false),
+      m_pauseOnExit(false) {}
+
+void TextTrackCue::cueWillChange() {
+  if (m_track)
+    m_track->cueWillChange(this);
 }
 
-void TextTrackCue::cueWillChange()
-{
-    if (m_track)
-        m_track->cueWillChange(this);
+void TextTrackCue::cueDidChange() {
+  if (m_track)
+    m_track->cueDidChange(this);
 }
 
-void TextTrackCue::cueDidChange()
-{
-    if (m_track)
-        m_track->cueDidChange(this);
+TextTrack* TextTrackCue::track() const {
+  return m_track;
 }
 
-TextTrack* TextTrackCue::track() const
-{
-    return m_track;
+void TextTrackCue::setTrack(TextTrack* track) {
+  m_track = track;
 }
 
-void TextTrackCue::setTrack(TextTrack* track)
-{
-    m_track = track;
+Node* TextTrackCue::owner() const {
+  return m_track ? m_track->owner() : 0;
 }
 
-Node* TextTrackCue::owner() const
-{
-    return m_track ? m_track->owner() : 0;
+void TextTrackCue::setId(const AtomicString& id) {
+  if (m_id == id)
+    return;
+
+  cueWillChange();
+  m_id = id;
+  cueDidChange();
 }
 
-void TextTrackCue::setId(const AtomicString& id)
-{
-    if (m_id == id)
-        return;
+void TextTrackCue::setStartTime(double value) {
+  // TODO(93143): Add spec-compliant behavior for negative time values.
+  if (m_startTime == value || value < 0)
+    return;
 
-    cueWillChange();
-    m_id = id;
-    cueDidChange();
+  cueWillChange();
+  m_startTime = value;
+  cueDidChange();
 }
 
-void TextTrackCue::setStartTime(double value)
-{
-    // TODO(93143): Add spec-compliant behavior for negative time values.
-    if (m_startTime == value || value < 0)
-        return;
+void TextTrackCue::setEndTime(double value) {
+  // TODO(93143): Add spec-compliant behavior for negative time values.
+  if (m_endTime == value || value < 0)
+    return;
 
-    cueWillChange();
-    m_startTime = value;
-    cueDidChange();
+  cueWillChange();
+  m_endTime = value;
+  cueDidChange();
 }
 
-void TextTrackCue::setEndTime(double value)
-{
-    // TODO(93143): Add spec-compliant behavior for negative time values.
-    if (m_endTime == value || value < 0)
-        return;
+void TextTrackCue::setPauseOnExit(bool value) {
+  if (m_pauseOnExit == value)
+    return;
 
-    cueWillChange();
-    m_endTime = value;
-    cueDidChange();
+  cueWillChange();
+  m_pauseOnExit = value;
+  cueDidChange();
 }
 
-void TextTrackCue::setPauseOnExit(bool value)
-{
-    if (m_pauseOnExit == value)
-        return;
-
-    cueWillChange();
-    m_pauseOnExit = value;
-    cueDidChange();
+void TextTrackCue::invalidateCueIndex() {
+  m_cueIndex = invalidCueIndex;
 }
 
-void TextTrackCue::invalidateCueIndex()
-{
-    m_cueIndex = invalidCueIndex;
+unsigned TextTrackCue::cueIndex() {
+  // This method can only be called on cues while they are associated with
+  // a(n enabled) track (and hence that track's list of cues should exist.)
+  DCHECK(track() && track()->cues());
+  TextTrackCueList* cueList = track()->cues();
+  if (!cueList->isCueIndexValid(m_cueIndex))
+    cueList->validateCueIndexes();
+  return m_cueIndex;
 }
 
-unsigned TextTrackCue::cueIndex()
-{
-    // This method can only be called on cues while they are associated with
-    // a(n enabled) track (and hence that track's list of cues should exist.)
-    DCHECK(track() && track()->cues());
-    TextTrackCueList* cueList = track()->cues();
-    if (!cueList->isCueIndexValid(m_cueIndex))
-        cueList->validateCueIndexes();
-    return m_cueIndex;
+DispatchEventResult TextTrackCue::dispatchEventInternal(Event* event) {
+  // When a TextTrack's mode is disabled: no cues are active, no events fired.
+  if (!track() || track()->mode() == TextTrack::disabledKeyword())
+    return DispatchEventResult::CanceledBeforeDispatch;
+
+  return EventTarget::dispatchEventInternal(event);
 }
 
-DispatchEventResult TextTrackCue::dispatchEventInternal(Event* event)
-{
-    // When a TextTrack's mode is disabled: no cues are active, no events fired.
-    if (!track() || track()->mode() == TextTrack::disabledKeyword())
-        return DispatchEventResult::CanceledBeforeDispatch;
-
-    return EventTarget::dispatchEventInternal(event);
+const AtomicString& TextTrackCue::interfaceName() const {
+  return EventTargetNames::TextTrackCue;
 }
 
-const AtomicString& TextTrackCue::interfaceName() const
-{
-    return EventTargetNames::TextTrackCue;
+DEFINE_TRACE(TextTrackCue) {
+  visitor->trace(m_track);
+  EventTargetWithInlineData::trace(visitor);
 }
 
-DEFINE_TRACE(TextTrackCue)
-{
-    visitor->trace(m_track);
-    EventTargetWithInlineData::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

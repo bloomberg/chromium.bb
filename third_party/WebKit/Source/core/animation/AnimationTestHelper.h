@@ -11,9 +11,15 @@
 
 namespace blink {
 
-void setV8ObjectPropertyAsString(v8::Isolate*, v8::Local<v8::Object>, const StringView& name, const StringView& value);
-void setV8ObjectPropertyAsNumber(v8::Isolate*, v8::Local<v8::Object>, const StringView& name, double value);
+void setV8ObjectPropertyAsString(v8::Isolate*,
+                                 v8::Local<v8::Object>,
+                                 const StringView& name,
+                                 const StringView& value);
+void setV8ObjectPropertyAsNumber(v8::Isolate*,
+                                 v8::Local<v8::Object>,
+                                 const StringView& name,
+                                 double value);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationTestHelper_h
+#endif  // AnimationTestHelper_h

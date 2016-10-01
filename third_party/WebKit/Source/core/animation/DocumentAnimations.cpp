@@ -44,42 +44,39 @@ namespace blink {
 
 namespace {
 
-void updateAnimationTiming(Document& document, TimingUpdateReason reason)
-{
-    document.timeline().serviceAnimations(reason);
+void updateAnimationTiming(Document& document, TimingUpdateReason reason) {
+  document.timeline().serviceAnimations(reason);
 }
 
-} // namespace
+}  // namespace
 
-void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document)
-{
-    updateAnimationTiming(document, TimingUpdateForAnimationFrame);
+void DocumentAnimations::updateAnimationTimingForAnimationFrame(
+    Document& document) {
+  updateAnimationTiming(document, TimingUpdateForAnimationFrame);
 }
 
-bool DocumentAnimations::needsAnimationTimingUpdate(const Document& document)
-{
-    return document.timeline().hasOutdatedAnimation() || document.timeline().needsAnimationTimingUpdate();
+bool DocumentAnimations::needsAnimationTimingUpdate(const Document& document) {
+  return document.timeline().hasOutdatedAnimation() ||
+         document.timeline().needsAnimationTimingUpdate();
 }
 
-void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
-{
-    if (needsAnimationTimingUpdate(document))
-        updateAnimationTiming(document, TimingUpdateOnDemand);
+void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document) {
+  if (needsAnimationTimingUpdate(document))
+    updateAnimationTiming(document, TimingUpdateOnDemand);
 }
 
-void DocumentAnimations::updateAnimations(Document& document)
-{
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        DCHECK(document.lifecycle().state() >= DocumentLifecycle::CompositingClean);
-    else
-        DCHECK(document.lifecycle().state() >= DocumentLifecycle::LayoutClean);
+void DocumentAnimations::updateAnimations(Document& document) {
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    DCHECK(document.lifecycle().state() >= DocumentLifecycle::CompositingClean);
+  else
+    DCHECK(document.lifecycle().state() >= DocumentLifecycle::LayoutClean);
 
-    if (document.compositorPendingAnimations().update()) {
-        DCHECK(document.view());
-        document.view()->scheduleAnimation();
-    }
+  if (document.compositorPendingAnimations().update()) {
+    DCHECK(document.view());
+    document.view()->scheduleAnimation();
+  }
 
-    document.timeline().scheduleNextService();
+  document.timeline().scheduleNextService();
 }
 
-} // namespace blink
+}  // namespace blink

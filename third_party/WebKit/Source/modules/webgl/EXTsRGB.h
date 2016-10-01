@@ -10,19 +10,20 @@
 namespace blink {
 
 class EXTsRGB final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static EXTsRGB* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~EXTsRGB() override;
-    WebGLExtensionName name() const override;
+ public:
+  static EXTsRGB* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-private:
-    explicit EXTsRGB(WebGLRenderingContextBase*);
+  ~EXTsRGB() override;
+  WebGLExtensionName name() const override;
+
+ private:
+  explicit EXTsRGB(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EXTsRGB_h
+#endif  // EXTsRGB_h

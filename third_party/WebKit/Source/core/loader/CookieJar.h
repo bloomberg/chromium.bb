@@ -38,6 +38,6 @@ String cookies(const Document*, const KURL&);
 void setCookies(Document*, const KURL&, const String& cookieString);
 bool cookiesEnabled(const Document*);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

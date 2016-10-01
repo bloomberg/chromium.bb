@@ -35,46 +35,42 @@
 
 namespace blink {
 
-ExtendableEvent* ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
-{
-    return new ExtendableEvent(type, eventInit);
+ExtendableEvent* ExtendableEvent::create(const AtomicString& type,
+                                         const ExtendableEventInit& eventInit) {
+  return new ExtendableEvent(type, eventInit);
 }
 
-ExtendableEvent* ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
-{
-    return new ExtendableEvent(type, eventInit, observer);
+ExtendableEvent* ExtendableEvent::create(const AtomicString& type,
+                                         const ExtendableEventInit& eventInit,
+                                         WaitUntilObserver* observer) {
+  return new ExtendableEvent(type, eventInit, observer);
 }
 
-ExtendableEvent::~ExtendableEvent()
-{
+ExtendableEvent::~ExtendableEvent() {}
+
+void ExtendableEvent::waitUntil(ScriptState* scriptState,
+                                ScriptPromise scriptPromise,
+                                ExceptionState& exceptionState) {
+  if (m_observer)
+    m_observer->waitUntil(scriptState, scriptPromise, exceptionState);
 }
 
-void ExtendableEvent::waitUntil(ScriptState* scriptState, ScriptPromise scriptPromise, ExceptionState& exceptionState)
-{
-    if (m_observer)
-        m_observer->waitUntil(scriptState, scriptPromise, exceptionState);
+ExtendableEvent::ExtendableEvent(const AtomicString& type,
+                                 const ExtendableEventInit& initializer)
+    : Event(type, initializer) {}
+
+ExtendableEvent::ExtendableEvent(const AtomicString& type,
+                                 const ExtendableEventInit& initializer,
+                                 WaitUntilObserver* observer)
+    : Event(type, initializer), m_observer(observer) {}
+
+const AtomicString& ExtendableEvent::interfaceName() const {
+  return EventNames::ExtendableEvent;
 }
 
-ExtendableEvent::ExtendableEvent(const AtomicString& type, const ExtendableEventInit& initializer)
-    : Event(type, initializer)
-{
+DEFINE_TRACE(ExtendableEvent) {
+  visitor->trace(m_observer);
+  Event::trace(visitor);
 }
 
-ExtendableEvent::ExtendableEvent(const AtomicString& type, const ExtendableEventInit& initializer, WaitUntilObserver* observer)
-    : Event(type, initializer)
-    , m_observer(observer)
-{
-}
-
-const AtomicString& ExtendableEvent::interfaceName() const
-{
-    return EventNames::ExtendableEvent;
-}
-
-DEFINE_TRACE(ExtendableEvent)
-{
-    visitor->trace(m_observer);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -34,82 +34,94 @@ class QualifiedName;
 class SVGLengthTearOff;
 
 class SVGLength final : public SVGPropertyBase {
-public:
-    typedef SVGLengthTearOff TearOffType;
+ public:
+  typedef SVGLengthTearOff TearOffType;
 
-    static SVGLength* create(SVGLengthMode mode = SVGLengthMode::Other)
-    {
-        return new SVGLength(mode);
-    }
+  static SVGLength* create(SVGLengthMode mode = SVGLengthMode::Other) {
+    return new SVGLength(mode);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    SVGLength* clone() const;
-    SVGPropertyBase* cloneForAnimation(const String&) const override;
+  SVGLength* clone() const;
+  SVGPropertyBase* cloneForAnimation(const String&) const override;
 
-    CSSPrimitiveValue::UnitType typeWithCalcResolved() const { return m_value->typeWithCalcResolved(); }
-    void setUnitType(CSSPrimitiveValue::UnitType);
-    SVGLengthMode unitMode() const { return static_cast<SVGLengthMode>(m_unitMode); }
+  CSSPrimitiveValue::UnitType typeWithCalcResolved() const {
+    return m_value->typeWithCalcResolved();
+  }
+  void setUnitType(CSSPrimitiveValue::UnitType);
+  SVGLengthMode unitMode() const {
+    return static_cast<SVGLengthMode>(m_unitMode);
+  }
 
-    bool operator==(const SVGLength&) const;
-    bool operator!=(const SVGLength& other) const { return !operator==(other); }
+  bool operator==(const SVGLength&) const;
+  bool operator!=(const SVGLength& other) const { return !operator==(other); }
 
-    float value(const SVGLengthContext&) const;
-    void setValue(float, const SVGLengthContext&);
-    void setValueAsNumber(float);
+  float value(const SVGLengthContext&) const;
+  void setValue(float, const SVGLengthContext&);
+  void setValueAsNumber(float);
 
-    float valueInSpecifiedUnits() const { return m_value->getFloatValue(); }
-    void setValueInSpecifiedUnits(float value)
-    {
-        m_value = CSSPrimitiveValue::create(value, m_value->typeWithCalcResolved());
-    }
+  float valueInSpecifiedUnits() const { return m_value->getFloatValue(); }
+  void setValueInSpecifiedUnits(float value) {
+    m_value = CSSPrimitiveValue::create(value, m_value->typeWithCalcResolved());
+  }
 
-    const CSSPrimitiveValue* asCSSPrimitiveValue() const { return m_value.get(); }
+  const CSSPrimitiveValue* asCSSPrimitiveValue() const { return m_value.get(); }
 
-    // Resolves LengthTypePercentage into a normalized floating point number (full value is 1.0).
-    float valueAsPercentage() const;
+  // Resolves LengthTypePercentage into a normalized floating point number (full value is 1.0).
+  float valueAsPercentage() const;
 
-    // Returns a number to be used as percentage (so full value is 100)
-    float valueAsPercentage100() const;
+  // Returns a number to be used as percentage (so full value is 100)
+  float valueAsPercentage100() const;
 
-    // Scale the input value by this SVGLength. Higher precision than input * valueAsPercentage().
-    float scaleByPercentage(float) const;
+  // Scale the input value by this SVGLength. Higher precision than input * valueAsPercentage().
+  float scaleByPercentage(float) const;
 
-    String valueAsString() const override;
-    SVGParsingError setValueAsString(const String&);
+  String valueAsString() const override;
+  SVGParsingError setValueAsString(const String&);
 
-    void newValueSpecifiedUnits(CSSPrimitiveValue::UnitType, float valueInSpecifiedUnits);
-    void convertToSpecifiedUnits(CSSPrimitiveValue::UnitType, const SVGLengthContext&);
+  void newValueSpecifiedUnits(CSSPrimitiveValue::UnitType,
+                              float valueInSpecifiedUnits);
+  void convertToSpecifiedUnits(CSSPrimitiveValue::UnitType,
+                               const SVGLengthContext&);
 
-    // Helper functions
-    inline bool isRelative() const { return CSSPrimitiveValue::isRelativeUnit(m_value->typeWithCalcResolved()); }
-    inline bool isCalculated() const { return m_value->isCalculated(); }
+  // Helper functions
+  inline bool isRelative() const {
+    return CSSPrimitiveValue::isRelativeUnit(m_value->typeWithCalcResolved());
+  }
+  inline bool isCalculated() const { return m_value->isCalculated(); }
 
-    bool isZero() const
-    {
-        return m_value->getFloatValue() == 0;
-    }
+  bool isZero() const { return m_value->getFloatValue() == 0; }
 
-    static SVGLengthMode lengthModeForAnimatedLengthAttribute(const QualifiedName&);
-    static bool negativeValuesForbiddenForAnimatedLengthAttribute(const QualifiedName&);
+  static SVGLengthMode lengthModeForAnimatedLengthAttribute(
+      const QualifiedName&);
+  static bool negativeValuesForbiddenForAnimatedLengthAttribute(
+      const QualifiedName&);
 
-    void add(SVGPropertyBase*, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
+  void add(SVGPropertyBase*, SVGElement*) override;
+  void calculateAnimatedValue(SVGAnimationElement*,
+                              float percentage,
+                              unsigned repeatCount,
+                              SVGPropertyBase* from,
+                              SVGPropertyBase* to,
+                              SVGPropertyBase* toAtEndOfDurationValue,
+                              SVGElement* contextElement) override;
+  float calculateDistance(SVGPropertyBase* to,
+                          SVGElement* contextElement) override;
 
-    static AnimatedPropertyType classType() { return AnimatedLength; }
-    AnimatedPropertyType type() const override { return classType(); }
+  static AnimatedPropertyType classType() { return AnimatedLength; }
+  AnimatedPropertyType type() const override { return classType(); }
 
-private:
-    SVGLength(SVGLengthMode);
-    SVGLength(const SVGLength&);
+ private:
+  SVGLength(SVGLengthMode);
+  SVGLength(const SVGLength&);
 
-    Member<const CSSPrimitiveValue> m_value;
-    unsigned m_unitMode : 2;
+  Member<const CSSPrimitiveValue> m_value;
+  unsigned m_unitMode : 2;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLength);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGLength_h
+#endif  // SVGLength_h

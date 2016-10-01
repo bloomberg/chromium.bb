@@ -12,21 +12,24 @@
 
 namespace blink {
 
-void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())
-        ObjectPainter(m_layoutInline).addPDFURLRectIfNeeded(paintInfo, paintOffset);
+void InlinePainter::paint(const PaintInfo& paintInfo,
+                          const LayoutPoint& paintOffset) {
+  if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())
+    ObjectPainter(m_layoutInline).addPDFURLRectIfNeeded(paintInfo, paintOffset);
 
-    if (shouldPaintSelfOutline(paintInfo.phase) || shouldPaintDescendantOutlines(paintInfo.phase)) {
-        ObjectPainter painter(m_layoutInline);
-        if (shouldPaintDescendantOutlines(paintInfo.phase))
-            painter.paintInlineChildrenOutlines(paintInfo, paintOffset);
-        if (shouldPaintSelfOutline(paintInfo.phase) && !m_layoutInline.isElementContinuation())
-            painter.paintOutline(paintInfo, paintOffset);
-        return;
-    }
+  if (shouldPaintSelfOutline(paintInfo.phase) ||
+      shouldPaintDescendantOutlines(paintInfo.phase)) {
+    ObjectPainter painter(m_layoutInline);
+    if (shouldPaintDescendantOutlines(paintInfo.phase))
+      painter.paintInlineChildrenOutlines(paintInfo, paintOffset);
+    if (shouldPaintSelfOutline(paintInfo.phase) &&
+        !m_layoutInline.isElementContinuation())
+      painter.paintOutline(paintInfo, paintOffset);
+    return;
+  }
 
-    LineBoxListPainter(*m_layoutInline.lineBoxes()).paint(m_layoutInline, paintInfo, paintOffset);
+  LineBoxListPainter(*m_layoutInline.lineBoxes())
+      .paint(m_layoutInline, paintInfo, paintOffset);
 }
 
-} // namespace blink
+}  // namespace blink

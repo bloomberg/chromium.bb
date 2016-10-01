@@ -16,59 +16,62 @@ class WebContentDecryptionModule;
 class WebString;
 
 class WebContentDecryptionModuleResult {
-public:
-    enum SessionStatus {
-        // New session has been initialized.
-        NewSession,
+ public:
+  enum SessionStatus {
+    // New session has been initialized.
+    NewSession,
 
-        // CDM could not find the requested session.
-        SessionNotFound,
+    // CDM could not find the requested session.
+    SessionNotFound,
 
-        // CDM already has a non-closed session that matches the provided
-        // parameters.
-        SessionAlreadyExists,
-    };
+    // CDM already has a non-closed session that matches the provided
+    // parameters.
+    SessionAlreadyExists,
+  };
 
-    WebContentDecryptionModuleResult(const WebContentDecryptionModuleResult& o)
-    {
-        assign(o);
-    }
+  WebContentDecryptionModuleResult(const WebContentDecryptionModuleResult& o) {
+    assign(o);
+  }
 
-    ~WebContentDecryptionModuleResult()
-    {
-        reset();
-    }
+  ~WebContentDecryptionModuleResult() { reset(); }
 
-    WebContentDecryptionModuleResult& operator=(const WebContentDecryptionModuleResult& o)
-    {
-        assign(o);
-        return *this;
-    }
+  WebContentDecryptionModuleResult& operator=(
+      const WebContentDecryptionModuleResult& o) {
+    assign(o);
+    return *this;
+  }
 
-    // Called when the CDM completes an operation and has no additional data to
-    // pass back.
-    BLINK_PLATFORM_EXPORT void complete();
+  // Called when the CDM completes an operation and has no additional data to
+  // pass back.
+  BLINK_PLATFORM_EXPORT void complete();
 
-    // Called when a CDM is created.
-    BLINK_PLATFORM_EXPORT void completeWithContentDecryptionModule(WebContentDecryptionModule*);
+  // Called when a CDM is created.
+  BLINK_PLATFORM_EXPORT void completeWithContentDecryptionModule(
+      WebContentDecryptionModule*);
 
-    // Called when the CDM completes a session operation.
-    BLINK_PLATFORM_EXPORT void completeWithSession(SessionStatus);
+  // Called when the CDM completes a session operation.
+  BLINK_PLATFORM_EXPORT void completeWithSession(SessionStatus);
 
-    // Called when the operation fails.
-    BLINK_PLATFORM_EXPORT void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& message);
+  // Called when the operation fails.
+  BLINK_PLATFORM_EXPORT void completeWithError(
+      WebContentDecryptionModuleException,
+      unsigned long systemCode,
+      const WebString& message);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebContentDecryptionModuleResult(ContentDecryptionModuleResult*);
+  BLINK_PLATFORM_EXPORT explicit WebContentDecryptionModuleResult(
+      ContentDecryptionModuleResult*);
 #endif
 
-private:
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebContentDecryptionModuleResult&);
+ private:
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebContentDecryptionModuleResult&);
 
-    WebPrivatePtr<ContentDecryptionModuleResult, WebPrivatePtrDestructionCrossThread> m_impl;
+  WebPrivatePtr<ContentDecryptionModuleResult,
+                WebPrivatePtrDestructionCrossThread>
+      m_impl;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebContentDecryptionModuleSession_h
+#endif  // WebContentDecryptionModuleSession_h

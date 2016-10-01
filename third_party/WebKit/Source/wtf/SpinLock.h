@@ -46,33 +46,31 @@
 namespace WTF {
 
 class SpinLock {
-public:
-    using Guard = std::lock_guard<SpinLock>;
+ public:
+  using Guard = std::lock_guard<SpinLock>;
 
-    ALWAYS_INLINE void lock()
-    {
-        static_assert(sizeof(m_lock) == sizeof(int), "int and m_lock are different sizes");
-        if (LIKELY(!m_lock.exchange(true, std::memory_order_acquire)))
-            return;
-        lockSlow();
-    }
+  ALWAYS_INLINE void lock() {
+    static_assert(sizeof(m_lock) == sizeof(int),
+                  "int and m_lock are different sizes");
+    if (LIKELY(!m_lock.exchange(true, std::memory_order_acquire)))
+      return;
+    lockSlow();
+  }
 
-    ALWAYS_INLINE void unlock()
-    {
-        m_lock.store(false, std::memory_order_release);
-    }
+  ALWAYS_INLINE void unlock() {
+    m_lock.store(false, std::memory_order_release);
+  }
 
-private:
-    // This is called if the initial attempt to acquire the lock fails. It's
-    // slower, but has a much better scheduling and power consumption behavior.
-    WTF_EXPORT void lockSlow();
+ private:
+  // This is called if the initial attempt to acquire the lock fails. It's
+  // slower, but has a much better scheduling and power consumption behavior.
+  WTF_EXPORT void lockSlow();
 
-    std::atomic_int m_lock;
+  std::atomic_int m_lock;
 };
 
-
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::SpinLock;
 
-#endif // WTF_SpinLock_h
+#endif  // WTF_SpinLock_h

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef CSSNamespaceRule_h
 #define CSSNamespaceRule_h
 
@@ -13,33 +12,34 @@ namespace blink {
 class StyleRuleNamespace;
 
 class CSSNamespaceRule final : public CSSRule {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSNamespaceRule* create(StyleRuleNamespace* rule, CSSStyleSheet* sheet)
-    {
-        return new CSSNamespaceRule(rule, sheet);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~CSSNamespaceRule() override;
+ public:
+  static CSSNamespaceRule* create(StyleRuleNamespace* rule,
+                                  CSSStyleSheet* sheet) {
+    return new CSSNamespaceRule(rule, sheet);
+  }
 
-    String cssText() const override;
-    void reattach(StyleRuleBase*) override { }
+  ~CSSNamespaceRule() override;
 
-    AtomicString namespaceURI() const;
-    AtomicString prefix() const;
+  String cssText() const override;
+  void reattach(StyleRuleBase*) override {}
 
-    DECLARE_VIRTUAL_TRACE();
+  AtomicString namespaceURI() const;
+  AtomicString prefix() const;
 
-private:
-    CSSNamespaceRule(StyleRuleNamespace*, CSSStyleSheet*);
+  DECLARE_VIRTUAL_TRACE();
 
-    CSSRule::Type type() const override { return kNamespaceRule; }
+ private:
+  CSSNamespaceRule(StyleRuleNamespace*, CSSStyleSheet*);
 
-    Member<StyleRuleNamespace> m_namespaceRule;
+  CSSRule::Type type() const override { return kNamespaceRule; }
+
+  Member<StyleRuleNamespace> m_namespaceRule;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSNamespaceRule, kNamespaceRule);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSNamespaceRule_h
+#endif  // CSSNamespaceRule_h

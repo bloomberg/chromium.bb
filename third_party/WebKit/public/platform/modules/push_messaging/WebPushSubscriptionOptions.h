@@ -10,21 +10,18 @@
 namespace blink {
 
 struct WebPushSubscriptionOptions {
-    WebPushSubscriptionOptions()
-        : userVisibleOnly(false)
-    {
-    }
+  WebPushSubscriptionOptions() : userVisibleOnly(false) {}
 
-    // Indicates that the subscription will only be used for push messages
-    // that result in UI visible to the user.
-    bool userVisibleOnly;
+  // Indicates that the subscription will only be used for push messages
+  // that result in UI visible to the user.
+  bool userVisibleOnly;
 
-    // P-256 public key, in uncompressed form, of the app server that can send
-    // push messages to this subscription.
-    // TODO(johnme): Make this a WebVector<uint8_t>.
-    WebString applicationServerKey;
+  // P-256 public key, in uncompressed form, of the app server that can send
+  // push messages to this subscription.
+  // TODO(johnme): Make this a WebVector<uint8_t>.
+  WebString applicationServerKey;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebPushSubscriptionOptions_h
+#endif  // WebPushSubscriptionOptions_h

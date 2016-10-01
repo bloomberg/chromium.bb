@@ -30,81 +30,88 @@
 
 #include "platform/mediastream/MediaStreamSource.h"
 
-
 namespace blink {
 
-MediaStreamSource* MediaStreamSource::create(const String& id, StreamType type, const String& name, bool remote, ReadyState readyState, bool requiresConsumer)
-{
-    return new MediaStreamSource(id, type, name, remote, readyState, requiresConsumer);
+MediaStreamSource* MediaStreamSource::create(const String& id,
+                                             StreamType type,
+                                             const String& name,
+                                             bool remote,
+                                             ReadyState readyState,
+                                             bool requiresConsumer) {
+  return new MediaStreamSource(id, type, name, remote, readyState,
+                               requiresConsumer);
 }
 
-MediaStreamSource::MediaStreamSource(const String& id, StreamType type, const String& name, bool remote, ReadyState readyState, bool requiresConsumer)
-    : m_id(id)
-    , m_type(type)
-    , m_name(name)
-    , m_remote(remote)
-    , m_readyState(readyState)
-    , m_requiresConsumer(requiresConsumer)
-{
+MediaStreamSource::MediaStreamSource(const String& id,
+                                     StreamType type,
+                                     const String& name,
+                                     bool remote,
+                                     ReadyState readyState,
+                                     bool requiresConsumer)
+    : m_id(id),
+      m_type(type),
+      m_name(name),
+      m_remote(remote),
+      m_readyState(readyState),
+      m_requiresConsumer(requiresConsumer) {}
+
+void MediaStreamSource::setReadyState(ReadyState readyState) {
+  if (m_readyState != ReadyStateEnded && m_readyState != readyState) {
+    m_readyState = readyState;
+
+    // Observers may dispatch events which create and add new Observers;
+    // take a snapshot so as to safely iterate.
+    HeapVector<Member<Observer>> observers;
+    copyToVector(m_observers, observers);
+    for (auto observer : observers)
+      observer->sourceChangedState();
+  }
 }
 
-void MediaStreamSource::setReadyState(ReadyState readyState)
-{
-    if (m_readyState != ReadyStateEnded && m_readyState != readyState) {
-        m_readyState = readyState;
-
-        // Observers may dispatch events which create and add new Observers;
-        // take a snapshot so as to safely iterate.
-        HeapVector<Member<Observer>> observers;
-        copyToVector(m_observers, observers);
-        for (auto observer : observers)
-            observer->sourceChangedState();
-    }
+void MediaStreamSource::addObserver(MediaStreamSource::Observer* observer) {
+  m_observers.add(observer);
 }
 
-void MediaStreamSource::addObserver(MediaStreamSource::Observer* observer)
-{
-    m_observers.add(observer);
+void MediaStreamSource::addAudioConsumer(AudioDestinationConsumer* consumer) {
+  ASSERT(m_requiresConsumer);
+  MutexLocker locker(m_audioConsumersLock);
+  m_audioConsumers.add(consumer);
 }
 
-void MediaStreamSource::addAudioConsumer(AudioDestinationConsumer* consumer)
-{
-    ASSERT(m_requiresConsumer);
-    MutexLocker locker(m_audioConsumersLock);
-    m_audioConsumers.add(consumer);
+bool MediaStreamSource::removeAudioConsumer(
+    AudioDestinationConsumer* consumer) {
+  ASSERT(m_requiresConsumer);
+  MutexLocker locker(m_audioConsumersLock);
+  HeapHashSet<Member<AudioDestinationConsumer>>::iterator it =
+      m_audioConsumers.find(consumer);
+  if (it == m_audioConsumers.end())
+    return false;
+  m_audioConsumers.remove(it);
+  return true;
 }
 
-bool MediaStreamSource::removeAudioConsumer(AudioDestinationConsumer* consumer)
-{
-    ASSERT(m_requiresConsumer);
-    MutexLocker locker(m_audioConsumersLock);
-    HeapHashSet<Member<AudioDestinationConsumer>>::iterator it = m_audioConsumers.find(consumer);
-    if (it == m_audioConsumers.end())
-        return false;
-    m_audioConsumers.remove(it);
-    return true;
+void MediaStreamSource::setAudioFormat(size_t numberOfChannels,
+                                       float sampleRate) {
+  ASSERT(m_requiresConsumer);
+  MutexLocker locker(m_audioConsumersLock);
+  for (HeapHashSet<Member<AudioDestinationConsumer>>::iterator it =
+           m_audioConsumers.begin();
+       it != m_audioConsumers.end(); ++it)
+    (*it)->setFormat(numberOfChannels, sampleRate);
 }
 
-void MediaStreamSource::setAudioFormat(size_t numberOfChannels, float sampleRate)
-{
-    ASSERT(m_requiresConsumer);
-    MutexLocker locker(m_audioConsumersLock);
-    for (HeapHashSet<Member<AudioDestinationConsumer>>::iterator it = m_audioConsumers.begin(); it != m_audioConsumers.end(); ++it)
-        (*it)->setFormat(numberOfChannels, sampleRate);
+void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames) {
+  ASSERT(m_requiresConsumer);
+  MutexLocker locker(m_audioConsumersLock);
+  for (HeapHashSet<Member<AudioDestinationConsumer>>::iterator it =
+           m_audioConsumers.begin();
+       it != m_audioConsumers.end(); ++it)
+    (*it)->consumeAudio(bus, numberOfFrames);
 }
 
-void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames)
-{
-    ASSERT(m_requiresConsumer);
-    MutexLocker locker(m_audioConsumersLock);
-    for (HeapHashSet<Member<AudioDestinationConsumer>>::iterator it = m_audioConsumers.begin(); it != m_audioConsumers.end(); ++it)
-        (*it)->consumeAudio(bus, numberOfFrames);
+DEFINE_TRACE(MediaStreamSource) {
+  visitor->trace(m_observers);
+  visitor->trace(m_audioConsumers);
 }
 
-DEFINE_TRACE(MediaStreamSource)
-{
-    visitor->trace(m_observers);
-    visitor->trace(m_audioConsumers);
-}
-
-} // namespace blink
+}  // namespace blink

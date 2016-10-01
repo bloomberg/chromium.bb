@@ -69,6 +69,6 @@ void PrintTo(const AnimatableUnknown&, ::std::ostream*);
 void PrintTo(const AnimatableValue&, ::std::ostream*);
 void PrintTo(const AnimatableVisibility&, ::std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

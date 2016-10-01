@@ -38,27 +38,27 @@ namespace blink {
 class WebInbandTextTrackClient;
 
 class WebInbandTextTrack {
-public:
-    enum Kind {
-        KindSubtitles,
-        KindCaptions,
-        KindDescriptions,
-        KindChapters,
-        KindMetadata,
-        KindNone
-    };
+ public:
+  enum Kind {
+    KindSubtitles,
+    KindCaptions,
+    KindDescriptions,
+    KindChapters,
+    KindMetadata,
+    KindNone
+  };
 
-    virtual ~WebInbandTextTrack() { }
+  virtual ~WebInbandTextTrack() {}
 
-    virtual void setClient(WebInbandTextTrackClient*) = 0;
-    virtual WebInbandTextTrackClient* client() = 0;
+  virtual void setClient(WebInbandTextTrackClient*) = 0;
+  virtual WebInbandTextTrackClient* client() = 0;
 
-    virtual Kind kind() const = 0;
-    virtual WebString label() const = 0;
-    virtual WebString language() const = 0;
-    virtual WebString id() const { return WebString(); }
+  virtual Kind kind() const = 0;
+  virtual WebString label() const = 0;
+  virtual WebString language() const = 0;
+  virtual WebString id() const { return WebString(); }
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

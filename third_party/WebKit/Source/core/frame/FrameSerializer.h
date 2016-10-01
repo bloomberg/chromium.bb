@@ -61,83 +61,76 @@ struct SerializedResource;
 // This class is used to serialize frame's contents back to text (typically HTML).
 // It serializes frame's document and resources such as images and CSS stylesheets.
 class CORE_EXPORT FrameSerializer final {
-    STACK_ALLOCATED();
-public:
-    class Delegate {
-    public:
-        // Controls whether HTML serialization should skip the given attribute.
-        virtual bool shouldIgnoreAttribute(const Attribute&)
-        {
-            return false;
-        }
+  STACK_ALLOCATED();
 
-        // Method allowing the Delegate control which URLs are written into the
-        // generated html document.
-        //
-        // When URL of the element needs to be rewritten, this method should
-        // return true and populate |rewrittenLink| with a desired value of the
-        // html attribute value to be used in place of the original link.
-        // (i.e. in place of img.src or iframe.src or object.data).
-        //
-        // If no link rewriting is desired, this method should return false.
-        virtual bool rewriteLink(const Element&, String& rewrittenLink)
-        {
-            return false;
-        }
+ public:
+  class Delegate {
+   public:
+    // Controls whether HTML serialization should skip the given attribute.
+    virtual bool shouldIgnoreAttribute(const Attribute&) { return false; }
 
-        // Tells whether to skip serialization of a subresource or CSSStyleSheet
-        // with a given URI. Used to deduplicate resources across multiple frames.
-        virtual bool shouldSkipResourceWithURL(const KURL&)
-        {
-            return false;
-        }
+    // Method allowing the Delegate control which URLs are written into the
+    // generated html document.
+    //
+    // When URL of the element needs to be rewritten, this method should
+    // return true and populate |rewrittenLink| with a desired value of the
+    // html attribute value to be used in place of the original link.
+    // (i.e. in place of img.src or iframe.src or object.data).
+    //
+    // If no link rewriting is desired, this method should return false.
+    virtual bool rewriteLink(const Element&, String& rewrittenLink) {
+      return false;
+    }
 
-        // Tells whether to skip serialization of a subresource.
-        virtual bool shouldSkipResource(const Resource&)
-        {
-            return false;
-        }
-    };
+    // Tells whether to skip serialization of a subresource or CSSStyleSheet
+    // with a given URI. Used to deduplicate resources across multiple frames.
+    virtual bool shouldSkipResourceWithURL(const KURL&) { return false; }
 
-    // Constructs a serializer that will write output to the given vector of
-    // SerializedResources and uses the Delegate for controlling some
-    // serialization aspects.  Callers need to ensure that both arguments stay
-    // alive until the FrameSerializer gets destroyed.
-    FrameSerializer(Vector<SerializedResource>&, Delegate&);
+    // Tells whether to skip serialization of a subresource.
+    virtual bool shouldSkipResource(const Resource&) { return false; }
+  };
 
-    // Initiates the serialization of the frame. All serialized content and
-    // retrieved resources are added to the Vector passed to the constructor.
-    // The first resource in that vector is the frame's serialized content.
-    // Subsequent resources are images, css, etc.
-    void serializeFrame(const LocalFrame&);
+  // Constructs a serializer that will write output to the given vector of
+  // SerializedResources and uses the Delegate for controlling some
+  // serialization aspects.  Callers need to ensure that both arguments stay
+  // alive until the FrameSerializer gets destroyed.
+  FrameSerializer(Vector<SerializedResource>&, Delegate&);
 
-    static String markOfTheWebDeclaration(const KURL&);
+  // Initiates the serialization of the frame. All serialized content and
+  // retrieved resources are added to the Vector passed to the constructor.
+  // The first resource in that vector is the frame's serialized content.
+  // Subsequent resources are images, css, etc.
+  void serializeFrame(const LocalFrame&);
 
-private:
-    // Serializes the stylesheet back to text and adds it to the resources if URL is not-empty.
-    // It also adds any resources included in that stylesheet (including any imported stylesheets and their own resources).
-    void serializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
+  static String markOfTheWebDeclaration(const KURL&);
 
-    // Serializes the css rule (including any imported stylesheets), adding referenced resources.
-    void serializeCSSRule(CSSRule*);
+ private:
+  // Serializes the stylesheet back to text and adds it to the resources if URL is not-empty.
+  // It also adds any resources included in that stylesheet (including any imported stylesheets and their own resources).
+  void serializeCSSStyleSheet(CSSStyleSheet&, const KURL&);
 
-    bool shouldAddURL(const KURL&);
+  // Serializes the css rule (including any imported stylesheets), adding referenced resources.
+  void serializeCSSRule(CSSRule*);
 
-    void addToResources(const Resource&, PassRefPtr<const SharedBuffer>, const KURL&);
-    void addImageToResources(ImageResource*, const KURL&);
-    void addFontToResources(FontResource*);
+  bool shouldAddURL(const KURL&);
 
-    void retrieveResourcesForProperties(const StylePropertySet*, Document&);
-    void retrieveResourcesForCSSValue(const CSSValue&, Document&);
+  void addToResources(const Resource&,
+                      PassRefPtr<const SharedBuffer>,
+                      const KURL&);
+  void addImageToResources(ImageResource*, const KURL&);
+  void addFontToResources(FontResource*);
 
-    Vector<SerializedResource>* m_resources;
-    HashSet<KURL> m_resourceURLs;
+  void retrieveResourcesForProperties(const StylePropertySet*, Document&);
+  void retrieveResourcesForCSSValue(const CSSValue&, Document&);
 
-    bool m_isSerializingCss;
+  Vector<SerializedResource>* m_resources;
+  HashSet<KURL> m_resourceURLs;
 
-    Delegate& m_delegate;
+  bool m_isSerializingCss;
+
+  Delegate& m_delegate;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FrameSerializer_h
+#endif  // FrameSerializer_h

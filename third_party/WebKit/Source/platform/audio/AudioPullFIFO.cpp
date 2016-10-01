@@ -30,41 +30,39 @@
 
 namespace blink {
 
-AudioPullFIFO::AudioPullFIFO(AudioSourceProvider& audioProvider, unsigned numberOfChannels, size_t fifoLength, size_t providerSize)
-    : m_provider(audioProvider)
-    , m_fifo(numberOfChannels, fifoLength)
-    , m_providerSize(providerSize)
-    , m_tempBus(AudioBus::create(numberOfChannels, providerSize))
-{
+AudioPullFIFO::AudioPullFIFO(AudioSourceProvider& audioProvider,
+                             unsigned numberOfChannels,
+                             size_t fifoLength,
+                             size_t providerSize)
+    : m_provider(audioProvider),
+      m_fifo(numberOfChannels, fifoLength),
+      m_providerSize(providerSize),
+      m_tempBus(AudioBus::create(numberOfChannels, providerSize)) {}
+
+void AudioPullFIFO::consume(AudioBus* destination, size_t framesToConsume) {
+  if (!destination)
+    return;
+
+  if (framesToConsume > m_fifo.framesInFifo()) {
+    // We don't have enough data in the FIFO to fulfill the request. Ask for more data.
+    fillBuffer(framesToConsume - m_fifo.framesInFifo());
+  }
+
+  m_fifo.consume(destination, framesToConsume);
 }
 
-void AudioPullFIFO::consume(AudioBus* destination, size_t framesToConsume)
-{
-    if (!destination)
-        return;
+void AudioPullFIFO::fillBuffer(size_t numberOfFrames) {
+  // Keep asking the provider to give us data until we have received at least |numberOfFrames| of
+  // data. Stuff the data into the FIFO.
+  size_t framesProvided = 0;
 
-    if (framesToConsume > m_fifo.framesInFifo()) {
-        // We don't have enough data in the FIFO to fulfill the request. Ask for more data.
-        fillBuffer(framesToConsume - m_fifo.framesInFifo());
-    }
+  while (framesProvided < numberOfFrames) {
+    m_provider.provideInput(m_tempBus.get(), m_providerSize);
 
-    m_fifo.consume(destination, framesToConsume);
+    m_fifo.push(m_tempBus.get());
+
+    framesProvided += m_providerSize;
+  }
 }
 
-void AudioPullFIFO::fillBuffer(size_t numberOfFrames)
-{
-    // Keep asking the provider to give us data until we have received at least |numberOfFrames| of
-    // data. Stuff the data into the FIFO.
-    size_t framesProvided = 0;
-
-    while (framesProvided < numberOfFrames) {
-        m_provider.provideInput(m_tempBus.get(), m_providerSize);
-
-        m_fifo.push(m_tempBus.get());
-
-        framesProvided += m_providerSize;
-    }
-}
-
-} // namespace blink
-
+}  // namespace blink

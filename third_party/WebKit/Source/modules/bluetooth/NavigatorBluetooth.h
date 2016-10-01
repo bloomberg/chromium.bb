@@ -13,25 +13,27 @@ namespace blink {
 class Bluetooth;
 class Navigator;
 
-class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>, public Supplement<Navigator> {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorBluetooth);
-public:
-    // Gets, or creates, NavigatorBluetooth supplement on Navigator.
-    // See platform/Supplementable.h
-    static NavigatorBluetooth& from(Navigator&);
+class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
+                                 public Supplement<Navigator> {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorBluetooth);
 
-    static Bluetooth* bluetooth(Navigator&);
-    Bluetooth* bluetooth();
+ public:
+  // Gets, or creates, NavigatorBluetooth supplement on Navigator.
+  // See platform/Supplementable.h
+  static NavigatorBluetooth& from(Navigator&);
 
-    DECLARE_TRACE();
+  static Bluetooth* bluetooth(Navigator&);
+  Bluetooth* bluetooth();
 
-private:
-    NavigatorBluetooth();
-    static const char* supplementName();
+  DECLARE_TRACE();
 
-    Member<Bluetooth> m_bluetooth;
+ private:
+  NavigatorBluetooth();
+  static const char* supplementName();
+
+  Member<Bluetooth> m_bluetooth;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorBluetooth_h
+#endif  // NavigatorBluetooth_h

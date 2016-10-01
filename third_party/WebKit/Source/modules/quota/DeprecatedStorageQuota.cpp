@@ -46,51 +46,66 @@
 
 namespace blink {
 
-DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
-    : m_type(type)
-{
+DeprecatedStorageQuota::DeprecatedStorageQuota(Type type) : m_type(type) {}
+
+void DeprecatedStorageQuota::queryUsageAndQuota(
+    ExecutionContext* executionContext,
+    StorageUsageCallback* successCallback,
+    StorageErrorCallback* errorCallback) {
+  ASSERT(executionContext);
+
+  WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
+  if (storageType != WebStorageQuotaTypeTemporary &&
+      storageType != WebStorageQuotaTypePersistent) {
+    // Unknown storage type is requested.
+    executionContext->postTask(BLINK_FROM_HERE,
+                               StorageErrorCallback::createSameThreadTask(
+                                   errorCallback, NotSupportedError));
+    return;
+  }
+
+  SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
+  if (securityOrigin->isUnique()) {
+    executionContext->postTask(BLINK_FROM_HERE,
+                               StorageErrorCallback::createSameThreadTask(
+                                   errorCallback, NotSupportedError));
+    return;
+  }
+
+  KURL storagePartition = KURL(KURL(), securityOrigin->toString());
+  StorageQuotaCallbacks* callbacks =
+      DeprecatedStorageQuotaCallbacksImpl::create(successCallback,
+                                                  errorCallback);
+  Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType,
+                                                 callbacks);
 }
 
-void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, StorageUsageCallback* successCallback, StorageErrorCallback* errorCallback)
-{
-    ASSERT(executionContext);
+void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext,
+                                          unsigned long long newQuotaInBytes,
+                                          StorageQuotaCallback* successCallback,
+                                          StorageErrorCallback* errorCallback) {
+  ASSERT(executionContext);
 
-    WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
-    if (storageType != WebStorageQuotaTypeTemporary && storageType != WebStorageQuotaTypePersistent) {
-        // Unknown storage type is requested.
-        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
-        return;
-    }
+  WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
+  if (storageType != WebStorageQuotaTypeTemporary &&
+      storageType != WebStorageQuotaTypePersistent) {
+    // Unknown storage type is requested.
+    executionContext->postTask(BLINK_FROM_HERE,
+                               StorageErrorCallback::createSameThreadTask(
+                                   errorCallback, NotSupportedError));
+    return;
+  }
 
-    SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
-    if (securityOrigin->isUnique()) {
-        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
-        return;
-    }
+  StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
+  if (!client) {
+    executionContext->postTask(BLINK_FROM_HERE,
+                               StorageErrorCallback::createSameThreadTask(
+                                   errorCallback, NotSupportedError));
+    return;
+  }
 
-    KURL storagePartition = KURL(KURL(), securityOrigin->toString());
-    StorageQuotaCallbacks* callbacks = DeprecatedStorageQuotaCallbacksImpl::create(successCallback, errorCallback);
-    Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, callbacks);
+  client->requestQuota(executionContext, storageType, newQuotaInBytes,
+                       successCallback, errorCallback);
 }
 
-void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, StorageQuotaCallback* successCallback, StorageErrorCallback* errorCallback)
-{
-    ASSERT(executionContext);
-
-    WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
-    if (storageType != WebStorageQuotaTypeTemporary && storageType != WebStorageQuotaTypePersistent) {
-        // Unknown storage type is requested.
-        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
-        return;
-    }
-
-    StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
-    if (!client) {
-        executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
-        return;
-    }
-
-    client->requestQuota(executionContext, storageType, newQuotaInBytes, successCallback, errorCallback);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -41,23 +41,30 @@ class SecurityOrigin;
 class URLRegistry;
 
 class CORE_EXPORT URLRegistrable {
-public:
-    virtual ~URLRegistrable() { }
-    virtual URLRegistry& registry() const = 0;
+ public:
+  virtual ~URLRegistrable() {}
+  virtual URLRegistry& registry() const = 0;
 };
 
 class CORE_EXPORT URLRegistry {
-    USING_FAST_MALLOC(URLRegistry);
-public:
-    virtual ~URLRegistry() { }
-    virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) = 0;
-    virtual void unregisterURL(const KURL&) = 0;
+  USING_FAST_MALLOC(URLRegistry);
 
-    // These are optional APIs
-    virtual URLRegistrable* lookup(const String&) { NOTREACHED(); return nullptr; }
-    virtual bool contains(const String&) { NOTREACHED(); return false; }
+ public:
+  virtual ~URLRegistry() {}
+  virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) = 0;
+  virtual void unregisterURL(const KURL&) = 0;
+
+  // These are optional APIs
+  virtual URLRegistrable* lookup(const String&) {
+    NOTREACHED();
+    return nullptr;
+  }
+  virtual bool contains(const String&) {
+    NOTREACHED();
+    return false;
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // URLRegistry_h
+#endif  // URLRegistry_h

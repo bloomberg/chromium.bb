@@ -13,7 +13,7 @@ namespace debug {
 
 using ScopedCrashKey = base::debug::ScopedCrashKey;
 
-} // namespace debug
-} // namespace WTF
+}  // namespace debug
+}  // namespace WTF
 
-#endif // WTF_CrashLogging_h
+#endif  // WTF_CrashLogging_h

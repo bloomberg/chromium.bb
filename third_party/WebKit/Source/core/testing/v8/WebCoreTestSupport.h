@@ -35,7 +35,8 @@ class Function;
 class Isolate;
 class Object;
 class Value;
-template <class T> class Local;
+template <class T>
+class Local;
 }
 
 namespace blink {
@@ -49,8 +50,12 @@ namespace WebCoreTestSupport {
 v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context>);
 void injectInternalsObject(v8::Local<v8::Context>);
 void resetInternalsObject(v8::Local<v8::Context>);
-void installConditionalFeaturesForTests(const blink::WrapperTypeInfo*, const blink::ScriptState*, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject);
+void installConditionalFeaturesForTests(
+    const blink::WrapperTypeInfo*,
+    const blink::ScriptState*,
+    v8::Local<v8::Object> prototypeObject,
+    v8::Local<v8::Function> interfaceObject);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

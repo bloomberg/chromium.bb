@@ -11,28 +11,30 @@
 namespace blink {
 
 class CORE_EXPORT CSSAngleValue final : public CSSStyleValue {
-    WTF_MAKE_NONCOPYABLE(CSSAngleValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSAngleValue* create(double value, const String& unit, ExceptionState&);
+  WTF_MAKE_NONCOPYABLE(CSSAngleValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    StyleValueType type() const override { return AngleType; }
+ public:
+  static CSSAngleValue* create(double value,
+                               const String& unit,
+                               ExceptionState&);
 
-    double degrees() const;
-    double radians() const;
-    double gradians() const;
-    double turns() const;
+  StyleValueType type() const override { return AngleType; }
 
-    CSSValue* toCSSValue() const override;
-private:
-    CSSAngleValue(double value, CSSPrimitiveValue::UnitType unit)
-        : m_value(value)
-        , m_unit(unit) {}
+  double degrees() const;
+  double radians() const;
+  double gradians() const;
+  double turns() const;
 
-    double m_value;
-    CSSPrimitiveValue::UnitType m_unit;
+  CSSValue* toCSSValue() const override;
+
+ private:
+  CSSAngleValue(double value, CSSPrimitiveValue::UnitType unit)
+      : m_value(value), m_unit(unit) {}
+
+  double m_value;
+  CSSPrimitiveValue::UnitType m_unit;
 };
-
 }
 
-#endif // CSSAngleValue_h
+#endif  // CSSAngleValue_h

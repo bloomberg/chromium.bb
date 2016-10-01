@@ -15,12 +15,17 @@ class ExecutionContext;
 class PropertyDescriptor;
 
 class PropertyRegistration {
-    STATIC_ONLY(PropertyRegistration);
-public:
-    static void registerProperty(ExecutionContext*, const PropertyDescriptor&, ExceptionState&);
-    static void unregisterProperty(ExecutionContext*, const String&, ExceptionState&);
+  STATIC_ONLY(PropertyRegistration);
+
+ public:
+  static void registerProperty(ExecutionContext*,
+                               const PropertyDescriptor&,
+                               ExceptionState&);
+  static void unregisterProperty(ExecutionContext*,
+                                 const String&,
+                                 ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PropertyRegistration_h
+#endif  // PropertyRegistration_h

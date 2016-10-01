@@ -33,66 +33,60 @@
 namespace blink {
 
 FastSharedBufferReader::FastSharedBufferReader(PassRefPtr<SegmentReader> data)
-    : m_data(data)
-    , m_segment(0)
-    , m_segmentLength(0)
-    , m_dataPosition(0)
-{
+    : m_data(data), m_segment(0), m_segmentLength(0), m_dataPosition(0) {}
+
+void FastSharedBufferReader::setData(PassRefPtr<SegmentReader> data) {
+  if (data == m_data)
+    return;
+  m_data = data;
+  clearCache();
 }
 
-void FastSharedBufferReader::setData(PassRefPtr<SegmentReader> data)
-{
-    if (data == m_data)
-        return;
-    m_data = data;
-    clearCache();
+void FastSharedBufferReader::clearCache() {
+  m_segment = 0;
+  m_segmentLength = 0;
+  m_dataPosition = 0;
 }
 
-void FastSharedBufferReader::clearCache()
-{
-    m_segment = 0;
-    m_segmentLength = 0;
-    m_dataPosition = 0;
+const char* FastSharedBufferReader::getConsecutiveData(size_t dataPosition,
+                                                       size_t length,
+                                                       char* buffer) const {
+  RELEASE_ASSERT(dataPosition + length <= m_data->size());
+
+  // Use the cached segment if it can serve the request.
+  if (dataPosition >= m_dataPosition &&
+      dataPosition + length <= m_dataPosition + m_segmentLength)
+    return m_segment + dataPosition - m_dataPosition;
+
+  // Return a pointer into |m_data| if the request doesn't span segments.
+  getSomeDataInternal(dataPosition);
+  if (length <= m_segmentLength)
+    return m_segment;
+
+  for (char* dest = buffer;;) {
+    size_t copy = std::min(length, m_segmentLength);
+    memcpy(dest, m_segment, copy);
+    length -= copy;
+    if (!length)
+      return buffer;
+
+    // Continue reading the next segment.
+    dest += copy;
+    getSomeDataInternal(m_dataPosition + copy);
+  }
 }
 
-const char* FastSharedBufferReader::getConsecutiveData(size_t dataPosition, size_t length, char* buffer) const
-{
-    RELEASE_ASSERT(dataPosition + length <= m_data->size());
-
-    // Use the cached segment if it can serve the request.
-    if (dataPosition >= m_dataPosition && dataPosition + length <= m_dataPosition + m_segmentLength)
-        return m_segment + dataPosition - m_dataPosition;
-
-    // Return a pointer into |m_data| if the request doesn't span segments.
-    getSomeDataInternal(dataPosition);
-    if (length <= m_segmentLength)
-        return m_segment;
-
-    for (char* dest = buffer; ; ) {
-        size_t copy = std::min(length, m_segmentLength);
-        memcpy(dest, m_segment, copy);
-        length -= copy;
-        if (!length)
-            return buffer;
-
-        // Continue reading the next segment.
-        dest += copy;
-        getSomeDataInternal(m_dataPosition + copy);
-    }
+size_t FastSharedBufferReader::getSomeData(const char*& someData,
+                                           size_t dataPosition) const {
+  getSomeDataInternal(dataPosition);
+  someData = m_segment;
+  return m_segmentLength;
 }
 
-size_t FastSharedBufferReader::getSomeData(const char*& someData, size_t dataPosition) const
-{
-    getSomeDataInternal(dataPosition);
-    someData = m_segment;
-    return m_segmentLength;
+void FastSharedBufferReader::getSomeDataInternal(size_t dataPosition) const {
+  m_dataPosition = dataPosition;
+  m_segmentLength = m_data->getSomeData(m_segment, dataPosition);
+  ASSERT(m_segmentLength);
 }
 
-void FastSharedBufferReader::getSomeDataInternal(size_t dataPosition) const
-{
-    m_dataPosition = dataPosition;
-    m_segmentLength = m_data->getSomeData(m_segment, dataPosition);
-    ASSERT(m_segmentLength);
-}
-
-} // namespace blink
+}  // namespace blink

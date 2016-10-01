@@ -24,39 +24,40 @@
 
 namespace blink {
 
-LayoutSVGResourceLinearGradient::LayoutSVGResourceLinearGradient(SVGLinearGradientElement* node)
-    : LayoutSVGResourceGradient(node)
-    , m_attributesWrapper(LinearGradientAttributesWrapper::create())
-{
+LayoutSVGResourceLinearGradient::LayoutSVGResourceLinearGradient(
+    SVGLinearGradientElement* node)
+    : LayoutSVGResourceGradient(node),
+      m_attributesWrapper(LinearGradientAttributesWrapper::create()) {}
+
+LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient() {}
+
+bool LayoutSVGResourceLinearGradient::collectGradientAttributes(
+    SVGGradientElement* gradientElement) {
+  m_attributesWrapper->set(LinearGradientAttributes());
+  return toSVGLinearGradientElement(gradientElement)
+      ->collectGradientAttributes(mutableAttributes());
 }
 
-LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient()
-{
+FloatPoint LayoutSVGResourceLinearGradient::startPoint(
+    const LinearGradientAttributes& attributes) const {
+  return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(),
+                                        *attributes.x1(), *attributes.y1());
 }
 
-bool LayoutSVGResourceLinearGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
-{
-    m_attributesWrapper->set(LinearGradientAttributes());
-    return toSVGLinearGradientElement(gradientElement)->collectGradientAttributes(mutableAttributes());
+FloatPoint LayoutSVGResourceLinearGradient::endPoint(
+    const LinearGradientAttributes& attributes) const {
+  return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(),
+                                        *attributes.x2(), *attributes.y2());
 }
 
-FloatPoint LayoutSVGResourceLinearGradient::startPoint(const LinearGradientAttributes& attributes) const
-{
-    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), *attributes.x1(), *attributes.y1());
+PassRefPtr<Gradient> LayoutSVGResourceLinearGradient::buildGradient() const {
+  const LinearGradientAttributes& attributes = this->attributes();
+  RefPtr<Gradient> gradient =
+      Gradient::create(startPoint(attributes), endPoint(attributes));
+  gradient->setSpreadMethod(
+      platformSpreadMethodFromSVGType(attributes.spreadMethod()));
+  addStops(*gradient, attributes.stops());
+  return gradient.release();
 }
 
-FloatPoint LayoutSVGResourceLinearGradient::endPoint(const LinearGradientAttributes& attributes) const
-{
-    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), *attributes.x2(), *attributes.y2());
-}
-
-PassRefPtr<Gradient> LayoutSVGResourceLinearGradient::buildGradient() const
-{
-    const LinearGradientAttributes& attributes = this->attributes();
-    RefPtr<Gradient> gradient = Gradient::create(startPoint(attributes), endPoint(attributes));
-    gradient->setSpreadMethod(platformSpreadMethodFromSVGType(attributes.spreadMethod()));
-    addStops(*gradient, attributes.stops());
-    return gradient.release();
-}
-
-} // namespace blink
+}  // namespace blink

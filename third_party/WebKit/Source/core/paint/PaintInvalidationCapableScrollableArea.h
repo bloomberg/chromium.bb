@@ -20,37 +20,40 @@ struct PaintInvalidatorContext;
 
 // Base class of FrameView and PaintLayerScrollableArea to share paint invalidation code.
 // TODO(wangxianzhu): Combine this into PaintLayerScrollableArea when root-layer-scrolls launches.
-class CORE_EXPORT PaintInvalidationCapableScrollableArea : public ScrollableArea {
-public:
-    PaintInvalidationCapableScrollableArea()
-        : m_horizontalScrollbarPreviouslyWasOverlay(false)
-        , m_verticalScrollbarPreviouslyWasOverlay(false) { }
+class CORE_EXPORT PaintInvalidationCapableScrollableArea
+    : public ScrollableArea {
+ public:
+  PaintInvalidationCapableScrollableArea()
+      : m_horizontalScrollbarPreviouslyWasOverlay(false),
+        m_verticalScrollbarPreviouslyWasOverlay(false) {}
 
-    void willRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
+  void willRemoveScrollbar(Scrollbar&, ScrollbarOrientation) override;
 
-    void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&);
-    void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
+  void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&);
+  void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
 
-    // Should be called when the previous paint invalidation rects are no longer valid.
-    void clearPreviousPaintInvalidationRects();
+  // Should be called when the previous paint invalidation rects are no longer valid.
+  void clearPreviousPaintInvalidationRects();
 
-    virtual IntRect scrollCornerAndResizerRect() const { return scrollCornerRect(); }
+  virtual IntRect scrollCornerAndResizerRect() const {
+    return scrollCornerRect();
+  }
 
-    LayoutRect visualRectForScrollbarParts() const override;
+  LayoutRect visualRectForScrollbarParts() const override;
 
-private:
-    virtual LayoutScrollbarPart* scrollCorner() const = 0;
-    virtual LayoutScrollbarPart* resizer() const = 0;
+ private:
+  virtual LayoutScrollbarPart* scrollCorner() const = 0;
+  virtual LayoutScrollbarPart* resizer() const = 0;
 
-    void scrollControlWasSetNeedsPaintInvalidation() override;
+  void scrollControlWasSetNeedsPaintInvalidation() override;
 
-    bool m_horizontalScrollbarPreviouslyWasOverlay;
-    bool m_verticalScrollbarPreviouslyWasOverlay;
-    LayoutRect m_horizontalScrollbarPreviousPaintInvalidationRect;
-    LayoutRect m_verticalScrollbarPreviousPaintInvalidationRect;
-    LayoutRect m_scrollCornerAndResizerPreviousPaintInvalidationRect;
+  bool m_horizontalScrollbarPreviouslyWasOverlay;
+  bool m_verticalScrollbarPreviouslyWasOverlay;
+  LayoutRect m_horizontalScrollbarPreviousPaintInvalidationRect;
+  LayoutRect m_verticalScrollbarPreviousPaintInvalidationRect;
+  LayoutRect m_scrollCornerAndResizerPreviousPaintInvalidationRect;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintInvalidationCapableScrollableArea_h
+#endif  // PaintInvalidationCapableScrollableArea_h

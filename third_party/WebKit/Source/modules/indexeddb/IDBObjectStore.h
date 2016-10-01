@@ -49,99 +49,145 @@ class DOMStringList;
 class IDBAny;
 class ExceptionState;
 
-class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static IDBObjectStore* create(const IDBObjectStoreMetadata& metadata, IDBTransaction* transaction)
-    {
-        return new IDBObjectStore(metadata, transaction);
-    }
-    ~IDBObjectStore() { }
-    DECLARE_TRACE();
+class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
-    const IDBKeyPath& idbKeyPath() const { return metadata().keyPath; }
+ public:
+  static IDBObjectStore* create(const IDBObjectStoreMetadata& metadata,
+                                IDBTransaction* transaction) {
+    return new IDBObjectStore(metadata, transaction);
+  }
+  ~IDBObjectStore() {}
+  DECLARE_TRACE();
 
-    // Implement the IDBObjectStore IDL
-    int64_t id() const { return metadata().id; }
-    const String& name() const { return metadata().name; }
-    void setName(const String& name, ExceptionState&);
-    ScriptValue keyPath(ScriptState*) const;
-    DOMStringList* indexNames() const;
-    IDBTransaction* transaction() const { return m_transaction.get(); }
-    bool autoIncrement() const { return metadata().autoIncrement; }
+  const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
+  const IDBKeyPath& idbKeyPath() const { return metadata().keyPath; }
 
-    IDBRequest* openCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
-    IDBRequest* openKeyCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
-    IDBRequest* get(ScriptState*, const ScriptValue& key, ExceptionState&);
-    IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
-    IDBRequest* getAll(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&);
-    IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
-    IDBRequest* getAllKeys(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&);
-    IDBRequest* getAllKeys(ScriptState*, const ScriptValue& range, ExceptionState&);
-    IDBRequest* add(ScriptState*, const ScriptValue&, const ScriptValue& key, ExceptionState&);
-    IDBRequest* put(ScriptState*, const ScriptValue&, const ScriptValue& key, ExceptionState&);
-    IDBRequest* deleteFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
-    IDBRequest* clear(ScriptState*, ExceptionState&);
+  // Implement the IDBObjectStore IDL
+  int64_t id() const { return metadata().id; }
+  const String& name() const { return metadata().name; }
+  void setName(const String& name, ExceptionState&);
+  ScriptValue keyPath(ScriptState*) const;
+  DOMStringList* indexNames() const;
+  IDBTransaction* transaction() const { return m_transaction.get(); }
+  bool autoIncrement() const { return metadata().autoIncrement; }
 
-    IDBIndex* createIndex(ScriptState* scriptState, const String& name, const StringOrStringSequence& keyPath, const IDBIndexParameters& options, ExceptionState& exceptionState)
-    {
-        return createIndex(scriptState, name, IDBKeyPath(keyPath), options, exceptionState);
-    }
-    IDBIndex* index(const String& name, ExceptionState&);
-    void deleteIndex(const String& name, ExceptionState&);
+  IDBRequest* openCursor(ScriptState*,
+                         const ScriptValue& range,
+                         const String& direction,
+                         ExceptionState&);
+  IDBRequest* openKeyCursor(ScriptState*,
+                            const ScriptValue& range,
+                            const String& direction,
+                            ExceptionState&);
+  IDBRequest* get(ScriptState*, const ScriptValue& key, ExceptionState&);
+  IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
+  IDBRequest* getAll(ScriptState*,
+                     const ScriptValue& range,
+                     unsigned long maxCount,
+                     ExceptionState&);
+  IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
+  IDBRequest* getAllKeys(ScriptState*,
+                         const ScriptValue& range,
+                         unsigned long maxCount,
+                         ExceptionState&);
+  IDBRequest* getAllKeys(ScriptState*,
+                         const ScriptValue& range,
+                         ExceptionState&);
+  IDBRequest* add(ScriptState*,
+                  const ScriptValue&,
+                  const ScriptValue& key,
+                  ExceptionState&);
+  IDBRequest* put(ScriptState*,
+                  const ScriptValue&,
+                  const ScriptValue& key,
+                  ExceptionState&);
+  IDBRequest* deleteFunction(ScriptState*,
+                             const ScriptValue& key,
+                             ExceptionState&);
+  IDBRequest* clear(ScriptState*, ExceptionState&);
 
-    IDBRequest* count(ScriptState*, const ScriptValue& range, ExceptionState&);
+  IDBIndex* createIndex(ScriptState* scriptState,
+                        const String& name,
+                        const StringOrStringSequence& keyPath,
+                        const IDBIndexParameters& options,
+                        ExceptionState& exceptionState) {
+    return createIndex(scriptState, name, IDBKeyPath(keyPath), options,
+                       exceptionState);
+  }
+  IDBIndex* index(const String& name, ExceptionState&);
+  void deleteIndex(const String& name, ExceptionState&);
 
-    // Used by IDBCursor::update():
-    IDBRequest* put(ScriptState*, WebIDBPutMode, IDBAny* source, const ScriptValue&, IDBKey*, ExceptionState&);
+  IDBRequest* count(ScriptState*, const ScriptValue& range, ExceptionState&);
 
-    // Used internally and by InspectorIndexedDBAgent:
-    IDBRequest* openCursor(ScriptState*, IDBKeyRange*, WebIDBCursorDirection, WebIDBTaskType = WebIDBTaskTypeNormal);
+  // Used by IDBCursor::update():
+  IDBRequest* put(ScriptState*,
+                  WebIDBPutMode,
+                  IDBAny* source,
+                  const ScriptValue&,
+                  IDBKey*,
+                  ExceptionState&);
 
-    void markDeleted();
-    bool isDeleted() const { return m_deleted; }
-    void abort();
-    void transactionFinished();
+  // Used internally and by InspectorIndexedDBAgent:
+  IDBRequest* openCursor(ScriptState*,
+                         IDBKeyRange*,
+                         WebIDBCursorDirection,
+                         WebIDBTaskType = WebIDBTaskTypeNormal);
 
-    void setMetadata(const IDBObjectStoreMetadata& metadata) { m_metadata = metadata; }
+  void markDeleted();
+  bool isDeleted() const { return m_deleted; }
+  void abort();
+  void transactionFinished();
 
-    // Used by IDBIndex::setName:
-    bool containsIndex(const String& name) const
-    {
-        return findIndexId(name) != IDBIndexMetadata::InvalidId;
-    }
-    void indexRenamed(int64_t indexId, const String& newName);
+  void setMetadata(const IDBObjectStoreMetadata& metadata) {
+    m_metadata = metadata;
+  }
 
-    WebIDBDatabase* backendDB() const;
+  // Used by IDBIndex::setName:
+  bool containsIndex(const String& name) const {
+    return findIndexId(name) != IDBIndexMetadata::InvalidId;
+  }
+  void indexRenamed(int64_t indexId, const String& newName);
 
-private:
-    IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
+  WebIDBDatabase* backendDB() const;
 
-    IDBIndex* createIndex(ScriptState*, const String& name, const IDBKeyPath&, const IDBIndexParameters&, ExceptionState&);
-    IDBRequest* put(ScriptState*, WebIDBPutMode, IDBAny* source, const ScriptValue&, const ScriptValue& key, ExceptionState&);
+ private:
+  IDBObjectStore(const IDBObjectStoreMetadata&, IDBTransaction*);
 
-    int64_t findIndexId(const String& name) const;
+  IDBIndex* createIndex(ScriptState*,
+                        const String& name,
+                        const IDBKeyPath&,
+                        const IDBIndexParameters&,
+                        ExceptionState&);
+  IDBRequest* put(ScriptState*,
+                  WebIDBPutMode,
+                  IDBAny* source,
+                  const ScriptValue&,
+                  const ScriptValue& key,
+                  ExceptionState&);
 
-    IDBObjectStoreMetadata m_metadata;
-    Member<IDBTransaction> m_transaction;
-    bool m_deleted = false;
+  int64_t findIndexId(const String& name) const;
 
-    // Caches the IDBIndex instances returned by the index() method.
-    // The spec requires that an object store's index() returns the same
-    // IDBIndex instance for a specific index, so this cache is necessary
-    // for correctness.
-    //
-    // index() throws for completed/aborted transactions, so this is not used
-    // after a transaction is finished, and can be cleared.
-    using IDBIndexMap = HeapHashMap<String, Member<IDBIndex>>;
-    IDBIndexMap m_indexMap;
+  IDBObjectStoreMetadata m_metadata;
+  Member<IDBTransaction> m_transaction;
+  bool m_deleted = false;
 
-    // Used to mark indexes created in an aborted upgrade transaction as
-    // deleted.
-    HeapHashSet<Member<IDBIndex>> m_createdIndexes;
+  // Caches the IDBIndex instances returned by the index() method.
+  // The spec requires that an object store's index() returns the same
+  // IDBIndex instance for a specific index, so this cache is necessary
+  // for correctness.
+  //
+  // index() throws for completed/aborted transactions, so this is not used
+  // after a transaction is finished, and can be cleared.
+  using IDBIndexMap = HeapHashMap<String, Member<IDBIndex>>;
+  IDBIndexMap m_indexMap;
+
+  // Used to mark indexes created in an aborted upgrade transaction as
+  // deleted.
+  HeapHashSet<Member<IDBIndex>> m_createdIndexes;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBObjectStore_h
+#endif  // IDBObjectStore_h

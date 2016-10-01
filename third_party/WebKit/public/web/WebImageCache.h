@@ -41,13 +41,13 @@ namespace blink {
 // and before blink::shutdown() is called.
 
 class WebImageCache {
-public:
-    // Clears the cache (as much as possible; some resources may not be
-    // cleared if they are actively referenced).
-    BLINK_EXPORT static void clear();
+ public:
+  // Clears the cache (as much as possible; some resources may not be
+  // cleared if they are actively referenced).
+  BLINK_EXPORT static void clear();
 
-private:
-    WebImageCache();  // Not intended to be instanced.
+ private:
+  WebImageCache();  // Not intended to be instanced.
 };
 
 }  // namespace blink

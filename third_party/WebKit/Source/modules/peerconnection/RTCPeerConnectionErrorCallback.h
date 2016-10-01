@@ -12,13 +12,14 @@ namespace blink {
 class ExecutionContext;
 class DOMException;
 
-class RTCPeerConnectionErrorCallback : public GarbageCollectedFinalized<RTCPeerConnectionErrorCallback> {
-public:
-    virtual ~RTCPeerConnectionErrorCallback() {}
-    virtual void handleEvent(DOMException*) = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+class RTCPeerConnectionErrorCallback
+    : public GarbageCollectedFinalized<RTCPeerConnectionErrorCallback> {
+ public:
+  virtual ~RTCPeerConnectionErrorCallback() {}
+  virtual void handleEvent(DOMException*) = 0;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCPeerConnectionErrorCallback_h
+#endif  // RTCPeerConnectionErrorCallback_h

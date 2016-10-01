@@ -38,15 +38,15 @@ namespace blink {
 // <wbr> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's createLayoutObject doesn't need to know about it.
 class HTMLWBRElement final : public HTMLElement {
-public:
-    DECLARE_NODE_FACTORY(HTMLWBRElement);
+ public:
+  DECLARE_NODE_FACTORY(HTMLWBRElement);
 
-private:
-    explicit HTMLWBRElement(Document&);
+ private:
+  explicit HTMLWBRElement(Document&);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

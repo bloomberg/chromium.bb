@@ -21,68 +21,57 @@
 namespace blink {
 
 void V8HTMLElement::constructorCustom(
-    const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    DCHECK(info.IsConstructCall());
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  DCHECK(info.IsConstructCall());
 
-    v8::Isolate* isolate = info.GetIsolate();
-    ScriptState* scriptState = ScriptState::current(isolate);
+  v8::Isolate* isolate = info.GetIsolate();
+  ScriptState* scriptState = ScriptState::current(isolate);
 
-    if (!RuntimeEnabledFeatures::customElementsV1Enabled()
-        || !scriptState->world().isMainWorld()) {
-        V8ThrowException::throwTypeError(
-            info.GetIsolate(),
-            "Illegal constructor");
-        return;
-    }
+  if (!RuntimeEnabledFeatures::customElementsV1Enabled() ||
+      !scriptState->world().isMainWorld()) {
+    V8ThrowException::throwTypeError(info.GetIsolate(), "Illegal constructor");
+    return;
+  }
 
-    LocalDOMWindow* window = scriptState->domWindow();
-    ScriptCustomElementDefinition* definition =
-        ScriptCustomElementDefinition::forConstructor(
-            scriptState,
-            window->customElements(),
-            info.NewTarget());
-    if (!definition) {
-        V8ThrowException::throwTypeError(isolate, "Illegal constructor");
-        return;
-    }
+  LocalDOMWindow* window = scriptState->domWindow();
+  ScriptCustomElementDefinition* definition =
+      ScriptCustomElementDefinition::forConstructor(
+          scriptState, window->customElements(), info.NewTarget());
+  if (!definition) {
+    V8ThrowException::throwTypeError(isolate, "Illegal constructor");
+    return;
+  }
 
-    ExceptionState exceptionState(
-        ExceptionState::ConstructionContext,
-        "HTMLElement",
-        info.Holder(),
-        isolate);
+  ExceptionState exceptionState(ExceptionState::ConstructionContext,
+                                "HTMLElement", info.Holder(), isolate);
 
-    Element* element;
-    if (definition->constructionStack().isEmpty()) {
-        // This is an element being created with 'new' from script
-        element = definition->createElementForConstructor(*window->document());
+  Element* element;
+  if (definition->constructionStack().isEmpty()) {
+    // This is an element being created with 'new' from script
+    element = definition->createElementForConstructor(*window->document());
+  } else {
+    element = definition->constructionStack().last();
+    if (element) {
+      // This is an element being upgraded that has called super
+      definition->constructionStack().last().clear();
     } else {
-        element = definition->constructionStack().last();
-        if (element) {
-            // This is an element being upgraded that has called super
-            definition->constructionStack().last().clear();
-        } else {
-            // During upgrade an element has invoked the same constructor
-            // before calling 'super' and that invocation has poached the
-            // element.
-            exceptionState.throwDOMException(
-                InvalidStateError,
-                "this instance is already constructed");
-            return;
-        }
+      // During upgrade an element has invoked the same constructor
+      // before calling 'super' and that invocation has poached the
+      // element.
+      exceptionState.throwDOMException(InvalidStateError,
+                                       "this instance is already constructed");
+      return;
     }
-    const WrapperTypeInfo* wrapperType = element->wrapperTypeInfo();
-    v8::Local<v8::Object> wrapper = V8DOMWrapper::associateObjectWithWrapper(
-        isolate,
-        element,
-        wrapperType,
-        info.Holder());
-    // If the element had a wrapper, we now update and return that
-    // instead.
-    v8SetReturnValue(info, wrapper);
+  }
+  const WrapperTypeInfo* wrapperType = element->wrapperTypeInfo();
+  v8::Local<v8::Object> wrapper = V8DOMWrapper::associateObjectWithWrapper(
+      isolate, element, wrapperType, info.Holder());
+  // If the element had a wrapper, we now update and return that
+  // instead.
+  v8SetReturnValue(info, wrapper);
 
-    wrapper->SetPrototype(scriptState->context(), definition->prototype()).ToChecked();
+  wrapper->SetPrototype(scriptState->context(), definition->prototype())
+      .ToChecked();
 }
 
-} // namespace blink
+}  // namespace blink

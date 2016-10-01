@@ -31,21 +31,20 @@
 namespace blink {
 
 class LabelsNodeList final : public LiveNodeList {
-public:
-    static LabelsNodeList* create(ContainerNode& ownerNode, CollectionType type)
-    {
-        DCHECK_EQ(type, LabelsNodeListType);
-        return new LabelsNodeList(ownerNode);
-    }
+ public:
+  static LabelsNodeList* create(ContainerNode& ownerNode, CollectionType type) {
+    DCHECK_EQ(type, LabelsNodeListType);
+    return new LabelsNodeList(ownerNode);
+  }
 
-    virtual ~LabelsNodeList();
+  virtual ~LabelsNodeList();
 
-protected:
-    explicit LabelsNodeList(ContainerNode&);
+ protected:
+  explicit LabelsNodeList(ContainerNode&);
 
-    bool elementMatches(const Element&) const override;
+  bool elementMatches(const Element&) const override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LabelsNodeList_h
+#endif  // LabelsNodeList_h

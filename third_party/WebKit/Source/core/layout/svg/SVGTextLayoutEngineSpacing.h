@@ -30,19 +30,20 @@ class Font;
 
 // Helper class used by SVGTextLayoutEngine to handle 'letter-spacing' and 'word-spacing'.
 class SVGTextLayoutEngineSpacing {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineSpacing);
-public:
-    SVGTextLayoutEngineSpacing(const Font&, float effectiveZoom);
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineSpacing);
 
-    float calculateCSSSpacing(UChar currentCharacter);
+ public:
+  SVGTextLayoutEngineSpacing(const Font&, float effectiveZoom);
 
-private:
-    const Font& m_font;
-    UChar m_lastCharacter;
-    float m_effectiveZoom;
+  float calculateCSSSpacing(UChar currentCharacter);
+
+ private:
+  const Font& m_font;
+  UChar m_lastCharacter;
+  float m_effectiveZoom;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

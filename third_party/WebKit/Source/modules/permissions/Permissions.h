@@ -18,30 +18,36 @@ class ScriptState;
 class ScriptValue;
 class WebPermissionClient;
 
-class Permissions final
-    : public GarbageCollectedFinalized<Permissions>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DEFINE_INLINE_TRACE() { }
+class Permissions final : public GarbageCollectedFinalized<Permissions>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // TODO(mlamouri): Find better place for this. https://crbug.com/510948
-    static bool connectToService(ExecutionContext*, mojom::blink::PermissionServiceRequest);
+ public:
+  DEFINE_INLINE_TRACE() {}
 
-    ScriptPromise query(ScriptState*, const Dictionary&);
-    ScriptPromise request(ScriptState*, const Dictionary&);
-    ScriptPromise revoke(ScriptState*, const Dictionary&);
-    ScriptPromise requestAll(ScriptState*, const Vector<Dictionary>&);
+  // TODO(mlamouri): Find better place for this. https://crbug.com/510948
+  static bool connectToService(ExecutionContext*,
+                               mojom::blink::PermissionServiceRequest);
 
-private:
-    mojom::blink::PermissionService* getService(ExecutionContext*);
-    void serviceConnectionError();
-    void taskComplete(ScriptPromiseResolver*, mojom::blink::PermissionName, mojom::blink::PermissionStatus);
-    void batchTaskComplete(ScriptPromiseResolver*, Vector<mojom::blink::PermissionName>, Vector<int>, const Vector<mojom::blink::PermissionStatus>&);
+  ScriptPromise query(ScriptState*, const Dictionary&);
+  ScriptPromise request(ScriptState*, const Dictionary&);
+  ScriptPromise revoke(ScriptState*, const Dictionary&);
+  ScriptPromise requestAll(ScriptState*, const Vector<Dictionary>&);
 
-    mojom::blink::PermissionServicePtr m_service;
+ private:
+  mojom::blink::PermissionService* getService(ExecutionContext*);
+  void serviceConnectionError();
+  void taskComplete(ScriptPromiseResolver*,
+                    mojom::blink::PermissionName,
+                    mojom::blink::PermissionStatus);
+  void batchTaskComplete(ScriptPromiseResolver*,
+                         Vector<mojom::blink::PermissionName>,
+                         Vector<int>,
+                         const Vector<mojom::blink::PermissionStatus>&);
+
+  mojom::blink::PermissionServicePtr m_service;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Permissions_h
+#endif  // Permissions_h

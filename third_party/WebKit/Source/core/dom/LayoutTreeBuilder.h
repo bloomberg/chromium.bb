@@ -39,61 +39,59 @@ class ComputedStyle;
 
 template <typename NodeType>
 class LayoutTreeBuilder {
-    STACK_ALLOCATED();
-protected:
-    LayoutTreeBuilder(NodeType& node, LayoutObject* layoutObjectParent)
-        : m_node(node)
-        , m_layoutObjectParent(layoutObjectParent)
-    {
-        DCHECK(!node.layoutObject());
-        DCHECK(node.needsAttach());
-        DCHECK(node.document().inStyleRecalc());
-        DCHECK(node.inActiveDocument());
-    }
+  STACK_ALLOCATED();
 
-    LayoutObject* nextLayoutObject() const
-    {
-        DCHECK(m_layoutObjectParent);
+ protected:
+  LayoutTreeBuilder(NodeType& node, LayoutObject* layoutObjectParent)
+      : m_node(node), m_layoutObjectParent(layoutObjectParent) {
+    DCHECK(!node.layoutObject());
+    DCHECK(node.needsAttach());
+    DCHECK(node.document().inStyleRecalc());
+    DCHECK(node.inActiveDocument());
+  }
 
-        // Avoid an O(N^2) walk over the children when reattaching all children of a node.
-        if (m_layoutObjectParent->node() && m_layoutObjectParent->node()->needsAttach())
-            return 0;
+  LayoutObject* nextLayoutObject() const {
+    DCHECK(m_layoutObjectParent);
 
-        return LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*m_node);
-    }
+    // Avoid an O(N^2) walk over the children when reattaching all children of a node.
+    if (m_layoutObjectParent->node() &&
+        m_layoutObjectParent->node()->needsAttach())
+      return 0;
 
-    Member<NodeType> m_node;
-    LayoutObject* m_layoutObjectParent;
+    return LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*m_node);
+  }
+
+  Member<NodeType> m_node;
+  LayoutObject* m_layoutObjectParent;
 };
 
 class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
-public:
-    LayoutTreeBuilderForElement(Element&, ComputedStyle*);
+ public:
+  LayoutTreeBuilderForElement(Element&, ComputedStyle*);
 
-    void createLayoutObjectIfNeeded()
-    {
-        if (shouldCreateLayoutObject())
-            createLayoutObject();
-    }
+  void createLayoutObjectIfNeeded() {
+    if (shouldCreateLayoutObject())
+      createLayoutObject();
+  }
 
-private:
-    LayoutObject* parentLayoutObject() const;
-    LayoutObject* nextLayoutObject() const;
-    bool shouldCreateLayoutObject() const;
-    ComputedStyle& style() const;
-    void createLayoutObject();
+ private:
+  LayoutObject* parentLayoutObject() const;
+  LayoutObject* nextLayoutObject() const;
+  bool shouldCreateLayoutObject() const;
+  ComputedStyle& style() const;
+  void createLayoutObject();
 
-    mutable RefPtr<ComputedStyle> m_style;
+  mutable RefPtr<ComputedStyle> m_style;
 };
 
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
-public:
-    LayoutTreeBuilderForText(Text& text, LayoutObject* layoutParent)
-        : LayoutTreeBuilder(text, layoutParent) { }
+ public:
+  LayoutTreeBuilderForText(Text& text, LayoutObject* layoutParent)
+      : LayoutTreeBuilder(text, layoutParent) {}
 
-    void createLayoutObject();
+  void createLayoutObject();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

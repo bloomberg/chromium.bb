@@ -16,23 +16,26 @@ class DOMWindow;
 class AudioWorklet;
 class Worklet;
 
-class MODULES_EXPORT WindowAudioWorklet final : public GarbageCollected<WindowAudioWorklet>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(WindowAudioWorklet);
+class MODULES_EXPORT WindowAudioWorklet final
+    : public GarbageCollected<WindowAudioWorklet>,
+      public Supplement<LocalDOMWindow>,
+      public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(WindowAudioWorklet);
 
-public:
-    static WindowAudioWorklet& from(LocalDOMWindow&);
-    static Worklet* audioWorklet(DOMWindow&);
-    AudioWorklet* audioWorklet();
+ public:
+  static WindowAudioWorklet& from(LocalDOMWindow&);
+  static Worklet* audioWorklet(DOMWindow&);
+  AudioWorklet* audioWorklet();
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit WindowAudioWorklet(LocalDOMWindow&);
-    static const char* supplementName();
+ private:
+  explicit WindowAudioWorklet(LocalDOMWindow&);
+  static const char* supplementName();
 
-    Member<AudioWorklet> m_audioWorklet;
+  Member<AudioWorklet> m_audioWorklet;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WindowAudioWorklet_h
+#endif  // WindowAudioWorklet_h

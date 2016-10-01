@@ -34,78 +34,84 @@ class SVGFilterElement;
 class SVGFilterGraphNodeMap;
 
 class FilterData final : public GarbageCollected<FilterData> {
-public:
-    /*
+ public:
+  /*
      * The state transitions should follow the following:
      * Initial -> RecordingContent -> ReadyToPaint -> PaintingFilter -> ReadyToPaint
      *               |     ^                              |     ^
      *               v     |                              v     |
      *     RecordingContentCycleDetected            PaintingFilterCycle
      */
-    enum FilterDataState {
-        Initial,
-        RecordingContent,
-        RecordingContentCycleDetected,
-        ReadyToPaint,
-        PaintingFilter,
-        PaintingFilterCycleDetected
-    };
+  enum FilterDataState {
+    Initial,
+    RecordingContent,
+    RecordingContentCycleDetected,
+    ReadyToPaint,
+    PaintingFilter,
+    PaintingFilterCycleDetected
+  };
 
-    static FilterData* create()
-    {
-        return new FilterData();
-    }
+  static FilterData* create() { return new FilterData(); }
 
-    void dispose();
+  void dispose();
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-    Member<FilterEffect> lastEffect;
-    Member<SVGFilterGraphNodeMap> nodeMap;
-    FilterDataState m_state;
+  Member<FilterEffect> lastEffect;
+  Member<SVGFilterGraphNodeMap> nodeMap;
+  FilterDataState m_state;
 
-private:
-    FilterData() : m_state(Initial) { }
+ private:
+  FilterData() : m_state(Initial) {}
 };
 
 class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
-public:
-    explicit LayoutSVGResourceFilter(SVGFilterElement*);
-    ~LayoutSVGResourceFilter() override;
+ public:
+  explicit LayoutSVGResourceFilter(SVGFilterElement*);
+  ~LayoutSVGResourceFilter() override;
 
-    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    const char* name() const override { return "LayoutSVGResourceFilter"; }
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceFilter || LayoutSVGResourceContainer::isOfType(type); }
+  const char* name() const override { return "LayoutSVGResourceFilter"; }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGResourceFilter ||
+           LayoutSVGResourceContainer::isOfType(type);
+  }
 
-    void removeAllClientsFromCache(bool markForInvalidation = true) override;
-    void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) override;
+  void removeAllClientsFromCache(bool markForInvalidation = true) override;
+  void removeClientFromCache(LayoutObject*,
+                             bool markForInvalidation = true) override;
 
-    FloatRect resourceBoundingBox(const LayoutObject*);
+  FloatRect resourceBoundingBox(const LayoutObject*);
 
-    SVGUnitTypes::SVGUnitType filterUnits() const;
-    SVGUnitTypes::SVGUnitType primitiveUnits() const;
+  SVGUnitTypes::SVGUnitType filterUnits() const;
+  SVGUnitTypes::SVGUnitType primitiveUnits() const;
 
-    void primitiveAttributeChanged(LayoutObject*, const QualifiedName&);
+  void primitiveAttributeChanged(LayoutObject*, const QualifiedName&);
 
-    static const LayoutSVGResourceType s_resourceType = FilterResourceType;
-    LayoutSVGResourceType resourceType() const override { return s_resourceType; }
+  static const LayoutSVGResourceType s_resourceType = FilterResourceType;
+  LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
-    FilterData* getFilterDataForLayoutObject(const LayoutObject* object) { return m_filter.get(const_cast<LayoutObject*>(object)); }
-    void setFilterDataForLayoutObject(LayoutObject* object, FilterData* filterData) { m_filter.set(object, filterData); }
+  FilterData* getFilterDataForLayoutObject(const LayoutObject* object) {
+    return m_filter.get(const_cast<LayoutObject*>(object));
+  }
+  void setFilterDataForLayoutObject(LayoutObject* object,
+                                    FilterData* filterData) {
+    m_filter.set(object, filterData);
+  }
 
-protected:
-    void willBeDestroyed() override;
+ protected:
+  void willBeDestroyed() override;
 
-private:
-    void disposeFilterMap();
+ private:
+  void disposeFilterMap();
 
-    using FilterMap = PersistentHeapHashMap<LayoutObject*, Member<FilterData>>;
-    FilterMap m_filter;
+  using FilterMap = PersistentHeapHashMap<LayoutObject*, Member<FilterData>>;
+  FilterMap m_filter;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceFilter, isSVGResourceFilter());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

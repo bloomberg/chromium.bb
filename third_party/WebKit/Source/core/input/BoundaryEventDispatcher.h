@@ -13,24 +13,27 @@ namespace blink {
 // crossing action and sending boundary events. The subclasses of this class
 // must define what events should be sent in every case.
 class BoundaryEventDispatcher {
-    STACK_ALLOCATED()
-public:
-    BoundaryEventDispatcher() {}
-    virtual ~BoundaryEventDispatcher() {}
+  STACK_ALLOCATED()
+ public:
+  BoundaryEventDispatcher() {}
+  virtual ~BoundaryEventDispatcher() {}
 
-    void sendBoundaryEvents(
-        EventTarget* exitedTarget,
-        EventTarget* enteredTarget);
+  void sendBoundaryEvents(EventTarget* exitedTarget,
+                          EventTarget* enteredTarget);
 
-protected:
-    virtual void dispatchOut(EventTarget*, EventTarget* relatedTarget) = 0;
-    virtual void dispatchOver(EventTarget*, EventTarget* relatedTarget) = 0;
-    virtual void dispatchLeave(EventTarget*, EventTarget* relatedTarget, bool checkForListener) = 0;
-    virtual void dispatchEnter(EventTarget*, EventTarget* relatedTarget, bool checkForListener) = 0;
-    virtual AtomicString getLeaveEvent() = 0;
-    virtual AtomicString getEnterEvent() = 0;
+ protected:
+  virtual void dispatchOut(EventTarget*, EventTarget* relatedTarget) = 0;
+  virtual void dispatchOver(EventTarget*, EventTarget* relatedTarget) = 0;
+  virtual void dispatchLeave(EventTarget*,
+                             EventTarget* relatedTarget,
+                             bool checkForListener) = 0;
+  virtual void dispatchEnter(EventTarget*,
+                             EventTarget* relatedTarget,
+                             bool checkForListener) = 0;
+  virtual AtomicString getLeaveEvent() = 0;
+  virtual AtomicString getEnterEvent() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BoundaryEventDispatcher_h
+#endif  // BoundaryEventDispatcher_h

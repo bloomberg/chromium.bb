@@ -34,41 +34,42 @@
 
 namespace blink {
 
-InertEffect* InertEffect::create(EffectModel* effect, const Timing& timing, bool paused, double inheritedTime)
-{
-    return new InertEffect(effect, timing, paused, inheritedTime);
+InertEffect* InertEffect::create(EffectModel* effect,
+                                 const Timing& timing,
+                                 bool paused,
+                                 double inheritedTime) {
+  return new InertEffect(effect, timing, paused, inheritedTime);
 }
 
-InertEffect::InertEffect(EffectModel* model, const Timing& timing, bool paused, double inheritedTime)
-    : AnimationEffectReadOnly(timing)
-    , m_model(model)
-    , m_paused(paused)
-    , m_inheritedTime(inheritedTime)
-{
+InertEffect::InertEffect(EffectModel* model,
+                         const Timing& timing,
+                         bool paused,
+                         double inheritedTime)
+    : AnimationEffectReadOnly(timing),
+      m_model(model),
+      m_paused(paused),
+      m_inheritedTime(inheritedTime) {}
+
+void InertEffect::sample(Vector<RefPtr<Interpolation>>& result) const {
+  updateInheritedTime(m_inheritedTime, TimingUpdateOnDemand);
+  if (!isInEffect()) {
+    result.clear();
+    return;
+  }
+
+  double iteration = currentIteration();
+  DCHECK_GE(iteration, 0);
+  m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(),
+                  result);
 }
 
-void InertEffect::sample(Vector<RefPtr<Interpolation>>& result) const
-{
-    updateInheritedTime(m_inheritedTime, TimingUpdateOnDemand);
-    if (!isInEffect()) {
-        result.clear();
-        return;
-    }
-
-    double iteration = currentIteration();
-    DCHECK_GE(iteration, 0);
-    m_model->sample(clampTo<int>(iteration, 0), progress(), iterationDuration(), result);
+double InertEffect::calculateTimeToEffectChange(bool, double, double) const {
+  return std::numeric_limits<double>::infinity();
 }
 
-double InertEffect::calculateTimeToEffectChange(bool, double, double) const
-{
-    return std::numeric_limits<double>::infinity();
+DEFINE_TRACE(InertEffect) {
+  visitor->trace(m_model);
+  AnimationEffectReadOnly::trace(visitor);
 }
 
-DEFINE_TRACE(InertEffect)
-{
-    visitor->trace(m_model);
-    AnimationEffectReadOnly::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

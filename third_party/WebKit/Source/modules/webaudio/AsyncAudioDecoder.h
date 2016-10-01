@@ -44,23 +44,39 @@ class ScriptPromiseResolver;
 // AudioBuffer.
 
 class AsyncAudioDecoder {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(AsyncAudioDecoder);
-public:
-    AsyncAudioDecoder() { };
-    ~AsyncAudioDecoder() { };
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(AsyncAudioDecoder);
 
-    // Must be called on the main thread.  |decodeAsync| and callees must not modify any of the
-    // parameters except |audioData|.  They are used to associate this decoding instance with the
-    // caller to process the decoding appropriately when finished.
-    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* , BaseAudioContext*);
+ public:
+  AsyncAudioDecoder(){};
+  ~AsyncAudioDecoder(){};
 
-private:
-    AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
-    static void decodeOnBackgroundThread(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, BaseAudioContext*);
-    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*, ScriptPromiseResolver*, BaseAudioContext*);
+  // Must be called on the main thread.  |decodeAsync| and callees must not modify any of the
+  // parameters except |audioData|.  They are used to associate this decoding instance with the
+  // caller to process the decoding appropriately when finished.
+  void decodeAsync(DOMArrayBuffer* audioData,
+                   float sampleRate,
+                   AudioBufferCallback* successCallback,
+                   AudioBufferCallback* errorCallback,
+                   ScriptPromiseResolver*,
+                   BaseAudioContext*);
+
+ private:
+  AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
+  static void decodeOnBackgroundThread(DOMArrayBuffer* audioData,
+                                       float sampleRate,
+                                       AudioBufferCallback* successCallback,
+                                       AudioBufferCallback* errorCallback,
+                                       ScriptPromiseResolver*,
+                                       BaseAudioContext*);
+  static void notifyComplete(DOMArrayBuffer* audioData,
+                             AudioBufferCallback* successCallback,
+                             AudioBufferCallback* errorCallback,
+                             AudioBus*,
+                             ScriptPromiseResolver*,
+                             BaseAudioContext*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AsyncAudioDecoder_h
+#endif  // AsyncAudioDecoder_h

@@ -39,28 +39,31 @@ class ScriptValue;
 class ScriptState;
 class ExceptionState;
 
-class SQLResultSetRowList final : public GarbageCollectedFinalized<SQLResultSetRowList>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SQLResultSetRowList* create() { return new SQLResultSetRowList; }
-    DEFINE_INLINE_TRACE() { }
+class SQLResultSetRowList final
+    : public GarbageCollectedFinalized<SQLResultSetRowList>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    const Vector<String>& columnNames() const { return m_columns; }
-    const Vector<SQLValue>& values() const { return m_result; }
+ public:
+  static SQLResultSetRowList* create() { return new SQLResultSetRowList; }
+  DEFINE_INLINE_TRACE() {}
 
-    void addColumn(const String& name) { m_columns.append(name); }
-    void addResult(const SQLValue& result) { m_result.append(result); }
+  const Vector<String>& columnNames() const { return m_columns; }
+  const Vector<SQLValue>& values() const { return m_result; }
 
-    unsigned length() const;
-    ScriptValue item(ScriptState*, unsigned index, ExceptionState&);
+  void addColumn(const String& name) { m_columns.append(name); }
+  void addResult(const SQLValue& result) { m_result.append(result); }
 
-private:
-    SQLResultSetRowList() { }
+  unsigned length() const;
+  ScriptValue item(ScriptState*, unsigned index, ExceptionState&);
 
-    Vector<String> m_columns;
-    Vector<SQLValue> m_result;
+ private:
+  SQLResultSetRowList() {}
+
+  Vector<String> m_columns;
+  Vector<SQLValue> m_result;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLResultSetRowList_h
+#endif  // SQLResultSetRowList_h

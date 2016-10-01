@@ -33,77 +33,70 @@
 namespace blink {
 
 SecurityContext::SecurityContext()
-    : m_sandboxFlags(SandboxNone)
-    , m_addressSpace(WebAddressSpacePublic)
-    , m_insecureRequestPolicy(kLeaveInsecureRequestsAlone)
-{
+    : m_sandboxFlags(SandboxNone),
+      m_addressSpace(WebAddressSpacePublic),
+      m_insecureRequestPolicy(kLeaveInsecureRequestsAlone) {}
+
+SecurityContext::~SecurityContext() {}
+
+DEFINE_TRACE(SecurityContext) {
+  visitor->trace(m_contentSecurityPolicy);
 }
 
-SecurityContext::~SecurityContext()
-{
+void SecurityContext::setSecurityOrigin(
+    PassRefPtr<SecurityOrigin> securityOrigin) {
+  m_securityOrigin = securityOrigin;
 }
 
-DEFINE_TRACE(SecurityContext)
-{
-    visitor->trace(m_contentSecurityPolicy);
+void SecurityContext::setContentSecurityPolicy(
+    ContentSecurityPolicy* contentSecurityPolicy) {
+  m_contentSecurityPolicy = contentSecurityPolicy;
 }
 
-void SecurityContext::setSecurityOrigin(PassRefPtr<SecurityOrigin> securityOrigin)
-{
-    m_securityOrigin = securityOrigin;
+void SecurityContext::enforceSandboxFlags(SandboxFlags mask) {
+  applySandboxFlags(mask);
 }
 
-void SecurityContext::setContentSecurityPolicy(ContentSecurityPolicy* contentSecurityPolicy)
-{
-    m_contentSecurityPolicy = contentSecurityPolicy;
+void SecurityContext::applySandboxFlags(SandboxFlags mask) {
+  m_sandboxFlags |= mask;
+
+  if (isSandboxed(SandboxOrigin) && getSecurityOrigin() &&
+      !getSecurityOrigin()->isUnique()) {
+    setSecurityOrigin(SecurityOrigin::createUnique());
+    didUpdateSecurityOrigin();
+  }
 }
 
-void SecurityContext::enforceSandboxFlags(SandboxFlags mask)
-{
-    applySandboxFlags(mask);
-}
-
-void SecurityContext::applySandboxFlags(SandboxFlags mask)
-{
-    m_sandboxFlags |= mask;
-
-    if (isSandboxed(SandboxOrigin) && getSecurityOrigin() && !getSecurityOrigin()->isUnique()) {
-        setSecurityOrigin(SecurityOrigin::createUnique());
-        didUpdateSecurityOrigin();
-    }
-}
-
-String SecurityContext::addressSpaceForBindings() const
-{
-    switch (m_addressSpace) {
+String SecurityContext::addressSpaceForBindings() const {
+  switch (m_addressSpace) {
     case WebAddressSpacePublic:
-        return "public";
+      return "public";
 
     case WebAddressSpacePrivate:
-        return "private";
+      return "private";
 
     case WebAddressSpaceLocal:
-        return "local";
-    }
-    ASSERT_NOT_REACHED();
-    return "public";
+      return "local";
+  }
+  ASSERT_NOT_REACHED();
+  return "public";
 }
 
 // Enforces the given suborigin as part of the security origin for this
 // security context. |name| must not be empty, although it may be null. A null
 // name represents a lack of a suborigin.
 // See: https://w3c.github.io/webappsec-suborigins/index.html
-void SecurityContext::enforceSuborigin(const Suborigin& suborigin)
-{
-    if (!RuntimeEnabledFeatures::suboriginsEnabled())
-        return;
+void SecurityContext::enforceSuborigin(const Suborigin& suborigin) {
+  if (!RuntimeEnabledFeatures::suboriginsEnabled())
+    return;
 
-    DCHECK(!suborigin.name().isEmpty());
-    DCHECK(RuntimeEnabledFeatures::suboriginsEnabled());
-    DCHECK(m_securityOrigin.get());
-    DCHECK(!m_securityOrigin->hasSuborigin() || m_securityOrigin->suborigin()->name() == suborigin.name());
-    m_securityOrigin->addSuborigin(suborigin);
-    didUpdateSecurityOrigin();
+  DCHECK(!suborigin.name().isEmpty());
+  DCHECK(RuntimeEnabledFeatures::suboriginsEnabled());
+  DCHECK(m_securityOrigin.get());
+  DCHECK(!m_securityOrigin->hasSuborigin() ||
+         m_securityOrigin->suborigin()->name() == suborigin.name());
+  m_securityOrigin->addSuborigin(suborigin);
+  didUpdateSecurityOrigin();
 }
 
-} // namespace blink
+}  // namespace blink

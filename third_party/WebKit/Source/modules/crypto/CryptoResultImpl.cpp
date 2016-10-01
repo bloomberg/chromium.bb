@@ -49,205 +49,190 @@
 
 namespace blink {
 
-static void rejectWithTypeError(const String& errorDetails, ScriptPromiseResolver* resolver)
-{
-    // Duplicate some of the checks done by ScriptPromiseResolver.
-    if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
+static void rejectWithTypeError(const String& errorDetails,
+                                ScriptPromiseResolver* resolver) {
+  // Duplicate some of the checks done by ScriptPromiseResolver.
+  if (!resolver->getExecutionContext() ||
+      resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
 
-    ScriptState::Scope scope(resolver->getScriptState());
-    v8::Isolate* isolate = resolver->getScriptState()->isolate();
-    resolver->reject(v8::Exception::TypeError(v8String(isolate, errorDetails)));
+  ScriptState::Scope scope(resolver->getScriptState());
+  v8::Isolate* isolate = resolver->getScriptState()->isolate();
+  resolver->reject(v8::Exception::TypeError(v8String(isolate, errorDetails)));
 }
 
 class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
-public:
-    static Resolver* create(ScriptState* scriptState, CryptoResultImpl* result)
-    {
-        ASSERT(scriptState->contextIsValid());
-        Resolver* resolver = new Resolver(scriptState, result);
-        resolver->suspendIfNeeded();
-        resolver->keepAliveWhilePending();
-        return resolver;
-    }
+ public:
+  static Resolver* create(ScriptState* scriptState, CryptoResultImpl* result) {
+    ASSERT(scriptState->contextIsValid());
+    Resolver* resolver = new Resolver(scriptState, result);
+    resolver->suspendIfNeeded();
+    resolver->keepAliveWhilePending();
+    return resolver;
+  }
 
-    void stop() override
-    {
-        m_result->cancel();
-        m_result = nullptr;
-        ScriptPromiseResolver::stop();
-    }
+  void stop() override {
+    m_result->cancel();
+    m_result = nullptr;
+    ScriptPromiseResolver::stop();
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_result);
-        ScriptPromiseResolver::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_result);
+    ScriptPromiseResolver::trace(visitor);
+  }
 
-private:
-    Resolver(ScriptState* scriptState, CryptoResultImpl* result)
-        : ScriptPromiseResolver(scriptState)
-        , m_result(result) { }
+ private:
+  Resolver(ScriptState* scriptState, CryptoResultImpl* result)
+      : ScriptPromiseResolver(scriptState), m_result(result) {}
 
-    Member<CryptoResultImpl> m_result;
+  Member<CryptoResultImpl> m_result;
 };
 
-CryptoResultImpl::ResultCancel::ResultCancel()
-    : m_cancelled(0)
-{
+CryptoResultImpl::ResultCancel::ResultCancel() : m_cancelled(0) {}
+
+bool CryptoResultImpl::ResultCancel::cancelled() const {
+  return acquireLoad(&m_cancelled);
 }
 
-bool CryptoResultImpl::ResultCancel::cancelled() const
-{
-    return acquireLoad(&m_cancelled);
+void CryptoResultImpl::ResultCancel::cancel() {
+  releaseStore(&m_cancelled, 1);
 }
 
-void CryptoResultImpl::ResultCancel::cancel()
-{
-    releaseStore(&m_cancelled, 1);
-}
-
-ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType errorType)
-{
-    switch (errorType) {
+ExceptionCode webCryptoErrorToExceptionCode(WebCryptoErrorType errorType) {
+  switch (errorType) {
     case WebCryptoErrorTypeNotSupported:
-        return NotSupportedError;
+      return NotSupportedError;
     case WebCryptoErrorTypeSyntax:
-        return SyntaxError;
+      return SyntaxError;
     case WebCryptoErrorTypeInvalidAccess:
-        return InvalidAccessError;
+      return InvalidAccessError;
     case WebCryptoErrorTypeData:
-        return DataError;
+      return DataError;
     case WebCryptoErrorTypeOperation:
-        return OperationError;
+      return OperationError;
     case WebCryptoErrorTypeType:
-        return V8TypeError;
-    }
+      return V8TypeError;
+  }
 
-    ASSERT_NOT_REACHED();
-    return 0;
+  ASSERT_NOT_REACHED();
+  return 0;
 }
 
 CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
-    : m_resolver(Resolver::create(scriptState, this))
-    , m_cancel(ResultCancel::create())
-{
-    // Sync cancellation state.
-    if (scriptState->getExecutionContext()->activeDOMObjectsAreStopped())
-        m_cancel->cancel();
-}
-
-CryptoResultImpl::~CryptoResultImpl()
-{
-    ASSERT(!m_resolver);
-}
-
-DEFINE_TRACE(CryptoResultImpl)
-{
-    visitor->trace(m_resolver);
-    CryptoResult::trace(visitor);
-}
-
-void CryptoResultImpl::clearResolver()
-{
-    m_resolver = nullptr;
-}
-
-CryptoResultImpl* CryptoResultImpl::create(ScriptState* scriptState)
-{
-    return new CryptoResultImpl(scriptState);
-}
-
-void CryptoResultImpl::completeWithError(WebCryptoErrorType errorType, const WebString& errorDetails)
-{
-    if (!m_resolver)
-        return;
-
-    ExceptionCode ec = webCryptoErrorToExceptionCode(errorType);
-
-    // Handle TypeError separately, as it cannot be created using
-    // DOMException.
-    if (ec == V8TypeError)
-        rejectWithTypeError(errorDetails, m_resolver);
-    else
-        m_resolver->reject(DOMException::create(ec, errorDetails));
-    clearResolver();
-}
-
-void CryptoResultImpl::completeWithBuffer(const void* bytes, unsigned bytesSize)
-{
-    if (!m_resolver)
-        return;
-
-    m_resolver->resolve(DOMArrayBuffer::create(bytes, bytesSize));
-    clearResolver();
-}
-
-void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
-{
-    if (!m_resolver)
-        return;
-
-    ScriptState* scriptState = m_resolver->getScriptState();
-    ScriptState::Scope scope(scriptState);
-
-    v8::Local<v8::String> jsonString = v8StringFromUtf8(scriptState->isolate(), utf8Data, length);
-
-    v8::TryCatch exceptionCatcher(scriptState->isolate());
-    v8::Local<v8::Value> jsonDictionary;
-    if (v8Call(v8::JSON::Parse(scriptState->isolate(), jsonString), jsonDictionary, exceptionCatcher))
-        m_resolver->resolve(jsonDictionary);
-    else
-        m_resolver->reject(exceptionCatcher.Exception());
-    clearResolver();
-}
-
-void CryptoResultImpl::completeWithBoolean(bool b)
-{
-    if (!m_resolver)
-        return;
-
-    m_resolver->resolve(b);
-    clearResolver();
-}
-
-void CryptoResultImpl::completeWithKey(const WebCryptoKey& key)
-{
-    if (!m_resolver)
-        return;
-
-    m_resolver->resolve(CryptoKey::create(key));
-    clearResolver();
-}
-
-void CryptoResultImpl::completeWithKeyPair(const WebCryptoKey& publicKey, const WebCryptoKey& privateKey)
-{
-    if (!m_resolver)
-        return;
-
-    ScriptState* scriptState = m_resolver->getScriptState();
-    ScriptState::Scope scope(scriptState);
-
-    V8ObjectBuilder keyPair(scriptState);
-
-    keyPair.add("publicKey", ScriptValue::from(scriptState, CryptoKey::create(publicKey)));
-    keyPair.add("privateKey", ScriptValue::from(scriptState, CryptoKey::create(privateKey)));
-
-    m_resolver->resolve(keyPair.v8Value());
-    clearResolver();
-}
-
-void CryptoResultImpl::cancel()
-{
-    ASSERT(m_cancel);
+    : m_resolver(Resolver::create(scriptState, this)),
+      m_cancel(ResultCancel::create()) {
+  // Sync cancellation state.
+  if (scriptState->getExecutionContext()->activeDOMObjectsAreStopped())
     m_cancel->cancel();
-    m_cancel.clear();
-    clearResolver();
 }
 
-ScriptPromise CryptoResultImpl::promise()
-{
-    return m_resolver ? m_resolver->promise() : ScriptPromise();
+CryptoResultImpl::~CryptoResultImpl() {
+  ASSERT(!m_resolver);
 }
 
-} // namespace blink
+DEFINE_TRACE(CryptoResultImpl) {
+  visitor->trace(m_resolver);
+  CryptoResult::trace(visitor);
+}
+
+void CryptoResultImpl::clearResolver() {
+  m_resolver = nullptr;
+}
+
+CryptoResultImpl* CryptoResultImpl::create(ScriptState* scriptState) {
+  return new CryptoResultImpl(scriptState);
+}
+
+void CryptoResultImpl::completeWithError(WebCryptoErrorType errorType,
+                                         const WebString& errorDetails) {
+  if (!m_resolver)
+    return;
+
+  ExceptionCode ec = webCryptoErrorToExceptionCode(errorType);
+
+  // Handle TypeError separately, as it cannot be created using
+  // DOMException.
+  if (ec == V8TypeError)
+    rejectWithTypeError(errorDetails, m_resolver);
+  else
+    m_resolver->reject(DOMException::create(ec, errorDetails));
+  clearResolver();
+}
+
+void CryptoResultImpl::completeWithBuffer(const void* bytes,
+                                          unsigned bytesSize) {
+  if (!m_resolver)
+    return;
+
+  m_resolver->resolve(DOMArrayBuffer::create(bytes, bytesSize));
+  clearResolver();
+}
+
+void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length) {
+  if (!m_resolver)
+    return;
+
+  ScriptState* scriptState = m_resolver->getScriptState();
+  ScriptState::Scope scope(scriptState);
+
+  v8::Local<v8::String> jsonString =
+      v8StringFromUtf8(scriptState->isolate(), utf8Data, length);
+
+  v8::TryCatch exceptionCatcher(scriptState->isolate());
+  v8::Local<v8::Value> jsonDictionary;
+  if (v8Call(v8::JSON::Parse(scriptState->isolate(), jsonString),
+             jsonDictionary, exceptionCatcher))
+    m_resolver->resolve(jsonDictionary);
+  else
+    m_resolver->reject(exceptionCatcher.Exception());
+  clearResolver();
+}
+
+void CryptoResultImpl::completeWithBoolean(bool b) {
+  if (!m_resolver)
+    return;
+
+  m_resolver->resolve(b);
+  clearResolver();
+}
+
+void CryptoResultImpl::completeWithKey(const WebCryptoKey& key) {
+  if (!m_resolver)
+    return;
+
+  m_resolver->resolve(CryptoKey::create(key));
+  clearResolver();
+}
+
+void CryptoResultImpl::completeWithKeyPair(const WebCryptoKey& publicKey,
+                                           const WebCryptoKey& privateKey) {
+  if (!m_resolver)
+    return;
+
+  ScriptState* scriptState = m_resolver->getScriptState();
+  ScriptState::Scope scope(scriptState);
+
+  V8ObjectBuilder keyPair(scriptState);
+
+  keyPair.add("publicKey",
+              ScriptValue::from(scriptState, CryptoKey::create(publicKey)));
+  keyPair.add("privateKey",
+              ScriptValue::from(scriptState, CryptoKey::create(privateKey)));
+
+  m_resolver->resolve(keyPair.v8Value());
+  clearResolver();
+}
+
+void CryptoResultImpl::cancel() {
+  ASSERT(m_cancel);
+  m_cancel->cancel();
+  m_cancel.clear();
+  clearResolver();
+}
+
+ScriptPromise CryptoResultImpl::promise() {
+  return m_resolver ? m_resolver->promise() : ScriptPromise();
+}
+
+}  // namespace blink

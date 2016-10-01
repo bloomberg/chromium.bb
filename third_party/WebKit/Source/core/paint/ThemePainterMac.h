@@ -31,28 +31,56 @@ namespace blink {
 class LayoutThemeMac;
 
 class ThemePainterMac final : public ThemePainter {
-public:
-    ThemePainterMac(LayoutThemeMac&);
+ public:
+  ThemePainterMac(LayoutThemeMac&);
 
-private:
-    bool paintButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintCheckbox(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintCapsLockIndicator(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintInnerSpinButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintMenuList(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintMenuListButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintProgressBar(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintRadio(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintSliderThumb(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintSliderTrack(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintSearchField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintSearchFieldCancelButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintTextArea(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintTextField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
+ private:
+  bool paintButton(const LayoutObject&,
+                   const PaintInfo&,
+                   const IntRect&) override;
+  bool paintCheckbox(const LayoutObject&,
+                     const PaintInfo&,
+                     const IntRect&) override;
+  bool paintCapsLockIndicator(const LayoutObject&,
+                              const PaintInfo&,
+                              const IntRect&) override;
+  bool paintInnerSpinButton(const LayoutObject&,
+                            const PaintInfo&,
+                            const IntRect&) override;
+  bool paintMenuList(const LayoutObject&,
+                     const PaintInfo&,
+                     const IntRect&) override;
+  bool paintMenuListButton(const LayoutObject&,
+                           const PaintInfo&,
+                           const IntRect&) override;
+  bool paintProgressBar(const LayoutObject&,
+                        const PaintInfo&,
+                        const IntRect&) override;
+  bool paintRadio(const LayoutObject&,
+                  const PaintInfo&,
+                  const IntRect&) override;
+  bool paintSliderThumb(const LayoutObject&,
+                        const PaintInfo&,
+                        const IntRect&) override;
+  bool paintSliderTrack(const LayoutObject&,
+                        const PaintInfo&,
+                        const IntRect&) override;
+  bool paintSearchField(const LayoutObject&,
+                        const PaintInfo&,
+                        const IntRect&) override;
+  bool paintSearchFieldCancelButton(const LayoutObject&,
+                                    const PaintInfo&,
+                                    const IntRect&) override;
+  bool paintTextArea(const LayoutObject&,
+                     const PaintInfo&,
+                     const IntRect&) override;
+  bool paintTextField(const LayoutObject&,
+                      const PaintInfo&,
+                      const IntRect&) override;
 
-    LayoutThemeMac& m_layoutTheme;
+  LayoutThemeMac& m_layoutTheme;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ThemePainterMac_h
+#endif  // ThemePainterMac_h

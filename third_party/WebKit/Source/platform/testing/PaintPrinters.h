@@ -34,6 +34,6 @@ void PrintTo(const TransformPaintPropertyNode&, std::ostream*);
 void PrintTo(const EffectPaintPropertyNode&, std::ostream*);
 void PrintTo(const ScrollPaintPropertyNode&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintPrinters_h
+#endif  // PaintPrinters_h

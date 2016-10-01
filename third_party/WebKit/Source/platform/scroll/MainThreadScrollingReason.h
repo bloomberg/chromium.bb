@@ -10,9 +10,8 @@
 namespace blink {
 
 // A wrapper around cc's structure to expose it to core.
-struct MainThreadScrollingReason : public cc::MainThreadScrollingReason {
-};
+struct MainThreadScrollingReason : public cc::MainThreadScrollingReason {};
 
-} // namespace blink
+}  // namespace blink
 
 #endif

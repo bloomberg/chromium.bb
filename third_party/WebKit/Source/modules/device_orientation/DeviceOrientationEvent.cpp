@@ -29,71 +29,68 @@
 
 namespace blink {
 
-DeviceOrientationEvent::~DeviceOrientationEvent()
-{
-}
+DeviceOrientationEvent::~DeviceOrientationEvent() {}
 
 DeviceOrientationEvent::DeviceOrientationEvent()
-    : m_orientation(DeviceOrientationData::create())
-{
+    : m_orientation(DeviceOrientationData::create()) {}
+
+DeviceOrientationEvent::DeviceOrientationEvent(
+    const AtomicString& eventType,
+    DeviceOrientationData* orientation)
+    : Event(eventType, false, false)  // Can't bubble, not cancelable
+      ,
+      m_orientation(orientation) {}
+
+void DeviceOrientationEvent::initDeviceOrientationEvent(
+    const AtomicString& type,
+    bool bubbles,
+    bool cancelable,
+    const Nullable<double>& alpha,
+    const Nullable<double>& beta,
+    const Nullable<double>& gamma,
+    bool absolute) {
+  if (isBeingDispatched())
+    return;
+
+  initEvent(type, bubbles, cancelable);
+  m_orientation = DeviceOrientationData::create(alpha, beta, gamma, absolute);
 }
 
-DeviceOrientationEvent::DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData* orientation)
-    : Event(eventType, false, false) // Can't bubble, not cancelable
-    , m_orientation(orientation)
-{
+double DeviceOrientationEvent::alpha(bool& isNull) const {
+  if (m_orientation->canProvideAlpha())
+    return m_orientation->alpha();
+
+  isNull = true;
+  return 0;
 }
 
-void DeviceOrientationEvent::initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute)
-{
-    if (isBeingDispatched())
-        return;
+double DeviceOrientationEvent::beta(bool& isNull) const {
+  if (m_orientation->canProvideBeta())
+    return m_orientation->beta();
 
-    initEvent(type, bubbles, cancelable);
-    m_orientation = DeviceOrientationData::create(alpha, beta, gamma, absolute);
+  isNull = true;
+  return 0;
 }
 
-double DeviceOrientationEvent::alpha(bool& isNull) const
-{
-    if (m_orientation->canProvideAlpha())
-        return m_orientation->alpha();
+double DeviceOrientationEvent::gamma(bool& isNull) const {
+  if (m_orientation->canProvideGamma())
+    return m_orientation->gamma();
 
-    isNull = true;
-    return 0;
+  isNull = true;
+  return 0;
 }
 
-double DeviceOrientationEvent::beta(bool& isNull) const
-{
-    if (m_orientation->canProvideBeta())
-        return m_orientation->beta();
-
-    isNull = true;
-    return 0;
+bool DeviceOrientationEvent::absolute() const {
+  return m_orientation->absolute();
 }
 
-double DeviceOrientationEvent::gamma(bool& isNull) const
-{
-    if (m_orientation->canProvideGamma())
-        return m_orientation->gamma();
-
-    isNull = true;
-    return 0;
+const AtomicString& DeviceOrientationEvent::interfaceName() const {
+  return EventNames::DeviceOrientationEvent;
 }
 
-bool DeviceOrientationEvent::absolute() const
-{
-    return m_orientation->absolute();
+DEFINE_TRACE(DeviceOrientationEvent) {
+  visitor->trace(m_orientation);
+  Event::trace(visitor);
 }
 
-const AtomicString& DeviceOrientationEvent::interfaceName() const
-{
-    return EventNames::DeviceOrientationEvent;
-}
-
-DEFINE_TRACE(DeviceOrientationEvent)
-{
-    visitor->trace(m_orientation);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -17,27 +17,29 @@ namespace blink {
 
 struct WebVREyeParameters;
 
-class VREyeParameters final : public GarbageCollected<VREyeParameters>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    VREyeParameters();
+class VREyeParameters final : public GarbageCollected<VREyeParameters>,
+                              public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    DOMFloat32Array* offset() const { return m_offset; }
-    VRFieldOfView* fieldOfView() const { return m_fieldOfView; }
-    unsigned long renderWidth() const { return m_renderWidth; }
-    unsigned long renderHeight() const { return m_renderHeight; }
+ public:
+  VREyeParameters();
 
-    void update(const device::blink::VREyeParametersPtr&);
+  DOMFloat32Array* offset() const { return m_offset; }
+  VRFieldOfView* fieldOfView() const { return m_fieldOfView; }
+  unsigned long renderWidth() const { return m_renderWidth; }
+  unsigned long renderHeight() const { return m_renderHeight; }
 
-    DECLARE_VIRTUAL_TRACE()
+  void update(const device::blink::VREyeParametersPtr&);
 
-private:
-    Member<DOMFloat32Array> m_offset;
-    Member<VRFieldOfView> m_fieldOfView;
-    unsigned long m_renderWidth;
-    unsigned long m_renderHeight;
+  DECLARE_VIRTUAL_TRACE()
+
+ private:
+  Member<DOMFloat32Array> m_offset;
+  Member<VRFieldOfView> m_fieldOfView;
+  unsigned long m_renderWidth;
+  unsigned long m_renderHeight;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // VREyeParameters_h
+#endif  // VREyeParameters_h

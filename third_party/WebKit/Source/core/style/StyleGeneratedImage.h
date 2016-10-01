@@ -33,37 +33,40 @@ class CSSValue;
 class CSSImageGeneratorValue;
 
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
-public:
-    static StyleGeneratedImage* create(const CSSImageGeneratorValue& value)
-    {
-        return new StyleGeneratedImage(value);
-    }
+ public:
+  static StyleGeneratedImage* create(const CSSImageGeneratorValue& value) {
+    return new StyleGeneratedImage(value);
+  }
 
-    WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
+  WrappedImagePtr data() const override { return m_imageGeneratorValue.get(); }
 
-    CSSValue* cssValue() const override;
-    CSSValue* computedCSSValue() const override;
+  CSSValue* cssValue() const override;
+  CSSValue* computedCSSValue() const override;
 
-    LayoutSize imageSize(const LayoutObject&, float multiplier, const LayoutSize& defaultObjectSize) const override;
-    bool imageHasRelativeSize() const override { return !m_fixedSize; }
-    bool usesImageContainerSize() const override { return !m_fixedSize; }
-    void addClient(LayoutObject*) override;
-    void removeClient(LayoutObject*) override;
-    PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float) const override;
-    bool knownToBeOpaque(const LayoutObject&) const override;
+  LayoutSize imageSize(const LayoutObject&,
+                       float multiplier,
+                       const LayoutSize& defaultObjectSize) const override;
+  bool imageHasRelativeSize() const override { return !m_fixedSize; }
+  bool usesImageContainerSize() const override { return !m_fixedSize; }
+  void addClient(LayoutObject*) override;
+  void removeClient(LayoutObject*) override;
+  PassRefPtr<Image> image(const LayoutObject&,
+                          const IntSize&,
+                          float) const override;
+  bool knownToBeOpaque(const LayoutObject&) const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    StyleGeneratedImage(const CSSImageGeneratorValue&);
+ private:
+  StyleGeneratedImage(const CSSImageGeneratorValue&);
 
-    // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once Member<>
-    // supports const types.
-    Member<CSSImageGeneratorValue> m_imageGeneratorValue;
-    const bool m_fixedSize;
+  // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once Member<>
+  // supports const types.
+  Member<CSSImageGeneratorValue> m_imageGeneratorValue;
+  const bool m_fixedSize;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleGeneratedImage, isGeneratedImage());
 
-} // namespace blink
+}  // namespace blink
 #endif

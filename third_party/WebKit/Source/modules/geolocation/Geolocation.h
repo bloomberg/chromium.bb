@@ -53,157 +53,167 @@ class GeolocationError;
 class ExecutionContext;
 
 class MODULES_EXPORT Geolocation final
-    : public GarbageCollectedFinalized<Geolocation>
-    , public ScriptWrappable
-    , public ContextLifecycleObserver
-    , public PageVisibilityObserver {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
-public:
-    static Geolocation* create(ExecutionContext*);
-    ~Geolocation();
-    DECLARE_VIRTUAL_TRACE();
+    : public GarbageCollectedFinalized<Geolocation>,
+      public ScriptWrappable,
+      public ContextLifecycleObserver,
+      public PageVisibilityObserver {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
 
-    // Inherited from ContextLifecycleObserver AND PageVisibilityObserver.
-    void contextDestroyed() override;
+ public:
+  static Geolocation* create(ExecutionContext*);
+  ~Geolocation();
+  DECLARE_VIRTUAL_TRACE();
 
-    Document* document() const;
-    LocalFrame* frame() const;
+  // Inherited from ContextLifecycleObserver AND PageVisibilityObserver.
+  void contextDestroyed() override;
 
-    // Creates a oneshot and attempts to obtain a position that meets the
-    // constraints of the options.
-    void getCurrentPosition(PositionCallback*, PositionErrorCallback*, const PositionOptions&);
+  Document* document() const;
+  LocalFrame* frame() const;
 
-    // Creates a watcher that will be notified whenever a new position is
-    // available that meets the constraints of the options.
-    int watchPosition(PositionCallback*, PositionErrorCallback*, const PositionOptions&);
+  // Creates a oneshot and attempts to obtain a position that meets the
+  // constraints of the options.
+  void getCurrentPosition(PositionCallback*,
+                          PositionErrorCallback*,
+                          const PositionOptions&);
 
-    // Removes all references to the watcher, it will not be updated again.
-    void clearWatch(int watchID);
+  // Creates a watcher that will be notified whenever a new position is
+  // available that meets the constraints of the options.
+  int watchPosition(PositionCallback*,
+                    PositionErrorCallback*,
+                    const PositionOptions&);
 
-    bool isAllowed() const { return m_geolocationPermission == PermissionAllowed; }
+  // Removes all references to the watcher, it will not be updated again.
+  void clearWatch(int watchID);
 
-    // Notifies this that a new position is available. Must never be called
-    // before permission is granted by the user.
-    void positionChanged();
+  bool isAllowed() const {
+    return m_geolocationPermission == PermissionAllowed;
+  }
 
-    // Discards the notifier because a fatal error occurred for it.
-    void fatalErrorOccurred(GeoNotifier*);
+  // Notifies this that a new position is available. Must never be called
+  // before permission is granted by the user.
+  void positionChanged();
 
-    // Adds the notifier to the set awaiting a cached position. Runs the success
-    // callbacks for them if permission has been granted. Requests permission if
-    // it is unknown.
-    void requestUsesCachedPosition(GeoNotifier*);
+  // Discards the notifier because a fatal error occurred for it.
+  void fatalErrorOccurred(GeoNotifier*);
 
-    // Discards the notifier if it is a oneshot because it timed it.
-    void requestTimedOut(GeoNotifier*);
+  // Adds the notifier to the set awaiting a cached position. Runs the success
+  // callbacks for them if permission has been granted. Requests permission if
+  // it is unknown.
+  void requestUsesCachedPosition(GeoNotifier*);
 
-    // Inherited from PageVisibilityObserver.
-    void pageVisibilityChanged() override;
+  // Discards the notifier if it is a oneshot because it timed it.
+  void requestTimedOut(GeoNotifier*);
 
-private:
-    bool isDenied() const { return m_geolocationPermission == PermissionDenied; }
+  // Inherited from PageVisibilityObserver.
+  void pageVisibilityChanged() override;
 
-    explicit Geolocation(ExecutionContext*);
+ private:
+  bool isDenied() const { return m_geolocationPermission == PermissionDenied; }
 
-    typedef HeapVector<Member<GeoNotifier>> GeoNotifierVector;
-    typedef HeapHashSet<Member<GeoNotifier>> GeoNotifierSet;
+  explicit Geolocation(ExecutionContext*);
 
-    bool hasListeners() const { return !m_oneShots.isEmpty() || !m_watchers.isEmpty(); }
+  typedef HeapVector<Member<GeoNotifier>> GeoNotifierVector;
+  typedef HeapHashSet<Member<GeoNotifier>> GeoNotifierSet;
 
-    void sendError(GeoNotifierVector&, PositionError*);
-    void sendPosition(GeoNotifierVector&, Geoposition*);
+  bool hasListeners() const {
+    return !m_oneShots.isEmpty() || !m_watchers.isEmpty();
+  }
 
-    // Removes notifiers that use a cached position from |notifiers| and
-    // if |cached| is not null they are added to it.
-    static void extractNotifiersWithCachedPosition(GeoNotifierVector& notifiers, GeoNotifierVector* cached);
+  void sendError(GeoNotifierVector&, PositionError*);
+  void sendPosition(GeoNotifierVector&, Geoposition*);
 
-    // Copies notifiers from |src| vector to |dest| set.
-    static void copyToSet(const GeoNotifierVector& src, GeoNotifierSet& dest);
+  // Removes notifiers that use a cached position from |notifiers| and
+  // if |cached| is not null they are added to it.
+  static void extractNotifiersWithCachedPosition(GeoNotifierVector& notifiers,
+                                                 GeoNotifierVector* cached);
 
-    static void stopTimer(GeoNotifierVector&);
-    void stopTimersForOneShots();
-    void stopTimersForWatchers();
-    void stopTimers();
+  // Copies notifiers from |src| vector to |dest| set.
+  static void copyToSet(const GeoNotifierVector& src, GeoNotifierSet& dest);
 
-    // Sets a fatal error on the given notifiers.
-    void cancelRequests(GeoNotifierVector&);
+  static void stopTimer(GeoNotifierVector&);
+  void stopTimersForOneShots();
+  void stopTimersForWatchers();
+  void stopTimers();
 
-    // Sets a fatal error on all notifiers.
-    void cancelAllRequests();
+  // Sets a fatal error on the given notifiers.
+  void cancelRequests(GeoNotifierVector&);
 
-    // Runs the success callbacks on all notifiers. A position must be available
-    // and the user must have given permission.
-    void makeSuccessCallbacks();
+  // Sets a fatal error on all notifiers.
+  void cancelAllRequests();
 
-    // Sends the given error to all notifiers, unless the error is not fatal and
-    // the notifier is due to receive a cached position. Clears the oneshots,
-    // and also  clears the watchers if the error is fatal.
-    void handleError(PositionError*);
+  // Runs the success callbacks on all notifiers. A position must be available
+  // and the user must have given permission.
+  void makeSuccessCallbacks();
 
-    // Requests permission to share positions with the page.
-    void requestPermission();
+  // Sends the given error to all notifiers, unless the error is not fatal and
+  // the notifier is due to receive a cached position. Clears the oneshots,
+  // and also  clears the watchers if the error is fatal.
+  void handleError(PositionError*);
 
-    // Connects to the Geolocation mojo service and starts polling for updates.
-    void startUpdating(GeoNotifier*);
+  // Requests permission to share positions with the page.
+  void requestPermission();
 
-    void stopUpdating();
+  // Connects to the Geolocation mojo service and starts polling for updates.
+  void startUpdating(GeoNotifier*);
 
-    void updateGeolocationServiceConnection();
-    void queryNextPosition();
+  void stopUpdating();
 
-    // Attempts to obtain a position for the given notifier, either by using
-    // the cached position or by requesting one from the GeolocationService.
-    // Sets a fatal error if permission is denied or no position can be
-    // obtained.
-    void startRequest(GeoNotifier*);
+  void updateGeolocationServiceConnection();
+  void queryNextPosition();
 
-    bool haveSuitableCachedPosition(const PositionOptions&);
+  // Attempts to obtain a position for the given notifier, either by using
+  // the cached position or by requesting one from the GeolocationService.
+  // Sets a fatal error if permission is denied or no position can be
+  // obtained.
+  void startRequest(GeoNotifier*);
 
-    // Record whether the origin trying to access Geolocation would be allowed
-    // to access a feature that can only be accessed by secure origins.
-    // See https://goo.gl/Y0ZkNV
-    void recordOriginTypeAccess() const;
+  bool haveSuitableCachedPosition(const PositionOptions&);
 
-    void onPositionUpdated(device::mojom::blink::GeopositionPtr);
+  // Record whether the origin trying to access Geolocation would be allowed
+  // to access a feature that can only be accessed by secure origins.
+  // See https://goo.gl/Y0ZkNV
+  void recordOriginTypeAccess() const;
 
-    // Processes the notifiers that were waiting for a permission decision. If
-    // granted then the notifier's timers are started. Otherwise, a fatal error
-    // is set on them.
-    void onGeolocationPermissionUpdated(mojom::blink::PermissionStatus);
+  void onPositionUpdated(device::mojom::blink::GeopositionPtr);
 
-    void onGeolocationConnectionError();
-    void onPermissionConnectionError();
+  // Processes the notifiers that were waiting for a permission decision. If
+  // granted then the notifier's timers are started. Otherwise, a fatal error
+  // is set on them.
+  void onGeolocationPermissionUpdated(mojom::blink::PermissionStatus);
 
-    GeoNotifierSet m_oneShots;
-    GeolocationWatchers m_watchers;
-    GeoNotifierSet m_pendingForPermissionNotifiers;
-    Member<Geoposition> m_lastPosition;
+  void onGeolocationConnectionError();
+  void onPermissionConnectionError();
 
-    // States of Geolocation permission as granted by the embedder. Unknown
-    // means that the embedder still has to be asked for the current permission
-    // level; Requested means that the user has yet to make a decision.
-    enum Permission {
-        PermissionUnknown,
-        PermissionRequested,
-        PermissionAllowed,
-        PermissionDenied
-    };
+  GeoNotifierSet m_oneShots;
+  GeolocationWatchers m_watchers;
+  GeoNotifierSet m_pendingForPermissionNotifiers;
+  Member<Geoposition> m_lastPosition;
 
-    Permission m_geolocationPermission;
-    device::mojom::blink::GeolocationServicePtr m_geolocationService;
-    bool m_enableHighAccuracy = false;
-    mojom::blink::PermissionServicePtr m_permissionService;
+  // States of Geolocation permission as granted by the embedder. Unknown
+  // means that the embedder still has to be asked for the current permission
+  // level; Requested means that the user has yet to make a decision.
+  enum Permission {
+    PermissionUnknown,
+    PermissionRequested,
+    PermissionAllowed,
+    PermissionDenied
+  };
 
-    // Whether a GeoNotifier is waiting for a position update.
-    bool m_updating = false;
+  Permission m_geolocationPermission;
+  device::mojom::blink::GeolocationServicePtr m_geolocationService;
+  bool m_enableHighAccuracy = false;
+  mojom::blink::PermissionServicePtr m_permissionService;
 
-    // Set to true when m_geolocationService is disconnected. This is used to
-    // detect when m_geolocationService is disconnected and reconnected while
-    // running callbacks in response to a call to onPositionUpdated().
-    bool m_disconnectedGeolocationService = false;
+  // Whether a GeoNotifier is waiting for a position update.
+  bool m_updating = false;
+
+  // Set to true when m_geolocationService is disconnected. This is used to
+  // detect when m_geolocationService is disconnected and reconnected while
+  // running callbacks in response to a call to onPositionUpdated().
+  bool m_disconnectedGeolocationService = false;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Geolocation_h
+#endif  // Geolocation_h

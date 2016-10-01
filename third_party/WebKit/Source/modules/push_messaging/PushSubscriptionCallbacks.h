@@ -21,20 +21,21 @@ struct WebPushSubscription;
 // the callback. It takes a ServiceWorkerRegistration in its constructor and
 // will pass it to the PushSubscription.
 class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
-    WTF_MAKE_NONCOPYABLE(PushSubscriptionCallbacks);
-    USING_FAST_MALLOC(PushSubscriptionCallbacks);
-public:
-    PushSubscriptionCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
-    ~PushSubscriptionCallbacks() override;
+  WTF_MAKE_NONCOPYABLE(PushSubscriptionCallbacks);
+  USING_FAST_MALLOC(PushSubscriptionCallbacks);
 
-    void onSuccess(std::unique_ptr<WebPushSubscription>) override;
-    void onError(const WebPushError&) override;
+ public:
+  PushSubscriptionCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
+  ~PushSubscriptionCallbacks() override;
 
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-    Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
+  void onSuccess(std::unique_ptr<WebPushSubscription>) override;
+  void onError(const WebPushError&) override;
+
+ private:
+  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PushSubscriptionCallbacks_h
+#endif  // PushSubscriptionCallbacks_h

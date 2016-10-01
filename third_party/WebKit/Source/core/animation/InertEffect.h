@@ -41,29 +41,38 @@ namespace blink {
 // Lightweight subset of KeyframeEffect.
 // Used to transport data for deferred KeyframeEffect construction and one off Interpolation sampling.
 class CORE_EXPORT InertEffect final : public AnimationEffectReadOnly {
-public:
-    static InertEffect* create(EffectModel*, const Timing&, bool paused, double inheritedTime);
-    void sample(Vector<RefPtr<Interpolation>>&) const;
-    EffectModel* model() const { return m_model.get(); }
-    bool paused() const { return m_paused; }
+ public:
+  static InertEffect* create(EffectModel*,
+                             const Timing&,
+                             bool paused,
+                             double inheritedTime);
+  void sample(Vector<RefPtr<Interpolation>>&) const;
+  EffectModel* model() const { return m_model.get(); }
+  bool paused() const { return m_paused; }
 
-    bool isInertEffect() const final { return true; }
+  bool isInertEffect() const final { return true; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    void updateChildrenAndEffects() const override { }
-    double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
+ protected:
+  void updateChildrenAndEffects() const override {}
+  double calculateTimeToEffectChange(bool forwards,
+                                     double inheritedTime,
+                                     double timeToNextIteration) const override;
 
-private:
-    InertEffect(EffectModel*, const Timing&, bool paused, double inheritedTime);
-    Member<EffectModel> m_model;
-    bool m_paused;
-    double m_inheritedTime;
+ private:
+  InertEffect(EffectModel*, const Timing&, bool paused, double inheritedTime);
+  Member<EffectModel> m_model;
+  bool m_paused;
+  double m_inheritedTime;
 };
 
-DEFINE_TYPE_CASTS(InertEffect, AnimationEffectReadOnly, animationEffect, animationEffect->isInertEffect(), animationEffect.isInertEffect());
+DEFINE_TYPE_CASTS(InertEffect,
+                  AnimationEffectReadOnly,
+                  animationEffect,
+                  animationEffect->isInertEffect(),
+                  animationEffect.isInertEffect());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

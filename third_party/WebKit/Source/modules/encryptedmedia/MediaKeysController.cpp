@@ -9,25 +9,22 @@
 
 namespace blink {
 
-const char* MediaKeysController::supplementName()
-{
-    return "MediaKeysController";
+const char* MediaKeysController::supplementName() {
+  return "MediaKeysController";
 }
 
 MediaKeysController::MediaKeysController(MediaKeysClient* client)
-    : m_client(client)
-{
+    : m_client(client) {}
+
+WebEncryptedMediaClient* MediaKeysController::encryptedMediaClient(
+    ExecutionContext* context) {
+  return m_client->encryptedMediaClient(context);
 }
 
-WebEncryptedMediaClient* MediaKeysController::encryptedMediaClient(ExecutionContext* context)
-{
-    return m_client->encryptedMediaClient(context);
+void MediaKeysController::provideMediaKeysTo(Page& page,
+                                             MediaKeysClient* client) {
+  MediaKeysController::provideTo(page, supplementName(),
+                                 new MediaKeysController(client));
 }
 
-void MediaKeysController::provideMediaKeysTo(Page& page, MediaKeysClient* client)
-{
-    MediaKeysController::provideTo(page, supplementName(), new MediaKeysController(client));
-}
-
-} // namespace blink
-
+}  // namespace blink

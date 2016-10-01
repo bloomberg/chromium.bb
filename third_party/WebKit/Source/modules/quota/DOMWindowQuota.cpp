@@ -38,44 +38,38 @@
 namespace blink {
 
 DOMWindowQuota::DOMWindowQuota(LocalDOMWindow& window)
-    : DOMWindowProperty(window.frame())
-{
-}
+    : DOMWindowProperty(window.frame()) {}
 
-const char* DOMWindowQuota::supplementName()
-{
-    return "DOMWindowQuota";
+const char* DOMWindowQuota::supplementName() {
+  return "DOMWindowQuota";
 }
 
 // static
-DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window)
-{
-    DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
-    if (!supplement) {
-        supplement = new DOMWindowQuota(window);
-        provideTo(window, supplementName(), supplement);
-    }
-    return *supplement;
+DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window) {
+  DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(
+      Supplement<LocalDOMWindow>::from(window, supplementName()));
+  if (!supplement) {
+    supplement = new DOMWindowQuota(window);
+    provideTo(window, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
 // static
-DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow& window)
-{
-    return DOMWindowQuota::from(toLocalDOMWindow(window)).webkitStorageInfo();
+DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow& window) {
+  return DOMWindowQuota::from(toLocalDOMWindow(window)).webkitStorageInfo();
 }
 
-DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const
-{
-    if (!m_storageInfo && frame())
-        m_storageInfo = DeprecatedStorageInfo::create();
-    return m_storageInfo.get();
+DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const {
+  if (!m_storageInfo && frame())
+    m_storageInfo = DeprecatedStorageInfo::create();
+  return m_storageInfo.get();
 }
 
-DEFINE_TRACE(DOMWindowQuota)
-{
-    visitor->trace(m_storageInfo);
-    Supplement<LocalDOMWindow>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+DEFINE_TRACE(DOMWindowQuota) {
+  visitor->trace(m_storageInfo);
+  Supplement<LocalDOMWindow>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-} // namespace blink
+}  // namespace blink

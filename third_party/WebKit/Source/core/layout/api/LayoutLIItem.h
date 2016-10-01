@@ -11,39 +11,30 @@
 namespace blink {
 
 class LayoutLIItem : public LayoutBoxItem {
-public:
-    explicit LayoutLIItem(LayoutListItem* layoutListItem)
-        : LayoutBoxItem(layoutListItem)
-    {
-    }
+ public:
+  explicit LayoutLIItem(LayoutListItem* layoutListItem)
+      : LayoutBoxItem(layoutListItem) {}
 
-    explicit LayoutLIItem(const LayoutItem& item)
-        : LayoutBoxItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isListItem());
-    }
+  explicit LayoutLIItem(const LayoutItem& item) : LayoutBoxItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isListItem());
+  }
 
-    explicit LayoutLIItem(std::nullptr_t) : LayoutBoxItem(nullptr) { }
+  explicit LayoutLIItem(std::nullptr_t) : LayoutBoxItem(nullptr) {}
 
-    LayoutLIItem() { }
+  LayoutLIItem() {}
 
-    void setNotInList(bool notInList)
-    {
-        return toListItem()->setNotInList(notInList);
-    }
+  void setNotInList(bool notInList) {
+    return toListItem()->setNotInList(notInList);
+  }
 
-private:
-    LayoutListItem* toListItem()
-    {
-        return toLayoutListItem(layoutObject());
-    }
+ private:
+  LayoutListItem* toListItem() { return toLayoutListItem(layoutObject()); }
 
-    const LayoutListItem* toListItem() const
-    {
-        return toLayoutListItem(layoutObject());
-    }
+  const LayoutListItem* toListItem() const {
+    return toLayoutListItem(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutLIItem_h
+#endif  // LayoutLIItem_h

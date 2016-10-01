@@ -11,26 +11,25 @@
 namespace blink {
 
 class CSSUnsetValue : public CSSValue {
-public:
-    static CSSUnsetValue* create();
+ public:
+  static CSSUnsetValue* create();
 
-    String customCSSText() const;
+  String customCSSText() const;
 
-    bool equals(const CSSUnsetValue&) const { return true; }
+  bool equals(const CSSUnsetValue&) const { return true; }
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValue::traceAfterDispatch(visitor);
+  }
 
-private:
-    friend class CSSValuePool;
+ private:
+  friend class CSSValuePool;
 
-    CSSUnsetValue()
-        : CSSValue(UnsetClass)
-    {
-    }
+  CSSUnsetValue() : CSSValue(UnsetClass) {}
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnsetValue, isUnsetValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSUnsetValue_h
+#endif  // CSSUnsetValue_h

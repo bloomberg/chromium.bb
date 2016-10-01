@@ -40,26 +40,25 @@ class HTMLSpanElement;
 
 // More accurately, this is ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
 class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
-public:
-    static ReplaceNodeWithSpanCommand* create(HTMLElement* element)
-    {
-        return new ReplaceNodeWithSpanCommand(element);
-    }
+ public:
+  static ReplaceNodeWithSpanCommand* create(HTMLElement* element) {
+    return new ReplaceNodeWithSpanCommand(element);
+  }
 
-    HTMLSpanElement* spanElement() { return m_spanElement.get(); }
+  HTMLSpanElement* spanElement() { return m_spanElement.get(); }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit ReplaceNodeWithSpanCommand(HTMLElement*);
+ private:
+  explicit ReplaceNodeWithSpanCommand(HTMLElement*);
 
-    void doApply(EditingState*) override;
-    void doUnapply() override;
+  void doApply(EditingState*) override;
+  void doUnapply() override;
 
-    Member<HTMLElement> m_elementToReplace;
-    Member<HTMLSpanElement> m_spanElement;
+  Member<HTMLElement> m_elementToReplace;
+  Member<HTMLSpanElement> m_spanElement;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ReplaceNodeWithSpanCommand
+#endif  // ReplaceNodeWithSpanCommand

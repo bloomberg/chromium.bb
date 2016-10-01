@@ -10,14 +10,22 @@
 #include "wtf/HashTraits.h"
 
 namespace WTF {
-template<> struct DefaultHash<blink::CSSPropertyID> {
-    typedef IntHash<unsigned> Hash;
+template <>
+struct DefaultHash<blink::CSSPropertyID> {
+  typedef IntHash<unsigned> Hash;
 };
-template<> struct HashTraits<blink::CSSPropertyID> : GenericHashTraits<blink::CSSPropertyID> {
-    static const bool emptyValueIsZero = true;
-    static void constructDeletedValue(blink::CSSPropertyID& slot, bool) { slot = static_cast<blink::CSSPropertyID>(blink::lastUnresolvedCSSProperty + 1); }
-    static bool isDeletedValue(blink::CSSPropertyID value) { return value == (blink::lastUnresolvedCSSProperty + 1); }
+template <>
+struct HashTraits<blink::CSSPropertyID>
+    : GenericHashTraits<blink::CSSPropertyID> {
+  static const bool emptyValueIsZero = true;
+  static void constructDeletedValue(blink::CSSPropertyID& slot, bool) {
+    slot =
+        static_cast<blink::CSSPropertyID>(blink::lastUnresolvedCSSProperty + 1);
+  }
+  static bool isDeletedValue(blink::CSSPropertyID value) {
+    return value == (blink::lastUnresolvedCSSProperty + 1);
+  }
 };
-} // namespace WTF
+}  // namespace WTF
 
-#endif // CSSPropertyIDTemplates_h
+#endif  // CSSPropertyIDTemplates_h

@@ -31,60 +31,90 @@
 namespace blink {
 
 class ThemeMac : public Theme {
-public:
-    ThemeMac() {}
-    ~ThemeMac() override {}
+ public:
+  ThemeMac() {}
+  ~ThemeMac() override {}
 
-    virtual int baselinePositionAdjustment(ControlPart) const;
+  virtual int baselinePositionAdjustment(ControlPart) const;
 
-    virtual FontDescription controlFont(ControlPart, const FontDescription&, float zoomFactor) const;
+  virtual FontDescription controlFont(ControlPart,
+                                      const FontDescription&,
+                                      float zoomFactor) const;
 
-    virtual LengthSize controlSize(ControlPart, const FontDescription&, const LengthSize&, float zoomFactor) const;
-    virtual LengthSize minimumControlSize(ControlPart, const FontDescription&, float zoomFactor) const;
+  virtual LengthSize controlSize(ControlPart,
+                                 const FontDescription&,
+                                 const LengthSize&,
+                                 float zoomFactor) const;
+  virtual LengthSize minimumControlSize(ControlPart,
+                                        const FontDescription&,
+                                        float zoomFactor) const;
 
-    virtual LengthBox controlPadding(ControlPart, const FontDescription&, const LengthBox& zoomedBox, float zoomFactor) const;
-    virtual LengthBox controlBorder(ControlPart, const FontDescription&, const LengthBox& zoomedBox, float zoomFactor) const;
+  virtual LengthBox controlPadding(ControlPart,
+                                   const FontDescription&,
+                                   const LengthBox& zoomedBox,
+                                   float zoomFactor) const;
+  virtual LengthBox controlBorder(ControlPart,
+                                  const FontDescription&,
+                                  const LengthBox& zoomedBox,
+                                  float zoomFactor) const;
 
-    virtual bool controlRequiresPreWhiteSpace(ControlPart part) const { return part == PushButtonPart; }
+  virtual bool controlRequiresPreWhiteSpace(ControlPart part) const {
+    return part == PushButtonPart;
+  }
 
-    virtual void addVisualOverflow(ControlPart, ControlStates, float zoomFactor, IntRect& borderBox) const;
+  virtual void addVisualOverflow(ControlPart,
+                                 ControlStates,
+                                 float zoomFactor,
+                                 IntRect& borderBox) const;
 
-    // Inflate an IntRect to accout for specific padding around margins.
-    enum {
-        TopMargin = 0,
-        RightMargin = 1,
-        BottomMargin = 2,
-        LeftMargin = 3
-    };
-    static PLATFORM_EXPORT IntRect inflateRect(const IntRect&, const IntSize&, const int* margins, float zoomLevel = 1.0f);
+  // Inflate an IntRect to accout for specific padding around margins.
+  enum { TopMargin = 0, RightMargin = 1, BottomMargin = 2, LeftMargin = 3 };
+  static PLATFORM_EXPORT IntRect inflateRect(const IntRect&,
+                                             const IntSize&,
+                                             const int* margins,
+                                             float zoomLevel = 1.0f);
 
-    // Inflate an IntRect to account for any bleeding that would happen due to anti-aliasing.
-    static PLATFORM_EXPORT IntRect inflateRectForAA(const IntRect&);
+  // Inflate an IntRect to account for any bleeding that would happen due to anti-aliasing.
+  static PLATFORM_EXPORT IntRect inflateRectForAA(const IntRect&);
 
-    // Inflate an IntRect to account for its focus ring.
-    // TODO: Consider using computing the focus ring's bounds with
-    // -[NSCell focusRingMaskBoundsForFrame:inView:]).
-    static PLATFORM_EXPORT IntRect inflateRectForFocusRing(const IntRect&);
+  // Inflate an IntRect to account for its focus ring.
+  // TODO: Consider using computing the focus ring's bounds with
+  // -[NSCell focusRingMaskBoundsForFrame:inView:]).
+  static PLATFORM_EXPORT IntRect inflateRectForFocusRing(const IntRect&);
 
-    static PLATFORM_EXPORT LengthSize checkboxSize(const FontDescription&, const LengthSize& zoomedSize, float zoomFactor);
-    static PLATFORM_EXPORT NSButtonCell *checkbox(ControlStates, const IntRect& zoomedRect, float zoomFactor);
-    static PLATFORM_EXPORT const IntSize* checkboxSizes();
-    static PLATFORM_EXPORT const int* checkboxMargins(NSControlSize);
-    static PLATFORM_EXPORT NSView* ensuredView(ScrollableArea*);
+  static PLATFORM_EXPORT LengthSize checkboxSize(const FontDescription&,
+                                                 const LengthSize& zoomedSize,
+                                                 float zoomFactor);
+  static PLATFORM_EXPORT NSButtonCell* checkbox(ControlStates,
+                                                const IntRect& zoomedRect,
+                                                float zoomFactor);
+  static PLATFORM_EXPORT const IntSize* checkboxSizes();
+  static PLATFORM_EXPORT const int* checkboxMargins(NSControlSize);
+  static PLATFORM_EXPORT NSView* ensuredView(ScrollableArea*);
 
-    static PLATFORM_EXPORT const IntSize* radioSizes();
-    static PLATFORM_EXPORT const int* radioMargins(NSControlSize);
-    static PLATFORM_EXPORT LengthSize radioSize(const FontDescription&, const LengthSize& zoomedSize, float zoomFactor);
-    static PLATFORM_EXPORT NSButtonCell *radio(ControlStates, const IntRect& zoomedRect, float zoomFactor);
+  static PLATFORM_EXPORT const IntSize* radioSizes();
+  static PLATFORM_EXPORT const int* radioMargins(NSControlSize);
+  static PLATFORM_EXPORT LengthSize radioSize(const FontDescription&,
+                                              const LengthSize& zoomedSize,
+                                              float zoomFactor);
+  static PLATFORM_EXPORT NSButtonCell* radio(ControlStates,
+                                             const IntRect& zoomedRect,
+                                             float zoomFactor);
 
-    static PLATFORM_EXPORT const IntSize* buttonSizes();
-    static PLATFORM_EXPORT const int* buttonMargins(NSControlSize);
-    static PLATFORM_EXPORT NSButtonCell *button(ControlPart, ControlStates, const IntRect& zoomedRect, float zoomFactor);
+  static PLATFORM_EXPORT const IntSize* buttonSizes();
+  static PLATFORM_EXPORT const int* buttonMargins(NSControlSize);
+  static PLATFORM_EXPORT NSButtonCell* button(ControlPart,
+                                              ControlStates,
+                                              const IntRect& zoomedRect,
+                                              float zoomFactor);
 
-    static PLATFORM_EXPORT NSControlSize controlSizeFromPixelSize(const IntSize* sizes, const IntSize& minZoomedSize, float zoomFactor);
-    static PLATFORM_EXPORT const IntSize* stepperSizes();
+  static PLATFORM_EXPORT NSControlSize
+  controlSizeFromPixelSize(const IntSize* sizes,
+                           const IntSize& minZoomedSize,
+                           float zoomFactor);
+  static PLATFORM_EXPORT const IntSize* stepperSizes();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ThemeMac_h
+#endif  // ThemeMac_h

@@ -10,25 +10,22 @@
 namespace blink {
 
 struct WebSyncError {
-    enum ErrorType {
-        ErrorTypeAbort = 0,
-        ErrorTypeNoPermission,
-        ErrorTypeNotFound,
-        ErrorTypePermissionDenied,
-        ErrorTypeUnknown,
-        ErrorTypeLast = ErrorTypeUnknown
-    };
+  enum ErrorType {
+    ErrorTypeAbort = 0,
+    ErrorTypeNoPermission,
+    ErrorTypeNotFound,
+    ErrorTypePermissionDenied,
+    ErrorTypeUnknown,
+    ErrorTypeLast = ErrorTypeUnknown
+  };
 
-    WebSyncError(ErrorType errorType, const WebString& message)
-        : errorType(errorType)
-        , message(message)
-    {
-    }
+  WebSyncError(ErrorType errorType, const WebString& message)
+      : errorType(errorType), message(message) {}
 
-    ErrorType errorType;
-    WebString message;
+  ErrorType errorType;
+  WebString message;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSyncError_h
+#endif  // WebSyncError_h

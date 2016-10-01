@@ -49,120 +49,134 @@
 
 namespace blink {
 
-void PageWidgetDelegate::animate(Page& page, double monotonicFrameBeginTime)
-{
-    page.autoscrollController().animate(monotonicFrameBeginTime);
-    page.animator().serviceScriptedAnimations(monotonicFrameBeginTime);
+void PageWidgetDelegate::animate(Page& page, double monotonicFrameBeginTime) {
+  page.autoscrollController().animate(monotonicFrameBeginTime);
+  page.animator().serviceScriptedAnimations(monotonicFrameBeginTime);
 }
 
-void PageWidgetDelegate::updateAllLifecyclePhases(Page& page, LocalFrame& root)
-{
-    page.animator().updateAllLifecyclePhases(root);
+void PageWidgetDelegate::updateAllLifecyclePhases(Page& page,
+                                                  LocalFrame& root) {
+  page.animator().updateAllLifecyclePhases(root);
 }
 
-static void paintInternal(Page& page, WebCanvas* canvas,
-    const WebRect& rect, LocalFrame& root, const GlobalPaintFlags globalPaintFlags)
-{
-    if (rect.isEmpty())
-        return;
+static void paintInternal(Page& page,
+                          WebCanvas* canvas,
+                          const WebRect& rect,
+                          LocalFrame& root,
+                          const GlobalPaintFlags globalPaintFlags) {
+  if (rect.isEmpty())
+    return;
 
-    IntRect intRect(rect);
-    SkPictureBuilder pictureBuilder(intRect);
-    {
-        GraphicsContext& paintContext = pictureBuilder.context();
+  IntRect intRect(rect);
+  SkPictureBuilder pictureBuilder(intRect);
+  {
+    GraphicsContext& paintContext = pictureBuilder.context();
 
-        // FIXME: device scale factor settings are layering violations and should not
-        // be used within Blink paint code.
-        float scaleFactor = page.deviceScaleFactor();
-        paintContext.setDeviceScaleFactor(scaleFactor);
+    // FIXME: device scale factor settings are layering violations and should not
+    // be used within Blink paint code.
+    float scaleFactor = page.deviceScaleFactor();
+    paintContext.setDeviceScaleFactor(scaleFactor);
 
-        AffineTransform scale;
-        scale.scale(scaleFactor);
-        TransformRecorder scaleRecorder(paintContext, pictureBuilder, scale);
+    AffineTransform scale;
+    scale.scale(scaleFactor);
+    TransformRecorder scaleRecorder(paintContext, pictureBuilder, scale);
 
-        IntRect dirtyRect(rect);
-        FrameView* view = root.view();
-        if (view) {
-            ClipRecorder clipRecorder(paintContext, pictureBuilder, DisplayItem::kPageWidgetDelegateClip, dirtyRect);
-            view->paint(paintContext, globalPaintFlags, CullRect(dirtyRect));
-        } else {
-            DrawingRecorder drawingRecorder(paintContext, pictureBuilder, DisplayItem::kPageWidgetDelegateBackgroundFallback, dirtyRect);
-            paintContext.fillRect(dirtyRect, Color::white);
-        }
+    IntRect dirtyRect(rect);
+    FrameView* view = root.view();
+    if (view) {
+      ClipRecorder clipRecorder(paintContext, pictureBuilder,
+                                DisplayItem::kPageWidgetDelegateClip,
+                                dirtyRect);
+      view->paint(paintContext, globalPaintFlags, CullRect(dirtyRect));
+    } else {
+      DrawingRecorder drawingRecorder(
+          paintContext, pictureBuilder,
+          DisplayItem::kPageWidgetDelegateBackgroundFallback, dirtyRect);
+      paintContext.fillRect(dirtyRect, Color::white);
     }
-    pictureBuilder.endRecording()->playback(canvas);
+  }
+  pictureBuilder.endRecording()->playback(canvas);
 }
 
-void PageWidgetDelegate::paint(Page& page, WebCanvas* canvas,
-    const WebRect& rect, LocalFrame& root)
-{
-    paintInternal(page, canvas, rect, root, GlobalPaintNormalPhase);
+void PageWidgetDelegate::paint(Page& page,
+                               WebCanvas* canvas,
+                               const WebRect& rect,
+                               LocalFrame& root) {
+  paintInternal(page, canvas, rect, root, GlobalPaintNormalPhase);
 }
 
-void PageWidgetDelegate::paintIgnoringCompositing(Page& page, WebCanvas* canvas,
-    const WebRect& rect, LocalFrame& root)
-{
-    paintInternal(page, canvas, rect, root, GlobalPaintFlattenCompositingLayers);
+void PageWidgetDelegate::paintIgnoringCompositing(Page& page,
+                                                  WebCanvas* canvas,
+                                                  const WebRect& rect,
+                                                  LocalFrame& root) {
+  paintInternal(page, canvas, rect, root, GlobalPaintFlattenCompositingLayers);
 }
 
-WebInputEventResult PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
-{
-    if (event.modifiers & WebInputEvent::IsTouchAccessibility
-        && WebInputEvent::isMouseEventType(event.type)) {
-        PlatformMouseEventBuilder pme(root->view(), static_cast<const WebMouseEvent&>(event));
+WebInputEventResult PageWidgetDelegate::handleInputEvent(
+    PageWidgetEventHandler& handler,
+    const WebInputEvent& event,
+    LocalFrame* root) {
+  if (event.modifiers & WebInputEvent::IsTouchAccessibility &&
+      WebInputEvent::isMouseEventType(event.type)) {
+    PlatformMouseEventBuilder pme(root->view(),
+                                  static_cast<const WebMouseEvent&>(event));
 
-        IntPoint docPoint(root->view()->rootFrameToContents(pme.position()));
-        HitTestResult result = root->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-        result.setToShadowHostIfInUserAgentShadowRoot();
-        if (result.innerNodeFrame()) {
-            Document* document = result.innerNodeFrame()->document();
-            if (document) {
-                AXObjectCache* cache = document->existingAXObjectCache();
-                if (cache)
-                    cache->onTouchAccessibilityHover(result.roundedPointInInnerNodeFrame());
-            }
-        }
+    IntPoint docPoint(root->view()->rootFrameToContents(pme.position()));
+    HitTestResult result = root->eventHandler().hitTestResultAtPoint(
+        docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
+    result.setToShadowHostIfInUserAgentShadowRoot();
+    if (result.innerNodeFrame()) {
+      Document* document = result.innerNodeFrame()->document();
+      if (document) {
+        AXObjectCache* cache = document->existingAXObjectCache();
+        if (cache)
+          cache->onTouchAccessibilityHover(
+              result.roundedPointInInnerNodeFrame());
+      }
     }
+  }
 
-    switch (event.type) {
-
+  switch (event.type) {
     // FIXME: WebKit seems to always return false on mouse events processing
     // methods. For now we'll assume it has processed them (as we are only
     // interested in whether keyboard events are processed).
     // FIXME: Why do we return HandleSuppressed when there is no root or
     // the root is detached?
     case WebInputEvent::MouseMove:
-        if (!root || !root->view())
-            return WebInputEventResult::HandledSuppressed;
-        handler.handleMouseMove(*root, static_cast<const WebMouseEvent&>(event));
-        return WebInputEventResult::HandledSystem;
+      if (!root || !root->view())
+        return WebInputEventResult::HandledSuppressed;
+      handler.handleMouseMove(*root, static_cast<const WebMouseEvent&>(event));
+      return WebInputEventResult::HandledSystem;
     case WebInputEvent::MouseLeave:
-        if (!root || !root->view())
-            return WebInputEventResult::HandledSuppressed;
-        handler.handleMouseLeave(*root, static_cast<const WebMouseEvent&>(event));
-        return WebInputEventResult::HandledSystem;
+      if (!root || !root->view())
+        return WebInputEventResult::HandledSuppressed;
+      handler.handleMouseLeave(*root, static_cast<const WebMouseEvent&>(event));
+      return WebInputEventResult::HandledSystem;
     case WebInputEvent::MouseDown:
-        if (!root || !root->view())
-            return WebInputEventResult::HandledSuppressed;
-        handler.handleMouseDown(*root, static_cast<const WebMouseEvent&>(event));
-        return WebInputEventResult::HandledSystem;
+      if (!root || !root->view())
+        return WebInputEventResult::HandledSuppressed;
+      handler.handleMouseDown(*root, static_cast<const WebMouseEvent&>(event));
+      return WebInputEventResult::HandledSystem;
     case WebInputEvent::MouseUp:
-        if (!root || !root->view())
-            return WebInputEventResult::HandledSuppressed;
-        handler.handleMouseUp(*root, static_cast<const WebMouseEvent&>(event));
-        return WebInputEventResult::HandledSystem;
+      if (!root || !root->view())
+        return WebInputEventResult::HandledSuppressed;
+      handler.handleMouseUp(*root, static_cast<const WebMouseEvent&>(event));
+      return WebInputEventResult::HandledSystem;
     case WebInputEvent::MouseWheel:
-        if (!root || !root->view())
-            return WebInputEventResult::NotHandled;
-        return handler.handleMouseWheel(*root, static_cast<const WebMouseWheelEvent&>(event));
+      if (!root || !root->view())
+        return WebInputEventResult::NotHandled;
+      return handler.handleMouseWheel(
+          *root, static_cast<const WebMouseWheelEvent&>(event));
 
     case WebInputEvent::RawKeyDown:
     case WebInputEvent::KeyDown:
     case WebInputEvent::KeyUp:
-        return handler.handleKeyEvent(static_cast<const WebKeyboardEvent&>(event));
+      return handler.handleKeyEvent(
+          static_cast<const WebKeyboardEvent&>(event));
 
     case WebInputEvent::Char:
-        return handler.handleCharEvent(static_cast<const WebKeyboardEvent&>(event));
+      return handler.handleCharEvent(
+          static_cast<const WebKeyboardEvent&>(event));
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
@@ -177,58 +191,68 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler&
     case WebInputEvent::GestureTwoFingerTap:
     case WebInputEvent::GestureLongPress:
     case WebInputEvent::GestureLongTap:
-        return handler.handleGestureEvent(static_cast<const WebGestureEvent&>(event));
+      return handler.handleGestureEvent(
+          static_cast<const WebGestureEvent&>(event));
 
     case WebInputEvent::TouchStart:
     case WebInputEvent::TouchMove:
     case WebInputEvent::TouchEnd:
     case WebInputEvent::TouchCancel:
     case WebInputEvent::TouchScrollStarted:
-        if (!root || !root->view())
-            return WebInputEventResult::NotHandled;
-        return handler.handleTouchEvent(*root, static_cast<const WebTouchEvent&>(event));
+      if (!root || !root->view())
+        return WebInputEventResult::NotHandled;
+      return handler.handleTouchEvent(*root,
+                                      static_cast<const WebTouchEvent&>(event));
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:
-        // Touchscreen pinch events are currently not handled in main thread. Once they are,
-        // these should be passed to |handleGestureEvent| similar to gesture scroll events.
-        return WebInputEventResult::NotHandled;
+      // Touchscreen pinch events are currently not handled in main thread. Once they are,
+      // these should be passed to |handleGestureEvent| similar to gesture scroll events.
+      return WebInputEventResult::NotHandled;
     default:
-        return WebInputEventResult::NotHandled;
-    }
+      return WebInputEventResult::NotHandled;
+  }
 }
 
 // ----------------------------------------------------------------
 // Default handlers for PageWidgetEventHandler
 
-void PageWidgetEventHandler::handleMouseMove(LocalFrame& mainFrame, const WebMouseEvent& event)
-{
-    mainFrame.eventHandler().handleMouseMoveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+void PageWidgetEventHandler::handleMouseMove(LocalFrame& mainFrame,
+                                             const WebMouseEvent& event) {
+  mainFrame.eventHandler().handleMouseMoveEvent(
+      PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
-void PageWidgetEventHandler::handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent& event)
-{
-    mainFrame.eventHandler().handleMouseLeaveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+void PageWidgetEventHandler::handleMouseLeave(LocalFrame& mainFrame,
+                                              const WebMouseEvent& event) {
+  mainFrame.eventHandler().handleMouseLeaveEvent(
+      PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
-void PageWidgetEventHandler::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& event)
-{
-    mainFrame.eventHandler().handleMousePressEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+void PageWidgetEventHandler::handleMouseDown(LocalFrame& mainFrame,
+                                             const WebMouseEvent& event) {
+  mainFrame.eventHandler().handleMousePressEvent(
+      PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
-void PageWidgetEventHandler::handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent& event)
-{
-    mainFrame.eventHandler().handleMouseReleaseEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+void PageWidgetEventHandler::handleMouseUp(LocalFrame& mainFrame,
+                                           const WebMouseEvent& event) {
+  mainFrame.eventHandler().handleMouseReleaseEvent(
+      PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
-WebInputEventResult PageWidgetEventHandler::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
-{
-    return mainFrame.eventHandler().handleWheelEvent(PlatformWheelEventBuilder(mainFrame.view(), event));
+WebInputEventResult PageWidgetEventHandler::handleMouseWheel(
+    LocalFrame& mainFrame,
+    const WebMouseWheelEvent& event) {
+  return mainFrame.eventHandler().handleWheelEvent(
+      PlatformWheelEventBuilder(mainFrame.view(), event));
 }
 
-WebInputEventResult PageWidgetEventHandler::handleTouchEvent(LocalFrame& mainFrame, const WebTouchEvent& event)
-{
-    return mainFrame.eventHandler().handleTouchEvent(PlatformTouchEventBuilder(mainFrame.view(), event));
+WebInputEventResult PageWidgetEventHandler::handleTouchEvent(
+    LocalFrame& mainFrame,
+    const WebTouchEvent& event) {
+  return mainFrame.eventHandler().handleTouchEvent(
+      PlatformTouchEventBuilder(mainFrame.view(), event));
 }
 
-} // namespace blink
+}  // namespace blink

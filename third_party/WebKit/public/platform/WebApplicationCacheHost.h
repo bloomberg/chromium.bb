@@ -45,86 +45,89 @@ class WebURLResponse;
 // the WebFrameClient::createApplicationCacheHost method to create instances,
 // and calls delete when the instance is no longer needed.
 class WebApplicationCacheHost {
-public:
-    // These values must match blink::ApplicationCacheHost::Status values
-    enum Status {
-        Uncached,
-        Idle,
-        Checking,
-        Downloading,
-        UpdateReady,
-        Obsolete
-    };
+ public:
+  // These values must match blink::ApplicationCacheHost::Status values
+  enum Status { Uncached, Idle, Checking, Downloading, UpdateReady, Obsolete };
 
-    // These values must match blink::ApplicationCacheHost::EventID values
-    enum EventID {
-        CheckingEvent,
-        ErrorEvent,
-        NoUpdateEvent,
-        DownloadingEvent,
-        ProgressEvent,
-        UpdateReadyEvent,
-        CachedEvent,
-        ObsoleteEvent
-    };
+  // These values must match blink::ApplicationCacheHost::EventID values
+  enum EventID {
+    CheckingEvent,
+    ErrorEvent,
+    NoUpdateEvent,
+    DownloadingEvent,
+    ProgressEvent,
+    UpdateReadyEvent,
+    CachedEvent,
+    ObsoleteEvent
+  };
 
-    enum ErrorReason {
-        ManifestError,
-        SignatureError,
-        ResourceError,
-        ChangedError,
-        AbortError,
-        QuotaError,
-        PolicyError,
-        UnknownError
-    };
+  enum ErrorReason {
+    ManifestError,
+    SignatureError,
+    ResourceError,
+    ChangedError,
+    AbortError,
+    QuotaError,
+    PolicyError,
+    UnknownError
+  };
 
-    virtual ~WebApplicationCacheHost() { }
+  virtual ~WebApplicationCacheHost() {}
 
-    // Called for every request made within the context.
-    virtual void willStartMainResourceRequest(WebURLRequest& r, const WebApplicationCacheHost* spawningHost) { }
-    virtual void willStartSubResourceRequest(WebURLRequest&) { }
+  // Called for every request made within the context.
+  virtual void willStartMainResourceRequest(
+      WebURLRequest& r,
+      const WebApplicationCacheHost* spawningHost) {}
+  virtual void willStartSubResourceRequest(WebURLRequest&) {}
 
-    // One or the other selectCache methods is called after having parsed the <html> tag.
-    // The latter returns false if the current document has been identified as a "foreign"
-    // entry, in which case the frame navigation will be restarted by webkit.
-    virtual void selectCacheWithoutManifest() { }
-    virtual bool selectCacheWithManifest(const WebURL& manifestURL) { return true; }
+  // One or the other selectCache methods is called after having parsed the <html> tag.
+  // The latter returns false if the current document has been identified as a "foreign"
+  // entry, in which case the frame navigation will be restarted by webkit.
+  virtual void selectCacheWithoutManifest() {}
+  virtual bool selectCacheWithManifest(const WebURL& manifestURL) {
+    return true;
+  }
 
-    // Called as the main resource is retrieved.
-    virtual void didReceiveResponseForMainResource(const WebURLResponse&) { }
-    virtual void didReceiveDataForMainResource(const char* data, unsigned len) { }
-    virtual void didFinishLoadingMainResource(bool success) { }
+  // Called as the main resource is retrieved.
+  virtual void didReceiveResponseForMainResource(const WebURLResponse&) {}
+  virtual void didReceiveDataForMainResource(const char* data, unsigned len) {}
+  virtual void didFinishLoadingMainResource(bool success) {}
 
-    // Called on behalf of the scriptable interface.
-    virtual Status getStatus() { return Uncached; }
-    virtual bool startUpdate() { return false; }
-    virtual bool swapCache() { return false; }
-    virtual void abort() { }
+  // Called on behalf of the scriptable interface.
+  virtual Status getStatus() { return Uncached; }
+  virtual bool startUpdate() { return false; }
+  virtual bool swapCache() { return false; }
+  virtual void abort() {}
 
-    // Structures and methods to support inspecting Application Caches.
-    struct CacheInfo {
-        WebURL manifestURL; // Empty if there is no associated cache.
-        double creationTime;
-        double updateTime;
-        long long totalSize;
-        CacheInfo() : creationTime(0), updateTime(0), totalSize(0) { }
-    };
-    struct ResourceInfo {
-        WebURL url;
-        long long size;
-        bool isMaster;
-        bool isManifest;
-        bool isExplicit;
-        bool isForeign;
-        bool isFallback;
-        ResourceInfo() : size(0), isMaster(false), isManifest(false), isExplicit(false), isForeign(false), isFallback(false) { }
-    };
-    virtual void getAssociatedCacheInfo(CacheInfo*) { }
-    virtual void getResourceList(WebVector<ResourceInfo>*) { }
-    virtual void deleteAssociatedCacheGroup() { }
+  // Structures and methods to support inspecting Application Caches.
+  struct CacheInfo {
+    WebURL manifestURL;  // Empty if there is no associated cache.
+    double creationTime;
+    double updateTime;
+    long long totalSize;
+    CacheInfo() : creationTime(0), updateTime(0), totalSize(0) {}
+  };
+  struct ResourceInfo {
+    WebURL url;
+    long long size;
+    bool isMaster;
+    bool isManifest;
+    bool isExplicit;
+    bool isForeign;
+    bool isFallback;
+    ResourceInfo()
+        : size(0),
+          isMaster(false),
+          isManifest(false),
+          isExplicit(false),
+          isForeign(false),
+          isFallback(false) {}
+  };
+  virtual void getAssociatedCacheInfo(CacheInfo*) {}
+  virtual void getResourceList(WebVector<ResourceInfo>*) {}
+  virtual void deleteAssociatedCacheGroup() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebApplicationCacheHost_h
+#endif  // WebApplicationCacheHost_h

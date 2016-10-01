@@ -33,19 +33,19 @@ namespace blink {
 class WebScrollbar;
 
 class BLINK_PLATFORM_EXPORT WebScrollbarThemeGeometry {
-public:
-    virtual ~WebScrollbarThemeGeometry() { }
+ public:
+  virtual ~WebScrollbarThemeGeometry() {}
 
-    virtual bool hasButtons(WebScrollbar*) = 0;
-    virtual bool hasThumb(WebScrollbar*) = 0;
-    virtual WebRect trackRect(WebScrollbar*) = 0;
-    virtual WebRect thumbRect(WebScrollbar*) = 0;
-    virtual WebRect backButtonStartRect(WebScrollbar*) = 0;
-    virtual WebRect backButtonEndRect(WebScrollbar*) = 0;
-    virtual WebRect forwardButtonStartRect(WebScrollbar*) = 0;
-    virtual WebRect forwardButtonEndRect(WebScrollbar*) = 0;
+  virtual bool hasButtons(WebScrollbar*) = 0;
+  virtual bool hasThumb(WebScrollbar*) = 0;
+  virtual WebRect trackRect(WebScrollbar*) = 0;
+  virtual WebRect thumbRect(WebScrollbar*) = 0;
+  virtual WebRect backButtonStartRect(WebScrollbar*) = 0;
+  virtual WebRect backButtonEndRect(WebScrollbar*) = 0;
+  virtual WebRect forwardButtonStartRect(WebScrollbar*) = 0;
+  virtual WebRect forwardButtonEndRect(WebScrollbar*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

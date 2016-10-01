@@ -16,22 +16,25 @@ class Dictionary;
 class ScriptPromise;
 class ScriptState;
 
-class CredentialsContainer final : public GarbageCollected<CredentialsContainer>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CredentialsContainer* create();
+class CredentialsContainer final
+    : public GarbageCollected<CredentialsContainer>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // CredentialsContainer.h
-    ScriptPromise get(ScriptState*, const CredentialRequestOptions&);
-    ScriptPromise store(ScriptState*, Credential* = 0);
-    ScriptPromise requireUserMediation(ScriptState*);
+ public:
+  static CredentialsContainer* create();
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  // CredentialsContainer.h
+  ScriptPromise get(ScriptState*, const CredentialRequestOptions&);
+  ScriptPromise store(ScriptState*, Credential* = 0);
+  ScriptPromise requireUserMediation(ScriptState*);
 
-private:
-    CredentialsContainer();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ private:
+  CredentialsContainer();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CredentialsContainer_h
+#endif  // CredentialsContainer_h

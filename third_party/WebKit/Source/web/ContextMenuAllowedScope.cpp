@@ -8,19 +8,16 @@ namespace blink {
 
 static unsigned s_ContextMenuAllowedCount = 0;
 
-ContextMenuAllowedScope::ContextMenuAllowedScope()
-{
-    s_ContextMenuAllowedCount++;
+ContextMenuAllowedScope::ContextMenuAllowedScope() {
+  s_ContextMenuAllowedCount++;
 }
 
-ContextMenuAllowedScope::~ContextMenuAllowedScope()
-{
-    s_ContextMenuAllowedCount--;
+ContextMenuAllowedScope::~ContextMenuAllowedScope() {
+  s_ContextMenuAllowedCount--;
 }
 
-bool ContextMenuAllowedScope::isContextMenuAllowed()
-{
-    return s_ContextMenuAllowedCount;
+bool ContextMenuAllowedScope::isContextMenuAllowed() {
+  return s_ContextMenuAllowedCount;
 }
 
-} // namespace blink
+}  // namespace blink

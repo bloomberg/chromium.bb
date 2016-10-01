@@ -10,10 +10,10 @@ namespace blink {
 // An object through which the embedder can trigger events on a Document-bound
 // BluetoothDevice object.
 class WebBluetoothDevice {
-public:
-    virtual void dispatchGattServerDisconnected() = 0;
+ public:
+  virtual void dispatchGattServerDisconnected() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebBluetoothDevice_h
+#endif  // WebBluetoothDevice_h

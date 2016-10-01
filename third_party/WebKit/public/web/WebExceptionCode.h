@@ -36,6 +36,6 @@ namespace blink {
 // This should match how ExceptionCode is defined in WebCore.
 typedef int WebExceptionCode;
 
-} // namespace blink
+}  // namespace blink
 
 #endif

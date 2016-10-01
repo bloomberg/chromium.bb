@@ -40,24 +40,29 @@ namespace blink {
 class Event;
 
 class V8WorkerGlobalScopeEventListener final : public V8EventListener {
-public:
-    static V8WorkerGlobalScopeEventListener* create(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
-    {
-        V8WorkerGlobalScopeEventListener* eventListener = new V8WorkerGlobalScopeEventListener(isInline, scriptState);
-        eventListener->setListenerObject(listener);
-        return eventListener;
-    }
+ public:
+  static V8WorkerGlobalScopeEventListener* create(
+      v8::Local<v8::Object> listener,
+      bool isInline,
+      ScriptState* scriptState) {
+    V8WorkerGlobalScopeEventListener* eventListener =
+        new V8WorkerGlobalScopeEventListener(isInline, scriptState);
+    eventListener->setListenerObject(listener);
+    return eventListener;
+  }
 
-    void handleEvent(ScriptState*, Event*) override;
+  void handleEvent(ScriptState*, Event*) override;
 
-protected:
-    V8WorkerGlobalScopeEventListener(bool isInline, ScriptState*);
+ protected:
+  V8WorkerGlobalScopeEventListener(bool isInline, ScriptState*);
 
-private:
-    v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*) override;
-    v8::Local<v8::Object> getReceiverObject(ScriptState*, Event*);
+ private:
+  v8::Local<v8::Value> callListenerFunction(ScriptState*,
+                                            v8::Local<v8::Value>,
+                                            Event*) override;
+  v8::Local<v8::Object> getReceiverObject(ScriptState*, Event*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V8WorkerGlobalScopeEventListener_h
+#endif  // V8WorkerGlobalScopeEventListener_h

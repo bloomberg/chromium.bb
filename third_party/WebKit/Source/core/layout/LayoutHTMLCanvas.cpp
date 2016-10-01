@@ -38,68 +38,66 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutHTMLCanvas::LayoutHTMLCanvas(HTMLCanvasElement* element)
-    : LayoutReplaced(element, LayoutSize(element->size()))
-{
-    view()->frameView()->setIsVisuallyNonEmpty();
+    : LayoutReplaced(element, LayoutSize(element->size())) {
+  view()->frameView()->setIsVisuallyNonEmpty();
 }
 
-PaintLayerType LayoutHTMLCanvas::layerTypeRequired() const
-{
-    return NormalPaintLayer;
+PaintLayerType LayoutHTMLCanvas::layerTypeRequired() const {
+  return NormalPaintLayer;
 }
 
-void LayoutHTMLCanvas::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
-{
-    HTMLCanvasPainter(*this).paintReplaced(paintInfo, paintOffset);
+void LayoutHTMLCanvas::paintReplaced(const PaintInfo& paintInfo,
+                                     const LayoutPoint& paintOffset) const {
+  HTMLCanvasPainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-void LayoutHTMLCanvas::canvasSizeChanged()
-{
-    IntSize canvasSize = toHTMLCanvasElement(node())->size();
-    LayoutSize zoomedSize(canvasSize.width() * style()->effectiveZoom(), canvasSize.height() * style()->effectiveZoom());
+void LayoutHTMLCanvas::canvasSizeChanged() {
+  IntSize canvasSize = toHTMLCanvasElement(node())->size();
+  LayoutSize zoomedSize(canvasSize.width() * style()->effectiveZoom(),
+                        canvasSize.height() * style()->effectiveZoom());
 
-    if (zoomedSize == intrinsicSize())
-        return;
+  if (zoomedSize == intrinsicSize())
+    return;
 
-    setIntrinsicSize(zoomedSize);
+  setIntrinsicSize(zoomedSize);
 
-    if (!parent())
-        return;
+  if (!parent())
+    return;
 
-    if (!preferredLogicalWidthsDirty())
-        setPreferredLogicalWidthsDirty();
+  if (!preferredLogicalWidthsDirty())
+    setPreferredLogicalWidthsDirty();
 
-    LayoutSize oldSize = size();
-    updateLogicalWidth();
-    updateLogicalHeight();
-    if (oldSize == size() && !hasOverrideLogicalContentWidth() && !hasOverrideLogicalContentHeight()) {
-        // If we have an override size, then we're probably a flex item, and the
-        // check above is insufficient because updateLogical{Width,Height} just
-        // used the override size. We actually have to mark ourselves as needing
-        // layout so the flex algorithm can run and compute our size correctly.
-        return;
-    }
+  LayoutSize oldSize = size();
+  updateLogicalWidth();
+  updateLogicalHeight();
+  if (oldSize == size() && !hasOverrideLogicalContentWidth() &&
+      !hasOverrideLogicalContentHeight()) {
+    // If we have an override size, then we're probably a flex item, and the
+    // check above is insufficient because updateLogical{Width,Height} just
+    // used the override size. We actually have to mark ourselves as needing
+    // layout so the flex algorithm can run and compute our size correctly.
+    return;
+  }
 
-    if (!selfNeedsLayout())
-        setNeedsLayout(LayoutInvalidationReason::SizeChanged);
+  if (!selfNeedsLayout())
+    setNeedsLayout(LayoutInvalidationReason::SizeChanged);
 }
 
-PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
-{
-    return HTMLCanvasPaintInvalidator(*this, context).invalidatePaintIfNeeded();
+PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(
+    const PaintInvalidatorContext& context) const {
+  return HTMLCanvasPaintInvalidator(*this, context).invalidatePaintIfNeeded();
 }
 
-CompositingReasons LayoutHTMLCanvas::additionalCompositingReasons() const
-{
-    if (toHTMLCanvasElement(node())->shouldBeDirectComposited())
-        return CompositingReasonCanvas;
-    return CompositingReasonNone;
+CompositingReasons LayoutHTMLCanvas::additionalCompositingReasons() const {
+  if (toHTMLCanvasElement(node())->shouldBeDirectComposited())
+    return CompositingReasonCanvas;
+  return CompositingReasonNone;
 }
 
-void LayoutHTMLCanvas::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
-{
-    LayoutReplaced::styleDidChange(diff, oldStyle);
-    toHTMLCanvasElement(node())->styleDidChange(oldStyle, styleRef());
+void LayoutHTMLCanvas::styleDidChange(StyleDifference diff,
+                                      const ComputedStyle* oldStyle) {
+  LayoutReplaced::styleDidChange(diff, oldStyle);
+  toHTMLCanvasElement(node())->styleDidChange(oldStyle, styleRef());
 }
 
-} // namespace blink
+}  // namespace blink

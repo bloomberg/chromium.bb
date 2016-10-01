@@ -21,51 +21,62 @@ namespace blink {
 
 namespace {
 
-void evaluateScriptOnWorkletGlobalScope(const String& source, const KURL& scriptURL, ExecutionContext* executionContext)
-{
-    WorkletGlobalScope* globalScope = toWorkletGlobalScope(executionContext);
-    globalScope->scriptController()->evaluate(ScriptSourceCode(source, scriptURL));
+void evaluateScriptOnWorkletGlobalScope(const String& source,
+                                        const KURL& scriptURL,
+                                        ExecutionContext* executionContext) {
+  WorkletGlobalScope* globalScope = toWorkletGlobalScope(executionContext);
+  globalScope->scriptController()->evaluate(
+      ScriptSourceCode(source, scriptURL));
 }
 
-} // namespace
+}  // namespace
 
-ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(ExecutionContext* executionContext)
-    : ThreadedMessagingProxyBase(executionContext)
-    , m_workletObjectProxy(ThreadedWorkletObjectProxy::create(this))
-{
+ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
+    ExecutionContext* executionContext)
+    : ThreadedMessagingProxyBase(executionContext),
+      m_workletObjectProxy(ThreadedWorkletObjectProxy::create(this)) {}
+
+void ThreadedWorkletMessagingProxy::initialize() {
+  DCHECK(isParentContextThread());
+  if (askedToTerminate())
+    return;
+
+  Document* document = toDocument(getExecutionContext());
+  SecurityOrigin* starterOrigin = document->getSecurityOrigin();
+  KURL scriptURL = document->url();
+
+  ContentSecurityPolicy* csp = document->contentSecurityPolicy();
+  DCHECK(csp);
+
+  WorkerThreadStartMode startMode =
+      workerInspectorProxy()->workerStartMode(document);
+  std::unique_ptr<WorkerSettings> workerSettings =
+      wrapUnique(new WorkerSettings(document->settings()));
+
+  // TODO(ikilpatrick): Decide on sensible a value for referrerPolicy.
+  std::unique_ptr<WorkerThreadStartupData> startupData =
+      WorkerThreadStartupData::create(
+          scriptURL, document->userAgent(), String(), nullptr, startMode,
+          csp->headers().get(), /* referrerPolicy */ String(), starterOrigin,
+          nullptr, document->addressSpace(),
+          OriginTrialContext::getTokens(document).get(),
+          std::move(workerSettings));
+
+  initializeWorkerThread(std::move(startupData));
+  workerInspectorProxy()->workerThreadCreated(document, workerThread(),
+                                              scriptURL);
 }
 
-void ThreadedWorkletMessagingProxy::initialize()
-{
-    DCHECK(isParentContextThread());
-    if (askedToTerminate())
-        return;
-
-    Document* document = toDocument(getExecutionContext());
-    SecurityOrigin* starterOrigin = document->getSecurityOrigin();
-    KURL scriptURL = document->url();
-
-    ContentSecurityPolicy* csp = document->contentSecurityPolicy();
-    DCHECK(csp);
-
-    WorkerThreadStartMode startMode = workerInspectorProxy()->workerStartMode(document);
-    std::unique_ptr<WorkerSettings> workerSettings = wrapUnique(new WorkerSettings(document->settings()));
-
-    // TODO(ikilpatrick): Decide on sensible a value for referrerPolicy.
-    std::unique_ptr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, document->userAgent(), String(), nullptr, startMode, csp->headers().get(), /* referrerPolicy */ String(), starterOrigin, nullptr, document->addressSpace(), OriginTrialContext::getTokens(document).get(), std::move(workerSettings));
-
-    initializeWorkerThread(std::move(startupData));
-    workerInspectorProxy()->workerThreadCreated(document, workerThread(), scriptURL);
+void ThreadedWorkletMessagingProxy::evaluateScript(
+    const ScriptSourceCode& scriptSourceCode) {
+  postTaskToWorkerGlobalScope(
+      BLINK_FROM_HERE,
+      createCrossThreadTask(&evaluateScriptOnWorkletGlobalScope,
+                            scriptSourceCode.source(), scriptSourceCode.url()));
 }
 
-void ThreadedWorkletMessagingProxy::evaluateScript(const ScriptSourceCode& scriptSourceCode)
-{
-    postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&evaluateScriptOnWorkletGlobalScope, scriptSourceCode.source(), scriptSourceCode.url()));
+void ThreadedWorkletMessagingProxy::terminateWorkletGlobalScope() {
+  terminateGlobalScope();
 }
 
-void ThreadedWorkletMessagingProxy::terminateWorkletGlobalScope()
-{
-    terminateGlobalScope();
-}
-
-} // namespace blink
+}  // namespace blink

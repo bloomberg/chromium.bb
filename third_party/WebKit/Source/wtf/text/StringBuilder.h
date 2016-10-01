@@ -35,286 +35,282 @@
 namespace WTF {
 
 class WTF_EXPORT StringBuilder {
-    WTF_MAKE_NONCOPYABLE(StringBuilder);
-public:
-    StringBuilder()
-        : m_buffer(nullptr)
-        , m_length(0)
-        , m_is8Bit(true) {}
+  WTF_MAKE_NONCOPYABLE(StringBuilder);
 
-    ~StringBuilder() { clear(); }
+ public:
+  StringBuilder() : m_buffer(nullptr), m_length(0), m_is8Bit(true) {}
 
-    void append(const UChar*, unsigned length);
-    void append(const LChar*, unsigned length);
+  ~StringBuilder() { clear(); }
 
-    ALWAYS_INLINE void append(const char* characters, unsigned length) { append(reinterpret_cast<const LChar*>(characters), length); }
+  void append(const UChar*, unsigned length);
+  void append(const LChar*, unsigned length);
 
-    void append(const StringBuilder& other)
-    {
-        if (!other.m_length)
-            return;
+  ALWAYS_INLINE void append(const char* characters, unsigned length) {
+    append(reinterpret_cast<const LChar*>(characters), length);
+  }
 
-        if (!m_length && !hasBuffer() && !other.m_string.isNull()) {
-            m_string = other.m_string;
-            m_length = other.m_string.length();
-            m_is8Bit = other.m_string.is8Bit();
-            return;
-        }
+  void append(const StringBuilder& other) {
+    if (!other.m_length)
+      return;
 
-        if (other.is8Bit())
-            append(other.characters8(), other.m_length);
-        else
-            append(other.characters16(), other.m_length);
+    if (!m_length && !hasBuffer() && !other.m_string.isNull()) {
+      m_string = other.m_string;
+      m_length = other.m_string.length();
+      m_is8Bit = other.m_string.is8Bit();
+      return;
     }
 
-    // NOTE: The semantics of this are different than StringView(..., offset, length)
-    // in that an invalid offset or invalid length is a no-op instead of an
-    // error.
-    // TODO(esprehn): We should probably unify the semantics instead.
-    void append(const StringView& string, unsigned offset, unsigned length)
-    {
-        unsigned extent = offset + length;
-        if (extent < offset || extent > string.length())
-            return;
+    if (other.is8Bit())
+      append(other.characters8(), other.m_length);
+    else
+      append(other.characters16(), other.m_length);
+  }
 
-        // We can't do this before the above check since StringView's constructor
-        // doesn't accept invalid offsets or lengths.
-        append(StringView(string, offset, length));
+  // NOTE: The semantics of this are different than StringView(..., offset, length)
+  // in that an invalid offset or invalid length is a no-op instead of an
+  // error.
+  // TODO(esprehn): We should probably unify the semantics instead.
+  void append(const StringView& string, unsigned offset, unsigned length) {
+    unsigned extent = offset + length;
+    if (extent < offset || extent > string.length())
+      return;
+
+    // We can't do this before the above check since StringView's constructor
+    // doesn't accept invalid offsets or lengths.
+    append(StringView(string, offset, length));
+  }
+
+  void append(const StringView& string) {
+    if (string.isEmpty())
+      return;
+
+    // If we're appending to an empty builder, and there is not a buffer
+    // (reserveCapacity has not been called), then share the impl if
+    // possible.
+    //
+    // This is important to avoid string copies inside dom operations like
+    // Node::textContent when there's only a single Text node child, or
+    // inside the parser in the common case when flushing buffered text to
+    // a Text node.
+    StringImpl* impl = string.sharedImpl();
+    if (!m_length && !hasBuffer() && impl) {
+      m_string = impl;
+      m_length = impl->length();
+      m_is8Bit = impl->is8Bit();
+      return;
     }
 
-    void append(const StringView& string)
-    {
-        if (string.isEmpty())
-            return;
+    if (string.is8Bit())
+      append(string.characters8(), string.length());
+    else
+      append(string.characters16(), string.length());
+  }
 
-        // If we're appending to an empty builder, and there is not a buffer
-        // (reserveCapacity has not been called), then share the impl if
-        // possible.
-        //
-        // This is important to avoid string copies inside dom operations like
-        // Node::textContent when there's only a single Text node child, or
-        // inside the parser in the common case when flushing buffered text to
-        // a Text node.
-        StringImpl* impl = string.sharedImpl();
-        if (!m_length && !hasBuffer() && impl) {
-            m_string = impl;
-            m_length = impl->length();
-            m_is8Bit = impl->is8Bit();
-            return;
-        }
-
-        if (string.is8Bit())
-            append(string.characters8(), string.length());
-        else
-            append(string.characters16(), string.length());
+  void append(UChar c) {
+    if (m_is8Bit && c <= 0xFF) {
+      append(static_cast<LChar>(c));
+      return;
     }
+    ensureBuffer16(1);
+    m_buffer16->append(c);
+    ++m_length;
+  }
 
-    void append(UChar c)
-    {
-        if (m_is8Bit && c <= 0xFF) {
-            append(static_cast<LChar>(c));
-            return;
-        }
-        ensureBuffer16(1);
-        m_buffer16->append(c);
-        ++m_length;
+  void append(LChar c) {
+    if (!m_is8Bit) {
+      append(static_cast<UChar>(c));
+      return;
     }
+    ensureBuffer8(1);
+    m_buffer8->append(c);
+    ++m_length;
+  }
 
-    void append(LChar c)
-    {
-        if (!m_is8Bit) {
-            append(static_cast<UChar>(c));
-            return;
-        }
-        ensureBuffer8(1);
-        m_buffer8->append(c);
-        ++m_length;
+  void append(char c) { append(static_cast<LChar>(c)); }
+
+  void append(UChar32 c) {
+    if (U_IS_BMP(c)) {
+      append(static_cast<UChar>(c));
+      return;
     }
+    append(U16_LEAD(c));
+    append(U16_TRAIL(c));
+  }
 
-    void append(char c)
-    {
-        append(static_cast<LChar>(c));
-    }
+  void appendNumber(int);
+  void appendNumber(unsigned);
+  void appendNumber(long);
+  void appendNumber(unsigned long);
+  void appendNumber(long long);
+  void appendNumber(unsigned long long);
+  void appendNumber(double, unsigned precision = 6);
 
-    void append(UChar32 c)
-    {
-        if (U_IS_BMP(c)) {
-            append(static_cast<UChar>(c));
-            return;
-        }
-        append(U16_LEAD(c));
-        append(U16_TRAIL(c));
-    }
+  String toString();
+  AtomicString toAtomicString();
+  String substring(unsigned start, unsigned length) const;
 
-    void appendNumber(int);
-    void appendNumber(unsigned);
-    void appendNumber(long);
-    void appendNumber(unsigned long);
-    void appendNumber(long long);
-    void appendNumber(unsigned long long);
-    void appendNumber(double, unsigned precision = 6);
+  unsigned length() const { return m_length; }
+  bool isEmpty() const { return !m_length; }
 
-    String toString();
-    AtomicString toAtomicString();
-    String substring(unsigned start, unsigned length) const;
+  unsigned capacity() const;
+  void reserveCapacity(unsigned newCapacity);
 
-    unsigned length() const { return m_length; }
-    bool isEmpty() const { return !m_length; }
+  // TODO(esprehn): Rename to shrink().
+  void resize(unsigned newSize);
 
-    unsigned capacity() const;
-    void reserveCapacity(unsigned newCapacity);
+  UChar operator[](unsigned i) const {
+    ASSERT_WITH_SECURITY_IMPLICATION(i < m_length);
+    if (m_is8Bit)
+      return characters8()[i];
+    return characters16()[i];
+  }
 
-    // TODO(esprehn): Rename to shrink().
-    void resize(unsigned newSize);
+  const LChar* characters8() const {
+    DCHECK(m_is8Bit);
+    if (!length())
+      return nullptr;
+    if (!m_string.isNull())
+      return m_string.characters8();
+    DCHECK(m_buffer8);
+    return m_buffer8->data();
+  }
 
-    UChar operator[](unsigned i) const
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(i < m_length);
-        if (m_is8Bit)
-            return characters8()[i];
-        return characters16()[i];
-    }
+  const UChar* characters16() const {
+    DCHECK(!m_is8Bit);
+    if (!length())
+      return nullptr;
+    if (!m_string.isNull())
+      return m_string.characters16();
+    DCHECK(m_buffer16);
+    return m_buffer16->data();
+  }
 
-    const LChar* characters8() const
-    {
-        DCHECK(m_is8Bit);
-        if (!length())
-            return nullptr;
-        if (!m_string.isNull())
-            return m_string.characters8();
-        DCHECK(m_buffer8);
-        return m_buffer8->data();
-    }
+  bool is8Bit() const { return m_is8Bit; }
 
-    const UChar* characters16() const
-    {
-        DCHECK(!m_is8Bit);
-        if (!length())
-            return nullptr;
-        if (!m_string.isNull())
-            return m_string.characters16();
-        DCHECK(m_buffer16);
-        return m_buffer16->data();
-    }
+  void clear();
+  void swap(StringBuilder&);
 
-    bool is8Bit() const { return m_is8Bit; }
+ private:
+  static const unsigned kInlineBufferSize = 16;
+  static unsigned initialBufferSize() { return kInlineBufferSize; }
 
-    void clear();
-    void swap(StringBuilder&);
+  typedef Vector<LChar, kInlineBufferSize> Buffer8;
+  typedef Vector<UChar, kInlineBufferSize> Buffer16;
 
-private:
-    static const unsigned kInlineBufferSize = 16;
-    static unsigned initialBufferSize() { return kInlineBufferSize; }
+  void ensureBuffer8(unsigned addedSize) {
+    DCHECK(m_is8Bit);
+    if (!hasBuffer())
+      createBuffer8(addedSize);
+  }
 
-    typedef Vector<LChar, kInlineBufferSize> Buffer8;
-    typedef Vector<UChar, kInlineBufferSize> Buffer16;
+  void ensureBuffer16(unsigned addedSize) {
+    if (m_is8Bit || !hasBuffer())
+      createBuffer16(addedSize);
+  }
 
-    void ensureBuffer8(unsigned addedSize)
-    {
-        DCHECK(m_is8Bit);
-        if (!hasBuffer())
-            createBuffer8(addedSize);
-    }
+  void createBuffer8(unsigned addedSize);
+  void createBuffer16(unsigned addedSize);
+  void clearBuffer();
+  bool hasBuffer() const { return m_buffer; }
 
-    void ensureBuffer16(unsigned addedSize)
-    {
-        if (m_is8Bit || !hasBuffer())
-            createBuffer16(addedSize);
-    }
-
-    void createBuffer8(unsigned addedSize);
-    void createBuffer16(unsigned addedSize);
-    void clearBuffer();
-    bool hasBuffer() const { return m_buffer; }
-
-    String m_string;
-    union {
-        Buffer8* m_buffer8;
-        Buffer16* m_buffer16;
-        void* m_buffer;
-    };
-    unsigned m_length;
-    bool m_is8Bit;
+  String m_string;
+  union {
+    Buffer8* m_buffer8;
+    Buffer16* m_buffer16;
+    void* m_buffer;
+  };
+  unsigned m_length;
+  bool m_is8Bit;
 };
 
 template <typename CharType>
-bool equal(const StringBuilder& s, const CharType* buffer, unsigned length)
-{
-    if (s.length() != length)
-        return false;
+bool equal(const StringBuilder& s, const CharType* buffer, unsigned length) {
+  if (s.length() != length)
+    return false;
 
-    if (s.is8Bit())
-        return equal(s.characters8(), buffer, length);
+  if (s.is8Bit())
+    return equal(s.characters8(), buffer, length);
 
-    return equal(s.characters16(), buffer, length);
+  return equal(s.characters16(), buffer, length);
 }
 
-template<typename CharType>
-bool equalIgnoringCase(const StringBuilder& s, const CharType* buffer, unsigned length)
-{
-    if (s.length() != length)
-        return false;
+template <typename CharType>
+bool equalIgnoringCase(const StringBuilder& s,
+                       const CharType* buffer,
+                       unsigned length) {
+  if (s.length() != length)
+    return false;
 
-    if (s.is8Bit())
-        return equalIgnoringCase(s.characters8(), buffer, length);
+  if (s.is8Bit())
+    return equalIgnoringCase(s.characters8(), buffer, length);
 
-    return equalIgnoringCase(s.characters16(), buffer, length);
+  return equalIgnoringCase(s.characters16(), buffer, length);
 }
 
-inline bool equalIgnoringCase(const StringBuilder& s, const char* string)
-{
-    return equalIgnoringCase(s, reinterpret_cast<const LChar*>(string), strlen(string));
-}
-
-template <typename StringType>
-bool equal(const StringBuilder& a, const StringType& b)
-{
-    if (a.length() != b.length())
-        return false;
-
-    if (!a.length())
-        return true;
-
-    if (a.is8Bit()) {
-        if (b.is8Bit())
-            return equal(a.characters8(), b.characters8(), a.length());
-        return equal(a.characters8(), b.characters16(), a.length());
-    }
-
-    if (b.is8Bit())
-        return equal(a.characters16(), b.characters8(), a.length());
-    return equal(a.characters16(), b.characters16(), a.length());
+inline bool equalIgnoringCase(const StringBuilder& s, const char* string) {
+  return equalIgnoringCase(s, reinterpret_cast<const LChar*>(string),
+                           strlen(string));
 }
 
 template <typename StringType>
-bool equalIgnoringCase(const StringBuilder& a, const StringType& b)
-{
-    if (a.length() != b.length())
-        return false;
+bool equal(const StringBuilder& a, const StringType& b) {
+  if (a.length() != b.length())
+    return false;
 
-    if (!a.length())
-        return true;
+  if (!a.length())
+    return true;
 
-    if (a.is8Bit()) {
-        if (b.is8Bit())
-            return equalIgnoringCase(a.characters8(), b.characters8(), a.length());
-        return equalIgnoringCase(a.characters8(), b.characters16(), a.length());
-    }
-
+  if (a.is8Bit()) {
     if (b.is8Bit())
-        return equalIgnoringCase(a.characters16(), b.characters8(), a.length());
-    return equalIgnoringCase(a.characters16(), b.characters16(), a.length());
+      return equal(a.characters8(), b.characters8(), a.length());
+    return equal(a.characters8(), b.characters16(), a.length());
+  }
+
+  if (b.is8Bit())
+    return equal(a.characters16(), b.characters8(), a.length());
+  return equal(a.characters16(), b.characters16(), a.length());
 }
 
-inline bool operator==(const StringBuilder& a, const StringBuilder& b) { return equal(a, b); }
-inline bool operator!=(const StringBuilder& a, const StringBuilder& b) { return !equal(a, b); }
-inline bool operator==(const StringBuilder& a, const String& b) { return equal(a, b); }
-inline bool operator!=(const StringBuilder& a, const String& b) { return !equal(a, b); }
-inline bool operator==(const String& a, const StringBuilder& b) { return equal(b, a); }
-inline bool operator!=(const String& a, const StringBuilder& b) { return !equal(b, a); }
+template <typename StringType>
+bool equalIgnoringCase(const StringBuilder& a, const StringType& b) {
+  if (a.length() != b.length())
+    return false;
 
-} // namespace WTF
+  if (!a.length())
+    return true;
+
+  if (a.is8Bit()) {
+    if (b.is8Bit())
+      return equalIgnoringCase(a.characters8(), b.characters8(), a.length());
+    return equalIgnoringCase(a.characters8(), b.characters16(), a.length());
+  }
+
+  if (b.is8Bit())
+    return equalIgnoringCase(a.characters16(), b.characters8(), a.length());
+  return equalIgnoringCase(a.characters16(), b.characters16(), a.length());
+}
+
+inline bool operator==(const StringBuilder& a, const StringBuilder& b) {
+  return equal(a, b);
+}
+inline bool operator!=(const StringBuilder& a, const StringBuilder& b) {
+  return !equal(a, b);
+}
+inline bool operator==(const StringBuilder& a, const String& b) {
+  return equal(a, b);
+}
+inline bool operator!=(const StringBuilder& a, const String& b) {
+  return !equal(a, b);
+}
+inline bool operator==(const String& a, const StringBuilder& b) {
+  return equal(b, a);
+}
+inline bool operator!=(const String& a, const StringBuilder& b) {
+  return !equal(b, a);
+}
+
+}  // namespace WTF
 
 using WTF::StringBuilder;
 
-#endif // StringBuilder_h
+#endif  // StringBuilder_h

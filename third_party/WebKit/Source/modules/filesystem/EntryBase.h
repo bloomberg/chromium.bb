@@ -42,34 +42,34 @@ class EntrySync;
 
 // A common base class for Entry and EntrySync.
 class MODULES_EXPORT EntryBase : public GarbageCollectedFinalized<EntryBase> {
-public:
-    virtual ~EntryBase();
+ public:
+  virtual ~EntryBase();
 
-    DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
+  DOMFileSystemBase* filesystem() const { return m_fileSystem.get(); }
 
-    virtual bool isFile() const { return false; }
-    virtual bool isDirectory() const { return false; }
+  virtual bool isFile() const { return false; }
+  virtual bool isDirectory() const { return false; }
 
-    const String& fullPath() const { return m_fullPath; }
-    const String& name() const { return m_name; }
+  const String& fullPath() const { return m_fullPath; }
+  const String& name() const { return m_name; }
 
-    String toURL() const;
+  String toURL() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-protected:
-    EntryBase(DOMFileSystemBase*, const String& fullPath);
-    friend class EntrySync;
+ protected:
+  EntryBase(DOMFileSystemBase*, const String& fullPath);
+  friend class EntrySync;
 
-    Member<DOMFileSystemBase> m_fileSystem;
+  Member<DOMFileSystemBase> m_fileSystem;
 
-    // This is a virtual path.
-    const String m_fullPath;
-    const String m_name;
+  // This is a virtual path.
+  const String m_fullPath;
+  const String m_name;
 
-    mutable String m_cachedURL;
+  mutable String m_cachedURL;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EntryBase_h
+#endif  // EntryBase_h

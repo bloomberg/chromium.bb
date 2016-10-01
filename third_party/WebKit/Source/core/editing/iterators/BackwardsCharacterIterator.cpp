@@ -29,70 +29,74 @@
 namespace blink {
 
 template <typename Strategy>
-BackwardsCharacterIteratorAlgorithm<Strategy>::BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags behavior)
-    : m_offset(0)
-    , m_runOffset(0)
-    , m_atBreak(true)
-    , m_textIterator(start, end, behavior)
-{
-    while (!atEnd() && !m_textIterator.length())
-        m_textIterator.advance();
+BackwardsCharacterIteratorAlgorithm<Strategy>::
+    BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start,
+                                        const PositionTemplate<Strategy>& end,
+                                        TextIteratorBehaviorFlags behavior)
+    : m_offset(0),
+      m_runOffset(0),
+      m_atBreak(true),
+      m_textIterator(start, end, behavior) {
+  while (!atEnd() && !m_textIterator.length())
+    m_textIterator.advance();
 }
 
 template <typename Strategy>
-PositionTemplate<Strategy> BackwardsCharacterIteratorAlgorithm<Strategy>::endPosition() const
-{
-    if (!m_textIterator.atEnd()) {
-        if (m_textIterator.length() > 1) {
-            Node* n = m_textIterator.startContainer();
-            return PositionTemplate<Strategy>::editingPositionOf(n, m_textIterator.endOffset() - m_runOffset);
-        }
-        DCHECK(!m_runOffset);
+PositionTemplate<Strategy>
+BackwardsCharacterIteratorAlgorithm<Strategy>::endPosition() const {
+  if (!m_textIterator.atEnd()) {
+    if (m_textIterator.length() > 1) {
+      Node* n = m_textIterator.startContainer();
+      return PositionTemplate<Strategy>::editingPositionOf(
+          n, m_textIterator.endOffset() - m_runOffset);
     }
-    return m_textIterator.endPosition();
+    DCHECK(!m_runOffset);
+  }
+  return m_textIterator.endPosition();
 }
 
 template <typename Strategy>
-void BackwardsCharacterIteratorAlgorithm<Strategy>::advance(int count)
-{
-    if (count <= 0) {
-        DCHECK(!count);
-        return;
-    }
+void BackwardsCharacterIteratorAlgorithm<Strategy>::advance(int count) {
+  if (count <= 0) {
+    DCHECK(!count);
+    return;
+  }
 
-    m_atBreak = false;
+  m_atBreak = false;
 
-    int remaining = m_textIterator.length() - m_runOffset;
-    if (count < remaining) {
-        m_runOffset += count;
+  int remaining = m_textIterator.length() - m_runOffset;
+  if (count < remaining) {
+    m_runOffset += count;
+    m_offset += count;
+    return;
+  }
+
+  count -= remaining;
+  m_offset += remaining;
+
+  for (m_textIterator.advance(); !atEnd(); m_textIterator.advance()) {
+    int runLength = m_textIterator.length();
+    if (!runLength) {
+      m_atBreak = true;
+    } else {
+      if (count < runLength) {
+        m_runOffset = count;
         m_offset += count;
         return;
+      }
+
+      count -= runLength;
+      m_offset += runLength;
     }
+  }
 
-    count -= remaining;
-    m_offset += remaining;
-
-    for (m_textIterator.advance(); !atEnd(); m_textIterator.advance()) {
-        int runLength = m_textIterator.length();
-        if (!runLength) {
-            m_atBreak = true;
-        } else {
-            if (count < runLength) {
-                m_runOffset = count;
-                m_offset += count;
-                return;
-            }
-
-            count -= runLength;
-            m_offset += runLength;
-        }
-    }
-
-    m_atBreak = true;
-    m_runOffset = 0;
+  m_atBreak = true;
+  m_runOffset = 0;
 }
 
-template class CORE_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT
+    BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT
+    BackwardsCharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
-} // namespace blink
+}  // namespace blink

@@ -13,11 +13,12 @@ class Document;
 class Internals;
 
 class InternalsNavigatorContentUtils {
-    STATIC_ONLY(InternalsNavigatorContentUtils);
-public:
-    static void setNavigatorContentUtilsClientMock(Internals&, Document*);
+  STATIC_ONLY(InternalsNavigatorContentUtils);
+
+ public:
+  static void setNavigatorContentUtilsClientMock(Internals&, Document*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InternalsNavigatorContentUtils_h
+#endif  // InternalsNavigatorContentUtils_h

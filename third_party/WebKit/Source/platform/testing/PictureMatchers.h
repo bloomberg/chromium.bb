@@ -19,6 +19,6 @@ class FloatRect;
 // paint has the color requested.
 ::testing::Matcher<const SkPicture&> drawsRectangle(const FloatRect&, Color);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PictureMatchers_h
+#endif  // PictureMatchers_h

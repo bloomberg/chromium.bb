@@ -29,41 +29,39 @@
 
 namespace blink {
 
-WebGLCompressedTextureS3TC::WebGLCompressedTextureS3TC(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+WebGLCompressedTextureS3TC::WebGLCompressedTextureS3TC(
+    WebGLRenderingContextBase* context)
+    : WebGLExtension(context) {
+  context->addCompressedTextureFormat(GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
+  context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
+  context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
+  context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
 }
 
-WebGLCompressedTextureS3TC::~WebGLCompressedTextureS3TC()
-{
+WebGLCompressedTextureS3TC::~WebGLCompressedTextureS3TC() {}
+
+WebGLExtensionName WebGLCompressedTextureS3TC::name() const {
+  return WebGLCompressedTextureS3TCName;
 }
 
-WebGLExtensionName WebGLCompressedTextureS3TC::name() const
-{
-    return WebGLCompressedTextureS3TCName;
+WebGLCompressedTextureS3TC* WebGLCompressedTextureS3TC::create(
+    WebGLRenderingContextBase* context) {
+  return new WebGLCompressedTextureS3TC(context);
 }
 
-WebGLCompressedTextureS3TC* WebGLCompressedTextureS3TC::create(WebGLRenderingContextBase* context)
-{
-    return new WebGLCompressedTextureS3TC(context);
+bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContextBase* context) {
+  Extensions3DUtil* extensionsUtil = context->extensionsUtil();
+  return extensionsUtil->supportsExtension("GL_EXT_texture_compression_s3tc") ||
+         (extensionsUtil->supportsExtension(
+              "GL_EXT_texture_compression_dxt1") &&
+          extensionsUtil->supportsExtension(
+              "GL_CHROMIUM_texture_compression_dxt3") &&
+          extensionsUtil->supportsExtension(
+              "GL_CHROMIUM_texture_compression_dxt5"));
 }
 
-bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContextBase* context)
-{
-    Extensions3DUtil* extensionsUtil = context->extensionsUtil();
-    return extensionsUtil->supportsExtension("GL_EXT_texture_compression_s3tc")
-        || (extensionsUtil->supportsExtension("GL_EXT_texture_compression_dxt1")
-            && extensionsUtil->supportsExtension("GL_CHROMIUM_texture_compression_dxt3")
-            && extensionsUtil->supportsExtension("GL_CHROMIUM_texture_compression_dxt5"));
+const char* WebGLCompressedTextureS3TC::extensionName() {
+  return "WEBGL_compressed_texture_s3tc";
 }
 
-const char* WebGLCompressedTextureS3TC::extensionName()
-{
-    return "WEBGL_compressed_texture_s3tc";
-}
-
-} // namespace blink
+}  // namespace blink

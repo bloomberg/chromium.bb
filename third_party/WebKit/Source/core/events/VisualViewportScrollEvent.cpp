@@ -8,22 +8,17 @@
 
 namespace blink {
 
-VisualViewportScrollEvent::~VisualViewportScrollEvent()
-{
-}
+VisualViewportScrollEvent::~VisualViewportScrollEvent() {}
 
 VisualViewportScrollEvent::VisualViewportScrollEvent()
-    : Event(EventTypeNames::scroll, false, false) // non-bubbling non-cancellable
-{
+    : Event(EventTypeNames::scroll,
+            false,
+            false)  // non-bubbling non-cancellable
+{}
+
+void VisualViewportScrollEvent::doneDispatchingEventAtCurrentTarget() {
+  UseCounter::count(currentTarget()->getExecutionContext(),
+                    UseCounter::VisualViewportScrollFired);
 }
 
-void VisualViewportScrollEvent::doneDispatchingEventAtCurrentTarget()
-{
-    UseCounter::count(currentTarget()->getExecutionContext(),
-        UseCounter::VisualViewportScrollFired);
-}
-
-} // namespace blink
-
-
-
+}  // namespace blink

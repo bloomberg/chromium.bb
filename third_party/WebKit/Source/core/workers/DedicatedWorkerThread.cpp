@@ -39,31 +39,35 @@
 
 namespace blink {
 
-std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
-{
-    return wrapUnique(new DedicatedWorkerThread(std::move(workerLoaderProxy), workerObjectProxy, timeOrigin));
+std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::create(
+    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
+    InProcessWorkerObjectProxy& workerObjectProxy,
+    double timeOrigin) {
+  return wrapUnique(new DedicatedWorkerThread(std::move(workerLoaderProxy),
+                                              workerObjectProxy, timeOrigin));
 }
 
-DedicatedWorkerThread::DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
-    : WorkerThread(std::move(workerLoaderProxy), workerObjectProxy)
-    , m_workerBackingThread(WorkerBackingThread::create("DedicatedWorker Thread", BlinkGC::PerThreadHeapMode))
-    , m_workerObjectProxy(workerObjectProxy)
-    , m_timeOrigin(timeOrigin)
-{
+DedicatedWorkerThread::DedicatedWorkerThread(
+    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
+    InProcessWorkerObjectProxy& workerObjectProxy,
+    double timeOrigin)
+    : WorkerThread(std::move(workerLoaderProxy), workerObjectProxy),
+      m_workerBackingThread(
+          WorkerBackingThread::create("DedicatedWorker Thread",
+                                      BlinkGC::PerThreadHeapMode)),
+      m_workerObjectProxy(workerObjectProxy),
+      m_timeOrigin(timeOrigin) {}
+
+DedicatedWorkerThread::~DedicatedWorkerThread() {}
+
+WorkerOrWorkletGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(
+    std::unique_ptr<WorkerThreadStartupData> startupData) {
+  return DedicatedWorkerGlobalScope::create(this, std::move(startupData),
+                                            m_timeOrigin);
 }
 
-DedicatedWorkerThread::~DedicatedWorkerThread()
-{
+void DedicatedWorkerThread::clearWorkerBackingThread() {
+  m_workerBackingThread = nullptr;
 }
 
-WorkerOrWorkletGlobalScope* DedicatedWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
-{
-    return DedicatedWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
-}
-
-void DedicatedWorkerThread::clearWorkerBackingThread()
-{
-    m_workerBackingThread = nullptr;
-}
-
-} // namespace blink
+}  // namespace blink

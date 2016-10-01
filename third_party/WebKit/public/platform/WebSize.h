@@ -45,90 +45,58 @@
 namespace blink {
 
 struct WebSize {
-    int width;
-    int height;
+  int width;
+  int height;
 
-    bool isEmpty() const { return width <= 0 || height <= 0; }
+  bool isEmpty() const { return width <= 0 || height <= 0; }
 
-    WebSize()
-        : width(0)
-        , height(0)
-    {
-    }
+  WebSize() : width(0), height(0) {}
 
-    WebSize(int width, int height)
-        : width(width)
-        , height(height)
-    {
-    }
+  WebSize(int width, int height) : width(width), height(height) {}
 
 #if INSIDE_BLINK
-    WebSize(const IntSize& s)
-        : width(s.width())
-        , height(s.height())
-    {
-    }
+  WebSize(const IntSize& s) : width(s.width()), height(s.height()) {}
 
-    WebSize& operator=(const IntSize& s)
-    {
-        width = s.width();
-        height = s.height();
-        return *this;
-    }
+  WebSize& operator=(const IntSize& s) {
+    width = s.width();
+    height = s.height();
+    return *this;
+  }
 
-    operator IntSize() const
-    {
-        return IntSize(width, height);
-    }
+  operator IntSize() const { return IntSize(width, height); }
 #else
-    WebSize(const gfx::Size& s)
-        : width(s.width())
-        , height(s.height())
-    {
-    }
+  WebSize(const gfx::Size& s) : width(s.width()), height(s.height()) {}
 
-    WebSize(const gfx::Vector2d& v)
-        : width(v.x())
-        , height(v.y())
-    {
-    }
+  WebSize(const gfx::Vector2d& v) : width(v.x()), height(v.y()) {}
 
-    WebSize& operator=(const gfx::Size& s)
-    {
-        width = s.width();
-        height = s.height();
-        return *this;
-    }
+  WebSize& operator=(const gfx::Size& s) {
+    width = s.width();
+    height = s.height();
+    return *this;
+  }
 
-    WebSize& operator=(const gfx::Vector2d& v)
-    {
-        width = v.x();
-        height = v.y();
-        return *this;
-    }
+  WebSize& operator=(const gfx::Vector2d& v) {
+    width = v.x();
+    height = v.y();
+    return *this;
+  }
 
-    operator gfx::Size() const
-    {
-        return gfx::Size(std::max(0, width), std::max(0, height));
-    }
+  operator gfx::Size() const {
+    return gfx::Size(std::max(0, width), std::max(0, height));
+  }
 
-    operator gfx::Vector2d() const
-    {
-        return gfx::Vector2d(width, height);
-    }
+  operator gfx::Vector2d() const { return gfx::Vector2d(width, height); }
 #endif
 };
 
-inline bool operator==(const WebSize& a, const WebSize& b)
-{
-    return a.width == b.width && a.height == b.height;
+inline bool operator==(const WebSize& a, const WebSize& b) {
+  return a.width == b.width && a.height == b.height;
 }
 
-inline bool operator!=(const WebSize& a, const WebSize& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebSize& a, const WebSize& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

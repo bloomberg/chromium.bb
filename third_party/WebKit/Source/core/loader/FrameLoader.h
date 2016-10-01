@@ -68,226 +68,256 @@ CORE_EXPORT bool isBackForwardLoadType(FrameLoadType);
 CORE_EXPORT bool isReloadLoadType(FrameLoadType);
 
 class CORE_EXPORT FrameLoader final {
-    WTF_MAKE_NONCOPYABLE(FrameLoader);
-    DISALLOW_NEW();
-public:
-    static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*, WebCachePolicy);
+  WTF_MAKE_NONCOPYABLE(FrameLoader);
+  DISALLOW_NEW();
 
-    explicit FrameLoader(LocalFrame*);
-    ~FrameLoader();
+ public:
+  static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*,
+                                                        WebCachePolicy);
 
-    void init();
+  explicit FrameLoader(LocalFrame*);
+  ~FrameLoader();
 
-    ResourceRequest resourceRequestForReload(FrameLoadType, const KURL& overrideURL = KURL(),
-        ClientRedirectPolicy = ClientRedirectPolicy::NotClientRedirect);
+  void init();
 
-    ProgressTracker& progress() const { return *m_progressTracker; }
+  ResourceRequest resourceRequestForReload(
+      FrameLoadType,
+      const KURL& overrideURL = KURL(),
+      ClientRedirectPolicy = ClientRedirectPolicy::NotClientRedirect);
 
-    // Starts a load. It will eventually call startLoad() or
-    // loadInSameDocument(). For history navigations or reloads, an appropriate
-    // FrameLoadType should be given. Otherwise, FrameLoadTypeStandard should be
-    // used (and the final FrameLoadType will be computed). For history
-    // navigations, a history item and a HistoryLoadType should also be provided.
-    void load(const FrameLoadRequest&, FrameLoadType = FrameLoadTypeStandard,
-        HistoryItem* = nullptr, HistoryLoadType = HistoryDifferentDocumentLoad);
+  ProgressTracker& progress() const { return *m_progressTracker; }
 
-    static void reportLocalLoadFailed(LocalFrame*, const String& url);
+  // Starts a load. It will eventually call startLoad() or
+  // loadInSameDocument(). For history navigations or reloads, an appropriate
+  // FrameLoadType should be given. Otherwise, FrameLoadTypeStandard should be
+  // used (and the final FrameLoadType will be computed). For history
+  // navigations, a history item and a HistoryLoadType should also be provided.
+  void load(const FrameLoadRequest&,
+            FrameLoadType = FrameLoadTypeStandard,
+            HistoryItem* = nullptr,
+            HistoryLoadType = HistoryDifferentDocumentLoad);
 
-    // Warning: stopAllLoaders can and will detach the LocalFrame out from under you. All callers need to either protect the LocalFrame
-    // or guarantee they won't in any way access the LocalFrame after stopAllLoaders returns.
-    void stopAllLoaders();
+  static void reportLocalLoadFailed(LocalFrame*, const String& url);
 
-    // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
-    void clear();
+  // Warning: stopAllLoaders can and will detach the LocalFrame out from under you. All callers need to either protect the LocalFrame
+  // or guarantee they won't in any way access the LocalFrame after stopAllLoaders returns.
+  void stopAllLoaders();
 
-    void replaceDocumentWhileExecutingJavaScriptURL(const String& source, Document* ownerDocument);
+  // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
+  void clear();
 
-    // Notifies the client that the initial empty document has been accessed,
-    // and thus it is no longer safe to show a provisional URL above the
-    // document without risking a URL spoof. The client must not call back into
-    // JavaScript.
-    void didAccessInitialDocument();
+  void replaceDocumentWhileExecutingJavaScriptURL(const String& source,
+                                                  Document* ownerDocument);
 
-    DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
-    DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
+  // Notifies the client that the initial empty document has been accessed,
+  // and thus it is no longer safe to show a provisional URL above the
+  // document without risking a URL spoof. The client must not call back into
+  // JavaScript.
+  void didAccessInitialDocument();
 
-    void loadFailed(DocumentLoader*, const ResourceError&);
+  DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
+  DocumentLoader* provisionalDocumentLoader() const {
+    return m_provisionalDocumentLoader.get();
+  }
 
-    bool isLoadingMainFrame() const;
+  void loadFailed(DocumentLoader*, const ResourceError&);
 
-    bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
-    bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
+  bool isLoadingMainFrame() const;
 
-    FrameLoadType loadType() const;
-    void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
+  bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
+  bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 
-    FrameLoaderClient* client() const;
+  FrameLoadType loadType() const;
+  void setLoadType(FrameLoadType loadType) { m_loadType = loadType; }
 
-    void setDefersLoading(bool);
+  FrameLoaderClient* client() const;
 
-    void didExplicitOpen();
+  void setDefersLoading(bool);
 
-    // Callbacks from DocumentWriter
-    void didInstallNewDocument(bool dispatchWindowObjectAvailable);
+  void didExplicitOpen();
 
-    void didBeginDocument();
+  // Callbacks from DocumentWriter
+  void didInstallNewDocument(bool dispatchWindowObjectAvailable);
 
-    void receivedFirstData();
+  void didBeginDocument();
 
-    String userAgent() const;
+  void receivedFirstData();
 
-    void dispatchDidClearWindowObjectInMainWorld();
-    void dispatchDidClearDocumentOfWindowObject();
-    void dispatchDocumentElementAvailable();
-    void runScriptsAtDocumentElementAvailable();
+  String userAgent() const;
 
-    // The following sandbox flags will be forced, regardless of changes to
-    // the sandbox attribute of any parent frames.
-    void forceSandboxFlags(SandboxFlags flags) { m_forcedSandboxFlags |= flags; }
-    SandboxFlags effectiveSandboxFlags() const;
+  void dispatchDidClearWindowObjectInMainWorld();
+  void dispatchDidClearDocumentOfWindowObject();
+  void dispatchDocumentElementAvailable();
+  void runScriptsAtDocumentElementAvailable();
 
-    WebInsecureRequestPolicy getInsecureRequestPolicy() const;
-    SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
-    void upgradeInsecureRequest(ResourceRequest&, Document*) const;
+  // The following sandbox flags will be forced, regardless of changes to
+  // the sandbox attribute of any parent frames.
+  void forceSandboxFlags(SandboxFlags flags) { m_forcedSandboxFlags |= flags; }
+  SandboxFlags effectiveSandboxFlags() const;
 
-    Frame* opener();
-    void setOpener(LocalFrame*);
+  WebInsecureRequestPolicy getInsecureRequestPolicy() const;
+  SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
+  void upgradeInsecureRequest(ResourceRequest&, Document*) const;
 
-    void detach();
+  Frame* opener();
+  void setOpener(LocalFrame*);
 
-    void finishedParsing();
-    void checkCompleted();
+  void detach();
 
-    void receivedMainResourceRedirect(const KURL& newURL);
+  void finishedParsing();
+  void checkCompleted();
 
-    void clearProvisionalHistoryItem();
+  void receivedMainResourceRedirect(const KURL& newURL);
 
-    // This prepares the FrameLoader for the next commit. It will dispatch
-    // unload events, abort XHR requests and detach the document. Returns true
-    // if the frame is ready to receive the next commit, or false otherwise.
-    bool prepareForCommit();
+  void clearProvisionalHistoryItem();
 
-    void commitProvisionalLoad();
+  // This prepares the FrameLoader for the next commit. It will dispatch
+  // unload events, abort XHR requests and detach the document. Returns true
+  // if the frame is ready to receive the next commit, or false otherwise.
+  bool prepareForCommit();
 
-    FrameLoaderStateMachine* stateMachine() const { return &m_stateMachine; }
+  void commitProvisionalLoad();
 
-    void applyUserAgent(ResourceRequest&);
+  FrameLoaderStateMachine* stateMachine() const { return &m_stateMachine; }
 
-    bool shouldInterruptLoadForXFrameOptions(const String&, const KURL&, unsigned long requestIdentifier);
+  void applyUserAgent(ResourceRequest&);
 
-    bool allAncestorsAreComplete() const; // including this
+  bool shouldInterruptLoadForXFrameOptions(const String&,
+                                           const KURL&,
+                                           unsigned long requestIdentifier);
 
-    bool shouldClose(bool isReload = false);
-    void dispatchUnloadEvent();
+  bool allAncestorsAreComplete() const;  // including this
 
-    bool allowPlugins(ReasonForCallingAllowPlugins);
+  bool shouldClose(bool isReload = false);
+  void dispatchUnloadEvent();
 
-    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, HistoryScrollRestorationType, FrameLoadType, Document*);
+  bool allowPlugins(ReasonForCallingAllowPlugins);
 
-    HistoryItem* currentItem() const { return m_currentItem.get(); }
-    void saveScrollState();
+  void updateForSameDocumentNavigation(const KURL&,
+                                       SameDocumentNavigationSource,
+                                       PassRefPtr<SerializedScriptValue>,
+                                       HistoryScrollRestorationType,
+                                       FrameLoadType,
+                                       Document*);
 
-    void restoreScrollPositionAndViewState();
+  HistoryItem* currentItem() const { return m_currentItem.get(); }
+  void saveScrollState();
 
-    bool shouldContinueForNavigationPolicy(const ResourceRequest&, const SubstituteData&, DocumentLoader*, ContentSecurityPolicyDisposition,
-        NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry, bool isClientRedirect, HTMLFormElement*);
+  void restoreScrollPositionAndViewState();
 
-    DECLARE_TRACE();
+  bool shouldContinueForNavigationPolicy(const ResourceRequest&,
+                                         const SubstituteData&,
+                                         DocumentLoader*,
+                                         ContentSecurityPolicyDisposition,
+                                         NavigationType,
+                                         NavigationPolicy,
+                                         bool shouldReplaceCurrentEntry,
+                                         bool isClientRedirect,
+                                         HTMLFormElement*);
 
-    static void setReferrerForFrameRequest(FrameLoadRequest&);
+  DECLARE_TRACE();
 
-private:
-    void checkTimerFired(TimerBase*);
-    void didAccessInitialDocumentTimerFired(TimerBase*);
+  static void setReferrerForFrameRequest(FrameLoadRequest&);
 
-    bool prepareRequestForThisFrame(FrameLoadRequest&);
-    FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
+ private:
+  void checkTimerFired(TimerBase*);
+  void didAccessInitialDocumentTimerFired(TimerBase*);
 
-    SubstituteData defaultSubstituteDataForURL(const KURL&);
+  bool prepareRequestForThisFrame(FrameLoadRequest&);
+  FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
 
-    bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
-    void processFragment(const KURL&, LoadStartType);
+  SubstituteData defaultSubstituteDataForURL(const KURL&);
 
-    void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
+  bool shouldPerformFragmentNavigation(bool isFormSubmission,
+                                       const String& httpMethod,
+                                       FrameLoadType,
+                                       const KURL&);
+  void processFragment(const KURL&, LoadStartType);
 
-    enum class HistoryNavigationType {
-        DifferentDocument,
-        Fragment,
-        HistoryApi
-    };
-    void setHistoryItemStateForCommit(FrameLoadType, HistoryCommitType, HistoryNavigationType);
+  void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 
-    void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType, HistoryLoadType, ClientRedirectPolicy, Document*);
+  enum class HistoryNavigationType { DifferentDocument, Fragment, HistoryApi };
+  void setHistoryItemStateForCommit(FrameLoadType,
+                                    HistoryCommitType,
+                                    HistoryNavigationType);
 
-    void scheduleCheckCompleted();
+  void loadInSameDocument(const KURL&,
+                          PassRefPtr<SerializedScriptValue> stateObject,
+                          FrameLoadType,
+                          HistoryLoadType,
+                          ClientRedirectPolicy,
+                          Document*);
 
-    void detachDocumentLoader(Member<DocumentLoader>&);
+  void scheduleCheckCompleted();
 
-    std::unique_ptr<TracedValue> toTracedValue() const;
-    void takeObjectSnapshot() const;
+  void detachDocumentLoader(Member<DocumentLoader>&);
 
-    Member<LocalFrame> m_frame;
+  std::unique_ptr<TracedValue> toTracedValue() const;
+  void takeObjectSnapshot() const;
 
-    // FIXME: These should be std::unique_ptr<T> to reduce build times and simplify
-    // header dependencies unless performance testing proves otherwise.
-    // Some of these could be lazily created for memory savings on devices.
-    mutable FrameLoaderStateMachine m_stateMachine;
+  Member<LocalFrame> m_frame;
 
-    Member<ProgressTracker> m_progressTracker;
+  // FIXME: These should be std::unique_ptr<T> to reduce build times and simplify
+  // header dependencies unless performance testing proves otherwise.
+  // Some of these could be lazily created for memory savings on devices.
+  mutable FrameLoaderStateMachine m_stateMachine;
 
+  Member<ProgressTracker> m_progressTracker;
+
+  FrameLoadType m_loadType;
+
+  // Document loaders for the three phases of frame loading. Note that while
+  // a new request is being loaded, the old document loader may still be referenced.
+  // E.g. while a new request is in the "policy" state, the old document loader may
+  // be consulted in particular as it makes sense to imply certain settings on the new loader.
+  Member<DocumentLoader> m_documentLoader;
+  Member<DocumentLoader> m_provisionalDocumentLoader;
+
+  Member<HistoryItem> m_currentItem;
+  Member<HistoryItem> m_provisionalItem;
+
+  class DeferredHistoryLoad
+      : public GarbageCollectedFinalized<DeferredHistoryLoad> {
+    WTF_MAKE_NONCOPYABLE(DeferredHistoryLoad);
+
+   public:
+    static DeferredHistoryLoad* create(ResourceRequest request,
+                                       HistoryItem* item,
+                                       FrameLoadType loadType,
+                                       HistoryLoadType historyLoadType) {
+      return new DeferredHistoryLoad(request, item, loadType, historyLoadType);
+    }
+
+    DeferredHistoryLoad(ResourceRequest request,
+                        HistoryItem* item,
+                        FrameLoadType loadType,
+                        HistoryLoadType historyLoadType)
+        : m_request(request),
+          m_item(item),
+          m_loadType(loadType),
+          m_historyLoadType(historyLoadType) {}
+
+    DEFINE_INLINE_TRACE() { visitor->trace(m_item); }
+
+    ResourceRequest m_request;
+    Member<HistoryItem> m_item;
     FrameLoadType m_loadType;
+    HistoryLoadType m_historyLoadType;
+  };
 
-    // Document loaders for the three phases of frame loading. Note that while
-    // a new request is being loaded, the old document loader may still be referenced.
-    // E.g. while a new request is in the "policy" state, the old document loader may
-    // be consulted in particular as it makes sense to imply certain settings on the new loader.
-    Member<DocumentLoader> m_documentLoader;
-    Member<DocumentLoader> m_provisionalDocumentLoader;
+  Member<DeferredHistoryLoad> m_deferredHistoryLoad;
 
-    Member<HistoryItem> m_currentItem;
-    Member<HistoryItem> m_provisionalItem;
+  bool m_inStopAllLoaders;
 
-    class DeferredHistoryLoad : public GarbageCollectedFinalized<DeferredHistoryLoad> {
-        WTF_MAKE_NONCOPYABLE(DeferredHistoryLoad);
-    public:
-        static DeferredHistoryLoad* create(ResourceRequest request, HistoryItem* item, FrameLoadType loadType, HistoryLoadType historyLoadType)
-        {
-            return new DeferredHistoryLoad(request, item, loadType, historyLoadType);
-        }
+  TaskRunnerTimer<FrameLoader> m_checkTimer;
 
-        DeferredHistoryLoad(ResourceRequest request, HistoryItem* item, FrameLoadType loadType,
-            HistoryLoadType historyLoadType)
-            : m_request(request)
-            , m_item(item)
-            , m_loadType(loadType)
-            , m_historyLoadType(historyLoadType)
-        {
-        }
+  SandboxFlags m_forcedSandboxFlags;
 
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_item);
-        }
-
-        ResourceRequest m_request;
-        Member<HistoryItem> m_item;
-        FrameLoadType m_loadType;
-        HistoryLoadType m_historyLoadType;
-    };
-
-    Member<DeferredHistoryLoad> m_deferredHistoryLoad;
-
-    bool m_inStopAllLoaders;
-
-    TaskRunnerTimer<FrameLoader> m_checkTimer;
-
-    SandboxFlags m_forcedSandboxFlags;
-
-    bool m_dispatchingDidClearWindowObjectInMainWorld;
-    bool m_protectProvisionalLoader;
-    bool m_isNavigationHandledByClient;
+  bool m_dispatchingDidClearWindowObjectInMainWorld;
+  bool m_protectProvisionalLoader;
+  bool m_isNavigationHandledByClient;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FrameLoader_h
+#endif  // FrameLoader_h

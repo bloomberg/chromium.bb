@@ -34,38 +34,42 @@
 namespace blink {
 
 class CORE_EXPORT ScriptableDocumentParser : public DecodedDataDocumentParser {
-public:
-    // Only used by Document::open for deciding if its safe to act on a
-    // JavaScript document.open() call right now, or it should be ignored.
-    virtual bool isExecutingScript() const { return false; }
+ public:
+  // Only used by Document::open for deciding if its safe to act on a
+  // JavaScript document.open() call right now, or it should be ignored.
+  virtual bool isExecutingScript() const { return false; }
 
-    // FIXME: Only the HTMLDocumentParser ever blocks script execution on
-    // stylesheet load, which is likely a bug in the XMLDocumentParser.
-    virtual void executeScriptsWaitingForResources() { }
+  // FIXME: Only the HTMLDocumentParser ever blocks script execution on
+  // stylesheet load, which is likely a bug in the XMLDocumentParser.
+  virtual void executeScriptsWaitingForResources() {}
 
-    virtual bool isWaitingForScripts() const = 0;
+  virtual bool isWaitingForScripts() const = 0;
 
-    // These are used to expose the current line/column to the scripting system.
-    virtual bool isParsingAtLineNumber() const;
-    virtual OrdinalNumber lineNumber() const = 0;
-    virtual TextPosition textPosition() const = 0;
+  // These are used to expose the current line/column to the scripting system.
+  virtual bool isParsingAtLineNumber() const;
+  virtual OrdinalNumber lineNumber() const = 0;
+  virtual TextPosition textPosition() const = 0;
 
-    void setWasCreatedByScript(bool wasCreatedByScript) { m_wasCreatedByScript = wasCreatedByScript; }
-    bool wasCreatedByScript() const { return m_wasCreatedByScript; }
+  void setWasCreatedByScript(bool wasCreatedByScript) {
+    m_wasCreatedByScript = wasCreatedByScript;
+  }
+  bool wasCreatedByScript() const { return m_wasCreatedByScript; }
 
-    ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
+  ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
 
-protected:
-    explicit ScriptableDocumentParser(Document&, ParserContentPolicy = AllowScriptingContent);
+ protected:
+  explicit ScriptableDocumentParser(
+      Document&,
+      ParserContentPolicy = AllowScriptingContent);
 
-private:
-    ScriptableDocumentParser* asScriptableDocumentParser() final { return this; }
+ private:
+  ScriptableDocumentParser* asScriptableDocumentParser() final { return this; }
 
-    // http://www.whatwg.org/specs/web-apps/current-work/#script-created-parser
-    bool m_wasCreatedByScript;
-    ParserContentPolicy m_parserContentPolicy;
+  // http://www.whatwg.org/specs/web-apps/current-work/#script-created-parser
+  bool m_wasCreatedByScript;
+  ParserContentPolicy m_parserContentPolicy;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptableDocumentParser_h
+#endif  // ScriptableDocumentParser_h

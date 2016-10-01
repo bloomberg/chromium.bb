@@ -33,19 +33,19 @@ namespace blink {
 class WebSpeechSynthesisUtterance;
 
 class WebSpeechSynthesizer {
-public:
-    virtual ~WebSpeechSynthesizer() { }
+ public:
+  virtual ~WebSpeechSynthesizer() {}
 
-    virtual void updateVoiceList() = 0;
+  virtual void updateVoiceList() = 0;
 
-    // OK to call with more than one utterance, will queue.
-    virtual void speak(const WebSpeechSynthesisUtterance&) = 0;
+  // OK to call with more than one utterance, will queue.
+  virtual void speak(const WebSpeechSynthesisUtterance&) = 0;
 
-    virtual void pause() = 0;
-    virtual void resume() = 0;
-    virtual void cancel() = 0;
+  virtual void pause() = 0;
+  virtual void resume() = 0;
+  virtual void cancel() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSpeechSynthesizer_h
+#endif  // WebSpeechSynthesizer_h

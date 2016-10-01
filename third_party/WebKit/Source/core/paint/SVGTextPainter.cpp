@@ -11,22 +11,24 @@
 
 namespace blink {
 
-void SVGTextPainter::paint(const PaintInfo& paintInfo)
-{
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
-        return;
+void SVGTextPainter::paint(const PaintInfo& paintInfo) {
+  if (paintInfo.phase != PaintPhaseForeground &&
+      paintInfo.phase != PaintPhaseSelection)
+    return;
 
-    PaintInfo blockInfo(paintInfo);
-    blockInfo.updateCullRect(m_layoutSVGText.localToSVGParentTransform());
-    SVGTransformContext transformContext(blockInfo.context, m_layoutSVGText, m_layoutSVGText.localToSVGParentTransform());
+  PaintInfo blockInfo(paintInfo);
+  blockInfo.updateCullRect(m_layoutSVGText.localToSVGParentTransform());
+  SVGTransformContext transformContext(
+      blockInfo.context, m_layoutSVGText,
+      m_layoutSVGText.localToSVGParentTransform());
 
+  BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
+
+  // Paint the outlines, if any
+  if (paintInfo.phase == PaintPhaseForeground) {
+    blockInfo.phase = PaintPhaseOutline;
     BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
-
-    // Paint the outlines, if any
-    if (paintInfo.phase == PaintPhaseForeground) {
-        blockInfo.phase = PaintPhaseOutline;
-        BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
-    }
+  }
 }
 
-} // namespace blink
+}  // namespace blink

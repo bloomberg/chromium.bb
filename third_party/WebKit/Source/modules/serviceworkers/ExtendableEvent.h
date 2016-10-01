@@ -41,25 +41,31 @@ namespace blink {
 class WaitUntilObserver;
 
 class MODULES_EXPORT ExtendableEvent : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ExtendableEvent* create(const AtomicString& type, const ExtendableEventInit&);
-    static ExtendableEvent* create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~ExtendableEvent() override;
+ public:
+  static ExtendableEvent* create(const AtomicString& type,
+                                 const ExtendableEventInit&);
+  static ExtendableEvent* create(const AtomicString& type,
+                                 const ExtendableEventInit&,
+                                 WaitUntilObserver*);
 
-    void waitUntil(ScriptState*, ScriptPromise, ExceptionState&);
+  ~ExtendableEvent() override;
 
-    const AtomicString& interfaceName() const override;
-    DECLARE_VIRTUAL_TRACE();
+  void waitUntil(ScriptState*, ScriptPromise, ExceptionState&);
 
-protected:
-    ExtendableEvent(const AtomicString& type, const ExtendableEventInit&);
-    ExtendableEvent(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
+  const AtomicString& interfaceName() const override;
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<WaitUntilObserver> m_observer;
+ protected:
+  ExtendableEvent(const AtomicString& type, const ExtendableEventInit&);
+  ExtendableEvent(const AtomicString& type,
+                  const ExtendableEventInit&,
+                  WaitUntilObserver*);
+
+  Member<WaitUntilObserver> m_observer;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ExtendableEvent_h
+#endif  // ExtendableEvent_h

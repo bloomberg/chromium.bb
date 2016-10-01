@@ -31,34 +31,37 @@
 
 namespace blink {
 
-Pattern::RepeatMode CanvasPattern::parseRepetitionType(const String& type,
-    ExceptionState& exceptionState)
-{
-    if (type.isEmpty() || type == "repeat")
-        return Pattern::RepeatModeXY;
+Pattern::RepeatMode CanvasPattern::parseRepetitionType(
+    const String& type,
+    ExceptionState& exceptionState) {
+  if (type.isEmpty() || type == "repeat")
+    return Pattern::RepeatModeXY;
 
-    if (type == "no-repeat")
-        return Pattern::RepeatModeNone;
-
-    if (type == "repeat-x")
-        return Pattern::RepeatModeX;
-
-    if (type == "repeat-y")
-        return Pattern::RepeatModeY;
-
-    exceptionState.throwDOMException(SyntaxError, "The provided type ('" + type + "') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'.");
+  if (type == "no-repeat")
     return Pattern::RepeatModeNone;
+
+  if (type == "repeat-x")
+    return Pattern::RepeatModeX;
+
+  if (type == "repeat-y")
+    return Pattern::RepeatModeY;
+
+  exceptionState.throwDOMException(
+      SyntaxError,
+      "The provided type ('" + type +
+          "') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'.");
+  return Pattern::RepeatModeNone;
 }
 
-CanvasPattern::CanvasPattern(PassRefPtr<Image> image, Pattern::RepeatMode repeat, bool originClean)
-    : m_pattern(Pattern::createImagePattern(std::move(image), repeat))
-    , m_originClean(originClean)
-{
+CanvasPattern::CanvasPattern(PassRefPtr<Image> image,
+                             Pattern::RepeatMode repeat,
+                             bool originClean)
+    : m_pattern(Pattern::createImagePattern(std::move(image), repeat)),
+      m_originClean(originClean) {}
+
+void CanvasPattern::setTransform(SVGMatrixTearOff* transform) {
+  m_patternTransform =
+      transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0);
 }
 
-void CanvasPattern::setTransform(SVGMatrixTearOff* transform)
-{
-    m_patternTransform = transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0);
-}
-
-} // namespace blink
+}  // namespace blink

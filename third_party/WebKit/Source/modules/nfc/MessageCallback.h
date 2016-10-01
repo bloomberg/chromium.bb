@@ -12,12 +12,12 @@ namespace blink {
 class NFCMessage;
 
 class MessageCallback : public GarbageCollectedFinalized<MessageCallback> {
-public:
-    virtual ~MessageCallback() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void handleMessage(const NFCMessage&) = 0;
+ public:
+  virtual ~MessageCallback() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void handleMessage(const NFCMessage&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MessageCallback_h
+#endif  // MessageCallback_h

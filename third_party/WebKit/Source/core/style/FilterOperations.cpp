@@ -32,89 +32,80 @@
 
 namespace blink {
 
-FilterOperations::FilterOperations()
-{
+FilterOperations::FilterOperations() {}
+
+DEFINE_TRACE(FilterOperations) {
+  visitor->trace(m_operations);
 }
 
-DEFINE_TRACE(FilterOperations)
-{
-    visitor->trace(m_operations);
+FilterOperations& FilterOperations::operator=(const FilterOperations& other) {
+  m_operations = other.m_operations;
+  return *this;
 }
 
-FilterOperations& FilterOperations::operator=(const FilterOperations& other)
-{
-    m_operations = other.m_operations;
-    return *this;
-}
-
-bool FilterOperations::operator==(const FilterOperations& o) const
-{
-    if (m_operations.size() != o.m_operations.size())
-        return false;
-
-    unsigned s = m_operations.size();
-    for (unsigned i = 0; i < s; i++) {
-        if (*m_operations[i] != *o.m_operations[i])
-            return false;
-    }
-
-    return true;
-}
-
-bool FilterOperations::canInterpolateWith(const FilterOperations& other) const
-{
-    for (size_t i = 0; i < operations().size(); ++i) {
-        if (!FilterOperation::canInterpolate(operations()[i]->type()))
-            return false;
-    }
-
-    for (size_t i = 0; i < other.operations().size(); ++i) {
-        if (!FilterOperation::canInterpolate(other.operations()[i]->type()))
-            return false;
-    }
-
-    size_t commonSize = std::min(operations().size(), other.operations().size());
-    for (size_t i = 0; i < commonSize; ++i) {
-        if (!operations()[i]->isSameType(*other.operations()[i]))
-            return false;
-    }
-    return true;
-}
-
-bool FilterOperations::hasReferenceFilter() const
-{
-    for (size_t i = 0; i < m_operations.size(); ++i) {
-        if (m_operations.at(i)->type() == FilterOperation::REFERENCE)
-            return true;
-    }
+bool FilterOperations::operator==(const FilterOperations& o) const {
+  if (m_operations.size() != o.m_operations.size())
     return false;
+
+  unsigned s = m_operations.size();
+  for (unsigned i = 0; i < s; i++) {
+    if (*m_operations[i] != *o.m_operations[i])
+      return false;
+  }
+
+  return true;
 }
 
-FloatRect FilterOperations::mapRect(const FloatRect& rect) const
-{
-    auto accumulateMappedRect = [](const FloatRect& rect, const Member<FilterOperation>& op)
-    {
-        return op->mapRect(rect);
-    };
-    return std::accumulate(m_operations.begin(), m_operations.end(), rect, accumulateMappedRect);
+bool FilterOperations::canInterpolateWith(const FilterOperations& other) const {
+  for (size_t i = 0; i < operations().size(); ++i) {
+    if (!FilterOperation::canInterpolate(operations()[i]->type()))
+      return false;
+  }
+
+  for (size_t i = 0; i < other.operations().size(); ++i) {
+    if (!FilterOperation::canInterpolate(other.operations()[i]->type()))
+      return false;
+  }
+
+  size_t commonSize = std::min(operations().size(), other.operations().size());
+  for (size_t i = 0; i < commonSize; ++i) {
+    if (!operations()[i]->isSameType(*other.operations()[i]))
+      return false;
+  }
+  return true;
 }
 
-bool FilterOperations::hasFilterThatAffectsOpacity() const
-{
-    for (size_t i = 0; i < m_operations.size(); ++i) {
-        if (m_operations[i]->affectsOpacity())
-            return true;
-    }
-    return false;
+bool FilterOperations::hasReferenceFilter() const {
+  for (size_t i = 0; i < m_operations.size(); ++i) {
+    if (m_operations.at(i)->type() == FilterOperation::REFERENCE)
+      return true;
+  }
+  return false;
 }
 
-bool FilterOperations::hasFilterThatMovesPixels() const
-{
-    for (size_t i = 0; i < m_operations.size(); ++i) {
-        if (m_operations[i]->movesPixels())
-            return true;
-    }
-    return false;
+FloatRect FilterOperations::mapRect(const FloatRect& rect) const {
+  auto accumulateMappedRect = [](const FloatRect& rect,
+                                 const Member<FilterOperation>& op) {
+    return op->mapRect(rect);
+  };
+  return std::accumulate(m_operations.begin(), m_operations.end(), rect,
+                         accumulateMappedRect);
 }
 
-} // namespace blink
+bool FilterOperations::hasFilterThatAffectsOpacity() const {
+  for (size_t i = 0; i < m_operations.size(); ++i) {
+    if (m_operations[i]->affectsOpacity())
+      return true;
+  }
+  return false;
+}
+
+bool FilterOperations::hasFilterThatMovesPixels() const {
+  for (size_t i = 0; i < m_operations.size(); ++i) {
+    if (m_operations[i]->movesPixels())
+      return true;
+  }
+  return false;
+}
+
+}  // namespace blink

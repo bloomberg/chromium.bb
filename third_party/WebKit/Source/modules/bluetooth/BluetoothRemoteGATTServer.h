@@ -21,51 +21,59 @@ class ScriptState;
 
 // BluetoothRemoteGATTServer provides a way to interact with a connected bluetooth peripheral.
 class BluetoothRemoteGATTServer final
-    : public GarbageCollected<BluetoothRemoteGATTServer>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    BluetoothRemoteGATTServer(BluetoothDevice*);
+    : public GarbageCollected<BluetoothRemoteGATTServer>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static BluetoothRemoteGATTServer* create(BluetoothDevice*);
+ public:
+  BluetoothRemoteGATTServer(BluetoothDevice*);
 
-    void setConnected(bool connected) { m_connected = connected; }
+  static BluetoothRemoteGATTServer* create(BluetoothDevice*);
 
-    // Adds |resolver| to the set of Active Algorithms. CHECK-fails if
-    // |resolver| was already added.
-    void AddToActiveAlgorithms(ScriptPromiseResolver*);
-    // Returns false if |resolver| was not in the set of Active Algorithms.
-    // Otherwise it removes |resolver| from the set of Active Algorithms and
-    // returns true.
-    bool RemoveFromActiveAlgorithms(ScriptPromiseResolver*);
-    // Removes all ScriptPromiseResolvers from the set of Active Algorithms.
-    void ClearActiveAlgorithms() { m_activeAlgorithms.clear(); }
+  void setConnected(bool connected) { m_connected = connected; }
 
-    // Interface required by Garbage Collectoin:
-    DECLARE_VIRTUAL_TRACE();
+  // Adds |resolver| to the set of Active Algorithms. CHECK-fails if
+  // |resolver| was already added.
+  void AddToActiveAlgorithms(ScriptPromiseResolver*);
+  // Returns false if |resolver| was not in the set of Active Algorithms.
+  // Otherwise it removes |resolver| from the set of Active Algorithms and
+  // returns true.
+  bool RemoveFromActiveAlgorithms(ScriptPromiseResolver*);
+  // Removes all ScriptPromiseResolvers from the set of Active Algorithms.
+  void ClearActiveAlgorithms() { m_activeAlgorithms.clear(); }
 
-    // IDL exposed interface:
-    BluetoothDevice* device() { return m_device; }
-    bool connected() { return m_connected; }
-    ScriptPromise connect(ScriptState*);
-    void disconnect(ScriptState*);
-    ScriptPromise getPrimaryService(ScriptState*, const StringOrUnsignedLong& service, ExceptionState&);
-    ScriptPromise getPrimaryServices(ScriptState*, const StringOrUnsignedLong& service, ExceptionState&);
-    ScriptPromise getPrimaryServices(ScriptState*, ExceptionState&);
+  // Interface required by Garbage Collectoin:
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    ScriptPromise getPrimaryServicesImpl(ScriptState*, mojom::blink::WebBluetoothGATTQueryQuantity, String serviceUUID = String());
+  // IDL exposed interface:
+  BluetoothDevice* device() { return m_device; }
+  bool connected() { return m_connected; }
+  ScriptPromise connect(ScriptState*);
+  void disconnect(ScriptState*);
+  ScriptPromise getPrimaryService(ScriptState*,
+                                  const StringOrUnsignedLong& service,
+                                  ExceptionState&);
+  ScriptPromise getPrimaryServices(ScriptState*,
+                                   const StringOrUnsignedLong& service,
+                                   ExceptionState&);
+  ScriptPromise getPrimaryServices(ScriptState*, ExceptionState&);
 
-    // Contains a ScriptPromiseResolver corresponding to each algorithm using
-    // this server’s connection. Disconnection i.e. disconnect() method or the
-    // device disconnecting by itself, empties this set so that the algorithm
-    // can tell whether its realm was ever disconnected while it was running.
-    HeapHashSet<Member<ScriptPromiseResolver>> m_activeAlgorithms;
+ private:
+  ScriptPromise getPrimaryServicesImpl(
+      ScriptState*,
+      mojom::blink::WebBluetoothGATTQueryQuantity,
+      String serviceUUID = String());
 
-    Member<BluetoothDevice> m_device;
-    bool m_connected;
+  // Contains a ScriptPromiseResolver corresponding to each algorithm using
+  // this server’s connection. Disconnection i.e. disconnect() method or the
+  // device disconnecting by itself, empties this set so that the algorithm
+  // can tell whether its realm was ever disconnected while it was running.
+  HeapHashSet<Member<ScriptPromiseResolver>> m_activeAlgorithms;
+
+  Member<BluetoothDevice> m_device;
+  bool m_connected;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BluetoothDevice_h
+#endif  // BluetoothDevice_h

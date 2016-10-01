@@ -30,20 +30,22 @@ namespace blink {
 class LayoutTable;
 
 class TableLayoutAlgorithmFixed final : public TableLayoutAlgorithm {
-public:
-    TableLayoutAlgorithmFixed(LayoutTable*);
+ public:
+  TableLayoutAlgorithmFixed(LayoutTable*);
 
-    void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
-    void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
-    void layout() override;
-    void willChangeTableLayout() override;
+  void computeIntrinsicLogicalWidths(LayoutUnit& minWidth,
+                                     LayoutUnit& maxWidth) override;
+  void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth,
+                                        LayoutUnit& maxWidth) const override;
+  void layout() override;
+  void willChangeTableLayout() override;
 
-private:
-    int calcWidthArray();
+ private:
+  int calcWidthArray();
 
-    Vector<Length> m_width;
+  Vector<Length> m_width;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TableLayoutAlgorithmFixed_h
+#endif  // TableLayoutAlgorithmFixed_h

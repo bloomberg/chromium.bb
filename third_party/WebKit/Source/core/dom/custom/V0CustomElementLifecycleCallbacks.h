@@ -38,34 +38,39 @@ namespace blink {
 
 class Element;
 
-class V0CustomElementLifecycleCallbacks : public GarbageCollectedFinalized<V0CustomElementLifecycleCallbacks> {
-public:
-    virtual ~V0CustomElementLifecycleCallbacks() { }
+class V0CustomElementLifecycleCallbacks
+    : public GarbageCollectedFinalized<V0CustomElementLifecycleCallbacks> {
+ public:
+  virtual ~V0CustomElementLifecycleCallbacks() {}
 
-    enum CallbackType {
-        None                     = 0,
-        CreatedCallback          = 1 << 0,
-        AttachedCallback         = 1 << 1,
-        DetachedCallback         = 1 << 2,
-        AttributeChangedCallback = 1 << 3
-    };
+  enum CallbackType {
+    None = 0,
+    CreatedCallback = 1 << 0,
+    AttachedCallback = 1 << 1,
+    DetachedCallback = 1 << 2,
+    AttributeChangedCallback = 1 << 3
+  };
 
-    bool hasCallback(CallbackType type) const { return m_callbackType & type; }
+  bool hasCallback(CallbackType type) const { return m_callbackType & type; }
 
-    virtual void created(Element*) = 0;
-    virtual void attached(Element*) = 0;
-    virtual void detached(Element*) = 0;
-    virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
+  virtual void created(Element*) = 0;
+  virtual void attached(Element*) = 0;
+  virtual void detached(Element*) = 0;
+  virtual void attributeChanged(Element*,
+                                const AtomicString& name,
+                                const AtomicString& oldValue,
+                                const AtomicString& newValue) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    explicit V0CustomElementLifecycleCallbacks(CallbackType type) : m_callbackType(type) { }
+ protected:
+  explicit V0CustomElementLifecycleCallbacks(CallbackType type)
+      : m_callbackType(type) {}
 
-private:
-    CallbackType m_callbackType;
+ private:
+  CallbackType m_callbackType;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementLifecycleCallbacks_h
+#endif  // V0CustomElementLifecycleCallbacks_h

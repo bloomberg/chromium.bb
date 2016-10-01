@@ -11,11 +11,11 @@
 namespace blink {
 
 class PLATFORM_EXPORT CompositorMutationsTarget {
-public:
-    virtual void applyMutations(CompositorMutations*) = 0;
-    virtual ~CompositorMutationsTarget() {}
+ public:
+  virtual void applyMutations(CompositorMutations*) = 0;
+  virtual ~CompositorMutationsTarget() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorMutationsTarget_h
+#endif  // CompositorMutationsTarget_h

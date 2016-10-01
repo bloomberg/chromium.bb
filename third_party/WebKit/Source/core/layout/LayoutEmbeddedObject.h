@@ -32,45 +32,50 @@ class TextRun;
 // LayoutObject for embeds and objects, often, but not always, rendered via plugins.
 // For example, <embed src="foo.html"> does not invoke a plugin.
 class LayoutEmbeddedObject : public LayoutPart {
-public:
-    LayoutEmbeddedObject(Element*);
-    ~LayoutEmbeddedObject() override;
+ public:
+  LayoutEmbeddedObject(Element*);
+  ~LayoutEmbeddedObject() override;
 
-    enum PluginAvailability {
-        PluginAvailable,
-        PluginMissing,
-        PluginBlockedByContentSecurityPolicy,
-    };
-    void setPluginAvailability(PluginAvailability);
-    bool showsUnavailablePluginIndicator() const;
+  enum PluginAvailability {
+    PluginAvailable,
+    PluginMissing,
+    PluginBlockedByContentSecurityPolicy,
+  };
+  void setPluginAvailability(PluginAvailability);
+  bool showsUnavailablePluginIndicator() const;
 
-    const char* name() const override { return "LayoutEmbeddedObject"; }
+  const char* name() const override { return "LayoutEmbeddedObject"; }
 
-    const String& unavailablePluginReplacementText() const { return m_unavailablePluginReplacementText; }
+  const String& unavailablePluginReplacementText() const {
+    return m_unavailablePluginReplacementText;
+  }
 
-private:
-    void paintContents(const PaintInfo&, const LayoutPoint&) const final;
-    void paintReplaced(const PaintInfo&, const LayoutPoint&) const final;
-    void paint(const PaintInfo&, const LayoutPoint&) const final;
+ private:
+  void paintContents(const PaintInfo&, const LayoutPoint&) const final;
+  void paintReplaced(const PaintInfo&, const LayoutPoint&) const final;
+  void paint(const PaintInfo&, const LayoutPoint&) const final;
 
-    void layout() final;
-    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) final;
+  void layout() final;
+  PaintInvalidationReason invalidatePaintIfNeeded(
+      const PaintInvalidationState&) final;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type); }
-    LayoutReplaced* embeddedReplacedContent() const final;
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectEmbeddedObject || LayoutPart::isOfType(type);
+  }
+  LayoutReplaced* embeddedReplacedContent() const final;
 
-    PaintLayerType layerTypeRequired() const final;
+  PaintLayerType layerTypeRequired() const final;
 
-    ScrollResult scroll(ScrollGranularity, const FloatSize&) final;
+  ScrollResult scroll(ScrollGranularity, const FloatSize&) final;
 
-    CompositingReasons additionalCompositingReasons() const override;
+  CompositingReasons additionalCompositingReasons() const override;
 
-    PluginAvailability m_pluginAvailability = PluginAvailable;
-    String m_unavailablePluginReplacementText;
+  PluginAvailability m_pluginAvailability = PluginAvailable;
+  String m_unavailablePluginReplacementText;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutEmbeddedObject, isEmbeddedObject());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutEmbeddedObject_h
+#endif  // LayoutEmbeddedObject_h

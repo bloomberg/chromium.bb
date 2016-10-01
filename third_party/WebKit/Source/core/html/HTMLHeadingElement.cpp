@@ -24,11 +24,9 @@
 
 namespace blink {
 
-inline HTMLHeadingElement::HTMLHeadingElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
-{
-}
+inline HTMLHeadingElement::HTMLHeadingElement(const QualifiedName& tagName,
+                                              Document& document)
+    : HTMLElement(tagName, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLHeadingElement)
-
 }

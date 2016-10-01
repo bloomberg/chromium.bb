@@ -29,28 +29,36 @@ class HTMLInputElement;
 class SliderThumbElement;
 
 class LayoutSlider final : public LayoutFlexibleBox {
-public:
-    static const int defaultTrackLength;
+ public:
+  static const int defaultTrackLength;
 
-    explicit LayoutSlider(HTMLInputElement*);
-    ~LayoutSlider() override;
+  explicit LayoutSlider(HTMLInputElement*);
+  ~LayoutSlider() override;
 
-    bool inDragMode() const;
+  bool inDragMode() const;
 
-    const char* name() const override { return "LayoutSlider"; }
+  const char* name() const override { return "LayoutSlider"; }
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSlider || LayoutFlexibleBox::isOfType(type); }
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSlider || LayoutFlexibleBox::isOfType(type);
+  }
 
-    int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
-    void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
-    void layout() override;
+  int baselinePosition(
+      FontBaseline,
+      bool firstLine,
+      LineDirectionMode,
+      LinePositionMode = PositionOnContainingLine) const override;
+  void computeIntrinsicLogicalWidths(
+      LayoutUnit& minLogicalWidth,
+      LayoutUnit& maxLogicalWidth) const override;
+  void layout() override;
 
-    SliderThumbElement* sliderThumbElement() const;
+  SliderThumbElement* sliderThumbElement() const;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSlider, isSlider());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSlider_h
+#endif  // LayoutSlider_h

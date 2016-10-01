@@ -19,16 +19,18 @@ struct PaintInfo;
 class LayoutInline;
 
 class InlinePainter {
-    STACK_ALLOCATED();
-public:
-    InlinePainter(const LayoutInline& layoutInline) : m_layoutInline(layoutInline) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+ public:
+  InlinePainter(const LayoutInline& layoutInline)
+      : m_layoutInline(layoutInline) {}
 
-private:
-    const LayoutInline& m_layoutInline;
+  void paint(const PaintInfo&, const LayoutPoint& paintOffset);
+
+ private:
+  const LayoutInline& m_layoutInline;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InlinePainter_h
+#endif  // InlinePainter_h

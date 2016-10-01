@@ -36,22 +36,17 @@
 namespace blink {
 
 struct WebActiveWheelFlingParameters {
-    WebFloatPoint delta;
-    WebPoint point;
-    WebPoint globalPoint;
-    int modifiers;
-    WebGestureDevice sourceDevice;
-    WebSize cumulativeScroll;
-    double startTime;
+  WebFloatPoint delta;
+  WebPoint point;
+  WebPoint globalPoint;
+  int modifiers;
+  WebGestureDevice sourceDevice;
+  WebSize cumulativeScroll;
+  double startTime;
 
-    WebActiveWheelFlingParameters()
-        : modifiers(0)
-        , sourceDevice(WebGestureDeviceTouchpad)
-        , startTime(0)
-    {
-    }
+  WebActiveWheelFlingParameters()
+      : modifiers(0), sourceDevice(WebGestureDeviceTouchpad), startTime(0) {}
 };
-
 }
 
 #endif

@@ -35,38 +35,38 @@ class BaseAudioContext;
 class ExceptionState;
 
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
-public:
-    static PassRefPtr<DefaultAudioDestinationHandler> create(AudioNode&);
-    ~DefaultAudioDestinationHandler() override;
+ public:
+  static PassRefPtr<DefaultAudioDestinationHandler> create(AudioNode&);
+  ~DefaultAudioDestinationHandler() override;
 
-    // AudioHandler
-    void dispose() override;
-    void initialize() override;
-    void uninitialize() override;
-    void setChannelCount(unsigned long, ExceptionState&) override;
+  // AudioHandler
+  void dispose() override;
+  void initialize() override;
+  void uninitialize() override;
+  void setChannelCount(unsigned long, ExceptionState&) override;
 
-    // AudioDestinationHandler
-    void startRendering() override;
-    void stopRendering() override;
-    unsigned long maxChannelCount() const override;
+  // AudioDestinationHandler
+  void startRendering() override;
+  void stopRendering() override;
+  unsigned long maxChannelCount() const override;
 
-private:
-    explicit DefaultAudioDestinationHandler(AudioNode&);
-    void createDestination();
+ private:
+  explicit DefaultAudioDestinationHandler(AudioNode&);
+  void createDestination();
 
-    std::unique_ptr<AudioDestination> m_destination;
-    String m_inputDeviceId;
-    unsigned m_numberOfInputChannels;
+  std::unique_ptr<AudioDestination> m_destination;
+  String m_inputDeviceId;
+  unsigned m_numberOfInputChannels;
 };
 
 class DefaultAudioDestinationNode final : public AudioDestinationNode {
-public:
-    static DefaultAudioDestinationNode* create(BaseAudioContext*);
+ public:
+  static DefaultAudioDestinationNode* create(BaseAudioContext*);
 
-private:
-    explicit DefaultAudioDestinationNode(BaseAudioContext&);
+ private:
+  explicit DefaultAudioDestinationNode(BaseAudioContext&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DefaultAudioDestinationNode_h
+#endif  // DefaultAudioDestinationNode_h

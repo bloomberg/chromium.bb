@@ -15,18 +15,26 @@ class LayoutUnit;
 class RootInlineBox;
 
 class RootInlineBoxPainter {
-    STACK_ALLOCATED();
-public:
-    RootInlineBoxPainter(const RootInlineBox& rootInlineBox) : m_rootInlineBox(rootInlineBox) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
+ public:
+  RootInlineBoxPainter(const RootInlineBox& rootInlineBox)
+      : m_rootInlineBox(rootInlineBox) {}
 
-private:
-    void paintEllipsisBox(const PaintInfo&, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const;
+  void paint(const PaintInfo&,
+             const LayoutPoint&,
+             LayoutUnit lineTop,
+             LayoutUnit lineBottom);
 
-    const RootInlineBox& m_rootInlineBox;
+ private:
+  void paintEllipsisBox(const PaintInfo&,
+                        const LayoutPoint& paintOffset,
+                        LayoutUnit lineTop,
+                        LayoutUnit lineBottom) const;
+
+  const RootInlineBox& m_rootInlineBox;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RootInlineBoxPainter_h
+#endif  // RootInlineBoxPainter_h

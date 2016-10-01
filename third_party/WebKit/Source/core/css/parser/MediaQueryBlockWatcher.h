@@ -13,16 +13,17 @@ namespace blink {
 class CSSParserToken;
 
 class CORE_EXPORT MediaQueryBlockWatcher {
-    STACK_ALLOCATED();
-public:
-    MediaQueryBlockWatcher();
-    void handleToken(const CSSParserToken&);
-    unsigned blockLevel() const { return m_blockLevel; }
+  STACK_ALLOCATED();
 
-private:
-    unsigned m_blockLevel;
+ public:
+  MediaQueryBlockWatcher();
+  void handleToken(const CSSParserToken&);
+  unsigned blockLevel() const { return m_blockLevel; }
+
+ private:
+  unsigned m_blockLevel;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaQueryBlockWatcher_h
+#endif  // MediaQueryBlockWatcher_h

@@ -42,71 +42,70 @@ class HTMLInputElement;
 class Event;
 
 class SliderThumbElement final : public HTMLDivElement {
-public:
-    static SliderThumbElement* create(Document&);
+ public:
+  static SliderThumbElement* create(Document&);
 
-    void setPositionFromValue();
+  void setPositionFromValue();
 
-    void dragFrom(const LayoutPoint&);
-    void defaultEventHandler(Event*) override;
-    bool willRespondToMouseMoveEvents() override;
-    bool willRespondToMouseClickEvents() override;
-    void detachLayoutTree(const AttachContext& = AttachContext()) override;
-    const AtomicString& shadowPseudoId() const override;
-    HTMLInputElement* hostInput() const;
-    void setPositionFromPoint(const LayoutPoint&);
-    void stopDragging();
+  void dragFrom(const LayoutPoint&);
+  void defaultEventHandler(Event*) override;
+  bool willRespondToMouseMoveEvents() override;
+  bool willRespondToMouseClickEvents() override;
+  void detachLayoutTree(const AttachContext& = AttachContext()) override;
+  const AtomicString& shadowPseudoId() const override;
+  HTMLInputElement* hostInput() const;
+  void setPositionFromPoint(const LayoutPoint&);
+  void stopDragging();
 
-private:
-    SliderThumbElement(Document&);
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    Element* cloneElementWithoutAttributesAndChildren() override;
-    bool isDisabledFormControl() const override;
-    bool matchesReadOnlyPseudoClass() const override;
-    bool matchesReadWritePseudoClass() const override;
-    Node* focusDelegate() override;
-    void startDragging();
+ private:
+  SliderThumbElement(Document&);
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  Element* cloneElementWithoutAttributesAndChildren() override;
+  bool isDisabledFormControl() const override;
+  bool matchesReadOnlyPseudoClass() const override;
+  bool matchesReadWritePseudoClass() const override;
+  Node* focusDelegate() override;
+  void startDragging();
 
-    bool m_inDragMode;
+  bool m_inDragMode;
 };
 
-inline Element* SliderThumbElement::cloneElementWithoutAttributesAndChildren()
-{
-    return create(document());
+inline Element* SliderThumbElement::cloneElementWithoutAttributesAndChildren() {
+  return create(document());
 }
 
 // FIXME: There are no ways to check if a node is a SliderThumbElement.
 DEFINE_ELEMENT_TYPE_CASTS(SliderThumbElement, isHTMLElement());
 
 class SliderContainerElement final : public HTMLDivElement {
-public:
-    enum Direction {
-        Horizontal,
-        Vertical,
-        NoMove,
-    };
+ public:
+  enum Direction {
+    Horizontal,
+    Vertical,
+    NoMove,
+  };
 
-    DECLARE_NODE_FACTORY(SliderContainerElement);
-    HTMLInputElement* hostInput() const;
-    void defaultEventHandler(Event*) override;
-    void handleTouchEvent(TouchEvent*);
-    void updateTouchEventHandlerRegistry();
-    void didMoveToNewDocument(Document&) override;
-    void removeAllEventListeners() override;
+  DECLARE_NODE_FACTORY(SliderContainerElement);
+  HTMLInputElement* hostInput() const;
+  void defaultEventHandler(Event*) override;
+  void handleTouchEvent(TouchEvent*);
+  void updateTouchEventHandlerRegistry();
+  void didMoveToNewDocument(Document&) override;
+  void removeAllEventListeners() override;
 
-private:
-    explicit SliderContainerElement(Document&);
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    const AtomicString& shadowPseudoId() const override;
-    Direction getDirection(LayoutPoint&, LayoutPoint&);
-    bool canSlide();
+ private:
+  explicit SliderContainerElement(Document&);
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  const AtomicString& shadowPseudoId() const override;
+  Direction getDirection(LayoutPoint&, LayoutPoint&);
+  bool canSlide();
 
-    bool m_hasTouchEventHandler;
-    bool m_touchStarted;
-    Direction m_slidingDirection;
-    LayoutPoint m_startPoint;
+  bool m_hasTouchEventHandler;
+  bool m_touchStarted;
+  Direction m_slidingDirection;
+  LayoutPoint m_startPoint;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

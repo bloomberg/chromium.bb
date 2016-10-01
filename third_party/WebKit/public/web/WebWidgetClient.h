@@ -54,131 +54,132 @@ struct WebFloatSize;
 struct WebSize;
 
 class WebWidgetClient {
-public:
-    // Called when a region of the WebWidget needs to be re-painted.
-    virtual void didInvalidateRect(const WebRect&) { }
+ public:
+  // Called when a region of the WebWidget needs to be re-painted.
+  virtual void didInvalidateRect(const WebRect&) {}
 
-    // Attempt to initialize compositing for this widget. If this is successful,
-    // layerTreeView() will return a valid WebLayerTreeView.
-    virtual void initializeLayerTreeView() { }
+  // Attempt to initialize compositing for this widget. If this is successful,
+  // layerTreeView() will return a valid WebLayerTreeView.
+  virtual void initializeLayerTreeView() {}
 
-    // Return a compositing view used for this widget. This is owned by the
-    // WebWidgetClient.
-    virtual WebLayerTreeView* layerTreeView() { return 0; }
-    // FIXME: Remove all overrides of this and change layerTreeView() above to ASSERT_NOT_REACHED.
-    virtual bool allowsBrokenNullLayerTreeView() const { return false; }
+  // Return a compositing view used for this widget. This is owned by the
+  // WebWidgetClient.
+  virtual WebLayerTreeView* layerTreeView() { return 0; }
+  // FIXME: Remove all overrides of this and change layerTreeView() above to ASSERT_NOT_REACHED.
+  virtual bool allowsBrokenNullLayerTreeView() const { return false; }
 
-    // Called when a call to WebWidget::animate is required
-    virtual void scheduleAnimation() { }
+  // Called when a call to WebWidget::animate is required
+  virtual void scheduleAnimation() {}
 
-    // Called immediately following the first compositor-driven (frame-generating) layout that
-    // happened after an interesting document lifecyle change (see WebMeaningfulLayout for details.)
-    virtual void didMeaningfulLayout(WebMeaningfulLayout) {}
+  // Called immediately following the first compositor-driven (frame-generating) layout that
+  // happened after an interesting document lifecyle change (see WebMeaningfulLayout for details.)
+  virtual void didMeaningfulLayout(WebMeaningfulLayout) {}
 
-    virtual void didFirstLayoutAfterFinishedParsing() { }
+  virtual void didFirstLayoutAfterFinishedParsing() {}
 
-    // Called when the cursor for the widget changes.
-    virtual void didChangeCursor(const WebCursorInfo&) { }
+  // Called when the cursor for the widget changes.
+  virtual void didChangeCursor(const WebCursorInfo&) {}
 
-    // Called when the widget should be closed.  WebWidget::close() should
-    // be called asynchronously as a result of this notification.
-    virtual void closeWidgetSoon() { }
+  // Called when the widget should be closed.  WebWidget::close() should
+  // be called asynchronously as a result of this notification.
+  virtual void closeWidgetSoon() {}
 
-    // Called to show the widget according to the given policy.
-    virtual void show(WebNavigationPolicy) { }
+  // Called to show the widget according to the given policy.
+  virtual void show(WebNavigationPolicy) {}
 
-    // Called to get/set the position of the widget in screen coordinates.
-    virtual WebRect windowRect() { return WebRect(); }
-    virtual void setWindowRect(const WebRect&) { }
+  // Called to get/set the position of the widget in screen coordinates.
+  virtual WebRect windowRect() { return WebRect(); }
+  virtual void setWindowRect(const WebRect&) {}
 
-    // Called when a tooltip should be shown at the current cursor position.
-    virtual void setToolTipText(const WebString&, WebTextDirection hint) { }
+  // Called when a tooltip should be shown at the current cursor position.
+  virtual void setToolTipText(const WebString&, WebTextDirection hint) {}
 
-    // Called to get the position of the resizer rect in window coordinates.
-    virtual WebRect windowResizerRect() { return WebRect(); }
+  // Called to get the position of the resizer rect in window coordinates.
+  virtual WebRect windowResizerRect() { return WebRect(); }
 
-    // Called to query information about the screen where this widget is
-    // displayed.
-    virtual WebScreenInfo screenInfo() { return WebScreenInfo(); }
+  // Called to query information about the screen where this widget is
+  // displayed.
+  virtual WebScreenInfo screenInfo() { return WebScreenInfo(); }
 
-    // When this method gets called, WebWidgetClient implementation should
-    // reset the input method by cancelling any ongoing composition.
-    virtual void resetInputMethod() { }
+  // When this method gets called, WebWidgetClient implementation should
+  // reset the input method by cancelling any ongoing composition.
+  virtual void resetInputMethod() {}
 
-    // Requests to lock the mouse cursor. If true is returned, the success
-    // result will be asynchronously returned via a single call to
-    // WebWidget::didAcquirePointerLock() or
-    // WebWidget::didNotAcquirePointerLock().
-    // If false, the request has been denied synchronously.
-    virtual bool requestPointerLock() { return false; }
+  // Requests to lock the mouse cursor. If true is returned, the success
+  // result will be asynchronously returned via a single call to
+  // WebWidget::didAcquirePointerLock() or
+  // WebWidget::didNotAcquirePointerLock().
+  // If false, the request has been denied synchronously.
+  virtual bool requestPointerLock() { return false; }
 
-    // Cause the pointer lock to be released. This may be called at any time,
-    // including when a lock is pending but not yet acquired.
-    // WebWidget::didLosePointerLock() is called when unlock is complete.
-    virtual void requestPointerUnlock() { }
+  // Cause the pointer lock to be released. This may be called at any time,
+  // including when a lock is pending but not yet acquired.
+  // WebWidget::didLosePointerLock() is called when unlock is complete.
+  virtual void requestPointerUnlock() {}
 
-    // Returns true iff the pointer is locked to this widget.
-    virtual bool isPointerLocked() { return false; }
+  // Returns true iff the pointer is locked to this widget.
+  virtual bool isPointerLocked() { return false; }
 
-    // Called when a gesture event is handled.
-    virtual void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) { }
+  // Called when a gesture event is handled.
+  virtual void didHandleGestureEvent(const WebGestureEvent& event,
+                                     bool eventCancelled) {}
 
-    // Called when overscrolled on main thread. All parameters are in
-    // viewport-space.
-    virtual void didOverscroll(
-        const WebFloatSize& overscrollDelta,
-        const WebFloatSize& accumulatedOverscroll,
-        const WebFloatPoint& positionInViewport,
-        const WebFloatSize& velocityInViewport) { }
+  // Called when overscrolled on main thread. All parameters are in
+  // viewport-space.
+  virtual void didOverscroll(const WebFloatSize& overscrollDelta,
+                             const WebFloatSize& accumulatedOverscroll,
+                             const WebFloatPoint& positionInViewport,
+                             const WebFloatSize& velocityInViewport) {}
 
-    // Called to update if touch events should be sent.
-    virtual void hasTouchEventHandlers(bool) { }
+  // Called to update if touch events should be sent.
+  virtual void hasTouchEventHandlers(bool) {}
 
-    // Called during WebWidget::HandleInputEvent for a TouchStart event to inform the embedder
-    // of the touch actions that are permitted for this touch.
-    virtual void setTouchAction(WebTouchAction touchAction) { }
+  // Called during WebWidget::HandleInputEvent for a TouchStart event to inform the embedder
+  // of the touch actions that are permitted for this touch.
+  virtual void setTouchAction(WebTouchAction touchAction) {}
 
-    // Called when value of focused text field gets dirty, e.g. value is
-    // modified by script, not by user input.
-    virtual void didUpdateTextOfFocusedElementByNonUserInput() { }
+  // Called when value of focused text field gets dirty, e.g. value is
+  // modified by script, not by user input.
+  virtual void didUpdateTextOfFocusedElementByNonUserInput() {}
 
-    // Request the browser to show the IME for current input type.
-    virtual void showImeIfNeeded() { }
+  // Request the browser to show the IME for current input type.
+  virtual void showImeIfNeeded() {}
 
-    // Request that the browser show a UI for an unhandled tap, if needed.
-    // Invoked during the handling of a GestureTap input event whenever the
-    // event is not consumed.
-    // |tappedPosition| is the point where the mouseDown occurred in client
-    // coordinates.
-    // |tappedNode| is the node that the mouseDown event hit, provided so the
-    // UI can be shown only on certain kinds of nodes in specific locations.
-    // |pageChanged| is true if and only if the DOM tree or style was
-    // modified during the dispatch of the mouse*, or click events associated
-    // with the tap.
-    // This provides a heuristic to help identify when a page is doing
-    // something as a result of a tap without explicitly consuming the event.
-    virtual void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition,
-        const WebNode& tappedNode, bool pageChanged) { }
+  // Request that the browser show a UI for an unhandled tap, if needed.
+  // Invoked during the handling of a GestureTap input event whenever the
+  // event is not consumed.
+  // |tappedPosition| is the point where the mouseDown occurred in client
+  // coordinates.
+  // |tappedNode| is the node that the mouseDown event hit, provided so the
+  // UI can be shown only on certain kinds of nodes in specific locations.
+  // |pageChanged| is true if and only if the DOM tree or style was
+  // modified during the dispatch of the mouse*, or click events associated
+  // with the tap.
+  // This provides a heuristic to help identify when a page is doing
+  // something as a result of a tap without explicitly consuming the event.
+  virtual void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition,
+                                          const WebNode& tappedNode,
+                                          bool pageChanged) {}
 
-    // Converts the |rect| from Blink's Viewport coordinates to the
-    // coordinates in the native window used to display the content, in
-    // DIP.  They're identical in tradional world, but will differ when
-    // use-zoom-for-dsf feature is eanbled, and Viewport coordinates
-    // becomes DSF times larger than window coordinates.
-    // TODO(oshima): Update the comment when the migration is completed.
-    virtual void convertViewportToWindow(WebRect* rect) {}
+  // Converts the |rect| from Blink's Viewport coordinates to the
+  // coordinates in the native window used to display the content, in
+  // DIP.  They're identical in tradional world, but will differ when
+  // use-zoom-for-dsf feature is eanbled, and Viewport coordinates
+  // becomes DSF times larger than window coordinates.
+  // TODO(oshima): Update the comment when the migration is completed.
+  virtual void convertViewportToWindow(WebRect* rect) {}
 
-    // Converts the |rect| from the coordinates in native window in
-    // DIP to Blink's Viewport coordinates. They're identical in
-    // tradional world, but will differ when use-zoom-for-dsf feature
-    // is eanbled.  TODO(oshima): Update the comment when the
-    // migration is completed.
-    virtual void convertWindowToViewport(WebFloatRect* rect) {}
+  // Converts the |rect| from the coordinates in native window in
+  // DIP to Blink's Viewport coordinates. They're identical in
+  // tradional world, but will differ when use-zoom-for-dsf feature
+  // is eanbled.  TODO(oshima): Update the comment when the
+  // migration is completed.
+  virtual void convertWindowToViewport(WebFloatRect* rect) {}
 
-protected:
-    ~WebWidgetClient() { }
+ protected:
+  ~WebWidgetClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

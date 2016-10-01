@@ -31,19 +31,18 @@
 namespace blink {
 
 class SinkDocument final : public HTMLDocument {
-public:
-    static SinkDocument* create(const DocumentInit& initializer = DocumentInit())
-    {
-        return new SinkDocument(initializer);
-    }
+ public:
+  static SinkDocument* create(
+      const DocumentInit& initializer = DocumentInit()) {
+    return new SinkDocument(initializer);
+  }
 
-private:
-    explicit SinkDocument(const DocumentInit&);
+ private:
+  explicit SinkDocument(const DocumentInit&);
 
-    DocumentParser* createParser() override;
+  DocumentParser* createParser() override;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // SinkDocument_h
+#endif  // SinkDocument_h

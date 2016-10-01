@@ -35,42 +35,46 @@ namespace blink {
 class PlatformSpeechSynthesisUtterance;
 
 class WebSpeechSynthesisUtterance {
-public:
-    WebSpeechSynthesisUtterance() { }
-    WebSpeechSynthesisUtterance(const WebSpeechSynthesisUtterance& other) { assign(other); }
-    ~WebSpeechSynthesisUtterance() { reset(); }
+ public:
+  WebSpeechSynthesisUtterance() {}
+  WebSpeechSynthesisUtterance(const WebSpeechSynthesisUtterance& other) {
+    assign(other);
+  }
+  ~WebSpeechSynthesisUtterance() { reset(); }
 
-    WebSpeechSynthesisUtterance& operator=(const WebSpeechSynthesisUtterance& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebSpeechSynthesisUtterance& operator=(
+      const WebSpeechSynthesisUtterance& other) {
+    assign(other);
+    return *this;
+  }
 
-    BLINK_PLATFORM_EXPORT void assign(const WebSpeechSynthesisUtterance&);
-    BLINK_PLATFORM_EXPORT void reset();
-    bool isNull() const { return m_private.isNull(); }
+  BLINK_PLATFORM_EXPORT void assign(const WebSpeechSynthesisUtterance&);
+  BLINK_PLATFORM_EXPORT void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    BLINK_PLATFORM_EXPORT WebString text() const;
-    BLINK_PLATFORM_EXPORT WebString lang() const;
-    BLINK_PLATFORM_EXPORT WebString voice() const;
+  BLINK_PLATFORM_EXPORT WebString text() const;
+  BLINK_PLATFORM_EXPORT WebString lang() const;
+  BLINK_PLATFORM_EXPORT WebString voice() const;
 
-    // As defined in: https://dvcs.w3.org/hg/speech-api/raw-file/tip/speechapi.html
-    BLINK_PLATFORM_EXPORT float volume() const; // 0...1, 1 is default
-    BLINK_PLATFORM_EXPORT float rate() const; // 0.1...10, 1 is default
-    BLINK_PLATFORM_EXPORT float pitch() const; // 0...2, 1 is default
+  // As defined in: https://dvcs.w3.org/hg/speech-api/raw-file/tip/speechapi.html
+  BLINK_PLATFORM_EXPORT float volume() const;  // 0...1, 1 is default
+  BLINK_PLATFORM_EXPORT float rate() const;    // 0.1...10, 1 is default
+  BLINK_PLATFORM_EXPORT float pitch() const;   // 0...2, 1 is default
 
-    BLINK_PLATFORM_EXPORT double startTime() const; // In seconds.
+  BLINK_PLATFORM_EXPORT double startTime() const;  // In seconds.
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance(PlatformSpeechSynthesisUtterance*);
-    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance& operator=(PlatformSpeechSynthesisUtterance*);
-    BLINK_PLATFORM_EXPORT operator PlatformSpeechSynthesisUtterance*() const;
+  BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance(
+      PlatformSpeechSynthesisUtterance*);
+  BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance& operator=(
+      PlatformSpeechSynthesisUtterance*);
+  BLINK_PLATFORM_EXPORT operator PlatformSpeechSynthesisUtterance*() const;
 #endif
 
-private:
-    WebPrivatePtr<PlatformSpeechSynthesisUtterance> m_private;
+ private:
+  WebPrivatePtr<PlatformSpeechSynthesisUtterance> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSpeechSynthesisUtterance_h
+#endif  // WebSpeechSynthesisUtterance_h

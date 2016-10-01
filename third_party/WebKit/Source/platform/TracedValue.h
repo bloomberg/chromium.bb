@@ -12,44 +12,47 @@
 namespace blink {
 
 // TracedValue copies all passed names and values and doesn't retain references.
-class PLATFORM_EXPORT TracedValue final : public base::trace_event::ConvertableToTraceFormat {
-    WTF_MAKE_NONCOPYABLE(TracedValue);
+class PLATFORM_EXPORT TracedValue final
+    : public base::trace_event::ConvertableToTraceFormat {
+  WTF_MAKE_NONCOPYABLE(TracedValue);
 
-public:
-    ~TracedValue();
+ public:
+  ~TracedValue();
 
-    static std::unique_ptr<TracedValue> create();
+  static std::unique_ptr<TracedValue> create();
 
-    void endDictionary();
-    void endArray();
+  void endDictionary();
+  void endArray();
 
-    void setInteger(const char* name, int value);
-    void setDouble(const char* name, double);
-    void setBoolean(const char* name, bool value);
-    void setString(const char* name, const String& value);
-    void beginArray(const char* name);
-    void beginDictionary(const char* name);
+  void setInteger(const char* name, int value);
+  void setDouble(const char* name, double);
+  void setBoolean(const char* name, bool value);
+  void setString(const char* name, const String& value);
+  void beginArray(const char* name);
+  void beginDictionary(const char* name);
 
-    void pushInteger(int);
-    void pushDouble(double);
-    void pushBoolean(bool);
-    void pushString(const String&);
-    void beginArray();
-    void beginDictionary();
+  void pushInteger(int);
+  void pushDouble(double);
+  void pushBoolean(bool);
+  void pushString(const String&);
+  void beginArray();
+  void beginDictionary();
 
-    String toString() const;
+  String toString() const;
 
-private:
-    TracedValue();
+ private:
+  TracedValue();
 
-    // ConvertableToTraceFormat
-    using base::trace_event::ConvertableToTraceFormat::ToString; // Hide this method from blink code.
-    void AppendAsTraceFormat(std::string*) const final;
-    void EstimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead*) final;
+  // ConvertableToTraceFormat
+  using base::trace_event::ConvertableToTraceFormat::
+      ToString;  // Hide this method from blink code.
+  void AppendAsTraceFormat(std::string*) const final;
+  void EstimateTraceMemoryOverhead(
+      base::trace_event::TraceEventMemoryOverhead*) final;
 
-    base::trace_event::TracedValue m_tracedValue;
+  base::trace_event::TracedValue m_tracedValue;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TracedValue_h
+#endif  // TracedValue_h

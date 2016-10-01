@@ -14,16 +14,18 @@ namespace blink {
 
 namespace EventHandlingUtil {
 
-HitTestResult hitTestResultInFrame(LocalFrame*, const LayoutPoint&,
-    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly
-        | HitTestRequest::Active);
+HitTestResult hitTestResultInFrame(
+    LocalFrame*,
+    const LayoutPoint&,
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly |
+                                                 HitTestRequest::Active);
 
-WebInputEventResult mergeEventResult(
-    WebInputEventResult resultA, WebInputEventResult resultB);
+WebInputEventResult mergeEventResult(WebInputEventResult resultA,
+                                     WebInputEventResult resultB);
 WebInputEventResult toWebInputEventResult(DispatchEventResult);
 
-} // namespace EventHandlingUtil
+}  // namespace EventHandlingUtil
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EventHandlingUtil_h
+#endif  // EventHandlingUtil_h

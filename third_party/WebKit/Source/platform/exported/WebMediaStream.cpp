@@ -40,108 +40,103 @@ namespace blink {
 namespace {
 
 class ExtraDataContainer : public MediaStreamDescriptor::ExtraData {
-public:
-    ExtraDataContainer(std::unique_ptr<WebMediaStream::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
+ public:
+  ExtraDataContainer(std::unique_ptr<WebMediaStream::ExtraData> extraData)
+      : m_extraData(std::move(extraData)) {}
 
-    WebMediaStream::ExtraData* getExtraData() { return m_extraData.get(); }
+  WebMediaStream::ExtraData* getExtraData() { return m_extraData.get(); }
 
-private:
-    std::unique_ptr<WebMediaStream::ExtraData> m_extraData;
+ private:
+  std::unique_ptr<WebMediaStream::ExtraData> m_extraData;
 };
 
-} // namespace
+}  // namespace
 
 WebMediaStream::WebMediaStream(MediaStreamDescriptor* mediaStreamDescriptor)
-    : m_private(mediaStreamDescriptor)
-{
+    : m_private(mediaStreamDescriptor) {}
+
+void WebMediaStream::reset() {
+  m_private.reset();
 }
 
-void WebMediaStream::reset()
-{
-    m_private.reset();
+WebString WebMediaStream::id() const {
+  return m_private->id();
 }
 
-WebString WebMediaStream::id() const
-{
-    return m_private->id();
+WebMediaStream::ExtraData* WebMediaStream::getExtraData() const {
+  MediaStreamDescriptor::ExtraData* data = m_private->getExtraData();
+  if (!data)
+    return 0;
+  return static_cast<ExtraDataContainer*>(data)->getExtraData();
 }
 
-WebMediaStream::ExtraData* WebMediaStream::getExtraData() const
-{
-    MediaStreamDescriptor::ExtraData* data = m_private->getExtraData();
-    if (!data)
-        return 0;
-    return static_cast<ExtraDataContainer*>(data)->getExtraData();
+void WebMediaStream::setExtraData(ExtraData* extraData) {
+  m_private->setExtraData(
+      wrapUnique(new ExtraDataContainer(wrapUnique(extraData))));
 }
 
-void WebMediaStream::setExtraData(ExtraData* extraData)
-{
-    m_private->setExtraData(wrapUnique(new ExtraDataContainer(wrapUnique(extraData))));
+void WebMediaStream::audioTracks(
+    WebVector<WebMediaStreamTrack>& webTracks) const {
+  size_t numberOfTracks = m_private->numberOfAudioComponents();
+  WebVector<WebMediaStreamTrack> result(numberOfTracks);
+  for (size_t i = 0; i < numberOfTracks; ++i)
+    result[i] = m_private->audioComponent(i);
+  webTracks.swap(result);
 }
 
-void WebMediaStream::audioTracks(WebVector<WebMediaStreamTrack>& webTracks) const
-{
-    size_t numberOfTracks = m_private->numberOfAudioComponents();
-    WebVector<WebMediaStreamTrack> result(numberOfTracks);
-    for (size_t i = 0; i < numberOfTracks; ++i)
-        result[i] = m_private->audioComponent(i);
-    webTracks.swap(result);
+void WebMediaStream::videoTracks(
+    WebVector<WebMediaStreamTrack>& webTracks) const {
+  size_t numberOfTracks = m_private->numberOfVideoComponents();
+  WebVector<WebMediaStreamTrack> result(numberOfTracks);
+  for (size_t i = 0; i < numberOfTracks; ++i)
+    result[i] = m_private->videoComponent(i);
+  webTracks.swap(result);
 }
 
-void WebMediaStream::videoTracks(WebVector<WebMediaStreamTrack>& webTracks) const
-{
-    size_t numberOfTracks = m_private->numberOfVideoComponents();
-    WebVector<WebMediaStreamTrack> result(numberOfTracks);
-    for (size_t i = 0; i < numberOfTracks; ++i)
-        result[i] = m_private->videoComponent(i);
-    webTracks.swap(result);
+void WebMediaStream::addTrack(const WebMediaStreamTrack& track) {
+  ASSERT(!isNull());
+  m_private->addRemoteTrack(track);
 }
 
-void WebMediaStream::addTrack(const WebMediaStreamTrack& track)
-{
-    ASSERT(!isNull());
-    m_private->addRemoteTrack(track);
+void WebMediaStream::removeTrack(const WebMediaStreamTrack& track) {
+  ASSERT(!isNull());
+  m_private->removeRemoteTrack(track);
 }
 
-void WebMediaStream::removeTrack(const WebMediaStreamTrack& track)
-{
-    ASSERT(!isNull());
-    m_private->removeRemoteTrack(track);
+WebMediaStream& WebMediaStream::operator=(
+    MediaStreamDescriptor* mediaStreamDescriptor) {
+  m_private = mediaStreamDescriptor;
+  return *this;
 }
 
-WebMediaStream& WebMediaStream::operator=(MediaStreamDescriptor* mediaStreamDescriptor)
-{
-    m_private = mediaStreamDescriptor;
-    return *this;
+WebMediaStream::operator MediaStreamDescriptor*() const {
+  return m_private.get();
 }
 
-WebMediaStream::operator MediaStreamDescriptor*() const
-{
-    return m_private.get();
+void WebMediaStream::initialize(
+    const WebVector<WebMediaStreamTrack>& audioTracks,
+    const WebVector<WebMediaStreamTrack>& videoTracks) {
+  initialize(createCanonicalUUIDString(), audioTracks, videoTracks);
 }
 
-void WebMediaStream::initialize(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks)
-{
-    initialize(createCanonicalUUIDString(), audioTracks, videoTracks);
+void WebMediaStream::initialize(
+    const WebString& label,
+    const WebVector<WebMediaStreamTrack>& audioTracks,
+    const WebVector<WebMediaStreamTrack>& videoTracks) {
+  MediaStreamComponentVector audio, video;
+  for (size_t i = 0; i < audioTracks.size(); ++i) {
+    MediaStreamComponent* component = audioTracks[i];
+    audio.append(component);
+  }
+  for (size_t i = 0; i < videoTracks.size(); ++i) {
+    MediaStreamComponent* component = videoTracks[i];
+    video.append(component);
+  }
+  m_private = MediaStreamDescriptor::create(label, audio, video);
 }
 
-void WebMediaStream::initialize(const WebString& label, const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks)
-{
-    MediaStreamComponentVector audio, video;
-    for (size_t i = 0; i < audioTracks.size(); ++i) {
-        MediaStreamComponent* component = audioTracks[i];
-        audio.append(component);
-    }
-    for (size_t i = 0; i < videoTracks.size(); ++i) {
-        MediaStreamComponent* component = videoTracks[i];
-        video.append(component);
-    }
-    m_private = MediaStreamDescriptor::create(label, audio, video);
+void WebMediaStream::assign(const WebMediaStream& other) {
+  m_private = other.m_private;
 }
 
-void WebMediaStream::assign(const WebMediaStream& other)
-{
-    m_private = other.m_private;
-}
-
-} // namespace blink
+}  // namespace blink

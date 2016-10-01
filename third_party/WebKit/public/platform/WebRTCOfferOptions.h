@@ -13,37 +13,37 @@ namespace blink {
 class RTCOfferOptionsPlatform;
 
 class BLINK_PLATFORM_EXPORT WebRTCOfferOptions {
-public:
-    WebRTCOfferOptions(int32_t offerToReceiveAudio,
-        int32_t offerToReceiveVideo, bool voiceActivityDetection,
-        bool iceRestart);
-    WebRTCOfferOptions(const WebRTCOfferOptions& other) { assign(other); }
-    ~WebRTCOfferOptions() { reset(); }
+ public:
+  WebRTCOfferOptions(int32_t offerToReceiveAudio,
+                     int32_t offerToReceiveVideo,
+                     bool voiceActivityDetection,
+                     bool iceRestart);
+  WebRTCOfferOptions(const WebRTCOfferOptions& other) { assign(other); }
+  ~WebRTCOfferOptions() { reset(); }
 
-    WebRTCOfferOptions& operator=(const WebRTCOfferOptions& other)
-    {
-        assign(other);
-        return *this;
-    }
+  WebRTCOfferOptions& operator=(const WebRTCOfferOptions& other) {
+    assign(other);
+    return *this;
+  }
 
-    void assign(const WebRTCOfferOptions&);
+  void assign(const WebRTCOfferOptions&);
 
-    void reset();
-    bool isNull() const { return m_private.isNull(); }
+  void reset();
+  bool isNull() const { return m_private.isNull(); }
 
-    int32_t offerToReceiveVideo() const;
-    int32_t offerToReceiveAudio() const;
-    bool voiceActivityDetection() const;
-    bool iceRestart() const;
+  int32_t offerToReceiveVideo() const;
+  int32_t offerToReceiveAudio() const;
+  bool voiceActivityDetection() const;
+  bool iceRestart() const;
 
 #if INSIDE_BLINK
-    WebRTCOfferOptions(RTCOfferOptionsPlatform*);
+  WebRTCOfferOptions(RTCOfferOptionsPlatform*);
 #endif
 
-private:
-    WebPrivatePtr<RTCOfferOptionsPlatform> m_private;
+ private:
+  WebPrivatePtr<RTCOfferOptionsPlatform> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRTCOfferOptions_h
+#endif  // WebRTCOfferOptions_h

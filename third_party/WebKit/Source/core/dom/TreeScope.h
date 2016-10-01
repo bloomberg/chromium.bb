@@ -50,116 +50,126 @@ class Node;
 // so that the Node destructor no longer does problematic NodeList cache manipulation in
 // the destructor.
 class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
-public:
-    TreeScope* parentTreeScope() const { return m_parentTreeScope; }
+ public:
+  TreeScope* parentTreeScope() const { return m_parentTreeScope; }
 
-    TreeScope* olderShadowRootOrParentTreeScope() const;
-    bool isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(const TreeScope&) const;
+  TreeScope* olderShadowRootOrParentTreeScope() const;
+  bool isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
+      const TreeScope&) const;
 
-    Element* adjustedFocusedElement() const;
-    // Finds a retargeted element to the given argument, when the retargetd element is in this
-    // TreeScope. Returns null otherwise.
-    // TODO(kochi): once this algorithm is named in the spec, rename the method name.
-    Element* adjustedElement(const Element&) const;
-    Element* getElementById(const AtomicString&) const;
-    const HeapVector<Member<Element>>& getAllElementsById(const AtomicString&) const;
-    bool hasElementWithId(const AtomicString& id) const;
-    bool containsMultipleElementsWithId(const AtomicString& id) const;
-    void addElementById(const AtomicString& elementId, Element*);
-    void removeElementById(const AtomicString& elementId, Element*);
+  Element* adjustedFocusedElement() const;
+  // Finds a retargeted element to the given argument, when the retargetd element is in this
+  // TreeScope. Returns null otherwise.
+  // TODO(kochi): once this algorithm is named in the spec, rename the method name.
+  Element* adjustedElement(const Element&) const;
+  Element* getElementById(const AtomicString&) const;
+  const HeapVector<Member<Element>>& getAllElementsById(
+      const AtomicString&) const;
+  bool hasElementWithId(const AtomicString& id) const;
+  bool containsMultipleElementsWithId(const AtomicString& id) const;
+  void addElementById(const AtomicString& elementId, Element*);
+  void removeElementById(const AtomicString& elementId, Element*);
 
-    Document& document() const
-    {
-        DCHECK(m_document);
-        return *m_document;
-    }
+  Document& document() const {
+    DCHECK(m_document);
+    return *m_document;
+  }
 
-    Node* ancestorInThisScope(Node*) const;
+  Node* ancestorInThisScope(Node*) const;
 
-    void addImageMap(HTMLMapElement*);
-    void removeImageMap(HTMLMapElement*);
-    HTMLMapElement* getImageMap(const String& url) const;
+  void addImageMap(HTMLMapElement*);
+  void removeImageMap(HTMLMapElement*);
+  HTMLMapElement* getImageMap(const String& url) const;
 
-    Element* elementFromPoint(int x, int y) const;
-    Element* hitTestPoint(int x, int y, const HitTestRequest&) const;
-    HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;
-    HeapVector<Member<Element>> elementsFromHitTestResult(HitTestResult&) const;
+  Element* elementFromPoint(int x, int y) const;
+  Element* hitTestPoint(int x, int y, const HitTestRequest&) const;
+  HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;
+  HeapVector<Member<Element>> elementsFromHitTestResult(HitTestResult&) const;
 
-    DOMSelection* getSelection() const;
+  DOMSelection* getSelection() const;
 
-    Element* retarget(const Element& target) const;
+  Element* retarget(const Element& target) const;
 
-    // Find first anchor with the given name.
-    // First searches for an element with the given ID, but if that fails, then looks
-    // for an anchor with the given name. ID matching is always case sensitive, but
-    // Anchor name matching is case sensitive in strict mode and not case sensitive in
-    // quirks mode for historical compatibility reasons.
-    Element* findAnchor(const String& name);
+  // Find first anchor with the given name.
+  // First searches for an element with the given ID, but if that fails, then looks
+  // for an anchor with the given name. ID matching is always case sensitive, but
+  // Anchor name matching is case sensitive in strict mode and not case sensitive in
+  // quirks mode for historical compatibility reasons.
+  Element* findAnchor(const String& name);
 
-    // Used by the basic DOM mutation methods (e.g., appendChild()).
-    void adoptIfNeeded(Node&);
+  // Used by the basic DOM mutation methods (e.g., appendChild()).
+  void adoptIfNeeded(Node&);
 
-    ContainerNode& rootNode() const { return *m_rootNode; }
+  ContainerNode& rootNode() const { return *m_rootNode; }
 
-    IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
+  IdTargetObserverRegistry& idTargetObserverRegistry() const {
+    return *m_idTargetObserverRegistry.get();
+  }
 
-    RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
+  RadioButtonGroupScope& radioButtonGroupScope() {
+    return m_radioButtonGroupScope;
+  }
 
-    bool isInclusiveAncestorOf(const TreeScope&) const;
-    unsigned short comparePosition(const TreeScope&) const;
+  bool isInclusiveAncestorOf(const TreeScope&) const;
+  unsigned short comparePosition(const TreeScope&) const;
 
-    const TreeScope* commonAncestorTreeScope(const TreeScope& other) const;
-    TreeScope* commonAncestorTreeScope(TreeScope& other);
+  const TreeScope* commonAncestorTreeScope(const TreeScope& other) const;
+  TreeScope* commonAncestorTreeScope(TreeScope& other);
 
-    Element* getElementByAccessKey(const String& key) const;
+  Element* getElementByAccessKey(const String& key) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-    ScopedStyleResolver* scopedStyleResolver() const { return m_scopedStyleResolver.get(); }
-    ScopedStyleResolver& ensureScopedStyleResolver();
-    void clearScopedStyleResolver();
+  ScopedStyleResolver* scopedStyleResolver() const {
+    return m_scopedStyleResolver.get();
+  }
+  ScopedStyleResolver& ensureScopedStyleResolver();
+  void clearScopedStyleResolver();
 
-protected:
-    TreeScope(ContainerNode&, Document&);
-    TreeScope(Document&);
-    virtual ~TreeScope();
+ protected:
+  TreeScope(ContainerNode&, Document&);
+  TreeScope(Document&);
+  virtual ~TreeScope();
 
-    void setDocument(Document& document) { m_document = &document; }
-    void setParentTreeScope(TreeScope&);
-    void setNeedsStyleRecalcForViewportUnits();
+  void setDocument(Document& document) { m_document = &document; }
+  void setParentTreeScope(TreeScope&);
+  void setNeedsStyleRecalcForViewportUnits();
 
-private:
-    Member<ContainerNode> m_rootNode;
-    Member<Document> m_document;
-    Member<TreeScope> m_parentTreeScope;
+ private:
+  Member<ContainerNode> m_rootNode;
+  Member<Document> m_document;
+  Member<TreeScope> m_parentTreeScope;
 
-    Member<DocumentOrderedMap> m_elementsById;
-    Member<DocumentOrderedMap> m_imageMapsByName;
+  Member<DocumentOrderedMap> m_elementsById;
+  Member<DocumentOrderedMap> m_imageMapsByName;
 
-    Member<IdTargetObserverRegistry> m_idTargetObserverRegistry;
+  Member<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
-    Member<ScopedStyleResolver> m_scopedStyleResolver;
+  Member<ScopedStyleResolver> m_scopedStyleResolver;
 
-    mutable Member<DOMSelection> m_selection;
+  mutable Member<DOMSelection> m_selection;
 
-    RadioButtonGroupScope m_radioButtonGroupScope;
+  RadioButtonGroupScope m_radioButtonGroupScope;
 };
 
-inline bool TreeScope::hasElementWithId(const AtomicString& id) const
-{
-    DCHECK(!id.isNull());
-    return m_elementsById && m_elementsById->contains(id);
+inline bool TreeScope::hasElementWithId(const AtomicString& id) const {
+  DCHECK(!id.isNull());
+  return m_elementsById && m_elementsById->contains(id);
 }
 
-inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) const
-{
-    return m_elementsById && m_elementsById->containsMultiple(id);
+inline bool TreeScope::containsMultipleElementsWithId(
+    const AtomicString& id) const {
+  return m_elementsById && m_elementsById->containsMultiple(id);
 }
 
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
 
-HitTestResult hitTestInDocument(const Document*, int x, int y, const HitTestRequest& = HitTestRequest::ReadOnly | HitTestRequest::Active);
+HitTestResult hitTestInDocument(
+    const Document*,
+    int x,
+    int y,
+    const HitTestRequest& = HitTestRequest::ReadOnly | HitTestRequest::Active);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TreeScope_h
+#endif  // TreeScope_h

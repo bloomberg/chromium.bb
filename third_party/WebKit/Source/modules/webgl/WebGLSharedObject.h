@@ -36,42 +36,39 @@ class WebGLRenderingContextBase;
 // WebGLSharedObject the base class for objects that can be shared by multiple
 // WebGLRenderingContexts.
 class WebGLSharedObject : public WebGLObject {
-public:
-    ~WebGLSharedObject() override;
+ public:
+  ~WebGLSharedObject() override;
 
-    WebGLContextGroup* contextGroup() const { return m_contextGroup; }
+  WebGLContextGroup* contextGroup() const { return m_contextGroup; }
 
-    virtual bool isBuffer() const { return false; }
-    virtual bool isProgram() const { return false; }
-    virtual bool isQuery() const { return false; }
-    virtual bool isRenderbuffer() const { return false; }
-    virtual bool isSampler() const { return false; }
-    virtual bool isShader() const { return false; }
-    virtual bool isSync() const { return false; }
-    virtual bool isTexture() const { return false; }
-    virtual bool isTransformFeedback() const { return false; }
+  virtual bool isBuffer() const { return false; }
+  virtual bool isProgram() const { return false; }
+  virtual bool isQuery() const { return false; }
+  virtual bool isRenderbuffer() const { return false; }
+  virtual bool isSampler() const { return false; }
+  virtual bool isShader() const { return false; }
+  virtual bool isSync() const { return false; }
+  virtual bool isTexture() const { return false; }
+  virtual bool isTransformFeedback() const { return false; }
 
-    bool validate(const WebGLContextGroup* contextGroup, const WebGLRenderingContextBase*) const final
-    {
-        return contextGroup == m_contextGroup;
-    }
+  bool validate(const WebGLContextGroup* contextGroup,
+                const WebGLRenderingContextBase*) const final {
+    return contextGroup == m_contextGroup;
+  }
 
-    void detachContextGroup();
+  void detachContextGroup();
 
-protected:
-    explicit WebGLSharedObject(WebGLRenderingContextBase*);
+ protected:
+  explicit WebGLSharedObject(WebGLRenderingContextBase*);
 
-    bool hasGroupOrContext() const final
-    {
-        return m_contextGroup;
-    }
+  bool hasGroupOrContext() const final { return m_contextGroup; }
 
-    gpu::gles2::GLES2Interface* getAGLInterface() const final;
+  gpu::gles2::GLES2Interface* getAGLInterface() const final;
 
-private:
-    WebGLContextGroup* m_contextGroup;
+ private:
+  WebGLContextGroup* m_contextGroup;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLSharedObject_h
+#endif  // WebGLSharedObject_h

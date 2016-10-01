@@ -19,35 +19,38 @@ struct WebRect;
 struct WebTextRun;
 
 class WebFont {
-public:
-    BLINK_PLATFORM_EXPORT static WebFont* create(const WebFontDescription&);
-    BLINK_PLATFORM_EXPORT ~WebFont();
+ public:
+  BLINK_PLATFORM_EXPORT static WebFont* create(const WebFontDescription&);
+  BLINK_PLATFORM_EXPORT ~WebFont();
 
-    BLINK_PLATFORM_EXPORT WebFontDescription getFontDescription() const;
-    BLINK_PLATFORM_EXPORT int ascent() const;
-    BLINK_PLATFORM_EXPORT int descent() const;
-    BLINK_PLATFORM_EXPORT int height() const;
-    BLINK_PLATFORM_EXPORT int lineSpacing() const;
-    BLINK_PLATFORM_EXPORT float xHeight() const;
-    BLINK_PLATFORM_EXPORT void drawText(WebCanvas*, const WebTextRun&,
-        const WebFloatPoint& leftBaseline, WebColor, const WebRect& clip) const;
-    BLINK_PLATFORM_EXPORT int calculateWidth(const WebTextRun&) const;
-    BLINK_PLATFORM_EXPORT int offsetForPosition(const WebTextRun&,
-        float position) const;
-    BLINK_PLATFORM_EXPORT WebFloatRect selectionRectForText(
-        const WebTextRun&,
-        const WebFloatPoint& leftBaseline,
-        int height,
-        int from = 0,
-        int to = -1) const;
+  BLINK_PLATFORM_EXPORT WebFontDescription getFontDescription() const;
+  BLINK_PLATFORM_EXPORT int ascent() const;
+  BLINK_PLATFORM_EXPORT int descent() const;
+  BLINK_PLATFORM_EXPORT int height() const;
+  BLINK_PLATFORM_EXPORT int lineSpacing() const;
+  BLINK_PLATFORM_EXPORT float xHeight() const;
+  BLINK_PLATFORM_EXPORT void drawText(WebCanvas*,
+                                      const WebTextRun&,
+                                      const WebFloatPoint& leftBaseline,
+                                      WebColor,
+                                      const WebRect& clip) const;
+  BLINK_PLATFORM_EXPORT int calculateWidth(const WebTextRun&) const;
+  BLINK_PLATFORM_EXPORT int offsetForPosition(const WebTextRun&,
+                                              float position) const;
+  BLINK_PLATFORM_EXPORT WebFloatRect
+  selectionRectForText(const WebTextRun&,
+                       const WebFloatPoint& leftBaseline,
+                       int height,
+                       int from = 0,
+                       int to = -1) const;
 
-private:
-    explicit WebFont(const WebFontDescription&);
+ private:
+  explicit WebFont(const WebFontDescription&);
 
-    class Impl;
-    std::unique_ptr<Impl> m_private;
+  class Impl;
+  std::unique_ptr<Impl> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

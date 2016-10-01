@@ -32,9 +32,6 @@
 
 namespace blink {
 
-AudioDSPKernel::~AudioDSPKernel()
-{
-}
+AudioDSPKernel::~AudioDSPKernel() {}
 
-} // namespace blink
-
+}  // namespace blink

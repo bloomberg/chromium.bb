@@ -35,29 +35,29 @@
 
 namespace blink {
 
-PassRefPtr<SVGDashArray> createSVGDashArray(size_t length)
-{
-    RefPtr<SVGDashArray> list = SVGDashArray::create();
-    for (size_t i = 0; i < length; ++i)
-        list->append(Length(Fixed));
-    return list.release();
+PassRefPtr<SVGDashArray> createSVGDashArray(size_t length) {
+  RefPtr<SVGDashArray> list = SVGDashArray::create();
+  for (size_t i = 0; i < length; ++i)
+    list->append(Length(Fixed));
+  return list.release();
 }
 
-TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
-{
-    RefPtr<SVGDashArray> svgListA = createSVGDashArray(4);
-    RefPtr<SVGDashArray> svgListB = createSVGDashArray(4);
-    RefPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA, 1);
-    RefPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
-    EXPECT_TRUE(listA->equals(listB.get()));
+TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo) {
+  RefPtr<SVGDashArray> svgListA = createSVGDashArray(4);
+  RefPtr<SVGDashArray> svgListB = createSVGDashArray(4);
+  RefPtr<AnimatableStrokeDasharrayList> listA =
+      AnimatableStrokeDasharrayList::create(svgListA, 1);
+  RefPtr<AnimatableStrokeDasharrayList> listB =
+      AnimatableStrokeDasharrayList::create(svgListB, 1);
+  EXPECT_TRUE(listA->equals(listB.get()));
 
-    svgListB->at(3) = Length(50, Fixed);
-    listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
-    EXPECT_FALSE(listA->equals(listB.get()));
+  svgListB->at(3) = Length(50, Fixed);
+  listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
+  EXPECT_FALSE(listA->equals(listB.get()));
 
-    svgListB = createSVGDashArray(5);
-    listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
-    EXPECT_FALSE(listA->equals(listB.get()));
+  svgListB = createSVGDashArray(5);
+  listB = AnimatableStrokeDasharrayList::create(svgListB, 1);
+  EXPECT_FALSE(listA->equals(listB.get()));
 }
 
-} // namespace blink
+}  // namespace blink

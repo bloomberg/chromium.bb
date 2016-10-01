@@ -31,36 +31,36 @@ class MediaList;
 class StyleRuleImport;
 
 class CSSImportRule final : public CSSRule {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSImportRule* create(StyleRuleImport* rule, CSSStyleSheet* sheet)
-    {
-        return new CSSImportRule(rule, sheet);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~CSSImportRule() override;
+ public:
+  static CSSImportRule* create(StyleRuleImport* rule, CSSStyleSheet* sheet) {
+    return new CSSImportRule(rule, sheet);
+  }
 
-    String cssText() const override;
-    void reattach(StyleRuleBase*) override;
+  ~CSSImportRule() override;
 
-    String href() const;
-    MediaList* media() const;
-    CSSStyleSheet* styleSheet() const;
+  String cssText() const override;
+  void reattach(StyleRuleBase*) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  String href() const;
+  MediaList* media() const;
+  CSSStyleSheet* styleSheet() const;
 
-private:
-    CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
+  DECLARE_VIRTUAL_TRACE();
 
-    CSSRule::Type type() const override { return kImportRule; }
+ private:
+  CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
 
-    Member<StyleRuleImport> m_importRule;
-    mutable Member<MediaList> m_mediaCSSOMWrapper;
-    mutable Member<CSSStyleSheet> m_styleSheetCSSOMWrapper;
+  CSSRule::Type type() const override { return kImportRule; }
+
+  Member<StyleRuleImport> m_importRule;
+  mutable Member<MediaList> m_mediaCSSOMWrapper;
+  mutable Member<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, kImportRule);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSImportRule_h
+#endif  // CSSImportRule_h

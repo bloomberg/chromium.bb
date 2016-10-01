@@ -27,37 +27,28 @@
 
 namespace blink {
 
-PageTransitionEvent::PageTransitionEvent()
-    : m_persisted(false)
-{
+PageTransitionEvent::PageTransitionEvent() : m_persisted(false) {}
+
+PageTransitionEvent::PageTransitionEvent(const AtomicString& type,
+                                         bool persisted)
+    : Event(type, true, true), m_persisted(persisted) {}
+
+PageTransitionEvent::PageTransitionEvent(
+    const AtomicString& type,
+    const PageTransitionEventInit& initializer)
+    : Event(type, initializer), m_persisted(false) {
+  if (initializer.hasPersisted())
+    m_persisted = initializer.persisted();
 }
 
-PageTransitionEvent::PageTransitionEvent(const AtomicString& type, bool persisted)
-    : Event(type, true, true)
-    , m_persisted(persisted)
-{
+PageTransitionEvent::~PageTransitionEvent() {}
+
+const AtomicString& PageTransitionEvent::interfaceName() const {
+  return EventNames::PageTransitionEvent;
 }
 
-PageTransitionEvent::PageTransitionEvent(const AtomicString& type, const PageTransitionEventInit& initializer)
-    : Event(type, initializer)
-    , m_persisted(false)
-{
-    if (initializer.hasPersisted())
-        m_persisted = initializer.persisted();
+DEFINE_TRACE(PageTransitionEvent) {
+  Event::trace(visitor);
 }
 
-PageTransitionEvent::~PageTransitionEvent()
-{
-}
-
-const AtomicString& PageTransitionEvent::interfaceName() const
-{
-    return EventNames::PageTransitionEvent;
-}
-
-DEFINE_TRACE(PageTransitionEvent)
-{
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

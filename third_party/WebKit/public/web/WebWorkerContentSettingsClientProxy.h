@@ -15,20 +15,14 @@ class WebString;
 // WorkerGlobalScope in blink. Each allow method is called on the worker thread
 // and may destructed on the worker thread.
 class WebWorkerContentSettingsClientProxy {
-public:
-    virtual ~WebWorkerContentSettingsClientProxy() { }
+ public:
+  virtual ~WebWorkerContentSettingsClientProxy() {}
 
-    virtual bool requestFileSystemAccessSync()
-    {
-        return true;
-    }
+  virtual bool requestFileSystemAccessSync() { return true; }
 
-    virtual bool allowIndexedDB(const WebString& name)
-    {
-        return true;
-    }
+  virtual bool allowIndexedDB(const WebString& name) { return true; }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebWorkerContentSettingsClientProxy_h
+#endif  // WebWorkerContentSettingsClientProxy_h

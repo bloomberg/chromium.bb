@@ -24,29 +24,30 @@ class CompositorTransformKeyframe;
 namespace blink {
 
 // A keyframed transform animation curve.
-class PLATFORM_EXPORT CompositorTransformAnimationCurve : public CompositorAnimationCurve {
-    WTF_MAKE_NONCOPYABLE(CompositorTransformAnimationCurve);
-public:
-    static std::unique_ptr<CompositorTransformAnimationCurve> create()
-    {
-        return wrapUnique(new CompositorTransformAnimationCurve());
-    }
+class PLATFORM_EXPORT CompositorTransformAnimationCurve
+    : public CompositorAnimationCurve {
+  WTF_MAKE_NONCOPYABLE(CompositorTransformAnimationCurve);
 
-    ~CompositorTransformAnimationCurve() override;
+ public:
+  static std::unique_ptr<CompositorTransformAnimationCurve> create() {
+    return wrapUnique(new CompositorTransformAnimationCurve());
+  }
 
-    void addKeyframe(const CompositorTransformKeyframe&);
-    void setTimingFunction(const TimingFunction&);
-    void setScaledDuration(double);
+  ~CompositorTransformAnimationCurve() override;
 
-    // CompositorAnimationCurve implementation.
-    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
+  void addKeyframe(const CompositorTransformKeyframe&);
+  void setTimingFunction(const TimingFunction&);
+  void setScaledDuration(double);
 
-private:
-    CompositorTransformAnimationCurve();
+  // CompositorAnimationCurve implementation.
+  std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
 
-    std::unique_ptr<cc::KeyframedTransformAnimationCurve> m_curve;
+ private:
+  CompositorTransformAnimationCurve();
+
+  std::unique_ptr<cc::KeyframedTransformAnimationCurve> m_curve;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorTransformAnimationCurve_h
+#endif  // CompositorTransformAnimationCurve_h

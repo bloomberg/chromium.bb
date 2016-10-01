@@ -34,22 +34,21 @@ namespace blink {
 class Node;
 
 class NativeXPathNSResolver final : public XPathNSResolver {
-public:
-    static NativeXPathNSResolver* create(Node* node)
-    {
-        return new NativeXPathNSResolver(node);
-    }
+ public:
+  static NativeXPathNSResolver* create(Node* node) {
+    return new NativeXPathNSResolver(node);
+  }
 
-    AtomicString lookupNamespaceURI(const String& prefix) override;
+  AtomicString lookupNamespaceURI(const String& prefix) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit NativeXPathNSResolver(Node*);
+ private:
+  explicit NativeXPathNSResolver(Node*);
 
-    Member<Node> m_node;
+  Member<Node> m_node;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NativeXPathNSResolver_h
+#endif  // NativeXPathNSResolver_h

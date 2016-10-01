@@ -12,37 +12,30 @@
 namespace blink {
 
 class LayoutProgressItem : public LayoutBlockItem {
-public:
-    explicit LayoutProgressItem(LayoutProgress* layoutProgress)
-        : LayoutBlockItem(layoutProgress)
-    {
-    }
+ public:
+  explicit LayoutProgressItem(LayoutProgress* layoutProgress)
+      : LayoutBlockItem(layoutProgress) {}
 
-    explicit LayoutProgressItem(const LayoutBlockItem& item)
-        : LayoutBlockItem(item)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isProgress());
-    }
+  explicit LayoutProgressItem(const LayoutBlockItem& item)
+      : LayoutBlockItem(item) {
+    ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isProgress());
+  }
 
-    explicit LayoutProgressItem(std::nullptr_t) : LayoutBlockItem(nullptr) { }
+  explicit LayoutProgressItem(std::nullptr_t) : LayoutBlockItem(nullptr) {}
 
-    LayoutProgressItem() { }
+  LayoutProgressItem() {}
 
-    bool isDeterminate() const
-    {
-        return toProgress()->isDeterminate();
-    }
+  bool isDeterminate() const { return toProgress()->isDeterminate(); }
 
-    void updateFromElement()
-    {
-        return toProgress()->updateFromElement();
-    }
+  void updateFromElement() { return toProgress()->updateFromElement(); }
 
-private:
-    LayoutProgress* toProgress() { return toLayoutProgress(layoutObject()); }
-    const LayoutProgress* toProgress() const { return toLayoutProgress(layoutObject()); }
+ private:
+  LayoutProgress* toProgress() { return toLayoutProgress(layoutObject()); }
+  const LayoutProgress* toProgress() const {
+    return toLayoutProgress(layoutObject());
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutProgressItem_h
+#endif  // LayoutProgressItem_h

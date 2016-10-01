@@ -22,40 +22,44 @@ class WebData;
 // status known to a particular session. Since it can be updated any time there
 // is a keychange event, iteration order and completeness is not guaranteed
 // if the event loop runs.
-class MediaKeyStatusMap final : public GarbageCollected<MediaKeyStatusMap>, public ScriptWrappable, public PairIterable<ArrayBufferOrArrayBufferView, String> {
-    DEFINE_WRAPPERTYPEINFO();
-private:
-    // MapEntry holds the keyId (DOMArrayBuffer) and status (MediaKeyStatus as
-    // String) for each entry.
-    class MapEntry;
+class MediaKeyStatusMap final
+    : public GarbageCollected<MediaKeyStatusMap>,
+      public ScriptWrappable,
+      public PairIterable<ArrayBufferOrArrayBufferView, String> {
+  DEFINE_WRAPPERTYPEINFO();
 
-    // The key ids and their status are kept in a list, as order is important.
-    // Note that order (or lack of it) is not specified in the EME spec.
-    using MediaKeyStatusMapType = HeapVector<Member<MapEntry>>;
+ private:
+  // MapEntry holds the keyId (DOMArrayBuffer) and status (MediaKeyStatus as
+  // String) for each entry.
+  class MapEntry;
 
-public:
-    MediaKeyStatusMap() { }
+  // The key ids and their status are kept in a list, as order is important.
+  // Note that order (or lack of it) is not specified in the EME spec.
+  using MediaKeyStatusMapType = HeapVector<Member<MapEntry>>;
 
-    void clear();
-    void addEntry(WebData keyId, const String& status);
-    const MapEntry& at(size_t) const;
+ public:
+  MediaKeyStatusMap() {}
 
-    // IDL attributes / methods
-    size_t size() const { return m_entries.size(); }
-    bool has(const ArrayBufferOrArrayBufferView& keyId);
-    ScriptValue get(ScriptState*, const ArrayBufferOrArrayBufferView& keyId);
+  void clear();
+  void addEntry(WebData keyId, const String& status);
+  const MapEntry& at(size_t) const;
 
-    DECLARE_VIRTUAL_TRACE();
+  // IDL attributes / methods
+  size_t size() const { return m_entries.size(); }
+  bool has(const ArrayBufferOrArrayBufferView& keyId);
+  ScriptValue get(ScriptState*, const ArrayBufferOrArrayBufferView& keyId);
 
-private:
-    // PairIterable<> implementation.
-    IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+  DECLARE_VIRTUAL_TRACE();
 
-    size_t indexOf(const DOMArrayPiece& keyId) const;
+ private:
+  // PairIterable<> implementation.
+  IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 
-    MediaKeyStatusMapType m_entries;
+  size_t indexOf(const DOMArrayPiece& keyId) const;
+
+  MediaKeyStatusMapType m_entries;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaKeyStatusMap_h
+#endif  // MediaKeyStatusMap_h

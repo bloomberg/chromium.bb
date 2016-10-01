@@ -10,19 +10,21 @@
 
 namespace blink {
 
-using WebAppBannerCallbacks = WebCallbacks<const WebAppBannerPromptResult&, void>;
+using WebAppBannerCallbacks =
+    WebCallbacks<const WebAppBannerPromptResult&, void>;
 
 class WebAppBannerClient {
-public:
-    virtual ~WebAppBannerClient() { }
+ public:
+  virtual ~WebAppBannerClient() {}
 
-    // Ownership of the callbacks is transferred to the client.
-    virtual void registerBannerCallbacks(int requestId, WebAppBannerCallbacks*) = 0;
+  // Ownership of the callbacks is transferred to the client.
+  virtual void registerBannerCallbacks(int requestId,
+                                       WebAppBannerCallbacks*) = 0;
 
-    // Tell the client that the event is being redispatched.
-    virtual void showAppBanner(int requestId) { }
+  // Tell the client that the event is being redispatched.
+  virtual void showAppBanner(int requestId) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebAppBannerClient_h
+#endif  // WebAppBannerClient_h

@@ -28,42 +28,36 @@
 
 namespace blink {
 
-FETile::FETile(Filter* filter)
-    : FilterEffect(filter)
-{
+FETile::FETile(Filter* filter) : FilterEffect(filter) {}
+
+FETile* FETile::create(Filter* filter) {
+  return new FETile(filter);
 }
 
-FETile* FETile::create(Filter* filter)
-{
-    return new FETile(filter);
+FloatRect FETile::mapInputs(const FloatRect& rect) const {
+  return absoluteBounds();
 }
 
-FloatRect FETile::mapInputs(const FloatRect& rect) const
-{
-    return absoluteBounds();
+sk_sp<SkImageFilter> FETile::createImageFilter() {
+  sk_sp<SkImageFilter> input(
+      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
+  FloatRect srcRect;
+  if (inputEffect(0)->getFilterEffectType() == FilterEffectTypeSourceInput)
+    srcRect = getFilter()->filterRegion();
+  else
+    srcRect = inputEffect(0)->filterPrimitiveSubregion();
+  FloatRect dstRect = filterPrimitiveSubregion();
+  return SkTileImageFilter::Make(srcRect, dstRect, std::move(input));
 }
 
-sk_sp<SkImageFilter> FETile::createImageFilter()
-{
-    sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-    FloatRect srcRect;
-    if (inputEffect(0)->getFilterEffectType() == FilterEffectTypeSourceInput)
-        srcRect = getFilter()->filterRegion();
-    else
-        srcRect = inputEffect(0)->filterPrimitiveSubregion();
-    FloatRect dstRect = filterPrimitiveSubregion();
-    return SkTileImageFilter::Make(srcRect, dstRect, std::move(input));
+TextStream& FETile::externalRepresentation(TextStream& ts, int indent) const {
+  writeIndent(ts, indent);
+  ts << "[feTile";
+  FilterEffect::externalRepresentation(ts);
+  ts << "]\n";
+  inputEffect(0)->externalRepresentation(ts, indent + 1);
+
+  return ts;
 }
 
-TextStream& FETile::externalRepresentation(TextStream& ts, int indent) const
-{
-    writeIndent(ts, indent);
-    ts << "[feTile";
-    FilterEffect::externalRepresentation(ts);
-    ts << "]\n";
-    inputEffect(0)->externalRepresentation(ts, indent + 1);
-
-    return ts;
-}
-
-} // namespace blink
+}  // namespace blink

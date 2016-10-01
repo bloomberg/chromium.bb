@@ -16,28 +16,32 @@ namespace blink {
 class Document;
 class Event;
 
-class MODULES_EXPORT DOMWindowStorageController final : public GarbageCollected<DOMWindowStorageController>, public Supplement<Document>, public LocalDOMWindow::EventListenerObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
-public:
-    DECLARE_VIRTUAL_TRACE();
+class MODULES_EXPORT DOMWindowStorageController final
+    : public GarbageCollected<DOMWindowStorageController>,
+      public Supplement<Document>,
+      public LocalDOMWindow::EventListenerObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
 
-    static const char* supplementName();
-    static DOMWindowStorageController& from(Document&);
+ public:
+  DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from LocalDOMWindow::EventListenerObserver
-    void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
-    void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override { }
-    void didRemoveAllEventListeners(LocalDOMWindow*) override { }
+  static const char* supplementName();
+  static DOMWindowStorageController& from(Document&);
 
-protected:
-    explicit DOMWindowStorageController(Document&);
+  // Inherited from LocalDOMWindow::EventListenerObserver
+  void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
+  void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override {}
+  void didRemoveAllEventListeners(LocalDOMWindow*) override {}
 
-private:
-    Document& document() const { return *m_document; }
+ protected:
+  explicit DOMWindowStorageController(Document&);
 
-    Member<Document> m_document;
+ private:
+  Document& document() const { return *m_document; }
+
+  Member<Document> m_document;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowStorageController_h
+#endif  // DOMWindowStorageController_h

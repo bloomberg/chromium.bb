@@ -41,52 +41,55 @@ struct WebRect;
 
 // Provides access to some properties of a DOM element node.
 class WebElement : public WebNode {
-public:
-    WebElement() : WebNode() { }
-    WebElement(const WebElement& e) : WebNode(e) { }
+ public:
+  WebElement() : WebNode() {}
+  WebElement(const WebElement& e) : WebNode(e) {}
 
-    WebElement& operator=(const WebElement& e) { WebNode::assign(e); return *this; }
-    void assign(const WebElement& e) { WebNode::assign(e); }
+  WebElement& operator=(const WebElement& e) {
+    WebNode::assign(e);
+    return *this;
+  }
+  void assign(const WebElement& e) { WebNode::assign(e); }
 
-    BLINK_EXPORT bool isFormControlElement() const;
-    BLINK_EXPORT bool isTextFormControlElement() const;
-    // If the element is editable, for example by being contenteditable or being
-    // an <input> that isn't readonly or disabled.
-    BLINK_EXPORT bool isEditable() const;
-    // Returns the qualified name, which may contain a prefix and a colon.
-    BLINK_EXPORT WebString tagName() const;
-    // Check if this element has the specified local tag name, and the HTML
-    // namespace. Tag name matching is case-insensitive.
-    BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
-    BLINK_EXPORT bool hasAttribute(const WebString&) const;
-    BLINK_EXPORT WebString getAttribute(const WebString&) const;
-    BLINK_EXPORT void setAttribute(const WebString& name, const WebString& value);
-    BLINK_EXPORT WebString textContent() const;
-    BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
-    BLINK_EXPORT WebString attributeValue(unsigned index) const;
-    BLINK_EXPORT unsigned attributeCount() const;
+  BLINK_EXPORT bool isFormControlElement() const;
+  BLINK_EXPORT bool isTextFormControlElement() const;
+  // If the element is editable, for example by being contenteditable or being
+  // an <input> that isn't readonly or disabled.
+  BLINK_EXPORT bool isEditable() const;
+  // Returns the qualified name, which may contain a prefix and a colon.
+  BLINK_EXPORT WebString tagName() const;
+  // Check if this element has the specified local tag name, and the HTML
+  // namespace. Tag name matching is case-insensitive.
+  BLINK_EXPORT bool hasHTMLTagName(const WebString&) const;
+  BLINK_EXPORT bool hasAttribute(const WebString&) const;
+  BLINK_EXPORT WebString getAttribute(const WebString&) const;
+  BLINK_EXPORT void setAttribute(const WebString& name, const WebString& value);
+  BLINK_EXPORT WebString textContent() const;
+  BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
+  BLINK_EXPORT WebString attributeValue(unsigned index) const;
+  BLINK_EXPORT unsigned attributeCount() const;
 
-    // If this element takes up space in the layout of the page.
-    BLINK_EXPORT bool hasNonEmptyLayoutSize() const;
+  // If this element takes up space in the layout of the page.
+  BLINK_EXPORT bool hasNonEmptyLayoutSize() const;
 
-    // Returns the bounds of the element in Visual Viewport. The bounds
-    // have been adjusted to include any transformations, including page scale.
-    // This function will update the layout if required.
-    BLINK_EXPORT WebRect boundsInViewport() const;
+  // Returns the bounds of the element in Visual Viewport. The bounds
+  // have been adjusted to include any transformations, including page scale.
+  // This function will update the layout if required.
+  BLINK_EXPORT WebRect boundsInViewport() const;
 
-    // Returns the image contents of this element or a null WebImage
-    // if there isn't any.
-    BLINK_EXPORT WebImage imageContents();
+  // Returns the image contents of this element or a null WebImage
+  // if there isn't any.
+  BLINK_EXPORT WebImage imageContents();
 
 #if BLINK_IMPLEMENTATION
-    BLINK_EXPORT WebElement(Element*);
-    BLINK_EXPORT WebElement& operator=(Element*);
-    BLINK_EXPORT operator Element*() const;
+  BLINK_EXPORT WebElement(Element*);
+  BLINK_EXPORT WebElement& operator=(Element*);
+  BLINK_EXPORT operator Element*() const;
 #endif
 };
 
 DECLARE_WEB_NODE_TYPE_CASTS(WebElement);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

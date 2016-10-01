@@ -46,65 +46,70 @@ class AudioBus;
 // making the sound richer, fuller, and more controlled.
 
 class PLATFORM_EXPORT DynamicsCompressor {
-    USING_FAST_MALLOC(DynamicsCompressor);
-    WTF_MAKE_NONCOPYABLE(DynamicsCompressor);
-public:
-    enum {
-        ParamThreshold,
-        ParamKnee,
-        ParamRatio,
-        ParamAttack,
-        ParamRelease,
-        ParamPreDelay,
-        ParamReleaseZone1,
-        ParamReleaseZone2,
-        ParamReleaseZone3,
-        ParamReleaseZone4,
-        ParamPostGain,
-        ParamFilterStageGain,
-        ParamFilterStageRatio,
-        ParamFilterAnchor,
-        ParamEffectBlend,
-        ParamReduction,
-        ParamLast
-    };
+  USING_FAST_MALLOC(DynamicsCompressor);
+  WTF_MAKE_NONCOPYABLE(DynamicsCompressor);
 
-    DynamicsCompressor(float sampleRate, unsigned numberOfChannels);
+ public:
+  enum {
+    ParamThreshold,
+    ParamKnee,
+    ParamRatio,
+    ParamAttack,
+    ParamRelease,
+    ParamPreDelay,
+    ParamReleaseZone1,
+    ParamReleaseZone2,
+    ParamReleaseZone3,
+    ParamReleaseZone4,
+    ParamPostGain,
+    ParamFilterStageGain,
+    ParamFilterStageRatio,
+    ParamFilterAnchor,
+    ParamEffectBlend,
+    ParamReduction,
+    ParamLast
+  };
 
-    void process(const AudioBus* sourceBus, AudioBus* destinationBus, unsigned framesToProcess);
-    void reset();
-    void setNumberOfChannels(unsigned);
+  DynamicsCompressor(float sampleRate, unsigned numberOfChannels);
 
-    void setParameterValue(unsigned parameterID, float value);
-    float parameterValue(unsigned parameterID);
+  void process(const AudioBus* sourceBus,
+               AudioBus* destinationBus,
+               unsigned framesToProcess);
+  void reset();
+  void setNumberOfChannels(unsigned);
 
-    float sampleRate() const { return m_sampleRate; }
-    float nyquist() const { return m_sampleRate / 2; }
+  void setParameterValue(unsigned parameterID, float value);
+  float parameterValue(unsigned parameterID);
 
-    double tailTime() const { return 0; }
-    double latencyTime() const { return m_compressor.latencyFrames() / static_cast<double>(sampleRate()); }
+  float sampleRate() const { return m_sampleRate; }
+  float nyquist() const { return m_sampleRate / 2; }
 
-protected:
-    unsigned m_numberOfChannels;
+  double tailTime() const { return 0; }
+  double latencyTime() const {
+    return m_compressor.latencyFrames() / static_cast<double>(sampleRate());
+  }
 
-    // m_parameters holds the tweakable compressor parameters.
-    float m_parameters[ParamLast];
-    void initializeParameters();
+ protected:
+  unsigned m_numberOfChannels;
 
-    float m_sampleRate;
+  // m_parameters holds the tweakable compressor parameters.
+  float m_parameters[ParamLast];
+  void initializeParameters();
 
-    // Emphasis filter controls.
-    float m_lastFilterStageRatio;
-    float m_lastAnchor;
-    float m_lastFilterStageGain;
+  float m_sampleRate;
 
-    std::unique_ptr<const float*[]> m_sourceChannels;
-    std::unique_ptr<float*[]> m_destinationChannels;
+  // Emphasis filter controls.
+  float m_lastFilterStageRatio;
+  float m_lastAnchor;
+  float m_lastFilterStageGain;
 
-    // The core compressor.
-    DynamicsCompressorKernel m_compressor;
+  std::unique_ptr<const float* []> m_sourceChannels;
+  std::unique_ptr<float* []> m_destinationChannels;
+
+  // The core compressor.
+  DynamicsCompressorKernel m_compressor;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DynamicsCompressor_h
+#endif  // DynamicsCompressor_h

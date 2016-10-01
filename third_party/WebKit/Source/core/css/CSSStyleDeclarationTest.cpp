@@ -12,18 +12,17 @@
 
 namespace blink {
 
-TEST(CSSStyleDeclarationTest, getPropertyShorthand)
-{
-    CSSTestHelper helper;
+TEST(CSSStyleDeclarationTest, getPropertyShorthand) {
+  CSSTestHelper helper;
 
-    helper.addCSSRules("div { padding: var(--p); }");
-    ASSERT_TRUE(helper.cssRules());
-    ASSERT_EQ(1u, helper.cssRules()->length());
-    ASSERT_EQ(CSSRule::kStyleRule, helper.cssRules()->item(0)->type());
-    CSSStyleRule* styleRule = toCSSStyleRule(helper.cssRules()->item(0));
-    CSSStyleDeclaration* style = styleRule->style();
-    ASSERT_TRUE(style);
-    EXPECT_EQ(AtomicString(), style->getPropertyShorthand("padding"));
+  helper.addCSSRules("div { padding: var(--p); }");
+  ASSERT_TRUE(helper.cssRules());
+  ASSERT_EQ(1u, helper.cssRules()->length());
+  ASSERT_EQ(CSSRule::kStyleRule, helper.cssRules()->item(0)->type());
+  CSSStyleRule* styleRule = toCSSStyleRule(helper.cssRules()->item(0));
+  CSSStyleDeclaration* style = styleRule->style();
+  ASSERT_TRUE(style);
+  EXPECT_EQ(AtomicString(), style->getPropertyShorthand("padding"));
 }
 
-} // namespace blink
+}  // namespace blink

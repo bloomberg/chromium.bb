@@ -36,15 +36,15 @@
 namespace blink {
 
 struct WebFileSystemEntry {
-    WebFileSystemEntry() : isDirectory(false) { }
+  WebFileSystemEntry() : isDirectory(false) {}
 
-    // The name of the entry.
-    WebString name;
+  // The name of the entry.
+  WebString name;
 
-    // This flag indicates if the entry is directory or not.
-    bool isDirectory;
+  // This flag indicates if the entry is directory or not.
+  bool isDirectory;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFileSystemEntry_h
+#endif  // WebFileSystemEntry_h

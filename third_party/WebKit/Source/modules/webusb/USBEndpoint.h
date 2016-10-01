@@ -14,30 +14,34 @@ namespace blink {
 class ExceptionState;
 class USBAlternateInterface;
 
-class USBEndpoint
-    : public GarbageCollected<USBEndpoint>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static USBEndpoint* create(const USBAlternateInterface*, size_t endpointIndex);
-    static USBEndpoint* create(const USBAlternateInterface*, size_t endpointNumber, const String& direction, ExceptionState&);
+class USBEndpoint : public GarbageCollected<USBEndpoint>,
+                    public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    USBEndpoint(const USBAlternateInterface*, size_t endpointIndex);
+ public:
+  static USBEndpoint* create(const USBAlternateInterface*,
+                             size_t endpointIndex);
+  static USBEndpoint* create(const USBAlternateInterface*,
+                             size_t endpointNumber,
+                             const String& direction,
+                             ExceptionState&);
 
-    const device::usb::blink::EndpointInfo& info() const;
+  USBEndpoint(const USBAlternateInterface*, size_t endpointIndex);
 
-    uint8_t endpointNumber() const { return info().endpoint_number; }
-    String direction() const;
-    String type() const;
-    unsigned packetSize() const { return info().packet_size; }
+  const device::usb::blink::EndpointInfo& info() const;
 
-    DECLARE_TRACE();
+  uint8_t endpointNumber() const { return info().endpoint_number; }
+  String direction() const;
+  String type() const;
+  unsigned packetSize() const { return info().packet_size; }
 
-private:
-    Member<const USBAlternateInterface> m_alternate;
-    const size_t m_endpointIndex;
+  DECLARE_TRACE();
+
+ private:
+  Member<const USBAlternateInterface> m_alternate;
+  const size_t m_endpointIndex;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // USBEndpoint_h
+#endif  // USBEndpoint_h

@@ -34,96 +34,81 @@ namespace WTF {
 
 template <typename T>
 class TypedArrayBase : public ArrayBufferView {
-public:
-    typedef T ValueType;
+ public:
+  typedef T ValueType;
 
-    T* data() const { return static_cast<T*>(baseAddress()); }
+  T* data() const { return static_cast<T*>(baseAddress()); }
 
-    bool set(TypedArrayBase<T>* array, unsigned offset)
-    {
-        return setImpl(array, offset * sizeof(T));
-    }
+  bool set(TypedArrayBase<T>* array, unsigned offset) {
+    return setImpl(array, offset * sizeof(T));
+  }
 
-    // Overridden from ArrayBufferView. This must be public because of
-    // rules about inheritance of members in template classes, and
-    // because it is accessed via pointers to subclasses.
-    unsigned length() const
-    {
-        return m_length;
-    }
+  // Overridden from ArrayBufferView. This must be public because of
+  // rules about inheritance of members in template classes, and
+  // because it is accessed via pointers to subclasses.
+  unsigned length() const { return m_length; }
 
-    unsigned byteLength() const final
-    {
-        return m_length * sizeof(T);
-    }
+  unsigned byteLength() const final { return m_length * sizeof(T); }
 
-    unsigned typeSize() const final
-    {
-        return sizeof(T);
-    }
+  unsigned typeSize() const final { return sizeof(T); }
 
-    // Invoked by the indexed getter. Does not perform range checks; caller
-    // is responsible for doing so and returning undefined as necessary.
-    T item(unsigned index) const
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(index < TypedArrayBase<T>::m_length);
-        return TypedArrayBase<T>::data()[index];
-    }
+  // Invoked by the indexed getter. Does not perform range checks; caller
+  // is responsible for doing so and returning undefined as necessary.
+  T item(unsigned index) const {
+    ASSERT_WITH_SECURITY_IMPLICATION(index < TypedArrayBase<T>::m_length);
+    return TypedArrayBase<T>::data()[index];
+  }
 
-protected:
-    TypedArrayBase(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-        : ArrayBufferView(std::move(buffer), byteOffset)
-        , m_length(length)
-    {
-    }
+ protected:
+  TypedArrayBase(PassRefPtr<ArrayBuffer> buffer,
+                 unsigned byteOffset,
+                 unsigned length)
+      : ArrayBufferView(std::move(buffer), byteOffset), m_length(length) {}
 
-    template <class Subclass>
-    static PassRefPtr<Subclass> create(unsigned length)
-    {
-        RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(length, sizeof(T));
-        return create<Subclass>(buffer.release(), 0, length);
-    }
+  template <class Subclass>
+  static PassRefPtr<Subclass> create(unsigned length) {
+    RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(length, sizeof(T));
+    return create<Subclass>(buffer.release(), 0, length);
+  }
 
-    template <class Subclass>
-    static PassRefPtr<Subclass> create(const T* array, unsigned length)
-    {
-        RefPtr<Subclass> a = create<Subclass>(length);
-        if (a)
-            for (unsigned i = 0; i < length; ++i)
-                a->set(i, array[i]);
-        return a;
-    }
+  template <class Subclass>
+  static PassRefPtr<Subclass> create(const T* array, unsigned length) {
+    RefPtr<Subclass> a = create<Subclass>(length);
+    if (a)
+      for (unsigned i = 0; i < length; ++i)
+        a->set(i, array[i]);
+    return a;
+  }
 
-    template <class Subclass>
-    static PassRefPtr<Subclass> create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    {
-        RefPtr<ArrayBuffer> buf(buffer);
-        RELEASE_ASSERT(verifySubRange<T>(buf, byteOffset, length));
-        return adoptRef(new Subclass(buf.release(), byteOffset, length));
-    }
+  template <class Subclass>
+  static PassRefPtr<Subclass> create(PassRefPtr<ArrayBuffer> buffer,
+                                     unsigned byteOffset,
+                                     unsigned length) {
+    RefPtr<ArrayBuffer> buf(buffer);
+    RELEASE_ASSERT(verifySubRange<T>(buf, byteOffset, length));
+    return adoptRef(new Subclass(buf.release(), byteOffset, length));
+  }
 
-    template <class Subclass>
-    static PassRefPtr<Subclass> createOrNull(unsigned length)
-    {
-        RefPtr<ArrayBuffer> buffer = ArrayBuffer::createOrNull(length, sizeof(T));
-        if (!buffer)
-            return nullptr;
-        return create<Subclass>(buffer.release(), 0, length);
-    }
+  template <class Subclass>
+  static PassRefPtr<Subclass> createOrNull(unsigned length) {
+    RefPtr<ArrayBuffer> buffer = ArrayBuffer::createOrNull(length, sizeof(T));
+    if (!buffer)
+      return nullptr;
+    return create<Subclass>(buffer.release(), 0, length);
+  }
 
-    void neuter() final
-    {
-        ArrayBufferView::neuter();
-        m_length = 0;
-    }
+  void neuter() final {
+    ArrayBufferView::neuter();
+    m_length = 0;
+  }
 
-    // We do not want to have to access this via a virtual function in subclasses,
-    // which is why it is protected rather than private.
-    unsigned m_length;
+  // We do not want to have to access this via a virtual function in subclasses,
+  // which is why it is protected rather than private.
+  unsigned m_length;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::TypedArrayBase;
 
-#endif // TypedArrayBase_h
+#endif  // TypedArrayBase_h

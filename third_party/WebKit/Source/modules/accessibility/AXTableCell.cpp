@@ -31,190 +31,180 @@
 #include "core/layout/LayoutTableCell.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
-
 namespace blink {
 
 using namespace HTMLNames;
 
-AXTableCell::AXTableCell(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-    : AXLayoutObject(layoutObject, axObjectCache)
-{
+AXTableCell::AXTableCell(LayoutObject* layoutObject,
+                         AXObjectCacheImpl& axObjectCache)
+    : AXLayoutObject(layoutObject, axObjectCache) {}
+
+AXTableCell::~AXTableCell() {}
+
+AXTableCell* AXTableCell::create(LayoutObject* layoutObject,
+                                 AXObjectCacheImpl& axObjectCache) {
+  return new AXTableCell(layoutObject, axObjectCache);
 }
 
-AXTableCell::~AXTableCell()
-{
+bool AXTableCell::isTableHeaderCell() const {
+  return getNode() && getNode()->hasTagName(thTag);
 }
 
-AXTableCell* AXTableCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& axObjectCache)
-{
-    return new AXTableCell(layoutObject, axObjectCache);
+bool AXTableCell::isRowHeaderCell() const {
+  const AtomicString& scope = getAttribute(scopeAttr);
+  return equalIgnoringCase(scope, "row") ||
+         equalIgnoringCase(scope, "rowgroup");
 }
 
-bool AXTableCell::isTableHeaderCell() const
-{
-    return getNode() && getNode()->hasTagName(thTag);
+bool AXTableCell::isColumnHeaderCell() const {
+  const AtomicString& scope = getAttribute(scopeAttr);
+  return equalIgnoringCase(scope, "col") ||
+         equalIgnoringCase(scope, "colgroup");
 }
 
-bool AXTableCell::isRowHeaderCell() const
-{
-    const AtomicString& scope = getAttribute(scopeAttr);
-    return equalIgnoringCase(scope, "row") || equalIgnoringCase(scope, "rowgroup");
-}
-
-bool AXTableCell::isColumnHeaderCell() const
-{
-    const AtomicString& scope = getAttribute(scopeAttr);
-    return equalIgnoringCase(scope, "col") || equalIgnoringCase(scope, "colgroup");
-}
-
-bool AXTableCell::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
-{
-    AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
-    if (decision == IncludeObject)
-        return false;
-    if (decision == IgnoreObject)
-        return true;
-
-    if (!isTableCell())
-        return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
-
+bool AXTableCell::computeAccessibilityIsIgnored(
+    IgnoredReasons* ignoredReasons) const {
+  AXObjectInclusion decision = defaultObjectInclusion(ignoredReasons);
+  if (decision == IncludeObject)
     return false;
-}
-
-AXObject* AXTableCell::parentTable() const
-{
-    if (!m_layoutObject || !m_layoutObject->isTableCell())
-        return 0;
-
-    // If the document no longer exists, we might not have an axObjectCache.
-    if (isDetached())
-        return 0;
-
-    // Do not use getOrCreate. parentTable() can be called while the layout tree is being modified
-    // by javascript, and creating a table element may try to access the layout tree while in a bad state.
-    // By using only get() implies that the AXTable must be created before AXTableCells. This should
-    // always be the case when AT clients access a table.
-    // https://bugs.webkit.org/show_bug.cgi?id=42652
-    return axObjectCache().get(toLayoutTableCell(m_layoutObject)->table());
-}
-
-bool AXTableCell::isTableCell() const
-{
-    AXObject* parent = parentObjectUnignored();
-    if (!parent || !parent->isTableRow())
-        return false;
-
+  if (decision == IgnoreObject)
     return true;
+
+  if (!isTableCell())
+    return AXLayoutObject::computeAccessibilityIsIgnored(ignoredReasons);
+
+  return false;
 }
 
-static AccessibilityRole decideRoleFromSibling(LayoutTableCell* siblingCell)
-{
-    if (!siblingCell)
-        return CellRole;
+AXObject* AXTableCell::parentTable() const {
+  if (!m_layoutObject || !m_layoutObject->isTableCell())
+    return 0;
 
-    if (Node* siblingNode = siblingCell->node()) {
-        if (siblingNode->hasTagName(thTag))
-            return ColumnHeaderRole;
-        if (siblingNode->hasTagName(tdTag))
-            return RowHeaderRole;
-    }
+  // If the document no longer exists, we might not have an axObjectCache.
+  if (isDetached())
+    return 0;
 
+  // Do not use getOrCreate. parentTable() can be called while the layout tree is being modified
+  // by javascript, and creating a table element may try to access the layout tree while in a bad state.
+  // By using only get() implies that the AXTable must be created before AXTableCells. This should
+  // always be the case when AT clients access a table.
+  // https://bugs.webkit.org/show_bug.cgi?id=42652
+  return axObjectCache().get(toLayoutTableCell(m_layoutObject)->table());
+}
+
+bool AXTableCell::isTableCell() const {
+  AXObject* parent = parentObjectUnignored();
+  if (!parent || !parent->isTableRow())
+    return false;
+
+  return true;
+}
+
+static AccessibilityRole decideRoleFromSibling(LayoutTableCell* siblingCell) {
+  if (!siblingCell)
     return CellRole;
+
+  if (Node* siblingNode = siblingCell->node()) {
+    if (siblingNode->hasTagName(thTag))
+      return ColumnHeaderRole;
+    if (siblingNode->hasTagName(tdTag))
+      return RowHeaderRole;
+  }
+
+  return CellRole;
 }
 
-AccessibilityRole AXTableCell::scanToDecideHeaderRole()
-{
-    if (!isTableHeaderCell())
-        return CellRole;
+AccessibilityRole AXTableCell::scanToDecideHeaderRole() {
+  if (!isTableHeaderCell())
+    return CellRole;
 
-    // Check scope attribute first.
-    if (isRowHeaderCell())
-        return RowHeaderRole;
+  // Check scope attribute first.
+  if (isRowHeaderCell())
+    return RowHeaderRole;
 
-    if (isColumnHeaderCell())
-        return ColumnHeaderRole;
-
-    // Check the previous cell and the next cell on the same row.
-    LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
-    AccessibilityRole headerRole = CellRole;
-
-    // if header is preceded by header cells on the same row, then it is a
-    // column header. If it is preceded by other cells then it's a row header.
-    if ((headerRole = decideRoleFromSibling(layoutCell->previousCell())) != CellRole)
-        return headerRole;
-
-    // if header is followed by header cells on the same row, then it is a
-    // column header. If it is followed by other cells then it's a row header.
-    if ((headerRole = decideRoleFromSibling(layoutCell->nextCell())) != CellRole)
-        return headerRole;
-
-    // If there are no other cells on that row, then it is a column header.
+  if (isColumnHeaderCell())
     return ColumnHeaderRole;
+
+  // Check the previous cell and the next cell on the same row.
+  LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
+  AccessibilityRole headerRole = CellRole;
+
+  // if header is preceded by header cells on the same row, then it is a
+  // column header. If it is preceded by other cells then it's a row header.
+  if ((headerRole = decideRoleFromSibling(layoutCell->previousCell())) !=
+      CellRole)
+    return headerRole;
+
+  // if header is followed by header cells on the same row, then it is a
+  // column header. If it is followed by other cells then it's a row header.
+  if ((headerRole = decideRoleFromSibling(layoutCell->nextCell())) != CellRole)
+    return headerRole;
+
+  // If there are no other cells on that row, then it is a column header.
+  return ColumnHeaderRole;
 }
 
-AccessibilityRole AXTableCell::determineAccessibilityRole()
-{
-    if (!isTableCell())
-        return AXLayoutObject::determineAccessibilityRole();
+AccessibilityRole AXTableCell::determineAccessibilityRole() {
+  if (!isTableCell())
+    return AXLayoutObject::determineAccessibilityRole();
 
-    return scanToDecideHeaderRole();
+  return scanToDecideHeaderRole();
 }
 
-void AXTableCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange)
-{
-    if (!m_layoutObject || !m_layoutObject->isTableCell())
-        return;
+void AXTableCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange) {
+  if (!m_layoutObject || !m_layoutObject->isTableCell())
+    return;
 
-    LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
-    rowRange.first = layoutCell->rowIndex();
-    rowRange.second = layoutCell->rowSpan();
+  LayoutTableCell* layoutCell = toLayoutTableCell(m_layoutObject);
+  rowRange.first = layoutCell->rowIndex();
+  rowRange.second = layoutCell->rowSpan();
 
-    // since our table might have multiple sections, we have to offset our row appropriately
-    LayoutTableSection* section = layoutCell->section();
-    LayoutTable* table = layoutCell->table();
-    if (!table || !section)
-        return;
+  // since our table might have multiple sections, we have to offset our row appropriately
+  LayoutTableSection* section = layoutCell->section();
+  LayoutTable* table = layoutCell->table();
+  if (!table || !section)
+    return;
 
-    LayoutTableSection* tableSection = table->topSection();
-    unsigned rowOffset = 0;
-    while (tableSection) {
-        if (tableSection == section)
-            break;
-        rowOffset += tableSection->numRows();
-        tableSection = table->sectionBelow(tableSection, SkipEmptySections);
-    }
+  LayoutTableSection* tableSection = table->topSection();
+  unsigned rowOffset = 0;
+  while (tableSection) {
+    if (tableSection == section)
+      break;
+    rowOffset += tableSection->numRows();
+    tableSection = table->sectionBelow(tableSection, SkipEmptySections);
+  }
 
-    rowRange.first += rowOffset;
+  rowRange.first += rowOffset;
 }
 
-void AXTableCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange)
-{
-    if (!m_layoutObject || !m_layoutObject->isTableCell())
-        return;
+void AXTableCell::columnIndexRange(std::pair<unsigned, unsigned>& columnRange) {
+  if (!m_layoutObject || !m_layoutObject->isTableCell())
+    return;
 
-    LayoutTableCell* cell = toLayoutTableCell(m_layoutObject);
-    columnRange.first = cell->table()->absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
-    columnRange.second = cell->table()->absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex() + cell->colSpan()) - columnRange.first;
+  LayoutTableCell* cell = toLayoutTableCell(m_layoutObject);
+  columnRange.first = cell->table()->absoluteColumnToEffectiveColumn(
+      cell->absoluteColumnIndex());
+  columnRange.second = cell->table()->absoluteColumnToEffectiveColumn(
+                           cell->absoluteColumnIndex() + cell->colSpan()) -
+                       columnRange.first;
 }
 
-SortDirection AXTableCell::getSortDirection() const
-{
-    if (roleValue() != RowHeaderRole
-        && roleValue() != ColumnHeaderRole)
-        return SortDirectionUndefined;
-
-    const AtomicString& ariaSort = getAttribute(aria_sortAttr);
-    if (ariaSort.isEmpty())
-        return SortDirectionUndefined;
-    if (equalIgnoringCase(ariaSort, "none"))
-        return SortDirectionNone;
-    if (equalIgnoringCase(ariaSort, "ascending"))
-        return SortDirectionAscending;
-    if (equalIgnoringCase(ariaSort, "descending"))
-        return SortDirectionDescending;
-    if (equalIgnoringCase(ariaSort, "other"))
-        return SortDirectionOther;
+SortDirection AXTableCell::getSortDirection() const {
+  if (roleValue() != RowHeaderRole && roleValue() != ColumnHeaderRole)
     return SortDirectionUndefined;
+
+  const AtomicString& ariaSort = getAttribute(aria_sortAttr);
+  if (ariaSort.isEmpty())
+    return SortDirectionUndefined;
+  if (equalIgnoringCase(ariaSort, "none"))
+    return SortDirectionNone;
+  if (equalIgnoringCase(ariaSort, "ascending"))
+    return SortDirectionAscending;
+  if (equalIgnoringCase(ariaSort, "descending"))
+    return SortDirectionDescending;
+  if (equalIgnoringCase(ariaSort, "other"))
+    return SortDirectionOther;
+  return SortDirectionUndefined;
 }
 
-} // namespace blink
+}  // namespace blink

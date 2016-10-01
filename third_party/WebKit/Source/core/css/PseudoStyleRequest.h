@@ -31,44 +31,38 @@ namespace blink {
 class ComputedStyle;
 
 class PseudoStyleRequest {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    enum RequestType { ForRenderer, ForComputedStyle };
+ public:
+  enum RequestType { ForRenderer, ForComputedStyle };
 
-    PseudoStyleRequest(PseudoId pseudoId, LayoutScrollbar* scrollbar = 0, ScrollbarPart scrollbarPart = NoPart)
-        : pseudoId(pseudoId)
-        , type(ForRenderer)
-        , scrollbarPart(scrollbarPart)
-        , scrollbar(scrollbar)
-    {
-    }
+  PseudoStyleRequest(PseudoId pseudoId,
+                     LayoutScrollbar* scrollbar = 0,
+                     ScrollbarPart scrollbarPart = NoPart)
+      : pseudoId(pseudoId),
+        type(ForRenderer),
+        scrollbarPart(scrollbarPart),
+        scrollbar(scrollbar) {}
 
-    PseudoStyleRequest(PseudoId pseudoId, RequestType requestType)
-        : pseudoId(pseudoId)
-        , type(requestType)
-        , scrollbarPart(NoPart)
-        , scrollbar(nullptr)
-    {
-    }
+  PseudoStyleRequest(PseudoId pseudoId, RequestType requestType)
+      : pseudoId(pseudoId),
+        type(requestType),
+        scrollbarPart(NoPart),
+        scrollbar(nullptr) {}
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(scrollbar);
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(scrollbar); }
 
-    // The spec disallows inheritance for ::backdrop.
-    bool allowsInheritance(const ComputedStyle* parentStyle) const
-    {
-        return parentStyle && pseudoId != PseudoIdBackdrop;
-    }
+  // The spec disallows inheritance for ::backdrop.
+  bool allowsInheritance(const ComputedStyle* parentStyle) const {
+    return parentStyle && pseudoId != PseudoIdBackdrop;
+  }
 
-    PseudoId pseudoId;
-    RequestType type;
-    ScrollbarPart scrollbarPart;
-    Member<LayoutScrollbar> scrollbar;
+  PseudoId pseudoId;
+  RequestType type;
+  ScrollbarPart scrollbarPart;
+  Member<LayoutScrollbar> scrollbar;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PseudoStyleRequest_h
+#endif  // PseudoStyleRequest_h

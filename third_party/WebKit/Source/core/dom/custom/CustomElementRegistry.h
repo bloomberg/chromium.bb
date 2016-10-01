@@ -29,82 +29,79 @@ class ScriptValue;
 class V0CustomElementRegistrationContext;
 
 class CORE_EXPORT CustomElementRegistry final
-    : public GarbageCollectedFinalized<CustomElementRegistry>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
-public:
-    static CustomElementRegistry* create(const LocalDOMWindow*);
+    : public GarbageCollectedFinalized<CustomElementRegistry>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+  WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
 
-    virtual ~CustomElementRegistry() = default;
+ public:
+  static CustomElementRegistry* create(const LocalDOMWindow*);
 
-    void define(
-        ScriptState*,
-        const AtomicString& name,
-        const ScriptValue& constructor,
-        const ElementRegistrationOptions&,
-        ExceptionState&);
+  virtual ~CustomElementRegistry() = default;
 
-    void define(
-        const AtomicString& name,
-        CustomElementDefinitionBuilder&,
-        const ElementRegistrationOptions&,
-        ExceptionState&);
+  void define(ScriptState*,
+              const AtomicString& name,
+              const ScriptValue& constructor,
+              const ElementRegistrationOptions&,
+              ExceptionState&);
 
-    ScriptValue get(const AtomicString& name);
-    bool nameIsDefined(const AtomicString& name) const;
-    CustomElementDefinition* definitionForName(const AtomicString& name) const;
+  void define(const AtomicString& name,
+              CustomElementDefinitionBuilder&,
+              const ElementRegistrationOptions&,
+              ExceptionState&);
 
-    // TODO(dominicc): Switch most callers of definitionForName to
-    // definitionFor when implementing type extensions.
-    CustomElementDefinition* definitionFor(const CustomElementDescriptor&) const;
+  ScriptValue get(const AtomicString& name);
+  bool nameIsDefined(const AtomicString& name) const;
+  CustomElementDefinition* definitionForName(const AtomicString& name) const;
 
-    // TODO(dominicc): Consider broadening this API when type extensions are
-    // implemented.
-    void addCandidate(Element*);
-    ScriptPromise whenDefined(
-        ScriptState*,
-        const AtomicString& name,
-        ExceptionState&);
+  // TODO(dominicc): Switch most callers of definitionForName to
+  // definitionFor when implementing type extensions.
+  CustomElementDefinition* definitionFor(const CustomElementDescriptor&) const;
 
-    void entangle(V0CustomElementRegistrationContext*);
+  // TODO(dominicc): Consider broadening this API when type extensions are
+  // implemented.
+  void addCandidate(Element*);
+  ScriptPromise whenDefined(ScriptState*,
+                            const AtomicString& name,
+                            ExceptionState&);
 
-    DECLARE_TRACE();
+  void entangle(V0CustomElementRegistrationContext*);
 
-private:
-    friend class CustomElementRegistryTest;
+  DECLARE_TRACE();
 
-    CustomElementRegistry(const LocalDOMWindow*);
+ private:
+  friend class CustomElementRegistryTest;
 
-    bool v0NameIsDefined(const AtomicString& name);
+  CustomElementRegistry(const LocalDOMWindow*);
 
-    void collectCandidates(
-        const CustomElementDescriptor&,
-        HeapVector<Member<Element>>*);
+  bool v0NameIsDefined(const AtomicString& name);
 
-    class ElementDefinitionIsRunning;
-    bool m_elementDefinitionIsRunning;
+  void collectCandidates(const CustomElementDescriptor&,
+                         HeapVector<Member<Element>>*);
 
-    using DefinitionMap =
-        HeapHashMap<AtomicString, Member<CustomElementDefinition>>;
-    DefinitionMap m_definitions;
+  class ElementDefinitionIsRunning;
+  bool m_elementDefinitionIsRunning;
 
-    Member<const LocalDOMWindow> m_owner;
+  using DefinitionMap =
+      HeapHashMap<AtomicString, Member<CustomElementDefinition>>;
+  DefinitionMap m_definitions;
 
-    using V0RegistrySet = HeapHashSet<WeakMember<V0CustomElementRegistrationContext>>;
-    Member<V0RegistrySet> m_v0;
+  Member<const LocalDOMWindow> m_owner;
 
-    using UpgradeCandidateSet = HeapHashSet<WeakMember<Element>>;
-    using UpgradeCandidateMap = HeapHashMap<
-        AtomicString,
-        Member<UpgradeCandidateSet>>;
-    Member<UpgradeCandidateMap> m_upgradeCandidates;
+  using V0RegistrySet =
+      HeapHashSet<WeakMember<V0CustomElementRegistrationContext>>;
+  Member<V0RegistrySet> m_v0;
 
-    using WhenDefinedPromiseMap =
-        HeapHashMap<AtomicString, Member<ScriptPromiseResolver>>;
-    WhenDefinedPromiseMap m_whenDefinedPromiseMap;
+  using UpgradeCandidateSet = HeapHashSet<WeakMember<Element>>;
+  using UpgradeCandidateMap =
+      HeapHashMap<AtomicString, Member<UpgradeCandidateSet>>;
+  Member<UpgradeCandidateMap> m_upgradeCandidates;
+
+  using WhenDefinedPromiseMap =
+      HeapHashMap<AtomicString, Member<ScriptPromiseResolver>>;
+  WhenDefinedPromiseMap m_whenDefinedPromiseMap;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementRegistry_h
+#endif  // CustomElementRegistry_h

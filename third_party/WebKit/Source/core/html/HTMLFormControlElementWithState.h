@@ -31,30 +31,37 @@ namespace blink {
 
 class FormControlState;
 
-class CORE_EXPORT HTMLFormControlElementWithState : public HTMLFormControlElement {
-public:
-    ~HTMLFormControlElementWithState() override;
+class CORE_EXPORT HTMLFormControlElementWithState
+    : public HTMLFormControlElement {
+ public:
+  ~HTMLFormControlElementWithState() override;
 
-    bool canContainRangeEndPoint() const final { return false; }
+  bool canContainRangeEndPoint() const final { return false; }
 
-    virtual bool shouldAutocomplete() const;
-    virtual bool shouldSaveAndRestoreFormControlState() const;
-    virtual FormControlState saveFormControlState() const;
-    // The specified FormControlState must have at least one string value.
-    virtual void restoreFormControlState(const FormControlState&) { }
-    void notifyFormStateChanged();
+  virtual bool shouldAutocomplete() const;
+  virtual bool shouldSaveAndRestoreFormControlState() const;
+  virtual FormControlState saveFormControlState() const;
+  // The specified FormControlState must have at least one string value.
+  virtual void restoreFormControlState(const FormControlState&) {}
+  void notifyFormStateChanged();
 
-protected:
-    HTMLFormControlElementWithState(const QualifiedName& tagName, Document&, HTMLFormElement*);
+ protected:
+  HTMLFormControlElementWithState(const QualifiedName& tagName,
+                                  Document&,
+                                  HTMLFormElement*);
 
-    void finishParsingChildren() override;
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
-    bool isFormControlElementWithState() const final;
+  void finishParsingChildren() override;
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
+  bool isFormControlElementWithState() const final;
 };
 
-DEFINE_TYPE_CASTS(HTMLFormControlElementWithState, FormAssociatedElement, control, control->isFormControlElementWithState(), control.isFormControlElementWithState());
+DEFINE_TYPE_CASTS(HTMLFormControlElementWithState,
+                  FormAssociatedElement,
+                  control,
+                  control->isFormControlElementWithState(),
+                  control.isFormControlElementWithState());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

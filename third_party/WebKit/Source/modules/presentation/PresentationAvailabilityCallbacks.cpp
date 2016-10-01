@@ -12,29 +12,29 @@
 
 namespace blink {
 
-PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(ScriptPromiseResolver* resolver, const KURL& url)
-    : m_resolver(resolver)
-    , m_url(url)
-{
-    ASSERT(m_resolver);
+PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(
+    ScriptPromiseResolver* resolver,
+    const KURL& url)
+    : m_resolver(resolver), m_url(url) {
+  ASSERT(m_resolver);
 }
 
-PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks()
-{
+PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks() {}
+
+void PresentationAvailabilityCallbacks::onSuccess(bool value) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->resolve(
+      PresentationAvailability::take(m_resolver.get(), m_url, value));
 }
 
-void PresentationAvailabilityCallbacks::onSuccess(bool value)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    m_resolver->resolve(PresentationAvailability::take(m_resolver.get(), m_url, value));
+void PresentationAvailabilityCallbacks::onError(
+    const WebPresentationError& error) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->reject(PresentationError::take(m_resolver.get(), error));
 }
 
-void PresentationAvailabilityCallbacks::onError(const WebPresentationError& error)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    m_resolver->reject(PresentationError::take(m_resolver.get(), error));
-}
-
-} // namespace blink
+}  // namespace blink

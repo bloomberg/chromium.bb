@@ -38,19 +38,27 @@ class ErrorCallback;
 class FileSystemCallback;
 
 class DOMWindowFileSystem {
-    STATIC_ONLY(DOMWindowFileSystem);
-public:
-    static void webkitRequestFileSystem(DOMWindow&, int type, long long size, FileSystemCallback*, ErrorCallback*);
-    static void webkitResolveLocalFileSystemURL(DOMWindow&, const String&, EntryCallback*, ErrorCallback*);
+  STATIC_ONLY(DOMWindowFileSystem);
 
-    // They are placed here and in all capital letters so they can be checked against the constants in the
-    // IDL at compile time.
-    enum {
-        kTemporary,
-        kPersistent,
-    };
+ public:
+  static void webkitRequestFileSystem(DOMWindow&,
+                                      int type,
+                                      long long size,
+                                      FileSystemCallback*,
+                                      ErrorCallback*);
+  static void webkitResolveLocalFileSystemURL(DOMWindow&,
+                                              const String&,
+                                              EntryCallback*,
+                                              ErrorCallback*);
+
+  // They are placed here and in all capital letters so they can be checked against the constants in the
+  // IDL at compile time.
+  enum {
+    kTemporary,
+    kPersistent,
+  };
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowFileSystem_h
+#endif  // DOMWindowFileSystem_h

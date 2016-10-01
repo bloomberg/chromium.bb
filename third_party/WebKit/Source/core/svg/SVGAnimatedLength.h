@@ -37,26 +37,31 @@
 
 namespace blink {
 
-class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SVGAnimatedLength* create(SVGElement* contextElement, const QualifiedName& attributeName, SVGLength* initialValue)
-    {
-        return new SVGAnimatedLength(contextElement, attributeName, initialValue);
-    }
+class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    void setDefaultValueAsString(const String&);
-    SVGParsingError setBaseValueAsString(const String&) override;
+ public:
+  static SVGAnimatedLength* create(SVGElement* contextElement,
+                                   const QualifiedName& attributeName,
+                                   SVGLength* initialValue) {
+    return new SVGAnimatedLength(contextElement, attributeName, initialValue);
+  }
 
-    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  void setDefaultValueAsString(const String&);
+  SVGParsingError setBaseValueAsString(const String&) override;
 
-protected:
-    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, SVGLength* initialValue)
-        : SVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)
-    {
-    }
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
+ protected:
+  SVGAnimatedLength(SVGElement* contextElement,
+                    const QualifiedName& attributeName,
+                    SVGLength* initialValue)
+      : SVGAnimatedProperty<SVGLength>(contextElement,
+                                       attributeName,
+                                       initialValue) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGAnimatedLength_h
+#endif  // SVGAnimatedLength_h

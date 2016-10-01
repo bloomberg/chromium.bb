@@ -46,37 +46,78 @@ class CryptoKey;
 typedef ArrayBufferOrArrayBufferView BufferSource;
 typedef DictionaryOrString AlgorithmIdentifier;
 
-class SubtleCrypto final : public GarbageCollected<SubtleCrypto>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static SubtleCrypto* create()
-    {
-        return new SubtleCrypto();
-    }
+class SubtleCrypto final : public GarbageCollected<SubtleCrypto>,
+                           public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    ScriptPromise encrypt(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, const BufferSource&);
-    ScriptPromise decrypt(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, const BufferSource&);
-    ScriptPromise sign(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, const BufferSource&);
-    // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
-    ScriptPromise verifySignature(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, const BufferSource& signature, const BufferSource& data);
-    ScriptPromise digest(ScriptState*, const AlgorithmIdentifier&, const BufferSource& data);
+ public:
+  static SubtleCrypto* create() { return new SubtleCrypto(); }
 
-    ScriptPromise generateKey(ScriptState*, const AlgorithmIdentifier&, bool extractable, const Vector<String>& keyUsages);
-    ScriptPromise importKey(ScriptState*, const String&, const ArrayBufferOrArrayBufferViewOrDictionary&, const AlgorithmIdentifier&, bool extractable, const Vector<String>& keyUsages);
-    ScriptPromise exportKey(ScriptState*, const String&, CryptoKey*);
+  ScriptPromise encrypt(ScriptState*,
+                        const AlgorithmIdentifier&,
+                        CryptoKey*,
+                        const BufferSource&);
+  ScriptPromise decrypt(ScriptState*,
+                        const AlgorithmIdentifier&,
+                        CryptoKey*,
+                        const BufferSource&);
+  ScriptPromise sign(ScriptState*,
+                     const AlgorithmIdentifier&,
+                     CryptoKey*,
+                     const BufferSource&);
+  // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
+  ScriptPromise verifySignature(ScriptState*,
+                                const AlgorithmIdentifier&,
+                                CryptoKey*,
+                                const BufferSource& signature,
+                                const BufferSource& data);
+  ScriptPromise digest(ScriptState*,
+                       const AlgorithmIdentifier&,
+                       const BufferSource& data);
 
-    ScriptPromise wrapKey(ScriptState*, const String&, CryptoKey*, CryptoKey*, const AlgorithmIdentifier&);
-    ScriptPromise unwrapKey(ScriptState*, const String&, const BufferSource&, CryptoKey*, const AlgorithmIdentifier&, const AlgorithmIdentifier&, bool, const Vector<String>&);
+  ScriptPromise generateKey(ScriptState*,
+                            const AlgorithmIdentifier&,
+                            bool extractable,
+                            const Vector<String>& keyUsages);
+  ScriptPromise importKey(ScriptState*,
+                          const String&,
+                          const ArrayBufferOrArrayBufferViewOrDictionary&,
+                          const AlgorithmIdentifier&,
+                          bool extractable,
+                          const Vector<String>& keyUsages);
+  ScriptPromise exportKey(ScriptState*, const String&, CryptoKey*);
 
-    ScriptPromise deriveBits(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, unsigned);
-    ScriptPromise deriveKey(ScriptState*, const AlgorithmIdentifier&, CryptoKey*, const AlgorithmIdentifier&, bool extractable, const Vector<String>&);
+  ScriptPromise wrapKey(ScriptState*,
+                        const String&,
+                        CryptoKey*,
+                        CryptoKey*,
+                        const AlgorithmIdentifier&);
+  ScriptPromise unwrapKey(ScriptState*,
+                          const String&,
+                          const BufferSource&,
+                          CryptoKey*,
+                          const AlgorithmIdentifier&,
+                          const AlgorithmIdentifier&,
+                          bool,
+                          const Vector<String>&);
 
-    DEFINE_INLINE_TRACE() { }
+  ScriptPromise deriveBits(ScriptState*,
+                           const AlgorithmIdentifier&,
+                           CryptoKey*,
+                           unsigned);
+  ScriptPromise deriveKey(ScriptState*,
+                          const AlgorithmIdentifier&,
+                          CryptoKey*,
+                          const AlgorithmIdentifier&,
+                          bool extractable,
+                          const Vector<String>&);
 
-private:
-    SubtleCrypto();
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  SubtleCrypto();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SubtleCrypto_h
+#endif  // SubtleCrypto_h

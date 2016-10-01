@@ -40,18 +40,14 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
-    : HTMLElement(noscriptTag, document)
-{
-}
+    : HTMLElement(noscriptTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLNoScriptElement)
 
-bool HTMLNoScriptElement::layoutObjectIsNeeded(const ComputedStyle& style)
-{
-    if (document().frame()->script().canExecuteScripts(NotAboutToExecuteScript))
-        return false;
-    return Element::layoutObjectIsNeeded(style);
-
+bool HTMLNoScriptElement::layoutObjectIsNeeded(const ComputedStyle& style) {
+  if (document().frame()->script().canExecuteScripts(NotAboutToExecuteScript))
+    return false;
+  return Element::layoutObjectIsNeeded(style);
 }
 
-} // namespace blink
+}  // namespace blink

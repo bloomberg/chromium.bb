@@ -10,23 +10,30 @@
 namespace blink {
 
 class CSSFontSizeInterpolationType : public CSSInterpolationType {
-public:
-    CSSFontSizeInterpolationType(PropertyHandle property)
-        : CSSInterpolationType(property)
-    {
-        DCHECK_EQ(cssProperty(), CSSPropertyFontSize);
-    }
+ public:
+  CSSFontSizeInterpolationType(PropertyHandle property)
+      : CSSInterpolationType(property) {
+    DCHECK_EQ(cssProperty(), CSSPropertyFontSize);
+  }
 
-    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
+  InterpolationValue maybeConvertUnderlyingValue(
+      const InterpolationEnvironment&) const final;
+  void apply(const InterpolableValue&,
+             const NonInterpolableValue*,
+             InterpolationEnvironment&) const final;
 
-private:
-    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+ private:
+  InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInitial(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertInherit(const StyleResolverState&,
+                                         ConversionCheckers&) const final;
+  InterpolationValue maybeConvertValue(const CSSValue&,
+                                       const StyleResolverState&,
+                                       ConversionCheckers&) const final;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSFontSizeInterpolationType_h
+#endif  // CSSFontSizeInterpolationType_h

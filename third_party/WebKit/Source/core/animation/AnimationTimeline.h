@@ -49,107 +49,113 @@ class Document;
 class AnimationEffectReadOnly;
 
 // AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
-class CORE_EXPORT AnimationTimeline : public GarbageCollectedFinalized<AnimationTimeline>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
-    public:
-        // Calls AnimationTimeline's wake() method after duration seconds.
-        virtual void wakeAfter(double duration) = 0;
-        virtual void serviceOnNextFrame() = 0;
-        virtual ~PlatformTiming() { }
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
-    };
+class CORE_EXPORT AnimationTimeline
+    : public GarbageCollectedFinalized<AnimationTimeline>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static AnimationTimeline* create(Document*, PlatformTiming* = nullptr);
+ public:
+  class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
+   public:
+    // Calls AnimationTimeline's wake() method after duration seconds.
+    virtual void wakeAfter(double duration) = 0;
+    virtual void serviceOnNextFrame() = 0;
+    virtual ~PlatformTiming() {}
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+  };
 
-    virtual ~AnimationTimeline() {}
+  static AnimationTimeline* create(Document*, PlatformTiming* = nullptr);
 
-    void serviceAnimations(TimingUpdateReason);
-    void scheduleNextService();
+  virtual ~AnimationTimeline() {}
 
-    Animation* play(AnimationEffectReadOnly*);
-    HeapVector<Member<Animation>> getAnimations();
+  void serviceAnimations(TimingUpdateReason);
+  void scheduleNextService();
 
-    void animationAttached(Animation&);
+  Animation* play(AnimationEffectReadOnly*);
+  HeapVector<Member<Animation>> getAnimations();
 
-    bool isActive();
-    bool hasPendingUpdates() const { return !m_animationsNeedingUpdate.isEmpty(); }
-    double zeroTime();
-    double currentTime(bool& isNull);
-    double currentTime();
-    double currentTimeInternal(bool& isNull);
-    double currentTimeInternal();
-    void setCurrentTime(double);
-    void setCurrentTimeInternal(double);
-    double effectiveTime();
-    void pauseAnimationsForTesting(double);
+  void animationAttached(Animation&);
 
-    void setAllCompositorPending(bool sourceChanged = false);
-    void setOutdatedAnimation(Animation*);
-    void clearOutdatedAnimation(Animation*);
-    bool hasOutdatedAnimation() const { return m_outdatedAnimationCount > 0; }
-    bool needsAnimationTimingUpdate();
-    void invalidateKeyframeEffects(const TreeScope&);
+  bool isActive();
+  bool hasPendingUpdates() const {
+    return !m_animationsNeedingUpdate.isEmpty();
+  }
+  double zeroTime();
+  double currentTime(bool& isNull);
+  double currentTime();
+  double currentTimeInternal(bool& isNull);
+  double currentTimeInternal();
+  void setCurrentTime(double);
+  void setCurrentTimeInternal(double);
+  double effectiveTime();
+  void pauseAnimationsForTesting(double);
 
-    void setPlaybackRate(double);
-    double playbackRate() const;
+  void setAllCompositorPending(bool sourceChanged = false);
+  void setOutdatedAnimation(Animation*);
+  void clearOutdatedAnimation(Animation*);
+  bool hasOutdatedAnimation() const { return m_outdatedAnimationCount > 0; }
+  bool needsAnimationTimingUpdate();
+  void invalidateKeyframeEffects(const TreeScope&);
 
-    CompositorAnimationTimeline* compositorTimeline() const { return m_compositorTimeline.get(); }
+  void setPlaybackRate(double);
+  double playbackRate() const;
 
-    Document* document() { return m_document.get(); }
-    void wake();
-    void resetForTesting();
+  CompositorAnimationTimeline* compositorTimeline() const {
+    return m_compositorTimeline.get();
+  }
 
-    DECLARE_TRACE();
+  Document* document() { return m_document.get(); }
+  void wake();
+  void resetForTesting();
 
-protected:
-    AnimationTimeline(Document*, PlatformTiming*);
+  DECLARE_TRACE();
 
-private:
-    Member<Document> m_document;
-    double m_zeroTime;
-    bool m_zeroTimeInitialized;
-    unsigned m_outdatedAnimationCount;
-    // Animations which will be updated on the next frame
-    // i.e. current, in effect, or had timing changed
-    HeapHashSet<Member<Animation>> m_animationsNeedingUpdate;
-    HeapHashSet<WeakMember<Animation>> m_animations;
+ protected:
+  AnimationTimeline(Document*, PlatformTiming*);
 
-    double m_playbackRate;
+ private:
+  Member<Document> m_document;
+  double m_zeroTime;
+  bool m_zeroTimeInitialized;
+  unsigned m_outdatedAnimationCount;
+  // Animations which will be updated on the next frame
+  // i.e. current, in effect, or had timing changed
+  HeapHashSet<Member<Animation>> m_animationsNeedingUpdate;
+  HeapHashSet<WeakMember<Animation>> m_animations;
 
-    friend class SMILTimeContainer;
-    static const double s_minimumDelay;
+  double m_playbackRate;
 
-    Member<PlatformTiming> m_timing;
-    double m_lastCurrentTimeInternal;
+  friend class SMILTimeContainer;
+  static const double s_minimumDelay;
 
-    std::unique_ptr<CompositorAnimationTimeline> m_compositorTimeline;
+  Member<PlatformTiming> m_timing;
+  double m_lastCurrentTimeInternal;
 
-    class AnimationTimelineTiming final : public PlatformTiming {
-    public:
-        AnimationTimelineTiming(AnimationTimeline* timeline)
-            : m_timeline(timeline)
-            , m_timer(this, &AnimationTimelineTiming::timerFired)
-        {
-            DCHECK(m_timeline);
-        }
+  std::unique_ptr<CompositorAnimationTimeline> m_compositorTimeline;
 
-        void wakeAfter(double duration) override;
-        void serviceOnNextFrame() override;
+  class AnimationTimelineTiming final : public PlatformTiming {
+   public:
+    AnimationTimelineTiming(AnimationTimeline* timeline)
+        : m_timeline(timeline),
+          m_timer(this, &AnimationTimelineTiming::timerFired) {
+      DCHECK(m_timeline);
+    }
 
-        void timerFired(TimerBase*) { m_timeline->wake(); }
+    void wakeAfter(double duration) override;
+    void serviceOnNextFrame() override;
 
-        DECLARE_VIRTUAL_TRACE();
+    void timerFired(TimerBase*) { m_timeline->wake(); }
 
-    private:
-        Member<AnimationTimeline> m_timeline;
-        Timer<AnimationTimelineTiming> m_timer;
-    };
+    DECLARE_VIRTUAL_TRACE();
 
-    friend class AnimationAnimationTimelineTest;
+   private:
+    Member<AnimationTimeline> m_timeline;
+    Timer<AnimationTimelineTiming> m_timer;
+  };
+
+  friend class AnimationAnimationTimelineTest;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

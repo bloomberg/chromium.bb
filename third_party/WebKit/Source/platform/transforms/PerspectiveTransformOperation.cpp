@@ -30,41 +30,47 @@
 
 namespace blink {
 
-PassRefPtr<TransformOperation> PerspectiveTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
-{
-    if (from && !from->isSameType(*this))
-        return this;
+PassRefPtr<TransformOperation> PerspectiveTransformOperation::blend(
+    const TransformOperation* from,
+    double progress,
+    bool blendToIdentity) {
+  if (from && !from->isSameType(*this))
+    return this;
 
-    if (blendToIdentity) {
-        double p = blink::blend(m_p, 1., progress); // FIXME: this seems wrong. https://bugs.webkit.org/show_bug.cgi?id=52700
-        return PerspectiveTransformOperation::create(clampTo<int>(p, 0));
-    }
+  if (blendToIdentity) {
+    double p = blink::blend(
+        m_p, 1.,
+        progress);  // FIXME: this seems wrong. https://bugs.webkit.org/show_bug.cgi?id=52700
+    return PerspectiveTransformOperation::create(clampTo<int>(p, 0));
+  }
 
-    const PerspectiveTransformOperation* fromOp = static_cast<const PerspectiveTransformOperation*>(from);
+  const PerspectiveTransformOperation* fromOp =
+      static_cast<const PerspectiveTransformOperation*>(from);
 
-    TransformationMatrix fromT;
-    TransformationMatrix toT;
-    fromT.applyPerspective(fromOp ? fromOp->m_p : 0);
-    toT.applyPerspective(m_p);
-    toT.blend(fromT, progress);
+  TransformationMatrix fromT;
+  TransformationMatrix toT;
+  fromT.applyPerspective(fromOp ? fromOp->m_p : 0);
+  toT.applyPerspective(m_p);
+  toT.blend(fromT, progress);
 
-    TransformationMatrix::DecomposedType decomp;
-    if (!toT.decompose(decomp)) {
-        // If we can't decompose, bail out of interpolation.
-        const PerspectiveTransformOperation* usedOperation = progress > 0.5 ? this : fromOp;
-        return PerspectiveTransformOperation::create(usedOperation->perspective());
-    }
+  TransformationMatrix::DecomposedType decomp;
+  if (!toT.decompose(decomp)) {
+    // If we can't decompose, bail out of interpolation.
+    const PerspectiveTransformOperation* usedOperation =
+        progress > 0.5 ? this : fromOp;
+    return PerspectiveTransformOperation::create(usedOperation->perspective());
+  }
 
-    if (decomp.perspectiveZ) {
-        double val = -1.0 / decomp.perspectiveZ;
-        return PerspectiveTransformOperation::create(clampTo<int>(val, 0));
-    }
-    return PerspectiveTransformOperation::create(0);
+  if (decomp.perspectiveZ) {
+    double val = -1.0 / decomp.perspectiveZ;
+    return PerspectiveTransformOperation::create(clampTo<int>(val, 0));
+  }
+  return PerspectiveTransformOperation::create(0);
 }
 
-PassRefPtr<TransformOperation> PerspectiveTransformOperation::zoom(double factor)
-{
-    return create(m_p * factor);
+PassRefPtr<TransformOperation> PerspectiveTransformOperation::zoom(
+    double factor) {
+  return create(m_p * factor);
 }
 
-} // namespace blink
+}  // namespace blink

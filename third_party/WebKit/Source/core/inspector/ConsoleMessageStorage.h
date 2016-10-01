@@ -14,24 +14,26 @@ namespace blink {
 class ConsoleMessage;
 class ExecutionContext;
 
-class CORE_EXPORT ConsoleMessageStorage : public GarbageCollected<ConsoleMessageStorage> {
-    WTF_MAKE_NONCOPYABLE(ConsoleMessageStorage);
-public:
-    ConsoleMessageStorage();
+class CORE_EXPORT ConsoleMessageStorage
+    : public GarbageCollected<ConsoleMessageStorage> {
+  WTF_MAKE_NONCOPYABLE(ConsoleMessageStorage);
 
-    void addConsoleMessage(ExecutionContext*, ConsoleMessage*);
-    void clear();
-    size_t size() const;
-    ConsoleMessage* at(size_t index) const;
-    int expiredCount() const;
+ public:
+  ConsoleMessageStorage();
 
-    DECLARE_TRACE();
+  void addConsoleMessage(ExecutionContext*, ConsoleMessage*);
+  void clear();
+  size_t size() const;
+  ConsoleMessage* at(size_t index) const;
+  int expiredCount() const;
 
-private:
-    int m_expiredCount;
-    HeapDeque<Member<ConsoleMessage>> m_messages;
+  DECLARE_TRACE();
+
+ private:
+  int m_expiredCount;
+  HeapDeque<Member<ConsoleMessage>> m_messages;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ConsoleMessageStorage_h
+#endif  // ConsoleMessageStorage_h

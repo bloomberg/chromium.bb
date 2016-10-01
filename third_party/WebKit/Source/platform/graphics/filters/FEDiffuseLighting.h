@@ -30,29 +30,36 @@ namespace blink {
 class LightSource;
 
 class PLATFORM_EXPORT FEDiffuseLighting final : public FELighting {
-public:
-    static FEDiffuseLighting* create(Filter*, const Color&, float, float,
-        PassRefPtr<LightSource>);
-    ~FEDiffuseLighting() override;
+ public:
+  static FEDiffuseLighting* create(Filter*,
+                                   const Color&,
+                                   float,
+                                   float,
+                                   PassRefPtr<LightSource>);
+  ~FEDiffuseLighting() override;
 
-    Color lightingColor() const;
-    bool setLightingColor(const Color&);
+  Color lightingColor() const;
+  bool setLightingColor(const Color&);
 
-    float surfaceScale() const;
-    bool setSurfaceScale(float);
+  float surfaceScale() const;
+  bool setSurfaceScale(float);
 
-    float diffuseConstant() const;
-    bool setDiffuseConstant(float);
+  float diffuseConstant() const;
+  bool setDiffuseConstant(float);
 
-    const LightSource* lightSource() const;
-    void setLightSource(PassRefPtr<LightSource>);
+  const LightSource* lightSource() const;
+  void setLightSource(PassRefPtr<LightSource>);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    FEDiffuseLighting(Filter*, const Color&, float, float, PassRefPtr<LightSource>);
+ private:
+  FEDiffuseLighting(Filter*,
+                    const Color&,
+                    float,
+                    float,
+                    PassRefPtr<LightSource>);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FEDiffuseLighting_h
+#endif  // FEDiffuseLighting_h

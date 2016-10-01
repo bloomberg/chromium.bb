@@ -43,7 +43,8 @@ PLATFORM_EXPORT float decibelsToLinear(float);
 // timeConstant is the time it takes a first-order linear time-invariant system
 // to reach the value 1 - 1/e (around 63.2%) given a step input response.
 // discreteTimeConstantForSampleRate() will return the discrete time-constant for the specific sampleRate.
-PLATFORM_EXPORT double discreteTimeConstantForSampleRate(double timeConstant, double sampleRate);
+PLATFORM_EXPORT double discreteTimeConstantForSampleRate(double timeConstant,
+                                                         double sampleRate);
 
 // Convert the time to a sample frame at the given sample rate.
 PLATFORM_EXPORT size_t timeToSampleFrame(double time, double sampleRate);
@@ -54,7 +55,7 @@ PLATFORM_EXPORT bool isValidAudioBufferSampleRate(float sampleRate);
 // Return max/min sample rate supported by AudioBuffers.
 PLATFORM_EXPORT float minAudioBufferSampleRate();
 PLATFORM_EXPORT float maxAudioBufferSampleRate();
-} // namespace AudioUtilities
-} // namespace blink
+}  // namespace AudioUtilities
+}  // namespace blink
 
-#endif // AudioUtilities_h
+#endif  // AudioUtilities_h

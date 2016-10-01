@@ -33,42 +33,40 @@
 
 namespace blink {
 
-RemoveCSSPropertyCommand::RemoveCSSPropertyCommand(Document& document, Element* element, CSSPropertyID property)
-    : SimpleEditCommand(document)
-    , m_element(element)
-    , m_property(property)
-    , m_important(false)
-{
-    DCHECK(m_element);
+RemoveCSSPropertyCommand::RemoveCSSPropertyCommand(Document& document,
+                                                   Element* element,
+                                                   CSSPropertyID property)
+    : SimpleEditCommand(document),
+      m_element(element),
+      m_property(property),
+      m_important(false) {
+  DCHECK(m_element);
 }
 
-RemoveCSSPropertyCommand::~RemoveCSSPropertyCommand()
-{
+RemoveCSSPropertyCommand::~RemoveCSSPropertyCommand() {}
+
+void RemoveCSSPropertyCommand::doApply(EditingState*) {
+  const StylePropertySet* style = m_element->inlineStyle();
+  if (!style)
+    return;
+
+  m_oldValue = style->getPropertyValue(m_property);
+  m_important = style->propertyIsImportant(m_property);
+
+  // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
+  // Setting to null string removes the property. We don't have internal version of removeProperty.
+  m_element->style()->setPropertyInternal(m_property, String(), String(), false,
+                                          IGNORE_EXCEPTION);
 }
 
-void RemoveCSSPropertyCommand::doApply(EditingState*)
-{
-    const StylePropertySet* style = m_element->inlineStyle();
-    if (!style)
-        return;
-
-    m_oldValue = style->getPropertyValue(m_property);
-    m_important = style->propertyIsImportant(m_property);
-
-    // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
-    // Setting to null string removes the property. We don't have internal version of removeProperty.
-    m_element->style()->setPropertyInternal(m_property, String(), String(), false, IGNORE_EXCEPTION);
+void RemoveCSSPropertyCommand::doUnapply() {
+  m_element->style()->setPropertyInternal(m_property, String(), m_oldValue,
+                                          m_important, IGNORE_EXCEPTION);
 }
 
-void RemoveCSSPropertyCommand::doUnapply()
-{
-    m_element->style()->setPropertyInternal(m_property, String(), m_oldValue, m_important, IGNORE_EXCEPTION);
+DEFINE_TRACE(RemoveCSSPropertyCommand) {
+  visitor->trace(m_element);
+  SimpleEditCommand::trace(visitor);
 }
 
-DEFINE_TRACE(RemoveCSSPropertyCommand)
-{
-    visitor->trace(m_element);
-    SimpleEditCommand::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

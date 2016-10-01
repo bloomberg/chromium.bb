@@ -39,35 +39,32 @@ namespace blink {
 class Document;
 
 class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
-public:
-    static VisitedLinkState* create(const Document& document)
-    {
-        return new VisitedLinkState(document);
-    }
+ public:
+  static VisitedLinkState* create(const Document& document) {
+    return new VisitedLinkState(document);
+  }
 
-    void invalidateStyleForAllLinks(bool invalidateVisitedLinkHashes);
-    void invalidateStyleForLink(LinkHash);
+  void invalidateStyleForAllLinks(bool invalidateVisitedLinkHashes);
+  void invalidateStyleForLink(LinkHash);
 
-    EInsideLink determineLinkState(const Element& element)
-    {
-        if (element.isLink())
-            return determineLinkStateSlowCase(element);
-        return NotInsideLink;
-    }
+  EInsideLink determineLinkState(const Element& element) {
+    if (element.isLink())
+      return determineLinkStateSlowCase(element);
+    return NotInsideLink;
+  }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit VisitedLinkState(const Document&);
-    const Document& document() const { return *m_document; }
+ private:
+  explicit VisitedLinkState(const Document&);
+  const Document& document() const { return *m_document; }
 
-    EInsideLink determineLinkStateSlowCase(const Element&);
+  EInsideLink determineLinkStateSlowCase(const Element&);
 
-    Member<const Document> m_document;
-    HashSet<LinkHash, LinkHashHash> m_linksCheckedForVisitedState;
+  Member<const Document> m_document;
+  HashSet<LinkHash, LinkHashHash> m_linksCheckedForVisitedState;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

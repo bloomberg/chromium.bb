@@ -9,28 +9,26 @@
 
 namespace blink {
 
-TEST(HTMLParserThreadTest, Init)
-{
-    // The harness has not initialized the parser thread, due to
-    // RuntimeEnabledFeatures gating.
-    ASSERT_FALSE(HTMLParserThread::shared());
-    HTMLParserThread::init();
-    ASSERT_TRUE(HTMLParserThread::shared());
-    HTMLParserThread::shutdown();
+TEST(HTMLParserThreadTest, Init) {
+  // The harness has not initialized the parser thread, due to
+  // RuntimeEnabledFeatures gating.
+  ASSERT_FALSE(HTMLParserThread::shared());
+  HTMLParserThread::init();
+  ASSERT_TRUE(HTMLParserThread::shared());
+  HTMLParserThread::shutdown();
 }
 
-TEST(HTMLParserThreadTest, ShutdownStartup)
-{
-    // The harness has not initialized the parser thread, due to
-    // RuntimeEnabledFeatures gating.
-    ASSERT_FALSE(HTMLParserThread::shared());
-    HTMLParserThread::init();
-    ASSERT_TRUE(HTMLParserThread::shared());
+TEST(HTMLParserThreadTest, ShutdownStartup) {
+  // The harness has not initialized the parser thread, due to
+  // RuntimeEnabledFeatures gating.
+  ASSERT_FALSE(HTMLParserThread::shared());
+  HTMLParserThread::init();
+  ASSERT_TRUE(HTMLParserThread::shared());
 
-    HTMLParserThread::shutdown();
-    ASSERT_FALSE(HTMLParserThread::shared());
-    HTMLParserThread::init();
-    ASSERT_TRUE(HTMLParserThread::shared());
+  HTMLParserThread::shutdown();
+  ASSERT_FALSE(HTMLParserThread::shared());
+  HTMLParserThread::init();
+  ASSERT_TRUE(HTMLParserThread::shared());
 }
 
-} // namespace blink
+}  // namespace blink

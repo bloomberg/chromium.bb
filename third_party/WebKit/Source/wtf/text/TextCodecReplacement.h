@@ -11,18 +11,22 @@
 namespace WTF {
 
 class TextCodecReplacement final : public TextCodecUTF8 {
-public:
-    TextCodecReplacement();
+ public:
+  TextCodecReplacement();
 
-    static void registerEncodingNames(EncodingNameRegistrar);
-    static void registerCodecs(TextCodecRegistrar);
+  static void registerEncodingNames(EncodingNameRegistrar);
+  static void registerCodecs(TextCodecRegistrar);
 
-private:
-    String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
+ private:
+  String decode(const char*,
+                size_t length,
+                FlushBehavior,
+                bool stopOnError,
+                bool& sawError) override;
 
-    bool m_replacementErrorReturned;
+  bool m_replacementErrorReturned;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // TextCodecReplacement_h
+#endif  // TextCodecReplacement_h

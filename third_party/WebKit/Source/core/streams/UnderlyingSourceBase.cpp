@@ -12,68 +12,61 @@
 
 namespace blink {
 
-ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* scriptState, ScriptValue jsController)
-{
-    // Cannot call start twice (e.g., cannot use the same UnderlyingSourceBase to construct multiple streams)
-    ASSERT(!m_controller);
+ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* scriptState,
+                                                 ScriptValue jsController) {
+  // Cannot call start twice (e.g., cannot use the same UnderlyingSourceBase to construct multiple streams)
+  ASSERT(!m_controller);
 
-    m_controller = new ReadableStreamController(jsController);
+  m_controller = new ReadableStreamController(jsController);
 
-    return start(scriptState);
+  return start(scriptState);
 }
 
-ScriptPromise UnderlyingSourceBase::start(ScriptState* scriptState)
-{
-    return ScriptPromise::castUndefined(scriptState);
+ScriptPromise UnderlyingSourceBase::start(ScriptState* scriptState) {
+  return ScriptPromise::castUndefined(scriptState);
 }
 
-ScriptPromise UnderlyingSourceBase::pull(ScriptState* scriptState)
-{
-    return ScriptPromise::castUndefined(scriptState);
+ScriptPromise UnderlyingSourceBase::pull(ScriptState* scriptState) {
+  return ScriptPromise::castUndefined(scriptState);
 }
 
-ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* scriptState, ScriptValue reason)
-{
+ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* scriptState,
+                                                  ScriptValue reason) {
+  m_controller->noteHasBeenCanceled();
+  return cancel(scriptState, reason);
+}
+
+ScriptPromise UnderlyingSourceBase::cancel(ScriptState* scriptState,
+                                           ScriptValue reason) {
+  return ScriptPromise::castUndefined(scriptState);
+}
+
+void UnderlyingSourceBase::notifyLockAcquired() {
+  m_isStreamLocked = true;
+}
+
+void UnderlyingSourceBase::notifyLockReleased() {
+  m_isStreamLocked = false;
+}
+
+bool UnderlyingSourceBase::hasPendingActivity() const {
+  // This will return false within a finite time period _assuming_ that
+  // consumers use the controller to close or error the stream.
+  // Browser-created readable streams should always close or error within a
+  // finite time period, due to timeouts etc.
+  return m_controller && m_controller->isActive() && m_isStreamLocked;
+}
+
+void UnderlyingSourceBase::stop() {
+  if (m_controller) {
     m_controller->noteHasBeenCanceled();
-    return cancel(scriptState, reason);
+    m_controller.clear();
+  }
 }
 
-ScriptPromise UnderlyingSourceBase::cancel(ScriptState* scriptState, ScriptValue reason)
-{
-    return ScriptPromise::castUndefined(scriptState);
+DEFINE_TRACE(UnderlyingSourceBase) {
+  ActiveDOMObject::trace(visitor);
+  visitor->trace(m_controller);
 }
 
-void UnderlyingSourceBase::notifyLockAcquired()
-{
-    m_isStreamLocked = true;
-}
-
-void UnderlyingSourceBase::notifyLockReleased()
-{
-    m_isStreamLocked = false;
-}
-
-bool UnderlyingSourceBase::hasPendingActivity() const
-{
-    // This will return false within a finite time period _assuming_ that
-    // consumers use the controller to close or error the stream.
-    // Browser-created readable streams should always close or error within a
-    // finite time period, due to timeouts etc.
-    return m_controller && m_controller->isActive() && m_isStreamLocked;
-}
-
-void UnderlyingSourceBase::stop()
-{
-    if (m_controller) {
-        m_controller->noteHasBeenCanceled();
-        m_controller.clear();
-    }
-}
-
-DEFINE_TRACE(UnderlyingSourceBase)
-{
-    ActiveDOMObject::trace(visitor);
-    visitor->trace(m_controller);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -34,70 +34,69 @@
 
 namespace blink {
 
-bool BufferedLineReader::getLine(String& line)
-{
-    if (m_maybeSkipLF) {
-        // We ran out of data after a CR (U+000D), which means that we may be
-        // in the middle of a CRLF pair. If the next character is a LF (U+000A)
-        // then skip it, and then (unconditionally) return the buffered line.
-        if (!m_buffer.isEmpty()) {
-            scanCharacter(newlineCharacter);
-            m_maybeSkipLF = false;
-        }
-        // If there was no (new) data available, then keep m_maybeSkipLF set,
-        // and fall through all the way down to the EOS check at the end of
-        // the method.
+bool BufferedLineReader::getLine(String& line) {
+  if (m_maybeSkipLF) {
+    // We ran out of data after a CR (U+000D), which means that we may be
+    // in the middle of a CRLF pair. If the next character is a LF (U+000A)
+    // then skip it, and then (unconditionally) return the buffered line.
+    if (!m_buffer.isEmpty()) {
+      scanCharacter(newlineCharacter);
+      m_maybeSkipLF = false;
+    }
+    // If there was no (new) data available, then keep m_maybeSkipLF set,
+    // and fall through all the way down to the EOS check at the end of
+    // the method.
+  }
+
+  bool shouldReturnLine = false;
+  bool checkForLF = false;
+  while (!m_buffer.isEmpty()) {
+    UChar c = m_buffer.currentChar();
+    m_buffer.advance();
+
+    if (c == newlineCharacter || c == carriageReturnCharacter) {
+      // We found a line ending. Return the accumulated line.
+      shouldReturnLine = true;
+      checkForLF = (c == carriageReturnCharacter);
+      break;
     }
 
-    bool shouldReturnLine = false;
-    bool checkForLF = false;
-    while (!m_buffer.isEmpty()) {
-        UChar c = m_buffer.currentChar();
-        m_buffer.advance();
+    // NULs are transformed into U+FFFD (REPLACEMENT CHAR.) in step 1 of
+    // the WebVTT parser algorithm.
+    if (c == '\0')
+      c = replacementCharacter;
 
-        if (c == newlineCharacter || c == carriageReturnCharacter) {
-            // We found a line ending. Return the accumulated line.
-            shouldReturnLine = true;
-            checkForLF = (c == carriageReturnCharacter);
-            break;
-        }
+    m_lineBuffer.append(c);
+  }
 
-        // NULs are transformed into U+FFFD (REPLACEMENT CHAR.) in step 1 of
-        // the WebVTT parser algorithm.
-        if (c == '\0')
-            c = replacementCharacter;
-
-        m_lineBuffer.append(c);
+  if (checkForLF) {
+    // May be in the middle of a CRLF pair.
+    if (!m_buffer.isEmpty()) {
+      // Scan a potential newline character.
+      scanCharacter(newlineCharacter);
+    } else {
+      // Check for the LF on the next call (unless we reached EOS, in
+      // which case we'll return the contents of the line buffer, and
+      // reset state for the next line.)
+      m_maybeSkipLF = true;
     }
+  }
 
-    if (checkForLF) {
-        // May be in the middle of a CRLF pair.
-        if (!m_buffer.isEmpty()) {
-            // Scan a potential newline character.
-            scanCharacter(newlineCharacter);
-        } else {
-            // Check for the LF on the next call (unless we reached EOS, in
-            // which case we'll return the contents of the line buffer, and
-            // reset state for the next line.)
-            m_maybeSkipLF = true;
-        }
-    }
+  if (isAtEndOfStream()) {
+    // We've reached the end of the stream proper. Emit a line if the
+    // current line buffer is non-empty. (Note that if shouldReturnLine is
+    // set already, we want to return a line nonetheless.)
+    shouldReturnLine |= !m_lineBuffer.isEmpty();
+  }
 
-    if (isAtEndOfStream()) {
-        // We've reached the end of the stream proper. Emit a line if the
-        // current line buffer is non-empty. (Note that if shouldReturnLine is
-        // set already, we want to return a line nonetheless.)
-        shouldReturnLine |= !m_lineBuffer.isEmpty();
-    }
+  if (shouldReturnLine) {
+    line = m_lineBuffer.toString();
+    m_lineBuffer.clear();
+    return true;
+  }
 
-    if (shouldReturnLine) {
-        line = m_lineBuffer.toString();
-        m_lineBuffer.clear();
-        return true;
-    }
-
-    DCHECK(m_buffer.isEmpty());
-    return false;
+  DCHECK(m_buffer.isEmpty());
+  return false;
 }
 
-} // namespace blink
+}  // namespace blink

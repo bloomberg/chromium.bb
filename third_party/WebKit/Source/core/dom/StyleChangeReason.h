@@ -48,7 +48,7 @@ extern const char VisitedLink[];
 extern const char VisuallyOrdered[];
 extern const char WritingModeChange[];
 extern const char Zoom[];
-} // namespace StyleChangeReason
+}  // namespace StyleChangeReason
 typedef const char StyleChangeReasonString[];
 
 namespace StyleChangeExtraData {
@@ -69,41 +69,42 @@ void init();
 // |StyleChangeReasonForTracing| is strictly only for the tracing purpose as
 // described above. Blink logic must not depend on this value.
 class StyleChangeReasonForTracing {
-    DISALLOW_NEW();
-public:
-    static StyleChangeReasonForTracing create(StyleChangeReasonString reasonString)
-    {
-        return StyleChangeReasonForTracing(reasonString, nullAtom);
-    }
+  DISALLOW_NEW();
 
-    static StyleChangeReasonForTracing createWithExtraData(StyleChangeReasonString reasonString, const AtomicString& extraData)
-    {
-        return StyleChangeReasonForTracing(reasonString, extraData);
-    }
+ public:
+  static StyleChangeReasonForTracing create(
+      StyleChangeReasonString reasonString) {
+    return StyleChangeReasonForTracing(reasonString, nullAtom);
+  }
 
-    static StyleChangeReasonForTracing fromAttribute(const QualifiedName& attributeName)
-    {
-        return StyleChangeReasonForTracing(StyleChangeReason::Attribute, attributeName.localName());
-    }
+  static StyleChangeReasonForTracing createWithExtraData(
+      StyleChangeReasonString reasonString,
+      const AtomicString& extraData) {
+    return StyleChangeReasonForTracing(reasonString, extraData);
+  }
 
-    String reasonString() const { return String(m_reason); }
-    const AtomicString& getExtraData() const { return m_extraData; }
+  static StyleChangeReasonForTracing fromAttribute(
+      const QualifiedName& attributeName) {
+    return StyleChangeReasonForTracing(StyleChangeReason::Attribute,
+                                       attributeName.localName());
+  }
 
-private:
-    StyleChangeReasonForTracing(StyleChangeReasonString reasonString, const AtomicString& extraData)
-        : m_reason(reasonString)
-        , m_extraData(extraData)
-    {
-    }
+  String reasonString() const { return String(m_reason); }
+  const AtomicString& getExtraData() const { return m_extraData; }
 
-    // disable comparisons
-    void operator==(const StyleChangeReasonForTracing&) const { }
-    void operator!=(const StyleChangeReasonForTracing&) const { }
+ private:
+  StyleChangeReasonForTracing(StyleChangeReasonString reasonString,
+                              const AtomicString& extraData)
+      : m_reason(reasonString), m_extraData(extraData) {}
 
-    const char* m_reason;
-    AtomicString m_extraData;
+  // disable comparisons
+  void operator==(const StyleChangeReasonForTracing&) const {}
+  void operator!=(const StyleChangeReasonForTracing&) const {}
+
+  const char* m_reason;
+  AtomicString m_extraData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleChangeReason_h
+#endif  // StyleChangeReason_h

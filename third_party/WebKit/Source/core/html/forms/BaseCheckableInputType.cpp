@@ -41,99 +41,90 @@ namespace blink {
 
 using namespace HTMLNames;
 
-DEFINE_TRACE(BaseCheckableInputType)
-{
-    InputTypeView::trace(visitor);
-    InputType::trace(visitor);
+DEFINE_TRACE(BaseCheckableInputType) {
+  InputTypeView::trace(visitor);
+  InputType::trace(visitor);
 }
 
-InputTypeView* BaseCheckableInputType::createView()
-{
-    return this;
+InputTypeView* BaseCheckableInputType::createView() {
+  return this;
 }
 
-FormControlState BaseCheckableInputType::saveFormControlState() const
-{
-    return FormControlState(element().checked() ? "on" : "off");
+FormControlState BaseCheckableInputType::saveFormControlState() const {
+  return FormControlState(element().checked() ? "on" : "off");
 }
 
-void BaseCheckableInputType::restoreFormControlState(const FormControlState& state)
-{
-    element().setChecked(state[0] == "on");
+void BaseCheckableInputType::restoreFormControlState(
+    const FormControlState& state) {
+  element().setChecked(state[0] == "on");
 }
 
-void BaseCheckableInputType::appendToFormData(FormData& formData) const
-{
-    if (element().checked())
-        formData.append(element().name(), element().value());
+void BaseCheckableInputType::appendToFormData(FormData& formData) const {
+  if (element().checked())
+    formData.append(element().name(), element().value());
 }
 
-void BaseCheckableInputType::handleKeydownEvent(KeyboardEvent* event)
-{
-    const String& key = event->key();
-    if (key == " ") {
-        element().setActive(true);
-        // No setDefaultHandled(), because IE dispatches a keypress in this case
-        // and the caller will only dispatch a keypress if we don't call setDefaultHandled().
-    }
+void BaseCheckableInputType::handleKeydownEvent(KeyboardEvent* event) {
+  const String& key = event->key();
+  if (key == " ") {
+    element().setActive(true);
+    // No setDefaultHandled(), because IE dispatches a keypress in this case
+    // and the caller will only dispatch a keypress if we don't call setDefaultHandled().
+  }
 }
 
-void BaseCheckableInputType::handleKeypressEvent(KeyboardEvent* event)
-{
-    if (event->charCode() == ' ') {
-        // Prevent scrolling down the page.
-        event->setDefaultHandled();
-    }
+void BaseCheckableInputType::handleKeypressEvent(KeyboardEvent* event) {
+  if (event->charCode() == ' ') {
+    // Prevent scrolling down the page.
+    event->setDefaultHandled();
+  }
 }
 
-bool BaseCheckableInputType::canSetStringValue() const
-{
-    return false;
+bool BaseCheckableInputType::canSetStringValue() const {
+  return false;
 }
 
 // FIXME: Could share this with KeyboardClickableInputTypeView and
 // RangeInputType if we had a common base class.
-void BaseCheckableInputType::accessKeyAction(bool sendMouseEvents)
-{
-    InputTypeView::accessKeyAction(sendMouseEvents);
+void BaseCheckableInputType::accessKeyAction(bool sendMouseEvents) {
+  InputTypeView::accessKeyAction(sendMouseEvents);
 
-    element().dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
+  element().dispatchSimulatedClick(
+      0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
 }
 
-bool BaseCheckableInputType::matchesDefaultPseudoClass()
-{
-    return element().fastHasAttribute(checkedAttr);
+bool BaseCheckableInputType::matchesDefaultPseudoClass() {
+  return element().fastHasAttribute(checkedAttr);
 }
 
-String BaseCheckableInputType::fallbackValue() const
-{
-    return "on";
+String BaseCheckableInputType::fallbackValue() const {
+  return "on";
 }
 
-bool BaseCheckableInputType::storesValueSeparateFromAttribute()
-{
-    return false;
+bool BaseCheckableInputType::storesValueSeparateFromAttribute() {
+  return false;
 }
 
-void BaseCheckableInputType::setValue(const String& sanitizedValue, bool, TextFieldEventBehavior)
-{
-    element().setAttribute(valueAttr, AtomicString(sanitizedValue));
+void BaseCheckableInputType::setValue(const String& sanitizedValue,
+                                      bool,
+                                      TextFieldEventBehavior) {
+  element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
-void BaseCheckableInputType::readingChecked() const
-{
-    if (m_isInClickHandler)
-        UseCounter::count(element().document(), UseCounter::ReadingCheckedInClickHandler);
+void BaseCheckableInputType::readingChecked() const {
+  if (m_isInClickHandler)
+    UseCounter::count(element().document(),
+                      UseCounter::ReadingCheckedInClickHandler);
 }
 
-bool BaseCheckableInputType::isCheckable()
-{
-    return true;
+bool BaseCheckableInputType::isCheckable() {
+  return true;
 }
 
-bool BaseCheckableInputType::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
-{
-    return oldValue != newValue;
+bool BaseCheckableInputType::shouldDispatchFormControlChangeEvent(
+    String& oldValue,
+    String& newValue) {
+  return oldValue != newValue;
 }
 
-} // namespace blink
+}  // namespace blink

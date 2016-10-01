@@ -42,69 +42,79 @@ class Document;
 class Element;
 class HTMLScriptRunnerHost;
 
-class HTMLScriptRunner final : public GarbageCollectedFinalized<HTMLScriptRunner>, private ScriptResourceClient {
-    WTF_MAKE_NONCOPYABLE(HTMLScriptRunner);
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptRunner);
-    USING_PRE_FINALIZER(HTMLScriptRunner, detach);
-public:
-    static HTMLScriptRunner* create(HTMLParserReentryPermit* reentryPermit, Document* document, HTMLScriptRunnerHost* host)
-    {
-        return new HTMLScriptRunner(reentryPermit, document, host);
-    }
-    ~HTMLScriptRunner();
+class HTMLScriptRunner final
+    : public GarbageCollectedFinalized<HTMLScriptRunner>,
+      private ScriptResourceClient {
+  WTF_MAKE_NONCOPYABLE(HTMLScriptRunner);
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptRunner);
+  USING_PRE_FINALIZER(HTMLScriptRunner, detach);
 
-    void detach();
+ public:
+  static HTMLScriptRunner* create(HTMLParserReentryPermit* reentryPermit,
+                                  Document* document,
+                                  HTMLScriptRunnerHost* host) {
+    return new HTMLScriptRunner(reentryPermit, document, host);
+  }
+  ~HTMLScriptRunner();
 
-    // Processes the passed in script and any pending scripts if possible.
-    void execute(Element* scriptToProcess, const TextPosition& scriptStartPosition);
+  void detach();
 
-    void executeScriptsWaitingForLoad(Resource*);
-    bool hasScriptsWaitingForResources() const { return m_hasScriptsWaitingForResources; }
-    void executeScriptsWaitingForResources();
-    bool executeScriptsWaitingForParsing();
+  // Processes the passed in script and any pending scripts if possible.
+  void execute(Element* scriptToProcess,
+               const TextPosition& scriptStartPosition);
 
-    bool hasParserBlockingScript() const;
-    bool isExecutingScript() const { return !!m_reentryPermit->scriptNestingLevel(); }
+  void executeScriptsWaitingForLoad(Resource*);
+  bool hasScriptsWaitingForResources() const {
+    return m_hasScriptsWaitingForResources;
+  }
+  void executeScriptsWaitingForResources();
+  bool executeScriptsWaitingForParsing();
 
-    // ResourceClient
-    void notifyFinished(Resource*) override;
-    String debugName() const override { return "HTMLScriptRunner"; }
+  bool hasParserBlockingScript() const;
+  bool isExecutingScript() const {
+    return !!m_reentryPermit->scriptNestingLevel();
+  }
 
-    DECLARE_TRACE();
+  // ResourceClient
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "HTMLScriptRunner"; }
 
-private:
-    HTMLScriptRunner(HTMLParserReentryPermit*, Document*, HTMLScriptRunnerHost*);
+  DECLARE_TRACE();
 
-    void executeParsingBlockingScript();
-    void executePendingScriptAndDispatchEvent(PendingScript*, ScriptStreamer::Type);
-    void executeParsingBlockingScripts();
+ private:
+  HTMLScriptRunner(HTMLParserReentryPermit*, Document*, HTMLScriptRunnerHost*);
 
-    void requestParsingBlockingScript(Element*);
-    void requestDeferredScript(Element*);
-    bool requestPendingScript(PendingScript*, Element*) const;
+  void executeParsingBlockingScript();
+  void executePendingScriptAndDispatchEvent(PendingScript*,
+                                            ScriptStreamer::Type);
+  void executeParsingBlockingScripts();
 
-    void runScript(Element*, const TextPosition& scriptStartPosition);
+  void requestParsingBlockingScript(Element*);
+  void requestDeferredScript(Element*);
+  bool requestPendingScript(PendingScript*, Element*) const;
 
-    bool isPendingScriptReady(const PendingScript*);
+  void runScript(Element*, const TextPosition& scriptStartPosition);
 
-    void stopWatchingResourceForLoad(Resource*);
+  bool isPendingScriptReady(const PendingScript*);
 
-    void possiblyFetchBlockedDocWriteScript(Resource*);
+  void stopWatchingResourceForLoad(Resource*);
 
-    RefPtr<HTMLParserReentryPermit> m_reentryPermit;
-    Member<Document> m_document;
-    Member<HTMLScriptRunnerHost> m_host;
-    Member<PendingScript> m_parserBlockingScript;
-    // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
-    HeapDeque<Member<PendingScript>> m_scriptsToExecuteAfterParsing;
+  void possiblyFetchBlockedDocWriteScript(Resource*);
 
-    // We only want stylesheet loads to trigger script execution if script
-    // execution is currently stopped due to stylesheet loads, otherwise we'd
-    // cause nested script execution when parsing <style> tags since </style>
-    // tags can cause Document to call executeScriptsWaitingForResources.
-    bool m_hasScriptsWaitingForResources;
+  RefPtr<HTMLParserReentryPermit> m_reentryPermit;
+  Member<Document> m_document;
+  Member<HTMLScriptRunnerHost> m_host;
+  Member<PendingScript> m_parserBlockingScript;
+  // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
+  HeapDeque<Member<PendingScript>> m_scriptsToExecuteAfterParsing;
+
+  // We only want stylesheet loads to trigger script execution if script
+  // execution is currently stopped due to stylesheet loads, otherwise we'd
+  // cause nested script execution when parsing <style> tags since </style>
+  // tags can cause Document to call executeScriptsWaitingForResources.
+  bool m_hasScriptsWaitingForResources;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

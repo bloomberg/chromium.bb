@@ -15,34 +15,35 @@ namespace blink {
 
 class FrameView;
 
-class FrameViewAutoSizeInfo final : public GarbageCollected<FrameViewAutoSizeInfo> {
-    WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
-public:
-    static FrameViewAutoSizeInfo* create(FrameView* frameView)
-    {
-        return new FrameViewAutoSizeInfo(frameView);
-    }
+class FrameViewAutoSizeInfo final
+    : public GarbageCollected<FrameViewAutoSizeInfo> {
+  WTF_MAKE_NONCOPYABLE(FrameViewAutoSizeInfo);
 
-    void configureAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
-    void autoSizeIfNeeded();
+ public:
+  static FrameViewAutoSizeInfo* create(FrameView* frameView) {
+    return new FrameViewAutoSizeInfo(frameView);
+  }
 
-    DECLARE_TRACE();
+  void configureAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
+  void autoSizeIfNeeded();
 
-private:
-    explicit FrameViewAutoSizeInfo(FrameView*);
+  DECLARE_TRACE();
 
-    Member<FrameView> m_frameView;
+ private:
+  explicit FrameViewAutoSizeInfo(FrameView*);
 
-    // The lower bound on the size when autosizing.
-    IntSize m_minAutoSize;
-    // The upper bound on the size when autosizing.
-    IntSize m_maxAutoSize;
+  Member<FrameView> m_frameView;
 
-    bool m_inAutoSize;
-    // True if autosize has been run since m_shouldAutoSize was set.
-    bool m_didRunAutosize;
+  // The lower bound on the size when autosizing.
+  IntSize m_minAutoSize;
+  // The upper bound on the size when autosizing.
+  IntSize m_maxAutoSize;
+
+  bool m_inAutoSize;
+  // True if autosize has been run since m_shouldAutoSize was set.
+  bool m_didRunAutosize;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FrameViewAutoSizeInfo_h
+#endif  // FrameViewAutoSizeInfo_h

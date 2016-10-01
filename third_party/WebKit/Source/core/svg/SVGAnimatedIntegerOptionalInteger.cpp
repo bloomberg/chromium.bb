@@ -34,41 +34,50 @@
 
 namespace blink {
 
-SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue)
-    : SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>(contextElement, attributeName,
-        SVGIntegerOptionalInteger::create(SVGInteger::create(initialFirstValue), SVGInteger::create(initialSecondValue)))
-    , m_firstInteger(SVGAnimatedInteger::create(contextElement, attributeName, baseValue()->firstInteger()))
-    , m_secondInteger(SVGAnimatedInteger::create(contextElement, attributeName, baseValue()->secondInteger()))
-{
-    m_firstInteger->setParentOptionalInteger(this);
-    m_secondInteger->setParentOptionalInteger(this);
+SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(
+    SVGElement* contextElement,
+    const QualifiedName& attributeName,
+    float initialFirstValue,
+    float initialSecondValue)
+    : SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>(
+          contextElement,
+          attributeName,
+          SVGIntegerOptionalInteger::create(
+              SVGInteger::create(initialFirstValue),
+              SVGInteger::create(initialSecondValue))),
+      m_firstInteger(SVGAnimatedInteger::create(contextElement,
+                                                attributeName,
+                                                baseValue()->firstInteger())),
+      m_secondInteger(
+          SVGAnimatedInteger::create(contextElement,
+                                     attributeName,
+                                     baseValue()->secondInteger())) {
+  m_firstInteger->setParentOptionalInteger(this);
+  m_secondInteger->setParentOptionalInteger(this);
 }
 
-DEFINE_TRACE(SVGAnimatedIntegerOptionalInteger)
-{
-    visitor->trace(m_firstInteger);
-    visitor->trace(m_secondInteger);
-    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::trace(visitor);
+DEFINE_TRACE(SVGAnimatedIntegerOptionalInteger) {
+  visitor->trace(m_firstInteger);
+  visitor->trace(m_secondInteger);
+  SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::trace(visitor);
 }
 
-void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(SVGPropertyBase* value)
-{
-    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::setAnimatedValue(value);
-    m_firstInteger->setAnimatedValue(currentValue()->firstInteger());
-    m_secondInteger->setAnimatedValue(currentValue()->secondInteger());
+void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(
+    SVGPropertyBase* value) {
+  SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::setAnimatedValue(value);
+  m_firstInteger->setAnimatedValue(currentValue()->firstInteger());
+  m_secondInteger->setAnimatedValue(currentValue()->secondInteger());
 }
 
-void SVGAnimatedIntegerOptionalInteger::animationEnded()
-{
-    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animationEnded();
-    m_firstInteger->animationEnded();
-    m_secondInteger->animationEnded();
+void SVGAnimatedIntegerOptionalInteger::animationEnded() {
+  SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::animationEnded();
+  m_firstInteger->animationEnded();
+  m_secondInteger->animationEnded();
 }
 
-bool SVGAnimatedIntegerOptionalInteger::needsSynchronizeAttribute()
-{
-    return m_firstInteger->needsSynchronizeAttribute()
-        || m_secondInteger->needsSynchronizeAttribute();
+bool SVGAnimatedIntegerOptionalInteger::needsSynchronizeAttribute() {
+  return m_firstInteger->needsSynchronizeAttribute() ||
+         m_secondInteger->needsSynchronizeAttribute();
 }
 
-} // namespace blink
+}  // namespace blink

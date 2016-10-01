@@ -14,19 +14,19 @@
 namespace blink {
 
 class CompositorTest : public testing::Test {
-    WTF_MAKE_NONCOPYABLE(CompositorTest);
+  WTF_MAKE_NONCOPYABLE(CompositorTest);
 
-public:
-    CompositorTest();
-    virtual ~CompositorTest();
+ public:
+  CompositorTest();
+  virtual ~CompositorTest();
 
-protected:
-    // Mock task runner is initialized here because tests create
-    // WebLayerTreeViewImplForTesting which needs the current task runner handle.
-    scoped_refptr<base::TestMockTimeTaskRunner> m_runner;
-    base::ThreadTaskRunnerHandle m_runnerHandle;
+ protected:
+  // Mock task runner is initialized here because tests create
+  // WebLayerTreeViewImplForTesting which needs the current task runner handle.
+  scoped_refptr<base::TestMockTimeTaskRunner> m_runner;
+  base::ThreadTaskRunnerHandle m_runnerHandle;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorTest_h
+#endif  // CompositorTest_h

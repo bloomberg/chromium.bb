@@ -13,11 +13,12 @@ class Internals;
 class ServiceWorker;
 
 class InternalsServiceWorker {
-    STATIC_ONLY(InternalsServiceWorker);
-public:
-    static void terminateServiceWorker(Internals&, ServiceWorker*);
+  STATIC_ONLY(InternalsServiceWorker);
+
+ public:
+  static void terminateServiceWorker(Internals&, ServiceWorker*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InternalsServiceWorker_h
+#endif  // InternalsServiceWorker_h

@@ -39,24 +39,27 @@ namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerGlobalScopePerformance final : public GarbageCollected<WorkerGlobalScopePerformance>, public Supplement<WorkerGlobalScope> {
-    USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
-public:
-    static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
+class WorkerGlobalScopePerformance final
+    : public GarbageCollected<WorkerGlobalScopePerformance>,
+      public Supplement<WorkerGlobalScope> {
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
 
-    static WorkerPerformance* performance(WorkerGlobalScope&);
+ public:
+  static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
 
-    DECLARE_VIRTUAL_TRACE();
+  static WorkerPerformance* performance(WorkerGlobalScope&);
 
-private:
-    WorkerGlobalScopePerformance();
+  DECLARE_VIRTUAL_TRACE();
 
-    WorkerPerformance* performance(WorkerGlobalScope*);
-    static const char* supplementName();
+ private:
+  WorkerGlobalScopePerformance();
 
-    Member<WorkerPerformance> m_performance;
+  WorkerPerformance* performance(WorkerGlobalScope*);
+  static const char* supplementName();
+
+  Member<WorkerPerformance> m_performance;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerGlobalScopePerformance_h
+#endif  // WorkerGlobalScopePerformance_h

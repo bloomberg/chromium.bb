@@ -37,79 +37,73 @@ namespace blink {
 const double maximumAllowedDelayTime = 180;
 
 DelayNode::DelayNode(BaseAudioContext& context, double maxDelayTime)
-    : AudioNode(context)
-    , m_delayTime(AudioParam::create(context, ParamTypeDelayDelayTime, 0.0, 0.0, maxDelayTime))
-{
-    setHandler(AudioBasicProcessorHandler::create(
-        AudioHandler::NodeTypeDelay,
-        *this,
-        context.sampleRate(),
-        wrapUnique(new DelayProcessor(
-            context.sampleRate(),
-            1,
-            m_delayTime->handler(),
-            maxDelayTime))));
+    : AudioNode(context),
+      m_delayTime(AudioParam::create(context,
+                                     ParamTypeDelayDelayTime,
+                                     0.0,
+                                     0.0,
+                                     maxDelayTime)) {
+  setHandler(AudioBasicProcessorHandler::create(
+      AudioHandler::NodeTypeDelay, *this, context.sampleRate(),
+      wrapUnique(new DelayProcessor(context.sampleRate(), 1,
+                                    m_delayTime->handler(), maxDelayTime))));
 }
 
-DelayNode* DelayNode::create(BaseAudioContext& context, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+DelayNode* DelayNode::create(BaseAudioContext& context,
+                             ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    // The default maximum delay time for the delay node is 1 sec.
-    return create(context, 1, exceptionState);
+  // The default maximum delay time for the delay node is 1 sec.
+  return create(context, 1, exceptionState);
 }
 
-DelayNode* DelayNode::create(BaseAudioContext& context, double maxDelayTime, ExceptionState& exceptionState)
-{
-    DCHECK(isMainThread());
+DelayNode* DelayNode::create(BaseAudioContext& context,
+                             double maxDelayTime,
+                             ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
 
-    if (context.isContextClosed()) {
-        context.throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
+  if (context.isContextClosed()) {
+    context.throwExceptionForClosedState(exceptionState);
+    return nullptr;
+  }
 
-    if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
-        exceptionState.throwDOMException(
-            NotSupportedError,
-            ExceptionMessages::indexOutsideRange(
-                "max delay time",
-                maxDelayTime,
-                0.0,
-                ExceptionMessages::ExclusiveBound,
-                maximumAllowedDelayTime,
-                ExceptionMessages::ExclusiveBound));
-        return nullptr;
-    }
+  if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
+    exceptionState.throwDOMException(
+        NotSupportedError,
+        ExceptionMessages::indexOutsideRange(
+            "max delay time", maxDelayTime, 0.0,
+            ExceptionMessages::ExclusiveBound, maximumAllowedDelayTime,
+            ExceptionMessages::ExclusiveBound));
+    return nullptr;
+  }
 
-    return new DelayNode(context, maxDelayTime);
+  return new DelayNode(context, maxDelayTime);
 }
 
-DelayNode* DelayNode::create(BaseAudioContext* context, const DelayOptions& options, ExceptionState& exceptionState)
-{
-    // maxDelayTime has a default value specified.
-    DelayNode* node = create(*context, options.maxDelayTime(), exceptionState);
+DelayNode* DelayNode::create(BaseAudioContext* context,
+                             const DelayOptions& options,
+                             ExceptionState& exceptionState) {
+  // maxDelayTime has a default value specified.
+  DelayNode* node = create(*context, options.maxDelayTime(), exceptionState);
 
-    if (!node)
-        return nullptr;
+  if (!node)
+    return nullptr;
 
-    node->handleChannelOptions(options, exceptionState);
+  node->handleChannelOptions(options, exceptionState);
 
-    if (options.hasDelayTime())
-        node->delayTime()->setValue(options.delayTime());
+  if (options.hasDelayTime())
+    node->delayTime()->setValue(options.delayTime());
 
-    return node;
+  return node;
 }
 
-AudioParam* DelayNode::delayTime()
-{
-    return m_delayTime;
+AudioParam* DelayNode::delayTime() {
+  return m_delayTime;
 }
 
-DEFINE_TRACE(DelayNode)
-{
-    visitor->trace(m_delayTime);
-    AudioNode::trace(visitor);
+DEFINE_TRACE(DelayNode) {
+  visitor->trace(m_delayTime);
+  AudioNode::trace(visitor);
 }
 
-} // namespace blink
-
+}  // namespace blink

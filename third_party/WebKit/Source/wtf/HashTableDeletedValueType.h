@@ -35,6 +35,6 @@ namespace WTF {
 
 enum HashTableDeletedValueType { HashTableDeletedValue };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // HashTableDeletedValueType_h
+#endif  // HashTableDeletedValueType_h

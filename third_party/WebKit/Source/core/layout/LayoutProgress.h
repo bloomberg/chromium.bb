@@ -29,44 +29,46 @@ namespace blink {
 class HTMLProgressElement;
 
 class CORE_EXPORT LayoutProgress final : public LayoutBlockFlow {
-public:
-    explicit LayoutProgress(HTMLProgressElement*);
-    ~LayoutProgress() override;
+ public:
+  explicit LayoutProgress(HTMLProgressElement*);
+  ~LayoutProgress() override;
 
-    double position() const { return m_position; }
-    double animationProgress() const;
+  double position() const { return m_position; }
+  double animationProgress() const;
 
-    bool isDeterminate() const;
-    void updateFromElement() override;
+  bool isDeterminate() const;
+  void updateFromElement() override;
 
-    HTMLProgressElement* progressElement() const;
+  HTMLProgressElement* progressElement() const;
 
-    const char* name() const override { return "LayoutProgress"; }
+  const char* name() const override { return "LayoutProgress"; }
 
-protected:
-    void willBeDestroyed() override;
+ protected:
+  void willBeDestroyed() override;
 
-    bool isAnimating() const;
-    bool isAnimationTimerActive() const;
+  bool isAnimating() const;
+  bool isAnimationTimerActive() const;
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectProgress || LayoutBlockFlow::isOfType(type); }
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectProgress || LayoutBlockFlow::isOfType(type);
+  }
 
-    void animationTimerFired(TimerBase*);
-    void updateAnimationState();
+  void animationTimerFired(TimerBase*);
+  void updateAnimationState();
 
-    double m_position;
-    double m_animationStartTime;
-    double m_animationRepeatInterval;
-    double m_animationDuration;
-    bool m_animating;
-    Timer<LayoutProgress> m_animationTimer;
+  double m_position;
+  double m_animationStartTime;
+  double m_animationRepeatInterval;
+  double m_animationDuration;
+  bool m_animating;
+  Timer<LayoutProgress> m_animationTimer;
 
-    friend class LayoutProgressTest;
+  friend class LayoutProgressTest;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutProgress, isProgress());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutProgress_h
+#endif  // LayoutProgress_h

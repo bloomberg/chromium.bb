@@ -20,78 +20,80 @@ class TracedValue;
 // Usage:
 // LayoutAnalyzer::Scope analyzer(*this);
 class LayoutAnalyzer {
-    USING_FAST_MALLOC(LayoutAnalyzer);
-    WTF_MAKE_NONCOPYABLE(LayoutAnalyzer);
-public:
-    enum Counter {
-        LayoutBlockWidthChanged,
-        LayoutBlockHeightChanged,
-        LayoutBlockSizeChanged,
-        LayoutBlockSizeDidNotChange,
-        LayoutObjectsThatSpecifyColumns,
-        LayoutAnalyzerStackMaximumDepth,
-        LayoutObjectsThatAreFloating,
-        LayoutObjectsThatHaveALayer,
-        LayoutInlineObjectsThatAlwaysCreateLineBoxes,
-        LayoutObjectsThatHadNeverHadLayout,
-        LayoutObjectsThatAreOutOfFlowPositioned,
-        LayoutObjectsThatNeedPositionedMovementLayout,
-        PerformLayoutRootLayoutObjects,
-        LayoutObjectsThatNeedLayoutForThemselves,
-        LayoutObjectsThatNeedSimplifiedLayout,
-        LayoutObjectsThatAreTableCells,
-        LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
-        CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
-        LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
-        CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
-        TotalLayoutObjectsThatWereLaidOut,
-    };
-    static const size_t NumCounters = 21;
+  USING_FAST_MALLOC(LayoutAnalyzer);
+  WTF_MAKE_NONCOPYABLE(LayoutAnalyzer);
 
-    class Scope {
-        STACK_ALLOCATED();
-    public:
-        explicit Scope(const LayoutObject&);
-        ~Scope();
+ public:
+  enum Counter {
+    LayoutBlockWidthChanged,
+    LayoutBlockHeightChanged,
+    LayoutBlockSizeChanged,
+    LayoutBlockSizeDidNotChange,
+    LayoutObjectsThatSpecifyColumns,
+    LayoutAnalyzerStackMaximumDepth,
+    LayoutObjectsThatAreFloating,
+    LayoutObjectsThatHaveALayer,
+    LayoutInlineObjectsThatAlwaysCreateLineBoxes,
+    LayoutObjectsThatHadNeverHadLayout,
+    LayoutObjectsThatAreOutOfFlowPositioned,
+    LayoutObjectsThatNeedPositionedMovementLayout,
+    PerformLayoutRootLayoutObjects,
+    LayoutObjectsThatNeedLayoutForThemselves,
+    LayoutObjectsThatNeedSimplifiedLayout,
+    LayoutObjectsThatAreTableCells,
+    LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
+    CharactersInLayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath,
+    LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
+    CharactersInLayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath,
+    TotalLayoutObjectsThatWereLaidOut,
+  };
+  static const size_t NumCounters = 21;
 
-    private:
-        const LayoutObject& m_layoutObject;
-        LayoutAnalyzer* m_analyzer;
-    };
+  class Scope {
+    STACK_ALLOCATED();
 
-    class BlockScope {
-        STACK_ALLOCATED();
-    public:
-        explicit BlockScope(const LayoutBlock&);
-        ~BlockScope();
+   public:
+    explicit Scope(const LayoutObject&);
+    ~Scope();
 
-    private:
-        const LayoutBlock& m_block;
-        LayoutUnit m_width;
-        LayoutUnit m_height;
-    };
+   private:
+    const LayoutObject& m_layoutObject;
+    LayoutAnalyzer* m_analyzer;
+  };
 
-    LayoutAnalyzer() { }
+  class BlockScope {
+    STACK_ALLOCATED();
 
-    void reset();
-    void push(const LayoutObject&);
-    void pop(const LayoutObject&);
+   public:
+    explicit BlockScope(const LayoutBlock&);
+    ~BlockScope();
 
-    void increment(Counter counter, unsigned delta = 1)
-    {
-        m_counters[counter] += delta;
-    }
+   private:
+    const LayoutBlock& m_block;
+    LayoutUnit m_width;
+    LayoutUnit m_height;
+  };
 
-    std::unique_ptr<TracedValue> toTracedValue();
+  LayoutAnalyzer() {}
 
-private:
-    const char* nameForCounter(Counter) const;
+  void reset();
+  void push(const LayoutObject&);
+  void pop(const LayoutObject&);
 
-    double m_startMs;
-    unsigned m_depth;
-    unsigned m_counters[NumCounters];
+  void increment(Counter counter, unsigned delta = 1) {
+    m_counters[counter] += delta;
+  }
+
+  std::unique_ptr<TracedValue> toTracedValue();
+
+ private:
+  const char* nameForCounter(Counter) const;
+
+  double m_startMs;
+  unsigned m_depth;
+  unsigned m_counters[NumCounters];
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutAnalyzer_h
+#endif  // LayoutAnalyzer_h

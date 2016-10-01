@@ -10,15 +10,14 @@
 
 namespace blink {
 
-class LayoutBlockTest : public RenderingTest {
-};
+class LayoutBlockTest : public RenderingTest {};
 
-TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle)
-{
-    LayoutObject* obj = LayoutBlockFlow::createAnonymous(&document());
-    EXPECT_FALSE(obj->style());
-    EXPECT_STREQ("LayoutBlockFlow (anonymous)", obj->decoratedName().ascii().data());
-    obj->destroy();
+TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
+  LayoutObject* obj = LayoutBlockFlow::createAnonymous(&document());
+  EXPECT_FALSE(obj->style());
+  EXPECT_STREQ("LayoutBlockFlow (anonymous)",
+               obj->decoratedName().ascii().data());
+  obj->destroy();
 }
 
-} // namespace blink
+}  // namespace blink

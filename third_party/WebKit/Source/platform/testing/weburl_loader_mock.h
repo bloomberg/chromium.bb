@@ -40,9 +40,8 @@ class WebURLLoaderMock : public WebURLLoader {
                                 const WebURLError& error);
 
   // Simulates the redirect being served.
-  WebURLRequest ServeRedirect(
-      const WebURLRequest& request,
-      const WebURLResponse& redirectResponse);
+  WebURLRequest ServeRedirect(const WebURLRequest& request,
+                              const WebURLResponse& redirectResponse);
 
   // WebURLLoader methods:
   void loadSynchronously(const WebURLRequest& request,
@@ -73,6 +72,6 @@ class WebURLLoaderMock : public WebURLLoader {
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMock);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif  // WebURLLoaderMock_h

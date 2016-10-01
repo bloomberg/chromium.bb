@@ -40,42 +40,48 @@ namespace blink {
 // This class represents collections of values that animate in a repeated fashion as described by the CSS Transitions spec:
 // http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
 class CORE_EXPORT AnimatableRepeatable : public AnimatableValue {
-public:
-    ~AnimatableRepeatable() override { }
+ public:
+  ~AnimatableRepeatable() override {}
 
-    // This will consume the vector passed into it.
-    static PassRefPtr<AnimatableRepeatable> create(Vector<RefPtr<AnimatableValue>>& values)
-    {
-        return adoptRef(new AnimatableRepeatable(values));
-    }
+  // This will consume the vector passed into it.
+  static PassRefPtr<AnimatableRepeatable> create(
+      Vector<RefPtr<AnimatableValue>>& values) {
+    return adoptRef(new AnimatableRepeatable(values));
+  }
 
-    const Vector<RefPtr<AnimatableValue>>& values() const { return m_values; }
+  const Vector<RefPtr<AnimatableValue>>& values() const { return m_values; }
 
-protected:
-    AnimatableRepeatable()
-    {
-    }
-    AnimatableRepeatable(Vector<RefPtr<AnimatableValue>>& values)
-    {
-        DCHECK(!values.isEmpty());
-        m_values.swap(values);
-    }
+ protected:
+  AnimatableRepeatable() {}
+  AnimatableRepeatable(Vector<RefPtr<AnimatableValue>>& values) {
+    DCHECK(!values.isEmpty());
+    m_values.swap(values);
+  }
 
-    static bool interpolateLists(const Vector<RefPtr<AnimatableValue>>& fromValues, const Vector<RefPtr<AnimatableValue>>& toValues, double fraction, Vector<RefPtr<AnimatableValue>>& interpolatedValues);
+  static bool interpolateLists(
+      const Vector<RefPtr<AnimatableValue>>& fromValues,
+      const Vector<RefPtr<AnimatableValue>>& toValues,
+      double fraction,
+      Vector<RefPtr<AnimatableValue>>& interpolatedValues);
 
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
+  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
-    Vector<RefPtr<AnimatableValue>> m_values;
+  Vector<RefPtr<AnimatableValue>> m_values;
 
-private:
-    PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+ private:
+  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
+                                            double fraction) const override;
 
-    AnimatableType type() const override { return TypeRepeatable; }
-    bool equalTo(const AnimatableValue*) const final;
+  AnimatableType type() const override { return TypeRepeatable; }
+  bool equalTo(const AnimatableValue*) const final;
 };
 
-DEFINE_TYPE_CASTS(AnimatableRepeatable, AnimatableValue, value, (value->isRepeatable() || value->isStrokeDasharrayList()), (value.isRepeatable() || value.isStrokeDasharrayList()));
+DEFINE_TYPE_CASTS(AnimatableRepeatable,
+                  AnimatableValue,
+                  value,
+                  (value->isRepeatable() || value->isStrokeDasharrayList()),
+                  (value.isRepeatable() || value.isStrokeDasharrayList()));
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimatableRepeatable_h
+#endif  // AnimatableRepeatable_h

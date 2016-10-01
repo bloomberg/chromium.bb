@@ -38,115 +38,99 @@
 namespace blink {
 
 template <typename TargetClass>
-class AsyncMethodRunner final : public GarbageCollectedFinalized<AsyncMethodRunner<TargetClass>> {
-    WTF_MAKE_NONCOPYABLE(AsyncMethodRunner);
-public:
-    typedef void (TargetClass::*TargetMethod)();
+class AsyncMethodRunner final
+    : public GarbageCollectedFinalized<AsyncMethodRunner<TargetClass>> {
+  WTF_MAKE_NONCOPYABLE(AsyncMethodRunner);
 
-    static AsyncMethodRunner* create(TargetClass* object, TargetMethod method)
-    {
-        return new AsyncMethodRunner(object, method);
+ public:
+  typedef void (TargetClass::*TargetMethod)();
+
+  static AsyncMethodRunner* create(TargetClass* object, TargetMethod method) {
+    return new AsyncMethodRunner(object, method);
+  }
+
+  ~AsyncMethodRunner() {}
+
+  // Schedules to run the method asynchronously. Do nothing if it's already
+  // scheduled. If it's suspended, remember to schedule to run the method when
+  // resume() is called.
+  void runAsync() {
+    if (m_suspended) {
+      ASSERT(!m_timer.isActive());
+      m_runWhenResumed = true;
+      return;
     }
 
-    ~AsyncMethodRunner()
-    {
+    // FIXME: runAsync should take a TraceLocation and pass it to timer here.
+    if (!m_timer.isActive())
+      m_timer.startOneShot(0, BLINK_FROM_HERE);
+  }
+
+  // If it's scheduled to run the method, cancel it and remember to schedule
+  // it again when resume() is called. Mainly for implementing
+  // ActiveDOMObject::suspend().
+  void suspend() {
+    if (m_suspended)
+      return;
+    m_suspended = true;
+
+    if (!m_timer.isActive())
+      return;
+
+    m_timer.stop();
+    m_runWhenResumed = true;
+  }
+
+  // Resumes pending method run.
+  void resume() {
+    if (!m_suspended)
+      return;
+    m_suspended = false;
+
+    if (!m_runWhenResumed)
+      return;
+
+    m_runWhenResumed = false;
+    // FIXME: resume should take a TraceLocation and pass it to timer here.
+    m_timer.startOneShot(0, BLINK_FROM_HERE);
+  }
+
+  void stop() {
+    if (m_suspended) {
+      ASSERT(!m_timer.isActive());
+      m_runWhenResumed = false;
+      m_suspended = false;
+      return;
     }
 
-    // Schedules to run the method asynchronously. Do nothing if it's already
-    // scheduled. If it's suspended, remember to schedule to run the method when
-    // resume() is called.
-    void runAsync()
-    {
-        if (m_suspended) {
-            ASSERT(!m_timer.isActive());
-            m_runWhenResumed = true;
-            return;
-        }
+    ASSERT(!m_runWhenResumed);
+    if (m_timer.isActive())
+      m_timer.stop();
+  }
 
-        // FIXME: runAsync should take a TraceLocation and pass it to timer here.
-        if (!m_timer.isActive())
-            m_timer.startOneShot(0, BLINK_FROM_HERE);
-    }
+  bool isActive() const { return m_timer.isActive(); }
 
-    // If it's scheduled to run the method, cancel it and remember to schedule
-    // it again when resume() is called. Mainly for implementing
-    // ActiveDOMObject::suspend().
-    void suspend()
-    {
-        if (m_suspended)
-            return;
-        m_suspended = true;
+  DEFINE_INLINE_TRACE() { visitor->trace(m_object); }
 
-        if (!m_timer.isActive())
-            return;
+ private:
+  AsyncMethodRunner(TargetClass* object, TargetMethod method)
+      : m_timer(this, &AsyncMethodRunner<TargetClass>::fired),
+        m_object(object),
+        m_method(method),
+        m_suspended(false),
+        m_runWhenResumed(false) {}
 
-        m_timer.stop();
-        m_runWhenResumed = true;
-    }
+  void fired(TimerBase*) { (m_object->*m_method)(); }
 
-    // Resumes pending method run.
-    void resume()
-    {
-        if (!m_suspended)
-            return;
-        m_suspended = false;
+  Timer<AsyncMethodRunner<TargetClass>> m_timer;
 
-        if (!m_runWhenResumed)
-            return;
+  Member<TargetClass> m_object;
+  TargetMethod m_method;
 
-        m_runWhenResumed = false;
-        // FIXME: resume should take a TraceLocation and pass it to timer here.
-        m_timer.startOneShot(0, BLINK_FROM_HERE);
-    }
-
-    void stop()
-    {
-        if (m_suspended) {
-            ASSERT(!m_timer.isActive());
-            m_runWhenResumed = false;
-            m_suspended = false;
-            return;
-        }
-
-        ASSERT(!m_runWhenResumed);
-        if (m_timer.isActive())
-            m_timer.stop();
-    }
-
-    bool isActive() const
-    {
-        return m_timer.isActive();
-    }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_object);
-    }
-
-private:
-    AsyncMethodRunner(TargetClass* object, TargetMethod method)
-        : m_timer(this, &AsyncMethodRunner<TargetClass>::fired)
-        , m_object(object)
-        , m_method(method)
-        , m_suspended(false)
-        , m_runWhenResumed(false)
-    {
-    }
-
-    void fired(TimerBase*)
-    {
-        (m_object->*m_method)();
-    }
-
-    Timer<AsyncMethodRunner<TargetClass>> m_timer;
-
-    Member<TargetClass> m_object;
-    TargetMethod m_method;
-
-    bool m_suspended;
-    bool m_runWhenResumed;
+  bool m_suspended;
+  bool m_runWhenResumed;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

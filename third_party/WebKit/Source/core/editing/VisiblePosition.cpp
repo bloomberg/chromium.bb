@@ -37,7 +37,7 @@
 #include "core/html/HTMLElement.h"
 #include "platform/geometry/FloatQuad.h"
 #include "wtf/text/CString.h"
-#include <ostream> // NOLINT
+#include <ostream>  // NOLINT
 
 namespace blink {
 
@@ -46,224 +46,243 @@ using namespace HTMLNames;
 template <typename Strategy>
 VisiblePositionTemplate<Strategy>::VisiblePositionTemplate()
 #if DCHECK_IS_ON()
-    : m_domTreeVersion(0)
-    , m_styleVersion(0)
+    : m_domTreeVersion(0),
+      m_styleVersion(0)
 #endif
 {
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
+VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(
+    const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
     : m_positionWithAffinity(positionWithAffinity)
 #if DCHECK_IS_ON()
-    , m_domTreeVersion(positionWithAffinity.position().document()->domTreeVersion())
-    , m_styleVersion(positionWithAffinity.position().document()->styleVersion())
+      ,
+      m_domTreeVersion(
+          positionWithAffinity.position().document()->domTreeVersion()),
+      m_styleVersion(positionWithAffinity.position().document()->styleVersion())
 #endif
 {
 }
 
-template<typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
-{
-    if (positionWithAffinity.isNull())
-        return VisiblePositionTemplate<Strategy>();
-    DCHECK(positionWithAffinity.position().isConnected()) << positionWithAffinity;
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(
+    const PositionWithAffinityTemplate<Strategy>& positionWithAffinity) {
+  if (positionWithAffinity.isNull())
+    return VisiblePositionTemplate<Strategy>();
+  DCHECK(positionWithAffinity.position().isConnected()) << positionWithAffinity;
 
-    Document& document = *positionWithAffinity.position().document();
-    DCHECK(!document.needsLayoutTreeUpdate());
-    DocumentLifecycle::DisallowTransitionScope disallowTransition(document.lifecycle());
+  Document& document = *positionWithAffinity.position().document();
+  DCHECK(!document.needsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallowTransition(
+      document.lifecycle());
 
-    const PositionTemplate<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
-    if (deepPosition.isNull())
-        return VisiblePositionTemplate<Strategy>();
-    const PositionWithAffinityTemplate<Strategy> downstreamPosition(deepPosition);
-    if (positionWithAffinity.affinity() == TextAffinity::Downstream)
-        return VisiblePositionTemplate<Strategy>(downstreamPosition);
+  const PositionTemplate<Strategy> deepPosition =
+      canonicalPositionOf(positionWithAffinity.position());
+  if (deepPosition.isNull())
+    return VisiblePositionTemplate<Strategy>();
+  const PositionWithAffinityTemplate<Strategy> downstreamPosition(deepPosition);
+  if (positionWithAffinity.affinity() == TextAffinity::Downstream)
+    return VisiblePositionTemplate<Strategy>(downstreamPosition);
 
-    // When not at a line wrap, make sure to end up with
-    // |TextAffinity::Downstream| affinity.
-    const PositionWithAffinityTemplate<Strategy> upstreamPosition(deepPosition, TextAffinity::Upstream);
-    if (inSameLine(downstreamPosition, upstreamPosition))
-        return VisiblePositionTemplate<Strategy>(downstreamPosition);
-    return VisiblePositionTemplate<Strategy>(upstreamPosition);
+  // When not at a line wrap, make sure to end up with
+  // |TextAffinity::Downstream| affinity.
+  const PositionWithAffinityTemplate<Strategy> upstreamPosition(
+      deepPosition, TextAffinity::Upstream);
+  if (inSameLine(downstreamPosition, upstreamPosition))
+    return VisiblePositionTemplate<Strategy>(downstreamPosition);
+  return VisiblePositionTemplate<Strategy>(upstreamPosition);
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::afterNode(Node* node)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (node)
-        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::afterNode(
+    Node* node) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (node)
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::afterNode(node)));
+  return create(PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::afterNode(node)));
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::beforeNode(Node* node)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (node)
-        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::beforeNode(
+    Node* node) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (node)
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::beforeNode(node)));
+  return create(PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::beforeNode(node)));
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::firstPositionInNode(Node* node)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (node)
-        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionTemplate<Strategy>
+VisiblePositionTemplate<Strategy>::firstPositionInNode(Node* node) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (node)
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::firstPositionInNode(node)));
+  return create(PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::firstPositionInNode(node)));
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::inParentAfterNode(const Node& node)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    node.document().updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionTemplate<Strategy>
+VisiblePositionTemplate<Strategy>::inParentAfterNode(const Node& node) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  node.document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::inParentAfterNode(node)));
+  return create(PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::inParentAfterNode(node)));
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::inParentBeforeNode(const Node& node)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    node.document().updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionTemplate<Strategy>
+VisiblePositionTemplate<Strategy>::inParentBeforeNode(const Node& node) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  node.document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::inParentBeforeNode(node)));
+  return create(PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::inParentBeforeNode(node)));
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::lastPositionInNode(Node* node)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (node)
-        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionTemplate<Strategy>
+VisiblePositionTemplate<Strategy>::lastPositionInNode(Node* node) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (node)
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::lastPositionInNode(node)));
+  return create(PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::lastPositionInNode(node)));
 }
 
-VisiblePosition createVisiblePositionDeprecated(const Position& position, TextAffinity affinity)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (position.isNotNull())
-        position.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePosition createVisiblePositionDeprecated(const Position& position,
+                                                TextAffinity affinity) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (position.isNotNull())
+    position.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return VisiblePosition::create(PositionWithAffinity(position, affinity));
+  return VisiblePosition::create(PositionWithAffinity(position, affinity));
 }
 
-VisiblePosition createVisiblePositionDeprecated(const PositionWithAffinity& positionWithAffinity)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (positionWithAffinity.isNotNull())
-        positionWithAffinity.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePosition createVisiblePositionDeprecated(
+    const PositionWithAffinity& positionWithAffinity) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (positionWithAffinity.isNotNull())
+    positionWithAffinity.position()
+        .document()
+        ->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return VisiblePosition::create(positionWithAffinity);
+  return VisiblePosition::create(positionWithAffinity);
 }
 
-VisiblePositionInFlatTree createVisiblePositionDeprecated(const PositionInFlatTree& position, TextAffinity affinity)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (position.isNotNull())
-        position.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionInFlatTree createVisiblePositionDeprecated(
+    const PositionInFlatTree& position,
+    TextAffinity affinity) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (position.isNotNull())
+    position.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return VisiblePositionInFlatTree::create(PositionInFlatTreeWithAffinity(position, affinity));
+  return VisiblePositionInFlatTree::create(
+      PositionInFlatTreeWithAffinity(position, affinity));
 }
 
-VisiblePositionInFlatTree createVisiblePositionDeprecated(const PositionInFlatTreeWithAffinity& positionWithAffinity)
-{
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    if (positionWithAffinity.isNotNull())
-        positionWithAffinity.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+VisiblePositionInFlatTree createVisiblePositionDeprecated(
+    const PositionInFlatTreeWithAffinity& positionWithAffinity) {
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  if (positionWithAffinity.isNotNull())
+    positionWithAffinity.position()
+        .document()
+        ->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    return VisiblePositionInFlatTree::create(positionWithAffinity);
+  return VisiblePositionInFlatTree::create(positionWithAffinity);
 }
 
-VisiblePosition createVisiblePosition(const Position& position, TextAffinity affinity)
-{
-    return VisiblePosition::create(PositionWithAffinity(position, affinity));
+VisiblePosition createVisiblePosition(const Position& position,
+                                      TextAffinity affinity) {
+  return VisiblePosition::create(PositionWithAffinity(position, affinity));
 }
 
-VisiblePosition createVisiblePosition(const PositionWithAffinity& positionWithAffinity)
-{
-    return VisiblePosition::create(positionWithAffinity);
+VisiblePosition createVisiblePosition(
+    const PositionWithAffinity& positionWithAffinity) {
+  return VisiblePosition::create(positionWithAffinity);
 }
 
-VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTree& position, TextAffinity affinity)
-{
-    return VisiblePositionInFlatTree::create(PositionInFlatTreeWithAffinity(position, affinity));
+VisiblePositionInFlatTree createVisiblePosition(
+    const PositionInFlatTree& position,
+    TextAffinity affinity) {
+  return VisiblePositionInFlatTree::create(
+      PositionInFlatTreeWithAffinity(position, affinity));
 }
 
-VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffinity& positionWithAffinity)
-{
-    return VisiblePositionInFlatTree::create(positionWithAffinity);
+VisiblePositionInFlatTree createVisiblePosition(
+    const PositionInFlatTreeWithAffinity& positionWithAffinity) {
+  return VisiblePositionInFlatTree::create(positionWithAffinity);
 }
 
 #ifndef NDEBUG
 
-template<typename Strategy>
-void VisiblePositionTemplate<Strategy>::showTreeForThis() const
-{
-    deepEquivalent().showTreeForThis();
+template <typename Strategy>
+void VisiblePositionTemplate<Strategy>::showTreeForThis() const {
+  deepEquivalent().showTreeForThis();
 }
 
 #endif
 
 template <typename Strategy>
-bool VisiblePositionTemplate<Strategy>::isValid() const
-{
+bool VisiblePositionTemplate<Strategy>::isValid() const {
 #if DCHECK_IS_ON()
-    if (isNull())
-        return true;
-    Document& document = *m_positionWithAffinity.position().document();
-    return m_domTreeVersion == document.domTreeVersion() && m_styleVersion == document.styleVersion() && !document.needsLayoutTreeUpdate();
-#else
+  if (isNull())
     return true;
+  Document& document = *m_positionWithAffinity.position().document();
+  return m_domTreeVersion == document.domTreeVersion() &&
+         m_styleVersion == document.styleVersion() &&
+         !document.needsLayoutTreeUpdate();
+#else
+  return true;
 #endif
 }
 
 template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInFlatTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT
+    VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
-std::ostream& operator<<(std::ostream& ostream, const VisiblePosition& position)
-{
-    return ostream << position.deepEquivalent() << '/' << position.affinity();
+std::ostream& operator<<(std::ostream& ostream,
+                         const VisiblePosition& position) {
+  return ostream << position.deepEquivalent() << '/' << position.affinity();
 }
 
-std::ostream& operator<<(std::ostream& ostream, const VisiblePositionInFlatTree& position)
-{
-    return ostream << position.deepEquivalent() << '/' << position.affinity();
+std::ostream& operator<<(std::ostream& ostream,
+                         const VisiblePositionInFlatTree& position) {
+  return ostream << position.deepEquivalent() << '/' << position.affinity();
 }
 
-} // namespace blink
+}  // namespace blink
 
 #ifndef NDEBUG
 
-void showTree(const blink::VisiblePosition* vpos)
-{
-    if (vpos) {
-        vpos->showTreeForThis();
-        return;
-    }
-    DVLOG(0) << "Cannot showTree for (nil) VisiblePosition.";
+void showTree(const blink::VisiblePosition* vpos) {
+  if (vpos) {
+    vpos->showTreeForThis();
+    return;
+  }
+  DVLOG(0) << "Cannot showTree for (nil) VisiblePosition.";
 }
 
-void showTree(const blink::VisiblePosition& vpos)
-{
-    vpos.showTreeForThis();
+void showTree(const blink::VisiblePosition& vpos) {
+  vpos.showTreeForThis();
 }
 
 #endif

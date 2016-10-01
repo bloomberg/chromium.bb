@@ -27,37 +27,39 @@
 
 namespace blink {
 
-class SVGFEDropShadowElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEDropShadowElement);
+class SVGFEDropShadowElement final
+    : public SVGFilterPrimitiveStandardAttributes {
+  DEFINE_WRAPPERTYPEINFO();
 
-    void setStdDeviation(float stdDeviationX, float stdDeviationY);
+ public:
+  DECLARE_NODE_FACTORY(SVGFEDropShadowElement);
 
-    SVGAnimatedNumber* dx() { return m_dx.get(); }
-    SVGAnimatedNumber* dy() { return m_dy.get(); }
-    SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
-    SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
-    SVGAnimatedString* in1() { return m_in1.get(); }
+  void setStdDeviation(float stdDeviationX, float stdDeviationY);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedNumber* dx() { return m_dx.get(); }
+  SVGAnimatedNumber* dy() { return m_dy.get(); }
+  SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
+  SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
+  SVGAnimatedString* in1() { return m_in1.get(); }
 
-private:
-    explicit SVGFEDropShadowElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+ private:
+  explicit SVGFEDropShadowElement(Document&);
 
-    static const AtomicString& stdDeviationXIdentifier();
-    static const AtomicString& stdDeviationYIdentifier();
+  void svgAttributeChanged(const QualifiedName&) override;
+  bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
 
-    Member<SVGAnimatedNumber> m_dx;
-    Member<SVGAnimatedNumber> m_dy;
-    Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
-    Member<SVGAnimatedString> m_in1;
+  static const AtomicString& stdDeviationXIdentifier();
+  static const AtomicString& stdDeviationYIdentifier();
+
+  Member<SVGAnimatedNumber> m_dx;
+  Member<SVGAnimatedNumber> m_dy;
+  Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
+  Member<SVGAnimatedString> m_in1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEDropShadowElement_h
+#endif  // SVGFEDropShadowElement_h

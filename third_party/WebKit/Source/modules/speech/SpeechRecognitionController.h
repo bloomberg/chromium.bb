@@ -34,31 +34,45 @@ namespace blink {
 
 class MediaStreamTrack;
 
-class SpeechRecognitionController final : public GarbageCollectedFinalized<SpeechRecognitionController>, public Supplement<Page> {
-    USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
-public:
-    virtual ~SpeechRecognitionController();
+class SpeechRecognitionController final
+    : public GarbageCollectedFinalized<SpeechRecognitionController>,
+      public Supplement<Page> {
+  USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 
-    void start(SpeechRecognition* recognition, const SpeechGrammarList* grammars, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack)
-    {
-        m_client->start(recognition, grammars, lang, continuous, interimResults, maxAlternatives, audioTrack);
-    }
+ public:
+  virtual ~SpeechRecognitionController();
 
-    void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
-    void abort(SpeechRecognition* recognition) { m_client->abort(recognition); }
+  void start(SpeechRecognition* recognition,
+             const SpeechGrammarList* grammars,
+             const String& lang,
+             bool continuous,
+             bool interimResults,
+             unsigned long maxAlternatives,
+             MediaStreamTrack* audioTrack) {
+    m_client->start(recognition, grammars, lang, continuous, interimResults,
+                    maxAlternatives, audioTrack);
+  }
 
-    static SpeechRecognitionController* create(std::unique_ptr<SpeechRecognitionClient>);
-    static const char* supplementName();
-    static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(Supplement<Page>::from(page, supplementName())); }
+  void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
+  void abort(SpeechRecognition* recognition) { m_client->abort(recognition); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::trace(visitor); }
+  static SpeechRecognitionController* create(
+      std::unique_ptr<SpeechRecognitionClient>);
+  static const char* supplementName();
+  static SpeechRecognitionController* from(Page* page) {
+    return static_cast<SpeechRecognitionController*>(
+        Supplement<Page>::from(page, supplementName()));
+  }
 
-private:
-    explicit SpeechRecognitionController(std::unique_ptr<SpeechRecognitionClient>);
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::trace(visitor); }
 
-    std::unique_ptr<SpeechRecognitionClient> m_client;
+ private:
+  explicit SpeechRecognitionController(
+      std::unique_ptr<SpeechRecognitionClient>);
+
+  std::unique_ptr<SpeechRecognitionClient> m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SpeechRecognitionController_h
+#endif  // SpeechRecognitionController_h

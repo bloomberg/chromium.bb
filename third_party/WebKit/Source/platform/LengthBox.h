@@ -31,81 +31,62 @@
 namespace blink {
 
 class PLATFORM_EXPORT LengthBox {
-    DISALLOW_NEW();
-public:
-    LengthBox()
-    {
-    }
+  DISALLOW_NEW();
 
-    LengthBox(LengthType t)
-        : m_left(t)
-        , m_right(t)
-        , m_top(t)
-        , m_bottom(t)
-    {
-    }
+ public:
+  LengthBox() {}
 
-    LengthBox(int v)
-        : m_left(Length(v, Fixed))
-        , m_right(Length(v, Fixed))
-        , m_top(Length(v, Fixed))
-        , m_bottom(Length(v, Fixed))
-    {
-    }
+  LengthBox(LengthType t) : m_left(t), m_right(t), m_top(t), m_bottom(t) {}
 
-    LengthBox(const Length& t, const Length& r, const Length& b, const Length& l)
-        : m_left(l)
-        , m_right(r)
-        , m_top(t)
-        , m_bottom(b)
-    {
-    }
+  LengthBox(int v)
+      : m_left(Length(v, Fixed)),
+        m_right(Length(v, Fixed)),
+        m_top(Length(v, Fixed)),
+        m_bottom(Length(v, Fixed)) {}
 
-    LengthBox(int t, int r, int b, int l)
-        : m_left(Length(l, Fixed))
-        , m_right(Length(r, Fixed))
-        , m_top(Length(t, Fixed))
-        , m_bottom(Length(b, Fixed))
-    {
-    }
+  LengthBox(const Length& t, const Length& r, const Length& b, const Length& l)
+      : m_left(l), m_right(r), m_top(t), m_bottom(b) {}
 
-    const Length& left() const { return m_left; }
-    const Length& right() const { return m_right; }
-    const Length& top() const { return m_top; }
-    const Length& bottom() const { return m_bottom; }
+  LengthBox(int t, int r, int b, int l)
+      : m_left(Length(l, Fixed)),
+        m_right(Length(r, Fixed)),
+        m_top(Length(t, Fixed)),
+        m_bottom(Length(b, Fixed)) {}
 
-    const Length& logicalLeft(WritingMode) const;
-    const Length& logicalRight(WritingMode) const;
+  const Length& left() const { return m_left; }
+  const Length& right() const { return m_right; }
+  const Length& top() const { return m_top; }
+  const Length& bottom() const { return m_bottom; }
 
-    const Length& before(WritingMode) const;
-    const Length& after(WritingMode) const;
-    const Length& start(WritingMode, TextDirection) const;
-    const Length& end(WritingMode, TextDirection) const;
-    const Length& over(WritingMode) const;
-    const Length& under(WritingMode) const;
+  const Length& logicalLeft(WritingMode) const;
+  const Length& logicalRight(WritingMode) const;
 
-    bool operator==(const LengthBox& o) const
-    {
-        return m_left == o.m_left && m_right == o.m_right && m_top == o.m_top && m_bottom == o.m_bottom;
-    }
+  const Length& before(WritingMode) const;
+  const Length& after(WritingMode) const;
+  const Length& start(WritingMode, TextDirection) const;
+  const Length& end(WritingMode, TextDirection) const;
+  const Length& over(WritingMode) const;
+  const Length& under(WritingMode) const;
 
-    bool operator!=(const LengthBox& o) const
-    {
-        return !(*this == o);
-    }
+  bool operator==(const LengthBox& o) const {
+    return m_left == o.m_left && m_right == o.m_right && m_top == o.m_top &&
+           m_bottom == o.m_bottom;
+  }
 
-    bool nonZero() const
-    {
-        return !(m_left.isZero() && m_right.isZero() && m_top.isZero() && m_bottom.isZero());
-    }
+  bool operator!=(const LengthBox& o) const { return !(*this == o); }
 
-    // Must be public for SET_VAR in ComputedStyle.h
-    Length m_left;
-    Length m_right;
-    Length m_top;
-    Length m_bottom;
+  bool nonZero() const {
+    return !(m_left.isZero() && m_right.isZero() && m_top.isZero() &&
+             m_bottom.isZero());
+  }
+
+  // Must be public for SET_VAR in ComputedStyle.h
+  Length m_left;
+  Length m_right;
+  Length m_top;
+  Length m_bottom;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LengthBox_h
+#endif  // LengthBox_h

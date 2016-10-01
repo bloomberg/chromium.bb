@@ -33,91 +33,92 @@
 
 namespace blink {
 
-bool TreeScopeEventContext::isUnclosedTreeOf(const TreeScopeEventContext& other)
-{
-    // Exclude closed nodes if necessary.
-    // If a node is in a closed shadow root, or in a tree whose ancestor has a closed shadow root,
-    // it should not be visible to nodes above the closed shadow root.
+bool TreeScopeEventContext::isUnclosedTreeOf(
+    const TreeScopeEventContext& other) {
+  // Exclude closed nodes if necessary.
+  // If a node is in a closed shadow root, or in a tree whose ancestor has a closed shadow root,
+  // it should not be visible to nodes above the closed shadow root.
 
-    // (1) If |this| is an ancestor of |other| in tree-of-trees, include it.
-    if (isInclusiveAncestorOf(other))
-        return true;
+  // (1) If |this| is an ancestor of |other| in tree-of-trees, include it.
+  if (isInclusiveAncestorOf(other))
+    return true;
 
-    // (2) If no closed shadow root in ancestors of this, include it.
-    if (!containingClosedShadowTree())
-        return true;
+  // (2) If no closed shadow root in ancestors of this, include it.
+  if (!containingClosedShadowTree())
+    return true;
 
-    // (3) If |this| is descendent of |other|, exclude if any closed shadow root in between.
-    if (isDescendantOf(other))
-        return !containingClosedShadowTree()->isDescendantOf(other);
+  // (3) If |this| is descendent of |other|, exclude if any closed shadow root in between.
+  if (isDescendantOf(other))
+    return !containingClosedShadowTree()->isDescendantOf(other);
 
-    // (4) |this| and |other| must be in exclusive branches.
+// (4) |this| and |other| must be in exclusive branches.
 #if DCHECK_IS_ON()
-    DCHECK(other.isExclusivePartOf(*this));
+  DCHECK(other.isExclusivePartOf(*this));
 #endif
-    return false;
+  return false;
 }
 
-HeapVector<Member<EventTarget>>& TreeScopeEventContext::ensureEventPath(EventPath& path)
-{
-    if (m_eventPath)
-        return *m_eventPath;
-
-    m_eventPath = new HeapVector<Member<EventTarget>>();
-    LocalDOMWindow* window = path.windowEventContext().window();
-    m_eventPath->reserveCapacity(path.size() + (window ? 1 : 0));
-
-    for (size_t i = 0; i < path.size(); ++i) {
-        if (path[i].treeScopeEventContext().isUnclosedTreeOf(*this))
-            m_eventPath->append(path[i].node());
-    }
-    if (window)
-        m_eventPath->append(window);
+HeapVector<Member<EventTarget>>& TreeScopeEventContext::ensureEventPath(
+    EventPath& path) {
+  if (m_eventPath)
     return *m_eventPath;
+
+  m_eventPath = new HeapVector<Member<EventTarget>>();
+  LocalDOMWindow* window = path.windowEventContext().window();
+  m_eventPath->reserveCapacity(path.size() + (window ? 1 : 0));
+
+  for (size_t i = 0; i < path.size(); ++i) {
+    if (path[i].treeScopeEventContext().isUnclosedTreeOf(*this))
+      m_eventPath->append(path[i].node());
+  }
+  if (window)
+    m_eventPath->append(window);
+  return *m_eventPath;
 }
 
-TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
-{
-    if (!m_touchEventContext)
-        m_touchEventContext = TouchEventContext::create();
-    return m_touchEventContext.get();
+TouchEventContext* TreeScopeEventContext::ensureTouchEventContext() {
+  if (!m_touchEventContext)
+    m_touchEventContext = TouchEventContext::create();
+  return m_touchEventContext.get();
 }
 
-TreeScopeEventContext* TreeScopeEventContext::create(TreeScope& treeScope)
-{
-    return new TreeScopeEventContext(treeScope);
+TreeScopeEventContext* TreeScopeEventContext::create(TreeScope& treeScope) {
+  return new TreeScopeEventContext(treeScope);
 }
 
 TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
-    : m_treeScope(treeScope)
-    , m_rootNode(treeScope.rootNode())
-    , m_containingClosedShadowTree(nullptr)
-    , m_preOrder(-1)
-    , m_postOrder(-1)
-{
+    : m_treeScope(treeScope),
+      m_rootNode(treeScope.rootNode()),
+      m_containingClosedShadowTree(nullptr),
+      m_preOrder(-1),
+      m_postOrder(-1) {}
+
+DEFINE_TRACE(TreeScopeEventContext) {
+  visitor->trace(m_treeScope);
+  visitor->trace(m_rootNode);
+  visitor->trace(m_target);
+  visitor->trace(m_relatedTarget);
+  visitor->trace(m_eventPath);
+  visitor->trace(m_touchEventContext);
+  visitor->trace(m_containingClosedShadowTree);
+  visitor->trace(m_children);
 }
 
-DEFINE_TRACE(TreeScopeEventContext)
-{
-    visitor->trace(m_treeScope);
-    visitor->trace(m_rootNode);
-    visitor->trace(m_target);
-    visitor->trace(m_relatedTarget);
-    visitor->trace(m_eventPath);
-    visitor->trace(m_touchEventContext);
-    visitor->trace(m_containingClosedShadowTree);
-    visitor->trace(m_children);
+int TreeScopeEventContext::calculateTreeOrderAndSetNearestAncestorClosedTree(
+    int orderNumber,
+    TreeScopeEventContext* nearestAncestorClosedTreeScopeEventContext) {
+  m_preOrder = orderNumber;
+  m_containingClosedShadowTree =
+      (rootNode().isShadowRoot() && !toShadowRoot(rootNode()).isOpenOrV0())
+          ? this
+          : nearestAncestorClosedTreeScopeEventContext;
+  for (size_t i = 0; i < m_children.size(); ++i)
+    orderNumber =
+        m_children[i]->calculateTreeOrderAndSetNearestAncestorClosedTree(
+            orderNumber + 1, containingClosedShadowTree());
+  m_postOrder = orderNumber + 1;
+
+  return orderNumber + 1;
 }
 
-int TreeScopeEventContext::calculateTreeOrderAndSetNearestAncestorClosedTree(int orderNumber, TreeScopeEventContext* nearestAncestorClosedTreeScopeEventContext)
-{
-    m_preOrder = orderNumber;
-    m_containingClosedShadowTree = (rootNode().isShadowRoot() && !toShadowRoot(rootNode()).isOpenOrV0()) ? this : nearestAncestorClosedTreeScopeEventContext;
-    for (size_t i = 0; i < m_children.size(); ++i)
-        orderNumber = m_children[i]->calculateTreeOrderAndSetNearestAncestorClosedTree(orderNumber + 1, containingClosedShadowTree());
-    m_postOrder = orderNumber + 1;
-
-    return orderNumber + 1;
-}
-
-} // namespace blink
+}  // namespace blink

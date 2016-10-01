@@ -8,21 +8,21 @@
 
 namespace blink {
 
-CSSColorValue* CSSColorValue::create(RGBA32 color)
-{
-    // These are the empty and deleted values of the hash table.
-    if (color == Color::transparent)
-        return cssValuePool().transparentColor();
-    if (color == Color::white)
-        return cssValuePool().whiteColor();
-    // Just because it is common.
-    if (color == Color::black)
-        return cssValuePool().blackColor();
+CSSColorValue* CSSColorValue::create(RGBA32 color) {
+  // These are the empty and deleted values of the hash table.
+  if (color == Color::transparent)
+    return cssValuePool().transparentColor();
+  if (color == Color::white)
+    return cssValuePool().whiteColor();
+  // Just because it is common.
+  if (color == Color::black)
+    return cssValuePool().blackColor();
 
-    CSSValuePool::ColorValueCache::AddResult entry = cssValuePool().getColorCacheEntry(color);
-    if (entry.isNewEntry)
-        entry.storedValue->value = new CSSColorValue(color);
-    return entry.storedValue->value;
+  CSSValuePool::ColorValueCache::AddResult entry =
+      cssValuePool().getColorCacheEntry(color);
+  if (entry.isNewEntry)
+    entry.storedValue->value = new CSSColorValue(color);
+  return entry.storedValue->value;
 }
 
-} // namespace blink
+}  // namespace blink

@@ -27,14 +27,15 @@
 
 #import "wtf/Assertions.h"
 
-void ReportBlockedObjCException(NSException *exception)
-{
+void ReportBlockedObjCException(NSException* exception) {
 #if DCHECK_IS_ON()
-    NOTREACHED() << "Uncaught exception - " << [[exception description] UTF8String];
-    // This function is marked as NO_RETURN_DUE_TO_ASSERT, but NOTREACHED() and
-    // DCHECK(false) are not recognized as NO_RETURN.
-    CRASH();
+  NOTREACHED() << "Uncaught exception - "
+               << [[exception description] UTF8String];
+  // This function is marked as NO_RETURN_DUE_TO_ASSERT, but NOTREACHED() and
+  // DCHECK(false) are not recognized as NO_RETURN.
+  CRASH();
 #else
-    NSLog(@"*** WebKit discarding exception: <%@> %@", [exception name], [exception reason]);
+  NSLog(@"*** WebKit discarding exception: <%@> %@", [exception name],
+        [exception reason]);
 #endif
 }

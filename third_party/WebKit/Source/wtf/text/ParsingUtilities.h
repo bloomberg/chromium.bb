@@ -31,70 +31,68 @@
 #ifndef ParsingUtilities_h
 #define ParsingUtilities_h
 
-template<typename CharType>
-bool skipExactly(const CharType*& position, const CharType* end, CharType delimiter)
-{
-    if (position < end && *position == delimiter) {
-        ++position;
-        return true;
-    }
-    return false;
-}
-
-template<typename CharType, bool characterPredicate(CharType)>
-bool skipExactly(const CharType*& position, const CharType* end)
-{
-    if (position < end && characterPredicate(*position)) {
-        ++position;
-        return true;
-    }
-    return false;
-}
-
 template <typename CharType>
-bool skipToken(const CharType*& position, const CharType* end, const char* token)
-{
-    const CharType* current = position;
-    while (current < end && *token) {
-        if (*current != *token)
-            return false;
-        ++current;
-        ++token;
-    }
-    if (*token)
-        return false;
-
-    position = current;
+bool skipExactly(const CharType*& position,
+                 const CharType* end,
+                 CharType delimiter) {
+  if (position < end && *position == delimiter) {
+    ++position;
     return true;
+  }
+  return false;
+}
+
+template <typename CharType, bool characterPredicate(CharType)>
+bool skipExactly(const CharType*& position, const CharType* end) {
+  if (position < end && characterPredicate(*position)) {
+    ++position;
+    return true;
+  }
+  return false;
 }
 
 template <typename CharType>
-void skipUntil(const CharType*& position, const CharType* end, CharType delimiter)
-{
-    while (position < end && *position != delimiter)
-        ++position;
+bool skipToken(const CharType*& position,
+               const CharType* end,
+               const char* token) {
+  const CharType* current = position;
+  while (current < end && *token) {
+    if (*current != *token)
+      return false;
+    ++current;
+    ++token;
+  }
+  if (*token)
+    return false;
+
+  position = current;
+  return true;
 }
 
-template<typename CharType, bool characterPredicate(CharType)>
-void skipUntil(const CharType*& position, const CharType* end)
-{
-    while (position < end && !characterPredicate(*position))
-        ++position;
+template <typename CharType>
+void skipUntil(const CharType*& position,
+               const CharType* end,
+               CharType delimiter) {
+  while (position < end && *position != delimiter)
+    ++position;
 }
 
-template<typename CharType, bool characterPredicate(CharType)>
-void skipWhile(const CharType*& position, const CharType* end)
-{
-    while (position < end && characterPredicate(*position))
-        ++position;
+template <typename CharType, bool characterPredicate(CharType)>
+void skipUntil(const CharType*& position, const CharType* end) {
+  while (position < end && !characterPredicate(*position))
+    ++position;
 }
 
-template<typename CharType, bool characterPredicate(CharType)>
-void reverseSkipWhile(const CharType*& position, const CharType* start)
-{
-    while (position >= start && characterPredicate(*position))
-        --position;
+template <typename CharType, bool characterPredicate(CharType)>
+void skipWhile(const CharType*& position, const CharType* end) {
+  while (position < end && characterPredicate(*position))
+    ++position;
+}
+
+template <typename CharType, bool characterPredicate(CharType)>
+void reverseSkipWhile(const CharType*& position, const CharType* start) {
+  while (position >= start && characterPredicate(*position))
+    --position;
 }
 
 #endif
-

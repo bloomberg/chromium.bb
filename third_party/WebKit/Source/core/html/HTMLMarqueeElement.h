@@ -28,20 +28,24 @@
 namespace blink {
 
 class HTMLMarqueeElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLMarqueeElement* create(Document&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason) final;
-    InsertionNotificationRequest insertedInto(ContainerNode*) final;
-    void removedFrom(ContainerNode*) final;
+ public:
+  static HTMLMarqueeElement* create(Document&);
 
-    bool isHorizontal() const;
+  void attributeChanged(const QualifiedName&,
+                        const AtomicString& oldValue,
+                        const AtomicString& newValue,
+                        AttributeModificationReason) final;
+  InsertionNotificationRequest insertedInto(ContainerNode*) final;
+  void removedFrom(ContainerNode*) final;
 
-private:
-    explicit HTMLMarqueeElement(Document&);
+  bool isHorizontal() const;
+
+ private:
+  explicit HTMLMarqueeElement(Document&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLMarqueeElement_h
+#endif  // HTMLMarqueeElement_h

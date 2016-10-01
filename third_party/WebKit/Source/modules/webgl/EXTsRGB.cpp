@@ -8,35 +8,27 @@
 
 namespace blink {
 
-EXTsRGB::EXTsRGB(WebGLRenderingContextBase* context)
-    : WebGLExtension(context)
-{
-    context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_sRGB");
+EXTsRGB::EXTsRGB(WebGLRenderingContextBase* context) : WebGLExtension(context) {
+  context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_sRGB");
 }
 
-EXTsRGB::~EXTsRGB()
-{
+EXTsRGB::~EXTsRGB() {}
+
+WebGLExtensionName EXTsRGB::name() const {
+  return EXTsRGBName;
 }
 
-WebGLExtensionName EXTsRGB::name() const
-{
-    return EXTsRGBName;
+EXTsRGB* EXTsRGB::create(WebGLRenderingContextBase* context) {
+  return new EXTsRGB(context);
 }
 
-EXTsRGB* EXTsRGB::create(WebGLRenderingContextBase* context)
-{
-    return new EXTsRGB(context);
+bool EXTsRGB::supported(WebGLRenderingContextBase* context) {
+  Extensions3DUtil* extensionsUtil = context->extensionsUtil();
+  return extensionsUtil->supportsExtension("GL_EXT_sRGB");
 }
 
-bool EXTsRGB::supported(WebGLRenderingContextBase* context)
-{
-    Extensions3DUtil* extensionsUtil = context->extensionsUtil();
-    return extensionsUtil->supportsExtension("GL_EXT_sRGB");
+const char* EXTsRGB::extensionName() {
+  return "EXT_sRGB";
 }
 
-const char* EXTsRGB::extensionName()
-{
-    return "EXT_sRGB";
-}
-
-} // namespace blink
+}  // namespace blink

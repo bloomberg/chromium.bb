@@ -48,162 +48,155 @@ using namespace HTMLNames;
 static const int msecPerMinute = 60 * 1000;
 static const int msecPerSecond = 1000;
 
-String BaseTemporalInputType::badInputText() const
-{
-    return locale().queryString(WebLocalizedString::ValidationBadInputForDateTime);
+String BaseTemporalInputType::badInputText() const {
+  return locale().queryString(
+      WebLocalizedString::ValidationBadInputForDateTime);
 }
 
-InputTypeView* BaseTemporalInputType::createView()
-{
-    if (RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled())
-        return MultipleFieldsTemporalInputTypeView::create(element(), *this);
-    return ChooserOnlyTemporalInputTypeView::create(element(), *this);
+InputTypeView* BaseTemporalInputType::createView() {
+  if (RuntimeEnabledFeatures::inputMultipleFieldsUIEnabled())
+    return MultipleFieldsTemporalInputTypeView::create(element(), *this);
+  return ChooserOnlyTemporalInputTypeView::create(element(), *this);
 }
 
-double BaseTemporalInputType::valueAsDate() const
-{
-    return valueAsDouble();
+double BaseTemporalInputType::valueAsDate() const {
+  return valueAsDouble();
 }
 
-void BaseTemporalInputType::setValueAsDate(double value, ExceptionState&) const
-{
-    element().setValue(serializeWithMilliseconds(value));
+void BaseTemporalInputType::setValueAsDate(double value,
+                                           ExceptionState&) const {
+  element().setValue(serializeWithMilliseconds(value));
 }
 
-double BaseTemporalInputType::valueAsDouble() const
-{
-    const Decimal value = parseToNumber(element().value(), Decimal::nan());
-    return value.isFinite() ? value.toDouble() : DateComponents::invalidMilliseconds();
+double BaseTemporalInputType::valueAsDouble() const {
+  const Decimal value = parseToNumber(element().value(), Decimal::nan());
+  return value.isFinite() ? value.toDouble()
+                          : DateComponents::invalidMilliseconds();
 }
 
-void BaseTemporalInputType::setValueAsDouble(double newValue, TextFieldEventBehavior eventBehavior, ExceptionState& exceptionState) const
-{
-    setValueAsDecimal(Decimal::fromDouble(newValue), eventBehavior, exceptionState);
+void BaseTemporalInputType::setValueAsDouble(
+    double newValue,
+    TextFieldEventBehavior eventBehavior,
+    ExceptionState& exceptionState) const {
+  setValueAsDecimal(Decimal::fromDouble(newValue), eventBehavior,
+                    exceptionState);
 }
 
-bool BaseTemporalInputType::typeMismatchFor(const String& value) const
-{
-    return !value.isEmpty() && !parseToDateComponents(value, 0);
+bool BaseTemporalInputType::typeMismatchFor(const String& value) const {
+  return !value.isEmpty() && !parseToDateComponents(value, 0);
 }
 
-bool BaseTemporalInputType::typeMismatch() const
-{
-    return typeMismatchFor(element().value());
+bool BaseTemporalInputType::typeMismatch() const {
+  return typeMismatchFor(element().value());
 }
 
-String BaseTemporalInputType::rangeOverflowText(const Decimal& maximum) const
-{
-    return locale().queryString(WebLocalizedString::ValidationRangeOverflowDateTime, localizeValue(serialize(maximum)));
+String BaseTemporalInputType::rangeOverflowText(const Decimal& maximum) const {
+  return locale().queryString(
+      WebLocalizedString::ValidationRangeOverflowDateTime,
+      localizeValue(serialize(maximum)));
 }
 
-String BaseTemporalInputType::rangeUnderflowText(const Decimal& minimum) const
-{
-    return locale().queryString(WebLocalizedString::ValidationRangeUnderflowDateTime, localizeValue(serialize(minimum)));
+String BaseTemporalInputType::rangeUnderflowText(const Decimal& minimum) const {
+  return locale().queryString(
+      WebLocalizedString::ValidationRangeUnderflowDateTime,
+      localizeValue(serialize(minimum)));
 }
 
-Decimal BaseTemporalInputType::defaultValueForStepUp() const
-{
-    return Decimal::fromDouble(convertToLocalTime(currentTimeMS()));
+Decimal BaseTemporalInputType::defaultValueForStepUp() const {
+  return Decimal::fromDouble(convertToLocalTime(currentTimeMS()));
 }
 
-bool BaseTemporalInputType::isSteppable() const
-{
-    return true;
+bool BaseTemporalInputType::isSteppable() const {
+  return true;
 }
 
-Decimal BaseTemporalInputType::parseToNumber(const String& source, const Decimal& defaultValue) const
-{
-    DateComponents date;
-    if (!parseToDateComponents(source, &date))
-        return defaultValue;
-    double msec = date.millisecondsSinceEpoch();
-    DCHECK(std::isfinite(msec));
-    return Decimal::fromDouble(msec);
+Decimal BaseTemporalInputType::parseToNumber(
+    const String& source,
+    const Decimal& defaultValue) const {
+  DateComponents date;
+  if (!parseToDateComponents(source, &date))
+    return defaultValue;
+  double msec = date.millisecondsSinceEpoch();
+  DCHECK(std::isfinite(msec));
+  return Decimal::fromDouble(msec);
 }
 
-bool BaseTemporalInputType::parseToDateComponents(const String& source, DateComponents* out) const
-{
-    if (source.isEmpty())
-        return false;
-    DateComponents ignoredResult;
-    if (!out)
-        out = &ignoredResult;
-    return parseToDateComponentsInternal(source, out);
+bool BaseTemporalInputType::parseToDateComponents(const String& source,
+                                                  DateComponents* out) const {
+  if (source.isEmpty())
+    return false;
+  DateComponents ignoredResult;
+  if (!out)
+    out = &ignoredResult;
+  return parseToDateComponentsInternal(source, out);
 }
 
-String BaseTemporalInputType::serialize(const Decimal& value) const
-{
-    if (!value.isFinite())
-        return String();
-    DateComponents date;
-    if (!setMillisecondToDateComponents(value.toDouble(), &date))
-        return String();
-    return serializeWithComponents(date);
+String BaseTemporalInputType::serialize(const Decimal& value) const {
+  if (!value.isFinite())
+    return String();
+  DateComponents date;
+  if (!setMillisecondToDateComponents(value.toDouble(), &date))
+    return String();
+  return serializeWithComponents(date);
 }
 
-String BaseTemporalInputType::serializeWithComponents(const DateComponents& date) const
-{
-    Decimal step;
-    if (!element().getAllowedValueStep(&step))
-        return date.toString();
-    if (step.remainder(msecPerMinute).isZero())
-        return date.toString(DateComponents::None);
-    if (step.remainder(msecPerSecond).isZero())
-        return date.toString(DateComponents::Second);
-    return date.toString(DateComponents::Millisecond);
+String BaseTemporalInputType::serializeWithComponents(
+    const DateComponents& date) const {
+  Decimal step;
+  if (!element().getAllowedValueStep(&step))
+    return date.toString();
+  if (step.remainder(msecPerMinute).isZero())
+    return date.toString(DateComponents::None);
+  if (step.remainder(msecPerSecond).isZero())
+    return date.toString(DateComponents::Second);
+  return date.toString(DateComponents::Millisecond);
 }
 
-String BaseTemporalInputType::serializeWithMilliseconds(double value) const
-{
-    return serialize(Decimal::fromDouble(value));
+String BaseTemporalInputType::serializeWithMilliseconds(double value) const {
+  return serialize(Decimal::fromDouble(value));
 }
 
-String BaseTemporalInputType::localizeValue(const String& proposedValue) const
-{
-    DateComponents date;
-    if (!parseToDateComponents(proposedValue, &date))
-        return proposedValue;
+String BaseTemporalInputType::localizeValue(const String& proposedValue) const {
+  DateComponents date;
+  if (!parseToDateComponents(proposedValue, &date))
+    return proposedValue;
 
-    String localized = element().locale().formatDateTime(date);
-    return localized.isEmpty() ? proposedValue : localized;
+  String localized = element().locale().formatDateTime(date);
+  return localized.isEmpty() ? proposedValue : localized;
 }
 
-String BaseTemporalInputType::visibleValue() const
-{
-    return localizeValue(element().value());
+String BaseTemporalInputType::visibleValue() const {
+  return localizeValue(element().value());
 }
 
-String BaseTemporalInputType::sanitizeValue(const String& proposedValue) const
-{
-    return typeMismatchFor(proposedValue) ? emptyString() : proposedValue;
+String BaseTemporalInputType::sanitizeValue(const String& proposedValue) const {
+  return typeMismatchFor(proposedValue) ? emptyString() : proposedValue;
 }
 
-bool BaseTemporalInputType::supportsReadOnly() const
-{
-    return true;
+bool BaseTemporalInputType::supportsReadOnly() const {
+  return true;
 }
 
-bool BaseTemporalInputType::shouldRespectListAttribute()
-{
-    return true;
+bool BaseTemporalInputType::shouldRespectListAttribute() {
+  return true;
 }
 
-bool BaseTemporalInputType::valueMissing(const String& value) const
-{
-    return element().isRequired() && value.isEmpty();
+bool BaseTemporalInputType::valueMissing(const String& value) const {
+  return element().isRequired() && value.isEmpty();
 }
 
-bool BaseTemporalInputType::shouldShowFocusRingOnMouseFocus() const
-{
-    return true;
+bool BaseTemporalInputType::shouldShowFocusRingOnMouseFocus() const {
+  return true;
 }
 
-bool BaseTemporalInputType::shouldHaveSecondField(const DateComponents& date) const
-{
-    StepRange stepRange = createStepRange(AnyIsDefaultStep);
-    return date.second() || date.millisecond()
-        || !stepRange.minimum().remainder(static_cast<int>(msPerMinute)).isZero()
-        || !stepRange.step().remainder(static_cast<int>(msPerMinute)).isZero();
+bool BaseTemporalInputType::shouldHaveSecondField(
+    const DateComponents& date) const {
+  StepRange stepRange = createStepRange(AnyIsDefaultStep);
+  return date.second() || date.millisecond() ||
+         !stepRange.minimum()
+              .remainder(static_cast<int>(msPerMinute))
+              .isZero() ||
+         !stepRange.step().remainder(static_cast<int>(msPerMinute)).isZero();
 }
 
-} // namespace blink
+}  // namespace blink

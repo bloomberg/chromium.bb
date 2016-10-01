@@ -15,16 +15,19 @@ namespace blink {
 class ComputedStyle;
 
 class LengthPropertyFunctions {
-    STATIC_ONLY(LengthPropertyFunctions);
-public:
-    static ValueRange getValueRange(CSSPropertyID);
-    static bool isZoomedLength(CSSPropertyID);
-    static bool getPixelsForKeyword(CSSPropertyID, CSSValueID, double& resultPixels);
-    static bool getInitialLength(CSSPropertyID, Length& result);
-    static bool getLength(CSSPropertyID, const ComputedStyle&, Length& result);
-    static bool setLength(CSSPropertyID, ComputedStyle&, const Length&);
+  STATIC_ONLY(LengthPropertyFunctions);
+
+ public:
+  static ValueRange getValueRange(CSSPropertyID);
+  static bool isZoomedLength(CSSPropertyID);
+  static bool getPixelsForKeyword(CSSPropertyID,
+                                  CSSValueID,
+                                  double& resultPixels);
+  static bool getInitialLength(CSSPropertyID, Length& result);
+  static bool getLength(CSSPropertyID, const ComputedStyle&, Length& result);
+  static bool setLength(CSSPropertyID, ComputedStyle&, const Length&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LengthPropertyFunctions_h
+#endif  // LengthPropertyFunctions_h

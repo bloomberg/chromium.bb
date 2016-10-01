@@ -35,25 +35,23 @@ namespace blink {
 // differences aren't really worth dealing with here.
 static const unsigned maxFilenameLength = 255;
 
-static bool isInvalidFileCharacter(UChar c)
-{
-    // HFS+ disallows '/' and Linux systems also disallow null. For sanity's sake we'll also
-    // disallow control characters.
-    return c < ' ' || c == 0x7F || c == '/';
+static bool isInvalidFileCharacter(UChar c) {
+  // HFS+ disallows '/' and Linux systems also disallow null. For sanity's sake we'll also
+  // disallow control characters.
+  return c < ' ' || c == 0x7F || c == '/';
 }
 
-void validateFilename(String& name, String& extension)
-{
-    // Remove any invalid file system characters, especially "/".
-    name = name.removeCharacters(&isInvalidFileCharacter);
-    extension = extension.removeCharacters(&isInvalidFileCharacter);
+void validateFilename(String& name, String& extension) {
+  // Remove any invalid file system characters, especially "/".
+  name = name.removeCharacters(&isInvalidFileCharacter);
+  extension = extension.removeCharacters(&isInvalidFileCharacter);
 
-    // Remove a ridiculously-long extension.
-    if (extension.length() >= maxFilenameLength)
-        extension = String();
+  // Remove a ridiculously-long extension.
+  if (extension.length() >= maxFilenameLength)
+    extension = String();
 
-    // Truncate an overly-long filename, reserving one character for a dot.
-    name.truncate(maxFilenameLength - extension.length() - 1);
+  // Truncate an overly-long filename, reserving one character for a dot.
+  name.truncate(maxFilenameLength - extension.length() - 1);
 }
 
-} // namespace blink
+}  // namespace blink

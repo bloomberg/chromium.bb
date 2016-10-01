@@ -35,52 +35,48 @@
 
 namespace blink {
 
-TextLinkColors::TextLinkColors()
-    : m_textColor(Color::black)
-{
-    resetLinkColor();
-    resetVisitedLinkColor();
-    resetActiveLinkColor();
+TextLinkColors::TextLinkColors() : m_textColor(Color::black) {
+  resetLinkColor();
+  resetVisitedLinkColor();
+  resetActiveLinkColor();
 }
 
-void TextLinkColors::resetLinkColor()
-{
-    m_linkColor = Color(0, 0, 238);
+void TextLinkColors::resetLinkColor() {
+  m_linkColor = Color(0, 0, 238);
 }
 
-void TextLinkColors::resetVisitedLinkColor()
-{
-    m_visitedLinkColor = Color(85, 26, 139);
+void TextLinkColors::resetVisitedLinkColor() {
+  m_visitedLinkColor = Color(85, 26, 139);
 }
 
-void TextLinkColors::resetActiveLinkColor()
-{
-    m_activeLinkColor = Color(255, 0, 0);
+void TextLinkColors::resetActiveLinkColor() {
+  m_activeLinkColor = Color(255, 0, 0);
 }
 
-Color TextLinkColors::colorFromCSSValue(const CSSValue& value, Color currentColor, bool forVisitedLink) const
-{
-    if (value.isColorValue())
-        return toCSSColorValue(value).value();
+Color TextLinkColors::colorFromCSSValue(const CSSValue& value,
+                                        Color currentColor,
+                                        bool forVisitedLink) const {
+  if (value.isColorValue())
+    return toCSSColorValue(value).value();
 
-    CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
-    switch (valueID) {
+  CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
+  switch (valueID) {
     case CSSValueInvalid:
-        NOTREACHED();
-        return Color();
+      NOTREACHED();
+      return Color();
     case CSSValueInternalQuirkInherit:
-        return textColor();
+      return textColor();
     case CSSValueWebkitLink:
-        return forVisitedLink ? visitedLinkColor() : linkColor();
+      return forVisitedLink ? visitedLinkColor() : linkColor();
     case CSSValueWebkitActivelink:
-        return activeLinkColor();
+      return activeLinkColor();
     case CSSValueWebkitFocusRingColor:
-        return LayoutTheme::theme().focusRingColor();
+      return LayoutTheme::theme().focusRingColor();
     case CSSValueCurrentcolor:
-        return currentColor;
+      return currentColor;
     default:
-        return StyleColor::colorFromKeyword(valueID);
-    }
+      return StyleColor::colorFromKeyword(valueID);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

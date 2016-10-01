@@ -28,59 +28,78 @@
 
 namespace blink {
 
-FEDropShadow::FEDropShadow(Filter* filter, float stdX, float stdY, float dx, float dy, const Color& shadowColor, float shadowOpacity)
-    : FilterEffect(filter)
-    , m_stdX(stdX)
-    , m_stdY(stdY)
-    , m_dx(dx)
-    , m_dy(dy)
-    , m_shadowColor(shadowColor)
-    , m_shadowOpacity(shadowOpacity)
-{
+FEDropShadow::FEDropShadow(Filter* filter,
+                           float stdX,
+                           float stdY,
+                           float dx,
+                           float dy,
+                           const Color& shadowColor,
+                           float shadowOpacity)
+    : FilterEffect(filter),
+      m_stdX(stdX),
+      m_stdY(stdY),
+      m_dx(dx),
+      m_dy(dy),
+      m_shadowColor(shadowColor),
+      m_shadowOpacity(shadowOpacity) {}
+
+FEDropShadow* FEDropShadow::create(Filter* filter,
+                                   float stdX,
+                                   float stdY,
+                                   float dx,
+                                   float dy,
+                                   const Color& shadowColor,
+                                   float shadowOpacity) {
+  return new FEDropShadow(filter, stdX, stdY, dx, dy, shadowColor,
+                          shadowOpacity);
 }
 
-FEDropShadow* FEDropShadow::create(Filter* filter, float stdX, float stdY, float dx, float dy, const Color& shadowColor, float shadowOpacity)
-{
-    return new FEDropShadow(filter, stdX, stdY, dx, dy, shadowColor, shadowOpacity);
+FloatRect FEDropShadow::mapEffect(const FloatRect& rect) const {
+  const Filter* filter = this->getFilter();
+  DCHECK(filter);
+
+  FloatRect offsetRect = rect;
+  offsetRect.move(filter->applyHorizontalScale(m_dx),
+                  filter->applyVerticalScale(m_dy));
+
+  IntSize kernelSize =
+      FEGaussianBlur::calculateKernelSize(filter, FloatPoint(m_stdX, m_stdY));
+
+  // We take the half kernel size and multiply it with three, because we run box blur three times.
+  FloatRect result = unionRect(rect, offsetRect);
+  result.inflateX(3.0f * kernelSize.width() * 0.5f);
+  result.inflateY(3.0f * kernelSize.height() * 0.5f);
+  return result;
 }
 
-FloatRect FEDropShadow::mapEffect(const FloatRect& rect) const
-{
-    const Filter* filter = this->getFilter();
-    DCHECK(filter);
-
-    FloatRect offsetRect = rect;
-    offsetRect.move(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
-
-    IntSize kernelSize = FEGaussianBlur::calculateKernelSize(filter, FloatPoint(m_stdX, m_stdY));
-
-    // We take the half kernel size and multiply it with three, because we run box blur three times.
-    FloatRect result = unionRect(rect, offsetRect);
-    result.inflateX(3.0f * kernelSize.width() * 0.5f);
-    result.inflateY(3.0f * kernelSize.height() * 0.5f);
-    return result;
+sk_sp<SkImageFilter> FEDropShadow::createImageFilter() {
+  sk_sp<SkImageFilter> input(
+      SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
+  float dx = getFilter()->applyHorizontalScale(m_dx);
+  float dy = getFilter()->applyVerticalScale(m_dy);
+  float stdX = getFilter()->applyHorizontalScale(m_stdX);
+  float stdY = getFilter()->applyVerticalScale(m_stdY);
+  Color color = adaptColorToOperatingColorSpace(
+      m_shadowColor.combineWithAlpha(m_shadowOpacity));
+  SkImageFilter::CropRect cropRect = getCropRect();
+  return SkDropShadowImageFilter::Make(
+      SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(stdX),
+      SkFloatToScalar(stdY), color.rgb(),
+      SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
+      std::move(input), &cropRect);
 }
 
-sk_sp<SkImageFilter> FEDropShadow::createImageFilter()
-{
-    sk_sp<SkImageFilter> input(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-    float dx = getFilter()->applyHorizontalScale(m_dx);
-    float dy = getFilter()->applyVerticalScale(m_dy);
-    float stdX = getFilter()->applyHorizontalScale(m_stdX);
-    float stdY = getFilter()->applyVerticalScale(m_stdY);
-    Color color = adaptColorToOperatingColorSpace(m_shadowColor.combineWithAlpha(m_shadowOpacity));
-    SkImageFilter::CropRect cropRect = getCropRect();
-    return SkDropShadowImageFilter::Make(SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(stdX), SkFloatToScalar(stdY), color.rgb(), SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, std::move(input), &cropRect);
+TextStream& FEDropShadow::externalRepresentation(TextStream& ts,
+                                                 int indent) const {
+  writeIndent(ts, indent);
+  ts << "[feDropShadow";
+  FilterEffect::externalRepresentation(ts);
+  ts << " stdDeviation=\"" << m_stdX << ", " << m_stdY << "\" dx=\"" << m_dx
+     << "\" dy=\"" << m_dy << "\" flood-color=\""
+     << m_shadowColor.nameForLayoutTreeAsText() << "\" flood-opacity=\""
+     << m_shadowOpacity << "]\n";
+  inputEffect(0)->externalRepresentation(ts, indent + 1);
+  return ts;
 }
 
-TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) const
-{
-    writeIndent(ts, indent);
-    ts << "[feDropShadow";
-    FilterEffect::externalRepresentation(ts);
-    ts << " stdDeviation=\"" << m_stdX << ", " << m_stdY << "\" dx=\"" << m_dx << "\" dy=\"" << m_dy << "\" flood-color=\"" << m_shadowColor.nameForLayoutTreeAsText() <<"\" flood-opacity=\"" << m_shadowOpacity << "]\n";
-    inputEffect(0)->externalRepresentation(ts, indent + 1);
-    return ts;
-}
-
-} // namespace blink
+}  // namespace blink

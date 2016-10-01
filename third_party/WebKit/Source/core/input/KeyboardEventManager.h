@@ -20,50 +20,48 @@ class KeyboardEvent;
 class LocalFrame;
 class ScrollManager;
 
-enum class OverrideCapsLockState {
-    Default,
-    On,
-    Off
-};
+enum class OverrideCapsLockState { Default, On, Off };
 
-class CORE_EXPORT KeyboardEventManager : public GarbageCollectedFinalized<KeyboardEventManager> {
-    WTF_MAKE_NONCOPYABLE(KeyboardEventManager);
-public:
-    static const int kAccessKeyModifiers =
+class CORE_EXPORT KeyboardEventManager
+    : public GarbageCollectedFinalized<KeyboardEventManager> {
+  WTF_MAKE_NONCOPYABLE(KeyboardEventManager);
+
+ public:
+  static const int kAccessKeyModifiers =
 // TODO(crbug.com/618397): Add a settings to control this behavior.
 #if OS(MACOSX)
-        WebInputEvent::ControlKey | WebInputEvent::AltKey;
+      WebInputEvent::ControlKey | WebInputEvent::AltKey;
 #else
-        WebInputEvent::AltKey;
+      WebInputEvent::AltKey;
 #endif
 
-    KeyboardEventManager(LocalFrame*, ScrollManager*);
-    DECLARE_TRACE();
+  KeyboardEventManager(LocalFrame*, ScrollManager*);
+  DECLARE_TRACE();
 
-    bool handleAccessKey(const WebKeyboardEvent&);
-    WebInputEventResult keyEvent(const WebKeyboardEvent&);
-    void defaultKeyboardEventHandler(KeyboardEvent*, Node*);
+  bool handleAccessKey(const WebKeyboardEvent&);
+  WebInputEventResult keyEvent(const WebKeyboardEvent&);
+  void defaultKeyboardEventHandler(KeyboardEvent*, Node*);
 
-    void capsLockStateMayHaveChanged();
-    static WebInputEvent::Modifiers getCurrentModifierState();
-    static bool currentCapsLockState();
+  void capsLockStateMayHaveChanged();
+  static WebInputEvent::Modifiers getCurrentModifierState();
+  static bool currentCapsLockState();
 
-private:
-    friend class Internals;
-    // Allows overriding the current caps lock state for testing purposes.
-    static void setCurrentCapsLockState(OverrideCapsLockState);
+ private:
+  friend class Internals;
+  // Allows overriding the current caps lock state for testing purposes.
+  static void setCurrentCapsLockState(OverrideCapsLockState);
 
-    void defaultSpaceEventHandler(KeyboardEvent*, Node*);
-    void defaultBackspaceEventHandler(KeyboardEvent*);
-    void defaultTabEventHandler(KeyboardEvent*);
-    void defaultEscapeEventHandler(KeyboardEvent*);
-    void defaultArrowEventHandler(WebFocusType, KeyboardEvent*);
+  void defaultSpaceEventHandler(KeyboardEvent*, Node*);
+  void defaultBackspaceEventHandler(KeyboardEvent*);
+  void defaultTabEventHandler(KeyboardEvent*);
+  void defaultEscapeEventHandler(KeyboardEvent*);
+  void defaultArrowEventHandler(WebFocusType, KeyboardEvent*);
 
-    const Member<LocalFrame> m_frame;
+  const Member<LocalFrame> m_frame;
 
-    Member<ScrollManager> m_scrollManager;
+  Member<ScrollManager> m_scrollManager;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // KeyboardEventManager_h
+#endif  // KeyboardEventManager_h

@@ -8,9 +8,8 @@
 
 namespace blink {
 
-bool WebPluginScriptForbiddenScope::isForbidden()
-{
-    return PluginScriptForbiddenScope::isForbidden();
+bool WebPluginScriptForbiddenScope::isForbidden() {
+  return PluginScriptForbiddenScope::isForbidden();
 }
 
-} // namespace blink
+}  // namespace blink

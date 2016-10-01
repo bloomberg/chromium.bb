@@ -27,55 +27,69 @@
 
 namespace blink {
 
-SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagName, Document& document)
-    : SVGTextContentElement(tagName, document)
-    , m_x(SVGAnimatedLengthList::create(this, SVGNames::xAttr, SVGLengthList::create(SVGLengthMode::Width)))
-    , m_y(SVGAnimatedLengthList::create(this, SVGNames::yAttr, SVGLengthList::create(SVGLengthMode::Height)))
-    , m_dx(SVGAnimatedLengthList::create(this, SVGNames::dxAttr, SVGLengthList::create(SVGLengthMode::Width)))
-    , m_dy(SVGAnimatedLengthList::create(this, SVGNames::dyAttr, SVGLengthList::create(SVGLengthMode::Height)))
-    , m_rotate(SVGAnimatedNumberList::create(this, SVGNames::rotateAttr, SVGNumberList::create()))
-{
-    addToPropertyMap(m_x);
-    addToPropertyMap(m_y);
-    addToPropertyMap(m_dx);
-    addToPropertyMap(m_dy);
-    addToPropertyMap(m_rotate);
+SVGTextPositioningElement::SVGTextPositioningElement(
+    const QualifiedName& tagName,
+    Document& document)
+    : SVGTextContentElement(tagName, document),
+      m_x(SVGAnimatedLengthList::create(
+          this,
+          SVGNames::xAttr,
+          SVGLengthList::create(SVGLengthMode::Width))),
+      m_y(SVGAnimatedLengthList::create(
+          this,
+          SVGNames::yAttr,
+          SVGLengthList::create(SVGLengthMode::Height))),
+      m_dx(SVGAnimatedLengthList::create(
+          this,
+          SVGNames::dxAttr,
+          SVGLengthList::create(SVGLengthMode::Width))),
+      m_dy(SVGAnimatedLengthList::create(
+          this,
+          SVGNames::dyAttr,
+          SVGLengthList::create(SVGLengthMode::Height))),
+      m_rotate(SVGAnimatedNumberList::create(this,
+                                             SVGNames::rotateAttr,
+                                             SVGNumberList::create())) {
+  addToPropertyMap(m_x);
+  addToPropertyMap(m_y);
+  addToPropertyMap(m_dx);
+  addToPropertyMap(m_dy);
+  addToPropertyMap(m_rotate);
 }
 
-DEFINE_TRACE(SVGTextPositioningElement)
-{
-    visitor->trace(m_x);
-    visitor->trace(m_y);
-    visitor->trace(m_dx);
-    visitor->trace(m_dy);
-    visitor->trace(m_rotate);
-    SVGTextContentElement::trace(visitor);
+DEFINE_TRACE(SVGTextPositioningElement) {
+  visitor->trace(m_x);
+  visitor->trace(m_y);
+  visitor->trace(m_dx);
+  visitor->trace(m_dy);
+  visitor->trace(m_rotate);
+  SVGTextContentElement::trace(visitor);
 }
 
-void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    bool updateRelativeLengths = attrName == SVGNames::xAttr
-                              || attrName == SVGNames::yAttr
-                              || attrName == SVGNames::dxAttr
-                              || attrName == SVGNames::dyAttr;
+void SVGTextPositioningElement::svgAttributeChanged(
+    const QualifiedName& attrName) {
+  bool updateRelativeLengths =
+      attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
+      attrName == SVGNames::dxAttr || attrName == SVGNames::dyAttr;
 
-    if (updateRelativeLengths)
-        updateRelativeLengthsInformation();
+  if (updateRelativeLengths)
+    updateRelativeLengthsInformation();
 
-    if (updateRelativeLengths || attrName == SVGNames::rotateAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
+  if (updateRelativeLengths || attrName == SVGNames::rotateAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutObject* layoutObject = this->layoutObject();
-        if (!layoutObject)
-            return;
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
+      return;
 
-        if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(layoutObject))
-            textLayoutObject->setNeedsPositioningValuesUpdate();
-        markForLayoutAndParentResourceInvalidation(layoutObject);
-        return;
-    }
+    if (LayoutSVGText* textLayoutObject =
+            LayoutSVGText::locateLayoutSVGTextAncestor(layoutObject))
+      textLayoutObject->setNeedsPositioningValuesUpdate();
+    markForLayoutAndParentResourceInvalidation(layoutObject);
+    return;
+  }
 
-    SVGTextContentElement::svgAttributeChanged(attrName);
+  SVGTextContentElement::svgAttributeChanged(attrName);
 }
 
-} // namespace blink
+}  // namespace blink

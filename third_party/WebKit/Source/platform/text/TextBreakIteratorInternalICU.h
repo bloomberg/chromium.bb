@@ -30,7 +30,6 @@ namespace blink {
 
 PLATFORM_EXPORT const char* currentSearchLocaleID();
 PLATFORM_EXPORT const char* currentTextBreakLocaleID();
-
 }
 
 #endif

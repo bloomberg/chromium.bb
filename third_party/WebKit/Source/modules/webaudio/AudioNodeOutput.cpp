@@ -31,231 +31,211 @@
 
 namespace blink {
 
-inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler, unsigned numberOfChannels)
-    : m_handler(*handler)
-    , m_numberOfChannels(numberOfChannels)
-    , m_desiredNumberOfChannels(numberOfChannels)
-    , m_isInPlace(false)
-    , m_isEnabled(true)
-    , m_didCallDispose(false)
-    , m_renderingFanOutCount(0)
-    , m_renderingParamFanOutCount(0)
-{
-    DCHECK_LE(numberOfChannels, BaseAudioContext::maxNumberOfChannels());
+inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler,
+                                        unsigned numberOfChannels)
+    : m_handler(*handler),
+      m_numberOfChannels(numberOfChannels),
+      m_desiredNumberOfChannels(numberOfChannels),
+      m_isInPlace(false),
+      m_isEnabled(true),
+      m_didCallDispose(false),
+      m_renderingFanOutCount(0),
+      m_renderingParamFanOutCount(0) {
+  DCHECK_LE(numberOfChannels, BaseAudioContext::maxNumberOfChannels());
 
-    m_internalBus = AudioBus::create(numberOfChannels, AudioHandler::ProcessingSizeInFrames);
+  m_internalBus =
+      AudioBus::create(numberOfChannels, AudioHandler::ProcessingSizeInFrames);
 }
 
-std::unique_ptr<AudioNodeOutput> AudioNodeOutput::create(AudioHandler* handler, unsigned numberOfChannels)
-{
-    return wrapUnique(new AudioNodeOutput(handler, numberOfChannels));
+std::unique_ptr<AudioNodeOutput> AudioNodeOutput::create(
+    AudioHandler* handler,
+    unsigned numberOfChannels) {
+  return wrapUnique(new AudioNodeOutput(handler, numberOfChannels));
 }
 
-void AudioNodeOutput::dispose()
-{
-    m_didCallDispose = true;
+void AudioNodeOutput::dispose() {
+  m_didCallDispose = true;
 
-    deferredTaskHandler().removeMarkedAudioNodeOutput(this);
-    disconnectAll();
-    DCHECK(m_inputs.isEmpty());
-    DCHECK(m_params.isEmpty());
+  deferredTaskHandler().removeMarkedAudioNodeOutput(this);
+  disconnectAll();
+  DCHECK(m_inputs.isEmpty());
+  DCHECK(m_params.isEmpty());
 }
 
-void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
-{
-    DCHECK_LE(numberOfChannels, BaseAudioContext::maxNumberOfChannels());
-    ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels) {
+  DCHECK_LE(numberOfChannels, BaseAudioContext::maxNumberOfChannels());
+  ASSERT(deferredTaskHandler().isGraphOwner());
 
-    m_desiredNumberOfChannels = numberOfChannels;
+  m_desiredNumberOfChannels = numberOfChannels;
 
-    if (deferredTaskHandler().isAudioThread()) {
-        // If we're in the audio thread then we can take care of it right away (we should be at the very start or end of a rendering quantum).
-        updateNumberOfChannels();
-    } else {
-        DCHECK(!m_didCallDispose);
-        // Let the context take care of it in the audio thread in the pre and post render tasks.
-        deferredTaskHandler().markAudioNodeOutputDirty(this);
-    }
-}
-
-void AudioNodeOutput::updateInternalBus()
-{
-    if (numberOfChannels() == m_internalBus->numberOfChannels())
-        return;
-
-    m_internalBus = AudioBus::create(numberOfChannels(), AudioHandler::ProcessingSizeInFrames);
-}
-
-void AudioNodeOutput::updateRenderingState()
-{
+  if (deferredTaskHandler().isAudioThread()) {
+    // If we're in the audio thread then we can take care of it right away (we should be at the very start or end of a rendering quantum).
     updateNumberOfChannels();
-    m_renderingFanOutCount = fanOutCount();
-    m_renderingParamFanOutCount = paramFanOutCount();
+  } else {
+    DCHECK(!m_didCallDispose);
+    // Let the context take care of it in the audio thread in the pre and post render tasks.
+    deferredTaskHandler().markAudioNodeOutputDirty(this);
+  }
 }
 
-void AudioNodeOutput::updateNumberOfChannels()
-{
-    DCHECK(deferredTaskHandler().isAudioThread());
-    ASSERT(deferredTaskHandler().isGraphOwner());
+void AudioNodeOutput::updateInternalBus() {
+  if (numberOfChannels() == m_internalBus->numberOfChannels())
+    return;
 
-    if (m_numberOfChannels != m_desiredNumberOfChannels) {
-        m_numberOfChannels = m_desiredNumberOfChannels;
-        updateInternalBus();
-        propagateChannelCount();
-    }
+  m_internalBus = AudioBus::create(numberOfChannels(),
+                                   AudioHandler::ProcessingSizeInFrames);
 }
 
-void AudioNodeOutput::propagateChannelCount()
-{
-    DCHECK(deferredTaskHandler().isAudioThread());
-    ASSERT(deferredTaskHandler().isGraphOwner());
-
-    if (isChannelCountKnown()) {
-        // Announce to any nodes we're connected to that we changed our channel count for its input.
-        for (AudioNodeInput* i : m_inputs)
-            i->handler().checkNumberOfChannelsForInput(i);
-    }
+void AudioNodeOutput::updateRenderingState() {
+  updateNumberOfChannels();
+  m_renderingFanOutCount = fanOutCount();
+  m_renderingParamFanOutCount = paramFanOutCount();
 }
 
-AudioBus* AudioNodeOutput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
-{
-    DCHECK(deferredTaskHandler().isAudioThread());
-    DCHECK(m_renderingFanOutCount > 0 || m_renderingParamFanOutCount > 0);
+void AudioNodeOutput::updateNumberOfChannels() {
+  DCHECK(deferredTaskHandler().isAudioThread());
+  ASSERT(deferredTaskHandler().isGraphOwner());
 
-    // Causes our AudioNode to process if it hasn't already for this render quantum.
-    // We try to do in-place processing (using inPlaceBus) if at all possible,
-    // but we can't process in-place if we're connected to more than one input (fan-out > 1).
-    // In this case pull() is called multiple times per rendering quantum, and the processIfNecessary() call below will
-    // cause our node to process() only the first time, caching the output in m_internalOutputBus for subsequent calls.
-
-    m_isInPlace = inPlaceBus && inPlaceBus->numberOfChannels() == numberOfChannels() && (m_renderingFanOutCount + m_renderingParamFanOutCount) == 1;
-
-    m_inPlaceBus = m_isInPlace ? inPlaceBus : 0;
-
-    handler().processIfNecessary(framesToProcess);
-    return bus();
+  if (m_numberOfChannels != m_desiredNumberOfChannels) {
+    m_numberOfChannels = m_desiredNumberOfChannels;
+    updateInternalBus();
+    propagateChannelCount();
+  }
 }
 
-AudioBus* AudioNodeOutput::bus() const
-{
-    DCHECK(deferredTaskHandler().isAudioThread());
-    return m_isInPlace ? m_inPlaceBus.get() : m_internalBus.get();
+void AudioNodeOutput::propagateChannelCount() {
+  DCHECK(deferredTaskHandler().isAudioThread());
+  ASSERT(deferredTaskHandler().isGraphOwner());
+
+  if (isChannelCountKnown()) {
+    // Announce to any nodes we're connected to that we changed our channel count for its input.
+    for (AudioNodeInput* i : m_inputs)
+      i->handler().checkNumberOfChannelsForInput(i);
+  }
 }
 
-unsigned AudioNodeOutput::fanOutCount()
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    return m_inputs.size();
+AudioBus* AudioNodeOutput::pull(AudioBus* inPlaceBus, size_t framesToProcess) {
+  DCHECK(deferredTaskHandler().isAudioThread());
+  DCHECK(m_renderingFanOutCount > 0 || m_renderingParamFanOutCount > 0);
+
+  // Causes our AudioNode to process if it hasn't already for this render quantum.
+  // We try to do in-place processing (using inPlaceBus) if at all possible,
+  // but we can't process in-place if we're connected to more than one input (fan-out > 1).
+  // In this case pull() is called multiple times per rendering quantum, and the processIfNecessary() call below will
+  // cause our node to process() only the first time, caching the output in m_internalOutputBus for subsequent calls.
+
+  m_isInPlace = inPlaceBus &&
+                inPlaceBus->numberOfChannels() == numberOfChannels() &&
+                (m_renderingFanOutCount + m_renderingParamFanOutCount) == 1;
+
+  m_inPlaceBus = m_isInPlace ? inPlaceBus : 0;
+
+  handler().processIfNecessary(framesToProcess);
+  return bus();
 }
 
-unsigned AudioNodeOutput::paramFanOutCount()
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    return m_params.size();
+AudioBus* AudioNodeOutput::bus() const {
+  DCHECK(deferredTaskHandler().isAudioThread());
+  return m_isInPlace ? m_inPlaceBus.get() : m_internalBus.get();
 }
 
-unsigned AudioNodeOutput::renderingFanOutCount() const
-{
-    return m_renderingFanOutCount;
+unsigned AudioNodeOutput::fanOutCount() {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  return m_inputs.size();
 }
 
-void AudioNodeOutput::addInput(AudioNodeInput& input)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    m_inputs.add(&input);
-    input.handler().makeConnection();
+unsigned AudioNodeOutput::paramFanOutCount() {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  return m_params.size();
 }
 
-void AudioNodeOutput::removeInput(AudioNodeInput& input)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    input.handler().breakConnection();
-    m_inputs.remove(&input);
+unsigned AudioNodeOutput::renderingFanOutCount() const {
+  return m_renderingFanOutCount;
 }
 
-void AudioNodeOutput::disconnectAllInputs()
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-
-    // AudioNodeInput::disconnect() changes m_inputs by calling removeInput().
-    while (!m_inputs.isEmpty())
-        (*m_inputs.begin())->disconnect(*this);
+void AudioNodeOutput::addInput(AudioNodeInput& input) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  m_inputs.add(&input);
+  input.handler().makeConnection();
 }
 
-void AudioNodeOutput::disconnectInput(AudioNodeInput& input)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    DCHECK(isConnectedToInput(input));
-    input.disconnect(*this);
+void AudioNodeOutput::removeInput(AudioNodeInput& input) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  input.handler().breakConnection();
+  m_inputs.remove(&input);
 }
 
-void AudioNodeOutput::disconnectAudioParam(AudioParamHandler& param)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    DCHECK(isConnectedToAudioParam(param));
-    param.disconnect(*this);
+void AudioNodeOutput::disconnectAllInputs() {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+
+  // AudioNodeInput::disconnect() changes m_inputs by calling removeInput().
+  while (!m_inputs.isEmpty())
+    (*m_inputs.begin())->disconnect(*this);
 }
 
-void AudioNodeOutput::addParam(AudioParamHandler& param)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    m_params.add(&param);
+void AudioNodeOutput::disconnectInput(AudioNodeInput& input) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  DCHECK(isConnectedToInput(input));
+  input.disconnect(*this);
 }
 
-void AudioNodeOutput::removeParam(AudioParamHandler& param)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    m_params.remove(&param);
+void AudioNodeOutput::disconnectAudioParam(AudioParamHandler& param) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  DCHECK(isConnectedToAudioParam(param));
+  param.disconnect(*this);
 }
 
-void AudioNodeOutput::disconnectAllParams()
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-
-    // AudioParam::disconnect() changes m_params by calling removeParam().
-    while (!m_params.isEmpty())
-        (*m_params.begin())->disconnect(*this);
+void AudioNodeOutput::addParam(AudioParamHandler& param) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  m_params.add(&param);
 }
 
-void AudioNodeOutput::disconnectAll()
-{
-    disconnectAllInputs();
-    disconnectAllParams();
+void AudioNodeOutput::removeParam(AudioParamHandler& param) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  m_params.remove(&param);
 }
 
-bool AudioNodeOutput::isConnectedToInput(AudioNodeInput& input)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    return m_inputs.contains(&input);
+void AudioNodeOutput::disconnectAllParams() {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+
+  // AudioParam::disconnect() changes m_params by calling removeParam().
+  while (!m_params.isEmpty())
+    (*m_params.begin())->disconnect(*this);
 }
 
-bool AudioNodeOutput::isConnectedToAudioParam(AudioParamHandler& param)
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-    return m_params.contains(&param);
+void AudioNodeOutput::disconnectAll() {
+  disconnectAllInputs();
+  disconnectAllParams();
 }
 
-void AudioNodeOutput::disable()
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-
-    if (m_isEnabled) {
-        m_isEnabled = false;
-        for (AudioNodeInput* i : m_inputs)
-            i->disable(*this);
-    }
+bool AudioNodeOutput::isConnectedToInput(AudioNodeInput& input) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  return m_inputs.contains(&input);
 }
 
-void AudioNodeOutput::enable()
-{
-    ASSERT(deferredTaskHandler().isGraphOwner());
-
-    if (!m_isEnabled) {
-        m_isEnabled = true;
-        for (AudioNodeInput* i : m_inputs)
-            i->enable(*this);
-    }
+bool AudioNodeOutput::isConnectedToAudioParam(AudioParamHandler& param) {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+  return m_params.contains(&param);
 }
 
-} // namespace blink
+void AudioNodeOutput::disable() {
+  ASSERT(deferredTaskHandler().isGraphOwner());
 
+  if (m_isEnabled) {
+    m_isEnabled = false;
+    for (AudioNodeInput* i : m_inputs)
+      i->disable(*this);
+  }
+}
+
+void AudioNodeOutput::enable() {
+  ASSERT(deferredTaskHandler().isGraphOwner());
+
+  if (!m_isEnabled) {
+    m_isEnabled = true;
+    for (AudioNodeInput* i : m_inputs)
+      i->enable(*this);
+  }
+}
+
+}  // namespace blink

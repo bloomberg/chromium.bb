@@ -14,8 +14,8 @@ namespace RootScrollerUtil {
 
 ScrollableArea* scrollableAreaFor(const Element&);
 
-} // namespace RootScrollerUtil
+}  // namespace RootScrollerUtil
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RootScrollerUtil_h
+#endif  // RootScrollerUtil_h

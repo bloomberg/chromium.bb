@@ -26,7 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef Screen_h
 #define Screen_h
 
@@ -39,30 +38,31 @@ namespace blink {
 
 class LocalFrame;
 
-class Screen final : public GarbageCollected<Screen>, public ScriptWrappable, public DOMWindowProperty, public Supplementable<Screen> {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(Screen);
-public:
-    static Screen* create(LocalFrame* frame)
-    {
-        return new Screen(frame);
-    }
+class Screen final : public GarbageCollected<Screen>,
+                     public ScriptWrappable,
+                     public DOMWindowProperty,
+                     public Supplementable<Screen> {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(Screen);
 
-    int height() const;
-    int width() const;
-    unsigned colorDepth() const;
-    unsigned pixelDepth() const;
-    int availLeft() const;
-    int availTop() const;
-    int availHeight() const;
-    int availWidth() const;
+ public:
+  static Screen* create(LocalFrame* frame) { return new Screen(frame); }
 
-    DECLARE_VIRTUAL_TRACE();
+  int height() const;
+  int width() const;
+  unsigned colorDepth() const;
+  unsigned pixelDepth() const;
+  int availLeft() const;
+  int availTop() const;
+  int availHeight() const;
+  int availWidth() const;
 
-private:
-    explicit Screen(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  explicit Screen(LocalFrame*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Screen_h
+#endif  // Screen_h

@@ -12,49 +12,48 @@
 namespace blink {
 
 NavigatorNetworkInformation::NavigatorNetworkInformation(Navigator& navigator)
-    : DOMWindowProperty(navigator.frame())
-{
+    : DOMWindowProperty(navigator.frame()) {}
+
+NavigatorNetworkInformation& NavigatorNetworkInformation::from(
+    Navigator& navigator) {
+  NavigatorNetworkInformation* supplement =
+      toNavigatorNetworkInformation(navigator);
+  if (!supplement) {
+    supplement = new NavigatorNetworkInformation(navigator);
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
-NavigatorNetworkInformation& NavigatorNetworkInformation::from(Navigator& navigator)
-{
-    NavigatorNetworkInformation* supplement = toNavigatorNetworkInformation(navigator);
-    if (!supplement) {
-        supplement = new NavigatorNetworkInformation(navigator);
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+NavigatorNetworkInformation*
+NavigatorNetworkInformation::toNavigatorNetworkInformation(
+    Navigator& navigator) {
+  return static_cast<NavigatorNetworkInformation*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
 }
 
-NavigatorNetworkInformation* NavigatorNetworkInformation::toNavigatorNetworkInformation(Navigator& navigator)
-{
-    return static_cast<NavigatorNetworkInformation*>(Supplement<Navigator>::from(navigator, supplementName()));
+const char* NavigatorNetworkInformation::supplementName() {
+  return "NavigatorNetworkInformation";
 }
 
-const char* NavigatorNetworkInformation::supplementName()
-{
-    return "NavigatorNetworkInformation";
+NetworkInformation* NavigatorNetworkInformation::connection(
+    Navigator& navigator) {
+  return NavigatorNetworkInformation::from(navigator).connection();
 }
 
-NetworkInformation* NavigatorNetworkInformation::connection(Navigator& navigator)
-{
-    return NavigatorNetworkInformation::from(navigator).connection();
+NetworkInformation* NavigatorNetworkInformation::connection() {
+  if (!m_connection && frame()) {
+    ASSERT(frame()->domWindow());
+    m_connection =
+        NetworkInformation::create(frame()->domWindow()->getExecutionContext());
+  }
+  return m_connection.get();
 }
 
-NetworkInformation* NavigatorNetworkInformation::connection()
-{
-    if (!m_connection && frame()) {
-        ASSERT(frame()->domWindow());
-        m_connection = NetworkInformation::create(frame()->domWindow()->getExecutionContext());
-    }
-    return m_connection.get();
+DEFINE_TRACE(NavigatorNetworkInformation) {
+  visitor->trace(m_connection);
+  Supplement<Navigator>::trace(visitor);
+  DOMWindowProperty::trace(visitor);
 }
 
-DEFINE_TRACE(NavigatorNetworkInformation)
-{
-    visitor->trace(m_connection);
-    Supplement<Navigator>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

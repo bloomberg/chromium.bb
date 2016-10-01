@@ -33,16 +33,17 @@
 namespace blink {
 
 class WebFlingAnimator {
-public:
-    virtual ~WebFlingAnimator() { }
+ public:
+  virtual ~WebFlingAnimator() {}
 
-    virtual void startFling(const WebFloatPoint& velocity, const WebRect& range) = 0;
-    // Returns true if the animation is not yet finished.
-    virtual bool updatePosition() = 0;
-    virtual WebPoint getCurrentPosition() = 0;
-    virtual void cancelFling() = 0;
+  virtual void startFling(const WebFloatPoint& velocity,
+                          const WebRect& range) = 0;
+  // Returns true if the animation is not yet finished.
+  virtual bool updatePosition() = 0;
+  virtual WebPoint getCurrentPosition() = 0;
+  virtual void cancelFling() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFlingAnimator_h
+#endif  // WebFlingAnimator_h

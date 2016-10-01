@@ -28,51 +28,84 @@
 namespace blink {
 
 class SVGInlineTextBox final : public InlineTextBox {
-public:
-    SVGInlineTextBox(LineLayoutItem, int start, unsigned short length);
+ public:
+  SVGInlineTextBox(LineLayoutItem, int start, unsigned short length);
 
-    bool isSVGInlineTextBox() const override { return true; }
+  bool isSVGInlineTextBox() const override { return true; }
 
-    LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
-    void setLogicalHeight(LayoutUnit height) { m_logicalHeight = height; }
+  LayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
+  void setLogicalHeight(LayoutUnit height) { m_logicalHeight = height; }
 
-    int offsetForPosition(LayoutUnit x, bool includePartialGlyphs = true) const override;
-    LayoutUnit positionForOffset(int offset) const override;
+  int offsetForPosition(LayoutUnit x,
+                        bool includePartialGlyphs = true) const override;
+  LayoutUnit positionForOffset(int offset) const override;
 
-    void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) const override;
-    LayoutRect localSelectionRect(int startPosition, int endPosition) const override;
+  void paint(const PaintInfo&,
+             const LayoutPoint&,
+             LayoutUnit lineTop,
+             LayoutUnit lineBottom) const override;
+  LayoutRect localSelectionRect(int startPosition,
+                                int endPosition) const override;
 
-    bool mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&, int& startPosition, int& endPosition) const;
+  bool mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&,
+                                                   int& startPosition,
+                                                   int& endPosition) const;
 
-    LayoutRect calculateBoundaries() const override;
+  LayoutRect calculateBoundaries() const override;
 
-    void clearTextFragments() { m_textFragments.clear(); }
-    Vector<SVGTextFragment>& textFragments() { return m_textFragments; }
-    const Vector<SVGTextFragment>& textFragments() const { return m_textFragments; }
+  void clearTextFragments() { m_textFragments.clear(); }
+  Vector<SVGTextFragment>& textFragments() { return m_textFragments; }
+  const Vector<SVGTextFragment>& textFragments() const {
+    return m_textFragments;
+  }
 
-    void dirtyLineBoxes() override;
+  void dirtyLineBoxes() override;
 
-    bool startsNewTextChunk() const { return m_startsNewTextChunk; }
-    void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }
+  bool startsNewTextChunk() const { return m_startsNewTextChunk; }
+  void setStartsNewTextChunk(bool newTextChunk) {
+    m_startsNewTextChunk = newTextChunk;
+  }
 
-    int offsetForPositionInFragment(const SVGTextFragment&, LayoutUnit position, bool includePartialGlyphs) const;
-    FloatRect selectionRectForTextFragment(const SVGTextFragment&, int fragmentStartPosition, int fragmentEndPosition, const ComputedStyle&) const;
-    TextRun constructTextRun(const ComputedStyle&, const SVGTextFragment&) const;
+  int offsetForPositionInFragment(const SVGTextFragment&,
+                                  LayoutUnit position,
+                                  bool includePartialGlyphs) const;
+  FloatRect selectionRectForTextFragment(const SVGTextFragment&,
+                                         int fragmentStartPosition,
+                                         int fragmentEndPosition,
+                                         const ComputedStyle&) const;
+  TextRun constructTextRun(const ComputedStyle&, const SVGTextFragment&) const;
 
-private:
-    void paintDocumentMarker(GraphicsContext&, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&, bool) const final;
-    void paintTextMatchMarkerForeground(const PaintInfo&, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&) const final;
-    void paintTextMatchMarkerBackground(const PaintInfo&, const LayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&) const final;
+ private:
+  void paintDocumentMarker(GraphicsContext&,
+                           const LayoutPoint&,
+                           DocumentMarker*,
+                           const ComputedStyle&,
+                           const Font&,
+                           bool) const final;
+  void paintTextMatchMarkerForeground(const PaintInfo&,
+                                      const LayoutPoint&,
+                                      DocumentMarker*,
+                                      const ComputedStyle&,
+                                      const Font&) const final;
+  void paintTextMatchMarkerBackground(const PaintInfo&,
+                                      const LayoutPoint&,
+                                      DocumentMarker*,
+                                      const ComputedStyle&,
+                                      const Font&) const final;
 
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) override;
+  bool nodeAtPoint(HitTestResult&,
+                   const HitTestLocation& locationInContainer,
+                   const LayoutPoint& accumulatedOffset,
+                   LayoutUnit lineTop,
+                   LayoutUnit lineBottom) override;
 
-    LayoutUnit m_logicalHeight;
-    bool m_startsNewTextChunk : 1;
-    Vector<SVGTextFragment> m_textFragments;
+  LayoutUnit m_logicalHeight;
+  bool m_startsNewTextChunk : 1;
+  Vector<SVGTextFragment> m_textFragments;
 };
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineTextBox);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGInlineTextBox_h
+#endif  // SVGInlineTextBox_h

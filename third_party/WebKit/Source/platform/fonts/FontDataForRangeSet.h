@@ -36,49 +36,53 @@ namespace blink {
 
 class SimpleFontData;
 
-class PLATFORM_EXPORT FontDataForRangeSet : public RefCounted<FontDataForRangeSet> {
-public:
-    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData = nullptr, PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
-        : m_fontData(fontData)
-        , m_rangeSet(rangeSet)
-    {
-    }
+class PLATFORM_EXPORT FontDataForRangeSet
+    : public RefCounted<FontDataForRangeSet> {
+ public:
+  explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData = nullptr,
+                               PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
+      : m_fontData(fontData), m_rangeSet(rangeSet) {}
 
-    // Shorthand for GlyphPageTreeNode tests.
-    explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData, UChar32 from, UChar32 to)
-        : m_fontData(fontData)
-    {
-        UnicodeRange range(from, to);
-        Vector<UnicodeRange> rangeVector;
-        rangeVector.append(range);
-        m_rangeSet = adoptRef(new UnicodeRangeSet(rangeVector));
-    }
+  // Shorthand for GlyphPageTreeNode tests.
+  explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData,
+                               UChar32 from,
+                               UChar32 to)
+      : m_fontData(fontData) {
+    UnicodeRange range(from, to);
+    Vector<UnicodeRange> rangeVector;
+    rangeVector.append(range);
+    m_rangeSet = adoptRef(new UnicodeRangeSet(rangeVector));
+  }
 
-    FontDataForRangeSet(const FontDataForRangeSet& other);
+  FontDataForRangeSet(const FontDataForRangeSet& other);
 
-    virtual ~FontDataForRangeSet() { };
+  virtual ~FontDataForRangeSet(){};
 
-    bool contains(UChar32 testChar) const { return !m_rangeSet || m_rangeSet->contains(testChar); }
-    bool isEntireRange() const { return !m_rangeSet || m_rangeSet->isEntireRange(); }
-    UnicodeRangeSet* ranges() const { return m_rangeSet.get(); }
-    bool hasFontData() const { return m_fontData.get(); }
-    const SimpleFontData* fontData() const { return m_fontData.get(); }
+  bool contains(UChar32 testChar) const {
+    return !m_rangeSet || m_rangeSet->contains(testChar);
+  }
+  bool isEntireRange() const {
+    return !m_rangeSet || m_rangeSet->isEntireRange();
+  }
+  UnicodeRangeSet* ranges() const { return m_rangeSet.get(); }
+  bool hasFontData() const { return m_fontData.get(); }
+  const SimpleFontData* fontData() const { return m_fontData.get(); }
 
-protected:
-    RefPtr<SimpleFontData> m_fontData;
-    RefPtr<UnicodeRangeSet> m_rangeSet;
+ protected:
+  RefPtr<SimpleFontData> m_fontData;
+  RefPtr<UnicodeRangeSet> m_rangeSet;
 };
 
-class PLATFORM_EXPORT FontDataForRangeSetFromCache : public FontDataForRangeSet {
-public:
-    explicit FontDataForRangeSetFromCache(PassRefPtr<SimpleFontData> fontData,
-        PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
-        : FontDataForRangeSet(std::move(fontData), std::move(rangeSet))
-    {
-    }
-    virtual ~FontDataForRangeSetFromCache();
+class PLATFORM_EXPORT FontDataForRangeSetFromCache
+    : public FontDataForRangeSet {
+ public:
+  explicit FontDataForRangeSetFromCache(
+      PassRefPtr<SimpleFontData> fontData,
+      PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
+      : FontDataForRangeSet(std::move(fontData), std::move(rangeSet)) {}
+  virtual ~FontDataForRangeSetFromCache();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

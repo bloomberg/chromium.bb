@@ -36,25 +36,25 @@ class String;
 WTF_EXPORT String dumpRefCountedInstanceCounts();
 
 #if ENABLE(INSTANCE_COUNTER)
-WTF_EXPORT void incrementInstanceCount(const char* stringWithTypeName, void* ptr);
-WTF_EXPORT void decrementInstanceCount(const char* stringWithTypeName, void* ptr);
+WTF_EXPORT void incrementInstanceCount(const char* stringWithTypeName,
+                                       void* ptr);
+WTF_EXPORT void decrementInstanceCount(const char* stringWithTypeName,
+                                       void* ptr);
 
 WTF_EXPORT String extractTypeNameFromFunctionName(const char* funcName);
 
-template<typename T>
-inline void incrementInstanceCount(T* p)
-{
-    incrementInstanceCount(getStringWithTypeName<T>(), p);
+template <typename T>
+inline void incrementInstanceCount(T* p) {
+  incrementInstanceCount(getStringWithTypeName<T>(), p);
 }
 
-template<typename T>
-inline void decrementInstanceCount(T* p)
-{
-    decrementInstanceCount(getStringWithTypeName<T>(), p);
+template <typename T>
+inline void decrementInstanceCount(T* p) {
+  decrementInstanceCount(getStringWithTypeName<T>(), p);
 }
 
-#endif // ENABLE(INSTANCE_COUNTER)
+#endif  // ENABLE(INSTANCE_COUNTER)
 
-} // namespace WTF
+}  // namespace WTF
 
 #endif

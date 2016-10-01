@@ -35,75 +35,96 @@ namespace blink {
 class EventDispatcher;
 
 class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum KeyLocationCode {
-        kDomKeyLocationStandard     = 0x00,
-        kDomKeyLocationLeft         = 0x01,
-        kDomKeyLocationRight        = 0x02,
-        kDomKeyLocationNumpad       = 0x03
-    };
+  DEFINE_WRAPPERTYPEINFO();
 
-    static KeyboardEvent* create()
-    {
-        return new KeyboardEvent;
-    }
+ public:
+  enum KeyLocationCode {
+    kDomKeyLocationStandard = 0x00,
+    kDomKeyLocationLeft = 0x01,
+    kDomKeyLocationRight = 0x02,
+    kDomKeyLocationNumpad = 0x03
+  };
 
-    static KeyboardEvent* create(const WebKeyboardEvent& webEvent, AbstractView* view)
-    {
-        return new KeyboardEvent(webEvent, view);
-    }
+  static KeyboardEvent* create() { return new KeyboardEvent; }
 
-    static KeyboardEvent* create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
+  static KeyboardEvent* create(const WebKeyboardEvent& webEvent,
+                               AbstractView* view) {
+    return new KeyboardEvent(webEvent, view);
+  }
 
-    static KeyboardEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, const String& code, const String& key, unsigned location,
-        PlatformEvent::Modifiers modifiers, double platformTimeStamp)
-    {
-        return new KeyboardEvent(type, canBubble, cancelable, view, code, key, location,
-            modifiers, platformTimeStamp);
-    }
+  static KeyboardEvent* create(ScriptState*,
+                               const AtomicString& type,
+                               const KeyboardEventInit&);
 
-    ~KeyboardEvent() override;
+  static KeyboardEvent* create(const AtomicString& type,
+                               bool canBubble,
+                               bool cancelable,
+                               AbstractView* view,
+                               const String& code,
+                               const String& key,
+                               unsigned location,
+                               PlatformEvent::Modifiers modifiers,
+                               double platformTimeStamp) {
+    return new KeyboardEvent(type, canBubble, cancelable, view, code, key,
+                             location, modifiers, platformTimeStamp);
+  }
 
-    void initKeyboardEvent(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
-        const String& keyIdentifier, unsigned location,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
+  ~KeyboardEvent() override;
 
-    const String& code() const { return m_code; }
-    const String& key() const { return m_key; }
+  void initKeyboardEvent(ScriptState*,
+                         const AtomicString& type,
+                         bool canBubble,
+                         bool cancelable,
+                         AbstractView*,
+                         const String& keyIdentifier,
+                         unsigned location,
+                         bool ctrlKey,
+                         bool altKey,
+                         bool shiftKey,
+                         bool metaKey);
 
-    unsigned location() const { return m_location; }
+  const String& code() const { return m_code; }
+  const String& key() const { return m_key; }
 
-    const WebKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
+  unsigned location() const { return m_location; }
 
-    int keyCode() const; // key code for keydown and keyup, character for keypress
-    int charCode() const; // character code for keypress, 0 for keydown and keyup
-    bool repeat() const { return modifiers() & PlatformEvent::IsAutoRepeat; }
+  const WebKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
-    const AtomicString& interfaceName() const override;
-    bool isKeyboardEvent() const override;
-    int which() const override;
+  int keyCode()
+      const;  // key code for keydown and keyup, character for keypress
+  int charCode() const;  // character code for keypress, 0 for keydown and keyup
+  bool repeat() const { return modifiers() & PlatformEvent::IsAutoRepeat; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
+  bool isKeyboardEvent() const override;
+  int which() const override;
 
-private:
-    KeyboardEvent();
-    KeyboardEvent(const WebKeyboardEvent&, AbstractView*);
-    KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
-    KeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
-        const String& code, const String& key, unsigned location,
-        PlatformEvent::Modifiers, double platformTimeStamp);
+  DECLARE_VIRTUAL_TRACE();
 
-    void initLocationModifiers(unsigned location);
+ private:
+  KeyboardEvent();
+  KeyboardEvent(const WebKeyboardEvent&, AbstractView*);
+  KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
+  KeyboardEvent(const AtomicString& type,
+                bool canBubble,
+                bool cancelable,
+                AbstractView*,
+                const String& code,
+                const String& key,
+                unsigned location,
+                PlatformEvent::Modifiers,
+                double platformTimeStamp);
 
-    std::unique_ptr<WebKeyboardEvent> m_keyEvent;
-    String m_code;
-    String m_key;
-    unsigned m_location;
+  void initLocationModifiers(unsigned location);
+
+  std::unique_ptr<WebKeyboardEvent> m_keyEvent;
+  String m_code;
+  String m_key;
+  unsigned m_location;
 };
 
 DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // KeyboardEvent_h
+#endif  // KeyboardEvent_h

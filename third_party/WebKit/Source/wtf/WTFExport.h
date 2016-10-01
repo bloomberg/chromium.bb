@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef WTFExport_h
 #define WTFExport_h
 
@@ -43,11 +42,11 @@
 #else
 #define WTF_EXPORT __declspec(dllimport)
 #endif
-#else // defined(WIN32)
+#else  // defined(WIN32)
 #define WTF_EXPORT __attribute__((visibility("default")))
 #endif
-#else // defined(COMPONENT_BUILD)
+#else  // defined(COMPONENT_BUILD)
 #define WTF_EXPORT
 #endif
 
-#endif // WTFExport_h
+#endif  // WTFExport_h

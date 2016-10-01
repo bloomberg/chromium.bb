@@ -9,40 +9,35 @@
 
 namespace blink {
 
-NavigatorPermissions::NavigatorPermissions()
-{
+NavigatorPermissions::NavigatorPermissions() {}
+
+// static
+const char* NavigatorPermissions::supplementName() {
+  return "NavigatorPermissions";
 }
 
 // static
-const char* NavigatorPermissions::supplementName()
-{
-    return "NavigatorPermissions";
+NavigatorPermissions& NavigatorPermissions::from(Navigator& navigator) {
+  NavigatorPermissions* supplement = static_cast<NavigatorPermissions*>(
+      Supplement<Navigator>::from(navigator, supplementName()));
+  if (!supplement) {
+    supplement = new NavigatorPermissions();
+    provideTo(navigator, supplementName(), supplement);
+  }
+  return *supplement;
 }
 
 // static
-NavigatorPermissions& NavigatorPermissions::from(Navigator& navigator)
-{
-    NavigatorPermissions* supplement = static_cast<NavigatorPermissions*>(Supplement<Navigator>::from(navigator, supplementName()));
-    if (!supplement) {
-        supplement = new NavigatorPermissions();
-        provideTo(navigator, supplementName(), supplement);
-    }
-    return *supplement;
+Permissions* NavigatorPermissions::permissions(Navigator& navigator) {
+  NavigatorPermissions& self = NavigatorPermissions::from(navigator);
+  if (!self.m_permissions)
+    self.m_permissions = new Permissions();
+  return self.m_permissions.get();
 }
 
-// static
-Permissions* NavigatorPermissions::permissions(Navigator& navigator)
-{
-    NavigatorPermissions& self = NavigatorPermissions::from(navigator);
-    if (!self.m_permissions)
-        self.m_permissions = new Permissions();
-    return self.m_permissions.get();
+DEFINE_TRACE(NavigatorPermissions) {
+  visitor->trace(m_permissions);
+  Supplement<Navigator>::trace(visitor);
 }
 
-DEFINE_TRACE(NavigatorPermissions)
-{
-    visitor->trace(m_permissions);
-    Supplement<Navigator>::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

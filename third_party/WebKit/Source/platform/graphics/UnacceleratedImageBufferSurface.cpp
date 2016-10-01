@@ -38,35 +38,40 @@ class SkCanvas;
 
 namespace blink {
 
-UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode, ImageInitializationMode initializationMode, sk_sp<SkColorSpace> colorSpace)
-    : ImageBufferSurface(size, opacityMode, colorSpace)
-{
-    SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType, colorSpace);
-    SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    m_surface = SkSurface::MakeRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps);
+UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
+    const IntSize& size,
+    OpacityMode opacityMode,
+    ImageInitializationMode initializationMode,
+    sk_sp<SkColorSpace> colorSpace)
+    : ImageBufferSurface(size, opacityMode, colorSpace) {
+  SkAlphaType alphaType =
+      (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+  SkImageInfo info =
+      SkImageInfo::MakeN32(size.width(), size.height(), alphaType, colorSpace);
+  SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
+  m_surface =
+      SkSurface::MakeRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps);
 
-    if (initializationMode == InitializeImagePixels) {
-        if (m_surface)
-            clear();
-    }
+  if (initializationMode == InitializeImagePixels) {
+    if (m_surface)
+      clear();
+  }
 }
 
-UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() { }
+UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() {}
 
-SkCanvas* UnacceleratedImageBufferSurface::canvas()
-{
-    return m_surface->getCanvas();
+SkCanvas* UnacceleratedImageBufferSurface::canvas() {
+  return m_surface->getCanvas();
 }
 
-bool UnacceleratedImageBufferSurface::isValid() const
-{
-    return m_surface;
+bool UnacceleratedImageBufferSurface::isValid() const {
+  return m_surface;
 }
 
-sk_sp<SkImage> UnacceleratedImageBufferSurface::newImageSnapshot(AccelerationHint, SnapshotReason)
-{
-    return m_surface->makeImageSnapshot();
+sk_sp<SkImage> UnacceleratedImageBufferSurface::newImageSnapshot(
+    AccelerationHint,
+    SnapshotReason) {
+  return m_surface->makeImageSnapshot();
 }
 
-} // namespace blink
+}  // namespace blink

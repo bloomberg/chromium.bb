@@ -38,30 +38,38 @@
 
 namespace blink {
 
-template<typename Strategy>
+template <typename Strategy>
 class StyledMarkupSerializer final {
-    STACK_ALLOCATED();
-public:
-    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines);
+  STACK_ALLOCATED();
 
-    String createMarkup();
+ public:
+  StyledMarkupSerializer(EAbsoluteURLs,
+                         EAnnotateForInterchange,
+                         const PositionTemplate<Strategy>& start,
+                         const PositionTemplate<Strategy>& end,
+                         Node* highestNodeToBeSerialized,
+                         ConvertBlocksToInlines);
 
-private:
-    bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange; }
+  String createMarkup();
 
-    const PositionTemplate<Strategy> m_start;
-    const PositionTemplate<Strategy> m_end;
-    const EAbsoluteURLs m_shouldResolveURLs;
-    const EAnnotateForInterchange m_shouldAnnotate;
-    const Member<Node> m_highestNodeToBeSerialized;
-    const ConvertBlocksToInlines m_convertBlocksToInlines;
-    Member<Node> m_lastClosed;
-    Member<EditingStyle> m_wrappingStyle;
+ private:
+  bool shouldAnnotate() const {
+    return m_shouldAnnotate == AnnotateForInterchange;
+  }
+
+  const PositionTemplate<Strategy> m_start;
+  const PositionTemplate<Strategy> m_end;
+  const EAbsoluteURLs m_shouldResolveURLs;
+  const EAnnotateForInterchange m_shouldAnnotate;
+  const Member<Node> m_highestNodeToBeSerialized;
+  const ConvertBlocksToInlines m_convertBlocksToInlines;
+  Member<Node> m_lastClosed;
+  Member<EditingStyle> m_wrappingStyle;
 };
 
 extern template class StyledMarkupSerializer<EditingStrategy>;
 extern template class StyledMarkupSerializer<EditingInFlatTreeStrategy>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyledMarkupSerializer_h
+#endif  // StyledMarkupSerializer_h

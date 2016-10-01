@@ -18,57 +18,62 @@ class CSSParserTokenRange;
 class CSSSyntaxDescriptor;
 
 class CSSVariableData : public RefCounted<CSSVariableData> {
-    WTF_MAKE_NONCOPYABLE(CSSVariableData);
-    USING_FAST_MALLOC(CSSVariableData);
-public:
-    static PassRefPtr<CSSVariableData> create(const CSSParserTokenRange& range, bool needsVariableResolution = true)
-    {
-        return adoptRef(new CSSVariableData(range, needsVariableResolution));
-    }
+  WTF_MAKE_NONCOPYABLE(CSSVariableData);
+  USING_FAST_MALLOC(CSSVariableData);
 
-    static PassRefPtr<CSSVariableData> createResolved(const Vector<CSSParserToken>& resolvedTokens, const CSSVariableData& unresolvedData)
-    {
-        return adoptRef(new CSSVariableData(resolvedTokens, unresolvedData.m_backingString));
-    }
+ public:
+  static PassRefPtr<CSSVariableData> create(
+      const CSSParserTokenRange& range,
+      bool needsVariableResolution = true) {
+    return adoptRef(new CSSVariableData(range, needsVariableResolution));
+  }
 
-    CSSParserTokenRange tokenRange() const { return m_tokens; }
+  static PassRefPtr<CSSVariableData> createResolved(
+      const Vector<CSSParserToken>& resolvedTokens,
+      const CSSVariableData& unresolvedData) {
+    return adoptRef(
+        new CSSVariableData(resolvedTokens, unresolvedData.m_backingString));
+  }
 
-    const Vector<CSSParserToken>& tokens() const { return m_tokens; }
+  CSSParserTokenRange tokenRange() const { return m_tokens; }
 
-    bool operator==(const CSSVariableData& other) const;
+  const Vector<CSSParserToken>& tokens() const { return m_tokens; }
 
-    bool needsVariableResolution() const { return m_needsVariableResolution; }
+  bool operator==(const CSSVariableData& other) const;
 
-    const CSSValue* parseForSyntax(const CSSSyntaxDescriptor&) const;
+  bool needsVariableResolution() const { return m_needsVariableResolution; }
 
-    StylePropertySet* propertySet();
+  const CSSValue* parseForSyntax(const CSSSyntaxDescriptor&) const;
 
-private:
-    CSSVariableData(const CSSParserTokenRange&, bool needsVariableResolution);
+  StylePropertySet* propertySet();
 
-    // We can safely copy the tokens (which have raw pointers to substrings) because
-    // StylePropertySets contain references to CSSCustomPropertyDeclarations, which
-    // point to the unresolved CSSVariableData values that own the backing strings
-    // this will potentially reference.
-    CSSVariableData(const Vector<CSSParserToken>& resolvedTokens, String backingString)
-        : m_backingString(backingString)
-        , m_tokens(resolvedTokens)
-        , m_needsVariableResolution(false)
-        , m_cachedPropertySet(false)
-    { }
+ private:
+  CSSVariableData(const CSSParserTokenRange&, bool needsVariableResolution);
 
-    void consumeAndUpdateTokens(const CSSParserTokenRange&);
-    template<typename CharacterType> void updateTokens(const CSSParserTokenRange&);
+  // We can safely copy the tokens (which have raw pointers to substrings) because
+  // StylePropertySets contain references to CSSCustomPropertyDeclarations, which
+  // point to the unresolved CSSVariableData values that own the backing strings
+  // this will potentially reference.
+  CSSVariableData(const Vector<CSSParserToken>& resolvedTokens,
+                  String backingString)
+      : m_backingString(backingString),
+        m_tokens(resolvedTokens),
+        m_needsVariableResolution(false),
+        m_cachedPropertySet(false) {}
 
-    String m_backingString;
-    Vector<CSSParserToken> m_tokens;
-    const bool m_needsVariableResolution;
+  void consumeAndUpdateTokens(const CSSParserTokenRange&);
+  template <typename CharacterType>
+  void updateTokens(const CSSParserTokenRange&);
 
-    // Parsed representation for @apply
-    bool m_cachedPropertySet;
-    Persistent<StylePropertySet> m_propertySet;
+  String m_backingString;
+  Vector<CSSParserToken> m_tokens;
+  const bool m_needsVariableResolution;
+
+  // Parsed representation for @apply
+  bool m_cachedPropertySet;
+  Persistent<StylePropertySet> m_propertySet;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSVariableData_h
+#endif  // CSSVariableData_h

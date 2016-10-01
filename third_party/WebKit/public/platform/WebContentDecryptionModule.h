@@ -37,15 +37,17 @@
 namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebContentDecryptionModule {
-public:
-    virtual ~WebContentDecryptionModule();
+ public:
+  virtual ~WebContentDecryptionModule();
 
-    // Must return non-null.
-    virtual WebContentDecryptionModuleSession* createSession() = 0;
+  // Must return non-null.
+  virtual WebContentDecryptionModuleSession* createSession() = 0;
 
-    virtual void setServerCertificate(const unsigned char* certificate, size_t certificateLength, WebContentDecryptionModuleResult) = 0;
+  virtual void setServerCertificate(const unsigned char* certificate,
+                                    size_t certificateLength,
+                                    WebContentDecryptionModuleResult) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebContentDecryptionModule_h
+#endif  // WebContentDecryptionModule_h

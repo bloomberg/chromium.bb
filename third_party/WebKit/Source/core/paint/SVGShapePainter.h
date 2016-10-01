@@ -20,22 +20,27 @@ struct MarkerPosition;
 struct PaintInfo;
 
 class SVGShapePainter {
-    STACK_ALLOCATED();
-public:
-    SVGShapePainter(const LayoutSVGShape& layoutSVGShape) : m_layoutSVGShape(layoutSVGShape) { }
+  STACK_ALLOCATED();
 
-    void paint(const PaintInfo&);
+ public:
+  SVGShapePainter(const LayoutSVGShape& layoutSVGShape)
+      : m_layoutSVGShape(layoutSVGShape) {}
 
-private:
-    void fillShape(GraphicsContext&, const SkPaint&, SkPath::FillType);
-    void strokeShape(GraphicsContext&, const SkPaint&);
+  void paint(const PaintInfo&);
 
-    void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
-    void paintMarker(const PaintInfo&, const LayoutSVGResourceMarker&, const MarkerPosition&, float);
+ private:
+  void fillShape(GraphicsContext&, const SkPaint&, SkPath::FillType);
+  void strokeShape(GraphicsContext&, const SkPaint&);
 
-    const LayoutSVGShape& m_layoutSVGShape;
+  void paintMarkers(const PaintInfo&, const FloatRect& boundingBox);
+  void paintMarker(const PaintInfo&,
+                   const LayoutSVGResourceMarker&,
+                   const MarkerPosition&,
+                   float);
+
+  const LayoutSVGShape& m_layoutSVGShape;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGShapePainter_h
+#endif  // SVGShapePainter_h

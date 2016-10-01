@@ -25,44 +25,57 @@
 
 namespace blink {
 
-bool RotateTransformOperation::operator==(const TransformOperation& other) const
-{
-    if (!isSameType(other))
-        return false;
-    const Rotation& otherRotation = toRotateTransformOperation(other).m_rotation;
-    return m_rotation.axis == otherRotation.axis && m_rotation.angle == otherRotation.angle;
+bool RotateTransformOperation::operator==(
+    const TransformOperation& other) const {
+  if (!isSameType(other))
+    return false;
+  const Rotation& otherRotation = toRotateTransformOperation(other).m_rotation;
+  return m_rotation.axis == otherRotation.axis &&
+         m_rotation.angle == otherRotation.angle;
 }
 
-bool RotateTransformOperation::getCommonAxis(const RotateTransformOperation* a, const RotateTransformOperation* b, FloatPoint3D& resultAxis, double& resultAngleA, double& resultAngleB)
-{
-    return Rotation::getCommonAxis(a ? a->m_rotation : Rotation(), b ? b->m_rotation : Rotation(), resultAxis, resultAngleA, resultAngleB);
+bool RotateTransformOperation::getCommonAxis(const RotateTransformOperation* a,
+                                             const RotateTransformOperation* b,
+                                             FloatPoint3D& resultAxis,
+                                             double& resultAngleA,
+                                             double& resultAngleB) {
+  return Rotation::getCommonAxis(a ? a->m_rotation : Rotation(),
+                                 b ? b->m_rotation : Rotation(), resultAxis,
+                                 resultAngleA, resultAngleB);
 }
 
-PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
-{
-    if (from && !from->isSameType(*this))
-        return this;
+PassRefPtr<TransformOperation> RotateTransformOperation::blend(
+    const TransformOperation* from,
+    double progress,
+    bool blendToIdentity) {
+  if (from && !from->isSameType(*this))
+    return this;
 
-    if (blendToIdentity)
-        return RotateTransformOperation::create(Rotation(axis(), angle() * (1 - progress)), m_type);
+  if (blendToIdentity)
+    return RotateTransformOperation::create(
+        Rotation(axis(), angle() * (1 - progress)), m_type);
 
-    // Optimize for single axis rotation
-    if (!from)
-        return RotateTransformOperation::create(Rotation(axis(), angle() * progress), m_type);
+  // Optimize for single axis rotation
+  if (!from)
+    return RotateTransformOperation::create(
+        Rotation(axis(), angle() * progress), m_type);
 
-    const RotateTransformOperation& fromRotate = toRotateTransformOperation(*from);
-    if (type() == Rotate3D) {
-        return RotateTransformOperation::create(
-            Rotation::slerp(fromRotate.m_rotation, m_rotation, progress), Rotate3D);
-    }
+  const RotateTransformOperation& fromRotate =
+      toRotateTransformOperation(*from);
+  if (type() == Rotate3D) {
+    return RotateTransformOperation::create(
+        Rotation::slerp(fromRotate.m_rotation, m_rotation, progress), Rotate3D);
+  }
 
-    ASSERT(axis() == fromRotate.axis());
-    return RotateTransformOperation::create(Rotation(axis(), blink::blend(fromRotate.angle(), angle(), progress)), m_type);
+  ASSERT(axis() == fromRotate.axis());
+  return RotateTransformOperation::create(
+      Rotation(axis(), blink::blend(fromRotate.angle(), angle(), progress)),
+      m_type);
 }
 
-bool RotateTransformOperation::canBlendWith(const TransformOperation& other) const
-{
-    return other.isSameType(*this);
+bool RotateTransformOperation::canBlendWith(
+    const TransformOperation& other) const {
+  return other.isSameType(*this);
 }
 
-} // namespace blink
+}  // namespace blink

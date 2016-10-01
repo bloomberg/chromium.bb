@@ -37,31 +37,33 @@ namespace blink {
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT StyleVisualData : public RefCounted<StyleVisualData> {
-public:
-    static PassRefPtr<StyleVisualData> create() { return adoptRef(new StyleVisualData); }
-    PassRefPtr<StyleVisualData> copy() const { return adoptRef(new StyleVisualData(*this)); }
-    ~StyleVisualData();
+ public:
+  static PassRefPtr<StyleVisualData> create() {
+    return adoptRef(new StyleVisualData);
+  }
+  PassRefPtr<StyleVisualData> copy() const {
+    return adoptRef(new StyleVisualData(*this));
+  }
+  ~StyleVisualData();
 
-    bool operator==(const StyleVisualData& o) const
-    {
-        return clip == o.clip
-            && hasAutoClip == o.hasAutoClip
-            && textDecoration == o.textDecoration
-            && m_zoom == o.m_zoom;
-    }
-    bool operator!=(const StyleVisualData& o) const { return !(*this == o); }
+  bool operator==(const StyleVisualData& o) const {
+    return clip == o.clip && hasAutoClip == o.hasAutoClip &&
+           textDecoration == o.textDecoration && m_zoom == o.m_zoom;
+  }
+  bool operator!=(const StyleVisualData& o) const { return !(*this == o); }
 
-    LengthBox clip;
-    bool hasAutoClip : 1;
-    unsigned textDecoration : TextDecorationBits; // Text decorations defined *only* by this element.
+  LengthBox clip;
+  bool hasAutoClip : 1;
+  unsigned textDecoration
+      : TextDecorationBits;  // Text decorations defined *only* by this element.
 
-    float m_zoom;
+  float m_zoom;
 
-private:
-    StyleVisualData();
-    StyleVisualData(const StyleVisualData&);
+ private:
+  StyleVisualData();
+  StyleVisualData(const StyleVisualData&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleVisualData_h
+#endif  // StyleVisualData_h

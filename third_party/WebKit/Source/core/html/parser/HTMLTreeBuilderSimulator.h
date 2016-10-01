@@ -36,41 +36,34 @@ class HTMLTokenizer;
 class HTMLTreeBuilder;
 
 class HTMLTreeBuilderSimulator {
-    USING_FAST_MALLOC(HTMLTreeBuilderSimulator);
-private:
-    enum Namespace {
-        HTML,
-        SVG,
-        MathML
-    };
+  USING_FAST_MALLOC(HTMLTreeBuilderSimulator);
 
-public:
-    enum SimulatedToken {
-        ScriptStart,
-        ScriptEnd,
-        OtherToken
-    };
+ private:
+  enum Namespace { HTML, SVG, MathML };
 
-    typedef Vector<Namespace, 1> State;
+ public:
+  enum SimulatedToken { ScriptStart, ScriptEnd, OtherToken };
 
-    explicit HTMLTreeBuilderSimulator(const HTMLParserOptions&);
+  typedef Vector<Namespace, 1> State;
 
-    static State stateFor(HTMLTreeBuilder*);
+  explicit HTMLTreeBuilderSimulator(const HTMLParserOptions&);
 
-    const State& state() const { return m_namespaceStack; }
-    void setState(const State& state) { m_namespaceStack = state; }
+  static State stateFor(HTMLTreeBuilder*);
 
-    SimulatedToken simulate(const CompactHTMLToken&, HTMLTokenizer*);
+  const State& state() const { return m_namespaceStack; }
+  void setState(const State& state) { m_namespaceStack = state; }
 
-private:
-    explicit HTMLTreeBuilderSimulator(HTMLTreeBuilder*);
+  SimulatedToken simulate(const CompactHTMLToken&, HTMLTokenizer*);
 
-    bool inForeignContent() const { return m_namespaceStack.last() != HTML; }
+ private:
+  explicit HTMLTreeBuilderSimulator(HTMLTreeBuilder*);
 
-    HTMLParserOptions m_options;
-    State m_namespaceStack;
+  bool inForeignContent() const { return m_namespaceStack.last() != HTML; }
+
+  HTMLParserOptions m_options;
+  State m_namespaceStack;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

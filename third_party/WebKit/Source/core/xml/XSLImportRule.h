@@ -29,36 +29,39 @@
 namespace blink {
 
 class XSLImportRule final : public GarbageCollectedFinalized<XSLImportRule> {
-public:
-    static XSLImportRule* create(XSLStyleSheet* parentSheet, const String& href)
-    {
-        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
-        return new XSLImportRule(parentSheet, href);
-    }
+ public:
+  static XSLImportRule* create(XSLStyleSheet* parentSheet, const String& href) {
+    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+    return new XSLImportRule(parentSheet, href);
+  }
 
-    virtual ~XSLImportRule();
-    DECLARE_VIRTUAL_TRACE();
+  virtual ~XSLImportRule();
+  DECLARE_VIRTUAL_TRACE();
 
-    const String& href() const { return m_strHref; }
-    XSLStyleSheet* styleSheet() const { return m_styleSheet.get(); }
+  const String& href() const { return m_strHref; }
+  XSLStyleSheet* styleSheet() const { return m_styleSheet.get(); }
 
-    XSLStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
-    void setParentStyleSheet(XSLStyleSheet* styleSheet) { m_parentStyleSheet = styleSheet; }
+  XSLStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
+  void setParentStyleSheet(XSLStyleSheet* styleSheet) {
+    m_parentStyleSheet = styleSheet;
+  }
 
-    bool isLoading();
-    void loadSheet();
+  bool isLoading();
+  void loadSheet();
 
-private:
-    XSLImportRule(XSLStyleSheet* parentSheet, const String& href);
+ private:
+  XSLImportRule(XSLStyleSheet* parentSheet, const String& href);
 
-    void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
+  void setXSLStyleSheet(const String& href,
+                        const KURL& baseURL,
+                        const String& sheet);
 
-    Member<XSLStyleSheet> m_parentStyleSheet;
-    String m_strHref;
-    Member<XSLStyleSheet> m_styleSheet;
-    bool m_loading;
+  Member<XSLStyleSheet> m_parentStyleSheet;
+  String m_strHref;
+  Member<XSLStyleSheet> m_styleSheet;
+  bool m_loading;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // XSLImportRule_h
+#endif  // XSLImportRule_h

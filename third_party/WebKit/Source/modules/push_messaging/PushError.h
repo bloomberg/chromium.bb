@@ -15,13 +15,15 @@ namespace blink {
 class ScriptPromiseResolver;
 
 class PushError {
-    STATIC_ONLY(PushError);
-public:
-    // For CallbackPromiseAdapter.
-    using WebType = const WebPushError&;
-    static DOMException* take(ScriptPromiseResolver*, const WebPushError& webError);
+  STATIC_ONLY(PushError);
+
+ public:
+  // For CallbackPromiseAdapter.
+  using WebType = const WebPushError&;
+  static DOMException* take(ScriptPromiseResolver*,
+                            const WebPushError& webError);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PushError_h
+#endif  // PushError_h

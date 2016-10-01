@@ -18,24 +18,28 @@ class ScriptPromise;
 class ScriptState;
 class InstalledAppController;
 
-class NavigatorInstalledApp final : public GarbageCollected<NavigatorInstalledApp>, public Supplement<Navigator>, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorInstalledApp);
-public:
-    static NavigatorInstalledApp* from(Document&);
-    static NavigatorInstalledApp& from(Navigator&);
+class NavigatorInstalledApp final
+    : public GarbageCollected<NavigatorInstalledApp>,
+      public Supplement<Navigator>,
+      public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorInstalledApp);
 
-    static ScriptPromise getInstalledRelatedApps(ScriptState*, Navigator&);
-    ScriptPromise getInstalledRelatedApps(ScriptState*);
+ public:
+  static NavigatorInstalledApp* from(Document&);
+  static NavigatorInstalledApp& from(Navigator&);
 
-    InstalledAppController* controller();
+  static ScriptPromise getInstalledRelatedApps(ScriptState*, Navigator&);
+  ScriptPromise getInstalledRelatedApps(ScriptState*);
 
-    DECLARE_VIRTUAL_TRACE();
+  InstalledAppController* controller();
 
-private:
-    explicit NavigatorInstalledApp(LocalFrame*);
-    static const char* supplementName();
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  explicit NavigatorInstalledApp(LocalFrame*);
+  static const char* supplementName();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorInstalledApp_h
+#endif  // NavigatorInstalledApp_h

@@ -12,35 +12,32 @@
 
 namespace blink {
 
-class USBIsochronousInTransferPacket final : public GarbageCollectedFinalized<USBIsochronousInTransferPacket>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static USBIsochronousInTransferPacket* create(const String& status, DOMDataView* data)
-    {
-        return new USBIsochronousInTransferPacket(status, data);
-    }
+class USBIsochronousInTransferPacket final
+    : public GarbageCollectedFinalized<USBIsochronousInTransferPacket>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~USBIsochronousInTransferPacket() {}
+ public:
+  static USBIsochronousInTransferPacket* create(const String& status,
+                                                DOMDataView* data) {
+    return new USBIsochronousInTransferPacket(status, data);
+  }
 
-    String status() const { return m_status; }
-    DOMDataView* data() const { return m_data; }
+  ~USBIsochronousInTransferPacket() {}
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_data);
-    }
+  String status() const { return m_status; }
+  DOMDataView* data() const { return m_data; }
 
-private:
-    USBIsochronousInTransferPacket(const String& status, DOMDataView* data)
-        : m_status(status)
-        , m_data(data)
-    {
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_data); }
 
-    const String m_status;
-    const Member<DOMDataView> m_data;
+ private:
+  USBIsochronousInTransferPacket(const String& status, DOMDataView* data)
+      : m_status(status), m_data(data) {}
+
+  const String m_status;
+  const Member<DOMDataView> m_data;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // USBIsochronousInTransferPacket_h
+#endif  // USBIsochronousInTransferPacket_h

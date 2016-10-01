@@ -16,27 +16,28 @@ class Navigator;
 
 // This exposes the BudgetState interface which is returned from BudgetService
 // when there is a GetBudget call.
-class BudgetState final : public GarbageCollected<BudgetState>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class BudgetState final : public GarbageCollected<BudgetState>,
+                          public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    BudgetState();
-    BudgetState(double budgetAt, DOMTimeStamp);
-    BudgetState(const BudgetState& other);
+ public:
+  BudgetState();
+  BudgetState(double budgetAt, DOMTimeStamp);
+  BudgetState(const BudgetState& other);
 
-    double budgetAt() const { return m_budgetAt; }
-    DOMTimeStamp time() const { return m_time; }
+  double budgetAt() const { return m_budgetAt; }
+  DOMTimeStamp time() const { return m_time; }
 
-    void setBudgetAt(const double budgetAt) { m_budgetAt = budgetAt; }
-    void setTime(const DOMTimeStamp& time) { m_time = time; }
+  void setBudgetAt(const double budgetAt) { m_budgetAt = budgetAt; }
+  void setTime(const DOMTimeStamp& time) { m_time = time; }
 
-    DEFINE_INLINE_TRACE() {}
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    double m_budgetAt;
-    DOMTimeStamp m_time;
+ private:
+  double m_budgetAt;
+  DOMTimeStamp m_time;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BudgetState_h
+#endif  // BudgetState_h

@@ -18,21 +18,22 @@ namespace blink {
 // to temporarily interrupt and pause this long running loop at
 // an arbitrary moment creating a safepoint for a GC.
 class PLATFORM_EXPORT BlinkGCInterruptor {
-    USING_FAST_MALLOC(BlinkGCInterruptor);
-public:
-    virtual ~BlinkGCInterruptor() { }
+  USING_FAST_MALLOC(BlinkGCInterruptor);
 
-    // Request the interruptor to interrupt the thread and
-    // call onInterrupted on that thread once interruption
-    // succeeds.
-    virtual void requestInterrupt() = 0;
+ public:
+  virtual ~BlinkGCInterruptor() {}
 
-protected:
-    // This method is called on the interrupted thread to
-    // create a safepoint for a GC.
-    void onInterrupted();
+  // Request the interruptor to interrupt the thread and
+  // call onInterrupted on that thread once interruption
+  // succeeds.
+  virtual void requestInterrupt() = 0;
+
+ protected:
+  // This method is called on the interrupted thread to
+  // create a safepoint for a GC.
+  void onInterrupted();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

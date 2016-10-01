@@ -39,35 +39,31 @@
 
 namespace blink {
 
-CSSTestHelper::~CSSTestHelper()
-{
+CSSTestHelper::~CSSTestHelper() {}
+
+CSSTestHelper::CSSTestHelper() {
+  m_document = Document::create();
+  TextPosition position;
+  m_styleSheet =
+      CSSStyleSheet::createInline(*m_document, KURL(), position, "UTF-8");
 }
 
-CSSTestHelper::CSSTestHelper()
-{
-    m_document = Document::create();
-    TextPosition position;
-    m_styleSheet = CSSStyleSheet::createInline(*m_document, KURL(), position, "UTF-8");
+CSSRuleList* CSSTestHelper::cssRules() {
+  return m_styleSheet->cssRules();
 }
 
-CSSRuleList* CSSTestHelper::cssRules()
-{
-    return m_styleSheet->cssRules();
+RuleSet& CSSTestHelper::ruleSet() {
+  RuleSet& ruleSet = m_styleSheet->contents()->ensureRuleSet(
+      MediaQueryEvaluator(), RuleHasNoSpecialState);
+  ruleSet.compactRulesIfNeeded();
+  return ruleSet;
 }
 
-RuleSet& CSSTestHelper::ruleSet()
-{
-    RuleSet& ruleSet = m_styleSheet->contents()->ensureRuleSet(MediaQueryEvaluator(), RuleHasNoSpecialState);
-    ruleSet.compactRulesIfNeeded();
-    return ruleSet;
+void CSSTestHelper::addCSSRules(const char* cssText) {
+  TextPosition position;
+  unsigned sheetLength = m_styleSheet->length();
+  m_styleSheet->contents()->parseStringAtPosition(cssText, position);
+  ASSERT_TRUE(m_styleSheet->length() > sheetLength);
 }
 
-void CSSTestHelper::addCSSRules(const char* cssText)
-{
-    TextPosition position;
-    unsigned sheetLength = m_styleSheet->length();
-    m_styleSheet->contents()->parseStringAtPosition(cssText, position);
-    ASSERT_TRUE(m_styleSheet->length() > sheetLength);
-}
-
-} // namespace blink
+}  // namespace blink

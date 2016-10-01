@@ -29,111 +29,117 @@
 
 namespace blink {
 
-class NodeMutationObserverData final : public GarbageCollected<NodeMutationObserverData> {
-    WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
-public:
-    HeapVector<Member<MutationObserverRegistration>> registry;
-    HeapHashSet<Member<MutationObserverRegistration>> transientRegistry;
+class NodeMutationObserverData final
+    : public GarbageCollected<NodeMutationObserverData> {
+  WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
 
-    static NodeMutationObserverData* create()
-    {
-        return new NodeMutationObserverData;
+ public:
+  HeapVector<Member<MutationObserverRegistration>> registry;
+  HeapHashSet<Member<MutationObserverRegistration>> transientRegistry;
+
+  static NodeMutationObserverData* create() {
+    return new NodeMutationObserverData;
+  }
+
+  DEFINE_INLINE_TRACE() {
+    visitor->trace(registry);
+    visitor->trace(transientRegistry);
+  }
+
+  DECLARE_TRACE_WRAPPERS() {
+    for (auto registration : registry) {
+      visitor->traceWrappers(registration);
     }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(registry);
-        visitor->trace(transientRegistry);
+    for (auto registration : transientRegistry) {
+      visitor->traceWrappers(registration);
     }
+  }
 
-    DECLARE_TRACE_WRAPPERS()
-    {
-        for (auto registration : registry) {
-            visitor->traceWrappers(registration);
-        }
-        for (auto registration : transientRegistry) {
-            visitor->traceWrappers(registration);
-        }
-    }
-
-private:
-    NodeMutationObserverData() { }
+ private:
+  NodeMutationObserverData() {}
 };
 
-class NodeRareData : public GarbageCollectedFinalized<NodeRareData>, public NodeRareDataBase {
-    WTF_MAKE_NONCOPYABLE(NodeRareData);
-public:
-    static NodeRareData* create(LayoutObject* layoutObject)
-    {
-        return new NodeRareData(layoutObject);
-    }
+class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
+                     public NodeRareDataBase {
+  WTF_MAKE_NONCOPYABLE(NodeRareData);
 
-    void clearNodeLists() { m_nodeLists.clear(); }
-    NodeListsNodeData* nodeLists() const { return m_nodeLists.get(); }
-    NodeListsNodeData& ensureNodeLists()
-    {
-        if (!m_nodeLists)
-            m_nodeLists = NodeListsNodeData::create();
-        return *m_nodeLists;
-    }
+ public:
+  static NodeRareData* create(LayoutObject* layoutObject) {
+    return new NodeRareData(layoutObject);
+  }
 
-    NodeMutationObserverData* mutationObserverData() { return m_mutationObserverData.get(); }
-    NodeMutationObserverData& ensureMutationObserverData()
-    {
-        if (!m_mutationObserverData)
-            m_mutationObserverData = NodeMutationObserverData::create();
-        return *m_mutationObserverData;
-    }
+  void clearNodeLists() { m_nodeLists.clear(); }
+  NodeListsNodeData* nodeLists() const { return m_nodeLists.get(); }
+  NodeListsNodeData& ensureNodeLists() {
+    if (!m_nodeLists)
+      m_nodeLists = NodeListsNodeData::create();
+    return *m_nodeLists;
+  }
 
-    unsigned connectedSubframeCount() const { return m_connectedFrameCount; }
-    void incrementConnectedSubframeCount();
-    void decrementConnectedSubframeCount()
-    {
-        DCHECK(m_connectedFrameCount);
-        --m_connectedFrameCount;
-    }
+  NodeMutationObserverData* mutationObserverData() {
+    return m_mutationObserverData.get();
+  }
+  NodeMutationObserverData& ensureMutationObserverData() {
+    if (!m_mutationObserverData)
+      m_mutationObserverData = NodeMutationObserverData::create();
+    return *m_mutationObserverData;
+  }
 
-    bool hasElementFlag(ElementFlags mask) const { return m_elementFlags & mask; }
-    void setElementFlag(ElementFlags mask, bool value) { m_elementFlags = (m_elementFlags & ~mask) | (-(int32_t)value & mask); }
-    void clearElementFlag(ElementFlags mask) { m_elementFlags &= ~mask; }
+  unsigned connectedSubframeCount() const { return m_connectedFrameCount; }
+  void incrementConnectedSubframeCount();
+  void decrementConnectedSubframeCount() {
+    DCHECK(m_connectedFrameCount);
+    --m_connectedFrameCount;
+  }
 
-    bool hasRestyleFlag(DynamicRestyleFlags mask) const { return m_restyleFlags & mask; }
-    void setRestyleFlag(DynamicRestyleFlags mask) { m_restyleFlags |= mask; RELEASE_ASSERT(m_restyleFlags); }
-    bool hasRestyleFlags() const { return m_restyleFlags; }
-    void clearRestyleFlags() { m_restyleFlags = 0; }
+  bool hasElementFlag(ElementFlags mask) const { return m_elementFlags & mask; }
+  void setElementFlag(ElementFlags mask, bool value) {
+    m_elementFlags = (m_elementFlags & ~mask) | (-(int32_t)value & mask);
+  }
+  void clearElementFlag(ElementFlags mask) { m_elementFlags &= ~mask; }
 
-    enum {
-        ConnectedFrameCountBits = 10, // Must fit Page::maxNumberOfFrames.
-    };
+  bool hasRestyleFlag(DynamicRestyleFlags mask) const {
+    return m_restyleFlags & mask;
+  }
+  void setRestyleFlag(DynamicRestyleFlags mask) {
+    m_restyleFlags |= mask;
+    RELEASE_ASSERT(m_restyleFlags);
+  }
+  bool hasRestyleFlags() const { return m_restyleFlags; }
+  void clearRestyleFlags() { m_restyleFlags = 0; }
 
-    DECLARE_TRACE();
+  enum {
+    ConnectedFrameCountBits = 10,  // Must fit Page::maxNumberOfFrames.
+  };
 
-    DECLARE_TRACE_AFTER_DISPATCH();
-    void finalizeGarbageCollectedObject();
+  DECLARE_TRACE();
 
-    DECLARE_TRACE_WRAPPERS();
-    DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
+  DECLARE_TRACE_AFTER_DISPATCH();
+  void finalizeGarbageCollectedObject();
 
-protected:
-    explicit NodeRareData(LayoutObject* layoutObject)
-        : NodeRareDataBase(layoutObject)
-        , m_connectedFrameCount(0)
-        , m_elementFlags(0)
-        , m_restyleFlags(0)
-        , m_isElementRareData(false)
-    { }
+  DECLARE_TRACE_WRAPPERS();
+  DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
-private:
-    Member<NodeListsNodeData> m_nodeLists;
-    Member<NodeMutationObserverData> m_mutationObserverData;
+ protected:
+  explicit NodeRareData(LayoutObject* layoutObject)
+      : NodeRareDataBase(layoutObject),
+        m_connectedFrameCount(0),
+        m_elementFlags(0),
+        m_restyleFlags(0),
+        m_isElementRareData(false) {}
 
-    unsigned m_connectedFrameCount : ConnectedFrameCountBits;
-    unsigned m_elementFlags : NumberOfElementFlags;
-    unsigned m_restyleFlags : NumberOfDynamicRestyleFlags;
-protected:
-    unsigned m_isElementRareData : 1;
+ private:
+  Member<NodeListsNodeData> m_nodeLists;
+  Member<NodeMutationObserverData> m_mutationObserverData;
+
+  unsigned m_connectedFrameCount : ConnectedFrameCountBits;
+  unsigned m_elementFlags : NumberOfElementFlags;
+  unsigned m_restyleFlags : NumberOfDynamicRestyleFlags;
+
+ protected:
+  unsigned m_isElementRareData : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NodeRareData_h
+#endif  // NodeRareData_h

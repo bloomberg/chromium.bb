@@ -49,30 +49,32 @@ class PaintLayer;
 // painting non-hardware accelerated filters (FilterEffect). Hardware
 // accelerated CSS filters use CompositorFilterOperations, that is backed by cc.
 //
-class PaintLayerFilterInfo final : public GarbageCollectedFinalized<PaintLayerFilterInfo>, public SVGResourceClient {
-    WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
-    USING_GARBAGE_COLLECTED_MIXIN(PaintLayerFilterInfo);
-public:
-    explicit PaintLayerFilterInfo(PaintLayer*);
-    ~PaintLayerFilterInfo() override;
+class PaintLayerFilterInfo final
+    : public GarbageCollectedFinalized<PaintLayerFilterInfo>,
+      public SVGResourceClient {
+  WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
+  USING_GARBAGE_COLLECTED_MIXIN(PaintLayerFilterInfo);
 
-    FilterEffect* lastEffect() const { return m_lastEffect; }
-    void setLastEffect(FilterEffect*);
+ public:
+  explicit PaintLayerFilterInfo(PaintLayer*);
+  ~PaintLayerFilterInfo() override;
 
-    void updateReferenceFilterClients(const FilterOperations&);
-    void clearLayer() { m_layer = nullptr; }
+  FilterEffect* lastEffect() const { return m_lastEffect; }
+  void setLastEffect(FilterEffect*);
 
-    void filterNeedsInvalidation() override;
+  void updateReferenceFilterClients(const FilterOperations&);
+  void clearLayer() { m_layer = nullptr; }
 
-    DECLARE_TRACE();
+  void filterNeedsInvalidation() override;
 
-private:
-    // |clearLayer| must be called before *m_layer becomes invalid.
-    PaintLayer* m_layer;
-    Member<FilterEffect> m_lastEffect;
+  DECLARE_TRACE();
+
+ private:
+  // |clearLayer| must be called before *m_layer becomes invalid.
+  PaintLayer* m_layer;
+  Member<FilterEffect> m_lastEffect;
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // PaintLayerFilterInfo_h
+#endif  // PaintLayerFilterInfo_h

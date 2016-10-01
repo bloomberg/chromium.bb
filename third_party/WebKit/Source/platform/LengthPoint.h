@@ -36,32 +36,31 @@
 namespace blink {
 
 struct LengthPoint {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    LengthPoint()
-    {
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    LengthPoint(const Length& x, const Length& y)
-        : m_x(x)
-        , m_y(y)
-    {
-    }
+ public:
+  LengthPoint() {}
 
-    bool operator==(const LengthPoint& o) const { return m_x == o.m_x && m_y == o.m_y; }
-    bool operator!=(const LengthPoint& o) const { return m_x != o.m_x || m_y != o.m_y; }
+  LengthPoint(const Length& x, const Length& y) : m_x(x), m_y(y) {}
 
-    void setX(const Length& x) { m_x = x; }
-    const Length& x() const { return m_x; }
+  bool operator==(const LengthPoint& o) const {
+    return m_x == o.m_x && m_y == o.m_y;
+  }
+  bool operator!=(const LengthPoint& o) const {
+    return m_x != o.m_x || m_y != o.m_y;
+  }
 
-    void setY(const Length& y) { m_y = y; }
-    const Length& y() const { return m_y; }
+  void setX(const Length& x) { m_x = x; }
+  const Length& x() const { return m_x; }
 
-private:
-    Length m_x;
-    Length m_y;
+  void setY(const Length& y) { m_y = y; }
+  const Length& y() const { return m_y; }
+
+ private:
+  Length m_x;
+  Length m_y;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LengthPoint_h
+#endif  // LengthPoint_h

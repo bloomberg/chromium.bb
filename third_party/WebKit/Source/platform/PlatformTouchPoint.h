@@ -26,41 +26,43 @@
 namespace blink {
 
 class PlatformTouchPoint {
-public:
-    enum TouchState {
-        TouchReleased,
-        TouchPressed,
-        TouchMoved,
-        TouchStationary,
-        TouchCancelled,
-        TouchStateEnd // Placeholder: must remain the last item.
-    };
+ public:
+  enum TouchState {
+    TouchReleased,
+    TouchPressed,
+    TouchMoved,
+    TouchStationary,
+    TouchCancelled,
+    TouchStateEnd  // Placeholder: must remain the last item.
+  };
 
-    // This is necessary for us to be able to build synthetic events.
-    PlatformTouchPoint()
-        : m_rotationAngle(0)
-    {
-    }
+  // This is necessary for us to be able to build synthetic events.
+  PlatformTouchPoint() : m_rotationAngle(0) {}
 
-    const WebPointerProperties& pointerProperties() const { return m_pointerProperties; }
-    int id() const { return pointerProperties().id; }
-    TouchState state() const { return m_state; }
-    FloatPoint screenPos() const { return m_screenPos; }
-    FloatPoint pos() const { return m_pos; }
-    FloatSize radius() const { return m_radius; }
-    float rotationAngle() const { return m_rotationAngle; }
-    float force() const { ASSERT(!std::isnan(pointerProperties().force)); return pointerProperties().force; }
+  const WebPointerProperties& pointerProperties() const {
+    return m_pointerProperties;
+  }
+  int id() const { return pointerProperties().id; }
+  TouchState state() const { return m_state; }
+  FloatPoint screenPos() const { return m_screenPos; }
+  FloatPoint pos() const { return m_pos; }
+  FloatSize radius() const { return m_radius; }
+  float rotationAngle() const { return m_rotationAngle; }
+  float force() const {
+    ASSERT(!std::isnan(pointerProperties().force));
+    return pointerProperties().force;
+  }
 
-protected:
-    WebPointerProperties m_pointerProperties;
+ protected:
+  WebPointerProperties m_pointerProperties;
 
-    TouchState m_state;
-    FloatPoint m_screenPos;
-    FloatPoint m_pos;
-    FloatSize m_radius;
-    float m_rotationAngle;
+  TouchState m_state;
+  FloatPoint m_screenPos;
+  FloatPoint m_pos;
+  FloatSize m_radius;
+  float m_rotationAngle;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformTouchPoint_h
+#endif  // PlatformTouchPoint_h

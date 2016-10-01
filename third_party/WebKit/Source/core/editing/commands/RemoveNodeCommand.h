@@ -31,26 +31,27 @@
 namespace blink {
 
 class RemoveNodeCommand final : public SimpleEditCommand {
-public:
-    static RemoveNodeCommand* create(Node* node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
-    {
-        return new RemoveNodeCommand(node, shouldAssumeContentIsAlwaysEditable);
-    }
+ public:
+  static RemoveNodeCommand* create(
+      Node* node,
+      ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable) {
+    return new RemoveNodeCommand(node, shouldAssumeContentIsAlwaysEditable);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit RemoveNodeCommand(Node*, ShouldAssumeContentIsAlwaysEditable);
+ private:
+  explicit RemoveNodeCommand(Node*, ShouldAssumeContentIsAlwaysEditable);
 
-    void doApply(EditingState*) override;
-    void doUnapply() override;
+  void doApply(EditingState*) override;
+  void doUnapply() override;
 
-    Member<Node> m_node;
-    Member<ContainerNode> m_parent;
-    Member<Node> m_refChild;
-    ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;
+  Member<Node> m_node;
+  Member<ContainerNode> m_parent;
+  Member<Node> m_refChild;
+  ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RemoveNodeCommand_h
+#endif  // RemoveNodeCommand_h

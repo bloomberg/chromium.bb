@@ -41,34 +41,51 @@ namespace blink {
 class MIDIAccessorClient;
 
 class MIDIAccessor final : public WebMIDIAccessorClient {
-    USING_FAST_MALLOC(MIDIAccessor);
-public:
-    static std::unique_ptr<MIDIAccessor> create(MIDIAccessorClient*);
+  USING_FAST_MALLOC(MIDIAccessor);
 
-    ~MIDIAccessor() override { }
+ public:
+  static std::unique_ptr<MIDIAccessor> create(MIDIAccessorClient*);
 
-    void startSession();
-    void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
-    // MIDIAccessInitializer and MIDIAccess are both MIDIAccessClient.
-    // MIDIAccessInitializer is the first client and MIDIAccess takes over it
-    // once the initialization successfully finishes.
-    void setClient(MIDIAccessorClient* client) { m_client = client; }
+  ~MIDIAccessor() override {}
 
-    // WebMIDIAccessorClient
-    void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState) override;
-    void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version, MIDIPortState) override;
-    void didSetInputPortState(unsigned portIndex, MIDIPortState) override;
-    void didSetOutputPortState(unsigned portIndex, MIDIPortState) override;
-    void didStartSession(bool success, const WebString& error, const WebString& message) override;
-    void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override;
+  void startSession();
+  void sendMIDIData(unsigned portIndex,
+                    const unsigned char* data,
+                    size_t length,
+                    double timeStamp);
+  // MIDIAccessInitializer and MIDIAccess are both MIDIAccessClient.
+  // MIDIAccessInitializer is the first client and MIDIAccess takes over it
+  // once the initialization successfully finishes.
+  void setClient(MIDIAccessorClient* client) { m_client = client; }
 
-private:
-    explicit MIDIAccessor(MIDIAccessorClient*);
+  // WebMIDIAccessorClient
+  void didAddInputPort(const WebString& id,
+                       const WebString& manufacturer,
+                       const WebString& name,
+                       const WebString& version,
+                       MIDIPortState) override;
+  void didAddOutputPort(const WebString& id,
+                        const WebString& manufacturer,
+                        const WebString& name,
+                        const WebString& version,
+                        MIDIPortState) override;
+  void didSetInputPortState(unsigned portIndex, MIDIPortState) override;
+  void didSetOutputPortState(unsigned portIndex, MIDIPortState) override;
+  void didStartSession(bool success,
+                       const WebString& error,
+                       const WebString& message) override;
+  void didReceiveMIDIData(unsigned portIndex,
+                          const unsigned char* data,
+                          size_t length,
+                          double timeStamp) override;
 
-    MIDIAccessorClient* m_client;
-    std::unique_ptr<WebMIDIAccessor> m_accessor;
+ private:
+  explicit MIDIAccessor(MIDIAccessorClient*);
+
+  MIDIAccessorClient* m_client;
+  std::unique_ptr<WebMIDIAccessor> m_accessor;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MIDIAccessor_h
+#endif  // MIDIAccessor_h

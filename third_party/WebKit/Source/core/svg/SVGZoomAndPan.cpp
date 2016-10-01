@@ -25,43 +25,37 @@
 
 namespace blink {
 
-SVGZoomAndPan::SVGZoomAndPan()
-    : m_zoomAndPan(SVGZoomAndPanMagnify)
-{
+SVGZoomAndPan::SVGZoomAndPan() : m_zoomAndPan(SVGZoomAndPanMagnify) {}
+
+void SVGZoomAndPan::resetZoomAndPan() {
+  m_zoomAndPan = SVGZoomAndPanMagnify;
 }
 
-void SVGZoomAndPan::resetZoomAndPan()
-{
-    m_zoomAndPan = SVGZoomAndPanMagnify;
+bool SVGZoomAndPan::isKnownAttribute(const QualifiedName& attrName) {
+  return attrName == SVGNames::zoomAndPanAttr;
 }
 
-bool SVGZoomAndPan::isKnownAttribute(const QualifiedName& attrName)
-{
-    return attrName == SVGNames::zoomAndPanAttr;
+template <typename CharType>
+static bool parseZoomAndPanInternal(const CharType*& start,
+                                    const CharType* end,
+                                    SVGZoomAndPanType& zoomAndPan) {
+  if (skipToken(start, end, "disable")) {
+    zoomAndPan = SVGZoomAndPanDisable;
+    return true;
+  }
+  if (skipToken(start, end, "magnify")) {
+    zoomAndPan = SVGZoomAndPanMagnify;
+    return true;
+  }
+  return false;
 }
 
-template<typename CharType>
-static bool parseZoomAndPanInternal(const CharType*& start, const CharType* end, SVGZoomAndPanType& zoomAndPan)
-{
-    if (skipToken(start, end, "disable")) {
-        zoomAndPan = SVGZoomAndPanDisable;
-        return true;
-    }
-    if (skipToken(start, end, "magnify")) {
-        zoomAndPan = SVGZoomAndPanMagnify;
-        return true;
-    }
-    return false;
+bool SVGZoomAndPan::parseZoomAndPan(const LChar*& start, const LChar* end) {
+  return parseZoomAndPanInternal(start, end, m_zoomAndPan);
 }
 
-bool SVGZoomAndPan::parseZoomAndPan(const LChar*& start, const LChar* end)
-{
-    return parseZoomAndPanInternal(start, end, m_zoomAndPan);
+bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end) {
+  return parseZoomAndPanInternal(start, end, m_zoomAndPan);
 }
 
-bool SVGZoomAndPan::parseZoomAndPan(const UChar*& start, const UChar* end)
-{
-    return parseZoomAndPanInternal(start, end, m_zoomAndPan);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -36,26 +36,31 @@ class ExceptionState;
 class WaveShaperOptions;
 
 class WaveShaperNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static WaveShaperNode* create(BaseAudioContext&, ExceptionState&);
-    static WaveShaperNode* create(BaseAudioContext*, const WaveShaperOptions&, ExceptionState&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    // setCurve() is called on the main thread.
-    void setCurve(DOMFloat32Array*, ExceptionState&);
-    void setCurve(const Vector<float>&, ExceptionState&);
-    DOMFloat32Array* curve();
+ public:
+  static WaveShaperNode* create(BaseAudioContext&, ExceptionState&);
+  static WaveShaperNode* create(BaseAudioContext*,
+                                const WaveShaperOptions&,
+                                ExceptionState&);
 
-    void setOversample(const String&);
-    String oversample() const;
+  // setCurve() is called on the main thread.
+  void setCurve(DOMFloat32Array*, ExceptionState&);
+  void setCurve(const Vector<float>&, ExceptionState&);
+  DOMFloat32Array* curve();
 
-private:
-    explicit WaveShaperNode(BaseAudioContext&);
+  void setOversample(const String&);
+  String oversample() const;
 
-    void setCurveImpl(const float* curveData, unsigned curveLength, ExceptionState&);
-    WaveShaperProcessor* getWaveShaperProcessor() const;
+ private:
+  explicit WaveShaperNode(BaseAudioContext&);
+
+  void setCurveImpl(const float* curveData,
+                    unsigned curveLength,
+                    ExceptionState&);
+  WaveShaperProcessor* getWaveShaperProcessor() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WaveShaperNode_h
+#endif  // WaveShaperNode_h

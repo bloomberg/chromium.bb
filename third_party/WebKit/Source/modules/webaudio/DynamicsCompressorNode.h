@@ -38,74 +38,77 @@ class DynamicsCompressor;
 class DynamicsCompressorOptions;
 
 class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
-public:
-    static PassRefPtr<DynamicsCompressorHandler> create(
-        AudioNode&,
-        float sampleRate,
-        AudioParamHandler& threshold,
-        AudioParamHandler& knee,
-        AudioParamHandler& ratio,
-        AudioParamHandler& attack,
-        AudioParamHandler& release);
+ public:
+  static PassRefPtr<DynamicsCompressorHandler> create(
+      AudioNode&,
+      float sampleRate,
+      AudioParamHandler& threshold,
+      AudioParamHandler& knee,
+      AudioParamHandler& ratio,
+      AudioParamHandler& attack,
+      AudioParamHandler& release);
 
-    ~DynamicsCompressorHandler();
+  ~DynamicsCompressorHandler();
 
-    // AudioHandler
-    void process(size_t framesToProcess) override;
-    void initialize() override;
-    void clearInternalStateWhenDisabled() override;
+  // AudioHandler
+  void process(size_t framesToProcess) override;
+  void initialize() override;
+  void clearInternalStateWhenDisabled() override;
 
-    float reductionValue() const { return m_reduction; }
-private:
-    DynamicsCompressorHandler(
-        AudioNode&,
-        float sampleRate,
-        AudioParamHandler& threshold,
-        AudioParamHandler& knee,
-        AudioParamHandler& ratio,
-        AudioParamHandler& attack,
-        AudioParamHandler& release);
-    double tailTime() const override;
-    double latencyTime() const override;
+  float reductionValue() const { return m_reduction; }
 
-    std::unique_ptr<DynamicsCompressor> m_dynamicsCompressor;
-    RefPtr<AudioParamHandler> m_threshold;
-    RefPtr<AudioParamHandler> m_knee;
-    RefPtr<AudioParamHandler> m_ratio;
-    float m_reduction;
-    RefPtr<AudioParamHandler> m_attack;
-    RefPtr<AudioParamHandler> m_release;
+ private:
+  DynamicsCompressorHandler(AudioNode&,
+                            float sampleRate,
+                            AudioParamHandler& threshold,
+                            AudioParamHandler& knee,
+                            AudioParamHandler& ratio,
+                            AudioParamHandler& attack,
+                            AudioParamHandler& release);
+  double tailTime() const override;
+  double latencyTime() const override;
 
-    FRIEND_TEST_ALL_PREFIXES(DynamicsCompressorNodeTest, ProcessorLifetime);
+  std::unique_ptr<DynamicsCompressor> m_dynamicsCompressor;
+  RefPtr<AudioParamHandler> m_threshold;
+  RefPtr<AudioParamHandler> m_knee;
+  RefPtr<AudioParamHandler> m_ratio;
+  float m_reduction;
+  RefPtr<AudioParamHandler> m_attack;
+  RefPtr<AudioParamHandler> m_release;
+
+  FRIEND_TEST_ALL_PREFIXES(DynamicsCompressorNodeTest, ProcessorLifetime);
 };
 
 class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DynamicsCompressorNode* create(BaseAudioContext&, ExceptionState&);
-    static DynamicsCompressorNode* create(BaseAudioContext*, const DynamicsCompressorOptions&, ExceptionState&);
-    DECLARE_VIRTUAL_TRACE();
+  DEFINE_WRAPPERTYPEINFO();
 
-    AudioParam* threshold() const;
-    AudioParam* knee() const;
-    AudioParam* ratio() const;
-    float reduction() const;
-    AudioParam* attack() const;
-    AudioParam* release() const;
+ public:
+  static DynamicsCompressorNode* create(BaseAudioContext&, ExceptionState&);
+  static DynamicsCompressorNode* create(BaseAudioContext*,
+                                        const DynamicsCompressorOptions&,
+                                        ExceptionState&);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    DynamicsCompressorNode(BaseAudioContext&);
-    DynamicsCompressorHandler& dynamicsCompressorHandler() const;
+  AudioParam* threshold() const;
+  AudioParam* knee() const;
+  AudioParam* ratio() const;
+  float reduction() const;
+  AudioParam* attack() const;
+  AudioParam* release() const;
 
-    Member<AudioParam> m_threshold;
-    Member<AudioParam> m_knee;
-    Member<AudioParam> m_ratio;
-    Member<AudioParam> m_attack;
-    Member<AudioParam> m_release;
+ private:
+  DynamicsCompressorNode(BaseAudioContext&);
+  DynamicsCompressorHandler& dynamicsCompressorHandler() const;
 
-    FRIEND_TEST_ALL_PREFIXES(DynamicsCompressorNodeTest, ProcessorLifetime);
+  Member<AudioParam> m_threshold;
+  Member<AudioParam> m_knee;
+  Member<AudioParam> m_ratio;
+  Member<AudioParam> m_attack;
+  Member<AudioParam> m_release;
+
+  FRIEND_TEST_ALL_PREFIXES(DynamicsCompressorNodeTest, ProcessorLifetime);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DynamicsCompressorNode_h
+#endif  // DynamicsCompressorNode_h

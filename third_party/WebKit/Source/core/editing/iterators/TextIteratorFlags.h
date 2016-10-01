@@ -29,24 +29,24 @@
 namespace blink {
 
 enum TextIteratorBehavior {
-    TextIteratorDefaultBehavior = 0,
-    TextIteratorEmitsCharactersBetweenAllVisiblePositions = 1 << 0,
-    TextIteratorEntersTextControls = 1 << 1,
-    TextIteratorIgnoresStyleVisibility = 1 << 2,
-    TextIteratorEmitsOriginalText = 1 << 3,
-    TextIteratorStopsOnFormControls = 1 << 4,
-    TextIteratorEmitsImageAltText = 1 << 5,
-    TextIteratorEntersOpenShadowRoots = 1 << 6,
-    TextIteratorEmitsObjectReplacementCharacter = 1 << 7,
-    TextIteratorDoesNotBreakAtReplacedElement = 1 << 8,
-    TextIteratorForInnerText = 1 << 9,
-    TextIteratorForSelectionToString = 1 << 10,
-    TextIteratorForWindowFind = 1 << 11,
-    TextIteratorExcludeAutofilledValue = 1 << 12,
-    TextIteratorCollapseTrailingSpace = 1 << 13,
+  TextIteratorDefaultBehavior = 0,
+  TextIteratorEmitsCharactersBetweenAllVisiblePositions = 1 << 0,
+  TextIteratorEntersTextControls = 1 << 1,
+  TextIteratorIgnoresStyleVisibility = 1 << 2,
+  TextIteratorEmitsOriginalText = 1 << 3,
+  TextIteratorStopsOnFormControls = 1 << 4,
+  TextIteratorEmitsImageAltText = 1 << 5,
+  TextIteratorEntersOpenShadowRoots = 1 << 6,
+  TextIteratorEmitsObjectReplacementCharacter = 1 << 7,
+  TextIteratorDoesNotBreakAtReplacedElement = 1 << 8,
+  TextIteratorForInnerText = 1 << 9,
+  TextIteratorForSelectionToString = 1 << 10,
+  TextIteratorForWindowFind = 1 << 11,
+  TextIteratorExcludeAutofilledValue = 1 << 12,
+  TextIteratorCollapseTrailingSpace = 1 << 13,
 };
 typedef unsigned TextIteratorBehaviorFlags;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TextIteratorFlags_h
+#endif  // TextIteratorFlags_h

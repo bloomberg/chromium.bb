@@ -51,263 +51,252 @@ class Node;
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702
 class CORE_EXPORT FlatTreeTraversal {
-    STATIC_ONLY(FlatTreeTraversal);
-public:
-    typedef LayoutTreeBuilderTraversal::ParentDetails ParentTraversalDetails;
-    using TraversalNodeType = Node;
+  STATIC_ONLY(FlatTreeTraversal);
 
-    static Node* next(const Node&);
-    static Node* next(const Node&, const Node* stayWithin);
-    static Node* previous(const Node&);
+ public:
+  typedef LayoutTreeBuilderTraversal::ParentDetails ParentTraversalDetails;
+  using TraversalNodeType = Node;
 
-    static Node* firstChild(const Node&);
-    static Node* lastChild(const Node&);
-    static bool hasChildren(const Node&);
+  static Node* next(const Node&);
+  static Node* next(const Node&, const Node* stayWithin);
+  static Node* previous(const Node&);
 
-    static ContainerNode* parent(const Node&, ParentTraversalDetails* = 0);
-    static Element* parentElement(const Node&);
+  static Node* firstChild(const Node&);
+  static Node* lastChild(const Node&);
+  static bool hasChildren(const Node&);
 
-    static Node* nextSibling(const Node&);
-    static Node* previousSibling(const Node&);
+  static ContainerNode* parent(const Node&, ParentTraversalDetails* = 0);
+  static Element* parentElement(const Node&);
 
-    // Returns a child node at |index|. If |index| is greater than or equal to
-    // the children, this function returns |nullptr|.
-    static Node* childAt(const Node&, unsigned index);
+  static Node* nextSibling(const Node&);
+  static Node* previousSibling(const Node&);
 
-    // Flat tree version of |NodeTraversal::nextSkippingChildren()|. This
-    // function is similar to |next()| but skips child nodes of a specified
-    // node.
-    static Node* nextSkippingChildren(const Node&);
-    static Node* nextSkippingChildren(const Node&, const Node* stayWithin);
+  // Returns a child node at |index|. If |index| is greater than or equal to
+  // the children, this function returns |nullptr|.
+  static Node* childAt(const Node&, unsigned index);
 
-    // Flat tree version of |NodeTraversal::previousSkippingChildren()|
-    // similar to |previous()| but skipping child nodes of the specified node.
-    static Node* previousSkippingChildren(const Node&);
+  // Flat tree version of |NodeTraversal::nextSkippingChildren()|. This
+  // function is similar to |next()| but skips child nodes of a specified
+  // node.
+  static Node* nextSkippingChildren(const Node&);
+  static Node* nextSkippingChildren(const Node&, const Node* stayWithin);
 
-    // Like previous, but visits parents before their children.
-    static Node* previousPostOrder(const Node&, const Node* stayWithin = nullptr);
+  // Flat tree version of |NodeTraversal::previousSkippingChildren()|
+  // similar to |previous()| but skipping child nodes of the specified node.
+  static Node* previousSkippingChildren(const Node&);
 
-    // Flat tree version of |Node::isDescendantOf(other)|. This function
-    // returns true if |other| contains |node|, otherwise returns
-    // false. If |other| is |node|, this function returns false.
-    static bool isDescendantOf(const Node& /*node*/, const Node& other);
+  // Like previous, but visits parents before their children.
+  static Node* previousPostOrder(const Node&, const Node* stayWithin = nullptr);
 
-    static bool contains(const ContainerNode& container, const Node& node)
-    {
-        assertPrecondition(container);
-        assertPrecondition(node);
-        return container == node || isDescendantOf(node, container);
-    }
+  // Flat tree version of |Node::isDescendantOf(other)|. This function
+  // returns true if |other| contains |node|, otherwise returns
+  // false. If |other| is |node|, this function returns false.
+  static bool isDescendantOf(const Node& /*node*/, const Node& other);
 
-    static bool containsIncludingPseudoElement(const ContainerNode&, const Node&);
+  static bool contains(const ContainerNode& container, const Node& node) {
+    assertPrecondition(container);
+    assertPrecondition(node);
+    return container == node || isDescendantOf(node, container);
+  }
 
-    // Returns a common ancestor of |nodeA| and |nodeB| if exists, otherwise
-    // returns |nullptr|.
-    static Node* commonAncestor(const Node& nodeA, const Node& nodeB);
+  static bool containsIncludingPseudoElement(const ContainerNode&, const Node&);
 
-    // Flat tree version of |Node::nodeIndex()|. This function returns a
-    // zero base position number of the specified node in child nodes list, or
-    // zero if the specified node has no parent.
-    static unsigned index(const Node&);
+  // Returns a common ancestor of |nodeA| and |nodeB| if exists, otherwise
+  // returns |nullptr|.
+  static Node* commonAncestor(const Node& nodeA, const Node& nodeB);
 
-    // Flat tree version of |ContainerNode::countChildren()|. This function
-    // returns the number of the child nodes of the specified node in the
-    // flat tree.
-    static unsigned countChildren(const Node&);
+  // Flat tree version of |Node::nodeIndex()|. This function returns a
+  // zero base position number of the specified node in child nodes list, or
+  // zero if the specified node has no parent.
+  static unsigned index(const Node&);
 
-    static Node* lastWithin(const Node&);
-    static Node& lastWithinOrSelf(const Node&);
+  // Flat tree version of |ContainerNode::countChildren()|. This function
+  // returns the number of the child nodes of the specified node in the
+  // flat tree.
+  static unsigned countChildren(const Node&);
 
-private:
-    enum TraversalDirection {
-        TraversalDirectionForward,
-        TraversalDirectionBackward
-    };
+  static Node* lastWithin(const Node&);
+  static Node& lastWithinOrSelf(const Node&);
 
-    static void assertPrecondition(const Node& node)
-    {
-        DCHECK(!node.needsDistributionRecalc());
-        DCHECK(node.canParticipateInFlatTree());
-    }
+ private:
+  enum TraversalDirection {
+    TraversalDirectionForward,
+    TraversalDirectionBackward
+  };
 
-    static void assertPostcondition(const Node* node)
-    {
+  static void assertPrecondition(const Node& node) {
+    DCHECK(!node.needsDistributionRecalc());
+    DCHECK(node.canParticipateInFlatTree());
+  }
+
+  static void assertPostcondition(const Node* node) {
 #if DCHECK_IS_ON()
-        if (node)
-            assertPrecondition(*node);
+    if (node)
+      assertPrecondition(*node);
 #endif
-    }
+  }
 
-    static Node* resolveDistributionStartingAt(const Node*, TraversalDirection);
-    static Node* v0ResolveDistributionStartingAt(const Node&, TraversalDirection);
+  static Node* resolveDistributionStartingAt(const Node*, TraversalDirection);
+  static Node* v0ResolveDistributionStartingAt(const Node&, TraversalDirection);
 
-    static Node* traverseNext(const Node&);
-    static Node* traverseNext(const Node&, const Node* stayWithin);
-    static Node* traverseNextSkippingChildren(const Node&, const Node* stayWithin);
-    static Node* traversePrevious(const Node&);
+  static Node* traverseNext(const Node&);
+  static Node* traverseNext(const Node&, const Node* stayWithin);
+  static Node* traverseNextSkippingChildren(const Node&,
+                                            const Node* stayWithin);
+  static Node* traversePrevious(const Node&);
 
-    static Node* traverseFirstChild(const Node&);
-    static Node* traverseLastChild(const Node&);
-    static Node* traverseChild(const Node&, TraversalDirection);
+  static Node* traverseFirstChild(const Node&);
+  static Node* traverseLastChild(const Node&);
+  static Node* traverseChild(const Node&, TraversalDirection);
 
-    static ContainerNode* traverseParent(const Node&, ParentTraversalDetails* = 0);
-    // TODO(hayato): Make ParentTraversalDetails be aware of slot elements too.
-    static ContainerNode* traverseParentForV0(const Node&,  ParentTraversalDetails* = 0);
-    static ContainerNode* traverseParentOrHost(const Node&);
+  static ContainerNode* traverseParent(const Node&,
+                                       ParentTraversalDetails* = 0);
+  // TODO(hayato): Make ParentTraversalDetails be aware of slot elements too.
+  static ContainerNode* traverseParentForV0(const Node&,
+                                            ParentTraversalDetails* = 0);
+  static ContainerNode* traverseParentOrHost(const Node&);
 
-    static Node* traverseNextSibling(const Node&);
-    static Node* traversePreviousSibling(const Node&);
+  static Node* traverseNextSibling(const Node&);
+  static Node* traversePreviousSibling(const Node&);
 
-    static Node* traverseSiblings(const Node&, TraversalDirection);
-    static Node* traverseSiblingsForV1HostChild(const Node&, TraversalDirection);
-    static Node* traverseSiblingsForV0Distribution(const Node&, TraversalDirection);
+  static Node* traverseSiblings(const Node&, TraversalDirection);
+  static Node* traverseSiblingsForV1HostChild(const Node&, TraversalDirection);
+  static Node* traverseSiblingsForV0Distribution(const Node&,
+                                                 TraversalDirection);
 
-    static Node* traverseNextAncestorSibling(const Node&);
-    static Node* traversePreviousAncestorSibling(const Node&);
+  static Node* traverseNextAncestorSibling(const Node&);
+  static Node* traversePreviousAncestorSibling(const Node&);
 };
 
-inline ContainerNode* FlatTreeTraversal::parent(const Node& node, ParentTraversalDetails* details)
-{
-    assertPrecondition(node);
-    ContainerNode* result = traverseParent(node, details);
-    assertPostcondition(result);
-    return result;
+inline ContainerNode* FlatTreeTraversal::parent(
+    const Node& node,
+    ParentTraversalDetails* details) {
+  assertPrecondition(node);
+  ContainerNode* result = traverseParent(node, details);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Element* FlatTreeTraversal::parentElement(const Node& node)
-{
-    ContainerNode* parent = FlatTreeTraversal::parent(node);
-    return parent && parent->isElementNode() ? toElement(parent) : nullptr;
+inline Element* FlatTreeTraversal::parentElement(const Node& node) {
+  ContainerNode* parent = FlatTreeTraversal::parent(node);
+  return parent && parent->isElementNode() ? toElement(parent) : nullptr;
 }
 
-inline Node* FlatTreeTraversal::nextSibling(const Node& node)
-{
-    assertPrecondition(node);
-    Node* result = traverseSiblings(node, TraversalDirectionForward);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::nextSibling(const Node& node) {
+  assertPrecondition(node);
+  Node* result = traverseSiblings(node, TraversalDirectionForward);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Node* FlatTreeTraversal::previousSibling(const Node& node)
-{
-    assertPrecondition(node);
-    Node* result = traverseSiblings(node, TraversalDirectionBackward);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::previousSibling(const Node& node) {
+  assertPrecondition(node);
+  Node* result = traverseSiblings(node, TraversalDirectionBackward);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Node* FlatTreeTraversal::next(const Node& node)
-{
-    assertPrecondition(node);
-    Node* result = traverseNext(node);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::next(const Node& node) {
+  assertPrecondition(node);
+  Node* result = traverseNext(node);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Node* FlatTreeTraversal::next(const Node& node, const Node* stayWithin)
-{
-    assertPrecondition(node);
-    Node* result = traverseNext(node, stayWithin);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::next(const Node& node, const Node* stayWithin) {
+  assertPrecondition(node);
+  Node* result = traverseNext(node, stayWithin);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Node* FlatTreeTraversal::nextSkippingChildren(const Node& node, const Node* stayWithin)
-{
-    assertPrecondition(node);
-    Node* result = traverseNextSkippingChildren(node, stayWithin);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::nextSkippingChildren(const Node& node,
+                                                     const Node* stayWithin) {
+  assertPrecondition(node);
+  Node* result = traverseNextSkippingChildren(node, stayWithin);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Node* FlatTreeTraversal::traverseNext(const Node& node)
-{
-    if (Node* next = traverseFirstChild(node))
-        return next;
-    for (const Node* next = &node; next; next = traverseParent(*next)) {
-        if (Node* sibling = traverseNextSibling(*next))
-            return sibling;
-    }
-    return nullptr;
+inline Node* FlatTreeTraversal::traverseNext(const Node& node) {
+  if (Node* next = traverseFirstChild(node))
+    return next;
+  for (const Node* next = &node; next; next = traverseParent(*next)) {
+    if (Node* sibling = traverseNextSibling(*next))
+      return sibling;
+  }
+  return nullptr;
 }
 
-inline Node* FlatTreeTraversal::traverseNext(const Node& node, const Node* stayWithin)
-{
-    if (Node* next = traverseFirstChild(node))
-        return next;
-    return traverseNextSkippingChildren(node, stayWithin);
+inline Node* FlatTreeTraversal::traverseNext(const Node& node,
+                                             const Node* stayWithin) {
+  if (Node* next = traverseFirstChild(node))
+    return next;
+  return traverseNextSkippingChildren(node, stayWithin);
 }
 
-inline Node* FlatTreeTraversal::traverseNextSkippingChildren(const Node& node, const Node* stayWithin)
-{
-    for (const Node* next = &node; next; next = traverseParent(*next)) {
-        if (next == stayWithin)
-            return nullptr;
-        if (Node* sibling = traverseNextSibling(*next))
-            return sibling;
-    }
-    return nullptr;
+inline Node* FlatTreeTraversal::traverseNextSkippingChildren(
+    const Node& node,
+    const Node* stayWithin) {
+  for (const Node* next = &node; next; next = traverseParent(*next)) {
+    if (next == stayWithin)
+      return nullptr;
+    if (Node* sibling = traverseNextSibling(*next))
+      return sibling;
+  }
+  return nullptr;
 }
 
-inline Node* FlatTreeTraversal::previous(const Node& node)
-{
-    assertPrecondition(node);
-    Node* result = traversePrevious(node);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::previous(const Node& node) {
+  assertPrecondition(node);
+  Node* result = traversePrevious(node);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Node* FlatTreeTraversal::traversePrevious(const Node& node)
-{
-    if (Node* previous = traversePreviousSibling(node)) {
-        while (Node* child = traverseLastChild(*previous))
-            previous = child;
-        return previous;
-    }
-    return traverseParent(node);
+inline Node* FlatTreeTraversal::traversePrevious(const Node& node) {
+  if (Node* previous = traversePreviousSibling(node)) {
+    while (Node* child = traverseLastChild(*previous))
+      previous = child;
+    return previous;
+  }
+  return traverseParent(node);
 }
 
-inline Node* FlatTreeTraversal::firstChild(const Node& node)
-{
-    assertPrecondition(node);
-    Node* result = traverseChild(node, TraversalDirectionForward);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::firstChild(const Node& node) {
+  assertPrecondition(node);
+  Node* result = traverseChild(node, TraversalDirectionForward);
+  assertPostcondition(result);
+  return result;
 }
 
-inline Node* FlatTreeTraversal::lastChild(const Node& node)
-{
-    assertPrecondition(node);
-    Node* result = traverseLastChild(node);
-    assertPostcondition(result);
-    return result;
+inline Node* FlatTreeTraversal::lastChild(const Node& node) {
+  assertPrecondition(node);
+  Node* result = traverseLastChild(node);
+  assertPostcondition(result);
+  return result;
 }
 
-inline bool FlatTreeTraversal::hasChildren(const Node& node)
-{
-    return firstChild(node);
+inline bool FlatTreeTraversal::hasChildren(const Node& node) {
+  return firstChild(node);
 }
 
-inline Node* FlatTreeTraversal::traverseNextSibling(const Node& node)
-{
-    return traverseSiblings(node, TraversalDirectionForward);
+inline Node* FlatTreeTraversal::traverseNextSibling(const Node& node) {
+  return traverseSiblings(node, TraversalDirectionForward);
 }
 
-inline Node* FlatTreeTraversal::traversePreviousSibling(const Node& node)
-{
-    return traverseSiblings(node, TraversalDirectionBackward);
+inline Node* FlatTreeTraversal::traversePreviousSibling(const Node& node) {
+  return traverseSiblings(node, TraversalDirectionBackward);
 }
 
-inline Node* FlatTreeTraversal::traverseFirstChild(const Node& node)
-{
-    return traverseChild(node, TraversalDirectionForward);
+inline Node* FlatTreeTraversal::traverseFirstChild(const Node& node) {
+  return traverseChild(node, TraversalDirectionForward);
 }
 
-inline Node* FlatTreeTraversal::traverseLastChild(const Node& node)
-{
-    return traverseChild(node, TraversalDirectionBackward);
+inline Node* FlatTreeTraversal::traverseLastChild(const Node& node) {
+  return traverseChild(node, TraversalDirectionBackward);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

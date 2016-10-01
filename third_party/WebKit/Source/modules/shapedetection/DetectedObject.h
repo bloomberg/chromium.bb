@@ -11,19 +11,18 @@
 
 namespace blink {
 
-class MODULES_EXPORT DetectedObject
-    : public GarbageCollected<DetectedObject>
-    , public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class MODULES_EXPORT DetectedObject : public GarbageCollected<DetectedObject>,
+                                      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-public:
-    DOMRect* boundingBox() const { return m_boundingBox.get(); }
-    DEFINE_INLINE_TRACE() { visitor->trace(m_boundingBox); }
+ public:
+  DOMRect* boundingBox() const { return m_boundingBox.get(); }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_boundingBox); }
 
-private:
-    Member<DOMRect> m_boundingBox;
+ private:
+  Member<DOMRect> m_boundingBox;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DetectedObject_h
+#endif  // DetectedObject_h

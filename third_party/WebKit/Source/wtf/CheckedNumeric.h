@@ -32,7 +32,7 @@
 
 namespace WTF {
 using base::CheckedNumeric;
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::CheckedNumeric;
 

@@ -35,44 +35,48 @@ class HTMLImageElement;
 class Path;
 
 class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLAreaElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool isDefault() const { return m_shape == Default; }
+ public:
+  DECLARE_NODE_FACTORY(HTMLAreaElement);
 
-    // |containerObject| in the following functions is an object (normally a LayoutImage)
-    // which references the containing image map of this area. There might be multiple
-    // objects referencing the same map. For these functions, the effective geometry of
-    // this map will be calculated based on the specified container object, e.g. the
-    // rectangle of the default shape will be the border box rect of the container object,
-    // and effective zoom factor of the container object will be applied on non-default shape.
-    bool pointInArea(const LayoutPoint&, const LayoutObject* containerObject) const;
-    LayoutRect computeAbsoluteRect(const LayoutObject* containerObject) const;
-    Path getPath(const LayoutObject* containerObject) const;
+  bool isDefault() const { return m_shape == Default; }
 
-    // The parent map's image.
-    HTMLImageElement* imageElement() const;
+  // |containerObject| in the following functions is an object (normally a LayoutImage)
+  // which references the containing image map of this area. There might be multiple
+  // objects referencing the same map. For these functions, the effective geometry of
+  // this map will be calculated based on the specified container object, e.g. the
+  // rectangle of the default shape will be the border box rect of the container object,
+  // and effective zoom factor of the container object will be applied on non-default shape.
+  bool pointInArea(const LayoutPoint&,
+                   const LayoutObject* containerObject) const;
+  LayoutRect computeAbsoluteRect(const LayoutObject* containerObject) const;
+  Path getPath(const LayoutObject* containerObject) const;
 
-private:
-    explicit HTMLAreaElement(Document&);
-    ~HTMLAreaElement();
+  // The parent map's image.
+  HTMLImageElement* imageElement() const;
 
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
-    bool isKeyboardFocusable() const override;
-    bool isMouseFocusable() const override;
-    bool layoutObjectIsFocusable() const override;
-    void updateFocusAppearance(SelectionBehaviorOnFocus) override;
-    void setFocus(bool) override;
+ private:
+  explicit HTMLAreaElement(Document&);
+  ~HTMLAreaElement();
 
-    enum Shape { Default, Poly, Rect, Circle };
-    void invalidateCachedPath();
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
+  bool isKeyboardFocusable() const override;
+  bool isMouseFocusable() const override;
+  bool layoutObjectIsFocusable() const override;
+  void updateFocusAppearance(SelectionBehaviorOnFocus) override;
+  void setFocus(bool) override;
 
-    mutable std::unique_ptr<Path> m_path;
-    Vector<double> m_coords;
-    Shape m_shape;
+  enum Shape { Default, Poly, Rect, Circle };
+  void invalidateCachedPath();
+
+  mutable std::unique_ptr<Path> m_path;
+  Vector<double> m_coords;
+  Shape m_shape;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLAreaElement_h
+#endif  // HTMLAreaElement_h

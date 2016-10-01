@@ -39,16 +39,17 @@ class WebUserMediaRequest;
 class WebMediaDeviceChangeObserver;
 
 class WebUserMediaClient {
-public:
-    virtual ~WebUserMediaClient() { }
+ public:
+  virtual ~WebUserMediaClient() {}
 
-    virtual void requestUserMedia(const WebUserMediaRequest&) = 0;
-    virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
-    virtual void requestMediaDevices(const WebMediaDevicesRequest&) = 0;
-    virtual void requestSources(const WebMediaStreamTrackSourcesRequest&) = 0;
-    virtual void setMediaDeviceChangeObserver(const WebMediaDeviceChangeObserver&) = 0;
+  virtual void requestUserMedia(const WebUserMediaRequest&) = 0;
+  virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
+  virtual void requestMediaDevices(const WebMediaDevicesRequest&) = 0;
+  virtual void requestSources(const WebMediaStreamTrackSourcesRequest&) = 0;
+  virtual void setMediaDeviceChangeObserver(
+      const WebMediaDeviceChangeObserver&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebUserMediaClient_h
+#endif  // WebUserMediaClient_h

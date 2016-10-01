@@ -15,16 +15,17 @@ class LayoutBox;
 class LayoutGrid;
 
 class GridPainter {
-    STACK_ALLOCATED();
-public:
-    GridPainter(const LayoutGrid& layoutGrid) : m_layoutGrid(layoutGrid) { }
+  STACK_ALLOCATED();
 
-    void paintChildren(const PaintInfo&, const LayoutPoint&);
+ public:
+  GridPainter(const LayoutGrid& layoutGrid) : m_layoutGrid(layoutGrid) {}
 
-private:
-    const LayoutGrid& m_layoutGrid;
+  void paintChildren(const PaintInfo&, const LayoutPoint&);
+
+ private:
+  const LayoutGrid& m_layoutGrid;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GridPainter_h
+#endif  // GridPainter_h

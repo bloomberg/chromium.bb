@@ -35,28 +35,33 @@ class ExecutionContext;
 class MediaStreamTrackSourcesCallback;
 class SecurityOrigin;
 class WebSourceInfo;
-template<typename T> class WebVector;
+template <typename T>
+class WebVector;
 
-class MediaStreamTrackSourcesRequestImpl final : public MediaStreamTrackSourcesRequest {
-public:
-    static MediaStreamTrackSourcesRequestImpl* create(ExecutionContext&, MediaStreamTrackSourcesCallback*);
-    ~MediaStreamTrackSourcesRequestImpl();
+class MediaStreamTrackSourcesRequestImpl final
+    : public MediaStreamTrackSourcesRequest {
+ public:
+  static MediaStreamTrackSourcesRequestImpl* create(
+      ExecutionContext&,
+      MediaStreamTrackSourcesCallback*);
+  ~MediaStreamTrackSourcesRequestImpl();
 
-    PassRefPtr<SecurityOrigin> origin() override;
-    void requestSucceeded(const WebVector<WebSourceInfo>&) override;
+  PassRefPtr<SecurityOrigin> origin() override;
+  void requestSucceeded(const WebVector<WebSourceInfo>&) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    MediaStreamTrackSourcesRequestImpl(ExecutionContext&, MediaStreamTrackSourcesCallback*);
+ private:
+  MediaStreamTrackSourcesRequestImpl(ExecutionContext&,
+                                     MediaStreamTrackSourcesCallback*);
 
-    void performCallback();
+  void performCallback();
 
-    Member<MediaStreamTrackSourcesCallback> m_callback;
-    Member<ExecutionContext> m_executionContext;
-    SourceInfoVector m_sourceInfos;
+  Member<MediaStreamTrackSourcesCallback> m_callback;
+  Member<ExecutionContext> m_executionContext;
+  SourceInfoVector m_sourceInfos;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MediaStreamTrackSourcesRequestImpl_h
+#endif  // MediaStreamTrackSourcesRequestImpl_h

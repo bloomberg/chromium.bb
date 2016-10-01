@@ -15,18 +15,18 @@ namespace blink {
 // is okay to call |getInterface| from any thread, without the thread hopping
 // that would have been necesary with shell::InterfaceProvider.
 class BLINK_PLATFORM_EXPORT InterfaceProvider {
-public:
-    virtual void getInterface(const char* name, mojo::ScopedMessagePipeHandle) = 0;
+ public:
+  virtual void getInterface(const char* name,
+                            mojo::ScopedMessagePipeHandle) = 0;
 
-    template <typename Interface>
-    void getInterface(mojo::InterfaceRequest<Interface> ptr)
-    {
-        getInterface(Interface::Name_, ptr.PassMessagePipe());
-    }
+  template <typename Interface>
+  void getInterface(mojo::InterfaceRequest<Interface> ptr) {
+    getInterface(Interface::Name_, ptr.PassMessagePipe());
+  }
 
-    static InterfaceProvider* getEmptyInterfaceProvider();
+  static InterfaceProvider* getEmptyInterfaceProvider();
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

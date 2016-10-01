@@ -38,87 +38,81 @@ namespace WTF {
 static const int defaultBufferCapacity = 32768;
 
 ArrayBufferBuilder::ArrayBufferBuilder()
-    : m_bytesUsed(0)
-    , m_variableCapacity(true)
-{
-    m_buffer = ArrayBuffer::create(defaultBufferCapacity, 1);
+    : m_bytesUsed(0), m_variableCapacity(true) {
+  m_buffer = ArrayBuffer::create(defaultBufferCapacity, 1);
 }
 
-bool ArrayBufferBuilder::expandCapacity(unsigned sizeToIncrease)
-{
-    unsigned currentBufferSize = m_buffer->byteLength();
+bool ArrayBufferBuilder::expandCapacity(unsigned sizeToIncrease) {
+  unsigned currentBufferSize = m_buffer->byteLength();
 
-    // If the size of the buffer exceeds max of unsigned, it can't be grown any
-    // more.
-    if (sizeToIncrease > std::numeric_limits<unsigned>::max() - m_bytesUsed)
-        return false;
+  // If the size of the buffer exceeds max of unsigned, it can't be grown any
+  // more.
+  if (sizeToIncrease > std::numeric_limits<unsigned>::max() - m_bytesUsed)
+    return false;
 
-    unsigned newBufferSize = m_bytesUsed + sizeToIncrease;
+  unsigned newBufferSize = m_bytesUsed + sizeToIncrease;
 
-    // Grow exponentially if possible.
-    unsigned exponentialGrowthNewBufferSize = std::numeric_limits<unsigned>::max();
-    if (currentBufferSize <= std::numeric_limits<unsigned>::max() / 2)
-        exponentialGrowthNewBufferSize = currentBufferSize * 2;
-    if (exponentialGrowthNewBufferSize > newBufferSize)
-        newBufferSize = exponentialGrowthNewBufferSize;
+  // Grow exponentially if possible.
+  unsigned exponentialGrowthNewBufferSize =
+      std::numeric_limits<unsigned>::max();
+  if (currentBufferSize <= std::numeric_limits<unsigned>::max() / 2)
+    exponentialGrowthNewBufferSize = currentBufferSize * 2;
+  if (exponentialGrowthNewBufferSize > newBufferSize)
+    newBufferSize = exponentialGrowthNewBufferSize;
 
-    // Copy existing data in current buffer to new buffer.
-    RefPtr<ArrayBuffer> newBuffer = ArrayBuffer::create(newBufferSize, 1);
-    if (!newBuffer)
-        return false;
+  // Copy existing data in current buffer to new buffer.
+  RefPtr<ArrayBuffer> newBuffer = ArrayBuffer::create(newBufferSize, 1);
+  if (!newBuffer)
+    return false;
 
-    memcpy(newBuffer->data(), m_buffer->data(), m_bytesUsed);
-    m_buffer = newBuffer;
-    return true;
+  memcpy(newBuffer->data(), m_buffer->data(), m_bytesUsed);
+  m_buffer = newBuffer;
+  return true;
 }
 
-unsigned ArrayBufferBuilder::append(const char* data, unsigned length)
-{
-    ASSERT(length > 0);
+unsigned ArrayBufferBuilder::append(const char* data, unsigned length) {
+  ASSERT(length > 0);
 
-    unsigned currentBufferSize = m_buffer->byteLength();
+  unsigned currentBufferSize = m_buffer->byteLength();
 
-    ASSERT(m_bytesUsed <= currentBufferSize);
+  ASSERT(m_bytesUsed <= currentBufferSize);
 
-    unsigned remainingBufferSpace = currentBufferSize - m_bytesUsed;
+  unsigned remainingBufferSpace = currentBufferSize - m_bytesUsed;
 
-    unsigned bytesToSave = length;
+  unsigned bytesToSave = length;
 
-    if (length > remainingBufferSpace) {
-        if (m_variableCapacity) {
-            if (!expandCapacity(length))
-                return 0;
-        } else {
-            bytesToSave = remainingBufferSpace;
-        }
+  if (length > remainingBufferSpace) {
+    if (m_variableCapacity) {
+      if (!expandCapacity(length))
+        return 0;
+    } else {
+      bytesToSave = remainingBufferSpace;
     }
+  }
 
-    memcpy(static_cast<char*>(m_buffer->data()) + m_bytesUsed, data, bytesToSave);
-    m_bytesUsed += bytesToSave;
+  memcpy(static_cast<char*>(m_buffer->data()) + m_bytesUsed, data, bytesToSave);
+  m_bytesUsed += bytesToSave;
 
-    return bytesToSave;
+  return bytesToSave;
 }
 
-PassRefPtr<ArrayBuffer> ArrayBufferBuilder::toArrayBuffer()
-{
-    // Fully used. Return m_buffer as-is.
-    if (m_buffer->byteLength() == m_bytesUsed)
-        return m_buffer;
+PassRefPtr<ArrayBuffer> ArrayBufferBuilder::toArrayBuffer() {
+  // Fully used. Return m_buffer as-is.
+  if (m_buffer->byteLength() == m_bytesUsed)
+    return m_buffer;
 
-    return m_buffer->slice(0, m_bytesUsed);
+  return m_buffer->slice(0, m_bytesUsed);
 }
 
-String ArrayBufferBuilder::toString()
-{
-    return String(static_cast<const char*>(m_buffer->data()), m_bytesUsed);
+String ArrayBufferBuilder::toString() {
+  return String(static_cast<const char*>(m_buffer->data()), m_bytesUsed);
 }
 
-void ArrayBufferBuilder::shrinkToFit()
-{
-    ASSERT(m_bytesUsed <= m_buffer->byteLength());
+void ArrayBufferBuilder::shrinkToFit() {
+  ASSERT(m_bytesUsed <= m_buffer->byteLength());
 
-    if (m_buffer->byteLength() > m_bytesUsed)
-        m_buffer = m_buffer->slice(0, m_bytesUsed);
+  if (m_buffer->byteLength() > m_bytesUsed)
+    m_buffer = m_buffer->slice(0, m_bytesUsed);
 }
 
-} // namespace WTF
+}  // namespace WTF

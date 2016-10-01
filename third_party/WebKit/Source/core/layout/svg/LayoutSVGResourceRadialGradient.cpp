@@ -25,51 +25,53 @@
 
 namespace blink {
 
-LayoutSVGResourceRadialGradient::LayoutSVGResourceRadialGradient(SVGRadialGradientElement* node)
-    : LayoutSVGResourceGradient(node)
-    , m_attributesWrapper(RadialGradientAttributesWrapper::create())
-{
+LayoutSVGResourceRadialGradient::LayoutSVGResourceRadialGradient(
+    SVGRadialGradientElement* node)
+    : LayoutSVGResourceGradient(node),
+      m_attributesWrapper(RadialGradientAttributesWrapper::create()) {}
+
+LayoutSVGResourceRadialGradient::~LayoutSVGResourceRadialGradient() {}
+
+bool LayoutSVGResourceRadialGradient::collectGradientAttributes(
+    SVGGradientElement* gradientElement) {
+  m_attributesWrapper->set(RadialGradientAttributes());
+  return toSVGRadialGradientElement(gradientElement)
+      ->collectGradientAttributes(mutableAttributes());
 }
 
-LayoutSVGResourceRadialGradient::~LayoutSVGResourceRadialGradient()
-{
+FloatPoint LayoutSVGResourceRadialGradient::centerPoint(
+    const RadialGradientAttributes& attributes) const {
+  return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(),
+                                        *attributes.cx(), *attributes.cy());
 }
 
-bool LayoutSVGResourceRadialGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
-{
-    m_attributesWrapper->set(RadialGradientAttributes());
-    return toSVGRadialGradientElement(gradientElement)->collectGradientAttributes(mutableAttributes());
+FloatPoint LayoutSVGResourceRadialGradient::focalPoint(
+    const RadialGradientAttributes& attributes) const {
+  return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(),
+                                        *attributes.fx(), *attributes.fy());
 }
 
-FloatPoint LayoutSVGResourceRadialGradient::centerPoint(const RadialGradientAttributes& attributes) const
-{
-    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), *attributes.cx(), *attributes.cy());
+float LayoutSVGResourceRadialGradient::radius(
+    const RadialGradientAttributes& attributes) const {
+  return SVGLengthContext::resolveLength(element(), attributes.gradientUnits(),
+                                         *attributes.r());
 }
 
-FloatPoint LayoutSVGResourceRadialGradient::focalPoint(const RadialGradientAttributes& attributes) const
-{
-    return SVGLengthContext::resolvePoint(element(), attributes.gradientUnits(), *attributes.fx(), *attributes.fy());
+float LayoutSVGResourceRadialGradient::focalRadius(
+    const RadialGradientAttributes& attributes) const {
+  return SVGLengthContext::resolveLength(element(), attributes.gradientUnits(),
+                                         *attributes.fr());
 }
 
-float LayoutSVGResourceRadialGradient::radius(const RadialGradientAttributes& attributes) const
-{
-    return SVGLengthContext::resolveLength(element(), attributes.gradientUnits(), *attributes.r());
+PassRefPtr<Gradient> LayoutSVGResourceRadialGradient::buildGradient() const {
+  const RadialGradientAttributes& attributes = this->attributes();
+  RefPtr<Gradient> gradient =
+      Gradient::create(focalPoint(attributes), focalRadius(attributes),
+                       centerPoint(attributes), radius(attributes));
+  gradient->setSpreadMethod(
+      platformSpreadMethodFromSVGType(attributes.spreadMethod()));
+  addStops(*gradient, attributes.stops());
+  return gradient.release();
 }
 
-float LayoutSVGResourceRadialGradient::focalRadius(const RadialGradientAttributes& attributes) const
-{
-    return SVGLengthContext::resolveLength(element(), attributes.gradientUnits(), *attributes.fr());
-}
-
-PassRefPtr<Gradient> LayoutSVGResourceRadialGradient::buildGradient() const
-{
-    const RadialGradientAttributes& attributes = this->attributes();
-    RefPtr<Gradient> gradient = Gradient::create(
-        focalPoint(attributes), focalRadius(attributes),
-        centerPoint(attributes), radius(attributes));
-    gradient->setSpreadMethod(platformSpreadMethodFromSVGType(attributes.spreadMethod()));
-    addStops(*gradient, attributes.stops());
-    return gradient.release();
-}
-
-} // namespace blink
+}  // namespace blink

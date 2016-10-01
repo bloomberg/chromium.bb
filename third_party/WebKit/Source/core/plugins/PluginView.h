@@ -33,7 +33,9 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace blink { class WebLayer; }
+namespace blink {
+class WebLayer;
+}
 
 namespace blink {
 
@@ -41,28 +43,34 @@ class ResourceError;
 class ResourceResponse;
 
 class CORE_EXPORT PluginView : public Widget {
-public:
-    bool isPluginView() const final { return true; }
+ public:
+  bool isPluginView() const final { return true; }
 
-    virtual WebLayer* platformLayer() const { return 0; }
-    virtual v8::Local<v8::Object> scriptableObject(v8::Isolate*) { return v8::Local<v8::Object>(); }
-    virtual bool wantsWheelEvents() { return false; }
-    virtual bool supportsKeyboardFocus() const { return false; }
-    virtual bool supportsInputMethod() const { return false; }
-    virtual bool canProcessDrag() const { return false; }
+  virtual WebLayer* platformLayer() const { return 0; }
+  virtual v8::Local<v8::Object> scriptableObject(v8::Isolate*) {
+    return v8::Local<v8::Object>();
+  }
+  virtual bool wantsWheelEvents() { return false; }
+  virtual bool supportsKeyboardFocus() const { return false; }
+  virtual bool supportsInputMethod() const { return false; }
+  virtual bool canProcessDrag() const { return false; }
 
-    virtual void didReceiveResponse(const ResourceResponse&) { }
-    virtual void didReceiveData(const char*, int) { }
+  virtual void didReceiveResponse(const ResourceResponse&) {}
+  virtual void didReceiveData(const char*, int) {}
 
-    virtual void updateAllLifecyclePhases() { }
-    virtual void invalidatePaintIfNeeded() { }
+  virtual void updateAllLifecyclePhases() {}
+  virtual void invalidatePaintIfNeeded() {}
 
-protected:
-    PluginView() : Widget() { }
+ protected:
+  PluginView() : Widget() {}
 };
 
-DEFINE_TYPE_CASTS(PluginView, Widget, widget, widget->isPluginView(), widget.isPluginView());
+DEFINE_TYPE_CASTS(PluginView,
+                  Widget,
+                  widget,
+                  widget->isPluginView(),
+                  widget.isPluginView());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PluginView_h
+#endif  // PluginView_h

@@ -14,25 +14,26 @@ class ScriptPromiseResolver;
 class RTCPeerConnection;
 
 class RTCVoidRequestPromiseImpl final : public RTCVoidRequest {
-public:
-    static RTCVoidRequestPromiseImpl* create(RTCPeerConnection*, ScriptPromiseResolver*);
-    ~RTCVoidRequestPromiseImpl() override;
+ public:
+  static RTCVoidRequestPromiseImpl* create(RTCPeerConnection*,
+                                           ScriptPromiseResolver*);
+  ~RTCVoidRequestPromiseImpl() override;
 
-    // RTCVoidRequest
-    void requestSucceeded() override;
-    void requestFailed(const String& error) override;
+  // RTCVoidRequest
+  void requestSucceeded() override;
+  void requestFailed(const String& error) override;
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    RTCVoidRequestPromiseImpl(RTCPeerConnection*, ScriptPromiseResolver*);
+ private:
+  RTCVoidRequestPromiseImpl(RTCPeerConnection*, ScriptPromiseResolver*);
 
-    void clear();
+  void clear();
 
-    Member<RTCPeerConnection> m_requester;
-    Member<ScriptPromiseResolver> m_resolver;
+  Member<RTCPeerConnection> m_requester;
+  Member<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // RTCVoidRequestPromiseImpl_h
+#endif  // RTCVoidRequestPromiseImpl_h

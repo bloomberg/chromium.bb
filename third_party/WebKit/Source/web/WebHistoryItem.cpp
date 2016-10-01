@@ -44,195 +44,167 @@
 
 namespace blink {
 
-void WebHistoryItem::initialize()
-{
-    m_private = HistoryItem::create();
+void WebHistoryItem::initialize() {
+  m_private = HistoryItem::create();
 }
 
-void WebHistoryItem::reset()
-{
-    m_private.reset();
+void WebHistoryItem::reset() {
+  m_private.reset();
 }
 
-void WebHistoryItem::assign(const WebHistoryItem& other)
-{
-    m_private = other.m_private;
+void WebHistoryItem::assign(const WebHistoryItem& other) {
+  m_private = other.m_private;
 }
 
-WebString WebHistoryItem::urlString() const
-{
-    return m_private->urlString();
+WebString WebHistoryItem::urlString() const {
+  return m_private->urlString();
 }
 
-void WebHistoryItem::setURLString(const WebString& url)
-{
-    m_private->setURLString(KURL(ParsedURLString, url).getString());
+void WebHistoryItem::setURLString(const WebString& url) {
+  m_private->setURLString(KURL(ParsedURLString, url).getString());
 }
 
-WebString WebHistoryItem::referrer() const
-{
-    return m_private->referrer().referrer;
+WebString WebHistoryItem::referrer() const {
+  return m_private->referrer().referrer;
 }
 
-WebReferrerPolicy WebHistoryItem::referrerPolicy() const
-{
-    return static_cast<WebReferrerPolicy>(m_private->referrer().referrerPolicy);
+WebReferrerPolicy WebHistoryItem::referrerPolicy() const {
+  return static_cast<WebReferrerPolicy>(m_private->referrer().referrerPolicy);
 }
 
-void WebHistoryItem::setReferrer(const WebString& referrer, WebReferrerPolicy referrerPolicy)
-{
-    m_private->setReferrer(Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy)));
+void WebHistoryItem::setReferrer(const WebString& referrer,
+                                 WebReferrerPolicy referrerPolicy) {
+  m_private->setReferrer(
+      Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy)));
 }
 
-WebString WebHistoryItem::target() const
-{
-    return m_private->target();
+WebString WebHistoryItem::target() const {
+  return m_private->target();
 }
 
-void WebHistoryItem::setTarget(const WebString& target)
-{
-    m_private->setTarget(target);
+void WebHistoryItem::setTarget(const WebString& target) {
+  m_private->setTarget(target);
 }
 
-WebFloatPoint WebHistoryItem::visualViewportScrollOffset() const
-{
-    return m_private->visualViewportScrollPoint();
+WebFloatPoint WebHistoryItem::visualViewportScrollOffset() const {
+  return m_private->visualViewportScrollPoint();
 }
 
-void WebHistoryItem::setVisualViewportScrollOffset(const WebFloatPoint& scrollOffset)
-{
-    m_private->setVisualViewportScrollPoint(scrollOffset);
+void WebHistoryItem::setVisualViewportScrollOffset(
+    const WebFloatPoint& scrollOffset) {
+  m_private->setVisualViewportScrollPoint(scrollOffset);
 }
 
-WebPoint WebHistoryItem::scrollOffset() const
-{
-    return m_private->scrollPoint();
+WebPoint WebHistoryItem::scrollOffset() const {
+  return m_private->scrollPoint();
 }
 
-void WebHistoryItem::setScrollOffset(const WebPoint& scrollOffset)
-{
-    m_private->setScrollPoint(scrollOffset);
+void WebHistoryItem::setScrollOffset(const WebPoint& scrollOffset) {
+  m_private->setScrollPoint(scrollOffset);
 }
 
-float WebHistoryItem::pageScaleFactor() const
-{
-    return m_private->pageScaleFactor();
+float WebHistoryItem::pageScaleFactor() const {
+  return m_private->pageScaleFactor();
 }
 
-void WebHistoryItem::setPageScaleFactor(float scale)
-{
-    m_private->setPageScaleFactor(scale);
+void WebHistoryItem::setPageScaleFactor(float scale) {
+  m_private->setPageScaleFactor(scale);
 }
 
-WebVector<WebString> WebHistoryItem::documentState() const
-{
-    return m_private->documentState();
+WebVector<WebString> WebHistoryItem::documentState() const {
+  return m_private->documentState();
 }
 
-void WebHistoryItem::setDocumentState(const WebVector<WebString>& state)
-{
-    // FIXME: would be nice to avoid the intermediate copy
-    Vector<String> ds;
-    for (size_t i = 0; i < state.size(); ++i)
-        ds.append(state[i]);
-    m_private->setDocumentState(ds);
+void WebHistoryItem::setDocumentState(const WebVector<WebString>& state) {
+  // FIXME: would be nice to avoid the intermediate copy
+  Vector<String> ds;
+  for (size_t i = 0; i < state.size(); ++i)
+    ds.append(state[i]);
+  m_private->setDocumentState(ds);
 }
 
-long long WebHistoryItem::itemSequenceNumber() const
-{
-    return m_private->itemSequenceNumber();
+long long WebHistoryItem::itemSequenceNumber() const {
+  return m_private->itemSequenceNumber();
 }
 
-void WebHistoryItem::setItemSequenceNumber(long long itemSequenceNumber)
-{
-    m_private->setItemSequenceNumber(itemSequenceNumber);
+void WebHistoryItem::setItemSequenceNumber(long long itemSequenceNumber) {
+  m_private->setItemSequenceNumber(itemSequenceNumber);
 }
 
-long long WebHistoryItem::documentSequenceNumber() const
-{
-    return m_private->documentSequenceNumber();
+long long WebHistoryItem::documentSequenceNumber() const {
+  return m_private->documentSequenceNumber();
 }
 
-void WebHistoryItem::setDocumentSequenceNumber(long long documentSequenceNumber)
-{
-    m_private->setDocumentSequenceNumber(documentSequenceNumber);
+void WebHistoryItem::setDocumentSequenceNumber(
+    long long documentSequenceNumber) {
+  m_private->setDocumentSequenceNumber(documentSequenceNumber);
 }
 
-WebHistoryScrollRestorationType WebHistoryItem::scrollRestorationType() const
-{
-    return static_cast<WebHistoryScrollRestorationType>(m_private->scrollRestorationType());
+WebHistoryScrollRestorationType WebHistoryItem::scrollRestorationType() const {
+  return static_cast<WebHistoryScrollRestorationType>(
+      m_private->scrollRestorationType());
 }
 
-void WebHistoryItem::setScrollRestorationType(WebHistoryScrollRestorationType type)
-{
-    m_private->setScrollRestorationType(static_cast<HistoryScrollRestorationType>(type));
+void WebHistoryItem::setScrollRestorationType(
+    WebHistoryScrollRestorationType type) {
+  m_private->setScrollRestorationType(
+      static_cast<HistoryScrollRestorationType>(type));
 }
 
-WebSerializedScriptValue WebHistoryItem::stateObject() const
-{
-    return WebSerializedScriptValue(m_private->stateObject());
+WebSerializedScriptValue WebHistoryItem::stateObject() const {
+  return WebSerializedScriptValue(m_private->stateObject());
 }
 
-void WebHistoryItem::setStateObject(const WebSerializedScriptValue& object)
-{
-    m_private->setStateObject(object);
+void WebHistoryItem::setStateObject(const WebSerializedScriptValue& object) {
+  m_private->setStateObject(object);
 }
 
-WebString WebHistoryItem::httpContentType() const
-{
-    return m_private->formContentType();
+WebString WebHistoryItem::httpContentType() const {
+  return m_private->formContentType();
 }
 
-void WebHistoryItem::setHTTPContentType(const WebString& httpContentType)
-{
-    m_private->setFormContentType(httpContentType);
+void WebHistoryItem::setHTTPContentType(const WebString& httpContentType) {
+  m_private->setFormContentType(httpContentType);
 }
 
-WebHTTPBody WebHistoryItem::httpBody() const
-{
-    return WebHTTPBody(m_private->formData());
+WebHTTPBody WebHistoryItem::httpBody() const {
+  return WebHTTPBody(m_private->formData());
 }
 
-void WebHistoryItem::setHTTPBody(const WebHTTPBody& httpBody)
-{
-    m_private->setFormData(httpBody);
+void WebHistoryItem::setHTTPBody(const WebHTTPBody& httpBody) {
+  m_private->setFormData(httpBody);
 }
 
-WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const
-{
-    HashSet<String> filePaths;
-    const EncodedFormData* formData = m_private->formData();
-    if (formData) {
-        for (size_t i = 0; i < formData->elements().size(); ++i) {
-            const FormDataElement& element = formData->elements()[i];
-            if (element.m_type == FormDataElement::encodedFile)
-                filePaths.add(element.m_filename);
-        }
+WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const {
+  HashSet<String> filePaths;
+  const EncodedFormData* formData = m_private->formData();
+  if (formData) {
+    for (size_t i = 0; i < formData->elements().size(); ++i) {
+      const FormDataElement& element = formData->elements()[i];
+      if (element.m_type == FormDataElement::encodedFile)
+        filePaths.add(element.m_filename);
     }
+  }
 
-    const Vector<String>& referencedFilePaths = m_private->getReferencedFilePaths();
-    for (size_t i = 0; i < referencedFilePaths.size(); ++i)
-        filePaths.add(referencedFilePaths[i]);
+  const Vector<String>& referencedFilePaths =
+      m_private->getReferencedFilePaths();
+  for (size_t i = 0; i < referencedFilePaths.size(); ++i)
+    filePaths.add(referencedFilePaths[i]);
 
-    Vector<String> results;
-    copyToVector(filePaths, results);
-    return results;
+  Vector<String> results;
+  copyToVector(filePaths, results);
+  return results;
 }
 
-WebHistoryItem::WebHistoryItem(HistoryItem* item)
-    : m_private(item)
-{
+WebHistoryItem::WebHistoryItem(HistoryItem* item) : m_private(item) {}
+
+WebHistoryItem& WebHistoryItem::operator=(HistoryItem* item) {
+  m_private = item;
+  return *this;
 }
 
-WebHistoryItem& WebHistoryItem::operator=(HistoryItem* item)
-{
-    m_private = item;
-    return *this;
+WebHistoryItem::operator HistoryItem*() const {
+  return m_private.get();
 }
 
-WebHistoryItem::operator HistoryItem*() const
-{
-    return m_private.get();
-}
-
-} // namespace blink
+}  // namespace blink

@@ -26,15 +26,13 @@
 
 namespace blink {
 
-HTMLNameCollection::HTMLNameCollection(ContainerNode& document, CollectionType type, const AtomicString& name)
-    : HTMLCollection(document, type, DoesNotOverrideItemAfter)
-    , m_name(name)
-{
+HTMLNameCollection::HTMLNameCollection(ContainerNode& document,
+                                       CollectionType type,
+                                       const AtomicString& name)
+    : HTMLCollection(document, type, DoesNotOverrideItemAfter), m_name(name) {}
+
+HTMLNameCollection::~HTMLNameCollection() {
+  DCHECK(type() == WindowNamedItems || type() == DocumentNamedItems);
 }
 
-HTMLNameCollection::~HTMLNameCollection()
-{
-    DCHECK(type() == WindowNamedItems || type() == DocumentNamedItems);
-}
-
-} // namespace blink
+}  // namespace blink

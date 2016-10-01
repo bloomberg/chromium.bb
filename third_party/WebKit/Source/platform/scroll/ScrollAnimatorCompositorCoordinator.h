@@ -26,148 +26,154 @@ class CompositorAnimation;
 class CompositorAnimationPlayer;
 class CompositorAnimationTimeline;
 
-class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public GarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private CompositorAnimationPlayerClient, CompositorAnimationDelegate {
-    WTF_MAKE_NONCOPYABLE(ScrollAnimatorCompositorCoordinator);
-    USING_PRE_FINALIZER(ScrollAnimatorCompositorCoordinator, dispose);
-public:
-    enum class RunState {
-        // No animation.
-        Idle,
+class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
+    : public GarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>,
+      private CompositorAnimationPlayerClient,
+      CompositorAnimationDelegate {
+  WTF_MAKE_NONCOPYABLE(ScrollAnimatorCompositorCoordinator);
+  USING_PRE_FINALIZER(ScrollAnimatorCompositorCoordinator, dispose);
 
-        // Waiting to send an animation to the compositor. There might also
-        // already be another animation running on the compositor that will need
-        // to be canceled first.
-        WaitingToSendToCompositor,
+ public:
+  enum class RunState {
+    // No animation.
+    Idle,
 
-        // Running an animation on the compositor.
-        RunningOnCompositor,
+    // Waiting to send an animation to the compositor. There might also
+    // already be another animation running on the compositor that will need
+    // to be canceled first.
+    WaitingToSendToCompositor,
 
-        // Running an animation on the compositor but needs update.
-        RunningOnCompositorButNeedsUpdate,
+    // Running an animation on the compositor.
+    RunningOnCompositor,
 
-        // Running an animation on the main thread.
-        RunningOnMainThread,
+    // Running an animation on the compositor but needs update.
+    RunningOnCompositorButNeedsUpdate,
 
-        // Waiting to cancel the animation currently running on the compositor.
-        // There is no pending animation to replace the canceled animation.
-        WaitingToCancelOnCompositor,
+    // Running an animation on the main thread.
+    RunningOnMainThread,
 
-        // Finished an animation that was running on the main thread or the
-        // compositor thread. When in this state, post animation cleanup can
-        // be performed.
-        PostAnimationCleanup,
+    // Waiting to cancel the animation currently running on the compositor.
+    // There is no pending animation to replace the canceled animation.
+    WaitingToCancelOnCompositor,
 
-        // Running an animation on the compositor but need to continue it
-        // on the main thread. This could happen if a main thread scrolling
-        // reason is added while animating the scroll offset.
-        RunningOnCompositorButNeedsTakeover,
+    // Finished an animation that was running on the main thread or the
+    // compositor thread. When in this state, post animation cleanup can
+    // be performed.
+    PostAnimationCleanup,
 
-        // Waiting to cancel the animation currently running on the compositor
-        // while another animation is requested. In this case, the currently
-        // running animation is aborted and an animation to the new target
-        // from the current position is started.
-        WaitingToCancelOnCompositorButNewScroll,
+    // Running an animation on the compositor but need to continue it
+    // on the main thread. This could happen if a main thread scrolling
+    // reason is added while animating the scroll offset.
+    RunningOnCompositorButNeedsTakeover,
 
-        // Running an animation on the compositor but an adjustment to the
-        // scroll position was made on the main thread and the animation must
-        // be updated.
-        RunningOnCompositorButNeedsAdjustment,
-    };
+    // Waiting to cancel the animation currently running on the compositor
+    // while another animation is requested. In this case, the currently
+    // running animation is aborted and an animation to the new target
+    // from the current position is started.
+    WaitingToCancelOnCompositorButNewScroll,
 
-    virtual ~ScrollAnimatorCompositorCoordinator();
+    // Running an animation on the compositor but an adjustment to the
+    // scroll position was made on the main thread and the animation must
+    // be updated.
+    RunningOnCompositorButNeedsAdjustment,
+  };
 
-    bool hasAnimationThatRequiresService() const;
-    void dispose();
-    String runStateAsText() const;
+  virtual ~ScrollAnimatorCompositorCoordinator();
 
-    virtual bool hasRunningAnimation() const { return false; }
+  bool hasAnimationThatRequiresService() const;
+  void dispose();
+  String runStateAsText() const;
 
-    virtual void resetAnimationState();
-    virtual void cancelAnimation();
-    // Aborts the currently running scroll offset animation on the compositor
-    // and continues it on the main thread. This should only be called when in
-    // DocumentLifecycle::LifecycleState::CompositingClean state.
-    virtual void takeOverCompositorAnimation();
-    // Updates the scroll position of the animator's ScrollableArea by
-    // adjustment and update the target of an ongoing scroll offset animation.
-    virtual void adjustAnimationAndSetScrollPosition(const DoublePoint& position, ScrollType);
-    virtual void updateCompositorAnimations();
+  virtual bool hasRunningAnimation() const { return false; }
 
-    virtual ScrollableArea* getScrollableArea() const = 0;
-    virtual void tickAnimation(double monotonicTime) = 0;
-    virtual void notifyCompositorAnimationFinished(int groupId) = 0;
-    virtual void notifyCompositorAnimationAborted(int groupId) = 0;
-    virtual void layerForCompositedScrollingDidChange(CompositorAnimationTimeline*) = 0;
+  virtual void resetAnimationState();
+  virtual void cancelAnimation();
+  // Aborts the currently running scroll offset animation on the compositor
+  // and continues it on the main thread. This should only be called when in
+  // DocumentLifecycle::LifecycleState::CompositingClean state.
+  virtual void takeOverCompositorAnimation();
+  // Updates the scroll position of the animator's ScrollableArea by
+  // adjustment and update the target of an ongoing scroll offset animation.
+  virtual void adjustAnimationAndSetScrollPosition(const DoublePoint& position,
+                                                   ScrollType);
+  virtual void updateCompositorAnimations();
 
-    RunState runStateForTesting() { return m_runState; }
+  virtual ScrollableArea* getScrollableArea() const = 0;
+  virtual void tickAnimation(double monotonicTime) = 0;
+  virtual void notifyCompositorAnimationFinished(int groupId) = 0;
+  virtual void notifyCompositorAnimationAborted(int groupId) = 0;
+  virtual void layerForCompositedScrollingDidChange(
+      CompositorAnimationTimeline*) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  RunState runStateForTesting() { return m_runState; }
 
-protected:
-    explicit ScrollAnimatorCompositorCoordinator();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    void scrollPositionChanged(const DoublePoint& offset, ScrollType);
+ protected:
+  explicit ScrollAnimatorCompositorCoordinator();
 
-    void adjustImplOnlyScrollOffsetAnimation(const IntSize& adjustment);
-    IntSize implOnlyAnimationAdjustmentForTesting() { return m_implOnlyAnimationAdjustment; }
+  void scrollPositionChanged(const DoublePoint& offset, ScrollType);
 
-    void resetAnimationIds();
-    bool addAnimation(std::unique_ptr<CompositorAnimation>);
-    void removeAnimation();
-    virtual void abortAnimation();
+  void adjustImplOnlyScrollOffsetAnimation(const IntSize& adjustment);
+  IntSize implOnlyAnimationAdjustmentForTesting() {
+    return m_implOnlyAnimationAdjustment;
+  }
 
-    FloatPoint compositorOffsetFromBlinkOffset(FloatPoint);
-    FloatPoint blinkOffsetFromCompositorOffset(FloatPoint);
+  void resetAnimationIds();
+  bool addAnimation(std::unique_ptr<CompositorAnimation>);
+  void removeAnimation();
+  virtual void abortAnimation();
 
-    void compositorAnimationFinished(int groupId);
-    // Returns true if the compositor player was attached to a new layer.
-    bool reattachCompositorPlayerIfNeeded(CompositorAnimationTimeline*);
+  FloatPoint compositorOffsetFromBlinkOffset(FloatPoint);
+  FloatPoint blinkOffsetFromCompositorOffset(FloatPoint);
 
-    // CompositorAnimationDelegate implementation.
-    void notifyAnimationStarted(double monotonicTime, int group) override;
-    void notifyAnimationFinished(double monotonicTime, int group) override;
-    void notifyAnimationAborted(double monotonicTime, int group) override;
-    void notifyAnimationTakeover(
-        double monotonicTime,
-        double animationStartTime,
-        std::unique_ptr<cc::AnimationCurve>) override { };
+  void compositorAnimationFinished(int groupId);
+  // Returns true if the compositor player was attached to a new layer.
+  bool reattachCompositorPlayerIfNeeded(CompositorAnimationTimeline*);
 
-    // CompositorAnimationPlayerClient implementation.
-    CompositorAnimationPlayer* compositorPlayer() const override;
+  // CompositorAnimationDelegate implementation.
+  void notifyAnimationStarted(double monotonicTime, int group) override;
+  void notifyAnimationFinished(double monotonicTime, int group) override;
+  void notifyAnimationAborted(double monotonicTime, int group) override;
+  void notifyAnimationTakeover(double monotonicTime,
+                               double animationStartTime,
+                               std::unique_ptr<cc::AnimationCurve>) override{};
 
-    friend class Internals;
-    // TODO(ymalik): Tests are added as friends to access m_RunState. Use the
-    // runStateForTesting accessor instead.
-    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
-    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, AnimatedScrollTakeover);
-    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingAnimationResetsState);
-    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingCompositorAnimation);
-    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared);
+  // CompositorAnimationPlayerClient implementation.
+  CompositorAnimationPlayer* compositorPlayer() const override;
 
+  friend class Internals;
+  // TODO(ymalik): Tests are added as friends to access m_RunState. Use the
+  // runStateForTesting accessor instead.
+  FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
+  FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, AnimatedScrollTakeover);
+  FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingAnimationResetsState);
+  FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingCompositorAnimation);
+  FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared);
 
-    std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
-    CompositorElementId m_compositorAnimationAttachedToElementId;
-    RunState m_runState;
-    int m_compositorAnimationId;
-    int m_compositorAnimationGroupId;
+  std::unique_ptr<CompositorAnimationPlayer> m_compositorPlayer;
+  CompositorElementId m_compositorAnimationAttachedToElementId;
+  RunState m_runState;
+  int m_compositorAnimationId;
+  int m_compositorAnimationGroupId;
 
-    // An adjustment to the scroll offset on the main thread that may affect
-    // impl-only scroll offset animations.
-    IntSize m_implOnlyAnimationAdjustment;
+  // An adjustment to the scroll offset on the main thread that may affect
+  // impl-only scroll offset animations.
+  IntSize m_implOnlyAnimationAdjustment;
 
-    // If set to true, sends a cc::ScrollOffsetAnimationUpdate to cc which will
-    // abort the impl-only scroll offset animation and continue it on main
-    // thread.
-    bool m_implOnlyAnimationTakeover;
+  // If set to true, sends a cc::ScrollOffsetAnimationUpdate to cc which will
+  // abort the impl-only scroll offset animation and continue it on main
+  // thread.
+  bool m_implOnlyAnimationTakeover;
 
-private:
-    bool hasImplOnlyAnimationUpdate() const;
-    void updateImplOnlyCompositorAnimations();
-    // Accesses compositing state and should only be called when in or after
-    // DocumentLifecycle::LifecycleState::CompositingClean.
-    void takeOverImplOnlyScrollOffsetAnimation();
+ private:
+  bool hasImplOnlyAnimationUpdate() const;
+  void updateImplOnlyCompositorAnimations();
+  // Accesses compositing state and should only be called when in or after
+  // DocumentLifecycle::LifecycleState::CompositingClean.
+  void takeOverImplOnlyScrollOffsetAnimation();
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScrollAnimatorCompositorCoordinator_h
+#endif  // ScrollAnimatorCompositorCoordinator_h

@@ -40,29 +40,46 @@ namespace blink {
 class MIDIAccess;
 
 class MIDIInput final : public MIDIPort {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static MIDIInput* create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState);
-    ~MIDIInput() override { }
+  DEFINE_WRAPPERTYPEINFO();
 
-    EventListener* onmidimessage();
-    void setOnmidimessage(EventListener*);
+ public:
+  static MIDIInput* create(MIDIAccess*,
+                           const String& id,
+                           const String& manufacturer,
+                           const String& name,
+                           const String& version,
+                           MIDIAccessor::MIDIPortState);
+  ~MIDIInput() override {}
 
-    // EventTarget
-    const AtomicString& interfaceName() const override { return EventTargetNames::MIDIInput; }
+  EventListener* onmidimessage();
+  void setOnmidimessage(EventListener*);
 
-    // |timeStamp| is a DOMHighResTimeStamp in the time coordinate system of performance.now().
-    void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp);
+  // EventTarget
+  const AtomicString& interfaceName() const override {
+    return EventTargetNames::MIDIInput;
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  // |timeStamp| is a DOMHighResTimeStamp in the time coordinate system of performance.now().
+  void didReceiveMIDIData(unsigned portIndex,
+                          const unsigned char* data,
+                          size_t length,
+                          double timeStamp);
 
-protected:
-    void addedEventListener(const AtomicString& eventType, RegisteredEventListener&) override;
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState);
+ protected:
+  void addedEventListener(const AtomicString& eventType,
+                          RegisteredEventListener&) override;
+
+ private:
+  MIDIInput(MIDIAccess*,
+            const String& id,
+            const String& manufacturer,
+            const String& name,
+            const String& version,
+            MIDIAccessor::MIDIPortState);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // MIDIInput_h
+#endif  // MIDIInput_h

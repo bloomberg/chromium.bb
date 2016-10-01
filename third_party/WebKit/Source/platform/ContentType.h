@@ -34,17 +34,19 @@
 namespace blink {
 
 class PLATFORM_EXPORT ContentType {
-    STACK_ALLOCATED();
-public:
-    explicit ContentType(const String& type);
+  STACK_ALLOCATED();
 
-    String parameter(const String& parameterName) const;
-    String type() const;
-    const String& raw() const { return m_type; }
-private:
-    String m_type;
+ public:
+  explicit ContentType(const String& type);
+
+  String parameter(const String& parameterName) const;
+  String type() const;
+  const String& raw() const { return m_type; }
+
+ private:
+  String m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ContentType_h
+#endif  // ContentType_h

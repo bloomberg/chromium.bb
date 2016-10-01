@@ -31,18 +31,13 @@ namespace blink {
 using namespace HTMLNames;
 
 NameNodeList::NameNodeList(ContainerNode& rootNode, const AtomicString& name)
-    : LiveNodeList(rootNode, NameNodeListType, InvalidateOnNameAttrChange)
-    , m_name(name)
-{
+    : LiveNodeList(rootNode, NameNodeListType, InvalidateOnNameAttrChange),
+      m_name(name) {}
+
+NameNodeList::~NameNodeList() {}
+
+bool NameNodeList::elementMatches(const Element& element) const {
+  return element.getNameAttribute() == m_name;
 }
 
-NameNodeList::~NameNodeList()
-{
-}
-
-bool NameNodeList::elementMatches(const Element& element) const
-{
-    return element.getNameAttribute() == m_name;
-}
-
-} // namespace blink
+}  // namespace blink

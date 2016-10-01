@@ -61,176 +61,160 @@ namespace blink {
 
 using namespace HTMLNames;
 
-HTMLDocument::HTMLDocument(const DocumentInit& initializer, DocumentClassFlags extendedDocumentClasses)
-    : Document(initializer, HTMLDocumentClass | extendedDocumentClasses)
-{
-    clearXMLVersion();
-    if (isSrcdocDocument() || initializer.importsController()) {
-        DCHECK(inNoQuirksMode());
-        lockCompatibilityMode();
-    }
+HTMLDocument::HTMLDocument(const DocumentInit& initializer,
+                           DocumentClassFlags extendedDocumentClasses)
+    : Document(initializer, HTMLDocumentClass | extendedDocumentClasses) {
+  clearXMLVersion();
+  if (isSrcdocDocument() || initializer.importsController()) {
+    DCHECK(inNoQuirksMode());
+    lockCompatibilityMode();
+  }
 }
 
-HTMLDocument::~HTMLDocument()
-{
+HTMLDocument::~HTMLDocument() {}
+
+HTMLBodyElement* HTMLDocument::htmlBodyElement() const {
+  HTMLElement* body = this->body();
+  return isHTMLBodyElement(body) ? toHTMLBodyElement(body) : 0;
 }
 
-HTMLBodyElement* HTMLDocument::htmlBodyElement() const
-{
-    HTMLElement* body = this->body();
-    return isHTMLBodyElement(body) ? toHTMLBodyElement(body) : 0;
+const AtomicString& HTMLDocument::bodyAttributeValue(
+    const QualifiedName& name) const {
+  if (HTMLBodyElement* body = htmlBodyElement())
+    return body->fastGetAttribute(name);
+  return nullAtom;
 }
 
-const AtomicString& HTMLDocument::bodyAttributeValue(const QualifiedName& name) const
-{
-    if (HTMLBodyElement* body = htmlBodyElement())
-        return body->fastGetAttribute(name);
-    return nullAtom;
+void HTMLDocument::setBodyAttribute(const QualifiedName& name,
+                                    const AtomicString& value) {
+  if (HTMLBodyElement* body = htmlBodyElement()) {
+    // FIXME: This check is apparently for benchmarks that set the same value repeatedly.
+    // It's not clear what benchmarks though, it's also not clear why we don't avoid
+    // causing a style recalc when setting the same value to a presentational attribute
+    // in the common case.
+    if (body->fastGetAttribute(name) != value)
+      body->setAttribute(name, value);
+  }
 }
 
-void HTMLDocument::setBodyAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    if (HTMLBodyElement* body = htmlBodyElement()) {
-        // FIXME: This check is apparently for benchmarks that set the same value repeatedly.
-        // It's not clear what benchmarks though, it's also not clear why we don't avoid
-        // causing a style recalc when setting the same value to a presentational attribute
-        // in the common case.
-        if (body->fastGetAttribute(name) != value)
-            body->setAttribute(name, value);
-    }
+const AtomicString& HTMLDocument::bgColor() const {
+  return bodyAttributeValue(bgcolorAttr);
 }
 
-const AtomicString& HTMLDocument::bgColor() const
-{
-    return bodyAttributeValue(bgcolorAttr);
+void HTMLDocument::setBgColor(const AtomicString& value) {
+  setBodyAttribute(bgcolorAttr, value);
 }
 
-void HTMLDocument::setBgColor(const AtomicString& value)
-{
-    setBodyAttribute(bgcolorAttr, value);
+const AtomicString& HTMLDocument::fgColor() const {
+  return bodyAttributeValue(textAttr);
 }
 
-const AtomicString& HTMLDocument::fgColor() const
-{
-    return bodyAttributeValue(textAttr);
+void HTMLDocument::setFgColor(const AtomicString& value) {
+  setBodyAttribute(textAttr, value);
 }
 
-void HTMLDocument::setFgColor(const AtomicString& value)
-{
-    setBodyAttribute(textAttr, value);
+const AtomicString& HTMLDocument::alinkColor() const {
+  return bodyAttributeValue(alinkAttr);
 }
 
-const AtomicString& HTMLDocument::alinkColor() const
-{
-    return bodyAttributeValue(alinkAttr);
+void HTMLDocument::setAlinkColor(const AtomicString& value) {
+  setBodyAttribute(alinkAttr, value);
 }
 
-void HTMLDocument::setAlinkColor(const AtomicString& value)
-{
-    setBodyAttribute(alinkAttr, value);
+const AtomicString& HTMLDocument::linkColor() const {
+  return bodyAttributeValue(linkAttr);
 }
 
-const AtomicString& HTMLDocument::linkColor() const
-{
-    return bodyAttributeValue(linkAttr);
+void HTMLDocument::setLinkColor(const AtomicString& value) {
+  setBodyAttribute(linkAttr, value);
 }
 
-void HTMLDocument::setLinkColor(const AtomicString& value)
-{
-    setBodyAttribute(linkAttr, value);
+const AtomicString& HTMLDocument::vlinkColor() const {
+  return bodyAttributeValue(vlinkAttr);
 }
 
-const AtomicString& HTMLDocument::vlinkColor() const
-{
-    return bodyAttributeValue(vlinkAttr);
+void HTMLDocument::setVlinkColor(const AtomicString& value) {
+  setBodyAttribute(vlinkAttr, value);
 }
 
-void HTMLDocument::setVlinkColor(const AtomicString& value)
-{
-    setBodyAttribute(vlinkAttr, value);
-}
-
-Document* HTMLDocument::cloneDocumentWithoutChildren()
-{
-    return create(DocumentInit(url()).withRegistrationContext(registrationContext()));
+Document* HTMLDocument::cloneDocumentWithoutChildren() {
+  return create(
+      DocumentInit(url()).withRegistrationContext(registrationContext()));
 }
 
 // --------------------------------------------------------------------------
 // not part of the DOM
 // --------------------------------------------------------------------------
 
-void HTMLDocument::addItemToMap(HashCountedSet<AtomicString>& map, const AtomicString& name)
-{
-    if (name.isEmpty())
-        return;
-    map.add(name);
-    if (LocalFrame* f = frame())
-        f->script().namedItemAdded(this, name);
+void HTMLDocument::addItemToMap(HashCountedSet<AtomicString>& map,
+                                const AtomicString& name) {
+  if (name.isEmpty())
+    return;
+  map.add(name);
+  if (LocalFrame* f = frame())
+    f->script().namedItemAdded(this, name);
 }
 
-void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map, const AtomicString& name)
-{
-    if (name.isEmpty())
-        return;
-    map.remove(name);
-    if (LocalFrame* f = frame())
-        f->script().namedItemRemoved(this, name);
+void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map,
+                                     const AtomicString& name) {
+  if (name.isEmpty())
+    return;
+  map.remove(name);
+  if (LocalFrame* f = frame())
+    f->script().namedItemRemoved(this, name);
 }
 
-void HTMLDocument::addNamedItem(const AtomicString& name)
-{
-    addItemToMap(m_namedItemCounts, name);
+void HTMLDocument::addNamedItem(const AtomicString& name) {
+  addItemToMap(m_namedItemCounts, name);
 }
 
-void HTMLDocument::removeNamedItem(const AtomicString& name)
-{
-    removeItemFromMap(m_namedItemCounts, name);
+void HTMLDocument::removeNamedItem(const AtomicString& name) {
+  removeItemFromMap(m_namedItemCounts, name);
 }
 
-void HTMLDocument::addExtraNamedItem(const AtomicString& name)
-{
-    addItemToMap(m_extraNamedItemCounts, name);
+void HTMLDocument::addExtraNamedItem(const AtomicString& name) {
+  addItemToMap(m_extraNamedItemCounts, name);
 }
 
-void HTMLDocument::removeExtraNamedItem(const AtomicString& name)
-{
-    removeItemFromMap(m_extraNamedItemCounts, name);
+void HTMLDocument::removeExtraNamedItem(const AtomicString& name) {
+  removeItemFromMap(m_extraNamedItemCounts, name);
 }
 
-static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
-{
-    // This is the list of attributes in HTML 4.01 with values marked as "[CI]" or case-insensitive
-    // Mozilla treats all other values as case-sensitive, thus so do we.
-    HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
+static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet() {
+  // This is the list of attributes in HTML 4.01 with values marked as "[CI]" or case-insensitive
+  // Mozilla treats all other values as case-sensitive, thus so do we.
+  HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
 
-    const QualifiedName* caseInsensitiveAttributes[] = {
-        &accept_charsetAttr, &acceptAttr, &alignAttr, &alinkAttr, &axisAttr,
-        &bgcolorAttr,
-        &charsetAttr, &checkedAttr, &clearAttr, &codetypeAttr, &colorAttr, &compactAttr,
-        &declareAttr, &deferAttr, &dirAttr, &directionAttr, &disabledAttr,
-        &enctypeAttr,
-        &faceAttr, &frameAttr,
-        &hreflangAttr, &http_equivAttr,
-        &langAttr, &languageAttr, &linkAttr,
-        &mediaAttr, &methodAttr, &multipleAttr,
-        &nohrefAttr, &noresizeAttr, &noshadeAttr, &nowrapAttr,
-        &readonlyAttr, &relAttr, &revAttr, &rulesAttr,
-        &scopeAttr, &scrollingAttr, &selectedAttr, &shapeAttr,
-        &targetAttr, &textAttr, &typeAttr,
-        &valignAttr, &valuetypeAttr, &vlinkAttr };
+  const QualifiedName* caseInsensitiveAttributes[] = {
+      &accept_charsetAttr, &acceptAttr,     &alignAttr,    &alinkAttr,
+      &axisAttr,           &bgcolorAttr,    &charsetAttr,  &checkedAttr,
+      &clearAttr,          &codetypeAttr,   &colorAttr,    &compactAttr,
+      &declareAttr,        &deferAttr,      &dirAttr,      &directionAttr,
+      &disabledAttr,       &enctypeAttr,    &faceAttr,     &frameAttr,
+      &hreflangAttr,       &http_equivAttr, &langAttr,     &languageAttr,
+      &linkAttr,           &mediaAttr,      &methodAttr,   &multipleAttr,
+      &nohrefAttr,         &noresizeAttr,   &noshadeAttr,  &nowrapAttr,
+      &readonlyAttr,       &relAttr,        &revAttr,      &rulesAttr,
+      &scopeAttr,          &scrollingAttr,  &selectedAttr, &shapeAttr,
+      &targetAttr,         &textAttr,       &typeAttr,     &valignAttr,
+      &valuetypeAttr,      &vlinkAttr};
 
-    attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsensitiveAttributes));
-    for (const QualifiedName* attr : caseInsensitiveAttributes)
-        attrSet->add(attr->localName().impl());
+  attrSet->reserveCapacityForSize(WTF_ARRAY_LENGTH(caseInsensitiveAttributes));
+  for (const QualifiedName* attr : caseInsensitiveAttributes)
+    attrSet->add(attr->localName().impl());
 
-    return attrSet;
+  return attrSet;
 }
 
-bool HTMLDocument::isCaseSensitiveAttribute(const QualifiedName& attributeName)
-{
-    static HashSet<StringImpl*>* htmlCaseInsensitiveAttributesSet = createHtmlCaseInsensitiveAttributesSet();
-    bool isPossibleHTMLAttr = !attributeName.hasPrefix() && (attributeName.namespaceURI() == nullAtom);
-    return !isPossibleHTMLAttr || !htmlCaseInsensitiveAttributesSet->contains(attributeName.localName().impl());
+bool HTMLDocument::isCaseSensitiveAttribute(
+    const QualifiedName& attributeName) {
+  static HashSet<StringImpl*>* htmlCaseInsensitiveAttributesSet =
+      createHtmlCaseInsensitiveAttributesSet();
+  bool isPossibleHTMLAttr =
+      !attributeName.hasPrefix() && (attributeName.namespaceURI() == nullAtom);
+  return !isPossibleHTMLAttr ||
+         !htmlCaseInsensitiveAttributesSet->contains(
+             attributeName.localName().impl());
 }
 
-} // namespace blink
+}  // namespace blink

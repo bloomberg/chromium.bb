@@ -12,25 +12,28 @@
 
 namespace blink {
 
-void NavigateClientCallback::onSuccess(std::unique_ptr<WebServiceWorkerClientInfo> clientInfo)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
-    m_resolver->resolve(ServiceWorkerWindowClient::take(m_resolver.get(), wrapUnique(clientInfo.release())));
+void NavigateClientCallback::onSuccess(
+    std::unique_ptr<WebServiceWorkerClientInfo> clientInfo) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
+  m_resolver->resolve(ServiceWorkerWindowClient::take(
+      m_resolver.get(), wrapUnique(clientInfo.release())));
 }
 
-void NavigateClientCallback::onError(const WebServiceWorkerError& error)
-{
-    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
-        return;
+void NavigateClientCallback::onError(const WebServiceWorkerError& error) {
+  if (!m_resolver->getExecutionContext() ||
+      m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+    return;
 
-    if (error.errorType == WebServiceWorkerError::ErrorTypeNavigation)  {
-        ScriptState::Scope scope(m_resolver->getScriptState());
-        m_resolver->reject(V8ThrowException::createTypeError(m_resolver->getScriptState()->isolate(), error.message));
-        return;
-    }
+  if (error.errorType == WebServiceWorkerError::ErrorTypeNavigation) {
+    ScriptState::Scope scope(m_resolver->getScriptState());
+    m_resolver->reject(V8ThrowException::createTypeError(
+        m_resolver->getScriptState()->isolate(), error.message));
+    return;
+  }
 
-    m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+  m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
 }
 
-} // namespace blink
+}  // namespace blink

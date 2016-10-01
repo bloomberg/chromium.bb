@@ -13,22 +13,24 @@ namespace blink {
 class TrackBase;
 class SourceBuffer;
 
-class SourceBufferTrackBaseSupplement : public GarbageCollected<SourceBufferTrackBaseSupplement>, public Supplement<TrackBase> {
-    USING_GARBAGE_COLLECTED_MIXIN(SourceBufferTrackBaseSupplement);
-public:
-    static SourceBuffer* sourceBuffer(TrackBase&);
-    static void setSourceBuffer(TrackBase&, SourceBuffer*);
+class SourceBufferTrackBaseSupplement
+    : public GarbageCollected<SourceBufferTrackBaseSupplement>,
+      public Supplement<TrackBase> {
+  USING_GARBAGE_COLLECTED_MIXIN(SourceBufferTrackBaseSupplement);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static SourceBuffer* sourceBuffer(TrackBase&);
+  static void setSourceBuffer(TrackBase&, SourceBuffer*);
 
-private:
-    static SourceBufferTrackBaseSupplement& from(TrackBase&);
-    static SourceBufferTrackBaseSupplement* fromIfExists(TrackBase&);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<SourceBuffer> m_sourceBuffer;
+ private:
+  static SourceBufferTrackBaseSupplement& from(TrackBase&);
+  static SourceBufferTrackBaseSupplement* fromIfExists(TrackBase&);
+
+  Member<SourceBuffer> m_sourceBuffer;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

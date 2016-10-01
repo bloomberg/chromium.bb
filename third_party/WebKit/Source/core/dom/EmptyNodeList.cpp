@@ -36,19 +36,15 @@
 
 namespace blink {
 
-EmptyNodeList::~EmptyNodeList()
-{
+EmptyNodeList::~EmptyNodeList() {}
+
+Node* EmptyNodeList::virtualOwnerNode() const {
+  return &ownerNode();
 }
 
-Node* EmptyNodeList::virtualOwnerNode() const
-{
-    return &ownerNode();
+DEFINE_TRACE(EmptyNodeList) {
+  visitor->trace(m_owner);
+  NodeList::trace(visitor);
 }
 
-DEFINE_TRACE(EmptyNodeList)
-{
-    visitor->trace(m_owner);
-    NodeList::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

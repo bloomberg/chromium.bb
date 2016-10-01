@@ -15,23 +15,23 @@ class GraphicsContext;
 class TransformationMatrix;
 
 class Transform3DRecorder {
-    STACK_ALLOCATED();
-public:
-    Transform3DRecorder(
-        GraphicsContext&,
-        const DisplayItemClient&,
-        DisplayItem::Type,
-        const TransformationMatrix&,
-        const FloatPoint3D& transformOrigin);
-    ~Transform3DRecorder();
+  STACK_ALLOCATED();
 
-private:
-    GraphicsContext& m_context;
-    const DisplayItemClient& m_client;
-    DisplayItem::Type m_type;
-    bool m_skipRecordingForIdentityTransform;
+ public:
+  Transform3DRecorder(GraphicsContext&,
+                      const DisplayItemClient&,
+                      DisplayItem::Type,
+                      const TransformationMatrix&,
+                      const FloatPoint3D& transformOrigin);
+  ~Transform3DRecorder();
+
+ private:
+  GraphicsContext& m_context;
+  const DisplayItemClient& m_client;
+  DisplayItem::Type m_type;
+  bool m_skipRecordingForIdentityTransform;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Transform3DRecorder_h
+#endif  // Transform3DRecorder_h

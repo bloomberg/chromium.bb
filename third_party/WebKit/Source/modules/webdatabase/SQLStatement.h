@@ -42,29 +42,31 @@ class SQLStatementErrorCallback;
 class SQLTransaction;
 
 class SQLStatement final : public GarbageCollected<SQLStatement> {
-public:
-    static SQLStatement* create(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
-    DECLARE_TRACE();
+ public:
+  static SQLStatement* create(Database*,
+                              SQLStatementCallback*,
+                              SQLStatementErrorCallback*);
+  DECLARE_TRACE();
 
-    bool performCallback(SQLTransaction*);
+  bool performCallback(SQLTransaction*);
 
-    void setBackend(SQLStatementBackend*);
+  void setBackend(SQLStatementBackend*);
 
-    bool hasCallback();
-    bool hasErrorCallback();
+  bool hasCallback();
+  bool hasErrorCallback();
 
-private:
-    SQLStatement(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
+ private:
+  SQLStatement(Database*, SQLStatementCallback*, SQLStatementErrorCallback*);
 
-    // The SQLStatementBackend owns the SQLStatement. Hence, the backend is
-    // guaranteed to be outlive the SQLStatement, and it is safe for us to refer
-    // to the backend using a raw pointer here.
-    Member<SQLStatementBackend> m_backend;
+  // The SQLStatementBackend owns the SQLStatement. Hence, the backend is
+  // guaranteed to be outlive the SQLStatement, and it is safe for us to refer
+  // to the backend using a raw pointer here.
+  Member<SQLStatementBackend> m_backend;
 
-    Member<SQLStatementCallback> m_statementCallback;
-    Member<SQLStatementErrorCallback> m_statementErrorCallback;
+  Member<SQLStatementCallback> m_statementCallback;
+  Member<SQLStatementErrorCallback> m_statementErrorCallback;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SQLStatement_h
+#endif  // SQLStatement_h

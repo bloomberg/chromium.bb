@@ -39,48 +39,46 @@
 namespace blink {
 
 class StyleResolverStats {
-    USING_FAST_MALLOC(StyleResolverStats);
-public:
-    static std::unique_ptr<StyleResolverStats> create()
-    {
-        return wrapUnique(new StyleResolverStats);
-    }
+  USING_FAST_MALLOC(StyleResolverStats);
 
-    void reset();
-    bool allCountersEnabled() const;
-    std::unique_ptr<TracedValue> toTracedValue() const;
+ public:
+  static std::unique_ptr<StyleResolverStats> create() {
+    return wrapUnique(new StyleResolverStats);
+  }
 
-    unsigned sharedStyleLookups;
-    unsigned sharedStyleCandidates;
-    unsigned sharedStyleFound;
-    unsigned sharedStyleMissed;
-    unsigned sharedStyleRejectedByUncommonAttributeRules;
-    unsigned sharedStyleRejectedBySiblingRules;
-    unsigned sharedStyleRejectedByParent;
-    unsigned matchedPropertyApply;
-    unsigned matchedPropertyCacheHit;
-    unsigned matchedPropertyCacheInheritedHit;
-    unsigned matchedPropertyCacheAdded;
-    unsigned rulesFastRejected;
-    unsigned rulesRejected;
-    unsigned rulesMatched;
-    unsigned stylesChanged;
-    unsigned stylesUnchanged;
-    unsigned stylesAnimated;
-    unsigned elementsStyled;
-    unsigned pseudoElementsStyled;
-    unsigned baseStylesUsed;
-    unsigned independentInheritedStylesPropagated;
+  void reset();
+  bool allCountersEnabled() const;
+  std::unique_ptr<TracedValue> toTracedValue() const;
 
-private:
-    StyleResolverStats()
-    {
-        reset();
-    }
+  unsigned sharedStyleLookups;
+  unsigned sharedStyleCandidates;
+  unsigned sharedStyleFound;
+  unsigned sharedStyleMissed;
+  unsigned sharedStyleRejectedByUncommonAttributeRules;
+  unsigned sharedStyleRejectedBySiblingRules;
+  unsigned sharedStyleRejectedByParent;
+  unsigned matchedPropertyApply;
+  unsigned matchedPropertyCacheHit;
+  unsigned matchedPropertyCacheInheritedHit;
+  unsigned matchedPropertyCacheAdded;
+  unsigned rulesFastRejected;
+  unsigned rulesRejected;
+  unsigned rulesMatched;
+  unsigned stylesChanged;
+  unsigned stylesUnchanged;
+  unsigned stylesAnimated;
+  unsigned elementsStyled;
+  unsigned pseudoElementsStyled;
+  unsigned baseStylesUsed;
+  unsigned independentInheritedStylesPropagated;
+
+ private:
+  StyleResolverStats() { reset(); }
 };
 
-#define INCREMENT_STYLE_STATS_COUNTER(styleEngine, counter, n) ((styleEngine).stats() && ((styleEngine).stats()-> counter += n));
+#define INCREMENT_STYLE_STATS_COUNTER(styleEngine, counter, n) \
+  ((styleEngine).stats() && ((styleEngine).stats()->counter += n));
 
-} // namespace blink
+}  // namespace blink
 
-#endif // StyleResolverStats_h
+#endif  // StyleResolverStats_h

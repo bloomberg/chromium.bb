@@ -36,46 +36,45 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
-    : HTMLElement(htmlTag, document)
-{
-}
+    : HTMLElement(htmlTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHtmlElement)
 
-bool HTMLHtmlElement::isURLAttribute(const Attribute& attribute) const
-{
-    return attribute.name() == manifestAttr || HTMLElement::isURLAttribute(attribute);
+bool HTMLHtmlElement::isURLAttribute(const Attribute& attribute) const {
+  return attribute.name() == manifestAttr ||
+         HTMLElement::isURLAttribute(attribute);
 }
 
-void HTMLHtmlElement::insertedByParser()
-{
-    // When parsing a fragment, its dummy document has a null parser.
-    if (!document().parser())
-        return;
+void HTMLHtmlElement::insertedByParser() {
+  // When parsing a fragment, its dummy document has a null parser.
+  if (!document().parser())
+    return;
 
-    maybeSetupApplicationCache();
+  maybeSetupApplicationCache();
 
-    document().parser()->documentElementAvailable();
-    if (document().frame()) {
-        document().frame()->loader().dispatchDocumentElementAvailable();
-        document().frame()->loader().runScriptsAtDocumentElementAvailable();
-        // runScriptsAtDocumentElementAvailable might have invalidated m_document.
-    }
+  document().parser()->documentElementAvailable();
+  if (document().frame()) {
+    document().frame()->loader().dispatchDocumentElementAvailable();
+    document().frame()->loader().runScriptsAtDocumentElementAvailable();
+    // runScriptsAtDocumentElementAvailable might have invalidated m_document.
+  }
 }
 
-void HTMLHtmlElement::maybeSetupApplicationCache()
-{
-    if (!document().frame())
-        return;
+void HTMLHtmlElement::maybeSetupApplicationCache() {
+  if (!document().frame())
+    return;
 
-    DocumentLoader* documentLoader = document().frame()->loader().documentLoader();
-    if (!documentLoader || !document().parser()->documentWasLoadedAsPartOfNavigation())
-        return;
-    const AtomicString& manifest = fastGetAttribute(manifestAttr);
-    if (manifest.isEmpty())
-        documentLoader->applicationCacheHost()->selectCacheWithoutManifest();
-    else
-        documentLoader->applicationCacheHost()->selectCacheWithManifest(document().completeURL(manifest));
+  DocumentLoader* documentLoader =
+      document().frame()->loader().documentLoader();
+  if (!documentLoader ||
+      !document().parser()->documentWasLoadedAsPartOfNavigation())
+    return;
+  const AtomicString& manifest = fastGetAttribute(manifestAttr);
+  if (manifest.isEmpty())
+    documentLoader->applicationCacheHost()->selectCacheWithoutManifest();
+  else
+    documentLoader->applicationCacheHost()->selectCacheWithManifest(
+        document().completeURL(manifest));
 }
 
-} // namespace blink
+}  // namespace blink

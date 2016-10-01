@@ -37,212 +37,219 @@
 namespace blink {
 
 enum PlatformGestureSource {
-    PlatformGestureSourceUninitialized,
-    PlatformGestureSourceTouchpad,
-    PlatformGestureSourceTouchscreen
+  PlatformGestureSourceUninitialized,
+  PlatformGestureSourceTouchpad,
+  PlatformGestureSourceTouchscreen
 };
 
 class PlatformGestureEvent : public PlatformEvent {
-public:
-    PlatformGestureEvent()
-        : PlatformEvent(PlatformEvent::GestureScrollBegin)
-        , m_source(PlatformGestureSourceUninitialized)
-    {
-        memset(&m_data, 0, sizeof(m_data));
+ public:
+  PlatformGestureEvent()
+      : PlatformEvent(PlatformEvent::GestureScrollBegin),
+        m_source(PlatformGestureSourceUninitialized) {
+    memset(&m_data, 0, sizeof(m_data));
+  }
+
+  PlatformGestureEvent(EventType type,
+                       const IntPoint& position,
+                       const IntPoint& globalPosition,
+                       const IntSize& area,
+                       double timestamp,
+                       PlatformEvent::Modifiers modifiers,
+                       PlatformGestureSource source)
+      : PlatformEvent(type, modifiers, timestamp),
+        m_position(position),
+        m_globalPosition(globalPosition),
+        m_area(area),
+        m_source(source) {
+    memset(&m_data, 0, sizeof(m_data));
+  }
+
+  void setScrollGestureData(float deltaX,
+                            float deltaY,
+                            ScrollGranularity deltaUnits,
+                            float velocityX,
+                            float velocityY,
+                            ScrollInertialPhase inertialPhase,
+                            bool preventPropagation,
+                            int resendingPluginId) {
+    ASSERT(type() == PlatformEvent::GestureScrollBegin ||
+           type() == PlatformEvent::GestureScrollUpdate ||
+           type() == PlatformEvent::GestureScrollEnd);
+    if (type() != GestureScrollUpdate) {
+      ASSERT(deltaX == 0);
+      ASSERT(deltaY == 0);
+      ASSERT(velocityX == 0);
+      ASSERT(velocityY == 0);
+      ASSERT(!preventPropagation);
     }
 
-    PlatformGestureEvent(EventType type, const IntPoint& position,
-        const IntPoint& globalPosition, const IntSize& area, double timestamp,
-        PlatformEvent::Modifiers modifiers, PlatformGestureSource source)
-        : PlatformEvent(type, modifiers, timestamp)
-        , m_position(position)
-        , m_globalPosition(globalPosition)
-        , m_area(area)
-        , m_source(source)
-    {
-        memset(&m_data, 0, sizeof(m_data));
-    }
+    if (type() == PlatformEvent::GestureScrollBegin)
+      DCHECK_NE(ScrollInertialPhaseMomentum, inertialPhase);
 
-    void setScrollGestureData(float deltaX, float deltaY, ScrollGranularity deltaUnits, float velocityX, float velocityY,
-        ScrollInertialPhase inertialPhase, bool preventPropagation, int resendingPluginId)
-    {
-        ASSERT(type() == PlatformEvent::GestureScrollBegin
-            || type() == PlatformEvent::GestureScrollUpdate
-            || type() == PlatformEvent::GestureScrollEnd);
-        if (type() != GestureScrollUpdate) {
-            ASSERT(deltaX == 0);
-            ASSERT(deltaY == 0);
-            ASSERT(velocityX == 0);
-            ASSERT(velocityY == 0);
-            ASSERT(!preventPropagation);
-        }
+    m_data.m_scroll.m_deltaX = deltaX;
+    m_data.m_scroll.m_deltaY = deltaY;
+    m_data.m_scroll.m_deltaUnits = deltaUnits;
+    m_data.m_scroll.m_velocityX = velocityX;
+    m_data.m_scroll.m_velocityY = velocityY;
+    m_data.m_scroll.m_inertialPhase = inertialPhase;
+    m_data.m_scroll.m_resendingPluginId = resendingPluginId;
+    m_data.m_scroll.m_preventPropagation = preventPropagation;
+  }
 
-        if (type() == PlatformEvent::GestureScrollBegin)
-            DCHECK_NE(ScrollInertialPhaseMomentum, inertialPhase);
+  const IntPoint& position() const {
+    return m_position;
+  }  // PlatformWindow coordinates.
+  const IntPoint& globalPosition() const {
+    return m_globalPosition;
+  }  // Screen coordinates.
 
-        m_data.m_scroll.m_deltaX = deltaX;
-        m_data.m_scroll.m_deltaY = deltaY;
-        m_data.m_scroll.m_deltaUnits = deltaUnits;
-        m_data.m_scroll.m_velocityX = velocityX;
-        m_data.m_scroll.m_velocityY = velocityY;
-        m_data.m_scroll.m_inertialPhase = inertialPhase;
-        m_data.m_scroll.m_resendingPluginId = resendingPluginId;
-        m_data.m_scroll.m_preventPropagation = preventPropagation;
-    }
+  const IntSize& area() const { return m_area; }
 
-    const IntPoint& position() const { return m_position; } // PlatformWindow coordinates.
-    const IntPoint& globalPosition() const { return m_globalPosition; } // Screen coordinates.
+  PlatformGestureSource source() const { return m_source; }
 
-    const IntSize& area() const { return m_area; }
+  float deltaX() const {
+    ASSERT(m_type == PlatformEvent::GestureScrollBegin ||
+           m_type == PlatformEvent::GestureScrollUpdate);
+    return m_data.m_scroll.m_deltaX;
+  }
 
-    PlatformGestureSource source() const { return m_source; }
+  float deltaY() const {
+    ASSERT(m_type == PlatformEvent::GestureScrollBegin ||
+           m_type == PlatformEvent::GestureScrollUpdate);
+    return m_data.m_scroll.m_deltaY;
+  }
 
-    float deltaX() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate);
-        return m_data.m_scroll.m_deltaX;
-    }
+  ScrollGranularity deltaUnits() const {
+    ASSERT(m_type == PlatformEvent::GestureScrollBegin ||
+           m_type == PlatformEvent::GestureScrollUpdate ||
+           m_type == PlatformEvent::GestureScrollEnd);
+    return m_data.m_scroll.m_deltaUnits;
+  }
 
-    float deltaY() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate);
-        return m_data.m_scroll.m_deltaY;
-    }
+  int tapCount() const {
+    ASSERT(m_type == PlatformEvent::GestureTap);
+    return m_data.m_tap.m_tapCount;
+  }
 
-    ScrollGranularity deltaUnits() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureScrollEnd);
-        return m_data.m_scroll.m_deltaUnits;
-    }
+  float velocityX() const {
+    ASSERT(m_type == PlatformEvent::GestureScrollUpdate ||
+           m_type == PlatformEvent::GestureFlingStart);
+    return m_data.m_scroll.m_velocityX;
+  }
 
-    int tapCount() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureTap);
-        return m_data.m_tap.m_tapCount;
-    }
+  float velocityY() const {
+    ASSERT(m_type == PlatformEvent::GestureScrollUpdate ||
+           m_type == PlatformEvent::GestureFlingStart);
+    return m_data.m_scroll.m_velocityY;
+  }
 
-    float velocityX() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureFlingStart);
-        return m_data.m_scroll.m_velocityX;
-    }
+  ScrollInertialPhase inertialPhase() const {
+    ASSERT(m_type == PlatformEvent::GestureScrollBegin ||
+           m_type == PlatformEvent::GestureScrollUpdate ||
+           m_type == PlatformEvent::GestureScrollEnd);
+    return m_data.m_scroll.m_inertialPhase;
+  }
 
-    float velocityY() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureFlingStart);
-        return m_data.m_scroll.m_velocityY;
-    }
+  bool synthetic() const {
+    ASSERT(m_type == PlatformEvent::GestureScrollBegin ||
+           m_type == PlatformEvent::GestureScrollEnd);
+    return m_data.m_scroll.m_synthetic;
+  }
 
-    ScrollInertialPhase inertialPhase() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureScrollEnd);
-        return m_data.m_scroll.m_inertialPhase;
-    }
+  int resendingPluginId() const {
+    if (m_type == PlatformEvent::GestureScrollUpdate ||
+        m_type == PlatformEvent::GestureScrollBegin ||
+        m_type == PlatformEvent::GestureScrollEnd)
+      return m_data.m_scroll.m_resendingPluginId;
 
-    bool synthetic() const
-    {
-        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollEnd);
-        return m_data.m_scroll.m_synthetic;
-    }
+    // This function is called by *all* gesture event types in
+    // GestureEvent::Create(), so we return -1 for all other types.
+    return -1;
+  }
 
-    int resendingPluginId() const
-    {
-        if (m_type == PlatformEvent::GestureScrollUpdate
-            || m_type == PlatformEvent::GestureScrollBegin
-            || m_type == PlatformEvent::GestureScrollEnd)
-            return m_data.m_scroll.m_resendingPluginId;
+  bool preventPropagation() const {
+    // TODO(tdresser) Once we've decided if we're getting rid of scroll
+    // chaining, we should remove all scroll chaining related logic. See
+    // crbug.com/526462 for details.
+    ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+    return true;
+  }
 
-        // This function is called by *all* gesture event types in
-        // GestureEvent::Create(), so we return -1 for all other types.
-        return -1;
-    }
+  float scale() const {
+    ASSERT(m_type == PlatformEvent::GesturePinchUpdate);
+    return m_data.m_pinchUpdate.m_scale;
+  }
 
-    bool preventPropagation() const
-    {
-        // TODO(tdresser) Once we've decided if we're getting rid of scroll
-        // chaining, we should remove all scroll chaining related logic. See
-        // crbug.com/526462 for details.
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+  void applyTouchAdjustment(const IntPoint& adjustedPosition) {
+    // Update the window-relative position of the event so that the node that was
+    // ultimately hit is under this point (i.e. elementFromPoint for the client
+    // co-ordinates in a 'click' event should yield the target). The global
+    // position is intentionally left unmodified because it's intended to reflect
+    // raw co-ordinates unrelated to any content.
+    m_position = adjustedPosition;
+  }
+
+  bool isScrollEvent() const {
+    switch (m_type) {
+      case GestureScrollBegin:
+      case GestureScrollEnd:
+      case GestureScrollUpdate:
+      case GestureFlingStart:
+      case GesturePinchBegin:
+      case GesturePinchEnd:
+      case GesturePinchUpdate:
         return true;
+      case GestureTap:
+      case GestureTapUnconfirmed:
+      case GestureTapDown:
+      case GestureShowPress:
+      case GestureTapDownCancel:
+      case GestureTwoFingerTap:
+      case GestureLongPress:
+      case GestureLongTap:
+        return false;
+      default:
+        ASSERT_NOT_REACHED();
+        return false;
     }
+  }
 
-    float scale() const
-    {
-        ASSERT(m_type == PlatformEvent::GesturePinchUpdate);
-        return m_data.m_pinchUpdate.m_scale;
-    }
+  uint32_t uniqueTouchEventId() const { return m_uniqueTouchEventId; }
 
-    void applyTouchAdjustment(const IntPoint& adjustedPosition)
-    {
-        // Update the window-relative position of the event so that the node that was
-        // ultimately hit is under this point (i.e. elementFromPoint for the client
-        // co-ordinates in a 'click' event should yield the target). The global
-        // position is intentionally left unmodified because it's intended to reflect
-        // raw co-ordinates unrelated to any content.
-        m_position = adjustedPosition;
-    }
+ protected:
+  IntPoint m_position;
+  IntPoint m_globalPosition;
+  IntSize m_area;
+  PlatformGestureSource m_source;
 
-    bool isScrollEvent() const
-    {
-        switch (m_type) {
-        case GestureScrollBegin:
-        case GestureScrollEnd:
-        case GestureScrollUpdate:
-        case GestureFlingStart:
-        case GesturePinchBegin:
-        case GesturePinchEnd:
-        case GesturePinchUpdate:
-            return true;
-        case GestureTap:
-        case GestureTapUnconfirmed:
-        case GestureTapDown:
-        case GestureShowPress:
-        case GestureTapDownCancel:
-        case GestureTwoFingerTap:
-        case GestureLongPress:
-        case GestureLongTap:
-            return false;
-        default:
-            ASSERT_NOT_REACHED();
-            return false;
-        }
-    }
+  union {
+    struct {
+      int m_tapCount;
+    } m_tap;
 
-    uint32_t uniqueTouchEventId() const { return m_uniqueTouchEventId; }
+    struct {
+      // |m_deltaX| and |m_deltaY| represent deltas in GSU but
+      // are only hints in GSB.
+      float m_deltaX;
+      float m_deltaY;
+      float m_velocityX;
+      float m_velocityY;
+      int m_preventPropagation;
+      ScrollInertialPhase m_inertialPhase;
+      ScrollGranularity m_deltaUnits;
+      int m_resendingPluginId;
+      bool m_synthetic;
+    } m_scroll;
 
-protected:
-    IntPoint m_position;
-    IntPoint m_globalPosition;
-    IntSize m_area;
-    PlatformGestureSource m_source;
+    struct {
+      float m_scale;
+    } m_pinchUpdate;
+  } m_data;
 
-    union {
-        struct {
-            int m_tapCount;
-        } m_tap;
-
-        struct {
-            // |m_deltaX| and |m_deltaY| represent deltas in GSU but
-            // are only hints in GSB.
-            float m_deltaX;
-            float m_deltaY;
-            float m_velocityX;
-            float m_velocityY;
-            int m_preventPropagation;
-            ScrollInertialPhase m_inertialPhase;
-            ScrollGranularity m_deltaUnits;
-            int m_resendingPluginId;
-            bool m_synthetic;
-        } m_scroll;
-
-        struct {
-            float m_scale;
-        } m_pinchUpdate;
-    } m_data;
-
-    uint32_t m_uniqueTouchEventId;
+  uint32_t m_uniqueTouchEventId;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PlatformGestureEvent_h
+#endif  // PlatformGestureEvent_h

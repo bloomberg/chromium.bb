@@ -35,30 +35,29 @@ namespace blink {
 class RTCStatsResponseBase;
 
 class WebRTCStatsResponse {
-public:
-    WebRTCStatsResponse(const WebRTCStatsResponse& other) { assign(other); }
-    WebRTCStatsResponse() { }
-    ~WebRTCStatsResponse() { reset(); }
+ public:
+  WebRTCStatsResponse(const WebRTCStatsResponse& other) { assign(other); }
+  WebRTCStatsResponse() {}
+  ~WebRTCStatsResponse() { reset(); }
 
-    WebRTCStatsResponse& operator=(const WebRTCStatsResponse& other)
-    {
-        assign(other);
-        return *this;
-    }
-    BLINK_PLATFORM_EXPORT void assign(const WebRTCStatsResponse&);
-    BLINK_PLATFORM_EXPORT void reset();
+  WebRTCStatsResponse& operator=(const WebRTCStatsResponse& other) {
+    assign(other);
+    return *this;
+  }
+  BLINK_PLATFORM_EXPORT void assign(const WebRTCStatsResponse&);
+  BLINK_PLATFORM_EXPORT void reset();
 
-    BLINK_PLATFORM_EXPORT void addStats(const WebRTCLegacyStats&);
+  BLINK_PLATFORM_EXPORT void addStats(const WebRTCLegacyStats&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCStatsResponse(RTCStatsResponseBase*);
-    BLINK_PLATFORM_EXPORT operator RTCStatsResponseBase*() const;
+  BLINK_PLATFORM_EXPORT WebRTCStatsResponse(RTCStatsResponseBase*);
+  BLINK_PLATFORM_EXPORT operator RTCStatsResponseBase*() const;
 #endif
 
-private:
-    WebPrivatePtr<RTCStatsResponseBase> m_private;
+ private:
+  WebPrivatePtr<RTCStatsResponseBase> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebRTCStatsResponse_h
+#endif  // WebRTCStatsResponse_h

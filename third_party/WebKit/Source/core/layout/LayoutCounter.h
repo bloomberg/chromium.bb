@@ -48,48 +48,53 @@ class CounterNode;
 // Keeping the map up to date is the reason why LayoutObjects need to call into
 // LayoutCounter during their lifetime (see the static functions below).
 class LayoutCounter final : public LayoutText {
-public:
-    LayoutCounter(Document*, const CounterContent&);
-    ~LayoutCounter() override;
+ public:
+  LayoutCounter(Document*, const CounterContent&);
+  ~LayoutCounter() override;
 
-    // These functions are static so that any LayoutObject can call them.
-    // The reason is that any LayoutObject in the tree can have a CounterNode
-    // without a LayoutCounter (e.g. by specifying 'counter-increment' without
-    // a "content: counter(a)" directive)).
-    static void destroyCounterNodes(LayoutObject&);
-    static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);
-    static void layoutObjectSubtreeAttached(LayoutObject*);
-    static void layoutObjectSubtreeWillBeDetached(LayoutObject*);
-    static void layoutObjectStyleChanged(LayoutObject&, const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
+  // These functions are static so that any LayoutObject can call them.
+  // The reason is that any LayoutObject in the tree can have a CounterNode
+  // without a LayoutCounter (e.g. by specifying 'counter-increment' without
+  // a "content: counter(a)" directive)).
+  static void destroyCounterNodes(LayoutObject&);
+  static void destroyCounterNode(LayoutObject&, const AtomicString& identifier);
+  static void layoutObjectSubtreeAttached(LayoutObject*);
+  static void layoutObjectSubtreeWillBeDetached(LayoutObject*);
+  static void layoutObjectStyleChanged(LayoutObject&,
+                                       const ComputedStyle* oldStyle,
+                                       const ComputedStyle& newStyle);
 
-    void updateCounter();
+  void updateCounter();
 
-    const char* name() const override { return "LayoutCounter"; }
+  const char* name() const override { return "LayoutCounter"; }
 
-protected:
-    void willBeDestroyed() override;
+ protected:
+  void willBeDestroyed() override;
 
-private:
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectCounter || LayoutText::isOfType(type); }
-    PassRefPtr<StringImpl> originalText() const override;
+ private:
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectCounter || LayoutText::isOfType(type);
+  }
+  PassRefPtr<StringImpl> originalText() const override;
 
-    // Removes the reference to the CounterNode associated with this layoutObject.
-    // This is used to cause a counter display update when the CounterNode tree changes.
-    void invalidate();
+  // Removes the reference to the CounterNode associated with this layoutObject.
+  // This is used to cause a counter display update when the CounterNode tree changes.
+  void invalidate();
 
-    CounterContent m_counter;
-    CounterNode* m_counterNode;
-    LayoutCounter* m_nextForSameCounter;
-    friend class CounterNode;
+  CounterContent m_counter;
+  CounterNode* m_counterNode;
+  LayoutCounter* m_nextForSameCounter;
+  friend class CounterNode;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCounter, isCounter());
 
-} // namespace blink
+}  // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showCounterLayoutTree(const blink::LayoutObject*, const char* counterName = nullptr);
+void showCounterLayoutTree(const blink::LayoutObject*,
+                           const char* counterName = nullptr);
 #endif
 
-#endif // LayoutCounter_h
+#endif  // LayoutCounter_h

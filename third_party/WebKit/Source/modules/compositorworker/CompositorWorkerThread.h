@@ -13,23 +13,32 @@ namespace blink {
 
 class InProcessWorkerObjectProxy;
 
-class MODULES_EXPORT CompositorWorkerThread final : public AbstractAnimationWorkletThread {
-public:
-    static std::unique_ptr<CompositorWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
-    ~CompositorWorkerThread() override;
+class MODULES_EXPORT CompositorWorkerThread final
+    : public AbstractAnimationWorkletThread {
+ public:
+  static std::unique_ptr<CompositorWorkerThread> create(
+      PassRefPtr<WorkerLoaderProxy>,
+      InProcessWorkerObjectProxy&,
+      double timeOrigin);
+  ~CompositorWorkerThread() override;
 
-    InProcessWorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
+  InProcessWorkerObjectProxy& workerObjectProxy() const {
+    return m_workerObjectProxy;
+  }
 
-protected:
-    WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
+ protected:
+  WorkerOrWorkletGlobalScope* createWorkerGlobalScope(
+      std::unique_ptr<WorkerThreadStartupData>) override;
 
-private:
-    CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
+ private:
+  CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>,
+                         InProcessWorkerObjectProxy&,
+                         double timeOrigin);
 
-    InProcessWorkerObjectProxy& m_workerObjectProxy;
-    double m_timeOrigin;
+  InProcessWorkerObjectProxy& m_workerObjectProxy;
+  double m_timeOrigin;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorWorkerThread_h
+#endif  // CompositorWorkerThread_h

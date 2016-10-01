@@ -37,21 +37,21 @@
 namespace blink {
 
 struct WebFallbackFont {
-    WebFallbackFont()
-        : name(WebCString())
-        , filename(WebCString())
-        , fontconfigInterfaceId(0)
-        , ttcIndex(0)
-        , isBold(false)
-        , isItalic(false) { }
-    WebCString name;
-    WebCString filename;
-    int fontconfigInterfaceId;
-    int ttcIndex;
-    bool isBold;
-    bool isItalic;
+  WebFallbackFont()
+      : name(WebCString()),
+        filename(WebCString()),
+        fontconfigInterfaceId(0),
+        ttcIndex(0),
+        isBold(false),
+        isItalic(false) {}
+  WebCString name;
+  WebCString filename;
+  int fontconfigInterfaceId;
+  int ttcIndex;
+  bool isBold;
+  bool isItalic;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFallbackFont_h
+#endif  // WebFallbackFont_h

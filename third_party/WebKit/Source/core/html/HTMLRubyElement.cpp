@@ -12,19 +12,16 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLRubyElement::HTMLRubyElement(Document& document)
-    : HTMLElement(rubyTag, document)
-{
-}
+    : HTMLElement(rubyTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLRubyElement)
 
-LayoutObject* HTMLRubyElement::createLayoutObject(const ComputedStyle& style)
-{
-    if (style.display() == EDisplay::Inline)
-        return new LayoutRubyAsInline(this);
-    if (style.display() == EDisplay::Block)
-        return new LayoutRubyAsBlock(this);
-    return LayoutObject::createObject(this, style);
+LayoutObject* HTMLRubyElement::createLayoutObject(const ComputedStyle& style) {
+  if (style.display() == EDisplay::Inline)
+    return new LayoutRubyAsInline(this);
+  if (style.display() == EDisplay::Block)
+    return new LayoutRubyAsBlock(this);
+  return LayoutObject::createObject(this, style);
 }
 
-} // namespace blink
+}  // namespace blink

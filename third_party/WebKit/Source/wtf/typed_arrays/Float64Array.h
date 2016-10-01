@@ -33,57 +33,59 @@
 namespace WTF {
 
 class Float64Array final : public TypedArrayBase<double> {
-public:
-    static inline PassRefPtr<Float64Array> create(unsigned length);
-    static inline PassRefPtr<Float64Array> create(const double* array, unsigned length);
-    static inline PassRefPtr<Float64Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+ public:
+  static inline PassRefPtr<Float64Array> create(unsigned length);
+  static inline PassRefPtr<Float64Array> create(const double* array,
+                                                unsigned length);
+  static inline PassRefPtr<Float64Array> create(PassRefPtr<ArrayBuffer>,
+                                                unsigned byteOffset,
+                                                unsigned length);
 
-    // Should only be used when it is known the entire array will be filled. Do
-    // not return these results directly to JavaScript without filling first.
-    static inline PassRefPtr<Float64Array> createUninitialized(unsigned length);
+  // Should only be used when it is known the entire array will be filled. Do
+  // not return these results directly to JavaScript without filling first.
+  static inline PassRefPtr<Float64Array> createUninitialized(unsigned length);
 
-    using TypedArrayBase<double>::set;
+  using TypedArrayBase<double>::set;
 
-    void set(unsigned index, double value)
-    {
-        if (index >= TypedArrayBase<double>::m_length)
-            return;
-        TypedArrayBase<double>::data()[index] = static_cast<double>(value);
-    }
+  void set(unsigned index, double value) {
+    if (index >= TypedArrayBase<double>::m_length)
+      return;
+    TypedArrayBase<double>::data()[index] = static_cast<double>(value);
+  }
 
-    ViewType type() const override
-    {
-        return TypeFloat64;
-    }
+  ViewType type() const override { return TypeFloat64; }
 
-private:
-    inline Float64Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
-    // Make constructor visible to superclass.
-    friend class TypedArrayBase<double>;
+ private:
+  inline Float64Array(PassRefPtr<ArrayBuffer>,
+                      unsigned byteOffset,
+                      unsigned length);
+  // Make constructor visible to superclass.
+  friend class TypedArrayBase<double>;
 };
 
-PassRefPtr<Float64Array> Float64Array::create(unsigned length)
-{
-    return TypedArrayBase<double>::create<Float64Array>(length);
+PassRefPtr<Float64Array> Float64Array::create(unsigned length) {
+  return TypedArrayBase<double>::create<Float64Array>(length);
 }
 
-PassRefPtr<Float64Array> Float64Array::create(const double* array, unsigned length)
-{
-    return TypedArrayBase<double>::create<Float64Array>(array, length);
+PassRefPtr<Float64Array> Float64Array::create(const double* array,
+                                              unsigned length) {
+  return TypedArrayBase<double>::create<Float64Array>(array, length);
 }
 
-PassRefPtr<Float64Array> Float64Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-{
-    return TypedArrayBase<double>::create<Float64Array>(std::move(buffer), byteOffset, length);
+PassRefPtr<Float64Array> Float64Array::create(PassRefPtr<ArrayBuffer> buffer,
+                                              unsigned byteOffset,
+                                              unsigned length) {
+  return TypedArrayBase<double>::create<Float64Array>(std::move(buffer),
+                                                      byteOffset, length);
 }
 
-Float64Array::Float64Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : TypedArrayBase<double>(std::move(buffer), byteOffset, length)
-{
-}
+Float64Array::Float64Array(PassRefPtr<ArrayBuffer> buffer,
+                           unsigned byteOffset,
+                           unsigned length)
+    : TypedArrayBase<double>(std::move(buffer), byteOffset, length) {}
 
-} // namespace WTF
+}  // namespace WTF
 
 using WTF::Float64Array;
 
-#endif // Float64Array_h
+#endif  // Float64Array_h

@@ -28,66 +28,65 @@
 namespace blink {
 
 SVGTests::SVGTests(SVGElement* contextElement)
-    : m_requiredFeatures(SVGStaticStringList::create(contextElement, SVGNames::requiredFeaturesAttr))
-    , m_requiredExtensions(SVGStaticStringList::create(contextElement, SVGNames::requiredExtensionsAttr))
-    , m_systemLanguage(SVGStaticStringList::create(contextElement, SVGNames::systemLanguageAttr))
-{
-    ASSERT(contextElement);
+    : m_requiredFeatures(
+          SVGStaticStringList::create(contextElement,
+                                      SVGNames::requiredFeaturesAttr)),
+      m_requiredExtensions(
+          SVGStaticStringList::create(contextElement,
+                                      SVGNames::requiredExtensionsAttr)),
+      m_systemLanguage(
+          SVGStaticStringList::create(contextElement,
+                                      SVGNames::systemLanguageAttr)) {
+  ASSERT(contextElement);
 
-    contextElement->addToPropertyMap(m_requiredFeatures);
-    contextElement->addToPropertyMap(m_requiredExtensions);
-    contextElement->addToPropertyMap(m_systemLanguage);
+  contextElement->addToPropertyMap(m_requiredFeatures);
+  contextElement->addToPropertyMap(m_requiredExtensions);
+  contextElement->addToPropertyMap(m_systemLanguage);
 }
 
-DEFINE_TRACE(SVGTests)
-{
-    visitor->trace(m_requiredFeatures);
-    visitor->trace(m_requiredExtensions);
-    visitor->trace(m_systemLanguage);
+DEFINE_TRACE(SVGTests) {
+  visitor->trace(m_requiredFeatures);
+  visitor->trace(m_requiredExtensions);
+  visitor->trace(m_systemLanguage);
 }
 
-SVGStringListTearOff* SVGTests::requiredFeatures()
-{
-    return m_requiredFeatures->tearOff();
+SVGStringListTearOff* SVGTests::requiredFeatures() {
+  return m_requiredFeatures->tearOff();
 }
 
-SVGStringListTearOff* SVGTests::requiredExtensions()
-{
-    return m_requiredExtensions->tearOff();
+SVGStringListTearOff* SVGTests::requiredExtensions() {
+  return m_requiredExtensions->tearOff();
 }
 
-SVGStringListTearOff* SVGTests::systemLanguage()
-{
-    return m_systemLanguage->tearOff();
+SVGStringListTearOff* SVGTests::systemLanguage() {
+  return m_systemLanguage->tearOff();
 }
 
-bool SVGTests::isValid() const
-{
-    // No need to check requiredFeatures since hasFeature always returns true.
+bool SVGTests::isValid() const {
+  // No need to check requiredFeatures since hasFeature always returns true.
 
-    if (m_systemLanguage->isSpecified()) {
-        bool matchFound = false;
-        for (const auto& value : m_systemLanguage->value()->values()) {
-            if (value.length() == 2 && defaultLanguage().startsWith(value)) {
-                matchFound = true;
-                break;
-            }
-        }
-        if (!matchFound)
-            return false;
+  if (m_systemLanguage->isSpecified()) {
+    bool matchFound = false;
+    for (const auto& value : m_systemLanguage->value()->values()) {
+      if (value.length() == 2 && defaultLanguage().startsWith(value)) {
+        matchFound = true;
+        break;
+      }
     }
+    if (!matchFound)
+      return false;
+  }
 
-    if (!m_requiredExtensions->value()->values().isEmpty())
-        return false;
+  if (!m_requiredExtensions->value()->values().isEmpty())
+    return false;
 
-    return true;
+  return true;
 }
 
-bool SVGTests::isKnownAttribute(const QualifiedName& attrName)
-{
-    return attrName == SVGNames::requiredFeaturesAttr
-        || attrName == SVGNames::requiredExtensionsAttr
-        || attrName == SVGNames::systemLanguageAttr;
+bool SVGTests::isKnownAttribute(const QualifiedName& attrName) {
+  return attrName == SVGNames::requiredFeaturesAttr ||
+         attrName == SVGNames::requiredExtensionsAttr ||
+         attrName == SVGNames::systemLanguageAttr;
 }
 
-} // namespace blink
+}  // namespace blink

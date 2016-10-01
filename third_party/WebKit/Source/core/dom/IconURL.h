@@ -38,40 +38,37 @@
 namespace blink {
 
 enum IconType {
-    InvalidIcon = 0,
-    Favicon = 1,
-    TouchIcon = 1 << 1,
-    TouchPrecomposedIcon = 1 << 2,
+  InvalidIcon = 0,
+  Favicon = 1,
+  TouchIcon = 1 << 1,
+  TouchPrecomposedIcon = 1 << 2,
 };
 
 struct IconURL {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    IconType m_iconType;
-    Vector<IntSize> m_sizes;
-    String m_mimeType;
-    KURL m_iconURL;
-    bool m_isDefaultIcon;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  IconType m_iconType;
+  Vector<IntSize> m_sizes;
+  String m_mimeType;
+  KURL m_iconURL;
+  bool m_isDefaultIcon;
 
-    IconURL()
-        : m_iconType(InvalidIcon)
-        , m_isDefaultIcon(false)
-    {
-    }
+  IconURL() : m_iconType(InvalidIcon), m_isDefaultIcon(false) {}
 
-    IconURL(const KURL& url, const Vector<IntSize>& sizes, const String& mimeType, IconType type)
-        : m_iconType(type)
-        , m_sizes(sizes)
-        , m_mimeType(mimeType)
-        , m_iconURL(url)
-        , m_isDefaultIcon(false)
-    {
-    }
+  IconURL(const KURL& url,
+          const Vector<IntSize>& sizes,
+          const String& mimeType,
+          IconType type)
+      : m_iconType(type),
+        m_sizes(sizes),
+        m_mimeType(mimeType),
+        m_iconURL(url),
+        m_isDefaultIcon(false) {}
 
-    static IconURL defaultFavicon(const KURL&);
+  static IconURL defaultFavicon(const KURL&);
 };
 
 bool operator==(const IconURL&, const IconURL&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IconURL_h
+#endif  // IconURL_h

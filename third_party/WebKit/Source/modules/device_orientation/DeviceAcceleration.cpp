@@ -27,41 +27,36 @@
 
 namespace blink {
 
-DeviceAcceleration::DeviceAcceleration(DeviceMotionData::Acceleration* acceleration)
-    : m_acceleration(acceleration)
-{
+DeviceAcceleration::DeviceAcceleration(
+    DeviceMotionData::Acceleration* acceleration)
+    : m_acceleration(acceleration) {}
+
+DEFINE_TRACE(DeviceAcceleration) {
+  visitor->trace(m_acceleration);
 }
 
-DEFINE_TRACE(DeviceAcceleration)
-{
-    visitor->trace(m_acceleration);
+double DeviceAcceleration::x(bool& isNull) const {
+  if (m_acceleration->canProvideX())
+    return m_acceleration->x();
+
+  isNull = true;
+  return 0;
 }
 
-double DeviceAcceleration::x(bool& isNull) const
-{
-    if (m_acceleration->canProvideX())
-        return m_acceleration->x();
+double DeviceAcceleration::y(bool& isNull) const {
+  if (m_acceleration->canProvideY())
+    return m_acceleration->y();
 
-    isNull = true;
-    return 0;
+  isNull = true;
+  return 0;
 }
 
-double DeviceAcceleration::y(bool& isNull) const
-{
-    if (m_acceleration->canProvideY())
-        return m_acceleration->y();
+double DeviceAcceleration::z(bool& isNull) const {
+  if (m_acceleration->canProvideZ())
+    return m_acceleration->z();
 
-    isNull = true;
-    return 0;
+  isNull = true;
+  return 0;
 }
 
-double DeviceAcceleration::z(bool& isNull) const
-{
-    if (m_acceleration->canProvideZ())
-        return m_acceleration->z();
-
-    isNull = true;
-    return 0;
-}
-
-} // namespace blink
+}  // namespace blink

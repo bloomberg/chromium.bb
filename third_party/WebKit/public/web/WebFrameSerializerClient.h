@@ -39,34 +39,33 @@ class WebURL;
 // This class is used for providing sink interface that can be used to receive
 // the individual chunks of data to be saved.
 class WebFrameSerializerClient {
-public:
-    // This sink interface can receive the individual chunks of serialized data
-    // to be saved, so we use values of following enum definition to indicate
-    // the serialization status of serializing all html content. If frame is not
-    // completely serialized yet, we will call didSerializeDataForFrame with URL
-    // of current frame, data, data length and flag CurrentFrameIsNotFinished.
-    //
-    // If frame is completely serialized, we will call didSerializeDataForFrame
-    // with URL of current frame, data, data length and flag
-    // CurrentFrameIsFinished.
-    enum FrameSerializationStatus {
-        CurrentFrameIsNotFinished,
-        CurrentFrameIsFinished,
-    };
+ public:
+  // This sink interface can receive the individual chunks of serialized data
+  // to be saved, so we use values of following enum definition to indicate
+  // the serialization status of serializing all html content. If frame is not
+  // completely serialized yet, we will call didSerializeDataForFrame with URL
+  // of current frame, data, data length and flag CurrentFrameIsNotFinished.
+  //
+  // If frame is completely serialized, we will call didSerializeDataForFrame
+  // with URL of current frame, data, data length and flag
+  // CurrentFrameIsFinished.
+  enum FrameSerializationStatus {
+    CurrentFrameIsNotFinished,
+    CurrentFrameIsFinished,
+  };
 
-    // Receive the individual chunks of serialized and encoded data to be saved.
-    // The parameter data contains the available data for saving.
-    // The parameter status indicates the status of data serialization.
-    virtual void didSerializeDataForFrame(
-        const WebCString& data,
-        FrameSerializationStatus) = 0;
+  // Receive the individual chunks of serialized and encoded data to be saved.
+  // The parameter data contains the available data for saving.
+  // The parameter status indicates the status of data serialization.
+  virtual void didSerializeDataForFrame(const WebCString& data,
+                                        FrameSerializationStatus) = 0;
 
-    WebFrameSerializerClient() { }
+  WebFrameSerializerClient() {}
 
-protected:
-    virtual ~WebFrameSerializerClient() { }
+ protected:
+  virtual ~WebFrameSerializerClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

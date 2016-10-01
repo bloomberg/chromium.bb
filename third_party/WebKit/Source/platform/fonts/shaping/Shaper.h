@@ -48,34 +48,39 @@ class TextRun;
 struct GlyphData;
 
 class PLATFORM_EXPORT Shaper {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(Shaper);
-protected:
-    Shaper(const Font*, const TextRun&, const GlyphData* emphasisData = nullptr,
-        HashSet<const SimpleFontData*>* fallbackFonts = nullptr, FloatRect* = nullptr);
+  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(Shaper);
 
-    void trackNonPrimaryFallbackFont(const SimpleFontData*);
+ protected:
+  Shaper(const Font*,
+         const TextRun&,
+         const GlyphData* emphasisData = nullptr,
+         HashSet<const SimpleFontData*>* fallbackFonts = nullptr,
+         FloatRect* = nullptr);
 
-    bool forTextEmphasis() const { return m_emphasisSubstitutionData; }
-    void addEmphasisMark(GlyphBuffer*, float midGlyphOffset) const;
+  void trackNonPrimaryFallbackFont(const SimpleFontData*);
 
-    const Font* m_font;
-    const TextRun& m_textRun;
-    HashSet<const SimpleFontData*>* m_fallbackFonts;
-    FloatRect* m_glyphBoundingBox;
+  bool forTextEmphasis() const { return m_emphasisSubstitutionData; }
+  void addEmphasisMark(GlyphBuffer*, float midGlyphOffset) const;
 
-    // TODO(kojii): These are no longer used in HarfBuzzShaper.
-    float m_expansion; // Pixels to be distributed over the line at word breaks.
-    float m_expansionPerOpportunity; // Pixels to be added to each expansion opportunity.
-    bool m_isAfterExpansion;
+  const Font* m_font;
+  const TextRun& m_textRun;
+  HashSet<const SimpleFontData*>* m_fallbackFonts;
+  FloatRect* m_glyphBoundingBox;
 
-private:
-    // Emphasis substitution info. If specified, this will be used to replace all glyphs which
-    // can receive text emphasis with center-aligned emphasis glyphs.
-    const GlyphData* m_emphasisSubstitutionData;
-    FloatPoint m_emphasisGlyphCenter;
+  // TODO(kojii): These are no longer used in HarfBuzzShaper.
+  float m_expansion;  // Pixels to be distributed over the line at word breaks.
+  float
+      m_expansionPerOpportunity;  // Pixels to be added to each expansion opportunity.
+  bool m_isAfterExpansion;
+
+ private:
+  // Emphasis substitution info. If specified, this will be used to replace all glyphs which
+  // can receive text emphasis with center-aligned emphasis glyphs.
+  const GlyphData* m_emphasisSubstitutionData;
+  FloatPoint m_emphasisGlyphCenter;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Shaper_h
+#endif  // Shaper_h

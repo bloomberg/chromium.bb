@@ -39,36 +39,36 @@ namespace blink {
 class DOMArrayBuffer;
 
 class WebArrayBuffer {
-public:
-    ~WebArrayBuffer() { reset(); }
+ public:
+  ~WebArrayBuffer() { reset(); }
 
-    WebArrayBuffer() { }
-    WebArrayBuffer(const WebArrayBuffer& b) { assign(b); }
-    WebArrayBuffer& operator=(const WebArrayBuffer& b)
-    {
-        assign(b);
-        return *this;
-    }
+  WebArrayBuffer() {}
+  WebArrayBuffer(const WebArrayBuffer& b) { assign(b); }
+  WebArrayBuffer& operator=(const WebArrayBuffer& b) {
+    assign(b);
+    return *this;
+  }
 
-    BLINK_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
+  BLINK_EXPORT static WebArrayBuffer create(unsigned numElements,
+                                            unsigned elementByteSize);
 
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebArrayBuffer&);
+  BLINK_EXPORT void reset();
+  BLINK_EXPORT void assign(const WebArrayBuffer&);
 
-    bool isNull() const { return m_private.isNull(); }
-    BLINK_EXPORT void* data() const;
-    BLINK_EXPORT unsigned byteLength() const;
+  bool isNull() const { return m_private.isNull(); }
+  BLINK_EXPORT void* data() const;
+  BLINK_EXPORT unsigned byteLength() const;
 
 #if INSIDE_BLINK
-    BLINK_EXPORT WebArrayBuffer(DOMArrayBuffer*);
-    BLINK_EXPORT WebArrayBuffer& operator=(DOMArrayBuffer*);
-    BLINK_EXPORT operator DOMArrayBuffer*() const;
+  BLINK_EXPORT WebArrayBuffer(DOMArrayBuffer*);
+  BLINK_EXPORT WebArrayBuffer& operator=(DOMArrayBuffer*);
+  BLINK_EXPORT operator DOMArrayBuffer*() const;
 #endif
 
-protected:
-    WebPrivatePtr<DOMArrayBuffer> m_private;
+ protected:
+  WebPrivatePtr<DOMArrayBuffer> m_private;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebArrayBuffer_h
+#endif  // WebArrayBuffer_h

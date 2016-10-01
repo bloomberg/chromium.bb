@@ -21,35 +21,38 @@ class WorkerGlobalScope;
 // mutator, e.g. if a single document creates multiple CompositorWorker objects.
 //
 // Should be accessed only on the compositor thread.
-class CompositorProxyClientImpl final : public GarbageCollectedFinalized<CompositorProxyClientImpl>, public CompositorProxyClient {
-    USING_GARBAGE_COLLECTED_MIXIN(CompositorProxyClientImpl);
-    WTF_MAKE_NONCOPYABLE(CompositorProxyClientImpl);
-public:
-    CompositorProxyClientImpl(CompositorMutatorImpl*);
-    DECLARE_VIRTUAL_TRACE();
+class CompositorProxyClientImpl final
+    : public GarbageCollectedFinalized<CompositorProxyClientImpl>,
+      public CompositorProxyClient {
+  USING_GARBAGE_COLLECTED_MIXIN(CompositorProxyClientImpl);
+  WTF_MAKE_NONCOPYABLE(CompositorProxyClientImpl);
 
-    // Runs the animation frame callback for the frame starting at the given time.
-    // Returns true if another animation frame was requested (i.e. should be reinvoked next frame).
-    bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*);
+ public:
+  CompositorProxyClientImpl(CompositorMutatorImpl*);
+  DECLARE_VIRTUAL_TRACE();
 
-    // CompositorProxyClient:
-    void dispose() override;
-    void setGlobalScope(WorkerGlobalScope*) override;
-    void requestAnimationFrame() override;
-    void registerCompositorProxy(CompositorProxy*) override;
-    void unregisterCompositorProxy(CompositorProxy*) override;
+  // Runs the animation frame callback for the frame starting at the given time.
+  // Returns true if another animation frame was requested (i.e. should be reinvoked next frame).
+  bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*);
 
-private:
-    bool executeAnimationFrameCallbacks(double monotonicTimeNow);
+  // CompositorProxyClient:
+  void dispose() override;
+  void setGlobalScope(WorkerGlobalScope*) override;
+  void requestAnimationFrame() override;
+  void registerCompositorProxy(CompositorProxy*) override;
+  void unregisterCompositorProxy(CompositorProxy*) override;
 
-    CrossThreadPersistent<CompositorMutatorImpl> m_mutator;
+ private:
+  bool executeAnimationFrameCallbacks(double monotonicTimeNow);
 
-    CrossThreadPersistent<CompositorWorkerGlobalScope> m_globalScope;
-    bool m_requestedAnimationFrameCallbacks;
+  CrossThreadPersistent<CompositorMutatorImpl> m_mutator;
 
-    HeapHashSet<WeakMember<CompositorProxy>> m_proxies;
+  CrossThreadPersistent<CompositorWorkerGlobalScope> m_globalScope;
+  bool m_requestedAnimationFrameCallbacks;
+
+  HeapHashSet<WeakMember<CompositorProxy>> m_proxies;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorProxyClientImpl_h
+#endif  // CompositorProxyClientImpl_h

@@ -38,12 +38,12 @@ namespace blink {
 class WebMediaStream;
 
 class BLINK_PLATFORM_EXPORT WebMediaStreamCenterClient {
-public:
-    virtual ~WebMediaStreamCenterClient() { }
+ public:
+  virtual ~WebMediaStreamCenterClient() {}
 
-    virtual void stopLocalMediaStream(const WebMediaStream&) = 0;
+  virtual void stopLocalMediaStream(const WebMediaStream&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebMediaStreamCenterClient_h
+#endif  // WebMediaStreamCenterClient_h

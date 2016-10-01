@@ -10,11 +10,12 @@
 namespace blink {
 
 class CORE_EXPORT MutableStylePropertyMap : public StylePropertyMap {
-    WTF_MAKE_NONCOPYABLE(MutableStylePropertyMap);
-protected:
-    MutableStylePropertyMap() = default;
+  WTF_MAKE_NONCOPYABLE(MutableStylePropertyMap);
+
+ protected:
+  MutableStylePropertyMap() = default;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

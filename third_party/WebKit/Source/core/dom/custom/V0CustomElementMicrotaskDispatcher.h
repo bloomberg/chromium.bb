@@ -13,36 +13,34 @@ namespace blink {
 
 class V0CustomElementCallbackQueue;
 
-class V0CustomElementMicrotaskDispatcher final : public GarbageCollected<V0CustomElementMicrotaskDispatcher> {
-    WTF_MAKE_NONCOPYABLE(V0CustomElementMicrotaskDispatcher);
-public:
-    static V0CustomElementMicrotaskDispatcher& instance();
+class V0CustomElementMicrotaskDispatcher final
+    : public GarbageCollected<V0CustomElementMicrotaskDispatcher> {
+  WTF_MAKE_NONCOPYABLE(V0CustomElementMicrotaskDispatcher);
 
-    void enqueue(V0CustomElementCallbackQueue*);
+ public:
+  static V0CustomElementMicrotaskDispatcher& instance();
 
-    bool elementQueueIsEmpty() { return m_elements.isEmpty(); }
+  void enqueue(V0CustomElementCallbackQueue*);
 
-    DECLARE_TRACE();
+  bool elementQueueIsEmpty() { return m_elements.isEmpty(); }
 
-private:
-    V0CustomElementMicrotaskDispatcher();
+  DECLARE_TRACE();
 
-    void ensureMicrotaskScheduledForElementQueue();
-    void ensureMicrotaskScheduled();
+ private:
+  V0CustomElementMicrotaskDispatcher();
 
-    static void dispatch();
-    void doDispatch();
+  void ensureMicrotaskScheduledForElementQueue();
+  void ensureMicrotaskScheduled();
 
-    bool m_hasScheduledMicrotask;
-    enum {
-        Quiescent,
-        Resolving,
-        DispatchingCallbacks
-    } m_phase;
+  static void dispatch();
+  void doDispatch();
 
-    HeapVector<Member<V0CustomElementCallbackQueue>> m_elements;
+  bool m_hasScheduledMicrotask;
+  enum { Quiescent, Resolving, DispatchingCallbacks } m_phase;
+
+  HeapVector<Member<V0CustomElementCallbackQueue>> m_elements;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // V0CustomElementMicrotaskDispatcher_h
+#endif  // V0CustomElementMicrotaskDispatcher_h

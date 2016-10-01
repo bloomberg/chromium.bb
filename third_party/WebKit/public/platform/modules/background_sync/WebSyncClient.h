@@ -15,14 +15,15 @@ class WebServiceWorkerRegistration;
 struct WebSyncRegistration;
 
 class WebSyncClient {
-public:
-    virtual ~WebSyncClient() { }
+ public:
+  virtual ~WebSyncClient() {}
 
-    // Ownership of the WebServiceWorkerRegistration is not transferred.
-    // Ownership of the callbacks is transferred to the client.
-    virtual void registerSync(WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
+  // Ownership of the WebServiceWorkerRegistration is not transferred.
+  // Ownership of the callbacks is transferred to the client.
+  virtual void registerSync(WebServiceWorkerRegistration*,
+                            WebSyncRegistrationCallbacks*) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebSyncClient_h
+#endif  // WebSyncClient_h

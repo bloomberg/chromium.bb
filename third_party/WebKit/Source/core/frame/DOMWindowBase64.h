@@ -40,11 +40,11 @@ namespace blink {
 class ExceptionState;
 
 class DOMWindowBase64 {
-public:
-    String btoa(const String& stringToEncode, ExceptionState&);
-    String atob(const String& encodedString, ExceptionState&);
+ public:
+  String btoa(const String& stringToEncode, ExceptionState&);
+  String atob(const String& encodedString, ExceptionState&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowBase64_h
+#endif  // DOMWindowBase64_h

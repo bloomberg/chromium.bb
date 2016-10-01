@@ -13,26 +13,29 @@
 
 namespace blink {
 
-class CSSTransformOriginInterpolationType : public CSSLengthListInterpolationType {
-public:
-    CSSTransformOriginInterpolationType(PropertyHandle property)
-        : CSSLengthListInterpolationType(property)
-    { }
+class CSSTransformOriginInterpolationType
+    : public CSSLengthListInterpolationType {
+ public:
+  CSSTransformOriginInterpolationType(PropertyHandle property)
+      : CSSLengthListInterpolationType(property) {}
 
-private:
-    InterpolationValue maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const final
-    {
-        const CSSValueList& list = toCSSValueList(value);
-        DCHECK_EQ(list.length(), 3U);
-        return ListInterpolationFunctions::createList(list.length(), [&list](size_t index) {
-            const CSSValue& item = list.item(index);
-            if (index < 2)
-                return CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(item);
-            return LengthInterpolationFunctions::maybeConvertCSSValue(item);
+ private:
+  InterpolationValue maybeConvertValue(const CSSValue& value,
+                                       const StyleResolverState&,
+                                       ConversionCheckers&) const final {
+    const CSSValueList& list = toCSSValueList(value);
+    DCHECK_EQ(list.length(), 3U);
+    return ListInterpolationFunctions::createList(
+        list.length(), [&list](size_t index) {
+          const CSSValue& item = list.item(index);
+          if (index < 2)
+            return CSSPositionAxisListInterpolationType::
+                convertPositionAxisCSSValue(item);
+          return LengthInterpolationFunctions::maybeConvertCSSValue(item);
         });
-    }
+  }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSTransformOriginInterpolationType_h
+#endif  // CSSTransformOriginInterpolationType_h

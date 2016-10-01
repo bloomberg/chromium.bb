@@ -26,28 +26,22 @@
 namespace blink {
 
 inline SVGSymbolElement::SVGSymbolElement(Document& document)
-    : SVGElement(SVGNames::symbolTag, document)
-    , SVGFitToViewBox(this)
-{
-}
+    : SVGElement(SVGNames::symbolTag, document), SVGFitToViewBox(this) {}
 
-DEFINE_TRACE(SVGSymbolElement)
-{
-    SVGElement::trace(visitor);
-    SVGFitToViewBox::trace(visitor);
+DEFINE_TRACE(SVGSymbolElement) {
+  SVGElement::trace(visitor);
+  SVGFitToViewBox::trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGSymbolElement)
 
-void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (SVGFitToViewBox::isKnownAttribute(attrName))
-        invalidateInstances();
+void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (SVGFitToViewBox::isKnownAttribute(attrName))
+    invalidateInstances();
 }
 
-LayoutObject* SVGSymbolElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutSVGHiddenContainer(this);
+LayoutObject* SVGSymbolElement::createLayoutObject(const ComputedStyle&) {
+  return new LayoutSVGHiddenContainer(this);
 }
 
-} // namespace blink
+}  // namespace blink

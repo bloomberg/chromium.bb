@@ -27,47 +27,37 @@
 
 namespace blink {
 
-AnimationEvent::AnimationEvent()
-    : m_elapsedTime(0.0)
-{
+AnimationEvent::AnimationEvent() : m_elapsedTime(0.0) {}
+
+AnimationEvent::AnimationEvent(const AtomicString& type,
+                               const AnimationEventInit& initializer)
+    : Event(type, initializer),
+      m_animationName(initializer.animationName()),
+      m_elapsedTime(initializer.elapsedTime()) {}
+
+AnimationEvent::AnimationEvent(const AtomicString& type,
+                               const String& animationName,
+                               double elapsedTime)
+    : Event(type, true, true),
+      m_animationName(animationName),
+      m_elapsedTime(elapsedTime) {}
+
+AnimationEvent::~AnimationEvent() {}
+
+const String& AnimationEvent::animationName() const {
+  return m_animationName;
 }
 
-AnimationEvent::AnimationEvent(const AtomicString& type, const AnimationEventInit& initializer)
-    : Event(type, initializer)
-    , m_animationName(initializer.animationName())
-    , m_elapsedTime(initializer.elapsedTime())
-{
+double AnimationEvent::elapsedTime() const {
+  return m_elapsedTime;
 }
 
-AnimationEvent::AnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)
-    : Event(type, true, true)
-    , m_animationName(animationName)
-    , m_elapsedTime(elapsedTime)
-{
+const AtomicString& AnimationEvent::interfaceName() const {
+  return EventNames::AnimationEvent;
 }
 
-AnimationEvent::~AnimationEvent()
-{
+DEFINE_TRACE(AnimationEvent) {
+  Event::trace(visitor);
 }
 
-const String& AnimationEvent::animationName() const
-{
-    return m_animationName;
-}
-
-double AnimationEvent::elapsedTime() const
-{
-    return m_elapsedTime;
-}
-
-const AtomicString& AnimationEvent::interfaceName() const
-{
-    return EventNames::AnimationEvent;
-}
-
-DEFINE_TRACE(AnimationEvent)
-{
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -31,37 +31,42 @@
 
 namespace WTF {
 
-std::unique_ptr<Vector<unsigned>> lineEndings(const String& text)
-{
-    std::unique_ptr<Vector<unsigned>> result(wrapUnique(new Vector<unsigned>()));
+std::unique_ptr<Vector<unsigned>> lineEndings(const String& text) {
+  std::unique_ptr<Vector<unsigned>> result(wrapUnique(new Vector<unsigned>()));
 
-    unsigned start = 0;
-    while (start < text.length()) {
-        size_t lineEnd = text.find('\n', start);
-        if (lineEnd == kNotFound)
-            break;
+  unsigned start = 0;
+  while (start < text.length()) {
+    size_t lineEnd = text.find('\n', start);
+    if (lineEnd == kNotFound)
+      break;
 
-        result->append(static_cast<unsigned>(lineEnd));
-        start = lineEnd + 1;
-    }
-    result->append(text.length());
+    result->append(static_cast<unsigned>(lineEnd));
+    start = lineEnd + 1;
+  }
+  result->append(text.length());
 
-    return result;
+  return result;
 }
 
-OrdinalNumber TextPosition::toOffset(const Vector<unsigned>& lineEndings)
-{
-    unsigned lineStartOffset = m_line != OrdinalNumber::first() ? lineEndings.at(m_line.zeroBasedInt() - 1) + 1 : 0;
-    return OrdinalNumber::fromZeroBasedInt(lineStartOffset + m_column.zeroBasedInt());
+OrdinalNumber TextPosition::toOffset(const Vector<unsigned>& lineEndings) {
+  unsigned lineStartOffset = m_line != OrdinalNumber::first()
+                                 ? lineEndings.at(m_line.zeroBasedInt() - 1) + 1
+                                 : 0;
+  return OrdinalNumber::fromZeroBasedInt(lineStartOffset +
+                                         m_column.zeroBasedInt());
 }
 
-TextPosition TextPosition::fromOffsetAndLineEndings(unsigned offset, const Vector<unsigned>& lineEndings)
-{
-    const unsigned* foundLineEnding = std::lower_bound(lineEndings.begin(), lineEndings.end(), offset);
-    int lineIndex = foundLineEnding - &lineEndings.at(0);
-    unsigned lineStartOffset = lineIndex > 0 ? lineEndings.at(lineIndex - 1) + 1 : 0;
-    int column = offset - lineStartOffset;
-    return TextPosition(OrdinalNumber::fromZeroBasedInt(lineIndex), OrdinalNumber::fromZeroBasedInt(column));
+TextPosition TextPosition::fromOffsetAndLineEndings(
+    unsigned offset,
+    const Vector<unsigned>& lineEndings) {
+  const unsigned* foundLineEnding =
+      std::lower_bound(lineEndings.begin(), lineEndings.end(), offset);
+  int lineIndex = foundLineEnding - &lineEndings.at(0);
+  unsigned lineStartOffset =
+      lineIndex > 0 ? lineEndings.at(lineIndex - 1) + 1 : 0;
+  int column = offset - lineStartOffset;
+  return TextPosition(OrdinalNumber::fromZeroBasedInt(lineIndex),
+                      OrdinalNumber::fromZeroBasedInt(column));
 }
 
-} // namespace WTF
+}  // namespace WTF

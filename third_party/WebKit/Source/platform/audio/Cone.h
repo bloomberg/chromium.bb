@@ -39,29 +39,32 @@ namespace blink {
 // Cone gain is defined according to the OpenAL specification
 
 class PLATFORM_EXPORT ConeEffect {
-    DISALLOW_NEW();
-public:
-    ConeEffect();
+  DISALLOW_NEW();
 
-    // Returns scalar gain for the given source/listener positions/orientations
-    double gain(FloatPoint3D sourcePosition, FloatPoint3D sourceOrientation, FloatPoint3D listenerPosition);
+ public:
+  ConeEffect();
 
-    // Angles in degrees
-    void setInnerAngle(double innerAngle) { m_innerAngle = innerAngle; }
-    double innerAngle() const { return m_innerAngle; }
+  // Returns scalar gain for the given source/listener positions/orientations
+  double gain(FloatPoint3D sourcePosition,
+              FloatPoint3D sourceOrientation,
+              FloatPoint3D listenerPosition);
 
-    void setOuterAngle(double outerAngle) { m_outerAngle = outerAngle; }
-    double outerAngle() const { return m_outerAngle; }
+  // Angles in degrees
+  void setInnerAngle(double innerAngle) { m_innerAngle = innerAngle; }
+  double innerAngle() const { return m_innerAngle; }
 
-    void setOuterGain(double outerGain) { m_outerGain = outerGain; }
-    double outerGain() const { return m_outerGain; }
+  void setOuterAngle(double outerAngle) { m_outerAngle = outerAngle; }
+  double outerAngle() const { return m_outerAngle; }
 
-protected:
-    double m_innerAngle;
-    double m_outerAngle;
-    double m_outerGain;
+  void setOuterGain(double outerGain) { m_outerGain = outerGain; }
+  double outerGain() const { return m_outerGain; }
+
+ protected:
+  double m_innerAngle;
+  double m_outerAngle;
+  double m_outerGain;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // Cone_h
+#endif  // Cone_h

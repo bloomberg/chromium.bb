@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef PlatformExport_h
 #define PlatformExport_h
 
@@ -43,10 +42,10 @@
 #else
 #define PLATFORM_EXPORT __declspec(dllimport)
 #endif
-#else // defined(WIN32)
+#else  // defined(WIN32)
 #define PLATFORM_EXPORT __attribute__((visibility("default")))
 #endif
-#else // defined(COMPONENT_BUILD)
+#else  // defined(COMPONENT_BUILD)
 #define PLATFORM_EXPORT
 #endif
 
@@ -60,7 +59,7 @@
 // This pragma will allow exporting a class that inherits from a non-exported
 // base class, anywhere in the Blink platform component. This is only
 // a problem when using the MSVC compiler on Windows.
-#pragma warning(suppress:4275)
+#pragma warning(suppress : 4275)
 #endif
 
-#endif // PlatformExport_h
+#endif  // PlatformExport_h

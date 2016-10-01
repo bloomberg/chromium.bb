@@ -50,7 +50,7 @@ class OrderedSimpleTaskRunner;
 
 namespace cc_blink {
 class WebCompositorSupportImpl;
-} // namespace cc_blink
+}  // namespace cc_blink
 
 namespace blink {
 namespace scheduler {
@@ -62,126 +62,134 @@ class TestingPlatformMockWebThread;
 class WebCompositorSupport;
 class WebThread;
 
-class TestingCompositorSupport : public WebCompositorSupport {
-};
+class TestingCompositorSupport : public WebCompositorSupport {};
 
 class TestingPlatformMockScheduler : public WebScheduler {
-    WTF_MAKE_NONCOPYABLE(TestingPlatformMockScheduler);
-public:
-    TestingPlatformMockScheduler();
-    ~TestingPlatformMockScheduler() override;
+  WTF_MAKE_NONCOPYABLE(TestingPlatformMockScheduler);
 
-    void runSingleTask();
-    void runAllTasks();
+ public:
+  TestingPlatformMockScheduler();
+  ~TestingPlatformMockScheduler() override;
 
-    // WebScheduler implementation:
-    WebTaskRunner* loadingTaskRunner() override;
-    WebTaskRunner* timerTaskRunner() override;
-    void shutdown() override {}
-    bool shouldYieldForHighPriorityWork() override { return false; }
-    bool canExceedIdleDeadlineIfRequired() override { return false; }
-    void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
-    void postNonNestableIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override { }
-    std::unique_ptr<WebViewScheduler> createWebViewScheduler(InterventionReporter*) override { return nullptr; }
-    void suspendTimerQueue() override { }
-    void resumeTimerQueue() override { }
-    void addPendingNavigation(WebScheduler::NavigatingFrameType) override { }
-    void removePendingNavigation(WebScheduler::NavigatingFrameType) override { }
-    void onNavigationStarted() override { }
+  void runSingleTask();
+  void runAllTasks();
 
-private:
-    WTF::Deque<std::unique_ptr<WebTaskRunner::Task>> m_tasks;
-    std::unique_ptr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
+  // WebScheduler implementation:
+  WebTaskRunner* loadingTaskRunner() override;
+  WebTaskRunner* timerTaskRunner() override;
+  void shutdown() override {}
+  bool shouldYieldForHighPriorityWork() override { return false; }
+  bool canExceedIdleDeadlineIfRequired() override { return false; }
+  void postIdleTask(const WebTraceLocation&, WebThread::IdleTask*) override {}
+  void postNonNestableIdleTask(const WebTraceLocation&,
+                               WebThread::IdleTask*) override {}
+  std::unique_ptr<WebViewScheduler> createWebViewScheduler(
+      InterventionReporter*) override {
+    return nullptr;
+  }
+  void suspendTimerQueue() override {}
+  void resumeTimerQueue() override {}
+  void addPendingNavigation(WebScheduler::NavigatingFrameType) override {}
+  void removePendingNavigation(WebScheduler::NavigatingFrameType) override {}
+  void onNavigationStarted() override {}
+
+ private:
+  WTF::Deque<std::unique_ptr<WebTaskRunner::Task>> m_tasks;
+  std::unique_ptr<TestingPlatformMockWebTaskRunner> m_mockWebTaskRunner;
 };
 
 class TestingPlatformSupport : public Platform {
-    WTF_MAKE_NONCOPYABLE(TestingPlatformSupport);
-public:
-    struct Config {
-        WebCompositorSupport* compositorSupport = nullptr;
-    };
+  WTF_MAKE_NONCOPYABLE(TestingPlatformSupport);
 
-    TestingPlatformSupport();
-    explicit TestingPlatformSupport(const Config&);
+ public:
+  struct Config {
+    WebCompositorSupport* compositorSupport = nullptr;
+  };
 
-    ~TestingPlatformSupport() override;
+  TestingPlatformSupport();
+  explicit TestingPlatformSupport(const Config&);
 
-    // Platform:
-    WebString defaultLocale() override;
-    WebCompositorSupport* compositorSupport() override;
-    WebThread* currentThread() override;
-    WebBlobRegistry* getBlobRegistry() override;
-    WebClipboard* clipboard() override;
-    WebFileUtilities* fileUtilities() override;
-    WebIDBFactory* idbFactory() override;
-    WebMimeRegistry* mimeRegistry() override;
-    WebURLLoaderMockFactory* getURLLoaderMockFactory() override;
-    blink::WebURLLoader* createURLLoader() override;
+  ~TestingPlatformSupport() override;
 
-    WebData loadResource(const char* name) override;
-    WebURLError cancelledError(const WebURL&) const override;
+  // Platform:
+  WebString defaultLocale() override;
+  WebCompositorSupport* compositorSupport() override;
+  WebThread* currentThread() override;
+  WebBlobRegistry* getBlobRegistry() override;
+  WebClipboard* clipboard() override;
+  WebFileUtilities* fileUtilities() override;
+  WebIDBFactory* idbFactory() override;
+  WebMimeRegistry* mimeRegistry() override;
+  WebURLLoaderMockFactory* getURLLoaderMockFactory() override;
+  blink::WebURLLoader* createURLLoader() override;
 
-protected:
-    const Config m_config;
-    Platform* const m_oldPlatform;
+  WebData loadResource(const char* name) override;
+  WebURLError cancelledError(const WebURL&) const override;
+
+ protected:
+  const Config m_config;
+  Platform* const m_oldPlatform;
 };
 
 class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
-    WTF_MAKE_NONCOPYABLE(TestingPlatformSupportWithMockScheduler);
-public:
-    TestingPlatformSupportWithMockScheduler();
-    explicit TestingPlatformSupportWithMockScheduler(const Config&);
-    ~TestingPlatformSupportWithMockScheduler() override;
+  WTF_MAKE_NONCOPYABLE(TestingPlatformSupportWithMockScheduler);
 
-    // Platform:
-    WebThread* currentThread() override;
+ public:
+  TestingPlatformSupportWithMockScheduler();
+  explicit TestingPlatformSupportWithMockScheduler(const Config&);
+  ~TestingPlatformSupportWithMockScheduler() override;
 
-    // Runs a single task.
-    void runSingleTask();
+  // Platform:
+  WebThread* currentThread() override;
 
-    // Runs all currently queued immediate tasks and delayed tasks whose delay has expired
-    // plus any immediate tasks that are posted as a result of running those tasks.
-    //
-    // This function ignores future delayed tasks when deciding if the system is idle.
-    // If you need to ensure delayed tasks run, try runForPeriodSeconds() instead.
-    void runUntilIdle();
+  // Runs a single task.
+  void runSingleTask();
 
-    // Runs for |seconds|. Note we use a testing clock rather than the wall clock here.
-    void runForPeriodSeconds(double seconds);
+  // Runs all currently queued immediate tasks and delayed tasks whose delay has expired
+  // plus any immediate tasks that are posted as a result of running those tasks.
+  //
+  // This function ignores future delayed tasks when deciding if the system is idle.
+  // If you need to ensure delayed tasks run, try runForPeriodSeconds() instead.
+  void runUntilIdle();
 
-    // Advances |m_clock| by |seconds|.
-    void advanceClockSeconds(double seconds);
+  // Runs for |seconds|. Note we use a testing clock rather than the wall clock here.
+  void runForPeriodSeconds(double seconds);
 
-    scheduler::RendererScheduler* rendererScheduler() const;
+  // Advances |m_clock| by |seconds|.
+  void advanceClockSeconds(double seconds);
 
-    // Controls the behavior of |m_mockTaskRunner| if true, then |m_clock| will
-    // be advanced to the next timer when there's no more immediate work to do.
-    void setAutoAdvanceNowToPendingTasks(bool);
+  scheduler::RendererScheduler* rendererScheduler() const;
 
-protected:
-    static double getTestTime();
+  // Controls the behavior of |m_mockTaskRunner| if true, then |m_clock| will
+  // be advanced to the next timer when there's no more immediate work to do.
+  void setAutoAdvanceNowToPendingTasks(bool);
 
-    std::unique_ptr<base::SimpleTestTickClock> m_clock;
-    scoped_refptr<cc::OrderedSimpleTaskRunner> m_mockTaskRunner;
-    std::unique_ptr<scheduler::RendererSchedulerImpl> m_scheduler;
-    std::unique_ptr<WebThread> m_thread;
+ protected:
+  static double getTestTime();
+
+  std::unique_ptr<base::SimpleTestTickClock> m_clock;
+  scoped_refptr<cc::OrderedSimpleTaskRunner> m_mockTaskRunner;
+  std::unique_ptr<scheduler::RendererSchedulerImpl> m_scheduler;
+  std::unique_ptr<WebThread> m_thread;
 };
 
 class ScopedUnittestsEnvironmentSetup {
-    WTF_MAKE_NONCOPYABLE(ScopedUnittestsEnvironmentSetup);
-public:
-    ScopedUnittestsEnvironmentSetup(int argc, char** argv);
-    ~ScopedUnittestsEnvironmentSetup();
+  WTF_MAKE_NONCOPYABLE(ScopedUnittestsEnvironmentSetup);
 
-private:
-    class DummyPlatform;
-    std::unique_ptr<base::TestDiscardableMemoryAllocator> m_discardableMemoryAllocator;
-    std::unique_ptr<DummyPlatform> m_platform;
-    std::unique_ptr<cc_blink::WebCompositorSupportImpl> m_compositorSupport;
-    TestingPlatformSupport::Config m_testingPlatformConfig;
-    std::unique_ptr<TestingPlatformSupport> m_testingPlatformSupport;
+ public:
+  ScopedUnittestsEnvironmentSetup(int argc, char** argv);
+  ~ScopedUnittestsEnvironmentSetup();
+
+ private:
+  class DummyPlatform;
+  std::unique_ptr<base::TestDiscardableMemoryAllocator>
+      m_discardableMemoryAllocator;
+  std::unique_ptr<DummyPlatform> m_platform;
+  std::unique_ptr<cc_blink::WebCompositorSupportImpl> m_compositorSupport;
+  TestingPlatformSupport::Config m_testingPlatformConfig;
+  std::unique_ptr<TestingPlatformSupport> m_testingPlatformSupport;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TestingPlatformSupport_h
+#endif  // TestingPlatformSupport_h

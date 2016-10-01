@@ -31,49 +31,53 @@
 namespace blink {
 
 inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
-    : HTMLElement(HTMLNames::marqueeTag, document)
-{
-    if (document.contextDocument()) {
-        v8::Local<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(&document, "HTMLMarqueeElement");
-        RELEASE_ASSERT(!classObject.IsEmpty());
-    }
-    UseCounter::count(document, UseCounter::HTMLMarqueeElement);
+    : HTMLElement(HTMLNames::marqueeTag, document) {
+  if (document.contextDocument()) {
+    v8::Local<v8::Value> classObject =
+        PrivateScriptRunner::installClassIfNeeded(&document,
+                                                  "HTMLMarqueeElement");
+    RELEASE_ASSERT(!classObject.IsEmpty());
+  }
+  UseCounter::count(document, UseCounter::HTMLMarqueeElement);
 }
 
-HTMLMarqueeElement* HTMLMarqueeElement::create(Document& document)
-{
-    HTMLMarqueeElement* marqueeElement = new HTMLMarqueeElement(document);
-    V8HTMLMarqueeElement::PrivateScript::createdCallbackMethod(document.frame(), marqueeElement);
-    return marqueeElement;
+HTMLMarqueeElement* HTMLMarqueeElement::create(Document& document) {
+  HTMLMarqueeElement* marqueeElement = new HTMLMarqueeElement(document);
+  V8HTMLMarqueeElement::PrivateScript::createdCallbackMethod(document.frame(),
+                                                             marqueeElement);
+  return marqueeElement;
 }
 
-void HTMLMarqueeElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
-{
-    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
-    V8HTMLMarqueeElement::PrivateScript::attributeChangedCallbackMethod(document().frame(), this, name.toString(), oldValue, newValue);
+void HTMLMarqueeElement::attributeChanged(const QualifiedName& name,
+                                          const AtomicString& oldValue,
+                                          const AtomicString& newValue,
+                                          AttributeModificationReason reason) {
+  HTMLElement::attributeChanged(name, oldValue, newValue, reason);
+  V8HTMLMarqueeElement::PrivateScript::attributeChangedCallbackMethod(
+      document().frame(), this, name.toString(), oldValue, newValue);
 }
 
-Node::InsertionNotificationRequest HTMLMarqueeElement::insertedInto(ContainerNode* insertionPoint)
-{
-    HTMLElement::insertedInto(insertionPoint);
-    if (isConnected()) {
-        V8HTMLMarqueeElement::PrivateScript::attachedCallbackMethod(document().frame(), this);
-    }
-    return InsertionDone;
+Node::InsertionNotificationRequest HTMLMarqueeElement::insertedInto(
+    ContainerNode* insertionPoint) {
+  HTMLElement::insertedInto(insertionPoint);
+  if (isConnected()) {
+    V8HTMLMarqueeElement::PrivateScript::attachedCallbackMethod(
+        document().frame(), this);
+  }
+  return InsertionDone;
 }
 
-void HTMLMarqueeElement::removedFrom(ContainerNode* insertionPoint)
-{
-    HTMLElement::removedFrom(insertionPoint);
-    if (insertionPoint->isConnected()) {
-        V8HTMLMarqueeElement::PrivateScript::detachedCallbackMethod(insertionPoint->document().frame(), this);
-    }
+void HTMLMarqueeElement::removedFrom(ContainerNode* insertionPoint) {
+  HTMLElement::removedFrom(insertionPoint);
+  if (insertionPoint->isConnected()) {
+    V8HTMLMarqueeElement::PrivateScript::detachedCallbackMethod(
+        insertionPoint->document().frame(), this);
+  }
 }
 
-bool HTMLMarqueeElement::isHorizontal() const
-{
-    AtomicString direction = getAttribute(HTMLNames::directionAttr);
-    return direction != "down" && direction != "up";
+bool HTMLMarqueeElement::isHorizontal() const {
+  AtomicString direction = getAttribute(HTMLNames::directionAttr);
+  return direction != "down" && direction != "up";
 }
 
-} // namespace blink
+}  // namespace blink

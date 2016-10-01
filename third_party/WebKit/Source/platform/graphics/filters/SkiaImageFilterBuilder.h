@@ -40,18 +40,25 @@ class FilterEffect;
 
 namespace SkiaImageFilterBuilder {
 
-PLATFORM_EXPORT sk_sp<SkImageFilter> build(FilterEffect*, ColorSpace, bool requiresPMColorValidation = true);
+PLATFORM_EXPORT sk_sp<SkImageFilter>
+build(FilterEffect*, ColorSpace, bool requiresPMColorValidation = true);
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> transformColorSpace(
-    sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
+    sk_sp<SkImageFilter> input,
+    ColorSpace srcColorSpace,
+    ColorSpace dstColorSpace);
 
 PLATFORM_EXPORT void populateSourceGraphicImageFilters(
-    FilterEffect* sourceGraphic, sk_sp<SkImageFilter> input, ColorSpace inputColorSpace);
+    FilterEffect* sourceGraphic,
+    sk_sp<SkImageFilter> input,
+    ColorSpace inputColorSpace);
 PLATFORM_EXPORT void buildSourceGraphic(FilterEffect*, sk_sp<SkPicture>);
 
-PLATFORM_EXPORT sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection&, sk_sp<SkImageFilter> input);
+PLATFORM_EXPORT sk_sp<SkImageFilter> buildBoxReflectFilter(
+    const BoxReflection&,
+    sk_sp<SkImageFilter> input);
 
-} // namespace SkiaImageFilterBuilder
-} // namespace blink
+}  // namespace SkiaImageFilterBuilder
+}  // namespace blink
 
 #endif

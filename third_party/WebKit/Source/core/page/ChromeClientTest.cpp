@@ -14,56 +14,56 @@ namespace blink {
 namespace {
 
 class ChromeClientToolTipLogger : public EmptyChromeClient {
-public:
-    void setToolTip(LocalFrame&, const String& text, TextDirection) override
-    {
-        m_toolTipForLastSetToolTip = text;
-    }
+ public:
+  void setToolTip(LocalFrame&, const String& text, TextDirection) override {
+    m_toolTipForLastSetToolTip = text;
+  }
 
-    String toolTipForLastSetToolTip() const { return m_toolTipForLastSetToolTip; }
-    void clearToolTipForLastSetToolTip() { m_toolTipForLastSetToolTip = String(); }
+  String toolTipForLastSetToolTip() const { return m_toolTipForLastSetToolTip; }
+  void clearToolTipForLastSetToolTip() {
+    m_toolTipForLastSetToolTip = String();
+  }
 
-private:
-    String m_toolTipForLastSetToolTip;
+ private:
+  String m_toolTipForLastSetToolTip;
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
-class ChromeClientTest : public testing::Test {
-};
+class ChromeClientTest : public testing::Test {};
 
-TEST_F(ChromeClientTest, SetToolTipFlood)
-{
-    ChromeClientToolTipLogger logger;
-    ChromeClient* client = &logger;
-    HitTestResult result(HitTestRequest(HitTestRequest::Move), LayoutPoint(10, 20));
-    Document* doc = Document::create();
-    Element* element = HTMLElement::create(HTMLNames::divTag, *doc);
-    element->setAttribute(HTMLNames::titleAttr, "tooltip");
-    result.setInnerNode(element);
+TEST_F(ChromeClientTest, SetToolTipFlood) {
+  ChromeClientToolTipLogger logger;
+  ChromeClient* client = &logger;
+  HitTestResult result(HitTestRequest(HitTestRequest::Move),
+                       LayoutPoint(10, 20));
+  Document* doc = Document::create();
+  Element* element = HTMLElement::create(HTMLNames::divTag, *doc);
+  element->setAttribute(HTMLNames::titleAttr, "tooltip");
+  result.setInnerNode(element);
 
-    client->setToolTip(*doc->frame(), result);
-    EXPECT_EQ("tooltip", logger.toolTipForLastSetToolTip());
+  client->setToolTip(*doc->frame(), result);
+  EXPECT_EQ("tooltip", logger.toolTipForLastSetToolTip());
 
-    // seToolTip(HitTestResult) again in the same condition.
-    logger.clearToolTipForLastSetToolTip();
-    client->setToolTip(*doc->frame(), result);
-    // setToolTip(String,TextDirection) should not be called.
-    EXPECT_EQ(String(), logger.toolTipForLastSetToolTip());
+  // seToolTip(HitTestResult) again in the same condition.
+  logger.clearToolTipForLastSetToolTip();
+  client->setToolTip(*doc->frame(), result);
+  // setToolTip(String,TextDirection) should not be called.
+  EXPECT_EQ(String(), logger.toolTipForLastSetToolTip());
 
-    // Cancel the tooltip, and setToolTip(HitTestResult) again.
-    client->clearToolTip(*doc->frame());
-    logger.clearToolTipForLastSetToolTip();
-    client->setToolTip(*doc->frame(), result);
-    // setToolTip(String,TextDirection) should not be called.
-    EXPECT_EQ(String(), logger.toolTipForLastSetToolTip());
+  // Cancel the tooltip, and setToolTip(HitTestResult) again.
+  client->clearToolTip(*doc->frame());
+  logger.clearToolTipForLastSetToolTip();
+  client->setToolTip(*doc->frame(), result);
+  // setToolTip(String,TextDirection) should not be called.
+  EXPECT_EQ(String(), logger.toolTipForLastSetToolTip());
 
-    logger.clearToolTipForLastSetToolTip();
-    element->setAttribute(HTMLNames::titleAttr, "updated");
-    client->setToolTip(*doc->frame(), result);
-    // setToolTip(String,TextDirection) should be called because tooltip string
-    // is different from the last one.
-    EXPECT_EQ("updated", logger.toolTipForLastSetToolTip());
+  logger.clearToolTipForLastSetToolTip();
+  element->setAttribute(HTMLNames::titleAttr, "updated");
+  client->setToolTip(*doc->frame(), result);
+  // setToolTip(String,TextDirection) should be called because tooltip string
+  // is different from the last one.
+  EXPECT_EQ("updated", logger.toolTipForLastSetToolTip());
 }
 
-} // namespace blink
+}  // namespace blink

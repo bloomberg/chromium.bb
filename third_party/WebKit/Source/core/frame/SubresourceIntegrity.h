@@ -20,43 +20,72 @@ class KURL;
 class Resource;
 
 class CORE_EXPORT SubresourceIntegrity {
-    STATIC_ONLY(SubresourceIntegrity);
-public:
-    enum IntegrityParseResult {
-        IntegrityParseValidResult,
-        IntegrityParseNoValidResult
-    };
+  STATIC_ONLY(SubresourceIntegrity);
 
-    // The versions with the IntegrityMetadataSet passed as the first argument
-    // assume that the integrity attribute has already been parsed, and the
-    // IntegrityMetadataSet represents the result of that parsing.
-    static bool CheckSubresourceIntegrity(const Element&, const char* content, size_t, const KURL& resourceUrl, const Resource&);
-    static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&, const Element&, const char* content, size_t, const KURL& resourceUrl, const Resource&);
-    static bool CheckSubresourceIntegrity(const String&, const char*, size_t, const KURL& resourceUrl, Document&, WTF::String&);
-    static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&, const char*, size_t, const KURL& resourceUrl, Document&, WTF::String&);
+ public:
+  enum IntegrityParseResult {
+    IntegrityParseValidResult,
+    IntegrityParseNoValidResult
+  };
 
-    // The IntegrityMetadataSet arguments are out parameters which contain the
-    // set of all valid, parsed metadata from |attribute|.
-    static IntegrityParseResult parseIntegrityAttribute(const WTF::String& attribute, IntegrityMetadataSet&);
-    static IntegrityParseResult parseIntegrityAttribute(const WTF::String& attribute, IntegrityMetadataSet&, Document*);
+  // The versions with the IntegrityMetadataSet passed as the first argument
+  // assume that the integrity attribute has already been parsed, and the
+  // IntegrityMetadataSet represents the result of that parsing.
+  static bool CheckSubresourceIntegrity(const Element&,
+                                        const char* content,
+                                        size_t,
+                                        const KURL& resourceUrl,
+                                        const Resource&);
+  static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&,
+                                        const Element&,
+                                        const char* content,
+                                        size_t,
+                                        const KURL& resourceUrl,
+                                        const Resource&);
+  static bool CheckSubresourceIntegrity(const String&,
+                                        const char*,
+                                        size_t,
+                                        const KURL& resourceUrl,
+                                        Document&,
+                                        WTF::String&);
+  static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&,
+                                        const char*,
+                                        size_t,
+                                        const KURL& resourceUrl,
+                                        Document&,
+                                        WTF::String&);
 
-private:
-    friend class SubresourceIntegrityTest;
-    FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, Parsing);
-    FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, ParseAlgorithm);
-    FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, Prioritization);
+  // The IntegrityMetadataSet arguments are out parameters which contain the
+  // set of all valid, parsed metadata from |attribute|.
+  static IntegrityParseResult parseIntegrityAttribute(
+      const WTF::String& attribute,
+      IntegrityMetadataSet&);
+  static IntegrityParseResult parseIntegrityAttribute(
+      const WTF::String& attribute,
+      IntegrityMetadataSet&,
+      Document*);
 
-    enum AlgorithmParseResult {
-        AlgorithmValid,
-        AlgorithmUnparsable,
-        AlgorithmUnknown
-    };
+ private:
+  friend class SubresourceIntegrityTest;
+  FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, Parsing);
+  FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, ParseAlgorithm);
+  FRIEND_TEST_ALL_PREFIXES(SubresourceIntegrityTest, Prioritization);
 
-    static HashAlgorithm getPrioritizedHashFunction(HashAlgorithm, HashAlgorithm);
-    static AlgorithmParseResult parseAlgorithm(const UChar*& begin, const UChar* end, HashAlgorithm&);
-    static bool parseDigest(const UChar*& begin, const UChar* end, String& digest);
+  enum AlgorithmParseResult {
+    AlgorithmValid,
+    AlgorithmUnparsable,
+    AlgorithmUnknown
+  };
+
+  static HashAlgorithm getPrioritizedHashFunction(HashAlgorithm, HashAlgorithm);
+  static AlgorithmParseResult parseAlgorithm(const UChar*& begin,
+                                             const UChar* end,
+                                             HashAlgorithm&);
+  static bool parseDigest(const UChar*& begin,
+                          const UChar* end,
+                          String& digest);
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

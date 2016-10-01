@@ -36,43 +36,38 @@
 
 namespace blink {
 
-bool getFileSize(const String& path, long long& result)
-{
-    FileMetadata metadata;
-    if (!getFileMetadata(path, metadata))
-        return false;
-    result = metadata.length;
-    return true;
+bool getFileSize(const String& path, long long& result) {
+  FileMetadata metadata;
+  if (!getFileMetadata(path, metadata))
+    return false;
+  result = metadata.length;
+  return true;
 }
 
-bool getFileModificationTime(const String& path, double& result)
-{
-    FileMetadata metadata;
-    if (!getFileMetadata(path, metadata))
-        return false;
-    result = metadata.modificationTime;
-    return true;
+bool getFileModificationTime(const String& path, double& result) {
+  FileMetadata metadata;
+  if (!getFileMetadata(path, metadata))
+    return false;
+  result = metadata.modificationTime;
+  return true;
 }
 
-bool getFileMetadata(const String& path, FileMetadata& metadata)
-{
-    WebFileInfo webFileInfo;
-    if (!Platform::current()->fileUtilities()->getFileInfo(path, webFileInfo))
-        return false;
-    metadata.modificationTime = webFileInfo.modificationTime;
-    metadata.length = webFileInfo.length;
-    metadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
-    return true;
+bool getFileMetadata(const String& path, FileMetadata& metadata) {
+  WebFileInfo webFileInfo;
+  if (!Platform::current()->fileUtilities()->getFileInfo(path, webFileInfo))
+    return false;
+  metadata.modificationTime = webFileInfo.modificationTime;
+  metadata.length = webFileInfo.length;
+  metadata.type = static_cast<FileMetadata::Type>(webFileInfo.type);
+  return true;
 }
 
-String directoryName(const String& path)
-{
-    return Platform::current()->fileUtilities()->directoryName(path);
+String directoryName(const String& path) {
+  return Platform::current()->fileUtilities()->directoryName(path);
 }
 
-KURL filePathToURL(const String& path)
-{
-    return Platform::current()->fileUtilities()->filePathToURL(path);
+KURL filePathToURL(const String& path) {
+  return Platform::current()->fileUtilities()->filePathToURL(path);
 }
 
-} // namespace blink
+}  // namespace blink

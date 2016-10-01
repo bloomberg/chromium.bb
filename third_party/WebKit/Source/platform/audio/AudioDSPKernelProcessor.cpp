@@ -34,117 +34,113 @@
 namespace blink {
 
 // setNumberOfChannels() may later be called if the object is not yet in an "initialized" state.
-AudioDSPKernelProcessor::AudioDSPKernelProcessor(float sampleRate, unsigned numberOfChannels)
-    : AudioProcessor(sampleRate, numberOfChannels)
-    , m_hasJustReset(true)
-{
+AudioDSPKernelProcessor::AudioDSPKernelProcessor(float sampleRate,
+                                                 unsigned numberOfChannels)
+    : AudioProcessor(sampleRate, numberOfChannels), m_hasJustReset(true) {}
+
+void AudioDSPKernelProcessor::initialize() {
+  if (isInitialized())
+    return;
+
+  MutexLocker locker(m_processLock);
+  ASSERT(!m_kernels.size());
+
+  // Create processing kernels, one per channel.
+  for (unsigned i = 0; i < numberOfChannels(); ++i)
+    m_kernels.append(createKernel());
+
+  m_initialized = true;
+  m_hasJustReset = true;
 }
 
-void AudioDSPKernelProcessor::initialize()
-{
-    if (isInitialized())
-        return;
+void AudioDSPKernelProcessor::uninitialize() {
+  if (!isInitialized())
+    return;
 
-    MutexLocker locker(m_processLock);
-    ASSERT(!m_kernels.size());
+  MutexLocker locker(m_processLock);
+  m_kernels.clear();
 
-    // Create processing kernels, one per channel.
-    for (unsigned i = 0; i < numberOfChannels(); ++i)
-        m_kernels.append(createKernel());
-
-    m_initialized = true;
-    m_hasJustReset = true;
+  m_initialized = false;
 }
 
-void AudioDSPKernelProcessor::uninitialize()
-{
-    if (!isInitialized())
-        return;
+void AudioDSPKernelProcessor::process(const AudioBus* source,
+                                      AudioBus* destination,
+                                      size_t framesToProcess) {
+  ASSERT(source && destination);
+  if (!source || !destination)
+    return;
 
-    MutexLocker locker(m_processLock);
-    m_kernels.clear();
+  if (!isInitialized()) {
+    destination->zero();
+    return;
+  }
 
-    m_initialized = false;
-}
+  MutexTryLocker tryLocker(m_processLock);
+  if (tryLocker.locked()) {
+    bool channelCountMatches =
+        source->numberOfChannels() == destination->numberOfChannels() &&
+        source->numberOfChannels() == m_kernels.size();
+    ASSERT(channelCountMatches);
+    if (!channelCountMatches)
+      return;
 
-void AudioDSPKernelProcessor::process(const AudioBus* source, AudioBus* destination, size_t framesToProcess)
-{
-    ASSERT(source && destination);
-    if (!source || !destination)
-        return;
-
-    if (!isInitialized()) {
-        destination->zero();
-        return;
-    }
-
-    MutexTryLocker tryLocker(m_processLock);
-    if (tryLocker.locked()) {
-        bool channelCountMatches = source->numberOfChannels() == destination->numberOfChannels() && source->numberOfChannels() == m_kernels.size();
-        ASSERT(channelCountMatches);
-        if (!channelCountMatches)
-            return;
-
-        for (unsigned i = 0; i < m_kernels.size(); ++i)
-            m_kernels[i]->process(source->channel(i)->data(), destination->channel(i)->mutableData(), framesToProcess);
-    } else {
-        // Unfortunately, the kernel is being processed by another thread.
-        // See also ConvolverNode::process().
-        destination->zero();
-    }
+    for (unsigned i = 0; i < m_kernels.size(); ++i)
+      m_kernels[i]->process(source->channel(i)->data(),
+                            destination->channel(i)->mutableData(),
+                            framesToProcess);
+  } else {
+    // Unfortunately, the kernel is being processed by another thread.
+    // See also ConvolverNode::process().
+    destination->zero();
+  }
 }
 
 // Resets filter state
-void AudioDSPKernelProcessor::reset()
-{
-    ASSERT(isMainThread());
-    if (!isInitialized())
-        return;
+void AudioDSPKernelProcessor::reset() {
+  ASSERT(isMainThread());
+  if (!isInitialized())
+    return;
 
-    // Forces snap to parameter values - first time.
-    // Any processing depending on this value must set it to false at the appropriate time.
-    m_hasJustReset = true;
+  // Forces snap to parameter values - first time.
+  // Any processing depending on this value must set it to false at the appropriate time.
+  m_hasJustReset = true;
 
-    MutexLocker locker(m_processLock);
-    for (unsigned i = 0; i < m_kernels.size(); ++i)
-        m_kernels[i]->reset();
+  MutexLocker locker(m_processLock);
+  for (unsigned i = 0; i < m_kernels.size(); ++i)
+    m_kernels[i]->reset();
 }
 
-void AudioDSPKernelProcessor::setNumberOfChannels(unsigned numberOfChannels)
-{
-    if (numberOfChannels == m_numberOfChannels)
-        return;
+void AudioDSPKernelProcessor::setNumberOfChannels(unsigned numberOfChannels) {
+  if (numberOfChannels == m_numberOfChannels)
+    return;
 
-    ASSERT(!isInitialized());
-    if (!isInitialized())
-        m_numberOfChannels = numberOfChannels;
+  ASSERT(!isInitialized());
+  if (!isInitialized())
+    m_numberOfChannels = numberOfChannels;
 }
 
-double AudioDSPKernelProcessor::tailTime() const
-{
-    ASSERT(!isMainThread());
-    MutexTryLocker tryLocker(m_processLock);
-    if (tryLocker.locked()) {
-        // It is expected that all the kernels have the same tailTime.
-        return !m_kernels.isEmpty() ? m_kernels.first()->tailTime() : 0;
-    }
-    // Since we don't want to block the Audio Device thread, we return a large value
-    // instead of trying to acquire the lock.
-    return std::numeric_limits<double>::infinity();
+double AudioDSPKernelProcessor::tailTime() const {
+  ASSERT(!isMainThread());
+  MutexTryLocker tryLocker(m_processLock);
+  if (tryLocker.locked()) {
+    // It is expected that all the kernels have the same tailTime.
+    return !m_kernels.isEmpty() ? m_kernels.first()->tailTime() : 0;
+  }
+  // Since we don't want to block the Audio Device thread, we return a large value
+  // instead of trying to acquire the lock.
+  return std::numeric_limits<double>::infinity();
 }
 
-double AudioDSPKernelProcessor::latencyTime() const
-{
-    ASSERT(!isMainThread());
-    MutexTryLocker tryLocker(m_processLock);
-    if (tryLocker.locked()) {
-        // It is expected that all the kernels have the same latencyTime.
-        return !m_kernels.isEmpty() ? m_kernels.first()->latencyTime() : 0;
-    }
-    // Since we don't want to block the Audio Device thread, we return a large value
-    // instead of trying to acquire the lock.
-    return std::numeric_limits<double>::infinity();
+double AudioDSPKernelProcessor::latencyTime() const {
+  ASSERT(!isMainThread());
+  MutexTryLocker tryLocker(m_processLock);
+  if (tryLocker.locked()) {
+    // It is expected that all the kernels have the same latencyTime.
+    return !m_kernels.isEmpty() ? m_kernels.first()->latencyTime() : 0;
+  }
+  // Since we don't want to block the Audio Device thread, we return a large value
+  // instead of trying to acquire the lock.
+  return std::numeric_limits<double>::infinity();
 }
 
-} // namespace blink
-
+}  // namespace blink

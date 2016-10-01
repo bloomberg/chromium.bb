@@ -22,60 +22,61 @@ namespace blink {
 //      return;
 //
 class EditingState final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(EditingState);
-public:
-    EditingState();
-    ~EditingState();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(EditingState);
 
-    void abort();
-    bool isAborted() const { return m_isAborted; }
+ public:
+  EditingState();
+  ~EditingState();
 
-private:
-    bool m_isAborted = false;
+  void abort();
+  bool isAborted() const { return m_isAborted; }
+
+ private:
+  bool m_isAborted = false;
 };
-
 
 // TODO(yosin): Once all commands aware |EditingState|, we get rid of
 // |IgnorableEditingAbortState | class
 class IgnorableEditingAbortState final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(IgnorableEditingAbortState);
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(IgnorableEditingAbortState);
 
-public:
-    IgnorableEditingAbortState();
-    ~IgnorableEditingAbortState();
+ public:
+  IgnorableEditingAbortState();
+  ~IgnorableEditingAbortState();
 
-    EditingState* editingState() { return &m_editingState; }
+  EditingState* editingState() { return &m_editingState; }
 
-private:
-    EditingState m_editingState;
+ private:
+  EditingState m_editingState;
 };
 
 // Abort the editing command if the specified expression is true.
 #define ABORT_EDITING_COMMAND_IF(expr) \
-    do { \
-        if (expr) { \
-            editingState->abort(); \
-            return; \
-        } \
-    } while (false)
+  do {                                 \
+    if (expr) {                        \
+      editingState->abort();           \
+      return;                          \
+    }                                  \
+  } while (false)
 
 #if DCHECK_IS_ON()
 // This class is inspired by |NoExceptionStateAssertionChecker|.
 class NoEditingAbortChecker final {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(NoEditingAbortChecker);
-public:
-    NoEditingAbortChecker(const char* file, int line);
-    ~NoEditingAbortChecker();
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(NoEditingAbortChecker);
 
-    EditingState* editingState() { return &m_editingState; }
+ public:
+  NoEditingAbortChecker(const char* file, int line);
+  ~NoEditingAbortChecker();
 
-private:
-    EditingState m_editingState;
-    const char* const m_file;
-    int const m_line;
+  EditingState* editingState() { return &m_editingState; }
+
+ private:
+  EditingState m_editingState;
+  const char* const m_file;
+  int const m_line;
 };
 
 // If a function with EditingState* argument should not be aborted,
@@ -83,11 +84,12 @@ private:
 //    fooFunc(...., ASSERT_NO_EDITING_ABORT);
 // It causes an assertion failure If DCHECK_IS_ON() and the function was aborted
 // unexpectedly.
-#define ASSERT_NO_EDITING_ABORT (NoEditingAbortChecker(__FILE__, __LINE__).editingState())
+#define ASSERT_NO_EDITING_ABORT \
+  (NoEditingAbortChecker(__FILE__, __LINE__).editingState())
 #else
 #define ASSERT_NO_EDITING_ABORT (IgnorableEditingAbortState().editingState())
 #endif
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EditingState_h
+#endif  // EditingState_h

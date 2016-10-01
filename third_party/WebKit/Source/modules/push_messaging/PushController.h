@@ -15,27 +15,32 @@ namespace blink {
 
 class WebPushClient;
 
-class PushController final : public GarbageCollected<PushController>, public Supplement<LocalFrame> {
-    USING_GARBAGE_COLLECTED_MIXIN(PushController);
-    WTF_MAKE_NONCOPYABLE(PushController);
-public:
-    static PushController* create(WebPushClient*);
-    static const char* supplementName();
-    static PushController* from(LocalFrame* frame) { return static_cast<PushController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
-    static WebPushClient& clientFrom(LocalFrame*);
+class PushController final : public GarbageCollected<PushController>,
+                             public Supplement<LocalFrame> {
+  USING_GARBAGE_COLLECTED_MIXIN(PushController);
+  WTF_MAKE_NONCOPYABLE(PushController);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::trace(visitor); }
+ public:
+  static PushController* create(WebPushClient*);
+  static const char* supplementName();
+  static PushController* from(LocalFrame* frame) {
+    return static_cast<PushController*>(
+        Supplement<LocalFrame>::from(frame, supplementName()));
+  }
+  static WebPushClient& clientFrom(LocalFrame*);
 
-private:
-    explicit PushController(WebPushClient*);
+  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::trace(visitor); }
 
-    WebPushClient* client() const { return m_client; }
+ private:
+  explicit PushController(WebPushClient*);
 
-    WebPushClient* m_client;
+  WebPushClient* client() const { return m_client; }
+
+  WebPushClient* m_client;
 };
 
 MODULES_EXPORT void providePushControllerTo(LocalFrame&, WebPushClient*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PushController_h
+#endif  // PushController_h

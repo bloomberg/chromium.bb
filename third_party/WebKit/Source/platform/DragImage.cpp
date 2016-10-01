@@ -66,211 +66,249 @@ const float kDragLabelBorderY = 2;
 const float kLabelBorderYOffset = 2;
 
 const float kMaxDragLabelWidth = 300;
-const float kMaxDragLabelStringWidth = (kMaxDragLabelWidth - 2 * kDragLabelBorderX);
+const float kMaxDragLabelStringWidth =
+    (kMaxDragLabelWidth - 2 * kDragLabelBorderX);
 
 const float kDragLinkLabelFontSize = 11;
 const float kDragLinkUrlFontSize = 10;
 
-} // anonymous namespace
+}  // anonymous namespace
 
-sk_sp<SkImage> DragImage::resizeAndOrientImage(sk_sp<SkImage> image, ImageOrientation orientation,
-    FloatSize imageScale, float opacity, InterpolationQuality interpolationQuality)
-{
-    IntSize size(image->width(), image->height());
-    size.scale(imageScale.width(), imageScale.height());
-    AffineTransform transform;
-    if (orientation != DefaultImageOrientation) {
-        if (orientation.usesWidthAsHeight())
-            size = size.transposedSize();
-        transform *= orientation.transformFromDefault(FloatSize(size));
-    }
-    transform.scaleNonUniform(imageScale.width(), imageScale.height());
+sk_sp<SkImage> DragImage::resizeAndOrientImage(
+    sk_sp<SkImage> image,
+    ImageOrientation orientation,
+    FloatSize imageScale,
+    float opacity,
+    InterpolationQuality interpolationQuality) {
+  IntSize size(image->width(), image->height());
+  size.scale(imageScale.width(), imageScale.height());
+  AffineTransform transform;
+  if (orientation != DefaultImageOrientation) {
+    if (orientation.usesWidthAsHeight())
+      size = size.transposedSize();
+    transform *= orientation.transformFromDefault(FloatSize(size));
+  }
+  transform.scaleNonUniform(imageScale.width(), imageScale.height());
 
-    if (size.isEmpty())
-        return nullptr;
+  if (size.isEmpty())
+    return nullptr;
 
-    if (transform.isIdentity() && opacity == 1) {
-        // Nothing to adjust, just use the original.
-        ASSERT(image->width() == size.width());
-        ASSERT(image->height() == size.height());
-        return image;
-    }
+  if (transform.isIdentity() && opacity == 1) {
+    // Nothing to adjust, just use the original.
+    ASSERT(image->width() == size.width());
+    ASSERT(image->height() == size.height());
+    return image;
+  }
 
-    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
-    if (!surface)
-        return nullptr;
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRasterN32Premul(size.width(), size.height());
+  if (!surface)
+    return nullptr;
 
-    SkPaint paint;
-    ASSERT(opacity >= 0 && opacity <= 1);
-    paint.setAlpha(opacity * 255);
-    paint.setFilterQuality(interpolationQuality == InterpolationNone
-        ? kNone_SkFilterQuality : kHigh_SkFilterQuality);
+  SkPaint paint;
+  ASSERT(opacity >= 0 && opacity <= 1);
+  paint.setAlpha(opacity * 255);
+  paint.setFilterQuality(interpolationQuality == InterpolationNone
+                             ? kNone_SkFilterQuality
+                             : kHigh_SkFilterQuality);
 
-    SkCanvas* canvas = surface->getCanvas();
-    canvas->concat(affineTransformToSkMatrix(transform));
-    canvas->drawImage(image, 0, 0, &paint);
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->concat(affineTransformToSkMatrix(transform));
+  canvas->drawImage(image, 0, 0, &paint);
 
-    return surface->makeImageSnapshot();
+  return surface->makeImageSnapshot();
 }
 
-FloatSize DragImage::clampedImageScale(const IntSize& imageSize, const IntSize& size,
-    const IntSize& maxSize)
-{
-    // Non-uniform scaling for size mapping.
-    FloatSize imageScale(
-        static_cast<float>(size.width()) / imageSize.width(),
-        static_cast<float>(size.height()) / imageSize.height());
+FloatSize DragImage::clampedImageScale(const IntSize& imageSize,
+                                       const IntSize& size,
+                                       const IntSize& maxSize) {
+  // Non-uniform scaling for size mapping.
+  FloatSize imageScale(static_cast<float>(size.width()) / imageSize.width(),
+                       static_cast<float>(size.height()) / imageSize.height());
 
-    // Uniform scaling for clamping.
-    const float clampScaleX = size.width() > maxSize.width()
-        ? static_cast<float>(maxSize.width()) / size.width() : 1;
-    const float clampScaleY = size.height() > maxSize.height()
-        ? static_cast<float>(maxSize.height()) / size.height() : 1;
-    imageScale.scale(std::min(clampScaleX, clampScaleY));
+  // Uniform scaling for clamping.
+  const float clampScaleX =
+      size.width() > maxSize.width()
+          ? static_cast<float>(maxSize.width()) / size.width()
+          : 1;
+  const float clampScaleY =
+      size.height() > maxSize.height()
+          ? static_cast<float>(maxSize.height()) / size.height()
+          : 1;
+  imageScale.scale(std::min(clampScaleX, clampScaleY));
 
-    return imageScale;
+  return imageScale;
 }
 
-std::unique_ptr<DragImage> DragImage::create(Image* image,
-    RespectImageOrientationEnum shouldRespectImageOrientation, float deviceScaleFactor,
-    InterpolationQuality interpolationQuality, float opacity, FloatSize imageScale)
-{
-    if (!image)
-        return nullptr;
+std::unique_ptr<DragImage> DragImage::create(
+    Image* image,
+    RespectImageOrientationEnum shouldRespectImageOrientation,
+    float deviceScaleFactor,
+    InterpolationQuality interpolationQuality,
+    float opacity,
+    FloatSize imageScale) {
+  if (!image)
+    return nullptr;
 
-    sk_sp<SkImage> skImage = image->imageForCurrentFrame();
-    if (!skImage)
-        return nullptr;
+  sk_sp<SkImage> skImage = image->imageForCurrentFrame();
+  if (!skImage)
+    return nullptr;
 
-    ImageOrientation orientation;
-    if (shouldRespectImageOrientation == RespectImageOrientation && image->isBitmapImage())
-        orientation = toBitmapImage(image)->currentFrameOrientation();
+  ImageOrientation orientation;
+  if (shouldRespectImageOrientation == RespectImageOrientation &&
+      image->isBitmapImage())
+    orientation = toBitmapImage(image)->currentFrameOrientation();
 
-    SkBitmap bm;
-    sk_sp<SkImage> resizedImage =
-        resizeAndOrientImage(std::move(skImage), orientation, imageScale, opacity, interpolationQuality);
-    if (!resizedImage || !resizedImage->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode))
-        return nullptr;
+  SkBitmap bm;
+  sk_sp<SkImage> resizedImage =
+      resizeAndOrientImage(std::move(skImage), orientation, imageScale, opacity,
+                           interpolationQuality);
+  if (!resizedImage ||
+      !resizedImage->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode))
+    return nullptr;
 
-    return wrapUnique(new DragImage(bm, deviceScaleFactor, interpolationQuality));
+  return wrapUnique(new DragImage(bm, deviceScaleFactor, interpolationQuality));
 }
 
-static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescription& systemFont)
-{
-    FontDescription description = systemFont;
-    description.setWeight(fontWeight);
-    description.setSpecifiedSize(size);
-    description.setComputedSize(size);
-    Font result(description);
-    result.update(nullptr);
-    return result;
+static Font deriveDragLabelFont(int size,
+                                FontWeight fontWeight,
+                                const FontDescription& systemFont) {
+  FontDescription description = systemFont;
+  description.setWeight(fontWeight);
+  description.setSpecifiedSize(size);
+  description.setComputedSize(size);
+  Font result(description);
+  result.update(nullptr);
+  return result;
 }
 
-std::unique_ptr<DragImage> DragImage::create(const KURL& url, const String& inLabel, const FontDescription& systemFont, float deviceScaleFactor)
-{
-    const Font labelFont = deriveDragLabelFont(kDragLinkLabelFontSize, FontWeightBold, systemFont);
-    const Font urlFont = deriveDragLabelFont(kDragLinkUrlFontSize, FontWeightNormal, systemFont);
-    FontCachePurgePreventer fontCachePurgePreventer;
+std::unique_ptr<DragImage> DragImage::create(const KURL& url,
+                                             const String& inLabel,
+                                             const FontDescription& systemFont,
+                                             float deviceScaleFactor) {
+  const Font labelFont =
+      deriveDragLabelFont(kDragLinkLabelFontSize, FontWeightBold, systemFont);
+  const Font urlFont =
+      deriveDragLabelFont(kDragLinkUrlFontSize, FontWeightNormal, systemFont);
+  FontCachePurgePreventer fontCachePurgePreventer;
 
-    bool drawURLString = true;
-    bool clipURLString = false;
-    bool clipLabelString = false;
-    float maxDragLabelStringWidthDIP = kMaxDragLabelStringWidth / deviceScaleFactor;
+  bool drawURLString = true;
+  bool clipURLString = false;
+  bool clipLabelString = false;
+  float maxDragLabelStringWidthDIP =
+      kMaxDragLabelStringWidth / deviceScaleFactor;
 
-    String urlString = url.getString();
-    String label = inLabel.stripWhiteSpace();
-    if (label.isEmpty()) {
-        drawURLString = false;
-        label = urlString;
-    }
+  String urlString = url.getString();
+  String label = inLabel.stripWhiteSpace();
+  if (label.isEmpty()) {
+    drawURLString = false;
+    label = urlString;
+  }
 
-    // First step is drawing the link drag image width.
-    TextRun labelRun(label.impl());
-    TextRun urlRun(urlString.impl());
-    IntSize labelSize(labelFont.width(labelRun), labelFont.getFontMetrics().ascent() + labelFont.getFontMetrics().descent());
+  // First step is drawing the link drag image width.
+  TextRun labelRun(label.impl());
+  TextRun urlRun(urlString.impl());
+  IntSize labelSize(labelFont.width(labelRun),
+                    labelFont.getFontMetrics().ascent() +
+                        labelFont.getFontMetrics().descent());
 
-    if (labelSize.width() > maxDragLabelStringWidthDIP) {
-        labelSize.setWidth(maxDragLabelStringWidthDIP);
-        clipLabelString = true;
-    }
+  if (labelSize.width() > maxDragLabelStringWidthDIP) {
+    labelSize.setWidth(maxDragLabelStringWidthDIP);
+    clipLabelString = true;
+  }
 
-    IntSize urlStringSize;
-    IntSize imageSize(labelSize.width() + kDragLabelBorderX * 2, labelSize.height() + kDragLabelBorderY * 2);
+  IntSize urlStringSize;
+  IntSize imageSize(labelSize.width() + kDragLabelBorderX * 2,
+                    labelSize.height() + kDragLabelBorderY * 2);
 
-    if (drawURLString) {
-        urlStringSize.setWidth(urlFont.width(urlRun));
-        urlStringSize.setHeight(urlFont.getFontMetrics().ascent() + urlFont.getFontMetrics().descent());
-        imageSize.setHeight(imageSize.height() + urlStringSize.height());
-        if (urlStringSize.width() > maxDragLabelStringWidthDIP) {
-            imageSize.setWidth(maxDragLabelStringWidthDIP);
-            clipURLString = true;
-        } else
-            imageSize.setWidth(std::max(labelSize.width(), urlStringSize.width()) + kDragLabelBorderX * 2);
-    }
+  if (drawURLString) {
+    urlStringSize.setWidth(urlFont.width(urlRun));
+    urlStringSize.setHeight(urlFont.getFontMetrics().ascent() +
+                            urlFont.getFontMetrics().descent());
+    imageSize.setHeight(imageSize.height() + urlStringSize.height());
+    if (urlStringSize.width() > maxDragLabelStringWidthDIP) {
+      imageSize.setWidth(maxDragLabelStringWidthDIP);
+      clipURLString = true;
+    } else
+      imageSize.setWidth(std::max(labelSize.width(), urlStringSize.width()) +
+                         kDragLabelBorderX * 2);
+  }
 
-    // We now know how big the image needs to be, so we create and
-    // fill the background
-    IntSize scaledImageSize = imageSize;
-    scaledImageSize.scale(deviceScaleFactor);
-    std::unique_ptr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize));
-    if (!buffer)
-        return nullptr;
+  // We now know how big the image needs to be, so we create and
+  // fill the background
+  IntSize scaledImageSize = imageSize;
+  scaledImageSize.scale(deviceScaleFactor);
+  std::unique_ptr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize));
+  if (!buffer)
+    return nullptr;
 
-    buffer->canvas()->scale(deviceScaleFactor, deviceScaleFactor);
+  buffer->canvas()->scale(deviceScaleFactor, deviceScaleFactor);
 
-    const float DragLabelRadius = 5;
+  const float DragLabelRadius = 5;
 
-    IntRect rect(IntPoint(), imageSize);
-    SkPaint backgroundPaint;
-    backgroundPaint.setColor(SkColorSetRGB(140, 140, 140));
-    SkRRect rrect;
-    rrect.setRectXY(SkRect::MakeWH(imageSize.width(), imageSize.height()), DragLabelRadius, DragLabelRadius);
-    buffer->canvas()->drawRRect(rrect, backgroundPaint);
+  IntRect rect(IntPoint(), imageSize);
+  SkPaint backgroundPaint;
+  backgroundPaint.setColor(SkColorSetRGB(140, 140, 140));
+  SkRRect rrect;
+  rrect.setRectXY(SkRect::MakeWH(imageSize.width(), imageSize.height()),
+                  DragLabelRadius, DragLabelRadius);
+  buffer->canvas()->drawRRect(rrect, backgroundPaint);
 
-    // Draw the text
-    SkPaint textPaint;
-    if (drawURLString) {
-        if (clipURLString)
-            urlString = StringTruncator::centerTruncate(urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont);
-        IntPoint textPos(kDragLabelBorderX, imageSize.height() - (kLabelBorderYOffset + urlFont.getFontMetrics().descent()));
-        TextRun textRun(urlString);
-        urlFont.drawText(buffer->canvas(), TextRunPaintInfo(textRun), textPos, deviceScaleFactor, textPaint);
-    }
+  // Draw the text
+  SkPaint textPaint;
+  if (drawURLString) {
+    if (clipURLString)
+      urlString = StringTruncator::centerTruncate(
+          urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont);
+    IntPoint textPos(kDragLabelBorderX,
+                     imageSize.height() - (kLabelBorderYOffset +
+                                           urlFont.getFontMetrics().descent()));
+    TextRun textRun(urlString);
+    urlFont.drawText(buffer->canvas(), TextRunPaintInfo(textRun), textPos,
+                     deviceScaleFactor, textPaint);
+  }
 
-    if (clipLabelString)
-        label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont);
+  if (clipLabelString)
+    label = StringTruncator::rightTruncate(
+        label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont);
 
-    bool hasStrongDirectionality;
-    TextRun textRun = textRunWithDirectionality(label, &hasStrongDirectionality);
-    IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.getFontDescription().computedPixelSize());
-    if (hasStrongDirectionality && textRun.direction() == RTL) {
-        float textWidth = labelFont.width(textRun);
-        int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
-        textPos.setX(availableWidth - ceilf(textWidth));
-    }
-    labelFont.drawBidiText(buffer->canvas(), TextRunPaintInfo(textRun), FloatPoint(textPos), Font::DoNotPaintIfFontNotReady, deviceScaleFactor, textPaint);
+  bool hasStrongDirectionality;
+  TextRun textRun = textRunWithDirectionality(label, &hasStrongDirectionality);
+  IntPoint textPos(
+      kDragLabelBorderX,
+      kDragLabelBorderY + labelFont.getFontDescription().computedPixelSize());
+  if (hasStrongDirectionality && textRun.direction() == RTL) {
+    float textWidth = labelFont.width(textRun);
+    int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
+    textPos.setX(availableWidth - ceilf(textWidth));
+  }
+  labelFont.drawBidiText(buffer->canvas(), TextRunPaintInfo(textRun),
+                         FloatPoint(textPos), Font::DoNotPaintIfFontNotReady,
+                         deviceScaleFactor, textPaint);
 
-    RefPtr<Image> image = buffer->newImageSnapshot();
-    return DragImage::create(image.get(), DoNotRespectImageOrientation, deviceScaleFactor);
+  RefPtr<Image> image = buffer->newImageSnapshot();
+  return DragImage::create(image.get(), DoNotRespectImageOrientation,
+                           deviceScaleFactor);
 }
 
-DragImage::DragImage(const SkBitmap& bitmap, float resolutionScale, InterpolationQuality interpolationQuality)
-    : m_bitmap(bitmap)
-    , m_resolutionScale(resolutionScale)
-    , m_interpolationQuality(interpolationQuality)
-{
+DragImage::DragImage(const SkBitmap& bitmap,
+                     float resolutionScale,
+                     InterpolationQuality interpolationQuality)
+    : m_bitmap(bitmap),
+      m_resolutionScale(resolutionScale),
+      m_interpolationQuality(interpolationQuality) {}
+
+DragImage::~DragImage() {}
+
+void DragImage::scale(float scaleX, float scaleY) {
+  skia::ImageOperations::ResizeMethod resizeMethod =
+      m_interpolationQuality == InterpolationNone
+          ? skia::ImageOperations::RESIZE_BOX
+          : skia::ImageOperations::RESIZE_LANCZOS3;
+  int imageWidth = scaleX * m_bitmap.width();
+  int imageHeight = scaleY * m_bitmap.height();
+  m_bitmap = skia::ImageOperations::Resize(m_bitmap, resizeMethod, imageWidth,
+                                           imageHeight);
 }
 
-DragImage::~DragImage()
-{
-}
-
-void DragImage::scale(float scaleX, float scaleY)
-{
-    skia::ImageOperations::ResizeMethod resizeMethod = m_interpolationQuality == InterpolationNone ? skia::ImageOperations::RESIZE_BOX : skia::ImageOperations::RESIZE_LANCZOS3;
-    int imageWidth = scaleX * m_bitmap.width();
-    int imageHeight = scaleY * m_bitmap.height();
-    m_bitmap = skia::ImageOperations::Resize(m_bitmap, resizeMethod, imageWidth, imageHeight);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -54,54 +54,69 @@ class WebServiceWorkerProvider;
 class WebServiceWorkerRegistration;
 
 class MODULES_EXPORT ServiceWorkerContainer final
-    : public EventTargetWithInlineData
-    , public ContextLifecycleObserver
-    , public WebServiceWorkerProviderClient {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
-public:
-    using RegistrationCallbacks = WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks;
+    : public EventTargetWithInlineData,
+      public ContextLifecycleObserver,
+      public WebServiceWorkerProviderClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 
-    static ServiceWorkerContainer* create(ExecutionContext*);
-    ~ServiceWorkerContainer();
+ public:
+  using RegistrationCallbacks =
+      WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks;
 
-    DECLARE_VIRTUAL_TRACE();
+  static ServiceWorkerContainer* create(ExecutionContext*);
+  ~ServiceWorkerContainer();
 
-    ServiceWorker* controller() { return m_controller; }
-    ScriptPromise ready(ScriptState*);
-    WebServiceWorkerProvider* provider() { return m_provider; }
+  DECLARE_VIRTUAL_TRACE();
 
-    void registerServiceWorkerImpl(ExecutionContext*, const KURL& scriptURL, const KURL& scope, std::unique_ptr<RegistrationCallbacks>);
+  ServiceWorker* controller() { return m_controller; }
+  ScriptPromise ready(ScriptState*);
+  WebServiceWorkerProvider* provider() { return m_provider; }
 
-    ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const RegistrationOptions&);
-    ScriptPromise getRegistration(ScriptState*, const String& documentURL);
-    ScriptPromise getRegistrations(ScriptState*);
+  void registerServiceWorkerImpl(ExecutionContext*,
+                                 const KURL& scriptURL,
+                                 const KURL& scope,
+                                 std::unique_ptr<RegistrationCallbacks>);
 
-    void contextDestroyed() override;
+  ScriptPromise registerServiceWorker(ScriptState*,
+                                      const String& pattern,
+                                      const RegistrationOptions&);
+  ScriptPromise getRegistration(ScriptState*, const String& documentURL);
+  ScriptPromise getRegistrations(ScriptState*);
 
-    // WebServiceWorkerProviderClient overrides.
-    void setController(std::unique_ptr<WebServiceWorker::Handle>, bool shouldNotifyControllerChange) override;
-    void dispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>, const WebString& message, const WebMessagePortChannelArray&) override;
+  void contextDestroyed() override;
 
-    // EventTarget overrides.
-    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
-    const AtomicString& interfaceName() const override;
+  // WebServiceWorkerProviderClient overrides.
+  void setController(std::unique_ptr<WebServiceWorker::Handle>,
+                     bool shouldNotifyControllerChange) override;
+  void dispatchMessageEvent(std::unique_ptr<WebServiceWorker::Handle>,
+                            const WebString& message,
+                            const WebMessagePortChannelArray&) override;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  // EventTarget overrides.
+  ExecutionContext* getExecutionContext() const override {
+    return ContextLifecycleObserver::getExecutionContext();
+  }
+  const AtomicString& interfaceName() const override;
 
-private:
-    explicit ServiceWorkerContainer(ExecutionContext*);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-    class GetRegistrationForReadyCallback;
-    typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>, Member<ServiceWorkerRegistration>, Member<ServiceWorkerRegistration>> ReadyProperty;
-    ReadyProperty* createReadyProperty();
+ private:
+  explicit ServiceWorkerContainer(ExecutionContext*);
 
-    WebServiceWorkerProvider* m_provider;
-    Member<ServiceWorker> m_controller;
-    Member<ReadyProperty> m_ready;
+  class GetRegistrationForReadyCallback;
+  typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>,
+                                Member<ServiceWorkerRegistration>,
+                                Member<ServiceWorkerRegistration>>
+      ReadyProperty;
+  ReadyProperty* createReadyProperty();
+
+  WebServiceWorkerProvider* m_provider;
+  Member<ServiceWorker> m_controller;
+  Member<ReadyProperty> m_ready;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerContainer_h
+#endif  // ServiceWorkerContainer_h

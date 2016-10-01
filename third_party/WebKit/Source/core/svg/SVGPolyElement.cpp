@@ -27,53 +27,51 @@
 namespace blink {
 
 SVGPolyElement::SVGPolyElement(const QualifiedName& tagName, Document& document)
-    : SVGGeometryElement(tagName, document)
-    , m_points(SVGAnimatedPointList::create(this, SVGNames::pointsAttr, SVGPointList::create()))
-{
-    addToPropertyMap(m_points);
+    : SVGGeometryElement(tagName, document),
+      m_points(SVGAnimatedPointList::create(this,
+                                            SVGNames::pointsAttr,
+                                            SVGPointList::create())) {
+  addToPropertyMap(m_points);
 }
 
-DEFINE_TRACE(SVGPolyElement)
-{
-    visitor->trace(m_points);
-    SVGGeometryElement::trace(visitor);
+DEFINE_TRACE(SVGPolyElement) {
+  visitor->trace(m_points);
+  SVGGeometryElement::trace(visitor);
 }
 
-Path SVGPolyElement::asPathFromPoints() const
-{
-    Path path;
+Path SVGPolyElement::asPathFromPoints() const {
+  Path path;
 
-    SVGPointList* pointsValue = points()->currentValue();
-    if (pointsValue->isEmpty())
-        return path;
-
-    SVGPointList::ConstIterator it = pointsValue->begin();
-    SVGPointList::ConstIterator itEnd = pointsValue->end();
-    ASSERT(it != itEnd);
-    path.moveTo(it->value());
-    ++it;
-
-    for (; it != itEnd; ++it)
-        path.addLineTo(it->value());
-
+  SVGPointList* pointsValue = points()->currentValue();
+  if (pointsValue->isEmpty())
     return path;
+
+  SVGPointList::ConstIterator it = pointsValue->begin();
+  SVGPointList::ConstIterator itEnd = pointsValue->end();
+  ASSERT(it != itEnd);
+  path.moveTo(it->value());
+  ++it;
+
+  for (; it != itEnd; ++it)
+    path.addLineTo(it->value());
+
+  return path;
 }
 
-void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
-{
-    if (attrName == SVGNames::pointsAttr) {
-        SVGElement::InvalidationGuard invalidationGuard(this);
+void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (attrName == SVGNames::pointsAttr) {
+    SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
-        if (!layoutObject)
-            return;
+    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+    if (!layoutObject)
+      return;
 
-        layoutObject->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(layoutObject);
-        return;
-    }
+    layoutObject->setNeedsShapeUpdate();
+    markForLayoutAndParentResourceInvalidation(layoutObject);
+    return;
+  }
 
-    SVGGeometryElement::svgAttributeChanged(attrName);
+  SVGGeometryElement::svgAttributeChanged(attrName);
 }
 
-} // namespace blink
+}  // namespace blink

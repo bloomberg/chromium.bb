@@ -18,48 +18,51 @@ namespace blink {
 namespace {
 
 class ScopedEnableV8BasedStructuredClone {
-public:
-    ScopedEnableV8BasedStructuredClone()
-        : m_wasEnabled(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled())
-    {
-        RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(true);
-    }
-    ~ScopedEnableV8BasedStructuredClone()
-    {
-        RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(m_wasEnabled);
-    }
-private:
-    bool m_wasEnabled;
+ public:
+  ScopedEnableV8BasedStructuredClone()
+      : m_wasEnabled(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
+    RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(true);
+  }
+  ~ScopedEnableV8BasedStructuredClone() {
+    RuntimeEnabledFeatures::setV8BasedStructuredCloneEnabled(m_wasEnabled);
+  }
+
+ private:
+  bool m_wasEnabled;
 };
 
-RefPtr<SerializedScriptValue> serializedValue(const Vector<uint8_t>& bytes)
-{
-    // TODO(jbroman): Fix this once SerializedScriptValue can take bytes without
-    // endianness swapping.
-    DCHECK_EQ(bytes.size() % 2, 0u);
-    return SerializedScriptValue::create(String(reinterpret_cast<const UChar*>(&bytes[0]), bytes.size() / 2));
+RefPtr<SerializedScriptValue> serializedValue(const Vector<uint8_t>& bytes) {
+  // TODO(jbroman): Fix this once SerializedScriptValue can take bytes without
+  // endianness swapping.
+  DCHECK_EQ(bytes.size() % 2, 0u);
+  return SerializedScriptValue::create(
+      String(reinterpret_cast<const UChar*>(&bytes[0]), bytes.size() / 2));
 }
 
-v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value, V8TestingScope& scope)
-{
-    RefPtr<ScriptState> scriptState = scope.getScriptState();
-    ExceptionState& exceptionState = scope.getExceptionState();
-    RefPtr<SerializedScriptValue> serializedScriptValue =
-        V8ScriptValueSerializerForModules(scriptState).serialize(value, nullptr, exceptionState);
-    DCHECK_EQ(!serializedScriptValue, exceptionState.hadException());
-    EXPECT_TRUE(serializedScriptValue);
-    if (!serializedScriptValue)
-        return v8::Local<v8::Value>();
-    return V8ScriptValueDeserializerForModules(scriptState, serializedScriptValue).deserialize();
+v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value,
+                               V8TestingScope& scope) {
+  RefPtr<ScriptState> scriptState = scope.getScriptState();
+  ExceptionState& exceptionState = scope.getExceptionState();
+  RefPtr<SerializedScriptValue> serializedScriptValue =
+      V8ScriptValueSerializerForModules(scriptState)
+          .serialize(value, nullptr, exceptionState);
+  DCHECK_EQ(!serializedScriptValue, exceptionState.hadException());
+  EXPECT_TRUE(serializedScriptValue);
+  if (!serializedScriptValue)
+    return v8::Local<v8::Value>();
+  return V8ScriptValueDeserializerForModules(scriptState, serializedScriptValue)
+      .deserialize();
 }
 
-static const char kEcdsaPrivateKey[] = "-----BEGIN PRIVATE KEY-----\n"
+static const char kEcdsaPrivateKey[] =
+    "-----BEGIN PRIVATE KEY-----\n"
     "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQghHwQ1xYtCoEhFk7r\n"
     "92u3ozy/MFR4I+9FiN8RYv5J96GhRANCAATLfi7OZLD9sIe5UMfMQnHQgAFaQD8h\n"
     "/cy6tB8wXZcixp7bZDp5t0GCDHqAUZT3Sa/NHaCelmmgPp3zW3lszXKP\n"
     "-----END PRIVATE KEY-----\n";
 
-static const char kEcdsaCertificate[] = "-----BEGIN CERTIFICATE-----\n"
+static const char kEcdsaCertificate[] =
+    "-----BEGIN CERTIFICATE-----\n"
     "MIIBFjCBvaADAgECAgkApnGS+DzNWkUwCgYIKoZIzj0EAwIwETEPMA0GA1UEAwwG\n"
     "V2ViUlRDMB4XDTE2MDkxNTE4MDcxMloXDTE2MTAxNjE4MDcxMlowETEPMA0GA1UE\n"
     "AwwGV2ViUlRDMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEy34uzmSw/bCHuVDH\n"
@@ -126,51 +129,54 @@ static const uint8_t kEcdsaCertificateEncoded[] = {
     0x4d, 0x41, 0x37, 0x2f, 0x76, 0x6a, 0x31, 0x54, 0x67, 0x66, 0x56, 0x0a,
     0x2d, 0x2d, 0x2d, 0x2d, 0x2d, 0x45, 0x4e, 0x44, 0x20, 0x43, 0x45, 0x52,
     0x54, 0x49, 0x46, 0x49, 0x43, 0x41, 0x54, 0x45, 0x2d, 0x2d, 0x2d, 0x2d,
-    0x2d, 0x0a
-};
+    0x2d, 0x0a};
 
-TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate)
-{
-    ScopedEnableV8BasedStructuredClone enable;
-    V8TestingScope scope;
+TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
 
-    // Make a certificate with the existing key above.
-    std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator(
-        Platform::current()->createRTCCertificateGenerator());
-    std::unique_ptr<WebRTCCertificate> webCertificate = certificateGenerator->fromPEM(
-        WebString::fromUTF8(kEcdsaPrivateKey, sizeof(kEcdsaPrivateKey)),
-        WebString::fromUTF8(kEcdsaCertificate, sizeof(kEcdsaCertificate)));
-    RTCCertificate* certificate = new RTCCertificate(std::move(webCertificate));
+  // Make a certificate with the existing key above.
+  std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator(
+      Platform::current()->createRTCCertificateGenerator());
+  std::unique_ptr<WebRTCCertificate> webCertificate =
+      certificateGenerator->fromPEM(
+          WebString::fromUTF8(kEcdsaPrivateKey, sizeof(kEcdsaPrivateKey)),
+          WebString::fromUTF8(kEcdsaCertificate, sizeof(kEcdsaCertificate)));
+  RTCCertificate* certificate = new RTCCertificate(std::move(webCertificate));
 
-    // Round trip test.
-    v8::Local<v8::Value> wrapper = toV8(certificate, scope.context()->Global(), scope.isolate());
-    v8::Local<v8::Value> result = roundTrip(wrapper, scope);
-    ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.isolate()));
-    RTCCertificate* newCertificate = V8RTCCertificate::toImpl(result.As<v8::Object>());
-    WebRTCCertificatePEM pem = newCertificate->certificate().toPEM();
-    EXPECT_EQ(kEcdsaPrivateKey, pem.privateKey());
-    EXPECT_EQ(kEcdsaCertificate, pem.certificate());
+  // Round trip test.
+  v8::Local<v8::Value> wrapper =
+      toV8(certificate, scope.context()->Global(), scope.isolate());
+  v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+  ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.isolate()));
+  RTCCertificate* newCertificate =
+      V8RTCCertificate::toImpl(result.As<v8::Object>());
+  WebRTCCertificatePEM pem = newCertificate->certificate().toPEM();
+  EXPECT_EQ(kEcdsaPrivateKey, pem.privateKey());
+  EXPECT_EQ(kEcdsaCertificate, pem.certificate());
 }
 
-TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate)
-{
-    ScopedEnableV8BasedStructuredClone enable;
-    V8TestingScope scope;
+TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
 
-    // This is encoded data generated from Chromium (around M55).
-    ScriptState* scriptState = scope.getScriptState();
-    Vector<uint8_t> encodedData;
-    encodedData.append(kEcdsaCertificateEncoded, sizeof(kEcdsaCertificateEncoded));
-    RefPtr<SerializedScriptValue> input = serializedValue(encodedData);
+  // This is encoded data generated from Chromium (around M55).
+  ScriptState* scriptState = scope.getScriptState();
+  Vector<uint8_t> encodedData;
+  encodedData.append(kEcdsaCertificateEncoded,
+                     sizeof(kEcdsaCertificateEncoded));
+  RefPtr<SerializedScriptValue> input = serializedValue(encodedData);
 
-    // Decode test.
-    v8::Local<v8::Value> result = V8ScriptValueDeserializerForModules(scriptState, input).deserialize();
-    ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.isolate()));
-    RTCCertificate* newCertificate = V8RTCCertificate::toImpl(result.As<v8::Object>());
-    WebRTCCertificatePEM pem = newCertificate->certificate().toPEM();
-    EXPECT_EQ(kEcdsaPrivateKey, pem.privateKey());
-    EXPECT_EQ(kEcdsaCertificate, pem.certificate());
+  // Decode test.
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializerForModules(scriptState, input).deserialize();
+  ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.isolate()));
+  RTCCertificate* newCertificate =
+      V8RTCCertificate::toImpl(result.As<v8::Object>());
+  WebRTCCertificatePEM pem = newCertificate->certificate().toPEM();
+  EXPECT_EQ(kEcdsaPrivateKey, pem.privateKey());
+  EXPECT_EQ(kEcdsaCertificate, pem.certificate());
 }
 
-} // namespace
-} // namespace blink
+}  // namespace
+}  // namespace blink

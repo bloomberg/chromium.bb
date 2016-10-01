@@ -41,30 +41,37 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageQuota final : public GarbageCollected<DeprecatedStorageQuota>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    enum Type {
-        Temporary,
-        Persistent,
-    };
+class DeprecatedStorageQuota final
+    : public GarbageCollected<DeprecatedStorageQuota>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static DeprecatedStorageQuota* create(Type type)
-    {
-        return new DeprecatedStorageQuota(type);
-    }
+ public:
+  enum Type {
+    Temporary,
+    Persistent,
+  };
 
-    void queryUsageAndQuota(ExecutionContext*, StorageUsageCallback*, StorageErrorCallback*);
+  static DeprecatedStorageQuota* create(Type type) {
+    return new DeprecatedStorageQuota(type);
+  }
 
-    void requestQuota(ExecutionContext*, unsigned long long newQuotaInBytes, StorageQuotaCallback*, StorageErrorCallback*);
+  void queryUsageAndQuota(ExecutionContext*,
+                          StorageUsageCallback*,
+                          StorageErrorCallback*);
 
-    DEFINE_INLINE_TRACE() { }
+  void requestQuota(ExecutionContext*,
+                    unsigned long long newQuotaInBytes,
+                    StorageQuotaCallback*,
+                    StorageErrorCallback*);
 
-private:
-    explicit DeprecatedStorageQuota(Type);
-    Type m_type;
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  explicit DeprecatedStorageQuota(Type);
+  Type m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeprecatedStorageQuota_h
+#endif  // DeprecatedStorageQuota_h

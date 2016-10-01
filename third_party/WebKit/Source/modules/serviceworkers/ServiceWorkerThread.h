@@ -40,21 +40,26 @@ namespace blink {
 class WorkerThreadStartupData;
 
 class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
-public:
-    static std::unique_ptr<ServiceWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
-    ~ServiceWorkerThread() override;
+ public:
+  static std::unique_ptr<ServiceWorkerThread> create(
+      PassRefPtr<WorkerLoaderProxy>,
+      WorkerReportingProxy&);
+  ~ServiceWorkerThread() override;
 
-    WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
-    void clearWorkerBackingThread() override;
+  WorkerBackingThread& workerBackingThread() override {
+    return *m_workerBackingThread;
+  }
+  void clearWorkerBackingThread() override;
 
-protected:
-    WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) override;
+ protected:
+  WorkerOrWorkletGlobalScope* createWorkerGlobalScope(
+      std::unique_ptr<WorkerThreadStartupData>) override;
 
-private:
-    ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
-    std::unique_ptr<WorkerBackingThread> m_workerBackingThread;
+ private:
+  ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
+  std::unique_ptr<WorkerBackingThread> m_workerBackingThread;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ServiceWorkerThread_h
+#endif  // ServiceWorkerThread_h

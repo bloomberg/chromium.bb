@@ -30,6 +30,6 @@ ScriptValue WebGLAny(ScriptState*, DOMInt32Array* value);
 ScriptValue WebGLAny(ScriptState*, DOMUint8Array* value);
 ScriptValue WebGLAny(ScriptState*, DOMUint32Array* value);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebGLAny_h
+#endif  // WebGLAny_h

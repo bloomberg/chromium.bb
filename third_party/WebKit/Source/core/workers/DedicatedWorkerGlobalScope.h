@@ -43,32 +43,44 @@ class DedicatedWorkerThread;
 class WorkerThreadStartupData;
 
 class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DedicatedWorkerGlobalScope* create(DedicatedWorkerThread*, std::unique_ptr<WorkerThreadStartupData>, double timeOrigin);
-    ~DedicatedWorkerGlobalScope() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool isDedicatedWorkerGlobalScope() const override { return true; }
-    void countFeature(UseCounter::Feature) const override;
-    void countDeprecation(UseCounter::Feature) const override;
+ public:
+  static DedicatedWorkerGlobalScope* create(
+      DedicatedWorkerThread*,
+      std::unique_ptr<WorkerThreadStartupData>,
+      double timeOrigin);
+  ~DedicatedWorkerGlobalScope() override;
 
-    // EventTarget
-    const AtomicString& interfaceName() const override;
+  bool isDedicatedWorkerGlobalScope() const override { return true; }
+  void countFeature(UseCounter::Feature) const override;
+  void countDeprecation(UseCounter::Feature) const override;
 
-    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue>, const MessagePortArray&, ExceptionState&);
+  // EventTarget
+  const AtomicString& interfaceName() const override;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  void postMessage(ExecutionContext*,
+                   PassRefPtr<SerializedScriptValue>,
+                   const MessagePortArray&,
+                   ExceptionState&);
 
-    DedicatedWorkerThread* thread() const;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-    DECLARE_VIRTUAL_TRACE();
+  DedicatedWorkerThread* thread() const;
 
-private:
-    friend class DedicatedWorkerThreadForTest;
+  DECLARE_VIRTUAL_TRACE();
 
-    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, std::unique_ptr<SecurityOrigin::PrivilegeData>, WorkerClients*);
+ private:
+  friend class DedicatedWorkerThreadForTest;
+
+  DedicatedWorkerGlobalScope(const KURL&,
+                             const String& userAgent,
+                             DedicatedWorkerThread*,
+                             double timeOrigin,
+                             std::unique_ptr<SecurityOrigin::PrivilegeData>,
+                             WorkerClients*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DedicatedWorkerGlobalScope_h
+#endif  // DedicatedWorkerGlobalScope_h

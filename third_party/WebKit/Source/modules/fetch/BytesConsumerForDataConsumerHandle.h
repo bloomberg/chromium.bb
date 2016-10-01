@@ -19,48 +19,53 @@ namespace blink {
 
 class ExecutionContext;
 
-class MODULES_EXPORT BytesConsumerForDataConsumerHandle final : public BytesConsumer, public WebDataConsumerHandle::Client {
-    EAGERLY_FINALIZE();
-    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
-public:
-    BytesConsumerForDataConsumerHandle(ExecutionContext*, std::unique_ptr<FetchDataConsumerHandle>);
-    ~BytesConsumerForDataConsumerHandle() override;
+class MODULES_EXPORT BytesConsumerForDataConsumerHandle final
+    : public BytesConsumer,
+      public WebDataConsumerHandle::Client {
+  EAGERLY_FINALIZE();
+  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
 
-    Result beginRead(const char** buffer, size_t* available) override;
-    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy) override;
-    PassRefPtr<EncodedFormData> drainAsFormData() override;
-    Result endRead(size_t readSize) override;
-    void setClient(BytesConsumer::Client*) override;
-    void clearClient() override;
+ public:
+  BytesConsumerForDataConsumerHandle(ExecutionContext*,
+                                     std::unique_ptr<FetchDataConsumerHandle>);
+  ~BytesConsumerForDataConsumerHandle() override;
 
-    void cancel() override;
-    PublicState getPublicState() const override;
-    Error getError() const override
-    {
-        DCHECK(m_state == InternalState::Errored);
-        return m_error;
-    }
-    String debugName() const override { return "BytesConsumerForDataConsumerHandle"; }
+  Result beginRead(const char** buffer, size_t* available) override;
+  PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy) override;
+  PassRefPtr<EncodedFormData> drainAsFormData() override;
+  Result endRead(size_t readSize) override;
+  void setClient(BytesConsumer::Client*) override;
+  void clearClient() override;
 
-    // WebDataConsumerHandle::Client
-    void didGetReadable() override;
+  void cancel() override;
+  PublicState getPublicState() const override;
+  Error getError() const override {
+    DCHECK(m_state == InternalState::Errored);
+    return m_error;
+  }
+  String debugName() const override {
+    return "BytesConsumerForDataConsumerHandle";
+  }
 
-    DECLARE_TRACE();
+  // WebDataConsumerHandle::Client
+  void didGetReadable() override;
 
-private:
-    void close();
-    void error();
-    void notify();
+  DECLARE_TRACE();
 
-    Member<ExecutionContext> m_executionContext;
-    std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
-    Member<BytesConsumer::Client> m_client;
-    InternalState m_state = InternalState::Waiting;
-    Error m_error;
-    bool m_isInTwoPhaseRead = false;
-    bool m_hasPendingNotification = false;
+ private:
+  void close();
+  void error();
+  void notify();
+
+  Member<ExecutionContext> m_executionContext;
+  std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
+  Member<BytesConsumer::Client> m_client;
+  InternalState m_state = InternalState::Waiting;
+  Error m_error;
+  bool m_isInTwoPhaseRead = false;
+  bool m_hasPendingNotification = false;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BytesConsumerForDataConsumerHandle_h
+#endif  // BytesConsumerForDataConsumerHandle_h

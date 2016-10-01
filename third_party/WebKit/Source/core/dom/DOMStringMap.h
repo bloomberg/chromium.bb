@@ -38,39 +38,42 @@ namespace blink {
 
 class Element;
 
-class DOMStringMap : public GarbageCollected<DOMStringMap>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(DOMStringMap);
-public:
-    virtual void getNames(Vector<String>&) = 0;
-    virtual String item(const String& name) = 0;
-    virtual bool contains(const String& name) = 0;
-    virtual void setItem(const String& name, const String& value, ExceptionState&) = 0;
-    virtual bool deleteItem(const String& name) = 0;
-    bool anonymousNamedSetter(const String& name, const String& value, ExceptionState& exceptionState)
-    {
-        setItem(name, value, exceptionState);
-        return true;
-    }
-    DeleteResult anonymousNamedDeleter(const AtomicString& name)
-    {
-        bool knownProperty = deleteItem(name);
-        return knownProperty ? DeleteSuccess : DeleteUnknownProperty;
-    }
-    void namedPropertyEnumerator(Vector<String>& names, ExceptionState&)
-    {
-        getNames(names);
-    }
-    bool namedPropertyQuery(const AtomicString&, ExceptionState&);
+class DOMStringMap : public GarbageCollected<DOMStringMap>,
+                     public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+  WTF_MAKE_NONCOPYABLE(DOMStringMap);
 
-    virtual Element* element() = 0;
+ public:
+  virtual void getNames(Vector<String>&) = 0;
+  virtual String item(const String& name) = 0;
+  virtual bool contains(const String& name) = 0;
+  virtual void setItem(const String& name,
+                       const String& value,
+                       ExceptionState&) = 0;
+  virtual bool deleteItem(const String& name) = 0;
+  bool anonymousNamedSetter(const String& name,
+                            const String& value,
+                            ExceptionState& exceptionState) {
+    setItem(name, value, exceptionState);
+    return true;
+  }
+  DeleteResult anonymousNamedDeleter(const AtomicString& name) {
+    bool knownProperty = deleteItem(name);
+    return knownProperty ? DeleteSuccess : DeleteUnknownProperty;
+  }
+  void namedPropertyEnumerator(Vector<String>& names, ExceptionState&) {
+    getNames(names);
+  }
+  bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  virtual Element* element() = 0;
 
-protected:
-    DOMStringMap() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+ protected:
+  DOMStringMap() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMStringMap_h
+#endif  // DOMStringMap_h

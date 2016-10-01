@@ -14,49 +14,47 @@
 
 namespace blink {
 
-class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static UnionTypesTest* create()
-    {
-        return new UnionTypesTest();
-    }
-    virtual ~UnionTypesTest() { }
+class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>,
+                             public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    void doubleOrStringOrStringArrayAttribute(DoubleOrStringOrStringArray&);
-    void setDoubleOrStringOrStringArrayAttribute(const DoubleOrStringOrStringArray&);
+ public:
+  static UnionTypesTest* create() { return new UnionTypesTest(); }
+  virtual ~UnionTypesTest() {}
 
-    String doubleOrStringArg(DoubleOrString&);
-    String doubleOrInternalEnumArg(DoubleOrInternalEnum&);
-    String doubleOrStringArrayArg(HeapVector<DoubleOrString>&);
-    String doubleOrStringSequenceArg(HeapVector<DoubleOrString>&);
+  void doubleOrStringOrStringArrayAttribute(DoubleOrStringOrStringArray&);
+  void setDoubleOrStringOrStringArrayAttribute(
+      const DoubleOrStringOrStringArray&);
 
-    String nodeListOrElementArg(NodeListOrElement&);
-    String nodeListOrElementOrNullArg(NodeListOrElement&);
+  String doubleOrStringArg(DoubleOrString&);
+  String doubleOrInternalEnumArg(DoubleOrInternalEnum&);
+  String doubleOrStringArrayArg(HeapVector<DoubleOrString>&);
+  String doubleOrStringSequenceArg(HeapVector<DoubleOrString>&);
 
-    String doubleOrStringOrStringArrayArg(const DoubleOrStringOrStringArray&);
-    String doubleOrStringOrStringSequenceArg(const DoubleOrStringOrStringSequence&);
+  String nodeListOrElementArg(NodeListOrElement&);
+  String nodeListOrElementOrNullArg(NodeListOrElement&);
 
-    DEFINE_INLINE_TRACE() { }
+  String doubleOrStringOrStringArrayArg(const DoubleOrStringOrStringArray&);
+  String doubleOrStringOrStringSequenceArg(
+      const DoubleOrStringOrStringSequence&);
 
-private:
-    UnionTypesTest()
-        : m_attributeType(SpecificTypeNone)
-    {
-    }
+  DEFINE_INLINE_TRACE() {}
 
-    enum AttributeSpecificType {
-        SpecificTypeNone,
-        SpecificTypeDouble,
-        SpecificTypeString,
-        SpecificTypeStringArray,
-    };
-    AttributeSpecificType m_attributeType;
-    double m_attributeDouble;
-    String m_attributeString;
-    Vector<String> m_attributeStringArray;
+ private:
+  UnionTypesTest() : m_attributeType(SpecificTypeNone) {}
+
+  enum AttributeSpecificType {
+    SpecificTypeNone,
+    SpecificTypeDouble,
+    SpecificTypeString,
+    SpecificTypeStringArray,
+  };
+  AttributeSpecificType m_attributeType;
+  double m_attributeDouble;
+  String m_attributeString;
+  Vector<String> m_attributeStringArray;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // UnionTypesTest_h
+#endif  // UnionTypesTest_h

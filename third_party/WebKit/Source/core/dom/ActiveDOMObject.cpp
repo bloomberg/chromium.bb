@@ -34,59 +34,51 @@ namespace blink {
 ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext, ActiveDOMObjectType)
 #if DCHECK_IS_ON()
-    , m_suspendIfNeededCalled(false)
+      ,
+      m_suspendIfNeededCalled(false)
 #endif
 {
-    DCHECK(!executionContext || executionContext->isContextThread());
-    InstanceCounters::incrementCounter(InstanceCounters::ActiveDOMObjectCounter);
+  DCHECK(!executionContext || executionContext->isContextThread());
+  InstanceCounters::incrementCounter(InstanceCounters::ActiveDOMObjectCounter);
 }
 
-ActiveDOMObject::~ActiveDOMObject()
-{
-    InstanceCounters::decrementCounter(InstanceCounters::ActiveDOMObjectCounter);
+ActiveDOMObject::~ActiveDOMObject() {
+  InstanceCounters::decrementCounter(InstanceCounters::ActiveDOMObjectCounter);
 
 #if DCHECK_IS_ON()
-    DCHECK(m_suspendIfNeededCalled);
+  DCHECK(m_suspendIfNeededCalled);
 #endif
 }
 
-void ActiveDOMObject::suspendIfNeeded()
-{
+void ActiveDOMObject::suspendIfNeeded() {
 #if DCHECK_IS_ON()
-    DCHECK(!m_suspendIfNeededCalled);
-    m_suspendIfNeededCalled = true;
+  DCHECK(!m_suspendIfNeededCalled);
+  m_suspendIfNeededCalled = true;
 #endif
-    if (ExecutionContext* context = getExecutionContext())
-        context->suspendActiveDOMObjectIfNeeded(this);
+  if (ExecutionContext* context = getExecutionContext())
+    context->suspendActiveDOMObjectIfNeeded(this);
 }
 
-void ActiveDOMObject::suspend()
-{
+void ActiveDOMObject::suspend() {}
+
+void ActiveDOMObject::resume() {}
+
+void ActiveDOMObject::stop() {}
+
+void ActiveDOMObject::didMoveToNewExecutionContext(ExecutionContext* context) {
+  setContext(context);
+
+  if (context->activeDOMObjectsAreStopped()) {
+    stop();
+    return;
+  }
+
+  if (context->activeDOMObjectsAreSuspended()) {
+    suspend();
+    return;
+  }
+
+  resume();
 }
 
-void ActiveDOMObject::resume()
-{
-}
-
-void ActiveDOMObject::stop()
-{
-}
-
-void ActiveDOMObject::didMoveToNewExecutionContext(ExecutionContext* context)
-{
-    setContext(context);
-
-    if (context->activeDOMObjectsAreStopped()) {
-        stop();
-        return;
-    }
-
-    if (context->activeDOMObjectsAreSuspended()) {
-        suspend();
-        return;
-    }
-
-    resume();
-}
-
-} // namespace blink
+}  // namespace blink

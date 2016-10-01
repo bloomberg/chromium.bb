@@ -35,61 +35,67 @@ struct PaintChunk;
 // PaintArtifactCompositor is the successor to PaintLayerCompositor, reflecting
 // the new home of compositing decisions after paint in Slimming Paint v2.
 class PLATFORM_EXPORT PaintArtifactCompositor {
-    WTF_MAKE_NONCOPYABLE(PaintArtifactCompositor);
-public:
-    ~PaintArtifactCompositor();
+  WTF_MAKE_NONCOPYABLE(PaintArtifactCompositor);
 
-    static std::unique_ptr<PaintArtifactCompositor> create()
-    {
-        return wrapUnique(new PaintArtifactCompositor());
-    }
+ public:
+  ~PaintArtifactCompositor();
 
-    // Updates the layer tree to match the provided paint artifact.
-    void update(const PaintArtifact&);
+  static std::unique_ptr<PaintArtifactCompositor> create() {
+    return wrapUnique(new PaintArtifactCompositor());
+  }
 
-    // The root layer of the tree managed by this object.
-    cc::Layer* rootLayer() const { return m_rootLayer.get(); }
+  // Updates the layer tree to match the provided paint artifact.
+  void update(const PaintArtifact&);
 
-    // Wraps rootLayer(), so that it can be attached as a child of another
-    // WebLayer.
-    WebLayer* getWebLayer() const { return m_webLayer.get(); }
+  // The root layer of the tree managed by this object.
+  cc::Layer* rootLayer() const { return m_rootLayer.get(); }
 
-    // Returns extra information recorded during unit tests.
-    // While not part of the normal output of this class, this provides a simple
-    // way of locating the layers of interest, since there are still a slew of
-    // placeholder layers required.
-    struct ExtraDataForTesting {
-        Vector<scoped_refptr<cc::Layer>> contentLayers;
-    };
-    void enableExtraDataForTesting() { m_extraDataForTestingEnabled = true; }
-    ExtraDataForTesting* getExtraDataForTesting() const { return m_extraDataForTesting.get(); }
+  // Wraps rootLayer(), so that it can be attached as a child of another
+  // WebLayer.
+  WebLayer* getWebLayer() const { return m_webLayer.get(); }
 
-private:
-    PaintArtifactCompositor();
+  // Returns extra information recorded during unit tests.
+  // While not part of the normal output of this class, this provides a simple
+  // way of locating the layers of interest, since there are still a slew of
+  // placeholder layers required.
+  struct ExtraDataForTesting {
+    Vector<scoped_refptr<cc::Layer>> contentLayers;
+  };
+  void enableExtraDataForTesting() { m_extraDataForTestingEnabled = true; }
+  ExtraDataForTesting* getExtraDataForTesting() const {
+    return m_extraDataForTesting.get();
+  }
 
-    class ContentLayerClientImpl;
+ private:
+  PaintArtifactCompositor();
 
-    // Builds a leaf layer that represents a single paint chunk.
-    // Note: cc::Layer API assumes the layer bounds to start at (0, 0) but the bounding box of
-    // a paint chunk does not necessarily start at (0, 0) and could even be negative. Internally
-    // the generated layer translates the paint chunk to align the bounding box to (0, 0) and
-    // return the actual origin of the paint chunk in output parameter layerOffset.
-    scoped_refptr<cc::Layer> layerForPaintChunk(const PaintArtifact&, const PaintChunk&, gfx::Vector2dF& layerOffset,
-        Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients);
+  class ContentLayerClientImpl;
 
-    // Finds a client among the current vector of clients that matches the paint chunk's id,
-    // or otherwise allocates a new one.
-    std::unique_ptr<ContentLayerClientImpl> clientForPaintChunk(const PaintChunk&);
+  // Builds a leaf layer that represents a single paint chunk.
+  // Note: cc::Layer API assumes the layer bounds to start at (0, 0) but the bounding box of
+  // a paint chunk does not necessarily start at (0, 0) and could even be negative. Internally
+  // the generated layer translates the paint chunk to align the bounding box to (0, 0) and
+  // return the actual origin of the paint chunk in output parameter layerOffset.
+  scoped_refptr<cc::Layer> layerForPaintChunk(
+      const PaintArtifact&,
+      const PaintChunk&,
+      gfx::Vector2dF& layerOffset,
+      Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients);
 
-    scoped_refptr<cc::Layer> m_rootLayer;
-    std::unique_ptr<WebLayer> m_webLayer;
-    Vector<std::unique_ptr<ContentLayerClientImpl>> m_contentLayerClients;
+  // Finds a client among the current vector of clients that matches the paint chunk's id,
+  // or otherwise allocates a new one.
+  std::unique_ptr<ContentLayerClientImpl> clientForPaintChunk(
+      const PaintChunk&);
 
-    bool m_extraDataForTestingEnabled = false;
-    std::unique_ptr<ExtraDataForTesting> m_extraDataForTesting;
-    friend class StubChromeClientForSPv2;
+  scoped_refptr<cc::Layer> m_rootLayer;
+  std::unique_ptr<WebLayer> m_webLayer;
+  Vector<std::unique_ptr<ContentLayerClientImpl>> m_contentLayerClients;
+
+  bool m_extraDataForTestingEnabled = false;
+  std::unique_ptr<ExtraDataForTesting> m_extraDataForTesting;
+  friend class StubChromeClientForSPv2;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintArtifactCompositor_h
+#endif  // PaintArtifactCompositor_h

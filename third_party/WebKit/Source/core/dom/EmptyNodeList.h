@@ -37,31 +37,34 @@
 namespace blink {
 
 class EmptyNodeList final : public NodeList {
-public:
-    static EmptyNodeList* create(Node& rootNode)
-    {
-        return new EmptyNodeList(rootNode);
-    }
-    ~EmptyNodeList() override;
+ public:
+  static EmptyNodeList* create(Node& rootNode) {
+    return new EmptyNodeList(rootNode);
+  }
+  ~EmptyNodeList() override;
 
-    Node& ownerNode() const { return *m_owner; }
+  Node& ownerNode() const { return *m_owner; }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    explicit EmptyNodeList(Node& rootNode) : m_owner(rootNode) { }
+ private:
+  explicit EmptyNodeList(Node& rootNode) : m_owner(rootNode) {}
 
-    unsigned length() const override { return 0; }
-    Node* item(unsigned) const override { return 0; }
+  unsigned length() const override { return 0; }
+  Node* item(unsigned) const override { return 0; }
 
-    bool isEmptyNodeList() const override { return true; }
-    Node* virtualOwnerNode() const override;
+  bool isEmptyNodeList() const override { return true; }
+  Node* virtualOwnerNode() const override;
 
-    Member<Node> m_owner;
+  Member<Node> m_owner;
 };
 
-DEFINE_TYPE_CASTS(EmptyNodeList, NodeList, nodeList, nodeList->isEmptyNodeList(), nodeList.isEmptyNodeList());
+DEFINE_TYPE_CASTS(EmptyNodeList,
+                  NodeList,
+                  nodeList,
+                  nodeList->isEmptyNodeList(),
+                  nodeList.isEmptyNodeList());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EmptyNodeList_h
+#endif  // EmptyNodeList_h

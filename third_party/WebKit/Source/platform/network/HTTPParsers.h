@@ -43,54 +43,52 @@ namespace blink {
 class Suborigin;
 
 typedef enum {
-    ContentDispositionNone,
-    ContentDispositionInline,
-    ContentDispositionAttachment,
-    ContentDispositionOther
+  ContentDispositionNone,
+  ContentDispositionInline,
+  ContentDispositionAttachment,
+  ContentDispositionOther
 } ContentDispositionType;
 
 enum ContentTypeOptionsDisposition {
-    ContentTypeOptionsNone,
-    ContentTypeOptionsNosniff
+  ContentTypeOptionsNone,
+  ContentTypeOptionsNosniff
 };
 
 enum XFrameOptionsDisposition {
-    XFrameOptionsInvalid,
-    XFrameOptionsDeny,
-    XFrameOptionsSameOrigin,
-    XFrameOptionsAllowAll,
-    XFrameOptionsConflict
+  XFrameOptionsInvalid,
+  XFrameOptionsDeny,
+  XFrameOptionsSameOrigin,
+  XFrameOptionsAllowAll,
+  XFrameOptionsConflict
 };
 
 // Be sure to update the behavior of XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's content or ordering.
 enum ReflectedXSSDisposition {
-    ReflectedXSSUnset = 0,
-    AllowReflectedXSS,
-    ReflectedXSSInvalid,
-    FilterReflectedXSS,
-    BlockReflectedXSS
+  ReflectedXSSUnset = 0,
+  AllowReflectedXSS,
+  ReflectedXSSInvalid,
+  FilterReflectedXSS,
+  BlockReflectedXSS
 };
 
 using CommaDelimitedHeaderSet = HashSet<String, CaseFoldingHash>;
 
 struct CacheControlHeader {
-    DISALLOW_NEW();
-    bool parsed : 1;
-    bool containsNoCache : 1;
-    bool containsNoStore : 1;
-    bool containsMustRevalidate : 1;
-    double maxAge;
-    double staleWhileRevalidate;
+  DISALLOW_NEW();
+  bool parsed : 1;
+  bool containsNoCache : 1;
+  bool containsNoStore : 1;
+  bool containsMustRevalidate : 1;
+  double maxAge;
+  double staleWhileRevalidate;
 
-    CacheControlHeader()
-        : parsed(false)
-        , containsNoCache(false)
-        , containsNoStore(false)
-        , containsMustRevalidate(false)
-        , maxAge(0.0)
-        , staleWhileRevalidate(0.0)
-    {
-    }
+  CacheControlHeader()
+      : parsed(false),
+        containsNoCache(false),
+        containsNoStore(false),
+        containsMustRevalidate(false),
+        maxAge(0.0),
+        staleWhileRevalidate(0.0) {}
 };
 
 PLATFORM_EXPORT ContentDispositionType getContentDispositionType(const String&);
@@ -105,7 +103,10 @@ PLATFORM_EXPORT bool isValidHTTPFieldContentRFC7230(const String&);
 PLATFORM_EXPORT bool isValidHTTPToken(const String&);
 // |matcher| specifies a function to check a whitespace character. if |nullptr|
 // is specified, ' ' and '\t' are treated as whitespace characters.
-PLATFORM_EXPORT bool parseHTTPRefresh(const String& refresh, WTF::CharacterMatchFunctionPtr matcher, double& delay, String& url);
+PLATFORM_EXPORT bool parseHTTPRefresh(const String& refresh,
+                                      WTF::CharacterMatchFunctionPtr matcher,
+                                      double& delay,
+                                      String& url);
 PLATFORM_EXPORT double parseDate(const String&);
 
 // Given a Media Type (like "foo/bar; baz=gazonk" - usually from the
@@ -119,19 +120,33 @@ PLATFORM_EXPORT double parseDate(const String&);
 //   are trimmed.
 PLATFORM_EXPORT AtomicString extractMIMETypeFromMediaType(const AtomicString&);
 PLATFORM_EXPORT String extractCharsetFromMediaType(const String&);
-PLATFORM_EXPORT void findCharsetInMediaType(const String& mediaType, unsigned& charsetPos, unsigned& charsetLen, unsigned start = 0);
-PLATFORM_EXPORT ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
-PLATFORM_EXPORT XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
-PLATFORM_EXPORT CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlHeader, const AtomicString& pragmaHeader);
-PLATFORM_EXPORT void parseCommaDelimitedHeader(const String& headerValue, CommaDelimitedHeaderSet&);
+PLATFORM_EXPORT void findCharsetInMediaType(const String& mediaType,
+                                            unsigned& charsetPos,
+                                            unsigned& charsetLen,
+                                            unsigned start = 0);
+PLATFORM_EXPORT ReflectedXSSDisposition
+parseXSSProtectionHeader(const String& header,
+                         String& failureReason,
+                         unsigned& failurePosition,
+                         String& reportURL);
+PLATFORM_EXPORT XFrameOptionsDisposition
+parseXFrameOptionsHeader(const String&);
+PLATFORM_EXPORT CacheControlHeader
+parseCacheControlDirectives(const AtomicString& cacheControlHeader,
+                            const AtomicString& pragmaHeader);
+PLATFORM_EXPORT void parseCommaDelimitedHeader(const String& headerValue,
+                                               CommaDelimitedHeaderSet&);
 // Returns true on success, otherwise false. The Suborigin argument must be a
 // non-null return argument. |messages| is a list of messages based on any
 // parse warnings or errors. Even if parseSuboriginHeader returns true, there
 // may be Strings in |messages|.
-PLATFORM_EXPORT bool parseSuboriginHeader(const String& header, Suborigin*, WTF::Vector<String>& messages);
+PLATFORM_EXPORT bool parseSuboriginHeader(const String& header,
+                                          Suborigin*,
+                                          WTF::Vector<String>& messages);
 
-PLATFORM_EXPORT ContentTypeOptionsDisposition parseContentTypeOptionsHeader(const String& header);
+PLATFORM_EXPORT ContentTypeOptionsDisposition
+parseContentTypeOptionsHeader(const String& header);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

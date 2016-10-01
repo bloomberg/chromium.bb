@@ -47,62 +47,71 @@ class EventTarget;
 using EventListenerVector = HeapVector<RegisteredEventListener, 1>;
 
 class CORE_EXPORT EventListenerMap {
-    WTF_MAKE_NONCOPYABLE(EventListenerMap);
-    DISALLOW_NEW();
-public:
-    EventListenerMap();
+  WTF_MAKE_NONCOPYABLE(EventListenerMap);
+  DISALLOW_NEW();
 
-    bool isEmpty() const { return m_entries.isEmpty(); }
-    bool contains(const AtomicString& eventType) const;
-    bool containsCapturing(const AtomicString& eventType) const;
+ public:
+  EventListenerMap();
 
-    void clear();
-    bool add(const AtomicString& eventType, EventListener*, const AddEventListenerOptionsResolved&, RegisteredEventListener* registeredListener);
-    bool remove(const AtomicString& eventType, const EventListener*, const EventListenerOptions&, size_t* indexOfRemovedListener, RegisteredEventListener* registeredListener);
-    EventListenerVector* find(const AtomicString& eventType);
-    Vector<AtomicString> eventTypes() const;
+  bool isEmpty() const { return m_entries.isEmpty(); }
+  bool contains(const AtomicString& eventType) const;
+  bool containsCapturing(const AtomicString& eventType) const;
 
-    DECLARE_TRACE();
+  void clear();
+  bool add(const AtomicString& eventType,
+           EventListener*,
+           const AddEventListenerOptionsResolved&,
+           RegisteredEventListener* registeredListener);
+  bool remove(const AtomicString& eventType,
+              const EventListener*,
+              const EventListenerOptions&,
+              size_t* indexOfRemovedListener,
+              RegisteredEventListener* registeredListener);
+  EventListenerVector* find(const AtomicString& eventType);
+  Vector<AtomicString> eventTypes() const;
 
-private:
-    friend class EventListenerIterator;
+  DECLARE_TRACE();
 
-    void checkNoActiveIterators();
+ private:
+  friend class EventListenerIterator;
 
-    // We use HeapVector instead of HeapHashMap because
-    //  - HeapVector is much more space efficient than HeapHashMap.
-    //  - An EventTarget rarely has event listeners for many event types, and
-    //    HeapVector is faster in such cases.
-    HeapVector<std::pair<AtomicString, Member<EventListenerVector>>, 2> m_entries;
+  void checkNoActiveIterators();
+
+  // We use HeapVector instead of HeapHashMap because
+  //  - HeapVector is much more space efficient than HeapHashMap.
+  //  - An EventTarget rarely has event listeners for many event types, and
+  //    HeapVector is faster in such cases.
+  HeapVector<std::pair<AtomicString, Member<EventListenerVector>>, 2> m_entries;
 
 #if DCHECK_IS_ON()
-    int m_activeIteratorCount = 0;
+  int m_activeIteratorCount = 0;
 #endif
 };
 
 class EventListenerIterator {
-    WTF_MAKE_NONCOPYABLE(EventListenerIterator);
-    STACK_ALLOCATED();
-public:
-    explicit EventListenerIterator(EventTarget*);
+  WTF_MAKE_NONCOPYABLE(EventListenerIterator);
+  STACK_ALLOCATED();
+
+ public:
+  explicit EventListenerIterator(EventTarget*);
 #if DCHECK_IS_ON()
-    ~EventListenerIterator();
+  ~EventListenerIterator();
 #endif
 
-    EventListener* nextListener();
+  EventListener* nextListener();
 
-private:
-    // This cannot be a Member because it is pointing to a part of object.
-    // TODO(haraken): Use Member<EventTarget> instead of EventListenerMap*.
-    EventListenerMap* m_map;
-    unsigned m_entryIndex;
-    unsigned m_index;
+ private:
+  // This cannot be a Member because it is pointing to a part of object.
+  // TODO(haraken): Use Member<EventTarget> instead of EventListenerMap*.
+  EventListenerMap* m_map;
+  unsigned m_entryIndex;
+  unsigned m_index;
 };
 
 #if !DCHECK_IS_ON()
-inline void EventListenerMap::checkNoActiveIterators() { }
+inline void EventListenerMap::checkNoActiveIterators() {}
 #endif
 
-} // namespace blink
+}  // namespace blink
 
-#endif // EventListenerMap_h
+#endif  // EventListenerMap_h

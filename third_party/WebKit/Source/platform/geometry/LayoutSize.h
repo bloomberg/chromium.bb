@@ -41,199 +41,182 @@
 
 namespace blink {
 
-enum AspectRatioFit {
-    AspectRatioFitShrink,
-    AspectRatioFitGrow
-};
+enum AspectRatioFit { AspectRatioFitShrink, AspectRatioFitGrow };
 
 class PLATFORM_EXPORT LayoutSize {
-    DISALLOW_NEW();
-public:
-    LayoutSize() { }
-    explicit LayoutSize(const IntSize& size) : m_width(size.width()), m_height(size.height()) { }
-    LayoutSize(LayoutUnit width, LayoutUnit height) : m_width(width), m_height(height) { }
-    LayoutSize(int width, int height) : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) { }
-    LayoutSize(float width, float height) : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) { }
+  DISALLOW_NEW();
 
-    explicit LayoutSize(const FloatSize& size) : m_width(size.width()), m_height(size.height()) { }
-    explicit LayoutSize(const DoubleSize& size) : m_width(size.width()), m_height(size.height()) { }
+ public:
+  LayoutSize() {}
+  explicit LayoutSize(const IntSize& size)
+      : m_width(size.width()), m_height(size.height()) {}
+  LayoutSize(LayoutUnit width, LayoutUnit height)
+      : m_width(width), m_height(height) {}
+  LayoutSize(int width, int height)
+      : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) {}
+  LayoutSize(float width, float height)
+      : m_width(LayoutUnit(width)), m_height(LayoutUnit(height)) {}
 
-    LayoutUnit width() const { return m_width; }
-    LayoutUnit height() const { return m_height; }
+  explicit LayoutSize(const FloatSize& size)
+      : m_width(size.width()), m_height(size.height()) {}
+  explicit LayoutSize(const DoubleSize& size)
+      : m_width(size.width()), m_height(size.height()) {}
 
-    void setWidth(LayoutUnit width) { m_width = width; }
-    void setHeight(LayoutUnit height) { m_height = height; }
+  LayoutUnit width() const { return m_width; }
+  LayoutUnit height() const { return m_height; }
 
-    bool isEmpty() const { return m_width.rawValue() <= 0 || m_height.rawValue() <= 0; }
-    bool isZero() const { return !m_width && !m_height; }
+  void setWidth(LayoutUnit width) { m_width = width; }
+  void setHeight(LayoutUnit height) { m_height = height; }
 
-    float aspectRatio() const { return m_width.toFloat() / m_height.toFloat(); }
+  bool isEmpty() const {
+    return m_width.rawValue() <= 0 || m_height.rawValue() <= 0;
+  }
+  bool isZero() const { return !m_width && !m_height; }
 
-    void expand(LayoutUnit width, LayoutUnit height)
-    {
-        m_width += width;
-        m_height += height;
-    }
+  float aspectRatio() const { return m_width.toFloat() / m_height.toFloat(); }
 
-    void expand(int width, int height) { expand(LayoutUnit(width), LayoutUnit(height)); }
+  void expand(LayoutUnit width, LayoutUnit height) {
+    m_width += width;
+    m_height += height;
+  }
 
-    void shrink(int width, int height) { shrink(LayoutUnit(width), LayoutUnit(height)); }
+  void expand(int width, int height) {
+    expand(LayoutUnit(width), LayoutUnit(height));
+  }
 
-    void shrink(LayoutUnit width, LayoutUnit height)
-    {
-        m_width -= width;
-        m_height -= height;
-    }
+  void shrink(int width, int height) {
+    shrink(LayoutUnit(width), LayoutUnit(height));
+  }
 
-    void scale(float scale)
-    {
-        m_width *= scale;
-        m_height *= scale;
-    }
+  void shrink(LayoutUnit width, LayoutUnit height) {
+    m_width -= width;
+    m_height -= height;
+  }
 
-    void scale(float widthScale, float heightScale)
-    {
-        m_width *= widthScale;
-        m_height *= heightScale;
-    }
+  void scale(float scale) {
+    m_width *= scale;
+    m_height *= scale;
+  }
 
-    LayoutSize expandedTo(const LayoutSize& other) const
-    {
-        return LayoutSize(m_width > other.m_width ? m_width : other.m_width,
-            m_height > other.m_height ? m_height : other.m_height);
-    }
+  void scale(float widthScale, float heightScale) {
+    m_width *= widthScale;
+    m_height *= heightScale;
+  }
 
-    LayoutSize expandedTo(const IntSize& other) const
-    {
-        return LayoutSize(
-            m_width > other.width() ? m_width : LayoutUnit(other.width()),
-            m_height > other.height() ? m_height : LayoutUnit(other.height()));
-    }
+  LayoutSize expandedTo(const LayoutSize& other) const {
+    return LayoutSize(m_width > other.m_width ? m_width : other.m_width,
+                      m_height > other.m_height ? m_height : other.m_height);
+  }
 
-    LayoutSize shrunkTo(const LayoutSize& other) const
-    {
-        return LayoutSize(m_width < other.m_width ? m_width : other.m_width,
-            m_height < other.m_height ? m_height : other.m_height);
-    }
+  LayoutSize expandedTo(const IntSize& other) const {
+    return LayoutSize(
+        m_width > other.width() ? m_width : LayoutUnit(other.width()),
+        m_height > other.height() ? m_height : LayoutUnit(other.height()));
+  }
 
-    void clampNegativeToZero()
-    {
-        *this = expandedTo(LayoutSize());
-    }
+  LayoutSize shrunkTo(const LayoutSize& other) const {
+    return LayoutSize(m_width < other.m_width ? m_width : other.m_width,
+                      m_height < other.m_height ? m_height : other.m_height);
+  }
 
-    void clampToMinimumSize(const LayoutSize& minimumSize)
-    {
-        if (m_width < minimumSize.width())
-            m_width = minimumSize.width();
-        if (m_height < minimumSize.height())
-            m_height = minimumSize.height();
-    }
+  void clampNegativeToZero() { *this = expandedTo(LayoutSize()); }
 
-    LayoutSize transposedSize() const
-    {
-        return LayoutSize(m_height, m_width);
-    }
+  void clampToMinimumSize(const LayoutSize& minimumSize) {
+    if (m_width < minimumSize.width())
+      m_width = minimumSize.width();
+    if (m_height < minimumSize.height())
+      m_height = minimumSize.height();
+  }
 
-    LayoutSize fitToAspectRatio(const LayoutSize& aspectRatio, AspectRatioFit fit) const
-    {
-        float heightScale = height().toFloat() / aspectRatio.height().toFloat();
-        float widthScale = width().toFloat() / aspectRatio.width().toFloat();
-        if ((widthScale > heightScale) != (fit == AspectRatioFitGrow))
-            return LayoutSize(height() * aspectRatio.width() / aspectRatio.height(), height());
-        return LayoutSize(width(), width() * aspectRatio.height() / aspectRatio.width());
-    }
+  LayoutSize transposedSize() const { return LayoutSize(m_height, m_width); }
 
-    LayoutSize fraction() const
-    {
-        return LayoutSize(m_width.fraction(), m_height.fraction());
-    }
+  LayoutSize fitToAspectRatio(const LayoutSize& aspectRatio,
+                              AspectRatioFit fit) const {
+    float heightScale = height().toFloat() / aspectRatio.height().toFloat();
+    float widthScale = width().toFloat() / aspectRatio.width().toFloat();
+    if ((widthScale > heightScale) != (fit == AspectRatioFitGrow))
+      return LayoutSize(height() * aspectRatio.width() / aspectRatio.height(),
+                        height());
+    return LayoutSize(width(),
+                      width() * aspectRatio.height() / aspectRatio.width());
+  }
 
-    String toString() const;
+  LayoutSize fraction() const {
+    return LayoutSize(m_width.fraction(), m_height.fraction());
+  }
 
-private:
-    LayoutUnit m_width, m_height;
+  String toString() const;
+
+ private:
+  LayoutUnit m_width, m_height;
 };
 
-inline LayoutSize& operator+=(LayoutSize& a, const LayoutSize& b)
-{
-    a.setWidth(a.width() + b.width());
-    a.setHeight(a.height() + b.height());
-    return a;
+inline LayoutSize& operator+=(LayoutSize& a, const LayoutSize& b) {
+  a.setWidth(a.width() + b.width());
+  a.setHeight(a.height() + b.height());
+  return a;
 }
 
-inline LayoutSize& operator-=(LayoutSize& a, const LayoutSize& b)
-{
-    a.setWidth(a.width() - b.width());
-    a.setHeight(a.height() - b.height());
-    return a;
+inline LayoutSize& operator-=(LayoutSize& a, const LayoutSize& b) {
+  a.setWidth(a.width() - b.width());
+  a.setHeight(a.height() - b.height());
+  return a;
 }
 
-inline LayoutSize& operator-=(LayoutSize& a, const IntSize& b)
-{
-    a.setWidth(a.width() - b.width());
-    a.setHeight(a.height() - b.height());
-    return a;
+inline LayoutSize& operator-=(LayoutSize& a, const IntSize& b) {
+  a.setWidth(a.width() - b.width());
+  a.setHeight(a.height() - b.height());
+  return a;
 }
 
-inline LayoutSize operator+(const LayoutSize& a, const LayoutSize& b)
-{
-    return LayoutSize(a.width() + b.width(), a.height() + b.height());
+inline LayoutSize operator+(const LayoutSize& a, const LayoutSize& b) {
+  return LayoutSize(a.width() + b.width(), a.height() + b.height());
 }
 
-inline LayoutSize operator+(const LayoutSize& a, const IntSize& b)
-{
-    return LayoutSize(a.width() + b.width(), a.height() + b.height());
+inline LayoutSize operator+(const LayoutSize& a, const IntSize& b) {
+  return LayoutSize(a.width() + b.width(), a.height() + b.height());
 }
 
-inline LayoutSize operator-(const LayoutSize& a, const LayoutSize& b)
-{
-    return LayoutSize(a.width() - b.width(), a.height() - b.height());
+inline LayoutSize operator-(const LayoutSize& a, const LayoutSize& b) {
+  return LayoutSize(a.width() - b.width(), a.height() - b.height());
 }
 
-inline LayoutSize operator-(const LayoutSize& size)
-{
-    return LayoutSize(-size.width(), -size.height());
+inline LayoutSize operator-(const LayoutSize& size) {
+  return LayoutSize(-size.width(), -size.height());
 }
 
-inline bool operator==(const LayoutSize& a, const LayoutSize& b)
-{
-    return a.width() == b.width() && a.height() == b.height();
+inline bool operator==(const LayoutSize& a, const LayoutSize& b) {
+  return a.width() == b.width() && a.height() == b.height();
 }
 
-inline bool operator==(const LayoutSize& a, const IntSize& b)
-{
-    return a.width() == b.width() && a.height() == b.height();
+inline bool operator==(const LayoutSize& a, const IntSize& b) {
+  return a.width() == b.width() && a.height() == b.height();
 }
 
-inline bool operator!=(const LayoutSize& a, const LayoutSize& b)
-{
-    return a.width() != b.width() || a.height() != b.height();
+inline bool operator!=(const LayoutSize& a, const LayoutSize& b) {
+  return a.width() != b.width() || a.height() != b.height();
 }
 
-inline FloatPoint operator+(const FloatPoint& a, const LayoutSize& b)
-{
-    return FloatPoint(a.x() + b.width(), a.y() + b.height());
+inline FloatPoint operator+(const FloatPoint& a, const LayoutSize& b) {
+  return FloatPoint(a.x() + b.width(), a.y() + b.height());
 }
 
-inline IntSize flooredIntSize(const LayoutSize& s)
-{
-    return IntSize(s.width().floor(), s.height().floor());
+inline IntSize flooredIntSize(const LayoutSize& s) {
+  return IntSize(s.width().floor(), s.height().floor());
 }
 
-inline IntSize roundedIntSize(const LayoutSize& s)
-{
-    return IntSize(s.width().round(), s.height().round());
+inline IntSize roundedIntSize(const LayoutSize& s) {
+  return IntSize(s.width().round(), s.height().round());
 }
 
-inline LayoutSize roundedLayoutSize(const FloatSize& s)
-{
-    return LayoutSize(s);
+inline LayoutSize roundedLayoutSize(const FloatSize& s) {
+  return LayoutSize(s);
 }
 
 // Redeclared here to avoid ODR issues.
 // See platform/testing/GeometryPrinters.h.
 void PrintTo(const LayoutSize&, std::ostream*);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSize_h
+#endif  // LayoutSize_h

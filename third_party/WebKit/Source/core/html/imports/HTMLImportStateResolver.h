@@ -39,25 +39,22 @@ namespace blink {
 class HTMLImport;
 
 class HTMLImportStateResolver {
-    STACK_ALLOCATED();
-public:
-    explicit HTMLImportStateResolver(HTMLImport* import)
-        : m_import(import)
-    {
-    }
+  STACK_ALLOCATED();
 
-    HTMLImportState resolve() const;
+ public:
+  explicit HTMLImportStateResolver(HTMLImport* import) : m_import(import) {}
 
-private:
-    static bool isBlockingFollowers(HTMLImport*);
+  HTMLImportState resolve() const;
 
-    bool shouldBlockScriptExecution() const;
-    bool isActive() const;
+ private:
+  static bool isBlockingFollowers(HTMLImport*);
 
-    Member<HTMLImport> m_import;
+  bool shouldBlockScriptExecution() const;
+  bool isActive() const;
+
+  Member<HTMLImport> m_import;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLImportStateResolver_h
-
+#endif  // HTMLImportStateResolver_h

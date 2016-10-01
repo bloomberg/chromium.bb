@@ -48,57 +48,56 @@ struct WebSize;
 
 // A container for an ARGB bitmap.
 class WebImage {
-public:
-    ~WebImage() { reset(); }
+ public:
+  ~WebImage() { reset(); }
 
-    WebImage() { init(); }
-    WebImage(const WebImage& image)
-    {
-        init();
-        assign(image);
-    }
+  WebImage() { init(); }
+  WebImage(const WebImage& image) {
+    init();
+    assign(image);
+  }
 
-    WebImage& operator=(const WebImage& image)
-    {
-        assign(image);
-        return *this;
-    }
+  WebImage& operator=(const WebImage& image) {
+    assign(image);
+    return *this;
+  }
 
-    // Decodes the given image data. If the image has multiple frames,
-    // then the frame whose size is desiredSize is returned. Otherwise,
-    // the first frame is returned.
-    BLINK_PLATFORM_EXPORT static WebImage fromData(const WebData&, const WebSize& desiredSize);
+  // Decodes the given image data. If the image has multiple frames,
+  // then the frame whose size is desiredSize is returned. Otherwise,
+  // the first frame is returned.
+  BLINK_PLATFORM_EXPORT static WebImage fromData(const WebData&,
+                                                 const WebSize& desiredSize);
 
-    // Returns a list of all frames in the image. Only the first frame at each pixel
-    // size will be returned.
-    BLINK_PLATFORM_EXPORT static WebVector<WebImage> framesFromData(const WebData&);
+  // Returns a list of all frames in the image. Only the first frame at each pixel
+  // size will be returned.
+  BLINK_PLATFORM_EXPORT static WebVector<WebImage> framesFromData(
+      const WebData&);
 
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebImage&);
+  BLINK_PLATFORM_EXPORT void reset();
+  BLINK_PLATFORM_EXPORT void assign(const WebImage&);
 
-    BLINK_PLATFORM_EXPORT bool isNull() const;
-    BLINK_PLATFORM_EXPORT WebSize size() const;
+  BLINK_PLATFORM_EXPORT bool isNull() const;
+  BLINK_PLATFORM_EXPORT WebSize size() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebImage(WTF::PassRefPtr<Image>);
+  BLINK_PLATFORM_EXPORT WebImage(WTF::PassRefPtr<Image>);
 #endif
 
-    WebImage(const SkBitmap& bitmap) : m_bitmap(bitmap) { }
+  WebImage(const SkBitmap& bitmap) : m_bitmap(bitmap) {}
 
-    WebImage& operator=(const SkBitmap& bitmap)
-    {
-        m_bitmap = bitmap;
-        return *this;
-    }
+  WebImage& operator=(const SkBitmap& bitmap) {
+    m_bitmap = bitmap;
+    return *this;
+  }
 
-    SkBitmap& getSkBitmap() { return m_bitmap; }
-    const SkBitmap& getSkBitmap() const { return m_bitmap; }
+  SkBitmap& getSkBitmap() { return m_bitmap; }
+  const SkBitmap& getSkBitmap() const { return m_bitmap; }
 
-private:
-    void init() { }
-    SkBitmap m_bitmap;
+ private:
+  void init() {}
+  SkBitmap m_bitmap;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -37,34 +37,41 @@ namespace blink {
 class FrameView;
 class WebViewImpl;
 
-class ValidationMessageClientImpl final : public GarbageCollectedFinalized<ValidationMessageClientImpl>, public ValidationMessageClient {
-    USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
-public:
-    static ValidationMessageClientImpl* create(WebViewImpl&);
-    ~ValidationMessageClientImpl() override;
+class ValidationMessageClientImpl final
+    : public GarbageCollectedFinalized<ValidationMessageClientImpl>,
+      public ValidationMessageClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  static ValidationMessageClientImpl* create(WebViewImpl&);
+  ~ValidationMessageClientImpl() override;
 
-private:
-    ValidationMessageClientImpl(WebViewImpl&);
-    void checkAnchorStatus(TimerBase*);
-    FrameView* currentView();
+  DECLARE_VIRTUAL_TRACE();
 
-    void showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) override;
-    void hideValidationMessage(const Element& anchor) override;
-    bool isValidationMessageVisible(const Element& anchor) override;
-    void documentDetached(const Document&) override;
-    void willBeDestroyed() override;
+ private:
+  ValidationMessageClientImpl(WebViewImpl&);
+  void checkAnchorStatus(TimerBase*);
+  FrameView* currentView();
 
-    WebViewImpl& m_webView;
-    Member<const Element> m_currentAnchor;
-    String m_message;
-    IntRect m_lastAnchorRectInScreen;
-    float m_lastPageScaleFactor;
-    double m_finishTime;
-    Timer<ValidationMessageClientImpl> m_timer;
+  void showValidationMessage(const Element& anchor,
+                             const String& message,
+                             TextDirection messageDir,
+                             const String& subMessage,
+                             TextDirection subMessageDir) override;
+  void hideValidationMessage(const Element& anchor) override;
+  bool isValidationMessageVisible(const Element& anchor) override;
+  void documentDetached(const Document&) override;
+  void willBeDestroyed() override;
+
+  WebViewImpl& m_webView;
+  Member<const Element> m_currentAnchor;
+  String m_message;
+  IntRect m_lastAnchorRectInScreen;
+  float m_lastPageScaleFactor;
+  double m_finishTime;
+  Timer<ValidationMessageClientImpl> m_timer;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

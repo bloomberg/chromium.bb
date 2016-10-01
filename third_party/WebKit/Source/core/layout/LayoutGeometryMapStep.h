@@ -37,42 +37,43 @@ namespace blink {
 class LayoutObject;
 
 enum GeometryInfoFlag {
-    AccumulatingTransform = 1 << 0,
-    IsNonUniform = 1 << 1, // Mapping depends on the input point, e.g. because of CSS columns.
-    IsFixedPosition = 1 << 2,
-    ContainsFixedPosition = 1 << 3,
+  AccumulatingTransform = 1 << 0,
+  IsNonUniform =
+      1
+      << 1,  // Mapping depends on the input point, e.g. because of CSS columns.
+  IsFixedPosition = 1 << 2,
+  ContainsFixedPosition = 1 << 3,
 };
 typedef unsigned GeometryInfoFlags;
 
 // Stores data about how to map from one layoutObject to its container.
 struct LayoutGeometryMapStep {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    LayoutGeometryMapStep(const LayoutGeometryMapStep& o)
-        : m_layoutObject(o.m_layoutObject)
-        , m_offset(o.m_offset)
-        , m_offsetForFixedPosition(o.m_offsetForFixedPosition)
-        , m_offsetForStickyPosition(o.m_offsetForStickyPosition)
-        , m_flags(o.m_flags)
-    {
-        ASSERT(!o.m_transform);
-    }
-    LayoutGeometryMapStep(const LayoutObject* layoutObject, GeometryInfoFlags flags)
-        : m_layoutObject(layoutObject)
-        , m_flags(flags)
-    {
-    }
-    const LayoutObject* m_layoutObject;
-    LayoutSize m_offset;
-    std::unique_ptr<TransformationMatrix> m_transform; // Includes offset if non-null.
-    // If m_offsetForFixedPosition could only apply to the fixed position steps, we may be able to merge
-    // with m_offsetForStickyPosition and simplify mapping.
-    LayoutSize m_offsetForFixedPosition;
-    LayoutSize m_offsetForStickyPosition;
-    GeometryInfoFlags m_flags;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  LayoutGeometryMapStep(const LayoutGeometryMapStep& o)
+      : m_layoutObject(o.m_layoutObject),
+        m_offset(o.m_offset),
+        m_offsetForFixedPosition(o.m_offsetForFixedPosition),
+        m_offsetForStickyPosition(o.m_offsetForStickyPosition),
+        m_flags(o.m_flags) {
+    ASSERT(!o.m_transform);
+  }
+  LayoutGeometryMapStep(const LayoutObject* layoutObject,
+                        GeometryInfoFlags flags)
+      : m_layoutObject(layoutObject), m_flags(flags) {}
+  const LayoutObject* m_layoutObject;
+  LayoutSize m_offset;
+  std::unique_ptr<TransformationMatrix>
+      m_transform;  // Includes offset if non-null.
+  // If m_offsetForFixedPosition could only apply to the fixed position steps, we may be able to merge
+  // with m_offsetForStickyPosition and simplify mapping.
+  LayoutSize m_offsetForFixedPosition;
+  LayoutSize m_offsetForStickyPosition;
+  GeometryInfoFlags m_flags;
 };
 
-} // namespace blink
+}  // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::LayoutGeometryMapStep);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::LayoutGeometryMapStep);
 
-#endif // LayoutGeometryMapStep_h
+#endif  // LayoutGeometryMapStep_h

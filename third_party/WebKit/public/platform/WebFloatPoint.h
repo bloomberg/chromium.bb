@@ -42,71 +42,45 @@
 namespace blink {
 
 struct WebFloatPoint {
-    float x;
-    float y;
+  float x;
+  float y;
 
-    WebFloatPoint()
-        : x(0.0f)
-        , y(0.0f)
-    {
-    }
+  WebFloatPoint() : x(0.0f), y(0.0f) {}
 
-    WebFloatPoint(float x, float y)
-        : x(x)
-        , y(y)
-    {
-    }
+  WebFloatPoint(float x, float y) : x(x), y(y) {}
 
 #if INSIDE_BLINK
-    WebFloatPoint(const FloatPoint& p)
-        : x(p.x())
-        , y(p.y())
-    {
-    }
+  WebFloatPoint(const FloatPoint& p) : x(p.x()), y(p.y()) {}
 
-    WebFloatPoint& operator=(const FloatPoint& p)
-    {
-        x = p.x();
-        y = p.y();
-        return *this;
-    }
+  WebFloatPoint& operator=(const FloatPoint& p) {
+    x = p.x();
+    y = p.y();
+    return *this;
+  }
 
-    operator FloatPoint() const
-    {
-        return FloatPoint(x, y);
-    }
+  operator FloatPoint() const { return FloatPoint(x, y); }
 #else
-    WebFloatPoint(const gfx::PointF& p)
-        : x(p.x())
-        , y(p.y())
-    {
-    }
+  WebFloatPoint(const gfx::PointF& p) : x(p.x()), y(p.y()) {}
 
-    WebFloatPoint& operator=(const gfx::PointF& p)
-    {
-        x = p.x();
-        y = p.y();
-        return *this;
-    }
+  WebFloatPoint& operator=(const gfx::PointF& p) {
+    x = p.x();
+    y = p.y();
+    return *this;
+  }
 
-    operator gfx::PointF() const
-    {
-        return gfx::PointF(x, y);
-    }
+  operator gfx::PointF() const { return gfx::PointF(x, y); }
 
 #endif
 };
 
-inline bool operator==(const WebFloatPoint& a, const WebFloatPoint& b)
-{
-    return a.x == b.x && a.y == b.y;
+inline bool operator==(const WebFloatPoint& a, const WebFloatPoint& b) {
+  return a.x == b.x && a.y == b.y;
 }
 
-inline bool operator!=(const WebFloatPoint& a, const WebFloatPoint& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebFloatPoint& a, const WebFloatPoint& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

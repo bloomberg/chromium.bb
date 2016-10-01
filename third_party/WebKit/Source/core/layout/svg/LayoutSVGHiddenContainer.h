@@ -29,26 +29,35 @@ class SVGElement;
 // This class is for containers which are never drawn, but do need to support style
 // <defs>, <linearGradient>, <radialGradient> are all good examples
 class LayoutSVGHiddenContainer : public LayoutSVGContainer {
-public:
-    explicit LayoutSVGHiddenContainer(SVGElement*);
+ public:
+  explicit LayoutSVGHiddenContainer(SVGElement*);
 
-    const char* name() const override { return "LayoutSVGHiddenContainer"; }
+  const char* name() const override { return "LayoutSVGHiddenContainer"; }
 
-protected:
-    void layout() override;
+ protected:
+  void layout() override;
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGHiddenContainer || LayoutSVGContainer::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGHiddenContainer ||
+           LayoutSVGContainer::isOfType(type);
+  }
 
-private:
-    // LayoutSVGHiddenContainer paints nothing.
-    void paint(const PaintInfo&, const LayoutPoint&) const final { }
-    bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final { return true; }
-    LayoutRect absoluteClippedOverflowRect() const final { return LayoutRect(); }
-    FloatRect paintInvalidationRectInLocalSVGCoordinates() const final { return FloatRect(); }
-    void absoluteQuads(Vector<FloatQuad>&) const final { }
+ private:
+  // LayoutSVGHiddenContainer paints nothing.
+  void paint(const PaintInfo&, const LayoutPoint&) const final {}
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
+    return true;
+  }
+  LayoutRect absoluteClippedOverflowRect() const final { return LayoutRect(); }
+  FloatRect paintInvalidationRectInLocalSVGCoordinates() const final {
+    return FloatRect();
+  }
+  void absoluteQuads(Vector<FloatQuad>&) const final {}
 
-    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) final;
+  bool nodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& pointInParent,
+                        HitTestAction) final;
 };
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSVGHiddenContainer_h
+#endif  // LayoutSVGHiddenContainer_h

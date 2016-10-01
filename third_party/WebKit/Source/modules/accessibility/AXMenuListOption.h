@@ -34,40 +34,50 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXMenuListOption final : public AXMockObject {
-    WTF_MAKE_NONCOPYABLE(AXMenuListOption);
+  WTF_MAKE_NONCOPYABLE(AXMenuListOption);
 
-public:
-    static AXMenuListOption* create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return new AXMenuListOption(element, axObjectCache); }
-    ~AXMenuListOption() override;
+ public:
+  static AXMenuListOption* create(HTMLOptionElement* element,
+                                  AXObjectCacheImpl& axObjectCache) {
+    return new AXMenuListOption(element, axObjectCache);
+  }
+  ~AXMenuListOption() override;
 
-private:
-    AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
-    DECLARE_VIRTUAL_TRACE();
+ private:
+  AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
+  DECLARE_VIRTUAL_TRACE();
 
-    bool isMenuListOption() const override { return true; }
+  bool isMenuListOption() const override { return true; }
 
-    Node* getNode() const override { return m_element; }
-    void detach() override;
-    bool isDetached() const override { return !m_element; }
-    AccessibilityRole roleValue() const override;
-    bool canHaveChildren() const override { return false; }
+  Node* getNode() const override { return m_element; }
+  void detach() override;
+  bool isDetached() const override { return !m_element; }
+  AccessibilityRole roleValue() const override;
+  bool canHaveChildren() const override { return false; }
 
-    Element* actionElement() const override;
-    bool isEnabled() const override;
-    bool isVisible() const override;
-    bool isOffScreen() const override;
-    bool isSelected() const override;
-    void setSelected(bool) override;
-    bool canSetSelectedAttribute() const override;
-    void getRelativeBounds(AXObject** outContainer, FloatRect& outBoundsInContainer, SkMatrix44& outContainerTransform) const override;
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  Element* actionElement() const override;
+  bool isEnabled() const override;
+  bool isVisible() const override;
+  bool isOffScreen() const override;
+  bool isSelected() const override;
+  void setSelected(bool) override;
+  bool canSetSelectedAttribute() const override;
+  void getRelativeBounds(AXObject** outContainer,
+                         FloatRect& outBoundsInContainer,
+                         SkMatrix44& outContainerTransform) const override;
+  String textAlternative(bool recursive,
+                         bool inAriaLabelledByTraversal,
+                         AXObjectSet& visited,
+                         AXNameFrom&,
+                         AXRelatedObjectVector*,
+                         NameSources*) const override;
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-    Member<HTMLOptionElement> m_element;
+  Member<HTMLOptionElement> m_element;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, isMenuListOption());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXMenuListOption_h
+#endif  // AXMenuListOption_h

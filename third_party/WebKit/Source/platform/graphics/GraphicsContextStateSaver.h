@@ -37,52 +37,48 @@
 namespace blink {
 
 class PLATFORM_EXPORT GraphicsContextStateSaver final {
-    USING_FAST_MALLOC(GraphicsContextStateSaver);
-    WTF_MAKE_NONCOPYABLE(GraphicsContextStateSaver);
-public:
-    GraphicsContextStateSaver(GraphicsContext& context, bool saveAndRestore = true)
-        : m_context(context)
-        , m_saveAndRestore(saveAndRestore)
-    {
-        if (m_saveAndRestore)
-            m_context.save();
-    }
+  USING_FAST_MALLOC(GraphicsContextStateSaver);
+  WTF_MAKE_NONCOPYABLE(GraphicsContextStateSaver);
 
-    ~GraphicsContextStateSaver()
-    {
-        if (m_saveAndRestore)
-            m_context.restore();
-    }
+ public:
+  GraphicsContextStateSaver(GraphicsContext& context,
+                            bool saveAndRestore = true)
+      : m_context(context), m_saveAndRestore(saveAndRestore) {
+    if (m_saveAndRestore)
+      m_context.save();
+  }
 
-    void save()
-    {
-        ASSERT(!m_saveAndRestore);
-        m_context.save();
-        m_saveAndRestore = true;
-    }
+  ~GraphicsContextStateSaver() {
+    if (m_saveAndRestore)
+      m_context.restore();
+  }
 
-    void saveIfNeeded()
-    {
-        if (saved())
-            return;
-        save();
-    }
+  void save() {
+    ASSERT(!m_saveAndRestore);
+    m_context.save();
+    m_saveAndRestore = true;
+  }
 
-    void restore()
-    {
-        ASSERT(m_saveAndRestore);
-        m_context.restore();
-        m_saveAndRestore = false;
-    }
+  void saveIfNeeded() {
+    if (saved())
+      return;
+    save();
+  }
 
-    GraphicsContext& context() const { return m_context; }
-    bool saved() const { return m_saveAndRestore; }
+  void restore() {
+    ASSERT(m_saveAndRestore);
+    m_context.restore();
+    m_saveAndRestore = false;
+  }
 
-private:
-    GraphicsContext& m_context;
-    bool m_saveAndRestore;
+  GraphicsContext& context() const { return m_context; }
+  bool saved() const { return m_saveAndRestore; }
+
+ private:
+  GraphicsContext& m_context;
+  bool m_saveAndRestore;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // GraphicsContextStateSaver_h
+#endif  // GraphicsContextStateSaver_h

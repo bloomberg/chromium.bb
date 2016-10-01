@@ -34,49 +34,39 @@
 
 namespace blink {
 
-void WebData::reset()
-{
-    m_private.reset();
+void WebData::reset() {
+  m_private.reset();
 }
 
-void WebData::assign(const WebData& other)
-{
-    m_private = other.m_private;
+void WebData::assign(const WebData& other) {
+  m_private = other.m_private;
 }
 
-void WebData::assign(const char* data, size_t size)
-{
-    m_private = SharedBuffer::create(data, size);
+void WebData::assign(const char* data, size_t size) {
+  m_private = SharedBuffer::create(data, size);
 }
 
-size_t WebData::size() const
-{
-    if (m_private.isNull())
-        return 0;
-    return m_private->size();
+size_t WebData::size() const {
+  if (m_private.isNull())
+    return 0;
+  return m_private->size();
 }
 
-const char* WebData::data() const
-{
-    if (m_private.isNull())
-        return 0;
-    return m_private->data();
+const char* WebData::data() const {
+  if (m_private.isNull())
+    return 0;
+  return m_private->data();
 }
 
-WebData::WebData(PassRefPtr<SharedBuffer> buffer)
-    : m_private(buffer)
-{
+WebData::WebData(PassRefPtr<SharedBuffer> buffer) : m_private(buffer) {}
+
+WebData& WebData::operator=(PassRefPtr<SharedBuffer> buffer) {
+  m_private = buffer;
+  return *this;
 }
 
-WebData& WebData::operator=(PassRefPtr<SharedBuffer> buffer)
-{
-    m_private = buffer;
-    return *this;
+WebData::operator PassRefPtr<SharedBuffer>() const {
+  return PassRefPtr<SharedBuffer>(m_private.get());
 }
 
-WebData::operator PassRefPtr<SharedBuffer>() const
-{
-    return PassRefPtr<SharedBuffer>(m_private.get());
-}
-
-} // namespace blink
+}  // namespace blink

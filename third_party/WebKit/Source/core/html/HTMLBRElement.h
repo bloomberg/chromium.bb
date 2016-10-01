@@ -30,21 +30,24 @@
 namespace blink {
 
 class CORE_EXPORT HTMLBRElement final : public HTMLElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(HTMLBRElement);
+  DEFINE_WRAPPERTYPEINFO();
 
-    bool canContainRangeEndPoint() const override { return false; }
+ public:
+  DECLARE_NODE_FACTORY(HTMLBRElement);
 
-private:
-    explicit HTMLBRElement(Document&);
+  bool canContainRangeEndPoint() const override { return false; }
 
-    bool isPresentationAttribute(const QualifiedName&) const override;
-    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+ private:
+  explicit HTMLBRElement(Document&);
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  bool isPresentationAttribute(const QualifiedName&) const override;
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
+
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLBRElement_h
+#endif  // HTMLBRElement_h

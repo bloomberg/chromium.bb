@@ -46,169 +46,165 @@ namespace blink {
 using namespace HTMLNames;
 
 TextControlInnerContainer::TextControlInnerContainer(Document& document)
-    : HTMLDivElement(document)
-{
+    : HTMLDivElement(document) {}
+
+TextControlInnerContainer* TextControlInnerContainer::create(
+    Document& document) {
+  TextControlInnerContainer* element = new TextControlInnerContainer(document);
+  element->setAttribute(idAttr, ShadowElementNames::textFieldContainer());
+  return element;
 }
 
-TextControlInnerContainer* TextControlInnerContainer::create(Document& document)
-{
-    TextControlInnerContainer* element = new TextControlInnerContainer(document);
-    element->setAttribute(idAttr, ShadowElementNames::textFieldContainer());
-    return element;
-}
-
-LayoutObject* TextControlInnerContainer::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutTextControlInnerContainer(this);
+LayoutObject* TextControlInnerContainer::createLayoutObject(
+    const ComputedStyle&) {
+  return new LayoutTextControlInnerContainer(this);
 }
 
 // ---------------------------
 
 EditingViewPortElement::EditingViewPortElement(Document& document)
-    : HTMLDivElement(document)
-{
-    setHasCustomStyleCallbacks();
+    : HTMLDivElement(document) {
+  setHasCustomStyleCallbacks();
 }
 
-EditingViewPortElement* EditingViewPortElement::create(Document& document)
-{
-    EditingViewPortElement* element = new EditingViewPortElement(document);
-    element->setAttribute(idAttr, ShadowElementNames::editingViewPort());
-    return element;
+EditingViewPortElement* EditingViewPortElement::create(Document& document) {
+  EditingViewPortElement* element = new EditingViewPortElement(document);
+  element->setAttribute(idAttr, ShadowElementNames::editingViewPort());
+  return element;
 }
 
-PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject()
-{
-    // FXIME: Move these styles to html.css.
+PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject() {
+  // FXIME: Move these styles to html.css.
 
-    RefPtr<ComputedStyle> style = ComputedStyle::create();
-    style->inheritFrom(ownerShadowHost()->computedStyleRef());
+  RefPtr<ComputedStyle> style = ComputedStyle::create();
+  style->inheritFrom(ownerShadowHost()->computedStyleRef());
 
-    style->setFlexGrow(1);
-    style->setMinWidth(Length(0, Fixed));
-    style->setDisplay(EDisplay::Block);
-    style->setDirection(LTR);
+  style->setFlexGrow(1);
+  style->setMinWidth(Length(0, Fixed));
+  style->setDisplay(EDisplay::Block);
+  style->setDirection(LTR);
 
-    // We don't want the shadow dom to be editable, so we set this block to
-    // read-only in case the input itself is editable.
-    style->setUserModify(READ_ONLY);
-    style->setUnique();
+  // We don't want the shadow dom to be editable, so we set this block to
+  // read-only in case the input itself is editable.
+  style->setUserModify(READ_ONLY);
+  style->setUnique();
 
-    if (const ComputedStyle* parentStyle = parentComputedStyle())
-        StyleAdjuster::adjustStyleForAlignment(*style, *parentStyle);
+  if (const ComputedStyle* parentStyle = parentComputedStyle())
+    StyleAdjuster::adjustStyleForAlignment(*style, *parentStyle);
 
-    return style.release();
+  return style.release();
 }
 
 // ---------------------------
 
-inline TextControlInnerEditorElement::TextControlInnerEditorElement(Document& document)
-    : HTMLDivElement(document)
-{
-    setHasCustomStyleCallbacks();
+inline TextControlInnerEditorElement::TextControlInnerEditorElement(
+    Document& document)
+    : HTMLDivElement(document) {
+  setHasCustomStyleCallbacks();
 }
 
-TextControlInnerEditorElement* TextControlInnerEditorElement::create(Document& document)
-{
-    TextControlInnerEditorElement* element = new TextControlInnerEditorElement(document);
-    element->setAttribute(idAttr, ShadowElementNames::innerEditor());
-    return element;
+TextControlInnerEditorElement* TextControlInnerEditorElement::create(
+    Document& document) {
+  TextControlInnerEditorElement* element =
+      new TextControlInnerEditorElement(document);
+  element->setAttribute(idAttr, ShadowElementNames::innerEditor());
+  return element;
 }
 
-void TextControlInnerEditorElement::defaultEventHandler(Event* event)
-{
-    // FIXME: In the future, we should add a way to have default event listeners.
-    // Then we would add one to the text field's inner div, and we wouldn't need this subclass.
-    // Or possibly we could just use a normal event listener.
-    if (event->isBeforeTextInsertedEvent() || event->type() == EventTypeNames::webkitEditableContentChanged) {
-        Element* shadowAncestor = ownerShadowHost();
-        // A TextControlInnerTextElement can have no host if its been detached,
-        // but kept alive by an EditCommand. In this case, an undo/redo can
-        // cause events to be sent to the TextControlInnerTextElement. To
-        // prevent an infinite loop, we must check for this case before sending
-        // the event up the chain.
-        if (shadowAncestor)
-            shadowAncestor->defaultEventHandler(event);
-    }
-    if (!event->defaultHandled())
-        HTMLDivElement::defaultEventHandler(event);
+void TextControlInnerEditorElement::defaultEventHandler(Event* event) {
+  // FIXME: In the future, we should add a way to have default event listeners.
+  // Then we would add one to the text field's inner div, and we wouldn't need this subclass.
+  // Or possibly we could just use a normal event listener.
+  if (event->isBeforeTextInsertedEvent() ||
+      event->type() == EventTypeNames::webkitEditableContentChanged) {
+    Element* shadowAncestor = ownerShadowHost();
+    // A TextControlInnerTextElement can have no host if its been detached,
+    // but kept alive by an EditCommand. In this case, an undo/redo can
+    // cause events to be sent to the TextControlInnerTextElement. To
+    // prevent an infinite loop, we must check for this case before sending
+    // the event up the chain.
+    if (shadowAncestor)
+      shadowAncestor->defaultEventHandler(event);
+  }
+  if (!event->defaultHandled())
+    HTMLDivElement::defaultEventHandler(event);
 }
 
-LayoutObject* TextControlInnerEditorElement::createLayoutObject(const ComputedStyle&)
-{
-    return new LayoutTextControlInnerBlock(this);
+LayoutObject* TextControlInnerEditorElement::createLayoutObject(
+    const ComputedStyle&) {
+  return new LayoutTextControlInnerBlock(this);
 }
 
-PassRefPtr<ComputedStyle> TextControlInnerEditorElement::customStyleForLayoutObject()
-{
-    LayoutObject* parentLayoutObject = ownerShadowHost()->layoutObject();
-    if (!parentLayoutObject || !parentLayoutObject->isTextControl())
-        return originalStyleForLayoutObject();
-    LayoutTextControlItem textControlLayoutItem = LayoutTextControlItem(toLayoutTextControl(parentLayoutObject));
-    RefPtr<ComputedStyle> innerEditorStyle = textControlLayoutItem.createInnerEditorStyle(textControlLayoutItem.styleRef());
-    // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
-    // to apply only editing-related and alignment-related.
-    StyleAdjuster::adjustStyleForEditing(*innerEditorStyle);
-    if (const ComputedStyle* parentStyle = parentComputedStyle())
-        StyleAdjuster::adjustStyleForAlignment(*innerEditorStyle, *parentStyle);
-    return innerEditorStyle.release();
+PassRefPtr<ComputedStyle>
+TextControlInnerEditorElement::customStyleForLayoutObject() {
+  LayoutObject* parentLayoutObject = ownerShadowHost()->layoutObject();
+  if (!parentLayoutObject || !parentLayoutObject->isTextControl())
+    return originalStyleForLayoutObject();
+  LayoutTextControlItem textControlLayoutItem =
+      LayoutTextControlItem(toLayoutTextControl(parentLayoutObject));
+  RefPtr<ComputedStyle> innerEditorStyle =
+      textControlLayoutItem.createInnerEditorStyle(
+          textControlLayoutItem.styleRef());
+  // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
+  // to apply only editing-related and alignment-related.
+  StyleAdjuster::adjustStyleForEditing(*innerEditorStyle);
+  if (const ComputedStyle* parentStyle = parentComputedStyle())
+    StyleAdjuster::adjustStyleForAlignment(*innerEditorStyle, *parentStyle);
+  return innerEditorStyle.release();
 }
 
 // ----------------------------
 
-inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document& document)
-    : HTMLDivElement(document)
-    , m_capturing(false)
-{
+inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
+    Document& document)
+    : HTMLDivElement(document), m_capturing(false) {}
+
+SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::create(
+    Document& document) {
+  SearchFieldCancelButtonElement* element =
+      new SearchFieldCancelButtonElement(document);
+  element->setShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
+  element->setAttribute(idAttr, ShadowElementNames::clearButton());
+  return element;
 }
 
-SearchFieldCancelButtonElement* SearchFieldCancelButtonElement::create(Document& document)
-{
-    SearchFieldCancelButtonElement* element = new SearchFieldCancelButtonElement(document);
-    element->setShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
-    element->setAttribute(idAttr, ShadowElementNames::clearButton());
-    return element;
+void SearchFieldCancelButtonElement::detachLayoutTree(
+    const AttachContext& context) {
+  if (m_capturing) {
+    if (LocalFrame* frame = document().frame())
+      frame->eventHandler().setCapturingMouseEventsNode(nullptr);
+  }
+  HTMLDivElement::detachLayoutTree(context);
 }
 
-void SearchFieldCancelButtonElement::detachLayoutTree(const AttachContext& context)
-{
-    if (m_capturing) {
-        if (LocalFrame* frame = document().frame())
-            frame->eventHandler().setCapturingMouseEventsNode(nullptr);
-    }
-    HTMLDivElement::detachLayoutTree(context);
-}
-
-
-void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
-{
-    // If the element is visible, on mouseup, clear the value, and set selection
-    HTMLInputElement* input(toHTMLInputElement(ownerShadowHost()));
-    if (!input || input->isDisabledOrReadOnly()) {
-        if (!event->defaultHandled())
-            HTMLDivElement::defaultEventHandler(event);
-        return;
-    }
-
-
-    if (event->type() == EventTypeNames::click && event->isMouseEvent() && toMouseEvent(event)->button() == static_cast<short>(WebPointerProperties::Button::Left)) {
-        input->setValueForUser("");
-        input->setAutofilled(false);
-        input->onSearch();
-        event->setDefaultHandled();
-    }
-
+void SearchFieldCancelButtonElement::defaultEventHandler(Event* event) {
+  // If the element is visible, on mouseup, clear the value, and set selection
+  HTMLInputElement* input(toHTMLInputElement(ownerShadowHost()));
+  if (!input || input->isDisabledOrReadOnly()) {
     if (!event->defaultHandled())
-        HTMLDivElement::defaultEventHandler(event);
+      HTMLDivElement::defaultEventHandler(event);
+    return;
+  }
+
+  if (event->type() == EventTypeNames::click && event->isMouseEvent() &&
+      toMouseEvent(event)->button() ==
+          static_cast<short>(WebPointerProperties::Button::Left)) {
+    input->setValueForUser("");
+    input->setAutofilled(false);
+    input->onSearch();
+    event->setDefaultHandled();
+  }
+
+  if (!event->defaultHandled())
+    HTMLDivElement::defaultEventHandler(event);
 }
 
-bool SearchFieldCancelButtonElement::willRespondToMouseClickEvents()
-{
-    const HTMLInputElement* input = toHTMLInputElement(ownerShadowHost());
-    if (input && !input->isDisabledOrReadOnly())
-        return true;
+bool SearchFieldCancelButtonElement::willRespondToMouseClickEvents() {
+  const HTMLInputElement* input = toHTMLInputElement(ownerShadowHost());
+  if (input && !input->isDisabledOrReadOnly())
+    return true;
 
-    return HTMLDivElement::willRespondToMouseClickEvents();
+  return HTMLDivElement::willRespondToMouseClickEvents();
 }
 
-} // namespace blink
+}  // namespace blink

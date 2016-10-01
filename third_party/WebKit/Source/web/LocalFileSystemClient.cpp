@@ -44,46 +44,45 @@
 
 namespace blink {
 
-std::unique_ptr<FileSystemClient> LocalFileSystemClient::create()
-{
-    return wrapUnique(static_cast<FileSystemClient*>(new LocalFileSystemClient()));
+std::unique_ptr<FileSystemClient> LocalFileSystemClient::create() {
+  return wrapUnique(
+      static_cast<FileSystemClient*>(new LocalFileSystemClient()));
 }
 
-LocalFileSystemClient::~LocalFileSystemClient()
-{
+LocalFileSystemClient::~LocalFileSystemClient() {}
+
+bool LocalFileSystemClient::requestFileSystemAccessSync(
+    ExecutionContext* context) {
+  DCHECK(context);
+  if (context->isDocument()) {
+    NOTREACHED();
+    return false;
+  }
+
+  DCHECK(context->isWorkerGlobalScope());
+  return WorkerContentSettingsClient::from(*toWorkerGlobalScope(context))
+      ->requestFileSystemAccessSync();
 }
 
-bool LocalFileSystemClient::requestFileSystemAccessSync(ExecutionContext* context)
-{
-    DCHECK(context);
-    if (context->isDocument()) {
-        NOTREACHED();
-        return false;
-    }
+void LocalFileSystemClient::requestFileSystemAccessAsync(
+    ExecutionContext* context,
+    std::unique_ptr<ContentSettingCallbacks> callbacks) {
+  DCHECK(context);
+  if (!context->isDocument()) {
+    NOTREACHED();
+    return;
+  }
 
-    DCHECK(context->isWorkerGlobalScope());
-    return WorkerContentSettingsClient::from(*toWorkerGlobalScope(context))->requestFileSystemAccessSync();
+  Document* document = toDocument(context);
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
+  if (!webFrame->contentSettingsClient()) {
+    callbacks->onAllowed();
+    return;
+  }
+  webFrame->contentSettingsClient()->requestFileSystemAccessAsync(
+      std::move(callbacks));
 }
 
-void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, std::unique_ptr<ContentSettingCallbacks> callbacks)
-{
-    DCHECK(context);
-    if (!context->isDocument()) {
-        NOTREACHED();
-        return;
-    }
+LocalFileSystemClient::LocalFileSystemClient() {}
 
-    Document* document = toDocument(context);
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-    if (!webFrame->contentSettingsClient()) {
-        callbacks->onAllowed();
-        return;
-    }
-    webFrame->contentSettingsClient()->requestFileSystemAccessAsync(std::move(callbacks));
-}
-
-LocalFileSystemClient::LocalFileSystemClient()
-{
-}
-
-} // namespace blink
+}  // namespace blink

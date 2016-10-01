@@ -29,59 +29,62 @@ namespace blink {
 class HTMLDivElement;
 
 class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLMeterElement* create(Document&);
+  DEFINE_WRAPPERTYPEINFO();
 
-    enum GaugeRegion {
-        GaugeRegionOptimum,
-        GaugeRegionSuboptimal,
-        GaugeRegionEvenLessGood
-    };
+ public:
+  static HTMLMeterElement* create(Document&);
 
-    double value() const;
-    void setValue(double);
+  enum GaugeRegion {
+    GaugeRegionOptimum,
+    GaugeRegionSuboptimal,
+    GaugeRegionEvenLessGood
+  };
 
-    double min() const;
-    void setMin(double);
+  double value() const;
+  void setValue(double);
 
-    double max() const;
-    void setMax(double);
+  double min() const;
+  void setMin(double);
 
-    double low() const;
-    void setLow(double);
+  double max() const;
+  void setMax(double);
 
-    double high() const;
-    void setHigh(double);
+  double low() const;
+  void setLow(double);
 
-    double optimum() const;
-    void setOptimum(double);
+  double high() const;
+  void setHigh(double);
 
-    double valueRatio() const;
-    GaugeRegion getGaugeRegion() const;
+  double optimum() const;
+  void setOptimum(double);
 
-    bool canContainRangeEndPoint() const override;
+  double valueRatio() const;
+  GaugeRegion getGaugeRegion() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  bool canContainRangeEndPoint() const override;
 
-private:
-    explicit HTMLMeterElement(Document&);
-    ~HTMLMeterElement() override;
+  DECLARE_VIRTUAL_TRACE();
 
-    bool areAuthorShadowsAllowed() const override { return false; }
+ private:
+  explicit HTMLMeterElement(Document&);
+  ~HTMLMeterElement() override;
 
-    bool supportLabels() const override { return true; }
+  bool areAuthorShadowsAllowed() const override { return false; }
 
-    LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
+  bool supportLabels() const override { return true; }
 
-    void didElementStateChange();
-    void updateValueAppearance(double percentage);
-    void didAddUserAgentShadowRoot(ShadowRoot&) override;
+  LayoutObject* createLayoutObject(const ComputedStyle&) override;
+  void parseAttribute(const QualifiedName&,
+                      const AtomicString&,
+                      const AtomicString&) override;
 
-    Member<HTMLDivElement> m_value;
+  void didElementStateChange();
+  void updateValueAppearance(double percentage);
+  void didAddUserAgentShadowRoot(ShadowRoot&) override;
+
+  Member<HTMLDivElement> m_value;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLMeterElement_h
+#endif  // HTMLMeterElement_h

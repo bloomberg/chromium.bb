@@ -10,15 +10,12 @@ namespace blink {
 namespace {
 
 class EmptyInterfaceProvider : public InterfaceProvider {
-    void getInterface(const char* name, mojo::ScopedMessagePipeHandle) override {}
+  void getInterface(const char* name, mojo::ScopedMessagePipeHandle) override {}
 };
-
 }
 
-InterfaceProvider* InterfaceProvider::getEmptyInterfaceProvider()
-{
-    DEFINE_STATIC_LOCAL(EmptyInterfaceProvider, emptyInterfaceProvider, ());
-    return &emptyInterfaceProvider;
+InterfaceProvider* InterfaceProvider::getEmptyInterfaceProvider() {
+  DEFINE_STATIC_LOCAL(EmptyInterfaceProvider, emptyInterfaceProvider, ());
+  return &emptyInterfaceProvider;
 }
-
 }

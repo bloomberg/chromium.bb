@@ -15,29 +15,32 @@ namespace blink {
 class ExceptionState;
 
 class CORE_EXPORT CSSKeywordValue final : public CSSStyleValue {
-    WTF_MAKE_NONCOPYABLE(CSSKeywordValue);
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static CSSKeywordValue* create(const AtomicString& keyword, ExceptionState&);
+  WTF_MAKE_NONCOPYABLE(CSSKeywordValue);
+  DEFINE_WRAPPERTYPEINFO();
 
-    StyleValueType type() const override { return KeywordType; }
+ public:
+  static CSSKeywordValue* create(const AtomicString& keyword, ExceptionState&);
 
-    const AtomicString& keywordValue() const;
-    CSSValueID keywordValueID() const;
+  StyleValueType type() const override { return KeywordType; }
 
-    CSSValue* toCSSValue() const override;
+  const AtomicString& keywordValue() const;
+  CSSValueID keywordValueID() const;
 
-private:
-    explicit CSSKeywordValue(const AtomicString& keyword)
-        : m_keywordValue(keyword) {}
+  CSSValue* toCSSValue() const override;
 
-    AtomicString m_keywordValue;
+ private:
+  explicit CSSKeywordValue(const AtomicString& keyword)
+      : m_keywordValue(keyword) {}
+
+  AtomicString m_keywordValue;
 };
 
-DEFINE_TYPE_CASTS(CSSKeywordValue, CSSStyleValue, value,
-    value->type() == CSSStyleValue::StyleValueType::KeywordType,
-    value.type() == CSSStyleValue::StyleValueType::KeywordType);
+DEFINE_TYPE_CASTS(CSSKeywordValue,
+                  CSSStyleValue,
+                  value,
+                  value->type() == CSSStyleValue::StyleValueType::KeywordType,
+                  value.type() == CSSStyleValue::StyleValueType::KeywordType);
 
-} // namespace blink
+}  // namespace blink
 
 #endif

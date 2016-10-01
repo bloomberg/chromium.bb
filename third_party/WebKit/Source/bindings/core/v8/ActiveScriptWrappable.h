@@ -24,18 +24,20 @@ class ScriptWrappableVisitor;
  * as long as they have pending activity.
  */
 class CORE_EXPORT ActiveScriptWrappable : public GarbageCollectedMixin {
-    WTF_MAKE_NONCOPYABLE(ActiveScriptWrappable);
-public:
-    explicit ActiveScriptWrappable(ScriptWrappable*);
+  WTF_MAKE_NONCOPYABLE(ActiveScriptWrappable);
 
-    static void traceActiveScriptWrappables(v8::Isolate*, ScriptWrappableVisitor*);
+ public:
+  explicit ActiveScriptWrappable(ScriptWrappable*);
 
-private:
-    ScriptWrappable* toScriptWrappable() const { return m_scriptWrappable; }
+  static void traceActiveScriptWrappables(v8::Isolate*,
+                                          ScriptWrappableVisitor*);
 
-    ScriptWrappable* m_scriptWrappable;
+ private:
+  ScriptWrappable* toScriptWrappable() const { return m_scriptWrappable; }
+
+  ScriptWrappable* m_scriptWrappable;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ActiveScriptWrappable_h
+#endif  // ActiveScriptWrappable_h

@@ -46,6 +46,6 @@ PLATFORM_EXPORT extern const char mimeTypeDownloadURL[];
 PLATFORM_EXPORT extern const char mimeTypeFiles[];
 PLATFORM_EXPORT extern const char mimeTypeImagePng[];
 
-} // namespace blink
+}  // namespace blink
 
 #endif

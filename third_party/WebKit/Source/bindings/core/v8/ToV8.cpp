@@ -13,47 +13,51 @@
 
 namespace blink {
 
-v8::Local<v8::Value> toV8(DOMWindow* window, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    // Notice that we explicitly ignore creationContext because the DOMWindow
-    // has its own creationContext.
+v8::Local<v8::Value> toV8(DOMWindow* window,
+                          v8::Local<v8::Object> creationContext,
+                          v8::Isolate* isolate) {
+  // Notice that we explicitly ignore creationContext because the DOMWindow
+  // has its own creationContext.
 
-    if (UNLIKELY(!window))
-        return v8::Null(isolate);
-    // Initializes environment of a frame, and return the global object
-    // of the frame.
-    Frame * frame = window->frame();
-    if (!frame)
-        return v8Undefined();
+  if (UNLIKELY(!window))
+    return v8::Null(isolate);
+  // Initializes environment of a frame, and return the global object
+  // of the frame.
+  Frame* frame = window->frame();
+  if (!frame)
+    return v8Undefined();
 
-    return frame->windowProxy(DOMWrapperWorld::current(isolate))->globalIfNotDetached();
+  return frame->windowProxy(DOMWrapperWorld::current(isolate))
+      ->globalIfNotDetached();
 }
 
-v8::Local<v8::Value> toV8(EventTarget* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
+v8::Local<v8::Value> toV8(EventTarget* impl,
+                          v8::Local<v8::Object> creationContext,
+                          v8::Isolate* isolate) {
+  if (UNLIKELY(!impl))
+    return v8::Null(isolate);
 
-    if (impl->interfaceName() == EventTargetNames::DOMWindow)
-        return toV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
-    return toV8(static_cast<ScriptWrappable*>(impl), creationContext, isolate);
+  if (impl->interfaceName() == EventTargetNames::DOMWindow)
+    return toV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
+  return toV8(static_cast<ScriptWrappable*>(impl), creationContext, isolate);
 }
 
-v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    // Notice that we explicitly ignore creationContext because the
-    // WorkerOrWorkletGlobalScope has its own creationContext.
+v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope* impl,
+                          v8::Local<v8::Object> creationContext,
+                          v8::Isolate* isolate) {
+  // Notice that we explicitly ignore creationContext because the
+  // WorkerOrWorkletGlobalScope has its own creationContext.
 
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
+  if (UNLIKELY(!impl))
+    return v8::Null(isolate);
 
-    WorkerOrWorkletScriptController* scriptController = impl->scriptController();
-    if (!scriptController)
-        return v8::Null(isolate);
+  WorkerOrWorkletScriptController* scriptController = impl->scriptController();
+  if (!scriptController)
+    return v8::Null(isolate);
 
-    v8::Local<v8::Object> global = scriptController->context()->Global();
-    ASSERT(!global.IsEmpty());
-    return global;
+  v8::Local<v8::Object> global = scriptController->context()->Global();
+  ASSERT(!global.IsEmpty());
+  return global;
 }
 
-} // namespace blink
+}  // namespace blink

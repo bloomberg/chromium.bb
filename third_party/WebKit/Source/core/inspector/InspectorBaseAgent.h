@@ -45,67 +45,74 @@ class LocalFrame;
 using protocol::ErrorString;
 using protocol::Maybe;
 
-class CORE_EXPORT InspectorAgent : public GarbageCollectedFinalized<InspectorAgent> {
-public:
-    InspectorAgent() { }
-    virtual ~InspectorAgent() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+class CORE_EXPORT InspectorAgent
+    : public GarbageCollectedFinalized<InspectorAgent> {
+ public:
+  InspectorAgent() {}
+  virtual ~InspectorAgent() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    virtual void restore() { }
-    virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
-    virtual void flushPendingProtocolNotifications() { }
+  virtual void restore() {}
+  virtual void didCommitLoadForLocalFrame(LocalFrame*) {}
+  virtual void flushPendingProtocolNotifications() {}
 
-    virtual void init(InstrumentingAgents*, protocol::UberDispatcher*, protocol::DictionaryValue*) = 0;
-    virtual void dispose() = 0;
+  virtual void init(InstrumentingAgents*,
+                    protocol::UberDispatcher*,
+                    protocol::DictionaryValue*) = 0;
+  virtual void dispose() = 0;
 };
 
-template<typename DomainMetainfo>
-class InspectorBaseAgent : public InspectorAgent, public DomainMetainfo::BackendClass {
-public:
-    ~InspectorBaseAgent() override { }
+template <typename DomainMetainfo>
+class InspectorBaseAgent : public InspectorAgent,
+                           public DomainMetainfo::BackendClass {
+ public:
+  ~InspectorBaseAgent() override {}
 
-    void init(InstrumentingAgents* instrumentingAgents, protocol::UberDispatcher* dispatcher, protocol::DictionaryValue* state) override
-    {
-        m_instrumentingAgents = instrumentingAgents;
-        m_frontend.reset(new typename DomainMetainfo::FrontendClass(dispatcher->channel()));
-        DomainMetainfo::DispatcherClass::wire(dispatcher, this);
+  void init(InstrumentingAgents* instrumentingAgents,
+            protocol::UberDispatcher* dispatcher,
+            protocol::DictionaryValue* state) override {
+    m_instrumentingAgents = instrumentingAgents;
+    m_frontend.reset(
+        new typename DomainMetainfo::FrontendClass(dispatcher->channel()));
+    DomainMetainfo::DispatcherClass::wire(dispatcher, this);
 
-        m_state = state->getObject(DomainMetainfo::domainName);
-        if (!m_state) {
-            std::unique_ptr<protocol::DictionaryValue> newState = protocol::DictionaryValue::create();
-            m_state = newState.get();
-            state->setObject(DomainMetainfo::domainName, std::move(newState));
-        }
+    m_state = state->getObject(DomainMetainfo::domainName);
+    if (!m_state) {
+      std::unique_ptr<protocol::DictionaryValue> newState =
+          protocol::DictionaryValue::create();
+      m_state = newState.get();
+      state->setObject(DomainMetainfo::domainName, std::move(newState));
     }
+  }
 
-    void disable(ErrorString*) override { }
+  void disable(ErrorString*) override {}
 
-    void dispose() override
-    {
-        ErrorString error;
-        disable(&error);
-        m_frontend.reset();
-        m_state = nullptr;
-        m_instrumentingAgents = nullptr;
-    }
+  void dispose() override {
+    ErrorString error;
+    disable(&error);
+    m_frontend.reset();
+    m_state = nullptr;
+    m_instrumentingAgents = nullptr;
+  }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_instrumentingAgents);
-        InspectorAgent::trace(visitor);
-    }
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(m_instrumentingAgents);
+    InspectorAgent::trace(visitor);
+  }
 
-protected:
-    InspectorBaseAgent() { }
+ protected:
+  InspectorBaseAgent() {}
 
-    typename DomainMetainfo::FrontendClass* frontend() const { return m_frontend.get(); }
-    Member<InstrumentingAgents> m_instrumentingAgents;
-    protocol::DictionaryValue* m_state;
+  typename DomainMetainfo::FrontendClass* frontend() const {
+    return m_frontend.get();
+  }
+  Member<InstrumentingAgents> m_instrumentingAgents;
+  protocol::DictionaryValue* m_state;
 
-private:
-    std::unique_ptr<typename DomainMetainfo::FrontendClass> m_frontend;
+ private:
+  std::unique_ptr<typename DomainMetainfo::FrontendClass> m_frontend;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !defined(InspectorBaseAgent_h)
+#endif  // !defined(InspectorBaseAgent_h)

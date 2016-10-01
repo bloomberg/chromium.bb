@@ -10,18 +10,27 @@
 
 namespace blink {
 
-class SerializedScriptValueForModulesFactory final : public SerializedScriptValueFactory {
-    USING_FAST_MALLOC(SerializedScriptValueForModulesFactory);
-    WTF_MAKE_NONCOPYABLE(SerializedScriptValueForModulesFactory);
-public:
-    SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() { }
+class SerializedScriptValueForModulesFactory final
+    : public SerializedScriptValueFactory {
+  USING_FAST_MALLOC(SerializedScriptValueForModulesFactory);
+  WTF_MAKE_NONCOPYABLE(SerializedScriptValueForModulesFactory);
 
-    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&) override;
+ public:
+  SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() {}
 
-protected:
-    v8::Local<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*) override;
+  PassRefPtr<SerializedScriptValue> create(v8::Isolate*,
+                                           v8::Local<v8::Value>,
+                                           Transferables*,
+                                           WebBlobInfoArray*,
+                                           ExceptionState&) override;
+
+ protected:
+  v8::Local<v8::Value> deserialize(SerializedScriptValue*,
+                                   v8::Isolate*,
+                                   MessagePortArray*,
+                                   const WebBlobInfoArray*) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SerializedScriptValueForModulesFactory_h
+#endif  // SerializedScriptValueForModulesFactory_h

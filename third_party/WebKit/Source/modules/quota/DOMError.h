@@ -34,44 +34,41 @@
 
 namespace blink {
 
-class MODULES_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMError* create(const String& name)
-    {
-        return new DOMError(name);
-    }
-    static DOMError* create(const String& name, const String& message)
-    {
-        return new DOMError(name, message);
-    }
+class MODULES_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>,
+                                public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    static DOMError* create(ExceptionCode ec)
-    {
-        return new DOMError(DOMException::getErrorName(ec), DOMException::getErrorMessage(ec));
-    }
+ public:
+  static DOMError* create(const String& name) { return new DOMError(name); }
+  static DOMError* create(const String& name, const String& message) {
+    return new DOMError(name, message);
+  }
 
-    static DOMError* create(ExceptionCode ec, const String& message)
-    {
-        return new DOMError(DOMException::getErrorName(ec), message);
-    }
+  static DOMError* create(ExceptionCode ec) {
+    return new DOMError(DOMException::getErrorName(ec),
+                        DOMException::getErrorMessage(ec));
+  }
 
-    virtual ~DOMError();
+  static DOMError* create(ExceptionCode ec, const String& message) {
+    return new DOMError(DOMException::getErrorName(ec), message);
+  }
 
-    const String& name() const { return m_name; }
-    const String& message() const { return m_message; }
+  virtual ~DOMError();
 
-    DEFINE_INLINE_TRACE() { }
+  const String& name() const { return m_name; }
+  const String& message() const { return m_message; }
 
-protected:
-    explicit DOMError(const String& name);
-    DOMError(const String& name, const String& message);
+  DEFINE_INLINE_TRACE() {}
 
-private:
-    const String m_name;
-    const String m_message;
+ protected:
+  explicit DOMError(const String& name);
+  DOMError(const String& name, const String& message);
+
+ private:
+  const String m_name;
+  const String m_message;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMError_h
+#endif  // DOMError_h

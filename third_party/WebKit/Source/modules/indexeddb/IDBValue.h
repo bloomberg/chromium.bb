@@ -20,32 +20,37 @@ class WebBlobInfo;
 struct WebIDBValue;
 
 class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
-public:
-    static PassRefPtr<IDBValue> create();
-    static PassRefPtr<IDBValue> create(const WebIDBValue&);
-    static PassRefPtr<IDBValue> create(const IDBValue*, IDBKey*, const IDBKeyPath&);
-    ~IDBValue();
+ public:
+  static PassRefPtr<IDBValue> create();
+  static PassRefPtr<IDBValue> create(const WebIDBValue&);
+  static PassRefPtr<IDBValue> create(const IDBValue*,
+                                     IDBKey*,
+                                     const IDBKeyPath&);
+  ~IDBValue();
 
-    bool isNull() const;
-    Vector<String> getUUIDs() const;
-    const SharedBuffer* data() const;
-    Vector<WebBlobInfo>* blobInfo() const { return m_blobInfo.get(); }
-    const IDBKey* primaryKey() const { return m_primaryKey; }
-    const IDBKeyPath& keyPath() const { return m_keyPath; }
+  bool isNull() const;
+  Vector<String> getUUIDs() const;
+  const SharedBuffer* data() const;
+  Vector<WebBlobInfo>* blobInfo() const { return m_blobInfo.get(); }
+  const IDBKey* primaryKey() const { return m_primaryKey; }
+  const IDBKeyPath& keyPath() const { return m_keyPath; }
 
-private:
-    IDBValue();
-    IDBValue(const WebIDBValue&);
-    IDBValue(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&, IDBKey*, const IDBKeyPath&);
-    IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
+ private:
+  IDBValue();
+  IDBValue(const WebIDBValue&);
+  IDBValue(PassRefPtr<SharedBuffer>,
+           const WebVector<WebBlobInfo>&,
+           IDBKey*,
+           const IDBKeyPath&);
+  IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
 
-    const RefPtr<SharedBuffer> m_data;
-    const std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> m_blobData;
-    const std::unique_ptr<Vector<WebBlobInfo>> m_blobInfo;
-    const Persistent<IDBKey> m_primaryKey;
-    const IDBKeyPath m_keyPath;
+  const RefPtr<SharedBuffer> m_data;
+  const std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> m_blobData;
+  const std::unique_ptr<Vector<WebBlobInfo>> m_blobInfo;
+  const Persistent<IDBKey> m_primaryKey;
+  const IDBKeyPath m_keyPath;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

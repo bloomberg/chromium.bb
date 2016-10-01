@@ -31,250 +31,242 @@ using Result = WebDataConsumerHandle::Result;
 using Flags = WebDataConsumerHandle::Flags;
 
 // This context is not yet thread-safe.
-class ReadableStreamDataConsumerHandle::ReadingContext final : public RefCounted<ReadingContext> {
-    WTF_MAKE_NONCOPYABLE(ReadingContext);
-public:
-    class OnFulfilled final : public ScriptFunction {
-    public:
-        static v8::Local<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
-        {
-            return (new OnFulfilled(scriptState, std::move(context)))->bindToV8Function();
-        }
+class ReadableStreamDataConsumerHandle::ReadingContext final
+    : public RefCounted<ReadingContext> {
+  WTF_MAKE_NONCOPYABLE(ReadingContext);
 
-        ScriptValue call(ScriptValue v) override
-        {
-            RefPtr<ReadingContext> readingContext(m_readingContext);
-            if (!readingContext)
-                return v;
-            bool done;
-            v8::Local<v8::Value> item = v.v8Value();
-            ASSERT(item->IsObject());
-            v8::Local<v8::Value> value = v8UnpackIteratorResult(v.getScriptState(), item.As<v8::Object>(), &done).ToLocalChecked();
-            if (done) {
-                readingContext->onReadDone();
-                return v;
-            }
-            if (!value->IsUint8Array()) {
-                readingContext->onRejected();
-                return ScriptValue();
-            }
-            readingContext->onRead(V8Uint8Array::toImpl(value.As<v8::Object>()));
-            return v;
-        }
-
-    private:
-        OnFulfilled(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
-            : ScriptFunction(scriptState), m_readingContext(context) {}
-
-        RefPtr<ReadingContext> m_readingContext;
-    };
-
-    class OnRejected final : public ScriptFunction {
-    public:
-        static v8::Local<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
-        {
-            return (new OnRejected(scriptState, std::move(context)))->bindToV8Function();
-        }
-
-        ScriptValue call(ScriptValue v) override
-        {
-            RefPtr<ReadingContext> readingContext(m_readingContext);
-            if (!readingContext)
-                return v;
-            readingContext->onRejected();
-            return v;
-        }
-
-    private:
-        OnRejected(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
-            : ScriptFunction(scriptState), m_readingContext(context) {}
-
-        RefPtr<ReadingContext> m_readingContext;
-    };
-
-    class ReaderImpl final : public FetchDataConsumerHandle::Reader {
-    public:
-        ReaderImpl(PassRefPtr<ReadingContext> context, Client* client)
-            : m_readingContext(context)
-        {
-            m_readingContext->attachReader(client);
-        }
-        ~ReaderImpl() override
-        {
-            m_readingContext->detachReader();
-        }
-
-        Result beginRead(const void** buffer, Flags, size_t* available) override
-        {
-            return m_readingContext->beginRead(buffer, available);
-        }
-
-        Result endRead(size_t readSize) override
-        {
-            return m_readingContext->endRead(readSize);
-        }
-
-    private:
-        RefPtr<ReadingContext> m_readingContext;
-    };
-
-    static PassRefPtr<ReadingContext> create(ScriptState* scriptState, ScriptValue streamReader)
-    {
-        return adoptRef(new ReadingContext(scriptState, streamReader));
+ public:
+  class OnFulfilled final : public ScriptFunction {
+   public:
+    static v8::Local<v8::Function> createFunction(
+        ScriptState* scriptState,
+        PassRefPtr<ReadingContext> context) {
+      return (new OnFulfilled(scriptState, std::move(context)))
+          ->bindToV8Function();
     }
 
-    void attachReader(WebDataConsumerHandle::Client* client)
-    {
-        m_client = client;
-        notifyLater();
+    ScriptValue call(ScriptValue v) override {
+      RefPtr<ReadingContext> readingContext(m_readingContext);
+      if (!readingContext)
+        return v;
+      bool done;
+      v8::Local<v8::Value> item = v.v8Value();
+      ASSERT(item->IsObject());
+      v8::Local<v8::Value> value =
+          v8UnpackIteratorResult(v.getScriptState(), item.As<v8::Object>(),
+                                 &done)
+              .ToLocalChecked();
+      if (done) {
+        readingContext->onReadDone();
+        return v;
+      }
+      if (!value->IsUint8Array()) {
+        readingContext->onRejected();
+        return ScriptValue();
+      }
+      readingContext->onRead(V8Uint8Array::toImpl(value.As<v8::Object>()));
+      return v;
     }
 
-    void detachReader()
-    {
-        m_client = nullptr;
+   private:
+    OnFulfilled(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
+        : ScriptFunction(scriptState), m_readingContext(context) {}
+
+    RefPtr<ReadingContext> m_readingContext;
+  };
+
+  class OnRejected final : public ScriptFunction {
+   public:
+    static v8::Local<v8::Function> createFunction(
+        ScriptState* scriptState,
+        PassRefPtr<ReadingContext> context) {
+      return (new OnRejected(scriptState, std::move(context)))
+          ->bindToV8Function();
     }
 
-    Result beginRead(const void** buffer, size_t* available)
-    {
-        *buffer = nullptr;
-        *available = 0;
-        if (m_hasError)
-            return WebDataConsumerHandle::UnexpectedError;
-        if (m_isDone)
-            return WebDataConsumerHandle::Done;
-
-        if (m_pendingBuffer) {
-            ASSERT(m_pendingOffset < m_pendingBuffer->length());
-            *buffer = m_pendingBuffer->data() + m_pendingOffset;
-            *available = m_pendingBuffer->length() - m_pendingOffset;
-            return WebDataConsumerHandle::Ok;
-        }
-        if (!m_isReading) {
-            m_isReading = true;
-            ScriptState::Scope scope(m_scriptState.get());
-            ScriptValue reader(m_scriptState.get(), m_reader.newLocal(m_scriptState->isolate()));
-            if (reader.isEmpty()) {
-                // The reader was collected.
-                m_hasError = true;
-                m_isReading = false;
-                return WebDataConsumerHandle::UnexpectedError;
-            }
-            ReadableStreamOperations::defaultReaderRead(
-                m_scriptState.get(), reader).then(
-                    OnFulfilled::createFunction(m_scriptState.get(), this),
-                    OnRejected::createFunction(m_scriptState.get(), this));
-        }
-        return WebDataConsumerHandle::ShouldWait;
+    ScriptValue call(ScriptValue v) override {
+      RefPtr<ReadingContext> readingContext(m_readingContext);
+      if (!readingContext)
+        return v;
+      readingContext->onRejected();
+      return v;
     }
 
-    Result endRead(size_t readSize)
-    {
-        ASSERT(m_pendingBuffer);
-        ASSERT(m_pendingOffset + readSize <= m_pendingBuffer->length());
-        m_pendingOffset += readSize;
-        if (m_pendingOffset == m_pendingBuffer->length()) {
-            m_pendingBuffer = nullptr;
-            m_pendingOffset = 0;
-        }
-        return WebDataConsumerHandle::Ok;
+   private:
+    OnRejected(ScriptState* scriptState, PassRefPtr<ReadingContext> context)
+        : ScriptFunction(scriptState), m_readingContext(context) {}
+
+    RefPtr<ReadingContext> m_readingContext;
+  };
+
+  class ReaderImpl final : public FetchDataConsumerHandle::Reader {
+   public:
+    ReaderImpl(PassRefPtr<ReadingContext> context, Client* client)
+        : m_readingContext(context) {
+      m_readingContext->attachReader(client);
+    }
+    ~ReaderImpl() override { m_readingContext->detachReader(); }
+
+    Result beginRead(const void** buffer, Flags, size_t* available) override {
+      return m_readingContext->beginRead(buffer, available);
     }
 
-    void onRead(DOMUint8Array* buffer)
-    {
-        ASSERT(m_isReading);
-        ASSERT(buffer);
-        ASSERT(!m_pendingBuffer);
-        ASSERT(!m_pendingOffset);
-        m_isReading = false;
-        if (buffer->length() > 0)
-            m_pendingBuffer = buffer;
-        notify();
+    Result endRead(size_t readSize) override {
+      return m_readingContext->endRead(readSize);
     }
 
-    void onReadDone()
-    {
-        ASSERT(m_isReading);
-        ASSERT(!m_pendingBuffer);
-        m_isReading = false;
-        m_isDone = true;
-        m_reader.clear();
-        notify();
-    }
+   private:
+    RefPtr<ReadingContext> m_readingContext;
+  };
 
-    void onRejected()
-    {
-        ASSERT(m_isReading);
-        ASSERT(!m_pendingBuffer);
+  static PassRefPtr<ReadingContext> create(ScriptState* scriptState,
+                                           ScriptValue streamReader) {
+    return adoptRef(new ReadingContext(scriptState, streamReader));
+  }
+
+  void attachReader(WebDataConsumerHandle::Client* client) {
+    m_client = client;
+    notifyLater();
+  }
+
+  void detachReader() { m_client = nullptr; }
+
+  Result beginRead(const void** buffer, size_t* available) {
+    *buffer = nullptr;
+    *available = 0;
+    if (m_hasError)
+      return WebDataConsumerHandle::UnexpectedError;
+    if (m_isDone)
+      return WebDataConsumerHandle::Done;
+
+    if (m_pendingBuffer) {
+      ASSERT(m_pendingOffset < m_pendingBuffer->length());
+      *buffer = m_pendingBuffer->data() + m_pendingOffset;
+      *available = m_pendingBuffer->length() - m_pendingOffset;
+      return WebDataConsumerHandle::Ok;
+    }
+    if (!m_isReading) {
+      m_isReading = true;
+      ScriptState::Scope scope(m_scriptState.get());
+      ScriptValue reader(m_scriptState.get(),
+                         m_reader.newLocal(m_scriptState->isolate()));
+      if (reader.isEmpty()) {
+        // The reader was collected.
         m_hasError = true;
         m_isReading = false;
-        m_reader.clear();
-        notify();
+        return WebDataConsumerHandle::UnexpectedError;
+      }
+      ReadableStreamOperations::defaultReaderRead(m_scriptState.get(), reader)
+          .then(OnFulfilled::createFunction(m_scriptState.get(), this),
+                OnRejected::createFunction(m_scriptState.get(), this));
     }
+    return WebDataConsumerHandle::ShouldWait;
+  }
 
-    void notify()
-    {
-        if (!m_client)
-            return;
-        m_client->didGetReadable();
+  Result endRead(size_t readSize) {
+    ASSERT(m_pendingBuffer);
+    ASSERT(m_pendingOffset + readSize <= m_pendingBuffer->length());
+    m_pendingOffset += readSize;
+    if (m_pendingOffset == m_pendingBuffer->length()) {
+      m_pendingBuffer = nullptr;
+      m_pendingOffset = 0;
     }
+    return WebDataConsumerHandle::Ok;
+  }
 
-    void notifyLater()
-    {
-        ASSERT(m_client);
-        Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&ReadingContext::notify, PassRefPtr<ReadingContext>(this)));
-    }
+  void onRead(DOMUint8Array* buffer) {
+    ASSERT(m_isReading);
+    ASSERT(buffer);
+    ASSERT(!m_pendingBuffer);
+    ASSERT(!m_pendingOffset);
+    m_isReading = false;
+    if (buffer->length() > 0)
+      m_pendingBuffer = buffer;
+    notify();
+  }
 
-private:
-    ReadingContext(ScriptState* scriptState, ScriptValue streamReader)
-        : m_reader(scriptState->isolate(), streamReader.v8Value())
-        , m_scriptState(scriptState)
-        , m_client(nullptr)
-        , m_pendingOffset(0)
-        , m_isReading(false)
-        , m_isDone(false)
-        , m_hasError(false)
-    {
-        m_reader.setWeak(this, &ReadingContext::onCollected);
-    }
+  void onReadDone() {
+    ASSERT(m_isReading);
+    ASSERT(!m_pendingBuffer);
+    m_isReading = false;
+    m_isDone = true;
+    m_reader.clear();
+    notify();
+  }
 
-    void onCollected()
-    {
-        m_reader.clear();
-        if (m_isDone || m_hasError)
-            return;
-        m_hasError = true;
-        if (m_client)
-            notifyLater();
-    }
+  void onRejected() {
+    ASSERT(m_isReading);
+    ASSERT(!m_pendingBuffer);
+    m_hasError = true;
+    m_isReading = false;
+    m_reader.clear();
+    notify();
+  }
 
-    static void onCollected(const v8::WeakCallbackInfo<ReadableStreamDataConsumerHandle::ReadingContext>& data)
-    {
-        data.GetParameter()->onCollected();
-    }
+  void notify() {
+    if (!m_client)
+      return;
+    m_client->didGetReadable();
+  }
 
-    // |m_reader| is a weak persistent. It should be kept alive by someone
-    // outside of ReadableStreamDataConsumerHandle.
-    // Holding a ScopedPersistent here is safe in terms of cross-world wrapper
-    // leakage because we read only Uint8Array chunks from the reader.
-    ScopedPersistent<v8::Value> m_reader;
-    RefPtr<ScriptState> m_scriptState;
-    WebDataConsumerHandle::Client* m_client;
-    Persistent<DOMUint8Array> m_pendingBuffer;
-    size_t m_pendingOffset;
-    bool m_isReading;
-    bool m_isDone;
-    bool m_hasError;
+  void notifyLater() {
+    ASSERT(m_client);
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        WTF::bind(&ReadingContext::notify, PassRefPtr<ReadingContext>(this)));
+  }
+
+ private:
+  ReadingContext(ScriptState* scriptState, ScriptValue streamReader)
+      : m_reader(scriptState->isolate(), streamReader.v8Value()),
+        m_scriptState(scriptState),
+        m_client(nullptr),
+        m_pendingOffset(0),
+        m_isReading(false),
+        m_isDone(false),
+        m_hasError(false) {
+    m_reader.setWeak(this, &ReadingContext::onCollected);
+  }
+
+  void onCollected() {
+    m_reader.clear();
+    if (m_isDone || m_hasError)
+      return;
+    m_hasError = true;
+    if (m_client)
+      notifyLater();
+  }
+
+  static void onCollected(
+      const v8::WeakCallbackInfo<
+          ReadableStreamDataConsumerHandle::ReadingContext>& data) {
+    data.GetParameter()->onCollected();
+  }
+
+  // |m_reader| is a weak persistent. It should be kept alive by someone
+  // outside of ReadableStreamDataConsumerHandle.
+  // Holding a ScopedPersistent here is safe in terms of cross-world wrapper
+  // leakage because we read only Uint8Array chunks from the reader.
+  ScopedPersistent<v8::Value> m_reader;
+  RefPtr<ScriptState> m_scriptState;
+  WebDataConsumerHandle::Client* m_client;
+  Persistent<DOMUint8Array> m_pendingBuffer;
+  size_t m_pendingOffset;
+  bool m_isReading;
+  bool m_isDone;
+  bool m_hasError;
 };
 
-ReadableStreamDataConsumerHandle::ReadableStreamDataConsumerHandle(ScriptState* scriptState, ScriptValue streamReader)
-    : m_readingContext(ReadingContext::create(scriptState, streamReader))
-{
-}
+ReadableStreamDataConsumerHandle::ReadableStreamDataConsumerHandle(
+    ScriptState* scriptState,
+    ScriptValue streamReader)
+    : m_readingContext(ReadingContext::create(scriptState, streamReader)) {}
 ReadableStreamDataConsumerHandle::~ReadableStreamDataConsumerHandle() = default;
 
-std::unique_ptr<FetchDataConsumerHandle::Reader> ReadableStreamDataConsumerHandle::obtainFetchDataReader(Client* client)
-{
-    return WTF::wrapUnique(new ReadingContext::ReaderImpl(m_readingContext, client));
+std::unique_ptr<FetchDataConsumerHandle::Reader>
+ReadableStreamDataConsumerHandle::obtainFetchDataReader(Client* client) {
+  return WTF::wrapUnique(
+      new ReadingContext::ReaderImpl(m_readingContext, client));
 }
 
-} // namespace blink
+}  // namespace blink

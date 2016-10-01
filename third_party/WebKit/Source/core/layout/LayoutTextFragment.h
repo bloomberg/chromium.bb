@@ -36,65 +36,79 @@ class FirstLetterPseudoElement;
 // We cache offsets so that text transformations can be applied in such a way that we can recover
 // the original unaltered string from our corresponding DOM node.
 class LayoutTextFragment final : public LayoutText {
-public:
-    LayoutTextFragment(Node*, StringImpl*, int startOffset, int length);
-    LayoutTextFragment(Node*, StringImpl*);
-    ~LayoutTextFragment() override;
+ public:
+  LayoutTextFragment(Node*, StringImpl*, int startOffset, int length);
+  LayoutTextFragment(Node*, StringImpl*);
+  ~LayoutTextFragment() override;
 
-    bool isTextFragment() const override { return true; }
+  bool isTextFragment() const override { return true; }
 
-    bool canBeSelectionLeaf() const override { return node() && hasEditableStyle(*node()); }
+  bool canBeSelectionLeaf() const override {
+    return node() && hasEditableStyle(*node());
+  }
 
-    unsigned start() const { return m_start; }
-    unsigned fragmentLength() const { return m_fragmentLength; }
+  unsigned start() const { return m_start; }
+  unsigned fragmentLength() const { return m_fragmentLength; }
 
-    unsigned textStartOffset() const override { return start(); }
+  unsigned textStartOffset() const override { return start(); }
 
-    void setContentString(StringImpl*);
-    StringImpl* contentString() const { return m_contentString.get(); }
-    // The complete text is all of the text in the associated DOM text node.
-    PassRefPtr<StringImpl> completeText() const;
-    // The fragment text is the text which will be used by this LayoutTextFragment. For
-    // things like first-letter this may differ from the completeText as we maybe using
-    // only a portion of the text nodes content.
+  void setContentString(StringImpl*);
+  StringImpl* contentString() const { return m_contentString.get(); }
+  // The complete text is all of the text in the associated DOM text node.
+  PassRefPtr<StringImpl> completeText() const;
+  // The fragment text is the text which will be used by this LayoutTextFragment. For
+  // things like first-letter this may differ from the completeText as we maybe using
+  // only a portion of the text nodes content.
 
-    PassRefPtr<StringImpl> originalText() const override;
+  PassRefPtr<StringImpl> originalText() const override;
 
-    void setText(PassRefPtr<StringImpl>, bool force = false) override;
-    void setTextFragment(PassRefPtr<StringImpl>, unsigned start, unsigned length);
+  void setText(PassRefPtr<StringImpl>, bool force = false) override;
+  void setTextFragment(PassRefPtr<StringImpl>, unsigned start, unsigned length);
 
-    void transformText() override;
+  void transformText() override;
 
-    // FIXME: Rename to LayoutTextFragment
-    const char* name() const override { return "LayoutTextFragment"; }
+  // FIXME: Rename to LayoutTextFragment
+  const char* name() const override { return "LayoutTextFragment"; }
 
-    void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) { m_firstLetterPseudoElement = element; }
-    FirstLetterPseudoElement* firstLetterPseudoElement() const { return m_firstLetterPseudoElement; }
+  void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) {
+    m_firstLetterPseudoElement = element;
+  }
+  FirstLetterPseudoElement* firstLetterPseudoElement() const {
+    return m_firstLetterPseudoElement;
+  }
 
-    void setIsRemainingTextLayoutObject(bool isRemainingText) { m_isRemainingTextLayoutObject = isRemainingText; }
-    bool isRemainingTextLayoutObject() const { return m_isRemainingTextLayoutObject; }
+  void setIsRemainingTextLayoutObject(bool isRemainingText) {
+    m_isRemainingTextLayoutObject = isRemainingText;
+  }
+  bool isRemainingTextLayoutObject() const {
+    return m_isRemainingTextLayoutObject;
+  }
 
-protected:
-    void willBeDestroyed() override;
+ protected:
+  void willBeDestroyed() override;
 
-private:
-    LayoutBlock* blockForAccompanyingFirstLetter() const;
-    UChar previousCharacter() const override;
+ private:
+  LayoutBlock* blockForAccompanyingFirstLetter() const;
+  UChar previousCharacter() const override;
 
-    Text* associatedTextNode() const;
-    void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
+  Text* associatedTextNode() const;
+  void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
-    unsigned m_start;
-    unsigned m_fragmentLength;
-    bool m_isRemainingTextLayoutObject;
-    RefPtr<StringImpl> m_contentString;
-    // Reference back to FirstLetterPseudoElement; cleared by FirstLetterPseudoElement::detachLayoutTree() if
-    // it goes away first.
-    UntracedMember<FirstLetterPseudoElement> m_firstLetterPseudoElement;
+  unsigned m_start;
+  unsigned m_fragmentLength;
+  bool m_isRemainingTextLayoutObject;
+  RefPtr<StringImpl> m_contentString;
+  // Reference back to FirstLetterPseudoElement; cleared by FirstLetterPseudoElement::detachLayoutTree() if
+  // it goes away first.
+  UntracedMember<FirstLetterPseudoElement> m_firstLetterPseudoElement;
 };
 
-DEFINE_TYPE_CASTS(LayoutTextFragment, LayoutObject, object, toLayoutText(object)->isTextFragment(), toLayoutText(object).isTextFragment());
+DEFINE_TYPE_CASTS(LayoutTextFragment,
+                  LayoutObject,
+                  object,
+                  toLayoutText(object)->isTextFragment(),
+                  toLayoutText(object).isTextFragment());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutTextFragment_h
+#endif  // LayoutTextFragment_h

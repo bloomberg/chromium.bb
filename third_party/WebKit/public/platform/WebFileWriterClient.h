@@ -37,21 +37,21 @@
 namespace blink {
 
 class WebFileWriterClient {
-public:
-    // Called for each chunk of a write, to indicate progress.
-    // On the final chunk, when the write is finished, complete will be true.
-    virtual void didWrite(long long bytes, bool complete) = 0;
+ public:
+  // Called for each chunk of a write, to indicate progress.
+  // On the final chunk, when the write is finished, complete will be true.
+  virtual void didWrite(long long bytes, bool complete) = 0;
 
-    // Called once when the truncate completes successfully.
-    virtual void didTruncate() = 0;
+  // Called once when the truncate completes successfully.
+  virtual void didTruncate() = 0;
 
-    // Called if the write or truncate fails, or if it is cancelled before the write or truncate completes. Completion of an operation will be signalled exactly once, either by didFail, didTruncate, or didWrite(..., true).
-    virtual void didFail(WebFileError) = 0;
+  // Called if the write or truncate fails, or if it is cancelled before the write or truncate completes. Completion of an operation will be signalled exactly once, either by didFail, didTruncate, or didWrite(..., true).
+  virtual void didFail(WebFileError) = 0;
 
-protected:
-    virtual ~WebFileWriterClient() { }
+ protected:
+  virtual ~WebFileWriterClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

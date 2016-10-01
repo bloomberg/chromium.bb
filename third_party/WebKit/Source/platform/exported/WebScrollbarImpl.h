@@ -35,40 +35,40 @@ namespace blink {
 
 class Scrollbar;
 class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
-    USING_FAST_MALLOC(WebScrollbarImpl);
-    WTF_MAKE_NONCOPYABLE(WebScrollbarImpl);
-public:
-    static WebScrollbarImpl* create(Scrollbar* scrollbar)
-    {
-        return new WebScrollbarImpl(scrollbar);
-    }
+  USING_FAST_MALLOC(WebScrollbarImpl);
+  WTF_MAKE_NONCOPYABLE(WebScrollbarImpl);
 
-    // Implement WebScrollbar methods
-    bool isOverlay() const override;
-    int value() const override;
-    WebPoint location() const override;
-    WebSize size() const override;
-    bool enabled() const override;
-    int maximum() const override;
-    int totalSize() const override;
-    bool isScrollableAreaActive() const override;
-    void getTickmarks(WebVector<WebRect>& tickmarks) const override;
-    ScrollbarControlSize controlSize() const override;
-    ScrollbarPart pressedPart() const override;
-    ScrollbarPart hoveredPart() const override;
-    ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
-    bool isCustomScrollbar() const override;
-    Orientation orientation() const override;
-    bool isLeftSideVerticalScrollbar() const override;
-    float elasticOverscroll() const override;
-    void setElasticOverscroll(float) override;
+ public:
+  static WebScrollbarImpl* create(Scrollbar* scrollbar) {
+    return new WebScrollbarImpl(scrollbar);
+  }
 
-private:
-    explicit WebScrollbarImpl(Scrollbar*);
+  // Implement WebScrollbar methods
+  bool isOverlay() const override;
+  int value() const override;
+  WebPoint location() const override;
+  WebSize size() const override;
+  bool enabled() const override;
+  int maximum() const override;
+  int totalSize() const override;
+  bool isScrollableAreaActive() const override;
+  void getTickmarks(WebVector<WebRect>& tickmarks) const override;
+  ScrollbarControlSize controlSize() const override;
+  ScrollbarPart pressedPart() const override;
+  ScrollbarPart hoveredPart() const override;
+  ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
+  bool isCustomScrollbar() const override;
+  Orientation orientation() const override;
+  bool isLeftSideVerticalScrollbar() const override;
+  float elasticOverscroll() const override;
+  void setElasticOverscroll(float) override;
 
-    Persistent<Scrollbar> m_scrollbar;
+ private:
+  explicit WebScrollbarImpl(Scrollbar*);
+
+  Persistent<Scrollbar> m_scrollbar;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

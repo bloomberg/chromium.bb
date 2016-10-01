@@ -13,41 +13,37 @@
 namespace blink {
 
 struct CustomElementDescriptorHash {
-    STATIC_ONLY(CustomElementDescriptorHash);
-    static unsigned hash(const CustomElementDescriptor& descriptor)
-    {
-        return WTF::hashInts(
-            AtomicStringHash::hash(descriptor.name()),
-            AtomicStringHash::hash(descriptor.localName()));
-    }
+  STATIC_ONLY(CustomElementDescriptorHash);
+  static unsigned hash(const CustomElementDescriptor& descriptor) {
+    return WTF::hashInts(AtomicStringHash::hash(descriptor.name()),
+                         AtomicStringHash::hash(descriptor.localName()));
+  }
 
-    static bool equal(
-        const CustomElementDescriptor& a,
-        const CustomElementDescriptor& b)
-    {
-        return a == b;
-    }
+  static bool equal(const CustomElementDescriptor& a,
+                    const CustomElementDescriptor& b) {
+    return a == b;
+  }
 
-    static const bool safeToCompareToEmptyOrDeleted = true;
+  static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
-} // namespace blink
+}  // namespace blink
 
 namespace WTF {
 
-template<>
+template <>
 struct HashTraits<blink::CustomElementDescriptor>
     : SimpleClassHashTraits<blink::CustomElementDescriptor> {
-    STATIC_ONLY(HashTraits);
-    static const bool emptyValueIsZero =
-        HashTraits<AtomicString>::emptyValueIsZero;
+  STATIC_ONLY(HashTraits);
+  static const bool emptyValueIsZero =
+      HashTraits<AtomicString>::emptyValueIsZero;
 };
 
-template<>
+template <>
 struct DefaultHash<blink::CustomElementDescriptor> {
-    using Hash = blink::CustomElementDescriptorHash;
+  using Hash = blink::CustomElementDescriptorHash;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // CustomElementDescriptorHash_h
+#endif  // CustomElementDescriptorHash_h

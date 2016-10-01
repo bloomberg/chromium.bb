@@ -11,65 +11,56 @@
 namespace blink {
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver()
-    : m_private(nullptr)
-{
-}
+    : m_private(nullptr) {}
 
 WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(bool unused)
-    : m_private(MediaDevices::create(Document::create()))
-{
+    : m_private(MediaDevices::create(Document::create())) {}
+
+WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(
+    const WebMediaDeviceChangeObserver& other) {
+  assign(other);
 }
 
-WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(const WebMediaDeviceChangeObserver& other)
-{
-    assign(other);
+WebMediaDeviceChangeObserver& WebMediaDeviceChangeObserver::operator=(
+    const WebMediaDeviceChangeObserver& other) {
+  assign(other);
+  return *this;
 }
 
-WebMediaDeviceChangeObserver& WebMediaDeviceChangeObserver::operator=(const WebMediaDeviceChangeObserver& other)
-{
-    assign(other);
-    return *this;
+WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(
+    MediaDevices* observer)
+    : m_private(observer) {}
+
+WebMediaDeviceChangeObserver::~WebMediaDeviceChangeObserver() {
+  reset();
 }
 
-WebMediaDeviceChangeObserver::WebMediaDeviceChangeObserver(MediaDevices* observer)
-    : m_private(observer)
-{
+bool WebMediaDeviceChangeObserver::isNull() const {
+  return m_private.isNull();
 }
 
-WebMediaDeviceChangeObserver::~WebMediaDeviceChangeObserver()
-{
-    reset();
+void WebMediaDeviceChangeObserver::didChangeMediaDevices() {
+  if (m_private.isNull())
+    return;
+
+  m_private->didChangeMediaDevices();
 }
 
-bool WebMediaDeviceChangeObserver::isNull() const
-{
-    return m_private.isNull();
+WebSecurityOrigin WebMediaDeviceChangeObserver::getSecurityOrigin() const {
+  if (m_private.isNull())
+    return WebSecurityOrigin();
+
+  return WebSecurityOrigin(
+      m_private->getExecutionContext()->getSecurityOrigin());
 }
 
-void WebMediaDeviceChangeObserver::didChangeMediaDevices()
-{
-    if (m_private.isNull())
-        return;
-
-    m_private->didChangeMediaDevices();
+void WebMediaDeviceChangeObserver::assign(
+    const WebMediaDeviceChangeObserver& other) {
+  m_private = other.m_private;
 }
 
-WebSecurityOrigin WebMediaDeviceChangeObserver::getSecurityOrigin() const
-{
-    if (m_private.isNull())
-        return WebSecurityOrigin();
-
-    return WebSecurityOrigin(m_private->getExecutionContext()->getSecurityOrigin());
+void WebMediaDeviceChangeObserver::reset() {
+  m_private.reset();
 }
 
-void WebMediaDeviceChangeObserver::assign(const WebMediaDeviceChangeObserver& other)
-{
-    m_private = other.m_private;
-}
-
-void WebMediaDeviceChangeObserver::reset()
-{
-    m_private.reset();
-}
-
-} // namespace blink
+}  // namespace blink

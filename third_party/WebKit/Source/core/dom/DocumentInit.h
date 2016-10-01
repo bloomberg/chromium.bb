@@ -44,63 +44,74 @@ class HTMLImportsController;
 class Settings;
 
 class CORE_EXPORT DocumentInit final {
-    STACK_ALLOCATED();
-public:
-    DocumentInit(const KURL& = KURL(), LocalFrame* = nullptr, Document* contextDocument = nullptr, HTMLImportsController* = nullptr);
-    DocumentInit(Document* ownerDocument, const KURL&, LocalFrame*, Document* contextDocument = nullptr, HTMLImportsController* = nullptr);
-    DocumentInit(const DocumentInit&);
-    ~DocumentInit();
+  STACK_ALLOCATED();
 
-    const KURL& url() const { return m_url; }
-    LocalFrame* frame() const { return m_frame; }
-    HTMLImportsController* importsController() const { return m_importsController; }
+ public:
+  DocumentInit(const KURL& = KURL(),
+               LocalFrame* = nullptr,
+               Document* contextDocument = nullptr,
+               HTMLImportsController* = nullptr);
+  DocumentInit(Document* ownerDocument,
+               const KURL&,
+               LocalFrame*,
+               Document* contextDocument = nullptr,
+               HTMLImportsController* = nullptr);
+  DocumentInit(const DocumentInit&);
+  ~DocumentInit();
 
-    bool hasSecurityContext() const { return frameForSecurityContext(); }
-    bool shouldTreatURLAsSrcdocDocument() const;
-    bool shouldSetURL() const;
-    bool isSeamlessAllowedFor(Document* child) const;
-    bool shouldReuseDefaultView() const { return m_shouldReuseDefaultView; }
-    SandboxFlags getSandboxFlags() const;
-    bool isHostedInReservedIPRange() const;
-    WebInsecureRequestPolicy getInsecureRequestPolicy() const;
-    SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
+  const KURL& url() const { return m_url; }
+  LocalFrame* frame() const { return m_frame; }
+  HTMLImportsController* importsController() const {
+    return m_importsController;
+  }
 
-    Document* parent() const { return m_parent.get(); }
-    Document* owner() const { return m_owner.get(); }
-    KURL parentBaseURL() const;
-    LocalFrame* ownerFrame() const;
-    Settings* settings() const;
+  bool hasSecurityContext() const { return frameForSecurityContext(); }
+  bool shouldTreatURLAsSrcdocDocument() const;
+  bool shouldSetURL() const;
+  bool isSeamlessAllowedFor(Document* child) const;
+  bool shouldReuseDefaultView() const { return m_shouldReuseDefaultView; }
+  SandboxFlags getSandboxFlags() const;
+  bool isHostedInReservedIPRange() const;
+  WebInsecureRequestPolicy getInsecureRequestPolicy() const;
+  SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
 
-    DocumentInit& withRegistrationContext(V0CustomElementRegistrationContext*);
-    DocumentInit& withNewRegistrationContext();
-    V0CustomElementRegistrationContext* registrationContext(Document*) const;
-    Document* contextDocument() const;
+  Document* parent() const { return m_parent.get(); }
+  Document* owner() const { return m_owner.get(); }
+  KURL parentBaseURL() const;
+  LocalFrame* ownerFrame() const;
+  Settings* settings() const;
 
-    static DocumentInit fromContext(Document* contextDocument, const KURL& = KURL());
+  DocumentInit& withRegistrationContext(V0CustomElementRegistrationContext*);
+  DocumentInit& withNewRegistrationContext();
+  V0CustomElementRegistrationContext* registrationContext(Document*) const;
+  Document* contextDocument() const;
 
-private:
-    LocalFrame* frameForSecurityContext() const;
+  static DocumentInit fromContext(Document* contextDocument,
+                                  const KURL& = KURL());
 
-    KURL m_url;
-    Member<LocalFrame> m_frame;
-    Member<Document> m_parent;
-    Member<Document> m_owner;
-    Member<Document> m_contextDocument;
-    Member<HTMLImportsController> m_importsController;
-    Member<V0CustomElementRegistrationContext> m_registrationContext;
-    bool m_createNewRegistrationContext;
+ private:
+  LocalFrame* frameForSecurityContext() const;
 
-    // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For example,
-    // when a script calls window.open("..."), the browser gives JavaScript a window
-    // synchronously but kicks off the load in the window asynchronously. Web sites
-    // expect that modifications that they make to the window object synchronously
-    // won't be blown away when the network load commits. To make that happen, we
-    // "securely transition" the existing LocalDOMWindow to the Document that results from
-    // the network load. See also SecurityContext::isSecureTransitionTo.
-    // FIXME: This is for DocumentWriter creation, not for one of Document.
-    bool m_shouldReuseDefaultView;
+  KURL m_url;
+  Member<LocalFrame> m_frame;
+  Member<Document> m_parent;
+  Member<Document> m_owner;
+  Member<Document> m_contextDocument;
+  Member<HTMLImportsController> m_importsController;
+  Member<V0CustomElementRegistrationContext> m_registrationContext;
+  bool m_createNewRegistrationContext;
+
+  // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For example,
+  // when a script calls window.open("..."), the browser gives JavaScript a window
+  // synchronously but kicks off the load in the window asynchronously. Web sites
+  // expect that modifications that they make to the window object synchronously
+  // won't be blown away when the network load commits. To make that happen, we
+  // "securely transition" the existing LocalDOMWindow to the Document that results from
+  // the network load. See also SecurityContext::isSecureTransitionTo.
+  // FIXME: This is for DocumentWriter creation, not for one of Document.
+  bool m_shouldReuseDefaultView;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentInit_h
+#endif  // DocumentInit_h

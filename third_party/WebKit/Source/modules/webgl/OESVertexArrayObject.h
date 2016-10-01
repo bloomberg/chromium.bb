@@ -34,24 +34,25 @@ class WebGLRenderingContextBase;
 class WebGLVertexArrayObjectOES;
 
 class OESVertexArrayObject final : public WebGLExtension {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static OESVertexArrayObject* create(WebGLRenderingContextBase*);
-    static bool supported(WebGLRenderingContextBase*);
-    static const char* extensionName();
+  DEFINE_WRAPPERTYPEINFO();
 
-    ~OESVertexArrayObject() override;
-    WebGLExtensionName name() const override;
+ public:
+  static OESVertexArrayObject* create(WebGLRenderingContextBase*);
+  static bool supported(WebGLRenderingContextBase*);
+  static const char* extensionName();
 
-    WebGLVertexArrayObjectOES* createVertexArrayOES();
-    void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
-    GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
-    void bindVertexArrayOES(WebGLVertexArrayObjectOES*);
+  ~OESVertexArrayObject() override;
+  WebGLExtensionName name() const override;
 
-private:
-    explicit OESVertexArrayObject(WebGLRenderingContextBase*);
+  WebGLVertexArrayObjectOES* createVertexArrayOES();
+  void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
+  GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
+  void bindVertexArrayOES(WebGLVertexArrayObjectOES*);
+
+ private:
+  explicit OESVertexArrayObject(WebGLRenderingContextBase*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // OESVertexArrayObject_h
+#endif  // OESVertexArrayObject_h

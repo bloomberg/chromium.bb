@@ -8,15 +8,12 @@
 namespace blink {
 
 enum OverlayScrollbarClipBehavior {
-    IgnoreOverlayScrollbarSize,
-    ExcludeOverlayScrollbarSizeForHitTesting
+  IgnoreOverlayScrollbarSize,
+  ExcludeOverlayScrollbarSizeForHitTesting
 };
 
-enum ScrollOffsetClamping {
-    ScrollOffsetUnclamped,
-    ScrollOffsetClamped
-};
+enum ScrollOffsetClamping { ScrollOffsetUnclamped, ScrollOffsetClamped };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScrollEnums_h
+#endif  // ScrollEnums_h

@@ -14,22 +14,21 @@ namespace blink {
 class HTMLLinkElement;
 
 class LinkManifest final : public LinkResource {
-public:
+ public:
+  static LinkManifest* create(HTMLLinkElement* owner);
 
-    static LinkManifest* create(HTMLLinkElement* owner);
+  ~LinkManifest() override;
 
-    ~LinkManifest() override;
+  // LinkResource
+  void process() override;
+  LinkResourceType type() const override { return Manifest; }
+  bool hasLoaded() const override;
+  void ownerRemoved() override;
 
-    // LinkResource
-    void process() override;
-    LinkResourceType type() const override { return Manifest; }
-    bool hasLoaded() const override;
-    void ownerRemoved() override;
-
-private:
-    explicit LinkManifest(HTMLLinkElement* owner);
+ private:
+  explicit LinkManifest(HTMLLinkElement* owner);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LinkManifest_h
+#endif  // LinkManifest_h

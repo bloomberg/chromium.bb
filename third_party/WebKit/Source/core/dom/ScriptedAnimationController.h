@@ -41,50 +41,55 @@ class EventTarget;
 class FrameRequestCallback;
 class MediaQueryListListener;
 
-class ScriptedAnimationController : public GarbageCollected<ScriptedAnimationController> {
-public:
-    static ScriptedAnimationController* create(Document* document)
-    {
-        return new ScriptedAnimationController(document);
-    }
+class ScriptedAnimationController
+    : public GarbageCollected<ScriptedAnimationController> {
+ public:
+  static ScriptedAnimationController* create(Document* document) {
+    return new ScriptedAnimationController(document);
+  }
 
-    DECLARE_TRACE();
-    void clearDocumentPointer() { m_document = nullptr; }
+  DECLARE_TRACE();
+  void clearDocumentPointer() { m_document = nullptr; }
 
-    typedef int CallbackId;
+  typedef int CallbackId;
 
-    int registerCallback(FrameRequestCallback*);
-    void cancelCallback(CallbackId);
-    void serviceScriptedAnimations(double monotonicTimeNow);
+  int registerCallback(FrameRequestCallback*);
+  void cancelCallback(CallbackId);
+  void serviceScriptedAnimations(double monotonicTimeNow);
 
-    void enqueueEvent(Event*);
-    void enqueuePerFrameEvent(Event*);
-    void enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>&);
+  void enqueueEvent(Event*);
+  void enqueuePerFrameEvent(Event*);
+  void enqueueMediaQueryChangeListeners(
+      HeapVector<Member<MediaQueryListListener>>&);
 
-    void suspend();
-    void resume();
+  void suspend();
+  void resume();
 
-    void dispatchEventsAndCallbacksForPrinting();
-private:
-    explicit ScriptedAnimationController(Document*);
+  void dispatchEventsAndCallbacksForPrinting();
 
-    void scheduleAnimationIfNeeded();
+ private:
+  explicit ScriptedAnimationController(Document*);
 
-    void dispatchEvents(const AtomicString& eventInterfaceFilter = AtomicString());
-    void executeCallbacks(double monotonicTimeNow);
-    void callMediaQueryListListeners();
+  void scheduleAnimationIfNeeded();
 
-    bool hasScheduledItems() const;
+  void dispatchEvents(
+      const AtomicString& eventInterfaceFilter = AtomicString());
+  void executeCallbacks(double monotonicTimeNow);
+  void callMediaQueryListListeners();
 
-    Member<Document> m_document;
-    FrameRequestCallbackCollection m_callbackCollection;
-    int m_suspendCount;
-    HeapVector<Member<Event>> m_eventQueue;
-    HeapListHashSet<std::pair<Member<const EventTarget>, const StringImpl*>> m_perFrameEvents;
-    using MediaQueryListListeners = HeapListHashSet<Member<MediaQueryListListener>>;
-    MediaQueryListListeners m_mediaQueryListListeners;
+  bool hasScheduledItems() const;
+
+  Member<Document> m_document;
+  FrameRequestCallbackCollection m_callbackCollection;
+  int m_suspendCount;
+  HeapVector<Member<Event>> m_eventQueue;
+  HeapListHashSet<std::pair<Member<const EventTarget>, const StringImpl*>>
+      m_perFrameEvents;
+  using MediaQueryListListeners =
+      HeapListHashSet<Member<MediaQueryListListener>>;
+  MediaQueryListListeners m_mediaQueryListListeners;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScriptedAnimationController_h
+#endif  // ScriptedAnimationController_h

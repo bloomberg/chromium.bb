@@ -11,49 +11,50 @@
 
 namespace blink {
 
-NodeIntersectionObserverData::NodeIntersectionObserverData() { }
+NodeIntersectionObserverData::NodeIntersectionObserverData() {}
 
-IntersectionObservation* NodeIntersectionObserverData::getObservationFor(IntersectionObserver& observer)
-{
-    auto i = m_intersectionObservations.find(&observer);
-    if (i == m_intersectionObservations.end())
-        return nullptr;
-    return i->value;
+IntersectionObservation* NodeIntersectionObserverData::getObservationFor(
+    IntersectionObserver& observer) {
+  auto i = m_intersectionObservations.find(&observer);
+  if (i == m_intersectionObservations.end())
+    return nullptr;
+  return i->value;
 }
 
-void NodeIntersectionObserverData::addObservation(IntersectionObservation& observation)
-{
-    m_intersectionObservations.add(&observation.observer(), &observation);
+void NodeIntersectionObserverData::addObservation(
+    IntersectionObservation& observation) {
+  m_intersectionObservations.add(&observation.observer(), &observation);
 }
 
-void NodeIntersectionObserverData::removeObservation(IntersectionObserver& observer)
-{
-    m_intersectionObservations.remove(&observer);
+void NodeIntersectionObserverData::removeObservation(
+    IntersectionObserver& observer) {
+  m_intersectionObservations.remove(&observer);
 }
 
-void NodeIntersectionObserverData::activateValidIntersectionObservers(Node& node)
-{
-    IntersectionObserverController& controller = node.document().ensureIntersectionObserverController();
-    for (auto& observer : m_intersectionObservers)
-        controller.addTrackedObserver(*observer);
+void NodeIntersectionObserverData::activateValidIntersectionObservers(
+    Node& node) {
+  IntersectionObserverController& controller =
+      node.document().ensureIntersectionObserverController();
+  for (auto& observer : m_intersectionObservers)
+    controller.addTrackedObserver(*observer);
 }
 
-void NodeIntersectionObserverData::deactivateAllIntersectionObservers(Node& node)
-{
-    node.document().ensureIntersectionObserverController().removeTrackedObserversForRoot(node);
+void NodeIntersectionObserverData::deactivateAllIntersectionObservers(
+    Node& node) {
+  node.document()
+      .ensureIntersectionObserverController()
+      .removeTrackedObserversForRoot(node);
 }
 
-DEFINE_TRACE(NodeIntersectionObserverData)
-{
-    visitor->trace(m_intersectionObservers);
-    visitor->trace(m_intersectionObservations);
+DEFINE_TRACE(NodeIntersectionObserverData) {
+  visitor->trace(m_intersectionObservers);
+  visitor->trace(m_intersectionObservations);
 }
 
-DEFINE_TRACE_WRAPPERS(NodeIntersectionObserverData)
-{
-    for (auto& entry : m_intersectionObservations) {
-        visitor->traceWrappers(entry.key);
-    }
+DEFINE_TRACE_WRAPPERS(NodeIntersectionObserverData) {
+  for (auto& entry : m_intersectionObservations) {
+    visitor->traceWrappers(entry.key);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

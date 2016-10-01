@@ -13,15 +13,16 @@ namespace blink {
 // implementation of complete() will resolve the promise with void. All other
 // complete() methods are not expected to be called (and will reject the
 // promise).
-class SimpleContentDecryptionModuleResultPromise : public ContentDecryptionModuleResultPromise {
-public:
-    explicit SimpleContentDecryptionModuleResultPromise(ScriptState*);
-    ~SimpleContentDecryptionModuleResultPromise() override;
+class SimpleContentDecryptionModuleResultPromise
+    : public ContentDecryptionModuleResultPromise {
+ public:
+  explicit SimpleContentDecryptionModuleResultPromise(ScriptState*);
+  ~SimpleContentDecryptionModuleResultPromise() override;
 
-    // ContentDecryptionModuleResultPromise implementation.
-    void complete() override;
+  // ContentDecryptionModuleResultPromise implementation.
+  void complete() override;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SimpleContentDecryptionModuleResultPromise_h
+#endif  // SimpleContentDecryptionModuleResultPromise_h

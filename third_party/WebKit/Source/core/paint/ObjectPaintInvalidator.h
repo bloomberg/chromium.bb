@@ -19,90 +19,112 @@ class LayoutRect;
 struct PaintInvalidatorContext;
 
 class CORE_EXPORT ObjectPaintInvalidator {
-    STACK_ALLOCATED();
-public:
-    ObjectPaintInvalidator(const LayoutObject& object)
-        : m_object(object) { }
+  STACK_ALLOCATED();
 
-    static void objectWillBeDestroyed(const LayoutObject&);
+ public:
+  ObjectPaintInvalidator(const LayoutObject& object) : m_object(object) {}
 
-    // This calls paintingLayer() which walks up the tree.
-    // If possible, use the faster PaintInvalidatorContext.paintingLayer.setNeedsRepaint().
-    void slowSetPaintingLayerNeedsRepaint();
+  static void objectWillBeDestroyed(const LayoutObject&);
 
-    // TODO(wangxianzhu): Change the call sites to use the faster version if possible.
-    void slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const DisplayItemClient& client, PaintInvalidationReason reason)
-    {
-        slowSetPaintingLayerNeedsRepaint();
-        invalidateDisplayItemClient(client, reason);
-    }
+  // This calls paintingLayer() which walks up the tree.
+  // If possible, use the faster PaintInvalidatorContext.paintingLayer.setNeedsRepaint().
+  void slowSetPaintingLayerNeedsRepaint();
 
-    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationReason);
+  // TODO(wangxianzhu): Change the call sites to use the faster version if possible.
+  void slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+      const DisplayItemClient& client,
+      PaintInvalidationReason reason) {
+    slowSetPaintingLayerNeedsRepaint();
+    invalidateDisplayItemClient(client, reason);
+  }
 
-    void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason);
+  void invalidateDisplayItemClientsIncludingNonCompositingDescendants(
+      PaintInvalidationReason);
 
-    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
-    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason);
+  void invalidatePaintOfPreviousPaintInvalidationRect(
+      const LayoutBoxModelObject& paintInvalidationContainer,
+      PaintInvalidationReason);
 
-    // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
-    // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
-    // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
-    void invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason);
+  // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
+  void invalidateDisplayItemClient(const DisplayItemClient&,
+                                   PaintInvalidationReason);
 
-    // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
-    // If a DisplayItemClient is specified, that client is invalidated rather than |m_object|.
-    // Returns the visual rect that was invalidated (i.e, invalidation in the space of the GraphicsLayer backing this LayoutObject).
-    LayoutRect invalidatePaintRectangle(const LayoutRect&, DisplayItemClient*);
+  // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
+  // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
+  // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
+  void invalidatePaintUsingContainer(
+      const LayoutBoxModelObject& paintInvalidationContainer,
+      const LayoutRect&,
+      PaintInvalidationReason);
 
-    void invalidatePaintIncludingNonCompositingDescendants();
-    void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);
+  // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
+  // If a DisplayItemClient is specified, that client is invalidated rather than |m_object|.
+  // Returns the visual rect that was invalidated (i.e, invalidation in the space of the GraphicsLayer backing this LayoutObject).
+  LayoutRect invalidatePaintRectangle(const LayoutRect&, DisplayItemClient*);
 
-private:
-    void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer);
-    void setBackingNeedsPaintInvalidationInRect(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason);
+  void invalidatePaintIncludingNonCompositingDescendants();
+  void invalidatePaintIncludingNonSelfPaintingLayerDescendants(
+      const LayoutBoxModelObject& paintInvalidationContainer);
 
-protected:
-    const LayoutObject& m_object;
+ private:
+  void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
+      const LayoutBoxModelObject& paintInvalidationContainer);
+  void setBackingNeedsPaintInvalidationInRect(
+      const LayoutBoxModelObject& paintInvalidationContainer,
+      const LayoutRect&,
+      PaintInvalidationReason);
+
+ protected:
+  const LayoutObject& m_object;
 };
 
 class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
-public:
-    ObjectPaintInvalidatorWithContext(const LayoutObject& object, const PaintInvalidatorContext& context)
-        : ObjectPaintInvalidator(object), m_context(context) { }
+ public:
+  ObjectPaintInvalidatorWithContext(const LayoutObject& object,
+                                    const PaintInvalidatorContext& context)
+      : ObjectPaintInvalidator(object), m_context(context) {}
 
-    PaintInvalidationReason invalidatePaintIfNeeded() { return invalidatePaintIfNeededWithComputedReason(computePaintInvalidationReason()); }
+  PaintInvalidationReason invalidatePaintIfNeeded() {
+    return invalidatePaintIfNeededWithComputedReason(
+        computePaintInvalidationReason());
+  }
 
-    PaintInvalidationReason computePaintInvalidationReason();
-    PaintInvalidationReason invalidatePaintIfNeededWithComputedReason(PaintInvalidationReason);
+  PaintInvalidationReason computePaintInvalidationReason();
+  PaintInvalidationReason invalidatePaintIfNeededWithComputedReason(
+      PaintInvalidationReason);
 
-    // This function tries to minimize the amount of invalidation generated by invalidating the "difference" between
-    // |m_context.oldBounds| and |m_context.newBounds|. This means invalidating the union of the previous rectangles
-    // but not their intersection. The use case is when an element only requires a paint invalidation (which means
-    // that its content didn't change) and its bounds changed but its location didn't.
-    // If we don't meet the criteria for an incremental paint, the alternative is a full paint invalidation.
-    // Returns true if any paint invalidation is done.
-    bool incrementallyInvalidatePaint();
+  // This function tries to minimize the amount of invalidation generated by invalidating the "difference" between
+  // |m_context.oldBounds| and |m_context.newBounds|. This means invalidating the union of the previous rectangles
+  // but not their intersection. The use case is when an element only requires a paint invalidation (which means
+  // that its content didn't change) and its bounds changed but its location didn't.
+  // If we don't meet the criteria for an incremental paint, the alternative is a full paint invalidation.
+  // Returns true if any paint invalidation is done.
+  bool incrementallyInvalidatePaint();
 
-private:
-    void invalidateSelectionIfNeeded(PaintInvalidationReason);
+ private:
+  void invalidateSelectionIfNeeded(PaintInvalidationReason);
 
-    // This function generates a full invalidation, which means invalidating both |oldBounds| and |newBounds|.
-    // This is the default choice when generating an invalidation, as it is always correct, albeit it may force some extra painting.
-    void fullyInvalidatePaint(PaintInvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
+  // This function generates a full invalidation, which means invalidating both |oldBounds| and |newBounds|.
+  // This is the default choice when generating an invalidation, as it is always correct, albeit it may force some extra painting.
+  void fullyInvalidatePaint(PaintInvalidationReason,
+                            const LayoutRect& oldBounds,
+                            const LayoutRect& newBounds);
 
-    const PaintInvalidatorContext& m_context;
+  const PaintInvalidatorContext& m_context;
 };
 
 // TODO(crbug.com/457415): We should not allow paint invalidation out of paint invalidation state.
 class DisablePaintInvalidationStateAsserts {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);
-public:
-    DisablePaintInvalidationStateAsserts();
-private:
-    AutoReset<bool> m_disabler;
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);
+
+ public:
+  DisablePaintInvalidationStateAsserts();
+
+ private:
+  AutoReset<bool> m_disabler;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

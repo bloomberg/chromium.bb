@@ -42,21 +42,22 @@ class SharedBuffer;
 
 // Allows transfer of data in multiple chunks from a SharedBuffer to a provided buffer.
 class CORE_EXPORT SharedBufferReader {
-    USING_FAST_MALLOC(SharedBufferReader);
-public:
-    SharedBufferReader(PassRefPtr<const SharedBuffer>);
+  USING_FAST_MALLOC(SharedBufferReader);
 
-    ~SharedBufferReader();
+ public:
+  SharedBufferReader(PassRefPtr<const SharedBuffer>);
 
-    // Returns the number of bytes that were read (i.e. written to |outputBuffer|).
-    // TODO(junov): use size_t instead of int. Until then, readData uses safeCast internally.
-    int readData(char* outputBuffer, int askedToRead);
+  ~SharedBufferReader();
 
-private:
-    RefPtr<const SharedBuffer> m_buffer;
-    size_t m_currentOffset;
+  // Returns the number of bytes that were read (i.e. written to |outputBuffer|).
+  // TODO(junov): use size_t instead of int. Until then, readData uses safeCast internally.
+  int readData(char* outputBuffer, int askedToRead);
+
+ private:
+  RefPtr<const SharedBuffer> m_buffer;
+  size_t m_currentOffset;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SharedBufferReader_h
+#endif  // SharedBufferReader_h

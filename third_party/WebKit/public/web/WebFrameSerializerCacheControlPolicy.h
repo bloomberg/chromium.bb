@@ -14,12 +14,12 @@ namespace blink {
 // other options may be used.
 // TODO(dewittj): Add more policies for subframes and subresources.
 enum class WebFrameSerializerCacheControlPolicy {
-    None = 0,
-    FailForNoStoreMainFrame,
-    SkipAnyFrameOrResourceMarkedNoStore,
-    Last = SkipAnyFrameOrResourceMarkedNoStore,
+  None = 0,
+  FailForNoStoreMainFrame,
+  SkipAnyFrameOrResourceMarkedNoStore,
+  Last = SkipAnyFrameOrResourceMarkedNoStore,
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebFrameSerializerCacheControlPolicy_h
+#endif  // WebFrameSerializerCacheControlPolicy_h

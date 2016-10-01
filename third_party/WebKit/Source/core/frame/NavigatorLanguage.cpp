@@ -8,28 +8,22 @@
 
 namespace blink {
 
-NavigatorLanguage::NavigatorLanguage()
-    : m_languagesChanged(true)
-{
+NavigatorLanguage::NavigatorLanguage() : m_languagesChanged(true) {}
+
+AtomicString NavigatorLanguage::language() {
+  return defaultLanguage();
 }
 
-AtomicString NavigatorLanguage::language()
-{
-    return defaultLanguage();
+bool NavigatorLanguage::hasLanguagesChanged() {
+  if (!m_languagesChanged)
+    return false;
+
+  m_languagesChanged = false;
+  return true;
 }
 
-bool NavigatorLanguage::hasLanguagesChanged()
-{
-    if (!m_languagesChanged)
-        return false;
-
-    m_languagesChanged = false;
-    return true;
+void NavigatorLanguage::setLanguagesChanged() {
+  m_languagesChanged = true;
 }
 
-void NavigatorLanguage::setLanguagesChanged()
-{
-    m_languagesChanged = true;
-}
-
-} // namespace blink
+}  // namespace blink

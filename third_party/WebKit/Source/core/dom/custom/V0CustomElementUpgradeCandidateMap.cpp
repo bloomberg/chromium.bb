@@ -34,62 +34,64 @@
 
 namespace blink {
 
-V0CustomElementUpgradeCandidateMap* V0CustomElementUpgradeCandidateMap::create()
-{
-    return new V0CustomElementUpgradeCandidateMap();
+V0CustomElementUpgradeCandidateMap*
+V0CustomElementUpgradeCandidateMap::create() {
+  return new V0CustomElementUpgradeCandidateMap();
 }
 
-V0CustomElementUpgradeCandidateMap::~V0CustomElementUpgradeCandidateMap()
-{
+V0CustomElementUpgradeCandidateMap::~V0CustomElementUpgradeCandidateMap() {}
+
+void V0CustomElementUpgradeCandidateMap::add(
+    const V0CustomElementDescriptor& descriptor,
+    Element* element) {
+  observe(element);
+
+  UpgradeCandidateMap::AddResult result =
+      m_upgradeCandidates.add(element, descriptor);
+  ASSERT_UNUSED(result, result.isNewEntry);
+
+  UnresolvedDefinitionMap::iterator it =
+      m_unresolvedDefinitions.find(descriptor);
+  ElementSet* elements;
+  if (it == m_unresolvedDefinitions.end())
+    elements = m_unresolvedDefinitions.add(descriptor, new ElementSet())
+                   .storedValue->value.get();
+  else
+    elements = it->value.get();
+  elements->add(element);
 }
 
-void V0CustomElementUpgradeCandidateMap::add(const V0CustomElementDescriptor& descriptor, Element* element)
-{
-    observe(element);
+void V0CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element) {
+  V0CustomElementObserver::elementWasDestroyed(element);
+  UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
+  ASSERT_WITH_SECURITY_IMPLICATION(candidate != m_upgradeCandidates.end());
 
-    UpgradeCandidateMap::AddResult result = m_upgradeCandidates.add(element, descriptor);
-    ASSERT_UNUSED(result, result.isNewEntry);
-
-    UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(descriptor);
-    ElementSet* elements;
-    if (it == m_unresolvedDefinitions.end())
-        elements = m_unresolvedDefinitions.add(descriptor, new ElementSet()).storedValue->value.get();
-    else
-        elements = it->value.get();
-    elements->add(element);
+  UnresolvedDefinitionMap::iterator elements =
+      m_unresolvedDefinitions.find(candidate->value);
+  ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
+  elements->value->remove(element);
+  m_upgradeCandidates.remove(candidate);
 }
 
-void V0CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
-{
-    V0CustomElementObserver::elementWasDestroyed(element);
-    UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
-    ASSERT_WITH_SECURITY_IMPLICATION(candidate != m_upgradeCandidates.end());
+V0CustomElementUpgradeCandidateMap::ElementSet*
+V0CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(
+    const V0CustomElementDescriptor& descriptor) {
+  ElementSet* candidates = m_unresolvedDefinitions.take(descriptor);
 
-    UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
-    ASSERT_WITH_SECURITY_IMPLICATION(elements != m_unresolvedDefinitions.end());
-    elements->value->remove(element);
+  if (!candidates)
+    return nullptr;
+
+  for (const auto& candidate : *candidates) {
+    unobserve(candidate);
     m_upgradeCandidates.remove(candidate);
+  }
+  return candidates;
 }
 
-V0CustomElementUpgradeCandidateMap::ElementSet* V0CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const V0CustomElementDescriptor& descriptor)
-{
-    ElementSet* candidates = m_unresolvedDefinitions.take(descriptor);
-
-    if (!candidates)
-        return nullptr;
-
-    for (const auto& candidate : *candidates) {
-        unobserve(candidate);
-        m_upgradeCandidates.remove(candidate);
-    }
-    return candidates;
+DEFINE_TRACE(V0CustomElementUpgradeCandidateMap) {
+  visitor->trace(m_upgradeCandidates);
+  visitor->trace(m_unresolvedDefinitions);
+  V0CustomElementObserver::trace(visitor);
 }
 
-DEFINE_TRACE(V0CustomElementUpgradeCandidateMap)
-{
-    visitor->trace(m_upgradeCandidates);
-    visitor->trace(m_unresolvedDefinitions);
-    V0CustomElementObserver::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

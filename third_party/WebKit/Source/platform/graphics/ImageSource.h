@@ -44,63 +44,69 @@ class IntSize;
 class SharedBuffer;
 
 class PLATFORM_EXPORT ImageSource final {
-    USING_FAST_MALLOC(ImageSource);
-    WTF_MAKE_NONCOPYABLE(ImageSource);
-public:
-    ImageSource();
-    ~ImageSource();
+  USING_FAST_MALLOC(ImageSource);
+  WTF_MAKE_NONCOPYABLE(ImageSource);
 
-    // Tells the ImageSource that the Image no longer cares about decoded frame
-    // data except for the specified frame. Callers may pass WTF::kNotFound to
-    // clear all frames.
-    //
-    // In response, the ImageSource should delete cached decoded data for other
-    // frames where possible to keep memory use low. The expectation is that in
-    // the future, the caller may call createFrameAtIndex() with an index larger
-    // than the one passed to this function, and the implementation may then
-    // make use of the preserved frame data here in decoding that frame.
-    // By contrast, callers who call this function and then later ask for an
-    // earlier frame may require more work to be done, e.g. redecoding the image
-    // from the beginning.
-    //
-    // Implementations may elect to preserve more frames than the one requested
-    // here if doing so is likely to save CPU time in the future, but will pay
-    // an increased memory cost to do so.
-    //
-    // Returns the number of bytes of frame data actually cleared.
-    size_t clearCacheExceptFrame(size_t);
+ public:
+  ImageSource();
+  ~ImageSource();
 
-    PassRefPtr<SharedBuffer> data();
-    // Returns false when the decoder layer rejects the data.
-    bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
-    String filenameExtension() const;
+  // Tells the ImageSource that the Image no longer cares about decoded frame
+  // data except for the specified frame. Callers may pass WTF::kNotFound to
+  // clear all frames.
+  //
+  // In response, the ImageSource should delete cached decoded data for other
+  // frames where possible to keep memory use low. The expectation is that in
+  // the future, the caller may call createFrameAtIndex() with an index larger
+  // than the one passed to this function, and the implementation may then
+  // make use of the preserved frame data here in decoding that frame.
+  // By contrast, callers who call this function and then later ask for an
+  // earlier frame may require more work to be done, e.g. redecoding the image
+  // from the beginning.
+  //
+  // Implementations may elect to preserve more frames than the one requested
+  // here if doing so is likely to save CPU time in the future, but will pay
+  // an increased memory cost to do so.
+  //
+  // Returns the number of bytes of frame data actually cleared.
+  size_t clearCacheExceptFrame(size_t);
 
-    bool isSizeAvailable();
-    bool hasColorProfile() const;
-    IntSize size(RespectImageOrientationEnum = DoNotRespectImageOrientation) const;
-    IntSize frameSizeAtIndex(size_t, RespectImageOrientationEnum = DoNotRespectImageOrientation) const;
+  PassRefPtr<SharedBuffer> data();
+  // Returns false when the decoder layer rejects the data.
+  bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
+  String filenameExtension() const;
 
-    bool getHotSpot(IntPoint&) const;
-    int repetitionCount();
+  bool isSizeAvailable();
+  bool hasColorProfile() const;
+  IntSize size(
+      RespectImageOrientationEnum = DoNotRespectImageOrientation) const;
+  IntSize frameSizeAtIndex(
+      size_t,
+      RespectImageOrientationEnum = DoNotRespectImageOrientation) const;
 
-    size_t frameCount() const;
+  bool getHotSpot(IntPoint&) const;
+  int repetitionCount();
 
-    // Attempts to create the requested frame.
-    sk_sp<SkImage> createFrameAtIndex(size_t);
+  size_t frameCount() const;
 
-    float frameDurationAtIndex(size_t) const;
-    bool frameHasAlphaAtIndex(size_t) const; // Whether or not the frame actually used any alpha.
-    bool frameIsCompleteAtIndex(size_t) const; // Whether or not the frame is fully received.
-    ImageOrientation orientationAtIndex(size_t) const; // EXIF image orientation
+  // Attempts to create the requested frame.
+  sk_sp<SkImage> createFrameAtIndex(size_t);
 
-    // Returns the number of bytes in the decoded frame. May return 0 if the
-    // frame has not yet begun to decode.
-    size_t frameBytesAtIndex(size_t) const;
+  float frameDurationAtIndex(size_t) const;
+  bool frameHasAlphaAtIndex(
+      size_t) const;  // Whether or not the frame actually used any alpha.
+  bool frameIsCompleteAtIndex(
+      size_t) const;  // Whether or not the frame is fully received.
+  ImageOrientation orientationAtIndex(size_t) const;  // EXIF image orientation
 
-private:
-    std::unique_ptr<DeferredImageDecoder> m_decoder;
+  // Returns the number of bytes in the decoded frame. May return 0 if the
+  // frame has not yet begun to decode.
+  size_t frameBytesAtIndex(size_t) const;
+
+ private:
+  std::unique_ptr<DeferredImageDecoder> m_decoder;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

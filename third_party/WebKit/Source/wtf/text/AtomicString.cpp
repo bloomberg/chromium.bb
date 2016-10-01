@@ -29,7 +29,8 @@
 
 namespace WTF {
 
-static_assert(sizeof(AtomicString) == sizeof(String), "AtomicString and String must be same size");
+static_assert(sizeof(AtomicString) == sizeof(String),
+              "AtomicString and String must be same size");
 
 AtomicString::AtomicString(const LChar* chars, unsigned length)
     : m_string(AtomicStringTable::instance().add(chars, length)) {}
@@ -38,108 +39,96 @@ AtomicString::AtomicString(const UChar* chars, unsigned length)
     : m_string(AtomicStringTable::instance().add(chars, length)) {}
 
 AtomicString::AtomicString(const UChar* chars)
-    : m_string(AtomicStringTable::instance().add(chars, chars ? lengthOfNullTerminatedString(chars) : 0)) {}
+    : m_string(AtomicStringTable::instance().add(
+          chars,
+          chars ? lengthOfNullTerminatedString(chars) : 0)) {}
 
-PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* string)
-{
-    DCHECK(!string->isAtomic());
-    return AtomicStringTable::instance().add(string);
+PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* string) {
+  DCHECK(!string->isAtomic());
+  return AtomicStringTable::instance().add(string);
 }
 
-AtomicString AtomicString::fromUTF8(const char* chars, size_t length)
-{
-    if (!chars)
-        return nullAtom;
-    if (!length)
-        return emptyAtom;
-    return AtomicString(AtomicStringTable::instance().addUTF8(chars, chars + length));
+AtomicString AtomicString::fromUTF8(const char* chars, size_t length) {
+  if (!chars)
+    return nullAtom;
+  if (!length)
+    return emptyAtom;
+  return AtomicString(
+      AtomicStringTable::instance().addUTF8(chars, chars + length));
 }
 
-AtomicString AtomicString::fromUTF8(const char* chars)
-{
-    if (!chars)
-        return nullAtom;
-    if (!*chars)
-        return emptyAtom;
-    return AtomicString(AtomicStringTable::instance().addUTF8(chars, nullptr));
+AtomicString AtomicString::fromUTF8(const char* chars) {
+  if (!chars)
+    return nullAtom;
+  if (!*chars)
+    return emptyAtom;
+  return AtomicString(AtomicStringTable::instance().addUTF8(chars, nullptr));
 }
 
-AtomicString AtomicString::lower() const
-{
-    // Note: This is a hot function in the Dromaeo benchmark.
-    StringImpl* impl = this->impl();
-    if (UNLIKELY(!impl))
-        return *this;
-    RefPtr<StringImpl> newImpl = impl->lower();
-    if (LIKELY(newImpl == impl))
-        return *this;
-    return AtomicString(newImpl.release());
+AtomicString AtomicString::lower() const {
+  // Note: This is a hot function in the Dromaeo benchmark.
+  StringImpl* impl = this->impl();
+  if (UNLIKELY(!impl))
+    return *this;
+  RefPtr<StringImpl> newImpl = impl->lower();
+  if (LIKELY(newImpl == impl))
+    return *this;
+  return AtomicString(newImpl.release());
 }
 
-AtomicString AtomicString::lowerASCII() const
-{
-    StringImpl* impl = this->impl();
-    if (UNLIKELY(!impl))
-        return *this;
-    RefPtr<StringImpl> newImpl = impl->lowerASCII();
-    if (LIKELY(newImpl == impl))
-        return *this;
-    return AtomicString(newImpl.release());
+AtomicString AtomicString::lowerASCII() const {
+  StringImpl* impl = this->impl();
+  if (UNLIKELY(!impl))
+    return *this;
+  RefPtr<StringImpl> newImpl = impl->lowerASCII();
+  if (LIKELY(newImpl == impl))
+    return *this;
+  return AtomicString(newImpl.release());
 }
 
-template<typename IntegerType>
-static AtomicString integerToAtomicString(IntegerType input)
-{
-    IntegerToStringConverter<IntegerType> converter(input);
-    return AtomicString(converter.characters8(), converter.length());
+template <typename IntegerType>
+static AtomicString integerToAtomicString(IntegerType input) {
+  IntegerToStringConverter<IntegerType> converter(input);
+  return AtomicString(converter.characters8(), converter.length());
 }
 
-AtomicString AtomicString::number(int number)
-{
-    return integerToAtomicString(number);
+AtomicString AtomicString::number(int number) {
+  return integerToAtomicString(number);
 }
 
-AtomicString AtomicString::number(unsigned number)
-{
-    return integerToAtomicString(number);
+AtomicString AtomicString::number(unsigned number) {
+  return integerToAtomicString(number);
 }
 
-AtomicString AtomicString::number(long number)
-{
-    return integerToAtomicString(number);
+AtomicString AtomicString::number(long number) {
+  return integerToAtomicString(number);
 }
 
-AtomicString AtomicString::number(unsigned long number)
-{
-    return integerToAtomicString(number);
+AtomicString AtomicString::number(unsigned long number) {
+  return integerToAtomicString(number);
 }
 
-AtomicString AtomicString::number(long long number)
-{
-    return integerToAtomicString(number);
+AtomicString AtomicString::number(long long number) {
+  return integerToAtomicString(number);
 }
 
-AtomicString AtomicString::number(unsigned long long number)
-{
-    return integerToAtomicString(number);
+AtomicString AtomicString::number(unsigned long long number) {
+  return integerToAtomicString(number);
 }
 
-AtomicString AtomicString::number(double number, unsigned precision)
-{
-    NumberToStringBuffer buffer;
-    return AtomicString(numberToFixedPrecisionString(number, precision, buffer));
+AtomicString AtomicString::number(double number, unsigned precision) {
+  NumberToStringBuffer buffer;
+  return AtomicString(numberToFixedPrecisionString(number, precision, buffer));
 }
 
-std::ostream& operator<<(std::ostream& out, const AtomicString& s)
-{
-    return out << s.getString();
+std::ostream& operator<<(std::ostream& out, const AtomicString& s) {
+  return out << s.getString();
 }
 
 #ifndef NDEBUG
-void AtomicString::show() const
-{
-    m_string.show();
+void AtomicString::show() const {
+  m_string.show();
 }
 #endif
 
-} // namespace WTF
+}  // namespace WTF

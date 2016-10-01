@@ -31,26 +31,31 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLParagraphElement::HTMLParagraphElement(Document& document)
-    : HTMLElement(pTag, document)
-{
-}
+    : HTMLElement(pTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLParagraphElement)
 
-void HTMLParagraphElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
-{
-    if (name == alignAttr) {
-        if (equalIgnoringCase(value, "middle") || equalIgnoringCase(value, "center"))
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, CSSValueWebkitCenter);
-        else if (equalIgnoringCase(value, "left"))
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, CSSValueWebkitLeft);
-        else if (equalIgnoringCase(value, "right"))
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, CSSValueWebkitRight);
-        else
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign, value);
-    } else {
-        HTMLElement::collectStyleForPresentationAttribute(name, value, style);
-    }
+void HTMLParagraphElement::collectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
+  if (name == alignAttr) {
+    if (equalIgnoringCase(value, "middle") ||
+        equalIgnoringCase(value, "center"))
+      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitCenter);
+    else if (equalIgnoringCase(value, "left"))
+      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitLeft);
+    else if (equalIgnoringCase(value, "right"))
+      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitRight);
+    else
+      addPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              value);
+  } else {
+    HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+  }
 }
 
-} // namespace blink
+}  // namespace blink

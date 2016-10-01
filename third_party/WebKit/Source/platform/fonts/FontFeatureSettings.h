@@ -37,37 +37,39 @@
 namespace blink {
 
 class PLATFORM_EXPORT FontFeature {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    FontFeature(const AtomicString& tag, int value);
-    bool operator==(const FontFeature&) const;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    const AtomicString& tag() const { return m_tag; }
-    int value() const { return m_value; }
+ public:
+  FontFeature(const AtomicString& tag, int value);
+  bool operator==(const FontFeature&) const;
 
-private:
-    AtomicString m_tag;
-    const int m_value;
+  const AtomicString& tag() const { return m_tag; }
+  int value() const { return m_value; }
+
+ private:
+  AtomicString m_tag;
+  const int m_value;
 };
 
-class PLATFORM_EXPORT FontFeatureSettings : public RefCounted<FontFeatureSettings> {
-    WTF_MAKE_NONCOPYABLE(FontFeatureSettings);
-public:
-    static PassRefPtr<FontFeatureSettings> create()
-    {
-        return adoptRef(new FontFeatureSettings());
-    }
-    void append(const FontFeature& feature) { m_list.append(feature); }
-    size_t size() const { return m_list.size(); }
-    const FontFeature& operator[](int index) const { return m_list[index]; }
-    const FontFeature& at(size_t index) const { return m_list.at(index); }
-    bool operator==(const FontFeatureSettings&) const;
+class PLATFORM_EXPORT FontFeatureSettings
+    : public RefCounted<FontFeatureSettings> {
+  WTF_MAKE_NONCOPYABLE(FontFeatureSettings);
 
-private:
-    FontFeatureSettings();
-    Vector<FontFeature> m_list;
+ public:
+  static PassRefPtr<FontFeatureSettings> create() {
+    return adoptRef(new FontFeatureSettings());
+  }
+  void append(const FontFeature& feature) { m_list.append(feature); }
+  size_t size() const { return m_list.size(); }
+  const FontFeature& operator[](int index) const { return m_list[index]; }
+  const FontFeature& at(size_t index) const { return m_list.at(index); }
+  bool operator==(const FontFeatureSettings&) const;
+
+ private:
+  FontFeatureSettings();
+  Vector<FontFeature> m_list;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FontFeatureSettings_h
+#endif  // FontFeatureSettings_h

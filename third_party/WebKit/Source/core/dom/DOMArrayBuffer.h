@@ -12,50 +12,46 @@
 namespace blink {
 
 class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DOMArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer)
-    {
-        return new DOMArrayBuffer(std::move(buffer));
-    }
-    static DOMArrayBuffer* create(unsigned numElements, unsigned elementByteSize)
-    {
-        return create(WTF::ArrayBuffer::create(numElements, elementByteSize));
-    }
-    static DOMArrayBuffer* create(const void* source, unsigned byteLength)
-    {
-        return create(WTF::ArrayBuffer::create(source, byteLength));
-    }
-    static DOMArrayBuffer* create(WTF::ArrayBufferContents& contents)
-    {
-        return create(WTF::ArrayBuffer::create(contents));
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    // Only for use by XMLHttpRequest::responseArrayBuffer and
-    // Internals::serializeObject.
-    static DOMArrayBuffer* createUninitialized(unsigned numElements, unsigned elementByteSize)
-    {
-        return create(WTF::ArrayBuffer::createUninitialized(numElements, elementByteSize));
-    }
+ public:
+  static DOMArrayBuffer* create(PassRefPtr<WTF::ArrayBuffer> buffer) {
+    return new DOMArrayBuffer(std::move(buffer));
+  }
+  static DOMArrayBuffer* create(unsigned numElements,
+                                unsigned elementByteSize) {
+    return create(WTF::ArrayBuffer::create(numElements, elementByteSize));
+  }
+  static DOMArrayBuffer* create(const void* source, unsigned byteLength) {
+    return create(WTF::ArrayBuffer::create(source, byteLength));
+  }
+  static DOMArrayBuffer* create(WTF::ArrayBufferContents& contents) {
+    return create(WTF::ArrayBuffer::create(contents));
+  }
 
-    DOMArrayBuffer* slice(int begin, int end) const
-    {
-        return create(buffer()->slice(begin, end));
-    }
-    DOMArrayBuffer* slice(int begin) const
-    {
-        return create(buffer()->slice(begin));
-    }
+  // Only for use by XMLHttpRequest::responseArrayBuffer and
+  // Internals::serializeObject.
+  static DOMArrayBuffer* createUninitialized(unsigned numElements,
+                                             unsigned elementByteSize) {
+    return create(
+        WTF::ArrayBuffer::createUninitialized(numElements, elementByteSize));
+  }
 
-    v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+  DOMArrayBuffer* slice(int begin, int end) const {
+    return create(buffer()->slice(begin, end));
+  }
+  DOMArrayBuffer* slice(int begin) const {
+    return create(buffer()->slice(begin));
+  }
 
-private:
-    explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)
-        : DOMArrayBufferBase(std::move(buffer))
-    {
-    }
+  v8::Local<v8::Object> wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creationContext) override;
+
+ private:
+  explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)
+      : DOMArrayBufferBase(std::move(buffer)) {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMArrayBuffer_h
+#endif  // DOMArrayBuffer_h

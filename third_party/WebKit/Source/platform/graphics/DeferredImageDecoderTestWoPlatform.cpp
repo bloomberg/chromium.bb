@@ -30,88 +30,89 @@ namespace blink {
  *  @param bytesForFirstFrame Number of bytes needed to return an SkImage
  *  @param laterFrame Frame to decode with almost complete data. Can be 0.
  */
-static void mixImages(const char* fileName, size_t bytesForFirstFrame, size_t laterFrame)
-{
-    RefPtr<SharedBuffer> file = readFile(fileName);
-    ASSERT_NE(file, nullptr);
+static void mixImages(const char* fileName,
+                      size_t bytesForFirstFrame,
+                      size_t laterFrame) {
+  RefPtr<SharedBuffer> file = readFile(fileName);
+  ASSERT_NE(file, nullptr);
 
-    RefPtr<SharedBuffer> partialFile = SharedBuffer::create(file->data(), bytesForFirstFrame);
-    std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(partialFile, false,
-        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
+  RefPtr<SharedBuffer> partialFile =
+      SharedBuffer::create(file->data(), bytesForFirstFrame);
+  std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(
+      partialFile, false, ImageDecoder::AlphaPremultiplied,
+      ImageDecoder::GammaAndColorProfileIgnored);
+  ASSERT_NE(decoder, nullptr);
+  sk_sp<SkImage> partialImage = decoder->createFrameAtIndex(0);
+
+  RefPtr<SharedBuffer> almostCompleteFile =
+      SharedBuffer::create(file->data(), file->size() - 1);
+  decoder->setData(almostCompleteFile, false);
+  sk_sp<SkImage> imageWithMoreData = decoder->createFrameAtIndex(laterFrame);
+
+  imageWithMoreData->preroll();
+  partialImage->preroll();
+}
+
+TEST(DeferredImageDecoderTestWoPlatform, mixImagesGif) {
+  mixImages("/LayoutTests/fast/images/resources/animated.gif", 818u, 1u);
+}
+
+TEST(DeferredImageDecoderTestWoPlatform, mixImagesPng) {
+  mixImages("/LayoutTests/fast/images/resources/mu.png", 910u, 0u);
+}
+
+TEST(DeferredImageDecoderTestWoPlatform, mixImagesJpg) {
+  mixImages("/LayoutTests/fast/images/resources/2-dht.jpg", 177u, 0u);
+}
+
+TEST(DeferredImageDecoderTestWoPlatform, mixImagesWebp) {
+  mixImages("/LayoutTests/fast/images/resources/webp-animated.webp", 142u, 1u);
+}
+
+TEST(DeferredImageDecoderTestWoPlatform, mixImagesBmp) {
+  mixImages("/LayoutTests/fast/images/resources/lenna.bmp", 122u, 0u);
+}
+
+TEST(DeferredImageDecoderTestWoPlatform, mixImagesIco) {
+  mixImages("/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico",
+            1376u, 1u);
+}
+
+TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
+  const char* testFiles[] = {
+      "/LayoutTests/fast/images/resources/animated.gif",
+      "/LayoutTests/fast/images/resources/mu.png",
+      "/LayoutTests/fast/images/resources/2-dht.jpg",
+      "/LayoutTests/fast/images/resources/webp-animated.webp",
+      "/LayoutTests/fast/images/resources/lenna.bmp",
+      "/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico",
+  };
+
+  for (size_t i = 0; i < SK_ARRAY_COUNT(testFiles); ++i) {
+    RefPtr<SharedBuffer> fileBuffer = readFile(testFiles[i]);
+    ASSERT_NE(fileBuffer, nullptr);
+    // We need contiguous data, which SharedBuffer doesn't guarantee.
+    sk_sp<SkData> skData = fileBuffer->getAsSkData();
+    EXPECT_EQ(skData->size(), fileBuffer->size());
+    const char* data = reinterpret_cast<const char*>(skData->bytes());
+
+    // Truncated signature (only 1 byte).  Decoder instantiation should fail.
+    RefPtr<SharedBuffer> buffer = SharedBuffer::create<size_t>(data, 1u);
+    EXPECT_FALSE(ImageDecoder::hasSufficientDataToSniffImageType(*buffer));
+    EXPECT_EQ(nullptr, DeferredImageDecoder::create(
+                           buffer, false, ImageDecoder::AlphaPremultiplied,
+                           ImageDecoder::GammaAndColorProfileIgnored));
+
+    // Append the rest of the data.  We should be able to sniff the signature now, even if segmented.
+    buffer->append<size_t>(data + 1, skData->size() - 1);
+    EXPECT_TRUE(ImageDecoder::hasSufficientDataToSniffImageType(*buffer));
+    std::unique_ptr<DeferredImageDecoder> decoder =
+        DeferredImageDecoder::create(buffer, false,
+                                     ImageDecoder::AlphaPremultiplied,
+                                     ImageDecoder::GammaAndColorProfileIgnored);
     ASSERT_NE(decoder, nullptr);
-    sk_sp<SkImage> partialImage = decoder->createFrameAtIndex(0);
-
-    RefPtr<SharedBuffer> almostCompleteFile = SharedBuffer::create(file->data(), file->size() - 1);
-    decoder->setData(almostCompleteFile, false);
-    sk_sp<SkImage> imageWithMoreData = decoder->createFrameAtIndex(laterFrame);
-
-    imageWithMoreData->preroll();
-    partialImage->preroll();
+    EXPECT_TRUE(String(testFiles[i]).endsWith(decoder->filenameExtension()));
+  }
 }
 
-TEST(DeferredImageDecoderTestWoPlatform, mixImagesGif)
-{
-    mixImages("/LayoutTests/fast/images/resources/animated.gif", 818u, 1u);
-}
-
-TEST(DeferredImageDecoderTestWoPlatform, mixImagesPng)
-{
-    mixImages("/LayoutTests/fast/images/resources/mu.png", 910u, 0u);
-}
-
-TEST(DeferredImageDecoderTestWoPlatform, mixImagesJpg)
-{
-    mixImages("/LayoutTests/fast/images/resources/2-dht.jpg", 177u, 0u);
-}
-
-TEST(DeferredImageDecoderTestWoPlatform, mixImagesWebp)
-{
-    mixImages("/LayoutTests/fast/images/resources/webp-animated.webp", 142u, 1u);
-}
-
-TEST(DeferredImageDecoderTestWoPlatform, mixImagesBmp)
-{
-    mixImages("/LayoutTests/fast/images/resources/lenna.bmp", 122u, 0u);
-}
-
-TEST(DeferredImageDecoderTestWoPlatform, mixImagesIco)
-{
-    mixImages("/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico", 1376u, 1u);
-}
-
-TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature)
-{
-    const char* testFiles[] = {
-        "/LayoutTests/fast/images/resources/animated.gif",
-        "/LayoutTests/fast/images/resources/mu.png",
-        "/LayoutTests/fast/images/resources/2-dht.jpg",
-        "/LayoutTests/fast/images/resources/webp-animated.webp",
-        "/LayoutTests/fast/images/resources/lenna.bmp",
-        "/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico",
-    };
-
-    for (size_t i = 0; i < SK_ARRAY_COUNT(testFiles); ++i) {
-        RefPtr<SharedBuffer> fileBuffer = readFile(testFiles[i]);
-        ASSERT_NE(fileBuffer, nullptr);
-        // We need contiguous data, which SharedBuffer doesn't guarantee.
-        sk_sp<SkData> skData = fileBuffer->getAsSkData();
-        EXPECT_EQ(skData->size(), fileBuffer->size());
-        const char* data = reinterpret_cast<const char*>(skData->bytes());
-
-        // Truncated signature (only 1 byte).  Decoder instantiation should fail.
-        RefPtr<SharedBuffer> buffer = SharedBuffer::create<size_t>(data, 1u);
-        EXPECT_FALSE(ImageDecoder::hasSufficientDataToSniffImageType(*buffer));
-        EXPECT_EQ(nullptr, DeferredImageDecoder::create(buffer, false,
-            ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
-
-        // Append the rest of the data.  We should be able to sniff the signature now, even if segmented.
-        buffer->append<size_t>(data + 1, skData->size() - 1);
-        EXPECT_TRUE(ImageDecoder::hasSufficientDataToSniffImageType(*buffer));
-        std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(buffer, false,
-            ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
-        ASSERT_NE(decoder, nullptr);
-        EXPECT_TRUE(String(testFiles[i]).endsWith(decoder->filenameExtension()));
-    }
-}
-
-} // namespace blink
+}  // namespace blink

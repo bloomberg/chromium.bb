@@ -19,219 +19,227 @@
 
 namespace blink {
 
-CustomElementRegistry* CustomElement::registry(const Element& element)
-{
-    return registry(element.document());
+CustomElementRegistry* CustomElement::registry(const Element& element) {
+  return registry(element.document());
 }
 
-CustomElementRegistry* CustomElement::registry(const Document& document)
-{
-    if (LocalDOMWindow* window = document.executingWindow())
-        return window->customElements();
+CustomElementRegistry* CustomElement::registry(const Document& document) {
+  if (LocalDOMWindow* window = document.executingWindow())
+    return window->customElements();
+  return nullptr;
+}
+
+static CustomElementDefinition* definitionForElementWithoutCheck(
+    const Element& element) {
+  DCHECK_EQ(element.getCustomElementState(), CustomElementState::Custom);
+  return element.customElementDefinition();
+}
+
+CustomElementDefinition* CustomElement::definitionForElement(
+    const Element* element) {
+  if (!element ||
+      element->getCustomElementState() != CustomElementState::Custom)
     return nullptr;
+  return definitionForElementWithoutCheck(*element);
 }
 
-static CustomElementDefinition* definitionForElementWithoutCheck(const Element& element)
-{
-    DCHECK_EQ(element.getCustomElementState(), CustomElementState::Custom);
-    return element.customElementDefinition();
+bool CustomElement::isHyphenatedSpecElementName(const AtomicString& name) {
+  // Even if Blink does not implement one of the related specs, (for
+  // example annotation-xml is from MathML, which Blink does not
+  // implement) we must prohibit using the name because that is
+  // required by the HTML spec which we *do* implement. Don't remove
+  // names from this list without removing them from the HTML spec
+  // first.
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, hyphenatedSpecElementNames,
+                      ({
+                          "annotation-xml", "color-profile", "font-face",
+                          "font-face-src", "font-face-uri", "font-face-format",
+                          "font-face-name", "missing-glyph",
+                      }));
+  return hyphenatedSpecElementNames.contains(name);
 }
 
-CustomElementDefinition* CustomElement::definitionForElement(const Element* element)
-{
-    if (!element || element->getCustomElementState() != CustomElementState::Custom)
-        return nullptr;
-    return definitionForElementWithoutCheck(*element);
+bool CustomElement::shouldCreateCustomElement(const AtomicString& localName) {
+  return RuntimeEnabledFeatures::customElementsV1Enabled() &&
+         isValidName(localName);
 }
 
-bool CustomElement::isHyphenatedSpecElementName(const AtomicString& name)
-{
-    // Even if Blink does not implement one of the related specs, (for
-    // example annotation-xml is from MathML, which Blink does not
-    // implement) we must prohibit using the name because that is
-    // required by the HTML spec which we *do* implement. Don't remove
-    // names from this list without removing them from the HTML spec
-    // first.
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, hyphenatedSpecElementNames, ({
-        "annotation-xml",
-        "color-profile",
-        "font-face",
-        "font-face-src",
-        "font-face-uri",
-        "font-face-format",
-        "font-face-name",
-        "missing-glyph",
-    }));
-    return hyphenatedSpecElementNames.contains(name);
+bool CustomElement::shouldCreateCustomElement(const QualifiedName& tagName) {
+  return shouldCreateCustomElement(tagName.localName()) &&
+         tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
 }
 
-bool CustomElement::shouldCreateCustomElement(const AtomicString& localName)
-{
-    return RuntimeEnabledFeatures::customElementsV1Enabled()
-        && isValidName(localName);
+static CustomElementDefinition* definitionForName(const Document& document,
+                                                  const QualifiedName& name) {
+  if (CustomElementRegistry* registry = CustomElement::registry(document))
+    return registry->definitionForName(name.localName());
+  return nullptr;
 }
 
-bool CustomElement::shouldCreateCustomElement(const QualifiedName& tagName)
-{
-    return shouldCreateCustomElement(tagName.localName())
-        && tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
+HTMLElement* CustomElement::createCustomElementSync(
+    Document& document,
+    const AtomicString& localName,
+    ExceptionState& exceptionState) {
+  return createCustomElementSync(
+      document,
+      QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI),
+      exceptionState);
 }
 
-static CustomElementDefinition* definitionForName(const Document& document, const QualifiedName& name)
-{
-    if (CustomElementRegistry* registry = CustomElement::registry(document))
-        return registry->definitionForName(name.localName());
-    return nullptr;
+HTMLElement* CustomElement::createCustomElementSync(
+    Document& document,
+    const QualifiedName& tagName,
+    ExceptionState& exceptionState) {
+  DCHECK(shouldCreateCustomElement(tagName));
+
+  // To create an element:
+  // https://dom.spec.whatwg.org/#concept-create-element
+  // 6. If definition is non-null, then:
+  // 6.1. If the synchronous custom elements flag is set:
+  if (CustomElementDefinition* definition =
+          definitionForName(document, tagName))
+    return definition->createElementSync(document, tagName, exceptionState);
+
+  return createUndefinedElement(document, tagName);
 }
 
-HTMLElement* CustomElement::createCustomElementSync(Document& document, const AtomicString& localName, ExceptionState& exceptionState)
-{
-    return createCustomElementSync(document,
-        QualifiedName(nullAtom, localName, HTMLNames::xhtmlNamespaceURI),
-        exceptionState);
+HTMLElement* CustomElement::createCustomElementSync(
+    Document& document,
+    const QualifiedName& tagName) {
+  DCHECK(shouldCreateCustomElement(tagName));
+
+  // When invoked from "create an element for a token":
+  // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
+  // 7. If this step throws an exception, then report the exception,
+  // and let element be instead a new element that implements
+  // HTMLUnknownElement.
+  if (CustomElementDefinition* definition =
+          definitionForName(document, tagName))
+    return definition->createElementSync(document, tagName);
+
+  return createUndefinedElement(document, tagName);
 }
 
-HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName, ExceptionState& exceptionState)
-{
-    DCHECK(shouldCreateCustomElement(tagName));
+HTMLElement* CustomElement::createCustomElementAsync(
+    Document& document,
+    const QualifiedName& tagName) {
+  DCHECK(shouldCreateCustomElement(tagName));
 
-    // To create an element:
-    // https://dom.spec.whatwg.org/#concept-create-element
-    // 6. If definition is non-null, then:
-    // 6.1. If the synchronous custom elements flag is set:
-    if (CustomElementDefinition* definition = definitionForName(document, tagName))
-        return definition->createElementSync(document, tagName, exceptionState);
+  // To create an element:
+  // https://dom.spec.whatwg.org/#concept-create-element
+  // 6. If definition is non-null, then:
+  // 6.2. If the synchronous custom elements flag is not set:
+  if (CustomElementDefinition* definition =
+          definitionForName(document, tagName))
+    return definition->createElementAsync(document, tagName);
 
-    return createUndefinedElement(document, tagName);
+  return createUndefinedElement(document, tagName);
 }
 
-HTMLElement* CustomElement::createCustomElementSync(Document& document, const QualifiedName& tagName)
-{
-    DCHECK(shouldCreateCustomElement(tagName));
+HTMLElement* CustomElement::createUndefinedElement(
+    Document& document,
+    const QualifiedName& tagName) {
+  DCHECK(shouldCreateCustomElement(tagName));
 
-    // When invoked from "create an element for a token":
-    // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
-    // 7. If this step throws an exception, then report the exception,
-    // and let element be instead a new element that implements
-    // HTMLUnknownElement.
-    if (CustomElementDefinition* definition = definitionForName(document, tagName))
-        return definition->createElementSync(document, tagName);
+  HTMLElement* element;
+  if (V0CustomElement::isValidName(tagName.localName()) &&
+      document.registrationContext()) {
+    Element* v0element = document.registrationContext()->createCustomTagElement(
+        document, tagName);
+    SECURITY_DCHECK(v0element->isHTMLElement());
+    element = toHTMLElement(v0element);
+  } else {
+    element = HTMLElement::create(tagName, document);
+  }
 
-    return createUndefinedElement(document, tagName);
+  element->setCustomElementState(CustomElementState::Undefined);
+
+  return element;
 }
 
-HTMLElement* CustomElement::createCustomElementAsync(Document& document, const QualifiedName& tagName)
-{
-    DCHECK(shouldCreateCustomElement(tagName));
+HTMLElement* CustomElement::createFailedElement(Document& document,
+                                                const QualifiedName& tagName) {
+  DCHECK(shouldCreateCustomElement(tagName));
 
-    // To create an element:
-    // https://dom.spec.whatwg.org/#concept-create-element
-    // 6. If definition is non-null, then:
-    // 6.2. If the synchronous custom elements flag is not set:
-    if (CustomElementDefinition* definition = definitionForName(document, tagName))
-        return definition->createElementAsync(document, tagName);
+  // "create an element for a token":
+  // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
 
-    return createUndefinedElement(document, tagName);
+  // 7. If this step throws an exception, let element be instead a new element
+  // that implements HTMLUnknownElement, with no attributes, namespace set to
+  // given namespace, namespace prefix set to null, custom element state set
+  // to "failed", and node document set to document.
+
+  HTMLElement* element = HTMLUnknownElement::create(tagName, document);
+  element->setCustomElementState(CustomElementState::Failed);
+  return element;
 }
 
-HTMLElement* CustomElement::createUndefinedElement(Document& document, const QualifiedName& tagName)
-{
-    DCHECK(shouldCreateCustomElement(tagName));
+void CustomElement::enqueue(Element* element, CustomElementReaction* reaction) {
+  // To enqueue an element on the appropriate element queue
+  // https://html.spec.whatwg.org/multipage/scripting.html#enqueue-an-element-on-the-appropriate-element-queue
 
-    HTMLElement* element;
-    if (V0CustomElement::isValidName(tagName.localName()) && document.registrationContext()) {
-        Element* v0element = document.registrationContext()->createCustomTagElement(document, tagName);
-        SECURITY_DCHECK(v0element->isHTMLElement());
-        element = toHTMLElement(v0element);
-    } else {
-        element = HTMLElement::create(tagName, document);
-    }
+  // If the custom element reactions stack is not empty, then
+  // Add element to the current element queue.
+  if (CEReactionsScope* current = CEReactionsScope::current()) {
+    current->enqueueToCurrentQueue(element, reaction);
+    return;
+  }
 
-    element->setCustomElementState(CustomElementState::Undefined);
-
-    return element;
+  // If the custom element reactions stack is empty, then
+  // Add element to the backup element queue.
+  CustomElementReactionStack::current().enqueueToBackupQueue(element, reaction);
 }
 
-HTMLElement* CustomElement::createFailedElement(Document& document, const QualifiedName& tagName)
-{
-    DCHECK(shouldCreateCustomElement(tagName));
-
-    // "create an element for a token":
-    // https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
-
-    // 7. If this step throws an exception, let element be instead a new element
-    // that implements HTMLUnknownElement, with no attributes, namespace set to
-    // given namespace, namespace prefix set to null, custom element state set
-    // to "failed", and node document set to document.
-
-    HTMLElement* element = HTMLUnknownElement::create(tagName, document);
-    element->setCustomElementState(CustomElementState::Failed);
-    return element;
+void CustomElement::enqueueConnectedCallback(Element* element) {
+  CustomElementDefinition* definition =
+      definitionForElementWithoutCheck(*element);
+  if (definition->hasConnectedCallback())
+    definition->enqueueConnectedCallback(element);
 }
 
-void CustomElement::enqueue(Element* element, CustomElementReaction* reaction)
-{
-    // To enqueue an element on the appropriate element queue
-    // https://html.spec.whatwg.org/multipage/scripting.html#enqueue-an-element-on-the-appropriate-element-queue
-
-    // If the custom element reactions stack is not empty, then
-    // Add element to the current element queue.
-    if (CEReactionsScope* current = CEReactionsScope::current()) {
-        current->enqueueToCurrentQueue(element, reaction);
-        return;
-    }
-
-    // If the custom element reactions stack is empty, then
-    // Add element to the backup element queue.
-    CustomElementReactionStack::current().enqueueToBackupQueue(element, reaction);
+void CustomElement::enqueueDisconnectedCallback(Element* element) {
+  CustomElementDefinition* definition =
+      definitionForElementWithoutCheck(*element);
+  if (definition->hasDisconnectedCallback())
+    definition->enqueueDisconnectedCallback(element);
 }
 
-void CustomElement::enqueueConnectedCallback(Element* element)
-{
-    CustomElementDefinition* definition = definitionForElementWithoutCheck(*element);
-    if (definition->hasConnectedCallback())
-        definition->enqueueConnectedCallback(element);
+void CustomElement::enqueueAdoptedCallback(Element* element,
+                                           Document* oldOwner,
+                                           Document* newOwner) {
+  DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
+  CustomElementDefinition* definition =
+      definitionForElementWithoutCheck(*element);
+  if (definition->hasAdoptedCallback())
+    definition->enqueueAdoptedCallback(element, oldOwner, newOwner);
 }
 
-void CustomElement::enqueueDisconnectedCallback(Element* element)
-{
-    CustomElementDefinition* definition = definitionForElementWithoutCheck(*element);
-    if (definition->hasDisconnectedCallback())
-        definition->enqueueDisconnectedCallback(element);
-}
-
-void CustomElement::enqueueAdoptedCallback(
-    Element* element, Document* oldOwner, Document* newOwner)
-{
-    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Custom);
-    CustomElementDefinition* definition = definitionForElementWithoutCheck(*element);
-    if (definition->hasAdoptedCallback())
-        definition->enqueueAdoptedCallback(element, oldOwner, newOwner);
-}
-
-void CustomElement::enqueueAttributeChangedCallback(Element* element,
+void CustomElement::enqueueAttributeChangedCallback(
+    Element* element,
     const QualifiedName& name,
-    const AtomicString& oldValue, const AtomicString& newValue)
-{
-    CustomElementDefinition* definition = definitionForElementWithoutCheck(*element);
-    if (definition->hasAttributeChangedCallback(name))
-        definition->enqueueAttributeChangedCallback(element, name, oldValue, newValue);
+    const AtomicString& oldValue,
+    const AtomicString& newValue) {
+  CustomElementDefinition* definition =
+      definitionForElementWithoutCheck(*element);
+  if (definition->hasAttributeChangedCallback(name))
+    definition->enqueueAttributeChangedCallback(element, name, oldValue,
+                                                newValue);
 }
 
-void CustomElement::tryToUpgrade(Element* element)
-{
-    // Try to upgrade an element
-    // https://html.spec.whatwg.org/multipage/scripting.html#concept-try-upgrade
+void CustomElement::tryToUpgrade(Element* element) {
+  // Try to upgrade an element
+  // https://html.spec.whatwg.org/multipage/scripting.html#concept-try-upgrade
 
-    DCHECK_EQ(element->getCustomElementState(), CustomElementState::Undefined);
+  DCHECK_EQ(element->getCustomElementState(), CustomElementState::Undefined);
 
-    CustomElementRegistry* registry = CustomElement::registry(*element);
-    if (!registry)
-        return;
-    if (CustomElementDefinition* definition = registry->definitionForName(element->localName()))
-        definition->enqueueUpgradeReaction(element);
-    else
-        registry->addCandidate(element);
+  CustomElementRegistry* registry = CustomElement::registry(*element);
+  if (!registry)
+    return;
+  if (CustomElementDefinition* definition =
+          registry->definitionForName(element->localName()))
+    definition->enqueueUpgradeReaction(element);
+  else
+    registry->addCandidate(element);
 }
 
-} // namespace blink
+}  // namespace blink

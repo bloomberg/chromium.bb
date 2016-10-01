@@ -29,22 +29,22 @@
 namespace blink {
 
 class PLATFORM_EXPORT FEBlend final : public FilterEffect {
-public:
-    static FEBlend* create(Filter*, WebBlendMode);
+ public:
+  static FEBlend* create(Filter*, WebBlendMode);
 
-    WebBlendMode blendMode() const;
-    bool setBlendMode(WebBlendMode);
+  WebBlendMode blendMode() const;
+  bool setBlendMode(WebBlendMode);
 
-    TextStream& externalRepresentation(TextStream&, int indention) const override;
+  TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-private:
-    FEBlend(Filter*, WebBlendMode);
+ private:
+  FEBlend(Filter*, WebBlendMode);
 
-    sk_sp<SkImageFilter> createImageFilter() override;
+  sk_sp<SkImageFilter> createImageFilter() override;
 
-    WebBlendMode m_mode;
+  WebBlendMode m_mode;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FEBlend_h
+#endif  // FEBlend_h

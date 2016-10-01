@@ -14,15 +14,17 @@ class LayoutPoint;
 class LayoutHTMLCanvas;
 
 class HTMLCanvasPainter {
-    STACK_ALLOCATED();
-public:
-    HTMLCanvasPainter(const LayoutHTMLCanvas& layoutHTMLCanvas) : m_layoutHTMLCanvas(layoutHTMLCanvas) { }
-    void paintReplaced(const PaintInfo&, const LayoutPoint&);
+  STACK_ALLOCATED();
 
-private:
-    const LayoutHTMLCanvas& m_layoutHTMLCanvas;
+ public:
+  HTMLCanvasPainter(const LayoutHTMLCanvas& layoutHTMLCanvas)
+      : m_layoutHTMLCanvas(layoutHTMLCanvas) {}
+  void paintReplaced(const PaintInfo&, const LayoutPoint&);
+
+ private:
+  const LayoutHTMLCanvas& m_layoutHTMLCanvas;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLCanvasPainter_h
+#endif  // HTMLCanvasPainter_h

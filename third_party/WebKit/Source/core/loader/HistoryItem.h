@@ -44,99 +44,105 @@ class EncodedFormData;
 class KURL;
 class ResourceRequest;
 
-class CORE_EXPORT HistoryItem final : public GarbageCollectedFinalized<HistoryItem> {
-public:
-    static HistoryItem* create()
-    {
-        return new HistoryItem;
-    }
-    ~HistoryItem();
+class CORE_EXPORT HistoryItem final
+    : public GarbageCollectedFinalized<HistoryItem> {
+ public:
+  static HistoryItem* create() { return new HistoryItem; }
+  ~HistoryItem();
 
-    const String& urlString() const;
-    KURL url() const;
+  const String& urlString() const;
+  KURL url() const;
 
-    const Referrer& referrer() const;
-    const String& target() const;
+  const Referrer& referrer() const;
+  const String& target() const;
 
-    EncodedFormData* formData();
-    const AtomicString& formContentType() const;
+  EncodedFormData* formData();
+  const AtomicString& formContentType() const;
 
-    const FloatPoint& visualViewportScrollPoint() const;
-    void setVisualViewportScrollPoint(const FloatPoint&);
-    const IntPoint& scrollPoint() const;
-    void setScrollPoint(const IntPoint&);
+  const FloatPoint& visualViewportScrollPoint() const;
+  void setVisualViewportScrollPoint(const FloatPoint&);
+  const IntPoint& scrollPoint() const;
+  void setScrollPoint(const IntPoint&);
 
-    float pageScaleFactor() const;
-    void setPageScaleFactor(float);
+  float pageScaleFactor() const;
+  void setPageScaleFactor(float);
 
-    Vector<String> getReferencedFilePaths();
-    const Vector<String>& documentState();
-    void setDocumentState(const Vector<String>&);
-    void setDocumentState(DocumentState*);
-    void clearDocumentState();
+  Vector<String> getReferencedFilePaths();
+  const Vector<String>& documentState();
+  void setDocumentState(const Vector<String>&);
+  void setDocumentState(DocumentState*);
+  void clearDocumentState();
 
-    void setURL(const KURL&);
-    void setURLString(const String&);
-    void setReferrer(const Referrer&);
-    void setTarget(const String&);
+  void setURL(const KURL&);
+  void setURLString(const String&);
+  void setReferrer(const Referrer&);
+  void setTarget(const String&);
 
-    void setStateObject(PassRefPtr<SerializedScriptValue>);
-    SerializedScriptValue* stateObject() const { return m_stateObject.get(); }
+  void setStateObject(PassRefPtr<SerializedScriptValue>);
+  SerializedScriptValue* stateObject() const { return m_stateObject.get(); }
 
-    void setItemSequenceNumber(long long number) { m_itemSequenceNumber = number; }
-    long long itemSequenceNumber() const { return m_itemSequenceNumber; }
+  void setItemSequenceNumber(long long number) {
+    m_itemSequenceNumber = number;
+  }
+  long long itemSequenceNumber() const { return m_itemSequenceNumber; }
 
-    void setDocumentSequenceNumber(long long number) { m_documentSequenceNumber = number; }
-    long long documentSequenceNumber() const { return m_documentSequenceNumber; }
+  void setDocumentSequenceNumber(long long number) {
+    m_documentSequenceNumber = number;
+  }
+  long long documentSequenceNumber() const { return m_documentSequenceNumber; }
 
-    void setScrollRestorationType(HistoryScrollRestorationType  type) { m_scrollRestorationType = type; }
-    HistoryScrollRestorationType scrollRestorationType() { return m_scrollRestorationType; }
+  void setScrollRestorationType(HistoryScrollRestorationType type) {
+    m_scrollRestorationType = type;
+  }
+  HistoryScrollRestorationType scrollRestorationType() {
+    return m_scrollRestorationType;
+  }
 
-    void setFormInfoFromRequest(const ResourceRequest&);
-    void setFormData(PassRefPtr<EncodedFormData>);
-    void setFormContentType(const AtomicString&);
+  void setFormInfoFromRequest(const ResourceRequest&);
+  void setFormData(PassRefPtr<EncodedFormData>);
+  void setFormContentType(const AtomicString&);
 
-    bool isCurrentDocument(Document*) const;
+  bool isCurrentDocument(Document*) const;
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    HistoryItem();
+ private:
+  HistoryItem();
 
-    String m_urlString;
-    Referrer m_referrer;
-    String m_target;
+  String m_urlString;
+  Referrer m_referrer;
+  String m_target;
 
-    FloatPoint m_visualViewportScrollPoint;
-    IntPoint m_scrollPoint;
-    float m_pageScaleFactor;
-    Vector<String> m_documentStateVector;
-    Member<DocumentState> m_documentState;
+  FloatPoint m_visualViewportScrollPoint;
+  IntPoint m_scrollPoint;
+  float m_pageScaleFactor;
+  Vector<String> m_documentStateVector;
+  Member<DocumentState> m_documentState;
 
-    // If two HistoryItems have the same item sequence number, then they are
-    // clones of one another. Traversing history from one such HistoryItem to
-    // another is a no-op. HistoryItem clones are created for parent and
-    // sibling frames when only a subframe navigates.
-    int64_t m_itemSequenceNumber;
+  // If two HistoryItems have the same item sequence number, then they are
+  // clones of one another. Traversing history from one such HistoryItem to
+  // another is a no-op. HistoryItem clones are created for parent and
+  // sibling frames when only a subframe navigates.
+  int64_t m_itemSequenceNumber;
 
-    // If two HistoryItems have the same document sequence number, then they
-    // refer to the same instance of a document. Traversing history from one
-    // such HistoryItem to another preserves the document.
-    int64_t m_documentSequenceNumber;
+  // If two HistoryItems have the same document sequence number, then they
+  // refer to the same instance of a document. Traversing history from one
+  // such HistoryItem to another preserves the document.
+  int64_t m_documentSequenceNumber;
 
-    // Type of the scroll restoration for the history item determines if scroll
-    // position should be restored when it is loaded during history traversal.
-    HistoryScrollRestorationType m_scrollRestorationType;
+  // Type of the scroll restoration for the history item determines if scroll
+  // position should be restored when it is loaded during history traversal.
+  HistoryScrollRestorationType m_scrollRestorationType;
 
-    // Support for HTML5 History
-    RefPtr<SerializedScriptValue> m_stateObject;
+  // Support for HTML5 History
+  RefPtr<SerializedScriptValue> m_stateObject;
 
-    // info used to repost form data
-    RefPtr<EncodedFormData> m_formData;
-    AtomicString m_formContentType;
+  // info used to repost form data
+  RefPtr<EncodedFormData> m_formData;
+  AtomicString m_formContentType;
 
-}; // class HistoryItem
+};  // class HistoryItem
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HISTORYITEM_H
+#endif  // HISTORYITEM_H

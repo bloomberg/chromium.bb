@@ -17,32 +17,32 @@ class HTMLMenuElement;
 class HTMLMenuItemElement;
 
 class CustomContextMenuProvider final : public ContextMenuProvider {
-public:
-    ~CustomContextMenuProvider() override;
+ public:
+  ~CustomContextMenuProvider() override;
 
-    static CustomContextMenuProvider* create(HTMLMenuElement& menu, HTMLElement& subject)
-    {
-        return new CustomContextMenuProvider(menu, subject);
-    }
+  static CustomContextMenuProvider* create(HTMLMenuElement& menu,
+                                           HTMLElement& subject) {
+    return new CustomContextMenuProvider(menu, subject);
+  }
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    CustomContextMenuProvider(HTMLMenuElement&, HTMLElement&);
+ private:
+  CustomContextMenuProvider(HTMLMenuElement&, HTMLElement&);
 
-    void populateContextMenu(ContextMenu*) override;
-    void contextMenuItemSelected(const ContextMenuItem*) override;
-    void contextMenuCleared() override;
-    void populateContextMenuItems(const HTMLMenuElement&, ContextMenu&);
-    void appendSeparator(ContextMenu&);
-    void appendMenuItem(HTMLMenuItemElement*, ContextMenu&);
-    HTMLElement* menuItemAt(unsigned menuId);
+  void populateContextMenu(ContextMenu*) override;
+  void contextMenuItemSelected(const ContextMenuItem*) override;
+  void contextMenuCleared() override;
+  void populateContextMenuItems(const HTMLMenuElement&, ContextMenu&);
+  void appendSeparator(ContextMenu&);
+  void appendMenuItem(HTMLMenuItemElement*, ContextMenu&);
+  HTMLElement* menuItemAt(unsigned menuId);
 
-    Member<HTMLMenuElement> m_menu;
-    Member<HTMLElement> m_subjectElement;
-    HeapVector<Member<HTMLElement>> m_menuItems;
+  Member<HTMLMenuElement> m_menu;
+  Member<HTMLElement> m_subjectElement;
+  HeapVector<Member<HTMLElement>> m_menuItems;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

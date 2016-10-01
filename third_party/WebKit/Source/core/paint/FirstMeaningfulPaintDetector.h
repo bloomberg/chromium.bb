@@ -19,49 +19,54 @@ class PaintTiming;
 // until network stable (2 seconds of no network activity), and computes the
 // layout-based First Meaningful Paint.
 // See https://goo.gl/vpaxv6 and http://goo.gl/TEiMi4 for more details.
-class CORE_EXPORT FirstMeaningfulPaintDetector : public GarbageCollectedFinalized<FirstMeaningfulPaintDetector> {
-    WTF_MAKE_NONCOPYABLE(FirstMeaningfulPaintDetector);
-public:
-    // Used by FrameView to keep track of the number of layout objects created
-    // in the frame.
-    class LayoutObjectCounter {
-    public:
-        void reset() { m_count = 0; }
-        void increment() { m_count++; }
-        unsigned count() const { return m_count; }
-    private:
-        unsigned m_count = 0;
-    };
+class CORE_EXPORT FirstMeaningfulPaintDetector
+    : public GarbageCollectedFinalized<FirstMeaningfulPaintDetector> {
+  WTF_MAKE_NONCOPYABLE(FirstMeaningfulPaintDetector);
 
-    static FirstMeaningfulPaintDetector& from(Document&);
+ public:
+  // Used by FrameView to keep track of the number of layout objects created
+  // in the frame.
+  class LayoutObjectCounter {
+   public:
+    void reset() { m_count = 0; }
+    void increment() { m_count++; }
+    unsigned count() const { return m_count; }
 
-    FirstMeaningfulPaintDetector(PaintTiming*);
-    virtual ~FirstMeaningfulPaintDetector() { }
+   private:
+    unsigned m_count = 0;
+  };
 
-    void markNextPaintAsMeaningfulIfNeeded(const LayoutObjectCounter&,
-        int contentsHeightBeforeLayout, int contentsHeightAfterLayout, int visibleHeight);
-    void notifyPaint();
-    void checkNetworkStable();
+  static FirstMeaningfulPaintDetector& from(Document&);
 
-    DECLARE_TRACE();
+  FirstMeaningfulPaintDetector(PaintTiming*);
+  virtual ~FirstMeaningfulPaintDetector() {}
 
-private:
-    friend class FirstMeaningfulPaintDetectorTest;
+  void markNextPaintAsMeaningfulIfNeeded(const LayoutObjectCounter&,
+                                         int contentsHeightBeforeLayout,
+                                         int contentsHeightAfterLayout,
+                                         int visibleHeight);
+  void notifyPaint();
+  void checkNetworkStable();
 
-    Document* document();
-    void networkStableTimerFired(TimerBase*);
+  DECLARE_TRACE();
 
-    enum State { NextPaintIsNotMeaningful, NextPaintIsMeaningful, Reported };
-    State m_state = NextPaintIsNotMeaningful;
+ private:
+  friend class FirstMeaningfulPaintDetectorTest;
 
-    Member<PaintTiming> m_paintTiming;
-    double m_provisionalFirstMeaningfulPaint = 0.0;
-    double m_maxSignificanceSoFar = 0.0;
-    double m_accumulatedSignificanceWhileHavingBlankText = 0.0;
-    unsigned m_prevLayoutObjectCount = 0;
-    Timer<FirstMeaningfulPaintDetector> m_networkStableTimer;
+  Document* document();
+  void networkStableTimerFired(TimerBase*);
+
+  enum State { NextPaintIsNotMeaningful, NextPaintIsMeaningful, Reported };
+  State m_state = NextPaintIsNotMeaningful;
+
+  Member<PaintTiming> m_paintTiming;
+  double m_provisionalFirstMeaningfulPaint = 0.0;
+  double m_maxSignificanceSoFar = 0.0;
+  double m_accumulatedSignificanceWhileHavingBlankText = 0.0;
+  unsigned m_prevLayoutObjectCount = 0;
+  Timer<FirstMeaningfulPaintDetector> m_networkStableTimer;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

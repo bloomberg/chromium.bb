@@ -23,181 +23,164 @@ namespace blink {
 
 // static
 TopDocumentRootScrollerController* TopDocumentRootScrollerController::create(
-    FrameHost& host)
-{
-    return new TopDocumentRootScrollerController(host);
+    FrameHost& host) {
+  return new TopDocumentRootScrollerController(host);
 }
 
 TopDocumentRootScrollerController::TopDocumentRootScrollerController(
     FrameHost& host)
-: m_frameHost(&host)
-{
+    : m_frameHost(&host) {}
+
+DEFINE_TRACE(TopDocumentRootScrollerController) {
+  visitor->trace(m_viewportApplyScroll);
+  visitor->trace(m_globalRootScroller);
+  visitor->trace(m_frameHost);
 }
 
-DEFINE_TRACE(TopDocumentRootScrollerController)
-{
-    visitor->trace(m_viewportApplyScroll);
-    visitor->trace(m_globalRootScroller);
-    visitor->trace(m_frameHost);
+void TopDocumentRootScrollerController::didChangeRootScroller() {
+  recomputeGlobalRootScroller();
 }
 
-void TopDocumentRootScrollerController::didChangeRootScroller()
-{
-    recomputeGlobalRootScroller();
+Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement() {
+  if (!topDocument())
+    return nullptr;
+
+  DCHECK(topDocument()->rootScrollerController());
+  Element* element =
+      topDocument()->rootScrollerController()->effectiveRootScroller();
+
+  while (element && element->isFrameOwnerElement()) {
+    HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(element);
+    DCHECK(frameOwner);
+
+    Document* iframeDocument = frameOwner->contentDocument();
+    if (!iframeDocument)
+      return element;
+
+    DCHECK(iframeDocument->rootScrollerController());
+    element = iframeDocument->rootScrollerController()->effectiveRootScroller();
+  }
+
+  return element;
 }
 
-Element* TopDocumentRootScrollerController::findGlobalRootScrollerElement()
-{
-    if (!topDocument())
-        return nullptr;
+void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
+  if (!m_viewportApplyScroll)
+    return;
 
-    DCHECK(topDocument()->rootScrollerController());
-    Element* element =
-        topDocument()->rootScrollerController()->effectiveRootScroller();
+  Element* target = findGlobalRootScrollerElement();
+  if (!target)
+    return;
 
-    while (element && element->isFrameOwnerElement()) {
-        HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(element);
-        DCHECK(frameOwner);
+  ScrollableArea* targetScroller = RootScrollerUtil::scrollableAreaFor(*target);
 
-        Document* iframeDocument = frameOwner->contentDocument();
-        if (!iframeDocument)
-            return element;
+  if (!targetScroller)
+    return;
 
-        DCHECK(iframeDocument->rootScrollerController());
-        element =
-            iframeDocument->rootScrollerController()->effectiveRootScroller();
-    }
+  if (m_globalRootScroller)
+    m_globalRootScroller->removeApplyScroll();
 
-    return element;
+  // Use disable-native-scroll since the ViewportScrollCallback needs to
+  // apply scroll actions both before (TopControls) and after (overscroll)
+  // scrolling the element so it will apply scroll to the element itself.
+  target->setApplyScroll(m_viewportApplyScroll, "disable-native-scroll");
+
+  // A change in global root scroller requires a compositing inputs update to
+  // the new and old global root scroller since it might change how the
+  // ancestor layers are clipped. e.g. An iframe that's the global root
+  // scroller clips its layers like the root frame.  Normally this is set
+  // when the local effective root scroller changes but the global root
+  // scroller can change because the parent's effective root scroller
+  // changes.
+  setNeedsCompositingInputsUpdateOnGlobalRootScroller();
+
+  m_globalRootScroller = target;
+
+  setNeedsCompositingInputsUpdateOnGlobalRootScroller();
+
+  // Ideally, scroll customization would pass the current element to scroll to
+  // the apply scroll callback but this doesn't happen today so we set it
+  // through a back door here. This is also needed by the
+  // ViewportScrollCallback to swap the target into the layout viewport
+  // in RootFrameViewport.
+  m_viewportApplyScroll->setScroller(targetScroller);
 }
 
-void TopDocumentRootScrollerController::recomputeGlobalRootScroller()
-{
-    if (!m_viewportApplyScroll)
-        return;
+Document* TopDocumentRootScrollerController::topDocument() const {
+  if (!m_frameHost)
+    return nullptr;
 
-    Element* target = findGlobalRootScrollerElement();
-    if (!target)
-        return;
+  if (!m_frameHost->page().mainFrame() ||
+      !m_frameHost->page().mainFrame()->isLocalFrame())
+    return nullptr;
 
-    ScrollableArea* targetScroller =
-        RootScrollerUtil::scrollableAreaFor(*target);
-
-    if (!targetScroller)
-        return;
-
-    if (m_globalRootScroller)
-        m_globalRootScroller->removeApplyScroll();
-
-    // Use disable-native-scroll since the ViewportScrollCallback needs to
-    // apply scroll actions both before (TopControls) and after (overscroll)
-    // scrolling the element so it will apply scroll to the element itself.
-    target->setApplyScroll(m_viewportApplyScroll, "disable-native-scroll");
-
-    // A change in global root scroller requires a compositing inputs update to
-    // the new and old global root scroller since it might change how the
-    // ancestor layers are clipped. e.g. An iframe that's the global root
-    // scroller clips its layers like the root frame.  Normally this is set
-    // when the local effective root scroller changes but the global root
-    // scroller can change because the parent's effective root scroller
-    // changes.
-    setNeedsCompositingInputsUpdateOnGlobalRootScroller();
-
-    m_globalRootScroller = target;
-
-    setNeedsCompositingInputsUpdateOnGlobalRootScroller();
-
-    // Ideally, scroll customization would pass the current element to scroll to
-    // the apply scroll callback but this doesn't happen today so we set it
-    // through a back door here. This is also needed by the
-    // ViewportScrollCallback to swap the target into the layout viewport
-    // in RootFrameViewport.
-    m_viewportApplyScroll->setScroller(targetScroller);
+  return toLocalFrame(m_frameHost->page().mainFrame())->document();
 }
 
-Document* TopDocumentRootScrollerController::topDocument() const
-{
-    if (!m_frameHost)
-        return nullptr;
+void TopDocumentRootScrollerController::
+    setNeedsCompositingInputsUpdateOnGlobalRootScroller() {
+  if (!m_globalRootScroller)
+    return;
 
-    if (!m_frameHost->page().mainFrame()
-        || !m_frameHost->page().mainFrame()->isLocalFrame())
-        return nullptr;
+  PaintLayer* layer = m_globalRootScroller->document()
+                          .rootScrollerController()
+                          ->rootScrollerPaintLayer();
 
-    return toLocalFrame(m_frameHost->page().mainFrame())->document();
+  if (layer)
+    layer->setNeedsCompositingInputsUpdate();
+
+  if (LayoutView* view = m_globalRootScroller->document().layoutView()) {
+    view->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+  }
 }
 
-void TopDocumentRootScrollerController
-    ::setNeedsCompositingInputsUpdateOnGlobalRootScroller()
-{
-    if (!m_globalRootScroller)
-        return;
+void TopDocumentRootScrollerController::didUpdateCompositing() {
+  if (!m_frameHost)
+    return;
 
-    PaintLayer* layer = m_globalRootScroller->document()
-        .rootScrollerController()->rootScrollerPaintLayer();
-
-    if (layer)
-        layer->setNeedsCompositingInputsUpdate();
-
-    if (LayoutView* view = m_globalRootScroller->document().layoutView()) {
-        view->compositor()
-            ->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
-    }
-}
-
-void TopDocumentRootScrollerController::didUpdateCompositing()
-{
-    if (!m_frameHost)
-        return;
-
-    // Let the compositor-side counterpart know about this change.
-    m_frameHost->chromeClient().registerViewportLayers();
+  // Let the compositor-side counterpart know about this change.
+  m_frameHost->chromeClient().registerViewportLayers();
 }
 
 void TopDocumentRootScrollerController::initializeViewportScrollCallback(
-    RootFrameViewport& rootFrameViewport)
-{
-    DCHECK(m_frameHost);
-    m_viewportApplyScroll = ViewportScrollCallback::create(
-        &m_frameHost->topControls(),
-        &m_frameHost->overscrollController(),
-        rootFrameViewport);
+    RootFrameViewport& rootFrameViewport) {
+  DCHECK(m_frameHost);
+  m_viewportApplyScroll = ViewportScrollCallback::create(
+      &m_frameHost->topControls(), &m_frameHost->overscrollController(),
+      rootFrameViewport);
 
-    recomputeGlobalRootScroller();
+  recomputeGlobalRootScroller();
 }
 
 bool TopDocumentRootScrollerController::isViewportScrollCallback(
-    const ScrollStateCallback* callback) const
-{
-    if (!callback)
-        return false;
+    const ScrollStateCallback* callback) const {
+  if (!callback)
+    return false;
 
-    return callback == m_viewportApplyScroll.get();
+  return callback == m_viewportApplyScroll.get();
 }
 
-GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer() const
-{
-    if (!m_globalRootScroller)
-        return nullptr;
+GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer() const {
+  if (!m_globalRootScroller)
+    return nullptr;
 
-    ScrollableArea* area =
-        RootScrollerUtil::scrollableAreaFor(*m_globalRootScroller);
+  ScrollableArea* area =
+      RootScrollerUtil::scrollableAreaFor(*m_globalRootScroller);
 
-    if (!area)
-        return nullptr;
+  if (!area)
+    return nullptr;
 
-    GraphicsLayer* graphicsLayer = area->layerForScrolling();
+  GraphicsLayer* graphicsLayer = area->layerForScrolling();
 
-    // TODO(bokan): We should assert graphicsLayer here and
-    // RootScrollerController should do whatever needs to happen to ensure
-    // the root scroller gets composited.
+  // TODO(bokan): We should assert graphicsLayer here and
+  // RootScrollerController should do whatever needs to happen to ensure
+  // the root scroller gets composited.
 
-    return graphicsLayer;
+  return graphicsLayer;
 }
 
-Element* TopDocumentRootScrollerController::globalRootScroller() const
-{
-    return m_globalRootScroller.get();
+Element* TopDocumentRootScrollerController::globalRootScroller() const {
+  return m_globalRootScroller.get();
 }
 
-} // namespace blink
+}  // namespace blink

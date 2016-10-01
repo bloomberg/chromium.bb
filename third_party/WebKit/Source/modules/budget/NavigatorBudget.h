@@ -13,27 +13,26 @@ class BudgetService;
 class Navigator;
 
 // This exposes the budget object on the Navigator partial interface.
-class NavigatorBudget final
-    : public GarbageCollected<NavigatorBudget>
-    , public Supplement<Navigator> {
-    USING_GARBAGE_COLLECTED_MIXIN(NavigatorBudget);
-    WTF_MAKE_NONCOPYABLE(NavigatorBudget);
+class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
+                              public Supplement<Navigator> {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigatorBudget);
+  WTF_MAKE_NONCOPYABLE(NavigatorBudget);
 
-public:
-    static NavigatorBudget& from(Navigator&);
+ public:
+  static NavigatorBudget& from(Navigator&);
 
-    static BudgetService* budget(Navigator&);
-    BudgetService* budget();
+  static BudgetService* budget(Navigator&);
+  BudgetService* budget();
 
-    DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    NavigatorBudget();
-    static const char* supplementName();
+ private:
+  NavigatorBudget();
+  static const char* supplementName();
 
-    Member<BudgetService> m_budget;
+  Member<BudgetService> m_budget;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NavigatorBudget_h
+#endif  // NavigatorBudget_h

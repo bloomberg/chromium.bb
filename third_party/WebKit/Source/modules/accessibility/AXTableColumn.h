@@ -39,37 +39,37 @@ class AXObjectCacheImpl;
 class LayoutTableSection;
 
 class MODULES_EXPORT AXTableColumn final : public AXMockObject {
-    WTF_MAKE_NONCOPYABLE(AXTableColumn);
+  WTF_MAKE_NONCOPYABLE(AXTableColumn);
 
-private:
-    explicit AXTableColumn(AXObjectCacheImpl&);
+ private:
+  explicit AXTableColumn(AXObjectCacheImpl&);
 
-public:
-    static AXTableColumn* create(AXObjectCacheImpl&);
-    ~AXTableColumn() override;
+ public:
+  static AXTableColumn* create(AXObjectCacheImpl&);
+  ~AXTableColumn() override;
 
-    // retrieves the topmost "column" header (th)
-    AXObject* headerObject();
-    // retrieves the "column" headers (th, scope) from top to bottom
-    void headerObjectsForColumn(AXObjectVector&);
+  // retrieves the topmost "column" header (th)
+  AXObject* headerObject();
+  // retrieves the "column" headers (th, scope) from top to bottom
+  void headerObjectsForColumn(AXObjectVector&);
 
-    AccessibilityRole roleValue() const override { return ColumnRole; }
+  AccessibilityRole roleValue() const override { return ColumnRole; }
 
-    void setColumnIndex(int columnIndex) { m_columnIndex = columnIndex; }
-    int columnIndex() const { return m_columnIndex; }
+  void setColumnIndex(int columnIndex) { m_columnIndex = columnIndex; }
+  int columnIndex() const { return m_columnIndex; }
 
-    void addChildren() override;
-    void setParent(AXObject*) override;
+  void addChildren() override;
+  void setParent(AXObject*) override;
 
-private:
-    unsigned m_columnIndex;
+ private:
+  unsigned m_columnIndex;
 
-    bool isTableCol() const override { return true; }
-    bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool isTableCol() const override { return true; }
+  bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, isTableCol());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AXTableColumn_h
+#endif  // AXTableColumn_h

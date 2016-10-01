@@ -30,43 +30,41 @@
 
 namespace blink {
 
-ArrayValue& ArrayValue::operator=(const ArrayValue& other)
-{
-    m_array = other.m_array;
-    m_isolate = other.m_isolate;
-    return *this;
+ArrayValue& ArrayValue::operator=(const ArrayValue& other) {
+  m_array = other.m_array;
+  m_isolate = other.m_isolate;
+  return *this;
 }
 
-bool ArrayValue::isUndefinedOrNull() const
-{
-    return blink::isUndefinedOrNull(m_array);
+bool ArrayValue::isUndefinedOrNull() const {
+  return blink::isUndefinedOrNull(m_array);
 }
 
-bool ArrayValue::length(size_t& length) const
-{
-    if (isUndefinedOrNull())
-        return false;
+bool ArrayValue::length(size_t& length) const {
+  if (isUndefinedOrNull())
+    return false;
 
-    length = m_array->Length();
-    return true;
+  length = m_array->Length();
+  return true;
 }
 
-bool ArrayValue::get(size_t index, Dictionary& value) const
-{
-    if (isUndefinedOrNull())
-        return false;
+bool ArrayValue::get(size_t index, Dictionary& value) const {
+  if (isUndefinedOrNull())
+    return false;
 
-    if (index >= m_array->Length())
-        return false;
+  if (index >= m_array->Length())
+    return false;
 
-    DCHECK(m_isolate);
-    DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
-    v8::Local<v8::Value> indexedValue;
-    if (!m_array->Get(m_isolate->GetCurrentContext(), index).ToLocal(&indexedValue) || !indexedValue->IsObject())
-        return false;
+  DCHECK(m_isolate);
+  DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
+  v8::Local<v8::Value> indexedValue;
+  if (!m_array->Get(m_isolate->GetCurrentContext(), index)
+           .ToLocal(&indexedValue) ||
+      !indexedValue->IsObject())
+    return false;
 
-    value = Dictionary(m_isolate, indexedValue);
-    return true;
+  value = Dictionary(m_isolate, indexedValue);
+  return true;
 }
 
-} // namespace blink
+}  // namespace blink

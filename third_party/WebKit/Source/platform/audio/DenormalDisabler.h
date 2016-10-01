@@ -52,122 +52,98 @@ namespace blink {
 
 #if HAVE(DENORMAL)
 class DenormalDisabler {
-    DISALLOW_NEW();
-public:
-    DenormalDisabler()
-            : m_savedCSR(0)
-    {
-        disableDenormals();
-    }
+  DISALLOW_NEW();
 
-    ~DenormalDisabler()
-    {
-        restoreState();
-    }
+ public:
+  DenormalDisabler() : m_savedCSR(0) { disableDenormals(); }
 
-    // This is a nop if we can flush denormals to zero in hardware.
-    static inline float flushDenormalFloatToZero(float f)
-    {
-        return f;
-    }
-private:
-    unsigned m_savedCSR;
+  ~DenormalDisabler() { restoreState(); }
+
+  // This is a nop if we can flush denormals to zero in hardware.
+  static inline float flushDenormalFloatToZero(float f) { return f; }
+
+ private:
+  unsigned m_savedCSR;
 
 #if COMPILER(GCC) && (CPU(X86) || CPU(X86_64))
-    inline void disableDenormals()
-    {
-        m_savedCSR = getCSR();
-        setCSR(m_savedCSR | 0x8040);
-    }
+  inline void disableDenormals() {
+    m_savedCSR = getCSR();
+    setCSR(m_savedCSR | 0x8040);
+  }
 
-    inline void restoreState()
-    {
-        setCSR(m_savedCSR);
-    }
+  inline void restoreState() { setCSR(m_savedCSR); }
 
-    inline int getCSR()
-    {
-        int result;
-        asm volatile("stmxcsr %0" : "=m" (result));
-        return result;
-    }
+  inline int getCSR() {
+    int result;
+    asm volatile("stmxcsr %0" : "=m"(result));
+    return result;
+  }
 
-    inline void setCSR(int a)
-    {
-        int temp = a;
-        asm volatile("ldmxcsr %0" : : "m" (temp));
-    }
+  inline void setCSR(int a) {
+    int temp = a;
+    asm volatile("ldmxcsr %0" : : "m"(temp));
+  }
 
 #elif OS(WIN) && COMPILER(MSVC)
-    inline void disableDenormals()
-    {
-        // Save the current state, and set mode to flush denormals.
-        //
-        // http://stackoverflow.com/questions/637175/possible-bug-in-controlfp-s-may-not-restore-control-word-correctly
-        _controlfp_s(&m_savedCSR, 0, 0);
-        unsigned unused;
-        _controlfp_s(&unused, _DN_FLUSH, _MCW_DN);
-    }
+  inline void disableDenormals() {
+    // Save the current state, and set mode to flush denormals.
+    //
+    // http://stackoverflow.com/questions/637175/possible-bug-in-controlfp-s-may-not-restore-control-word-correctly
+    _controlfp_s(&m_savedCSR, 0, 0);
+    unsigned unused;
+    _controlfp_s(&unused, _DN_FLUSH, _MCW_DN);
+  }
 
-    inline void restoreState()
-    {
-        unsigned unused;
-        _controlfp_s(&unused, m_savedCSR, _MCW_DN);
-    }
+  inline void restoreState() {
+    unsigned unused;
+    _controlfp_s(&unused, m_savedCSR, _MCW_DN);
+  }
 #elif CPU(ARM) || CPU(ARM64)
-    inline void disableDenormals()
-    {
-        m_savedCSR = getStatusWord();
-        // Bit 24 is the flush-to-zero mode control bit. Setting it to 1 flushes denormals to 0.
-        setStatusWord(m_savedCSR | (1 << 24));
-    }
+  inline void disableDenormals() {
+    m_savedCSR = getStatusWord();
+    // Bit 24 is the flush-to-zero mode control bit. Setting it to 1 flushes denormals to 0.
+    setStatusWord(m_savedCSR | (1 << 24));
+  }
 
-    inline void restoreState()
-    {
-        setStatusWord(m_savedCSR);
-    }
+  inline void restoreState() { setStatusWord(m_savedCSR); }
 
-    inline int getStatusWord()
-    {
-        int result;
+  inline int getStatusWord() {
+    int result;
 #if CPU(ARM64)
-        asm volatile("mrs %x[result], FPCR" : [result] "=r" (result));
+    asm volatile("mrs %x[result], FPCR" : [result] "=r"(result));
 #else
-        asm volatile("vmrs %[result], FPSCR" : [result] "=r" (result));
+    asm volatile("vmrs %[result], FPSCR" : [result] "=r"(result));
 #endif
-        return result;
-    }
+    return result;
+  }
 
-    inline void setStatusWord(int a)
-    {
+  inline void setStatusWord(int a) {
 #if CPU(ARM64)
-        asm volatile("msr FPCR, %x[src]" : : [src] "r" (a));
+    asm volatile("msr FPCR, %x[src]" : : [src] "r"(a));
 #else
-        asm volatile("vmsr FPSCR, %[src]" : : [src] "r" (a));
+    asm volatile("vmsr FPSCR, %[src]" : : [src] "r"(a));
 #endif
-    }
+  }
 
 #endif
-
 };
 
 #else
 // FIXME: add implementations for other architectures and compilers
 class DenormalDisabler {
-public:
-    DenormalDisabler() { }
+ public:
+  DenormalDisabler() {}
 
-    // Assume the worst case that other architectures and compilers
-    // need to flush denormals to zero manually.
-    static inline float flushDenormalFloatToZero(float f)
-    {
-        return (fabs(f) < FLT_MIN) ? 0.0f : f;
-    }
+  // Assume the worst case that other architectures and compilers
+  // need to flush denormals to zero manually.
+  static inline float flushDenormalFloatToZero(float f) {
+    return (fabs(f) < FLT_MIN) ? 0.0f : f;
+  }
 };
 
 #endif
 
-} // namespace blink
+}  // namespace blink
 
 #undef HAVE_DENORMAL
-#endif // DenormalDisabler_h
+#endif  // DenormalDisabler_h

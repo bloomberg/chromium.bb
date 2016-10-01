@@ -30,66 +30,68 @@ namespace blink {
 class ExceptionState;
 
 enum SVGZoomAndPanType {
-    SVGZoomAndPanUnknown = 0,
-    SVGZoomAndPanDisable,
-    SVGZoomAndPanMagnify
+  SVGZoomAndPanUnknown = 0,
+  SVGZoomAndPanDisable,
+  SVGZoomAndPanMagnify
 };
 
 class SVGZoomAndPan {
-public:
-    // Forward declare enumerations in the W3C naming scheme, for IDL generation.
-    enum {
-        kSvgZoomandpanUnknown = SVGZoomAndPanUnknown,
-        kSvgZoomandpanDisable = SVGZoomAndPanDisable,
-        kSvgZoomandpanMagnify = SVGZoomAndPanMagnify
-    };
+ public:
+  // Forward declare enumerations in the W3C naming scheme, for IDL generation.
+  enum {
+    kSvgZoomandpanUnknown = SVGZoomAndPanUnknown,
+    kSvgZoomandpanDisable = SVGZoomAndPanDisable,
+    kSvgZoomandpanMagnify = SVGZoomAndPanMagnify
+  };
 
-    virtual ~SVGZoomAndPan() { }
+  virtual ~SVGZoomAndPan() {}
 
-    static bool isKnownAttribute(const QualifiedName&);
+  static bool isKnownAttribute(const QualifiedName&);
 
-    static SVGZoomAndPanType parseFromNumber(unsigned short number)
-    {
-        if (!number || number > SVGZoomAndPanMagnify)
-            return SVGZoomAndPanUnknown;
-        return static_cast<SVGZoomAndPanType>(number);
-    }
+  static SVGZoomAndPanType parseFromNumber(unsigned short number) {
+    if (!number || number > SVGZoomAndPanMagnify)
+      return SVGZoomAndPanUnknown;
+    return static_cast<SVGZoomAndPanType>(number);
+  }
 
-    bool parseZoomAndPan(const LChar*& start, const LChar* end);
-    bool parseZoomAndPan(const UChar*& start, const UChar* end);
+  bool parseZoomAndPan(const LChar*& start, const LChar* end);
+  bool parseZoomAndPan(const UChar*& start, const UChar* end);
 
-    bool parseAttribute(const QualifiedName& name, const AtomicString& value)
-    {
-        if (name == SVGNames::zoomAndPanAttr) {
-            m_zoomAndPan = SVGZoomAndPanUnknown;
-            if (!value.isEmpty()) {
-                if (value.is8Bit()) {
-                    const LChar* start = value.characters8();
-                    parseZoomAndPan(start, start + value.length());
-                } else {
-                    const UChar* start = value.characters16();
-                    parseZoomAndPan(start, start + value.length());
-                }
-            }
-            return true;
+  bool parseAttribute(const QualifiedName& name, const AtomicString& value) {
+    if (name == SVGNames::zoomAndPanAttr) {
+      m_zoomAndPan = SVGZoomAndPanUnknown;
+      if (!value.isEmpty()) {
+        if (value.is8Bit()) {
+          const LChar* start = value.characters8();
+          parseZoomAndPan(start, start + value.length());
+        } else {
+          const UChar* start = value.characters16();
+          parseZoomAndPan(start, start + value.length());
         }
-
-        return false;
+      }
+      return true;
     }
 
-    // JS API
-    SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
-    virtual void setZoomAndPan(unsigned short value) { m_zoomAndPan = parseFromNumber(value); }
-    virtual void setZoomAndPan(unsigned short value, ExceptionState&) { setZoomAndPan(value); }
+    return false;
+  }
 
-protected:
-    SVGZoomAndPan();
-    void resetZoomAndPan();
+  // JS API
+  SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
+  virtual void setZoomAndPan(unsigned short value) {
+    m_zoomAndPan = parseFromNumber(value);
+  }
+  virtual void setZoomAndPan(unsigned short value, ExceptionState&) {
+    setZoomAndPan(value);
+  }
 
-private:
-    SVGZoomAndPanType m_zoomAndPan;
+ protected:
+  SVGZoomAndPan();
+  void resetZoomAndPan();
+
+ private:
+  SVGZoomAndPanType m_zoomAndPan;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGZoomAndPan_h
+#endif  // SVGZoomAndPan_h

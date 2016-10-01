@@ -36,52 +36,54 @@ enum ShadowStyle { Normal, Inset };
 
 // This class holds information about shadows for the text-shadow and box-shadow properties.
 class ShadowData {
-    USING_FAST_MALLOC(ShadowData);
-public:
-    ShadowData(const FloatPoint& location, float blur, float spread, ShadowStyle style, StyleColor color)
-        : m_location(location)
-        , m_blur(blur)
-        , m_spread(spread)
-        , m_color(color)
-        , m_style(style)
-    {
-    }
+  USING_FAST_MALLOC(ShadowData);
 
-    bool operator==(const ShadowData&) const;
-    bool operator!=(const ShadowData& o) const { return !(*this == o); }
+ public:
+  ShadowData(const FloatPoint& location,
+             float blur,
+             float spread,
+             ShadowStyle style,
+             StyleColor color)
+      : m_location(location),
+        m_blur(blur),
+        m_spread(spread),
+        m_color(color),
+        m_style(style) {}
 
-    ShadowData blend(const ShadowData& from, double progress, const Color& currentColor) const;
+  bool operator==(const ShadowData&) const;
+  bool operator!=(const ShadowData& o) const { return !(*this == o); }
 
-    float x() const { return m_location.x(); }
-    float y() const { return m_location.y(); }
-    FloatPoint location() const { return m_location; }
-    float blur() const { return m_blur; }
-    float spread() const { return m_spread; }
-    ShadowStyle style() const { return m_style; }
-    StyleColor color() const { return m_color; }
+  ShadowData blend(const ShadowData& from,
+                   double progress,
+                   const Color& currentColor) const;
 
-    // Outsets needed to adjust a source rectangle to the one cast by this
-    // shadow.
-    FloatRectOutsets rectOutsets() const
-    {
-        // 3 * skBlurRadiusToSigma(blur()) is how Skia implements the radius of a blur. See also
-        // https://crbug.com/624175.
-        float blurAndSpread = ceil(3 * skBlurRadiusToSigma(blur())) + spread();
-        return FloatRectOutsets(
-            blurAndSpread - y() /* top */,
-            blurAndSpread + x() /* right */,
-            blurAndSpread + y() /* bottom */,
-            blurAndSpread - x() /* left */);
-    }
+  float x() const { return m_location.x(); }
+  float y() const { return m_location.y(); }
+  FloatPoint location() const { return m_location; }
+  float blur() const { return m_blur; }
+  float spread() const { return m_spread; }
+  ShadowStyle style() const { return m_style; }
+  StyleColor color() const { return m_color; }
 
-private:
-    FloatPoint m_location;
-    float m_blur;
-    float m_spread;
-    StyleColor m_color;
-    ShadowStyle m_style;
+  // Outsets needed to adjust a source rectangle to the one cast by this
+  // shadow.
+  FloatRectOutsets rectOutsets() const {
+    // 3 * skBlurRadiusToSigma(blur()) is how Skia implements the radius of a blur. See also
+    // https://crbug.com/624175.
+    float blurAndSpread = ceil(3 * skBlurRadiusToSigma(blur())) + spread();
+    return FloatRectOutsets(
+        blurAndSpread - y() /* top */, blurAndSpread + x() /* right */,
+        blurAndSpread + y() /* bottom */, blurAndSpread - x() /* left */);
+  }
+
+ private:
+  FloatPoint m_location;
+  float m_blur;
+  float m_spread;
+  StyleColor m_color;
+  ShadowStyle m_style;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ShadowData_h
+#endif  // ShadowData_h

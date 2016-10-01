@@ -38,15 +38,28 @@ namespace blink {
 namespace InspectorInstrumentation {
 
 CORE_EXPORT bool isDebuggerPaused(LocalFrame*);
-CORE_EXPORT void asyncTaskScheduled(ExecutionContext*, const String& name, void*);
-CORE_EXPORT void asyncTaskScheduled(ExecutionContext*, const String& name, void*, bool recurring);
+CORE_EXPORT void asyncTaskScheduled(ExecutionContext*,
+                                    const String& name,
+                                    void*);
+CORE_EXPORT void asyncTaskScheduled(ExecutionContext*,
+                                    const String& name,
+                                    void*,
+                                    bool recurring);
 CORE_EXPORT void asyncTaskCanceled(ExecutionContext*, void*);
 CORE_EXPORT void allAsyncTasksCanceled(ExecutionContext*);
-CORE_EXPORT void continueAfterXFrameOptionsDenied(LocalFrame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&, Resource*);
-CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&, Resource*);
+CORE_EXPORT void continueAfterXFrameOptionsDenied(LocalFrame*,
+                                                  DocumentLoader*,
+                                                  unsigned long identifier,
+                                                  const ResourceResponse&,
+                                                  Resource*);
+CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*,
+                                          DocumentLoader*,
+                                          unsigned long identifier,
+                                          const ResourceResponse&,
+                                          Resource*);
 
-} // namespace InspectorInstrumentation
+}  // namespace InspectorInstrumentation
 
-} // namespace blink
+}  // namespace blink
 
-#endif // InspectorInstrumentationCustom_inl_h
+#endif  // InspectorInstrumentationCustom_inl_h

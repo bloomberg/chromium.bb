@@ -35,44 +35,53 @@ class HTMLElementOrLong;
 class NodeListOrElement;
 
 class HTMLOptionsCollection final : public HTMLCollection {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static HTMLOptionsCollection* create(ContainerNode&, CollectionType);
+  DEFINE_WRAPPERTYPEINFO();
 
-    HTMLOptionElement* item(unsigned offset) const { return toHTMLOptionElement(HTMLCollection::item(offset)); }
+ public:
+  static HTMLOptionsCollection* create(ContainerNode&, CollectionType);
 
-    void add(const HTMLOptionElementOrHTMLOptGroupElement&, const HTMLElementOrLong&, ExceptionState&);
-    void remove(int index);
+  HTMLOptionElement* item(unsigned offset) const {
+    return toHTMLOptionElement(HTMLCollection::item(offset));
+  }
 
-    int selectedIndex() const;
-    void setSelectedIndex(int);
+  void add(const HTMLOptionElementOrHTMLOptGroupElement&,
+           const HTMLElementOrLong&,
+           ExceptionState&);
+  void remove(int index);
 
-    void setLength(unsigned, ExceptionState&);
-    void namedGetter(const AtomicString& name, NodeListOrElement&);
-    bool anonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
+  int selectedIndex() const;
+  void setSelectedIndex(int);
 
-    bool elementMatches(const HTMLElement&) const;
+  void setLength(unsigned, ExceptionState&);
+  void namedGetter(const AtomicString& name, NodeListOrElement&);
+  bool anonymousIndexedSetter(unsigned, HTMLOptionElement*, ExceptionState&);
 
-private:
-    explicit HTMLOptionsCollection(ContainerNode&);
+  bool elementMatches(const HTMLElement&) const;
 
-    void supportedPropertyNames(Vector<String>& names) override;
+ private:
+  explicit HTMLOptionsCollection(ContainerNode&);
+
+  void supportedPropertyNames(Vector<String>& names) override;
 };
 
-DEFINE_TYPE_CASTS(HTMLOptionsCollection, LiveNodeListBase, collection, collection->type() == SelectOptions, collection.type() == SelectOptions);
+DEFINE_TYPE_CASTS(HTMLOptionsCollection,
+                  LiveNodeListBase,
+                  collection,
+                  collection->type() == SelectOptions,
+                  collection.type() == SelectOptions);
 
-inline bool HTMLOptionsCollection::elementMatches(const HTMLElement& element) const
-{
-    if (!isHTMLOptionElement(element))
-        return false;
-    Node* parent = element.parentNode();
-    if (!parent)
-        return false;
-    if (parent == &rootNode())
-        return true;
-    return isHTMLOptGroupElement(*parent) && parent->parentNode() == &rootNode();
+inline bool HTMLOptionsCollection::elementMatches(
+    const HTMLElement& element) const {
+  if (!isHTMLOptionElement(element))
+    return false;
+  Node* parent = element.parentNode();
+  if (!parent)
+    return false;
+  if (parent == &rootNode())
+    return true;
+  return isHTMLOptGroupElement(*parent) && parent->parentNode() == &rootNode();
 }
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLOptionsCollection_h
+#endif  // HTMLOptionsCollection_h

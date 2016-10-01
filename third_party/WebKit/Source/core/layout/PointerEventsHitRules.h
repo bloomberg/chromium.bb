@@ -27,24 +27,25 @@
 namespace blink {
 
 class PointerEventsHitRules {
-    STACK_ALLOCATED();
-public:
-    enum EHitTesting {
-        SVG_IMAGE_HITTESTING,
-        SVG_GEOMETRY_HITTESTING,
-        SVG_TEXT_HITTESTING
-    };
+  STACK_ALLOCATED();
 
-    PointerEventsHitRules(EHitTesting, const HitTestRequest&, EPointerEvents);
+ public:
+  enum EHitTesting {
+    SVG_IMAGE_HITTESTING,
+    SVG_GEOMETRY_HITTESTING,
+    SVG_TEXT_HITTESTING
+  };
 
-    unsigned requireVisible : 1;
-    unsigned requireFill : 1;
-    unsigned requireStroke : 1;
-    unsigned canHitStroke : 1;
-    unsigned canHitFill : 1;
-    unsigned canHitBoundingBox : 1;
+  PointerEventsHitRules(EHitTesting, const HitTestRequest&, EPointerEvents);
+
+  unsigned requireVisible : 1;
+  unsigned requireFill : 1;
+  unsigned requireStroke : 1;
+  unsigned canHitStroke : 1;
+  unsigned canHitFill : 1;
+  unsigned canHitBoundingBox : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -40,34 +40,40 @@ class TransformPaintPropertyNode;
 //       .rectDrawing(bounds3, color3);
 //   doSomethingWithArtifact(artifact);
 class TestPaintArtifact {
-    STACK_ALLOCATED();
-public:
-    TestPaintArtifact();
-    ~TestPaintArtifact();
+  STACK_ALLOCATED();
 
-    // Add to the artifact.
-    TestPaintArtifact& chunk(PassRefPtr<TransformPaintPropertyNode>, PassRefPtr<ClipPaintPropertyNode>, PassRefPtr<EffectPaintPropertyNode>, PassRefPtr<ScrollPaintPropertyNode> = nullptr);
-    TestPaintArtifact& chunk(const PaintChunkProperties&);
-    TestPaintArtifact& rectDrawing(const FloatRect& bounds, Color);
-    TestPaintArtifact& foreignLayer(const FloatPoint&, const IntSize&, scoped_refptr<cc::Layer>);
+ public:
+  TestPaintArtifact();
+  ~TestPaintArtifact();
 
-    // Can't add more things once this is called.
-    const PaintArtifact& build();
+  // Add to the artifact.
+  TestPaintArtifact& chunk(PassRefPtr<TransformPaintPropertyNode>,
+                           PassRefPtr<ClipPaintPropertyNode>,
+                           PassRefPtr<EffectPaintPropertyNode>,
+                           PassRefPtr<ScrollPaintPropertyNode> = nullptr);
+  TestPaintArtifact& chunk(const PaintChunkProperties&);
+  TestPaintArtifact& rectDrawing(const FloatRect& bounds, Color);
+  TestPaintArtifact& foreignLayer(const FloatPoint&,
+                                  const IntSize&,
+                                  scoped_refptr<cc::Layer>);
 
-private:
-    class DummyRectClient;
-    Vector<std::unique_ptr<DummyRectClient>> m_dummyClients;
+  // Can't add more things once this is called.
+  const PaintArtifact& build();
 
-    // Exists if m_built is false.
-    DisplayItemList m_displayItemList;
-    Vector<PaintChunk> m_paintChunks;
+ private:
+  class DummyRectClient;
+  Vector<std::unique_ptr<DummyRectClient>> m_dummyClients;
 
-    // Exists if m_built is true.
-    PaintArtifact m_paintArtifact;
+  // Exists if m_built is false.
+  DisplayItemList m_displayItemList;
+  Vector<PaintChunk> m_paintChunks;
 
-    bool m_built;
+  // Exists if m_built is true.
+  PaintArtifact m_paintArtifact;
+
+  bool m_built;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TestPaintArtifact_h
+#endif  // TestPaintArtifact_h

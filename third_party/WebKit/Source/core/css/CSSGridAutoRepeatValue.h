@@ -22,30 +22,29 @@ namespace blink {
 // future. That's why we're using a list, it's prepared for future changes and it also
 // allows us to keep the parsing algorithm almost intact.
 class CSSGridAutoRepeatValue : public CSSValueList {
-public:
-    static CSSGridAutoRepeatValue* create(CSSValueID id)
-    {
-        return new CSSGridAutoRepeatValue(id);
-    }
+ public:
+  static CSSGridAutoRepeatValue* create(CSSValueID id) {
+    return new CSSGridAutoRepeatValue(id);
+  }
 
-    String customCSSText() const;
-    CSSValueID autoRepeatID() const { return m_autoRepeatID; }
+  String customCSSText() const;
+  CSSValueID autoRepeatID() const { return m_autoRepeatID; }
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValueList::traceAfterDispatch(visitor); }
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    CSSValueList::traceAfterDispatch(visitor);
+  }
 
-private:
-    CSSGridAutoRepeatValue(CSSValueID id)
-        : CSSValueList(GridAutoRepeatClass, SpaceSeparator)
-        , m_autoRepeatID(id)
-    {
-        ASSERT(id == CSSValueAutoFill || id == CSSValueAutoFit);
-    }
+ private:
+  CSSGridAutoRepeatValue(CSSValueID id)
+      : CSSValueList(GridAutoRepeatClass, SpaceSeparator), m_autoRepeatID(id) {
+    ASSERT(id == CSSValueAutoFill || id == CSSValueAutoFit);
+  }
 
-    const CSSValueID m_autoRepeatID;
+  const CSSValueID m_autoRepeatID;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridAutoRepeatValue, isGridAutoRepeatValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSGridAutoRepeatValue_h
+#endif  // CSSGridAutoRepeatValue_h

@@ -9,14 +9,16 @@
 
 namespace blink {
 
-void V8ExtendableMessageEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8ServiceWorkerMessageEventInternal::constructorCustom<ExtendableMessageEvent, ExtendableMessageEventInit>(info);
+void V8ExtendableMessageEvent::constructorCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  V8ServiceWorkerMessageEventInternal::constructorCustom<
+      ExtendableMessageEvent, ExtendableMessageEventInit>(info);
 }
 
-void V8ExtendableMessageEvent::dataAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom<ExtendableMessageEvent>(info);
+void V8ExtendableMessageEvent::dataAttributeGetterCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom<
+      ExtendableMessageEvent>(info);
 }
 
-} // namespace blink
+}  // namespace blink

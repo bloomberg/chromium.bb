@@ -14,29 +14,30 @@ namespace blink {
 
 // Represents the smooth interpolation between an adjacent pair of PropertySpecificKeyframes.
 struct PairwiseInterpolationValue {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    PairwiseInterpolationValue(std::unique_ptr<InterpolableValue> startInterpolableValue, std::unique_ptr<InterpolableValue> endInterpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-        : startInterpolableValue(std::move(startInterpolableValue))
-        , endInterpolableValue(std::move(endInterpolableValue))
-        , nonInterpolableValue(std::move(nonInterpolableValue))
-    { }
+  PairwiseInterpolationValue(
+      std::unique_ptr<InterpolableValue> startInterpolableValue,
+      std::unique_ptr<InterpolableValue> endInterpolableValue,
+      PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+      : startInterpolableValue(std::move(startInterpolableValue)),
+        endInterpolableValue(std::move(endInterpolableValue)),
+        nonInterpolableValue(std::move(nonInterpolableValue)) {}
 
-    PairwiseInterpolationValue(std::nullptr_t) { }
+  PairwiseInterpolationValue(std::nullptr_t) {}
 
-    PairwiseInterpolationValue(PairwiseInterpolationValue&& other)
-        : startInterpolableValue(std::move(other.startInterpolableValue))
-        , endInterpolableValue(std::move(other.endInterpolableValue))
-        , nonInterpolableValue(other.nonInterpolableValue.release())
-    { }
+  PairwiseInterpolationValue(PairwiseInterpolationValue&& other)
+      : startInterpolableValue(std::move(other.startInterpolableValue)),
+        endInterpolableValue(std::move(other.endInterpolableValue)),
+        nonInterpolableValue(other.nonInterpolableValue.release()) {}
 
-    operator bool() const { return startInterpolableValue.get(); }
+  operator bool() const { return startInterpolableValue.get(); }
 
-    std::unique_ptr<InterpolableValue> startInterpolableValue;
-    std::unique_ptr<InterpolableValue> endInterpolableValue;
-    RefPtr<NonInterpolableValue> nonInterpolableValue;
+  std::unique_ptr<InterpolableValue> startInterpolableValue;
+  std::unique_ptr<InterpolableValue> endInterpolableValue;
+  RefPtr<NonInterpolableValue> nonInterpolableValue;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PairwiseInterpolationValue_h
+#endif  // PairwiseInterpolationValue_h

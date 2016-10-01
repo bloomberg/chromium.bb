@@ -38,29 +38,30 @@
 
 namespace blink {
 
-std::unique_ptr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-{
-    return wrapUnique(new ServiceWorkerThread(std::move(workerLoaderProxy), workerReportingProxy));
+std::unique_ptr<ServiceWorkerThread> ServiceWorkerThread::create(
+    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
+    WorkerReportingProxy& workerReportingProxy) {
+  return wrapUnique(new ServiceWorkerThread(std::move(workerLoaderProxy),
+                                            workerReportingProxy));
 }
 
-ServiceWorkerThread::ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy)
-    , m_workerBackingThread(WorkerBackingThread::create("ServiceWorker Thread", BlinkGC::PerThreadHeapMode))
-{
+ServiceWorkerThread::ServiceWorkerThread(
+    PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
+    WorkerReportingProxy& workerReportingProxy)
+    : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy),
+      m_workerBackingThread(
+          WorkerBackingThread::create("ServiceWorker Thread",
+                                      BlinkGC::PerThreadHeapMode)) {}
+
+ServiceWorkerThread::~ServiceWorkerThread() {}
+
+void ServiceWorkerThread::clearWorkerBackingThread() {
+  m_workerBackingThread = nullptr;
 }
 
-ServiceWorkerThread::~ServiceWorkerThread()
-{
+WorkerOrWorkletGlobalScope* ServiceWorkerThread::createWorkerGlobalScope(
+    std::unique_ptr<WorkerThreadStartupData> startupData) {
+  return ServiceWorkerGlobalScope::create(this, std::move(startupData));
 }
 
-void ServiceWorkerThread::clearWorkerBackingThread()
-{
-    m_workerBackingThread = nullptr;
-}
-
-WorkerOrWorkletGlobalScope* ServiceWorkerThread::createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData)
-{
-    return ServiceWorkerGlobalScope::create(this, std::move(startupData));
-}
-
-} // namespace blink
+}  // namespace blink

@@ -15,19 +15,19 @@ namespace blink {
 namespace {
 
 class TestListener : public MediaQueryListListener {
-public:
-    void notifyMediaQueryChanged() override { }
+ public:
+  void notifyMediaQueryChanged() override {}
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
-TEST(MediaQueryListTest, CrashInStop)
-{
-    Document* document = Document::create();
-    MediaQueryList* list = MediaQueryList::create(document, MediaQueryMatcher::create(*document), MediaQuerySet::create());
-    list->addListener(new TestListener());
-    list->stop();
-    // This test passes if it's not crashed.
+TEST(MediaQueryListTest, CrashInStop) {
+  Document* document = Document::create();
+  MediaQueryList* list = MediaQueryList::create(
+      document, MediaQueryMatcher::create(*document), MediaQuerySet::create());
+  list->addListener(new TestListener());
+  list->stop();
+  // This test passes if it's not crashed.
 }
 
-} // namespace blink
+}  // namespace blink

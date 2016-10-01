@@ -129,8 +129,8 @@ const UChar zeroWidthSpaceCharacter = 0x200B;
 const UChar zeroWidthNoBreakSpaceCharacter = 0xFEFF;
 const UChar32 kMaxCodepoint = 0x10ffff;
 
-} // namespace Unicode
-} // namespace WTF
+}  // namespace Unicode
+}  // namespace WTF
 
 using WTF::Unicode::aegeanWordSeparatorLineCharacter;
 using WTF::Unicode::aegeanWordSeparatorDotCharacter;
@@ -219,4 +219,4 @@ using WTF::Unicode::zeroWidthSpaceCharacter;
 using WTF::Unicode::zeroWidthNoBreakSpaceCharacter;
 using WTF::Unicode::kMaxCodepoint;
 
-#endif // CharacterNames_h
+#endif  // CharacterNames_h

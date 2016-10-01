@@ -46,13 +46,13 @@ class ExecutionContext;
 // Should only be created, used, and destroyed on the script execution
 // context thread.
 class CORE_EXPORT ActiveDOMCallback : public ContextLifecycleObserver {
-public:
-    explicit ActiveDOMCallback(ExecutionContext*);
-    virtual ~ActiveDOMCallback();
+ public:
+  explicit ActiveDOMCallback(ExecutionContext*);
+  virtual ~ActiveDOMCallback();
 
-    bool canInvokeCallback() const;
+  bool canInvokeCallback() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ActiveDOMCallback_h
+#endif  // ActiveDOMCallback_h

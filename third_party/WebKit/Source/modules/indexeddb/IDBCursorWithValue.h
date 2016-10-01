@@ -39,23 +39,36 @@ class IDBRequest;
 class IDBTransaction;
 
 class IDBCursorWithValue final : public IDBCursor {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static IDBCursorWithValue* create(std::unique_ptr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
-    ~IDBCursorWithValue() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via
-    // its IDL). This is to make the implementation more simple while matching what the spec says.
+ public:
+  static IDBCursorWithValue* create(std::unique_ptr<WebIDBCursor>,
+                                    WebIDBCursorDirection,
+                                    IDBRequest*,
+                                    IDBAny* source,
+                                    IDBTransaction*);
+  ~IDBCursorWithValue() override;
 
-    bool isKeyCursor() const override { return false; }
-    bool isCursorWithValue() const override { return true; }
+  // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via
+  // its IDL). This is to make the implementation more simple while matching what the spec says.
 
-private:
-    IDBCursorWithValue(std::unique_ptr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+  bool isKeyCursor() const override { return false; }
+  bool isCursorWithValue() const override { return true; }
+
+ private:
+  IDBCursorWithValue(std::unique_ptr<WebIDBCursor>,
+                     WebIDBCursorDirection,
+                     IDBRequest*,
+                     IDBAny* source,
+                     IDBTransaction*);
 };
 
-DEFINE_TYPE_CASTS(IDBCursorWithValue, IDBCursor, cursor, cursor->isCursorWithValue(), cursor.isCursorWithValue());
+DEFINE_TYPE_CASTS(IDBCursorWithValue,
+                  IDBCursor,
+                  cursor,
+                  cursor->isCursorWithValue(),
+                  cursor.isCursorWithValue());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IDBCursorWithValue_h
+#endif  // IDBCursorWithValue_h

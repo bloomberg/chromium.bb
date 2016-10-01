@@ -10,31 +10,28 @@
 
 namespace blink {
 
-Transform3DRecorder::Transform3DRecorder(
-    GraphicsContext& context,
-    const DisplayItemClient& client,
-    DisplayItem::Type type,
-    const TransformationMatrix& transform,
-    const FloatPoint3D& transformOrigin)
-    : m_context(context)
-    , m_client(client)
-    , m_type(type)
-{
-    ASSERT(DisplayItem::isTransform3DType(type));
-    m_skipRecordingForIdentityTransform = transform.isIdentity();
+Transform3DRecorder::Transform3DRecorder(GraphicsContext& context,
+                                         const DisplayItemClient& client,
+                                         DisplayItem::Type type,
+                                         const TransformationMatrix& transform,
+                                         const FloatPoint3D& transformOrigin)
+    : m_context(context), m_client(client), m_type(type) {
+  ASSERT(DisplayItem::isTransform3DType(type));
+  m_skipRecordingForIdentityTransform = transform.isIdentity();
 
-    if (m_skipRecordingForIdentityTransform)
-        return;
+  if (m_skipRecordingForIdentityTransform)
+    return;
 
-    m_context.getPaintController().createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform, transformOrigin);
+  m_context.getPaintController().createAndAppend<BeginTransform3DDisplayItem>(
+      m_client, m_type, transform, transformOrigin);
 }
 
-Transform3DRecorder::~Transform3DRecorder()
-{
-    if (m_skipRecordingForIdentityTransform)
-        return;
+Transform3DRecorder::~Transform3DRecorder() {
+  if (m_skipRecordingForIdentityTransform)
+    return;
 
-    m_context.getPaintController().endItem<EndTransform3DDisplayItem>(m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
+  m_context.getPaintController().endItem<EndTransform3DDisplayItem>(
+      m_client, DisplayItem::transform3DTypeToEndTransform3DType(m_type));
 }
 
-} // namespace blink
+}  // namespace blink

@@ -41,76 +41,69 @@
 namespace blink {
 
 struct Timing {
-    USING_FAST_MALLOC(Timing);
-public:
-    using FillMode = CompositorAnimation::FillMode;
-    using PlaybackDirection = CompositorAnimation::Direction;
+  USING_FAST_MALLOC(Timing);
 
-    static String fillModeString(FillMode);
-    static String playbackDirectionString(PlaybackDirection);
+ public:
+  using FillMode = CompositorAnimation::FillMode;
+  using PlaybackDirection = CompositorAnimation::Direction;
 
-    static const Timing& defaults()
-    {
-        DEFINE_STATIC_LOCAL(Timing, timing, ());
-        return timing;
-    }
+  static String fillModeString(FillMode);
+  static String playbackDirectionString(PlaybackDirection);
 
-    Timing()
-        : startDelay(0)
-        , endDelay(0)
-        , fillMode(FillMode::AUTO)
-        , iterationStart(0)
-        , iterationCount(1)
-        , iterationDuration(std::numeric_limits<double>::quiet_NaN())
-        , playbackRate(1)
-        , direction(PlaybackDirection::NORMAL)
-        , timingFunction(LinearTimingFunction::shared())
-    {
-    }
+  static const Timing& defaults() {
+    DEFINE_STATIC_LOCAL(Timing, timing, ());
+    return timing;
+  }
 
-    void assertValid() const
-    {
-        DCHECK(std::isfinite(startDelay));
-        DCHECK(std::isfinite(endDelay));
-        DCHECK(std::isfinite(iterationStart));
-        DCHECK_GE(iterationStart, 0);
-        DCHECK_GE(iterationCount, 0);
-        DCHECK(std::isnan(iterationDuration) || iterationDuration >= 0);
-        DCHECK(std::isfinite(playbackRate));
-        DCHECK(timingFunction);
-    }
+  Timing()
+      : startDelay(0),
+        endDelay(0),
+        fillMode(FillMode::AUTO),
+        iterationStart(0),
+        iterationCount(1),
+        iterationDuration(std::numeric_limits<double>::quiet_NaN()),
+        playbackRate(1),
+        direction(PlaybackDirection::NORMAL),
+        timingFunction(LinearTimingFunction::shared()) {}
 
-    bool operator==(const Timing &other) const
-    {
-        return startDelay == other.startDelay
-            && endDelay == other.endDelay
-            && fillMode == other.fillMode
-            && iterationStart == other.iterationStart
-            && iterationCount == other.iterationCount
-            && ((std::isnan(iterationDuration) && std::isnan(other.iterationDuration)) || iterationDuration == other.iterationDuration)
-            && playbackRate == other.playbackRate
-            && direction == other.direction
-            && dataEquivalent(timingFunction.get(), other.timingFunction.get());
-    }
+  void assertValid() const {
+    DCHECK(std::isfinite(startDelay));
+    DCHECK(std::isfinite(endDelay));
+    DCHECK(std::isfinite(iterationStart));
+    DCHECK_GE(iterationStart, 0);
+    DCHECK_GE(iterationCount, 0);
+    DCHECK(std::isnan(iterationDuration) || iterationDuration >= 0);
+    DCHECK(std::isfinite(playbackRate));
+    DCHECK(timingFunction);
+  }
 
-    bool operator!=(const Timing &other) const
-    {
-        return !(*this == other);
-    }
+  bool operator==(const Timing& other) const {
+    return startDelay == other.startDelay && endDelay == other.endDelay &&
+           fillMode == other.fillMode &&
+           iterationStart == other.iterationStart &&
+           iterationCount == other.iterationCount &&
+           ((std::isnan(iterationDuration) &&
+             std::isnan(other.iterationDuration)) ||
+            iterationDuration == other.iterationDuration) &&
+           playbackRate == other.playbackRate && direction == other.direction &&
+           dataEquivalent(timingFunction.get(), other.timingFunction.get());
+  }
 
-    double startDelay;
-    double endDelay;
-    FillMode fillMode;
-    double iterationStart;
-    double iterationCount;
-    double iterationDuration;
+  bool operator!=(const Timing& other) const { return !(*this == other); }
 
-    // TODO(crbug.com/630915) Remove playbackRate
-    double playbackRate;
-    PlaybackDirection direction;
-    RefPtr<TimingFunction> timingFunction;
+  double startDelay;
+  double endDelay;
+  FillMode fillMode;
+  double iterationStart;
+  double iterationCount;
+  double iterationDuration;
+
+  // TODO(crbug.com/630915) Remove playbackRate
+  double playbackRate;
+  PlaybackDirection direction;
+  RefPtr<TimingFunction> timingFunction;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -40,104 +40,94 @@ namespace blink {
 // An AudioChannel represents a buffer of non-interleaved floating-point audio samples.
 // The PCM samples are normally assumed to be in a nominal range -1.0 -> +1.0
 class PLATFORM_EXPORT AudioChannel {
-    USING_FAST_MALLOC(AudioChannel);
-    WTF_MAKE_NONCOPYABLE(AudioChannel);
-public:
-    // Memory can be externally referenced, or can be internally allocated with an AudioFloatArray.
+  USING_FAST_MALLOC(AudioChannel);
+  WTF_MAKE_NONCOPYABLE(AudioChannel);
 
-    // Reference an external buffer.
-    AudioChannel(float* storage, size_t length)
-        : m_length(length)
-        , m_rawPointer(storage)
-        , m_silent(false)
-    {
-    }
+ public:
+  // Memory can be externally referenced, or can be internally allocated with an AudioFloatArray.
 
-    // Manage storage for us.
-    explicit AudioChannel(size_t length)
-        : m_length(length)
-        , m_rawPointer(nullptr)
-        , m_silent(true)
-    {
-        m_memBuffer = wrapUnique(new AudioFloatArray(length));
-    }
+  // Reference an external buffer.
+  AudioChannel(float* storage, size_t length)
+      : m_length(length), m_rawPointer(storage), m_silent(false) {}
 
-    // A "blank" audio channel -- must call set() before it's useful...
-    AudioChannel()
-        : m_length(0)
-        , m_rawPointer(nullptr)
-        , m_silent(true)
-    {
-    }
+  // Manage storage for us.
+  explicit AudioChannel(size_t length)
+      : m_length(length), m_rawPointer(nullptr), m_silent(true) {
+    m_memBuffer = wrapUnique(new AudioFloatArray(length));
+  }
 
-    // Redefine the memory for this channel.
-    // storage represents external memory not managed by this object.
-    void set(float* storage, size_t length)
-    {
-        m_memBuffer.reset(); // cleanup managed storage
-        m_rawPointer = storage;
-        m_length = length;
-        m_silent = false;
-    }
+  // A "blank" audio channel -- must call set() before it's useful...
+  AudioChannel() : m_length(0), m_rawPointer(nullptr), m_silent(true) {}
 
-    // How many sample-frames do we contain?
-    size_t length() const { return m_length; }
+  // Redefine the memory for this channel.
+  // storage represents external memory not managed by this object.
+  void set(float* storage, size_t length) {
+    m_memBuffer.reset();  // cleanup managed storage
+    m_rawPointer = storage;
+    m_length = length;
+    m_silent = false;
+  }
 
-    // resizeSmaller() can only be called with a new length <= the current length.
-    // The data stored in the bus will remain undisturbed.
-    void resizeSmaller(size_t newLength);
+  // How many sample-frames do we contain?
+  size_t length() const { return m_length; }
 
-    // Direct access to PCM sample data. Non-const accessor clears silent flag.
-    float* mutableData()
-    {
-        clearSilentFlag();
-        return m_rawPointer ? m_rawPointer : m_memBuffer->data();
-    }
+  // resizeSmaller() can only be called with a new length <= the current length.
+  // The data stored in the bus will remain undisturbed.
+  void resizeSmaller(size_t newLength);
 
-    const float* data() const { return m_rawPointer ? m_rawPointer : m_memBuffer->data(); }
+  // Direct access to PCM sample data. Non-const accessor clears silent flag.
+  float* mutableData() {
+    clearSilentFlag();
+    return m_rawPointer ? m_rawPointer : m_memBuffer->data();
+  }
 
-    // Zeroes out all sample values in buffer.
-    void zero()
-    {
-        if (m_silent)
-            return;
+  const float* data() const {
+    return m_rawPointer ? m_rawPointer : m_memBuffer->data();
+  }
 
-        m_silent = true;
+  // Zeroes out all sample values in buffer.
+  void zero() {
+    if (m_silent)
+      return;
 
-        if (m_memBuffer.get())
-            m_memBuffer->zero();
-        else
-            memset(m_rawPointer, 0, sizeof(float) * m_length);
-    }
+    m_silent = true;
 
-    // Clears the silent flag.
-    void clearSilentFlag() { m_silent = false; }
+    if (m_memBuffer.get())
+      m_memBuffer->zero();
+    else
+      memset(m_rawPointer, 0, sizeof(float) * m_length);
+  }
 
-    bool isSilent() const { return m_silent; }
+  // Clears the silent flag.
+  void clearSilentFlag() { m_silent = false; }
 
-    // Scales all samples by the same amount.
-    void scale(float scale);
+  bool isSilent() const { return m_silent; }
 
-    // A simple memcpy() from the source channel
-    void copyFrom(const AudioChannel* sourceChannel);
+  // Scales all samples by the same amount.
+  void scale(float scale);
 
-    // Copies the given range from the source channel.
-    void copyFromRange(const AudioChannel* sourceChannel, unsigned startFrame, unsigned endFrame);
+  // A simple memcpy() from the source channel
+  void copyFrom(const AudioChannel* sourceChannel);
 
-    // Sums (with unity gain) from the source channel.
-    void sumFrom(const AudioChannel* sourceChannel);
+  // Copies the given range from the source channel.
+  void copyFromRange(const AudioChannel* sourceChannel,
+                     unsigned startFrame,
+                     unsigned endFrame);
 
-    // Returns maximum absolute value (useful for normalization).
-    float maxAbsValue() const;
+  // Sums (with unity gain) from the source channel.
+  void sumFrom(const AudioChannel* sourceChannel);
 
-private:
-    size_t m_length;
+  // Returns maximum absolute value (useful for normalization).
+  float maxAbsValue() const;
 
-    float* m_rawPointer;
-    std::unique_ptr<AudioFloatArray> m_memBuffer;
-    bool m_silent;
+ private:
+  size_t m_length;
+
+  float* m_rawPointer;
+  std::unique_ptr<AudioFloatArray> m_memBuffer;
+  bool m_silent;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AudioChannel_h
+#endif  // AudioChannel_h

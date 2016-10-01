@@ -36,162 +36,142 @@
 namespace blink {
 
 IntRect::IntRect(const FloatRect& r)
-    : m_location(clampTo<int>(r.x()), clampTo<int>(r.y()))
-    , m_size(clampTo<int>(r.width()), clampTo<int>(r.height()))
-{
-}
+    : m_location(clampTo<int>(r.x()), clampTo<int>(r.y())),
+      m_size(clampTo<int>(r.width()), clampTo<int>(r.height())) {}
 
 IntRect::IntRect(const LayoutRect& r)
-    : m_location(r.x().toInt(), r.y().toInt())
-    , m_size(r.width().toInt(), r.height().toInt())
-{
+    : m_location(r.x().toInt(), r.y().toInt()),
+      m_size(r.width().toInt(), r.height().toInt()) {}
+
+bool IntRect::intersects(const IntRect& other) const {
+  // Checking emptiness handles negative widths as well as zero.
+  return !isEmpty() && !other.isEmpty() && x() < other.maxX() &&
+         other.x() < maxX() && y() < other.maxY() && other.y() < maxY();
 }
 
-bool IntRect::intersects(const IntRect& other) const
-{
-    // Checking emptiness handles negative widths as well as zero.
-    return !isEmpty() && !other.isEmpty()
-        && x() < other.maxX() && other.x() < maxX()
-        && y() < other.maxY() && other.y() < maxY();
+bool IntRect::contains(const IntRect& other) const {
+  return x() <= other.x() && maxX() >= other.maxX() && y() <= other.y() &&
+         maxY() >= other.maxY();
 }
 
-bool IntRect::contains(const IntRect& other) const
-{
-    return x() <= other.x() && maxX() >= other.maxX()
-        && y() <= other.y() && maxY() >= other.maxY();
+void IntRect::intersect(const IntRect& other) {
+  int left = std::max(x(), other.x());
+  int top = std::max(y(), other.y());
+  int right = std::min(maxX(), other.maxX());
+  int bottom = std::min(maxY(), other.maxY());
+
+  // Return a clean empty rectangle for non-intersecting cases.
+  if (left >= right || top >= bottom) {
+    left = 0;
+    top = 0;
+    right = 0;
+    bottom = 0;
+  }
+
+  m_location.setX(left);
+  m_location.setY(top);
+  m_size.setWidth(right - left);
+  m_size.setHeight(bottom - top);
 }
 
-void IntRect::intersect(const IntRect& other)
-{
-    int left = std::max(x(), other.x());
-    int top = std::max(y(), other.y());
-    int right = std::min(maxX(), other.maxX());
-    int bottom = std::min(maxY(), other.maxY());
+void IntRect::unite(const IntRect& other) {
+  // Handle empty special cases first.
+  if (other.isEmpty())
+    return;
+  if (isEmpty()) {
+    *this = other;
+    return;
+  }
 
-    // Return a clean empty rectangle for non-intersecting cases.
-    if (left >= right || top >= bottom) {
-        left = 0;
-        top = 0;
-        right = 0;
-        bottom = 0;
-    }
-
-    m_location.setX(left);
-    m_location.setY(top);
-    m_size.setWidth(right - left);
-    m_size.setHeight(bottom - top);
+  uniteEvenIfEmpty(other);
 }
 
-void IntRect::unite(const IntRect& other)
-{
-    // Handle empty special cases first.
-    if (other.isEmpty())
-        return;
-    if (isEmpty()) {
-        *this = other;
-        return;
-    }
+void IntRect::uniteIfNonZero(const IntRect& other) {
+  // Handle empty special cases first.
+  if (!other.width() && !other.height())
+    return;
+  if (!width() && !height()) {
+    *this = other;
+    return;
+  }
 
-    uniteEvenIfEmpty(other);
+  uniteEvenIfEmpty(other);
 }
 
-void IntRect::uniteIfNonZero(const IntRect& other)
-{
-    // Handle empty special cases first.
-    if (!other.width() && !other.height())
-        return;
-    if (!width() && !height()) {
-        *this = other;
-        return;
-    }
+void IntRect::uniteEvenIfEmpty(const IntRect& other) {
+  int left = std::min(x(), other.x());
+  int top = std::min(y(), other.y());
+  int right = std::max(maxX(), other.maxX());
+  int bottom = std::max(maxY(), other.maxY());
 
-    uniteEvenIfEmpty(other);
+  m_location.setX(left);
+  m_location.setY(top);
+  m_size.setWidth(right - left);
+  m_size.setHeight(bottom - top);
 }
 
-void IntRect::uniteEvenIfEmpty(const IntRect& other)
-{
-    int left = std::min(x(), other.x());
-    int top = std::min(y(), other.y());
-    int right = std::max(maxX(), other.maxX());
-    int bottom = std::max(maxY(), other.maxY());
-
-    m_location.setX(left);
-    m_location.setY(top);
-    m_size.setWidth(right - left);
-    m_size.setHeight(bottom - top);
+void IntRect::scale(float s) {
+  m_location.setX((int)(x() * s));
+  m_location.setY((int)(y() * s));
+  m_size.setWidth((int)(width() * s));
+  m_size.setHeight((int)(height() * s));
 }
 
-void IntRect::scale(float s)
-{
-    m_location.setX((int)(x() * s));
-    m_location.setY((int)(y() * s));
-    m_size.setWidth((int)(width() * s));
-    m_size.setHeight((int)(height() * s));
+static inline int distanceToInterval(int pos, int start, int end) {
+  if (pos < start)
+    return start - pos;
+  if (pos > end)
+    return end - pos;
+  return 0;
 }
 
-static inline int distanceToInterval(int pos, int start, int end)
-{
-    if (pos < start)
-        return start - pos;
-    if (pos > end)
-        return end - pos;
-    return 0;
+IntSize IntRect::differenceToPoint(const IntPoint& point) const {
+  int xdistance = distanceToInterval(point.x(), x(), maxX());
+  int ydistance = distanceToInterval(point.y(), y(), maxY());
+  return IntSize(xdistance, ydistance);
 }
 
-IntSize IntRect::differenceToPoint(const IntPoint& point) const
-{
-    int xdistance = distanceToInterval(point.x(), x(), maxX());
-    int ydistance = distanceToInterval(point.y(), y(), maxY());
-    return IntSize(xdistance, ydistance);
+IntRect::operator SkIRect() const {
+  SkIRect rect = {x(), y(), maxX(), maxY()};
+  return rect;
 }
 
-IntRect::operator SkIRect() const
-{
-    SkIRect rect = { x(), y(), maxX(), maxY() };
-    return rect;
+IntRect::operator SkRect() const {
+  SkRect rect;
+  rect.set(SkIntToScalar(x()), SkIntToScalar(y()), SkIntToScalar(maxX()),
+           SkIntToScalar(maxY()));
+  return rect;
 }
 
-IntRect::operator SkRect() const
-{
-    SkRect rect;
-    rect.set(SkIntToScalar(x()), SkIntToScalar(y()), SkIntToScalar(maxX()), SkIntToScalar(maxY()));
-    return rect;
+IntRect::operator gfx::Rect() const {
+  return gfx::Rect(x(), y(), width(), height());
 }
 
-IntRect::operator gfx::Rect() const
-{
-    return gfx::Rect(x(), y(), width(), height());
+IntRect unionRect(const Vector<IntRect>& rects) {
+  IntRect result;
+
+  size_t count = rects.size();
+  for (size_t i = 0; i < count; ++i)
+    result.unite(rects[i]);
+
+  return result;
 }
 
-IntRect unionRect(const Vector<IntRect>& rects)
-{
-    IntRect result;
+IntRect unionRectEvenIfEmpty(const Vector<IntRect>& rects) {
+  size_t count = rects.size();
+  if (!count)
+    return IntRect();
 
-    size_t count = rects.size();
-    for (size_t i = 0; i < count; ++i)
-        result.unite(rects[i]);
+  IntRect result = rects[0];
+  for (size_t i = 1; i < count; ++i)
+    result.uniteEvenIfEmpty(rects[i]);
 
-    return result;
+  return result;
 }
 
-IntRect unionRectEvenIfEmpty(const Vector<IntRect>& rects)
-{
-    size_t count = rects.size();
-    if (!count)
-        return IntRect();
-
-    IntRect result = rects[0];
-    for (size_t i = 1; i < count; ++i)
-        result.uniteEvenIfEmpty(rects[i]);
-
-    return result;
+String IntRect::toString() const {
+  return String::format("%s %s", location().toString().ascii().data(),
+                        size().toString().ascii().data());
 }
 
-String IntRect::toString() const
-{
-    return String::format("%s %s",
-        location().toString().ascii().data(),
-        size().toString().ascii().data());
-}
-
-} // namespace blink
+}  // namespace blink

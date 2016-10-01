@@ -8,13 +8,13 @@
 namespace blink {
 
 enum SelectionState {
-    SelectionNone, // The object is not selected.
-    SelectionStart, // The object either contains the start of a selection run or is the start of a run.
-    SelectionInside, // The object is fully encompassed by a selection run.
-    SelectionEnd, // The object either contains the end of a selection run or is the end of a run.
-    SelectionBoth // The object contains an entire run or is the sole selected object in that run.
+  SelectionNone,    // The object is not selected.
+  SelectionStart,   // The object either contains the start of a selection run or is the start of a run.
+  SelectionInside,  // The object is fully encompassed by a selection run.
+  SelectionEnd,  // The object either contains the end of a selection run or is the end of a run.
+  SelectionBoth  // The object contains an entire run or is the sole selected object in that run.
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SelectionState_h
+#endif  // SelectionState_h

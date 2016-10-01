@@ -34,19 +34,21 @@
 
 namespace blink {
 
-DedicatedWorkerMessagingProxyProvider* DedicatedWorkerMessagingProxyProvider::from(Page& page)
-{
-    return static_cast<DedicatedWorkerMessagingProxyProvider*>(Supplement<Page>::from(page, supplementName()));
+DedicatedWorkerMessagingProxyProvider*
+DedicatedWorkerMessagingProxyProvider::from(Page& page) {
+  return static_cast<DedicatedWorkerMessagingProxyProvider*>(
+      Supplement<Page>::from(page, supplementName()));
 }
 
-const char* DedicatedWorkerMessagingProxyProvider::supplementName()
-{
-    return "DedicatedWorkerMessagingProxyProvider";
+const char* DedicatedWorkerMessagingProxyProvider::supplementName() {
+  return "DedicatedWorkerMessagingProxyProvider";
 }
 
-void provideDedicatedWorkerMessagingProxyProviderTo(Page& page, DedicatedWorkerMessagingProxyProvider* provider)
-{
-    Supplement<Page>::provideTo(page, DedicatedWorkerMessagingProxyProvider::supplementName(), provider);
+void provideDedicatedWorkerMessagingProxyProviderTo(
+    Page& page,
+    DedicatedWorkerMessagingProxyProvider* provider) {
+  Supplement<Page>::provideTo(
+      page, DedicatedWorkerMessagingProxyProvider::supplementName(), provider);
 }
 
-} // namespace blink
+}  // namespace blink

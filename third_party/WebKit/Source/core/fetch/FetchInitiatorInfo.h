@@ -33,45 +33,38 @@
 namespace blink {
 
 struct FetchInitiatorInfo {
-    DISALLOW_NEW();
-    FetchInitiatorInfo()
-        : name()
-        , position(TextPosition::belowRangePosition())
-        , startTime(0.0)
-    {
-    }
+  DISALLOW_NEW();
+  FetchInitiatorInfo()
+      : name(), position(TextPosition::belowRangePosition()), startTime(0.0) {}
 
-    // When adding members, CrossThreadFetchInitiatorInfoData should be
-    // updated.
-    AtomicString name;
-    TextPosition position;
-    double startTime;
+  // When adding members, CrossThreadFetchInitiatorInfoData should be
+  // updated.
+  AtomicString name;
+  TextPosition position;
+  double startTime;
 };
 
 // Encode AtomicString as String to cross threads.
 struct CrossThreadFetchInitiatorInfoData {
-    DISALLOW_NEW();
-    explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
-        : name(info.name.getString().isolatedCopy())
-        , position(info.position)
-        , startTime(info.startTime)
-    {
-    }
+  DISALLOW_NEW();
+  explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
+      : name(info.name.getString().isolatedCopy()),
+        position(info.position),
+        startTime(info.startTime) {}
 
-    operator FetchInitiatorInfo() const
-    {
-        FetchInitiatorInfo info;
-        info.name = AtomicString(name);
-        info.position = position;
-        info.startTime = startTime;
-        return info;
-    }
+  operator FetchInitiatorInfo() const {
+    FetchInitiatorInfo info;
+    info.name = AtomicString(name);
+    info.position = position;
+    info.startTime = startTime;
+    return info;
+  }
 
-    String name;
-    TextPosition position;
-    double startTime;
+  String name;
+  TextPosition position;
+  double startTime;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

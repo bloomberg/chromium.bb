@@ -40,26 +40,28 @@ class ScriptRegexp;
 // Base of email, password, search, tel, text, and URL types.
 // They support maxlength, selection functions, and so on.
 class BaseTextInputType : public TextFieldInputType {
-protected:
-    BaseTextInputType(HTMLInputElement&);
-    ~BaseTextInputType() override;
+ protected:
+  BaseTextInputType(HTMLInputElement&);
+  ~BaseTextInputType() override;
 
-private:
-    bool tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const final;
-    bool tooShort(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const final;
-    int maxLength() const final;
-    int minLength() const final;
-    bool patternMismatch(const String&) const final;
-    bool supportsPlaceholder() const final;
-    bool supportsSelectionAPI() const override;
-    bool supportsAutocapitalize() const override;
+ private:
+  bool tooLong(const String&,
+               HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const final;
+  bool tooShort(const String&,
+                HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const final;
+  int maxLength() const final;
+  int minLength() const final;
+  bool patternMismatch(const String&) const final;
+  bool supportsPlaceholder() const final;
+  bool supportsSelectionAPI() const override;
+  bool supportsAutocapitalize() const override;
 
-    // m_regexp and m_patternForRegexp are mutable because they are kinds of
-    // cache.
-    mutable std::unique_ptr<ScriptRegexp> m_regexp;
-    mutable AtomicString m_patternForRegexp;
+  // m_regexp and m_patternForRegexp are mutable because they are kinds of
+  // cache.
+  mutable std::unique_ptr<ScriptRegexp> m_regexp;
+  mutable AtomicString m_patternForRegexp;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BaseTextInputType_h
+#endif  // BaseTextInputType_h

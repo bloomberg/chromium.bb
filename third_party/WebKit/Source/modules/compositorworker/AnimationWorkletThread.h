@@ -13,18 +13,22 @@ namespace blink {
 
 class WorkerReportingProxy;
 
-class MODULES_EXPORT AnimationWorkletThread final : public AbstractAnimationWorkletThread {
-public:
-    static std::unique_ptr<AnimationWorkletThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
-    ~AnimationWorkletThread() override;
+class MODULES_EXPORT AnimationWorkletThread final
+    : public AbstractAnimationWorkletThread {
+ public:
+  static std::unique_ptr<AnimationWorkletThread> create(
+      PassRefPtr<WorkerLoaderProxy>,
+      WorkerReportingProxy&);
+  ~AnimationWorkletThread() override;
 
-protected:
-    WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData>) final;
+ protected:
+  WorkerOrWorkletGlobalScope* createWorkerGlobalScope(
+      std::unique_ptr<WorkerThreadStartupData>) final;
 
-private:
-    AnimationWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
+ private:
+  AnimationWorkletThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // AnimationWorkletThread_h
+#endif  // AnimationWorkletThread_h

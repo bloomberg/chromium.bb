@@ -42,47 +42,65 @@ namespace blink {
 // logic can go in this class or in SVGLayoutSupport.
 
 class LayoutSVGModelObject : public LayoutObject {
-public:
-    explicit LayoutSVGModelObject(SVGElement*);
+ public:
+  explicit LayoutSVGModelObject(SVGElement*);
 
-    bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
+  bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    LayoutRect absoluteClippedOverflowRect() const override;
-    FloatRect paintInvalidationRectInLocalSVGCoordinates() const override { return m_paintInvalidationBoundingBox; }
+  LayoutRect absoluteClippedOverflowRect() const override;
+  FloatRect paintInvalidationRectInLocalSVGCoordinates() const override {
+    return m_paintInvalidationBoundingBox;
+  }
 
-    void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
-    void absoluteQuads(Vector<FloatQuad>&) const override;
-    FloatRect localBoundingBoxRectForAccessibility() const final;
+  void absoluteRects(Vector<IntRect>&,
+                     const LayoutPoint& accumulatedOffset) const final;
+  void absoluteQuads(Vector<FloatQuad>&) const override;
+  FloatRect localBoundingBoxRectForAccessibility() const final;
 
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
-    void mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
-    const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const final;
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+  void mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                          TransformState&,
+                          MapCoordinatesFlags = ApplyContainerFlip) const final;
+  void mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
+                          TransformState&,
+                          MapCoordinatesFlags = ApplyContainerFlip) const final;
+  const LayoutObject* pushMappingToContainer(
+      const LayoutBoxModelObject* ancestorToStopAt,
+      LayoutGeometryMap&) const final;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
-    void computeLayerHitTestRects(LayerHitTestRects&) const final;
+  void computeLayerHitTestRects(LayerHitTestRects&) const final;
 
-    SVGElement* element() const { return toSVGElement(LayoutObject::node()); }
+  SVGElement* element() const { return toSVGElement(LayoutObject::node()); }
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || LayoutObject::isOfType(type); }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVG || LayoutObject::isOfType(type);
+  }
 
-protected:
-    void addLayerHitTestRects(LayerHitTestRects&, const PaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const final;
-    void willBeDestroyed() override;
+ protected:
+  void addLayerHitTestRects(LayerHitTestRects&,
+                            const PaintLayer* currentCompositedLayer,
+                            const LayoutPoint& layerOffset,
+                            const LayoutRect& containerRect) const final;
+  void willBeDestroyed() override;
 
-    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const final;
+  PaintInvalidationReason invalidatePaintIfNeeded(
+      const PaintInvalidatorContext&) const final;
 
-private:
-    // LayoutSVGModelObject subclasses should use element() instead.
-    void node() const = delete;
+ private:
+  // LayoutSVGModelObject subclasses should use element() instead.
+  void node() const = delete;
 
-    // This method should never be called, SVG uses a different nodeAtPoint method
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
-    IntRect absoluteElementBoundingBoxRect() const final;
+  // This method should never be called, SVG uses a different nodeAtPoint method
+  bool nodeAtPoint(HitTestResult&,
+                   const HitTestLocation& locationInContainer,
+                   const LayoutPoint& accumulatedOffset,
+                   HitTestAction) final;
+  IntRect absoluteElementBoundingBoxRect() const final;
 
-protected:
-    FloatRect m_paintInvalidationBoundingBox;
+ protected:
+  FloatRect m_paintInvalidationBoundingBox;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

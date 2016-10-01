@@ -19,18 +19,23 @@ struct PaintInfo;
 enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
 class BoxClipper {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    BoxClipper(const LayoutBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
-    ~BoxClipper();
-private:
-    const LayoutBox& m_box;
-    const PaintInfo& m_paintInfo;
-    DisplayItem::Type m_clipType;
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    Optional<ScopedPaintChunkProperties> m_scopedClipProperty;
+ public:
+  BoxClipper(const LayoutBox&,
+             const PaintInfo&,
+             const LayoutPoint& accumulatedOffset,
+             ContentsClipBehavior);
+  ~BoxClipper();
+
+ private:
+  const LayoutBox& m_box;
+  const PaintInfo& m_paintInfo;
+  DisplayItem::Type m_clipType;
+
+  Optional<ScopedPaintChunkProperties> m_scopedClipProperty;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // BoxClipper_h
+#endif  // BoxClipper_h

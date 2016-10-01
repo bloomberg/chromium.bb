@@ -13,14 +13,16 @@ class ExecutionContext;
 class IntersectionObserver;
 class IntersectionObserverEntry;
 
-class IntersectionObserverCallback : public GarbageCollectedFinalized<IntersectionObserverCallback> {
-public:
-    virtual ~IntersectionObserverCallback() {}
-    virtual void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&, IntersectionObserver&) = 0;
-    virtual ExecutionContext* getExecutionContext() const = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+class IntersectionObserverCallback
+    : public GarbageCollectedFinalized<IntersectionObserverCallback> {
+ public:
+  virtual ~IntersectionObserverCallback() {}
+  virtual void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&,
+                           IntersectionObserver&) = 0;
+  virtual ExecutionContext* getExecutionContext() const = 0;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // IntersectionObserverCallback_h
+#endif  // IntersectionObserverCallback_h

@@ -32,31 +32,24 @@
 
 namespace blink {
 
-FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type, const FontFaceArray& fontfaces)
-    : Event(type, false, false)
-    , m_fontfaces(fontfaces)
-{
+FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type,
+                                           const FontFaceArray& fontfaces)
+    : Event(type, false, false), m_fontfaces(fontfaces) {}
+
+FontFaceSetLoadEvent::FontFaceSetLoadEvent(
+    const AtomicString& type,
+    const FontFaceSetLoadEventInit& initializer)
+    : Event(type, initializer), m_fontfaces(initializer.fontfaces()) {}
+
+FontFaceSetLoadEvent::~FontFaceSetLoadEvent() {}
+
+const AtomicString& FontFaceSetLoadEvent::interfaceName() const {
+  return EventNames::FontFaceSetLoadEvent;
 }
 
-FontFaceSetLoadEvent::FontFaceSetLoadEvent(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
-    : Event(type, initializer)
-    , m_fontfaces(initializer.fontfaces())
-{
+DEFINE_TRACE(FontFaceSetLoadEvent) {
+  visitor->trace(m_fontfaces);
+  Event::trace(visitor);
 }
 
-FontFaceSetLoadEvent::~FontFaceSetLoadEvent()
-{
-}
-
-const AtomicString& FontFaceSetLoadEvent::interfaceName() const
-{
-    return EventNames::FontFaceSetLoadEvent;
-}
-
-DEFINE_TRACE(FontFaceSetLoadEvent)
-{
-    visitor->trace(m_fontfaces);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

@@ -35,37 +35,43 @@ namespace blink {
 class SerializedScriptValue;
 
 class CORE_EXPORT CustomEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~CustomEvent() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    static CustomEvent* create()
-    {
-        return new CustomEvent;
-    }
+ public:
+  ~CustomEvent() override;
 
-    static CustomEvent* create(const AtomicString& type, const CustomEventInit& initializer)
-    {
-        return new CustomEvent(type, initializer);
-    }
+  static CustomEvent* create() { return new CustomEvent; }
 
-    void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, const ScriptValue& detail);
-    void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue>);
+  static CustomEvent* create(const AtomicString& type,
+                             const CustomEventInit& initializer) {
+    return new CustomEvent(type, initializer);
+  }
 
-    const AtomicString& interfaceName() const override;
+  void initCustomEvent(const AtomicString& type,
+                       bool canBubble,
+                       bool cancelable,
+                       const ScriptValue& detail);
+  void initCustomEvent(const AtomicString& type,
+                       bool canBubble,
+                       bool cancelable,
+                       PassRefPtr<SerializedScriptValue>);
 
-    SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
-    void setSerializedDetail(PassRefPtr<SerializedScriptValue> serializedDetail) { m_serializedDetail = serializedDetail; }
+  const AtomicString& interfaceName() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
+  void setSerializedDetail(PassRefPtr<SerializedScriptValue> serializedDetail) {
+    m_serializedDetail = serializedDetail;
+  }
 
-private:
-    CustomEvent();
-    CustomEvent(const AtomicString& type, const CustomEventInit& initializer);
+  DECLARE_VIRTUAL_TRACE();
 
-    RefPtr<SerializedScriptValue> m_serializedDetail;
+ private:
+  CustomEvent();
+  CustomEvent(const AtomicString& type, const CustomEventInit& initializer);
+
+  RefPtr<SerializedScriptValue> m_serializedDetail;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomEvent_h
+#endif  // CustomEvent_h

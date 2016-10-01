@@ -14,26 +14,28 @@ class SkPicture;
 namespace blink {
 
 class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {
-public:
-    static PassRefPtr<PaintGeneratedImage> create(sk_sp<SkPicture> picture, const IntSize& size)
-    {
-        return adoptRef(new PaintGeneratedImage(std::move(picture), size));
-    }
-    ~PaintGeneratedImage() override { }
+ public:
+  static PassRefPtr<PaintGeneratedImage> create(sk_sp<SkPicture> picture,
+                                                const IntSize& size) {
+    return adoptRef(new PaintGeneratedImage(std::move(picture), size));
+  }
+  ~PaintGeneratedImage() override {}
 
-protected:
-    void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
-    void drawTile(GraphicsContext&, const FloatRect&) final;
+ protected:
+  void draw(SkCanvas*,
+            const SkPaint&,
+            const FloatRect&,
+            const FloatRect&,
+            RespectImageOrientationEnum,
+            ImageClampingMode) override;
+  void drawTile(GraphicsContext&, const FloatRect&) final;
 
-    PaintGeneratedImage(sk_sp<SkPicture> picture, const IntSize& size)
-        : GeneratedImage(size)
-        , m_picture(std::move(picture))
-    {
-    }
+  PaintGeneratedImage(sk_sp<SkPicture> picture, const IntSize& size)
+      : GeneratedImage(size), m_picture(std::move(picture)) {}
 
-    sk_sp<SkPicture> m_picture;
+  sk_sp<SkPicture> m_picture;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintGeneratedImage_h
+#endif  // PaintGeneratedImage_h

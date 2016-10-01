@@ -36,68 +36,71 @@ namespace blink {
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGEnumerationBase);
 
-SVGEnumerationBase::~SVGEnumerationBase()
-{
+SVGEnumerationBase::~SVGEnumerationBase() {}
+
+SVGPropertyBase* SVGEnumerationBase::cloneForAnimation(
+    const String& value) const {
+  SVGEnumerationBase* svgEnumeration = clone();
+  svgEnumeration->setValueAsString(value);
+  return svgEnumeration;
 }
 
-SVGPropertyBase* SVGEnumerationBase::cloneForAnimation(const String& value) const
-{
-    SVGEnumerationBase* svgEnumeration = clone();
-    svgEnumeration->setValueAsString(value);
-    return svgEnumeration;
+String SVGEnumerationBase::valueAsString() const {
+  for (const auto& entry : m_entries) {
+    if (m_value == entry.first)
+      return entry.second;
+  }
+
+  ASSERT(m_value < maxInternalEnumValue());
+  return emptyString();
 }
 
-String SVGEnumerationBase::valueAsString() const
-{
-    for (const auto& entry : m_entries) {
-        if (m_value == entry.first)
-            return entry.second;
+void SVGEnumerationBase::setValue(unsigned short value) {
+  m_value = value;
+  notifyChange();
+}
+
+SVGParsingError SVGEnumerationBase::setValueAsString(const String& string) {
+  for (const auto& entry : m_entries) {
+    if (string == entry.second) {
+      // 0 corresponds to _UNKNOWN enumeration values, and should not be settable.
+      ASSERT(entry.first);
+      m_value = entry.first;
+      notifyChange();
+      return SVGParseStatus::NoError;
     }
+  }
 
-    ASSERT(m_value < maxInternalEnumValue());
-    return emptyString();
+  notifyChange();
+  return SVGParseStatus::ExpectedEnumeration;
 }
 
-void SVGEnumerationBase::setValue(unsigned short value)
-{
-    m_value = value;
-    notifyChange();
+void SVGEnumerationBase::add(SVGPropertyBase*, SVGElement*) {
+  ASSERT_NOT_REACHED();
 }
 
-SVGParsingError SVGEnumerationBase::setValueAsString(const String& string)
-{
-    for (const auto& entry : m_entries) {
-        if (string == entry.second) {
-            // 0 corresponds to _UNKNOWN enumeration values, and should not be settable.
-            ASSERT(entry.first);
-            m_value = entry.first;
-            notifyChange();
-            return SVGParseStatus::NoError;
-        }
-    }
+void SVGEnumerationBase::calculateAnimatedValue(
+    SVGAnimationElement* animationElement,
+    float percentage,
+    unsigned repeatCount,
+    SVGPropertyBase* from,
+    SVGPropertyBase* to,
+    SVGPropertyBase*,
+    SVGElement*) {
+  ASSERT(animationElement);
+  unsigned short fromEnumeration =
+      animationElement->getAnimationMode() == ToAnimation
+          ? m_value
+          : toSVGEnumerationBase(from)->value();
+  unsigned short toEnumeration = toSVGEnumerationBase(to)->value();
 
-    notifyChange();
-    return SVGParseStatus::ExpectedEnumeration;
+  animationElement->animateDiscreteType<unsigned short>(
+      percentage, fromEnumeration, toEnumeration, m_value);
 }
 
-void SVGEnumerationBase::add(SVGPropertyBase*, SVGElement*)
-{
-    ASSERT_NOT_REACHED();
+float SVGEnumerationBase::calculateDistance(SVGPropertyBase*, SVGElement*) {
+  // No paced animations for boolean.
+  return -1;
 }
 
-void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase*, SVGElement*)
-{
-    ASSERT(animationElement);
-    unsigned short fromEnumeration = animationElement->getAnimationMode() == ToAnimation ? m_value : toSVGEnumerationBase(from)->value();
-    unsigned short toEnumeration = toSVGEnumerationBase(to)->value();
-
-    animationElement->animateDiscreteType<unsigned short>(percentage, fromEnumeration, toEnumeration, m_value);
-}
-
-float SVGEnumerationBase::calculateDistance(SVGPropertyBase*, SVGElement*)
-{
-    // No paced animations for boolean.
-    return -1;
-}
-
-} // namespace blink
+}  // namespace blink

@@ -39,17 +39,17 @@ class AXObject;
 class Color;
 
 class CORE_EXPORT ColorChooser : public GarbageCollectedMixin {
-public:
-    ColorChooser();
-    virtual ~ColorChooser();
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+ public:
+  ColorChooser();
+  virtual ~ColorChooser();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-    virtual void setSelectedColor(const Color&) { }
-    virtual void endChooser() { }
-    // Returns a root AXObject in the ColorChooser if it's available.
-    virtual AXObject* rootAXObject() = 0;
+  virtual void setSelectedColor(const Color&) {}
+  virtual void endChooser() {}
+  // Returns a root AXObject in the ColorChooser if it's available.
+  virtual AXObject* rootAXObject() = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ColorChooser_h
+#endif  // ColorChooser_h

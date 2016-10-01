@@ -40,22 +40,25 @@ namespace blink {
 class Crypto;
 class DOMWindow;
 
-class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
-    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
-public:
-    static DOMWindowCrypto& from(LocalDOMWindow&);
-    static Crypto* crypto(DOMWindow&);
-    Crypto* crypto() const;
+class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
+                              public Supplement<LocalDOMWindow>,
+                              public DOMWindowProperty {
+  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
 
-    DECLARE_TRACE();
+ public:
+  static DOMWindowCrypto& from(LocalDOMWindow&);
+  static Crypto* crypto(DOMWindow&);
+  Crypto* crypto() const;
 
-private:
-    explicit DOMWindowCrypto(LocalDOMWindow&);
-    static const char* supplementName();
+  DECLARE_TRACE();
 
-    mutable Member<Crypto> m_crypto;
+ private:
+  explicit DOMWindowCrypto(LocalDOMWindow&);
+  static const char* supplementName();
+
+  mutable Member<Crypto> m_crypto;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DOMWindowCrypto_h
+#endif  // DOMWindowCrypto_h

@@ -47,21 +47,28 @@
 
 namespace blink {
 
-InProcessWorkerMessagingProxy* DedicatedWorkerMessagingProxyProviderImpl::createWorkerMessagingProxy(Worker* worker)
-{
-    if (worker->getExecutionContext()->isDocument()) {
-        Document* document = toDocument(worker->getExecutionContext());
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-        WorkerClients* workerClients = WorkerClients::create();
-        provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
-        provideLocalFileSystemToWorker(workerClients, LocalFileSystemClient::create());
-        provideContentSettingsClientToWorker(workerClients, wrapUnique(webFrame->client()->createWorkerContentSettingsClientProxy()));
-        // FIXME: call provideServiceWorkerContainerClientToWorker here when we
-        // support ServiceWorker in dedicated workers (http://crbug.com/371690)
-        return new DedicatedWorkerMessagingProxy(worker, workerClients);
-    }
-    NOTREACHED();
-    return 0;
+InProcessWorkerMessagingProxy*
+DedicatedWorkerMessagingProxyProviderImpl::createWorkerMessagingProxy(
+    Worker* worker) {
+  if (worker->getExecutionContext()->isDocument()) {
+    Document* document = toDocument(worker->getExecutionContext());
+    WebLocalFrameImpl* webFrame =
+        WebLocalFrameImpl::fromFrame(document->frame());
+    WorkerClients* workerClients = WorkerClients::create();
+    provideIndexedDBClientToWorker(workerClients,
+                                   IndexedDBClientImpl::create());
+    provideLocalFileSystemToWorker(workerClients,
+                                   LocalFileSystemClient::create());
+    provideContentSettingsClientToWorker(
+        workerClients,
+        wrapUnique(
+            webFrame->client()->createWorkerContentSettingsClientProxy()));
+    // FIXME: call provideServiceWorkerContainerClientToWorker here when we
+    // support ServiceWorker in dedicated workers (http://crbug.com/371690)
+    return new DedicatedWorkerMessagingProxy(worker, workerClients);
+  }
+  NOTREACHED();
+  return 0;
 }
 
-} // namespace blink
+}  // namespace blink

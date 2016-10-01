@@ -14,24 +14,26 @@ namespace blink {
 class ThreadedWorkletObjectProxy;
 
 class CORE_EXPORT ThreadedWorkletMessagingProxy
-    : public ThreadedMessagingProxyBase
-    , public WorkletGlobalScopeProxy {
-public:
-    // WorkletGlobalScopeProxy implementation.
-    void evaluateScript(const ScriptSourceCode&) final;
-    void terminateWorkletGlobalScope() final;
+    : public ThreadedMessagingProxyBase,
+      public WorkletGlobalScopeProxy {
+ public:
+  // WorkletGlobalScopeProxy implementation.
+  void evaluateScript(const ScriptSourceCode&) final;
+  void terminateWorkletGlobalScope() final;
 
-    void initialize();
+  void initialize();
 
-protected:
-    explicit ThreadedWorkletMessagingProxy(ExecutionContext*);
+ protected:
+  explicit ThreadedWorkletMessagingProxy(ExecutionContext*);
 
-    ThreadedWorkletObjectProxy& workletObjectProxy() { return *m_workletObjectProxy; }
+  ThreadedWorkletObjectProxy& workletObjectProxy() {
+    return *m_workletObjectProxy;
+  }
 
-private:
-    std::unique_ptr<ThreadedWorkletObjectProxy> m_workletObjectProxy;
+ private:
+  std::unique_ptr<ThreadedWorkletObjectProxy> m_workletObjectProxy;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ThreadedWorkletMessagingProxy_h
+#endif  // ThreadedWorkletMessagingProxy_h

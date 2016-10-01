@@ -36,52 +36,49 @@
 
 namespace blink {
 
-template <typename T> class WebVector;
+template <typename T>
+class WebVector;
 
 // Gets called back when WebViewClient finished choosing a file.
 class WebFileChooserCompletion {
-public:
-    struct SelectedFileInfo {
-        // The actual path of the selected file.
-        WebString path;
+ public:
+  struct SelectedFileInfo {
+    // The actual path of the selected file.
+    WebString path;
 
-        // The display name of the file that is to be exposed as File.name in
-        // the DOM layer. If it is empty the base part of the |path| is used.
-        WebString displayName;
+    // The display name of the file that is to be exposed as File.name in
+    // the DOM layer. If it is empty the base part of the |path| is used.
+    WebString displayName;
 
-        // File system URL.
-        WebURL fileSystemURL;
+    // File system URL.
+    WebURL fileSystemURL;
 
-        // Metadata of non-native file.
-        // 0 is Unix epoch, unit is sec.
-        double modificationTime;
-        long long length;
-        bool isDirectory;
+    // Metadata of non-native file.
+    // 0 is Unix epoch, unit is sec.
+    double modificationTime;
+    long long length;
+    bool isDirectory;
 
-        SelectedFileInfo()
-            : modificationTime(0)
-            , length(0)
-            , isDirectory(false)
-        {
-        }
-    };
+    SelectedFileInfo() : modificationTime(0), length(0), isDirectory(false) {}
+  };
 
-    // Called with zero or more file names. Zero-length vector means that
-    // the user cancelled or that file choosing failed. The callback instance
-    // is destroyed when this method is called.
-    virtual void didChooseFile(const WebVector<WebString>& fileNames) = 0;
+  // Called with zero or more file names. Zero-length vector means that
+  // the user cancelled or that file choosing failed. The callback instance
+  // is destroyed when this method is called.
+  virtual void didChooseFile(const WebVector<WebString>& fileNames) = 0;
 
-    // Called with zero or more files, given as a vector of SelectedFileInfo.
-    // Zero-length vector means that the user cancelled or that file
-    // choosing failed. The callback instance is destroyed when this method
-    // is called.
-    // FIXME: Deprecate either one of the didChooseFile (and rename it to
-    // didChooseFile*s*).
-    virtual void didChooseFile(const WebVector<SelectedFileInfo>&) { }
-protected:
-    virtual ~WebFileChooserCompletion() {}
+  // Called with zero or more files, given as a vector of SelectedFileInfo.
+  // Zero-length vector means that the user cancelled or that file
+  // choosing failed. The callback instance is destroyed when this method
+  // is called.
+  // FIXME: Deprecate either one of the didChooseFile (and rename it to
+  // didChooseFile*s*).
+  virtual void didChooseFile(const WebVector<SelectedFileInfo>&) {}
+
+ protected:
+  virtual ~WebFileChooserCompletion() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

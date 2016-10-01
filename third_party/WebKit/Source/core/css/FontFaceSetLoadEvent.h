@@ -40,33 +40,36 @@
 namespace blink {
 
 class FontFaceSetLoadEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static FontFaceSetLoadEvent* create(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
-    {
-        return new FontFaceSetLoadEvent(type, initializer);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    static FontFaceSetLoadEvent* createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
-    {
-        return new FontFaceSetLoadEvent(type, fontfaces);
-    }
+ public:
+  static FontFaceSetLoadEvent* create(
+      const AtomicString& type,
+      const FontFaceSetLoadEventInit& initializer) {
+    return new FontFaceSetLoadEvent(type, initializer);
+  }
 
-    ~FontFaceSetLoadEvent() override;
+  static FontFaceSetLoadEvent* createForFontFaces(
+      const AtomicString& type,
+      const FontFaceArray& fontfaces = FontFaceArray()) {
+    return new FontFaceSetLoadEvent(type, fontfaces);
+  }
 
-    FontFaceArray fontfaces() const { return m_fontfaces; }
+  ~FontFaceSetLoadEvent() override;
 
-    const AtomicString& interfaceName() const override;
+  FontFaceArray fontfaces() const { return m_fontfaces; }
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    FontFaceSetLoadEvent(const AtomicString&, const FontFaceArray&);
-    FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit&);
+  DECLARE_VIRTUAL_TRACE();
 
-    FontFaceArray m_fontfaces;
+ private:
+  FontFaceSetLoadEvent(const AtomicString&, const FontFaceArray&);
+  FontFaceSetLoadEvent(const AtomicString&, const FontFaceSetLoadEventInit&);
+
+  FontFaceArray m_fontfaces;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FontFaceSetLoadEvent_h
+#endif  // FontFaceSetLoadEvent_h

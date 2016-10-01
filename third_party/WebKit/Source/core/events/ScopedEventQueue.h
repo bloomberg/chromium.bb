@@ -43,37 +43,41 @@ namespace blink {
 class EventDispatchMediator;
 
 class CORE_EXPORT ScopedEventQueue {
-    WTF_MAKE_NONCOPYABLE(ScopedEventQueue); USING_FAST_MALLOC(ScopedEventQueue);
-public:
-    ~ScopedEventQueue();
+  WTF_MAKE_NONCOPYABLE(ScopedEventQueue);
+  USING_FAST_MALLOC(ScopedEventQueue);
 
-    void enqueueEventDispatchMediator(EventDispatchMediator*);
-    void dispatchAllEvents();
-    static ScopedEventQueue* instance();
+ public:
+  ~ScopedEventQueue();
 
-    void incrementScopingLevel();
-    void decrementScopingLevel();
-    bool shouldQueueEvents() const { return m_scopingLevel > 0; }
+  void enqueueEventDispatchMediator(EventDispatchMediator*);
+  void dispatchAllEvents();
+  static ScopedEventQueue* instance();
 
-private:
-    ScopedEventQueue();
-    static void initialize();
-    void dispatchEvent(EventDispatchMediator*) const;
+  void incrementScopingLevel();
+  void decrementScopingLevel();
+  bool shouldQueueEvents() const { return m_scopingLevel > 0; }
 
-    PersistentHeapVector<Member<EventDispatchMediator>> m_queuedEventDispatchMediators;
-    unsigned m_scopingLevel;
+ private:
+  ScopedEventQueue();
+  static void initialize();
+  void dispatchEvent(EventDispatchMediator*) const;
 
-    static ScopedEventQueue* s_instance;
+  PersistentHeapVector<Member<EventDispatchMediator>>
+      m_queuedEventDispatchMediators;
+  unsigned m_scopingLevel;
+
+  static ScopedEventQueue* s_instance;
 };
 
 class EventQueueScope {
-    WTF_MAKE_NONCOPYABLE(EventQueueScope);
-    STACK_ALLOCATED();
-public:
-    EventQueueScope() { ScopedEventQueue::instance()->incrementScopingLevel(); }
-    ~EventQueueScope() { ScopedEventQueue::instance()->decrementScopingLevel(); }
+  WTF_MAKE_NONCOPYABLE(EventQueueScope);
+  STACK_ALLOCATED();
+
+ public:
+  EventQueueScope() { ScopedEventQueue::instance()->incrementScopingLevel(); }
+  ~EventQueueScope() { ScopedEventQueue::instance()->decrementScopingLevel(); }
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ScopedEventQueue_h
+#endif  // ScopedEventQueue_h

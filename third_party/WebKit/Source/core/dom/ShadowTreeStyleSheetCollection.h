@@ -36,27 +36,31 @@ class ShadowRoot;
 class StyleSheetCollection;
 class StyleEngine;
 
-class ShadowTreeStyleSheetCollection final : public TreeScopeStyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection);
-public:
-    explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
+class ShadowTreeStyleSheetCollection final
+    : public TreeScopeStyleSheetCollection {
+  WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection);
 
-    void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
+ public:
+  explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
 
-    bool isShadowTreeStyleSheetCollection() const final { return true; }
+  void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        TreeScopeStyleSheetCollection::trace(visitor);
-    }
+  bool isShadowTreeStyleSheetCollection() const final { return true; }
 
-private:
-    void collectStyleSheets(StyleEngine&, StyleSheetCollection&);
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    TreeScopeStyleSheetCollection::trace(visitor);
+  }
+
+ private:
+  void collectStyleSheets(StyleEngine&, StyleSheetCollection&);
 };
 
-DEFINE_TYPE_CASTS(ShadowTreeStyleSheetCollection, TreeScopeStyleSheetCollection, value, value->isShadowTreeStyleSheetCollection(), value.isShadowTreeStyleSheetCollection());
+DEFINE_TYPE_CASTS(ShadowTreeStyleSheetCollection,
+                  TreeScopeStyleSheetCollection,
+                  value,
+                  value->isShadowTreeStyleSheetCollection(),
+                  value.isShadowTreeStyleSheetCollection());
 
-} // namespace blink
+}  // namespace blink
 
 #endif
-

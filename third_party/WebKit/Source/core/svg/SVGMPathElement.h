@@ -28,35 +28,35 @@ namespace blink {
 
 class SVGPathElement;
 
-class SVGMPathElement final : public SVGElement,
-                              public SVGURIReference {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(SVGMPathElement);
-public:
-    DECLARE_NODE_FACTORY(SVGMPathElement);
+class SVGMPathElement final : public SVGElement, public SVGURIReference {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGMPathElement);
 
-    ~SVGMPathElement() override;
+ public:
+  DECLARE_NODE_FACTORY(SVGMPathElement);
 
-    SVGPathElement* pathElement();
+  ~SVGMPathElement() override;
 
-    void targetPathChanged();
+  SVGPathElement* pathElement();
 
-    DECLARE_VIRTUAL_TRACE();
+  void targetPathChanged();
 
-private:
-    explicit SVGMPathElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void buildPendingResource() override;
-    void clearResourceReferences();
-    InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    void removedFrom(ContainerNode*) override;
+ private:
+  explicit SVGMPathElement(Document&);
 
-    void svgAttributeChanged(const QualifiedName&) override;
+  void buildPendingResource() override;
+  void clearResourceReferences();
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
 
-    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
-    void notifyParentOfPathChange(ContainerNode*);
+  void svgAttributeChanged(const QualifiedName&) override;
+
+  bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  void notifyParentOfPathChange(ContainerNode*);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGMPathElement_h
+#endif  // SVGMPathElement_h

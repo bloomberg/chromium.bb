@@ -37,51 +37,50 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 
-class ApplicationCache final : public EventTargetWithInlineData, public DOMWindowProperty {
-    DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
-public:
-    static ApplicationCache* create(LocalFrame* frame)
-    {
-        return new ApplicationCache(frame);
-    }
-    ~ApplicationCache() override
-    {
-    }
+class ApplicationCache final : public EventTargetWithInlineData,
+                               public DOMWindowProperty {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 
-    void frameDestroyed() override;
+ public:
+  static ApplicationCache* create(LocalFrame* frame) {
+    return new ApplicationCache(frame);
+  }
+  ~ApplicationCache() override {}
 
-    unsigned short status() const;
-    void update(ExceptionState&);
-    void swapCache(ExceptionState&);
-    void abort();
+  void frameDestroyed() override;
 
-    // Explicitly named attribute event listener helpers
+  unsigned short status() const;
+  void update(ExceptionState&);
+  void swapCache(ExceptionState&);
+  void abort();
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(checking);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(noupdate);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(downloading);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(updateready);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(cached);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
+  // Explicitly named attribute event listener helpers
 
-    const AtomicString& interfaceName() const override;
-    ExecutionContext* getExecutionContext() const override;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(checking);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(noupdate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(downloading);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updateready);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(cached);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
 
-    static const AtomicString& toEventType(ApplicationCacheHost::EventID);
+  const AtomicString& interfaceName() const override;
+  ExecutionContext* getExecutionContext() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+  static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 
-private:
-    explicit ApplicationCache(LocalFrame*);
+  DECLARE_VIRTUAL_TRACE();
 
-    void recordAPIUseType() const;
+ private:
+  explicit ApplicationCache(LocalFrame*);
 
-    ApplicationCacheHost* applicationCacheHost() const;
+  void recordAPIUseType() const;
+
+  ApplicationCacheHost* applicationCacheHost() const;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ApplicationCache_h
+#endif  // ApplicationCache_h

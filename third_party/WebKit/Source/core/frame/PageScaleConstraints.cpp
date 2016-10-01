@@ -35,73 +35,71 @@
 namespace blink {
 
 PageScaleConstraints::PageScaleConstraints()
-    : initialScale(-1), minimumScale(-1), maximumScale(-1) { }
+    : initialScale(-1), minimumScale(-1), maximumScale(-1) {}
 
-PageScaleConstraints::PageScaleConstraints(float initial, float minimum, float maximum)
-    : initialScale(initial), minimumScale(minimum), maximumScale(maximum) { }
+PageScaleConstraints::PageScaleConstraints(float initial,
+                                           float minimum,
+                                           float maximum)
+    : initialScale(initial), minimumScale(minimum), maximumScale(maximum) {}
 
-void PageScaleConstraints::overrideWith(const PageScaleConstraints& other)
-{
-    if (other.initialScale != -1) {
-        initialScale = other.initialScale;
-        if (minimumScale != -1)
-            minimumScale = std::min(minimumScale, other.initialScale);
-    }
-    if (other.minimumScale != -1)
-        minimumScale = other.minimumScale;
-    if (other.maximumScale != -1)
-        maximumScale = other.maximumScale;
-    if (!other.layoutSize.isZero())
-        layoutSize = other.layoutSize;
-    clampAll();
-}
-
-float PageScaleConstraints::clampToConstraints(float pageScaleFactor) const
-{
-    if (pageScaleFactor == -1)
-        return pageScaleFactor;
+void PageScaleConstraints::overrideWith(const PageScaleConstraints& other) {
+  if (other.initialScale != -1) {
+    initialScale = other.initialScale;
     if (minimumScale != -1)
-        pageScaleFactor = std::max(pageScaleFactor, minimumScale);
-    if (maximumScale != -1)
-        pageScaleFactor = std::min(pageScaleFactor, maximumScale);
+      minimumScale = std::min(minimumScale, other.initialScale);
+  }
+  if (other.minimumScale != -1)
+    minimumScale = other.minimumScale;
+  if (other.maximumScale != -1)
+    maximumScale = other.maximumScale;
+  if (!other.layoutSize.isZero())
+    layoutSize = other.layoutSize;
+  clampAll();
+}
+
+float PageScaleConstraints::clampToConstraints(float pageScaleFactor) const {
+  if (pageScaleFactor == -1)
     return pageScaleFactor;
+  if (minimumScale != -1)
+    pageScaleFactor = std::max(pageScaleFactor, minimumScale);
+  if (maximumScale != -1)
+    pageScaleFactor = std::min(pageScaleFactor, maximumScale);
+  return pageScaleFactor;
 }
 
-void PageScaleConstraints::clampAll()
-{
-    if (minimumScale != -1 && maximumScale != -1)
-        maximumScale = std::max(minimumScale, maximumScale);
-    initialScale = clampToConstraints(initialScale);
+void PageScaleConstraints::clampAll() {
+  if (minimumScale != -1 && maximumScale != -1)
+    maximumScale = std::max(minimumScale, maximumScale);
+  initialScale = clampToConstraints(initialScale);
 }
 
-void PageScaleConstraints::fitToContentsWidth(float contentsWidth, int viewWidthNotIncludingScrollbars)
-{
-    if (!contentsWidth || !viewWidthNotIncludingScrollbars)
-        return;
+void PageScaleConstraints::fitToContentsWidth(
+    float contentsWidth,
+    int viewWidthNotIncludingScrollbars) {
+  if (!contentsWidth || !viewWidthNotIncludingScrollbars)
+    return;
 
-    // Clamp the minimum scale so that the viewport can't exceed the document
-    // width.
-    minimumScale = std::max(minimumScale, viewWidthNotIncludingScrollbars / contentsWidth);
+  // Clamp the minimum scale so that the viewport can't exceed the document
+  // width.
+  minimumScale =
+      std::max(minimumScale, viewWidthNotIncludingScrollbars / contentsWidth);
 
-    clampAll();
+  clampAll();
 }
 
-void PageScaleConstraints::resolveAutoInitialScale()
-{
-    // If the initial scale wasn't defined, set it to minimum scale now that we
-    // know the real value.
-    if (initialScale == -1)
-        initialScale = minimumScale;
+void PageScaleConstraints::resolveAutoInitialScale() {
+  // If the initial scale wasn't defined, set it to minimum scale now that we
+  // know the real value.
+  if (initialScale == -1)
+    initialScale = minimumScale;
 
-    clampAll();
+  clampAll();
 }
 
-bool PageScaleConstraints::operator==(const PageScaleConstraints& other) const
-{
-    return layoutSize == other.layoutSize
-        && initialScale == other.initialScale
-        && minimumScale == other.minimumScale
-        && maximumScale == other.maximumScale;
+bool PageScaleConstraints::operator==(const PageScaleConstraints& other) const {
+  return layoutSize == other.layoutSize && initialScale == other.initialScale &&
+         minimumScale == other.minimumScale &&
+         maximumScale == other.maximumScale;
 }
 
-} // namespace blink
+}  // namespace blink

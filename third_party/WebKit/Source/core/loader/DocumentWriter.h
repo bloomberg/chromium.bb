@@ -40,34 +40,41 @@ class Document;
 class DocumentParser;
 
 class DocumentWriter final : public GarbageCollectedFinalized<DocumentWriter> {
-    WTF_MAKE_NONCOPYABLE(DocumentWriter);
-public:
-    static DocumentWriter* create(Document*, ParserSynchronizationPolicy, const AtomicString& mimeType, const AtomicString& encoding);
+  WTF_MAKE_NONCOPYABLE(DocumentWriter);
 
-    ~DocumentWriter();
-    DECLARE_TRACE();
+ public:
+  static DocumentWriter* create(Document*,
+                                ParserSynchronizationPolicy,
+                                const AtomicString& mimeType,
+                                const AtomicString& encoding);
 
-    void end();
+  ~DocumentWriter();
+  DECLARE_TRACE();
 
-    void addData(const char* bytes, size_t length);
+  void end();
 
-    const AtomicString& mimeType() const { return m_decoderBuilder.mimeType(); }
-    const AtomicString& encoding() const { return m_decoderBuilder.encoding(); }
+  void addData(const char* bytes, size_t length);
 
-    // Exposed for DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL.
-    void appendReplacingData(const String&);
+  const AtomicString& mimeType() const { return m_decoderBuilder.mimeType(); }
+  const AtomicString& encoding() const { return m_decoderBuilder.encoding(); }
 
-    void setDocumentWasLoadedAsPartOfNavigation();
+  // Exposed for DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL.
+  void appendReplacingData(const String&);
 
-private:
-    DocumentWriter(Document*, ParserSynchronizationPolicy, const AtomicString& mimeType, const AtomicString& encoding);
+  void setDocumentWasLoadedAsPartOfNavigation();
 
-    Member<Document> m_document;
-    TextResourceDecoderBuilder m_decoderBuilder;
+ private:
+  DocumentWriter(Document*,
+                 ParserSynchronizationPolicy,
+                 const AtomicString& mimeType,
+                 const AtomicString& encoding);
 
-    Member<DocumentParser> m_parser;
+  Member<Document> m_document;
+  TextResourceDecoderBuilder m_decoderBuilder;
+
+  Member<DocumentParser> m_parser;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DocumentWriter_h
+#endif  // DocumentWriter_h

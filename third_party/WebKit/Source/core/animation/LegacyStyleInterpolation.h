@@ -12,32 +12,38 @@
 namespace blink {
 
 class LegacyStyleInterpolation : public StyleInterpolation {
-public:
-    static PassRefPtr<LegacyStyleInterpolation> create(PassRefPtr<AnimatableValue> start, PassRefPtr<AnimatableValue> end, CSSPropertyID id)
-    {
-        return adoptRef(new LegacyStyleInterpolation(InterpolableAnimatableValue::create(std::move(start)), InterpolableAnimatableValue::create(std::move(end)), id));
-    }
+ public:
+  static PassRefPtr<LegacyStyleInterpolation> create(
+      PassRefPtr<AnimatableValue> start,
+      PassRefPtr<AnimatableValue> end,
+      CSSPropertyID id) {
+    return adoptRef(new LegacyStyleInterpolation(
+        InterpolableAnimatableValue::create(std::move(start)),
+        InterpolableAnimatableValue::create(std::move(end)), id));
+  }
 
-    void apply(StyleResolverState& state) const override
-    {
-        AnimatedStyleBuilder::applyProperty(m_id, state, currentValue().get());
-    }
+  void apply(StyleResolverState& state) const override {
+    AnimatedStyleBuilder::applyProperty(m_id, state, currentValue().get());
+  }
 
-    bool isLegacyStyleInterpolation() const final { return true; }
-    PassRefPtr<AnimatableValue> currentValue() const
-    {
-        return toInterpolableAnimatableValue(m_cachedValue.get())->value();
-    }
+  bool isLegacyStyleInterpolation() const final { return true; }
+  PassRefPtr<AnimatableValue> currentValue() const {
+    return toInterpolableAnimatableValue(m_cachedValue.get())->value();
+  }
 
-private:
-    LegacyStyleInterpolation(std::unique_ptr<InterpolableValue> start, std::unique_ptr<InterpolableValue> end, CSSPropertyID id)
-        : StyleInterpolation(std::move(start), std::move(end), id)
-    {
-    }
+ private:
+  LegacyStyleInterpolation(std::unique_ptr<InterpolableValue> start,
+                           std::unique_ptr<InterpolableValue> end,
+                           CSSPropertyID id)
+      : StyleInterpolation(std::move(start), std::move(end), id) {}
 };
 
-DEFINE_TYPE_CASTS(LegacyStyleInterpolation, Interpolation, value, value->isLegacyStyleInterpolation(), value.isLegacyStyleInterpolation());
+DEFINE_TYPE_CASTS(LegacyStyleInterpolation,
+                  Interpolation,
+                  value,
+                  value->isLegacyStyleInterpolation(),
+                  value.isLegacyStyleInterpolation());
 
-} // namespace blink
+}  // namespace blink
 
 #endif

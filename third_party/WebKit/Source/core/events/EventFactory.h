@@ -39,25 +39,25 @@ class Event;
 class ExecutionContext;
 
 class EventFactoryBase {
-    USING_FAST_MALLOC(EventFactoryBase);
-public:
-    virtual Event* create(ExecutionContext*, const String& eventType) = 0;
-    virtual ~EventFactoryBase() { }
+  USING_FAST_MALLOC(EventFactoryBase);
 
-protected:
-    EventFactoryBase() { }
+ public:
+  virtual Event* create(ExecutionContext*, const String& eventType) = 0;
+  virtual ~EventFactoryBase() {}
+
+ protected:
+  EventFactoryBase() {}
 };
 
 class EventFactory final : public EventFactoryBase {
-public:
-    static std::unique_ptr<EventFactory> create()
-    {
-        return wrapUnique(new EventFactory());
-    }
+ public:
+  static std::unique_ptr<EventFactory> create() {
+    return wrapUnique(new EventFactory());
+  }
 
-    Event* create(ExecutionContext*, const String& eventType) override;
+  Event* create(ExecutionContext*, const String& eventType) override;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

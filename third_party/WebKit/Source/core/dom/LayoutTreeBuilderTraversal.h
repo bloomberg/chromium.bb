@@ -38,23 +38,21 @@ class LayoutObject;
 namespace LayoutTreeBuilderTraversal {
 
 class ParentDetails {
-    STACK_ALLOCATED();
-public:
-    ParentDetails()
-        : m_insertionPoint(nullptr)
-    { }
+  STACK_ALLOCATED();
 
-    const InsertionPoint* insertionPoint() const { return m_insertionPoint; }
+ public:
+  ParentDetails() : m_insertionPoint(nullptr) {}
 
-    void didTraverseInsertionPoint(const InsertionPoint*);
+  const InsertionPoint* insertionPoint() const { return m_insertionPoint; }
 
-    bool operator==(const ParentDetails& other)
-    {
-        return m_insertionPoint == other.m_insertionPoint;
-    }
+  void didTraverseInsertionPoint(const InsertionPoint*);
 
-private:
-    Member<const InsertionPoint> m_insertionPoint;
+  bool operator==(const ParentDetails& other) {
+    return m_insertionPoint == other.m_insertionPoint;
+  }
+
+ private:
+  Member<const InsertionPoint> m_insertionPoint;
 };
 
 CORE_EXPORT ContainerNode* parent(const Node&, ParentDetails* = 0);
@@ -68,14 +66,13 @@ LayoutObject* nextSiblingLayoutObject(const Node&);
 LayoutObject* previousSiblingLayoutObject(const Node&);
 LayoutObject* nextInTopLayer(const Element&);
 
-inline Element* parentElement(const Node& node)
-{
-    ContainerNode* found = parent(node);
-    return found && found->isElementNode() ? toElement(found) : 0;
+inline Element* parentElement(const Node& node) {
+  ContainerNode* found = parent(node);
+  return found && found->isElementNode() ? toElement(found) : 0;
 }
 
-} // namespace LayoutTreeBuilderTraversal
+}  // namespace LayoutTreeBuilderTraversal
 
-} // namespace blink
+}  // namespace blink
 
 #endif

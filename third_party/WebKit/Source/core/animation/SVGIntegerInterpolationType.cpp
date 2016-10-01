@@ -9,22 +9,25 @@
 
 namespace blink {
 
-InterpolationValue SVGIntegerInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
-{
-    return InterpolationValue(InterpolableNumber::create(0));
+InterpolationValue SVGIntegerInterpolationType::maybeConvertNeutral(
+    const InterpolationValue&,
+    ConversionCheckers&) const {
+  return InterpolationValue(InterpolableNumber::create(0));
 }
 
-InterpolationValue SVGIntegerInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
-{
-    if (svgValue.type() != AnimatedInteger)
-        return nullptr;
-    return InterpolationValue(InterpolableNumber::create(toSVGInteger(svgValue).value()));
+InterpolationValue SVGIntegerInterpolationType::maybeConvertSVGValue(
+    const SVGPropertyBase& svgValue) const {
+  if (svgValue.type() != AnimatedInteger)
+    return nullptr;
+  return InterpolationValue(
+      InterpolableNumber::create(toSVGInteger(svgValue).value()));
 }
 
-SVGPropertyBase* SVGIntegerInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
-{
-    double value = toInterpolableNumber(interpolableValue).value();
-    return SVGInteger::create(round(value));
+SVGPropertyBase* SVGIntegerInterpolationType::appliedSVGValue(
+    const InterpolableValue& interpolableValue,
+    const NonInterpolableValue*) const {
+  double value = toInterpolableNumber(interpolableValue).value();
+  return SVGInteger::create(round(value));
 }
 
-} // namespace blink
+}  // namespace blink

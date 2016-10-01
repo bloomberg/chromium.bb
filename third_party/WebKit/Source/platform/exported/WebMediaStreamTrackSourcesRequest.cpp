@@ -32,31 +32,28 @@
 
 namespace blink {
 
-WebMediaStreamTrackSourcesRequest::WebMediaStreamTrackSourcesRequest(MediaStreamTrackSourcesRequest* request)
-    : m_private(request)
-{
+WebMediaStreamTrackSourcesRequest::WebMediaStreamTrackSourcesRequest(
+    MediaStreamTrackSourcesRequest* request)
+    : m_private(request) {}
+
+void WebMediaStreamTrackSourcesRequest::assign(
+    const WebMediaStreamTrackSourcesRequest& other) {
+  m_private = other.m_private;
 }
 
-void WebMediaStreamTrackSourcesRequest::assign(const WebMediaStreamTrackSourcesRequest& other)
-{
-    m_private = other.m_private;
+void WebMediaStreamTrackSourcesRequest::reset() {
+  m_private.reset();
 }
 
-void WebMediaStreamTrackSourcesRequest::reset()
-{
-    m_private.reset();
+WebSecurityOrigin WebMediaStreamTrackSourcesRequest::origin() const {
+  ASSERT(m_private.get());
+  return m_private->origin();
 }
 
-WebSecurityOrigin WebMediaStreamTrackSourcesRequest::origin() const
-{
-    ASSERT(m_private.get());
-    return m_private->origin();
+void WebMediaStreamTrackSourcesRequest::requestSucceeded(
+    const WebVector<WebSourceInfo>& sourceInfos) const {
+  ASSERT(m_private.get());
+  m_private->requestSucceeded(sourceInfos);
 }
 
-void WebMediaStreamTrackSourcesRequest::requestSucceeded(const WebVector<WebSourceInfo>& sourceInfos) const
-{
-    ASSERT(m_private.get());
-    m_private->requestSucceeded(sourceInfos);
-}
-
-} // namespace blink
+}  // namespace blink

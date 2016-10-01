@@ -22,35 +22,36 @@ class ScriptValue;
 // technology-specific steps for CustomElementRegistry.define.
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-define
 class CORE_EXPORT CustomElementDefinitionBuilder {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(CustomElementDefinitionBuilder);
-public:
-    CustomElementDefinitionBuilder() { }
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(CustomElementDefinitionBuilder);
 
-    // This API necessarily sounds JavaScript specific; this implements
-    // some steps of the CustomElementRegistry.define process, which
-    // are defined in terms of JavaScript.
+ public:
+  CustomElementDefinitionBuilder() {}
 
-    // Check the constructor is valid. Return false if processing
-    // should not proceed.
-    virtual bool checkConstructorIntrinsics() = 0;
+  // This API necessarily sounds JavaScript specific; this implements
+  // some steps of the CustomElementRegistry.define process, which
+  // are defined in terms of JavaScript.
 
-    // Check the constructor is not already registered in the calling
-    // registry. Return false if processing should not proceed.
-    virtual bool checkConstructorNotRegistered() = 0;
+  // Check the constructor is valid. Return false if processing
+  // should not proceed.
+  virtual bool checkConstructorIntrinsics() = 0;
 
-    // Checking the prototype may destroy the window. Return false if
-    // processing should not proceed.
-    virtual bool checkPrototype() = 0;
+  // Check the constructor is not already registered in the calling
+  // registry. Return false if processing should not proceed.
+  virtual bool checkConstructorNotRegistered() = 0;
 
-    // Cache properties for build to use. Return false if processing
-    // should not proceed.
-    virtual bool rememberOriginalProperties() = 0;
+  // Checking the prototype may destroy the window. Return false if
+  // processing should not proceed.
+  virtual bool checkPrototype() = 0;
 
-    // Produce the definition. This must produce a definition.
-    virtual CustomElementDefinition* build(const CustomElementDescriptor&) = 0;
+  // Cache properties for build to use. Return false if processing
+  // should not proceed.
+  virtual bool rememberOriginalProperties() = 0;
+
+  // Produce the definition. This must produce a definition.
+  virtual CustomElementDefinition* build(const CustomElementDescriptor&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomElementDefinitionBuilder_h
+#endif  // CustomElementDefinitionBuilder_h

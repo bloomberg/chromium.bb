@@ -31,109 +31,85 @@
 namespace blink {
 
 class RegisteredEventListener {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    RegisteredEventListener()
-        : m_useCapture(false)
-        , m_passive(false)
-        , m_once(false)
-        , m_blockedEventWarningEmitted(false)
-        , m_passiveForcedForDocumentTarget(false)
-    {
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    RegisteredEventListener(EventListener* listener, const AddEventListenerOptionsResolved& options)
-        : m_listener(listener)
-        , m_useCapture(options.capture())
-        , m_passive(options.passive())
-        , m_once(options.once())
-        , m_blockedEventWarningEmitted(false)
-        , m_passiveForcedForDocumentTarget(options.passiveForcedForDocumentTarget())
-    {
-    }
+ public:
+  RegisteredEventListener()
+      : m_useCapture(false),
+        m_passive(false),
+        m_once(false),
+        m_blockedEventWarningEmitted(false),
+        m_passiveForcedForDocumentTarget(false) {}
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_listener);
-    }
+  RegisteredEventListener(EventListener* listener,
+                          const AddEventListenerOptionsResolved& options)
+      : m_listener(listener),
+        m_useCapture(options.capture()),
+        m_passive(options.passive()),
+        m_once(options.once()),
+        m_blockedEventWarningEmitted(false),
+        m_passiveForcedForDocumentTarget(
+            options.passiveForcedForDocumentTarget()) {}
 
-    AddEventListenerOptionsResolved options() const
-    {
-        AddEventListenerOptionsResolved result;
-        result.setCapture(m_useCapture);
-        result.setPassive(m_passive);
-        result.setPassiveForcedForDocumentTarget(m_passiveForcedForDocumentTarget);
-        result.setOnce(m_once);
-        return result;
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_listener); }
 
-    const EventListener* listener() const
-    {
-        return m_listener;
-    }
+  AddEventListenerOptionsResolved options() const {
+    AddEventListenerOptionsResolved result;
+    result.setCapture(m_useCapture);
+    result.setPassive(m_passive);
+    result.setPassiveForcedForDocumentTarget(m_passiveForcedForDocumentTarget);
+    result.setOnce(m_once);
+    return result;
+  }
 
-    EventListener* listener()
-    {
-        return m_listener;
-    }
+  const EventListener* listener() const { return m_listener; }
 
-    bool passive() const
-    {
-        return m_passive;
-    }
+  EventListener* listener() { return m_listener; }
 
-    bool once() const
-    {
-        return m_once;
-    }
+  bool passive() const { return m_passive; }
 
-    bool capture() const
-    {
-        return m_useCapture;
-    }
+  bool once() const { return m_once; }
 
-    bool blockedEventWarningEmitted() const
-    {
-        return m_blockedEventWarningEmitted;
-    }
+  bool capture() const { return m_useCapture; }
 
-    bool passiveForcedForDocumentTarget() const
-    {
-        return m_passiveForcedForDocumentTarget;
-    }
+  bool blockedEventWarningEmitted() const {
+    return m_blockedEventWarningEmitted;
+  }
 
-    void setBlockedEventWarningEmitted()
-    {
-        m_blockedEventWarningEmitted = true;
-    }
+  bool passiveForcedForDocumentTarget() const {
+    return m_passiveForcedForDocumentTarget;
+  }
 
-    bool matches(const EventListener* listener, const EventListenerOptions& options) const
-    {
-        // Equality is soley based on the listener and useCapture flags.
-        DCHECK(m_listener);
-        DCHECK(listener);
-        return *m_listener == *listener && static_cast<bool>(m_useCapture) == options.capture();
-    }
+  void setBlockedEventWarningEmitted() { m_blockedEventWarningEmitted = true; }
 
-    bool operator==(const RegisteredEventListener& other) const
-    {
-        // Equality is soley based on the listener and useCapture flags.
-        DCHECK(m_listener);
-        DCHECK(other.m_listener);
-        return *m_listener == *other.m_listener && m_useCapture == other.m_useCapture;
-    }
+  bool matches(const EventListener* listener,
+               const EventListenerOptions& options) const {
+    // Equality is soley based on the listener and useCapture flags.
+    DCHECK(m_listener);
+    DCHECK(listener);
+    return *m_listener == *listener &&
+           static_cast<bool>(m_useCapture) == options.capture();
+  }
 
-private:
-    Member<EventListener> m_listener;
-    unsigned m_useCapture : 1;
-    unsigned m_passive : 1;
-    unsigned m_once : 1;
-    unsigned m_blockedEventWarningEmitted : 1;
-    unsigned m_passiveForcedForDocumentTarget : 1;
+  bool operator==(const RegisteredEventListener& other) const {
+    // Equality is soley based on the listener and useCapture flags.
+    DCHECK(m_listener);
+    DCHECK(other.m_listener);
+    return *m_listener == *other.m_listener &&
+           m_useCapture == other.m_useCapture;
+  }
+
+ private:
+  Member<EventListener> m_listener;
+  unsigned m_useCapture : 1;
+  unsigned m_passive : 1;
+  unsigned m_once : 1;
+  unsigned m_blockedEventWarningEmitted : 1;
+  unsigned m_passiveForcedForDocumentTarget : 1;
 };
 
-} // namespace blink
+}  // namespace blink
 
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::RegisteredEventListener);
 
-#endif // RegisteredEventListener_h
+#endif  // RegisteredEventListener_h

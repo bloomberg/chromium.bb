@@ -49,68 +49,80 @@ class WebURL;
 // * publishing, and
 // * streaming.
 class WebBlobRegistry {
-public:
-    // Builder class for creating blobs. The blob is built on calling the
-    // build() method, where IPCs are sent to the browser.
-    // Preconditions:
-    // * Not meant to be used on multiple threads.
-    // * Must not be kept alive longer than creator WebBlobRegistry (shouldn't
-    //   be an issue because of the singleton nature of the WebBlobRegistry)
-    // * append.* methods are invalid after build() is called.
-    class Builder {
-    public:
-        virtual ~Builder() { }
-        virtual void appendData(const WebThreadSafeData&) = 0;
-        virtual void appendFile(const WebString& path, uint64_t offset, uint64_t length, double expectedModificationTime) = 0;
-        // Calling this method ensures the given blob lives for the creation of
-        // the new blob.
-        virtual void appendBlob(const WebString& uuid, uint64_t offset, uint64_t length) = 0;
-        virtual void appendFileSystemURL(const WebURL&, uint64_t offset, uint64_t length, double expectedModificationTime) = 0;
+ public:
+  // Builder class for creating blobs. The blob is built on calling the
+  // build() method, where IPCs are sent to the browser.
+  // Preconditions:
+  // * Not meant to be used on multiple threads.
+  // * Must not be kept alive longer than creator WebBlobRegistry (shouldn't
+  //   be an issue because of the singleton nature of the WebBlobRegistry)
+  // * append.* methods are invalid after build() is called.
+  class Builder {
+   public:
+    virtual ~Builder() {}
+    virtual void appendData(const WebThreadSafeData&) = 0;
+    virtual void appendFile(const WebString& path,
+                            uint64_t offset,
+                            uint64_t length,
+                            double expectedModificationTime) = 0;
+    // Calling this method ensures the given blob lives for the creation of
+    // the new blob.
+    virtual void appendBlob(const WebString& uuid,
+                            uint64_t offset,
+                            uint64_t length) = 0;
+    virtual void appendFileSystemURL(const WebURL&,
+                                     uint64_t offset,
+                                     uint64_t length,
+                                     double expectedModificationTime) = 0;
 
-        // Builds the blob. All calls to append* are invalid after calling this
-        // method.
-        virtual void build() = 0;
-    };
+    // Builds the blob. All calls to append* are invalid after calling this
+    // method.
+    virtual void build() = 0;
+  };
 
-    virtual ~WebBlobRegistry() { }
+  virtual ~WebBlobRegistry() {}
 
-    // TODO(dmurph): Deprecate and migrate to createBuilder
-    virtual void registerBlobData(const WebString& uuid, const WebBlobData&) { }
+  // TODO(dmurph): Deprecate and migrate to createBuilder
+  virtual void registerBlobData(const WebString& uuid, const WebBlobData&) {}
 
-    // The blob is finalized (and sent to the browser) on calling build() on the Builder object.
-    virtual std::unique_ptr<Builder> createBuilder(const WebString& uuid, const WebString& contentType) = 0;
+  // The blob is finalized (and sent to the browser) on calling build() on the Builder object.
+  virtual std::unique_ptr<Builder> createBuilder(
+      const WebString& uuid,
+      const WebString& contentType) = 0;
 
-    virtual void addBlobDataRef(const WebString& uuid) { }
-    virtual void removeBlobDataRef(const WebString& uuid) { }
-    virtual void registerPublicBlobURL(const WebURL&, const WebString& uuid) { }
-    virtual void revokePublicBlobURL(const WebURL&) { }
+  virtual void addBlobDataRef(const WebString& uuid) {}
+  virtual void removeBlobDataRef(const WebString& uuid) {}
+  virtual void registerPublicBlobURL(const WebURL&, const WebString& uuid) {}
+  virtual void revokePublicBlobURL(const WebURL&) {}
 
-    // Registers a stream URL referring to a stream with the specified media
-    // type.
-    virtual void registerStreamURL(const WebURL&, const WebString&) = 0;
+  // Registers a stream URL referring to a stream with the specified media
+  // type.
+  virtual void registerStreamURL(const WebURL&, const WebString&) = 0;
 
-    // Registers a stream URL referring to the stream identified by the
-    // specified srcURL.
-    virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) = 0;
+  // Registers a stream URL referring to the stream identified by the
+  // specified srcURL.
+  virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) = 0;
 
-    // Add data to the stream referred by the URL.
-    virtual void addDataToStream(const WebURL&, const char* data, size_t length) = 0;
+  // Add data to the stream referred by the URL.
+  virtual void addDataToStream(const WebURL&,
+                               const char* data,
+                               size_t length) = 0;
 
-    // Flush contents buffered in the stream to the corresponding reader.
-    virtual void flushStream(const WebURL&) = 0;
+  // Flush contents buffered in the stream to the corresponding reader.
+  virtual void flushStream(const WebURL&) = 0;
 
-    // Tell the registry that construction of this stream has completed
-    // successfully and so it won't receive any more data.
-    virtual void finalizeStream(const WebURL&) = 0;
+  // Tell the registry that construction of this stream has completed
+  // successfully and so it won't receive any more data.
+  virtual void finalizeStream(const WebURL&) = 0;
 
-    // Tell the registry that construction of this stream has been aborted and
-    // so it won't receive any more data.
-    virtual void abortStream(const WebURL&) = 0;
+  // Tell the registry that construction of this stream has been aborted and
+  // so it won't receive any more data.
+  virtual void abortStream(const WebURL&) = 0;
 
-    // Unregisters a stream referred by the URL.
-    virtual void unregisterStreamURL(const WebURL&) = 0;
+  // Unregisters a stream referred by the URL.
+  virtual void unregisterStreamURL(const WebURL&) = 0;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WebBlobRegistry_h
+#endif  // WebBlobRegistry_h

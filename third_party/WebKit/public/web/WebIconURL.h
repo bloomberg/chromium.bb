@@ -41,55 +41,36 @@
 namespace blink {
 
 class WebIconURL {
-public:
-    enum Type {
-        TypeInvalid = 0,
-        TypeFavicon = 1 << 0,
-        TypeTouch = 1 << 1,
-        TypeTouchPrecomposed = 1 << 2
-    };
+ public:
+  enum Type {
+    TypeInvalid = 0,
+    TypeFavicon = 1 << 0,
+    TypeTouch = 1 << 1,
+    TypeTouchPrecomposed = 1 << 2
+  };
 
-    WebIconURL()
-        : m_iconType(TypeInvalid)
-    {
-    }
+  WebIconURL() : m_iconType(TypeInvalid) {}
 
-    WebIconURL(const WebURL& url, Type type)
-        : m_iconType(type)
-        , m_iconURL(url)
-    {
-    }
+  WebIconURL(const WebURL& url, Type type) : m_iconType(type), m_iconURL(url) {}
 
-    Type iconType() const
-    {
-        return m_iconType;
-    }
+  Type iconType() const { return m_iconType; }
 
-    const WebURL& iconURL() const
-    {
-        return m_iconURL;
-    }
+  const WebURL& iconURL() const { return m_iconURL; }
 
-    const WebVector<WebSize>& sizes() const
-    {
-        return m_sizes;
-    }
+  const WebVector<WebSize>& sizes() const { return m_sizes; }
 
 #if BLINK_IMPLEMENTATION
-    WebIconURL(const IconURL& iconURL)
-        : m_iconType(static_cast<Type>(iconURL.m_iconType))
-        , m_iconURL(iconURL.m_iconURL)
-        , m_sizes(iconURL.m_sizes)
-    {
-    }
+  WebIconURL(const IconURL& iconURL)
+      : m_iconType(static_cast<Type>(iconURL.m_iconType)),
+        m_iconURL(iconURL.m_iconURL),
+        m_sizes(iconURL.m_sizes) {}
 #endif
 
-private:
-    Type m_iconType;
-    WebURL m_iconURL;
-    WebVector<WebSize> m_sizes;
+ private:
+  Type m_iconType;
+  WebURL m_iconURL;
+  WebVector<WebSize> m_sizes;
 };
-
 }
 
-#endif // WebIconURL_h
+#endif  // WebIconURL_h

@@ -11,28 +11,32 @@
 
 namespace blink {
 
-template<typename WTFTypedArray>
-class CORE_TEMPLATE_CLASS_EXPORT TypedFlexibleArrayBufferView final : public FlexibleArrayBufferView {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(TypedFlexibleArrayBufferView);
-public:
-    using ValueType = typename WTFTypedArray::ValueType;
+template <typename WTFTypedArray>
+class CORE_TEMPLATE_CLASS_EXPORT TypedFlexibleArrayBufferView final
+    : public FlexibleArrayBufferView {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(TypedFlexibleArrayBufferView);
 
-    TypedFlexibleArrayBufferView() : FlexibleArrayBufferView() {}
+ public:
+  using ValueType = typename WTFTypedArray::ValueType;
 
-    ValueType* dataMaybeOnStack() const { return static_cast<ValueType*>(baseAddressMaybeOnStack()); }
+  TypedFlexibleArrayBufferView() : FlexibleArrayBufferView() {}
 
-    unsigned length() const
-    {
-        DCHECK_EQ(byteLength() % sizeof(ValueType), 0u);
-        return byteLength() / sizeof(ValueType);
-    }
+  ValueType* dataMaybeOnStack() const {
+    return static_cast<ValueType*>(baseAddressMaybeOnStack());
+  }
+
+  unsigned length() const {
+    DCHECK_EQ(byteLength() % sizeof(ValueType), 0u);
+    return byteLength() / sizeof(ValueType);
+  }
 };
 
-using FlexibleFloat32ArrayView = TypedFlexibleArrayBufferView<WTF::Float32Array>;
+using FlexibleFloat32ArrayView =
+    TypedFlexibleArrayBufferView<WTF::Float32Array>;
 using FlexibleInt32ArrayView = TypedFlexibleArrayBufferView<WTF::Int32Array>;
 using FlexibleUint32ArrayView = TypedFlexibleArrayBufferView<WTF::Uint32Array>;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // TypedFlexibleArrayBufferView_h
+#endif  // TypedFlexibleArrayBufferView_h

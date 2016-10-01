@@ -40,46 +40,28 @@
 namespace blink {
 
 struct WebDoublePoint {
-    double x;
-    double y;
+  double x;
+  double y;
 
-    WebDoublePoint()
-        : x(0.0)
-        , y(0.0)
-    {
-    }
+  WebDoublePoint() : x(0.0), y(0.0) {}
 
-    WebDoublePoint(double x, double y)
-        : x(x)
-        , y(y)
-    {
-    }
+  WebDoublePoint(double x, double y) : x(x), y(y) {}
 
 #if INSIDE_BLINK
-    WebDoublePoint(const DoublePoint& p)
-        : x(p.x())
-        , y(p.y())
-    {
-    }
+  WebDoublePoint(const DoublePoint& p) : x(p.x()), y(p.y()) {}
 
-    operator DoublePoint() const
-    {
-        return DoublePoint(x, y);
-    }
+  operator DoublePoint() const { return DoublePoint(x, y); }
 #endif
-
 };
 
-inline bool operator==(const WebDoublePoint& a, const WebDoublePoint& b)
-{
-    return a.x == b.x && a.y == b.y;
+inline bool operator==(const WebDoublePoint& a, const WebDoublePoint& b) {
+  return a.x == b.x && a.y == b.y;
 }
 
-inline bool operator!=(const WebDoublePoint& a, const WebDoublePoint& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebDoublePoint& a, const WebDoublePoint& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

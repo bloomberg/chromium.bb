@@ -40,93 +40,92 @@ namespace blink {
 //  4. Outline phase: outlines are painted over the foreground.
 
 enum PaintPhase {
-    // Background phase
-    //
-    // Paint background of the current object and non-self-painting descendants.
-    PaintPhaseBlockBackground = 0,
-    //
-    // The following two values are added besides the normal PaintPhaseBlockBackground
-    // to distinguish backgrounds for the object itself and for descendants, because
-    // the two backgrounds are often painted with different scroll offsets and clips.
-    //
-    // Paint background of the current object only.
-    PaintPhaseSelfBlockBackgroundOnly = 1,
-    // Paint backgrounds of non-self-painting descendants only. The painter should call
-    // each non-self-painting child's paint method by passing paintInfo.forDescendants() which
-    // converts PaintPhaseDescendantsBlockBackgroundsOnly to PaintPhaseBlockBackground.
-    PaintPhaseDescendantBlockBackgroundsOnly = 2,
+  // Background phase
+  //
+  // Paint background of the current object and non-self-painting descendants.
+  PaintPhaseBlockBackground = 0,
+  //
+  // The following two values are added besides the normal PaintPhaseBlockBackground
+  // to distinguish backgrounds for the object itself and for descendants, because
+  // the two backgrounds are often painted with different scroll offsets and clips.
+  //
+  // Paint background of the current object only.
+  PaintPhaseSelfBlockBackgroundOnly = 1,
+  // Paint backgrounds of non-self-painting descendants only. The painter should call
+  // each non-self-painting child's paint method by passing paintInfo.forDescendants() which
+  // converts PaintPhaseDescendantsBlockBackgroundsOnly to PaintPhaseBlockBackground.
+  PaintPhaseDescendantBlockBackgroundsOnly = 2,
 
-    // Float phase
-    PaintPhaseFloat = 3,
+  // Float phase
+  PaintPhaseFloat = 3,
 
-    // Foreground phase
-    PaintPhaseForeground = 4,
+  // Foreground phase
+  PaintPhaseForeground = 4,
 
-    // Outline phase
-    //
-    // Paint outline for the current object and non-self-painting descendants.
-    PaintPhaseOutline = 5,
-    //
-    // Similar to the background phase, the following two values are added for painting
-    // outlines of the object itself and for descendants.
-    //
-    // Paint outline for the current object only.
-    PaintPhaseSelfOutlineOnly = 6,
-    // Paint outlines of non-self-painting descendants only. The painter should call each
-    // non-self-painting child's paint method by passing paintInfo.forDescendants() which
-    // converts PaintPhaseDescendantsOutlinesOnly to PaintPhaseBlockOutline.
-    PaintPhaseDescendantOutlinesOnly = 7,
+  // Outline phase
+  //
+  // Paint outline for the current object and non-self-painting descendants.
+  PaintPhaseOutline = 5,
+  //
+  // Similar to the background phase, the following two values are added for painting
+  // outlines of the object itself and for descendants.
+  //
+  // Paint outline for the current object only.
+  PaintPhaseSelfOutlineOnly = 6,
+  // Paint outlines of non-self-painting descendants only. The painter should call each
+  // non-self-painting child's paint method by passing paintInfo.forDescendants() which
+  // converts PaintPhaseDescendantsOutlinesOnly to PaintPhaseBlockOutline.
+  PaintPhaseDescendantOutlinesOnly = 7,
 
-    // The below are auxiliary phases which are used to paint special effects.
-    PaintPhaseSelection = 8,
-    PaintPhaseTextClip = 9,
-    PaintPhaseMask = 10,
-    PaintPhaseClippingMask = 11,
+  // The below are auxiliary phases which are used to paint special effects.
+  PaintPhaseSelection = 8,
+  PaintPhaseTextClip = 9,
+  PaintPhaseMask = 10,
+  PaintPhaseClippingMask = 11,
 
-    PaintPhaseMax = PaintPhaseClippingMask,
-    // These values must be kept in sync with DisplayItem::Type and DisplayItem::typeAsDebugString().
+  PaintPhaseMax = PaintPhaseClippingMask,
+  // These values must be kept in sync with DisplayItem::Type and DisplayItem::typeAsDebugString().
 };
 
-inline bool shouldPaintSelfBlockBackground(PaintPhase phase)
-{
-    return phase == PaintPhaseBlockBackground || phase == PaintPhaseSelfBlockBackgroundOnly;
+inline bool shouldPaintSelfBlockBackground(PaintPhase phase) {
+  return phase == PaintPhaseBlockBackground ||
+         phase == PaintPhaseSelfBlockBackgroundOnly;
 }
 
-inline bool shouldPaintSelfOutline(PaintPhase phase)
-{
-    return phase == PaintPhaseOutline || phase == PaintPhaseSelfOutlineOnly;
+inline bool shouldPaintSelfOutline(PaintPhase phase) {
+  return phase == PaintPhaseOutline || phase == PaintPhaseSelfOutlineOnly;
 }
 
-inline bool shouldPaintDescendantBlockBackgrounds(PaintPhase phase)
-{
-    return phase == PaintPhaseBlockBackground || phase == PaintPhaseDescendantBlockBackgroundsOnly;
+inline bool shouldPaintDescendantBlockBackgrounds(PaintPhase phase) {
+  return phase == PaintPhaseBlockBackground ||
+         phase == PaintPhaseDescendantBlockBackgroundsOnly;
 }
 
-inline bool shouldPaintDescendantOutlines(PaintPhase phase)
-{
-    return phase == PaintPhaseOutline || phase == PaintPhaseDescendantOutlinesOnly;
+inline bool shouldPaintDescendantOutlines(PaintPhase phase) {
+  return phase == PaintPhaseOutline ||
+         phase == PaintPhaseDescendantOutlinesOnly;
 }
 
 // Those flags are meant as global tree operations. This means
 // that they should be constant for a paint phase.
 enum GlobalPaintFlag {
-    GlobalPaintNormalPhase = 0,
-    // Used when painting selection as part of a drag-image. This
-    // flag disables a lot of the painting code and specifically
-    // triggers a PaintPhaseSelection.
-    GlobalPaintSelectionOnly = 1 << 0,
-    // Used when painting a drag-image or printing in order to
-    // ignore the hardware layers and paint the whole tree
-    // into the topmost layer.
-    GlobalPaintFlattenCompositingLayers = 1 << 1,
-    // Used when printing in order to adapt the output to the medium, for
-    // instance by not painting shadows and selections on text, and add
-    // URL metadata for links.
-    GlobalPaintPrinting = 1 << 2
+  GlobalPaintNormalPhase = 0,
+  // Used when painting selection as part of a drag-image. This
+  // flag disables a lot of the painting code and specifically
+  // triggers a PaintPhaseSelection.
+  GlobalPaintSelectionOnly = 1 << 0,
+  // Used when painting a drag-image or printing in order to
+  // ignore the hardware layers and paint the whole tree
+  // into the topmost layer.
+  GlobalPaintFlattenCompositingLayers = 1 << 1,
+  // Used when printing in order to adapt the output to the medium, for
+  // instance by not painting shadows and selections on text, and add
+  // URL metadata for links.
+  GlobalPaintPrinting = 1 << 2
 };
 
 typedef unsigned GlobalPaintFlags;
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaintPhase_h
+#endif  // PaintPhase_h

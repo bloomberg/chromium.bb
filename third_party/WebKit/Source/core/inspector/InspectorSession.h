@@ -22,52 +22,63 @@ class InstrumentingAgents;
 class LocalFrame;
 
 class CORE_EXPORT InspectorSession
-    : public GarbageCollectedFinalized<InspectorSession>
-    , public protocol::FrontendChannel
-    , public v8_inspector::V8Inspector::Channel {
-    WTF_MAKE_NONCOPYABLE(InspectorSession);
-public:
-    class Client {
-    public:
-        virtual void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) = 0;
-        virtual ~Client() {}
-    };
+    : public GarbageCollectedFinalized<InspectorSession>,
+      public protocol::FrontendChannel,
+      public v8_inspector::V8Inspector::Channel {
+  WTF_MAKE_NONCOPYABLE(InspectorSession);
 
-    InspectorSession(Client*, InstrumentingAgents*, int sessionId, v8_inspector::V8Inspector*, int contextGroupId, const String* savedState);
-    ~InspectorSession() override;
-    int sessionId() { return m_sessionId; }
-    v8_inspector::V8InspectorSession* v8Session() { return m_v8Session.get(); }
+ public:
+  class Client {
+   public:
+    virtual void sendProtocolMessage(int sessionId,
+                                     int callId,
+                                     const String& response,
+                                     const String& state) = 0;
+    virtual ~Client() {}
+  };
 
-    void append(InspectorAgent*);
-    void restore();
-    void dispose();
-    void didCommitLoadForLocalFrame(LocalFrame*);
-    void dispatchProtocolMessage(const String& method, const String& message);
-    void flushProtocolNotifications() override;
+  InspectorSession(Client*,
+                   InstrumentingAgents*,
+                   int sessionId,
+                   v8_inspector::V8Inspector*,
+                   int contextGroupId,
+                   const String* savedState);
+  ~InspectorSession() override;
+  int sessionId() { return m_sessionId; }
+  v8_inspector::V8InspectorSession* v8Session() { return m_v8Session.get(); }
 
-    DECLARE_TRACE();
+  void append(InspectorAgent*);
+  void restore();
+  void dispose();
+  void didCommitLoadForLocalFrame(LocalFrame*);
+  void dispatchProtocolMessage(const String& method, const String& message);
+  void flushProtocolNotifications() override;
 
-private:
-    // protocol::FrontendChannel implementation.
-    void sendProtocolResponse(int callId, const String& message) override;
-    void sendProtocolNotification(const String& message) override;
+  DECLARE_TRACE();
 
-    // v8_inspector::V8Inspector::Channel implementation.
-    void sendProtocolResponse(int callId, const v8_inspector::StringView& message) override;
-    void sendProtocolNotification(const v8_inspector::StringView& message) override;
+ private:
+  // protocol::FrontendChannel implementation.
+  void sendProtocolResponse(int callId, const String& message) override;
+  void sendProtocolNotification(const String& message) override;
 
-    Client* m_client;
-    std::unique_ptr<v8_inspector::V8InspectorSession> m_v8Session;
-    int m_sessionId;
-    bool m_disposed;
-    Member<InstrumentingAgents> m_instrumentingAgents;
-    std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;
-    std::unique_ptr<protocol::DictionaryValue> m_state;
-    HeapVector<Member<InspectorAgent>> m_agents;
-    Vector<String> m_notificationQueue;
-    String m_lastSentState;
+  // v8_inspector::V8Inspector::Channel implementation.
+  void sendProtocolResponse(int callId,
+                            const v8_inspector::StringView& message) override;
+  void sendProtocolNotification(
+      const v8_inspector::StringView& message) override;
+
+  Client* m_client;
+  std::unique_ptr<v8_inspector::V8InspectorSession> m_v8Session;
+  int m_sessionId;
+  bool m_disposed;
+  Member<InstrumentingAgents> m_instrumentingAgents;
+  std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;
+  std::unique_ptr<protocol::DictionaryValue> m_state;
+  HeapVector<Member<InspectorAgent>> m_agents;
+  Vector<String> m_notificationQueue;
+  String m_lastSentState;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // !defined(InspectorSession_h)
+#endif  // !defined(InspectorSession_h)

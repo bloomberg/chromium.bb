@@ -31,68 +31,60 @@
 
 namespace blink {
 
-class NodeFilter final : public GarbageCollected<NodeFilter>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    /**
+class NodeFilter final : public GarbageCollected<NodeFilter>,
+                         public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
+
+ public:
+  /**
      * The following constants are returned by the acceptNode()
      * method:
      */
-    enum {
-        kFilterAccept = 1,
-        kFilterReject = 2,
-        kFilterSkip   = 3
-    };
+  enum { kFilterAccept = 1, kFilterReject = 2, kFilterSkip = 3 };
 
-    /**
+  /**
      * These are the available values for the whatToShow parameter.
      * They are the same as the set of possible types for Node, and
      * their values are derived by using a bit position corresponding
      * to the value of NodeType for the equivalent node type.
      */
-    enum {
-        kShowAll                       = 0xFFFFFFFF,
-        kShowElement                   = 0x00000001,
-        kShowAttribute                 = 0x00000002,
-        kShowText                      = 0x00000004,
-        kShowCdataSection              = 0x00000008,
-        kShowEntityReference           = 0x00000010,
-        kShowEntity                    = 0x00000020,
-        kShowProcessingInstruction     = 0x00000040,
-        kShowComment                   = 0x00000080,
-        kShowDocument                  = 0x00000100,
-        kShowDocumentType              = 0x00000200,
-        kShowDocumentFragment          = 0x00000400,
-        kShowNotation                  = 0x00000800
-    };
+  enum {
+    kShowAll = 0xFFFFFFFF,
+    kShowElement = 0x00000001,
+    kShowAttribute = 0x00000002,
+    kShowText = 0x00000004,
+    kShowCdataSection = 0x00000008,
+    kShowEntityReference = 0x00000010,
+    kShowEntity = 0x00000020,
+    kShowProcessingInstruction = 0x00000040,
+    kShowComment = 0x00000080,
+    kShowDocument = 0x00000100,
+    kShowDocumentType = 0x00000200,
+    kShowDocumentFragment = 0x00000400,
+    kShowNotation = 0x00000800
+  };
 
-    static NodeFilter* create(NodeFilterCondition* condition)
-    {
-        return new NodeFilter(condition);
-    }
+  static NodeFilter* create(NodeFilterCondition* condition) {
+    return new NodeFilter(condition);
+  }
 
-    static NodeFilter* create()
-    {
-        return new NodeFilter();
-    }
+  static NodeFilter* create() { return new NodeFilter(); }
 
-    unsigned acceptNode(Node*, ExceptionState&) const;
+  unsigned acceptNode(Node*, ExceptionState&) const;
 
-    void setCondition(NodeFilterCondition* condition)
-    {
-        m_condition = condition;
-    }
+  void setCondition(NodeFilterCondition* condition) { m_condition = condition; }
 
-    DECLARE_TRACE();
+  DECLARE_TRACE();
 
-private:
-    explicit NodeFilter(NodeFilterCondition* condition) : m_condition(condition) { }
+ private:
+  explicit NodeFilter(NodeFilterCondition* condition)
+      : m_condition(condition) {}
 
-    NodeFilter() { }
+  NodeFilter() {}
 
-    Member<NodeFilterCondition> m_condition;
+  Member<NodeFilterCondition> m_condition;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // NodeFilter_h
+#endif  // NodeFilter_h

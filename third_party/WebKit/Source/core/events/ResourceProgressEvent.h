@@ -44,26 +44,35 @@ namespace blink {
 // constructable by web content at all, and so does not provide the usual
 // EventInit pattern for Event construction.
 class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static ResourceProgressEvent* create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const String& url)
-    {
-        return new ResourceProgressEvent(type, lengthComputable, loaded, total, url);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    const String& url() const;
+ public:
+  static ResourceProgressEvent* create(const AtomicString& type,
+                                       bool lengthComputable,
+                                       unsigned long long loaded,
+                                       unsigned long long total,
+                                       const String& url) {
+    return new ResourceProgressEvent(type, lengthComputable, loaded, total,
+                                     url);
+  }
 
-    const AtomicString& interfaceName() const override;
+  const String& url() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-protected:
-    ResourceProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const String& url);
+  DECLARE_VIRTUAL_TRACE();
 
-private:
-    String m_url;
+ protected:
+  ResourceProgressEvent(const AtomicString& type,
+                        bool lengthComputable,
+                        unsigned long long loaded,
+                        unsigned long long total,
+                        const String& url);
+
+ private:
+  String m_url;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ResourceProgressEvent_h
+#endif  // ResourceProgressEvent_h

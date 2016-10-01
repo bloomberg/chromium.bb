@@ -37,33 +37,34 @@ class ExceptionState;
 class KeyframeStyleRuleCSSStyleDeclaration;
 
 class CSSKeyframeRule final : public CSSRule {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~CSSKeyframeRule() override;
+  DEFINE_WRAPPERTYPEINFO();
 
-    String cssText() const override { return m_keyframe->cssText(); }
-    void reattach(StyleRuleBase*) override;
+ public:
+  ~CSSKeyframeRule() override;
 
-    String keyText() const { return m_keyframe->keyText(); }
-    void setKeyText(const String&, ExceptionState&);
+  String cssText() const override { return m_keyframe->cssText(); }
+  void reattach(StyleRuleBase*) override;
 
-    CSSStyleDeclaration* style() const;
+  String keyText() const { return m_keyframe->keyText(); }
+  void setKeyText(const String&, ExceptionState&);
 
-    DECLARE_VIRTUAL_TRACE();
+  CSSStyleDeclaration* style() const;
 
-private:
-    CSSKeyframeRule(StyleRuleKeyframe*, CSSKeyframesRule* parent);
+  DECLARE_VIRTUAL_TRACE();
 
-    CSSRule::Type type() const override { return kKeyframeRule; }
+ private:
+  CSSKeyframeRule(StyleRuleKeyframe*, CSSKeyframesRule* parent);
 
-    Member<StyleRuleKeyframe> m_keyframe;
-    mutable Member<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+  CSSRule::Type type() const override { return kKeyframeRule; }
 
-    friend class CSSKeyframesRule;
+  Member<StyleRuleKeyframe> m_keyframe;
+  mutable Member<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+
+  friend class CSSKeyframesRule;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, kKeyframeRule);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSKeyframeRule_h
+#endif  // CSSKeyframeRule_h

@@ -11,12 +11,9 @@ namespace blink {
 
 // A wrapper around cc's structure to expose it to core.
 struct ScrollStateData : public cc::ScrollStateData {
-    ScrollStateData()
-        : cc::ScrollStateData()
-    {
-    }
+  ScrollStateData() : cc::ScrollStateData() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

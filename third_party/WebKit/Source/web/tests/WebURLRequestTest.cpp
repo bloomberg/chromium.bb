@@ -37,41 +37,36 @@ namespace blink {
 namespace {
 
 class TestExtraData : public WebURLRequest::ExtraData {
-public:
-    explicit TestExtraData(bool* alive)
-        : m_alive(alive)
-    {
-        *alive = true;
-    }
+ public:
+  explicit TestExtraData(bool* alive) : m_alive(alive) { *alive = true; }
 
-    ~TestExtraData() override { *m_alive = false; }
+  ~TestExtraData() override { *m_alive = false; }
 
-private:
-    bool* m_alive;
+ private:
+  bool* m_alive;
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
-TEST(WebURLRequestTest, ExtraData)
-{
-    bool alive = false;
+TEST(WebURLRequestTest, ExtraData) {
+  bool alive = false;
+  {
+    WebURLRequest urlRequest;
+    TestExtraData* extraData = new TestExtraData(&alive);
+    EXPECT_TRUE(alive);
+
+    urlRequest.setExtraData(extraData);
+    EXPECT_EQ(extraData, urlRequest.getExtraData());
     {
-        WebURLRequest urlRequest;
-        TestExtraData* extraData = new TestExtraData(&alive);
-        EXPECT_TRUE(alive);
-
-        urlRequest.setExtraData(extraData);
-        EXPECT_EQ(extraData, urlRequest.getExtraData());
-        {
-            WebURLRequest otherUrlRequest = urlRequest;
-            EXPECT_TRUE(alive);
-            EXPECT_EQ(extraData, otherUrlRequest.getExtraData());
-            EXPECT_EQ(extraData, urlRequest.getExtraData());
-        }
-        EXPECT_TRUE(alive);
-        EXPECT_EQ(extraData, urlRequest.getExtraData());
+      WebURLRequest otherUrlRequest = urlRequest;
+      EXPECT_TRUE(alive);
+      EXPECT_EQ(extraData, otherUrlRequest.getExtraData());
+      EXPECT_EQ(extraData, urlRequest.getExtraData());
     }
-    EXPECT_FALSE(alive);
+    EXPECT_TRUE(alive);
+    EXPECT_EQ(extraData, urlRequest.getExtraData());
+  }
+  EXPECT_FALSE(alive);
 }
 
-} // namespace blink
+}  // namespace blink

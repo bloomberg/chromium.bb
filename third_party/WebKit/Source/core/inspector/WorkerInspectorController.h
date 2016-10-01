@@ -46,39 +46,45 @@ class WorkerThread;
 class WorkerThreadDebugger;
 
 class WorkerInspectorController final
-    : public GarbageCollectedFinalized<WorkerInspectorController>
-    , public InspectorSession::Client
-    , private WebThread::TaskObserver {
-    WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
-public:
-    static WorkerInspectorController* create(WorkerThread*);
-    ~WorkerInspectorController() override;
-    DECLARE_TRACE();
+    : public GarbageCollectedFinalized<WorkerInspectorController>,
+      public InspectorSession::Client,
+      private WebThread::TaskObserver {
+  WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
 
-    InstrumentingAgents* instrumentingAgents() const { return m_instrumentingAgents.get(); }
+ public:
+  static WorkerInspectorController* create(WorkerThread*);
+  ~WorkerInspectorController() override;
+  DECLARE_TRACE();
 
-    void connectFrontend();
-    void disconnectFrontend();
-    void dispatchMessageFromFrontend(const String&);
-    void dispose();
-    void flushProtocolNotifications();
+  InstrumentingAgents* instrumentingAgents() const {
+    return m_instrumentingAgents.get();
+  }
 
-private:
-    WorkerInspectorController(WorkerThread*, WorkerThreadDebugger*);
+  void connectFrontend();
+  void disconnectFrontend();
+  void dispatchMessageFromFrontend(const String&);
+  void dispose();
+  void flushProtocolNotifications();
 
-    // InspectorSession::Client implementation.
-    void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
+ private:
+  WorkerInspectorController(WorkerThread*, WorkerThreadDebugger*);
 
-    // WebThread::TaskObserver implementation.
-    void willProcessTask() override;
-    void didProcessTask() override;
+  // InspectorSession::Client implementation.
+  void sendProtocolMessage(int sessionId,
+                           int callId,
+                           const String& response,
+                           const String& state) override;
 
-    WorkerThreadDebugger* m_debugger;
-    WorkerThread* m_thread;
-    Member<InstrumentingAgents> m_instrumentingAgents;
-    Member<InspectorSession> m_session;
+  // WebThread::TaskObserver implementation.
+  void willProcessTask() override;
+  void didProcessTask() override;
+
+  WorkerThreadDebugger* m_debugger;
+  WorkerThread* m_thread;
+  Member<InstrumentingAgents> m_instrumentingAgents;
+  Member<InspectorSession> m_session;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // WorkerInspectorController_h
+#endif  // WorkerInspectorController_h

@@ -39,37 +39,29 @@
 namespace blink {
 
 struct WebMenuItemInfo {
-    enum Type {
-        Option,
-        CheckableOption,
-        Group,
-        Separator,
-        SubMenu
-    };
+  enum Type { Option, CheckableOption, Group, Separator, SubMenu };
 
-    WebMenuItemInfo()
-        : type(Option)
-        , action(0)
-        , textDirection(WebTextDirectionDefault)
-        , hasTextDirectionOverride(false)
-        , enabled(false)
-        , checked(false)
-    {
-    }
+  WebMenuItemInfo()
+      : type(Option),
+        action(0),
+        textDirection(WebTextDirectionDefault),
+        hasTextDirectionOverride(false),
+        enabled(false),
+        checked(false) {}
 
-    WebString label;
-    // "icon" provides absolute URL of an image that repesents the command.
-    WebString icon;
-    WebString toolTip;
-    Type type;
-    unsigned action;
-    WebTextDirection textDirection;
-    WebVector<WebMenuItemInfo> subMenuItems;
-    bool hasTextDirectionOverride;
-    bool enabled;
-    bool checked;
+  WebString label;
+  // "icon" provides absolute URL of an image that repesents the command.
+  WebString icon;
+  WebString toolTip;
+  Type type;
+  unsigned action;
+  WebTextDirection textDirection;
+  WebVector<WebMenuItemInfo> subMenuItems;
+  bool hasTextDirectionOverride;
+  bool enabled;
+  bool checked;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

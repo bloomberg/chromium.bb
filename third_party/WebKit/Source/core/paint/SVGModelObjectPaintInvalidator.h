@@ -14,18 +14,20 @@ class LayoutSVGModelObject;
 struct PaintInvalidatorContext;
 
 class SVGModelObjectPaintInvalidator {
-    STACK_ALLOCATED();
-public:
-    SVGModelObjectPaintInvalidator(const LayoutSVGModelObject& object, const PaintInvalidatorContext& context)
-        : m_object(object), m_context(context) { }
+  STACK_ALLOCATED();
 
-    PaintInvalidationReason invalidatePaintIfNeeded();
+ public:
+  SVGModelObjectPaintInvalidator(const LayoutSVGModelObject& object,
+                                 const PaintInvalidatorContext& context)
+      : m_object(object), m_context(context) {}
 
-private:
-    const LayoutSVGModelObject& m_object;
-    const PaintInvalidatorContext& m_context;
+  PaintInvalidationReason invalidatePaintIfNeeded();
+
+ private:
+  const LayoutSVGModelObject& m_object;
+  const PaintInvalidatorContext& m_context;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

@@ -35,40 +35,48 @@ namespace blink {
 class DeviceOrientationData;
 
 class DeviceOrientationEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    ~DeviceOrientationEvent() override;
-    static DeviceOrientationEvent* create()
-    {
-        return new DeviceOrientationEvent;
-    }
-    static DeviceOrientationEvent* create(const AtomicString& eventType, DeviceOrientationData* orientation)
-    {
-        return new DeviceOrientationEvent(eventType, orientation);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-    void initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute);
+ public:
+  ~DeviceOrientationEvent() override;
+  static DeviceOrientationEvent* create() { return new DeviceOrientationEvent; }
+  static DeviceOrientationEvent* create(const AtomicString& eventType,
+                                        DeviceOrientationData* orientation) {
+    return new DeviceOrientationEvent(eventType, orientation);
+  }
 
-    DeviceOrientationData* orientation() const { return m_orientation.get(); }
+  void initDeviceOrientationEvent(const AtomicString& type,
+                                  bool bubbles,
+                                  bool cancelable,
+                                  const Nullable<double>& alpha,
+                                  const Nullable<double>& beta,
+                                  const Nullable<double>& gamma,
+                                  bool absolute);
 
-    double alpha(bool& isNull) const;
-    double beta(bool& isNull) const;
-    double gamma(bool& isNull) const;
-    bool absolute() const;
+  DeviceOrientationData* orientation() const { return m_orientation.get(); }
 
-    const AtomicString& interfaceName() const override;
+  double alpha(bool& isNull) const;
+  double beta(bool& isNull) const;
+  double gamma(bool& isNull) const;
+  bool absolute() const;
 
-    DECLARE_VIRTUAL_TRACE();
+  const AtomicString& interfaceName() const override;
 
-private:
-    DeviceOrientationEvent();
-    DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData*);
+  DECLARE_VIRTUAL_TRACE();
 
-    Member<DeviceOrientationData> m_orientation;
+ private:
+  DeviceOrientationEvent();
+  DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData*);
+
+  Member<DeviceOrientationData> m_orientation;
 };
 
-DEFINE_TYPE_CASTS(DeviceOrientationEvent, Event, event, event->interfaceName() == EventNames::DeviceOrientationEvent, event.interfaceName() == EventNames::DeviceOrientationEvent);
+DEFINE_TYPE_CASTS(DeviceOrientationEvent,
+                  Event,
+                  event,
+                  event->interfaceName() == EventNames::DeviceOrientationEvent,
+                  event.interfaceName() == EventNames::DeviceOrientationEvent);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // DeviceOrientationEvent_h
+#endif  // DeviceOrientationEvent_h

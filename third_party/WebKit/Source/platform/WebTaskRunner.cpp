@@ -6,24 +6,32 @@
 
 namespace blink {
 
-void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task)
-{
-    toSingleThreadTaskRunner()->PostTask(location, convertToBaseCallback(std::move(task)));
+void WebTaskRunner::postTask(const WebTraceLocation& location,
+                             std::unique_ptr<CrossThreadClosure> task) {
+  toSingleThreadTaskRunner()->PostTask(location,
+                                       convertToBaseCallback(std::move(task)));
 }
 
-void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task, long long delayMs)
-{
-    toSingleThreadTaskRunner()->PostDelayedTask(location, convertToBaseCallback(std::move(task)), base::TimeDelta::FromMilliseconds(delayMs));
+void WebTaskRunner::postDelayedTask(const WebTraceLocation& location,
+                                    std::unique_ptr<CrossThreadClosure> task,
+                                    long long delayMs) {
+  toSingleThreadTaskRunner()->PostDelayedTask(
+      location, convertToBaseCallback(std::move(task)),
+      base::TimeDelta::FromMilliseconds(delayMs));
 }
 
-void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task)
-{
-    toSingleThreadTaskRunner()->PostTask(location, convertToBaseCallback(std::move(task)));
+void WebTaskRunner::postTask(const WebTraceLocation& location,
+                             std::unique_ptr<WTF::Closure> task) {
+  toSingleThreadTaskRunner()->PostTask(location,
+                                       convertToBaseCallback(std::move(task)));
 }
 
-void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<WTF::Closure> task, long long delayMs)
-{
-    toSingleThreadTaskRunner()->PostDelayedTask(location, convertToBaseCallback(std::move(task)), base::TimeDelta::FromMilliseconds(delayMs));
+void WebTaskRunner::postDelayedTask(const WebTraceLocation& location,
+                                    std::unique_ptr<WTF::Closure> task,
+                                    long long delayMs) {
+  toSingleThreadTaskRunner()->PostDelayedTask(
+      location, convertToBaseCallback(std::move(task)),
+      base::TimeDelta::FromMilliseconds(delayMs));
 }
 
-} // namespace blink
+}  // namespace blink

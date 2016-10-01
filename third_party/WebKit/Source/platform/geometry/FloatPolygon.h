@@ -44,114 +44,126 @@ class FloatPolygonEdge;
 
 // This class is used by PODIntervalTree for debugging.
 #ifndef NDEBUG
-template <class> struct ValueToString;
+template <class>
+struct ValueToString;
 #endif
 
 class PLATFORM_EXPORT FloatPolygon {
-    USING_FAST_MALLOC(FloatPolygon);
-    WTF_MAKE_NONCOPYABLE(FloatPolygon);
-public:
-    FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fillRule);
+  USING_FAST_MALLOC(FloatPolygon);
+  WTF_MAKE_NONCOPYABLE(FloatPolygon);
 
-    const FloatPoint& vertexAt(unsigned index) const { return (*m_vertices)[index]; }
-    unsigned numberOfVertices() const { return m_vertices->size(); }
+ public:
+  FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fillRule);
 
-    WindRule fillRule() const { return m_fillRule; }
+  const FloatPoint& vertexAt(unsigned index) const {
+    return (*m_vertices)[index];
+  }
+  unsigned numberOfVertices() const { return m_vertices->size(); }
 
-    const FloatPolygonEdge& edgeAt(unsigned index) const { return m_edges[index]; }
-    unsigned numberOfEdges() const { return m_edges.size(); }
+  WindRule fillRule() const { return m_fillRule; }
 
-    FloatRect boundingBox() const { return m_boundingBox; }
-    bool overlappingEdges(float minY, float maxY, Vector<const FloatPolygonEdge*>& result) const;
-    bool contains(const FloatPoint&) const;
-    bool isEmpty() const { return m_empty; }
+  const FloatPolygonEdge& edgeAt(unsigned index) const {
+    return m_edges[index];
+  }
+  unsigned numberOfEdges() const { return m_edges.size(); }
 
-private:
-    typedef PODInterval<float, FloatPolygonEdge*> EdgeInterval;
-    typedef PODIntervalTree<float, FloatPolygonEdge*> EdgeIntervalTree;
+  FloatRect boundingBox() const { return m_boundingBox; }
+  bool overlappingEdges(float minY,
+                        float maxY,
+                        Vector<const FloatPolygonEdge*>& result) const;
+  bool contains(const FloatPoint&) const;
+  bool isEmpty() const { return m_empty; }
 
-    bool containsNonZero(const FloatPoint&) const;
-    bool containsEvenOdd(const FloatPoint&) const;
+ private:
+  typedef PODInterval<float, FloatPolygonEdge*> EdgeInterval;
+  typedef PODIntervalTree<float, FloatPolygonEdge*> EdgeIntervalTree;
 
-    std::unique_ptr<Vector<FloatPoint>> m_vertices;
-    WindRule m_fillRule;
-    FloatRect m_boundingBox;
-    bool m_empty;
-    Vector<FloatPolygonEdge> m_edges;
-    EdgeIntervalTree m_edgeTree; // Each EdgeIntervalTree node stores minY, maxY, and a ("UserData") pointer to a FloatPolygonEdge.
+  bool containsNonZero(const FloatPoint&) const;
+  bool containsEvenOdd(const FloatPoint&) const;
 
+  std::unique_ptr<Vector<FloatPoint>> m_vertices;
+  WindRule m_fillRule;
+  FloatRect m_boundingBox;
+  bool m_empty;
+  Vector<FloatPolygonEdge> m_edges;
+  EdgeIntervalTree
+      m_edgeTree;  // Each EdgeIntervalTree node stores minY, maxY, and a ("UserData") pointer to a FloatPolygonEdge.
 };
 
 class PLATFORM_EXPORT VertexPair {
-public:
-    virtual ~VertexPair() { }
+ public:
+  virtual ~VertexPair() {}
 
-    virtual const FloatPoint& vertex1() const = 0;
-    virtual const FloatPoint& vertex2() const = 0;
+  virtual const FloatPoint& vertex1() const = 0;
+  virtual const FloatPoint& vertex2() const = 0;
 
-    float minX() const { return std::min(vertex1().x(), vertex2().x()); }
-    float minY() const { return std::min(vertex1().y(), vertex2().y()); }
-    float maxX() const { return std::max(vertex1().x(), vertex2().x()); }
-    float maxY() const { return std::max(vertex1().y(), vertex2().y()); }
+  float minX() const { return std::min(vertex1().x(), vertex2().x()); }
+  float minY() const { return std::min(vertex1().y(), vertex2().y()); }
+  float maxX() const { return std::max(vertex1().x(), vertex2().x()); }
+  float maxY() const { return std::max(vertex1().y(), vertex2().y()); }
 
-    bool intersection(const VertexPair&, FloatPoint&) const;
+  bool intersection(const VertexPair&, FloatPoint&) const;
 };
 
 class PLATFORM_EXPORT FloatPolygonEdge final : public VertexPair {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    friend class FloatPolygon;
-public:
-    const FloatPoint& vertex1() const override
-    {
-        ASSERT(m_polygon);
-        return m_polygon->vertexAt(m_vertexIndex1);
-    }
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  friend class FloatPolygon;
 
-    const FloatPoint& vertex2() const override
-    {
-        ASSERT(m_polygon);
-        return m_polygon->vertexAt(m_vertexIndex2);
-    }
+ public:
+  const FloatPoint& vertex1() const override {
+    ASSERT(m_polygon);
+    return m_polygon->vertexAt(m_vertexIndex1);
+  }
 
-    const FloatPolygonEdge& previousEdge() const
-    {
-        ASSERT(m_polygon && m_polygon->numberOfEdges() > 1);
-        return m_polygon->edgeAt((m_edgeIndex + m_polygon->numberOfEdges() - 1) % m_polygon->numberOfEdges());
-    }
+  const FloatPoint& vertex2() const override {
+    ASSERT(m_polygon);
+    return m_polygon->vertexAt(m_vertexIndex2);
+  }
 
-    const FloatPolygonEdge& nextEdge() const
-    {
-        ASSERT(m_polygon && m_polygon->numberOfEdges() > 1);
-        return m_polygon->edgeAt((m_edgeIndex + 1) % m_polygon->numberOfEdges());
-    }
+  const FloatPolygonEdge& previousEdge() const {
+    ASSERT(m_polygon && m_polygon->numberOfEdges() > 1);
+    return m_polygon->edgeAt((m_edgeIndex + m_polygon->numberOfEdges() - 1) %
+                             m_polygon->numberOfEdges());
+  }
 
-    const FloatPolygon* polygon() const { return m_polygon; }
-    unsigned vertexIndex1() const { return m_vertexIndex1; }
-    unsigned vertexIndex2() const { return m_vertexIndex2; }
-    unsigned edgeIndex() const { return m_edgeIndex; }
+  const FloatPolygonEdge& nextEdge() const {
+    ASSERT(m_polygon && m_polygon->numberOfEdges() > 1);
+    return m_polygon->edgeAt((m_edgeIndex + 1) % m_polygon->numberOfEdges());
+  }
 
-private:
-    // Edge vertex index1 is less than index2, except the last edge, where index2 is 0. When a polygon edge
-    // is defined by 3 or more colinear vertices, index2 can be the the index of the last colinear vertex.
-    unsigned m_vertexIndex1;
-    unsigned m_vertexIndex2;
-    unsigned m_edgeIndex;
-    const FloatPolygon* m_polygon;
+  const FloatPolygon* polygon() const { return m_polygon; }
+  unsigned vertexIndex1() const { return m_vertexIndex1; }
+  unsigned vertexIndex2() const { return m_vertexIndex2; }
+  unsigned edgeIndex() const { return m_edgeIndex; }
+
+ private:
+  // Edge vertex index1 is less than index2, except the last edge, where index2 is 0. When a polygon edge
+  // is defined by 3 or more colinear vertices, index2 can be the the index of the last colinear vertex.
+  unsigned m_vertexIndex1;
+  unsigned m_vertexIndex2;
+  unsigned m_edgeIndex;
+  const FloatPolygon* m_polygon;
 };
 
 // These structures are used by PODIntervalTree for debugging.
 #ifndef NDEBUG
-template <> struct ValueToString<float> {
-    STATIC_ONLY(ValueToString);
-    static String toString(const float value) { return String::number(value); }
+template <>
+struct ValueToString<float> {
+  STATIC_ONLY(ValueToString);
+  static String toString(const float value) { return String::number(value); }
 };
 
-template<> struct ValueToString<FloatPolygonEdge*> {
-    STATIC_ONLY(ValueToString);
-    static String toString(const FloatPolygonEdge* edge) { return String::format("%p (%f,%f %f,%f)", edge, edge->vertex1().x(), edge->vertex1().y(), edge->vertex2().x(), edge->vertex2().y()); }
+template <>
+struct ValueToString<FloatPolygonEdge*> {
+  STATIC_ONLY(ValueToString);
+  static String toString(const FloatPolygonEdge* edge) {
+    return String::format("%p (%f,%f %f,%f)", edge, edge->vertex1().x(),
+                          edge->vertex1().y(), edge->vertex2().x(),
+                          edge->vertex2().y());
+  }
 };
 #endif
 
-} // namespace blink
+}  // namespace blink
 
-#endif // FloatPolygon_h
+#endif  // FloatPolygon_h

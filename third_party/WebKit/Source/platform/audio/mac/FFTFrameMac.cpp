@@ -44,114 +44,99 @@ FFTSetup* FFTFrame::fftSetups = nullptr;
 
 // Normal constructor: allocates for a given fftSize
 FFTFrame::FFTFrame(unsigned fftSize)
-    : m_realData(fftSize)
-    , m_imagData(fftSize)
-{
-    m_FFTSize = fftSize;
-    m_log2FFTSize = static_cast<unsigned>(log2(fftSize));
+    : m_realData(fftSize), m_imagData(fftSize) {
+  m_FFTSize = fftSize;
+  m_log2FFTSize = static_cast<unsigned>(log2(fftSize));
 
-    // We only allow power of two
-    ASSERT(1UL << m_log2FFTSize == m_FFTSize);
+  // We only allow power of two
+  ASSERT(1UL << m_log2FFTSize == m_FFTSize);
 
-    // Lazily create and share fftSetup with other frames
-    m_FFTSetup = fftSetupForSize(fftSize);
+  // Lazily create and share fftSetup with other frames
+  m_FFTSetup = fftSetupForSize(fftSize);
 
-    // Setup frame data
-    m_frame.realp = m_realData.data();
-    m_frame.imagp = m_imagData.data();
+  // Setup frame data
+  m_frame.realp = m_realData.data();
+  m_frame.imagp = m_imagData.data();
 }
 
 // Creates a blank/empty frame (interpolate() must later be called)
-FFTFrame::FFTFrame()
-    : m_realData(0)
-    , m_imagData(0)
-{
-    // Later will be set to correct values when interpolate() is called
-    m_frame.realp = 0;
-    m_frame.imagp = 0;
+FFTFrame::FFTFrame() : m_realData(0), m_imagData(0) {
+  // Later will be set to correct values when interpolate() is called
+  m_frame.realp = 0;
+  m_frame.imagp = 0;
 
-    m_FFTSize = 0;
-    m_log2FFTSize = 0;
+  m_FFTSize = 0;
+  m_log2FFTSize = 0;
 }
 
 // Copy constructor
 FFTFrame::FFTFrame(const FFTFrame& frame)
-    : m_FFTSize(frame.m_FFTSize)
-    , m_log2FFTSize(frame.m_log2FFTSize)
-    , m_realData(frame.m_FFTSize)
-    , m_imagData(frame.m_FFTSize)
-    , m_FFTSetup(frame.m_FFTSetup)
-{
-    // Setup frame data
-    m_frame.realp = m_realData.data();
-    m_frame.imagp = m_imagData.data();
+    : m_FFTSize(frame.m_FFTSize),
+      m_log2FFTSize(frame.m_log2FFTSize),
+      m_realData(frame.m_FFTSize),
+      m_imagData(frame.m_FFTSize),
+      m_FFTSetup(frame.m_FFTSetup) {
+  // Setup frame data
+  m_frame.realp = m_realData.data();
+  m_frame.imagp = m_imagData.data();
 
-    // Copy/setup frame data
-    unsigned nbytes = sizeof(float) * m_FFTSize;
-    memcpy(realData(), frame.m_frame.realp, nbytes);
-    memcpy(imagData(), frame.m_frame.imagp, nbytes);
+  // Copy/setup frame data
+  unsigned nbytes = sizeof(float) * m_FFTSize;
+  memcpy(realData(), frame.m_frame.realp, nbytes);
+  memcpy(imagData(), frame.m_frame.imagp, nbytes);
 }
 
-FFTFrame::~FFTFrame()
-{
+FFTFrame::~FFTFrame() {}
+
+void FFTFrame::doFFT(const float* data) {
+  AudioFloatArray scaledData(m_FFTSize);
+  // veclib fft returns a result that is twice as large as would be expected. Compensate for that
+  // by scaling the input by half so the FFT has the correct scaling.
+  float scale = 0.5f;
+  VectorMath::vsmul(data, 1, &scale, scaledData.data(), 1, m_FFTSize);
+
+  vDSP_ctoz((DSPComplex*)scaledData.data(), 2, &m_frame, 1, m_FFTSize / 2);
+  vDSP_fft_zrip(m_FFTSetup, &m_frame, 1, m_log2FFTSize, FFT_FORWARD);
 }
 
-void FFTFrame::doFFT(const float* data)
-{
-    AudioFloatArray scaledData(m_FFTSize);
-    // veclib fft returns a result that is twice as large as would be expected. Compensate for that
-    // by scaling the input by half so the FFT has the correct scaling.
-    float scale = 0.5f;
-    VectorMath::vsmul(data, 1, &scale, scaledData.data(), 1, m_FFTSize);
+void FFTFrame::doInverseFFT(float* data) {
+  vDSP_fft_zrip(m_FFTSetup, &m_frame, 1, m_log2FFTSize, FFT_INVERSE);
+  vDSP_ztoc(&m_frame, 1, (DSPComplex*)data, 2, m_FFTSize / 2);
 
-    vDSP_ctoz((DSPComplex*)scaledData.data(), 2, &m_frame, 1, m_FFTSize / 2);
-    vDSP_fft_zrip(m_FFTSetup, &m_frame, 1, m_log2FFTSize, FFT_FORWARD);
+  // Do final scaling so that x == IFFT(FFT(x))
+  float scale = 1.0f / m_FFTSize;
+  VectorMath::vsmul(data, 1, &scale, data, 1, m_FFTSize);
 }
 
-void FFTFrame::doInverseFFT(float* data)
-{
-    vDSP_fft_zrip(m_FFTSetup, &m_frame, 1, m_log2FFTSize, FFT_INVERSE);
-    vDSP_ztoc(&m_frame, 1, (DSPComplex*)data, 2, m_FFTSize / 2);
+FFTSetup FFTFrame::fftSetupForSize(unsigned fftSize) {
+  if (!fftSetups) {
+    fftSetups = (FFTSetup*)malloc(sizeof(FFTSetup) * kMaxFFTPow2Size);
+    memset(fftSetups, 0, sizeof(FFTSetup) * kMaxFFTPow2Size);
+  }
 
-    // Do final scaling so that x == IFFT(FFT(x))
-    float scale = 1.0f / m_FFTSize;
-    VectorMath::vsmul(data, 1, &scale, data, 1, m_FFTSize);
+  int pow2size = static_cast<int>(log2(fftSize));
+  ASSERT(pow2size < kMaxFFTPow2Size);
+  if (!fftSetups[pow2size])
+    fftSetups[pow2size] = vDSP_create_fftsetup(pow2size, FFT_RADIX2);
+
+  return fftSetups[pow2size];
 }
 
-FFTSetup FFTFrame::fftSetupForSize(unsigned fftSize)
-{
-    if (!fftSetups) {
-        fftSetups = (FFTSetup*)malloc(sizeof(FFTSetup) * kMaxFFTPow2Size);
-        memset(fftSetups, 0, sizeof(FFTSetup) * kMaxFFTPow2Size);
-    }
+void FFTFrame::initialize() {}
 
-    int pow2size = static_cast<int>(log2(fftSize));
-    ASSERT(pow2size < kMaxFFTPow2Size);
-    if (!fftSetups[pow2size])
-        fftSetups[pow2size] = vDSP_create_fftsetup(pow2size, FFT_RADIX2);
+void FFTFrame::cleanup() {
+  if (!fftSetups)
+    return;
 
-    return fftSetups[pow2size];
+  for (int i = 0; i < kMaxFFTPow2Size; ++i) {
+    if (fftSetups[i])
+      vDSP_destroy_fftsetup(fftSetups[i]);
+  }
+
+  free(fftSetups);
+  fftSetups = nullptr;
 }
 
-void FFTFrame::initialize()
-{
-}
+}  // namespace blink
 
-void FFTFrame::cleanup()
-{
-    if (!fftSetups)
-        return;
-
-    for (int i = 0; i < kMaxFFTPow2Size; ++i) {
-        if (fftSetups[i])
-            vDSP_destroy_fftsetup(fftSetups[i]);
-    }
-
-    free(fftSetups);
-    fftSetups = nullptr;
-}
-
-} // namespace blink
-
-#endif // #if OS(MACOSX)
-
+#endif  // #if OS(MACOSX)

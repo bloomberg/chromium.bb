@@ -32,40 +32,40 @@
 
 namespace blink {
 
-DocumentStyleSheetCollector::DocumentStyleSheetCollector(HeapVector<Member<StyleSheet>>& sheetsForList, HeapVector<Member<CSSStyleSheet>>& activeList, HeapHashSet<Member<Document>>& visitedDocuments)
-    : m_styleSheetsForStyleSheetList(sheetsForList)
-    , m_activeAuthorStyleSheets(activeList)
-    , m_visitedDocuments(visitedDocuments)
-{
+DocumentStyleSheetCollector::DocumentStyleSheetCollector(
+    HeapVector<Member<StyleSheet>>& sheetsForList,
+    HeapVector<Member<CSSStyleSheet>>& activeList,
+    HeapHashSet<Member<Document>>& visitedDocuments)
+    : m_styleSheetsForStyleSheetList(sheetsForList),
+      m_activeAuthorStyleSheets(activeList),
+      m_visitedDocuments(visitedDocuments) {}
+
+DocumentStyleSheetCollector::~DocumentStyleSheetCollector() {}
+
+void DocumentStyleSheetCollector::appendActiveStyleSheets(
+    const HeapVector<Member<CSSStyleSheet>>& sheets) {
+  m_activeAuthorStyleSheets.appendVector(sheets);
 }
 
-DocumentStyleSheetCollector::~DocumentStyleSheetCollector()
-{
+void DocumentStyleSheetCollector::appendActiveStyleSheet(CSSStyleSheet* sheet) {
+  m_activeAuthorStyleSheets.append(sheet);
 }
 
-void DocumentStyleSheetCollector::appendActiveStyleSheets(const HeapVector<Member<CSSStyleSheet>>& sheets)
-{
-    m_activeAuthorStyleSheets.appendVector(sheets);
+void DocumentStyleSheetCollector::appendSheetForList(StyleSheet* sheet) {
+  m_styleSheetsForStyleSheetList.append(sheet);
 }
 
-void DocumentStyleSheetCollector::appendActiveStyleSheet(CSSStyleSheet* sheet)
-{
-    m_activeAuthorStyleSheets.append(sheet);
-}
+ActiveDocumentStyleSheetCollector::ActiveDocumentStyleSheetCollector(
+    StyleSheetCollection& collection)
+    : DocumentStyleSheetCollector(collection.m_styleSheetsForStyleSheetList,
+                                  collection.m_activeAuthorStyleSheets,
+                                  m_visitedDocuments) {}
 
-void DocumentStyleSheetCollector::appendSheetForList(StyleSheet* sheet)
-{
-    m_styleSheetsForStyleSheetList.append(sheet);
-}
+ImportedDocumentStyleSheetCollector::ImportedDocumentStyleSheetCollector(
+    DocumentStyleSheetCollector& collector,
+    HeapVector<Member<StyleSheet>>& sheetForList)
+    : DocumentStyleSheetCollector(sheetForList,
+                                  collector.m_activeAuthorStyleSheets,
+                                  collector.m_visitedDocuments) {}
 
-ActiveDocumentStyleSheetCollector::ActiveDocumentStyleSheetCollector(StyleSheetCollection& collection)
-    : DocumentStyleSheetCollector(collection.m_styleSheetsForStyleSheetList, collection.m_activeAuthorStyleSheets, m_visitedDocuments)
-{
-}
-
-ImportedDocumentStyleSheetCollector::ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector& collector, HeapVector<Member<StyleSheet>>& sheetForList)
-    : DocumentStyleSheetCollector(sheetForList, collector.m_activeAuthorStyleSheets, collector.m_visitedDocuments)
-{
-}
-
-} // namespace blink
+}  // namespace blink

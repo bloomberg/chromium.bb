@@ -41,41 +41,44 @@ class WebString;
 struct WebDeviceEmulationParams;
 
 class WebDevToolsAgentClient {
-public:
-    // Sends response message over the protocol, update agent state on the browser side for
-    // potential re-attach. |callId| for notifications is 0, |state| for notifications is empty.
-    virtual void sendProtocolMessage(int sessionId, int callId, const WebString& response, const WebString& state) { }
+ public:
+  // Sends response message over the protocol, update agent state on the browser side for
+  // potential re-attach. |callId| for notifications is 0, |state| for notifications is empty.
+  virtual void sendProtocolMessage(int sessionId,
+                                   int callId,
+                                   const WebString& response,
+                                   const WebString& state) {}
 
-    // Returns process id.
-    virtual long processId() { return -1; }
+  // Returns process id.
+  virtual long processId() { return -1; }
 
-    // Returns unique identifier of the entity within process.
-    virtual int debuggerId() { return -1; }
+  // Returns unique identifier of the entity within process.
+  virtual int debuggerId() { return -1; }
 
-    // Resume the inspected renderer that is waiting for DevTools front-end to initialize its state.
-    virtual void resumeStartup() { }
+  // Resume the inspected renderer that is waiting for DevTools front-end to initialize its state.
+  virtual void resumeStartup() {}
 
-    class WebKitClientMessageLoop {
-    public:
-        virtual ~WebKitClientMessageLoop() { }
-        virtual void run() = 0;
-        virtual void quitNow() = 0;
-    };
-    virtual WebKitClientMessageLoop* createClientMessageLoop() { return 0; }
-    virtual void willEnterDebugLoop() { }
-    virtual void didExitDebugLoop() { }
+  class WebKitClientMessageLoop {
+   public:
+    virtual ~WebKitClientMessageLoop() {}
+    virtual void run() = 0;
+    virtual void quitNow() = 0;
+  };
+  virtual WebKitClientMessageLoop* createClientMessageLoop() { return 0; }
+  virtual void willEnterDebugLoop() {}
+  virtual void didExitDebugLoop() {}
 
-    virtual bool requestDevToolsForFrame(WebLocalFrame*) { return false; }
+  virtual bool requestDevToolsForFrame(WebLocalFrame*) { return false; }
 
-    virtual void enableTracing(const WebString& categoryFilter) { }
-    virtual void disableTracing() { }
+  virtual void enableTracing(const WebString& categoryFilter) {}
+  virtual void disableTracing() {}
 
-    virtual void setCPUThrottlingRate(double rate) {}
+  virtual void setCPUThrottlingRate(double rate) {}
 
-protected:
-    ~WebDevToolsAgentClient() { }
+ protected:
+  ~WebDevToolsAgentClient() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

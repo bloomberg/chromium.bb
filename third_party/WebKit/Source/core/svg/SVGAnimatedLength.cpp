@@ -34,26 +34,26 @@
 
 namespace blink {
 
-void SVGAnimatedLength::setDefaultValueAsString(const String& value)
-{
-    baseValue()->setValueAsString(value);
+void SVGAnimatedLength::setDefaultValueAsString(const String& value) {
+  baseValue()->setValueAsString(value);
 }
 
-SVGParsingError SVGAnimatedLength::setBaseValueAsString(const String& value)
-{
-    SVGParsingError parseStatus = baseValue()->setValueAsString(value);
+SVGParsingError SVGAnimatedLength::setBaseValueAsString(const String& value) {
+  SVGParsingError parseStatus = baseValue()->setValueAsString(value);
 
-    if (parseStatus != SVGParseStatus::NoError)
-        baseValue()->newValueSpecifiedUnits(CSSPrimitiveValue::UnitType::UserUnits, 0);
-    else if (SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(attributeName()) && baseValue()->valueInSpecifiedUnits() < 0)
-        parseStatus = SVGParseStatus::NegativeValue;
+  if (parseStatus != SVGParseStatus::NoError)
+    baseValue()->newValueSpecifiedUnits(CSSPrimitiveValue::UnitType::UserUnits,
+                                        0);
+  else if (SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(
+               attributeName()) &&
+           baseValue()->valueInSpecifiedUnits() < 0)
+    parseStatus = SVGParseStatus::NegativeValue;
 
-    return parseStatus;
+  return parseStatus;
 }
 
-DEFINE_TRACE_WRAPPERS(SVGAnimatedLength)
-{
-    visitor->traceWrappers(contextElement());
+DEFINE_TRACE_WRAPPERS(SVGAnimatedLength) {
+  visitor->traceWrappers(contextElement());
 }
 
-} // namespace blink
+}  // namespace blink

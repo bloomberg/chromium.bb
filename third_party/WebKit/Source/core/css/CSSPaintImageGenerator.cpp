@@ -8,26 +8,26 @@ namespace blink {
 
 namespace {
 
-CSSPaintImageGenerator::CSSPaintImageGeneratorCreateFunction s_createFunction = nullptr;
+CSSPaintImageGenerator::CSSPaintImageGeneratorCreateFunction s_createFunction =
+    nullptr;
 
-} // namespace
-
-// static
-void CSSPaintImageGenerator::init(CSSPaintImageGeneratorCreateFunction createFunction)
-{
-    ASSERT(!s_createFunction);
-    s_createFunction = createFunction;
-}
+}  // namespace
 
 // static
-CSSPaintImageGenerator* CSSPaintImageGenerator::create(const String& name, Document& document, Observer* observer)
-{
-    ASSERT(s_createFunction);
-    return s_createFunction(name, document, observer);
+void CSSPaintImageGenerator::init(
+    CSSPaintImageGeneratorCreateFunction createFunction) {
+  ASSERT(!s_createFunction);
+  s_createFunction = createFunction;
 }
 
-CSSPaintImageGenerator::~CSSPaintImageGenerator()
-{
+// static
+CSSPaintImageGenerator* CSSPaintImageGenerator::create(const String& name,
+                                                       Document& document,
+                                                       Observer* observer) {
+  ASSERT(s_createFunction);
+  return s_createFunction(name, document, observer);
 }
 
-} // namespace blink
+CSSPaintImageGenerator::~CSSPaintImageGenerator() {}
+
+}  // namespace blink

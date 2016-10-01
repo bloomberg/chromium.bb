@@ -10,20 +10,21 @@
 namespace blink {
 
 class CORE_EXPORT PendingInvalidations final {
-    WTF_MAKE_NONCOPYABLE(PendingInvalidations);
-public:
-    PendingInvalidations() {}
+  WTF_MAKE_NONCOPYABLE(PendingInvalidations);
 
-    InvalidationSetVector& descendants() { return m_descendants; }
-    const InvalidationSetVector& descendants() const { return m_descendants; }
-    InvalidationSetVector& siblings() { return m_siblings; }
-    const InvalidationSetVector& siblings() const { return m_siblings; }
+ public:
+  PendingInvalidations() {}
 
-private:
-    InvalidationSetVector m_descendants;
-    InvalidationSetVector m_siblings;
+  InvalidationSetVector& descendants() { return m_descendants; }
+  const InvalidationSetVector& descendants() const { return m_descendants; }
+  InvalidationSetVector& siblings() { return m_siblings; }
+  const InvalidationSetVector& siblings() const { return m_siblings; }
+
+ private:
+  InvalidationSetVector m_descendants;
+  InvalidationSetVector m_siblings;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PendingInvalidations_h
+#endif  // PendingInvalidations_h

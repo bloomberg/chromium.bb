@@ -44,77 +44,68 @@ namespace WTF {
 // thread gets captured when setShared(true) is called.
 // The mode may be changed by calling useMutexMode (or turnOffVerification).
 class ThreadRestrictionVerifier {
-public:
-    ThreadRestrictionVerifier()
-        : m_shared(false)
-        , m_owningThread(0)
-    {
-    }
+ public:
+  ThreadRestrictionVerifier() : m_shared(false), m_owningThread(0) {}
 
-    void checkSafeToUse() const
-    {
-        // If this assert fires, it either indicates a thread safety issue or
-        // that the verification needs to change.
-        ASSERT_WITH_SECURITY_IMPLICATION(isSafeToUse());
-    }
+  void checkSafeToUse() const {
+    // If this assert fires, it either indicates a thread safety issue or
+    // that the verification needs to change.
+    ASSERT_WITH_SECURITY_IMPLICATION(isSafeToUse());
+  }
 
-    // Call onRef() before refCount is incremented in ref().
-    void onRef(int refCount)
-    {
-        // Start thread verification as soon as the ref count gets to 2. This
-        // heuristic reflects the fact that items are often created on one
-        // thread and then given to another thread to be used.
-        // FIXME: Make this restriction tigher. Especially as we move to more
-        // common methods for sharing items across threads like
-        // CrossThreadCopier.h
-        // We should be able to add a "detachFromThread" method to make this
-        // explicit.
-        if (refCount == 1)
-            setShared(true);
-        checkSafeToUse();
-    }
+  // Call onRef() before refCount is incremented in ref().
+  void onRef(int refCount) {
+    // Start thread verification as soon as the ref count gets to 2. This
+    // heuristic reflects the fact that items are often created on one
+    // thread and then given to another thread to be used.
+    // FIXME: Make this restriction tigher. Especially as we move to more
+    // common methods for sharing items across threads like
+    // CrossThreadCopier.h
+    // We should be able to add a "detachFromThread" method to make this
+    // explicit.
+    if (refCount == 1)
+      setShared(true);
+    checkSafeToUse();
+  }
 
-    // Call onDeref() before refCount is decremented in deref().
-    void onDeref(int refCount)
-    {
-        checkSafeToUse();
+  // Call onDeref() before refCount is decremented in deref().
+  void onDeref(int refCount) {
+    checkSafeToUse();
 
-        // Stop thread verification when the ref goes to 1 because it
-        // is safe to be passed to another thread at this point.
-        if (refCount == 2)
-            setShared(false);
-    }
+    // Stop thread verification when the ref goes to 1 because it
+    // is safe to be passed to another thread at this point.
+    if (refCount == 2)
+      setShared(false);
+  }
 
-private:
-    // Indicates that the object may (or may not) be owned by more than one place.
-    void setShared(bool shared)
-    {
-        bool previouslyShared = m_shared;
-        m_shared = shared;
+ private:
+  // Indicates that the object may (or may not) be owned by more than one place.
+  void setShared(bool shared) {
+    bool previouslyShared = m_shared;
+    m_shared = shared;
 
-        if (!m_shared)
-            return;
+    if (!m_shared)
+      return;
 
-        ASSERT_UNUSED(previouslyShared, shared != previouslyShared);
-        // Capture the current thread to verify that subsequent ref/deref happen on this thread.
-        m_owningThread = currentThread();
-    }
+    ASSERT_UNUSED(previouslyShared, shared != previouslyShared);
+    // Capture the current thread to verify that subsequent ref/deref happen on this thread.
+    m_owningThread = currentThread();
+  }
 
-    // Is it OK to use the object at this moment on the current thread?
-    bool isSafeToUse() const
-    {
-        if (!m_shared)
-            return true;
+  // Is it OK to use the object at this moment on the current thread?
+  bool isSafeToUse() const {
+    if (!m_shared)
+      return true;
 
-        return m_owningThread == currentThread();
-    }
+    return m_owningThread == currentThread();
+  }
 
-    bool m_shared;
+  bool m_shared;
 
-    ThreadIdentifier m_owningThread;
+  ThreadIdentifier m_owningThread;
 };
 
-} // namespace WTF
+}  // namespace WTF
 
-#endif // ENABLE(ASSERT)
-#endif // ThreadRestrictionVerifier_h
+#endif  // ENABLE(ASSERT)
+#endif  // ThreadRestrictionVerifier_h

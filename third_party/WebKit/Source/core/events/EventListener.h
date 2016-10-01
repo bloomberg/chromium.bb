@@ -30,39 +30,37 @@ namespace blink {
 class Event;
 class ExecutionContext;
 
-class CORE_EXPORT EventListener : public GarbageCollectedFinalized<EventListener> {
-public:
-    enum ListenerType {
-        JSEventListenerType,
-        ImageEventListenerType,
-        CPPEventListenerType,
-        ConditionEventListenerType,
-        NativeEventListenerType,
-    };
+class CORE_EXPORT EventListener
+    : public GarbageCollectedFinalized<EventListener> {
+ public:
+  enum ListenerType {
+    JSEventListenerType,
+    ImageEventListenerType,
+    CPPEventListenerType,
+    ConditionEventListenerType,
+    NativeEventListenerType,
+  };
 
-    virtual ~EventListener() { }
-    virtual bool operator==(const EventListener&) const = 0;
-    virtual void handleEvent(ExecutionContext*, Event*) = 0;
-    virtual const String& code() const { return emptyString(); }
-    virtual bool belongsToTheCurrentWorld() const { return false; }
+  virtual ~EventListener() {}
+  virtual bool operator==(const EventListener&) const = 0;
+  virtual void handleEvent(ExecutionContext*, Event*) = 0;
+  virtual const String& code() const { return emptyString(); }
+  virtual bool belongsToTheCurrentWorld() const { return false; }
 
-    bool isAttribute() const { return virtualisAttribute(); }
-    ListenerType type() const { return m_type; }
+  bool isAttribute() const { return virtualisAttribute(); }
+  ListenerType type() const { return m_type; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-protected:
-    explicit EventListener(ListenerType type)
-            : m_type(type)
-    {
-    }
+ protected:
+  explicit EventListener(ListenerType type) : m_type(type) {}
 
-private:
-    virtual bool virtualisAttribute() const { return false; }
+ private:
+  virtual bool virtualisAttribute() const { return false; }
 
-    ListenerType m_type;
+  ListenerType m_type;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

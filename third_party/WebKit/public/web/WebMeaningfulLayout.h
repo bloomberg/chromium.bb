@@ -8,20 +8,19 @@
 namespace blink {
 
 enum WebMeaningfulLayout {
-    // Signifies that one of the following things were involved during the layout:
-    // * > 200 text characters
-    // * > 1024 image pixels
-    // * a plugin
-    // * a canvas
-    // An approximation for first layout that resulted in pixels on screen.
-    // Not the best heuristic, and we should replace it with something better.
-    VisuallyNonEmpty,
-    // First layout of a frame immediately after the parsing finished.
-    FinishedParsing,
-    // First layout of a frame immediately after the loading finished.
-    FinishedLoading
+  // Signifies that one of the following things were involved during the layout:
+  // * > 200 text characters
+  // * > 1024 image pixels
+  // * a plugin
+  // * a canvas
+  // An approximation for first layout that resulted in pixels on screen.
+  // Not the best heuristic, and we should replace it with something better.
+  VisuallyNonEmpty,
+  // First layout of a frame immediately after the parsing finished.
+  FinishedParsing,
+  // First layout of a frame immediately after the loading finished.
+  FinishedLoading
 };
-
 }
 
 #endif

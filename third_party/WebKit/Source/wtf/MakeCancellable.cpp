@@ -11,43 +11,41 @@ namespace internal {
 FunctionCanceller::FunctionCanceller() = default;
 FunctionCanceller::~FunctionCanceller() = default;
 
-} // namespace internal
+}  // namespace internal
 
 ScopedFunctionCanceller::ScopedFunctionCanceller() = default;
-ScopedFunctionCanceller::ScopedFunctionCanceller(PassRefPtr<internal::FunctionCanceller> canceller)
-    : m_canceller(std::move(canceller)) { }
+ScopedFunctionCanceller::ScopedFunctionCanceller(
+    PassRefPtr<internal::FunctionCanceller> canceller)
+    : m_canceller(std::move(canceller)) {}
 
-ScopedFunctionCanceller::ScopedFunctionCanceller(ScopedFunctionCanceller&&) = default;
-ScopedFunctionCanceller& ScopedFunctionCanceller::operator=(ScopedFunctionCanceller&& other)
-{
-    RefPtr<internal::FunctionCanceller> canceller = std::move(other.m_canceller);
-    cancel();
-    m_canceller = std::move(canceller);
-    return *this;
+ScopedFunctionCanceller::ScopedFunctionCanceller(ScopedFunctionCanceller&&) =
+    default;
+ScopedFunctionCanceller& ScopedFunctionCanceller::operator=(
+    ScopedFunctionCanceller&& other) {
+  RefPtr<internal::FunctionCanceller> canceller = std::move(other.m_canceller);
+  cancel();
+  m_canceller = std::move(canceller);
+  return *this;
 }
 
-ScopedFunctionCanceller::~ScopedFunctionCanceller()
-{
-    cancel();
+ScopedFunctionCanceller::~ScopedFunctionCanceller() {
+  cancel();
 }
 
-void ScopedFunctionCanceller::detach()
-{
-    m_canceller = nullptr;
+void ScopedFunctionCanceller::detach() {
+  m_canceller = nullptr;
 }
 
-void ScopedFunctionCanceller::cancel()
-{
-    if (!m_canceller)
-        return;
+void ScopedFunctionCanceller::cancel() {
+  if (!m_canceller)
+    return;
 
-    m_canceller->cancel();
-    m_canceller = nullptr;
+  m_canceller->cancel();
+  m_canceller = nullptr;
 }
 
-bool ScopedFunctionCanceller::isActive() const
-{
-    return m_canceller && m_canceller->isActive();
+bool ScopedFunctionCanceller::isActive() const {
+  return m_canceller && m_canceller->isActive();
 }
 
-} // namespace WTF
+}  // namespace WTF

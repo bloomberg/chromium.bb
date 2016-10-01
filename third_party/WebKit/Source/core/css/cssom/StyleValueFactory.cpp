@@ -19,68 +19,69 @@ namespace blink {
 
 namespace {
 
-CSSStyleValue* styleValueForPrimitiveValue(const CSSPrimitiveValue& primitiveValue)
-{
-    if (primitiveValue.isNumber())
-        return CSSNumberValue::create(primitiveValue.getDoubleValue());
-    if (primitiveValue.isLength() || primitiveValue.isPercentage())
-        return CSSSimpleLength::fromCSSValue(primitiveValue);
+CSSStyleValue* styleValueForPrimitiveValue(
+    const CSSPrimitiveValue& primitiveValue) {
+  if (primitiveValue.isNumber())
+    return CSSNumberValue::create(primitiveValue.getDoubleValue());
+  if (primitiveValue.isLength() || primitiveValue.isPercentage())
+    return CSSSimpleLength::fromCSSValue(primitiveValue);
 
-    return nullptr;
+  return nullptr;
 }
 
-CSSStyleValue* styleValueForProperty(CSSPropertyID propertyID, const CSSValue& value)
-{
-    switch (propertyID) {
+CSSStyleValue* styleValueForProperty(CSSPropertyID propertyID,
+                                     const CSSValue& value) {
+  switch (propertyID) {
     case CSSPropertyTransform:
-        return CSSTransformValue::fromCSSValue(value);
+      return CSSTransformValue::fromCSSValue(value);
     default:
-        // TODO(meade): Implement other complex properties.
-        break;
-    }
+      // TODO(meade): Implement other complex properties.
+      break;
+  }
 
-    if (value.isPrimitiveValue())
-        return styleValueForPrimitiveValue(toCSSPrimitiveValue(value));
-    if (value.isVariableReferenceValue())
-        return CSSUnparsedValue::fromCSSValue(toCSSVariableReferenceValue(value));
-    if (value.isImageValue())
-        return CSSURLImageValue::create(toCSSImageValue(value).valueWithURLMadeAbsolute());
+  if (value.isPrimitiveValue())
+    return styleValueForPrimitiveValue(toCSSPrimitiveValue(value));
+  if (value.isVariableReferenceValue())
+    return CSSUnparsedValue::fromCSSValue(toCSSVariableReferenceValue(value));
+  if (value.isImageValue())
+    return CSSURLImageValue::create(
+        toCSSImageValue(value).valueWithURLMadeAbsolute());
 
-    return nullptr;
+  return nullptr;
 }
 
-CSSStyleValueVector unsupportedCSSValue(const CSSValue& value)
-{
-    CSSStyleValueVector styleValueVector;
-    styleValueVector.append(CSSUnsupportedStyleValue::create(value.cssText()));
+CSSStyleValueVector unsupportedCSSValue(const CSSValue& value) {
+  CSSStyleValueVector styleValueVector;
+  styleValueVector.append(CSSUnsupportedStyleValue::create(value.cssText()));
+  return styleValueVector;
+}
+
+}  // namespace
+
+CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(
+    CSSPropertyID propertyID,
+    const CSSValue& value) {
+  CSSStyleValueVector styleValueVector;
+  CSSStyleValue* styleValue = styleValueForProperty(propertyID, value);
+  if (styleValue) {
+    styleValueVector.append(styleValue);
     return styleValueVector;
+  }
+
+  if (!value.isValueList()) {
+    return unsupportedCSSValue(value);
+  }
+
+  // If it's a list, we can try it as a list valued property.
+  const CSSValueList& cssValueList = toCSSValueList(value);
+  for (const CSSValue* innerValue : cssValueList) {
+    styleValue = styleValueForProperty(propertyID, *innerValue);
+    if (!styleValue) {
+      return unsupportedCSSValue(value);
+    }
+    styleValueVector.append(styleValue);
+  }
+  return styleValueVector;
 }
 
-} // namespace
-
-CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(CSSPropertyID propertyID, const CSSValue& value)
-{
-    CSSStyleValueVector styleValueVector;
-    CSSStyleValue* styleValue = styleValueForProperty(propertyID, value);
-    if (styleValue) {
-        styleValueVector.append(styleValue);
-        return styleValueVector;
-    }
-
-    if (!value.isValueList()) {
-        return unsupportedCSSValue(value);
-    }
-
-    // If it's a list, we can try it as a list valued property.
-    const CSSValueList& cssValueList = toCSSValueList(value);
-    for (const CSSValue* innerValue : cssValueList) {
-        styleValue = styleValueForProperty(propertyID, *innerValue);
-        if (!styleValue) {
-            return unsupportedCSSValue(value);
-        }
-        styleValueVector.append(styleValue);
-    }
-    return styleValueVector;
-}
-
-} // namespace blink
+}  // namespace blink

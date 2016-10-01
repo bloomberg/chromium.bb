@@ -40,20 +40,19 @@ namespace blink {
 class Document;
 
 class CORE_EXPORT DocumentTimeline final : public AnimationTimeline {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static DocumentTimeline* create(Document* document)
-    {
-        return new DocumentTimeline(document);
-    }
+  DEFINE_WRAPPERTYPEINFO();
 
-private:
-    DocumentTimeline(Document* document)
-        : AnimationTimeline(document, nullptr) {}
+ public:
+  static DocumentTimeline* create(Document* document) {
+    return new DocumentTimeline(document);
+  }
 
-    friend class AnimationDocumentTimelineTest;
+ private:
+  DocumentTimeline(Document* document) : AnimationTimeline(document, nullptr) {}
+
+  friend class AnimationDocumentTimelineTest;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

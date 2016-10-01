@@ -32,53 +32,65 @@ class LayoutImageResource;
 class SVGImageElement;
 
 class LayoutSVGImage final : public LayoutSVGModelObject {
-public:
-    explicit LayoutSVGImage(SVGImageElement*);
-    ~LayoutSVGImage() override;
+ public:
+  explicit LayoutSVGImage(SVGImageElement*);
+  ~LayoutSVGImage() override;
 
-    void setNeedsBoundariesUpdate() override { m_needsBoundariesUpdate = true; }
-    void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
+  void setNeedsBoundariesUpdate() override { m_needsBoundariesUpdate = true; }
+  void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
-    LayoutImageResource* imageResource() { return m_imageResource.get(); }
-    const LayoutImageResource* imageResource() const { return m_imageResource.get(); }
+  LayoutImageResource* imageResource() { return m_imageResource.get(); }
+  const LayoutImageResource* imageResource() const {
+    return m_imageResource.get();
+  }
 
-    const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
+  const AffineTransform& localToSVGParentTransform() const override {
+    return m_localTransform;
+  }
 
-    FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || LayoutSVGModelObject::isOfType(type); }
+  FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGImage || LayoutSVGModelObject::isOfType(type);
+  }
 
-    const char* name() const override { return "LayoutSVGImage"; }
+  const char* name() const override { return "LayoutSVGImage"; }
 
-protected:
-    void willBeDestroyed() override;
+ protected:
+  void willBeDestroyed() override;
 
-private:
-    FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
+ private:
+  FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
 
-    void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot) const override;
+  void addOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additionalOffset,
+                       IncludeBlockVisualOverflowOrNot) const override;
 
-    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
-    void layout() override;
-    void paint(const PaintInfo&, const LayoutPoint&) const override;
+  void layout() override;
+  void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    bool updateBoundingBox();
+  bool updateBoundingBox();
 
-    bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
+  bool nodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& pointInParent,
+                        HitTestAction) override;
 
-    AffineTransform localSVGTransform() const override { return m_localTransform; }
+  AffineTransform localSVGTransform() const override {
+    return m_localTransform;
+  }
 
-    FloatSize calculateObjectSize() const;
+  FloatSize calculateObjectSize() const;
 
-    bool m_needsBoundariesUpdate : 1;
-    bool m_needsTransformUpdate : 1;
-    AffineTransform m_localTransform;
-    FloatRect m_objectBoundingBox;
-    Persistent<LayoutImageResource> m_imageResource;
+  bool m_needsBoundariesUpdate : 1;
+  bool m_needsTransformUpdate : 1;
+  AffineTransform m_localTransform;
+  FloatRect m_objectBoundingBox;
+  Persistent<LayoutImageResource> m_imageResource;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGImage, isSVGImage());
 
-} // namespace blink
+}  // namespace blink
 
-#endif // LayoutSVGImage_h
+#endif  // LayoutSVGImage_h

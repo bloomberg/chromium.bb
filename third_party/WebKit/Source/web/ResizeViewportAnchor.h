@@ -19,51 +19,43 @@ class FrameView;
 // It is needed when the layout viewport grows (causing its own scroll position
 // to be clamped) and also when it shrinks (causing the visual viewport's scroll
 // position to be clamped).
-class ResizeViewportAnchor final : public GarbageCollected<ResizeViewportAnchor> {
-    WTF_MAKE_NONCOPYABLE(ResizeViewportAnchor);
-public:
-    ResizeViewportAnchor(Page& page)
-        : m_page(page)
-        , m_scopeCount(0)
-    {
+class ResizeViewportAnchor final
+    : public GarbageCollected<ResizeViewportAnchor> {
+  WTF_MAKE_NONCOPYABLE(ResizeViewportAnchor);
+
+ public:
+  ResizeViewportAnchor(Page& page) : m_page(page), m_scopeCount(0) {}
+
+  class ResizeScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ResizeScope(ResizeViewportAnchor& anchor) : m_anchor(anchor) {
+      m_anchor->beginScope();
     }
+    ~ResizeScope() { m_anchor->endScope(); }
 
-    class ResizeScope {
-        STACK_ALLOCATED();
-    public:
-        explicit ResizeScope(ResizeViewportAnchor& anchor)
-            : m_anchor(anchor)
-        {
-            m_anchor->beginScope();
-        }
-        ~ResizeScope()
-        {
-            m_anchor->endScope();
-        }
-    private:
-        Member<ResizeViewportAnchor> m_anchor;
-    };
+   private:
+    Member<ResizeViewportAnchor> m_anchor;
+  };
 
-    void resizeFrameView(IntSize);
+  void resizeFrameView(IntSize);
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_page);
-    }
+  DEFINE_INLINE_TRACE() { visitor->trace(m_page); }
 
-private:
-    void beginScope() { m_scopeCount++; }
-    void endScope();
-    FrameView* rootFrameView();
+ private:
+  void beginScope() { m_scopeCount++; }
+  void endScope();
+  FrameView* rootFrameView();
 
-    // The amount of resize-induced clamping drift accumulated during the
-    // ResizeScope.  Note that this should NOT include other kinds of scrolling
-    // that may occur during layout, such as from ScrollAnchor.
-    DoubleSize m_drift;
-    Member<Page> m_page;
-    int m_scopeCount;
+  // The amount of resize-induced clamping drift accumulated during the
+  // ResizeScope.  Note that this should NOT include other kinds of scrolling
+  // that may occur during layout, such as from ScrollAnchor.
+  DoubleSize m_drift;
+  Member<Page> m_page;
+  int m_scopeCount;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ResizeViewportAnchor_h
+#endif  // ResizeViewportAnchor_h

@@ -30,21 +30,23 @@ namespace blink {
 class SimpleFontData;
 
 class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
-public:
-    static PassRefPtr<CustomFontData> create() { return adoptRef(new CustomFontData()); }
+ public:
+  static PassRefPtr<CustomFontData> create() {
+    return adoptRef(new CustomFontData());
+  }
 
-    virtual ~CustomFontData() { }
+  virtual ~CustomFontData() {}
 
-    virtual void beginLoadIfNeeded() const { }
-    virtual bool isLoading() const { return false; }
-    virtual bool isLoadingFallback() const { return false; }
-    virtual bool shouldSkipDrawing() const { return false; }
-    virtual void clearFontFaceSource() { }
+  virtual void beginLoadIfNeeded() const {}
+  virtual bool isLoading() const { return false; }
+  virtual bool isLoadingFallback() const { return false; }
+  virtual bool shouldSkipDrawing() const { return false; }
+  virtual void clearFontFaceSource() {}
 
-protected:
-    CustomFontData() { }
+ protected:
+  CustomFontData() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CustomFontData_h
+#endif  // CustomFontData_h

@@ -10,10 +10,13 @@ using namespace WTF;
 
 namespace blink {
 
-void V8WebGL2RenderingContext::visitDOMWrapperCustom(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
-{
-    WebGL2RenderingContext* impl = scriptWrappable->toImpl<WebGL2RenderingContext>();
-    impl->visitChildDOMWrappers(isolate, wrapper);
+void V8WebGL2RenderingContext::visitDOMWrapperCustom(
+    v8::Isolate* isolate,
+    ScriptWrappable* scriptWrappable,
+    const v8::Persistent<v8::Object>& wrapper) {
+  WebGL2RenderingContext* impl =
+      scriptWrappable->toImpl<WebGL2RenderingContext>();
+  impl->visitChildDOMWrappers(isolate, wrapper);
 }
 
-} // namespace blink
+}  // namespace blink

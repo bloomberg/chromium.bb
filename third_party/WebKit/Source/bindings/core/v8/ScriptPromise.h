@@ -50,123 +50,102 @@ class DOMException;
 // memory leaks since it has a reference from C++ to V8.
 //
 class CORE_EXPORT ScriptPromise final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    // Constructs an empty promise.
-    ScriptPromise();
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-    // Constructs a ScriptPromise from |promise|.
-    // If |promise| is not a Promise object, throws a v8 TypeError.
-    ScriptPromise(ScriptState*, v8::Local<v8::Value> promise);
+ public:
+  // Constructs an empty promise.
+  ScriptPromise();
 
-    ScriptPromise(const ScriptPromise&);
+  // Constructs a ScriptPromise from |promise|.
+  // If |promise| is not a Promise object, throws a v8 TypeError.
+  ScriptPromise(ScriptState*, v8::Local<v8::Value> promise);
 
-    ~ScriptPromise();
+  ScriptPromise(const ScriptPromise&);
 
-    ScriptPromise then(v8::Local<v8::Function> onFulfilled, v8::Local<v8::Function> onRejected = v8::Local<v8::Function>());
+  ~ScriptPromise();
 
-    bool isObject() const
-    {
-        return m_promise.isObject();
-    }
+  ScriptPromise then(
+      v8::Local<v8::Function> onFulfilled,
+      v8::Local<v8::Function> onRejected = v8::Local<v8::Function>());
 
-    bool isNull() const
-    {
-        return m_promise.isNull();
-    }
+  bool isObject() const { return m_promise.isObject(); }
 
-    bool isUndefinedOrNull() const
-    {
-        return m_promise.isUndefined() || m_promise.isNull();
-    }
+  bool isNull() const { return m_promise.isNull(); }
 
-    ScriptValue getScriptValue() const
-    {
-        return m_promise;
-    }
+  bool isUndefinedOrNull() const {
+    return m_promise.isUndefined() || m_promise.isNull();
+  }
 
-    v8::Local<v8::Value> v8Value() const
-    {
-        return m_promise.v8Value();
-    }
+  ScriptValue getScriptValue() const { return m_promise; }
 
-    v8::Isolate* isolate() const
-    {
-        return m_promise.isolate();
-    }
+  v8::Local<v8::Value> v8Value() const { return m_promise.v8Value(); }
 
-    bool isEmpty() const
-    {
-        return m_promise.isEmpty();
-    }
+  v8::Isolate* isolate() const { return m_promise.isolate(); }
 
-    void clear()
-    {
-        m_promise.clear();
-    }
+  bool isEmpty() const { return m_promise.isEmpty(); }
 
-    void setReference(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
-    {
-        m_promise.setReference(parent, isolate);
-    }
+  void clear() { m_promise.clear(); }
 
-    bool operator==(const ScriptPromise& value) const
-    {
-        return m_promise == value.m_promise;
-    }
+  void setReference(const v8::Persistent<v8::Object>& parent,
+                    v8::Isolate* isolate) {
+    m_promise.setReference(parent, isolate);
+  }
 
-    bool operator!=(const ScriptPromise& value) const
-    {
-        return !operator==(value);
-    }
+  bool operator==(const ScriptPromise& value) const {
+    return m_promise == value.m_promise;
+  }
 
-    // Constructs and returns a ScriptPromise from |value|.
-    // if |value| is not a Promise object, returns a Promise object
-    // resolved with |value|.
-    // Returns |value| itself if it is a Promise.
-    static ScriptPromise cast(ScriptState*, const ScriptValue& /*value*/);
-    static ScriptPromise cast(ScriptState*, v8::Local<v8::Value> /*value*/);
+  bool operator!=(const ScriptPromise& value) const {
+    return !operator==(value);
+  }
 
-    // Constructs and returns a ScriptPromise resolved with undefined.
-    static ScriptPromise castUndefined(ScriptState*);
+  // Constructs and returns a ScriptPromise from |value|.
+  // if |value| is not a Promise object, returns a Promise object
+  // resolved with |value|.
+  // Returns |value| itself if it is a Promise.
+  static ScriptPromise cast(ScriptState*, const ScriptValue& /*value*/);
+  static ScriptPromise cast(ScriptState*, v8::Local<v8::Value> /*value*/);
 
-    static ScriptPromise reject(ScriptState*, const ScriptValue&);
-    static ScriptPromise reject(ScriptState*, v8::Local<v8::Value>);
+  // Constructs and returns a ScriptPromise resolved with undefined.
+  static ScriptPromise castUndefined(ScriptState*);
 
-    static ScriptPromise rejectWithDOMException(ScriptState*, DOMException*);
+  static ScriptPromise reject(ScriptState*, const ScriptValue&);
+  static ScriptPromise reject(ScriptState*, v8::Local<v8::Value>);
 
-    static v8::Local<v8::Promise> rejectRaw(ScriptState*, v8::Local<v8::Value>);
+  static ScriptPromise rejectWithDOMException(ScriptState*, DOMException*);
 
-    // Constructs and returns a ScriptPromise to be resolved when all |promises|
-    // are resolved. If one of |promises| is rejected, the returned
-    // ScriptPromise is rejected.
-    static ScriptPromise all(ScriptState*, const Vector<ScriptPromise>& promises);
+  static v8::Local<v8::Promise> rejectRaw(ScriptState*, v8::Local<v8::Value>);
 
-    // This is a utility class intended to be used internally.
-    // ScriptPromiseResolver is for general purpose.
-    class CORE_EXPORT InternalResolver final {
-        DISALLOW_NEW();
-    public:
-        explicit InternalResolver(ScriptState*);
-        v8::Local<v8::Promise> v8Promise() const;
-        ScriptPromise promise() const;
-        void resolve(v8::Local<v8::Value>);
-        void reject(v8::Local<v8::Value>);
-        void clear() { m_resolver.clear(); }
+  // Constructs and returns a ScriptPromise to be resolved when all |promises|
+  // are resolved. If one of |promises| is rejected, the returned
+  // ScriptPromise is rejected.
+  static ScriptPromise all(ScriptState*, const Vector<ScriptPromise>& promises);
 
-    private:
-        ScriptValue m_resolver;
-    };
+  // This is a utility class intended to be used internally.
+  // ScriptPromiseResolver is for general purpose.
+  class CORE_EXPORT InternalResolver final {
+    DISALLOW_NEW();
 
-private:
-    static void increaseInstanceCount();
-    static void decreaseInstanceCount();
+   public:
+    explicit InternalResolver(ScriptState*);
+    v8::Local<v8::Promise> v8Promise() const;
+    ScriptPromise promise() const;
+    void resolve(v8::Local<v8::Value>);
+    void reject(v8::Local<v8::Value>);
+    void clear() { m_resolver.clear(); }
 
-    RefPtr<ScriptState> m_scriptState;
-    ScriptValue m_promise;
+   private:
+    ScriptValue m_resolver;
+  };
+
+ private:
+  static void increaseInstanceCount();
+  static void decreaseInstanceCount();
+
+  RefPtr<ScriptState> m_scriptState;
+  ScriptValue m_promise;
 };
 
-} // namespace blink
+}  // namespace blink
 
-
-#endif // ScriptPromise_h
+#endif  // ScriptPromise_h

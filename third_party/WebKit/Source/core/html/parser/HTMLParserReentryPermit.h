@@ -35,61 +35,58 @@ namespace blink {
 // parser-blocking scripts after that, does not set the parser pause
 // flag. However recursively parsing end script tags, or running
 // custom element constructors, does set the parser pause flag.
-class HTMLParserReentryPermit final : public RefCounted<HTMLParserReentryPermit> {
-public:
-    static PassRefPtr<HTMLParserReentryPermit> create();
-    ~HTMLParserReentryPermit() = default;
+class HTMLParserReentryPermit final
+    : public RefCounted<HTMLParserReentryPermit> {
+ public:
+  static PassRefPtr<HTMLParserReentryPermit> create();
+  ~HTMLParserReentryPermit() = default;
 
-    unsigned scriptNestingLevel() const { return m_scriptNestingLevel; }
-    bool parserPauseFlag() const { return m_parserPauseFlag; }
-    void pause()
-    {
-        CHECK(m_scriptNestingLevel);
-        m_parserPauseFlag = true;
+  unsigned scriptNestingLevel() const { return m_scriptNestingLevel; }
+  bool parserPauseFlag() const { return m_parserPauseFlag; }
+  void pause() {
+    CHECK(m_scriptNestingLevel);
+    m_parserPauseFlag = true;
+  }
+
+  class ScriptNestingLevelIncrementer final {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ScriptNestingLevelIncrementer(HTMLParserReentryPermit* permit)
+        : m_permit(permit) {
+      m_permit->m_scriptNestingLevel++;
     }
 
-    class ScriptNestingLevelIncrementer final {
-        STACK_ALLOCATED();
-    public:
-        explicit ScriptNestingLevelIncrementer(HTMLParserReentryPermit* permit)
-            : m_permit(permit)
-        {
-            m_permit->m_scriptNestingLevel++;
-        }
+    ScriptNestingLevelIncrementer(ScriptNestingLevelIncrementer&&) = default;
 
-        ScriptNestingLevelIncrementer(ScriptNestingLevelIncrementer&&)
-            = default;
-
-        ~ScriptNestingLevelIncrementer()
-        {
-            m_permit->m_scriptNestingLevel--;
-            if (!m_permit->m_scriptNestingLevel)
-                m_permit->m_parserPauseFlag = false;
-        }
-
-    private:
-        HTMLParserReentryPermit* m_permit;
-
-        DISALLOW_COPY_AND_ASSIGN(ScriptNestingLevelIncrementer);
-    };
-
-    ScriptNestingLevelIncrementer incrementScriptNestingLevel()
-    {
-        return ScriptNestingLevelIncrementer(this);
+    ~ScriptNestingLevelIncrementer() {
+      m_permit->m_scriptNestingLevel--;
+      if (!m_permit->m_scriptNestingLevel)
+        m_permit->m_parserPauseFlag = false;
     }
 
-private:
-    HTMLParserReentryPermit();
+   private:
+    HTMLParserReentryPermit* m_permit;
 
-    // https://html.spec.whatwg.org/#script-nesting-level
-    unsigned m_scriptNestingLevel;
+    DISALLOW_COPY_AND_ASSIGN(ScriptNestingLevelIncrementer);
+  };
 
-    // https://html.spec.whatwg.org/#parser-pause-flag
-    bool m_parserPauseFlag;
+  ScriptNestingLevelIncrementer incrementScriptNestingLevel() {
+    return ScriptNestingLevelIncrementer(this);
+  }
 
-    DISALLOW_COPY_AND_ASSIGN(HTMLParserReentryPermit);
+ private:
+  HTMLParserReentryPermit();
+
+  // https://html.spec.whatwg.org/#script-nesting-level
+  unsigned m_scriptNestingLevel;
+
+  // https://html.spec.whatwg.org/#parser-pause-flag
+  bool m_parserPauseFlag;
+
+  DISALLOW_COPY_AND_ASSIGN(HTMLParserReentryPermit);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HTMLParserReentryPermit_h
+#endif  // HTMLParserReentryPermit_h

@@ -39,65 +39,57 @@
 
 namespace blink {
 
-WebBlob WebBlob::createFromUUID(const WebString& uuid, const WebString& type, long long size)
-{
-    return Blob::create(BlobDataHandle::create(uuid, type, size));
+WebBlob WebBlob::createFromUUID(const WebString& uuid,
+                                const WebString& type,
+                                long long size) {
+  return Blob::create(BlobDataHandle::create(uuid, type, size));
 }
 
-WebBlob WebBlob::createFromFile(const WebString& path, long long size)
-{
-    std::unique_ptr<BlobData> blobData = BlobData::create();
-    blobData->appendFile(path, 0, size, invalidFileTime());
-    return Blob::create(BlobDataHandle::create(std::move(blobData), size));
+WebBlob WebBlob::createFromFile(const WebString& path, long long size) {
+  std::unique_ptr<BlobData> blobData = BlobData::create();
+  blobData->appendFile(path, 0, size, invalidFileTime());
+  return Blob::create(BlobDataHandle::create(std::move(blobData), size));
 }
 
-WebBlob WebBlob::fromV8Value(v8::Local<v8::Value> value)
-{
-    if (V8Blob::hasInstance(value, v8::Isolate::GetCurrent())) {
-        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-        Blob* blob = V8Blob::toImpl(object);
-        DCHECK(blob);
-        return blob;
-    }
-    return WebBlob();
+WebBlob WebBlob::fromV8Value(v8::Local<v8::Value> value) {
+  if (V8Blob::hasInstance(value, v8::Isolate::GetCurrent())) {
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
+    Blob* blob = V8Blob::toImpl(object);
+    DCHECK(blob);
+    return blob;
+  }
+  return WebBlob();
 }
 
-void WebBlob::reset()
-{
-    m_private.reset();
+void WebBlob::reset() {
+  m_private.reset();
 }
 
-void WebBlob::assign(const WebBlob& other)
-{
-    m_private = other.m_private;
+void WebBlob::assign(const WebBlob& other) {
+  m_private = other.m_private;
 }
 
-WebString WebBlob::uuid()
-{
-    if (!m_private.get())
-        return WebString();
-    return m_private->uuid();
+WebString WebBlob::uuid() {
+  if (!m_private.get())
+    return WebString();
+  return m_private->uuid();
 }
 
-v8::Local<v8::Value> WebBlob::toV8Value(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    // We no longer use |creationContext| because it's often misused and points
-    // to a context faked by user script.
-    DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
-    if (!m_private.get())
-        return v8::Local<v8::Value>();
-    return toV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);
+v8::Local<v8::Value> WebBlob::toV8Value(v8::Local<v8::Object> creationContext,
+                                        v8::Isolate* isolate) {
+  // We no longer use |creationContext| because it's often misused and points
+  // to a context faked by user script.
+  DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
+  if (!m_private.get())
+    return v8::Local<v8::Value>();
+  return toV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);
 }
 
-WebBlob::WebBlob(Blob* blob)
-    : m_private(blob)
-{
+WebBlob::WebBlob(Blob* blob) : m_private(blob) {}
+
+WebBlob& WebBlob::operator=(Blob* blob) {
+  m_private = blob;
+  return *this;
 }
 
-WebBlob& WebBlob::operator=(Blob* blob)
-{
-    m_private = blob;
-    return *this;
-}
-
-} // namespace blink
+}  // namespace blink

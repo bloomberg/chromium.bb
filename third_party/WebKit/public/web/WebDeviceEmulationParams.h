@@ -15,65 +15,65 @@ namespace blink {
 
 // All sizes are measured in device independent pixels.
 struct WebDeviceEmulationParams {
-    // For mobile, |screenSize| and |viewPosition| are used.
-    // For desktop, screen size and view position are preserved.
-    enum ScreenPosition {
-        Desktop,
-        Mobile,
-        ScreenPositionLast = Mobile
-    };
+  // For mobile, |screenSize| and |viewPosition| are used.
+  // For desktop, screen size and view position are preserved.
+  enum ScreenPosition { Desktop, Mobile, ScreenPositionLast = Mobile };
 
-    ScreenPosition screenPosition;
+  ScreenPosition screenPosition;
 
-    // Emulated screen size. Used with |screenPosition == Mobile|.
-    WebSize screenSize;
+  // Emulated screen size. Used with |screenPosition == Mobile|.
+  WebSize screenSize;
 
-    // Position of view on the screen. Used with |screenPosition == Mobile|.
-    WebPoint viewPosition;
+  // Position of view on the screen. Used with |screenPosition == Mobile|.
+  WebPoint viewPosition;
 
-    // If zero, the original device scale factor is preserved.
-    float deviceScaleFactor;
+  // If zero, the original device scale factor is preserved.
+  float deviceScaleFactor;
 
-    // Emulated view size. Empty size means no override.
-    WebSize viewSize;
+  // Emulated view size. Empty size means no override.
+  WebSize viewSize;
 
-    // Whether emulated view should be scaled down if necessary to fit into available space.
-    bool fitToView;
+  // Whether emulated view should be scaled down if necessary to fit into available space.
+  bool fitToView;
 
-    // Offset of emulated view inside available space, not in fit to view mode.
-    WebFloatPoint offset;
+  // Offset of emulated view inside available space, not in fit to view mode.
+  WebFloatPoint offset;
 
-    // Scale of emulated view inside available space, not in fit to view mode.
-    float scale;
+  // Scale of emulated view inside available space, not in fit to view mode.
+  float scale;
 
-    // Optional screen orientation type, with WebScreenOrientationUndefined
-    // value meaning no emulation necessary.
-    WebScreenOrientationType screenOrientationType;
+  // Optional screen orientation type, with WebScreenOrientationUndefined
+  // value meaning no emulation necessary.
+  WebScreenOrientationType screenOrientationType;
 
-    // Screen orientation angle, used together with screenOrientationType.
-    int screenOrientationAngle;
+  // Screen orientation angle, used together with screenOrientationType.
+  int screenOrientationAngle;
 
-    WebDeviceEmulationParams()
-        : screenPosition(Desktop)
-        , deviceScaleFactor(0)
-        , fitToView(false)
-        , scale(1)
-        , screenOrientationType(WebScreenOrientationUndefined)
-        , screenOrientationAngle(0) { }
+  WebDeviceEmulationParams()
+      : screenPosition(Desktop),
+        deviceScaleFactor(0),
+        fitToView(false),
+        scale(1),
+        screenOrientationType(WebScreenOrientationUndefined),
+        screenOrientationAngle(0) {}
 };
 
-inline bool operator==(const WebDeviceEmulationParams& a, const WebDeviceEmulationParams& b)
-{
-    return a.screenPosition == b.screenPosition && a.screenSize == b.screenSize && a.viewPosition == b.viewPosition && a.deviceScaleFactor == b.deviceScaleFactor
-        && a.viewSize == b.viewSize && a.fitToView == b.fitToView && a.offset == b.offset && a.scale == b.scale
-        && a.screenOrientationType == b.screenOrientationType && a.screenOrientationAngle == b.screenOrientationAngle;
+inline bool operator==(const WebDeviceEmulationParams& a,
+                       const WebDeviceEmulationParams& b) {
+  return a.screenPosition == b.screenPosition && a.screenSize == b.screenSize &&
+         a.viewPosition == b.viewPosition &&
+         a.deviceScaleFactor == b.deviceScaleFactor &&
+         a.viewSize == b.viewSize && a.fitToView == b.fitToView &&
+         a.offset == b.offset && a.scale == b.scale &&
+         a.screenOrientationType == b.screenOrientationType &&
+         a.screenOrientationAngle == b.screenOrientationAngle;
 }
 
-inline bool operator!=(const WebDeviceEmulationParams& a, const WebDeviceEmulationParams& b)
-{
-    return !(a == b);
+inline bool operator!=(const WebDeviceEmulationParams& a,
+                       const WebDeviceEmulationParams& b) {
+  return !(a == b);
 }
 
-} // namespace blink
+}  // namespace blink
 
 #endif

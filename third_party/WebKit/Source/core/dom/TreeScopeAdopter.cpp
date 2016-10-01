@@ -34,119 +34,123 @@
 
 namespace blink {
 
-void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
-{
-    DCHECK(needsScopeChange());
+void TreeScopeAdopter::moveTreeToNewScope(Node& root) const {
+  DCHECK(needsScopeChange());
 
-    // If an element is moved from a document and then eventually back again the collection cache for
-    // that element may contain stale data as changes made to it will have updated the DOMTreeVersion
-    // of the document it was moved to. By increasing the DOMTreeVersion of the donating document here
-    // we ensure that the collection cache will be invalidated as needed when the element is moved back.
-    Document& oldDocument = oldScope().document();
-    Document& newDocument = newScope().document();
-    bool willMoveToNewDocument = oldDocument != newDocument;
-    if (willMoveToNewDocument)
-        oldDocument.incDOMTreeVersion();
+  // If an element is moved from a document and then eventually back again the collection cache for
+  // that element may contain stale data as changes made to it will have updated the DOMTreeVersion
+  // of the document it was moved to. By increasing the DOMTreeVersion of the donating document here
+  // we ensure that the collection cache will be invalidated as needed when the element is moved back.
+  Document& oldDocument = oldScope().document();
+  Document& newDocument = newScope().document();
+  bool willMoveToNewDocument = oldDocument != newDocument;
+  if (willMoveToNewDocument)
+    oldDocument.incDOMTreeVersion();
 
-    for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
-        updateTreeScope(node);
+  for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
+    updateTreeScope(node);
 
-        if (willMoveToNewDocument) {
-            moveNodeToNewDocument(node, oldDocument, newDocument);
-        } else if (node.hasRareData()) {
-            NodeRareData* rareData = node.rareData();
-            if (rareData->nodeLists())
-                rareData->nodeLists()->adoptTreeScope();
-        }
-
-        if (!node.isElementNode())
-            continue;
-        Element& element = toElement(node);
-
-        if (HeapVector<Member<Attr>>* attrs = element.attrNodeList()) {
-            for (const auto& attr : *attrs)
-                moveTreeToNewScope(*attr);
-        }
-
-        for (ShadowRoot* shadow = element.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
-            shadow->setParentTreeScope(newScope());
-            if (willMoveToNewDocument)
-                moveTreeToNewDocument(*shadow, oldDocument, newDocument);
-        }
+    if (willMoveToNewDocument) {
+      moveNodeToNewDocument(node, oldDocument, newDocument);
+    } else if (node.hasRareData()) {
+      NodeRareData* rareData = node.rareData();
+      if (rareData->nodeLists())
+        rareData->nodeLists()->adoptTreeScope();
     }
-    if (!willMoveToNewDocument)
-        return;
-    oldDocument.didMoveTreeToNewDocument(root);
+
+    if (!node.isElementNode())
+      continue;
+    Element& element = toElement(node);
+
+    if (HeapVector<Member<Attr>>* attrs = element.attrNodeList()) {
+      for (const auto& attr : *attrs)
+        moveTreeToNewScope(*attr);
+    }
+
+    for (ShadowRoot* shadow = element.youngestShadowRoot(); shadow;
+         shadow = shadow->olderShadowRoot()) {
+      shadow->setParentTreeScope(newScope());
+      if (willMoveToNewDocument)
+        moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+    }
+  }
+  if (!willMoveToNewDocument)
+    return;
+  oldDocument.didMoveTreeToNewDocument(root);
 }
 
-void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, Document& newDocument) const
-{
-    DCHECK_NE(oldDocument, newDocument);
-    for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
-        moveNodeToNewDocument(node, oldDocument, newDocument);
+void TreeScopeAdopter::moveTreeToNewDocument(Node& root,
+                                             Document& oldDocument,
+                                             Document& newDocument) const {
+  DCHECK_NE(oldDocument, newDocument);
+  for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
+    moveNodeToNewDocument(node, oldDocument, newDocument);
 
-        if (!node.isElementNode())
-            continue;
-        Element& element = toElement(node);
+    if (!node.isElementNode())
+      continue;
+    Element& element = toElement(node);
 
-        if (HeapVector<Member<Attr>>* attrs = element.attrNodeList()) {
-            for (const auto& attr : *attrs)
-                moveTreeToNewDocument(*attr, oldDocument, newDocument);
-        }
-
-        for (ShadowRoot* shadow = element.youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
-            moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+    if (HeapVector<Member<Attr>>* attrs = element.attrNodeList()) {
+      for (const auto& attr : *attrs)
+        moveTreeToNewDocument(*attr, oldDocument, newDocument);
     }
+
+    for (ShadowRoot* shadow = element.youngestShadowRoot(); shadow;
+         shadow = shadow->olderShadowRoot())
+      moveTreeToNewDocument(*shadow, oldDocument, newDocument);
+  }
 }
 
 #if DCHECK_IS_ON()
 static bool didMoveToNewDocumentWasCalled = false;
 static Document* oldDocumentDidMoveToNewDocumentWasCalledWith = 0;
 
-void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(Document& oldDocument)
-{
-    DCHECK(!didMoveToNewDocumentWasCalled);
-    ASSERT_UNUSED(oldDocument, oldDocument == oldDocumentDidMoveToNewDocumentWasCalledWith);
-    didMoveToNewDocumentWasCalled = true;
+void TreeScopeAdopter::ensureDidMoveToNewDocumentWasCalled(
+    Document& oldDocument) {
+  DCHECK(!didMoveToNewDocumentWasCalled);
+  ASSERT_UNUSED(oldDocument,
+                oldDocument == oldDocumentDidMoveToNewDocumentWasCalledWith);
+  didMoveToNewDocumentWasCalled = true;
 }
 #endif
 
-inline void TreeScopeAdopter::updateTreeScope(Node& node) const
-{
-    DCHECK(!node.isTreeScope());
-    DCHECK(node.treeScope() == oldScope());
-    node.setTreeScope(m_newScope);
+inline void TreeScopeAdopter::updateTreeScope(Node& node) const {
+  DCHECK(!node.isTreeScope());
+  DCHECK(node.treeScope() == oldScope());
+  node.setTreeScope(m_newScope);
 }
 
-inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDocument, Document& newDocument) const
-{
-    DCHECK_NE(oldDocument, newDocument);
+inline void TreeScopeAdopter::moveNodeToNewDocument(
+    Node& node,
+    Document& oldDocument,
+    Document& newDocument) const {
+  DCHECK_NE(oldDocument, newDocument);
 
-    if (node.hasRareData()) {
-        NodeRareData* rareData = node.rareData();
-        if (rareData->nodeLists())
-            rareData->nodeLists()->adoptDocument(oldDocument, newDocument);
-    }
+  if (node.hasRareData()) {
+    NodeRareData* rareData = node.rareData();
+    if (rareData->nodeLists())
+      rareData->nodeLists()->adoptDocument(oldDocument, newDocument);
+  }
 
-    oldDocument.moveNodeIteratorsToNewDocument(node, newDocument);
+  oldDocument.moveNodeIteratorsToNewDocument(node, newDocument);
 
-    if (node.getCustomElementState() == CustomElementState::Custom) {
-        Element& element = toElement(node);
-        CustomElement::enqueueAdoptedCallback(&element, &oldDocument, &newDocument);
-    }
+  if (node.getCustomElementState() == CustomElementState::Custom) {
+    Element& element = toElement(node);
+    CustomElement::enqueueAdoptedCallback(&element, &oldDocument, &newDocument);
+  }
 
-    if (node.isShadowRoot())
-        toShadowRoot(node).setDocument(newDocument);
+  if (node.isShadowRoot())
+    toShadowRoot(node).setDocument(newDocument);
 
 #if DCHECK_IS_ON()
-    didMoveToNewDocumentWasCalled = false;
-    oldDocumentDidMoveToNewDocumentWasCalledWith = &oldDocument;
+  didMoveToNewDocumentWasCalled = false;
+  oldDocumentDidMoveToNewDocumentWasCalledWith = &oldDocument;
 #endif
 
-    node.didMoveToNewDocument(oldDocument);
+  node.didMoveToNewDocument(oldDocument);
 #if DCHECK_IS_ON()
-    DCHECK(didMoveToNewDocumentWasCalled);
+  DCHECK(didMoveToNewDocumentWasCalled);
 #endif
 }
 
-} // namespace blink
+}  // namespace blink

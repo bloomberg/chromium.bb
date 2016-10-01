@@ -41,79 +41,73 @@
 
 namespace blink {
 
-RTCIceCandidate* RTCIceCandidate::create(ExecutionContext* context, const RTCIceCandidateInit& candidateInit, ExceptionState& exceptionState)
-{
-    if (!candidateInit.hasCandidate() || !candidateInit.candidate().length()) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::incorrectPropertyType("candidate", "is not a string, or is empty."));
-        return nullptr;
-    }
+RTCIceCandidate* RTCIceCandidate::create(
+    ExecutionContext* context,
+    const RTCIceCandidateInit& candidateInit,
+    ExceptionState& exceptionState) {
+  if (!candidateInit.hasCandidate() || !candidateInit.candidate().length()) {
+    exceptionState.throwDOMException(
+        TypeMismatchError, ExceptionMessages::incorrectPropertyType(
+                               "candidate", "is not a string, or is empty."));
+    return nullptr;
+  }
 
-    String sdpMid;
-    if (candidateInit.hasSdpMid())
-        sdpMid = candidateInit.sdpMid();
+  String sdpMid;
+  if (candidateInit.hasSdpMid())
+    sdpMid = candidateInit.sdpMid();
 
-    // TODO(guidou): Change default value to -1. crbug.com/614958.
-    unsigned short sdpMLineIndex = 0;
-    if (candidateInit.hasSdpMLineIndex())
-        sdpMLineIndex = candidateInit.sdpMLineIndex();
-    else
-        UseCounter::count(context, UseCounter::RTCIceCandidateDefaultSdpMLineIndex);
+  // TODO(guidou): Change default value to -1. crbug.com/614958.
+  unsigned short sdpMLineIndex = 0;
+  if (candidateInit.hasSdpMLineIndex())
+    sdpMLineIndex = candidateInit.sdpMLineIndex();
+  else
+    UseCounter::count(context, UseCounter::RTCIceCandidateDefaultSdpMLineIndex);
 
-    return new RTCIceCandidate(WebRTCICECandidate(candidateInit.candidate(), sdpMid, sdpMLineIndex));
+  return new RTCIceCandidate(
+      WebRTCICECandidate(candidateInit.candidate(), sdpMid, sdpMLineIndex));
 }
 
-RTCIceCandidate* RTCIceCandidate::create(WebRTCICECandidate webCandidate)
-{
-    return new RTCIceCandidate(webCandidate);
+RTCIceCandidate* RTCIceCandidate::create(WebRTCICECandidate webCandidate) {
+  return new RTCIceCandidate(webCandidate);
 }
 
 RTCIceCandidate::RTCIceCandidate(WebRTCICECandidate webCandidate)
-    : m_webCandidate(webCandidate)
-{
+    : m_webCandidate(webCandidate) {}
+
+String RTCIceCandidate::candidate() const {
+  return m_webCandidate.candidate();
 }
 
-String RTCIceCandidate::candidate() const
-{
-    return m_webCandidate.candidate();
+String RTCIceCandidate::sdpMid() const {
+  return m_webCandidate.sdpMid();
 }
 
-String RTCIceCandidate::sdpMid() const
-{
-    return m_webCandidate.sdpMid();
+unsigned short RTCIceCandidate::sdpMLineIndex() const {
+  return m_webCandidate.sdpMLineIndex();
 }
 
-unsigned short RTCIceCandidate::sdpMLineIndex() const
-{
-    return m_webCandidate.sdpMLineIndex();
+WebRTCICECandidate RTCIceCandidate::webCandidate() const {
+  return m_webCandidate;
 }
 
-WebRTCICECandidate RTCIceCandidate::webCandidate() const
-{
-    return m_webCandidate;
+void RTCIceCandidate::setCandidate(String candidate) {
+  m_webCandidate.setCandidate(candidate);
 }
 
-void RTCIceCandidate::setCandidate(String candidate)
-{
-    m_webCandidate.setCandidate(candidate);
+void RTCIceCandidate::setSdpMid(String sdpMid) {
+  m_webCandidate.setSdpMid(sdpMid);
 }
 
-void RTCIceCandidate::setSdpMid(String sdpMid)
-{
-    m_webCandidate.setSdpMid(sdpMid);
+void RTCIceCandidate::setSdpMLineIndex(unsigned short sdpMLineIndex) {
+  m_webCandidate.setSdpMLineIndex(sdpMLineIndex);
 }
 
-void RTCIceCandidate::setSdpMLineIndex(unsigned short sdpMLineIndex)
-{
-    m_webCandidate.setSdpMLineIndex(sdpMLineIndex);
+ScriptValue RTCIceCandidate::toJSONForBinding(ScriptState* scriptState) {
+  V8ObjectBuilder result(scriptState);
+  result.addString("candidate", m_webCandidate.candidate());
+  result.addString("sdpMid", m_webCandidate.sdpMid());
+  result.addNumber("sdpMLineIndex", m_webCandidate.sdpMLineIndex());
+  return result.scriptValue();
 }
 
-ScriptValue RTCIceCandidate::toJSONForBinding(ScriptState* scriptState)
-{
-    V8ObjectBuilder result(scriptState);
-    result.addString("candidate", m_webCandidate.candidate());
-    result.addString("sdpMid", m_webCandidate.sdpMid());
-    result.addNumber("sdpMLineIndex", m_webCandidate.sdpMLineIndex());
-    return result.scriptValue();
-}
-
-} // namespace blink
+}  // namespace blink

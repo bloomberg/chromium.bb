@@ -14,14 +14,15 @@ namespace blink {
 class ScriptValue;
 
 class MODULES_EXPORT PaymentUpdater : public GarbageCollectedMixin {
-public:
-    virtual void onUpdatePaymentDetails(const ScriptValue& detailsScriptValue) = 0;
-    virtual void onUpdatePaymentDetailsFailure(const String& error) = 0;
+ public:
+  virtual void onUpdatePaymentDetails(
+      const ScriptValue& detailsScriptValue) = 0;
+  virtual void onUpdatePaymentDetailsFailure(const String& error) = 0;
 
-protected:
-    virtual ~PaymentUpdater() {}
+ protected:
+  virtual ~PaymentUpdater() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaymentUpdater_h
+#endif  // PaymentUpdater_h

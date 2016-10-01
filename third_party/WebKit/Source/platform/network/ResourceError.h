@@ -34,84 +34,95 @@
 
 namespace blink {
 
-PLATFORM_EXPORT extern const char errorDomainBlinkInternal[]; // Used for errors that won't be exposed to clients.
+PLATFORM_EXPORT extern const char errorDomainBlinkInternal
+    [];  // Used for errors that won't be exposed to clients.
 
 class PLATFORM_EXPORT ResourceError final {
-    DISALLOW_NEW();
-public:
-    static ResourceError cancelledError(const String& failingURL);
-    static ResourceError cancelledDueToAccessCheckError(const String& failingURL);
+  DISALLOW_NEW();
 
-    ResourceError()
-        : m_errorCode(0)
-        , m_isNull(true)
-        , m_isCancellation(false)
-        , m_isAccessCheck(false)
-        , m_isTimeout(false)
-        , m_staleCopyInCache(false)
-        , m_wasIgnoredByHandler(false)
-    {
-    }
+ public:
+  static ResourceError cancelledError(const String& failingURL);
+  static ResourceError cancelledDueToAccessCheckError(const String& failingURL);
 
-    ResourceError(const String& domain, int errorCode, const String& failingURL, const String& localizedDescription)
-        : m_domain(domain)
-        , m_errorCode(errorCode)
-        , m_failingURL(failingURL)
-        , m_localizedDescription(localizedDescription)
-        , m_isNull(false)
-        , m_isCancellation(false)
-        , m_isAccessCheck(false)
-        , m_isTimeout(false)
-        , m_staleCopyInCache(false)
-        , m_wasIgnoredByHandler(false)
-    {
-    }
+  ResourceError()
+      : m_errorCode(0),
+        m_isNull(true),
+        m_isCancellation(false),
+        m_isAccessCheck(false),
+        m_isTimeout(false),
+        m_staleCopyInCache(false),
+        m_wasIgnoredByHandler(false) {}
 
-    // Makes a deep copy. Useful for when you need to use a ResourceError on another thread.
-    ResourceError copy() const;
+  ResourceError(const String& domain,
+                int errorCode,
+                const String& failingURL,
+                const String& localizedDescription)
+      : m_domain(domain),
+        m_errorCode(errorCode),
+        m_failingURL(failingURL),
+        m_localizedDescription(localizedDescription),
+        m_isNull(false),
+        m_isCancellation(false),
+        m_isAccessCheck(false),
+        m_isTimeout(false),
+        m_staleCopyInCache(false),
+        m_wasIgnoredByHandler(false) {}
 
-    bool isNull() const { return m_isNull; }
+  // Makes a deep copy. Useful for when you need to use a ResourceError on another thread.
+  ResourceError copy() const;
 
-    const String& domain() const { return m_domain; }
-    int errorCode() const { return m_errorCode; }
-    const String& failingURL() const { return m_failingURL; }
-    const String& localizedDescription() const { return m_localizedDescription; }
+  bool isNull() const { return m_isNull; }
 
-    void setIsCancellation(bool isCancellation) { m_isCancellation = isCancellation; }
-    bool isCancellation() const { return m_isCancellation; }
+  const String& domain() const { return m_domain; }
+  int errorCode() const { return m_errorCode; }
+  const String& failingURL() const { return m_failingURL; }
+  const String& localizedDescription() const { return m_localizedDescription; }
 
-    void setIsAccessCheck(bool isAccessCheck) { m_isAccessCheck = isAccessCheck; }
-    bool isAccessCheck() const { return m_isAccessCheck; }
+  void setIsCancellation(bool isCancellation) {
+    m_isCancellation = isCancellation;
+  }
+  bool isCancellation() const { return m_isCancellation; }
 
-    void setIsTimeout(bool isTimeout) { m_isTimeout = isTimeout; }
-    bool isTimeout() const { return m_isTimeout; }
-    void setStaleCopyInCache(bool staleCopyInCache) { m_staleCopyInCache = staleCopyInCache; }
-    bool staleCopyInCache() const { return m_staleCopyInCache; }
+  void setIsAccessCheck(bool isAccessCheck) { m_isAccessCheck = isAccessCheck; }
+  bool isAccessCheck() const { return m_isAccessCheck; }
 
-    void setWasIgnoredByHandler(bool ignoredByHandler) { m_wasIgnoredByHandler = ignoredByHandler; }
-    bool wasIgnoredByHandler() const { return m_wasIgnoredByHandler; }
+  void setIsTimeout(bool isTimeout) { m_isTimeout = isTimeout; }
+  bool isTimeout() const { return m_isTimeout; }
+  void setStaleCopyInCache(bool staleCopyInCache) {
+    m_staleCopyInCache = staleCopyInCache;
+  }
+  bool staleCopyInCache() const { return m_staleCopyInCache; }
 
-    static bool compare(const ResourceError&, const ResourceError&);
+  void setWasIgnoredByHandler(bool ignoredByHandler) {
+    m_wasIgnoredByHandler = ignoredByHandler;
+  }
+  bool wasIgnoredByHandler() const { return m_wasIgnoredByHandler; }
 
-private:
-    String m_domain;
-    int m_errorCode;
-    String m_failingURL;
-    String m_localizedDescription;
-    bool m_isNull;
-    bool m_isCancellation;
-    bool m_isAccessCheck;
-    bool m_isTimeout;
-    bool m_staleCopyInCache;
-    bool m_wasIgnoredByHandler;
+  static bool compare(const ResourceError&, const ResourceError&);
+
+ private:
+  String m_domain;
+  int m_errorCode;
+  String m_failingURL;
+  String m_localizedDescription;
+  bool m_isNull;
+  bool m_isCancellation;
+  bool m_isAccessCheck;
+  bool m_isTimeout;
+  bool m_staleCopyInCache;
+  bool m_wasIgnoredByHandler;
 };
 
-inline bool operator==(const ResourceError& a, const ResourceError& b) { return ResourceError::compare(a, b); }
-inline bool operator!=(const ResourceError& a, const ResourceError& b) { return !(a == b); }
+inline bool operator==(const ResourceError& a, const ResourceError& b) {
+  return ResourceError::compare(a, b);
+}
+inline bool operator!=(const ResourceError& a, const ResourceError& b) {
+  return !(a == b);
+}
 
 // Pretty printer for gtest. Declared here to avoid ODR violations.
 std::ostream& operator<<(std::ostream&, const ResourceError&);
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ResourceError_h
+#endif  // ResourceError_h

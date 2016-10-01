@@ -20,45 +20,47 @@ class WebURLLoaderClient;
 // methods to simulate the response from the server. Note that all started
 // requests must be finished.
 class SimRequest final {
-public:
-    SimRequest(String url, String mimeType);
-    ~SimRequest();
+ public:
+  SimRequest(String url, String mimeType);
+  ~SimRequest();
 
-    // Starts the response from the server, this is as if the headers and 200 OK
-    // reply had been received but no response body yet.
-    void start();
+  // Starts the response from the server, this is as if the headers and 200 OK
+  // reply had been received but no response body yet.
+  void start();
 
-    // Write a chunk of the response body.
-    void write(const String& data);
+  // Write a chunk of the response body.
+  void write(const String& data);
 
-    // Finish the response, this is as if the server closed the connection.
-    void finish();
+  // Finish the response, this is as if the server closed the connection.
+  void finish();
 
-    // Shorthand to complete a request (start/write/finish) sequence in order.
-    void complete(const String& data = String());
+  // Shorthand to complete a request (start/write/finish) sequence in order.
+  void complete(const String& data = String());
 
-    const String& url() const { return m_url; }
-    const WebURLError& error() const { return m_error; }
-    const WebURLResponse& response() const { return m_response; }
+  const String& url() const { return m_url; }
+  const WebURLError& error() const { return m_error; }
+  const WebURLResponse& response() const { return m_response; }
 
-private:
-    friend class SimNetwork;
+ private:
+  friend class SimNetwork;
 
-    void reset();
+  void reset();
 
-    // Used by SimNetwork.
-    void didReceiveResponse(WebURLLoaderClient*, WebURLLoader*, const WebURLResponse&);
-    void didFail(const WebURLError&);
+  // Used by SimNetwork.
+  void didReceiveResponse(WebURLLoaderClient*,
+                          WebURLLoader*,
+                          const WebURLResponse&);
+  void didFail(const WebURLError&);
 
-    String m_url;
-    WebURLLoader* m_loader;
-    WebURLResponse m_response;
-    WebURLError m_error;
-    WebURLLoaderClient* m_client;
-    unsigned m_totalEncodedDataLength;
-    bool m_isReady;
+  String m_url;
+  WebURLLoader* m_loader;
+  WebURLResponse m_response;
+  WebURLError m_error;
+  WebURLLoaderClient* m_client;
+  unsigned m_totalEncodedDataLength;
+  bool m_isReady;
 };
 
-} // namespace blink
+}  // namespace blink
 
 #endif

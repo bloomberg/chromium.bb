@@ -28,113 +28,123 @@
 namespace blink {
 
 enum LayoutSVGResourceType {
-    MaskerResourceType,
-    MarkerResourceType,
-    PatternResourceType,
-    LinearGradientResourceType,
-    RadialGradientResourceType,
-    FilterResourceType,
-    ClipperResourceType
+  MaskerResourceType,
+  MarkerResourceType,
+  PatternResourceType,
+  LinearGradientResourceType,
+  RadialGradientResourceType,
+  FilterResourceType,
+  ClipperResourceType
 };
 
 class PaintLayer;
 
 class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
-public:
-    explicit LayoutSVGResourceContainer(SVGElement*);
-    ~LayoutSVGResourceContainer() override;
+ public:
+  explicit LayoutSVGResourceContainer(SVGElement*);
+  ~LayoutSVGResourceContainer() override;
 
-    virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
-    virtual void removeClientFromCache(LayoutObject*, bool markForInvalidation = true) = 0;
+  virtual void removeAllClientsFromCache(bool markForInvalidation = true) = 0;
+  virtual void removeClientFromCache(LayoutObject*,
+                                     bool markForInvalidation = true) = 0;
 
-    void layout() override;
-    void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGResourceContainer || LayoutSVGHiddenContainer::isOfType(type); }
+  void layout() override;
+  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) final;
+  bool isOfType(LayoutObjectType type) const override {
+    return type == LayoutObjectSVGResourceContainer ||
+           LayoutSVGHiddenContainer::isOfType(type);
+  }
 
-    virtual LayoutSVGResourceType resourceType() const = 0;
+  virtual LayoutSVGResourceType resourceType() const = 0;
 
-    bool isSVGPaintServer() const
-    {
-        LayoutSVGResourceType resourceType = this->resourceType();
-        return resourceType == PatternResourceType
-            || resourceType == LinearGradientResourceType
-            || resourceType == RadialGradientResourceType;
-    }
+  bool isSVGPaintServer() const {
+    LayoutSVGResourceType resourceType = this->resourceType();
+    return resourceType == PatternResourceType ||
+           resourceType == LinearGradientResourceType ||
+           resourceType == RadialGradientResourceType;
+  }
 
-    void idChanged();
-    void addResourceClient(SVGResourceClient*);
-    void removeResourceClient(SVGResourceClient*);
+  void idChanged();
+  void addResourceClient(SVGResourceClient*);
+  void removeResourceClient(SVGResourceClient*);
 
-    void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
+  void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
-    static void markForLayoutAndParentResourceInvalidation(LayoutObject*, bool needsLayout = true);
+  static void markForLayoutAndParentResourceInvalidation(
+      LayoutObject*,
+      bool needsLayout = true);
 
-    void clearInvalidationMask() { m_invalidationMask = 0; }
+  void clearInvalidationMask() { m_invalidationMask = 0; }
 
-protected:
-    // When adding modes, make sure we don't overflow m_invalidationMask below.
-    enum InvalidationMode {
-        LayoutAndBoundariesInvalidation = 1 << 0,
-        BoundariesInvalidation = 1 << 1,
-        PaintInvalidation = 1 << 2,
-        ParentOnlyInvalidation = 1 << 3
-    };
+ protected:
+  // When adding modes, make sure we don't overflow m_invalidationMask below.
+  enum InvalidationMode {
+    LayoutAndBoundariesInvalidation = 1 << 0,
+    BoundariesInvalidation = 1 << 1,
+    PaintInvalidation = 1 << 2,
+    ParentOnlyInvalidation = 1 << 3
+  };
 
-    // Used from the invalidateClient/invalidateClients methods from classes, inheriting from us.
-    void markAllClientsForInvalidation(InvalidationMode);
-    void markAllResourceClientsForInvalidation();
-    void markClientForInvalidation(LayoutObject*, InvalidationMode);
+  // Used from the invalidateClient/invalidateClients methods from classes, inheriting from us.
+  void markAllClientsForInvalidation(InvalidationMode);
+  void markAllResourceClientsForInvalidation();
+  void markClientForInvalidation(LayoutObject*, InvalidationMode);
 
-    void willBeDestroyed() override;
+  void willBeDestroyed() override;
 
-    bool m_isInLayout;
+  bool m_isInLayout;
 
-private:
-    friend class SVGResourcesCache;
-    void addClient(LayoutObject*);
-    void removeClient(LayoutObject*);
-    void detachAllClients();
+ private:
+  friend class SVGResourcesCache;
+  void addClient(LayoutObject*);
+  void removeClient(LayoutObject*);
+  void detachAllClients();
 
-    void registerResource();
+  void registerResource();
 
-    AtomicString m_id;
-    // Track global (markAllClientsForInvalidation) invals to avoid redundant crawls.
-    unsigned m_invalidationMask : 8;
+  AtomicString m_id;
+  // Track global (markAllClientsForInvalidation) invals to avoid redundant crawls.
+  unsigned m_invalidationMask : 8;
 
-    unsigned m_registered : 1;
-    unsigned m_isInvalidating : 1;
-    // 22 padding bits available
+  unsigned m_registered : 1;
+  unsigned m_isInvalidating : 1;
+  // 22 padding bits available
 
-    HashSet<LayoutObject*> m_clients;
-    PersistentHeapHashSet<WeakMember<SVGResourceClient>> m_resourceClients;
+  HashSet<LayoutObject*> m_clients;
+  PersistentHeapHashSet<WeakMember<SVGResourceClient>> m_resourceClients;
 };
 
-inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(TreeScope& treeScope, const AtomicString& id)
-{
-    if (id.isEmpty())
-        return nullptr;
-
-    if (LayoutSVGResourceContainer* layoutResource = treeScope.document().accessSVGExtensions().resourceById(id))
-        return layoutResource;
-
+inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(
+    TreeScope& treeScope,
+    const AtomicString& id) {
+  if (id.isEmpty())
     return nullptr;
+
+  if (LayoutSVGResourceContainer* layoutResource =
+          treeScope.document().accessSVGExtensions().resourceById(id))
+    return layoutResource;
+
+  return nullptr;
 }
 
-template<typename Layout>
-Layout* getLayoutSVGResourceById(TreeScope& treeScope, const AtomicString& id)
-{
-    if (LayoutSVGResourceContainer* container = getLayoutSVGResourceContainerById(treeScope, id)) {
-        if (container->resourceType() == Layout::s_resourceType)
-            return static_cast<Layout*>(container);
-    }
-    return nullptr;
+template <typename Layout>
+Layout* getLayoutSVGResourceById(TreeScope& treeScope, const AtomicString& id) {
+  if (LayoutSVGResourceContainer* container =
+          getLayoutSVGResourceContainerById(treeScope, id)) {
+    if (container->resourceType() == Layout::s_resourceType)
+      return static_cast<Layout*>(container);
+  }
+  return nullptr;
 }
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer, isSVGResourceContainer());
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,
+                                isSVGResourceContainer());
 
-#define DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(thisType, typeName) \
-    DEFINE_TYPE_CASTS(thisType, LayoutSVGResourceContainer, resource, resource->resourceType() == typeName, resource.resourceType() == typeName)
+#define DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(thisType, typeName)   \
+  DEFINE_TYPE_CASTS(thisType, LayoutSVGResourceContainer, resource, \
+                    resource->resourceType() == typeName,           \
+                    resource.resourceType() == typeName)
 
-} // namespace blink
+}  // namespace blink
 
 #endif

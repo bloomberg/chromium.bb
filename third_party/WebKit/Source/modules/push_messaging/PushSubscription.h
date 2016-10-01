@@ -23,38 +23,43 @@ class ScriptPromiseResolver;
 class ScriptState;
 struct WebPushSubscription;
 
-class PushSubscription final : public GarbageCollectedFinalized<PushSubscription>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PushSubscription* take(ScriptPromiseResolver*, std::unique_ptr<WebPushSubscription>, ServiceWorkerRegistration*);
-    static void dispose(WebPushSubscription* subscriptionRaw);
+class PushSubscription final
+    : public GarbageCollectedFinalized<PushSubscription>,
+      public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-    virtual ~PushSubscription();
+ public:
+  static PushSubscription* take(ScriptPromiseResolver*,
+                                std::unique_ptr<WebPushSubscription>,
+                                ServiceWorkerRegistration*);
+  static void dispose(WebPushSubscription* subscriptionRaw);
 
-    KURL endpoint() const { return m_endpoint; }
+  virtual ~PushSubscription();
 
-    PushSubscriptionOptions* options() const { return m_options.get(); }
+  KURL endpoint() const { return m_endpoint; }
 
-    DOMArrayBuffer* getKey(const AtomicString& name) const;
-    ScriptPromise unsubscribe(ScriptState*);
+  PushSubscriptionOptions* options() const { return m_options.get(); }
 
-    ScriptValue toJSONForBinding(ScriptState*);
+  DOMArrayBuffer* getKey(const AtomicString& name) const;
+  ScriptPromise unsubscribe(ScriptState*);
 
-    DECLARE_TRACE();
+  ScriptValue toJSONForBinding(ScriptState*);
 
-private:
-    PushSubscription(const WebPushSubscription&, ServiceWorkerRegistration*);
+  DECLARE_TRACE();
 
-    KURL m_endpoint;
+ private:
+  PushSubscription(const WebPushSubscription&, ServiceWorkerRegistration*);
 
-    Member<PushSubscriptionOptions> m_options;
+  KURL m_endpoint;
 
-    Member<DOMArrayBuffer> m_p256dh;
-    Member<DOMArrayBuffer> m_auth;
+  Member<PushSubscriptionOptions> m_options;
 
-    Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
+  Member<DOMArrayBuffer> m_p256dh;
+  Member<DOMArrayBuffer> m_auth;
+
+  Member<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PushSubscription_h
+#endif  // PushSubscription_h

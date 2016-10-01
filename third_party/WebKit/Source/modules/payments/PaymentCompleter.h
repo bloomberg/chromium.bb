@@ -14,19 +14,15 @@ namespace blink {
 class ScriptState;
 
 class MODULES_EXPORT PaymentCompleter : public GarbageCollectedMixin {
-public:
-    enum PaymentComplete {
-        Success,
-        Fail,
-        Unknown
-    };
+ public:
+  enum PaymentComplete { Success, Fail, Unknown };
 
-    virtual ScriptPromise complete(ScriptState*, PaymentComplete result) = 0;
+  virtual ScriptPromise complete(ScriptState*, PaymentComplete result) = 0;
 
-protected:
-    virtual ~PaymentCompleter() {}
+ protected:
+  virtual ~PaymentCompleter() {}
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // PaymentCompleter_h
+#endif  // PaymentCompleter_h

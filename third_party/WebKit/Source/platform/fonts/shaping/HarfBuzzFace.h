@@ -48,32 +48,32 @@ class FontPlatformData;
 struct HarfBuzzFontData;
 
 class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
-    WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
-public:
+  WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
 
-    static PassRefPtr<HarfBuzzFace> create(FontPlatformData* platformData, uint64_t uniqueID)
-    {
-        return adoptRef(new HarfBuzzFace(platformData, uniqueID));
-    }
-    ~HarfBuzzFace();
+ public:
+  static PassRefPtr<HarfBuzzFace> create(FontPlatformData* platformData,
+                                         uint64_t uniqueID) {
+    return adoptRef(new HarfBuzzFace(platformData, uniqueID));
+  }
+  ~HarfBuzzFace();
 
-    // In order to support the restricting effect of unicode-range optionally a
-    // range restriction can be passed in, which will restrict which glyphs we
-    // return in the harfBuzzGetGlyph function.
-    hb_font_t* getScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
+  // In order to support the restricting effect of unicode-range optionally a
+  // range restriction can be passed in, which will restrict which glyphs we
+  // return in the harfBuzzGetGlyph function.
+  hb_font_t* getScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
 
-private:
-    HarfBuzzFace(FontPlatformData*, uint64_t);
+ private:
+  HarfBuzzFace(FontPlatformData*, uint64_t);
 
-    hb_face_t* createFace();
-    void prepareHarfBuzzFontData();
+  hb_face_t* createFace();
+  void prepareHarfBuzzFontData();
 
-    FontPlatformData* m_platformData;
-    uint64_t m_uniqueID;
-    hb_font_t* m_unscaledFont;
-    HarfBuzzFontData* m_harfBuzzFontData;
+  FontPlatformData* m_platformData;
+  uint64_t m_uniqueID;
+  hb_font_t* m_unscaledFont;
+  HarfBuzzFontData* m_harfBuzzFontData;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // HarfBuzzFace_h
+#endif  // HarfBuzzFace_h

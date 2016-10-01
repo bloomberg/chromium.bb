@@ -39,35 +39,42 @@
 
 namespace blink {
 
-String DOMWindowBase64::btoa(const String& stringToEncode, ExceptionState& exceptionState)
-{
-    if (stringToEncode.isNull())
-        return String();
+String DOMWindowBase64::btoa(const String& stringToEncode,
+                             ExceptionState& exceptionState) {
+  if (stringToEncode.isNull())
+    return String();
 
-    if (!stringToEncode.containsOnlyLatin1()) {
-        exceptionState.throwDOMException(InvalidCharacterError, "The string to be encoded contains characters outside of the Latin1 range.");
-        return String();
-    }
+  if (!stringToEncode.containsOnlyLatin1()) {
+    exceptionState.throwDOMException(InvalidCharacterError,
+                                     "The string to be encoded contains "
+                                     "characters outside of the Latin1 range.");
+    return String();
+  }
 
-    return base64Encode(stringToEncode.latin1());
+  return base64Encode(stringToEncode.latin1());
 }
 
-String DOMWindowBase64::atob(const String& encodedString, ExceptionState& exceptionState)
-{
-    if (encodedString.isNull())
-        return String();
+String DOMWindowBase64::atob(const String& encodedString,
+                             ExceptionState& exceptionState) {
+  if (encodedString.isNull())
+    return String();
 
-    if (!encodedString.containsOnlyLatin1()) {
-        exceptionState.throwDOMException(InvalidCharacterError, "The string to be decoded contains characters outside of the Latin1 range.");
-        return String();
-    }
-    Vector<char> out;
-    if (!base64Decode(encodedString, out, isHTMLSpace<UChar>, Base64ValidatePadding)) {
-        exceptionState.throwDOMException(InvalidCharacterError, "The string to be decoded is not correctly encoded.");
-        return String();
-    }
+  if (!encodedString.containsOnlyLatin1()) {
+    exceptionState.throwDOMException(InvalidCharacterError,
+                                     "The string to be decoded contains "
+                                     "characters outside of the Latin1 range.");
+    return String();
+  }
+  Vector<char> out;
+  if (!base64Decode(encodedString, out, isHTMLSpace<UChar>,
+                    Base64ValidatePadding)) {
+    exceptionState.throwDOMException(
+        InvalidCharacterError,
+        "The string to be decoded is not correctly encoded.");
+    return String();
+  }
 
-    return String(out.data(), out.size());
+  return String(out.data(), out.size());
 }
 
-} // namespace blink
+}  // namespace blink

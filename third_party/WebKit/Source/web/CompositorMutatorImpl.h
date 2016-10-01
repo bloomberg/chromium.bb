@@ -26,32 +26,37 @@ class CompositorMutatorClient;
 //
 // Should be accessed only on the compositor thread.
 class CompositorMutatorImpl final : public CompositorMutator {
-    WTF_MAKE_NONCOPYABLE(CompositorMutatorImpl);
-public:
-    static std::unique_ptr<CompositorMutatorClient> createClient();
-    static CompositorMutatorImpl* create();
+  WTF_MAKE_NONCOPYABLE(CompositorMutatorImpl);
 
-    // CompositorMutator implementation.
-    bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*) override;
+ public:
+  static std::unique_ptr<CompositorMutatorClient> createClient();
+  static CompositorMutatorImpl* create();
 
-    void registerProxyClient(CompositorProxyClientImpl*);
-    void unregisterProxyClient(CompositorProxyClientImpl*);
+  // CompositorMutator implementation.
+  bool mutate(double monotonicTimeNow,
+              CompositorMutableStateProvider*) override;
 
-    void setNeedsMutate();
+  void registerProxyClient(CompositorProxyClientImpl*);
+  void unregisterProxyClient(CompositorProxyClientImpl*);
 
-    void setClient(CompositorMutatorClient* client) { m_client = client; }
-    CustomCompositorAnimationManager* animationManager() { return m_animationManager.get(); }
+  void setNeedsMutate();
 
-private:
-    CompositorMutatorImpl();
+  void setClient(CompositorMutatorClient* client) { m_client = client; }
+  CustomCompositorAnimationManager* animationManager() {
+    return m_animationManager.get();
+  }
 
-    using ProxyClients = HashSet<CrossThreadPersistent<CompositorProxyClientImpl>>;
-    ProxyClients m_proxyClients;
+ private:
+  CompositorMutatorImpl();
 
-    std::unique_ptr<CustomCompositorAnimationManager> m_animationManager;
-    CompositorMutatorClient* m_client;
+  using ProxyClients =
+      HashSet<CrossThreadPersistent<CompositorProxyClientImpl>>;
+  ProxyClients m_proxyClients;
+
+  std::unique_ptr<CustomCompositorAnimationManager> m_animationManager;
+  CompositorMutatorClient* m_client;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CompositorMutatorImpl_h
+#endif  // CompositorMutatorImpl_h

@@ -19,45 +19,59 @@ namespace blink {
 
 SerializedScriptValueFactory* SerializedScriptValueFactory::m_instance = 0;
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
-{
-    if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-        V8ScriptValueSerializer serializer(ScriptState::current(isolate));
-        serializer.setBlobInfoArray(blobInfo);
-        return serializer.serialize(value, transferables, exceptionState);
-    }
-    SerializedScriptValueWriter writer;
-    ScriptValueSerializer serializer(writer, blobInfo, ScriptState::current(isolate));
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> value,
+    Transferables* transferables,
+    WebBlobInfoArray* blobInfo,
+    ExceptionState& exceptionState) {
+  if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
+    V8ScriptValueSerializer serializer(ScriptState::current(isolate));
+    serializer.setBlobInfoArray(blobInfo);
     return serializer.serialize(value, transferables, exceptionState);
+  }
+  SerializedScriptValueWriter writer;
+  ScriptValueSerializer serializer(writer, blobInfo,
+                                   ScriptState::current(isolate));
+  return serializer.serialize(value, transferables, exceptionState);
 }
 
-v8::Local<v8::Value> SerializedScriptValueFactory::deserialize(SerializedScriptValue* value, v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)
-{
-    if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
-        V8ScriptValueDeserializer deserializer(ScriptState::current(isolate), value);
-        deserializer.setTransferredMessagePorts(messagePorts);
-        deserializer.setBlobInfoArray(blobInfo);
-        return deserializer.deserialize();
-    }
-    // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.
-    // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
-    RefPtr<SerializedScriptValue> protect(value);
-    String& data = value->data();
-    if (!data.impl())
-        return v8::Null(isolate);
-    static_assert(sizeof(SerializedScriptValueWriter::BufferValueType) == 2, "BufferValueType should be 2 bytes");
-    data.ensure16Bit();
-    // FIXME: SerializedScriptValue shouldn't use String for its underlying
-    // storage. Instead, it should use SharedBuffer or Vector<uint8_t>. The
-    // information stored in m_data isn't even encoded in UTF-16. Instead,
-    // unicode characters are encoded as UTF-8 with two code units per UChar.
-    SerializedScriptValueReader reader(reinterpret_cast<const uint8_t*>(data.impl()->characters16()), 2 * data.length(), blobInfo, value->blobDataHandles(), ScriptState::current(isolate));
-    ScriptValueDeserializer deserializer(reader, messagePorts, value->getArrayBufferContentsArray(), value->getImageBitmapContentsArray());
-
-    // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.
-    // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
+v8::Local<v8::Value> SerializedScriptValueFactory::deserialize(
+    SerializedScriptValue* value,
+    v8::Isolate* isolate,
+    MessagePortArray* messagePorts,
+    const WebBlobInfoArray* blobInfo) {
+  if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
+    V8ScriptValueDeserializer deserializer(ScriptState::current(isolate),
+                                           value);
+    deserializer.setTransferredMessagePorts(messagePorts);
+    deserializer.setBlobInfoArray(blobInfo);
     return deserializer.deserialize();
+  }
+  // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.
+  // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
+  RefPtr<SerializedScriptValue> protect(value);
+  String& data = value->data();
+  if (!data.impl())
+    return v8::Null(isolate);
+  static_assert(sizeof(SerializedScriptValueWriter::BufferValueType) == 2,
+                "BufferValueType should be 2 bytes");
+  data.ensure16Bit();
+  // FIXME: SerializedScriptValue shouldn't use String for its underlying
+  // storage. Instead, it should use SharedBuffer or Vector<uint8_t>. The
+  // information stored in m_data isn't even encoded in UTF-16. Instead,
+  // unicode characters are encoded as UTF-8 with two code units per UChar.
+  SerializedScriptValueReader reader(
+      reinterpret_cast<const uint8_t*>(data.impl()->characters16()),
+      2 * data.length(), blobInfo, value->blobDataHandles(),
+      ScriptState::current(isolate));
+  ScriptValueDeserializer deserializer(reader, messagePorts,
+                                       value->getArrayBufferContentsArray(),
+                                       value->getImageBitmapContentsArray());
+
+  // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.
+  // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
+  return deserializer.deserialize();
 }
 
-
-} // namespace blink
+}  // namespace blink

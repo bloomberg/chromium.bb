@@ -138,80 +138,82 @@ class UnicodeRangeSet;
 // Shaping then continues analogously for the remaining Hiragana Japanese
 // sub-run, and the result is inserted into ShapeResult as well.
 class PLATFORM_EXPORT HarfBuzzShaper final : public Shaper {
-public:
-    HarfBuzzShaper(const Font*, const TextRun&);
-    PassRefPtr<ShapeResult> shapeResult();
-    ~HarfBuzzShaper() { }
+ public:
+  HarfBuzzShaper(const Font*, const TextRun&);
+  PassRefPtr<ShapeResult> shapeResult();
+  ~HarfBuzzShaper() {}
 
-    enum HolesQueueItemAction {
-        HolesQueueNextFont,
-        HolesQueueRange
-    };
+  enum HolesQueueItemAction { HolesQueueNextFont, HolesQueueRange };
 
-    struct HolesQueueItem {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-        HolesQueueItemAction m_action;
-        unsigned m_startIndex;
-        unsigned m_numCharacters;
-        HolesQueueItem(HolesQueueItemAction action, unsigned start, unsigned num)
-            : m_action(action)
-            , m_startIndex(start)
-            , m_numCharacters(num) {};
-    };
+  struct HolesQueueItem {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    HolesQueueItemAction m_action;
+    unsigned m_startIndex;
+    unsigned m_numCharacters;
+    HolesQueueItem(HolesQueueItemAction action, unsigned start, unsigned num)
+        : m_action(action), m_startIndex(start), m_numCharacters(num){};
+  };
 
-protected:
-    using FeaturesVector = Vector<hb_feature_t, 6>;
+ protected:
+  using FeaturesVector = Vector<hb_feature_t, 6>;
 
-    class CapsFeatureSettingsScopedOverlay final {
-        STACK_ALLOCATED()
+  class CapsFeatureSettingsScopedOverlay final {
+    STACK_ALLOCATED()
 
-    public:
-        CapsFeatureSettingsScopedOverlay(FeaturesVector&, FontDescription::FontVariantCaps);
-        CapsFeatureSettingsScopedOverlay() = delete;
-        ~CapsFeatureSettingsScopedOverlay();
-    private:
-        void overlayCapsFeatures(FontDescription::FontVariantCaps);
-        void prependCounting(const hb_feature_t&);
-        FeaturesVector& m_features;
-        size_t m_countFeatures;
-    };
+   public:
+    CapsFeatureSettingsScopedOverlay(FeaturesVector&,
+                                     FontDescription::FontVariantCaps);
+    CapsFeatureSettingsScopedOverlay() = delete;
+    ~CapsFeatureSettingsScopedOverlay();
 
-private:
-    void setFontFeatures();
+   private:
+    void overlayCapsFeatures(FontDescription::FontVariantCaps);
+    void prependCounting(const hb_feature_t&);
+    FeaturesVector& m_features;
+    size_t m_countFeatures;
+  };
 
-    void appendToHolesQueue(HolesQueueItemAction,
-        unsigned startIndex,
-        unsigned numCharacters);
-    void prependHolesQueue(HolesQueueItemAction,
-        unsigned startIndex,
-        unsigned numCharacters);
-    void splitUntilNextCaseChange(HolesQueueItem& currentQueueItem, SmallCapsIterator::SmallCapsBehavior&);
-    inline bool shapeRange(hb_buffer_t* harfBuzzBuffer,
-        unsigned startIndex,
-        unsigned numCharacters,
-        const SimpleFontData* currentFont,
-        PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
-        UScriptCode currentRunScript,
-        hb_language_t);
-    bool extractShapeResults(hb_buffer_t* harfBuzzBuffer,
-        ShapeResult*,
-        bool& fontCycleQueued,
-        const HolesQueueItem& currentQueueItem,
-        const SimpleFontData* currentFont,
-        UScriptCode currentRunScript,
-        bool isLastResort);
-    bool collectFallbackHintChars(Vector<UChar32>& hint);
+ private:
+  void setFontFeatures();
 
-    void insertRunIntoShapeResult(ShapeResult*, std::unique_ptr<ShapeResult::RunInfo> runToInsert, unsigned startGlyph, unsigned numGlyphs, hb_buffer_t*);
+  void appendToHolesQueue(HolesQueueItemAction,
+                          unsigned startIndex,
+                          unsigned numCharacters);
+  void prependHolesQueue(HolesQueueItemAction,
+                         unsigned startIndex,
+                         unsigned numCharacters);
+  void splitUntilNextCaseChange(HolesQueueItem& currentQueueItem,
+                                SmallCapsIterator::SmallCapsBehavior&);
+  inline bool shapeRange(hb_buffer_t* harfBuzzBuffer,
+                         unsigned startIndex,
+                         unsigned numCharacters,
+                         const SimpleFontData* currentFont,
+                         PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
+                         UScriptCode currentRunScript,
+                         hb_language_t);
+  bool extractShapeResults(hb_buffer_t* harfBuzzBuffer,
+                           ShapeResult*,
+                           bool& fontCycleQueued,
+                           const HolesQueueItem& currentQueueItem,
+                           const SimpleFontData* currentFont,
+                           UScriptCode currentRunScript,
+                           bool isLastResort);
+  bool collectFallbackHintChars(Vector<UChar32>& hint);
 
-    std::unique_ptr<UChar[]> m_normalizedBuffer;
-    unsigned m_normalizedBufferLength;
+  void insertRunIntoShapeResult(
+      ShapeResult*,
+      std::unique_ptr<ShapeResult::RunInfo> runToInsert,
+      unsigned startGlyph,
+      unsigned numGlyphs,
+      hb_buffer_t*);
 
-    FeaturesVector m_features;
-    Deque<HolesQueueItem> m_holesQueue;
+  std::unique_ptr<UChar[]> m_normalizedBuffer;
+  unsigned m_normalizedBufferLength;
+
+  FeaturesVector m_features;
+  Deque<HolesQueueItem> m_holesQueue;
 };
 
+}  // namespace blink
 
-} // namespace blink
-
-#endif // HarfBuzzShaper_h
+#endif  // HarfBuzzShaper_h

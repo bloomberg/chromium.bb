@@ -41,13 +41,17 @@ namespace blink {
 class ComputedStyle;
 
 class CSSAnimatableValueFactory {
-    STATIC_ONLY(CSSAnimatableValueFactory);
-public:
-    static PassRefPtr<AnimatableValue> create(CSSPropertyID, const ComputedStyle&);
-private:
-    static PassRefPtr<AnimatableValue> createFromColor(CSSPropertyID, const ComputedStyle&);
+  STATIC_ONLY(CSSAnimatableValueFactory);
+
+ public:
+  static PassRefPtr<AnimatableValue> create(CSSPropertyID,
+                                            const ComputedStyle&);
+
+ private:
+  static PassRefPtr<AnimatableValue> createFromColor(CSSPropertyID,
+                                                     const ComputedStyle&);
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // CSSAnimatableValueFactory_h
+#endif  // CSSAnimatableValueFactory_h

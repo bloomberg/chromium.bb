@@ -33,43 +33,38 @@
 namespace blink {
 
 AXTableHeaderContainer::AXTableHeaderContainer(AXObjectCacheImpl& axObjectCache)
-    : AXMockObject(axObjectCache)
-{
+    : AXMockObject(axObjectCache) {}
+
+AXTableHeaderContainer::~AXTableHeaderContainer() {}
+
+AXTableHeaderContainer* AXTableHeaderContainer::create(
+    AXObjectCacheImpl& axObjectCache) {
+  return new AXTableHeaderContainer(axObjectCache);
 }
 
-AXTableHeaderContainer::~AXTableHeaderContainer()
-{
-}
-
-AXTableHeaderContainer* AXTableHeaderContainer::create(AXObjectCacheImpl& axObjectCache)
-{
-    return new AXTableHeaderContainer(axObjectCache);
-}
-
-bool AXTableHeaderContainer::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
-{
-    if (!m_parent)
-        return true;
-
-    if (!m_parent->accessibilityIsIgnored())
-        return false;
-
-    if (ignoredReasons)
-        m_parent->computeAccessibilityIsIgnored(ignoredReasons);
-
+bool AXTableHeaderContainer::computeAccessibilityIsIgnored(
+    IgnoredReasons* ignoredReasons) const {
+  if (!m_parent)
     return true;
+
+  if (!m_parent->accessibilityIsIgnored())
+    return false;
+
+  if (ignoredReasons)
+    m_parent->computeAccessibilityIsIgnored(ignoredReasons);
+
+  return true;
 }
 
-void AXTableHeaderContainer::addChildren()
-{
-    ASSERT(!isDetached());
-    ASSERT(!m_haveChildren);
+void AXTableHeaderContainer::addChildren() {
+  ASSERT(!isDetached());
+  ASSERT(!m_haveChildren);
 
-    m_haveChildren = true;
-    if (!m_parent || !m_parent->isAXTable())
-        return;
+  m_haveChildren = true;
+  if (!m_parent || !m_parent->isAXTable())
+    return;
 
-    toAXTable(m_parent)->columnHeaders(m_children);
+  toAXTable(m_parent)->columnHeaders(m_children);
 }
 
-} // namespace blink
+}  // namespace blink

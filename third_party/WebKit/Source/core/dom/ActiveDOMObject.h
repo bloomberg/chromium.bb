@@ -34,33 +34,33 @@
 namespace blink {
 
 class CORE_EXPORT ActiveDOMObject : public ContextLifecycleObserver {
-public:
-    ActiveDOMObject(ExecutionContext*);
+ public:
+  ActiveDOMObject(ExecutionContext*);
 
-    // suspendIfNeeded() should be called exactly once after object construction to synchronize
-    // the suspend state with that in ExecutionContext.
-    void suspendIfNeeded();
+  // suspendIfNeeded() should be called exactly once after object construction to synchronize
+  // the suspend state with that in ExecutionContext.
+  void suspendIfNeeded();
 #if DCHECK_IS_ON()
-    bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
+  bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
 #endif
 
-    // These methods have an empty default implementation so that subclasses
-    // which don't need special treatment can skip implementation.
-    virtual void suspend();
-    virtual void resume();
-    virtual void stop();
+  // These methods have an empty default implementation so that subclasses
+  // which don't need special treatment can skip implementation.
+  virtual void suspend();
+  virtual void resume();
+  virtual void stop();
 
-    void didMoveToNewExecutionContext(ExecutionContext*);
+  void didMoveToNewExecutionContext(ExecutionContext*);
 
-protected:
-    virtual ~ActiveDOMObject();
+ protected:
+  virtual ~ActiveDOMObject();
 
-private:
+ private:
 #if DCHECK_IS_ON()
-    bool m_suspendIfNeededCalled;
+  bool m_suspendIfNeededCalled;
 #endif
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // ActiveDOMObject_h
+#endif  // ActiveDOMObject_h

@@ -6,40 +6,36 @@
 
 namespace blink {
 
-VRDisplayEvent::VRDisplayEvent()
-{
+VRDisplayEvent::VRDisplayEvent() {}
+
+VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
+                               bool canBubble,
+                               bool cancelable,
+                               VRDisplay* display,
+                               String reason)
+    : Event(type, canBubble, cancelable),
+      m_display(display),
+      m_reason(reason) {}
+
+VRDisplayEvent::VRDisplayEvent(const AtomicString& type,
+                               const VRDisplayEventInit& initializer)
+    : Event(type, initializer) {
+  if (initializer.hasDisplay())
+    m_display = initializer.display();
+
+  if (initializer.hasReason())
+    m_reason = initializer.reason();
 }
 
-VRDisplayEvent::VRDisplayEvent(const AtomicString& type, bool canBubble, bool cancelable, VRDisplay* display, String reason)
-    : Event(type, canBubble, cancelable)
-    , m_display(display)
-    , m_reason(reason)
-{
+VRDisplayEvent::~VRDisplayEvent() {}
+
+const AtomicString& VRDisplayEvent::interfaceName() const {
+  return EventNames::VRDisplayEvent;
 }
 
-VRDisplayEvent::VRDisplayEvent(const AtomicString& type, const VRDisplayEventInit& initializer)
-    : Event(type, initializer)
-{
-    if (initializer.hasDisplay())
-        m_display = initializer.display();
-
-    if (initializer.hasReason())
-        m_reason = initializer.reason();
+DEFINE_TRACE(VRDisplayEvent) {
+  visitor->trace(m_display);
+  Event::trace(visitor);
 }
 
-VRDisplayEvent::~VRDisplayEvent()
-{
-}
-
-const AtomicString& VRDisplayEvent::interfaceName() const
-{
-    return EventNames::VRDisplayEvent;
-}
-
-DEFINE_TRACE(VRDisplayEvent)
-{
-    visitor->trace(m_display);
-    Event::trace(visitor);
-}
-
-} // namespace blink
+}  // namespace blink

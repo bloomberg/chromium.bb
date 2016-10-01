@@ -27,29 +27,31 @@
 
 namespace blink {
 
-class SVGFEGaussianBlurElement final : public SVGFilterPrimitiveStandardAttributes {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    DECLARE_NODE_FACTORY(SVGFEGaussianBlurElement);
+class SVGFEGaussianBlurElement final
+    : public SVGFilterPrimitiveStandardAttributes {
+  DEFINE_WRAPPERTYPEINFO();
 
-    void setStdDeviation(float stdDeviationX, float stdDeviationY);
+ public:
+  DECLARE_NODE_FACTORY(SVGFEGaussianBlurElement);
 
-    SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
-    SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
-    SVGAnimatedString* in1() { return m_in1.get(); }
+  void setStdDeviation(float stdDeviationX, float stdDeviationY);
 
-    DECLARE_VIRTUAL_TRACE();
+  SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
+  SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
+  SVGAnimatedString* in1() { return m_in1.get(); }
 
-private:
-    explicit SVGFEGaussianBlurElement(Document&);
+  DECLARE_VIRTUAL_TRACE();
 
-    void svgAttributeChanged(const QualifiedName&) override;
-    FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+ private:
+  explicit SVGFEGaussianBlurElement(Document&);
 
-    Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
-    Member<SVGAnimatedString> m_in1;
+  void svgAttributeChanged(const QualifiedName&) override;
+  FilterEffect* build(SVGFilterBuilder*, Filter*) override;
+
+  Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
+  Member<SVGAnimatedString> m_in1;
 };
 
-} // namespace blink
+}  // namespace blink
 
-#endif // SVGFEGaussianBlurElement_h
+#endif  // SVGFEGaussianBlurElement_h

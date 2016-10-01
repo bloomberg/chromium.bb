@@ -46,75 +46,80 @@ class Parser;
 class Predicate;
 
 struct Token {
-    STACK_ALLOCATED();
-    int type;
-    String str;
-    Step::Axis axis;
-    NumericOp::Opcode numop;
-    EqTestOp::Opcode eqop;
+  STACK_ALLOCATED();
+  int type;
+  String str;
+  Step::Axis axis;
+  NumericOp::Opcode numop;
+  EqTestOp::Opcode eqop;
 
-    Token(int t) : type(t) { }
-    Token(int t, const String& v): type(t), str(v) { }
-    Token(int t, Step::Axis v): type(t), axis(v) { }
-    Token(int t, NumericOp::Opcode v): type(t), numop(v) { }
-    Token(int t, EqTestOp::Opcode v): type(t), eqop(v) { }
+  Token(int t) : type(t) {}
+  Token(int t, const String& v) : type(t), str(v) {}
+  Token(int t, Step::Axis v) : type(t), axis(v) {}
+  Token(int t, NumericOp::Opcode v) : type(t), numop(v) {}
+  Token(int t, EqTestOp::Opcode v) : type(t), eqop(v) {}
 };
 
 class Parser {
-    WTF_MAKE_NONCOPYABLE(Parser);
-    STACK_ALLOCATED();
-public:
-    Parser();
-    ~Parser();
+  WTF_MAKE_NONCOPYABLE(Parser);
+  STACK_ALLOCATED();
 
-    XPathNSResolver* resolver() const { return m_resolver.get(); }
-    bool expandQName(const String& qName, AtomicString& localName, AtomicString& namespaceURI);
+ public:
+  Parser();
+  ~Parser();
 
-    Expression* parseStatement(const String& statement, XPathNSResolver*, ExceptionState&);
+  XPathNSResolver* resolver() const { return m_resolver.get(); }
+  bool expandQName(const String& qName,
+                   AtomicString& localName,
+                   AtomicString& namespaceURI);
 
-    static Parser* current() { return currentParser; }
+  Expression* parseStatement(const String& statement,
+                             XPathNSResolver*,
+                             ExceptionState&);
 
-    int lex(void* yylval);
+  static Parser* current() { return currentParser; }
 
-    Member<Expression> m_topExpr;
-    bool m_gotNamespaceError;
+  int lex(void* yylval);
 
-    void registerString(String*);
-    void deleteString(String*);
+  Member<Expression> m_topExpr;
+  bool m_gotNamespaceError;
 
-private:
-    bool isBinaryOperatorContext() const;
+  void registerString(String*);
+  void deleteString(String*);
 
-    void skipWS();
-    Token makeTokenAndAdvance(int type, int advance = 1);
-    Token makeTokenAndAdvance(int type, NumericOp::Opcode, int advance = 1);
-    Token makeTokenAndAdvance(int type, EqTestOp::Opcode, int advance = 1);
-    char peekAheadHelper();
-    char peekCurHelper();
+ private:
+  bool isBinaryOperatorContext() const;
 
-    Token lexString();
-    Token lexNumber();
-    bool lexNCName(String&);
-    bool lexQName(String&);
+  void skipWS();
+  Token makeTokenAndAdvance(int type, int advance = 1);
+  Token makeTokenAndAdvance(int type, NumericOp::Opcode, int advance = 1);
+  Token makeTokenAndAdvance(int type, EqTestOp::Opcode, int advance = 1);
+  char peekAheadHelper();
+  char peekCurHelper();
 
-    Token nextToken();
-    Token nextTokenInternal();
+  Token lexString();
+  Token lexNumber();
+  bool lexNCName(String&);
+  bool lexQName(String&);
 
-    void reset(const String& data);
+  Token nextToken();
+  Token nextTokenInternal();
 
-    static Parser* currentParser;
+  void reset(const String& data);
 
-    unsigned m_nextPos;
-    String m_data;
-    int m_lastTokenType;
-    Member<XPathNSResolver> m_resolver;
+  static Parser* currentParser;
 
-    HashSet<std::unique_ptr<String>> m_strings;
+  unsigned m_nextPos;
+  String m_data;
+  int m_lastTokenType;
+  Member<XPathNSResolver> m_resolver;
+
+  HashSet<std::unique_ptr<String>> m_strings;
 };
 
-} // namespace XPath
+}  // namespace XPath
 
-} // namespace blink
+}  // namespace blink
 
 int xpathyyparse(blink::XPath::Parser*);
 #endif

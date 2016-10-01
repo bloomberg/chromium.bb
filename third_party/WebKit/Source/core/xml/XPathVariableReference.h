@@ -34,17 +34,20 @@ namespace XPath {
 
 // Variable references are not used with XPathEvaluator.
 class VariableReference final : public Expression {
-public:
-    explicit VariableReference(const String& name);
+ public:
+  explicit VariableReference(const String& name);
 
-private:
-    Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { NOTREACHED(); return Value::NumberValue; }
+ private:
+  Value evaluate(EvaluationContext&) const override;
+  Value::Type resultType() const override {
+    NOTREACHED();
+    return Value::NumberValue;
+  }
 
-    String m_name;
+  String m_name;
 };
 
-} // namespace XPath
+}  // namespace XPath
 
-} // namespace blink
-#endif // XPathVariableReference_h
+}  // namespace blink
+#endif  // XPathVariableReference_h

@@ -32,159 +32,156 @@
 
 namespace blink {
 
-FETurbulence::FETurbulence(Filter* filter, TurbulenceType type, float baseFrequencyX, float baseFrequencyY, int numOctaves, float seed, bool stitchTiles)
-    : FilterEffect(filter)
-    , m_type(type)
-    , m_baseFrequencyX(baseFrequencyX)
-    , m_baseFrequencyY(baseFrequencyY)
-    , m_numOctaves(numOctaves)
-    , m_seed(seed)
-    , m_stitchTiles(stitchTiles)
-{
+FETurbulence::FETurbulence(Filter* filter,
+                           TurbulenceType type,
+                           float baseFrequencyX,
+                           float baseFrequencyY,
+                           int numOctaves,
+                           float seed,
+                           bool stitchTiles)
+    : FilterEffect(filter),
+      m_type(type),
+      m_baseFrequencyX(baseFrequencyX),
+      m_baseFrequencyY(baseFrequencyY),
+      m_numOctaves(numOctaves),
+      m_seed(seed),
+      m_stitchTiles(stitchTiles) {}
+
+FETurbulence* FETurbulence::create(Filter* filter,
+                                   TurbulenceType type,
+                                   float baseFrequencyX,
+                                   float baseFrequencyY,
+                                   int numOctaves,
+                                   float seed,
+                                   bool stitchTiles) {
+  return new FETurbulence(filter, type, baseFrequencyX, baseFrequencyY,
+                          numOctaves, seed, stitchTiles);
 }
 
-FETurbulence* FETurbulence::create(Filter* filter, TurbulenceType type, float baseFrequencyX, float baseFrequencyY, int numOctaves, float seed, bool stitchTiles)
-{
-    return new FETurbulence(filter, type, baseFrequencyX, baseFrequencyY, numOctaves, seed, stitchTiles);
+TurbulenceType FETurbulence::type() const {
+  return m_type;
 }
 
-TurbulenceType FETurbulence::type() const
-{
-    return m_type;
+bool FETurbulence::setType(TurbulenceType type) {
+  if (m_type == type)
+    return false;
+  m_type = type;
+  return true;
 }
 
-bool FETurbulence::setType(TurbulenceType type)
-{
-    if (m_type == type)
-        return false;
-    m_type = type;
-    return true;
+float FETurbulence::baseFrequencyY() const {
+  return m_baseFrequencyY;
 }
 
-float FETurbulence::baseFrequencyY() const
-{
-    return m_baseFrequencyY;
+bool FETurbulence::setBaseFrequencyY(float baseFrequencyY) {
+  if (m_baseFrequencyY == baseFrequencyY)
+    return false;
+  m_baseFrequencyY = baseFrequencyY;
+  return true;
 }
 
-bool FETurbulence::setBaseFrequencyY(float baseFrequencyY)
-{
-    if (m_baseFrequencyY == baseFrequencyY)
-        return false;
-    m_baseFrequencyY = baseFrequencyY;
-    return true;
+float FETurbulence::baseFrequencyX() const {
+  return m_baseFrequencyX;
 }
 
-float FETurbulence::baseFrequencyX() const
-{
-    return m_baseFrequencyX;
+bool FETurbulence::setBaseFrequencyX(float baseFrequencyX) {
+  if (m_baseFrequencyX == baseFrequencyX)
+    return false;
+  m_baseFrequencyX = baseFrequencyX;
+  return true;
 }
 
-bool FETurbulence::setBaseFrequencyX(float baseFrequencyX)
-{
-    if (m_baseFrequencyX == baseFrequencyX)
-        return false;
-    m_baseFrequencyX = baseFrequencyX;
-    return true;
+float FETurbulence::seed() const {
+  return m_seed;
 }
 
-float FETurbulence::seed() const
-{
-    return m_seed;
+bool FETurbulence::setSeed(float seed) {
+  if (m_seed == seed)
+    return false;
+  m_seed = seed;
+  return true;
 }
 
-bool FETurbulence::setSeed(float seed)
-{
-    if (m_seed == seed)
-        return false;
-    m_seed = seed;
-    return true;
+int FETurbulence::numOctaves() const {
+  return m_numOctaves;
 }
 
-int FETurbulence::numOctaves() const
-{
-    return m_numOctaves;
+bool FETurbulence::setNumOctaves(int numOctaves) {
+  if (m_numOctaves == numOctaves)
+    return false;
+  m_numOctaves = numOctaves;
+  return true;
 }
 
-bool FETurbulence::setNumOctaves(int numOctaves)
-{
-    if (m_numOctaves == numOctaves)
-        return false;
-    m_numOctaves = numOctaves;
-    return true;
+bool FETurbulence::stitchTiles() const {
+  return m_stitchTiles;
 }
 
-bool FETurbulence::stitchTiles() const
-{
-    return m_stitchTiles;
+bool FETurbulence::setStitchTiles(bool stitch) {
+  if (m_stitchTiles == stitch)
+    return false;
+  m_stitchTiles = stitch;
+  return true;
 }
 
-bool FETurbulence::setStitchTiles(bool stitch)
-{
-    if (m_stitchTiles == stitch)
-        return false;
-    m_stitchTiles = stitch;
-    return true;
+sk_sp<SkShader> FETurbulence::createShader() const {
+  const SkISize size = SkISize::Make(filterPrimitiveSubregion().width(),
+                                     filterPrimitiveSubregion().height());
+  // Frequency should be scaled by page zoom, but not by primitiveUnits.
+  // So we apply only the transform scale (as Filter::apply*Scale() do)
+  // and not the target bounding box scale (as SVGFilter::apply*Scale()
+  // would do). Note also that we divide by the scale since this is
+  // a frequency, not a period.
+  float baseFrequencyX = m_baseFrequencyX / getFilter()->scale();
+  float baseFrequencyY = m_baseFrequencyY / getFilter()->scale();
+  return (type() == FETURBULENCE_TYPE_FRACTALNOISE)
+             ? SkPerlinNoiseShader::MakeFractalNoise(
+                   SkFloatToScalar(baseFrequencyX),
+                   SkFloatToScalar(baseFrequencyY), numOctaves(),
+                   SkFloatToScalar(seed()), stitchTiles() ? &size : 0)
+             : SkPerlinNoiseShader::MakeTurbulence(
+                   SkFloatToScalar(baseFrequencyX),
+                   SkFloatToScalar(baseFrequencyY), numOctaves(),
+                   SkFloatToScalar(seed()), stitchTiles() ? &size : 0);
 }
 
-sk_sp<SkShader> FETurbulence::createShader() const
-{
-    const SkISize size = SkISize::Make(
-        filterPrimitiveSubregion().width(),
-        filterPrimitiveSubregion().height());
-    // Frequency should be scaled by page zoom, but not by primitiveUnits.
-    // So we apply only the transform scale (as Filter::apply*Scale() do)
-    // and not the target bounding box scale (as SVGFilter::apply*Scale()
-    // would do). Note also that we divide by the scale since this is
-    // a frequency, not a period.
-    float baseFrequencyX = m_baseFrequencyX / getFilter()->scale();
-    float baseFrequencyY = m_baseFrequencyY / getFilter()->scale();
-    return (type() == FETURBULENCE_TYPE_FRACTALNOISE) ?
-        SkPerlinNoiseShader::MakeFractalNoise(SkFloatToScalar(baseFrequencyX),
-            SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
-            stitchTiles() ? &size : 0) :
-        SkPerlinNoiseShader::MakeTurbulence(SkFloatToScalar(baseFrequencyX),
-            SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
-            stitchTiles() ? &size : 0);
+sk_sp<SkImageFilter> FETurbulence::createImageFilter() {
+  if (m_baseFrequencyX < 0 || m_baseFrequencyY < 0)
+    return createTransparentBlack();
+
+  SkPaint paint;
+  paint.setShader(createShader());
+  SkImageFilter::CropRect rect = getCropRect();
+  return SkPaintImageFilter::Make(paint, &rect);
 }
 
-sk_sp<SkImageFilter> FETurbulence::createImageFilter()
-{
-    if (m_baseFrequencyX < 0 || m_baseFrequencyY < 0)
-        return createTransparentBlack();
-
-    SkPaint paint;
-    paint.setShader(createShader());
-    SkImageFilter::CropRect rect = getCropRect();
-    return SkPaintImageFilter::Make(paint, &rect);
-}
-
-static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)
-{
-    switch (type) {
+static TextStream& operator<<(TextStream& ts, const TurbulenceType& type) {
+  switch (type) {
     case FETURBULENCE_TYPE_UNKNOWN:
-        ts << "UNKNOWN";
-        break;
+      ts << "UNKNOWN";
+      break;
     case FETURBULENCE_TYPE_TURBULENCE:
-        ts << "TURBULENCE";
-        break;
+      ts << "TURBULENCE";
+      break;
     case FETURBULENCE_TYPE_FRACTALNOISE:
-        ts << "NOISE";
-        break;
-    }
-    return ts;
+      ts << "NOISE";
+      break;
+  }
+  return ts;
 }
 
-TextStream& FETurbulence::externalRepresentation(TextStream& ts, int indent) const
-{
-    writeIndent(ts, indent);
-    ts << "[feTurbulence";
-    FilterEffect::externalRepresentation(ts);
-    ts << " type=\"" << type() << "\" "
-       << "baseFrequency=\"" << baseFrequencyX() << ", " << baseFrequencyY() << "\" "
-       << "seed=\"" << seed() << "\" "
-       << "numOctaves=\"" << numOctaves() << "\" "
-       << "stitchTiles=\"" << stitchTiles() << "\"]\n";
-    return ts;
+TextStream& FETurbulence::externalRepresentation(TextStream& ts,
+                                                 int indent) const {
+  writeIndent(ts, indent);
+  ts << "[feTurbulence";
+  FilterEffect::externalRepresentation(ts);
+  ts << " type=\"" << type() << "\" "
+     << "baseFrequency=\"" << baseFrequencyX() << ", " << baseFrequencyY()
+     << "\" "
+     << "seed=\"" << seed() << "\" "
+     << "numOctaves=\"" << numOctaves() << "\" "
+     << "stitchTiles=\"" << stitchTiles() << "\"]\n";
+  return ts;
 }
 
-} // namespace blink
+}  // namespace blink

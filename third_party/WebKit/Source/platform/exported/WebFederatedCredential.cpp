@@ -7,31 +7,30 @@
 #include "platform/credentialmanager/PlatformFederatedCredential.h"
 
 namespace blink {
-WebFederatedCredential::WebFederatedCredential(const WebString& id, const WebSecurityOrigin& provider, const WebString& name, const WebURL& iconURL)
-    : WebCredential(PlatformFederatedCredential::create(id, provider, name, iconURL))
-{
+WebFederatedCredential::WebFederatedCredential(
+    const WebString& id,
+    const WebSecurityOrigin& provider,
+    const WebString& name,
+    const WebURL& iconURL)
+    : WebCredential(
+          PlatformFederatedCredential::create(id, provider, name, iconURL)) {}
+
+void WebFederatedCredential::assign(const WebFederatedCredential& other) {
+  m_platformCredential = other.m_platformCredential;
 }
 
-void WebFederatedCredential::assign(const WebFederatedCredential& other)
-{
-    m_platformCredential = other.m_platformCredential;
-}
-
-WebSecurityOrigin WebFederatedCredential::provider() const
-{
-    return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())->provider();
+WebSecurityOrigin WebFederatedCredential::provider() const {
+  return static_cast<PlatformFederatedCredential*>(m_platformCredential.get())
+      ->provider();
 }
 
 WebFederatedCredential::WebFederatedCredential(PlatformCredential* credential)
-    : WebCredential(credential)
-{
+    : WebCredential(credential) {}
+
+WebFederatedCredential& WebFederatedCredential::operator=(
+    PlatformCredential* credential) {
+  m_platformCredential = credential;
+  return *this;
 }
 
-WebFederatedCredential& WebFederatedCredential::operator=(PlatformCredential* credential)
-{
-    m_platformCredential = credential;
-    return *this;
-}
-
-} // namespace blink
-
+}  // namespace blink
