@@ -14,14 +14,19 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
-#include "net/url_request/url_request_test_util.h"
+#include "url/gurl.h"
 
-class GURL;
 class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace net {
+class TestURLRequestContextGetter;
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace update_client {
 

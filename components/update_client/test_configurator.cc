@@ -4,9 +4,12 @@
 
 #include "components/update_client/test_configurator.h"
 
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/version.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/component_patcher_operation.h"
+#include "net/url_request/url_request_test_util.h"
 #include "url/gurl.h"
 
 namespace update_client {

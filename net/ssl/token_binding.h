@@ -9,9 +9,12 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
+
+namespace crypto {
+class ECPrivateKey;
+}
 
 namespace net {
 

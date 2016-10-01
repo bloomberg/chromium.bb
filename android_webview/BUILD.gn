@@ -503,6 +503,7 @@ source_set("common") {
     "//content",
     "//content/public/app:both",
     "//content/public/browser",
+    "//crypto",
     "//gin",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/client:gles2_c_lib",

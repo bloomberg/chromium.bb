@@ -11,6 +11,7 @@
 #include <openssl/mem.h>
 
 #include "base/stl_util.h"
+#include "crypto/ec_private_key.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_config.h"
