@@ -238,6 +238,10 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("item_source.html",
                           IDR_MD_EXTENSIONS_ITEM_SOURCE_HTML);
   source->AddResourcePath("item_source.js", IDR_MD_EXTENSIONS_ITEM_SOURCE_JS);
+  source->AddResourcePath("options_dialog.html",
+                          IDR_MD_EXTENSIONS_OPTIONS_DIALOG_HTML);
+  source->AddResourcePath("options_dialog.js",
+                          IDR_MD_EXTENSIONS_OPTIONS_DIALOG_JS);
   source->AddResourcePath("pack_dialog.html",
                           IDR_MD_EXTENSIONS_PACK_DIALOG_HTML);
   source->AddResourcePath("pack_dialog.js", IDR_MD_EXTENSIONS_PACK_DIALOG_JS);
@@ -315,11 +319,11 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 #endif
 
     web_ui->AddMessageHandler(new MetricsHandler());
-
-    // Need to allow <object> elements so that the <extensionoptions> browser
-    // plugin can be loaded within chrome://extensions.
-    source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
   }
+
+  // Need to allow <object> elements so that the <extensionoptions> browser
+  // plugin can be loaded within chrome://extensions.
+  source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
 
   content::WebUIDataSource::Add(profile, source);
   // Handles its own lifetime.

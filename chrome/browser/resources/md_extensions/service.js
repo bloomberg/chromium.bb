@@ -223,7 +223,8 @@ cr.define('extensions', function() {
       assert(extension && extension.optionsPage);
       if (extension.optionsPage.openInTab)
         chrome.developerPrivate.showOptions(id);
-      // TODO(devlin): Handle embedded extension options.
+      else
+        this.manager_.optionsDialog.show(extension);
     },
 
     /** @override */

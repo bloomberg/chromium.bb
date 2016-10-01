@@ -100,6 +100,10 @@ cr.define('extensions', function() {
       return this.$['pack-dialog'];
     },
 
+    get optionsDialog() {
+      return this.$['options-dialog'];
+    },
+
     /**
      * @param {!CustomEvent} event
      * @private

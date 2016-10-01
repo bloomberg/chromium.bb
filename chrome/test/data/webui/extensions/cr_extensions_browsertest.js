@@ -41,6 +41,7 @@ CrExtensionsBrowserTest.prototype = {
     'extension_item_test.js',
     'extension_item_list_test.js',
     'extension_keyboard_shortcuts_test.js',
+    'extension_options_dialog_test.js',
     'extension_pack_dialog_test.js',
     'extension_service_test.js',
     'extension_shortcut_input_test.js',
@@ -243,4 +244,13 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionPackDialogInteractionTest',
        function() {
   extension_pack_dialog_tests.registerTests();
   mocha.grep(assert(extension_pack_dialog_tests.TestNames.Interaction)).run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Options Dialog Tests
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionOptionsDialogInteractionTest',
+       function() {
+  extension_options_dialog_tests.registerTests();
+  mocha.grep(assert(extension_options_dialog_tests.TestNames.Layout)).run();
 });

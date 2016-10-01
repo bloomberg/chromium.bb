@@ -5,16 +5,15 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 
 <dom-module id="extensions-pack-dialog">
   <template>
     <style>
       dialog {
+        @apply(--shadow-elevation-2dp);
         border: none;
         border-radius: 2px;
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .05),
-                    0 1px 4px 0 rgba(0, 0, 0, .08),
-                    0 3px 1px -2px rgba(0, 0, 0, .2);
         padding: 0;
       }
       header {
