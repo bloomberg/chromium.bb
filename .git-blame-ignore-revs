@@ -513,3 +513,5 @@ fe45a535ea84cba23a9b1355d36525db0d408280
 49740b50472837cc4b4a3ed8402ac56802338464
 # chrome/browser/download: Change auto to not deduce raw pointers.
 747f5543ff5e4c201bcba0182bfd24e5e6896d28
+# clang-format blink.
+1c8e1a7719e9d223cc84e838c9a31a0210f5878b
