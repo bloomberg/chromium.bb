@@ -47,7 +47,7 @@ void RequestQueueInMemoryStore::UpdateRequests(
     const std::vector<SavePageRequest>& requests,
     const RequestQueue::UpdateCallback& callback) {
   std::unique_ptr<UpdateRequestsResult> result(
-      new UpdateRequestsResult(StoreState::LOADED));
+      new UpdateRequestsResult(state()));
 
   ItemActionStatus status;
   for (const auto& request : requests) {
@@ -100,6 +100,10 @@ void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {
   requests_.clear();
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(callback, true));
+}
+
+StoreState RequestQueueInMemoryStore::state() const {
+  return StoreState::LOADED;
 }
 
 }  // namespace offline_pages

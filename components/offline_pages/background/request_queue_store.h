@@ -61,6 +61,9 @@ class RequestQueueStore {
 
   // Resets the store.
   virtual void Reset(const ResetCallback& callback) = 0;
+
+  // Gets the store state.
+  virtual StoreState state() const = 0;
 };
 
 }  // namespace offline_pages

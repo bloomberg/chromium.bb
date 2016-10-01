@@ -23,6 +23,7 @@ template class StoreUpdateResult<SavePageRequest>;
 namespace {
 
 using UpdateStatus = RequestQueueStore::UpdateStatus;
+using StoreStateCallback = base::Callback<void(StoreState)>;
 
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
@@ -338,21 +339,28 @@ void RemoveRequestsSync(sql::Connection* db,
 void OpenConnectionSync(sql::Connection* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const base::FilePath& path,
-                        const base::Callback<void(bool)>& callback) {
-  bool success = InitDatabase(db, path);
-  runner->PostTask(FROM_HERE, base::Bind(callback, success));
+                        const StoreStateCallback& callback) {
+  StoreState state =
+      InitDatabase(db, path) ? StoreState::LOADED : StoreState::FAILED_LOADING;
+  runner->PostTask(FROM_HERE, base::Bind(callback, state));
 }
 
 void ResetSync(sql::Connection* db,
                const base::FilePath& db_file_path,
                scoped_refptr<base::SingleThreadTaskRunner> runner,
-               const RequestQueueStore::ResetCallback& callback) {
+               const StoreStateCallback& callback) {
   // This method deletes the content of the whole store and reinitializes it.
   bool success = db->Raze();
   db->Close();
-  if (success)
-    success = InitDatabase(db, db_file_path);
-  runner->PostTask(FROM_HERE, base::Bind(callback, success));
+  StoreState state;
+  if (!success)
+    state = StoreState::FAILED_RESET;
+  if (InitDatabase(db, db_file_path))
+    state = StoreState::LOADED;
+  else
+    state = StoreState::FAILED_LOADING;
+
+  runner->PostTask(FROM_HERE, base::Bind(callback, state));
 }
 
 }  // anonymous namespace
@@ -465,19 +473,25 @@ void RequestQueueStoreSQL::OpenConnection() {
                             weak_ptr_factory_.GetWeakPtr())));
 }
 
-void RequestQueueStoreSQL::OnOpenConnectionDone(bool success) {
+void RequestQueueStoreSQL::OnOpenConnectionDone(StoreState state) {
   DCHECK(db_.get());
 
+  state_ = state;
+
   // Unfortunately we were not able to open DB connection.
-  if (!success)
+  if (state_ != StoreState::LOADED)
     db_.reset();
 }
 
 void RequestQueueStoreSQL::OnResetDone(const ResetCallback& callback,
-                                       bool success) {
+                                       StoreState state) {
   // Complete connection initialization post reset.
-  OnOpenConnectionDone(success);
-  callback.Run(success);
+  OnOpenConnectionDone(state);
+  callback.Run(state == StoreState::LOADED);
+}
+
+StoreState RequestQueueStoreSQL::state() const {
+  return state_;
 }
 
 }  // namespace offline_pages

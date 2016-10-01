@@ -35,6 +35,7 @@ class RequestQueueInMemoryStore : public RequestQueueStore {
                       const RemoveCallback& callback) override;
 
   void Reset(const ResetCallback& callback) override;
+  StoreState state() const override;
 
  private:
   typedef std::map<int64_t, SavePageRequest> RequestsMap;

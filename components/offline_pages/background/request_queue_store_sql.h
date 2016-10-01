@@ -6,7 +6,6 @@
 #define COMPONENTS_OFFLINE_PAGES_BACKGROUND_REQUEST_QUEUE_STORE_SQL_H_
 
 #include <stdint.h>
-
 #include <memory>
 #include <vector>
 
@@ -41,6 +40,7 @@ class RequestQueueStoreSQL : public RequestQueueStore {
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
+  StoreState state() const override;
 
  private:
   // Helper functions to return immediately if no database is found.
@@ -48,10 +48,10 @@ class RequestQueueStoreSQL : public RequestQueueStore {
 
   // Used to initialize DB connection.
   void OpenConnection();
-  void OnOpenConnectionDone(bool success);
+  void OnOpenConnectionDone(StoreState state);
 
   // Used to finalize connection reset.
-  void OnResetDone(const ResetCallback& callback, bool success);
+  void OnResetDone(const ResetCallback& callback, StoreState state);
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
@@ -61,6 +61,9 @@ class RequestQueueStoreSQL : public RequestQueueStore {
 
   // Database connection.
   std::unique_ptr<sql::Connection> db_;
+
+  // State of the store.
+  StoreState state_;
 
   base::WeakPtrFactory<RequestQueueStoreSQL> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(RequestQueueStoreSQL);
