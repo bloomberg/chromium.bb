@@ -537,6 +537,16 @@ void NetworkQualityEstimator::ObtainEffectiveConnectionTypeModelParams(
           base::TimeDelta::FromMilliseconds(1280),
           nqe::internal::kInvalidThroughput);
 
+  default_effective_connection_type_thresholds_[EFFECTIVE_CONNECTION_TYPE_3G] =
+      nqe::internal::NetworkQuality(
+          // Set to 273 milliseconds, which corresponds to 50th percentile of
+          // 3G HTTP RTT observations on Android.
+          base::TimeDelta::FromMilliseconds(273),
+          // Set to 204 milliseconds, which corresponds to 50th percentile of
+          // 3G transport RTT observations on Android.
+          base::TimeDelta::FromMilliseconds(204),
+          nqe::internal::kInvalidThroughput);
+
   for (size_t i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
     EffectiveConnectionType effective_connection_type =
         static_cast<EffectiveConnectionType>(i);

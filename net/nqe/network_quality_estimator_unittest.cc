@@ -566,7 +566,8 @@ TEST(NetworkQualityEstimatorTest, DefaultTransportRTTBasedThresholds) {
       {false, 3000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
       {false, 2000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
       {false, 1500, EFFECTIVE_CONNECTION_TYPE_2G},
-      {false, 1000, EFFECTIVE_CONNECTION_TYPE_4G},
+      {false, 1000, EFFECTIVE_CONNECTION_TYPE_3G},
+      {false, 100, EFFECTIVE_CONNECTION_TYPE_4G},
       {false, 20, EFFECTIVE_CONNECTION_TYPE_4G},
       // Override default thresholds using variation params.
       {true, 5000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
@@ -623,7 +624,8 @@ TEST(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
       {false, 3000, EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
       {false, 2000, EFFECTIVE_CONNECTION_TYPE_2G},
       {false, 1500, EFFECTIVE_CONNECTION_TYPE_2G},
-      {false, 1000, EFFECTIVE_CONNECTION_TYPE_4G},
+      {false, 1000, EFFECTIVE_CONNECTION_TYPE_3G},
+      {false, 100, EFFECTIVE_CONNECTION_TYPE_4G},
       {false, 20, EFFECTIVE_CONNECTION_TYPE_4G},
       // Override default thresholds using variation params.
       {true, 5000, EFFECTIVE_CONNECTION_TYPE_OFFLINE},
