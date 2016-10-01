@@ -2,7 +2,7 @@
   "name": "exe:content_browser",
   "capabilities": {
     "provided": {
-      "web": [
+      "renderer": [
         "content::mojom::LayoutTestBluetoothFakeAdapterSetter"
       ]
     }

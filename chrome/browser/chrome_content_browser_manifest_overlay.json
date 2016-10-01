@@ -2,7 +2,7 @@
   "name": "exe:content_browser",
   "capabilities": {
     "provided": {
-      "web": [
+      "renderer": [
         "autofill::mojom::AutofillDriver",
         "autofill::mojom::PasswordManagerDriver",
         "extensions::StashService",
