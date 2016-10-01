@@ -59,7 +59,6 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
  public:
   NGPhysicalConstraintSpace();
   NGPhysicalConstraintSpace(NGPhysicalSize);
-  NGPhysicalConstraintSpace(const NGPhysicalConstraintSpace&);
 
   NGPhysicalSize ContainerSize() const { return container_size_; }
 

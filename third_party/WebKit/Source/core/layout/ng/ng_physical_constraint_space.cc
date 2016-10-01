@@ -24,19 +24,6 @@ NGPhysicalConstraintSpace::NGPhysicalConstraintSpace()
       width_direction_fragmentation_type_(FragmentNone),
       height_direction_fragmentation_type_(FragmentNone) {}
 
-NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(
-    const NGPhysicalConstraintSpace& other)
-    : fixed_width_(other.fixed_width_),
-      fixed_height_(other.fixed_height_),
-      width_direction_triggers_scrollbar_(
-          other.width_direction_triggers_scrollbar_),
-      height_direction_triggers_scrollbar_(
-          other.height_direction_triggers_scrollbar_),
-      width_direction_fragmentation_type_(
-          other.width_direction_fragmentation_type_),
-      height_direction_fragmentation_type_(
-          other.height_direction_fragmentation_type_) {}
-
 void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion exclusion,
                                              unsigned options) {
   exclusions_.append(exclusion);
