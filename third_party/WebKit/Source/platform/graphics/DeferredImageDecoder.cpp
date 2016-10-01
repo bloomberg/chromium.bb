@@ -165,7 +165,9 @@ void DeferredImageDecoder::setDataInternal(PassRefPtr<SharedBuffer> passData,
     const char* segment = 0;
     for (size_t length = data->getSomeData(segment, m_rwBuffer->size()); length;
          length = data->getSomeData(segment, m_rwBuffer->size())) {
-      m_rwBuffer->append(segment, length);
+      DCHECK_GE(data->size(), m_rwBuffer->size() + length);
+      const size_t remaining = data->size() - m_rwBuffer->size() - length;
+      m_rwBuffer->append(segment, length, remaining);
     }
   }
 }
