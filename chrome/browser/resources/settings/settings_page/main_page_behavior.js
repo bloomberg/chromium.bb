@@ -210,8 +210,16 @@ var MainPageBehaviorImpl = {
     assert(this.scroller);
     assert(section.classList.contains('expanded'));
 
-    var canAnimateCollapse = section.canAnimateCollapse();
-    if (canAnimateCollapse) {
+    // Don't animate the collapse if we are transitioning between Basic/Advanced
+    // and About, since the section won't be visible.
+    var needAnimate =
+        settings.Route.ABOUT.contains(settings.getCurrentRoute()) ==
+        (section.domHost.tagName == 'SETTINGS-ABOUT-PAGE');
+
+    // Animate the collapse if the section knows the original height, except
+    // when switching between Basic/Advanced and About.
+    var shouldAnimateCollapse = needAnimate && section.canAnimateCollapse();
+    if (shouldAnimateCollapse) {
       this.toggleScrolling_(false);
       // Do the initial collapse setup, which takes the section out of the flow,
       // before showing everything.
@@ -224,7 +232,7 @@ var MainPageBehaviorImpl = {
     this.toggleOtherSectionsHidden_(section.section, false);
     this.classList.remove('showing-subpage');
 
-    if (!canAnimateCollapse) {
+    if (!shouldAnimateCollapse) {
       // Finish by restoring the section into the page.
       section.setFrozen(false);
       return Promise.resolve();

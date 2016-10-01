@@ -139,7 +139,10 @@ var SettingsSectionElement = Polymer({
     return animation;
   },
 
-  /** @return {boolean} True if the section is currently expanded. */
+  /**
+   * @return {boolean} True if the section is currently expanded and we know
+   *     what the collapsed height should be.
+   */
   canAnimateCollapse: function() {
     return this.classList.contains('expanded') && this.clientHeight > 0 &&
         !Number.isNaN(this.collapsedHeight_);
