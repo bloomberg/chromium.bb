@@ -1344,24 +1344,6 @@
             ]
         }
     ],
-    "PreferHtmlOverPlugins": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PreferHtmlOverPlugins"
-                    ]
-                }
-            ]
-        }
-    ],
     "ProgressBarAnimationAndroid": [
         {
             "platforms": [
