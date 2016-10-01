@@ -27,6 +27,15 @@ def main():
     sys.exit(1)
 
   base, current, others, file_name_in_tree = sys.argv[1:5]
+
+  if file_name_in_tree == '%P':
+    print >>sys.stderr
+    print >>sys.stderr, 'ERROR: clang-format merge driver needs git 2.5+'
+    if sys.platform == 'darwin':
+      print >>sys.stderr, 'Upgrade to Xcode 7.2+'
+    print >>sys.stderr
+    return 1
+
   print 'Running clang-format 3-way merge driver on ' + file_name_in_tree
 
   try:
