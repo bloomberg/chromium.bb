@@ -272,7 +272,7 @@ bool BrowsingDataRemoverFunction::RunAsync() {
       base::Time::FromDoubleT(ms_since_epoch / 1000.0);
 
   removal_mask_ = GetRemovalMask();
-  if (bad_message_)
+  if (bad_message())
     return false;
 
   // Check for prohibited data types.
@@ -381,7 +381,7 @@ int BrowsingDataRemoverFunction::ParseOriginTypeMask(
 int BrowsingDataRemoveFunction::GetRemovalMask() {
   base::DictionaryValue* data_to_remove;
   if (!args_->GetDictionary(1, &data_to_remove)) {
-    bad_message_ = true;
+    set_bad_message(true);
     return 0;
   }
 
@@ -392,7 +392,7 @@ int BrowsingDataRemoveFunction::GetRemovalMask() {
        i.Advance()) {
     bool selected = false;
     if (!i.value().GetAsBoolean(&selected)) {
-      bad_message_ = true;
+      set_bad_message(true);
       return 0;
     }
     if (selected)

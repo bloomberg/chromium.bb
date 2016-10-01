@@ -42,8 +42,34 @@ ChromeUIThreadExtensionFunction::GetAssociatedWebContents() {
   return chrome_details_.GetAssociatedWebContents();
 }
 
+void ChromeUIThreadExtensionFunction::SetError(const std::string& error) {
+  error_ = error;
+}
+
+const std::string& ChromeUIThreadExtensionFunction::GetError() const {
+  return error_.empty() ? UIThreadExtensionFunction::GetError() : error_;
+}
+
 void ChromeUIThreadExtensionFunction::SendResponse(bool success) {
-  Respond(success ? ArgumentList(std::move(results_)) : Error(error_));
+  ResponseValue response;
+  if (success) {
+    response = ArgumentList(std::move(results_));
+  } else {
+    response = results_ ? ErrorWithArguments(std::move(results_), error_)
+                        : Error(error_);
+  }
+  Respond(std::move(response));
+}
+
+void ChromeUIThreadExtensionFunction::SetResult(
+    std::unique_ptr<base::Value> result) {
+  results_.reset(new base::ListValue());
+  results_->Append(std::move(result));
+}
+
+void ChromeUIThreadExtensionFunction::SetResultList(
+    std::unique_ptr<base::ListValue> results) {
+  results_ = std::move(results);
 }
 
 ChromeUIThreadExtensionFunction::~ChromeUIThreadExtensionFunction() {
@@ -55,7 +81,13 @@ ChromeAsyncExtensionFunction::ChromeAsyncExtensionFunction() {
 ChromeAsyncExtensionFunction::~ChromeAsyncExtensionFunction() {}
 
 ExtensionFunction::ResponseAction ChromeAsyncExtensionFunction::Run() {
-  return RunAsync() ? RespondLater() : RespondNow(Error(error_));
+  if (RunAsync())
+    return RespondLater();
+  // TODO(devlin): Track these down and eliminate them if possible. We
+  // shouldn't return results and an error.
+  if (results_)
+    return RespondNow(ErrorWithArguments(std::move(results_), error_));
+  return RespondNow(Error(error_));
 }
 
 // static
@@ -70,8 +102,11 @@ ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {
 ChromeSyncExtensionFunction::~ChromeSyncExtensionFunction() {}
 
 ExtensionFunction::ResponseAction ChromeSyncExtensionFunction::Run() {
-  return RespondNow(RunSync() ? ArgumentList(std::move(results_))
-                              : Error(error_));
+  if (!RunSync()) {
+    DCHECK(!results_);
+    return RespondNow(Error(error_));
+  }
+  return RespondNow(ArgumentList(std::move(results_)));
 }
 
 // static

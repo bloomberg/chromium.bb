@@ -55,7 +55,7 @@ chrome.test.getConfig(function(config) {
                     {permissions: ['bookmarks']},
                     function(granted1) {
                       if (chrome.runtime.lastError) {
-                        chrome.test.assertFalse(granted1);
+                        chrome.test.assertFalse(!!granted1);
                         chrome.test.assertEq(chrome.runtime.lastError.message,
                                              GESTURE_ERROR);
                         chrome.test.succeed();

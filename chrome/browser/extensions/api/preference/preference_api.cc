@@ -737,7 +737,7 @@ bool SetPreferenceFunction::RunSync() {
       transformer->ExtensionToBrowserPref(value, &error, &bad_message));
   if (!browser_pref_value) {
     error_ = error;
-    bad_message_ = bad_message;
+    set_bad_message(bad_message);
     return false;
   }
   EXTENSION_FUNCTION_VALIDATE(browser_pref_value->GetType() == pref->GetType());
@@ -749,7 +749,7 @@ bool SetPreferenceFunction::RunSync() {
   if (!extensionPrefValue) {
     error_ =  ErrorUtils::FormatErrorMessage(kConversionErrorMessage,
                                                       pref->name());
-    bad_message_ = true;
+    set_bad_message(true);
     return false;
   }
 

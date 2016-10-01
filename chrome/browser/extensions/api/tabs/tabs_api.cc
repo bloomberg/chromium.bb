@@ -1367,7 +1367,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
             ScriptExecutor::SINGLE_FRAME, ExtensionApiFrameIdMap::kTopFrameId,
             ScriptExecutor::DONT_MATCH_ABOUT_BLANK, UserScript::DOCUMENT_IDLE,
             ScriptExecutor::MAIN_WORLD, ScriptExecutor::DEFAULT_PROCESS, GURL(),
-            GURL(), user_gesture_, ScriptExecutor::NO_RESULT,
+            GURL(), user_gesture(), ScriptExecutor::NO_RESULT,
             base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
 
     *is_async = true;
@@ -2163,9 +2163,10 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
   // that will discard the least important tab.
   if (params->tab_id) {
     int tab_id = *params->tab_id;
+    std::string error;
     if (!GetTabById(tab_id, profile, include_incognito(), nullptr, nullptr,
-                    &contents, nullptr, &error_)) {
-      return RespondNow(Error(error_));
+                    &contents, nullptr, &error)) {
+      return RespondNow(Error(error));
     }
   }
   // Discard the tab.

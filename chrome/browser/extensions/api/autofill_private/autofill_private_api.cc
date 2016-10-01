@@ -179,7 +179,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded()) {
-    error_ = kErrorDataUnavailable;
+    SetError(kErrorDataUnavailable);
     return RespondNow(NoArguments());
   }
 
@@ -368,7 +368,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded()) {
-    error_ = kErrorDataUnavailable;
+    SetError(kErrorDataUnavailable);
     return RespondNow(NoArguments());
   }
 
@@ -427,7 +427,7 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded()) {
-    error_ = kErrorDataUnavailable;
+    SetError(kErrorDataUnavailable);
     return RespondNow(NoArguments());
   }
 
@@ -479,7 +479,7 @@ ExtensionFunction::ResponseAction AutofillPrivateMaskCreditCardFunction::Run() {
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
   if (!personal_data || !personal_data->IsDataLoaded()) {
-    error_ = kErrorDataUnavailable;
+    SetError(kErrorDataUnavailable);
     return RespondNow(NoArguments());
   }
 

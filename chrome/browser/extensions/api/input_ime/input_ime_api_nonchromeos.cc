@@ -355,15 +355,16 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
   if (!engine)
     return RespondNow(Error(kErrorNoActiveEngine));
 
+  std::string error;
   int frame_id = engine->CreateImeWindow(
       extension(), render_frame_host(),
       options.url.get() ? *options.url : url::kAboutBlankURL,
       options.window_type == input_ime::WINDOW_TYPE_FOLLOWCURSOR
           ? ui::ImeWindow::FOLLOW_CURSOR
           : ui::ImeWindow::NORMAL,
-      bounds, &error_);
+      bounds, &error);
   if (!frame_id)
-    return RespondNow(Error(error_));
+    return RespondNow(Error(error));
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->Set("frameId", new base::FundamentalValue(frame_id));

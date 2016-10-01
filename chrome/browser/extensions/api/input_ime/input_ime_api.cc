@@ -318,9 +318,11 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
         params.selection_start ? *params.selection_start : params.cursor;
     int selection_end =
         params.selection_end ? *params.selection_end : params.cursor;
+    std::string error;
     success = engine->SetComposition(params.context_id, params.text.c_str(),
                                      selection_start, selection_end,
-                                     params.cursor, segments, &error_);
+                                     params.cursor, segments, &error);
+    SetError(error);
   }
   std::unique_ptr<base::ListValue> output =
       SetComposition::Results::Create(success);
@@ -337,8 +339,10 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
     std::unique_ptr<CommitText::Params> parent_params(
         CommitText::Params::Create(*args_));
     const CommitText::Params::Parameters& params = parent_params->parameters;
+    std::string error;
     success =
-        engine->CommitText(params.context_id, params.text.c_str(), &error_);
+        engine->CommitText(params.context_id, params.text.c_str(), &error);
+    SetError(error);
   }
   std::unique_ptr<base::ListValue> output =
       CommitText::Results::Create(success);

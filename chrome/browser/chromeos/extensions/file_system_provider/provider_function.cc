@@ -163,7 +163,7 @@ bool FileSystemProviderInternalFunction::Parse() {
 
   if (!args_->GetString(0, &file_system_id) ||
       !args_->GetInteger(1, &request_id_)) {
-    bad_message_ = true;
+    set_bad_message(true);
     return false;
   }
 

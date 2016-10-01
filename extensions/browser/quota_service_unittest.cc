@@ -66,7 +66,6 @@ class MockFunction : public ExtensionFunction {
   explicit MockFunction(const char* name) { set_name(name); }
 
   void SetArgs(const base::ListValue* args) override {}
-  std::string GetError() const override { return std::string(); }
   void SetError(const std::string& error) override {}
   void Destruct() const override { delete this; }
   ResponseAction Run() override { return RespondLater(); }

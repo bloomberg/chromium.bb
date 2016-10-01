@@ -515,11 +515,12 @@ WebViewInternalAddContentScriptsFunction::Run() {
   HostID host_id = GenerateHostIDFromEmbedder(extension(), sender_web_contents);
   bool incognito_enabled = browser_context()->IsOffTheRecord();
 
+  std::string error;
   std::unique_ptr<UserScriptList> result =
       ParseContentScripts(params->content_script_list, extension(), host_id,
-                          incognito_enabled, owner_base_url, &error_);
+                          incognito_enabled, owner_base_url, &error);
   if (!result)
-    return RespondNow(Error(error_));
+    return RespondNow(Error(error));
 
   WebViewContentScriptManager* manager =
       WebViewContentScriptManager::Get(browser_context());
@@ -782,11 +783,12 @@ WebViewInternalLoadDataWithBaseUrlFunction::Run() {
   std::string virtual_url =
       params->virtual_url ? *params->virtual_url : params->data_url;
 
+  std::string error;
   bool successful = guest_->LoadDataWithBaseURL(
-      params->data_url, params->base_url, virtual_url, &error_);
+      params->data_url, params->base_url, virtual_url, &error);
   if (successful)
     return RespondNow(NoArguments());
-  return RespondNow(Error(error_));
+  return RespondNow(Error(error));
 }
 
 WebViewInternalGoFunction::WebViewInternalGoFunction() {

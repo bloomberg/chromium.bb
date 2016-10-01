@@ -305,6 +305,7 @@ class WebViewInternalFindFunction
 
   // Exposes SendResponse() for use by WebViewInternalFindHelper.
   using LegacyWebViewInternalExtensionFunction::SendResponse;
+  using LegacyWebViewInternalExtensionFunction::SetResult;
 
  protected:
   ~WebViewInternalFindFunction() override;

@@ -44,7 +44,8 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
       bool show_programmatic_uninstall_ui) const override;
   bool CreateAppShortcutFunctionDelegate(
       extensions::ManagementCreateAppShortcutFunction* function,
-      const extensions::Extension* extension) const override;
+      const extensions::Extension* extension,
+      std::string* error) const override;
   std::unique_ptr<extensions::AppForLinkDelegate>
   GenerateAppForLinkFunctionDelegate(
       extensions::ManagementGenerateAppForLinkFunction* function,

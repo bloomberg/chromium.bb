@@ -2021,13 +2021,13 @@ WebRequestInternalAddEventListenerFunction::Run() {
   // Argument 0 is the callback, which we don't use here.
   ExtensionWebRequestEventRouter::RequestFilter filter;
   base::DictionaryValue* value = NULL;
-  error_.clear();
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &value));
   // Failure + an empty error string means a fatal error.
-  EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error_) ||
-                              !error_.empty());
-  if (!error_.empty())
-    return RespondNow(Error(error_));
+  std::string error;
+  EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error) ||
+                              !error.empty());
+  if (!error.empty())
+    return RespondNow(Error(error));
 
   int extra_info_spec = 0;
   if (HasOptionalArgument(2)) {

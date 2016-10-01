@@ -114,7 +114,8 @@ class ManagementAPIDelegate {
   // Creates an app shortcut.
   virtual bool CreateAppShortcutFunctionDelegate(
       ManagementCreateAppShortcutFunction* function,
-      const Extension* extension) const = 0;
+      const Extension* extension,
+      std::string* error) const = 0;
 
   // Forwards the call to launch_util::SetLaunchType in chrome.
   virtual void SetLaunchType(content::BrowserContext* context,

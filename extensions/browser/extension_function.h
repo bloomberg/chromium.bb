@@ -56,7 +56,7 @@ class Sender;
 #define EXTENSION_FUNCTION_VALIDATE(test) \
   do {                                    \
     if (!(test)) {                        \
-      this->bad_message_ = true;          \
+      this->set_bad_message(true);        \
       return ValidationFailure(this);     \
     }                                     \
   } while (0)
@@ -68,7 +68,7 @@ class Sender;
 #define EXTENSION_FUNCTION_PRERUN_VALIDATE(test) \
   do {                                           \
     if (!(test)) {                               \
-      this->bad_message_ = true;                 \
+      this->set_bad_message(true);               \
       return false;                              \
     }                                            \
   } while (0)
@@ -79,7 +79,7 @@ class Sender;
 #define EXTENSION_FUNCTION_ERROR(error) \
   do {                                  \
     error_ = error;                     \
-    this->bad_message_ = true;          \
+    this->set_bad_message(true);        \
     return ValidationFailure(this);     \
   } while (0)
 
@@ -145,6 +145,12 @@ class ExtensionFunction
 
     // Returns true for success, false for failure.
     virtual bool Apply() = 0;
+
+   protected:
+    void SetFunctionResults(ExtensionFunction* function,
+                            std::unique_ptr<base::ListValue> results);
+    void SetFunctionError(ExtensionFunction* function,
+                          const std::string& error);
   };
   typedef std::unique_ptr<ResponseValueObject> ResponseValue;
 
@@ -231,22 +237,17 @@ class ExtensionFunction
   // TODO(dcheng): This should take a const ref.
   virtual void SetArgs(const base::ListValue* args);
 
-  // Sets a single Value as the results of the function.
-  void SetResult(std::unique_ptr<base::Value> result);
-
-  // Sets multiple Values as the results of the function.
-  void SetResultList(std::unique_ptr<base::ListValue> results);
-
   // Retrieves the results of the function as a ListValue.
   const base::ListValue* GetResultList() const;
 
   // Retrieves any error string from the function.
-  virtual std::string GetError() const;
+  virtual const std::string& GetError() const;
 
   // Sets the function's error string.
+  // TODO(devlin): This should be handled exclusively through the responses.
   virtual void SetError(const std::string& error);
 
-  // Sets the function's bad message state.
+  bool bad_message() const { return bad_message_; }
   void set_bad_message(bool bad_message) { bad_message_ = bad_message; }
 
   // Specifies the name of the function. A long-lived string (such as a string
@@ -316,6 +317,8 @@ class ExtensionFunction
   }
 
   ResponseType* response_type() const { return response_type_.get(); }
+
+  bool did_respond() const { return did_respond_; }
 
   // Sets did_respond_ to true so that the function won't DCHECK if it never
   // sends a response. Typically, this shouldn't be used, even in testing. It's
@@ -405,14 +408,38 @@ class ExtensionFunction
   // is non-null.
   bool HasOptionalArgument(size_t index);
 
+  // The extension that called this function.
+  scoped_refptr<const extensions::Extension> extension_;
+
+  // The arguments to the API. Only non-null if argument were specified.
+  std::unique_ptr<base::ListValue> args_;
+
+ private:
+  friend class ResponseValueObject;
+
+  // Call with true to indicate success, false to indicate failure. If this
+  // failed, |error_| should be set.
+  void SendResponseImpl(bool success);
+
+  base::ElapsedTimer timer_;
+
+  // The results of the API. This should be populated through the Respond()/
+  // RespondNow() methods. In legacy implementations, this is set directly, and
+  // should be set before calling SendResponse().
+  std::unique_ptr<base::ListValue> results_;
+
+  // Any detailed error from the API. This should be populated by the derived
+  // class before Run() returns.
+  std::string error_;
+
+  // The callback to run once the function has done execution.
+  ResponseCallback response_callback_;
+
   // Id of this request, used to map the response back to the caller.
   int request_id_;
 
   // The id of the profile of this function's extension.
   void* profile_id_;
-
-  // The extension that called this function.
-  scoped_refptr<const extensions::Extension> extension_;
 
   // The name of this function.
   const char* name_;
@@ -433,18 +460,6 @@ class ExtensionFunction
   // True if the call was made in response of user gesture.
   bool user_gesture_;
 
-  // The arguments to the API. Only non-null if argument were specified.
-  std::unique_ptr<base::ListValue> args_;
-
-  // The results of the API. This should be populated through the Respond()/
-  // RespondNow() methods. In legacy implementations, this is set directly, and
-  // should be set before calling SendResponse().
-  std::unique_ptr<base::ListValue> results_;
-
-  // Any detailed error from the API. This should be populated by the derived
-  // class before Run() returns.
-  std::string error_;
-
   // Any class that gets a malformed message should set this to true before
   // returning.  Usually we want to kill the message sending process.
   bool bad_message_;
@@ -452,9 +467,6 @@ class ExtensionFunction
   // The sample value to record with the histogram API when the function
   // is invoked.
   extensions::functions::HistogramValue histogram_value_;
-
-  // The callback to run once the function has done execution.
-  ResponseCallback response_callback_;
 
   // The ID of the tab triggered this function call, or -1 if there is no tab.
   int source_tab_id_;
@@ -466,18 +478,12 @@ class ExtensionFunction
   // if unknown.
   int source_process_id_;
 
-  // Whether this function has responded.
-  bool did_respond_;
-
- private:
-  // Call with true to indicate success, false to indicate failure. If this
-  // failed, |error_| should be set.
-  void SendResponseImpl(bool success);
-
-  base::ElapsedTimer timer_;
-
   // The response type of the function, if the response has been sent.
   std::unique_ptr<ResponseType> response_type_;
+
+  // Whether this function has responded.
+  // TODO(devlin): Replace this with response_type_ != null.
+  bool did_respond_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
@@ -630,8 +636,18 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
  public:
   AsyncExtensionFunction();
 
+  // ExtensionFunction:
+  void SetError(const std::string& error) override;
+  const std::string& GetError() const override;
+
  protected:
   ~AsyncExtensionFunction() override;
+
+  // Sets a single Value as the results of the function.
+  void SetResult(std::unique_ptr<base::Value> result);
+
+  // Sets multiple Values as the results of the function.
+  void SetResultList(std::unique_ptr<base::ListValue> results);
 
   // Deprecated: Override UIThreadExtensionFunction and implement Run() instead.
   //
@@ -646,6 +662,14 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
   // Responds with success/failure. |results_| or |error_| should be set
   // accordingly.
   void SendResponse(bool success);
+
+  // Exposed versions of |results_| and |error_| which are curried into the
+  // ExtensionFunction response.
+  // These need to keep the same name to avoid breaking existing
+  // implementations, but this should be temporary with crbug.com/648275
+  // and crbug.com/634140.
+  std::unique_ptr<base::ListValue> results_;
+  std::string error_;
 
  private:
   // If you're hitting a compile error here due to "final" - great! You're

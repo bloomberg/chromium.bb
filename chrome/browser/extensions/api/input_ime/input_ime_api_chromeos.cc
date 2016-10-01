@@ -370,8 +370,12 @@ ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
   const ClearComposition::Params::Parameters& params =
       parent_params->parameters;
 
-  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
-      engine->ClearComposition(params.context_id, &error_))));
+  std::string error;
+  bool success = engine->ClearComposition(params.context_id, &error);
+  if (!success)
+    SetError(error);
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
 }
 
 bool InputImeHideInputViewFunction::RunAsync() {
@@ -404,8 +408,10 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
   const SetCandidateWindowProperties::Params::Parameters::Properties&
       properties = params.properties;
 
+  std::string error;
   if (properties.visible &&
-      !engine->SetCandidateWindowVisible(*properties.visible, &error_)) {
+      !engine->SetCandidateWindowVisible(*properties.visible, &error)) {
+    SetError(error);
     return RespondNow(
         OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
   }
@@ -484,8 +490,13 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
     }
   }
 
-  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
-      engine->SetCandidates(params.context_id, candidates_out, &error_))));
+  std::string error;
+  bool success =
+      engine->SetCandidates(params.context_id, candidates_out, &error);
+  if (!success)
+    SetError(error);
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
 }
 
 ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
@@ -501,9 +512,13 @@ ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
   const SetCursorPosition::Params::Parameters& params =
       parent_params->parameters;
 
-  return RespondNow(OneArgument(
-      base::MakeUnique<base::FundamentalValue>(engine->SetCursorPosition(
-          params.context_id, params.candidate_id, &error_))));
+  std::string error;
+  bool success =
+      engine->SetCursorPosition(params.context_id, params.candidate_id, &error);
+  if (!success)
+    SetError(error);
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
 }
 
 ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
@@ -570,8 +585,10 @@ ExtensionFunction::ResponseAction InputImeDeleteSurroundingTextFunction::Run() {
   if (!engine)
     return RespondNow(Error(kErrorEngineNotAvailable));
 
+  std::string error;
   engine->DeleteSurroundingText(params.context_id, params.offset, params.length,
-                                &error_);
+                                &error);
+  SetError(error);
   return RespondNow(NoArguments());
 }
 

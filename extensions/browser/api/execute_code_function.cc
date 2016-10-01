@@ -151,7 +151,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
       match_about_blank, run_at, ScriptExecutor::ISOLATED_WORLD,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
                   : ScriptExecutor::DEFAULT_PROCESS,
-      GetWebViewSrc(), file_url_, user_gesture_,
+      GetWebViewSrc(), file_url_, user_gesture(),
       has_callback() ? ScriptExecutor::JSON_SERIALIZED_RESULT
                      : ScriptExecutor::NO_RESULT,
       base::Bind(&ExecuteCodeFunction::OnExecuteCodeFinished, this));

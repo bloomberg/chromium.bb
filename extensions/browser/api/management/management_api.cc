@@ -678,12 +678,15 @@ bool ManagementCreateAppShortcutFunction::RunAsync() {
     return true;
   }
 
+  std::string error;
   if (ManagementAPI::GetFactoryInstance()
           ->Get(browser_context())
           ->GetDelegate()
-          ->CreateAppShortcutFunctionDelegate(this, extension)) {
+          ->CreateAppShortcutFunctionDelegate(this, extension, &error)) {
     // Matched with a Release() in OnCloseShortcutPrompt().
     AddRef();
+  } else {
+    SetError(error);
   }
 
   // Response is sent async in OnCloseShortcutPrompt().

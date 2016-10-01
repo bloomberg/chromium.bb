@@ -242,13 +242,13 @@ ChromeManagementAPIDelegate::UninstallFunctionDelegate(
 
 bool ChromeManagementAPIDelegate::CreateAppShortcutFunctionDelegate(
     extensions::ManagementCreateAppShortcutFunction* function,
-    const extensions::Extension* extension) const {
+    const extensions::Extension* extension,
+    std::string* error) const {
   Browser* browser = chrome::FindBrowserWithProfile(
       Profile::FromBrowserContext(function->browser_context()));
   if (!browser) {
     // Shouldn't happen if we have user gesture.
-    function->SetError(
-        extension_management_api_constants::kNoBrowserToCreateShortcut);
+    *error = extension_management_api_constants::kNoBrowserToCreateShortcut;
     return false;
   }
 

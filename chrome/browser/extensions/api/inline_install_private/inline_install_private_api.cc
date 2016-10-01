@@ -116,14 +116,10 @@ InlineInstallPrivateInstallFunction::Run() {
     return RespondNow(CreateResponse("Already installed",
                                      webstore_install::OTHER_ERROR));
 
-  scoped_refptr<Installer> installer =
-      new Installer(
-          params->id,
-          source_url_,
-          Profile::FromBrowserContext(browser_context()),
-          base::Bind(
-              &InlineInstallPrivateInstallFunction::InstallerCallback,
-              this));
+  scoped_refptr<Installer> installer = new Installer(
+      params->id, source_url(), Profile::FromBrowserContext(browser_context()),
+      base::Bind(&InlineInstallPrivateInstallFunction::InstallerCallback,
+                 this));
   installer->BeginInstall();
 
   return RespondLater();

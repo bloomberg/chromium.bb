@@ -65,7 +65,7 @@ function requestHost(host, expectedGranted, expectedError) {
             "Access to " + host + " was not granted, but should have been");
       } else {
         test.assertFalse(
-            granted,
+            !!granted,
             "Access to " + host + " was granted, but should not have been");
       }
       checkGrantedHosts(callback);

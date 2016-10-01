@@ -10,7 +10,7 @@ var expectedError =
 function test() {
   chrome.permissions.request({"origins": ["file:///*"]},
                              callbackFail(expectedError, function(granted) {
-    chrome.test.assertFalse(granted);
+    chrome.test.assertFalse(!!granted);
     chrome.permissions.getAll(callbackPass(function(permissions) {
       chrome.test.assertEq([], permissions.origins);
       chrome.test.succeed();
