@@ -14,6 +14,7 @@
 #extension-error-overlay .extension-error-list {
   border: 1px solid #ccc;
   margin-bottom: 3px;
+  min-height: 48px;
   overflow-y: auto;
 }
 
