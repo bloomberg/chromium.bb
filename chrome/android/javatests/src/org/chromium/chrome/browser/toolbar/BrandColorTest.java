@@ -140,6 +140,28 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     /**
+     * Test for immediately setting the brand color.
+     */
+    @SmallTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Feature({"Omnibox"})
+    public void testImmediateColorChange() throws InterruptedException {
+        startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
+        checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getToolbarManager().updatePrimaryColor(mDefaultColor, false);
+                // Since the color should change instantly, there is no need to use the criteria
+                // helper.
+                assertEquals(mToolbarDataProvider.getPrimaryColor(),
+                        mToolbar.getBackgroundDrawable().getColor());
+            }
+        });
+    }
+
+    /**
      * Test to make sure onLoadStarted doesn't reset the brand color.
      */
     @SmallTest

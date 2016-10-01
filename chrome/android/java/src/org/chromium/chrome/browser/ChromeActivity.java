@@ -420,7 +420,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * @return {@link ToolbarManager} that belongs to this activity.
      */
-    protected ToolbarManager getToolbarManager() {
+    @VisibleForTesting
+    public ToolbarManager getToolbarManager() {
         return mToolbarManager;
     }
 

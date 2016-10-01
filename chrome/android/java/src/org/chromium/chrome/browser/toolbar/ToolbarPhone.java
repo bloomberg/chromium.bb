@@ -1878,12 +1878,17 @@ public class ToolbarPhone extends ToolbarLayout
     protected void onPrimaryColorChanged(boolean shouldAnimate) {
         super.onPrimaryColorChanged(shouldAnimate);
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
-        if (!shouldAnimate || !isVisualStateValidForBrandColorTransition(mVisualState)) {
-            return;
-        }
+
         final int initialColor = mToolbarBackground.getColor();
         final int finalColor = getToolbarDataProvider().getPrimaryColor();
         if (initialColor == finalColor) return;
+
+        if (!isVisualStateValidForBrandColorTransition(mVisualState)) return;
+
+        if (!shouldAnimate) {
+            updateToolbarBackground(finalColor);
+            return;
+        }
 
         boolean shouldUseOpaque = ColorUtils.shouldUseOpaqueTextboxBackground(finalColor);
         final int initialAlpha = mLocationBarBackgroundAlpha;
