@@ -5,6 +5,7 @@
 #include "core/animation/CSSPathInterpolationType.h"
 
 #include "core/animation/PathInterpolationFunctions.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
@@ -87,7 +88,7 @@ InterpolationValue CSSPathInterpolationType::maybeConvertValue(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   if (!value.isPathValue()) {
-    DCHECK_EQ(toCSSPrimitiveValue(value).getValueID(), CSSValueNone);
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueNone);
     return nullptr;
   }
   return PathInterpolationFunctions::convertValue(

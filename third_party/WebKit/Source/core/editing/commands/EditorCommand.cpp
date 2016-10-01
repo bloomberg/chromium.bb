@@ -33,6 +33,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/Pasteboard.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
@@ -1653,8 +1654,8 @@ static bool executeStrikethrough(LocalFrame& frame,
                                  Event*,
                                  EditorCommandSource source,
                                  const String&) {
-  CSSPrimitiveValue* lineThrough =
-      CSSPrimitiveValue::createIdentifier(CSSValueLineThrough);
+  CSSIdentifierValue* lineThrough =
+      CSSIdentifierValue::create(CSSValueLineThrough);
   return executeToggleStyleInList(
       frame, source, InputEvent::InputType::StrikeThrough,
       CSSPropertyWebkitTextDecorationsInEffect, lineThrough);
@@ -1733,8 +1734,7 @@ static bool executeUnderline(LocalFrame& frame,
                              Event*,
                              EditorCommandSource source,
                              const String&) {
-  CSSPrimitiveValue* underline =
-      CSSPrimitiveValue::createIdentifier(CSSValueUnderline);
+  CSSIdentifierValue* underline = CSSIdentifierValue::create(CSSValueUnderline);
   return executeToggleStyleInList(
       frame, source, InputEvent::InputType::Underline,
       CSSPropertyWebkitTextDecorationsInEffect, underline);

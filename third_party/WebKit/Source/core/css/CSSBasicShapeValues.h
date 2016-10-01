@@ -51,12 +51,12 @@ class CSSBasicShapeCircleValue final : public CSSValue {
 
   CSSValue* centerX() const { return m_centerX.get(); }
   CSSValue* centerY() const { return m_centerY.get(); }
-  CSSPrimitiveValue* radius() const { return m_radius.get(); }
+  CSSValue* radius() const { return m_radius.get(); }
 
   // TODO(sashab): Remove these and pass them as arguments in the constructor.
   void setCenterX(CSSValue* centerX) { m_centerX = centerX; }
   void setCenterY(CSSValue* centerY) { m_centerY = centerY; }
-  void setRadius(CSSPrimitiveValue* radius) { m_radius = radius; }
+  void setRadius(CSSValue* radius) { m_radius = radius; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -65,7 +65,7 @@ class CSSBasicShapeCircleValue final : public CSSValue {
 
   Member<CSSValue> m_centerX;
   Member<CSSValue> m_centerY;
-  Member<CSSPrimitiveValue> m_radius;
+  Member<CSSValue> m_radius;
 };
 
 class CSSBasicShapeEllipseValue final : public CSSValue {
@@ -79,14 +79,14 @@ class CSSBasicShapeEllipseValue final : public CSSValue {
 
   CSSValue* centerX() const { return m_centerX.get(); }
   CSSValue* centerY() const { return m_centerY.get(); }
-  CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
-  CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
+  CSSValue* radiusX() const { return m_radiusX.get(); }
+  CSSValue* radiusY() const { return m_radiusY.get(); }
 
   // TODO(sashab): Remove these and pass them as arguments in the constructor.
   void setCenterX(CSSValue* centerX) { m_centerX = centerX; }
   void setCenterY(CSSValue* centerY) { m_centerY = centerY; }
-  void setRadiusX(CSSPrimitiveValue* radiusX) { m_radiusX = radiusX; }
-  void setRadiusY(CSSPrimitiveValue* radiusY) { m_radiusY = radiusY; }
+  void setRadiusX(CSSValue* radiusX) { m_radiusX = radiusX; }
+  void setRadiusY(CSSValue* radiusY) { m_radiusY = radiusY; }
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -95,8 +95,8 @@ class CSSBasicShapeEllipseValue final : public CSSValue {
 
   Member<CSSValue> m_centerX;
   Member<CSSValue> m_centerY;
-  Member<CSSPrimitiveValue> m_radiusX;
-  Member<CSSPrimitiveValue> m_radiusY;
+  Member<CSSValue> m_radiusX;
+  Member<CSSValue> m_radiusY;
 };
 
 class CSSBasicShapePolygonValue final : public CSSValue {

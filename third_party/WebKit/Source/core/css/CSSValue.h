@@ -27,6 +27,8 @@
 
 namespace blink {
 
+class Length;
+
 class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
  public:
   // Override operator new to allocate CSSValue subtype objects onto
@@ -43,9 +45,13 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
         GCInfoTrait<CSSValue>::index(), typeName);
   }
 
+  // TODO(sashab): Remove this method and move logic to the caller.
+  static CSSValue* create(const Length& value, float zoom);
+
   String cssText() const;
 
   bool isPrimitiveValue() const { return m_classType == PrimitiveClass; }
+  bool isIdentifierValue() const { return m_classType == IdentifierClass; }
   bool isValuePair() const { return m_classType == ValuePairClass; }
   bool isValueList() const { return m_classType >= ValueListClass; }
 
@@ -156,6 +162,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   static const size_t ClassTypeBits = 6;
   enum ClassType {
     PrimitiveClass,
+    IdentifierClass,
     ColorClass,
     CounterClass,
     QuadClass,

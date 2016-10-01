@@ -26,6 +26,7 @@
 #ifndef CSSGradientValue_h
 #define CSSGradientValue_h
 
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/RefPtr.h"
@@ -195,8 +196,8 @@ class CSSRadialGradientValue final : public CSSGradientValue {
   void setFirstRadius(CSSPrimitiveValue* val) { m_firstRadius = val; }
   void setSecondRadius(CSSPrimitiveValue* val) { m_secondRadius = val; }
 
-  void setShape(CSSPrimitiveValue* val) { m_shape = val; }
-  void setSizingBehavior(CSSPrimitiveValue* val) { m_sizingBehavior = val; }
+  void setShape(CSSIdentifierValue* val) { m_shape = val; }
+  void setSizingBehavior(CSSIdentifierValue* val) { m_sizingBehavior = val; }
 
   void setEndHorizontalSize(CSSPrimitiveValue* val) {
     m_endHorizontalSize = val;
@@ -227,8 +228,8 @@ class CSSRadialGradientValue final : public CSSGradientValue {
   Member<CSSPrimitiveValue> m_secondRadius;
 
   // The below are only used for non-deprecated gradients. Any of them may be null.
-  Member<CSSPrimitiveValue> m_shape;
-  Member<CSSPrimitiveValue> m_sizingBehavior;
+  Member<CSSIdentifierValue> m_shape;
+  Member<CSSIdentifierValue> m_sizingBehavior;
 
   Member<CSSPrimitiveValue> m_endHorizontalSize;
   Member<CSSPrimitiveValue> m_endVerticalSize;

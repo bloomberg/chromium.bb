@@ -32,6 +32,7 @@
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFamilyValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -66,12 +67,12 @@ class CORE_EXPORT CSSValuePool
   CSSInitialValue* explicitInitialValue() { return m_explicitInitialValue; }
   CSSUnsetValue* unsetValue() { return m_unsetValue; }
 
-  // CSSPrimitiveValue vector caches.
-  CSSPrimitiveValue* identifierCacheValue(CSSValueID ident) {
+  // Vector caches.
+  CSSIdentifierValue* identifierCacheValue(CSSValueID ident) {
     return m_identifierValueCache[ident];
   }
-  CSSPrimitiveValue* setIdentifierCacheValue(CSSValueID ident,
-                                             CSSPrimitiveValue* cssValue) {
+  CSSIdentifierValue* setIdentifierCacheValue(CSSValueID ident,
+                                              CSSIdentifierValue* cssValue) {
     return m_identifierValueCache[ident] = cssValue;
   }
   CSSPrimitiveValue* pixelCacheValue(int intValue) {
@@ -129,8 +130,8 @@ class CORE_EXPORT CSSValuePool
   Member<CSSColorValue> m_colorWhite;
   Member<CSSColorValue> m_colorBlack;
 
-  // CSSPrimitiveValue vector caches.
-  HeapVector<Member<CSSPrimitiveValue>, numCSSValueKeywords>
+  // Vector caches.
+  HeapVector<Member<CSSIdentifierValue>, numCSSValueKeywords>
       m_identifierValueCache;
   HeapVector<Member<CSSPrimitiveValue>, maximumCacheableIntegerValue + 1>
       m_pixelValueCache;

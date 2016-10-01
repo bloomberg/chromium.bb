@@ -29,6 +29,7 @@
 
 #include "core/css/CSSBasicShapeValues.h"
 
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePair.h"
 #include "platform/Length.h"
@@ -63,10 +64,10 @@ static String buildCircleString(const String& radius,
 
 static String serializePositionOffset(const CSSValuePair& offset,
                                       const CSSValuePair& other) {
-  if ((toCSSPrimitiveValue(offset.first()).getValueID() == CSSValueLeft &&
-       toCSSPrimitiveValue(other.first()).getValueID() == CSSValueTop) ||
-      (toCSSPrimitiveValue(offset.first()).getValueID() == CSSValueTop &&
-       toCSSPrimitiveValue(other.first()).getValueID() == CSSValueLeft))
+  if ((toCSSIdentifierValue(offset.first()).getValueID() == CSSValueLeft &&
+       toCSSIdentifierValue(other.first()).getValueID() == CSSValueTop) ||
+      (toCSSIdentifierValue(offset.first()).getValueID() == CSSValueTop &&
+       toCSSIdentifierValue(other.first()).getValueID() == CSSValueLeft))
     return offset.second().cssText();
   return offset.cssText();
 }
@@ -78,11 +79,10 @@ static CSSValuePair* buildSerializablePositionOffset(CSSValue* offset,
 
   if (!offset) {
     side = CSSValueCenter;
-  } else if (offset->isPrimitiveValue() &&
-             toCSSPrimitiveValue(offset)->isValueID()) {
-    side = toCSSPrimitiveValue(offset)->getValueID();
+  } else if (offset->isIdentifierValue()) {
+    side = toCSSIdentifierValue(offset)->getValueID();
   } else if (offset->isValuePair()) {
-    side = toCSSPrimitiveValue(toCSSValuePair(*offset).first()).getValueID();
+    side = toCSSIdentifierValue(toCSSValuePair(*offset).first()).getValueID();
     amount = &toCSSPrimitiveValue(toCSSValuePair(*offset).second());
     if ((side == CSSValueRight || side == CSSValueBottom) &&
         amount->isPercentage()) {
@@ -109,7 +109,7 @@ static CSSValuePair* buildSerializablePositionOffset(CSSValue* offset,
     side = defaultSide;
   }
 
-  return CSSValuePair::create(CSSPrimitiveValue::createIdentifier(side), amount,
+  return CSSValuePair::create(CSSIdentifierValue::create(side), amount,
                               CSSValuePair::KeepIdenticalValues);
 }
 
@@ -120,7 +120,9 @@ String CSSBasicShapeCircleValue::customCSSText() const {
       buildSerializablePositionOffset(m_centerY, CSSValueTop);
 
   String radius;
-  if (m_radius && m_radius->getValueID() != CSSValueClosestSide)
+  if (m_radius &&
+      !(m_radius->isIdentifierValue() &&
+        toCSSIdentifierValue(*m_radius).getValueID() == CSSValueClosestSide))
     radius = m_radius->cssText();
 
   return buildCircleString(
@@ -185,12 +187,14 @@ String CSSBasicShapeEllipseValue::customCSSText() const {
   String radiusY;
   if (m_radiusX) {
     bool shouldSerializeRadiusXValue =
-        m_radiusX->getValueID() != CSSValueClosestSide;
+        !(m_radiusX->isIdentifierValue() &&
+          toCSSIdentifierValue(*m_radiusX).getValueID() == CSSValueClosestSide);
     bool shouldSerializeRadiusYValue = false;
 
     if (m_radiusY) {
-      shouldSerializeRadiusYValue =
-          m_radiusY->getValueID() != CSSValueClosestSide;
+      shouldSerializeRadiusYValue = !(
+          m_radiusY->isIdentifierValue() &&
+          toCSSIdentifierValue(*m_radiusY).getValueID() == CSSValueClosestSide);
       if (shouldSerializeRadiusYValue)
         radiusY = m_radiusY->cssText();
     }

@@ -99,11 +99,11 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  if (!value.isPrimitiveValue())
+  if (!value.isIdentifierValue())
     return nullptr;
 
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-  CSSValueID keyword = primitiveValue.getValueID();
+  const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
+  CSSValueID keyword = identifierValue.getValueID();
 
   switch (keyword) {
     case CSSValueInvalid:
@@ -122,7 +122,7 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertValue(
     }
 
     default:
-      return createFontWeightValue(primitiveValue.convertTo<FontWeight>());
+      return createFontWeightValue(identifierValue.convertTo<FontWeight>());
   }
 }
 

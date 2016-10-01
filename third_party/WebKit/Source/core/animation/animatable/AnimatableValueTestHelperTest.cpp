@@ -74,7 +74,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo) {
 
   EXPECT_EQ(::std::string("AnimatableUnknown(none)"),
             PrintToString(AnimatableUnknown::create(
-                CSSPrimitiveValue::createIdentifier(CSSValueNone))));
+                CSSIdentifierValue::create(CSSValueNone))));
 
   EXPECT_EQ(::std::string("AnimatableVisibility(EVisibility::Visible)"),
             PrintToString(AnimatableVisibility::create(EVisibility::Visible)));

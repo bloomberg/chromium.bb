@@ -1069,7 +1069,7 @@ WebString WebAXObject::computedStyleDisplay() const {
     return WebString();
 
   return WebString(
-      CSSPrimitiveValue::create(computedStyle->display())->cssText());
+      CSSIdentifierValue::create(computedStyle->display())->cssText());
 }
 
 bool WebAXObject::accessibilityIsIgnored() const {

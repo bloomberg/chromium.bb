@@ -63,6 +63,8 @@ blink_core_sources("css") {
     "CSSGridTemplateAreasValue.h",
     "CSSGroupingRule.cpp",
     "CSSGroupingRule.h",
+    "CSSIdentifierValue.cpp",
+    "CSSIdentifierValue.h",
     "CSSImageGeneratorValue.cpp",
     "CSSImageSetValue.cpp",
     "CSSImageValue.cpp",

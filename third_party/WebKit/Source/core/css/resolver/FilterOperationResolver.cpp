@@ -121,8 +121,8 @@ FilterOperations FilterOperationResolver::createFilterOperations(
     const CSSValue& inValue) {
   FilterOperations operations;
 
-  if (inValue.isPrimitiveValue()) {
-    ASSERT(toCSSPrimitiveValue(inValue).getValueID() == CSSValueNone);
+  if (inValue.isIdentifierValue()) {
+    DCHECK_EQ(toCSSIdentifierValue(inValue).getValueID(), CSSValueNone);
     return operations;
   }
 

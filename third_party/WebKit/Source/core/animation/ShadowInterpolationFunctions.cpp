@@ -8,6 +8,7 @@
 #include "core/animation/InterpolationValue.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/NonInterpolableValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ShadowData.h"

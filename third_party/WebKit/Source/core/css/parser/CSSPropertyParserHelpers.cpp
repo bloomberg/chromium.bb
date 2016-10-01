@@ -310,16 +310,15 @@ CSSPrimitiveValue* consumeTime(CSSParserTokenRange& range,
   return nullptr;
 }
 
-CSSPrimitiveValue* consumeIdent(CSSParserTokenRange& range) {
+CSSIdentifierValue* consumeIdent(CSSParserTokenRange& range) {
   if (range.peek().type() != IdentToken)
     return nullptr;
-  return CSSPrimitiveValue::createIdentifier(
-      range.consumeIncludingWhitespace().id());
+  return CSSIdentifierValue::create(range.consumeIncludingWhitespace().id());
 }
 
-CSSPrimitiveValue* consumeIdentRange(CSSParserTokenRange& range,
-                                     CSSValueID lower,
-                                     CSSValueID upper) {
+CSSIdentifierValue* consumeIdentRange(CSSParserTokenRange& range,
+                                      CSSValueID lower,
+                                      CSSValueID upper) {
   if (range.peek().id() < lower || range.peek().id() > upper)
     return nullptr;
   return consumeIdent(range);
@@ -515,11 +514,11 @@ CSSValue* consumeColor(CSSParserTokenRange& range,
   return CSSColorValue::create(color);
 }
 
-static CSSPrimitiveValue* consumePositionComponent(CSSParserTokenRange& range,
-                                                   CSSParserMode cssParserMode,
-                                                   UnitlessQuirk unitless,
-                                                   bool& horizontalEdge,
-                                                   bool& verticalEdge) {
+static CSSValue* consumePositionComponent(CSSParserTokenRange& range,
+                                          CSSParserMode cssParserMode,
+                                          UnitlessQuirk unitless,
+                                          bool& horizontalEdge,
+                                          bool& verticalEdge) {
   if (range.peek().type() != IdentToken)
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll,
                                   unitless);
@@ -539,33 +538,38 @@ static CSSPrimitiveValue* consumePositionComponent(CSSParserTokenRange& range,
   return consumeIdent(range);
 }
 
-static bool isHorizontalPositionKeywordOnly(const CSSPrimitiveValue& value) {
-  return value.isValueID() && (value.getValueID() == CSSValueLeft ||
-                               value.getValueID() == CSSValueRight);
+static bool isHorizontalPositionKeywordOnly(const CSSValue& value) {
+  if (!value.isIdentifierValue())
+    return false;
+  CSSValueID valueID = toCSSIdentifierValue(value).getValueID();
+  return valueID == CSSValueLeft || valueID == CSSValueRight;
 }
 
-static bool isVerticalPositionKeywordOnly(const CSSPrimitiveValue& value) {
-  return value.isValueID() && (value.getValueID() == CSSValueTop ||
-                               value.getValueID() == CSSValueBottom);
+static bool isVerticalPositionKeywordOnly(const CSSValue& value) {
+  if (!value.isIdentifierValue())
+    return false;
+  CSSValueID valueID = toCSSIdentifierValue(value).getValueID();
+  return valueID == CSSValueTop || valueID == CSSValueBottom;
 }
 
-static void positionFromOneValue(CSSPrimitiveValue* value,
+static void positionFromOneValue(CSSValue* value,
                                  CSSValue*& resultX,
                                  CSSValue*& resultY) {
   bool valueAppliesToYAxisOnly = isVerticalPositionKeywordOnly(*value);
   resultX = value;
-  resultY = CSSPrimitiveValue::createIdentifier(CSSValueCenter);
+  resultY = CSSIdentifierValue::create(CSSValueCenter);
   if (valueAppliesToYAxisOnly)
     std::swap(resultX, resultY);
 }
 
-static void positionFromTwoValues(CSSPrimitiveValue* value1,
-                                  CSSPrimitiveValue* value2,
+static void positionFromTwoValues(CSSValue* value1,
+                                  CSSValue* value2,
                                   CSSValue*& resultX,
                                   CSSValue*& resultY) {
   bool mustOrderAsXY = isHorizontalPositionKeywordOnly(*value1) ||
                        isVerticalPositionKeywordOnly(*value2) ||
-                       !value1->isValueID() || !value2->isValueID();
+                       !value1->isIdentifierValue() ||
+                       !value2->isIdentifierValue();
   bool mustOrderAsYX = isVerticalPositionKeywordOnly(*value1) ||
                        isHorizontalPositionKeywordOnly(*value2);
   DCHECK(!mustOrderAsXY || !mustOrderAsYX);
@@ -575,13 +579,12 @@ static void positionFromTwoValues(CSSPrimitiveValue* value1,
     std::swap(resultX, resultY);
 }
 
-static void positionFromThreeOrFourValues(CSSPrimitiveValue** values,
+static void positionFromThreeOrFourValues(CSSValue** values,
                                           CSSValue*& resultX,
                                           CSSValue*& resultY) {
-  CSSPrimitiveValue* center = nullptr;
+  CSSIdentifierValue* center = nullptr;
   for (int i = 0; values[i]; i++) {
-    CSSPrimitiveValue* currentValue = values[i];
-    DCHECK(currentValue->isValueID());
+    CSSIdentifierValue* currentValue = toCSSIdentifierValue(values[i]);
     CSSValueID id = currentValue->getValueID();
 
     if (id == CSSValueCenter) {
@@ -591,7 +594,7 @@ static void positionFromThreeOrFourValues(CSSPrimitiveValue** values,
     }
 
     CSSValue* result = nullptr;
-    if (values[i + 1] && !values[i + 1]->isValueID()) {
+    if (values[i + 1] && !values[i + 1]->isIdentifierValue()) {
       result = CSSValuePair::create(currentValue, values[++i],
                                     CSSValuePair::KeepIdenticalValues);
     } else {
@@ -626,30 +629,31 @@ bool consumePosition(CSSParserTokenRange& range,
                      CSSValue*& resultY) {
   bool horizontalEdge = false;
   bool verticalEdge = false;
-  CSSPrimitiveValue* value1 = consumePositionComponent(
-      range, cssParserMode, unitless, horizontalEdge, verticalEdge);
+  CSSValue* value1 = consumePositionComponent(range, cssParserMode, unitless,
+                                              horizontalEdge, verticalEdge);
   if (!value1)
     return false;
-  if (!value1->isValueID())
+  if (!value1->isIdentifierValue())
     horizontalEdge = true;
 
   CSSParserTokenRange rangeAfterFirstConsume = range;
-  CSSPrimitiveValue* value2 = consumePositionComponent(
-      range, cssParserMode, unitless, horizontalEdge, verticalEdge);
+  CSSValue* value2 = consumePositionComponent(range, cssParserMode, unitless,
+                                              horizontalEdge, verticalEdge);
   if (!value2) {
     positionFromOneValue(value1, resultX, resultY);
     return true;
   }
 
-  CSSPrimitiveValue* value3 = nullptr;
-  if (value1->isValueID() &&
-      value2->isValueID() != (range.peek().type() == IdentToken) &&
-      (value2->isValueID() ? value2->getValueID() : value1->getValueID()) !=
-          CSSValueCenter)
+  CSSValue* value3 = nullptr;
+  if (value1->isIdentifierValue() &&
+      value2->isIdentifierValue() != (range.peek().type() == IdentToken) &&
+      (value2->isIdentifierValue()
+           ? toCSSIdentifierValue(value2)->getValueID()
+           : toCSSIdentifierValue(value1)->getValueID()) != CSSValueCenter)
     value3 = consumePositionComponent(range, cssParserMode, unitless,
                                       horizontalEdge, verticalEdge);
   if (!value3) {
-    if (verticalEdge && !value2->isValueID()) {
+    if (verticalEdge && !value2->isIdentifierValue()) {
       range = rangeAfterFirstConsume;
       positionFromOneValue(value1, resultX, resultY);
       return true;
@@ -658,12 +662,13 @@ bool consumePosition(CSSParserTokenRange& range,
     return true;
   }
 
-  CSSPrimitiveValue* value4 = nullptr;
-  if (value3->isValueID() && value3->getValueID() != CSSValueCenter &&
+  CSSValue* value4 = nullptr;
+  if (value3->isIdentifierValue() &&
+      toCSSIdentifierValue(value3)->getValueID() != CSSValueCenter &&
       range.peek().type() != IdentToken)
     value4 = consumePositionComponent(range, cssParserMode, unitless,
                                       horizontalEdge, verticalEdge);
-  CSSPrimitiveValue* values[5];
+  CSSValue* values[5];
   values[0] = value1;
   values[1] = value2;
   values[2] = value3;
@@ -691,14 +696,14 @@ bool consumeOneOrTwoValuedPosition(CSSParserTokenRange& range,
                                    CSSValue*& resultY) {
   bool horizontalEdge = false;
   bool verticalEdge = false;
-  CSSPrimitiveValue* value1 = consumePositionComponent(
-      range, cssParserMode, unitless, horizontalEdge, verticalEdge);
+  CSSValue* value1 = consumePositionComponent(range, cssParserMode, unitless,
+                                              horizontalEdge, verticalEdge);
   if (!value1)
     return false;
-  if (!value1->isValueID())
+  if (!value1->isIdentifierValue())
     horizontalEdge = true;
 
-  CSSPrimitiveValue* value2 = nullptr;
+  CSSValue* value2 = nullptr;
   if (!verticalEdge || range.peek().type() == IdentToken)
     value2 = consumePositionComponent(range, cssParserMode, unitless,
                                       horizontalEdge, verticalEdge);
@@ -879,14 +884,14 @@ static CSSValue* consumeDeprecatedRadialGradient(CSSParserTokenRange& args,
   if ((centerX || centerY) && !consumeCommaIncludingWhitespace(args))
     return nullptr;
 
-  result->setFirstX(toCSSPrimitiveValue(centerX));
-  result->setSecondX(toCSSPrimitiveValue(centerX));
-  result->setFirstY(toCSSPrimitiveValue(centerY));
-  result->setSecondY(toCSSPrimitiveValue(centerY));
+  result->setFirstX(centerX);
+  result->setSecondX(centerX);
+  result->setFirstY(centerY);
+  result->setSecondY(centerY);
 
-  CSSPrimitiveValue* shape =
+  CSSIdentifierValue* shape =
       consumeIdent<CSSValueCircle, CSSValueEllipse>(args);
-  CSSPrimitiveValue* sizeKeyword =
+  CSSIdentifierValue* sizeKeyword =
       consumeIdent<CSSValueClosestSide, CSSValueClosestCorner,
                    CSSValueFarthestSide, CSSValueFarthestCorner,
                    CSSValueContain, CSSValueCover>(args);
@@ -923,8 +928,8 @@ static CSSValue* consumeRadialGradient(CSSParserTokenRange& args,
   CSSRadialGradientValue* result =
       CSSRadialGradientValue::create(repeating, CSSRadialGradient);
 
-  CSSPrimitiveValue* shape = nullptr;
-  CSSPrimitiveValue* sizeKeyword = nullptr;
+  CSSIdentifierValue* shape = nullptr;
+  CSSIdentifierValue* sizeKeyword = nullptr;
   CSSPrimitiveValue* horizontalSize = nullptr;
   CSSPrimitiveValue* verticalSize = nullptr;
 
@@ -1021,12 +1026,12 @@ static CSSValue* consumeLinearGradient(CSSParserTokenRange& args,
     result->setAngle(angle);
   } else if (gradientType == CSSPrefixedLinearGradient ||
              consumeIdent<CSSValueTo>(args)) {
-    CSSPrimitiveValue* endX = consumeIdent<CSSValueLeft, CSSValueRight>(args);
-    CSSPrimitiveValue* endY = consumeIdent<CSSValueBottom, CSSValueTop>(args);
+    CSSIdentifierValue* endX = consumeIdent<CSSValueLeft, CSSValueRight>(args);
+    CSSIdentifierValue* endY = consumeIdent<CSSValueBottom, CSSValueTop>(args);
     if (!endX && !endY) {
       if (gradientType == CSSLinearGradient)
         return nullptr;
-      endY = CSSPrimitiveValue::createIdentifier(CSSValueTop);
+      endY = CSSIdentifierValue::create(CSSValueTop);
       expectComma = false;
     } else if (!endX) {
       endX = consumeIdent<CSSValueLeft, CSSValueRight>(args);

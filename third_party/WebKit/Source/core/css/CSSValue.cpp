@@ -43,6 +43,7 @@
 #include "core/css/CSSGridAutoRepeatValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
@@ -62,6 +63,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSVariableReferenceValue.h"
+#include "platform/Length.h"
 #include "wtf/SizeAssertions.h"
 
 namespace blink {
@@ -71,6 +73,28 @@ struct SameSizeAsCSSValue
   uint32_t bitfields;
 };
 ASSERT_SIZE(CSSValue, SameSizeAsCSSValue);
+
+CSSValue* CSSValue::create(const Length& value, float zoom) {
+  switch (value.type()) {
+    case Auto:
+    case MinContent:
+    case MaxContent:
+    case FillAvailable:
+    case FitContent:
+    case ExtendToZoom:
+      return CSSIdentifierValue::create(value);
+    case Percent:
+    case Fixed:
+    case Calculated:
+      return CSSPrimitiveValue::create(value, zoom);
+    case DeviceWidth:
+    case DeviceHeight:
+    case MaxSizeNone:
+      NOTREACHED();
+      break;
+  }
+  return nullptr;
+}
 
 bool CSSValue::isImplicitInitialValue() const {
   return m_classType == InitialClass && toCSSInitialValue(this)->isImplicit();
@@ -153,6 +177,8 @@ bool CSSValue::equals(const CSSValue& other) const {
         return compareCSSValues<CSSPathValue>(*this, other);
       case PrimitiveClass:
         return compareCSSValues<CSSPrimitiveValue>(*this, other);
+      case IdentifierClass:
+        return compareCSSValues<CSSIdentifierValue>(*this, other);
       case QuadClass:
         return compareCSSValues<CSSQuadValue>(*this, other);
       case ReflectClass:
@@ -245,6 +271,8 @@ String CSSValue::cssText() const {
       return toCSSPathValue(this)->customCSSText();
     case PrimitiveClass:
       return toCSSPrimitiveValue(this)->customCSSText();
+    case IdentifierClass:
+      return toCSSIdentifierValue(this)->customCSSText();
     case QuadClass:
       return toCSSQuadValue(this)->customCSSText();
     case ReflectClass:
@@ -359,6 +387,9 @@ void CSSValue::finalizeGarbageCollectedObject() {
       return;
     case PrimitiveClass:
       toCSSPrimitiveValue(this)->~CSSPrimitiveValue();
+      return;
+    case IdentifierClass:
+      toCSSIdentifierValue(this)->~CSSIdentifierValue();
       return;
     case QuadClass:
       toCSSQuadValue(this)->~CSSQuadValue();
@@ -489,6 +520,9 @@ DEFINE_TRACE(CSSValue) {
       return;
     case PrimitiveClass:
       toCSSPrimitiveValue(this)->traceAfterDispatch(visitor);
+      return;
+    case IdentifierClass:
+      toCSSIdentifierValue(this)->traceAfterDispatch(visitor);
       return;
     case QuadClass:
       toCSSQuadValue(this)->traceAfterDispatch(visitor);

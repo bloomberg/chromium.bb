@@ -6,7 +6,7 @@
 
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
 
@@ -19,20 +19,20 @@ CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(
     const CSSValuePair& pair = toCSSValuePair(value);
     InterpolationValue result =
         LengthInterpolationFunctions::maybeConvertCSSValue(pair.second());
-    CSSValueID side = toCSSPrimitiveValue(pair.first()).getValueID();
+    CSSValueID side = toCSSIdentifierValue(pair.first()).getValueID();
     if (side == CSSValueRight || side == CSSValueBottom)
       LengthInterpolationFunctions::subtractFromOneHundredPercent(result);
     return result;
   }
 
-  if (!value.isPrimitiveValue())
-    return nullptr;
-
-  const CSSPrimitiveValue& primitveValue = toCSSPrimitiveValue(value);
-  if (!primitveValue.isValueID())
+  if (value.isPrimitiveValue())
     return LengthInterpolationFunctions::maybeConvertCSSValue(value);
 
-  switch (primitveValue.getValueID()) {
+  if (!value.isIdentifierValue())
+    return nullptr;
+
+  const CSSIdentifierValue& ident = toCSSIdentifierValue(value);
+  switch (ident.getValueID()) {
     case CSSValueLeft:
     case CSSValueTop:
       return LengthInterpolationFunctions::createInterpolablePercent(0);

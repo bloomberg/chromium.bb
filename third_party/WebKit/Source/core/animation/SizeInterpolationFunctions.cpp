@@ -6,6 +6,7 @@
 
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/UnderlyingValueOwner.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/CSSValuePair.h"
 
@@ -103,18 +104,17 @@ InterpolationValue SizeInterpolationFunctions::maybeConvertCSSSizeSide(
   if (value.isValuePair()) {
     const CSSValuePair& pair = toCSSValuePair(value);
     const CSSValue& side = convertWidth ? pair.first() : pair.second();
-    if (side.isPrimitiveValue() &&
-        toCSSPrimitiveValue(side).getValueID() == CSSValueAuto)
+    if (side.isIdentifierValue() &&
+        toCSSIdentifierValue(side).getValueID() == CSSValueAuto)
       return convertKeyword(CSSValueAuto);
     return wrapConvertedLength(
         LengthInterpolationFunctions::maybeConvertCSSValue(side));
   }
 
-  if (!value.isPrimitiveValue())
+  if (!value.isIdentifierValue() && !value.isPrimitiveValue())
     return nullptr;
-  CSSValueID keyword = toCSSPrimitiveValue(value).getValueID();
-  if (keyword)
-    return convertKeyword(keyword);
+  if (value.isIdentifierValue())
+    return convertKeyword(toCSSIdentifierValue(value).getValueID());
 
   // A single length is equivalent to "<length> auto".
   if (convertWidth)

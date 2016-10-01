@@ -22,7 +22,7 @@
 #define CSSCounterValue_h
 
 #include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSStringValue.h"
 #include "wtf/text/WTFString.h"
 
@@ -31,7 +31,7 @@ namespace blink {
 class CSSCounterValue : public CSSValue {
  public:
   static CSSCounterValue* create(CSSCustomIdentValue* identifier,
-                                 CSSPrimitiveValue* listStyle,
+                                 CSSIdentifierValue* listStyle,
                                  CSSStringValue* separator) {
     return new CSSCounterValue(identifier, listStyle, separator);
   }
@@ -51,17 +51,15 @@ class CSSCounterValue : public CSSValue {
 
  private:
   CSSCounterValue(CSSCustomIdentValue* identifier,
-                  CSSPrimitiveValue* listStyle,
+                  CSSIdentifierValue* listStyle,
                   CSSStringValue* separator)
       : CSSValue(CounterClass),
         m_identifier(identifier),
         m_listStyle(listStyle),
-        m_separator(separator) {
-    ASSERT(m_listStyle->isValueID());
-  }
+        m_separator(separator) {}
 
   Member<CSSCustomIdentValue> m_identifier;  // string
-  Member<CSSPrimitiveValue> m_listStyle;     // ident
+  Member<CSSIdentifierValue> m_listStyle;    // ident
   Member<CSSStringValue> m_separator;        // string
 };
 

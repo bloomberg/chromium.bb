@@ -32,17 +32,18 @@
 
 namespace blink {
 
+class CSSIdentifierValue;
 class CSSPrimitiveValue;
 
 class CSSReflectValue : public CSSValue {
  public:
-  static CSSReflectValue* create(CSSPrimitiveValue* direction,
+  static CSSReflectValue* create(CSSIdentifierValue* direction,
                                  CSSPrimitiveValue* offset,
                                  CSSValue* mask) {
     return new CSSReflectValue(direction, offset, mask);
   }
 
-  CSSPrimitiveValue* direction() const { return m_direction.get(); }
+  CSSIdentifierValue* direction() const { return m_direction.get(); }
   CSSPrimitiveValue* offset() const { return m_offset.get(); }
   CSSValue* mask() const { return m_mask.get(); }
 
@@ -53,7 +54,7 @@ class CSSReflectValue : public CSSValue {
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSReflectValue(CSSPrimitiveValue* direction,
+  CSSReflectValue(CSSIdentifierValue* direction,
                   CSSPrimitiveValue* offset,
                   CSSValue* mask)
       : CSSValue(ReflectClass),
@@ -61,7 +62,7 @@ class CSSReflectValue : public CSSValue {
         m_offset(offset),
         m_mask(mask) {}
 
-  Member<CSSPrimitiveValue> m_direction;
+  Member<CSSIdentifierValue> m_direction;
   Member<CSSPrimitiveValue> m_offset;
   Member<CSSValue> m_mask;
 };

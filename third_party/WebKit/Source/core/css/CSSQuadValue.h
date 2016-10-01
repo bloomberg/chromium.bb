@@ -22,7 +22,6 @@
 #define CSSQuadValue_h
 
 #include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "wtf/RefPtr.h"
 
@@ -32,18 +31,18 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
  public:
   enum TypeForSerialization { SerializeAsRect, SerializeAsQuad };
 
-  static CSSQuadValue* create(CSSPrimitiveValue* top,
-                              CSSPrimitiveValue* right,
-                              CSSPrimitiveValue* bottom,
-                              CSSPrimitiveValue* left,
+  static CSSQuadValue* create(CSSValue* top,
+                              CSSValue* right,
+                              CSSValue* bottom,
+                              CSSValue* left,
                               TypeForSerialization serializationType) {
     return new CSSQuadValue(top, right, bottom, left, serializationType);
   }
 
-  CSSPrimitiveValue* top() const { return m_top.get(); }
-  CSSPrimitiveValue* right() const { return m_right.get(); }
-  CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
-  CSSPrimitiveValue* left() const { return m_left.get(); }
+  CSSValue* top() const { return m_top.get(); }
+  CSSValue* right() const { return m_right.get(); }
+  CSSValue* bottom() const { return m_bottom.get(); }
+  CSSValue* left() const { return m_left.get(); }
 
   TypeForSerialization serializationType() { return m_serializationType; }
 
@@ -59,10 +58,10 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
   DECLARE_TRACE_AFTER_DISPATCH();
 
  protected:
-  CSSQuadValue(CSSPrimitiveValue* top,
-               CSSPrimitiveValue* right,
-               CSSPrimitiveValue* bottom,
-               CSSPrimitiveValue* left,
+  CSSQuadValue(CSSValue* top,
+               CSSValue* right,
+               CSSValue* bottom,
+               CSSValue* left,
                TypeForSerialization serializationType)
       : CSSValue(QuadClass),
         m_serializationType(serializationType),
@@ -73,10 +72,10 @@ class CORE_EXPORT CSSQuadValue : public CSSValue {
 
  private:
   TypeForSerialization m_serializationType;
-  Member<CSSPrimitiveValue> m_top;
-  Member<CSSPrimitiveValue> m_right;
-  Member<CSSPrimitiveValue> m_bottom;
-  Member<CSSPrimitiveValue> m_left;
+  Member<CSSValue> m_top;
+  Member<CSSValue> m_right;
+  Member<CSSValue> m_bottom;
+  Member<CSSValue> m_left;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSQuadValue, isQuadValue());

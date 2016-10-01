@@ -5,7 +5,7 @@
 #ifndef CSSContentDistributionValue_h
 #define CSSContentDistributionValue_h
 
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValue.h"
 #include "wtf/RefPtr.h"
 
@@ -20,16 +20,17 @@ class CSSContentDistributionValue : public CSSValue {
   }
   ~CSSContentDistributionValue();
 
-  CSSPrimitiveValue* distribution() const {
-    return CSSPrimitiveValue::createIdentifier(m_distribution);
+  // TODO(sashab): Make these return CSSValueIDs instead of CSSValues.
+  CSSIdentifierValue* distribution() const {
+    return CSSIdentifierValue::create(m_distribution);
   }
 
-  CSSPrimitiveValue* position() const {
-    return CSSPrimitiveValue::createIdentifier(m_position);
+  CSSIdentifierValue* position() const {
+    return CSSIdentifierValue::create(m_position);
   }
 
-  CSSPrimitiveValue* overflow() const {
-    return CSSPrimitiveValue::createIdentifier(m_overflow);
+  CSSIdentifierValue* overflow() const {
+    return CSSIdentifierValue::create(m_overflow);
   }
 
   String customCSSText() const;

@@ -135,17 +135,17 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  if (!value.isPrimitiveValue())
+  if (!value.isIdentifierValue())
     return nullptr;
 
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-  CSSValueID keyword = primitiveValue.getValueID();
+  const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
+  CSSValueID keyword = identifierValue.getValueID();
 
   switch (keyword) {
     case CSSValueHidden:
     case CSSValueVisible:
     case CSSValueCollapse:
-      return createVisibilityValue(primitiveValue.convertTo<EVisibility>());
+      return createVisibilityValue(identifierValue.convertTo<EVisibility>());
     default:
       return nullptr;
   }

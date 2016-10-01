@@ -28,6 +28,7 @@
 
 namespace blink {
 
+class CSSIdentifierValue;
 class CSSPrimitiveValue;
 
 // Used for text-shadow and box-shadow
@@ -37,7 +38,7 @@ class CORE_EXPORT CSSShadowValue : public CSSValue {
                                 CSSPrimitiveValue* y,
                                 CSSPrimitiveValue* blur,
                                 CSSPrimitiveValue* spread,
-                                CSSPrimitiveValue* style,
+                                CSSIdentifierValue* style,
                                 CSSValue* color) {
     return new CSSShadowValue(x, y, blur, spread, style, color);
   }
@@ -50,7 +51,7 @@ class CORE_EXPORT CSSShadowValue : public CSSValue {
   Member<CSSPrimitiveValue> y;
   Member<CSSPrimitiveValue> blur;
   Member<CSSPrimitiveValue> spread;
-  Member<CSSPrimitiveValue> style;
+  Member<CSSIdentifierValue> style;
   Member<CSSValue> color;
 
   DECLARE_TRACE_AFTER_DISPATCH();
@@ -60,7 +61,7 @@ class CORE_EXPORT CSSShadowValue : public CSSValue {
                  CSSPrimitiveValue* y,
                  CSSPrimitiveValue* blur,
                  CSSPrimitiveValue* spread,
-                 CSSPrimitiveValue* style,
+                 CSSIdentifierValue* style,
                  CSSValue* color);
 };
 

@@ -28,6 +28,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/CSSValuePair.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -45,6 +46,22 @@
 #include <utility>
 
 namespace blink {
+
+namespace {
+
+static bool colorIsDerivedFromElement(const CSSIdentifierValue& value) {
+  CSSValueID valueID = value.getValueID();
+  switch (valueID) {
+    case CSSValueInternalQuirkInherit:
+    case CSSValueWebkitLink:
+    case CSSValueWebkitActivelink:
+    case CSSValueCurrentcolor:
+      return true;
+    default:
+      return false;
+  }
+}
+}
 
 DEFINE_TRACE(CSSGradientColorStop) {
   visitor->trace(m_position);
@@ -512,13 +529,35 @@ static float positionFromValue(const CSSValue* value,
   // [ top | bottom | right | left ] [ <percentage> | <length> ].
   if (value->isValuePair()) {
     const CSSValuePair& pair = toCSSValuePair(*value);
-    CSSValueID originID = toCSSPrimitiveValue(pair.first()).getValueID();
+    CSSValueID originID = toCSSIdentifierValue(pair.first()).getValueID();
     value = &pair.second();
 
     if (originID == CSSValueRight || originID == CSSValueBottom) {
       // For right/bottom, the offset is relative to the far edge.
       origin = edgeDistance;
       sign = -1;
+    }
+  }
+
+  if (value->isIdentifierValue()) {
+    switch (toCSSIdentifierValue(value)->getValueID()) {
+      case CSSValueTop:
+        DCHECK(!isHorizontal);
+        return 0;
+      case CSSValueLeft:
+        DCHECK(isHorizontal);
+        return 0;
+      case CSSValueBottom:
+        DCHECK(!isHorizontal);
+        return size.height();
+      case CSSValueRight:
+        DCHECK(isHorizontal);
+        return size.width();
+      case CSSValueCenter:
+        return origin + sign * .5f * edgeDistance;
+      default:
+        NOTREACHED();
+        break;
     }
   }
 
@@ -538,25 +577,6 @@ static float positionFromValue(const CSSValue* value,
                primitiveValue->cssCalcValue()
                    ->toCalcValue(conversionData)
                    ->evaluate(edgeDistance);
-
-  switch (primitiveValue->getValueID()) {
-    case CSSValueTop:
-      ASSERT(!isHorizontal);
-      return 0;
-    case CSSValueLeft:
-      ASSERT(isHorizontal);
-      return 0;
-    case CSSValueBottom:
-      ASSERT(!isHorizontal);
-      return size.height();
-    case CSSValueRight:
-      ASSERT(isHorizontal);
-      return size.width();
-    case CSSValueCenter:
-      return origin + sign * .5f * edgeDistance;
-    default:
-      break;
-  }
 
   return origin + sign * primitiveValue->computeLength<float>(conversionData);
 }
@@ -581,8 +601,8 @@ bool CSSGradientValue::isCacheable() const {
   for (size_t i = 0; i < m_stops.size(); ++i) {
     const CSSGradientColorStop& stop = m_stops[i];
 
-    if (!stop.isHint() && stop.m_color->isPrimitiveValue() &&
-        toCSSPrimitiveValue(*stop.m_color).colorIsDerivedFromElement())
+    if (!stop.isHint() && stop.m_color->isIdentifierValue() &&
+        colorIsDerivedFromElement(toCSSIdentifierValue(*stop.m_color)))
       return false;
 
     if (!stop.m_position)
@@ -675,8 +695,8 @@ String CSSLinearGradientValue::customCSSText() const {
       result.append(m_angle->cssText());
       wroteSomething = true;
     } else if ((m_firstX || m_firstY) &&
-               !(!m_firstX && m_firstY && m_firstY->isPrimitiveValue() &&
-                 toCSSPrimitiveValue(m_firstY.get())->getValueID() ==
+               !(!m_firstX && m_firstY && m_firstY->isIdentifierValue() &&
+                 toCSSIdentifierValue(m_firstY.get())->getValueID() ==
                      CSSValueBottom)) {
       result.append("to ");
       if (m_firstX && m_firstY) {
@@ -820,11 +840,12 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(
           // "Magic" corners, so the 50% line touches two corners.
           float rise = size.width();
           float run = size.height();
-          if (m_firstX && m_firstX->isPrimitiveValue() &&
-              toCSSPrimitiveValue(m_firstX.get())->getValueID() == CSSValueLeft)
+          if (m_firstX && m_firstX->isIdentifierValue() &&
+              toCSSIdentifierValue(m_firstX.get())->getValueID() ==
+                  CSSValueLeft)
             run *= -1;
-          if (m_firstY && m_firstY->isPrimitiveValue() &&
-              toCSSPrimitiveValue(m_firstY.get())->getValueID() ==
+          if (m_firstY && m_firstY->isIdentifierValue() &&
+              toCSSIdentifierValue(m_firstY.get())->getValueID() ==
                   CSSValueBottom)
             rise *= -1;
           // Compute angle, and flip it back to "bearing angle" degrees.

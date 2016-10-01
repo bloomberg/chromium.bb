@@ -8,6 +8,7 @@
 #include "core/animation/LengthPropertyFunctions.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/LengthFunctions.h"
@@ -86,8 +87,8 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState&,
     ConversionCheckers& conversionCheckers) const {
-  if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).isValueID()) {
-    CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
+  if (value.isIdentifierValue()) {
+    CSSValueID valueID = toCSSIdentifierValue(value).getValueID();
     double pixels;
     if (!LengthPropertyFunctions::getPixelsForKeyword(cssProperty(), valueID,
                                                       pixels))
@@ -146,7 +147,7 @@ void CSSLengthInterpolationType::apply(
     Length after;
     DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, before));
     StyleBuilder::applyProperty(cssProperty(), state,
-                                *CSSPrimitiveValue::create(length, zoom));
+                                *CSSValue::create(length, zoom));
     DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, after));
     DCHECK_EQ(before.type(), after.type());
     if (before.isSpecified()) {
@@ -159,7 +160,7 @@ void CSSLengthInterpolationType::apply(
     return;
   }
   StyleBuilder::applyProperty(cssProperty(), state,
-                              *CSSPrimitiveValue::create(length, zoom));
+                              *CSSValue::create(length, zoom));
 }
 
 }  // namespace blink

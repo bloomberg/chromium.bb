@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
@@ -70,8 +71,8 @@ void CSSMatrix::setMatrixValue(const String& string,
   if (const CSSValue* value =
           CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
     // Check for a "none" transform. In these cases we can use the default identity matrix.
-    if (value->isPrimitiveValue() &&
-        (toCSSPrimitiveValue(value))->getValueID() == CSSValueNone)
+    if (value->isIdentifierValue() &&
+        (toCSSIdentifierValue(value))->getValueID() == CSSValueNone)
       return;
 
     DEFINE_STATIC_REF(ComputedStyle, initialStyle, createInitialStyle());

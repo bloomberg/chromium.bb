@@ -6,6 +6,7 @@
 #define CSSPropertyParserHelpers_h
 
 #include "core/css/CSSCustomIdentValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserTokenRange.h"
@@ -51,14 +52,14 @@ CSSPrimitiveValue* consumeLengthOrPercent(
 CSSPrimitiveValue* consumeAngle(CSSParserTokenRange&);
 CSSPrimitiveValue* consumeTime(CSSParserTokenRange&, ValueRange);
 
-CSSPrimitiveValue* consumeIdent(CSSParserTokenRange&);
-CSSPrimitiveValue* consumeIdentRange(CSSParserTokenRange&,
-                                     CSSValueID lower,
-                                     CSSValueID upper);
+CSSIdentifierValue* consumeIdent(CSSParserTokenRange&);
+CSSIdentifierValue* consumeIdentRange(CSSParserTokenRange&,
+                                      CSSValueID lower,
+                                      CSSValueID upper);
 template <CSSValueID, CSSValueID...>
 inline bool identMatches(CSSValueID id);
 template <CSSValueID... allowedIdents>
-CSSPrimitiveValue* consumeIdent(CSSParserTokenRange&);
+CSSIdentifierValue* consumeIdent(CSSParserTokenRange&);
 
 CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange&);
 CSSStringValue* consumeString(CSSParserTokenRange&);
@@ -104,12 +105,11 @@ inline bool identMatches(CSSValueID id) {
 }
 
 template <CSSValueID... names>
-CSSPrimitiveValue* consumeIdent(CSSParserTokenRange& range) {
+CSSIdentifierValue* consumeIdent(CSSParserTokenRange& range) {
   if (range.peek().type() != IdentToken ||
       !identMatches<names...>(range.peek().id()))
     return nullptr;
-  return CSSPrimitiveValue::createIdentifier(
-      range.consumeIncludingWhitespace().id());
+  return CSSIdentifierValue::create(range.consumeIncludingWhitespace().id());
 }
 
 }  // namespace CSSPropertyParserHelpers

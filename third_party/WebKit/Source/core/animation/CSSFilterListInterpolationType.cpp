@@ -7,6 +7,7 @@
 #include "core/animation/FilterInterpolationFunctions.h"
 #include "core/animation/FilterListPropertyFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
@@ -135,8 +136,8 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState&,
     ConversionCheckers&) const {
-  if (value.isPrimitiveValue() &&
-      toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
+  if (value.isIdentifierValue() &&
+      toCSSIdentifierValue(value).getValueID() == CSSValueNone)
     return InterpolationValue(InterpolableList::create(0),
                               NonInterpolableList::create());
 

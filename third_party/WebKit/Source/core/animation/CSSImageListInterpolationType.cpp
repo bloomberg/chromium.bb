@@ -7,7 +7,7 @@
 #include "core/animation/CSSImageInterpolationType.h"
 #include "core/animation/ImageListPropertyFunctions.h"
 #include "core/animation/ListInterpolationFunctions.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
@@ -111,8 +111,8 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState&,
     ConversionCheckers&) const {
-  if (value.isPrimitiveValue() &&
-      toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
+  if (value.isIdentifierValue() &&
+      toCSSIdentifierValue(value).getValueID() == CSSValueNone)
     return nullptr;
 
   CSSValueList* tempList = nullptr;

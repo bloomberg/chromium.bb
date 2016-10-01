@@ -7,6 +7,7 @@
 #include "core/animation/ListInterpolationFunctions.h"
 #include "core/animation/ShadowInterpolationFunctions.h"
 #include "core/animation/ShadowListPropertyFunctions.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -94,8 +95,8 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState&,
     ConversionCheckers&) const {
-  if (value.isPrimitiveValue() &&
-      toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
+  if (value.isIdentifierValue() &&
+      toCSSIdentifierValue(value).getValueID() == CSSValueNone)
     return createNeutralValue();
 
   if (!value.isBaseValueList())

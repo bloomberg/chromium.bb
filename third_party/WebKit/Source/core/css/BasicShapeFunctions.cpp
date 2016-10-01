@@ -30,6 +30,7 @@
 #include "core/css/BasicShapeFunctions.h"
 
 #include "core/css/CSSBasicShapeValues.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -43,35 +44,34 @@ static CSSValue* valueForCenterCoordinate(
     const BasicShapeCenterCoordinate& center,
     EBoxOrient orientation) {
   if (center.getDirection() == BasicShapeCenterCoordinate::TopLeft)
-    return CSSPrimitiveValue::create(center.length(), style.effectiveZoom());
+    return CSSValue::create(center.length(), style.effectiveZoom());
 
   CSSValueID keyword =
       orientation == HORIZONTAL ? CSSValueRight : CSSValueBottom;
 
   return CSSValuePair::create(
-      CSSPrimitiveValue::createIdentifier(keyword),
-      CSSPrimitiveValue::create(center.length(), style.effectiveZoom()),
+      CSSIdentifierValue::create(keyword),
+      CSSValue::create(center.length(), style.effectiveZoom()),
       CSSValuePair::DropIdenticalValues);
 }
 
 static CSSValuePair* valueForLengthSize(const LengthSize& lengthSize,
                                         const ComputedStyle& style) {
   return CSSValuePair::create(
-      CSSPrimitiveValue::create(lengthSize.width(), style.effectiveZoom()),
-      CSSPrimitiveValue::create(lengthSize.height(), style.effectiveZoom()),
+      CSSValue::create(lengthSize.width(), style.effectiveZoom()),
+      CSSValue::create(lengthSize.height(), style.effectiveZoom()),
       CSSValuePair::KeepIdenticalValues);
 }
 
-static CSSPrimitiveValue* basicShapeRadiusToCSSValue(
-    const ComputedStyle& style,
-    const BasicShapeRadius& radius) {
+static CSSValue* basicShapeRadiusToCSSValue(const ComputedStyle& style,
+                                            const BasicShapeRadius& radius) {
   switch (radius.type()) {
     case BasicShapeRadius::Value:
-      return CSSPrimitiveValue::create(radius.value(), style.effectiveZoom());
+      return CSSValue::create(radius.value(), style.effectiveZoom());
     case BasicShapeRadius::ClosestSide:
-      return CSSPrimitiveValue::createIdentifier(CSSValueClosestSide);
+      return CSSIdentifierValue::create(CSSValueClosestSide);
     case BasicShapeRadius::FarthestSide:
-      return CSSPrimitiveValue::createIdentifier(CSSValueFarthestSide);
+      return CSSIdentifierValue::create(CSSValueFarthestSide);
   }
 
   ASSERT_NOT_REACHED();
@@ -178,11 +178,10 @@ static BasicShapeCenterCoordinate convertToCenterCoordinate(
   CSSValueID keyword = CSSValueTop;
   if (!value) {
     keyword = CSSValueCenter;
-  } else if (value->isPrimitiveValue() &&
-             toCSSPrimitiveValue(value)->isValueID()) {
-    keyword = toCSSPrimitiveValue(value)->getValueID();
+  } else if (value->isIdentifierValue()) {
+    keyword = toCSSIdentifierValue(value)->getValueID();
   } else if (value->isValuePair()) {
-    keyword = toCSSPrimitiveValue(toCSSValuePair(value)->first()).getValueID();
+    keyword = toCSSIdentifierValue(toCSSValuePair(value)->first()).getValueID();
     offset = convertToLength(
         state, &toCSSPrimitiveValue(toCSSValuePair(value)->second()));
   } else {
@@ -213,12 +212,12 @@ static BasicShapeCenterCoordinate convertToCenterCoordinate(
 
 static BasicShapeRadius cssValueToBasicShapeRadius(
     const StyleResolverState& state,
-    const CSSPrimitiveValue* radius) {
+    const CSSValue* radius) {
   if (!radius)
     return BasicShapeRadius(BasicShapeRadius::ClosestSide);
 
-  if (radius->isValueID()) {
-    switch (radius->getValueID()) {
+  if (radius->isIdentifierValue()) {
+    switch (toCSSIdentifierValue(radius)->getValueID()) {
       case CSSValueClosestSide:
         return BasicShapeRadius(BasicShapeRadius::ClosestSide);
       case CSSValueFarthestSide:
@@ -229,7 +228,7 @@ static BasicShapeRadius cssValueToBasicShapeRadius(
     }
   }
 
-  return BasicShapeRadius(convertToLength(state, radius));
+  return BasicShapeRadius(convertToLength(state, toCSSPrimitiveValue(radius)));
 }
 
 PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state,

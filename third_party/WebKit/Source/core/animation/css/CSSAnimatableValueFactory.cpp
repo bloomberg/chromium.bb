@@ -53,6 +53,7 @@
 #include "core/animation/animatable/AnimatableUnknown.h"
 #include "core/animation/animatable/AnimatableVisibility.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
@@ -76,7 +77,7 @@ static PassRefPtr<AnimatableValue> createFromLengthWithZoom(
     case MaxContent:
     case FillAvailable:
     case FitContent:
-      return AnimatableUnknown::create(CSSPrimitiveValue::create(length, 1));
+      return AnimatableUnknown::create(CSSValue::create(length, 1));
     case MaxSizeNone:
       return AnimatableUnknown::create(CSSValueNone);
     case ExtendToZoom:  // Does not apply to elements.
@@ -204,7 +205,7 @@ inline static PassRefPtr<AnimatableValue> createFromFillSize(
     case Cover:
     case SizeNone:
       return AnimatableUnknown::create(
-          CSSPrimitiveValue::create(fillSize.type));
+          CSSIdentifierValue::create(fillSize.type));
     default:
       NOTREACHED();
       return nullptr;
@@ -356,10 +357,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
       switch (style.svgStyle().baselineShift()) {
         case BS_SUPER:
           return AnimatableUnknown::create(
-              CSSPrimitiveValue::createIdentifier(CSSValueSuper));
+              CSSIdentifierValue::create(CSSValueSuper));
         case BS_SUB:
           return AnimatableUnknown::create(
-              CSSPrimitiveValue::createIdentifier(CSSValueSub));
+              CSSIdentifierValue::create(CSSValueSub));
         default:
           return createFromLength(style.baselineShiftValue(), style);
       }
@@ -401,9 +402,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
     case CSSPropertyBoxShadow:
       return AnimatableShadow::create(style.boxShadow(), style.color());
     case CSSPropertyClip:
-      if (style.hasAutoClip())
+      if (style.hasAutoClip()) {
         return AnimatableUnknown::create(
-            CSSPrimitiveValue::createIdentifier(CSSValueAuto));
+            CSSIdentifierValue::create(CSSValueAuto));
+      }
       return createFromLengthBox(style.clip(), style);
     case CSSPropertyColor:
       return createFromColor(property, style);
@@ -570,9 +572,10 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
       return createFromFillLayers<CSSPropertyWebkitMaskSize>(style.maskLayers(),
                                                              style);
     case CSSPropertyPerspective:
-      if (style.perspective() == 0)
+      if (style.perspective() == 0) {
         return AnimatableUnknown::create(
-            CSSPrimitiveValue::createIdentifier(CSSValueNone));
+            CSSIdentifierValue::create(CSSValueNone));
+      }
       return createFromDouble(style.perspective());
     case CSSPropertyPerspectiveOrigin:
       return createFromLengthPoint(style.perspectiveOrigin(), style);
@@ -641,7 +644,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
       if (style.verticalAlign() == VerticalAlignLength)
         return createFromLength(style.getVerticalAlignLength(), style);
       return AnimatableUnknown::create(
-          CSSPrimitiveValue::create(style.verticalAlign()));
+          CSSIdentifierValue::create(style.verticalAlign()));
     case CSSPropertyVisibility:
       return AnimatableVisibility::create(style.visibility());
     case CSSPropertyD:

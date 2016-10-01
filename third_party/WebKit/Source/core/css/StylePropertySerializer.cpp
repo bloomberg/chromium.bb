@@ -25,6 +25,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
@@ -534,8 +535,8 @@ void StylePropertySerializer::appendFontLonghandValueIfNotNormal(
   ASSERT(foundPropertyIndex != -1);
 
   const CSSValue* val = m_propertySet.propertyAt(foundPropertyIndex).value();
-  if (val->isPrimitiveValue() &&
-      toCSSPrimitiveValue(val)->getValueID() == CSSValueNormal)
+  if (val->isIdentifierValue() &&
+      toCSSIdentifierValue(val)->getValueID() == CSSValueNormal)
     return;
 
   char prefix = '\0';
@@ -563,8 +564,8 @@ void StylePropertySerializer::appendFontLonghandValueIfNotNormal(
   String value;
   // In the font-variant shorthand a "none" ligatures value needs to be expanded.
   if (propertyID == CSSPropertyFontVariantLigatures &&
-      val->isPrimitiveValue() &&
-      toCSSPrimitiveValue(val)->getValueID() == CSSValueNone) {
+      val->isIdentifierValue() &&
+      toCSSIdentifierValue(val)->getValueID() == CSSValueNone) {
     value =
         "no-common-ligatures no-discretionary-ligatures "
         "no-historical-ligatures no-contextual";
@@ -606,11 +607,11 @@ String StylePropertySerializer::fontValue() const {
   // Check that non-initial font-variant subproperties are not conflicting with this serialization.
   const CSSValue* ligaturesValue = fontVariantLigaturesProperty.value();
   const CSSValue* numericValue = fontVariantNumericProperty.value();
-  if ((ligaturesValue->isPrimitiveValue() &&
-       toCSSPrimitiveValue(ligaturesValue)->getValueID() != CSSValueNormal) ||
+  if ((ligaturesValue->isIdentifierValue() &&
+       toCSSIdentifierValue(ligaturesValue)->getValueID() != CSSValueNormal) ||
       ligaturesValue->isValueList() ||
-      (numericValue->isPrimitiveValue() &&
-       toCSSPrimitiveValue(numericValue)->getValueID() != CSSValueNormal) ||
+      (numericValue->isIdentifierValue() &&
+       toCSSIdentifierValue(numericValue)->getValueID() != CSSValueNormal) ||
       numericValue->isValueList())
     return emptyString();
 
@@ -618,9 +619,9 @@ String StylePropertySerializer::fontValue() const {
   appendFontLonghandValueIfNotNormal(CSSPropertyFontStyle, result);
 
   const CSSValue* val = fontVariantCapsProperty.value();
-  if (val->isPrimitiveValue() &&
-      (toCSSPrimitiveValue(val)->getValueID() != CSSValueSmallCaps &&
-       toCSSPrimitiveValue(val)->getValueID() != CSSValueNormal))
+  if (val->isIdentifierValue() &&
+      (toCSSIdentifierValue(val)->getValueID() != CSSValueSmallCaps &&
+       toCSSIdentifierValue(val)->getValueID() != CSSValueNormal))
     return emptyString();
   appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result);
 
@@ -762,11 +763,11 @@ String StylePropertySerializer::getLayeredShorthandValue(
 
         // FIXME: At some point we need to fix this code to avoid returning an invalid shorthand,
         // since some longhand combinations are not serializable into a single shorthand.
-        if (!value->isPrimitiveValue() || !yValue.isPrimitiveValue())
+        if (!value->isIdentifierValue() || !yValue.isIdentifierValue())
           continue;
 
-        CSSValueID xId = toCSSPrimitiveValue(value)->getValueID();
-        CSSValueID yId = toCSSPrimitiveValue(yValue).getValueID();
+        CSSValueID xId = toCSSIdentifierValue(value)->getValueID();
+        CSSValueID yId = toCSSIdentifierValue(yValue).getValueID();
         // Maybe advance propertyIndex to look at the next CSSValue in the list for the checks below.
         if (xId == yId) {
           useSingleWordShorthand = true;
@@ -880,14 +881,14 @@ static void appendBackgroundRepeatValue(StringBuilder& builder,
                                         const CSSValue& repeatXCSSValue,
                                         const CSSValue& repeatYCSSValue) {
   // FIXME: Ensure initial values do not appear in CSS_VALUE_LISTS.
-  DEFINE_STATIC_LOCAL(CSSPrimitiveValue, initialRepeatValue,
-                      (CSSPrimitiveValue::createIdentifier(CSSValueRepeat)));
-  const CSSPrimitiveValue& repeatX = repeatXCSSValue.isInitialValue()
-                                         ? initialRepeatValue
-                                         : toCSSPrimitiveValue(repeatXCSSValue);
-  const CSSPrimitiveValue& repeatY = repeatYCSSValue.isInitialValue()
-                                         ? initialRepeatValue
-                                         : toCSSPrimitiveValue(repeatYCSSValue);
+  DEFINE_STATIC_LOCAL(CSSIdentifierValue, initialRepeatValue,
+                      (CSSIdentifierValue::create(CSSValueRepeat)));
+  const CSSIdentifierValue& repeatX =
+      repeatXCSSValue.isInitialValue() ? initialRepeatValue
+                                       : toCSSIdentifierValue(repeatXCSSValue);
+  const CSSIdentifierValue& repeatY =
+      repeatYCSSValue.isInitialValue() ? initialRepeatValue
+                                       : toCSSIdentifierValue(repeatYCSSValue);
   CSSValueID repeatXValueId = repeatX.getValueID();
   CSSValueID repeatYValueId = repeatY.getValueID();
   if (repeatXValueId == repeatYValueId) {
@@ -916,7 +917,7 @@ String StylePropertySerializer::backgroundRepeatPropertyValue() const {
   if (repeatX.isValueList()) {
     repeatXList = &toCSSValueList(repeatX);
     repeatXLength = repeatXList->length();
-  } else if (!repeatX.isPrimitiveValue()) {
+  } else if (!repeatX.isIdentifierValue()) {
     return String();
   }
 
@@ -925,7 +926,7 @@ String StylePropertySerializer::backgroundRepeatPropertyValue() const {
   if (repeatY.isValueList()) {
     repeatYList = &toCSSValueList(repeatY);
     repeatYLength = repeatYList->length();
-  } else if (!repeatY.isPrimitiveValue()) {
+  } else if (!repeatY.isIdentifierValue()) {
     return String();
   }
 

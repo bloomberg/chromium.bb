@@ -19,6 +19,7 @@
  */
 #include "core/css/CSSShadowValue.h"
 
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -30,7 +31,7 @@ CSSShadowValue::CSSShadowValue(CSSPrimitiveValue* x,
                                CSSPrimitiveValue* y,
                                CSSPrimitiveValue* blur,
                                CSSPrimitiveValue* spread,
-                               CSSPrimitiveValue* style,
+                               CSSIdentifierValue* style,
                                CSSValue* color)
     : CSSValue(ShadowClass),
       x(x),

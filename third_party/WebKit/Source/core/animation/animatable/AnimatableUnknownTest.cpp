@@ -39,10 +39,10 @@ namespace blink {
 class AnimationAnimatableUnknownTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    cssValue = CSSPrimitiveValue::createIdentifier(CSSValueYellow);
+    cssValue = CSSIdentifierValue::create(CSSValueYellow);
     animatableUnknown = AnimatableUnknown::create(cssValue);
 
-    otherCSSValue = CSSPrimitiveValue::createIdentifier(CSSValueOrange);
+    otherCSSValue = CSSIdentifierValue::create(CSSValueOrange);
     otherAnimatableUnknown = AnimatableUnknown::create(otherCSSValue);
   }
 

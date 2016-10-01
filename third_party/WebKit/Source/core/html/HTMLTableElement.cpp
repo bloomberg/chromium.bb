@@ -29,9 +29,9 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
@@ -511,7 +511,7 @@ StylePropertySet* HTMLTableElement::createSharedCellStyle() {
           CSSPropertyBorderWidth,
           *CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Pixels));
       style->setProperty(CSSPropertyBorderStyle,
-                         *CSSPrimitiveValue::createIdentifier(CSSValueSolid));
+                         *CSSIdentifierValue::create(CSSValueSolid));
       style->setProperty(CSSPropertyBorderColor, *CSSInheritedValue::create());
       break;
     case InsetBorders:
@@ -519,7 +519,7 @@ StylePropertySet* HTMLTableElement::createSharedCellStyle() {
           CSSPropertyBorderWidth,
           *CSSPrimitiveValue::create(1, CSSPrimitiveValue::UnitType::Pixels));
       style->setProperty(CSSPropertyBorderStyle,
-                         *CSSPrimitiveValue::createIdentifier(CSSValueInset));
+                         *CSSIdentifierValue::create(CSSValueInset));
       style->setProperty(CSSPropertyBorderColor, *CSSInheritedValue::create());
       break;
     case NoBorders:

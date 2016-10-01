@@ -28,7 +28,7 @@
 #include "core/dom/TextLinkColors.h"
 
 #include "core/css/CSSColorValue.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/StyleColor.h"
 #include "core/layout/LayoutTheme.h"
 #include "wtf/text/WTFString.h"
@@ -59,7 +59,7 @@ Color TextLinkColors::colorFromCSSValue(const CSSValue& value,
   if (value.isColorValue())
     return toCSSColorValue(value).value();
 
-  CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
+  CSSValueID valueID = toCSSIdentifierValue(value).getValueID();
   switch (valueID) {
     case CSSValueInvalid:
       NOTREACHED();

@@ -29,7 +29,6 @@
 #include "wtf/BitVector.h"
 #include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
-#include "wtf/TypeTraits.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringView.h"
 
@@ -62,9 +61,8 @@ inline float roundForImpreciseConversion(double value) {
   return static_cast<float>(value);
 }
 
-// CSSPrimitiveValues are immutable. This class has manual ref-counting
-// of unioned types and does not have the code necessary
-// to handle any kind of mutations.
+// CSSPrimitiveValue stores numeric data types (e.g. 1, 10px, 4%) and calc()
+// values (e.g. calc(3px + 2em)).
 class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
  public:
   // These units are iterated through, so be careful when adding or changing the order.
@@ -110,7 +108,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     CalcPercentageWithLength,
     CalcLengthWithNumber,
     CalcPercentageWithLengthAndNumber,
-    ValueID,
 
     // This value is used to handle quirky margins in reflow roots (body, td, and th) like WinIE.
     // The basic idea is that a stylesheet can use the value __qem (for quirky em) instead of em.
@@ -210,19 +207,15 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
            type <= UnitType::DotsPerCentimeter;
   }
   bool isFlex() const { return typeWithCalcResolved() == UnitType::Fraction; }
-  bool isValueID() const { return type() == UnitType::ValueID; }
-  bool colorIsDerivedFromElement() const;
 
-  static CSSPrimitiveValue* createIdentifier(CSSValueID);
   static CSSPrimitiveValue* create(double value, UnitType);
   static CSSPrimitiveValue* create(const Length& value, float zoom) {
     return new CSSPrimitiveValue(value, zoom);
   }
+
+  // TODO(sashab): Remove this.
   template <typename T>
   static CSSPrimitiveValue* create(T value) {
-    static_assert(!std::is_same<T, CSSValueID>::value,
-                  "Do not call create() with a CSSValueID; call "
-                  "createIdentifier() instead");
     return new CSSPrimitiveValue(value);
   }
 
@@ -253,10 +246,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return m_value.calc;
   }
 
-  CSSValueID getValueID() const {
-    return type() == UnitType::ValueID ? m_value.valueID : CSSValueInvalid;
-  }
-
   template <typename T>
   inline T convertTo() const;  // Defined in CSSPrimitiveValueMappings.h
 
@@ -281,7 +270,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   static UnitType lengthUnitTypeToUnitType(LengthUnitType);
 
  private:
-  CSSPrimitiveValue(CSSValueID);
   CSSPrimitiveValue(const Length&, float zoom);
   CSSPrimitiveValue(double, UnitType);
 
@@ -313,7 +301,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   }
 
   union {
-    CSSValueID valueID;
     double num;
     // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
     CSSCalcValue* calc;

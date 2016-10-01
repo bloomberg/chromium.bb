@@ -45,6 +45,7 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSReflectValue.h"
@@ -853,8 +854,8 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
       for (auto it = properties.begin(); it != properties.end(); ++it) {
         const CSSValue* value =
             it->properties->getPropertyCSSValue(CSSPropertyDisplay);
-        if (value && value->isPrimitiveValue() &&
-            toCSSPrimitiveValue(*value).getValueID() == CSSValueBlock)
+        if (value && value->isIdentifierValue() &&
+            toCSSIdentifierValue(*value).getValueID() == CSSValueBlock)
           UseCounter::count(
               element->document(),
               UseCounter::SummaryElementWithDisplayBlockAuthorRule);

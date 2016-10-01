@@ -180,8 +180,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyColor(
     StyleResolverState& state,
     const CSSValue& value) {
   // As per the spec, 'color: currentColor' is treated as 'color: inherit'
-  if (value.isPrimitiveValue() &&
-      toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor) {
+  if (value.isIdentifierValue() &&
+      toCSSIdentifierValue(value).getValueID() == CSSValueCurrentcolor) {
     applyInheritCSSPropertyColor(state);
     return;
   }
@@ -253,11 +253,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(
                                  hotSpotSpecified, hotSpot);
       } else {
         state.style()->setCursor(
-            toCSSPrimitiveValue(item).convertTo<ECursor>());
+            toCSSIdentifierValue(item).convertTo<ECursor>());
       }
     }
   } else {
-    state.style()->setCursor(toCSSPrimitiveValue(value).convertTo<ECursor>());
+    state.style()->setCursor(toCSSIdentifierValue(value).convertTo<ECursor>());
   }
 }
 
@@ -265,7 +265,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyDirection(
     StyleResolverState& state,
     const CSSValue& value) {
   state.style()->setDirection(
-      toCSSPrimitiveValue(value).convertTo<TextDirection>());
+      toCSSIdentifierValue(value).convertTo<TextDirection>());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyGridTemplateAreas(
@@ -289,9 +289,9 @@ void StyleBuilderFunctions::applyInheritCSSPropertyGridTemplateAreas(
 void StyleBuilderFunctions::applyValueCSSPropertyGridTemplateAreas(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (value.isPrimitiveValue()) {
+  if (value.isIdentifierValue()) {
     // FIXME: Shouldn't we clear the grid-area values
-    DCHECK_EQ(toCSSPrimitiveValue(value).getValueID(), CSSValueNone);
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueNone);
     return;
   }
 
@@ -343,23 +343,23 @@ void StyleBuilderFunctions::applyInheritCSSPropertyOutlineStyle(
 void StyleBuilderFunctions::applyValueCSSPropertyOutlineStyle(
     StyleResolverState& state,
     const CSSValue& value) {
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+  const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
   state.style()->setOutlineStyleIsAuto(
-      primitiveValue.convertTo<OutlineIsAuto>());
-  state.style()->setOutlineStyle(primitiveValue.convertTo<EBorderStyle>());
+      identifierValue.convertTo<OutlineIsAuto>());
+  state.style()->setOutlineStyle(identifierValue.convertTo<EBorderStyle>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyResize(
     StyleResolverState& state,
     const CSSValue& value) {
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+  const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
 
   EResize r = RESIZE_NONE;
-  if (primitiveValue.getValueID() == CSSValueAuto) {
+  if (identifierValue.getValueID() == CSSValueAuto) {
     if (Settings* settings = state.document().settings())
       r = settings->textAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
   } else {
-    r = primitiveValue.convertTo<EResize>();
+    r = identifierValue.convertTo<EResize>();
   }
   state.style()->setResize(r);
 }
@@ -370,7 +370,7 @@ static float mmToPx(float mm) {
 static float inchToPx(float inch) {
   return inch * cssPixelsPerInch;
 }
-static FloatSize getPageSizeFromName(const CSSPrimitiveValue& pageSizeName) {
+static FloatSize getPageSizeFromName(const CSSIdentifierValue& pageSizeName) {
   switch (pageSizeName.getValueID()) {
     case CSSValueA5:
       return FloatSize(mmToPx(148), mmToPx(210));
@@ -404,37 +404,38 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
   const CSSValueList& list = toCSSValueList(value);
   if (list.length() == 2) {
     // <length>{2} | <page-size> <orientation>
-    const CSSPrimitiveValue& first = toCSSPrimitiveValue(list.item(0));
-    const CSSPrimitiveValue& second = toCSSPrimitiveValue(list.item(1));
-    if (first.isLength()) {
+    const CSSValue& first = list.item(0);
+    const CSSValue& second = list.item(1);
+    if (first.isPrimitiveValue() && toCSSPrimitiveValue(first).isLength()) {
       // <length>{2}
       size = FloatSize(
-          first.computeLength<float>(
+          toCSSPrimitiveValue(first).computeLength<float>(
               state.cssToLengthConversionData().copyWithAdjustedZoom(1.0)),
-          second.computeLength<float>(
+          toCSSPrimitiveValue(second).computeLength<float>(
               state.cssToLengthConversionData().copyWithAdjustedZoom(1.0)));
     } else {
       // <page-size> <orientation>
-      size = getPageSizeFromName(first);
+      size = getPageSizeFromName(toCSSIdentifierValue(first));
 
-      DCHECK(second.getValueID() == CSSValueLandscape ||
-             second.getValueID() == CSSValuePortrait);
-      if (second.getValueID() == CSSValueLandscape)
+      DCHECK(toCSSIdentifierValue(second).getValueID() == CSSValueLandscape ||
+             toCSSIdentifierValue(second).getValueID() == CSSValuePortrait);
+      if (toCSSIdentifierValue(second).getValueID() == CSSValueLandscape)
         size = size.transposedSize();
     }
     pageSizeType = PAGE_SIZE_RESOLVED;
   } else {
     DCHECK_EQ(list.length(), 1U);
     // <length> | auto | <page-size> | [ portrait | landscape]
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(list.item(0));
-    if (primitiveValue.isLength()) {
+    const CSSValue& first = list.item(0);
+    if (first.isPrimitiveValue() && toCSSPrimitiveValue(first).isLength()) {
       // <length>
       pageSizeType = PAGE_SIZE_RESOLVED;
-      float width = primitiveValue.computeLength<float>(
+      float width = toCSSPrimitiveValue(first).computeLength<float>(
           state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
       size = FloatSize(width, width);
     } else {
-      switch (primitiveValue.getValueID()) {
+      const CSSIdentifierValue& ident = toCSSIdentifierValue(first);
+      switch (ident.getValueID()) {
         case CSSValueAuto:
           pageSizeType = PAGE_SIZE_AUTO;
           break;
@@ -447,7 +448,7 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
         default:
           // <page-size>
           pageSizeType = PAGE_SIZE_RESOLVED;
-          size = getPageSizeFromName(primitiveValue);
+          size = getPageSizeFromName(ident);
       }
     }
   }
@@ -494,16 +495,16 @@ void StyleBuilderFunctions::applyValueCSSPropertySnapHeight(
 void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(
     StyleResolverState& state,
     const CSSValue& value) {
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-  if (primitiveValue.isValueID() &&
-      primitiveValue.getValueID() != CSSValueWebkitMatchParent) {
+  if (value.isIdentifierValue() &&
+      toCSSIdentifierValue(value).getValueID() != CSSValueWebkitMatchParent) {
     // Special case for th elements - UA stylesheet text-align does not apply if parent's computed value for text-align is not its initial value
     // https://html.spec.whatwg.org/multipage/rendering.html#tables-2
-    if (primitiveValue.getValueID() == CSSValueInternalCenter &&
+    const CSSIdentifierValue& identValue = toCSSIdentifierValue(value);
+    if (identValue.getValueID() == CSSValueInternalCenter &&
         state.parentStyle()->textAlign() != ComputedStyle::initialTextAlign())
       state.style()->setTextAlign(state.parentStyle()->textAlign());
     else
-      state.style()->setTextAlign(primitiveValue.convertTo<ETextAlign>());
+      state.style()->setTextAlign(identValue.convertTo<ETextAlign>());
   } else if (state.parentStyle()->textAlign() == TASTART)
     state.style()->setTextAlign(
         state.parentStyle()->isLeftToRightDirection() ? LEFT : RIGHT);
@@ -536,17 +537,19 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(
   TextIndentType textIndentTypeValue = ComputedStyle::initialTextIndentType();
 
   for (auto& listValue : toCSSValueList(value)) {
-    const CSSPrimitiveValue* primitiveValue =
-        toCSSPrimitiveValue(listValue.get());
-    if (!primitiveValue->getValueID())
+    if (listValue->isPrimitiveValue()) {
       lengthOrPercentageValue =
-          primitiveValue->convertToLength(state.cssToLengthConversionData());
-    else if (primitiveValue->getValueID() == CSSValueEachLine)
+          toCSSPrimitiveValue(*listValue)
+              .convertToLength(state.cssToLengthConversionData());
+    } else if (toCSSIdentifierValue(*listValue).getValueID() ==
+               CSSValueEachLine) {
       textIndentLineValue = TextIndentEachLine;
-    else if (primitiveValue->getValueID() == CSSValueHanging)
+    } else if (toCSSIdentifierValue(*listValue).getValueID() ==
+               CSSValueHanging) {
       textIndentTypeValue = TextIndentHanging;
-    else
+    } else {
       NOTREACHED();
+    }
   }
 
   state.style()->setTextIndent(lengthOrPercentageValue);
@@ -576,13 +579,14 @@ void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(
 void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(
     StyleResolverState& state,
     const CSSValue& value) {
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-
-  if (primitiveValue.getValueID())
-    state.style()->setVerticalAlign(primitiveValue.convertTo<EVerticalAlign>());
-  else
+  if (value.isIdentifierValue()) {
+    state.style()->setVerticalAlign(
+        toCSSIdentifierValue(value).convertTo<EVerticalAlign>());
+  } else {
     state.style()->setVerticalAlignLength(
-        primitiveValue.convertToLength(state.cssToLengthConversionData()));
+        toCSSPrimitiveValue(value).convertToLength(
+            state.cssToLengthConversionData()));
+  }
 }
 
 static void resetEffectiveZoom(StyleResolverState& state) {
@@ -606,28 +610,34 @@ void StyleBuilderFunctions::applyInheritCSSPropertyZoom(
 
 void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolverState& state,
                                                       const CSSValue& value) {
-  SECURITY_DCHECK(value.isPrimitiveValue());
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+  SECURITY_DCHECK(value.isPrimitiveValue() || value.isIdentifierValue());
 
-  if (primitiveValue.getValueID() == CSSValueNormal) {
-    resetEffectiveZoom(state);
-    state.setZoom(ComputedStyle::initialZoom());
-  } else if (primitiveValue.getValueID() == CSSValueReset) {
-    state.setEffectiveZoom(ComputedStyle::initialZoom());
-    state.setZoom(ComputedStyle::initialZoom());
-  } else if (primitiveValue.getValueID() == CSSValueDocument) {
-    float docZoom = state.rootElementStyle() ? state.rootElementStyle()->zoom()
-                                             : ComputedStyle::initialZoom();
-    state.setEffectiveZoom(docZoom);
-    state.setZoom(docZoom);
-  } else if (primitiveValue.isPercentage()) {
-    resetEffectiveZoom(state);
-    if (float percent = primitiveValue.getFloatValue())
-      state.setZoom(percent / 100.0f);
-  } else if (primitiveValue.isNumber()) {
-    resetEffectiveZoom(state);
-    if (float number = primitiveValue.getFloatValue())
-      state.setZoom(number);
+  if (value.isIdentifierValue()) {
+    const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
+    if (identifierValue.getValueID() == CSSValueNormal) {
+      resetEffectiveZoom(state);
+      state.setZoom(ComputedStyle::initialZoom());
+    } else if (identifierValue.getValueID() == CSSValueReset) {
+      state.setEffectiveZoom(ComputedStyle::initialZoom());
+      state.setZoom(ComputedStyle::initialZoom());
+    } else if (identifierValue.getValueID() == CSSValueDocument) {
+      float docZoom = state.rootElementStyle()
+                          ? state.rootElementStyle()->zoom()
+                          : ComputedStyle::initialZoom();
+      state.setEffectiveZoom(docZoom);
+      state.setZoom(docZoom);
+    }
+  } else if (value.isPrimitiveValue()) {
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue.isPercentage()) {
+      resetEffectiveZoom(state);
+      if (float percent = primitiveValue.getFloatValue())
+        state.setZoom(percent / 100.0f);
+    } else if (primitiveValue.isNumber()) {
+      resetEffectiveZoom(state);
+      if (float number = primitiveValue.getFloatValue())
+        state.setZoom(number);
+    }
   }
 }
 
@@ -665,7 +675,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(
     const CSSValueList& list = toCSSValueList(value);
     DCHECK_EQ(list.length(), 2U);
     for (unsigned i = 0; i < 2; ++i) {
-      const CSSPrimitiveValue& value = toCSSPrimitiveValue(list.item(i));
+      const CSSIdentifierValue& value = toCSSIdentifierValue(list.item(i));
       if (value.getValueID() == CSSValueFilled ||
           value.getValueID() == CSSValueOpen)
         state.style()->setTextEmphasisFill(value.convertTo<TextEmphasisFill>());
@@ -684,19 +694,19 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(
     return;
   }
 
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+  const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
 
   state.style()->setTextEmphasisCustomMark(nullAtom);
 
-  if (primitiveValue.getValueID() == CSSValueFilled ||
-      primitiveValue.getValueID() == CSSValueOpen) {
+  if (identifierValue.getValueID() == CSSValueFilled ||
+      identifierValue.getValueID() == CSSValueOpen) {
     state.style()->setTextEmphasisFill(
-        primitiveValue.convertTo<TextEmphasisFill>());
+        identifierValue.convertTo<TextEmphasisFill>());
     state.style()->setTextEmphasisMark(TextEmphasisMarkAuto);
   } else {
     state.style()->setTextEmphasisFill(TextEmphasisFillFilled);
     state.style()->setTextEmphasisMark(
-        primitiveValue.convertTo<TextEmphasisMark>());
+        identifierValue.convertTo<TextEmphasisMark>());
   }
 }
 
@@ -728,18 +738,18 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(
   bool willChangeScrollPosition = false;
   Vector<CSSPropertyID> willChangeProperties;
 
-  if (value.isPrimitiveValue()) {
-    DCHECK_EQ(toCSSPrimitiveValue(value).getValueID(), CSSValueAuto);
+  if (value.isIdentifierValue()) {
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueAuto);
   } else {
     DCHECK(value.isValueList());
     for (auto& willChangeValue : toCSSValueList(value)) {
       if (willChangeValue->isCustomIdentValue())
         willChangeProperties.append(
             toCSSCustomIdentValue(*willChangeValue).valueAsPropertyID());
-      else if (toCSSPrimitiveValue(*willChangeValue).getValueID() ==
+      else if (toCSSIdentifierValue(*willChangeValue).getValueID() ==
                CSSValueContents)
         willChangeContents = true;
-      else if (toCSSPrimitiveValue(*willChangeValue).getValueID() ==
+      else if (toCSSIdentifierValue(*willChangeValue).getValueID() ==
                CSSValueScrollPosition)
         willChangeScrollPosition = true;
       else
@@ -767,9 +777,9 @@ void StyleBuilderFunctions::applyInheritCSSPropertyContent(
 void StyleBuilderFunctions::applyValueCSSPropertyContent(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (value.isPrimitiveValue()) {
-    DCHECK(toCSSPrimitiveValue(value).getValueID() == CSSValueNormal ||
-           toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
+  if (value.isIdentifierValue()) {
+    DCHECK(toCSSIdentifierValue(value).getValueID() == CSSValueNormal ||
+           toCSSIdentifierValue(value).getValueID() == CSSValueNone);
     state.style()->setContent(nullptr);
     return;
   }
@@ -793,9 +803,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
           AtomicString(counterValue->identifier()), listStyleType,
           AtomicString(counterValue->separator())));
       nextContent = ContentData::create(std::move(counter));
-    } else if (item->isPrimitiveValue()) {
+    } else if (item->isIdentifierValue()) {
       QuoteType quoteType;
-      switch (toCSSPrimitiveValue(*item).getValueID()) {
+      switch (toCSSIdentifierValue(*item).getValueID()) {
         default:
           NOTREACHED();
         case CSSValueOpenQuote:
@@ -852,8 +862,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (value.isPrimitiveValue()) {
-    DCHECK_EQ(toCSSPrimitiveValue(value).getValueID(), CSSValueAuto);
+  if (value.isIdentifierValue()) {
+    DCHECK_EQ(toCSSIdentifierValue(value).getValueID(), CSSValueAuto);
     state.fontBuilder().setLocale(nullptr);
   } else {
     state.fontBuilder().setLocale(
@@ -870,37 +880,37 @@ void StyleBuilderFunctions::applyInheritCSSPropertyWebkitAppRegion(
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(
     StyleResolverState& state,
     const CSSValue& value) {
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
+  const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
   state.style()->setDraggableRegionMode(
-      primitiveValue.getValueID() == CSSValueDrag ? DraggableRegionDrag
-                                                  : DraggableRegionNoDrag);
+      identifierValue.getValueID() == CSSValueDrag ? DraggableRegionDrag
+                                                   : DraggableRegionNoDrag);
   state.document().setHasAnnotatedRegions(true);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWritingMode(
     StyleResolverState& state,
     const CSSValue& value) {
-  state.setWritingMode(toCSSPrimitiveValue(value).convertTo<WritingMode>());
+  state.setWritingMode(toCSSIdentifierValue(value).convertTo<WritingMode>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(
     StyleResolverState& state,
     const CSSValue& value) {
-  state.setWritingMode(toCSSPrimitiveValue(value).convertTo<WritingMode>());
+  state.setWritingMode(toCSSIdentifierValue(value).convertTo<WritingMode>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyTextOrientation(
     StyleResolverState& state,
     const CSSValue& value) {
   state.setTextOrientation(
-      toCSSPrimitiveValue(value).convertTo<TextOrientation>());
+      toCSSIdentifierValue(value).convertTo<TextOrientation>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(
     StyleResolverState& state,
     const CSSValue& value) {
   state.setTextOrientation(
-      toCSSPrimitiveValue(value).convertTo<TextOrientation>());
+      toCSSIdentifierValue(value).convertTo<TextOrientation>());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyVariable(
@@ -1007,14 +1017,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(
     StyleResolverState& state,
     const CSSValue& value) {
   SVGComputedStyle& svgStyle = state.style()->accessSVGStyle();
-  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-  if (!primitiveValue.isValueID()) {
+  if (!value.isIdentifierValue()) {
     svgStyle.setBaselineShift(BS_LENGTH);
-    svgStyle.setBaselineShiftValue(
-        StyleBuilderConverter::convertLength(state, primitiveValue));
+    svgStyle.setBaselineShiftValue(StyleBuilderConverter::convertLength(
+        state, toCSSPrimitiveValue(value)));
     return;
   }
-  switch (primitiveValue.getValueID()) {
+  switch (toCSSIdentifierValue(value).getValueID()) {
     case CSSValueBaseline:
       svgStyle.setBaselineShift(BS_LENGTH);
       svgStyle.setBaselineShiftValue(Length(Fixed));

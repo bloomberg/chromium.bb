@@ -222,7 +222,6 @@ MediaQueryExp* MediaQueryExp::createIfValid(
       if (!featureWithValidIdent(lowerMediaFeature, ident))
         return nullptr;
       expValue.id = ident;
-      expValue.unit = CSSPrimitiveValue::UnitType::ValueID;
       expValue.isID = true;
     } else if (token.type() == NumberToken || token.type() == PercentageToken ||
                token.type() == DimensionToken) {

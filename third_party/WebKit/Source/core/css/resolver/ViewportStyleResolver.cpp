@@ -150,8 +150,27 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const {
     defaultValue = 1;
 
   const CSSValue* value = m_propertySet->getPropertyCSSValue(id);
-  if (!value || !value->isPrimitiveValue())
+  if (!value || !(value->isPrimitiveValue() || value->isIdentifierValue()))
     return defaultValue;
+
+  if (value->isIdentifierValue()) {
+    switch (toCSSIdentifierValue(value)->getValueID()) {
+      case CSSValueAuto:
+        return defaultValue;
+      case CSSValueLandscape:
+        return ViewportDescription::ValueLandscape;
+      case CSSValuePortrait:
+        return ViewportDescription::ValuePortrait;
+      case CSSValueZoom:
+        return defaultValue;
+      case CSSValueInternalExtendToZoom:
+        return ViewportDescription::ValueExtendToZoom;
+      case CSSValueFixed:
+        return 0;
+      default:
+        return defaultValue;
+    }
+  }
 
   const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
@@ -170,27 +189,13 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const {
       case CSSPropertyZoom:
         return percentValue;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
   }
 
-  switch (primitiveValue->getValueID()) {
-    case CSSValueAuto:
-      return defaultValue;
-    case CSSValueLandscape:
-      return ViewportDescription::ValueLandscape;
-    case CSSValuePortrait:
-      return ViewportDescription::ValuePortrait;
-    case CSSValueZoom:
-      return defaultValue;
-    case CSSValueInternalExtendToZoom:
-      return ViewportDescription::ValueExtendToZoom;
-    case CSSValueFixed:
-      return 0;
-    default:
-      return defaultValue;
-  }
+  NOTREACHED();
+  return defaultValue;
 }
 
 Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const {
@@ -198,14 +203,18 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const {
          id == CSSPropertyMaxWidth || id == CSSPropertyMinWidth);
 
   const CSSValue* value = m_propertySet->getPropertyCSSValue(id);
-  if (!value || !value->isPrimitiveValue())
+  if (!value || !(value->isPrimitiveValue() || value->isIdentifierValue()))
     return Length();  // auto
 
+  if (value->isIdentifierValue()) {
+    CSSValueID valueID = toCSSIdentifierValue(value)->getValueID();
+    if (valueID == CSSValueInternalExtendToZoom)
+      return Length(ExtendToZoom);
+    if (valueID == CSSValueAuto)
+      return Length(Auto);
+  }
+
   const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-
-  if (primitiveValue->getValueID() == CSSValueInternalExtendToZoom)
-    return Length(ExtendToZoom);
-
   ComputedStyle* documentStyle = m_document->mutableComputedStyle();
 
   // If we have viewport units the conversion will mark the document style as having viewport units.
@@ -215,9 +224,6 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const {
   CSSToLengthConversionData::FontSizes fontSizes(documentStyle, documentStyle);
   CSSToLengthConversionData::ViewportSize viewportSize(
       m_document->layoutViewItem());
-
-  if (primitiveValue->getValueID() == CSSValueAuto)
-    return Length(Auto);
 
   Length result = primitiveValue->convertToLength(
       CSSToLengthConversionData(documentStyle, fontSizes, viewportSize, 1.0f));

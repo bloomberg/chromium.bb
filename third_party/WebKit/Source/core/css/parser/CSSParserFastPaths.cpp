@@ -7,6 +7,7 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -468,7 +469,7 @@ CSSValue* CSSParserFastPaths::parseColor(const String& string,
   if (StyleColor::isColorKeyword(valueID)) {
     if (!isValueAllowedInMode(valueID, parserMode))
       return nullptr;
-    return CSSPrimitiveValue::createIdentifier(valueID);
+    return CSSIdentifierValue::create(valueID);
   }
 
   RGBA32 color;
@@ -987,7 +988,7 @@ static CSSValue* parseKeywordValue(CSSPropertyID propertyId,
     return CSSInitialValue::create();
   if (CSSParserFastPaths::isValidKeywordPropertyAndValue(propertyId, valueID,
                                                          parserMode))
-    return CSSPrimitiveValue::createIdentifier(valueID);
+    return CSSIdentifierValue::create(valueID);
   return nullptr;
 }
 

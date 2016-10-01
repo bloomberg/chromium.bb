@@ -5,7 +5,7 @@
 #include "core/animation/CSSFontSizeInterpolationType.h"
 
 #include "core/animation/LengthInterpolationFunctions.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontDescription.h"
@@ -119,10 +119,10 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(
   if (result)
     return InterpolationValue(std::move(result));
 
-  if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isValueID())
+  if (!value.isIdentifierValue())
     return nullptr;
 
-  return maybeConvertKeyword(toCSSPrimitiveValue(value).getValueID(), state,
+  return maybeConvertKeyword(toCSSIdentifierValue(value).getValueID(), state,
                              conversionCheckers);
 }
 

@@ -146,9 +146,8 @@ static EColorInterpolation colorInterpolationForElement(
           element.presentationAttributeStyle()) {
     const CSSValue* cssValue =
         propertySet->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
-    if (cssValue && cssValue->isPrimitiveValue()) {
-      const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*cssValue);
-      return primitiveValue.convertTo<EColorInterpolation>();
+    if (cssValue && cssValue->isIdentifierValue()) {
+      return toCSSIdentifierValue(*cssValue).convertTo<EColorInterpolation>();
     }
   }
   // 'auto' is the default (per Filter Effects), but since the property is

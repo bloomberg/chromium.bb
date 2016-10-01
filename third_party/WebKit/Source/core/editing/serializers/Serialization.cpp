@@ -31,7 +31,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CDATASection.h"
@@ -157,9 +157,9 @@ bool propertyMissingOrEqualToNone(StylePropertySet* style,
   const CSSValue* value = style->getPropertyCSSValue(propertyID);
   if (!value)
     return true;
-  if (!value->isPrimitiveValue())
+  if (!value->isIdentifierValue())
     return false;
-  return toCSSPrimitiveValue(value)->getValueID() == CSSValueNone;
+  return toCSSIdentifierValue(value)->getValueID() == CSSValueNone;
 }
 
 template <typename Strategy>

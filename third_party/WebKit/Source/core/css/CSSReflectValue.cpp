@@ -25,6 +25,7 @@
 
 #include "core/css/CSSReflectValue.h"
 
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 
 namespace blink {

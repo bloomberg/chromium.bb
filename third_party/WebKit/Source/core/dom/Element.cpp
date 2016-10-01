@@ -38,6 +38,7 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CustomCompositorAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSStyleSheet.h"
@@ -3842,8 +3843,8 @@ void Element::inlineStyleChanged() {
 void Element::setInlineStyleProperty(CSSPropertyID propertyID,
                                      CSSValueID identifier,
                                      bool important) {
-  setInlineStyleProperty(
-      propertyID, CSSPrimitiveValue::createIdentifier(identifier), important);
+  setInlineStyleProperty(propertyID, CSSIdentifierValue::create(identifier),
+                         important);
 }
 
 void Element::setInlineStyleProperty(CSSPropertyID propertyID,
@@ -3905,8 +3906,7 @@ void Element::addPropertyToPresentationAttributeStyle(
     CSSPropertyID propertyID,
     CSSValueID identifier) {
   DCHECK(isStyledElement());
-  style->setProperty(propertyID,
-                     *CSSPrimitiveValue::createIdentifier(identifier));
+  style->setProperty(propertyID, *CSSIdentifierValue::create(identifier));
 }
 
 void Element::addPropertyToPresentationAttributeStyle(

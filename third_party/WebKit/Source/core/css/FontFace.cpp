@@ -39,7 +39,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/FontFaceDescriptors.h"
@@ -129,7 +129,7 @@ FontFace* FontFace::create(Document* document,
   // Obtain the font-family property and the src property. Both must be defined.
   const CSSValue* family =
       properties.getPropertyCSSValue(CSSPropertyFontFamily);
-  if (!family || (!family->isFontFamilyValue() && !family->isPrimitiveValue()))
+  if (!family || (!family->isFontFamilyValue() && !family->isIdentifierValue()))
     return nullptr;
   const CSSValue* src = properties.getPropertyCSSValue(CSSPropertySrc);
   if (!src || !src->isValueList())
@@ -308,10 +308,10 @@ bool FontFace::setFamilyValue(const CSSValue& familyValue) {
   AtomicString family;
   if (familyValue.isFontFamilyValue()) {
     family = AtomicString(toCSSFontFamilyValue(familyValue).value());
-  } else if (toCSSPrimitiveValue(familyValue).isValueID()) {
+  } else if (familyValue.isIdentifierValue()) {
     // We need to use the raw text for all the generic family types, since @font-face is a way of actually
     // defining what font to use for those types.
-    switch (toCSSPrimitiveValue(familyValue).getValueID()) {
+    switch (toCSSIdentifierValue(familyValue).getValueID()) {
       case CSSValueSerif:
         family = FontFamilyNames::webkit_serif;
         break;
@@ -425,10 +425,10 @@ void FontFace::loadInternal(ExecutionContext* context) {
 FontTraits FontFace::traits() const {
   FontStretch stretch = FontStretchNormal;
   if (m_stretch) {
-    if (!m_stretch->isPrimitiveValue())
+    if (!m_stretch->isIdentifierValue())
       return 0;
 
-    switch (toCSSPrimitiveValue(m_stretch.get())->getValueID()) {
+    switch (toCSSIdentifierValue(m_stretch.get())->getValueID()) {
       case CSSValueUltraCondensed:
         stretch = FontStretchUltraCondensed;
         break;
@@ -460,10 +460,10 @@ FontTraits FontFace::traits() const {
 
   FontStyle style = FontStyleNormal;
   if (m_style) {
-    if (!m_style->isPrimitiveValue())
+    if (!m_style->isIdentifierValue())
       return 0;
 
-    switch (toCSSPrimitiveValue(m_style.get())->getValueID()) {
+    switch (toCSSIdentifierValue(m_style.get())->getValueID()) {
       case CSSValueNormal:
         style = FontStyleNormal;
         break;
@@ -480,10 +480,10 @@ FontTraits FontFace::traits() const {
 
   FontWeight weight = FontWeight400;
   if (m_weight) {
-    if (!m_weight->isPrimitiveValue())
+    if (!m_weight->isIdentifierValue())
       return 0;
 
-    switch (toCSSPrimitiveValue(m_weight.get())->getValueID()) {
+    switch (toCSSIdentifierValue(m_weight.get())->getValueID()) {
       case CSSValueBold:
       case CSSValue700:
         weight = FontWeight700;
@@ -534,8 +534,8 @@ size_t FontFace::approximateBlankCharacterCount() const {
 }
 
 static FontDisplay CSSValueToFontDisplay(const CSSValue* value) {
-  if (value && value->isPrimitiveValue()) {
-    switch (toCSSPrimitiveValue(value)->getValueID()) {
+  if (value && value->isIdentifierValue()) {
+    switch (toCSSIdentifierValue(value)->getValueID()) {
       case CSSValueAuto:
         return FontDisplayAuto;
       case CSSValueBlock:

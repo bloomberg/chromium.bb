@@ -33,7 +33,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 
 namespace blink {
 
@@ -45,13 +45,12 @@ class AnimatableUnknown final : public AnimatableValue {
     return adoptRef(new AnimatableUnknown(value));
   }
   static PassRefPtr<AnimatableUnknown> create(CSSValueID value) {
-    return adoptRef(
-        new AnimatableUnknown(CSSPrimitiveValue::createIdentifier(value)));
+    return adoptRef(new AnimatableUnknown(CSSIdentifierValue::create(value)));
   }
 
   CSSValue* toCSSValue() const { return m_value; }
   CSSValueID toCSSValueID() const {
-    return toCSSPrimitiveValue(m_value.get())->getValueID();
+    return toCSSIdentifierValue(m_value.get())->getValueID();
   }
 
  protected:

@@ -86,27 +86,6 @@ CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitTypeToUnitCategory(
   }
 }
 
-bool CSSPrimitiveValue::colorIsDerivedFromElement() const {
-  int valueID = getValueID();
-  switch (valueID) {
-    case CSSValueInternalQuirkInherit:
-    case CSSValueWebkitLink:
-    case CSSValueWebkitActivelink:
-    case CSSValueCurrentcolor:
-      return true;
-    default:
-      return false;
-  }
-}
-
-CSSPrimitiveValue* CSSPrimitiveValue::createIdentifier(CSSValueID valueID) {
-  CSSPrimitiveValue* cssValue = cssValuePool().identifierCacheValue(valueID);
-  if (!cssValue)
-    cssValue = cssValuePool().setIdentifierCacheValue(
-        valueID, new CSSPrimitiveValue(valueID));
-  return cssValue;
-}
-
 CSSPrimitiveValue* CSSPrimitiveValue::create(double value, UnitType type) {
   // TODO(timloh): This looks wrong.
   if (std::isinf(value))
@@ -186,28 +165,6 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const {
   return UnitType::Unknown;
 }
 
-static const AtomicString& valueName(CSSValueID valueID) {
-  DCHECK_GE(valueID, 0);
-  DCHECK_LT(valueID, numCSSValueKeywords);
-
-  if (valueID < 0)
-    return nullAtom;
-
-  static AtomicString* keywordStrings =
-      new AtomicString[numCSSValueKeywords];  // Leaked intentionally.
-  AtomicString& keywordString = keywordStrings[valueID];
-  if (keywordString.isNull())
-    keywordString = getValueName(valueID);
-  return keywordString;
-}
-
-CSSPrimitiveValue::CSSPrimitiveValue(CSSValueID valueID)
-    : CSSValue(PrimitiveClass) {
-  init(UnitType::ValueID);
-  // TODO(sashab): Add a DCHECK_NE(valueID, CSSValueInvalid).
-  m_value.valueID = valueID;
-}
-
 CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
     : CSSValue(PrimitiveClass) {
   init(type);
@@ -218,30 +175,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
 CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     : CSSValue(PrimitiveClass) {
   switch (length.type()) {
-    case Auto:
-      init(UnitType::ValueID);
-      m_value.valueID = CSSValueAuto;
-      break;
-    case MinContent:
-      init(UnitType::ValueID);
-      m_value.valueID = CSSValueMinContent;
-      break;
-    case MaxContent:
-      init(UnitType::ValueID);
-      m_value.valueID = CSSValueMaxContent;
-      break;
-    case FillAvailable:
-      init(UnitType::ValueID);
-      m_value.valueID = CSSValueWebkitFillAvailable;
-      break;
-    case FitContent:
-      init(UnitType::ValueID);
-      m_value.valueID = CSSValueFitContent;
-      break;
-    case ExtendToZoom:
-      init(UnitType::ValueID);
-      m_value.valueID = CSSValueInternalExtendToZoom;
-      break;
     case Percent:
       init(UnitType::Percentage);
       ASSERT(std::isfinite(length.percent()));
@@ -270,6 +203,12 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
         m_value.num = 0;
       break;
     }
+    case Auto:
+    case MinContent:
+    case MaxContent:
+    case FillAvailable:
+    case FitContent:
+    case ExtendToZoom:
     case DeviceWidth:
     case DeviceHeight:
     case MaxSizeNone:
@@ -635,7 +574,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type) {
     case UnitType::ViewportMax:
       return "vmax";
     case UnitType::Unknown:
-    case UnitType::ValueID:
     case UnitType::Calc:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
@@ -693,9 +631,6 @@ String CSSPrimitiveValue::customCSSText() const {
     case UnitType::ViewportMax:
       text = formatNumber(m_value.num, unitTypeToString(type()));
       break;
-    case UnitType::ValueID:
-      text = valueName(m_value.valueID);
-      break;
     case UnitType::Calc:
       text = m_value.calc->customCSSText();
       break;
@@ -750,8 +685,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const {
     case UnitType::ViewportMax:
     case UnitType::Fraction:
       return m_value.num == other.m_value.num;
-    case UnitType::ValueID:
-      return m_value.valueID == other.m_value.valueID;
     case UnitType::Calc:
       return m_value.calc && other.m_value.calc &&
              m_value.calc->equals(*other.m_value.calc);

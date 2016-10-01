@@ -4,7 +4,7 @@
 
 #include "core/css/parser/CSSParserFastPaths.h"
 
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,10 +14,9 @@ TEST(CSSParserFastPathsTest, ParseKeyword) {
   CSSValue* value = CSSParserFastPaths::maybeParseValue(
       CSSPropertyFloat, "left", HTMLStandardMode);
   ASSERT_NE(nullptr, value);
-  EXPECT_TRUE(value->isPrimitiveValue());
-  CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-  EXPECT_TRUE(primitiveValue->isValueID());
-  EXPECT_EQ(CSSValueLeft, primitiveValue->getValueID());
+  EXPECT_TRUE(value->isIdentifierValue());
+  CSSIdentifierValue* identifierValue = toCSSIdentifierValue(value);
+  EXPECT_EQ(CSSValueLeft, identifierValue->getValueID());
   value = CSSParserFastPaths::maybeParseValue(CSSPropertyFloat, "foo",
                                               HTMLStandardMode);
   ASSERT_EQ(nullptr, value);

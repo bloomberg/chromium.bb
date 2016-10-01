@@ -5,6 +5,7 @@
 #include "core/animation/CSSTextIndentInterpolationType.h"
 
 #include "core/animation/LengthInterpolationFunctions.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -158,14 +159,14 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertValue(
   TextIndentType type = ComputedStyle::initialTextIndentType();
 
   for (const auto& item : toCSSValueList(value)) {
-    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*item);
-    if (primitiveValue.getValueID() == CSSValueEachLine)
+    if (item->isIdentifierValue() &&
+        toCSSIdentifierValue(*item).getValueID() == CSSValueEachLine)
       line = TextIndentEachLine;
-    else if (primitiveValue.getValueID() == CSSValueHanging)
+    else if (item->isIdentifierValue() &&
+             toCSSIdentifierValue(*item).getValueID() == CSSValueHanging)
       type = TextIndentHanging;
     else
-      length =
-          LengthInterpolationFunctions::maybeConvertCSSValue(primitiveValue);
+      length = LengthInterpolationFunctions::maybeConvertCSSValue(*item);
   }
   DCHECK(length);
 

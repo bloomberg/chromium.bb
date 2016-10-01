@@ -106,8 +106,7 @@ void TransformBuilder::createTransformOperations(
     TransformOperations& outOperations) {
   ASSERT(!outOperations.size());
   if (!inValue.isValueList()) {
-    ASSERT(inValue.isPrimitiveValue() &&
-           toCSSPrimitiveValue(inValue).getValueID() == CSSValueNone);
+    DCHECK_EQ(toCSSIdentifierValue(inValue).getValueID(), CSSValueNone);
     return;
   }
 

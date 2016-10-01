@@ -25,6 +25,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyIDTemplates.h"
@@ -240,7 +241,7 @@ CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const {
     return nullptr;
 
   if (int keywordSize = style->getFontDescription().keywordSize())
-    return CSSPrimitiveValue::createIdentifier(
+    return CSSIdentifierValue::create(
         cssIdentifierForFontSizeKeyword(keywordSize));
 
   return zoomAdjustedPixelValue(style->getFontDescription().computedPixelSize(),
@@ -441,7 +442,9 @@ String CSSComputedStyleDeclaration::item(unsigned i) const {
 bool CSSComputedStyleDeclaration::cssPropertyMatches(
     CSSPropertyID propertyID,
     const CSSValue* propertyValue) const {
-  if (propertyID == CSSPropertyFontSize && propertyValue->isPrimitiveValue() &&
+  if (propertyID == CSSPropertyFontSize &&
+      (propertyValue->isPrimitiveValue() ||
+       propertyValue->isIdentifierValue()) &&
       m_node) {
     m_node->document().updateStyleAndLayoutIgnorePendingStylesheets();
     const ComputedStyle* style =
@@ -449,10 +452,8 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(
     if (style && style->getFontDescription().keywordSize()) {
       CSSValueID sizeValue = cssIdentifierForFontSizeKeyword(
           style->getFontDescription().keywordSize());
-      const CSSPrimitiveValue* primitiveValue =
-          toCSSPrimitiveValue(propertyValue);
-      if (primitiveValue->isValueID() &&
-          primitiveValue->getValueID() == sizeValue)
+      if (propertyValue->isIdentifierValue() &&
+          toCSSIdentifierValue(propertyValue)->getValueID() == sizeValue)
         return true;
     }
   }

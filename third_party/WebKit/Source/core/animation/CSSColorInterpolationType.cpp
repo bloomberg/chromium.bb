@@ -6,6 +6,7 @@
 
 #include "core/animation/ColorPropertyFunctions.h"
 #include "core/css/CSSColorValue.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/layout/LayoutTheme.h"
 #include "wtf/PtrUtil.h"
@@ -80,14 +81,12 @@ std::unique_ptr<InterpolableValue>
 CSSColorInterpolationType::maybeCreateInterpolableColor(const CSSValue& value) {
   if (value.isColorValue())
     return createInterpolableColor(toCSSColorValue(value).value());
-  if (!value.isPrimitiveValue())
+  if (!value.isIdentifierValue())
     return nullptr;
-  const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
-  if (!primitive.isValueID())
+  const CSSIdentifierValue& identifierValue = toCSSIdentifierValue(value);
+  if (!StyleColor::isColorKeyword(identifierValue.getValueID()))
     return nullptr;
-  if (!StyleColor::isColorKeyword(primitive.getValueID()))
-    return nullptr;
-  return createInterpolableColor(primitive.getValueID());
+  return createInterpolableColor(identifierValue.getValueID());
 }
 
 static void addPremultipliedColor(double& red,
@@ -212,8 +211,8 @@ InterpolationValue CSSColorInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
-  if (cssProperty() == CSSPropertyColor && value.isPrimitiveValue() &&
-      toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
+  if (cssProperty() == CSSPropertyColor && value.isIdentifierValue() &&
+      toCSSIdentifierValue(value).getValueID() == CSSValueCurrentcolor)
     return maybeConvertInherit(state, conversionCheckers);
 
   std::unique_ptr<InterpolableValue> interpolableColor =

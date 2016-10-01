@@ -31,10 +31,14 @@ struct SideNumbers {
     isNumber[SideLeft] = box.left().isNumber();
   }
   explicit SideNumbers(const CSSQuadValue& quad) {
-    isNumber[SideTop] = quad.top()->isNumber();
-    isNumber[SideRight] = quad.right()->isNumber();
-    isNumber[SideBottom] = quad.bottom()->isNumber();
-    isNumber[SideLeft] = quad.left()->isNumber();
+    isNumber[SideTop] = quad.top()->isPrimitiveValue() &&
+                        toCSSPrimitiveValue(quad.top())->isNumber();
+    isNumber[SideRight] = quad.right()->isPrimitiveValue() &&
+                          toCSSPrimitiveValue(quad.right())->isNumber();
+    isNumber[SideBottom] = quad.bottom()->isPrimitiveValue() &&
+                           toCSSPrimitiveValue(quad.bottom())->isNumber();
+    isNumber[SideLeft] = quad.left()->isPrimitiveValue() &&
+                         toCSSPrimitiveValue(quad.left())->isNumber();
   }
 
   bool operator==(const SideNumbers& other) const {
@@ -229,16 +233,17 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(
   std::unique_ptr<InterpolableList> list =
       InterpolableList::create(SideIndexCount);
   Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(SideIndexCount);
-  const CSSPrimitiveValue* sides[SideIndexCount] = {};
+  const CSSValue* sides[SideIndexCount] = {};
   sides[SideTop] = quad.top();
   sides[SideRight] = quad.right();
   sides[SideBottom] = quad.bottom();
   sides[SideLeft] = quad.left();
 
   for (size_t i = 0; i < SideIndexCount; i++) {
-    const CSSPrimitiveValue& side = *sides[i];
-    if (side.isNumber()) {
-      list->set(i, InterpolableNumber::create(side.getDoubleValue()));
+    const CSSValue& side = *sides[i];
+    if (side.isPrimitiveValue() && toCSSPrimitiveValue(side).isNumber()) {
+      list->set(i, InterpolableNumber::create(
+                       toCSSPrimitiveValue(side).getDoubleValue()));
     } else {
       InterpolationValue convertedSide =
           LengthInterpolationFunctions::maybeConvertCSSValue(side);

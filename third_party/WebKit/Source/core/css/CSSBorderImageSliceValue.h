@@ -40,6 +40,8 @@ class CSSBorderImageSliceValue : public CSSValue {
 
   String customCSSText() const;
 
+  // TODO(sashab): Change this to a quad of CSSPrimitiveValues, or add separate
+  // methods for topSlice(), leftSlice(), etc.
   const CSSQuadValue& slices() const { return *m_slices; }
   bool fill() const { return m_fill; }
 

@@ -107,9 +107,8 @@ BasicShapeCenterCoordinate createCoordinate(
           interpolableValue, nullptr, conversionData, ValueRangeAll));
 }
 
-std::unique_ptr<InterpolableValue> convertCSSRadius(
-    const CSSPrimitiveValue* radius) {
-  if (!radius || radius->isValueID())
+std::unique_ptr<InterpolableValue> convertCSSRadius(const CSSValue* radius) {
+  if (!radius || radius->isIdentifierValue())
     return nullptr;
   return unwrap(LengthInterpolationFunctions::maybeConvertCSSValue(*radius));
 }

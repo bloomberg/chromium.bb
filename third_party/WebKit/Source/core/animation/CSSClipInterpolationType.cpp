@@ -5,6 +5,7 @@
 #include "core/animation/CSSClipInterpolationType.h"
 
 #include "core/animation/LengthInterpolationFunctions.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
@@ -189,12 +190,13 @@ InterpolationValue CSSClipInterpolationType::maybeConvertInherit(
                          state.parentStyle()->effectiveZoom());
 }
 
-static bool isCSSAuto(const CSSPrimitiveValue& value) {
-  return value.getValueID() == CSSValueAuto;
+static bool isCSSAuto(const CSSValue& value) {
+  return value.isIdentifierValue() &&
+         toCSSIdentifierValue(value).getValueID() == CSSValueAuto;
 }
 
 static std::unique_ptr<InterpolableValue> convertClipComponent(
-    const CSSPrimitiveValue& length) {
+    const CSSValue& length) {
   if (isCSSAuto(length))
     return InterpolableList::create(0);
   return LengthInterpolationFunctions::maybeConvertCSSValue(length)

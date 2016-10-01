@@ -32,10 +32,16 @@ struct SliceTypes {
     fill = slice.fill;
   }
   explicit SliceTypes(const CSSBorderImageSliceValue& slice) {
-    isNumber[SideTop] = slice.slices().top()->isNumber();
-    isNumber[SideRight] = slice.slices().right()->isNumber();
-    isNumber[SideBottom] = slice.slices().bottom()->isNumber();
-    isNumber[SideLeft] = slice.slices().left()->isNumber();
+    isNumber[SideTop] = slice.slices().top()->isPrimitiveValue() &&
+                        toCSSPrimitiveValue(slice.slices().top())->isNumber();
+    isNumber[SideRight] =
+        slice.slices().right()->isPrimitiveValue() &&
+        toCSSPrimitiveValue(slice.slices().right())->isNumber();
+    isNumber[SideBottom] =
+        slice.slices().bottom()->isPrimitiveValue() &&
+        toCSSPrimitiveValue(slice.slices().bottom())->isNumber();
+    isNumber[SideLeft] = slice.slices().left()->isPrimitiveValue() &&
+                         toCSSPrimitiveValue(slice.slices().left())->isNumber();
     fill = slice.fill();
   }
 
@@ -193,14 +199,14 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertValue(
   const CSSBorderImageSliceValue& slice = toCSSBorderImageSliceValue(value);
   std::unique_ptr<InterpolableList> list =
       InterpolableList::create(SideIndexCount);
-  const CSSPrimitiveValue* sides[SideIndexCount];
+  const CSSValue* sides[SideIndexCount];
   sides[SideTop] = slice.slices().top();
   sides[SideRight] = slice.slices().right();
   sides[SideBottom] = slice.slices().bottom();
   sides[SideLeft] = slice.slices().left();
 
   for (size_t i = 0; i < SideIndexCount; i++) {
-    const CSSPrimitiveValue& side = *sides[i];
+    const CSSPrimitiveValue& side = *toCSSPrimitiveValue(sides[i]);
     DCHECK(side.isNumber() || side.isPercentage());
     list->set(i, InterpolableNumber::create(side.getDoubleValue()));
   }
