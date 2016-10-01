@@ -29,6 +29,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
+#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -318,16 +319,25 @@ class HostControllersManager {
         adb_path.c_str(),
         serial_part.c_str(),
         port);
-    const int ret = system(command.c_str());
-    LOG(INFO) << command << " ret: " << ret;
+    const base::CommandLine command_line(base::SplitString(
+        command, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
+    int ret;
+    std::string output;
+    base::GetAppOutputWithExitCode(command_line, &output, &ret);
+    LOG(INFO) << command << " ret: " << ret << " output: " << output;
     // Wait for the socket to be fully unmapped.
     const std::string port_mapped_cmd = base::StringPrintf(
         "lsof -nPi:%d",
         port);
+    const base::CommandLine port_mapped_cmd_line(
+        base::SplitString(port_mapped_cmd, " ", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY));
     const int poll_interval_us = 500 * 1000;
     int retries = 3;
     while (retries) {
-      const int port_unmapped = system(port_mapped_cmd.c_str());
+      int port_unmapped;
+      base::GetAppOutputWithExitCode(port_mapped_cmd_line, &output,
+                                     &port_unmapped);
       LOG(INFO) << "Device " << device_serial << " port " << port << " unmap "
                 << port_unmapped;
       if (port_unmapped)
@@ -354,8 +364,12 @@ class HostControllersManager {
         adb_path.c_str(),
         serial_part.c_str(),
         port);
-    LOG(INFO) << command;
-    const int ret = system(command.c_str());
+    const base::CommandLine command_line(base::SplitString(
+        command, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
+    int ret;
+    std::string output;
+    base::GetAppOutputWithExitCode(command_line, &output, &ret);
+    LOG(INFO) << command << " ret: " << ret << " output: " << output;
     if (ret < 0 || !WIFEXITED(ret) || WEXITSTATUS(ret) != 0)
       return -1;
     device_serial_to_adb_port_map_[device_serial] = port;
