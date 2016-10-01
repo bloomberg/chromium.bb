@@ -193,8 +193,11 @@ class WebInputEvent {
     // IsRight, IsComposing don't change the meaning of the key
     // being pressed. NumLockOn, ScrollLockOn, CapsLockOn are stateful
     // and don't indicate explicit depressed state.
-    KeyModifiers =
-        SymbolKey | FnKey | AltGrKey | MetaKey | AltKey | ControlKey | ShiftKey
+    // TODO(https://crbug.com/652018): Fix Java enum generation to not get
+    // confused by correctly formatted code.
+    // clang-format off
+    KeyModifiers = SymbolKey | FnKey | AltGrKey | MetaKey | AltKey | ControlKey | ShiftKey
+    // clang-format on
   };
 
   // Indicates whether the browser needs to block on the ACK result for
