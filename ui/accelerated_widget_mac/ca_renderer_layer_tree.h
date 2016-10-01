@@ -33,7 +33,8 @@ struct CARendererLayerParams;
 // https://docs.google.com/document/d/1DtSN9zzvCF44_FQPM7ie01UxGHagQ66zfF5L9HnigQY/edit?usp=sharing
 class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
  public:
-  CARendererLayerTree(bool allow_av_sample_buffer_display_layer);
+  CARendererLayerTree(bool allow_av_sample_buffer_display_layer,
+                      bool allow_solid_color_layers);
 
   // This will remove all CALayers from this tree from their superlayer.
   ~CARendererLayerTree();
@@ -58,6 +59,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   // be called after committing scheduled CALayers.
   bool CommitFullscreenLowPowerLayer(
       AVSampleBufferDisplayLayer* fullscreen_low_power_layer);
+
+  // Returns the contents used for a given solid color.
+  id ContentsForSolidColorForTesting(unsigned int color);
 
  private:
   class SolidColorContents;
@@ -187,6 +191,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   float scale_factor_ = 1;
   bool has_committed_ = false;
   const bool allow_av_sample_buffer_display_layer_ = true;
+  const bool allow_solid_color_layers_ = true;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CARendererLayerTree);

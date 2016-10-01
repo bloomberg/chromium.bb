@@ -6,6 +6,7 @@
 
 #include <AVFoundation/AVFoundation.h>
 
+#include "base/mac/mac_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/cocoa/animation_utils.h"
 
@@ -61,8 +62,8 @@ CARendererLayerTree* CALayerTreeCoordinator::GetPendingCARendererLayerTree() {
                    "specified, but not both.";
   }
   if (!pending_ca_renderer_layer_tree_)
-    pending_ca_renderer_layer_tree_.reset(
-        new CARendererLayerTree(allow_av_sample_buffer_display_layer_));
+    pending_ca_renderer_layer_tree_.reset(new CARendererLayerTree(
+        allow_av_sample_buffer_display_layer_, base::mac::IsAtLeastOS10_12()));
   return pending_ca_renderer_layer_tree_.get();
 }
 

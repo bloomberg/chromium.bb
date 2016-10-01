@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -201,9 +200,11 @@ CARendererLayerTree::SolidColorContents::~SolidColorContents() {
 }
 
 CARendererLayerTree::CARendererLayerTree(
-    bool allow_av_sample_buffer_display_layer)
+    bool allow_av_sample_buffer_display_layer,
+    bool allow_solid_color_layers)
     : allow_av_sample_buffer_display_layer_(
-          allow_av_sample_buffer_display_layer) {}
+          allow_av_sample_buffer_display_layer),
+      allow_solid_color_layers_(allow_solid_color_layers) {}
 CARendererLayerTree::~CARendererLayerTree() {}
 
 bool CARendererLayerTree::ScheduleCALayer(const CARendererLayerParams& params) {
@@ -287,6 +288,9 @@ bool CARendererLayerTree::CommitFullscreenLowPowerLayer(
   return true;
 }
 
+id CARendererLayerTree::ContentsForSolidColorForTesting(SkColor color) {
+  return SolidColorContents::Get(color)->GetContents();
+}
 
 CARendererLayerTree::RootLayer::RootLayer() {}
 
@@ -366,7 +370,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
   // across processes. To make colors consistent across both solid color and
   // IOSurface-backed layers, use a cache of solid-color IOSurfaces as contents.
   // https://crbug.com/633805
-  if (base::mac::IsAtLeastOS10_12()) {
+  if (!io_surface && !tree->allow_solid_color_layers_) {
     solid_color_contents = SolidColorContents::Get(background_color);
     ContentLayer::contents_rect = gfx::RectF(0, 0, 1, 1);
   }
@@ -673,6 +677,8 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
         [ca_layer setContents:static_cast<id>(io_surface.get())];
       } else if (solid_color_contents) {
         [ca_layer setContents:solid_color_contents->GetContents()];
+      } else {
+        [ca_layer setContents:nil];
       }
       if ([ca_layer respondsToSelector:(@selector(setContentsScale:))])
         [ca_layer setContentsScale:scale_factor];
@@ -715,7 +721,7 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
         // Yellow represents an AV layer that changed this frame.
         color.reset(CGColorCreateGenericRGB(1, 1, 0, 1));
       } else if (io_surface) {
-        // Pink represents a CALayer that changed this frame.
+        // Magenta represents a CALayer that changed this frame.
         color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
       } else if (solid_color_contents) {
         // Cyan represents a solid color IOSurface-backed layer.

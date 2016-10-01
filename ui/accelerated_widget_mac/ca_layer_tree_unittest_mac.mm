@@ -39,6 +39,9 @@ struct CALayerProperties {
   float scale_factor = 1.0f;
   unsigned filter = GL_LINEAR;
   scoped_refptr<gl::GLImageIOSurface> gl_image;
+
+  bool allow_av_layers = true;
+  bool allow_solid_color_layers = true;
 };
 
 scoped_refptr<gl::GLImageIOSurface> CreateGLImage(const gfx::Size& size,
@@ -74,20 +77,8 @@ void UpdateCALayerTree(std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
                        CALayerProperties* properties,
                        CALayer* superlayer) {
   std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-      new ui::CARendererLayerTree(true));
-  bool result = ScheduleCALayer(new_ca_layer_tree.get(), properties);
-  EXPECT_TRUE(result);
-  new_ca_layer_tree->CommitScheduledCALayers(
-      superlayer, std::move(ca_layer_tree), properties->scale_factor);
-  std::swap(new_ca_layer_tree, ca_layer_tree);
-}
-
-void UpdateCALayerTreeWithAVDisabled(
-    std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
-    CALayerProperties* properties,
-    CALayer* superlayer) {
-  std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-      new ui::CARendererLayerTree(false));
+      new ui::CARendererLayerTree(properties->allow_av_layers,
+                                  properties->allow_solid_color_layers));
   bool result = ScheduleCALayer(new_ca_layer_tree.get(), properties);
   EXPECT_TRUE(result);
   new_ca_layer_tree->CommitScheduledCALayers(
@@ -110,352 +101,385 @@ class CALayerTreeTest : public testing::Test {
 };
 
 // Test updating each layer's properties.
-TEST_F(CALayerTreeTest, PropertyUpdates) {
-  CALayerProperties properties;
-  properties.clip_rect = gfx::Rect(2, 4, 8, 16);
-  properties.transform.Translate(10, 20);
-  properties.contents_rect = gfx::RectF(0.0f, 0.25f, 0.5f, 0.75f);
-  properties.rect = gfx::Rect(16, 32, 64, 128);
-  properties.background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
-  properties.edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
-  properties.opacity = 0.5f;
-  properties.gl_image =
-      CreateGLImage(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888, false);
-
-  std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
-  CALayer* root_layer = nil;
-  CALayer* clip_and_sorting_layer = nil;
-  CALayer* transform_layer = nil;
-  CALayer* content_layer = nil;
-
-  // Validate the initial values.
-  {
-    std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree(true));
-
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    content_layer = [[transform_layer sublayers] objectAtIndex:0];
-
-    // Validate the clip and sorting context layer.
-    EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
-    EXPECT_EQ(gfx::Rect(properties.clip_rect.size()),
-              gfx::Rect([clip_and_sorting_layer bounds]));
-    EXPECT_EQ(properties.clip_rect.origin(),
-              gfx::Point([clip_and_sorting_layer position]));
-    EXPECT_EQ(-properties.clip_rect.origin().x(),
-              [clip_and_sorting_layer sublayerTransform].m41);
-    EXPECT_EQ(-properties.clip_rect.origin().y(),
-              [clip_and_sorting_layer sublayerTransform].m42);
-
-    // Validate the transform layer.
-    EXPECT_EQ(properties.transform.matrix().get(3, 0),
-              [transform_layer sublayerTransform].m41);
-    EXPECT_EQ(properties.transform.matrix().get(3, 1),
-              [transform_layer sublayerTransform].m42);
-
-    // Validate the content layer.
-    EXPECT_EQ(static_cast<id>(properties.gl_image->io_surface().get()),
-              [content_layer contents]);
-    EXPECT_EQ(properties.contents_rect,
-              gfx::RectF([content_layer contentsRect]));
-    EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::Rect(properties.rect.size()),
-              gfx::Rect([content_layer bounds]));
-    EXPECT_EQ(kCALayerLeftEdge, [content_layer edgeAntialiasingMask]);
-    EXPECT_EQ(properties.opacity, [content_layer opacity]);
-    EXPECT_NSEQ(kCAFilterLinear, [content_layer minificationFilter]);
-    EXPECT_NSEQ(kCAFilterLinear, [content_layer magnificationFilter]);
-    if ([content_layer respondsToSelector:(@selector(contentsScale))])
-      EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
-  }
-
-  // Update just the clip rect and re-commit.
-  {
-    properties.clip_rect = gfx::Rect(4, 8, 16, 32);
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-
-    // Validate the clip and sorting context layer.
-    EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
-    EXPECT_EQ(gfx::Rect(properties.clip_rect.size()),
-              gfx::Rect([clip_and_sorting_layer bounds]));
-    EXPECT_EQ(properties.clip_rect.origin(),
-              gfx::Point([clip_and_sorting_layer position]));
-    EXPECT_EQ(-properties.clip_rect.origin().x(),
-              [clip_and_sorting_layer sublayerTransform].m41);
-    EXPECT_EQ(-properties.clip_rect.origin().y(),
-              [clip_and_sorting_layer sublayerTransform].m42);
-  }
-
-  // Disable clipping and re-commit.
-  {
-    properties.is_clipped = false;
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-
-    // Validate the clip and sorting context layer.
-    EXPECT_FALSE([clip_and_sorting_layer masksToBounds]);
-    EXPECT_EQ(gfx::Rect(), gfx::Rect([clip_and_sorting_layer bounds]));
-    EXPECT_EQ(gfx::Point(), gfx::Point([clip_and_sorting_layer position]));
-    EXPECT_EQ(0.0, [clip_and_sorting_layer sublayerTransform].m41);
-    EXPECT_EQ(0.0, [clip_and_sorting_layer sublayerTransform].m42);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-  }
-
-  // Change the transform and re-commit.
-  {
-    properties.transform.Translate(5, 5);
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-
-    // Validate the transform layer.
-    EXPECT_EQ(properties.transform.matrix().get(3, 0),
-              [transform_layer sublayerTransform].m41);
-    EXPECT_EQ(properties.transform.matrix().get(3, 1),
-              [transform_layer sublayerTransform].m42);
-  }
-
-  // Change the edge antialiasing mask and commit.
-  {
-    properties.edge_aa_mask = GL_CA_LAYER_EDGE_TOP_CHROMIUM;
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
-
-    // Validate the content layer. Note that top and bottom edges flip.
-    EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
-  }
-
-  // Change the contents and commit.
-  {
-    properties.gl_image->Destroy(true);
-    properties.gl_image = nullptr;
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
-
-    // Validate the content layer. Note that edge anti-aliasing no longer flips.
-    EXPECT_EQ(nil, [content_layer contents]);
-    EXPECT_EQ(kCALayerTopEdge, [content_layer edgeAntialiasingMask]);
-  }
-
-  // Change the rect size.
-  {
-    properties.rect = gfx::Rect(properties.rect.origin(), gfx::Size(32, 16));
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
-
-    // Validate the content layer.
-    EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::Rect(properties.rect.size()),
-              gfx::Rect([content_layer bounds]));
-  }
-
-  // Change the rect position.
-  {
-    properties.rect = gfx::Rect(gfx::Point(16, 4), properties.rect.size());
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
-
-    // Validate the content layer.
-    EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::Rect(properties.rect.size()),
-              gfx::Rect([content_layer bounds]));
-  }
-
-  // Change the opacity.
-  {
-    properties.opacity = 1.0f;
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
-
-    // Validate the content layer.
-    EXPECT_EQ(properties.opacity, [content_layer opacity]);
-  }
-
-  // Change the filter.
-  {
-    properties.filter = GL_NEAREST;
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
-
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
-
-    // Validate the content layer.
-    EXPECT_NSEQ(kCAFilterNearest, [content_layer minificationFilter]);
-    EXPECT_NSEQ(kCAFilterNearest, [content_layer magnificationFilter]);
-  }
-
-  // Add the clipping and IOSurface contents back.
-  {
-    properties.is_clipped = true;
+class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
+ public:
+  void RunTest(bool allow_solid_color_layers) {
+    CALayerProperties properties;
+    properties.allow_solid_color_layers = allow_solid_color_layers;
+    properties.clip_rect = gfx::Rect(2, 4, 8, 16);
+    properties.transform.Translate(10, 20);
+    properties.contents_rect = gfx::RectF(0.0f, 0.25f, 0.5f, 0.75f);
+    properties.rect = gfx::Rect(16, 32, 64, 128);
+    properties.background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
+    properties.edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
+    properties.opacity = 0.5f;
     properties.gl_image =
         CreateGLImage(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888, false);
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_EQ(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_EQ(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+    std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
+    CALayer* root_layer = nil;
+    CALayer* clip_and_sorting_layer = nil;
+    CALayer* transform_layer = nil;
+    CALayer* content_layer = nil;
 
-    // Validate the content layer.
-    EXPECT_EQ(static_cast<id>(properties.gl_image->io_surface().get()),
-              [content_layer contents]);
-    EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
+    // Validate the initial values.
+    {
+      std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+          new ui::CARendererLayerTree(true, allow_solid_color_layers));
+
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      content_layer = [[transform_layer sublayers] objectAtIndex:0];
+
+      // Validate the clip and sorting context layer.
+      EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
+      EXPECT_EQ(gfx::Rect(properties.clip_rect.size()),
+                gfx::Rect([clip_and_sorting_layer bounds]));
+      EXPECT_EQ(properties.clip_rect.origin(),
+                gfx::Point([clip_and_sorting_layer position]));
+      EXPECT_EQ(-properties.clip_rect.origin().x(),
+                [clip_and_sorting_layer sublayerTransform].m41);
+      EXPECT_EQ(-properties.clip_rect.origin().y(),
+                [clip_and_sorting_layer sublayerTransform].m42);
+
+      // Validate the transform layer.
+      EXPECT_EQ(properties.transform.matrix().get(3, 0),
+                [transform_layer sublayerTransform].m41);
+      EXPECT_EQ(properties.transform.matrix().get(3, 1),
+                [transform_layer sublayerTransform].m42);
+
+      // Validate the content layer.
+      EXPECT_EQ(static_cast<id>(properties.gl_image->io_surface().get()),
+                [content_layer contents]);
+      EXPECT_EQ(properties.contents_rect,
+                gfx::RectF([content_layer contentsRect]));
+      EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
+      EXPECT_EQ(gfx::Rect(properties.rect.size()),
+                gfx::Rect([content_layer bounds]));
+      EXPECT_EQ(kCALayerLeftEdge, [content_layer edgeAntialiasingMask]);
+      EXPECT_EQ(properties.opacity, [content_layer opacity]);
+      EXPECT_NSEQ(kCAFilterLinear, [content_layer minificationFilter]);
+      EXPECT_NSEQ(kCAFilterLinear, [content_layer magnificationFilter]);
+      if ([content_layer respondsToSelector:(@selector(contentsScale))])
+        EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
+    }
+
+    // Update just the clip rect and re-commit.
+    {
+      properties.clip_rect = gfx::Rect(4, 8, 16, 32);
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+
+      // Validate the clip and sorting context layer.
+      EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
+      EXPECT_EQ(gfx::Rect(properties.clip_rect.size()),
+                gfx::Rect([clip_and_sorting_layer bounds]));
+      EXPECT_EQ(properties.clip_rect.origin(),
+                gfx::Point([clip_and_sorting_layer position]));
+      EXPECT_EQ(-properties.clip_rect.origin().x(),
+                [clip_and_sorting_layer sublayerTransform].m41);
+      EXPECT_EQ(-properties.clip_rect.origin().y(),
+                [clip_and_sorting_layer sublayerTransform].m42);
+    }
+
+    // Disable clipping and re-commit.
+    {
+      properties.is_clipped = false;
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+
+      // Validate the clip and sorting context layer.
+      EXPECT_FALSE([clip_and_sorting_layer masksToBounds]);
+      EXPECT_EQ(gfx::Rect(), gfx::Rect([clip_and_sorting_layer bounds]));
+      EXPECT_EQ(gfx::Point(), gfx::Point([clip_and_sorting_layer position]));
+      EXPECT_EQ(0.0, [clip_and_sorting_layer sublayerTransform].m41);
+      EXPECT_EQ(0.0, [clip_and_sorting_layer sublayerTransform].m42);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    }
+
+    // Change the transform and re-commit.
+    {
+      properties.transform.Translate(5, 5);
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+
+      // Validate the transform layer.
+      EXPECT_EQ(properties.transform.matrix().get(3, 0),
+                [transform_layer sublayerTransform].m41);
+      EXPECT_EQ(properties.transform.matrix().get(3, 1),
+                [transform_layer sublayerTransform].m42);
+    }
+
+    // Change the edge antialiasing mask and commit.
+    {
+      properties.edge_aa_mask = GL_CA_LAYER_EDGE_TOP_CHROMIUM;
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+      // Validate the content layer. Note that top and bottom edges flip.
+      EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
+    }
+
+    // Change the contents and commit.
+    {
+      properties.gl_image->Destroy(true);
+      properties.gl_image = nullptr;
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+      // Validate the content layer. Note that edge anti-aliasing does not flip
+      // for solid colors.
+      if (allow_solid_color_layers) {
+        EXPECT_EQ(nil, [content_layer contents]);
+        EXPECT_EQ(kCALayerTopEdge, [content_layer edgeAntialiasingMask]);
+      } else {
+        EXPECT_EQ(ca_layer_tree->ContentsForSolidColorForTesting(
+                      properties.background_color),
+                  [content_layer contents]);
+        EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
+      }
+    }
+
+    // Change the rect size.
+    {
+      properties.rect = gfx::Rect(properties.rect.origin(), gfx::Size(32, 16));
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+      // Validate the content layer.
+      EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
+      EXPECT_EQ(gfx::Rect(properties.rect.size()),
+                gfx::Rect([content_layer bounds]));
+    }
+
+    // Change the rect position.
+    {
+      properties.rect = gfx::Rect(gfx::Point(16, 4), properties.rect.size());
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+      // Validate the content layer.
+      EXPECT_EQ(properties.rect.origin(), gfx::Point([content_layer position]));
+      EXPECT_EQ(gfx::Rect(properties.rect.size()),
+                gfx::Rect([content_layer bounds]));
+    }
+
+    // Change the opacity.
+    {
+      properties.opacity = 1.0f;
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+      // Validate the content layer.
+      EXPECT_EQ(properties.opacity, [content_layer opacity]);
+    }
+
+    // Change the filter.
+    {
+      properties.filter = GL_NEAREST;
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+      // Validate the content layer.
+      EXPECT_NSEQ(kCAFilterNearest, [content_layer minificationFilter]);
+      EXPECT_NSEQ(kCAFilterNearest, [content_layer magnificationFilter]);
+    }
+
+    // Add the clipping and IOSurface contents back.
+    {
+      properties.is_clipped = true;
+      properties.gl_image = CreateGLImage(gfx::Size(256, 256),
+                                          gfx::BufferFormat::BGRA_8888, false);
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_EQ(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_EQ(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_EQ(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_EQ(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+
+      // Validate the content layer.
+      EXPECT_EQ(static_cast<id>(properties.gl_image->io_surface().get()),
+                [content_layer contents]);
+      EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
+    }
+
+    // Change the scale factor. This should result in a new tree being created.
+    {
+      properties.scale_factor = 2.0f;
+      UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+      // Validate the tree structure.
+      EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+      EXPECT_NE(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
+      root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+      EXPECT_EQ(1u, [[root_layer sublayers] count]);
+      EXPECT_NE(clip_and_sorting_layer,
+                [[root_layer sublayers] objectAtIndex:0]);
+      clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+      EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+      EXPECT_NE(transform_layer,
+                [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
+      transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+      EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+      EXPECT_NE(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
+      content_layer = [[transform_layer sublayers] objectAtIndex:0];
+
+      // Validate the clip and sorting context layer.
+      EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
+      EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
+                                      gfx::Rect(properties.clip_rect.size())),
+                gfx::Rect([clip_and_sorting_layer bounds]));
+      EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
+                                       properties.clip_rect.origin()),
+                gfx::Point([clip_and_sorting_layer position]));
+      EXPECT_EQ(-properties.clip_rect.origin().x() / properties.scale_factor,
+                [clip_and_sorting_layer sublayerTransform].m41);
+      EXPECT_EQ(-properties.clip_rect.origin().y() / properties.scale_factor,
+                [clip_and_sorting_layer sublayerTransform].m42);
+
+      // Validate the transform layer.
+      EXPECT_EQ(
+          properties.transform.matrix().get(3, 0) / properties.scale_factor,
+          [transform_layer sublayerTransform].m41);
+      EXPECT_EQ(
+          properties.transform.matrix().get(3, 1) / properties.scale_factor,
+          [transform_layer sublayerTransform].m42);
+
+      // Validate the content layer.
+      EXPECT_EQ(static_cast<id>(properties.gl_image->io_surface().get()),
+                [content_layer contents]);
+      EXPECT_EQ(properties.contents_rect,
+                gfx::RectF([content_layer contentsRect]));
+      EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
+                                       properties.rect.origin()),
+                gfx::Point([content_layer position]));
+      EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
+                                      gfx::Rect(properties.rect.size())),
+                gfx::Rect([content_layer bounds]));
+      EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
+      EXPECT_EQ(properties.opacity, [content_layer opacity]);
+      if ([content_layer respondsToSelector:(@selector(contentsScale))])
+        EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
+    }
+
+    properties.gl_image->Destroy(true);
   }
+};
 
-  // Change the scale factor. This should result in a new tree being created.
-  {
-    properties.scale_factor = 2.0f;
-    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+TEST_F(CALayerTreePropertyUpdatesTest, AllowSolidColors) {
+  RunTest(true);
+}
 
-    // Validate the tree structure.
-    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
-    EXPECT_NE(root_layer, [[superlayer_ sublayers] objectAtIndex:0]);
-    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
-    EXPECT_EQ(1u, [[root_layer sublayers] count]);
-    EXPECT_NE(clip_and_sorting_layer, [[root_layer sublayers] objectAtIndex:0]);
-    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
-    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
-    EXPECT_NE(transform_layer,
-              [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
-    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
-    EXPECT_NE(content_layer, [[transform_layer sublayers] objectAtIndex:0]);
-    content_layer = [[transform_layer sublayers] objectAtIndex:0];
-
-    // Validate the clip and sorting context layer.
-    EXPECT_TRUE([clip_and_sorting_layer masksToBounds]);
-    EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
-                                    gfx::Rect(properties.clip_rect.size())),
-              gfx::Rect([clip_and_sorting_layer bounds]));
-    EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
-                                     properties.clip_rect.origin()),
-              gfx::Point([clip_and_sorting_layer position]));
-    EXPECT_EQ(-properties.clip_rect.origin().x() / properties.scale_factor,
-              [clip_and_sorting_layer sublayerTransform].m41);
-    EXPECT_EQ(-properties.clip_rect.origin().y() / properties.scale_factor,
-              [clip_and_sorting_layer sublayerTransform].m42);
-
-    // Validate the transform layer.
-    EXPECT_EQ(properties.transform.matrix().get(3, 0) / properties.scale_factor,
-              [transform_layer sublayerTransform].m41);
-    EXPECT_EQ(properties.transform.matrix().get(3, 1) / properties.scale_factor,
-              [transform_layer sublayerTransform].m42);
-
-    // Validate the content layer.
-    EXPECT_EQ(static_cast<id>(properties.gl_image->io_surface().get()),
-              [content_layer contents]);
-    EXPECT_EQ(properties.contents_rect,
-              gfx::RectF([content_layer contentsRect]));
-    EXPECT_EQ(gfx::ConvertPointToDIP(properties.scale_factor,
-                                     properties.rect.origin()),
-              gfx::Point([content_layer position]));
-    EXPECT_EQ(gfx::ConvertRectToDIP(properties.scale_factor,
-                                    gfx::Rect(properties.rect.size())),
-              gfx::Rect([content_layer bounds]));
-    EXPECT_EQ(kCALayerBottomEdge, [content_layer edgeAntialiasingMask]);
-    EXPECT_EQ(properties.opacity, [content_layer opacity]);
-    if ([content_layer respondsToSelector:(@selector(contentsScale))])
-      EXPECT_EQ(properties.scale_factor, [content_layer contentsScale]);
-  }
-
-  properties.gl_image->Destroy(true);
+TEST_F(CALayerTreePropertyUpdatesTest, DisallowSolidColors) {
+  RunTest(false);
 }
 
 // Verify that sorting context zero is split at non-flat transforms.
@@ -485,7 +509,7 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
 
   // Schedule and commit the layers.
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
-      new ui::CARendererLayerTree(true));
+      new ui::CARendererLayerTree(true, true));
   for (size_t i = 0; i < 5; ++i) {
     properties.gl_image = gl_images[i];
     properties.transform = transforms[i];
@@ -568,7 +592,7 @@ TEST_F(CALayerTreeTest, SortingContexts) {
 
   // Schedule and commit the layers.
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
-      new ui::CARendererLayerTree(true));
+      new ui::CARendererLayerTree(true, true));
   for (size_t i = 0; i < 3; ++i) {
     properties.sorting_context_id = sorting_context_ids[i];
     properties.gl_image = gl_images[i];
@@ -632,7 +656,7 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
   };
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
-      new ui::CARendererLayerTree(true));
+      new ui::CARendererLayerTree(true, true));
   // First send the various clip parameters to sorting context zero. This is
   // legitimate.
   for (size_t i = 0; i < 3; ++i) {
@@ -807,7 +831,8 @@ TEST_F(CALayerTreeTest, AVLayerBlacklist) {
   }
 
   {
-    UpdateCALayerTreeWithAVDisabled(ca_layer_tree, &properties, superlayer_);
+    properties.allow_av_layers = false;
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
     // Validate the tree structure.
     EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
@@ -845,7 +870,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with no background.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree(true));
+        new ui::CARendererLayerTree(true, true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
@@ -875,7 +900,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with a black background.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree(true));
+        new ui::CARendererLayerTree(true, true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_black);
     EXPECT_TRUE(result);
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
@@ -907,7 +932,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with a white background. It will fail.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree(true));
+        new ui::CARendererLayerTree(true, true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_white);
     EXPECT_TRUE(result);
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
@@ -939,7 +964,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with a black foreground. It too will fail.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree(true));
+        new ui::CARendererLayerTree(true, true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_black);
