@@ -56,8 +56,8 @@ const int kPausedReadSamples = 512;
 const int kDefaultReadSize = ::media::SincResampler::kDefaultRequestSize;
 const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
-const int kMaxSlewTimeUpMs = 100;
-const int kMaxSlewTimeDownMs = 100;
+const int kMaxSlewTimeUpMs = 15;
+const int kMaxSlewTimeDownMs = 15;
 
 }  // namespace
 
