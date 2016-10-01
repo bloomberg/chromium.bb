@@ -51,9 +51,11 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
   const std::string& last_gettoken_app_id() const {
     return last_gettoken_app_id_;
   }
-
   const std::string& last_gettoken_authorized_entity() const {
     return last_gettoken_authorized_entity_;
+  }
+  const std::string& last_deletetoken_app_id() const {
+    return last_deletetoken_app_id_;
   }
 
  private:
@@ -61,6 +63,7 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
   std::map<std::string, std::string> tokens_;
   std::string last_gettoken_app_id_;
   std::string last_gettoken_authorized_entity_;
+  std::string last_deletetoken_app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMDriverForInstanceID);
 };

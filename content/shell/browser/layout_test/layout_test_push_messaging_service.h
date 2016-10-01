@@ -53,6 +53,8 @@ class LayoutTestPushMessagingService : public PushMessagingService {
                    const UnregisterCallback& callback) override;
 
  private:
+  bool is_subscribed_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(LayoutTestPushMessagingService);
 };
 

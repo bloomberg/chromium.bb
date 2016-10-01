@@ -83,6 +83,11 @@ void RecordDeliveryStatus(content::PushDeliveryStatus status) {
                             content::PUSH_DELIVERY_STATUS_LAST + 1);
 }
 
+void RecordUnsubscribeReason(content::PushUnregistrationReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationReason", reason,
+                            content::PUSH_UNREGISTRATION_REASON_LAST + 1);
+}
+
 blink::WebPushPermissionStatus ToPushPermission(
     blink::mojom::PermissionStatus permission_status) {
   switch (permission_status) {
@@ -92,14 +97,58 @@ blink::WebPushPermissionStatus ToPushPermission(
       return blink::WebPushPermissionStatusDenied;
     case blink::mojom::PermissionStatus::ASK:
       return blink::WebPushPermissionStatusPrompt;
-    default:
-      NOTREACHED();
-      return blink::WebPushPermissionStatusDenied;
   }
+  NOTREACHED();
+  return blink::WebPushPermissionStatusDenied;
+}
+
+content::PushUnregistrationStatus ToUnregisterStatus(
+    InstanceID::Result result) {
+  switch (result) {
+    case InstanceID::SUCCESS:
+      return content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED;
+    case InstanceID::INVALID_PARAMETER:
+    case InstanceID::DISABLED:
+    case InstanceID::SERVER_ERROR:
+    case InstanceID::UNKNOWN_ERROR:
+      return content::PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR;
+    case InstanceID::ASYNC_OPERATION_PENDING:
+    case InstanceID::NETWORK_ERROR:
+      return content::PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR;
+  }
+  NOTREACHED();
+  return content::PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
+}
+
+content::PushUnregistrationStatus ToUnregisterStatus(
+    gcm::GCMClient::Result gcm_result) {
+  switch (gcm_result) {
+    case gcm::GCMClient::SUCCESS:
+      return content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED;
+    case gcm::GCMClient::INVALID_PARAMETER:
+    case gcm::GCMClient::GCM_DISABLED:
+    case gcm::GCMClient::SERVER_ERROR:
+    case gcm::GCMClient::UNKNOWN_ERROR:
+      return content::PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR;
+    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
+    case gcm::GCMClient::NETWORK_ERROR:
+    case gcm::GCMClient::TTL_EXCEEDED:
+      return content::PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR;
+  }
+  NOTREACHED();
+  return content::PUSH_UNREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
+}
+
+void GCMCallbackToUnregisterCallback(
+    const content::PushMessagingService::UnregisterCallback& callback,
+    gcm::GCMClient::Result result) {
+  DCHECK(!callback.is_null());
+  callback.Run(ToUnregisterStatus(result));
 }
 
 void UnregisterCallbackToClosure(const base::Closure& closure,
                                  content::PushUnregistrationStatus status) {
+  DCHECK(!closure.is_null());
   closure.Run();
 }
 
@@ -236,8 +285,9 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
       PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
   // Drop message and unregister if app_id was unknown (maybe recently deleted).
   if (app_identifier.is_null()) {
-    DeliverMessageCallback(app_id, GURL::EmptyGURL(), -1, message,
-                           message_handled_closure,
+    DeliverMessageCallback(app_id, GURL::EmptyGURL(),
+                           -1 /* kInvalidServiceWorkerRegistrationId */,
+                           message, message_handled_closure,
                            content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID);
     return;
   }
@@ -287,12 +337,18 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     content::PushDeliveryStatus status) {
   DCHECK_GE(in_flight_message_deliveries_.count(app_id), 1u);
 
+  RecordDeliveryStatus(status);
+
   base::Closure completion_closure =
       base::Bind(&PushMessagingServiceImpl::DidHandleMessage,
                  weak_factory_.GetWeakPtr(), app_id, message_handled_closure);
   // The completion_closure should run by default at the end of this function,
   // unless it is explicitly passed to another function.
   base::ScopedClosureRunner completion_closure_runner(completion_closure);
+
+  // A reason to automatically unsubscribe. UNKNOWN means do not unsubscribe.
+  content::PushUnregistrationReason unsubscribe_reason =
+      content::PUSH_UNREGISTRATION_REASON_UNKNOWN;
 
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
@@ -318,17 +374,35 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 #endif
       break;
     case content::PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR:
+      // Do nothing, and hope the error is transient.
       break;
     case content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID:
+      unsubscribe_reason =
+          content::PUSH_UNREGISTRATION_REASON_DELIVERY_UNKNOWN_APP_ID;
+      break;
     case content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED:
+      unsubscribe_reason =
+          content::PUSH_UNREGISTRATION_REASON_DELIVERY_PERMISSION_DENIED;
+      break;
     case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
-      Unsubscribe(app_id, message.sender_id,
-                  base::Bind(&UnregisterCallbackToClosure,
-                             completion_closure_runner.Release()));
+      unsubscribe_reason =
+          content::PUSH_UNREGISTRATION_REASON_DELIVERY_NO_SERVICE_WORKER;
       break;
   }
 
-  RecordDeliveryStatus(status);
+  if (unsubscribe_reason != content::PUSH_UNREGISTRATION_REASON_UNKNOWN) {
+    PushMessagingAppIdentifier app_identifier =
+        PushMessagingAppIdentifier::FindByAppId(profile_, app_id);
+    UnsubscribeInternal(
+        unsubscribe_reason,
+        app_identifier.is_null() ? GURL::EmptyGURL() : app_identifier.origin(),
+        app_identifier.is_null()
+            ? -1 /* kInvalidServiceWorkerRegistrationId */
+            : app_identifier.service_worker_registration_id(),
+        app_id, message.sender_id,
+        base::Bind(&UnregisterCallbackToClosure,
+                   completion_closure_runner.Release()));
+  }
 }
 
 void PushMessagingServiceImpl::DidHandleMessage(
@@ -391,7 +465,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     int renderer_id,
     int render_frame_id,
     const content::PushSubscriptionOptions& options,
-    const content::PushMessagingService::RegisterCallback& callback) {
+    const RegisterCallback& callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Generate(requesting_origin,
                                            service_worker_registration_id);
@@ -432,7 +506,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const content::PushSubscriptionOptions& options,
-    const content::PushMessagingService::RegisterCallback& register_callback) {
+    const RegisterCallback& register_callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Generate(requesting_origin,
                                            service_worker_registration_id);
@@ -477,7 +551,7 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
 void PushMessagingServiceImpl::DoSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
     const content::PushSubscriptionOptions& options,
-    const content::PushMessagingService::RegisterCallback& register_callback,
+    const RegisterCallback& register_callback,
     blink::mojom::PermissionStatus permission_status) {
   if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
     SubscribeEndWithError(register_callback,
@@ -497,7 +571,7 @@ void PushMessagingServiceImpl::DoSubscribe(
 }
 
 void PushMessagingServiceImpl::SubscribeEnd(
-    const content::PushMessagingService::RegisterCallback& callback,
+    const RegisterCallback& callback,
     const std::string& subscription_id,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
@@ -506,7 +580,7 @@ void PushMessagingServiceImpl::SubscribeEnd(
 }
 
 void PushMessagingServiceImpl::SubscribeEndWithError(
-    const content::PushMessagingService::RegisterCallback& callback,
+    const RegisterCallback& callback,
     content::PushRegistrationStatus status) {
   SubscribeEnd(callback, std::string() /* subscription_id */,
                std::vector<uint8_t>() /* p256dh */,
@@ -516,7 +590,7 @@ void PushMessagingServiceImpl::SubscribeEndWithError(
 void PushMessagingServiceImpl::DidSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
     const std::string& sender_id,
-    const content::PushMessagingService::RegisterCallback& callback,
+    const RegisterCallback& callback,
     const std::string& subscription_id,
     InstanceID::Result result) {
   DecreasePushSubscriptionCount(1, true /* was_pending */);
@@ -554,7 +628,7 @@ void PushMessagingServiceImpl::DidSubscribe(
 
 void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
     const PushMessagingAppIdentifier& app_identifier,
-    const content::PushMessagingService::RegisterCallback& callback,
+    const RegisterCallback& callback,
     const std::string& subscription_id,
     const std::string& p256dh,
     const std::string& auth_secret) {
@@ -610,23 +684,59 @@ void PushMessagingServiceImpl::Unsubscribe(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const std::string& sender_id,
-    const content::PushMessagingService::UnregisterCallback& callback) {
+    const UnregisterCallback& callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::FindByServiceWorker(
           profile_, requesting_origin, service_worker_registration_id);
-  if (app_identifier.is_null()) {
+
+  UnsubscribeInternal(
+      content::PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API, requesting_origin,
+      service_worker_registration_id,
+      app_identifier.is_null() ? std::string() : app_identifier.app_id(),
+      sender_id, callback);
+}
+
+void PushMessagingServiceImpl::UnsubscribeInternal(
+    content::PushUnregistrationReason reason,
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    const std::string& app_id,
+    const std::string& sender_id,
+    const UnregisterCallback& callback) {
+  DCHECK(!app_id.empty() || (!origin.is_empty() &&
+                             service_worker_registration_id !=
+                                 -1 /* kInvalidServiceWorkerRegistrationId */))
+      << "Need an app_id and/or origin+service_worker_registration_id";
+
+  RecordUnsubscribeReason(reason);
+
+  if (origin.is_empty() ||
+      service_worker_registration_id ==
+          -1 /* kInvalidServiceWorkerRegistrationId */) {
+    // Can't clear Service Worker database.
+    DidClearPushSubscriptionId(reason, app_id, sender_id, callback);
+    return;
+  }
+  ClearPushSubscriptionId(
+      profile_, origin, service_worker_registration_id,
+      base::Bind(&PushMessagingServiceImpl::DidClearPushSubscriptionId,
+                 weak_factory_.GetWeakPtr(), reason, app_id, sender_id,
+                 callback));
+}
+
+void PushMessagingServiceImpl::DidClearPushSubscriptionId(
+    content::PushUnregistrationReason reason,
+    const std::string& app_id,
+    const std::string& sender_id,
+    const UnregisterCallback& callback) {
+  if (app_id.empty()) {
+    // Without an |app_id|, we can neither delete the subscription from the
+    // PushMessagingAppIdentifier map, nor unsubscribe with the GCM Driver.
     callback.Run(
         content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
     return;
   }
 
-  Unsubscribe(app_identifier.app_id(), sender_id, callback);
-}
-
-void PushMessagingServiceImpl::Unsubscribe(
-    const std::string& app_id,
-    const std::string& sender_id,
-    const content::PushMessagingService::UnregisterCallback& callback) {
   // Delete the mapping for this app_id, to guarantee that no messages get
   // delivered in future (even if unregistration fails).
   // TODO(johnme): Instead of deleting these app ids, store them elsewhere, and
@@ -641,10 +751,14 @@ void PushMessagingServiceImpl::Unsubscribe(
     GetInstanceIDDriver()->GetInstanceID(app_id)->DeleteID(base::Bind(
         &PushMessagingServiceImpl::DidDeleteID, weak_factory_.GetWeakPtr(),
         app_id, was_subscribed, callback));
+
   } else {
     auto unregister_callback =
-        base::Bind(&PushMessagingServiceImpl::DidUnsubscribe,
-                   weak_factory_.GetWeakPtr(), was_subscribed, callback);
+        base::Bind(&GCMCallbackToUnregisterCallback,
+                   base::Bind(&PushMessagingServiceImpl::DidUnsubscribe,
+                              weak_factory_.GetWeakPtr(),
+                              std::string() /* app_id_when_instance_id */,
+                              was_subscribed, callback));
 #if defined(OS_ANDROID)
     // On Android the backend is different, and requires the original sender_id.
     // UnsubscribeBecausePermissionRevoked sometimes calls us with an empty one.
@@ -660,83 +774,37 @@ void PushMessagingServiceImpl::Unsubscribe(
   }
 }
 
-void PushMessagingServiceImpl::DidDeleteID(
-    const std::string& app_id,
-    bool was_subscribed,
-    const content::PushMessagingService::UnregisterCallback& callback,
-    InstanceID::Result result) {
-  // DidUnsubscribeInstanceID must be run asynchronously, since it calls
+void PushMessagingServiceImpl::DidDeleteID(const std::string& app_id,
+                                           bool was_subscribed,
+                                           const UnregisterCallback& callback,
+                                           InstanceID::Result result) {
+  // DidUnsubscribe must be run asynchronously when passing a non-empty
+  // |app_id_when_instance_id|, since it calls
   // InstanceIDDriver::RemoveInstanceID which deletes the InstanceID itself.
   // Calling that immediately would cause a use-after-free in our caller.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PushMessagingServiceImpl::DidUnsubscribeInstanceID,
+      FROM_HERE, base::Bind(&PushMessagingServiceImpl::DidUnsubscribe,
                             weak_factory_.GetWeakPtr(), app_id, was_subscribed,
-                            callback, result));
-}
-
-void PushMessagingServiceImpl::DidUnsubscribeInstanceID(
-    const std::string& app_id,
-    bool was_subscribed,
-    const content::PushMessagingService::UnregisterCallback& callback,
-    InstanceID::Result result) {
-  GetInstanceIDDriver()->RemoveInstanceID(app_id);
-
-  if (was_subscribed)
-    DecreasePushSubscriptionCount(1, false /* was_pending */);
-
-  DCHECK(!callback.is_null());
-
-  if (!was_subscribed) {
-    callback.Run(
-        content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
-    return;
-  }
-  switch (result) {
-    case InstanceID::SUCCESS:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
-      break;
-    case InstanceID::INVALID_PARAMETER:
-    case InstanceID::DISABLED:
-    case InstanceID::SERVER_ERROR:
-    case InstanceID::UNKNOWN_ERROR:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR);
-      break;
-    case InstanceID::ASYNC_OPERATION_PENDING:
-    case InstanceID::NETWORK_ERROR:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR);
-      break;
-  }
+                            callback, ToUnregisterStatus(result)));
 }
 
 void PushMessagingServiceImpl::DidUnsubscribe(
+    const std::string& app_id_when_instance_id,
     bool was_subscribed,
-    const content::PushMessagingService::UnregisterCallback& callback,
-    gcm::GCMClient::Result gcm_result) {
-  if (was_subscribed)
-    DecreasePushSubscriptionCount(1, false /* was_pending */);
+    const UnregisterCallback& callback,
+    content::PushUnregistrationStatus status) {
+  if (!app_id_when_instance_id.empty())
+    GetInstanceIDDriver()->RemoveInstanceID(app_id_when_instance_id);
 
   DCHECK(!callback.is_null());
 
-  if (!was_subscribed) {
+  if (was_subscribed) {
+    DecreasePushSubscriptionCount(1, false /* was_pending */);
+    callback.Run(status);
+  } else {
+    // Override status since there was no record of an existing subscription.
     callback.Run(
         content::PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED);
-    return;
-  }
-  switch (gcm_result) {
-    case gcm::GCMClient::SUCCESS:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
-      break;
-    case gcm::GCMClient::INVALID_PARAMETER:
-    case gcm::GCMClient::GCM_DISABLED:
-    case gcm::GCMClient::SERVER_ERROR:
-    case gcm::GCMClient::UNKNOWN_ERROR:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_PENDING_SERVICE_ERROR);
-      break;
-    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
-    case gcm::GCMClient::NETWORK_ERROR:
-    case gcm::GCMClient::TTL_EXCEEDED:
-      callback.Run(content::PUSH_UNREGISTRATION_STATUS_PENDING_NETWORK_ERROR);
-      break;
   }
 }
 
@@ -787,38 +855,36 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
           app_identifier.service_worker_registration_id(),
           base::Bind(
               &PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked,
-              weak_factory_.GetWeakPtr(), app_identifier, barrier_closure));
+              weak_factory_.GetWeakPtr(), app_identifier,
+              base::Bind(&UnregisterCallbackToClosure, barrier_closure)));
     } else {
-      UnsubscribeBecausePermissionRevoked(
-          app_identifier, barrier_closure, "" /* sender_id */,
-          true /* success */, true /* not_found */);
+      UnsubscribeInternal(
+          content::PUSH_UNREGISTRATION_REASON_PERMISSION_REVOKED,
+          app_identifier.origin(),
+          app_identifier.service_worker_registration_id(),
+          app_identifier.app_id(), std::string() /* sender_id */,
+          base::Bind(&UnregisterCallbackToClosure, barrier_closure));
     }
   }
 }
 
 void PushMessagingServiceImpl::UnsubscribeBecausePermissionRevoked(
     const PushMessagingAppIdentifier& app_identifier,
-    const base::Closure& closure,
+    const UnregisterCallback& callback,
     const std::string& sender_id,
     bool success,
     bool not_found) {
-  base::Closure barrier_closure = base::BarrierClosure(2, closure);
-
   // Unsubscribe the PushMessagingAppIdentifier with the push service.
   // It's possible for GetSenderId to have failed and sender_id to be empty, if
   // cookies (and the SW database) for an origin got cleared before permissions
   // are cleared for the origin. In that case for legacy GCM registrations on
   // Android, Unsubscribe will just delete the app identifier to block future
   // messages.
-  // TODO(johnme): Auto-unregister before SW DB is cleared
-  // (https://crbug.com/402458).
-  Unsubscribe(app_identifier.app_id(), sender_id,
-              base::Bind(&UnregisterCallbackToClosure, barrier_closure));
-
-  // Clear the associated service worker push registration id.
-  ClearPushSubscriptionID(profile_, app_identifier.origin(),
-                          app_identifier.service_worker_registration_id(),
-                          barrier_closure);
+  // TODO(johnme): Auto-unregister before SW DB is cleared (crbug.com/402458).
+  UnsubscribeInternal(content::PUSH_UNREGISTRATION_REASON_PERMISSION_REVOKED,
+                      app_identifier.origin(),
+                      app_identifier.service_worker_registration_id(),
+                      app_identifier.app_id(), sender_id, callback);
 }
 
 void PushMessagingServiceImpl::SetContentSettingChangedCallbackForTesting(

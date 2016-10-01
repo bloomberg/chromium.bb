@@ -89,6 +89,7 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     std::vector<uint8_t> auth(
         kAuthentication, kAuthentication + arraysize(kAuthentication));
 
+    is_subscribed_ = true;
     callback.Run("layoutTestRegistrationId", p256dh, auth,
                  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
   } else {
@@ -129,7 +130,14 @@ void LayoutTestPushMessagingService::Unsubscribe(
     int64_t service_worker_registration_id,
     const std::string& sender_id,
     const UnregisterCallback& callback) {
-  callback.Run(PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED);
+  ClearPushSubscriptionId(
+      LayoutTestContentBrowserClient::Get()->browser_context(),
+      requesting_origin, service_worker_registration_id,
+      base::Bind(callback,
+                 is_subscribed_
+                     ? PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED
+                     : PUSH_UNREGISTRATION_STATUS_SUCCESS_WAS_NOT_REGISTERED));
+  is_subscribed_ = false;
 }
 
 }  // namespace content

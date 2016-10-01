@@ -48,7 +48,7 @@ void GetUserDataOnIO(
       base::Bind(&CallStringCallbackFromIO, callback));
 }
 
-void ClearPushSubscriptionIDOnIO(
+void ClearPushSubscriptionIdOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     int64_t service_worker_registration_id,
     const base::Closure& callback) {
@@ -103,19 +103,17 @@ void PushMessagingService::GetSenderId(BrowserContext* browser_context,
 }
 
 // static
-void PushMessagingService::ClearPushSubscriptionID(
+void PushMessagingService::ClearPushSubscriptionId(
     BrowserContext* browser_context,
     const GURL& origin,
     int64_t service_worker_registration_id,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ClearPushSubscriptionIDOnIO,
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ClearPushSubscriptionIdOnIO,
                  GetServiceWorkerContext(browser_context, origin),
-                 service_worker_registration_id,
-                 callback));
+                 service_worker_registration_id, callback));
 }
 
 // static

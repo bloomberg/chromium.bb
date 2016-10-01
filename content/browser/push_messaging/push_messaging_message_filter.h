@@ -96,21 +96,12 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void OnUnsubscribe(int request_id, int64_t service_worker_registration_id);
 
-  void UnsubscribeHavingGottenIds(
+  void UnsubscribeHavingGottenSenderId(
       int request_id,
       int64_t service_worker_registration_id,
       const GURL& requesting_origin,
-      const std::vector<std::string>& push_subscription_and_sender_ids,
+      const std::vector<std::string>& sender_id,
       ServiceWorkerStatusCode service_worker_status);
-
-  // Called via PostTask from UI thread.
-  void ClearRegistrationData(int request_id,
-                             int64_t service_worker_registration_id,
-                             PushUnregistrationStatus unregistration_status);
-
-  void DidClearRegistrationData(int request_id,
-                                PushUnregistrationStatus unregistration_status,
-                                ServiceWorkerStatusCode service_worker_status);
 
   // Called both from IO thread, and via PostTask from UI thread.
   void DidUnregister(int request_id,

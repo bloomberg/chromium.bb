@@ -59,6 +59,30 @@ ResultQueue.prototype.popImmediately = function() {
   sendResultToTest(this.queue.length ? this.queue.pop() : null);
 };
 
+// Waits for the given ServiceWorkerRegistration to become ready.
+// Shim for https://github.com/w3c/ServiceWorker/issues/770.
+function swRegistrationReady(reg) {
+  return new Promise((resolve, reject) => {
+    if (reg.active) {
+      resolve();
+      return;
+    }
+
+    if (!reg.installing && !reg.waiting) {
+      reject(Error('Install failed'));
+      return;
+    }
+
+    (reg.installing || reg.waiting).addEventListener('statechange', function() {
+      if (this.state == 'redundant') {
+        reject(Error('Install failed'));
+      } else if (this.state == 'activated') {
+        resolve();
+      }
+    });
+  });
+}
+
 // Notification permission has been coalesced with Push permission. After
 // this is granted, Push API subscription can succeed.
 function requestNotificationPermission() {
@@ -82,6 +106,14 @@ function unregisterServiceWorker() {
     swRegistration.unregister().then(function(result) {
       sendResultToTest('service worker unregistration status: ' + result);
     })
+  }).catch(sendErrorToTest);
+}
+
+function replaceServiceWorker() {
+  navigator.serviceWorker.register('service_worker_with_skipWaiting_claim.js', {
+    scope: './'
+  }).then(swRegistrationReady).then(() => {
+    sendResultToTest('ok - service worker replaced');
   }).catch(sendErrorToTest);
 }
 
@@ -195,8 +227,25 @@ function unsubscribePush() {
         sendResultToTest('unsubscribe result: ' + result);
       }, function(error) {
         sendResultToTest('unsubscribe error: ' + error.message);
-      })
+      });
     })
+  });
+}
+
+function storePushSubscription() {
+  navigator.serviceWorker.ready.then(swRegistration => {
+    swRegistration.pushManager.getSubscription().then(pushSubscription => {
+      window.storedPushSubscription = pushSubscription;
+      sendResultToTest('ok - stored');
+    }, sendErrorToTest);
+  }, sendErrorToTest);
+}
+
+function unsubscribeStoredPushSubscription() {
+  window.storedPushSubscription.unsubscribe().then(function(result) {
+    sendResultToTest('unsubscribe result: ' + result);
+  }, function(error) {
+    sendResultToTest('unsubscribe error: ' + error.message);
   });
 }
 

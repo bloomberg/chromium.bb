@@ -103,7 +103,7 @@ class CONTENT_EXPORT PushMessagingService {
 
   // Clear the push subscription id stored in the service worker with the given
   // |service_worker_registration_id| for the given |origin|.
-  static void ClearPushSubscriptionID(BrowserContext* browser_context,
+  static void ClearPushSubscriptionId(BrowserContext* browser_context,
                                       const GURL& origin,
                                       int64_t service_worker_registration_id,
                                       const base::Closure& callback);

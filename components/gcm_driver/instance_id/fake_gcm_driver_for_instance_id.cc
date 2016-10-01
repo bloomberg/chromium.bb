@@ -85,6 +85,9 @@ void FakeGCMDriverForInstanceID::DeleteToken(
     const DeleteTokenCallback& callback) {
   std::string key = app_id + authorized_entity + scope;
   tokens_.erase(key);
+
+  last_deletetoken_app_id_ = app_id;
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, gcm::GCMClient::SUCCESS));
 }

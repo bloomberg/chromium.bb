@@ -8,6 +8,7 @@
 namespace content {
 
 // Push registration success/error codes for internal use & reporting in UMA.
+// Enum values can be added, but must never be renumbered or deleted and reused.
 enum PushRegistrationStatus {
   // New successful registration (there was not yet a registration cached in
   // Service Worker storage, so the browser successfully registered with the
@@ -65,7 +66,38 @@ enum PushRegistrationStatus {
       PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING
 };
 
+// Push unregistration reason for reporting in UMA. Enum values can be added,
+// but must never be renumbered or deleted and reused.
+enum PushUnregistrationReason {
+  // Should never happen.
+  PUSH_UNREGISTRATION_REASON_UNKNOWN = 0,
+
+  // Unregistering because the website called the unsubscribe API.
+  PUSH_UNREGISTRATION_REASON_JAVASCRIPT_API = 1,
+
+  // Unregistering because the user manually revoked permission.
+  PUSH_UNREGISTRATION_REASON_PERMISSION_REVOKED = 2,
+
+  // Automatic - incoming message's app id was unknown.
+  PUSH_UNREGISTRATION_REASON_DELIVERY_UNKNOWN_APP_ID = 3,
+
+  // Automatic - incoming message's origin no longer has permission.
+  PUSH_UNREGISTRATION_REASON_DELIVERY_PERMISSION_DENIED = 4,
+
+  // Automatic - incoming message's service worker was not found.
+  PUSH_UNREGISTRATION_REASON_DELIVERY_NO_SERVICE_WORKER = 5,
+
+  // NOTE: Do not renumber these as that would confuse interpretation of
+  // previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
+  // update PUSH_UNREGISTRATION_REASON_LAST below.
+
+  PUSH_UNREGISTRATION_REASON_LAST =
+      PUSH_UNREGISTRATION_REASON_DELIVERY_NO_SERVICE_WORKER
+};
+
 // Push unregistration success/error codes for internal use & reporting in UMA.
+// Enum values can be added, but must never be renumbered or deleted and reused.
 enum PushUnregistrationStatus {
   // The unregistration was successful.
   PUSH_UNREGISTRATION_STATUS_SUCCESS_UNREGISTERED = 0,
@@ -102,6 +134,7 @@ enum PushUnregistrationStatus {
 };
 
 // Push getregistration success/error codes for internal use & reporting in UMA.
+// Enum values can be added, but must never be renumbered or deleted and reused.
 enum PushGetRegistrationStatus {
   // Getting the registration was successful.
   PUSH_GETREGISTRATION_STATUS_SUCCESS = 0,
@@ -132,6 +165,7 @@ enum PushGetRegistrationStatus {
 };
 
 // Push message event success/error codes for internal use & reporting in UMA.
+// Enum values can be added, but must never be renumbered or deleted and reused.
 enum PushDeliveryStatus {
   // The message was successfully delivered.
   PUSH_DELIVERY_STATUS_SUCCESS = 0,
@@ -160,7 +194,8 @@ enum PushDeliveryStatus {
   PUSH_DELIVERY_STATUS_LAST = PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED
 };
 
-// Push message user visible tracking for reporting in UMA.
+// Push message user visible tracking for reporting in UMA. Enum values can be
+// added, but must never be renumbered or deleted and reused.
 enum PushUserVisibleStatus {
   // A notification was required and one (or more) were shown.
   PUSH_USER_VISIBLE_STATUS_REQUIRED_AND_SHOWN = 0,
