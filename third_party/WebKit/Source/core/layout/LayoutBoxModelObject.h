@@ -128,8 +128,8 @@ struct LayoutBoxModelObjectRareData {
 // - physical coordinates with flipped block-flow direction: those are physical
 //   coordinates but we flipped the block direction. See
 //   LayoutBox::noOverflowRect.
-//   TODO(jchaffraix): I don't fully understand why we need this coordinate
-//   system someone should fill in those details.
+//
+// For more, see Source/core/layout/README.md ### Coordinate Spaces.
 class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
  public:
   LayoutBoxModelObject(ContainerNode*);
