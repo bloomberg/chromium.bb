@@ -25,6 +25,7 @@ class CC_EXPORT ContentLayerClient {
     DISPLAY_LIST_CACHING_DISABLED,
     DISPLAY_LIST_PAINTING_DISABLED,
     SUBSEQUENCE_CACHING_DISABLED,
+    PARTIAL_INVALIDATION,
   };
 
   // The paintable region is the rectangular region, within the bounds of the

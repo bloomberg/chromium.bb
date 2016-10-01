@@ -65,6 +65,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
  public:
   virtual ~GraphicsLayerClient() {}
 
+  virtual void invalidateTargetElementForTesting() {}
   virtual void notifyPaint(bool isFirstPaint,
                            bool textPainted,
                            bool imagePainted) {}

@@ -44,10 +44,13 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
     PaintDefaultBehavior,
     // Paints the content to simulate the behavior of FrameView::synchronizedPaint.
     PaintDefaultBehaviorForTest,
+    // Puts the GraphicsContext in disabled mode and disables display item
+    // construction in PaintController.
     DisplayListConstructionDisabled,
     DisplayListCachingDisabled,
     DisplayListPaintingDisabled,
-    SubsequenceCachingDisabled
+    SubsequenceCachingDisabled,
+    PartialInvalidation
   };
 
   // The paintable region is the rectangular region, within the bounds of the layer
@@ -61,7 +64,6 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
   // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands
   // to populate the WebDisplayItemList.
   // The |PaintingControlSetting| enum controls painting to isolate different components in performance tests.
-  // Currently the DisplayListConstructionDisabled does nothing.
   virtual void paintContents(WebDisplayItemList*,
                              PaintingControlSetting = PaintDefaultBehavior) = 0;
 

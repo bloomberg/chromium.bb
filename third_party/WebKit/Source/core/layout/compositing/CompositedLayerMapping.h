@@ -188,6 +188,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void updateElementIdAndCompositorMutableProperties();
 
   // GraphicsLayerClient interface
+  void invalidateTargetElementForTesting() override;
   void notifyPaint(bool isFirstPaint,
                    bool textPainted,
                    bool imagePainted) override;

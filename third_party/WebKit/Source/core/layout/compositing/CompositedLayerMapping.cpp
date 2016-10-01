@@ -2977,6 +2977,29 @@ void CompositedLayerMapping::verifyNotPainting() {
 }
 #endif
 
+// Only used for performance benchmark testing. Intended to be a sufficiently-unique
+// element id name to allow picking out the target element for invalidation.
+static const char* kTestPaintInvalidationTargetName =
+    "blinkPaintInvalidationTarget";
+
+void CompositedLayerMapping::invalidateTargetElementForTesting() {
+  // The below is an artificial construct formed intentionally to focus a microbenchmark on the cost of paint with a
+  // partial invalidation.
+  Element* targetElement =
+      m_owningLayer.layoutObject()->document().getElementById(
+          AtomicString(kTestPaintInvalidationTargetName));
+  // TODO(wkorman): If we don't find the expected target element, we could consider walking to the first leaf node so
+  // that the partial-invalidation benchmark mode still provides some value when running on generic pages.
+  if (!targetElement)
+    return;
+  LayoutObject* targetObject = targetElement->layoutObject();
+  if (!targetObject)
+    return;
+  targetObject->enclosingLayer()->setNeedsRepaint();
+  // TODO(wkorman): Consider revising the below to invalidate all non-compositing descendants as well.
+  targetObject->invalidateDisplayItemClients(PaintInvalidationForTesting);
+}
+
 void CompositedLayerMapping::notifyPaint(bool isFirstPaint,
                                          bool textPainted,
                                          bool imagePainted) {

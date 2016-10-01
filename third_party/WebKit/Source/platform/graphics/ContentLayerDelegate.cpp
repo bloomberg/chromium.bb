@@ -80,6 +80,9 @@ void ContentLayerDelegate::paintContents(
   paintController.setSubsequenceCachingIsDisabled(
       paintingControl == WebContentLayerClient::SubsequenceCachingDisabled);
 
+  if (paintingControl == WebContentLayerClient::PartialInvalidation)
+    m_graphicsLayer->client()->invalidateTargetElementForTesting();
+
   // We also disable caching when Painting or Construction are disabled. In both cases we would like
   // to compare assuming the full cost of recording, not the cost of re-using cached content.
   if (paintingControl != WebContentLayerClient::PaintDefaultBehavior &&

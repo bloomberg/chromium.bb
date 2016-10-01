@@ -42,7 +42,29 @@ const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] = {
     "_painting_disabled",
     "_caching_disabled",
     "_construction_disabled",
-    "_subsequence_caching_disabled"};
+    "_subsequence_caching_disabled",
+    "_partial_invalidation"};
+
+ContentLayerClient::PaintingControlSetting
+RecordingModeToPaintingControlSetting(RecordingSource::RecordingMode mode) {
+  switch (mode) {
+    case RecordingSource::RECORD_NORMALLY:
+      return ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST;
+    case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
+      return ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
+    case RecordingSource::RECORD_WITH_CACHING_DISABLED:
+      return ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
+    case RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED:
+      return ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+    case RecordingSource::RECORD_WITH_SUBSEQUENCE_CACHING_DISABLED:
+      return ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED;
+    case RecordingSource::RECORD_WITH_PARTIAL_INVALIDATION:
+      return ContentLayerClient::PARTIAL_INVALIDATION;
+    case RecordingSource::RECORDING_MODE_COUNT:
+      NOTREACHED();
+  }
+  return ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST;
+}
 
 }  // namespace
 
@@ -120,27 +142,8 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   for (int mode_index = 0; mode_index < RecordingSource::RECORDING_MODE_COUNT;
        mode_index++) {
     ContentLayerClient::PaintingControlSetting painting_control =
-        ContentLayerClient::PAINTING_BEHAVIOR_NORMAL_FOR_TEST;
-    switch (static_cast<RecordingSource::RecordingMode>(mode_index)) {
-      case RecordingSource::RECORD_NORMALLY:
-        // Already setup for normal recording.
-        break;
-      case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
-        painting_control = ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
-        break;
-      case RecordingSource::RECORD_WITH_CACHING_DISABLED:
-        painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
-        break;
-      case RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED:
-        painting_control =
-            ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
-        break;
-      case RecordingSource::RECORD_WITH_SUBSEQUENCE_CACHING_DISABLED:
-        painting_control = ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED;
-        break;
-      default:
-        NOTREACHED();
-    }
+        RecordingModeToPaintingControlSetting(
+            static_cast<RecordingSource::RecordingMode>(mode_index));
     base::TimeDelta min_time = base::TimeDelta::Max();
     size_t memory_used = 0;
 

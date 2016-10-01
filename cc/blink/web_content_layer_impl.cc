@@ -45,6 +45,8 @@ PaintingControlToWeb(
       return blink::WebContentLayerClient::DisplayListPaintingDisabled;
     case cc::ContentLayerClient::SUBSEQUENCE_CACHING_DISABLED:
       return blink::WebContentLayerClient::SubsequenceCachingDisabled;
+    case cc::ContentLayerClient::PARTIAL_INVALIDATION:
+      return blink::WebContentLayerClient::PartialInvalidation;
   }
   NOTREACHED();
   return blink::WebContentLayerClient::PaintDefaultBehavior;

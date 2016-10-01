@@ -86,6 +86,10 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
     # r367465.
     record_time_subsequence_caching_disabled = \
         data.get('record_time_subsequence_caching_disabled_ms', 0)
+    # TODO(wkorman): Remove the default-to-zero workaround below when
+    # reference builds get past the change that adds this comment.
+    record_time_partial_invalidation = \
+        data.get('record_time_partial_invalidation_ms', 0)
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time_painting_disabled', 'ms',
         record_time_painting_disabled))
@@ -98,6 +102,9 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time_subsequence_caching_disabled', 'ms',
         record_time_subsequence_caching_disabled))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'record_time_partial_invalidation_ms', 'ms',
+        record_time_partial_invalidation))
 
     if self._report_detailed_results:
       pixels_rasterized_with_non_solid_color = \
