@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -50,8 +49,6 @@ class MessageReaderTest : public testing::Test {
     reader_.reset(new MessageReader());
   }
 
-  void TearDown() override { base::STLDeleteElements(&messages_); }
-
   void InitReader() {
     reader_->StartReading(
         &socket_,
@@ -78,7 +75,7 @@ class MessageReaderTest : public testing::Test {
   }
 
   void OnMessage(std::unique_ptr<CompoundBuffer> buffer) {
-    messages_.push_back(buffer.release());
+    messages_.push_back(std::move(buffer));
     callback_.OnMessage();
   }
 
@@ -87,7 +84,7 @@ class MessageReaderTest : public testing::Test {
   FakeStreamSocket socket_;
   MockMessageReceivedCallback callback_;
   int read_error_ = 0;
-  std::vector<CompoundBuffer*> messages_;
+  std::vector<std::unique_ptr<CompoundBuffer>> messages_;
 };
 
 // Receive one message.
@@ -116,8 +113,8 @@ TEST_F(MessageReaderTest, TwoMessages_Together) {
   Mock::VerifyAndClearExpectations(&callback_);
   Mock::VerifyAndClearExpectations(&socket_);
 
-  EXPECT_TRUE(CompareResult(messages_[0], kTestMessage1));
-  EXPECT_TRUE(CompareResult(messages_[1], kTestMessage2));
+  EXPECT_TRUE(CompareResult(messages_[0].get(), kTestMessage1));
+  EXPECT_TRUE(CompareResult(messages_[1].get(), kTestMessage2));
 
   EXPECT_TRUE(socket_.read_pending());
 }
@@ -135,7 +132,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
   Mock::VerifyAndClearExpectations(&callback_);
   Mock::VerifyAndClearExpectations(&socket_);
 
-  EXPECT_TRUE(CompareResult(messages_[0], kTestMessage1));
+  EXPECT_TRUE(CompareResult(messages_[0].get(), kTestMessage1));
 
   EXPECT_TRUE(socket_.read_pending());
 
@@ -145,7 +142,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
   AddMessage(kTestMessage2);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(CompareResult(messages_[1], kTestMessage2));
+  EXPECT_TRUE(CompareResult(messages_[1].get(), kTestMessage2));
 
   EXPECT_TRUE(socket_.read_pending());
 }

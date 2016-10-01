@@ -14,8 +14,8 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "remoting/protocol/message_serialization.h"
@@ -91,7 +91,7 @@ class ChannelMultiplexer::MuxChannel {
   bool id_sent_;
   int receive_id_;
   MuxSocket* socket_;
-  std::list<PendingPacket*> pending_packets_;
+  std::list<std::unique_ptr<PendingPacket>> pending_packets_;
 
   DISALLOW_COPY_AND_ASSIGN(MuxChannel);
 };
@@ -145,7 +145,6 @@ ChannelMultiplexer::MuxChannel::MuxChannel(
 ChannelMultiplexer::MuxChannel::~MuxChannel() {
   // Socket must be destroyed before the channel.
   DCHECK(!socket_);
-  base::STLDeleteElements(&pending_packets_);
 }
 
 std::unique_ptr<P2PStreamSocket>
@@ -160,7 +159,8 @@ void ChannelMultiplexer::MuxChannel::OnIncomingPacket(
     std::unique_ptr<MultiplexPacket> packet) {
   DCHECK_EQ(packet->channel_id(), receive_id_);
   if (packet->data().size() > 0) {
-    pending_packets_.push_back(new PendingPacket(std::move(packet)));
+    pending_packets_.push_back(
+        base::MakeUnique<PendingPacket>(std::move(packet)));
     if (socket_) {
       // Notify the socket that we have more data.
       socket_->OnPacketReceived();
@@ -200,10 +200,8 @@ int ChannelMultiplexer::MuxChannel::DoRead(
     DCHECK_LE(result, buffer_len);
     pos += result;
     buffer_len -= pos;
-    if (pending_packets_.front()->is_empty()) {
-      delete pending_packets_.front();
-      pending_packets_.erase(pending_packets_.begin());
-    }
+    if (pending_packets_.front()->is_empty())
+      pending_packets_.pop_front();
   }
   return pos;
 }
@@ -310,7 +308,6 @@ ChannelMultiplexer::ChannelMultiplexer(StreamChannelFactory* factory,
 
 ChannelMultiplexer::~ChannelMultiplexer() {
   DCHECK(pending_channels_.empty());
-  base::STLDeleteValues(&channels_);
 
   // Cancel creation of the base channel if it hasn't finished.
   if (base_channel_factory_)
@@ -393,22 +390,19 @@ void ChannelMultiplexer::DoCreatePendingChannels() {
 
 ChannelMultiplexer::MuxChannel* ChannelMultiplexer::GetOrCreateChannel(
     const std::string& name) {
-  // Check if we already have a channel with the requested name.
-  std::map<std::string, MuxChannel*>::iterator it = channels_.find(name);
-  if (it != channels_.end())
-    return it->second;
+  std::unique_ptr<MuxChannel>& channel = channels_[name];
+  if (!channel) {
+    // Create a new channel if we haven't found existing one.
+    channel = base::MakeUnique<MuxChannel>(this, name, next_channel_id_);
+    ++next_channel_id_;
+  }
 
-  // Create a new channel if we haven't found existing one.
-  MuxChannel* channel = new MuxChannel(this, name, next_channel_id_);
-  ++next_channel_id_;
-  channels_[channel->name()] = channel;
-  return channel;
+  return channel.get();
 }
 
 
 void ChannelMultiplexer::OnBaseChannelError(int error) {
-  for (std::map<std::string, MuxChannel*>::iterator it = channels_.begin();
-       it != channels_.end(); ++it) {
+  for (auto it = channels_.begin(); it != channels_.end(); ++it) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ChannelMultiplexer::NotifyBaseChannelError,
@@ -418,7 +412,7 @@ void ChannelMultiplexer::OnBaseChannelError(int error) {
 
 void ChannelMultiplexer::NotifyBaseChannelError(const std::string& name,
                                                 int error) {
-  std::map<std::string, MuxChannel*>::iterator it = channels_.find(name);
+  auto it = channels_.find(name);
   if (it != channels_.end())
     it->second->OnBaseChannelError(error);
 }

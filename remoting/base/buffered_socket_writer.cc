@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -46,9 +46,7 @@ std::unique_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
 
 BufferedSocketWriter::BufferedSocketWriter() : weak_factory_(this) {}
 
-BufferedSocketWriter::~BufferedSocketWriter() {
-  base::STLDeleteElements(&queue_);
-}
+BufferedSocketWriter::~BufferedSocketWriter() {}
 
 void BufferedSocketWriter::Start(
     const WriteCallback& write_callback,
@@ -68,7 +66,7 @@ void BufferedSocketWriter::Write(
   if (closed_)
     return;
 
-  queue_.push_back(new PendingPacket(
+  queue_.push_back(base::MakeUnique<PendingPacket>(
       new net::DrainableIOBuffer(data.get(), data->size()), done_task));
 
   DoWrite();
@@ -107,7 +105,6 @@ void BufferedSocketWriter::HandleWriteResult(int result) {
 
   if (queue_.front()->data->BytesRemaining() == 0) {
     base::Closure done_task = queue_.front()->done_task;
-    delete queue_.front();
     queue_.pop_front();
 
     if (!done_task.is_null())

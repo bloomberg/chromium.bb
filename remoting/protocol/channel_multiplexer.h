@@ -5,6 +5,8 @@
 #ifndef REMOTING_PROTOCOL_CHANNEL_MULTIPLEXER_H_
 #define REMOTING_PROTOCOL_CHANNEL_MULTIPLEXER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/buffered_socket_writer.h"
@@ -72,7 +74,7 @@ class ChannelMultiplexer : public StreamChannelFactory {
   std::list<PendingChannel> pending_channels_;
 
   int next_channel_id_;
-  std::map<std::string, MuxChannel*> channels_;
+  std::map<std::string, std::unique_ptr<MuxChannel>> channels_;
 
   // Channels are added to |channels_by_receive_id_| only after we receive
   // receive_id from the remote peer.

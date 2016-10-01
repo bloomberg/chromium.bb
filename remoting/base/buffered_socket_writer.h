@@ -6,6 +6,7 @@
 #define REMOTING_BASE_BUFFERED_SOCKET_WRITER_H_
 
 #include <list>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -52,7 +53,6 @@ class BufferedSocketWriter {
 
  private:
   struct PendingPacket;
-  typedef std::list<PendingPacket*> DataQueue;
 
   void DoWrite();
   void HandleWriteResult(int result);
@@ -65,7 +65,7 @@ class BufferedSocketWriter {
 
   bool closed_ = false;
 
-  DataQueue queue_;
+  std::list<std::unique_ptr<PendingPacket>> queue_;
 
   bool write_pending_ = false;
 
