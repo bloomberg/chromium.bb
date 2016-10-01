@@ -549,6 +549,12 @@
       TRACE_EVENT_PHASE_SAMPLE, category_group, name, 0, thread_id, timestamp, \
       TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val, arg2_name, arg2_val)
 
+#define TRACE_EVENT_SAMPLE_WITH_ID1(category_group, name, id, arg1_name,       \
+                                    arg1_val)                                  \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_SAMPLE, category_group,   \
+                                   name, id, TRACE_EVENT_FLAG_NONE, arg1_name, \
+                                   arg1_val)
+
 // ASYNC_STEP_* APIs should be only used by legacy code. New code should
 // consider using NESTABLE_ASYNC_* APIs to describe substeps within an async
 // event.
