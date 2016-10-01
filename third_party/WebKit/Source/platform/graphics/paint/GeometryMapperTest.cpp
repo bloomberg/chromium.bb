@@ -33,6 +33,12 @@ class GeometryMapperTest : public ::testing::Test {
         geometryPropertyTreeState);
   }
 
+  const TransformPaintPropertyNode* leastCommonAncestor(
+      const TransformPaintPropertyNode* a,
+      const TransformPaintPropertyNode* b) {
+    return GeometryMapper::leastCommonAncestor(a, b);
+  }
+
  private:
   void SetUp() override {
     rootTransformNode = TransformPaintPropertyNode::create(
@@ -544,6 +550,44 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
       input, transform2AndClipState, transform1State, success);
   EXPECT_TRUE(success);
   EXPECT_RECT_EQ(expectedUnclipped, result);
+}
+
+TEST_F(GeometryMapperTest, LeastCommonAncestor) {
+  TransformationMatrix matrix;
+  RefPtr<TransformPaintPropertyNode> child1 =
+      TransformPaintPropertyNode::create(
+          rootGeometryPropertyTreeState().transform, matrix, FloatPoint3D());
+  RefPtr<TransformPaintPropertyNode> child2 =
+      TransformPaintPropertyNode::create(
+          rootGeometryPropertyTreeState().transform, matrix, FloatPoint3D());
+
+  RefPtr<TransformPaintPropertyNode> childOfChild1 =
+      TransformPaintPropertyNode::create(child1, matrix, FloatPoint3D());
+  RefPtr<TransformPaintPropertyNode> childOfChild2 =
+      TransformPaintPropertyNode::create(child2, matrix, FloatPoint3D());
+
+  EXPECT_EQ(rootGeometryPropertyTreeState().transform,
+            leastCommonAncestor(childOfChild1.get(), childOfChild2.get()));
+  EXPECT_EQ(rootGeometryPropertyTreeState().transform,
+            leastCommonAncestor(childOfChild1.get(), child2.get()));
+  EXPECT_EQ(
+      rootGeometryPropertyTreeState().transform,
+      leastCommonAncestor(childOfChild1.get(),
+                          rootGeometryPropertyTreeState().transform.get()));
+  EXPECT_EQ(child1, leastCommonAncestor(childOfChild1.get(), child1.get()));
+
+  EXPECT_EQ(rootGeometryPropertyTreeState().transform,
+            leastCommonAncestor(childOfChild2.get(), childOfChild1.get()));
+  EXPECT_EQ(rootGeometryPropertyTreeState().transform,
+            leastCommonAncestor(childOfChild2.get(), child1.get()));
+  EXPECT_EQ(
+      rootGeometryPropertyTreeState().transform,
+      leastCommonAncestor(childOfChild2.get(),
+                          rootGeometryPropertyTreeState().transform.get()));
+  EXPECT_EQ(child2, leastCommonAncestor(childOfChild2.get(), child2.get()));
+
+  EXPECT_EQ(rootGeometryPropertyTreeState().transform,
+            leastCommonAncestor(child1.get(), child2.get()));
 }
 
 }  // namespace blink

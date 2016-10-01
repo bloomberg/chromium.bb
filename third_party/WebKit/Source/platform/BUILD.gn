@@ -1666,7 +1666,6 @@ test("blink_platform_unittests") {
     "graphics/paint/DisplayItemListTest.cpp",
     "graphics/paint/DisplayItemTest.cpp",
     "graphics/paint/GeometryMapperTest.cpp",
-    "graphics/paint/GeometryPropertyTreeStateTest.cpp",
     "graphics/paint/PaintArtifactToSkCanvasTest.cpp",
     "graphics/paint/PaintChunkTest.cpp",
     "graphics/paint/PaintChunkerTest.cpp",

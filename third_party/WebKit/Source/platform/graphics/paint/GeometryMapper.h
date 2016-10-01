@@ -146,9 +146,9 @@ class PLATFORM_EXPORT GeometryMapper {
       const GeometryPropertyTreeState&);
 
   // Returns the least common ancestor in the transform tree.
-  PassRefPtr<TransformPaintPropertyNode> leastCommonAncestor(
-      PassRefPtr<TransformPaintPropertyNode>,
-      PassRefPtr<TransformPaintPropertyNode>);
+  static const TransformPaintPropertyNode* leastCommonAncestor(
+      const TransformPaintPropertyNode*,
+      const TransformPaintPropertyNode*);
 
   friend class GeometryMapperTest;
 

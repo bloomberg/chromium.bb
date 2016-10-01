@@ -42,9 +42,8 @@ FloatRect GeometryMapper::slowMapToVisualRectInDestinationSpace(
     const GeometryPropertyTreeState& sourceState,
     const GeometryPropertyTreeState& destinationState,
     bool& success) {
-  const TransformPaintPropertyNode* lcaTransform =
-      propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(
-          sourceState.transform.get(), destinationState.transform.get());
+  const TransformPaintPropertyNode* lcaTransform = leastCommonAncestor(
+      sourceState.transform.get(), destinationState.transform.get());
   DCHECK(lcaTransform);
 
   // Assume that the clip of destinationState is an ancestor of the clip of sourceState
@@ -76,9 +75,8 @@ FloatRect GeometryMapper::slowMapRectToDestinationSpace(
     const GeometryPropertyTreeState& sourceState,
     const GeometryPropertyTreeState& destinationState,
     bool& success) {
-  const TransformPaintPropertyNode* lcaTransform =
-      propertyTreeNearestCommonAncestor<TransformPaintPropertyNode>(
-          sourceState.transform.get(), destinationState.transform.get());
+  const TransformPaintPropertyNode* lcaTransform = leastCommonAncestor(
+      sourceState.transform.get(), destinationState.transform.get());
   DCHECK(lcaTransform);
   GeometryPropertyTreeState lcaState = sourceState;
   lcaState.transform = lcaTransform;
@@ -256,6 +254,46 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
   }
   success = true;
   return precomputedData.toAncestorTransforms.find(localTransformNode)->value;
+}
+
+namespace {
+
+unsigned transformPropertyTreeNodeDepth(
+    const TransformPaintPropertyNode* node) {
+  unsigned depth = 0;
+  while (node) {
+    depth++;
+    node = node->parent();
+  }
+  return depth;
+}
+}
+
+const TransformPaintPropertyNode* GeometryMapper::leastCommonAncestor(
+    const TransformPaintPropertyNode* a,
+    const TransformPaintPropertyNode* b) {
+  // Measure both depths.
+  unsigned depthA = transformPropertyTreeNodeDepth(a);
+  unsigned depthB = transformPropertyTreeNodeDepth(b);
+
+  // Make it so depthA >= depthB.
+  if (depthA < depthB) {
+    std::swap(a, b);
+    std::swap(depthA, depthB);
+  }
+
+  // Make it so depthA == depthB.
+  while (depthA > depthB) {
+    a = a->parent();
+    depthA--;
+  }
+
+  // Walk up until we find the ancestor.
+  while (a != b) {
+    a = a->parent();
+    b = b->parent();
+  }
+  return a;
 }
 
 }  // namespace blink
