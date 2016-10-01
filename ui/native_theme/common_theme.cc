@@ -23,7 +23,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme) {
   // Second wave of MD colors (colors that only appear in secondary UI).
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    static const SkColor kPrimaryTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
+    static const SkColor kPrimaryTextColor = SK_ColorBLACK;
 
     switch (color_id) {
       // Labels
